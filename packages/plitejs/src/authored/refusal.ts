@@ -10,6 +10,20 @@ import type { CompiledEditorSchema } from '../core/schema-compiler';
 import { getDefined } from '../internal/get-defined';
 
 /**
+ * Why the review marks cannot hold an edit beside content a pending join
+ * shows away from where it is saved. `crosses`: the edit would cover or
+ * split such content apart from where it shows. `reordered`: the saved
+ * result would show the edited blocks in another order once everything is
+ * accepted. `diverged`: it would show other content than the edit wrote.
+ * `unaligned`: the preview there has no map to the saved content.
+ */
+export type UnrepresentableReason =
+  | 'crosses'
+  | 'diverged'
+  | 'reordered'
+  | 'unaligned';
+
+/**
  * Why the authored plugin refused a change whole, so nothing of it applied,
  * or refused a view switch.
  */
@@ -26,7 +40,10 @@ export type AuthoredRefusal = Readonly<{
    */
   code: 'generated-values' | 'unrepresentable' | 'veto';
   message: string;
-  /** Each veto reason the change met, such as `'table'`. */
+  /**
+   * Each veto reason the change met, such as `'table'`, or the
+   * {@link UnrepresentableReason} an unrepresentable edit met.
+   */
   reasons: readonly string[];
 }>;
 
@@ -174,12 +191,15 @@ export const GENERATED_VALUES_REFUSAL: AuthoredRefusal = Object.freeze({
   reasons: Object.freeze([]),
 });
 
-export const unrepresentable = (message: string): EditorRefusalError =>
+export const unrepresentable = (
+  message: string,
+  reason?: UnrepresentableReason
+): EditorRefusalError =>
   new EditorRefusalError(
     Object.freeze({
       code: 'unrepresentable',
       message,
-      reasons: Object.freeze([]),
+      reasons: Object.freeze(reason ? [reason] : []),
     } satisfies AuthoredRefusal),
     message
   );
@@ -188,3 +208,18 @@ export const unplaced = () =>
   unrepresentable(
     'Cannot write inside the content root of a block whose deletion is pending.'
   );
+
+const MOVED_MESSAGES: Readonly<Record<UnrepresentableReason, string>> = {
+  crosses:
+    'This edit would cover content a pending join shows elsewhere; decide the join first.',
+  diverged:
+    'This edit would save something other than what it wrote; decide the pending join first.',
+  reordered:
+    'This edit would show in another order once everything is accepted; decide the pending join first.',
+  unaligned:
+    'The preview cannot place this edit beside content a pending join moves.',
+};
+
+/** The refusal of an edit beside content a pending join moves. */
+export const movedRefusal = (reason: UnrepresentableReason) =>
+  unrepresentable(MOVED_MESSAGES[reason], reason);

@@ -1,4 +1,5 @@
 import { jsx } from '../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { isVoid as editorIsVoid } from '../../../../src/internal';
 import { getChildren as editorGetChildren } from '../../../../src/testing';

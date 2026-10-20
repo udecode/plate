@@ -453,6 +453,7 @@ export const insertionsIn = (
     counts.set(incarnation, (counts.get(incarnation) ?? 0) + 1)
   );
   if (Array.isArray(children)) {
+    countLedgerWork('summaryChildren', children.length);
     for (const child of children) {
       addCounts(counts, insertionsIn(child, facts), 1);
     }

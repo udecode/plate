@@ -451,6 +451,7 @@
     "test:partition:migrations": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs migrations",
     "test:partition:react-core": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs react-core",
     "test:partition:resizable-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs resizable-react",
+    "test:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs root",
     "test:partition:standard-basic-nodes": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-nodes",
     "test:partition:standard-basic-nodes-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-nodes-react",
     "test:partition:standard-basic-styles": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-basic-styles",

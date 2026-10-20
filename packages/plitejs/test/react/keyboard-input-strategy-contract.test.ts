@@ -2762,11 +2762,11 @@ describe('keyboard input strategy', () => {
         { createEditor: innerCreateEditor },
         { ReactEditor: innerReactEditor },
         { applyEditableKeyDown: innerApplyEditableKeyDown },
-      ] = await Promise.all([
-        import('plitejs'),
-        import('../../src/react/plugin/react-editor'),
-        import('../../src/react/editable/keyboard-input-strategy'),
-      ]);
+      ] = [
+        await import('plitejs'),
+        await import('../../src/react/plugin/react-editor'),
+        await import('../../src/react/editable/keyboard-input-strategy'),
+      ];
       const editor = innerCreateEditor({
         initialSelection: {
           kind: 'text',
@@ -2854,11 +2854,11 @@ describe('keyboard input strategy', () => {
         },
         { ReactEditor: innerReactEditor2 },
         { applyEditableKeyDown: innerApplyEditableKeyDown2 },
-      ] = await Promise.all([
-        import('plitejs'),
-        import('../../src/react/plugin/react-editor'),
-        import('../../src/react/editable/keyboard-input-strategy'),
-      ]);
+      ] = [
+        await import('plitejs'),
+        await import('../../src/react/plugin/react-editor'),
+        await import('../../src/react/editable/keyboard-input-strategy'),
+      ];
       const editor = innerCreateEditor2({
         plugins: [
           innerDefineEditorSchema(
@@ -2989,11 +2989,11 @@ describe('keyboard input strategy', () => {
           },
           { ReactEditor: innerReactEditor3 },
           { applyEditableKeyDown: innerApplyEditableKeyDown3 },
-        ] = await Promise.all([
-          import('plitejs'),
-          import('../../src/react/plugin/react-editor'),
-          import('../../src/react/editable/keyboard-input-strategy'),
-        ]);
+        ] = [
+          await import('plitejs'),
+          await import('../../src/react/plugin/react-editor'),
+          await import('../../src/react/editable/keyboard-input-strategy'),
+        ];
         const editor = innerCreateEditor3({
           plugins: [
             innerDefineEditorSchema2(

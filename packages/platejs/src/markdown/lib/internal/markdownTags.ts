@@ -157,19 +157,21 @@ export const decodeMarkdownTagAttribute = (value: string) =>
       ? Number.parseInt(decimal, 10)
       : Number.parseInt(hex, 16);
 
-    return codePoint > 0 && codePoint <= 0x10_ff_ff
-      ? String.fromCodePoint(codePoint)
-      : match;
+    return codePoint <= 0x10_ff_ff ? String.fromCodePoint(codePoint) : match;
   });
 
-/** Escape a quoted attribute value. Tags never span lines or end a table cell. */
+/**
+ * Escape a quoted attribute value. Tags never span lines or end a table cell,
+ * and Markdown turns a literal NUL into U+FFFD before the tag reader runs.
+ */
 export const escapeMarkdownTagAttribute = (value: string) =>
   value
     .replaceAll('&', '&amp;')
     .replaceAll('"', '&quot;')
     .replaceAll('\n', '&#10;')
     .replaceAll('\r', '&#13;')
-    .replaceAll('|', '&#124;');
+    .replaceAll('|', '&#124;')
+    .replaceAll('\0', '&#0;');
 
 const tagStates = (
   effects: Effects,

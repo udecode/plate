@@ -1,4 +1,5 @@
 import { jsx } from '../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { isStart as editorIsStart } from '../../../../src/internal';
 import { getSnapshot as editorGetSnapshot } from '../../../../src/testing';

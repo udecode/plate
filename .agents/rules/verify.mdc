@@ -172,8 +172,7 @@ its `exit N` line; after an interruption or resume, only those logs count.
   This runner owns its build/server lifecycle. Run managed proofs serially.
 - Optional CLI: `pnpm --filter @platejs/cli build`, then invoke the absolute
   `packages/cli/dist/bin.js` with Node from the disposable consumer's cwd.
-  Each one-shot invocation is a fresh process. `generate --watch` owns a
-  long-lived session; retain its handle and stop its children after the drive.
+  Each invocation is a fresh process.
 - Library-only proof: use the actual affected package test/type script. No app
   launch is needed unless the claimed behavior depends on rendering or native
   input. Use the full [command recipes](./references/commands.md).

@@ -8,11 +8,6 @@
     "runtime"
   ],
   "prerequisiteReason": "Focus and navigation depend on mounted-view lifetime and selection intent across active and read-only views.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Input acceptance, accessible feedback and selection preservation are different contracts from rendering static HTML."
-  },
   "owners": [
     "packages/plitejs/src/core/screen-reader-announcement.ts",
     "packages/plitejs/src/react/editable/runtime-focus-mouse-events.ts",

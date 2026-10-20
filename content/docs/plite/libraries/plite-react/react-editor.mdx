@@ -123,21 +123,27 @@ editor.
 
 #### `editor.api.dom.assertDOMPoint(point: Point): DOMPoint`
 
-Assert a native DOM selection point from a Plite point.
+Assert a native DOM selection point from a Plite point. Throws where
+`resolveDOMPoint` returns `null`.
 
 #### `editor.api.dom.resolveDOMPoint(point: Point): DOMPoint | null`
 
 Resolve a native DOM selection point from a Plite point. Returns `null` when the
-Plite point is not currently mappable.
+Plite point is not currently mappable. It also returns `null` while the page's
+text differs from the editor's, such as right after an update or during IME
+composition, so resolve again after the page paints.
 
 #### `editor.api.dom.assertDOMRange(range: Range): DOMRange`
 
-Assert a native DOM range from a Plite range.
+Assert a native DOM range from a Plite range. Throws where `resolveDOMRange`
+returns `null`.
 
 #### `editor.api.dom.resolveDOMRange(range: Range): DOMRange | null`
 
 Resolve a native DOM range from a Plite range. Returns `null` when the Plite
-range is not currently mappable.
+range is not currently mappable. It also returns `null` while the page's
+text differs from the editor's, such as right after an update or during IME
+composition, so resolve again after the page paints.
 
 #### `editor.api.dom.resolveRangeRect(range: Range): DOMRect | null`
 
@@ -196,15 +202,16 @@ range is not currently mappable.
 
 ## DOM environment
 
-#### `editor.api.dom.findDocumentOrShadowRoot(): Document | ShadowRoot`
+#### `editor.api.dom.assertDocumentOrShadowRoot(): Document | ShadowRoot`
 
-Return the document or shadow root that owns the editor. Throws when the editor
-has no mounted root.
+Return the document or shadow root that owns the editor. Throws where
+`resolveDocumentOrShadowRoot` returns `null`.
 
 #### `editor.api.dom.resolveDocumentOrShadowRoot(): Document | ShadowRoot | null`
 
 Resolve the document or shadow root that owns the editor. Returns `null` when
-the editor has no mounted root.
+this editor has no mounted view, or when several are mounted and none has
+focus.
 
 #### `editor.api.dom.getWindow(): Window`
 

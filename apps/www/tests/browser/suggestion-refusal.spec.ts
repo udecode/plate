@@ -39,6 +39,22 @@ const open = async (page: Page) => {
 const firstLeaf = (block: Block, path: number[]): number[] =>
   block.children ? firstLeaf(block.children[0], [...path, 0]) : path;
 
+const leafReading = (
+  block: Block,
+  path: number[],
+  text: string
+): number[] | null => {
+  if (!block.children) return block.text === text ? path : null;
+
+  for (const [index, child] of block.children.entries()) {
+    const found = leafReading(child, [...path, index], text);
+
+    if (found) return found;
+  }
+
+  return null;
+};
+
 const caret = (path: number[], offset = 0) => ({
   anchor: { offset, path },
   focus: { offset, path },
@@ -78,6 +94,34 @@ for (const [place, match] of [
     await expect.poll(blocks).toEqual(before);
     await expect.poll(() => blockText(page, index)).toBe(text);
     expect(await editor.selection.get()).toMatchObject(caret(leaf));
+    errors.assertNone();
+  });
+}
+
+for (const [place, offset] of [
+  ['at the end', 'Paid Extension'.length],
+  ['in the middle', 4],
+] as const) {
+  test(`gives back a key typed ${place} of a table cell while Suggesting`, async ({
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page, { strict: true });
+    const { blocks, editor } = await open(page);
+    const before = await blocks();
+    const index = before.findIndex((block) => block.type === 'table');
+    const text = await blockText(page, index);
+    const cell = 'Paid Extension';
+    const leaf = leafReading(before[index], [index], cell);
+
+    expect(leaf).not.toBeNull();
+    await editor.selection.select(caret(leaf!, offset));
+    await page.keyboard.type('x');
+
+    await expect(refusalToast(page)).toBeVisible();
+    await expect.poll(blocks).toEqual(before);
+    await expect.poll(() => blockText(page, index)).toBe(text);
+    expect(await editor.selection.get()).toMatchObject(caret(leaf!, offset));
+    await editor.assert.domCaret({ offset, text: cell });
     errors.assertNone();
   });
 }

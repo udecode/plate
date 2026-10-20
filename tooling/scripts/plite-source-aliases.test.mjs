@@ -174,10 +174,10 @@ test('ordinary package tests use the root source-first Bun config', () => {
 
 test('Plate public import smoke resolves test entrypoints from root and package cwd', () => {
   for (const [cwd, filename] of [
-    [repoRoot, './packages/platejs/test/public-package-import-smoke.slow.ts'],
+    [repoRoot, './packages/platejs/test/public-package-import-smoke.spec.ts'],
     [
       path.join(repoRoot, 'packages/platejs'),
-      './test/public-package-import-smoke.slow.ts',
+      './test/public-package-import-smoke.spec.ts',
     ],
   ]) {
     const result = spawnSync('bun', ['test', filename], {

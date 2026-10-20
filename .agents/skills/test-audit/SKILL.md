@@ -59,7 +59,7 @@ Keep a test that independently enforces one of the contracts listed at the top, 
 - a source inspection that is the cheapest independent guard, failing when the user-facing key, byte or path changes and surviving an identifier rename; when the project's Tests rule bans source-text tests, the guard moves to its lint or a check script;
 - a test that fails on the current tree. Treat it as a possible bug, reproduce it and repair the owner or the fixture instead of deleting it.
 
-A slow test moves to the project's slow tier. A flaky test goes to the flaky lane in [Full mode](#full-mode), never to a cut. A test that resembles the implementation may still be the independent contract. Prove otherwise before removing it.
+A slow test is never a cut either. Shrink its input to the smallest size at which its mutant still fails, or move it to the project's slow tier when the project keeps one. A flaky test goes to the flaky lane in [Full mode](#full-mode), never to a cut. A test that resembles the implementation may still be the independent contract. Prove otherwise before removing it.
 
 ## Candidate evidence
 

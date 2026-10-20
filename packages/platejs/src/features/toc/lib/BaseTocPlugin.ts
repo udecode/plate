@@ -4,20 +4,50 @@ import {
   NodeApi,
   PLUGINS,
   type DefinitionOf,
+  type Editor,
   type EditorStateView,
   type NodeKey,
 } from '../../../core';
-import { BaseHeadingPlugin } from '../../basic-nodes';
+import { BaseHeadingPlugin, type HeadingLevel } from '../../basic-nodes';
 
 export type Heading = {
-  depth: number;
   key: NodeKey;
+  level: HeadingLevel;
   title: string;
-  type: string;
 };
 
-export type TocPluginState = {
-  queryHeading: ((state: EditorStateView) => Heading[]) | null;
+/**
+ * Lists every titled heading in `state`, in document order, at the level the
+ * installed `BaseHeadingPlugin` reads. A read override filters this list to
+ * change which headings a table of contents shows. `editor`'s heading plugin
+ * reads each level, so pass the `editor` and `state` of one read.
+ */
+export const readTocHeadings = ({
+  editor,
+  state,
+}: Readonly<{ editor: Editor; state: EditorStateView }>): Heading[] => {
+  const heading = editor.plugin(BaseHeadingPlugin);
+
+  if (!heading.installed) return [];
+
+  const headings: Heading[] = [];
+
+  for (const [node] of state.nodes.entries({
+    at: [],
+    match: ElementApi.isElement,
+  })) {
+    const level = heading.read.level(node);
+
+    if (level === undefined) continue;
+
+    const title = NodeApi.string(node);
+
+    if (title) {
+      headings.push({ key: state.key(node), level, title });
+    }
+  }
+
+  return headings;
 };
 
 export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
@@ -25,40 +55,8 @@ export const BaseTocPlugin = definePlugin(PLUGINS.toc, {
     defineFormats({
       markdown: { tag: type },
     }),
-  initialState: (): TocPluginState => ({ queryHeading: null }),
-  read: ({ editor, store, state }) => ({
-    headings: () => {
-      const { queryHeading } = store.get();
-
-      if (queryHeading) return queryHeading(state);
-
-      const headings: Heading[] = [];
-      const heading = editor.plugin(BaseHeadingPlugin);
-
-      if (!heading.installed) return headings;
-
-      for (const [node] of state.nodes.entries({
-        at: [],
-        match: ElementApi.isElement,
-      })) {
-        const depth = heading.read.level(node);
-
-        if (depth === undefined) continue;
-
-        const title = NodeApi.string(node);
-
-        if (title) {
-          headings.push({
-            depth,
-            key: state.key(node),
-            title,
-            type: node.type,
-          });
-        }
-      }
-
-      return headings;
-    },
+  read: ({ editor, state }) => ({
+    headings: () => readTocHeadings({ editor, state }),
   }),
   render: { readsDocument: true },
   schema: {

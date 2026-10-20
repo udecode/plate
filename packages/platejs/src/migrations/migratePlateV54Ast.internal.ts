@@ -6,6 +6,7 @@ import {
   TextApi,
   type Value,
 } from '../facade';
+import { parseLegacyDateValue } from '../features/date/lib/legacyDateValue.internal';
 import type { DocumentMigrationContext } from './documentMigrations';
 import { resolveV54BuiltIns } from './migratePlateV54BuiltIns.internal';
 import {
@@ -274,12 +275,11 @@ export const migratePlateV54Ast = ({
     };
 
     if (dateType && element.type === dateType) {
-      const rawDate = isNonEmptyString(properties().rawDate)
-        ? properties().rawDate
+      const { date: dateProperty, rawDate: rawDateProperty } = properties();
+      const rawDate = isNonEmptyString(rawDateProperty)
+        ? rawDateProperty
         : undefined;
-      const date = isNonEmptyString(properties().date)
-        ? properties().date
-        : undefined;
+      const date = isNonEmptyString(dateProperty) ? dateProperty : undefined;
 
       if (rawDate !== undefined && date !== undefined && rawDate !== date) {
         throw new Error(
@@ -287,7 +287,9 @@ export const migratePlateV54Ast = ({
         );
       }
 
-      const legacyValue = rawDate ?? date;
+      const legacyValue =
+        rawDate ??
+        (date === undefined ? undefined : (parseLegacyDateValue(date) ?? date));
       const value =
         legacyValue ??
         (isNonEmptyString(properties().value) ? properties().value : undefined);
@@ -296,7 +298,7 @@ export const migratePlateV54Ast = ({
 
       if (
         Object.hasOwn(element, 'value') &&
-        !isNonEmptyString(properties().value)
+        (!isNonEmptyString(properties().value) || properties().value === date)
       ) {
         without('value');
       }

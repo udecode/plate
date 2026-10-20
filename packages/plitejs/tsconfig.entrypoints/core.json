@@ -27,7 +27,6 @@
     "../src/yjs/react/**/*",
     "../src/**/*.spec.*",
     "../src/**/*.test.*",
-    "../src/**/*.slow.*",
     "../src/**/*-contract.*",
     "../src/**/__tests__/**"
   ],

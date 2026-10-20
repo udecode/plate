@@ -8,7 +8,7 @@
 
 ## ProseMirror test families
 
-- **PM-07 history.** `history/test/test-history.ts` checks undo and redo, grouping by `newGroupDelay` and adjacency, changes kept outside history and overlapping or unsynced deletes, compression, restoring and rebasing the selection on undo, undo and redo depth, truncation, appended transactions and collaborative rebasing (`ProseMirror/prosemirror-history@768b74205ad59919ed54d75e197312964ddcf3c2:test/test-history.ts:31-402`). Plite counterparts: `packages/plitejs/test/history/history-contract.ts`, `history-branch-contract.spec.ts` and `history-soak-contract.slow.ts`; Plite does not persist ProseMirror-style steps. Source: `docs/editor-test-harvester/prosemirror/report.md:146`.
+- **PM-07 history.** `history/test/test-history.ts` checks undo and redo, grouping by `newGroupDelay` and adjacency, changes kept outside history and overlapping or unsynced deletes, compression, restoring and rebasing the selection on undo, undo and redo depth, truncation, appended transactions and collaborative rebasing (`ProseMirror/prosemirror-history@768b74205ad59919ed54d75e197312964ddcf3c2:test/test-history.ts:31-402`). Plite counterparts: `packages/plitejs/test/history/history-contract.ts`, `history-branch-contract.spec.ts` and `history-soak-contract.spec.ts`; Plite does not persist ProseMirror-style steps. Source: `docs/editor-test-harvester/prosemirror/report.md:146`.
 
 ## Edits outside history
 

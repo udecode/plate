@@ -3,8 +3,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
-import { parse } from '@babel/parser';
-
+import { vitestSuites } from '../config/test-suites.mjs';
+import {
+  importClosure,
+  isTypecheckedSource,
+  tsconfigChain,
+} from '../scripts/import-graph.mjs';
 import {
   classifyEntrypoint,
   entrypointTaskPartition,
@@ -12,8 +16,8 @@ import {
   normalizePath,
   normalizeSourcePath,
   partitionTypecheckTask,
-  resolvePublicEntrypoint,
 } from './entrypoint-dag.mjs';
+import { testModuleEffects } from './test-module-effects.mjs';
 
 const toolingRoot = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,9 +25,7 @@ export const repoRoot = path.resolve(toolingRoot, '../..');
 
 const sourceFilePattern = /\.[cm]?[jt]sx?$/u;
 const runtimeTestPattern = /\.(?:spec|test)\.[cm]?[jt]sx?$/u;
-const sourceTestPattern = /(?:\.(?:spec|test|slow)|-contract)\.[cm]?[jt]sx?$/u;
-const plateSourceTestPattern = /(?:\.(?:spec|test)|-contract)\.[cm]?[jt]sx?$/u;
-const slowSourcePattern = /\.slow\.[cm]?[jt]sx?$/u;
+const sourceTestPattern = /(?:\.(?:spec|test)|-contract)\.[cm]?[jt]sx?$/u;
 const ignoredDirectoryNames = new Set([
   '.cache',
   '.turbo',
@@ -34,43 +36,95 @@ const ignoredDirectoryNames = new Set([
 const sourceTestInputNegations = [
   '!src/**/*.spec.*',
   '!src/**/*.test.*',
-  '!src/**/*.slow.*',
   '!src/**/*-contract.*',
   '!src/**/__tests__/**',
 ];
-const sharedTypecheckInputs = [
-  '$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs',
-  '$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs',
-  '$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs',
+const sharedTypecheckInputs = () => [
+  ...runnerInputs('tooling/scripts/run-entrypoint-task.mjs'),
   '$TURBO_ROOT$/tooling/config/global.d.ts',
   '$TURBO_ROOT$/tooling/config/tsconfig.base.json',
   '$TURBO_ROOT$/tooling/config/tsconfig.test.json',
   '$TURBO_ROOT$/tsconfig.json',
   'tsconfig.json',
 ];
-const sharedTestInputs = [
-  '$TURBO_ROOT$/config/plite-source-aliases.ts',
-  '$TURBO_ROOT$/config/plite-source-test-setup.ts',
-  '$TURBO_ROOT$/tooling/config/bunTestSetup.ts',
-  '$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs',
-  '$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs',
-  '$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs',
+// The preloads import package source, so the walk starts from them too.
+export const testPreloadFiles = [
+  'config/plite-source-aliases.ts',
+  'config/plite-source-test-setup.ts',
+  'tooling/config/bunTestSetup.ts',
+].map((filename) => path.join(repoRoot, filename));
+// Bun and Vitest read their config files without importing them, so the
+// load trace cannot report them.
+// Top-level files only: Playwright writes its results under tooling/config.
+const runtimeTestHarnessInputs = () => [
+  ...runnerInputs('tooling/scripts/run-entrypoint-task.mjs'),
+  '$TURBO_ROOT$/bunfig.toml',
+  '$TURBO_ROOT$/config/*',
+  '$TURBO_ROOT$/tooling/config/*',
   'bunfig.toml',
+  'vitest.config.*',
 ];
-const sharedLintInputs = [
-  '$TURBO_ROOT$/oxlint.config.ts',
-  '$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs',
-  '$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs',
-  '$TURBO_ROOT$/tooling/oxlint/entrypoint-dag-plugin.mjs',
-  '$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs',
+// Strict env mode hides any variable a task does not declare, so a replay
+// seed, a run count or the plitejs law switch would never reach the test.
+const runtimeTestEnv = {
+  platejs: ['PLATE_*', 'PLITE_*', 'TZ'],
+  plitejs: ['FILL_LAW_*', 'PLITE_*'],
+};
+const typecheckedExternalTestFiles = {
+  plitejs: [
+    'test/authored-tree-recording-laws.spec.ts',
+    'test/authored-tree-resolve-laws.spec.ts',
+    'test/document-change-relocation-scale.spec.ts',
+    'test/history/history-soak-contract.spec.ts',
+    'test/index.spec.ts',
+    'test/yjs/authored-key-work.spec.ts',
+    'test/yjs/collaborative-history-contract.spec.ts',
+    'test/yjs/lift-nodes-contract.spec.ts',
+    'test/yjs/remote-import-contract.spec.ts',
+    'test/yjs/structural-soak-contract.spec.ts',
+  ],
+};
+// ultracite runs oxlint and oxfmt, which load their configs, oxlint's plugins
+// and the baseline by path, not by import.
+const sharedLintInputs = () => [
+  ...new Set([
+    ...runnerInputs(
+      'oxfmt.config.ts',
+      'oxlint.config.ts',
+      'tooling/oxlint/anti-slop-plugin.mjs',
+      'tooling/oxlint/entrypoint-dag-plugin.mjs',
+      'tooling/oxlint/plate-plugin.mjs'
+    ),
+    '$TURBO_ROOT$/tooling/oxlint/plate-baseline.json',
+    ...runnerInputs('tooling/scripts/run-entrypoint-task.mjs'),
+  ]),
 ];
-const aggregateTaskInputs = [
-  '$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs',
-  '$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs',
-  '$TURBO_ROOT$/tooling/scripts/run-entrypoint-package-task.mjs',
-];
+const aggregateTaskInputs = () =>
+  runnerInputs('tooling/scripts/run-entrypoint-package-task.mjs');
 
 const compareStrings = (left, right) => left.localeCompare(right, 'en');
+
+const rootInput = (filename) =>
+  `$TURBO_ROOT$/${normalizePath(path.relative(repoRoot, filename))}`;
+
+const runnerInputs = (...runners) =>
+  importClosure(runners.map((runner) => path.join(repoRoot, runner)))
+    .map(rootInput)
+    .sort(compareStrings);
+
+const declaredEffects = (filename) => {
+  const effects =
+    testModuleEffects[normalizePath(path.relative(repoRoot, filename))];
+
+  return typeof effects === 'object' ? effects : {};
+};
+
+const effectInputs = (files) =>
+  files.flatMap((filename) => {
+    const { reads = [], runs = [] } = declaredEffects(filename);
+
+    return [...reads, ...runs].map((glob) => `$TURBO_ROOT$/${glob}`);
+  });
 
 const walkFiles = (directory) => {
   if (!fs.existsSync(directory)) return [];
@@ -99,21 +153,15 @@ const packageRelativePath = (packageName, filename) =>
   normalizePath(path.relative(packageRoot(packageName), filename));
 
 const sourceFileCategory = (packageName, filename) => {
-  if (packageName === 'platejs' && slowSourcePattern.test(filename)) {
-    return 'ignored';
-  }
-
   if (
     packageName === 'platejs' &&
     normalizePath(filename).includes('/__tests__/') &&
-    !plateSourceTestPattern.test(filename)
+    !sourceTestPattern.test(filename)
   ) {
     return 'ignored';
   }
 
-  return (packageName === 'platejs'
-    ? plateSourceTestPattern.test(filename)
-    : sourceTestPattern.test(filename)) ||
+  return sourceTestPattern.test(filename) ||
     normalizePath(filename).includes('/__tests__/')
     ? 'tests'
     : 'source';
@@ -201,10 +249,10 @@ export const getPackageRuntimeTestFiles = (packageName, partitionName) =>
     )
     .sort(compareStrings);
 
-const getPackageExternalSlowTestFiles = (packageName) =>
-  walkFiles(path.join(packageRoot(packageName), 'test'))
-    .filter((filename) => slowSourcePattern.test(filename))
-    .sort(compareStrings);
+export const getTypecheckedExternalTestFiles = (packageName) =>
+  (typecheckedExternalTestFiles[packageName] ?? []).map((filename) =>
+    path.join(packageRoot(packageName), filename)
+  );
 
 export const getPackageLintFiles = (packageName, partitionName) =>
   walkFiles(packageRoot(packageName))
@@ -254,33 +302,31 @@ const sourceOwnerGlobs = (definition, entrypointName, prefix = 'src') => {
   return globs;
 };
 
+const externalTestGlobs = (source) => [
+  `test/${source}/**`,
+  `test/${source}.*`,
+  `test/${source}-*`,
+];
+
 const externalTestOwnerGlobs = (definition, entrypointName) => {
   const entrypoint = definition.entrypoints[entrypointName];
-  const globs = [];
-
-  if (entrypoint.sourceKind === 'root') {
-    globs.push('test/**');
-  } else if (entrypoint.sourceKind === 'directory') {
-    globs.push(`test/${entrypoint.source}/**`);
-  } else {
-    globs.push(`test/${entrypoint.source}*`);
-  }
+  const ownsUnmatchedTests =
+    entrypointName === 'root' || entrypoint.sourceKind === 'root';
+  const globs = ownsUnmatchedTests
+    ? ['test/**']
+    : externalTestGlobs(entrypoint.source);
 
   for (const [otherName, other] of Object.entries(definition.entrypoints)) {
     if (otherName === entrypointName || other.sourceKind === 'root') continue;
 
-    const isNested =
-      entrypoint.sourceKind === 'root' ||
-      (entrypoint.sourceKind === 'directory' &&
-        other.source.startsWith(`${entrypoint.source}/`));
+    const winsLongestPrefix =
+      ownsUnmatchedTests ||
+      (other.source.length > entrypoint.source.length &&
+        other.source.startsWith(entrypoint.source));
 
-    if (!isNested) continue;
+    if (!winsLongestPrefix) continue;
 
-    globs.push(
-      other.sourceKind === 'directory'
-        ? `!test/${other.source}/**`
-        : `!test/${other.source}*`
-    );
+    globs.push(...externalTestGlobs(other.source).map((glob) => `!${glob}`));
   }
 
   return globs;
@@ -307,180 +353,51 @@ const partitionSourceOwnerGlobs = (definition, partitionName, prefix = 'src') =>
 const partitionExternalTestOwnerGlobs = (definition, partitionName) =>
   partitionOwnerGlobs(definition, partitionName, externalTestOwnerGlobs);
 
-const moduleSpecifierCache = new Map();
-
-const moduleSpecifiers = (filename) => {
-  if (moduleSpecifierCache.has(filename)) {
-    return moduleSpecifierCache.get(filename);
-  }
-
-  let source;
-
-  try {
-    source = fs.readFileSync(filename, 'utf-8');
-  } catch (error) {
-    if (error.code === 'ENOENT') return [];
-    throw error;
-  }
-  const sourceFile = parse(source, {
-    errorRecovery: false,
-    plugins: ['jsx', 'typescript'],
-    sourceFilename: filename,
-    sourceType: 'unambiguous',
-  });
-  const specifiers = [];
-
-  const addLiteral = (node) => {
-    if (node?.type === 'StringLiteral') specifiers.push(node.value);
-  };
-
-  const visit = (node) => {
-    if (!node || typeof node !== 'object') return;
-
-    if (
-      node.type === 'ImportDeclaration' ||
-      node.type === 'ExportAllDeclaration' ||
-      node.type === 'ExportNamedDeclaration'
-    ) {
-      addLiteral(node.moduleSpecifier);
-      addLiteral(node.source);
-    } else if (node.type === 'TSExternalModuleReference') {
-      addLiteral(node.expression);
-    } else if (node.type === 'TSImportType') {
-      addLiteral(node.argument);
-    } else if (node.type === 'ImportExpression') {
-      addLiteral(node.source);
-    } else if (
-      node.type === 'CallExpression' &&
-      (node.callee?.type === 'Import' ||
-        (node.callee?.type === 'Identifier' && node.callee.name === 'require'))
-    ) {
-      addLiteral(node.arguments[0]);
-    }
-
-    for (const value of Object.values(node)) {
-      if (Array.isArray(value)) {
-        for (const child of value) visit(child);
-      } else if (value && typeof value === 'object') {
-        visit(value);
-      }
-    }
-  };
-
-  visit(sourceFile);
-  moduleSpecifierCache.set(filename, specifiers);
-
-  return specifiers;
-};
-
-const sourceModuleIndex = new Map();
-
-const getSourceModuleIndex = (packageName) => {
-  if (sourceModuleIndex.has(packageName)) {
-    return sourceModuleIndex.get(packageName);
-  }
-
-  const index = new Map();
-
-  for (const filename of [
-    ...getPackageSourceFiles(packageName),
-    ...getPackageSourceFiles(packageName, { tests: true }),
-  ]) {
-    const normalizedFilename = normalizeSourcePath(filename);
-
-    index.set(normalizedFilename, filename);
-    if (normalizedFilename.endsWith('/index')) {
-      index.set(normalizedFilename.slice(0, -'/index'.length), filename);
-    }
-  }
-
-  sourceModuleIndex.set(packageName, index);
-
-  return index;
-};
-
-const resolveRelativeModule = (packageName, filename, specifier) => {
-  const index = getSourceModuleIndex(packageName);
-  const target = normalizeSourcePath(
-    path.resolve(path.dirname(filename), specifier)
+const entrypointPackageOf = (filename) =>
+  entrypointPackageNames.find(
+    (packageName) =>
+      !packageRelativePath(packageName, filename).startsWith('../')
   );
 
-  return index.get(target) ?? index.get(`${target}/index`) ?? null;
-};
-
-const addTaskDependency = (dependencies, dependency, currentPackageName) => {
+const typecheckTaskFor = (filename, currentPackageName) => {
+  const packageName = entrypointPackageOf(filename);
   const taskName = partitionTypecheckTask(
-    entrypointTaskPartition(dependency.packageName, dependency.entrypointName)
+    entrypointTaskPartition(
+      packageName,
+      classifyPackageFile(packageName, filename)
+    )
   );
 
-  dependencies.add(
-    dependency.packageName === currentPackageName
-      ? taskName
-      : `${dependency.packageName}#${taskName}`
-  );
+  return packageName === currentPackageName
+    ? taskName
+    : `${packageName}#${taskName}`;
 };
+
+const taskImportClosure = (packageName, initialFiles, currentPartitionName) =>
+  importClosure(
+    initialFiles,
+    (filename) =>
+      !isTypecheckedSource(filename) ||
+      (currentPartitionName !== undefined &&
+        entrypointPackageOf(filename) === packageName &&
+        partitionOwnsFile(packageName, currentPartitionName, filename))
+  );
 
 const collectSourceTaskDependencies = (
   packageName,
   initialFiles,
   { currentPartitionName, includeInitialOwners = false } = {}
 ) => {
-  const dependencies = new Set();
-  const queuedFiles = [...initialFiles];
-  const visitedFiles = new Set();
-
-  if (includeInitialOwners) {
-    for (const filename of initialFiles) {
-      addTaskDependency(
-        dependencies,
-        {
-          entrypointName: classifyPackageFile(packageName, filename),
-          packageName,
-        },
-        packageName
-      );
-    }
-  }
-
-  while (queuedFiles.length > 0) {
-    const filename = queuedFiles.pop();
-
-    if (!filename || visitedFiles.has(filename)) continue;
-    visitedFiles.add(filename);
-
-    for (const specifier of moduleSpecifiers(filename)) {
-      const publicEntrypoint = resolvePublicEntrypoint(specifier);
-
-      if (publicEntrypoint) {
-        addTaskDependency(dependencies, publicEntrypoint, packageName);
-        continue;
-      }
-      if (!specifier.startsWith('.')) continue;
-
-      const resolved = resolveRelativeModule(packageName, filename, specifier);
-
-      if (!resolved) continue;
-
-      const resolvedEntrypoint = classifyPackageFile(packageName, resolved);
-      const resolvedPartition = entrypointTaskPartition(
+  const dependencies = new Set(
+    [
+      ...taskImportClosure(
         packageName,
-        resolvedEntrypoint
-      );
-
-      addTaskDependency(
-        dependencies,
-        { entrypointName: resolvedEntrypoint, packageName },
-        packageName
-      );
-
-      if (
-        sourceFileCategory(packageName, resolved) === 'tests' ||
-        resolvedPartition === currentPartitionName
-      ) {
-        queuedFiles.push(resolved);
-      }
-    }
-  }
+        initialFiles,
+        currentPartitionName
+      ).filter(isTypecheckedSource),
+      ...(includeInitialOwners ? initialFiles : []),
+    ].map((filename) => typecheckTaskFor(filename, packageName))
+  );
 
   if (currentPartitionName && !includeInitialOwners) {
     dependencies.delete(partitionTypecheckTask(currentPartitionName));
@@ -630,7 +547,6 @@ const createPartitionTsconfig = (
         .map((glob) => toTsconfigGlob(glob.slice(1))),
       '../src/**/*.spec.*',
       '../src/**/*.test.*',
-      '../src/**/*.slow.*',
       '../src/**/*-contract.*',
       '../src/**/__tests__/**',
     ],
@@ -667,7 +583,7 @@ const createPackageTestsTsconfig = (packageName) => {
           tests: true,
         })
     ),
-    ...getPackageExternalSlowTestFiles(packageName),
+    ...getTypecheckedExternalTestFiles(packageName),
   ].sort(compareStrings);
   const testFiles = absoluteTestFiles
     .map((filename) => normalizePath(path.relative(configDirectory, filename)))
@@ -723,6 +639,68 @@ const packageTaskInputs = (definition, partitionName) => [
   ...partitionSourceOwnerGlobs(definition, partitionName),
   ...partitionExternalTestOwnerGlobs(definition, partitionName),
 ];
+
+const runtimeTestClosure = (packageName, partitionName, roots) => {
+  const files = taskImportClosure(packageName, roots, partitionName);
+  const children = files
+    .filter((filename) => !isTypecheckedSource(filename))
+    .flatMap((filename) => declaredEffects(filename).runs ?? [])
+    .map((runs) => path.join(repoRoot, runs))
+    .filter((filename) => !files.includes(filename));
+
+  return children.length === 0
+    ? files
+    : runtimeTestClosure(packageName, partitionName, [...files, ...children]);
+};
+
+// Vitest loads its config's setup files by path, so the walk starts from the
+// config and its test-module-effects.mjs entry.
+const vitestConfigFiles = (packageName, partitionName, runtimeTestFiles) => {
+  const suite = vitestSuites[packageName];
+
+  return suite &&
+    runtimeTestFiles.some((filename) =>
+      suite.includes(partitionName, packageRelativePath(packageName, filename))
+    )
+    ? [path.join(packageRoot(packageName), suite.config)]
+    : [];
+};
+
+const runtimeTestTaskGraph = (packageName, partitionName, runtimeTestFiles) => {
+  const loadedFiles = runtimeTestClosure(packageName, partitionName, [
+    ...runtimeTestFiles,
+    ...testPreloadFiles,
+    ...vitestConfigFiles(packageName, partitionName, runtimeTestFiles),
+  ]);
+  const testSideFiles = loadedFiles.filter(
+    (filename) => !isTypecheckedSource(filename)
+  );
+
+  return {
+    dependsOn: [
+      ...new Set(
+        [...loadedFiles.filter(isTypecheckedSource), ...runtimeTestFiles].map(
+          (filename) => typecheckTaskFor(filename, packageName)
+        )
+      ),
+    ].sort(compareStrings),
+    inputs: [
+      ...new Set([
+        ...testSideFiles.flatMap((filename) => {
+          const relativePath = packageRelativePath(packageName, filename);
+
+          if (relativePath.startsWith('../')) return [rootInput(filename)];
+
+          return partitionOwnsFile(packageName, partitionName, filename)
+            ? []
+            : [relativePath];
+        }),
+        ...effectInputs(testSideFiles),
+        ...loadedFiles.flatMap(tsconfigChain).map(rootInput),
+      ]),
+    ].sort(compareStrings),
+  };
+};
 
 const buildInputs = [
   'src/**',
@@ -780,26 +758,33 @@ export const createPackageTurboConfig = (packageName) => {
               ...packageTaskInputs(definition, partitionName).slice(1),
             ]
           : packageTaskInputs(definition, partitionName)),
-        ...sharedLintInputs,
+        ...sharedLintInputs(),
       ],
       outputLogs: 'errors-only',
       outputs: [],
     };
     if (runtimeTestFiles.length > 0) {
+      const testGraph = runtimeTestTaskGraph(
+        packageName,
+        partitionName,
+        runtimeTestFiles
+      );
+
       testTasks.push(testTask);
       tasks[testTask] = {
         cache: true,
-        dependsOn: collectSourceTaskDependencies(
-          packageName,
-          runtimeTestFiles,
-          { currentPartitionName: partitionName, includeInitialOwners: true }
-        ),
+        dependsOn: testGraph.dependsOn,
         inputs: [
           ...packageTaskInputs(definition, partitionName),
-          ...sharedTestInputs,
-          ...(packageName === 'plitejs' ? ['vitest.config.mjs'] : []),
+          ...testGraph.inputs,
+          ...runtimeTestHarnessInputs(),
         ],
-        env: ['CI', 'FAST_CHECK_SEED'],
+        env: [
+          'BENCH_MEASURE',
+          'CI',
+          'FAST_CHECK_SEED',
+          ...(runtimeTestEnv[packageName] ?? []),
+        ],
         outputLogs: 'errors-only',
         outputs: [],
       };
@@ -817,7 +802,8 @@ export const createPackageTurboConfig = (packageName) => {
       inputs: [
         ...partitionSourceOwnerGlobs(definition, partitionName),
         ...sourceTestInputNegations,
-        ...sharedTypecheckInputs,
+        ...sharedTypecheckInputs(),
+        ...new Set(effectInputs(sourceFiles)),
         `tsconfig.entrypoints/${partitionName}.json`,
       ],
       outputLogs: 'errors-only',
@@ -841,7 +827,7 @@ export const createPackageTurboConfig = (packageName) => {
       ...(packageName === 'platejs'
         ? ['type-tests/**', 'tsconfig.type-tests.json']
         : ['test/public-api-contract.tsx', 'tsconfig.public-api.json']),
-      ...sharedTypecheckInputs,
+      ...sharedTypecheckInputs(),
       '$TURBO_ROOT$/config/workspace-source-entries.mjs',
       '$TURBO_ROOT$/tooling/scripts/typecheck-package-source.mjs',
       'tsconfig.entrypoints/contracts.json',
@@ -852,7 +838,7 @@ export const createPackageTurboConfig = (packageName) => {
   if (packageName === 'plitejs') {
     const packageTestFiles = [
       ...getPackageSourceFiles(packageName, { tests: true }),
-      ...getPackageExternalSlowTestFiles(packageName),
+      ...getTypecheckedExternalTestFiles(packageName),
       ...walkFiles(path.join(packageRoot(packageName), 'test/react')).filter(
         (filename) => sourceFilePattern.test(filename)
       ),
@@ -866,11 +852,10 @@ export const createPackageTurboConfig = (packageName) => {
       inputs: [
         'src/**/*.spec.*',
         'src/**/*.test.*',
-        'src/**/*.slow.*',
         'src/**/*-contract.*',
         'src/**/__tests__/**',
         'test/**',
-        ...sharedTypecheckInputs,
+        ...sharedTypecheckInputs(),
         'tsconfig.entrypoints/tests.json',
       ],
       outputLogs: 'errors-only',
@@ -880,14 +865,14 @@ export const createPackageTurboConfig = (packageName) => {
   tasks.lint = {
     cache: true,
     dependsOn: lintTasks,
-    inputs: aggregateTaskInputs,
+    inputs: aggregateTaskInputs(),
     outputLogs: 'errors-only',
     outputs: [],
   };
   tasks.test = {
     cache: true,
     dependsOn: testTasks,
-    inputs: aggregateTaskInputs,
+    inputs: aggregateTaskInputs(),
     outputLogs: 'errors-only',
     outputs: [],
   };
@@ -898,7 +883,7 @@ export const createPackageTurboConfig = (packageName) => {
       'typecheck:contracts',
       ...(packageName === 'plitejs' ? ['typecheck:tests'] : []),
     ],
-    inputs: aggregateTaskInputs,
+    inputs: aggregateTaskInputs(),
     outputLogs: 'errors-only',
     outputs: [],
   };

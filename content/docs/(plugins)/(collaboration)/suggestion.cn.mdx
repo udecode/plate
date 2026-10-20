@@ -152,6 +152,8 @@ authored.api.setView({ preview: 'proposed' });
 
 Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改文档，例如带决定的 update、撤销和重做，以及远程协作变更；`read.mode()` 把它报告为 `'editing'`。切换到 preview 不会接受或拒绝 change。不同 view 的坐标可能不同，因此请通过产生 selection 的 view 读取 selection 并应用编辑。调用 `setMode` 可离开 preview。
 
+在 preview 下，每个区块读取它所显示的存储内容上的卡片和 change，包括 preview 隐藏在其中的内容，以及 preview 去掉的外层元素上的卡片和 change，例如 preview 应用了待处理解除包裹的 quote。Preview 只按 node 的 key 或 path 读取它们，下面的 hook 就是这样读取的；传入 point 或 range 会抛出 `platejs/authored` 导出的 `AuthoredPlaceError`。被 preview 隐藏的顶层区块，其卡片不会显示在任何区块上；要查看并决定这些卡片，请切换到编辑模式。例外是被合并的行，它会显示其两半之间被隐藏区块的卡片。Preview 为补全文档而添加的顶层区块，例如某个建议删除了唯一区块时 preview 显示的空段落，不显示任何卡片。它在容器内添加的区块，例如某个建议删除了 quote 中唯一的段落时，可能显示它所替代的隐藏段落的卡片。在 preview 下，复制的 discussion 会把建议或 change 讨论的弹出层锚定在最后按下触发按钮的段落上，并且只在该段落显示该讨论时才打开它。
+
 ## 读取 view 状态
 
 React 入口提供用于自定义控件和审阅 UI 的 hooks：
@@ -170,9 +172,9 @@ const cards = useSuggestionGroups(blockKey);
 const { activeId, setActiveId } = useActiveSuggestion();
 ```
 
-`useSuggestionChanges(path)` 返回接触该区块的原生 `AuthoredChange` 记录。这些记录未变化时，结果保持稳定。
+`useSuggestionChanges(path)` 返回已挂载 view 中该 path 处区块的原生 `AuthoredChange` 记录。嵌套区块的 path 返回它自己的 change，以及 preview 去掉的外层容器的 change。它绝不返回 view 仍然显示的外层容器的待处理包裹或解除包裹，那由该容器自己的 path 返回。每个改变文档或其状态的 commit，以及指名该 path 顶层区块的审阅 delta，都会让它重新读取；这些记录未变化时，结果保持稳定。Change 的 `ranges` 在每个 view 上都仍是存储文档中的位置。
 
-`useSuggestionGroups(blockKey)` 以 `read.groups` 摘要的形式，返回与该 key 对应顶层区块相交的审阅卡片。区块重绘时，以及区块中的某个 change 移到另一张卡片时，它会重新读取。同一张卡片在其他区块中的编辑不会触发这两种情况，因此摘要中的 `changeCount` 或 `revision` 可能滞后；控件需要当前摘要时，请读取 `editor.plugin(AuthoredPlugin).read.groupOf(card.id)`。用 `read.changes({ group: card.id })` 逐页读取卡片中的 change。
+`useSuggestionGroups(blockKey)` 以 `read.groups` 摘要的形式，返回该 key 对应区块的审阅卡片。嵌套区块的 key 读取该区块自己的卡片。调用它的组件重新渲染时，以及审阅 delta 指名该区块时，它会重新读取：某个 change 进入或离开了该区块，或它的某个 change 移到了另一张卡片。delta 只指名顶层区块，因此对嵌套区块的 key，它只在该组件重新渲染时重新读取。同一张卡片在其他区块中的编辑两者都不会引发，因此摘要中的 `changeCount` 或 `revision` 可能滞后；控件需要当前摘要时，请读取 `editor.plugin(AuthoredPlugin).read.groupOf(card.id)`。用 `read.changes({ group: card.id })` 逐页读取卡片中的 change。
 
 点击带标记的元素会在当前 view 中激活其 `data-editor-authored-groups` 属性列出的第一张卡片。点击未标记的编辑器内容会清除活动项。卸载 view、把它切换到其他 intent 或 preview，或决定该卡片时，也会清除失效的活动状态。自定义卡片或控件可调用 `setActiveId` 直接激活卡片。
 
@@ -184,7 +186,7 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 <ComponentPreview name="suggestion-format-demo" height="360px" />
 
-为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。`propose` view 会拒绝无法记录为 proposal 的写入并将其回滚；参阅 [Authored Changes](/cn/docs/authored-changes#配置-view)。在编辑模式下对待处理的格式 suggestion 再设置格式会直接应用，并保留该 suggestion 待处理，因此之后拒绝它仍会保留这次直接编辑。如果协作者在这次编辑同步期间决定或撤回该 suggestion，这次直接编辑可能丢失。
+为编辑器支持的文本格式添加[基础标记](/docs/basic-marks)。View 处于建议模式时，编辑器命令会将文本、mark 和 node 操作记录为 proposal。`propose` view 会拒绝无法记录为 proposal 的写入并将其回滚，两种模式也都会拒绝某些位于段落旁的编辑，这些段落被待处理的合并显示在其存储位置之外；参阅 [Authored Changes](/cn/docs/authored-changes#配置-view)。在编辑模式下对待处理的格式 suggestion 再设置格式会直接应用，并保留该 suggestion 待处理，因此之后拒绝它仍会保留这次直接编辑。如果协作者在这次编辑同步期间决定或撤回该 suggestion，这次直接编辑可能丢失。
 
 ### Accepted、proposed 和 markup
 
@@ -343,8 +345,8 @@ if (result.status === 'applied') {
 | Hook | 结果 |
 | --- | --- |
 | `useSuggestionMode()` | 精确挂载 view 的 `'suggesting' \| 'editing'` 模式。 |
-| `useSuggestionChanges(path)` | 接触 `path` 处区块的原生 `AuthoredChange` 记录。 |
-| `useSuggestionGroups(blockKey)` | 与该 key 对应顶层区块相交的审阅卡片摘要。 |
+| `useSuggestionChanges(path)` | `path` 处区块的原生 `AuthoredChange` 记录。 |
+| `useSuggestionGroups(blockKey)` | 该 key 对应区块的审阅卡片摘要。 |
 | `useActiveSuggestion()` | View 局部活动卡片的 `activeId` 和 `setActiveId` 函数。 |
 
 ### `SuggestionKit`

@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/Aq92ZtchKMEwkei3qT937r
 
-Plite's native authored capability owns suggested edits: review marks in the stored document, change identity, review cards, dependencies, the accepted and proposed previews, and atomic accept and reject. Plate owns `BaseSuggestionPlugin` (suggestion mode and decorations), `SuggestionPlugin`, the copied `SuggestionKit` and discussion UI, and `AuthoredPlugin`, which stamps every write with the editor's `userId`. The ledger asks which proposed-edit, accept/reject and attribution policies belong to Suggestions, and which reuse native authored changes (`docs/research/review-scopes/suggestions.json`). Native authored ownership (2026-09-10), plugin-owned content attributes (2026-09-14), the direct replacement of fully selected pending changes (2026-09-22), one fixed user per editor for suggestions, comments and copied UI (2026-10-07), constructors that always create a new editor (2026-10-08) and the review-tree pivot, which keeps pending changes as review marks in the one stored document and groups them into cards (`docs/plans/2026-10-13-review-tree-pivot.md`), and Accept all and Reject all in the copied mode menu (`docs/plans/2026-10-17-suggestions-bulk-resolve.md`), have landed, with browser cases in `apps/www/tests/browser/suggestion.spec.ts`. An editor with no `userId` writes as the local user `'local'`. The `EditorRoot authored` view input takes an `edit` or `propose` intent, or an `accepted` or `proposed` preview. `node tooling/scripts/review-ledger.mjs show suggestions` prints the scope's full history.
+Plite's native authored capability owns suggested edits: review marks in the stored document, change identity, review cards, dependencies, the accepted and proposed previews, and atomic accept and reject. Plate owns `BaseSuggestionPlugin` (suggestion mode and decorations), `SuggestionPlugin`, the copied `SuggestionKit` and discussion UI, and `AuthoredPlugin`, which stamps every write with the editor's `userId`. The ledger asks which proposed-edit, accept/reject and attribution policies belong to Suggestions, and which reuse native authored changes (`docs/research/review-scopes/suggestions.json`). Native authored ownership (2026-09-10), plugin-owned content attributes (2026-09-14), the direct replacement of fully selected pending changes (2026-09-22), one fixed user per editor for suggestions, comments and copied UI (2026-10-07), constructors that always create a new editor (2026-10-08) and the review-tree pivot, which keeps pending changes as review marks in the one stored document and groups them into cards (`docs/plans/2026-10-13-review-tree-pivot.md`), and Accept all and Reject all in the copied mode menu (`docs/plans/2026-10-17-suggestions-bulk-resolve.md`), have landed, with browser cases in `apps/www/tests/browser/suggestion.spec.ts`. An editor with no `userId` writes as the local user `'local'`. The `EditorRoot authored` view input takes an `edit` or `propose` intent, or an `accepted` or `proposed` preview. Under a preview, each block shows the cards of the stored content it shows, and the suggestion hooks and copied review UI read them by the block's key or path. `node tooling/scripts/review-ledger.mjs show suggestions` prints the scope's full history.
 
 ## Public API
 
@@ -63,7 +63,7 @@ const switchUser = (nextUserId: string) => {
 };
 ```
 
-Copied review UI reaches native authored decisions through the one authored plugin that suggestions and AI depend on, and reads the cards touching each top-level block.
+Copied review UI reaches native authored decisions through the one authored plugin that suggestions and AI depend on, and reads each block's cards by the block's key.
 
 ```tsx
 // apps/www/src/registry/components/editor/discussion.tsx
@@ -73,6 +73,38 @@ const authored = editor.plugin(AuthoredPlugin);
 ```tsx
 // apps/www/src/registry/components/editor/discussion.tsx
 const cards = useSuggestionGroups(blockKey);
+```
+
+The copied discussion's target panel reads the cards of the block it targets by that block's key.
+
+```ts
+// apps/www/src/registry/components/editor/discussion.tsx
+const targetGroups = useEditorSelector(
+  (current) =>
+    suggestions && targetKey
+      ? current.plugin(AuthoredPlugin).read.groups({ at: targetKey })
+      : NO_GROUPS,
+  { equalityFn: sameGroups }
+);
+```
+
+The Plate hook reads the cards of the block key it renders.
+
+```ts
+// packages/platejs/src/react/features/suggestion/useSuggestion.ts
+return useAuthoredRead(
+  () => editor.plugin(AuthoredPlugin).read.groups({ at: blockKey }),
+  { equal: sameGroups, when }
+);
+```
+
+The copied discussion counts a block's threads by the block's key, and its block wrapper takes only that key.
+
+```ts
+// apps/www/src/registry/components/editor/discussion.tsx
+<SuggestionDiscussionBlock blockKey={blockKey}>{children}</SuggestionDiscussionBlock>
+
+const page = read.changes({ at: blockKey, cursor, limit: 200 });
 ```
 
 Copied suggestion UI colors each change by the palette slot its card's id gives it.
@@ -102,7 +134,7 @@ const overlapped = mark(overlapChangeId, 'charlie', 700_000, 'insert');
 Every constructor creates its own editor; a test that built a raw editor first now lets `createEditor` allocate it, and passing an `editor` option throws.
 
 ```tsx
-// packages/platejs/src/lib/editor/withPlite.slow.ts
+// packages/platejs/src/lib/editor/withPlite.schema-plugins.spec.ts
 const editor = createReactEditor();
 ```
 
@@ -130,7 +162,9 @@ const result = authored.update.decide({ action, changes });
 - Every Plate constructor, `createEditor` from `platejs` and `platejs/react`, ends in one internal `buildEditor` in `packages/platejs/src/lib/editor/withPlite.ts`, which allocates the Plite editor with `id`, `lifecycleErrorSink`, `readOnly` and `maxLength` and builds it. `assertConstructorOptions` refuses an `editor` or `migrations` key on the options a caller passed, at every constructor and on every render of `useCreateEditor`; it counts a key that either `in` or an own-property check along the prototype chain sees, and never calls a getter.
 - `packages/platejs/src/lib/editor/editorUser.internal.ts` checks `userId` with Plite's author rule and turns an omitted or empty `userId` into the local user `'local'`. Right after allocation, `buildEditor` defines `editor.userId` as a fixed data property and records the user in a map keyed by the editor, so construction callbacks and every view read the same user. The author read looks the user up through the runtime owner and throws `This editor has no user` for an editor no constructor built.
 - `packages/platejs/src/authored/AuthoredPlugin.ts` is `definePlugin('authored', { dependencies: [authoredRecords] })` extended by a stage that returns Plite's `authored()` with the editor's user, so it takes no options. `BaseSuggestionPlugin`, `SuggestionPlugin` and `AIChatPlugin` depend on it.
-- `BaseSuggestionPlugin` writes each suggested node's `data-editor-authored-*` attributes, the change ids, kinds, authors, cards and the color slot of its first card, and `useSuggestionGroups(blockKey)` in `packages/platejs/src/react/features/suggestion/useSuggestion.ts` rereads a block's cards when a change delta names that block.
+- `BaseSuggestionPlugin` writes each suggested node's `data-editor-authored-*` attributes, the change ids, kinds, authors, cards and the color slot of its first card. In `packages/platejs/src/react/features/suggestion/useSuggestion.ts`, `useSuggestionGroups(blockKey)` reads the cards of the block with that key, so a nested key reads that block's own cards, and rereads them when the component renders and when a review delta names the block. `useSuggestionChanges(path)` reads the changes of the node at that path of the mounted view. It rereads on each commit that changes the document or its state, on a view switch, and when a review delta names the path's top-level block. A nested block's path returns its own changes and those of a container around it that the preview takes away, never the pending wrap or unwrap of a container the view still shows, which that container's own path returns. Neither hook maps a key or path to an index.
+- The copied discussion (`apps/www/src/registry/components/editor/discussion.tsx`) reads its target panel's cards, counts a block's threads and anchors its popover by block key. Under a preview, the popover of a suggestion or a change thread anchors on the block whose trigger was pressed last, when that block shows the open thread, and positions by that block's element. A block shows the open thread when `read.groups({ at: lastTrigger })` holds the active suggestion's card, on the suggestion route, or the card of the open thread's change, on the change route, so a card that spans two blocks shows its threads on both. The discussion forgets that block when the view changes, and opens no popover when the block does not show the thread. The popover reads the comment anchor and the active suggestion's range through their own editor selectors with range equality, so a range that moves rerenders it and typing elsewhere does not. A thread opened from a list with no active suggestion opens its change's card in every view.
+- The copied suggestion toast (`apps/www/src/registry/components/editor/suggestion.tsx`) shows a refusal's `message` in Suggesting when the refusal carries a reason, such as `crosses` or `reordered`, and otherwise tells the writer to switch to Editing. Editing keeps its hint to decide the nearby suggestion first.
 - The author read warns once per editor through `editor.api.debug.warn`, which is silent in production, when a write or a comment is stamped with the local user while a published plugin is keyed `yjs`, because collaborators would then share one author.
 - `packages/platejs/src/features/comments/BaseCommentsPlugin.ts` stamps thread creation, replies and resolution with the editor's user and keeps the `users` directory that copied UI also uses to name suggestion authors.
 - `useCreateEditor` keys its editor on the normalized `userId` as it keys on `id`.
@@ -169,7 +203,12 @@ For bulk accept and reject, read from local checkouts at the commits in the `rev
 
 ## Layer and owner
 
-Plite owns authored identity, retained content, properties, dependencies, views and atomic decisions; ordinary feature commands own valid schema changes; Plate owns descriptions, markers, navigation and review interaction; applications own access policy. Write intent and displayed content are separate: an editing view keeps pending changes visible and editable, and ordinary typing never accepts pending work. A visible replacement that fully contains every affected pending change resolves them and publishes the replacement in one undoable transaction; when a retained fragment or dependency reaches outside the selection, the editor keeps the selection and content. Saved suggestions load as a prepared authored document through `initialValue`, with threads through `initialState.initialThreads`. Suggestion paint reaches the content root through plugin-owned `render.contentAttributes`, so generic Editor skins hold no suggestion or comment selectors.
+Plite owns authored identity, retained content, properties, dependencies, views and atomic decisions; ordinary feature commands own valid schema changes; Plate owns descriptions, markers, navigation and review interaction; applications own access policy. Write intent and displayed content are separate: an editing view keeps pending changes visible and editable, and ordinary typing never accepts pending work. A visible replacement that fully contains every affected pending change resolves them and publishes the replacement in one undoable transaction; when a retained fragment or dependency reaches outside the selection, the editor keeps the selection and content. Saved suggestions load as a prepared authored document through `initialValue`, with threads through `initialState.initialThreads`. Suggestion paint reaches the content root through plugin-owned `render.contentAttributes`, so generic Editor skins hold no suggestion or comment selectors. Under a preview, Plite's authored reads decide which cards and changes each block shows, as `docs/plans/topics/authored.md` says, and Plate passes the key or path it holds. [One map of a preview's places](../2026-10-19-preview-places-on-next.md) puts its Plate changes in these layers, and `docs/plans/topics/authored.md` lists its Plite rows.
+
+| Change | Layer (Plite or Plate) | Package | Why |
+| --- | --- | --- | --- |
+| `useSuggestionGroups` reads by the block key it renders, and `useSuggestionChanges` reads by its path and also wakes when the review delta names its block | Plate | `platejs/suggestion/react` | Plate glue passes the place it holds and maps nothing |
+| The discussion's target panel, thread counts and popover anchor use the block key, and the suggestion toast shows a moved-content refusal's message | Plate | `apps/www` registry, `discussion` and `suggestion` | Copied UI passes the place it holds and maps nothing |
 
 Rejected, and why:
 
@@ -182,6 +221,14 @@ Rejected, and why:
 | Restoring `main`'s independent suggestion mutation engine | Boolean mark rejection, paragraph-only splits and incomplete structural and clipboard proof. |
 | Parallel accept and reject aliases or a cast protocol such as `getSuggestionEditor` | Native authored reads, decisions and inferred plugin composition already serve them. |
 
+## Hard cuts and app migration
+
+- `SuggestionDiscussionBlock` in the copied discussion has no `blockIndex` prop, and `blockThreadCount` takes the block key. An app with a copied `discussion.tsx` re-copies it or makes the edits the Public API fences show.
+- `useSuggestionGroups(blockKey)` reads the cards of the block with that key, so a nested key reads that block's own cards, not its top-level block's. This repository mounts badges only on top-level blocks.
+- The empty paragraph a preview shows when a suggestion deletes the only block shows no badge or card, so that paragraph's card shows only in Editing. An empty paragraph it shows inside a quote can still show the card of the hidden paragraph it replaces. owner: the owner; stop: the filler card task lands or the owner drops it.
+- On any view, a nested block's `useSuggestionChanges(path)` returns no pending wrap or unwrap of a container the view still shows, and neither does `useSuggestionGroups`. The container's own hook returns it.
+- In this repository, six places pass a place to a preview read or anchor on one, and a seventh selects a stored range on the editor it was opened from. `useSuggestionGroups`, `useSuggestionChanges`, the discussion's `targetGroups` and `blockThreadCount` hold a view place and pass it, and `useSuggestionChanges` passes its path. The discussion popover anchors by block key under a preview, as Main changes says. The docx export maps comments onto a preview through its own diff (`projectAuthoredRange` in `packages/plitejs/src/authored/format.ts`), and the comment toolbar selects a change's stored `ranges[0]`, which can select a neighbour under a preview (Open work).
+
 ## Rules
 
 These rules bind this feature alone, so they live here instead of in `docs/vision/`.
@@ -190,7 +237,10 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   capability. Plate may provide copied registry presentation, mode controls,
   discussion composition, and product defaults, but it does not own another
   suggestion schema, mutation engine, review scan, decision command set, or
-  global input mode. Human and explicitly tracked AI edits use the same authored
+  global input mode. Suggestion hooks and copied review UI read cards and
+  changes by the block key or path they hold, and never map a preview place
+  to a stored one; Plite's authored reads own that map. Human and explicitly
+  tracked AI edits use the same authored
   records and decisions; temporary AI drafts remain outside that lifecycle.
   Plate attributes every authored write to the editor's `userId`, or to the
   local user `'local'` when the application passes none, so a solo editor and
@@ -234,3 +284,7 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
 - In WebKit, the playground image test's click on a paragraph lands on a Preview button and then on the sticky site header, and times out, at HEAD and at base too. Suggested task t_095b0272 holds it. owner: zbeyens, who starts or drops that task. stop: t_095b0272 lands or is dropped.
 - On a loaded host the authored suite's large-document tests run past their 5 s limit, at base too. Suggested task t_0a13d914 holds them. owner: zbeyens, who starts or drops that task. stop: t_0a13d914 lands or is dropped.
 - Suggesting now records typing, deleting and formatting inside a list item, and still refuses Enter, indenting and joining items (`docs/plans/2026-10-17-list-suggesting-insert.md`). The suggestions plan still says typing in a list item refuses, in its behavior row at line 79, its Defaults row at line 89, its P2.2 box and the refusal paragraph at line 177. S14 of the suggestions scenarios still expects Enter at a list item's end to suggest a new item, and the list refusal toast does not offer Switch to Editing. owner: zbeyens, through P3.1 of the suggestions plan. stop: P3.1's lists plan lands.
+- The comment toolbar's jump from a thread to its suggestion selects the change's stored `ranges[0]` on the editor it was opened from (`apps/www/src/registry/components/editor/comment-toolbar-button.tsx`, `readCommentTarget`), so under a preview it can select a neighbour. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- Under a preview, a thread opened from a list opens no popover unless its block's trigger was pressed last (`apps/www/src/registry/components/editor/discussion.tsx`, `snapshot.lastTrigger`), because no Plite read names the view blocks that show a change. A read built on the ledger's `places.readers`, which publication already uses, would anchor the popover and the comment toolbar's jump above. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- DOCX export maps comment ranges through its own document diff (`packages/platejs/src/docx/export/lib/exportDocx.tsx`, `projectAuthoredRange`), so a comment beside a moved piece can still export at the wrong place. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- `node tooling/scripts/review-ledger.mjs check` refuses `docs/plans/2026-10-12-suggestions-complete.md`, whose Evidence does not reconcile `2026-10-13-review-tree-pivot`. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.

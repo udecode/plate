@@ -7,11 +7,6 @@
     "search"
   ],
   "prerequisiteReason": "Snapshot comparison needs document value and identity semantics; live authored import is a separate integration question. The user's queue policy places deferred search before diff, with diff immediately before AI.",
-  "last": true,
-  "opportunity": {
-    "score": 9,
-    "reason": "Existing research identifies a broad comparison contract that depends on native authored semantics."
-  },
   "owners": [
     "packages/plitejs/src/diff/"
   ],

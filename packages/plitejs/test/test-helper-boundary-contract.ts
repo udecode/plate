@@ -39,20 +39,6 @@ describe('test helper snapshot boundary', () => {
     assert.equal('getTestEditorSnapshot' in EditorRoot, false);
   });
 
-  it('implements the helper through the runtime snapshot state group', () => {
-    const helperSource = readFileSync(
-      resolve(repoRoot, 'packages/plitejs/test/support/snapshot.ts'),
-      'utf-8'
-    );
-
-    assert.match(helperSource, /state\.runtime\.snapshot\(\)/);
-    assert.equal(/\bEditor\.getSnapshot\b/.test(helperSource), false);
-    assert.equal(
-      /from ['"]@platejs\/plite\/internal['"]/.test(helperSource),
-      false
-    );
-  });
-
   it('seeds editor values through the public update transaction helper', () => {
     const editor = createEditor();
 

@@ -14,8 +14,8 @@ docs:
 
 ## 功能特性
 
-- 为选中的文本应用字体样式，包括大小、字体、颜色、背景色和粗细。
-- 支持自定义字体、大小、颜色和粗细。
+- 为选中的文本应用字体样式，包括大小、字体、颜色和背景色。
+- 支持自定义字体、大小和颜色。
 
 ## 插件
 
@@ -23,7 +23,6 @@ docs:
 - `FontColorPlugin`: 使用 `color` 样式控制字体颜色
 - `FontFamilyPlugin`: 使用内联元素和 `font-family` 样式更改字体
 - `FontSizePlugin`: 使用 CSS 类或 `font-size` 样式控制字体大小
-- `FontWeightPlugin`: 使用 `font-weight` 样式控制字体粗细
 
 </PackageInfo>
 
@@ -95,6 +94,8 @@ const editor = createEditor({
 
 字体插件会注册字符串类型的文本标记，因此它们跟随选中文本，而不是块级目标列表。每个已保存的值都会渲染，因此粘贴的 `color: black` 在任何主题下都显示为黑色。HTML 解析器会把字体样式直接写入文本属性；块级注入目标不会限制文本标记。
 
+字重不是字体标记。[加粗](/docs/bold)负责字重，因此粘贴的 600 及以上的 `font-weight` 会保存为 `bold`。
+
 ### 添加工具栏按钮
 
 你可以将 [`FontColorToolbarButton`](/docs/components/font-color-toolbar-button) 和 [`FontSizeToolbarButton`](/docs/components/font-size-toolbar-button) 添加到你的 [Toolbar](/docs/toolbar) 中，以控制字体颜色和大小。
@@ -118,10 +119,6 @@ const editor = createEditor({
 ### `FontSizePlugin`
 
 用于字体大小格式化的插件。将 `font-size` 样式应用于选中的文本。
-
-### `FontWeightPlugin`
-
-用于字体粗细格式化的插件。将 `font-weight` 样式应用于选中的文本。
 
 ## 转换
 
@@ -171,34 +168,4 @@ const editor = createEditor({
       要设置的字体大小值（例如：`'16px'`、`'1.2em'`）。
     </APIItem>
   </APIParameters>
-</API>
-
-### `editor.update.fontWeight.set`
-
-在选中的文本上设置字体粗细标记。
-
-<API name="editor.update.fontWeight.set">
-  <APIParameters>
-    <APIItem name="value" type="string">
-      要设置的字体粗细值（例如：`'bold'`、`'400'`、`'600'`）。
-    </APIItem>
-  </APIParameters>
-</API>
-
-## API
-
-### `toUnitLess`
-
-将字体大小值转换为无单位值。
-
-<API name="toUnitLess">
-<APIParameters>
-  <APIItem name="fontSize" type="string">
-    要转换的字体大小值。
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="string">
-  无单位的字体大小值。
-</APIReturns>
 </API>

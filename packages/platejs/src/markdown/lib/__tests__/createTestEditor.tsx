@@ -28,7 +28,6 @@ import {
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
-  BaseFontWeightPlugin,
 } from '../../../features/basic-styles';
 import { BaseCalloutPlugin } from '../../../features/callout';
 import { BaseCodeBlockPlugin } from '../../../features/code-block';
@@ -82,7 +81,6 @@ const testSchemaPlugins: readonly BasePluginInput[] = [
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
-  BaseFontWeightPlugin,
   BaseLinkPlugin,
   BaseCodeBlockPlugin,
   BaseFootnoteDefinitionPlugin,

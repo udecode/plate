@@ -57,10 +57,152 @@ URL 被当前 Schema 拒绝，迁移会将其链接文本、标题、`alt` 文�
 提及、表情、斜杠命令和脚注输入节点会变为普通文本形式的触发符与已输入的查询。以文本保存的行高
 会转换为数字，例如 `"107%"` 变为 `1.07`，`"150%"` 或 `"1.5em"` 变为 `1.5`。迁移会丢弃已保存的
 `"normal"`、`"12pt"` 等长度、零、负数和无法解析的文本，且不报告，这些块随后跟随主题行高。
-迁移暂不转换修改格式或块属性的 v53 建议，例如加粗或对齐的修改，v54 无法打开或处理这些建议。
-升级前请在 Plate v53 中接受或拒绝这些建议。
+待处理的 v53 建议会转换为审阅修改。当目标 Schema 会重塑被建议的节点，或文档在拒绝所有待处理
+修改后无法适配目标 Schema 时，迁移会拒绝该文档，例如一条删除了目标未声明属性的建议。升级前请在
+Plate v53 中接受或拒绝这些建议。
 
 `migrateListIdentity` 为每个列表项保存 `listId`，每段相邻项一个 id，使不带列表 id 保存的文档保持原有编号。把它注册在首次包含列表插件 `listId` 和 `listLevels` 的 Schema 版本下。
+
+### 已保存的字重
+
+字重由加粗负责，Plate 没有字重标记。`migrateV54` 不转换任何已保存的 `fontWeight`，因为 v53
+把已保存的字重叠加在加粗之上绘制。目标 Schema 没有 `fontWeight` 文本属性时，会以
+`Unknown text property "fontWeight" in closed editor schema.` 拒绝每个已保存的字重，包括文本叶子、
+已保存选区的标记，以及设置或删除字重的待处理建议。
+
+有已保存字重的应用可以选择以下两种方式之一：
+
+- 声明自己的 `fontWeight` 文本属性。所有值原样加载，应用自行负责 `bold` 之外的这份字重记录。
+- 在 `migrateDocument` 之前移除字重。下面的预处理保留 v53 是否把文本绘制为加粗。`bold`、`bolder`
+  和 600 到 1000 变为 `bold`，不区分大小写；`normal`、`lighter` 和 1 到 599 会同时去掉两者。它会
+  拒绝无法读取的字重，例如 `inherit`、CSS 变量或 `0x2bc`。对原始 v53 值，它也会拒绝 `h1` 到 `h6`
+  或 `th` 中的细字重，因为 v53 把它绘制得比该块的加粗更细。它还会拒绝带有待处理格式修改的加字重叶子，
+  以及任何修改字重本身的待处理修改，
+  因为两者一经转换，有人拒绝时就会抹掉原本绘制出的加粗。
+
+~~~ts
+type Json = Record<string, unknown>;
+
+const readWeight = (weight: unknown) => {
+  const value = String(weight).trim().toLowerCase();
+
+  if (value === 'bold' || value === 'bolder') return 'heavy';
+  if (value === 'normal' || value === 'lighter') return 'light';
+  if (!/^\+?(\d+|\d*\.\d+)(e[+-]?\d+)?$/.test(value)) return null;
+
+  const number = Number(value);
+
+  if (number >= 1 && number <= 1000) return number >= 600 ? 'heavy' : 'light';
+
+  return null;
+};
+
+const boldBlocks = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'th']);
+
+const touchesWeight = (change: Json) =>
+  change.key === 'fontWeight' ||
+  ['properties', 'newProperties'].some((key) =>
+    Object.hasOwn(change[key] ?? {}, 'fontWeight')
+  );
+
+const stripLeaf = (node: Json, mayDrawBold: boolean): Json => {
+  const pending = [
+    ...Object.entries(node)
+      .filter(([key]) => key.startsWith('suggestion_'))
+      .map(([, value]) => value as Json)
+      .filter((value) => value?.type === 'update'),
+    ...((Array.isArray(node.authored) ? node.authored : []) as Json[]).filter(
+      (mark) => mark?.kind === 'format'
+    ),
+  ];
+
+  if (
+    pending.length > 0 &&
+    (Object.hasOwn(node, 'fontWeight') || pending.some(touchesWeight))
+  ) {
+    throw new Error(
+      'Settle format changes on weighted text before the upgrade.'
+    );
+  }
+  if (!Object.hasOwn(node, 'fontWeight')) return node;
+
+  const { bold: _bold, fontWeight, ...rest } = node;
+  const weight = readWeight(fontWeight);
+
+  if (!weight || (weight === 'light' && mayDrawBold)) {
+    throw new Error('Bold cannot keep how v53 drew this font weight.');
+  }
+
+  return weight === 'heavy' ? { ...rest, bold: true } : rest;
+};
+
+const stripTree = (node: Json, mayDrawBold: boolean): Json => {
+  if (typeof node.text === 'string') return stripLeaf(node, mayDrawBold);
+
+  const inside = mayDrawBold || boldBlocks.has(node.type as string);
+  const next = { ...node };
+
+  for (const key of ['children', 'caption']) {
+    if (Array.isArray(node[key])) {
+      next[key] = (node[key] as Json[]).map((child) =>
+        stripTree(child, inside)
+      );
+    }
+  }
+
+  return next;
+};
+
+const stripNode = (node: Json) => stripTree(node, false);
+
+migrateDocument(value.map(stripNode), { migrations, source: 53 });
+~~~
+
+原始 v53 值使用 `source: 53`。持久化信封需要映射 `document.children`、`document.roots` 中的每个数组
+以及已保存选区的 `marks`，其余字段与 `document.meta` 按原样保留，并省略 `source`。信封形式会拒绝
+所有细字重，包括已保存选区的插入字重，因为基于 v2 源码构建的应用使用自己的块类型，预处理无法判断其中
+哪些会绘制为加粗：
+
+~~~ts
+const stripEnvelope = (stored: Json): Json => {
+  const document = { ...(stored.document as Json) };
+  const selection = stored.selection as Json | null | undefined;
+
+  const strip = (node: Json) => stripTree(node, true);
+
+  document.children = (document.children as Json[]).map(strip);
+  if (document.roots) {
+    document.roots = Object.fromEntries(
+      Object.entries(document.roots as Record<string, Json[]>).map(
+        ([name, children]) => [name, children.map(strip)]
+      )
+    );
+  }
+
+  return {
+    ...stored,
+    document,
+    ...(selection?.marks
+      ? {
+          selection: {
+            ...selection,
+            marks: stripLeaf(selection.marks as Json, true),
+          },
+        }
+      : {}),
+  };
+};
+
+migrateDocument(stripEnvelope(stored) as PersistedDocumentInput, {
+  migrations,
+});
+~~~
+
+待处理插入或删除中的加字重叶子会被转换，因为无论接受还是拒绝都保留 v53 是否把它绘制为加粗。
+
+Markdown 也可能保存字重，形式是 `<span style="font-weight: bold;">` 片段。没有插件认领字重片段。
+在装有样式插件的编辑器中，只含字重的片段会使解析被拒绝，与其他样式并存的字重会被丢弃且不报告。
+请在解析前改写这些片段，或保留一个声明 `fontWeight` 并带有 Markdown 映射的应用插件。
 
 ## 代表性功能结构
 

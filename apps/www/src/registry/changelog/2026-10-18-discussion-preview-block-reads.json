@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-18-discussion-preview-block-reads",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-18-discussion-preview-block-reads.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-18",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Read discussion cards and threads by block key, under a preview too",
+  "targets": [
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion",
+      "files": ["apps/www/src/registry/components/editor/suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-18-discussion-cards-threads-by-block-10f000a8",
+      "kind": "behavior",
+      "summary": "Read the target panel's cards and each block's thread count by the block's key, so under an accepted or proposed preview each paragraph shows only the cards of the content it shows. `SuggestionDiscussionBlock` takes `blockKey` and no `blockIndex` prop.",
+      "details": [],
+      "migrationNotes": [
+        "Remove the `blockIndex` prop from `SuggestionDiscussionBlock` and pass a block key to `blockThreadCount`, or re-copy `discussion.tsx`."
+      ],
+      "targets": ["discussion"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-discussion-preview-block-reads",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-discussion-preview-popover-anchor-4b7e21c9",
+      "kind": "behavior",
+      "summary": "Under a preview, anchor the popover of a suggestion or a change thread on the paragraph whose trigger you pressed last, and open it only while that paragraph shows the thread.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-discussion-preview-block-reads",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-discussion-list-thread-change-card",
+      "kind": "behavior",
+      "summary": "Show a change's card in the popover when its thread opens on its own, such as from a list.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-discussion-preview-block-reads",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-18-suggestion-moved-refusal-message-7c3d90e2",
+      "kind": "fix",
+      "summary": "In Suggesting, say why the editor refused an edit beside content a pending join moves, instead of suggesting a switch to Editing.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["suggestion"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-18",
+          "entry": "2026-10-18-discussion-preview-block-reads",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

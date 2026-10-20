@@ -37,7 +37,7 @@ editor.update.value.replace({ children, document: { application: true } }); // t
 Plate construction reads its raw value as a document, so a selection goes in the `selection` option.
 
 ```ts
-// packages/platejs/src/lib/editor/withPlite.slow.ts
+// packages/platejs/src/lib/editor/withPlite.schema-plugins.spec.ts
 createEditor({ initialValue: { children }, selection });
 ```
 

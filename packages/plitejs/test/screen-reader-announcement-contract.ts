@@ -39,11 +39,12 @@ describe('screen-reader announcement effect', () => {
     editor.update((tx) => {
       tx.effects.emit(screenReaderAnnouncementEffect, 'Saved');
       tx.effects.emit(screenReaderAnnouncementEffect, 'Saved');
+      tx.effects.emit(screenReaderAnnouncementEffect, 'Moved');
     });
 
     assert.deepEqual(
       getScreenReaderAnnouncements(editor.read.lastCommit()?.effects ?? []),
-      ['Saved', 'Saved']
+      ['Saved', 'Saved', 'Moved']
     );
   });
 });

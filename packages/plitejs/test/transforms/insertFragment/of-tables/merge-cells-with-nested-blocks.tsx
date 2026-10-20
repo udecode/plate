@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -45,10 +46,6 @@ export const input = (
     </block>
   </editor>
 );
-// Core policy: slice replacement is structural, not table-grid aware. The first
-// compatible source cell merges into the active cell; later source cells stay
-// as inserted siblings before the existing following cells. Positional grid
-// merge belongs in a table plugin.
 export const output = (
   <editor>
     <block>
@@ -56,10 +53,10 @@ export const output = (
         <block>
           <block>
             <block>1</block>
+          </block>
+          <block>
             <block>
-              <block>
-                2<cursor />
-              </block>
+              2<cursor />
             </block>
           </block>
           <block>

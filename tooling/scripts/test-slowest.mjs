@@ -51,7 +51,6 @@ mkdirSync(outputDir, { recursive: true });
 
 const command = [
   'tooling/scripts/test-suite.mjs',
-  'fast',
   ...bunArgs,
   '--reporter=junit',
   '--reporter-outfile',
@@ -131,10 +130,7 @@ if (xml) {
       : [...rows].sort((a, b) => a.milliseconds - b.milliseconds)[
           Math.floor(rows.length / 2)
         ].milliseconds;
-  const modeLabel = 'fast suite';
-
   console.log('');
-  console.log(`Suite: ${modeLabel}`);
   console.log(`JUnit report: ${junitFile}`);
   console.log(
     `Average: ${averageMs.toFixed(3)}ms  Median: ${medianMs.toFixed(3)}ms`
@@ -179,10 +175,7 @@ if (xml) {
   ) {
     console.log('');
     console.log(
-      'Fast-suite warning zone reached. Optimize repeat offenders before the feedback loop crosses its hard budget.'
-    );
-    console.log(
-      'Move only inherently blocking tests to `*.slow.*`; keep coherent families colocated.'
+      'Warning zone reached. Optimize repeat offenders before the feedback loop crosses its hard budget.'
     );
 
     if (warnSuite) {
@@ -212,7 +205,7 @@ if (xml) {
   if (!profileOnly && (slowTests.length > 0 || slowSuite)) {
     console.error('');
     console.error(
-      'Fast-suite budget exceeded. Optimize aggregate drift or move inherently blocking tests to `*.slow.*`; do not split coherent files to game file totals.'
+      'Suite budget exceeded. Make the slow cases cheaper or optimize aggregate drift; do not split coherent files to game file totals.'
     );
 
     if (slowSuite) {
@@ -224,7 +217,7 @@ if (xml) {
 
     if (slowTests.length > 0) {
       console.error('');
-      console.error('Tests over the fast-suite case threshold:');
+      console.error('Tests over the case threshold:');
 
       for (const row of slowTests) {
         const prefix = row.classname ? `${row.classname} > ` : '';

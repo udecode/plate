@@ -10,7 +10,7 @@
 
 ## Seeded soak
 
-- **Seeded soak.** `test/test-history.ts` lines 304-322 at b5ad0d0 run long seeded mixtures of edits, undo and redo, and check tree, selection and stack invariants. Plite's `packages/plitejs/test/history/history-soak-contract.slow.ts` does the same with replayable traces (report.md:96).
+- **Seeded soak.** `test/test-history.ts` lines 304-322 at b5ad0d0 run long seeded mixtures of edits, undo and redo, and check tree, selection and stack invariants. Plite's `packages/plitejs/test/history/history-soak-contract.spec.ts` does the same with replayable traces (report.md:96).
 
 ## History persistence
 

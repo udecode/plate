@@ -84,6 +84,26 @@ describe('toReactPlugin', () => {
     expect(ParentPlugin.dependencies).toEqual([ChildPlugin]);
   });
 
+  it('answers an installed extended read through another lift of its Base', () => {
+    const BaseListingPlugin = definePlugin('listing', {
+      read: () => ({ items: () => ['base'] }),
+    });
+    const editor = createEditor({
+      plugins: [
+        toReactPlugin(
+          BaseListingPlugin.extend({
+            read: () => ({ items: () => ['app'] }),
+          })
+        ),
+      ],
+    });
+
+    expect([
+      editor.plugin(toReactPlugin(BaseListingPlugin)).read.items(),
+      editor.plugin(BaseListingPlugin).read.items(),
+    ]).toEqual([['app'], ['app']]);
+  });
+
   it('lets terminal configuration bind the component', () => {
     const Component: NodeComponent = () => null;
     const resolved = resolvePluginTest(

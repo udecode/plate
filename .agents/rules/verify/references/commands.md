@@ -57,9 +57,9 @@ Rules:
   / `rg -n`, then rerun once with the correct runner;
 - run Plite package checks through the entrypoint-aware `plitejs` scripts, such
   as `pnpm --filter plitejs typecheck`, which runs `typecheck:tests`. That task
-  covers the `src` specs, `test/react`, and the `.slow.*` suites under `test/`
-  with the helpers they import. Elsewhere under `test/`, `check:core`,
-  `typecheck:contracts` and `plite:public-types` check only the files that
+  covers the `src` specs and `test/react` with the helpers they import.
+  Elsewhere under `test/`, `check:core`, `typecheck:contracts` and
+  `plite:public-types` check only the files that
   `test/tsconfig.generic-types.json`, `tsconfig.public-api.json` and
   `test/tsconfig.public-package-types.json` list, and no gate typechecks the
   rest. Run alone in a fresh worktree, `typecheck:tests` fails
@@ -71,8 +71,7 @@ Rules:
   `pnpm exec tsc -p packages/platejs/tsconfig.test.json --noEmit` from the
   repository root and compare its errors in the task's files with the same run
   at `HEAD` in a detached worktree, because that config already reports errors
-  at base. It leaves out `.slow.*` files, so check those through a scratch
-  config in the run directory that extends it and includes them;
+  at base;
 - use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
@@ -129,7 +128,7 @@ Rules:
   and copy the manifest back;
 - when running packed/external-consumer package smoke, start from the live
   export/type contracts such as
-  `packages/platejs/test/public-package-import-smoke.slow.ts` and
+  `packages/platejs/test/public-package-import-smoke.spec.ts` and
   `packages/plitejs/test/public-package-types-smoke.ts`. Do not invent public
   function call examples from memory. Prefer type-importing exported names and
   doing only tiny value references unless the package docs/source were just
@@ -239,7 +238,7 @@ A typecheck that reports TS6305, a referenced project's output not built, checke
 
 Use root `pnpm lint:fix` when the affected lint scope needs that command.
 `pnpm typecheck` checks root packages from source; `pnpm build` builds all
-packages only when needed. `bun run test` is the fast aggregate test lane,
+packages only when needed. `bun run test` runs the whole root test lane,
 and `pnpm check` is the handoff check, not the default iteration command. It
 skips only its `www-build` step, the production build, which CI runs as
 `pnpm check --build`. Pass `--build` locally only when the change can break the

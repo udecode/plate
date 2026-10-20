@@ -16,6 +16,6 @@
 
 ## List commands
 
-- **List toggling.** `test/test-commands.ts` lines 650-778 at b5ad0d0 pin list toggling over collapsed, expanded, nested, mixed and multi-range targets without leaking the selection. Plate owns this, and `packages/platejs/src/features/list/lib/BaseListPlugin.slow.tsx` covers the cases (report.md:103).
+- **List toggling.** `test/test-commands.ts` lines 650-778 at b5ad0d0 pin list toggling over collapsed, expanded, nested, mixed and multi-range targets without leaking the selection. Plate owns this, and `packages/platejs/src/features/list/lib/BaseListPlugin.scale.spec.tsx` covers the cases (report.md:103).
 
 - **Join into nested list items.** `test/test-commands.ts` lines 394-401 at b5ad0d0 pin a forward join from a paragraph into the first block of a nested list item that holds several blocks, keeping the rest of the list structure. Wordgard issue #68 reported this case building an invalid document (issues.md:76, title only). Plate represents lists as flat list-item properties (`packages/platejs/src/features/list/lib/BaseListPlugin.ts`), not as nested multi-block containers, so the case has no Plate counterpart (report.md:125, 169).

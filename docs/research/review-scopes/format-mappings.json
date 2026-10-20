@@ -7,11 +7,6 @@
     "plate-api"
   ],
   "prerequisiteReason": "Reuse the established schema authority and plugin authoring boundary before choosing shared format mechanics.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Repeated schema identity, child traversal and property handling across feature mappings may be removable at their existing compiler owners."
-  },
   "owners": [
     "packages/platejs/src/lib/plugin/BasePlugin.ts",
     "packages/platejs/src/lib/plugin/MarkdownNodeMapping.ts",

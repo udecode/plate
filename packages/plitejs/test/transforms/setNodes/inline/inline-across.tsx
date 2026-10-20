@@ -1,6 +1,7 @@
 import { ElementApi } from 'plitejs';
 
 import { jsx } from '../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { isInline as editorIsInline } from '../../../../src/internal';
 

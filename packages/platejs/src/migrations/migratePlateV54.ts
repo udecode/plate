@@ -130,6 +130,16 @@ export const migrateV54: PlateV54Migration = (context) => {
       'Plate v54 migration cannot convert legacy suggestions whose nodes the target schema reshapes.'
     );
   }
+  try {
+    context.target.schema.fitDocument(
+      projectAuthoredDocument(document, { projection: 'accepted' }).document
+    );
+  } catch (error) {
+    throw new Error(
+      'Plate v54 migration cannot convert legacy suggestions that the target schema could not reject.',
+      { cause: error }
+    );
+  }
 
   return Object.freeze({
     document,

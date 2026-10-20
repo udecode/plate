@@ -139,6 +139,7 @@ const mountEditorRoot = (
 
 const bindTextOwner = (editor: any, path: number[], owner: HTMLElement) => {
   owner.setAttribute('data-editor-node', 'text');
+  owner.setAttribute('data-editor-node-key', editorGetNodeKey(editor, path)!);
 
   const [node] = editor.read((state) => state.nodes.get(path));
   const key = editor.api.dom.findKey(node);
@@ -1576,7 +1577,7 @@ describe('plite-dom bridge', () => {
 
   it('adjusts zero-width DOM range offsets when converting a collapsed Plite range', () => {
     withDom(({ document }) => {
-      const editor = createParagraphEditor();
+      const editor = createParagraphEditor('');
       const root = mountEditorRoot(editor, document);
 
       const owner = document.createElement('span');

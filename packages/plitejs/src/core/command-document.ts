@@ -24,6 +24,11 @@ export type ProjectionBreak = Readonly<{
   after: number;
 }>;
 
+/** @internal */
+export type RangePlacement =
+  | Readonly<{ from: number; kind: 'placed'; to: number }>
+  | Readonly<{ kind: 'refused'; reason: 'crosses' | 'unaligned' }>;
+
 /**
  * How positions of the stored document correspond to positions of the
  * document commands decide on. A root the projection leaves alone maps each
@@ -53,6 +58,24 @@ export type CommandProjectionMap = Readonly<{
   change: () => DocumentChange;
   /** Whether a stored position lies strictly inside content the projection removes. */
   hides: (root: string, position: number) => boolean;
+  /** The stored paths of the subtrees the projection shows away from their stored place. */
+  moved: (root: string) => ReadonlyArray<readonly number[]>;
+  /**
+   * The projected path of the node at a stored path, or `null` when the
+   * projection does not show that node whole as one node.
+   */
+  nodePath: (root: string, path: readonly number[]) => number[] | null;
+  /**
+   * Where the stored range `low` to `high` places, or `null` in a root the
+   * projection drops.
+   */
+  projectRange: (
+    root: string,
+    low: number,
+    high: number
+  ) => RangePlacement | null;
+  /** Whether the projection shows stored content of `root` away from its stored place. */
+  reorders: (root: string) => boolean;
   /** The roots the projection changes. */
   roots: readonly string[];
   /**
@@ -108,6 +131,8 @@ export type EditorCommandDocument = Readonly<{
    */
   recorded?: (input: EditorFrameRecording) => void;
   project: (value: EditorDocumentValue) => CommandProjection | null;
+  /** The error a command meets when its range has no faithful place. */
+  refuse?: (reason: 'crosses' | 'unaligned') => Error;
   unplaced?: () => Error;
 }>;
 
@@ -187,6 +212,26 @@ export const projectionMapOf = (change: DocumentChange): CommandProjectionMap =>
 
       return false;
     },
+    moved: () => [],
+    nodePath: () => null,
+    projectRange: (
+      root: string,
+      low: number,
+      high: number
+    ): RangePlacement | null => {
+      if (change.deleteRoots.has(root)) return null;
+
+      const rootChange = getInternalDocumentRootChange(change, root);
+      const [from, to] = rootChange
+        ? [
+            getDefined(rootChange.mapPos(low, 1)),
+            getDefined(rootChange.mapPos(high, -1)),
+          ]
+        : [low, high];
+
+      return { from, kind: 'placed', to };
+    },
+    reorders: () => false,
     roots: Object.freeze(
       [...getInternalDocumentChangeEntries(change)].map(([root]) => root)
     ),
@@ -236,6 +281,11 @@ export const registerEditorCommandDocument = (
 /** @internal */
 export const getEditorCommandDocument = (editor: Editor) =>
   COMMAND_DOCUMENTS.get(getEditorRuntimeOwner(editor));
+
+/** @internal */
+export const refusedIn = (editor: Editor, reason: 'crosses' | 'unaligned') =>
+  getEditorCommandDocument(editor)?.refuse?.(reason) ??
+  new Error(`The command frame refuses a range that ${reason}.`);
 
 /** @internal */
 export const unplacedIn = (editor: Editor, what: string) =>

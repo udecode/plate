@@ -11,7 +11,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 
 import { globSync, isDynamicPattern } from 'tinyglobby';
 
@@ -19,11 +19,10 @@ import {
   BUN_TEST_TIMEOUT_MS,
   TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
-  TEST_IGNORE_PATTERNS,
   TEST_ISOLATED_FILE_PATTERNS,
-  TEST_SLOW_FILE_PATTERNS,
   TEST_NODE_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
+import { usesMockModule } from './import-graph.mjs';
 
 const VALUE_FLAGS = new Set([
   '--bail',
@@ -40,25 +39,12 @@ const VALUE_FLAGS = new Set([
 ]);
 const LEADING_DOT_SLASH_RE = /^\.\//;
 const JUNIT_OUTFILE_PREFIX = 'plate-junit-';
-const MOCK_MODULE_PATTERN = 'mock.module(';
-const LOCAL_IMPORT_PATTERN =
-  /\b(?:import|export)\b[^'"]*?from\s*['"]([^'"]+)['"]|\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)|\brequire\s*\(\s*['"]([^'"]+)['"]\s*\)|\bimport\s*['"]([^'"]+)['"]/g;
 const XML_DECLARATION_RE = /^<\?xml[^>]*>\s*/u;
 const TESTSUITES_OPEN_RE = /^<testsuites\b[^>]*>\s*/u;
 const TESTSUITES_CLOSE_RE = /\s*<\/testsuites>\s*$/u;
 const TRAILING_SLASH_RE = /\/$/;
-const LOCAL_SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
 
-const [suite, ...rawArgs] = process.argv.slice(2);
-if (suite !== 'fast' && suite !== 'slow') {
-  throw new Error(
-    'Usage: bun tooling/scripts/test-suite.mjs <fast|slow> [paths and Bun test flags]'
-  );
-}
-const patterns =
-  suite === 'fast' ? TEST_FILE_PATTERNS : TEST_SLOW_FILE_PATTERNS;
-const ignore =
-  suite === 'fast' ? TEST_FAST_IGNORE_PATTERNS : TEST_IGNORE_PATTERNS;
+const rawArgs = process.argv.slice(2);
 const bunArgs = [];
 const pathFilters = [];
 
@@ -116,25 +102,29 @@ const exactFiles =
   );
 const candidates = exactFiles
   ? filters
-  : globSync(patterns, { cwd: process.cwd(), ignore, onlyFiles: true });
+  : globSync(TEST_FILE_PATTERNS, {
+      cwd: process.cwd(),
+      ignore: TEST_FAST_IGNORE_PATTERNS,
+      onlyFiles: true,
+    });
 const selectedFiles = [...new Set(candidates)]
-  .filter((file) => {
-    if (!matches(file, patterns) || matches(file, ignore)) return false;
-    return (
-      filters.length === 0 ||
-      filters.some((filter) =>
-        isDynamicPattern(filter)
-          ? new Bun.Glob(filter).match(file)
-          : file === filter ||
-            file.startsWith(`${filter}/`) ||
-            file.includes(filter)
-      )
-    );
-  })
+  .filter(
+    (file) =>
+      matches(file, TEST_FILE_PATTERNS) &&
+      !matches(file, TEST_FAST_IGNORE_PATTERNS) &&
+      (filters.length === 0 ||
+        filters.some((filter) =>
+          isDynamicPattern(filter)
+            ? new Bun.Glob(filter).match(file)
+            : file === filter ||
+              file.startsWith(`${filter}/`) ||
+              file.includes(filter)
+        ))
+  )
   .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
 if (selectedFiles.length === 0) {
-  console.error(`No ${suite}-suite tests matched.`);
+  console.error('No tests matched.');
   process.exit(1);
 }
 
@@ -213,65 +203,6 @@ const runFiles = (files, args, cwd) =>
     stdio: 'inherit',
   });
 
-const resolveLocalImport = (fromFile, specifier) => {
-  if (!specifier.startsWith('.')) return undefined;
-
-  const sanitizedSpecifier = specifier.split('?')[0]?.split('#')[0];
-
-  if (!sanitizedSpecifier) return undefined;
-
-  const absoluteBase = resolve(dirname(fromFile), sanitizedSpecifier);
-  const importCandidates = [
-    absoluteBase,
-    ...LOCAL_SOURCE_EXTENSIONS.map(
-      (extension) => `${absoluteBase}${extension}`
-    ),
-    ...LOCAL_SOURCE_EXTENSIONS.map((extension) =>
-      join(absoluteBase, `index${extension}`)
-    ),
-  ];
-
-  return importCandidates.find((candidate) => {
-    if (!existsSync(candidate)) return false;
-
-    return statSync(candidate).isFile();
-  });
-};
-
-const mockModuleUsageCache = new Map();
-
-const fileUsesMockModule = (file) => {
-  if (mockModuleUsageCache.has(file)) {
-    return mockModuleUsageCache.get(file);
-  }
-
-  mockModuleUsageCache.set(file, false);
-
-  const source = readFileSync(file, 'utf-8');
-
-  if (source.includes(MOCK_MODULE_PATTERN)) {
-    mockModuleUsageCache.set(file, true);
-    return true;
-  }
-
-  for (const match of source.matchAll(LOCAL_IMPORT_PATTERN)) {
-    const specifier = match[1] ?? match[2] ?? match[3] ?? match[4];
-
-    if (!specifier) continue;
-
-    const resolvedImport = resolveLocalImport(file, specifier);
-
-    if (!resolvedImport) continue;
-
-    if (fileUsesMockModule(resolvedImport)) {
-      mockModuleUsageCache.set(file, true);
-      return true;
-    }
-  }
-
-  return false;
-};
-
 const mergeJunitReports = (files, outfile) => {
   const suites = files
     .map((file) => {
@@ -334,7 +265,7 @@ const isolatedFiles = shouldIsolate
   ? bunFiles.filter(
       (file) =>
         matches(file, TEST_ISOLATED_FILE_PATTERNS) ||
-        fileUsesMockModule(resolve(file))
+        usesMockModule(resolve(file))
     )
   : [];
 const sharedFiles =

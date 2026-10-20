@@ -4,6 +4,7 @@ export declare const summarize: (samples: any) => {
     samples: any;
     mean: number;
     median: number;
+    p50: number;
     p75: number;
     p95: number;
     p99: number;

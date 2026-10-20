@@ -26,7 +26,11 @@ import {
   writeDOMFragmentData,
   writeDOMSelectionData,
 } from '../../../../../packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts';
-import { round, writeBenchmarkArtifact } from '../../shared/stats.mjs';
+import {
+  round,
+  summarize,
+  writeBenchmarkArtifact,
+} from '../../shared/stats.mjs';
 import {
   CLIPBOARD_AUTHORITY_ARTIFACT_PATH,
   createClipboardIssueTargetThresholds,
@@ -354,55 +358,6 @@ const forceGc = () => {
   if (gcAvailable) globalThis.gc();
 };
 
-const percentile = (sorted, ratio) => {
-  if (sorted.length === 0) {
-    return 0;
-  }
-
-  const index = Math.min(
-    sorted.length - 1,
-    Math.max(0, Math.ceil(sorted.length * ratio) - 1)
-  );
-
-  return sorted[index];
-};
-
-const summarizeDurations = (durations) => {
-  if (durations.length === 0) {
-    return {
-      samples: [],
-      mean: 0,
-      p50: 0,
-      p95: 0,
-      min: 0,
-      max: 0,
-    };
-  }
-
-  const sorted = [...durations].sort((left, right) => left - right);
-  const total = durations.reduce((sum, value) => sum + value, 0);
-
-  return {
-    samples: durations.map(round),
-    mean: round(total / durations.length),
-    p50: round(percentile(sorted, 0.5)),
-    p95: round(percentile(sorted, 0.95)),
-    min: round(sorted[0] ?? 0),
-    max: round(sorted.at(-1) ?? 0),
-  };
-};
-
-const summarizeHeapDeltas = (heapDeltas) => ({
-  max: heapDeltas.length === 0 ? 0 : Math.max(...heapDeltas),
-  mean:
-    heapDeltas.length === 0
-      ? 0
-      : round(
-          heapDeltas.reduce((sum, value) => sum + value, 0) / heapDeltas.length
-        ),
-  samples: heapDeltas,
-});
-
 const measureLane = (sampleCount, run) => {
   const durations = [];
   const heapDeltas = [];
@@ -423,8 +378,8 @@ const measureLane = (sampleCount, run) => {
   }
 
   return {
-    ...summarizeDurations(durations),
-    heapDeltaBytes: summarizeHeapDeltas(heapDeltas),
+    ...summarize(durations),
+    heapDeltaBytes: summarize(heapDeltas),
     metadata,
     metadataSamples,
     retainedHeapDeltaBytes: null,
@@ -490,15 +445,15 @@ const measurePreparedLane = (
   }
 
   return {
-    ...summarizeDurations(durations),
-    heapDeltaBytes: summarizeHeapDeltas(heapDeltas),
-    inspectionMs: summarizeDurations(inspectionDurations),
+    ...summarize(durations),
+    heapDeltaBytes: summarize(heapDeltas),
+    inspectionMs: summarize(inspectionDurations),
     metadata,
     metadataSamples,
     retainedHeapDeltaBytes: gcAvailable && measureRetained
-      ? summarizeHeapDeltas(retainedHeapDeltas)
+      ? summarize(retainedHeapDeltas)
       : null,
-    setupMs: summarizeDurations(setupDurations),
+    setupMs: summarize(setupDurations),
   };
 };
 
@@ -1627,7 +1582,7 @@ const allLanes = [
   ...Object.values(plateDataTransferFormats),
 ];
 const metadataP95 = (lane, key) =>
-  summarizeDurations(
+  summarize(
     lane.metadataSamples
       .map((metadata) => metadata[key])
       .filter((value) => typeof value === 'number')

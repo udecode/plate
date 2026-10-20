@@ -7,11 +7,6 @@
     "transactions"
   ],
   "prerequisiteReason": "Locations must preserve document identity through the established transaction behavior.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Selection and rebasing preserve user intent across clipboard, history, tables and annotations."
-  },
   "owners": [
     "packages/plitejs/src/core/selection-protocol.ts",
     "packages/plitejs/src/core/selection-state.ts",

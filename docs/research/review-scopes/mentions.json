@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Entity identity and persisted reference values determine mention insertion, paste and display contracts.",
-  "last": false,
-  "opportunity": {
-    "score": 7,
-    "reason": "Entity references have persistence and paste semantics beyond generic combobox navigation."
-  },
   "owners": [
     "packages/platejs/src/features/mention/"
   ],

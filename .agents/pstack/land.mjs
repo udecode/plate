@@ -9,7 +9,10 @@
 // pushes <branch> to origin, and anything else pushes a topic branch to origin
 // and opens a PR into <branch> with gh. In PR mode the canonical repository is
 // the `upstream` remote when the clone has one, so a contributor whose origin
-// is a fork rebases onto upstream and opens the PR there from the fork.
+// is a fork rebases onto upstream and opens the PR there from the fork. The PR
+// body is the page `plan-page.mjs <plan> --pr` renders, with each frame it
+// prints attached, when the task changes exactly one dated plan, and the
+// commit body otherwise; a refused render stops before the push.
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is.
 //
@@ -111,12 +114,32 @@ function validate(text) {
   return { subject, body: rest.join('\n').trim() };
 }
 
-function trailers(body, staged) {
+// The one dated plan the task changes, or null when it changes none or several.
+function planOf(staged) {
+  const touched = staged.filter((path) => path.startsWith(`${plans}/`) && DATED.test(path.slice(plans.length + 1)));
+  return touched.length === 1 ? touched[0] : null;
+}
+
+function trailers(body, plan) {
   const lines = [];
   if (session && !SESSION.test(body)) lines.push(`Session: ${session}`);
-  const touched = staged.filter((path) => path.startsWith(`${plans}/`) && DATED.test(path.slice(plans.length + 1)));
-  if (!PLAN.test(body) && touched.length === 1) lines.push(`Plan: ${touched[0]}`);
+  if (!PLAN.test(body) && plan) lines.push(`Plan: ${plan}`);
   return lines.length > 0 ? `${body}\n\n${lines.join('\n')}` : body;
+}
+
+// The PR body file and its --attach arguments: the plan's page when the task changes one plan, else the commit body.
+function prBody(plan, body) {
+  if (plan && existsSync(plan) && existsSync('.agents/pstack/plan-page.mjs')) {
+    const render = spawnSync(process.execPath, ['.agents/pstack/plan-page.mjs', plan, '--pr'], { encoding: 'utf8' });
+    if (render.status !== 0) {
+      fail(`plan-page.mjs refused ${plan}, so nothing was pushed:\n${`${render.stderr}${render.stdout}`.trim()}\nFix the plan, then run land.mjs again without --message.`);
+    }
+    const [file, ...rest] = render.stdout.trim().split('\n');
+    return { file, attach: rest.flatMap((line) => (/^--attach ./u.test(line) ? ['--attach', line.slice('--attach '.length)] : [])) };
+  }
+  const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'body');
+  writeFileSync(file, `${body}\n`);
+  return { file, attach: [] };
 }
 
 function squash({ subject, body }) {
@@ -128,21 +151,22 @@ function squash({ subject, body }) {
     must('reset', '--quiet', '--soft', head);
     fail(`nothing to land: the task changes nothing against ${target}`);
   }
-  const staged = must('diff', '--cached', '--name-only').split('\n').filter(Boolean);
+  const plan = planOf(must('diff', '--cached', '--name-only').split('\n').filter(Boolean));
   const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
-  writeFileSync(file, `${subject}\n\n${trailers(body, staged)}\n`);
+  writeFileSync(file, `${subject}\n\n${trailers(body, plan)}\n`);
   const run = spawnSync('git', ['commit', '--quiet', '--file', file], { stdio: 'inherit' });
   if (run.status !== 0) {
     must('reset', '--quiet', '--soft', head);
     fail('git commit failed; the task commits are back as they were');
   }
+  return plan;
 }
 
 fetch();
 const ahead = Number(must('rev-list', '--count', `${upstream}..HEAD`));
 if (messageText === null && ahead === 0) fail(`HEAD has no task commit to take a message from; pass --message <file>\n${USAGE}`);
 const message = validate(messageText ?? must('log', '-1', '--format=%B'));
-squash(message);
+const plan = squash(message);
 rebase();
 
 const changed = must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD').split('\n').filter(Boolean);
@@ -176,6 +200,8 @@ if (mode === 'push') {
 } else {
   const slug = message.subject.toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '').slice(0, 50);
   const topic = current && current !== branch ? current : `land/${slug}`;
+  // Rendered before the push, because its links name HEAD, which is the commit pushed next, and a refusal then leaves nothing pushed.
+  const body = prBody(plan, message.body);
   const pushed = git('push', '--quiet', 'origin', `HEAD:refs/heads/${topic}`);
   if (pushed.status !== 0 && !forked && /denied|\b403\b/iu.test(pushed.stderr)) {
     fail('this clone cannot push to origin: fork the repository, point origin at the fork, add the canonical repository as `upstream`, then run land.mjs again');
@@ -183,11 +209,9 @@ if (mode === 'push') {
   if (pushed.status !== 0) {
     fail(`git push origin HEAD:${topic} failed, and land.mjs never forces: ${pushed.stderr.trim()}\nPush follow-up commits to the open PR yourself, or land from a new branch.`);
   }
-  const body = join(mkdtempSync(join(tmpdir(), 'land-')), 'body');
-  writeFileSync(body, `${message.body}\n`);
   const head = forked ? `${repo('origin')[0]}:${topic}` : topic;
   const into = forked ? ['--repo', repo('upstream').join('/')] : [];
-  const pr = spawnSync('gh', ['pr', 'create', '--base', branch, '--head', head, '--title', message.subject, '--body-file', body, ...into], { encoding: 'utf8' });
+  const pr = spawnSync('gh', ['pr', 'create', '--base', branch, '--head', head, '--title', message.subject, '--body-file', body.file, ...body.attach, ...into], { encoding: 'utf8' });
   if (pr.status !== 0) fail(`gh pr create failed after pushing ${topic}: ${`${pr.stderr}${pr.stdout}`.trim()}`);
   console.log(`Pushed ${topic} and opened a PR into ${branch}: ${pr.stdout.trim()}`);
 }

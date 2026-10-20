@@ -413,7 +413,13 @@ export const authoredAdmission: DocumentAdmission = {
     // insert, settles claims in every block naming that incarnation.
     const decided = [
       ...verdictIncarnationsOf(records.get(VERDICTS)?.keys() ?? []),
-      ...[...flipped].filter((incarnation) => facts.hasVerdict(incarnation)),
+      ...[...flipped].filter(
+        (incarnation) =>
+          // A replaced block takes its insertions away and back, so only an
+          // incarnation whose count changed sign across the commit flipped.
+          (previous.counts.get(incarnation) ?? 0) > 0 !==
+            (counts.get(incarnation) ?? 0) > 0 && facts.hasVerdict(incarnation)
+      ),
     ];
     const settled = new Map(
       [...scope].map(([root, at]) => [root, new Set(at)])

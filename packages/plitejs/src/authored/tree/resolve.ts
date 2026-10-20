@@ -8,7 +8,7 @@ import {
   deriveValue,
   withoutValueRoots,
 } from '../../core/record-store';
-import type { RootPart } from '../../core/representation';
+import type { ListPart } from '../../core/representation';
 import { orphanedValueRoots } from '../../core/root-ownership';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { survivalUnder } from '../../core/survival';
@@ -30,6 +30,7 @@ import {
   putContexts,
   putLanded,
 } from '../facts/records';
+import { countLedgerWork } from '../ledger/work';
 import { cutsOf, joinRejectedCuts } from './cuts';
 import {
   decideKey,
@@ -72,13 +73,17 @@ export type AuthoredResolveSchema = Readonly<{
     site: readonly JsonRecord[],
     root: string,
     vacated: (slot: number, candidate: JsonNode) => boolean,
-    part?: RootPart
+    part?: ListPart
   ) => Completion<JsonNode>;
   /** Whether `node` can stand in prefix slot `slot` of `root`. */
   fitsPrefix?: (node: JsonNode, slot: number, root: string) => boolean;
+  /**
+   * A text's properties made canonical for the element it sits in, given by
+   * type with the types of its ancestors, nearest first.
+   */
   canonicalizeTextProperties?: (
     props: JsonRecord,
-    path: readonly number[],
+    types: readonly string[],
     root: string,
     preferredKey: string
   ) => Readonly<JsonRecord>;
@@ -87,6 +92,7 @@ export type AuthoredResolveSchema = Readonly<{
     root: string
   ) => Readonly<{
     allowsText: boolean;
+    max: number | null;
     min: number;
     prefix: number;
   }> | null;
@@ -101,10 +107,17 @@ export type AuthoredResolution = Readonly<{
   diagnostics: readonly AuthoredProjectionDiagnostic[];
   landed: readonly LandedRecord[];
   /**
-   * The original blocks that land after an accepted join's line, each with
-   * the node it lands right after, in landing order.
+   * The stored blocks the decision shows away from their stored place, in the
+   * order they land: each lands as the next sibling of `after`, once the
+   * placements before it have landed. A block goes with a join it follows,
+   * merges into a block that does, or stands, as a rejected split's piece, in
+   * the place of the piece it rejoins when the decision empties that piece.
+   * It counts only when a line the decision shows lies between its place and
+   * its landing point, or it leaves an element the decision shows.
    */
-  reordered: ReadonlyArray<Readonly<{ after: unknown; node: unknown }>>;
+  placements: readonly AuthoredPlacement[];
+  /** The blocks the decision hides whole, with the shown block each collapses into. */
+  hidden: readonly AuthoredHiddenBlock[];
   /**
    * The node an original node became in the resolved tree, or null when a
    * decision removed it or merged it into the block before it, the canonical
@@ -117,6 +130,18 @@ export type AuthoredResolution = Readonly<{
    * among blocks.
    */
   unplaceable: boolean;
+}>;
+
+export type AuthoredPlacement = Readonly<{ after: JsonNode; node: JsonNode }>;
+
+export type AuthoredHiddenBlock = Readonly<{
+  /** The block's path in the children the decision was given. */
+  at: readonly number[];
+  /**
+   * The path in the resolved children of the shown block it collapses into,
+   * or null when it collapses between top-level blocks.
+   */
+  owner: readonly number[] | null;
 }>;
 
 type Node = JsonRecord & { children?: readonly Node[]; text?: string };
@@ -233,7 +258,14 @@ export type AuthoredResolveOptions = Readonly<{
    * its minimum completes even when no decision changed it, because blocks
    * the rest of the root dropped leave the root short.
    */
-  part?: RootPart;
+  part?: ListPart;
+  /**
+   * Children the caller hides whole before deciding, which the resolution
+   * records in `hidden` and otherwise never reads.
+   */
+  removed?: ReadonlySet<JsonNode>;
+  /** The containers the children sit in, nearest first; none at a root. */
+  site?: readonly JsonNode[];
 }>;
 
 const propsOf = (node: Node) => {
@@ -269,17 +301,19 @@ const followerPassage = (
   children: NodeList<Node>,
   claimsOf: (node: Node) => readonly AuthoredMark[]
 ) => {
-  let firstJoins: Map<string, Path> | undefined;
+  const blocks = textBlocksIn(children, []);
+  const firstJoins = new Map<string, Path>();
+  // Scans only as far as the join's first block, so a key beside a join near
+  // the top of a long level reads no block past it.
   const firstJoinOf = (key: string) => {
-    if (!firstJoins) {
-      const found = new Map<string, Path>();
+    while (!firstJoins.has(key)) {
+      const next = blocks.next();
 
-      for (const { node, path } of textBlocksOf(children)) {
-        for (const join of joinKeysOf(claimsOf(node))) {
-          if (!found.has(join)) found.set(join, path);
-        }
+      if (next.done) break;
+      countLedgerWork('joinScans');
+      for (const join of joinKeysOf(claimsOf(next.value.node))) {
+        if (!firstJoins.has(join)) firstJoins.set(join, next.value.path);
       }
-      firstJoins = found;
     }
 
     return firstJoins.get(key);
@@ -358,6 +392,19 @@ type TextBlock = Readonly<{
   path: Path;
 }>;
 
+function* textBlocksIn(
+  nodes: NodeList<Node>,
+  base: Path
+): Generator<Readonly<{ node: Node; path: Path }>> {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = getDefined(nodes.at(index));
+
+    if (isText(node)) continue;
+    if (isTextBlock(node)) yield { node, path: [...base, index] };
+    else yield* textBlocksIn(node.children ?? [], [...base, index]);
+  }
+}
+
 const textBlocksOf = (children: NodeList<Node>) => {
   const blocks: TextBlock[] = [];
   const collect = (
@@ -398,6 +445,118 @@ export const pastFollowers = (
   return end;
 };
 
+const subtreesOf = (roots: readonly Node[]) => {
+  const nodes = new WeakSet<Node>();
+  const add = (node: Node) => {
+    nodes.add(node);
+    for (const child of node.children ?? []) add(child);
+  };
+
+  roots.forEach(add);
+
+  return nodes;
+};
+
+type Landing = { children: Landing[]; node: Node; parent: Landing | null };
+
+/**
+ * The landings phase two made, applied in order to a model of the stored
+ * elements, keeping each one that moves a block past a line the resolved
+ * tree shows, or out of an element it shows. A landing that passes only
+ * lines it does not show already shows where the stored order puts it, and
+ * so do all of them when the elements the tree shows keep their stored order
+ * and nesting.
+ */
+const placementsOf = (
+  children: readonly Node[],
+  landings: readonly AuthoredPlacement[],
+  shows: (node: Node) => boolean
+): AuthoredPlacement[] => {
+  if (landings.length === 0) return [];
+
+  const items = new Map<Node, Landing>();
+  const top: Landing = { children: [], node: {}, parent: null };
+  const build = (nodes: readonly Node[], parent: Landing) => {
+    for (const node of nodes) {
+      if (isText(node)) continue;
+
+      const item: Landing = { children: [], node, parent };
+
+      items.set(node, item);
+      parent.children.push(item);
+      if (!isTextBlock(node)) build(node.children ?? [], item);
+    }
+  };
+
+  build(children, top);
+
+  const linesOf = (item: Landing): Landing[] =>
+    item !== top && isTextBlock(item.node)
+      ? [item]
+      : item.children.flatMap(linesOf);
+  const holds = (outer: Landing, inner: Landing) => {
+    for (let at: Landing | null = inner; at; at = at.parent) {
+      if (at === outer) return true;
+    }
+
+    return false;
+  };
+  const outline = (item: Landing, into: Array<Node | null> = []) => {
+    for (const child of item.children) {
+      const shown = shows(child.node);
+
+      if (shown) into.push(child.node);
+      outline(child, into);
+      if (shown) into.push(null);
+    }
+
+    return into;
+  };
+  const stored = outline(top);
+  const placements: AuthoredPlacement[] = [];
+
+  for (const placement of landings) {
+    const item = items.get(placement.node);
+    const target = items.get(placement.after);
+
+    if (!item || !target || holds(item, target) || holds(target, item)) {
+      continue;
+    }
+
+    const lines = linesOf(top);
+    const own = linesOf(item);
+    const first = own[0] ? lines.indexOf(own[0]) : -1;
+    const landing = lines.indexOf(getDefined(linesOf(target).at(-1))) + 1;
+    const from = getDefined(item.parent);
+    const into = getDefined(target.parent);
+
+    if (
+      first === -1 ||
+      !(
+        (first < landing
+          ? lines.slice(first + own.length, landing)
+          : lines.slice(landing, first)
+        ).some((line) => shows(line.node)) ||
+        (from !== into && from !== top && shows(from.node))
+      )
+    ) {
+      continue;
+    }
+
+    from.children.splice(from.children.indexOf(item), 1);
+    into.children.splice(into.children.indexOf(target) + 1, 0, item);
+    item.parent = into;
+    placements.push(placement);
+  }
+
+  const shown = outline(top);
+
+  return shown.length === stored.length &&
+    shown.every((node, index) => node === stored[index])
+    ? []
+    : placements;
+};
+
 /**
  * The only implementation of accept and reject. Phase one finds, against the
  * input document, where each accepted join or rejected split lands: it merges
@@ -410,7 +569,7 @@ export const pastFollowers = (
  * Undecided marks stay.
  */
 export const resolveAuthoredChildren = (
-  children: readonly JsonNode[],
+  given: readonly JsonNode[],
   outcome: AuthoredOutcome,
   schema: AuthoredResolveSchema | null = null,
   root = 'main',
@@ -420,8 +579,11 @@ export const resolveAuthoredChildren = (
     stores = false,
     withdraws = false,
     part,
+    removed,
+    site = [],
   }: AuthoredResolveOptions = {}
 ): AuthoredResolution => {
+  const children = removed ? given.filter((node) => !removed.has(node)) : given;
   const pending = (node: unknown) =>
     standingClaimsOf(node, facts, dependencies);
   const isInserted = (node: unknown) =>
@@ -485,22 +647,23 @@ export const resolveAuthoredChildren = (
   // Without a schema, a text block a decision empties keeps an empty text.
   const complete = (
     nodes: readonly Node[],
-    site: readonly Node[],
+    at: readonly Node[],
     startLevel: readonly Node[],
-    vacated: (slot: number, candidate: Node) => boolean
+    vacated: (slot: number, candidate: Node) => boolean,
+    listPart: ListPart | undefined
   ) =>
     schema?.complete
       ? (schema.complete(
           nodes as readonly JsonNode[],
-          site,
+          at,
           root,
           vacated,
-          part
+          listPart
         ) as Completion<Node>)
       : {
           built: [],
           children:
-            nodes.length === 0 && site.length > 0 && startLevel.some(isText)
+            nodes.length === 0 && at.length > 0 && startLevel.some(isText)
               ? [{ text: '' }]
               : mergeTextsWithEqualProps(nodes),
         };
@@ -884,7 +1047,6 @@ export const resolveAuthoredChildren = (
     }
   }
 
-  const reorders: Array<{ after: Node; node: Node }> = [];
   const movedWith = (node: Node): Node[] => {
     if (!emptiedTargets.has(node)) {
       return [node, ...(mergedBlocks.get(node) ?? [])];
@@ -972,12 +1134,30 @@ export const resolveAuthoredChildren = (
     }
   }
 
+  const moves: Array<Readonly<{ after: Node; node: Node }>> = [];
+  const shown = new WeakSet<Node>();
+  const unwrapped = new WeakSet<Node>();
+  const hidden = new Set<Node>();
+  const pieceSubtrees = new WeakMap<Node, WeakSet<Node>>();
+  const inPiece = (piece: Node, node: Node) => {
+    let nodes = pieceSubtrees.get(piece);
+
+    if (!nodes) {
+      nodes = subtreesOf([piece]);
+      pieceSubtrees.set(piece, nodes);
+    }
+
+    return nodes.has(node);
+  };
+
   // Phase two: rebuild the document with decided content removed.
   const resolveList = (
     input: readonly Node[],
     parentType: string | null,
+    ancestors: readonly string[],
     path: readonly number[],
-    landing = false
+    landing = false,
+    landingBlock: Node | null = null
   ): Readonly<{ changed: boolean; dirty: number[]; list: Node[] }> => {
     const out: Node[] = [];
     const dirty: number[] = [];
@@ -996,6 +1176,12 @@ export const resolveAuthoredChildren = (
       : { joined: new Map<Node, Node>(), nodes: input };
     let restructured = joined.size > 0;
     let changed = false;
+    const landHere = (pieces: readonly Node[]) => {
+      const landed = resolveList(pieces, parentType, ancestors, path, true);
+
+      for (const at of landed.dirty) dirty.push(out.length + at);
+      out.push(...landed.list);
+    };
     const land = (anchor: Node) => {
       const pieces = placedAfter.get(anchor);
 
@@ -1003,15 +1189,12 @@ export const resolveAuthoredChildren = (
 
       let after = getDefined(movedWith(anchor).at(-1));
 
-      for (const node of pieces.flatMap(movedWith)) {
-        reorders.push({ after, node });
+      // Each piece records the blocks merged into it as it resolves.
+      for (const node of pieces) {
+        moves.push({ after, node });
         after = node;
       }
-
-      const landed = resolveList(pieces, parentType, path, true);
-
-      for (const at of landed.dirty) dirty.push(out.length + at);
-      out.push(...landed.list);
+      landHere(pieces);
       restructured = true;
     };
 
@@ -1019,6 +1202,7 @@ export const resolveAuthoredChildren = (
       const marks = pending(node);
       const stored = readMembers(node);
       const original = joined.get(node) ?? node;
+      const landedIn = landing ? node : landingBlock;
 
       if ((placed.has(node) || standsIn.has(node)) && !landing) {
         restructured = true;
@@ -1027,11 +1211,10 @@ export const resolveAuthoredChildren = (
       if (emptiedTargets.has(node)) {
         const line = standsFor.get(node);
 
+        hidden.add(original);
         if (line) {
-          const stood = resolveList([line], parentType, path, true);
-
-          for (const at of stood.dirty) dirty.push(out.length + at);
-          out.push(...stood.list);
+          moves.push({ after: node, node: line });
+          landHere([line]);
         }
         restructured = true;
         continue;
@@ -1063,7 +1246,10 @@ export const resolveAuthoredChildren = (
         wait(cutsOf(node));
         // Corrections derive values from elements, not from text runs.
         if (isText(node)) changed = true;
-        else restructured = true;
+        else {
+          restructured = true;
+          hidden.add(original);
+        }
         continue;
       }
 
@@ -1080,7 +1266,7 @@ export const resolveAuthoredChildren = (
           ? (candidate, key) =>
               schema?.canonicalizeTextProperties?.(
                 candidate,
-                [...path, index],
+                parentType ? [parentType, ...ancestors] : [],
                 root,
                 key
               ) ?? candidate
@@ -1126,6 +1312,8 @@ export const resolveAuthoredChildren = (
         formatted.kept.some((member, at) => member !== stored[at]);
 
       if (selfChanged) changed = true;
+      shown.add(node);
+      shown.add(original);
       if (isText(node)) {
         out.push(
           track(
@@ -1138,6 +1326,22 @@ export const resolveAuthoredChildren = (
       // A rejected type change restores the type the children are judged by.
       const type = typeOf(formatted.props);
       const merged = mergedBlocks.get(node) ?? [];
+
+      // A landing block takes the blocks merged into its lines from outside
+      // it, and a joined line takes its own ahead of the blocks that follow
+      // it, so a block stored between them, such as a quote a follower was
+      // wrapped in, shows after those blocks.
+      if (landedIn || placedAfter.has(node)) {
+        let after = node;
+
+        for (const block of merged) {
+          if (!landedIn || !inPiece(landedIn, block)) {
+            moves.push({ after, node: block });
+          }
+          after = block;
+        }
+      }
+
       const {
         changed: childrenChanged,
         dirty: childDirty,
@@ -1148,7 +1352,10 @@ export const resolveAuthoredChildren = (
           ...merged.flatMap((block) => block.children ?? []),
         ],
         type,
-        [...path, index]
+        parentType ? [parentType, ...ancestors] : ancestors,
+        [...path, index],
+        false,
+        landedIn
       );
       const element = withMarks(
         { ...formatted.props, children: resolved },
@@ -1157,6 +1364,7 @@ export const resolveAuthoredChildren = (
 
       if (structureOf(node).unwrap && !(unwrapsLine && outlived.length > 0)) {
         restructured = true;
+        unwrapped.add(node);
         if (
           resolved.some(isText) &&
           contentOf(parentType)?.allowsText === false
@@ -1227,8 +1435,8 @@ export const resolveAuthoredChildren = (
   // A decision that builds waits on every pending change whose outcome
   // changes what it builds. A built element's properties can read any
   // ancestor, so it waits on each ancestor's pending restructuring.
-  const waitOnBuild = (level: readonly Node[], site: readonly Node[]) => {
-    const [parent, ...ancestors] = site;
+  const waitOnBuild = (level: readonly Node[], at: readonly Node[]) => {
+    const [parent, ...ancestors] = at;
 
     // The element's type picks the content its completion builds for.
     wait(
@@ -1290,9 +1498,9 @@ export const resolveAuthoredChildren = (
   // recorder's fills are, so rejecting any of them removes it.
   const underInsertions = (
     completion: Completion<Node>,
-    site: readonly Node[]
+    at: readonly Node[]
   ): Completion<Node> => {
-    const marks = site.flatMap((node) =>
+    const marks = at.flatMap((node) =>
       pending(node).filter(
         (mark) => mark.kind === 'insert' && decisionOf(mark) === 'keep'
       )
@@ -1315,13 +1523,16 @@ export const resolveAuthoredChildren = (
       children: completion.children.map((node) => marked.get(node) ?? node),
     };
   };
-  // Each element at its final placement, children first.
+  // Each element at its final placement, children first. Only the given
+  // children are a part of their list; each element below them holds all of
+  // its own children.
   const completeLevel = (
     level: readonly Node[],
-    site: readonly Node[],
+    at: readonly Node[],
     startLevel: readonly Node[],
     changed: boolean,
-    dirty: readonly number[]
+    dirty: readonly number[],
+    listPart?: ListPart
   ): readonly Node[] => {
     let copy: Node[] | null = null;
 
@@ -1330,7 +1541,7 @@ export const resolveAuthoredChildren = (
       const original = origins.get(node) as Node | undefined;
       const completed = completeLevel(
         node.children ?? [],
-        [node, ...site],
+        [node, ...at],
         original?.children ?? [],
         touched.has(node),
         dirtyChildren.get(node) ?? []
@@ -1347,19 +1558,24 @@ export const resolveAuthoredChildren = (
 
     const start = startOccupants(startLevel, isInserted);
     const completeHere = (items: readonly Node[]) =>
-      complete(items, site, startLevel, (slot, candidate) =>
-        vacatesSlot(
-          start,
-          slot,
-          origins.get(candidate) ?? candidate,
-          isInserted
-        )
+      complete(
+        items,
+        at,
+        startLevel,
+        (slot, candidate) =>
+          vacatesSlot(
+            start,
+            slot,
+            origins.get(candidate) ?? candidate,
+            isInserted
+          ),
+        listPart
       );
-    const completion = underInsertions(completeHere(nodes), site);
-    const slots = contentOf(site[0] ? typeOf(site[0]) : null)?.prefix ?? 0;
+    const completion = underInsertions(completeHere(nodes), at);
+    const slots = contentOf(at[0] ? typeOf(at[0]) : null)?.prefix ?? 0;
 
     if (completion.built.length > 0) {
-      waitOnBuild(nodes, site);
+      waitOnBuild(nodes, at);
     }
     if (slots > 0) {
       waitOnPrefix(nodes, completion, start, completeHere, slots);
@@ -1368,13 +1584,28 @@ export const resolveAuthoredChildren = (
     return mergeTextsWithEqualProps(completion.children);
   };
 
-  const top = resolveList(children, null, []);
+  const top = resolveList(
+    children,
+    site[0] ? typeOf(site[0]) : null,
+    site.slice(1).flatMap((node) => typeOf(node) ?? []),
+    []
+  );
+  // A line merged into a joined line shows only the content it keeps there.
+  const placements = placementsOf(
+    children,
+    moves as readonly AuthoredPlacement[],
+    (node) =>
+      (shown.has(node) && !unwrapped.has(node)) ||
+      (mergedInto.has(node) &&
+        (node.children ?? []).some((child) => shown.has(child)))
+  );
   const resolvedChildren = completeLevel(
     top.list,
-    [],
+    site,
     children,
     top.changed || top.list.length < (part?.min ?? 0),
-    top.dirty
+    top.dirty,
+    part
   );
   // Indexed from the final tree, so a node a later merge replaced is not
   // reported.
@@ -1389,23 +1620,158 @@ export const resolveAuthoredChildren = (
 
     return index;
   };
+  const resolvedOf = (original: unknown) => {
+    if (typeof original !== 'object' || original === null) return null;
+
+    resolvedNodes ??= indexResolved(new Map(), resolvedChildren);
+
+    return resolvedNodes.get(original) ?? null;
+  };
+
+  for (const node of removed ?? []) hidden.add(node);
 
   return {
     blockers: [...waits],
     children: resolvedChildren as readonly JsonNode[],
     decided: [...decided],
     diagnostics,
+    hidden:
+      hidden.size > 0
+        ? hiddenBlocksOf(given, hidden, {
+            lines: [
+              ...[...mergedBlocks].map(([into, merged]) => ({
+                first: into,
+                head: standingOf(into),
+                last: merged,
+              })),
+              ...[...standsFor].map(([target, line]) => ({
+                first: target,
+                head: standingOf(line),
+                last: movedWith(target).slice(1),
+              })),
+            ],
+            resolved: resolvedChildren,
+            resolvedOf,
+            shows: (node) => shown.has(node) && !unwrapped.has(node),
+          })
+        : [],
     landed: [...landings.values()],
-    reordered: reorders,
-    resolvedOf: (original) => {
-      if (typeof original !== 'object' || original === null) return null;
-
-      resolvedNodes ??= indexResolved(new Map(), resolvedChildren);
-
-      return (resolvedNodes.get(original) as JsonNode | undefined) ?? null;
-    },
+    placements,
+    resolvedOf: (original) => resolvedOf(original) as JsonNode | null,
     unplaceable,
   };
+};
+
+type Line = Readonly<{ first: Node; head: Node; last: readonly Node[] }>;
+
+/**
+ * Which shown block each block a decision hides whole collapses into. A
+ * block stored between the pieces of a joined line collapses into that line,
+ * unless a shown element holds the block and not the line's first piece, as
+ * an emptied quote the line's pieces pass over does. Any other block
+ * collapses into its nearest shown ancestor.
+ */
+const hiddenBlocksOf = (
+  given: readonly JsonNode[],
+  hidden: ReadonlySet<Node>,
+  {
+    lines,
+    resolved,
+    resolvedOf,
+    shows,
+  }: Readonly<{
+    lines: readonly Line[];
+    resolved: readonly Node[];
+    resolvedOf: (original: unknown) => Node | null;
+    shows: (node: Node) => boolean;
+  }>
+): AuthoredHiddenBlock[] => {
+  type Place = { at: number; end: number; parent: Node | null; path: number[] };
+  const places = new Map<Node, Place>();
+  let count = 0;
+  const walk = (
+    nodes: readonly Node[],
+    parent: Node | null,
+    path: readonly number[]
+  ) => {
+    for (const [index, node] of nodes.entries()) {
+      if (isText(node)) continue;
+
+      const place = { at: count, end: 0, parent, path: [...path, index] };
+
+      count += 1;
+      places.set(node, place);
+      walk(node.children ?? [], node, place.path);
+      place.end = count - 1;
+    }
+  };
+
+  walk(given, null, []);
+
+  const spans = lines.flatMap(({ first, head, last }) => {
+    const start = places.get(first);
+
+    return start
+      ? [
+          {
+            first,
+            head,
+            start: start.at,
+            to: Math.max(...last.map((node) => places.get(node)?.at ?? -1)),
+          },
+        ]
+      : [];
+  });
+  let outputPaths: Map<Node, readonly number[]> | null = null;
+  const outputPathOf = (node: Node) => {
+    if (!outputPaths) {
+      const paths = new Map<Node, readonly number[]>();
+      const index = (nodes: readonly Node[], path: readonly number[]) => {
+        for (const [at, child] of nodes.entries()) {
+          if (isText(child)) continue;
+          paths.set(child, [...path, at]);
+          index(child.children ?? [], [...path, at]);
+        }
+      };
+
+      index(resolved, []);
+      outputPaths = paths;
+    }
+
+    const output = resolvedOf(node);
+
+    return (output && outputPaths.get(output)) ?? null;
+  };
+
+  return [...hidden].flatMap((node) => {
+    const place = places.get(node);
+
+    if (!place) return [];
+
+    let container = place.parent;
+
+    while (container && !shows(container)) {
+      container = places.get(container)?.parent ?? null;
+    }
+
+    const box = container ? places.get(container) : undefined;
+    let owner = container;
+    let from = -1;
+
+    for (const line of spans) {
+      if (
+        (line.first === node ||
+          (line.start < place.at && place.at < line.to)) &&
+        line.start > from &&
+        (!box || (box.at < line.start && line.start <= box.end))
+      ) {
+        owner = line.head;
+        from = line.start;
+      }
+    }
+
+    return [{ at: place.path, owner: owner && outputPathOf(owner) }];
+  });
 };
 
 const CONTENT_AND_ENCLOSURE_KINDS: ReadonlySet<AuthoredMark['kind']> = new Set([

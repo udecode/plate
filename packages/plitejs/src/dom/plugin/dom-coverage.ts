@@ -14,15 +14,8 @@ import {
   hasPath as editorHasPath,
   getSnapshot,
 } from '../../interfaces/editor';
-import {
-  type DOMElement,
-  type DOMPoint,
-  type DOMRange,
-  isDOMElement,
-} from '../utils/dom';
+import { type DOMElement, type DOMPoint, isDOMElement } from '../utils/dom';
 import { IS_COMPOSING } from '../utils/weak-maps';
-import { resolveDOMPointInRoot, resolveDOMRangeInRoot } from './dom-editor';
-import type { DOMEditor as DOMEditorType } from './with-dom';
 
 export const DOM_COVERAGE_BOUNDARY_ATTRIBUTE =
   'data-editor-dom-coverage-boundary';
@@ -84,22 +77,8 @@ export interface DOMCoverageBoundary {
   version: number;
 }
 
-/** Plite-to-DOM point conversion result that can stop at a boundary. */
-export type DOMCoverageDOMPointResult =
-  | { domPoint: DOMPoint; type: 'dom-point' }
-  | { boundary: DOMCoverageBoundary; point: Point; type: 'boundary' };
-
 /** Boundary edge used when a DOM point maps back to Plite. */
 export type DOMCoverageBoundaryEdge = 'anchor' | 'focus' | 'owner';
-
-/** Plite-to-DOM range conversion result that can stop at covered ranges. */
-export type DOMCoverageDOMRangeResult =
-  | { domRange: DOMRange; type: 'dom-range' }
-  | {
-      boundaries: readonly DOMCoverageBoundary[];
-      range: ModelRange;
-      type: 'boundary-range';
-    };
 
 /** DOM-to-Plite point conversion result for native boundary DOM. */
 export type DOMCoveragePointResult =
@@ -745,56 +724,6 @@ export const createDOMCoverageSession = (
       return () => {
         registry.materializeHandlers.delete(handlerId);
       };
-    },
-
-    /**
-     * Resolve a Plite point to mounted DOM or to the covering boundary, or
-     * `null` when neither answers.
-     */
-    resolveDOMPointOrBoundary(point: Point): DOMCoverageDOMPointResult | null {
-      const boundary = coverage.getBoundaryForPoint(point);
-
-      if (boundary) {
-        return {
-          boundary,
-          point,
-          type: 'boundary',
-        };
-      }
-
-      const domPoint = resolveDOMPointInRoot(
-        editor as DOMEditorType<any>,
-        point,
-        getRoot?.()
-      );
-
-      return domPoint ? { domPoint, type: 'dom-point' } : null;
-    },
-
-    /**
-     * Resolve a Plite range to mounted DOM or to covered boundary ranges, or
-     * `null` when neither answers.
-     */
-    resolveDOMRangeOrBoundary(
-      range: ModelRange
-    ): DOMCoverageDOMRangeResult | null {
-      const boundaries = coverage.getBoundariesForRange(range);
-
-      if (boundaries.length > 0) {
-        return {
-          boundaries,
-          range,
-          type: 'boundary-range',
-        };
-      }
-
-      const domRange = resolveDOMRangeInRoot(
-        editor as DOMEditorType<any>,
-        range,
-        getRoot?.()
-      );
-
-      return domRange ? { domRange, type: 'dom-range' } : null;
     },
 
     /** Resolve native boundary DOM back to the Plite point it represents. */

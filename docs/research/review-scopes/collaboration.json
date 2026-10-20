@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Local and remote changes must preserve transaction and selection identity laws before provider policy is compared.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Collaboration correctness constrains authored changes, history and document identity."
-  },
   "owners": [
     "packages/plitejs/src/yjs/"
   ],

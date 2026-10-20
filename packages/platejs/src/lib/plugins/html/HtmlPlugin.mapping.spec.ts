@@ -1575,6 +1575,117 @@ describe('compilePlateHtmlFormat', () => {
     );
   });
 
+  it.each([
+    [
+      'an attribute',
+      (element: HTMLElement) => element.removeAttribute('style'),
+    ],
+    ['a child', (element: HTMLElement) => element.firstChild?.remove()],
+  ])('reports a decode that changes %s of its element', (_label, mutate) => {
+    const reports: unknown[] = [];
+    const MutatingPlugin = definePlugin('mutatingMark', {
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: ({ element }) => {
+              mutate(element);
+
+              return true;
+            },
+            decodeOnly: true,
+            match: [{ tag: 'mark' }],
+          },
+        }),
+    });
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => reports.push(error),
+      plugins: [MutatingPlugin],
+    });
+    const input = new DataTransfer();
+
+    input.setData(
+      'text/html',
+      '<p><mark style="color: red">a<b>b</b></mark></p>'
+    );
+    editor.api.dom.clipboard.insertData(input);
+
+    expect(reports).toHaveLength(1);
+    expect((reports[0] as any).cause.cause.message).toContain(
+      'decode must not mutate its element'
+    );
+  });
+
+  it('keeps a decoded default whose meaning depends on where it lands', () => {
+    const quoted = target.and(
+      target.type('paragraph'),
+      target.parent(target.type('quote'))
+    );
+    const QuotePlugin = definePlugin('quote', {
+      schema: {
+        element: {
+          content: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+      },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: () => ({}),
+            encode: ({ children }) => ({ children, tag: 'blockquote' }),
+            match: [{ tag: 'blockquote' }],
+          },
+        }),
+    });
+    const PlainFlagPlugin = definePlugin('plainFlag', {
+      schema: {
+        properties: {
+          flag: schema.textProperty(
+            property.boolean({ default: false, omitDefault: true }),
+            { target: target.and(target.type('paragraph'), target.not(quoted)) }
+          ),
+        },
+      },
+      formats: ({ defineFormats }) =>
+        defineFormats({
+          html: {
+            decode: () => false,
+            encode: () => ({ tag: 'span' }),
+            match: [{ tag: 'span' }],
+          },
+        }),
+    });
+    const QuotedFlagPlugin = definePlugin('quotedFlag', {
+      schema: {
+        properties: {
+          flag: schema.textProperty(
+            property.boolean({ default: true, omitDefault: true }),
+            { target: quoted }
+          ),
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [QuotePlugin, PlainFlagPlugin, QuotedFlagPlugin],
+    });
+
+    expect(
+      parseHtmlSliceContent(
+        editor,
+        '<blockquote><p><span>x</span></p></blockquote>'
+      )
+    ).toEqual([
+      {
+        children: [
+          { children: [{ flag: false, text: 'x' }], type: 'paragraph' },
+        ],
+        type: 'quote',
+      },
+    ]);
+  });
+
   it('throws when direct compiled decode violates its schema contract', () => {
     const reports: unknown[] = [];
     let validations = 0;

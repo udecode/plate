@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -27,9 +28,9 @@ export const input = (
 );
 export const output = (
   <editor>
-    <block>woone</block>
-    <block>two</block>
     <block>
+      woone
+      <block>two</block>
       three
       <cursor />
       rd

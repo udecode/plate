@@ -203,8 +203,7 @@ export const dispatchPluginUpdate = (
             return located !== null;
           };
         },
-        undefined,
-        () => decidedRoot
+        { targetRoot: () => decidedRoot }
       )
     );
     if (framed !== null) return result;

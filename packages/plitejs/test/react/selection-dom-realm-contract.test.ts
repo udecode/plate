@@ -45,12 +45,11 @@ const createInputController = () =>
 const importWebKitSelectionModules = async () => {
   vi.resetModules();
 
-  const [selectionController, selectionReconciler, reactEditor] =
-    await Promise.all([
-      import('../../src/react/editable/selection-controller'),
-      import('../../src/react/editable/selection-reconciler'),
-      import('../../src/react/plugin/react-editor'),
-    ]);
+  const [selectionController, selectionReconciler, reactEditor] = [
+    await import('../../src/react/editable/selection-controller'),
+    await import('../../src/react/editable/selection-reconciler'),
+    await import('../../src/react/plugin/react-editor'),
+  ];
 
   return {
     applyEditableDOMSelectionChange:

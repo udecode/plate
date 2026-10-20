@@ -1256,6 +1256,26 @@ describe('JSON document change algebra', () => {
     assert.equal(firstIndex.pathOf(secondKey), null);
   });
 
+  it('keeps a prepared replacement token-free when composed after a removal', () => {
+    const before = DocumentIndex.fromValue(
+      asJsonNodes([paragraph('a'), paragraph('b'), paragraph('c')])
+    );
+    const removal = RootChange.create(before, { from: 5, to: 10 });
+    const middle = removal.apply(before);
+    const inserted = asJsonNodes([paragraph('x'), paragraph('y')]);
+    const slice = PreparedTokenSlice.fromPreparedNodes(inserted);
+    const replacement = RootChange.create(middle, {
+      from: 0,
+      insert: slice,
+      to: middle.length,
+    });
+    const after = removal.compose(replacement).apply(before);
+
+    assert.equal(after.node([0]), inserted[0]);
+    assert.equal(after.node([1]), inserted[1]);
+    assert.equal(hasMaterializedDocumentSliceTokens(slice), false);
+  });
+
   it('keeps prepared structural slices token-free through runtime publication', () => {
     const before = DocumentIndex.fromValue(asJsonNodes([paragraph('before')]));
     const inserted = asJsonNodes([paragraph('inserted')]);

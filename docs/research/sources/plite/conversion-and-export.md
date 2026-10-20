@@ -88,7 +88,7 @@
 
 ## DOCX proof limits
 
-- The DOCX package roundtrip test normalizes link URLs, and its inline formatting case asserts only that the reimported document has children (apps/www/src/__tests__/package-integration/docx.roundtrip.slow.tsx:102-129, checked 2026-10-08), so it does not show that formatting survives a round trip (docs/plite/research/2026-09-14-docx-interoperability-oss/shards/plate-audit.md:97).
+- The DOCX package roundtrip test normalizes link URLs, and its inline formatting case asserts only that the reimported document has children (apps/www/src/__tests__/package-integration/docx.roundtrip.spec.tsx:102-129, checked 2026-10-08), so it does not show that formatting survives a round trip (docs/plite/research/2026-09-14-docx-interoperability-oss/shards/plate-audit.md:97).
 
 ## Formats without an exporter
 

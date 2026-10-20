@@ -1,6 +1,7 @@
 import { ElementApi } from 'plitejs';
 
 import { jsx } from '../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import {
   getChildren as editorGetChildren,

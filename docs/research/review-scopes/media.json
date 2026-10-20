@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Persisted media and caption values depend on the canonical document contract; upload lifetime is contextual.",
-  "last": false,
-  "opportunity": {
-    "score": 8,
-    "reason": "Many UI variants share upload and node-lifetime laws but retain distinct user interactions."
-  },
   "owners": [
     "packages/platejs/src/features/media/"
   ],

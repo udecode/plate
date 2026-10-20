@@ -1,4 +1,5 @@
 import { edges as editorEdges } from '../../../../src/internal';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 
 export const input = (

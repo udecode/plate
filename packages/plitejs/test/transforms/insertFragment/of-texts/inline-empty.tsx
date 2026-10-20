@@ -1,3 +1,4 @@
+/** @jsxRuntime classic */
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -19,17 +20,15 @@ export const input = (
     </block>
   </editor>
 );
-// Current policy: text fragments inserted inside empty inline text land at the
-// surrounding block text level.
 export const output = (
   <editor>
     <block>
       <text />
       <inline>
-        <text />
+        fragment
+        <cursor />
       </inline>
-      fragment
-      <cursor />
+      <text />
     </block>
   </editor>
 );

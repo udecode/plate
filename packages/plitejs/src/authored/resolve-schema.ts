@@ -42,8 +42,8 @@ export const authoredResolveSchemaOf = (
 
   const schema = getEditorSchema(editor);
   const resolve: AuthoredResolveSchema = {
-    canonicalizeTextProperties: (props, path, root, key) =>
-      schema.canonicalizeTextPropertiesAt(props, [...path], root, key),
+    canonicalizeTextProperties: (props, types, root, key) =>
+      schema.canonicalizeTextPropertiesIn(props, types, root, key),
     complete: (children, site, root, vacated, part) => {
       const completion = completeChildrenAt(
         editor,
@@ -73,6 +73,7 @@ export const authoredResolveSchemaOf = (
       return content
         ? {
             allowsText: content.allowsText,
+            max: content.max,
             min: content.min,
             prefix: content.prefix?.length ?? 0,
           }

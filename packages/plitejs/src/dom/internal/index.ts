@@ -15,8 +15,6 @@ export type {
   DOMCoverageBoundaryEdge,
   DOMCoverageBoundaryState,
   DOMCoverageCopyPolicy,
-  DOMCoverageDOMPointResult,
-  DOMCoverageDOMRangeResult,
   DOMCoverageMaterializeHandler,
   DOMCoverageMaterializeRangeRole,
   DOMCoverageMaterializeReason,
@@ -109,6 +107,7 @@ export {
   setDOMTextFlowRecordIndexes,
   setDOMTextFlowIndex,
 } from '../plugin/dom-text-flow-index';
+export { auditDOMTextProofs } from '../plugin/dom-text-proofs';
 export type {
   DOMPhase,
   DOMPhaseScheduleOptions,

@@ -2,6 +2,8 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import { BUN_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
+
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
 const touches =
@@ -9,7 +11,6 @@ const touches =
   (files) =>
     files.some((file) => prefixes.some((prefix) => file.startsWith(prefix)));
 const never = () => false;
-const SLOW_FILE_RE = /\.slow\.(?:test\.mjs|tsx?)$/;
 
 // A change to one of these can reach every step, so --affected runs them all.
 const GLOBAL_PATHS = [
@@ -48,19 +49,16 @@ export const steps = [
   {
     name: 'test',
     run: 'pnpm test',
-    affected: touches(
-      '.agents/rules/',
-      'apps/',
-      'benchmarks/',
-      'content/',
-      'packages/',
-      'tooling/'
-    ),
-  },
-  {
-    name: 'test-slow',
-    run: 'pnpm test:slow',
-    affected: (files) => files.filter((file) => SLOW_FILE_RE.test(file)),
+    // Bun ignores the www Playwright specs, so editing one cannot change this step.
+    affected: (files) =>
+      touches(
+        '.agents/rules/',
+        'apps/',
+        'benchmarks/',
+        'content/',
+        'packages/',
+        'tooling/'
+      )(files.filter((file) => !file.startsWith('apps/www/tests/browser/'))),
   },
   {
     name: 'plite-test',
@@ -76,7 +74,7 @@ export const steps = [
   { name: 'public-types', run: 'pnpm plite:public-types' },
   {
     name: 'cli-test',
-    run: 'pnpm --filter @platejs/cli test',
+    run: `pnpm --filter @platejs/cli run test --timeout=${BUN_TEST_TIMEOUT_MS}`,
     // The CLI tests compile editors against platejs source, which builds on plitejs.
     affected: touches(
       'packages/cli/',
@@ -169,7 +167,7 @@ export const manualOnly = {
   'check:plite:browser-matrix':
     'Runs the full browser matrix, which plite-ci.yml runs on workflow_dispatch.',
   'check:plite:contracts':
-    'Runs tooling contract tests that the test and test-slow steps already run.',
+    'Runs tooling contract tests that the test step already runs.',
   'check:plite:dev': 'Plans Plite proof from changed paths for plite-ci.yml.',
   'check:plite:packages':
     'Runs plite:typecheck, plite:test and check:plite:contracts, which other steps cover.',
@@ -190,8 +188,7 @@ export const manualOnly = {
     'templates/** is CI-generated output; ci-templates.yml builds it.',
   'templates:test':
     'Installs registry items into templates/**, which CI generates.',
-  'test:all': 'Runs the test and test-slow steps as one command.',
-  'test:coverage': 'Reports coverage for the fast suite; it gates nothing.',
+  'test:coverage': 'Reports coverage for the root suite; it gates nothing.',
   'test:deferred':
     'Runs quarantined __deferred__ specs, which are kept out of every gate.',
   'test:mobile-device-proof': 'Needs a connected phone or emulator.',

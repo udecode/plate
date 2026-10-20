@@ -576,13 +576,19 @@ const projectionIndexes = (editor: Editor) => {
 
 export const getEditorProjectionSnapshotIndex = (
   editor: Editor,
-  children: readonly Descendant[]
+  children: ChildrenSource
 ): SnapshotIndex => {
   const indexes = projectionIndexes(editor);
-  const nodes = DocumentIndex.nodesOf(children);
+  const nodes =
+    children instanceof DocumentIndex
+      ? children.nodes
+      : DocumentIndex.nodesOf(children);
   let index = indexes.get(nodes);
   if (!index) {
-    index = buildSnapshotIndex(getEditorRuntimeOwner(editor), children);
+    index = buildSnapshotIndex(
+      getEditorRuntimeOwner(editor),
+      childrenOf(children)
+    );
     indexes.set(nodes, index);
   }
   return index;
@@ -2897,7 +2903,7 @@ const getChildrenSource = (editor: Editor): ChildrenSource => {
   if (projection) {
     const root = getCurrentChildrenRoot(editor);
     return root === MAIN_ROOT_KEY
-      ? projection.children
+      ? (lazyRootOf(projection, 'children') ?? projection.children)
       : (projection.roots?.[root] ?? EMPTY_CHILDREN);
   }
   const context = getTransactionSpecContext(editor);
@@ -8674,16 +8680,16 @@ export const applyTransactionSpec = <V extends Value>(
   if (!isInTransaction(editor)) {
     throw new Error('Transaction specs can only be applied during dispatch.');
   }
-  const framedOn = FRAMED_SPECS.get(spec);
+  const framed = FRAMED_SPECS.get(spec);
 
-  if (framedOn && !COMMAND_FRAMES.has(editor)) {
+  if (framed && !COMMAND_FRAMES.has(editor)) {
     const applied = runInEditorCommandFrame(
       editor,
       () => () => {
         applyTransactionSpecContents(editor, spec);
         return true;
       },
-      framedOn
+      framed
     );
 
     if (applied === null) {
@@ -9497,18 +9503,20 @@ export const getSnapshot = (editor: Editor): EditorSnapshot => {
     ) {
       return previous;
     }
-    const children = getChildren(editor);
+    const children = getChildrenSource(editor);
     let index: SnapshotIndex | undefined;
-    const snapshot: EditorSnapshot = Object.freeze({
-      children,
-      selection,
-      version,
-      get index() {
-        return (index ??= getEditorProjectionSnapshotIndex(editor, children));
-      },
+    const snapshot: Record<string, unknown> = { selection, version };
+
+    setRoot(snapshot, 'children', children);
+    Object.defineProperty(snapshot, 'index', {
+      enumerable: true,
+      get: () => (index ??= getEditorProjectionSnapshotIndex(editor, children)),
     });
-    snapshots.set(root, snapshot);
-    return snapshot;
+
+    const frozen = Object.freeze(snapshot) as unknown as EditorSnapshot;
+
+    snapshots.set(root, frozen);
+    return frozen;
   }
   const cached = getCachedSnapshot(editor);
 
@@ -11075,18 +11083,22 @@ export const runEditorTransaction = <R>(
 
         const correct = () => {
           profileCoreDuration('transaction-correct', () => {
-            const framed = runInEditorCommandFrame(editor, (place) => {
-              const seed = {
-                change: activeChange,
-                place: (path: Path) => place.location(path),
-              };
+            const framed = runInEditorCommandFrame(
+              editor,
+              (place) => {
+                const seed = {
+                  change: activeChange,
+                  place: (path: Path) => place.location(path),
+                };
 
-              return () => {
-                correctDocument(editor, { force: false, root, seed });
+                return () => {
+                  correctDocument(editor, { force: false, root, seed });
 
-                return true;
-              };
-            });
+                  return true;
+                };
+              },
+              { ignoresSelection: true }
+            );
 
             if (framed === null) {
               correctDocument(editor, {

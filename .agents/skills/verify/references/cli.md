@@ -3,7 +3,7 @@
 Use this recipe for the current local generate/check flow. It proves neither
 packed distribution nor generated-type compilation. Add those owners' checks
 only when the claim requires them. `packages/cli/src/bin.ts` owns the command
-and flag inventory. Generation/watch/scaffolding fixtures live in
+and flag inventory. Generation and scaffolding fixtures live in
 `packages/cli/test/generate.test.ts`; document migrations use
 `packages/cli/test/run-migration.test.ts`. Dependency utility fixtures live
 under `packages/cli/src/deps` and do not replace a real `deps` command drive.
@@ -67,26 +67,8 @@ multi-entry fixtures. A TSX fixture containing JSX needs React, including
 `react/jsx-runtime`, installed in that consumer; source aliases alone do not
 supply its runtime dependency. Confirm unchanged outputs keep their modification
 times, one changed entry leaves its sibling untouched, and an invalid batch
-preserves all last-good outputs. Duplicate entries, output collisions and
-`--check --watch` use their existing rejection fixtures.
-
-## Watch a consumer
-
-Run `generate editor.ts second-editor.ts --watch` in an owned foreground
-session. Wait for its initial generation and watch-ready output, then change
-only the first fixture's schema version. Verify that only its generated pair
-changes. Use the imported dependency, ambient type and tsconfig fixtures when
-those input classes are in scope.
-
-Introduce the existing invalid-dependency or missing-entry condition. Confirm
-the watcher reports the failure while retaining the last-good outputs; restore
-the input and observe successful generation in the same session. An entry
-missing before startup is a different error and does not start a watcher.
-
-While it is healthy, verify unchanged one-shot generation can run and another
-watcher cannot acquire the same outputs. Stop owned sessions with SIGINT or
-SIGTERM and check their corresponding exit codes, child cleanup and ownership
-release. Retain evidence before removing the private cache.
+preserves all last-good outputs. Duplicate entries and output collisions use
+their existing rejection fixtures.
 
 ## Scaffold and run migrations
 

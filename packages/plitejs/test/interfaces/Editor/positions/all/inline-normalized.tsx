@@ -1,4 +1,5 @@
 import { jsx } from '../../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { range as editorRange } from '../../../../../src/internal';
 import { positions as editorPositions } from '../../../../../src/testing';

@@ -3,11 +3,6 @@
   "title": "Strict DOM lookups with no internal caller",
   "question": "Should DOMCoverage keep resolveDOMPointOrBoundary and resolveDOMRangeOrBoundary with no production caller, and should the strict findDocumentOrShadowRoot carry an assert name now that runtime code calls only resolveDocumentOrShadowRoot?",
   "dependsOn": [],
-  "last": false,
-  "opportunity": {
-    "score": 4,
-    "reason": "A bounded naming and deletion question on public DOM lookups; runtime code already uses the soft forms."
-  },
   "owners": [
     "packages/plitejs/src/dom/plugin/dom-coverage.ts",
     "packages/plitejs/src/dom/plugin/dom-editor.ts"

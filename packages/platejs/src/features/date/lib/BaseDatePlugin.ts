@@ -7,7 +7,14 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
-import { normalizeDateValue, parseCanonicalDateValue } from './dateValue';
+import { formatDateValue, parseCanonicalDateValue } from './dateValue';
+import { parseLegacyDateValue } from './legacyDateValue.internal';
+
+const readDateText = (text: string) => {
+  const trimmed = text.trim();
+
+  return parseLegacyDateValue(trimmed) ?? trimmed;
+};
 
 export const BaseDatePlugin = definePlugin(PLUGINS.date, {
   formats: ({ defineFormats, schema: { type } }) =>
@@ -15,17 +22,20 @@ export const BaseDatePlugin = definePlugin(PLUGINS.date, {
       markdown: {
         tag: type,
         decode: ({ node, readTagAttributes }) => {
-          const props = readTagAttributes().properties;
+          const { attributes, properties } = readTagAttributes();
           const firstChild = node.children[0];
-          const dateValue =
-            typeof props.value === 'string'
-              ? props.value
-              : firstChild?.type === 'text'
-                ? firstChild.value
-                : '';
-          const value = normalizeDateValue(dateValue);
+          const value =
+            typeof attributes.text === 'string'
+              ? attributes.text
+              : readDateText(
+                  typeof properties.value === 'string'
+                    ? properties.value
+                    : firstChild?.type === 'text'
+                      ? firstChild.value
+                      : ''
+                );
 
-          if (!value) return undefined;
+          if (!value.trim()) return undefined;
 
           return {
             children: [{ text: '' }],
@@ -33,19 +43,23 @@ export const BaseDatePlugin = definePlugin(PLUGINS.date, {
             value,
           };
         },
-        encode: ({ encodeAttributes, node }) => {
-          if (parseCanonicalDateValue(node.value)) {
+        encode: ({ encodeAttributes, node, preserve }) => {
+          const { value } = node;
+
+          if (parseCanonicalDateValue(value)) {
             return {
-              attributes: encodeAttributes({ value: node.value }),
+              attributes: encodeAttributes({ value }),
               children: [],
               name: type,
               type: 'mdxJsxTextElement',
             };
           }
 
+          preserve('value');
+
           return {
-            attributes: [],
-            children: [{ type: 'text', value: node.value }],
+            attributes: [{ name: 'text', type: 'mdxJsxAttribute', value }],
+            children: [],
             name: type,
             type: 'mdxJsxTextElement',
           };
@@ -71,19 +85,24 @@ export const BaseDatePlugin = definePlugin(PLUGINS.date, {
     insert: txLocate(
       locateAt(1),
       (
-        { value }: { value?: Date | string } = {},
+        { value = new Date() }: { value?: Date | string } = {},
         options: NodeInsertOptions = {}
       ) => {
-        const normalized = normalizeDateValue(value ?? new Date());
+        const stored =
+          value instanceof Date
+            ? Number.isNaN(value.getTime())
+              ? undefined
+              : formatDateValue(value)
+            : value.trim();
 
-        if (!normalized) return;
+        if (!stored) return;
 
         tx.nodes.insert(
           [
             {
               children: [{ text: '' }],
               type,
-              value: normalized,
+              value: stored,
             },
             { text: ' ' },
           ],

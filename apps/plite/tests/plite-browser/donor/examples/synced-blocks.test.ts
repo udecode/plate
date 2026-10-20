@@ -2195,6 +2195,83 @@ test.describe('synced blocks example', () => {
     await outer.assert.noDoubleSelectionHighlight();
   });
 
+  for (const input of ['typing', 'pasting'] as const) {
+    test(`${input} over a Shift+click selection from the end of the paragraph before a synced copy replaces from that paragraph's end`, async ({
+      page,
+    }) => {
+      await openExample(page, 'plite/synced-blocks', {
+        ready: { editor: 'visible' },
+      });
+
+      const outerEditor = page.locator('[data-editor="true"]').first();
+      const outer = createBrowserEditorHarness(
+        page,
+        'synced-blocks-outer',
+        outerEditor
+      );
+      const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
+      const secondEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 1);
+      const from = outerEditor.getByText('p1', { exact: true });
+      const to = outerEditor.getByText('Between synced copies.', {
+        exact: true,
+      });
+      const fromBox = await from.boundingBox();
+      const toBox = await to.boundingBox();
+
+      if (!fromBox || !toBox) {
+        throw new Error('Cannot Shift+click from p1 into owner text');
+      }
+
+      await page.mouse.click(
+        fromBox.x + fromBox.width - 1,
+        fromBox.y + fromBox.height / 2
+      );
+      await expect
+        .poll(() => outer.selection.get())
+        .toEqual({
+          anchor: { path: [0, 0], offset: 'p1'.length },
+          focus: { path: [0, 0], offset: 'p1'.length },
+        });
+
+      await page.keyboard.down('Shift');
+      await page.mouse.click(
+        toBox.x + toBox.width * 0.45,
+        toBox.y + toBox.height / 2
+      );
+      await page.keyboard.up('Shift');
+
+      await expect
+        .poll(() => outer.selection.get())
+        .toMatchObject({
+          anchor: { path: [0, 0], offset: 'p1'.length },
+          focus: { path: [2, 0] },
+        });
+      await expect
+        .poll(() => getViewSelection(outerEditor))
+        .toMatchObject({
+          anchor: { point: { path: [0, 0], offset: 'p1'.length } },
+          focus: { point: { path: [2, 0] } },
+        });
+
+      if (input === 'typing') {
+        await page.keyboard.type('X');
+      } else {
+        await outer.clipboard.pasteText('X');
+      }
+
+      await expect(outerEditor.getByText('p1X', { exact: true })).toBeVisible();
+      await expect(outerEditor).not.toContainText('Between synced copies.');
+      await expect(firstEditor).not.toContainText('X');
+      await expect(secondEditor).not.toContainText('X');
+      await expect
+        .poll(() => outer.selection.get())
+        .toEqual({
+          anchor: { path: [0, 0], offset: 'p1X'.length },
+          focus: { path: [0, 0], offset: 'p1X'.length },
+        });
+    });
+  }
+
   test('typing over a projected Shift+Arrow selection replaces text across the outer and synced roots', async ({
     page,
   }) => {

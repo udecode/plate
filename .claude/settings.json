@@ -38,6 +38,11 @@
             "type": "command",
             "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/skills/cleanup/scripts/scan.mjs\" --brief --repo \"$CLAUDE_PROJECT_DIR\"",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/skills/contributor-setup/scripts/doctor.mjs ] || node .agents/skills/contributor-setup/scripts/doctor.mjs --hook; }",
+            "timeout": 30
           }
         ]
       }

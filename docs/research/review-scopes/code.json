@@ -7,11 +7,6 @@
     "native"
   ],
   "prerequisiteReason": "Canonical editing rules and native input ownership constrain code text behavior before syntax presentation is chosen.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Multiple removed code-line and external-text designs have concrete scale and browser evidence to reuse."
-  },
   "owners": [
     "packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts"
   ],

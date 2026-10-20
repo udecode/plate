@@ -3,7 +3,6 @@ import {
   BaseFontColorPlugin,
   BaseFontFamilyPlugin,
   BaseFontSizePlugin,
-  BaseFontWeightPlugin,
   BaseLineHeightPlugin,
   BaseTextAlignPlugin,
   BaseTextIndentPlugin,
@@ -16,7 +15,6 @@ export const FontBackgroundColorPlugin = toReactPlugin(
 export const FontColorPlugin = toReactPlugin(BaseFontColorPlugin);
 export const FontFamilyPlugin = toReactPlugin(BaseFontFamilyPlugin);
 export const FontSizePlugin = toReactPlugin(BaseFontSizePlugin);
-export const FontWeightPlugin = toReactPlugin(BaseFontWeightPlugin);
 export const LineHeightPlugin = toReactPlugin(BaseLineHeightPlugin);
 export const TextAlignPlugin = toReactPlugin(BaseTextAlignPlugin);
 export const TextIndentPlugin = toReactPlugin(BaseTextIndentPlugin);

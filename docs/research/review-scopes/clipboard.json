@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Transferred content must fit valid document changes and retain the selection intent established by rebasing.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Clipboard loss and mismatched fitting affect every structure and external format."
-  },
   "owners": [
     "packages/plitejs/src/core/content-slice.ts",
     "packages/plitejs/src/core/editor-read-execution.ts",

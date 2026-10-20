@@ -1,4 +1,5 @@
 import { jsx } from '../../..';
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import { isEdge as editorIsEdge } from '../../../../src/internal';
 import { getSnapshot as editorGetSnapshot } from '../../../../src/testing';

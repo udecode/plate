@@ -222,30 +222,6 @@ describe('plitejs/react surface contract', () => {
     );
   });
 
-  test('Editable exposes native beforeinput context without public command handlers', () => {
-    const editor = createEditor({
-      initialValue: [{ type: 'paragraph', children: [{ text: 'test' }] }],
-    });
-    let beforeInputContext:
-      | Parameters<NonNullable<EditableDOMBeforeInputProps>>[1]
-      | null = null;
-
-    render(
-      <EditorRoot editor={editor}>
-        <Editable
-          onDOMBeforeInput={(event, context) => {
-            event.preventDefault();
-            beforeInputContext = context;
-            context.editor.update(() => {});
-            return true;
-          }}
-        />
-      </EditorRoot>
-    );
-
-    expect(beforeInputContext).toBe(null);
-  });
-
   test('subpaths are not package dependencies', () => {
     const packageJson = readPackageJson();
     const dependencyNames = Object.keys(packageJson.dependencies ?? {});

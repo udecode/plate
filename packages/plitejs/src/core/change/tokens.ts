@@ -49,7 +49,6 @@ export type NodeKind = 'element' | 'text';
 
 export const PREPARED_SOURCE_TOKEN = Symbol('prepared-source-token');
 export const CLAIMED_PREPARED_SOURCES = new WeakSet<object>();
-export const PREPARED_TOKEN_NEXT = new WeakMap<JsonToken, JsonToken | null>();
 
 export const claimPreparedNodeSlice = (nodes: readonly JsonNode[]) => {
   const claimed: object[] = [];
@@ -72,7 +71,12 @@ export const claimPreparedNodeSlice = (nodes: readonly JsonNode[]) => {
 };
 
 export type OpenToken = {
-  [PREPARED_SOURCE_TOKEN]?: true;
+  // The encoding a prepared token came from. A weak map from each token to
+  // the next made JavaScriptCore's collector mark one token per pass.
+  [PREPARED_SOURCE_TOKEN]?: Readonly<{
+    index: number;
+    tokens: readonly JsonToken[];
+  }>;
   kind: 'open';
   nodeKind: NodeKind;
   props: Readonly<JsonRecord>;
@@ -803,7 +807,14 @@ export const encodeTrustedNodes = (
     const kind: NodeKind = isTextNode(node) ? 'text' : 'element';
     const openIndex = tokens.length;
     const open: OpenToken = {
-      ...(prepared ? { [PREPARED_SOURCE_TOKEN]: true as const } : {}),
+      ...(prepared
+        ? {
+            [PREPARED_SOURCE_TOKEN]: Object.freeze({
+              index: openIndex,
+              tokens,
+            }),
+          }
+        : {}),
       kind: 'open',
       nodeKind: kind,
       props: Object.freeze(nodeProps(node)),
@@ -830,10 +841,6 @@ export const encodeTrustedNodes = (
   };
 
   nodes.forEach(encode);
-
-  tokens.forEach((token, index) => {
-    PREPARED_TOKEN_NEXT.set(token, tokens[index + 1] ?? null);
-  });
 
   return tokens;
 };

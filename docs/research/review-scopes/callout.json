@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Callout and details nodes must compose valid document structure before interaction policy is assigned.",
-  "last": false,
-  "opportunity": {
-    "score": 5,
-    "reason": "These bounded node features are likely candidates for canonical schema/UI reuse."
-  },
   "owners": [
     "packages/platejs/src/features/callout/"
   ],

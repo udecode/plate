@@ -6,11 +6,6 @@
     "model"
   ],
   "prerequisiteReason": "Embedded canvas values and identity must fit the document contract before external-runtime interaction is chosen.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "Canvas serialization and focus ownership differ from source-to-diagram rendering."
-  },
   "owners": [
     "packages/platejs/src/excalidraw/"
   ],

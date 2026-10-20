@@ -17,6 +17,7 @@ import {
 } from 'plitejs';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
+import { readLedgerWork } from '../src/authored/ledger/work';
 import { probeCommandNativeEquivalent } from '../src/core/command-registry';
 import { withEditorTargetRuntime } from '../src/core/target-runtime';
 import { applyEditableCommand } from '../src/react/editable/mutation-controller';
@@ -1202,6 +1203,23 @@ describe('authored review tree commands', () => {
     start: [q(p('cd'), follower(p('ab')), joined(p('ef')), p('gh'))],
   });
   law({
+    accepted: [q(p('cdef'), p('abgh'), p('ij'))],
+    at: [[0, 1, 0], 2],
+    name: 'Delete at the end of a moved line merges the line after it when the next move lands after a struck line',
+    plainAt: [[0, 1, 0], 2],
+    run: del,
+    start: [
+      q(
+        p('cd'),
+        follower(p('ab')),
+        joined(p('ef')),
+        p('gh'),
+        follower(p('ij'), 'erin', '~edit:erin', 'dora:1'),
+        joined(p(struck('kl')), 'dora')
+      ),
+    ],
+  });
+  law({
     accepted: [p('h'), p('ab'), q(p('ij'))],
     at: [
       [[0, 0], 1],
@@ -1299,6 +1317,45 @@ describe('authored review tree commands', () => {
 
       assert.equal(textOf(line), 'aZb');
       assert.deepEqual((line.children as Node[]).at(-1), held('b'));
+    });
+
+    it(`a letter typed before a rejected move’s held letter adopts the written line, live and on a fresh load, in ${intent === 'edit' ? 'Editing' : 'Suggesting'}`, () => {
+      const editor = make(
+        [
+          p(''),
+          {
+            ...p('a', held('b')),
+            authored: [{ ...mark('split'), change: 'carol:2' }],
+          },
+          p('cd'),
+        ],
+        intent
+      );
+      const before = readLedgerWork();
+
+      drive(editor, [[1, 1], 0], type('Z'), 'update');
+      const work = readLedgerWork();
+
+      // The gate takes the frame's write for the held line's window.
+      assert.ok(work.writtenRuns > before.writtenRuns, 'no written run');
+      assert.equal(work.resolvedRuns - before.resolvedRuns, 0);
+      assert.deepEqual(
+        ((editor.read.children() as Node[])[1].children as Node[]).at(-1),
+        held('b')
+      );
+
+      const shown = (target: Editor) =>
+        (
+          createEditorView(target, {
+            authored: { preview: 'proposed' },
+          }).read.children() as Node[]
+        ).map(textOf);
+
+      assert.deepEqual(shown(editor), ['', 'aZb', 'cd']);
+      assert.deepEqual(
+        shown(make(editor.read.value().children as Node[], intent)),
+        ['', 'aZb', 'cd']
+      );
     });
   }
 
@@ -1598,21 +1655,6 @@ describe('authored review tree commands', () => {
           [[0, 3, 0], 1],
         ],
         fragment,
-      ],
-      [
-        'Delete at the end of a moved line whose next line ends at a break',
-        [
-          q(
-            p('cd'),
-            follower(p('ab')),
-            joined(p('ef')),
-            p('gh'),
-            follower(p('ij'), 'erin', '~edit:erin', 'dora:1'),
-            joined(p(struck('kl')), 'dora')
-          ),
-        ],
-        [[0, 1, 0], 2],
-        del,
       ],
       [
         'a block inserted at the end of a joined line with a line moved between its halves',

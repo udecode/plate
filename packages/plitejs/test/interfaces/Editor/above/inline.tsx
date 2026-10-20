@@ -1,5 +1,6 @@
 import { ElementApi } from 'plitejs';
 
+/** @jsxRuntime classic */
 /** @jsx jsx */
 import {
   above as editorAbove,

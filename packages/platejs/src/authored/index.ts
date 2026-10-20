@@ -1,4 +1,5 @@
 export {
+  AuthoredPlaceError,
   projectAuthoredDocument,
   projectAuthoredRange,
   proposeAuthoredComparison,

@@ -7,11 +7,6 @@
     "transactions"
   ],
   "prerequisiteReason": "Committed update semantics determine which state participates in durable change and which remains transient.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Competing stores and lifecycle meanings create recurring coordination across history and plugins."
-  },
   "owners": [
     "packages/plitejs/src/core/state-field.ts",
     "packages/plitejs/src/core/state-fields.ts",

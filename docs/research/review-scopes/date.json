@@ -6,18 +6,13 @@
     "model"
   ],
   "prerequisiteReason": "The document value contract determines persisted dates independently of locale formatting.",
-  "last": false,
-  "opportunity": {
-    "score": 4,
-    "reason": "A small inline value/presentation boundary with explicit serialization policy."
-  },
   "owners": [
     "packages/platejs/src/features/date/"
   ],
   "members": [
     "apps/www/src/registry/components/editor/date-static.spec.tsx",
     "apps/www/src/registry/components/editor/date-static.tsx",
-    "apps/www/src/registry/components/editor/date.slow.tsx",
+    "apps/www/src/registry/components/editor/date.spec.tsx",
     "apps/www/src/registry/components/editor/date.tsx",
     "apps/www/src/registry/components/editor/insert-toolbar-button.tsx",
     "apps/www/src/registry/components/editor/slash.tsx",

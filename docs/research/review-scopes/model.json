@@ -4,11 +4,6 @@
   "question": "What is the smallest schema-valid document and identity contract that all editors and codecs must preserve?",
   "dependsOn": [],
   "prerequisiteReason": "Document identity and validity are the starting laws for this queue.",
-  "last": false,
-  "opportunity": {
-    "score": 10,
-    "reason": "Document shape and stable identity constrain every operation, persisted value and feature."
-  },
   "owners": [
     "packages/plitejs/src/core/schema-definition.ts",
     "packages/plitejs/src/core/document-shape.ts",

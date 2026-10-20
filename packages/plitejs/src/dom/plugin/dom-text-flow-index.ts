@@ -522,6 +522,142 @@ export const resolveDOMTextFlowRecordDOMText = (
     .join('');
 };
 
+const DISPLAY_SUFFIXES = new Set(['', '\n', '\uFEFF']);
+
+const readDirectText = (element: Element) => {
+  let text = '';
+
+  for (const child of element.childNodes) {
+    if (child.nodeType === Node.TEXT_NODE) text += child.nodeValue ?? '';
+  }
+
+  return text;
+};
+
+const readDOMTextFlowRecord = (
+  record: DOMTextFlowRecord,
+  observed: DOMTextFlowSegment[]
+) => {
+  if (observed.length !== record.segments.length) return null;
+  let expectedStart = 0;
+  let text = '';
+
+  for (const [index, segment] of record.segments.entries()) {
+    const shift =
+      index > (record.shiftAfterSegment ?? Number.MAX_SAFE_INTEGER)
+        ? (record.shiftDelta ?? 0)
+        : 0;
+    const value = segment.stringElement
+      ? readDirectText(segment.stringElement)
+      : (segment.textNode.nodeValue ?? '');
+    const length = segment.end - segment.start;
+
+    if (
+      observed[index] !== segment ||
+      segment.start + shift !== expectedStart ||
+      value.length !== Math.max(segment.domLength, length) ||
+      !DISPLAY_SUFFIXES.has(value.slice(length)) ||
+      (segment.stringElement && segment.stringElement.textContent !== value)
+    ) {
+      return null;
+    }
+    text += value.slice(0, length);
+    expectedStart = segment.end + shift;
+  }
+
+  return text;
+};
+
+export const readDOMTextFlowKey = (host: HTMLElement, nodeKey: string) => {
+  const records = TEXT_HOST_TO_FLOW_INDEX.get(host)?.records;
+  const record =
+    records?.get(nodeKey)?.record ??
+    (records?.size === 1 ? records.values().next().value?.record : undefined);
+
+  if (!record) return undefined;
+  let previous: globalThis.Node | undefined;
+
+  for (const segment of record.segments) {
+    const node = segment.stringElement ?? segment.textNode;
+
+    if (
+      !host.contains(node) ||
+      (previous &&
+        !(
+          previous.compareDocumentPosition(node) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+        ))
+    ) {
+      return null;
+    }
+    previous = node;
+  }
+
+  return readDOMTextFlowRecord(record, [...record.segments]);
+};
+
+export const readDOMTextFlowHost = (host: HTMLElement) => {
+  const owners = new Map<
+    globalThis.Node,
+    { record: DOMTextFlowRecord; segment: DOMTextFlowSegment }
+  >();
+
+  for (const { record } of TEXT_HOST_TO_FLOW_INDEX.get(
+    host
+  )?.records.values() ?? []) {
+    for (const segment of record.segments) {
+      owners.set(segment.stringElement ?? segment.textNode, {
+        record,
+        segment,
+      });
+    }
+  }
+
+  const readStringOwner = (node: globalThis.Node) => {
+    const stringElement = node.parentElement?.closest<HTMLElement>(
+      '[data-editor-string], [data-editor-zero-width]'
+    );
+
+    return stringElement && host.contains(stringElement)
+      ? owners.get(stringElement)
+      : undefined;
+  };
+  const observed = new Map<DOMTextFlowRecord, DOMTextFlowSegment[] | null>();
+  let current: DOMTextFlowRecord | undefined;
+  const walker = host.ownerDocument.createTreeWalker(
+    host,
+    NodeFilter.SHOW_TEXT
+  );
+
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const owner = owners.get(node) ?? readStringOwner(node);
+
+    if (!owner) {
+      if ((node.nodeValue ?? '').replaceAll('\uFEFF', '') !== '') return null;
+      continue;
+    }
+    if (owner.record !== current) {
+      current = owner.record;
+      observed.set(
+        owner.record,
+        observed.has(owner.record) ? null : [owner.segment]
+      );
+      continue;
+    }
+
+    const segments = observed.get(owner.record);
+
+    if (segments && segments.at(-1) !== owner.segment) {
+      segments.push(owner.segment);
+    }
+  }
+
+  return [...observed].map(([record, segments]) => ({
+    nodeKey: record.nodeKey,
+    text: segments ? readDOMTextFlowRecord(record, segments) : null,
+  }));
+};
+
 export const resolveDOMTextFlowOffset = (
   host: HTMLElement,
   node: globalThis.Node,
@@ -639,4 +775,75 @@ export const resolveDOMTextFlowStringOffset = (
   const bounds = getBindingSegmentBounds(binding);
 
   return Math.max(bounds.start, Math.min(bounds.start + offset, bounds.end));
+};
+
+export type DOMTextFlowShape = readonly unknown[];
+
+const forEachShapeValue = (
+  host: HTMLElement,
+  nodeKey: string | undefined,
+  visit: (value: unknown) => boolean
+) => {
+  const records = TEXT_HOST_TO_FLOW_INDEX.get(host)?.records;
+  const keyed =
+    nodeKey === undefined
+      ? undefined
+      : (records?.get(nodeKey)?.record ??
+        (records?.size === 1 ? records.values().next().value?.record : null));
+  const selected =
+    nodeKey === undefined
+      ? [...(records?.values() ?? [])].map(({ record }) => record)
+      : keyed
+        ? [keyed]
+        : [];
+
+  if (!visit(selected.length)) return false;
+  for (const record of selected) {
+    if (
+      !visit(record.nodeKey) ||
+      !visit(record.segments.length) ||
+      !visit(record.shiftAfterSegment) ||
+      !visit(record.shiftDelta)
+    ) {
+      return false;
+    }
+    for (const segment of record.segments) {
+      if (
+        !visit(segment.start) ||
+        !visit(segment.end) ||
+        !visit(segment.domLength) ||
+        !visit(segment.stringElement) ||
+        !visit(segment.textNode)
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+export const captureDOMTextFlowShape = (
+  host: HTMLElement,
+  nodeKey?: string
+): DOMTextFlowShape => {
+  const shape: unknown[] = [nodeKey];
+
+  forEachShapeValue(host, nodeKey, (value) => shape.push(value) > 0);
+  return shape;
+};
+
+export const isDOMTextFlowShapeCurrent = (
+  host: HTMLElement,
+  shape: DOMTextFlowShape
+) => {
+  let index = 1;
+
+  return (
+    forEachShapeValue(host, shape[0] as string | undefined, (value) => {
+      const matches = shape[index] === value;
+
+      index += 1;
+      return matches;
+    }) && index === shape.length
+  );
 };

@@ -1,5 +1,4 @@
 const CANONICAL_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-const LEGACY_DATE_REGEX = /^[A-Z][a-z]{2} [A-Z][a-z]{2} \d{2} \d{4}$/;
 
 const isValidDate = (date: Date) => !Number.isNaN(date.getTime());
 
@@ -27,60 +26,4 @@ export const parseCanonicalDateValue = (value: string) => {
   }
 
   return parsed;
-};
-
-export const normalizeDateValue = (value?: Date | string) => {
-  if (value instanceof Date) {
-    if (!isValidDate(value)) return undefined;
-
-    return formatDateValue(value);
-  }
-
-  if (!value) return undefined;
-
-  const trimmed = value.trim();
-
-  if (!trimmed) return undefined;
-
-  if (CANONICAL_DATE_REGEX.test(trimmed)) {
-    return trimmed;
-  }
-
-  if (LEGACY_DATE_REGEX.test(trimmed)) {
-    const parsed = new Date(trimmed);
-
-    if (isValidDate(parsed)) return formatDateValue(parsed);
-  }
-
-  return trimmed;
-};
-
-const isSameCalendarDay = (a: Date, b: Date) =>
-  a.getFullYear() === b.getFullYear() &&
-  a.getMonth() === b.getMonth() &&
-  a.getDate() === b.getDate();
-
-export const getDateDisplayLabel = (
-  value: string,
-  { now = new Date() }: { now?: Date } = {}
-) => {
-  const parsed = parseCanonicalDateValue(value);
-
-  if (!parsed) return value;
-
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-
-  if (isSameCalendarDay(parsed, today)) return 'Today';
-  if (isSameCalendarDay(parsed, yesterday)) return 'Yesterday';
-  if (isSameCalendarDay(parsed, tomorrow)) return 'Tomorrow';
-
-  return parsed.toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
 };

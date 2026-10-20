@@ -6,11 +6,6 @@
     "selection"
   ],
   "prerequisiteReason": "Document identity and rebased references constrain footnote content and navigation.",
-  "last": false,
-  "opportunity": {
-    "score": 6,
-    "reason": "Reference identity and cross-document conversion need a coherent owner."
-  },
   "owners": [
     "packages/platejs/src/features/footnote/"
   ],
@@ -18,7 +13,7 @@
     "apps/www/src/registry/components/editor/footnote-static.tsx",
     "apps/www/src/registry/components/editor/footnote.combobox.spec.tsx",
     "apps/www/src/registry/components/editor/footnote.navigation.spec.tsx",
-    "apps/www/src/registry/components/editor/footnote.slow.tsx",
+    "apps/www/src/registry/components/editor/footnote.spec.tsx",
     "apps/www/src/registry/components/editor/footnote.tsx",
     "apps/www/src/registry/components/editor/markdown.spec.ts",
     "apps/www/src/registry/examples/values/footnote-value.tsx",

@@ -1179,14 +1179,14 @@ function leadSeats(entries) {
   }
   return [...byLead]
     .filter(([lead, seats]) => lead || seats.size)
-    .map(([lead, seats]) => ({ lead: lead ? seatList(lead)[0] : null, seats: [...seats.values()] }));
+    .map(([lead, seats]) => ({ lead: lead && lead !== 'unknown' ? seatList(lead)[0] : null, seats: [...seats.values()] }));
 }
 
 const leadSeatsHtml = (entries) =>
   leadSeats(entries)
     .map(
       ({ lead, seats }) =>
-        `${lead ? `<span class="round-tag"><span class="badge hue-grey">Lead</span><span class="seats">${seatChip(lead)}</span></span>` : ''}${seats.length ? `<span class="round-tag"><span class="badge hue-indigo">Reviews</span><span class="seats">${seats.map(({ seat, count }) => seatChip(seat, count)).join('')}</span></span>` : ''}`
+        `<span class="round-tag"><span class="badge hue-grey">Lead</span>${lead ? `<span class="seats">${seatChip(lead)}</span>` : ' unknown'}</span>${seats.length ? `<span class="round-tag"><span class="badge hue-indigo">Reviews</span><span class="seats">${seats.map(({ seat, count }) => seatChip(seat, count)).join('')}</span></span>` : ''}`
     )
     .join('');
 
@@ -2612,7 +2612,7 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
     plans: () => titled('Plans', entries.map((entry) => `- ${link(entry)}`)),
   };
   // The compare view is exactly the commits after the author's, so the comment never pastes code a reviewer can open there.
-  const range = since && (github ? [`[My commits after yours](https://github.com/${github.repo}/compare/${since}...${github.sha})`, ''] : [`My commits after \`${since}\``, '']);
+  const range = since && (github ? [`[My commits after yours](https://diffshub.com/${github.repo}/compare/${since}...${github.sha})`, ''] : [`My commits after \`${since}\``, '']);
   const region = [PR_START, ...models, '', ...(range || []), ...brief.flat(), ...BRIEF_ORDER.flatMap((key) => parts[key]?.() ?? []), PR_END]
     .join('\n')
     .replace(/\n{3,}/g, '\n\n');

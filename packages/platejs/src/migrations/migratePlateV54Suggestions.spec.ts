@@ -10,6 +10,7 @@ import {
 
 import { AuthoredPlugin, projectAuthoredDocument } from '../authored';
 import type { EditorDocumentValue } from '../facade';
+import { BaseTextAlignPlugin } from '../features/basic-styles/lib/BaseStylePlugins';
 import {
   defineDocumentMigrations,
   migrateDocument,
@@ -319,5 +320,69 @@ describe('migratePlateV54 legacy suggestions', () => {
       /current property "bold" does not match newProperties/
     );
     expect(JSON.stringify(document)).toBe(frozen);
+  });
+});
+
+describe('legacy suggestions the target must reject', () => {
+  it('refuses a pending removal of a weight the target does not declare', () => {
+    expect(() =>
+      migrateLegacy({
+        children: [
+          {
+            children: [
+              {
+                suggestion: true,
+                suggestion_weight: {
+                  createdAt: 1,
+                  id: 'weight',
+                  newProperties: {},
+                  properties: { fontWeight: '700' },
+                  type: 'update',
+                  userId: 'alice',
+                },
+                text: 'text',
+              },
+            ],
+            type: 'p',
+          },
+        ],
+      })
+    ).toThrow(/could not reject/);
+  });
+
+  it('converts a pending update of a declared element property', () => {
+    const plugins = [...migrationPlugins, BaseTextAlignPlugin] as const;
+    const migrated = migrateDocument(
+      {
+        children: [
+          {
+            children: [{ text: 'text' }],
+            suggestion: {
+              createdAt: 1,
+              id: 'align',
+              newProperties: { textAlign: 'center' },
+              properties: { textAlign: 'right' },
+              type: 'update',
+              userId: 'alice',
+            },
+            textAlign: 'center',
+            type: 'p',
+          },
+        ],
+      },
+      {
+        migrations: defineDocumentMigrations({
+          plugins,
+          schema: MigrationSchema,
+          steps: { 54: migrateV54 },
+        }),
+        source: 53,
+      }
+    ).output.document;
+
+    expect(
+      projectAuthoredDocument(migrated, { projection: 'accepted' }).document
+        .children[0]
+    ).toMatchObject({ textAlign: 'right' });
   });
 });

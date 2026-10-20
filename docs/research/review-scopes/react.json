@@ -8,11 +8,6 @@
     "reads"
   ],
   "prerequisiteReason": "The runtime owns mounted-view lifetime; canonical reads determine what React may subscribe to and render.",
-  "last": false,
-  "opportunity": {
-    "score": 9,
-    "reason": "Shared render ownership can remove repeated subscriptions and stale view work across features."
-  },
   "owners": [
     "packages/plitejs/src/react/components/plite.tsx",
     "packages/plitejs/src/react/hooks/use-plite-runtime.tsx",
@@ -38,7 +33,7 @@
     "packages/platejs/src/react/plugin/",
     "packages/platejs/src/react/plugins/",
     "packages/platejs/src/react/stores/",
-    "packages/platejs/src/react/utils/BlockPlaceholderPlugin.slow.tsx",
+    "packages/platejs/src/react/utils/BlockPlaceholderPlugin.target.spec.tsx",
     "packages/platejs/src/react/utils/BlockPlaceholderPlugin.spec.tsx",
     "packages/platejs/src/react/utils/BlockPlaceholderPlugin.tsx",
     "packages/platejs/src/react/utils/bindPointerSession.internal.ts",

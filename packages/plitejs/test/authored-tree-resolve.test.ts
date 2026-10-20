@@ -11,6 +11,7 @@ import {
 import { history } from 'plitejs/history';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
+import { authoredResolveSchemaOf } from '../src/authored/resolve-schema';
 import { resolveAuthoredChildren } from '../src/authored/tree/resolve';
 import { authoredTestApi, reviewedValue } from './support/authored';
 
@@ -22,6 +23,10 @@ const mark = (
 ) => ({ at: AT, author, change, kind });
 const paragraph = (...children: Array<Record<string, unknown>>) => ({
   type: 'paragraph',
+  children,
+});
+const heading = (...children: Array<Record<string, unknown>>) => ({
+  type: 'heading',
   children,
 });
 const point = (offset: number, path = [0, 0]) => ({ offset, path });
@@ -353,6 +358,180 @@ describe('authored review tree decisions', () => {
       assert.deepEqual(
         resolveAuthoredChildren(lines, reject('alice:1')).children,
         [lines[0], paragraph({ text: 'gh' })]
+      );
+    });
+
+    it('keeps an empty heading’s type and reports the joined text landing past the moved line', () => {
+      const moved = {
+        ...paragraph({ text: 'ef' }),
+        authored: [
+          {
+            ...mark('insert', 'carol'),
+            follows: JSON.stringify(['alice:1', AT]),
+          },
+        ],
+      };
+      const lines = [heading({ text: '' }), moved, joining('cd')];
+      const resolution = resolveAuthoredChildren(lines, () => 'accept');
+
+      assert.deepEqual(
+        {
+          children: resolution.children,
+          hidden: resolution.hidden,
+          placements: resolution.placements,
+        },
+        {
+          children: [heading({ text: 'cd' }), paragraph({ text: 'ef' })],
+          hidden: [],
+          placements: [{ after: lines[0], node: lines[2] }],
+        }
+      );
+    });
+
+    it('collapses the emptied piece a rejected split rejoins, and a line hidden between them, into the rejoined piece under Accepted', () => {
+      const lines = [
+        paragraph({ text: 'X', authored: [mark('insert', 'alice')] }),
+        whole(paragraph({ text: 'y' }), mark('insert', 'carol')),
+        { ...paragraph({ text: 'cd' }), authored: [mark('split')] },
+      ];
+      const resolution = resolveAuthoredChildren(lines, () => 'reject');
+
+      assert.deepEqual(
+        {
+          children: resolution.children,
+          hidden: resolution.hidden,
+          placements: resolution.placements,
+        },
+        {
+          children: [paragraph({ text: 'cd' })],
+          hidden: [
+            { at: [0], owner: [0] },
+            { at: [1], owner: [0] },
+          ],
+          placements: [],
+        }
+      );
+    });
+  });
+
+  describe('the report of where a decision shows each block', () => {
+    it('leaves out a follower’s landing that passes no shown line', () => {
+      const follower = {
+        ...paragraph({ text: 'ab' }),
+        authored: [
+          { ...mark('split', 'carol'), follows: JSON.stringify(['bob:1', AT]) },
+        ],
+      };
+      const joining = {
+        ...paragraph({ text: 'gh', authored: [mark('delete')] }),
+        authored: [mark('join')],
+      };
+      const resolution = resolveAuthoredChildren(
+        [
+          paragraph({ text: 'cd' }),
+          paragraph({ text: 'e' }, { text: 'f', authored: [mark('delete')] }),
+          follower,
+          joining,
+        ],
+        () => 'accept'
+      );
+
+      assert.deepEqual(
+        {
+          children: resolution.children,
+          placements: resolution.placements,
+        },
+        {
+          children: [
+            paragraph({ text: 'cd' }),
+            paragraph({ text: 'e' }),
+            paragraph({ text: 'ab' }),
+          ],
+          placements: [],
+        }
+      );
+    });
+
+    it('reports each block hidden whole with the shown block it collapses into', () => {
+      const removed = paragraph({ text: 'z' });
+
+      assert.deepEqual(
+        resolveAuthoredChildren(
+          [
+            {
+              type: 'quote',
+              children: [
+                paragraph({ text: 'ab' }),
+                whole(paragraph({ text: 'x' }), mark('delete', 'carol')),
+              ],
+            },
+            paragraph({ text: 'cd' }),
+            whole(paragraph({ text: 'y' }), mark('delete', 'carol')),
+            { ...paragraph({ text: 'ef' }), authored: [mark('join')] },
+            removed,
+          ],
+          () => 'accept',
+          null,
+          'main',
+          { removed: new Set([removed]) }
+        ).hidden,
+        [
+          { at: [0, 1], owner: [0] },
+          { at: [2], owner: [1] },
+          { at: [4], owner: null },
+        ]
+      );
+    });
+
+    it('completes a container’s children in the container’s schema', () => {
+      const Quotes = defineEditorSchema('quoted-headings-schema', {
+        elements: {
+          heading: schema.element.textBlock(),
+          quote: {
+            content: schema.content.types(['heading'], {
+              default: { type: 'heading' },
+              min: 1,
+            }),
+          },
+        },
+        id: 'quoted-headings-schema',
+        root: schema.content.types(['quote'], {
+          default: { type: 'quote' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+      const editor = createEditor({
+        plugins: [Quotes, createAuthoredPlugin({ authorId: 'dave' })],
+        initialValue: [
+          {
+            type: 'quote',
+            children: [
+              whole(heading({ text: 'gone' }), mark('delete', 'alice')),
+            ],
+          },
+        ],
+      });
+      const resolver = authoredResolveSchemaOf(editor);
+      const value = editor.read.children() as never;
+      const [quote] = editor.read.children();
+
+      assert.deepEqual(
+        [
+          resolveAuthoredChildren(
+            quote.children as never,
+            () => 'accept',
+            resolver,
+            'main',
+            { site: [quote as never] }
+          ).children,
+          resolveAuthoredChildren(value, () => 'accept', resolver).children,
+        ],
+        [
+          [heading({ text: '' })],
+          [{ type: 'quote', children: [heading({ text: '' })] }],
+        ]
       );
     });
   });
