@@ -1,8 +1,7 @@
 import * as Y from 'yjs';
 
-import { readAuthoredView } from '../../core/authored-runtime';
+import { withStoredAuthoredRead } from '../../core/authored-runtime';
 import type { NodeList } from '../../core/change/document-index';
-import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { registerEditorViewLifetimeCleanup } from '../../core/editor-view-lifetime';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import type { Anchor, Descendant, Point, Range } from '../../index';
@@ -582,14 +581,8 @@ export const createYjsAwarenessAdapter = <
   };
 
   const writeSelection = (view: YjsEditor): void => {
-    const shown = view.read.selection();
-    const authored = readAuthoredView(view);
-    // A preview shows its owner's selection in its own coordinates, and peers
-    // decode the owner's.
-    const selection =
-      shown && authored && 'preview' in authored
-        ? getEditorRuntimeOwner(view).read.selection()
-        : shown;
+    // Peers decode stored places, which a preview shows at its own.
+    const selection = withStoredAuthoredRead(view, () => view.read.selection());
 
     const nextRange =
       selection === null || selection === undefined

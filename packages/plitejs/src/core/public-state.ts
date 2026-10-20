@@ -551,7 +551,7 @@ const SNAPSHOT_CACHE = new WeakMap<Editor, Map<string, EditorSnapshot>>();
 const READ_PROJECTIONS = new WeakMap<Editor, EditorDocumentValue>();
 const READ_SELECTIONS = new WeakMap<
   Editor,
-  Readonly<{ selection: Selection; root: string }>
+  Readonly<{ root: string; selection: () => Selection }>
 >();
 const PROJECTION_SNAPSHOTS = new WeakMap<
   Editor,
@@ -694,7 +694,7 @@ export const withEditorDocumentProjection = <T>(
   editor: Editor,
   value: EditorDocumentValue | undefined,
   read: () => T,
-  selection?: Readonly<{ selection: Selection; root: string }>
+  selection?: Readonly<{ root: string; selection: () => Selection }>
 ): T => {
   const owner = getEditorRuntimeOwner(editor);
   const previous = READ_PROJECTIONS.get(owner);
@@ -9130,13 +9130,14 @@ export const getCurrentSelection = (editor: Editor): Selection => {
   if (readRoot !== undefined && readRoot !== getCurrentSelectionRoot(owner)) {
     return null;
   }
+  const frame = READ_SELECTIONS.get(owner);
+
   return cloneValue(
     context
       ? context.selection
-      : (READ_SELECTIONS.get(owner)?.selection ??
-          (READ_SELECTIONS.has(owner)
-            ? null
-            : getSelectionStateSelection(owner)))
+      : frame
+        ? frame.selection()
+        : getSelectionStateSelection(owner)
   );
 };
 

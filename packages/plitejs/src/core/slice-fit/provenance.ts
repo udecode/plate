@@ -1,11 +1,6 @@
-import type { Descendant, Path, Point, RootKey } from '../../interfaces';
+import type { Descendant, Path, Point } from '../../interfaces';
 import { ElementApi, NodeApi } from '../../interfaces';
-import {
-  createInternalDocumentChange,
-  DocumentChange,
-} from '../change/document-change';
 import type { DocumentIndex } from '../change/document-index';
-import { RootChange } from '../change/root-change';
 
 export type ClosedFitOriginTracker = Readonly<{
   originOf: (node: Descendant) => Descendant | null;
@@ -16,11 +11,6 @@ export type ClosedFitOriginTracker = Readonly<{
 export type FitInputPaths = (path: Path) => readonly Path[];
 
 export type RootFitPathProvenance = Readonly<{
-  createContextChange: (
-    source: DocumentIndex,
-    raw: DocumentIndex,
-    root: RootKey
-  ) => DocumentChange;
   /** Caller paths of a path in the latest grammar output. */
   inputPaths: FitInputPaths;
   mapPath: (
@@ -83,7 +73,6 @@ const createClosedFitOriginTracker = (): ClosedFitOriginTracker => {
 export const createRootFitPathProvenance = (
   source: readonly Descendant[]
 ): RootFitPathProvenance => {
-  let changed = false;
   let mappedPaths = new Map<string, Path>();
 
   visitDescendantPaths(source, (_node, path) => {
@@ -150,18 +139,6 @@ export const createRootFitPathProvenance = (
   };
 
   return {
-    createContextChange(sourceDocument, rawDocument, root) {
-      if (!changed) return DocumentChange.empty;
-      const change = RootChange.create(sourceDocument, {
-        from: 0,
-        insert: rawDocument.slice(0),
-        to: sourceDocument.length,
-      });
-
-      return createInternalDocumentChange(
-        change.empty ? new Map() : new Map([[root, change]])
-      );
-    },
     inputPaths: (path) => latestInputPaths(path),
     mapPath(path, sourceDocument, association, deletion) {
       const mapped = mappedPaths.get(pathKey(path));
@@ -270,7 +247,6 @@ export const createRootFitPathProvenance = (
 
           mappedPaths = nextPaths;
           latestInputPaths = inputPathsOf(mappedPaths);
-          changed = true;
         },
         inputsOf(node) {
           const path = stagePathOf(origins.originOf(node) ?? node);

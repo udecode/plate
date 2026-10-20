@@ -1,6 +1,7 @@
 import type {
   AnyEditor as Editor,
   EditorCommit,
+  EditorSelectionTarget,
   EditorViewOptions,
   Value,
 } from '../interfaces/editor';
@@ -8,33 +9,31 @@ import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 import { getEditorRuntimeOwner } from './editor-runtime';
+import { toInternalRoot } from './public-root';
 
 type AuthoredView = NonNullable<EditorViewOptions['authored']>;
 
 type AuthoredLocation = Path | Point | Range;
 
-type SelectionTarget = NonNullable<
-  Parameters<Editor['update']['selection']['set']>[0]
->;
+export type StoredTarget =
+  | Readonly<{ kind: 'stored'; target: EditorSelectionTarget }>
+  | Readonly<{ kind: 'unmapped' }>;
 
 type AuthoredRuntime = {
-  /**
-   * A selection `view` shows, in `root` where a point names none, as stored,
-   * or null when it stores none of it.
-   */
-  mapFromView: (
-    view: Editor,
-    root: string,
-    target: SelectionTarget
-  ) => SelectionTarget | null;
   /** A stored location of `root` as `view` reads it, or null when it reads none of it. */
   mapToView: <T extends AuthoredLocation>(
     view: Editor,
     root: string,
     value: T
   ) => T | null;
+  readStored: <T>(view: Editor, read: () => T) => T;
   readView: <T>(view: Editor, read: () => T) => T;
   setView: (view: Editor, value: AuthoredView) => void;
+  toStored: (
+    view: Editor,
+    root: string,
+    target: EditorSelectionTarget
+  ) => StoredTarget;
   view: (view: Editor) => AuthoredView;
   viewCommit: (view: Editor, commit: EditorCommit) => EditorCommit;
 };
@@ -42,14 +41,22 @@ type AuthoredRuntime = {
 const AUTHORED_RUNTIMES = new WeakMap<Editor, AuthoredRuntime>();
 const UPDATE_VIEWS = new WeakMap<Editor, Editor>();
 
-export const mapFromAuthoredView = (
+export const toStoredTarget = (
   view: Editor,
-  root: string,
-  target: SelectionTarget
-): SelectionTarget | null => {
+  target: EditorSelectionTarget
+): StoredTarget => {
   const installed = AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view));
 
-  return installed ? installed.mapFromView(view, root, target) : target;
+  return installed
+    ? installed.toStored(view, toInternalRoot(view.read.view.root()), target)
+    : { kind: 'stored', target };
+};
+
+/** `read` with every view of `view`'s editor reading the stored document. */
+export const withStoredAuthoredRead = <T>(view: Editor, read: () => T): T => {
+  const installed = AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view));
+
+  return installed ? installed.readStored(view, read) : read();
 };
 
 export const mapToAuthoredView = <T extends AuthoredLocation>(

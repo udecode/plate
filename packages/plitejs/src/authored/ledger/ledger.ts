@@ -19,6 +19,7 @@ import type {
   EditorFrameRecording,
 } from '../../core/command-document';
 import { createEditorCommit, getEditorCommitValue } from '../../core/commit';
+import { getEditorSchema } from '../../core/editor-runtime';
 import {
   ensureElementOwnedRootIndex,
   rebaseElementOwnedRootIndex,
@@ -44,6 +45,7 @@ import {
 } from '../../core/root-ownership';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
+import type { SelectionModeSchema } from '../../core/selection-protocol';
 import { countCoreWork } from '../../core/work';
 import type {
   AnyEditor as Editor,
@@ -51,31 +53,24 @@ import type {
   EditorDocumentValue,
   EditorSnapshot,
 } from '../../interfaces/editor';
-import { PathApi } from '../../interfaces/path';
-import type { Point } from '../../interfaces/point';
-import { type Range, RangeApi } from '../../interfaces/range';
-import {
-  type Selection,
-  SelectionApi,
-  type SelectionAssociation,
-  type TextSelection,
-} from '../../interfaces/selection';
+import type { Selection } from '../../interfaces/selection';
 import { getDefined } from '../../internal/get-defined';
 import { getNodeKeyForNode } from '../../utils/node-keys';
 import type { createDocumentMarksValidator } from '../facts/admission';
 import { factsOf, primeInsertions } from '../facts/facts';
 import { VERDICTS, verdictIncarnationsOf } from '../facts/records';
-import {
-  type AuthoredFormatProjection,
-  type AuthoredLocationMap,
-  locationMapOver,
-} from '../format';
+import type { AuthoredFormatProjection } from '../format';
 import { tokenLength } from '../tree/alignment';
 import { isAuthoredSetValued } from '../tree/marks';
 import { type AuthoredResolveSchema, isTextBlock } from '../tree/resolve';
 import { type BookSink, ChangeBook } from './book';
 import type { WrittenList } from './level';
 import { mapSpans, type Pairing, rankAt, type Span, startOf } from './pairs';
+import {
+  createPreviewLens,
+  type PreviewLens,
+  type RootedSelection,
+} from './preview-lens';
 import { RootProjection } from './projection';
 import { contentRootsOf, type Roots, rootOf, sameRoots } from './roots';
 import type { RunContext } from './runs';
@@ -476,19 +471,23 @@ const matches = (
 class ModeProjection {
   private readonly roots = new Map<string, RootProjection>();
   private history: History | null = null;
+  private readonly lenses = new WeakMap<Synced, PreviewLens>();
   private syncing = false;
   private verdicts: RecordSetVersion | undefined;
   readonly mode: AuthoredFormatProjection;
   private readonly book: ChangeBook;
+  private readonly schema: () => SelectionModeSchema;
   private readonly holder: Holder | null;
 
   constructor(
     mode: AuthoredFormatProjection,
     book: ChangeBook,
+    schema: () => SelectionModeSchema,
     holder: Holder | null = null
   ) {
     this.mode = mode;
     this.book = book;
+    this.schema = schema;
     this.holder = holder;
   }
 
@@ -685,24 +684,84 @@ class ModeProjection {
     return valueOf(this.sync(stored, schema));
   }
 
+  lens(stored: JsonEditorValue, schema: AuthoredResolveSchema | null) {
+    this.sync(stored, schema);
+
+    return this.lastLens();
+  }
+
+  // `mapOf` moves the mode to the state it maps, so only the last state gets
+  // a lens.
+  private lastLens(): PreviewLens {
+    const synced = getDefined(this.history).last;
+    const known = this.lenses.get(synced);
+
+    if (known) return known;
+
+    const lens = createPreviewLens({
+      map: mapOf(this, synced),
+      schema: this.schema(),
+      shownIndex: (root) => {
+        const state = synced.roots.get(root);
+
+        return state?.changed ? state.index : rootOf(synced.value, root);
+      },
+      storedIndex: (root) => rootOf(synced.value, root),
+    });
+
+    this.lenses.set(synced, lens);
+
+    return lens;
+  }
+
   step(
     before: JsonEditorValue,
     after: JsonEditorValue,
-    schema: AuthoredResolveSchema | null
+    schema: AuthoredResolveSchema | null,
+    selections: Readonly<{ after: RootedSelection; before: RootedSelection }>
   ) {
     const content = contentRootsOf(before);
     const held = [this.history?.last, this.history?.prior].find(
       (synced) => synced && matches(synced, before, content, schema)
     );
-    const to = this.sync(after, schema);
     // A document the mode no longer holds projects apart from it, so the
     // views reading the mode keep their previews.
-    const from =
-      held ?? new ModeProjection(this.mode, this.book).sync(before, schema);
+    let apart: ModeProjection | undefined;
+    const apartFrom = () => {
+      apart ??= new ModeProjection(this.mode, this.book, this.schema);
+
+      return apart;
+    };
+    // Syncing to `after` leaves `before`, so its selection maps first, or
+    // comes from what a view read through it.
+    const shownBefore = (): Selection => {
+      const { root, selection } = selections.before;
+
+      if (!selection) return null;
+      if (held && held === this.history?.last) {
+        return this.lastLens().toView(selection, root);
+      }
+
+      const read = held && this.lenses.get(held)?.lastView(selection, root);
+
+      if (read !== undefined) return read;
+      if (held) countLedgerWork('apartSelections');
+
+      return apartFrom().lens(before, schema).toView(selection, root);
+    };
+    const selectionBefore = shownBefore();
+    const to = this.sync(after, schema);
+    const from = held ?? apartFrom().sync(before, schema);
+
     return {
       after: valueOf(to),
       before: valueOf(from),
       changes: this.changeOf(from, to),
+      selectionAfter: this.lastLens().toView(
+        selections.after.selection,
+        selections.after.root
+      ),
+      selectionBefore,
     };
   }
 
@@ -793,6 +852,8 @@ const mapOf = (
     // A node shows whole as one node when its open token keeps its place and
     // a projected node starts there.
     nodePath: (root: string, path: readonly number[]) => {
+      if (synced.dropped.has(root)) return null;
+
       const shown = live(root);
 
       if (!shown) return [...path];
@@ -828,34 +889,6 @@ const mapOf = (
         ? null
         : (live(root)?.toStored(position, assoc) ?? position),
   });
-};
-
-type PointMap = (point: Point, assoc: -1 | 1) => Point | null;
-
-/**
- * `selection` mapped point by point: a range's edges inward, a caret to the
- * side its affinity names. Null when a point maps nowhere.
- */
-const mapTextSelection = <
-  T extends Range & { affinity?: SelectionAssociation },
->(
-  selection: T,
-  point: PointMap
-): T | null => {
-  if (RangeApi.isCollapsed(selection)) {
-    const at = point(
-      selection.focus,
-      selection.affinity === 'forward' ? 1 : -1
-    );
-
-    return at && { ...selection, anchor: at, focus: at };
-  }
-
-  const backward = RangeApi.isBackward(selection);
-  const anchor = point(selection.anchor, backward ? -1 : 1);
-  const focus = point(selection.focus, backward ? 1 : -1);
-
-  return anchor && focus && { ...selection, anchor, focus };
 };
 
 const snapshotOf = (
@@ -943,10 +976,6 @@ export class ReviewLedger {
     Partial<Record<AuthoredFormatProjection, EditorCommit>>
   >();
   private readonly modes = new Map<AuthoredFormatProjection, ModeProjection>();
-  private readonly lastShown = new Map<
-    AuthoredFormatProjection,
-    Readonly<{ selection: Selection; version: number }>
-  >();
   private lastFrame: Readonly<{
     frame: CommandProjection | null;
     value: JsonEditorValue;
@@ -970,7 +999,12 @@ export class ReviewLedger {
     let projection = this.modes.get(mode);
 
     if (!projection) {
-      projection = new ModeProjection(mode, this.book, this.holder);
+      projection = new ModeProjection(
+        mode,
+        this.book,
+        () => getEditorSchema(this.owner),
+        this.holder
+      );
       this.modes.set(mode, projection);
     }
 
@@ -1304,110 +1338,8 @@ export class ReviewLedger {
     };
   }
 
-  locationMap(
-    stored: JsonEditorValue,
-    mode: AuthoredFormatProjection,
-    root: string
-  ): AuthoredLocationMap {
-    return this.locationMaps(stored, mode, root).toPreview;
-  }
-
-  previewSelection(
-    stored: JsonEditorValue,
-    mode: AuthoredFormatProjection,
-    selection: Selection,
-    root: string
-  ): Selection {
-    return SelectionApi.isText(selection)
-      ? mapTextSelection(
-          selection,
-          this.pointMap(stored, mode, root, 'toPreview')
-        )
-      : null;
-  }
-
-  storedSelection(
-    stored: JsonEditorValue,
-    mode: AuthoredFormatProjection,
-    selection: TextSelection,
-    root: string
-  ): TextSelection | null {
-    const lifted = mapTextSelection(
-      selection,
-      this.pointMap(stored, mode, root, 'toStored')
-    );
-
-    if (!lifted || !RangeApi.isCollapsed(selection)) return lifted;
-
-    // Content the preview hides or adds shows one stored place at two places,
-    // and the caret's side keeps the one it was shown at.
-    const shows = (affinity: SelectionAssociation | undefined) => {
-      const back = mapTextSelection(
-        { ...lifted, affinity },
-        this.pointMap(stored, mode, root, 'toPreview')
-      )?.focus;
-
-      return (
-        back?.offset === selection.focus.offset &&
-        PathApi.equals(back.path, selection.focus.path)
-      );
-    };
-
-    if (shows(lifted.affinity)) return lifted;
-
-    const side = lifted.affinity === 'forward' ? 'backward' : 'forward';
-
-    return shows(side) ? { ...lifted, affinity: side } : lifted;
-  }
-
-  private locationMaps(
-    stored: JsonEditorValue,
-    mode: AuthoredFormatProjection,
-    root: string
-  ) {
-    const projection = this.modeOf(mode);
-    const synced = projection.sync(stored, this.schemaOf());
-    const storedIndex = rootOf(stored, root);
-    const state = synced.roots.get(root);
-    const previewIndex = state?.changed ? state.index : storedIndex;
-    const through =
-      (move: (live: RootProjection, from: number, assoc: -1 | 1) => number) =>
-      (from: number, assoc: -1 | 1) => {
-        if (synced.dropped.has(root)) return null;
-
-        const live = projection.moveTo(synced).get(root);
-
-        return live ? move(live, from, assoc) : from;
-      };
-
-    return {
-      toPreview: locationMapOver(
-        storedIndex,
-        previewIndex,
-        through((live, from, assoc) => live.toProjected(from, assoc)),
-        root
-      ),
-      toStored: locationMapOver(
-        previewIndex,
-        storedIndex,
-        through((live, from, assoc) => live.toStored(from, assoc)),
-        root
-      ),
-    };
-  }
-
-  private pointMap(
-    stored: JsonEditorValue,
-    mode: AuthoredFormatProjection,
-    root: string,
-    way: 'toPreview' | 'toStored'
-  ): PointMap {
-    return (point, assoc) =>
-      this.locationMaps(
-        stored,
-        mode,
-        point.root === undefined ? root : toInternalRoot(point.root)
-      )[way].point(point, assoc);
+  lens(stored: JsonEditorValue, mode: AuthoredFormatProjection) {
+    return this.modeOf(mode).lens(stored, this.schemaOf());
   }
 
   previewCommit(
@@ -1419,40 +1351,18 @@ export class ReviewLedger {
 
     if (known) return known;
 
-    const storedBefore = getEditorCommitValue(commit, 'before');
-    const storedAfter = getEditorCommitValue(commit);
-    const { after, before, changes } = this.modeOf(mode).step(
-      storedBefore,
-      storedAfter,
-      this.schemaOf()
-    );
     const afterRoot = toInternalRoot(commit.selectionAfterRoot);
     const beforeRoot = toInternalRoot(commit.selectionBeforeRoot);
-    const selectionAfter = this.previewSelection(
-      storedAfter,
-      mode,
-      commit.selectionAfter,
-      afterRoot
-    );
-    const last = this.lastShown.get(mode);
-    // The preview before a content change is no longer synced, so the mode
-    // reads the selection it showed last.
-    const selectionBefore =
-      last?.version === commit.previousVersion
-        ? last.selection
-        : storedBefore === storedAfter
-          ? this.previewSelection(
-              storedAfter,
-              mode,
-              commit.selectionBefore,
-              beforeRoot
-            )
-          : undefined;
-
-    this.lastShown.set(mode, {
-      selection: selectionAfter,
-      version: commit.version,
-    });
+    const { after, before, changes, selectionAfter, selectionBefore } =
+      this.modeOf(mode).step(
+        getEditorCommitValue(commit, 'before'),
+        getEditorCommitValue(commit),
+        this.schemaOf(),
+        {
+          after: { root: afterRoot, selection: commit.selectionAfter },
+          before: { root: beforeRoot, selection: commit.selectionBefore },
+        }
+      );
 
     if (!changes.empty) {
       inheritEditorProjectionIndexes(
@@ -1477,7 +1387,7 @@ export class ReviewLedger {
           this.owner,
           before,
           commit.previousVersion,
-          beforeRoot === 'main' ? (selectionBefore ?? null) : null
+          beforeRoot === 'main' ? selectionBefore : null
         ),
         beforeValue: before,
         changes,
@@ -1487,13 +1397,12 @@ export class ReviewLedger {
         replace: commit.changed.hasAny('replace'),
         selectionAfter,
         selectionAfterRoot: afterRoot,
-        selectionBefore: selectionBefore ?? null,
+        selectionBefore,
         selectionBeforeRoot: beforeRoot,
         selectionChanged:
-          selectionBefore === undefined
-            ? commit.selectionChanged || selectionAfter !== null
-            : beforeRoot !== afterRoot ||
-              !jsonEqual(selectionBefore, selectionAfter),
+          (selectionBefore !== null || selectionAfter !== null) &&
+          (beforeRoot !== afterRoot ||
+            !jsonEqual(selectionBefore, selectionAfter)),
         tags: commit.tags,
       },
       { previousVersion: commit.previousVersion, version: commit.version }
@@ -1505,10 +1414,6 @@ export class ReviewLedger {
     return projected;
   }
 
-  /**
-   * Carry a preview's node keys through `commit` for each mode whose last
-   * preview a reader indexed, so its keys stay while no view renders it.
-   */
   carry(commit: EditorCommit) {
     for (const [mode, projection] of this.modes) {
       const indexed = projection

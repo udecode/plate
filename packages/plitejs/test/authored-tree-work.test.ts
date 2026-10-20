@@ -639,6 +639,43 @@ describe('authored review tree work per edit', () => {
     assert.deepEqual(large, small);
   });
 
+  it('does as much work for a caret move and the Suggesting letter after it, with Accepted and Proposed indexed and no view rendering them, at 5,000 blocks as at 100', () => {
+    const [small, large] = atBothSizes(
+      (size) => {
+        const editor = editorFor(
+          Array.from({ length: size }, (_, index) =>
+            index % 100 === 50
+              ? struckParagraph(`struck ${index}`, `bob:s${index}`)
+              : paragraph({ text: `plain ${index}` })
+          ),
+          'propose'
+        );
+
+        for (const preview of ['accepted', 'proposed'] as const) {
+          createEditorView(editor, { authored: { preview } }).key([0]);
+        }
+
+        return editor;
+      },
+      (editor, size, run) => {
+        const path = [size - 10 + run, 0];
+
+        editor.update((tx) => {
+          tx.selection.set({
+            anchor: { offset: 1, path },
+            focus: { offset: 1, path },
+          });
+        });
+        editor.update((tx) => {
+          tx.command(editorCommands.insertText, { text: 'k' });
+        });
+      },
+      [100, 5000]
+    );
+
+    assert.deepEqual(large, small);
+  });
+
   for (const [name, edit] of [
     ['typing', typeAtEnd],
     [

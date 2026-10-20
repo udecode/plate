@@ -262,50 +262,73 @@ describe('plitejs/yjs awareness contract', () => {
     peer.cleanup();
   });
 
-  it('publishes the stored selection from an authored preview that hides it', () => {
-    const awareness = new FakeAwareness(2);
-    const peer = createYjsPeerWithEditor(
-      createEditor({
-        initialValue: [paragraph('')],
-        plugins: [createAuthoredPlugin({ authorId: 'alice' })],
-      }),
-      {
-        awareness,
-        children: [
-          {
-            children: [
-              { text: 'This ' },
-              {
-                authored: [
-                  { at: 1, author: 'carol', change: 'carol:1', kind: 'delete' },
-                ],
-                text: 'extra ',
-              },
-              { text: 'sentence can go.' },
-            ],
-            type: 'paragraph',
-          },
-        ],
-        clientId: 'b',
-        numericClientId: 2,
-      }
-    );
-    const controller = getActiveYjsController(peer.editor);
-    const proposed = createEditorView(peer.editor, {
-      authored: { preview: 'proposed' },
+  for (const [label, preview] of [
+    [
+      'an authored preview',
+      (editor: Peer['editor']) =>
+        createEditorView(editor, { authored: { preview: 'proposed' } }),
+    ],
+    [
+      'an editor set to an authored preview',
+      (
+        editor: Peer['editor'],
+        plugin: ReturnType<typeof createAuthoredPlugin>
+      ) => {
+        editor.plugin(plugin).api.setView({ preview: 'proposed' });
+
+        return editor;
+      },
+    ],
+  ] as const) {
+    it(`publishes the stored selection from ${label} that hides it`, () => {
+      const awareness = new FakeAwareness(2);
+      const plugin = createAuthoredPlugin({ authorId: 'alice' });
+      const peer = createYjsPeerWithEditor(
+        createEditor({
+          initialValue: [paragraph('')],
+          plugins: [plugin],
+        }),
+        {
+          awareness,
+          children: [
+            {
+              children: [
+                { text: 'This ' },
+                {
+                  authored: [
+                    {
+                      at: 1,
+                      author: 'carol',
+                      change: 'carol:1',
+                      kind: 'delete',
+                    },
+                  ],
+                  text: 'extra ',
+                },
+                { text: 'sentence can go.' },
+              ],
+              type: 'paragraph',
+            },
+          ],
+          clientId: 'b',
+          numericClientId: 2,
+        }
+      );
+      const controller = getActiveYjsController(peer.editor);
+
+      assert.ok(controller);
+
+      peer.editor.update.selection.set(selection([0, 1], 3));
+      controller.presenceApi(peer.editor).syncSelection();
+      const stored = awareness.getLocalState()?.selection;
+
+      controller.presenceApi(preview(peer.editor, plugin)).syncSelection();
+
+      assert.deepEqual(awareness.getLocalState()?.selection, stored);
+
+      peer.cleanup();
     });
-
-    assert.ok(controller);
-
-    peer.editor.update.selection.set(selection([0, 1], 3));
-    controller.presenceApi(proposed).syncSelection();
-    const fromPreview = awareness.getLocalState()?.selection;
-    controller.presenceApi(peer.editor).syncSelection();
-
-    assert.deepEqual(fromPreview, awareness.getLocalState()?.selection);
-
-    peer.cleanup();
-  });
+  }
 
   it('publishes root-qualified awareness for a named root', () => {
     const { awareness, peer } = createAwarePeer();

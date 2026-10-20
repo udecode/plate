@@ -17,11 +17,7 @@ import {
   valueRootIndex,
   withDocumentChangeRecords,
 } from '../core/change/document-change';
-import {
-  DocumentIndex,
-  rootIndexOf,
-  rootNodesOf,
-} from '../core/change/document-index';
+import { DocumentIndex, rootIndexOf } from '../core/change/document-index';
 import { jsonEqual } from '../core/change/json';
 import { copyFields, setLazyRoot } from '../core/change/lazy-root';
 import type { RootChange } from '../core/change/root-change';
@@ -1646,123 +1642,71 @@ export const createAuthoredPlugin = (
       );
 
       onCleanup(
-        getEditorRuntime(owner).subscribeCommit((commit) => {
-          if (
-            rootNodesOf(commit.before, 'children') !==
-            rootNodesOf(commit.after, 'children')
-          ) {
-            ledger.carry(commit);
-          }
-        })
+        getEditorRuntime(owner).subscribeCommit((commit) =>
+          ledger.carry(commit)
+        )
       );
 
       onCleanup(
         registerAuthoredRuntime(owner, {
-          mapFromView: (view, root, target) => {
-            const current = viewOf(view);
-
-            if (!('preview' in current)) return target;
-
-            const shown = PointApi.isPoint(target)
-              ? SelectionApi.text({ anchor: target, focus: target })
-              : RangeApi.isRange(target)
-                ? SelectionApi.text(target)
-                : null;
-
-            try {
-              return (
-                shown &&
-                ledger.storedSelection(
-                  storedValue(owner),
-                  current.preview,
-                  shown,
-                  root
-                )
-              );
-            } catch {
-              // A point the shown document no longer holds selects nothing.
-              return null;
-            }
-          },
           mapToView: (view, root, value) => {
-            const current = viewOf(view);
+            const preview = previewModeOf(view);
 
-            if (!('preview' in current)) return value;
+            if (!preview) return value;
 
-            const map = ledger.locationMap(
-              storedValue(owner),
-              current.preview,
-              root
-            );
+            const map = ledger
+              .lens(storedValue(owner), preview)
+              .locations(root);
 
-            try {
-              if (PathApi.isPath(value)) return map.path(value) as typeof value;
-              if (PointApi.isPoint(value)) {
-                return map.point(value, -1) as typeof value;
-              }
-
-              return map.range(value) as typeof value;
-            } catch {
-              // A location the stored document no longer holds reads nothing.
-              return null;
+            if (PathApi.isPath(value)) return map.path(value) as typeof value;
+            if (PointApi.isPoint(value)) {
+              return map.point(value, -1) as typeof value;
             }
+
+            return map.range(value) as typeof value;
           },
+          readStored: storedRead,
           readView: (view, read) => {
             const preview = previewModeOf(view);
 
             if (!preview) return read();
 
             const stored = storedValue(owner);
-            let shown: { root: string; selection: Selection } | undefined;
-            const selected = () => {
-              if (shown) return shown;
-
-              const { root, selection } = withEditorDocumentProjection(
-                owner,
-                undefined,
-                () => ({
-                  root: getCurrentSelectionRoot(owner),
-                  selection: getCurrentSelection(owner),
-                })
-              );
-
-              shown = {
-                root,
-                selection: ledger.previewSelection(
-                  stored,
-                  preview,
-                  selection,
-                  root
-                ),
-              };
-
-              return shown;
-            };
+            const root = withEditorDocumentProjection(owner, undefined, () =>
+              getCurrentSelectionRoot(owner)
+            );
 
             return withEditorDocumentProjection(
               owner,
               ledger.preview(stored, preview) as EditorDocumentValue,
               read,
               {
-                get root() {
-                  return selected().root;
-                },
-                get selection() {
-                  return selected().selection;
-                },
+                root,
+                selection: () =>
+                  ledger.lens(stored, preview).toView(
+                    withEditorDocumentProjection(owner, undefined, () =>
+                      getCurrentSelection(owner)
+                    ),
+                    root
+                  ),
               }
             );
           },
           setView: (view, value) => {
             state.views.set(getEditorRuntime(view), value);
           },
+          toStored: (view, root, target) => {
+            const preview = previewModeOf(view);
+
+            return preview
+              ? ledger.lens(storedValue(owner), preview).fromView(target, root)
+              : { kind: 'stored', target };
+          },
           view: viewOf,
           viewCommit: (view, commit) => {
-            const current = viewOf(view);
+            const preview = previewModeOf(view);
 
-            return 'preview' in current
-              ? ledger.previewCommit(commit, current.preview)
-              : commit;
+            return preview ? ledger.previewCommit(commit, preview) : commit;
           },
         })
       );

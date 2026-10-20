@@ -2103,12 +2103,7 @@ export const compileSliceFitter = <V extends Value>(
 
       return anchor && focus ? { anchor, focus } : null;
     };
-    const composedChange = provenance
-      .createContextChange(sourceDocument, rawDocument, root)
-      .compose(constructionChange);
     const context = Object.freeze({
-      change: composedChange,
-      editor: getEditor(),
       mapPath,
       mapPoint,
       mapRange,
