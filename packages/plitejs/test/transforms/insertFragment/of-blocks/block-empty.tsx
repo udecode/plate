@@ -31,12 +31,14 @@ export const output = (
   <editor>
     <block>word</block>
     <block>
-      <block>one</block>
-    </block>
-    <block>two</block>
-    <block>
-      three
-      <cursor />
+      <block>
+        <block>one</block>
+      </block>
+      <block>two</block>
+      <block>
+        three
+        <cursor />
+      </block>
     </block>
   </editor>
 );

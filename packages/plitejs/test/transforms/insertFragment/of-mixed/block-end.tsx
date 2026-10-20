@@ -27,9 +27,9 @@ export const input = (
 );
 export const output = (
   <editor>
-    <block>wordone</block>
-    <block>two</block>
     <block>
+      wordone
+      <block>two</block>
       three
       <cursor />
     </block>
