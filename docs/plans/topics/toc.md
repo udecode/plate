@@ -111,8 +111,8 @@ Rejected, and why:
 ## Open work
 
 - Word export registers a bookmark for a heading inside a quote but never writes it, and writes a link to a Details title that names no bookmark. The smallest fix is one branch at `xml-builder.ts:1809-1810`, which writes the label without `w:hyperlink` when `getBookmark` misses, but it changes every internal `#` link in an export. owner: suggested task t_7ac4ead9. stop: none.
-- The full walk measured 21 ms per read at 5,000 blocks on a loaded host. A quiet-host measurement, and a contract that a heading's level depends on that heading alone, would decide whether an incremental list earns its place. owner: suggested task t_c91e91d7. stop: none.
-- Letting a read override call the read it replaces is a plugin-system change. owner: suggested task t_76b1739e. stop: none.
+- The full walk measured 21 ms per read at 5,000 blocks on a loaded host. A quiet-host measurement, and a contract that a heading's level depends on that heading alone, would decide whether an incremental list earns its place. owner: suggested task t_15ebb97b. stop: none.
+- Letting a read override call the read it replaces is a plugin-system change. owner: suggested task t_cc44dd71. stop: none.
 - A plugin that declares no state accepts any state object in `configure`, so an app that still sets `queryHeading` compiles. owner: suggested task t_d9d2239e. stop: none.
-- `readTocHeadings` walks `state` but reads each level through `editor`'s heading plugin. A finder that takes only `state` needs a typed plugin read on a read's state, which the plugin system lacks. owner: suggested task t_62dcb29c. stop: none.
+- `readTocHeadings` walks `state` but reads each level through `editor`'s heading plugin. A finder that takes only `state` needs a typed plugin read on a read's state, which the plugin system lacks. owner: suggested task t_305b3dcc. stop: none.
 - Nothing rebuilds or checks `apps/www/public/tailwind.css`, which the HTML export block loads. owner: suggested task t_20ac8bbb. stop: none.

@@ -338,7 +338,7 @@ Read from source only: Lexical `dd5c41b131`, Tiptap `91c51be53c`, ProseMirror `c
 
 Reversals and deviations come first.
 
-- The diff panel's one round found no critical finding, so no second round ran. The build applied its five warnings and four nits, except two it deferred. A finder that takes only `state` went to suggested task t_62dcb29c, and premise 6 waited for this fold.
+- The diff panel's one round found no critical finding, so no second round ran. The build applied its five warnings and four nits, except two it deferred. A finder that takes only `state` went to suggested task t_305b3dcc, and premise 6 waited for this fold.
 - Step 4's base runs fail on the renamed `depth` field before they reach an inset. A planted three-row table is the control that shows each six-inset case can fail.
 - Two cases differ from their step in setup only. The direct finder case takes the view's state out of `view.read` before it calls `readTocHeadings` with the live editor. The base runs of the six-level and Word indent cases drop `readTocHeadings` from the spec import, so they fail on the asserted values, not on the import.
 - The docs put the app plugin in a module that imports only `platejs/toc`, apart from the live and static kits, so the server-rendered static kit can import it.
@@ -360,19 +360,51 @@ Proof, by each decision row's scope:
 - The spec typecheck through `tsconfig.test.json` reports 247 errors at base and on the build, with no new error in a touched file.
 - `api-reference:check`, `build:registry --check`, the UI changelog check, `check:docs`, `pnpm --filter www typecheck`, `removed-api-teaching` against `b54221655a` and `sync-resources --check` pass, and `pnpm lint:task` reports 0 warnings on 11 files (`www-typecheck-a4.log`, `check-docs-a3.log`, `removed-api-teaching-a2.log`, `sync-resources-check-a1.log`, `lint-task-a1.log`).
 - The hand drive covers 74 of 74 cells on a dev server that served this worktree's source (`hand-drive-check-a1.log`). Every TOC preview indents levels 1 to 6 at 2, 26, 50, 74, 98 and 122 px. Clicking a level 4 entry on `/docs/toc` scrolls its heading to its 80 px scroll margin and flashes it for 1600 ms. Both docs pages render the changed sections as written, and the HTML export frame resolves the six classes.
-- Limits: nobody opened the exported file in Word, because the spec reads `document.xml`. The drive ran in the in-app browser at desktop width in the light theme. `land.mjs` runs `pnpm check --affected` with this commit.
+- Limits: nobody opened the exported file in Word, because the spec reads `document.xml`. The drive ran in the in-app browser at desktop width in the light theme.
+- The build landed as `4b5693818c` once `land.mjs` passed all 24 steps of `pnpm check --affected` (`land-a6.log`). Earlier attempts stopped on a network timeout, on a rebase conflict in the generated registry that `build:registry` regenerated (`rebase-registry-a1.log`), and on a CLI test that timed out under host load and passed when rerun alone (`cli-generate-rerun-a1.log`).
 
 The predicted benefit in Lane 4 held. Deep headings indent in all three renderers, and the public surface lost one state type and one option.
 
-Counts: of the 18 items, the 10 steps and 8 completion gates, 16 are done, 1 is skipped (the benchmark probe, which does not apply) and 1, the `land.mjs` check, runs with this commit. None are partial, blocked or open. The plan's open work moved to the subject file, each item with its owner and stop.
+Counts: of the 18 items, the 10 steps and 8 completion gates, 17 are done and 1 is skipped (the benchmark probe, which does not apply). None are partial, blocked or open. The plan's open work moved to the subject file, each item with its owner and stop.
 
 The review read these inputs at `review_commit`: `VISION.md`, `docs/vision/common.md`, `docs/vision/plate.md`, `packages/platejs/src/features/toc/lib/BaseTocPlugin.ts`, `packages/platejs/src/features/toc/lib/BaseTocPlugin.spec.ts`, `packages/platejs/src/features/basic-nodes/lib/BaseHeadingPlugins.ts`, `packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts`, `packages/platejs/src/docx/export/lib/docxStaticComponents.tsx`, `packages/platejs/src/docx/export/lib/exportDocx.spec.ts`, `packages/platejs/src/docx/export/lib/internal/render-document-file.ts`, `packages/platejs/src/static/internal/staticPresentation.ts`, `packages/platejs/src/static/components/PlateStatic.reuse-oracle.spec.tsx`, `packages/platejs/src/react/features/toc/TocPlugin.tsx`, `packages/platejs/src/migrations/migratePlateV54BuiltIns.internal.ts`, `packages/platejs/src/utils/plugins/SingleLinePlugin.ts`, `tooling/entrypoints/entrypoint-dag.mjs`, `apps/www/src/registry/components/editor/toc.tsx`, `apps/www/src/registry/components/editor/toc-static.tsx`, `apps/www/src/registry/components/editor/toc.spec.tsx`, `apps/www/src/registry/components/editor/details-static.tsx`, `apps/www/src/registry/components/editor/insert-toolbar-button.tsx`, `apps/www/src/registry/components/editor/plugins.ts`, `apps/www/src/registry/components/editor/plugins-static.ts`, `apps/www/api-reference.config.json`, `content/docs/(plugins)/(elements)/toc.mdx`, `content/docs/(plugins)/(elements)/toc.cn.mdx`, `.changeset/toc-v54-runtime.md`, `.changeset/toc-heading-levels.md`, `.changeset/semantic-details.md` and `docs/editor-behavior/current-evidence.md`.
+
+## Reflect
+
+One reflect ran over this session through its judgment, tooling and divergent lenses.
+
+Built in this run:
+
+- `review-ledger.mjs ship` now marks a scope busy when a plan in another worktree is working on it (Divergent 3, Tooling 12). The owner had to say `styles` was taken, because the ledger read only this checkout's plans. One three-seat panel round reviewed the fix, and its fixes landed without a second round. Each of 11 planted defects fails a test. `136dd6ac73` removed `review-ledger.mjs next` while the fix waited, so the fix serves `ship` alone. It landed as `ddd117372b`.
+
+Backlog, each a suggested task the owner takes or drops:
+
+- t_8732b34d, print the landed commit as `land.mjs`'s last line (Tooling 3, Divergent 1).
+- t_76482ef6, copy the probe a proof runs into its run directory (Divergent 2).
+- t_aea0f63f, check a derived-value cache under every override point before timing it (Judgment 1 to 3, Divergent 5).
+- t_9fda0a3b, key copied UI variant tables by the full value domain (Judgment 5).
+- t_723dc3a9, compare the base branch's rules with the worktree's copy at each gate reread (Divergent 6).
+- t_e9ce7cce, keep the www typecheck passing while a dynamic-docs server runs (Tooling 5).
+- t_e1619a07, record this run's probe recipes and plugin read facts (Tooling 9 to 11).
+- t_35d56208, have each cross-judge write its verdict to a file its brief names (Tooling 13).
+- t_951d9b2a, reload the worktree's own skill copy after a compaction (Tooling 14).
+- t_ade3c20a, keep a worktree that cleanup removes mid-scan from emptying the ship list (the ledger panel's Opus finding 8).
+- Tooling 1, 4, 6 and 8 joined open tasks t_3d8386a3, t_f20cd302, t_78870a77 and t_20ac8bbb. Divergent 4 is t_305b3dcc.
+- t_28a52daa (Judgment 6) was dropped, because `136dd6ac73` reversed the Chips priority rule it would have enforced.
+
+Rejected:
+
+- Judgment 4. The Suggested tasks rule already says to offer a found defect at once, and this run built the ledger fix.
+- Judgment 7. Verdict no longer picks the next item, and the ledger fix puts the claim check in `ship`.
+- Tooling 2. The Write refusal comes from this session's worktree isolation, and `proof.mjs` and `cp` already reach the run directory.
+- Tooling 7. It was one slip, and the script's dry run prints that it needs `--write`.
+- Divergent 7. A Pursue continues in the same run by the owner's word, and this plan had one phase.
 
 ## Open work
 
 - Word export registers a bookmark for a heading inside a quote but never writes it, and writes a link to a Details title that names no bookmark. The smallest fix is one branch at `xml-builder.ts:1809-1810`. When `getBookmark` misses, it would write the label without `w:hyperlink` instead of falling back to the raw key. That drops only links that cannot resolve and keeps an app-drawn Details title bookmark, but it changes every internal `#` link in an exported document, not only the TOC. owner: suggested task t_7ac4ead9. stop: none.
-- The full walk measured 21 ms per read at 5,000 blocks on a loaded host. A quiet-host measurement, and a contract that a heading's level depends on that heading alone, would decide whether an incremental list earns its place. owner: suggested task t_c91e91d7. stop: none.
-- Letting an override call the earlier stage's read, Lane 7, is a plugin-system change. owner: suggested task t_76b1739e. stop: none.
+- The full walk measured 21 ms per read at 5,000 blocks on a loaded host. A quiet-host measurement, and a contract that a heading's level depends on that heading alone, would decide whether an incremental list earns its place. owner: suggested task t_15ebb97b. stop: none.
+- Letting an override call the earlier stage's read, Lane 7, is a plugin-system change. owner: suggested task t_cc44dd71. stop: none.
 - A plugin that declares no state accepts any state object in `configure`. owner: suggested task t_d9d2239e. stop: none.
-- `readTocHeadings` walks `state` but reads each level through `editor`'s heading plugin, so a level override that reads the document sees `editor`'s document. The docs say to pass the `editor` and `state` of one read, as every renderer does. A finder that takes only `state` needs a typed plugin read on a read's state, which the plugin system lacks. owner: suggested task t_62dcb29c. stop: none.
+- `readTocHeadings` walks `state` but reads each level through `editor`'s heading plugin, so a level override that reads the document sees `editor`'s document. The docs say to pass the `editor` and `state` of one read, as every renderer does. A finder that takes only `state` needs a typed plugin read on a read's state, which the plugin system lacks. owner: suggested task t_305b3dcc. stop: none.
 - Nothing rebuilds or checks `apps/www/public/tailwind.css`, which the HTML export page loads. owner: suggested task t_20ac8bbb. stop: none.
