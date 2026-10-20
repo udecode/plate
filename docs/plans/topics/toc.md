@@ -1,6 +1,6 @@
 # Table of contents
 
-Page: https://claude.ai/artifact/GEowDNGZd98ZLyrgX7vdB3
+Page: https://claude.ai/artifact/PUgJNLcnP3gypt4yfrXB7f
 
 The ledger asks how heading reads and navigation feed a table of contents. A TOC is a void block that `BaseTocPlugin` owns. It holds no text and draws one entry per heading in the document. `read.headings()` calls the exported `readTocHeadings`, which walks the document for nodes the installed `BaseHeadingPlugin` gives a level, leveled Details titles included, and returns each heading's editor-scoped `NodeKey`, level and text, so no id is saved in the document. An app changes the list by overriding the read and filtering that finder. Copied UI owns scrolling to a heading, opening a closed Details that holds it, the arrival flash and an indent for each of the six levels. The owner removed the active-heading highlight on 2026-10-15. The 2026-09-07 extraction moved interaction into copied UI, the 2026-09-29 static rendering work made static TOC reads match the rendered document, and the [2026-10-19 review](../2026-10-19-toc-review.md) renamed `depth` to `level`, cut `type` and `queryHeading`, and indented all six levels in copied UI and Word. `node tooling/scripts/review-ledger.mjs show toc` prints the full history.
 

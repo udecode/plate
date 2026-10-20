@@ -208,6 +208,7 @@ equalityFn: (previous, next) =>
 | React test | One case in the plugin system's React spec shows an extended app plugin, converted for React, answering through the stock TOC plugin handle | Add a React TOC test partition with its own spec | react spec | detail |
 | Copied indent | Each copied TOC file keeps its own six-step indent table | One shared row component both copied files import | shared row | detail |
 | Next step | Plan and build now, as a Pursue continues | Hold at the plan | hold | detail |
+| Plan page | The old page, https://claude.ai/artifact/GEowDNGZd98ZLyrgX7vdB3, no longer opened, so the close made a new one at https://claude.ai/artifact/PUgJNLcnP3gypt4yfrXB7f and keeps it (look) | Delete the new page, if the old one was removed on purpose | drop page | detail |
 
 ## Decision ledger
 
