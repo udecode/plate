@@ -71,7 +71,7 @@ dotai `skills/sync-pstack/assets/pstack/` (`tasks.mjs`, `decisions-check.mjs`, `
 
 ## Close
 
-What landed. The shared chips law is dotai [ba47c0f](https://github.com/udecode/dotai/commit/ba47c0f9213d19b9bb4a9b398e68da5c90f728b3). plate-2's sync of it, the review ledger cut, the 71 scope files, the playbooks, the schema, `AGENTS.md`, the enforcement table and the workflow guide land in the commit that carries this Close.
+What landed. The shared chips law is dotai [ba47c0f](https://github.com/udecode/dotai/commit/ba47c0f9213d19b9bb4a9b398e68da5c90f728b3). plate-2's sync of it, the review ledger cut, the 71 scope files, the playbooks, the schema, `AGENTS.md`, the enforcement table and the workflow guide landed in 009c8c3a5b. Right after it, the ledger logged t_5acb4bd7, t_80b5a22a and t_92d3762d as landed and t_ade3c20a as superseded.
 
 Reversals. Only `/chips` sweeps, which reverses your word of 2026-10-19 that a deep verdict's close and a wave end sweep. A card keeps its title when its priority changes, which reverts the priority half of dotai 4100a08. You took both with "go all".
 
@@ -84,6 +84,5 @@ Counts. 7 steps, 7 done. 2 owner asks, the harsh feedback and "go all. fast", bo
 ## Open work
 
 - Twelve plans still say active, held or planning, so eight review items wait on them. No chip holds this, because a chip that rewrote their `Status:` lines would write active plans and wait on them. owner: zbeyens. stop: each plan's `Status:` is settled.
-- Log the ledger rows once this commit lands, because they cite its hash: landed for t_5acb4bd7, t_80b5a22a and t_92d3762d, superseded for t_ade3c20a. owner: this run. stop: `chips` shows them closed.
 - t_32bd6bba asks whether a verdict deep review runs reflect, because Codex says it does and Claude Code says it does not. owner: zbeyens. stop: the owner starts or drops it.
 - dotai ba47c0f and this commit shipped fast and are owed a review. owner: zbeyens. stop: "full" or the owner drops the review.
