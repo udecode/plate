@@ -44,7 +44,7 @@ Each find becomes an issue, then a fix with a test tagged by the issue. The issu
 | Plate pages in P2 | Every docs page with a live demo, the example pages no docs page shows, and the playground, next to the same page on platejs.org; about 83 pages | Only the docs example pages; every generated docs route | examples only; every route | big |
 | Time per page | 8 minutes for a P1 or P2 page and 6 for P3 or P4, every round. This plan does not shrink it; a later plan decides from rounds 1 and 2 (look) | Halve the time on pages that stay clean | halve clean pages | big |
 | Round size | One session for every page whose plugin's refactor has landed; about two and a half days with two testers in round 1; P6 starts only after the whole pass | Two tester days, with leftover pages waiting a round | two days | big |
-| Pages of plugins still being refactored | Wait for a later round; 12 Plate pages in round 1 (look) | Test every page | every page | big |
+| Pages of plugins still being refactored | Wait until natamox says the plugin is ready or its review closes, then join the round under way; 12 Plate pages wait in round 1 (look) | Test every page | every page | big |
 | Open beta issues | Every open beta bug is a round 1 recheck, even on a held page; feature requests go to a verdict | Recheck only the issues this plan named | named issues | small |
 | Browsers per page | One per round, staggered by page so each round covers Chrome, Safari, Firefox and the iPhone; each page sees all four in four rounds | Every browser every round | every browser | big |
 | Order of work | Your order: test P1 to P5, then fix in that order, then test again | Fix P1 bugs before testing P2 | fix as found | big |
