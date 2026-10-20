@@ -1,6 +1,7 @@
 # Contributor setup instead of per-PR body patches
 
 Status: executed: landed on next, nothing waits on you
+Page: https://claude.ai/artifact/113ovFt1qgMyipxxZAu4dZ
 Playbook: build
 
 The owner read the PR body check's comment on PR 5221 and asked for two changes: "instead of that long github comment, can it just ask to invoke a skill (with a link to it). and instead of patching that way, it should be a one time fix for each contributor having stale agents".
