@@ -2,7 +2,6 @@ import {
   type EditorMarks,
   type EditorUpdateTransaction,
   type Point,
-  PointApi,
   type Range,
   RangeApi,
   type Selection,
@@ -181,57 +180,46 @@ const clonePoint = (point: Point): Point => ({
   path: [...point.path],
 });
 
-const getRangeRoot = (range: Range) => range.anchor.root ?? range.focus.root;
-
-const toDeletionOrder = (ranges: readonly Range[]) =>
-  [...ranges].reverse().filter((range) => !RangeApi.isCollapsed(range));
-
-const orderProjectedDeletions = (ranges: readonly Range[], start: Point) => {
-  const deletions = toDeletionOrder(ranges);
-  const startsAtStart = (range: Range) =>
-    PointApi.equals(RangeApi.start(range), start);
-  const atStart = deletions.filter(startsAtStart);
-
-  return {
-    deletions: [
-      ...deletions.filter((range) => !startsAtStart(range)),
-      ...atStart,
-    ],
-    leavesCaretAtStart: atStart.length > 0,
-  };
-};
-
 const deleteProjectedRanges = (
   editor: RuntimeEditor,
-  tx: Pick<EditorUpdateTransaction, 'command'>,
-  ranges: readonly Range[]
+  ranges: readonly Range[],
+  deleteRange: (range: Range) => void
 ) => {
-  for (const range of ranges) {
-    withProjectedMutationRoot(editor, getRangeRoot(range), () => {
-      tx.command(editorCommands.deleteFragment, {
-        at: range,
-        direction: 'forward',
-      });
-    });
+  for (const range of [...ranges].reverse()) {
+    if (RangeApi.isCollapsed(range)) continue;
+
+    withProjectedMutationRoot(
+      editor,
+      range.anchor.root ?? range.focus.root,
+      () => deleteRange(range)
+    );
   }
 };
 
 const deleteProjectedRangesToStart = (
   editor: RuntimeEditor,
-  tx: Pick<EditorUpdateTransaction, 'command' | 'selection'>,
-  target: ProjectedSelectionTarget
+  tx: Pick<EditorUpdateTransaction, 'anchor' | 'selection'>,
+  target: ProjectedSelectionTarget,
+  deleteRange: (range: Range) => void
 ) => {
-  const { deletions, leavesCaretAtStart } = orderProjectedDeletions(
-    target.ranges,
-    target.start
-  );
-
-  tx.selection.set({ anchor: target.start, focus: target.start });
-  deleteProjectedRanges(editor, tx, deletions);
-
-  if (!leavesCaretAtStart) {
+  // A main-document start has no root, so the view's own root would claim it.
+  withProjectedMutationRoot(editor, target.start.root, () => {
     tx.selection.set({ anchor: target.start, focus: target.start });
-  }
+
+    const firstDeleteOwnsCaret = !RangeApi.isCollapsed(target.ranges[0]);
+    const startThroughDeletes = firstDeleteOwnsCaret
+      ? null
+      : tx.anchor(target.start, {
+          association: 'backward',
+          deletion: 'nearest',
+        });
+
+    deleteProjectedRanges(editor, target.ranges, deleteRange);
+
+    const caret = startThroughDeletes?.resolve();
+
+    if (caret) tx.selection.set({ anchor: caret, focus: caret });
+  });
 };
 
 const applyProjectedViewSelectionTextCommand = ({
@@ -268,11 +256,18 @@ const applyProjectedViewSelectionTextCommand = ({
     // The view wrapper would pin implicit commands to its mounted root.
     const tx = getDefined(getActiveEditorTransaction(editor));
     if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
-    // The caret maps through the deletion, which can merge the text leaves
-    // around a deleted one and leave the start's path behind.
-    deleteProjectedRangesToStart(runtimeEditor, tx, target);
+    deleteProjectedRangesToStart(runtimeEditor, tx, target, (range) => {
+      tx.command(editorCommands.deleteFragment, {
+        at: range,
+        direction: 'forward',
+      });
+    });
 
-    if (text) tx.command(editorCommands.insertText, { text });
+    if (text) {
+      withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
+        tx.command(editorCommands.insertText, { text });
+      });
+    }
     applied = true;
   });
   if (!applied) return true;
@@ -312,30 +307,20 @@ const applyProjectedViewSelectionDataCommand = ({
   const { target } = resolution;
 
   const { combined, insertion, prefix } = editor.read((state) => {
-    const { deletions, leavesCaretAtStart } = orderProjectedDeletions(
-      target.ranges,
-      target.start
+    // The view's builder would pin the start to its mounted root.
+    const deletion = runtimeEditor.read((owner) =>
+      owner.transaction((tx) => {
+        deleteProjectedRangesToStart(runtimeEditor, tx, target, (range) => {
+          const { result } = evaluateCommandWithState(
+            editor,
+            editorCommands.deleteFragment,
+            getEditorStateView(runtimeEditor),
+            { at: range, direction: 'forward' }
+          );
+          if (result) applyTransactionSpec(runtimeEditor, result);
+        });
+      })
     );
-    const collapseToStart = (tx: Pick<EditorUpdateTransaction, 'selection'>) =>
-      tx.selection.set({ anchor: target.start, focus: target.start });
-    const deleted = deletions.reduce(
-      (previous, range) =>
-        state.transaction.extend(previous, () => {
-          withProjectedMutationRoot(runtimeEditor, getRangeRoot(range), () => {
-            const { result } = evaluateCommandWithState(
-              editor,
-              editorCommands.deleteFragment,
-              getEditorStateView(runtimeEditor),
-              { at: range, direction: 'forward' }
-            );
-            if (result) applyTransactionSpec(runtimeEditor, result);
-          });
-        }),
-      state.transaction(collapseToStart)
-    );
-    const deletion = leavesCaretAtStart
-      ? deleted
-      : state.transaction.extend(deleted, collapseToStart);
     const evaluation: { result?: false | TransactionSpec } = {};
     const pasted = state.transaction.extend(deletion, () => {
       withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
@@ -413,7 +398,12 @@ const applyProjectedViewSelectionLineBreakCommand = ({
 
   editor.update(() => {
     const tx = getDefined(getActiveEditorTransaction(editor));
-    deleteProjectedRanges(runtimeEditor, tx, toDeletionOrder(target.ranges));
+    deleteProjectedRanges(runtimeEditor, target.ranges, (range) => {
+      tx.command(editorCommands.deleteFragment, {
+        at: range,
+        direction: 'forward',
+      });
+    });
 
     tx.selection.set({
       anchor: target.start,

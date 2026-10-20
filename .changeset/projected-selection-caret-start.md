@@ -2,4 +2,4 @@
 'plitejs': patch
 ---
 
-Fix typing or pasting over a selection that crosses a synced copy from the end of the paragraph before it. The text landed in the synced copy's shared content, so it showed in every copy, and the paragraph kept its text. It now lands where the selection starts.
+Fix typing, pasting or deleting over a selection that crosses a synced copy and starts at the end of a block. The text or the caret landed in another root, such as the synced copy's shared content, where every copy showed it. It now lands where the selection starts.

@@ -761,30 +761,30 @@ const resolveCoordinatePlacementTarget = ({
   editor: RootInteractionEditor;
   event: MouseEvent<HTMLElement>;
   placement: NonNullable<PliteStringCoordinatePlacement>;
-}): {
-  placementDOMPoint: PliteStringPlacementDOMPoint | null;
-  range: Range | null;
-} => {
-  const placed = {
-    placementDOMPoint: getPliteStringPlacementDOMPoint(placement),
-    range: resolvePliteStringPlacementRange({ editor, placement }),
-  };
+}) => {
+  const range = resolvePliteStringPlacementRange({ editor, placement });
 
   if (
-    !placed.range ||
-    placement.offset != null ||
-    !placement.string.closest('[data-editor-text-flow-host="true"]')
+    range &&
+    placement.offset == null &&
+    placement.string.closest('[data-editor-text-flow-host="true"]')
   ) {
-    return placed;
+    const native = editor.api.dom.resolveEventRange(event.nativeEvent);
+
+    if (
+      native &&
+      RangeApi.isCollapsed(native) &&
+      PathApi.equals(native.anchor.path, range.anchor.path) &&
+      native.anchor.offset !== range.anchor.offset
+    ) {
+      return { placementDOMPoint: null, range: native };
+    }
   }
 
-  const native = editor.api.dom.resolveEventRange(event.nativeEvent);
-
-  return native &&
-    RangeApi.isCollapsed(native) &&
-    PathApi.equals(native.anchor.path, placed.range.anchor.path)
-    ? { placementDOMPoint: null, range: native }
-    : placed;
+  return {
+    placementDOMPoint: getPliteStringPlacementDOMPoint(placement),
+    range: range ?? editor.api.dom.resolveEventRange(event.nativeEvent),
+  };
 };
 
 const hasPointerMoved = (
@@ -1613,8 +1613,7 @@ export const useRootInteractionController = ({
             )
           : null;
         const startRange = coordinatePlacementTarget
-          ? (coordinatePlacementTarget.range ??
-            focusEditor.api.dom.resolveEventRange(event.nativeEvent))
+          ? coordinatePlacementTarget.range
           : action.type === 'place-native-editable'
             ? profilePliteReactDuration(
                 'root-mousedown.resolve-start-range',
