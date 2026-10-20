@@ -1,6 +1,6 @@
 # Verdict: one intake for any input, chips for every open question
 
-Status: building: Slice 1 reviewed, landing it next
+Status: done: both slices landed; the intake's chips wait offered, with no card
 Topic: pstack
 Playbook: plan
 
@@ -10,11 +10,11 @@ The owner wants to run verdict on any intake, draft or issue and ask "what would
 
 ### What will change?
 
-Verdict on any doc, draft or issue gives one page: pushback, an outcome per item and what to do first. Every open question becomes a chip, a proposed removal aside, and "next" shows the chips board.
+Verdict on any doc, draft or issue now gives one page: pushback, an outcome per item and what to do first. Every open question becomes a chip, a proposed removal aside, and "next" shows the chips board. Dylan's spec doc went through it: 14 items, 8 chips offered and 2 folded into open tasks, nothing built.
 
 ### What could go wrong?
 
-An intake could call an item settled on too little reading. New design questions sit in the lower tier, which the default board only counts. "next" now lands somewhere new.
+An intake can call an item settled on too little reading, and no check fails when an open item gets no chip. The shared chips and plan-page skills still describe the old "next" answer until t_70dc11b4 runs. No check catches a promise that one doc drops and another still states in other words; the panels caught each one here.
 
 ## Teach
 
@@ -135,7 +135,7 @@ The warnings added the Topics precedence, the caller sweep's missing subject fil
 
 Limits the build keeps: no check fails when an intake item that needs a chip has none, so Slice 2's proof checks it by hand; `append` validates and appends without a lock, so two sessions offering on one topic at once can race; every Pursue still becomes a P1 build through `ship`, as the owner set on 2026-10-19; a challenge to a build someone already carded cannot make that build wait, so its chip's finding names the build; and an outside-event chip has no wait that clears on the event, so only an answer or the owner's drop closes it.
 
-Diff panel
+### Diff panel
 
 One round on the Slice 1 diff, the same three seats at xhigh, found five critical problems, each checked against the text and applied:
 
@@ -166,14 +166,39 @@ Twelve warnings were applied, three dismissed and one deferred to the dotai chip
 
 ### Slice 2. Run the intake on Dylan's doc
 
-- [ ] 2.1 In this worktree after Slice 1 lands, run the new verdict intake on `input-plite-feature-specs.md`: page, offers and order, with no fix, plan, build, card or sweep. Land only the page and its log. Proof: `plan-page.mjs --check` passes on the intake page; every Bug, Defer and Open question row names a chip id that `chips brief` prints or a task it folded into, and every Settled and Stop row cites a path; the ledger's new rows are only `offered` and `folded`; `review-ledger.mjs show` gives every scope the input touches the same head before and after; and the landed commit changes only the page and its log.
+- [x] 2.1 In this worktree after Slice 1 lands, run the new verdict intake on `input-plite-feature-specs.md`: page, offers and order, with no fix, plan, build, card or sweep. Land only the page and its log. Proof: `plan-page.mjs --check` passes on the intake page; every Bug, Defer and Open question row names a chip id that `chips brief` prints or a task it folded into, and every Settled and Stop row cites a path; the ledger's new rows are only `offered` and `folded`; `review-ledger.mjs show` gives every scope the input touches the same head before and after; and the landed commit changes only the page and its log.
 
 ### Close
 
-- [ ] Fold the delta into `docs/plans/topics/pstack.md`: its Public API, the "next takes the move" and hand-back sweep lines, and its stale Verdict handoff item under Open work. Write the Close and publish the page.
-- [ ] skip: the chips sweep at this close, because the owner said "without pursuing".
-- [ ] Run `/pstack:correct` on the class "wording a change removes from one doc stays in another", the rule-only row of `docs/development/enforcement.md` that the panel's caller-sweep finding repeats.
+- [x] Fold the delta into `docs/plans/topics/pstack.md`: its Public API, the "next takes the move" and hand-back sweep lines, and its stale Verdict handoff item under Open work. Write the Close and publish the page.
+- [x] skip: the chips sweep at this close, because the owner said "without pursuing".
+- [x] Run `/pstack:correct` on the class "wording a change removes from one doc stays in another", the rule-only row of `docs/development/enforcement.md` that the panel's caller-sweep finding repeats.
 
 ## Proof
 
 Logs go to `docs/plans/artifacts/2026-10-19-verdict-intake/` in the main checkout through `node .agents/pstack/proof.mjs`. The base control at `98e4608f4d` already showed that a fixture intake page with no front matter leaves `review-ledger.mjs status` and `check` output unchanged and passes `plan-page.mjs --check`, and that `next` exits 0 there.
+
+## Close
+
+Three commits landed on `next`: 136dd6ac73, "feat(verdict): run verdict on any input and send its open questions to chips", for Slice 1; ad97c5980f, "docs(plans): record the verdict intake on the Plite feature specs", for Slice 2; and this close, which folds the change into the pstack subject.
+
+Reversals and deviations come first. The close ran no chips sweep, on the owner's "without pursuing", so no chip has a card. `append` refused a note on t_0ba5a6e8 because that task is started. When its session rebases it will meet the removed `review-ledger.mjs next`, which now prints the usage line. The pstack subject page moved to a new link because the old one no longer opens, as the Defaults row Topic page link says. The `/pstack:correct` pass shipped no check. The diff round's two leftovers restated dropped promises in other words, and a word-window sweep finds neither of them and cannot tell narrowed wording from moved wording. The class stays rule-only, and its evidence is in `docs/plans/topics/correct.md`.
+
+Proof and its limits follow. Slice 1 passed:
+
+- `check-playbooks.mjs`;
+- the skill mirror check;
+- the shared block, in sync with dotai `e2468fb` after landing;
+- the ledger tests, including the ported busy-expiry test, which fails when `ship` ignores the expiry;
+- the caller grep;
+- the six-route smoke on both runtimes.
+
+The smoke proves routing only. After the round's fixes, Claude calls a proposed removal a defer and never names the intake page, while Codex names both, as decision log row 32 records. For Slice 2, the page check passed and every Bug and Open question row names a task that `chips brief` prints. Every Settled row cites a path. The ledger gained 10 rows, 8 offers and 2 folds. Every touched scope kept its review head, and the landed commit holds only the page and its log. This run reran no browser, screen-reader or print result, so the intake page marks which items rest on source reads and which on the doc's own claims.
+
+All four of the owner's asks are done: the Chips priority reversal, the intake and deep paths, the dropped `next` picker and handoff, and the intake on Dylan's doc without pursuing its output. Architect ran three runners. The plan round applied 7 critical findings. The diff round applied 5 critical findings and 12 warnings, dismissed 3 warnings and deferred 1 to t_70dc11b4.
+
+## Open work
+
+- t_70dc11b4, the diff round's deferred warning, teaches the shared chips and plan-page skills that "next" reads the board. owner: zbeyens. stop: the owner starts or drops it. Tracked in `docs/plans/suggested-tasks.decisions.tsv`.
+- The intake's 8 chips wait offered, with no card, in the order `docs/plans/2026-10-19-plite-feature-specs-intake.md` gives. owner: zbeyens. stop: `/chips` cards them, or the owner drops each. Tracked in `docs/plans/suggested-tasks.decisions.tsv`.
+- The plan panel's limits under Design stay open: no check fails when an intake item lacks its chip, `append` takes no lock, and only an answer or a drop closes an outside-event chip. owner: zbeyens. stop: the first intake that hits one. Tracked here.

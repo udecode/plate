@@ -11,8 +11,8 @@ What to type today for each job, one line per command it replaced, in the order 
 The v2 loop: next item, review, plan and build.
 
 ```text
-next
-review <scope>, then again or interrogate
+next    (the chips board, read only; writes nothing)
+review <scope id>, then again or interrogate
 the verdict leads with today's and the proposed call site
 plan <goal>
 plan <question>    (the Plan playbook reads .agents/playbooks/references/architecture.md)
@@ -144,6 +144,12 @@ panel | arena | full    (panel: /pstack:interrogate on the plan or diff; arena: 
 architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 ```
 
+Verdict intake: any input, and a chip for each open question.
+
+```text
+verdict <a doc, draft, issue or idea>    (pushback, an outcome per item, an order, and a chip for each open one)
+```
+
 ## Hard cuts and app migration
 
 Every command typed before pstack, each on the same line as what replaces it today.
@@ -163,8 +169,8 @@ $task <goal>
 ```
 
 ```text after
-next
-review <scope>, then again or interrogate
+next    (the chips board, read only; writes nothing)
+review <scope id>, then again or interrogate
 the verdict leads with today's and the proposed call site
 plan <goal>
 $plate-architecture [quick | deep | audit] <question>
@@ -368,6 +374,16 @@ panel | arena | full    (panel: /pstack:interrogate on the plan or diff; arena: 
 architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 ```
 
+Verdict intake: any input, and a chip for each open question.
+
+```text before
+(no intake: a review took one ledger scope)
+```
+
+```text after
+verdict <a doc, draft, issue or idea>    (pushback, an outcome per item, an order, and a chip for each open one)
+```
+
 ## Main changes
 
 - **pstack runs the method.** poteto-mode, its playbooks and the pstack block in `AGENTS.md` own lifecycle, tests, review, plans and delivery; Plate skills keep only Plate knowledge. Claude Code runs Opus and Codex runs gpt-6.1-sol, and pstack's own panels bring in the other family.
@@ -385,7 +401,7 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - **cross-review and autoreview are gone.** High-risk code gets the panel on one commit in a detached worktree. Someone else's PR gets a review-only panel; its findings go in the reply, and the run keeps no plan, page or decision log. `sync-pstack verify` flags a project playbook that names a panel tool without citing a reviews row, a citation of a missing row and a retired `bigWork`, `risk` or `reviewPr` field.
 - **A row runs only the tool and stage it names.** An Ellie access change listed for a diff panel runs neither `architect` nor a plan panel. Ellie's `high-risk` row covers code that changes who can read PHI or that writes, exports or sends it, plus auth, the database or migrations, customer sends and shared product code. A review-only panel has no rounds, logs no rows and answers in the reply. The Panel rule carries an overrides note for each pstack step it suppresses.
 - **sync-pstack carries the opt-in panels lessons.** Reviews mode lists each pstack step that calls a tool by default as a Defaults row, and smokes an uncovered request from the project's most common work. Lesson runs the whole smoke set on the final block before the trail review, follows the gate in force, searches a concept's stem before the first smoke, fixes a synced commit with a new commit, and updates each out-of-repo guide a project's `AGENTS.md` lists. Smokes sort the conflicts they report, and a denied read is inconclusive.
-- **A lighter review loop.** A Pursue verdict goes straight into the plan with no panel of its own, `next` records one move for the item's state and the lead takes it in the same run, and project playbooks rank with plate-2's rules outside the pstack block.
+- **A lighter review loop.** A Pursue verdict goes straight into the plan with no panel of its own, and project playbooks rank with plate-2's rules outside the pstack block.
 - **pstack 0.9.64 owns project playbooks and PR sections.** poteto-mode's Project playbooks paragraph and `check-playbooks.mjs` apply each project playbook, and the block keeps only each project's playbook list. A PR body links its plan first, then follows Opening a PR, with `## What changed` for symbols and paths and `## Scope` for what the PR covers and leaves out.
 - **A bump audits the project skills.** When `CHANGES.md` adds or changes a skill or principle, sync-pstack's Sync mode runs its Audit on each synced project at the new pin, and the Audit runs a panel only when the Panel review rule allows it or the owner says "panel". user-pin refreshes Claude Code with a marketplace add from the pinned entry.
 - **A repeated mistake goes to `correct`.** The block sends a code, shell or tool mistake the user corrects a second time to `/pstack:correct`, whose commits follow Delivery; a shell mistake gets a helper first, then a hook, then text. `reflect` keeps workflow lessons, and the lead applies every Accepted lesson without waiting.
@@ -399,7 +415,7 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - **What pstack covers is gone.** dotai cut autogoal and gpt-pro; Ellie cut improve, its prototype rule, next-dev-loop, two process docs and nine vendor skills; plate-2 retired sync-vision, folded plate-architecture into `.agents/playbooks/references/architecture.md`, dropped maintainer's heartbeat and the feature pack's process copies, and uninstalled four vendor skills.
 - **Reviews have no round cap.** The block follows pstack, which limits no rounds: a round reruns after an applied critical fix and stops when no critical finding remains or each is dismissed. A design changed for a reason other than a review's findings is reviewed again before its first behavior edit, so nothing waits for an "another round" word.
 - **Agents load only what every task needs.** `AGENTS.md` is 32 KB, down from 111 KB. Code rules live in `CODING_STANDARDS.md`, which the Code pointer sends agents to before they plan or make a code change. The shared block keeps the rules every task needs plus one pointer per process, and `sync-pstack` renders eight rule files into `.agents/pstack/rules/` from its `RULE_FILES` table. A `pushBranches` setting replaces Plate's prose push grants, and `pnpm lint:task` lints a task's own files with the flags `pnpm check` uses.
-- **Suggested tasks live in a ledger, and a card is only a view.** The ledger is the project's tracker. Where pstack would file a tracked issue, a follow-up, a reflect Backlog item or an out-of-band PR, the lead offers a suggested task. `.agents/pstack/tasks.mjs` reads `suggested-tasks.decisions.tsv` into tasks that keep one id for good, and `decisions-check.mjs chips` prints them as Ready, Started, Waiting, Unmigrated and Lost with a Do list. Each task names a topic and typed waits, `pr:`, `task:` and `run:`, that clear with no new row. Only a ready task gets a card, which names the session that offered it, and a card leaving the queue leaves its task open. A topic holds one open design question that waits on no task of its topic. A finding on the question of an offered task with no card folds into it, and `dismissed dup` moves a duplicate's work into the task it keeps. A task with a card takes no new work. A finding on its question waits on it with `task:`, and `chips` merges it once the card is withdrawn, so dismissing a card closes only what it showed. The Do list shows withdrawals, then ledger rows, then cards. A row that blames the base branch names a check an open task owns. A title is a plain imperative or ends in `(xhigh)`, and a card passes that effort, capped by the project's highest role effort. The `chips` skill runs the ledger. Plain `/chips` applies the Do list, settles stale and split tasks from `chips stale`, cards what can start and reports what changed, and `offer`, `start` and `drop` act on one task. `chips stale` tells a path deleted since the offer from one the offer never had. pstack runs a quick sweep, without the stale step, at each hand-back.
+- **Suggested tasks live in a ledger, and a card is only a view.** The ledger is the project's tracker. Where pstack would file a tracked issue, a follow-up, a reflect Backlog item or an out-of-band PR, the lead offers a suggested task. `.agents/pstack/tasks.mjs` reads `suggested-tasks.decisions.tsv` into tasks that keep one id for good, and `decisions-check.mjs chips` prints them as Ready, Started, Waiting, Unmigrated and Lost with a Do list. Each task names a topic and typed waits, `pr:`, `task:` and `run:`, that clear with no new row. Only a ready task gets a card, which names the session that offered it, and a card leaving the queue leaves its task open. A topic holds one open design question that waits on no task of its topic. A finding on the question of an offered task with no card folds into it, and `dismissed dup` moves a duplicate's work into the task it keeps. A task with a card takes no new work. A finding on its question waits on it with `task:`, and `chips` merges it once the card is withdrawn, so dismissing a card closes only what it showed. The Do list shows withdrawals, then ledger rows, then cards. A row that blames the base branch names a check an open task owns. A title is a plain imperative or ends in `(xhigh)`, and a card passes that effort, capped by the project's highest role effort. The `chips` skill runs the ledger. Plain `/chips` applies the Do list, settles stale and split tasks from `chips stale`, cards what can start and reports what changed, and `offer`, `start` and `drop` act on one task. `chips stale` tells a path deleted since the offer from one the offer never had. pstack runs a quick sweep, without the stale step, at each hand-back except a verdict intake's, which only offers its chips.
 - **On another person's PR, the lead comments instead of rewriting.** After it pushes to another person's PR branch, the lead leaves their description alone and keeps one comment about its own commits current, rendered with `plan-page --comment`. The Messages rule lets that comment through without a separate go, and a runtime that refuses the post, such as Codex, leaves it as a draft under Needs you.
 - **A chips sweep settles a started task from its session and asks nothing.** A `started` row names its session in `session:` where the runtime's session tool gives one, and `chips --session` adds a check item for each started task another session runs. Once the session tool reports that session archived, the sweep logs `landed` when a commit holds the change or the session reported delivering it, and `dismissed stopped` only when it left no patch and no uncommitted edit on the task's paths in this checkout or its own worktree. Otherwise, and in a runtime with no session tool, the task stays started and the report names the owner's "drop <id>", which Drop logs as `dismissed stopped`.
 - **Suggested tasks run in waves by dependency.** A task waits only on a merged PR, a finished plan or another task's result. A shared project path no longer holds it back, because each card session works in its own worktree. Only a path outside the checkout still queues one task behind another. Before each card, and for each carded task in a full sweep, the lead judges whether the task needs the result of a task that shares its paths. A card session lands its own work with a plain `git apply` onto the checkout and logs `landed` with `patch:`, and a `task:` wait on that patch clears once the checkout commits its paths. The sweep that runs on the owner's next message or at a hand-back cards the next wave, and no background wait wakes the lead on each landing. A fix marked `fast: yes` skips its own review panels, and the ledger keeps its landed work owed a review until a `kind: review` task logs `reviewed` on it.
@@ -414,6 +430,7 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - **The block has a byte budget.** dotai's `scripts/validate-skills` refuses `assets/block.md` over 39,500 bytes and says to move a rule's detail into a rule file.
 - **Landed commits name their session.** `land.mjs` ends each commit with `Session:` and, when the task changes one dated plan, `Plan:`. `review.mjs` lists unreviewed commits grouped by session, `--done <session>` marks one session reviewed, and a run that landed a commit closes with a 👀 title.
 - **Tools block two trunk mistakes.** `guard.mjs` denies the desktop app's `sync_with_base_branch`, which refuses `next` whenever it changes `.claude` files, and names the rebase. `sync-pstack apply` and `sync` refuse to write a trunk project's main checkout when its clone sets `pstack.delivery`.
+- **Verdict takes any input, and chips hold the questions.** `verdict` on a doc, draft, issue or idea writes one intake page that closes at once, with pushback, an outcome per item and an order, and offers a chip for each open item. A Stop, Pursue or Defer review of one scope takes its exact id. A new design question becomes a `decide` chip in topic `review-<scope>`, except a hard cut's, and the review ledger keeps answers. "next" reads the chips board and writes nothing. `review-ledger.mjs next`, verdict's session handoff and the ledger triage audit are gone. The plan is `docs/plans/2026-10-19-verdict-intake.md`.
 
 ## Open work
 
@@ -441,8 +458,6 @@ architect runners: opus, codex:gpt-6-astra @high, codex:gpt-6.1-sol @xhigh
 - The first real wave: a card session lands its patch through the brief's footer, and the next sweep cards the next wave. owner: the lead of the next chips sweep. stop: the first card session that logs `landed` with `patch:`.
 - The block's Git rule pushes a repair to another person's PR with `git push origin HEAD:<head branch>`, which misses a head branch on a fork; suggested task `task_295ff37f` fixes it. owner: zbeyens. stop: the owner starts or drops the task.
 - Reflect backlog from the PR comment delivery run, listed in `docs/plans/2026-10-14-pr-comment-delivery.md`'s Reflect section: `plan-page --pr` refusing another author's PR, `status` and `verify` printing stale installed dotai skills, the retired-policy search on a skill change, and a `started` row the ledger refuses while another lead's `Now` task shares a path. owner: zbeyens. stop: the owner takes or drops each.
-
-- plate-2's Verdict playbook still names `spawn_task` for its one-click offer of the next ledger item, and says such an offer opens in a worktree, which a `start_session` card offered with `use_worktree: false` does not (`.agents/playbooks/verdict.md:28` and `:30`). owner: zbeyens. stop: the owner takes or drops it.
 
 - plate-2's changes from the opt-in panels iteration wait for the owner's commit: `.agents/pstack.json`, `AGENTS.md`, the Plan, Build, Perf issue, API review and Babysit playbooks, `docs/development/agent-skills.md` and the benchmark and feature templates, plus the panel lessons iteration's out-of-repo guide line in `AGENTS.md`, the plan-page copy and `skills-lock.json`. owner: Ziad, tracked here.
 - The close order runs `lint:fix` after a diff panel, but the Review rule cherry-picks the reviewed commit unchanged, so a formatter edit ships bytes no seat saw. owner: Ziad, tracked here.
