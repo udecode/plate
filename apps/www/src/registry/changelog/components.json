@@ -1,6 +1,20 @@
 {
   "schemaVersion": 1,
   "components": {
+    "date": [
+      "2026-10-20-date-copied-labels",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-08-30-fix-date-calendar-single-click",
+      "2026-08-25-base-first-registry",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "date-static": [
+      "2026-10-20-date-copied-labels",
+      "2026-10-08-registry-install-dependencies",
+      "2026-08-18-complete-v54-ast-contracts",
+      "2026-08-17-flat-editor-registry"
+    ],
     "export-toolbar-button": [
       "2026-10-19-export-toolbar-docx-load",
       "2026-10-12-neutral-stored-names",
@@ -850,11 +864,6 @@
       "2026-07-24-collaboration-runtime",
       "2025-11-20-biome-ultracite"
     ],
-    "date-static": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
     "link-static": [
       "2026-10-08-registry-install-dependencies",
       "2026-08-17-flat-editor-registry"
@@ -1128,13 +1137,6 @@
     "controlled-demo": [
       "2026-09-06-registry-lifetime-repairs",
       "2025-11-20-biome-ultracite"
-    ],
-    "date": [
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-08-30-fix-date-calendar-single-click",
-      "2026-08-25-base-first-registry",
-      "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
     ],
     "code-block-codemirror-demo": ["2026-09-04-code-block-editing-and-syntax"],
     "code-block-views-demo": ["2026-09-04-code-block-editing-and-syntax"],

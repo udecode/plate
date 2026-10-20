@@ -11,7 +11,6 @@
       "mock.module('platejs/react', () => ({"
     ],
     "apps/www/src/registry/components/editor/date-static.spec.tsx": [
-      "mock.module('platejs/date', () => ({",
       "mock.module('platejs/static', () => ({"
     ],
     "apps/www/src/registry/components/editor/editor.spec.tsx": [

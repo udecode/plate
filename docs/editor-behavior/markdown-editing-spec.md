@@ -1948,20 +1948,26 @@ Plugin surface:
 
 - date plugins expose `editor.update.date.insert`
 - this section defines current boundary and insertion law, not date-picker UI
-- current canonical node payload is one `YYYY-MM-DD` calendar-day string on
-  `node.date`
-- current markdown contract writes canonical dates as
-  `<date value="YYYY-MM-DD" />`
-- current markdown read path accepts both:
-  - legacy plain `<date>value</date>` child-text
-  - canonical `<date value="YYYY-MM-DD" />`
-- legacy child-text values that do not normalize safely stay on an explicit raw
-  fallback path instead of being silently reinterpreted as canonical dates
-- bundled renderers may derive relative labels or long-date display from the
-  canonical node value, but that is render-layer behavior layered on top of the
-  canonical payload
-- a bundled renderer derives relative labels from the canonical `YYYY-MM-DD`
-  value without timezone drift and renders raw fallback text literally
+- the node payload is one required `value` string that holds a `YYYY-MM-DD`
+  calendar day or authored text, such as `sometime next week`, and
+  `parseCanonicalDateValue` tells them apart
+- `insert` stores a `Date` as its local day and a string as written, trimmed
+- v1's `toDateString()` text, such as `Mon Mar 23 2026`, converts to its day
+  only in the v54 migration and the Markdown reader, and only when its weekday
+  matches; other text stays as written
+- the Markdown writer emits `<date value="YYYY-MM-DD" />` for a day and
+  `<date text="…" />` for any other text, because Markdown can change child
+  text, such as a blank line or an emoji shortcode; a day the host zone
+  skipped writes as a `text` attribute and reads back the same
+- the Markdown reader accepts `<date value>`, `<date>` child text and
+  `<date text>`, and keeps a `text` attribute as written
+- the copied live renderer computes Today, Yesterday or Tomorrow during render,
+  from the server's clock in server HTML and the viewer's clock in the browser,
+  and prints other days as the full date; the copied
+  static renderer always prints the full date, so an export never goes stale
+- both renderers print a day in UTC from the stored string, so the printed day
+  does not depend on the host zone, except a day the host zone skipped, which
+  prints as stored text; both print authored text literally
 - the contract has no locale- or timezone-aware serialized semantics and no display-vs-value payload split
 
 - `EDIT-DATE-INSERT-001` `locked`
@@ -1997,11 +2003,11 @@ note: deleting forward at the boundary removes the whole date atom
 Date: <date value="2024-01-01" />
 ```
 
-note: current canonical node value is `YYYY-MM-DD`
-note: current writer emits canonical attribute form for normalized date values
-note: current read path still accepts legacy child-text `<date>value</date>`
-note: non-normalizable legacy child text stays on an explicit raw fallback path
-instead of being treated as canonical date data
+note: a stored day writes the `value` attribute form and reads back as the same day
+note: the reader also accepts `<date>` child text and `<date text="…" />`, and
+reads `toDateString()` text in child text or a `value` attribute as its day when
+the weekday matches
+note: authored text writes as a `text` attribute and reads back as written
 
 ## TOC
 

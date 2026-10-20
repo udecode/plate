@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  formatDateValue,
-  getDateDisplayLabel,
-  parseCanonicalDateValue,
-} from 'platejs/date';
+import { formatDateValue, parseCanonicalDateValue } from 'platejs/date';
 import { DatePlugin } from 'platejs/date/react';
 import {
   type EditorElementProps,
@@ -21,6 +17,26 @@ import {
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
+
+const DAY_MS = 86_400_000;
+const RELATIVE_DAYS: Partial<Record<number, string>> = {
+  [-1]: 'Yesterday',
+  0: 'Today',
+  1: 'Tomorrow',
+};
+const dateFormat = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'long',
+  timeZone: 'UTC',
+});
+
+const getDateLabel = (value: string) => {
+  if (!parseCanonicalDateValue(value)) return value;
+
+  const day = Date.parse(value);
+  const today = Date.parse(formatDateValue(new Date()));
+
+  return RELATIVE_DAYS[(day - today) / DAY_MS] ?? dateFormat.format(day);
+};
 
 export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
   const { editor, element } = props;
@@ -65,7 +81,7 @@ export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
       ref={buttonRef}
       type="button"
     >
-      {getDateDisplayLabel(element.value)}
+      {getDateLabel(element.value)}
     </button>
   );
 

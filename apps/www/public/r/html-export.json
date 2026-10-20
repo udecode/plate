@@ -69,7 +69,7 @@
     },
     {
       "path": "src/registry/examples/values/date-value.tsx",
-      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test';\nimport type { Value } from 'platejs';\n\njsx;\n\nconst today = new Date().toISOString().split('T')[0];\n\nexport const dateValue: Value = (\n  <fragment>\n    <hheading level={2}>Date</hheading>\n    <hp>\n      Insert and display dates within your text using inline date elements.\n      These dates can be easily selected and modified using a calendar\n      interface.\n    </hp>\n    <hp>\n      Try selecting{' '}\n      <hdate value=\"2024-01-01\">\n        <htext />\n      </hdate>{' '}\n      or{' '}\n      <hdate value={today}>\n        <htext />\n      </hdate>\n      .\n    </hp>\n  </fragment>\n);\n",
+      "content": "/** @jsxRuntime classic */\n/** @jsx jsx */\nimport { jsx } from '@platejs/test';\nimport type { Value } from 'platejs';\n\njsx;\n\nexport const dateValue: Value = (\n  <fragment>\n    <hheading level={2}>Date</hheading>\n    <hp>\n      Insert and display dates within your text using inline date elements.\n      These dates can be easily selected and modified using a calendar\n      interface.\n    </hp>\n    <hp>\n      Try selecting{' '}\n      <hdate value=\"2024-01-01\">\n        <htext />\n      </hdate>{' '}\n      or{' '}\n      <hdate value=\"2025-05-08\">\n        <htext />\n      </hdate>\n      .\n    </hp>\n  </fragment>\n);\n",
       "type": "registry:example"
     },
     {

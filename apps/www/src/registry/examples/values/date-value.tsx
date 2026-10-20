@@ -5,8 +5,6 @@ import type { Value } from 'platejs';
 
 jsx;
 
-const today = new Date().toISOString().split('T')[0];
-
 export const dateValue: Value = (
   <fragment>
     <hheading level={2}>Date</hheading>
@@ -21,7 +19,7 @@ export const dateValue: Value = (
         <htext />
       </hdate>{' '}
       or{' '}
-      <hdate value={today}>
+      <hdate value="2025-05-08">
         <htext />
       </hdate>
       .

@@ -928,8 +928,6 @@
             "BaseDatePlugin",
             "DateElement",
             "formatDateValue",
-            "getDateDisplayLabel",
-            "normalizeDateValue",
             "parseCanonicalDateValue"
           ],
           "excludeReason": "No curated reference page owns this symbol yet.",

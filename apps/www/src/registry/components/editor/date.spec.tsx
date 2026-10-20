@@ -1,20 +1,20 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  setSystemTime,
+} from 'bun:test';
 
-import { fireEvent, render } from '@testing-library/react';
-import * as PlateDate from 'platejs/date';
+import { act, fireEvent, render } from '@testing-library/react';
 import * as PlateReact from 'platejs/react';
 import * as React from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { renderToString } from 'react-dom/server';
 
-const formatDateValueMock = mock(
-  (date: Date) =>
-    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-);
-const getDateDisplayLabelMock = mock((value: string) => {
-  if (value === '2026-03-23') return 'Today';
-
-  return value;
-});
-const parseCanonicalDateValueMock = mock(() => new Date(2026, 2, 23));
 const plateElementMock = mock();
 const useReadOnlyMock = mock();
 const PopoverMockContext = React.createContext<{
@@ -23,13 +23,6 @@ const PopoverMockContext = React.createContext<{
 }>({});
 let openOnFocus = false;
 let popoverMode: 'passive' | 'passthrough' | 'radix' = 'passthrough';
-
-mock.module('platejs/date', () => ({
-  ...PlateDate,
-  formatDateValue: formatDateValueMock,
-  getDateDisplayLabel: getDateDisplayLabelMock,
-  parseCanonicalDateValue: parseCanonicalDateValueMock,
-}));
 
 mock.module('platejs/react', () => ({
   ...PlateReact,
@@ -100,11 +93,49 @@ mock.module('@/lib/utils', () => ({
     values.filter(Boolean).join(' '),
 }));
 
+// Bun tests run in UTC when TZ is unset, and deleting TZ stops Bun from
+// applying a later change, so restore a value instead.
+const originalTimeZone = process.env.TZ ?? 'UTC';
+
+const createDateElement = async (value: string) => {
+  const { DateElement } = await import(
+    `./date?test=${Math.random().toString(36).slice(2)}`
+  );
+
+  return (
+    <DateElement
+      attributes={{}}
+      editor={{}}
+      element={{ children: [{ text: '' }], type: 'date', value }}
+    >
+      {null}
+    </DateElement>
+  );
+};
+
+const hydrateLabel = async (html: string, element: React.ReactElement) => {
+  const container = document.createElement('div');
+  const recoverableErrors: unknown[] = [];
+
+  container.innerHTML = html;
+  document.body.append(container);
+
+  const root = await act(async () =>
+    hydrateRoot(container, element, {
+      onRecoverableError: (error) => recoverableErrors.push(error),
+    })
+  );
+  const label = container.querySelector('button')?.textContent;
+
+  act(() => root.unmount());
+  container.remove();
+
+  return { label, recoverableErrors };
+};
+
 describe('DateElement', () => {
   beforeEach(() => {
-    formatDateValueMock.mockClear();
-    getDateDisplayLabelMock.mockClear();
-    parseCanonicalDateValueMock.mockClear();
+    setSystemTime(new Date(2026, 2, 23, 9));
     plateElementMock.mockReset();
     useReadOnlyMock.mockReset();
     useReadOnlyMock.mockReturnValue(false);
@@ -112,34 +143,55 @@ describe('DateElement', () => {
     popoverMode = 'passthrough';
   });
 
+  afterEach(() => {
+    setSystemTime();
+    process.env.TZ = originalTimeZone;
+  });
+
   afterAll(() => {
     mock.restore();
   });
 
-  it('renders canonical dates through the shared relative-label helper', async () => {
-    const { DateElement } = await import(
-      `./date?test=${Math.random().toString(36).slice(2)}`
-    );
+  it.each([
+    ['2026-03-22', 'Yesterday'],
+    ['2026-03-23', 'Today'],
+    ['2026-03-24', 'Tomorrow'],
+    ['2026-04-01', 'April 1, 2026'],
+    ['2026-02-30', '2026-02-30'],
+    ['sometime next week', 'sometime next week'],
+  ])('labels %s as %s', async (value, label) => {
+    const element = await createDateElement(value);
 
-    const view = render(
-      <DateElement
-        attributes={{}}
-        editor={{}}
-        element={
-          {
-            children: [{ text: '' }],
-            value: '2026-03-23',
-            type: 'date',
-          } as any
-        }
-      >
-        {null}
-      </DateElement>
+    expect(render(element).container.querySelector('button')?.textContent).toBe(
+      label
     );
+  });
 
-    expect(
-      view.getByRole('button', { name: 'Today' }).getAttribute('type')
-    ).toBe('button');
+  it.each([
+    ['2026-03-23', 'Today'],
+    ['2026-03-24', 'Tomorrow'],
+  ])(
+    'labels %s as %s late on March 23 in Los Angeles',
+    async (value, label) => {
+      process.env.TZ = 'America/Los_Angeles';
+      setSystemTime(new Date(2026, 2, 23, 23, 30));
+      const element = await createDateElement(value);
+
+      expect(
+        render(element).container.querySelector('button')?.textContent
+      ).toBe(label);
+    }
+  );
+
+  it('hydrates server HTML that already holds the relative word', async () => {
+    const element = await createDateElement('2026-03-23');
+    const html = renderToString(element);
+
+    expect(html).toContain('Today');
+    expect(await hydrateLabel(html, element)).toEqual({
+      label: 'Today',
+      recoverableErrors: [],
+    });
   });
 
   it('owns first-click opening with a passive popover wrapper', async () => {
@@ -209,7 +261,8 @@ describe('DateElement', () => {
     expect(view.getByTestId('calendar-select')).toBeTruthy();
   });
 
-  it('writes the canonical date value on calendar selection', async () => {
+  it('writes the picked calendar day', async () => {
+    process.env.TZ = 'Asia/Tokyo';
     const setNodes = mock();
     const element = {
       children: [{ text: '' }],

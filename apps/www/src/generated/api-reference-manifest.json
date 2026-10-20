@@ -11496,30 +11496,6 @@
           "source": null,
           "typeParameters": []
         },
-        "platejs/date:getDateDisplayLabel": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/date",
-          "kind": "const",
-          "name": "getDateDisplayLabel",
-          "route": null,
-          "runtime": true,
-          "signature": "getDateDisplayLabel: (value: string, { now }?: {\n  now?: Date;\n}) => string",
-          "source": null,
-          "typeParameters": []
-        },
-        "platejs/date:normalizeDateValue": {
-          "aliases": [],
-          "documentation": "",
-          "entrypoint": "platejs/date",
-          "kind": "const",
-          "name": "normalizeDateValue",
-          "route": null,
-          "runtime": true,
-          "signature": "normalizeDateValue: (value?: Date | string) => string | undefined",
-          "source": null,
-          "typeParameters": []
-        },
         "platejs/date:parseCanonicalDateValue": {
           "aliases": [],
           "documentation": "",

@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-20-date-copied-labels",
+      "href": "/registry/changelog/2026-10-20-date-copied-labels.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Build Date labels in the copied items",
+      "change": {
+        "type": "source",
+        "date": "2026-10-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["date", "date-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-export-toolbar-docx-load",
       "href": "/registry/changelog/2026-10-19-export-toolbar-docx-load.json",
       "status": "draft",

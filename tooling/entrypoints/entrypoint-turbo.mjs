@@ -67,7 +67,7 @@ const runtimeTestHarnessInputs = () => [
 // Strict env mode hides any variable a task does not declare, so a replay
 // seed, a run count or the plitejs law switch would never reach the test.
 const runtimeTestEnv = {
-  platejs: ['PLATE_*', 'PLITE_*'],
+  platejs: ['PLATE_*', 'PLITE_*', 'TZ'],
   plitejs: ['FILL_LAW_*', 'PLITE_*'],
 };
 const typecheckedExternalTestFiles = {

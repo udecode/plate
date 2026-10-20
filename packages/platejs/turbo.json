@@ -2895,7 +2895,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2951,7 +2958,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -2998,7 +3012,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3039,7 +3060,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3082,7 +3110,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3122,7 +3157,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3167,7 +3209,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3209,7 +3258,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3254,7 +3310,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3297,7 +3360,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3711,7 +3781,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3756,7 +3833,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3808,7 +3892,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3851,7 +3942,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3907,7 +4005,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -3951,7 +4056,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4006,7 +4118,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4055,7 +4174,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4100,7 +4226,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4142,7 +4275,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4185,7 +4325,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4238,7 +4385,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4282,7 +4436,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4338,7 +4499,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4380,7 +4548,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4430,7 +4605,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4481,7 +4663,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4543,7 +4732,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4594,7 +4790,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4639,7 +4842,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4681,7 +4891,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4742,7 +4959,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4884,7 +5108,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -4925,7 +5156,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5213,7 +5451,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5264,7 +5509,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5307,7 +5559,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5350,7 +5609,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5402,7 +5668,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5449,7 +5722,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5497,7 +5777,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5546,7 +5833,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5601,7 +5895,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5649,7 +5950,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5699,7 +6007,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5741,7 +6056,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5785,7 +6107,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5832,7 +6161,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5887,7 +6223,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5937,7 +6280,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -5980,7 +6330,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -6027,7 +6384,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -6072,7 +6436,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -6120,7 +6491,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
@@ -6168,7 +6546,14 @@
         "bunfig.toml",
         "vitest.config.*"
       ],
-      "env": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED", "PLATE_*", "PLITE_*"],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
       "outputLogs": "errors-only",
       "outputs": []
     },
