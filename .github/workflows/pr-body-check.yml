@@ -38,7 +38,6 @@ jobs:
         with:
           script: |
             const MARKER = '<!-- pr-body-check -->';
-            const PLAN = /^docs\/plans\/\d{4}-\d\d-\d\d-[^/]+\.md$/u;
             const { owner, repo } = context.repo;
             const number = context.payload.pull_request.number;
             // A rerun judges the body as it is now, not as the event that started the run saw it.
@@ -64,46 +63,11 @@ jobs:
               return;
             }
 
-            const files = await github.paginate(github.rest.pulls.listFiles, { owner, repo, pull_number: number, per_page: 100 });
-            const plans = files.filter((file) => file.status !== 'removed' && PLAN.test(file.filename)).map((file) => file.filename);
-            const view = `mkdir -p docs/plans/artifacts && gh pr view ${number} --repo ${owner}/${repo} --json body --jq .body > docs/plans/artifacts/pr-${number}-body.md`;
-            const render = (plan) => [
-              '```text',
-              `1. ${view}`,
-              `2. node .agents/pstack/plan-page.mjs ${plan} --pr --into docs/plans/artifacts/pr-${number}-body.md`,
-              `3. gh pr edit ${number} --repo ${owner}/${repo} --body-file <the file step 2 printed>, with each --attach line step 2 printed`,
-              '```',
-            ];
-            const fix =
-              plans.length === 1
-                ? [
-                    `This PR changes the plan \`${plans[0]}\`, so its body is that plan's page. Ask your agent to read the \`plan-page\` skill's PR section, then run these steps from a checkout at this PR's head:`,
-                    '',
-                    ...render(plans[0]),
-                  ]
-                : plans.length > 1
-                  ? [
-                      `This PR changes ${plans.length} plans: ${plans.map((plan) => `\`${plan}\``).join(', ')}. Its body is the page of the one plan that covers the whole diff, or of a PR plan whose \`Plans:\` line lists them. Ask your agent to read the \`plan-page\` skill's PR section, pick or write that plan, then run these steps from a checkout at this PR's head:`,
-                      '',
-                      ...render('<that plan>'),
-                    ]
-                  : [
-                      'This PR changes no plan under `docs/plans`. Ask your agent to add to the body a short paragraph on why the change exists and a line that starts with `Beyond the ask:`, naming each change the request did not ask for or saying `none`, with these steps from a checkout of this repository:',
-                      '',
-                      '```text',
-                      `1. ${view}`,
-                      `2. Add the paragraph and the Beyond the ask: line to docs/plans/artifacts/pr-${number}-body.md.`,
-                      `3. gh pr edit ${number} --repo ${owner}/${repo} --body-file docs/plans/artifacts/pr-${number}-body.md`,
-                      '```',
-                    ];
+            const skill = `https://github.com/${owner}/${repo}/blob/next/.agents/skills/contributor-setup/SKILL.md`;
             const text = [
               '### PR body check fails',
               '',
-              'A PR into `next` opens through `node .agents/pstack/land.mjs`, which writes its body. This body has neither a plan page nor a `Beyond the ask:` line.',
-              '',
-              ...fix,
-              '',
-              'The check runs again when the body changes.',
+              `\`land.mjs\` did not write this body, so the agent that opened this PR likely runs an old setup. Pull \`next\`, then ask your agent to run the [contributor-setup](${skill}) skill once. It updates the setup and fixes this body, and the check runs again on the edit.`,
             ].join('\n');
             await post(text);
             core.setFailed(text);

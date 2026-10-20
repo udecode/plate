@@ -56,6 +56,7 @@ These are shortcuts for one job, not a sequence to run.
 | Draft a Plate Beta issue from video or text | `$maintainer issue-draft <video or text>` |
 | Inspect, sync, promote or verify release lanes | `$release-lanes status`, `sync dry-run`, `sync`, `promote`, `promote execute` or `verify` |
 | Clean up idle caches and finished worktrees | `/cleanup` |
+| Set up your agent for this repository, or fix a failed PR body check | `/contributor-setup` |
 
 ## Find the rule
 
@@ -94,6 +95,7 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | [benchmark](../../.agents/skills/benchmark/SKILL.md) | Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. |
 | [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review or repair a Plate or Plite public call shape with the Plate API lens. |
 | [verdict](../../.agents/skills/verdict/SKILL.md) | Say what to do from any input, or judge one Plate or Plite review scope by its exact id. |
+| [contributor-setup](../../.agents/skills/contributor-setup/SKILL.md) | Bring your coding agent's Plate setup up to date once, then fix the bodies of your open PRs into next. |
 | [changeset](../../.agents/skills/changeset/SKILL.md) | Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. |
 | [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence. |
 | [maintainer](../../.agents/skills/maintainer/SKILL.md) | Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof. |
