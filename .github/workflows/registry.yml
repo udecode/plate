@@ -32,7 +32,7 @@ jobs:
     name: Validate Registry
     runs-on: ubuntu-latest
     if: >-
-      github.event_name == 'pull_request' && github.repository == 'udecode/plate' && (vars.SKIP_NEXT_CI != 'true' || github.base_ref != 'next') && (
+      github.event_name == 'pull_request' && github.repository == 'udecode/plate' && github.base_ref != 'next' && (
         github.event.pull_request.head.repo.full_name != github.repository ||
         !startsWith(github.event.pull_request.head.ref, 'changeset-release/')
       )
