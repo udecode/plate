@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-20-preserve-more-formatting-toolbar",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-20-preserve-more-formatting-toolbar.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the floating toolbar after closing More formatting",
+  "targets": [
+    {
+      "name": "more-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/more-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-20-more-toolbar-keep-floating-after-closing-3ef25023",
+      "kind": "fix",
+      "summary": "Keep the floating toolbar after closing More formatting",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["more-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-20",
+          "entry": "2026-10-20-preserve-more-formatting-toolbar",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

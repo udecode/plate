@@ -33,6 +33,10 @@ export function MoreToolbarButton() {
       <DropdownMenuContent
         className="ignore-click-outside/toolbar flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto"
         align="start"
+        onFinalFocus={(event) => {
+          event.preventDefault();
+          editor.api.dom.focus();
+        }}
       >
         <DropdownMenuGroup>
           <DropdownMenuItem
@@ -56,7 +60,6 @@ export function MoreToolbarButton() {
           >
             <SuperscriptIcon />
             Superscript
-            {/* (⌘+,) */}
           </DropdownMenuItem>
           <DropdownMenuItem
             finalFocus={() => editor.api.dom.focus()}
@@ -66,7 +69,6 @@ export function MoreToolbarButton() {
           >
             <SubscriptIcon />
             Subscript
-            {/* (⌘+.) */}
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

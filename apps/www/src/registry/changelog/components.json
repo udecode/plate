@@ -15,6 +15,16 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
+    "more-toolbar-button": [
+      "2026-10-20-preserve-more-formatting-toolbar",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-12-more-toolbar-plugin-transaction",
+      "2026-07-26-unify-script-mark",
+      "2026-07-24-feature-toolbar-plugin-portals"
+    ],
     "export-toolbar-button": [
       "2026-10-19-export-toolbar-docx-load",
       "2026-10-12-neutral-stored-names",
@@ -777,15 +787,6 @@
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies"
-    ],
-    "more-toolbar-button": [
-      "2026-10-12-toolbar-button-names",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-12-more-toolbar-plugin-transaction",
-      "2026-07-26-unify-script-mark",
-      "2026-07-24-feature-toolbar-plugin-portals"
     ],
     "emoji-toolbar-button": [
       "2026-10-12-toolbar-button-names",
