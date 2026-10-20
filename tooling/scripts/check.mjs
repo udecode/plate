@@ -50,14 +50,16 @@ export const steps = [
   {
     name: 'test',
     run: 'pnpm test',
-    affected: touches(
-      '.agents/rules/',
-      'apps/',
-      'benchmarks/',
-      'content/',
-      'packages/',
-      'tooling/'
-    ),
+    // Bun ignores the www Playwright specs, so editing one cannot change this step.
+    affected: (files) =>
+      touches(
+        '.agents/rules/',
+        'apps/',
+        'benchmarks/',
+        'content/',
+        'packages/',
+        'tooling/'
+      )(files.filter((file) => !file.startsWith('apps/www/tests/browser/'))),
   },
   {
     name: 'test-slow',

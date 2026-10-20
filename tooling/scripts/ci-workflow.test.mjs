@@ -129,6 +129,7 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
   assert.deepEqual(
     {
       docs: added(['docs/plans/2026-10-19-landing-check.md']),
+      browserSpec: added(['apps/www/tests/browser/suggestion.spec.ts']),
       cli: added(['packages/cli/src/generate.ts']),
       slow: added([
         'packages/plitejs/test/authored-tree-recording-laws.slow.ts',
@@ -140,6 +141,7 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
     },
     {
       docs: [],
+      browserSpec: ['www'],
       cli: ['test', 'cli-test', 'www'],
       slow: [
         'test',
