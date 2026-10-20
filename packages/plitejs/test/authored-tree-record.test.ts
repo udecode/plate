@@ -329,6 +329,73 @@ describe('authored review tree recording', () => {
     ]);
   });
 
+  it('records a Suggesting format on another author’s insertion within one’s own, so rejecting it restores the text', () => {
+    const editor = editorFor(
+      [
+        paragraph(
+          { text: 'mi', authored: [mark('insert', 'bob', 'bob:9')] },
+          {
+            text: 'QR',
+            authored: [mark('insert', 'bob', 'bob:9'), mark('insert', 'alice')],
+          },
+          { text: 'ne', authored: [mark('insert', 'bob', 'bob:9')] }
+        ),
+      ],
+      'propose',
+      'bob',
+      [Quotes]
+    );
+    const before = expandedChildren(editor);
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(0, [0, 1]), focus: point(2, [0, 1]) });
+      tx.marks.add('bold', true);
+    });
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['bob:1'] });
+
+    assert.deepEqual(expandedChildren(editor), before);
+  });
+
+  it('records a Suggesting link in another author’s paragraph within one’s own quote as its own change, so rejecting it restores the text', () => {
+    const QuotedLinks = defineEditorSchema('record-quoted-links', {
+      elements: {
+        link: { content: schema.content.text(), inline: true },
+        paragraph: schema.element.textBlock(),
+        quote: { content: schema.content.type('paragraph', { min: 1 }) },
+      },
+      id: 'record-quoted-links',
+      root: schema.content.type('quote', { min: 1 }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const editor = editorFor(
+      [
+        whole(
+          {
+            type: 'quote',
+            children: [
+              whole(paragraph({ text: 'hers' }), mark('insert', 'alice')),
+            ],
+          },
+          mark('insert', 'bob', 'bob:9')
+        ),
+      ],
+      'propose',
+      'bob',
+      [QuotedLinks]
+    );
+    const before = expandedChildren(editor);
+
+    editor.update((tx) =>
+      tx.nodes.insert({ type: 'link', children: [{ text: 'L' }] } as never, {
+        at: point(2, [0, 0, 0]),
+      })
+    );
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['bob:1'] });
+
+    assert.deepEqual(expandedChildren(editor), before);
+  });
+
   for (const [where, block] of [
     [
       'another author’s insertion',
