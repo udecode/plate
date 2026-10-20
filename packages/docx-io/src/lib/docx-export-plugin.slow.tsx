@@ -140,4 +140,100 @@ describe('exportToDocx', () => {
 
     expect(pageFields).toEqual([['p', 'PAGE']]);
   });
+
+  it('exports tables nested in table cells at any depth', async () => {
+    const cases = {
+      deep: ['deep'],
+      multiple: ['first', 'second'],
+      nestedOnly: ['inner'],
+      nestedThenText: ['inner', 'after'],
+      textThenNested: ['before', 'inner'],
+    };
+    const exportModule = import.meta.resolve('./docx-export-plugin.tsx');
+    const script = `
+      import { createElement } from 'react';
+      import JSZip from ${JSON.stringify(import.meta.resolve('jszip'))};
+      import { exportToDocx } from ${JSON.stringify(exportModule)};
+
+      const p = (text) => '<p>' + text + '</p>';
+      // Mirrors the static table markup: wrapper divs around <table> and a
+      // content div inside every cell.
+      const table = (...cells) =>
+        '<div><div><table><tbody><tr>' +
+        cells.map((cell) => '<td><div>' + cell + '</div></td>').join('') +
+        '</tr></tbody></table></div></div>';
+      const htmls = {
+        deep: table(table(table(p('deep')))),
+        multiple: table(table(p('first')) + table(p('second'))),
+        nestedOnly: table(table(p('inner'))),
+        nestedThenText: table(table(p('inner')) + p('after')),
+        textThenNested: table(p('before') + table(p('inner'))),
+      };
+      const documents = {};
+      for (const [name, html] of Object.entries(htmls)) {
+        const blob = await exportToDocx([{ type: 'p', children: [{ text: '' }] }], {
+          editorStaticComponent: () =>
+            createElement('div', { dangerouslySetInnerHTML: { __html: html } }),
+        });
+        const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+        documents[name] = await zip.file('word/document.xml').async('string');
+      }
+      console.log(JSON.stringify(documents));
+    `;
+    const subprocess = Bun.spawn([process.execPath, '--eval', script], {
+      stderr: 'pipe',
+      stdout: 'pipe',
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(subprocess.stdout).text(),
+      new Response(subprocess.stderr).text(),
+      subprocess.exited,
+    ]);
+
+    expect(stderr).toBe('');
+    expect(exitCode).toBe(0);
+
+    const documents: Record<string, string> = JSON.parse(stdout);
+    const tableDepth = (element: Element) => {
+      let depth = 0;
+
+      for (
+        let ancestor: Element | null = element;
+        ancestor;
+        ancestor = ancestor.parentElement
+      ) {
+        if (ancestor.tagName === 'w:tbl') depth += 1;
+      }
+
+      return depth;
+    };
+
+    for (const [name, expectedText] of Object.entries(cases)) {
+      const document = new DOMParser().parseFromString(
+        documents[name],
+        'application/xml'
+      );
+      const tables = Array.from(document.getElementsByTagName('w:tbl'));
+      const cells = Array.from(document.getElementsByTagName('w:tc'));
+      const nestedTables = tables.filter(
+        (table) => table.parentElement?.tagName === 'w:tc'
+      );
+      const exportedText = Array.from(
+        document.getElementsByTagName('w:t'),
+        (run) => run.textContent
+      );
+
+      expect(document.getElementsByTagName('parsererror')).toHaveLength(0);
+      expect(exportedText).toEqual(expectedText);
+      expect(nestedTables).toHaveLength(
+        name === 'deep' || name === 'multiple' ? 2 : 1
+      );
+      expect(Math.max(...tables.map(tableDepth))).toBe(name === 'deep' ? 3 : 2);
+
+      // Word rejects a cell that does not end with a paragraph.
+      for (const cell of cells) {
+        expect(cell.lastElementChild?.tagName).toBe('w:p');
+      }
+    }
+  });
 });
