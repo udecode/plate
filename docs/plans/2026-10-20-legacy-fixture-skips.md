@@ -1,6 +1,7 @@
 # Plite fixtures: settle the 16 legacy Slate rows that failed
 
 Status: executed: 13 rows rewritten to Plite's behavior, 3 cut, no Plite bug found
+Page: https://claude.ai/artifact/SJR9zPXS1SNUXKuGYRYGGt
 Playbook: verdict
 
 **None of the 16 failing legacy Slate fixtures shows a Plite bug.** Each failure is a place where Plite deliberately replaced a Slate heuristic with a rule from `docs/vision/plite.md`, so 13 rows now assert Plite's output and 3 rows are cut. The 2026-10-20 test audit had run the 60 skipped fixtures and kept these 16 as `it.failing` through `packages/plitejs/test/fixture-claim-overrides.ts`. That file and the `it.failing` branch in `test/index.spec.ts` are gone, and every fixture in the tree runs as a plain test. Suggested task t_ef9d5fcb asked the question.
