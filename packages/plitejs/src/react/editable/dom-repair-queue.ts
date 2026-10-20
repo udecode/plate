@@ -5,7 +5,10 @@ import {
   isDOMElement,
   isDOMText,
 } from '../../dom';
-import type { DOMPhaseScheduler } from '../../dom/internal';
+import {
+  type DOMPhaseScheduler,
+  resolveDOMTextFlowEntry,
+} from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
 import {
   getPliteTextHostBounds,
@@ -30,6 +33,7 @@ import {
 } from './editing-kernel';
 import { updateNativeTextInput } from './input-history';
 import {
+  clearEditablePendingNativeTextInputRepair,
   type EditableInputController,
   getEditableNativeGroupingInput,
 } from './input-state';
@@ -192,6 +196,49 @@ export const createDOMRepairQueue = ({
     }
   };
 
+  // The browser already typed the refused text, and the integrity observer
+  // accepts typing in a text-flow host, so nothing else takes it back.
+  const giveBackRefusedTextInsert = ({
+    insert,
+    path,
+    textHost,
+  }: {
+    insert: { offset: number; text: string };
+    path: Path;
+    textHost: Element | null | undefined;
+  }) => {
+    clearEditablePendingNativeTextInputRepair(inputController);
+
+    const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
+    const domSelection = root ? getSelection(root) : null;
+    const node = domSelection?.anchorNode;
+    const end = domSelection?.anchorOffset ?? 0;
+    const start = end - insert.text.length;
+
+    if (
+      !textHost ||
+      !isDOMText(node) ||
+      !textHost.contains(node) ||
+      start < 0 ||
+      node.data.slice(start, end) !== insert.text
+    ) {
+      return;
+    }
+
+    const flowEntry = resolveDOMTextFlowEntry(node, start);
+    const offset = flowEntry
+      ? PathApi.equals(flowEntry.path, path)
+        ? flowEntry.offset
+        : null
+      : getTextHostSelectionOffset({
+          anchorNode: node,
+          anchorOffset: start,
+          textHost,
+        });
+
+    if (offset === insert.offset) node.deleteData(start, insert.text.length);
+  };
+
   const armRepairInducedSelectionOriginGuard = () => {
     const repairOriginVersion =
       (inputController.state.repairInducedSelectionOriginVersion ?? 0) + 1;
@@ -300,7 +347,7 @@ export const createDOMRepairQueue = ({
     const at = { path: target.path, offset: insert.offset };
 
     armRepairInducedSelectionOriginGuard();
-    profileDOMRepairDuration('captured-update-model', () => {
+    const committed = profileDOMRepairDuration('captured-update-model', () =>
       withTypedTextIntent(
         editor,
         inputController,
@@ -326,8 +373,11 @@ export const createDOMRepairQueue = ({
             },
             getEditableNativeGroupingInput(inputController)
           )
-      );
-    });
+      )
+    );
+    if (!committed) {
+      giveBackRefusedTextInsert({ insert, path: target.path, textHost });
+    }
     if (!isInsideVirtualizedDOM(textHost)) {
       setEditableModelSelectionPreference({
         inputController,
@@ -624,7 +674,7 @@ export const createDOMRepairQueue = ({
           }
         }
         // A repair that leaves the caret elsewhere is not typing at the caret.
-        withTypedTextIntent(
+        const committed = withTypedTextIntent(
           editor,
           inputController,
           {
@@ -651,6 +701,9 @@ export const createDOMRepairQueue = ({
               getEditableNativeGroupingInput(inputController)
             )
         );
+        if (!committed) {
+          giveBackRefusedTextInsert({ insert, path, textHost });
+        }
         if (textHost && !isInsideVirtualizedDOM(textHost)) {
           setEditableModelSelectionPreference({
             inputController,

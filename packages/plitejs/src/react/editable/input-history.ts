@@ -28,6 +28,7 @@ export const createNativeGroupingId = () => {
 export const getNativeTextInputUpdateTags = () =>
   ['native-text-input'] as const;
 
+/** Writes native text input and returns false when the editor refused it. */
 export const updateNativeTextInput = <V extends Value>(
   editor: Editor<V>,
   update: (tx: EditorUpdateTransaction<V, any>) => void,
@@ -38,13 +39,17 @@ export const updateNativeTextInput = <V extends Value>(
     getNativeTextInputUpdateTags
   );
 
-  profilePliteReactDuration('native-text-input-update', () => {
-    getEditorRuntime(editor).update(
-      (tx) => {
-        tx.annotations.set(nativeGroupingInput, input);
-        update(tx);
-      },
-      { tags }
-    );
-  });
+  return profilePliteReactDuration(
+    'native-text-input-update',
+    () =>
+      getEditorRuntime(editor).update(
+        (tx) => {
+          tx.annotations.set(nativeGroupingInput, input);
+          update(tx);
+
+          return true;
+        },
+        { tags }
+      ) === true
+  );
 };
