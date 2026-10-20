@@ -33,6 +33,8 @@ export function stateOf(status) {
 
 export const SEATS = /^seats\s/u;
 
+export const isHandOffReview = (phase) => /^review/iu.test(phase ?? '');
+
 export const SEVERITIES = ['critical', 'warning', 'nit'];
 
 export const STAGE_PHASES = {
@@ -49,6 +51,12 @@ export const STAGE_PHASES = {
 // Panel rounds before the first build row review the plan; later ones review the code.
 export function stageOfRow(phases, index) {
   const phase = phases[index];
+  if (isHandOffReview(phase)) return 'Audit';
+  if (STAGE_PHASES.Writing.includes(phase)) {
+    const staged = (each) => !STAGE_PHASES.Writing.includes(each) && (isHandOffReview(each) || Object.values(STAGE_PHASES).flat().includes(each));
+    const last = phases.findLastIndex((each, at) => at < index && staged(each));
+    if (STAGE_PHASES.Review.includes(phases[last])) return stageOfRow(phases, last);
+  }
   if (STAGE_PHASES.Review.includes(phase)) {
     const firstBuild = phases.findIndex((each) => STAGE_PHASES.Build.includes(each));
     return firstBuild < 0 || index < firstBuild ? 'Plan review' : 'Code review';
@@ -244,13 +252,13 @@ export const NOT_PASSED = ['partial', 'open', 'gap', 'blocked', 'inconclusive'];
 const realOf = (path) => (existsSync(path) ? realpathSync(path) : path);
 export const proofKey = (path) => relative(realOf(process.cwd()), realOf(resolve(path)));
 
-export function proofLabels(evidence, plans) {
+export function proofLabels(evidence, plans, exists = existsSync) {
   const root = `${plans}/artifacts/`;
   return [...evidence.matchAll(/(?:^|[\s;`])proof:\s+([^\s;,`]+)/gu)].flatMap(([, value]) => {
     if (value === 'none') return [{ none: true }];
     if (!value.includes(root)) return [];
     const path = tidy(value);
-    return [{ path, key: proofKey(path), exists: existsSync(path) }];
+    return [{ path, key: proofKey(path), exists: exists(path) }];
   });
 }
 
@@ -319,7 +327,7 @@ export const isAcceptingWord = (word, words) => Boolean(word) && words.has(plain
 export function proofStates(rows, plans) {
   const states = new Map();
   for (const [, phase = '', , , evidence = '', result = ''] of rows) {
-    if (phase.startsWith('review')) continue;
+    if (isHandOffReview(phase)) continue;
     const status = statusOf(result);
     for (const label of proofLabels(evidence, plans)) {
       if (label.none) continue;
