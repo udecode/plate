@@ -81,7 +81,7 @@ Each find becomes an issue, then a fix with a test tagged by the issue. The issu
 
 Steps 1.1 to 1.5 landed on `next`. You skipped the planted-bug trial, so round 1 runs on live beta with free clicking on every page, and the six moves wait for a later round.
 
-Round 1's plan, `docs/plans/2026-10-19-sweep-r1.md`, gives 117 pages a tester, a browser and a time limit; the Sessions page, https://claude.ai/artifact/SuEuEtP6c7fyirnCGKSwh5, shows its table with filters. It tests only plugins whose refactor has landed, so 12 Plate pages wait: AI, Copilot, Combobox, Date, Discussion, Find, Suggestion, Version History and four Markdown pages. The styles and toc refactors landed on 2026-10-19, so the mark pages and the table of contents run. Sin now tests beside natamox, and the round takes about two and a half days.
+Round 1's plan, `docs/plans/2026-10-19-sweep-r1.md`, gives 117 pages a tester, a browser and a time limit. It tests only plugins whose refactor has landed, so 12 Plate pages wait: AI, Copilot, Combobox, Date, Discussion, Find, Suggestion, Version History and four Markdown pages. The styles and toc refactors landed on 2026-10-19, so the mark pages and the table of contents run. Sin now tests beside natamox, and the round takes about two and a half days.
 
 Its 25 rechecks cover every open beta bug, 14 of them filed on 2026-10-19, even when the bug sits on a held page, plus the open issues this plan named and the probe finds. The four open beta feature requests go to a verdict instead.
 
