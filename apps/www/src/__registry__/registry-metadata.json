@@ -1,5 +1,5 @@
 {
-  "generation": "8946effc2a059693226909759813a949c7202d9d90fc2dcd4fa2242e787878d0",
+  "generation": "3a9401e00e79f522b939ff3b2f8765044c181759add1427ee4cd2f9b6b99f0de",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2682,6 +2682,9 @@
           ]
         },
         {
+          "dependencies": [
+            "pele@1.6.0"
+          ],
           "files": [
             {
               "path": "components/editor/code-block-diagram-mermaid.ts",
@@ -2703,14 +2706,14 @@
               "code-block-diagram-demo"
             ]
           },
-          "dependencies": [
-            "pele"
-          ],
           "registryDependencies": [
             "@plate/code-block-diagram"
           ]
         },
         {
+          "dependencies": [
+            "viz.js@2.1.2"
+          ],
           "devDependencies": [
             "@types/viz.js"
           ],
@@ -2735,14 +2738,14 @@
               "code-block-diagram-demo"
             ]
           },
-          "dependencies": [
-            "viz.js"
-          ],
           "registryDependencies": [
             "@plate/code-block-diagram"
           ]
         },
         {
+          "dependencies": [
+            "flowchart.js@1.18.0"
+          ],
           "files": [
             {
               "path": "components/editor/code-block-diagram-flowchart.ts",
@@ -2764,14 +2767,14 @@
               "code-block-diagram-demo"
             ]
           },
-          "dependencies": [
-            "flowchart.js"
-          ],
           "registryDependencies": [
             "@plate/code-block-diagram"
           ]
         },
         {
+          "dependencies": [
+            "plantuml-encoder@1.4.0"
+          ],
           "devDependencies": [
             "@types/plantuml-encoder"
           ],
@@ -2793,9 +2796,6 @@
               }
             ]
           },
-          "dependencies": [
-            "plantuml-encoder"
-          ],
           "registryDependencies": [
             "@plate/code-block-diagram"
           ]
@@ -9528,6 +9528,9 @@
           ]
         },
         {
+          "dependencies": [
+            "pele@1.6.0"
+          ],
           "files": [
             {
               "path": "components/editor/code-block-diagram-mermaid.ts",
@@ -9549,14 +9552,14 @@
               "code-block-diagram-demo"
             ]
           },
-          "dependencies": [
-            "pele"
-          ],
           "registryDependencies": [
             "@plate/code-block-diagram"
           ]
         },
         {
+          "dependencies": [
+            "viz.js@2.1.2"
+          ],
           "devDependencies": [
             "@types/viz.js"
           ],
@@ -9581,14 +9584,14 @@
               "code-block-diagram-demo"
             ]
           },
-          "dependencies": [
-            "viz.js"
-          ],
           "registryDependencies": [
             "@plate/code-block-diagram"
           ]
         },
         {
+          "dependencies": [
+            "flowchart.js@1.18.0"
+          ],
           "files": [
             {
               "path": "components/editor/code-block-diagram-flowchart.ts",
@@ -9610,14 +9613,14 @@
               "code-block-diagram-demo"
             ]
           },
-          "dependencies": [
-            "flowchart.js"
-          ],
           "registryDependencies": [
             "@plate/code-block-diagram"
           ]
         },
         {
+          "dependencies": [
+            "plantuml-encoder@1.4.0"
+          ],
           "devDependencies": [
             "@types/plantuml-encoder"
           ],
@@ -9639,9 +9642,6 @@
               }
             ]
           },
-          "dependencies": [
-            "plantuml-encoder"
-          ],
           "registryDependencies": [
             "@plate/code-block-diagram"
           ]

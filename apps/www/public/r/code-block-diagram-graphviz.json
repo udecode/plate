@@ -4,7 +4,7 @@
   "title": "Code Block Diagram Graphviz",
   "description": "Draw Graphviz DOT code blocks.",
   "dependencies": [
-    "viz.js"
+    "viz.js@2.1.2"
   ],
   "devDependencies": [
     "@types/viz.js"

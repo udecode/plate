@@ -4,7 +4,7 @@
   "title": "Code Block Diagram Mermaid",
   "description": "Draw Mermaid code blocks.",
   "dependencies": [
-    "pele"
+    "pele@1.6.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/code-block-diagram.json"
