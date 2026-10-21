@@ -159,7 +159,7 @@
       ".agents/pstack/tasks.mjs": "34a36109778f2cb7a2ced3971bd3f420429e33941d18efdb85de7443ed6c48bc",
       ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
       ".agents/pstack/rules/chips.md": "7914660a311f7534ccd1afdb92ff118a169bdc438e7fa744a3011fc19b925b50",
-      ".agents/pstack/rules/close.md": "a57d7ac1a9ae2679182e609b51b06b56adeda0a0c8001caa0740ff566fe2efc8",
+      ".agents/pstack/rules/close.md": "27b28a402f98fd0d5185ccd6eb327eab68fd7ca9bec894baec212ad93472e992",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
       ".agents/pstack/rules/codex.md": "e3eb17bbb7b34793c3242a7b08ad20f183a3d698d909e9e137d1731fdc94353a",
       ".agents/pstack/rules/linked.md": "414bb3823bc3719af5303941eb5a028092e815dacbe61ba83ce95697c99dae70",
@@ -172,6 +172,6 @@
       ".agents/pstack/rules/title.md": "0a64b90ec1d4440adefe17a32044b72f9f8ab57a4807ccf70d506e2e3c709bec",
       ".agents/pstack/rules/trails.md": "e5d12f8c578a1d2f45dd6624ed0022babbad97f2e474b05894f00a6075913ae1"
     },
-    "source": "2099885437d511d8f00594a0bb72a5fdd436f226"
+    "source": "e01212ac99ec02bbc64192daa6e820c4e08c15b3"
   }
 }
