@@ -13,10 +13,18 @@
 // transcript keeps a worktree; uncommitted changes do not, because a card
 // session lands them in the checkout as a patch. A commit that no branch, tag
 // or remote reaches, which only the worktree's HEAD history keeps, makes the
-// scan ask, because removing the worktree loses it. --delete measures each
-// safe item, judges it again, checks the running processes once more, saves a
-// worktree's uncommitted changes the checkout lacks as a patch under the git
-// folder's cleanup/ and removes it.
+// scan ask when it writes a file whose content the checkout's HEAD and its
+// upstream both lack and neither changed since, because removing the worktree
+// loses it. --delete measures each safe item, judges it again, checks the
+// running processes once more, saves a worktree's uncommitted changes the
+// checkout lacks and its unreached commits as patches under the git folder's
+// cleanup/ and removes it.
+// In a pstack project, whose .agents/pstack.json names its plans directory,
+// --landed counts only ignored files under <plans>/artifacts/, because there
+// every other ignored file is build output or a copy of the checkout's, and
+// one there counts as held once the checkout has that path, because the
+// landing merge never overwrites the checkout's copy. It also skips commits
+// only HEAD's reflog reaches, which land.mjs's squash leaves behind.
 // --brief prints one line, or nothing, counting the unlocked agent worktrees and
 // the checkout caches cleanup could remove that show no git or cache writes for
 // three days. --landed exits 0 only when every change and ignored file of one
@@ -25,11 +33,12 @@
 // once the checkout's copy holds its hunks.
 // --remove takes worktrees whose work the caller knows landed and judges none of
 // them: it stops each process working in one, saves the uncommitted changes the
-// checkout lacks as a patch as --delete does and removes it. It keeps a
-// worktree git does not list, a locked one, one outside the folders agents make
-// worktrees in, one holding another worktree, the one it runs in, one holding a
-// commit no branch, tag or remote reaches, one whose processes lsof cannot list
-// and one git refuses to remove, and exits 1 when it keeps any.
+// checkout lacks as a patch as --delete does, saves each commit no branch, tag
+// or remote reaches as a second patch, and removes it. It keeps a worktree git
+// does not list, a locked one, one outside the folders agents make worktrees
+// in, one holding another worktree, the one it runs in, one whose commits git
+// cannot list, one whose processes lsof cannot list and one git refuses to
+// remove, and exits 1 when it keeps any.
 import { execFileSync } from 'node:child_process';
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -115,7 +124,7 @@ function usageVerdict(facts) {
 }
 
 const unreachedReason = (count) =>
-  count === null ? 'git could not list the commits its HEAD history keeps' : `${count} ${count === 1 ? 'commit' : 'commits'} that no branch, tag or remote reaches, kept only by its HEAD history; save them with git branch <name> <sha>`;
+  count === null ? 'git could not list the commits its HEAD history keeps' : `${count} ${count === 1 ? 'commit' : 'commits'} that no branch, tag or remote reaches, kept only by its HEAD history, with changes the checkout lacks; save them with git branch <name> <sha>`;
 
 function cleanupVerdict(facts) {
   if (facts.heldCaches === null) return ['keep', 'lsof could not tell whether a server holds a cache inside it'];
@@ -256,11 +265,21 @@ function recreated(path, rel, isDir) {
   return CACHE.test(name) || (PACKAGE_OUTPUT.has(name) && existsSync(join(path, dirname(rel), 'package.json')));
 }
 
-function ignoredWork(main, path, listings) {
+function runRoot(main) {
+  try {
+    const { plans } = JSON.parse(readFileSync(join(main, '.agents', 'pstack.json'), 'utf8'));
+    return typeof plans === 'string' && plans ? join(plans, 'artifacts') : null;
+  } catch {
+    return null;
+  }
+}
+
+function ignoredWork(main, path, listings, root = null) {
   const unique = [];
   let seen = 0;
   const visit = (rel) => {
     if (seen > IGNORED_LIMIT) return;
+    if (root && !within(join(path, rel), join(path, root)) && !within(join(path, root), join(path, rel))) return;
     const isDir = Boolean(statOrNull(join(path, rel))?.isDirectory());
     if (recreated(path, rel, isDir)) return;
     if (isDir) {
@@ -268,7 +287,7 @@ function ignoredWork(main, path, listings) {
       return;
     }
     seen += 1;
-    if (!matchesCheckout(main, path, rel, listings)) unique.push(rel);
+    if (root ? !spelledIn(main, rel, listings) : !matchesCheckout(main, path, rel, listings)) unique.push(rel);
   };
   for (const entry of git(path, ['ls-files', '-z', '--others', '--ignored', '--exclude-standard', '--directory']).split('\0')) {
     const rel = entry.replace(/\/$/u, '');
@@ -353,26 +372,74 @@ function heldCaches(path, worktrees) {
 
 // Removing a worktree deletes its HEAD reflog, so a commit made on a detached
 // HEAD and left behind by a later switch or reset is lost unless a ref reaches it.
-function unreachedCommits(main, entry) {
+function unreachedList(main, entry, options, reflog = true) {
+  const history = reflog ? execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', 'HEAD'], { cwd: entry.path, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }) : '';
+  const tips = [...new Set([entry.HEAD, ...history.split('\n')].filter(Boolean))];
+  const input = [...tips, '--not', '--branches', '--tags', '--remotes', ''].join('\n');
+  return execFileSync('git', ['--no-optional-locks', 'rev-list', ...options, '--ignore-missing', '--stdin'], { cwd: main, encoding: 'utf8', input, stdio: ['pipe', 'pipe', 'ignore'] });
+}
+
+function unreachedCommits(main, entry, reflog = true) {
   try {
-    const history = execFileSync('git', ['--no-optional-locks', 'reflog', 'show', '--format=%H', 'HEAD'], { cwd: entry.path, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    const tips = [...new Set([entry.HEAD, ...history.split('\n')].filter(Boolean))];
-    const input = [...tips, '--not', '--branches', '--tags', '--remotes', ''].join('\n');
-    return Number(execFileSync('git', ['--no-optional-locks', 'rev-list', '--count', '--ignore-missing', '--stdin'], { cwd: main, encoding: 'utf8', input, stdio: ['pipe', 'pipe', 'ignore'] }));
+    return Number(unreachedList(main, entry, ['--count'], reflog));
   } catch {
     return null;
   }
 }
 
-const cleanupFacts = (main, entry, worktrees) => ({ heldCaches: heldCaches(entry.path, worktrees), repos: nestedRepos(entry.path, statusEntries(entry.path)), unreached: unreachedCommits(main, entry) });
+// A squash landing leaves the task's own commits in its worktree's HEAD
+// history, so one counts as landed when each file it writes has its content
+// in the checkout's HEAD or upstream, or changed there after it.
+function unlandedCommits(main, entry, reflog = true) {
+  try {
+    const commits = unreachedList(main, entry, ['--no-merges'], reflog).split('\n').filter(Boolean);
+    if (commits.length === 0) return 0;
+    const bases = ['HEAD', '@{upstream}'].filter((ref) => {
+      try {
+        git(main, ['rev-parse', '--verify', '--quiet', ref]);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    const trees = bases.map((ref) => new Map(git(main, ['ls-tree', '-r', '-z', ref]).split('\0').filter(Boolean).map((line) => [line.slice(line.indexOf('\t') + 1), line.split(' ')[2].split('\t')[0]])));
+    return commits.filter((sha) => {
+      const date = git(main, ['show', '-s', '--format=%cI', sha]).trim();
+      const changed = new Set(bases.flatMap((ref) => git(main, ['log', `--since=${date}`, '--name-only', '--format=', ref]).split('\n')));
+      const fields = git(main, ['diff-tree', '--no-commit-id', '-r', '-z', '--root', sha]).split('\0');
+      for (let at = 0; at + 1 < fields.length; at += 2) {
+        const blob = fields[at].split(' ')[3];
+        const path = fields[at + 1];
+        const content = /^0+$/u.test(blob) ? undefined : blob;
+        if (!changed.has(path) && trees.every((tree) => tree.get(path) !== content)) return true;
+      }
+      return false;
+    }).length;
+  } catch {
+    return null;
+  }
+}
+
+function saveUnreached(main, entry) {
+  const commits = unreachedList(main, entry, ['--reverse', '--topo-order']).split('\n').filter(Boolean);
+  if (commits.length === 0) return null;
+  const dir = join(git(main, ['rev-parse', '--path-format=absolute', '--git-common-dir']), 'cleanup');
+  mkdirSync(dir, { recursive: true });
+  const file = join(dir, `${basename(entry.path)}-${Date.now().toString(36)}-commits.patch`);
+  writeFileSync(file, commits.map((sha) => git(main, ['format-patch', '-1', '--stdout', '--binary', sha])).join('\n') + '\n');
+  return file;
+}
+
+const cleanupFacts = (main, entry, worktrees) => ({ heldCaches: heldCaches(entry.path, worktrees), repos: nestedRepos(entry.path, statusEntries(entry.path)), unreached: unlandedCommits(main, entry) });
 
 function contentFacts(main, entry, worktrees) {
   const listings = new Map();
+  const root = runRoot(main);
   return {
     ...compareWithCheckout(main, entry.path, listings),
     heldCaches: heldCaches(entry.path, worktrees),
-    ignored: ignoredWork(main, entry.path, listings),
-    unreached: unreachedCommits(main, entry),
+    ignored: ignoredWork(main, entry.path, listings, root),
+    unreached: unlandedCommits(main, entry, root === null),
   };
 }
 
@@ -466,6 +533,7 @@ export function deleteSafe({ repo, sessions = [], now = Date.now() }) {
       continue;
     }
     try {
+      if (item.kind === 'worktree' && existsSync(item.path)) item.commits = saveUnreached(main, listWorktrees(main).find((each) => each.path === item.path));
       removeFolder(main, item);
     } catch (error) {
       Object.assign(item, { verdict: 'ask', reason: `removal failed: ${String(error.message).split('\n')[0]}` });
@@ -515,8 +583,7 @@ function removalRefusal(main, listed, path) {
   const nested = nestedIn(path, listed);
   if (nested) return `another worktree lives inside it: ${nested}`;
   if (within(real(process.cwd()), path)) return 'this command runs in it';
-  const unreached = unreachedCommits(main, entry);
-  if (unreached !== 0) return unreachedReason(unreached);
+  if (unreachedCommits(main, entry) === null) return unreachedReason(null);
   return null;
 }
 
@@ -532,8 +599,9 @@ export function removeLanded({ repo, worktrees }) {
     stopProcesses(pids);
     const item = { kind: 'worktree', path };
     try {
+      const commits = saveUnreached(main, listed.find((each) => each.path === path));
       removeFolder(main, item);
-      return { path, removed: true, patch: item.patch ?? null, stopped: pids.length };
+      return { path, removed: true, patch: item.patch ?? null, commits, stopped: pids.length };
     } catch (error) {
       return { path, removed: false, reason: `git refused to remove it: ${String(error.stderr ?? error.message).trim()}`, stopped: pids.length };
     }
@@ -584,6 +652,8 @@ function render({ items, removed }) {
   if (removed) lines.push(`removed ${removed.length} items, ${gib(removed.reduce((sum, item) => sum + (item.bytes ?? 0), 0))} by du, which counts shared hard links again`);
   const patches = (removed ?? []).filter((item) => item.patch);
   if (patches.length > 0) lines.push(`saved the uncommitted changes of ${patches.length} worktrees as patches in ${dirname(patches[0].patch)}`);
+  const commits = (removed ?? []).filter((item) => item.commits);
+  if (commits.length > 0) lines.push(`saved the unreached commits of ${commits.length} worktrees as patches in ${dirname(commits[0].commits)}`);
   return lines.join('\n');
 }
 
@@ -605,7 +675,7 @@ function main(argv) {
     const results = removeLanded({ repo, worktrees: paths });
     for (const result of results) {
       const stopped = result.stopped ? `  stopped ${result.stopped} process${result.stopped === 1 ? '' : 'es'}` : '';
-      console.log(result.removed ? `REMOVED  ${result.path}${result.patch ? `  patch ${result.patch}` : ''}${stopped}` : `KEPT  ${result.path}  ${result.reason}${stopped}`);
+      console.log(result.removed ? `REMOVED  ${result.path}${result.patch ? `  patch ${result.patch}` : ''}${result.commits ? `  commits ${result.commits}` : ''}${stopped}` : `KEPT  ${result.path}  ${result.reason}${stopped}`);
     }
     return results.every((result) => result.removed) ? 0 : 1;
   }
