@@ -222,5 +222,8 @@ For coverage or cleanup waves, `test-audit`'s full mode owns the inventory,
 scoring and stopping. It reads coverage from
 `bun test --coverage --coverage-reporter=lcov --coverage-dir=<run directory>/coverage`
 and timing from `pnpm test:profile` and `pnpm test:slowest`.
+Its cuts run through `node tooling/scripts/cut-tests.mjs <cases.tsv>`, one
+`<file>\t<full test name>` line per case, where a full name joins the describe
+titles and the case title with ` > `.
 Ordinary test repair does not start that program. Keep negative type proofs and explicit capability
 skips with their missing prerequisites visible.

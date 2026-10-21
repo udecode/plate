@@ -505,265 +505,6 @@ it('above exposes the current traversal API', () => {
   );
 });
 
-it('mirrors the legacy above/block-lowest.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'block',
-        children: [
-          {
-            type: 'block',
-            children: [{ text: 'one ' }],
-          },
-        ],
-      },
-    ],
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorAbove(editor, {
-      at: [0, 0, 0],
-      match: (node) =>
-        'type' in node &&
-        (node as Element & { type?: string }).type === 'block' &&
-        editorIsBlock(editor, node),
-      mode: 'lowest',
-    }),
-    [
-      {
-        type: 'block',
-        children: [{ text: 'one ' }],
-      },
-      [0, 0],
-    ]
-  );
-});
-
-it('mirrors the legacy above/block-highest.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'block',
-        children: [
-          {
-            type: 'block',
-            children: [{ text: 'one' }],
-          },
-        ],
-      },
-    ],
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorAbove(editor, {
-      at: [0, 0, 0],
-      match: (node) =>
-        'type' in node &&
-        (node as Element & { type?: string }).type === 'block' &&
-        editorIsBlock(editor, node),
-      mode: 'highest',
-    }),
-    [
-      {
-        type: 'block',
-        children: [
-          {
-            type: 'block',
-            children: [{ text: 'one' }],
-          },
-        ],
-      },
-      [0],
-    ]
-  );
-});
-
-it('mirrors the legacy above/inline.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'block',
-        children: [
-          { text: 'one' },
-          {
-            type: 'inline',
-            children: [{ text: 'two' }],
-          },
-          { text: 'three' },
-        ],
-      },
-    ],
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorAbove(editor, {
-      at: [0, 1, 0],
-      match: (node) =>
-        'type' in node &&
-        (node as Element & { type?: string }).type === 'inline' &&
-        editorIsInline(editor, node),
-    }),
-    [
-      {
-        type: 'inline',
-        children: [{ text: 'two' }],
-      },
-      [0, 1],
-    ]
-  );
-});
-
-it('mirrors the legacy above/point.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'block',
-        children: [
-          {
-            type: 'block',
-            children: [{ text: 'one' }],
-          },
-        ],
-      },
-    ],
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorAbove(editor, { at: { path: [0, 0, 0], offset: 1 } }),
-    [
-      {
-        type: 'block',
-        children: [{ text: 'one' }],
-      },
-      [0, 0],
-    ]
-  );
-});
-
-it('mirrors the legacy above/potential-parent.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'block',
-        children: [
-          {
-            type: 'block',
-            children: [
-              {
-                type: 'block',
-                children: [{ text: 'one' }],
-              },
-            ],
-          },
-          {
-            type: 'block',
-            children: [{ text: 'two' }],
-          },
-        ],
-      },
-    ],
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorAbove(editor, {
-      at: [0, 0, 1],
-      match: (node) =>
-        'type' in node &&
-        (node as Element & { type?: string }).type === 'block' &&
-        editorIsBlock(editor, node),
-    }),
-    [
-      {
-        type: 'block',
-        children: [
-          {
-            type: 'block',
-            children: [{ text: 'one' }],
-          },
-        ],
-      },
-      [0, 0],
-    ]
-  );
-});
-
-it('mirrors the legacy above/range.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: [
-      {
-        type: 'block',
-        children: [
-          {
-            type: 'block',
-            children: [
-              {
-                type: 'block',
-                children: [{ text: 'one' }],
-              },
-            ],
-          },
-          {
-            type: 'block',
-            children: [{ text: 'two' }],
-          },
-        ],
-      },
-    ],
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorAbove(editor, {
-      at: {
-        anchor: { path: [0, 0, 0, 0], offset: 0 },
-        focus: { path: [0, 1, 0], offset: 0 },
-      },
-      match: (node) =>
-        'type' in node &&
-        (node as Element & { type?: string }).type === 'block' &&
-        editorIsBlock(editor, node),
-    }),
-    [
-      {
-        type: 'block',
-        children: [
-          {
-            type: 'block',
-            children: [
-              {
-                type: 'block',
-                children: [{ text: 'one' }],
-              },
-            ],
-          },
-          {
-            type: 'block',
-            children: [{ text: 'two' }],
-          },
-        ],
-      },
-      [0],
-    ]
-  );
-});
-
 it('mirrors the legacy edges/end/start/path/point/node/parent/range oracle rows', () => {
   const editor = createEditor();
 
@@ -1556,46 +1297,6 @@ it('unhangRange exposes the current hanging-range API', () => {
 
 const unhangOracleCases = [
   {
-    name: 'mirrors the legacy unhangRange/block-hanging.tsx oracle row',
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'word' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'another' }],
-      },
-    ] as Element[],
-    selection: {
-      kind: 'text' as const,
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [1, 0], offset: 0 },
-    },
-    expected: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 4 },
-    },
-  },
-  {
-    name: 'mirrors the legacy unhangRange/collapsed.tsx oracle row',
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'one' }],
-      },
-    ] as Element[],
-    selection: {
-      kind: 'text' as const,
-      anchor: { path: [0, 0], offset: 3 },
-      focus: { path: [0, 0], offset: 3 },
-    },
-    expected: {
-      anchor: { path: [0, 0], offset: 3 },
-      focus: { path: [0, 0], offset: 3 },
-    },
-  },
-  {
     name: 'mirrors the legacy unhangRange/text-hanging.tsx oracle row',
     children: [
       {
@@ -1611,36 +1312,6 @@ const unhangOracleCases = [
     expected: {
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [0, 2], offset: 0 },
-    },
-  },
-  {
-    name: 'mirrors the legacy unhangRange/block-hanging-over-void.tsx oracle row',
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is a first paragraph' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the second paragraph' }],
-      },
-      {
-        type: 'void-block',
-        children: [{ text: 'This void paragraph gets skipped over' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: '' }],
-      },
-    ] as Element[],
-    selection: {
-      kind: 'text' as const,
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [3, 0], offset: 0 },
-    },
-    expected: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [1, 0], offset: 28 },
     },
   },
   {
@@ -1672,37 +1343,6 @@ const unhangOracleCases = [
     expected: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 28 },
-    },
-  },
-  {
-    name: 'mirrors the legacy unhangRange/block-hanging-over-non-empty-void-with-voids-option.tsx oracle row',
-    options: { voids: true },
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is a first paragraph' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the second paragraph' }],
-      },
-      {
-        type: 'void-block',
-        children: [{ text: 'This is the third paragraph' }],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: '' }],
-      },
-    ] as Element[],
-    selection: {
-      kind: 'text' as const,
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [3, 0], offset: 0 },
-    },
-    expected: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [2, 0], offset: 27 },
     },
   },
   {
@@ -1774,110 +1414,6 @@ const unhangOracleCases = [
     expected: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 2], offset: 0 },
-    },
-  },
-  {
-    name: 'mirrors the legacy unhangRange/not-hanging-inline-at-end.tsx oracle row',
-    options: { voids: true },
-    children: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the first paragraph' },
-          {
-            type: 'void-inline',
-            children: [{ text: '' }],
-          },
-          { text: '' },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the second paragraph' }],
-      },
-    ] as Element[],
-    selection: {
-      kind: 'text' as const,
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 2], offset: 0 },
-    },
-    expected: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 2], offset: 0 },
-    },
-  },
-  {
-    name: 'mirrors the legacy unhangRange/not-hanging-multi-block-inline-at-end.tsx oracle row',
-    options: { voids: true },
-    children: [
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the first paragraph' },
-          {
-            type: 'void-inline',
-            children: [{ text: '' }],
-          },
-          { text: '' },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'This is the second paragraph' },
-          {
-            type: 'void-inline',
-            children: [{ text: '' }],
-          },
-          { text: '' },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'This is the third paragraph' }],
-      },
-    ] as Element[],
-    selection: {
-      kind: 'text' as const,
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [1, 2], offset: 0 },
-    },
-    expected: {
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [1, 2], offset: 0 },
-    },
-  },
-  {
-    name: 'mirrors the legacy unhangRange/inline-range-normal.tsx oracle row',
-    children: [
-      {
-        type: 'paragraph',
-        children: [{ text: 'Block before' }],
-      },
-      {
-        type: 'paragraph',
-        children: [
-          { text: 'Some text before ' },
-          {
-            type: 'void-inline',
-            children: [{ text: '' }],
-          },
-          { text: '' },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [{ text: 'Another block' }],
-      },
-    ] as Element[],
-    selection: {
-      kind: 'text' as const,
-      anchor: { path: [1, 0], offset: 0 },
-      focus: { path: [1, 1, 0], offset: 0 },
-    },
-    expected: {
-      anchor: { path: [1, 0], offset: 0 },
-      focus: { path: [1, 1, 0], offset: 0 },
     },
   },
 ];
@@ -2865,23 +2401,6 @@ it('mirrors the legacy editorLevels/voids-true.tsx oracle row', () => {
   );
 });
 
-it('mirrors the legacy editorNext/default.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(editorNext(editor, { at: [0] }), [
-    {
-      type: 'paragraph',
-      children: [{ text: 'two' }],
-    },
-    [1],
-  ]);
-});
-
 it('returns undefined when editorNext is called from the root path', () => {
   const editor = createEditor();
 
@@ -2897,63 +2416,6 @@ it('returns undefined when editorNext is called from the root path', () => {
   );
 });
 
-it('mirrors the legacy editorNext/block.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorNext(editor, {
-      at: [0],
-      match: (node) => 'type' in node && editorIsBlock(editor, node),
-    }),
-    [
-      {
-        type: 'paragraph',
-        children: [{ text: 'two' }],
-      },
-      [1],
-    ]
-  );
-});
-
-it('mirrors the legacy editorNext/text.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorNext(editor, {
-      at: [0],
-      match: (node) => 'text' in node,
-    }),
-    [{ text: 'two' }, [1, 0]]
-  );
-});
-
-it('mirrors the legacy editorPrevious/default.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(editorPrevious(editor, { at: [1] }), [
-    {
-      type: 'paragraph',
-      children: [{ text: 'one' }],
-    },
-    [0],
-  ]);
-});
-
 it('returns undefined when getting the previous node from the root path', () => {
   const editor = createEditor();
 
@@ -2966,46 +2428,6 @@ it('returns undefined when getting the previous node from the root path', () => 
   assert.equal(
     editor.read((state) => state.nodes.previous({ at: [] })),
     undefined
-  );
-});
-
-it('mirrors the legacy editorPrevious/block.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorPrevious(editor, {
-      at: [1],
-      match: (node) => 'type' in node && editorIsBlock(editor, node),
-    }),
-    [
-      {
-        type: 'paragraph',
-        children: [{ text: 'one' }],
-      },
-      [0],
-    ]
-  );
-});
-
-it('mirrors the legacy editorPrevious/text.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorPrevious(editor, {
-      at: [1],
-      match: (node) => 'text' in node,
-    }),
-    [{ text: 'one' }, [0, 0]]
   );
 });
 
@@ -3091,62 +2513,6 @@ it('supports editorAfter and editorBefore with top-level block paths', () => {
   assert.deepEqual(editorBefore(editor, [1]), {
     path: [0, 0],
     offset: 5,
-  });
-});
-
-it('mirrors the legacy editorBefore/path.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(editorBefore(editor, [1, 0]), {
-    path: [0, 0],
-    offset: 3,
-  });
-});
-
-it('mirrors the legacy editorAfter/path.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(editorAfter(editor, [0, 0]), {
-    path: [1, 0],
-    offset: 0,
-  });
-});
-
-it('mirrors the legacy editorBefore/point.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren().slice(0, 1),
-    selection: null,
-  });
-
-  assert.deepEqual(editorBefore(editor, { path: [0, 0], offset: 1 }), {
-    path: [0, 0],
-    offset: 0,
-  });
-});
-
-it('mirrors the legacy editorAfter/point.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren().slice(0, 1),
-    selection: null,
-  });
-
-  assert.deepEqual(editorAfter(editor, { path: [0, 0], offset: 1 }), {
-    path: [0, 0],
-    offset: 2,
   });
 });
 
@@ -3251,23 +2617,6 @@ it('mirrors the legacy editorBefore/range.tsx oracle row', () => {
   );
 });
 
-it('mirrors the legacy editorAfter/range.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.deepEqual(
-    editorAfter(editor, {
-      anchor: { path: [0, 0], offset: 1 },
-      focus: { path: [1, 0], offset: 2 },
-    }),
-    { path: [1, 0], offset: 3 }
-  );
-});
-
 it('returns undefined when editorBefore or editorAfter hits the document boundary', () => {
   const editor = createEditor();
 
@@ -3278,28 +2627,6 @@ it('returns undefined when editorBefore or editorAfter hits the document boundar
 
   assert.equal(editorBefore(editor, { path: [0, 0], offset: 0 }), undefined);
   assert.equal(editorAfter(editor, { path: [1, 0], offset: 4 }), undefined);
-});
-
-it('mirrors the legacy editorBefore/start.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.equal(editorBefore(editor, [0, 0]), undefined);
-});
-
-it('mirrors the legacy editorAfter/end.tsx oracle row', () => {
-  const editor = createEditor();
-
-  editorReplace(editor, {
-    children: createLegacyBlockChildren(),
-    selection: null,
-  });
-
-  assert.equal(editorAfter(editor, [1, 0]), undefined);
 });
 
 it('supports editorAfter inside an outer transaction using the live draft tree', () => {
