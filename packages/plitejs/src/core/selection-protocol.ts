@@ -103,7 +103,8 @@ const projectSelectionRange = (range: Range): Range =>
     focus: projectSelectionPoint(range.focus),
   });
 
-const rawNodeAt = (
+/** @internal */
+export const rawNodeAt = (
   document: DocumentIndex,
   path: Path
 ): Record<string, unknown> | null => {
@@ -122,11 +123,13 @@ const rawNodeAt = (
 
 const pointRoot = (point: Point, fallback: RootKey) => point.root ?? fallback;
 
+export type SelectionModeSchema = Pick<
+  ReturnType<typeof getEditorSchema>,
+  'isAtom' | 'isObject' | 'isSelectable' | 'isVoid'
+>;
+
 export const isObjectSelectionTarget = (
-  schema: Pick<
-    ReturnType<typeof getEditorSchema>,
-    'isAtom' | 'isObject' | 'isSelectable' | 'isVoid'
-  >,
+  schema: SelectionModeSchema,
   node: unknown
 ) =>
   isRecord(node) &&
@@ -134,6 +137,23 @@ export const isObjectSelectionTarget = (
   !schema.isVoid(node as Node) &&
   schema.isSelectable(node as Node) &&
   (schema.isObject(node as Node) || schema.isAtom(node as Node));
+
+/** @internal */
+export const settleSelectionMode = (
+  schema: SelectionModeSchema,
+  selection: Selection,
+  document: DocumentIndex
+): Selection =>
+  SelectionApi.isNode(selection) &&
+  selection.mode === 'object' &&
+  !isObjectSelectionTarget(schema, rawNodeAt(document, selection.paths[0]))
+    ? SelectionApi.nodes(selection.paths, {
+        anchorPath: selection.anchorPath,
+        focusPath: selection.focusPath,
+        mode: 'block',
+        ...(selection.root === undefined ? {} : { root: selection.root }),
+      })
+    : selection;
 
 const publicPoint = (
   point: Point,
@@ -349,7 +369,6 @@ export const decodeEditorSelection = (
 };
 
 const createMapContext = (
-  editor: Editor,
   change: DocumentChange,
   before: JsonEditorValue,
   after: JsonEditorValue,
@@ -597,8 +616,6 @@ const createMapContext = (
   };
 
   return Object.freeze({
-    change,
-    editor,
     mapPath,
     mapPoint,
     mapRange,
@@ -902,7 +919,6 @@ export const mapSelectionThroughChange = (
 
   const root = SelectionApi.root(selection) ?? fallbackRoot;
   const context = createMapContext(
-    editor,
     change,
     before,
     after,
@@ -935,21 +951,11 @@ export const mapSelectionThroughChange = (
     }
   }
 
-  const mapped = mapSelectionWithContext(selection, context, options);
-  const result =
-    SelectionApi.isNode(mapped) &&
-    mapped.mode === 'object' &&
-    !isObjectSelectionTarget(
-      selectionSchema(editor),
-      rawNodeAt(valueRootIndex(after, root), mapped.paths[0])
-    )
-      ? SelectionApi.nodes(mapped.paths, {
-          anchorPath: mapped.anchorPath,
-          focusPath: mapped.focusPath,
-          mode: 'block',
-          ...(mapped.root === undefined ? {} : { root: mapped.root }),
-        })
-      : mapped;
+  const result = settleSelectionMode(
+    selectionSchema(editor),
+    mapSelectionWithContext(selection, context, options),
+    valueRootIndex(after, root)
+  );
 
   if (result) {
     assertSelectionSupported(editor, result, after, root);

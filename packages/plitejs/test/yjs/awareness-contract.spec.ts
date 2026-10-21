@@ -1,13 +1,20 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { createAuthoredPlugin } from '../../src/authored/authored';
 import { releaseEditorViewLifetime } from '../../src/core/editor-view-lifetime';
-import { createEditorView, type Descendant, type Range } from '../../src/index';
+import {
+  createEditor,
+  createEditorView,
+  type Descendant,
+  type Range,
+} from '../../src/index';
 import type { YjsCursorDataSchema } from '../../src/yjs/core';
 import { getActiveYjsController } from '../../src/yjs/core/controller-registry';
 import {
   clearYjsTrace,
   createYjsPeer,
+  createYjsPeerWithEditor,
   disconnectYjsPeer,
   FakeAwareness,
   getYjsAwarenessRevision,
@@ -254,6 +261,74 @@ describe('plitejs/yjs awareness contract', () => {
 
     peer.cleanup();
   });
+
+  for (const [label, preview] of [
+    [
+      'an authored preview',
+      (editor: Peer['editor']) =>
+        createEditorView(editor, { authored: { preview: 'proposed' } }),
+    ],
+    [
+      'an editor set to an authored preview',
+      (
+        editor: Peer['editor'],
+        plugin: ReturnType<typeof createAuthoredPlugin>
+      ) => {
+        editor.plugin(plugin).api.setView({ preview: 'proposed' });
+
+        return editor;
+      },
+    ],
+  ] as const) {
+    it(`publishes the stored selection from ${label} that hides it`, () => {
+      const awareness = new FakeAwareness(2);
+      const plugin = createAuthoredPlugin({ authorId: 'alice' });
+      const peer = createYjsPeerWithEditor(
+        createEditor({
+          initialValue: [paragraph('')],
+          plugins: [plugin],
+        }),
+        {
+          awareness,
+          children: [
+            {
+              children: [
+                { text: 'This ' },
+                {
+                  authored: [
+                    {
+                      at: 1,
+                      author: 'carol',
+                      change: 'carol:1',
+                      kind: 'delete',
+                    },
+                  ],
+                  text: 'extra ',
+                },
+                { text: 'sentence can go.' },
+              ],
+              type: 'paragraph',
+            },
+          ],
+          clientId: 'b',
+          numericClientId: 2,
+        }
+      );
+      const controller = getActiveYjsController(peer.editor);
+
+      assert.ok(controller);
+
+      peer.editor.update.selection.set(selection([0, 1], 3));
+      controller.presenceApi(peer.editor).syncSelection();
+      const stored = awareness.getLocalState()?.selection;
+
+      controller.presenceApi(preview(peer.editor, plugin)).syncSelection();
+
+      assert.deepEqual(awareness.getLocalState()?.selection, stored);
+
+      peer.cleanup();
+    });
+  }
 
   it('publishes root-qualified awareness for a named root', () => {
     const { awareness, peer } = createAwarePeer();

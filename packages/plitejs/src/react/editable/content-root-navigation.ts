@@ -12,6 +12,7 @@ import {
   type RootKey,
 } from '../..';
 import { resolveLastEditorWindow } from '../../dom/internal';
+import type { EditorSelectionTarget } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readRootChildren } from '../root-key';
 import {
@@ -136,7 +137,7 @@ const rootedRange = (point: Point, root: RootKey): Range => {
 
 const selectContentRoot = (
   editor: ReactRuntimeEditor,
-  target: NonNullable<Parameters<typeof writeRuntimeSelection>[1]>
+  target: EditorSelectionTarget
 ) => {
   if (editor.read.view.isReadOnly()) {
     writeRuntimeSelection(editor, target);

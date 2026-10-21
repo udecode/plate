@@ -227,7 +227,7 @@ const withRootRead = <T>(
   return viewState.document
     ? withEditorDocumentProjection(editor, viewState.document, read, {
         root: viewState.root,
-        selection: null,
+        selection: () => null,
       })
     : withAuthoredViewRead(editor, viewState.editor ?? editor, read);
 };
