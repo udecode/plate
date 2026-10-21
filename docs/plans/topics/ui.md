@@ -1,6 +1,6 @@
 # Registry kits, installation and command presentation
 
-Page: https://claude.ai/artifact/WEzA582D2wBjBdtc7jZgRT
+Page: https://claude.ai/artifact/FqHGvHTUYHBCAy72HTj23W
 
 How Plate's copied registry UI installs into an app and who owns kit membership, install metadata and menu and toolbar policy. The ledger asks for the smallest copied composition contract that keeps kit membership, installation metadata and toolbar policy explicit. The 2026-09-18 Pursue landed. The registry's `transforms.ts` is gone, Base and Radix dropdown items carry item-scoped `finalFocus`, and feature plugins own typed insert and upsert through one private `blockInsertion` policy. Its slash-ui-actions proof ran then and is historical now. The 2026-10-04 review (`2026-10-04-ui-audit-2`) found one gap left, authored `registryDependencies` that mixed import facts with install intent, and `docs/plans/2026-10-08-ui-review.md` closed it. The build now derives every registry edge and package version that copied imports need, and authored lists hold only install policy: styles, companions, bundles, providers and owner picks. Its proof is shadcn's own resolver run over every published item in all 16 styles, with no new app built, because a separate `dnd.tsx` tooltip error stopped the first one. Its law is `docs/vision/plate.md`, the registry install bullet that starts "Derive required package and registry-item dependencies", and the owners below.
 
@@ -30,7 +30,7 @@ A registry author declares each copied item in `registry-features.ts`; the build
 | Neutral feature policy | One server-safe Align kit and one LineHeight kit; Font is not a third case, because live Font sets a black default its static counterpart does not. |
 | Presentation and eligibility | Copied JSX: labels, icons, grouping, membership and async surface policy. |
 | Edits | Feature operations: typed `insert` always creates, `upsert` reuses a matching empty source; Insert uses `insert`, Slash uses `upsert` for blocks and `insert` for inlines. |
-| Menu focus | Item-scoped `finalFocus` in the Base and Radix adapters; only a successful closing selection arms it, `false` suppresses it, and content-level `onFinalFocus` is the fallback. |
+| Menu focus | Item-scoped `finalFocus` in the Base and Radix adapters; only a successful closing selection arms it, and `false` suppresses it. Content-level `onFinalFocus` is the fallback for a close the menu owns: a left press in the menu, on its trigger or in the trigger's toolbar, any key but Tab, or a left press outside a modal menu. Tab, a right-click outside the menu, a press outside a non-modal menu, or focus already on another element leaves focus where the user put it. Both adapters take the close record and the window capture listeners that write it while the content is open from `menu-close-focus.tsx`. The listeners exist because the floating toolbar can unmount the menu before the library reports the press. |
 | Toolbars | `FixedToolbarPlugin` and `FixedToolbarKit` stay as optional placement beside ordinary JSX; floating toolbar and block menu render inside the exact mounted view. |
 | Installation | Registry tooling derives required facts, keeps explicit bundles and compiles `r`, `rd`, sparse overlays, the manifest and hashes as one generation. |
 
@@ -52,7 +52,7 @@ Rejected, and why:
 - `deriveRegistryDependencies` in `apps/www/scripts/registry-package-dependencies.mts` parses each published item's copied imports. It derives npm package requirements with the version ranges the package DAG gives, and every `@plate/*` and shadcn registry edge, emitted after the authored policy edges. It rejects an authored edge that the item's own import already gives, and an authored bare package name whose derived version has a range. A shared imported file settles through an owner another import derives, or needs exactly one authored pick. `apps/www/scripts/build-registry.mts` runs it and writes the one generated metadata snapshot that build, preview, docs and installers read.
 - `apps/www/src/lib/rehype-utils.ts` reads a bare dependency edge as a shadcn item, and `apps/www/scripts/check-registry-source.mts` rejects a bare edge that names no shadcn item. Docs install commands quote any package request that holds shell syntax (`toShellPackageArguments` in `apps/www/src/lib/registry-install.ts`).
 - `apps/www/src/registry/components/editor/plugins.ts` and `plugins-static.ts` own live and static kit membership as app source.
-- `apps/www/src/registry/bases/{base,radix}/dropdown-menu.tsx` own the menu focus lifecycle through item-scoped `finalFocus`.
+- `apps/www/src/registry/bases/{base,radix}/dropdown-menu.tsx` own the menu focus lifecycle through item-scoped `finalFocus` and a close record. The shared `menu-close-focus.tsx` holds that record and the window listeners that write it while the menu is open.
 - `packages/platejs/src/internal/plugin/blockInsertion.ts` is the one private policy behind each feature plugin's typed insert and upsert; there is no universal command catalog.
 
 ## What other editors do
