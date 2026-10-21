@@ -158,7 +158,7 @@
       ".agents/pstack/status.mjs": "eb66de88cdf526ea780c01a149e383467d8a7bb1cbdb0530b428be268be54c76",
       ".agents/pstack/tasks.mjs": "34a36109778f2cb7a2ced3971bd3f420429e33941d18efdb85de7443ed6c48bc",
       ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
-      ".agents/pstack/rules/chips.md": "7914660a311f7534ccd1afdb92ff118a169bdc438e7fa744a3011fc19b925b50",
+      ".agents/pstack/rules/chips.md": "3338e8005847b443437874d6ee9fedf0f9fe95c5df36fa5b338e2081b705780f",
       ".agents/pstack/rules/close.md": "27b28a402f98fd0d5185ccd6eb327eab68fd7ca9bec894baec212ad93472e992",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
       ".agents/pstack/rules/codex.md": "e3eb17bbb7b34793c3242a7b08ad20f183a3d698d909e9e137d1731fdc94353a",
@@ -172,6 +172,6 @@
       ".agents/pstack/rules/title.md": "0a64b90ec1d4440adefe17a32044b72f9f8ab57a4807ccf70d506e2e3c709bec",
       ".agents/pstack/rules/trails.md": "e5d12f8c578a1d2f45dd6624ed0022babbad97f2e474b05894f00a6075913ae1"
     },
-    "source": "e01212ac99ec02bbc64192daa6e820c4e08c15b3"
+    "source": "c55cf323dc9b7f521e560db153f9d4a83442b25f"
   }
 }
