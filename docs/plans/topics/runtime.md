@@ -1,6 +1,6 @@
 # Document runtime and views
 
-Page: https://claude.ai/artifact/VVn5MNBokeZVoz39Deh4S6
+Page: https://claude.ai/artifact/TBgmnQqQjBpGCdLdgYWwy1
 
 The ledger asks which runtime and view lifetimes Plite needs. The 2026-10-04 audit stopped: one private document runtime with root-, document- and authored-bound views matches the lifetimes production code uses, the competing public React runtime is gone, and every deletion lane loses either shared-root identity or per-view interaction state. The [content-root execution](../2026-09-30-content-root-locations-execution.md) corrected view derivation over the canonical runtime, including immutable, read-only and authored binding, and validates a document once per compiled schema. `node tooling/scripts/review-ledger.mjs show runtime` prints the scope's history.
 
