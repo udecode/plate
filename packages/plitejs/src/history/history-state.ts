@@ -22,6 +22,7 @@ import { MAIN_ROOT_KEY } from '../core/public-root';
 import { areEditorSchemaIdentitiesEqual } from '../core/schema-compiler';
 import type { AnyEditor } from '../interfaces/editor';
 import type { Batch, History } from './history';
+import { type HistoryCarets, mapHistoryCarets } from './history-carets';
 import type { HistoryBatchGroup } from './history-merge-policy';
 import {
   historyReplaySchemaOf,
@@ -53,6 +54,7 @@ type HistoryBranch<V extends Value> = Readonly<{
   anchorCeiling: number;
   base: EditorDocumentValue<V>;
   batch: Batch<V>;
+  carets: HistoryCarets | null;
   depth: number;
   group: HistoryBatchGroup | null;
   identity: object;
@@ -66,6 +68,7 @@ type ResolvedHistoryEntry<V extends Value> = Readonly<{
   anchorCeiling: number;
   base: EditorDocumentValue<V>;
   batch: Batch<V>;
+  carets: HistoryCarets | null;
   group: HistoryBatchGroup | null;
   identity: object;
   recovery: AnchorHistoryRecovery | null;
@@ -302,12 +305,14 @@ const branch = <V extends Value>(
   group: HistoryBatchGroup | null = null,
   recovery: AnchorHistoryRecovery | null = null,
   anchorCeiling = 0,
-  identity: object = {}
+  identity: object = {},
+  carets: HistoryCarets | null = null
 ): HistoryBranch<V> =>
   Object.freeze({
     anchorCeiling,
     base,
     batch: freezeBatch({ ...batch, change: replay.change }),
+    carets,
     replay,
     depth: (next?.depth ?? 0) + 1,
     group,
@@ -343,7 +348,8 @@ const clipBranch = <V extends Value>(
       item.group,
       item.recovery,
       item.anchorCeiling,
-      item.identity
+      item.identity,
+      item.carets
     );
   }
 
@@ -359,7 +365,8 @@ const pushBranch = <V extends Value>(
   group: HistoryBatchGroup | null = null,
   recovery: AnchorHistoryRecovery | null = null,
   anchorCeiling = 0,
-  identity: object = {}
+  identity: object = {},
+  carets: HistoryCarets | null = null
 ) =>
   branch(
     batchValue,
@@ -370,7 +377,8 @@ const pushBranch = <V extends Value>(
     group,
     recovery,
     anchorCeiling,
-    identity
+    identity,
+    carets
   );
 
 const addMapping = <V extends Value>(
@@ -436,7 +444,7 @@ const resolveHead = <V extends Value>(
   let batchValue = value.batch;
   let { replay } = value;
   let { next } = value;
-  let { recovery } = value;
+  let { carets, recovery } = value;
 
   for (const mapping of journalEntries(value.mappings)) {
     const nextBase = replay.record().after;
@@ -465,6 +473,27 @@ const resolveHead = <V extends Value>(
       mappedNextBase
     );
 
+    if (carets) {
+      const batchSide = {
+        after: mappedBatchBase,
+        before: batchBase,
+        change: mapping.change,
+      };
+      const nextSide = {
+        after: mappedNextBase,
+        before: nextBase,
+        change: mapped.rest,
+      };
+
+      carets = mapHistoryCarets(
+        editor,
+        carets,
+        batchValue,
+        replay.direction === 'undo'
+          ? { after: batchSide, before: nextSide }
+          : { after: nextSide, before: batchSide }
+      );
+    }
     batchValue = freezeBatch<V>({
       ...batchValue,
       change: replay.change,
@@ -511,7 +540,8 @@ const resolveHead = <V extends Value>(
     retainMappedCompositionGroup(value.group),
     recovery,
     value.anchorCeiling,
-    value.identity
+    value.identity,
+    carets
   );
 };
 
@@ -540,6 +570,7 @@ const resolveAll = <V extends Value>(
       anchorCeiling: current.anchorCeiling,
       base: current.base,
       batch: current.batch,
+      carets: current.carets,
       group: current.group,
       identity: current.identity,
       recovery: current.recovery,
@@ -561,7 +592,8 @@ const resolveAll = <V extends Value>(
       entry.group,
       entry.recovery,
       entry.anchorCeiling,
-      entry.identity
+      entry.identity,
+      entry.carets
     );
   }
 
@@ -588,7 +620,8 @@ const rebuildBranch = <V extends Value>(
       entry.group,
       entry.recovery,
       entry.anchorCeiling,
-      entry.identity
+      entry.identity,
+      entry.carets
     );
   }
 
@@ -975,6 +1008,7 @@ export const peekHistoryEntry = <V extends Value>(
         anchorCeiling: resolved.anchorCeiling,
         base: resolved.base,
         batch: resolved.batch,
+        carets: resolved.carets,
         group: resolved.group,
         identity: resolved.identity,
         recovery: resolved.recovery,
@@ -994,6 +1028,7 @@ export const writeHistory = <V extends Value>(
   current: EditorDocumentValue<V>,
   options: Readonly<{
     anchorCeiling?: number;
+    carets?: HistoryCarets | null;
     clearRedos?: boolean;
     group?: HistoryBatchGroup | null;
     recovery?: AnchorHistoryRecovery | null;
@@ -1015,7 +1050,9 @@ export const writeHistory = <V extends Value>(
       store.maxDepth,
       options.group ?? null,
       options.recovery ?? null,
-      options.anchorCeiling ?? 0
+      options.anchorCeiling ?? 0,
+      {},
+      options.carets ?? null
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
@@ -1028,6 +1065,7 @@ export const replaceHistoryHead = <V extends Value>(
   current: EditorDocumentValue<V>,
   options: Readonly<{
     anchorCeiling?: number;
+    carets?: HistoryCarets | null;
     clearRedos?: boolean;
     group?: HistoryBatchGroup | null;
     recovery?: AnchorHistoryRecovery | null;
@@ -1053,7 +1091,8 @@ export const replaceHistoryHead = <V extends Value>(
       options.group ?? null,
       options.recovery ?? null,
       options.anchorCeiling ?? resolved.anchorCeiling,
-      resolved.identity
+      resolved.identity,
+      options.carets ?? null
     ),
     ...(options.clearRedos ? { redos: null } : {}),
   });
@@ -1101,7 +1140,8 @@ export const completeHistoryAction = <V extends Value>(
       resolved.group,
       resolved.recovery,
       resolved.anchorCeiling,
-      resolved.identity
+      resolved.identity,
+      resolved.carets
     ),
     [source]: nextSource,
     ...(discardRedos ? { redos: null } : {}),

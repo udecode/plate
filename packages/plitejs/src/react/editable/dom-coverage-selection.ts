@@ -1,9 +1,10 @@
 import { NodeApi, RangeApi, type Range as ModelRange } from '../..';
-import {
-  type DOMCoverageSession,
-  replaceDOMSelectionRange,
-} from '../../dom/internal';
+import type { DOMCoverageSession } from '../../dom/internal';
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
+import {
+  getDOMRangeSelectionPoints,
+  writeDOMSelection,
+} from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 
 type DOMRangeProjection = {
@@ -131,56 +132,20 @@ const getDOMRangeProjection = (
   return null;
 };
 
-const applyDOMRangeProjection = (
-  domSelection: globalThis.Selection,
-  projection: DOMRangeProjection | null,
-  forceDOMRangeRebuild: boolean
-) => {
-  domSelection.removeAllRanges();
-
-  if (!projection) {
-    return;
-  }
-
-  const { backward, domRange } = projection;
-
-  if (forceDOMRangeRebuild) {
-    replaceDOMSelectionRange(domSelection, domRange, {
-      backward,
-    });
-  } else if (backward) {
-    domSelection.setBaseAndExtent(
-      domRange.endContainer,
-      domRange.endOffset,
-      domRange.startContainer,
-      domRange.startOffset
-    );
-  } else {
-    domSelection.setBaseAndExtent(
-      domRange.startContainer,
-      domRange.startOffset,
-      domRange.endContainer,
-      domRange.endOffset
-    );
-  }
-};
-
 export const applyDOMCoverageSelectionPolicy = ({
   coverage,
-  domSelection,
   editor,
   editorElement,
-  forceDOMRangeRebuild = false,
   onDOMSelectionWillChange,
   selection,
+  tree,
 }: {
   coverage: DOMCoverageSession;
-  domSelection: globalThis.Selection;
   editor: ReactRuntimeEditor;
   editorElement?: HTMLElement;
-  forceDOMRangeRebuild?: boolean;
   onDOMSelectionWillChange?: () => void;
   selection: ModelRange;
+  tree: Document | ShadowRoot;
 }) => {
   const boundaries = coverage.getBoundariesForRange(selection);
 
@@ -204,7 +169,12 @@ export const applyDOMCoverageSelectionPolicy = ({
   const projection = getDOMRangeProjection(editor, selection, editorElement);
 
   onDOMSelectionWillChange?.();
-  applyDOMRangeProjection(domSelection, projection, forceDOMRangeRebuild);
+  writeDOMSelection(
+    tree,
+    projection
+      ? getDOMRangeSelectionPoints(projection.domRange, projection.backward)
+      : null
+  );
 
   return true;
 };

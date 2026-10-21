@@ -218,8 +218,11 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   document. Proof keeps the inferred editor instead of widening fixtures or
   casting callers.
 - A public `EditorRoot` requires an editor and owns one independent mounted
-  view. Its root, authored, and read-only inputs configure that view through the
-  existing view owner. Replacing the editor remounts its views; changing
+  view. It starts its own presentation, which owns that view's caret and view
+  state, whatever editor it is given; the Editables, windowed and paged
+  surfaces and element-owned content roots Plite mounts inside it share that
+  presentation. Its root, authored, and read-only inputs configure that view
+  through the existing view owner. Replacing the editor remounts its views; changing
   the root retires queued work and commands from the prior view before
   descendants observe the next one. Nested same-document roots may share the
   nearest private provider while retaining independent mounted views. An

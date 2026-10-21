@@ -516,9 +516,7 @@ describe('Details list conversion', () => {
       });
       editor.api.history.undo();
       expect(editor.read.children()).toEqual(before);
-      expect(
-        editor.plugin(BaseDetailsPlugin).store.get('isOpen', innerKey)
-      ).toBe(true);
+      expect(editor.plugin(BaseDetailsPlugin).api.isOpen(innerKey)).toBe(true);
     }
   );
 });

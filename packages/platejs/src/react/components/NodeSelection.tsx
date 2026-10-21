@@ -3,6 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { writeDOMSelection } from '../../dom/plite-dom.internal';
 import {
   ElementApi,
   PathApi,
@@ -666,7 +667,10 @@ export function NodeSelectionDrag({
         finishFrame = undefined;
         if (editor.read.lastCommit() !== committedChange) return;
         editable.focus({ preventScroll: true });
-        ownerDocument.getSelection()?.removeAllRanges();
+        writeDOMSelection(
+          editable.getRootNode() as Document | ShadowRoot,
+          null
+        );
 
         if (
           committedPaths.length > 0 &&
@@ -826,7 +830,7 @@ export function NodeSelectionDrag({
       event.preventDefault();
       event.stopPropagation();
       // A focused contenteditable can recreate its native caret before keyup.
-      ownerDocument.getSelection()?.removeAllRanges();
+      writeDOMSelection(editable.getRootNode() as Document | ShadowRoot, null);
       if (event.type === 'keyup' || event.key === 'Shift') return;
       const step = event.key === 'ArrowUp' ? -1 : 1;
       let next = focus + step;

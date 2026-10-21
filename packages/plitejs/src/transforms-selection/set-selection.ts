@@ -2,7 +2,7 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getEditorUpdateRoot,
-  markTransactionSelectionWritten,
+  placeSelection,
   setCurrentSelection,
   syncImplicitTargetToCurrentSelection,
 } from '../core/public-state';
@@ -30,16 +30,23 @@ export const writeSelection = <
   selection: Selection,
   root = getEditorUpdateRoot(editor)
 ) => {
-  markTransactionSelectionWritten(editor);
-  setCurrentSelection(editor, selection, root);
-  syncImplicitTargetToCurrentSelection(editor);
+  placeSelection(editor, () => {
+    setCurrentSelection(editor, selection, root);
+    syncImplicitTargetToCurrentSelection(editor);
+  });
 };
 
 export const setSelection: SelectionMutationMethods['setSelection'] = (
   editor,
   props
 ) => {
-  markTransactionSelectionWritten(editor);
+  placeSelection(editor, () => setSelectionProps(editor, props));
+};
+
+const setSelectionProps: SelectionMutationMethods['setSelection'] = (
+  editor,
+  props
+) => {
   const selection = getCurrentSelection(editor);
   const oldProps: MutableRangeProperties = {};
   const newProps: MutableRangeProperties = {};

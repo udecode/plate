@@ -175,6 +175,10 @@ export const steps = [
     affected: source,
   },
   {
+    name: 'selection-writes',
+    run: 'node tooling/scripts/check-selection-writes.mjs',
+  },
+  {
     name: 'hook-generics',
     run: 'node tooling/scripts/check-hook-generics.mjs --check',
     fix: 'node tooling/scripts/check-hook-generics.mjs',

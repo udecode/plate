@@ -152,7 +152,7 @@ Best API target:
 import {
   BaseDetailsPlugin,
   BaseDetailsSummaryPlugin,
-  type BaseDetailsPluginState,
+  type BaseDetailsViewState,
   type DetailsElement,
   type DetailsSummaryElement,
 } from 'platejs/details';
@@ -241,13 +241,17 @@ Structural contract:
 
 View-state and interaction contract:
 
-- `BaseDetailsPluginState` contains only `openKeys: Set<NodeKey>` and remains
-  Node-safe; the React descriptors consume it without owning second state.
-- Loaded Details start closed. Newly inserted or wrapped Details start open.
+- `BaseDetailsViewState` contains only `openKeys: Set<NodeKey>` and remains
+  Node-safe; each view keeps its own copy in the plugin's view store
+  (`docs/plans/2026-10-20-runtime-view-state.md`), and the React descriptors
+  consume it without owning second state.
+- Loaded Details start closed. Newly inserted or wrapped Details start open in
+  the view that inserts them.
 - Open state follows node keys across path moves and is pruned on deletion. A
   new node at the old path does not inherit state.
 - Closing while selection is in body moves selection to the end of Summary
-  before unmount. `setOpen` owns that action without document history.
+  before unmount, when the closing view is writable and holds the caret or no
+  view holds it. `setOpen` owns that action without document history.
 - Programmatic materialization opens through `setOpen`.
 - Enter in an open Summary moves into the first body block at the end, or moves
   trailing split text into a new first Paragraph from the middle.

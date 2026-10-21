@@ -1,14 +1,20 @@
 import { type FormEvent, type RefObject, useCallback } from 'react';
 
 import { PathApi, type Range, RangeApi, SelectionApi } from '../..';
+import { toPublicRoot } from '../../core/public-root';
 import { getSelection } from '../../dom';
 import { findEditorDOMRootRuntime } from '../../dom/internal';
+import { projectEditorView } from '../../editor-runtime-view';
+import type { RootKey } from '../../interfaces/editor';
 import type {
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
 } from '../components/editable';
 import { focusPliteEditable } from '../hooks/focus-plite-editable';
-import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
+import {
+  createReactRuntimeViewEditor,
+  useOptionalPliteRuntimeContext,
+} from '../hooks/use-plite-runtime';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   profilePliteReactDuration,
@@ -93,6 +99,16 @@ const isDOMBeforeInputHandled = (
 };
 
 const getSelectionRoot = (selection: Range | null) => selection?.anchor.root;
+
+const getRootInputEditor = (
+  editor: ReactRuntimeEditor,
+  root: RootKey,
+  runtimeContext: ReturnType<typeof useOptionalPliteRuntimeContext>
+) =>
+  runtimeContext?.getMountedViewEditor(root) ??
+  createReactRuntimeViewEditor(
+    projectEditorView(editor, { root: toPublicRoot(root) })
+  );
 
 export const probeBeforeInputInsertTextCommand = ({
   editor,
@@ -383,7 +399,7 @@ export const useRuntimeBeforeInputEvents = ({
   onDOMBeforeInput,
   onInput,
   onUserInput,
-  processing,
+  webKitProbeActive,
   queuePendingNativeTextInput,
   readOnly,
   repair,
@@ -403,7 +419,7 @@ export const useRuntimeBeforeInputEvents = ({
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
   onInput?: unknown;
   onUserInput: () => void;
-  processing: RefObject<boolean>;
+  webKitProbeActive: RefObject<boolean>;
   queuePendingNativeTextInput?: (input: {
     data: string;
     inputType: string;
@@ -578,7 +594,7 @@ export const useRuntimeBeforeInputEvents = ({
             handleWebKitShadowDOMBeforeInput({
               editor,
               event,
-              processing,
+              webKitProbeActive,
               root,
               window,
             })
@@ -701,12 +717,8 @@ export const useRuntimeBeforeInputEvents = ({
           );
           const targetEditor =
             selectionRoot && selectionRoot !== viewRoot
-              ? pliteRuntimeContext?.getMountedViewEditor(selectionRoot)
+              ? getRootInputEditor(editor, selectionRoot, pliteRuntimeContext)
               : null;
-
-          if (selectionRoot && selectionRoot !== viewRoot && !targetEditor) {
-            return;
-          }
 
           if (
             claimSettledCompositionInput({
@@ -1152,7 +1164,7 @@ export const useRuntimeBeforeInputEvents = ({
       onDOMBeforeInput,
       onInput,
       onUserInput,
-      processing,
+      webKitProbeActive,
       queuePendingNativeTextInput,
       readOnly,
       repair,

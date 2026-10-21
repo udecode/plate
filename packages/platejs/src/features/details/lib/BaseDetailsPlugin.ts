@@ -23,6 +23,12 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
+import {
+  getActiveEditorTransaction,
+  getCaretOwner,
+  holdsCaret,
+  setSelectionAsView,
+} from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import { blockRelease } from '../../../internal/plugin/blockRelease';
 import { insertionAnchor } from '../../../internal/plugin/insertionAnchor';
@@ -81,7 +87,7 @@ const releaseDetails = (
   return tx.nodes.unwrap({ at: details });
 };
 
-export type BaseDetailsPluginState = {
+export type BaseDetailsViewState = {
   openKeys: Set<NodeKey>;
 };
 
@@ -208,7 +214,7 @@ export const BaseDetailsSummaryPlugin = definePlugin(PLUGINS.detailsSummary, {
 
 export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
   dependencies: [BaseDetailsSummaryPlugin, BaseParagraphPlugin],
-  initialState: (): BaseDetailsPluginState => ({
+  initialViewState: (): BaseDetailsViewState => ({
     openKeys: new Set(),
   }),
   schema: ({ plugins }) => ({
@@ -241,7 +247,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
       markdown: { tag: type },
     }),
 })
-  .extend(({ editor, plugin, schema: { type }, store }) => ({
+  .extend(({ editor, plugin, schema: { type }, viewStoreOf }) => ({
     contributions: [
       blockRelease.of((tx, [node, path]) => {
         const container = getDetailsOfTitle(tx, { path, type });
@@ -269,44 +275,43 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         const container = getDetailsOfTitle(tx, { path, type });
         const key = container && tx.key(container[1]);
 
-        return key && !store.get('openKeys').has(key) ? container : null;
+        return key && !viewStoreOf(tx).get('openKeys').has(key)
+          ? container
+          : null;
       }),
     ],
-    api: ({ editor: commandEditor }) => ({
+    api: ({ editor: viewEditor, viewStore }) => ({
+      isOpen: (key: NodeKey) => viewStore.get('openKeys').has(key),
       setOpen: (key: NodeKey, open: boolean) => {
-        // The plugin store holds open state for every view of the document,
-        // so a read-only caller moves the owner's selection out of the body
-        // it hides. Another authored view keeps its own selection.
-        const writable = [commandEditor, editor].find(
-          (candidate) => !candidate.read.view.isReadOnly()
-        );
+        const movesCaret =
+          !open &&
+          !viewEditor.read.view.isReadOnly() &&
+          (!getCaretOwner(viewEditor) || holdsCaret(viewEditor));
+        const state = getActiveEditorTransaction(viewEditor) ?? viewEditor.read;
+        const detailsEntry = movesCaret ? state.nodes.get(key) : undefined;
 
-        if (!open && writable) {
-          const detailsEntry = writable.read.nodes.get(key);
-          const selection = writable.read.selection();
-
-          if (detailsEntry && ElementApi.isElementType(detailsEntry[0], type)) {
-            const detailsPath = detailsEntry[1];
-            const selectedPaths = SelectionApi.isNode(selection)
-              ? selection.paths
-              : RangeApi.isRange(selection)
-                ? [selection.anchor.path, selection.focus.path]
-                : [];
-            const isInBody = selectedPaths.some(
+        if (detailsEntry && ElementApi.isElementType(detailsEntry[0], type)) {
+          const [details, detailsPath] = detailsEntry;
+          const summaryEnd = state.points.end(details.children[0]);
+          const selection = state.selection();
+          const selectedPaths = SelectionApi.isNode(selection)
+            ? selection.paths
+            : RangeApi.isRange(selection)
+              ? [selection.anchor.path, selection.focus.path]
+              : [];
+          const isInBody =
+            SelectionApi.root(selection) === summaryEnd?.root &&
+            selectedPaths.some(
               (path) =>
                 PathApi.isDescendant(path, detailsPath) &&
                 path[detailsPath.length] !== 0
             );
-
-            if (isInBody) {
-              const point = writable.read.points.end(detailsPath.concat(0));
-
-              if (point) writable.update.selection.set(point);
-            }
+          if (isInBody && summaryEnd) {
+            setSelectionAsView(viewEditor, summaryEnd);
           }
         }
 
-        store.set((draft) => {
+        viewStore.set((draft) => {
           const openKeys = new Set(draft.openKeys);
 
           if (open) {
@@ -319,9 +324,6 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         });
       },
     }),
-    selectors: {
-      isOpen: (state, key: NodeKey) => state.openKeys.has(key),
-    },
     update: ({ tx }) => {
       const insertDetails = (
         data: Record<string, never> = {},
@@ -345,7 +347,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
 
         const [key] = inserted;
 
-        store.set((draft) => {
+        viewStoreOf(tx).set((draft) => {
           draft.openKeys = new Set(draft.openKeys).add(key);
         });
 
@@ -505,7 +507,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
 
             const key = tx.key(detailsEntry[0]);
 
-            store.set((draft) => {
+            viewStoreOf(tx).set((draft) => {
               draft.openKeys = new Set(draft.openKeys).add(key);
             });
           }
@@ -520,7 +522,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
       };
     },
   }))
-  .extend(({ editor, plugin, store }) => ({
+  .extend(({ editor, plugin, viewStoreOf }) => ({
     commands: ({ around, handle }) => [
       ...[editorCommands.delete, editorCommands.deleteFragment].map((command) =>
         around(command, ({ state, next }) => {
@@ -540,7 +542,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
                 return (
                   ElementApi.isElement(node) &&
                   key !== null &&
-                  !store.get('isOpen', key)
+                  !viewStoreOf(state).get('openKeys').has(key)
                 );
               },
               mode: 'highest',
@@ -593,7 +595,9 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
           });
 
         if (summary) {
-          if (!store.get('isOpen', detailsKey)) return exitAfterDetails();
+          if (!viewStoreOf(state).get('openKeys').has(detailsKey)) {
+            return exitAfterDetails();
+          }
 
           if (state.points.isEnd(selection.anchor, summary[1])) {
             const firstBodyPoint = state.points.start(details[1].concat(1));
@@ -654,7 +658,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
               type: plugin,
               match: (node) =>
                 ElementApi.isElement(node) &&
-                !store.get('isOpen', state.key(node)),
+                !viewStoreOf(state).get('openKeys').has(state.key(node)),
               mode: 'highest',
             });
           const point =
@@ -712,7 +716,7 @@ export const BaseDetailsPlugin = definePlugin(PLUGINS.details, {
         if (
           input.direction === 'forward' &&
           summary &&
-          !store.get('isOpen', state.key(details[0])) &&
+          !viewStoreOf(state).get('openKeys').has(state.key(details[0])) &&
           state.points.isEnd(selection.anchor, summary[1])
         ) {
           const next = state.nodes.next({ at: details[1], from: 'after' });

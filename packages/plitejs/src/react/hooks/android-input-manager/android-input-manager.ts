@@ -11,6 +11,7 @@ import {
   type Range,
   RangeApi,
 } from '../../..';
+import { setShownSelectionAsView } from '../../../core/view-carets';
 import {
   applyStringDiff,
   isDOMElement,
@@ -65,10 +66,7 @@ import {
   leaf as editorLeaf,
   next as editorNext,
 } from '../../editable/runtime-editor-api';
-import {
-  writeRuntimeMarks,
-  writeRuntimeSelection,
-} from '../../editable/runtime-mutation-state';
+import { writeRuntimeMarks } from '../../editable/runtime-mutation-state';
 import { readRuntimeSelectionRange } from '../../editable/runtime-selection-state';
 import { isTypingInputType } from '../../editable/typed-text';
 import {
@@ -184,7 +182,7 @@ export function createAndroidInputManager({
         normalized &&
         (!selection || !RangeApi.equals(normalized, selection))
       ) {
-        writeRuntimeSelection(editor, normalized);
+        setShownSelectionAsView(editor, normalized);
       }
     }
   };
@@ -216,7 +214,7 @@ export function createAndroidInputManager({
       const innerTargetRange = editorRange(editor, target);
       const selection = readRuntimeSelectionRange(editor);
       if (!selection || !RangeApi.equals(selection, innerTargetRange)) {
-        writeRuntimeSelection(editor, target);
+        setShownSelectionAsView(editor, target);
       }
     }
 
@@ -337,7 +335,7 @@ export function createAndroidInputManager({
       const range = targetRange(diff);
       const selection = readRuntimeSelectionRange(editor);
       if (!selection || !RangeApi.equals(selection, range)) {
-        writeRuntimeSelection(editor, range);
+        setShownSelectionAsView(editor, range);
       }
 
       if (diff.diff.text) {
@@ -385,7 +383,7 @@ export function createAndroidInputManager({
             failInvariant('Expected value to be defined')
         ))
     ) {
-      writeRuntimeSelection(editor, selection);
+      setShownSelectionAsView(editor, selection);
     }
 
     if (hasPendingAction()) {

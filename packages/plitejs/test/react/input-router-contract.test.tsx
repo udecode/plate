@@ -677,7 +677,7 @@ test('material beforeinput commands bypass direct DOM repair at the mounted sele
         handledDOMBeforeInputRef: { current: false },
         inputController,
         onUserInput: vi.fn(),
-        processing: { current: false },
+        webKitProbeActive: { current: false },
         readOnly: false,
         repair: { requestEditableRepair } as any,
         runtime,

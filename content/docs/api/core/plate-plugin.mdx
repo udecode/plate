@@ -6,9 +6,10 @@ description: API reference for Plate plugins.
 Plate plugins are descriptors passed in the `plugins` array of `createEditor`
 or `useCreateEditor`. Installed plugin APIs are inferred on `editor.api` under
 the plugin name. Pass the descriptor to `editor.plugin(MyPlugin)` for its exact
-API, reads, update commands, schema identity, and editor-local state. React
-components use `useEditor().plugin(MyPlugin)` for the portal and `usePluginStore`
-for state subscriptions.
+API, reads, update commands, schema identity, editor-local state, and per-view
+state. React components use `useEditor().plugin(MyPlugin)` for the portal,
+`usePluginStore` for state subscriptions, and `useViewStore` for view state
+subscriptions.
 
 ## Authoring context
 
@@ -75,7 +76,8 @@ Plugin descriptors or dynamic names targeted by the plugin's schema contribution
   declare independent methods in the constructor and use `.extend({api})` only
   when they need an earlier-stage type or are adapting an imported/prebuilt
   descriptor. Genuinely editor-wide capabilities use the same root `api` field;
-  Plate projects it under the plugin name.
+  Plate projects it under the plugin name. The factory also receives
+  `viewStore`, this plugin's state in the view the API is built for.
 </APIItem>
 
 <APIItem
@@ -114,6 +116,22 @@ through a typed constant or explicit factory return type. Use the callback form
 when the seed depends on the resolved plugin context. App consumers override
 the seed with one final `.configure({ initialState: { ... } })`. Runtime code
 reads and updates the installed store through `editor.plugin(MyPlugin).store`.
+</APIItem>
+
+<APIItem name="initialViewState" type="() => InferPluginViewState<D>">
+Creates this plugin's state for one view. Plate keeps one copy for each view
+of the editor and one for the base editor. Use it for state that belongs to
+what one view shows, such as which sections are collapsed; state that every
+view shares stays in `initialState`. The `api` factory and the plugin portal
+read and write it through `viewStore`, `.extend` callbacks through
+`viewStoreOf(state)` and `viewStoreOf(tx)`, and React components through
+`useViewStore`. See [View state](/docs/plugin-context#view-state).
+
+```ts
+initialViewState: (): BaseDetailsViewState => ({
+  openKeys: new Set(),
+}),
+```
 </APIItem>
 
 <APIItem name="component" type="NodeComponent | keyof HTMLElementTagNameMap" optional>
@@ -724,6 +742,17 @@ field, including `api`, `read`, `selectors`, `update`, editor fields, and
       Reads, updates, and subscribes to the current plugin's editor-local state.
       Named selectors are pure functions of that state.
     </APIItem>
+    <APIItem name="viewStore" type="PluginViewStore<D>">
+      Reads, updates, and subscribes to the current plugin's state in one view.
+      The `api` factory and the plugin portal receive it, bound to the view
+      they are built for.
+    </APIItem>
+    <APIItem name="viewStoreOf" type="PluginViewStoreOf<D>">
+      Returns the current plugin's state in the view a read state or
+      transaction runs in: a reader for a read `state`, a writer for a `tx`.
+      `.extend` callbacks receive it instead of `viewStore`, because one plugin
+      definition serves every view. It does not accept an editor.
+    </APIItem>
   </APIAttributes>
 </API>
 
@@ -743,8 +772,9 @@ descriptor's inferred definition.
 <API name="GenericTypes">
   <APIAttributes>
     <APIItem name="D" type="BasePluginDefinition">
-      The inferred definition contract, including `name`, `initialState`, `api`,
-      `read`, `update`, selectors, dependencies, and schema inference.
+      The inferred definition contract, including `name`, `initialState`,
+      `initialViewState`, `api`, `read`, `update`, selectors, dependencies, and
+      schema inference.
     </APIItem>
   </APIAttributes>
 </API>

@@ -1,3 +1,4 @@
+import { writeDOMSelection } from '../utils/selection-writes';
 import {
   markDOMTextFlowMutation,
   observeDOMTextFlowRoot,
@@ -219,19 +220,16 @@ const restoreSelection = (
     return;
   }
 
-  try {
-    root.ownerDocument
-      .getSelection()
-      ?.setBaseAndExtent(
-        snapshot.anchorNode,
-        Math.min(snapshot.anchorOffset, maxOffset(snapshot.anchorNode)),
-        snapshot.focusNode,
-        Math.min(snapshot.focusOffset, maxOffset(snapshot.focusNode))
-      );
-  } catch {
-    // The model selection export below remains authoritative when a browser
-    // invalidates a DOM endpoint while repairing a removed subtree.
-  }
+  writeDOMSelection(root.getRootNode() as Document | ShadowRoot, {
+    anchor: [
+      snapshot.anchorNode,
+      Math.min(snapshot.anchorOffset, maxOffset(snapshot.anchorNode)),
+    ],
+    focus: [
+      snapshot.focusNode,
+      Math.min(snapshot.focusOffset, maxOffset(snapshot.focusNode)),
+    ],
+  });
 };
 
 const restoreMutation = (mutation: MutationRecord) => {

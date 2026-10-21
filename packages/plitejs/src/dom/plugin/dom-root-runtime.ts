@@ -9,6 +9,7 @@ import {
 import { EDITOR_TO_DOM_SCOPE_LISTENERS, IS_FOCUSED } from '../utils/weak-maps';
 import {
   createDOMCoverageSession,
+  type DOMCoverageBoundary,
   type DOMCoverageSession,
 } from './dom-coverage';
 import {
@@ -51,6 +52,7 @@ export type DOMRootRuntimeOptions<TRoot extends HTMLElement> = Omit<
   DOMRootRuntimeLifecycle<TRoot> & {
     adapter: object;
     editor: AnyEditor;
+    onRegisterBoundary?: (boundary: DOMCoverageBoundary) => void;
     testRootFacts?: DOMRootFactOverrides;
   };
 
@@ -282,7 +284,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     this.editor = options.editor;
     this.domCoverage = createDOMCoverageSession(
       options.editor,
-      () => this.rootRef.current
+      () => this.rootRef.current,
+      options.onRegisterBoundary
     );
     this.lifecycle = {
       afterRootMount: options.afterRootMount,

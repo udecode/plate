@@ -33,13 +33,13 @@ import {
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
+  hasEditorRuntime,
   type InternalEditorReadRuntime,
   type InternalEditorRuntime,
   setEditorRuntime,
 } from './core/editor-runtime';
 import { getSourcesForChange } from './core/listener-state';
 import { createEditorViewPluginApis, extendEditor } from './core/plugin';
-import { registerPluginRootTransactionBuilder } from './core/plugin-dispatch';
 import {
   getCompiledEditorSchema,
   getPluginRegistry,
@@ -74,6 +74,12 @@ import {
   withEditorUpdateRootChildren,
 } from './core/public-state';
 import { defineSemanticUpdateMethod } from './core/semantic-update-method';
+import {
+  createViewPresentation,
+  getBaseViewPresentation,
+  retainPresentation,
+  type ViewPresentation,
+} from './core/view-presentation';
 import type {
   AnyEditor as Editor,
   EditorAnchorApi,
@@ -117,6 +123,7 @@ type ViewState = {
   composing: boolean;
   document: AdmittedDocument | undefined;
   focused: boolean;
+  presentation: ViewPresentation;
   readOnly: boolean;
   root: RootKey;
 };
@@ -126,6 +133,7 @@ type LayeredEditorView<TEditor> = Omit<TEditor, 'blur' | 'focus' | 'root'> &
 
 // Keyed by view runtime, which mounted React view editors share with their view.
 const VIEW_STATES = new WeakMap<object, ViewState>();
+const MOUNTED_PRESENTATIONS = new WeakMap<object, ViewPresentation>();
 
 // Keyed by compiled schema: a schema change validates each document once more.
 const VALIDATED_DOCUMENTS = new WeakMap<object, WeakSet<EditorDocumentValue>>();
@@ -181,6 +189,17 @@ type CreateEditorView = {
       (Editor<V, TPlugins> extends { read: { authored: unknown } }
         ? unknown
         : { authored?: never })
+  ): EditorView<V, TPlugins>;
+};
+
+type WithMountedPresentation = {
+  <const TEditor extends EditorStateViewProvider<() => unknown>>(
+    editor: TEditor,
+    view: Editor
+  ): LayeredEditorView<TEditor>;
+  <V extends Value, TPlugins extends readonly unknown[] = readonly []>(
+    editor: Editor<V, TPlugins>,
+    view: Editor
   ): EditorView<V, TPlugins>;
 };
 
@@ -1025,6 +1044,7 @@ const withViewTransaction = <V extends Value>(
   return createEditorViewTransactionState(
     viewState.editor ?? editor,
     viewTransaction,
+    viewState.presentation,
     (context) =>
       withViewUpdateContext(
         editor,
@@ -1076,7 +1096,8 @@ const createViewRuntime = <V extends Value>(
       cachedBaseState = state;
       cachedViewState = createEditorViewReadState(
         getViewEditor() ?? editor,
-        withViewState<V, EditorStateView<V, any>>(editor, state, viewState)
+        withViewState<V, EditorStateView<V, any>>(editor, state, viewState),
+        viewState.presentation
       ) as EditorStateView<V, any>;
     }
 
@@ -1288,7 +1309,7 @@ const createViewRuntime = <V extends Value>(
                 ),
                 withViewUpdateContext(editor, context, viewState, getViewEditor)
               ),
-            updateOptions
+            { ...updateOptions, placement: viewState.presentation }
           )
         );
       const targetRuntime = getViewEditor()
@@ -1319,7 +1340,8 @@ export const createEditorViewRuntime = <
   const TRoot extends RootKey = RootKey,
 >(
   sourceEditor: Editor<V, TPlugins>,
-  options: EditorViewOptions<TRoot> = {}
+  options: EditorViewOptions<TRoot> = {},
+  presentation?: ViewPresentation
 ): EditorView<V, TPlugins> => {
   // A view of a view reads the document runtime directly, so only the
   // requested root applies. The source view's document and policy carry over.
@@ -1346,6 +1368,8 @@ export const createEditorViewRuntime = <
     composing: sourceEditor.read.view.isComposing(),
     document,
     focused: sourceEditor.read.view.isFocused(),
+    presentation:
+      presentation ?? sourceView?.presentation ?? createViewPresentation(),
     readOnly: document
       ? true
       : Boolean(options.readOnly || sourceView?.readOnly),
@@ -1468,10 +1492,139 @@ export const createEditorViewRuntime = <
 };
 
 /** Create a root-scoped editor view while preserving layered capabilities. */
-export const createEditorView: CreateEditorView = createEditorViewRuntime;
+export const createEditorView: CreateEditorView = <
+  V extends Value,
+  TPlugins extends readonly unknown[] = readonly [],
+  const TRoot extends RootKey = RootKey,
+>(
+  sourceEditor: Editor<V, TPlugins>,
+  options?: EditorViewOptions<TRoot>
+): EditorView<V, TPlugins> => createEditorViewRuntime(sourceEditor, options);
 
-registerPluginRootTransactionBuilder((editor, root) => {
-  const view = createEditorViewRuntime(editor, { root: toPublicRoot(root) });
+export const projectEditorView: CreateEditorView = <
+  V extends Value,
+  TPlugins extends readonly unknown[] = readonly [],
+  const TRoot extends RootKey = RootKey,
+>(
+  sourceEditor: Editor<V, TPlugins>,
+  options?: EditorViewOptions<TRoot>
+): EditorView<V, TPlugins> =>
+  createEditorViewRuntime(
+    sourceEditor,
+    options,
+    getViewPresentation(sourceEditor)
+  );
+
+export const getOwnViewPresentation = (editor: Editor) =>
+  VIEW_STATES.get(getEditorRuntime(editor))?.presentation;
+
+export const getViewPresentation = (editor: Editor) =>
+  getOwnViewPresentation(editor) ??
+  getBaseViewPresentation(getEditorRuntimeOwner(editor));
+
+export const matchesPresentationOf = (editor: object) => {
+  const presentation =
+    hasEditorRuntime(editor) &&
+    !Object.is(editor, getEditorRuntimeOwner(editor))
+      ? getViewPresentation(editor)
+      : null;
+
+  return (view: Editor) =>
+    !presentation || getViewPresentation(view) === presentation;
+};
+
+export const retainViewPresentation = (editor: Editor) =>
+  retainPresentation(getViewPresentation(editor));
+
+type MountedViews = {
+  counts: Map<ViewPresentation, number>;
+  listeners: Set<(hasPeers: boolean) => void>;
+};
+
+const MOUNTED_VIEWS = new WeakMap<object, MountedViews>();
+
+export const mountViewPeer = (
+  view: Editor,
+  onPeers: (hasPeers: boolean) => void
+) => {
+  const owner = getEditorRuntimeOwner(view);
+  const presentation = getViewPresentation(view);
+  const mounted = MOUNTED_VIEWS.get(owner) ?? {
+    counts: new Map(),
+    listeners: new Set(),
+  };
+  const { counts, listeners } = mounted;
+  const change = (step: () => void) => {
+    const before = counts.size > 1;
+
+    step();
+    if (counts.size > 1 !== before) {
+      for (const listener of listeners) listener(counts.size > 1);
+    }
+  };
+
+  MOUNTED_VIEWS.set(owner, mounted);
+  change(() => {
+    counts.set(presentation, (counts.get(presentation) ?? 0) + 1);
+  });
+  listeners.add(onPeers);
+  if (counts.size > 1) onPeers(true);
+
+  let released = false;
+
+  return () => {
+    if (released) return;
+
+    released = true;
+    listeners.delete(onPeers);
+    change(() => {
+      const count = (counts.get(presentation) ?? 1) - 1;
+
+      if (count > 0) counts.set(presentation, count);
+      else counts.delete(presentation);
+    });
+    if (counts.size === 0) MOUNTED_VIEWS.delete(owner);
+  };
+};
+
+export const withMountedPresentation: WithMountedPresentation = <
+  V extends Value,
+  TPlugins extends readonly unknown[] = readonly [],
+>(
+  editor: Editor<V, TPlugins>,
+  view: Editor
+): EditorView<V, TPlugins> => {
+  if (getEditorRuntimeOwner(view) !== getEditorRuntimeOwner(editor)) {
+    throw new TypeError(
+      'A mounted presentation must come from a view of the same editor.'
+    );
+  }
+
+  const presentation = getViewPresentation(view);
+  const mounted = createEditorViewRuntime(
+    editor,
+    { readOnly: editor.read.view.isReadOnly(), root: editor.read.view.root() },
+    presentation
+  );
+
+  MOUNTED_PRESENTATIONS.set(mounted, presentation);
+
+  return mounted;
+};
+
+export const getCarriedPresentation = (editor: object) =>
+  MOUNTED_PRESENTATIONS.get(editor);
+
+export const buildPluginRootTransaction = (
+  editor: Editor,
+  root: string,
+  presentation: ViewPresentation | undefined
+) => {
+  const view = createEditorViewRuntime(
+    editor,
+    { root: toPublicRoot(root) },
+    presentation ?? getBaseViewPresentation(getEditorRuntimeOwner(editor))
+  );
   const viewState = getDefined(VIEW_STATES.get(getEditorRuntime(view)));
   return withViewTransaction(
     editor,
@@ -1479,4 +1632,4 @@ registerPluginRootTransactionBuilder((editor, root) => {
     viewState,
     () => view
   );
-});
+};

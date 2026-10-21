@@ -886,7 +886,7 @@ describe('external text views', () => {
       domRepairQueueRef: native.domRepairQueueRef,
       editor: native.editor,
       inputController: native.inputController,
-      processing: native.processing,
+      webKitProbeActive: native.webKitProbeActive,
       readOnly: false,
       rootRef: native.rootRef,
     });
@@ -928,10 +928,10 @@ describe('external text views', () => {
       act(() => {
         applyDOMCoverageSelectionPolicy({
           coverage: runtime.domCoverage,
-          domSelection: document.getSelection()!,
           editor: runtime.editor,
           editorElement: root,
           selection,
+          tree: document,
         });
       });
       expect(document.getSelection()!.toString()).toBe(
@@ -2334,7 +2334,7 @@ describe('external text views', () => {
           androidInputManager: null,
           editor: runtime.editor,
           inputController: runtime.inputController,
-          processing: runtime.processing,
+          webKitProbeActive: runtime.webKitProbeActive,
           readOnly: true,
           rerunOnDirtyNodeMap: vi.fn(),
         })

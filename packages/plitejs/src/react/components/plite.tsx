@@ -30,6 +30,15 @@ import {
   publishEditorCommitInVersionOrder,
 } from '../../core/commit-publication';
 import { startOwnedEditor } from '../../core/editor-owner';
+import {
+  retainPresentation,
+  type ViewPresentation,
+} from '../../core/view-presentation';
+import {
+  getCarriedPresentation,
+  getViewPresentation,
+  withMountedPresentation,
+} from '../../editor-runtime-view';
 import { PliteContentRootOwnerContext } from '../context';
 import {
   DecorationContext,
@@ -69,6 +78,7 @@ import {
 import {
   createReactRuntimeViewEditor,
   EditorRuntimeProvider,
+  SurfaceRuntimeScope,
   useRequiredPliteRuntimeContext,
   useOptionalPliteRuntimeContext,
 } from '../hooks/use-plite-runtime';
@@ -79,10 +89,7 @@ import type {
 } from '../plugin/with-react';
 import { profilePliteReactDuration } from '../render-profiler';
 import { toPublicRootOption } from '../root-key';
-import {
-  mountPliteViewSelection,
-  setPliteViewSelectionStoreKey,
-} from '../view-selection';
+import { mountPliteViewSelection } from '../view-selection';
 import {
   createPliteViewSelectionDecorationSource,
   usePliteViewSelectionPresence,
@@ -191,6 +198,7 @@ type EditorRuntimeViewProps<E extends ReactEditorType<any, any>> = {
   onValueChange?: (
     context: EditorCommitContext<E> & { value: ValueOf<E> }
   ) => void;
+  presentation?: ViewPresentation;
   readOnly?: boolean;
   root?: NamedRootKey;
 };
@@ -223,6 +231,15 @@ export const EditorRoot = <
 >(
   props: EditorRootProps<E, TRoot>
 ) => <EditorRootContent key={getRuntimeKey(props.editor)} {...props} />;
+
+export const SurfaceRoot = ({ editor, ...props }: EditorRootProps) => {
+  const surfaceEditor = useMemo(
+    () => withMountedPresentation(editor, editor),
+    [editor]
+  );
+
+  return <EditorRoot {...props} editor={surfaceEditor} />;
+};
 
 const EditorRootContent = <
   E extends ReactEditorType<any, any>,
@@ -257,6 +274,7 @@ const EditorRootContent = <
       {...viewProps}
       authored={props.authored ?? defaults.authored}
       lifetime={editor}
+      presentation={getCarriedPresentation(editor)}
       readOnly={props.readOnly ?? defaults.readOnly}
       root={props.root ?? defaults.root}
     />
@@ -283,37 +301,34 @@ export const EditorRuntimeView = <
   root,
   directEditor,
   lifetime,
+  presentation,
 }: EditorRuntimeViewProps<E>) => {
   const runtimeContext = useRequiredPliteRuntimeContext();
   const { getView, registerViewEditor } = runtimeContext;
   const parentEditor = useOptionalEditorContext();
   const inheritedTextFlow = useContext(ImperativeTextFlowContext);
   const contentRootOwner = useContext(PliteContentRootOwnerContext);
-  const selectionOwner = root ? parentEditor : null;
   const { selectorContext, onChange } = useEditorSelectorContext();
   const editor = useMemo(() => {
     if (directEditor) {
       return directEditor;
     }
 
-    const view = getView({
-      authored,
-      readOnly,
-      root,
-    });
-
-    const viewEditor = createReactRuntimeViewEditor(view);
-
-    if (selectionOwner) {
-      setPliteViewSelectionStoreKey(viewEditor, selectionOwner);
-    }
-
-    return viewEditor as unknown as E;
+    return createReactRuntimeViewEditor(
+      getView({ authored, readOnly, root }, presentation)
+    ) as unknown as E;
     // Authored and read-only policy updates reconcile below without replacing
     // the view. Their current values seed only a new input/root lifetime.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [directEditor, getView, lifetime, root, selectionOwner]);
+  }, [directEditor, getView, lifetime, presentation, root]);
   const reactEditor = editor;
+  const viewPresentation = getViewPresentation(reactEditor);
+  // Insertion effects survive StrictMode replays and Activity hides, so a
+  // surface keeps its resting carets until it really unmounts.
+  useInsertionEffect(
+    () => retainPresentation(viewPresentation),
+    [viewPresentation]
+  );
   useIsomorphicLayoutEffect(
     () => mountPliteViewSelection(reactEditor),
     [reactEditor]
@@ -383,7 +398,9 @@ export const EditorRuntimeView = <
                   <ImperativeTextFlowContext
                     value={parentEditor ? true : inheritedTextFlow}
                   >
-                    {children}
+                    <SurfaceRuntimeScope presentation={viewPresentation}>
+                      {children}
+                    </SurfaceRuntimeScope>
                   </ImperativeTextFlowContext>
                 </FocusedContext>
               </ReadOnlyContext>

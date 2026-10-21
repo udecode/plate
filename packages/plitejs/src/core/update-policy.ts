@@ -3,6 +3,7 @@ import type {
   EditorUpdateTag,
   EditorUpdateTagInput,
 } from '../interfaces/editor';
+import type { ViewPresentation } from './view-presentation';
 
 const HISTORY_TAGS = [
   'history-push',
@@ -26,6 +27,7 @@ export type CompiledEditorUpdatePolicy = Readonly<{
 }>;
 
 export type InternalEditorUpdateOptions = {
+  placement?: ViewPresentation;
   skipCorrections?: boolean;
   tags?: readonly EditorUpdateTag[];
 };

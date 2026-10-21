@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { RootKey } from '../../facade';
+import { type RootKey, withMountedPresentation } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import {
   getCompiledPlatePlugin,
@@ -9,7 +9,7 @@ import {
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { PlateMountedView, usePlateModel } from '../internal/plate-context';
-import { EditorRoot } from '../internal/plite-components';
+import { EditorRoot, useEditorContext } from '../internal/plite-components';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 
 /**
@@ -32,6 +32,11 @@ export function PlateRoot({
   const emptyEditableRef = React.useRef<HTMLDivElement | null>(null);
   const editableRef = providedEditableRef ?? emptyEditableRef;
   const { authored, editor, readOnly: modelReadOnly } = usePlateModel();
+  const rootView = useEditorContext();
+  const surfaceEditor = React.useMemo(
+    () => withMountedPresentation(editor, rootView),
+    [editor, rootView]
+  );
   const modelRevision = usePlateModelRevision(editor);
   const decorations = React.useMemo(() => {
     void modelRevision;
@@ -54,7 +59,7 @@ export function PlateRoot({
   return (
     <EditorRoot
       authored={authored}
-      editor={editor}
+      editor={surfaceEditor}
       key={`${getPlateEditorInstanceKey(editor)}:${root ?? 'main'}`}
       decorations={decorations}
       readOnly={readOnly ?? modelReadOnly}

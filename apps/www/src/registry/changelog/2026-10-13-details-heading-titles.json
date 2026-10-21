@@ -148,7 +148,7 @@
     {
       "id": "2026-10-17-toc-details-titles",
       "kind": "fix",
-      "summary": "List each Details title that has a heading level, and open every collapsed Details around a heading or title before jumping to it",
+      "summary": "List each Details title that has a heading level, and open every Details around a heading or title that the jumping editor root shows collapsed before jumping to it",
       "details": [],
       "migrationNotes": [],
       "targets": ["toc"],

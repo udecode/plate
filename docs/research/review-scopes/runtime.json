@@ -37,7 +37,6 @@
     "packages/plitejs/src/react/editable/content-root-boundaries.ts",
     "packages/plitejs/src/react/editable/content-root-owner-target.ts",
     "packages/plitejs/src/react/editable/content-root-owners.ts",
-    "packages/plitejs/src/react/editable/mutation-root-scope.ts",
     "packages/plitejs/src/react/editable/root-interaction-controller.ts",
     "packages/plitejs/src/react/editable/root-interaction-resolver.ts",
     "packages/plitejs/src/react/editable/root-selector-sources.ts",

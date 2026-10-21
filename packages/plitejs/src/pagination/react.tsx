@@ -29,7 +29,6 @@ import {
 } from '..';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
 import {
-  EditorRoot,
   type EditableProps,
   useEditorContext,
   useEditorReadOnly,
@@ -45,6 +44,7 @@ import {
   pathKey,
 } from '../react/components/editable-element-placement';
 import { ImperativeTextFlowContext } from '../react/components/editable-text-flow';
+import { SurfaceRoot } from '../react/components/plite';
 import { WindowedEditable } from '../react/components/windowed-editable.internal';
 import {
   DecorationContext,
@@ -1401,12 +1401,12 @@ export const PagedEditable = <TElement extends Element = Element>({
   return root === undefined ? (
     editable
   ) : (
-    <EditorRoot
+    <SurfaceRoot
       editor={editor}
       readOnly={props.readOnly || inheritedReadOnly}
       root={root}
     >
       {editable}
-    </EditorRoot>
+    </SurfaceRoot>
   );
 };

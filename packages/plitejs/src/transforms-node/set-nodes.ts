@@ -4,6 +4,7 @@ import {
   getActiveUpdateRoot,
   runEditorTransaction,
 } from '../core/public-state';
+import { withoutPlacement } from '../core/view-carets';
 import { node as editorNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { type Location, LocationApi } from '../interfaces';
@@ -229,7 +230,9 @@ export const setNodes = ((
       }
 
       if (options.at == null) {
-        select(editor, at);
+        const preserved = at;
+
+        withoutPlacement(editor, () => select(editor, preserved));
       }
     }
 

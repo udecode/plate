@@ -118,6 +118,7 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'packages/platejs/src/history/plite-history.internal.ts',
     'packages/platejs/src/hyperscript/index.ts',
     'packages/platejs/src/internal/plugin/compilePlainTextMappings.ts',
+    'packages/platejs/src/internal/plugin/pluginStore.ts',
     'packages/platejs/src/internal/plugin/resolvePlugins.ts',
     'packages/platejs/src/internal/utils/mergePlugins.ts',
     'packages/platejs/src/internal/utils/trustedContentSlice.ts',

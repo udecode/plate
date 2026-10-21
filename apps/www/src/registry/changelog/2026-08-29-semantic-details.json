@@ -48,7 +48,7 @@
     {
       "id": "2026-08-29-details-semantic-blocks-04855b28",
       "kind": "rename",
-      "summary": "Use nested semantic Details and Summary nodes with transient disclosure state.",
+      "summary": "Use nested semantic Details and Summary nodes with transient disclosure state that each editor root keeps for itself.",
       "details": [],
       "migrationNotes": [],
       "targets": [

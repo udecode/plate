@@ -39,6 +39,7 @@ import { createZustandStore } from '../../lib/libs/zustand';
 import {
   createPlatePluginPortal,
   createPluginContext,
+  withPluginViewStore,
 } from '../../lib/plugin/createPluginContext.internal';
 import type {
   InputRule,
@@ -1251,7 +1252,11 @@ export const createPlateRuntimePlugins = (
                         ? contribution.value
                         : Reflect.apply(contribution.factory, undefined, [
                             Object.create(
-                              createPluginContext(
+                              withPluginViewStore(
+                                createPluginContext(
+                                  context.editor as Editor,
+                                  plugin
+                                ),
                                 context.editor as Editor,
                                 plugin
                               ),

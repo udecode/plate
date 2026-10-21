@@ -252,5 +252,13 @@ export {
   snapshotEditorJsonValue,
   subscribeEditorViewState,
   withDocumentViewRead,
+  getActiveEditorTransaction,
+  getCaretOwner,
+  getViewPresentation,
+  holdsCaret,
+  projectEditorView,
+  retainViewPresentation,
+  setSelectionAsView,
+  withMountedPresentation,
   type CompiledEditorSchema,
 } from 'plitejs/internal';

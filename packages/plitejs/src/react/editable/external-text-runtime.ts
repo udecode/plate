@@ -15,6 +15,7 @@ import { RootChange } from '../../core/change/root-change';
 import { projectEditorTextSplices } from '../../core/change/text-splices';
 import { PreparedTokenSlice } from '../../core/change/tokens';
 import { reportEditorLifecycleError } from '../../core/lifecycle-error';
+import { setShownSelectionAsView } from '../../core/view-carets';
 import { IS_FOCUSED } from '../../dom/internal';
 import type { PliteDecorationStore } from '../decoration-context';
 import type { DecorationSlice } from '../decoration-source';
@@ -48,7 +49,6 @@ import {
   setEditorFocused,
   toInternalRoot,
 } from './runtime-editor-api';
-import { writeRuntimeSelection } from './runtime-mutation-state';
 
 type Binding = NonNullable<ReturnType<typeof readExternalTextBinding>>;
 type Entry = {
@@ -969,7 +969,7 @@ export class ExternalTextRuntime {
           entry.elementKey
         );
         if (!binding) return this.stale(entry);
-        writeRuntimeSelection(this.runtime.editor, {
+        setShownSelectionAsView(this.runtime.editor, {
           anchor: { path: binding.textPath, offset: selection.anchor },
           focus: { path: binding.textPath, offset: selection.focus },
         });
@@ -1027,7 +1027,7 @@ export class ExternalTextRuntime {
                 targetRuntime: this.runtime,
               }) ?? edge);
         const previous = this.runtime.editor.read.selection();
-        writeRuntimeSelection(this.runtime.editor, {
+        setShownSelectionAsView(this.runtime.editor, {
           anchor: extend && previous ? previous.anchor : point,
           focus: point,
         });

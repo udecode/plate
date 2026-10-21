@@ -3854,13 +3854,18 @@
         "typecheck:partition:callout",
         "typecheck:partition:core",
         "typecheck:partition:details",
+        "typecheck:partition:details-react",
         "typecheck:partition:markdown",
+        "typecheck:partition:media",
+        "typecheck:partition:proxies",
+        "typecheck:partition:react-core",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-code-block",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-link",
         "typecheck:partition:standard-list",
-        "typecheck:partition:table"
+        "typecheck:partition:table",
+        "typecheck:partition:upload"
       ],
       "inputs": [
         "src/features/details/**",
@@ -8173,6 +8178,7 @@
       "dependsOn": [
         "plitejs#typecheck:partition:react",
         "typecheck:partition:core",
+        "typecheck:partition:proxies",
         "typecheck:partition:static"
       ],
       "inputs": [

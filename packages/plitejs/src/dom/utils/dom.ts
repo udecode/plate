@@ -346,36 +346,6 @@ export const getSelection = (root: Document | ShadowRoot): Selection | null => {
   return (root as ShadowRoot).ownerDocument?.getSelection() ?? null;
 };
 
-/** Replace the native range while preserving its exact direction. */
-export const replaceDOMSelectionRange = (
-  selection: DOMSelection,
-  range: DOMRange,
-  {
-    backward = false,
-  }: {
-    backward?: boolean;
-  } = {}
-) => {
-  const anchorNode = backward ? range.endContainer : range.startContainer;
-  const anchorOffset = backward ? range.endOffset : range.startOffset;
-  const focusNode = backward ? range.startContainer : range.endContainer;
-  const focusOffset = backward ? range.startOffset : range.endOffset;
-
-  if (range.collapsed) {
-    selection.setBaseAndExtent(
-      anchorNode,
-      anchorOffset,
-      focusNode,
-      focusOffset
-    );
-    return;
-  }
-
-  selection.removeAllRanges();
-  selection.addRange(range);
-  selection.setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset);
-};
-
 export const getFlatTreeParentElement = (element: Element): Element | null => {
   if (element.assignedSlot) return element.assignedSlot;
   if (element.parentElement) return element.parentElement;

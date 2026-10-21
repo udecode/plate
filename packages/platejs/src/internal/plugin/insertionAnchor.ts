@@ -14,7 +14,7 @@ import {
 export const insertionAnchor =
   definePluginPoint<
     (
-      state: Pick<EditorCoreStateView, 'key' | 'nodes'>,
+      state: Pick<EditorCoreStateView, 'getField' | 'key' | 'nodes' | 'view'>,
       entry: NodeEntry<Element>
     ) => NodeEntry<Element> | null
   >('insertion-anchor');
@@ -22,7 +22,7 @@ export const insertionAnchor =
 /** The block an insert from `entry` lands after: a contributed anchor, or `entry`. */
 export const resolveInsertionAnchor = (
   editor: Editor,
-  state: Pick<EditorCoreStateView, 'key' | 'nodes'>,
+  state: Pick<EditorCoreStateView, 'getField' | 'key' | 'nodes' | 'view'>,
   entry: NodeEntry<Element>
 ) => {
   for (const anchor of getPluginContributions(editor, insertionAnchor)) {
@@ -40,7 +40,10 @@ export const resolveInsertionAnchor = (
  */
 export const getCaretAnchor = (
   editor: Editor,
-  state: Pick<EditorCoreStateView, 'key' | 'nodes' | 'selection'>
+  state: Pick<
+    EditorCoreStateView,
+    'getField' | 'key' | 'nodes' | 'selection' | 'view'
+  >
 ) => {
   const selection = state.selection();
   const caret = selection ? state.nodes.block() : undefined;

@@ -2,7 +2,6 @@ import {
   authoredVeto,
   BaseParagraphPlugin,
   defineInputRule,
-  createEditorView,
   definePlugin,
   editorCommands,
   editorReads,
@@ -33,6 +32,7 @@ import {
   txLocate,
   locateAt,
 } from '../../../core';
+import { projectEditorView } from '../../../facade';
 import { applyBlockInsertion } from '../../../internal/plugin/blockInsertion';
 import {
   applyBlockReleases,
@@ -202,7 +202,7 @@ const handleListTab = (
   if (!selection) return false;
 
   const root = SelectionApi.root(selection);
-  const view = root ? createEditorView(editor, { root }) : editor;
+  const view = root ? projectEditorView(editor, { root }) : editor;
   const entries = view.read.nodes.blocks({ match, mode: 'lowest' });
 
   if (!entries.some(([node]) => isListItem(node)) || selectsCodeBlock(view)) {
@@ -225,7 +225,7 @@ const handleListUntab = (
   if (!selection) return false;
 
   const root = SelectionApi.root(selection);
-  const view = root ? createEditorView(editor, { root }) : editor;
+  const view = root ? projectEditorView(editor, { root }) : editor;
   const entries = view.read.nodes.blocks({ match, mode: 'lowest' });
   const isRootItem = ([node]: NodeEntry<Element>) =>
     isListItem(node) && listItemDepth(node) <= 1;

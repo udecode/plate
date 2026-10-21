@@ -49,6 +49,9 @@
       "path": "./core.json"
     },
     {
+      "path": "./proxies.json"
+    },
+    {
       "path": "./static.json"
     }
   ]

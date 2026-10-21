@@ -5,7 +5,6 @@ import type {
 } from 'files-sdk/client';
 
 import {
-  createEditorView,
   defineEffect,
   definePlugin,
   documentReplacement,
@@ -19,12 +18,12 @@ import {
   type NodeEntry,
   type NodeKey,
   property,
-  SelectionApi,
   transferVeto,
   txLocate,
   locateAt,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
+import { getActiveEditorTransaction } from '../../../facade';
 import { isReplaceableEmptyBlock } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import { getCaretAnchor } from '../../../internal/plugin/insertionAnchor';
@@ -693,7 +692,20 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       },
       update: ({ context: { afterCommit }, editor: updateEditor, tx }) => ({
         submit: txLocate(
-          locateAt(1, 'slot', 'at', 'after', 'before'),
+          (args, place) => {
+            const [, { after, at, before, slot } = {}] = args;
+            const liveCaret =
+              getActiveEditorTransaction(updateEditor)?.selection();
+            const placed = [after, at, before, slot].some(
+              (target) => target !== undefined
+            );
+
+            if (placed || !liveCaret) {
+              return locateAt(1, 'slot', 'at', 'after', 'before')(args, place);
+            }
+
+            return place.location(liveCaret) === null ? null : args;
+          },
           (input: File[] | FileList, options: UploadSubmitOptions = {}) => {
             const files = Array.from(input);
             if (files.length === 0 || updateEditor.read.view.isReadOnly()) {
@@ -850,7 +862,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       }),
     };
   })
-  .extend(({ editor }) => ({
+  .extend(() => ({
     commands: ({ around }) => [
       around(domCommands.insertData, ({ input, next, state }) => {
         const files = Array.from(input.files ?? []);
@@ -862,18 +874,9 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           return next();
         }
 
-        const root = SelectionApi.root(state.selection());
-        const caretEditor = root ? createEditorView(editor, { root }) : editor;
-        const after = caretEditor.read((caret) => {
-          const block = caret.nodes.block();
-          return (
-            getCaretAnchor(editor, caret) ??
-            (block ? caret.key(block[0]) : undefined)
-          );
-        });
         let handled = false;
         const transaction = state.transaction((tx) => {
-          handled = tx.upload.submit(files, { after, replaceEmpty: true });
+          handled = tx.upload.submit(files);
         });
 
         return handled ? transaction : next();

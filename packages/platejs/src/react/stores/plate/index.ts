@@ -5,3 +5,4 @@
 export * from './useEditor';
 export * from './useEditorSelector';
 export * from './usePluginStore';
+export * from './useViewStore';

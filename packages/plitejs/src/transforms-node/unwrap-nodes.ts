@@ -4,6 +4,7 @@ import {
   getCurrentSelection,
   runEditorTransaction,
 } from '../core/public-state';
+import { withoutPlacement } from '../core/view-carets';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
@@ -341,8 +342,10 @@ export const unwrapNodes = ((
       const nextFocus = focus.release();
 
       if (nextAnchor && nextFocus) {
-        tx.setSelection(
-          SelectionApi.text({ anchor: nextAnchor, focus: nextFocus })
+        withoutPlacement(editor, () =>
+          tx.setSelection(
+            SelectionApi.text({ anchor: nextAnchor, focus: nextFocus })
+          )
         );
       }
     }

@@ -82,7 +82,7 @@ export function applyStringDiff(text: string, ...diffs: StringDiff[]) {
   );
 }
 
-function longestCommonPrefixLength(str: string, another: string) {
+export function longestCommonPrefixLength(str: string, another: string) {
   const length = Math.min(str.length, another.length);
 
   for (let i = 0; i < length; i++) {

@@ -1,12 +1,10 @@
 import { getSelection } from '../../dom';
 import { isGeckoDOMHost } from '../../dom/internal';
-
-export type ExpandedDOMSelectionSnapshot = {
-  anchorNode: Node;
-  anchorOffset: number;
-  focusNode: Node;
-  focusOffset: number;
-};
+import {
+  type DOMSelectionPoints,
+  readDOMSelectionRange,
+  writeDOMSelection,
+} from '../../dom/utils/selection-writes';
 
 export const hasExpandedDOMSelectionInTarget = (target: HTMLElement) => {
   const rootNode = target.getRootNode() as Document | ShadowRoot;
@@ -28,7 +26,7 @@ export const hasExpandedDOMSelectionInTarget = (target: HTMLElement) => {
 
 export const getExpandedDOMSelectionInTarget = (
   target: HTMLElement
-): ExpandedDOMSelectionSnapshot | null => {
+): DOMSelectionPoints | null => {
   const rootNode = target.getRootNode() as Document | ShadowRoot;
   const selection = getSelection(rootNode);
 
@@ -48,38 +46,26 @@ export const getExpandedDOMSelectionInTarget = (
   }
 
   return {
-    anchorNode,
-    anchorOffset: selection.anchorOffset,
-    focusNode,
-    focusOffset: selection.focusOffset,
+    anchor: [anchorNode, selection.anchorOffset],
+    focus: [focusNode, selection.focusOffset],
   };
 };
 
 export const restoreDOMSelectionInTarget = (
   target: HTMLElement,
-  snapshot: ExpandedDOMSelectionSnapshot
+  points: DOMSelectionPoints
 ) => {
-  if (
-    !target.contains(snapshot.anchorNode) ||
-    !target.contains(snapshot.focusNode)
-  ) {
+  if (!target.contains(points.anchor[0]) || !target.contains(points.focus[0])) {
     return false;
   }
 
   const rootNode = target.getRootNode() as Document | ShadowRoot;
-  const selection = getSelection(rootNode);
 
-  if (!selection) {
+  if (!getSelection(rootNode)) {
     return false;
   }
 
-  selection.removeAllRanges();
-  selection.setBaseAndExtent(
-    snapshot.anchorNode,
-    snapshot.anchorOffset,
-    snapshot.focusNode,
-    snapshot.focusOffset
-  );
+  writeDOMSelection(rootNode, points);
 
   return true;
 };
@@ -101,7 +87,7 @@ export const isPointInsideDOMSelection = ({
   }
 
   for (let index = 0; index < selection.rangeCount; index++) {
-    const range = selection.getRangeAt(index);
+    const range = readDOMSelectionRange(selection, index);
 
     for (const rect of Array.from(range.getClientRects())) {
       if (

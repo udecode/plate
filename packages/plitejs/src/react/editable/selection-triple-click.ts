@@ -1,6 +1,10 @@
 import { type Range, RangeApi } from '../..';
 import { getSelection } from '../../dom';
 import { type DOMPhaseScheduler, EDITOR_TO_ELEMENT } from '../../dom/internal';
+import {
+  getDOMRangeSelectionPoints,
+  writeDOMSelection,
+} from '../../dom/utils/selection-writes';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
 
@@ -28,35 +32,18 @@ export const exportTripleClickSelectionToDOM = ({
   }
 
   const root = editorElement.getRootNode() as Document | ShadowRoot;
-  const domSelection = getSelection(root);
 
-  if (!domSelection) {
+  if (!getSelection(root)) {
     return;
   }
 
   inputController.state.isUpdatingSelection = true;
   inputController.state.selectionChangeOrigin = 'programmatic-export';
 
-  try {
-    if (RangeApi.isBackward(range)) {
-      domSelection.setBaseAndExtent(
-        domRange.endContainer,
-        domRange.endOffset,
-        domRange.startContainer,
-        domRange.startOffset
-      );
-    } else {
-      domSelection.setBaseAndExtent(
-        domRange.startContainer,
-        domRange.startOffset,
-        domRange.endContainer,
-        domRange.endOffset
-      );
-    }
-  } catch {
-    domSelection.removeAllRanges();
-    domSelection.addRange(domRange);
-  }
+  writeDOMSelection(
+    root,
+    getDOMRangeSelectionPoints(domRange, RangeApi.isBackward(range))
+  );
 
   editorElement.ownerDocument.dispatchEvent(
     new Event('selectionchange', { bubbles: true })

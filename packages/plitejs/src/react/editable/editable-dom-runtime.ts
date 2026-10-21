@@ -34,6 +34,7 @@ import {
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
 import { isDOMNode } from '../../dom/utils/dom';
+import { matchesPresentationOf } from '../../editor-runtime-view';
 import type { EditableViewportRuntime } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import {
@@ -74,6 +75,12 @@ import {
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { attachEditableSelectionChangeListener } from './selection-change-listener';
+import { SelectionClaims } from './selection-claim';
+import { setEditableModelSelectionPreference } from './selection-controller';
+import {
+  activateViewCaret,
+  clampCaretAtRegistration,
+} from './view-caret-restore';
 
 type MutableCell<T> = { current: T };
 
@@ -244,8 +251,11 @@ export const getMountedEditableDOMRuntime = <
   if (exact.length === 1) return exact[0] ?? null;
 
   const viewRoot = editor.read.view.root();
+  const matchesPresentation = matchesPresentationOf(editor);
   const sameRoot = getMountedEditableDOMRuntimes(editor).filter(
-    (runtime) => runtime.editor.read.view.root() === viewRoot
+    (runtime) =>
+      runtime.editor.read.view.root() === viewRoot &&
+      matchesPresentation(runtime.editor)
   );
 
   const focused = sameRoot.filter((runtime) => {
@@ -334,7 +344,7 @@ export class EditableDOMRuntime {
 
   readonly inputController: ReturnType<typeof createEditableInputController>;
 
-  readonly processing: MutableCell<boolean> = { current: false };
+  readonly webKitProbeActive: MutableCell<boolean> = { current: false };
 
   readonly receivedUserInput: MutableCell<boolean> = { current: false };
 
@@ -365,6 +375,8 @@ export class EditableDOMRuntime {
   private dropResultHandler: (result: EditableDropResult) => void = () => {};
 
   private externalMouseGesture = false;
+  private cancelPressTask: (() => void) | null = null;
+  private inEditableMouseUp = false;
 
   private readonly nativeInputHandlers: {
     beforeInput: ((event: InputEvent) => void) | null;
@@ -375,6 +387,8 @@ export class EditableDOMRuntime {
   };
 
   private nativeInputListenersCleanup: (() => void) | null = null;
+
+  private selectionClaimsValue: SelectionClaims | null = null;
 
   private modelSelectionDOMPreference: ModelSelectionDOMPreference | null =
     null;
@@ -503,6 +517,8 @@ export class EditableDOMRuntime {
         );
       },
       isComposing: () => this.state.isComposing,
+      onRegisterBoundary: (boundary) =>
+        clampCaretAtRegistration(this.editorValue, boundary),
       onDestroy: () => {
         const rangeAnchors = [
           ...this.browserHandleRangeAnchors.current.values(),
@@ -564,6 +580,10 @@ export class EditableDOMRuntime {
       scheduleTask: this.domPhaseScheduler.schedule,
       state: createEditableInputControllerState(this.domInputRuntime),
     });
+  }
+
+  get selectionClaims() {
+    return this.selectionClaimsValue;
   }
 
   get viewportRuntime() {
@@ -939,6 +959,45 @@ export class EditableDOMRuntime {
     this.externalMouseGesture = active;
   }
 
+  /**
+   * Whether a focus belongs to a press in this Editable, whose own placement
+   * wins over the view's activation.
+   */
+  get mousePressActive() {
+    return this.cancelPressTask !== null || this.inEditableMouseUp;
+  }
+
+  /**
+   * The browser's focus and selection for a press land within one task of its
+   * mousedown, so the press window closes at the next zero-delay timeout.
+   */
+  beginMousePress() {
+    this.cancelPressTask?.();
+
+    const cancel = this.domPhaseScheduler.schedule(
+      'model',
+      'mouse-press-window',
+      () => {
+        this.cancelPressTask = null;
+      },
+      { timing: 'timeout' }
+    );
+
+    this.cancelPressTask = () => {
+      cancel();
+      this.cancelPressTask = null;
+    };
+  }
+
+  duringEditableMouseUp(handler: () => void) {
+    this.inEditableMouseUp = true;
+    try {
+      handler();
+    } finally {
+      this.inEditableMouseUp = false;
+    }
+  }
+
   requestSelectionExportAfterDOMCommit() {
     if (!this.cancelSelectionExportMicrotask) {
       this.cancelSelectionExportMicrotask = this.domPhaseScheduler.schedule(
@@ -1273,6 +1332,17 @@ export class EditableDOMRuntime {
       if (getEditableInteractionOwner(node, event.target) === 'external-text') {
         return;
       }
+      if (
+        !this.webKitProbeActive.current &&
+        activateViewCaret(this.editorValue)
+      ) {
+        setEditableModelSelectionPreference({
+          inputController: this.inputController,
+          preferModelSelection: true,
+          reason: 'model-command',
+          selectionSource: 'model-owned',
+        });
+      }
       this.nativeInputHandlers.beforeInput?.(event);
     };
     const handleInput = (event: Event) => {
@@ -1282,20 +1352,44 @@ export class EditableDOMRuntime {
       this.nativeInputHandlers.input?.(event);
     };
 
+    // A page's document-capture pointerdown can focus the Editable and prevent
+    // the mousedown, so the press opens here, before any document listener.
+    const notePointerPress = (event: PointerEvent) => {
+      if (event.composedPath().includes(node)) this.beginMousePress();
+    };
+    const ownerWindow = node.ownerDocument.defaultView;
+    const claims = new SelectionClaims(
+      this.editorValue,
+      node,
+      this.domPhaseScheduler.schedule,
+      () => {
+        if (!this.state.isComposing) {
+          this.selectionExportAfterDOMCommitHandler();
+        }
+      }
+    );
+
+    this.selectionClaimsValue = claims;
     const detachSelectionChangeListener = attachEditableSelectionChangeListener(
       {
         root: node,
-        scheduleOnDOMSelectionChange: () =>
-          this.scheduleOnDOMSelectionChange?.(),
+        scheduleOnDOMSelectionChange: () => {
+          claims.observeSelection();
+          this.scheduleOnDOMSelectionChange?.();
+        },
         state: this.inputController.state,
       }
     );
     node.addEventListener('beforeinput', handleBeforeInput);
     node.addEventListener('input', handleInput);
+    ownerWindow?.addEventListener('pointerdown', notePointerPress, true);
     this.nativeInputListenersCleanup = () => {
+      claims.destroy();
+      this.selectionClaimsValue = null;
       detachSelectionChangeListener();
       node.removeEventListener('beforeinput', handleBeforeInput);
       node.removeEventListener('input', handleInput);
+      ownerWindow?.removeEventListener('pointerdown', notePointerPress, true);
     };
   }
 
@@ -1348,6 +1442,7 @@ export class EditableDOMRuntime {
       () => {
         this.cancelUserInputFrame();
         this.externalMouseGesture = false;
+        this.cancelPressTask?.();
         this.deferredCompositionDOMWrites.clear();
       },
       () => this.renderContract.beforeRootTeardown(),

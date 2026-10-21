@@ -55,9 +55,7 @@ export function TocElement({
           ? editor.key(ancestor)
           : undefined;
 
-      return detailsKey && !details.store.get('openKeys').has(detailsKey)
-        ? [detailsKey]
-        : [];
+      return detailsKey && !details.api.isOpen(detailsKey) ? [detailsKey] : [];
     });
 
     for (const detailsKey of closedKeys) {

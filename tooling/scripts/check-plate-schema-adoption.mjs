@@ -335,7 +335,7 @@ const intentionalProductionExtendStageChains = new Map([
   ['packages/platejs/src/markdown/lib/MarkdownPlugin.ts', [[['api']]]],
   [
     'packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts',
-    [[['api', 'contributions', 'selectors', 'update'], ['commands']]],
+    [[['api', 'contributions', 'update'], ['commands']]],
   ],
   [
     'packages/platejs/src/features/find/lib/BaseFindPlugin.ts',

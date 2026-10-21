@@ -426,6 +426,39 @@ const pair = usePluginStore(
 
 </API>
 
+### `useViewStore`
+
+Subscribe to a value derived from a plugin's view state inside `<EditorRoot>`.
+The hook reads the view of the editor that `useEditor()` returns. Every
+`EditorRoot` is one view, and the `EditorContent` areas inside it share that
+view's state. A write in another view runs no selector here. Plate throws when
+the plugin is not installed.
+
+Pass the plugin descriptor itself. A `{ name }` object carries no view state
+contract.
+
+<API name="useViewStore">
+<APIParameters>
+  <APIItem name="plugin" type="Plugin">
+    The plugin whose view state, declared by `initialViewState`, the hook
+    reads.
+  </APIItem>
+  <APIItem name="selector" type="(state: InferPluginViewState<C>) => T">
+    Derives the value from the view state.
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="T">The derived value.</APIReturns>
+
+```tsx
+const open = useViewStore(
+  BaseDetailsPlugin,
+  (state) => detailsKey !== undefined && state.openKeys.has(detailsKey)
+);
+```
+
+</API>
+
 ### `useElement`
 
 Get the current element and throw when the matching provider is absent. Pass a

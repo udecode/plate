@@ -48,7 +48,13 @@ import {
   registerEditorTransactionGuard,
 } from '../core/public-state';
 import { createEditorEffect } from '../core/transaction-values';
+import { consumeCommitCarets, restoreHistoryCarets } from '../core/view-carets';
 import { type Batch, History, type HistoryJSON } from './history';
+import {
+  historyCaretViews,
+  keyedHistoryCarets,
+  mergeHistoryCarets,
+} from './history-carets';
 import { decodeHistoryValue, encodeHistoryValue } from './history-codec';
 import {
   createHistoryBatchGroup,
@@ -346,6 +352,13 @@ const applyHistoryAction = <V extends Value>(
 
   runHistoricUpdate(root, tx, entry.batch, () => {
     consumeHistoryBatch(tx, entry.batch, direction, root);
+    if (entry.carets) {
+      restoreHistoryCarets(
+        editor,
+        historyCaretViews(editor, entry.carets, entry.batch),
+        direction === 'undo' ? 'before' : 'after'
+      );
+    }
   });
   tx.annotations.set(historyAction, direction);
   tx.annotations.set(historyReplayRequest, request);
@@ -543,16 +556,22 @@ const createHistoryPlugin = <
 ): HistoryPlugin<TEnabled> => {
   const reduceHistory = ({
     after,
+    before,
     commit,
     editor,
     schema,
   }: {
     after: EditorDocumentValue;
+    before: EditorDocumentValue;
     commit: EditorCommit;
     editor: Editor;
     schema: EditorSchemaIdentity;
   }): PreparedHistoryReplay | undefined => {
     const anchorCapture = consumeAnchorHistoryCapture(commit);
+    const commitCarets = consumeCommitCarets(commit);
+    const carets = commitCarets
+      ? keyedHistoryCarets(commitCarets, before, after)
+      : null;
 
     if (
       configureHistoryState(editor, getHistoryMaxDepth(options), schema) ||
@@ -825,6 +844,25 @@ const createHistoryPlugin = <
 
       replaceHistoryHead(editor, 'undos', mergedBatch, after, {
         anchorCeiling: lastEntry.anchorCeiling,
+        carets: mergeHistoryCarets(
+          editor,
+          {
+            batch: lastEntry.batch,
+            carets: lastEntry.carets,
+            undo: () => ({
+              after: lastEntry.batch.change.apply(
+                toChangeValue(lastEntry.base)
+              ) as EditorDocumentValue,
+              before: lastEntry.base,
+              change: lastEntry.batch.change,
+            }),
+          },
+          {
+            batch: preparedBatch,
+            carets,
+            redo: () => ({ after, before: lastEntry.base, change: changes }),
+          }
+        ),
         clearRedos: true,
         group: mergedGroup,
         recovery: mergedRecovery,
@@ -832,6 +870,7 @@ const createHistoryPlugin = <
     } else {
       writeHistory(editor, 'undos', preparedBatch, after, {
         anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
+        carets,
         clearRedos: true,
         group: prepared.group,
         recovery: anchorCapture?.recovery ?? null,
@@ -1108,7 +1147,7 @@ const createHistoryPlugin = <
         })
       );
       context.onCleanup(
-        registerEditorTransactionGuard(editor, ({ after, commit, schema }) => {
+        registerEditorTransactionGuard(editor, (guarded) => {
           if (HISTORY_ACTIVATION.get(owner) !== activation) return undefined;
           const beforeTime = LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
           const restoreTime = (time: number | undefined) => {
@@ -1127,7 +1166,7 @@ const createHistoryPlugin = <
               activationPublished
                 ? captureHistoryState(editor)
                 : activationState,
-              () => reduceHistory({ after, commit, editor, schema })
+              () => reduceHistory({ ...guarded, editor })
             );
             nextReplay = prepared.result;
             next = prepared.state;

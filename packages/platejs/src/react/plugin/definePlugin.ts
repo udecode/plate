@@ -19,6 +19,7 @@ import type { BasePluginDependencyReferences } from '../../lib/plugin/basePlugin
 import type { PluginInitialStateInput } from '../../lib/plugin/pluginInitialState.internal';
 import type {
   Plugin,
+  PluginApiContext,
   PluginContext,
   PluginDefinitionInput,
   Shortcuts,
@@ -38,9 +39,11 @@ type PluginConstructorContextDefinition<
   S extends object,
   TSchema extends PluginSchemaDeclaration = never,
   TTargetPlugins extends ReadonlyArray<PluginReference | string> = readonly [],
+  TViewState extends object = {},
 > = NormalizePluginInput<
   Readonly<{
     initialState: S;
+    initialViewState: TViewState;
     name: N;
     schema: TSchema;
     targetPlugins: TTargetPlugins;
@@ -83,6 +86,7 @@ type PluginConstructorRestKey = Exclude<
   | 'decorate'
   | 'enabled'
   | 'initialState'
+  | 'initialViewState'
   | 'key'
   | 'name'
   | 'read'
@@ -107,6 +111,7 @@ type PluginConstructorResultInput<
   TEnabled extends boolean,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
+  TViewState extends object,
 > = Readonly<{
   [
     TKey in Exclude<
@@ -117,6 +122,7 @@ type PluginConstructorResultInput<
       | 'decorate'
       | 'enabled'
       | 'initialState'
+      | 'initialViewState'
       | 'key'
       | 'name'
       | 'read'
@@ -140,6 +146,9 @@ type PluginConstructorResultInput<
     : Readonly<Record<never, never>>) &
   ('initialState' extends TKeys
     ? Readonly<{ initialState: S }>
+    : Readonly<Record<never, never>>) &
+  ('initialViewState' extends TKeys
+    ? Readonly<{ initialViewState: TViewState }>
     : Readonly<Record<never, never>>) &
   ('api' extends TKeys
     ? Readonly<{ api: () => TApi }>
@@ -175,10 +184,18 @@ type PluginConstructorRestInput<
   S extends object,
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
+  TViewState extends object,
 > = Readonly<{
   [TKey in Extract<TKeys, PluginConstructorRestKey>]: PluginDefinitionInput<
     NoInfer<
-      PluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
+      PluginConstructorContextDefinition<
+        N,
+        D,
+        S,
+        TSchema,
+        TTargetPlugins,
+        TViewState
+      >
     >
   >[TKey];
 }>;
@@ -216,16 +233,31 @@ type PluginConstructorUpdateFactory<
   TSchema extends PluginSchemaDeclaration,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
   TUpdate extends object,
+  TViewState extends object,
 > = (
   context: PluginContext<
     NoInfer<
-      PluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
+      PluginConstructorContextDefinition<
+        N,
+        D,
+        S,
+        TSchema,
+        TTargetPlugins,
+        TViewState
+      >
     >
   > & {
     context: EditorUpdateContext;
     tx: PluginTransaction<
       NoInfer<
-        PluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
+        PluginConstructorContextDefinition<
+          N,
+          D,
+          S,
+          TSchema,
+          TTargetPlugins,
+          TViewState
+        >
       >
     >;
   }
@@ -241,23 +273,45 @@ type PluginConstructorStateConsumerInput<
   TSelectors extends PluginSelectors<S>,
   TUpdate extends object,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
+  TViewState extends object,
 > = Readonly<{
   api?: (
-    context: PluginContext<
+    context: PluginApiContext<
       NoInfer<
-        PluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
+        PluginConstructorContextDefinition<
+          N,
+          D,
+          S,
+          TSchema,
+          TTargetPlugins,
+          TViewState
+        >
       >
     >
   ) => TApi;
   read?: (
     context: PluginContext<
       NoInfer<
-        PluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
+        PluginConstructorContextDefinition<
+          N,
+          D,
+          S,
+          TSchema,
+          TTargetPlugins,
+          TViewState
+        >
       >
     > & {
       state: PluginReadState<
         NoInfer<
-          PluginConstructorContextDefinition<N, D, S, TSchema, TTargetPlugins>
+          PluginConstructorContextDefinition<
+            N,
+            D,
+            S,
+            TSchema,
+            TTargetPlugins,
+            TViewState
+          >
         >
       >;
     }
@@ -269,7 +323,8 @@ type PluginConstructorStateConsumerInput<
     S,
     TSchema,
     TTargetPlugins,
-    TUpdate
+    TUpdate,
+    TViewState
   >;
 }>;
 
@@ -293,6 +348,7 @@ type PluginConstructorStagedStateConsumerInput<
   TSelectors extends PluginSelectors<S>,
   TUpdate extends object,
   TTargetPlugins extends ReadonlyArray<PluginReference | string>,
+  TViewState extends object,
 > =
   Extract<TKeys, 'api' | 'read' | 'selectors' | 'update'> extends never
     ? Readonly<Record<never, never>>
@@ -309,7 +365,8 @@ type PluginConstructorStagedStateConsumerInput<
               TRead,
               TSelectors,
               TUpdate,
-              TTargetPlugins
+              TTargetPlugins,
+              TViewState
             >
           : PluginConstructorDeferredStateConsumers
       : PluginConstructorStateConsumerInput<
@@ -321,7 +378,8 @@ type PluginConstructorStagedStateConsumerInput<
           TRead,
           TSelectors,
           TUpdate,
-          TTargetPlugins
+          TTargetPlugins,
+          TViewState
         >;
 
 type CompactBasePluginDefinition<TDefinition> = Readonly<{
@@ -337,6 +395,7 @@ export function definePlugin<
   const N extends string,
   const TKeys extends PluginConstructorKey,
   TInitialStateInput,
+  TInitialViewStateInput extends () => object,
   const TApi extends object = {},
   const TUpdate extends object = {},
   const TSchema extends PluginSchemaDeclaration = never,
@@ -349,6 +408,9 @@ export function definePlugin<
     PluginConstructorState<TKeys, TInitialStateInput>
   > = {},
   const TEnabled extends boolean = boolean,
+  TViewState extends object = 'initialViewState' extends TKeys
+    ? ReturnType<TInitialViewStateInput>
+    : {},
 >(
   name: N,
   definition: Readonly<Record<TKeys, unknown>> &
@@ -367,7 +429,8 @@ export function definePlugin<
       PluginConstructorDependencies<TKeys, D>,
       PluginConstructorState<TKeys, TInitialStateInput>,
       NoInfer<'schema' extends TKeys ? TSchema : never>,
-      TTargetPlugins
+      TTargetPlugins,
+      TViewState
     > &
     ('decorate' extends TKeys
       ? Readonly<{
@@ -378,7 +441,8 @@ export function definePlugin<
                 PluginConstructorDependencies<TKeys, D>,
                 PluginConstructorState<TKeys, TInitialStateInput>,
                 'schema' extends TKeys ? TSchema : never,
-                TTargetPlugins
+                TTargetPlugins,
+                TViewState
               >
             >
           >;
@@ -397,6 +461,12 @@ export function definePlugin<
               PluginInitialStateInput<NoInfer<TInitialStateInput>>;
           }>
       : Readonly<{ initialState?: never }>) &
+    ('initialViewState' extends TKeys
+      ? Readonly<{
+          initialViewState: TInitialViewStateInput &
+            PluginInitialStateInput<NoInfer<TInitialViewStateInput>>;
+        }>
+      : Readonly<{ initialViewState?: never }>) &
     PluginConstructorStagedStateConsumerInput<
       TKeys,
       TInitialStateInput,
@@ -408,7 +478,8 @@ export function definePlugin<
       TRead,
       TSelectors,
       TUpdate,
-      TTargetPlugins
+      TTargetPlugins,
+      TViewState
     > &
     ('shortcuts' extends TKeys
       ? Readonly<{
@@ -418,7 +489,8 @@ export function definePlugin<
               PluginConstructorDependencies<TKeys, D>,
               PluginConstructorState<TKeys, TInitialStateInput>,
               TSchema,
-              TTargetPlugins
+              TTargetPlugins,
+              TViewState
             >,
             Shortcuts
           >;
@@ -446,7 +518,8 @@ export function definePlugin<
           TUpdate,
           TEnabled,
           'schema' extends TKeys ? TSchema : never,
-          TTargetPlugins
+          TTargetPlugins,
+          TViewState
         >
       >,
       'dependencies'

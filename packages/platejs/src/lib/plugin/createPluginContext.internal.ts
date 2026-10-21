@@ -1,5 +1,7 @@
 import {
   callPluginUpdateMethod,
+  getStateViewPresentation,
+  getViewPresentation,
   type InternalCompiledPluginPublicationEntry,
   resolveInstalledPlugin,
   resolvePluginMethod,
@@ -26,7 +28,13 @@ import {
   resolvePluginElementType,
   resolvePluginPropertyKey,
 } from '../../internal/plugin/compilePlateModel';
-import { getPluginStore } from '../../internal/plugin/pluginStore';
+import { getPlateRuntimeOwner } from '../../internal/plugin/plateRuntime';
+import {
+  getEditorViewStore,
+  getPluginStore,
+  getViewStore,
+  type InternalPluginStore,
+} from '../../internal/plugin/pluginStore';
 import {
   getPluginSchemaFamily,
   isNominalPluginDescriptor,
@@ -65,6 +73,40 @@ type PluginAccessCache = {
 };
 
 const PLUGIN_ACCESS_CACHE = new WeakMap<object, PluginAccessCache>();
+
+const createViewStoreAccess = (getStore: () => InternalPluginStore) =>
+  Object.freeze({
+    get: (key?: PropertyKey) => {
+      const store = getStore().public;
+
+      return key === undefined ? store.get() : store.get(key);
+    },
+    set: (value: object) => {
+      getStore().public.set(value);
+    },
+    subscribe: (listener: (state: object, previousState: object) => void) =>
+      getStore().public.subscribe(listener),
+  });
+
+const createEditorViewStoreAccess = (
+  editor: object,
+  getPlugin: () => AnyBasePlugin
+) =>
+  createViewStoreAccess(() =>
+    getEditorViewStore(editor as Editor, getPlugin())
+  );
+
+export const withPluginViewStore = <T extends object>(
+  context: T,
+  editor: Editor,
+  plugin: AnyBasePlugin
+): T =>
+  Object.create(context, {
+    viewStore: {
+      enumerable: true,
+      value: createEditorViewStoreAccess(editor, () => plugin),
+    },
+  });
 
 export const createPlatePluginPortal = (
   editor: Parameters<
@@ -183,6 +225,15 @@ const createPluginAccess = (
     );
   };
   const getStore = () => getPluginStore(editor, getPlugin());
+  const viewStoreOf = (state: object) =>
+    createViewStoreAccess(() =>
+      getViewStore(
+        editor,
+        getPlugin(),
+        getStateViewPresentation(state) ??
+          getViewPresentation(getPlateRuntimeOwner(editor))
+      )
+    );
   const getAuthoredSchema = () =>
     evaluatePluginSchemaDeclaration(editor as Editor, getPlugin());
   const getPublishedBinding = () => {
@@ -597,6 +648,12 @@ const createPluginAccess = (
     Object.defineProperty(context, 'plugin', {
       enumerable: true,
       get: getPlugin,
+    });
+    context.viewStoreOf = viewStoreOf;
+  } else {
+    Object.defineProperty(context, 'viewStore', {
+      enumerable: true,
+      value: createEditorViewStoreAccess(editor, getPlugin),
     });
   }
 

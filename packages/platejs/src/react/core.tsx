@@ -134,6 +134,7 @@ export type {
   OnNodeChange,
   OnTextChange,
   PluginConfiguration,
+  PluginApiContext,
   PluginContext,
   PluginExtendInput,
   PluginOn,
@@ -183,4 +184,5 @@ export {
   usePluginStore,
   useEditorPluginStore,
 } from './stores/plate/usePluginStore';
+export { useViewStore } from './stores/plate/useViewStore';
 export * from './utils/index';

@@ -4,6 +4,7 @@ import {
   getCurrentSelection,
   runEditorTransaction,
 } from '../core/public-state';
+import { withoutPlacement } from '../core/view-carets';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
@@ -151,7 +152,9 @@ export const removeNodes = ((
     if (selectionAnchor) {
       const resolved = selectionAnchor.release();
 
-      tx.setSelection(resolved ? { ...selection, ...resolved } : null);
+      withoutPlacement(editor, () =>
+        tx.setSelection(resolved ? { ...selection, ...resolved } : null)
+      );
     }
   });
 }) as NodeMutationMethods['removeNodes'];

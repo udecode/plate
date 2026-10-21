@@ -9,6 +9,10 @@ const DOM_SYNC_MUTATION_OWNER_BY_ROOT = new WeakMap<
   HTMLElement,
   DOMSyncMutationOwnership
 >();
+const DOM_SYNC_TEXT_MARK_WATCHERS = new WeakMap<
+  HTMLElement,
+  (target: Node) => void
+>();
 const ELEMENT_NODE = 1;
 
 const asElement = (node: Node): Element | null =>
@@ -95,7 +99,11 @@ export class DOMSyncMutationOwnership {
     type: MutationRecord['type'],
     attributeName: string | null = null
   ) {
-    if (!this.connected || this.markingPauseDepth > 0) return;
+    if (!this.connected) return;
+    if (type === 'characterData' && this.root) {
+      DOM_SYNC_TEXT_MARK_WATCHERS.get(this.root)?.(target);
+    }
+    if (this.markingPauseDepth > 0) return;
 
     const key = mutationKey(type, attributeName);
     const targetTokens =
@@ -192,6 +200,19 @@ export const markDOMSyncMutationTarget = (
     return;
   }
   findDOMSyncMutationOwner(target)?.mark(target, type, attributeName);
+};
+
+export const watchDOMSyncTextMarks = (
+  root: HTMLElement,
+  watcher: (target: Node) => void
+) => {
+  DOM_SYNC_TEXT_MARK_WATCHERS.set(root, watcher);
+
+  return () => {
+    if (DOM_SYNC_TEXT_MARK_WATCHERS.get(root) === watcher) {
+      DOM_SYNC_TEXT_MARK_WATCHERS.delete(root);
+    }
+  };
 };
 
 export const isDOMSyncMutation = (mutation: MutationRecord) =>

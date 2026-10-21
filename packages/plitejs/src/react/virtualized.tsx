@@ -7,7 +7,7 @@ import {
   EditableViewportSurface,
   type EditableProps,
 } from './components/editable-text-blocks';
-import { EditorRoot } from './components/plite';
+import { SurfaceRoot } from './components/plite';
 import {
   useRootNodeKeys,
   useSelectionPaths,
@@ -122,8 +122,8 @@ export const VirtualizedEditable = <
   return root === undefined ? (
     editable
   ) : (
-    <EditorRoot editor={editor} readOnly={readOnly} root={root}>
+    <SurfaceRoot editor={editor} readOnly={readOnly} root={root}>
       {editable}
-    </EditorRoot>
+    </SurfaceRoot>
   );
 };

@@ -125,7 +125,7 @@ export const useEditableEventRuntime = ({
     editor,
     handledDOMBeforeInputRef,
     inputController,
-    processing,
+    webKitProbeActive,
     rootRef,
     state,
   } = runtime;
@@ -219,7 +219,7 @@ export const useEditableEventRuntime = ({
     onDOMBeforeInput,
     onInput: callbacks.onInput,
     onUserInput: runtime.onUserInput,
-    processing,
+    webKitProbeActive,
     queuePendingNativeTextInput: inputHandlers.queuePendingNativeTextInput,
     readOnly,
     repair: eventCore.repair,

@@ -1,5 +1,7 @@
 import { PathApi, type Range, RangeApi, type RootKey } from '..';
+import { hasEditorRuntime } from '../core/editor-runtime';
 import { readEditorHistoryHeadIdentity } from '../core/public-state';
+import { getViewPresentation } from '../editor-runtime-view';
 import type { AnyEditor } from '../interfaces/editor';
 import { failInvariant } from './editable/runtime-editor-api';
 import {
@@ -28,7 +30,6 @@ export type PliteViewSelectionCollapseEdge =
   | 'start';
 
 const EDITOR_TO_VIEW_SELECTION = new WeakMap<object, PliteViewSelection>();
-const EDITOR_TO_VIEW_SELECTION_STORE_KEY = new WeakMap<object, object>();
 const VIEW_SELECTION_MOUNTS = new WeakMap<object, number>();
 type PliteViewSelectionNotification = Readonly<{
   forceInvalidate?: boolean;
@@ -47,18 +48,8 @@ const HISTORY_GROUP_TO_VIEW_SELECTION = new WeakMap<
 
 const cloneBoundaryPoint = clonePliteViewBoundaryPointWithOwner;
 
-export const setPliteViewSelectionStoreKey = (
-  editor: object,
-  storeKey: object
-) => {
-  EDITOR_TO_VIEW_SELECTION_STORE_KEY.set(
-    editor,
-    getViewSelectionStoreKey(storeKey)
-  );
-};
-
 const getViewSelectionStoreKey = (editor: object): object =>
-  EDITOR_TO_VIEW_SELECTION_STORE_KEY.get(editor) ?? editor;
+  hasEditorRuntime(editor) ? getViewPresentation(editor) : editor;
 
 const notifyViewSelectionListeners = (
   storeKey: object,

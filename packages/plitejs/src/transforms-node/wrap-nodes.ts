@@ -3,6 +3,7 @@ import {
   applyBuiltDocumentChange,
   runEditorTransaction,
 } from '../core/public-state';
+import { withoutPlacement } from '../core/view-carets';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import {
@@ -321,7 +322,9 @@ export const wrapNodes = ((
       }
 
       if (options.at == null) {
-        select(editor, target);
+        const trimmed = target;
+
+        withoutPlacement(editor, () => select(editor, trimmed));
       }
     }
 
@@ -483,7 +486,9 @@ export const wrapNodes = ((
     }
 
     if (nextSelection) {
-      select(editor, nextSelection);
+      const mapped = nextSelection;
+
+      withoutPlacement(editor, () => select(editor, mapped));
     }
   });
 }) as NodeMutationMethods['wrapNodes'];

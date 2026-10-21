@@ -20,6 +20,7 @@ import {
   type DOMPhaseScheduler,
   getLineBoundaryKeyboardMove,
 } from '../../dom/internal';
+import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import {
@@ -227,7 +228,7 @@ const clearNativeSelectionForViewSelection = (
   }
 
   const clear = () => {
-    rootElement.ownerDocument.getSelection()?.removeAllRanges();
+    writeDOMSelection(rootElement.getRootNode() as Document | ShadowRoot, null);
   };
 
   clear();

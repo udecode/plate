@@ -3,13 +3,13 @@ import React from 'react';
 import { expect, test, vi } from 'vitest';
 
 import { authored } from '../../src/authored';
+import { setShownSelectionAsView } from '../../src/core/view-carets';
 import { createEditorView } from '../../src/editor-runtime-view';
 import { defineEditorSchema, schema } from '../../src/index';
 import type { Range } from '../../src/interfaces/range';
 import { SelectionApi } from '../../src/interfaces/selection';
 import { Editable } from '../../src/react/components/editable-text-blocks';
 import { EditorRoot } from '../../src/react/components/plite';
-import { writeRuntimeSelection } from '../../src/react/editable/runtime-mutation-state';
 import { useEditorContext } from '../../src/react/hooks/use-editor-context';
 import { createEditor } from '../../src/react/plugin/with-react';
 
@@ -58,7 +58,7 @@ const mountPreview = (
 
 const select = (view: ReturnType<typeof useEditorContext>, range: Range) => {
   act(() => {
-    writeRuntimeSelection(view, SelectionApi.text(range));
+    setShownSelectionAsView(view, SelectionApi.text(range));
   });
 };
 
@@ -218,7 +218,7 @@ test.each([
     const { view } = mountPreview(source, 'accepted');
 
     act(() => {
-      writeRuntimeSelection(view, target);
+      setShownSelectionAsView(view, target);
     });
 
     expect(source.read.selection()).toMatchObject({
@@ -281,7 +281,7 @@ test('a block selection of a block holding lines a pending join shows out of ord
   const { view } = mountPreview(source, 'proposed');
 
   act(() => {
-    writeRuntimeSelection(view, SelectionApi.nodes([[0]], { mode: 'block' }));
+    setShownSelectionAsView(view, SelectionApi.nodes([[0]], { mode: 'block' }));
   });
 
   expect(source.read.selection.nodes().map(([, path]) => path)).toEqual([
@@ -304,7 +304,7 @@ test.each([
     const { view } = mountPreview(source as never, 'proposed');
 
     act(() => {
-      writeRuntimeSelection(view, target);
+      setShownSelectionAsView(view, target);
     });
 
     expect(source.read.selection()).toMatchObject({
@@ -332,7 +332,10 @@ test('an object selection of a block whose pending type change makes it an objec
   const { view } = mountPreview(source as never, 'accepted');
 
   act(() => {
-    writeRuntimeSelection(view, SelectionApi.nodes([[0]], { mode: 'object' }));
+    setShownSelectionAsView(
+      view,
+      SelectionApi.nodes([[0]], { mode: 'object' })
+    );
   });
 
   expect(source.read.selection.nodeMode()).toBe('block');

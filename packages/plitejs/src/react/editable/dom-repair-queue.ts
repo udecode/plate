@@ -15,6 +15,10 @@ import {
   getPliteTextHostStrings,
 } from '../../dom/plugin/dom-geometry';
 import {
+  readDOMSelectionRange,
+  writeDOMSelection,
+} from '../../dom/utils/selection-writes';
+import {
   getPliteNodeElementByPath,
   getPliteNodePathFromDOMElement,
 } from '../hooks/use-plite-node-ref';
@@ -809,7 +813,10 @@ export const createDOMRepairQueue = ({
 
             if (!shouldSkipSelectionScroll(editor)) {
               profileDOMRepairDuration('scroll-current-selection', () => {
-                scrollSelectionIntoView(editor, domSelection.getRangeAt(0));
+                scrollSelectionIntoView(
+                  editor,
+                  readDOMSelectionRange(domSelection)
+                );
               });
             }
             return true;
@@ -955,23 +962,11 @@ export const createDOMRepairQueue = ({
             if (!selectionMatches) {
               armRepairInducedSelectionOriginGuard();
               profileDOMRepairDuration('set-dom-selection', () => {
-                domSelection.setBaseAndExtent(
-                  domNode,
-                  domOffset,
-                  domNode,
-                  domOffset
-                );
+                writeDOMSelection(root, {
+                  anchor: [domNode, domOffset],
+                  focus: [domNode, domOffset],
+                });
               });
-              if (
-                domSelection.rangeCount === 0 ||
-                domSelection.anchorNode !== domNode ||
-                domSelection.anchorOffset !== domOffset ||
-                domSelection.focusNode !== domNode ||
-                domSelection.focusOffset !== domOffset
-              ) {
-                domSelection.removeAllRanges();
-                domSelection.addRange(domRange);
-              }
             }
             if (
               kind === 'repair-caret-after-text-insert' &&

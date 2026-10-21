@@ -66,6 +66,24 @@ import {
 } from "plitejs/dom";
 ```
 
+Write the native selection with `writeDOMSelection(tree, points)`, where
+`tree` is the editable element's root node, and pass `null` to clear it.
+Integration code must not change the browser `Selection` directly. When an
+editor shows several views of one document, Plite compares each later native
+selection with its last write to tell its own writes from the user's, so a
+direct change looks like the user's selection.
+`readDOMSelectionRange(selection)` returns a copy of the selection's first
+range, so changing the copy leaves the selection alone.
+
+```ts
+import { writeDOMSelection } from "plitejs/dom";
+
+const tree = editable.getRootNode() as Document | ShadowRoot;
+
+writeDOMSelection(tree, { anchor: [text, 0], focus: [text, 4] });
+writeDOMSelection(tree, null);
+```
+
 Plite node marker helpers include `getElements`, `getNodeDataAttributeKeys`,
 `keyToDataAttribute`, `isEditor`, `isElement`, `isLeaf`, `isNode`, `isString`,
 `isText`, and `isVoid`.

@@ -1,6 +1,7 @@
 import { NodeApi, type Path, type Point, SelectionApi } from '../..';
 import { isObjectSelectionTarget } from '../../core/selection-protocol';
-import { getSelection, isDOMElement, isDOMNode, isDOMText } from '../../dom';
+import { isDOMElement, isDOMNode, isDOMText } from '../../dom';
+import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
@@ -288,7 +289,7 @@ export const selectEditableSelectableOwnerPath = ({
   ReactEditor.focus(editor);
   const root = ReactEditor.resolveDocumentOrShadowRoot(editor);
 
-  if (root) getSelection(root)?.removeAllRanges();
+  if (root) writeDOMSelection(root, null);
 
   return path;
 };

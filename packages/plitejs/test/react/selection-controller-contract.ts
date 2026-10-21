@@ -569,9 +569,13 @@ test('native selection drag keeps DOM selection and scroll under browser ownersh
       state,
     });
 
-    expect(removeAllRanges).toHaveBeenCalledTimes(1);
-    expect(addRange).toHaveBeenCalledWith(domRange);
-    expect(setBaseAndExtent).toHaveBeenCalledWith(textNode, 0, textNode, 1);
+    expect(state.selectionChangeOrigin).toBe('programmatic-export');
+    expect([
+      domSelection.anchorNode,
+      domSelection.anchorOffset,
+      domSelection.focusNode,
+      domSelection.focusOffset,
+    ]).toEqual([textNode, 0, textNode, 1]);
   } finally {
     editorElement.remove();
     domSelection.removeAllRanges();
@@ -1016,7 +1020,7 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
       androidInputManager: null,
       editor,
       inputController,
-      processing: { current: false },
+      webKitProbeActive: { current: false },
       readOnly: false,
       rerunOnDirtyNodeMap: vi.fn(),
     });
@@ -1136,7 +1140,7 @@ test('projected DOM selection import publishes its anchor selection commit', () 
       androidInputManager: null,
       editor,
       inputController,
-      processing: { current: false },
+      webKitProbeActive: { current: false },
       readOnly: false,
       rerunOnDirtyNodeMap: vi.fn(),
     });
@@ -1329,7 +1333,7 @@ test('model-owned collapsed programmatic selectionchange skips DOM range resolut
       androidInputManager: null,
       editor,
       inputController,
-      processing: { current: false },
+      webKitProbeActive: { current: false },
       readOnly: false,
       rerunOnDirtyNodeMap: vi.fn(),
     });
@@ -1418,7 +1422,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
       androidInputManager: null,
       editor,
       inputController,
-      processing: { current: false },
+      webKitProbeActive: { current: false },
       readOnly: false,
       rerunOnDirtyNodeMap: vi.fn(),
     });
@@ -1507,7 +1511,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
       androidInputManager: null,
       editor,
       inputController,
-      processing: { current: false },
+      webKitProbeActive: { current: false },
       readOnly: false,
       rerunOnDirtyNodeMap: vi.fn(),
     });
@@ -1600,7 +1604,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
       androidInputManager: null,
       editor,
       inputController,
-      processing: { current: false },
+      webKitProbeActive: { current: false },
       readOnly: false,
       rerunOnDirtyNodeMap: vi.fn(),
     });

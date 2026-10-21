@@ -38,6 +38,12 @@ export const testModuleEffects = {
       'benchmarks/targets/slate-v2.json',
     ],
   },
+  'packages/plitejs/test/core/runtime-load-order.test.ts': {
+    runs: [
+      'packages/plitejs/src/core/plugin-dispatch.ts',
+      'packages/plitejs/src/core/view-carets.ts',
+    ],
+  },
   'packages/plitejs/test/create-editor-options-message.test.ts': {
     reads: [
       'packages/plitejs/tsconfig.json',

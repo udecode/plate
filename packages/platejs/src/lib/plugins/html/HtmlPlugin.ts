@@ -7,7 +7,7 @@ import type {
 } from '../../../dom/plite-dom.internal';
 import {
   ContentSlice,
-  createEditorView,
+  projectEditorView,
   EditorSchemaValidationError,
   ElementApi,
   getCompiledEditorSchemaFromApi,
@@ -4013,7 +4013,7 @@ export const serializeHtmlWithEditor = (
     options.projection
   );
   const outputDocument = projected.document;
-  const view = createEditorView(editor, {
+  const view = projectEditorView(editor, {
     document: outputDocument,
   }) as unknown as Editor;
   return view.read((state) =>

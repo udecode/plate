@@ -80,6 +80,7 @@ import type {
   InferConflicts,
   InferDependencies,
   InferPluginStoreState,
+  InferPluginViewState,
   InferRead,
   InferSelectors,
   InferUpdate,
@@ -97,6 +98,7 @@ import type {
   PluginSchema,
   PluginSelectorMethods,
   PluginSelectors,
+  PluginViewStore,
   SelectionRules,
   WithAnyName,
 } from './PluginDefinition';
@@ -243,6 +245,7 @@ export type AnyBasePlugin = {
   inject: ErasedPluginInject;
   inputRules: InputRulesDefinition | InputRulesConfig;
   initialState: object;
+  initialViewState?: () => object;
   name: string;
   on: ErasedPluginOn;
   override: Record<string, ErasedBasePluginOverride>;
@@ -1107,6 +1110,15 @@ export interface BasePluginContextEditor<
   in out C extends AnyBasePluginDefinition = BasePluginDefinition,
 > extends InternalBaseEditorWithPlugins<Value, C> {}
 
+/** API factory context, bound to the editor or view the API is built for. */
+export type BasePluginApiContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = BasePluginContext<C> &
+  Readonly<{
+    /** This plugin's state in the view the API is built for. */
+    viewStore: PluginViewStore<C>;
+  }>;
+
 export type BasePluginImplementationContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = PluginBaseContext<C> & {
@@ -1203,10 +1215,12 @@ type BasePluginAuthorFields<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = Omit<PluginBase<C>, 'dependencies' | 'render' | 'slots'> &
   BaseRuntimePluginFields<C> & {
-    api?: (context: BasePluginContext<C>) => InferApi<C>;
+    api?: (context: BasePluginApiContext<C>) => InferApi<C>;
     conflicts: BasePluginDependencyDescriptors<InferConflicts<C>>;
     corrections?: ReadonlyArray<BasePluginCorrection<C>>;
     dependencies: BasePluginDependencyDescriptors<InferDependencies<C>>;
+    /** Creates this plugin's state for each view of the document. */
+    initialViewState: () => InferPluginViewState<C>;
     on: BasePluginOn<C>;
     read?: (
       context: BasePluginContext<C> & {
@@ -1425,7 +1439,7 @@ export interface BasePlugin<
     EditorSchemaSourceProvider<() => InferPluginSchemaContribution<C>>,
     PluginReference<C['name']>,
     PluginDefinitionWitness<C> {
-  api?: (context: BasePluginContext<C>) => InferApi<C>;
+  api?: (context: BasePluginApiContext<C>) => InferApi<C>;
   readonly conflicts: BasePluginDependencyDescriptors<InferConflicts<C>>;
   dependencies: BasePluginDependencyDescriptors<InferDependencies<C>>;
   readonly initialState: InferPluginStoreState<C>;
@@ -1465,7 +1479,7 @@ type BasePluginInputFields<C extends AnyBasePluginDefinition> = Omit<
   | 'type'
   | 'update'
 > & {
-  api?: (context: BasePluginContext<C>) => InferApi<C>;
+  api?: (context: BasePluginApiContext<C>) => InferApi<C>;
   dependencies?: InferDependencies<C>;
   initialState?:
     | Partial<InferPluginStoreState<C>>
@@ -1495,6 +1509,7 @@ type BasePluginStageObject<C extends AnyBasePluginDefinition> = Omit<
   | 'decorate'
   | 'dependencies'
   | 'initialState'
+  | 'initialViewState'
   | 'key'
   | 'name'
   | 'read'
@@ -1503,7 +1518,7 @@ type BasePluginStageObject<C extends AnyBasePluginDefinition> = Omit<
   | 'type'
   | 'update'
 > & {
-  api?: (context: BasePluginContext<C>) => object;
+  api?: (context: BasePluginApiContext<C>) => object;
   decorate?: DecorateInput<C>;
   component?: never;
   initialState?: object | ((context: BasePluginContext<C>) => object);
@@ -1549,7 +1564,7 @@ type BasePluginStageInput<
 > = Readonly<Record<TKeys, unknown>> &
   Pick<BasePluginStageObject<C>, Exclude<TKeys, BasePluginStageSpecialKey>> &
   Readonly<{
-    api?: (context: BasePluginContext<C>) => TApi;
+    api?: (context: BasePluginApiContext<C>) => TApi;
     conflicts?: BasePluginStageConflictInput<TConflictNames>;
     decorate?: DecorateInput<C>;
     enabled?: TEnabled;
@@ -1769,6 +1784,7 @@ export type BasePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
   | 'enabled'
   | 'effectTypes'
   | 'initialState'
+  | 'initialViewState'
   | 'key'
   | 'name'
   | 'read'

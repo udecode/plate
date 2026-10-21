@@ -1772,20 +1772,19 @@ test('DOM coverage selection materializes every covered materialize boundary wit
     return true;
   });
 
-  const domSelection = document.getSelection();
   const selection = readTextSelection(editor);
 
   try {
-    if (!domSelection || !selection) {
-      throw new Error('Expected document and editor selection');
+    if (!selection) {
+      throw new Error('Expected an editor selection');
     }
 
     expect(
       applyDOMCoverageSelectionPolicy({
         coverage,
-        domSelection,
         editor,
         selection,
+        tree: document,
       })
     ).toBe(true);
     expect(materialized.sort()).toEqual([
@@ -1795,67 +1794,6 @@ test('DOM coverage selection materializes every covered materialize boundary wit
     ]);
   } finally {
     coverage.destroy();
-  }
-});
-
-test('forced DOM coverage export rebuilds a fresh native range', () => {
-  const editor = createEditor<Value>();
-  const coverage = DOMCoverage.create(editor);
-  const textNode = document.createTextNode('abc');
-  const domRange = document.createRange();
-
-  domRange.setStart(textNode, 0);
-  domRange.setEnd(textNode, 2);
-  editorReplace(editor, {
-    children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
-    selection: {
-      kind: 'text',
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 2 },
-    },
-  });
-  coverage.registerBoundary({
-    anchor: { type: 'placeholder' },
-    boundaryId: 'covered-paragraph',
-    copyPolicy: 'model',
-    coveredPathRanges: [{ anchor: [0], focus: [0] }],
-    coveredRuntimeRanges: [],
-    ownerPath: [],
-    ownerNodeKey: null,
-    reason: 'app-hidden',
-    selectionPolicy: 'skip',
-    state: 'intentionally-hidden',
-    version: 1,
-  });
-
-  const domSelection = document.getSelection();
-  const selection = readTextSelection(editor);
-
-  try {
-    if (!domSelection || !selection) {
-      throw new Error('Expected document and editor selection');
-    }
-
-    vi.spyOn(domRangeResolver, 'resolveDOMRangeInRoot').mockReturnValue(
-      domRange
-    );
-    const addRange = vi.spyOn(domSelection, 'addRange');
-    const setBaseAndExtent = vi.spyOn(domSelection, 'setBaseAndExtent');
-
-    expect(
-      applyDOMCoverageSelectionPolicy({
-        coverage,
-        domSelection,
-        editor,
-        forceDOMRangeRebuild: true,
-        selection,
-      })
-    ).toBe(true);
-    expect(addRange).toHaveBeenCalledWith(domRange);
-    expect(setBaseAndExtent).toHaveBeenCalledWith(textNode, 0, textNode, 2);
-  } finally {
-    coverage.destroy();
-    vi.restoreAllMocks();
   }
 });
 

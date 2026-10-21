@@ -8,8 +8,10 @@ export {
   dataTransferFormats,
   isGeckoDOMHost,
   isHotkey,
+  readDOMSelectionRange,
   usesAppleDOMHotkeys,
   writeDOMFragmentData,
+  writeDOMSelection,
 } from 'plitejs/dom';
 
 export type {

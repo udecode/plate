@@ -140,7 +140,7 @@ it.each(cases)(
         expect(
           editor
             .plugin(BaseDetailsPlugin)
-            .store.get('isOpen', editor.key([text ? 1 : 0])!)
+            .api.isOpen(editor.key([text ? 1 : 0])!)
         ).toBe(true);
       }
       if (type === 'columnGroup') {

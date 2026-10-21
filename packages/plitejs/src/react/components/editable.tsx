@@ -25,6 +25,7 @@ import {
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { resolveEditableSelectableOwnerClickTarget } from '../editable/selection-void-target';
+import { activateViewCaret } from '../editable/view-caret-restore';
 import {
   EditableDOMRuntimeContext,
   useEditableDOMHostFact,
@@ -57,6 +58,17 @@ type DropCursorRect = {
 };
 
 const DROP_CURSOR_THICKNESS = 2;
+
+const CARET_KEYS: ReadonlySet<string> = new Set([
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'End',
+  'Home',
+  'PageDown',
+  'PageUp',
+]);
 
 const getDropCursorTargetElement = (target: EventTarget | null) => {
   if (!isDOMNode(target)) {
@@ -323,7 +335,7 @@ export const EditableDOMRoot = (
   const editor = useEditorContext();
   const editorRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const hasViewSelection = usePliteViewSelectionPresence(editor);
-  const { getLastSelectionForRoot, getMountedViewEditor, setActiveViewEditor } =
+  const { getMountedViewEditor, setActiveViewEditor } =
     useRequiredPliteRuntimeContext();
   const activateRootView = useCallback(() => {
     setActiveViewEditor(editor, editorRoot);
@@ -361,7 +373,6 @@ export const EditableDOMRoot = (
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
     editor,
-    getLastSelectionForRoot,
     getMountedViewEditor,
     ignoreBlankEditableRootClicks:
       ignoreBlankEditableRootClicks || viewportRuntime !== null,
@@ -421,9 +432,20 @@ export const EditableDOMRoot = (
   const rootInteractionEventBindings = {
     onFocusCapture: (event: React.FocusEvent<HTMLDivElement>) => {
       activateRootView();
+      if (!runtime.mousePressActive && event.target === event.currentTarget) {
+        activateViewCaret(editor);
+      }
       propsOnFocusCapture?.(event);
     },
+    onKeyDownCapture: (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (CARET_KEYS.has(event.key)) {
+        activateViewCaret(editor);
+        runtime.selectionClaims?.openKeyGesture();
+      }
+      editableEventBindings.onKeyDownCapture?.(event);
+    },
     onMouseDownCapture: (event: React.MouseEvent<HTMLDivElement>) => {
+      runtime.beginMousePress();
       runtime.setExternalMouseGesture(event.defaultPrevented);
 
       if (!runtime.externalMouseGestureActive) {
@@ -460,11 +482,13 @@ export const EditableDOMRoot = (
       propsOnMouseMoveCapture?.(event);
     },
     onMouseUpCapture: (event: React.MouseEvent<HTMLDivElement>) => {
-      if (!runtime.externalMouseGestureActive) {
-        activateRootView();
-        onRootMouseUpCapture(event);
-      }
-      propsOnMouseUpCapture?.(event);
+      runtime.duringEditableMouseUp(() => {
+        if (!runtime.externalMouseGestureActive) {
+          activateRootView();
+          onRootMouseUpCapture(event);
+        }
+        propsOnMouseUpCapture?.(event);
+      });
       runtime.setExternalMouseGesture(false);
     },
   };

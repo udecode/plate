@@ -24,6 +24,8 @@ export type EditorDocumentRecorder = (
   input: Readonly<{
     after: EditorDocumentValue;
     before: EditorDocumentValue;
+    /** Views' bookmarks in `after`, each in its own root. */
+    bookmarks: ReadonlyArray<Readonly<{ root: string; selection: Selection }>>;
     /** From `before`, or in a command frame from the projected document. */
     change: DocumentChange;
     /**
@@ -46,6 +48,8 @@ export type EditorDocumentRecorder = (
    * maps positions, so anchors made while commands ran follow the rewrite.
    */
   anchorChange?: (written: (root: string) => DocumentIndex) => DocumentChange;
+  /** The input bookmarks in the committed draft, in order; omitted, unmoved. */
+  bookmarks?: readonly Selection[];
   change: DocumentChange;
   indexedAfter?: ReadonlyMap<string, DocumentIndex>;
   /**

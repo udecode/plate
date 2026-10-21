@@ -1,5 +1,5 @@
 import {
-  createEditorView,
+  projectEditorView,
   type EditorDocumentValue,
   type AuthoredProjectionDiagnostic,
   type StructuralPlainTextDiagnostic,
@@ -52,7 +52,7 @@ const serializeEditorPlainText = (
     document,
     options.projection
   );
-  const view = createEditorView(editor, {
+  const view = projectEditorView(editor, {
     document: projected.document,
   }) as unknown as Editor;
   const result = view.read((state) =>

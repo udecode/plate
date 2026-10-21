@@ -219,6 +219,9 @@ Current priorities:
   an existing command editor without constructing another runtime. Interactions
   retain that target and read its current permissions; a detached target rejects
   writes. Schema, plugin stores and history remain model-owned across views.
+  View stores, declared by `initialViewState`, are view-owned: each
+  presentation has its own, and the `EditorContent`s of one `EditorRoot` share
+  its caret and view state.
   Whole-document controls use `useModelEditor()` for canonical load,
   replacement, persistence and snapshot conversion; root commands, DOM and
   selection use `useEditor()`. Selector hooks infer only their selected result.
@@ -720,7 +723,8 @@ Current priorities:
 - Plugins never add plugin or product fields to the root editor object; only
   core-owned fields of the typed public `Editor` extend it. By lifecycle, that
   state lives in scoped `api` and `update`, `initialState` and the plugin store,
-  Plite state fields, a React store, a session or controller object, or a
+  `initialViewState` and the view store for state each view keeps apart, Plite
+  state fields, a React store, a session or controller object, or a
   module-local `WeakMap` keyed by editor.
 - Every state-owning production descriptor has a named `*PluginState`, exported
   with an exported descriptor. Owner defaults are checked against that contract
@@ -743,7 +747,7 @@ Current priorities:
   instead of becoming an export subsystem, cache or live view.
 - Plate compiles `read` and `update` capability trees per plugin configuration.
   API factories bind to the exact editor or mounted view that exposes them, with
-  shared plugin stores, plain-record recursion and source-order replacement. An
+  shared plugin stores, that view's view store, plain-record recursion and source-order replacement. An
   API stage sees the preceding stage's immutable API. Descriptor construction
   retains its model lifetime; view work captures the editor inside the API
   factory. Descriptor merging never owns runtime values. A base or retired

@@ -45,6 +45,7 @@ import {
   isTransactionSpecContinuation,
   withTransactionSpecDraftRead,
 } from './public-state';
+import { withViewPlacement } from './view-carets';
 
 export { defineCommand } from './command-definition';
 
@@ -439,6 +440,15 @@ const applyCommandEvaluation = (
 };
 
 const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
+  editor: TEditor,
+  command: EditorCommand<Input, TEditor>,
+  input: Input
+): boolean | undefined =>
+  withViewPlacement(editor, () =>
+    runPlacedCommandChain(editor, command, input)
+  );
+
+const runPlacedCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   editor: TEditor,
   command: EditorCommand<Input, TEditor>,
   input: Input

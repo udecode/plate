@@ -1,6 +1,8 @@
+import { render } from '@testing-library/react';
 import { createEditorView, type Point } from 'plitejs';
 import { describe, expect, it } from 'vitest';
 
+import { EditorRoot, useEditorContext, useRootEditor } from '../../src/react';
 import {
   createPliteDecorationManager,
   type DecorationSource,
@@ -21,7 +23,6 @@ import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
   refreshPliteViewSelection,
-  setPliteViewSelectionStoreKey,
   subscribePliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
@@ -130,10 +131,31 @@ describe('plite view selection', () => {
     });
   });
 
-  it('keeps state editor-local and shares notifications across view editors', () => {
-    const runtimeEditor = {};
-    const viewEditor = {};
-    const otherEditor = {};
+  it('keeps state per mounted root and shares notifications across its editors', () => {
+    const editor = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'hello' }] }],
+    });
+    const editors = new Map<
+      string,
+      { content: ReactRuntimeEditor; root: ReactRuntimeEditor }
+    >();
+    const Probe = ({ name }: { name: string }) => {
+      editors.set(name, { content: useEditorContext(), root: useRootEditor() });
+      return null;
+    };
+
+    render(
+      <>
+        <EditorRoot editor={editor}>
+          <Probe name="A" />
+        </EditorRoot>
+        <EditorRoot editor={editor}>
+          <Probe name="B" />
+        </EditorRoot>
+      </>
+    );
+    const a = editors.get('A')!;
+    const b = editors.get('B')!;
     const selection = createPliteViewSelection(graph, {
       anchor: { point: point(undefined, [0, 0], 1) },
       focus: {
@@ -143,16 +165,17 @@ describe('plite view selection', () => {
     });
     const events: unknown[] = [];
 
-    setPliteViewSelectionStoreKey(viewEditor, runtimeEditor);
-    const unsubscribe = subscribePliteViewSelection(viewEditor, (event) => {
-      events.push(event ?? readPliteViewSelection(viewEditor));
+    const unsubscribe = subscribePliteViewSelection(a.content, (event) => {
+      events.push(event ?? readPliteViewSelection(a.content));
     });
-    writePliteViewSelection(runtimeEditor, selection);
-    refreshPliteViewSelection(runtimeEditor);
+    writePliteViewSelection(a.root, selection);
+    refreshPliteViewSelection(a.root);
     unsubscribe();
 
-    expect(readPliteViewSelection(viewEditor)).toEqual(selection);
-    expect(readPliteViewSelection(otherEditor)).toBeNull();
+    expect(readPliteViewSelection(a.content)).toEqual(selection);
+    expect(readPliteViewSelection(b.content)).toBeNull();
+    expect(readPliteViewSelection(b.root)).toBeNull();
+    expect(readPliteViewSelection(editor)).toBeNull();
     expect(events).toEqual([selection, { forceInvalidate: true }]);
   });
 
@@ -247,8 +270,7 @@ describe('plite view selection', () => {
     });
     const text = editorGetSnapshot(viewEditor).children[0].children[0];
 
-    setPliteViewSelectionStoreKey(viewEditor, editor);
-    writePliteViewSelection(editor, selection);
+    writePliteViewSelection(viewEditor, selection);
 
     expect(
       createPliteViewSelectionDecorationSource(

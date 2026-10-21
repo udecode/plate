@@ -456,7 +456,6 @@ describe('root interaction controller', () => {
       useRootInteractionController({
         disabled: false,
         editor: editor as never,
-        getLastSelectionForRoot: () => null,
         getMountedViewEditor: () => editor as never,
         ignoreBlankEditableRootClicks: true,
         root: 'main',
@@ -550,7 +549,6 @@ describe('root interaction controller', () => {
       useRootInteractionController({
         disabled: false,
         editor: editor as never,
-        getLastSelectionForRoot: () => null,
         getMountedViewEditor: () => editor as never,
         ignoreBlankEditableRootClicks: true,
         root: 'main',

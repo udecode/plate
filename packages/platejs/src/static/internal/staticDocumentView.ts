@@ -1,5 +1,5 @@
 import {
-  createEditorView,
+  projectEditorView,
   type EditorDocumentValue,
   readAuthoredView,
 } from '../../facade';
@@ -36,7 +36,7 @@ export const getStaticDocumentView = (
   let view = byDocument.get(document);
 
   if (!view) {
-    view = createEditorView(editor, { document });
+    view = projectEditorView(editor, { document });
     inheritStaticPresentation(editor, view);
     byDocument.set(document, view);
   }
@@ -68,7 +68,7 @@ export const getStaticRootView = (reader: Editor, root: string): Editor => {
     return cached.view;
   }
 
-  const view = createEditorView(base, { root }) as unknown as Editor;
+  const view = projectEditorView(base, { root }) as unknown as Editor;
 
   inheritStaticPresentation(base, view);
   byRoot.set(root, { authored, readOnly, view });

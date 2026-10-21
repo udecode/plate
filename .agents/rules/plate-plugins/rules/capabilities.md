@@ -15,7 +15,11 @@ boundary is the Vision capability table ("Capability names encode execution
 boundaries"). Choose in this order:
 
 1. Stored per editor? Declare defaults in `initialState`, use `store` for live
-   access, and use `selectors` only for pure store projections.
+   access, and use `selectors` only for pure store projections. Kept apart per
+   view, such as which sections one view shows collapsed? Declare it in
+   `initialViewState`; `api` and the portal use `viewStore`, `.extend`
+   callbacks use `viewStoreOf(state)` or `viewStoreOf(tx)`, and React uses
+   `useViewStore`.
 2. Reads the document? Use `read` when the result must bind to the supplied
    snapshot or active transaction state.
 3. Mutates the document? Use `update` and the supplied `tx` for a mutation that composes with other draft work, or an `api` service that opens exactly one update for a complete model action.

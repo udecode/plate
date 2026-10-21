@@ -23,7 +23,7 @@ export const useEditableRootSelectionImport = ({
         domRepairQueueRef: runtime.domRepairQueueRef,
         editor,
         inputController,
-        processing: runtime.processing,
+        webKitProbeActive: runtime.webKitProbeActive,
         readOnly,
         rootRef: runtime.rootRef,
       }),

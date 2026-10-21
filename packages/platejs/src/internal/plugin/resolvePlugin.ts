@@ -6,7 +6,10 @@ import { isRuntimePlugin } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import { assertNoPrepareDocument } from '../../lib/plugin/assertNoPrepareDocument.internal';
 import type { AnyBasePlugin } from '../../lib/plugin/BasePlugin';
-import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import {
+  createPluginContext,
+  withPluginViewStore,
+} from '../../lib/plugin/createPluginContext.internal';
 import { pluginFormatMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import {
@@ -312,6 +315,7 @@ const applyFormats = (
 };
 
 const applyStage = (
+  editor: Editor,
   plugin: AnyBasePlugin,
   contribution: PluginContribution,
   pluginContext: Readonly<{ plugin: Readonly<{ name: string }> }>
@@ -424,7 +428,9 @@ const applyStage = (
         Object.freeze({ factory: api, kind: 'native' as const }),
       ]);
     } else {
-      const apiValue = Reflect.apply(api, undefined, [pluginContext]);
+      const apiValue = Reflect.apply(api, undefined, [
+        withPluginViewStore(pluginContext, editor, plugin),
+      ]);
 
       if (!isObjectRecord(apiValue)) {
         throw new Error(
@@ -619,7 +625,7 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
         );
       }
 
-      return applyStage(plugin, contribution, context) as P;
+      return applyStage(editor, plugin, contribution, context) as P;
     });
   }
   plugin = reapplyResolvedPluginConfigurations(editor, plugin, configurations);

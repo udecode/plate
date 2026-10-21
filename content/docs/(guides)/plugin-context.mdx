@@ -5,9 +5,10 @@ description: Use editor, plugin, store, API, and transaction context inside Plat
 
 Plugin context is the object Plate passes to plugin configuration callbacks,
 events, native capabilities, transaction commands, and render components. It gives you
-the resolved editor, current plugin name and schema handles, `api`, and plugin store
-without reaching through global state. Use it inside plugin-owned code; use
-editor methods or React hooks when code runs outside a plugin callback.
+the resolved editor, current plugin name and schema handles, `api`, plugin
+store, and per-view state without reaching through global state. Use it inside
+plugin-owned code; use editor methods or React hooks when code runs outside a
+plugin callback.
 
 ## Context shape
 
@@ -27,6 +28,8 @@ but the editor type is `Editor`.
 | `read` | State-bound reads owned by the current plugin. |
 | `update` | One-shot updates owned by the current plugin. |
 | `store` | Read, update, or subscribe to the current plugin's editor-local state. |
+| `viewStore` | Read, update, or subscribe to the current plugin's state in one view. Available in the `api` factory and on the plugin portal. |
+| `viewStoreOf(state)`, `viewStoreOf(tx)` | Read or write the current plugin's state in the view a read state or transaction runs in. Available in `.extend` callbacks. |
 | `defineFormats(map)` | Bind self-owned HTML, Markdown, and plain-text mappings to this plugin's inferred schema. |
 | `defineFormats(TargetPlugin, map)` | Bind a foreign mapping to an exact descriptor and inject its target. |
 
@@ -288,6 +291,88 @@ Always pass the plugin descriptor to `usePluginStore`.
 A name-only object has no state contract for TypeScript
 to infer.
 
+## View state
+
+Every view of an editor shares its plugin state. When two `EditorRoot`s show
+one editor, state that belongs to what one view shows, such as which sections
+are collapsed, goes in the plugin's view store instead. Declare it with
+`initialViewState`. Plate creates one copy for each view and one for the base
+editor.
+
+```ts title="focus-mode-plugin.ts" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export type FocusModeViewState = {
+  enabled: boolean;
+};
+
+export const FocusModePlugin = definePlugin('focusMode', {
+  initialViewState: (): FocusModeViewState => ({
+    enabled: false,
+  }),
+  api: ({ viewStore }) => ({
+    isEnabled: () => viewStore.get('enabled'),
+  }),
+}).extend(({ viewStoreOf }) => ({
+  read: ({ state }) => ({
+    isEnabled: () => viewStoreOf(state).get('enabled'),
+  }),
+  update: ({ tx }) => ({
+    toggle: () => {
+      viewStoreOf(tx).set((draft) => {
+        draft.enabled = !draft.enabled;
+      });
+    },
+  }),
+}));
+```
+
+The `api` factory receives `viewStore`, bound to the view the API is built for.
+The plugin portal exposes the same store as
+`editor.plugin(FocusModePlugin).viewStore`.
+
+A `.extend` callback has no `viewStore`, because one plugin definition serves
+every view. A read or command reaches its view through the state or transaction
+it receives. `viewStoreOf(state)` returns a reader for the view that state
+belongs to, and `viewStoreOf(tx)` returns a writer for the view the transaction
+runs in. `viewStoreOf` does not accept an editor.
+
+A view store write takes effect at once, so a later read in the same update
+sees it. It notifies only that view's subscribers and adds no history entry.
+Reconfiguring the plugin resets every view's state to `initialViewState`.
+
+Every `EditorRoot` is one view. The `EditorContent` areas inside one
+`EditorRoot` share its view, so they share one caret and one view state. Two
+`EditorRoot`s on one editor are two views with separate state. A view's state
+lasts as long as its `EditorRoot` stays mounted, and remounting an
+`EditorContent` inside it keeps the state. The base editor that `createEditor`
+or `useCreateEditor` returns is not a view. It keeps its own state, so a value
+set through a view does not show through the base editor.
+
+In a component, `useViewStore` subscribes to the state of the view that
+`useEditor()` returns. A write in another view runs no selector here.
+
+```tsx title="focus-mode-button.tsx" showLineNumbers
+import { useEditor, useViewStore } from 'platejs/react';
+
+import { FocusModePlugin } from './focus-mode-plugin';
+
+export function FocusModeButton() {
+  const { update } = useEditor().plugin(FocusModePlugin);
+  const enabled = useViewStore(FocusModePlugin, (state) => state.enabled);
+
+  return (
+    <button
+      aria-pressed={enabled}
+      type="button"
+      onClick={() => update.toggle()}
+    >
+      Focus mode
+    </button>
+  );
+}
+```
+
 ## API Reference
 
 | Helper | Scope | Notes |
@@ -296,6 +381,7 @@ to infer.
 | `useEditor().plugin(plugin)` | React under `<EditorRoot>`. | Returns the installed plugin's flat consumer portal. |
 | `usePluginStore(plugin, key, ...args)` | React under `<EditorRoot>`. | Subscribes to one state field or named selector. |
 | `usePluginStore(plugin, selector, options?)` | React under `<EditorRoot>` or a registered editor under `<EditorController>`. | Subscribes to a value derived from plugin state on the provider’s selected editor. Use `useEditorPluginStore(editor, plugin, selector)` for an explicit editor. |
+| `useViewStore(plugin, selector)` | React under `<EditorRoot>`. | Subscribes to a value derived from the plugin's view state in the view `useEditor()` returns. |
 
 For plugin plugin methods, see [Plugin Methods](/docs/plugin-methods). For
 plugin configuration, see [Plugin](/docs/plugin).

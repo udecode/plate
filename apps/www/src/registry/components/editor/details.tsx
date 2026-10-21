@@ -7,7 +7,7 @@ import {
   type EditorElementProps,
   EditorElement,
   useEditor,
-  usePluginStore,
+  useViewStore,
 } from 'platejs/react';
 import * as React from 'react';
 
@@ -21,9 +21,11 @@ export function DetailsElement(
   const { element, slots } = props;
   const editor = useEditor();
   const detailsKey = editor.key(element);
-  const openKeys = usePluginStore(BaseDetailsPlugin, 'openKeys');
-  const { api } = useEditor().plugin(BaseDetailsPlugin);
-  const open = detailsKey !== undefined && openKeys.has(detailsKey);
+  const { api } = editor.plugin(BaseDetailsPlugin);
+  const open = useViewStore(
+    BaseDetailsPlugin,
+    (state) => detailsKey !== undefined && state.openKeys.has(detailsKey)
+  );
   const bodyId = React.useId();
   const { titleRef, toggleRef } = useToggleOnFirstLine();
 

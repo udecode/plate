@@ -272,6 +272,12 @@ type InputInitialState<TInput> = TInput extends {
   ? NormalizePluginState<ObjectResult<TInitialState>>
   : {};
 
+type InputInitialViewState<TInput> = TInput extends {
+  initialViewState: infer TInitialViewState;
+}
+  ? NormalizePluginState<ObjectResult<TInitialViewState>>
+  : {};
+
 type InputApi<TInput> = TInput extends { api: infer TApi }
   ? ObjectResult<TApi>
   : {};
@@ -372,13 +378,15 @@ type NormalizedBasePluginField<
                   ? InputUpdate<TInput>
                   : TKey extends 'initialState'
                     ? InputInitialState<TInput>
-                    : TKey extends 'selectors'
-                      ? InputSelectors<TInput>
-                      : TKey extends 'schema'
-                        ? InputSchema<TInput>
-                        : TKey extends BasePluginPresenceField
-                          ? true
-                          : never;
+                    : TKey extends 'initialViewState'
+                      ? InputInitialViewState<TInput>
+                      : TKey extends 'selectors'
+                        ? InputSelectors<TInput>
+                        : TKey extends 'schema'
+                          ? InputSchema<TInput>
+                          : TKey extends BasePluginPresenceField
+                            ? true
+                            : never;
 
 export type NormalizeBasePluginInput<
   TInput,

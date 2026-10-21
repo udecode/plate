@@ -123,9 +123,7 @@ describe('BaseCodeBlockPlugin', () => {
     editor.api.history.undo();
     expect(editor.read.children()).toEqual(initialValue);
     expect(editor.key([0, 1])).toBe(innerKey);
-    expect(
-      editor.plugin(BaseDetailsPlugin).store.get('isOpen', innerKey!)
-    ).toBe(true);
+    expect(editor.plugin(BaseDetailsPlugin).api.isOpen(innerKey!)).toBe(true);
   });
 
   it('reports a toggle false when paragraphs cannot replace the code block', () => {

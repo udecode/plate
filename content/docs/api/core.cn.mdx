@@ -364,6 +364,36 @@ const state = usePluginStore(plugin, (state) => state);
 
 </API>
 
+### `useViewStore`
+
+在 `<EditorRoot>` 内订阅从插件视图状态派生的值。该 hook 读取 `useEditor()`
+返回的编辑器所在的视图。每个 `EditorRoot` 是一个视图，其中的 `EditorContent`
+共享该视图的状态。其他视图中的写入不会在这里运行 selector。插件未安装时，Plate
+会抛出错误。
+
+请传入插件 descriptor 本身。`{ name }` 对象不携带视图状态契约。
+
+<API name="useViewStore">
+<APIParameters>
+  <APIItem name="plugin" type="Plugin">
+    要订阅其视图状态的插件，视图状态由 `initialViewState` 声明。
+  </APIItem>
+  <APIItem name="selector" type="(state: InferPluginViewState<C>) => T">
+    从视图状态派生值。
+  </APIItem>
+</APIParameters>
+
+<APIReturns type="T">派生的值。</APIReturns>
+
+```tsx
+const open = useViewStore(
+  BaseDetailsPlugin,
+  (state) => detailsKey !== undefined && state.openKeys.has(detailsKey)
+);
+```
+
+</API>
+
 ### `useElement`
 
 获取当前 element。传 plugin descriptor 可推断配置后的 schema element type；仅在需要擦除后的 `Element` 类型时不传 descriptor。缺少匹配 provider 时抛出错误。

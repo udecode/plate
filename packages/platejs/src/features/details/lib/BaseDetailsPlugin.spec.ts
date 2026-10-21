@@ -342,7 +342,7 @@ describe('BaseDetailsPlugin', () => {
     });
   });
 
-  it('closes Details in a read-only view and moves the writable selection to its Summary', () => {
+  it('closes Details in a read-only view and leaves the selection in its body', () => {
     const editor = createEditor({
       plugins,
       initialValue: [
@@ -363,11 +363,13 @@ describe('BaseDetailsPlugin', () => {
     details.api.setOpen(key, true);
     details.api.setOpen(key, false);
 
-    expect(details.store.get('isOpen', key)).toBe(false);
-    expect(editor.read.selection()).toMatchObject({
-      anchor: { path: [0, 0, 0], offset: 5 },
-      focus: { path: [0, 0, 0], offset: 5 },
-    });
+    expect([details.api.isOpen(key), editor.read.selection()]).toMatchObject([
+      false,
+      {
+        anchor: { path: [0, 1, 0], offset: 2 },
+        focus: { path: [0, 1, 0], offset: 2 },
+      },
+    ]);
   });
 
   it('restores a removed open Details as open on undo', () => {
@@ -390,7 +392,7 @@ describe('BaseDetailsPlugin', () => {
     editor.update.nodes.remove({ at: [1] });
     editor.api.history.undo();
 
-    expect(details.store.get('isOpen', editor.key([1])!)).toBe(true);
+    expect(details.api.isOpen(editor.key([1])!)).toBe(true);
   });
 
   it.each([true, false])(
@@ -426,9 +428,9 @@ describe('BaseDetailsPlugin', () => {
       for (let cycle = 0; cycle < 2; cycle++) {
         editor.api.history.undo();
         expect(editor.read.children()).toEqual(before);
-        expect(details.store.get('isOpen', editor.key([0])!)).toBe(true);
+        expect(details.api.isOpen(editor.key([0])!)).toBe(true);
         expect(editor.key([0, 1])).toBe(innerKey);
-        expect(details.store.get('isOpen', editor.key([0, 1])!)).toBe(open);
+        expect(details.api.isOpen(editor.key([0, 1])!)).toBe(open);
         editor.api.history.redo();
         expect(editor.read.children()).toEqual(unwrapped);
       }
@@ -481,12 +483,12 @@ describe('BaseDetailsPlugin', () => {
     view.update.selection.set({ path: [1, 1, 0], offset: 2 });
     view.update.break.insert();
 
-    expect(details.store.get('isOpen', key)).toBe(true);
-    expect(acceptedDetails.store.get('isOpen', acceptedKey)).toBe(true);
+    expect(details.api.isOpen(key)).toBe(true);
+    expect(acceptedDetails.api.isOpen(acceptedKey)).toBe(true);
     expect(view.read.text.string([1, 2])).toBe('dy');
     view.update.text.insert('X');
     expect(view.read.text.string([1, 2])).toBe('Xdy');
-    expect(details.store.get('isOpen', key)).toBe(true);
+    expect(details.api.isOpen(key)).toBe(true);
     details.api.setOpen(key, false);
     expect(view.read.selection()).toMatchObject({
       anchor: { path: [1, 0, 0], offset: 5 },
@@ -572,11 +574,11 @@ describe('BaseDetailsPlugin', () => {
     const key = editor.key([0])!;
     const details = editor.plugin(BaseDetailsPlugin);
 
-    expect(details.store.get('isOpen', key)).toBe(false);
+    expect(details.api.isOpen(key)).toBe(false);
 
     details.api.setOpen(key, true);
 
-    expect(details.store.get('isOpen', key)).toBe(true);
+    expect(details.api.isOpen(key)).toBe(true);
     expect(editor.read.children()[0]).not.toHaveProperty('open');
   });
 
@@ -652,9 +654,9 @@ describe('BaseDetailsPlugin', () => {
         type: 'details',
       },
     ]);
-    expect(
-      editor.plugin(BaseDetailsPlugin).store.get('isOpen', editor.key([0])!)
-    ).toBe(true);
+    expect(editor.plugin(BaseDetailsPlugin).api.isOpen(editor.key([0])!)).toBe(
+      true
+    );
     expect(editor.read.selection()).toMatchObject({
       anchor: { path: [0, 0, 0] },
       focus: { path: [0, 0, 0] },
@@ -682,9 +684,9 @@ describe('BaseDetailsPlugin', () => {
         type: 'details',
       },
     ]);
-    expect(
-      editor.plugin(BaseDetailsPlugin).store.get('isOpen', editor.key([0])!)
-    ).toBe(true);
+    expect(editor.plugin(BaseDetailsPlugin).api.isOpen(editor.key([0])!)).toBe(
+      true
+    );
   });
 
   it('wraps a text block with inline content as Summary', () => {

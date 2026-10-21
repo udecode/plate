@@ -18,13 +18,14 @@ import {
   SelectionApi,
   TextApi,
 } from '../..';
-import { getSelection } from '../../dom';
+import { getPlacementGeneration } from '../../core/view-carets';
 import type {
   DOMPhase,
   DOMPhaseScheduler,
   DOMPhaseTiming,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
+import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import {
   type focusPliteEditable,
   focusPliteEditableAfterEventFrame,
@@ -87,12 +88,12 @@ import {
 import {
   dispatchCommand,
   editorCommands,
-  failInvariant,
   getSelection as getEditorSelection,
   getSelectionDOMRange,
   toInternalRoot,
 } from './runtime-editor-api';
 import { canUseNativeViewSelection } from './selection-projected-dom';
+import { activateViewCaret } from './view-caret-restore';
 
 export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selection-replay';
 
@@ -113,7 +114,6 @@ export type RootInteractionEditor = ReactRuntimeEditor &
 export type RootInteractionControllerOptions = {
   disabled: boolean;
   editor: RootInteractionEditor;
-  getLastSelectionForRoot: (root: RootKey) => Selection;
   getMountedViewEditor: (root: RootKey) => RootInteractionEditor | null;
   ignoreBlankEditableRootClicks?: boolean;
   root: RootKey;
@@ -878,10 +878,10 @@ const canApplyCoordinateDragSelection = (
     pendingInteraction.coordinateDragSelection);
 
 const clearDOMSelectionFromEvent = (event: MouseEvent<HTMLElement>) => {
-  const rootNode = event.currentTarget.getRootNode() as Document | ShadowRoot;
-  const domSelection = getSelection(rootNode);
-
-  domSelection?.removeAllRanges();
+  writeDOMSelection(
+    event.currentTarget.getRootNode() as Document | ShadowRoot,
+    null
+  );
 };
 
 const shouldIgnoreDragTarget = (event: MouseEvent<HTMLElement>) => {
@@ -1230,7 +1230,6 @@ const updateDragAutoScroll = (
 export const useRootInteractionController = ({
   disabled,
   editor,
-  getLastSelectionForRoot,
   getMountedViewEditor,
   ignoreBlankEditableRootClicks = false,
   root,
@@ -1279,82 +1278,21 @@ export const useRootInteractionController = ({
   const focusRoot = useCallback(
     ({
       fallbackSelection,
-      forceSelection = false,
+      receipt,
       selection: selectionPreference = selection,
     }: {
       fallbackSelection?: RootInteractionFocusSelection;
-      forceSelection?: boolean;
+      receipt?: number;
       selection?: RootInteractionFocusSelection;
     } = {}) => {
-      const focusEditor = getMountedViewEditor(root) ?? editor;
-      const currentSelection = focusEditor.read((state) => state.selection());
-      const getEndSelection = (): Range => {
-        const point =
-          focusEditor.read((state) => state.points.end([])) ??
-          failInvariant('Expected a document end point when focusing a root');
-
-        return { anchor: point, focus: point };
-      };
-      let focusSelection =
-        selectionPreference === 'end'
-          ? getEndSelection()
-          : selectionPreference === 'restore' &&
-              (forceSelection || !currentSelection)
-            ? getLastSelectionForRoot(root)
-            : null;
-
-      if (
-        selectionPreference === 'restore' &&
-        !focusSelection &&
-        !currentSelection &&
-        fallbackSelection === 'end'
-      ) {
-        focusSelection = getEndSelection();
-      }
-
-      if (
-        selectionPreference === 'restore' &&
-        !focusSelection &&
-        !currentSelection
-      ) {
-        return;
-      }
-
-      const applyFocusSelection = () => {
-        if (!focusSelection) {
-          return false;
-        }
-
-        writePliteViewSelection(focusEditor, null);
-        dispatchCommand(focusEditor, editorCommands.select, {
-          target: focusSelection,
-        });
-
-        return true;
-      };
-      const appliedSelection = applyFocusSelection();
-
-      focusPliteEditableAfterEventFrame(focusEditor);
-
-      if (appliedSelection) {
-        scheduleInteractionFrame(
-          'root-interaction-focus-selection-replay',
-          () => {
-            applyFocusSelection();
-            focusPliteEditableAfterEventFrame(focusEditor);
-          },
-          { timing: 'timeout' }
-        );
-      }
+      activateViewCaret(getMountedViewEditor(root) ?? editor, {
+        fallback: fallbackSelection === 'end' ? 'end' : undefined,
+        focus: true,
+        receipt,
+        target: selectionPreference === 'end' ? 'end' : undefined,
+      });
     },
-    [
-      editor,
-      getLastSelectionForRoot,
-      getMountedViewEditor,
-      root,
-      scheduleInteractionFrame,
-      selection,
-    ]
+    [editor, getMountedViewEditor, root, selection]
   );
 
   const applyInteractionAction = useCallback(
@@ -1362,6 +1300,7 @@ export const useRootInteractionController = ({
       action: RootInteractionMouseUpAction,
       options: {
         placementDOMPoint?: PliteStringPlacementDOMPoint | null;
+        receipt?: number;
       } = {}
     ) => {
       if (action.type === 'ignore') {
@@ -1381,7 +1320,9 @@ export const useRootInteractionController = ({
             dispatchCommand(selectionEditor, editorCommands.select, {
               target: range,
             });
-            focusPliteEditableAfterEventFrame(selectionEditor);
+            focusPliteEditableAfterEventFrame(selectionEditor, {
+              receipt: getPlacementGeneration(selectionEditor),
+            });
           }
           return;
         }
@@ -1423,7 +1364,9 @@ export const useRootInteractionController = ({
           options.placementDOMPoint ?? null
         );
         dispatchCommand(focusEditor, editorCommands.select, { target: range });
-        focusPliteEditableAfterEventFrame(focusEditor);
+        focusPliteEditableAfterEventFrame(focusEditor, {
+          receipt: getPlacementGeneration(focusEditor),
+        });
         selectionBridge?.syncDOMSelectionToEditor();
         scheduleInteractionFrame('root-interaction-selection-sync', () => {
           selectionBridge?.syncDOMSelectionToEditor();
@@ -1433,7 +1376,7 @@ export const useRootInteractionController = ({
 
       focusRoot({
         fallbackSelection: action.fallbackSelection,
-        forceSelection: action.selection === 'restore',
+        receipt: options.receipt,
         selection: action.selection,
       });
     },
@@ -1783,6 +1726,8 @@ export const useRootInteractionController = ({
           return;
         }
 
+        const receipt = getPlacementGeneration(focusEditor);
+
         scheduleInteractionFrame(
           'root-interaction-mouse-down',
           () => {
@@ -1791,7 +1736,8 @@ export const useRootInteractionController = ({
                 eventRange: null,
                 pendingAction: action,
                 selection,
-              })
+              }),
+              { receipt }
             );
           },
           { phase: 'model', target: event.currentTarget }
@@ -1989,6 +1935,12 @@ export const useRootInteractionController = ({
               ) {
                 return;
               }
+
+              const claims = findMountedEditableDOMRuntime(
+                expandedDOMSelection.anchor[0]
+              )?.selectionClaims;
+
+              if (claims && !claims.mayRedraw(expandedDOMSelection)) return;
 
               if (
                 !hasExpandedDOMSelectionInTarget(currentTarget) &&

@@ -13,15 +13,21 @@ export type CoreWork = {
   anchorScopes: number;
   /** Projected documents adopted as the schema's validated baseline. */
   baselines: number;
+  bookCopies: number;
   /** Change builders started on a projected document. */
   builders: number;
+  clampWrites: number;
+  collapsedBoundaryVisits: number;
   composedProjectionSections: number;
+  coverageQueries: number;
   /** Sequence slots copied, each node at its width. */
   copiedSlots: number;
   /** Incremental paths a collaboration binding refused for a fallback. */
   fallbacks: number;
   /** Nodes an index was built from, out of a whole array. */
   indexedNodes: number;
+  /** Bookmarks a step mapped. */
+  mappedBookmarks: number;
   /** Plugin update method calls that reached the dispatcher. */
   pluginDispatches: number;
   /** Candidate roots the orphan judge counted owners for. */
@@ -66,11 +72,16 @@ export const coreWork: CoreWork = {
   allocatedNodes: 0,
   anchorScopes: 0,
   baselines: 0,
+  bookCopies: 0,
   builders: 0,
+  clampWrites: 0,
+  collapsedBoundaryVisits: 0,
   composedProjectionSections: 0,
+  coverageQueries: 0,
   copiedSlots: 0,
   fallbacks: 0,
   indexedNodes: 0,
+  mappedBookmarks: 0,
   pluginDispatches: 0,
   ownedRootsJudged: 0,
   ownerIndexReads: 0,

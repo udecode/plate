@@ -1,6 +1,5 @@
 import {
   type EditorMarks,
-  type EditorUpdateTransaction,
   type Point,
   type Range,
   RangeApi,
@@ -8,12 +7,15 @@ import {
   SelectionApi,
   type TransactionSpec,
 } from '../..';
+import { getRootTransaction } from '../../core/plugin-dispatch';
 import {
   getActiveEditorTransaction,
   withUpdateTagContext,
 } from '../../core/public-state';
+import { holdsCaretAt } from '../../core/view-carets';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { domCommands } from '../../dom/internal';
+import { getViewPresentation } from '../../editor-runtime-view';
 import { getDefined } from '../../internal/get-defined';
 import {
   ReactEditor,
@@ -49,7 +51,6 @@ import {
 } from './mutation-block-editing';
 import { canUseCachedCollapsedTextInsert } from './mutation-full-block-editing';
 import { applyModelOwnedHistoryIntent } from './mutation-history';
-import { withProjectedMutationRoot } from './mutation-root-scope';
 import {
   type ProjectedSelectionTarget,
   resolveProjectedSelectionTarget,
@@ -64,12 +65,11 @@ import {
   move as editorMove,
   failInvariant,
   getEditorRuntimeOwner,
-  getEditorStateView,
   rebaseTransactionSpecWithoutChanges,
   type Editor as RuntimeEditor,
   toInternalRoot,
+  withEditorUpdateRootScope,
 } from './runtime-editor-api';
-import { writeRuntimeSelection } from './runtime-mutation-state';
 import {
   readRuntimeSelection,
   readRuntimeSelectionRange,
@@ -180,46 +180,72 @@ const clonePoint = (point: Point): Point => ({
   path: [...point.path],
 });
 
+const projectedRootTransaction = (editor: RuntimeEditor, root: Point['root']) =>
+  getRootTransaction(
+    getEditorRuntimeOwner(editor),
+    toInternalRoot(root),
+    getViewPresentation(editor)
+  );
+
+const rootOfRange = (range: Range) => range.anchor.root ?? range.focus.root;
+
 const deleteProjectedRanges = (
-  editor: RuntimeEditor,
   ranges: readonly Range[],
   deleteRange: (range: Range) => void
 ) => {
   for (const range of [...ranges].reverse()) {
-    if (RangeApi.isCollapsed(range)) continue;
-
-    withProjectedMutationRoot(
-      editor,
-      range.anchor.root ?? range.focus.root,
-      () => deleteRange(range)
-    );
+    if (!RangeApi.isCollapsed(range)) deleteRange(range);
   }
+};
+
+const applyInProjectedRoot = (
+  editor: RuntimeEditor,
+  root: Point['root'],
+  evaluate: (
+    tx: ReturnType<typeof projectedRootTransaction>
+  ) => false | TransactionSpec | undefined
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  return withEditorUpdateRootScope(owner, toInternalRoot(root), () => {
+    const result = evaluate(projectedRootTransaction(editor, root));
+
+    if (result) applyTransactionSpec(owner, result);
+
+    return result;
+  });
+};
+
+const deleteFragmentIn = (editor: RuntimeEditor) => (range: Range) => {
+  projectedRootTransaction(editor, rootOfRange(range)).command(
+    editorCommands.deleteFragment,
+    { at: range, direction: 'forward' }
+  );
 };
 
 const deleteProjectedRangesToStart = (
   editor: RuntimeEditor,
-  tx: Pick<EditorUpdateTransaction, 'anchor' | 'selection'>,
   target: ProjectedSelectionTarget,
   deleteRange: (range: Range) => void
 ) => {
   // A main-document start has no root, so the view's own root would claim it.
-  withProjectedMutationRoot(editor, target.start.root, () => {
-    tx.selection.set({ anchor: target.start, focus: target.start });
+  const tx = projectedRootTransaction(editor, target.start.root);
 
-    const firstDeleteOwnsCaret = !RangeApi.isCollapsed(target.ranges[0]);
-    const startThroughDeletes = firstDeleteOwnsCaret
-      ? null
-      : tx.anchor(target.start, {
-          association: 'backward',
-          deletion: 'nearest',
-        });
+  tx.selection.set({ anchor: target.start, focus: target.start });
 
-    deleteProjectedRanges(editor, target.ranges, deleteRange);
+  const firstDeleteOwnsCaret = !RangeApi.isCollapsed(target.ranges[0]);
+  const startThroughDeletes = firstDeleteOwnsCaret
+    ? null
+    : tx.anchor(target.start, {
+        association: 'backward',
+        deletion: 'nearest',
+      });
 
-    const caret = startThroughDeletes?.resolve();
+  deleteProjectedRanges(target.ranges, deleteRange);
 
-    if (caret) tx.selection.set({ anchor: caret, focus: caret });
-  });
+  const caret = startThroughDeletes?.resolve();
+
+  if (caret) tx.selection.set({ anchor: caret, focus: caret });
 };
 
 const applyProjectedViewSelectionTextCommand = ({
@@ -236,8 +262,6 @@ const applyProjectedViewSelectionTextCommand = ({
   if (!viewSelection || isPliteViewSelectionCollapsed(viewSelection)) {
     return false;
   }
-
-  const runtimeEditor = getEditorRuntimeOwner(editor);
 
   const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
 
@@ -256,17 +280,13 @@ const applyProjectedViewSelectionTextCommand = ({
     // The view wrapper would pin implicit commands to its mounted root.
     const tx = getDefined(getActiveEditorTransaction(editor));
     if (nativeInput) tx.annotations.set(nativeGroupingInput, nativeInput);
-    deleteProjectedRangesToStart(runtimeEditor, tx, target, (range) => {
-      tx.command(editorCommands.deleteFragment, {
-        at: range,
-        direction: 'forward',
-      });
-    });
+    deleteProjectedRangesToStart(editor, target, deleteFragmentIn(editor));
 
     if (text) {
-      withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
-        tx.command(editorCommands.insertText, { text });
-      });
+      projectedRootTransaction(editor, target.start.root).command(
+        editorCommands.insertText,
+        { text }
+      );
     }
     applied = true;
   });
@@ -307,34 +327,33 @@ const applyProjectedViewSelectionDataCommand = ({
   const { target } = resolution;
 
   const { combined, insertion, prefix } = editor.read((state) => {
-    // The view's builder would pin the start to its mounted root.
-    const deletion = runtimeEditor.read((owner) =>
-      owner.transaction((tx) => {
-        deleteProjectedRangesToStart(runtimeEditor, tx, target, (range) => {
-          const { result } = evaluateCommandWithState(
-            editor,
-            editorCommands.deleteFragment,
-            getEditorStateView(runtimeEditor),
-            { at: range, direction: 'forward' }
-          );
-          if (result) applyTransactionSpec(runtimeEditor, result);
-        });
-      })
-    );
+    const deletion = state.transaction(() => {
+      deleteProjectedRangesToStart(editor, target, (range) => {
+        applyInProjectedRoot(
+          editor,
+          rootOfRange(range),
+          (tx) =>
+            evaluateCommandWithState(
+              editor,
+              editorCommands.deleteFragment,
+              tx,
+              {
+                at: range,
+                direction: 'forward',
+              }
+            ).result
+        );
+      });
+    });
     const evaluation: { result?: false | TransactionSpec } = {};
     const pasted = state.transaction.extend(deletion, () => {
-      withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
-        evaluation.result = evaluateCommandWithState(
-          editor,
-          domCommands.insertData,
-          getEditorStateView(runtimeEditor),
-          data
-        ).result;
-
-        if (evaluation.result) {
-          applyTransactionSpec(runtimeEditor, evaluation.result);
-        }
-      });
+      evaluation.result = applyInProjectedRoot(
+        editor,
+        target.start.root,
+        (tx) =>
+          evaluateCommandWithState(editor, domCommands.insertData, tx, data)
+            .result
+      );
     });
 
     return { combined: pasted, insertion: evaluation.result, prefix: deletion };
@@ -382,7 +401,6 @@ const applyProjectedViewSelectionLineBreakCommand = ({
     return false;
   }
 
-  const runtimeEditor = getEditorRuntimeOwner(editor);
   const resolution = resolveProjectedSelectionTarget(editor, viewSelection);
 
   if (resolution.kind === 'ambiguous') {
@@ -398,12 +416,7 @@ const applyProjectedViewSelectionLineBreakCommand = ({
 
   editor.update(() => {
     const tx = getDefined(getActiveEditorTransaction(editor));
-    deleteProjectedRanges(runtimeEditor, target.ranges, (range) => {
-      tx.command(editorCommands.deleteFragment, {
-        at: range,
-        direction: 'forward',
-      });
-    });
+    deleteProjectedRanges(target.ranges, deleteFragmentIn(editor));
 
     tx.selection.set({
       anchor: target.start,
@@ -411,37 +424,36 @@ const applyProjectedViewSelectionLineBreakCommand = ({
     });
     applied = true;
 
-    withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
-      if (kind !== 'open-line') {
-        if (kind === 'paragraph') {
-          tx.command(editorCommands.insertBreak);
-          return;
-        }
+    const routed = projectedRootTransaction(editor, target.start.root);
 
-        tx.command(editorCommands.insertSoftBreak);
-        return;
-      }
+    if (kind !== 'open-line') {
+      routed.command(
+        kind === 'paragraph'
+          ? editorCommands.insertBreak
+          : editorCommands.insertSoftBreak
+      );
+      return;
+    }
 
-      const blockEntry = tx.nodes.block({
-        at: target.start,
-      });
+    const blockEntry = routed.nodes.block({
+      at: target.start,
+    });
 
-      if (!blockEntry) {
-        tx.command(editorCommands.insertBreak);
-        return;
-      }
+    if (!blockEntry) {
+      routed.command(editorCommands.insertBreak);
+      return;
+    }
 
-      const [, blockPath] = blockEntry;
-      const insertionPoint = { path: blockPath.concat(0), offset: 0 };
+    const [, blockPath] = blockEntry;
+    const insertionPoint = { path: blockPath.concat(0), offset: 0 };
 
-      tx.command(editorCommands.insertNodes, {
-        nodes: createDefaultParagraph(),
-        options: { at: blockPath },
-      });
-      tx.selection.set({
-        anchor: insertionPoint,
-        focus: insertionPoint,
-      });
+    routed.command(editorCommands.insertNodes, {
+      nodes: createDefaultParagraph(),
+      options: { at: blockPath },
+    });
+    routed.selection.set({
+      anchor: insertionPoint,
+      focus: insertionPoint,
     });
   });
   if (!applied) return true;
@@ -878,6 +890,10 @@ export const applyModelOwnedTextInput = ({
             marks !== undefined ||
             RangeApi.isCollapsed(target)
           ) {
+            // Writing the caret the view already holds would count as a
+            // placement on every keystroke.
+            const held = holdsCaretAt(editor, target);
+
             editor.update(
               mergeHistory ? { tags: ['composition'] } : {},
               (tx) => {
@@ -886,7 +902,7 @@ export const applyModelOwnedTextInput = ({
                 }
                 const collapsed = RangeApi.isCollapsed(target);
                 if (collapsed) {
-                  tx.selection.set(target);
+                  if (!held) tx.selection.set(target);
                   if (marks !== undefined) tx.marks.set(marks);
                   // A composition writes where the browser composed it. The
                   // insert-text command would move it where a typed letter
@@ -1134,12 +1150,6 @@ export const applyEditableRepairRequest = ({
         const syncProgrammaticDOMSelection = () => {
           if (!isEditableModelSelectionPreferred(inputController)) {
             return;
-          }
-
-          const selection = readRuntimeSelection(editor);
-
-          if (selection) {
-            writeRuntimeSelection(editor, selection);
           }
 
           markProgrammaticSelectionUpdate();

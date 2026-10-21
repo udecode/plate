@@ -936,8 +936,8 @@
         "./details": {
           "exclude": [
             "BaseDetailsPlugin",
-            "BaseDetailsPluginState",
             "BaseDetailsSummaryPlugin",
+            "BaseDetailsViewState",
             "DetailsElement",
             "DetailsSummaryElement"
           ],

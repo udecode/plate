@@ -1,102 +1,256 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import { afterAll, describe, expect, it, mock } from 'bun:test';
 
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import * as React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-const setOpen = mock();
-const useEditorMock = mock();
-const usePluginStoreMock = mock();
-const buttonUi = await import('@/components/ui/button');
-const utils = await import('@/lib/utils');
 const plateReact = await import('platejs/react');
+const { useViewStore } = plateReact;
+const ViewName = React.createContext('');
+const viewStoreCalls = mock((_view: string, _call: 'render' | 'select') => {});
+
+const useCountedViewStore: typeof useViewStore = (plugin, selector) => {
+  const view = React.useContext(ViewName);
+
+  viewStoreCalls(view, 'render');
+
+  return useViewStore(plugin, (state) => {
+    viewStoreCalls(view, 'select');
+
+    return selector(state);
+  });
+};
 
 mock.module('platejs/react', () => ({
   ...plateReact,
-  EditorElement: ({ children }: React.PropsWithChildren) => (
-    <div>{children}</div>
-  ),
-  useEditor: () => useEditorMock(),
-  usePluginStore: () => usePluginStoreMock(),
+  useViewStore: useCountedViewStore,
 }));
 
-mock.module('@/components/ui/button', () => ({
-  ...buttonUi,
-  Button: ({
-    children,
-    size: _,
-    variant: __,
-    ...props
-  }: React.ComponentProps<'button'> & { size?: string; variant?: string }) => (
-    <button type="button" {...props}>
-      {children}
-    </button>
-  ),
-}));
+const {
+  createEditor,
+  EditorContent,
+  EditorRoot,
+  useRootChrome,
+  useRootEditor,
+} = plateReact;
+const { DetailsKit } = await import('./details');
 
-mock.module('@/lib/utils', () => ({
-  ...utils,
-  cn: (...values: Array<string | false | null | undefined>) =>
-    values.filter(Boolean).join(' '),
-}));
+type RootView = ReturnType<typeof useRootEditor>;
 
-describe('Details registry components', () => {
-  beforeEach(() => {
-    setOpen.mockReset();
-    useEditorMock.mockReset();
-    useEditorMock.mockReturnValue({
-      plugin: () => ({ api: { setOpen } }),
-      key: () => 'details-key',
-    });
-    usePluginStoreMock.mockReset();
-    usePluginStoreMock.mockReturnValue(new Set());
+const wait = (ms = 50) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
   });
 
+const createDetailsEditor = () =>
+  createEditor({
+    plugins: DetailsKit,
+    initialValue: [
+      {
+        children: [
+          { children: [{ text: 'First' }], type: 'summary' },
+          { children: [{ text: 'First body' }], type: 'paragraph' },
+        ],
+        type: 'details',
+      },
+      {
+        children: [
+          { children: [{ text: 'Second' }], type: 'summary' },
+          { children: [{ text: 'Second body' }], type: 'paragraph' },
+        ],
+        type: 'details',
+      },
+      { children: [{ text: 'After' }], type: 'paragraph' },
+    ],
+  });
+
+const View = ({
+  name,
+  register,
+}: {
+  name: string;
+  register: Map<string, RootView>;
+}) => {
+  const chrome = useRootChrome();
+  register.set(name, useRootEditor());
+
+  return (
+    <ViewName.Provider value={name}>
+      <section {...chrome.props} aria-label={`${name} view`}>
+        <span>{name} chrome</span>
+        <EditorContent aria-label={`${name} content`} />
+      </section>
+    </ViewName.Provider>
+  );
+};
+
+const renderViews = ({ readOnlyB = false } = {}) => {
+  const editor = createDetailsEditor();
+  const views = new Map<string, RootView>();
+
+  render(
+    <>
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <View name="A" register={views} />
+      </EditorRoot>
+      <EditorRoot editor={editor} readOnly={readOnlyB} suppressInstanceWarning>
+        <View name="B" register={views} />
+      </EditorRoot>
+    </>
+  );
+
+  return { a: views.get('A')!, b: views.get('B')! };
+};
+
+const firstToggle = (name: string) =>
+  within(screen.getByRole('region', { name: `${name} view` })).getAllByRole(
+    'button',
+    { name: /details$/ }
+  )[0];
+
+const toggleFirst = async (name: string) => {
+  await act(async () => {
+    fireEvent.click(firstToggle(name));
+  });
+};
+
+const caret = (view: RootView) =>
+  view.read((state) => {
+    const selection = state.selection();
+
+    return selection
+      ? [...selection.anchor.path, selection.anchor.offset].join('.')
+      : null;
+  });
+
+const place = async (view: RootView, path: number[], offset: number) => {
+  await act(async () => {
+    view.update((tx) => tx.selection.set({ offset, path }));
+  });
+};
+
+const pressChrome = async (name: string) => {
+  await act(async () => {
+    fireEvent.mouseDown(screen.getByText(`${name} chrome`));
+    await wait();
+  });
+};
+
+const clickText = async (name: string, text: string, offset: number) => {
+  const content = screen.getByLabelText(`${name} content`);
+  const target = within(content).getByText(text);
+  const node = target.firstChild as Text;
+
+  await act(async () => {
+    fireEvent.mouseDown(target);
+    content.focus();
+    document.getSelection()!.setBaseAndExtent(node, offset, node, offset);
+    document.dispatchEvent(new Event('selectionchange'));
+    await wait(100);
+    fireEvent.mouseUp(target);
+    await wait();
+  });
+};
+
+/** happy-dom keeps a range on a removed node, where a browser would move it. */
+const nativeAnchorText = () => {
+  const anchor = document.getSelection()?.anchorNode;
+
+  return anchor?.isConnected ? anchor.textContent : null;
+};
+
+describe('Details registry components', () => {
   afterAll(() => {
     mock.restore();
   });
 
-  it('owns the collapsed body through a content boundary', async () => {
-    const contentBoundary = mock((_options: unknown) => (
-      <p data-testid="details-body">Body</p>
-    ));
-    const children = mock((_options: unknown) => <summary>Summary</summary>);
-    const { DetailsElement } = await import(
-      `./details?boundary=${Math.random().toString(36).slice(2)}`
-    );
-    const view = render(
-      <DetailsElement
-        element={{
-          children: [
-            { children: [{ text: 'Summary' }], type: 'summary' },
-            { children: [{ text: 'Body' }], type: 'paragraph' },
-          ],
-          type: 'details',
-        }}
-        slots={{ children, contentBoundary } as any}
-      />
-    );
+  it("collapses a section only in the view that toggled it, re-rendering only that view's block (R22)", async () => {
+    renderViews();
+    await toggleFirst('A');
+    await toggleFirst('B');
+    viewStoreCalls.mockClear();
 
-    expect(children).toHaveBeenCalledWith({ from: 0, to: 0 });
-    expect(contentBoundary).toHaveBeenCalledWith({
-      copyPolicy: 'model',
-      mounted: false,
-      onMaterialize: expect.any(Function),
-      reason: 'app-collapse',
-      renderPlaceholder: expect.any(Function),
-      scope: { from: 1, to: 1, type: 'children' },
-      selectionPolicy: 'skip',
+    await toggleFirst('A');
+    const count = (view: string, call: 'render' | 'select') =>
+      viewStoreCalls.mock.calls.filter(
+        ([callView, callKind]) => callView === view && callKind === call
+      ).length;
+
+    expect({
+      aExpanded: firstToggle('A').getAttribute('aria-expanded'),
+      aRenders: count('A', 'render'),
+      bExpanded: firstToggle('B').getAttribute('aria-expanded'),
+      bRenders: count('B', 'render'),
+      bSelects: count('B', 'select'),
+    }).toEqual({
+      aExpanded: 'false',
+      aRenders: 1,
+      bExpanded: 'true',
+      bRenders: 0,
+      bSelects: 0,
     });
+  });
 
-    fireEvent.click(view.getByRole('button', { name: 'Expand details' }));
-    expect(setOpen).toHaveBeenCalledWith('details-key', true);
+  it("restores a view's resting caret out of a section that view collapsed (R23)", async () => {
+    const { a, b } = renderViews();
 
-    const boundaryOptions = contentBoundary.mock.calls[0][0] as {
-      onMaterialize: () => void;
-    };
+    await toggleFirst('A');
+    await place(a, [0, 1, 0], 3);
+    await place(b, [2, 0], 2);
+    await toggleFirst('A');
+    await pressChrome('A');
 
-    boundaryOptions.onMaterialize();
-    expect(setOpen).toHaveBeenLastCalledWith('details-key', true);
+    expect({
+      caret: caret(a),
+      native: nativeAnchorText(),
+      nativeInA: screen
+        .getByLabelText('A content')
+        .contains(document.getSelection()?.anchorNode ?? null),
+    }).toEqual({ caret: '0.0.0.5', native: 'First', nativeInA: true });
+  });
+
+  it('keeps the selection of a read-only view that closes the section holding its caret (R25)', async () => {
+    const { b } = renderViews({ readOnlyB: true });
+
+    await toggleFirst('B');
+    await clickText('B', 'First body', 3);
+    const clicked = caret(b);
+
+    await toggleFirst('B');
+
+    expect({
+      caret: caret(b),
+      clicked,
+      native: nativeAnchorText(),
+    }).toEqual({ caret: '0.1.0.3', clicked: '0.1.0.3', native: null });
+  });
+
+  it("keeps a read-only view's selection when a writable view closes that section (R25)", async () => {
+    const { b } = renderViews({ readOnlyB: true });
+
+    await toggleFirst('A');
+    await toggleFirst('B');
+    await clickText('B', 'First body', 3);
+    await toggleFirst('A');
+
+    expect({
+      caret: caret(b),
+      native: nativeAnchorText(),
+    }).toEqual({ caret: '0.1.0.3', native: 'First body' });
+  });
+
+  it("keeps a writable view's caret in a section another view closes", async () => {
+    const { b } = renderViews();
+
+    await toggleFirst('A');
+    await toggleFirst('B');
+    await clickText('B', 'First body', 3);
+    await toggleFirst('A');
+
+    expect({
+      caret: caret(b),
+      native: nativeAnchorText(),
+    }).toEqual({ caret: '0.1.0.3', native: 'First body' });
   });
 
   it('renders native Details and Summary tags without browser state', async () => {

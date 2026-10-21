@@ -5,9 +5,9 @@ description: Plate 插件的 API 参考文档。
 
 Plate 插件是传入 `createEditor` 或 `useCreateEditor` 的 `plugins` 数组的描述符。
 已安装插件的 API 会按插件名称推断到 `editor.api`。将描述符传给
-`editor.plugin(MyPlugin)`，即可访问精确的 API、read、update 命令、schema 标识
-和编辑器内状态。React 组件通过 `useEditor().plugin(MyPlugin)` 获取 portal，
-通过 `usePluginStore` 订阅状态。
+`editor.plugin(MyPlugin)`，即可访问精确的 API、read、update 命令、schema 标识、
+编辑器内状态和按视图保存的状态。React 组件通过 `useEditor().plugin(MyPlugin)`
+获取 portal，通过 `usePluginStore` 订阅状态，通过 `useViewStore` 订阅视图状态。
 
 ## 编写插件的上下文
 
@@ -70,7 +70,8 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
   普通 Plate plugin context 的对象；不要使用 positional `editor, context`
   参数。互相独立的方法放进 constructor；只有方法需要前一阶段类型或正在适配
   import/prebuilt descriptor 时才使用 `.extend({api})`。真正面向整个
-  编辑器的能力也使用根级 `api` 字段；Plate 会按插件 name 投影它。
+  编辑器的能力也使用根级 `api` 字段；Plate 会按插件 name 投影它。Factory
+  还会接收 `viewStore`，即该插件在构建此 API 的视图中的状态。
 </APIItem>
 
 <APIItem
@@ -104,6 +105,21 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 依赖已解析 plugin context 时使用 callback 形式。应用用户通过一次最终
 `.configure({ initialState: { ... } })` 覆盖初始值。运行时代码通过
 `editor.plugin(MyPlugin).store` 读取和更新已安装的 store。
+</APIItem>
+
+<APIItem name="initialViewState" type="() => InferPluginViewState<D>">
+为一个视图创建该插件的状态。Plate 为编辑器的每个视图保存一份，并为基础编辑器
+单独保存一份。属于某个视图显示内容的状态，例如哪些区块已折叠，放在这里；所有
+视图共享的状态仍放在 `initialState`。`api` factory 和插件 portal 通过
+`viewStore` 读写它，`.extend` callback 通过 `viewStoreOf(state)` 和
+`viewStoreOf(tx)` 读写它，React 组件通过 `useViewStore` 订阅它。参见
+[视图状态](/docs/plugin-context#view-state)。
+
+```ts
+initialViewState: (): BaseDetailsViewState => ({
+  openKeys: new Set(),
+}),
+```
 </APIItem>
 
 <APIItem name="component" type="NodeComponent | keyof HTMLElementTagNameMap" optional>
@@ -654,6 +670,15 @@ rule 或非空有序 tuple。Whole-payload MIME 处理属于 `dataTransferFormat
       读取、更新和订阅当前插件的 editor-local state。命名 selector 是该 state
       的纯函数。
     </APIItem>
+    <APIItem name="viewStore" type="PluginViewStore<D>">
+      读取、更新和订阅当前插件在一个视图中的状态。`api` factory 和插件 portal
+      会接收它，并绑定到构建它们的视图。
+    </APIItem>
+    <APIItem name="viewStoreOf" type="PluginViewStoreOf<D>">
+      返回当前插件在 read state 或事务所在视图中的状态：传入 read `state` 时返回
+      reader，传入 `tx` 时返回 writer。`.extend` callback 接收它而不是
+      `viewStore`，因为一个插件定义服务所有视图。它不接受编辑器。
+    </APIItem>
   </APIAttributes>
 </API>
 
@@ -673,8 +698,8 @@ state，以及本次 operation 的 registry、schema、model 与 diagnostic cont
   <APIAttributes>
     <APIItem name="D" type="BasePluginDefinition">
       表示插件契约，包括
-      `name`、`initialState`、`api`、`read`、`update`、selectors、dependencies
-      和 schema 推断。
+      `name`、`initialState`、`initialViewState`、`api`、`read`、`update`、
+      selectors、dependencies 和 schema 推断。
     </APIItem>
   </APIAttributes>
 </API>

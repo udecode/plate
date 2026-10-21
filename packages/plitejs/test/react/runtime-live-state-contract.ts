@@ -5,16 +5,14 @@ import {
   TextApi,
 } from 'plitejs';
 
+import { setSelectionAsView } from '../../src/core/view-carets';
 import {
   readRuntimeNode,
   readNodeByKey,
   readRuntimeText,
   readTextByKey,
 } from '../../src/react/editable/runtime-live-state';
-import {
-  writeRuntimeMarks,
-  writeRuntimeSelection,
-} from '../../src/react/editable/runtime-mutation-state';
+import { writeRuntimeMarks } from '../../src/react/editable/runtime-mutation-state';
 import { readRuntimeSelection } from '../../src/react/editable/runtime-selection-state';
 import {
   getSnapshot as editorGetSnapshot,
@@ -118,7 +116,7 @@ describe('plite-react runtime live state facade', () => {
     });
 
     try {
-      writeRuntimeSelection(editor, selection);
+      setSelectionAsView(editor, selection);
       expect(readRuntimeSelection(editor)).toEqual(selection);
       expect(commitCount).toBe(1);
       expect(lastCommit?.selectionChanged).toBe(true);
@@ -131,7 +129,7 @@ describe('plite-react runtime live state facade', () => {
       };
 
       editor.update(() => {
-        writeRuntimeSelection(editor, joinedSelection);
+        setSelectionAsView(editor, joinedSelection);
         expect(commitCount).toBe(1);
       });
 

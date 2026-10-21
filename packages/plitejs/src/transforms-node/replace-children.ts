@@ -5,6 +5,7 @@ import {
   getEditorUpdateRoot,
   getLiveSelection,
 } from '../core/public-state';
+import { withoutPlacement } from '../core/view-carets';
 import {
   type Descendant,
   ElementApi,
@@ -162,24 +163,28 @@ export const replaceChildren = <
   const selectionAfter =
     newSelection === undefined ? retainedSelection : newSelection;
 
-  applyBuiltDocumentChange(
-    editor,
-    (builder, root) =>
-      builder.replaceChildren(root, at, index, replacedChildren.length, [
-        ...children,
-      ] as Descendant[]),
-    {
-      nodeKeyTransfers: preserveKeys
-        ? children
-            .slice(0, replacedChildren.length)
-            .map((_child, childIndex) => ({
-              path: [...at, index + childIndex],
-              source: replacedChildren[childIndex],
-            }))
-        : undefined,
-      ...(selectionAfter === undefined
-        ? {}
-        : { selection: { root: updateRoot, value: selectionAfter } }),
-    }
-  );
+  const apply = () =>
+    applyBuiltDocumentChange(
+      editor,
+      (builder, root) =>
+        builder.replaceChildren(root, at, index, replacedChildren.length, [
+          ...children,
+        ] as Descendant[]),
+      {
+        nodeKeyTransfers: preserveKeys
+          ? children
+              .slice(0, replacedChildren.length)
+              .map((_child, childIndex) => ({
+                path: [...at, index + childIndex],
+                source: replacedChildren[childIndex],
+              }))
+          : undefined,
+        ...(selectionAfter === undefined
+          ? {}
+          : { selection: { root: updateRoot, value: selectionAfter } }),
+      }
+    );
+
+  if (newSelection === undefined) withoutPlacement(editor, apply);
+  else apply();
 };

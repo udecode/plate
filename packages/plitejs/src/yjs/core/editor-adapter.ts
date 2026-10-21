@@ -2,6 +2,7 @@ import { valueRootNodes } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import { runTrustedUpdate } from '../../core/public-state';
+import { withoutPlacement } from '../../core/view-carets';
 import type {
   Descendant,
   DocumentChange,
@@ -151,7 +152,7 @@ export const createYjsEditorAdapter = (
             tx.changes.apply(change);
           }
           if (selection !== undefined) {
-            tx.selection.set(nextSelection);
+            withoutPlacement(editor, () => tx.selection.set(nextSelection));
           }
 
           for (const pending of effects) {

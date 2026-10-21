@@ -32,12 +32,15 @@ import {
   SelectionApi,
   TextApi,
   type Value,
-  createEditorView,
   defineEffect,
   editorCommands,
   HistoryPlugin,
 } from '../../core';
-import { canPlaceBlocksAtPath, placeElementAt } from '../../facade';
+import {
+  canPlaceBlocksAtPath,
+  placeElementAt,
+  projectEditorView,
+} from '../../facade';
 import { isListItem } from '../../features/list/lib/listIndex.internal';
 import {
   BaseTableCellPlugin,
@@ -246,7 +249,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const root = current
       ? SelectionApi.root(current)
       : commandEditor.read.view.root();
-    const captureEditor = createEditorView(commandEditor, root ? { root } : {});
+    const captureEditor = projectEditorView(
+      commandEditor,
+      root ? { root } : {}
+    );
     const selection =
       current && !isNodeSelecting
         ? captureEditor.read((state) => captureTextRange(state, current))
@@ -354,7 +360,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     if (!target) return null;
 
-    return createEditorView(
+    return projectEditorView(
       commandEditor,
       target.root ? { root: target.root } : {}
     ) as AIActionEditor;
@@ -561,7 +567,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
     if (cells.length === 0) return '';
     const root = state.view.root() ?? SelectionApi.root(state.selection());
-    const tableView = root ? createEditorView(editor, { root }) : null;
+    const tableView = root ? projectEditorView(editor, { root }) : null;
     const tableNodes = tableView?.read.nodes ?? state.nodes;
     const tableKey = (path: Path) =>
       tableView ? tableView.key(path) : state.key(path);
@@ -659,7 +665,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const root = current
       ? SelectionApi.root(current)
       : commandEditor.read.view.root();
-    const requestEditor = createEditorView(commandEditor, root ? { root } : {});
+    const requestEditor = projectEditorView(
+      commandEditor,
+      root ? { root } : {}
+    );
     const requestAt = at
       ? {
           ...at,

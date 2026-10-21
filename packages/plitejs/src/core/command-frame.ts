@@ -60,6 +60,8 @@ import {
   retainTransactionSnapshotIndex,
   getTransactionSpecContext,
   type RecordedDraft,
+  recordedCarets,
+  recorderBookmarks,
   resolveNodeTargetLocation,
   runEditorDocumentRecorder,
   type TransactionSpecContext,
@@ -70,6 +72,12 @@ import { changedRootsOf } from './root-ownership';
 import { mapSelectionThroughChange } from './selection-protocol';
 import { mapSnapshotIndexThroughChange } from './snapshot-index';
 import { mapEffect } from './transaction-values';
+import {
+  type CarriedCarets,
+  carryCarets,
+  getPlacementGeneration,
+  mapBookThroughStep,
+} from './view-carets';
 import { countCoreWork } from './work';
 
 /**
@@ -81,9 +89,14 @@ import { countCoreWork } from './work';
  */
 export const COMMAND_FRAMES = new WeakSet<Editor>();
 
+type FramedOn = Readonly<{
+  children: readonly Descendant[];
+  generation: number;
+}>;
+
 export const FRAMED_SPECS = new WeakMap<
   TransactionSpec,
-  Readonly<{ framedOn: readonly Descendant[]; ignoresSelection: boolean }>
+  Readonly<{ framedOn: FramedOn; ignoresSelection: boolean }>
 >();
 
 /**
@@ -107,7 +120,10 @@ export const evaluateInEditorCommandFrame = <
   if (!probed) return null;
   if (probed.value.result !== false) {
     FRAMED_SPECS.set(probed.value.result, {
-      framedOn: probed.stored.children,
+      framedOn: {
+        children: probed.stored.children,
+        generation: getPlacementGeneration(editor),
+      },
       ignoresSelection: probed.located,
     });
   }
@@ -189,7 +205,8 @@ export const probeInEditorCommandFrame = <T>(
           : getDefined(published.get(rootName)).index,
       storedSelection,
       selectionRoot,
-      selection
+      selection,
+      placed.bookCaret
     );
     snapshot.implicitTarget = null;
     snapshot.implicitTargetResolved = false;
@@ -335,7 +352,8 @@ const enterFrameDraft = (
   storedIndex: (root: string) => SnapshotIndex,
   storedSelection: Selection,
   storedSelectionRoot: string,
-  selection: Selection
+  selection: Selection,
+  bookCaret: (selection: Selection, root: string) => Selection
 ) => {
   const { snapshot } = frame;
 
@@ -362,7 +380,26 @@ const enterFrameDraft = (
   snapshot.builder = createEditorDocumentChangeBuilder(editor, projected.value);
   countCoreWork('builders');
   snapshot.activeChange = { change: snapshot.builder.change };
-  frame.selection = selection;
+  const { book } = frame.caret;
+
+  frame.caret = {
+    ...frame.caret,
+    book:
+      book.nodes.size === 0
+        ? book
+        : mapBookThroughStep(book, {
+            before: (root) => valueRootIndex(stored, root),
+            deletedRoots: [],
+            keys: (root) => ({
+              after: retainTransactionSnapshotIndex(editor, snapshot, root),
+              before: storedIndex(root),
+            }),
+            map: bookCaret,
+            roots: getInternalDocumentChangeEntries(projected.map.change()),
+          }),
+    selection,
+  };
+  frame.baseCaret = frame.caret;
   snapshot.selection = selection;
   const selectedRoot =
     storedSelection &&
@@ -379,6 +416,7 @@ const enterFrameDraft = (
 };
 
 type Refuse = (reason: 'crosses' | 'unaligned') => void;
+const keepWhereHeld: Refuse = () => {};
 
 /**
  * Where stored locations land in a frame. A point first lands where a text
@@ -672,10 +710,14 @@ const createFramePlace = (
   }
 
   const place: EditorCommandPlace = Object.freeze({ location });
-  const placeSelection = (selection: Selection, onRefuse: Refuse) => {
-    if (selection?.kind !== 'text') return map(selection, selectionRoot);
+  const placeSelection = (
+    selection: Selection,
+    root: string,
+    onRefuse: Refuse
+  ): Selection => {
+    if (selection?.kind !== 'text') return map(selection, root);
 
-    const placed = span(selection, selectionRoot, onRefuse);
+    const placed = span(selection, root, onRefuse);
 
     return placed && { ...selection, ...placed };
   };
@@ -686,7 +728,7 @@ const createFramePlace = (
      * keeps where it would hold it, and refuses only a body that acts at it.
      */
     held: (selection: Selection): Selection =>
-      placeSelection(selection, (reason) => {
+      placeSelection(selection, selectionRoot, (reason) => {
         heldRefusal ??= reason;
       }),
     located: () => located,
@@ -699,7 +741,9 @@ const createFramePlace = (
       if (!located && heldRefusal) refuse(heldRefusal);
     },
     selection: (selection: Selection): Selection =>
-      placeSelection(selection, refuse),
+      placeSelection(selection, selectionRoot, refuse),
+    bookCaret: (selection: Selection, root: string): Selection =>
+      placeSelection(selection, root, keepWhereHeld),
   });
 };
 
@@ -786,7 +830,7 @@ export const runInEditorCommandFrame = (
     ignoresSelection = false,
     targetRoot,
   }: Readonly<{
-    framedOn?: readonly Descendant[];
+    framedOn?: FramedOn;
     /**
      * The body never acts at the selection, so one the frame cannot place
      * leaves it be, even though it places its locations as it runs.
@@ -811,7 +855,11 @@ export const runInEditorCommandFrame = (
 
   const stored = outer.snapshot.builder.value as EditorDocumentValue;
 
-  if (framedOn && stored.children !== framedOn) {
+  if (
+    framedOn &&
+    (stored.children !== framedOn.children ||
+      outer.caret.generation !== framedOn.generation)
+  ) {
     throw new Error('Cannot apply a stale framed spec.');
   }
   const projected = document.project(stored);
@@ -822,12 +870,12 @@ export const runInEditorCommandFrame = (
     editor,
     projected,
     stored,
-    outer.selectionRoot,
+    outer.caret.root,
     (reason) => {
       throw refusedIn(editor, reason);
     }
   );
-  const selection = placed.held(outer.selection);
+  const selection = placed.held(outer.caret.selection);
   const target = outer.snapshot.implicitTarget
     ? placed.held(outer.snapshot.implicitTarget)
     : null;
@@ -835,9 +883,12 @@ export const runInEditorCommandFrame = (
 
   if (!ignoresSelection) placed.refuseAtHeldSelection();
 
+  const storedIndex = (root: string) =>
+    retainTransactionSnapshotIndex(editor, outer.snapshot, root);
   const runFramed = () => {
     const frame = createTransactionSpecContext(editor);
     const { snapshot } = frame;
+    let carried: CarriedCarets | null = null;
     let recorded: RecordedDraft | null = null;
     let written: {
       change: DocumentChange;
@@ -852,17 +903,18 @@ export const runInEditorCommandFrame = (
         frame,
         stored,
         projected,
-        (root) => retainTransactionSnapshotIndex(editor, outer.snapshot, root),
-        outer.selection,
-        outer.selectionRoot,
-        selection
+        storedIndex,
+        outer.caret.selection,
+        outer.caret.root,
+        selection,
+        placed.bookCaret
       );
       if (snapshot.implicitTargetResolved) {
         snapshot.implicitTarget = target;
       } else {
         snapshot.implicitTargetFrame = {
           context: frame,
-          storedSelection: outer.selection,
+          storedSelection: outer.caret.selection,
           toFrame: placed.selection,
         };
       }
@@ -892,15 +944,33 @@ export const runInEditorCommandFrame = (
       );
 
       if (!wrote.empty || frame.selectionWritten) {
+        // A root the projection dropped is one the frame cannot write, so its
+        // bookmarks keep their stored places.
+        const inFrame = (root: string) => Object.hasOwn(snapshot.roots, root);
+        const changed = carryCarets(
+          editor,
+          outer.baseCaret,
+          frame.caret,
+          (root) =>
+            inFrame(root)
+              ? retainTransactionSnapshotIndex(editor, snapshot, root)
+              : storedIndex(root)
+        );
+        const framed = changed && {
+          ...changed,
+          moved: changed.moved.filter(({ root }) => inFrame(root)),
+        };
+
         recorded = recorder({
           after: snapshot.builder.value as EditorDocumentValue,
           before: stored,
+          bookmarks: recorderBookmarks(framed),
           change: wrote,
           projection: projected,
-          selection: frame.selection,
-          selectionBefore: outer.selection,
-          selectionBeforeRoot: outer.selectionRoot,
-          selectionRoot: frame.selectionRoot,
+          selection: frame.caret.selection,
+          selectionBefore: outer.caret.selection,
+          selectionBeforeRoot: outer.caret.root,
+          selectionRoot: frame.caret.root,
           steps: snapshot.builder.draftSteps,
           tags: getActiveEditorUpdateTags(editor),
           update: outer.id,
@@ -908,10 +978,20 @@ export const runInEditorCommandFrame = (
         if (!recorded) {
           throw new Error('A command frame needs a recorder that records it.');
         }
+
+        const converted = recordedCarets(framed, recorded);
+
+        carried = converted && {
+          ...converted,
+          moved: [
+            ...converted.moved,
+            ...(changed?.moved.filter(({ root }) => !inFrame(root)) ?? []),
+          ],
+        };
         written = {
           change: wrote,
           frame: {
-            selection: frame.selection,
+            selection: frame.caret.selection,
             value: snapshot.builder.value as EditorDocumentValue,
           },
         };
@@ -951,7 +1031,8 @@ export const runInEditorCommandFrame = (
       disposeTransactionSpecContext(editor, frame);
     }
     if (!recorded) return true;
-    commitRecordedDraft(editor, outer, recorded, frame.selectionRoot, {
+    commitRecordedDraft(editor, outer, recorded, frame.caret.root, {
+      carried,
       storedToWritten,
     });
     outer.changed = true;
@@ -959,9 +1040,9 @@ export const runInEditorCommandFrame = (
       document.recorded?.({
         ...written,
         projection: projected,
-        root: frame.selectionRoot,
+        root: frame.caret.root,
         stored: {
-          selection: outer.selection,
+          selection: outer.caret.selection,
           value: outer.snapshot.builder.value as EditorDocumentValue,
         },
       });

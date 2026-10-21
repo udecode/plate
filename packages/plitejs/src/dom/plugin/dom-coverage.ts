@@ -6,10 +6,12 @@ import {
   type Path as ModelPath,
   type Range as ModelRange,
 } from '../..';
+import { countCoreWork } from '../../core/work';
 import {
   type AnyEditor as EditorType,
   after as editorAfter,
   before as editorBefore,
+  getNodeKey as editorGetNodeKey,
   getPathByNodeKey as editorGetPathByNodeKey,
   hasPath as editorHasPath,
   getSnapshot,
@@ -133,10 +135,22 @@ export type DOMCoverageMaterializeHandler = (
   options: DOMCoverageMaterializeOptions
 ) => boolean | void;
 
+const COLLAPSED_REASONS: ReadonlySet<DOMCoverageReason> = new Set([
+  'app-collapse',
+  'app-hidden',
+]);
+
+/** Whether a boundary hides content the user collapsed, so no caret can rest in it. @internal */
+export const isCollapsedDOMCoverageBoundary = (boundary: DOMCoverageBoundary) =>
+  COLLAPSED_REASONS.has(boundary.reason) && boundary.selectionPolicy === 'skip';
+
 interface DOMCoverageRegistry {
   boundaries: Map<string, DOMCoverageBoundary>;
   boundaryRootKeys: Map<string, Set<string>>;
   boundariesByRootKey: Map<string, Set<string>>;
+  collapsedByOwner: Map<NodeKey, Set<string>>;
+  collapsedOwners: Map<string, NodeKey | null>;
+  unownedCollapsed: Set<string>;
   indexedIndex: ReturnType<typeof getSnapshot>['index'];
   registrations: Map<string, object>;
   materializeHandlers: Map<number, DOMCoverageMaterializeHandler>;
@@ -380,6 +394,58 @@ const setRegistryBoundary = (
   addBoundaryToIndex(registry, boundary);
 };
 
+const collapsedOwnerKey = (boundary: DOMCoverageBoundary) =>
+  boundary.ownerNodeKey != null &&
+  boundary.coveredPathRanges.every(
+    (range) =>
+      pathIsInsideOwner(range.anchor, boundary.ownerPath) &&
+      pathIsInsideOwner(range.focus, boundary.ownerPath)
+  )
+    ? boundary.ownerNodeKey
+    : null;
+
+const removeCollapsedBoundary = (
+  registry: DOMCoverageRegistry,
+  boundaryId: string
+) => {
+  const owner = registry.collapsedOwners.get(boundaryId);
+
+  if (owner === undefined) return;
+
+  registry.collapsedOwners.delete(boundaryId);
+  if (owner === null) {
+    registry.unownedCollapsed.delete(boundaryId);
+    return;
+  }
+
+  const boundaryIds = registry.collapsedByOwner.get(owner);
+
+  boundaryIds?.delete(boundaryId);
+  if (boundaryIds?.size === 0) registry.collapsedByOwner.delete(owner);
+};
+
+const addCollapsedBoundary = (
+  registry: DOMCoverageRegistry,
+  boundary: DOMCoverageBoundary
+) => {
+  const owner = collapsedOwnerKey(boundary);
+
+  registry.collapsedOwners.set(boundary.boundaryId, owner);
+  if (owner === null) {
+    registry.unownedCollapsed.add(boundary.boundaryId);
+    return;
+  }
+
+  let boundaryIds = registry.collapsedByOwner.get(owner);
+
+  if (!boundaryIds) {
+    boundaryIds = new Set();
+    registry.collapsedByOwner.set(owner, boundaryIds);
+  }
+
+  boundaryIds.add(boundary.boundaryId);
+};
+
 const getIndexedBoundaries = (
   registry: DOMCoverageRegistry,
   rootKeys: readonly string[]
@@ -531,12 +597,16 @@ export const DOMCoverage = {
 /** Bind runtime coverage to its exact DOM root without adding a public view selector. @internal */
 export const createDOMCoverageSession = (
   editor: EditorType,
-  getRoot?: () => HTMLElement | null
+  getRoot?: () => HTMLElement | null,
+  onRegisterBoundary?: (boundary: DOMCoverageBoundary) => void
 ) => {
   const registry: DOMCoverageRegistry = {
     boundaries: new Map(),
     boundaryRootKeys: new Map(),
     boundariesByRootKey: new Map(),
+    collapsedByOwner: new Map(),
+    collapsedOwners: new Map(),
+    unownedCollapsed: new Set(),
     indexedIndex: getSnapshot(editor).index,
     registrations: new Map(),
     materializeHandlers: new Map(),
@@ -548,6 +618,9 @@ export const createDOMCoverageSession = (
       registry.boundaries.clear();
       registry.boundaryRootKeys.clear();
       registry.boundariesByRootKey.clear();
+      registry.collapsedByOwner.clear();
+      registry.collapsedOwners.clear();
+      registry.unownedCollapsed.clear();
       registry.registrations.clear();
       registry.materializeHandlers.clear();
     },
@@ -557,6 +630,39 @@ export const createDOMCoverageSession = (
       registry.materializeHandlers.clear();
     },
 
+    hasCollapsedBoundaries() {
+      return registry.collapsedOwners.size > 0;
+    },
+
+    /**
+     * Whether a collapsed boundary covers `point`. It leaves the registry as it
+     * is.
+     */
+    hidesPoint(point: Point) {
+      countCoreWork('coverageQueries');
+      const hides = (boundaryIds: ReadonlySet<string> | undefined) => {
+        for (const boundaryId of boundaryIds ?? []) {
+          countCoreWork('collapsedBoundaryVisits');
+          const boundary = registry.boundaries.get(boundaryId);
+          const resolved = boundary && resolveBoundary(editor, boundary);
+
+          if (resolved && boundaryContainsPoint(resolved, point)) return true;
+        }
+
+        return false;
+      };
+
+      if (hides(registry.unownedCollapsed)) return true;
+
+      for (let depth = 1; depth <= point.path.length; depth++) {
+        const owner = editorGetNodeKey(editor, point.path.slice(0, depth));
+
+        if (owner && hides(registry.collapsedByOwner.get(owner))) return true;
+      }
+
+      return false;
+    },
+
     /** Return all currently valid boundaries after rebasing them to the editor. */
     getBoundaries(): readonly DOMCoverageBoundary[] {
       return [...syncRegistryToEditor(editor, registry).boundaries.values()];
@@ -564,6 +670,8 @@ export const createDOMCoverageSession = (
 
     /** Return boundaries whose covered ranges intersect a Plite range. */
     getBoundariesForRange(range: ModelRange): readonly DOMCoverageBoundary[] {
+      countCoreWork('coverageQueries');
+      if (registry.boundaries.size === 0) return [];
       const orderedRange = getOrderedPathRange({
         anchor: range.anchor.path,
         focus: range.focus.path,
@@ -603,6 +711,8 @@ export const createDOMCoverageSession = (
 
     /** Return the nearest boundary that owns a Plite point. */
     getBoundaryForPoint(point: Point): DOMCoverageBoundary | null {
+      countCoreWork('coverageQueries');
+      if (registry.boundaries.size === 0) return null;
       syncRegistryToEditor(editor, registry);
       const [boundary] = getIndexedBoundaries(registry, [
         getRootKey(point.path),
@@ -699,6 +809,11 @@ export const createDOMCoverageSession = (
 
       setRegistryBoundary(registry, boundary);
       registry.registrations.set(boundary.boundaryId, registration);
+      removeCollapsedBoundary(registry, boundary.boundaryId);
+      if (isCollapsedDOMCoverageBoundary(boundary)) {
+        addCollapsedBoundary(registry, boundary);
+      }
+      onRegisterBoundary?.(boundary);
 
       return () => {
         if (registry.registrations.get(boundary.boundaryId) === registration) {
@@ -758,6 +873,7 @@ export const createDOMCoverageSession = (
     unregisterBoundary(boundaryId: string) {
       registry.boundaries.delete(boundaryId);
       registry.registrations.delete(boundaryId);
+      removeCollapsedBoundary(registry, boundaryId);
       removeBoundaryFromIndex(registry, boundaryId);
     },
   };

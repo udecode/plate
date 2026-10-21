@@ -148,7 +148,7 @@ test('WebKit shadow selectionchange uses the editor document realm', async () =>
   const execCommand = vi.fn();
   const ambientExecCommand = vi.fn();
   const editor = { update: vi.fn() } as any;
-  const processing = { current: false };
+  const webKitProbeActive = { current: false };
 
   frameDocument.body.append(host);
   host.attachShadow({ mode: 'open' }).append(editorElement);
@@ -169,7 +169,7 @@ test('WebKit shadow selectionchange uses the editor document realm', async () =>
       androidInputManager: null,
       editor,
       inputController: createInputController(),
-      processing,
+      webKitProbeActive,
       readOnly: false,
       rerunOnDirtyNodeMap: vi.fn(),
     });
@@ -177,7 +177,7 @@ test('WebKit shadow selectionchange uses the editor document realm', async () =>
     expect(execCommand).toHaveBeenCalledWith('indent');
     expect(ambientExecCommand).not.toHaveBeenCalled();
     expect(editor.update).not.toHaveBeenCalled();
-    expect(processing.current).toBe(false);
+    expect(webKitProbeActive.current).toBe(false);
   } finally {
     frame.remove();
   }
@@ -230,7 +230,7 @@ test('WebKit shadow beforeinput uses the shadow root realm', async () => {
     const handled = handleWebKitShadowDOMBeforeInput({
       editor,
       event,
-      processing: { current: true },
+      webKitProbeActive: { current: true },
       root,
       window,
     });

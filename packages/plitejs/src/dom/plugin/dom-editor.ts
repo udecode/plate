@@ -28,8 +28,12 @@ import {
 } from '../../core/public-state';
 import { getSelectionDOMRange } from '../../core/selection-protocol';
 import {
+  getPlacementGeneration,
+  placedSince,
+  setSelectionAsView,
+} from '../../core/view-carets';
+import {
   type AnyEditor as EditorType,
-  getSelection as editorGetSelection,
   getNodeKey as editorGetNodeKey,
   hasPath as editorHasPath,
   isVoid as editorIsVoid,
@@ -58,10 +62,14 @@ import {
   isDOMSelection,
   isDOMText,
   normalizeDOMPoint,
-  replaceDOMSelectionRange,
 } from '../utils/dom';
 import { isAndroidDOMHost, isGeckoDOMHost } from '../utils/environment';
 import { Key } from '../utils/key';
+import {
+  getDOMRangeSelectionPoints,
+  readDOMSelectionRange,
+  writeDOMSelection,
+} from '../utils/selection-writes';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_DOM_EDITABLE,
@@ -136,6 +144,7 @@ import {
 } from './dom-text-flow-index';
 import { getTextHost, getTextRoot } from './dom-text-freshness';
 import { isDOMRangePainted, isDOMTextPainted } from './dom-text-proofs';
+import { resolveNextKeyCaret } from './dom-view-caret';
 
 const EDITOR_TO_CANCEL_FOCUS_RETRY = new WeakMap<EditorType, () => void>();
 const EDITOR_TO_FOCUS_REQUEST_GENERATION = new WeakMap<EditorType, number>();
@@ -146,6 +155,17 @@ const ROOT_TO_FOCUS_REQUEST_OWNER = new WeakMap<
     generation: number;
   }
 >();
+
+export const FOCUS_SETTLE_TIMEOUT = 50;
+
+export const supersedeFocusRequest = (editor: EditorType) => {
+  EDITOR_TO_FOCUS_REQUEST_GENERATION.set(
+    editor,
+    (EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0) + 1
+  );
+  EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
+  EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
+};
 
 const getLastChildren = (element: HTMLElement): HTMLElement => {
   if (element.childElementCount > 0) {
@@ -1347,12 +1367,7 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   blur: (editor) => {
-    EDITOR_TO_FOCUS_REQUEST_GENERATION.set(
-      editor,
-      (EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0) + 1
-    );
-    EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
-    EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
+    supersedeFocusRequest(editor);
     IS_FOCUSED.set(editor, false);
     setEditorFocused(editor, false);
 
@@ -1371,11 +1386,8 @@ export const DOMEditor: DOMEditorInterface = {
   deselect: (editor) => {
     const selection = editor.read((state) => state.selection());
     const root = DOMEditor.resolveDocumentOrShadowRoot(editor);
-    const domSelection = root ? getSelection(root) : null;
 
-    if (domSelection && domSelection.rangeCount > 0) {
-      domSelection.removeAllRanges();
-    }
+    if (root) writeDOMSelection(root, null);
 
     if (selection) {
       editor.update((tx) => {
@@ -1567,6 +1579,7 @@ export const DOMEditor: DOMEditorInterface = {
     if (IS_NODE_MAP_DIRTY.get(editor)) {
       EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
       let cancel = () => {};
+      const generation = getPlacementGeneration(editor);
 
       cancel = scheduleEditorDOMPhase(
         editor,
@@ -1576,7 +1589,11 @@ export const DOMEditor: DOMEditorInterface = {
           if (EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor) === cancel) {
             EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
           }
-          if (ROOT_TO_FOCUS_REQUEST_OWNER.get(root) !== focusRequestOwner) {
+          // A newer placement owns the caret and focus.
+          if (
+            ROOT_TO_FOCUS_REQUEST_OWNER.get(root) !== focusRequestOwner ||
+            placedSince(editor, generation)
+          ) {
             return;
           }
           DOMEditor.focus(editor, { retries: retries - 1 });
@@ -1594,8 +1611,7 @@ export const DOMEditor: DOMEditorInterface = {
     EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor)?.();
     EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
 
-    const getLiveSelection = () => editorGetSelection(editor);
-    const selection = getLiveSelection();
+    const selection = resolveNextKeyCaret(editor, el);
     const selectionAtFocus = selection
       ? getSelectionDOMRange(editor, selection)
       : null;
@@ -1603,39 +1619,29 @@ export const DOMEditor: DOMEditorInterface = {
     if (!selection) {
       const start = editor.read((state) => state.points.start([]));
 
-      if (start) {
-        const transaction = getActiveEditorTransaction(editor);
-
-        if (transaction) {
-          transaction.selection.set(start);
-        } else {
-          editor.update((tx) => {
-            tx.selection.set(start);
-          });
-        }
-      }
+      if (start) setSelectionAsView(editor, start);
     }
 
     const syncDomSelection = () => {
-      const innerSelection = getLiveSelection();
+      const innerSelection = resolveNextKeyCaret(editor, el);
 
       if (innerSelection) {
-        const domSelection = getSelection(root);
         const projectedSelection = getSelectionDOMRange(editor, innerSelection);
 
-        if (!domSelection) {
-          return;
-        }
         if (!projectedSelection) {
-          domSelection.removeAllRanges();
+          writeDOMSelection(root, null);
           return;
         }
         const domRange = DOMEditor.resolveDOMRange(editor, projectedSelection);
 
         if (domRange) {
-          replaceDOMSelectionRange(domSelection, domRange, {
-            backward: RangeApi.isBackward(projectedSelection),
-          });
+          writeDOMSelection(
+            root,
+            getDOMRangeSelectionPoints(
+              domRange,
+              RangeApi.isBackward(projectedSelection)
+            )
+          );
         }
       }
     };
@@ -1727,7 +1733,7 @@ export const DOMEditor: DOMEditorInterface = {
         'dom-editor-focus-settle-timeout',
         settleFocus,
         {
-          delay: 50,
+          delay: FOCUS_SETTLE_TIMEOUT,
           key: 'dom-editor-focus-settle-timeout',
           timing: 'timeout',
         }
@@ -1764,7 +1770,7 @@ export const DOMEditor: DOMEditorInterface = {
 
             const currentSelection = getSelectionDOMRange(
               editor,
-              getLiveSelection()
+              resolveNextKeyCaret(editor, el)
             );
 
             if (
@@ -2585,12 +2591,13 @@ export const DOMEditor: DOMEditorInterface = {
           isGeckoDOMHost(domRange.anchorNode ?? domRange.focusNode ?? el) &&
           domRange.rangeCount > 1
         ) {
-          // Focus node works fine
           ({ focusNode } = domRange);
-          const firstRange = domRange.getRangeAt(0);
-          const lastRange = domRange.getRangeAt(domRange.rangeCount - 1);
+          const firstRange = readDOMSelectionRange(domRange);
+          const lastRange = readDOMSelectionRange(
+            domRange,
+            domRange.rangeCount - 1
+          );
 
-          // Here we are in the contenteditable mode of a table in firefox
           if (
             focusNode instanceof HTMLTableRowElement &&
             firstRange.startContainer instanceof HTMLTableRowElement &&

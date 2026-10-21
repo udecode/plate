@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createEditorView } from '../../facade';
+import { projectEditorView } from '../../facade';
 import type { Editor } from '../../lib';
 import { projectPlateFormatDocument } from '../../lib/editor/withPlite';
 import { EditorStatic } from '../components/PlateStatic';
@@ -45,7 +45,7 @@ export const renderStaticHtmlWithOverrides = async (
     }
   }
   const projected = projectPlateFormatDocument(editor, document, projection);
-  const renderEditor = createEditorView(editor, {
+  const renderEditor = projectEditorView(editor, {
     document: projected.document,
   }) as unknown as Editor;
 

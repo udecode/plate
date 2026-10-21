@@ -13,6 +13,7 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
+import { draftCreditsOwner } from '../core/view-carets';
 import {
   LocationApi,
   PointApi,
@@ -117,10 +118,22 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
       if (limited.length === 0 && text.length > 0) return;
 
       if (!hasExplicitAt) {
-        if (LocationApi.isPoint(target)) {
-          tx.setSelection(SelectionApi.text({ anchor: target, focus: target }));
-        } else if (LocationApi.isRange(target)) {
-          tx.setSelection(SelectionApi.text(target));
+        const caret = LocationApi.isPoint(target)
+          ? SelectionApi.text({ anchor: target, focus: target })
+          : LocationApi.isRange(target)
+            ? SelectionApi.text(target)
+            : null;
+
+        // Restating the caret the crediting view holds would count as a
+        // placement on every keystroke.
+        if (
+          caret &&
+          !(
+            draftCreditsOwner(editor) &&
+            SelectionApi.equals(tx.getModelSelection(), caret)
+          )
+        ) {
+          tx.setSelection(caret);
         }
 
         const selection = tx.getModelSelection();

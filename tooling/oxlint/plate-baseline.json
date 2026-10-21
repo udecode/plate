@@ -385,9 +385,6 @@
     "packages/plitejs/src/dom/plugin/dom-geometry.ts": [
       "export const getPliteStringPlacementDOMPoint = getStringPlacementDOMPoint;"
     ],
-    "packages/plitejs/src/editor-runtime-view.ts": [
-      "export const createEditorView: CreateEditorView = createEditorViewRuntime;"
-    ],
     "packages/plitejs/src/internal/view/mapped-view-store.ts": [
       "export const areMappedViewDataEqual = areEditorJsonValuesEqual;"
     ],

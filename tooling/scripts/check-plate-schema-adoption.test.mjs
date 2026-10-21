@@ -1831,7 +1831,6 @@ test('allows only exact audited production extend stages at their owner path', (
         .extend(() => ({
           api: () => ({}),
           contributions: [],
-          selectors: {},
           update: () => ({}),
         }))
         .extend(() => ({ commands: () => [] }))`,

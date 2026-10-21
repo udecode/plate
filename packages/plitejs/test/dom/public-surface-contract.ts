@@ -89,11 +89,13 @@ const expectedDOMRuntimeRootExports = [
   'normalizePoint',
   'normalizeRange',
   'normalizeStringDiff',
+  'readDOMSelectionRange',
   'targetRange',
   'usesAppleDOMHotkeys',
   'verifyDiffState',
   'writeDOMFragmentData',
   'writeDOMRangeData',
+  'writeDOMSelection',
   'writeDataTransferFragment',
 ];
 

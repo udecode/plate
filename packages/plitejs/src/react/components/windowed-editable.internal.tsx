@@ -13,7 +13,7 @@ import {
   EditableViewportSurface,
   type EditableProps,
 } from './editable-text-blocks';
-import { EditorRoot } from './plite';
+import { SurfaceRoot } from './plite';
 
 export type WindowedEditableProps<
   TElement extends Element = Element,
@@ -94,8 +94,8 @@ export const WindowedEditable = <
   return root === undefined ? (
     editable
   ) : (
-    <EditorRoot editor={editor} readOnly={readOnly} root={root}>
+    <SurfaceRoot editor={editor} readOnly={readOnly} root={root}>
       {editable}
-    </EditorRoot>
+    </SurfaceRoot>
   );
 };

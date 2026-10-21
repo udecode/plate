@@ -21,7 +21,6 @@ import {
   type NamedRootKey,
   type Path,
   type RootKey,
-  type Selection,
   SelectionApi,
   type Value,
   type ValueOf,
@@ -32,12 +31,16 @@ import {
 } from '../../core/commit-publication';
 import { releaseEditorViewLifetime } from '../../core/editor-view-lifetime';
 import { createEditorViewPluginApis } from '../../core/plugin';
+import type { ViewPresentation } from '../../core/view-presentation';
 import type { DOMApi } from '../../dom';
 import {
   createDOMEditorCapability,
   EDITOR_TO_ROOT_VIEW_EDITORS,
 } from '../../dom/internal';
-import { createEditorViewRuntime } from '../../editor-runtime-view';
+import {
+  createEditorViewRuntime,
+  getViewPresentation,
+} from '../../editor-runtime-view';
 import { EditorAnnouncementLiveRegion } from '../components/editor-announcement-live-region';
 import { PliteEditableRootContext } from '../context';
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
@@ -46,6 +49,7 @@ import {
   getEditorRuntimeOwner,
   inheritPluginRegistry,
   dispatchCommand,
+  failInvariant,
   setEditorRuntime,
   getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
@@ -60,10 +64,7 @@ import type { Editor as ReactEditorType, ReactApi } from '../plugin/with-react';
 import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
-import { setPliteViewSelectionStoreKey } from '../view-selection';
 import { focusPliteEditable } from './focus-plite-editable';
-import { createRootSelectionCache } from './root-selection-cache';
-import { useOptionalEditorContext } from './use-editor-context';
 import {
   type EditorSelectorContextValue,
   useEditorSelectorContext,
@@ -139,11 +140,12 @@ type PliteRuntimeContextValue = {
   getContentRootOwnerViewEditor: (
     owner: PliteContentRootOwner
   ) => MountedViewEditor | null;
-  getLastSelectionForRoot: (root: RootKey) => Selection;
   getMountedViewEditor: (root: RootKey) => MountedViewEditor | null;
   getView: (
-    options?: EditorViewOptions
+    options?: EditorViewOptions,
+    presentation?: ViewPresentation
   ) => EditorView<Value, PluginsOf<ReactEditorType>>;
+  presentation: ViewPresentation | null;
   registerContentRootOwner: (
     editor: MountedViewEditor,
     owner: PliteContentRootOwner
@@ -152,6 +154,75 @@ type PliteRuntimeContextValue = {
   runtime: ReactEditorType;
   selectorContext: EditorSelectorContextValue;
   setActiveViewEditor: (editor: MountedViewEditor, root: RootKey) => void;
+};
+
+type PresentationLookups = {
+  getActiveContentRootOwner: (
+    root: RootKey,
+    presentation: ViewPresentation | null
+  ) => PliteContentRootOwner | null;
+  getContentRootOwnerViewEditor: (
+    owner: PliteContentRootOwner,
+    presentation: ViewPresentation | null
+  ) => MountedViewEditor | null;
+  getMountedViewEditor: (
+    root: RootKey,
+    presentation: ViewPresentation | null
+  ) => MountedViewEditor | null;
+};
+
+type PliteRuntimeProviderValue = Omit<
+  PliteRuntimeContextValue,
+  keyof PresentationLookups | 'presentation'
+> &
+  PresentationLookups;
+
+const scopeRuntimeContext = (
+  provider: PliteRuntimeProviderValue,
+  presentation: ViewPresentation | null
+): PliteRuntimeContextValue => ({
+  ...provider,
+  getActiveContentRootOwner: (root) =>
+    provider.getActiveContentRootOwner(root, presentation),
+  getContentRootOwnerViewEditor: (owner) =>
+    provider.getContentRootOwnerViewEditor(owner, presentation),
+  getMountedViewEditor: (root) =>
+    provider.getMountedViewEditor(root, presentation),
+  presentation,
+});
+
+const presentationMap = <K, T>(
+  maps: Map<ViewPresentation, Map<K, T>>,
+  presentation: ViewPresentation
+) => {
+  let map = maps.get(presentation);
+
+  if (!map) {
+    map = new Map();
+    maps.set(presentation, map);
+  }
+
+  return map;
+};
+
+const ProviderContext = createContext<PliteRuntimeProviderValue | null>(null);
+
+export const SurfaceRuntimeScope = ({
+  children,
+  presentation,
+}: {
+  children: ReactNode;
+  presentation: ViewPresentation | null;
+}) => {
+  const provider =
+    useContext(ProviderContext) ??
+    failInvariant('A mounted surface requires an editor runtime provider.');
+  const value = useMemo(
+    () => scopeRuntimeContext(provider, presentation),
+    [presentation, provider]
+  );
+
+  return <PliteRuntimeContext value={value}>{children}</PliteRuntimeContext>;
 };
 
 /** Selector options for `useRuntimeState` and `useRootState`. */
@@ -311,35 +382,63 @@ export function EditorRuntimeProvider({
   const mountedViewEditorsRef = useRef(
     new Map<RootKey, Set<typeof reactEditor>>()
   );
-  const activeViewEditorsRef = useRef(new Map<RootKey, typeof reactEditor>());
+  const activeViewEditorsRef = useRef(
+    new Map<ViewPresentation, Map<RootKey, typeof reactEditor>>()
+  );
   const contentRootOwnersRef = useRef(
     new Map<typeof reactEditor, PliteContentRootOwner>()
   );
   const contentRootOwnerViewEditorsRef = useRef(
-    new Map<string, typeof reactEditor>()
+    new Map<ViewPresentation, Map<string, typeof reactEditor>>()
   );
   const activeContentRootOwnersRef = useRef(
-    new Map<RootKey, PliteContentRootOwner>()
+    new Map<ViewPresentation, Map<RootKey, PliteContentRootOwner>>()
   );
-  const [lastSelectionCache] = useState(createRootSelectionCache);
   const { focused, focusVersion, refreshFocused } =
     useRuntimeFocusState(reactEditor);
 
   const getView = useCallback(
-    (options: EditorViewOptions = {}) =>
-      createEditorViewRuntime(runtime, options),
+    (options: EditorViewOptions = {}, presentation?: ViewPresentation) =>
+      createEditorViewRuntime(runtime, options, presentation),
     [runtime]
+  );
+  const findMountedViewEditor = useCallback(
+    (root: RootKey, presentation: ViewPresentation | null) => {
+      const viewEditors = mountedViewEditorsRef.current.get(root);
+
+      if (!viewEditors) return null;
+      if (presentation) {
+        const active = activeViewEditorsRef.current
+          .get(presentation)
+          ?.get(root);
+
+        if (active && viewEditors.has(active)) return active;
+      }
+      for (const viewEditor of viewEditors) {
+        if (!presentation || getViewPresentation(viewEditor) === presentation) {
+          return viewEditor;
+        }
+      }
+
+      return null;
+    },
+    []
   );
   const registerViewEditor = useCallback(
     (editor: typeof reactEditor, root: RootKey) => {
+      const presentation = getViewPresentation(editor);
       const viewEditors = mountedViewEditorsRef.current.get(root) ?? new Set();
       const rootViewEditors =
         EDITOR_TO_ROOT_VIEW_EDITORS.get(runtime) ?? new Set();
+      const activeViewEditors = presentationMap(
+        activeViewEditorsRef.current,
+        presentation
+      );
 
       viewEditors.add(editor);
       mountedViewEditorsRef.current.set(root, viewEditors);
-      if (!activeViewEditorsRef.current.has(root)) {
-        activeViewEditorsRef.current.set(root, editor);
+      if (!activeViewEditors.has(root)) {
+        activeViewEditors.set(root, editor);
       }
       rootViewEditors.add(editor);
       EDITOR_TO_ROOT_VIEW_EDITORS.set(runtime, rootViewEditors);
@@ -349,24 +448,20 @@ export function EditorRuntimeProvider({
         viewEditors.delete(editor);
         rootViewEditors.delete(editor);
         const owner = contentRootOwnersRef.current.get(editor);
+        const ownerViewEditors =
+          contentRootOwnerViewEditorsRef.current.get(presentation);
 
         contentRootOwnersRef.current.delete(editor);
-        if (owner) {
-          unregisterContentRootOwnerViewEditor(
-            contentRootOwnerViewEditorsRef.current,
-            owner,
-            editor
-          );
+        if (owner && ownerViewEditors) {
+          unregisterContentRootOwnerViewEditor(ownerViewEditors, owner, editor);
         }
 
-        if (activeViewEditorsRef.current.get(root) === editor) {
-          const nextEditor = viewEditors.values().next().value;
+        if (activeViewEditors.get(root) === editor) {
+          activeViewEditors.delete(root);
 
-          if (nextEditor) {
-            activeViewEditorsRef.current.set(root, nextEditor);
-          } else {
-            activeViewEditorsRef.current.delete(root);
-          }
+          const nextEditor = findMountedViewEditor(root, presentation);
+
+          if (nextEditor) activeViewEditors.set(root, nextEditor);
         }
         if (viewEditors.size === 0) {
           mountedViewEditorsRef.current.delete(root);
@@ -374,87 +469,107 @@ export function EditorRuntimeProvider({
         if (rootViewEditors.size === 0) {
           EDITOR_TO_ROOT_VIEW_EDITORS.delete(runtime);
         }
+        const presentationStillMounted = [...rootViewEditors].some(
+          (viewEditor) => getViewPresentation(viewEditor) === presentation
+        );
+
+        if (!presentationStillMounted) {
+          activeViewEditorsRef.current.delete(presentation);
+          contentRootOwnerViewEditorsRef.current.delete(presentation);
+          activeContentRootOwnersRef.current.delete(presentation);
+        }
       };
     },
-    [runtime]
+    [findMountedViewEditor, runtime]
   );
   const setActiveViewEditor = useCallback(
     (editor: typeof reactEditor, root: RootKey) => {
       const viewEditors = mountedViewEditorsRef.current.get(root);
 
       if (viewEditors?.has(editor) || root === MAIN_ROOT_KEY) {
-        activeViewEditorsRef.current.set(root, editor);
+        const presentation = getViewPresentation(editor);
+
+        presentationMap(activeViewEditorsRef.current, presentation).set(
+          root,
+          editor
+        );
         const owner = contentRootOwnersRef.current.get(editor);
 
         if (owner) {
-          activeContentRootOwnersRef.current.set(root, owner);
+          presentationMap(activeContentRootOwnersRef.current, presentation).set(
+            root,
+            owner
+          );
         }
       }
     },
     []
   );
-  const getMountedViewEditor = useCallback(
-    (root: RootKey) => {
-      const viewEditors = mountedViewEditorsRef.current.get(root);
-      const activeViewEditor = activeViewEditorsRef.current.get(root);
-      const viewEditor =
-        activeViewEditor && viewEditors?.has(activeViewEditor)
-          ? activeViewEditor
-          : viewEditors?.values().next().value;
-
-      return viewEditor ?? (root === MAIN_ROOT_KEY ? reactEditor : null);
-    },
-    [reactEditor]
-  );
   const registerContentRootOwner = useCallback(
     (editor: typeof reactEditor, owner: PliteContentRootOwner) => {
-      contentRootOwnersRef.current.set(editor, owner);
-      contentRootOwnerViewEditorsRef.current.set(
-        getContentRootOwnerKey(owner),
-        editor
+      const ownerViewEditors = presentationMap(
+        contentRootOwnerViewEditorsRef.current,
+        getViewPresentation(editor)
       );
+
+      contentRootOwnersRef.current.set(editor, owner);
+      ownerViewEditors.set(getContentRootOwnerKey(owner), editor);
 
       return () => {
         if (contentRootOwnersRef.current.get(editor) === owner) {
           contentRootOwnersRef.current.delete(editor);
-          unregisterContentRootOwnerViewEditor(
-            contentRootOwnerViewEditorsRef.current,
-            owner,
-            editor
-          );
+          unregisterContentRootOwnerViewEditor(ownerViewEditors, owner, editor);
         }
       };
     },
     []
   );
   const getContentRootOwnerViewEditor = useCallback(
-    (owner: PliteContentRootOwner) =>
-      contentRootOwnerViewEditorsRef.current.get(
-        getContentRootOwnerKey(owner)
-      ) ?? null,
+    (owner: PliteContentRootOwner, presentation: ViewPresentation | null) => {
+      const key = getContentRootOwnerKey(owner);
+
+      if (presentation) {
+        return (
+          contentRootOwnerViewEditorsRef.current.get(presentation)?.get(key) ??
+          null
+        );
+      }
+      for (const ownerViewEditors of contentRootOwnerViewEditorsRef.current.values()) {
+        const viewEditor = ownerViewEditors.get(key);
+
+        if (viewEditor) return viewEditor;
+      }
+
+      return null;
+    },
     []
   );
-  const getActiveContentRootOwner = useCallback((root: RootKey) => {
-    const activeOwner = activeContentRootOwnersRef.current.get(root);
+  const getActiveContentRootOwner = useCallback(
+    (root: RootKey, presentation: ViewPresentation | null) => {
+      if (!presentation) return null;
 
-    if (
-      activeOwner &&
-      contentRootOwnerViewEditorsRef.current.has(
-        getContentRootOwnerKey(activeOwner)
-      )
-    ) {
-      return activeOwner;
-    }
+      const activeOwner = activeContentRootOwnersRef.current
+        .get(presentation)
+        ?.get(root);
 
-    const activeViewEditor = activeViewEditorsRef.current.get(root);
+      if (
+        activeOwner &&
+        contentRootOwnerViewEditorsRef.current
+          .get(presentation)
+          ?.has(getContentRootOwnerKey(activeOwner))
+      ) {
+        return activeOwner;
+      }
 
-    return activeViewEditor
-      ? (contentRootOwnersRef.current.get(activeViewEditor) ?? null)
-      : null;
-  }, []);
-  const getLastSelectionForRoot = useCallback(
-    (root: RootKey) => lastSelectionCache.get(root),
-    [lastSelectionCache]
+      const activeViewEditor = activeViewEditorsRef.current
+        .get(presentation)
+        ?.get(root);
+
+      return activeViewEditor
+        ? (contentRootOwnersRef.current.get(activeViewEditor) ?? null)
+        : null;
+    },
+    []
   );
   useIsomorphicLayoutEffect(() => {
     const maybeBatchUpdates =
@@ -467,11 +582,6 @@ export function EditorRuntimeProvider({
     const publishCommit: Parameters<typeof runtime.subscribeCommit>[0] = (
       commit
     ) => {
-      lastSelectionCache.record(
-        commit.selectionAfter,
-        commit.selectionAfterRoot
-      );
-
       maybeBatchUpdates(() => {
         profilePliteReactDuration('focused-state', refreshFocused);
 
@@ -513,20 +623,18 @@ export function EditorRuntimeProvider({
   }, [
     commitPublicationQueue,
     handleSelectorChange,
-    lastSelectionCache,
     reactEditor,
     refreshFocused,
     runtime,
   ]);
 
-  const value = useMemo(
+  const provider = useMemo(
     () => ({
       focusVersion,
       focused,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
-      getLastSelectionForRoot,
-      getMountedViewEditor,
+      getMountedViewEditor: findMountedViewEditor,
       getView,
       registerContentRootOwner,
       registerViewEditor,
@@ -535,12 +643,11 @@ export function EditorRuntimeProvider({
       setActiveViewEditor,
     }),
     [
+      findMountedViewEditor,
       focusVersion,
       focused,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
-      getLastSelectionForRoot,
-      getMountedViewEditor,
       getView,
       registerContentRootOwner,
       registerViewEditor,
@@ -551,10 +658,12 @@ export function EditorRuntimeProvider({
   );
 
   return (
-    <PliteRuntimeContext value={value}>
-      <EditorAnnouncementLiveRegion editor={runtime} />
-      {children}
-    </PliteRuntimeContext>
+    <ProviderContext value={provider}>
+      <SurfaceRuntimeScope presentation={null}>
+        <EditorAnnouncementLiveRegion editor={runtime} />
+        {children}
+      </SurfaceRuntimeScope>
+    </ProviderContext>
   );
 }
 
@@ -638,11 +747,12 @@ export function useRootState<T, const TRoot extends RootKey = RootKey>(
     throw new Error('Omit root to read the primary document root state.');
   }
 
-  const { getView, selectorContext } = useRequiredPliteRuntimeContext();
+  const { getView, presentation, selectorContext } =
+    useRequiredPliteRuntimeContext();
   const internalRoot = root ?? MAIN_ROOT_KEY;
   const stateSelector = useCallback(
-    () => getView({ root }).read(selector),
-    [getView, root, selector]
+    () => getView({ root }, presentation ?? undefined).read(selector),
+    [getView, presentation, root, selector]
   );
   const [selectedState, update] = useGenericSelector(stateSelector, equalityFn);
   const shouldUpdateRef = useRef(shouldUpdate);
@@ -687,13 +797,16 @@ export type UseRootEditorOptions = {
 };
 
 export function createPliteRootEditor(
-  { getView, runtime }: Pick<PliteRuntimeContextValue, 'getView' | 'runtime'>,
+  {
+    getView,
+    presentation,
+  }: Pick<PliteRuntimeContextValue, 'getView' | 'presentation'>,
   root?: NamedRootKey,
   readOnly?: boolean
 ): ReactEditorType {
-  const editor = createReactRuntimeViewEditor(getView({ readOnly, root }));
-  setPliteViewSelectionStoreKey(editor, runtime);
-  return editor;
+  return createReactRuntimeViewEditor(
+    getView({ readOnly, root }, presentation ?? undefined)
+  );
 }
 
 /**
@@ -712,18 +825,13 @@ export function useRootEditor<const TRoot extends RootKey = RootKey>(
     throw new Error('Omit root to create an editor for the primary document.');
   }
 
-  const { getView, runtime } = useRequiredPliteRuntimeContext();
-  const parentEditor = useOptionalEditorContext();
+  const { getView, presentation } = useRequiredPliteRuntimeContext();
 
-  return useMemo(() => {
-    const editor = createPliteRootEditor(
-      { getView, runtime },
-      root,
-      options.readOnly
-    );
-    if (parentEditor) setPliteViewSelectionStoreKey(editor, parentEditor);
-    return editor;
-  }, [getView, options.readOnly, root, runtime, parentEditor]);
+  return useMemo(
+    () =>
+      createPliteRootEditor({ getView, presentation }, root, options.readOnly),
+    [getView, options.readOnly, presentation, root]
+  );
 }
 
 /** Focus behavior before or after root command callbacks. */

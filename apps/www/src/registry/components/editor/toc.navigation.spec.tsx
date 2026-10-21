@@ -1,6 +1,12 @@
 import { expect, it } from 'bun:test';
 
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { createEditor, EditorContent, EditorRoot } from 'platejs/react';
 import * as React from 'react';
 
@@ -8,8 +14,8 @@ import { BasicBlocksKit } from './basic-blocks';
 import { DetailsKit } from './details';
 import { TocKit } from './toc';
 
-it('opens the collapsed Details around a TOC target before flashing it [EDIT-TOC-NAV-001]', async () => {
-  const editor = createEditor({
+const createTocEditor = () =>
+  createEditor({
     plugins: [...BasicBlocksKit, ...DetailsKit, ...TocKit],
     initialValue: [
       { children: [{ text: '' }], type: 'toc' },
@@ -28,8 +34,10 @@ it('opens the collapsed Details around a TOC target before flashing it [EDIT-TOC
       },
     ],
   });
+
+it('opens the collapsed Details around a TOC target before flashing it [EDIT-TOC-NAV-001]', async () => {
   const view = render(
-    <EditorRoot editor={editor}>
+    <EditorRoot editor={createTocEditor()}>
       <EditorContent />
     </EditorRoot>
   );
@@ -42,5 +50,37 @@ it('opens the collapsed Details around a TOC target before flashing it [EDIT-TOC
     ).toBe('Setup')
   );
   expect(view.queryByText('Steps')).toBeNull();
+  view.unmount();
+});
+
+it('opens the Details around a TOC target only in the view that jumped (R24)', async () => {
+  const editor = createTocEditor();
+  const view = render(
+    <>
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent aria-label="A content" />
+      </EditorRoot>
+      <EditorRoot editor={editor} suppressInstanceWarning>
+        <EditorContent aria-label="B content" />
+      </EditorRoot>
+    </>
+  );
+  const outerToggle = (label: string) =>
+    within(view.getByLabelText(label))
+      .getAllByRole('button', { name: /details$/ })[0]
+      .getAttribute('aria-expanded');
+
+  await act(async () => {
+    fireEvent.click(
+      within(view.getByLabelText('A content')).getByRole('button', {
+        name: 'Setup',
+      })
+    );
+  });
+
+  expect([outerToggle('A content'), outerToggle('B content')]).toEqual([
+    'true',
+    'false',
+  ]);
   view.unmount();
 });

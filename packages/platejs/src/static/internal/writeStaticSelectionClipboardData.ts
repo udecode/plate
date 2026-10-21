@@ -1,12 +1,13 @@
 import { exportContentSlice } from 'plitejs/internal';
 
+import { readDOMSelectionRange } from '../../dom/plite-dom.internal';
 import {
   ContentSlice,
   type ContentSlice as ContentSliceValue,
   type Descendant,
   type Path,
   type Point,
-  createEditorView,
+  projectEditorView,
   MAIN_ROOT_KEY,
   PathApi,
   SelectionApi,
@@ -106,7 +107,7 @@ const getStaticSelectionPayload = (
   if (!selection || selection.rangeCount !== 1 || selection.isCollapsed) {
     return null;
   }
-  const range = selection.getRangeAt(0);
+  const range = readDOMSelectionRange(selection);
 
   if (
     !containsBoundary(host, range.startContainer) ||
@@ -123,7 +124,7 @@ const getStaticSelectionPayload = (
     const view =
       root === MAIN_ROOT_KEY
         ? editor
-        : (createEditorView(editor, { root }) as unknown as Editor);
+        : (projectEditorView(editor, { root }) as unknown as Editor);
 
     views.set(root, view);
 

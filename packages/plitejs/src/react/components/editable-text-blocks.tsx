@@ -134,7 +134,7 @@ import {
   type EditableTextFlowEntry,
   ImperativeTextFlowContext,
 } from './editable-text-flow';
-import { EditorRoot } from './plite';
+import { SurfaceRoot } from './plite';
 import { EditorElement } from './plite-element';
 import { EditorSpacer } from './plite-spacer';
 import { InlineVoidShell, VoidShell } from './plite-void-shell';
@@ -403,7 +403,7 @@ function EditableContentRootSlot({
 
   return (
     <PliteContentRootOwnerContext value={contentRootOwner}>
-      <EditorRoot
+      <SurfaceRoot
         // The owner's runtime policy is authoritative even when the owner's
         // static editor type does not declare authored changes.
         authored={ownerAuthored as never}
@@ -420,7 +420,7 @@ function EditableContentRootSlot({
           root={root}
           slot={slot}
         />
-      </EditorRoot>
+      </SurfaceRoot>
     </PliteContentRootOwnerContext>
   );
 }
@@ -461,7 +461,6 @@ function EditableContentRootView({
   const inheritedReadOnly = useEditorReadOnly();
   const readOnly = Boolean(options.readOnly || inheritedReadOnly);
   const {
-    getLastSelectionForRoot,
     getMountedViewEditor,
     registerContentRootOwner,
     setActiveViewEditor,
@@ -482,7 +481,6 @@ function EditableContentRootView({
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
     editor,
-    getLastSelectionForRoot,
     getMountedViewEditor,
     root,
     selection: 'restore',
@@ -1651,8 +1649,8 @@ export const Editable = <
   return root === undefined ? (
     editable
   ) : (
-    <EditorRoot editor={editor} readOnly={rootReadOnly} root={root}>
+    <SurfaceRoot editor={editor} readOnly={rootReadOnly} root={root}>
       {editable}
-    </EditorRoot>
+    </SurfaceRoot>
   );
 };

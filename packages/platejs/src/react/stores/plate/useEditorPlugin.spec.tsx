@@ -53,7 +53,9 @@ describe('useEditor plugin portal', () => {
         rendered.getByRole('textbox', { name: `owner-${index}` })
       );
     }
-    act(() => editor.plugin(OwnerPlugin).store.set({ count: 2 }));
+    act(() => {
+      editor.plugin(OwnerPlugin).store.set({ count: 2 });
+    });
     expect(portals.map((portal) => portal.api.count())).toEqual([2, 2]);
     expect(editor.plugin(OwnerPlugin).api.owner()).toBe(editor);
     rendered.unmount();

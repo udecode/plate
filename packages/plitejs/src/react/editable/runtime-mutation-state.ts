@@ -1,45 +1,6 @@
 import type { EditorMarks, EditorTargetRuntime } from '../..';
-import {
-  toStoredTarget,
-  withAuthoredUpdateView,
-} from '../../core/authored-runtime';
-import { getActiveEditorTransaction } from '../../core/public-state';
-import type { AnyEditor, EditorSelectionTarget } from '../../interfaces/editor';
-import {
-  getEditorRuntimeOwner,
-  setEditorMarks,
-  setEditorTargetRuntime,
-  withEditorUpdateRootScope,
-} from './runtime-editor-api';
-
-export const writeRuntimeSelection = (
-  editor: AnyEditor,
-  shown: EditorSelectionTarget | null
-) => {
-  const lifted = shown && toStoredTarget(editor, shown);
-  const target = lifted?.kind === 'stored' ? lifted.target : null;
-
-  if (editor.read.view.isReadOnly()) {
-    const owner = getEditorRuntimeOwner(editor);
-    withAuthoredUpdateView(owner, editor, () =>
-      withEditorUpdateRootScope(owner, editor.read.view.root(), () => {
-        owner.update((tx) => tx.selection.set(target));
-      })
-    );
-    return;
-  }
-  const transaction = getActiveEditorTransaction(editor);
-
-  if (transaction) {
-    transaction.selection.set(target);
-    return;
-  }
-
-  // DOM imports bypass command dispatch while preserving correction policy.
-  editor.update((tx) => {
-    tx.selection.set(target);
-  });
-};
+import type { AnyEditor } from '../../interfaces/editor';
+import { setEditorMarks, setEditorTargetRuntime } from './runtime-editor-api';
 
 export const writeRuntimeMarks = (
   editor: AnyEditor,

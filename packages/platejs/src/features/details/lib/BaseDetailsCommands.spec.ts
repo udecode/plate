@@ -390,7 +390,7 @@ describe('BaseDetailsPlugin', () => {
 
       const key = note.key([1]);
       expect(note.read.children()[1]).toMatchObject({ type: 'details' });
-      expect(key && details.store.get('isOpen', key)).toBe(true);
+      expect(key && details.api.isOpen(key)).toBe(true);
       expect(editor.read.selection()).toMatchObject({
         anchor: { path: [1, 0, 0], offset: 0, root: 'note' },
       });
@@ -618,7 +618,7 @@ describe('BaseDetailsPlugin', () => {
       anchor: { path: [0, 2, 1, 0], offset: 8 },
       focus: { path: [0, 2, 1, 0], offset: 8 },
     });
-    expect(details.store.get('isOpen', key)).toBe(true);
+    expect(details.api.isOpen(key)).toBe(true);
   });
 
   it('moves Enter in a closed Summary after the whole Details', () => {

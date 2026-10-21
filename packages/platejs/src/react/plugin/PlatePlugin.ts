@@ -52,6 +52,7 @@ import type {
   PluginReadCapability,
   PluginDirectUpdate,
   PluginTransaction,
+  PluginViewStore,
   PluginBaseContext,
   PluginPortalContext,
   PluginDefinitionWitness,
@@ -238,7 +239,7 @@ export type AnyPluginContext = Omit<DynamicPluginPortal, 'schema'> & {
 
 export type PluginContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = Omit<PluginPortal<C>, keyof PluginBaseContext<C>> &
+> = Omit<PluginPortal<C>, keyof PluginBaseContext<C> | 'viewStore'> &
   PluginBaseContext<C> & {
     defineFormats: DefinePluginFormats<C>;
     editor: PluginContextEditor<C> &
@@ -247,6 +248,11 @@ export type PluginContext<
       }>;
     plugin: ResolvedPlugin<C>;
   };
+
+/** The API factory context, which also reads the editor's own view store. */
+export type PluginApiContext<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = PluginContext<C> & Readonly<{ viewStore: PluginViewStore<C> }>;
 
 type PluginContextEditor<C extends AnyBasePluginDefinition> =
   InternalReactEditorWithInstalledPlugins<
@@ -517,7 +523,7 @@ type PluginAuthorFields<C extends AnyBasePluginDefinition> = Omit<
   | 'shortcuts'
   | 'update'
 > & {
-  api?: (context: PluginContext<C>) => InferApi<C>;
+  api?: (context: PluginApiContext<C>) => InferApi<C>;
   dataTransferFormats?: BasePluginDefinitionInput<C>['dataTransferFormats'];
   formats?: BasePluginDefinitionInput<C>['formats'];
   component?: NodeComponent;
@@ -573,7 +579,7 @@ type PluginStageObject<C extends AnyBasePluginDefinition> = Omit<
   | 'selectors'
   | 'update'
 > & {
-  api?: (context: PluginContext<C>) => object;
+  api?: (context: PluginApiContext<C>) => object;
   decorate?: DecorateInput<C>;
   initialState?: object | ((context: PluginContext<C>) => object);
   read?: (
@@ -621,7 +627,7 @@ type PluginStageInput<
 > = Readonly<Record<TKeys, unknown>> &
   Pick<PluginStageObject<C>, Exclude<TKeys, PluginStageSpecialKey>> &
   Readonly<{
-    api?: (context: PluginContext<C>) => TApi;
+    api?: (context: PluginApiContext<C>) => TApi;
     conflicts?: PluginStageConflictInput<TConflictNames>;
     decorate?: DecorateInput<C>;
     enabled?: TEnabled;
@@ -769,7 +775,7 @@ export interface Plugin<
     EditorSchemaSourceProvider<() => InferPluginSchemaContribution<C>>,
     PluginReference<C['name']>,
     PluginDefinitionWitness<C> {
-  api?: (context: PluginContext<C>) => InferApi<C>;
+  api?: (context: PluginApiContext<C>) => InferApi<C>;
   readonly conflicts: BasePluginDependencyDescriptors<InferConflicts<C>>;
   dependencies: BasePluginDependencyDescriptors<InferDependencies<C>>;
   readonly initialState: InferPluginStoreState<C>;

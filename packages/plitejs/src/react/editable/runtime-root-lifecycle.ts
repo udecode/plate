@@ -1,7 +1,12 @@
 import type { RefObject } from 'react';
 
+import {
+  clearCaretUnlessHeldElsewhere,
+  mayClearCaret,
+} from '../../core/view-carets';
 import { containsShadowAware, getSelection, isDOMNode } from '../../dom';
 import { type DOMPhaseScheduler, IS_FOCUSED } from '../../dom/internal';
+import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -14,7 +19,6 @@ import {
 } from './input-controller';
 import { attachEditableGlobalDragLifecycleListeners } from './input-router';
 import { setEditorFocused } from './runtime-editor-api';
-import { writeRuntimeSelection } from './runtime-mutation-state';
 
 export const attachEditableOutsideFocusBoundaryListener = ({
   domPhaseScheduler,
@@ -69,8 +73,10 @@ export const attachEditableOutsideFocusBoundaryListener = ({
       }
       return undefined;
     }
-    const hasReadOnlyModelSelection =
-      readOnly && Boolean(editor.read((innerState) => innerState.selection()));
+    const holdsReadOnlyCaret =
+      readOnly &&
+      mayClearCaret(editor) &&
+      Boolean(editor.read((innerState) => innerState.selection()));
 
     if (
       targetWindow &&
@@ -89,11 +95,11 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     if (selectionInRoot) {
       hadRootOwnedNativeState = true;
       if (readOnly) {
-        selection.removeAllRanges();
+        writeDOMSelection(root, null);
       }
     }
 
-    if (hasReadOnlyModelSelection) {
+    if (holdsReadOnlyCaret) {
       hadRootOwnedNativeState = true;
     }
 
@@ -105,8 +111,8 @@ export const attachEditableOutsideFocusBoundaryListener = ({
     setEditorFocused(editor, false);
     publishFocusState();
 
-    if (hasReadOnlyModelSelection) {
-      writeRuntimeSelection(editor, null);
+    if (holdsReadOnlyCaret) {
+      clearCaretUnlessHeldElsewhere(editor);
     }
 
     return true;

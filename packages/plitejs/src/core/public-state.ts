@@ -404,6 +404,26 @@ import {
   cloneFrozenEditorJsonValue,
   snapshotEditorJsonValue,
 } from './value-codec';
+import {
+  type CaretState,
+  type CarriedCarets,
+  carryCarets,
+  commitCarets,
+  currentPlacement,
+  getCommittedCarets,
+  hasBookmarksIn,
+  landCarets,
+  mapBookThroughStep,
+  type Placement,
+  placeInDraft,
+  recordCommitCarets,
+  withoutPlacement,
+  withPlacement,
+} from './view-carets';
+import {
+  setStatePresentation,
+  type ViewPresentation,
+} from './view-presentation';
 import { countCoreWork } from './work';
 
 export {
@@ -425,16 +445,6 @@ type AnyPluginEditor = Editor;
 export type TransactionAuthority = 'explicit' | 'replace' | 'update';
 
 type TransactionSnapshot = {
-  viewChanged?: boolean;
-  publicationBase?: Pick<
-    TransactionSnapshot,
-    | 'baseRuntimeIndexes'
-    | 'baseSnapshots'
-    | 'previousSnapshot'
-    | 'roots'
-    | 'selection'
-    | 'selectionRoot'
-  >;
   activeChange: {
     change: DocumentChange;
   };
@@ -835,7 +845,9 @@ export const setEditorStateViewTransform = (
 export type TransactionSpecContext = {
   activeChildrenRoot?: string;
   activeUpdateRoot?: string;
+  baseCaret: CaretState;
   baseDraftEpoch: number;
+  caret: CaretState;
   baseRevision: number;
   changed: boolean;
   currentChildrenRoot: string;
@@ -848,10 +860,13 @@ export type TransactionSpecContext = {
   kind: 'spec' | 'update';
   mutationVersion: number;
   parentId?: object;
+  /** Who a selection write in this draft credits, unless a scope says. */
+  placement: Placement | null;
   pluginRoot?: string;
-  pluginRootTransactions?: Map<string, EditorUpdateTransaction>;
-  selection: Selection;
-  selectionRoot: string;
+  pluginRootTransactions?: Map<
+    ViewPresentation | undefined,
+    Map<string, EditorUpdateTransaction>
+  >;
   selectionWritten: boolean;
   snapshot: TransactionSnapshot;
   transactionView?: EditorTransaction;
@@ -941,9 +956,39 @@ const getReadProjection = (editor: Editor) => {
     : undefined;
 };
 
-export const markTransactionSelectionWritten = (editor: Editor) => {
+const PLACING = new WeakSet<TransactionSpecContext>();
+
+export const setDraftCaret = (editor: Editor, caret: CaretState) => {
+  const context = getDefined(getTransactionSpecContext(editor));
+
+  context.caret = caret;
+  bumpMutationVersion(editor);
+  markTransactionChanged(editor);
+};
+
+export const placeSelection = <T>(editor: Editor, write: () => T): T => {
   const context = getTransactionSpecContext(editor);
-  if (context) context.selectionWritten = true;
+
+  if (!context || PLACING.has(context)) return write();
+
+  const before = context.caret;
+  let result: T;
+
+  PLACING.add(context);
+  try {
+    result = write();
+  } finally {
+    PLACING.delete(context);
+  }
+  context.selectionWritten = true;
+
+  const placed = placeInDraft(editor, before, context.caret, () =>
+    getEditorDocumentValue(editor)
+  );
+
+  if (placed) setDraftCaret(editor, placed);
+
+  return result;
 };
 
 /**
@@ -1108,6 +1153,7 @@ const TRANSACTION_SPEC_LANDINGS = new WeakMap<
   Readonly<{ root: string; span: DraftSpan }>
 >();
 const APPLIED_SPEC_LANDINGS = new WeakMap<TransactionSpec, DraftTrack>();
+const TRANSACTION_SPEC_CARETS = new WeakMap<TransactionSpec, CarriedCarets>();
 
 /** @internal */
 export const getAppliedSpecLanding = (spec: TransactionSpec) =>
@@ -1434,9 +1480,12 @@ export const commitRecordedDraft = (
   recorded: RecordedDraft,
   selectionRoot: string,
   {
+    carried,
     plain,
     storedToWritten,
   }: Readonly<{
+    /** The draft's placements, with its bookmarks in recorded coordinates. */
+    carried?: CarriedCarets | null;
     plain?: PlainDraft;
     storedToWritten?: PositionMap;
   }> = {}
@@ -1485,10 +1534,13 @@ export const commitRecordedDraft = (
     snapshot.builderValidation ? { validation: snapshot.builderValidation } : {}
   );
   snapshot.activeChange = { change: snapshot.builder.change };
-  // The recorded selection is already in recorded coordinates, so applying the
-  // recorded change must not map it.
-  context.selection = null;
-  context.selectionRoot = snapshot.selectionRoot;
+  // The recorded selection and the carried bookmarks are already in recorded
+  // coordinates, so applying the recorded change maps only the base bookmarks.
+  context.caret = {
+    ...context.baseCaret,
+    root: snapshot.selectionRoot,
+    selection: null,
+  };
   if (!change.empty) {
     applyTransactionSpecDocumentChangeStep(
       editor,
@@ -1513,19 +1565,43 @@ export const commitRecordedDraft = (
         }
       : null
   );
-  context.selection = cloneValue(recorded.selection);
-  context.selectionRoot = selectionRoot;
+  context.caret = {
+    ...context.caret,
+    root: selectionRoot,
+    selection: cloneValue(recorded.selection),
+  };
+  if (carried) context.caret = landCarets(editor, context.caret, carried);
   if (snapshot.implicitTargetResolved) {
     snapshot.implicitTarget = cloneValue(recorded.selection);
   }
   if (!change.empty) settleBeforeRecordingFrontier(editor, snapshot);
   RECORDING_FRONTIERS.set(snapshot, {
     change: snapshot.builder.change,
-    selection: context.selection,
-    selectionRoot: context.selectionRoot,
+    selection: context.caret.selection,
+    selectionRoot: context.caret.root,
     steps: snapshot.builder.draftSteps.length,
     value: snapshot.builder.value as EditorDocumentValue,
   });
+};
+
+export const recorderBookmarks = (carried: CarriedCarets | null) =>
+  (carried?.moved ?? []).map(({ root, selection }) => ({ root, selection }));
+
+export const recordedCarets = (
+  carried: CarriedCarets | null,
+  recorded: RecordedDraft
+): CarriedCarets | null => {
+  const converted = recorded.bookmarks;
+
+  if (!carried || !converted) return carried;
+
+  return {
+    ...carried,
+    moved: carried.moved.map((moved, index) => ({
+      ...moved,
+      selection: converted[index] ?? null,
+    })),
+  };
 };
 
 const composeDraftSteps = (steps: readonly DraftStep[]) =>
@@ -1554,7 +1630,8 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
 
   if (!recorder || snapshot.activeChange.change.empty) return;
 
-  const { selectionRoot } = context;
+  const selectionRoot = context.caret.root;
+  const carried = carryCarets(editor, context.baseCaret, context.caret);
   const plain: PlainDraft = {
     before:
       frontier?.value ??
@@ -1564,8 +1641,9 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
   const recorded = recorder({
     after: snapshot.builder.value as EditorDocumentValue,
     before: plain.before,
+    bookmarks: recorderBookmarks(carried),
     change: plain.change,
-    selection: context.selection,
+    selection: context.caret.selection,
     selectionBefore: frontier ? frontier.selection : snapshot.selection,
     selectionBeforeRoot: frontier?.selectionRoot ?? snapshot.selectionRoot,
     selectionRoot,
@@ -1575,7 +1653,10 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
   });
 
   if (!recorded) return;
-  commitRecordedDraft(editor, context, recorded, selectionRoot, { plain });
+  commitRecordedDraft(editor, context, recorded, selectionRoot, {
+    carried: recordedCarets(carried, recorded),
+    plain,
+  });
 };
 
 const admitTransactionDraft = (editor: Editor) => {
@@ -1672,6 +1753,7 @@ export const enterEditorRead = (editor: Editor) => {
   return () => {
     if (depth === 0) {
       READ_DEPTH.delete(editor);
+      drainAfterOpenDrafts(editor);
     } else {
       READ_DEPTH.set(editor, depth);
     }
@@ -3003,8 +3085,6 @@ const hasTransactionNetChanges = (
   if (!snapshot) {
     return true;
   }
-
-  if (snapshot.viewChanged) return true;
 
   if (snapshot.effects.length > 0 || snapshot.annotations.size > 0) {
     return true;
@@ -6203,11 +6283,14 @@ export const getEditorStateView = <
 
 export const createEditorViewReadState = <T extends object>(
   editor: Editor,
-  core: T
+  core: T,
+  presentation: ViewPresentation
 ): T => {
   const state = { ...core } as Record<string, unknown>;
+  setStatePresentation(state, presentation);
   for (const [name, registration] of getPluginRegistry(editor).stateGroups) {
     const factoryState = createReadFactoryState(state);
+    setStatePresentation(factoryState.state, presentation);
     try {
       state[name] = freezeReadMethodTree(
         name,
@@ -6287,6 +6370,7 @@ const createTransactionPluginSelector = (
 export const createEditorViewTransactionState = <T extends object>(
   editor: Editor,
   core: T,
+  presentation: ViewPresentation,
   projectContext: (
     context: EditorUpdateContext<Editor>
   ) => EditorUpdateContext<Editor>
@@ -6296,10 +6380,10 @@ export const createEditorViewTransactionState = <T extends object>(
   if (!scope) {
     throw new Error('An editor view transaction requires an active draft.');
   }
-  const state = { ...createEditorViewReadState(editor, core) } as Record<
-    string,
-    unknown
-  >;
+  const state = {
+    ...createEditorViewReadState(editor, core, presentation),
+  } as Record<string, unknown>;
+  setStatePresentation(state, presentation);
   const registry = getPluginRegistry(editor);
   if (!registry.stateGroups.has('plugin')) delete state.plugin;
   const assertActive = () =>
@@ -6667,13 +6751,8 @@ export const getUpdateView = <
 
     return runWithMutationRoot(editor, getMutationRoot(editor), fn);
   };
-  const markSelectionWritten = <T>(fn: () => T) => {
-    markTransactionSelectionWritten(editor);
-
-    return fn();
-  };
   const runSelectionWrite = <T>(fn: () => T) =>
-    runSelectionMutation(() => markSelectionWritten(fn));
+    runSelectionMutation(() => placeSelection(editor, fn));
   const runLocationMutation = <T>(location: Location, fn: () => T) => {
     assertActive();
 
@@ -7865,7 +7944,7 @@ export const getUpdateView = <
             }
 
             if (SelectionApi.isSelection(target)) {
-              markSelectionWritten(() => {
+              placeSelection(editor, () => {
                 runWithMutationRoot(
                   editor,
                   SelectionApi.root(target) ??
@@ -7886,13 +7965,13 @@ export const getUpdateView = <
             }
 
             if (RangeApi.isRange(target)) {
-              markSelectionWritten(() => {
+              placeSelection(editor, () => {
                 runLocationMutation(target, () => select(editor, target));
               });
               return;
             }
 
-            markSelectionWritten(() => {
+            placeSelection(editor, () => {
               runLocationMutation(target, () => select(editor, target));
             });
           },
@@ -8193,6 +8272,11 @@ export const createTransactionSpecContext = (
   const roots = getEditorDocumentRoots(editor);
   const selection = getCurrentSelection(editor);
   const selectionRoot = getCurrentSelectionRoot(editor);
+  const caret: CaretState = {
+    ...(parent?.caret ?? getCommittedCarets(getEditorRuntimeOwner(editor))),
+    root: selectionRoot,
+    selection,
+  };
   const currentChildrenRoot = getCurrentChildrenRoot(editor);
   const baseRuntimeIndex = parentSnapshot
     ? () =>
@@ -8265,13 +8349,14 @@ export const createTransactionSpecContext = (
     depth: 1,
     documentState: copyDocumentState(getDocumentState(editor)),
     draftEpoch: parent?.draftEpoch ?? 0,
+    baseCaret: caret,
+    caret,
     exitAnchorScope: () => {},
     id: {},
     kind: 'spec',
     mutationVersion: getMutationVersion(editor),
     ...(parent ? { parentId: parent.id } : {}),
-    selection,
-    selectionRoot,
+    placement: currentPlacement(editor),
     selectionWritten: false,
     snapshot,
   };
@@ -8303,7 +8388,51 @@ export const disposeTransactionSpecContext = (
 
   context.exitAnchorScope();
   contexts.pop();
-  if (contexts.length === 0) TRANSACTION_SPEC_CONTEXTS.delete(editor);
+  if (contexts.length === 0) {
+    TRANSACTION_SPEC_CONTEXTS.delete(editor);
+    // An update drains once it has published, at the end of its transaction.
+    if (context.kind !== 'update') drainAfterOpenDrafts(editor);
+  }
+};
+
+const AFTER_OPEN_DRAFTS = new WeakMap<Editor, Array<() => void>>();
+
+const hasOpenDraft = (owner: Editor) =>
+  (TRANSACTION_SPEC_CONTEXTS.get(owner)?.length ?? 0) > 0 ||
+  (TRANSACTION_DEPTH.get(owner) ?? 0) > 0 ||
+  getEditorReadDepth(owner) > 0;
+
+export const afterOpenDrafts = (editor: Editor, fn: () => void) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (!hasOpenDraft(owner)) {
+    fn();
+    return;
+  }
+
+  const queued = AFTER_OPEN_DRAFTS.get(owner);
+
+  if (queued) queued.push(fn);
+  else AFTER_OPEN_DRAFTS.set(owner, [fn]);
+};
+
+const drainAfterOpenDrafts = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const queued = AFTER_OPEN_DRAFTS.get(owner);
+
+  if (!queued || hasOpenDraft(owner)) return;
+
+  AFTER_OPEN_DRAFTS.delete(owner);
+  let failure: Readonly<{ value: unknown }> | null = null;
+
+  for (const fn of queued) {
+    try {
+      fn();
+    } catch (error) {
+      failure ??= { value: error };
+    }
+  }
+  if (failure) throw failure.value;
 };
 
 const assertTransactionSpecBase = (editor: Editor, spec: TransactionSpec) => {
@@ -8492,6 +8621,9 @@ const finalizeTransactionSpecContext = (
       document: snapshot.builder.prepare(changes, { classify: false }),
     })
   );
+  const carried = carryCarets(editor, context.baseCaret, context.caret);
+
+  if (carried) TRANSACTION_SPEC_CARETS.set(spec, carried);
 
   return spec;
 };
@@ -8571,7 +8703,9 @@ const applyTransactionSpecContents = <V extends Value>(
   spec: TransactionSpec
 ) => {
   const landing = TRANSACTION_SPEC_LANDINGS.get(spec);
+  const carried = TRANSACTION_SPEC_CARETS.get(spec);
   const options = {
+    ...(carried ? { carried } : {}),
     ...(spec.selection
       ? {
           selection: {
@@ -8596,23 +8730,27 @@ const applyTransactionSpecContents = <V extends Value>(
       : {}),
   };
 
-  if (!spec.changes.empty) {
-    if (!applyPreparedTransactionSpecChange(editor, spec, options)) {
-      applyDocumentChange(editor, spec.changes, options);
+  // Applying a spec places nothing: it installs the placements it made.
+  withoutPlacement(editor, () => {
+    if (!spec.changes.empty) {
+      if (!applyPreparedTransactionSpecChange(editor, spec, options)) {
+        applyDocumentChange(editor, spec.changes, options);
+      }
+    } else if (spec.selection) {
+      setCurrentSelection(
+        editor,
+        spec.selection.value,
+        toInternalRoot(spec.selection.root)
+      );
+      syncImplicitTargetToCurrentSelection(editor);
     }
-  } else if (spec.selection) {
-    setCurrentSelection(
-      editor,
-      spec.selection.value,
-      toInternalRoot(spec.selection.root)
-    );
-    syncImplicitTargetToCurrentSelection(editor);
-  }
+  });
 
-  if (spec.selection) {
-    const context = getTransactionSpecContext(editor);
+  const context = getTransactionSpecContext(editor);
 
-    if (context) context.selectionWritten = true;
+  if (context && spec.selection) context.selectionWritten = true;
+  if (context && carried) {
+    setDraftCaret(editor, landCarets(editor, context.caret, carried));
   }
 
   if (TRANSACTION_SPEC_DOCUMENT_STATES.has(spec)) {
@@ -8929,6 +9067,7 @@ export const updateEditor = <
       () => fn(getUpdateView(editor), getUpdateContext(editor)),
       {
         authority: 'update',
+        placement: options.placement,
         skipCorrections: options.skipCorrections,
       }
     );
@@ -9226,8 +9365,11 @@ const setSelectionValue = (
   const context = getTransactionSpecContext(editor);
 
   if (context) {
-    context.selection = cloneValue(selection);
-    context.selectionRoot = root;
+    context.caret = {
+      ...context.caret,
+      root,
+      selection: cloneValue(selection),
+    };
   } else {
     setSelectionStateSelection(editor, selection, root);
   }
@@ -9259,7 +9401,10 @@ export const setCurrentMarks = (editor: Editor, marks: EditorMarks | null) => {
 
   if (SelectionApi.equals(selection, nextSelection)) return;
 
-  markTransactionSelectionWritten(editor);
+  const context = getTransactionSpecContext(editor);
+
+  // Marks belong to the caret where it is, so changing them places nothing.
+  if (context) context.selectionWritten = true;
   setCurrentSelection(editor, nextSelection, getCurrentSelectionRoot(editor));
   syncImplicitTargetToCurrentSelection(editor);
 };
@@ -9276,7 +9421,7 @@ export const getCurrentSelection = (editor: Editor): Selection => {
 
   return cloneValue(
     context
-      ? context.selection
+      ? context.caret.selection
       : frame
         ? frame.selection()
         : getSelectionStateSelection(owner)
@@ -9287,7 +9432,7 @@ export const getCurrentSelectionRoot = (editor: Editor): string => {
   const owner = getEditorRuntimeOwner(editor);
 
   return (
-    getTransactionSpecContext(owner)?.selectionRoot ??
+    getTransactionSpecContext(owner)?.caret.root ??
     READ_SELECTIONS.get(owner)?.root ??
     getSelectionStateRoot(owner)
   );
@@ -9601,16 +9746,12 @@ const getTransactionView = (editor: Editor): EditorTransaction => {
       setCurrentMarks(editor, marks);
     },
     setSelection(selection: Selection) {
-      markTransactionSelectionWritten(editor);
-      const currentSelection = getCurrentSelection(editor);
-
-      if (SelectionApi.equals(currentSelection, selection)) {
+      placeSelection(editor, () => {
+        if (!SelectionApi.equals(getCurrentSelection(editor), selection)) {
+          setCurrentSelection(editor, selection);
+        }
         syncImplicitTargetToCurrentSelection(editor);
-        return;
-      }
-
-      setCurrentSelection(editor, selection);
-      syncImplicitTargetToCurrentSelection(editor);
+      });
     },
   }) as unknown as EditorTransaction;
 
@@ -10422,6 +10563,8 @@ export const withTransactionDocumentChangeObserver = <T>(
 };
 
 type ApplyDocumentChangeOptions = Readonly<{
+  /** Bookmarks a spec carries, which it installs after its step. */
+  carried?: CarriedCarets;
   notifyTransactionListeners?: boolean;
   beforeListeners?: () => void;
   selection?: Readonly<{ root: RootKey; value: Selection }>;
@@ -10576,6 +10719,22 @@ const applyTransactionSpecDocumentChangeStep = (
   const selectionBefore = getCurrentSelection(editor);
   const selectionRoot = getCurrentSelectionRoot(editor);
   const explicitSelection = options.selection;
+  // An explicit selection places before the step maps the book, so a caret it
+  // takes from another view parks in the document that caret sat in.
+  const placed = explicitSelection
+    ? placeInDraft(
+        editor,
+        specContext.caret,
+        {
+          ...specContext.caret,
+          root: explicitSelection.root,
+          selection: explicitSelection.value,
+        },
+        () => before
+      )
+    : null;
+  const carets = placed ?? specContext.caret;
+  const changedRoots = [...getInternalDocumentChangeEntries(step.change)];
 
   const runtimeIndexes = profileCoreDuration(
     specContext.kind === 'spec'
@@ -10583,36 +10742,54 @@ const applyTransactionSpecDocumentChangeStep = (
       : 'transaction-node-keys',
     () =>
       inheritDocumentChangeStepNodeKeys(editor, snapshot, step, {
-        defer: specContext.kind === 'spec' && explicitSelection !== undefined,
+        defer:
+          specContext.kind === 'spec' &&
+          explicitSelection !== undefined &&
+          !changedRoots.some(([root]) => hasBookmarksIn(carets.book, root)),
       })
   );
   const selectionRuntimeIndexes = runtimeIndexes.get(selectionRoot);
   specContext.currentChildrenRoot = nextRoot;
 
+  const mapThroughStep = (selection: Selection, root: string) => {
+    const indexes = runtimeIndexes.get(root);
+
+    return mapSelectionThroughChange(
+      editor,
+      selection,
+      step.change,
+      before,
+      after,
+      root,
+      {
+        ...(options.selectionAssociation
+          ? { association: options.selectionAssociation }
+          : {}),
+        ...(options.selectionMapping === 'representation'
+          ? { preferPositionMapping: true }
+          : {}),
+        ...(indexes ? { runtimeIndexes: indexes } : {}),
+      }
+    );
+  };
   const mappedSelection = explicitSelection
     ? explicitSelection.value
     : selectionBefore
-      ? mapSelectionThroughChange(
-          editor,
-          selectionBefore,
-          step.change,
-          before,
-          after,
-          selectionRoot,
-          {
-            ...(options.selectionAssociation
-              ? { association: options.selectionAssociation }
-              : {}),
-            ...(options.selectionMapping === 'representation'
-              ? { preferPositionMapping: true }
-              : {}),
-            ...(selectionRuntimeIndexes
-              ? { runtimeIndexes: selectionRuntimeIndexes }
-              : {}),
-          }
-        )
+      ? mapThroughStep(selectionBefore, selectionRoot)
       : null;
 
+  specContext.caret = {
+    ...carets,
+    book: mapBookThroughStep(carets.book, {
+      ...(options.carried ? { carried: options.carried } : {}),
+      before: (root) =>
+        step.indexedBefore.get(root) ?? valueRootIndex(step.before, root),
+      deletedRoots: step.change.deleteRoots,
+      keys: (root) => getDefined(runtimeIndexes.get(root)),
+      map: mapThroughStep,
+      roots: changedRoots,
+    }),
+  };
   setCurrentSelection(
     editor,
     mappedSelection,
@@ -10857,7 +11034,8 @@ export const incrementVersion = (editor: Editor) => {
 };
 
 const createEditorUpdateDraftContext = (
-  editor: Editor
+  editor: Editor,
+  placement: Placement | null
 ): TransactionSpecContext => {
   const childrenRoot = getCurrentChildrenRoot(editor);
   const previousSnapshot =
@@ -10886,6 +11064,11 @@ const createEditorUpdateDraftContext = (
   const documentState = copyDocumentState(DOCUMENT_STATE.get(editor));
   const selection = previousSnapshot.selection ?? getCurrentSelection(editor);
   const selectionRoot = getCurrentSelectionRoot(editor);
+  const caret: CaretState = {
+    ...getCommittedCarets(editor),
+    root: selectionRoot,
+    selection: cloneValue(selection),
+  };
   const cachedSnapshots = new Map(SNAPSHOT_CACHE.get(editor));
 
   cachedSnapshots.set(childrenRoot, previousSnapshot);
@@ -10944,10 +11127,11 @@ const createEditorUpdateDraftContext = (
     draftEpoch: 0,
     exitAnchorScope: () => {},
     id: {},
+    baseCaret: caret,
+    caret,
     kind: 'update',
     mutationVersion: getMutationVersion(editor),
-    selection: cloneValue(selection),
-    selectionRoot,
+    placement,
     selectionWritten: false,
     snapshot,
   };
@@ -10975,144 +11159,12 @@ const createEditorUpdateDraftContext = (
   return context;
 };
 
-export const setTransactionDocumentProjection = (
-  editor: Editor,
-  value: EditorDocumentValue
-) => {
-  const context = getTransactionSpecContext(editor);
-  if (!context || context.kind !== 'update') {
-    throw new Error(
-      'Authored proposal intent requires an active editor update.'
-    );
-  }
-  const { snapshot } = context;
-  if (!snapshot.activeChange.change.empty || snapshot.publicationBase) {
-    throw new Error(
-      'Set authored proposal intent before the first document mutation.'
-    );
-  }
-  snapshot.publicationBase = {
-    baseRuntimeIndexes: snapshot.baseRuntimeIndexes,
-    baseSnapshots: snapshot.baseSnapshots,
-    previousSnapshot: snapshot.previousSnapshot,
-    roots: snapshot.roots,
-    selection: snapshot.selection,
-    selectionRoot: snapshot.selectionRoot,
-  };
-  snapshot.roots = { [MAIN_ROOT_KEY]: value.children, ...value.roots };
-  snapshot.rootIndexes = {};
-  snapshot.baseRuntimeIndexes = {};
-  snapshot.baseSnapshots = {};
-  snapshot.builder = createEditorDocumentChangeBuilder(
-    editor,
-    getChangeValue(snapshot.roots, snapshot.records)
-  );
-  snapshot.activeChange = { change: snapshot.builder.change };
-  snapshot.previousSnapshot = null;
-  snapshot.previousSnapshot = getTransactionRootSnapshot(
-    editor,
-    snapshot,
-    snapshot.childrenRoot
-  );
-  context.exitAnchorScope();
-  context.exitAnchorScope = enterAnchorScope(editor, value);
-};
-
-export const setTransactionViewSelection = (
-  editor: Editor,
-  selection: Selection,
-  root: string
-) => {
-  const context = getTransactionSpecContext(editor);
-  if (!context) {
-    throw new Error('A view selection requires an active transaction.');
-  }
-  context.selection = cloneValue(selection);
-  context.selectionRoot = root;
-  syncImplicitTargetToCurrentSelection(editor);
-};
-
-export const restoreTransactionSourceSelection = (
-  editor: Editor,
-  viewChanged: boolean
-) => {
-  const context = getTransactionSpecContext(editor);
-  if (!context) {
-    throw new Error('A view selection requires an active transaction.');
-  }
-  const { snapshot } = context;
-  const before = getChangeValue(
-    snapshot.roots,
-    snapshot.records
-  ) as EditorDocumentValue;
-  const after = snapshot.builder.value as EditorDocumentValue;
-  context.selection = mapSelectionThroughChange(
-    editor,
-    snapshot.selection,
-    snapshot.activeChange.change,
-    before,
-    after,
-    snapshot.selectionRoot
-  );
-  context.selectionRoot = snapshot.selectionRoot;
-  if (viewChanged) {
-    snapshot.viewChanged = true;
-    markTransactionChanged(editor);
-  }
-  syncImplicitTargetToCurrentSelection(editor);
-};
-
-export const setTransactionPublicationChange = (
-  editor: Editor,
-  change: DocumentChange
-) => {
-  const context = getTransactionSpecContext(editor);
-  const snapshot = context?.snapshot;
-  if (!context || !snapshot?.publicationBase) {
-    throw new Error('Missing authored transaction projection.');
-  }
-  for (const restore of snapshot.runtimeIndexRollbacks.values()) restore();
-  snapshot.runtimeIndexRollbacks.clear();
-  Object.assign(snapshot, snapshot.publicationBase);
-  snapshot.publicationBase = undefined;
-  snapshot.rootIndexes = {};
-  snapshot.discardedNodeKeys.clear();
-  snapshot.builder = createEditorDocumentChangeBuilder(
-    editor,
-    getChangeValue(snapshot.roots, snapshot.records)
-  );
-  snapshot.activeChange = { change: snapshot.builder.change };
-  context.selection = snapshot.selection;
-  context.selectionRoot = snapshot.selectionRoot;
-  if (!change.empty) {
-    applyTransactionSpecDocumentChangeStep(
-      editor,
-      snapshot.builder.apply(change),
-      {
-        notifyTransactionListeners: false,
-      }
-    );
-    const constructed = snapshot.builder.finalize();
-    if (constructed) {
-      applyTransactionSpecDocumentChangeStep(editor, constructed, {
-        notifyTransactionListeners: false,
-        selectionMapping: 'representation',
-      });
-    }
-  }
-  context.exitAnchorScope();
-  context.exitAnchorScope = enterAnchorScope(
-    editor,
-    getEditorDocumentValue(editor)
-  );
-};
-
 const publishTransactionDraft = (
   editor: Editor,
   context: TransactionSpecContext,
   roots: Readonly<Record<string, readonly Descendant[]>>
 ) => {
-  const selection = cloneValue(context.selection);
+  const selection = cloneValue(context.caret.selection);
   const documentState = copyDocumentState(context.documentState);
 
   const currentRoot = Object.hasOwn(roots, context.currentChildrenRoot)
@@ -11123,7 +11175,8 @@ const publishTransactionDraft = (
   RECORDS.set(editor, getValueRecords(context.snapshot.builder.value));
   CURRENT_CHILDREN_ROOT.set(editor, currentRoot);
   CHILDREN.set(editor, rootSourceOf(roots, currentRoot));
-  setSelectionStateSelection(editor, selection, context.selectionRoot);
+  setSelectionStateSelection(editor, selection, context.caret.root);
+  commitCarets(editor, context.caret);
   if (documentState === undefined) DOCUMENT_STATE.delete(editor);
   else DOCUMENT_STATE.set(editor, documentState);
   MUTATION_VERSION.set(editor, context.mutationVersion);
@@ -11157,6 +11210,7 @@ export const runEditorTransaction = <R>(
   fn: (transaction: EditorTransaction) => R,
   options: {
     authority?: TransactionAuthority;
+    placement?: ViewPresentation;
     skipCorrections?: boolean;
   } = {}
 ): R | undefined => {
@@ -11169,7 +11223,10 @@ export const runEditorTransaction = <R>(
     incrementEditorTransactionDepth(editor, depth);
 
     try {
-      const answer = fn(getTransactionView(editor));
+      const run = () => fn(getTransactionView(editor));
+      const answer = options.placement
+        ? withPlacement(editor, options.placement, run)
+        : run();
 
       assertSynchronousTransactionAuthorResult(answer);
 
@@ -11190,7 +11247,10 @@ export const runEditorTransaction = <R>(
 
   assertCanStartEditorWrite(editor, options.authority);
   const transactionStartedAt = globalThis.performance?.now?.() ?? Date.now();
-  const draftContext = createEditorUpdateDraftContext(editor);
+  const draftContext = createEditorUpdateDraftContext(
+    editor,
+    options.placement ?? currentPlacement(editor)
+  );
   incrementEditorTransactionDepth(editor, depth);
 
   try {
@@ -11358,6 +11418,18 @@ export const runEditorTransaction = <R>(
             restore();
           }
           disposeTransactionSpecContext(editor, draftContext);
+          // An update whose only change is a placement still commits it, so a
+          // spec built before it goes stale.
+          if (
+            draftContext.caret.generation !==
+            getCommittedCarets(editor).generation
+          ) {
+            commitCarets(editor, draftContext.caret);
+            MUTATION_VERSION.set(
+              getEditorRuntimeOwner(editor),
+              draftContext.mutationVersion
+            );
+          }
         } else {
           let prepared;
           let anchorPublication;
@@ -11407,7 +11479,12 @@ export const runEditorTransaction = <R>(
             );
 
             const selectionBefore = cloneValue(snapshot.selection);
-            const selectionAfter = cloneValue(draftContext.selection);
+            const selectionAfter = cloneValue(draftContext.caret.selection);
+            const beforeIndexAt = (root: string) =>
+              root === MAIN_ROOT_KEY
+                ? beforeSnapshot.index
+                : (snapshot.baseRuntimeIndexes[root]?.() ??
+                  snapshot.baseSnapshots[root]?.index);
             const change = profileCoreDuration('build-change', () =>
               createEditorCommit(
                 {
@@ -11421,11 +11498,7 @@ export const runEditorTransaction = <R>(
                     ])
                   ),
                   before: beforeSnapshot,
-                  beforeIndexAt: (root) =>
-                    root === MAIN_ROOT_KEY
-                      ? beforeSnapshot.index
-                      : (snapshot.baseRuntimeIndexes[root]?.() ??
-                        snapshot.baseSnapshots[root]?.index),
+                  beforeIndexAt,
                   beforeValue,
                   changes: canonicalChanges,
                   dirtyStateKeys: [...snapshot.dirtyStateKeys],
@@ -11433,12 +11506,12 @@ export const runEditorTransaction = <R>(
                   editor,
                   replace: snapshot.reason === 'replace',
                   selectionAfter,
-                  selectionAfterRoot: draftContext.selectionRoot,
+                  selectionAfterRoot: draftContext.caret.root,
                   selectionBefore,
                   selectionBeforeRoot: snapshot.selectionRoot,
                   selectionChanged:
                     !selectionPositionEquals(selectionBefore, selectionAfter) ||
-                    snapshot.selectionRoot !== draftContext.selectionRoot,
+                    snapshot.selectionRoot !== draftContext.caret.root,
                   tags: [...snapshot.tags],
                 },
                 {
@@ -11449,6 +11522,11 @@ export const runEditorTransaction = <R>(
               )
             );
 
+            recordCommitCarets(
+              change,
+              draftContext.baseCaret,
+              draftContext.caret
+            );
             anchorPublication = prepareAnchorPublication(editor, change, () => {
               profileCoreDuration('transaction-publish-anchors', () => {
                 beginAnchorTransaction(editor);
@@ -11623,6 +11701,12 @@ export const runEditorTransaction = <R>(
     }
   } catch (error) {
     transactionError = { value: error };
+  }
+
+  try {
+    drainAfterOpenDrafts(editor);
+  } catch (error) {
+    transactionError ??= { value: error };
   }
 
   if (transactionError) {
@@ -11952,10 +12036,12 @@ export const replaceTransformedSnapshot = (
       : snapshotInput.selection;
 
     withEditorUpdateRootScope(editor, selectedRoot, () => {
-      setCurrentSelection(
-        editor,
-        resolveSnapshotSelection(editor, mappedInputSelection),
-        selectedRoot
+      placeSelection(editor, () =>
+        setCurrentSelection(
+          editor,
+          resolveSnapshotSelection(editor, mappedInputSelection),
+          selectedRoot
+        )
       );
     });
   };

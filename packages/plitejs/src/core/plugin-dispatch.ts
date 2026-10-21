@@ -1,7 +1,7 @@
+import { buildPluginRootTransaction } from '../editor-runtime-view';
 import type {
   AnyEditor as Editor,
   EditorCommandPlace,
-  EditorUpdateTransaction,
 } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
 import { PointApi } from '../interfaces/point';
@@ -26,28 +26,33 @@ import {
 } from './public-state';
 import { EditorRefusalError } from './refusal';
 import { getTxMethodLocate, isTxOnlyMethod } from './tx-only';
+import { currentPlacement } from './view-carets';
 import { countCoreWork } from './work';
 
-let buildRootTransaction:
-  | ((editor: Editor, root: string) => EditorUpdateTransaction)
-  | undefined;
+const placingPresentation = (editor: Editor) => {
+  const placement = currentPlacement(editor);
 
-export const registerPluginRootTransactionBuilder = (
-  build: NonNullable<typeof buildRootTransaction>
-) => {
-  buildRootTransaction = build;
+  return placement === 'base' || placement === null ? undefined : placement;
 };
 
-const rootTransaction = (editor: Editor, root: string) => {
+export const getRootTransaction = (
+  editor: Editor,
+  root: string,
+  presentation = placingPresentation(editor)
+) => {
   const context = getTransactionSpecContext(editor);
-  if (!context || !buildRootTransaction) {
+  if (!context) {
     throw new Error('A plugin root transaction requires an active draft.');
   }
   context.pluginRootTransactions ??= new Map();
-  const cache = context.pluginRootTransactions;
+  let cache = context.pluginRootTransactions.get(presentation);
+  if (!cache) {
+    cache = new Map();
+    context.pluginRootTransactions.set(presentation, cache);
+  }
   const cached = cache.get(root);
   if (cached) return cached;
-  const tx = buildRootTransaction(editor, root);
+  const tx = buildPluginRootTransaction(editor, root, presentation);
   cache.set(root, tx);
   return tx;
 };
@@ -177,7 +182,7 @@ export const dispatchPluginUpdate = (
       if (!framed && (isView ? decidedRoot === ownRoot : base)) {
         return Reflect.apply(method, thisArg, located);
       }
-      return callMember(rootTransaction(editor, decidedRoot), group, path, [
+      return callMember(getRootTransaction(editor, decidedRoot), group, path, [
         ...located,
       ]);
     } catch (error) {

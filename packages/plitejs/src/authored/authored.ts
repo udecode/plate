@@ -1991,9 +1991,7 @@ export const createAuthoredPlugin = (
             after,
             indexes: recorded.indexedAfter,
             map: recorded.mapPosition,
-            root: input.selectionRoot,
           };
-          const selection = mapSelection(input.selection, map);
 
           const kept = [
             ...new Set([
@@ -2151,14 +2149,33 @@ export const createAuthoredPlugin = (
               recorded.mapPosition(root, position, assoc, false),
               assoc
             );
-          const filledSelection = filled
-            ? mapSelection(selection, {
-                after: valueOf(indexes),
-                indexes: filled.indexes,
-                map: through([filled.change]),
-                root: input.selectionRoot,
-              })
-            : selection;
+          // A caret where accepting removes the writer's struck run stays on
+          // the line after it, as in the frame.
+          const staysAfter = 1;
+          const record = (draftSelection: Selection, root: string) => {
+            const selection = mapSelection(draftSelection, { ...map, root });
+            const filledSelection = filled
+              ? mapSelection(selection, {
+                  after: valueOf(indexes),
+                  indexes: filled.indexes,
+                  map: through([filled.change]),
+                  root,
+                })
+              : selection;
+
+            return owned
+              ? mapSelection(
+                  filledSelection,
+                  {
+                    after: valueOf(writtenIndexes),
+                    indexes: owned.indexes,
+                    map: through([owned.change]),
+                    root,
+                  },
+                  staysAfter
+                )
+              : filledSelection;
+          };
 
           const later = owned ? content.compose(owned.change) : content;
           const indexedAfter = owned?.indexes ?? writtenIndexes;
@@ -2184,23 +2201,13 @@ export const createAuthoredPlugin = (
                   next ? anchor.compose(next) : anchor,
                 recorded.anchorChange(plainAfter)
               ),
+            bookmarks: input.bookmarks.map(({ root, selection }) =>
+              record(selection, root)
+            ),
             change: withDocumentChangeRecords(later, records),
             indexedAfter,
             mapPosition,
-            // A caret where accepting removes the writer's struck run stays on
-            // the line after it, as in the frame.
-            selection: owned
-              ? mapSelection(
-                  filledSelection,
-                  {
-                    after: valueOf(writtenIndexes),
-                    indexes: owned.indexes,
-                    map: through([owned.change]),
-                    root: input.selectionRoot,
-                  },
-                  1
-                )
-              : filledSelection,
+            selection: record(input.selection, input.selectionRoot),
           };
         })
       );

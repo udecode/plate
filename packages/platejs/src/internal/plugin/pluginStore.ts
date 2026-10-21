@@ -1,4 +1,9 @@
 import { create } from 'mutative';
+import {
+  getViewPresentation,
+  onPresentationRelease,
+  type ViewPresentation,
+} from 'plitejs/internal';
 
 import type {
   AnyBasePluginDefinition,
@@ -8,7 +13,11 @@ import type {
   PluginReference,
   PluginStore,
 } from '../../lib';
-import type { ZustandStoreApi } from '../../lib/libs/zustand';
+import type { Editor } from '../../lib/editor';
+import {
+  createZustandStore,
+  type ZustandStoreApi,
+} from '../../lib/libs/zustand';
 import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import {
   brandPluginDescriptor,
@@ -203,11 +212,69 @@ export const createPluginStateSnapshot = () => {
   return <T>(value: T): T => snapshotPluginStateValue(value, context) as T;
 };
 
-const PLUGIN_STORES = new WeakMap<object, Map<string, unknown>>();
+type PluginStoreEntry = {
+  plugins: Map<string, unknown>;
+  viewStoreCount: number;
+  views: WeakMap<ViewPresentation, Map<string, InternalPluginStore>>;
+};
+
+const PLUGIN_STORES = new WeakMap<object, PluginStoreEntry>();
+
+const getPluginStoreEntry = (owner: object) => {
+  let entry = PLUGIN_STORES.get(owner);
+
+  if (!entry) {
+    entry = { plugins: new Map(), viewStoreCount: 0, views: new WeakMap() };
+    PLUGIN_STORES.set(owner, entry);
+  }
+
+  return entry;
+};
 
 export const clearPluginStores = (editor: object) => {
   PLUGIN_STORES.delete(getPlateRuntimeOwner(editor));
 };
+
+export const getViewStore = (
+  editor: object,
+  plugin: AnyBasePlugin,
+  presentation: ViewPresentation
+): InternalPluginStore => {
+  const entry = getPluginStoreEntry(getPlateRuntimeOwner(editor));
+  const stores =
+    entry.views.get(presentation) ?? new Map<string, InternalPluginStore>();
+
+  if (!entry.views.has(presentation)) {
+    entry.views.set(presentation, stores);
+    onPresentationRelease(presentation, () => {
+      entry.viewStoreCount -= stores.size;
+      entry.views.delete(presentation);
+    });
+  }
+
+  let store = stores.get(plugin.name);
+
+  if (!store) {
+    store = createPluginStore(
+      plugin,
+      createZustandStore(
+        snapshotPluginState(plugin.initialViewState?.() ?? {}),
+        { mutative: true, name: plugin.name }
+      ),
+      {}
+    );
+    stores.set(plugin.name, store);
+    entry.viewStoreCount += 1;
+  }
+
+  return store;
+};
+
+export const getEditorViewStore = (editor: Editor, plugin: AnyBasePlugin) =>
+  getViewStore(editor, plugin, getViewPresentation(editor));
+
+export const getViewStoreCount = (editor: object) =>
+  PLUGIN_STORES.get(getPlateRuntimeOwner(editor))?.viewStoreCount ?? 0;
 
 export function getPluginStore<P extends AnyBasePlugin & PluginReference>(
   editor: object,
@@ -227,7 +294,7 @@ export function getPluginStore(
 ): unknown {
   const name = typeof plugin === 'string' ? plugin : plugin.name;
 
-  return PLUGIN_STORES.get(getPlateRuntimeOwner(editor))?.get(name);
+  return PLUGIN_STORES.get(getPlateRuntimeOwner(editor))?.plugins.get(name);
 }
 
 export const setPluginStore = <C extends AnyBasePluginDefinition>(
@@ -236,12 +303,6 @@ export const setPluginStore = <C extends AnyBasePluginDefinition>(
   store: InternalPluginStore<C>
 ) => {
   const name = typeof plugin === 'string' ? plugin : plugin.name;
-  const owner = getPlateRuntimeOwner(editor);
-  let stores = PLUGIN_STORES.get(owner);
 
-  if (!stores) {
-    stores = new Map();
-    PLUGIN_STORES.set(owner, stores);
-  }
-  stores.set(name, store);
+  getPluginStoreEntry(getPlateRuntimeOwner(editor)).plugins.set(name, store);
 };

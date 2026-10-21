@@ -10,6 +10,7 @@ import {
   type NodeKey,
   type Selection as EditorSelection,
 } from '../..';
+import { setShownSelectionAsView } from '../../core/view-carets';
 import { getSelection } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { BROWSER_HANDLE_KEY } from '../../internal/browser-protocol';
@@ -63,7 +64,6 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
-import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
   executeEditableSelectionImport,
@@ -513,7 +513,7 @@ export const attachPliteBrowserHandle = ({
       ) {
         const point = editor.read((state) => state.points.start([]));
 
-        if (point) writeRuntimeSelection(editor, point);
+        if (point) setShownSelectionAsView(editor, point);
       }
       const editorElement = getCurrentHandleElement();
 
@@ -621,6 +621,8 @@ export const attachPliteBrowserHandle = ({
         modelSelectionPreference:
           inputController.state.modelSelectionPreference,
         modelOwnedDOMCoverageSelection,
+        pendingDOMSelectionImport:
+          inputController.state.pendingDOMSelectionImport,
         pendingNativeTextInputRepairOffset:
           inputController.state.pendingNativeTextInputRepairOffset ?? null,
         pendingNativeTextInputRepairPathKey:
@@ -779,7 +781,7 @@ export const attachPliteBrowserHandle = ({
       inputController.state.isUpdatingSelection = true;
       inputController.state.selectionChangeOrigin = 'browser-handle';
       writePliteViewSelection(editor, null);
-      writeRuntimeSelection(editor, selection);
+      setShownSelectionAsView(editor, selection);
       setExplicitViewportBackedSelection(viewportBackedSelection);
       if (viewportBackedSelection) {
         scrollPathIntoView?.(RangeApi.start(selection).path, 'center');

@@ -126,6 +126,11 @@ export { Hotkeys, isHotkey } from './utils/hotkeys';
 export { createCompiledHotkeyMatcher } from './utils/hotkey-match';
 
 export { Key } from './utils/key';
+export type { DOMSelectionPoints } from './utils/selection-writes';
+export {
+  readDOMSelectionRange,
+  writeDOMSelection,
+} from './utils/selection-writes';
 
 export {
   getElements,

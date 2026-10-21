@@ -158,7 +158,7 @@ export const createRuntimeSelectionChangeHandler = ({
   domRepairQueueRef,
   editor,
   inputController,
-  processing,
+  webKitProbeActive,
   readOnly,
   rootRef,
 }: {
@@ -166,7 +166,7 @@ export const createRuntimeSelectionChangeHandler = ({
   domRepairQueueRef: RefObject<DOMRepairQueue | null>;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
-  processing: RefObject<boolean>;
+  webKitProbeActive: RefObject<boolean>;
   readOnly: boolean;
   rootRef: RefObject<HTMLElement | null>;
 }): RuntimeSelectionChangeHandler => {
@@ -248,7 +248,7 @@ export const createRuntimeSelectionChangeHandler = ({
         androidInputManager: androidInputManagerRef.current,
         editor,
         inputController,
-        processing,
+        webKitProbeActive,
         readOnly,
         rerunOnDirtyNodeMap: onDOMSelectionChange,
       });

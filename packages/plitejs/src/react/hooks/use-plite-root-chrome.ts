@@ -38,13 +38,11 @@ export function useRootChrome<const TRoot extends RootKey = RootKey>(
 
   const internalRoot = root ?? MAIN_ROOT_KEY;
   const editor = useRootEditor(root);
-  const { getLastSelectionForRoot, getMountedViewEditor } =
-    useRequiredPliteRuntimeContext();
+  const { getMountedViewEditor } = useRequiredPliteRuntimeContext();
   const { onMouseDownCapture, onMouseMoveCapture, onMouseUpCapture } =
     useRootInteractionController({
       disabled,
       editor,
-      getLastSelectionForRoot,
       getMountedViewEditor,
       root: internalRoot,
       selection,

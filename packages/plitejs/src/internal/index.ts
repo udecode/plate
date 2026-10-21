@@ -146,6 +146,22 @@ export {
 } from '../create-editor';
 export { isAuthorId } from '../core/authored-document-capability';
 export {
+  getViewPresentation,
+  projectEditorView,
+  retainViewPresentation,
+  withMountedPresentation,
+} from '../editor-runtime-view';
+export {
+  getStateViewPresentation,
+  onPresentationRelease,
+  type ViewPresentation,
+} from '../core/view-presentation';
+export {
+  getCaretOwner,
+  holdsCaret,
+  setSelectionAsView,
+} from '../core/view-carets';
+export {
   createEditorOwner,
   type EditorOwner,
   startOwnedEditor,

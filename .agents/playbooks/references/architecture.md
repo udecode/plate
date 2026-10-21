@@ -87,7 +87,7 @@ Classify every state value before judging its API:
 | Durable document truth | model nodes/properties plus operations and serialization |
 | Shared application or service truth | application/service domain owner outside one editor instance |
 | Editor-session configuration | editor/plugin runtime configuration and scoped store |
-| View-local transient state | mounted view, DOM/input lifecycle, or component owner |
+| View-local transient state | mounted view, DOM/input lifecycle, component owner, or the plugin's view store when plugin commands read it |
 | Derived read, cache, or index | private projection with explicit invalidation from its source |
 
 Then trace all writers, readers, invalidation, serialization, collaboration, mount/unmount and reset paths. A cache is not a second truth only when callers cannot write it independently and its source owns invalidation. Wrong ownership or lifetime is structural failure; UI polish, tests and a short call site cannot average it away.

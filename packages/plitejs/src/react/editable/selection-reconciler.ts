@@ -7,9 +7,11 @@ import {
 } from 'react';
 
 import { NodeApi, PathApi, type Range, RangeApi, SelectionApi } from '../..';
+import { setShownSelectionAsView } from '../../core/view-carets';
 import {
   containsShadowAware,
   type DOMElement,
+  type DOMPoint,
   type DOMRange,
   getDefaultView,
   getSelection,
@@ -32,6 +34,11 @@ import {
   NODE_TO_ELEMENT,
 } from '../../dom/internal';
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
+import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
+import {
+  readDOMSelectionRange,
+  writeDOMSelection,
+} from '../../dom/utils/selection-writes';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
@@ -70,8 +77,8 @@ import {
   setEditorFocused,
   string as editorString,
 } from './runtime-editor-api';
-import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
+import { decideWebKitProbeImport } from './selection-controller';
 import {
   resolvePliteRangeFromDOMSelection,
   resolvePliteRangeFromDOMTextRange,
@@ -247,12 +254,8 @@ export const applyEditableBlur = ({
     }
   }
 
-  // COMPAT: Safari doesn't always remove the selection even if the content-
-  // editable element no longer has focus. Refer to:
-  // https://stackoverflow.com/questions/12353247/force-contenteditable-div-to-stop-accepting-input-after-it-loses-focus-under-web
   if (isWebKitDOMHost(root)) {
-    const domSelection = getSelection(root);
-    domSelection?.removeAllRanges();
+    writeDOMSelection(root, null);
   }
 
   IS_FOCUSED.delete(editor);
@@ -942,13 +945,13 @@ export const restoreUserSelectionAfterBeforeInput = ({
 export const handleWebKitShadowDOMBeforeInput = ({
   editor,
   event,
-  processing,
+  webKitProbeActive,
   root,
   window,
 }: {
   editor: ReactRuntimeEditor;
   event: InputEvent;
-  processing: RefObject<boolean>;
+  webKitProbeActive: RefObject<boolean>;
   root: globalThis.Node;
   window: Window & typeof globalThis;
 }) => {
@@ -957,7 +960,7 @@ export const handleWebKitShadowDOMBeforeInput = ({
 
   if (
     !(
-      processing.current &&
+      webKitProbeActive.current &&
       isWebKitDOMHost(root) &&
       ShadowRootConstructor &&
       root instanceof ShadowRootConstructor
@@ -987,10 +990,16 @@ export const handleWebKitShadowDOMBeforeInput = ({
     return true;
   }
 
-  writePliteViewSelection(editor, null);
-  editor.update((tx) => {
-    tx.selection.set(pliteRange);
-  });
+  const decision = decideWebKitProbeImport(editor, newRange);
+
+  if (decision.verdict === 'sync' || decision.verdict === 'claim') {
+    decision.write(() => {
+      writePliteViewSelection(editor, null);
+      editor.update((tx) => {
+        tx.selection.set(pliteRange);
+      });
+    });
+  }
 
   event.preventDefault();
   event.stopImmediatePropagation();
@@ -1032,7 +1041,7 @@ export const useEditableSelectionReconciler = ({
     }
 
     // Make sure the DOM selection state is in sync.
-    const selection = readRuntimeSelection(editor);
+    const selection = resolveNextKeyCaret(editor, rootRef.current);
     const initialMount = reconciledRuntime.current !== runtime;
     reconciledRuntime.current = runtime;
     // Reading native selection can force layout before sibling adapters mount.
@@ -1111,7 +1120,7 @@ export const useEditableSelectionReconciler = ({
     }
 
     if (viewportBackedSelection && selectionHasDOMCoverage) {
-      domSelection.removeAllRanges();
+      writeDOMSelection(root, null);
       return undefined;
     }
 
@@ -1142,16 +1151,17 @@ export const useEditableSelectionReconciler = ({
       // COMPAT: In firefox the normal selection way does not work
       // (https://github.com/ianstormtaylor/slate/pull/5486#issue-1820720223)
       if (runtime.isGeckoHost && domSelection.rangeCount > 1) {
-        const firstRange = domSelection.getRangeAt(0);
-        const lastRange = domSelection.getRangeAt(domSelection.rangeCount - 1);
+        const firstRange = readDOMSelectionRange(domSelection);
+        const lastRange = readDOMSelectionRange(
+          domSelection,
+          domSelection.rangeCount - 1
+        );
 
-        // Right to left
-        if (firstRange.startContainer === focusNode) {
-          anchorNode = lastRange.endContainer;
-        } else {
-          // Left to right
-          anchorNode = firstRange.startContainer;
-        }
+        const rightToLeft = firstRange.startContainer === focusNode;
+
+        anchorNode = rightToLeft
+          ? lastRange.endContainer
+          : firstRange.startContainer;
       } else {
         ({ anchorNode } = domSelection);
       }
@@ -1235,7 +1245,7 @@ export const useEditableSelectionReconciler = ({
           exactMatch: false,
         });
 
-        writeRuntimeSelection(
+        setShownSelectionAsView(
           editor,
           resolvedRange ? SelectionApi.text(resolvedRange) : null
         );
@@ -1252,7 +1262,6 @@ export const useEditableSelectionReconciler = ({
         applyDOMCoverageSelectionPolicy({
           editorElement,
           coverage: runtime.domCoverage,
-          domSelection,
           editor,
           onDOMSelectionWillChange: () => {
             state.isUpdatingSelection = true;
@@ -1260,6 +1269,7 @@ export const useEditableSelectionReconciler = ({
             clearUpdatingSelection();
           },
           selection: projectedSelection,
+          tree: root,
         })
       ) {
         return undefined;
@@ -1301,44 +1311,33 @@ export const useEditableSelectionReconciler = ({
         : null;
 
       if (newDomRange) {
-        const [startContainer, startOffset] = clampDOMSelectionPoint(
+        const start = clampDOMSelectionPoint(
           newDomRange.startContainer,
           newDomRange.startOffset
         );
-        const [endContainer, endOffset] = clampDOMSelectionPoint(
+        const end = clampDOMSelectionPoint(
           newDomRange.endContainer,
           newDomRange.endOffset
         );
 
         if (ReactEditor.isComposing(editor) && !runtime.isAndroidHost) {
-          if (domSelection.rangeCount > 0) {
-            domSelection.collapseToEnd();
-          } else {
-            domSelection.setBaseAndExtent(
-              endContainer,
-              endOffset,
-              endContainer,
-              endOffset
-            );
-          }
+          const range =
+            domSelection.rangeCount > 0
+              ? readDOMSelectionRange(domSelection)
+              : null;
+          const caret: DOMPoint = range
+            ? [range.endContainer, range.endOffset]
+            : end;
+
+          writeDOMSelection(root, { anchor: caret, focus: caret });
         } else if (
           RangeApi.isBackward(
             projectedSelection ?? failInvariant('Expected value to be defined')
           )
         ) {
-          domSelection.setBaseAndExtent(
-            endContainer,
-            endOffset,
-            startContainer,
-            startOffset
-          );
+          writeDOMSelection(root, { anchor: end, focus: start });
         } else {
-          domSelection.setBaseAndExtent(
-            startContainer,
-            startOffset,
-            endContainer,
-            endOffset
-          );
+          writeDOMSelection(root, { anchor: start, focus: end });
         }
         if (!shouldSkipSelectionScroll(editor)) {
           scrollSelectionIntoView(editor, newDomRange);
@@ -1351,7 +1350,7 @@ export const useEditableSelectionReconciler = ({
         SelectionApi.isNode(selection) ||
         !projectedSelection
       ) {
-        domSelection.removeAllRanges();
+        writeDOMSelection(root, null);
       }
 
       return newDomRange;

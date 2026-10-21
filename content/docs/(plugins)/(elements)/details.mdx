@@ -9,7 +9,7 @@ docs:
 
 <ComponentPreview name="details-demo" />
 
-Details adds semantic disclosure blocks with one editable Summary and any number of direct body blocks. Open state belongs to the editor session, so HTML, Markdown, saved values, collaboration, and undo keep only document content.
+Details adds semantic disclosure blocks with one editable Summary and any number of direct body blocks. Open state belongs to each view of the editor, not to the document, so HTML, Markdown, saved values, collaboration, and undo keep only document content.
 
 <PackageInfo>
 
@@ -17,7 +17,7 @@ Details adds semantic disclosure blocks with one editable Summary and any number
 
 - Native `details` and `summary` HTML serialization.
 - Nested Details with direct block children.
-- Transient open state keyed by node identity.
+- Transient open state keyed by node identity, kept per view.
 - Wrap, unwrap, and insert transforms.
 - Keyboard behavior for entering, exiting, and unwrapping Details.
 
@@ -41,7 +41,7 @@ const value = [
 
 The Details schema enforces this shape. Turning a title into Quote, Callout or Columns, or typing three dashes in it, changes nothing. Code and List still convert a title and remove its Details. When Enter, paste or Duplicate creates a block after the title, that block is a body paragraph. A value with a Summary out of place, or with two, fails to load.
 
-`open` and `name` are not document properties. Use the plugin state when the application needs to expand or collapse a Details node.
+`open` and `name` are not document properties. Use the [open state](#open-state) API when the application needs to expand or collapse a Details node.
 
 ## Heading titles
 
@@ -66,7 +66,7 @@ Heading and Text choices keep the Details structure. List choices turn the selec
 
 With the Code Block kit installed, use `mod+alt+8` for the code conversion. Turn into disables Code when the selection holds the title and more blocks. Undo restores the Details and its disclosure state. A list conversion changes nothing when a body block cannot take an indent. Other selected blocks stay unchanged too. `IndentKit` lists the block types that can, so a custom setup adds its body block types to Indent's `targetPlugins`.
 
-A block inserted from a closed Details title lands after the whole Details, whether it comes from the slash menu, an insert command, a pasted file or AI. From an open title it lands at the start of the body. Heading and Text slash choices format the existing title instead.
+When the inserting view shows a Details closed, a block inserted from its title lands after the whole Details, whether it comes from the slash menu, an insert command, a pasted file or AI. From an open title it lands at the start of the body. Heading and Text slash choices format the existing title instead.
 
 <Steps>
 
@@ -149,8 +149,9 @@ const editor = createEditor({
 
 ### `editor.plugin(BaseDetailsPlugin).update.insert`
 
-Insert an open Details node with an empty Summary and body paragraph after the
-current block. Pass `select: true` to place the selection in the Summary and
+Insert a Details node with an empty Summary and body paragraph after the
+current block. The new node is open in the view that inserts it and closed in
+every other view. Pass `select: true` to place the selection in the Summary and
 `replaceEmpty: true` to replace an empty source in the same history step.
 An explicit `at` keeps node-insertion placement; `after` identifies the source block.
 
@@ -160,7 +161,7 @@ editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true });
 
 ### `editor.plugin(BaseDetailsPlugin).update.wrap`
 
-Wrap selected sibling blocks. The first text block becomes the Summary; structural first blocks get an empty Summary before them.
+Wrap selected sibling blocks. The first text block becomes the Summary; structural first blocks get an empty Summary before them. The new Details is open in the view that wraps it.
 
 ```tsx
 editor.plugin(BaseDetailsPlugin).update.wrap();
@@ -176,7 +177,11 @@ editor.plugin(BaseDetailsPlugin).update.unwrap();
 
 ## Open state
 
-Read and update disclosure state through `BaseDetailsPlugin`. The state uses `NodeKey`, not a serialized element property.
+Each view keeps its own open state. Opening or closing a Details node in one view leaves every other view as it is. The state lives in the plugin's [view store](/docs/plugin-context#view-state) and uses `NodeKey`, not a serialized element property.
+
+Every `EditorRoot` is one view. The `EditorContent` areas inside one `EditorRoot` share its view, so they share one caret and one open state. Two `EditorRoot`s on one editor are two views, each with its own caret and its own open sections.
+
+Read and update the open state through the view editor that `useEditor()` returns:
 
 ```tsx
 const details = editor.plugin(BaseDetailsPlugin);
@@ -184,11 +189,44 @@ const key = editor.key(detailsElement);
 
 if (key !== undefined) {
   details.api.setOpen(key, true);
-  const open = details.store.get('isOpen', key);
+  const open = details.api.isOpen(key);
 }
 ```
 
-Closing a Details node moves the closing editor's selection out of its body to the end of its Summary. A read-only view moves the owning editor's selection instead. Undo restores a removed Details node with its open state.
+A component subscribes to its own view's open state with [`useViewStore`](/docs/api/core#useviewstore):
+
+```tsx title="details-toggle.tsx" showLineNumbers
+import { BaseDetailsPlugin, type DetailsElement } from 'platejs/details';
+import { useEditor, useViewStore } from 'platejs/react';
+
+export function DetailsToggle({ element }: { element: DetailsElement }) {
+  const editor = useEditor();
+  const detailsKey = editor.key(element);
+  const { api } = editor.plugin(BaseDetailsPlugin);
+  const open = useViewStore(
+    BaseDetailsPlugin,
+    (state) => detailsKey !== undefined && state.openKeys.has(detailsKey)
+  );
+
+  return (
+    <button
+      aria-expanded={open}
+      type="button"
+      onClick={() => {
+        if (detailsKey !== undefined) api.setOpen(detailsKey, !open);
+      }}
+    >
+      {open ? 'Collapse' : 'Expand'}
+    </button>
+  );
+}
+```
+
+Enter, Backspace, Delete, and blocks inserted from a title follow the open state of the view they run in. A heading jump from the table of contents opens the sections around the heading only in the view that jumped.
+
+Closing a Details node moves the caret out of its body to the end of its Summary when the closing view is writable and holds the caret, or when no view holds it. A close never moves a caret that another view holds. A read-only view's close leaves the selection where it is. Undo restores a removed Details node with its open state.
+
+The base editor, the editor that `createEditor` or `useCreateEditor` returns, is not a view. It keeps its own open state, which no mounted view shows. A section opened in a view reads closed through the base editor and through `editor.api` calls made on it, and `api.setOpen` on the base editor changes no view. In React, call these APIs on the editor that `useEditor()` returns. In headless code with no views, the base editor's state is the only open state.
 
 ## Serialization
 
@@ -218,7 +256,7 @@ Use [`DetailsToolbarButton`](/docs/components/details-toolbar-button) to wrap th
 
 ### `BaseDetailsPlugin`
 
-Headless schema, format mappings, transient state, transforms, and Enter, Backspace, and Delete behavior for `details` nodes.
+Headless schema, format mappings, per-view open state, transforms, and Enter, Backspace, and Delete behavior for `details` nodes.
 
 ### `BaseDetailsSummaryPlugin`
 
@@ -236,7 +274,10 @@ React adapter for Summary rendering.
 
 ```ts
 import type {
+  BaseDetailsViewState,
   DetailsElement,
   DetailsSummaryElement,
 } from 'platejs/details';
 ```
+
+`BaseDetailsViewState` is one view's open state. Its `openKeys` field is the `Set<NodeKey>` of open Details nodes.

@@ -9,7 +9,7 @@ docs:
 
 <ComponentPreview name="details-demo" />
 
-Details 提供语义化的折叠内容块，其中包含一个可编辑的 Summary 和任意数量的直属内容块。展开状态属于编辑器会话，因此 HTML、Markdown、保存值、协作和撤销记录只保留文档内容。
+Details 提供语义化的折叠内容块，其中包含一个可编辑的 Summary 和任意数量的直属内容块。展开状态属于编辑器的每个视图，而不是文档，因此 HTML、Markdown、保存值、协作和撤销记录只保留文档内容。
 
 <PackageInfo>
 
@@ -17,7 +17,7 @@ Details 提供语义化的折叠内容块，其中包含一个可编辑的 Summa
 
 - 使用原生 `details` 和 `summary` 标签序列化 HTML。
 - 支持包含直属块内容的嵌套 Details。
-- 使用节点标识维护临时展开状态。
+- 使用节点标识维护临时展开状态，每个视图各自一份。
 - 提供包裹、解除包裹和插入转换。
 - 提供进入、退出和解除 Details 的键盘行为。
 
@@ -41,7 +41,7 @@ const value = [
 
 这个结构由 schema 保证。把标题转换为引用、Callout 或分栏，或在标题中输入三个短横线，都不会生效。代码块和列表仍可转换标题，同时移除所在的 Details。在标题中按 Enter、粘贴或创建副本时，新建的块是正文段落。Summary 不在首位或有两个 Summary 的值无法加载。
 
-`open` 和 `name` 不是文档属性。应用需要展开或折叠 Details 节点时，请使用插件状态。
+`open` 和 `name` 不是文档属性。应用需要展开或折叠 Details 节点时，请使用[展开状态](#open-state) API。
 
 ## 标题等级
 
@@ -68,7 +68,7 @@ Heading 和 Text 选项保留 Details 结构。列表选项把选中的标题转
 
 安装 Code Block 套件后，可以使用 `mod+alt+8` 转换为代码块。选区包含标题和其他块时，Turn into 菜单会禁用 Code。撤销会恢复 Details 及其展开状态。如果某个正文块不能缩进，列表转换不做任何改动，选区中的其他块也不会转换。`IndentKit` 列出可以缩进的块类型；自定义配置需要把正文块类型加入 Indent 的 `targetPlugins`。
 
-从折叠的 Details 标题插入的块，无论来自斜杠菜单、插入命令、粘贴的文件还是 AI，都会放在整个 Details 之后。从展开的标题插入时，块会放在正文开头。Heading 和 Text 斜杠选项则直接修改现有标题格式。
+执行插入的视图中折叠的 Details，从它的标题插入的块，无论来自斜杠菜单、插入命令、粘贴的文件还是 AI，都会放在整个 Details 之后。从展开的标题插入时，块会放在正文开头。Heading 和 Text 斜杠选项则直接修改现有标题格式。
 
 <Steps>
 
@@ -151,7 +151,7 @@ const editor = createEditor({
 
 ### `editor.plugin(BaseDetailsPlugin).update.insert`
 
-插入一个展开的 Details 节点，其中包含空 Summary 和正文段落。传入 `select: true` 可将选区放入 Summary。
+插入一个 Details 节点，其中包含空 Summary 和正文段落。新节点在执行插入的视图中展开，在其他视图中折叠。传入 `select: true` 可将选区放入 Summary。
 
 ```tsx
 editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true });
@@ -162,7 +162,7 @@ editor.plugin(BaseDetailsPlugin).update.insert({}, { select: true });
 
 ### `editor.plugin(BaseDetailsPlugin).update.wrap`
 
-包裹选中的同级块。第一个文本块会成为 Summary；如果第一个块是结构化节点，则会在它之前插入空 Summary。
+包裹选中的同级块。第一个文本块会成为 Summary；如果第一个块是结构化节点，则会在它之前插入空 Summary。新的 Details 在执行包裹的视图中展开。
 
 ```tsx
 editor.plugin(BaseDetailsPlugin).update.wrap();
@@ -176,9 +176,13 @@ editor.plugin(BaseDetailsPlugin).update.wrap();
 editor.plugin(BaseDetailsPlugin).update.unwrap();
 ```
 
-## 展开状态
+## 展开状态 [#open-state]
 
-通过 `BaseDetailsPlugin` 读取和更新展开状态。该状态使用 `NodeKey`，而不是序列化的元素属性。
+每个视图都有自己的展开状态。在一个视图中展开或折叠 Details 节点，不会影响其他视图。该状态保存在插件的 [view store](/docs/plugin-context#view-state) 中，使用 `NodeKey`，而不是序列化的元素属性。
+
+每个 `EditorRoot` 是一个视图。同一个 `EditorRoot` 中的 `EditorContent` 共享它的视图，因此共享同一个光标和同一份展开状态。同一个编辑器上的两个 `EditorRoot` 是两个视图，各自有自己的光标和展开的区块。
+
+通过 `useEditor()` 返回的视图编辑器读取和更新展开状态：
 
 ```tsx
 const details = editor.plugin(BaseDetailsPlugin);
@@ -186,11 +190,44 @@ const key = editor.key(detailsElement);
 
 if (key !== undefined) {
   details.api.setOpen(key, true);
-  const open = details.store.get('isOpen', key);
+  const open = details.api.isOpen(key);
 }
 ```
 
-关闭 Details 节点时，执行关闭的编辑器在正文内的选区会移动到 Summary 末尾。只读视图会改为移动所属编辑器的选区。撤销删除时，Details 节点会恢复原来的展开状态。
+组件使用 [`useViewStore`](/docs/api/core#useviewstore) 订阅自己所在视图的展开状态：
+
+```tsx title="details-toggle.tsx" showLineNumbers
+import { BaseDetailsPlugin, type DetailsElement } from 'platejs/details';
+import { useEditor, useViewStore } from 'platejs/react';
+
+export function DetailsToggle({ element }: { element: DetailsElement }) {
+  const editor = useEditor();
+  const detailsKey = editor.key(element);
+  const { api } = editor.plugin(BaseDetailsPlugin);
+  const open = useViewStore(
+    BaseDetailsPlugin,
+    (state) => detailsKey !== undefined && state.openKeys.has(detailsKey)
+  );
+
+  return (
+    <button
+      aria-expanded={open}
+      type="button"
+      onClick={() => {
+        if (detailsKey !== undefined) api.setOpen(detailsKey, !open);
+      }}
+    >
+      {open ? 'Collapse' : 'Expand'}
+    </button>
+  );
+}
+```
+
+Enter、Backspace、Delete 以及从标题插入的块，都按它们所在视图的展开状态执行。从目录跳转到标题时，只会在执行跳转的视图中展开标题外层的区块。
+
+关闭 Details 节点时，如果执行关闭的视图可编辑且持有光标，或者没有任何视图持有光标，光标会从正文移到 Summary 末尾。关闭操作不会移动其他视图持有的光标。只读视图关闭时，选区保持不变。撤销删除时，Details 节点会恢复原来的展开状态。
+
+基础编辑器，即 `createEditor` 或 `useCreateEditor` 返回的编辑器，不是视图。它有自己的展开状态，任何已挂载的视图都不会显示这份状态。在视图中展开的区块，通过基础编辑器以及在它上面调用的 `editor.api` 读取时仍是折叠的；在基础编辑器上调用 `api.setOpen` 也不会改变任何视图。在 React 中，请在 `useEditor()` 返回的编辑器上调用这些 API。在没有视图的无界面代码中，基础编辑器的状态就是唯一的展开状态。
 
 ## 序列化
 
@@ -218,7 +255,7 @@ HTML 按浏览器的规则确定标题。第一个 `<summary>` 子元素无论�
 
 ### `BaseDetailsPlugin`
 
-为 `details` 节点提供无界面 schema、编解码器、临时状态、转换，以及 Enter、Backspace 和 Delete 行为。
+为 `details` 节点提供无界面 schema、编解码器、按视图保存的展开状态、转换，以及 Enter、Backspace 和 Delete 行为。
 
 ### `BaseDetailsSummaryPlugin`
 
@@ -236,7 +273,10 @@ HTML 按浏览器的规则确定标题。第一个 `<summary>` 子元素无论�
 
 ```ts
 import type {
+  BaseDetailsViewState,
   DetailsElement,
   DetailsSummaryElement,
 } from 'platejs/details';
 ```
+
+`BaseDetailsViewState` 是一个视图的展开状态。它的 `openKeys` 字段是已展开 Details 节点的 `Set<NodeKey>`。

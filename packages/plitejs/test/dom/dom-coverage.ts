@@ -15,7 +15,6 @@ import {
   IS_NODE_MAP_DIRTY,
   installEditorDOMPhaseScheduler,
   NODE_TO_ELEMENT,
-  replaceDOMSelectionRange,
 } from '../../src/dom/internal';
 import {
   getNodeKey as editorGetNodeKey,
@@ -412,62 +411,6 @@ describe('DOM coverage boundaries', () => {
       testView(editor).domCoverage.getBoundariesForRange(range)
     ).toMatchObject([{ boundaryId: 'section-body' }]);
   });
-
-  test.each([
-    [false, false],
-    [true, false],
-    [false, true],
-  ])(
-    'installs exact selection direction (backward: %s, collapsed: %s)',
-    (backward, collapsed) => {
-      withDom((document) => {
-        const text = document.createTextNode('abc');
-        const range = document.createRange();
-        const calls: string[] = [];
-        let addedRange: globalThis.Range | null = null;
-        let baseAndExtentCall: unknown[] | null = null;
-        const selection = {
-          addRange(nextRange: globalThis.Range) {
-            calls.push('addRange');
-            addedRange = nextRange;
-          },
-          removeAllRanges() {
-            calls.push('removeAllRanges');
-          },
-          setBaseAndExtent(
-            nextAnchorNode: Node,
-            nextAnchorOffset: number,
-            nextFocusNode: Node,
-            nextFocusOffset: number
-          ) {
-            calls.push('setBaseAndExtent');
-            baseAndExtentCall = [
-              nextAnchorNode,
-              nextAnchorOffset,
-              nextFocusNode,
-              nextFocusOffset,
-            ];
-          },
-        } as unknown as Selection;
-
-        range.setStart(text, 0);
-        range.setEnd(text, collapsed ? 0 : 2);
-        replaceDOMSelectionRange(selection, range, { backward });
-
-        expect(addedRange).toBe(collapsed ? null : range);
-        expect(baseAndExtentCall).toEqual(
-          backward
-            ? [text, range.endOffset, text, range.startOffset]
-            : [text, range.startOffset, text, range.endOffset]
-        );
-        expect(calls).toEqual(
-          collapsed
-            ? ['setBaseAndExtent']
-            : ['removeAllRanges', 'addRange', 'setBaseAndExtent']
-        );
-      });
-    }
-  );
 
   test('syncs native selection inside a shadow root when focusing', () => {
     withDom((document) => {

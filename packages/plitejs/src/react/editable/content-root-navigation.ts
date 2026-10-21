@@ -11,7 +11,9 @@ import {
   SelectionApi,
   type RootKey,
 } from '../..';
+import { setShownSelectionAsView } from '../../core/view-carets';
 import { resolveLastEditorWindow } from '../../dom/internal';
+import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { EditorSelectionTarget } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { readRootChildren } from '../root-key';
@@ -86,7 +88,6 @@ import {
   getEditorRuntimeOwner,
   toInternalRoot,
 } from './runtime-editor-api';
-import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 
 export {
@@ -140,7 +141,7 @@ const selectContentRoot = (
   target: EditorSelectionTarget
 ) => {
   if (editor.read.view.isReadOnly()) {
-    writeRuntimeSelection(editor, target);
+    setShownSelectionAsView(editor, target);
   } else {
     dispatchCommand(editor, editorCommands.select, { target });
   }
@@ -167,16 +168,16 @@ const collapseNativeSelectionForProjectedSelection = (
     return;
   }
 
-  const domSelection = resolveLastEditorWindow(editor)?.document.getSelection();
+  const tree = resolveLastEditorWindow(editor)?.document;
 
-  if (!domSelection) {
+  if (!tree) {
     return;
   }
 
   const clear = () => {
     const current = readPliteViewSelection(editor);
     if (!current || isPliteViewSelectionCollapsed(current)) return;
-    domSelection.removeAllRanges();
+    writeDOMSelection(tree, null);
   };
 
   clear();

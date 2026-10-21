@@ -6,8 +6,10 @@ import type {
   RuntimePluginDependencyReference,
   RuntimePluginDefinition,
   RuntimePluginReference,
+  EditorCoreStateView,
   EditorDirectUpdate,
   EditorReadMethodTree,
+  EditorUpdateTransaction,
   Editor as RuntimeEditor,
   Element,
   Path,
@@ -66,6 +68,7 @@ export type BasePluginDefinition = Readonly<{
   effectTypes?: true;
   enabled?: boolean;
   initialState?: object;
+  initialViewState?: object;
   inject?: true;
   inputRules?: true;
   name: string;
@@ -505,12 +508,25 @@ type PluginRuntimeContext<
 /** Consumer capabilities projected by one exact plugin portal. */
 export type PluginPortalContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = PluginRuntimeContext<C> & PluginConsumerSchemaField<C>;
+> = PluginRuntimeContext<C> &
+  PluginConsumerSchemaField<C> &
+  Readonly<{
+    /** This plugin's state in the view the portal was built for. */
+    viewStore: PluginViewStore<C>;
+  }>;
 
 /** Capabilities and compiled schema handles available in author callbacks. */
 export type PluginBaseContext<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
-> = PluginRuntimeContext<C> & PluginAuthorSchemaField<C>;
+> = PluginRuntimeContext<C> &
+  PluginAuthorSchemaField<C> &
+  Readonly<{
+    /**
+     * This plugin's state in the view a read state or transaction runs in: a
+     * reader for a read state, a writer for a transaction.
+     */
+    viewStoreOf: PluginViewStoreOf<C>;
+  }>;
 
 export type BaseTransformOptions = GetInjectNodePropsOptions & {
   nodeValue?: unknown;
@@ -899,6 +915,53 @@ export type PluginStore<
       previousState: InferPluginStoreState<C>
     ) => void
   ) => () => void;
+};
+
+export type InferPluginViewState<P> = P extends {
+  initialViewState: infer ViewState;
+}
+  ? ViewState
+  : {};
+
+export type PluginViewStoreReader<
+  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = {
+  get(): Readonly<InferPluginViewState<C>>;
+  get<K extends keyof InferPluginViewState<C>>(
+    key: K
+  ): InferPluginViewState<C>[K];
+};
+
+export type PluginViewStoreWriter<
+  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = PluginViewStoreReader<C> & {
+  set(
+    value:
+      | Partial<InferPluginViewState<C>>
+      | ((state: Draft<InferPluginViewState<C>>) => void)
+  ): void;
+};
+
+export type PluginViewStore<
+  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = PluginViewStoreWriter<C> & {
+  subscribe: (
+    listener: (
+      state: InferPluginViewState<C>,
+      previousState: InferPluginViewState<C>
+    ) => void
+  ) => () => void;
+};
+
+export type PluginViewStoreOf<
+  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = {
+  (
+    tx: Readonly<Pick<EditorUpdateTransaction, 'setField'>>
+  ): PluginViewStoreWriter<C>;
+  (
+    state: Readonly<Pick<EditorCoreStateView, 'getField' | 'view'>>
+  ): PluginViewStoreReader<C>;
 };
 
 export type InferPluginReadGroups<P extends AnyBasePluginDefinition> = {

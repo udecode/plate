@@ -9,6 +9,7 @@ import {
   type Value,
 } from '../..';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '../../dom/internal';
+import { matchesPresentationOf } from '../../editor-runtime-view';
 import type { AnyEditor } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
@@ -100,14 +101,18 @@ export const getRegisteredRootViewEditor = (
   editor: ReactRuntimeEditor,
   root: RootKey
 ): ReactRuntimeEditor | null => {
-  const viewEditors = EDITOR_TO_ROOT_VIEW_EDITORS.get(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const viewEditors = EDITOR_TO_ROOT_VIEW_EDITORS.get(owner);
 
   if (!viewEditors) {
     return null;
   }
 
+  const matchesPresentation = matchesPresentationOf(editor);
+
   for (const viewEditor of viewEditors) {
     if (
+      matchesPresentation(viewEditor) &&
       toInternalRoot(viewEditor.read((state) => state.view.root())) === root
     ) {
       return viewEditor as ReactRuntimeEditor;

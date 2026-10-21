@@ -15,6 +15,7 @@ import {
   getEditorCommitValue,
 } from '../../core/commit';
 import { mapSelectionThroughChange } from '../../core/selection-protocol';
+import { getSelection } from '../../dom';
 import { EDITOR_TO_PLACEHOLDER_ELEMENT } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -414,7 +415,7 @@ const listenForLeave = (
   if (!root) return () => {};
   const document = root.ownerDocument;
   const onSelectionChange = () => {
-    const selection = document.getSelection();
+    const selection = getSelection(root.getRootNode() as Document | ShadowRoot);
 
     if (
       selection?.anchorNode &&

@@ -241,3 +241,80 @@ rule tuple。Whole-payload browser MIME 处理通过 `dataTransferFormats` 注�
 从 `platejs` import 的 `definePlugin` 只用于独立复用的
 standalone Plate descriptor。完整示例见
 [插件方法](/docs/plugin-methods#commands)。
+
+## 视图状态 [#view-state]
+
+同一个编辑器的所有视图共享插件 state。当两个 `EditorRoot` 显示同一个编辑器时，
+属于某个视图显示内容的状态，例如哪些区块已折叠，应放入插件的 view store。使用
+`initialViewState` 声明它。Plate 为每个视图创建一份，并为基础编辑器单独创建一份。
+
+```ts title="focus-mode-plugin.ts" showLineNumbers
+import { definePlugin } from 'platejs/react';
+
+export type FocusModeViewState = {
+  enabled: boolean;
+};
+
+export const FocusModePlugin = definePlugin('focusMode', {
+  initialViewState: (): FocusModeViewState => ({
+    enabled: false,
+  }),
+  api: ({ viewStore }) => ({
+    isEnabled: () => viewStore.get('enabled'),
+  }),
+}).extend(({ viewStoreOf }) => ({
+  read: ({ state }) => ({
+    isEnabled: () => viewStoreOf(state).get('enabled'),
+  }),
+  update: ({ tx }) => ({
+    toggle: () => {
+      viewStoreOf(tx).set((draft) => {
+        draft.enabled = !draft.enabled;
+      });
+    },
+  }),
+}));
+```
+
+`api` factory 接收 `viewStore`，它绑定到构建该 API 的视图。插件 portal 以
+`editor.plugin(FocusModePlugin).viewStore` 暴露同一个 store。
+
+`.extend` callback 没有 `viewStore`，因为一个插件定义服务所有视图。read 或命令
+通过它接收的 state 或事务访问自己的视图。`viewStoreOf(state)` 返回该 state 所属
+视图的 reader，`viewStoreOf(tx)` 返回该事务所在视图的 writer。`viewStoreOf`
+不接受编辑器。
+
+view store 的写入立即生效，因此同一个 update 中之后的读取能看到它。写入只通知
+该视图的订阅者，也不会添加历史记录。重新配置插件会把每个视图的状态重置为
+`initialViewState`。
+
+每个 `EditorRoot` 是一个视图。同一个 `EditorRoot` 中的 `EditorContent` 共享它的
+视图，因此共享同一个光标和同一份视图状态。同一个编辑器上的两个 `EditorRoot` 是
+两个视图，各自有独立的状态。视图状态在其 `EditorRoot` 保持挂载期间一直存在，
+重新挂载其中的 `EditorContent` 不会丢失它。`createEditor` 或 `useCreateEditor`
+返回的基础编辑器不是视图。它有自己的状态，因此通过视图设置的值不会出现在基础
+编辑器上。
+
+在组件中，`useViewStore` 订阅 `useEditor()` 返回的视图的状态。其他视图中的写入
+不会在这里运行 selector。
+
+```tsx title="focus-mode-button.tsx" showLineNumbers
+import { useEditor, useViewStore } from 'platejs/react';
+
+import { FocusModePlugin } from './focus-mode-plugin';
+
+export function FocusModeButton() {
+  const { update } = useEditor().plugin(FocusModePlugin);
+  const enabled = useViewStore(FocusModePlugin, (state) => state.enabled);
+
+  return (
+    <button
+      aria-pressed={enabled}
+      type="button"
+      onClick={() => update.toggle()}
+    >
+      Focus mode
+    </button>
+  );
+}
+```
