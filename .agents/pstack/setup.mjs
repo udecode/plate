@@ -17,7 +17,8 @@ import { copyFileSync, existsSync, readFileSync, renameSync, rmSync, writeFileSy
 import { basename, dirname, join } from 'node:path';
 import { LEDGER } from './tasks.mjs';
 
-const git = (args, options = {}) => spawnSync('git', args, { encoding: 'utf8', timeout: 30_000, ...options });
+// The ledger outgrows spawnSync's 1 MB default buffer, which cuts its output off without failing.
+const git = (args, options = {}) => spawnSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 30, timeout: 30_000, ...options });
 const out = (...args) => {
   const run = git(args);
   return run.status === 0 ? run.stdout.trim() : null;
@@ -75,9 +76,14 @@ if (!fetchUpstream()) process.exit(0);
 // Every session appends its suggested-task rows to this checkout's ledger and no task commits
 // them, so the first session to find them lands them; left here, they block every fast-forward.
 const ledger = config.plans ? join(config.plans, LEDGER) : null;
+const show = (rev) => {
+  const run = git(['show', `${rev}:${ledger}`]);
+  if (run.error) throw run.error;
+  return run.status === 0 ? run.stdout : '';
+};
 const landLedger = () => {
   if (!ledger || !existsSync(ledger)) return;
-  const base = git(['show', `HEAD:${ledger}`]).stdout ?? '';
+  const base = show('HEAD');
   const file = readFileSync(ledger, 'utf8');
   // A row another session is still appending has no newline yet; the next run lands it.
   const text = file.slice(0, file.lastIndexOf('\n') + 1);
@@ -89,7 +95,7 @@ const landLedger = () => {
   const rows = text.slice(base.length).split('\n').filter(Boolean);
   for (let attempt = 0; attempt < 3; attempt += 1) {
     if (attempt > 0 && !fetchUpstream()) break;
-    const theirs = git(['show', `${upstream}:${ledger}`]).stdout ?? '';
+    const theirs = show(upstream);
     const known = new Set(theirs.split('\n'));
     const added = rows.filter((row) => !known.has(row));
     if (added.length === 0) {
