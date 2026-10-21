@@ -1,5 +1,6 @@
 # Intake: Ellie's t3code-style test rules
 
+Page: https://claude.ai/artifact/CKdRLpCzJYYT4EW5zPttSX
 Status: done: 10 items, 1 chip offered, 1 folded
 Playbook: verdict
 
