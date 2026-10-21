@@ -1,6 +1,6 @@
 # Find and navigation
 
-Page: https://claude.ai/artifact/WXGAJm2EnoyhvrdSoSBk2m
+Page: https://claude.ai/artifact/3aQ4FYJESBeEveayH6n7vn
 
 Find searches the main document for a literal, case-insensitive query, paints every match through decorations without writing the document or history, and steps an active result through them. `BaseFindPlugin` in `platejs/find` owns the query, the results and navigation. The copied `FindKit` owns each view's bar, `Mod+F`, the deferred draft and range scrolling. Package specs, the copied-UI spec and the 2026-09-09 view-ownership, controller-cut and range-scrolling plans prove that split. While a query is active, every document commit reruns the whole search and repaints every match, which the 2026-10-21 review measured.
 
