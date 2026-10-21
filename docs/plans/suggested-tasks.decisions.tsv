@@ -2319,7 +2319,8 @@ e case with no repro on record	priority: P2	updated
 2026-10-19T16:18:49Z	chip	t_18a7003e Stop www specs from formatting a DOM element on each waitFor poll	One-time triage of the untagged ledger: workflow, tooling or a measurement	priority: P3	updated
 2026-10-19T16:18:49Z	chip	t_f6f4dfe2 Start the Extraction fan-out's readers in one background command	One-time triage of the untagged ledger: workflow, tooling or a measurement	priority: P3	updated
 2026-10-19T16:18:49Z	chip	t_568bb940 Find why plate generate --watch sometimes misses a created deep dependency	One-time triage of the untagged ledger: a product fix, refactor or edge case with no repro on record	priority: P2	updated
-2026-10-19T16:18:49Z	chip	t_cacdbf8c Decide whether an owner-asked side session gets its own worktree so it can be detached (xhigh)	One-time triage of the untagged ledger: workflow, tooling or a measurement	priority: P3	updated
+2026-10-19T16:18:49Z	chip	t_cacdbf8c Decide whether an owner-asked sid
+e session gets its own worktree so it can be detached (xhigh)	One-time triage of the untagged ledger: workflow, tooling or a measurement	priority: P3	updated
 2026-10-19T16:18:49Z	chip	t_15c1b9b9 Time bold's pasted-weight decode on a quiet host, phase-1 tree against the styles build	One-time triage of the untagged ledger: workflow, tooling or a measurement	priority: P3	updated
 2026-10-19T16:18:49Z	chip	t_eb25a63c Make PreparedTokenSlice.concat return a lone filled slice unchanged	One-time triage of the untagged ledger: a product fix, refactor or edge case with no repro on record	priority: P2	updated
 2026-10-19T16:18:49Z	chip	t_f072c156 Port plate-2's verdict, bug-fix and build playbook edits to plate	One-time triage of the untagged ledger: workflow, tooling or a measurement	priority: P3	updated
