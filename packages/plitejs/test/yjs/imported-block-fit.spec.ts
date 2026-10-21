@@ -13,6 +13,7 @@ import {
   type Element,
   property,
   schema,
+  target,
 } from '../../src/index';
 import { createYjsNode } from '../../src/yjs/core/document';
 import { DEFAULT_YJS_ROOT_NAME } from '../../src/yjs/core/keys';
@@ -64,6 +65,33 @@ const TwoHeadings = defineEditorSchema('schema:yjs-imported-two-headings', {
   version: 1,
 });
 
+const QuotedColor = defineEditorSchema('schema:yjs-imported-quoted-color', {
+  elements: {
+    paragraph: { content: schema.content.text({ default: 'text', min: 1 }) },
+    quote: {
+      content: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    },
+  },
+  id: 'yjs-imported-quoted-color',
+  properties: [
+    schema.textProperty('color', property.string(), {
+      target: target.and(
+        target.type('paragraph'),
+        target.parent(target.type('quote'))
+      ),
+    }),
+  ],
+  root: schema.content.types(['paragraph', 'quote'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
 const Captioned = defineEditorSchema('schema:yjs-imported-content-root', {
   elements: {
     media: {
@@ -110,7 +138,7 @@ const rootsOf = (value: EditorDocumentValue) =>
   Object.entries({ main: value.children, ...value.roots });
 
 const receive = (
-  plugin: typeof Prefixed | typeof TwoHeadings,
+  plugin: typeof Prefixed | typeof QuotedColor | typeof TwoHeadings,
   value: EditorDocumentValue,
   write: (root: Y.XmlElement) => void
 ) => {
@@ -198,6 +226,25 @@ describe('imported block fitting', () => {
         root.insert(0, [createYjsNode(text('heading', 'New'))])
       ),
       { children: headed.children, state: 'error' }
+    );
+  });
+
+  it('drops a text color a remote change leaves outside the quote it needs', () => {
+    assert.deepEqual(
+      receive(
+        QuotedColor,
+        { children: [{ children: [text('paragraph', 'abc')], type: 'quote' }] },
+        (root) => {
+          root.delete(0, 1);
+          root.insert(0, [
+            createYjsNode({
+              children: [{ color: 'u', text: 'abc' }],
+              type: 'paragraph',
+            }),
+          ]);
+        }
+      ),
+      { children: [text('paragraph', 'abc')], state: 'ready' }
     );
   });
 });

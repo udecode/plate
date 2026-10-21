@@ -39,7 +39,8 @@ export type DocumentAdmission = Readonly<{
     }>
   ) => DocumentChange | null;
   load: (
-    document: EditorDocumentValue
+    document: EditorDocumentValue,
+    schema: CompiledEditorSchema
   ) => Readonly<{ change: DocumentChange; value: EditorDocumentValue }> | null;
 }>;
 
@@ -103,7 +104,7 @@ export const repairLoadedDocument = (
   document: EditorDocumentValue,
   schema: CompiledEditorSchema
 ) => {
-  const repaired = admission?.load(document) ?? null;
+  const repaired = admission?.load(document, schema) ?? null;
 
   return repaired && withoutRepairOrphans(schema, document, repaired);
 };

@@ -1559,3 +1559,332 @@ describe('authored review tree decisions on an element several insertions built'
     );
   });
 });
+
+describe('authored review tree decisions that change where a value stands', () => {
+  const outsideQuotes = target.and(
+    target.type('paragraph'),
+    target.not(target.parent(target.type('quote')))
+  );
+  const Quoted = defineEditorSchema('decisions-quoted', {
+    elements: {
+      paragraph: { content: schema.content.text() },
+      quote: {
+        content: schema.content.types(['paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+      },
+    },
+    id: 'decisions-quoted',
+    properties: [
+      schema.elementProperty('tone', property.string(), {
+        target: outsideQuotes,
+      }),
+      schema.textProperty('color', property.string(), {
+        target: outsideQuotes,
+      }),
+    ],
+    root: schema.content.types(['paragraph', 'quote'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const Tones = defineEditorSchema('decisions-tones', {
+    elements: {
+      heading: { content: schema.content.text() },
+      paragraph: { content: schema.content.text() },
+    },
+    id: 'decisions-tones',
+    properties: [
+      schema.elementProperty('tone', property.string(), {
+        target: target.type('heading'),
+      }),
+      schema.textProperty('color', property.string(), {
+        target: target.type('heading'),
+      }),
+      schema.elementProperty('size', property.string(), {
+        target: target.type('heading'),
+      }),
+      schema.elementProperty('size', property.enum(['s', 'm']), {
+        target: target.type('paragraph'),
+      }),
+    ],
+    root: schema.content.types(['heading', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const editorOf =
+    (Schema: typeof Tones | typeof Quoted) =>
+    (value: unknown, author: string, intent: 'edit' | 'propose') =>
+      createEditor({
+        initialValue: value as never,
+        plugins: [
+          Schema,
+          createAuthoredPlugin({
+            authorId: author,
+            createChangeId: () => author,
+            intent,
+            now: () => 1,
+          }),
+        ],
+      });
+  const toneEditor = editorOf(Tones);
+  const quoteEditor = editorOf(Quoted);
+  const rejectedWrap = (
+    start: unknown[],
+    unset: Readonly<{ at: number[]; key: string }>
+  ) => {
+    const alice = quoteEditor(start, 'alice', 'propose');
+
+    alice.update((tx) => {
+      tx.nodes.unset(unset.key, { at: unset.at });
+      tx.nodes.wrap({ children: [], type: 'quote' } as never, { at: [0] });
+    });
+
+    const zed = quoteEditor(alice.read.value(), 'zed', 'edit');
+
+    authoredTestApi(zed).decide({ action: 'reject', changes: ['alice'] });
+    return zed.read.value().children;
+  };
+  const wrappedAfterUnset = (
+    start: unknown[],
+    unset: Readonly<{ at: number[]; key: string }>
+  ) => {
+    const eve = quoteEditor(start, 'eve', 'propose');
+
+    eve.update((tx) => tx.nodes.unset(unset.key, { at: unset.at }));
+
+    const alice = quoteEditor(eve.read.value(), 'alice', 'propose');
+
+    alice.update((tx) =>
+      tx.nodes.wrap({ children: [], type: 'quote' } as never, { at: [0] })
+    );
+    return quoteEditor(alice.read.value(), 'zed', 'edit');
+  };
+  const retypedAfterUnset = (
+    start: unknown[],
+    unset: Readonly<{ at: number[]; key: string }>
+  ) => {
+    const eve = toneEditor(start, 'eve', 'propose');
+
+    eve.update((tx) => tx.nodes.unset(unset.key, { at: unset.at }));
+
+    const alice = toneEditor(eve.read.value(), 'alice', 'propose');
+
+    alice.update((tx) => tx.nodes.set({ type: 'paragraph' }, { at: [0] }));
+    return toneEditor(alice.read.value(), 'zed', 'edit');
+  };
+  const proposed = (
+    value: unknown,
+    author: string,
+    props: Readonly<Record<string, string>>,
+    at: number[]
+  ) => {
+    const editor = toneEditor(value, author, 'propose');
+
+    editor.update((tx) => tx.nodes.set(props as never, { at }));
+    return editor.read.value();
+  };
+  const decided = (
+    value: unknown,
+    ...steps: Array<Parameters<ReturnType<typeof authoredTestApi>['decide']>[0]>
+  ) => {
+    let current = value;
+
+    for (const decisions of steps) {
+      const editor = toneEditor(current, 'zed', 'edit');
+
+      authoredTestApi(editor).decide(decisions);
+      current = editor.read.value();
+    }
+    return (current as { children: unknown[] }).children;
+  };
+  const headingProposed = (
+    props: Readonly<Record<string, string>>,
+    at: number[]
+  ) =>
+    proposed(
+      proposed([paragraph('abc')], 'alice', { type: 'heading' }, [0]),
+      'bob',
+      props,
+      at
+    );
+
+  it('drops a tone one decision accepts while it rejects the heading that holds it', () => {
+    assert.deepEqual(
+      decided(headingProposed({ tone: 'u' }, [0]), [
+        { action: 'accept', changes: ['bob'] },
+        { action: 'reject', changes: ['alice'] },
+      ]),
+      [paragraph('abc')]
+    );
+  });
+
+  it('keeps a later tone pending on the paragraph a rejected heading leaves', () => {
+    const zed = toneEditor(
+      proposed(headingProposed({ tone: 'u' }, [0]), 'eve', { tone: 'w' }, [0]),
+      'zed',
+      'edit'
+    );
+
+    authoredTestApi(zed).decide([
+      { action: 'accept', changes: ['bob'] },
+      { action: 'reject', changes: ['alice'] },
+    ]);
+
+    assert.equal(
+      authoredTestApi(zed).decide({ action: 'reject', changes: ['eve'] })
+        .status,
+      'applied'
+    );
+    assert.deepEqual(zed.read.value().children, [paragraph('abc')]);
+  });
+
+  it('drops an accepted size the paragraph declares but cannot hold once the heading is rejected', () => {
+    assert.deepEqual(
+      decided(
+        headingProposed({ size: 'xl' }, [0]),
+        { action: 'accept', changes: ['bob'] },
+        { action: 'reject', changes: ['alice'] }
+      ),
+      [paragraph('abc')]
+    );
+  });
+
+  it('drops an accepted tone once the heading that holds it is rejected', () => {
+    assert.deepEqual(
+      decided(
+        headingProposed({ tone: 'u' }, [0]),
+        { action: 'accept', changes: ['bob'] },
+        { action: 'reject', changes: ['alice'] }
+      ),
+      [paragraph('abc')]
+    );
+  });
+
+  it('keeps a text color its heading holds once a paragraph retype is rejected', () => {
+    const heading = {
+      children: [{ color: 'u', text: 'abc' }],
+      type: 'heading',
+    };
+
+    assert.deepEqual(
+      decided(proposed([heading], 'alice', { type: 'paragraph' }, [0]), {
+        action: 'reject',
+        changes: ['alice'],
+      }),
+      [heading]
+    );
+  });
+
+  it('drops an accepted text color once the heading that holds it is rejected', () => {
+    assert.deepEqual(
+      decided(
+        headingProposed({ color: 'u' }, [0, 0]),
+        { action: 'accept', changes: ['bob'] },
+        { action: 'reject', changes: ['alice'] }
+      ),
+      [paragraph('abc')]
+    );
+  });
+
+  it('keeps a tone a rejected wrap restores on the paragraph it lifts out', () => {
+    const start = [
+      { children: [{ text: 'abc' }], tone: 'u', type: 'paragraph' },
+    ];
+
+    assert.deepEqual(rejectedWrap(start, { at: [0], key: 'tone' }), start);
+  });
+
+  it('keeps a text color a rejected wrap restores on the paragraph it lifts out', () => {
+    const start = [
+      { children: [{ color: 'u', text: 'abc' }], type: 'paragraph' },
+    ];
+
+    assert.deepEqual(rejectedWrap(start, { at: [0, 0], key: 'color' }), start);
+  });
+  it('waits on a pending wrap before it restores a tone the quote cannot hold', () => {
+    const start = [
+      { children: [{ text: 'abc' }], tone: 'u', type: 'paragraph' },
+    ];
+    const zed = wrappedAfterUnset(start, { at: [0], key: 'tone' });
+    const review = authoredTestApi(zed);
+
+    assert.deepEqual(review.decide({ action: 'reject', changes: ['eve'] }), {
+      ids: ['eve'],
+      status: 'blocked',
+      with: ['alice'],
+    });
+    review.decide({ action: 'reject', changes: ['alice'] });
+    assert.equal(
+      review.decide({ action: 'reject', changes: ['eve'] }).status,
+      'applied'
+    );
+    assert.deepEqual(zed.read.value().children, start);
+  });
+
+  it('waits on a pending wrap before it restores a text color the quote cannot hold', () => {
+    const start = [
+      { children: [{ color: 'u', text: 'abc' }], type: 'paragraph' },
+    ];
+    const zed = wrappedAfterUnset(start, { at: [0, 0], key: 'color' });
+    const review = authoredTestApi(zed);
+
+    assert.deepEqual(review.decide({ action: 'reject', changes: ['eve'] }), {
+      ids: ['eve'],
+      status: 'blocked',
+      with: ['alice'],
+    });
+    review.decide({ action: 'reject', changes: ['alice'] });
+    assert.equal(
+      review.decide({ action: 'reject', changes: ['eve'] }).status,
+      'applied'
+    );
+    assert.deepEqual(zed.read.value().children, start);
+  });
+
+  it('waits on a pending retype before it restores a size the paragraph cannot hold', () => {
+    const start = [
+      { children: [{ text: 'abc' }], size: 'xl', type: 'heading' },
+    ];
+    const zed = retypedAfterUnset(start, { at: [0], key: 'size' });
+    const review = authoredTestApi(zed);
+
+    assert.deepEqual(review.decide({ action: 'reject', changes: ['eve'] }), {
+      ids: ['eve'],
+      status: 'blocked',
+      with: ['alice'],
+    });
+    review.decide({ action: 'reject', changes: ['alice'] });
+    assert.equal(
+      review.decide({ action: 'reject', changes: ['eve'] }).status,
+      'applied'
+    );
+    assert.deepEqual(zed.read.value().children, start);
+  });
+
+  it('waits on a pending retype before it restores a text color the paragraph cannot hold', () => {
+    const start = [
+      { children: [{ color: 'u', text: 'abc' }], type: 'heading' },
+    ];
+    const zed = retypedAfterUnset(start, { at: [0, 0], key: 'color' });
+    const review = authoredTestApi(zed);
+
+    assert.deepEqual(review.decide({ action: 'reject', changes: ['eve'] }), {
+      ids: ['eve'],
+      status: 'blocked',
+      with: ['alice'],
+    });
+    review.decide({ action: 'reject', changes: ['alice'] });
+    assert.equal(
+      review.decide({ action: 'reject', changes: ['eve'] }).status,
+      'applied'
+    );
+    assert.deepEqual(zed.read.value().children, start);
+  });
+});

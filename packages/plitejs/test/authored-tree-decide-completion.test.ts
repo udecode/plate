@@ -931,7 +931,7 @@ describe('authored review tree decisions that complete', () => {
     );
   });
 
-  it('returns invalid when the document a decision resolves holds a property its new site refuses', () => {
+  it('drops a property its new site refuses from a row an accepted unwrap lifts out', () => {
     const review = [
       lead,
       {
@@ -939,12 +939,16 @@ describe('authored review tree decisions that complete', () => {
         authored: [mark('unwrap', 'carol:1')],
       },
     ];
+    const result = decided(Lifted, review, {
+      action: 'accept',
+      changes: ['carol:1'],
+    });
 
-    assert.deepEqual(
-      decided(Lifted, review, { action: 'accept', changes: ['carol:1'] })
-        .results[0],
-      { ids: ['carol:1'], status: 'invalid' }
-    );
+    assert.deepEqual(result.results[0], {
+      ids: ['carol:1'],
+      status: 'applied',
+    });
+    assert.deepEqual(plain(result.children), [lead, el('row', t('x'))]);
   });
 
   it('rests a fill on the pending type change under an Editing one, not on the Editing write', () => {

@@ -32,6 +32,7 @@ import {
 } from '../facts/records';
 import { countLedgerWork } from '../ledger/work';
 import { cutsOf, joinRejectedCuts } from './cuts';
+import { heldProps } from './holds';
 import {
   decideKey,
   type FormatTag,
@@ -694,6 +695,23 @@ export const resolveAuthoredChildren = (
       if (decisionOf(mark) === 'keep') waits.add(mark.change);
     }
   };
+  const STRUCTURE_KINDS: ReadonlySet<AuthoredMark['kind']> = new Set([
+    'join',
+    'split',
+    'unwrap',
+    'wrap',
+  ]);
+  const waitOnPlaceChanges = (at: readonly Node[]) => {
+    for (const node of at) {
+      wait(
+        pending(node).filter(
+          (mark) =>
+            STRUCTURE_KINDS.has(mark.kind) ||
+            (mark.kind === 'format' && mark.key === 'type')
+        )
+      );
+    }
+  };
   const subtreeMarks = (node: Node): AuthoredMark[] => [
     ...pending(node),
     ...(node.children ?? []).flatMap(subtreeMarks),
@@ -1157,7 +1175,9 @@ export const resolveAuthoredChildren = (
     ancestors: readonly string[],
     path: readonly number[],
     landing = false,
-    landingBlock: Node | null = null
+    landingBlock: Node | null = null,
+    placeChangedAbove = false,
+    above: readonly Node[] = []
   ): Readonly<{ changed: boolean; dirty: number[]; list: Node[] }> => {
     const out: Node[] = [];
     const dirty: number[] = [];
@@ -1177,7 +1197,16 @@ export const resolveAuthoredChildren = (
     let restructured = joined.size > 0;
     let changed = false;
     const landHere = (pieces: readonly Node[]) => {
-      const landed = resolveList(pieces, parentType, ancestors, path, true);
+      const landed = resolveList(
+        pieces,
+        parentType,
+        ancestors,
+        path,
+        true,
+        null,
+        placeChangedAbove,
+        above
+      );
 
       for (const at of landed.dirty) dirty.push(out.length + at);
       out.push(...landed.list);
@@ -1277,6 +1306,22 @@ export const resolveAuthoredChildren = (
       for (const tag of formats?.landed ?? []) {
         if (!facts.landed(tag.id)) landings.set(tag.id, landedOf(tag));
       }
+      const decidedProps = formats?.props ?? props;
+      const placeChanged =
+        placeChangedAbove || typeOf(decidedProps) !== typeOf(props);
+      const placedProps =
+        schema && (placeChanged || formats?.changed)
+          ? heldProps(schema.ownership, decidedProps, {
+              outerTypes: ancestors,
+              parentType,
+              root,
+              text: isText(node),
+            })
+          : decidedProps;
+
+      const dropsValue = placedProps !== decidedProps;
+
+      if (dropsValue) waitOnPlaceChanges([node, ...above]);
 
       const kept = keptMembers(node, marks, (mark) => {
         const result = resultOf(mark);
@@ -1304,10 +1349,11 @@ export const resolveAuthoredChildren = (
       ];
       const formatted = {
         kept: outlived.length > 0 ? [...kept, ...outlived] : kept,
-        props: formats?.props ?? props,
+        props: placedProps,
       };
       const selfChanged =
         (formats?.changed ?? false) ||
+        dropsValue ||
         formatted.kept.length !== stored.length ||
         formatted.kept.some((member, at) => member !== stored[at]);
 
@@ -1342,6 +1388,8 @@ export const resolveAuthoredChildren = (
         }
       }
 
+      const lifts =
+        structureOf(node).unwrap && !(unwrapsLine && outlived.length > 0);
       const {
         changed: childrenChanged,
         dirty: childDirty,
@@ -1351,18 +1399,20 @@ export const resolveAuthoredChildren = (
           ...(node.children ?? []),
           ...merged.flatMap((block) => block.children ?? []),
         ],
-        type,
-        parentType ? [parentType, ...ancestors] : ancestors,
+        lifts ? parentType : type,
+        lifts || !parentType ? ancestors : [parentType, ...ancestors],
         [...path, index],
         false,
-        landedIn
+        landedIn,
+        placeChanged || lifts,
+        lifts ? above : [node, ...above]
       );
       const element = withMarks(
         { ...formatted.props, children: resolved },
         formatted.kept
       );
 
-      if (structureOf(node).unwrap && !(unwrapsLine && outlived.length > 0)) {
+      if (lifts) {
         restructured = true;
         unwrapped.add(node);
         if (
@@ -1426,12 +1476,6 @@ export const resolveAuthoredChildren = (
     return { changed: changed || restructured, dirty, list: out };
   };
 
-  const STRUCTURE_KINDS: ReadonlySet<AuthoredMark['kind']> = new Set([
-    'join',
-    'split',
-    'unwrap',
-    'wrap',
-  ]);
   // A decision that builds waits on every pending change whose outcome
   // changes what it builds. A built element's properties can read any
   // ancestor, so it waits on each ancestor's pending restructuring.
@@ -1588,7 +1632,11 @@ export const resolveAuthoredChildren = (
     children,
     site[0] ? typeOf(site[0]) : null,
     site.slice(1).flatMap((node) => typeOf(node) ?? []),
-    []
+    [],
+    false,
+    null,
+    false,
+    site
   );
   // A line merged into a joined line shows only the content it keeps there.
   const placements = placementsOf(

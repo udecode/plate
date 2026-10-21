@@ -83,8 +83,10 @@ import type {
   CompiledSchemaTargetContext,
 } from './schema-compiler';
 import {
+  getCompiledPropertyCandidates,
   matchesCompiledSchemaTarget,
   resolveCompiledSchemaProperty,
+  toCompiledTargetContext,
 } from './schema-compiler';
 import {
   createEditorSchemaValidationError,
@@ -673,6 +675,19 @@ const validatePropertyValue = (
   return canonical;
 };
 
+export const acceptsPropertyValue = (
+  descriptor: PropertyValueDescriptor,
+  value: unknown
+) => {
+  try {
+    validatePropertyValue('Editor property', descriptor, value);
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const getPropertyDefault = (property: CompiledSchemaProperty) =>
   Object.hasOwn(property.descriptor, 'default')
     ? property.descriptor.default
@@ -1033,22 +1048,6 @@ export const createEditorSchema = <V extends Value = Value>(
     return property ? toPublicProperty(property) : null;
   };
 
-  const toCompiledTargetContext = (
-    type: string,
-    options: RuntimeTargetOptions = {}
-  ): CompiledSchemaTargetContext => ({
-    ancestors: (options.ancestors ?? []).flatMap((element) => {
-      const ancestorType = getElementType(element);
-
-      return ancestorType ? [ancestorType] : [];
-    }),
-    root:
-      options.root === undefined || options.root === 'main'
-        ? null
-        : options.root,
-    type,
-  });
-
   const getDeclarativeRootProgram = (
     schema: CompiledEditorSchema,
     root: RootKey
@@ -1141,26 +1140,6 @@ export const createEditorSchema = <V extends Value = Value>(
     }
 
     return projected;
-  };
-
-  const getCompiledPropertyCandidates = (
-    schema: CompiledEditorSchema,
-    placement: 'element' | 'text',
-    key: string
-  ) => {
-    const lookup = schema.properties.lookup[placement];
-    const ids = [
-      ...(lookup.exact.get(key) ?? []),
-      ...lookup.prefixes.flatMap(({ prefix, propertyIds }) =>
-        key.startsWith(prefix) ? propertyIds : []
-      ),
-    ];
-
-    return ids.flatMap((id) => {
-      const property = schema.properties.byId.get(id);
-
-      return property ? [property] : [];
-    });
   };
 
   const matchesTargetWithOpenAncestorBoundary = (
@@ -3297,24 +3276,11 @@ export const createEditorSchema = <V extends Value = Value>(
         const [source, destination] = rule;
 
         if (!source) return schema.unknown === 'preserve';
-        if (
-          source.lifecycle.typeChange !== 'preserve-if-allowed' ||
-          !destination
-        ) {
-          return false;
-        }
-
-        try {
-          validatePropertyValue(
-            `Editor text property "${key}"`,
-            destination.descriptor,
-            value
-          );
-
-          return true;
-        } catch {
-          return false;
-        }
+        return (
+          source.lifecycle.typeChange === 'preserve-if-allowed' &&
+          destination !== null &&
+          acceptsPropertyValue(destination.descriptor, value)
+        );
       };
       let children: Descendant[] | null = null;
 

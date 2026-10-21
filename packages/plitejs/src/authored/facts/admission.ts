@@ -29,6 +29,7 @@ import {
 import type { DocumentAdmission } from '../../core/document-admission';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
+import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { getActiveEditorUpdateTags } from '../../core/public-state';
 import {
   deriveValue,
@@ -467,6 +468,7 @@ export const authoredAdmission: DocumentAdmission = {
         {
           returnsHeld: true,
           restoreMissingFormats,
+          schema: getCompiledEditorSchema(editor),
         }
       ).value ?? compacted;
 
@@ -474,13 +476,14 @@ export const authoredAdmission: DocumentAdmission = {
       ? null
       : repairOf(after, admitted, settled, indexOf);
   },
-  load: (document) => {
+  load: (document, schema) => {
     assertRecordStore(getValueRecords(document));
     createDocumentMarksValidator().validate(document);
 
     const compacted = compactClaims(document);
     const facts = factsOf(compacted);
-    const value = settleValue(compacted, facts, 'document').value ?? compacted;
+    const value =
+      settleValue(compacted, facts, 'document', { schema }).value ?? compacted;
 
     if (value === document) return null;
 

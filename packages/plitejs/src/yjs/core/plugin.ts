@@ -1,3 +1,4 @@
+import { getEditorSchema } from '../../core/editor-runtime';
 import { getCompiledEditorSchemaFromApi } from '../../core/editor-schema';
 import {
   carryPluginFactoryType,
@@ -161,8 +162,14 @@ const createBindingRuntime = <TCursorData extends YjsRemoteCursorData>(
         };
 
         const controller = new YjsController(owner, options, {
-          canonicalize: (root, children) =>
+          canonicalize: (root, merged) =>
             owner.read((state) => {
+              const children = getEditorSchema(owner).canonicalizeChildren(
+                merged,
+                root,
+                [],
+                true
+              );
               const before = state.value();
               const transaction = state.transaction((tx) => {
                 if (root === 'main') {

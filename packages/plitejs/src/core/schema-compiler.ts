@@ -3425,6 +3425,45 @@ export const getCompiledPropertyMergeStrategy = (
 ): CompiledSchemaPropertyMergeStrategy | null =>
   resolveCompiledSchemaProperty(schema, placement, key, context)?.merge ?? null;
 
+export const getCompiledPropertyCandidates = (
+  schema: Pick<CompiledEditorSchema, 'properties'>,
+  placement: 'element' | 'text',
+  key: string
+) => {
+  const lookup = schema.properties.lookup[placement];
+  const ids = [
+    ...(lookup.exact.get(key) ?? []),
+    ...lookup.prefixes.flatMap(({ prefix, propertyIds }) =>
+      key.startsWith(prefix) ? propertyIds : []
+    ),
+  ];
+
+  return ids.flatMap((id) => {
+    const property = schema.properties.byId.get(id);
+
+    return property ? [property] : [];
+  });
+};
+
+export const toCompiledTargetContext = (
+  type: string,
+  {
+    ancestors = [],
+    root,
+  }: Readonly<{
+    ancestors?: ReadonlyArray<Readonly<{ type?: unknown }>>;
+    root?: string;
+  }> = {}
+): CompiledSchemaTargetContext => ({
+  ancestors: ancestors.flatMap((ancestor) =>
+    typeof ancestor.type === 'string' && ancestor.type.length > 0
+      ? [ancestor.type]
+      : []
+  ),
+  root: root === undefined || root === 'main' ? null : root,
+  type,
+});
+
 const compileEditorSchemaInternal = (
   inputRecords: readonly EditorSchemaContributionRecord[],
   revision: number

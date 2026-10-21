@@ -1,7 +1,9 @@
 import { type NodeList, rootNodesOf } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
 import { composeRecordOps, deriveValue } from '../../core/record-store';
+import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { countLedgerWork } from '../ledger/work';
+import { heldProps } from '../tree/holds';
 import {
   decideKey,
   type FormatTag,
@@ -50,7 +52,34 @@ type Pass = Readonly<{
   landed: Map<string, LandedRecord>;
   reopenedRejections: Set<string>;
   returnsHeld: boolean;
+  schema: CompiledEditorSchema;
 }>;
+
+type Site = Readonly<{
+  outer: Site | null;
+  parent: Node | null;
+  root: string;
+}>;
+
+const typeOf = (node: Node | null) =>
+  typeof node?.type === 'string' ? node.type : null;
+
+const placed = (node: Node, pass: Pass, site: Site) => {
+  const outerTypes: string[] = [];
+
+  for (let at = site.outer; at?.parent; at = at.outer) {
+    const type = typeOf(at.parent);
+
+    if (type) outerTypes.push(type);
+  }
+
+  return heldProps(pass.schema, node, {
+    outerTypes,
+    parentType: typeOf(site.parent),
+    root: site.root,
+    text: isText(node),
+  });
+};
 
 export const keyReadingOf = (facts: ReviewFacts): KeyReading => ({
   accepted: (member) => isAccepted(facts, member),
@@ -104,7 +133,7 @@ const settleFormats = (
   return { dropped, props };
 };
 
-const settleNode = (node: Node, pass: Pass): Node | null => {
+const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
   countLedgerWork('settledNodes');
 
   const members = readMembers(node);
@@ -120,15 +149,21 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
     facts,
     pass.landed
   );
-  const next: Record<string, unknown> = { ...node };
+  const written: Record<string, unknown> = { ...node };
   for (const [key, value] of Object.entries(props)) {
-    if (value === undefined) delete next[key];
-    else next[key] = value;
+    if (value === undefined) delete written[key];
+    else written[key] = value;
   }
+  const wrote = Object.keys(props).length > 0;
+  const next = wrote ? placed(written, pass, site) : written;
+  const rewritten =
+    wrote &&
+    [...Object.keys(props), ...Object.keys(written)].some(
+      (key) => !jsonEqual(next[key], node[key])
+    );
+
   if (!facts.hasVerdicts) {
-    if (dropped.size === 0) {
-      return Object.keys(props).length > 0 ? next : node;
-    }
+    if (dropped.size === 0) return rewritten ? next : node;
 
     return withMembers(
       next,
@@ -137,7 +172,7 @@ const settleNode = (node: Node, pass: Pass): Node | null => {
       )
     );
   }
-  let changed = dropped.size > 0 || Object.keys(props).length > 0;
+  let changed = dropped.size > 0 || rewritten;
   const kept: AuthoredMember[] = [];
   // Editing's claim that its block goes with a pending join stays until the
   // resolver lands that join.
@@ -216,6 +251,7 @@ const goesWhenSettled = (
 const settleNodes = <L extends NodeList<Node>>(
   nodes: L,
   pass: Pass,
+  site: Site,
   inline = false
 ): L | Node[] => {
   let changed = false;
@@ -225,7 +261,7 @@ const settleNodes = <L extends NodeList<Node>>(
   nodes.forEach((node) => {
     holdsText ||= isText(node);
 
-    const settled = settleNode(node, pass);
+    const settled = settleNode(node, pass, site);
 
     if (!settled) {
       changed = true;
@@ -235,7 +271,12 @@ const settleNodes = <L extends NodeList<Node>>(
 
     const children =
       settled.children &&
-      settleNodes(settled.children, pass, settled.children.some(isText));
+      settleNodes(
+        settled.children,
+        pass,
+        { outer: site, parent: settled, root: site.root },
+        settled.children.some(isText)
+      );
 
     if (inline && children && goesWhenSettled(settled, children, pass.facts)) {
       changed = true;
@@ -261,7 +302,8 @@ const settleNodes = <L extends NodeList<Node>>(
 const settleBlocks = (
   children: NodeList<Node>,
   pass: Pass,
-  blocks: ReadonlySet<number> | undefined
+  blocks: ReadonlySet<number> | undefined,
+  root: string
 ) => {
   if (!blocks) return children;
 
@@ -272,7 +314,11 @@ const settleBlocks = (
 
     if (!block) continue;
 
-    const settled = settleNodes([block], pass)[0];
+    const settled = settleNodes([block], pass, {
+      outer: null,
+      parent: null,
+      root,
+    })[0];
 
     if (settled !== block) {
       next ??= children.slice();
@@ -344,7 +390,12 @@ export const settleValue = <V extends Value>(
   {
     returnsHeld = scope === 'document',
     restoreMissingFormats = scope === 'document',
-  }: Readonly<{ returnsHeld?: boolean; restoreMissingFormats?: boolean }> = {}
+    schema,
+  }: Readonly<{
+    returnsHeld?: boolean;
+    restoreMissingFormats?: boolean;
+    schema: CompiledEditorSchema;
+  }>
 ): Readonly<{ reopenedRejections: ReadonlySet<string>; value: V | null }> => {
   const pass: Pass = {
     dependencies: createDependencies(facts),
@@ -352,6 +403,7 @@ export const settleValue = <V extends Value>(
     landed: new Map(),
     reopenedRejections: new Set(),
     returnsHeld,
+    schema,
   };
 
   if (!facts.hasVerdicts && !restoreMissingFormats) {
@@ -360,8 +412,12 @@ export const settleValue = <V extends Value>(
 
   const settleIn = (root: string, nodes: NodeList<Node>) =>
     scope === 'document'
-      ? settleNodes(nodes, pass)
-      : settleBlocks(nodes, pass, scope.get(root));
+      ? settleNodes(nodes, pass, {
+          outer: null,
+          parent: null,
+          root,
+        })
+      : settleBlocks(nodes, pass, scope.get(root), root);
   const main = rootNodesOf(
     value as Readonly<{ children: readonly Node[] }>,
     'children'

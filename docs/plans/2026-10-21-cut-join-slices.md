@@ -1,7 +1,7 @@
 # Land the rejected-cut fix in slices, starting with the admission guard
 
-Status: planning: slice 1's guard went back to planning after its second review; a fresh session writes its new design, then slices 2 to 8 follow
-Page: https://claude.ai/artifact/6fWoW4f5Mt5gDbCfCw9mch
+Status: superseded: docs/plans/2026-10-21-cut-join-redesign.md redesigns slice 1 and carries slices 2 and 3
+Topic: cut-join
 Playbook: bug-fix
 
 ## Brief
