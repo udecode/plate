@@ -11,13 +11,13 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/cleanup/SKILL.md",
-      "computedHash": "ddf7161cf7be082e2e0af6063946d691a1a47ab1ebde363bbee87c08ddb718da"
+      "computedHash": "1c0629ca84974792a262e281fbd2f8e9cc88265c2f885ddfdaa701f7eb142731"
     },
     "plan-page": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/plan-page/SKILL.md",
-      "computedHash": "380ecf7055c54da028795e7706a28a6c554162a4e5e4c9f29918540157303978"
+      "computedHash": "2f4f160846b6ea4d46c9512052247be23fb5571ece3a3b90e4d603dda403f049"
     },
     "redo": {
       "source": "udecode/dotai",

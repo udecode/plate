@@ -161,6 +161,39 @@ test('--landed passes ignored copies of the checkout and folders an install or b
   assert.equal(landedOf(f.archived), 'safe');
 });
 
+function pstackFixture() {
+  const f = fixture();
+  mkdirSync(join(f.main, '.agents'), { recursive: true });
+  writeFileSync(join(f.main, '.agents', 'pstack.json'), '{"plans":"docs/plans"}\n');
+  writeFileSync(join(f.main, '.git', 'info', 'exclude'), '.source/\ndocs/plans/artifacts/\n');
+  return f;
+}
+
+test('--landed in a pstack project passes generated output and asks only about run artifacts the checkout lacks', () => {
+  const f = pstackFixture();
+  mkdirSync(join(f.archived, 'apps', 'www', '.source'), { recursive: true });
+  writeFileSync(join(f.archived, 'apps', 'www', '.source', 'browser.ts'), 'generated\n');
+  assert.equal(landedOf(f.archived), 'safe', 'generated output outside the run folders does not keep the worktree');
+  mkdirSync(join(f.archived, 'docs', 'plans', 'artifacts', 'run'), { recursive: true });
+  writeFileSync(join(f.archived, 'docs', 'plans', 'artifacts', 'run', 'proof.log'), 'exit 0\n');
+  assert.equal(landedOf(f.archived), 'ask', 'a run artifact the checkout lacks keeps the worktree');
+  mkdirSync(join(f.main, 'docs', 'plans', 'artifacts', 'run'), { recursive: true });
+  writeFileSync(join(f.main, 'docs', 'plans', 'artifacts', 'run', 'proof.log'), 'exit 0, merged earlier\n');
+  assert.equal(landedOf(f.archived), 'safe', 'the checkout copy a no-overwrite merge kept holds the artifact');
+});
+
+test('--landed in a pstack project passes the commits a squash left only in the reflog', () => {
+  const f = pstackFixture();
+  for (const name of ['b.txt', 'c.txt']) {
+    writeFileSync(join(f.archived, name), `${name}\n`);
+    git(f.archived, 'add', name);
+    git(f.archived, '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '-q', '-m', name);
+  }
+  git(f.archived, 'reset', '-q', '--soft', 'HEAD~2');
+  git(f.archived, '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '-q', '-m', 'squashed');
+  assert.equal(landedOf(f.archived), 'safe');
+});
+
 test('--landed asks about proof logs in a run folder named build', () => {
   const f = fixture();
   mkdirSync(join(f.archived, 'artifacts', 'run', 'build'), { recursive: true });
@@ -330,25 +363,52 @@ test('--remove keeps the checkout, a locked worktree and one outside the agent f
   for (const path of [f.main, f.archived, f.landed]) assert.ok(existsSync(path), `${path} stays`);
 });
 
-test('a worktree holding a commit no ref reaches is asked about by the scan, --landed and --remove until a branch keeps it', () => {
+function commitOnDetachedHead(path) {
+  git(path, 'switch', '-q', '--detach');
+  writeFileSync(join(path, 'lost.txt'), 'only here\n');
+  git(path, 'add', 'lost.txt');
+  git(path, 'commit', '-q', '-m', 'made on a detached HEAD');
+  return git(path, 'rev-parse', 'HEAD').trim();
+}
+
+test('a worktree holding a commit no ref reaches is asked about by the scan and --landed until a branch keeps it', () => {
   const f = fixture();
-  git(f.archived, 'switch', '-q', '--detach');
-  writeFileSync(join(f.archived, 'lost.txt'), 'only here\n');
-  git(f.archived, 'add', 'lost.txt');
-  git(f.archived, 'commit', '-q', '-m', 'made on a detached HEAD');
-  const lost = git(f.archived, 'rev-parse', 'HEAD').trim();
+  const lost = commitOnDetachedHead(f.archived);
   const item = () => scan({ repo: f.main, sessions: f.sessions, sizes: false }).items.find((each) => each.path === f.archived);
   assert.equal(item().verdict, 'ask', 'the commit sits on a detached HEAD');
   assert.match(item().reason, /1 commit that no branch, tag or remote reaches/u);
   git(f.archived, 'switch', '-q', 'archived');
   assert.equal(item().verdict, 'ask', 'only the HEAD history keeps the commit after the switch back');
   assert.equal(landedOf(f.archived), 'ask');
-  const [kept] = removeLanded({ repo: f.main, worktrees: [f.archived] });
-  assert.equal(kept.removed, false);
-  assert.ok(existsSync(f.archived), 'the worktree stays');
   git(f.main, 'branch', 'saved', lost);
   assert.equal(item().verdict, 'safe', 'a branch now keeps the commit');
   assert.equal(landedOf(f.archived), 'safe');
+});
+
+test('the scan removes a worktree whose unreached commits the checkout holds, saving them as a patch', () => {
+  const f = fixture();
+  commitOnDetachedHead(f.archived);
+  git(f.archived, 'switch', '-q', 'archived');
+  writeFileSync(join(f.main, 'lost.txt'), 'only here\n');
+  git(f.main, 'add', 'lost.txt');
+  git(f.main, 'commit', '-q', '-m', 'landed squash');
+  const item = deleteSafe({ repo: f.main, sessions: f.sessions }).removed.find((each) => each.path === f.archived);
+  assert.ok(item, 'a commit whose change the checkout holds does not keep the worktree');
+  assert.match(readFileSync(item.commits, 'utf8'), /^Subject: \[PATCH\] made on a detached HEAD$/mu);
+});
+
+test('--remove saves a commit no ref reaches as a patch and removes the landed worktree', () => {
+  const f = fixture();
+  commitOnDetachedHead(f.archived);
+  git(f.archived, 'switch', '-q', 'archived');
+  const run = spawnSync(process.execPath, [SCAN, '--repo', f.main, '--remove', f.archived], { encoding: 'utf8' });
+  assert.equal(run.status, 0, run.stdout);
+  const saved = run.stdout.match(/ {2}commits (\S+)$/mu)?.[1];
+  assert.ok(saved, run.stdout);
+  assert.ok(!existsSync(f.archived), 'the worktree is gone');
+  const patch = readFileSync(saved, 'utf8');
+  assert.match(patch, /^Subject: \[PATCH\] made on a detached HEAD$/mu);
+  assert.match(patch, /^\+only here$/mu);
 });
 
 test('--remove takes only the paths before the next flag', () => {
