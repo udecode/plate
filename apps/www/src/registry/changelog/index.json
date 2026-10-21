@@ -56,8 +56,8 @@
       "release": {
         "status": "unresolved"
       },
-      "targets": ["more-toolbar-button"],
-      "entries": 1,
+      "targets": ["more-toolbar-button", "editor-dropdown-menu"],
+      "entries": 2,
       "diagnostics": []
     },
     {

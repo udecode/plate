@@ -1023,7 +1023,10 @@ Current priorities:
   model-scoped plugin command may clear state without owning the caller's focus
   target. A copied dropdown item owns the final focus intent of its selection,
   the menu content keeps only the fallback, and cancellation or explicit focus
-  suppression wins.
+  suppression wins. A dropdown runs the fallback only for a close the menu or
+  its toolbar owns. After the user presses outside a non-modal menu,
+  right-clicks outside any menu, or moves focus out, focus stays where the user
+  put it.
 - Recurring editor-state projections belong to the existing semantic React
   owner. Presence-only controls use `useEditorHasSelection`; range consumers
   use `useEditorSelection`. Keep commit invalidation private and reuse the

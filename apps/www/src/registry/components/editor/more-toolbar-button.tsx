@@ -40,7 +40,6 @@ export function MoreToolbarButton() {
       >
         <DropdownMenuGroup>
           <DropdownMenuItem
-            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
               editor.update((tx) => {
                 tx.plugin(KbdPlugin).toggle();
@@ -53,7 +52,6 @@ export function MoreToolbarButton() {
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
               editor.plugin(ScriptPlugin).update.toggle('sup');
             }}
@@ -62,7 +60,6 @@ export function MoreToolbarButton() {
             Superscript
           </DropdownMenuItem>
           <DropdownMenuItem
-            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
               editor.plugin(ScriptPlugin).update.toggle('sub');
             }}

@@ -11,4 +11,5 @@ diagnostics: []
 
 <!-- entry: {"id":"2026-10-20-more-toolbar-keep-floating-after-closing-3ef25023","kind":"fix","migrationNotes":[]} -->
 
-- **`more-toolbar-button`**: Keep the floating toolbar after closing More formatting
+- **`more-toolbar-button`**: Keep the floating toolbar and the selected text when a second click on More formatting, or Escape, closes it.
+- **`editor-dropdown-menu`**: When a click outside a non-modal menu, a right-click outside any menu, Tab, or a focus move to another control closes a toolbar menu, focus stays where the user put it instead of jumping back into the editor. This covers More formatting, Turn into, font color and the table menus. A press on another button in the menu's own toolbar still puts focus back in the editor. Base UI menus close without an exit animation, as Radix menus already do, so a click right after a close keeps its focus.
