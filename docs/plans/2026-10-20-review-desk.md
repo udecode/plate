@@ -1,6 +1,6 @@
 # Review desk
 
-Status: partial: phase 3 shipped fast and unreviewed, like phase 2; your trial and the page budgets still wait
+Status: planned: phase 4 waits for your go; phases 2 and 3 are unreviewed, and your trial and the page budgets still wait
 Topic: review-desk
 Playbook: plan
 
@@ -8,26 +8,29 @@ Playbook: plan
 
 ### What will change?
 
-A local page lists each task landed on next, shows only the files you review, and remembers what you read. Session headers show titles and open in Claude, chips list their sessions, and a copied link opens the same view.
+The desk lists your Claude sessions, newest first, each with its plan pages and landings. You review a whole session, accept it with one key, then archive it in Claude. A Commits tab finds public landings you missed.
 
 ### What could go wrong?
 
-Budgets are unmeasured, and phases 2 and 3 are unreviewed. Decisions holds 889 unseen picks. Session titles come from the Claude app's private files, which an update can change. Below about 1,100 pixels wide, the drawer hides the diff.
+Phase 4 cuts Decisions, Chips and the context drawer, which you may want. Commits from outside a session leave the desk. Phases 2 and 3 are unreviewed, and the budgets are unmeasured. Titles rely on the Claude app's private files.
 
 ## Teach
 
 Today you review pstack's work in four places: DiffsHub links, a terminal script, plan pages and the chips board. None keeps a list that grows until you read it.
 
-Each task lands on next as one squashed commit naming its session and, usually, its plan. The desk, a DiffsHub page on your machine, lists each landing under its session. The public view shows package source, changesets, the registry and the docs site; internal adds apps and root files. A test shows only when skipped, env-gated, or weakened with no code change.
+Each task lands on next as one squashed commit naming its session and, usually, its plan. The desk, a DiffsHub page on your machine, shows only the files you review: package source, changesets, the registry and docs in the public view, plus apps and root files in internal. It saves what you read, so later changes come back to your list.
 
-Opening a session's plan shows each file's net change across its landings. You mark files viewed and accept, and the desk saves what you read, so new landings return as Debt. Press c to see a landing's plan, proofs and notes. A plan edit or open concern after your accept also returns it to Debt. Key 4 lists every plan's open questions, and key 5 lists the chips.
+Phase 4 makes the session the thing you review. The sidebar lists your sessions, newest first, with each plan's page link and landings under it. You open a session, mark its files viewed and press a to accept it all. It waits under Ready to archive until you archive it in Claude. The Commits tab sweeps for public landings you have not accepted.
 
 ## Defaults
 
 | Decision | Pick | Alternative | Word | Impact |
 | --- | --- | --- | --- | --- |
 | App | A local page in DiffsHub's design, opened in your browser and served by one process per repository | An Electron window | electron | big |
-| What a row is | One landed task, listed under its session; opening one of the session's plans shows each file's net change | One row per session; one per session and plan | by session | big |
+| What you review | A session. The sidebar lists sessions newest first, with each plan and its landings under it, and one key accepts the whole session. The Commits tab lists single landings, so you can check that nothing public was missed | One landed task per row under a session header, as phases 1 to 3 built it | by landing | big |
+| Commits from outside a session | Left out of both lists, with a count at the bottom, since you review only your own sessions for now. That is 153 of the last 300 commits, such as merged contributor PRs | A No session group at the foot of Commits | show outside commits | small |
+| Plans in the desk | A link to the plan's published page, opened at this run. 27 of the 35 plans in range have a page. The context drawer and the plans view go away | Keep the drawer and the plans view | keep drawer | small |
+| Finishing a session | Once you accept it, it moves to Ready to archive with a link that opens it in Claude, and it leaves the desk when the Claude app marks it archived. 28 of the 32 sessions in today's public view are archived already | It leaves the desk when you accept it | drop on accept | detail |
 | Default view | Public: package source, changesets, registry and docs site | Internal; everything | start internal | big |
 | Tests | Hidden. In the public and internal views you must read a skipped or env-gated test, and a weakened test in a landing that changes only tests; that landing then gets a row. Other weakened tests show as a badge | Every weakened test must be read; tests always shown | read weakened tests | small |
 | Sessions with only plans | In their own plans view; other views count them as hidden | Shown in every view | plans everywhere | small |
@@ -39,10 +42,10 @@ Opening a session's plan shows each file's net change across its landings. You m
 | Where the app is built | A local git repository in this run's folder until you say push dotai (look) | Push it to dotai now | push dotai | detail |
 | Review rounds | Three panel rounds on the Electron plan. The web redesign got one design round, and the build's diff gets one panel round, whose fixes land without another round. The sign-in cut, phase 2 with its two server fixes, and phase 3 shipped fast with no panel. Saying full reviews them | A panel on the web plan before the build | panel | detail |
 | Browser sign-in | None, on your word. The server answers only requests to its own address, and its API answers only its own page | A one-time code in the link that opens the page | sign-in | detail |
-| Build sessions | On your word, phases 2 and 3 built in this session in fast mode, before your trial | Each phase waits for the trial and builds in its own session | after trial | detail |
-| Picks in Decisions | Every look or answer pick in any plan's Defaults, after the questions and decide chips, until you press x on it. Today that is 889 picks from 185 plans (look) | Only picks of plans still open | open plans only | small |
-| What x hides | Only a pick; a question stays until its plan drops it | x hides questions too | hide questions | detail |
-| Starting a chip | y copies its start command for you to send to the lead; the desk starts nothing | A button that starts the session | start button | detail |
+| Build sessions | On your word, phases 2 and 3 built in this session in fast mode, before your trial. Phase 4 builds in a fresh session on your go, because this one is long and each call rereads it | Build phase 4 here | build here | detail |
+| Decisions and Chips | Cut in phase 4. Plan pages hold each plan's picks and questions, and the chips command holds the chips | Keep both tabs | keep boards | small |
+| Phase 4 design | I compared three designs myself, listed under Decisions, since only you use the desk (look) | A three-model architect round | architect | detail |
+| Review of phases 2 to 4 | One panel round on their combined diff once phase 4 is built, because phase 4 deletes much of what 2 and 3 added. "go fast" skips it, as before | Review phases 2 and 3 first, then 4 | review first | detail |
 | Trial pass mark | Faster than DiffsHub and at most 72 seconds a task, so 100 tasks fit in two hours (look) | Faster than DiffsHub only | floor N | small |
 | Plan page link | A new page at https://claude.ai/artifact/LmfrwLCc1YFTNhZjEFVb4w, because the old one at https://claude.ai/artifact/HLYerHCL1r65tGVNEqwUJM no longer opens | No published page, since the plan file is the record | drop page | detail |
 | Server lifetime | It runs until you stop it or log out, so a tab left open still answers. It holds about 220 MB while it runs | It stops 10 minutes after its last page closes | idle stop | detail |
@@ -50,11 +53,9 @@ Opening a session's plan shows each file's net change across its landings. You m
 | Session titles | Read from the Claude app's own session files, which hold every session's title, archived ones included. A session with no file keeps its id (look) | A title that land.mjs writes into each landing | titles in landings | small |
 | Session link | Opens the session in the Claude desktop app, as pstack-pulse's menubar does | Opens it on claude.ai | web links | detail |
 | Desk state in the URL | Every view, filter and open landing or plan lives in the URL through nuqs. A filter change replaces the history entry, and opening a landing adds one, so Back returns to the list | Only the open landing in the URL | landing only | small |
-| Filtering | One filter bar with the state, a search box and removable filter chips. The key numbers beside the tabs move to the help sheet | Keep today's tabs, range picker and hidden checkbox | keep controls | small |
+| Controls | One bar with Sessions or Commits, a search box, the view in Commits and the range. A row that changed after your accept comes back with a changed badge, and hidden rows only show as a count at the bottom | Phase 3's state tabs, filter chips and signal picker | keep controls | small |
 | Concern to its session | A button copies the note and opens the session for you to paste it; the desk sends nothing | The desk messages the session itself | send notes | detail |
-| A chip's landings | Through its sessions. Each session shows how many landings it has in the range, and that count opens them. Only landed chips name commits, and Chips lists only open chips, so a landings list under each chip would always be empty | A landings list under each chip | chip landings | detail |
-| Hidden | One of the three states, beside Unreviewed and Debt, which h switches to and back. The old hidden checkbox added hidden rows to the list instead | A hidden switch on top of the state | hidden switch | detail |
-| Trial order | Phase 3 builds before your trial, because it changes how you find and filter landings (look) | The trial runs first, on today's desk | trial first | small |
+| Trial order | Phase 4 builds before your trial, because it changes how you review (look) | The trial runs first, on today's desk | trial first | small |
 | Comment lines | Counted with code for now | Code and comment lines split | split comments | detail |
 | Tests you cut | Every scripted browser test goes, and I check the page by hand in the built-in browser. The unit tests for core, the server and stats stay | Cut the unit tests too | cut node tests | small |
 
@@ -77,6 +78,7 @@ In scope:
 Out of scope:
 
 - Reviewing open PRs, contributor branches or work in worktrees.
+- Commits from outside a session, such as merged contributor PRs, until you ask for them.
 - Changing chips, landing work, writing any ref other than the desk's own `refs/review-desk/<trunk>`, or posting anywhere.
 - Running any code from the repository under review.
 - Any AI summary or reading order.
@@ -101,6 +103,7 @@ Out of scope:
 - **Phases earn their place.** Stats and the release range fold into phase 1, because the owner's trial needs stats and a release range is a horizon that starts at a tag. Phase 2 was to start only if the trial showed the desk beats today's tools; on your word it was built first.
 - **Context and the board.** The desk reads each plan and its decision log at the trunk tip through git, and the chips ledger and run folders from the main checkout's disk, because run folders are never committed. The board loads after the desk prints its address, so start time does not grow. The server sends the page a new board only when the board's contents change. An accept records the versions of the landing's plan, rows, proof logs and images. A change to any of them, or an open concern note, sends a reviewed row back to Debt until you accept again or press "I read these changes".
 - **The trial measures both halves.** The desk splits one day's public landings into two halves with about the same changed lines and hands them out one at a time, alternating halves, timed by the same start and done keys. A desk landing opens in the desk; a control landing opens its DiffsHub link with the view's files listed, so both halves read the same files. The desk passes when its minutes per landing are lower than the control's and at most 1.2, which fits 100 landings into two hours; next took 44 landings on 2026-10-18 and 53 on 2026-10-19. Files accepts made under the frozen desk file version must cover every frozen file of each timed desk landing, and each half needs at least 10 landings. A per-day figure from one day is a projection, and the report says so. The trial counts time, not problems caught.
+- **Review by session.** You review in two ways. You work through a session, then archive it in Claude, and you sweep for public landings you missed. I compared three targets. A nests each session's plans and landings in the sidebar, opens a session to all its files, accepts it with one key, and keeps a flat Commits tab for the sweep. B makes each session one row whose diff nets every landing, which merges unrelated tasks, as `local_0835e684`'s 15 landings show, and has no place for each plan's page. C, the control, keeps phase 3's desk and only lists newest first with outside commits at the foot. It fixes the worst of what you hit, since today 112 commits with no session, the oldest from September, sit above the first of 32 sessions. But a session still takes one accept per landing, and nothing says when to archive it. A fits both ways you review, so phase 4 builds A, and its first step is C's order fix. Coverage stays per comparison, so a session accept is one accept per landing and plan group, and Commits reads the same record.
 - **Grafts from the losing designs.** A scope sheet before any accept on summary, shortcuts ignored while typing or composing, binary files counted as files, the last good board kept until a ledger snapshot validates, owed agent reviews listed apart from the owner's debt, unresolved chip commits, plans as landed beside the current version, and concern notes that keep a row in debt.
 
 ## Main changes
@@ -108,6 +111,7 @@ Out of scope:
 - A local web app reads landed commits, plans, decision logs and the chips ledger as data, and keeps the owner's review record in its own append-only log outside every repository.
 - `review.mjs` stays as it is. The desk reads its marks and never writes them.
 - Plate gains one file that names its views.
+- Phase 4 makes the session the unit of review. The core lists sessions newest first, reads each plan's page link and accepts a session as one accept per landing and plan group. The page drops Decisions, Chips, the context drawer and the plans view.
 
 ## Claims reversed
 
@@ -135,10 +139,13 @@ Out of scope:
 - Earlier I said the page signs in with a one-time code. You asked why you should sign in at all, so the code and the per-tab token are gone, and the server's host and same-page checks keep other sites out.
 - Earlier I said phase 2 starts only after your trial, in its own session. You asked for it now, in fast mode, so it is built here and the trial still waits.
 - Earlier I said the record's port makes its server the one writer. A second server on another `--port` could open the same record, so every server now holds the record's port whatever `--port` says.
+- Earlier I said the desk lists each landing under its session. It listed groups oldest first, so 112 September commits with no session sat above the first session.
+- Earlier I said a row is one landing, accepted on its own. Phase 4 makes the session what you review and accept, and a landing stays a row inside it.
+- Earlier I built Decisions, Chips and the context drawer so you could read plans and chips in the desk. You read plans on their pages and chips through `/chips`, so phase 4 cuts all three.
 
 ## Steps
 
-Phase 1 builds in this session and ends with your trial. On your word, phase 2 built in this session too, in fast mode, before the trial. Phase 3 waits for your go.
+Phase 1 built in this session. On your word, phases 2 and 3 built here too, in fast mode, before your trial. Phase 4 builds in a fresh session on your go, and the trial follows it.
 
 ### Phase 1. Inbox desk
 
@@ -197,7 +204,7 @@ Phase 1 builds in this session and ends with your trial. On your word, phase 2 b
 - [x] 2.3 Add the Decisions view (open questions from every plan whatever its status, look and answer picks not marked seen, and decide chips) and the Chips view (ready chips by priority, a read-only brief, and a copy of the start command). The board changes only when a complete ledger snapshot validates. Proof: a hand-labelled list of questions, including those in `2026-10-18-restore-chips.md` and `2026-10-17-authored-root-deletion.md`, equals the view's list; a truncated or malformed ledger keeps the last board and shows the ledger as degraded; and appending a ledger row updates Chips within one second.
 - [x] 2.4 Add notes, with a concern note keeping its row in Debt, plus the panel and proof signals. Proof: `node --test` cases and a hand check in the built-in browser.
 - [x] 2.5 Land fast: `deslop` on the skill repository's diff, then `land.mjs` for the Plate side. The dotai commit and push wait for your "push dotai", as in 1.6. Proof: the Plate commit.
-- [ ] 2.6 Review the sign-in cut and phase 2 when you say "full": a panel round on their diff, then `no-comments`. Owner: you. Proof: the panel's answers in the run directory.
+- [ ] 2.6 Review the sign-in cut and phase 2 in step 4.7's panel round, as the Review of phases 2 to 4 row says, or alone when you say "full" first. Owner: you. Proof: the panel's answers in the run directory.
 
 ### Phase 3. Linked and shareable
 
@@ -209,7 +216,19 @@ Each landing's `Session:` line names a Claude desktop session as `local_<id>`. T
 - [x] 3.4 Replace the controls with one filter bar. The view tabs keep their counts and drop the key numbers beside them, which move to the help sheet. Under them one bar holds the state (Unreviewed, Debt, Hidden), a search box over subject, sha, session title, plan and chip id that `/` focuses, and removable filter chips for session, plan, signal and range, each with its count. Proof: by hand in the built-in browser, the `exports` filter lists the rows that carry that signal, a search for a session title finds its landings, and clearing every filter restores the default URL. Built: the `exports` filter listed its 80 rows exactly, and a search for "👀 workflow friction" found all 17 of that session's landings and nothing else.
 - [x] 3.5 Send a concern to its session. A concern note gets a button that copies the note with the landing's sha and subject, and opens the landing's session for you to paste it. Proof: by hand. Built: with the clipboard stubbed to record and fail, the button copied the short sha, subject and note and showed the failure. The real clipboard and the app switch wait for your hand.
 - [x] 3.6 Land fast, on your "go. fast.": `deslop` on the skill repository's diff, `unslop` on `SKILL.md`, then `land.mjs` for the Plate side. The dotai commit and push wait for your "push dotai". Proof: the Plate commit.
-- [ ] 3.7 Review phase 3 when you say "full": a panel round on its diff, then `no-comments`. Owner: you. Proof: the panel's answers in the run directory.
+- [ ] 3.7 Review phase 3 in step 4.7's panel round, or alone when you say "full" first. Owner: you. Proof: the panel's answers in the run directory.
+
+### Phase 4. Review by session
+
+The base counts cover the last 300 first-parent commits of next at `6eb38f09bc`. They hold 56 sessions, 153 commits with no `Session:` line and 35 plans, 27 of which have a published page. In the public view at `cd17c75`, the first of 32 session headers is the 107th sidebar item, and 28 of the 32 sessions are archived in the Claude app.
+
+- [ ] 4.1 List newest first, sessions only. The core orders groups by their newest landing, newest first, instead of `groupsOf`'s oldest first. A commit with no `Session:` line leaves both lists, and the sidebar's foot counts it. Proof: a `node --test` case that fails on today's order. By hand on your record, the first sidebar row is the session that landed last, and the foot's count equals the base count for the same range.
+- [ ] 4.2 Nest the sidebar. A session row shows its title, when it last landed, how many landings it has left and a link that opens it in Claude. Under it sits one row per plan, titled by the plan's first heading and linking its page, then that plan's landings. A landing with no plan sits under the session. Only the open session expands, j and k move between sessions, and Enter opens one. Reviewed sessions that are not archived sit under Ready to archive at the top, and a session both reviewed and archived leaves the list. Proof: by hand, the tree lists every session the range holds that is not both reviewed and archived, which a count from the record and the session files confirms. On a scratch home, flipping a session file's archived flag moves an accepted session out of the list.
+- [ ] 4.3 Open and accept a session. Opening a session shows every file its landings change in the internal view, netted per plan as today, with its plan files folded under their page links. A card above the diff shows the title, the Claude link, each plan's page link, the landings, failed proofs and concern notes. `a` accepts the whole session, as one accept per landing and plan group, on the files basis when you viewed every file and through the scope sheet otherwise. Proof: a `node --test` case in the tests' scratch repository shows that after a session accept none of its landings is left in the public, internal or plans view, and that a landing added to the session afterwards is. By hand on a scratch record, the session moves to Ready to archive.
+- [ ] 4.4 Add the Commits tab for the coverage sweep. It lists session landings left in the public view, newest first, with each row's session title beside its subject and a count of what is left. The view picker switches to internal. An accept here writes the same record as a session accept. Proof: by hand on a scratch record, accepting a landing in Commits lowers its session's count by one, and accepting a session removes its landings from Commits.
+- [ ] 4.5 Link each plan's page. The core reads a plan's page at the trunk tip, from its subject file's `Page:` line through `Topic:`, or from the plan's own `Page:` line, and links `<url>#run-<plan slug>`. A plan without one shows its title unlinked. Proof: a `node --test` case for both sources and a missing page. By hand, the 27 of 35 linked plans match `base-counts-a1.log` in the run directory, after next's newer commits are counted again.
+- [ ] 4.6 Cut what the session flow replaces: the Decisions and Chips tabs, the context drawer, the plans view, the Debt and Hidden tabs, the signal picker, the per-row filter buttons and the chip lines under session headers. A row changed since its accept stays in the list with a changed badge, and hidden rows only count at the foot. The URL keeps the tab, view, range, search, open session or landing, and file. The keys are j, k, Enter, v, a, o to open in Claude, p to open the page, / and ?. Proof: all node tests and both type checks pass, and the help sheet lists only those keys. By hand, a copied URL restores the open session and file.
+- [ ] 4.7 Land: `deslop` and `no-comments` on the skill repository's diff, `unslop` on `SKILL.md`, then one panel round on the diff of phases 2 to 4 before `land.mjs` lands the Plate side. "go fast" skips the panel and `no-comments`. The dotai commit and push wait for your "push dotai". Proof: the Plate commit and the panel's answers in the run directory.
 
 ## Proof
 
@@ -249,11 +268,15 @@ The public view shows the public class, the internal view shows public and inter
 | Hand check of phase 3 in the built-in browser | done: every proof in steps 3.1 to 3.5 except the live clipboard and the app switch; it found the lost file jump, the empty landing links and the long session headers, each fixed and checked again |
 | Review of phase 3 | skip: fast, so no panel and no `no-comments`; `deslop` ran; step 3.7 waits for your "full" |
 | `land.mjs` for the Plate side | the commit that carries this table |
+| Proofs of steps 4.1 to 4.6 through `proof.mjs` | pending: phase 4 waits for your go |
+| Hand check of phase 4 in the built-in browser | pending: phase 4 waits for your go |
+| One panel round on the diff of phases 2 to 4 | pending: step 4.7 |
 
 ## Open work
 
-- Your trial in step 1.7. Owner: you. Stop: none, since phase 2 is built.
-- The review of `7d5f879`, `2057e7b`, `ece9c3e`, `729f61c`, `b956cd6` and `cd17c75` in steps 2.6 and 3.7, none reviewed yet. Owner: you, with "full". Stop: before "push dotai".
+- Your trial in step 1.7. Owner: you. Stop: after phase 4.
+- The review of `7d5f879`, `2057e7b`, `ece9c3e`, `729f61c`, `b956cd6` and `cd17c75` in steps 2.6 and 3.7, none reviewed yet. Owner: lead, in step 4.7's panel round, or you with "full" first. Stop: before "push dotai".
+- Commits from outside a session, 153 of the last 300, such as merged contributor PRs. Owner: you, when you want other people's changes in the desk. Stop: none.
 - The page budgets in step 1.3. The browser pane stayed hidden and drew 1 to 3 frames a second, and a reading needs at least 30. Owner: lead, once you show the pane with Cmd+Shift+B. Stop: before your trial.
 - Whether hand-back replies and plan pages link a landing in the desk instead of on DiffsHub. Owner: chip t_de79eadf. Stop: none.
 - The concern button's real clipboard and app switch, and a session link opening its session. Owner: you, by hand on your desk. Stop: none.
