@@ -354,6 +354,92 @@ describe('plate oxlint rules', () => {
     ],
   });
 
+  tester.run('no-existence-only-test', plugin.rules['no-existence-only-test'], {
+    invalid: [
+      {
+        // b77cba1680
+        ...ts(
+          "it('runs inactive slots under element context', () => {\n  const { container } = renderPipe(editor);\n  expect(container.querySelector('section')).toBeTruthy();\n});"
+        ),
+        errors: [{ messageId: 'existence' }],
+      },
+    ],
+    valid: [
+      ts(
+        "it('wraps quotes', () => {\n  expect(section).toBeTruthy();\n  expect(section.textContent).toBe('quote');\n});"
+      ),
+      ts(
+        "it('selects the word', () => {\n  expect(editor).toBeDefined();\n  expectSelection(editor, range);\n});"
+      ),
+      ts(
+        "it('renders the language label', () => {\n  expect(view.getByText('Python')).toBeTruthy();\n});"
+      ),
+      ts(
+        "test('reorders on drop', async () => {\n  await test.step('drop', async () => {\n    expect(dropped).toBeTruthy();\n  });\n  expect(order).toEqual(['b', 'a']);\n});"
+      ),
+    ],
+  });
+
+  tester.run('no-snapshot', plugin.rules['no-snapshot'], {
+    invalid: [
+      {
+        // 01adb67002
+        ...ts('expect(ranges).toMatchSnapshot();'),
+        errors: [{ messageId: 'snapshot' }],
+      },
+    ],
+    valid: [ts('expect(ranges).toEqual(expected);')],
+  });
+
+  tester.run('no-fixed-sleep', plugin.rules['no-fixed-sleep'], {
+    invalid: [
+      {
+        // 00adcecc79
+        ...ts('await page.waitForTimeout(300);'),
+        errors: [{ messageId: 'sleep' }],
+      },
+      {
+        // 4e16eada7d
+        ...ts(
+          'await new Promise((resolve) => {\n  setTimeout(resolve, 1000);\n});'
+        ),
+        errors: [{ messageId: 'sleep' }],
+      },
+    ],
+    valid: [
+      ts('await page.waitForTimeout(0);'),
+      ts('await new Promise((resolve) => setTimeout(resolve, 0));'),
+      ts('const flush = () => {};\nsetTimeout(flush, 100);'),
+    ],
+  });
+
+  tester.run('no-wall-clock-bound', plugin.rules['no-wall-clock-bound'], {
+    invalid: [
+      {
+        // 3e0ab4dd7d
+        ...ts(
+          'const started = performance.now();\nconst fragment = parse(html);\nconst duration = performance.now() - started;\nexpect(duration).toBeLessThan(2000);'
+        ),
+        errors: [{ messageId: 'wallClock' }],
+      },
+      {
+        // packages/plitejs/test/dom/dom-coverage.ts
+        ...ts(
+          'const measure = (run) => {\n  const startedAt = performance.now();\n  run();\n  return performance.now() - startedAt;\n};\nconst samples = Array.from({ length: 25 }, () => measure(query));\nexpect(median(samples)).toBeLessThanOrEqual(5);'
+        ),
+        errors: [{ messageId: 'wallClock' }],
+      },
+    ],
+    valid: [
+      // apps/www/tests/browser/markdown-streaming-contract.spec.ts times its
+      // chunks but bounds a ratio of kept blocks.
+      ts(
+        'const stream = () => {\n  arrivals.push(performance.now());\n  return { eligible, kept };\n};\nconst streamed = stream();\nexpect(streamed.kept / streamed.eligible).toBeGreaterThan(0.9);'
+      ),
+      ts('expect(Date.now()).toBe(fakeNow);'),
+    ],
+  });
+
   tester.run('no-as-never', plugin.rules['no-as-never'], {
     invalid: [
       {

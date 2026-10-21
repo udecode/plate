@@ -114,6 +114,120 @@
     ]
   },
   "plate/no-branded-value": {},
+  "plate/no-existence-only-test": {
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts": [
+      "test(cell, async ({ baseURL }) => {"
+    ],
+    "packages/platejs/src/features/link/lib/LinkRules.spec.tsx": [
+      "it('keeps an empty link when removeEmpty is disabled', () => {"
+    ],
+    "packages/platejs/src/lib/utils/isUrl.spec.ts": [
+      "it('//google.com', () => {",
+      "it('accepts an authenticated Sentry URL', () => {",
+      "it('accepts MongoDB user info', () => {",
+      "it('accepts Postgres user info', () => {",
+      "it('accepts Redis user info', () => {",
+      "it('empty', () => {",
+      "it('ftp://google.com', () => {",
+      "it('google.com', () => {",
+      "it('google', () => {",
+      "it('http://', () => {",
+      "it('http://0.0.0.0', () => {",
+      "it('http://google.', () => {",
+      "it('http://google.cat', () => {",
+      "it('http://google.co.uk', () => {",
+      "it('http://google.com?q=query', () => {",
+      "it('http://google.com', () => {",
+      "it('http://google.com/something?q=query#hash', () => {",
+      "it('http://google.com/something', () => {",
+      "it('http://google.com#hash', () => {",
+      "it('http://google', () => {",
+      "it('http://localhost:342/a/path', () => {",
+      "it('http://localhost:4000', () => {",
+      "it('http://localhost', () => {",
+      "it('http://www.google.co.uk', () => {",
+      "it('http://www.google.com', () => {",
+      "it('https://google.com', () => {",
+      "it('mailto:', () => {",
+      "it('mailto:sample-mail@gmail.com', () => {",
+      "it('null', () => {",
+      "it('object', () => {",
+      "it('re', () => {",
+      "it('redos exploit', () => {",
+      "it('undefined', () => {",
+      "it('whitespace in hostname', () => {",
+      "it('ws://chat.example.com/games', () => {",
+      "it('wss://secure.example.com/biz', () => {"
+    ],
+    "packages/platejs/src/react/editor/TPlateEditor.spec.ts": [
+      "it('supports specific plugin generics on createEditor', () => {"
+    ],
+    "packages/platejs/src/react/editor/TPlateEditorCore.spec.ts": [
+      "it('exposes link api after extending a plate plugin', () => {"
+    ],
+    "packages/platejs/src/react/utils/pipeRenderElement.spec.tsx": [
+      "it('runs inactive wrapNodeChildren slots under element context', () => {"
+    ],
+    "packages/platejs/src/react/utils/shortcuts.spec.tsx": [
+      "it('add new shortcuts to a plugin', () => {"
+    ],
+    "packages/plitejs/test/react/surface-contract.tsx": [
+      "test('Editable consumes raw element, leaf, text, and void render props', () => {"
+    ]
+  },
+  "plate/no-fixed-sleep": {
+    "apps/plite/tests/device/bypass.device.ts": ["setTimeout(resolve, 1000);"],
+    "apps/plite/tests/plite-browser/ime-cost.spec.ts": [
+      "await page.waitForTimeout(40);"
+    ],
+    "apps/www/tests/browser/code-block-diagram.spec.ts": [
+      "await page.waitForTimeout(500);"
+    ],
+    "apps/www/tests/browser/dnd.spec.ts": [
+      "await page.waitForTimeout(50);",
+      "await page.waitForTimeout(50);",
+      "await page.waitForTimeout(50);",
+      "await page.waitForTimeout(50);"
+    ],
+    "apps/www/tests/browser/docx.spec.ts": ["await page.waitForTimeout(500);"],
+    "apps/www/tests/browser/link-floating-toolbar.spec.ts": [
+      "await page.waitForTimeout(150);",
+      "await page.waitForTimeout(250);",
+      "await page.waitForTimeout(40);"
+    ],
+    "apps/www/tests/browser/markdown-streaming-contract.spec.ts": [
+      "await page.waitForTimeout(quarter);",
+      "await page.waitForTimeout(quietMs);"
+    ],
+    "apps/www/tests/browser/select-editor.spec.ts": [
+      "await page.waitForTimeout(300);"
+    ],
+    "apps/www/tests/browser/selection-drag-scroll.spec.ts": [
+      "await page.waitForTimeout(100);"
+    ],
+    "apps/www/tests/browser/selection-edge-scroll.spec.ts": [
+      "await page.waitForTimeout(100);",
+      "await page.waitForTimeout(100);",
+      "await page.waitForTimeout(200);",
+      "await page.waitForTimeout(200);",
+      "await page.waitForTimeout(250);",
+      "await page.waitForTimeout(30);",
+      "await page.waitForTimeout(300);"
+    ],
+    "apps/www/tests/browser/suggestion.spec.ts": [
+      "await page.waitForTimeout(100);"
+    ],
+    "apps/www/tests/browser/table-selection.spec.ts": [
+      "await page.waitForTimeout(40);",
+      "await page.waitForTimeout(40);",
+      "await page.waitForTimeout(40);",
+      "await page.waitForTimeout(50);"
+    ],
+    "apps/www/tests/native/homepage-ime.native.ts": [
+      "await page.waitForTimeout(150);",
+      "await page.waitForTimeout(80);"
+    ]
+  },
   "plate/no-one-off-editor-type": {
     "packages/cli/src/generate.ts": ["type CompiledEditor = Readonly<{"],
     "packages/platejs/src/features/combobox/lib/combobox.ts": [
@@ -309,6 +423,29 @@
       "root: selection?.anchor.root,"
     ]
   },
+  "plate/no-snapshot": {
+    "apps/www/src/__tests__/package-integration/ai-utils/aiCommentToRange.spec.tsx": [
+      "expect(ranges).toMatchSnapshot();"
+    ],
+    "apps/www/src/__tests__/package-integration/markdown-rich/serializeMarkdown.spec.tsx": [
+      "expect(",
+      "expect(",
+      "expect(",
+      "expect(",
+      "expect(",
+      "expect(",
+      "expect(",
+      "expect(result).toMatchSnapshot();",
+      "expect(result).toMatchSnapshot();",
+      "expect(result).toMatchSnapshot();"
+    ],
+    "packages/platejs/src/markdown/lib/mdx.spec.tsx": [
+      "expect(md).toMatchSnapshot();"
+    ],
+    "packages/platejs/src/markdown/lib/serializer/listToMdastTree.spec.ts": [
+      "expect(result).toMatchSnapshot();"
+    ]
+  },
   "plate/no-source-text-test": {
     "apps/www/src/lib/rehype-utils.spec.ts": [
       "expect(await fs.readFile(filePath, 'utf-8')).toContain("
@@ -360,5 +497,17 @@
       "readAuthoredMarks(node).filter((mark) => mark.kind === 'unwrap')",
       "reshaping.push(...childMarks.filter((mark) => mark.kind === 'join'));"
     ]
+  },
+  "plate/no-wall-clock-bound": {
+    "packages/platejs/src/features/media/lib/media/parseMediaUrl.spec.ts": [
+      "expect(performance.now() - start).toBeLessThan(100);"
+    ],
+    "packages/platejs/src/lib/plugins/html/HtmlPlugin.mapping.spec.ts": [
+      "expect(duration).toBeLessThan(2000);"
+    ],
+    "packages/platejs/src/lib/utils/isUrl.spec.ts": [
+      "expect(elapsed[0] < 1).toBeTruthy();"
+    ],
+    "packages/plitejs/test/dom/dom-coverage.ts": ["expect("]
   }
 }

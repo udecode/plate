@@ -374,6 +374,293 @@ const noSourceTextTest = {
   },
 };
 
+const chainRoot = (node) =>
+  node?.type === 'MemberExpression' ? chainRoot(node.object) : node;
+
+const matcherOf = (node) => {
+  const { callee } = node;
+  if (callee.type !== 'MemberExpression' || callee.computed) return null;
+  const root = chainRoot(callee.object);
+  if (root?.type !== 'CallExpression') return null;
+  return calleeName(root.callee) === 'expect'
+    ? { expectCall: root, name: callee.property.name }
+    : null;
+};
+
+const EXISTENCE_MATCHERS = new Set(['toBeDefined', 'toBeTruthy']);
+
+const NOT_A_TEST = new Set([
+  'afterAll',
+  'afterEach',
+  'beforeAll',
+  'beforeEach',
+  'describe',
+  'step',
+]);
+
+const calleeMembers = (callee) =>
+  callee?.type === 'MemberExpression'
+    ? [
+        ...calleeMembers(callee.object),
+        staticKeyName(callee.property, callee.computed),
+      ]
+    : callee?.type === 'CallExpression'
+      ? calleeMembers(callee.callee)
+      : [];
+
+const isTestCall = (node) => {
+  const name = calleeName(node.callee);
+  return (
+    (name === 'it' || name === 'test') &&
+    isFunction(node.arguments.at(-1)) &&
+    !calleeMembers(node.callee).some((member) => NOT_A_TEST.has(member))
+  );
+};
+
+// A call such as `expectSelection(editor, ...)` or `assert.equal(...)` asserts
+// in a way this rule cannot read, and Testing Library's `getBy*` and `findBy*`
+// queries throw unless their element renders, so the test is not judged.
+const ASSERTING_CALLEE = /^(?:assert|expect|getBy|getAllBy|findBy|findAllBy)/u;
+
+const assertsElsewhere = (callee) => {
+  const name = calleeName(callee);
+  if (name === 'expect') return false;
+  if (ASSERTING_CALLEE.test(name ?? '')) return true;
+  return (
+    callee.type === 'MemberExpression' &&
+    ASSERTING_CALLEE.test(staticKeyName(callee.property, callee.computed) ?? '')
+  );
+};
+
+const noExistenceOnlyTest = {
+  create(context) {
+    const tests = [];
+    return {
+      CallExpression(node) {
+        if (isTestCall(node)) {
+          tests.push({ judged: true, node, weak: 0 });
+          return;
+        }
+        const test = tests.at(-1);
+        if (!test) return;
+        const matcher = matcherOf(node);
+        if (matcher && EXISTENCE_MATCHERS.has(matcher.name)) test.weak += 1;
+        else if (matcher || assertsElsewhere(node.callee)) test.judged = false;
+      },
+      'CallExpression:exit'(node) {
+        if (tests.at(-1)?.node !== node) return;
+        const test = tests.pop();
+        if (!test.judged || test.weak === 0) return;
+        context.report({ messageId: 'existence', node });
+      },
+      ThrowStatement() {
+        const test = tests.at(-1);
+        if (test) test.judged = false;
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'A test asserts a value, not only that something exists or is truthy.',
+    },
+    messages: {
+      existence:
+        'Every assertion in this test is `toBeDefined` or `toBeTruthy` (baselined in this file: {{baselined}}), which passes for almost any wrong value. Assert the value users observe, or cut the test when another one already does.',
+    },
+    type: 'problem',
+  },
+};
+
+const SNAPSHOT_MATCHERS = new Set([
+  'toHaveScreenshot',
+  'toMatchAriaSnapshot',
+  'toMatchFileSnapshot',
+  'toMatchInlineSnapshot',
+  'toMatchSnapshot',
+  'toThrowErrorMatchingInlineSnapshot',
+  'toThrowErrorMatchingSnapshot',
+]);
+
+const noSnapshot = {
+  create(context) {
+    return {
+      CallExpression(node) {
+        const matcher = matcherOf(node);
+        if (!matcher || !SNAPSHOT_MATCHERS.has(matcher.name)) return;
+        context.report({
+          data: { matcher: matcher.name },
+          messageId: 'snapshot',
+          node,
+        });
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description: 'Tests assert named values, never a recorded snapshot.',
+    },
+    messages: {
+      snapshot:
+        '`{{matcher}}` approves whatever the code produced when it was recorded (baselined in this file: {{baselined}}). Assert the values the behavior promises, so the test fails for a named defect and not on every change.',
+    },
+    type: 'problem',
+  },
+};
+
+const isZero = (node) => node?.type === 'Literal' && node.value === 0;
+
+const isPromiseResolve = (context, identifier) => {
+  const [definition] = resolvedVariable(context, identifier)?.defs ?? [];
+  const executor = definition?.type === 'Parameter' ? definition.node : null;
+  const promise = executor?.parent;
+  return (
+    executor?.params[0] === definition.name &&
+    promise?.type === 'NewExpression' &&
+    promise.callee.type === 'Identifier' &&
+    promise.callee.name === 'Promise' &&
+    promise.arguments[0] === executor
+  );
+};
+
+const noFixedSleep = {
+  create(context) {
+    const report = (node, delay) =>
+      context.report({
+        data: { delay: context.sourceCode.getText(delay) },
+        messageId: 'sleep',
+        node,
+      });
+    return {
+      CallExpression(node) {
+        const { callee } = node;
+        const name =
+          callee.type === 'Identifier'
+            ? callee.name
+            : callee.type === 'MemberExpression'
+              ? staticKeyName(callee.property, callee.computed)
+              : null;
+        const [first, second] = node.arguments;
+        if (name === 'waitForTimeout' && first && !isZero(first)) {
+          report(node, first);
+        }
+        if (
+          name === 'setTimeout' &&
+          first?.type === 'Identifier' &&
+          second &&
+          !isZero(second) &&
+          isPromiseResolve(context, first)
+        ) {
+          report(node, second);
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description: 'A browser spec waits for a state, never a fixed time.',
+    },
+    messages: {
+      sleep:
+        'This browser spec sleeps a fixed {{delay}} ms (baselined in this file: {{baselined}}). Wait for the state the next step needs, such as a web-first `expect` or `page.waitForFunction`; a fixed sleep flakes on a loaded host and wastes time on an idle one.',
+    },
+    type: 'problem',
+  },
+};
+
+const CLOCK_READ = /\b(?:performance\.now|Date\.now|process\.hrtime)\b/u;
+
+const BOUND_MATCHERS = new Set([
+  'toBeGreaterThan',
+  'toBeGreaterThanOrEqual',
+  'toBeLessThan',
+  'toBeLessThanOrEqual',
+]);
+
+const ORDERINGS = new Set(['<', '<=', '>', '>=']);
+
+const childNodes = (node) =>
+  Object.entries(node).flatMap(([key, value]) =>
+    key === 'parent'
+      ? []
+      : (Array.isArray(value) ? value : [value]).filter(
+          (child) => typeof child?.type === 'string'
+        )
+  );
+
+const referencedIdentifiers = (node) => {
+  if (node.type === 'Identifier') return [node];
+  if (node.type === 'MemberExpression') {
+    return [
+      ...referencedIdentifiers(node.object),
+      ...(node.computed ? referencedIdentifiers(node.property) : []),
+    ];
+  }
+  return childNodes(node).flatMap(referencedIdentifiers);
+};
+
+const isFunctionValue = (node) =>
+  isFunction(node) || node.type === 'FunctionDeclaration';
+
+const returnedValues = (node) => {
+  if (node.type === 'ReturnStatement') return [node.argument].filter(Boolean);
+  if (isFunctionValue(node)) return [];
+  return childNodes(node).flatMap(returnedValues);
+};
+
+// Whether a value reads the clock, directly or through what a binding it names
+// is ever given, such as `const elapsed = performance.now() - start`. A named
+// function counts by what it returns, so a helper that only times its steps
+// does not mark every value it returns.
+const readsClock = (node, context, seen = new Set()) => {
+  if (!node || seen.has(node)) return false;
+  seen.add(node);
+  if (isFunctionValue(node)) {
+    const values =
+      node.body.type === 'BlockStatement'
+        ? childNodes(node.body).flatMap(returnedValues)
+        : [node.body];
+    return values.some((value) => readsClock(value, context, seen));
+  }
+  if (CLOCK_READ.test(context.sourceCode.getText(node))) return true;
+  return referencedIdentifiers(node).some((identifier) =>
+    writtenValues(context, identifier).some((value) =>
+      readsClock(value, context, seen)
+    )
+  );
+};
+
+const noWallClockBound = {
+  create(context) {
+    return {
+      CallExpression(node) {
+        const matcher = matcherOf(node);
+        if (!matcher) return;
+        const [actual] = matcher.expectCall.arguments;
+        const bounded = BOUND_MATCHERS.has(matcher.name)
+          ? [actual, node.arguments[0]]
+          : actual?.type === 'BinaryExpression' &&
+              ORDERINGS.has(actual.operator)
+            ? [actual]
+            : [];
+        if (!bounded.some((value) => readsClock(value, context))) return;
+        context.report({ messageId: 'wallClock', node });
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'A blocking test asserts correctness and work counts, never elapsed time.',
+    },
+    messages: {
+      wallClock:
+        'This test bounds elapsed wall-clock time (baselined in this file: {{baselined}}), which flakes on a loaded host and passes a slow change on a fast one. Count the work instead, or move the budget to a benchmark lane that asserts it only under `BENCH_MEASURE=1`.',
+    },
+    type: 'problem',
+  },
+};
+
 const noAsNever = {
   create(context) {
     return {
@@ -1239,6 +1526,11 @@ export default {
     'no-annotated-inferred-callback': noAnnotatedInferredCallback,
     'no-as-never': withBaseline('no-as-never', noAsNever),
     'no-branded-value': withBaseline('no-branded-value', noBrandedValue),
+    'no-existence-only-test': withBaseline(
+      'no-existence-only-test',
+      noExistenceOnlyTest
+    ),
+    'no-fixed-sleep': withBaseline('no-fixed-sleep', noFixedSleep),
     'no-inline-hydration-flag': noInlineHydrationFlag,
     'no-one-off-editor-type': withBaseline(
       'no-one-off-editor-type',
@@ -1262,6 +1554,7 @@ export default {
       'no-selection-root-copy',
       noSelectionRootCopy
     ),
+    'no-snapshot': withBaseline('no-snapshot', noSnapshot),
     'no-source-text-test': withBaseline(
       'no-source-text-test',
       noSourceTextTest
@@ -1270,6 +1563,10 @@ export default {
     'no-structural-mark-copy': withBaseline(
       'no-structural-mark-copy',
       noStructuralMarkCopy
+    ),
+    'no-wall-clock-bound': withBaseline(
+      'no-wall-clock-bound',
+      noWallClockBound
     ),
   },
 };

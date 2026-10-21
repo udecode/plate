@@ -516,6 +516,41 @@ export default defineConfig({
       },
     },
     {
+      files: [
+        'apps/*/tests/**/*.{cts,mts,ts,tsx}',
+        'apps/www/src/**/*.{spec,test}.{cts,mts,ts,tsx}',
+        'packages/**/*.{spec,test}.{cts,mts,ts,tsx}',
+        'packages/*/test/**/*.{cts,mts,ts,tsx}',
+      ],
+      rules: {
+        'plate/no-existence-only-test': 'error',
+        'plate/no-snapshot': 'error',
+      },
+    },
+    {
+      files: [
+        'apps/*/tests/**/*.{cts,mts,ts,tsx}',
+        'apps/www/src/**/*.{spec,test}.{cts,mts,ts,tsx}',
+        'packages/**/*.{spec,test}.{cts,mts,ts,tsx}',
+        'packages/*/test/**/*.{cts,mts,ts,tsx}',
+      ],
+      // The benchmark lanes the root package.json's bench:* scripts run under
+      // BENCH_MEASURE=1, where a timing budget belongs.
+      excludeFiles: [
+        '**/*.benchmark.spec.*',
+        'packages/plitejs/test/document-change-relocation-scale.spec.ts',
+      ],
+      rules: {
+        'plate/no-wall-clock-bound': 'error',
+      },
+    },
+    {
+      files: ['apps/*/tests/**/*.{cts,mts,ts,tsx}'],
+      rules: {
+        'plate/no-fixed-sleep': 'error',
+      },
+    },
+    {
       files: ['packages/*/src/**/*.{cts,mts,ts,tsx}'],
       excludeFiles: ['**/*.spec.*', '**/*.test.*', '**/__tests__/**'],
       rules: {
