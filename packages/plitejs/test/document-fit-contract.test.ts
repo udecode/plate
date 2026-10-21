@@ -173,7 +173,17 @@ const positionsConcatenated = (paragraphs: number) => {
       })),
     });
 
-    assert.equal(fitted.children.length, paragraphs);
+    assert.deepEqual(
+      fitted.children,
+      Array.from({ length: paragraphs }, () => ({
+        children: [
+          { bold: true, text: 'a ' },
+          { text: 'b' },
+          { bold: true, text: ' c' },
+        ],
+        type: 'paragraph',
+      }))
+    );
   } finally {
     PreparedTokenSlice.concat = concat;
   }
@@ -185,6 +195,7 @@ it('concatenates each slice position once when fitting strips a default from eve
   const small = positionsConcatenated(100);
   const large = positionsConcatenated(400);
 
+  assert.ok(small > 0, 'fitting concatenated no slice positions');
   assert.ok(
     large <= small * 5,
     `fitting 400 paragraphs concatenated ${large} slice positions, against ${small} for 100`

@@ -1002,7 +1002,10 @@ describe('authored review tree recording', () => {
   });
 
   it('keeps Editing text at either edge of another author’s insertion plain', () => {
-    for (const offset of [0, 4]) {
+    for (const [offset, before, after] of [
+      [0, 'aX', 'b'],
+      [4, 'a', 'Xb'],
+    ] as const) {
       const editor = editing([
         paragraph(
           { text: 'a' },
@@ -1015,11 +1018,16 @@ describe('authored review tree recording', () => {
         tx.text.insert('X', { at: point(offset, [0, 1]) });
       });
 
-      const text = JSON.stringify(editor.read.children());
-
-      assert.ok(
-        !text.includes('"text":"Xhers"') && !text.includes('"text":"hersX"'),
-        `edge ${offset}: ${text}`
+      assert.deepEqual(
+        expandedChildren(editor),
+        [
+          paragraph(
+            { text: before },
+            { text: 'hers', authored: [mark('insert', 'alice')] },
+            { text: after }
+          ),
+        ],
+        `edge ${offset}`
       );
     }
   });

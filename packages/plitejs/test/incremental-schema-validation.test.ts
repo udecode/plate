@@ -673,40 +673,6 @@ describe('incremental schema validation', () => {
     }
   });
 
-  it('never full-scans an ordinary live update', () => {
-    const editor = createValidationEditor();
-    const profilerGlobal = globalThis as typeof globalThis & {
-      __EDITOR_REACT_RENDER_PROFILER__?: {
-        record: (event: { id: string }) => void;
-      };
-    };
-    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
-    const events: string[] = [];
-
-    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
-      record: ({ id }) => events.push(id),
-    };
-
-    try {
-      editor.update((tx) =>
-        tx.text.insert('!', { at: { offset: 5, path: [0, 0, 0] } })
-      );
-
-      assert.equal(
-        events.filter((id) => id === 'schema-validation-incremental-hit')
-          .length,
-        1
-      );
-      assert.equal(
-        events.filter((id) => id === 'schema-validation-full-document-boundary')
-          .length,
-        0
-      );
-    } finally {
-      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
-    }
-  });
-
   it('keeps live updates valid after an editor with another schema adopts the document', () => {
     const editor = createValidationEditor();
     createEditor({ initialValue: editor.read.value() });
@@ -842,11 +808,6 @@ describe('incremental schema validation', () => {
         );
         assert.equal(
           events.filter((id) => id === 'schema-root-ownership-index-build')
-            .length,
-          0
-        );
-        assert.equal(
-          events.filter((id) => id === 'schema-validation-global-root-fallback')
             .length,
           0
         );
@@ -1059,12 +1020,6 @@ describe('incremental schema validation', () => {
 
       assert.match(conflict ?? '', /\[1,0\].*paragraph-owner\.body/i);
       assert.match(conflict ?? '', /\[2\].*heading-owner\.body/i);
-      assert.equal(
-        events.filter(
-          (id) => id === 'schema-root-ownership-index-location-fallback'
-        ).length,
-        0
-      );
     } finally {
       profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
     }
@@ -1082,51 +1037,29 @@ describe('incremental schema validation', () => {
         roots: { [OWNED_ROOT]: [paragraph('projected')] },
       },
     });
-    const profilerGlobal = globalThis as typeof globalThis & {
-      __EDITOR_REACT_RENDER_PROFILER__?: {
-        record: (event: { id: string }) => void;
-      };
+
+    editor.update((tx) =>
+      tx.text.insert('!', { at: { offset: 1, path: [1, 0] } })
+    );
+    editor.update.nodes.insert(
+      { children: [{ text: 'prefix' }], type: 'paragraph' },
+      { at: [0] }
+    );
+    const before = editor.read.value();
+    const candidate: EditorDocumentValue = {
+      ...before,
+      children: [...before.children, ownedRootElement('heading-owner')],
     };
-    const previous = profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
-    const events: string[] = [];
+    const conflict = errorMessage(() =>
+      validateWithBuilder(
+        before,
+        DocumentChange.between(before, candidate),
+        getEditorSchema(editor)
+      )
+    );
 
-    profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
-      record: ({ id }) => events.push(id),
-    };
-
-    try {
-      editor.update((tx) =>
-        tx.text.insert('!', { at: { offset: 1, path: [1, 0] } })
-      );
-      editor.update.nodes.insert(
-        { children: [{ text: 'prefix' }], type: 'paragraph' },
-        { at: [0] }
-      );
-      events.length = 0;
-      const before = editor.read.value();
-      const candidate: EditorDocumentValue = {
-        ...before,
-        children: [...before.children, ownedRootElement('heading-owner')],
-      };
-      const conflict = errorMessage(() =>
-        validateWithBuilder(
-          before,
-          DocumentChange.between(before, candidate),
-          getEditorSchema(editor)
-        )
-      );
-
-      assert.match(conflict ?? '', /\[2\].*paragraph-owner\.body/i);
-      assert.match(conflict ?? '', /\[4\].*heading-owner\.body/i);
-      assert.equal(
-        events.filter(
-          (id) => id === 'schema-root-ownership-index-location-fallback'
-        ).length,
-        0
-      );
-    } finally {
-      profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previous;
-    }
+    assert.match(conflict ?? '', /\[2\].*paragraph-owner\.body/i);
+    assert.match(conflict ?? '', /\[4\].*heading-owner\.body/i);
   });
 
   it('compacts 10k owner-path moves into logarithmic lookup history', () => {

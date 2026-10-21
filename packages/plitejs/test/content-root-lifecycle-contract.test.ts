@@ -719,11 +719,20 @@ describe('element-owned root lifecycle', () => {
       roots: { 'exclusive:detached': [paragraph('caption')] },
     });
 
-    assert.ok(
-      editor.read.slice.fit(slice, {
-        at: { offset: 0, path: [0, 0] },
-      })
-    );
+    const fitted = editor.read.slice.fit(slice, {
+      at: { offset: 0, path: [0, 0] },
+    });
+
+    assert.ok(fitted);
+    const value = fitted.changes.apply(editor.read.value());
+
+    assert.deepEqual(value.children, [
+      portal('exclusive-portal', 'exclusive:detached:copy'),
+      paragraph('target'),
+    ]);
+    assert.deepEqual(value.roots?.['exclusive:detached:copy'], [
+      paragraph('caption'),
+    ]);
   });
 
   it('rolls back an invalid root-bearing slice without partial publication', () => {

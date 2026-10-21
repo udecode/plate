@@ -2139,6 +2139,9 @@ describe('contextual schema slice fitting', () => {
     }
 
     assert.ok(fitted);
+    assert.deepEqual(fitted.changes.apply(editor.read.value()).children, [
+      paragraph('deep'),
+    ]);
     assert.ok(materialized < 8, `${materialized} materialized variants`);
   });
 

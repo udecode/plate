@@ -198,10 +198,10 @@ describe('plugin method hard cut', () => {
     editor.update((tx) => {
       tx.selection.set({ path: [0, 0], offset: 3 });
     });
-    editorInsertText(editor, '!');
+    editorInsertText(editor, 'x');
 
     assert.deepEqual(seenOffsets, [3, 4]);
-    assert.equal(editorString(editor, [0]), 'one!');
+    assert.equal(editorString(editor, [0]), 'oneX');
     assert.deepEqual(editorGetSnapshot(editor).version, 2);
   });
 

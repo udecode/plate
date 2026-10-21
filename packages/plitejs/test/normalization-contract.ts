@@ -47,7 +47,7 @@ describe('plite normalization contract', () => {
     ]);
   });
 
-  it('repairs every root in stable maintenance scope', () => {
+  it('repairs empty blocks in every root when the editor is created', () => {
     const editor = createEditor({
       initialValue: {
         children: [{ type: 'block', children: [] }],
@@ -57,8 +57,6 @@ describe('plite normalization contract', () => {
         },
       },
     });
-
-    editor.update.value.repair();
 
     assert.deepEqual(editor.read.children(), [
       { type: 'block', children: [{ text: '' }] },

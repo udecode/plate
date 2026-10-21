@@ -2677,8 +2677,6 @@ it('supports editorBefore across mixed-inline sibling text leaves in one block',
   });
 });
 
-it('supports editorAfter across mixed-inline siblings inside an outer transaction using the live draft tree', () => {});
-
 it('supports editorBefore and editorAfter with voids: true on path and point locations', () => {
   const editor = createEditor();
 

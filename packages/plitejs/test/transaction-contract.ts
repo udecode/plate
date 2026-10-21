@@ -378,25 +378,6 @@ describe('plite transaction contract', () => {
     });
   });
 
-  it('exposes high-level writes through the transaction-owned mutation groups', () => {
-    const editor = createEditor();
-
-    replaceChildren(editor, [paragraph('one')]);
-
-    editor.update((tx) => {
-      tx.text.insert('!', {
-        at: { path: [0, 0], offset: 3 },
-      });
-
-      assert.equal(editorGetChildren(editor)[0]?.children[0]?.text, 'one!');
-    });
-
-    assert.equal(
-      editorGetSnapshot(editor).children[0].children[0].text,
-      'one!'
-    );
-  });
-
   it('publishes explicit last commit metadata without requiring snapshot subscribers', () => {
     const editor = createEditor();
 
@@ -1474,25 +1455,36 @@ describe('plite transaction contract', () => {
     assert.equal(editorString(editor, [0]), 'one?');
   });
 
-  it('publishes plugin-owned registry slots atomically', () => {
+  it('publishes and removes a plugin api, correction and commit listener together', () => {
     const editor = createEditor();
     const capability = { type: 'link' };
-    const correction = {
-      correct() {},
-      event: 'content' as const,
-    };
-    const commitListener = () => {};
+    let corrections = 0;
+    let commits = 0;
+
+    replaceChildren(editor, [paragraph('one')]);
 
     const cleanup = editor.install(
       definePlugin('registry-slots', {
         api: () => ({ inline: capability }),
-        corrections: [correction],
+        corrections: [
+          {
+            correct() {
+              corrections += 1;
+            },
+            event: 'content',
+          },
+        ],
         on: {
-          commit: commitListener,
+          commit: () => {
+            commits += 1;
+          },
         },
       })
     );
-    const registry = editorGetPluginRegistry(editor);
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 3 } });
+    });
 
     assert.equal(
       (
@@ -1502,22 +1494,18 @@ describe('plite transaction contract', () => {
       )['registry-slots']?.inline,
       capability
     );
-    assert.equal(
-      registry.corrections.get('registry-slots:corrections.0'),
-      correction
-    );
-    assert.equal(registry.commitListeners.size, 1);
+    assert.deepEqual([corrections > 0, commits > 0], [true, true]);
 
     cleanup();
+    corrections = 0;
+    commits = 0;
 
-    const clearedRegistry = editorGetPluginRegistry(editor);
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { path: [0, 0], offset: 4 } });
+    });
 
     assert.equal('registry-slots' in editor.api, false);
-    assert.equal(
-      clearedRegistry.corrections.has('registry-slots:corrections.0'),
-      false
-    );
-    assert.equal(clearedRegistry.commitListeners.size, 0);
+    assert.deepEqual([corrections, commits], [0, 0]);
   });
 
   it('cleans plugin registration output and aborts its lifecycle signal', () => {

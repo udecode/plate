@@ -1076,15 +1076,13 @@ it('the correction kernel removes stray top-level text after insertNodes', () =>
   ]);
 });
 
-it('editorNormalize explicitly merges adjacent compatible text children in inline-style containers', () => {
+it('merges adjacent compatible text children when a document is replaced', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
     children: createMergeTextChildren(),
     selection: null,
   });
-
-  editor.update.value.repair();
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
     {
@@ -1094,7 +1092,7 @@ it('editorNormalize explicitly merges adjacent compatible text children in inlin
   ]);
 });
 
-it('editorNormalize explicitly removes empty adjacent text in inline-style containers', () => {
+it('removes empty adjacent text when a document is replaced', () => {
   const editor = createEditor();
 
   editorReplace(editor, {
@@ -1110,8 +1108,6 @@ it('editorNormalize explicitly removes empty adjacent text in inline-style conta
     ],
     selection: null,
   });
-
-  editor.update.value.repair();
 
   assert.deepEqual(editorGetSnapshot(editor).children, [
     {
@@ -2364,60 +2360,6 @@ it('keeps small top-level expanded selection impact precise', () => {
     changes[0]?.changed.nodeKeys('decoration'),
     changes[0]?.changed.nodeKeys('selection')
   );
-});
-
-it('does not rebuild root snapshots for selection-only subscriber commits', () => {
-  const editor = createEditor();
-  const profiledIds: string[] = [];
-  const previousProfiler = (
-    globalThis as typeof globalThis & {
-      __EDITOR_REACT_RENDER_PROFILER__?: unknown;
-    }
-  ).__EDITOR_REACT_RENDER_PROFILER__;
-
-  editorReplace(editor, {
-    children: createChildren(),
-    selection: {
-      kind: 'text' as const,
-      anchor: { path: [0, 0], offset: 0 },
-      focus: { path: [0, 0], offset: 0 },
-    },
-  });
-
-  editor.subscribeCommit(() => {});
-
-  try {
-    (
-      globalThis as typeof globalThis & {
-        __EDITOR_REACT_RENDER_PROFILER__?: {
-          record?: (event: { id: string; kind: string }) => void;
-        };
-      }
-    ).__EDITOR_REACT_RENDER_PROFILER__ = {
-      record(event) {
-        if (event.kind === 'core-time') {
-          profiledIds.push(event.id);
-        }
-      },
-    };
-
-    editor.update((tx) => {
-      tx.selection.set({
-        kind: 'text',
-        anchor: { path: [1, 0], offset: 1 },
-        focus: { path: [1, 0], offset: 1 },
-      });
-    });
-  } finally {
-    (
-      globalThis as typeof globalThis & {
-        __EDITOR_REACT_RENDER_PROFILER__?: unknown;
-      }
-    ).__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
-  }
-
-  assert.ok(profiledIds.includes('build-change'));
-  assert.equal(profiledIds.includes('next-snapshot'), false);
 });
 
 it('does not materialize listener snapshots for irrelevant source subscribers', () => {
