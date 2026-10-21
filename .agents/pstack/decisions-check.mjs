@@ -30,7 +30,8 @@
 //        its topic and a Do list of one pass, withdrawals, then ledger rows, then cards,
 //        and exits 1 when any pass holds a problem: a card on a task that cannot start,
 //        a wait that can never clear or two open design questions in one topic;
-//        <ledger> defaults to <plans>/suggested-tasks.decisions.tsv,
+//        <ledger> defaults to <plans>/artifacts/suggested-tasks.decisions.tsv in trunk
+//        delivery and <plans>/suggested-tasks.decisions.tsv otherwise,
 //        --fetch refreshes the remote branches that PR waits read, and --session names
 //        this session, so it cards only the tasks it owns and the ship-list tasks, and each card it does not hold
 //        gets a check item instead of a withdraw problem)
@@ -53,11 +54,11 @@
 //        names this session, whose own tasks it skips)
 
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, lstatSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { currentLead, leadLabel, maxEffort } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
-import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, LEDGER, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -82,7 +83,7 @@ const shipList = () => (shipped ??= readShip(projectConfig().chips?.ship));
 
 let ledgerTasks = null;
 const currentLedger = () => {
-  const path = trunk() ? join(mainCheckout(), plansDir(), LEDGER) : join(plansDir(), LEDGER);
+  const path = trunk() ? join(mainCheckout(), ledgerFile()) : ledgerFile();
   ledgerTasks ??= readTasks(existsSync(path) ? readFileSync(path, 'utf8').split('\n').slice(1) : []);
   return ledgerTasks;
 };
@@ -95,6 +96,8 @@ function projectConfig() {
 function plansDir() {
   return projectConfig().plans || 'docs/plans';
 }
+
+const ledgerFile = () => ledgerPath(plansDir(), projectConfig().delivery);
 
 const trunk = () => projectConfig().delivery === 'trunk';
 
@@ -119,13 +122,13 @@ function chipsArgs(args) {
 function runLedgerCommandFromMainCheckout(args) {
   if (!trunk() || !['append', 'chips'].includes(args[0])) return;
   const logAt = args[0] === 'append' ? 1 : chipsArgs(args).logAt;
-  const ledgers = [resolve(join(plansDir(), LEDGER)), join(mainCheckout(), plansDir(), LEDGER)];
+  const ledgers = [resolve(ledgerFile()), join(mainCheckout(), ledgerFile())];
   if (logAt !== undefined && !ledgers.includes(resolve(args[logAt] ?? ''))) return;
   if (args[0] === 'append' && args[2] === '--from' && args[3]) args[3] = resolve(args[3]);
   const sessions = args.indexOf('--sessions');
   if (sessions !== -1 && args[sessions + 1]) args[sessions + 1] = resolve(args[sessions + 1]);
   process.chdir(mainCheckout());
-  if (logAt !== undefined) args[logAt] = join(plansDir(), LEDGER);
+  if (logAt !== undefined) args[logAt] = ledgerFile();
 }
 const onDisk = (path) => existsSync(path) || (trunk() && !isAbsolute(path) && existsSync(join(mainCheckout(), path)));
 
@@ -237,7 +240,7 @@ function problems(path) {
   if (lines[0] !== HEADER) return [`${path}:1: header must be "${HEADER.replaceAll('\t', ' ')}"`];
   const committed = committedLines(path);
   let opened = false;
-  const chips = resolve(path) === resolve(join(plansDir(), LEDGER)) ? new Map() : null;
+  const chips = resolve(path) === resolve(ledgerFile()) ? new Map() : null;
   return lines.flatMap((line, index) => {
     if (index === 0 || line === '') return [];
     const where = `${path}:${index + 1}`;
@@ -273,7 +276,7 @@ function append(path, batch, run) {
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
   let rounds = roundsSince(existing);
   const chips = readTasks(existing.slice(1));
-  const ledger = resolve(path) === resolve(join(plansDir(), LEDGER));
+  const ledger = resolve(path) === resolve(ledgerFile());
   const writer = run ? { session: null, transcript: transcriptOf(run) } : null;
   const rows = [];
   const found = [];
@@ -290,7 +293,7 @@ function append(path, batch, run) {
       continue;
     }
     const row = [stamp, ...cells].join('\t');
-    if (cells[0] === 'chip' && !ledger) found.push(`${where}: chip rows go in the project's ledger ${join(plansDir(), LEDGER)}, because a suggested task outlives the run that offered it`);
+    if (cells[0] === 'chip' && !ledger) found.push(`${where}: chip rows go in the project's ledger ${ledgerFile()}, because a suggested task outlives the run that offered it`);
     found.push(...rowProblems(row, where, opened, ledger ? chips : null), ...newRowProblems(cells, where, ledger ? chips : null, writer), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
     if (opens(row) && opened && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
@@ -362,7 +365,7 @@ if (args[0] === 'chips') {
   }
   const id = rest[0] === 'brief' ? rest[1] : null;
   const named = args[logAt];
-  const ledger = named ?? join(plansDir(), LEDGER);
+  const ledger = named ?? ledgerFile();
   if (!existsSync(ledger)) {
     console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
     process.exit(named ? 2 : 0);
@@ -488,7 +491,8 @@ if (args[0] === 'append') {
 const paths =
   args[0] === '--all'
     ? readdirSync(plansDir())
-        .filter((name) => name.endsWith('.decisions.tsv'))
+        // In trunk delivery the ledger's former path is a link to the moved ledger, for helpers that predate the move.
+        .filter((name) => name.endsWith('.decisions.tsv') && lstatSync(join(plansDir(), name)).isFile())
         .map((name) => join(plansDir(), name))
     : args;
 if (paths.length === 0 && args[0] !== '--all') {
