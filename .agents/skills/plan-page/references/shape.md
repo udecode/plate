@@ -145,7 +145,7 @@ A published subject page is a set of files. The page file lists the runs that pu
 
 A local frame becomes a `![label](./path)` reference from the repository root, under a `<!-- frame: ./path -->` note, and goes up through `gh --attach`. A later render with `--into` reuses the uploaded link found under that note. The sections the page leaves in the plan file, such as Close, Steps and Evidence, stay there.
 
-`plan-page.mjs <plan> --comment <sha>` writes the same body as a comment about the commits after `<sha>`, into `<name>.comment.md`. Under the lead lines it links DiffsHub's compare view from `<sha>` to the checkout's head. With `--against <description.md>`, it leaves out each Demo clip the description already shows, and each step whose clips all are.
+`plan-page.mjs <plan> --comment <sha>` writes a comment about the commits after `<sha>`, into `<name>.comment.md`. It opens with a link to DiffsHub's compare view from `<sha>` to the checkout's head, then shows only On top of the PR, Demo, Public API, the `page-pr` sections and Verification, in that order. The PR's author wrote the code and its description, so the brief and How it works stay out, and so do the models line, open questions, Decisions, Out of scope and Plans, which only the owner reads. With `--against <description.md>`, it leaves out each Demo clip the description already shows, and each step whose clips all are.
 
 ## Refusals
 
@@ -160,6 +160,7 @@ A local frame becomes a `![label](./path)` reference from the repository root, u
 - An iteration names a playbook that neither `.agents/playbooks/` nor pstack has.
 - A playbook's `page-pr` line names a section its `page-lead` line does not.
 - `--comment` names a commit the checkout lacks, or one its HEAD does not contain, because the compare link would not open.
+- `--comment` renders a plan whose `## On top of the PR` is missing or empty, because the comment has no other list of what your commits changed.
 - `.agents/pstack.json` still sets `pageLead`, `pagePairs` or `pageTopic.require`. sync-pstack's `apply` drops them in the write that installs the renderer once a playbook carries each title, and refuses until then.
 - A subject whose hub exists lacks a required section in its file, and in the plan that leads its page when that plan has a brief. The leading plan's playbook sets the required sections, or every playbook does when that plan names none.
 - An open iteration's subject already shows one of its added or changed rows, or no longer has a row it removes, in any section with a Delta table. It also refuses when the subject shows a pair's after fence line for line, indentation and punctuation included, and does not show its before fence. The check skips a pair that deletes a call or changes nothing, a pair whose changed lines another iteration's fences all hold, and any row another iteration also marks. It exempts a plan whose `Status:` starts with `reopened`, and the plan a `--folded` render folds.
@@ -168,6 +169,7 @@ A local frame becomes a `![label](./path)` reference from the repository root, u
 - An open iteration's brief skips, adds or reorders a question, leaves an answer empty, or answers in more than 40 words. When a brief asks a question that older briefs asked, the refusal names each one to drop.
 - `--folded` names a plan with no `## Close` or no subject file, or the subject file lacks the plan's Delta rows or after lines, still shows its before lines, or does not show an after fence as one block in order, skipping any row or line another iteration also changes.
 
-- `--pr` or `--comment` names a plan with no `## Brief`, whatever its state, a title or brief that names a PR number, a Changes answer that still says "will", or a `Plans:` line that lists a plan that does not exist. It also runs the brief, Teach and plain-section checks that otherwise apply only to an open plan.
+- `--pr` names a plan with no `## Brief`, whatever its state, a title or brief that names a PR number, or a Changes answer that still says "will". It also runs the brief, Teach and plain-section checks that otherwise apply only to an open plan.
+- `--pr` or `--comment` names a plan whose `Plans:` line lists a plan that does not exist.
 
 `--check` runs every refusal and writes nothing.
