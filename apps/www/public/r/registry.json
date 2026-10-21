@@ -2684,7 +2684,7 @@
       "title": "Code Block Diagram Mermaid",
       "description": "Draw Mermaid code blocks.",
       "dependencies": [
-        "pele"
+        "pele@1.6.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/code-block-diagram.json"
@@ -2713,7 +2713,7 @@
       "title": "Code Block Diagram Graphviz",
       "description": "Draw Graphviz DOT code blocks.",
       "dependencies": [
-        "viz.js"
+        "viz.js@2.1.2"
       ],
       "devDependencies": [
         "@types/viz.js"
@@ -2745,7 +2745,7 @@
       "title": "Code Block Diagram Flowchart",
       "description": "Draw flowchart.js code blocks.",
       "dependencies": [
-        "flowchart.js"
+        "flowchart.js@1.18.0"
       ],
       "registryDependencies": [
         "https://platejs.org/r/code-block-diagram.json"
@@ -2774,7 +2774,7 @@
       "title": "Code Block Diagram PlantUML",
       "description": "Draw PlantUML code blocks through your own PlantUML server.",
       "dependencies": [
-        "plantuml-encoder"
+        "plantuml-encoder@1.4.0"
       ],
       "devDependencies": [
         "@types/plantuml-encoder"

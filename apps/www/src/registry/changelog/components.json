@@ -15,6 +15,22 @@
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
     ],
+    "code-block-diagram-mermaid": [
+      "2026-10-20-pin-diagram-engines",
+      "2026-10-16-code-block-diagrams"
+    ],
+    "code-block-diagram-graphviz": [
+      "2026-10-20-pin-diagram-engines",
+      "2026-10-16-code-block-diagrams"
+    ],
+    "code-block-diagram-flowchart": [
+      "2026-10-20-pin-diagram-engines",
+      "2026-10-16-code-block-diagrams"
+    ],
+    "code-block-diagram-plantuml": [
+      "2026-10-20-pin-diagram-engines",
+      "2026-10-16-code-block-diagrams"
+    ],
     "more-toolbar-button": [
       "2026-10-20-preserve-more-formatting-toolbar",
       "2026-10-12-toolbar-button-names",
@@ -395,10 +411,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "code-block-diagram": ["2026-10-16-code-block-diagrams"],
-    "code-block-diagram-mermaid": ["2026-10-16-code-block-diagrams"],
-    "code-block-diagram-graphviz": ["2026-10-16-code-block-diagrams"],
-    "code-block-diagram-flowchart": ["2026-10-16-code-block-diagrams"],
-    "code-block-diagram-plantuml": ["2026-10-16-code-block-diagrams"],
     "code-block": [
       "2026-10-16-code-block-diagrams",
       "2026-10-08-registry-install-dependencies",

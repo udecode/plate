@@ -20,6 +20,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-20-pin-diagram-engines",
+      "href": "/registry/changelog/2026-10-20-pin-diagram-engines.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Pin copied diagram renderers to tested engine versions",
+      "change": {
+        "type": "source",
+        "date": "2026-10-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "code-block-diagram-mermaid",
+        "code-block-diagram-graphviz",
+        "code-block-diagram-flowchart",
+        "code-block-diagram-plantuml"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-20-preserve-more-formatting-toolbar",
       "href": "/registry/changelog/2026-10-20-preserve-more-formatting-toolbar.json",
       "status": "draft",

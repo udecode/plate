@@ -1,6 +1,6 @@
 # Review desk
 
-Status: partial: phase 2 shipped fast and unreviewed; your trial and the page budgets still wait
+Status: planned: phase 3 waits for your go; phase 2 is unreviewed, and your trial and the page budgets still wait
 Topic: review-desk
 Playbook: plan
 
@@ -8,11 +8,11 @@ Playbook: plan
 
 ### What will change?
 
-A DiffsHub-style page on your machine lists every task landed on next, shows only the files you review, and remembers what you read. Phase 2 shows each landing's plan, proofs and notes, and lists open questions and chips.
+A page on your machine lists each task landed on next, shows only the files you review, and remembers what you read. Phase 3 links landings to their Claude session and chip, and keeps the whole view in the URL.
 
 ### What could go wrong?
 
-22 of 156 recent public rows hold a must-read test, skipped, env-gated or weakened without a code change. Speed budgets are unmeasured. Phase 2 shipped unreviewed before your trial. Decisions puts 889 unseen picks after the 11 questions.
+Speed budgets are unmeasured, and phase 2 is unreviewed. Decisions puts 889 unseen picks after 11 questions. Session titles would come from the Claude app's private files, which an app update can change.
 
 ## Teach
 
@@ -37,7 +37,7 @@ Opening a session's plan shows each file's net change across its landings. You m
 | Where views are set | A small desk file in each project | pstack's project settings | pstack settings | detail |
 | Review record | One per GitHub repo, shared by every clone, with one app open at a time | One per clone | per clone | detail |
 | Where the app is built | A local git repository in this run's folder until you say push dotai (look) | Push it to dotai now | push dotai | detail |
-| Review rounds | Three panel rounds on the Electron plan. The web redesign got one design round, and the build's diff gets one panel round, whose fixes land without another round. The sign-in cut and phase 2 shipped fast with no panel. Saying full reviews them | A panel on the web plan before the build | panel | detail |
+| Review rounds | Three panel rounds on the Electron plan. The web redesign got one design round, and the build's diff gets one panel round, whose fixes land without another round. The sign-in cut, phase 2 and its two server fixes shipped fast with no panel. Saying full reviews them | A panel on the web plan before the build | panel | detail |
 | Browser sign-in | None, on your word. The server answers only requests to its own address, and its API answers only its own page | A one-time code in the link that opens the page | sign-in | detail |
 | Build sessions | On your word, phase 2 built in this session in fast mode, before your trial | Phase 2 waits for the trial and builds in its own session | after trial | detail |
 | Picks in Decisions | Every look or answer pick in any plan's Defaults, after the questions and decide chips, until you press x on it. Today that is 889 picks from 185 plans (look) | Only picks of plans still open | open plans only | small |
@@ -45,10 +45,20 @@ Opening a session's plan shows each file's net change across its landings. You m
 | Starting a chip | y copies its start command for you to send to the lead; the desk starts nothing | A button that starts the session | start button | detail |
 | Trial pass mark | Faster than DiffsHub and at most 72 seconds a task, so 100 tasks fit in two hours (look) | Faster than DiffsHub only | floor N | small |
 | Plan page link | A new page at https://claude.ai/artifact/LmfrwLCc1YFTNhZjEFVb4w, because the old one at https://claude.ai/artifact/HLYerHCL1r65tGVNEqwUJM no longer opens | No published page, since the plan file is the record | drop page | detail |
+| Server lifetime | It runs until you stop it or log out, so a tab left open still answers. It holds about 220 MB while it runs | It stops 10 minutes after its last page closes | idle stop | detail |
+| Sidebar rows | The subject first, at most two signals, a failed proof and the badges that ask you to act. The short sha, every signal's text, panel rounds and running proofs show on hover. A session header shows when it landed | Every mark and the short sha on the row | full rows | detail |
+| Session titles | Read from the Claude app's own session files, which hold every session's title, archived ones included. A session with no file keeps its id (look) | A title that land.mjs writes into each landing | titles in landings | small |
+| Session link | Opens the session in the Claude desktop app, as pstack-pulse's menubar does | Opens it on claude.ai | web links | detail |
+| Desk state in the URL | Every view, filter and open landing or plan lives in the URL through nuqs. A filter change replaces the history entry, and opening a landing adds one, so Back returns to the list | Only the open landing in the URL | landing only | small |
+| Filtering | One filter bar with the state, a search box and removable filter chips. The key numbers beside the tabs move to the help sheet | Keep today's tabs, range picker and hidden checkbox | keep controls | small |
+| Concern to its session | A button copies the note and opens the session for you to paste it; the desk sends nothing | The desk messages the session itself | send notes | detail |
+| Trial order | Phase 3 builds before your trial, because it changes how you find and filter landings (look) | The trial runs first, on today's desk | trial first | small |
 | Comment lines | Counted with code for now | Code and comment lines split | split comments | detail |
 | Tests you cut | Every scripted browser test goes, and I check the page by hand in the built-in browser. The unit tests for core, the server and stats stay | Cut the unit tests too | cut node tests | small |
 
 ## Open questions
+
+- Build phase 3 now? It names and links each landing's session, ties chips to their sessions and landings, keeps the whole view in the URL and replaces the controls with one filter bar. Say "go" and it builds here with one panel round on its diff, or "go fast" to skip the panel.
 
 - Push the desk to dotai? dotai is public and anyone can install skills from it, so the app stays in this run's folder until you say "push dotai". Then I move it into dotai's skills folder, run dotai's skill checks, and commit and push dotai's main branch.
 
@@ -128,7 +138,7 @@ Out of scope:
 
 ## Steps
 
-Phase 1 builds in this session and ends with your trial. On your word, phase 2 built in this session too, in fast mode, before the trial.
+Phase 1 builds in this session and ends with your trial. On your word, phase 2 built in this session too, in fast mode, before the trial. Phase 3 waits for your go.
 
 ### Phase 1. Inbox desk
 
@@ -189,6 +199,17 @@ Phase 1 builds in this session and ends with your trial. On your word, phase 2 b
 - [x] 2.5 Land fast: `deslop` on the skill repository's diff, then `land.mjs` for the Plate side. The dotai commit and push wait for your "push dotai", as in 1.6. Proof: the Plate commit.
 - [ ] 2.6 Review the sign-in cut and phase 2 when you say "full": a panel round on their diff, then `no-comments`. Owner: you. Proof: the panel's answers in the run directory.
 
+### Phase 3. Linked and shareable
+
+Each landing's `Session:` line names a Claude desktop session as `local_<id>`. The Claude app keeps one file per session under `~/Library/Application Support/Claude/claude-code-sessions/`, archived ones included, with its title, archived flag, last activity, the session that spawned it and its PRs. Of the 54 sessions behind the last 300 landings at `309c449308`, 52 have such a file, and the ledger's rows tie 41 of them to a chip.
+
+- [ ] 3.1 Name and link sessions. The server reads those files read-only, by the id each `Session:` line names. A session header shows the session's title, when it last landed and its landing count, with an open link, `claude://claude.ai/epitaxy/<id>`, which pstack-pulse's menubar uses to open a session in the desktop app. A session with no file keeps its id. Proof: the 52 titled sessions match a count from the files; with the folder renamed in a scratch home, every header falls back to its id; and the link opens this session in the app.
+- [ ] 3.2 Tie chips to sessions and landings. The board maps each chip to the sessions its ledger rows name and the commits its `landed` rows name. A session that ran a chip shows the chip's id and title under its header. The Chips view lists each chip's sessions, with open links, and its landings, and opening a landing there shows it in the reader. The drawer's chip list links the same way. Proof: the 41 sessions tied to a chip match a ledger count, and a chip with more than one session lists each.
+- [ ] 3.3 Keep the desk's state in the URL with nuqs. The mode, view, state, range, hidden switch, filters, open landing or plan, open file and drawer each get a query key. A filter change replaces the history entry, and opening a landing adds one, so Back returns to the list. `open --landing <sha>` builds the same URL. nuqs is pinned to its newest release that is at least seven days old, as doctor requires. Proof: a copied URL opened in a new tab shows the same rows, open landing, file and drawer; Back after opening a landing returns to the list; a URL with an unknown key or a bad value opens the default view without an error.
+- [ ] 3.4 Replace the controls with one filter bar. The view tabs keep their counts and drop the key numbers beside them, which move to the help sheet. Under them one bar holds the state (Unreviewed, Debt, Hidden), a search box over subject, sha, session title, plan and chip id that `/` focuses, and removable filter chips for session, plan, signal and range, each with its count. Proof: by hand in the built-in browser, the `exports` filter lists the rows that carry that signal, a search for a session title finds its landings, and clearing every filter restores the default URL.
+- [ ] 3.5 Send a concern to its session. A concern note gets a button that copies the note with the landing's sha and subject, and opens the landing's session for you to paste it. Proof: by hand.
+- [ ] 3.6 Review and land: `deslop` and `no-comments` on the skill repository's diff, one panel round on it whose fixes land without another round, `unslop` on `SKILL.md`, then `land.mjs` for the Plate side. The dotai commit and push wait for your "push dotai". Proof: the panel's answers in the run directory and the Plate commit.
+
 ## Proof
 
 Evidence goes under `docs/plans/artifacts/2026-10-20-review-desk/` in the main checkout, and every command that counts runs through `proof.mjs`.
@@ -228,11 +249,12 @@ The public view shows the public class, the internal view shows public and inter
 ## Open work
 
 - Your trial in step 1.7. Owner: you. Stop: none, since phase 2 is built.
-- The review of `7d5f879`, `2057e7b` and `ece9c3e` in step 2.6, all shipped fast. Owner: you, with "full". Stop: before "push dotai".
+- The review of `7d5f879`, `2057e7b`, `ece9c3e`, `729f61c` and `b956cd6` in step 2.6, none reviewed yet. Owner: you, with "full". Stop: before "push dotai".
 - The page budgets in step 1.3. The browser pane stayed hidden and drew 1 to 3 frames a second, and a reading needs at least 30. Owner: lead, once you show the pane with Cmd+Shift+B. Stop: before your trial.
+- Hand-back replies and plan pages that link a landing in the desk instead of on DiffsHub. That changes pstack's shared sources in dotai, so it becomes a suggested task once 3.3 gives the desk stable links. Owner: lead. Stop: after 3.3.
 - Whether to retire `review.mjs` or point it at the desk's record. Owner: you, through a chip. Stop: after phase 2.
 - A `Review:` trailer from `land.mjs` and a commit in each proof log, so fast and proof stop showing as unknown. Owner: chip t_5f6ea908. Stop: none.
-- The diff panel's deferred warnings. Each key replays the whole log, so its cost grows with the log, and this waits until the budgets are read. The record doesn't store its trunk, so a clone whose `origin/HEAD` names another branch opens the same record on that trunk. A reader opened while the scans run keeps its first file classes. After a dev server restarts, the page stops reconnecting. Opus's nits n1 to n16 and n18 wait too. Owner: lead. Stop: before your trial.
+- The diff panel's deferred warnings. Each key replays the whole log, so its cost grows with the log, and this waits until the budgets are read. The record doesn't store its trunk, so a clone whose `origin/HEAD` names another branch opens the same record on that trunk. A reader opened while the scans run keeps its first file classes. Opus's nits n1 to n16 and n18 wait too. Owner: lead. Stop: before your trial.
 - Limits: kept bytes for reviewed images and artifacts over 1 MB, exclusion reasons, a rename across categories, a raised timeout, folded assertions or rewritten expected values not counting as weakening, an assertion gated through a helper the file imports, a weakened test beside a code change accepted unread from its badge, the API signal trusting that the manifest was regenerated, the trial counting time, not problems caught, a browser that may not bring an open desk tab to the front, budgets read once by hand rather than as a 95th percentile, no scripted browser test to catch a page regression, a program that is not a desk holding a record's port, which blocks that record until you pass another `--state`, two records hashing to one port, one chance in 2,000, each load reading the whole first-parent log while a recorded commit lies outside the horizon, a local program that forges the browser's headers, the drawer showing a plan's diff since its landing rather than both versions side by side, a proof log tied to a landing only through its plan, Decisions holding 889 unseen picks, notes and seen marks driven by hand only on a scratch record, no scripted test of the drawer, Decisions or Chips, a summary accept of a desk file landing, which leaves its version waiting, shown in the header, until a files accept, and that header link, which tests check but the hand check could not show because both desks ran with a local desk file. Owner: lead. Stop: none.
 
 ## Close
@@ -240,8 +262,10 @@ The public view shows the public class, the internal view shows public and inter
 - Phase 2's changes from the plan first. On your "go directly phase 2. fast mode", phase 2 built here before your trial, with no panel, and the sign-in cut before it shipped the same way. The drawer shows a plan as it is now with its diff since the landing, not both versions side by side. Step 2.2's proof ran in the tests' scratch repository, not a clone of plate-2.
 - Phase 2 landed. The skill repository's `2057e7b` adds the context drawer, Decisions, Chips, notes, and the panel and proof badges on rows. Nothing pushes it until you say "push dotai". Plate's commit updates this plan.
 - Phase 2 proof. On `2057e7b`, 54 of 54 node tests and both type checks pass, and five planted defects each failed their test. By hand, Decisions listed the same 11 open questions as a hand list, the drawer matched a shell count on five plans, and a concern note and its resolve worked on a scratch record. That check found no row showing a panel badge, because the board looked for a phase pstack never writes. After the fix, 31 landings show one. Then your desk stuck on "Loading…". Opening the scratch record rebuilt the shared app, and your record's server kept serving the new page with its old code, so the browser blocked the page's script. `ece9c3e` restarts a server whose code differs from the installed app, and a replay of that case loads cleanly.
+- Then your desk showed "Loading…" again. The server had stopped itself 10 minutes after its last page closed, and your tab outlived it. `729f61c` keeps the server running until `stop`, a signal or logout. A page that loses its server now says so and keeps retrying. It reconnects in place when the server comes back on the same code, and reloads when the server comes back on newer code. The commit also stops a type check from making the next open reinstall the app, which had made that open take 39 s. On `729f61c`, 53 of 53 node tests and both type checks pass. On a scratch install, a page whose server was killed said so, reconnected without reloading to the same code, and reloaded onto changed code. A probe shows a type check no longer changes the code hash, and it fails with the old rule planted back.
+- On your word, `b956cd6` trims the sidebar. A row leads with its subject and moves the short sha, panel rounds and running proofs to hover. A session header shows when it landed instead of a piece of its id. On your desk the first eight subjects had 48 to 243 pixels of the 360-pixel sidebar before, median 155. After, all 166 have 140 or more, median 247, and no row overflows. The web type check passes, and no test covers the page.
 - Phase 2 limits. Decisions puts 889 unseen picks from 185 plans after the questions, and the Picks in Decisions row's word narrows them. No panel or other reviewer has read phase 2. Open work's Limits list the rest.
-- Phase 2 counts. Since phase 1's close you sent 9 messages, and each was done or answered.
+- Phase 2 counts. Since phase 1's close you sent 11 messages, and each was done or answered.
 - Phase 1's changes from the plan. The panel's B finding changed `B` to accept the cursor's session instead of the reader's. The first run of step 1.1's checks matched too widely and exited 1, and the rerun with the exact paths passed. A log row said hand-check items 1 to 8 passed, but item 8 was not shown, and a later row corrects it.
 - Landed. Plate's commit adds `.agents/review-desk.json`, this plan, its decision log and the review-desk subject file. The desk is the skill repository in this run's folder at `a727b2a`, and nothing pushes it until you say "push dotai".
 - Proof. The final rerun on `a727b2a` ran the node tests, both type checks, the install with `next build`, doctor, the stats and trial report commands, the desk file diff and 63 planted defects, and all 72 runs gave their expected exit. Step 1.1's checks found the server listening only on `127.0.0.1`, the import before the fork, and no commit holding the left-out font or images. The hand check passed items 1 to 7 on `80c26e3`, each with a screenshot.

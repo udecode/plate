@@ -427,6 +427,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
+    dependencies: ['pele@1.6.0'],
     files: [
       {
         path: 'components/editor/code-block-diagram-mermaid.ts',
@@ -443,6 +444,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
+    dependencies: ['viz.js@2.1.2'],
     devDependencies: ['@types/viz.js'],
     files: [
       {
@@ -460,6 +462,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
+    dependencies: ['flowchart.js@1.18.0'],
     files: [
       {
         path: 'components/editor/code-block-diagram-flowchart.ts',
@@ -476,6 +479,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
+    dependencies: ['plantuml-encoder@1.4.0'],
     devDependencies: ['@types/plantuml-encoder'],
     files: [
       {
