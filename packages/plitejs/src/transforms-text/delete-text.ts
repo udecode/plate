@@ -412,20 +412,17 @@ const resolveDeleteTarget = (
       voids,
     });
   };
+  const lowestBlock = (point: Point) =>
+    editorAbove(editor, {
+      at: point,
+      match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
+      mode: 'lowest',
+      voids,
+    });
   const startBlock = highestBlockInCell(start);
   const endBlock = highestBlockInCell(end);
-  const startMergeBlock = editorAbove(editor, {
-    at: start,
-    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
-    mode: 'lowest',
-    voids,
-  });
-  const endMergeBlock = editorAbove(editor, {
-    at: end,
-    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
-    mode: 'lowest',
-    voids,
-  });
+  const startMergeBlock = lowestBlock(start);
+  const endMergeBlock = lowestBlock(end);
   const prefersLowestMergeBlocks =
     startMergeBlock &&
     endMergeBlock &&
@@ -544,7 +541,8 @@ const resolveDeleteTarget = (
     preserveInlineEdge,
     preserveEmptyStartBlockPath,
     preservedEmptyStartBlock,
-    startMergeBlockPath: startMergeBlock?.[1] ?? null,
+    startJoinBlockPath:
+      !isCollapsed && isAcrossBlocks ? (lowestBlock(start)?.[1] ?? null) : null,
     topLevelCountBefore: getChildList(editor).length,
     effectiveStartBlockPath: effectiveStartBlock?.[1] ?? null,
     effectiveEndBlockPath: effectiveEndBlock?.[1] ?? null,
@@ -675,6 +673,7 @@ const resolveDeletePoint = (
 ) => {
   const startPoint = removal.startAnchor.release();
   const endPoint = removal.endAnchor.release();
+  const startBlockDropped = removal.startBlockAnchor?.release() === null;
   const reverseMergePoint =
     plan.reverse &&
     plan.isCollapsed &&
@@ -686,8 +685,9 @@ const resolveDeletePoint = (
         ? startPoint
         : endPoint
       : (startPoint ?? endPoint);
-  const collapseTarget =
-    !plan.isCollapsed && editorHasPath(editor, plan.start.path)
+  const collapseTarget = startBlockDropped
+    ? (endPoint ?? startPoint)
+    : !plan.isCollapsed && editorHasPath(editor, plan.start.path)
       ? { path: [...plan.start.path], offset: plan.start.offset }
       : reverseMergePoint;
   let point = normalizeFinalDeletePoint(editor, collapseTarget, {
@@ -1507,6 +1507,7 @@ const applyAt = (
   } else {
     removal.startAnchor.release();
     removal.endAnchor.release();
+    removal.startBlockAnchor?.release();
   }
   setDeletedMarks();
 

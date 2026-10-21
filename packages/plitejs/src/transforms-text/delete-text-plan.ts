@@ -178,7 +178,7 @@ export type DeleteRangePlan = {
   removedInteriorElementSiblingStructure: boolean;
   reverse: boolean;
   start: Point;
-  startMergeBlockPath: Path | null;
+  startJoinBlockPath: Path | null;
   startNonEditable: ReturnType<typeof getHighestNonEditable>;
   topLevelCountBefore: number;
   unit: NonNullable<DeleteOptions['unit']>;

@@ -239,6 +239,12 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
     association: 'forward',
     deletion: 'nearest',
   });
+  const startBlockAnchor = plan.startJoinBlockPath
+    ? createAnchor(editor, plan.startJoinBlockPath, {
+        association: 'forward',
+        deletion: 'drop',
+      })
+    : null;
   let removedText = '';
 
   if (!plan.isSingleText && !plan.startNonEditable && !skipStartText) {
@@ -293,6 +299,7 @@ export const removeDeleteContents = (editor: Editor, plan: DeleteRangePlan) => {
   return {
     startAnchor,
     endAnchor,
+    startBlockAnchor,
     endChain,
     removedText,
   };

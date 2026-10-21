@@ -867,6 +867,197 @@ describe('plite delete contract', () => {
     ]);
   });
 
+  it('puts the caret in the link a cross-block delete from a block start ends inside', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('cross-block-link-end-delete', {
+        link: { inline: true },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        paragraph('ab'),
+        paragraph('cd'),
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'ef' },
+            { type: 'link', children: [{ text: 'ghij' }] },
+            { text: 'kl' },
+          ],
+        },
+      ],
+      selection: null,
+    });
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [1, 0], offset: 0 },
+          focus: { path: [2, 1, 0], offset: 2 },
+        },
+      });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      paragraph('ab'),
+      {
+        type: 'paragraph',
+        children: [
+          { text: '' },
+          { type: 'link', children: [{ text: 'ij' }] },
+          { text: 'kl' },
+        ],
+      },
+    ]);
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
+      anchor: { path: [1, 1, 0], offset: 0 },
+      focus: { path: [1, 1, 0], offset: 0 },
+    });
+  });
+
+  it('keeps the caret in the merged block when a cross-block delete empties its start block', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('cross-block-emptied-start-delete', {
+        link: { inline: true },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        paragraph('ab'),
+        {
+          type: 'paragraph',
+          children: [
+            { text: '' },
+            { type: 'link', children: [{ text: 'cd' }] },
+            { text: 'ef' },
+          ],
+        },
+        paragraph('gh'),
+      ],
+      selection: null,
+    });
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [1, 1, 0], offset: 0 },
+          focus: { path: [2, 0], offset: 1 },
+        },
+      });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      paragraph('ab'),
+      paragraph('h'),
+    ]);
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 0 },
+    });
+  });
+
+  it('puts the caret in the link a cross-block delete from a nested block start ends inside', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('nested-cross-block-link-end-delete', {
+        box: {},
+        link: { inline: true },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        paragraph('ab'),
+        { type: 'box', children: [paragraph('cd')] },
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'ef' },
+            { type: 'link', children: [{ text: 'ghij' }] },
+            { text: 'kl' },
+          ],
+        },
+      ],
+      selection: null,
+    });
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [1, 0, 0], offset: 0 },
+          focus: { path: [2, 1, 0], offset: 2 },
+        },
+      });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      paragraph('ab'),
+      {
+        type: 'box',
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { text: '' },
+              { type: 'link', children: [{ text: 'ij' }] },
+              { text: 'kl' },
+            ],
+          },
+        ],
+      },
+    ]);
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
+      anchor: { path: [1, 0, 1, 0], offset: 0 },
+      focus: { path: [1, 0, 1, 0], offset: 0 },
+    });
+  });
+
+  it('keeps the caret at the end of the sibling before a block void a cross-block delete starts in', () => {
+    const editor = createEditor();
+
+    editor.install(
+      defineTestSchema('cross-block-void-start-in-container-delete', {
+        box: {},
+        image: { void: 'block' },
+      })
+    );
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'box',
+          children: [
+            paragraph('ab'),
+            { type: 'image', children: [{ text: '' }] },
+          ],
+        },
+        paragraph('ghij'),
+      ],
+      selection: null,
+    });
+    editor.update((tx) => {
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 1, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 2 },
+        },
+      });
+    });
+
+    assert.deepEqual(editorGetSnapshot(editor).children, [
+      { type: 'box', children: [paragraph('ab')] },
+      paragraph('ij'),
+    ]);
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
+      kind: 'text',
+      anchor: { path: [0, 0, 0], offset: 2 },
+      focus: { path: [0, 0, 0], offset: 2 },
+    });
+  });
+
   const tagged = {
     type: 'paragraph',
     children: [
