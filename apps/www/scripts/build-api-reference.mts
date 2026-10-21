@@ -289,6 +289,19 @@ const extractEntrypoint = async (
 };
 
 const main = async () => {
+  execFileSync(
+    'pnpm',
+    [
+      'turbo',
+      'run',
+      'build',
+      ...config.packages.map(
+        (packageConfig) => `--filter=${packageConfig.name}`
+      ),
+    ],
+    { cwd: repoRoot, stdio: 'inherit' }
+  );
+
   const tempRoot = mkdtempSync(join(tmpdir(), 'plate-api-reference-'));
   const manifestPackages: Record<
     string,

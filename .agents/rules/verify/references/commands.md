@@ -118,14 +118,10 @@ Rules:
 - an independent integration runner that resolves workspace `dist` must build
   its actual artifact dependencies before execution. This requirement belongs
   to that runner, not every source-first package or browser check;
-- `pnpm --filter www api-reference` and its `--check` read the declarations in
-  `packages/*/dist`, so in this checkout they read whatever `dist` was last
-  built. After a public API change, regenerate
-  `apps/www/src/generated/api-reference-manifest.json` in a
-  `tooling/scripts/proof-worktree.mjs --install` worktree that builds the
-  changed packages first, such as
-  `pnpm --filter plitejs build && pnpm --filter platejs build && pnpm --filter www api-reference`,
-  and copy the manifest back;
+- `pnpm --filter www api-reference` and its `--check` run
+  `pnpm turbo run build --filter=platejs` before they pack platejs, so they
+  read declarations built from the current source. Turbo caches that build on
+  the package sources, so an unchanged package adds about a second;
 - when running packed/external-consumer package smoke, start from the live
   export/type contracts such as
   `packages/platejs/test/public-package-import-smoke.spec.ts` and
