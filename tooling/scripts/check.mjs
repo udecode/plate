@@ -1,8 +1,13 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { basename, matchesGlob } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { BUN_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
+import {
+  BUN_TEST_TIMEOUT_MS,
+  TEST_FAST_IGNORE_PATTERNS,
+  TEST_FILE_PATTERNS,
+} from '../config/test-suites.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -11,6 +16,71 @@ const touches =
   (files) =>
     files.some((file) => prefixes.some((prefix) => file.startsWith(prefix)));
 const never = () => false;
+const matches = (path, file) =>
+  path.endsWith('/') ? file.startsWith(path) : file === path;
+
+const PROSE_PATHS = [
+  '.agents/',
+  '.claude/',
+  '.codex/',
+  'AGENTS.md',
+  'docs/',
+  'skills/',
+];
+const isProse = (file) =>
+  /\.(?:md|mdc|tsv)$/u.test(file) &&
+  PROSE_PATHS.some((path) => matches(path, file));
+const FORMATTER_ONLY = new Set(['skills-lock.json']);
+const formatted = (files) => files.some((file) => !isProse(file));
+const CODE = /\.(?:[cm]?[jt]sx?|sh)$/u;
+const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
+const BUILD_CONFIG = /(?:^|\/)(?:package|turbo|tsconfig[\w.-]*)\.json$/u;
+const inTestSuite = (file) =>
+  TEST_FILE_PATTERNS.some((pattern) => matchesGlob(file, pattern)) &&
+  !TEST_FAST_IGNORE_PATTERNS.some((pattern) => matchesGlob(file, pattern));
+const isToolingScript = (file) =>
+  CODE.test(file) &&
+  (file.startsWith('tooling/scripts/') || file.startsWith('.agents/'));
+
+const toolingOnlyReaches = new Map();
+const toolingOnlyReach = (file) => {
+  if (!isToolingScript(file)) return null;
+  if (toolingOnlyReaches.has(file)) return toolingOnlyReaches.get(file);
+  const scripts = new Set([file]);
+  const tests = new Set(TEST.test(file) ? [file] : []);
+  const queue = [file];
+  while (queue.length > 0) {
+    const name = basename(queue.pop()).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+    const { stdout } = spawnSync(
+      'git',
+      ['grep', '-l', '-P', `(?<![\\w.-])${name}`, '--', ':!docs'],
+      { cwd: root, encoding: 'utf-8' }
+    );
+    for (const hit of stdout.split('\n').filter(Boolean)) {
+      if (TEST.test(hit)) {
+        tests.add(hit);
+      } else if (isToolingScript(hit)) {
+        if (scripts.has(hit)) continue;
+        scripts.add(hit);
+        queue.push(hit);
+      } else if (
+        hit !== 'package.json' &&
+        (CODE.test(hit) || BUILD_CONFIG.test(hit))
+      ) {
+        toolingOnlyReaches.set(file, null);
+        return null;
+      }
+    }
+  }
+  const reach = { scripts, tests };
+  toolingOnlyReaches.set(file, reach);
+  return reach;
+};
+const source = (files) =>
+  files.some(
+    (file) =>
+      !isProse(file) && !FORMATTER_ONLY.has(file) && !toolingOnlyReach(file)
+  );
 
 // A change to one of these can reach every step, so --affected runs them all.
 const GLOBAL_PATHS = [
@@ -20,7 +90,6 @@ const GLOBAL_PATHS = [
   'pnpm-lock.yaml',
   'pnpm-workspace.yaml',
   'tooling/config/',
-  'tooling/scripts/check.mjs',
   'tsconfig.json',
   'turbo.json',
 ];
@@ -36,16 +105,21 @@ const packageDiff = () =>
   ).stdout;
 
 export const steps = [
-  { name: 'lint', run: 'pnpm lint', fix: 'pnpm lint:fix' },
-  { name: 'lint-type-aware', run: 'pnpm lint:type-aware' },
+  { name: 'lint', run: 'pnpm lint', fix: 'pnpm lint:fix', affected: formatted },
+  { name: 'lint-type-aware', run: 'pnpm lint:type-aware', affected: source },
   {
     name: 'lint-baseline',
     run: 'node tooling/oxlint/plate-baseline.mjs --check',
     fix: 'pnpm lint:baseline',
+    affected: source,
   },
-  { name: 'typecheck', run: 'pnpm typecheck' },
-  { name: 'plite-app-typecheck', run: 'pnpm --filter plite typecheck' },
-  { name: 'type-tests', run: 'pnpm test:types' },
+  { name: 'typecheck', run: 'pnpm typecheck', affected: source },
+  {
+    name: 'plite-app-typecheck',
+    run: 'pnpm --filter plite typecheck',
+    affected: source,
+  },
+  { name: 'type-tests', run: 'pnpm test:types', affected: source },
   {
     name: 'test',
     run: 'pnpm test',
@@ -58,7 +132,19 @@ export const steps = [
         'content/',
         'packages/',
         'tooling/'
-      )(files.filter((file) => !file.startsWith('apps/www/tests/browser/'))),
+      )(
+        files.filter(
+          (file) =>
+            !toolingOnlyReach(file) &&
+            !file.startsWith('apps/www/tests/browser/')
+        )
+      ) || [
+        ...new Set(
+          files.flatMap((file) =>
+            [...(toolingOnlyReach(file)?.tests ?? [])].filter(inTestSuite)
+          )
+        ),
+      ],
   },
   {
     name: 'plite-test',
@@ -71,7 +157,7 @@ export const steps = [
     ),
   },
   { name: 'bench-targets', run: 'pnpm plite:bench:targets:check' },
-  { name: 'public-types', run: 'pnpm plite:public-types' },
+  { name: 'public-types', run: 'pnpm plite:public-types', affected: source },
   {
     name: 'cli-test',
     run: `pnpm --filter @platejs/cli run test --timeout=${BUN_TEST_TIMEOUT_MS}`,
@@ -82,21 +168,28 @@ export const steps = [
       'packages/plitejs/'
     ),
   },
-  { name: 'core-audits', run: 'pnpm check:core' },
-  { name: 'plite-bridge', run: 'node tooling/scripts/check-plite-bridge.mjs' },
+  { name: 'core-audits', run: 'pnpm check:core', affected: source },
+  {
+    name: 'plite-bridge',
+    run: 'node tooling/scripts/check-plite-bridge.mjs',
+    affected: source,
+  },
   {
     name: 'hook-generics',
     run: 'node tooling/scripts/check-hook-generics.mjs --check',
     fix: 'node tooling/scripts/check-hook-generics.mjs',
+    affected: source,
   },
   {
     name: 'value-records',
     run: 'node tooling/scripts/check-value-records.mjs',
+    affected: source,
   },
   {
     name: 'entrypoint-graph',
     run: 'pnpm entrypoint:turbo:check',
     write: 'pnpm entrypoint:turbo:generate',
+    affected: source,
   },
   {
     name: 'registry-changelog',
@@ -134,12 +227,14 @@ export const steps = [
   {
     name: 'toolbar-variants',
     run: 'pnpm --filter www check:toolbar-variants',
+    affected: source,
   },
   {
     name: 'barrels',
     run: 'pnpm brl',
     unchangedFiles: packageDiff,
     write: 'pnpm brl',
+    affected: source,
   },
   {
     // www typecheck and its generators run the plate CLI from packages/cli/dist.
@@ -225,19 +320,41 @@ export const selectSteps = (args) => {
   );
 };
 
+const rootScripts = JSON.parse(
+  readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')
+).scripts;
+const expand = (command, seen = new Set()) => {
+  const parts = [command];
+  for (const [, name] of command.matchAll(/pnpm (?:run )?([\w:.-]+)/gu)) {
+    if (!rootScripts[name] || seen.has(name)) continue;
+    seen.add(name);
+    parts.push(expand(rootScripts[name], seen));
+  }
+  return parts.join('\n');
+};
+
 /** Each default step with the command a change to `files` needs, or null. */
 export const planAffected = (files) => {
   const everything = files.some((file) =>
-    GLOBAL_PATHS.some((path) =>
-      path.endsWith('/') ? file.startsWith(path) : file === path
+    GLOBAL_PATHS.some((path) => matches(path, file))
+  );
+  const called = new Set(
+    files.flatMap((file) =>
+      [...(toolingOnlyReach(file)?.scripts ?? [])].map((script) =>
+        basename(script)
+      )
     )
   );
+  const calls = (step) =>
+    expand(step.run)
+      .split(/[\s"'`;&|()]+/u)
+      .some((token) => called.has(basename(token)));
   return steps
     .filter((step) => !step.optIn)
     .map((step) => {
       if (!step.affected) return { step, command: step.run };
       if (step.affected === never) return { step, command: null };
-      if (everything) return { step, command: step.run };
+      if (everything || calls(step)) return { step, command: step.run };
       const hit = step.affected(files);
       if (!Array.isArray(hit)) return { step, command: hit ? step.run : null };
       return {

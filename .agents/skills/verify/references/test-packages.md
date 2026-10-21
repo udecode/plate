@@ -40,6 +40,7 @@ implementation recipes and reviewed exceptions, not a coverage mandate.
 - Keep runtime coverage on navigation, selection math, structural queries, transform edge cases, extension transforms, and `createEditor` legacy sync.
 - Keep a small compile-only type lane for public `plitejs` contracts.
 - Use selective upstream mining. Pull invariants that cheaply improve local public-contract coverage; do not mirror upstream blindly.
+- The legacy Slate fixture tree, `test/{interfaces,transforms,normalization,utils}` run by `test/index.spec.ts`, owns each row it can express: one input document, one call and an expected document, selection or return value. A contract file holds what that runner cannot express, such as keys, roots, commits, plugins, history or a named schema, and repeats no fixture row.
 - Add direct helper specs for custom Slate code when indirect coverage is lying.
 - Use `lcov` as package truth. Bun’s text coverage summary is noisy for targeted package runs.
 - Stop once the remaining misses are mostly deferred DOM wrappers plus low-risk non-DOM dust.

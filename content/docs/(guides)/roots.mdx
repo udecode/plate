@@ -43,7 +43,10 @@ commands follow their target the same way. Given a node from the header, a
 command edits the header. Called with no target, it edits the root that holds
 the caret. Code outside a plugin command that writes by a bare path on the
 editor writes the primary document, so pass a node or use
-`useRootEditor(root)` there.
+`useRootEditor(root)` there. Inside a callback that runs in another root, such
+as the `match` of `tx.nodes.remove` on a node there, the editor's transaction
+addresses that root instead, so a bare path or a command with no target edits
+it. A view's transaction keeps the view's root.
 
 Persist roots through the full [Document Meta](/docs/document-meta) value
 instead of saving only one mounted root. When an application publishes a

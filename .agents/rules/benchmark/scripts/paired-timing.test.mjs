@@ -235,6 +235,34 @@ test('fails a conclusive miss on one cohort even when another cohort is inconclu
   assert.match(run.stderr, /inconclusive: small: planted planted scored 1\.020/);
 });
 
+test('judges each cohort against its own budget when the config gives one per cohort', (t) => {
+  const config = { ...twoCohorts, budget: { small: 0.8, large: 0.5 } };
+  const run = analyze(
+    t,
+    config,
+    measurementsFrom(config, {
+      small: { base: flat(10), candidate: flat(7), planted: flat(9), copy: flat(7) },
+      large: { base: flat(10), candidate: flat(6), planted: flat(7), copy: flat(6) },
+    })
+  );
+  assert.equal(run.status, 1, run.stderr);
+  assert.match(run.stderr, /the candidate fails on large$/m);
+});
+
+test('refuses a per-cohort budget that leaves a judged cohort without one', (t) => {
+  const config = { ...twoCohorts, budget: { small: 0.8 } };
+  const run = analyze(
+    t,
+    config,
+    measurementsFrom(config, {
+      small: { base: flat(10), candidate: flat(7), planted: flat(9), copy: flat(7) },
+      large: { base: flat(10), candidate: flat(6), planted: flat(7), copy: flat(6) },
+    })
+  );
+  assert.equal(run.status, 2, run.stderr);
+  assert.match(run.stderr, /config\.budget\.large must be a positive ratio/);
+});
+
 test('judges extreme finite measurements by their ratios and refuses a ratio out of range', (t) => {
   const swing = [1e-200, 1e200, 1e-200, 1e200, 1e-200, 1e200];
   const reversed = [1e200, 1e-200, 1e200, 1e-200, 1e200, 1e-200];

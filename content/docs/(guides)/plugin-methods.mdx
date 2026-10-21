@@ -293,7 +293,12 @@ editor.update.highlight.clear({ at: bodyBlock }); // clears one primary-document
 
 A call whose targets sit in two roots throws before the method runs.
 `txSelection` and `txOnly` methods, and a call that passes a function, run in
-the caller's root.
+the caller's root. Inside a callback that runs in a named root, such as the
+`match` of `tx.nodes.remove` on a node there, calls on the transaction of
+`editor.update` take that root as the caller's root. A bare path, a call with
+no target, a `txSelection` or `txOnly` method and a call that passes a
+function all run there, even with the caret in the main document. A view's
+`update` keeps the view's root.
 
 ## Declare feature format mappings
 

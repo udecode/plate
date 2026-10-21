@@ -73,13 +73,16 @@ editor.update.nodes.remove({ at: nodeKey });
 ```
 
 `nodes.path(nodeKey)` 只在节点属于当前 editor 或 view root 时返回路径。
-base editor 的路径输入指向 main root；view 的路径输入指向该 view 的 root。
+base editor 的路径输入指向 main root（下文所述的命名 root 回调除外）；view 的路径输入指向该
+view 的 root。
 作为 `at` 目标时，来自同一 editor 其他 root 的实时节点仍能解析，读取和写入都会落到
 它自己的 root。未带 `root` 的 `NodeSelection` 指向你调用的 editor 或 view 的 root。
 
 插件 update 方法在目标所在的 root 中运行。实时节点、节点键，或指明 root 的点和范围
 决定 root；裸路径指向你调用的 editor 或 view 的 root；在 editor 上不带目标的调用
-在光标所在的 root 中运行。
+在光标所在的 root 中运行。在命名 root 中运行的回调里（例如对该 root 内节点执行
+`tx.nodes.remove` 时的 `match`），editor 的 transaction 改为指向该 root，因此裸路径和
+不带目标的调用都在该 root 中运行。view 的 transaction 保持在 view 自己的 root 中。
 
 ```ts
 // 光标位于 footer。

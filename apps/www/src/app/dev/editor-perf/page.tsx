@@ -76,6 +76,7 @@ import {
 import { createZustandStore } from '../../../../../../packages/platejs/src/react/libs/zustand';
 import { ElementProvider } from '../../../../../../packages/platejs/src/react/stores/element/useElementStore';
 import { failInvariant } from '../../../lib/failInvariant';
+import { type FindHarness, FindSurface, useFindHarness } from './find-surface';
 import {
   CORE_PLUGIN_CENSUS_ENTRIES,
   type CorePluginCensusEntry,
@@ -252,6 +253,7 @@ type EditorPerfRunnerControls = {
 
 type EditorPerfRunnerHarness = {
   configure: (controls: EditorPerfRunnerControls) => Promise<void>;
+  find: FindHarness;
   runBenchmark: (benchmark: RunnerBenchmarkName) => Promise<void>;
 };
 
@@ -4492,6 +4494,11 @@ export default function EditorPerfPage() {
   );
 
   const editorRef = React.useRef<BenchmarkEditorHandle | null>(null);
+  const {
+    handleRef: findHandleRef,
+    harness: findHarness,
+    mounted: findMount,
+  } = useFindHarness();
   const fanoutHandleRef = React.useRef<FanoutEditorHandle | null>(null);
   const mountDurationRef = React.useRef<Partial<Record<ScenarioId, number>>>(
     {}
@@ -5534,6 +5541,7 @@ export default function EditorPerfPage() {
     };
     const harness: EditorPerfRunnerHarness = {
       configure: configureRunnerControls,
+      find: findHarness,
       runBenchmark: runRunnerBenchmark,
     };
 
@@ -5544,7 +5552,7 @@ export default function EditorPerfPage() {
         runnerWindow.__editorPerfHarness = undefined;
       }
     };
-  }, [configureRunnerControls, runRunnerBenchmark]);
+  }, [configureRunnerControls, findHarness, runRunnerBenchmark]);
 
   React.useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -5908,29 +5916,38 @@ export default function EditorPerfPage() {
 
         <div className="space-y-4">
           <div className="rounded-xl border bg-background">
-            {didLoadSearchParams && (
-              <React.Profiler
-                key={`${displayMode}:${activeScenarioId}:${mountVersion}`}
-                id={activeScenarioId}
-                onRender={onRender}
-              >
-                {displayMode === 'prebuilt' && prebuiltEditor ? (
-                  <PrebuiltScenarioEditor
-                    key={`${displayMode}:${activeScenarioId}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${mountVersion}`}
-                    config={config}
-                    editor={prebuiltEditor}
-                    scenario={activeScenario}
-                  />
-                ) : (
-                  <ScenarioEditor
-                    key={`${displayMode}:${activeScenarioId}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${mountVersion}`}
-                    config={config}
-                    editorRef={editorRef}
-                    scenario={activeScenario}
-                    value={activeValue}
-                  />
-                )}
-              </React.Profiler>
+            {findMount ? (
+              <FindSurface
+                key={findMount.key}
+                handleRef={findHandleRef}
+                mountKey={findMount.key}
+                spec={findMount.spec}
+              />
+            ) : (
+              didLoadSearchParams && (
+                <React.Profiler
+                  key={`${displayMode}:${activeScenarioId}:${mountVersion}`}
+                  id={activeScenarioId}
+                  onRender={onRender}
+                >
+                  {displayMode === 'prebuilt' && prebuiltEditor ? (
+                    <PrebuiltScenarioEditor
+                      key={`${displayMode}:${activeScenarioId}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${mountVersion}`}
+                      config={config}
+                      editor={prebuiltEditor}
+                      scenario={activeScenario}
+                    />
+                  ) : (
+                    <ScenarioEditor
+                      key={`${displayMode}:${activeScenarioId}:${config.blocks}:${config.chunkSize}:${config.chunking}:${config.contentVisibility}:${mountVersion}`}
+                      config={config}
+                      editorRef={editorRef}
+                      scenario={activeScenario}
+                      value={activeValue}
+                    />
+                  )}
+                </React.Profiler>
+              )
             )}
           </div>
 

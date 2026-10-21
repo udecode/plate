@@ -598,6 +598,182 @@ describe('FindKit', () => {
     await waitFor(() => expect(find.store.get('count')).toBe(3));
   });
 
+  it('paints a match typed by native input before the commit returns', async () => {
+    const { editor, find, ui, view } = setup();
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => ui.open('hello'));
+    await waitFor(() => expect(highlights()).toEqual(['hello', 'hello']));
+
+    act(() => {
+      editor.update({ tags: 'native-text-input' }, (tx) => {
+        tx.text.insert(' hello', { at: { offset: 6, path: [0, 2] } });
+      });
+    });
+
+    expect({
+      count: find.store.get('count'),
+      highlights: highlights(),
+    }).toEqual({ count: 3, highlights: ['hello', 'hello', 'hello'] });
+  });
+
+  it('clears a match broken by native input before the commit returns', async () => {
+    const { editor, find, ui, view } = setup();
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => ui.open('hello'));
+    await waitFor(() => expect(highlights()).toEqual(['hello', 'hello']));
+
+    act(() => {
+      editor.update({ tags: 'native-text-input' }, (tx) => {
+        tx.text.insert('x', { at: { offset: 2, path: [1, 0] } });
+      });
+    });
+
+    expect({
+      count: find.store.get('count'),
+      highlights: highlights(),
+    }).toEqual({ count: 1, highlights: ['hello'] });
+  });
+
+  it('moves highlights with their text when a block is inserted above them', async () => {
+    const { editor, ui, view } = setup();
+    const highlightedBlocks = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => ({
+          block: element
+            .closest('[data-editor-node="element"]')
+            ?.textContent?.replace(/\s+/g, ' '),
+          text: element.textContent,
+        })
+      );
+    const settled = [
+      { block: 'hello world again', text: 'hello' },
+      { block: 'hello outside', text: 'hello' },
+    ];
+
+    act(() => ui.open('hello'));
+    await waitFor(() => expect(highlightedBlocks()).toEqual(settled));
+
+    act(() => {
+      editor.update.nodes.insert(
+        { type: 'paragraph', children: [{ text: 'plain' }] },
+        { at: [0] }
+      );
+    });
+
+    expect({ inCommit: highlightedBlocks() }).toEqual({ inCommit: settled });
+    await act(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve, 300);
+        })
+    );
+    expect({ afterTimers: highlightedBlocks() }).toEqual({
+      afterTimers: settled,
+    });
+  });
+
+  it('keeps every highlight on its text through a native input commit that changes no match', async () => {
+    const { editor, find, ui, view } = setup();
+    const highlights = () =>
+      Array.from(
+        view.container.querySelectorAll('[data-find-match]'),
+        (element) => ({
+          block: element.closest('[data-editor-node="element"]'),
+          text: element.textContent,
+        })
+      );
+
+    act(() => ui.open('hello'));
+    await waitFor(() =>
+      expect(highlights().map(({ text }) => text)).toEqual(['hello', 'hello'])
+    );
+    const before = highlights();
+    const ranges = find.store.get('matches').map((match) => match.range);
+
+    act(() => {
+      editor.update({ tags: 'native-text-input' }, (tx) => {
+        tx.text.insert('x', { at: { offset: 13, path: [1, 0] } });
+      });
+    });
+
+    expect({
+      inCommit: highlights(),
+      matches: find.store.get('matches').map((match) => match.range),
+    }).toEqual({ inCommit: before, matches: ranges });
+    await act(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve, 300);
+        })
+    );
+    expect({ afterTimers: highlights().map(({ text }) => text) }).toEqual({
+      afterTimers: ['hello', 'hello'],
+    });
+  });
+
+  it('paints a match typed by native input in every mounted view before the commit returns', async () => {
+    const editor = createEditor({
+      plugins: [LinkPlugin, ...FindKit],
+      initialValue: value,
+    });
+    const find = editor.plugin(BaseFindPlugin);
+    const view = render(
+      <>
+        <section aria-label="first view">
+          <EditorRoot editor={editor}>
+            <EditorContent aria-label="first editor" />
+          </EditorRoot>
+        </section>
+        <section aria-label="second view">
+          <EditorRoot editor={editor}>
+            <EditorContent aria-label="second editor" />
+          </EditorRoot>
+        </section>
+      </>
+    );
+    const highlights = (name: string) =>
+      Array.from(
+        view
+          .getByRole('region', { name })
+          .querySelectorAll('[data-find-match]'),
+        (element) => element.textContent
+      );
+
+    try {
+      act(() => find.api.search('hello'));
+      await waitFor(() =>
+        expect([highlights('first view'), highlights('second view')]).toEqual([
+          ['hello', 'hello'],
+          ['hello', 'hello'],
+        ])
+      );
+
+      act(() => {
+        editor.update({ tags: 'native-text-input' }, (tx) => {
+          tx.text.insert(' hello', { at: { offset: 13, path: [1, 0] } });
+        });
+      });
+
+      expect({
+        first: highlights('first view'),
+        second: highlights('second view'),
+      }).toEqual({
+        first: ['hello', 'hello', 'hello'],
+        second: ['hello', 'hello', 'hello'],
+      });
+    } finally {
+      view.unmount();
+    }
+  });
+
   it('owns an accessible find bar and returns focus on Escape', async () => {
     const { find, ui, view } = setup();
 

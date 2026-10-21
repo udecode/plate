@@ -90,8 +90,17 @@ export const BaseFindPlugin = definePlugin('find', {
       count: (state) => state.matches.length,
     },
     update: ({ tx }) => ({
-      /** Select the current result; focus remains owned by the caller's view. */
+      /**
+       * Select the current result in the main document; returns false without
+       * one or in a named root's view. Focus remains owned by the caller's
+       * view. Called on the base editor's transaction inside a callback that
+       * runs in a named root, such as the `match` of `tx.nodes.remove` on a
+       * node there, it selects whatever text sits at the result's path and
+       * offsets in that root instead and returns true, or throws when they
+       * fall outside that root. A view's transaction keeps its view's root.
+       */
       select: txSelection(() => {
+        if (tx.view.root() !== undefined) return false;
         const { matches, activeIndex } = store.get();
         const match = matches[activeIndex];
         if (!match) return false;

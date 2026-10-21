@@ -114,37 +114,99 @@ test('pnpm check runs the production build only with --build or by name', async 
 
 test('pnpm check --affected runs the steps each change reaches', async () => {
   const { planAffected } = await import('./check.mjs');
-  const always = new Set(
-    planAffected([])
-      .filter(({ command }) => command)
-      .map(({ step }) => step.name)
-  );
-  const added = (files) =>
+  const skipped = (files) =>
     planAffected(files)
-      .filter(({ step, command }) => command && !always.has(step.name))
-      .map(({ step, command }) =>
-        command === step.run ? step.name : `${step.name}: ${command}`
-      );
+      .filter(({ command }) => !command)
+      .map(({ step }) => step.name);
+  const prose = [
+    'AGENTS.md',
+    '.agents/skills/plan-page/SKILL.md',
+    'docs/plans/2026-10-19-landing-check.decisions.tsv',
+    'docs/plans/2026-10-19-landing-check.md',
+  ];
 
   assert.deepEqual(
     {
-      docs: added(['docs/plans/2026-10-19-landing-check.md']),
-      browserSpec: added(['apps/www/tests/browser/suggestion.spec.ts']),
-      cli: added(['packages/cli/src/generate.ts']),
-      plite: added(['packages/plitejs/test/index.spec.ts']),
-      lockfile: added(['pnpm-lock.yaml']),
-      lockfileSkips: planAffected(['pnpm-lock.yaml'])
-        .filter(({ command }) => !command)
-        .map(({ step }) => step.name),
+      prose: skipped(prose),
+      skillsLock: skipped(prose).filter(
+        (name) => !skipped([...prose, 'skills-lock.json']).includes(name)
+      ),
+      docsData: skipped(['docs/plite/reference/public-route-map.json']),
+      browserSpec: skipped(['apps/www/tests/browser/suggestion.spec.ts']),
+      cli: skipped(['packages/cli/src/generate.ts']),
+      plite: skipped(['packages/plitejs/test/index.spec.ts']),
+      lockfile: skipped(['pnpm-lock.yaml']),
     },
     {
-      docs: [],
-      browserSpec: ['www'],
-      cli: ['test', 'cli-test', 'www'],
-      plite: ['test', 'plite-test', 'cli-test', 'www'],
-      lockfile: ['test', 'plite-test', 'cli-test', 'www'],
-      lockfileSkips: ['review-ledger', 'knowledge'],
+      prose: [
+        'lint',
+        'lint-type-aware',
+        'lint-baseline',
+        'typecheck',
+        'plite-app-typecheck',
+        'type-tests',
+        'test',
+        'plite-test',
+        'public-types',
+        'cli-test',
+        'core-audits',
+        'plite-bridge',
+        'hook-generics',
+        'value-records',
+        'entrypoint-graph',
+        'review-ledger',
+        'knowledge',
+        'toolbar-variants',
+        'barrels',
+        'www',
+      ],
+      skillsLock: ['lint'],
+      docsData: [
+        'test',
+        'plite-test',
+        'cli-test',
+        'review-ledger',
+        'knowledge',
+        'www',
+      ],
+      browserSpec: [
+        'test',
+        'plite-test',
+        'cli-test',
+        'review-ledger',
+        'knowledge',
+      ],
+      cli: ['plite-test', 'review-ledger', 'knowledge'],
+      plite: ['review-ledger', 'knowledge'],
+      lockfile: ['review-ledger', 'knowledge'],
     }
+  );
+});
+
+test('pnpm check --affected runs a tooling script with its tests and the steps that call it', async () => {
+  const { planAffected } = await import('./check.mjs');
+  const commands = (files) =>
+    Object.fromEntries(
+      planAffected(files).map(({ step, command }) => [step.name, command])
+    );
+  const planner = commands(['tooling/scripts/check.mjs']);
+
+  assert.equal(planner.typecheck, null);
+  assert.match(
+    planner.test,
+    /^pnpm test .*'tooling\/scripts\/ci-workflow\.test\.mjs'/u
+  );
+  assert.equal(
+    commands(['tooling/scripts/check-plite-docs.mjs'])['core-audits'],
+    'pnpm check:core'
+  );
+  assert.equal(
+    commands(['tooling/scripts/brl.sh']).typecheck,
+    'pnpm typecheck'
+  );
+  assert.doesNotMatch(
+    commands(['.agents/skills/cleanup/scripts/scan.test.mjs']).test ?? '',
+    /\.agents\/skills\//u
   );
 });
 

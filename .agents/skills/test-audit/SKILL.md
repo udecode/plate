@@ -25,10 +25,11 @@ Take the user's scope, or the files they name; `full` takes every tracked test f
 ## Discover without editing the checkout
 
 1. For a broad scope, split it into read-only lanes by owner area and run them in parallel.
-2. For each candidate, read the whole test, its production owner, the owner's callers, the overlapping tests, CI routing and history. When a test claims behavior a dependency provides, read that dependency.
-3. Prove the first edit by mutating a scratch copy of the owner so the behavior breaks, and run the test against it, never by editing the checkout.
-4. Prove the second edit for a test that reads private state, imports an internal entry, spies on or counts an internal call, or asserts an order no user sees. Refactor a scratch copy of the owner without changing anything its users observe, such as renaming a private helper, inlining a collaborator or reordering independent internal calls, and run the test. A failure shows the coupling.
-5. Prefer a few high-confidence candidates over a long speculative list. Report the evidence before editing.
+2. Sort the scope into the tiers of [Evidence tiers](#evidence-tiers), listing shape and duplicate members with scripts.
+3. For each Test-tier candidate, read the whole test, its production owner, the owner's callers, the overlapping tests, CI routing and history. When a test claims behavior a dependency provides, read that dependency.
+4. Prove the first edit by mutating a scratch copy of the owner so the behavior breaks, and run the test against it, never by editing the checkout.
+5. Prove the second edit for a test that reads private state, imports an internal entry, spies on or counts an internal call, or asserts an order no user sees. Refactor a scratch copy of the owner without changing anything its users observe, such as renaming a private helper, inlining a collaborator or reordering independent internal calls, and run the test. A failure shows the coupling.
+6. For the Test tier, prefer a few high-confidence candidates over a long speculative list. Report the evidence before editing.
 
 ## Junk patterns
 
@@ -55,15 +56,24 @@ Keep a test that independently enforces one of the contracts listed at the top, 
 - call ordering when the order is observable behavior;
 - the payload a mocked external service receives, because that service observes it;
 - a regression with a credible failure mode;
+- logic driven by a fake or deterministic clock, such as a credential expiring, which is not a timing test;
 - a pin on a constant users are promised, such as a documented default, when the test names that promise;
 - a source inspection that is the cheapest independent guard, failing when the user-facing key, byte or path changes and surviving an identifier rename; when the project's Tests rule bans source-text tests, the guard moves to its lint or a check script;
 - a test that fails on the current tree. Treat it as a possible bug, reproduce it and repair the owner or the fixture instead of deleting it.
 
 A slow test is never a cut either. Shrink its input to the smallest size at which its mutant still fails, or move it to the project's slow tier when the project keeps one. A flaky test goes to the flaky lane in [Full mode](#full-mode), never to a cut. A test that resembles the implementation may still be the independent contract. Prove otherwise before removing it.
 
+## Evidence tiers
+
+Every cut cites one of three proofs. A reader's verdict is not one, and neither is several readers agreeing.
+
+- **Shape.** Some shapes cannot catch a behavior break: a test with no assertion and no call that throws on failure, an assertion the owner's declared type makes always true, such as `toBeDefined` on a value the type never leaves undefined, `toBeTruthy` on an object or `typeof` on an export, and a wall-clock bound outside the project's benchmark lane. A test is a member only when every assertion in it has the shape, because one real assertion beside a junk one still catches its break. A test whose only check is an awaited call that throws on failure is a real test; give it an explicit assertion instead of cutting it. Prove the shape once per batch: a script that lists every member, one member that still passes against a mutant, and the type or rule that makes the rest the same. When that member fails its mutant, the shape is wrong, and its members move to the Test tier. Membership is the proof, so a member stays only with a keep's evidence, the contract it enforces and the mutant it fails. When the project lints the shape, the lint's baseline is the member list.
+- **Duplicate.** Two places hold the same input and the same expected result. Prove it with a script that matches them, and keep the copy at the owner the project picks.
+- **Test.** Everything else, such as mock-call assertions, internal imports, schema parses, copied lists, tables with distinct inputs and contract-shaped tests, gets both edits one test at a time and every field of Candidate evidence. A schema case can catch a broken refinement, a call count can be the reads a server sees, and a copied list can be the value users are promised, so none of them is a shape.
+
 ## Candidate evidence
 
-Record every field before editing; a missing field means the candidate is not ready:
+A shape or duplicate batch records its proof, its member list, the production deletion it unlocks and its validation command. A Test-tier candidate records every field below before editing; a missing field means it is not ready:
 
 - the exact test name and location;
 - the failure it can actually detect, shown by a mutant;
@@ -76,7 +86,7 @@ Record every field before editing; a missing field means the candidate is not re
 
 ## Edit shape
 
-Change one coherent owner-boundary batch at a time. Delete obsolete test-only exports, globals, wrappers and dead production paths instead of keeping aliases. Move a retained regression to its canonical owner, and fold near-duplicates into the shared fixture. Prefer a change that removes more production lines than it adds. Add no replacement test that restates the implementation, and never turn an uncertain candidate into a deletion to raise the count. Before the first edit to a file that holds another session's work, copy it to scratch.
+Change one coherent owner-boundary batch at a time. Delete obsolete test-only exports, globals, wrappers and dead production paths instead of keeping aliases. Move a retained regression to its canonical owner, and fold near-duplicates into the shared fixture. Prefer a change that removes more production lines than it adds. Apply cuts with a codemod that parses each test file, deletes each case matched by its full test name, then removes the imports and top-level helpers nothing references any more. Use the project's codemod when it has one; otherwise build it on the first batch and commit it with the project's tooling, so later batches rerun it. Add no replacement test that restates the implementation, and never turn an uncertain candidate into a deletion to raise the count. Before the first edit to a file that holds another session's work, copy it to scratch.
 
 ## Full mode
 
@@ -84,14 +94,14 @@ Change one coherent owner-boundary batch at a time. Delete obsolete test-only ex
 
 1. **Inventory.** List every tracked test file with the project's own test patterns and group the files by owner area, such as a package or an app. Write a ledger in the run directory with one row per area: its files, line count, signals (internal imports, mocks and spies, snapshots) and state. A later session resumes from the ledger and never restarts an area the ledger marks done.
 2. **Suite health.** Before the lanes, scan for skipped and focused tests, commented-out tests, tests that import another test file, placeholder titles, and snapshot files that keep dead keys. Report only what is worth fixing.
-3. **Lanes.** Take the areas in the order the ledger ranks, largest and most internally coupled first. Each lane runs this skill on one area with a file budget it states before it starts: discovery first, then its edit batch when the request asks for repairs. In a project with a task ledger, each area's edits go out as their own task.
+3. **Lanes.** Take the areas in the order the ledger ranks, largest and most internally coupled first. Each lane runs this skill on one area with a file budget it states before it starts. It lists the area's shape and duplicate members with scripts and cuts them one batch per shape, then reads the remaining files in full for the Test tier, with its edit batch when the request asks for repairs. In a project with a task ledger, each area's edits go out as their own task.
 4. **Flaky lane.** A test that fails only sometimes is a defect in the test or the code. Reproduce it, then repair it or quarantine it in the project's own way with its owner named.
 5. **Gaps.** From fresh coverage and the public exports, list the public contracts whose break no test catches, ranked by the named defect a test would catch. Skip barrels, declarations, type-only and generated files. List a contract that only a browser can prove under the project's browser proof, not as a unit-test gap. Stop when what remains is wrappers, glue or code due for a rewrite. The list writes no test; the project's Tests rule gates each one.
 
 ## Validate
 
 1. Run the owner's and its siblings' tests with the project's own runners.
-2. Run each rewritten test against its named mutant and see it fail, and against its named refactor and see it pass.
+2. Run each rewritten test against its named mutant and see it fail, and against its named refactor and see it pass. Rerun each shape batch's listing script and see it list only the members kept with evidence.
 3. For a removed grep or plan assertion, run the executable that owns the real contract.
 4. Regenerate anything the edited files feed, such as skill mirrors or a manifest, and run its check.
 5. Report production and test line counts separately, measured against the scratch copies when the index holds other sessions' work.

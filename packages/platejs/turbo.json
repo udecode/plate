@@ -4294,6 +4294,7 @@
         "plitejs#typecheck:partition:testing",
         "typecheck:partition:core",
         "typecheck:partition:find",
+        "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-link"
       ],
       "inputs": [
