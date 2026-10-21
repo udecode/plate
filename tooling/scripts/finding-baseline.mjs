@@ -26,6 +26,17 @@ export const readBaseline = (file) => {
 export const lineIdentity = (text, line) =>
   text.split('\n')[line - 1]?.trim() ?? '';
 
+// oxfmt owns the committed layout, so a write that skipped it would fail the
+// format check that the next lint runs.
+const writeBaseline = (file, baseline) => {
+  const target = path.join(repoRoot, file);
+  writeFileSync(target, `${JSON.stringify(sortKeys(baseline), null, 2)}\n`);
+  spawnSync(path.join(repoRoot, 'node_modules/.bin/oxfmt'), [target], {
+    cwd: repoRoot,
+    stdio: 'inherit',
+  });
+};
+
 const sortKeys = (object) =>
   Object.fromEntries(
     Object.entries(object).sort(([a], [b]) => a.localeCompare(b))
@@ -151,10 +162,7 @@ export function enforceBaseline({
         Object.hasOwn(old, rule) ? old[rule] : (found[rule] ?? {}),
       ])
     );
-    writeFileSync(
-      path.join(repoRoot, file),
-      `${JSON.stringify(sortKeys(seeded), null, 2)}\n`
-    );
+    writeBaseline(file, seeded);
     console.info(`Seeded ${added.length} rules in ${file}.`);
     return 0;
   }
@@ -191,10 +199,7 @@ export function enforceBaseline({
       ),
     ])
   );
-  writeFileSync(
-    path.join(repoRoot, file),
-    `${JSON.stringify(sortKeys(lowered), null, 2)}\n`
-  );
+  writeBaseline(file, lowered);
   console.info(`Dropped ${decreases.length} entries from ${file}.`);
   return 0;
 }
