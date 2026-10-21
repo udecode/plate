@@ -1,11 +1,36 @@
 import { defaultFont, defaultFontSize, defaultLang } from '../constants';
 import namespaces from '../namespaces';
+import type { Spacing } from '../types';
+
+const defaultParagraphSpacing: Spacing = { after: 120 };
+
+const defaultHeadingSpacing: Spacing[] = [
+  { before: 480 },
+  { after: 80, before: 360 },
+  { after: 80, before: 280 },
+  { after: 40, before: 240 },
+  { after: 40, before: 220 },
+  { after: 40, before: 200 },
+];
+
+const spacingAttributes = ({ after, before }: Spacing): string =>
+  `${before === undefined ? '' : ` w:before="${before}"`}${
+    after === undefined ? '' : ` w:after="${after}"`
+  }`;
+
+const headingSpacingXML = (level: number, spacing: Spacing): string =>
+  `<w:spacing${spacingAttributes({
+    ...defaultHeadingSpacing[level - 1],
+    ...spacing,
+  })} />`;
 
 const generateStylesXML = (
   font: string = defaultFont,
   fontSize: number = defaultFontSize,
   complexScriptFontSize: number = defaultFontSize,
-  lang: string = defaultLang
+  lang: string = defaultLang,
+  paragraphSpacing: Spacing = {},
+  headingSpacing: Spacing = {}
 ): string => `
   <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
@@ -21,7 +46,7 @@ const generateStylesXML = (
 	  </w:rPrDefault>
 	  <w:pPrDefault>
 		<w:pPr>
-		  <w:spacing w:after="120" w:line="240" w:lineRule="atLeast" />
+		  <w:spacing${spacingAttributes({ ...defaultParagraphSpacing, ...paragraphSpacing })} w:line="240" w:lineRule="atLeast" />
 		</w:pPr>
 	  </w:pPrDefault>
 	</w:docDefaults>
@@ -41,7 +66,7 @@ const generateStylesXML = (
 	  <w:pPr>
 		<w:keepNext />
 		<w:keepLines />
-		<w:spacing w:before="480" />
+		${headingSpacingXML(1, headingSpacing)}
 		<w:outlineLvl w:val="0" />
 	  </w:pPr>
 	  <w:rPr>
@@ -60,7 +85,7 @@ const generateStylesXML = (
 	  <w:pPr>
 		<w:keepNext />
 		<w:keepLines />
-		<w:spacing w:before="360" w:after="80" />
+		${headingSpacingXML(2, headingSpacing)}
 		<w:outlineLvl w:val="1" />
 	  </w:pPr>
 	  <w:rPr>
@@ -80,7 +105,7 @@ const generateStylesXML = (
 	  <w:pPr>
 		<w:keepNext />
 		<w:keepLines />
-		<w:spacing w:before="280" w:after="80" />
+		${headingSpacingXML(3, headingSpacing)}
 		<w:outlineLvl w:val="2" />
 	  </w:pPr>
 	  <w:rPr>
@@ -100,7 +125,7 @@ const generateStylesXML = (
 	  <w:pPr>
 		<w:keepNext />
 		<w:keepLines />
-		<w:spacing w:before="240" w:after="40" />
+		${headingSpacingXML(4, headingSpacing)}
 		<w:outlineLvl w:val="3" />
 	  </w:pPr>
 	  <w:rPr>
@@ -120,7 +145,7 @@ const generateStylesXML = (
 	  <w:pPr>
 		<w:keepNext />
 		<w:keepLines />
-		<w:spacing w:before="220" w:after="40" />
+		${headingSpacingXML(5, headingSpacing)}
 		<w:outlineLvl w:val="4" />
 	  </w:pPr>
 	  <w:rPr>
@@ -138,7 +163,7 @@ const generateStylesXML = (
 	  <w:pPr>
 		<w:keepNext />
 		<w:keepLines />
-		<w:spacing w:before="200" w:after="40" />
+		${headingSpacingXML(6, headingSpacing)}
 		<w:outlineLvl w:val="5" />
 	  </w:pPr>
 	  <w:rPr>

@@ -560,4 +560,97 @@ describe('htmlToDocxBlob', () => {
       expect(docXml).toContain('This is a quote');
     });
   });
+
+  describe('paragraph and heading spacing', () => {
+    async function readSpacing(options?: Parameters<typeof htmlToDocxBlob>[1]) {
+      const zip = await loadZipFromBlob(
+        await htmlToDocxBlob('<p>Test</p>', options)
+      );
+      const styles = new DOMParser().parseFromString(
+        await zip.file('word/styles.xml')!.async('string'),
+        'application/xml'
+      );
+      const spacingOf = (element: Element | undefined) =>
+        Object.fromEntries(
+          Array.from(
+            element?.getElementsByTagName('w:spacing')[0]?.attributes ?? []
+          ).map((attribute) => [attribute.name.slice(2), attribute.value])
+        );
+      const styleElements = Array.from(styles.getElementsByTagName('w:style'));
+
+      return {
+        headings: [1, 2, 3, 4, 5, 6].map((level) =>
+          spacingOf(
+            styleElements.find(
+              (style) => style.getAttribute('w:styleId') === `Heading${level}`
+            )
+          )
+        ),
+        paragraph: spacingOf(styles.getElementsByTagName('w:pPrDefault')[0]),
+      };
+    }
+
+    it('keep the default spacing when no spacing option is set', async () => {
+      expect(await readSpacing()).toEqual({
+        headings: [
+          { before: '480' },
+          { after: '80', before: '360' },
+          { after: '80', before: '280' },
+          { after: '40', before: '240' },
+          { after: '40', before: '220' },
+          { after: '40', before: '200' },
+        ],
+        paragraph: { after: '120', line: '240', lineRule: 'atLeast' },
+      });
+    });
+
+    it('set the default paragraph spacing, zero included', async () => {
+      const defaults = await readSpacing();
+      const spacing = await readSpacing({
+        paragraphSpacing: { after: 0, before: 40 },
+      });
+
+      expect(spacing.paragraph).toEqual({
+        after: '0',
+        before: '40',
+        line: '240',
+        lineRule: 'atLeast',
+      });
+      expect(spacing.headings).toEqual(defaults.headings);
+      expect(
+        (await readSpacing({ paragraphSpacing: { after: 119.6 } })).paragraph
+          .after
+      ).toBe('120');
+    });
+
+    it('set the spacing of every heading style and keep the keys left out', async () => {
+      const defaults = await readSpacing();
+      const both = await readSpacing({
+        headingSpacing: { after: 0, before: 20 },
+      });
+      const afterOnly = await readSpacing({ headingSpacing: { after: 0 } });
+
+      expect(both.headings).toEqual(
+        defaults.headings.map(() => ({ after: '0', before: '20' }))
+      );
+      expect(afterOnly.headings).toEqual(
+        defaults.headings.map(({ before }) => ({ after: '0', before }))
+      );
+      expect(both.paragraph).toEqual(defaults.paragraph);
+    });
+
+    it('reject a spacing that is not a non-negative number', async () => {
+      await expect(
+        htmlToDocxBlob('<p>Test</p>', {
+          paragraphSpacing: { after: Number.NaN },
+        })
+      ).rejects.toThrow(RangeError);
+      await expect(
+        htmlToDocxBlob('<p>Test</p>', { headingSpacing: { before: -1 } })
+      ).rejects.toThrow(RangeError);
+      await expect(
+        htmlToDocxBlob('<p>Test</p>', { paragraphSpacing: { before: 1e21 } })
+      ).rejects.toThrow(RangeError);
+    });
+  });
 });

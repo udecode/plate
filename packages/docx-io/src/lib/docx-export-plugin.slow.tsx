@@ -140,4 +140,47 @@ describe('exportToDocx', () => {
 
     expect(pageFields).toEqual([['p', 'PAGE']]);
   });
+
+  it('writes paragraphSpacing and headingSpacing into the document styles', async () => {
+    const exportModule = new URL('./docx-export-plugin.tsx', import.meta.url)
+      .pathname;
+    const script = `
+      import JSZip from ${JSON.stringify(import.meta.resolve('jszip'))};
+      import { exportToDocx } from ${JSON.stringify(exportModule)};
+
+      const blob = await exportToDocx([{ type: 'p', children: [{ text: 'Body' }] }], {
+        headingSpacing: { before: 0 },
+        paragraphSpacing: { after: 0 },
+      });
+      const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+      console.log(await zip.file('word/styles.xml').async('string'));
+    `;
+    const subprocess = Bun.spawn([process.execPath, '--eval', script], {
+      stderr: 'pipe',
+      stdout: 'pipe',
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(subprocess.stdout).text(),
+      new Response(subprocess.stderr).text(),
+      subprocess.exited,
+    ]);
+
+    expect(stderr).toBe('');
+    expect(exitCode).toBe(0);
+
+    const styles = new DOMParser().parseFromString(stdout, 'application/xml');
+    const heading2 = Array.from(styles.getElementsByTagName('w:style')).find(
+      (style) => style.getAttribute('w:styleId') === 'Heading2'
+    );
+
+    expect(
+      styles
+        .getElementsByTagName('w:pPrDefault')[0]
+        ?.getElementsByTagName('w:spacing')[0]
+        ?.getAttribute('w:after')
+    ).toBe('0');
+    expect(
+      heading2?.getElementsByTagName('w:spacing')[0]?.getAttribute('w:before')
+    ).toBe('0');
+  });
 });

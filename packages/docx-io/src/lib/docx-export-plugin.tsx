@@ -45,7 +45,7 @@ import { serializeHtml } from 'platejs/static';
 
 import juice from 'juice';
 
-import type { DocumentMargins, PageSize } from './html-to-docx';
+import type { DocumentMargins, PageSize, Spacing } from './html-to-docx';
 
 import { htmlToDocxBlob } from './html-to-docx';
 
@@ -188,6 +188,19 @@ export type DocxExportOperationOptions = {
   fontFamily?: string;
 
   /**
+   * Space above and below every heading, in twentieths of a point (twips; 20 =
+   * 1 pt). Applies to all six heading levels; a key left out keeps each level's
+   * built-in value (level 2: 360 before, 80 after). Heading 1 has no built-in
+   * `after` and takes `paragraphSpacing.after`.
+   *
+   * @example
+   * ```typescript
+   * headingSpacing: { before: 0 } // no space above headings
+   * ```
+   */
+  headingSpacing?: Spacing;
+
+  /**
    * Page margins in twentieths of a point.
    * 1 inch = 1440 twentieths.
    *
@@ -221,6 +234,18 @@ export type DocxExportOperationOptions = {
    * ```
    */
   pageSize?: PageSize;
+
+  /**
+   * Space around paragraphs, in twentieths of a point (twips; 20 = 1 pt).
+   * Written to the document defaults, so it also applies to list items and
+   * table cells. A key left out keeps the default (120 after, 6 pt).
+   *
+   * @example
+   * ```typescript
+   * paragraphSpacing: { after: 0 } // no space between paragraphs
+   * ```
+   */
+  paragraphSpacing?: Spacing;
 
   /**
    * Document title (for metadata purposes).
@@ -435,10 +460,12 @@ async function exportToDocxInternal(
     editorPlugins,
     editorStaticComponent,
     fontFamily,
+    headingSpacing,
     margins = DEFAULT_DOCX_MARGINS,
     orientation = 'portrait',
     pageNumber,
     pageSize,
+    paragraphSpacing,
     value,
   } = options;
 
@@ -466,6 +493,7 @@ async function exportToDocxInternal(
   const blob = await htmlToDocxBlob(inlinedHtml, {
     font: fontFamily,
     footer: pageNumber,
+    headingSpacing,
     margins: {
       ...DEFAULT_DOCX_MARGINS,
       ...margins,
@@ -473,6 +501,7 @@ async function exportToDocxInternal(
     orientation,
     pageNumber,
     pageSize,
+    paragraphSpacing,
   });
 
   return blob;

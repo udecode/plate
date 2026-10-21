@@ -1,5 +1,7 @@
 import { cloneDeep } from 'lodash';
 
+import type { Spacing } from './types';
+
 export type Orientation = 'landscape' | 'portrait';
 
 export type HeaderFooterType = 'default' | 'even' | 'first';
@@ -76,6 +78,7 @@ export type DocumentOptions = {
   footerType: HeaderFooterType;
   header: boolean;
   headerType: HeaderFooterType;
+  headingSpacing: Spacing;
   keywords: string[];
   lastModifiedBy: string;
   lineNumber: boolean;
@@ -86,6 +89,7 @@ export type DocumentOptions = {
   orientation: Orientation;
   pageNumber: boolean;
   pageSize: PageSize;
+  paragraphSpacing: Spacing;
   revision: number;
   skipFirstHeaderFooter: boolean;
   subject: string;
@@ -132,6 +136,7 @@ const defaultDocumentOptions: DocumentOptions = {
   footerType: 'default',
   header: false,
   headerType: 'default',
+  headingSpacing: {},
   keywords: [applicationName],
   lastModifiedBy: applicationName,
   lineNumber: false,
@@ -151,6 +156,7 @@ const defaultDocumentOptions: DocumentOptions = {
     height: landscapeWidth,
     width: landscapeHeight,
   },
+  paragraphSpacing: {},
   revision: 1,
   skipFirstHeaderFooter: false,
   subject: '',

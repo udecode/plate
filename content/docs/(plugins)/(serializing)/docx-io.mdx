@@ -10,7 +10,7 @@ description: Import DOCX files and export Plate content to Word documents.
 - **Import DOCX files** to Plate format with full content and comment extraction
 - **Export to DOCX** with support for all common formatting, tables, lists, and images
 - Support for headers, footers, page orientation, and margins
-- Configurable CSS styles and fonts for export
+- Configurable CSS styles, fonts, and paragraph and heading spacing for export
 
 </PackageInfo>
 
@@ -115,6 +115,19 @@ const blob = await exportToDocx(editor.children, {
     h1 { color: #1a1a1a; }
   `,
   fontFamily: 'Times New Roman',
+});
+```
+
+### Paragraph and Heading Spacing
+
+Word adds 6 pt after every paragraph and a gap above each heading. CSS margins do not change them. Set `paragraphSpacing` and `headingSpacing` in twentieths of a point (20 = 1 pt):
+
+```tsx
+import { exportToDocx } from '@platejs/docx-io';
+
+const blob = await exportToDocx(editor.children, {
+  paragraphSpacing: { after: 0 },
+  headingSpacing: { before: 120, after: 60 },
 });
 ```
 
@@ -257,6 +270,14 @@ Number the pages in a footer, left-aligned in the document font.
 
 - **Default:** `false`
 </APIItem>
+<APIItem name="paragraphSpacing" type="Spacing" optional>
+Space around paragraphs, in twentieths of a point (20 = 1 pt). Applies to every paragraph, list item and table cell that sets no spacing of its own.
+
+- **Default:** `{ after: 120 }`
+</APIItem>
+<APIItem name="headingSpacing" type="Spacing" optional>
+Space above and below all six heading levels, in twentieths of a point. A key left out keeps each level's built-in value, for example 360 before and 80 after for heading 2. Heading 1 has no built-in `after` and takes the `after` of `paragraphSpacing`.
+</APIItem>
 <APIItem name="title" type="string" optional>
 Document title for metadata.
 </APIItem>
@@ -327,6 +348,12 @@ Additional CSS styles.
 <APIItem name="pageNumber" type="boolean" optional>
 Number the pages in a footer.
 </APIItem>
+<APIItem name="paragraphSpacing" type="Spacing" optional>
+Space around paragraphs, in twentieths of a point.
+</APIItem>
+<APIItem name="headingSpacing" type="Spacing" optional>
+Space above and below headings, in twentieths of a point.
+</APIItem>
 <APIItem name="title" type="string" optional>
 Document title.
 </APIItem>
@@ -391,6 +418,15 @@ type DocxExportMargins = {
   header?: number;
   footer?: number;
   gutter?: number;
+};
+```
+
+### Spacing
+
+```ts
+type Spacing = {
+  before?: number;
+  after?: number;
 };
 ```
 

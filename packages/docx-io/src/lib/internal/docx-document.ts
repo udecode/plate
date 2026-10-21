@@ -37,6 +37,7 @@ import generateStylesXML from './schemas/styles';
 import generateThemeXML from './schemas/theme';
 import webSettingsXMLString from './schemas/web-settings';
 import type { DocumentMargins } from './schemas/document.template';
+import type { Spacing } from './types';
 import { fontFamilyToTableObject } from './utils/font-family-conversion';
 import ListStyleBuilder, {
   type ListStyleDefaults,
@@ -196,6 +197,7 @@ export interface DocxDocumentProperties {
   footerType?: string;
   header?: boolean;
   headerType?: string;
+  headingSpacing?: Spacing;
   htmlString: string | null;
   keywords?: string[];
   lang?: string;
@@ -208,6 +210,7 @@ export interface DocxDocumentProperties {
   orientation?: string;
   pageNumber?: boolean;
   pageSize?: PageSize | null;
+  paragraphSpacing?: Spacing;
   revision?: number;
   skipFirstHeaderFooter?: boolean;
   subject?: string;
@@ -349,6 +352,7 @@ class DocxDocument {
   header: boolean;
   headerObjects: HeaderObject[];
   headerType: string;
+  headingSpacing: Spacing;
   height: number;
   htmlString: string | null;
   keywords: string[];
@@ -368,6 +372,7 @@ class DocxDocument {
   orientation: string;
   pageNumber: boolean;
   pageSize: PageSize;
+  paragraphSpacing: Spacing;
   relationshipFilename: string;
   relationships: FileRelationship[];
   revision: number;
@@ -429,6 +434,8 @@ class DocxDocument {
     this.lang = properties.lang || defaultLang;
     this.tableRowCantSplit = properties.table?.row?.cantSplit || false;
     this.pageNumber = properties.pageNumber || false;
+    this.paragraphSpacing = properties.paragraphSpacing ?? {};
+    this.headingSpacing = properties.headingSpacing ?? {};
     this.skipFirstHeaderFooter = properties.skipFirstHeaderFooter || false;
     this.lineNumber = properties.lineNumber
       ? properties.lineNumberOptions || null
@@ -656,7 +663,9 @@ class DocxDocument {
         this.font,
         this.fontSize,
         this.complexScriptFontSize,
-        this.lang
+        this.lang,
+        this.paragraphSpacing,
+        this.headingSpacing
       )
     );
   }
