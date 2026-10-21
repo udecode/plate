@@ -49,7 +49,7 @@ export function CodeDrawingElement({
 }
 ```
 
-The copied Mermaid renderer item draws with Pele and returns its SVG.
+The copied Mermaid renderer item draws with Pele and returns its SVG. Each copied renderer item installs the exact engine version the site runs, such as `pele@1.6.0`. The site's `apps/www/package.json` pins the same versions.
 
 ```ts
 // apps/www/src/registry/components/editor/code-block-diagram-mermaid.ts
@@ -96,5 +96,4 @@ Sources: `TypeCellOS/BlockNote@1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163:packages
 ## Open work
 
 - Export PNG of a very wide diagram can save an empty image. Pele states a chain of 400 to 500 nodes at 75678 to 82388 pixels wide, past the browser's canvas limit, and the shared exporter in `code-block-diagram.tsx` does not scale it down. Owner: suggested task `t_3bdcf6b3` in the ledger. Stop: none, since such chains are rare and the source is unharmed.
-- The registry item names `pele` with no version range. Owner: suggested task `t_b0f60c45`, which pins every engine's version. Stop: none.
 - The timing lines T1 and T2 stay gates, because step 6 ran while the host's load was 15.36, above the frozen limit of 9. Owner: suggested task `t_e0e8d398`, which now also reruns step 6 on a quiet host. Stop: a conclusive miss sends the engine choice back to `architect`.
