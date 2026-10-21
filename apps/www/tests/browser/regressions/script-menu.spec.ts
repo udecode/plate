@@ -8,7 +8,7 @@ for (const [label, script] of [
   ['Subscript', 'sub'],
   ['Superscript', 'sup'],
 ] as const) {
-  test(`[plate#5210] More formatting renders ${label.toLowerCase()} on the selected digit`, async ({
+  test(`More formatting renders ${label.toLowerCase()} on the selected digit [plate#5210]`, async ({
     page,
   }) => {
     const runtimeErrors = recordBrowserRuntimeErrors(page);
