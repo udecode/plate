@@ -14,7 +14,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { capEffort, currentLead, EFFORTS, maxEffort } from './lead.mjs';
+import { capEffort, EFFORTS, findLead, maxEffort } from './lead.mjs';
 
 const rank = (effort) => EFFORTS.indexOf(effort);
 const MODEL = /^(?:codex:[\w.-]+|claude-[\w.-]+|gpt-[\w.-]+|opus|sonnet|haiku|fable)$/u;
@@ -140,8 +140,9 @@ function main(argv) {
   if (!logs.length) return [usage, 1];
   const missing = logs.find((log) => !existsSync(log));
   if (missing) return [`${missing} does not exist`, 1];
-  const found = flags.lead ? parseLead(flags.lead) : currentLead();
-  if (!found?.effort) return ['Runtime identity could not be verified against one transcript, so the current level is unknown; pass --lead.', 1];
+  const lead = flags.lead ? { run: parseLead(flags.lead) } : findLead();
+  const found = lead.run;
+  if (!found?.effort) return [`Runtime identity could not be verified${lead.miss ? ` because ${lead.miss}` : ''}, so the current level is unknown; pass --lead.`, 1];
   let max;
   try {
     max = maxEffort();

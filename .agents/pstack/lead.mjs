@@ -76,30 +76,38 @@ function nearestRuntime() {
 
 export function invocationRun(identity, transcripts) {
   const { runtime, thread, session, invocation } = identity;
-  if (runtime !== 'codex' || !ID.test(session ?? '') || !ID.test(thread ?? '') || !/^exec-[a-f0-9-]{36}$/u.test(invocation ?? '')) return null;
-  const found = transcripts.flatMap(({ transcript, text }) => {
+  if (runtime !== 'codex') return { miss: 'the runtime is not codex' };
+  if (!ID.test(thread ?? '')) return { miss: 'CODEX_THREAD_ID holds no thread id' };
+  if (!ID.test(session ?? '')) return { miss: 'CODEX_SESSION_ID holds no session id' };
+  if (!/^exec-[a-f0-9-]{36}$/u.test(invocation ?? '')) return { miss: 'CODEX_TOOL_CALL_ID holds no exec call id' };
+  const results = transcripts.map(({ transcript, text }) => {
     const records = text.split('\n').map(parse).filter(Boolean);
     const metas = records.filter((record) => record.type === 'session_meta');
-    if (metas.length !== 1) return [];
+    if (metas.length !== 1) return { miss: `${transcript} holds ${metas.length} session_meta records, not one` };
     const meta = metas[0].payload;
-    if (meta?.id !== thread || meta.session_id !== session) return [];
-    if (thread !== session && meta.parent_thread_id !== session) return [];
+    if (meta?.id !== thread || meta.session_id !== session) return { miss: `${transcript} belongs to another thread or session` };
+    if (thread !== session && meta.parent_thread_id !== session) return { miss: `${transcript} is not a child of session ${session}` };
     const execution = records.findLast((record) => record.type === 'event_msg' && record.payload?.item?.id === invocation);
-    if (execution && (execution.payload.thread_id !== thread || execution.payload.item.type !== 'CommandExecution' || execution.payload.item.status !== 'inProgress')) return [];
+    if (execution && (execution.payload.thread_id !== thread || execution.payload.item.type !== 'CommandExecution' || execution.payload.item.status !== 'inProgress')) {
+      return { miss: `${transcript} records this call as finished or in another thread` };
+    }
     const context = records.findLast((record) => record.type === 'turn_context');
-    if (!context?.payload?.model || !context.payload.effort) return [];
-    if (execution && execution.payload.turn_id !== context.payload.turn_id) return [];
-    return [{ runtime, model: context.payload.model, effort: context.payload.effort, at: context.timestamp, transcript }];
+    if (!context?.payload?.model || !context.payload.effort) return { miss: `${transcript} names no model or effort for its turn` };
+    if (execution && execution.payload.turn_id !== context.payload.turn_id) return { miss: `${transcript} records this call in another turn` };
+    return { run: { runtime, model: context.payload.model, effort: context.payload.effort, at: context.timestamp, transcript } };
   });
-  return found.length === 1 ? found[0] : null;
+  const matches = results.filter((result) => result.run);
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) return { miss: `${matches.length} transcripts of thread ${thread} match, not one` };
+  return { miss: results.length ? results.map((result) => result.miss).join('; ') : `no transcript of thread ${thread} exists` };
 }
 
-// Claude Code writes a Bash call to the transcript before running it and its
-// result after, so the one call still open across a session's transcript and
-// its subagents' is the command running now, and its record carries the model
-// and effort of whoever made it.
-export function claudeInvocationRun(transcripts) {
-  const found = transcripts.flatMap(({ transcript, text }) => {
+// Claude Code appends a Bash call to the transcript shortly after the command
+// starts and its result after it ends, so the one call still open across a
+// session's transcript and its subagents' is the command running now, and its
+// record carries the model and effort of whoever made it.
+function openClaudeCalls(transcripts) {
+  return transcripts.flatMap(({ transcript, text }) => {
     const open = new Map();
     for (const record of text.split('\n').map(parse).filter(Boolean)) {
       const blocks = Array.isArray(record.message?.content) ? record.message.content : [];
@@ -110,29 +118,48 @@ export function claudeInvocationRun(transcripts) {
     }
     return [...open.values()].map((record) => ({ runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp, transcript }));
   });
-  return found.length === 1 && found[0].model && found[0].effort ? found[0] : null;
 }
+
+function claudeVerdict(found) {
+  if (found.length === 0) return { miss: 'no Bash call is open in the session transcripts' };
+  if (found.length > 1) return { miss: `${found.length} Bash calls are open, in ${[...new Set(found.map((call) => basename(call.transcript)))].join(', ')}, not one` };
+  if (!found[0].model || !found[0].effort) return { miss: `the open Bash call in ${found[0].transcript} names no model or effort` };
+  return { run: found[0] };
+}
+
+export const claudeInvocationRun = (transcripts) => claudeVerdict(openClaudeCalls(transcripts));
+
+// The running call can reach the transcript more than a tenth of a second
+// after the command starts, after this helper's first read.
+const FLUSH_WAIT_MS = 1000;
 
 function claudeLead(sessionId) {
-  if (!ID.test(sessionId ?? '')) return null;
+  if (!ID.test(sessionId ?? '')) return { miss: 'CLAUDE_CODE_SESSION_ID holds no session id' };
   const path = filesUnder(join(claudeHome(), 'projects'), 1).find((file) => file.endsWith(`/${sessionId}.jsonl`));
-  if (!path) return null;
+  if (!path) return { miss: `no ${sessionId}.jsonl transcript is under ${join(claudeHome(), 'projects')}` };
   const files = [path, ...filesUnder(join(path.slice(0, -'.jsonl'.length), 'subagents'), 0)];
-  return claudeInvocationRun(files.map((transcript) => ({ transcript, text: tailLines(transcript).join('\n') })));
+  const read = () => openClaudeCalls(files.map((transcript) => ({ transcript, text: tailLines(transcript).join('\n') })));
+  const deadline = Date.now() + FLUSH_WAIT_MS;
+  let found = read();
+  while (found.length === 0 && Date.now() < deadline) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
+    found = read();
+  }
+  return claudeVerdict(found);
 }
 
-export function currentLead() {
+export function findLead() {
   try {
     const runtime = nearestRuntime();
     if (runtime === 'claude') return claudeLead(process.env.CLAUDE_CODE_SESSION_ID);
-    if (runtime !== 'codex' || ['CLAUDECODE', 'CLAUDE_SESSION_ID', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_PID', 'CLAUDE_CODE_ENTRYPOINT'].some((key) => process.env[key])) return null;
+    if (runtime !== 'codex') return { miss: 'no claude or codex process is an ancestor of this command' };
+    const claudeKey = ['CLAUDECODE', 'CLAUDE_SESSION_ID', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_PID', 'CLAUDE_CODE_ENTRYPOINT'].find((key) => process.env[key]);
+    if (claudeKey) return { miss: `codex runs this command, but ${claudeKey} is set` };
     const identity = { runtime, thread: process.env.CODEX_THREAD_ID, session: process.env.CODEX_SESSION_ID, invocation: process.env.CODEX_TOOL_CALL_ID };
-    const id = identity.thread;
-    if (!ID.test(id ?? '')) return null;
-    const files = filesUnder(join(codexHome(), 'sessions'), 3).filter((file) => file.endsWith(`-${id}.jsonl`));
+    const files = ID.test(identity.thread ?? '') ? filesUnder(join(codexHome(), 'sessions'), 3).filter((file) => file.endsWith(`-${identity.thread}.jsonl`)) : [];
     return invocationRun(identity, files.map((transcript) => ({ transcript, text: readFileSync(transcript, 'utf8') })));
-  } catch {
-    return null;
+  } catch (error) {
+    return { miss: error.message };
   }
 }
 
@@ -151,9 +178,9 @@ export function maxEffort(root = process.cwd()) {
 export const capEffort = (effort, max) => (max && EFFORTS.indexOf(effort) > EFFORTS.indexOf(max) ? max : effort);
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const run = currentLead();
+  const { run, miss } = findLead();
   if (!run) {
-    console.error('Runtime identity could not be verified against one transcript, so the effort is unknown.');
+    console.error(`Runtime identity could not be verified because ${miss}, so the effort is unknown.`);
     process.exit(1);
   }
   console.info(leadLabel(run));
