@@ -19,6 +19,7 @@ export type {
   Margins,
   NumberingOptions,
   PageSize,
+  Spacing,
   TableOptions,
 } from './internal/types';
 

@@ -29,7 +29,7 @@ import {
 import DocxDocument from './docx-document';
 import renderDocumentFile from './helpers/render-document-file';
 import relsXML from './schemas/rels';
-import type { DocumentOptions, Margins, PageSize } from './types';
+import type { DocumentOptions, Margins, PageSize, Spacing } from './types';
 import {
   cmRegex,
   cmToTWIP,
@@ -62,6 +62,7 @@ interface NormalizedDocumentOptions {
   footerType?: 'default' | 'even' | 'first';
   header?: boolean;
   headerType?: 'default' | 'even' | 'first';
+  headingSpacing?: Spacing;
   keywords?: string[];
   lastModifiedBy?: string;
   lineNumber?: boolean;
@@ -72,6 +73,7 @@ interface NormalizedDocumentOptions {
   orientation?: 'landscape' | 'portrait';
   pageNumber?: boolean;
   pageSize?: NormalizedPageSize | null;
+  paragraphSpacing?: Spacing;
   revision?: number;
   skipFirstHeaderFooter?: boolean;
   subject?: string;
@@ -192,6 +194,28 @@ const normalizeUnits = (
   return normalizedUnitResult as NormalizedMargins | NormalizedPageSize;
 };
 
+const normalizeSpacing = (name: string, spacing: Spacing): Spacing => {
+  const normalized: Spacing = {};
+
+  (['after', 'before'] as const).forEach((key) => {
+    const value = spacing[key];
+
+    if (value === undefined) return;
+
+    const twips = Math.round(value);
+
+    if (!Number.isSafeInteger(twips) || twips < 0) {
+      throw new RangeError(
+        `${name}.${key} must be a non-negative number of twips, received ${String(value)}`
+      );
+    }
+
+    normalized[key] = twips;
+  });
+
+  return normalized;
+};
+
 const normalizeDocumentOptions = (
   documentOptions: DocumentOptions
 ): NormalizedDocumentOptions => {
@@ -219,6 +243,11 @@ const normalizeDocumentOptions = (
     result.header = documentOptions.header;
   if (documentOptions.headerType !== undefined)
     result.headerType = documentOptions.headerType;
+  if (documentOptions.headingSpacing !== undefined)
+    result.headingSpacing = normalizeSpacing(
+      'headingSpacing',
+      documentOptions.headingSpacing
+    );
   if (documentOptions.keywords !== undefined)
     result.keywords = documentOptions.keywords;
   if (documentOptions.lastModifiedBy !== undefined)
@@ -235,6 +264,11 @@ const normalizeDocumentOptions = (
     result.orientation = documentOptions.orientation;
   if (documentOptions.pageNumber !== undefined)
     result.pageNumber = documentOptions.pageNumber;
+  if (documentOptions.paragraphSpacing !== undefined)
+    result.paragraphSpacing = normalizeSpacing(
+      'paragraphSpacing',
+      documentOptions.paragraphSpacing
+    );
   if (documentOptions.revision !== undefined)
     result.revision = documentOptions.revision;
   if (documentOptions.skipFirstHeaderFooter !== undefined)
