@@ -40,6 +40,22 @@
       "2026-10-20-pin-diagram-engines",
       "2026-10-16-code-block-diagrams"
     ],
+    "more-toolbar-button": [
+      "2026-10-20-preserve-more-formatting-toolbar",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-12-more-toolbar-plugin-transaction",
+      "2026-07-26-unify-script-mark",
+      "2026-07-24-feature-toolbar-plugin-portals"
+    ],
+    "editor-dropdown-menu": [
+      "2026-10-20-preserve-more-formatting-toolbar",
+      "2026-09-24-export-menu-projection",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-25-base-first-registry"
+    ],
     "export-toolbar-button": [
       "2026-10-19-export-toolbar-docx-load",
       "2026-10-12-neutral-stored-names",
@@ -826,15 +842,6 @@
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies"
     ],
-    "more-toolbar-button": [
-      "2026-10-12-toolbar-button-names",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-12-more-toolbar-plugin-transaction",
-      "2026-07-26-unify-script-mark",
-      "2026-07-24-feature-toolbar-plugin-portals"
-    ],
     "emoji-toolbar-button": [
       "2026-10-12-toolbar-button-names",
       "2026-10-08-emoji-frimousse",
@@ -1013,11 +1020,6 @@
       "2026-08-17-flat-editor-registry"
     ],
     "markdown-to-editor-demo": ["2026-09-28-markdown-registered-tags"],
-    "editor-dropdown-menu": [
-      "2026-09-24-export-menu-projection",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-25-base-first-registry"
-    ],
     "docx-demo": [
       "2026-09-24-export-menu-projection",
       "2026-09-02-comments-ownership",

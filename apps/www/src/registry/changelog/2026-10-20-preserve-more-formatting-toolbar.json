@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-20-preserve-more-formatting-toolbar",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-20-preserve-more-formatting-toolbar.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-20",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the floating toolbar after closing More formatting",
+  "targets": [
+    {
+      "name": "more-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/more-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx",
+        "apps/www/src/registry/components/editor/menu-close-focus.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-20-more-toolbar-keep-floating-after-closing-3ef25023",
+      "kind": "fix",
+      "summary": "Keep the floating toolbar and the selected text when a second click on More formatting, or Escape, closes it.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["more-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-20",
+          "entry": "2026-10-20-preserve-more-formatting-toolbar",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-20-preserve-more-formatting-toolbar-2",
+      "kind": "wiring",
+      "summary": "When a click outside a non-modal menu, a right-click outside any menu, Tab in a Base UI menu, or a focus move to another control closes a dropdown, focus stays where the user put it. It no longer moves back into the editor or, on Base UI, to the menu's trigger. This applies to every editor dropdown: More formatting, Turn into, font color, insert, mode, align, line height, list, export, import, media, comment, the table menus and the block drag handle menu. When an item moves focus itself, the menu leaves focus there. A menu that puts focus back in the editor after a close, such as More formatting, still does after a press on another button in its own toolbar. Base UI menus close without an exit animation, as Radix menus already do, so a click right after a close keeps its focus. The dropdown menu now also installs `menu-close-focus.tsx`, which holds the close-focus code both bases share.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-dropdown-menu"],
+      "source": {
+        "line": 15,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-20",
+          "entry": "2026-10-20-preserve-more-formatting-toolbar",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

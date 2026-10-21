@@ -22,6 +22,10 @@
       "name": "editor-dropdown-menu",
       "title": "Editor Dropdown Menu",
       "description": "Provider-neutral dropdown menu behavior for Plate UI.",
+      "dependencies": [
+        "diff-match-patch-ts@^0.6.0",
+        "platejs"
+      ],
       "registryDependencies": [
         "dropdown-menu"
       ],
@@ -30,6 +34,11 @@
           "path": "src/registry/bases/radix/dropdown-menu.tsx",
           "type": "registry:component",
           "target": "@components/editor/dropdown-menu.tsx"
+        },
+        {
+          "path": "src/registry/components/editor/menu-close-focus.tsx",
+          "type": "registry:component",
+          "target": "@components/editor/menu-close-focus.tsx"
         }
       ],
       "type": "registry:component"

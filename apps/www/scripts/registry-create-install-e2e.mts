@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { chromium, type Locator } from '@playwright/test';
+import { chromium, devices, type Locator } from '@playwright/test';
 
 import { createRegistryResponse } from '../src/lib/registry-response';
 
@@ -153,7 +153,7 @@ async function verifyInstalledEditorCommands(project: string) {
     }
 
     browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
+    const page = await browser.newPage({ ...devices['Desktop Chrome'] });
     const runtimeErrors: string[] = [];
 
     page.on('pageerror', (error) => runtimeErrors.push(String(error)));
@@ -246,6 +246,158 @@ async function verifyInstalledEditorCommands(project: string) {
     );
     await editor.pressSequentially('K');
     await waitForCount(keyboardText, initialKeyboardTextCount + 1);
+
+    const moreFormatting = toolbar.getByRole('button', {
+      name: 'More formatting',
+    });
+    const outside = page.getByText('Outside the editor', { exact: true });
+
+    await page.evaluate(() => {
+      const element = document.createElement('p');
+
+      element.textContent = 'Outside the editor';
+      element.style.cssText =
+        'position:fixed;bottom:0;left:0;margin:0;padding:8px;background:white;z-index:2147483647';
+      document.body.append(element);
+    });
+    await insertedHeading.click();
+    await moreFormatting.click();
+    await page.getByRole('menu').waitFor();
+    await outside.click();
+    await page.getByRole('menu').waitFor({ state: 'detached' });
+    await page.waitForTimeout(500);
+
+    if (
+      !(await page.evaluate(() => document.activeElement === document.body))
+    ) {
+      throw new Error(
+        'Installed More formatting moved focus after an outside click'
+      );
+    }
+
+    await insertedHeading.click();
+    await moreFormatting.click();
+    await page.getByRole('menu').waitFor();
+    await moreFormatting.click();
+    await page.getByRole('menu').waitFor({ state: 'detached' });
+    await page.waitForFunction(
+      () => document.activeElement?.getAttribute('contenteditable') === 'true'
+    );
+
+    await moreFormatting.click();
+    await page.getByRole('menu').waitFor();
+    await moreFormatting.click();
+    await page
+      .getByRole('menu')
+      .waitFor({ state: 'detached', timeout: 60 })
+      .catch(() => {
+        throw new Error(
+          'Installed More formatting stayed mounted while closing'
+        );
+      });
+    await page.waitForFunction(
+      () => document.activeElement?.getAttribute('contenteditable') === 'true'
+    );
+    await outside.evaluate((element) => element.remove());
+
+    const floatingToolbar = page.locator('[role="toolbar"]').filter({
+      has: page.getByRole('button', { name: 'Mark as equation', exact: true }),
+    });
+    const floatingMore = floatingToolbar.getByRole('button', {
+      name: 'More formatting',
+      exact: true,
+    });
+    const floatingBold = floatingToolbar.getByRole('button', { name: /^Bold/ });
+    const nativeSelection = () =>
+      page.evaluate(() => window.getSelection()?.toString() ?? '');
+
+    await editor.locator('[data-editor-string]').first().dblclick();
+    const selected = await nativeSelection();
+    const keepsFloatingSelection = async (message: string) => {
+      await page.getByRole('menu').waitFor({ state: 'detached' });
+      await page.waitForFunction(
+        () => document.activeElement?.getAttribute('contenteditable') === 'true'
+      );
+      await floatingMore.waitFor();
+
+      if (!selected || (await nativeSelection()) !== selected) {
+        throw new Error(message);
+      }
+    };
+
+    await floatingMore.click();
+    await page.getByRole('menu').waitFor();
+    await floatingMore.click();
+    await keepsFloatingSelection(
+      'Installed floating More formatting lost the selected text'
+    );
+
+    const boldSelected = editor.locator('strong').filter({
+      hasText: new RegExp(
+        `^${selected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`
+      ),
+    });
+    const boldCount = await boldSelected.count();
+
+    await floatingBold.click();
+    await waitForCount(boldSelected, boldCount + 1);
+
+    await floatingMore.click();
+    await page.getByRole('menu').waitFor();
+    await page.keyboard.press('Escape');
+    await keepsFloatingSelection(
+      'Installed floating More formatting lost the selected text on Escape'
+    );
+
+    await floatingMore.click();
+    await page.getByRole('menu').waitFor();
+    await floatingBold.click();
+    await keepsFloatingSelection(
+      'Installed floating toolbar lost the selected text after a Bold press while More formatting was open'
+    );
+
+    const turnIntoMenu = page.getByRole('menu').filter({
+      has: page.getByRole('menuitemradio', { name: 'Heading 1', exact: true }),
+    });
+
+    await moreFormatting.click();
+    await page.getByRole('menu').waitFor();
+    await toolbar.getByRole('button', { name: /^Turn into/ }).click();
+    await turnIntoMenu.waitFor();
+    await page.waitForTimeout(500);
+
+    if (
+      (await page.getByRole('menu').count()) !== 1 ||
+      !(await turnIntoMenu.evaluate((menu) =>
+        menu.contains(document.activeElement)
+      ))
+    ) {
+      throw new Error(
+        'Installed More formatting took focus back from Turn into'
+      );
+    }
+
+    await page.keyboard.press('Escape');
+    await turnIntoMenu.waitFor({ state: 'detached' });
+
+    const fontSize = toolbar.getByRole('textbox', {
+      name: 'Font size',
+      exact: true,
+    });
+
+    await toolbar.getByRole('button', { name: /^Turn into/ }).click();
+    await turnIntoMenu.waitFor();
+    await fontSize.click();
+    await turnIntoMenu.waitFor({ state: 'detached' });
+    await page.waitForTimeout(500);
+
+    if (
+      !(await fontSize.evaluate((input) => input === document.activeElement))
+    ) {
+      throw new Error(
+        'Installed Turn into took focus back from the font size box'
+      );
+    }
 
     // The installed picker loads Emojibase from jsDelivr, like any installed app.
     const emojiButton = toolbar.getByRole('button', {

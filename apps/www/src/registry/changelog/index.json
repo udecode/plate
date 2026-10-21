@@ -61,6 +61,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-20-preserve-more-formatting-toolbar",
+      "href": "/registry/changelog/2026-10-20-preserve-more-formatting-toolbar.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the floating toolbar after closing More formatting",
+      "change": {
+        "type": "source",
+        "date": "2026-10-20",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["more-toolbar-button", "editor-dropdown-menu"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-export-toolbar-docx-load",
       "href": "/registry/changelog/2026-10-19-export-toolbar-docx-load.json",
       "status": "draft",

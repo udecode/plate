@@ -33,10 +33,13 @@ export function MoreToolbarButton() {
       <DropdownMenuContent
         className="ignore-click-outside/toolbar flex max-h-[500px] min-w-[180px] flex-col overflow-y-auto"
         align="start"
+        onFinalFocus={(event) => {
+          event.preventDefault();
+          editor.api.dom.focus();
+        }}
       >
         <DropdownMenuGroup>
           <DropdownMenuItem
-            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
               editor.update((tx) => {
                 tx.plugin(KbdPlugin).toggle();
@@ -49,24 +52,20 @@ export function MoreToolbarButton() {
           </DropdownMenuItem>
 
           <DropdownMenuItem
-            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
               editor.plugin(ScriptPlugin).update.toggle('sup');
             }}
           >
             <SuperscriptIcon />
             Superscript
-            {/* (⌘+,) */}
           </DropdownMenuItem>
           <DropdownMenuItem
-            finalFocus={() => editor.api.dom.focus()}
             onSelect={() => {
               editor.plugin(ScriptPlugin).update.toggle('sub');
             }}
           >
             <SubscriptIcon />
             Subscript
-            {/* (⌘+.) */}
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

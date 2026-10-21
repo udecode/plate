@@ -1,8 +1,10 @@
 'use client';
 
+import { useComposedRef } from 'platejs/react';
 import * as React from 'react';
 
 import {
+  DropdownMenu as ShadcnDropdownMenu,
   DropdownMenuCheckboxItem as ShadcnDropdownMenuCheckboxItem,
   DropdownMenuContent as ShadcnDropdownMenuContent,
   DropdownMenuItem as ShadcnDropdownMenuItem,
@@ -10,9 +12,18 @@ import {
   DropdownMenuTrigger as ShadcnDropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import {
+  CloseFocusWatcher,
+  type FinalFocus,
+  FinalFocusContext,
+  type FinalFocusRef,
+  focusClaimed,
+  MenuRootContext,
+  takeFinalFocus,
+  useMenuRoot,
+} from '@/registry/components/editor/menu-close-focus';
 
 export {
-  DropdownMenu,
   DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuPortal,
@@ -24,10 +35,18 @@ export {
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type FinalFocus = false | (() => void);
-type FinalFocusRef = React.RefObject<FinalFocus | undefined>;
+export function DropdownMenu({
+  modal = true,
+  ...props
+}: React.ComponentProps<typeof ShadcnDropdownMenu>) {
+  const root = useMenuRoot(modal);
 
-const FinalFocusContext = React.createContext<FinalFocusRef | null>(null);
+  return (
+    <MenuRootContext.Provider value={root}>
+      <ShadcnDropdownMenu {...props} modal={modal} />
+    </MenuRootContext.Provider>
+  );
+}
 
 function armFinalFocus(
   event: Event,
@@ -100,54 +119,70 @@ export function DropdownMenuRadioItem({
 }
 
 export function DropdownMenuContent({
+  children,
   className,
   onFinalFocus,
+  ref,
   ...props
-}: Omit<React.ComponentPropsWithoutRef<'div'>, 'onAbort'> & {
+}: Omit<React.ComponentProps<'div'>, 'onAbort'> & {
   align?: 'center' | 'end' | 'start';
   alignOffset?: number;
   onFinalFocus?: (event: Event) => void;
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
 }) {
-  const finalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
+  const root = React.useContext(MenuRootContext);
+  const contentFinalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
+  const finalFocusRef = root?.finalFocusRef ?? contentFinalFocusRef;
+  const popupRef = React.useRef<HTMLDivElement | null>(null);
+  const contentRef = useComposedRef(ref, popupRef);
 
   return (
     <FinalFocusContext.Provider value={finalFocusRef}>
       <ShadcnDropdownMenuContent
         {...props}
+        ref={contentRef}
         className={cn('data-[state=closed]:!animate-none', className)}
         onCloseAutoFocus={(event) => {
-          const finalFocus = finalFocusRef.current;
+          const finalFocus = takeFinalFocus(finalFocusRef);
 
-          finalFocusRef.current = undefined;
-
-          if (finalFocus === false) {
-            event.preventDefault();
-
-            return;
-          }
           if (finalFocus) {
             event.preventDefault();
             finalFocus();
 
             return;
           }
+          // FocusScope calls this from a timer after the content unmounts, so focus is never still inside the menu here.
+          if (
+            finalFocus === false ||
+            (root && focusClaimed(root.triggerRef.current))
+          ) {
+            event.preventDefault();
+
+            return;
+          }
           onFinalFocus?.(event);
         }}
-      />
+      >
+        {root && <CloseFocusWatcher popupRef={popupRef} root={root} />}
+        {children}
+      </ShadcnDropdownMenuContent>
     </FinalFocusContext.Provider>
   );
 }
 
 export function DropdownMenuTrigger({
   children,
+  ref,
   ...props
-}: Omit<React.ComponentPropsWithoutRef<'button'>, 'children'> & {
+}: Omit<React.ComponentProps<'button'>, 'children'> & {
   children: React.ReactElement;
 }) {
+  const root = React.useContext(MenuRootContext);
+  const triggerRef = useComposedRef(ref, root?.triggerRef);
+
   return (
-    <ShadcnDropdownMenuTrigger {...props} asChild>
+    <ShadcnDropdownMenuTrigger {...props} ref={triggerRef} asChild>
       {children}
     </ShadcnDropdownMenuTrigger>
   );

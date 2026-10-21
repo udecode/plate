@@ -630,6 +630,10 @@ export const editorComponents: Registry['items'] = [
         target: '@components/editor/dropdown-menu.tsx',
         type: 'registry:component',
       },
+      {
+        path: 'components/editor/menu-close-focus.tsx',
+        type: 'registry:component',
+      },
     ],
     name: 'editor-dropdown-menu',
     title: 'Editor Dropdown Menu',

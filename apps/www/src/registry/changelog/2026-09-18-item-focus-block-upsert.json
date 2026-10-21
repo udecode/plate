@@ -21,7 +21,8 @@
       "name": "editor-dropdown-menu",
       "files": [
         "apps/www/src/registry/bases/base/dropdown-menu.tsx",
-        "apps/www/src/registry/bases/radix/dropdown-menu.tsx"
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx",
+        "apps/www/src/registry/components/editor/menu-close-focus.tsx"
       ],
       "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
       "diagnostics": []
