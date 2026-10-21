@@ -13,10 +13,12 @@
 // transcript keeps a worktree; uncommitted changes do not, because a card
 // session lands them in the checkout as a patch. A commit that no branch, tag
 // or remote reaches, which only the worktree's HEAD history keeps, makes the
-// scan ask, because removing the worktree loses it. --delete measures each
-// safe item, judges it again, checks the running processes once more, saves a
-// worktree's uncommitted changes the checkout lacks as a patch under the git
-// folder's cleanup/ and removes it.
+// scan ask when it writes a file whose content the checkout's HEAD and its
+// upstream both lack and neither changed since, because removing the worktree
+// loses it. --delete measures each safe item, judges it again, checks the
+// running processes once more, saves a worktree's uncommitted changes the
+// checkout lacks and its unreached commits as patches under the git folder's
+// cleanup/ and removes it.
 // In a pstack project, whose .agents/pstack.json names its plans directory,
 // --landed counts only ignored files under <plans>/artifacts/, because there
 // every other ignored file is build output or a copy of the checkout's, and
@@ -122,7 +124,7 @@ function usageVerdict(facts) {
 }
 
 const unreachedReason = (count) =>
-  count === null ? 'git could not list the commits its HEAD history keeps' : `${count} ${count === 1 ? 'commit' : 'commits'} that no branch, tag or remote reaches, kept only by its HEAD history; save them with git branch <name> <sha>`;
+  count === null ? 'git could not list the commits its HEAD history keeps' : `${count} ${count === 1 ? 'commit' : 'commits'} that no branch, tag or remote reaches, kept only by its HEAD history, with changes the checkout lacks; save them with git branch <name> <sha>`;
 
 function cleanupVerdict(facts) {
   if (facts.heldCaches === null) return ['keep', 'lsof could not tell whether a server holds a cache inside it'];
@@ -385,6 +387,39 @@ function unreachedCommits(main, entry, reflog = true) {
   }
 }
 
+// A squash landing leaves the task's own commits in its worktree's HEAD
+// history, so one counts as landed when each file it writes has its content
+// in the checkout's HEAD or upstream, or changed there after it.
+function unlandedCommits(main, entry, reflog = true) {
+  try {
+    const commits = unreachedList(main, entry, ['--no-merges'], reflog).split('\n').filter(Boolean);
+    if (commits.length === 0) return 0;
+    const bases = ['HEAD', '@{upstream}'].filter((ref) => {
+      try {
+        git(main, ['rev-parse', '--verify', '--quiet', ref]);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    const trees = bases.map((ref) => new Map(git(main, ['ls-tree', '-r', '-z', ref]).split('\0').filter(Boolean).map((line) => [line.slice(line.indexOf('\t') + 1), line.split(' ')[2].split('\t')[0]])));
+    return commits.filter((sha) => {
+      const date = git(main, ['show', '-s', '--format=%cI', sha]).trim();
+      const changed = new Set(bases.flatMap((ref) => git(main, ['log', `--since=${date}`, '--name-only', '--format=', ref]).split('\n')));
+      const fields = git(main, ['diff-tree', '--no-commit-id', '-r', '-z', '--root', sha]).split('\0');
+      for (let at = 0; at + 1 < fields.length; at += 2) {
+        const blob = fields[at].split(' ')[3];
+        const path = fields[at + 1];
+        const content = /^0+$/u.test(blob) ? undefined : blob;
+        if (!changed.has(path) && trees.every((tree) => tree.get(path) !== content)) return true;
+      }
+      return false;
+    }).length;
+  } catch {
+    return null;
+  }
+}
+
 function saveUnreached(main, entry) {
   const commits = unreachedList(main, entry, ['--reverse', '--topo-order']).split('\n').filter(Boolean);
   if (commits.length === 0) return null;
@@ -395,7 +430,7 @@ function saveUnreached(main, entry) {
   return file;
 }
 
-const cleanupFacts = (main, entry, worktrees) => ({ heldCaches: heldCaches(entry.path, worktrees), repos: nestedRepos(entry.path, statusEntries(entry.path)), unreached: unreachedCommits(main, entry) });
+const cleanupFacts = (main, entry, worktrees) => ({ heldCaches: heldCaches(entry.path, worktrees), repos: nestedRepos(entry.path, statusEntries(entry.path)), unreached: unlandedCommits(main, entry) });
 
 function contentFacts(main, entry, worktrees) {
   const listings = new Map();
@@ -404,7 +439,7 @@ function contentFacts(main, entry, worktrees) {
     ...compareWithCheckout(main, entry.path, listings),
     heldCaches: heldCaches(entry.path, worktrees),
     ignored: ignoredWork(main, entry.path, listings, root),
-    unreached: unreachedCommits(main, entry, root === null),
+    unreached: unlandedCommits(main, entry, root === null),
   };
 }
 
@@ -498,6 +533,7 @@ export function deleteSafe({ repo, sessions = [], now = Date.now() }) {
       continue;
     }
     try {
+      if (item.kind === 'worktree' && existsSync(item.path)) item.commits = saveUnreached(main, listWorktrees(main).find((each) => each.path === item.path));
       removeFolder(main, item);
     } catch (error) {
       Object.assign(item, { verdict: 'ask', reason: `removal failed: ${String(error.message).split('\n')[0]}` });
@@ -616,6 +652,8 @@ function render({ items, removed }) {
   if (removed) lines.push(`removed ${removed.length} items, ${gib(removed.reduce((sum, item) => sum + (item.bytes ?? 0), 0))} by du, which counts shared hard links again`);
   const patches = (removed ?? []).filter((item) => item.patch);
   if (patches.length > 0) lines.push(`saved the uncommitted changes of ${patches.length} worktrees as patches in ${dirname(patches[0].patch)}`);
+  const commits = (removed ?? []).filter((item) => item.commits);
+  if (commits.length > 0) lines.push(`saved the unreached commits of ${commits.length} worktrees as patches in ${dirname(commits[0].commits)}`);
   return lines.join('\n');
 }
 

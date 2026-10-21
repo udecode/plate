@@ -385,6 +385,18 @@ test('a worktree holding a commit no ref reaches is asked about by the scan and 
   assert.equal(landedOf(f.archived), 'safe');
 });
 
+test('the scan removes a worktree whose unreached commits the checkout holds, saving them as a patch', () => {
+  const f = fixture();
+  commitOnDetachedHead(f.archived);
+  git(f.archived, 'switch', '-q', 'archived');
+  writeFileSync(join(f.main, 'lost.txt'), 'only here\n');
+  git(f.main, 'add', 'lost.txt');
+  git(f.main, 'commit', '-q', '-m', 'landed squash');
+  const item = deleteSafe({ repo: f.main, sessions: f.sessions }).removed.find((each) => each.path === f.archived);
+  assert.ok(item, 'a commit whose change the checkout holds does not keep the worktree');
+  assert.match(readFileSync(item.commits, 'utf8'), /^Subject: \[PATCH\] made on a detached HEAD$/mu);
+});
+
 test('--remove saves a commit no ref reaches as a patch and removes the landed worktree', () => {
   const f = fixture();
   commitOnDetachedHead(f.archived);

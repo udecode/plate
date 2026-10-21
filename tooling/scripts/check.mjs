@@ -1,9 +1,13 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { basename } from 'node:path';
+import { basename, matchesGlob } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { BUN_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
+import {
+  BUN_TEST_TIMEOUT_MS,
+  TEST_FAST_IGNORE_PATTERNS,
+  TEST_FILE_PATTERNS,
+} from '../config/test-suites.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -31,6 +35,9 @@ const formatted = (files) => files.some((file) => !isProse(file));
 const CODE = /\.(?:[cm]?[jt]sx?|sh)$/u;
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
 const BUILD_CONFIG = /(?:^|\/)(?:package|turbo|tsconfig[\w.-]*)\.json$/u;
+const inTestSuite = (file) =>
+  TEST_FILE_PATTERNS.some((pattern) => matchesGlob(file, pattern)) &&
+  !TEST_FAST_IGNORE_PATTERNS.some((pattern) => matchesGlob(file, pattern));
 const isToolingScript = (file) =>
   CODE.test(file) &&
   (file.startsWith('tooling/scripts/') || file.startsWith('.agents/'));
@@ -133,7 +140,9 @@ export const steps = [
         )
       ) || [
         ...new Set(
-          files.flatMap((file) => [...(toolingOnlyReach(file)?.tests ?? [])])
+          files.flatMap((file) =>
+            [...(toolingOnlyReach(file)?.tests ?? [])].filter(inTestSuite)
+          )
         ),
       ],
   },

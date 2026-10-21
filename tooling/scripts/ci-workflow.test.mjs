@@ -204,6 +204,10 @@ test('pnpm check --affected runs a tooling script with its tests and the steps t
     commands(['tooling/scripts/brl.sh']).typecheck,
     'pnpm typecheck'
   );
+  assert.doesNotMatch(
+    commands(['.agents/skills/cleanup/scripts/scan.test.mjs']).test ?? '',
+    /\.agents\/skills\//u
+  );
 });
 
 test('pnpm check refuses --write with --build instead of dropping the build', () => {
