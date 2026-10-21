@@ -45,7 +45,14 @@ const typed = run([
   '--format=default',
   ...files,
 ]);
-const linted = Number(typed.output.match(/on (\d+) files? with/u)?.[1] ?? 0);
+const count = typed.output.match(/on (\d+) files? with/u)?.[1];
+if (count === undefined) {
+  console.error(
+    'oxlint did not report how many files it read, so lint did not run.'
+  );
+  process.exit(2);
+}
+const linted = Number(count);
 
 if (linted === 0 && allowIgnored) {
   console.info(
