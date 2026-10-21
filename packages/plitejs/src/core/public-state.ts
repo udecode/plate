@@ -1948,7 +1948,11 @@ const withLocationRootRead = <T>(
       ? getCurrentSelectionRoot(editor)
       : undefined);
 
-  return root ? withEditorRootChildren(editor, root, fn) : fn();
+  return root
+    ? withRoutedCallerScope(editor, () =>
+        withEditorRootChildren(editor, root, fn)
+      )
+    : fn();
 };
 
 const withOptionsRootRead = <T>(
@@ -1958,10 +1962,10 @@ const withOptionsRootRead = <T>(
   queryOptions?: { selectionFallback?: boolean }
 ): T => {
   if (SelectionApi.isNode(options?.at)) {
-    return withEditorRootChildren(
-      editor,
-      options.at.root ?? getCurrentChildrenRoot(editor),
-      fn
+    const { root = getCurrentChildrenRoot(editor) } = options.at;
+
+    return withRoutedCallerScope(editor, () =>
+      withEditorRootChildren(editor, root, fn)
     );
   }
 
@@ -1976,10 +1980,13 @@ const withOptionsRootGenerator = <T>(
 ): Generator<T, void, undefined> =>
   (function* rootedReadGenerator() {
     if (SelectionApi.isNode(options?.at)) {
-      yield* withEditorRootChildrenGenerator(
+      yield* withRoutedCallerScopeGenerator(
         editor,
-        options.at.root ?? getCurrentChildrenRoot(editor),
-        create
+        withEditorRootChildrenGenerator(
+          editor,
+          options.at.root ?? getCurrentChildrenRoot(editor),
+          create
+        )
       );
       return;
     }
@@ -1992,7 +1999,10 @@ const withOptionsRootGenerator = <T>(
         : undefined);
 
     if (root) {
-      yield* withEditorRootChildrenGenerator(editor, root, create);
+      yield* withRoutedCallerScopeGenerator(
+        editor,
+        withEditorRootChildrenGenerator(editor, root, create)
+      );
       return;
     }
 
@@ -2238,7 +2248,11 @@ const withNodeTargetRootRead = <T>(
 ): T => {
   const root = getNodeTargetRoot(editor, target);
 
-  return root ? withEditorRootChildren(editor, root, fn) : fn();
+  return root
+    ? withRoutedCallerScope(editor, () =>
+        withEditorRootChildren(editor, root, fn)
+      )
+    : fn();
 };
 
 const withNodeTargetRootGenerator = <T>(
@@ -2249,7 +2263,10 @@ const withNodeTargetRootGenerator = <T>(
   const root = getNodeTargetRoot(editor, target);
 
   return root
-    ? withEditorRootChildrenGenerator(editor, root, create)
+    ? withRoutedCallerScopeGenerator(
+        editor,
+        withEditorRootChildrenGenerator(editor, root, create)
+      )
     : (function* unscopedNodeTargetGenerator() {
         yield* create();
       })();
@@ -2278,20 +2295,47 @@ type ResolvedNodeTargetOptions<TOptions extends NodeTargetOptions> = Omit<
 };
 
 const normalizeNodeMatchOption = <TOptions extends object>(
+  editor: Editor,
   options: TOptions
 ): NormalizedNodeMatchOptions<TOptions> => {
-  if (!('match' in options) && !('type' in options)) {
-    return options;
+  const callerOptions = keepCallbacksInCallerScope(editor, options);
+
+  if (!('match' in callerOptions) && !('type' in callerOptions)) {
+    return callerOptions;
   }
 
   const {
     match: optionMatch,
     type,
     ...rest
-  } = options as TOptions & NodeMatchOptions;
-  const match = normalizeNodeMatch(type, optionMatch);
+  } = callerOptions as TOptions & NodeMatchOptions;
+  const match = normalizeCallerMatch(editor, type, optionMatch);
 
   return { ...rest, match };
+};
+
+type CallerCallbackOptions = {
+  compare?: (...args: never[]) => unknown;
+  merge?: (...args: never[]) => unknown;
+  split?: { match?: NodeMatch };
+};
+
+const keepCallbacksInCallerScope = <TOptions extends object>(
+  editor: Editor,
+  options: TOptions
+): TOptions => {
+  const { compare, merge, split } = options as TOptions & CallerCallbackOptions;
+
+  if (!compare && !merge && !split?.match) return options;
+
+  return {
+    ...options,
+    ...(compare && { compare: inCallerScope(editor, compare) }),
+    ...(merge && { merge: inCallerScope(editor, merge) }),
+    ...(split?.match && {
+      split: { ...split, match: inCallerScope(editor, split.match) },
+    }),
+  };
 };
 
 const resolveNodeTargetOptions = <TOptions extends NodeTargetOptions>(
@@ -2301,6 +2345,7 @@ const resolveNodeTargetOptions = <TOptions extends NodeTargetOptions>(
   if (!options || options.at === undefined) {
     return options
       ? (normalizeNodeMatchOption(
+          editor,
           options
         ) as ResolvedNodeTargetOptions<TOptions>)
       : undefined;
@@ -2310,7 +2355,7 @@ const resolveNodeTargetOptions = <TOptions extends NodeTargetOptions>(
 
   if (at === undefined) return null;
 
-  return normalizeNodeMatchOption({
+  return normalizeNodeMatchOption(editor, {
     ...options,
     at,
   });
@@ -2334,17 +2379,20 @@ const resolveNodeTargetOrSpanOptions = <
   if (!options || options.at === undefined) {
     return options
       ? (normalizeNodeMatchOption(
+          editor,
           options
         ) as ResolvedNodeTargetOrSpanOptions<TOptions>)
       : undefined;
   }
   if (SelectionApi.isNode(options.at)) {
     return normalizeNodeMatchOption(
+      editor,
       options
     ) as ResolvedNodeTargetOrSpanOptions<TOptions>;
   }
   if (LocationApi.isSpan(options.at)) {
     return normalizeNodeMatchOption(
+      editor,
       options
     ) as ResolvedNodeTargetOrSpanOptions<TOptions>;
   }
@@ -2353,7 +2401,7 @@ const resolveNodeTargetOrSpanOptions = <
 
   if (at === undefined) return null;
 
-  return normalizeNodeMatchOption({
+  return normalizeNodeMatchOption(editor, {
     ...options,
     at,
   });
@@ -2773,11 +2821,100 @@ const runWithMutationRoot = <T>(
 ): T =>
   profileCoreDuration('mutation-root', () =>
     root
-      ? withEditorUpdateRoot(editor, root, () =>
-          withEditorUpdateRootChildren(editor, root, fn)
+      ? withRoutedCallerScope(editor, () =>
+          withEditorUpdateRoot(editor, root, () =>
+            withEditorUpdateRootChildren(editor, root, fn)
+          )
         )
       : fn()
   );
+
+type RootScope = Readonly<
+  Pick<
+    TransactionSpecContext,
+    'activeChildrenRoot' | 'activeUpdateRoot' | 'currentChildrenRoot'
+  >
+>;
+
+const ROUTED_CALLER_SCOPE = new WeakMap<Editor, RootScope>();
+
+const readRootScope = (context: TransactionSpecContext): RootScope => ({
+  activeChildrenRoot: context.activeChildrenRoot,
+  activeUpdateRoot: context.activeUpdateRoot,
+  currentChildrenRoot: context.currentChildrenRoot,
+});
+
+const isSameRootScope = (left: RootScope, right: RootScope) =>
+  left.activeChildrenRoot === right.activeChildrenRoot &&
+  left.activeUpdateRoot === right.activeUpdateRoot &&
+  left.currentChildrenRoot === right.currentChildrenRoot;
+
+const withRoutedCallerScope = <T>(editor: Editor, fn: () => T): T => {
+  const owner = getEditorRuntimeOwner(editor);
+  const context = getTransactionSpecContext(owner);
+
+  if (!context || ROUTED_CALLER_SCOPE.has(owner)) return fn();
+  ROUTED_CALLER_SCOPE.set(owner, readRootScope(context));
+  try {
+    return fn();
+  } finally {
+    ROUTED_CALLER_SCOPE.delete(owner);
+  }
+};
+
+const withRoutedCallerScopeGenerator = <T>(
+  editor: Editor,
+  routed: Iterable<T>
+): Generator<T, void, undefined> =>
+  (function* routedCallerScopeGenerator() {
+    const iterator = routed[Symbol.iterator]();
+    let done = false;
+
+    try {
+      while (true) {
+        const result = withRoutedCallerScope(editor, () => iterator.next());
+
+        if (result.done) {
+          done = true;
+          return;
+        }
+
+        yield result.value;
+      }
+    } finally {
+      if (!done) withRoutedCallerScope(editor, () => iterator.return?.());
+    }
+  })();
+
+const inCallerScope =
+  <TArgs extends unknown[], TResult>(
+    editor: Editor,
+    fn: (...args: TArgs) => TResult
+  ) =>
+  (...args: TArgs): TResult => {
+    const owner = getEditorRuntimeOwner(editor);
+    const caller = ROUTED_CALLER_SCOPE.get(owner);
+    const context = getTransactionSpecContext(owner);
+
+    if (!caller || !context) return fn(...args);
+    const routed = readRootScope(context);
+
+    if (isSameRootScope(caller, routed)) return fn(...args);
+    ROUTED_CALLER_SCOPE.delete(owner);
+    Object.assign(context, caller);
+    try {
+      return fn(...args);
+    } finally {
+      Object.assign(context, routed);
+      ROUTED_CALLER_SCOPE.set(owner, caller);
+    }
+  };
+
+const normalizeCallerMatch = <T extends PliteNode>(
+  editor: Editor,
+  type: NodeTypeSelector | undefined,
+  match: NodeMatch<T> | undefined
+) => normalizeNodeMatch(type, match && inCallerScope(editor, match));
 
 const getCurrentRuntimeIndex = (editor: Editor): SnapshotIndex => {
   if (getReadProjection(editor)) return getSnapshot(editor).index;
@@ -5444,7 +5581,11 @@ const getStateView = <
 
         if (!target) return [];
 
-        const match = normalizeNodeMatch(inputOptions.type, inputOptions.match);
+        const match = normalizeCallerMatch(
+          editor,
+          inputOptions.type,
+          inputOptions.match
+        );
         const matchesBlock = (node: PliteNode, path: Path) =>
           NodeApi.isElement(node) &&
           getEditorSchema(editor).isBlock(node) &&
@@ -5617,7 +5758,8 @@ const getStateView = <
             return (({ at: innerAt3, options: innerOptions5 }) =>
               withLocationRootRead(editor, innerAt3, () => {
                 const entry = readNodeEntry<PliteNode>(editor, innerAt3);
-                const match = normalizeNodeMatch(
+                const match = normalizeCallerMatch(
+                  editor,
                   innerOptions5.type,
                   innerOptions5.match
                 );
@@ -5809,7 +5951,8 @@ const getStateView = <
             return (({ at: innerAt7, options: innerOptions9 }) =>
               withLocationRootRead(editor, innerAt7, () => {
                 const entry = readNodeParent(editor, innerAt7, innerOptions9);
-                const match = normalizeNodeMatch(
+                const match = normalizeCallerMatch(
+                  editor,
                   innerOptions9.type,
                   innerOptions9.match
                 );
@@ -6512,7 +6655,7 @@ export const getUpdateView = <
       ),
       () =>
         fn(
-          normalizeNodeMatchOption({
+          normalizeNodeMatchOption(editor, {
             ...options,
             at: nodeSelection,
           } as TOptions) as ResolvedNodeMutationTargetOptions<TOptions>
@@ -6898,7 +7041,7 @@ export const getUpdateView = <
 
         if (!nodeSelection && !targetAt) return;
 
-        const blockMatch = normalizeNodeMatch(type, match);
+        const blockMatch = normalizeCallerMatch(editor, type, match);
 
         const matchesBlock = (node: PliteNode, path: Path) =>
           NodeApi.isElement(node) &&
@@ -7119,14 +7262,13 @@ export const getUpdateView = <
     }
   ) =>
     runNodeTargetMutation(options, (resolvedOptions) => {
+      const readProps =
+        typeof inputProps === 'function'
+          ? inCallerScope(editor, inputProps)
+          : () => inputProps;
       const entries = state.nodes
         .blocks(resolvedOptions)
-        .map(([node, path]) => ({
-          node,
-          path,
-          props:
-            typeof inputProps === 'function' ? inputProps(node) : inputProps,
-        }));
+        .map(([node, path]) => ({ node, path, props: readProps(node) }));
       const root = getActiveUpdateRoot(editor) ?? MAIN_ROOT_KEY;
 
       if (

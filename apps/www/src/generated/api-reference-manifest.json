@@ -10878,7 +10878,7 @@
         },
         "platejs:txLocate": {
           "aliases": [],
-          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there, so the method\ndoes nothing. `false` says the arguments hold no location. A call that\npasses a function runs in the caller's root, and `locate` runs only to map\nits arguments into the command document. Called on the base editor's\ntransaction inside a callback that runs in a named root, the method runs in\nthat root instead when its targets are bare paths or points, when it has no\ntarget, or when the call passes a function. A method called with arguments\nthat has no declaration throws.",
+          "documentation": "Declare where a plugin update method's arguments land. The method runs in\nthe root of the targets `locate` places. While a command document is\nregistered, `locate` also maps them into the document editing commands\ndecide on, or returns null when they have no place there, so the method\ndoes nothing. `false` says the arguments hold no location. A call that\npasses a function runs in the caller's root, and `locate` runs only to map\nits arguments into the command document. A method called with arguments\nthat has no declaration throws.",
           "entrypoint": "platejs",
           "kind": "const",
           "name": "txLocate",
@@ -10930,7 +10930,7 @@
         },
         "platejs:txSelection": {
           "aliases": [],
-          "documentation": "Declare a plugin update method that only moves the selection, as caret\nmovement does: it runs in the caller's root on the stored document, and\nthrows if it changes content. Called on the base editor's transaction\ninside a callback that runs in a named root, such as the `match` of\n`tx.nodes.remove` on a node there, it runs in that root instead.",
+          "documentation": "Declare a plugin update method that only moves the selection, as caret\nmovement does: it runs in the caller's root on the stored document, and\nthrows if it changes content.",
           "entrypoint": "platejs",
           "kind": "const",
           "name": "txSelection",

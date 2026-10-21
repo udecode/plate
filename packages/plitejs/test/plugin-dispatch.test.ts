@@ -515,6 +515,119 @@ function hideMarked(nodes: readonly Descendant[]): readonly Descendant[] {
   );
 }
 
+type Tx = Parameters<
+  Parameters<ReturnType<typeof createEditor>['update']>[0]
+>[0];
+
+describe('callbacks that run in a named root', () => {
+  const Calls = definePlugin('calls', {
+    update: ({ tx }) => ({
+      plain: () => {
+        tx.text.insert('P', { at: caret() });
+      },
+      only: txOnly(() => {
+        tx.text.insert('O', { at: caret() });
+      }),
+      none: txLocate(false, () => {
+        tx.text.insert('N', { at: caret() });
+      }),
+      wrap: txLocate(false, (fn: () => void) => {
+        fn();
+        tx.text.insert('W', { at: caret() });
+      }),
+      at: txLocate(locateAt(0), ({ at }: { at: ReturnType<typeof caret> }) => {
+        tx.text.insert('A', { at });
+      }),
+      caret: txSelection(() => {
+        tx.selection.set({ path: [0, 0], offset: 1 });
+      }),
+    }),
+  });
+
+  for (const via of ['base editor', 'main view'] as const) {
+    it(`keeps the ${via}'s root for calls in a match on a note node`, () => {
+      const editor = createEditor({ plugins: [Calls], initialValue: value() });
+      const noteKey = editor.key(editor.read.root('note')[0]);
+      editor.update.selection.set(caret());
+      const caller = via === 'base editor' ? editor : createEditorView(editor);
+
+      caller.update((tx) => {
+        tx.nodes.remove({
+          at: noteKey,
+          match: () => {
+            tx.text.insert('R', { at: caret() });
+            tx.plugin(Calls).plain();
+            tx.plugin(Calls).only();
+            tx.plugin(Calls).none();
+            tx.plugin(Calls).wrap(() => {});
+            tx.plugin(Calls).at({ at: caret() });
+            tx.plugin(Calls).caret();
+            return false;
+          },
+        });
+      });
+
+      assert.deepEqual(
+        {
+          main: NodeApi.string(editor.read.children()[0]),
+          note: NodeApi.string(editor.read.root('note')[0]),
+          selection: editor.read.selection(),
+        },
+        {
+          main: 'AWNOPRmain',
+          note: 'note',
+          selection: {
+            anchor: { path: [0, 0], offset: 1 },
+            focus: { path: [0, 0], offset: 1 },
+          },
+        }
+      );
+    });
+  }
+
+  type Hit = <T>(result: T) => T;
+  const callbacks = {
+    'a read match': (tx: Tx, at: NodeKey, hit: Hit) =>
+      tx.nodes.blocks({ at, match: () => hit(false) }),
+    'a set compare': (tx: Tx, at: NodeKey, hit: Hit) =>
+      tx.nodes.set({ checked: true }, { at, compare: () => hit(true) }),
+    'a blocks.set props function': (tx: Tx, at: NodeKey, hit: Hit) =>
+      tx.blocks.set(() => hit({ checked: true }), { at }),
+    'an insert split match': (tx: Tx, _at: NodeKey, hit: Hit) =>
+      tx.nodes.insert(paragraph('x'), {
+        at: caret('note'),
+        split: { match: () => hit(false) },
+      }),
+  };
+
+  for (const [kind, call] of Object.entries(callbacks)) {
+    for (const via of ['base editor', 'main view'] as const) {
+      it(`keeps the ${via}'s root inside ${kind} on a note node`, () => {
+        const editor = createEditor({ initialValue: value() });
+        const noteKey = editor.key(editor.read.root('note')[0]);
+        const caller =
+          via === 'base editor' ? editor : createEditorView(editor);
+        let hits = 0;
+
+        caller.update((tx) => {
+          call(tx, noteKey, (result) => {
+            hits += 1;
+            tx.text.insert('R', { at: caret() });
+            return result;
+          });
+        });
+
+        assert.ok(hits > 0);
+        assert.equal(
+          NodeApi.string(editor.read.children()[0]),
+          `${'R'.repeat(hits)}main`
+        );
+        assert.ok(!NodeApi.string(editor.read.root('note')[0]).includes('R'));
+      });
+    }
+  }
+});
+
 describe('named root command frames', () => {
   const Marker = definePlugin('marker', {
     update: () => ({

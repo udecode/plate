@@ -128,15 +128,12 @@ const NoteHolder = definePlugin('findNoteHolder', {
   },
 });
 
-const createNoteEditor = (...texts: string[]) => {
+const createNoteEditor = (noteText = 'note text here') => {
   const editor = createEditor({
     plugins: [BaseParagraphPlugin, NoteHolder, BaseFindPlugin],
     initialValue: {
       children: [
-        ...texts.map((text) => ({
-          type: 'paragraph',
-          children: [{ text }],
-        })),
+        { type: 'paragraph', children: [{ text: 'main hello' }] },
         {
           type: 'findNoteHolder',
           childRoots: { body: 'note' },
@@ -144,7 +141,7 @@ const createNoteEditor = (...texts: string[]) => {
         },
       ],
       roots: {
-        note: [{ type: 'paragraph', children: [{ text: 'note text here' }] }],
+        note: [{ type: 'paragraph', children: [{ text: noteText }] }],
       },
     },
   });
@@ -444,7 +441,7 @@ test('matches a fresh search after the whole value is replaced with new text', (
 });
 
 test('selects nothing from a transaction in a named root', () => {
-  const { editor, note } = createNoteEditor('main hello');
+  const { editor, note } = createNoteEditor();
   editor.update.selection.set({ path: [0, 0], offset: 0 });
   editor.plugin(BaseFindPlugin).api.search('hello');
   const before = { main: editor.read.selection(), note: note.read.selection() };
@@ -455,7 +452,7 @@ test('selects nothing from a transaction in a named root', () => {
 });
 
 test('selects in the main document from the main editor while the caret is in a named root', () => {
-  const { editor, note } = createNoteEditor('main hello');
+  const { editor, note } = createNoteEditor();
   note.update.selection.set({ path: [0, 0], offset: 2 });
   const find = editor.plugin(BaseFindPlugin);
   find.api.search('hello');
@@ -470,6 +467,35 @@ test('selects in the main document from the main editor while the caret is in a 
     },
   });
 });
+
+for (const noteText of ['note text here', 'x']) {
+  test(`selects in the main document from a match on the note "${noteText}"`, () => {
+    const { editor, note } = createNoteEditor(noteText);
+    editor.plugin(BaseFindPlugin).api.search('hello');
+    let selected: boolean | undefined;
+    editor.update((tx) => {
+      tx.nodes.remove({
+        at: note.key([0]),
+        match: () => {
+          selected = tx.plugin(BaseFindPlugin).select();
+          return false;
+        },
+      });
+    });
+    expect({
+      selected,
+      selection: editor.read.selection(),
+      note: note.read.selection(),
+    }).toEqual({
+      selected: true,
+      selection: {
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 10 },
+      },
+      note: null,
+    });
+  });
+}
 
 test('publishes a failed rescan as no matches and the error in one write', () => {
   const editor = createFindEditor();

@@ -831,26 +831,23 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   editor or view root because a `Path` carries no root. Passing a live node to
   `editor.key(node)` resolves it from any root in the same editor, and a live
   node passed as a target reaches its own root as its key does. Base-editor path inputs
-  address the main root; view path inputs address that view's root. A
+  always address the main root; view path inputs address that view's root. A
   `NodeSelection` passed without a root means the reader's root, as a path
   does; a stored one keeps its own root. A plugin update method runs in its
   target's root, as if called through that root's view: a key, live node or
   rooted point or range picks the root, a bare path stays in the caller's root,
   and a call with no target runs in a view's own root, or in the caret's root
   from the base editor. `txSelection` and `txOnly` methods, and a call that
-  passes a function, skip this routing and run in the caller's root. Inside a
-  callback that runs in a named root, such as the `match` of `tx.nodes.remove`
-  on a node there, the base editor's transaction addresses that root instead,
-  so bare paths, calls with no target and these methods all run there. That
-  holds until Plite settles which root such callbacks address. The owners are
-  `withEditorUpdateRootScope` in `packages/plitejs/src/core/public-state.ts`,
-  which scopes a command targeting a named root and its callbacks, and
-  `dispatchPluginUpdate` in `packages/plitejs/src/core/plugin-dispatch.ts`. A
-  view's transaction keeps its view's root. Of the calls routed by target or
-  caret, only a base-editor call whose root is main, with the caret in main or
-  nowhere, runs on the base transaction. Code outside a plugin method that
-  writes by bare path from the base editor still writes main outside such a
-  callback. A view created from a view reads its requested root, or the primary root when
+  passes a function, skip this routing and run in the caller's root. A
+  callback passed to a call routed to another root, such as a `match`,
+  `compare`, `merge`, `split.match` or a `tx.blocks.set` props function,
+  runs back in the root its call started in, on the base editor as in a view.
+  `inCallerScope` in `packages/plitejs/src/core/public-state.ts` owns that
+  rule. A view's transaction keeps its view's root. Of the calls routed by
+  target or caret, only a base-editor call whose root is main, with the caret
+  in main or nowhere, runs on the base transaction. Code outside a plugin
+  method that writes by bare path from the base editor still writes main. A
+  view created from a view reads its requested root, or the primary root when
   none is given, and keeps the source view's document, read-only state and
   authored mode; derivation never unlocks a read-only source. Callbacks receive
   the reader of the entry's root, so a root-relative entry never needs its root

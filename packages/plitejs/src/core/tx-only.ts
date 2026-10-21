@@ -126,10 +126,7 @@ const TX_LOCATES = getRuntimeRegistry(
  * decide on, or returns null when they have no place there, so the method
  * does nothing. `false` says the arguments hold no location. A call that
  * passes a function runs in the caller's root, and `locate` runs only to map
- * its arguments into the command document. Called on the base editor's
- * transaction inside a callback that runs in a named root, the method runs in
- * that root instead when its targets are bare paths or points, when it has no
- * target, or when the call passes a function. A method called with arguments
+ * its arguments into the command document. A method called with arguments
  * that has no declaration throws.
  */
 export const txLocate = <TMethod extends (...args: never[]) => unknown>(
@@ -196,9 +193,7 @@ export const locateAt =
 /**
  * Declare a plugin update method that only moves the selection, as caret
  * movement does: it runs in the caller's root on the stored document, and
- * throws if it changes content. Called on the base editor's transaction
- * inside a callback that runs in a named root, such as the `match` of
- * `tx.nodes.remove` on a node there, it runs in that root instead.
+ * throws if it changes content.
  */
 export const txSelection = <TMethod extends (...args: never[]) => unknown>(
   method: TMethod
