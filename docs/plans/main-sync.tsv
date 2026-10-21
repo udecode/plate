@@ -1,0 +1,130 @@
+commit	date	status	note	subject
+c7d5366f6d	2026-06-27	pending		Delete _id instead of setting it to undefined (#5041)
+73c35e0eef	2026-06-27	pending		fix(suggestion): set userId on block removal suggestions (#5042)
+f2c187c95f	2026-06-28	pending		[Release] Version packages (#5044)
+ac6ebe3ceb	2026-06-27	pending		chore: update registry after release [skip ci] [skip release]
+a45a978f2f	2026-06-28	pending		Fix release dependent changesets (#5046)
+2204a0c758	2026-06-28	pending		[Release] Version packages (#5047)
+1cc2497983	2026-06-27	pending		chore: update registry after release [skip ci] [skip release]
+34fdca42f7	2026-06-29	pending		Fix template sync after release (#5045)
+442f7d8bd5	2026-06-30	pending		Fix release changelog GitHub metadata fallback (#5049)
+11a7c19f61	2026-06-30	pending		[Release] Version packages (#5050)
+6d5fbe8135	2026-06-30	pending		chore: update registry after release [skip ci] [skip release]
+001b2f256d	2026-06-30	pending		chore: sync templates after release [skip release]
+df0996f810	2026-07-01	pending		fix(link): guard IME composition-commit Enter (keyCode 229) in floating link (#5048)
+4d792e09be	2026-06-30	pending		[Release] Version packages (#5051)
+57d5347558	2026-06-30	pending		chore: update registry after release [skip ci] [skip release]
+5be29c6864	2026-06-30	pending		chore: sync templates after release [skip release]
+21aa59926f	2026-07-03	pending		Fix DOCX remote image export default (#5053)
+71ea3916f7	2026-07-03	pending		[Release] Version packages (#5054)
+bb51295d3d	2026-07-03	pending		chore: update registry after release [skip ci] [skip release]
+fa98e90663	2026-07-03	pending		chore: sync templates after release [skip release]
+279fdae777	2026-07-08	pending		chore: update
+8abee2ba6d	2026-07-09	pending		fix(table): keep floating toolbar row/column controls for single-cell selections (#5058)
+45116fd4e5	2026-07-17	pending		chore: update
+23d4cfd03f	2026-08-04	pending		fix(markdown): keep custom inline elements inside table cell paragraphs (#5068)
+357c964f6b	2026-08-04	pending		[Release] Version packages (#5055)
+3add964236	2026-08-04	pending		chore: update registry after release [skip ci] [skip release]
+2e4c36c563	2026-08-13	pending		fix: repair broken star history chart (#5094)
+91f4c0c2af	2026-08-14	pending		chore: update
+00ac8e7a33	2026-08-14	pending		[Release] Version packages (#5095)
+8d63b45e5c	2026-08-14	pending		chore: update registry after release [skip ci] [skip release]
+a102cd5cd9	2026-08-15	pending		chore: update
+79dc385b3f	2026-08-15	pending		fix(link): do not autolink pasted text starting with # or / (#5096)
+7d622cb3f6	2026-08-15	pending		[Release] Version packages (#5097)
+d76efae695	2026-08-15	pending		chore: update registry after release [skip ci] [skip release]
+33a1f122ac	2026-08-16	pending		fix(core): wrap root inline nodes in the default block on HTML deserialize (#5098)
+eaea1388e5	2026-08-15	pending		[Release] Version packages (#5099)
+2f87593f95	2026-08-15	pending		chore: update registry after release [skip ci] [skip release]
+31f4d90731	2026-08-20	pending		fix(core): handle multiline max length paste (#5101)
+af7b73f9fa	2026-08-20	pending		[Release] Version packages (#5104)
+cb19a4492b	2026-08-20	pending		chore: update registry after release [skip ci] [skip release]
+af5e430397	2026-08-20	pending		Sync autoclosure and per-PR task enforcement (#5105)
+bc7104f7dd	2026-08-20	pending		Fix template sync after release (#5069)
+749d75ae1b	2026-08-24	pending		Repair editor to editor dnd (#5103)
+cf08cbdc91	2026-08-24	pending		[Release] Version packages (#5108)
+dbea183c86	2026-08-24	pending		chore: update registry after release [skip ci] [skip release]
+93aac17161	2026-08-24	pending		Fix shared usePlateEditor initial values (#5110)
+c60a7e6c8d	2026-08-24	pending		[Release] Version packages (#5111)
+cce36d378b	2026-08-24	pending		chore: update registry after release [skip ci] [skip release]
+12a034f7cf	2026-09-01	pending		chore: update
+a22433b590	2026-09-04	pending		[Release] Version packages (#5116)
+09001dbc62	2026-09-04	pending		chore: update registry after release [skip ci] [skip release]
+550b477161	2026-09-04	pending		chore: fix template sync after release [skip release]
+d02afe45d5	2026-09-04	pending		Parse HTML strings in inert documents (#5117)
+c6801761b1	2026-09-04	pending		[Release] Version packages (#5118)
+9ec2c8efcb	2026-09-04	pending		chore: update registry after release [skip ci] [skip release]
+4b13ad75b3	2026-09-06	pending		fix: preserve editor content and require explicit service credentials (#5120)
+cee7a4ec03	2026-09-06	pending		[Release] Version packages (#5121)
+f366c3f35d	2026-09-06	pending		chore: update registry after release [skip ci] [skip release]
+d05a578dfb	2026-09-07	pending		fix: align template CI and release verification (#5119)
+8f65d77f8b	2026-09-07	pending		chore: sync registry and templates [skip release]
+94699ac7de	2026-09-17	pending		Fix @platejs/list headless React dependency (#5129)
+f1b8e5e38f	2026-09-17	pending		[Release] Version packages (#5130)
+2d0fddc3f8	2026-09-17	pending		chore: update registry after release [skip ci] [skip release]
+91b6f5f264	2026-09-17	pending		chore: sync templates after release [skip release]
+ebd2a1fd7a	2026-09-19	pending		fix: preserve source document during HTML transforms (#5131)
+16a0063d89	2026-09-19	pending		[Release] Version packages (#5132)
+21e0532823	2026-09-19	pending		chore: update registry after release [skip ci] [skip release]
+5abfbf76b5	2026-09-19	pending		chore: sync templates after release [skip release]
+a9bfa840b3	2026-09-20	pending		chore: update
+babb3c2a73	2026-09-27	pending		Harden media file URLs (#5135)
+92b1eb95e0	2026-09-29	pending		Keep the comment composer clear of selected text (#5134)
+b7475d4728	2026-10-02	pending		chore: update
+961c65be4c	2026-10-03	pending		fix(markdown): round-trip lists inside table cells (#5139)
+ef90c27119	2026-10-03	pending		[Release] Version packages (#5133)
+16fc880e8d	2026-10-03	pending		chore: update registry after release [skip ci] [skip release]
+a8607621c0	2026-10-03	pending		chore: sync templates after release [skip release]
+6c3d7c4127	2026-10-07	pending		fix(docx-io): read line-height units when exporting to DOCX (#5145)
+4814446971	2026-10-07	pending		fix(docx-io): decode escaped inline style attributes (#5148)
+67f103ddbf	2026-10-07	pending		[Release] Version packages (#5147)
+56c85ce1fa	2026-10-07	pending		chore: update registry after release [skip ci] [skip release]
+6f3815d465	2026-10-07	pending		chore: sync templates after release [skip release]
+97dabdb9f3	2026-10-09	pending		chore: sync registry and templates [skip release]
+45aee8fd81	2026-10-09	pending		chore: sync registry and templates [skip release]
+f999d0a5f4	2026-10-13	pending		chore(pstack): sync the Plate workflow from plate-2 (#5162)
+4557ee9392	2026-10-12	pending		chore: sync registry and templates [skip release]
+7801a8097d	2026-10-13	pending		fix(docx-io): keep every nested inline formatting tag on DOCX export (#5150)
+2edc332578	2026-10-13	pending		fix(docx-io): export line breaks the way Word writes them (#5161)
+0a4109c503	2026-10-13	pending		fix(markdown): apply disallowedNodes to MDX elements by rule key (#5141)
+3e0b4742aa	2026-10-14	pending		fix(markdown): parse autolinks when deserializing with remark-mdx (#5159)
+c0f66a24a8	2026-10-14	pending		chore: update registry after release [skip ci] [skip release]
+ea2ee251e8	2026-10-14	pending		chore: sync templates after release [skip release]
+cb4f5146d6	2026-10-15	pending		chore: update
+42f04c5aba	2026-10-16	pending		chore: update
+8fe7a3bb22	2026-10-17	pending		chore(pstack): sync pstack v0.9.88 and dotai 1aad9ce (#5166)
+9a7c657bb6	2026-10-16	pending		Upgrade to slate 0.142.1 and sync the bundled history with slate-history (#5172)
+9c726d5d3a	2026-10-17	pending		chore: drop the agentation and plate MCP servers from the repo (#5180)
+bb7108672d	2026-10-17	pending		chore(pstack): sync dotai 4cfaca5 call batching, batched writing passes and helper effort (#5181)
+ad746c5959	2026-10-17	pending		ci: skip CI and release runs for agent-only changes (#5183)
+9208b4e63c	2026-10-17	pending		ci: report a green CI check on PRs that change no code (#5184)
+ae66aa7a9f	2026-10-17	pending		chore(pstack): sync dotai e23bf33 card worktree commits and cleanup commit hold (#5182)
+3c3bea9b7f	2026-10-17	pending		fix(markdown): apply node filters to the children of bold, italic and strikethrough (#5185)
+d62b35ff2e	2026-10-17	pending		chore(agents): re-sync workflow owners from plate-2 d0209b439a (#5186)
+6819d1dc56	2026-10-17	pending		fix(markdown): keep unknown HTML and comments as raw source (#5179)
+e9862a2ff6	2026-10-17	pending		fix(markdown): deserialize reference links and images (#5177)
+9b86f1bfe7	2026-10-17	pending		fix(markdown): only write a zero-width space for empty paragraphs (#5178)
+5f0ffd77e9	2026-10-18	pending		Upgrade to slate 0.146.0 with setChildren and undo past unsaved changes (#5190)
+5b68e980ae	2026-10-18	pending		[Release] Version packages (#5174)
+74562cceb6	2026-10-18	pending		chore: update registry after release [skip ci] [skip release]
+7937212aab	2026-10-18	pending		chore: sync templates after release [skip release]
+3c6d6a3661	2026-10-19	pending		feat(docx-io): add pageNumber to exportToDocx (#5193)
+23904b9797	2026-10-19	pending		[Release] Version packages (#5207)
+7f83572d65	2026-10-19	pending		chore: update registry after release [skip ci] [skip release]
+5cbd9fd102	2026-10-19	pending		chore: sync templates after release [skip release]
+19db88833e	2026-10-19	pending		chore(www): build production with GitHub Actions
+a5c30c247b	2026-10-19	pending		docs(www): record production deployment proof
+659c292560	2026-10-19	pending		docs(www): close the production deployment rollout
+9d89e3709b	2026-10-19	pending		chore(deploy): migrate environment credentials securely
+3fc58766af	2026-10-19	pending		fix(deploy): track production and beta separately
+e9976ae3ba	2026-10-19	pending		docs(deploy): record the production environment proof
+569ffe2255	2026-10-19	pending		docs(deploy): close the environment correction proof
+754a89ae54	2026-10-19	pending		chore(deploy): prepare PR preview deployment credentials
+32a3c8f2ee	2026-10-19	pending		feat(deploy): add PR-only Preview deployments
+e0b3a73c2c	2026-10-19	pending		chore(deploy): clarify manual Preview approval inputs
+e0d31d9e05	2026-10-19	pending		docs(deploy): record the successful PR preview
+c673d03672	2026-10-19	pending		docs(deploy): close PR Preview deployment proof
+66572c9ddb	2026-10-20	pending		ci: skip release runs for the agent workflow guide [skip ci]
+65aab3cede	2026-10-20	pending		chore(pstack): sync dotai 1df128d so a card session fixes its own workflow friction
+977d8f1e7b	2026-10-21	pending		chore(pstack): sync the plan-page comment shape from dotai 5c23802
+e4afde1d88	2026-10-21	pending		chore(pstack): install plan-page from dotai 4c86a62
