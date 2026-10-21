@@ -92,16 +92,17 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "83cf009f287d6e887855eb6a6dcb4789d99dc1102075ec0795776e1eef9a9ae0",
+    "block": "c9da7c2af2ee1ecc17c637534a6754e62ee9722d75301f634ba3df7525898b6e",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
+      ".agents/pstack/checkout.mjs": "958527cc3d2bbc0ea435ed100ff81ff1fc1d44170e73e5dc14cbf765116fa1f7",
       ".agents/pstack/cross.mjs": "57d7bffc13d8e3980a2a17964368c2462d27798e37d4ae9112f79de90f8fe493",
       ".agents/pstack/cua-steps.mjs": "1ab7c6ed073ad08616be3be0e81d3c8a474c57e46cedda772afced8f570493cb",
       ".agents/pstack/head.mjs": "bcd2d1b577deff6ae700d20491f9e4c90a76a0e68a76347e3b4f33e7971a7fae",
-      ".agents/pstack/lead.mjs": "5276ddf8d924824f4de17184acedc3b3ea86fff69116c692e460dc06a7b928ed",
+      ".agents/pstack/lead.mjs": "7e9d481b4be0aa2254c0e797da82d07685cda4b43584f0bc295863ff4bfdf547",
       ".agents/pstack/proof.mjs": "fea4e08d55499d1db65baddf0727e6e3feb94ed44e96df621930cf43ede1305e",
-      ".agents/pstack/reread.mjs": "769e2ea97b963aab3784736f13da54439a7d2ba9350df3f01e0928827485b34c",
+      ".agents/pstack/reread.mjs": "398a9f0f0d300ee59e37618308f6ff9801f562167d18051d38edd15c6f866276",
       ".agents/pstack/seats.mjs": "4e121f4ae04aee6c5112264cb4663e598c97a1fd734f94e052a207be1c2baf87",
       ".agents/pstack/title.mjs": "2c530dd09c7f545393939aa7446f362c8fb7ffc9ea4a3f0f597d31c302bbdc84",
       ".agents/pstack/decisions-check.mjs": "98b6ab3142c8ddb0af068d1ef938fea7a102bc7c06d446662323f301e5b07da0",
@@ -114,13 +115,13 @@
       ".agents/pstack/guard.mjs": "2b93c245a90b1e5941196ed55d87a23a1bdc4d8d178a93a12c258b64d89d18b7",
       ".agents/pstack/land.mjs": "50694221a31d35399426a762b63a61f6093f21f43dca698542a9f9cd7e2206e8",
       ".agents/pstack/review.mjs": "a82ef79dc43a6acadadee5f4e8b1938c897333ea46c43ef854b2d9c729168737",
-      ".agents/pstack/setup.mjs": "31123c523a046841368bfed3c057e7b71caac17ba9751da4f77dfb81b0972e17",
+      ".agents/pstack/setup.mjs": "1fb48a1895c03239719937adbe0b470d6633d80f72824604cdac3b831a3b34a7",
       ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
       ".agents/pstack/rules/chips.md": "aa89930617eb31d57b0cb2a8479b525de8f6ef0da0ae16b0a67d82f9ed207be4",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
-      ".agents/pstack/rules/land.md": "bbf0ba335c9753ccf00b3052fb526229f6c4d01205d5b1c2262189c5d76529eb",
+      ".agents/pstack/rules/land.md": "9dcf3b740ec33eb43d81a7cba84060ad0652692ad2467b8ba3e5fd6426ee7959",
       ".agents/pstack/rules/linked.md": "414bb3823bc3719af5303941eb5a028092e815dacbe61ba83ce95697c99dae70",
-      ".agents/pstack/rules/long-runs.md": "86bc2be5b45e56e24887e7979c9f53d831a8a367e79e918350484a92c4d7cbdf",
+      ".agents/pstack/rules/long-runs.md": "6720088a5647cb07d6cb06c58386215c274aaa055ad53308ad134f35f2ad5f5a",
       ".agents/pstack/rules/pages.md": "7c22e711f85ff96d5b16f079d8038b2c5505bc665bd077e01bd621b3a11982ae",
       ".agents/pstack/rules/panel.md": "1c1c63355712cba11f32a29fbd808cce593b363ec88bb3f206aae996d9bbf868",
       ".agents/pstack/rules/reflect.md": "02778c440a41de15f11fb2bb3c2d0b7ebfd43ea9264cab06b0191b48b37e7961",
@@ -128,7 +129,7 @@
       ".agents/pstack/rules/time.md": "ccc1340977ddd4a6bdb9697c20165d3b1b9edec9e6bd1312b40ba819bd9a93d9",
       ".agents/pstack/rules/title.md": "0a64b90ec1d4440adefe17a32044b72f9f8ab57a4807ccf70d506e2e3c709bec"
     },
-    "source": "4386a29c3146eedc2ba4c8c7d00e4cfb82dc46a6"
+    "source": "376ce71911edbcc73886eafce1455c3050f5c300"
   },
   "pageTopic": {
     "field": "review_scopes",

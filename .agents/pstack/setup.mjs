@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: a Claude Code SessionStart hook,
-//   node .agents/pstack/setup.mjs [--install <command>] [--env <name>]...
-// In a linked worktree it copies each untracked env file (by default `.env`
-// and `.env.local`, at any depth git does not skip as an ignored directory)
-// from the main checkout to the same path when that path is free, and runs
+//   node .agents/pstack/setup.mjs [--hook] [--install <command>] [--env <name>]...
+// --hook reads the hook payload from stdin and works on the session's own
+// checkout, as checkout.mjs finds it. In a linked worktree it copies each
+// untracked env file (by default `.env` and `.env.local`, at any depth git
+// does not skip as an ignored directory) from the main checkout to the same
+// path when that path is free, and runs
 // --install once per worktree, again after a failed run. Then, in the main
 // checkout, it keeps the suggested-task ledger, which git ignores, in step
 // with refs/pstack/ledger on origin, and on the branch .agents/pstack.json
@@ -15,6 +17,7 @@
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
+import { hookPayload, sessionCheckout } from './checkout.mjs';
 import { LEDGER, LEDGER_REF, ledgerPath } from './tasks.mjs';
 
 // The ledger outgrows spawnSync's 1 MB default buffer, which cuts its output off without failing.
@@ -26,20 +29,22 @@ const out = (...args) => {
 
 const args = process.argv.slice(2);
 let install = null;
+let hook = false;
 const names = [];
 for (let i = 0; i < args.length; i += 1) {
-  if (args[i] === '--install' && args[i + 1]) install = args[++i];
+  if (args[i] === '--hook') hook = true;
+  else if (args[i] === '--install' && args[i + 1]) install = args[++i];
   else if (args[i] === '--env' && args[i + 1]) names.push(args[++i]);
   else {
-    console.error('Usage: node .agents/pstack/setup.mjs [--install <command>] [--env <name>]...');
+    console.error('Usage: node .agents/pstack/setup.mjs [--hook] [--install <command>] [--env <name>]...');
     process.exit(2);
   }
 }
 if (names.length === 0) names.push('.env', '.env.local');
 
-const root = out('rev-parse', '--show-toplevel');
-if (!root) process.exit(0);
-process.chdir(root);
+const checkout = sessionCheckout(hook ? hookPayload().cwd : undefined);
+if (!checkout) process.exit(0);
+process.chdir(checkout.root);
 const gitDir = out('rev-parse', '--path-format=absolute', '--git-dir');
 const commonDir = out('rev-parse', '--path-format=absolute', '--git-common-dir');
 const linked = gitDir !== commonDir;

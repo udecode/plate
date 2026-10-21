@@ -94,9 +94,37 @@ export function invocationRun(identity, transcripts) {
   return found.length === 1 ? found[0] : null;
 }
 
+// Claude Code writes a Bash call to the transcript before running it and its
+// result after, so the one call still open across a session's transcript and
+// its subagents' is the command running now, and its record carries the model
+// and effort of whoever made it.
+export function claudeInvocationRun(transcripts) {
+  const found = transcripts.flatMap(({ transcript, text }) => {
+    const open = new Map();
+    for (const record of text.split('\n').map(parse).filter(Boolean)) {
+      const blocks = Array.isArray(record.message?.content) ? record.message.content : [];
+      for (const block of blocks) {
+        if (record.type === 'assistant' && block.type === 'tool_use' && block.name === 'Bash') open.set(block.id, record);
+        if (record.type === 'user' && block.type === 'tool_result') open.delete(block.tool_use_id);
+      }
+    }
+    return [...open.values()].map((record) => ({ runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp, transcript }));
+  });
+  return found.length === 1 && found[0].model && found[0].effort ? found[0] : null;
+}
+
+function claudeLead(sessionId) {
+  if (!ID.test(sessionId ?? '')) return null;
+  const path = filesUnder(join(claudeHome(), 'projects'), 1).find((file) => file.endsWith(`/${sessionId}.jsonl`));
+  if (!path) return null;
+  const files = [path, ...filesUnder(join(path.slice(0, -'.jsonl'.length), 'subagents'), 0)];
+  return claudeInvocationRun(files.map((transcript) => ({ transcript, text: tailLines(transcript).join('\n') })));
+}
+
 export function currentLead() {
   try {
     const runtime = nearestRuntime();
+    if (runtime === 'claude') return claudeLead(process.env.CLAUDE_CODE_SESSION_ID);
     if (runtime !== 'codex' || ['CLAUDECODE', 'CLAUDE_SESSION_ID', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_PID', 'CLAUDE_CODE_ENTRYPOINT'].some((key) => process.env[key])) return null;
     const identity = { runtime, thread: process.env.CODEX_THREAD_ID, session: process.env.CODEX_SESSION_ID, invocation: process.env.CODEX_TOOL_CALL_ID };
     const id = identity.thread;

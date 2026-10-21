@@ -31,7 +31,7 @@
           },
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/setup.mjs ] || node .agents/pstack/setup.mjs --install 'pnpm install --offline'; }",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/setup.mjs ] || node .agents/pstack/setup.mjs --hook --install 'pnpm install --offline'; }",
             "timeout": 600
           },
           {

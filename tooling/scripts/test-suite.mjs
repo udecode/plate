@@ -128,6 +128,13 @@ if (selectedFiles.length === 0) {
   process.exit(1);
 }
 
+if (selectedFiles.some((file) => file.startsWith('apps/www/'))) {
+  const docsSource = spawnSync('pnpm', ['--filter', 'www', 'build:source'], {
+    stdio: ['ignore', 'ignore', 'inherit'],
+  });
+  if (docsSource.status !== 0) process.exit(docsSource.status ?? 1);
+}
+
 const findArgValue = (args, flag) => {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];

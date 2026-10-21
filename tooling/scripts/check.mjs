@@ -122,9 +122,7 @@ export const steps = [
   { name: 'type-tests', run: 'pnpm test:types', affected: source },
   {
     name: 'test',
-    // www tests import collections/server from apps/www/.source, which only
-    // www's postinstall writes, so a worktree that never installed lacks it.
-    run: 'pnpm --filter www build:source && pnpm test',
+    run: 'pnpm test',
     // Bun ignores the www Playwright specs, so editing one cannot change this step.
     affected: (files) =>
       touches(

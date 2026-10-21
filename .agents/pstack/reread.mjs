@@ -5,15 +5,18 @@
 // Prints each sentence that changed in each instruction file since this
 // helper's last snapshot of it, then stores the new snapshot. A file with no
 // snapshot yet is reported as a first read to take in full. --hook reads a
-// Claude Code SessionStart payload from stdin, keeps the session's snapshots
-// under <plans>/artifacts/reread/<session_id> and prints the directory to pass
-// as --dir. On a startup or clear session it stays silent about first reads,
-// which only seed the snapshots, and about missing files. After a compaction
-// it also prints a reload: line naming each loaded skill that Claude Code's
-// compaction restore cut short; it restores shorter skills in full.
+// Claude Code SessionStart payload from stdin, reads the files in the
+// session's own checkout, keeps the session's snapshots under the main
+// checkout's <plans>/artifacts/reread/<session_id> and prints that
+// directory's absolute path to pass as --dir. On a startup or clear session
+// it stays silent about first reads, which only seed the snapshots, and
+// about missing files. After a compaction it also prints a reload: line
+// naming each loaded skill that Claude Code's compaction restore cut short;
+// it restores shorter skills in full.
 
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { hookPayload, sessionCheckout } from './checkout.mjs';
 
 const BLOCK_START = /^\s*(?:[-*+]\s|\d+\.\s|#|\||>|```|~~~)/u;
 const ONE_LINE = /^\s*(?:#|\||```|~~~)/u;
@@ -118,9 +121,11 @@ const shellWord = (word) => (/^[\w./@:=+-]+$/u.test(word) ? word : `'${word.repl
 
 const args = process.argv.slice(2);
 if (args[0] === '--hook') {
-  const { session_id: session, source, transcript_path: transcript } = JSON.parse(readFileSync(0, 'utf8') || '{}');
+  const { cwd, session_id: session, source, transcript_path: transcript } = hookPayload();
   if (!session) process.exit(0);
-  const dir = join(plansDir(), 'artifacts', 'reread', session);
+  const checkout = sessionCheckout(cwd);
+  if (checkout) process.chdir(checkout.root);
+  const dir = resolve(checkout?.main ?? '.', plansDir(), 'artifacts', 'reread', session);
   const freshContext = ['startup', 'clear'].includes(source);
   // The hook runs before the next turn, so every skill load in the transcript
   // predates this compaction, even when its compact_boundary record lags.

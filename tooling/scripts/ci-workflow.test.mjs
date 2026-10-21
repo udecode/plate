@@ -194,7 +194,7 @@ test('pnpm check --affected runs a tooling script with its tests and the steps t
   assert.equal(planner.typecheck, null);
   assert.match(
     planner.test,
-    /(?:^|&& )pnpm test .*'tooling\/scripts\/ci-workflow\.test\.mjs'/u
+    /^pnpm test .*'tooling\/scripts\/ci-workflow\.test\.mjs'/u
   );
   assert.equal(
     commands(['tooling/scripts/check-plite-docs.mjs'])['core-audits'],
