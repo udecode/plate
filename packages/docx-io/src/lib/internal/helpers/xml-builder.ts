@@ -2065,8 +2065,7 @@ const buildTableCell = async (
       docxDocumentInstance
     );
     tableCellFragment.import(nestedTableFragment);
-    // A cell must end with a paragraph, and one also keeps adjacent tables
-    // from merging.
+    // Word merges adjacent tables that have no paragraph between them.
     tableCellFragment.import(await buildParagraph(null, {}));
   };
 
@@ -2184,12 +2183,14 @@ const buildTableCell = async (
         tableCellFragment.import(paragraphFragment);
       }
     }
-  } else {
-    // TODO: Figure out why building with buildParagraph() isn't working
-    const paragraphFragment = fragment({ namespaceAlias: { w: namespaces.w } })
-      .ele('@w', 'p')
-      .up();
-    tableCellFragment.import(paragraphFragment);
+  }
+  // Word rejects a cell that does not end with a paragraph.
+  if (tableCellFragment.node.lastChild?.nodeName !== 'p') {
+    tableCellFragment.import(
+      fragment({ namespaceAlias: { w: namespaces.w } })
+        .ele('@w', 'p')
+        .up()
+    );
   }
   tableCellFragment.up();
 
@@ -2325,7 +2326,8 @@ const buildTableRow = async (
       ['td', 'th'].includes((childVNode as VNodeType).tagName || '')
     );
     const maximumColumnWidth =
-      docxDocumentInstance.availableDocumentSpace / tableColumns.length;
+      (attributes.maximumWidth ?? docxDocumentInstance.availableDocumentSpace) /
+      tableColumns.length;
 
     for (const column of tableColumns) {
       const rowSpanCellFragments = buildRowSpanCell(

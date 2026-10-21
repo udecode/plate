@@ -184,13 +184,33 @@ describe('exportToDocx', () => {
     ).toBe('0');
   });
 
-  it('exports tables nested in table cells at any depth', async () => {
+  it('exports nested tables and ends every table cell with a paragraph', async () => {
+    const p = (text: string) => `<p>${text}</p>`;
+    const staticTable = (...cells: string[]) =>
+      `<div><div><table><tbody><tr>${cells
+        .map((cell) => `<td><div>${cell}</div></td>`)
+        .join('')}</tr></tbody></table></div></div>`;
     const cases = {
-      deep: ['deep'],
-      multiple: ['first', 'second'],
-      nestedOnly: ['inner'],
-      nestedThenText: ['inner', 'after'],
-      textThenNested: ['before', 'inner'],
+      deepBesideText: {
+        expected: { depth: 3, nestedTables: 2, text: ['deep', 'right'] },
+        html: staticTable(staticTable(staticTable(p('deep'))), p('right')),
+      },
+      imageOnly: {
+        expected: { depth: 1, nestedTables: 0, text: [] },
+        html: staticTable('<img src="https://example.com/image.webp">'),
+      },
+      multiple: {
+        expected: { depth: 2, nestedTables: 2, text: ['first', 'second'] },
+        html: staticTable(staticTable(p('first')) + staticTable(p('second'))),
+      },
+      nestedThenText: {
+        expected: { depth: 2, nestedTables: 1, text: ['inner', 'after'] },
+        html: staticTable(staticTable(p('inner')) + p('after')),
+      },
+      plainHtml: {
+        expected: { depth: 2, nestedTables: 1, text: ['inner'] },
+        html: `<table><tbody><tr><td><table><tbody><tr><td>${p('inner')}</td></tr></tbody></table></td></tr></tbody></table>`,
+      },
     };
     const exportModule = import.meta.resolve('./docx-export-plugin.tsx');
     const script = `
@@ -198,22 +218,8 @@ describe('exportToDocx', () => {
       import JSZip from ${JSON.stringify(import.meta.resolve('jszip'))};
       import { exportToDocx } from ${JSON.stringify(exportModule)};
 
-      const p = (text) => '<p>' + text + '</p>';
-      // Mirrors the static table markup: wrapper divs around <table> and a
-      // content div inside every cell.
-      const table = (...cells) =>
-        '<div><div><table><tbody><tr>' +
-        cells.map((cell) => '<td><div>' + cell + '</div></td>').join('') +
-        '</tr></tbody></table></div></div>';
-      const htmls = {
-        deep: table(table(table(p('deep')))),
-        multiple: table(table(p('first')) + table(p('second'))),
-        nestedOnly: table(table(p('inner'))),
-        nestedThenText: table(table(p('inner')) + p('after')),
-        textThenNested: table(p('before') + table(p('inner'))),
-      };
       const documents = {};
-      for (const [name, html] of Object.entries(htmls)) {
+      for (const [name, { html }] of Object.entries(${JSON.stringify(cases)})) {
         const blob = await exportToDocx([{ type: 'p', children: [{ text: '' }] }], {
           editorStaticComponent: () =>
             createElement('div', { dangerouslySetInnerHTML: { __html: html } }),
@@ -237,6 +243,14 @@ describe('exportToDocx', () => {
     expect(exitCode).toBe(0);
 
     const documents: Record<string, string> = JSON.parse(stdout);
+    const childrenNamed = (element: Element, tagName: string) =>
+      Array.from(element.children).filter((child) => child.tagName === tagName);
+    const gridWidths = (table: Element) =>
+      childrenNamed(table, 'w:tblGrid').flatMap((grid) =>
+        childrenNamed(grid, 'w:gridCol').map((column) =>
+          Number(column.getAttribute('w:w'))
+        )
+      );
     const tableDepth = (element: Element) => {
       let depth = 0;
 
@@ -250,33 +264,60 @@ describe('exportToDocx', () => {
 
       return depth;
     };
-
-    for (const [name, expectedText] of Object.entries(cases)) {
-      const document = new DOMParser().parseFromString(
-        documents[name],
-        'application/xml'
-      );
+    const summarize = (xml: string) => {
+      const document = new DOMParser().parseFromString(xml, 'application/xml');
       const tables = Array.from(document.getElementsByTagName('w:tbl'));
-      const cells = Array.from(document.getElementsByTagName('w:tc'));
       const nestedTables = tables.filter(
         (table) => table.parentElement?.tagName === 'w:tc'
       );
-      const exportedText = Array.from(
-        document.getElementsByTagName('w:t'),
-        (run) => run.textContent
-      );
 
-      expect(document.getElementsByTagName('parsererror')).toHaveLength(0);
-      expect(exportedText).toEqual(expectedText);
-      expect(nestedTables).toHaveLength(
-        name === 'deep' || name === 'multiple' ? 2 : 1
-      );
-      expect(Math.max(...tables.map(tableDepth))).toBe(name === 'deep' ? 3 : 2);
+      return {
+        // Word rejects a cell that does not end with a paragraph.
+        cellsEndWithParagraph: Array.from(
+          document.getElementsByTagName('w:tc')
+        ).every((cell) => cell.lastElementChild?.tagName === 'w:p'),
+        depth: Math.max(...tables.map(tableDepth)),
+        nestedTables: nestedTables.length,
+        nestedTablesFitTheirCell: tables.every((table) =>
+          childrenNamed(table, 'w:tr').every((row) =>
+            childrenNamed(row, 'w:tc').every((cell, column) =>
+              childrenNamed(cell, 'w:tbl').every(
+                (nested) =>
+                  gridWidths(nested).reduce((a, b) => a + b, 0) <=
+                  gridWidths(table)[column]
+              )
+            )
+          )
+        ),
+        // Word merges adjacent tables that have no paragraph between them.
+        nestedTablesFollowedByParagraph: nestedTables.every(
+          (nested) => nested.nextElementSibling?.tagName === 'w:p'
+        ),
+        parseErrors: document.getElementsByTagName('parsererror').length,
+        text: Array.from(
+          document.getElementsByTagName('w:t'),
+          (run) => run.textContent
+        ),
+      };
+    };
 
-      // Word rejects a cell that does not end with a paragraph.
-      for (const cell of cells) {
-        expect(cell.lastElementChild?.tagName).toBe('w:p');
-      }
-    }
+    expect(
+      Object.fromEntries(
+        Object.entries(documents).map(([name, xml]) => [name, summarize(xml)])
+      )
+    ).toEqual(
+      Object.fromEntries(
+        Object.entries(cases).map(([name, { expected }]) => [
+          name,
+          {
+            cellsEndWithParagraph: true,
+            nestedTablesFitTheirCell: true,
+            nestedTablesFollowedByParagraph: true,
+            parseErrors: 0,
+            ...expected,
+          },
+        ])
+      )
+    );
   });
 });
