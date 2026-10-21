@@ -42,8 +42,18 @@ jobs:
             const number = context.payload.pull_request.number;
             // A rerun judges the body as it is now, not as the event that started the run saw it.
             const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: number });
-            const body = pr.body ?? '';
-            const passed = body.includes('<!-- plan-page:start -->') || /^Beyond the ask: \S/mu.test(body);
+            // GitHub's editor saves CRLF, which the section match below would miss.
+            const body = (pr.body ?? '').replace(/\r\n/g, '\n');
+            // The same test land.mjs runs before it opens a PR whose body is the commit body.
+            const filled = (name) => {
+              const section = body.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |^Beyond the ask:|(?![\\s\\S]))`, 'mu'));
+              return Boolean(section) && section[1].replace(/<!--[\s\S]*?-->/gu, '').trim() !== '';
+            };
+            const missing = [
+              ...['Why', 'Verification'].filter((name) => !filled(name)).map((name) => `a \`## ${name}\` section with text`),
+              ...(/^Beyond the ask: \S/mu.test(body) ? [] : ['a `Beyond the ask:` line']),
+            ];
+            const passed = body.includes('<!-- plan-page:start -->') || missing.length === 0;
 
             const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: number, per_page: 100 });
             const mine = comments.find((comment) => comment.user?.login === 'github-actions[bot]' && comment.body?.includes(MARKER));
@@ -58,8 +68,8 @@ jobs:
             };
 
             if (passed) {
-              core.info('The PR body has its plan page or a `Beyond the ask:` line.');
-              if (mine) await post('### PR body check passes\n\nThe body now has its plan page or a `Beyond the ask:` line.');
+              core.info('The PR body has its plan page, or its Why and Verification sections and a `Beyond the ask:` line.');
+              if (mine) await post('### PR body check passes\n\nThe body now has its plan page, or its Why and Verification sections and a `Beyond the ask:` line.');
               return;
             }
 
@@ -67,7 +77,7 @@ jobs:
             const text = [
               '### PR body check fails',
               '',
-              `\`land.mjs\` did not write this body, so the agent that opened this PR likely runs an old setup. Pull \`next\`, then ask your agent to run the [contributor-setup](${skill}) skill once. It updates the setup and fixes this body, and the check runs again on the edit.`,
+              `This body lacks ${new Intl.ListFormat('en').format(missing)}. The current \`land.mjs\` refuses to open a PR with such a body, so the agent that opened this PR likely runs an old setup. Pull \`next\`, then ask your agent to run the [contributor-setup](${skill}) skill once. It updates the setup and fixes this body, and the check runs again on the edit.`,
             ].join('\n');
             await post(text);
             core.setFailed(text);

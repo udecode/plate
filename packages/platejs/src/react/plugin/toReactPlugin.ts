@@ -148,14 +148,14 @@ const assertPlateExtendObject = (value: PluginRecord) => {
   }
 };
 
+type PlateBinding = Readonly<{
+  component?: unknown;
+  dependencies?: readonly unknown[];
+}>;
+
 const prepareAdapterObject = (
   value: PluginRecord
-): Readonly<{
-  component?: unknown;
-  contribution: PluginRecord;
-  dependencies?: readonly unknown[];
-  hasComponent: boolean;
-}> => {
+): Readonly<{ binding: PlateBinding; contribution: PluginRecord }> => {
   assertAdapterObject(value);
   if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
     throw new Error('Plate plugin `api` must be a factory.');
@@ -163,16 +163,17 @@ const prepareAdapterObject = (
   const { component, dependencies, ...contribution } = value;
 
   return {
-    component,
+    binding: {
+      ...(Object.hasOwn(value, 'component') ? { component } : {}),
+      ...(dependencies === undefined
+        ? {}
+        : {
+            dependencies: Object.freeze([
+              ...(dependencies as readonly unknown[]),
+            ]),
+          }),
+    },
     contribution,
-    hasComponent: Object.hasOwn(value, 'component'),
-    ...(dependencies === undefined
-      ? {}
-      : {
-          dependencies: Object.freeze([
-            ...(dependencies as readonly unknown[]),
-          ]),
-        }),
   };
 };
 
@@ -190,25 +191,13 @@ const callBaseMethod = (
   return Reflect.apply(baseMethod, basePlugin, [input]) as AnyBasePlugin;
 };
 
-const bindPlateComponent = (
-  plugin: AnyBasePlugin,
-  component: unknown,
-  hasComponent: boolean
-) =>
-  hasComponent
-    ? (brandPluginDescriptor({ ...plugin, component }, plugin) as AnyBasePlugin)
-    : plugin;
-
 const wrapPlatePlugin = (
   basePlugin: AnyBasePlugin,
-  dependencies?: readonly unknown[],
+  binding: PlateBinding = {},
   sourcePlugin?: AnyBasePlugin
 ): AnyBasePlugin => {
   const plugin = brandPluginDescriptor(
-    {
-      ...basePlugin,
-      ...(dependencies === undefined ? {} : { dependencies }),
-    },
+    { ...basePlugin, ...binding },
     basePlugin
   ) as AnyBasePlugin;
 
@@ -253,7 +242,7 @@ const wrapPlatePlugin = (
       normalizedInput
     );
 
-    return wrapPlatePlugin(nextBasePlugin, dependencies, plugin);
+    return wrapPlatePlugin(nextBasePlugin, binding, plugin);
   });
 
   Reflect.set(plugin, 'extend', (input: unknown) => {
@@ -288,7 +277,7 @@ const wrapPlatePlugin = (
       normalizedInput
     );
 
-    return wrapPlatePlugin(nextBasePlugin, dependencies, plugin);
+    return wrapPlatePlugin(nextBasePlugin, binding, plugin);
   });
 
   return plugin;
@@ -312,8 +301,7 @@ const toReactPluginRuntime = (
     throw new Error('Plate plugin adapter values must be objects.');
   }
 
-  const { component, contribution, dependencies, hasComponent } =
-    prepareAdapterObject(adapter);
+  const { binding, contribution } = prepareAdapterObject(adapter);
   const extendedBasePlugin =
     Reflect.ownKeys(contribution).length === 0
       ? basePlugin
@@ -322,13 +310,8 @@ const toReactPluginRuntime = (
           'extend',
           freezePluginDescriptorValue(contribution)
         );
-  const nextBasePlugin = bindPlateComponent(
-    extendedBasePlugin,
-    component,
-    hasComponent
-  );
 
-  return wrapPlatePlugin(nextBasePlugin, dependencies);
+  return wrapPlatePlugin(extendedBasePlugin, binding);
 };
 
 /**

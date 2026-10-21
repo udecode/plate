@@ -3922,6 +3922,43 @@ describe('authored plugin beside content a pending join moves', () => {
         );
       });
 
+      it('maps each Suggesting keystroke selection through a projection both previews already hold', () => {
+        const doc = editorOf(
+          [HIDDEN_IN_ACCEPTED, HIDDEN_IN_PROPOSED, paragraph('alpha')],
+          'zed'
+        );
+
+        for (const preview of ['accepted', 'proposed'] as const) {
+          const view = createEditorView(doc.editor, { authored: { preview } });
+
+          view.subscribeCommit(() => view.read.selection());
+        }
+        typeAt(doc, point([2, 0], 0), 'x');
+        resetLedgerWork();
+        for (const offset of [1, 2, 3]) typeAt(doc, point([2, 0], offset), 'x');
+
+        assert.equal(readLedgerWork().apartSelections, 0);
+      });
+
+      it('maps the first Suggesting keystroke after a caret move through the projection Proposed holds, with no view of it subscribed', () => {
+        const doc = editorOf(
+          [HIDDEN_IN_PROPOSED, paragraph('alpha'), paragraph('beta')],
+          'zed'
+        );
+
+        createEditorView(doc.editor, { authored: { preview: 'proposed' } }).key(
+          [0]
+        );
+        typeAt(doc, point([1, 0], 0), 'x');
+        doc.editor.update((tx) => {
+          tx.selection.set(caret([2, 0], 0));
+        });
+        resetLedgerWork();
+        typeAt(doc, point([2, 0], 0), 'x');
+
+        assert.equal(readLedgerWork().apartSelections, 0);
+      });
+
       it("names beta under Accepted for Bob's forced proposal reaching it, whose badge shows Bob's card", () => {
         const doc = editorOf(
           [

@@ -3080,7 +3080,7 @@ const assertLedger = (editor: Editor, label: string) => {
         }
       }
 
-      const actual = ledger.locationMap(stored, mode, root);
+      const actual = ledger.lens(stored, mode).locations(root);
       const own = authoredLocationMap(stored, preview, change, root);
       const { letters, paths } = locationsOf(valueRoot(stored, root));
 
