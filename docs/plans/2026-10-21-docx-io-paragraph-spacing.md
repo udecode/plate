@@ -40,7 +40,7 @@ const blob = await exportToDocx(value, {
 
 - `htmlToDocxBlob` takes the same two options, because the export forwards its options to it and the converter owns the styles part.
 - `generateStylesXML` builds the default paragraph spacing and the six heading spacings from a table of today's numbers, merged with the caller's.
-- The converter rejects a spacing that is not a non-negative number, because a `NaN` would write a file Word calls corrupt.
+- The converter rejects a spacing that is not a non-negative whole number of twips once rounded, because `NaN` or `1e21` would write an invalid attribute.
 
 ## What other editors do
 
@@ -80,7 +80,7 @@ Findings, on the P0 to P3 scale. No P0 or P1. P2: `htmlToDocxBlob` normalises ma
 | Registry rebuild | Skipped; the docs check passes and the edit touches no registry source | Run the registry build anyway | build registry | detail |
 | Page publish | Local render and check only; nothing goes to claude.ai | Publish the page | publish | detail |
 | Chinese docs | Left to the docs translation job | Translate the new entries by hand | translate cn | detail |
-| Where it stops | Commit, push to the fork and open a draft PR on the owner's word, "fais une draft" (look) | Keep the work in the tree | hold | big |
+| Where it stops | Open a draft PR from the fork once the work is verified (look) | Keep the work local | hold | big |
 | PR before the panel and a green check | Open it as a draft anyway: the panel cannot start here and the first check step is red at the base (look) | Wait for a trusted workspace and a green base | wait | small |
 
 ## Steps
@@ -112,9 +112,8 @@ Findings, on the P0 to P3 scale. No P0 or P1. P2: `htmlToDocxBlob` normalises ma
 - Word for Windows, LibreOffice and a printed page were not tried. owner: vincent69001, stop: a rendered export from one of them shows the gaps, or dropped.
 - A caller who needs a different gap for each heading level, or a default line spacing, has no option. owner: vincent69001, stop: a caller asks, or dropped.
 - The Chinese docs page lacks the new entries until the docs translation job runs. owner: vincent69001, stop: the translation job runs, or dropped.
-- The multi-seat panel, owed by the api-build row, did not run because its Claude seat refuses to start in an untrusted workspace. owner: vincent69001, stop: Claude Code accepts the trust dialog once in this folder and the panel answers, or dropped.
+- The multi-seat panel review did not run, because its seat runner could not start in this workspace. One independent review of the diff ran instead. owner: vincent69001, stop: the panel answers, or dropped.
 - `check:workflow` fails at the base commit on the installed chips skill hash, so `pnpm check` cannot pass anywhere on this base. owner: vincent69001, stop: a pstack sync restores the hash, or dropped.
-- Two probe files, control.docx and spaced.docx, are still open in Word and sit in Word's container folder under Documents/plate-spacing-probe, because Word ignored every scripted close. owner: vincent69001, stop: the two windows are closed and the folder is deleted.
 - The exportToDocx path was not diffed against a base build, only the converter. owner: vincent69001, stop: a base build of the export runs the same probe, or dropped.
 
 ## Close
@@ -127,4 +126,4 @@ What landed in the tree: `paragraphSpacing` and `headingSpacing`, each `{ before
 
 Proof and its limits. Tests: 63 pass across the four docx-io spec files (58 existing, 5 new). The three behavior tests fail at the base, and the default-pin test passes at the base by design. Dropping the rounding, the safe-integer check, the negative check or either forwarded option makes a named test fail. Byte identity holds for all 11 parts of the converter's file, with no options and with empty option objects. The XML after the options is in `after-probe-a4.log`. Word for Mac read the styles part that the final code generates. The review found no critical issue, and I applied its range check, rounding test, Heading 1 note and one redundant assertion. Limits: converter-level identity only, one Word version, no printed page, no multi-seat panel, and the first step of `pnpm check` is red at the base for a reason outside this diff.
 
-Counts: 15 steps closed, 7 open-work items, 5 mutants run and 5 killed, 1 independent review, 0 critical findings.
+Counts: 15 steps closed, 6 open-work items, 5 mutants run and 5 killed, 1 independent review, 0 critical findings.
