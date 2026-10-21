@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-21-floating-toolbar-menu-press",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-21-floating-toolbar-menu-press.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-21",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the floating toolbar working while one of its menus closes",
+  "targets": [
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx",
+        "apps/www/src/registry/components/editor/menu-close-focus.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar-overlay",
+      "files": ["apps/www/src/registry/components/editor/toolbar-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-21-floating-toolbar-keep-working-while-one-cbbf2b6b",
+      "kind": "fix",
+      "summary": "A press on another floating toolbar button while one of its menus is open now works, so Bold marks the selected text and Turn into opens. The floating toolbar also stays visible while a press that closes its menu is held. A dropdown menu now keeps its toolbar open until focus settles after it closes.",
+      "details": [],
+      "migrationNotes": [
+        "Update `floating-toolbar` together with `editor-dropdown-menu`; an older floating toolbar closes its menus before they can record an outside press, so focus jumps back to the editor."
+      ],
+      "targets": ["floating-toolbar", "editor-dropdown-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-21",
+          "entry": "2026-10-21-floating-toolbar-menu-press",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-21-toolbar-overlay-item",
+      "kind": "wiring",
+      "summary": "`toolbar-overlay.tsx` is now its own registry item, which both the toolbar and the dropdown menu install.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar-overlay", "toolbar", "editor-dropdown-menu"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-21",
+          "entry": "2026-10-21-floating-toolbar-menu-press",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

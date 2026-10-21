@@ -20,6 +20,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-21-floating-toolbar-menu-press",
+      "href": "/registry/changelog/2026-10-21-floating-toolbar-menu-press.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the floating toolbar working while one of its menus closes",
+      "change": {
+        "type": "source",
+        "date": "2026-10-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "floating-toolbar",
+        "editor-dropdown-menu",
+        "toolbar-overlay",
+        "toolbar"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-20-date-copied-labels",
       "href": "/registry/changelog/2026-10-20-date-copied-labels.json",
       "status": "draft",

@@ -126,8 +126,46 @@ test('[plate#5209] More formatting refocuses the editor only for closes it owns'
   }
 });
 
+test('[plate#5209] the floating toolbar stays while a press that closes More formatting is held', async ({
+  page,
+}) => {
+  const runtimeErrors = recordBrowserRuntimeErrors(page);
+
+  try {
+    await page.goto('/cn/docs/block-menu', { waitUntil: 'commit' });
+    const editor = page
+      .locator('[data-editor="true"][contenteditable="true"]')
+      .first();
+    const harness = createBrowserEditorHarness(page, 'held-close', editor);
+    await harness.ready({ editor: 'visible' });
+    const floating = page.locator('[role="toolbar"]').filter({
+      has: page.getByRole('button', { name: 'Mark as equation', exact: true }),
+    });
+    const trigger = floating.getByRole('button', {
+      name: 'More formatting',
+      exact: true,
+    });
+
+    await editor.locator('[data-editor-string]').first().dblclick();
+    await trigger.click();
+    await expect(page.getByRole('menu')).toBeVisible();
+    const box = await trigger.boundingBox();
+    if (!box) throw new Error('More formatting has no box');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(editor).toBeFocused();
+    await expect(floating).toBeVisible();
+    await page.mouse.up();
+    runtimeErrors.assertNone();
+  } finally {
+    runtimeErrors.stop();
+  }
+});
+
 for (const menu of ['Turn into', 'More formatting'] as const) {
-  test(`[plate#5209] a Bold press while ${menu} is open keeps the toolbar and the range for the next action`, async ({
+  test(`[plate#5209] a Bold press while ${menu} is open bolds the range and keeps the toolbar for the next action`, async ({
     page,
   }) => {
     const runtimeErrors = recordBrowserRuntimeErrors(page);
@@ -152,11 +190,11 @@ for (const menu of ['Turn into', 'More formatting'] as const) {
         throw new Error('Double-clicking the word selected nothing');
       }
       const selectedText = await harness.get.selectedText();
-      const italicized = async () =>
+      const marks = async () =>
         (
           (await harness.get.modelValue()) as { children: EditorNode[] }
-        ).children[selection.anchor.path[0]].children?.some(
-          (leaf) => leaf.italic && leaf.text === selectedText
+        ).children[selection.anchor.path[0]].children?.find(
+          (leaf) => leaf.text === selectedText
         );
       await floating
         .getByRole('button', {
@@ -167,12 +205,13 @@ for (const menu of ['Turn into', 'More formatting'] as const) {
       await floating.getByRole('button', { name: /^Bold/ }).click();
 
       await expect(page.getByRole('menu')).toHaveCount(0);
+      await expect.poll(marks).toMatchObject({ bold: true });
       await expect(editor).toBeFocused();
       await expect(floating).toBeVisible();
-      expect(await harness.get.selection()).toEqual(selection);
+      expect(await harness.get.selectedText()).toBe(selectedText);
 
       await floating.getByRole('button', { name: /^Italic/ }).click();
-      await expect.poll(italicized).toBe(true);
+      await expect.poll(marks).toMatchObject({ bold: true, italic: true });
       runtimeErrors.assertNone();
     } finally {
       runtimeErrors.stop();

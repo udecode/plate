@@ -1,0 +1,16 @@
+---
+id: 2026-10-21-floating-toolbar-menu-press
+date: 2026-10-21
+status: draft
+kind: fix
+summary: 'Keep the floating toolbar working while one of its menus closes'
+change: { 'type': 'source', 'date': '2026-10-21', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-21-floating-toolbar-keep-working-while-one-cbbf2b6b","kind":"fix","migrationNotes":["Update `floating-toolbar` together with `editor-dropdown-menu`; an older floating toolbar closes its menus before they can record an outside press, so focus jumps back to the editor."]} -->
+
+- **`floating-toolbar`**, **`editor-dropdown-menu`**: A press on another floating toolbar button while one of its menus is open now works, so Bold marks the selected text and Turn into opens. The floating toolbar also stays visible while a press that closes its menu is held. A dropdown menu now keeps its toolbar open until focus settles after it closes.
+<!-- entry: {"id":"2026-10-21-toolbar-overlay-item","kind":"wiring","migrationNotes":[]} -->
+- **`toolbar-overlay`**, **`toolbar`**, **`editor-dropdown-menu`**: `toolbar-overlay.tsx` is now its own registry item, which both the toolbar and the dropdown menu install.

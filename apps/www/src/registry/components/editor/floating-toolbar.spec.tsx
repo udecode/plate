@@ -404,6 +404,10 @@ describe('FloatingToolbar', () => {
 
     act(() => clickOutside());
 
+    expect(view.getByText('toolbar action')).toBeTruthy();
+
+    act(() => toolbarOverlayOpenChange(false));
+
     expect(view.queryByText('toolbar action')).toBeNull();
   });
 });

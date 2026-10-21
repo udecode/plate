@@ -1,5 +1,5 @@
 {
-  "generation": "d98c0429f854b38c51e66acc45bbff512b1612e758877718aab5365e73137ec4",
+  "generation": "54a7154a6209e12c6070fe4314ceda1e592b1b7867aababdb578c974ac2c94d4",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1163,6 +1163,7 @@
             "platejs"
           ],
           "registryDependencies": [
+            "@plate/toolbar-overlay",
             "dropdown-menu"
           ]
         },
@@ -1191,11 +1192,6 @@
               "path": "bases/base/toolbar.tsx",
               "target": "@components/editor/toolbar.tsx",
               "type": "registry:component"
-            },
-            {
-              "path": "components/editor/toolbar-overlay.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/toolbar-overlay.tsx"
             }
           ],
           "meta": {},
@@ -1205,8 +1201,26 @@
           "dependencies": [
             "@base-ui/react",
             "class-variance-authority",
+            "lucide-react"
+          ],
+          "registryDependencies": [
+            "@plate/toolbar-overlay"
+          ]
+        },
+        {
+          "description": "Keeps a toolbar open while one of its overlays, such as a menu, is open or closing.",
+          "files": [
+            {
+              "path": "components/editor/toolbar-overlay.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/toolbar-overlay.tsx"
+            }
+          ],
+          "name": "toolbar-overlay",
+          "title": "Toolbar Overlay",
+          "type": "registry:component",
+          "dependencies": [
             "diff-match-patch-ts@^0.6.0",
-            "lucide-react",
             "platejs"
           ]
         },
@@ -1439,6 +1453,7 @@
           "registryDependencies": [
             "@plate/floating-popover",
             "@plate/toolbar",
+            "@plate/toolbar-overlay",
             "button",
             "input"
           ]
@@ -8018,6 +8033,7 @@
             "platejs"
           ],
           "registryDependencies": [
+            "@plate/toolbar-overlay",
             "dropdown-menu"
           ]
         },
@@ -8045,11 +8061,6 @@
               "path": "bases/radix/toolbar.tsx",
               "target": "@components/editor/toolbar.tsx",
               "type": "registry:component"
-            },
-            {
-              "path": "components/editor/toolbar-overlay.tsx",
-              "type": "registry:component",
-              "target": "@components/editor/toolbar-overlay.tsx"
             }
           ],
           "meta": {},
@@ -8060,8 +8071,26 @@
             "@radix-ui/react-toolbar",
             "@radix-ui/react-tooltip",
             "class-variance-authority",
+            "lucide-react"
+          ],
+          "registryDependencies": [
+            "@plate/toolbar-overlay"
+          ]
+        },
+        {
+          "description": "Keeps a toolbar open while one of its overlays, such as a menu, is open or closing.",
+          "files": [
+            {
+              "path": "components/editor/toolbar-overlay.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/toolbar-overlay.tsx"
+            }
+          ],
+          "name": "toolbar-overlay",
+          "title": "Toolbar Overlay",
+          "type": "registry:component",
+          "dependencies": [
             "diff-match-patch-ts@^0.6.0",
-            "lucide-react",
             "platejs"
           ]
         },
@@ -8294,6 +8323,7 @@
           "registryDependencies": [
             "@plate/floating-popover",
             "@plate/toolbar",
+            "@plate/toolbar-overlay",
             "button",
             "input"
           ]

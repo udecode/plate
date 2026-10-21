@@ -2,11 +2,17 @@
 
 import * as React from 'react';
 
+import {
+  useToolbarOverlayHold,
+  useToolbarOverlayHoldPastUnmount,
+} from '@/registry/components/editor/toolbar-overlay';
+
 export type FinalFocus = false | (() => void);
 export type FinalFocusRef = React.RefObject<FinalFocus | undefined>;
 export type MenuRoot = {
   finalFocusRef: FinalFocusRef;
   modal: boolean;
+  open: boolean;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
@@ -15,36 +21,36 @@ export const FinalFocusContext = React.createContext<FinalFocusRef | null>(
 );
 export const MenuRootContext = React.createContext<MenuRoot | null>(null);
 
-const closeGestures = ['keydown', 'pointerdown'] as const;
-
-function isSecondaryPress(event: Event) {
+export function secondaryPress(event: Event) {
   return (
     event instanceof MouseEvent &&
     (event.button === 2 || (event.button === 0 && event.ctrlKey))
   );
 }
 
-function ownsGesture(event: Event, trigger: HTMLElement | null) {
-  const owner = trigger?.closest('[role="toolbar"]') ?? trigger;
-
-  return event
-    .composedPath()
-    .some(
-      (node) =>
-        node instanceof Element &&
-        (node === owner || node.matches('[role="menu"]'))
-    );
-}
-
-function gestureFinalFocus(
+export function outsideFinalFocus(
   event: Event,
   { modal, triggerRef }: MenuRoot
 ): false | undefined {
-  if (event instanceof KeyboardEvent) {
-    return event.key === 'Tab' ? false : undefined;
+  if (
+    event instanceof FocusEvent ||
+    event instanceof KeyboardEvent ||
+    secondaryPress(event)
+  ) {
+    return false;
   }
-  if (isSecondaryPress(event)) return false;
-  if (ownsGesture(event, triggerRef.current)) return undefined;
+
+  const trigger = triggerRef.current;
+  const owner = trigger?.closest('[role="toolbar"]') ?? trigger;
+  const path = event.composedPath();
+  // Radix reports a touch press from the click that follows it, after the press's own dispatch has emptied its path.
+  const ownPress =
+    !!owner &&
+    (path.length > 0
+      ? path.includes(owner)
+      : event.target instanceof Node && owner.contains(event.target));
+
+  if (ownPress) return undefined;
 
   return modal ? undefined : false;
 }
@@ -67,43 +73,46 @@ export function takeFinalFocus(finalFocusRef: FinalFocusRef) {
   return finalFocus;
 }
 
-export function useMenuRoot(modal: boolean) {
+export function useMenuRoot(modal: boolean, open: boolean) {
   const finalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
+  useToolbarOverlayHold(open);
+
+  React.useEffect(() => {
+    if (open) finalFocusRef.current = undefined;
+  }, [open]);
+
   return React.useMemo<MenuRoot>(
-    () => ({ finalFocusRef, modal, triggerRef }),
-    [modal]
+    () => ({ finalFocusRef, modal, open, triggerRef }),
+    [modal, open]
   );
 }
 
-export function CloseFocusWatcher({
-  popupRef,
-  root,
-}: {
-  popupRef: React.RefObject<HTMLElement | null>;
-  root: MenuRoot;
-}) {
-  React.useEffect(() => {
-    const record = (event: Event) => {
-      // Base UI keeps a closed popup mounted for a frame or more before it calls finalFocus, so a gesture in between must not replace the close's intent.
-      if (!popupRef.current?.matches('[data-open], [data-state="open"]')) {
-        return;
-      }
+export function MenuPopupHold({ root }: { root: MenuRoot }) {
+  const { finalFocusRef, open } = root;
 
-      root.finalFocusRef.current = gestureFinalFocus(event, root);
-    };
+  // Holding the toolbar until the close focus runs keeps a floating toolbar mounted under a press that closes the menu, so that press still reaches its button.
+  useToolbarOverlayHoldPastUnmount();
 
-    for (const type of closeGestures) {
-      window.addEventListener(type, record, true);
-    }
+  // Base UI's useDismiss stops reporting presses once the menu closes, while its popup stays mounted for a frame or more.
+  React.useLayoutEffect(() => {
+    if (open) return undefined;
 
-    return () => {
-      for (const type of closeGestures) {
-        window.removeEventListener(type, record, true);
+    const onPointerDown = (event: PointerEvent) => {
+      if (
+        finalFocusRef.current === undefined &&
+        outsideFinalFocus(event, root) === false
+      ) {
+        finalFocusRef.current = false;
       }
     };
-  }, [popupRef, root]);
+
+    document.addEventListener('pointerdown', onPointerDown, true);
+
+    return () =>
+      document.removeEventListener('pointerdown', onPointerDown, true);
+  }, [finalFocusRef, open, root]);
 
   return null;
 }

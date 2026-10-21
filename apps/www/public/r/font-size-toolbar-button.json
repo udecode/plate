@@ -11,6 +11,7 @@
   "registryDependencies": [
     "https://platejs.org/r/floating-popover.json",
     "https://platejs.org/r/toolbar.json",
+    "https://platejs.org/r/toolbar-overlay.json",
     "button",
     "input"
   ],

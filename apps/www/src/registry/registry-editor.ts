@@ -662,16 +662,25 @@ export const editorComponents: Registry['items'] = [
         target: '@components/editor/toolbar.tsx',
         type: 'registry:component',
       },
-      {
-        path: 'components/editor/toolbar-overlay.tsx',
-        type: 'registry:component',
-      },
     ],
     meta: {
       // Add links here if needed
     },
     name: 'toolbar',
     title: 'Toolbar',
+    type: 'registry:component',
+  },
+  {
+    description:
+      'Keeps a toolbar open while one of its overlays, such as a menu, is open or closing.',
+    files: [
+      {
+        path: 'components/editor/toolbar-overlay.tsx',
+        type: 'registry:component',
+      },
+    ],
+    name: 'toolbar-overlay',
+    title: 'Toolbar Overlay',
     type: 'registry:component',
   },
   {

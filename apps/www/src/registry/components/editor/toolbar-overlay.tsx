@@ -40,6 +40,42 @@ export function useToolbarOverlayTrigger(
   };
 }
 
+export function useToolbarOverlayHold(open: boolean) {
+  const [overlayId] = React.useState(() => Symbol('toolbar-overlay'));
+  const reportOverlayOpen = React.useContext(ToolbarOverlayContext);
+
+  React.useEffect(() => {
+    if (!open) return undefined;
+
+    reportOverlayOpen(overlayId, true);
+
+    return () => reportOverlayOpen(overlayId, false);
+  }, [open, overlayId, reportOverlayOpen]);
+}
+
+export function useToolbarOverlayHoldPastUnmount() {
+  const [overlayId] = React.useState(() => Symbol('toolbar-overlay'));
+  const reportOverlayOpen = React.useContext(ToolbarOverlayContext);
+  const mountedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    mountedRef.current = true;
+    reportOverlayOpen(overlayId, true);
+
+    return () => {
+      mountedRef.current = false;
+      // Radix runs a menu's close focus from a timer it starts at unmount, so the hold outlasts that timer.
+      setTimeout(
+        () =>
+          setTimeout(() => {
+            if (!mountedRef.current) reportOverlayOpen(overlayId, false);
+          }, 0),
+        0
+      );
+    };
+  }, [overlayId, reportOverlayOpen]);
+}
+
 export function ToolbarOverlayProvider({
   children,
   onOpenChange,

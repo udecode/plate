@@ -13,12 +13,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import {
-  CloseFocusWatcher,
   type FinalFocus,
   FinalFocusContext,
+  MenuPopupHold,
   type FinalFocusRef,
   focusClaimed,
   MenuRootContext,
+  outsideFinalFocus,
   takeFinalFocus,
   useMenuRoot,
 } from '@/registry/components/editor/menu-close-focus';
@@ -39,11 +40,21 @@ export function DropdownMenu({
   modal = true,
   ...props
 }: React.ComponentProps<typeof ShadcnDropdownMenu>) {
-  const root = useMenuRoot(modal);
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
+    props.defaultOpen ?? false
+  );
+  const root = useMenuRoot(modal, props.open ?? uncontrolledOpen);
 
   return (
     <MenuRootContext.Provider value={root}>
-      <ShadcnDropdownMenu {...props} modal={modal} />
+      <ShadcnDropdownMenu
+        {...props}
+        modal={modal}
+        onOpenChange={(open) => {
+          setUncontrolledOpen(open);
+          props.onOpenChange?.(open);
+        }}
+      />
     </MenuRootContext.Provider>
   );
 }
@@ -134,15 +145,24 @@ export function DropdownMenuContent({
   const root = React.useContext(MenuRootContext);
   const contentFinalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
   const finalFocusRef = root?.finalFocusRef ?? contentFinalFocusRef;
-  const popupRef = React.useRef<HTMLDivElement | null>(null);
-  const contentRef = useComposedRef(ref, popupRef);
 
   return (
     <FinalFocusContext.Provider value={finalFocusRef}>
       <ShadcnDropdownMenuContent
         {...props}
-        ref={contentRef}
+        ref={ref}
         className={cn('data-[state=closed]:!animate-none', className)}
+        onEscapeKeyDown={() => {
+          finalFocusRef.current = undefined;
+        }}
+        onInteractOutside={(event) => {
+          if (root && !event.defaultPrevented) {
+            finalFocusRef.current = outsideFinalFocus(
+              event.detail.originalEvent,
+              root
+            );
+          }
+        }}
         onCloseAutoFocus={(event) => {
           const finalFocus = takeFinalFocus(finalFocusRef);
 
@@ -164,7 +184,7 @@ export function DropdownMenuContent({
           onFinalFocus?.(event);
         }}
       >
-        {root && <CloseFocusWatcher popupRef={popupRef} root={root} />}
+        {root && <MenuPopupHold root={root} />}
         {children}
       </ShadcnDropdownMenuContent>
     </FinalFocusContext.Provider>

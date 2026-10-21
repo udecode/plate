@@ -327,7 +327,24 @@ async function verifyInstalledEditorCommands(project: string) {
 
     await floatingMore.click();
     await page.getByRole('menu').waitFor();
-    await floatingMore.click();
+    const moreBox = await floatingMore.boundingBox();
+    if (!moreBox) {
+      throw new Error('Installed floating More formatting has no box');
+    }
+    await page.mouse.move(
+      moreBox.x + moreBox.width / 2,
+      moreBox.y + moreBox.height / 2
+    );
+    await page.mouse.down();
+    await page.getByRole('menu').waitFor({ state: 'detached' });
+    await page.waitForTimeout(300);
+    const heldVisible = await floatingMore.isVisible();
+    await page.mouse.up();
+    if (!heldVisible) {
+      throw new Error(
+        'Installed floating toolbar hid while a press that closed More formatting was held'
+      );
+    }
     await keepsFloatingSelection(
       'Installed floating More formatting lost the selected text'
     );
@@ -355,10 +372,18 @@ async function verifyInstalledEditorCommands(project: string) {
     await keepsFloatingSelection(
       'Installed floating toolbar lost the selected text after a Bold press while More formatting was open'
     );
+    await waitForCount(boldSelected, boldCount);
 
     const turnIntoMenu = page.getByRole('menu').filter({
       has: page.getByRole('menuitemradio', { name: 'Heading 1', exact: true }),
     });
+
+    await floatingMore.click();
+    await page.getByRole('menu').waitFor();
+    await floatingToolbar.getByRole('button', { name: /^Turn into/ }).click();
+    await turnIntoMenu.waitFor();
+    await page.keyboard.press('Escape');
+    await turnIntoMenu.waitFor({ state: 'detached' });
 
     await moreFormatting.click();
     await page.getByRole('menu').waitFor();

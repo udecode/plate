@@ -95,9 +95,12 @@ describe('Plate registry editor files', () => {
       '@radix-ui/react-toolbar',
       '@radix-ui/react-tooltip',
     ]);
-    const variantItemNames = new Set(
-      [...EDITOR_REGISTRY_VARIANTS.values()].map((variant) => variant.itemName)
-    );
+    const variantItemNames = new Set([
+      ...[...EDITOR_REGISTRY_VARIANTS.values()].map(
+        (variant) => variant.itemName
+      ),
+      'toolbar-overlay',
+    ]);
 
     for (const base of PLATE_REGISTRY_BASES) {
       const selectedRegistry = createPlateRegistry('https://platejs.org', {

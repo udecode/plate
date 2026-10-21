@@ -14,12 +14,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import {
-  CloseFocusWatcher,
   type FinalFocus,
   FinalFocusContext,
+  MenuPopupHold,
   type FinalFocusRef,
   focusClaimed,
   MenuRootContext,
+  outsideFinalFocus,
+  secondaryPress,
   takeFinalFocus,
   useMenuRoot,
 } from '@/registry/components/editor/menu-close-focus';
@@ -76,18 +78,37 @@ type BaseUIEvent = React.MouseEvent<HTMLElement> & {
 
 export function DropdownMenu({
   modal = true,
+  onOpenChange,
   ...props
 }: BaseMenuPrimitive.Root.Props) {
-  const root = useMenuRoot(modal);
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
+    props.defaultOpen ?? false
+  );
+  const root = useMenuRoot(modal, props.open ?? uncontrolledOpen);
   const { finalFocusRef } = root;
-
-  React.useEffect(() => {
-    if (props.open) finalFocusRef.current = undefined;
-  }, [finalFocusRef, props.open]);
 
   return (
     <MenuRootContext.Provider value={root}>
-      <BaseDropdownMenu {...props} modal={modal} />
+      <BaseDropdownMenu
+        {...props}
+        modal={modal}
+        onOpenChange={(open, details) => {
+          if (
+            details.reason === 'outside-press' ||
+            details.reason === 'focus-out'
+          ) {
+            finalFocusRef.current = outsideFinalFocus(details.event, root);
+          } else if (details.reason === 'trigger-press') {
+            finalFocusRef.current = secondaryPress(details.event)
+              ? false
+              : undefined;
+          } else if (details.reason !== 'item-press') {
+            finalFocusRef.current = undefined;
+          }
+          onOpenChange?.(open, details);
+          if (!details.isCanceled) setUncontrolledOpen(open);
+        }}
+      />
     </MenuRootContext.Provider>
   );
 }
@@ -259,8 +280,6 @@ export function DropdownMenuContent({
   const root = React.useContext(MenuRootContext);
   const contentFinalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
   const finalFocusRef = root?.finalFocusRef ?? contentFinalFocusRef;
-  const popupRef = React.useRef<HTMLDivElement | null>(null);
-  const contentRef = useComposedRef(ref, popupRef);
   // React focus events propagate out of a submenu's portal, so focus in a submenu still counts as inside the menu.
   const focusInside = React.useRef(false);
 
@@ -268,7 +287,7 @@ export function DropdownMenuContent({
     <FinalFocusContext.Provider value={finalFocusRef}>
       <BaseDropdownMenuContent
         {...props}
-        ref={contentRef}
+        ref={ref}
         className={cn('data-closed:!animate-none', className)}
         onBlurCapture={(event) => {
           focusInside.current = false;
@@ -304,7 +323,7 @@ export function DropdownMenuContent({
           return true;
         }}
       >
-        {root && <CloseFocusWatcher popupRef={popupRef} root={root} />}
+        {root && <MenuPopupHold root={root} />}
         {children}
       </BaseDropdownMenuContent>
     </FinalFocusContext.Provider>

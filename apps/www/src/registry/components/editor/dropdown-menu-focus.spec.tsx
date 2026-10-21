@@ -1,12 +1,31 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test';
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+  cleanup,
+  createEvent,
+  fireEvent,
+  render,
+  screen,
+} from '@testing-library/react';
 import * as React from 'react';
 import { createPortal } from 'react-dom';
 
+import { ToolbarOverlayProvider } from './toolbar-overlay';
+
+type ChangeDetails = {
+  cancel?: () => void;
+  event?: Event;
+  isCanceled?: boolean;
+  reason: string;
+};
+
+let changeOpen: ((open: boolean, details: ChangeDetails) => void) | undefined;
 let closeMenu: (() => boolean) | undefined;
+let escapeKeyDown: ((event: KeyboardEvent) => void) | undefined;
+let interactOutside:
+  | ((event: CustomEvent<{ originalEvent: Event }>) => void)
+  | undefined;
 let parentRefusesClose = false;
-let popupAnimatesOut = false;
 
 const passthrough = ({ children }: React.PropsWithChildren) => <>{children}</>;
 const Item = ({
@@ -38,13 +57,12 @@ const Item = ({
 
       if (
         closeOnClick &&
-        !parentRefusesClose &&
-        !popupAnimatesOut &&
         !providerPrevented &&
         !clickEvent.defaultPrevented &&
         !selectEvent.defaultPrevented
       ) {
-        closeMenu?.();
+        changeOpen?.(false, { reason: 'item-press' });
+        if (!parentRefusesClose) closeMenu?.();
       }
     }}
     type="button"
@@ -54,22 +72,37 @@ const Item = ({
 );
 
 mock.module('@/components/ui/dropdown-menu', () => ({
-  DropdownMenu: passthrough,
+  DropdownMenu: ({
+    children,
+    onOpenChange,
+  }: React.PropsWithChildren<{
+    onOpenChange?: (open: boolean, details: ChangeDetails) => void;
+  }>) => {
+    changeOpen = onOpenChange;
+
+    return <>{children}</>;
+  },
   DropdownMenuCheckboxItem: Item,
   DropdownMenuContent: ({
     children,
     finalFocus,
     onBlurCapture,
     onCloseAutoFocus,
+    onEscapeKeyDown,
     onFocusCapture,
+    onInteractOutside,
     ref,
   }: React.PropsWithChildren<{
     finalFocus?: () => boolean;
     onBlurCapture?: React.FocusEventHandler<HTMLDivElement>;
     onCloseAutoFocus?: (event: Event) => void;
+    onEscapeKeyDown?: (event: KeyboardEvent) => void;
     onFocusCapture?: React.FocusEventHandler<HTMLDivElement>;
+    onInteractOutside?: (event: CustomEvent<{ originalEvent: Event }>) => void;
     ref?: React.Ref<HTMLDivElement>;
   }>) => {
+    escapeKeyDown = onEscapeKeyDown;
+    interactOutside = onInteractOutside;
     closeMenu = () => {
       if (finalFocus) return finalFocus();
 
@@ -81,7 +114,6 @@ mock.module('@/components/ui/dropdown-menu', () => ({
 
     return (
       <div
-        data-open=""
         onBlurCapture={onBlurCapture}
         onFocusCapture={onFocusCapture}
         ref={ref}
@@ -114,20 +146,53 @@ mock.module('@/components/ui/dropdown-menu', () => ({
 }));
 
 afterEach(() => {
+  changeOpen = undefined;
   closeMenu = undefined;
+  escapeKeyDown = undefined;
+  interactOutside = undefined;
   parentRefusesClose = false;
-  popupAnimatesOut = false;
   cleanup();
 });
 
 afterAll(() => mock.restore());
 
+const runCloseTimers = () =>
+  React.act(
+    () =>
+      new Promise<void>((resolve) => {
+        setTimeout(() => setTimeout(resolve, 0), 0);
+      })
+  );
+
 for (const provider of ['base', 'radix'] as const) {
   describe(`${provider} dropdown final focus`, () => {
     const loadAdapter = () =>
       import(
-        `../../bases/${provider}/dropdown-menu?test=${Math.random().toString(36).slice(2)}`
+        `../../bases/${provider}/dropdown-menu?test=${Math.random()
+          .toString(36)
+          .slice(2)}`
       );
+
+    const reportOutside = (event: Event, reason: string) => {
+      if (provider === 'base') {
+        changeOpen?.(false, { event, reason });
+      } else {
+        interactOutside?.(
+          new CustomEvent('interactoutside', {
+            detail: { originalEvent: event },
+          })
+        );
+      }
+    };
+    const pressEscape = () => {
+      const event = new KeyboardEvent('keydown', { key: 'Escape' });
+
+      if (provider === 'base') {
+        changeOpen?.(false, { event, reason: 'escape-key' });
+      } else {
+        escapeKeyDown?.(event);
+      }
+    };
 
     const renderMenu = async ({
       container,
@@ -162,21 +227,39 @@ for (const provider of ['base', 'radix'] as const) {
               </menu.DropdownMenuContent>
             </menu.DropdownMenu>
           </div>
+          <div role="menu">
+            <button type="button">Other menu</button>
+          </div>
           <button type="button">Outside</button>
         </>
       );
       const view = render(ui(), { container });
       const button = (name: string) => view.getByRole('button', { name });
+      const trigger = button('Open');
 
       return {
         fallback,
         item: button('Select'),
-        menu: view.getAllByRole('menu')[0],
         nested: screen.getByRole('button', { name: 'Nested' }),
+        otherMenu: button('Other menu'),
         outside: button('Outside'),
+        press: (target: Element, init?: MouseEventInit) => {
+          const event = createEvent.pointerDown(target, init);
+
+          document.addEventListener(
+            'pointerdown',
+            () =>
+              reportOutside(
+                event,
+                target === trigger ? 'trigger-press' : 'outside-press'
+              ),
+            { capture: true, once: true }
+          );
+          fireEvent(target, event);
+        },
         setOpen: (next: boolean) => view.rerender(ui(next)),
         sibling: button('Bold'),
-        trigger: button('Open'),
+        trigger,
         view,
       };
     };
@@ -207,6 +290,25 @@ for (const provider of ['base', 'radix'] as const) {
       );
 
       expect(ref.current).toBeInstanceOf(HTMLElement);
+    });
+
+    it('holds its toolbar open until the close focus timer after its popup unmounts', async () => {
+      const menu = await loadAdapter();
+      const overlayOpen = mock((_open: boolean) => undefined);
+      const ui = (open: boolean) => (
+        <ToolbarOverlayProvider onOpenChange={overlayOpen}>
+          <menu.DropdownMenu open={open}>
+            {open && <menu.DropdownMenuContent>Item</menu.DropdownMenuContent>}
+          </menu.DropdownMenu>
+        </ToolbarOverlayProvider>
+      );
+      const view = render(ui(true));
+
+      view.rerender(ui(false));
+      expect(overlayOpen.mock.calls.at(-1)).toEqual([true]);
+
+      await runCloseTimers();
+      expect(overlayOpen.mock.calls.at(-1)).toEqual([false]);
     });
 
     it('runs the selected item focus intent instead of the content fallback', async () => {
@@ -251,7 +353,6 @@ for (const provider of ['base', 'radix'] as const) {
     it('suppresses final focus when the selected item opts out', async () => {
       const { fallback, item } = await renderMenu({ itemFocus: false });
 
-      fireEvent.pointerDown(item);
       fireEvent.click(item);
 
       expect(fallback).not.toHaveBeenCalled();
@@ -313,27 +414,27 @@ for (const provider of ['base', 'radix'] as const) {
     });
 
     it('runs the content fallback when its own trigger closes the menu', async () => {
-      const { fallback, trigger } = await renderMenu({ modal: false });
+      const { fallback, press, trigger } = await renderMenu({ modal: false });
 
-      fireEvent.pointerDown(trigger);
+      press(trigger);
       closeMenu?.();
 
       expect(fallback).toHaveBeenCalledTimes(1);
     });
 
     it("runs the content fallback when another button in the trigger's toolbar closes the menu", async () => {
-      const { fallback, sibling } = await renderMenu({ modal: false });
+      const { fallback, press, sibling } = await renderMenu({ modal: false });
 
-      fireEvent.pointerDown(sibling);
+      press(sibling);
       closeMenu?.();
 
       expect(fallback).toHaveBeenCalledTimes(1);
     });
 
     it('leaves focus on a sibling toolbar control that took it before the close', async () => {
-      const { fallback, sibling } = await renderMenu({ modal: false });
+      const { fallback, press, sibling } = await renderMenu({ modal: false });
 
-      fireEvent.pointerDown(sibling);
+      press(sibling);
       sibling.focus();
 
       expect(closeMenu?.()).toBe(false);
@@ -341,19 +442,20 @@ for (const provider of ['base', 'radix'] as const) {
     });
 
     it('leaves focus where an outside press on a non-modal menu puts it', async () => {
-      const { fallback } = await renderMenu({ modal: false });
+      const { fallback, press } = await renderMenu({ modal: false });
 
-      fireEvent.pointerDown(document.body);
+      press(document.body);
 
       expect(closeMenu?.()).toBe(false);
       expect(fallback).not.toHaveBeenCalled();
     });
 
-    it('leaves focus when its owner unmounts the menu during an outside press', async () => {
-      const { fallback, view } = await renderMenu({ modal: false });
+    it('leaves focus after a press in another open menu', async () => {
+      const { fallback, otherMenu, press } = await renderMenu({
+        modal: false,
+      });
 
-      fireEvent.pointerDown(document.body);
-      view.unmount();
+      press(otherMenu);
 
       expect(closeMenu?.()).toBe(false);
       expect(fallback).not.toHaveBeenCalled();
@@ -373,37 +475,27 @@ for (const provider of ['base', 'radix'] as const) {
     });
 
     it('runs the content fallback after a primary press outside a modal menu', async () => {
-      const { fallback } = await renderMenu({});
+      const { fallback, press } = await renderMenu({});
 
-      fireEvent.pointerDown(document.body, { button: 0 });
+      press(document.body, { button: 0 });
       closeMenu?.();
 
       expect(fallback).toHaveBeenCalledTimes(1);
     });
 
     it('leaves focus after a secondary press outside a modal menu', async () => {
-      const { fallback } = await renderMenu({});
+      const { fallback, press } = await renderMenu({});
 
-      fireEvent.pointerDown(document.body, { button: 2 });
+      press(document.body, { button: 2 });
 
       expect(closeMenu?.()).toBe(false);
       expect(fallback).not.toHaveBeenCalled();
     });
 
     it("leaves focus after a secondary press on another button in the trigger's toolbar", async () => {
-      const { fallback, sibling } = await renderMenu({ modal: false });
+      const { fallback, press, sibling } = await renderMenu({ modal: false });
 
-      fireEvent.pointerDown(sibling, { button: 2 });
-
-      expect(closeMenu?.()).toBe(false);
-      expect(fallback).not.toHaveBeenCalled();
-    });
-
-    it('leaves focus on the trigger when Shift+Tab moves it there', async () => {
-      const { fallback, menu, trigger } = await renderMenu({});
-
-      fireEvent.keyDown(menu, { key: 'Tab', shiftKey: true });
-      trigger.focus();
+      press(sibling, { button: 2 });
 
       expect(closeMenu?.()).toBe(false);
       expect(fallback).not.toHaveBeenCalled();
@@ -413,26 +505,17 @@ for (const provider of ['base', 'radix'] as const) {
       const { fallback, outside } = await renderMenu({});
 
       outside.focus();
+      reportOutside(new FocusEvent('focusout'), 'focus-out');
 
       expect(closeMenu?.()).toBe(false);
       expect(fallback).not.toHaveBeenCalled();
     });
 
     it('runs the content fallback on Escape after the parent refused an outside close', async () => {
-      const { fallback, menu } = await renderMenu({ modal: false });
+      const { fallback, press } = await renderMenu({ modal: false });
 
-      fireEvent.pointerDown(document.body);
-      fireEvent.keyDown(menu, { key: 'Escape' });
-      closeMenu?.();
-
-      expect(fallback).toHaveBeenCalledTimes(1);
-    });
-
-    it('runs the content fallback on a submenu Escape after the parent refused an outside close', async () => {
-      const { fallback, nested } = await renderMenu({ modal: false });
-
-      fireEvent.pointerDown(document.body);
-      fireEvent.keyDown(nested, { key: 'Escape' });
+      press(document.body);
+      pressEscape();
       closeMenu?.();
 
       expect(fallback).toHaveBeenCalledTimes(1);
@@ -440,13 +523,15 @@ for (const provider of ['base', 'radix'] as const) {
 
     it('drops an item focus intent whose close the parent refused', async () => {
       const itemFocus = mock(() => undefined);
-      const { fallback, item } = await renderMenu({ itemFocus, modal: false });
+      const { fallback, item, press } = await renderMenu({
+        itemFocus,
+        modal: false,
+      });
 
       parentRefusesClose = true;
-      fireEvent.pointerDown(item);
       fireEvent.click(item);
       parentRefusesClose = false;
-      fireEvent.pointerDown(document.body);
+      press(document.body);
 
       expect(closeMenu?.()).toBe(false);
       expect(itemFocus).not.toHaveBeenCalled();
@@ -466,19 +551,162 @@ for (const provider of ['base', 'radix'] as const) {
       const container = host
         .attachShadow({ mode: 'open' })
         .appendChild(document.createElement('div'));
-      const { fallback, sibling } = await renderMenu({
+      const { fallback, press, sibling } = await renderMenu({
         container,
         modal: false,
       });
 
-      fireEvent.pointerDown(sibling);
+      press(sibling);
       closeMenu?.();
       host.remove();
 
       expect(fallback).toHaveBeenCalledTimes(1);
     });
 
+    it("drops a closing item's focus intent once its parent reopens the menu before it unmounts", async () => {
+      const intent = mock(() => undefined);
+      const { fallback, item, setOpen } = await renderMenu({
+        itemFocus: intent,
+        open: true,
+      });
+
+      parentRefusesClose = true;
+      fireEvent.click(item);
+      setOpen(false);
+      setOpen(true);
+      setOpen(false);
+      closeMenu?.();
+
+      expect(intent).not.toHaveBeenCalled();
+      expect(fallback).toHaveBeenCalledTimes(1);
+    });
+
+    it('leaves focus after an outside press while the closed menu waits to unmount', async () => {
+      const { fallback, setOpen } = await renderMenu({
+        modal: false,
+        open: true,
+      });
+
+      setOpen(false);
+      fireEvent.pointerDown(document.body);
+
+      expect(closeMenu?.()).toBe(false);
+      expect(fallback).not.toHaveBeenCalled();
+    });
+
+    it("runs a closing item's focus intent after an outside press while the closed menu waits to unmount", async () => {
+      const intent = mock(() => undefined);
+      const { fallback, item, setOpen } = await renderMenu({
+        itemFocus: intent,
+        modal: false,
+        open: true,
+      });
+
+      parentRefusesClose = true;
+      fireEvent.click(item);
+      setOpen(false);
+      fireEvent.pointerDown(document.body);
+      closeMenu?.();
+
+      expect(intent).toHaveBeenCalledTimes(1);
+      expect(fallback).not.toHaveBeenCalled();
+    });
+
+    it('runs the content fallback after a press on its own toolbar while the closed menu waits to unmount', async () => {
+      const { fallback, setOpen, sibling } = await renderMenu({
+        modal: false,
+        open: true,
+      });
+
+      setOpen(false);
+      fireEvent.pointerDown(sibling);
+      closeMenu?.();
+
+      expect(fallback).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps its toolbar held for a reopened menu when the earlier popup releases late', async () => {
+      const menu = await loadAdapter();
+      const overlayOpen = mock((_open: boolean) => undefined);
+      const ui = (open: boolean) => (
+        <ToolbarOverlayProvider onOpenChange={overlayOpen}>
+          <menu.DropdownMenu open={open}>
+            {open && <menu.DropdownMenuContent>Item</menu.DropdownMenuContent>}
+          </menu.DropdownMenu>
+        </ToolbarOverlayProvider>
+      );
+      const view = render(ui(true));
+
+      view.rerender(ui(false));
+      view.rerender(ui(true));
+      await runCloseTimers();
+      view.rerender(ui(false));
+      expect(overlayOpen.mock.calls.at(-1)).toEqual([true]);
+
+      await runCloseTimers();
+      expect(overlayOpen.mock.calls.at(-1)).toEqual([false]);
+    });
+
+    if (provider === 'radix') {
+      it('runs the content fallback after Radix refused a focus move out of the menu', async () => {
+        const { fallback } = await renderMenu({});
+        const event = new CustomEvent('interactoutside', {
+          cancelable: true,
+          detail: { originalEvent: new FocusEvent('focusin') },
+        });
+
+        event.preventDefault();
+        interactOutside?.(event);
+        closeMenu?.();
+
+        expect(fallback).toHaveBeenCalledTimes(1);
+      });
+    }
+
     if (provider === 'base') {
+      it('leaves focus after a ctrl press on its own trigger closes the menu', async () => {
+        const { fallback, press, trigger } = await renderMenu({
+          modal: false,
+        });
+
+        press(trigger, { button: 0, ctrlKey: true });
+
+        expect(closeMenu?.()).toBe(false);
+        expect(fallback).not.toHaveBeenCalled();
+      });
+
+      it('holds no toolbar overlay for an opening its parent cancels', async () => {
+        const menu = await loadAdapter();
+        const overlayOpen = mock((_open: boolean) => undefined);
+
+        render(
+          <ToolbarOverlayProvider onOpenChange={overlayOpen}>
+            <menu.DropdownMenu
+              onOpenChange={(_open: boolean, details: ChangeDetails) =>
+                details.cancel?.()
+              }
+            >
+              <menu.DropdownMenuTrigger>
+                <button type="button">Open</button>
+              </menu.DropdownMenuTrigger>
+            </menu.DropdownMenu>
+          </ToolbarOverlayProvider>
+        );
+        React.act(() => {
+          const details: ChangeDetails = {
+            cancel() {
+              details.isCanceled = true;
+            },
+            isCanceled: false,
+            reason: 'trigger-press',
+          };
+
+          changeOpen?.(true, details);
+        });
+
+        expect(overlayOpen).not.toHaveBeenCalled();
+      });
+
       it('runs the content fallback when the menu closes with focus in its submenu', async () => {
         const { fallback, nested } = await renderMenu({ modal: false });
 
@@ -489,35 +717,27 @@ for (const provider of ['base', 'radix'] as const) {
         expect(fallback).toHaveBeenCalledTimes(1);
       });
 
-      it("keeps a closing item's focus opt-out through a press during the exit animation", async () => {
-        const { fallback, item, menu, trigger } = await renderMenu({
-          itemFocus: false,
-        });
+      it('leaves focus on the trigger when Shift+Tab moves it there', async () => {
+        const { fallback, trigger } = await renderMenu({});
 
-        popupAnimatesOut = true;
-        fireEvent.pointerDown(item);
-        fireEvent.click(item);
-        menu.removeAttribute('data-open');
-        fireEvent.pointerDown(trigger);
+        trigger.focus();
+        reportOutside(
+          new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true }),
+          'focus-out'
+        );
 
         expect(closeMenu?.()).toBe(false);
         expect(fallback).not.toHaveBeenCalled();
       });
 
-      it("drops a closing item's focus intent once its parent reopens the menu during the exit animation", async () => {
+      it("drops a closing item's focus intent once the menu reopens itself before it unmounts", async () => {
         const intent = mock(() => undefined);
-        const { fallback, item, menu, setOpen } = await renderMenu({
-          itemFocus: intent,
-          open: true,
-        });
+        const { fallback, item } = await renderMenu({ itemFocus: intent });
 
-        popupAnimatesOut = true;
-        fireEvent.pointerDown(item);
+        parentRefusesClose = true;
         fireEvent.click(item);
-        setOpen(false);
-        menu.removeAttribute('data-open');
-        setOpen(true);
-        setOpen(false);
+        changeOpen?.(true, { reason: 'trigger-press' });
+        changeOpen?.(false, { reason: 'trigger-press' });
         closeMenu?.();
 
         expect(intent).not.toHaveBeenCalled();

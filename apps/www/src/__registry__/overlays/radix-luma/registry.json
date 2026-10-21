@@ -27,6 +27,7 @@
         "platejs"
       ],
       "registryDependencies": [
+        "@plate/toolbar-overlay",
         "dropdown-menu"
       ],
       "files": [
@@ -68,20 +69,16 @@
         "@radix-ui/react-toolbar",
         "@radix-ui/react-tooltip",
         "class-variance-authority",
-        "diff-match-patch-ts@^0.6.0",
-        "lucide-react",
-        "platejs"
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@plate/toolbar-overlay"
       ],
       "files": [
         {
           "path": "src/registry/bases/radix/toolbar.tsx",
           "type": "registry:component",
           "target": "@components/editor/toolbar.tsx"
-        },
-        {
-          "path": "src/registry/components/editor/toolbar-overlay.tsx",
-          "type": "registry:component",
-          "target": "@components/editor/toolbar-overlay.tsx"
         }
       ],
       "meta": {},

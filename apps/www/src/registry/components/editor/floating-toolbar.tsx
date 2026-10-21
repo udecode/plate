@@ -141,7 +141,7 @@ function TextFloatingToolbar({
     !isAIChatOpen &&
     !readOnly &&
     mouseDownOpen !== false &&
-    dismissedSelection !== selectionRange;
+    (ownedOverlayOpen || dismissedSelection !== selectionRange);
   const openStateRef = React.useRef(open);
 
   React.useEffect(() => {
