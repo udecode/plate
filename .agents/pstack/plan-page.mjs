@@ -1571,8 +1571,8 @@ function rail(planPath) {
   };
 }
 
-// One section order for a page with a brief and for the PR body; each output renders a part its own way or leaves it out.
-const BRIEF_ORDER = ['teach', 'ontop', 'demo', 'moved', 'needs', 'picked', 'api', 'lead', 'main', 'idea', 'verification', 'scope', 'plans'];
+const PART_ORDER = ['teach', 'ontop', 'demo', 'moved', 'needs', 'picked', 'api', 'lead', 'main', 'idea', 'verification', 'scope', 'plans'];
+const COMMENT_PARTS = new Set(['ontop', 'demo', 'api', 'lead', 'verification']);
 const isOpenWork = (section) => sameText(section.title) === 'open work';
 const isVerification = (section) => sameText(section.title) === 'verification';
 
@@ -1782,7 +1782,7 @@ function page(planPath, { folded = false, run = null } = {}) {
     <div class="meta">${planTag}${carriedTag}${leadSeatsHtml(entries)}<span>Updated ${updated} UTC</span></div>
   </header>
   <section class="brief card">${answers}</section>
-  ${[...BRIEF_ORDER, 'history'].flatMap((key) => parts[key]?.() ?? [])
+  ${[...PART_ORDER, 'history'].flatMap((key) => parts[key]?.() ?? [])
     .filter(Boolean)
     .join('\n  ')}
 `;
@@ -2490,13 +2490,23 @@ const prModels = (entries) =>
     ...seats.map(({ seat, count }) => `  - ${seatMd(seat)}${count > 1 ? ` ×${count}` : ''}`),
   ]);
 
+function assertPrBrief(plan, where) {
+  if (!briefOf(plan)) throw new Error(`${where} needs a ## Brief before --pr, because the PR body opens with its Changes and Risks`);
+  assertBrief(plan, where);
+  assertTeach(plan, where);
+  assertPlain(plan, where);
+  if (/\bPR\s*#?\d+/i.test(plan.title)) throw new Error(`${where} is titled "${plan.title}"; the PR body links its plan by title, so name the change instead of the PR`);
+  const selfReference = briefOf(plan).find(({ lines }) => /\bPR\s*#?\d+/i.test(lines.join(' ')));
+  if (selfReference) throw new Error(`## Brief in ${where} names a PR number in "${selfReference.question}"; the PR body opens with the brief, so say what changes for a reviewer instead`);
+  const promised = briefOf(plan).find(({ question, lines }) => sameText(question) === sameText(BRIEF[0]) && /\bwill\b/i.test(lines.join(' ')));
+  if (promised) throw new Error(`## Brief in ${where} answers "${promised.question}" with "will"; at PR time say what the PR changes, for a reviewer`);
+}
+
 // With since, the body is a comment on someone else's PR about the commits after theirs; against is the PR's description.
 function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
   page(planPath);
   const { plan, root, playbooks } = contextOf(planPath);
   const where = relative(root, planPath);
-  const flag = since ? '--comment' : '--pr';
-  const output = since ? 'PR comment' : 'PR body';
   if (since) {
     try {
       execFileSync('git', ['cat-file', '-e', `${since}^{commit}`], { cwd: root, stdio: 'ignore' });
@@ -2509,17 +2519,9 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
     } catch {
       throw new Error(`--comment names ${since}, which this checkout's HEAD does not contain; render from a checkout at the PR's pushed head`);
     }
+  } else {
+    assertPrBrief(plan, where);
   }
-  if (!briefOf(plan)) throw new Error(`${where} needs a ## Brief before ${flag}, because the ${output} opens with its Changes and Risks`);
-  assertBrief(plan, where);
-  assertTeach(plan, where);
-  assertPlain(plan, where);
-  if (/\bPR\s*#?\d+/i.test(plan.title)) throw new Error(`${where} is titled "${plan.title}"; the ${output} links its plan by title, so name the change instead of the PR`);
-  const selfReference = briefOf(plan).find(({ lines }) => /\bPR\s*#?\d+/i.test(lines.join(' ')));
-  if (selfReference) throw new Error(`## Brief in ${where} names a PR number in "${selfReference.question}"; the ${output} opens with the brief, so say what changes for a reviewer instead`);
-  // A brief still in the future tense was written before the build, not rewritten for the reviewer.
-  const promised = briefOf(plan).find(({ question, lines }) => sameText(question) === sameText(BRIEF[0]) && /\bwill\b/i.test(lines.join(' ')));
-  if (promised) throw new Error(`## Brief in ${where} answers "${promised.question}" with "will"; at PR time say what the PR changes, for a reviewer`);
   const self = { path: planPath, plan };
   const carried = carriedPlans(self, root);
   const entries = [self, ...carried];
@@ -2535,6 +2537,7 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
   ];
   const { lead, pairs } = pageSections(playbooks, plan.meta.playbook, where);
   const sections = (role) => plan.sections.filter((section) => roleOf(section, lead) === role && section.lines.some((line) => line.trim()));
+  if (since && !sections('ontop').length) throw new Error(`${where} needs a non-empty ## On top of the PR before --comment, because the comment lists there what your commits kept, changed and dropped from the author's version`);
   const base = dirname(planPath);
   const uploaded = uploadedFrames(existing);
   const attach = new Set();
@@ -2553,7 +2556,7 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
     const paths = [...step.matchAll(SHOT)].map(([, , path]) => path);
     return !paths.length || !paths.every(repeated);
   };
-  const brief = briefOf(plan).map(({ question, lines }) => {
+  const brief = (since ? [] : briefOf(plan)).map(({ question, lines }) => {
     const index = BRIEF.findIndex((asked) => sameText(asked) === sameText(question));
     const body = lines.join('\n').trim().split('\n');
     // Changes opens the body as its summary; GitHub's Caution box already titles the risks.
@@ -2561,8 +2564,8 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
   });
   const titled = (title, lines) => (lines.some((line) => line.trim()) ? [`## ${title}`, '', ...lines, ''] : []);
   const filled = (section) => (section?.lines.some((line) => line.trim()) ? section : null);
-  const process = prProcess(entries, playbooks);
-  const models = prModels(entries);
+  const process = since ? '' : prProcess(entries, playbooks);
+  const models = since ? [] : prModels(entries);
   if (models.length) models[0] = [models[0], process].filter(Boolean).join(' · ');
   else if (process) models.push(process);
   // A reviewer needs what the PR leaves out, not who tracks it or where its run files sit.
@@ -2611,9 +2614,8 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
     scope: () => sections('idea').filter(isOpenWork).flatMap((section) => titled('Out of scope', followUps(section.lines))),
     plans: () => titled('Plans', entries.map((entry) => `- ${link(entry)}`)),
   };
-  // The compare view is exactly the commits after the author's, so the comment never pastes code a reviewer can open there.
   const range = since && (github ? [`[My commits after yours](https://diffshub.com/${github.repo}/compare/${since}...${github.sha})`, ''] : [`My commits after \`${since}\``, '']);
-  const region = [PR_START, ...models, '', ...(range || []), ...brief.flat(), ...BRIEF_ORDER.flatMap((key) => parts[key]?.() ?? []), PR_END]
+  const region = [PR_START, ...models, '', ...(range || []), ...brief.flat(), ...PART_ORDER.filter((key) => !since || COMMENT_PARTS.has(key)).flatMap((key) => parts[key]?.() ?? []), PR_END]
     .join('\n')
     .replace(/\n{3,}/g, '\n\n');
   const start = existing.indexOf(PR_START);

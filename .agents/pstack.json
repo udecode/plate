@@ -152,7 +152,7 @@
       ".agents/pstack/levels.mjs": "7faae23e5063b613dffc90a3f2c55ebb22ef197c20c9b0b0d41bf453a7800b84",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
       ".agents/pstack/page-stop.mjs": "5b31dd1fbfd0249ad83e15dbbe3d4c6c0bed5c6ef0231c365a42620838d8d10b",
-      ".agents/pstack/plan-page.mjs": "af5b2d3f213af3dbac5f2ef48684d470dc0e1714fb5789d39ea88e52302c0095",
+      ".agents/pstack/plan-page.mjs": "c38287df552b23590674f93a85cda5a152908351aee21e65cc689d8a7cedc900",
       ".agents/pstack/status.mjs": "eb66de88cdf526ea780c01a149e383467d8a7bb1cbdb0530b428be268be54c76",
       ".agents/pstack/tasks.mjs": "b382cc5897feb482371a08b47ce938c2d6bac377ec3e12e28ab195427a0049a4",
       ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
@@ -168,6 +168,6 @@
       ".agents/pstack/rules/title.md": "efad1fa1903df9ca7a1e55d2e353fdb4a2e9cdd23d2ec278662be554ec08efc0",
       ".agents/pstack/rules/trails.md": "e5d12f8c578a1d2f45dd6624ed0022babbad97f2e474b05894f00a6075913ae1"
     },
-    "source": "1df128d99e7d49115b3c0eb638c35a2edf4e144b"
+    "source": "5c23802b96cd090eb60aca05a56dc21d2fd76aef"
   }
 }
