@@ -78,8 +78,15 @@ find.update.select();
 `api.search(query)` applies a case-insensitive literal query. An empty query
 clears the results. `api.move(1 | -1)` wraps through the current results without
 rescanning. Document commits refresh the query automatically, including when
-no view is mounted. `update.select()` selects the current range and returns
-whether a result exists; view focus remains the caller's responsibility.
+no view is mounted. `update.select()` selects the current range in the main
+document and returns whether it did. It returns `false` when no result exists
+or when a named root's view calls it, because matches are main-document ranges.
+Called on the transaction of `editor.update` inside a callback that runs in a
+named root, such as the `match` of `tx.nodes.remove` on a node there, it
+selects whatever text sits at the result's path and offsets in that root
+instead and returns `true`, or throws when they fall outside that root. A
+view's `update` keeps the view's root. View focus remains the caller's
+responsibility.
 
 `FindPluginState` contains `query`, immutable `matches`, `activeIndex` and
 `error`. The `count` and `activeMatch` store selectors derive current results.

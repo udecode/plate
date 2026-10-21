@@ -56,7 +56,11 @@ Plugin update methods run in their target's root, as if called through that
 root's view. A node key, a live node, or a point or range that names its root
 picks the root. A bare path addresses the caller's root, and a call with no
 target runs in the view's own root, or in the caret's root when called on the
-editor.
+editor. `txSelection` and `txOnly` methods, and a call that passes a function,
+skip this routing and run in the caller's root. Inside a callback that runs in
+a named root, calls on the transaction of `editor.update` take that root as the
+caller's root, so a bare path, a call with no target and these methods all run
+there. A view's `update` keeps the view's root.
 
 Read committed state with direct read methods, or with `editor.read(...)` when
 several reads should share one state view.

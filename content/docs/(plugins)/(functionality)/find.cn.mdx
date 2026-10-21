@@ -59,8 +59,12 @@ const editor = createEditor({
 
 `platejs/find` 的 `BaseFindPlugin` 管理查询、当前匹配项、导航和临时装饰数据。
 `editor.plugin(BaseFindPlugin).api.search(query)` 执行不区分大小写的文本搜索，
-空字符串清除结果。`api.move(1 | -1)` 循环切换结果；`update.select()` 选择当前
-匹配范围并返回是否存在结果。焦点、输入延迟、快捷键和搜索栏由复制的 UI 管理。
+空字符串清除结果。`api.move(1 | -1)` 循环切换结果；`update.select()` 在主文档中
+选择当前匹配范围并返回是否已选择。没有结果，或由命名根（named root）的视图调用时，
+它返回 `false`，因为匹配项是主文档中的范围。在 `editor.update` 的事务中，于命名根中运行的
+回调里（例如对该根内节点执行 `tx.nodes.remove` 时的 `match`）调用它时，它会改为选中该根中
+位于结果路径和偏移处的任意文本并返回 `true`；路径和偏移超出该根时则抛错。视图的 `update`
+保持在视图自己的根中。视图焦点由调用方负责。
 文档提交会自动更新结果，即使没有挂载视图。查询不会写入文档或历史记录。
 
 `FindPluginState` 包含 `query`、不可变的 `matches`、`activeIndex` 和 `error`。

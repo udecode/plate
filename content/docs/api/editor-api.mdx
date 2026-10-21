@@ -280,7 +280,10 @@ content roots.
 Plugin update methods run in their target's root. A live node, a node key, or
 a point or range that names its root picks that root. A bare path addresses
 the root of the editor or view you call. A call on the editor with no target
-runs in the root that holds the caret.
+runs in the root that holds the caret. Inside a callback that runs in a named
+root, such as the `match` of `tx.nodes.remove` on a node there, the editor's
+transaction addresses that root instead, so a bare path or a call with no
+target runs there. A view's transaction keeps the view's root.
 
 ```ts
 // The caret is in the footer.

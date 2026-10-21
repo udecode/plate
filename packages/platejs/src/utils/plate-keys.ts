@@ -52,7 +52,6 @@ export const PLUGINS = {
   override: 'override',
   paragraph: 'paragraph',
   script: 'script',
-  searchHighlight: 'searchHighlight',
   singleBlock: 'singleBlock',
   singleLine: 'singleLine',
   strikethrough: 'strikethrough',

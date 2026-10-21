@@ -2,8 +2,6 @@
 'platejs': major
 ---
 
-Export `FindReplacePluginState` as the complete mutable state contract for `FindReplacePlugin`.
+Replace `FindReplacePlugin` and `decorateFindReplace` from `@platejs/find-replace` with `BaseFindPlugin` from `platejs/find`. Matches can now span links and other inline nodes.
 
-Move find-and-replace decoration into `FindReplacePlugin`, remove its React runtime requirement, highlight matches across inline descendants, and register search highlights in compiled schemas. The capability name and persisted decoration property key are both `searchHighlight`.
-
-**Migration:** Remove `decorateFindReplace` imports. Configure and install `FindReplacePlugin`; it owns decoration directly.
+**Migration:** Install the copied `FindKit`, or add `BaseFindPlugin` and call `editor.plugin(BaseFindPlugin).api.search(query)` where you set the `search` option. Remove `decorateFindReplace` imports and reads of `KEYS.searchHighlight`. Matches render as decorations with `data-find-match` and `data-find-active` attributes instead of `search_highlight` leaves.

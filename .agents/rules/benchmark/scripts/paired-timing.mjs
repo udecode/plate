@@ -22,6 +22,7 @@
 //     "planted": { "<arm>": ["<cohort>", ...] },
 //     "sameCode": { "<arm>": ["<cohort>", ...] }
 //   }
+// `budget` is one ratio for every cohort, or an object with one for each cohort.
 // Every run has six packets, three mirrored pairs. Every cohort needs a
 // planted arm and a same-code arm. No arm is both, and base and candidate are
 // neither. Planted arms carry a deliberate slowdown on their cohorts.
@@ -70,11 +71,17 @@ const readConfig = (configPath) => {
   const { arms, budget, cohorts, loadLimit, metric, planted, sameCode } = config;
 
   if (typeof metric !== 'string') fail('config.metric must name the measured field');
-  if (!isPositive(budget)) fail('config.budget must be a positive ratio');
   if (!isPositive(loadLimit)) fail('config.loadLimit must be a positive one-minute load');
   if (!Array.isArray(cohorts) || cohorts.length === 0 || new Set(cohorts).size !== cohorts.length) {
     fail('config.cohorts must list each judged cohort once');
   }
+  const budgets = typeof budget === 'number' ? Object.fromEntries(cohorts.map((cohort) => [cohort, budget])) : (budget ?? {});
+  for (const cohort of cohorts) {
+    if (!isPositive(budgets[cohort])) {
+      fail(typeof budget === 'number' ? 'config.budget must be a positive ratio' : `config.budget.${cohort} must be a positive ratio`);
+    }
+  }
+  config.budgets = budgets;
   if (!arms?.base || !arms?.candidate) fail('config.arms needs a base and a candidate');
   for (const [name, arm] of Object.entries(arms)) {
     if (!Array.isArray(arm.command) || arm.command.length === 0) fail(`config.arms.${name}.command must be an argv array`);
@@ -207,20 +214,21 @@ const judge = (config, { runs }) => {
         )
       )
     );
-    const margin = Math.abs(config.budget - candidate.statistic);
+    const budget = config.budgets[cohort];
+    const margin = Math.abs(budget - candidate.statistic);
     const reasons = [];
     for (const arm of armsOn(config.planted, cohort)) {
       const { statistic } = row(arm);
-      if (statistic - config.budget <= noise) {
+      if (statistic - budget <= noise) {
         reasons.push(
-          `planted ${arm} scored ${statistic.toFixed(3)}, not past the budget ${config.budget} by more than the same-code noise ${noise.toFixed(3)}, so the line could not fail there`
+          `planted ${arm} scored ${statistic.toFixed(3)}, not past the budget ${budget} by more than the same-code noise ${noise.toFixed(3)}, so the line could not fail there`
         );
       }
     }
     if (noise >= margin) {
       reasons.push(`the same-code noise ${noise.toFixed(3)} reaches the candidate's margin ${margin.toFixed(3)} to the budget`);
     }
-    return { cohort, rows, noise, reasons, passes: candidate.statistic <= config.budget };
+    return { cohort, rows, noise, reasons, passes: candidate.statistic <= budget };
   });
 
   const maxLoad = Math.max(...runs.map((run) => run.load));

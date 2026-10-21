@@ -261,7 +261,10 @@ editor.update.highlight.clear({ at: bodyBlock }); // 清除主文档中的一个
 ```
 
 目标分属两个 root 时，方法运行前就会抛错。`txSelection` 和 `txOnly` 方法，以及传入
-函数的调用，在调用方的 root 中运行。
+函数的调用，在调用方的 root 中运行。在 `editor.update` 的 transaction 中，于命名 root 中运行的
+回调里（例如对该 root 内节点执行 `tx.nodes.remove` 时的 `match`）调用时，方法会把该 root
+当作调用方的 root。裸路径、不带目标的调用、`txSelection` 或 `txOnly` 方法以及传入函数的
+调用都在该 root 中运行，即使光标位于主文档中。视图的 `update` 保持在视图自己的 root 中。
 
 ## 声明 feature format mapping
 
