@@ -18,6 +18,8 @@ Judge each test by the two edits of pstack's `principle-test-behavior-not-implem
 
 Keep a test that passes both. Rewrite or cut the rest, as the sections below say.
 
+An internal entry is an export that no production code outside its own module calls. A dead-code tool in production mode, such as `knip --production`, lists them. Each failure mode keeps one test, at the outermost entry a cheap test can call, such as the projection a screen reads rather than the helper inside it. When a kept boundary test catches a mistake, every other test of that mistake goes, even one that reads no private state.
+
 ## Scope
 
 Take the user's scope, or the files they name; `full` takes every tracked test file, as [Full mode](#full-mode) says. Read the root and scoped `AGENTS.md` first; their Tests rule is the bar for every test this audit keeps, rewrites or moves. A request that only asks which tests are weak or what is untested stays read-only and reports its candidates and gaps. Leave out skills and code installed from another repository.
@@ -38,6 +40,7 @@ Take the user's scope, or the files they name; `full` takes every tracked test f
 - Copied fixtures, inventories, manifests or export lists.
 - Exact source, import or string greps, and regexes over prose.
 - Tests of private state, internal entries or internal calls that fail the second edit. Rewrite one through the public interface when no public test covers its behavior, and cut it when one does.
+- Table rows that run no line another row does not and pin no edge of their own, such as a date, a timezone or an amount.
 - Duplicate invocations of the same contract, including a test this run just added and a test that builds its own fixture to recheck what a shared fixture already covers.
 - Tests whose only purpose is keeping a test-only export, global or wrapper alive.
 - Dead production code whose only callers are tests.
@@ -65,10 +68,12 @@ A slow test is never a cut either. Shrink its input to the smallest size at whic
 
 ## Evidence tiers
 
-Every cut cites one of three proofs. A reader's verdict is not one, and neither is several readers agreeing.
+Every cut cites one of these proofs. A reader's verdict is not one, and neither is several readers agreeing.
 
 - **Shape.** Some shapes cannot catch a behavior break: a test with no assertion and no call that throws on failure, an assertion the owner's declared type makes always true, such as `toBeDefined` on a value the type never leaves undefined, `toBeTruthy` on an object or `typeof` on an export, and a wall-clock bound outside the project's benchmark lane. A test is a member only when every assertion in it has the shape, because one real assertion beside a junk one still catches its break. A test whose only check is an awaited call that throws on failure is a real test; give it an explicit assertion instead of cutting it. Prove the shape once per batch: a script that lists every member, one member that still passes against a mutant, and the type or rule that makes the rest the same. When that member fails its mutant, the shape is wrong, and its members move to the Test tier. Membership is the proof, so a member stays only with a keep's evidence, the contract it enforces and the mutant it fails. When the project lints the shape, the lint's baseline is the member list.
 - **Duplicate.** Two places hold the same input and the same expected result. Prove it with a script that matches them, and keep the copy at the owner the project picks.
+- **Covered.** A kept case catches the same mistake. Either a per-case coverage run lists this case's covered lines as a subset of the kept case's, or the mutant this case catches also fails the kept case. A row whose own expected value pins a distinct edge is not covered by a row that runs the same lines.
+- **Internal.** The case reaches the code only through an export or file that the dead-code tool lists as used by tests alone. The code goes with the case when no production caller remains.
 - **Test.** Everything else, such as mock-call assertions, internal imports, schema parses, copied lists, tables with distinct inputs and contract-shaped tests, gets both edits one test at a time and every field of Candidate evidence. A schema case can catch a broken refinement, a call count can be the reads a server sees, and a copied list can be the value users are promised, so none of them is a shape.
 
 ## Candidate evidence
@@ -86,7 +91,7 @@ A shape or duplicate batch records its proof, its member list, the production de
 
 ## Edit shape
 
-Change one coherent owner-boundary batch at a time. Delete obsolete test-only exports, globals, wrappers and dead production paths instead of keeping aliases. Move a retained regression to its canonical owner, and fold near-duplicates into the shared fixture. Prefer a change that removes more production lines than it adds. Cut each case by hand, then remove the imports and top-level helpers the project's unused-code lint reports. Add no replacement test that restates the implementation, and never turn an uncertain candidate into a deletion to raise the count. Before the first edit to a file that holds another session's work, copy it to scratch.
+Change one coherent owner-boundary batch at a time. Delete obsolete test-only exports, globals, wrappers and dead production paths instead of keeping aliases. Move a retained regression to its canonical owner, and fold near-duplicates into the shared fixture. Prefer a change that removes more production lines than it adds. Cut each case with the project's delete-by-title codemod when it has one, or by hand, then remove the imports and top-level helpers the project's unused-code lint reports. Add no replacement test that restates the implementation, and never turn an uncertain candidate into a deletion to raise the count. Before the first edit to a file that holds another session's work, copy it to scratch.
 
 ## Full mode
 

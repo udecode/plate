@@ -56,7 +56,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, lstatSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
-import { currentLead, leadLabel, maxEffort } from './lead.mjs';
+import { findLead, leadLabel, maxEffort } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
@@ -391,7 +391,7 @@ if (args[0] === 'chips') {
     process.exit(2);
   }
   const listed = all ? sessionList() : null;
-  const owning = { transcript: here === null ? null : transcriptOf(currentLead()), all, live: listed && new Set(listed.filter((session) => !session.isArchived).map((session) => session.sessionId)) };
+  const owning = { transcript: here === null ? null : transcriptOf(findLead().run ?? null), all, live: listed && new Set(listed.filter((session) => !session.isArchived).map((session) => session.sessionId)) };
   if (rest[0] === 'cleanup') {
     const sessions = sessionList();
     if (!sessions) {
@@ -474,8 +474,9 @@ if (args[0] === 'append') {
           .map((line) => line.split('\t'))
       : [args.slice(2)];
   const before = stageMoves(args[1] ?? '').length;
-  const run = currentLead();
-  if (!run) console.error(`Runtime identity is unknown, so ${args[1]} records an unknown lead boundary.`);
+  const lead = findLead();
+  const run = lead.run ?? null;
+  if (!run) console.error(`Runtime identity is unknown because ${lead.miss}, so ${args[1]} records an unknown lead boundary.`);
   const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run);
   if (found.length > 0) {
     console.error(`${batch.length > 1 ? 'No row written' : 'Row not written'}:\n${found.join('\n')}`);
