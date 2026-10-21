@@ -1,6 +1,6 @@
 ---
 name: chips
-description: "Run the project's suggested-task ledger, the chips. /chips alone brings every open task up to date: it applies what the ledger helper says, settles stale and split tasks, cards what can start and reports the board. Use for /chips, /chips offer, start or drop, \"what chips are open\", \"suggest a task for X\", \"update the chips\", \"clean up the chips\", \"which chips are stale\", and whenever pstack would file a tracked issue, a follow-up, a reflect Backlog item or an out-of-band PR."
+description: "Run the project's suggested-task ledger, the chips. /chips alone brings every open task up to date: it applies what the ledger helper says, settles stale and split tasks, cards what can start and reports the board. Use for /chips, /chips offer, start or drop, \"what chips are open\", \"suggest a task for X\", \"update the chips\", \"clean up the chips\", \"which chips are stale\", at the last hand-back of a run that offered a task, and whenever pstack would file a tracked issue, a follow-up, a reflect Backlog item or an out-of-band PR."
 argument-hint: '[offer <finding> | start <id> | drop <id>]'
 ---
 
@@ -14,10 +14,11 @@ Every command below is `node .agents/pstack/decisions-check.mjs <command>`, run 
 | --- | --- |
 | [Sweep](#sweep), `/chips` with no argument, `/chips all` or `/chips codex` | bring this session's open tasks up to date, card what can start and report the board; `all` also lists every priority and takes the tasks no live session owns, and `codex` forces the Codex handoff on each card it offers, outside trunk delivery |
 | [Offer](#offer) | add a finding, the one way new work enters the ledger |
+| [Close](#close) | card the run's own Ready offers at its last hand-back, without the sweep |
 | [Start](#start) | begin a task a card opened, in the card's session |
 | [Drop](#drop) | record the owner's word to drop a task |
 
-pstack calls these modes too. Where a pstack step files a tracked issue, a follow-up or a reflect Backlog item, or puts an out-of-band fix in its own PR, the lead runs Offer instead. It runs a sweep only on `/chips`, as chips.md's Sweep says. A question about open chips, such as "what's next" over side work, runs steps 1 and 6 without step 1's cleanup and writes nothing.
+pstack calls these modes too. Where a pstack step files a tracked issue, a follow-up or a reflect Backlog item, or puts an out-of-band fix in its own PR, the lead runs Offer instead. It runs a sweep only on `/chips`, as chips.md's Sweep says, and Close at the last hand-back of a run that offered a task. A question about open chips, such as "what's next" over side work, runs steps 1 and 6 without step 1's cleanup and writes nothing.
 
 ## Sweep
 
@@ -53,7 +54,18 @@ pstack calls these modes too. Where a pstack step files a tracked issue, a follo
    - When it belongs to the question of a started task or of one that holds a card, offer a new task in that topic with `waits: task:<id>`. `chips` merges it into a carded task once the card is withdrawn.
    - Otherwise offer a new task with an id from `chips id`, a plain imperative title, `(xhigh)` only where chips.md's Title rule gives it, and its `writes:`, `topic:`, `kind:`, `priority:` with the evidence chips.md's Priority asks, `waits:`, `owns:` and `session:`, this session's id, which makes it this session's task, as chips.md's Owner says. Its `waits:` include `run:<plan>` for each active plan whose files it writes, as Sweep step 5 finds them. Reuse a topic the board lists when the finding answers its question. A new topic names one owner question, never an area.
 3. Append it with `append <ledger> chip "<id> <title>" "<finding>" "<tokens>" <result>`, where `<ledger>` is `<plans>/artifacts/suggested-tasks.decisions.tsv` in trunk delivery and `<plans>/suggested-tasks.decisions.tsv` otherwise, the path chips.md's Ledger names. When `append` refuses the row, its message names the route; follow it.
-4. Leave the card to the next sweep, and say in the hand-back how many tasks this run offered and that `/chips` cards them.
+4. Card it in [Close](#close) at the run's last hand-back, not now, because a later finding in this run may still fold into it, and a carded task takes no `folded` row.
+
+## Close
+
+A run that offered a task runs this at its last hand-back, once it has delivered its work, closed its plan and made its last offer, reflect's included, as chips.md's Close says. A session a card started skips it.
+
+1. Run `chips --session <id>`. For each task this run offered that the board lists as Ready, judge its dependencies and effort as chips.md's Cards says. For a task that needs another open task's result, log an `updated` row with its waits plus `task:<that id>` in place of its card. Append these rows in one batch before any card, because a new wait can raise the priority the next brief prints, and a card's title cannot change.
+2. Offer a card for each of the rest the way Sweep step 5 offers one, highest priority first, within the 10-card limit and all in one turn. Then append each card's `carded` row in one `append --from` batch.
+3. Leave every other task and every pass of the Do list to `/chips`.
+4. Add one line to the reply beside the page link: how many tasks the run offered, how many it carded and what each of the rest waits on, with `start <id>` beside each Ready task the limit left uncarded. `/chips` cards a waiting task once its wait clears, or `/chips all` once this session is gone.
+
+A runtime with no suggest tool still runs step 1, then lists each Ready task in the reply instead of carding it, as chips.md's Limits says for a plan that has closed.
 
 ## Start
 
