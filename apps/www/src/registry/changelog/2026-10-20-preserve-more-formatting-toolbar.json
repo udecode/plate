@@ -55,8 +55,8 @@
     },
     {
       "id": "2026-10-20-preserve-more-formatting-toolbar-2",
-      "kind": "behavior",
-      "summary": "When a click outside a non-modal menu, a right-click outside any menu, Tab, or a focus move to another control closes a toolbar menu, focus stays where the user put it instead of jumping back into the editor. This covers More formatting, Turn into, font color and the table menus. A press on another button in the menu's own toolbar still puts focus back in the editor. Base UI menus close without an exit animation, as Radix menus already do, so a click right after a close keeps its focus.",
+      "kind": "wiring",
+      "summary": "When a click outside a non-modal menu, a right-click outside any menu, Tab, or a focus move to another control closes a dropdown, focus stays where the user put it. It no longer moves back into the editor or, on Base UI, to the menu's trigger. This applies to every editor dropdown: More formatting, Turn into, font color, insert, mode, align, line height, list, export, import, media, comment, the table menus and the block drag handle menu. When an item moves focus itself, the menu leaves focus there. A press on another button in the menu's own toolbar still puts focus back in the editor. Base UI menus close without an exit animation, as Radix menus already do, so a click right after a close keeps its focus.",
       "details": [],
       "migrationNotes": [],
       "targets": ["editor-dropdown-menu"],

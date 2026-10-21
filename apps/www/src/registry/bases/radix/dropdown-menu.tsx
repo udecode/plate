@@ -217,6 +217,7 @@ export function DropdownMenuContent({
 
             return;
           }
+          // FocusScope calls this from a timer after the content unmounts, so focus is never still inside the menu here.
           if (
             finalFocus === false ||
             (root && focusClaimed(root.triggerRef.current))
