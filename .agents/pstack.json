@@ -92,7 +92,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "46b322b29a0bd6e9de73d8f69d86e1ac9dc0e637b937a890c34cc90b5fcf7e72",
+    "block": "88127cd260586b72d29c0ee2ba8282c81a0da58f08fd806aa6d8ea3741fa25c4",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",

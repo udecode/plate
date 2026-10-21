@@ -20,7 +20,7 @@ playbooks in [`.agents/playbooks/`](../../.agents/playbooks/) build on pstack's.
 | "plan" or `plan <goal>` | [Plan](../../.agents/playbooks/plan.md) |
 | "go" | [Build](../../.agents/playbooks/build.md) |
 | A bug report, screenshot or recording | [Bug fix](../../.agents/playbooks/bug-fix.md) |
-| "clean up PR <number>", "finish the current tree", "babysit merge" or "review PR <number>" | [Babysit](../../.agents/playbooks/babysit.md) |
+| "babysit <number>", "clean up PR <number>", "finish the current tree" or "review PR <number>" | [Babysit](../../.agents/playbooks/babysit.md) |
 | "clean up <surface>" | [Refactoring](../../.agents/playbooks/refactoring.md) |
 | A slowness report or `benchmark <scope>` | [Perf issue](../../.agents/playbooks/perf-issue.md) |
 
