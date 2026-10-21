@@ -1,5 +1,12 @@
 # @platejs/docx-io
 
+## 53.5.0
+
+### Minor Changes
+
+- [#5233](https://github.com/udecode/plate/pull/5233) by [@vincent69001](https://github.com/vincent69001) –
+  - Add `paragraphSpacing` and `headingSpacing` to `exportToDocx`, `exportEditorToDocx`, `editor.api.docxExport.exportToBlob`, `editor.tf.docxExport.exportAndDownload` and `htmlToDocxBlob` to set the space Word adds around paragraphs and headings, in twentieths of a point. Without them the file is unchanged.
+
 ## 53.4.0
 
 ### Minor Changes
