@@ -19,6 +19,16 @@ Read this file in full before you write, review or deslop any source, test or to
 ## Tests
 
 - Before writing or changing a test, invoke the `verify` skill and read the shared Tests rule in `.agents/pstack/rules/tests.md` and `verify`'s [testing reference](.agents/rules/verify/references/testing.md); it holds Plate's test shape, runners, type-test and assertion rules. Beyond the pstack block's Tests rule, do not write TDD cases for dead code/legacy removal assertions (for example: "should not contain old API X anymore"). Remove the dead path directly and keep tests focused on current behavior. The block's `.skip` ban does not cover a runtime capability gate, a skip that runs only when the browser, platform or engine lacks what the test needs; an unconditional `.skip` or `.only` stays banned.
+- **Library bar.** A test earns its place only when it guards one of these at an entry a user or another Plate package imports:
+  - the call, return, type, error or documented default of a public or cross-package export
+  - an editor-behavior rule, tagged as the last bullet of this section says
+  - the bytes of an outside format in either direction, such as HTML, Markdown, DOCX, a Yjs update or the clipboard
+  - a migration, a codemod or a stored document shape
+  - a regression with a named issue or failure mode
+  - a browser interaction a person performs, such as focus, selection, IME or drag, in the browser lane
+
+  Any other test, such as one that imports a module no entry exports or asserts a helper's intermediate result, needs its own named defect that no test on this list catches, or it goes. An audit that cannot settle a test on this list keeps it. One that cannot settle a test off the list cuts it, which overrides `test-audit`'s rule against cutting an uncertain candidate. Speed belongs to the benchmark lane, never to a test's assertion.
+
 - Write a throwaway probe as a scratch script run from the package directory with its `[test]` preloads passed as `--preload`, as `verify`'s command recipes say, and importing by absolute path, never as a `*.spec.*` file in the repository, where the Stop hook stages it. A probe that needs a DOM and runs without a preload that registers one registers it before it loads React or the code under test, as `verify`'s command recipes describe.
 - A test that proves a rule of `docs/editor-behavior/markdown-editing-spec.md` ends its title with the rule's tag, such as `[EDIT-TABLE-TAB-001]`, and `pnpm kb gaps` lists the locked rules that no running test carries. Add a tag only after reading the test's fixture, action and assertions against the rule's scenario, because the tag turns a claim into proof that `pnpm kb gaps` accepts. `pnpm kb <rule ID or issue ref>` joins a rule or issue to the tests tagged with it, and `pnpm kb check` is the `knowledge` step of `pnpm check`.
 

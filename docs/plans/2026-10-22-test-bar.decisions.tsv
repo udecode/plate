@@ -1,0 +1,8 @@
+ts	phase	decision	why	evidence	result
+2026-10-21T23:44:09Z	lead	claude-opus-5-5 @high	read from the session transcript, since an agent cannot see its own effort	transcript e2549b88-69f6-41c3-820d-01673acf611e.jsonl	recorded claude session
+2026-10-21T23:44:09Z	lead	claude-opus-5-5 @xhigh	get_session with self reports this session's model and effort	scope: get_session self for local_53e505e8-a485-4d1d-8e4b-54fa5cf76b29	recorded claude session
+2026-10-21T23:44:09Z	plan	Pursue: a closed library list of what a test may guard, with unsure tests off the list cut	t_4c22d0d5 asked whether Plate adopts Ellie's closed bar for a library, and the owner kept public API tests	scope: CODING_STANDARDS.md Tests, .agents/pstack/rules/tests.md, test-audit's Retention bar, verify's testing reference and Ellie's AGENTS.md Testing, all read this session	decided: verdict pursue
+2026-10-21T23:44:09Z	plan	unsure tests off the list are cut	the audit cannot prove two edits for every doubtful test across about 2,100 files	scope: test-audit's Edit shape rule against cutting uncertain candidates, read this session	decided: word keep unsure tests
+2026-10-21T23:44:09Z	plan	the list lives in CODING_STANDARDS.md Tests	every test change and review reads it, and a subject page holds one scope's decisions	scope: AGENTS.md Code bullet and Source authority, read this session	decided: word subject page
+2026-10-21T23:44:09Z	build	added the Library bar bullet to CODING_STANDARDS.md Tests	a one-file rule edit, so it lands directly	scope: CODING_STANDARDS.md Tests section diff	applied: one bullet
+2026-10-21T23:44:09Z	writing	unslop on the page and the bullet	AGENTS.md's Writing passes rule	scope: unslop loaded this session; the drafts needed no edit	applied: no edits
