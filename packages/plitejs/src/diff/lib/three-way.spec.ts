@@ -211,6 +211,25 @@ describe('three-way structural comparison', () => {
         comparison,
         resolutions: [
           {
+            choice: 'local',
+            comparisonId: comparison.id,
+            conflictId: conflict.id,
+          },
+          {
+            choice: 'remote',
+            comparisonId: comparison.id,
+            conflictId: conflict.id,
+          },
+        ],
+      })
+    ).resolves.toMatchObject({ status: 'invalid' });
+
+    await expect(
+      resolveComparison({
+        baseline: 'base',
+        comparison,
+        resolutions: [
+          {
             choice: {
               document: { children: [{ text: 'invalid' }] },
               kind: 'custom',
