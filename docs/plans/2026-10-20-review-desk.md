@@ -44,6 +44,7 @@ Opening a session's plan shows each file's net change across its landings. You m
 | What x hides | Only a pick; a question stays until its plan drops it | x hides questions too | hide questions | detail |
 | Starting a chip | y copies its start command for you to send to the lead; the desk starts nothing | A button that starts the session | start button | detail |
 | Trial pass mark | Faster than DiffsHub and at most 72 seconds a task, so 100 tasks fit in two hours (look) | Faster than DiffsHub only | floor N | small |
+| Plan page link | A new page at https://claude.ai/artifact/LmfrwLCc1YFTNhZjEFVb4w, because the old one at https://claude.ai/artifact/HLYerHCL1r65tGVNEqwUJM no longer opens | No published page, since the plan file is the record | drop page | detail |
 | Comment lines | Counted with code for now | Code and comment lines split | split comments | detail |
 | Tests you cut | Every scripted browser test goes, and I check the page by hand in the built-in browser. The unit tests for core, the server and stats stay | Cut the unit tests too | cut node tests | small |
 
@@ -227,7 +228,7 @@ The public view shows the public class, the internal view shows public and inter
 ## Open work
 
 - Your trial in step 1.7. Owner: you. Stop: none, since phase 2 is built.
-- The review of `7d5f879` and `2057e7b` in step 2.6, both shipped fast. Owner: you, with "full". Stop: before "push dotai".
+- The review of `7d5f879`, `2057e7b` and `ece9c3e` in step 2.6, all shipped fast. Owner: you, with "full". Stop: before "push dotai".
 - The page budgets in step 1.3. The browser pane stayed hidden and drew 1 to 3 frames a second, and a reading needs at least 30. Owner: lead, once you show the pane with Cmd+Shift+B. Stop: before your trial.
 - Whether to retire `review.mjs` or point it at the desk's record. Owner: you, through a chip. Stop: after phase 2.
 - A `Review:` trailer from `land.mjs` and a commit in each proof log, so fast and proof stop showing as unknown. Owner: chip t_5f6ea908. Stop: none.
@@ -238,9 +239,9 @@ The public view shows the public class, the internal view shows public and inter
 
 - Phase 2's changes from the plan first. On your "go directly phase 2. fast mode", phase 2 built here before your trial, with no panel, and the sign-in cut before it shipped the same way. The drawer shows a plan as it is now with its diff since the landing, not both versions side by side. Step 2.2's proof ran in the tests' scratch repository, not a clone of plate-2.
 - Phase 2 landed. The skill repository's `2057e7b` adds the context drawer, Decisions, Chips, notes, and the panel and proof badges on rows. Nothing pushes it until you say "push dotai". Plate's commit updates this plan.
-- Phase 2 proof. On `2057e7b`, 54 of 54 node tests and both type checks pass, and five planted defects each failed their test. By hand, Decisions listed the same 11 open questions as a hand list, the drawer matched a shell count on five plans, and a concern note and its resolve worked on a scratch record. That check found no row showing a panel badge, because the board looked for a phase pstack never writes. After the fix, 31 landings show one.
+- Phase 2 proof. On `2057e7b`, 54 of 54 node tests and both type checks pass, and five planted defects each failed their test. By hand, Decisions listed the same 11 open questions as a hand list, the drawer matched a shell count on five plans, and a concern note and its resolve worked on a scratch record. That check found no row showing a panel badge, because the board looked for a phase pstack never writes. After the fix, 31 landings show one. Then your desk stuck on "Loading…". Opening the scratch record rebuilt the shared app, and your record's server kept serving the new page with its old code, so the browser blocked the page's script. `ece9c3e` restarts a server whose code differs from the installed app, and a replay of that case loads cleanly.
 - Phase 2 limits. Decisions puts 889 unseen picks from 185 plans after the questions, and the Picks in Decisions row's word narrows them. No panel or other reviewer has read phase 2. Open work's Limits list the rest.
-- Phase 2 counts. Since phase 1's close you sent 8 messages, and each was done or answered.
+- Phase 2 counts. Since phase 1's close you sent 9 messages, and each was done or answered.
 - Phase 1's changes from the plan. The panel's B finding changed `B` to accept the cursor's session instead of the reader's. The first run of step 1.1's checks matched too widely and exited 1, and the rerun with the exact paths passed. A log row said hand-check items 1 to 8 passed, but item 8 was not shown, and a later row corrects it.
 - Landed. Plate's commit adds `.agents/review-desk.json`, this plan, its decision log and the review-desk subject file. The desk is the skill repository in this run's folder at `a727b2a`, and nothing pushes it until you say "push dotai".
 - Proof. The final rerun on `a727b2a` ran the node tests, both type checks, the install with `next build`, doctor, the stats and trial report commands, the desk file diff and 63 planted defects, and all 72 runs gave their expected exit. Step 1.1's checks found the server listening only on `127.0.0.1`, the import before the fork, and no commit holding the left-out font or images. The hand check passed items 1 to 7 on `80c26e3`, each with a screenshot.
