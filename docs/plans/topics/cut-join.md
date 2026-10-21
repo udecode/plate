@@ -1,6 +1,6 @@
 # Rejected cuts and decided values
 
-Page: https://claude.ai/artifact/6fWoW4f5Mt5gDbCfCw9mch
+Page: https://claude.ai/artifact/V9DMHdJKexdyqCDCDLF5Wa
 
 What happens to property values when a reviewer rejects a proposed Enter or split, and when a decision lands a value on a node whose type or place changed. Plans `docs/plans/2026-10-20-cut-join-values.md`, `-order.md`, `-moves.md`, `docs/plans/2026-10-21-cut-join-classes.md` and `docs/plans/2026-10-21-cut-join-slices.md` are this subject's earlier iterations. `docs/plans/2026-10-21-cut-join-redesign.md` is the current one, and `docs/plans/2026-10-21-cut-join-storage.md` follows it.
 

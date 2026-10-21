@@ -18,7 +18,7 @@ A tone or color someone accepted disappears when the heading that held it is rej
 
 A schema can say that a value only fits some blocks, such as a tone that only headings hold. In suggesting mode, one person can propose a heading and another a tone on it. Deciding them in some orders left the tone on a paragraph, and the editor then crashed or refused the decision.
 
-Now, when a decision writes values onto a block or changes its type or place, the block keeps only the values that place can hold, text included. While another pending suggestion, such as a wrap or a retype, still decides that place, the decision waits for it instead of dropping the value. The check after each change uses the same rule, so it never brings back a value the block cannot hold. When two people's concurrent edits leave a value in a place that refuses it, every peer drops it the same way, and a pending suggestion keeps its mark.
+Now, when a decision writes values onto a block or changes its type or place, the block keeps only the values that place can hold, text included. While another pending suggestion, such as a wrap or a retype, still decides that place, the decision waits for it instead of dropping the value. When concurrent edits leave a value where its place refuses it, every peer drops it alike, and a pending suggestion keeps its mark.
 
 This plan first covered the cut fixes too. Its panel traced them to how the editor saves a value equal to the default, so they moved to the storage plan.
 
