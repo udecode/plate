@@ -7,6 +7,11 @@ import type { JsonNode } from '../../core/change/tokens';
  * @internal
  */
 export type LedgerWork = {
+  /**
+   * Preview selections a commit mapped through a projection built apart
+   * from its mode, because no view read the selection the mode last showed.
+   */
+  apartSelections: number;
   blockFacts: number;
   bookEntries: number;
   /** Ordered runs `orderedRunsIn` yielded. */
@@ -85,6 +90,7 @@ export type LedgerWork = {
 };
 
 const work: LedgerWork = {
+  apartSelections: 0,
   blockFacts: 0,
   bookEntries: 0,
   breakRuns: 0,

@@ -115,6 +115,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-19-strikethrough-shortcut-hint",
+      "href": "/registry/changelog/2026-10-19-strikethrough-shortcut-hint.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show the strikethrough shortcut the editor binds",
+      "change": {
+        "type": "source",
+        "date": "2026-10-19",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["fixed-toolbar", "floating-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-19-toc-six-heading-levels",
       "href": "/registry/changelog/2026-10-19-toc-six-heading-levels.json",
       "status": "draft",

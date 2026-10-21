@@ -1,5 +1,6 @@
 import * as Y from 'yjs';
 
+import { withStoredAuthoredRead } from '../../core/authored-runtime';
 import type { NodeList } from '../../core/change/document-index';
 import { registerEditorViewLifetimeCleanup } from '../../core/editor-view-lifetime';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
@@ -580,7 +581,8 @@ export const createYjsAwarenessAdapter = <
   };
 
   const writeSelection = (view: YjsEditor): void => {
-    const selection = view.read.selection();
+    // Peers decode stored places, which a preview shows at its own.
+    const selection = withStoredAuthoredRead(view, () => view.read.selection());
 
     const nextRange =
       selection === null || selection === undefined

@@ -890,6 +890,11 @@ type EditorSelectionLocation =
   | Point
   | (Range & Readonly<{ kind?: never }>);
 
+/** What a selection write takes: a selection, or a path, point or range to select. */
+export type EditorSelectionTarget<
+  TSelection extends SelectionValue = SelectionValue,
+> = TSelection | EditorSelectionLocation;
+
 export type EditorTransactionSelectionApi<
   TSelection extends SelectionValue = SelectionValue,
   V extends Value = Value,
@@ -897,7 +902,7 @@ export type EditorTransactionSelectionApi<
   collapse: (options?: SelectionCollapseOptions) => void;
   move: (options?: SelectionMoveOptions) => void;
   set: BivariantMethod<
-    [target: TSelection | EditorSelectionLocation | null],
+    [target: EditorSelectionTarget<TSelection> | null],
     void
   >;
   /** Select exact live nodes. An empty collection clears the selection. */
@@ -2079,7 +2084,8 @@ export type EditorViewOptions<TRoot extends RootKey = RootKey> = {
    * every pending change accepted (`proposed`) or rejected (`accepted`) and
    * throws on a plain edit, though some other writes still change the
    * document, such as an update that makes a decision, undo and redo, and
-   * remote collaboration changes.
+   * remote collaboration changes. Outside a transaction, its
+   * `read.selection()` names places of that preview.
    */
   authored?:
     | Readonly<{ intent: 'edit' | 'propose' }>
@@ -3371,8 +3377,6 @@ export type PluginSlotLike = Readonly<{
 }>;
 
 export type EditorSelectionMapContext = Readonly<{
-  change: DocumentChange;
-  editor: AnyEditor;
   mapPoint: (
     point: Point,
     options?: {

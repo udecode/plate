@@ -1,0 +1,51 @@
+{
+  "trunk": "next",
+  "classes": {
+    "plans": ["docs/plans/*.md", "docs/plans/topics/*.md"],
+    "skip": [
+      ".agents/**",
+      ".claude/**",
+      ".codex/**",
+      "docs/**",
+      "**/AGENTS.md",
+      "**/CLAUDE.md",
+      "tooling/**",
+      "benchmarks/**",
+      "templates/**",
+      "apps/www/public/r/**",
+      "apps/www/src/__registry__/**",
+      "apps/www/src/generated/**",
+      "skills-lock.json"
+    ],
+    "tests": [
+      "**/*.test.*",
+      "**/*.spec.*",
+      "**/*.slow.*",
+      "**/__tests__/**",
+      "**/__snapshots__/**",
+      "**/tests/**",
+      "packages/*/test/**",
+      "packages/*/type-tests/**"
+    ],
+    "public": [
+      "packages/*/package.json",
+      "packages/*/src/**",
+      ".changeset/**",
+      "apps/www/src/registry/**",
+      "content/docs/**"
+    ]
+  },
+  "categories": {
+    "generated": [
+      "templates/**",
+      "apps/www/public/r/**",
+      "apps/www/src/__registry__/**",
+      "apps/www/src/generated/**"
+    ],
+    "workflow": [".agents/**", ".claude/**", ".codex/**", "**/AGENTS.md", "**/CLAUDE.md", "skills-lock.json"]
+  },
+  "signals": {
+    "core": { "label": "Plite core", "paths": ["packages/plitejs/src/**"] },
+    "api": { "label": "API manifest", "paths": ["apps/www/src/generated/api-reference-manifest.json"] }
+  }
+}

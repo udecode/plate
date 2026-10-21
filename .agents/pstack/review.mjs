@@ -12,14 +12,15 @@
 // oldest commits once each is reviewed. --mark moves the ref to the tip it
 // listed. The ref and the reviewed list live in this clone only.
 //
-// The config's reviewPaths, such as {"tests": ["**/*.test.*"], "public":
-// ["packages/**"], "internal": ["apps/**"]}, sorts each changed file into the
-// first of tests, public and internal whose globs match it, and leaves the
-// rest unreviewed. A commit weakens tests when it deletes a test file, drops
+// The config's reviewPaths, such as {"skip": ["docs/**"], "tests":
+// ["**/*.test.*"], "public": ["packages/**"]}, sorts each changed file into the
+// first of skip, tests and public whose globs match it, and every other file
+// into internal, so a path no list names still reaches a review. A skipped
+// file is never reviewed. A commit weakens tests when it deletes a test file, drops
 // expect or assert lines from them or adds .skip or .todo calls. --tier public,
 // the default when reviewPaths is set, or --tier internal lists only the
 // commits with a file in that tier or weakened tests, and --tier all lists
-// every commit. A commit that changes only unreviewed paths and new tests
+// every commit. A commit that changes only skipped paths and new tests
 // needs no review, so the ref moves past it. A session with more than one
 // listed commit names --net <session>, which prints the diff of that
 // session's commits in the tier as if they had landed together, so a later
@@ -79,7 +80,7 @@ const matcher = (globs = []) => {
   const patterns = globs.map((glob) => new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/gu, '\\$&').replace(/\*\*\/|\*\*|\*|\?/gu, (token) => GLOB[token])}$`, 'u'));
   return (path) => patterns.some((pattern) => pattern.test(path));
 };
-const classes = ['tests', ...TIERS].map((name) => [name, matcher(reviewPaths?.[name])]);
+const classes = ['skip', 'tests', 'public'].map((name) => [name, matcher(reviewPaths?.[name])]);
 const some = (paths) => `${paths.slice(0, 3).join(', ')}${paths.length > 3 ? `, and ${paths.length - 3} more` : ''}`;
 const diffOf = (sha, ...rest) => ['diff-tree', '-r', '-M', '--no-commit-id', '--root', '--diff-merges=first-parent', ...rest, sha];
 
@@ -90,7 +91,7 @@ function changes(sha) {
     .filter(Boolean)
     .map((line) => {
       const [status, ...paths] = line.split('\t');
-      return { status: status[0], paths, tier: classes.find(([, match]) => match(paths.at(-1)))?.[0] ?? 'skip' };
+      return { status: status[0], paths, tier: classes.find(([, match]) => match(paths.at(-1)))?.[0] ?? 'internal' };
     });
   const tests = files.filter((file) => file.tier === 'tests');
   if (tests.length === 0) return { files, weak: null };
@@ -212,5 +213,5 @@ if (tier !== 'all') {
   const other = hidden.filter(needsReview).length;
   const rest = TIERS.find((name) => name !== tier);
   if (other > 0) console.log(`\n${other} more commit(s) change ${rest} paths and no ${tier} ones; --tier ${rest} lists them, and --done marks a session's commits reviewed in every tier.`);
-  if (hidden.length > other) console.log(`${hidden.length - other} commit(s) change only unreviewed paths or add tests, and need no review.`);
+  if (hidden.length > other) console.log(`${hidden.length - other} commit(s) change only skipped paths or add tests, and need no review.`);
 }
