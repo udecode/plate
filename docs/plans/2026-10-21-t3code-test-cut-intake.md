@@ -1,6 +1,7 @@
 # Intake: t3code's 11k test cut
 
 Status: done: 10 items, 3 chips offered, 1 folded
+Page: https://claude.ai/artifact/2GBcKaEzFMykR6xcTTKGL4
 Playbook: verdict
 
 t3code deleted 43% of its tests in one PR, picked by cheap-model votes. Plate should copy the speed and refuse the votes. Plate's audit holds the right bar and moves too slowly to matter. Its first plitejs pass read 84 of 1,363 files and removed about 800 lines, against about 552k lines of tests. The fix is structure, not a stricter principle. Lint the banned shapes so the baseline becomes the cut list, prove a junk shape once instead of once per test, and give the legacy fixtures one owner.
