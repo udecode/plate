@@ -4,7 +4,7 @@
   "title": "Code Block Diagram Flowchart",
   "description": "Draw flowchart.js code blocks.",
   "dependencies": [
-    "flowchart.js"
+    "flowchart.js@1.18.0"
   ],
   "registryDependencies": [
     "https://platejs.org/r/code-block-diagram.json"

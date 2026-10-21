@@ -426,7 +426,7 @@ importers:
         specifier: 2.6.0
         version: 2.6.0(@aws-sdk/client-s3@3.1136.0)(@aws-sdk/lib-storage@3.1136.0(@aws-sdk/client-s3@3.1136.0))(@aws-sdk/s3-presigned-post@3.1136.0)(@aws-sdk/s3-request-presigner@3.1136.0)(@opentelemetry/api@1.9.0)(ai@6.0.116(zod@3.25.61))(hono@4.12.5)(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(openai@5.3.0(ws@8.19.0)(zod@4.1.12))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(zod@3.25.61)
       flowchart.js:
-        specifier: ^1.15.0
+        specifier: 1.18.0
         version: 1.18.0
       framer-motion:
         specifier: 12.17.0
@@ -492,10 +492,10 @@ importers:
         specifier: 2.4.3
         version: 2.4.3(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)
       pele:
-        specifier: ^1.6.0
+        specifier: 1.6.0
         version: 1.6.0
       plantuml-encoder:
-        specifier: ^1.4.0
+        specifier: 1.4.0
         version: 1.4.0
       platejs:
         specifier: workspace:^
@@ -588,7 +588,7 @@ importers:
         specifier: 2.1.2
         version: 2.1.2(react@19.2.8)
       viz.js:
-        specifier: ^2.1.2
+        specifier: 2.1.2
         version: 2.1.2
       y-webrtc:
         specifier: 10.3.0
