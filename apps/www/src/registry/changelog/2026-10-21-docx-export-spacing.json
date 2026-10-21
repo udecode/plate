@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-21-docx-export-spacing",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-21-docx-export-spacing.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-21",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Keep space above headings in Word export",
+  "targets": [
+    {
+      "name": "docx-export",
+      "files": ["apps/www/src/registry/components/editor/docx-export.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-21-docx-export-keep-space-above-headings-154466f7",
+      "kind": "behavior",
+      "summary": "Add space above each heading in `DOCX_EXPORT_STYLES`, from 24pt for `h1` down to 10pt for `h6`, because Word export now applies the stylesheet's block margins.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["docx-export"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-21",
+          "entry": "2026-10-21-docx-export-spacing",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
