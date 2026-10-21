@@ -539,7 +539,13 @@ async function copyPackages(sourceRoot: string, targetRoot: string) {
         recursive: true,
       });
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        throw new Error(
+          `packages/${entry.name} has no dist; run pnpm build before this check`,
+          { cause: error }
+        );
+      }
+      throw error;
     }
 
     for (const filePattern of packageJson.files ?? []) {
