@@ -1,5 +1,6 @@
 'use client';
 
+import { useComposedRef } from 'platejs/react';
 import * as React from 'react';
 
 import {
@@ -11,6 +12,16 @@ import {
   DropdownMenuTrigger as ShadcnDropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import {
+  CloseFocusWatcher,
+  type FinalFocus,
+  FinalFocusContext,
+  type FinalFocusRef,
+  focusClaimed,
+  MenuRootContext,
+  takeFinalFocus,
+  useMenuRoot,
+} from '@/registry/components/editor/menu-close-focus';
 
 export {
   DropdownMenuGroup,
@@ -24,90 +35,11 @@ export {
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 
-type FinalFocus = false | (() => void);
-type FinalFocusRef = React.RefObject<FinalFocus | undefined>;
-type MenuRoot = {
-  finalFocusRef: FinalFocusRef;
-  modal: boolean;
-  triggerRef: React.RefObject<HTMLButtonElement | null>;
-};
-
-const FinalFocusContext = React.createContext<FinalFocusRef | null>(null);
-const MenuRootContext = React.createContext<MenuRoot | null>(null);
-const closeGestures = ['keydown', 'pointerdown'] as const;
-
-function isSecondaryPress(event: Event) {
-  return (
-    event instanceof MouseEvent &&
-    (event.button === 2 || (event.button === 0 && event.ctrlKey))
-  );
-}
-
-function ownsGesture(event: Event, trigger: HTMLElement | null) {
-  const owner = trigger?.closest('[role="toolbar"]') ?? trigger;
-
-  return event
-    .composedPath()
-    .some(
-      (node) =>
-        node instanceof Element &&
-        (node === owner || node.matches('[role="menu"]'))
-    );
-}
-
-function gestureFinalFocus(
-  event: Event,
-  { modal, triggerRef }: MenuRoot
-): FinalFocus | undefined {
-  if (event instanceof KeyboardEvent) {
-    return event.key === 'Tab' ? false : undefined;
-  }
-  if (isSecondaryPress(event)) return false;
-  if (ownsGesture(event, triggerRef.current)) return undefined;
-
-  return modal ? undefined : false;
-}
-
-function focusClaimed(trigger: HTMLElement | null) {
-  let active = document.activeElement;
-
-  while (active?.shadowRoot?.activeElement) {
-    active = active.shadowRoot.activeElement;
-  }
-
-  return !!active && active !== document.body && !trigger?.contains(active);
-}
-
-function CloseFocusWatcher({ root }: { root: MenuRoot }) {
-  React.useEffect(() => {
-    const record = (event: Event) => {
-      root.finalFocusRef.current = gestureFinalFocus(event, root);
-    };
-
-    for (const type of closeGestures) {
-      window.addEventListener(type, record, true);
-    }
-
-    return () => {
-      for (const type of closeGestures) {
-        window.removeEventListener(type, record, true);
-      }
-    };
-  }, [root]);
-
-  return null;
-}
-
 export function DropdownMenu({
   modal = true,
   ...props
 }: React.ComponentProps<typeof ShadcnDropdownMenu>) {
-  const finalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
-  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
-  const root = React.useMemo(
-    () => ({ finalFocusRef, modal, triggerRef }),
-    [modal]
-  );
+  const root = useMenuRoot(modal);
 
   return (
     <MenuRootContext.Provider value={root}>
@@ -190,8 +122,9 @@ export function DropdownMenuContent({
   children,
   className,
   onFinalFocus,
+  ref,
   ...props
-}: Omit<React.ComponentPropsWithoutRef<'div'>, 'onAbort'> & {
+}: Omit<React.ComponentProps<'div'>, 'onAbort'> & {
   align?: 'center' | 'end' | 'start';
   alignOffset?: number;
   onFinalFocus?: (event: Event) => void;
@@ -201,16 +134,18 @@ export function DropdownMenuContent({
   const root = React.useContext(MenuRootContext);
   const contentFinalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
   const finalFocusRef = root?.finalFocusRef ?? contentFinalFocusRef;
+  const popupRef = React.useRef<HTMLDivElement | null>(null);
+  const contentRef = useComposedRef(ref, popupRef);
 
   return (
     <FinalFocusContext.Provider value={finalFocusRef}>
       <ShadcnDropdownMenuContent
         {...props}
+        ref={contentRef}
         className={cn('data-[state=closed]:!animate-none', className)}
         onCloseAutoFocus={(event) => {
-          const finalFocus = finalFocusRef.current;
+          const finalFocus = takeFinalFocus(finalFocusRef);
 
-          finalFocusRef.current = undefined;
           if (finalFocus) {
             event.preventDefault();
             finalFocus();
@@ -229,7 +164,7 @@ export function DropdownMenuContent({
           onFinalFocus?.(event);
         }}
       >
-        {root && <CloseFocusWatcher root={root} />}
+        {root && <CloseFocusWatcher popupRef={popupRef} root={root} />}
         {children}
       </ShadcnDropdownMenuContent>
     </FinalFocusContext.Provider>
@@ -238,14 +173,16 @@ export function DropdownMenuContent({
 
 export function DropdownMenuTrigger({
   children,
+  ref,
   ...props
-}: Omit<React.ComponentPropsWithoutRef<'button'>, 'children'> & {
+}: Omit<React.ComponentProps<'button'>, 'children'> & {
   children: React.ReactElement;
 }) {
   const root = React.useContext(MenuRootContext);
+  const triggerRef = useComposedRef(ref, root?.triggerRef);
 
   return (
-    <ShadcnDropdownMenuTrigger {...props} ref={root?.triggerRef} asChild>
+    <ShadcnDropdownMenuTrigger {...props} ref={triggerRef} asChild>
       {children}
     </ShadcnDropdownMenuTrigger>
   );

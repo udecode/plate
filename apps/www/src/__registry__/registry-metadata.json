@@ -1,5 +1,5 @@
 {
-  "generation": "b57333cd7438692b1b519da162ee65783344ae780043cf63e7bdf44c16a5cb36",
+  "generation": "1629ab255f01a8d2b61551a0bf49df70cce065879f09bbb8e62df47291a5a1d7",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1147,13 +1147,20 @@
               "path": "bases/base/dropdown-menu.tsx",
               "target": "@components/editor/dropdown-menu.tsx",
               "type": "registry:component"
+            },
+            {
+              "path": "components/editor/menu-close-focus.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/menu-close-focus.tsx"
             }
           ],
           "name": "editor-dropdown-menu",
           "title": "Editor Dropdown Menu",
           "type": "registry:component",
           "dependencies": [
-            "@base-ui/react"
+            "@base-ui/react",
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
           ],
           "registryDependencies": [
             "dropdown-menu"
@@ -7996,11 +8003,20 @@
               "path": "bases/radix/dropdown-menu.tsx",
               "target": "@components/editor/dropdown-menu.tsx",
               "type": "registry:component"
+            },
+            {
+              "path": "components/editor/menu-close-focus.tsx",
+              "type": "registry:component",
+              "target": "@components/editor/menu-close-focus.tsx"
             }
           ],
           "name": "editor-dropdown-menu",
           "title": "Editor Dropdown Menu",
           "type": "registry:component",
+          "dependencies": [
+            "diff-match-patch-ts@^0.6.0",
+            "platejs"
+          ],
           "registryDependencies": [
             "dropdown-menu"
           ]

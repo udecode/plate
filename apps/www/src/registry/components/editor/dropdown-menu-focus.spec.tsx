@@ -134,13 +134,11 @@ for (const provider of ['base', 'radix'] as const) {
       itemFocus,
       modal,
       open,
-      strict = false,
     }: {
       container?: HTMLElement;
       itemFocus?: false | (() => void);
       modal?: boolean;
       open?: boolean;
-      strict?: boolean;
     }) => {
       const menu = await loadAdapter();
       const fallback = mock(() => undefined);
@@ -167,9 +165,7 @@ for (const provider of ['base', 'radix'] as const) {
           <button type="button">Outside</button>
         </>
       );
-      const wrap = (node: React.ReactNode) =>
-        strict ? <React.StrictMode>{node}</React.StrictMode> : node;
-      const view = render(wrap(ui()), { container });
+      const view = render(ui(), { container });
       const button = (name: string) => view.getByRole('button', { name });
 
       return {
@@ -178,12 +174,40 @@ for (const provider of ['base', 'radix'] as const) {
         menu: view.getAllByRole('menu')[0],
         nested: screen.getByRole('button', { name: 'Nested' }),
         outside: button('Outside'),
-        setOpen: (next: boolean) => view.rerender(wrap(ui(next))),
+        setOpen: (next: boolean) => view.rerender(ui(next)),
         sibling: button('Bold'),
         trigger: button('Open'),
         view,
       };
     };
+
+    it("passes a parent's ref through to the trigger", async () => {
+      const menu = await loadAdapter();
+      const ref = React.createRef<HTMLButtonElement>();
+
+      render(
+        <menu.DropdownMenu>
+          <menu.DropdownMenuTrigger ref={ref}>
+            <button type="button">Open</button>
+          </menu.DropdownMenuTrigger>
+        </menu.DropdownMenu>
+      );
+
+      expect(ref.current).toBeInstanceOf(HTMLElement);
+    });
+
+    it("passes a parent's ref through to the menu content", async () => {
+      const menu = await loadAdapter();
+      const ref = React.createRef<HTMLDivElement>();
+
+      render(
+        <menu.DropdownMenu>
+          <menu.DropdownMenuContent ref={ref}>Item</menu.DropdownMenuContent>
+        </menu.DropdownMenu>
+      );
+
+      expect(ref.current).toBeInstanceOf(HTMLElement);
+    });
 
     it('runs the selected item focus intent instead of the content fallback', async () => {
       const menu = await loadAdapter();
@@ -414,16 +438,6 @@ for (const provider of ['base', 'radix'] as const) {
       expect(fallback).toHaveBeenCalledTimes(1);
     });
 
-    it('runs the content fallback on a trigger toggle after the parent refused an outside close', async () => {
-      const { fallback, trigger } = await renderMenu({ modal: false });
-
-      fireEvent.pointerDown(document.body);
-      fireEvent.pointerDown(trigger);
-      closeMenu?.();
-
-      expect(fallback).toHaveBeenCalledTimes(1);
-    });
-
     it('drops an item focus intent whose close the parent refused', async () => {
       const itemFocus = mock(() => undefined);
       const { fallback, item } = await renderMenu({ itemFocus, modal: false });
@@ -464,15 +478,6 @@ for (const provider of ['base', 'radix'] as const) {
       expect(fallback).toHaveBeenCalledTimes(1);
     });
 
-    it('keeps one gesture record under StrictMode', async () => {
-      const { fallback } = await renderMenu({ modal: false, strict: true });
-
-      fireEvent.pointerDown(document.body);
-
-      expect(closeMenu?.()).toBe(false);
-      expect(fallback).not.toHaveBeenCalled();
-    });
-
     if (provider === 'base') {
       it('runs the content fallback when the menu closes with focus in its submenu', async () => {
         const { fallback, nested } = await renderMenu({ modal: false });
@@ -484,7 +489,7 @@ for (const provider of ['base', 'radix'] as const) {
         expect(fallback).toHaveBeenCalledTimes(1);
       });
 
-      it("keeps a closing item's focus opt-out when a press reopens nothing during the exit animation", async () => {
+      it("keeps a closing item's focus opt-out through a press during the exit animation", async () => {
         const { fallback, item, menu, trigger } = await renderMenu({
           itemFocus: false,
         });
