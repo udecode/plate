@@ -19,7 +19,6 @@ const arm = (name) => ({ command: ['node', 'arm.mjs', name], source: `/src/${nam
 const baseConfig = {
   metric: 'median',
   budget: 1.05,
-  loadLimit: 6,
   cohorts: ['small'],
   arms: { base: arm('base'), candidate: arm('candidate'), planted: arm('planted'), copy: arm('copy') },
   planted: { planted: ['small'] },
@@ -215,10 +214,10 @@ test('keeps linear drift from failing identical code across mirrored packets', (
   assert.equal(run.status, 0, run.stderr);
 });
 
-test('reports a loaded host as inconclusive', (t) => {
-  const run = analyze(t, baseConfig, small({ base: flat(10), candidate: flat(10), planted: flat(11), copy: flat(10) }, 9));
-  assert.equal(run.status, 3, run.stderr);
-  assert.match(run.stderr, /one-minute load reached 9\.00 > 6/);
+test('judges a loaded host on its measured noise, so a quiet same-code arm decides at any load', (t) => {
+  const run = analyze(t, baseConfig, small({ base: flat(10), candidate: flat(10), planted: flat(11), copy: flat(10) }, 54));
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /max one-minute load 54\.00/);
 });
 
 test('fails a conclusive miss on one cohort even when another cohort is inconclusive', (t) => {
@@ -397,7 +396,7 @@ test('runs when started through a symlink, so a linked path cannot exit 0 unjudg
 });
 
 test('reverses the arm order every odd packet, saves every run with its config, and never overwrites an attempt', (t) => {
-  const config = { ...baseConfig, loadLimit: 1000 };
+  const config = { ...baseConfig };
   const { dir, out, run } = measureWith(t, config, steadyArm);
   const first = run();
   assert.equal(first.status, 0, first.stderr);

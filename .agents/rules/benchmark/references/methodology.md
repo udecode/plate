@@ -48,10 +48,14 @@ Record before measuring:
   is honest; otherwise predeclare both an absolute and relative delta against
   observed baseline variability before reading the candidate result.
 
-On a loaded shared host, every timing line is inconclusive whether it passes
-or misses. Such a result never rewrites a tracked receipt or accepts a
-target, and a speed claim from it narrows to what a deterministic work count
-proves. In Chromium, count per-keystroke work through CDP
+Host load never gates a timing line, and no run waits for a quiet host. A
+timing verdict compares arms interleaved in one run, as
+`scripts/paired-timing.mjs` does, so load hits every arm alike, and a same-code
+arm measures the noise that load leaves. Only that noise and a planted arm
+decide whether a line is conclusive. Compare only ratios within one run,
+because absolute medians drift between runs. An inconclusive line reruns now,
+or its claim narrows to what a deterministic work count proves. An unpaired
+run never rewrites a tracked receipt or accepts a target. In Chromium, count per-keystroke work through CDP
 `Performance.getMetrics`: `LayoutCount`, `RecalcStyleCount` and
 `TaskDuration`. Frame latency through `requestAnimationFrame` moves in steps of
 about 16.7 ms, so it cannot resolve work smaller than a frame.
