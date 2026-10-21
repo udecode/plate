@@ -6,16 +6,16 @@
 // and `.env.local`, at any depth git does not skip as an ignored directory)
 // from the main checkout to the same path when that path is free, and runs
 // --install once per worktree, again after a failed run. Then, in the main
-// checkout on the branch .agents/pstack.json names, it lands the rows sessions
-// appended to the suggested-task ledger as one commit on origin/<branch>, and
-// fast-forwards only when no other local edit, staged, unstaged or untracked,
-// touches a path the incoming commits change. It prints one line per action
-// for the session.
+// checkout, it keeps the suggested-task ledger, which git ignores, in step
+// with refs/pstack/ledger on origin, and on the branch .agents/pstack.json
+// names it fast-forwards only when no other local edit, staged, unstaged or
+// untracked, touches a path the incoming commits change. It prints one line
+// per action for the session.
 
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
-import { LEDGER } from './tasks.mjs';
+import { LEDGER, LEDGER_REF, ledgerPath } from './tasks.mjs';
 
 // The ledger outgrows spawnSync's 1 MB default buffer, which cuts its output off without failing.
 const git = (args, options = {}) => spawnSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 30, timeout: 30_000, ...options });
@@ -41,7 +41,8 @@ const root = out('rev-parse', '--show-toplevel');
 if (!root) process.exit(0);
 process.chdir(root);
 const gitDir = out('rev-parse', '--path-format=absolute', '--git-dir');
-const linked = gitDir !== out('rev-parse', '--path-format=absolute', '--git-common-dir');
+const commonDir = out('rev-parse', '--path-format=absolute', '--git-common-dir');
+const linked = gitDir !== commonDir;
 
 if (linked) {
   const main = out('worktree', 'list', '--porcelain')?.match(/^worktree (.+)$/mu)?.[1];
@@ -66,81 +67,83 @@ if (linked) {
   process.chdir(main);
 }
 
-const config = existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {};
-const { branch } = config;
-if (!branch || out('branch', '--show-current') !== branch) process.exit(0);
-const upstream = `refs/remotes/origin/${branch}`;
-const fetchUpstream = () => out('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`) !== null;
-if (!fetchUpstream()) process.exit(0);
+const rows = (text) => text.slice(0, text.lastIndexOf('\n') + 1).split('\n').filter(Boolean);
 
-// Every session appends its suggested-task rows to this checkout's ledger and no task commits
-// them, so the first session to find them lands them; left here, they block every fast-forward.
-const ledger = config.plans ? join(config.plans, LEDGER) : null;
-const show = (rev) => {
-  const run = git(['show', `${rev}:${ledger}`]);
-  if (run.error) throw run.error;
-  return run.status === 0 ? run.stdout : '';
-};
-const landLedger = () => {
-  if (!ledger || !existsSync(ledger)) return;
-  const base = show('HEAD');
-  const file = readFileSync(ledger, 'utf8');
-  // A row another session is still appending has no newline yet; the next run lands it.
-  const text = file.slice(0, file.lastIndexOf('\n') + 1);
-  if (text.length <= base.length) return;
-  if (!text.startsWith(base)) {
-    console.log(`setup.mjs: ${ledger} has local edits that are not appended rows, so they were not landed`);
-    return;
+// Appends the complete rows of text that the file lacks, after the file's own. Returns how many,
+// or null when the file ends inside a row another session is still writing.
+const appendMissing = (path, text) => {
+  const file = existsSync(path) ? readFileSync(path, 'utf8') : '';
+  if (file !== '' && !file.endsWith('\n')) return null;
+  const known = new Set(rows(file));
+  const added = rows(text).filter((row) => !known.has(row));
+  if (added.length > 0) {
+    mkdirSync(dirname(path), { recursive: true });
+    appendFileSync(path, `${added.join('\n')}\n`);
   }
-  const rows = text.slice(base.length).split('\n').filter(Boolean);
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    if (attempt > 0 && !fetchUpstream()) break;
-    const theirs = show(upstream);
-    const known = new Set(theirs.split('\n'));
-    const added = rows.filter((row) => !known.has(row));
-    if (added.length === 0) {
-      moveTo(out('rev-parse', upstream), text, theirs);
+  return added.length;
+};
+
+// Helpers from before the ledger moved append to its former path. Once this checkout has the
+// tracked link there, their rows reach the ledger through it; until then, or when a file replaces
+// the link, the rows move into the ledger and the path goes back to what HEAD holds.
+const absorbFormer = (former, ledger) => {
+  if (!lstatSync(former, { throwIfNoEntry: false })?.isFile()) return;
+  const moved = appendMissing(ledger, readFileSync(former, 'utf8'));
+  if (moved === null) return;
+  if (moved > 0) console.log(`setup.mjs: moved ${moved} ledger row(s) from ${former} to ${ledger}`);
+  if (git(['ls-files', '--error-unmatch', '--', former]).status !== 0) rmSync(former);
+  else if (git(['diff', '--quiet', 'HEAD', '--', former]).status !== 0) git(['checkout', 'HEAD', '--', former]);
+};
+
+// Every session appends its suggested-task rows to this checkout's ledger, which git ignores, so
+// the ref on origin keeps them durable and shared between clones. Both sides only gain rows: the
+// file gets the rows only the ref holds, and the ref gets the rows only the file holds, pushed as
+// a fast-forward.
+const syncLedger = (ledger, former) => {
+  const lock = join(commonDir, 'pstack-ledger.lock');
+  try {
+    mkdirSync(lock);
+  } catch {
+    // Two starts at once would append the same rows twice; a lock this old belongs to a start that died.
+    if (Date.now() - (statSync(lock, { throwIfNoEntry: false })?.mtimeMs ?? 0) < 120_000) return;
+  }
+  try {
+    absorbFormer(former, ledger);
+    let pending = 0;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const fetched = git(['fetch', '--quiet', 'origin', `+${LEDGER_REF}:${LEDGER_REF}`]).status === 0;
+      if (attempt > 0 && !fetched) break;
+      const tip = out('rev-parse', '--verify', '--quiet', `${LEDGER_REF}^{commit}`);
+      const shown = tip ? git(['show', `${tip}:${LEDGER}`]) : null;
+      const theirs = shown?.status === 0 ? shown.stdout : '';
+      const pulled = appendMissing(ledger, theirs);
+      if (pulled) console.log(`setup.mjs: added ${pulled} ledger row(s) from ${LEDGER_REF} on origin`);
+      const known = new Set(rows(theirs));
+      const added = rows(existsSync(ledger) ? readFileSync(ledger, 'utf8') : '').filter((row) => !known.has(row));
+      pending = added.length;
+      if (pending === 0) return;
+      const content = `${theirs}${theirs === '' || theirs.endsWith('\n') ? '' : '\n'}${added.join('\n')}\n`;
+      const blob = git(['hash-object', '-w', '--stdin'], { input: content }).stdout.trim();
+      const tree = git(['mktree'], { input: `100644 blob ${blob}\t${LEDGER}\n` }).stdout.trim();
+      const head = out('commit-tree', tree, ...(tip ? ['-p', tip] : []), '-m', `${pending} suggested-task ledger row(s)`);
+      if (!head) break;
+      if (git(['push', '--quiet', 'origin', `${head}:${LEDGER_REF}`], { timeout: 60_000 }).status !== 0) continue;
+      git(['update-ref', LEDGER_REF, head]);
+      console.log(`setup.mjs: pushed ${pending} ledger row(s) to ${LEDGER_REF} on origin`);
       return;
     }
-    const content = `${theirs}${theirs === '' || theirs.endsWith('\n') ? '' : '\n'}${added.join('\n')}\n`;
-    const blob = git(['hash-object', '-w', '--stdin'], { input: content }).stdout.trim();
-    const env = { ...process.env, GIT_INDEX_FILE: join(gitDir, 'pstack-ledger-index') };
-    git(['read-tree', upstream], { env });
-    git(['update-index', '--cacheinfo', `100644,${blob},${ledger}`], { env });
-    const tree = git(['write-tree'], { env }).stdout.trim();
-    rmSync(env.GIT_INDEX_FILE, { force: true });
-    const message = `chore(plans): land ${added.length} suggested-task ledger row(s)\n\n[skip ci]`;
-    const head = out('commit-tree', tree, '-p', upstream, '-m', message);
-    if (!head) break;
-    if (git(['push', '--quiet', 'origin', `${head}:refs/heads/${branch}`], { timeout: 60_000 }).status !== 0) continue;
-    git(['update-ref', upstream, head]);
-    console.log(`setup.mjs: landed ${added.length} ledger row(s) on origin/${branch} as ${head.slice(0, 10)}`);
-    moveTo(head, text, content);
-    return;
+    console.log(`setup.mjs: could not push ${pending} ledger row(s) to ${LEDGER_REF} on origin`);
+  } finally {
+    rmSync(lock, { recursive: true, force: true });
   }
-  console.log(`setup.mjs: could not land the ${rows.length} ledger row(s) on origin/${branch}`);
 };
 
-// Moves this checkout to the commit that holds its ledger rows without rewriting the ledger
-// file, which other sessions keep appending to, unless the commit put rows before them.
-const moveTo = (head, text, committed) => {
-  if (git(['merge-base', '--is-ancestor', 'HEAD', head]).status !== 0) return;
-  const changed = git(['diff', '--name-status', '--no-renames', '-z', 'HEAD', head]).stdout.split('\0').filter(Boolean);
-  const paths = [];
-  for (let i = 0; i < changed.length; i += 2) paths.push({ status: changed[i], path: changed[i + 1] });
-  const updated = paths.filter(({ path }) => path !== ledger);
-  const others = new Set(updated.map(({ path }) => path));
-  if (localEdits().some((path) => others.has(path))) return;
-  git(['reset', '--quiet', '--mixed', head]);
-  for (const { path } of updated.filter(({ status }) => status === 'D')) rmSync(path, { force: true });
-  const written = updated.filter(({ status }) => status !== 'D').map(({ path }) => path);
-  for (let i = 0; i < written.length; i += 200) git(['checkout', '--quiet', '--', ...written.slice(i, i + 200)]);
-  if (committed === text) return;
-  const now = readFileSync(ledger, 'utf8');
-  if (!now.startsWith(text)) return;
-  writeFileSync(`${ledger}.tmp`, `${committed}${now.slice(text.length)}`);
-  renameSync(`${ledger}.tmp`, ledger);
-};
+const config = existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {};
+const { branch } = config;
+if (config.plans) syncLedger(ledgerPath(config.plans, 'trunk'), join(config.plans, LEDGER));
+if (!branch || out('branch', '--show-current') !== branch) process.exit(0);
+const upstream = `refs/remotes/origin/${branch}`;
+if (out('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`) === null) process.exit(0);
 
 const localEdits = () => {
   const local = git(['status', '--porcelain=v1', '-z', '--untracked-files=all']).stdout.split('\0').filter(Boolean);
@@ -152,7 +155,6 @@ const localEdits = () => {
   return paths;
 };
 
-landLedger();
 const behind = Number(out('rev-list', '--count', `HEAD..${upstream}`) ?? 0);
 if (behind === 0) process.exit(0);
 if (git(['merge-base', '--is-ancestor', 'HEAD', upstream]).status !== 0) {

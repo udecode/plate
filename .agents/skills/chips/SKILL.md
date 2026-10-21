@@ -52,7 +52,7 @@ pstack calls these modes too. Where a pstack step files a tracked issue, a follo
    - When the finding belongs to an offered task's question and that task holds no card, log a `folded` row on it with what the finding adds.
    - When it belongs to the question of a started task or of one that holds a card, offer a new task in that topic with `waits: task:<id>`. `chips` merges it into a carded task once the card is withdrawn.
    - Otherwise offer a new task with an id from `chips id`, a plain imperative title, `(xhigh)` only where chips.md's Title rule gives it, and its `writes:`, `topic:`, `kind:`, `priority:` with the evidence chips.md's Priority asks, `waits:`, `owns:` and `session:`, this session's id, which makes it this session's task, as chips.md's Owner says. Its `waits:` include `run:<plan>` for each active plan whose files it writes, as Sweep step 5 finds them. Reuse a topic the board lists when the finding answers its question. A new topic names one owner question, never an area.
-3. Append it with `append <plans>/suggested-tasks.decisions.tsv chip "<id> <title>" "<finding>" "<tokens>" <result>`. When `append` refuses the row, its message names the route; follow it.
+3. Append it with `append <ledger> chip "<id> <title>" "<finding>" "<tokens>" <result>`, where `<ledger>` is `<plans>/artifacts/suggested-tasks.decisions.tsv` in trunk delivery and `<plans>/suggested-tasks.decisions.tsv` otherwise, the path chips.md's Ledger names. When `append` refuses the row, its message names the route; follow it.
 4. Leave the card to the next sweep, and say in the hand-back how many tasks this run offered and that `/chips` cards them.
 
 ## Start

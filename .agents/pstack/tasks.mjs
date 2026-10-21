@@ -3,11 +3,15 @@
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, readFileSync, realpathSync } from 'node:fs';
-import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { capEffort } from './lead.mjs';
 import { landed, stateOf } from './status.mjs';
 
 export const LEDGER = 'suggested-tasks.decisions.tsv';
+// Trunk delivery keeps the ledger out of the branch's history: git ignores the artifacts
+// directory, and setup.mjs keeps the file in step with LEDGER_REF on origin.
+export const ledgerPath = (plans, delivery) => (delivery === 'trunk' ? join(plans, 'artifacts', LEDGER) : join(plans, LEDGER));
+export const LEDGER_REF = 'refs/pstack/ledger';
 
 let config;
 const projectConfig = () => (config ??= existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {});
@@ -1042,8 +1046,8 @@ function brief(task, ledger, max, tasks, codex, state) {
   const ref = checkoutRef();
   const onTrunk = trunk();
   const run = onTrunk ? 'node .agents/pstack/decisions-check.mjs' : `cd ${root} && node .agents/pstack/decisions-check.mjs`;
-  const patch = resolve(root, dirname(ledger), 'artifacts', 'chips', `${task.id}.patch`);
-  const artifacts = relative(root, dirname(dirname(patch)));
+  const artifacts = join(projectConfig().plans || 'docs/plans', 'artifacts');
+  const patch = resolve(root, artifacts, 'chips', `${task.id}.patch`);
   const reviewed = task.waits.map((wait) => follow(wait.match(WAIT)?.[2] ?? '', tasks)).filter(Boolean);
   const priority = priorityOf(task);
   return [

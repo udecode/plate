@@ -22,9 +22,9 @@
 // changes .claude files, and names the rebase to run instead. On Edit,
 // MultiEdit, Write and NotebookEdit it denies a file inside the main checkout,
 // its .git folder included, while that checkout is on the branch or the
-// protected branch, except the suggested-task ledger and the plans artifacts
-// directory; a linked worktree, even one nested in the main checkout's folder,
-// is its own checkout and passes. It refuses the edit when git or the guard
+// protected branch, except the plans artifacts directory, which holds the
+// suggested-task ledger and the run directories; a linked worktree, even one
+// nested in the main checkout's folder, is its own checkout and passes. It refuses the edit when git or the guard
 // itself fails, because a hook that exits with an error lets the edit through.
 
 import { spawnSync } from 'node:child_process';
@@ -271,14 +271,13 @@ function editDenial(config, file, cwd) {
   const branch = git(main, 'branch', '--show-current');
   if (branch === null) return "git could not read the main checkout's branch, so the guard refuses this edit there. Fix git, then retry.";
   if (branch !== '' && ![config.branch, config.protected].includes(branch)) return null;
-  const ledger = config.plans && join(config.plans, 'suggested-tasks.decisions.tsv');
   const artifacts = config.plans && join(config.plans, 'artifacts') + sep;
-  const path = hits.find((hit) => hit !== ledger && !(artifacts && hit.startsWith(artifacts)));
+  const path = hits.find((hit) => !(artifacts && hit.startsWith(artifacts)));
   if (path === undefined) return null;
   const here = git(cwd, 'rev-parse', '--show-toplevel');
   const worktree =
     path.split(sep)[0] !== '.git' && here !== null && !sameDir(here, main) && sameDir(git(here, 'rev-parse', '--path-format=absolute', '--git-common-dir') ?? here, common) ? here : null;
-  return `agents never edit the main checkout on ${branch || 'a detached HEAD'}, here ${path}. ${worktree ? `Edit ${join(worktree, path)} in your worktree instead` : 'Move to your own worktree, such as with EnterWorktree, edit there'}, and land it with land.mjs.${ledger ? ` Only ${ledger} and ${artifacts} are writable in the main checkout.` : ''}`;
+  return `agents never edit the main checkout on ${branch || 'a detached HEAD'}, here ${path}. ${worktree ? `Edit ${join(worktree, path)} in your worktree instead` : 'Move to your own worktree, such as with EnterWorktree, edit there'}, and land it with land.mjs.${artifacts ? ` Only ${artifacts}, which holds the suggested-task ledger, is writable in the main checkout.` : ''}`;
 }
 
 const input = JSON.parse(readFileSync(0, 'utf8'));
