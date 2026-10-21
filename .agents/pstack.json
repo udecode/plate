@@ -117,7 +117,7 @@
       ".agents/pstack/review.mjs": "a82ef79dc43a6acadadee5f4e8b1938c897333ea46c43ef854b2d9c729168737",
       ".agents/pstack/setup.mjs": "1fb48a1895c03239719937adbe0b470d6633d80f72824604cdac3b831a3b34a7",
       ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
-      ".agents/pstack/rules/chips.md": "2eeffe48c2718d80e6d15151f5091b23eb01a23c12f28c541e24b0d07f7a18ab",
+      ".agents/pstack/rules/chips.md": "ca1ab4880190127d63ab3aa03f897e9be4d76f46b866976bdd219f87423529d0",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
       ".agents/pstack/rules/land.md": "9dcf3b740ec33eb43d81a7cba84060ad0652692ad2467b8ba3e5fd6426ee7959",
       ".agents/pstack/rules/linked.md": "414bb3823bc3719af5303941eb5a028092e815dacbe61ba83ce95697c99dae70",
@@ -129,7 +129,7 @@
       ".agents/pstack/rules/time.md": "ccc1340977ddd4a6bdb9697c20165d3b1b9edec9e6bd1312b40ba819bd9a93d9",
       ".agents/pstack/rules/title.md": "0a64b90ec1d4440adefe17a32044b72f9f8ab57a4807ccf70d506e2e3c709bec"
     },
-    "source": "132b72065cf2edd67fabfe99dd795ccfed302a0d"
+    "source": "c55cf323dc9b7f521e560db153f9d4a83442b25f"
   },
   "pageTopic": {
     "field": "review_scopes",

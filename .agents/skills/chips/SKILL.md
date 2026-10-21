@@ -60,12 +60,12 @@ pstack calls these modes too. Where a pstack step files a tracked issue, a follo
 
 A run that offered a task runs this at its last hand-back, once it has delivered its work, closed its plan and made its last offer, reflect's included, as chips.md's Close says. A session a card started skips it.
 
-1. Run `chips all --session <id>`, because the plain board folds P2 and P3 into one count. For each task this run offered that the board lists as Ready, judge its dependencies and effort as chips.md's Cards says. For a task that needs another open task's result, log an `updated` row with its waits plus `task:<that id>` in place of its card. Append these rows in one batch before any card, because a new wait can raise the priority the next brief prints, and a card's title cannot change.
+1. Run `chips all --session <id>`, because the plain board folds P2 and P3 into one count. A runtime with no session tool, which `chips all` needs, runs `chips brief <id>` for each task this run offered instead. For each task this run offered that is Ready, judge its dependencies and effort as chips.md's Cards says. For a task that needs another open task's result, log an `updated` row with its waits plus `task:<that id>` in place of its card. Append these rows in one batch before any card, because a new wait can raise the priority the next brief prints, and a card's title cannot change.
 2. Offer a card for each of the rest the way Sweep step 5 offers one, highest priority first, within the 10-card limit and all in one turn. Then append each card's `carded` row in one `append --from` batch.
 3. Leave every other task and every pass of the Do list to `/chips`.
 4. Add one line to the reply beside the page link: how many tasks the run offered, how many it carded and what each of the rest waits on, with `start <id>` beside each Ready task the limit left uncarded. `/chips` cards a waiting task once its wait clears, or `/chips all` once this session is gone.
 
-A runtime with no suggest tool still runs step 1, then lists each Ready task in the reply instead of carding it, as chips.md's Limits says for a plan that has closed.
+A runtime with no suggest tool still runs step 1, then lists each Ready task in the reply instead of carding it, as chips.md's Limits says for a plan that has closed, and leaves step 4's `/chips` and `/chips all` hints out, because they card nothing there.
 
 ## Start
 
