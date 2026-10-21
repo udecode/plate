@@ -20,6 +20,7 @@ const adaptationsPath = 'docs/development/pstack-adaptations.json';
 const patchPath = 'docs/development/pstack-adaptations.patch';
 const recordPath = 'docs/development/pstack-source.json';
 const ownerRoots = ['.agents/playbooks', '.agents/rules'];
+const botMaintainedSource = 'udecode/dotai';
 const lineReference = /:\d+(?:-\d+)?$/;
 const trailingPunctuation = /[.:/]+$/;
 const placeholderChar = /[*<>{}$[]/;
@@ -98,18 +99,32 @@ const fail = (lines) => {
 };
 
 const sourceLock = JSON.parse(show('skills-lock.json').toString());
-const installedDirs = Object.keys(sourceLock.skills).map(
-  (name) => `.agents/skills/${name}`
-);
 const localLock = JSON.parse(
   readFileSync(join(root, 'skills-lock.json'), 'utf8')
 );
+const ownedSkillDirs = (lock) =>
+  Object.keys(lock.skills)
+    .filter((name) => lock.skills[name].source !== botMaintainedSource)
+    .map((name) => `.agents/skills/${name}`);
+const installedDirs = ownedSkillDirs(sourceLock);
 const scannedDirs = [
-  ...new Set([
-    ...installedDirs,
-    ...Object.keys(localLock.skills).map((name) => `.agents/skills/${name}`),
-  ]),
+  ...new Set([...installedDirs, ...ownedSkillDirs(localLock)]),
 ];
+const expectedLock = `${JSON.stringify(
+  {
+    ...sourceLock,
+    skills: Object.fromEntries(
+      Object.entries(sourceLock.skills).map(([name, entry]) => [
+        name,
+        entry.source === botMaintainedSource
+          ? (localLock.skills[name] ?? entry)
+          : entry,
+      ])
+    ),
+  },
+  null,
+  2
+)}\n`;
 const installedPaths = listSource(...installedDirs);
 const toolingPaths = listSource(...adaptations.tooling);
 const sourcePaths = [
@@ -149,7 +164,10 @@ const expectedGit = (...gitArgs) =>
 expectedGit('init', '-q');
 for (const path of kept) {
   mkdirSync(dirname(join(expected, path)), { recursive: true });
-  writeFileSync(join(expected, path), show(path));
+  writeFileSync(
+    join(expected, path),
+    path === 'skills-lock.json' ? expectedLock : show(path)
+  );
 }
 expectedGit('add', '-A');
 
