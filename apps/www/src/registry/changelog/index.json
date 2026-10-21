@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-21-docx-export-spacing",
+      "href": "/registry/changelog/2026-10-21-docx-export-spacing.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep space above headings in Word export",
+      "change": {
+        "type": "source",
+        "date": "2026-10-21",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["docx-export"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-20-date-copied-labels",
       "href": "/registry/changelog/2026-10-20-date-copied-labels.json",
       "status": "draft",

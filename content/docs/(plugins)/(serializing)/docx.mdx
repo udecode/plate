@@ -274,6 +274,11 @@ size beyond an element's own values, such as a callout's color. The app's
 - `[data-docx-preserve-whitespace]`, the text of a code block;
 - `[data-empty]`, the placeholder of an empty equation or table of contents.
 
+The top and bottom margin, in `pt` or `px`, of a paragraph, heading or other
+block drawn as one Word paragraph sets its Word space before and after. A margin
+on a list, list item or table does not reach the file. Without a margin, the
+Word paragraph and heading styles set that spacing.
+
 The app may pass a custom root `component` when it needs a different wrapper.
 `DOCX_EXPORT_STYLES` is the registry's copied presentation preset.
 

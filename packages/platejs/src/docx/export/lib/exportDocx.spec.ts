@@ -941,6 +941,47 @@ describe('exportDocx layout values', () => {
     }
   );
 
+  it.each([
+    ['margin: 0 0 8pt 0', '0', '160'],
+    ['margin: 6pt 0', '120', '120'],
+    ['margin: 3pt', '60', '60'],
+    ['margin: 2pt 0 10px', '40', '150'],
+    ['margin-top: 4pt; margin-bottom: 12pt', '80', '240'],
+    ['margin: 0; margin-bottom: 9pt', '0', '180'],
+  ])(
+    'writes a stylesheet %s as space before %s and after %s',
+    async (css, before, after) => {
+      const properties = await paragraphProperties(
+        [paragraph('Spaced', {})],
+        `.editor-paragraph { ${css}; }`
+      );
+
+      expect(properties.Spaced).toContain(
+        `<w:spacing w:before="${before}" w:after="${after}" w:lineRule="auto"/>`
+      );
+    }
+  );
+
+  it('lets a heading margin replace the Word heading spacing', async () => {
+    const properties = await paragraphProperties(
+      [{ children: [{ text: 'Title' }], level: 1, type: 'heading' }],
+      'h1 { margin: 0 0 12pt 0; }'
+    );
+
+    expect(properties.Title).toContain(
+      '<w:spacing w:before="0" w:after="240" w:lineRule="auto"/>'
+    );
+  });
+
+  it('drops a negative margin, which Word spacing cannot hold', async () => {
+    const properties = await paragraphProperties(
+      [paragraph('Pulled', {})],
+      '.editor-paragraph { margin-top: -4pt; }'
+    );
+
+    expect(properties.Pulled).not.toContain('w:before=');
+  });
+
   it('maps logical and justified alignment to Word alignment', async () => {
     const properties = await paragraphProperties([
       paragraph('Start', { textAlign: 'start' }),

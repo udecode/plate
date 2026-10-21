@@ -1,6 +1,15 @@
 {
   "schemaVersion": 1,
   "components": {
+    "docx-export": [
+      "2026-10-21-docx-export-spacing",
+      "2026-10-09-export-static-presentation",
+      "2026-09-24-export-menu-projection",
+      "2026-09-07-docx-bookmarks",
+      "2026-09-02-comments-ownership",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-17-flat-editor-registry"
+    ],
     "date": [
       "2026-10-20-date-copied-labels",
       "2026-09-05-editor-feature-lifetimes",
@@ -873,14 +882,6 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
-    ],
-    "docx-export": [
-      "2026-10-09-export-static-presentation",
-      "2026-09-24-export-menu-projection",
-      "2026-09-07-docx-bookmarks",
-      "2026-09-02-comments-ownership",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-17-flat-editor-registry"
     ],
     "callout": [
       "2026-10-08-emoji-frimousse",

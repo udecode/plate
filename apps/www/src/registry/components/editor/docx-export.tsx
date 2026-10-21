@@ -7,12 +7,12 @@ body {
   margin: 0;
   padding: 20px;
 }
-h1 { font-size: 24pt; font-weight: bold; margin: 0 0 12pt 0; }
-h2 { font-size: 18pt; font-weight: bold; margin: 0 0 10pt 0; }
-h3 { font-size: 14pt; font-weight: bold; margin: 0 0 8pt 0; }
-h4 { font-size: 12pt; font-weight: bold; margin: 0 0 6pt 0; }
-h5 { font-size: 11pt; font-weight: bold; margin: 0 0 6pt 0; }
-h6 { font-size: 10pt; font-weight: bold; margin: 0 0 6pt 0; }
+h1 { font-size: 24pt; font-weight: bold; margin: 24pt 0 12pt 0; }
+h2 { font-size: 18pt; font-weight: bold; margin: 18pt 0 10pt 0; }
+h3 { font-size: 14pt; font-weight: bold; margin: 14pt 0 8pt 0; }
+h4 { font-size: 12pt; font-weight: bold; margin: 12pt 0 6pt 0; }
+h5 { font-size: 11pt; font-weight: bold; margin: 11pt 0 6pt 0; }
+h6 { font-size: 10pt; font-weight: bold; margin: 10pt 0 6pt 0; }
 p { margin: 0 0 8pt 0; }
 ul, ol { margin: 0 0 8pt 0; padding-left: 20pt; }
 li { margin: 0 0 4pt 0; }

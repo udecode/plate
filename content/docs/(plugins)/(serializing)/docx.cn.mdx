@@ -271,6 +271,10 @@ static mapping。除了元素自身的值（例如 callout 的颜色），它们
 - `[data-docx-preserve-whitespace]`，code block 的文本；
 - `[data-empty]`，空公式或空目录的占位文字。
 
+段落、标题等绘制为单个 Word 段落的块，其上下外边距（`pt` 或 `px`）设置它在
+Word 中的段前和段后间距。列表、列表项和表格自身的外边距不会写入文件。没有设置
+外边距时，由 Word 的段落和标题样式决定间距。
+
 需要不同 wrapper 时可以传入自定义 root `component`。`DOCX_EXPORT_STYLES` 是
 registry 可复制的展示预设。
 

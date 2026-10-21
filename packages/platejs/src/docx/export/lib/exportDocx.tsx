@@ -106,6 +106,11 @@ export type DocxExportOptions = Readonly<{
    * draws `[data-docx-preserve-whitespace]`; an empty equation or table of
    * contents marks its placeholder `[data-empty]`. A task list item marks its
    * `li` with `data-checked`, which becomes a ☑ or ☐ list marker.
+   *
+   * The top and bottom margin, in `pt` or `px`, of an element drawn as a Word
+   * paragraph, such as a paragraph or heading, sets its Word space before and
+   * after. Without one, the Word paragraph and heading styles set that
+   * spacing.
    */
   stylesheet?: string;
   /** Document metadata title. */

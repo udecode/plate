@@ -130,3 +130,4 @@ c673d03672	2026-10-19	pending		docs(deploy): close PR Preview deployment proof
 e4afde1d88	2026-10-21	pending		chore(pstack): install plan-page from dotai 4c86a62
 0708e01632	2026-10-21	pending		chore(pstack): install cleanup from dotai 7ba5f4d
 563643de0e	2026-10-21	synced	moot: main-only workflow tooling	fix(tooling): stop pinning dotai-installed skills in the workflow record (#5234)
+0ca5914475	2026-10-21	synced	next: exportDocx maps stylesheet top and bottom margins to Word spacing; copied stylesheet owns the values	feat(docx-io): add paragraphSpacing and headingSpacing to exportToDocx (#5233)

@@ -1222,6 +1222,15 @@ const fixupMargin = (marginString: string): number | undefined => {
   return undefined;
 };
 
+// Word space before and after is unsigned, so a negative margin is dropped.
+const fixupSpacing = (spacing?: string): number | undefined => {
+  if (spacing === undefined || spacing.trim().startsWith('-')) {
+    return undefined;
+  }
+
+  return spacing.trim() === '0' ? 0 : fixupMargin(spacing);
+};
+
 type ModifiedAttributesBuilderOptions = {
   isParagraph?: boolean;
 };
@@ -1358,9 +1367,21 @@ const modifiedStyleAttributesBuilder = (
       modifiedAttributes.font = 'Courier';
     }
 
-    const textIndent = isVNode(vNode)
-      ? (vNode as VNodeType).properties?.style?.['text-indent']
+    const style = isVNode(vNode)
+      ? (vNode as VNodeType).properties?.style
       : undefined;
+    const [top, , bottom = top] = style?.margin?.trim().split(/\s+/u) ?? [];
+    const beforeSpacing = fixupSpacing(style?.['margin-top'] ?? top);
+    const afterSpacing = fixupSpacing(style?.['margin-bottom'] ?? bottom);
+
+    if (beforeSpacing !== undefined) {
+      modifiedAttributes.beforeSpacing = beforeSpacing;
+    }
+    if (afterSpacing !== undefined) {
+      modifiedAttributes.afterSpacing = afterSpacing;
+    }
+
+    const textIndent = style?.['text-indent'];
     const textIndentSize = textIndent ? fixupMargin(textIndent) : undefined;
     if (textIndent && textIndentSize && !modifiedAttributes.numbering) {
       modifiedAttributes.indentation = {
@@ -1895,10 +1916,10 @@ const buildSpacing = (
   if (lineSpacing) {
     spacingFragment.att('@w', 'line', String(lineSpacing.line));
   }
-  if (beforeSpacing) {
+  if (beforeSpacing !== undefined) {
     spacingFragment.att('@w', 'before', String(beforeSpacing));
   }
-  if (afterSpacing) {
+  if (afterSpacing !== undefined) {
     spacingFragment.att('@w', 'after', String(afterSpacing));
   }
 
