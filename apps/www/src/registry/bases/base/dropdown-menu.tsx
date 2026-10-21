@@ -220,6 +220,14 @@ function handleItemClick(
   }
 }
 
+function takeFinalFocus(finalFocusRef: FinalFocusRef) {
+  const finalFocus = finalFocusRef.current;
+
+  finalFocusRef.current = undefined;
+
+  return finalFocus;
+}
+
 export function DropdownMenuItem({
   closeOnClick = true,
   finalFocus,
@@ -352,10 +360,9 @@ export function DropdownMenuContent({
           onFocusCapture?.(event);
         }}
         finalFocus={() => {
-          const finalFocus = finalFocusRef.current;
+          const finalFocus = takeFinalFocus(finalFocusRef);
           const inside = focusInside.current;
 
-          finalFocusRef.current = undefined;
           focusInside.current = false;
           if (finalFocus) {
             finalFocus();

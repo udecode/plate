@@ -76,8 +76,9 @@ test('[plate#5209] More formatting refocuses the editor only for closes it owns'
 
     await word.dblclick();
     const selection = await harness.get.selection();
-    if (!selection)
+    if (!selection) {
       throw new Error('Double-clicking the word selected nothing');
+    }
     const selectedText = await harness.get.selectedText();
     const selected = await nativeSelection();
     expect(selected?.length).toBeGreaterThan(0);
@@ -147,8 +148,9 @@ for (const menu of ['Turn into', 'More formatting'] as const) {
 
       await editor.locator('[data-editor-string]').first().dblclick();
       const selection = await harness.get.selection();
-      if (!selection)
+      if (!selection) {
         throw new Error('Double-clicking the word selected nothing');
+      }
       const selectedText = await harness.get.selectedText();
       const italicized = async () =>
         (

@@ -106,11 +106,11 @@ mock.module('@/components/ui/dropdown-menu', () => ({
   DropdownMenuTrigger: ({
     children,
     ref,
-    render,
+    render: element,
   }: React.PropsWithChildren<{
     ref?: React.Ref<HTMLSpanElement>;
     render?: React.ReactNode;
-  }>) => <span ref={ref}>{render ?? children}</span>,
+  }>) => <span ref={ref}>{element ?? children}</span>,
 }));
 
 afterEach(() => {
