@@ -5,7 +5,7 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "20291de86aa7c9f0fdda54710336613bdc88a9af75313aef50ae811423c1333a"
+      "computedHash": "60af804d94b6d12e51e038d653ffb43c4a8ff2dd4a22cb96c404d3ffd222e9d4"
     },
     "cleanup": {
       "source": "udecode/dotai",
@@ -39,7 +39,7 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/test-audit/SKILL.md",
-      "computedHash": "7cb7513b8ab63e2524d6e1e1049e5c4e31615efebe5c914c4679437c07f613c4"
+      "computedHash": "1e81aefee3cbac5081d5739e9cce9a1246d082c23f780927c676146ac6953187"
     },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",

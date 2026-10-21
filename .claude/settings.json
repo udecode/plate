@@ -58,6 +58,17 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/pstack/title.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/pstack/title.mjs\" --hook",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "worktree": {

@@ -86,7 +86,7 @@ A shape or duplicate batch records its proof, its member list, the production de
 
 ## Edit shape
 
-Change one coherent owner-boundary batch at a time. Delete obsolete test-only exports, globals, wrappers and dead production paths instead of keeping aliases. Move a retained regression to its canonical owner, and fold near-duplicates into the shared fixture. Prefer a change that removes more production lines than it adds. Apply cuts with a codemod that parses each test file, deletes each case matched by its full test name, then removes the imports and top-level helpers nothing references any more. Use the project's codemod when it has one; otherwise build it on the first batch and commit it with the project's tooling, so later batches rerun it. Add no replacement test that restates the implementation, and never turn an uncertain candidate into a deletion to raise the count. Before the first edit to a file that holds another session's work, copy it to scratch.
+Change one coherent owner-boundary batch at a time. Delete obsolete test-only exports, globals, wrappers and dead production paths instead of keeping aliases. Move a retained regression to its canonical owner, and fold near-duplicates into the shared fixture. Prefer a change that removes more production lines than it adds. Cut each case by hand, then remove the imports and top-level helpers the project's unused-code lint reports. Add no replacement test that restates the implementation, and never turn an uncertain candidate into a deletion to raise the count. Before the first edit to a file that holds another session's work, copy it to scratch.
 
 ## Full mode
 
