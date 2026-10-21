@@ -1028,6 +1028,11 @@ describe('keyboard input strategy', () => {
 
   it('applies model-owned keydown commands without a public onCommand hook', () => {
     const editor = createEditor({
+      initialSelection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      },
       initialValue: [paragraph('test')],
     }) as ReactEditorType;
     const event = reactKeyEvent(keyEvent('Enter'));
@@ -1053,6 +1058,14 @@ describe('keyboard input strategy', () => {
 
     expect(result.handled).toBe(true);
     expect(event.preventDefault).toHaveBeenCalled();
+    expect(editor.read((state) => state.children())).toEqual([
+      paragraph('te'),
+      paragraph('st'),
+    ]);
+    expect(editor.read((state) => state.selection())).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    });
 
     hasEditableTarget.mockRestore();
     isComposing.mockRestore();

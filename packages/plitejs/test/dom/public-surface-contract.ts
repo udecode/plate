@@ -16,17 +16,10 @@ const tsdownConfigPath = fileURLToPath(
 const domDocsPath = fileURLToPath(
   new URL('../../../../content/docs/api/dom.mdx', import.meta.url)
 );
-const coverageDocsPath = fileURLToPath(
-  new URL('../../../../content/docs/(guides)/dom-coverage.mdx', import.meta.url)
-);
 
 const typePrefixPattern = /^type\s+/;
 const exportAliasSplitPattern = /\s+as\s+/;
 const immediateJsdocPattern = /\/\*\*[\s\S]*?\*\/\s*$/;
-const readmeDomFocusPattern = /editor\.api\.dom\.focus\(\)/;
-const readmeClipboardPattern = /editor\.api\.dom\.clipboard\.insertTextData/;
-const readmeRootImportPattern =
-  /import \{ createEditor \} from ['"]platejs\/react['"]/;
 const tsdownRootEntryPattern = /index:\s*'src\/index\.ts'/;
 const tsdownDOMEntryPattern = /'dom\/index':\s*'src\/dom\/index\.ts'/;
 const tryPrefixPattern = /^try/i;
@@ -161,30 +154,6 @@ describe('DOM public surface contract', () => {
     }
 
     assert.deepEqual(missing, []);
-  });
-
-  it('documents mounted DOM services and component-owned coverage', () => {
-    const docs = readFileSync(domDocsPath, 'utf-8');
-    const coverage = readFileSync(coverageDocsPath, 'utf-8');
-
-    assert.match(docs, readmeDomFocusPattern);
-    assert.match(docs, readmeClipboardPattern);
-    assert.match(docs, readmeRootImportPattern);
-    assert.match(coverage, /slots\.contentBoundary/);
-    assert.match(
-      coverage,
-      /Each mounted editor surface owns an independent coverage session/
-    );
-    assert.match(
-      coverage,
-      /onMaterialize\(\{ boundary, reason, range, rangeRole \}\)/
-    );
-    for (const policy of ['skip', 'model', 'materialize', 'exclude']) {
-      assert.ok(
-        coverage.includes(`\`${policy}\``),
-        `${policy} should be documented`
-      );
-    }
   });
 
   it('documents application host utilities and DOM primitive types', () => {

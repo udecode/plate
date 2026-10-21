@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-
 import { afterEach } from 'vitest';
 
 import {
@@ -82,20 +80,83 @@ const mountEditorRoot = (editor: ReturnType<typeof createEditor>) => {
 };
 
 test('DOM repair exposes focused profiler buckets for huge-document attribution', () => {
-  const source = readFileSync(
-    'src/react/editable/dom-repair-queue.ts',
-    'utf-8'
-  );
+  const editor = createEditor();
+  const root = mountEditorRoot(editor);
+  const recorded: string[] = [];
 
-  expect(source).toContain("'collapsed-selection'");
-  expect(source).toContain("'lookup-text-host'");
-  expect(source).toContain("'set-dom-selection'");
-  expect(source).toContain("'scroll-text-host'");
-  expect(source).toContain("'scroll-current-selection'");
-  expect(source).toContain("'read-current-frame'");
-  expect(source).toContain("'read-runtime-selection'");
-  expect(source).toContain("'record-kernel-trace'");
-  expect(source).toContain('selectionAfter: selectionBefore');
+  editorReplace(editor, {
+    children: [
+      {
+        type: 'paragraph',
+        children: [{ text: 'abc' }],
+      },
+    ],
+    selection: {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 2 },
+      focus: { path: [0, 0], offset: 2 },
+    },
+  });
+
+  const textHost = document.createElement('span');
+  const string = document.createElement('span');
+  const text = document.createTextNode('abc');
+  const range = document.createRange();
+  const selection = window.getSelection();
+  const queue = createDOMRepairQueue({
+    editor,
+    inputController: createEditableInputController({
+      preferModelSelectionForInputRef: { current: true },
+      state: createEditableInputControllerState(),
+    }),
+    scrollSelectionIntoView: () => {},
+    syncDOMSelectionToEditor: () => {},
+  });
+
+  textHost.setAttribute('data-editor-node', 'text');
+  bindTextPath(editor, textHost, [0, 0]);
+  string.setAttribute('data-editor-string', 'true');
+  string.append(text);
+  textHost.append(string);
+  root.append(textHost);
+
+  range.setStart(text, 0);
+  range.collapse(true);
+  selection?.removeAllRanges();
+  selection?.addRange(range);
+
+  globalThis.__EDITOR_REACT_RENDER_PROFILER__ = {
+    record: ({ id }) => {
+      if (id) recorded.push(id);
+    },
+  };
+
+  try {
+    queue.repairCaretAfterModelIntent();
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 3 },
+      });
+    });
+    queue.repairCaretAfterModelIntent();
+
+    expect(recorded).toEqual(
+      expect.arrayContaining([
+        'dom-repair:collapsed-selection',
+        'dom-repair:lookup-text-host',
+        'dom-repair:read-current-frame',
+        'dom-repair:read-runtime-selection',
+        'dom-repair:record-kernel-trace',
+        'dom-repair:scroll-current-selection',
+        'dom-repair:scroll-text-host',
+        'dom-repair:set-dom-selection',
+      ])
+    );
+  } finally {
+    globalThis.__EDITOR_REACT_RENDER_PROFILER__ = undefined;
+    root.remove();
+  }
 });
 
 test('repair frame state rejects work scheduled by an older frame', () => {

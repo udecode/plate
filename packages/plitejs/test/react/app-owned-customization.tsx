@@ -199,7 +199,13 @@ describe('plite-react app-owned customization', () => {
       });
     });
 
-    expect(rendered.container.querySelectorAll('h2')).toHaveLength(1);
+    expect(editor.read((state) => state.children())).toEqual([
+      { type: 'title', children: [{ text: 'Untitled' }] },
+      { type: 'paragraph', children: [{ text: '' }] },
+    ]);
+    expect(rendered.container.querySelector('h2')?.textContent).toBe(
+      'Untitled'
+    );
   });
 
   test('Editable forwards scrollSelectionIntoView to app-owned code', async () => {

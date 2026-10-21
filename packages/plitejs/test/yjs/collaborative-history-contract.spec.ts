@@ -84,6 +84,29 @@ const assertRunProjectionExact = (run: CollaborativeHistoryRun): void => {
   }
 };
 
+type ReplayDocuments = Readonly<{ redo?: unknown; undo: unknown }>;
+
+const assertReplayDocuments = (
+  run: CollaborativeHistoryRun,
+  expected: ReplayDocuments
+): void => {
+  let replay: 'redo' | 'undo' | undefined;
+
+  for (const observation of run.observations) {
+    const { kind } = observation.step;
+
+    if (kind === 'undo' || kind === 'redo') replay = kind;
+    else if (kind !== 'sync') replay = undefined;
+    if (!replay) continue;
+
+    assert.deepEqual(
+      observation.peers.b?.document,
+      expected[replay],
+      `peer b ${replay} document mismatch at step ${observation.stepIndex}`
+    );
+  }
+};
+
 const readIdentityAt = (
   nodes: readonly CollaborativeYjsIdentityNode[],
   path: Path
@@ -226,11 +249,23 @@ describe('plitejs/yjs collaborative history contract', () => {
     readonly allowedFallbacks?: readonly ['remote-event-projected-content'];
     readonly children: readonly Descendant[];
     readonly name: string;
+    readonly redo: Readonly<{ children: readonly Descendant[] }>;
     readonly trace: CollaborativeHistoryTrace;
+    readonly undo: Readonly<{ children: readonly Descendant[] }>;
   }> = [
     {
       children: initialValue(),
       name: 'node properties',
+      redo: {
+        children: [
+          paragraph('alpha?'),
+          paragraph('beta', { role: 'title' }),
+          paragraph('gamma'),
+        ],
+      },
+      undo: {
+        children: [paragraph('alpha?'), paragraph('beta'), paragraph('gamma')],
+      },
       trace: offlineTrace(
         14_002,
         {
@@ -248,6 +283,12 @@ describe('plitejs/yjs collaborative history contract', () => {
     {
       children: initialValue(),
       name: 'text deletion',
+      redo: {
+        children: [paragraph('alpha?'), paragraph('ba'), paragraph('gamma')],
+      },
+      undo: {
+        children: [paragraph('alpha?'), paragraph('beta'), paragraph('gamma')],
+      },
       trace: offlineTrace(
         14_003,
         {
@@ -266,6 +307,12 @@ describe('plitejs/yjs collaborative history contract', () => {
       allowedFallbacks: ['remote-event-projected-content'],
       children: initialValue(),
       name: 'move',
+      redo: {
+        children: [paragraph('gamma'), paragraph('alpha'), paragraph('beta?')],
+      },
+      undo: {
+        children: [paragraph('alpha'), paragraph('beta?'), paragraph('gamma')],
+      },
       trace: offlineTrace(
         14_006,
         { at: [2], kind: 'move-node', to: [0] },
@@ -289,6 +336,7 @@ describe('plitejs/yjs collaborative history contract', () => {
       });
 
       assertRunProjectionExact(run);
+      assertReplayDocuments(run, scenario);
     });
   }
 
@@ -300,12 +348,30 @@ describe('plitejs/yjs collaborative history contract', () => {
     readonly children: readonly Descendant[];
     readonly identityPaths: readonly Path[];
     readonly minimized: CollaborativeHistoryTrace;
+    readonly minimizedReplay: ReplayDocuments;
     readonly name: string;
     readonly offline: CollaborativeHistoryTrace;
+    readonly offlineReplay: ReplayDocuments;
   }> = [
     {
       children: [paragraph('alphabeta'), paragraph('gamma')],
       identityPaths: [[0], [0], [0]],
+      minimizedReplay: {
+        redo: {
+          children: [paragraph('alph'), paragraph('abeta'), paragraph('gamma')],
+        },
+        undo: { children: [paragraph('alphabeta'), paragraph('gamma')] },
+      },
+      offlineReplay: {
+        redo: {
+          children: [
+            paragraph('alph'),
+            paragraph('abeta'),
+            paragraph('gamma?'),
+          ],
+        },
+        undo: { children: [paragraph('alphabeta'), paragraph('gamma?')] },
+      },
       minimized: {
         seed: 14_004,
         steps: [
@@ -343,6 +409,13 @@ describe('plitejs/yjs collaborative history contract', () => {
       ],
       children: [paragraph('alpha'), paragraph('beta')],
       identityPaths: [[0], [0]],
+      minimizedReplay: {
+        undo: { children: [paragraph('alpha'), paragraph('beta')] },
+      },
+      offlineReplay: {
+        redo: { children: [paragraph('alpha?beta')] },
+        undo: { children: [paragraph('alpha?'), paragraph('beta')] },
+      },
       minimized: {
         seed: 14_005,
         steps: [
@@ -369,6 +442,24 @@ describe('plitejs/yjs collaborative history contract', () => {
     {
       children: [paragraph('alpha'), paragraph('beta')],
       identityPaths: [[0, 0], [0], [0, 0]],
+      minimizedReplay: {
+        redo: {
+          children: [
+            { children: [paragraph('alpha')], type: 'quote' },
+            paragraph('beta'),
+          ],
+        },
+        undo: { children: [paragraph('alpha'), paragraph('beta')] },
+      },
+      offlineReplay: {
+        redo: {
+          children: [
+            { children: [paragraph('alpha')], type: 'quote' },
+            paragraph('beta?'),
+          ],
+        },
+        undo: { children: [paragraph('alpha'), paragraph('beta?')] },
+      },
       minimized: {
         seed: 14_007,
         steps: [
@@ -410,6 +501,23 @@ describe('plitejs/yjs collaborative history contract', () => {
         paragraph('beta'),
       ],
       identityPaths: [[0], [0, 0]],
+      minimizedReplay: {
+        undo: {
+          children: [
+            { children: [paragraph('alpha')], type: 'quote' },
+            paragraph('beta'),
+          ],
+        },
+      },
+      offlineReplay: {
+        redo: { children: [paragraph('alpha'), paragraph('beta?')] },
+        undo: {
+          children: [
+            { children: [paragraph('alpha')], type: 'quote' },
+            paragraph('beta?'),
+          ],
+        },
+      },
       minimized: {
         seed: 14_008,
         steps: [
@@ -442,6 +550,35 @@ describe('plitejs/yjs collaborative history contract', () => {
         paragraph('gamma'),
       ],
       identityPaths: [[1], [0, 1]],
+      minimizedReplay: {
+        undo: {
+          children: [
+            {
+              children: [paragraph('alpha'), paragraph('beta')],
+              type: 'quote',
+            },
+            paragraph('gamma'),
+          ],
+        },
+      },
+      offlineReplay: {
+        redo: {
+          children: [
+            { children: [paragraph('alpha')], type: 'quote' },
+            paragraph('beta'),
+            paragraph('gamma?'),
+          ],
+        },
+        undo: {
+          children: [
+            {
+              children: [paragraph('alpha'), paragraph('beta')],
+              type: 'quote',
+            },
+            paragraph('gamma?'),
+          ],
+        },
+      },
       minimized: {
         seed: 14_009,
         steps: [
@@ -490,6 +627,8 @@ describe('plitejs/yjs collaborative history contract', () => {
 
       assertRunProjectionExact(offline);
       assertRunProjectionExact(minimized);
+      assertReplayDocuments(offline, blocker.offlineReplay);
+      assertReplayDocuments(minimized, blocker.minimizedReplay);
       assertMinimizedIdentityStable(minimized, blocker.identityPaths);
     });
   }
@@ -536,6 +675,16 @@ describe('plitejs/yjs collaborative history contract', () => {
     });
 
     assertRunProjectionExact(run);
+    assertReplayDocuments(run, {
+      redo: {
+        children: [paragraph('alpha?'), paragraph('beta'), paragraph('gamma')],
+        roots: { header: [paragraph('header!')] },
+      },
+      undo: {
+        children: [paragraph('alpha?'), paragraph('beta'), paragraph('gamma')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
   });
 
   it('invalidates redo after a new local edit', () => {
@@ -584,9 +733,38 @@ describe('plitejs/yjs collaborative history contract', () => {
   });
 
   it('replays twelve deterministic text and property seeds', () => {
-    const seeds = Array.from({ length: 12 }, (_, index) => 14_100 + index);
+    const seeds = [
+      { alpha: 'ialpha', beta: paragraph('betaI'), seed: 14_100 },
+      { alpha: 'ajlpha', beta: paragraph('bta'), seed: 14_101 },
+      {
+        alpha: 'alkpha',
+        beta: paragraph('beta', { tone: 'seed-14102' }),
+        seed: 14_102,
+      },
+      { alpha: 'alplha', beta: paragraph('betaL'), seed: 14_103 },
+      { alpha: 'alphma', beta: paragraph('bta'), seed: 14_104 },
+      {
+        alpha: 'alphan',
+        beta: paragraph('beta', { tone: 'seed-14105' }),
+        seed: 14_105,
+      },
+      { alpha: 'oalpha', beta: paragraph('betaO'), seed: 14_106 },
+      { alpha: 'aplpha', beta: paragraph('bta'), seed: 14_107 },
+      {
+        alpha: 'alqpha',
+        beta: paragraph('beta', { tone: 'seed-14108' }),
+        seed: 14_108,
+      },
+      { alpha: 'alprha', beta: paragraph('betaR'), seed: 14_109 },
+      { alpha: 'alphsa', beta: paragraph('bta'), seed: 14_110 },
+      {
+        alpha: 'alphat',
+        beta: paragraph('beta', { tone: 'seed-14111' }),
+        seed: 14_111,
+      },
+    ];
 
-    for (const seed of seeds) {
+    for (const { alpha, beta, seed } of seeds) {
       const variant = seed % 3;
       const local: CanonicalTestOperation =
         variant === 0
@@ -619,6 +797,12 @@ describe('plitejs/yjs collaborative history contract', () => {
       });
 
       assertRunProjectionExact(run);
+      assertReplayDocuments(run, {
+        redo: { children: [paragraph(alpha), beta, paragraph('gamma')] },
+        undo: {
+          children: [paragraph(alpha), paragraph('beta'), paragraph('gamma')],
+        },
+      });
     }
   });
 

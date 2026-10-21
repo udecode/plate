@@ -189,29 +189,29 @@ describe('plite-react DOM capability contract', () => {
       focus: { path: [1, 0], offset: 3 },
     };
 
+    let rendered!: ReturnType<typeof render>;
     act(() => {
-      render(
+      rendered = render(
         <EditorRoot editor={editor}>
           <Editable />
         </EditorRoot>
       );
     });
+    const editable =
+      rendered.container.querySelector<HTMLElement>('[data-editor]')!;
+    const mountedEditor = findMountedEditableDOMRuntime(editable)!.editor;
 
     await act(async () => {
-      editor.update((tx) => {
+      mountedEditor.update((tx) => {
         tx.nodes.replace(propagatedValue, { at: [0] });
         tx.selection.set(expectedSelection);
+        mountedEditor.api.dom.focus();
       });
-      editor.api.dom.focus();
     });
 
-    expect(editor.read.selection()).toEqual(expectedSelection);
-
-    await act(async () => {
-      editor.api.dom.focus();
-    });
-
-    expect(editor.read.selection()).toEqual(expectedSelection);
+    await waitFor(() => expect(document.activeElement).toBe(editable));
+    expect(mountedEditor.read.selection()).toEqual(expectedSelection);
+    expect(document.getSelection()?.toString()).toBe('bar');
   });
 
   test('editor.api.dom.focus reports a selection change without a value change', async () => {
@@ -341,8 +341,26 @@ describe('plite-react DOM capability contract', () => {
         <Editable />
       </EditorRoot>
     );
-    const editable = mounted.container.querySelector('[data-editor]')!;
-    const assertDOMRange = vi.spyOn(ReactEditor, 'assertDOMRange');
+    const editable =
+      mounted.container.querySelector<HTMLElement>('[data-editor]')!;
+
+    await act(async () => {
+      editable.focus();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 20);
+      });
+    });
+    await act(async () => {
+      editor.update((tx) => {
+        tx.selection.set({
+          kind: 'text',
+          anchor: { path: [1, 0], offset: 2 },
+          focus: { path: [1, 0], offset: 2 },
+        });
+      });
+    });
+
+    expect(document.getSelection()?.anchorNode?.textContent).toBe('block-1');
 
     await act(async () => {
       editor.update((tx) => {
@@ -354,11 +372,12 @@ describe('plite-react DOM capability contract', () => {
       });
     });
 
-    expect(assertDOMRange).not.toHaveBeenCalled();
-    expect(document.getSelection()?.anchorNode).not.toBe(editable);
-    expect(document.getSelection()?.focusNode).not.toBe(editable);
-
-    assertDOMRange.mockRestore();
+    expect(editor.read.selection()).toEqual({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1000, 0], offset: 'block-1000'.length },
+    });
+    expect(document.getSelection()?.anchorNode?.textContent).toBe('block-1');
+    expect(document.getSelection()?.focusNode?.textContent).toBe('block-1');
   });
 
   test('model-owned text insert keeps untrusted printable input model-owned', async () => {

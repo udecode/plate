@@ -84,24 +84,6 @@ describe('root interaction resolver', () => {
     });
   });
 
-  test('carries root chrome fallback selection into mouseup focus action', () => {
-    expect(
-      resolveRootInteractionMouseUp({
-        eventRange: null,
-        pendingAction: {
-          fallbackSelection: 'end',
-          preventDefault: true,
-          type: 'activate-root',
-        },
-        selection: 'restore',
-      })
-    ).toEqual({
-      fallbackSelection: 'end',
-      selection: 'restore',
-      type: 'focus-root',
-    });
-  });
-
   test('restores selection for editable root surface clicks without coordinates', () => {
     const editable = document.createElement('div');
 

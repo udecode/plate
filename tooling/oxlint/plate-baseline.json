@@ -461,9 +461,6 @@
       "const indexSource = readFileSync(",
       "const source = readFileSync(sourcePath, 'utf-8');"
     ],
-    "packages/plitejs/test/react/dom-repair-policy-contract.test.ts": [
-      "const source = readFileSync("
-    ],
     "packages/plitejs/test/react/kernel-authority-audit-contract.ts": [
       "const editableSource = readFileSync(",
       "const editableSource = readFileSync("

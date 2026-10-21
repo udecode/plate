@@ -2079,6 +2079,18 @@ describe('native block drag', () => {
 
   test('indicator line rect is identical for "P1 after" and "P2 before" when adjacent', () => {
     const { at, dataTransfer, editor, hosts, root, state } = setup();
+    const rects = hosts.map((host, index) =>
+      vi.spyOn(host, 'getBoundingClientRect').mockReturnValue({
+        bottom: index * 40 + 20,
+        height: 20,
+        left: 0,
+        right: 200,
+        top: index * 40,
+        width: 200,
+        x: 0,
+        y: index * 40,
+      } as DOMRect)
+    );
 
     try {
       editor.api.dom.drag.start(
@@ -2091,7 +2103,11 @@ describe('native block drag', () => {
 
       applyEditableDragOver({
         editor,
-        event: createDragEvent(hosts[1], dataTransfer),
+        event: {
+          ...createDragEvent(hosts[1], dataTransfer),
+          clientX: 10,
+          clientY: 55,
+        },
         state,
       });
       overB.mockRestore();
@@ -2103,18 +2119,26 @@ describe('native block drag', () => {
 
       applyEditableDragOver({
         editor,
-        event: createDragEvent(hosts[2], dataTransfer),
+        event: {
+          ...createDragEvent(hosts[2], dataTransfer),
+          clientX: 10,
+          clientY: 85,
+        },
         state,
       });
       overC.mockRestore();
 
       const indicatorBeforeC = readDropIndicator(editor);
 
-      expect(indicatorAfterB).not.toBe(null);
-      expect(indicatorBeforeC).not.toBe(null);
-      // Both indicators must produce the identical line rectangle
-      expect(indicatorAfterB!.line).toEqual(indicatorBeforeC!.line);
+      expect(indicatorAfterB?.line).toEqual({
+        height: 0,
+        width: 200,
+        x: 0,
+        y: 70,
+      });
+      expect(indicatorBeforeC?.line).toEqual(indicatorAfterB?.line);
     } finally {
+      for (const rect of rects) rect.mockRestore();
       cleanupEditorRoot(editor, root);
     }
   });

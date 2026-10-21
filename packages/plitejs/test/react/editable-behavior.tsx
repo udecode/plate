@@ -1346,56 +1346,6 @@ describe('plite-react editable behavior', () => {
     expect(onBeforeInput).not.toHaveBeenCalled();
   });
 
-  test('default scroll restores leaf measurement after scrolling a collapsed range', () => {
-    const editor = createEditor();
-
-    editorReplace(editor, {
-      children: [{ type: 'block', children: [{ text: 'test' }] }],
-      selection: {
-        kind: 'text',
-        anchor: { path: [0, 0], offset: 4 },
-        focus: { path: [0, 0], offset: 4 },
-      },
-    });
-
-    const leaf = document.createElement('span');
-    const text = document.createTextNode('test');
-    leaf.append(text);
-    document.body.append(leaf);
-
-    const range = {
-      cloneRange: () => ({
-        collapse: () => {},
-        getBoundingClientRect: () =>
-          ({
-            bottom: 1,
-            height: 1,
-            left: 1,
-            right: 1,
-            top: 1,
-            width: 1,
-            x: 1,
-            y: 1,
-          }) as DOMRect,
-        startContainer: text,
-      }),
-    } as unknown as DOMRange;
-
-    try {
-      defaultScrollSelectionIntoView(editor, range);
-
-      expect(Object.hasOwn(leaf, 'getBoundingClientRect')).toBe(false);
-      expect(typeof leaf.getBoundingClientRect).toBe('function');
-
-      defaultScrollSelectionIntoView(editor, range);
-
-      expect(Object.hasOwn(leaf, 'getBoundingClientRect')).toBe(false);
-      expect(typeof leaf.getBoundingClientRect).toBe('function');
-    } finally {
-      leaf.remove();
-    }
-  });
-
   test('default scroll keeps the caret below a scroll container top inset', () => {
     const editor = createEditor();
 

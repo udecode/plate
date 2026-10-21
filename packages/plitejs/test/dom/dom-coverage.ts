@@ -1306,12 +1306,17 @@ describe('DOM coverage boundaries', () => {
         });
       }
 
+      const foundBoundaryIds: string[] = [];
       const coverageSamples = Array.from({ length: 25 }, () =>
         measureRepeated(() => {
-          testView(editor).domCoverage.getBoundaryForPoint(outsidePoint);
+          const boundary =
+            testView(editor).domCoverage.getBoundaryForPoint(outsidePoint);
+
+          if (boundary) foundBoundaryIds.push(boundary.boundaryId);
         })
       );
 
+      expect(foundBoundaryIds).toEqual([]);
       expect(
         median(coverageSamples) - median(baselineSamples)
       ).toBeLessThanOrEqual(5);

@@ -13,6 +13,7 @@ import {
   getVisibleYjsNodeAt,
   type Peer,
   paragraph,
+  readPeerChildren,
   redoHistoryPeerAndSync,
   syncConnectedPeers,
   undoHistoryPeerAndSync,
@@ -174,17 +175,17 @@ describe('plitejs/yjs liftNodes collaboration contract', () => {
 
     connectYjsPeerAndSync(b, peers);
     for (const peer of peers) {
-      assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!']);
+      assert.deepEqual(readPeerChildren(peer), [paragraph('alpha!')]);
     }
 
     undoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
-      assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!']);
+      assert.deepEqual(readPeerChildren(peer), [section(paragraph('alpha!'))]);
     }
 
     redoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
-      assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!']);
+      assert.deepEqual(readPeerChildren(peer), [paragraph('alpha!')]);
     }
   });
 

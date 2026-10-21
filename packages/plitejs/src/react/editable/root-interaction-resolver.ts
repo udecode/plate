@@ -21,11 +21,7 @@ export type RootInteractionTarget =
 export type RootInteractionMouseDownAction =
   | { type: 'ignore' }
   | { type: 'place-native-editable' }
-  | {
-      fallbackSelection?: RootInteractionFocusSelection;
-      preventDefault: true;
-      type: 'activate-root';
-    }
+  | { preventDefault: true; type: 'activate-root' }
   | { preventDefault: true; type: 'place-editable-root' };
 
 export type RootInteractionFocusSelection = 'end' | 'preserve' | 'restore';
@@ -231,7 +227,7 @@ export const resolveRootInteractionMouseUp = ({
 
   if (pendingAction.type === 'activate-root') {
     return {
-      fallbackSelection: pendingAction.fallbackSelection ?? 'end',
+      fallbackSelection: 'end',
       selection,
       type: 'focus-root',
     };

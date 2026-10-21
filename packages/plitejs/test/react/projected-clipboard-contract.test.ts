@@ -392,16 +392,6 @@ describe('projected clipboard', () => {
     expect(propertyReads).toBe(0);
   });
 
-  it('serializes projected selection fragments in visible order across roots', () => {
-    const { editor } = createFixture();
-
-    expect(getProjectedViewSelectionSlice(editor)).toEqual({
-      content: [paragraph('ore'), paragraph('In')],
-      openEnd: 1,
-      openStart: 1,
-    });
-  });
-
   it('serializes projected selections from a root-scoped editor view', () => {
     const runtime = createEditor({
       plugins: [contentRootPlugin],

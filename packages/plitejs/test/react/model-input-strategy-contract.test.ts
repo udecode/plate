@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { IS_COMPOSING } from '../../src/dom/internal';
 import { select as editorSelect } from '../../src/internal';
+import type { EditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import {
   createEditableInputController,
   createEditableInputControllerState,
@@ -1171,26 +1172,22 @@ describe('model input strategy', () => {
 
   it('ignores native history beforeinput while read-only', () => {
     const editor = createTextEditor('stable', 'stable'.length) as ReactEditor;
-    const undo = vi.fn();
-
-    (editor as any).undo = undo;
+    const dispatchHistory = vi.fn();
 
     const handled = applyModelOwnedNativeHistoryEvent({
       editor,
       event: { inputType: 'historyUndo' } as InputEvent,
       readOnly: true,
+      runtime: { dispatchHistory } as unknown as EditableDOMRuntime,
     });
 
     expect(handled).toBe(false);
-    expect(undo).not.toHaveBeenCalled();
-    expect(editorString(editor, [])).toBe('stable');
+    expect(dispatchHistory).not.toHaveBeenCalled();
   });
 
   it('ignores native history input while read-only', () => {
     const editor = createTextEditor('stable', 'stable'.length) as ReactEditor;
-    const undo = vi.fn();
-
-    (editor as any).undo = undo;
+    const dispatchHistory = vi.fn();
 
     const result = applyEditableInput({
       androidInputManagerRef: { current: null },
@@ -1208,11 +1205,11 @@ describe('model input strategy', () => {
         state: createEditableInputControllerState(),
       }),
       readOnly: true,
+      runtime: { dispatchHistory } as unknown as EditableDOMRuntime,
     });
 
     expect(result.repairs).toEqual([]);
-    expect(undo).not.toHaveBeenCalled();
-    expect(editorString(editor, [])).toBe('stable');
+    expect(dispatchHistory).not.toHaveBeenCalled();
   });
 
   it('does not read full editor or DOM text when native input repair already handled the event', () => {

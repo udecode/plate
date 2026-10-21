@@ -204,62 +204,42 @@ test('scrollIntoView returns early when the target cannot be mounted', () => {
 test('scrollIntoView delays only explicit navigation past selection repair', () => {
   const root = document.createElement('div');
   const editor = {} as DOMEditorType;
-  const scheduledCallbacks: Array<() => void> = [];
-  const schedule = mock(
-    (_phase: unknown, _label: unknown, callback: () => void) => {
-      scheduledCallbacks.push(callback);
+  const scheduler = createDOMPhaseScheduler({ getWindow: () => null });
+  const { domRange } = createDOMRange();
+  let scrollsBeforeRepair = -1;
 
-      return () => {};
-    }
-  );
-  const scheduler: DOMPhaseScheduler = {
-    destroy: () => {},
-    diagnostics: () => ({
-      flushes: 0,
-      lastFlushPhases: [],
-      loopLimitHits: 0,
-      loopRestarts: 0,
-      maxObservedPasses: 0,
-    }),
-    flush: () => {},
-    pending: () => 0,
-    schedule,
-  };
-
+  DOMEditor.resolveDOMRange = mock(() => domRange);
   EDITOR_TO_ELEMENT.set(editor, root);
   const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
 
-  DOMEditor.scrollIntoView(editor, { offset: 0, path: [0, 0] });
+  try {
+    DOMEditor.scrollIntoView(editor, { offset: 0, path: [0, 0] });
+    scheduler.flush();
 
-  expect(schedule).toHaveBeenCalledTimes(1);
-  expect(schedule.mock.calls[0]?.[0]).toBe('dom-write');
-  expect(schedule.mock.calls[0]?.[1]).toBe('dom-editor-scroll-into-view');
+    expect(scrollIntoViewIfNeeded).toHaveBeenCalledTimes(1);
 
-  schedule.mockClear();
-  scheduledCallbacks.length = 0;
-  DOMEditor.scrollIntoView(
-    editor,
-    { offset: 0, path: [0, 0] },
-    { scrollMode: 'always' }
-  );
+    scrollIntoViewIfNeeded.mockClear();
+    DOMEditor.scrollIntoView(
+      editor,
+      { offset: 0, path: [0, 0] },
+      { scrollMode: 'always' }
+    );
+    scheduler.flush();
 
-  expect(schedule).toHaveBeenCalledTimes(1);
-  expect(schedule.mock.calls[0]?.[0]).toBe('post-selection');
-  expect(schedule.mock.calls[0]?.[1]).toBe(
-    'dom-editor-scroll-into-view-settle'
-  );
-  expect(schedule.mock.calls[0]?.[3]).toEqual({
-    key: 'dom-editor-scroll-into-view',
-    timing: 'animation-frame',
-  });
+    expect(scrollIntoViewIfNeeded).not.toHaveBeenCalled();
 
-  scheduledCallbacks[0]?.();
-  expect(schedule).toHaveBeenCalledTimes(2);
-  expect(schedule.mock.calls[1]?.[0]).toBe('post-selection');
-  expect(schedule.mock.calls[1]?.[1]).toBe('dom-editor-scroll-into-view');
+    scheduler.schedule('selection-repair', 'selection-repair', () => {
+      scrollsBeforeRepair = scrollIntoViewIfNeeded.mock.calls.length;
+    });
+    scheduler.flush();
 
-  uninstall();
-  EDITOR_TO_ELEMENT.delete(editor);
+    expect(scrollsBeforeRepair).toBe(0);
+    expect(scrollIntoViewIfNeeded).toHaveBeenCalledTimes(1);
+  } finally {
+    scheduler.destroy();
+    uninstall();
+    EDITOR_TO_ELEMENT.delete(editor);
+  }
 });
 
 test('scrollIntoView preserves requested path margins across a rerender', () => {
