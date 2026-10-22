@@ -79,6 +79,7 @@ const fragmentation: NodeFragmentationProvider = ({ content, element }) => {
 | Pictures in static pages | Show the diagram's code, as today | Draw Mermaid pictures in static pages | static pictures | small |
 | More work on this question | Hold | Review again, or have other models challenge it | again, interrogate | small |
 | Old text on the diagram page | Update it to describe today's diagram code blocks | Leave the old text about the removed drawing block | keep subject | detail |
+| This subject's page | A new page at https://claude.ai/artifact/2n3uS1vjX5CpFWM1BMp15E, because the old one at https://claude.ai/artifact/39jaGe5sHWk5ND6tJVk8aD belongs to another account | Keep no published page; the page stays a local file | drop drawing page | detail |
 
 ## Evidence
 

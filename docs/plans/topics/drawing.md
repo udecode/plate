@@ -1,6 +1,6 @@
 # Code-generated diagrams
 
-Page: https://claude.ai/artifact/39jaGe5sHWk5ND6tJVk8aD
+Page: https://claude.ai/artifact/2n3uS1vjX5CpFWM1BMp15E
 
 The ledger asks which source and rendering contract generated diagrams should use, and which remote or embedded renderer policy belongs to the application. A diagram is a code block whose language a copied renderer claims, so the document stores only the code block's text and language. The copied `withDiagrams` wraps the code block element and draws the picture below the source through one copied renderer item per engine: Mermaid through Pele, Graphviz through viz.js, flowchart.js, and PlantUML through a server the app names. Its Code and Both views live in the component, and it exports a PNG. Static rendering and Markdown export print the source. The [2026-10-15 review](../2026-10-15-drawing-review.md) moved diagrams from their own element into code blocks, the [2026-10-18 review](../2026-10-18-drawing-pele-review.md) moved Mermaid to Pele, and the [2026-10-22 review](../2026-10-22-drawing-paged-size.md) kept diagram sizes in paged layout with the app. The scope's history prints with `node tooling/scripts/review-ledger.mjs show drawing`.
 
