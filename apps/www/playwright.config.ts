@@ -14,6 +14,7 @@ export default defineConfig<BrowserTestOptions>({
   },
   forbidOnly: !!process.env.CI,
   fullyParallel: false,
+  globalSetup: './tests/browser/global-setup.ts',
   projects: [
     {
       name: 'chromium',

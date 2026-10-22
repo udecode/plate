@@ -149,7 +149,7 @@ test('a click on the preview backdrop closes it', async ({ page }) => {
   }
 });
 
-test('the preview covers the home page above its header and fade', async ({
+test('the preview covers the home page edge to edge above a site header', async ({
   page,
 }) => {
   const runtimeErrors = recordBrowserRuntimeErrors(page);
@@ -162,6 +162,13 @@ test('the preview covers the home page above its header and fade', async ({
     const editor = createBrowserEditorHarness(page, 'media-preview:home', root);
     await editor.ready({ editor: 'visible', text: CAPTION });
 
+    await page.evaluate(() => {
+      const header = document.createElement('header');
+      header.style.cssText =
+        'position: fixed; inset: 0 0 auto; height: 64px; z-index: 50; background: white';
+      document.body.append(header);
+    });
+
     const image = root
       .locator('figure')
       .filter({ hasText: CAPTION })
@@ -173,11 +180,13 @@ test('the preview covers the home page above its header and fade', async ({
       page.getByRole('button', { name: 'Close preview' }).first()
     ).toBeVisible();
 
+    // The page's overlay scrollbar paints above every layer and hit-tests as
+    // <html>, so the right probe stays clear of it.
     const topLabels = await page.evaluate(() =>
       [
         [8, 8],
         [8, window.innerHeight - 8],
-        [document.documentElement.clientWidth - 8, window.innerHeight / 2],
+        [document.documentElement.clientWidth - 24, window.innerHeight / 2],
       ].map(([x, y]) =>
         document.elementFromPoint(x, y)?.getAttribute('aria-label')
       )

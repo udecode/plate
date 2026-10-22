@@ -168,7 +168,8 @@ its `exit N` line; after an interruption or resume, only those logs count.
   mode, such as the `www-plite-drive` entry of `.claude/launch.json`. Plite
   mode serves a different shell and root layout, so a spec green on a server
   without the flag, such as 3297, is not green for the runner.
-  `GET /api/plite/ready` returns the server's `plite` and `devSource` flags.
+  `GET /api/plite/ready` returns the server's `plite` and `devSource` flags,
+  and the runner's global setup refuses a server that lacks either one.
 - Plite examples for interactive source proof:
   `pnpm --filter plite exec next dev --port 3298`.
 - Existing managed Plite browser proof:
