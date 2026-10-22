@@ -22,7 +22,7 @@
         "@platejs/date": "^53.0.0",
         "@platejs/dnd": "^53.3.8",
         "@platejs/docx": "^53.0.0",
-        "@platejs/docx-io": "^53.5.0",
+        "@platejs/docx-io": "^53.5.1",
         "@platejs/emoji": "^53.1.7",
         "@platejs/excalidraw": "^53.0.0",
         "@platejs/floating": "^53.0.0",
@@ -442,7 +442,7 @@
 
     "@platejs/docx": ["@platejs/docx@53.0.0", "", { "dependencies": { "react-compiler-runtime": "^1.0.0", "validator": "^13.15.15" }, "peerDependencies": { "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-Su1z61MjuFYKTHSZhS7W2L3BVn/Br58VbzTY1K8BpXZOyzwnHhPH17r9swaHxkEnC1eGw0RatT1p63Afbadukw=="],
 
-    "@platejs/docx-io": ["@platejs/docx-io@53.5.0", "", { "dependencies": { "color-name": "^2.0.0", "html-entities": "^2.5.2", "html-to-vdom": "^0.7.0", "jszip": "^3.10.1", "juice": "^11.0.1", "lodash": "^4.17.21", "mammoth": "^1.9.0", "mime-types": "^2.1.35", "nanoid": "^5.0.9", "react-compiler-runtime": "^1.0.0", "validator": "^13.15.15", "virtual-dom": "^2.1.1", "xmlbuilder2": "^3.1.1" }, "peerDependencies": { "@platejs/docx": ">=53.0.0", "@platejs/markdown": ">=53.3.17", "platejs": ">=53.3.10", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-6W0T9D+BDPhdf3qZXNZjzntf0mhKN7gjPtsI1J64uCpq15eWZYB3iT28aSJnBnJU80pIxI9Cj4czIDJOiVGJ2g=="],
+    "@platejs/docx-io": ["@platejs/docx-io@53.5.1", "", { "dependencies": { "color-name": "^2.0.0", "html-entities": "^2.5.2", "html-to-vdom": "^0.7.0", "jszip": "^3.10.1", "juice": "^11.0.1", "lodash": "^4.17.21", "mammoth": "^1.9.0", "mime-types": "^2.1.35", "nanoid": "^5.0.9", "react-compiler-runtime": "^1.0.0", "validator": "^13.15.15", "virtual-dom": "^2.1.1", "xmlbuilder2": "^3.1.1" }, "peerDependencies": { "@platejs/docx": ">=53.0.0", "@platejs/markdown": ">=53.3.17", "platejs": ">=53.3.10", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-CaLN+9c+c24QRaPwZF8mXqWoEj96hIL8qsidDkXGiBuq0a3m1UzZZmYeFGwPKcb6IIIMU99HgOyjD9lfZnrzkw=="],
 
     "@platejs/emoji": ["@platejs/emoji@53.1.7", "", { "dependencies": { "@platejs/combobox": "53.0.0", "react-compiler-runtime": "^1.0.0" }, "peerDependencies": { "@emoji-mart/data": ">=1.2.0", "platejs": ">=53.0.0", "react": ">=18.0.0", "react-dom": ">=18.0.0" } }, "sha512-Gs+3nDqiup7I7DU9hgv9WyWve1cD0G7w4mfjZ4jTb5uy8VBT/ahRJW9GLkc+hGi8xuy29tdceGR1aiIxPMcltg=="],
 
