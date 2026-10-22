@@ -32,9 +32,10 @@ let install = null;
 let hook = false;
 const names = [];
 for (let i = 0; i < args.length; i += 1) {
+  const hasValue = args[i + 1] && !args[i + 1].startsWith('--');
   if (args[i] === '--hook') hook = true;
-  else if (args[i] === '--install' && args[i + 1]) install = args[++i];
-  else if (args[i] === '--env' && args[i + 1]) names.push(args[++i]);
+  else if (args[i] === '--install' && hasValue) install = args[++i];
+  else if (args[i] === '--env' && hasValue) names.push(args[++i]);
   else {
     console.error('Usage: node .agents/pstack/setup.mjs [--hook] [--install <command>] [--env <name>]...');
     process.exit(2);
