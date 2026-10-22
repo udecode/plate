@@ -109,7 +109,7 @@ export const createMarkInputRule = (
 
       const selection = tx.selection();
 
-      if (selection && match.beforeEndMatchPoint !== selection.anchor) {
+      if (selection && match.end) {
         tx.text.delete({
           at: {
             anchor: match.beforeEndMatchPoint,
