@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-22-edit-link-text",
+      "href": "/registry/changelog/2026-10-22-edit-link-text.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fill Text to display with the link's text in Edit link",
+      "change": {
+        "type": "source",
+        "date": "2026-10-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-21-docx-export-spacing",
       "href": "/registry/changelog/2026-10-21-docx-export-spacing.json",
       "status": "draft",

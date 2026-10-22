@@ -253,6 +253,22 @@ function FloatingLinkUrlInput({
   );
 }
 
+function FloatingLinkTextInput({
+  ...props
+}: React.ComponentPropsWithRef<'input'>) {
+  const { store } = useEditor().plugin(linkPlugin);
+
+  return (
+    <Input
+      defaultValue={store.get().text}
+      onChange={(event) => {
+        store.set({ text: event.target.value });
+      }}
+      {...props}
+    />
+  );
+}
+
 export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   const editor = useEditor();
 
@@ -352,7 +368,6 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     };
   }, [api, floatingElement, isEditing, mode, open]);
 
-  const { text } = store.get();
   const editButtonProps = { onClick: api.triggerEdit };
   const onFloatingKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'Escape' || event.nativeEvent.isComposing) return;
@@ -406,14 +421,6 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     }
   }, [shouldFocusUrlInput]);
 
-  const textInputProps = {
-    defaultValue: text,
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-      store.set({ text: event.target.value });
-    },
-    onKeyDown: onInputKeyDown,
-  };
-
   if (readOnly || !open) return null;
 
   const input = (
@@ -436,11 +443,11 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
         <div className="flex items-center pr-1 pl-2 text-muted-foreground">
           <Text className="size-4" />
         </div>
-        <Input
+        <FloatingLinkTextInput
           className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
           placeholder="Text to display"
           data-editor-keep-selection-visible
-          {...textInputProps}
+          onKeyDown={onInputKeyDown}
         />
       </div>
     </div>

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-22-edit-link-text",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-22-edit-link-text.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fill Text to display with the link's text in Edit link",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-22-link-fill-text-display-s-5bd3dafb",
+      "kind": "fix",
+      "summary": "Fill Text to display with the link's text in Edit link",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-22",
+          "entry": "2026-10-22-edit-link-text",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
