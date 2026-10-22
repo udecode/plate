@@ -131,3 +131,11 @@ e4afde1d88	2026-10-21	pending		chore(pstack): install plan-page from dotai 4c86a
 0708e01632	2026-10-21	pending		chore(pstack): install cleanup from dotai 7ba5f4d
 563643de0e	2026-10-21	synced	moot: main-only workflow tooling	fix(tooling): stop pinning dotai-installed skills in the workflow record (#5234)
 0ca5914475	2026-10-21	synced	next: exportDocx maps stylesheet top and bottom margins to Word spacing; copied stylesheet owns the values	feat(docx-io): add paragraphSpacing and headingSpacing to exportToDocx (#5233)
+110e3a28dc	2026-10-21	pending		chore(pstack): sync dotai 9f923ab so a run cards its own suggested tasks at its close
+6bf56339d8	2026-10-21	pending		chore(pstack): sync dotai e01212a so the close order cards offers after reflect [skip ci]
+39f4ed318a	2026-10-21	pending		chore(pstack): sync the chips Close fixes so a run cards offers at every priority [skip ci]
+2b6b0c3685	2026-10-22	pending		chore(pstack): sync dotai 1db0d49 so a new test goes through an entry production calls [skip ci]
+ef5aec69c5	2026-10-21	pending		chore: update registry after release [skip ci] [skip release]
+6713da4d7d	2026-10-21	pending		chore: sync templates after release [skip release]
+496030e0d2	2026-10-22	pending		chore(pstack): sync dotai a52faf5 so a case counts redundant only when one planted bug fails both [skip ci]
+b3c826ee68	2026-10-22	synced		fix(docx-io): export nested tables (#5232)
