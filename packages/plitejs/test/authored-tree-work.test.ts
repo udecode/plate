@@ -1961,6 +1961,128 @@ describe('authored review tree work per edit', () => {
       }
     );
 
+    it('does as much work for Suggesting keys that a correction checks at 2,000 blocks as at 100', () => {
+      const [small, large] = [100, 2000].map((size) =>
+        suggesting(
+          Array.from({ length: size }, (_, index) =>
+            paragraph({ text: `plain ${index}` })
+          ),
+          [
+            definePlugin('work-correction', {
+              corrections: [
+                {
+                  correct() {},
+                  event: 'content',
+                  query: { type: 'paragraph' },
+                },
+              ],
+            }),
+          ]
+        )
+          .keys(at([0, 0]))
+          // The first key maps the stored index into the frame.
+          .slice(1)
+      );
+
+      assert.ok(small.every((counts) => counts.baselines === 1));
+      assert.deepEqual(large, small);
+    });
+
+    it('reads as many nodes whole to check what an undo’s repair orphans at 200 cards as at 20', async () => {
+      const admission = await import('../src/core/document-admission');
+      const realAdmission = { ...admission };
+      let repairs = 0;
+      let repairReads = 0;
+
+      mock.module(
+        join(import.meta.dir, '../src/core/document-admission.ts'),
+        () => ({
+          ...realAdmission,
+          withoutRepairOrphans: (
+            ...args: Parameters<typeof realAdmission.withoutRepairOrphans>
+          ) => {
+            const before = readCoreWork().wholeReadNodes;
+
+            try {
+              return realAdmission.withoutRepairOrphans(...args);
+            } finally {
+              repairs += 1;
+              repairReads += readCoreWork().wholeReadNodes - before;
+            }
+          },
+        })
+      );
+
+      const ColoredCards = defineEditorSchema('work-colored-cards', {
+        elements: {
+          card: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+            contentRoots: {
+              body: {
+                content: schema.content.type('paragraph', {
+                  default: { type: 'paragraph' },
+                  min: 1,
+                }),
+                ownership: 'exclusive',
+              },
+            },
+          },
+          paragraph: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+        id: 'work-colored-cards',
+        properties: [schema.textProperty('color', property.string())],
+        root: schema.content.types(['paragraph', 'card'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+      const [small, large] = [20, 200].map((size) => {
+        let author = 'alice';
+        const editor = createEditor({
+          initialValue: deck(size) as never,
+          plugins: [
+            ColoredCards,
+            history({ newBatchDelay: 0 }),
+            createAuthoredPlugin({
+              authorId: () => author,
+              createChangeId: () => `${author}:${(count += 1)}`,
+              intent: 'propose',
+              now: () => 1,
+            }),
+          ],
+        });
+        const color = (value: string) =>
+          editor.update((tx) =>
+            tx.nodes.set({ color: value } as never, { at: [size, 0] })
+          );
+
+        color('red');
+        author = 'carol';
+        editor.api.authored.setView({ intent: 'edit' });
+        color('green');
+        const proposed = editor.read.authored
+          .changes()
+          .items.filter((item) => item.id.startsWith('alice:'));
+
+        editor.update((tx) => {
+          tx.tags.add('history-skip');
+          tx.authored.decide({ action: 'reject', changes: proposed });
+        });
+        repairs = 0;
+        repairReads = 0;
+        editor.api.history.undo();
+
+        return { repairReads, repairs };
+      });
+
+      assert.ok(small.repairs > 0, 'The undo repaired nothing.');
+      assert.deepEqual(large, small);
+    });
+
     it('reads at most linearly more owner indexes to remove one owner of a shared root at 1,000 cards than at 20', () => {
       const [small, large] = SIZES.map((size) => {
         const value = deck(size);
@@ -1976,6 +2098,254 @@ describe('authored review tree work per edit', () => {
 
       assertLinear([small], [large]);
     });
+  });
+});
+
+describe('authored work beside pending changes that grow with the document', () => {
+  withoutLawCheck();
+
+  const inserted = (text: string, change: string) => ({
+    authored: [{ at: 1, author: 'bob', change, kind: 'insert' }],
+    text,
+  });
+  const holding = (
+    size: number,
+    changeAt: (index: number) => string,
+    intent: 'edit' | 'propose',
+    author = 'alice'
+  ) =>
+    createEditor({
+      initialValue: {
+        children: Array.from({ length: size }, (_, index) =>
+          paragraph(
+            { text: `plain ${index} ` },
+            inserted('new', changeAt(index))
+          )
+        ),
+        records: reviewRecords({
+          verdicts: [
+            {
+              decision: 'd:carol',
+              member: { at: 1, change: 'carol:0' },
+              verdict: 'accept',
+            },
+          ],
+        }),
+      } as never,
+      plugins: [
+        Inline,
+        createAuthoredPlugin({
+          authorId: author,
+          createChangeId: () => `${author}:${(count += 1)}`,
+          createTagId: () => `${author}-tag:${(count += 1)}`,
+          intent,
+          now: () => 1,
+        }),
+      ],
+    });
+  const counted = (edit: () => void) => {
+    const ledger = readLedgerWork();
+    const core = readCoreWork();
+    const reads = markReads + memberReads;
+
+    edit();
+
+    const ledgerAfter = readLedgerWork();
+    const coreAfter = readCoreWork();
+
+    return {
+      core: Object.fromEntries(
+        Object.entries(coreAfter).map(([kind, value]) => [
+          kind,
+          value - core[kind as keyof typeof core],
+        ])
+      ),
+      ledger: Object.fromEntries(
+        Object.entries(ledgerAfter).map(([kind, value]) => [
+          kind,
+          value - ledger[kind as keyof typeof ledger],
+        ])
+      ),
+      reads: markReads + memberReads - reads,
+    };
+  };
+  const countedAtBothSizes = (
+    setup: (size: number) => Editor,
+    edit: (editor: Editor, size: number, run: number) => void,
+    sizes = [100, 2000]
+  ) =>
+    sizes.map((size) => {
+      const editor = setup(size);
+
+      edit(editor, size, 0);
+
+      return [1, 2].map((run) => counted(() => edit(editor, size, run)));
+    });
+
+  for (const intent of ['edit', 'propose'] as const) {
+    it(`does as much work for one ${
+      intent === 'edit' ? 'Editing' : 'Suggesting'
+    } transaction that edits the first and the last block, beside a pending insertion and a verdict in every block, at 2,000 blocks as at 100`, () => {
+      const [small, large] = countedAtBothSizes(
+        (size) => holding(size, (index) => `bob:i${index}`, intent),
+        (editor, size) =>
+          editor.update((tx) => {
+            tx.text.insert('k', { at: { offset: 0, path: [0, 0] } });
+            tx.text.insert('k', { at: { offset: 0, path: [size - 1, 0] } });
+          })
+      );
+
+      assert.deepEqual(large, small);
+    });
+
+    it(`does as much work for ${
+      intent === 'edit' ? 'an Editing' : 'a Suggesting'
+    } letter in the last block of one pending insertion that spans every block at 2,000 blocks as at 100`, () => {
+      const [small, large] = countedAtBothSizes(
+        (size) => holding(size, () => 'bob:1', intent),
+        (editor, size) =>
+          editor.update((tx) =>
+            tx.text.insert('k', { at: { offset: 1, path: [size - 1, 1] } })
+          )
+      );
+
+      assert.deepEqual(large, small);
+    });
+  }
+
+  it('settles as much for a verdict a peer delivers on one block, beside a pending insertion in every other block, at 2,000 blocks as at 100', () => {
+    const settled: unknown[] = [];
+    const [small, large] = countedAtBothSizes(
+      (size) => holding(size, (index) => `bob:i${index}`, 'edit'),
+      (editor, size, run) => {
+        const at = size - 1 - run;
+        const records = reviewRecords({
+          verdicts: [
+            {
+              decision: `d:${at}`,
+              member: { at: 1, change: `bob:i${at}` },
+              verdict: 'accept',
+            },
+          ],
+        })['authored-verdicts'];
+
+        editor.update({ tags: ['collaboration'] }, (tx) => {
+          for (const [id, record] of Object.entries(records)) {
+            tx.records.put('authored-verdicts', id, record);
+          }
+        });
+        settled.push(editor.read.nodes.get([at])?.[0]);
+      }
+    );
+
+    assert.deepEqual(
+      settled,
+      [99, 98, 97, 1999, 1998, 1997].map((index) =>
+        paragraph({ text: `plain ${index} new` })
+      )
+    );
+    assert.deepEqual(large, small);
+  });
+
+  it('does as much work for an undo and a redo of rejecting a deletion, beside a pending insertion in every other block, at 2,000 blocks as at 100', () => {
+    const last: unknown[] = [];
+    const [small, large] = countedAtBothSizes(
+      (size) =>
+        createEditor({
+          initialValue: Array.from({ length: size }, (_, index) =>
+            index === size - 1
+              ? struckParagraph('struck', 'bob:d')
+              : paragraph(
+                  { text: `plain ${index} ` },
+                  inserted('new', `bob:i${index}`)
+                )
+          ) as never,
+          plugins: [
+            Inline,
+            history({ newBatchDelay: 0 }),
+            createAuthoredPlugin({
+              authorId: 'alice',
+              createChangeId: () => `alice:${(count += 1)}`,
+              intent: 'edit',
+              now: () => 1,
+            }),
+          ],
+        }),
+      (editor, size, run) => {
+        if (run === 0) {
+          editor.update.authored.decide({
+            action: 'reject',
+            changes: [editor.read.authored.change('bob:d')],
+          });
+        } else if (run === 1) {
+          editor.api.history.undo();
+        } else {
+          editor.api.history.redo();
+        }
+        last.push(editor.read.nodes.get([size - 1])?.[0]);
+      }
+    );
+
+    assert.deepEqual(
+      last.map((node) => Object.hasOwn(node as object, 'authored')),
+      [false, true, false, false, true, false]
+    );
+    assert.deepEqual(large, small);
+  });
+
+  it('does as much work for the author’s own Suggesting letter in the last block of their pending insertion that spans every block, with its changes subscribed, at 2,000 blocks as at 100', () => {
+    const changed: string[][] = [];
+    const [small, large] = countedAtBothSizes(
+      (size) => {
+        const editor = holding(size, () => 'bob:1', 'propose', 'bob');
+
+        editor.api.authored.subscribeChanges((delta) => {
+          changed.push([...delta.changed]);
+        });
+
+        return editor;
+      },
+      (editor, size) =>
+        editor.update((tx) =>
+          tx.text.insert('k', { at: { offset: 1, path: [size - 1, 1] } })
+        )
+    );
+
+    assert.ok(
+      changed.length === 6 && changed.every((ids) => ids.includes('bob:1')),
+      JSON.stringify(changed)
+    );
+    assert.deepEqual(large, small);
+  });
+
+  it('does as much review-ledger work, outside resolving the decision and pairing its rebuilt blocks, to accept one of a pending insertion per block at 1,000 blocks as at 100', () => {
+    const [small, large] = countedAtBothSizes(
+      (size) => holding(size, (index) => `bob:i${index}`, 'edit'),
+      (editor, _size, run) => {
+        const change = editor.read.authored
+          .changes()
+          .items.find((item: { id: string }) => item.id === `bob:i${run}`);
+
+        editor.update.authored.decide({
+          action: 'accept',
+          changes: [change],
+        });
+      },
+      [100, 1000]
+    );
+    const ledgerOf = (runs: typeof small) =>
+      runs.map(({ ledger }) => ({
+        ...ledger,
+        pairedBlocks: 0,
+        verdictLookups: 0,
+      }));
+
+    assert.equal(
+      large[0].ledger.pairedBlocks - small[0].ledger.pairedBlocks,
+      900
+    );
+
+    assert.deepEqual(ledgerOf(large), ledgerOf(small));
   });
 });
 

@@ -1062,6 +1062,42 @@ describe('the review previews of a suggested card deletion', () => {
     assert.deepEqual(valueOf(editor), { children: [p('aa')] });
   });
 
+  it("wait on another author's insertion inside the root that a third author's pending deletion covers", () => {
+    const { editor: alice } = make({
+      authorId: 'alice',
+      unknown: 'reject',
+      value: plain(),
+    });
+
+    alice.update((tx) =>
+      tx.text.insert('Q', { at: { offset: 0, path: [0, 0], root: 'b1' } })
+    );
+
+    const { editor: carol } = make({
+      authorId: 'carol',
+      unknown: 'reject',
+      value: alice.read.value(),
+    });
+
+    carol.update((tx) =>
+      tx.text.delete({
+        at: {
+          anchor: { offset: 0, path: [0, 0], root: 'b1' },
+          focus: { offset: 1, path: [0, 0], root: 'b1' },
+        },
+      })
+    );
+    const { editor } = make({ unknown: 'reject', value: carol.read.value() });
+
+    editor.update((tx) => tx.nodes.remove({ at: [0] }));
+
+    assert.deepEqual(decideAll(editor, 'accept', 'bob:1'), {
+      ids: ['bob:1'],
+      status: 'blocked',
+      with: ['alice:1'],
+    });
+  });
+
   it("drop a nested card's root with the outer card's", () => {
     const { editor } = make({
       schema: nesting(),

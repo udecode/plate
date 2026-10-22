@@ -1,7 +1,22 @@
-import { type NodeList, rootNodesOf } from '../../core/change/document-index';
+import { createInternalDocumentChange } from '../../core/change/document-change';
+import {
+  type DocumentIndex,
+  type NodeList,
+  rootNodesOf,
+} from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
+import {
+  RootChange,
+  type RootChangeSection,
+} from '../../core/change/root-change';
+import {
+  type JsonEditorValue,
+  type JsonNode,
+  PreparedTokenSlice,
+} from '../../core/change/tokens';
 import { composeRecordOps, deriveValue } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import { rootOf } from '../ledger/roots';
 import { countLedgerWork } from '../ledger/work';
 import { heldProps } from '../tree/holds';
 import {
@@ -35,11 +50,6 @@ type Node = Readonly<Record<string, unknown>> & {
   children?: readonly Node[];
   text?: string;
 };
-
-type Value = Readonly<{
-  children: readonly unknown[];
-  roots?: Readonly<Record<string, readonly unknown[]>>;
-}>;
 
 const isText = (node: Node) => typeof node.text === 'string';
 
@@ -299,18 +309,20 @@ const settleNodes = <L extends NodeList<Node>>(
   return next;
 };
 
+/**
+ * The blocks of `index` at `blocks` that settle to another node, as one change
+ * of the root, so a settled block costs its own range and not the root.
+ */
 const settleBlocks = (
-  children: NodeList<Node>,
+  index: DocumentIndex,
   pass: Pass,
-  blocks: ReadonlySet<number> | undefined,
+  blocks: ReadonlySet<number>,
   root: string
 ) => {
-  if (!blocks) return children;
+  const sections: RootChangeSection[] = [];
 
-  let next: Node[] | null = null;
-
-  for (const index of blocks) {
-    const block = children.at(index);
+  for (const at of [...blocks].sort((left, right) => left - right)) {
+    const block = index.child(at) as Node | undefined;
 
     if (!block) continue;
 
@@ -321,12 +333,15 @@ const settleBlocks = (
     })[0];
 
     if (settled !== block) {
-      next ??= children.slice();
-      next[index] = settled;
+      sections.push({
+        from: index.childPosition([], at),
+        insert: PreparedTokenSlice.fromNodes([settled as JsonNode]),
+        to: index.childPosition([], at + 1),
+      });
     }
   }
 
-  return next ?? children;
+  return sections.length === 0 ? null : RootChange.create(index, sections);
 };
 
 const formatTagsOf = (node: Node) =>
@@ -383,7 +398,7 @@ export const repairKeys = (
  * answers by walking the whole document unless an index backs it, so a block
  * scope returns held deletions only with `returnsHeld`.
  */
-export const settleValue = <V extends Value>(
+export const settleValue = <V extends JsonEditorValue>(
   value: V,
   facts: ReviewFacts,
   scope: SettleScope,
@@ -410,14 +425,49 @@ export const settleValue = <V extends Value>(
     return { reopenedRejections: pass.reopenedRejections, value: null };
   }
 
-  const settleIn = (root: string, nodes: NodeList<Node>) =>
+  const settled =
     scope === 'document'
-      ? settleNodes(nodes, pass, {
-          outer: null,
-          parent: null,
-          root,
-        })
-      : settleBlocks(nodes, pass, scope.get(root), root);
+      ? settleRoots(value, pass)
+      : settleScope(value, pass, scope);
+  const minted = pass.dependencies.minted();
+
+  return {
+    reopenedRejections: pass.reopenedRejections,
+    value:
+      settled === value && minted.length === 0
+        ? null
+        : deriveValue(
+            settled,
+            {},
+            composeRecordOps(
+              putContexts(minted),
+              putLanded(pass.landed.values())
+            )
+          ),
+  };
+};
+
+const settleScope = <V extends JsonEditorValue>(
+  value: V,
+  pass: Pass,
+  scope: ReadonlyMap<string, ReadonlySet<number>>
+): V => {
+  const changes = new Map<string, RootChange>();
+
+  for (const [root, blocks] of scope) {
+    const change = settleBlocks(rootOf(value, root), pass, blocks, root);
+
+    if (change) changes.set(root, change);
+  }
+
+  return changes.size === 0
+    ? value
+    : createInternalDocumentChange(changes).apply(value);
+};
+
+const settleRoots = <V extends JsonEditorValue>(value: V, pass: Pass): V => {
+  const settleIn = (root: string, nodes: NodeList<Node>) =>
+    settleNodes(nodes, pass, { outer: null, parent: null, root });
   const main = rootNodesOf(
     value as Readonly<{ children: readonly Node[] }>,
     'children'
@@ -427,30 +477,18 @@ export const settleValue = <V extends Value>(
     ([root, nodes]) =>
       [root, nodes, settleIn(root, nodes as readonly Node[])] as const
   );
-  const minted = pass.dependencies.minted();
   const rootsChanged = roots.some(([, nodes, settled]) => settled !== nodes);
 
-  return {
-    reopenedRejections: pass.reopenedRejections,
-    value:
-      children === main && !rootsChanged && minted.length === 0
-        ? null
-        : deriveValue(
-            value,
-            {
-              ...(children === main ? {} : { children }),
-              ...(rootsChanged
-                ? {
-                    roots: Object.fromEntries(
-                      roots.map(([root, , settled]) => [root, settled])
-                    ),
-                  }
-                : {}),
-            } as Partial<V>,
-            composeRecordOps(
-              putContexts(minted),
-              putLanded(pass.landed.values())
-            )
-          ),
-  };
+  return children === main && !rootsChanged
+    ? value
+    : deriveValue(value, {
+        ...(children === main ? {} : { children }),
+        ...(rootsChanged
+          ? {
+              roots: Object.fromEntries(
+                roots.map(([root, , settled]) => [root, settled])
+              ),
+            }
+          : {}),
+      } as Partial<V>);
 };

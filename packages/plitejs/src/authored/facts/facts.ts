@@ -394,7 +394,7 @@ export const factsOf = (value: Value): ReviewFacts => {
 
   countLedgerWork('documentFacts');
 
-  let inserted: NodesPerIncarnation | null = null;
+  let inserted: IncarnationCounts | null = null;
   // Admission keeps each admitted document's counts, so this reads them
   // instead of the document.
   const facts: ReviewFacts = Object.freeze({
@@ -411,8 +411,89 @@ export const NO_FACTS: ReviewFacts = factsOf({ children: EMPTY });
 
 export type NodesPerIncarnation = ReadonlyMap<string, number>;
 
+type Undo = Readonly<{
+  next: IncarnationCounts;
+  undo: ReadonlyArray<readonly [string, number | undefined]>;
+}>;
+
+/**
+ * How many nodes carry each incarnation's insertion, in one version of a
+ * document. Versions share one map: the version read last holds it, and every
+ * other holds the writes that turn the version it points to back into itself,
+ * so admitting a commit costs the counts it changed, not every count.
+ */
+export class IncarnationCounts {
+  private state: Map<string, number> | Undo;
+
+  private constructor(state: Map<string, number> | Undo) {
+    this.state = state;
+  }
+
+  static of(counts: Map<string, number>) {
+    return new IncarnationCounts(counts);
+  }
+
+  get(incarnation: string) {
+    return this.counts().get(incarnation);
+  }
+
+  has(incarnation: string) {
+    return this.counts().has(incarnation);
+  }
+
+  /** A version with each of `writes` set, or deleted where it is undefined. */
+  with(writes: ReadonlyMap<string, number | undefined>) {
+    const counts = this.counts();
+    const next = new IncarnationCounts(counts);
+    const undo: Array<readonly [string, number | undefined]> = [];
+
+    for (const [incarnation, count] of writes) {
+      undo.push([incarnation, counts.get(incarnation)]);
+      if (count === undefined) counts.delete(incarnation);
+      else counts.set(incarnation, count);
+    }
+    countLedgerWork('insertionCounts', writes.size);
+    this.state = { next, undo };
+
+    return next;
+  }
+
+  private counts(): Map<string, number> {
+    const path: IncarnationCounts[] = [this];
+
+    for (
+      let { state } = this;
+      !(state instanceof Map);
+      { state } = state.next
+    ) {
+      path.push(state.next);
+    }
+
+    const counts = getDefined(path.at(-1)).state as Map<string, number>;
+
+    for (let at = path.length - 2; at >= 0; at -= 1) {
+      const version = getDefined(path[at]);
+      const holder = getDefined(path[at + 1]);
+      const { undo } = version.state as Undo;
+      const redo = undo.map(
+        ([incarnation]) => [incarnation, counts.get(incarnation)] as const
+      );
+
+      for (const [incarnation, count] of undo) {
+        if (count === undefined) counts.delete(incarnation);
+        else counts.set(incarnation, count);
+      }
+      countLedgerWork('insertionCounts', undo.length);
+      holder.state = { next: version, undo: redo };
+      version.state = counts;
+    }
+
+    return counts;
+  }
+}
+
 type Insertions = Readonly<{
-  counts: NodesPerIncarnation;
+  counts: IncarnationCounts;
   roots: ReadonlyMap<string, NodeList<unknown>>;
 }>;
 
@@ -423,14 +504,11 @@ const INSERTIONS = new WeakMap<NodeList<unknown>, Insertions>();
 export const addCounts = (
   counts: Map<string, number>,
   added: NodesPerIncarnation,
-  sign: 1 | -1,
-  flipped?: Set<string>
+  sign: 1 | -1
 ) => {
   for (const [incarnation, count] of added) {
-    const was = counts.get(incarnation) ?? 0;
-    const now = was + sign * count;
+    const now = (counts.get(incarnation) ?? 0) + sign * count;
 
-    if (flipped && was > 0 !== now > 0) flipped.add(incarnation);
     if (now === 0) counts.delete(incarnation);
     else counts.set(incarnation, now);
   }
@@ -487,12 +565,12 @@ export const insertionsOf = (value: Value): Insertions => {
     });
   }
 
-  return rememberInsertions(value, counts);
+  return rememberInsertions(value, IncarnationCounts.of(counts));
 };
 
 export const rememberInsertions = (
   value: Value,
-  counts: NodesPerIncarnation
+  counts: IncarnationCounts
 ): Insertions => {
   const insertions = { counts, roots: contentRootsOf(value) };
 

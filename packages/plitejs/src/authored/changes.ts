@@ -221,16 +221,22 @@ export const sameShape = (left: Node, right: Node) =>
 export const isStructureMark = (mark: AuthoredMark) =>
   KINDS[mark.kind] === 'structure';
 
-const revisionOf = (list: readonly Occurrence[]) => {
-  let value = FNV_OFFSET;
+/**
+ * One top-level block's part of a change's revision, from the change's
+ * occurrences in it, each with its path inside the block.
+ *
+ * @internal
+ */
+export const blockRevisionOf = (
+  root: string,
+  list: ReadonlyArray<Pick<Occurrence, 'mark' | 'node' | 'path'>>
+) => {
+  let value = mix(FNV_OFFSET, hash(root));
 
-  for (const { mark, node, path, root } of list) {
-    value = mix(value, hash(root));
+  for (const { mark, node, path } of list) {
     if (isLineBreak(mark)) {
-      value = mix(value, path.length - 1);
-      for (let depth = 1; depth < path.length; depth++) {
-        value = mix(value, path[depth]);
-      }
+      value = mix(value, path.length);
+      for (const index of path) value = mix(value, index);
     }
     value = mix(value, markHash(mark));
     value = mix(
@@ -240,6 +246,35 @@ const revisionOf = (list: readonly Occurrence[]) => {
   }
 
   return value;
+};
+
+// Blocks add their parts, so a key in one block of a change that spans many
+// moves the revision by that block's part alone.
+const revisionOf = (list: readonly Occurrence[]) => {
+  let revision = 0;
+  let start = 0;
+
+  for (let at = 1; at <= list.length; at++) {
+    const first = list[start];
+    const next = list[at];
+
+    if (next && next.root === first.root && next.path[0] === first.path[0]) {
+      continue;
+    }
+    revision =
+      (revision +
+        blockRevisionOf(
+          first.root,
+          list.slice(start, at).map((occurrence) => ({
+            ...occurrence,
+            path: occurrence.path.slice(1),
+          }))
+        )) >>>
+      0;
+    start = at;
+  }
+
+  return revision;
 };
 
 /**

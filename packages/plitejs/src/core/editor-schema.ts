@@ -155,6 +155,12 @@ const generatePropertyValue = (
   }
 };
 
+/** Per root, an earlier root and the change from it to the root it derives. */
+type DerivedRoots = ReadonlyMap<
+  RootKey,
+  Readonly<{ change: RootChange; from: DocumentIndex }>
+>;
+
 /**
  * Schema implementation used only by the slice transaction owner.
  *
@@ -230,7 +236,10 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       options?: Readonly<{ removing?: readonly number[]; root?: RootKey }>
     ) => boolean;
     /** Register one trusted immutable document installed by the runtime owner. */
-    adoptDocumentBaseline: (value: EditorDocumentValue) => void;
+    adoptDocumentBaseline: (
+      value: EditorDocumentValue,
+      derived?: DerivedRoots
+    ) => void;
     /** Fit an external document and preserve one explicit selection through it. */
     fitDocumentWithSelection: <TValue extends Value>(
       value: EditorDocumentValue<TValue>,
@@ -4217,17 +4226,44 @@ export const createEditorSchema = <V extends Value = Value>(
   };
   const rememberValidatedDocumentRoots = (
     value: EditorDocumentValue,
-    schema?: CompiledEditorSchema | null
+    schema?: CompiledEditorSchema | null,
+    derived?: DerivedRoots
   ) => {
     const authority = getValidationAuthority();
+    // A root derived from a validated root shares its other top-level nodes,
+    // so only the ones its change touched can be unfrozen.
+    const holdsFrozenNodes = (root: string, document: DocumentIndex) => {
+      const derivation = derived?.get(root);
+
+      if (!derivation || !isRootValidatedBy(derivation.from, authority)) {
+        return (
+          isImmutable(document.value) &&
+          (document.value as readonly Descendant[]).every((node) =>
+            isDeepFrozenNode(node)
+          )
+        );
+      }
+
+      let frozen = true;
+
+      derivation.change.iterChangedRanges((_fromA, _toA, from, to) => {
+        for (const entry of document.nodeRangesTouching(from, to)) {
+          if (
+            entry.path.length === 1 &&
+            !isDeepFrozenNode(getDefined(rootNodes(document).at(entry.path[0])))
+          ) {
+            frozen = false;
+          }
+        }
+      });
+
+      return frozen;
+    };
 
     for (const [root, document] of Object.entries(documentRoots(value))) {
       if (
         isRootValidatedBy(document, authority) ||
-        (isImmutable(document.value) &&
-          (document.value as readonly Descendant[]).every((node) =>
-            isDeepFrozenNode(node)
-          ))
+        holdsFrozenNodes(root, document)
       ) {
         markRootValidatedBy(document, authority);
         if (schema && hasContentRoots()) {
@@ -4865,8 +4901,8 @@ export const createEditorSchema = <V extends Value = Value>(
     };
 
   const api: InternalEditorSchemaApi<V> = Object.freeze({
-    adoptDocumentBaseline: (value) => {
-      rememberValidatedDocumentRoots(value, getDeclarativeSchema());
+    adoptDocumentBaseline: (value, derived) => {
+      rememberValidatedDocumentRoots(value, getDeclarativeSchema(), derived);
     },
     allowsElementType,
     canContain,

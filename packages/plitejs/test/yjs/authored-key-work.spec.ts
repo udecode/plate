@@ -557,6 +557,79 @@ describe("a key's work follows its edit, not the document", () => {
   }
 });
 
+// Each join leaves the joined-away line as a hidden root child, since the line
+// it joined shows its text by reference.
+const enterAfterJoinsWork = (blocks: number) => {
+  const a = peer(new Y.Doc(), 'alice', 'edit', {
+    children: [
+      { children: [{ text: 'Title' }], type: 'title' },
+      ...Array.from({ length: blocks - 1 }, (_, index) =>
+        paragraph(plainLine(index))
+      ),
+    ],
+  });
+  const joined = new Y.Doc();
+
+  send(a.doc, joined);
+
+  const b = peer(joined, 'bob', 'edit');
+  const unmount = mountReceiver(b.editor);
+
+  for (let line = blocks - 50; line > 0; line -= 100) {
+    const point = { offset: 0, path: [line, 0] };
+
+    a.editor.update((tx) => tx.selection.set({ anchor: point, focus: point }));
+    press(a.editor, 'backspace');
+    send(a.doc, b.doc);
+  }
+
+  const remote = [0, 1].map(() => {
+    const last = a.editor.read.children().length - 1;
+    const point = { offset: 3, path: [last, 0] };
+
+    a.editor.update((tx) => tx.selection.set({ anchor: point, focus: point }));
+    send(a.doc, b.doc);
+    press(a.editor, 'enter');
+    reset();
+    send(a.doc, b.doc);
+
+    return read();
+  });
+
+  assert.deepEqual(
+    b.editor.read.children(),
+    a.editor.read.children(),
+    'the peer received the joins and the Enters'
+  );
+  unmount();
+  a.cleanup();
+  b.cleanup();
+
+  return remote;
+};
+
+describe('a remote Enter after Editing joins', () => {
+  it('reads as much at 992 lines with ten joins as at 96 with one', () => {
+    const small = enterAfterJoinsWork(96);
+    const large = enterAfterJoinsWork(992);
+
+    console.info(JSON.stringify({ large, small }));
+    assert.deepEqual(
+      large.map((work, index) =>
+        Object.fromEntries(
+          (Object.keys(work) as Array<keyof typeof work>)
+            .filter((counter) => work[counter] !== small[index][counter])
+            .map((counter) => [
+              counter,
+              `${small[index][counter]} -> ${work[counter]}`,
+            ])
+        )
+      ),
+      [{}, {}]
+    );
+  });
+});
+
 describe("a card's walks follow the key, not the card", () => {
   for (const place of ['inside', 'beside'] as const) {
     it(`the card's author typing ${place} it`, () => {

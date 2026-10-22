@@ -10,6 +10,7 @@ import { getDefined } from '../../internal/get-defined';
 import {
   type BlockOccurrence,
   blockOccurrencesOf,
+  blockRevisionOf,
   changeOf,
   type Occurrence,
   placeOccurrence,
@@ -25,7 +26,7 @@ import { readMembers } from '../tree/marks';
 import type { AuthoredChange, AuthoredChangeGroup } from '../types';
 import {
   type CardEntry,
-  type ChangePlaces,
+  type ChangeSummary,
   cardIn,
   cardOf,
   cardRun,
@@ -128,22 +129,63 @@ const blockChangesOf = (block: JsonNode, facts: ReviewFacts): BlockChanges => {
   };
 };
 
+type HeldPart = Readonly<{ createdAt: number; revision: number }>;
+
+/**
+ * A pending change as one root holds it, kept in step with the blocks that
+ * come and go, so a key reads only its own blocks' parts.
+ */
+class HeldChange {
+  /** The blocks holding the change, in document order. */
+  readonly holders: BookSlot[] = [];
+  readonly parts = new Map<BookSlot, HeldPart>();
+  revision = 0;
+  private readonly times = new Map<number, number>();
+  private oldest = Number.POSITIVE_INFINITY;
+
+  get createdAt() {
+    if (!this.times.has(this.oldest)) {
+      this.oldest = Number.POSITIVE_INFINITY;
+      for (const time of this.times.keys()) {
+        if (time < this.oldest) this.oldest = time;
+      }
+    }
+
+    return this.oldest;
+  }
+
+  add(part: HeldPart, sign: 1 | -1) {
+    const holding = (this.times.get(part.createdAt) ?? 0) + sign;
+
+    this.revision = (this.revision + sign * part.revision) >>> 0;
+    if (holding === 0) this.times.delete(part.createdAt);
+    else this.times.set(part.createdAt, holding);
+    if (sign === 1 && part.createdAt < this.oldest) {
+      this.oldest = part.createdAt;
+    }
+  }
+}
+
 /** @internal */
 export class RootBook {
-  readonly holders = new Map<string, Set<BookSlot>>();
+  readonly held = new Map<string, HeldChange>();
   private readonly naming = new Map<string, Set<BookSlot>>();
+  rootIndex = 0;
   readonly slots: SlotTree<BookSlot, CardEntry>;
   readonly root: string;
   private stored: DocumentIndex;
+  private readonly heldBy: (id: string, book: RootBook, held: boolean) => void;
 
   constructor(
     root: string,
     stored: DocumentIndex,
     changesOf: (block: JsonNode) => BlockChanges,
-    touched: Set<string>
+    touched: Set<string>,
+    heldBy: (id: string, book: RootBook, held: boolean) => void
   ) {
     this.root = root;
     this.stored = stored;
+    this.heldBy = heldBy;
     this.slots = this.build(stored, changesOf, touched);
   }
 
@@ -158,12 +200,21 @@ export class RootBook {
       .slice(0, stored.size)
       .map((block) => slotOf(block, changesOf, this));
 
-    for (const slot of slots) this.hold(slot, true, touched);
+    // The slots come in document order and the tree does not hold them yet,
+    // so each holder goes last.
+    for (const slot of slots) {
+      this.name(slot, true);
+      for (const [id, list] of slot.changes.occurrences) {
+        touched.add(id);
+        this.heldOf(id).holders.push(slot);
+        this.addPart(id, slot, list);
+      }
+    }
 
     return new SlotTree<BookSlot, CardEntry>(MEASURES, slots, SLOT_OLDEST);
   }
 
-  private hold(slot: BookSlot, add: boolean, touched: Set<string> | null) {
+  private name(slot: BookSlot, add: boolean) {
     for (const incarnation of slot.changes.incarnations) {
       const slots = this.naming.get(incarnation) ?? new Set<BookSlot>();
 
@@ -175,31 +226,95 @@ export class RootBook {
         if (slots.size === 0) this.naming.delete(incarnation);
       }
     }
-    this.holdChanges(slot, add, touched);
   }
 
-  private holdChanges(
-    slot: BookSlot,
-    add: boolean,
-    touched: Set<string> | null
-  ) {
-    for (const id of slot.changes.occurrences.keys()) {
-      const holders = this.holders.get(id) ?? new Set<BookSlot>();
+  private heldOf(id: string) {
+    let held = this.held.get(id);
 
+    if (!held) {
+      held = new HeldChange();
+      this.held.set(id, held);
+      this.heldBy(id, this, true);
+    }
+
+    return held;
+  }
+
+  private addPart(
+    id: string,
+    slot: BookSlot,
+    list: readonly BlockOccurrence[]
+  ) {
+    const part = {
+      createdAt: Math.min(...list.map(({ mark }) => mark.at)),
+      revision: blockRevisionOf(this.root, list),
+    };
+    const held = getDefined(this.held.get(id));
+
+    held.parts.set(slot, part);
+    held.add(part, 1);
+  }
+
+  private dropPart(id: string, slot: BookSlot) {
+    const held = getDefined(this.held.get(id));
+
+    held.add(getDefined(held.parts.get(slot)), -1);
+    held.parts.delete(slot);
+  }
+
+  /** Where `slot`, which the tree holds, goes among `holders`. */
+  private holderIndex(holders: readonly BookSlot[], slot: BookSlot) {
+    const rank = this.slots.rankOf(slot);
+    let low = 0;
+    let high = holders.length;
+
+    while (low < high) {
+      const middle = (low + high) >> 1;
+
+      countLedgerWork('holderReads');
+      if (this.slots.rankOf(getDefined(holders[middle])) < rank) {
+        low = middle + 1;
+      } else high = middle;
+    }
+
+    return low;
+  }
+
+  private hold(slot: BookSlot, add: boolean, touched: Set<string> | null) {
+    this.name(slot, add);
+    for (const [id, list] of slot.changes.occurrences) {
       touched?.add(id);
-      if (add) {
-        holders.add(slot);
-        this.holders.set(id, holders);
-      } else {
-        holders.delete(slot);
-        if (holders.size === 0) this.holders.delete(id);
-      }
+      if (add) this.addHolder(id, slot, list);
+      else this.dropHolder(id, slot);
+    }
+  }
+
+  private addHolder(
+    id: string,
+    slot: BookSlot,
+    list: readonly BlockOccurrence[]
+  ) {
+    const { holders } = this.heldOf(id);
+
+    holders.splice(this.holderIndex(holders, slot), 0, slot);
+    this.addPart(id, slot, list);
+  }
+
+  private dropHolder(id: string, slot: BookSlot) {
+    const held = getDefined(this.held.get(id));
+
+    this.dropPart(id, slot);
+    held.holders.splice(this.holderIndex(held.holders, slot), 1);
+    if (held.holders.length === 0) {
+      this.held.delete(id);
+      this.heldBy(id, this, false);
     }
   }
 
   /**
    * Put `block` in `slot`, the block it replaced, so the entries of the
-   * changes a pairing left untouched stay in place.
+   * changes a pairing left untouched stay in place, and a change the slot
+   * holds before and after keeps its place among its holders.
    */
   private replace(
     slot: BookSlot,
@@ -207,12 +322,22 @@ export class RootBook {
     changes: BlockChanges,
     rechecked: Map<BookSlot, RootBook>
   ) {
-    this.hold(slot, false, null);
+    const old = slot.changes;
+
+    this.name(slot, false);
+    for (const id of old.occurrences.keys()) {
+      if (changes.occurrences.has(id)) this.dropPart(id, slot);
+      else this.dropHolder(id, slot);
+    }
     slot.block = block;
     slot.changes = changes;
     slot.measures[UNITS] = changes.units;
     slot.measures[TOKENS] = tokenLength(block);
-    this.hold(slot, true, null);
+    this.name(slot, true);
+    for (const [id, list] of changes.occurrences) {
+      if (old.occurrences.has(id)) this.addPart(id, slot, list);
+      else this.addHolder(id, slot, list);
+    }
     if (slot.leaf) this.slots.update(slot);
     rechecked.set(slot, this);
   }
@@ -276,12 +401,14 @@ export class RootBook {
         .slice(paired)
         .map(({ block }) => slotOf(block, changesOf, this));
 
+      // A holder's place among its change's holders reads its rank, so a
+      // slot leaves while the tree holds it and joins once the tree does.
       for (const slot of removed) this.hold(slot, false, touched);
-      for (const slot of inserted) this.hold(slot, true, touched);
       if (removed.length > 0) {
         this.slots.splice(fromA + paired, removed.length, []);
       }
       if (inserted.length > 0) this.slots.splice(fromA + paired, 0, inserted);
+      for (const slot of inserted) this.hold(slot, true, touched);
       spliced.push({ book: this, rank: fromB }, { book: this, rank: toB });
       countLedgerWork('bookEntries', toA - fromA + inserted.length);
     }
@@ -319,73 +446,37 @@ export class RootBook {
     for (const slot of slots) {
       const old = { block: slot.block, changes: slot.changes };
 
-      this.holdChanges(slot, false, touched);
+      for (const id of old.changes.occurrences.keys()) {
+        touched.add(id);
+        this.dropHolder(id, slot);
+      }
       slot.changes = changesOf(slot.block);
       if (out) {
         const start = this.slots.sumBefore(this.slots.rankOf(slot), TOKENS);
 
         pairStretch([old], [slot], start, start, out);
       }
-      this.holdChanges(slot, true, touched);
+      for (const [id, list] of slot.changes.occurrences) {
+        touched.add(id);
+        this.addHolder(id, slot, list);
+      }
     }
     countLedgerWork('bookEntries', slots.size);
   }
 
   occurrences(id: string): Occurrence[] {
-    const holders = this.holders.get(id);
+    const holders = this.held.get(id)?.holders ?? [];
 
-    if (!holders) return [];
+    countLedgerWork('holderReads', holders.length);
 
-    return [...holders]
-      .map((slot) => ({ rank: this.slots.rankOf(slot), slot }))
-      .sort((left, right) => left.rank - right.rank)
-      .flatMap(({ rank, slot }) => {
-        const before = this.slots.sumBefore(rank, UNITS);
+    return holders.flatMap((slot) => {
+      const rank = this.slots.rankOf(slot);
+      const before = this.slots.sumBefore(rank, UNITS);
 
-        return getDefined(slot.changes.occurrences.get(id)).map((local) =>
-          placeOccurrence(local, this.root, rank, before)
-        );
-      });
-  }
-
-  /** The holder of `id` with the least rank, or the greatest. */
-  edgeHolder(id: string, last: boolean): BookSlot {
-    let edge: BookSlot | null = null;
-    let rank = 0;
-
-    for (const slot of getDefined(this.holders.get(id))) {
-      const at = this.slots.rankOf(slot);
-
-      if (!edge || (last ? at > rank : at < rank)) {
-        rank = at;
-        edge = slot;
-      }
-    }
-
-    return getDefined(edge);
-  }
-
-  firstPlace(id: string): Readonly<{ order: number; rank: number }> | null {
-    const holders = this.holders.get(id);
-
-    if (!holders) return null;
-
-    let first: BookSlot | null = null;
-    let rank = Number.POSITIVE_INFINITY;
-
-    for (const slot of holders) {
-      const at = this.slots.rankOf(slot);
-
-      if (at < rank) {
-        rank = at;
-        first = slot;
-      }
-    }
-
-    return {
-      order: [...getDefined(first).changes.occurrences.keys()].indexOf(id),
-      rank,
-    };
+      return getDefined(slot.changes.occurrences.get(id)).map((local) =>
+        placeOccurrence(local, this.root, rank, before)
+      );
+    });
   }
 
   /**
@@ -592,6 +683,18 @@ const EMPTY_DELTA: BookDelta = Object.freeze({
 export class ChangeBook {
   private readonly entries = new Map<string, CardEntry>();
   private readonly roots = new Map<string, RootBook>();
+  private readonly holding = new Map<string, Set<RootBook>>();
+  private readonly heldBy = (id: string, book: RootBook, held: boolean) => {
+    const books = this.holding.get(id) ?? new Set<RootBook>();
+
+    if (held) {
+      books.add(book);
+      this.holding.set(id, books);
+    } else {
+      books.delete(book);
+      if (books.size === 0) this.holding.delete(id);
+    }
+  };
   private readonly blocks = new WeakMap<
     JsonNode,
     Readonly<{ changes: BlockChanges; verdicts: readonly VerdictRead[] }>
@@ -668,8 +771,11 @@ export class ChangeBook {
     this.facts = factsOf(value);
     for (const root of this.roots.keys()) {
       if (content.has(root)) continue;
-      for (const id of getDefined(this.roots.get(root)).holders.keys()) {
+      const book = getDefined(this.roots.get(root));
+
+      for (const id of book.held.keys()) {
         touched.add(id);
+        this.heldBy(id, book, false);
       }
       this.roots.delete(root);
     }
@@ -705,10 +811,11 @@ export class ChangeBook {
       } else {
         sitesOf(root)?.push([0, index.length]);
       }
-      roots.set(
-        root,
-        book ?? new RootBook(root, index, this.changesOf, touched)
-      );
+      const synced =
+        book ?? new RootBook(root, index, this.changesOf, touched, this.heldBy);
+
+      synced.rootIndex = roots.size;
+      roots.set(root, synced);
     }
     this.roots.clear();
     for (const [root, book] of roots) this.roots.set(root, book);
@@ -761,13 +868,8 @@ export class ChangeBook {
     spliced: Array<Readonly<{ book: RootBook; rank: number }>>,
     rechecked: Map<BookSlot, RootBook>
   ) {
-    const cards = syncCards(
-      this.entries,
-      touched,
-      spliced,
-      rechecked,
-      (id) => this.change(id),
-      (id) => this.placesOf(id)
+    const cards = syncCards(this.entries, touched, spliced, rechecked, (id) =>
+      this.summaryOf(id)
     );
 
     if (this.published) {
@@ -1032,8 +1134,11 @@ export class ChangeBook {
   }
 
   private sitesOf(id: string, sites: Map<string, Span[]>) {
-    for (const book of this.roots.values()) {
-      for (const slot of book.holders.get(id) ?? []) {
+    for (const book of this.holding.get(id) ?? []) {
+      const { holders } = getDefined(book.held.get(id));
+
+      countLedgerWork('holderReads', holders.length);
+      for (const slot of holders) {
         const start = book.slots.sumBefore(book.slots.rankOf(slot), TOKENS);
         const list = sites.get(book.root) ?? [];
 
@@ -1063,16 +1168,35 @@ export class ChangeBook {
     return ranks;
   }
 
-  private placesOf(id: string): ChangePlaces {
-    const books = [...this.roots.values()].filter((book) =>
-      book.holders.has(id)
-    );
-    const first = getDefined(books[0]);
-    const last = getDefined(books.at(-1));
+  private summaryOf(id: string): ChangeSummary | null {
+    const books = this.holding.get(id);
+
+    if (!books) return null;
+
+    let first: RootBook | null = null;
+    let last: RootBook | null = null;
+    let createdAt = Number.POSITIVE_INFINITY;
+    let revision = 0;
+
+    for (const book of books) {
+      const held = getDefined(book.held.get(id));
+
+      createdAt = Math.min(createdAt, held.createdAt);
+      revision = (revision + held.revision) >>> 0;
+      if (!first || book.rootIndex < first.rootIndex) first = book;
+      if (!last || book.rootIndex > last.rootIndex) last = book;
+    }
+
+    const firstSlot = getDefined(getDefined(first).held.get(id)?.holders[0]);
+    const lastSlot = getDefined(getDefined(last).held.get(id)?.holders.at(-1));
 
     return {
-      first: { book: first, slot: first.edgeHolder(id, false) },
-      last: { book: last, slot: last.edgeHolder(id, true) },
+      authorId: getDefined(firstSlot.changes.occurrences.get(id)?.[0]).mark
+        .author,
+      createdAt,
+      first: { book: getDefined(first), slot: firstSlot },
+      last: { book: getDefined(last), slot: lastSlot },
+      revision,
     };
   }
 
@@ -1206,7 +1330,9 @@ export class ChangeBook {
   }
 
   private occurrences(id: string): readonly Occurrence[] {
-    return [...this.roots.values()].flatMap((book) => book.occurrences(id));
+    return [...this.roots.values()].flatMap((book) =>
+      this.holding.get(id)?.has(book) ? book.occurrences(id) : []
+    );
   }
 
   private change(id: string): AuthoredChange | null {

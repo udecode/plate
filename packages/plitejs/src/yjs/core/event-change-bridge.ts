@@ -1168,22 +1168,44 @@ const parseProjectedRootInsertDelta = (
 ): RootStructuralRegion[] | null => {
   if (delta.some((part) => part.delete !== undefined)) return null;
 
-  const rawAfter = rawYjsChildren(root);
-  const visibleAfter = new Set(getYjsVisibleChildren(root, root));
   const regions: RootStructuralRegion[] = [];
+  let visibleAfter: ReadonlySet<YjsNode> | undefined;
+  const showsAfter = (node: YjsNode) =>
+    !hasProjectionAttributes(node) ||
+    (visibleAfter ??= new Set(getYjsVisibleChildren(root, root))).has(node);
   let beforeIndex = 0;
   let rawIndex = 0;
 
   for (const part of delta) {
     if (part.retain !== undefined) {
-      if (!isDeltaLength(part.retain)) return null;
+      if (
+        !isDeltaLength(part.retain) ||
+        rawIndex + part.retain > before.rawLength
+      ) {
+        return null;
+      }
 
-      let remaining = part.retain;
+      const end = rawIndex + part.retain;
 
-      while (remaining > 0) {
-        const retained = rawAfter[rawIndex];
+      while (rawIndex < end) {
+        // Up to the next crossing child, each retained child shows itself or
+        // nothing, and the batch could not change its projection attributes
+        // without an earlier fallback, so their visible indexes run on.
+        const crossing = Math.min(before.nextCrossing(rawIndex), end);
+        const from = before.visibleBefore(rawIndex);
+        const shown = before.visibleBefore(crossing) - from;
+
+        if (shown > 0 && from !== beforeIndex) return null;
+
+        beforeIndex += shown;
+        rawIndex = crossing;
+        if (rawIndex === end) break;
+
+        const retained = before.rawAt(rawIndex);
 
         if (retained === undefined) return null;
+
+        countCoreWork('yjsChildrenRead');
 
         const visibleIndex = before.indexOf(retained);
 
@@ -1195,7 +1217,6 @@ const parseProjectedRootInsertDelta = (
           return null;
         }
         rawIndex += 1;
-        remaining -= 1;
       }
     }
     if (part.insert !== undefined) {
@@ -1205,14 +1226,7 @@ const parseProjectedRootInsertDelta = (
 
       const inserted = part.insert as readonly YjsNode[];
 
-      if (
-        inserted.some(
-          (node, index) =>
-            rawAfter[rawIndex + index] !== node ||
-            before.has(node) ||
-            !visibleAfter.has(node)
-        )
-      ) {
+      if (inserted.some((node) => before.has(node) || !showsAfter(node))) {
         return null;
       }
 
@@ -1221,7 +1235,6 @@ const parseProjectedRootInsertDelta = (
         beforeTo: beforeIndex,
         nodes: inserted,
       });
-      rawIndex += inserted.length;
     }
   }
 

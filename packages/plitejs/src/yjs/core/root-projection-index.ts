@@ -4,6 +4,9 @@ import type { YjsNode } from './attributes';
 import { YJS_NODE_ID_KEY, YJS_VIRTUAL_CHILD_ID_KEY } from './keys';
 
 type RootSlot = {
+  /** Whether the slot crosses, as `nextCrossing` defines it. */
+  crosses: boolean;
+  crossings: number;
   left: RootSlot | null;
   parent: RootSlot | null;
   priority: number;
@@ -48,12 +51,16 @@ const sizeOf = (slot: RootSlot | null): number => slot?.size ?? 0;
 
 const visibleOf = (slot: RootSlot | null): number => slot?.visible ?? 0;
 
+const crossingsOf = (slot: RootSlot | null): number => slot?.crossings ?? 0;
+
 const shownCount = (slot: RootSlot): number => (slot.shown === null ? 0 : 1);
 
 const update = (slot: RootSlot): RootSlot => {
   slot.size = sizeOf(slot.left) + sizeOf(slot.right) + 1;
   slot.visible =
     visibleOf(slot.left) + visibleOf(slot.right) + shownCount(slot);
+  slot.crossings =
+    crossingsOf(slot.left) + crossingsOf(slot.right) + (slot.crosses ? 1 : 0);
   if (slot.left) slot.left.parent = slot;
   if (slot.right) slot.right.parent = slot;
 
@@ -105,7 +112,28 @@ const split = (
   return [root, right];
 };
 
+const firstCrossed = (
+  slot: RootSlot | null,
+  offset: number,
+  from: number
+): number => {
+  if (slot === null || slot.crossings === 0 || offset + slot.size <= from) {
+    return -1;
+  }
+
+  const index = offset + sizeOf(slot.left);
+  const left = firstCrossed(slot.left, offset, from);
+
+  if (left !== -1) return left;
+  if (index >= from && slot.crosses) return index;
+
+  return firstCrossed(slot.right, index + 1, from);
+};
+
 const isDeleted = (node: YjsNode): boolean => node._item?.deleted === true;
+
+const isLive = (id: string, node: YjsNode): boolean =>
+  node.getAttribute(YJS_NODE_ID_KEY) === id && !isDeleted(node);
 
 /**
  * The raw children of one Yjs root, each with the node it shows, and the root
@@ -132,6 +160,8 @@ export class RootProjectionIndex {
   private readonly refs = new Map<string, number>();
   private root: RootSlot | null = null;
   private readonly shown = new Map<YjsNode, RootSlot>();
+  /** The size `ids` may reach before its stale ids are dropped. */
+  private sweepAt = 0;
 
   get length(): number {
     return visibleOf(this.root);
@@ -156,6 +186,38 @@ export class RootProjectionIndex {
 
   holdsRaw(raw: YjsNode): boolean {
     return this.raws.has(raw);
+  }
+
+  /**
+   * The raw index of the first slot at or after `rawIndex` that crosses, or
+   * `rawLength` when none does. A slot crosses when it shows a node other than
+   * its raw child, or another slot shows its raw child.
+   */
+  nextCrossing(rawIndex: number): number {
+    const index = firstCrossed(this.root, 0, rawIndex);
+
+    return index === -1 ? this.rawLength : index;
+  }
+
+  /** How many raw children before `rawIndex` show a node. */
+  visibleBefore(rawIndex: number): number {
+    let current = this.root;
+    let target = rawIndex;
+    let visible = 0;
+
+    while (current !== null && target > 0) {
+      const leftSize = sizeOf(current.left);
+
+      if (target <= leftSize) {
+        current = current.left;
+      } else {
+        visible += visibleOf(current.left) + shownCount(current);
+        target -= leftSize + 1;
+        current = current.right;
+      }
+    }
+
+    return visible;
   }
 
   indexOf(node: YjsNode): number {
@@ -249,15 +311,18 @@ export class RootProjectionIndex {
   resolve(id: string): YjsNode | null {
     const node = this.ids.get(id);
 
-    return node !== undefined &&
-      node.getAttribute(YJS_NODE_ID_KEY) === id &&
-      !isDeleted(node)
-      ? node
-      : null;
+    return node !== undefined && isLive(id, node) ? node : null;
   }
 
   noteId(id: string, node: YjsNode): void {
     this.ids.set(id, node);
+    if (this.ids.size <= this.sweepAt) return;
+
+    for (const [known, held] of this.ids) {
+      // A node a lowering has not inserted yet reads no attributes.
+      if (held.doc !== null && !isLive(known, held)) this.ids.delete(known);
+    }
+    this.sweepAt = 2 * this.ids.size;
   }
 
   noteReferrer(id: string, referrer: Y.XmlElement): void {
@@ -301,6 +366,7 @@ export class RootProjectionIndex {
     this.ids.clear();
     this.referrers.clear();
     for (const [id, node] of tree.ids) this.ids.set(id, node);
+    this.sweepAt = 2 * this.ids.size;
     for (const [id, referrer] of tree.referrers) {
       this.noteReferrer(id, referrer);
     }
@@ -388,6 +454,8 @@ export class RootProjectionIndex {
 
     for (const { raw, ref, shown } of entries) {
       const slot: RootSlot = {
+        crossings: 0,
+        crosses: false,
         left: null,
         parent: null,
         priority: nextPriority(),
@@ -425,13 +493,41 @@ export class RootProjectionIndex {
     slot.shown = shown;
     if (shown !== null) this.shown.set(shown, slot);
     if (shown !== slot.raw) this.projected += 1;
+    this.mark(slot);
+    this.markRawOf(shown, slot);
   }
 
   private unshow(slot: RootSlot): void {
-    if (slot.shown !== null && this.shown.get(slot.shown) === slot) {
-      this.shown.delete(slot.shown);
+    const { shown } = slot;
+
+    if (shown !== null && this.shown.get(shown) === slot) {
+      this.shown.delete(shown);
     }
-    if (slot.shown !== slot.raw) this.projected -= 1;
+    if (shown !== slot.raw) this.projected -= 1;
     slot.shown = null;
+    this.mark(slot);
+    this.markRawOf(shown, slot);
+  }
+
+  private mark(slot: RootSlot): void {
+    slot.crosses =
+      slot.shown !== slot.raw &&
+      (slot.shown !== null || this.shown.has(slot.raw));
+  }
+
+  /** Refreshes the raw slot of `node`, which crosses while another slot shows `node`. */
+  private markRawOf(node: YjsNode | null, by: RootSlot): void {
+    const slot = node === null ? undefined : this.raws.get(node);
+
+    if (slot === undefined || slot === by) return;
+
+    this.mark(slot);
+    for (
+      let current: RootSlot | null = slot;
+      current;
+      current = current.parent
+    ) {
+      update(current);
+    }
   }
 }

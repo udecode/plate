@@ -1968,6 +1968,7 @@ export const resolveAuthoredValue = (
   );
   const kept = roots.filter(([root]) => !dropped.has(root));
   const live = [main, ...kept.map(([, resolution]) => resolution)];
+  const byRoot = new Map([['main', main], ...kept]);
   const base = dropped.size > 0 ? withoutValueRoots(value, dropped) : value;
 
   return {
@@ -1975,6 +1976,7 @@ export const resolveAuthoredValue = (
     decided: [...new Set(all.flatMap((resolution) => resolution.decided))],
     diagnostics: live.flatMap((resolution) => resolution.diagnostics),
     landed: live.flatMap((resolution) => resolution.landed),
+    resolvedIn: (root: string) => byRoot.get(root)?.resolvedOf ?? null,
     resolvedOf: (original: unknown) =>
       live.reduce<JsonNode | null>(
         (found, resolution) => found ?? resolution.resolvedOf(original),

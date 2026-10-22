@@ -17,7 +17,11 @@ import {
   valueRootIndex,
   withDocumentChangeRecords,
 } from '../core/change/document-change';
-import { DocumentIndex, rootIndexOf } from '../core/change/document-index';
+import {
+  DocumentIndex,
+  type NodeList,
+  rootIndexOf,
+} from '../core/change/document-index';
 import { jsonEqual } from '../core/change/json';
 import { copyFields, setLazyRoot } from '../core/change/lazy-root';
 import type { RootChange } from '../core/change/root-change';
@@ -82,6 +86,7 @@ import {
   type TxOnlyMethod,
   txStored,
 } from '../core/tx-only';
+import { countCoreWork } from '../core/work';
 import type {
   AnyEditor as Editor,
   EditorDocumentValue,
@@ -99,7 +104,7 @@ import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import {
-  indexAuthoredChanges,
+  blockOccurrencesOf,
   type Occurrence,
   readAuthoredDetails,
 } from './changes';
@@ -132,13 +137,15 @@ import {
   withStore,
 } from './facts/records';
 import { projectAuthoredDocumentUnder, projectionRefusal } from './format';
-import type { BookSink } from './ledger/book';
+import type { BookSink, BookView } from './ledger/book';
 import {
   createReviewLedger,
   getReviewLedger,
   type ViewPlaces,
 } from './ledger/ledger';
+import { rootOf } from './ledger/roots';
 import { blockFactsOf } from './ledger/runs';
+import { countLedgerWork } from './ledger/work';
 import {
   type AuthoredRefusal,
   constructsValues,
@@ -701,10 +708,8 @@ const siteOf = (index: DocumentIndex, from: number, to: number) => {
   return site;
 };
 
-const childrenOf = (index: DocumentIndex, path: readonly number[]) =>
-  (path.length === 0
-    ? index.value
-    : index.node(path).children) as readonly JsonNode[];
+const childrenOf = (index: DocumentIndex, path: readonly number[]): NodeList =>
+  path.length === 0 ? index.nodes : (index.node(path).children ?? []);
 
 const holdsOwnStructure = (node: JsonNode, facts: ReviewFacts): boolean =>
   claimsOf(node, facts).some(
@@ -740,7 +745,7 @@ const runAround = (
     .slice(from, to)
     .some((node) => holdsOwnStructure(node, facts));
   let start =
-    from > 0 && (structural || isTextBlock(siblings[from - 1]))
+    from > 0 && (structural || isTextBlock(getDefined(siblings.at(from - 1))))
       ? from - 1
       : from;
 
@@ -748,7 +753,7 @@ const runAround = (
     holdsOwnStructure(node, facts) ||
     (structural && isSettledDeletion(node, facts));
 
-  while (start > 0 && landingPassesOver(getDefined(siblings[start]))) {
+  while (start > 0 && landingPassesOver(getDefined(siblings.at(start)))) {
     start -= 1;
   }
 
@@ -757,7 +762,10 @@ const runAround = (
   return {
     from: start,
     path,
-    to: end < siblings.length && isTextBlock(siblings[end]) ? end + 1 : end,
+    to:
+      end < siblings.length && isTextBlock(getDefined(siblings.at(end)))
+        ? end + 1
+        : end,
   };
 };
 
@@ -920,9 +928,16 @@ const acceptOwn = (
         );
 
         if (keys.size > 0) {
-          const lines = siblings.flatMap((node, at) =>
-            blockFactsOf(node).joins.some((key) => keys.has(key)) ? [at] : []
-          );
+          const lines: number[] = [];
+
+          if (run.path.length === 0) {
+            countCoreWork('wholeReadNodes', siblings.length);
+          }
+          siblings.forEach((node, at) => {
+            if (blockFactsOf(node).joins.some((key) => keys.has(key))) {
+              lines.push(at);
+            }
+          });
 
           if (lines.length === 0 && run.path.length > 0) {
             const at = getDefined(run.path.at(-1));
@@ -1077,6 +1092,125 @@ const insertionsInDroppedRoots = (
   }
 
   return stranded;
+};
+
+type ReplacedRange = readonly [
+  from: number,
+  to: number,
+  afterFrom: number,
+  afterTo: number,
+];
+
+/**
+ * The resolution rebuilds every block, so a block it left alone is one equal
+ * to the original it resolves.
+ */
+const replacedRanges = (
+  before: readonly JsonNode[],
+  after: readonly JsonNode[],
+  resolvedOf: (original: JsonNode) => JsonNode | null
+) => {
+  const ranges: ReplacedRange[] = [];
+  let positions: Map<JsonNode, number> | undefined;
+  const kept = (from: number, afterAt: number) => {
+    const node = after[afterAt];
+
+    if (before[from] === node) return true;
+    positions ??= new Map(
+      before.flatMap((original, index) => {
+        const resolved = resolvedOf(original);
+
+        return resolved ? [[resolved, index] as const] : [];
+      })
+    );
+
+    countLedgerWork('pairedBlocks');
+
+    return positions.get(node) === from && jsonEqual(before[from], node);
+  };
+  let from = 0;
+  let afterFrom = 0;
+
+  while (from < before.length || afterFrom < after.length) {
+    if (from < before.length && kept(from, afterFrom)) {
+      from += 1;
+      afterFrom += 1;
+      continue;
+    }
+
+    let afterTo = afterFrom;
+    let to = before.length;
+
+    for (; afterTo < after.length; afterTo += 1) {
+      const at = positions?.get(after[afterTo]) ?? -1;
+
+      if (at >= from && kept(at, afterTo)) {
+        to = at;
+        break;
+      }
+    }
+
+    ranges.push([from, to, afterFrom, afterTo]);
+    from = to;
+    afterFrom = afterTo;
+  }
+
+  return ranges;
+};
+
+const remainsAfter = (
+  value: JsonEditorValue,
+  decided: JsonEditorValue,
+  book: BookView,
+  resolvedIn: (root: string) => ((original: JsonNode) => JsonNode | null) | null
+) => {
+  const facts = factsOf(decided);
+  const replaced = new Map<string, readonly ReplacedRange[]>();
+  const kept = new Set<string>();
+  const candidates = new Set<string>();
+
+  for (const root of ['main', ...Object.keys(value.roots ?? {})]) {
+    if (root !== 'main' && !Object.hasOwn(decided.roots ?? {}, root)) {
+      for (const id of book.idsIn(root, 0, rootOf(value, root).size)) {
+        candidates.add(id);
+      }
+      continue;
+    }
+
+    const after = valueRoot(decided, root);
+    const ranges = replacedRanges(
+      valueRoot(value, root),
+      after,
+      resolvedIn(root) ?? (() => null)
+    );
+
+    replaced.set(root, ranges);
+    for (const [from, to, afterFrom, afterTo] of ranges) {
+      countLedgerWork('strandedBlocks', to - from + afterTo - afterFrom);
+      for (const id of book.idsIn(root, from, to)) candidates.add(id);
+      for (const block of after.slice(afterFrom, afterTo)) {
+        for (const id of blockOccurrencesOf(block, (node) =>
+          marksOf(node, facts)
+        ).occurrences.keys()) {
+          kept.add(id);
+        }
+      }
+    }
+  }
+
+  const remains = (id: string) =>
+    kept.has(id) ||
+    book.occurrences(id).some(({ node, path, root }) => {
+      const ranges = replaced.get(root);
+
+      return (
+        ranges !== undefined &&
+        !ranges.some(([from, to]) => path[0] >= from && path[0] < to) &&
+        marksOf(node, facts).some((mark) => mark.change === id)
+      );
+    });
+
+  return { candidates, remains };
 };
 
 const incarnationsOf = (occurrences: readonly Occurrence[]) =>
@@ -1246,22 +1380,29 @@ export const createAuthoredPlugin = (
     // A change whose inserted text the decision removes, such as text typed
     // inside a rejected insertion, goes only when it is decided too. An empty
     // block completion built holds nothing to lose.
-    const remaining = indexAuthoredChanges(decidedValue).changes;
-    const inDroppedRoots = insertionsInDroppedRoots(value, decidedValue);
-    const taken = [...book.idsFrom({})].filter(
-      (id) =>
-        !actions.has(id) &&
-        (inDroppedRoots.has(id) ||
-          (!remaining.has(id) &&
-            book
-              .occurrences(id)
-              .some(
-                ({ mark, node }) =>
-                  mark.kind === 'insert' &&
-                  typeof node.text === 'string' &&
-                  node.text !== ''
-              )))
+    const { candidates, remains } = remainsAfter(
+      value,
+      decidedValue,
+      book,
+      resolution.resolvedIn
     );
+    const inDroppedRoots = insertionsInDroppedRoots(value, decidedValue);
+    const taken = book
+      .pendingInOrder(new Set([...candidates, ...inDroppedRoots]))
+      .filter(
+        (id) =>
+          !actions.has(id) &&
+          (inDroppedRoots.has(id) ||
+            (!remains(id) &&
+              book
+                .occurrences(id)
+                .some(
+                  ({ mark, node }) =>
+                    mark.kind === 'insert' &&
+                    typeof node.text === 'string' &&
+                    node.text !== ''
+                )))
+      );
 
     if (taken.length > 0) {
       return { result: { ids, status: 'blocked', with: taken } };
@@ -1285,7 +1426,7 @@ export const createAuthoredPlugin = (
             ids: [
               ...new Set([
                 ...resolution.decided,
-                ...ids.filter((id) => !remaining.has(id)),
+                ...ids.filter((id) => !remains(id)),
               ]),
             ],
             status: 'applied',

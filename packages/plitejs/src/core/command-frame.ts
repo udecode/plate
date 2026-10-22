@@ -22,8 +22,9 @@ import {
   getInternalDocumentRootChange,
   valueRoot,
   valueRootIndex,
+  valueRootNodes,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import { DocumentIndex, type NodeList } from './change/document-index';
 import { copyRoot } from './change/lazy-root';
 import { mapRootChangePositionBackward } from './change/root-change';
 import type { JsonPoint, JsonToken } from './change/tokens';
@@ -156,7 +157,7 @@ export const probeInEditorCommandFrame = <T>(
   const root = storedSelection
     ? (SelectionApi.root(storedSelection) ?? selectionRoot)
     : selectionRoot;
-  const index = DocumentIndex.fromValue(valueRoot(stored, root));
+  const index = valueRootIndex(stored, root);
   // A point strictly inside content the projection removes has no place in
   // the frame, so a write there lands elsewhere.
   const insideRemoved = (point: Point) =>
@@ -375,7 +376,10 @@ const enterFrameDraft = (
   }
   // The accept-all projection of a valid review tree is valid, so the frame
   // adopts it as its validated baseline.
-  getEditorSchema(editor).adoptDocumentBaseline(projected.value);
+  getEditorSchema(editor).adoptDocumentBaseline(
+    projected.value,
+    projected.carried
+  );
   countCoreWork('baselines');
   snapshot.builder = createEditorDocumentChangeBuilder(editor, projected.value);
   countCoreWork('builders');
@@ -482,7 +486,7 @@ const createFramePlace = (
   ) => {
     const position = projected.map.toProjected(
       root,
-      DocumentIndex.fromValue(valueRoot(stored, root)).positionAt(point),
+      valueRootIndex(stored, root).positionAt(point),
       mapAssoc < 0 ? 'backward' : 'forward'
     );
 
@@ -558,11 +562,11 @@ const createFramePlace = (
   // gives that container.
   const caret = (point: Point, fallbackRoot: string, onRefuse: Refuse) => {
     const root = point.root ?? fallbackRoot;
-    const document = valueRoot(stored, root);
+    const document = valueRootNodes(stored, root) as NodeList<Descendant>;
     const landed = landTextWrite(editor, point, document);
 
     if (projected.map.reorders(root)) {
-      const at = DocumentIndex.fromValue(document).positionAt(landed);
+      const at = valueRootIndex(stored, root).positionAt(landed);
       const placement = projected.map.projectRange(root, at, at);
 
       if (placement?.kind === 'refused') onRefuse(placement.reason);
@@ -583,7 +587,7 @@ const createFramePlace = (
     root: string,
     onRefuse: Refuse
   ) => {
-    const index = DocumentIndex.fromValue(valueRoot(stored, root));
+    const index = valueRootIndex(stored, root);
     const placement = projected.map.projectRange(
       root,
       index.positionAt(start),

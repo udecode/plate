@@ -46,8 +46,12 @@ export type LedgerWork = {
   /** Runs that fill a root's minimum; a container's own minimum does not count. */
   filledRuns: number;
   headRuns: number;
+  /** Holders of a change read to place it, summarize it or list its sites. */
+  holderReads: number;
   /** Blocks the output hides whole, or merged runs of them, that a place read looked at. */
   hiddenBlocks: number;
+  /** Insertion counts admission copied or rewound to admit a commit. */
+  insertionCounts: number;
   /** Text blocks read to find where a join's first block stands. */
   joinScans: number;
   /** Levels built for a container's children where none was carried. */
@@ -60,6 +64,8 @@ export type LedgerWork = {
   occurrencesVisited: number;
   /** Segments of a run's order that a place read looked at. */
   orderSegments: number;
+  /** Blocks a decision compared with the originals they resolve. */
+  pairedBlocks: number;
   /** Pair reads a book sync made, one for each side of each block it compared. */
   pairsCompared: number;
   /** Maps from a run's stored places to its output's that were built. */
@@ -73,6 +79,8 @@ export type LedgerWork = {
   settledNodes: number;
   /** Slots a level read to map a projected range to its stored ranges. */
   spanSlots: number;
+  /** Blocks a decision read on both sides of what it replaced, to find changes it strands. */
+  strandedBlocks: number;
   /** Children read to sum an element's insertions or find a stacked context in it. */
   summaryChildren: number;
   /** Children read to tell a text block from a container. */
@@ -112,12 +120,15 @@ const work: LedgerWork = {
   filledRuns: 0,
   headRuns: 0,
   hiddenBlocks: 0,
+  holderReads: 0,
+  insertionCounts: 0,
   joinScans: 0,
   levelBuilds: 0,
   levelSlots: 0,
   narrowedChildren: 0,
   occurrencesVisited: 0,
   orderSegments: 0,
+  pairedBlocks: 0,
   pairsCompared: 0,
   placesBuilt: 0,
   previewSites: 0,
@@ -126,6 +137,7 @@ const work: LedgerWork = {
   resolvedRuns: 0,
   settledNodes: 0,
   spanSlots: 0,
+  strandedBlocks: 0,
   summaryChildren: 0,
   textScans: 0,
   unalignedRuns: 0,

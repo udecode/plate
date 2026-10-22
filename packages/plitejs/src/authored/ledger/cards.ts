@@ -1,6 +1,6 @@
 import { getDefined } from '../../internal/get-defined';
 import { type BlockOccurrence, continues, placeOccurrence } from '../changes';
-import type { AuthoredChange, AuthoredChangeGroup } from '../types';
+import type { AuthoredChangeGroup } from '../types';
 import type { BookSlot, RootBook } from './book';
 import { countLedgerWork } from './work';
 
@@ -147,12 +147,19 @@ const measure = (book: RootBook, slot: BookSlot) => {
 };
 
 /**
- * Where a pending change shows first and last, each in the root and block
+ * What the card sequence reads of a pending change: its author, oldest mark
+ * and revision, and where it shows first and last, each in the root and block
  * the kernel's occurrence list starts and ends in.
  *
  * @internal
  */
-export type ChangePlaces = Readonly<{ first: Place; last: Place }>;
+export type ChangeSummary = Readonly<{
+  authorId: string;
+  createdAt: number;
+  first: Place;
+  last: Place;
+  revision: number;
+}>;
 
 /**
  * Move the entries of `touched` changes, then set the start bit again on the
@@ -171,8 +178,7 @@ export const syncCards = (
   touched: Iterable<string>,
   spliced: Iterable<Readonly<{ book: RootBook; rank: number }>>,
   rechecked: ReadonlyMap<BookSlot, RootBook>,
-  changeOf: (id: string) => AuthoredChange | null,
-  placesOf: (id: string) => ChangePlaces
+  summaryOf: (id: string) => ChangeSummary | null
 ) => {
   const dirty = new Map<BookSlot, RootBook>();
 
@@ -190,14 +196,14 @@ export const syncCards = (
       entries.delete(id);
     }
 
-    const change = changeOf(id);
+    const change = summaryOf(id);
 
     if (!change) {
       if (old) removed.push(old);
       continue;
     }
 
-    const { first, last } = placesOf(id);
+    const { first, last } = change;
     const entry: CardEntry = {
       authorId: change.authorId,
       createdAt: change.createdAt,

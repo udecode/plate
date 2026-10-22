@@ -844,7 +844,7 @@ export const bindDocumentChangeNodeKeys = (
           [
             root,
             rootChange.withInsertedNodeKeys(
-              DocumentIndex.fromValue(valueRoot(target, root)),
+              valueRootIndex(target, root),
               (path) => nodeKeyAt(root, path)
             ),
           ] as const
@@ -1325,7 +1325,7 @@ export class DocumentChange {
       const bChange = getInternalDocumentRootChange(b, root);
 
       if (aChange && bChange) {
-        const document = DocumentIndex.fromValue(valueRoot(value, root));
+        const document = valueRootIndex(value, root);
         const transformed = RootChange.transformInDocument(
           aChange,
           bChange,
@@ -1580,7 +1580,7 @@ export class DocumentChange {
 
     const changes = new Map(
       [...getInternalDocumentChangeEntries(this)].map(([root, change]) => {
-        const document = DocumentIndex.fromValue(valueRoot(value, root));
+        const document = valueRootIndex(value, root);
 
         return [root, change.invert(document)] as const;
       })

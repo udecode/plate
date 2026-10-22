@@ -12,7 +12,6 @@ import {
   type IndexedNodeRange,
   NO_NODES,
   type SparseNodes,
-  type NodeList,
 } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
 import {
@@ -62,53 +61,47 @@ import {
 import { CONTEXTS, VERDICTS, verdictIncarnationsOf } from './records';
 import { keyReadingOf, repairKeys, settleValue } from './settle';
 
-const firstChildEndingAfter = (index: DocumentIndex, position: number) => {
-  let low = 0;
-  let high = index.size;
-
-  while (low < high) {
-    const middle = Math.floor((low + high) / 2);
-
-    if (index.childPosition([], middle + 1) <= position) low = middle + 1;
-    else high = middle;
+const changedChildren = (
+  change: DocumentChange,
+  root: string,
+  before: JsonEditorValue,
+  after: DocumentIndex
+): ReadonlyArray<readonly [number, number, number, number]> => {
+  if (change.createRoots.has(root) || change.deleteRoots.has(root)) {
+    return [
+      [
+        0,
+        change.createRoots.has(root) ? 0 : rootOf(before, root).size,
+        0,
+        after.size,
+      ],
+    ];
   }
 
-  return low;
+  return rootOf(before, root).changedChildren(after);
 };
 
 /**
- * The top-level children of `root` a change can touch: `from` to `to` after it,
- * and `from` to `beforeTo` before it, since every child outside them is
- * unchanged. One child more on each side covers a change at a boundary.
+ * The children of `after` that admission settles: each replaced child and
+ * one more on each side, which covers a change at a boundary.
  */
-const changedSpan = (
-  change: DocumentChange,
-  root: string,
-  before: NodeList<unknown>,
-  after: NodeList<unknown>,
-  index: DocumentIndex
+const childrenAround = (
+  ranges: ReadonlyArray<readonly [number, number, number, number]>,
+  length: number
 ) => {
-  if (change.createRoots.has(root) || change.deleteRoots.has(root)) {
-    return { beforeTo: before.length, from: 0, to: after.length };
+  const at = new Set<number>();
+
+  for (const { 2: from, 3: to } of ranges) {
+    for (
+      let child = Math.max(0, from - 1);
+      child < Math.min(length, to + 1);
+      child += 1
+    ) {
+      at.add(child);
+    }
   }
 
-  let from = after.length;
-  let to = 0;
-
-  for (const range of getInternalDocumentChangeRanges(change, root)) {
-    from = Math.min(
-      from,
-      Math.max(0, firstChildEndingAfter(index, range[2]) - 1)
-    );
-    to = Math.max(
-      to,
-      Math.min(after.length, firstChildEndingAfter(index, range[3]) + 1)
-    );
-  }
-
-  return from >= to
-    ? null
-    : { beforeTo: before.length - (after.length - to), from, to };
+  return [...at].sort((left, right) => left - right);
 };
 
 type Leaf = Readonly<Record<string, unknown>> & { text?: string };
@@ -351,36 +344,50 @@ export const authoredAdmission: DocumentAdmission = {
     if (dropped.size > 0) assertDroppedContextsUnused(after, dropped);
 
     const previous = insertionsOf(before);
-    const counts = new Map(previous.counts);
-    const flipped = new Set<string>();
+    const added = new Map<string, number>();
     const roots = contentRootsOf(after);
     const scope = new Map<string, readonly number[]>();
     const beforeFacts = factsOf(before);
     const facts = factsOf(after);
 
     for (const root of new Set([...previous.roots.keys(), ...roots.keys()])) {
-      const old = previous.roots.get(root) ?? [];
-      const next = roots.get(root) ?? [];
+      const old = previous.roots.get(root) ?? NO_NODES;
+      const next = roots.get(root) ?? NO_NODES;
 
       if (old === next) continue;
 
-      const span = changedSpan(change, root, old, next, indexOf(root));
+      const ranges = changedChildren(change, root, before, indexOf(root));
 
-      if (!span) continue;
-      for (const node of old.slice(span.from, span.beforeTo)) {
-        addCounts(counts, insertionsIn(node, beforeFacts), -1, flipped);
+      for (const [fromBefore, toBefore, from, to] of ranges) {
+        for (const node of old.slice(fromBefore, toBefore)) {
+          addCounts(added, insertionsIn(node, beforeFacts), -1);
+        }
+        for (const node of next.slice(from, to)) {
+          addCounts(added, insertionsIn(node, facts), 1);
+        }
       }
-      for (const node of next.slice(span.from, span.to)) {
-        addCounts(counts, insertionsIn(node, facts), 1, flipped);
+      if (next.length > 0 && ranges.length > 0) {
+        scope.set(root, childrenAround(ranges, next.length));
       }
-      scope.set(
-        root,
-        Array.from(
-          { length: span.to - span.from },
-          (_, child) => span.from + child
-        )
-      );
     }
+
+    const writes = new Map<string, number | undefined>();
+    const flipped: string[] = [];
+
+    for (const [incarnation, count] of added) {
+      const was = previous.counts.get(incarnation) ?? 0;
+      const now = was + count;
+
+      writes.set(incarnation, now === 0 ? undefined : now);
+      // A replaced block takes its insertions away and back, so only an
+      // incarnation whose count changed sign across the commit flipped.
+      if (was > 0 !== now > 0 && facts.hasVerdict(incarnation)) {
+        flipped.push(incarnation);
+      }
+    }
+
+    const counts = previous.counts.with(writes);
+
     rememberInsertions(after, counts);
 
     const repairs = new Map<string, RootChange>();
@@ -414,13 +421,7 @@ export const authoredAdmission: DocumentAdmission = {
     // insert, settles claims in every block naming that incarnation.
     const decided = [
       ...verdictIncarnationsOf(records.get(VERDICTS)?.keys() ?? []),
-      ...[...flipped].filter(
-        (incarnation) =>
-          // A replaced block takes its insertions away and back, so only an
-          // incarnation whose count changed sign across the commit flipped.
-          (previous.counts.get(incarnation) ?? 0) > 0 !==
-            (counts.get(incarnation) ?? 0) > 0 && facts.hasVerdict(incarnation)
-      ),
+      ...flipped,
     ];
     const settled = new Map(
       [...scope].map(([root, at]) => [root, new Set(at)])
@@ -459,11 +460,10 @@ export const authoredAdmission: DocumentAdmission = {
       }
     }
 
-    const inserting = { has: (incarnation: string) => counts.has(incarnation) };
     const admitted =
       settleValue(
         compacted,
-        { ...compactedFacts, insertedIncarnations: () => inserting },
+        { ...compactedFacts, insertedIncarnations: () => counts },
         settled,
         {
           returnsHeld: true,

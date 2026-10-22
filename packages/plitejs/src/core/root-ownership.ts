@@ -5,7 +5,7 @@ import {
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import { DocumentIndex, rootIndexOf } from './change/document-index';
 import { RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import {
@@ -571,9 +571,11 @@ export const orphanedValueRoots = (
 ) => {
   const side = (value: RootsOf) => ({
     read: (root: RootKey) => {
-      const children = root === 'main' ? value.children : value.roots?.[root];
+      if (root === 'main') return rootIndexOf(value, 'children');
 
-      return children ? DocumentIndex.fromValue(children) : null;
+      const roots = value.roots ?? {};
+
+      return Object.hasOwn(roots, root) ? rootIndexOf(roots, root) : null;
     },
     roots: () => ['main', ...Object.keys(value.roots ?? {})],
   });
