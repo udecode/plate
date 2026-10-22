@@ -242,6 +242,25 @@ td { line-height: 2; text-align: center; }`
     expect(nested).toBeLessThanOrEqual(pageWidth / 2);
   });
 
+  it('keeps two tables in one cell apart with a paragraph', async () => {
+    const paragraph = (text: string) => ({
+      children: [{ text }],
+      type: 'paragraph',
+    });
+    const xml = await exportXml(
+      [
+        table([
+          [table([[paragraph('first')]]), table([[paragraph('second')]])],
+        ]),
+      ] as Value,
+      DOCX_EXPORT_STYLES
+    );
+
+    expect(firstCell(xml)).toMatch(
+      /first[\s\S]*?<\/w:tbl>\s*<w:p[\s/>][\s\S]*?<w:tbl>[\s\S]*?second/
+    );
+  });
+
   it('ends a table cell whose only image cannot be embedded with a paragraph', async () => {
     const xml = await exportXml(
       [
