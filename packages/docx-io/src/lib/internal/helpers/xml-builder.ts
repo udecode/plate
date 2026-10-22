@@ -1978,6 +1978,20 @@ type ColumnIndex = {
   index: number;
 };
 
+// Static table markup wraps a table in single-child divs.
+const getWrappedTable = (
+  vNode: VNodeType | VTextType
+): VNodeType | undefined => {
+  if (!isVNode(vNode)) return;
+
+  const vn = vNode as VNodeType;
+
+  if (vn.tagName === 'table') return vn;
+  if (vn.tagName === 'div' && vn.children?.length === 1) {
+    return getWrappedTable(vn.children[0]);
+  }
+};
+
 const buildTableCell = async (
   vNode: VNodeType | VTextType,
   attributes: TableCellAttributes,
@@ -2041,11 +2055,31 @@ const buildTableCell = async (
   const paragraphAttributes = { ...modifiedAttributes };
   paragraphAttributes.backgroundColor = undefined;
 
+  const importNestedTable = async (tableVNode: VNodeType) => {
+    const nestedTableFragment = await buildTable(
+      tableVNode,
+      {
+        maximumWidth: modifiedAttributes.maximumWidth,
+        rowCantSplit: docxDocumentInstance.tableRowCantSplit,
+      },
+      docxDocumentInstance
+    );
+    tableCellFragment.import(nestedTableFragment);
+    // Word merges adjacent tables that have no paragraph between them.
+    tableCellFragment.import(await buildParagraph(null, {}));
+  };
+
   if (vNodeHasChildren(vNode as VNodeType)) {
     const vn = vNode as VNodeType;
     for (let index = 0; index < (vn.children || []).length; index++) {
       const childVNode = (vn.children || [])[index];
-      if (isVNode(childVNode) && (childVNode as VNodeType).tagName === 'img') {
+      const nestedTable = getWrappedTable(childVNode);
+      if (nestedTable) {
+        await importNestedTable(nestedTable);
+      } else if (
+        isVNode(childVNode) &&
+        (childVNode as VNodeType).tagName === 'img'
+      ) {
         const imageFragment = await buildImage(
           docxDocumentInstance,
           childVNode as VNodeType,
@@ -2102,7 +2136,10 @@ const buildTableCell = async (
             divIndex++
           ) {
             const divChild = (divVn.children || [])[divIndex];
-            if (
+            const nestedDivTable = getWrappedTable(divChild);
+            if (nestedDivTable) {
+              await importNestedTable(nestedDivTable);
+            } else if (
               isVNode(divChild) &&
               (divChild as VNodeType).tagName === 'img'
             ) {
@@ -2146,12 +2183,14 @@ const buildTableCell = async (
         tableCellFragment.import(paragraphFragment);
       }
     }
-  } else {
-    // TODO: Figure out why building with buildParagraph() isn't working
-    const paragraphFragment = fragment({ namespaceAlias: { w: namespaces.w } })
-      .ele('@w', 'p')
-      .up();
-    tableCellFragment.import(paragraphFragment);
+  }
+  // Word rejects a cell that does not end with a paragraph.
+  if (tableCellFragment.node.lastChild?.nodeName !== 'p') {
+    tableCellFragment.import(
+      fragment({ namespaceAlias: { w: namespaces.w } })
+        .ele('@w', 'p')
+        .up()
+    );
   }
   tableCellFragment.up();
 
@@ -2287,7 +2326,8 @@ const buildTableRow = async (
       ['td', 'th'].includes((childVNode as VNodeType).tagName || '')
     );
     const maximumColumnWidth =
-      docxDocumentInstance.availableDocumentSpace / tableColumns.length;
+      (attributes.maximumWidth ?? docxDocumentInstance.availableDocumentSpace) /
+      tableColumns.length;
 
     for (const column of tableColumns) {
       const rowSpanCellFragments = buildRowSpanCell(
