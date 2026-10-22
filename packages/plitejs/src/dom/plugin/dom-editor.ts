@@ -199,20 +199,39 @@ export interface DOMApi {
   /**
    * Resolve where a drop under a pointer lands: the innermost block edge or
    * side the transfer dry pass admits, or a text point for a text drag. A
-   * files drop resolves only to an edge. With no `target`, it resolves in the
-   * editor's view under the pointer, reading the coordinates as client
-   * coordinates of the window `root()` sits in.
+   * files drop resolves only to an edge. With no `target`, a text drag
+   * resolves nothing, and a block or files drop hit-tests the pointer, read as
+   * client coordinates of the window of the view this editor picks, where its
+   * last rendered Editable sits, and resolves in the editor's view found
+   * there, else in the picked view. The editor an Editable renders with always
+   * resolves in its own view. For a `useRootEditor` editor, the hit test finds
+   * only its `EditorRoot`'s views of its root. The hit test enters shadow
+   * roots but not iframes. A read-only editor resolves nothing unless an
+   * Editable renders with it.
    */
   resolveDropTarget: (
     input: DOMDropTargetInput,
     options?: DOMDropTargetOptions
   ) => DOMDropTarget | null;
   deselect: () => void;
+  /**
+   * The Editable of the view this editor's calls run in, or of a view at
+   * `root` when given. Null when no view is picked, or when a view's own
+   * editor is given another root.
+   */
   editable: (root?: RootKey) => HTMLElement | null;
   assertDocumentOrShadowRoot: () => Document | ShadowRoot;
   /**
-   * The document or shadow root holding the editable, or null when this editor
-   * has no mounted view, or when several are mounted and none has focus.
+   * The DOM document or shadow root holding the Editable of the view this
+   * editor's calls run in. A view's own editor runs in its own view. A
+   * `useRootEditor` editor runs in a view of its root from its `EditorRoot`.
+   * The editor `createEditor` returns runs in a view of the selection's root,
+   * else of main. When the caret was placed in that root from an
+   * `EditorRoot`, only that `EditorRoot`'s views of the root count, even
+   * after this editor moves the caret within it. Of the views that count, it
+   * takes the only one, else the one that holds focus, through iframes and
+   * shadow roots. Null when no view is picked, or when that view has several
+   * Editables and none holds focus.
    */
   resolveDocumentOrShadowRoot: () => Document | ShadowRoot | null;
   assertEventRange: (event: any) => Range;
@@ -240,6 +259,7 @@ export interface DOMApi {
     point: Point,
     options: DOMVisualPointOptions
   ) => DOMVisualPoint | null;
+  /** The root element of the view this editor's calls run in. */
   root: () => HTMLElement | null;
   /**
    * The DOM text from `from` to this editor root's caret, including IME
@@ -301,11 +321,16 @@ export interface DOMEditorCapability<V extends Value = Value> extends DOMApi {
 export interface DOMDragApi {
   /**
    * Scroll one step for a drag whose pointer is at `point`, in client
-   * coordinates of the window `root()` sits in: the innermost scroller around
-   * the editor's view under the point whose visible edge holds the point and
-   * that can still move that way, else the window. Returns
-   * the pixels scrolled, 0 when nothing moved. Call it once per animation
-   * frame while the drag lasts.
+   * coordinates of the window of the view this editor picks, where its last
+   * rendered Editable sits. It hit-tests the point for the editor's view
+   * there, else takes the picked view, and scrolls the innermost element from
+   * that view's root up whose visible edge holds the point and that can still
+   * scroll that way, else the window. The editor an Editable renders with
+   * always scrolls from its own view. For a `useRootEditor` editor, the hit
+   * test finds only its `EditorRoot`'s views of its root. The hit test enters
+   * shadow roots but not iframes. Returns the pixels scrolled, 0 when nothing
+   * moved or no view is picked. Call it once per animation frame while the
+   * drag lasts.
    */
   autoScroll: (point: Readonly<{ x: number; y: number }>) => number;
   /** Publish this view's drop indicator for a target, or clear it. */
@@ -454,7 +479,8 @@ export interface DOMEditorInterface {
   ) => void;
 
   /**
-   * Resolve the currently mounted editable element for an editor root.
+   * Resolve the Editable of the view an editor's calls run in, or of a view at
+   * `root` when given. Null when no view is picked.
    */
   editable: <V extends Value, TPlugins extends readonly unknown[]>(
     editor: DOMEditor<V, TPlugins>,
@@ -473,9 +499,9 @@ export interface DOMEditorInterface {
   ) => Document | ShadowRoot;
 
   /**
-   * Resolve the DocumentOrShadowRoot holding the editor's editable, or null
-   * when this editor has no mounted view, or when several are mounted and none
-   * has focus.
+   * Resolve the DOM document or shadow root holding the Editable of the view
+   * an editor's calls run in. See `editor.api.dom.resolveDocumentOrShadowRoot`
+   * for which view that is and when the result is null.
    */
   resolveDocumentOrShadowRoot: <
     V extends Value,
@@ -509,7 +535,8 @@ export interface DOMEditorInterface {
   ) => Path;
 
   /**
-   * Focus the editor.
+   * Focus the view an editor's calls run in. Does nothing when no view is
+   * picked.
    */
   focus: <V extends Value, TPlugins extends readonly unknown[]>(
     editor: DOMEditor<V, TPlugins>,
@@ -659,7 +686,7 @@ export interface DOMEditorInterface {
   ) => DOMRect | null;
 
   /**
-   * Resolve the mounted editor root element.
+   * Resolve the root element of the view an editor's calls run in.
    */
   root: <V extends Value, TPlugins extends readonly unknown[]>(
     editor: DOMEditor<V, TPlugins>

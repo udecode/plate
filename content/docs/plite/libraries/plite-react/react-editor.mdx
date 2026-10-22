@@ -13,17 +13,80 @@ import { createEditor } from "plitejs/react";
 
 const editor = createEditor();
 
+// Once <EditorRoot editor={editor}> shows an Editable, this focuses the view
+// that holds the caret, or the only view.
 editor.api.dom.focus();
 ```
 
 ## On this page
 
+- [Views](react-editor#views)
 - [Checks](react-editor#checks)
 - [Focus And Selection](react-editor#focus-and-selection)
 - [DOM Scope](react-editor#dom-scope)
 - [DOM Translation](react-editor#dom-translation)
 - [DOM Environment](react-editor#dom-environment)
 - [DataTransfer](react-editor#datatransfer)
+
+## Views
+
+Inside one `EditorRoot`, the `<Editable />`s without a `root` share the
+`EditorRoot`'s view, which shows the `root` it names or the primary document,
+and each `<Editable root>` is a view of its own. Every `editor.api.dom` call
+runs in one view, picked by the editor you call it on:
+
+- A view's own editor, such as the one `useEditorContext()` returns inside the
+  view, runs every call in that view, even one given another view's DOM node
+  or event, so pass it only its own view's DOM. A lookup of the DOM of a node,
+  point or range in a root the view does not show returns `null`.
+- An editor from `useRootEditor(root)` runs in its own `EditorRoot`'s view of
+  `root`.
+- The editor `createEditor` returns runs in a view that shows the root the
+  call is about: its target's root, else the caret's root, else the primary
+  document. When the caret was placed in that root from an `EditorRoot`,
+  through one of its views or its `useRootEditor` editor, only that
+  `EditorRoot`'s views of the root count, even after the editor `createEditor`
+  returns moves the caret within the root. Of the views that count, it takes
+  the only one, else the focused one, also when that view sits in an iframe or
+  a shadow root.
+- The other editors run a call given a DOM node or an event in the view that
+  renders it, when that view belongs to the editor. `resolveRange` and
+  `assertRange` run on the editor you call instead, so resolve a DOM range in
+  one view with that view's own editor.
+
+When no view is picked, a lookup of DOM, such as `root()`, `editable()` or
+`resolveDOMNode`, returns `null`, its `assert*` twin throws and `focus()`
+does nothing. Calls that need no view still answer: `resolvePath`
+and `assertPath` read the model, `findKey` and `visibleRect` read what you
+pass, and `scroll()` returns a scroll container registered for the editor you
+call. While the `EditorRoot` that placed the caret shows no view of the caret's
+root, for example while React hides it with `Activity`, the editor
+`createEditor` returns picks no view of that root. When one view has several
+Editables, its lookups of DOM use the one that holds focus, and find none while
+none does.
+
+To act on one of several views, call the DOM API on that view's editor:
+
+```tsx
+import { Editable, EditorRoot, useEditorContext } from "plitejs/react";
+
+function FocusThisView() {
+  const view = useEditorContext();
+
+  return <button onClick={() => view.api.dom.focus()}>Focus</button>;
+}
+
+<>
+  <EditorRoot editor={editor}>
+    <Editable />
+    <FocusThisView />
+  </EditorRoot>
+  <EditorRoot editor={editor}>
+    <Editable />
+    <FocusThisView />
+  </EditorRoot>
+</>
+```
 
 ## Checks
 
@@ -59,7 +122,8 @@ Blur the editor.
 
 #### `editor.api.dom.focus(options?: { retries?: number }): void`
 
-Focus the editor.
+Focus the editor's [view](react-editor#views). Does nothing when no view is
+picked.
 
 #### `editor.api.dom.deselect(): void`
 
@@ -69,11 +133,12 @@ Clear the native DOM selection and the Plite selection.
 
 #### `editor.api.dom.root(): HTMLElement | null`
 
-Return the mounted editor root element.
+Return the root element of the editor's [view](react-editor#views).
 
 #### `editor.api.dom.editable(root?: RootKey): HTMLElement | null`
 
-Return the mounted editable element for a Plite root.
+Return the editable element of the editor's [view](react-editor#views), or of
+its view of `root` when given.
 
 #### `editor.api.dom.scroll(): HTMLElement | null`
 
@@ -164,11 +229,11 @@ follows the actual position inside a text leaf. The returned function cancels
 pending work for this request; return it from an effect to cancel scrolling
 when its target changes or the component unmounts.
 
-#### `editor.api.dom.assertPliteNode(domNode: DOMNode): Node`
+#### `editor.api.dom.assertNode(domNode: DOMNode): Node`
 
 Assert a Plite node from a native DOM node.
 
-#### `editor.api.dom.resolvePliteNode(domNode: DOMNode): Node | null`
+#### `editor.api.dom.resolveNode(domNode: DOMNode): Node | null`
 
 Resolve a Plite node from a native DOM node. Returns `null` when the DOM node is
 not owned by the editor.
@@ -182,20 +247,20 @@ Assert the target range from a DOM event.
 Resolve the target range from a DOM event. Returns `null` when the event target
 cannot be mapped into the editor.
 
-#### `editor.api.dom.assertPlitePoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point`
+#### `editor.api.dom.assertPoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point`
 
 Assert a Plite point from a DOM point.
 
-#### `editor.api.dom.resolvePlitePoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point | null`
+#### `editor.api.dom.resolvePoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point | null`
 
 Resolve a Plite point from a DOM point. Returns `null` when the DOM point is not
 currently mappable.
 
-#### `editor.api.dom.assertPliteRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range`
+#### `editor.api.dom.assertRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range`
 
 Assert a Plite range from a DOM range or selection.
 
-#### `editor.api.dom.resolvePliteRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range | null`
+#### `editor.api.dom.resolveRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range | null`
 
 Resolve a Plite range from a DOM range or selection. Returns `null` when the DOM
 range is not currently mappable.
@@ -204,14 +269,13 @@ range is not currently mappable.
 
 #### `editor.api.dom.assertDocumentOrShadowRoot(): Document | ShadowRoot`
 
-Return the document or shadow root that owns the editor. Throws where
+Return the document or shadow root that holds the editor's view. Throws where
 `resolveDocumentOrShadowRoot` returns `null`.
 
 #### `editor.api.dom.resolveDocumentOrShadowRoot(): Document | ShadowRoot | null`
 
-Resolve the document or shadow root that owns the editor. Returns `null` when
-this editor has no mounted view, or when several are mounted and none has
-focus.
+Resolve the document or shadow root that holds the editor's
+[view](react-editor#views). Returns `null` when no view is picked.
 
 #### `editor.api.dom.getWindow(): Window`
 

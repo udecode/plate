@@ -10,16 +10,16 @@ review_upstreams: ['../codemirror-view@fbff59ba004d80d8c914f64c42586387b08706ac'
 
 # Which view an editor's DOM calls reach
 
-Status: building: Phase 1 landed in 7f2eacb6eb and Phase 2 lands next; Phase 3 follows
+Status: building: Phase 1 landed in 7f2eacb6eb and Phase 2 in 0500826291; Phase 3 lands in this commit
 Playbook: plan
 
-Every `DOMEditor` call runs on the editor its handle reaches, by one rule. A view's editor reaches itself, and answers `null` for a lookup about a root it does not show. A `useRootEditor` editor reaches the mounted view of its own `EditorRoot` and root, and no other. The document's editor reaches a view that shows the root the call is about, which is its target's root, else the caret's root, else main. Among the views of that root it takes the one that placed the caret last, and nothing while React hides that view. With no caret there, it takes the only view, else the focused one, else nothing. A lookup about a root no view shows answers `null`. A call with a DOM target reaches the view that owns the target when that view belongs to the handle. Today, once `EditorRoot` mounts a view, `editor.api.dom.focus()` on the editor `createEditor` returns focuses nothing, and the same holds for a `useRootEditor` editor (probes A and B). The DOM API page teaches that call, the controlled-value demo's buttons leave focus on the button, and the Plite mentions popup never moves on screen, all in a real browser. The rule picks the root the way core already routes the document editor's commands (`docs/vision/plite.md:840-843`) and reads core's caret owner (`packages/plitejs/src/core/view-carets.ts:906`) to pick a view, so it adds no public name and no new state of record. This plan continues the Pursue verdict below; architect's arena picked the target and the panel reviews this plan before the build.
+Every `DOMEditor` call runs on the editor its handle reaches, by one rule. A view's editor reaches itself, and answers `null` for a lookup of DOM in a root it does not show. A `useRootEditor` editor reaches the mounted view of its own `EditorRoot` and root, and no other. The document's editor reaches a view that shows the root the call is about, which is its target's root, else the caret's root, else main. When the caret was placed in that root from an `EditorRoot`, only that `EditorRoot`'s views of the root count, and none while React hides them. Of those, it takes the only view, else the focused one, else nothing. A lookup about a root no view shows answers `null`. A call with a DOM target reaches the view that owns the target when that view belongs to the handle. Today, once `EditorRoot` mounts a view, `editor.api.dom.focus()` on the editor `createEditor` returns focuses nothing, and the same holds for a `useRootEditor` editor (probes A and B). The DOM API page teaches that call, the controlled-value demo's buttons leave focus on the button, and the Plite mentions popup never moves on screen, all in a real browser. The rule picks the root the way core already routes the document editor's commands (`docs/vision/plite.md:840-843`) and reads core's caret owner (`packages/plitejs/src/core/view-carets.ts:906`) to pick a view, so it adds no public name and no new state of record. This plan continues the Pursue verdict below; architect's arena picked the target and the panel reviews this plan before the build.
 
 ## Brief
 
 ### What will change?
 
-Screen calls like focus on your app's editor will run in a view showing the root they target, else the caret's root, picking the view where the caret was last placed. The docs example, demo buttons and mention popup work.
+Screen calls like focus on your app's editor will run in a view showing the root they target, else the caret's root. They pick the only such view, else the focused one, among the views of the editor root that placed the caret. The docs example, demo buttons and mention popup work.
 
 ### What could go wrong?
 
@@ -31,11 +31,11 @@ A Plite editor holds one document. Each mounted editor root shows a view of it, 
 
 Today a screen call, like focus, looks for a screen only under the editor it was called on. Only a view's own editor has one. So the same call on the document's editor, or on a toolbar's root editor, does nothing.
 
-After this change, each screen call finds a view, then runs there. A view's editor finds itself, and a toolbar's root editor finds the view it was made in. The document's editor finds a view showing the root of the point or node passed, or else the caret's root, preferring the view where the caret was placed last. If no view fits, the call still does nothing. To act on one chosen view, hold that view's editor.
+After this change, each screen call finds a view, then runs there. A view's editor finds itself, and a toolbar's root editor finds the view it was made in. The document's editor finds a view showing the root of the point or node passed, or else the caret's root. Only the views of the editor root that placed the caret count, and it takes the only one, else the focused one. If no view fits, the call still does nothing. To act on one chosen view, hold that view's editor.
 
 ## Public API
 
-The DOM API page teaches focusing the editor `createEditor` returns. The code stays. Today the call does nothing once `EditorRoot` mounts a view; after the change it focuses the view that placed the caret last, or the only view.
+The DOM API page teaches focusing the editor `createEditor` returns. The code stays. Today the call does nothing once `EditorRoot` mounts a view; after the change it focuses the view that holds the caret, or the only view.
 
 ```ts before
 // content/docs/api/dom.mdx
@@ -52,8 +52,8 @@ import { createEditor } from "platejs/react";
 
 const editor = createEditor();
 
-// Once <EditorRoot editor={editor}> mounts, this focuses the view that
-// placed the caret last, or the only view.
+// Once <EditorRoot editor={editor}> shows an EditorContent, this focuses the
+// view that holds the caret, or the only view.
 editor.api.dom.focus();
 ```
 
@@ -67,8 +67,7 @@ The hooks page gains an example of a root editor focusing its own view, which it
 // content/docs/api/react-hooks.mdx
 const note = useRootEditor("note");
 
-note.update((tx) => tx.text.insert("!"));
-note.api.dom.focus();
+return <button onClick={() => note.api.dom.focus()}>Edit note</button>;
 ```
 
 The DOM API page also shows how an app picks one view out of several. A view's own editor already works today (probe A), so this example is new to the docs, not new behavior.
@@ -79,20 +78,24 @@ The DOM API page also shows how an app picks one view out of several. A view's o
 
 ```tsx after
 // content/docs/api/dom.mdx
+import { EditorContent, EditorRoot, useEditor } from "platejs/react";
+
 function FocusThisView() {
-  const view = useEditorContext();
+  const view = useEditor();
 
   return <button onClick={() => view.api.dom.focus()}>Focus</button>;
 }
 
-<EditorRoot editor={editor}>
-  <Editable />
-  <FocusThisView />
-</EditorRoot>
-<EditorRoot editor={editor}>
-  <Editable />
-  <FocusThisView />
-</EditorRoot>
+<>
+  <EditorRoot editor={editor}>
+    <EditorContent />
+    <FocusThisView />
+  </EditorRoot>
+  <EditorRoot editor={editor}>
+    <EditorContent />
+    <FocusThisView />
+  </EditorRoot>
+</>
 ```
 
 The caret tests hold one root editor per view but reach into the mounted Editable to focus it, because focus on the held editor does nothing. They call the held editor instead. Tests that hold no root editor, such as "a main view's focus inside a note view's update gives that view the caret in main" (`view-carets.test.tsx:605`), keep `mountedView`, because nothing public returns a view's editor from outside that view.
@@ -151,7 +154,7 @@ Read from the four checkouts in `review_upstreams`, as source, with nothing run.
 | A DOM node of a view, passed to the document's editor and to another view's root editor | The document's editor answers for that view; the root editor still answers `false` | jsdom case and control; the control fails under a mutant that checks the node before the handle's own view |
 | Another view's text, passed to a root editor's `resolveNode` or `resolvePoint` | Unchanged, as at base. It answers the shared model node or point, while `hasDOMNode` answers `false`. This stays open, and t_6c238731 owns it | The seat's probe at base and on the built rule |
 | `focus()` on a `useRootEditor` editor inside an `EditorRoot` | Focuses that root's Editable in its own view | The caret tests that swap `mountedView(...)` for the held editor; each fails at base |
-| `resolveRangeRect` on the document's editor | Returns the caret's box in its view, so the mentions popup moves beside the caret | Browser re-drive of `/examples/plite/mentions` in Chromium |
+| `resolveRangeRect` on the document's editor | Returns the caret's box in its view, so the mentions popup's box moves beside the caret. On www the menu paints behind the app shell, which predates this plan (drift-2) | Browser re-drive of `/examples/plite/mentions` in Chromium |
 | `deselect()` on the document's editor | Clears the editor's selection as today, and also the native selection in the reached view's document, under a read-only view too | jsdom case under `<EditorRoot readOnly>`; browser re-drive of `/examples/plite/iframe` in Chromium |
 | `scroll()` on the document's editor with a scroll container registered on it, as an app may, and as Plate's `PlateContainer` does before its inner view mounts | Unchanged. It returns that container | jsdom control, which the plan's first rule fails |
 | `focus()` on the document's editor while React's `Activity` hides the caret's view | Does nothing; the reviewed draft moved focus to another view of the root | jsdom case |
@@ -280,12 +283,12 @@ Each phase lands as its own commit, ends with a keep or revert decision, and the
 
 ### Phase 3: docs and law
 
-- [ ] Run `plate-docs` on `content/docs/api/dom.mdx`, with its comment and its two-view example, `content/docs/plite/libraries/plite-react/react-editor.mdx`, `content/docs/api/react-hooks.mdx` and `content/docs/(guides)/roots.mdx`; none has a Chinese twin. Proof: the docs checks and each page's rendered body in the docs app.
-- [ ] Rewrite the JSDoc of `resolveDocumentOrShadowRoot`, `root` and `editable` to say which view answers. Proof: the docs build reads them.
-- [ ] Run `best-api repair` to write the reach rule into `docs/vision/plite.md` beside the core routing law, with its open limit that a root editor's text conversions still accept another view's text, which t_6c238731 owns, and fix every artifact that still teaches the null answer. Proof: a teaching sweep for the old wording.
-- [ ] Check the `plitejs` changesets Phases 1 and 2 amended against the final behavior per `changeset`. Proof: its check.
-- [ ] Re-drive `/docs/controlled`, `/examples/plite/mentions` and `/examples/plite/iframe` in Chromium from a source-served docs app. Proof: Replace Value and Reset Editor leave focus in the editor with the caret at the end, and text typed after each appears there; the mention popup sits beside the caret, and choosing a mention inserts it; the iframe example clears its selection on blur.
-- [ ] Keep or revert Phase 3.
+- [x] Run `plate-docs` on `content/docs/api/dom.mdx`, with its comment and its two-view example, `content/docs/plite/libraries/plite-react/react-editor.mdx`, `content/docs/api/react-hooks.mdx` and `content/docs/(guides)/roots.mdx`; none has a Chinese twin. Proof: the docs checks and each page's rendered body in the docs app.
+- [x] Rewrite the JSDoc of `resolveDocumentOrShadowRoot`, `root` and `editable` to say which view answers. Proof: no docs build reads JSDoc, so the `plitejs` typecheck parses them and comment-sicko reads them against the code (log rows "proof" and "writing").
+- [x] Run `best-api repair` to write the reach rule into `docs/vision/plite.md` beside the core routing law, with its open limit that a root editor's text conversions still accept another view's text, which t_6c238731 owns, and fix every artifact that still teaches the null answer. Proof: a teaching sweep for the old wording.
+- [x] Check the `plitejs` changesets Phases 1 and 2 amended against the final behavior per `changeset`. Proof: its check.
+- [x] Re-drive `/docs/controlled`, `/examples/plite/mentions` and `/examples/plite/iframe` in Chromium from a source-served docs app. Proof: Replace Value and Reset Editor leave focus in the editor with the caret at the end, and text typed after each appears there; the mention popup sits beside the caret, and choosing a mention inserts it; the iframe example clears its selection on blur.
+- [x] Keep or revert Phase 3.
 
 ## Completion gates
 
@@ -324,6 +327,25 @@ Phase 2 runs under the same "go" and the owner's 2026-10-22 word to build every 
 | Suites | yes | The plitejs React suite, the plitejs bun suite and the platejs suite | done: log rows "proof" |
 | Thermos | skip | The diff panel applies both lenses | skip: the `api-build` and `push` rows owe a panel on the diff |
 | Hand drive | yes | `hand-drive.mjs check` on the plan's files | done: log row "proof", 7 of 7 cells |
+| Land | yes | `land.mjs --check 'pnpm check --affected'` | done: this commit |
+
+Phase 3 runs under the same "go" and word. The lead built it in this session and lands it as one commit.
+
+| Gate | Applies | Required action | Evidence |
+| --- | --- | --- | --- |
+| Docs | yes | `plate-docs` on the four pages, then `build:source`, `check:docs` and `build:registry` with its `--check` after the last prose pass | done: log rows "build" and "proof" |
+| JSDoc | yes | The `DOMApi` and `DOMEditorInterface` comments say which view answers | done: log row "build". No docs build reads this JSDoc, because the API reference manifest keeps only the `DomApi` signature, so the `plitejs` typecheck parses it and comment-sicko read it against the code (log rows "proof" and "writing") |
+| Best API repair | yes | The reach rule in `docs/vision/plite.md` and a teaching sweep for the old wording | done: log row "build"; the subject file's two resolved Open work bullets close at the Build close |
+| Changeset | yes | Check the two `plitejs` changesets per `changeset` | done: log row "changeset", no change |
+| Writing passes | yes | `deslop` and `no-comments` on the JSDoc, `unslop` on the docs, law and JSDoc prose | done: log rows "writing" |
+| Cheap checks | yes | Lint on the task's files and the `plitejs` typecheck | done: log row "proof" |
+| Diff panel | yes | The `api-build` row, after a `built:` row for Phase 2 | done: three rounds, log rows "panel". Round 3 found one critical doc claim, which the lead applied without a fourth round, because three rounds is the cap |
+| Example tests | yes | The managed mentions and iframe tests in Chromium | done: log row "proof", 23 and 3 passed |
+| Hand drive | yes | `hand-drive.mjs check` on the plan's files | done: log row "proof", 7 cells. The mention menu's box sits under the typed `@ma` and choosing a mention inserts it, but on www the menu paints behind the app shell, so no frame shows it (drift-2, which predates the run). drift-3, two pages teaching `useEditorContext()` from `platejs/react`, is fixed in this commit |
+| Scale gate | skip | Phase 3 changes no runtime code | skip: comments and docs only |
+| Suites | skip | Phase 3 changes no runtime code | skip: the `plitejs` typecheck reads the JSDoc |
+| Thermos | skip | The diff panel applies both lenses | skip: the `api-build` row owes a panel on the diff |
+| Playtest | skip | `playtest.mjs scope` on the task's files | skip: it names no scenario catalog for these files |
 | Land | yes | `land.mjs --check 'pnpm check --affected'` | done: this commit |
 
 ## Scale gate
@@ -457,14 +479,15 @@ Phase 2's second round found nothing critical and changed text only (log rows "p
 ## Open work
 
 - Build Phases 2 and 3 through the Build playbook, each landing as its own commit. owner: the lead. stop: Phase 3 lands or a panel replaces the target.
-- Phase 2 leaves six pointer cases open.
+- Phase 2 leaves seven pointer cases open.
   - With two views of one root, `resolveDropTarget` from coordinates picks the view under the pointer while `drag.indicate` on the document's editor paints in the caret's view, as target drops already did after Phase 1 (diff panel Phase 2 round 1, Opus W4).
   - A pointer over another editor nested in a view, in its void or in an open or closed shadow root, maps to no view of the document's editor, so the pointer calls fall back to the caret's view. The drop then answers `null`, and `drag.autoScroll` scrolls that view, as on Phase 1's pick. A root editor's pointer calls hit-test once more per call (round 1, Opus N3; round 2, Opus N1).
   - A text drop into a view inside a shadow root gets no caret from coordinates, because `caretPositionFromPoint` in `dom-geometry.ts` reads the page.
   - Root chrome's hit test in `root-interaction-controller.ts` reads the page.
-  - A pointer over a view inside an iframe resolves in the host view.
+  - The pointer hit test runs in the picked view's document and enters no iframe, so from the page a pointer over a view inside an iframe resolves in the view that holds the iframe, if any (diff panel Phase 3 rounds 1 and 2).
+  - When one view's plain Editables sit in two documents, the hit test reads the document of the one rendered last, which can miss the view under the pointer in the other (diff panel Phase 3 round 3, Astra 1).
   - No test drives a block drag with auto-scroll over a view in a shadow root, where the drop probe and the Editable's repaint now hit-test in the view's own tree (round 2, Opus N3).
 
-  owner: a suggested task offered at the close. stop: started or dismissed.
+  owner: t_44e3acfa, from the suggested-task ledger. stop: started or dismissed.
 - No test checks the routes of the capability's `textToCaret`, `resolveVisualPoint`, `resolveDropTarget` and `drag.autoScroll` on the document's editor, because each answers `null` under jsdom on every handle. owner: the lead. stop: the Close names them unproven unless a browser drive covers them.
 - t_6c238731 Resolve a DOM target in its own mirror and keep the focus record after a canceled press. owner: the owner, from the suggested-task ledger. stop: started or dismissed. It waits on this run, because it writes the same two files. It also owns panel round 2's open finding, that a root editor's `resolveNode`, `resolvePoint` and `resolveRange` accept another same-root view's text, as at base. The lead folded two diff-review findings into it, both as at base. The document's editor turns another editor's text into a point in its own main root through the text index whenever main has text at that path (round 1, Opus 3). The document's editor and a root editor resolve a DOM range on themselves, so a range in a named root's view comes back as a main range (round 3). When it lands, the reach-order paragraph in Main changes, the `useRootEditor` ledger row and the law sentence Phase 3 writes say again that a root editor refuses every other view's DOM.

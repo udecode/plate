@@ -13,7 +13,75 @@ import { createEditor } from "platejs/react";
 
 const editor = createEditor();
 
+// Once <EditorRoot editor={editor}> shows an EditorContent, this focuses the
+// view that holds the caret, or the only view.
 editor.api.dom.focus();
+```
+
+## Views
+
+A view is one mounted `EditorContent`, so an `EditorRoot` that shows a header,
+a body and a footer holds three views. Every `editor.api.dom` call runs in one
+view, picked by the editor you call it on:
+
+- A view's own editor runs every call in that view, even one given another
+  view's DOM node or event, so pass it only its own view's DOM. A lookup of
+  the DOM of a node, point or range in a root the view does not show returns
+  `null`. Inside an `EditorContent`, `useEditor()` returns that view's editor.
+  Elsewhere inside an `EditorRoot`, it returns the editor of the view that
+  last held focus, else of the first one mounted, and the editor passed to
+  `EditorRoot` until one mounts.
+- An editor from `useRootEditor(root)` runs in its own `EditorRoot`'s view of
+  `root`.
+- The editor `createEditor` returns runs in a view that shows the root the
+  call is about: its target's root, else the caret's root, else the primary
+  document. When the caret was placed in that root from an `EditorRoot`,
+  through one of its views or its `useRootEditor` editor, only that
+  `EditorRoot`'s views of the root count, even after the editor `createEditor`
+  returns moves the caret within the root. Of the views that count, it takes
+  the only one, else the focused one, also when that view sits in an iframe or
+  a shadow root.
+- The other editors run a call given a DOM node or an event in the view that
+  renders it, when that view belongs to the editor. `resolveRange` and
+  `assertRange` run on the editor you call instead, so resolve a DOM range in
+  one view with that view's own editor.
+- On the editor `createEditor` returns, a block or files drop that
+  `resolveDropTarget` finds from coordinates alone, and `drag.autoScroll`,
+  hit-test the pointer in the document of the view picked as above. They run in
+  the editor's view found there, else in the picked view. The hit test enters shadow roots but
+  not iframes, so a pointer over an iframe finds the view that holds the
+  iframe, if any.
+
+When no view is picked, a lookup of DOM, such as `root()`, `editable()` or
+`resolveDOMNode`, returns `null`, its `assert*` twin throws, `focus()` does
+nothing and `drag.autoScroll` returns 0. Calls that need no view
+still answer: `resolvePath` and `assertPath` read the model, `findKey` and
+`visibleRect` read what you pass, and `scroll()` returns a scroll container
+registered for the editor you call. While the `EditorRoot` that placed the
+caret shows no view of the caret's root, for example while React hides it
+with `Activity`, the editor `createEditor` returns picks no view of that root.
+
+To act on one of several views, call the DOM API on that view's editor:
+
+```tsx
+import { EditorContent, EditorRoot, useEditor } from "platejs/react";
+
+function FocusThisView() {
+  const view = useEditor();
+
+  return <button onClick={() => view.api.dom.focus()}>Focus</button>;
+}
+
+<>
+  <EditorRoot editor={editor}>
+    <EditorContent />
+    <FocusThisView />
+  </EditorRoot>
+  <EditorRoot editor={editor}>
+    <EditorContent />
+    <FocusThisView />
+  </EditorRoot>
+</>
 ```
 
 ## Checks
@@ -50,7 +118,7 @@ Blur the editor. An unmounted editor only clears its focused state.
 
 #### `editor.api.dom.focus(options?: { retries?: number }): void`
 
-Focus the editor. Does nothing while the editor has no mounted root.
+Focus the editor's [view](#views). Does nothing when no view is picked.
 
 #### `editor.api.dom.deselect(): void`
 
@@ -78,11 +146,12 @@ nothing.
 
 #### `editor.api.dom.root(): HTMLElement | null`
 
-Return the mounted editor root element.
+Return the root element of the editor's [view](#views).
 
 #### `editor.api.dom.editable(root?: RootKey): HTMLElement | null`
 
-Return the mounted editable element for a document root.
+Return the editable element of the editor's [view](#views), or of its view of
+`root` when given.
 
 #### `editor.api.dom.scroll(): HTMLElement | null`
 
@@ -229,14 +298,13 @@ range is not currently mappable.
 
 #### `editor.api.dom.assertDocumentOrShadowRoot(): Document | ShadowRoot`
 
-Return the document or shadow root that owns the editor. Throws where
+Return the document or shadow root that holds the editor's view. Throws where
 `resolveDocumentOrShadowRoot` returns `null`.
 
 #### `editor.api.dom.resolveDocumentOrShadowRoot(): Document | ShadowRoot | null`
 
-Resolve the document or shadow root that owns the editor. Returns `null` when
-this editor has no mounted view, or when several are mounted and none has
-focus.
+Resolve the document or shadow root that holds the editor's
+[view](#views). Returns `null` when no view is picked.
 
 #### `editor.api.dom.getWindow(): Window`
 
@@ -273,11 +341,14 @@ clear it. `useDropIndicator` reads it.
 
 #### `editor.api.dom.drag.autoScroll(point: { x: number; y: number }): number`
 
-Scroll one step for a pointer drag at `point`, in client coordinates, and
-return the pixels scrolled, or 0. It scrolls the innermost scroller around the
-editor whose visible top or bottom edge zone holds the point and that can still
-move that way, else the window, at the speed text selection and block dragging
-use: faster nearer the edge. Each zone is 48px, at most half the visible height.
+Scroll one step for a pointer drag at `point`, in client coordinates of the
+window that holds the editor's view, and return the pixels scrolled, or 0. On
+the editor `createEditor` returns, it runs in the [view](#views) under the
+point, found in the document of the view the editor picks, else in the picked
+view. It scrolls the innermost scroller around that view whose visible top or
+bottom edge zone holds the point and that can still move that way, else the
+window, at the speed text selection and block
+dragging use: faster nearer the edge. Each zone is 48px, at most half the visible height.
 Call it once per animation frame while a custom drag lasts, and call again on
 the next frame while it returns a value other than 0.
 
@@ -292,6 +363,12 @@ schema or a veto refuses that edge. An edge inside the dragged blocks, or one
 that would not move them, drops nothing. A move whose pointer is over or beside
 its own blocks also drops nothing, even within a container's band. Edges inside
 collapsed content are refused. Without options it reads the active drag session.
+With no `target`, a text drop resolves nothing, and a block or files drop on
+the editor `createEditor` returns resolves in the [view](#views) under the
+pointer, found in the document of the view the editor picks, else in the picked
+view. It reads
+`clientX` and `clientY` in the window that holds the picked view. A read-only
+editor finds no drop target unless it is a view's own editor.
 Pass `files` with the block that dropped files become to place an upload. The
 drop checks one such block per file the browser exposes, and one block when the
 browser hides them during the drag.

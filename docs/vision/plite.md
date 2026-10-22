@@ -863,6 +863,34 @@ deps?)` owns one editor for a component lifetime. Render builds it dormant.
   that returns `null`. The strict form is for a direct caller that knows the
   DOM is mounted. Runtime and package code call the twin, and a lint rule bans
   the strict forms and `findKey` there.
+- Each `editor.api.dom` call runs in one mounted view, and `resolveDOMReach`
+  in `packages/plitejs/src/dom/plugin/dom-root-runtime.ts` owns the pick. A
+  view's own editor, a `useRootEditor` editor included, runs in its own view,
+  where a lookup of the DOM of a node, point or range in another root answers
+  `null`. The editor an Editable renders with stays in its view even when
+  given another view's DOM node or event. The base editor takes a view of the call's root, which is
+  the target's root, else the caret's root, else main, as for a plugin call.
+  When the caret was placed in that root from an `EditorRoot`, only that
+  `EditorRoot`'s views of the root count, even after the base editor moves the
+  caret within it, so while it shows none, such as while it is hidden,
+  no view is picked. Of the views that count, it takes the only one, else the
+  one that holds focus, through iframes and shadow roots. On the base editor
+  and a root editor, a call given a DOM node or an event runs in the view that
+  renders it when that view belongs to the editor called. On the base editor,
+  a block or files drop target found from pointer coordinates alone, and
+  `drag.autoScroll`, hit-test the pointer in the document where the picked view
+  last rendered an Editable and run in the editor's view found there, else in the picked view. That hit test
+  enters shadow roots but not iframes. A text drop resolves nothing from
+  coordinates alone. With no view picked, a lookup of DOM returns `null`, its
+  `assert*` twin throws and `focus()` does nothing, while calls that need no
+  view, such as `resolvePath`, `findKey`, `visibleRect` and `scroll()` with a
+  registered container, still answer. A view with several Editables looks up
+  DOM in the focused one, and in none while none holds focus. Suggested task
+  t_6c238731 owns two limits. `resolveRange` and
+  `assertRange` run on the editor called, so on the base editor or a root
+  editor a DOM range in another view resolves against that editor's own root.
+  A root editor's `resolveNode`, `resolvePoint` and `resolveRange` still turn
+  another same-root view's text into the shared model node.
 - Code that holds a live node passes it directly as the `NodeTarget` or `at`
   value, resolves a path only when the path is the result, and never rediscovers
   the node by scanning for its `type` and `id`. Package code treats an
