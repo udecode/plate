@@ -2,51 +2,34 @@
 
 Page: https://claude.ai/artifact/39jaGe5sHWk5ND6tJVk8aD
 
-The ledger asks which source and rendering contract generated diagrams should use, and which remote or embedded renderer policy belongs to the application. Today a diagram is a `codeDrawing` void element from `platejs/code-drawing`. It stores its source, language and view as string properties, and the same entrypoint ships `renderCodeDrawing`, which loads Mermaid, Graphviz, flowchart.js or a PlantUML server. The copied `CodeDrawingElement` edits the source in a textarea, previews it and exports a PNG. Landed and proven: the flat v54 node shape, insertion through the plugin's `insert` and `upsert` updates, the Markdown `codeDrawing` tag, and the single Graphviz engine name, each with its package spec, plus the copied controls' browser spec. The [2026-10-04 audit](../../research/review-records/2026-10-04-drawing-audit.json) gave a Pursue verdict that no plan has adopted. The scope's history prints with `node tooling/scripts/review-ledger.mjs show drawing`.
+The ledger asks which source and rendering contract generated diagrams should use, and which remote or embedded renderer policy belongs to the application. A diagram is a code block whose language a copied renderer claims, so the document stores only the code block's text and language. The copied `withDiagrams` wraps the code block element and draws the picture below the source through one copied renderer item per engine: Mermaid through Pele, Graphviz through viz.js, flowchart.js, and PlantUML through a server the app names. Its Code and Both views live in the component, and it exports a PNG. Static rendering and Markdown export print the source. The [2026-10-15 review](../2026-10-15-drawing-review.md) moved diagrams from their own element into code blocks, the [2026-10-18 review](../2026-10-18-drawing-pele-review.md) moved Mermaid to Pele, and the [2026-10-22 review](../2026-10-22-drawing-paged-size.md) kept diagram sizes in paged layout with the app. The scope's history prints with `node tooling/scripts/review-ledger.mjs show drawing`.
 
 ## Public API
 
-The demo installs the plugin with the copied element.
+An app wraps the copied code block element with the renderers it draws and swaps the kit's code block plugin.
 
 ```tsx
-// e184158398:apps/www/src/registry/examples/code-drawing-demo.tsx
-import { CodeDrawingPlugin } from 'platejs/code-drawing/react';
+// content/docs/(plugins)/(elements)/code-block.mdx
+import { CodeBlockPlugin } from 'platejs/react';
 
-import { CodeDrawingElement } from '@/registry/components/editor/code-drawing';
+import {
+  CodeBlockElement,
+  createCodeBlockPlugin,
+} from '@/components/editor/code-block';
+import { withDiagrams } from '@/components/editor/code-block-diagram';
+import { graphvizRenderer } from '@/components/editor/code-block-diagram-graphviz';
+import { mermaidRenderer } from '@/components/editor/code-block-diagram-mermaid';
+import { EditorKit } from '@/components/editor/plugins';
 
-const editor = useCreateEditor({
-  plugins: [
-    ...EditorKit,
-    CodeDrawingPlugin.configure({ component: CodeDrawingElement }),
-  ],
-  initialValue: codeDrawingValue,
-});
-```
+const diagramCodeBlockPlugin = createCodeBlockPlugin(
+  withDiagrams(CodeBlockElement, {
+    renderers: [mermaidRenderer, graphvizRenderer],
+  })
+);
 
-The copied insert menu inserts an empty drawing through the plugin's update.
-
-```tsx
-// apps/www/src/registry/components/editor/insert-toolbar-button.tsx
-import { BaseCodeDrawingPlugin } from 'platejs/code-drawing';
-
-editor.update((tx) => {
-  tx.plugin(BaseCodeDrawingPlugin).insert({}, { select: true });
-});
-```
-
-The copied element renders through the package renderer and defaults PlantUML to the public server.
-
-```tsx
-// e184158398:apps/www/src/registry/components/editor/code-drawing.tsx
-import { renderCodeDrawing } from 'platejs/code-drawing';
-
-export function CodeDrawingElement({
-  plantUmlServer = 'https://www.plantuml.com/plantuml',
-  ...props
-}: EditorElementProps<typeof CodeDrawingPlugin> & { plantUmlServer?: string }) {
-  // ...
-  const imageData = await renderCodeDrawing(language, code, { plantUmlServer });
-}
+export const DiagramEditorKit = EditorKit.map((plugin) =>
+  plugin.name === CodeBlockPlugin.name ? diagramCodeBlockPlugin : plugin
+);
 ```
 
 The copied Mermaid renderer item draws with Pele and returns its SVG. Each copied renderer item installs the exact engine version the site runs, such as `pele@1.6.0`. The site's `apps/www/package.json` pins the same versions.
@@ -66,12 +49,41 @@ export const mermaidRenderer: DiagramRenderer = {
 };
 ```
 
+PlantUML draws through a server the app runs and names.
+
+```tsx
+// content/docs/(plugins)/(elements)/code-block.mdx
+import { createPlantUmlRenderer } from '@/components/editor/code-block-diagram-plantuml';
+
+const plantUmlRenderer = createPlantUmlRenderer({
+  server: 'https://plantuml.example.com',
+});
+```
+
 ## Main changes
 
-- `e184158398:packages/platejs/src/code-drawing/lib/BaseCodeDrawingPlugin.ts` owns the `codeDrawing` void element with `code`, `language` (flowchart, graphviz, mermaid or plantuml) and `view` (code, preview or split), and maps it to a Markdown `codeDrawing` tag.
-- `e184158398:packages/platejs/src/code-drawing/lib/renderers.ts` owns `renderCodeDrawing`, which dynamically imports `mermaid`, `viz.js`, `flowchart.js` or `plantuml-encoder`, calls `mermaid.initialize` once, and returns an SVG data URL.
-- The copied `code-drawing.tsx` writes the source on every textarea change with `editor.update.nodes.set`, renders the preview when the view is not `code`, and exports a PNG. The copied `code-drawing-static.tsx` prints the source and no image.
-- `packages/platejs/src/migrations/migratePlateV54Ast.internal.ts` moves a v53 `code_drawing` element's `data.code`, `data.drawingType` and `data.drawingMode` into the flat properties.
+- `apps/www/src/registry/components/editor/code-block-diagram.tsx` owns `withDiagrams` and the `DiagramRenderer` contract. It refuses two renderers that claim one language, draws in the Both view once the block is near the viewport and the browser is idle, runs one render per block at a time, shows the SVG as an image and exports a PNG scaled within the browser's canvas limits.
+- Each `code-block-diagram-<engine>.ts` item owns one engine and its dependency.
+- `packages/platejs/src/migrations/migratePlateV54Inputs.internal.ts` turns a saved v53 `code_drawing` element into a code block whose language is its drawing type, Mermaid by default.
+- `apps/www/src/registry/components/editor/code-block-static.tsx` prints a diagram block's source as an ordinary code block.
+
+## Rules
+
+These rules bind this feature alone, so they live here instead of in `docs/vision/`.
+
+- The engine is app policy in copied source. Each engine has one renderer item, and Mermaid has one, which draws with Pele.
+- A diagram's size in paged layout belongs to the app's `fragmentation` provider, as every non-text block's does. The renderer contract carries no size, and no engine reports sizes to pages. An app that pages Mermaid diagrams can size them in its provider with Pele's synchronous `render` once the diagram type has loaded.
+- Static rendering and Markdown export print the diagram source, and Markdown writes a fence in the diagram's language.
+
+Rejected, and why:
+
+| Alternative | Why it lost |
+| --- | --- |
+| A size on the renderer contract, measured up front through Pele for Mermaid, with the other engines reporting sizes once drawn | Only Mermaid measures synchronously. Reports tie page layout to which pictures have been drawn, and the wrapper draws only near the viewport while the virtualized paged view never mounts far pages. No kit pages diagrams (2026-10-22 review). |
+| A fixed picture frame that a paged kit sizes and the wrapper draws into | Works for every engine but has no consumer. It is the target once a paged kit draws diagrams (2026-10-22 review). |
+| Pictures in static pages through Pele | Draws Mermaid alone, while Graphviz, flowchart.js and PlantUML would still print source, and nobody asked for it (2026-10-18 and 2026-10-22 reviews). |
+| Keeping mermaid.js for Mermaid | Each redraw cost 29 to 44 ms of main thread on the probe's flowcharts, and the first diagram loaded 225 kB gzip (2026-10-18 review). |
+| A Pele item beside a mermaid.js item | Both claim `mermaid`, so an app installs one; Plate would ship two ways to draw one language (2026-10-18 review). |
 
 ## What other editors do
 
@@ -95,5 +107,4 @@ Sources: `TypeCellOS/BlockNote@1e26f1c5e1cd7df81df9d4ab2a853bf1b298b163:packages
 
 ## Open work
 
-- Export PNG of a very wide diagram can save an empty image. Pele states a chain of 400 to 500 nodes at 75678 to 82388 pixels wide, past the browser's canvas limit, and the shared exporter in `code-block-diagram.tsx` does not scale it down. Owner: suggested task `t_3bdcf6b3` in the ledger. Stop: none, since such chains are rare and the source is unharmed.
-- The timing lines T1 and T2 stay gates, because step 6 ran while the host's load was 15.36, above the frozen limit of 9. Owner: suggested task `t_e0e8d398`, which now also reruns step 6 on a quiet host. Stop: a conclusive miss sends the engine choice back to `architect`.
+- The timing lines T1 and T2 stay gates, because step 6 of the 2026-10-18 review ran while the host's load was 15.36, above the frozen limit of 9. Owner: suggested task `t_e0e8d398`, which now also reruns step 6 on a quiet host. Stop: a conclusive miss sends the engine choice back to `architect`.
