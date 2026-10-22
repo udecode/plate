@@ -1,6 +1,6 @@
 # Pagination and page layout
 
-Page: https://claude.ai/artifact/X2TpUgz6JwrqLGB8ahiEub
+Page: https://claude.ai/artifact/FtcGuSe7rGtop8U1oRpswc
 
 Pagination gives a Plate document measured pages. It covers live paged editing with custom page chrome, fragmentation and optional page omission, and one-shot headless measurement for previews and export inputs. The ledger asks which document and measurement contracts determine pages, and which layout authority can be removed or reused (`docs/research/review-scopes/pagination.json`). Plite owns the paged view: `PagedEditable` owns live layout, page surfaces and omission, `measurePages` is the headless path, fragmentation is `text`, `atomic` or `direct-children`, and page-break persistence is deleted (`docs/plans/2026-09-15-pagination-view-owned-layout.md`). A Plate app renders pages through `PagedEditorContent` from `platejs/pagination/react`, which runs `EditorContent`'s pipeline with `PagedEditable` as its editable, so plugin components, handlers, shortcuts and slots work on pages; the Plate facade does not export the raw `PagedEditable` (`docs/plans/2026-10-06-pagination-review.md`). `node tooling/scripts/review-ledger.mjs show pagination` prints the reviews.
 
