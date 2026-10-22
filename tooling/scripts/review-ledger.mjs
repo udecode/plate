@@ -2076,6 +2076,15 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
   if (added(plan.path)) {
     problems.push(...dependentProblems(ledger, plan, evidence));
   }
+  // A plan that landed after the tree a review read is the later plan's to reconcile.
+  const reviewedTree =
+    plan.commit &&
+    git(root, ['rev-parse', '--verify', '--quiet', `${plan.commit}^{commit}`])
+      ? plan.commit
+      : null;
+  const inReviewedTree = (path) =>
+    !reviewedTree ||
+    git(root, ['cat-file', '-e', `${reviewedTree}:${path}`]) !== null;
   for (const id of plan.reviewBasis) {
     const reconciled = [
       id,
@@ -2085,7 +2094,8 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
             executes(other) &&
             other.landed &&
             !isReviewPage(other) &&
-            other.reviewBasis.includes(id)
+            other.reviewBasis.includes(id) &&
+            inReviewedTree(other.path)
         )
         .map((other) => idOf(other.path)),
       ...effectiveExecutions(ledger, id).map((execution) => execution.id),

@@ -842,6 +842,40 @@ test('check fails on an Evidence line that names only a longer id than the basis
   );
 });
 
+test('check asks a review page to reconcile only the plans on its basis that its review_commit holds', (t) => {
+  const { root, put, git, commit } = fixture(t);
+  plan(put, 'docs/plans/2026-09-01-comments.md', {
+    scopes: ['comments'],
+    basis: [],
+    verdict: 'pursue',
+    state: 'reviewed',
+    commit: headOf(git),
+  });
+  commit();
+  const review = (reads) =>
+    plan(put, 'docs/plans/2026-09-02-comments.md', {
+      scopes: ['comments'],
+      basis: ['2026-09-01-comments'],
+      verdict: 'pursue',
+      state: 'reviewed',
+      commit: reads,
+    });
+  review(headOf(git));
+  plan(put, 'docs/plans/2026-09-03-comments-build.md', {
+    scopes: ['comments'],
+    basis: ['2026-09-01-comments'],
+    state: 'executed',
+  });
+  commit();
+
+  assert.equal(check(root).ok, true);
+  review(headOf(git));
+  assert.throws(
+    () => check(root),
+    /does not reconcile 2026-09-03-comments-build with an action/
+  );
+});
+
 test('check fails on an absolute link on a review page', (t) => {
   const { root, put, git } = fixture(t);
   const path = 'docs/plans/2026-09-01-comments.md';
