@@ -651,7 +651,7 @@ const createHistoryPlugin = <
       replaceHistoryState(
         editor,
         decodeHistoryValue(editor, restoredHistoryJSON, {
-          validateDocument: false,
+          validateAgainst: after,
         }),
         after
       );
@@ -1112,7 +1112,10 @@ const createHistoryPlugin = <
 
           tx.tags.add('history-skip');
           tx.tags.add('history-restore');
-          tx.annotations.set(historyRestore, encodeHistoryValue(editor, value));
+          tx.annotations.set(
+            historyRestore,
+            encodeHistoryValue(editor, value, { validateAgainst: false })
+          );
         }),
         skip: createHistoryControl(tx, 'skip'),
       } satisfies HistoryTxApi;

@@ -708,6 +708,7 @@
     "test:partition:history": {
       "cache": true,
       "dependsOn": [
+        "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:history",
         "typecheck:partition:testing"

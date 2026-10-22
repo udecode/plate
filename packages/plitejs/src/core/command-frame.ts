@@ -28,6 +28,7 @@ import { DocumentIndex, type NodeList } from './change/document-index';
 import { copyRoot } from './change/lazy-root';
 import { mapRootChangePositionBackward } from './change/root-change';
 import type { JsonPoint, JsonToken } from './change/tokens';
+import { cloneValue } from './clone';
 import {
   type CommandProjection,
   type EditorDocumentState,
@@ -1027,7 +1028,20 @@ export const runInEditorCommandFrame = (
       }
       outer.snapshot.afterCommitHandlers.push(...snapshot.afterCommitHandlers);
       for (const [key, entry] of snapshot.annotations) {
-        outer.snapshot.annotations.set(key, entry);
+        const previous = outer.snapshot.annotations.get(key);
+
+        outer.snapshot.annotations.set(
+          key,
+          previous
+            ? {
+                type: entry.type,
+                value: cloneValue(
+                  entry.type.combine(previous.value, entry.value)
+                ),
+              }
+            : entry
+        );
+        outer.changed = true;
       }
       for (const tag of snapshot.tags) outer.snapshot.tags.add(tag);
     } finally {

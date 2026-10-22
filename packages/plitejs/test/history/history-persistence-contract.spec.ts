@@ -17,6 +17,7 @@ import {
   valueCodecs,
 } from 'plitejs';
 
+import { createAuthoredPlugin } from '../../src/authored/authored';
 import { History, history } from '../../src/history';
 import { encodeHistoryValue } from '../../src/history/history-codec';
 import { initializePlugins } from '../../src/internal';
@@ -476,6 +477,37 @@ describe('versioned history persistence', () => {
     restored.api.history.redo();
     assert.deepEqual(restored.read.marks(), { bold: true });
     assert.deepEqual(restored.read.selection(), range(3));
+  });
+
+  it('restores history saved while review proposes edits', () => {
+    const reviewed = () =>
+      createEditor({
+        plugins: [
+          history(),
+          createAuthoredPlugin({ authorId: 'a', intent: 'propose' }),
+        ] as const,
+        initialValue: [paragraph('body')],
+      });
+    const source = reviewed();
+
+    source.update((tx) => tx.text.insert(' text', { at: range(4).anchor }));
+
+    const json = JSON.parse(JSON.stringify(History.toJSON(source)));
+    const restored = reviewed();
+
+    restored.update((tx) => tx.text.insert(' text', { at: range(4).anchor }));
+    restored.update((tx) =>
+      tx.history.restore(
+        History.fromJSON(restored, { ...json, redos: [], undos: [] })
+      )
+    );
+    assert.equal(restored.read.history.hasUndo(), false);
+
+    restored.update((tx) =>
+      tx.history.restore(History.fromJSON(restored, json))
+    );
+    restored.api.history.undo();
+    assert.deepEqual(restored.read.value().children, [paragraph('body')]);
   });
 
   it('round-trips rootless selections owned by a named root', () => {

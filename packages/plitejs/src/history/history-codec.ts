@@ -1,6 +1,7 @@
 import {
   DocumentChange,
   type Editor,
+  type EditorDocumentValue,
   type EditorEffectType,
   type EditorSchemaIdentity,
   SelectionApi,
@@ -96,9 +97,10 @@ const assertSchemaIdentity = (
 const validateBatchSelections = <V extends Value>(
   editor: Editor<V>,
   batches: ReadonlyArray<Batch<V>>,
-  direction: 'redo' | 'undo'
+  direction: 'redo' | 'undo',
+  document: EditorDocumentValue
 ) => {
-  let value = editor.read.value();
+  let value = document;
 
   for (const batch of batches.toReversed()) {
     const selectionAtBase =
@@ -134,11 +136,18 @@ const validateBatchSelections = <V extends Value>(
 
 const validateHistory = <V extends Value>(
   editor: Editor<V>,
-  history: Pick<History<V>, 'redos' | 'undos'>
+  history: Pick<History<V>, 'redos' | 'undos'>,
+  validateAgainst: EditorDocumentValue | false = editor.read.value()
 ) => {
-  validateBatchSelections(editor, history.redos, 'redo');
-  validateBatchSelections(editor, history.undos, 'undo');
+  if (!validateAgainst) return;
+
+  validateBatchSelections(editor, history.redos, 'redo', validateAgainst);
+  validateBatchSelections(editor, history.undos, 'undo', validateAgainst);
 };
+
+type HistoryValidationOptions = Readonly<{
+  validateAgainst?: EditorDocumentValue | false;
+}>;
 
 const decodeBatch = <V extends Value>(
   editor: Editor<V>,
@@ -217,7 +226,7 @@ const decodeBatch = <V extends Value>(
 export const decodeHistoryValue = <V extends Value>(
   editor: Editor<V>,
   json: unknown,
-  options: Readonly<{ validateDocument?: boolean }> = {}
+  options: HistoryValidationOptions = {}
 ): History<V> => {
   if (!isHistoryJSON(json)) {
     throw new Error(
@@ -245,19 +254,20 @@ export const decodeHistoryValue = <V extends Value>(
     ),
   });
 
-  if (options.validateDocument ?? true) validateHistory(editor, history);
+  validateHistory(editor, history, options.validateAgainst);
 
   return history;
 };
 
 export const encodeHistoryValue = <V extends Value>(
   editor: Editor<V>,
-  history: Pick<History<V>, 'redos' | 'schema' | 'undos'>
+  history: Pick<History<V>, 'redos' | 'schema' | 'undos'>,
+  options: HistoryValidationOptions = {}
 ): HistoryJSON => {
   const schema = copyHistorySchemaIdentity(history.schema);
 
   assertSchemaIdentity(editor, schema);
-  validateHistory(editor, history);
+  validateHistory(editor, history, options.validateAgainst);
 
   const persistent = (batches: ReadonlyArray<Batch<V>>) =>
     batches.filter((batch) =>

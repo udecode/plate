@@ -6,6 +6,7 @@ import {
   defineCommand,
   defineEffect,
   definePlugin,
+  defineUpdateAnnotation,
   type Descendant,
   DocumentChange,
   editorCommands,
@@ -487,6 +488,34 @@ describe('command frame', () => {
     // 8 is where the visible paragraph starts in the stored document, after
     // the hidden one.
     assert.deepEqual(emitted, [8]);
+  });
+
+  it('commits a plugin method whose only write is an annotation, combined across calls', () => {
+    const origin = defineUpdateAnnotation<readonly string[]>({
+      combine: (previous, next) => [...previous, ...next],
+      key: 'test.origin',
+    });
+    const Origin = definePlugin('origin', {
+      update: ({ tx }) => ({
+        mark: () => tx.annotations.set(origin, ['probe']),
+      }),
+    });
+    const editor = framedEditor(
+      [paragraph('gone', { hidden: true }), paragraph('a')],
+      { plugins: [Origin] }
+    );
+    const annotations: unknown[] = [];
+
+    editor.subscribeCommit((commit) => {
+      annotations.push(commit.annotations[origin.key]);
+    });
+    editor.update.origin.mark();
+    editor.update((tx) => {
+      tx.origin.mark();
+      tx.origin.mark();
+    });
+
+    assert.deepEqual(annotations, [['probe'], ['probe', 'probe']]);
   });
 
   it('runs a correction on the accepted document', () => {
