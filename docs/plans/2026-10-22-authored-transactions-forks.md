@@ -39,6 +39,7 @@ No public call changes. This page records verdicts only.
 | --- | --- | --- | --- | --- |
 | When to settle the forks | Settle both now, as you asked (look) | Wait for the open authored and transactions plans to finish | wait | small |
 | What both scopes do next | Hold, with nothing new to build | Review the scope again; a three-model challenge | again; interrogate | small |
+| The authored page link | A new page at https://claude.ai/artifact/V1tpozSyUe7nsDoYrYUj9N, because https://claude.ai/artifact/LMYNM7X5UttawN35x7edE5 no longer opens for this account | Go back to the old page | old page | detail |
 
 ## Evidence
 
