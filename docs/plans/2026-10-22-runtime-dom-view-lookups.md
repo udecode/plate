@@ -292,7 +292,7 @@ Each phase lands as its own commit, ends with a keep or revert decision, and the
 
 ## Completion gates
 
-Phase 1 runs under the owner's "go" from the Pursue verdict, as one packet landed by `land.mjs`. The lead wrote the draft during plan review, and the diff panel reviews it instead of a code delegate.
+Phase 1 runs because the verdict playbook continues a Pursue verdict into its plan and the plan into its build, as the Autopilot rule says; the owner typed no "go". It is one packet landed by `land.mjs`. The lead wrote the draft during plan review, and the diff panel reviews it instead of a code delegate.
 
 | Gate | Applies | Required action | Evidence |
 | --- | --- | --- | --- |
@@ -311,7 +311,7 @@ Phase 1 runs under the owner's "go" from the Pursue verdict, as one packet lande
 | Playtest | skip | `playtest.mjs scope` on the task's files | skip: it names no scenario catalog for these files |
 | Land | yes | `land.mjs --check 'pnpm check --affected'` | done: this commit |
 
-Phase 2 runs under the same "go" and the owner's 2026-10-22 word to build every phase in one session, "we want to autopilot one shot". Its packet is the Phase 2 steps, built by three delegates in their own worktrees and landed as one commit.
+Phase 2 runs under the same rule and the owner's 2026-10-22 word to build every phase in one session, "we want to autopilot one shot". Its packet is the Phase 2 steps, built by three delegates in their own worktrees and landed as one commit.
 
 | Gate | Applies | Required action | Evidence |
 | --- | --- | --- | --- |
@@ -329,7 +329,7 @@ Phase 2 runs under the same "go" and the owner's 2026-10-22 word to build every 
 | Hand drive | yes | `hand-drive.mjs check` on the plan's files | done: log row "proof", 7 of 7 cells |
 | Land | yes | `land.mjs --check 'pnpm check --affected'` | done: this commit |
 
-Phase 3 runs under the same "go" and word. The lead built it in this session and lands it as one commit.
+Phase 3 runs under the same rule and word. The lead built it in this session and lands it as one commit.
 
 | Gate | Applies | Required action | Evidence |
 | --- | --- | --- | --- |
@@ -488,6 +488,7 @@ Reversals and deviations, first:
 - Phase 3's JSDoc step first named the docs build as its proof, but no docs build reads that JSDoc, so the step now names the `plitejs` typecheck and comment-sicko's read against the code.
 - The plan predicted the mentions popup would show beside the caret. Its box does move beside the caret and choosing a mention inserts it, but on www the menu paints behind the app shell (drift-2), so no frame shows it there.
 - Every phase ran in this one session, on the owner's word, instead of one session per phase.
+- Earlier records of this run, a session brief and ledger rows among them, said the build ran under the owner's "go". The owner typed no such word. The verdict playbook and the Autopilot rule continued the run, and t_a008396b owns the rule that keeps such a quote out.
 
 Proof, by phase:
 
@@ -499,9 +500,42 @@ Where the proof stops: no test checks the capability routes of `textToCaret`, `r
 
 Predicted benefit: probes A and B now answer with the view's DOM (held, jsdom cases), the DOM API page's example works as written (held), the controlled demo's buttons focus the editor (held, hand drive), the mentions popup's box moves beside the caret (held for its box; drift-2 hides it on www), and the caret tests that hold a root editor dropped their helper (held).
 
-User asks: five, all done. The chip's three items (which view each DOM lookup resolves in and how an app names one, with the DOM API page's example fixed; `focus()` on a `useRootEditor` editor; keyboard navigation's clear in its own tree), the owner's word to build every phase in this session, and "continue ??" after a resume.
+User asks: five, all done, one with no defect behind it. The chip's three items are which view each DOM lookup resolves in and how an app names one, with the DOM API page's example fixed; `focus()` on a `useRootEditor` editor; and keyboard navigation's clear in its own tree. That last change shows nothing on screen, because all three engines already cleared a shadow tree's selection with the page's. It stays because the new lint rule refuses the old read. The other two asks are the owner's word to build every phase in this session and "continue ??" after a resume.
 
 Open work: t_44e3acfa (pointer cases), t_6c238731 (text and range conversions across views), t_3fd19637 (drift-1, Shift+ArrowDown out of a synced root) and t_aff1384b (drift-2, the www mention menu), each with its owner and stop under Open work.
+
+### Reflect
+
+One reviewer read the session through the judgment, tooling and divergent lenses, and the lead judged each finding.
+
+Accepted, and fixed in this run:
+
+- The plan credited a "go" the owner never typed. The Completion gates and this Close now name the rule that carried the run.
+- This Close counted keyboard navigation's clear as done though no defect ever showed. It now says so.
+- The verdict playbook ends a deep path with the chips Sweep, not chips.md's Close, so the last hand-back runs the Sweep.
+- The close stop's publish dropped the view-selection-import run from the runtime page, because page-stop took a run file as its base. The lead rebuilt the base from the published page and published both runs.
+
+Backlog, as suggested tasks for the owner to start or drop:
+
+- t_465932bb makes page-stop keep a subject page's other runs after a refused publish, and refuse an app session id.
+- t_b4919f02 keeps an autopilot turn from ending while a background gate is its only work. Phase 2's land died in an app restart, and the run sat idle for about three hours.
+- t_a008396b makes briefs, ledger rows and compaction summaries quote only words the owner typed.
+- t_42afc07a adds a hook that denies zsh words starting with `=`, and makes the inline-script denial name `jq` for JSON reads.
+- t_cff02e42 decides whether each phase of a multi-phase build runs in a background subagent, which needs no approval and starts with a fresh context.
+- t_1fee06b1 gained a finding. A chip whose plan has phases left logs `landed` only at the build close.
+
+Rejected:
+
+- Check each docs claim against the code before review. `plate-docs` already says to read the source behind each changed claim, so the miss was in execution.
+- Restore base at the panel round cap. The review rules already say to revert after a second miss.
+- Treat a seat's runtime claim as a hypothesis. Phase 2's reachability gate caught both false premises before any build.
+- Delegates cannot sign commits. The lead lands every delegate's diff, so nothing changes.
+- The land recovery steps, the planted arm a copy overwrote, rtk's rewrite of `grep -h` and zsh glob qualifiers. Each check caught its case, and the details change with the code.
+- Edit dotai in its own worktree. `plan-page`'s Change mode edits dotai on main on purpose.
+- Blast radius missed a closed shadow root. It was one case in one run.
+- The decision-row grammar. `append` already refuses a bad row and names the fix.
+- The pre-land proof missed a repo-wide test. `land.mjs` is that gate by design, and t_b4919f02 owns the idle turn that followed.
+- The dropped `/pstack:correct` queue. The hooks already deny those commands, and t_42afc07a adds the missing denial and a clearer message.
 
 ### Review inputs
 
