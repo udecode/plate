@@ -28,9 +28,17 @@ describe('core static renderStaticHtml element rendering', () => {
 
     const { data: html } = await renderStaticHtml(editor);
 
-    expect(html).toContain('Heading 1');
-    expect(html).toContain('Heading 2');
-    expect(html).toContain('Heading 3');
+    const headings = new DOMParser()
+      .parseFromString(html, 'text/html')
+      .querySelectorAll('h1, h2, h3');
+
+    expect(
+      Array.from(headings, (heading) => [heading.tagName, heading.textContent])
+    ).toEqual([
+      ['H1', 'Heading 1'],
+      ['H2', 'Heading 2'],
+      ['H3', 'Heading 3'],
+    ]);
   });
 
   it('renders table cell content', async () => {
@@ -54,7 +62,13 @@ describe('core static renderStaticHtml element rendering', () => {
 
     const { data: html } = await renderStaticHtml(editor);
 
-    expect(html).toContain('Cell 1');
-    expect(html).toContain('Cell 2');
+    const cells = new DOMParser()
+      .parseFromString(html, 'text/html')
+      .querySelectorAll('table > tbody > tr > td');
+
+    expect(Array.from(cells, (cell) => cell.textContent)).toEqual([
+      'Cell 1',
+      'Cell 2',
+    ]);
   });
 });

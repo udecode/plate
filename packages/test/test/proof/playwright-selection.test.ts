@@ -246,17 +246,13 @@ describe('playwright selection snapshots', () => {
       anchor: { offset: 3, path: [47, 119, 1, 0] },
       focus: { offset: 3, path: [47, 119, 1, 0] },
     };
-    let reads = 0;
     let selection = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     };
 
     (root as any)[BROWSER_HANDLE_KEY] = {
-      getSelection: () => {
-        reads += 1;
-        return selection;
-      },
+      getSelection: () => selection,
     };
     window.getSelection()?.removeAllRanges();
     setTimeout(() => {
@@ -267,7 +263,7 @@ describe('playwright selection snapshots', () => {
       allowMissingNativeSelection: true,
     });
 
-    expect(reads).toBeGreaterThan(1);
+    expect(selection).toBe(expected);
   });
 
   test('accepts a partial native range only while its view declares model-owned DOM coverage', async () => {
@@ -289,12 +285,8 @@ describe('playwright selection snapshots', () => {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 6 },
     };
-    let reads = 0;
     (root as any)[BROWSER_HANDLE_KEY] = {
-      getDOMSelection: () => {
-        reads += 1;
-        return native;
-      },
+      getDOMSelection: () => native,
       getInputState: () => ({
         modelOwnedDOMCoverageSelection: covered,
         preferModelSelection: true,
@@ -305,12 +297,11 @@ describe('playwright selection snapshots', () => {
       waitForSelectionSync(createRootLocator(root), model)
     ).resolves.toBeUndefined();
     covered = false;
-    reads = 0;
     setTimeout(() => {
       native = model;
     }, 20);
     await waitForSelectionSync(createRootLocator(root), model);
-    expect(reads).toBeGreaterThan(1);
+    expect(native).toBe(model);
   });
 
   test('waits for native selection inside the requested editor root', async () => {

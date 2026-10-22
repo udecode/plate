@@ -1,8 +1,3 @@
-export const V53_PROFILE_SOURCE = {
-  commit: '2f87593f95',
-  packageVersion: '53.3.6',
-} as const;
-
 export const V53_FIRST_PARTY_IDENTITIES = [
   { identity: 'a', kind: 'element-rename', owner: 'link' },
   { identity: 'ai', kind: 'mark-unchanged' },

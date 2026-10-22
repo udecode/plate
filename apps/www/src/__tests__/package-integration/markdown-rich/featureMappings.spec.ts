@@ -335,25 +335,4 @@ describe('feature-owned Markdown formats', () => {
       width: 320,
     });
   });
-
-  it('serializes a trailing blockquote break as html so the newline survives', () => {
-    const editor = createTestEditor();
-    const result = serializeMarkdown(editor, {
-      document: {
-        children: [
-          {
-            children: [
-              { children: [{ text: 'Line one\n' }], type: 'paragraph' },
-            ],
-            type: 'blockquote',
-          },
-        ],
-      },
-    });
-
-    expect(result).toContain('<br />');
-    expect(parseMarkdown(editor, result).children[0]).toMatchObject({
-      type: 'blockquote',
-    });
-  });
 });

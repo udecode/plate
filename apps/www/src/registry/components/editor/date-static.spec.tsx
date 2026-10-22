@@ -11,9 +11,11 @@ import {
 
 import { render } from '@testing-library/react';
 import type { DateElement } from 'platejs/date';
+import * as actualStatic from 'platejs/static';
 import * as React from 'react';
 
 mock.module('platejs/static', () => ({
+  ...actualStatic,
   EditorElement: ({ children }: React.ComponentProps<'span'>) => (
     <span>{children}</span>
   ),

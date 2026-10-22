@@ -11,6 +11,7 @@ import {
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import * as actualPlatejs from 'platejs';
 import type { CodeBlockElement } from 'platejs';
+import * as actualPlatejsReact from 'platejs/react';
 import * as React from 'react';
 
 const useReadOnlyMock = mock(() => true);
@@ -37,6 +38,7 @@ mock.module('platejs', () => ({
 }));
 
 mock.module('platejs/react', () => ({
+  ...actualPlatejsReact,
   CodeBlockPlugin: mockPlugin('codeBlock'),
   CodeHighlightPlugin: mockPlugin('codeHighlight'),
   EditorElement: ({ children, className, ...props }: any) => (

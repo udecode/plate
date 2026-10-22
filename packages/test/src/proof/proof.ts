@@ -34,26 +34,6 @@ export type ImeInputEvaluation = {
   snapshot: DebugSnapshot;
 };
 
-export type SplitJoinEvaluation = {
-  issues: string[];
-  ok: boolean;
-  snapshot: {
-    blockCount: number;
-    blockTexts: string[];
-    selection: string;
-  };
-};
-
-export type EmptyRebuildEvaluation = {
-  issues: string[];
-  ok: boolean;
-  snapshot: {
-    blockCount: number;
-    blockTexts: string[];
-    selection: string;
-  };
-};
-
 type AgentBrowserBatchItem = {
   command: string[];
   error: string | null;
@@ -182,61 +162,3 @@ export const evaluatePlaceholderInput = (
   snapshot: DebugSnapshot,
   expectedText = 'sushi'
 ): PlaceholderInputEvaluation => evaluateImeInput(snapshot, expectedText);
-
-export const evaluateSplitJoin = (
-  snapshot: {
-    blockCount: number;
-    blockTexts: string[];
-    selection: string;
-  },
-  expectedText = 'One before two middle three after four'
-): SplitJoinEvaluation => {
-  const issues: string[] = [];
-
-  if (snapshot.blockCount !== 1) {
-    issues.push(`Expected blockCount to equal 1, got ${snapshot.blockCount}`);
-  }
-
-  if (
-    snapshot.blockTexts.length !== 1 ||
-    snapshot.blockTexts[0] !== expectedText
-  ) {
-    issues.push(
-      `Expected blockTexts to equal ["${expectedText}"], got ${JSON.stringify(
-        snapshot.blockTexts
-      )}`
-    );
-  }
-
-  return {
-    issues,
-    ok: issues.length === 0,
-    snapshot,
-  };
-};
-
-export const evaluateEmptyRebuild = (snapshot: {
-  blockCount: number;
-  blockTexts: string[];
-  selection: string;
-}): EmptyRebuildEvaluation => {
-  const issues: string[] = [];
-
-  if (snapshot.blockCount !== 1) {
-    issues.push(`Expected blockCount to equal 1, got ${snapshot.blockCount}`);
-  }
-
-  if (snapshot.blockTexts.length !== 1 || snapshot.blockTexts[0] !== '') {
-    issues.push(
-      `Expected blockTexts to equal [""], got ${JSON.stringify(
-        snapshot.blockTexts
-      )}`
-    );
-  }
-
-  return {
-    issues,
-    ok: issues.length === 0,
-    snapshot,
-  };
-};

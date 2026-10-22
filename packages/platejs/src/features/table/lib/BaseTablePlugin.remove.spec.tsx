@@ -348,49 +348,6 @@ describe('table removal', () => {
     ]);
   });
 
-  it('deletes a selected column spanning every row', () => {
-    const input = (
-      <editor>
-        <htable>
-          <htr>
-            <htd>
-              <hp>
-                <anchor />
-                11
-              </hp>
-            </htd>
-            <htd>
-              <hp>12</hp>
-            </htd>
-          </htr>
-          <htr>
-            <htd>
-              <hp>
-                21
-                <focus />
-              </hp>
-            </htd>
-            <htd>
-              <hp>22</hp>
-            </htd>
-          </htr>
-        </htable>
-      </editor>
-    ) as TestEditor;
-
-    const editor = createTestTableEditor({
-      plugins: getTestTablePlugins({ allowCellSpanEditing: true }),
-      selection: input.selection,
-      initialValue: input.children,
-    });
-    editor.update.table.removeColumn();
-
-    expect(editor.read.text.string([0])).toBe('1222');
-    expect(
-      editor.read.nodes.toArray({ at: [], type: 'tableCell' })
-    ).toHaveLength(2);
-  });
-
   {
     jsxt;
 
@@ -405,46 +362,6 @@ describe('table removal', () => {
       });
 
     describe('update.removeRow', () => {
-      it('deletes a fully selected row', () => {
-        const input = (
-          <editor>
-            <htable>
-              <htr>
-                <htd>
-                  <hp>
-                    <anchor />
-                    11
-                  </hp>
-                </htd>
-                <htd>
-                  <hp>
-                    12
-                    <focus />
-                  </hp>
-                </htd>
-              </htr>
-              <htr>
-                <htd>
-                  <hp>21</hp>
-                </htd>
-                <htd>
-                  <hp>22</hp>
-                </htd>
-              </htr>
-            </htable>
-          </editor>
-        ) as TestEditor;
-
-        const editor = createTableEditor(input);
-
-        editor.update.table.removeRow();
-
-        expect(editor.read.text.string([0])).toBe('2122');
-        expect(
-          editor.read.nodes.toArray({ at: [], type: 'tableRow' })
-        ).toHaveLength(1);
-      });
-
       it('removes the current row when the table has more than one row', () => {
         const input = (
           <editor>

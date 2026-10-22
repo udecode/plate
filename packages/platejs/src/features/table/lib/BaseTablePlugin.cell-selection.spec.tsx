@@ -25,15 +25,8 @@ import {
 import { BaseListPlugin, ListType } from '../../list/lib/BaseListPlugin';
 import { createTestTableEditor } from './__tests__/getTestTablePlugins';
 import type { TableDefinition } from './BaseTablePlugin';
-import {
-  BaseTableCellPlugin,
-  BaseTablePlugin,
-  BaseTableRowPlugin,
-} from './BaseTablePlugin';
-import {
-  readTableSelection,
-  readTableSelectionViewMetrics,
-} from './internal/selection';
+import { BaseTableCellPlugin, BaseTablePlugin } from './BaseTablePlugin';
+import { readTableSelectionViewMetrics } from './internal/selection';
 
 const assertNodeSelection: (
   selection: Selection
@@ -775,6 +768,7 @@ describe('table selection contracts', () => {
 
           const editor = createTableEditor(input);
 
+          editor.plugin(BaseTablePlugin).read.selection();
           editor.update.nodes.set(
             { backgroundColor: 'red' },
             { at: [0, 0, 0] }
@@ -782,13 +776,14 @@ describe('table selection contracts', () => {
           const view = editor.plugin(BaseTablePlugin).read.selection();
 
           assert.ok(view);
-          expect(editor.read.nodes.get([0, 0, 0])?.[0]).toMatchObject({
-            backgroundColor: 'red',
-            id: 'c11',
-          });
-          expect(view.cells.map(([cell]) => getFixtureId(cell))).toStrictEqual([
-            'c11',
-            'c12',
+          expect(
+            view.cells.map(([cell]) => [
+              getFixtureId(cell),
+              cell.backgroundColor,
+            ])
+          ).toStrictEqual([
+            ['c11', 'red'],
+            ['c12', undefined],
           ]);
         });
 
@@ -1070,12 +1065,6 @@ describe('table selection contracts', () => {
         },
       },
     });
-    const getSelectionTypes = (
-      editor: ReturnType<typeof createTestTableEditor>
-    ) => ({
-      cellTypes: [editor.plugin(BaseTableCellPlugin).schema.type],
-      tableType: editor.plugin(BaseTablePlugin).schema.type,
-    });
 
     it('exports reachable selected roots and prunes roots owned by unselected cells', () => {
       const rootHolder = (body: string) => ({
@@ -1178,7 +1167,7 @@ describe('table selection contracts', () => {
       expect(editor.read.value()).toEqual(before);
     });
 
-    it('isolates cached selection views by root snapshot index', () => {
+    it('keeps repeated selection reads of the main editor and a root view apart', () => {
       const root = 'table-selection-cache-root';
       const editor = createTestTableEditor({
         plugins: [BaseTablePlugin, RootHolderPlugin],
@@ -1197,20 +1186,16 @@ describe('table selection contracts', () => {
       const rootEditor = createEditorView(editor, {
         root,
       }) as unknown as typeof editor;
-      const selectionTypes = getSelectionTypes(editor);
-      const readMain = () =>
-        editor.read((state) => readTableSelection(state, selectionTypes));
+      const readMain = () => editor.plugin(BaseTablePlugin).read.selection();
       const readRoot = () =>
-        rootEditor.read((state) => readTableSelection(state, selectionTypes));
+        rootEditor.plugin(BaseTablePlugin).read.selection();
+      const cellIds = (view: ReturnType<typeof readMain>) =>
+        view?.cells.map(([cell]) => getFixtureId(cell));
       const mainAnchor = editor.read.points.start([1, 0, 0]);
       const mainFocus = editor.read.points.end([1, 1, 1]);
 
       assert.ok(mainAnchor);
       assert.ok(mainFocus);
-
-      expect(editor.read.runtime.snapshot().index).not.toBe(
-        rootEditor.read.runtime.snapshot().index
-      );
 
       editor.update.selection.set({ anchor: mainAnchor, focus: mainFocus });
 
@@ -1219,7 +1204,12 @@ describe('table selection contracts', () => {
       assert.ok(mainView);
       expect(mainView.root).toBeUndefined();
       expect(readRoot()).toBeNull();
-      expect(readMain()).toBe(mainView);
+      expect(cellIds(readMain())).toEqual([
+        'main-00',
+        'main-01',
+        'main-10',
+        'main-11',
+      ]);
 
       const rootAnchor = rootEditor.read.points.start([0, 0, 0]);
       const rootFocus = rootEditor.read.points.end([0, 1, 1]);
@@ -1237,10 +1227,13 @@ describe('table selection contracts', () => {
 
       assert.ok(mainReadOfRoot);
       expect(mainReadOfRoot.root).toBe(root);
-      expect(mainReadOfRoot).not.toBe(mainView);
-      expect(mainReadOfRoot).not.toBe(rootView);
-      expect(readRoot()).toBe(rootView);
-      expect(rootView).not.toBe(mainView);
+      expect(cellIds(mainReadOfRoot)).toEqual([
+        'root-00',
+        'root-01',
+        'root-10',
+        'root-11',
+      ]);
+      expect(cellIds(readRoot())).toEqual(cellIds(mainReadOfRoot));
     });
 
     it('drops deleted cell ranges without duplicating surviving cells', () => {
@@ -1334,48 +1327,19 @@ describe('table selection contracts', () => {
       assert.ok(focus);
 
       const rootRange = Object.freeze({ anchor, focus });
-      const rootSelectionView = rootEditor.read((state) =>
-        readTableSelection(state, {
-          at: rootRange,
-          ...getSelectionTypes(editor),
-        })
-      );
-      const baseSelectionView = editor.read((state) =>
-        readTableSelection(state, {
-          at: rootRange,
-          ...getSelectionTypes(editor),
-        })
-      );
-
-      assert.ok(rootSelectionView, 'root-scoped table selection view');
-      assert.ok(baseSelectionView, 'explicit-root base table selection view');
-      expect(rootSelectionView.selection).toBe(rootRange);
-      expect(baseSelectionView.selection).toBe(rootRange);
-
-      const upperLeft = rootEditor.read.nodes.get([0, 0, 0], {
-        type: BaseTableCellPlugin,
-      });
-      const upperRight = rootEditor.read.nodes.get([0, 0, 1], {
-        type: BaseTableCellPlugin,
-      });
-      const upperRow = rootEditor.read.nodes.get([0, 0], {
-        type: BaseTableRowPlugin,
-      });
-      const upperLeftPoint = rootEditor.read.points.start([0, 0, 0]);
-      const upperRightPoint = rootEditor.read.points.start([0, 0, 1]);
-      const lowerRightPoint = rootEditor.read.points.start([0, 1, 1]);
-
-      assert.ok(upperLeft);
-      assert.ok(upperRight);
-      assert.ok(upperRow);
-      assert.ok(upperLeftPoint);
-      assert.ok(upperRightPoint);
-      assert.ok(lowerRightPoint);
-
+      const rootSelectionView = rootEditor
+        .plugin(BaseTablePlugin)
+        .read.selection({ at: rootRange });
       const selectionView = editor
         .plugin(BaseTablePlugin)
         .read.selection({ at: rootRange });
-      assert.ok(selectionView);
+
+      assert.ok(rootSelectionView, 'root-scoped table selection view');
+      assert.ok(selectionView, 'explicit-root base table selection view');
+      expect([rootSelectionView.root, selectionView.root]).toEqual([
+        root,
+        root,
+      ]);
       rootEditor.update.selection.setNodes(
         selectionView.cells.map(([, path]) => path),
         {
@@ -1397,25 +1361,19 @@ describe('table selection contracts', () => {
           tableIndex,
         ]);
 
-        const view = rootEditor.read((state) =>
-          readTableSelection(state, {
-            ...getSelectionTypes(editor),
-          })
-        );
+        const view = rootEditor.plugin(BaseTablePlugin).read.selection();
         const beforeHotRead = readTableSelectionViewMetrics();
-        const hotView = rootEditor.read((state) =>
-          readTableSelection(state, {
-            ...getSelectionTypes(editor),
-          })
-        );
-        const afterHotRead = readTableSelectionViewMetrics();
 
-        expect(view?.root).toBe(root);
-        expect(hotView).toBe(view);
-        expect(afterHotRead.cacheHitCount - beforeHotRead.cacheHitCount).toBe(
-          1
+        rootEditor.plugin(BaseTablePlugin).read.selection();
+
+        assert.equal(
+          readTableSelectionViewMetrics().cacheHitCount -
+            beforeHotRead.cacheHitCount,
+          1,
+          'a repeated named-root selection read recompiles the selection view'
         );
-        expect(view?.anchors.map(({ cell }) => getFixtureId(cell))).toEqual([
+        expect(view?.root).toBe(root);
+        expect(view?.cells.map(([cell]) => getFixtureId(cell))).toEqual([
           'root-00',
           'root-01',
           'root-10',

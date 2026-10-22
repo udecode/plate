@@ -67,15 +67,6 @@ describe('BaseDatePlugin', () => {
     expect(editor.read.schema.isObject(element)).toBe(false);
   });
 
-  it('provides the date.insert transaction', () => {
-    const editor = createEditor({
-      plugins: [BaseDatePlugin],
-    });
-
-    expect(editor.update.date.insert).toBeDefined();
-    expect(typeof editor.update.date.insert).toBe('function');
-  });
-
   it('deleteBackward removes the adjacent date atom', () => {
     const editor = createEditor({
       plugins: [BaseDatePlugin],

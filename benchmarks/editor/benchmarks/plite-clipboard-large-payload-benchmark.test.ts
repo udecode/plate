@@ -25,7 +25,6 @@ const benchmarkPath = resolve(
   root,
   'benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs'
 );
-const registryPath = resolve(root, 'benchmarks/targets/slate-v2.json');
 
 type BenchmarkLane = {
   inspectionMs: { p95: number };
@@ -483,72 +482,4 @@ describe('clipboard large-payload benchmark authority', () => {
       );
     }
   );
-
-  it('keeps one issue-sized target with native metrics and bounded correctness', () => {
-    const registry = JSON.parse(readFileSync(registryPath, 'utf-8')) as {
-      targets: Array<{
-        artifacts: Array<{ path: string; required: boolean }>;
-        command: string;
-        correctness: { command: string };
-        id: string;
-        metrics: { primary: string; printsMetric: boolean; unit: string };
-      }>;
-    };
-    const targets = registry.targets.filter(
-      ({ id }) => id === 'clipboard-large-payload'
-    );
-    const source = readFileSync(benchmarkPath, 'utf-8');
-
-    assert.equal(targets.length, 1);
-    assert.match(targets[0].command, /HUGE_CUT_BLOCKS=50000/u);
-    assert.match(targets[0].command, /ISSUE_TARGETS=1/u);
-    assert.match(
-      targets[0].command,
-      /--output=tmp\/slate-clipboard-large-payload-benchmark\.json/u
-    );
-    assert.match(targets[0].command, /bun --expose-gc --preload/u);
-    assert.equal(
-      targets[0].correctness.command,
-      'bun test benchmarks/editor/benchmarks/plite-clipboard-large-payload-benchmark.test.ts'
-    );
-    assert.equal(
-      targets[0].metrics.primary,
-      'plite_clipboard_worst_issue_p95_ms'
-    );
-    assert.equal(targets[0].metrics.printsMetric, true);
-    assert.equal(targets[0].metrics.unit, 'ms');
-    assert.deepEqual(targets[0].artifacts, [
-      {
-        evidence: {
-          category: 'slate-clipboard-large-payload',
-          kind: 'current',
-          library: 'slate-v2:clipboard',
-        },
-        path: 'tmp/slate-clipboard-large-payload-benchmark.json',
-        required: true,
-      },
-    ]);
-    assert.match(source, /editor\.update\.slice\.replace\(slice\)/u);
-    assert.match(source, /editor\.read\.slice\.fit\(slice\)/u);
-    assert.match(source, /new Set\(snapshot\.children\)/u);
-    assert.match(source, /currentBlocks\.has\(node\)/u);
-    assert.match(source, /METRIC \$\{name\}=\$\{value\}/u);
-    assert.match(source, /CLIPBOARD_AUTHORITY_ARTIFACT_PATH/u);
-    assert.match(source, /assertAuthorityConfiguration/u);
-    assert.match(source, /isClipboardAuthorityArtifactPath\(outputPath\)/u);
-    assert.match(source, /hugeCutBlocks !== 50_000/u);
-    assert.match(source, /hugeCutIterations !== 3/u);
-    assert.match(source, /issueTargetStressLines !== 10_000/u);
-    assert.match(source, /!issueTargetsEnabled/u);
-    assert.match(source, /hasClipboardBenchmarkFailures/u);
-    assert.match(source, /plite_clipboard_plain_text_paste_10000_p50_ms/u);
-    assert.match(
-      source,
-      /plite_clipboard_populated_full_selection_copy_10000_p50_ms/u
-    );
-    assert.match(
-      source,
-      /plite_clipboard_populated_plain_text_paste_10000_p50_ms/u
-    );
-  });
 });

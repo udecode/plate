@@ -8,7 +8,6 @@ import {
   createEditorView,
   definePlugin,
   ElementIdPlugin,
-  PLUGINS,
   schema,
   type BasePluginInput,
   type CreateEditorOptions,
@@ -29,14 +28,12 @@ import {
   parseTestMarkdown,
   serializeTestMarkdown,
 } from './__tests__/createTestEditor';
-import { createMarkdownRuntime } from './internal/markdownConversion';
 import {
   MarkdownPlugin,
   parseMarkdown,
   serializeMarkdown,
 } from './MarkdownPlugin';
 import type { MarkdownSyncPluggable } from './types';
-import { materializeRemarkPlugins } from './utils/remarkPlugins';
 
 const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
   options: Omit<CreateEditorOptions, 'plugins'> & {
@@ -403,11 +400,19 @@ describe('MarkdownPlugin', () => {
     });
   });
 
-  it('materializes frozen sync plugin tuples only at the unified boundary', () => {
-    const remarkPlugin = (_options: { label: string }) => undefined;
+  it('snapshots configured remark tuples and passes their options at serialize', () => {
+    const remarkPlugin =
+      ({ label }: { label: string }) =>
+      (tree: { children: unknown[] }) => {
+        tree.children.push({
+          children: [{ type: 'text', value: label }],
+          type: 'paragraph',
+        });
+      };
     const tuple = [remarkPlugin, { label: 'configured' }] as const;
     const configuredPlugins: MarkdownSyncPluggable[] = [tuple];
     const editor = createFixtureEditor({
+      initialValue: [{ children: [{ text: 'body' }], type: 'paragraph' }],
       plugins: [
         MarkdownPlugin.configure({
           initialState: { remarkPlugins: configuredPlugins },
@@ -431,22 +436,7 @@ describe('MarkdownPlugin', () => {
     expect(snapshot).toHaveLength(1);
     expect(Object.isFrozen(snapshot)).toBe(true);
     expect(Object.isFrozen(snapshotTuple)).toBe(true);
-
-    const materialized = materializeRemarkPlugins(snapshot);
-    const materializedTuple = materialized[0];
-
-    if (
-      !materializedTuple ||
-      typeof materializedTuple === 'function' ||
-      !Array.isArray(materializedTuple)
-    ) {
-      throw new Error('Expected a materialized remark plugin tuple.');
-    }
-
-    expect(materialized).not.toBe(snapshot);
-    expect(materializedTuple).not.toBe(snapshotTuple);
-    expect(materializedTuple[1]).toBe(snapshotTuple[1]);
-    expect(typeof serializeTestMarkdown(editor).data).toBe('string');
+    expect(serializeTestMarkdown(editor).data).toBe('body\n\nconfigured\n');
   });
 
   it('exposes the final parse and serialize API', () => {
@@ -740,29 +730,6 @@ describe('MarkdownPlugin', () => {
       ],
       document: { children: [{ children: [{ text: 'Hello' }] }] },
       ok: true,
-    });
-  });
-
-  it('checks optional plugins through their installed portal state', () => {
-    const editor = createFixtureEditor({
-      plugins: [MarkdownPlugin],
-    });
-    const installed = editor.read((state) => {
-      const runtime = createMarkdownRuntime(
-        editor,
-        editor.plugin(MarkdownPlugin).store.get(),
-        state
-      );
-
-      return {
-        markdown: runtime.registry.has(PLUGINS.markdown),
-        missing: runtime.registry.has('missingPlugin'),
-      };
-    });
-
-    expect(installed).toEqual({
-      markdown: true,
-      missing: false,
     });
   });
 

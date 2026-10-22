@@ -708,20 +708,18 @@ describe('AIChatPlugin suggestions', () => {
       ],
       chatNodes
     );
-    const unrelatedKey = editor.key([2])!;
     const ai = editor.plugin(AIChatPlugin);
     editor.api.authored.setView({ intent: 'edit' });
     ai.store.set({ toolName: 'edit' });
 
     ai.api.setPreview('next-a\n\nnext-b');
+    ai.api.accept();
 
-    const replacementKeys = ai.store.get('_replaceNodeKeys');
-
-    expect(replacementKeys).toHaveLength(2);
-    expect(replacementKeys).not.toContain(unrelatedKey);
-    expect(replacementKeys).toEqual(
-      chatNodes.map((_, index) => editor.key([index]))
-    );
+    expect(editor.read.value().children).toEqual([
+      { children: [{ text: 'next-a' }], type: 'paragraph' },
+      { children: [{ text: 'next-b' }], type: 'paragraph' },
+      { children: [{ text: 'unrelated' }], type: 'paragraph' },
+    ]);
   });
 
   it('keeps streaming when the replacement block count changes', () => {

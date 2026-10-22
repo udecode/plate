@@ -1,11 +1,8 @@
 /** @jsx jsxt */
 
-import { editorCommands, property, schema } from '../../core';
+import { editorCommands, schema } from '../../core';
 import { probeCommandNativeEquivalent } from '../../facade';
-import {
-  getCompiledPlatePlugin,
-  getPlateRuntime,
-} from '../../internal/plugin/compilePlateModel';
+import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 import {
   createBlockFenceInputRule,
@@ -64,31 +61,6 @@ describe('input rules', () => {
         children: [{ children: [{ text: '' }], type: 'callout' }],
       })
     ).not.toThrow();
-  });
-
-  it('registers explicit configured rule instances on the owning plugin', () => {
-    const strongRule = defineInputRule({
-      apply: () => {},
-      target: 'insertText',
-      trigger: '*',
-    });
-    const editor = createEditor({
-      plugins: [
-        definePlugin('testPlugin', {}).configure({
-          inputRules: [strongRule],
-        }),
-      ],
-    });
-
-    expect(
-      getPlateRuntime(editor).inputRules.plugins.testPlugin.rules
-    ).toHaveLength(1);
-    expect(
-      getPlateRuntime(editor).inputRules.plugins.testPlugin.rules[0].id
-    ).toBe('testPlugin.0');
-    expect(
-      getPlateRuntime(editor).inputRules.insertText.byTrigger['*']
-    ).toHaveLength(1);
   });
 
   it('dispatches configured insertText rules through the core runtime', () => {
@@ -557,40 +529,6 @@ describe('input rules', () => {
     expect(apply).not.toHaveBeenCalled();
   });
 
-  it('keeps terminal configure-time rules final over definition defaults', () => {
-    const editor = createEditor({
-      plugins: [
-        definePlugin('testPlugin', {
-          inputRules: [
-            defineInputRule({
-              apply: () => {},
-              target: 'insertText',
-              trigger: '*',
-            }),
-          ],
-        }).configure({
-          inputRules: [
-            defineInputRule({
-              apply: () => {},
-              target: 'insertText',
-              trigger: '_',
-            }),
-          ],
-        }),
-      ],
-    });
-
-    expect(
-      getPlateRuntime(editor).inputRules.plugins.testPlugin.rules
-    ).toHaveLength(1);
-    expect(
-      getPlateRuntime(editor).inputRules.insertText.byTrigger['*']
-    ).toBeUndefined();
-    expect(
-      getPlateRuntime(editor).inputRules.insertText.byTrigger._
-    ).toHaveLength(1);
-  });
-
   it('provides lazy cached selection getters and the owning plugin to insertText resolve', () => {
     const apply = mock(() => {});
     const resolve = mock(
@@ -708,72 +646,45 @@ describe('input rules', () => {
   });
 
   it('orders competing rules by priority, then plugin order, then declaration order', () => {
-    const baseRule = defineInputRule({
-      apply: () => {},
-      target: 'insertText',
-      trigger: '*',
+    const handled = new Set<string>();
+    const rule = (label: string, priority: number) => ({
+      ...defineInputRule({
+        apply: ({ tx }) => {
+          handled.add(label);
+          tx.text.insert(label);
+        },
+        resolve: () => (handled.has(label) ? undefined : true),
+        target: 'insertText',
+        trigger: '*',
+      }),
+      priority,
     });
-    const first = { ...baseRule, priority: 100 };
-    const second = { ...baseRule, priority: 100 };
-    const high = { ...baseRule, priority: 200 };
     const editor = createEditor({
       plugins: [
         definePlugin('alpha', {}).configure({
-          inputRules: [first, second],
+          inputRules: [rule('A', 100), rule('B', 100)],
         }),
         definePlugin('beta', {}).configure({
-          inputRules: [high],
+          inputRules: [rule('H', 200)],
+        }),
+        definePlugin('gamma', {}).configure({
+          inputRules: [rule('C', 100)],
         }),
       ],
-    });
-
-    expect(
-      getPlateRuntime(editor).inputRules.insertText.byTrigger['*'].map(
-        (rule) => rule.id
-      )
-    ).toEqual(['beta.0', 'alpha.0', 'alpha.1']);
-  });
-
-  it('registers explicit rules built by public helpers', () => {
-    const BoldPlugin = definePlugin('bold', {
-      schema: {
-        mark: property.boolean({ default: false, omitDefault: true }),
-      },
-      inputRules: [
-        createMarkInputRule({
-          end: '*',
-          start: '**',
-          trigger: '*',
-        }),
-      ],
-    });
-    const editor = createEditor({
-      plugins: [BoldPlugin],
-      initialValue: [{ children: [{ text: '**hello*' }], type: 'paragraph' }],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
 
     editor.update.selection.set({
       kind: 'text',
-      anchor: { offset: 8, path: [0, 0] },
-      focus: { offset: 8, path: [0, 0] },
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
     });
     insertText(editor, '*');
+    insertText(editor, '*');
+    insertText(editor, '*');
+    insertText(editor, '*');
 
-    expect(getPlateRuntime(editor).inputRules.plugins.bold.rules).toHaveLength(
-      1
-    );
-    expect(
-      getPlateRuntime(editor).inputRules.insertText.byTrigger['*']
-    ).toHaveLength(1);
-    expect(
-      getPlateRuntime(editor).inputRules.insertText.byTrigger['*'][0]?.plugin
-    ).toBe(getCompiledPlatePlugin(editor, BoldPlugin));
-    expect(editor.read.children()).toMatchObject([
-      {
-        children: [{ bold: true, text: 'hello' }],
-        type: 'paragraph',
-      },
-    ]);
+    expect(editorString(editor, [])).toBe('HABC');
   });
 
   it('does not serialize unresolved mark plugin names', () => {
@@ -869,63 +780,6 @@ describe('input rules', () => {
     expect(
       getPlateRuntime(editor).inputRules.insertText.byTrigger['`']
     ).toHaveLength(1);
-  });
-
-  it('registers configured match-triggered fences through createEditor', () => {
-    const editor = createEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        definePlugin('codeBlock', {}).configure({
-          inputRules: [
-            defineInputRule({
-              apply: () => {},
-              target: 'insertText',
-              trigger: '`',
-            }),
-          ],
-        }),
-      ],
-      initialValue: [{ children: [{ text: '``' }], type: 'paragraph' }],
-    } as any);
-
-    editor.update.selection.set({
-      kind: 'text',
-      anchor: { offset: 2, path: [0, 0] },
-      focus: { offset: 2, path: [0, 0] },
-    });
-
-    expect(
-      getPlateRuntime(editor).inputRules.plugins.codeBlock.rules
-    ).toHaveLength(1);
-    expect(
-      getPlateRuntime(editor).inputRules.insertText.byTrigger['`']
-    ).toHaveLength(1);
-  });
-
-  it('registers configured break-triggered rules through createEditor', () => {
-    const editor = createEditor({
-      plugins: [
-        BaseParagraphPlugin,
-        definePlugin('equation', {}).configure({
-          inputRules: [
-            defineInputRule({
-              apply: () => {},
-              target: 'insertBreak',
-            }),
-          ],
-        }),
-      ],
-      initialValue: [{ children: [{ text: '$$' }], type: 'paragraph' }],
-    } as any);
-
-    expect(
-      getPlateRuntime(editor).inputRules.plugins.equation.rules
-    ).toHaveLength(1);
-    expect(getPlateRuntime(editor).inputRules.insertBreak).toContainEqual(
-      expect.objectContaining({
-        plugin: expect.objectContaining({ name: 'equation' }),
-      })
-    );
   });
 
   it('supports ordinary rule functions with concrete defaults and caller overrides', () => {

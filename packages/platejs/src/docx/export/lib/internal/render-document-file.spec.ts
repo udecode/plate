@@ -1,9 +1,6 @@
-// @ts-expect-error - no types available
-import VText from 'virtual-dom/vnode/vtext.js';
-import { fragment } from 'xmlbuilder2';
+import JSZip from 'jszip';
 
-import { convertVTreeToXML } from './render-document-file';
-import * as xmlBuilder from './xml-builder';
+import { htmlToDocxBlob } from '../html-to-docx.internal';
 import { buildImage } from './xml-builder';
 
 describe('renderDocumentFile', () => {
@@ -40,34 +37,11 @@ describe('renderDocumentFile', () => {
     fetchSpy.mockRestore();
   });
 
-  it('returns an empty string for null trees and imports paragraphs for text nodes', async () => {
-    const docxDocument = {} as any;
-    const nullFragment = fragment({ namespaceAlias: { w: 'urn:test' } });
-    const xmlFragment = fragment({ namespaceAlias: { w: 'urn:test' } });
-    const buildParagraphSpy = spyOn(
-      xmlBuilder,
-      'buildParagraph'
-    ).mockImplementation(async () =>
-      fragment({ namespaceAlias: { w: 'urn:test' } })
-        .ele('@w', 'p')
-        .up()
-    );
+  it('imports loose text nodes as paragraphs', async () => {
+    const blob = await htmlToDocxBlob('loose text<p>para</p>');
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
 
-    await expect(
-      convertVTreeToXML(docxDocument, null, nullFragment)
-    ).resolves.toBe('');
-
-    const result = await convertVTreeToXML(
-      docxDocument,
-      new VText('hello') as any,
-      xmlFragment
-    );
-
-    expect(buildParagraphSpy).toHaveBeenCalledWith(
-      expect.any(VText),
-      {},
-      docxDocument
-    );
-    expect((result as any).end({ prettyPrint: false })).toContain('<p');
+    expect(documentXml).toContain('loose text');
   });
 });

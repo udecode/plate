@@ -2,13 +2,22 @@ import { parseTabSeparated, serializeTabSeparated } from './tabularText';
 
 describe('tabularText', () => {
   it.each([
-    ['quotes around a field split by a tab', [['"a', 'b"', 'c']]],
-    ['a tab inside a field', [['a\tb', 'c']]],
-    ['a field that is only a quote', [['"', '6"']]],
-    ['line breaks inside a field', [['one\ntwo', 'three\r\nfour']]],
-    ['an empty last row', [['a'], ['']]],
-  ])('round-trips %s', (_name, rows) => {
-    expect(parseTabSeparated(serializeTabSeparated(rows))).toEqual(rows);
+    [
+      'quotes around a field split by a tab',
+      [['"a', 'b"', 'c']],
+      '"""a"\tb"\tc\n',
+    ],
+    ['a tab inside a field', [['a\tb', 'c']], '"a\tb"\tc\n'],
+    ['a field that is only a quote', [['"', '6"']], '""""\t6"\n'],
+    [
+      'line breaks inside a field',
+      [['one\ntwo', 'three\r\nfour']],
+      '"one\ntwo"\t"three\r\nfour"\n',
+    ],
+    ['an empty last row', [['a'], ['']], 'a\n\n'],
+  ])('round-trips %s through spreadsheet TSV', (_name, rows, tsv) => {
+    expect(serializeTabSeparated(rows)).toBe(tsv);
+    expect(parseTabSeparated(tsv)).toEqual(rows);
   });
 
   it('keeps quotes on a field that did not need quoting', () => {

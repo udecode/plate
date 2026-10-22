@@ -140,10 +140,4 @@ describe('SuggestionKit', () => {
       { id: 'suggestion-refusal' }
     );
   });
-
-  it('keeps presentation optional', () => {
-    const plain = createEditor({ initialValue: value });
-
-    expect(plain.plugin(SuggestionPlugin).installed).toBe(false);
-  });
 });

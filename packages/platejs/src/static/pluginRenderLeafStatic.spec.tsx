@@ -1,7 +1,9 @@
+import { render } from '@testing-library/react';
 import React from 'react';
 
 import { createEditor, property } from '../core';
 import { type RenderLeafProps, definePlugin } from '../lib';
+import { EditorStatic } from './components/PlateStatic';
 import {
   pipeRenderLeafStatic,
   pluginRenderLeafStatic,
@@ -46,23 +48,15 @@ describe('pluginRenderLeafStatic', () => {
     });
     const editor = createEditor({
       plugins: [CustomLeafPlugin],
+      initialValue: [
+        { children: [{ highlight: true, text: 'hi' }], type: 'paragraph' },
+      ],
     });
-    const result = pluginRenderLeafStatic(
-      editor,
-      editor.plugin(CustomLeafPlugin)
-    )({
-      attributes: {},
-      children: 'hi',
-      leaf: { highlight: true, text: 'hi' },
-      text: { highlight: true, text: 'hi' },
-    } satisfies RenderLeafProps);
+    const { container } = render(<EditorStatic editor={editor} />);
 
-    expect(result).toEqual(
-      expect.objectContaining({
-        props: expect.objectContaining({ children: 'hi' }),
-        type: editor.plugin(CustomLeafPlugin).component,
-      })
-    );
+    expect(
+      container.querySelector('mark[data-kind="custom-leaf"]')?.textContent
+    ).toBe('hi');
   });
 
   it('matches marks by persisted key rather than plugin name', () => {
@@ -77,25 +71,17 @@ describe('pluginRenderLeafStatic', () => {
         <mark data-kind="persisted-mark">{children}</mark>
       ),
     });
-    const editor = createEditor({ plugins: [MarkPlugin] });
-    const result = pluginRenderLeafStatic(
-      editor,
-      editor.plugin(MarkPlugin)
-    )({
-      attributes: {},
-      children: 'hi',
-      leaf: { persistedMark: true, text: 'hi' },
-      text: { persistedMark: true, text: 'hi' },
-    } satisfies RenderLeafProps);
+    const editor = createEditor({
+      plugins: [MarkPlugin],
+      initialValue: [
+        { children: [{ persistedMark: true, text: 'hi' }], type: 'paragraph' },
+      ],
+    });
+    const { container } = render(<EditorStatic editor={editor} />);
 
-    expect(MarkPlugin.name).toBe('markCapability');
-    expect(editor.plugin(MarkPlugin).schema.key).toBe('persistedMark');
-    expect(result).toEqual(
-      expect.objectContaining({
-        props: expect.objectContaining({ children: 'hi' }),
-        type: MarkPlugin.component,
-      })
-    );
+    expect(
+      container.querySelector('mark[data-kind="persisted-mark"]')?.textContent
+    ).toBe('hi');
   });
 
   it('merges plugin leaf props before delegating to renderLeaf', () => {

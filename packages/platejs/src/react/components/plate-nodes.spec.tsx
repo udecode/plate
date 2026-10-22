@@ -70,20 +70,22 @@ describe('PlateElement', () => {
     expect(element).not.toHaveAttribute('data-block-id');
   });
 
-  it('keeps the Plite attributes ref on the fast path', () => {
+  it('passes the rendered element to the Plite attributes ref', () => {
     const editor = createEditor({
       initialValue: [createElement()],
     });
     const attributeRef = mock();
 
-    render(
+    const { container } = render(
       <EditorElement
         {...createProps(editor)}
         attributes={{ ref: attributeRef } as any}
       />
     );
 
-    expect(attributeRef).toHaveBeenCalled();
+    expect(attributeRef).toHaveBeenLastCalledWith(
+      container.querySelector('[data-editor-node="element"]')
+    );
   });
 
   it('composes forwarded refs when merged attributes are needed', () => {
@@ -93,7 +95,7 @@ describe('PlateElement', () => {
     const attributeRef = mock();
     const forwardedRef = React.createRef<HTMLDivElement>();
 
-    render(
+    const { container } = render(
       <EditorElement
         {...createProps(editor)}
         attributes={{ ref: attributeRef } as any}
@@ -101,8 +103,9 @@ describe('PlateElement', () => {
         ref={forwardedRef}
       />
     );
+    const element = container.querySelector('[data-editor-node="element"]');
 
-    expect(attributeRef).toHaveBeenCalled();
-    expect(forwardedRef.current).not.toBeNull();
+    expect(forwardedRef.current).toBe(element);
+    expect(attributeRef).toHaveBeenLastCalledWith(element);
   });
 });

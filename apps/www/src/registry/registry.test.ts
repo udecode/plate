@@ -459,22 +459,4 @@ describe('Plate registry editor files', () => {
       ])
     );
   });
-
-  it('keeps DOCX presentation in copied registry source', () => {
-    const exportKit = readFileSync(
-      join(import.meta.dir, 'components/editor/docx-export.tsx'),
-      'utf-8'
-    );
-    const exportToolbar = readFileSync(
-      join(import.meta.dir, 'components/editor/export-toolbar-button.tsx'),
-      'utf-8'
-    );
-
-    expect(exportKit).toContain('export const DOCX_EXPORT_STYLES');
-    expect(exportKit).toContain("font-family: 'Calibri'");
-    expect(exportKit).toContain(
-      '.hljs-doctag, .hljs-keyword, .hljs-template-tag'
-    );
-    expect(exportToolbar).toContain('stylesheet: DOCX_EXPORT_STYLES');
-  });
 });

@@ -21,7 +21,12 @@ describe('MarkdownKit', () => {
     ];
 
     for (const editor of editors) {
-      expect(typeof editor.api.markdown.serialize).toBe('function');
+      expect(editor.api.markdown.parse(':tada: shipped')).toMatchObject({
+        document: {
+          children: [{ children: [{ text: '🎉 shipped' }], type: 'paragraph' }],
+        },
+        ok: true,
+      });
     }
   });
 

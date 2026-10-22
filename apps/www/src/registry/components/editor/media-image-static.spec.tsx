@@ -1,9 +1,11 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test';
 
 import { render } from '@testing-library/react';
+import * as actualStatic from 'platejs/static';
 import * as React from 'react';
 
 mock.module('platejs/static', () => ({
+  ...actualStatic,
   EditorElement: ({ children }: React.ComponentProps<'div'>) => (
     <div>{children}</div>
   ),

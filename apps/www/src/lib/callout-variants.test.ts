@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import {
-  getCalloutVariant,
-  getCalloutVariantClassName,
-} from './callout-variants';
+import { getCalloutVariant } from './callout-variants';
 
 describe('callout variants', () => {
   it('maps legacy MDX callout types to rendered variants', () => {
@@ -13,12 +10,5 @@ describe('callout variants', () => {
     expect(getCalloutVariant({ type: 'destructive' })).toBe('destructive');
     expect(getCalloutVariant({ type: 'success' })).toBe('success');
     expect(getCalloutVariant({ variant: 'default' })).toBe('default');
-  });
-
-  it('keeps type variants visually distinct', () => {
-    expect(getCalloutVariantClassName('warning')).toContain('orange');
-    expect(getCalloutVariantClassName('info')).toContain('blue');
-    expect(getCalloutVariantClassName('destructive')).toContain('destructive');
-    expect(getCalloutVariantClassName('default')).toBeNull();
   });
 });

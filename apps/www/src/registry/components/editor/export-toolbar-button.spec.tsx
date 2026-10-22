@@ -4,9 +4,12 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { BaseParagraphPlugin, createEditor, createEditorView } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import { CommentsPlugin } from 'platejs/comments/react';
+import * as actualDocxExport from 'platejs/docx/export';
 import { EditorRoot } from 'platejs/react';
 import * as actualStatic from 'platejs/static';
 import React from 'react';
+
+import { DOCX_EXPORT_STYLES } from './docx-export';
 
 mock.module('@/registry/components/editor/dropdown-menu', () => ({
   DropdownMenu: ({ children }: React.PropsWithChildren) => <>{children}</>,
@@ -44,6 +47,7 @@ mock.module('@/registry/components/editor/toolbar', () => ({
 let exportOptions: {
   comments?: Array<{ target: { range: unknown } }>;
   lossPolicy?: string;
+  stylesheet?: string;
 } | null = null;
 const exportDocx = mock(
   async (_editor: unknown, options: typeof exportOptions) => {
@@ -55,7 +59,10 @@ const exportDocx = mock(
 
 const renderStaticHtml = mock(actualStatic.renderStaticHtml);
 
-mock.module('platejs/docx/export', () => ({ exportDocx }));
+mock.module('platejs/docx/export', () => ({
+  ...actualDocxExport,
+  exportDocx,
+}));
 mock.module('platejs/static', () => ({ ...actualStatic, renderStaticHtml }));
 const toastError = mock();
 mock.module('sonner', () => ({
@@ -111,6 +118,7 @@ describe('ExportToolbarButton', () => {
 
     expect(exportOptions?.comments?.[0]?.target.range).toEqual(proposedRange);
     expect(exportOptions?.lossPolicy).toBe('allow');
+    expect(exportOptions?.stylesheet).toBe(DOCX_EXPORT_STYLES);
     expect(click).toHaveBeenCalledTimes(1);
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:test');
   });

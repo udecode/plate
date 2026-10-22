@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import {
+  chmodSync,
   existsSync,
   readFileSync,
   mkdtempSync,
@@ -143,18 +144,42 @@ test('Plite CI runs the repository Bun version', () => {
   assert.deepEqual([...new Set(versions)], [rootManifest.devDependencies.bun]);
 });
 
-test('Core proof preserves generated partition dependencies', () => {
-  const source = readFileSync(
-    path.join(repoRoot, 'tooling/scripts/check-core.mjs'),
-    'utf-8'
-  );
+test('Core proof preserves generated partition dependencies', (t) => {
+  const bin = mkdtempSync(path.join(tmpdir(), 'plate-check-core-'));
+  t.after(() => rmSync(bin, { recursive: true, force: true }));
+  const log = path.join(bin, 'commands.log');
 
-  assert.doesNotMatch(source, /run\('build /);
-  assert.match(
-    source,
-    /run\(`lint \$\{packageSlugs\.length\} Core and reviewed packages`, 'pnpm', \[\s*'turbo',\s*'lint'/s
+  for (const command of ['node', 'pnpm']) {
+    writeFileSync(
+      path.join(bin, command),
+      `#!/bin/sh\necho "${command} $*" >> "${log}"\n`
+    );
+    chmodSync(path.join(bin, command), 0o755);
+  }
+
+  const result = spawnSync(
+    process.execPath,
+    ['tooling/scripts/check-core.mjs'],
+    {
+      cwd: repoRoot,
+      encoding: 'utf-8',
+      env: {
+        ...process.env,
+        PATH: `${bin}${path.delimiter}${process.env.PATH}`,
+      },
+    }
   );
-  assert.doesNotMatch(source, /['"]--only['"]/u);
+  const commands = readFileSync(log, 'utf-8').trim().split('\n');
+  const packageFilters =
+    '--filter=./packages/plitejs --filter=./packages/platejs --filter=./packages/test --filter=./packages/cli';
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.ok(commands.includes(`pnpm turbo typecheck ${packageFilters}`));
+  assert.ok(commands.includes(`pnpm turbo lint ${packageFilters}`));
+  assert.deepEqual(
+    commands.filter((command) => /\bbuild\b|--only/u.test(command)),
+    []
+  );
 });
 
 test('ordinary package tests use the root source-first Bun config', () => {

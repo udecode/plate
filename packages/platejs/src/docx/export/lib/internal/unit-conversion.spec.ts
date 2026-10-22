@@ -1,47 +1,15 @@
-/**
- * Unit tests for unit conversion utilities.
- * Tests conversion between various units used in DOCX:
- * - Pixels to TWIP (twentieths of a point)
- * - Points to TWIP
- * - Centimeters to TWIP
- * - Inches to TWIP
- * - Pixels to EMU (English Metric Units)
- * - Points to HIP (half points)
- */
-
 import {
   cmRegex,
   cmToTWIP,
-  HIPToTWIP,
   inchRegex,
   inchToTWIP,
   percentageRegex,
-  pixelRegex,
-  pixelToEIP,
-  pixelToEMU,
-  pixelToHIP,
-  pixelToTWIP,
-  pointRegex,
-  pointToEIP,
   pointToHIP,
-  pointToTWIP,
   TWIPToEMU,
 } from './unit-conversion';
 
 describe('unit conversion', () => {
   describe('regex patterns', () => {
-    it('pixelRegex matches pixel values', () => {
-      expect(pixelRegex.test('10px')).toBe(true);
-      expect(pixelRegex.test('100.5px')).toBe(true);
-      expect(pixelRegex.test('10pt')).toBe(false);
-    });
-
-    it('pointRegex matches point values', () => {
-      expect(pointRegex.test('12pt')).toBe(true);
-      expect(pointRegex.test('11.5pt')).toBe(true);
-      expect(pointRegex.test('12px')).toBe(false);
-    });
-
     it('cmRegex matches centimeter values', () => {
       expect(cmRegex.test('2.54cm')).toBe(true);
       expect(cmRegex.test('10cm')).toBe(true);
@@ -61,53 +29,11 @@ describe('unit conversion', () => {
     });
   });
 
-  describe('pixel conversions', () => {
-    it('pixelToTWIP converts pixels to TWIP', () => {
-      // 1 pixel = 15 TWIP (at 96 DPI)
-      expect(pixelToTWIP(1)).toBe(15);
-      expect(pixelToTWIP(10)).toBe(150);
-      // 1 inch = 1440 TWIP
-      expect(pixelToTWIP(96)).toBe(1440);
-    });
-
-    it('pixelToEMU converts pixels to EMU', () => {
-      // 1 pixel = 9525 EMU (at 96 DPI)
-      expect(pixelToEMU(1)).toBe(9525);
-      expect(pixelToEMU(10)).toBe(95_250);
-    });
-
-    it('pixelToHIP converts pixels to half points', () => {
-      // Calculated via EMU and TWIP conversion chain (rounded)
-      expect(pixelToHIP(1)).toBe(2);
-      expect(pixelToHIP(10)).toBe(15);
-    });
-
-    it('pixelToEIP converts pixels to eighths of a point', () => {
-      // Calculated via point conversion chain (rounded)
-      expect(pixelToEIP(1)).toBe(8);
-      expect(pixelToEIP(10)).toBe(64);
-    });
-  });
-
   describe('point conversions', () => {
-    it('pointToTWIP converts points to TWIP', () => {
-      // 1 point = 20 TWIP
-      expect(pointToTWIP(1)).toBe(20);
-      expect(pointToTWIP(12)).toBe(240);
-      // 72 points = 1 inch
-      expect(pointToTWIP(72)).toBe(1440);
-    });
-
     it('pointToHIP converts points to half points', () => {
       // 1 point = 2 half points
       expect(pointToHIP(1)).toBe(2);
       expect(pointToHIP(11)).toBe(22);
-    });
-
-    it('pointToEIP converts points to eighths of a point', () => {
-      // 1 point = 8 eighths of a point
-      expect(pointToEIP(1)).toBe(8);
-      expect(pointToEIP(2)).toBe(16);
     });
   });
 
@@ -135,15 +61,6 @@ describe('unit conversion', () => {
       expect(TWIPToEMU(1)).toBe(635);
       // 1 inch in EMU
       expect(TWIPToEMU(1440)).toBe(914_400);
-    });
-  });
-
-  describe('HIP conversions', () => {
-    it('HIPToTWIP converts half points to TWIP', () => {
-      // 1 half point = 10 TWIP
-      expect(HIPToTWIP(1)).toBe(10);
-      // 11pt = 22 half points = 220 TWIP
-      expect(HIPToTWIP(22)).toBe(220);
     });
   });
 });

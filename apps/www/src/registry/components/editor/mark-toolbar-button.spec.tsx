@@ -1,4 +1,12 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from 'bun:test';
 
 import { act, fireEvent, render, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -7,8 +15,13 @@ import { BaseFilePlugin } from 'platejs/media';
 import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
-const { BoldPlugin, FontColorPlugin, FontSizePlugin, ScriptPlugin } =
-  actualCoreReact;
+const {
+  BoldPlugin,
+  createEditor,
+  FontColorPlugin,
+  FontSizePlugin,
+  ScriptPlugin,
+} = actualCoreReact;
 
 const focusMock = mock();
 const clearMock = mock();
@@ -17,9 +30,7 @@ const isUrlMock = mock((value: string) => /^https?:\/\//.test(value));
 const openFilePickerMock = mock();
 const setMock = mock();
 const recentColorsChangeMock = mock();
-const scriptToggleMock = mock();
 const toastErrorMock = mock();
-const toggleMock = mock();
 const pluginMock = mock();
 
 let currentEditor: any;
@@ -53,7 +64,6 @@ mock.module('platejs/react', () => ({
 mock.module('platejs', () => ({
   ...actualPlate,
   isUrl: isUrlMock,
-  TextApi: { isText: () => true },
 }));
 
 mock.module('use-file-picker', () => ({
@@ -263,9 +273,7 @@ describe('feature toolbar plugin portals', () => {
     pluginMock.mockClear();
     recentColorsChangeMock.mockClear();
     setMock.mockClear();
-    scriptToggleMock.mockClear();
     toastErrorMock.mockClear();
-    toggleMock.mockClear();
 
     currentEditor = {
       api: { dom: { focus: focusMock } },
@@ -283,12 +291,20 @@ describe('feature toolbar plugin portals', () => {
   });
 
   it('uses the typed plugin portal for a decoupled bold control', async () => {
-    pluginMock.mockReturnValue({
-      installed: true,
-      name: 'bold',
-      read: { isActive: () => true },
-      update: { toggle: toggleMock },
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ bold: true, text: 'Bold' }], type: 'paragraph' },
+      ],
+      plugins: [BoldPlugin],
     });
+    editor.update((tx) =>
+      tx.selection.set({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      })
+    );
+    currentEditor = editor;
+    const focus = spyOn(editor.api.dom, 'focus');
     const { MarkToolbarButton } = await import(
       `./mark-toolbar-button?plugin=${Math.random().toString(36).slice(2)}`
     );
@@ -303,17 +319,23 @@ describe('feature toolbar plugin portals', () => {
 
     fireEvent.click(button);
 
-    expect(pluginMock).toHaveBeenCalledWith(BoldPlugin);
-    expect(toggleMock).toHaveBeenCalledTimes(1);
-    expect(focusMock).toHaveBeenCalledTimes(1);
+    expect(editor.plugin(BoldPlugin).read.isActive()).toBe(false);
+    expect(focus).toHaveBeenCalledTimes(1);
   });
 
   it('uses the installed script portal and restores editor focus', async () => {
-    pluginMock.mockImplementation(() => ({
-      update: {
-        toggle: scriptToggleMock,
-      },
-    }));
+    const editor = createEditor({
+      initialValue: [{ children: [{ text: 'x2' }], type: 'paragraph' }],
+      plugins: [ScriptPlugin],
+    });
+    editor.update((tx) =>
+      tx.selection.set({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      })
+    );
+    currentEditor = editor;
+    const focus = spyOn(editor.api.dom, 'focus');
     const { MoreToolbarButton } = await import(
       `./more-toolbar-button?test=${Math.random().toString(36).slice(2)}`
     );
@@ -321,14 +343,15 @@ describe('feature toolbar plugin portals', () => {
 
     fireEvent.click(view.getByRole('button', { name: 'Superscript' }));
     dropdownOnFinalFocus?.({ preventDefault: mock() });
+
+    expect(editor.plugin(ScriptPlugin).read.isActive('sup')).toBe(true);
+    expect(focus).toHaveBeenCalledTimes(1);
+
     fireEvent.click(view.getByRole('button', { name: 'Subscript' }));
     dropdownOnFinalFocus?.({ preventDefault: mock() });
 
-    expect(pluginMock).toHaveBeenNthCalledWith(1, ScriptPlugin);
-    expect(pluginMock).toHaveBeenNthCalledWith(2, ScriptPlugin);
-    expect(scriptToggleMock).toHaveBeenNthCalledWith(1, 'sup');
-    expect(scriptToggleMock).toHaveBeenNthCalledWith(2, 'sub');
-    expect(focusMock).toHaveBeenCalledTimes(2);
+    expect(editor.plugin(ScriptPlugin).read.isActive('sub')).toBe(true);
+    expect(focus).toHaveBeenCalledTimes(2);
   });
 
   it('changes font size without refocusing from the step buttons', async () => {

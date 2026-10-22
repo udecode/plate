@@ -289,31 +289,7 @@ test('main to next direct sync creates beta changesets for public package change
   ]);
 });
 
-test('main to next direct sync versions generated beta changesets before committing', async () => {
-  const source = await readFile(releaseBranchPrsPath, 'utf-8');
-  const versionIndex = source.indexOf("runPnpm(['ci:version']");
-  const commitIndex = source.indexOf("runGit(['commit'");
-
-  assert.ok(versionIndex > 0);
-  assert.ok(commitIndex > versionIndex);
-  assert.match(
-    source,
-    /if \(changesets\.length > 0\) \{\s*runPnpm\(\['ci:version'\]/
-  );
-});
-
-test('main to next direct sync guards real pushes from dirty worktrees', async () => {
-  const source = await readFile(releaseBranchPrsPath, 'utf-8');
-  const guardIndex = source.indexOf('assertCleanWorktreeForDirectSync');
-  const checkoutIndex = source.indexOf("runGit(['checkout', '--detach'");
-
-  assert.match(source, /status', '--porcelain', '--untracked-files=all'/);
-  assert.match(source, /Direct main -> next sync requires a clean worktree/);
-  assert.ok(guardIndex > 0);
-  assert.ok(checkoutIndex > guardIndex);
-});
-
-test('a local main to next sync keeps the git identity and unpushed next commits', () => {
+const createSyncFixture = () => {
   const root = mkdtempSync(path.join(tmpdir(), 'plate-sync-'));
   const work = path.join(root, 'work');
   const git = (...args) => {
@@ -331,6 +307,11 @@ test('a local main to next sync keeps the git identity and unpushed next commits
     path.join(work, 'tooling/scripts/release-branch-prs.mjs')
   );
   writeFileSync(path.join(work, 'package.json'), '{"private":true}\n');
+  mkdirSync(path.join(work, 'packages/fixture'), { recursive: true });
+  writeFileSync(
+    path.join(work, 'packages/fixture/package.json'),
+    '{"name":"@fixture/sync"}\n'
+  );
   git('add', '-A');
   git(...author, 'commit', '-qm', 'base');
   git('branch', '-M', 'main');
@@ -338,21 +319,67 @@ test('a local main to next sync keeps the git identity and unpushed next commits
   git('checkout', '-qb', 'next');
   git('push', '-q', 'origin', 'next');
   git('checkout', '-q', 'main');
-  writeFileSync(path.join(work, 'fix.txt'), 'fix\n');
-  git('add', 'fix.txt');
+  writeFileSync(path.join(work, 'packages/fixture/fix.txt'), 'fix\n');
+  git('add', 'packages/fixture/fix.txt');
   git(...author, 'commit', '-qm', 'main fix');
   git('push', '-q', 'origin', 'main');
   git('checkout', '-q', 'next');
+
+  return {
+    author,
+    git,
+    sync: (...args) =>
+      spawnSync(
+        process.execPath,
+        [
+          'tooling/scripts/release-branch-prs.mjs',
+          'sync-main-to-next',
+          ...args,
+        ],
+        { cwd: work, encoding: 'utf-8' }
+      ),
+    work,
+  };
+};
+
+test('main to next direct sync versions generated beta changesets before committing', () => {
+  const { sync } = createSyncFixture();
+  const result = sync('--dry-run');
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(
+    result.stdout
+      .split('\n')
+      .filter((line) => /^dry-run: (?:pnpm|git commit) /.test(line)),
+    [
+      'dry-run: pnpm ci:version',
+      'dry-run: git commit --allow-empty -m "chore: sync main to next"',
+    ]
+  );
+});
+
+test('main to next direct sync guards real pushes from dirty worktrees', () => {
+  const { git, sync, work } = createSyncFixture();
+  const next = git('rev-parse', 'HEAD');
+
+  writeFileSync(path.join(work, 'scratch.txt'), 'scratch\n');
+  const result = sync();
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /requires a clean worktree before mutating next/);
+  assert.equal(git('symbolic-ref', '--short', 'HEAD'), 'next');
+  assert.equal(git('rev-parse', 'HEAD'), next);
+});
+
+test('a local main to next sync keeps the git identity and unpushed next commits', () => {
+  const { author, git, sync, work } = createSyncFixture();
+
   writeFileSync(path.join(work, 'local.txt'), 'local\n');
   git('add', 'local.txt');
   git(...author, 'commit', '-qm', 'unpushed work on next');
   const unpushed = git('rev-parse', 'HEAD');
 
-  spawnSync(
-    process.execPath,
-    ['tooling/scripts/release-branch-prs.mjs', 'sync-main-to-next'],
-    { cwd: work, encoding: 'utf-8' }
-  );
+  sync();
 
   assert.equal(
     spawnSync('git', ['rev-parse', '-q', '--verify', 'MERGE_HEAD'], {
@@ -925,16 +952,6 @@ test('main to next sync keeps stable sections after the last matched anchor', ()
   assert.match(resolved, /- Main patch after the final shared anchor\./);
 });
 
-test('auto-retarget workflow is removed', async () => {
-  await assert.rejects(
-    readFile(
-      new URL('../../.github/workflows/auto-retarget.yml', import.meta.url),
-      'utf-8'
-    ),
-    /ENOENT/
-  );
-});
-
 test('verify changesets workflow allows minor on main and keeps release branches patch-only', async () => {
   const workflow = await readFile(verifyChangesetsWorkflowPath, 'utf-8');
   const preJsonGuardIndex = workflow.indexOf(
@@ -1008,15 +1025,98 @@ test('verify changesets workflow allows minor on main and keeps release branches
 
 test('changeset auto-release reads complete files from the pull request head', async () => {
   const workflow = await readFile(changesetAutoReleaseWorkflowPath, 'utf-8');
+  const lines = workflow.split('\n');
+  const start = lines.findIndex((line) => line.trim() === 'script: |') + 1;
+  const indent = lines[start].match(/^ */)[0];
+  const end = lines.findIndex(
+    (line, index) =>
+      index > start && line.trim() !== '' && !line.startsWith(indent)
+  );
+  const script = lines
+    .slice(start, end === -1 ? undefined : end)
+    .map((line) => line.slice(indent.length))
+    .join('\n');
+  const runScript = new (async () => {}).constructor(
+    'github',
+    'context',
+    'core',
+    'process',
+    script
+  );
+  const workspace = mkdtempSync(path.join(tmpdir(), 'plate-auto-release-'));
+  const patchChangeset = "---\n'platejs': patch\n---\n\nFix.\n";
+  mkdirSync(path.join(workspace, 'tooling/scripts'), { recursive: true });
+  mkdirSync(path.join(workspace, '.changeset'));
+  copyFileSync(
+    fileURLToPath(new URL('auto-release-pr.mjs', import.meta.url)),
+    path.join(workspace, 'tooling/scripts/auto-release-pr.mjs')
+  );
+  writeFileSync(path.join(workspace, '.changeset/local.md'), patchChangeset);
+  const syncBody = async (filename, headRepository) => {
+    let body;
 
-  assert.match(workflow, /github\.rest\.repos\.getContent/);
-  assert.match(workflow, /ref: pullRequest\.head\.sha/);
-  assert.match(workflow, /Buffer\.from\(data\.content, 'base64'\)/);
-  assert.match(workflow, /if \(isHeadCheckedOut\)/);
-  assert.match(workflow, /await readFile/);
-  assert.doesNotMatch(workflow, /Promise\.all/);
-  assert.match(workflow, /files: filesWithContents/);
-  assert.match(workflow, /getChangesetReleaseType\(filesWithContents\)/);
+    await runScript(
+      {
+        paginate: async () => [{ filename, status: 'added' }],
+        rest: {
+          pulls: {
+            listFiles: {},
+            update: async (request) => {
+              ({ body } = request);
+            },
+          },
+          repos: {
+            getContent: async ({ path: contentPath, ref }) => ({
+              data: {
+                content: Buffer.from(
+                  ref === 'head-sha' && contentPath === '.changeset/fork.md'
+                    ? patchChangeset
+                    : ''
+                ).toString('base64'),
+                encoding: 'base64',
+                type: 'file',
+              },
+            }),
+          },
+        },
+      },
+      {
+        payload: {
+          pull_request: {
+            body: '',
+            head: { repo: headRepository, sha: 'head-sha' },
+            number: 1,
+            title: 'Fix',
+          },
+          repository: { full_name: 'udecode/plate' },
+        },
+        repo: { owner: 'udecode', repo: 'plate' },
+      },
+      { info() {} },
+      { env: { GITHUB_WORKSPACE: workspace } }
+    );
+
+    return body;
+  };
+  const checkedBody =
+    '<!-- auto-release:start -->\n- [x] Auto release\n<!-- auto-release:end -->\n';
+
+  assert.equal(
+    await syncBody('.changeset/local.md', {
+      full_name: 'udecode/plate',
+      name: 'plate',
+      owner: { login: 'udecode' },
+    }),
+    checkedBody
+  );
+  assert.equal(
+    await syncBody('.changeset/fork.md', {
+      full_name: 'fork/plate',
+      name: 'plate',
+      owner: { login: 'fork' },
+    }),
+    checkedBody
+  );
 });
 
 test('package scripts expose CI version and release commands only', async () => {

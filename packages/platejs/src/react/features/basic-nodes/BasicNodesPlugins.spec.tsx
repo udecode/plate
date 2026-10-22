@@ -99,7 +99,10 @@ describe('basic node plugin composition', () => {
     rootEditor.update.bold.toggle();
     portalEditor.plugin(BaseBoldPlugin).update.toggle();
 
-    expect(portalEditor.read.children()).toEqual(rootEditor.read.children());
+    expect([rootEditor.read.children(), portalEditor.read.children()]).toEqual([
+      [{ children: [{ bold: true, text: 'text' }], type: 'paragraph' }],
+      [{ children: [{ bold: true, text: 'text' }], type: 'paragraph' }],
+    ]);
   });
 
   it('keeps explicit React plugin composition inference-complete', () => {

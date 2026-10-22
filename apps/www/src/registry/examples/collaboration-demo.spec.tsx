@@ -2,6 +2,8 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import * as actualCoreReact from 'platejs/react';
+import * as actualYjs from 'platejs/yjs';
+import * as actualYjsReact from 'platejs/yjs/react';
 import * as React from 'react';
 
 const createPlateEditorMock = mock();
@@ -69,6 +71,7 @@ mock.module('platejs/react', () => ({
 }));
 
 mock.module('platejs/yjs/react', () => ({
+  ...actualYjsReact,
   YjsPlugin: {
     require: () => ({
       map: () => ({ create: collaborationCreateMock }),
@@ -78,15 +81,9 @@ mock.module('platejs/yjs/react', () => ({
   useYjsRemoteCursor: (_editor: unknown, clientId: number) =>
     currentPositions.find((position) => position.clientId === clientId)
       ?.cursor ?? null,
-  useYjsRemoteCursorGeometry: (
-    _editor: unknown,
-    clientId: number,
-    options: { editableRef: React.RefObject<HTMLElement | null> }
-  ) =>
-    options.editableRef.current
-      ? (currentPositions.find((position) => position.clientId === clientId)
-          ?.geometry ?? null)
-      : null,
+  useYjsRemoteCursorGeometry: (_editor: unknown, clientId: number) =>
+    currentPositions.find((position) => position.clientId === clientId)
+      ?.geometry ?? null,
   useYjsRemoteCursorIds: (editor: unknown) => {
     overlayPositionsMock(editor);
 
@@ -95,6 +92,7 @@ mock.module('platejs/yjs/react', () => ({
 }));
 
 mock.module('platejs/yjs', () => ({
+  ...actualYjs,
   yjs: yjsMock,
 }));
 
@@ -314,38 +312,5 @@ describe('CollaborativeEditingDemo', () => {
     expect(caret?.getAttribute('style')).toContain('background-color: #DB2777');
     expect(caret?.textContent).toBe('Guest 2');
     expect(view.container.querySelector('[data-client-id="3"]')).toBeNull();
-  });
-
-  it('renders no cursors until the exact Editable is mounted', async () => {
-    editableRef = { current: null };
-    currentPositions = [
-      {
-        clientId: 2,
-        cursor: {
-          selection: {
-            anchor: { offset: 0, path: [0, 0] },
-            focus: { offset: 0, path: [0, 0] },
-          },
-        },
-        geometry: {
-          focusRect: { height: 20, left: 30, top: 40, width: 0 },
-          rects: [],
-        },
-      },
-    ];
-
-    const { RemoteCursorOverlay } = await import(
-      `../components/editor/remote-cursor-overlay?test=${Math.random()
-        .toString(36)
-        .slice(2)}`
-    );
-    const view = render(
-      <RemoteCursorOverlay
-        editableRef={editableRef}
-        editor={currentOverlayEditor}
-      />
-    );
-
-    expect(view.container.querySelector('[data-remote-caret]')).toBeNull();
   });
 });

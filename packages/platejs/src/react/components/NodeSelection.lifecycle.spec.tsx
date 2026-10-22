@@ -425,7 +425,7 @@ describe('node selection gesture lifetime', () => {
   });
 
   for (const count of [1, 5, 20, 100, 1000]) {
-    it(`measures ${count} stable candidates at the start and after the editable's first size report`, () => {
+    it(`measures ${count} stable candidates at the start and after the editable's first size report, never once per frame`, () => {
       const f = fixture(count);
       try {
         f.pointer('pointerDown', f.editable);

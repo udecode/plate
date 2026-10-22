@@ -153,16 +153,6 @@ describe('Editor core package', () => {
       expect(editor.plugin(DebugPlugin).api.warn).toBeInstanceOf(Function);
     });
 
-    it('exposes DebugPlugin methods on createEditor', () => {
-      const editor = createEditor();
-
-      expect(editor.plugin(DebugPlugin).api).toBeDefined();
-      expect(editor.plugin(DebugPlugin).api.log).toBeInstanceOf(Function);
-      expect(editor.plugin(DebugPlugin).api.error).toBeInstanceOf(Function);
-      expect(editor.plugin(DebugPlugin).api.info).toBeInstanceOf(Function);
-      expect(editor.plugin(DebugPlugin).api.warn).toBeInstanceOf(Function);
-    });
-
     it('combines core and custom plugin APIs on base and Plate editors', () => {
       const baseEditor = createHeadlessEditor({
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin, LinkPlugin],
@@ -196,7 +186,10 @@ describe('Editor core package', () => {
         ],
       });
 
-      expect(editor.plugin(LinkPlugin).api.getAttributes).toBeDefined();
+      expect([
+        editor.plugin(LinkPlugin).api.getAttributes(),
+        editor.api.link.extendedLink(),
+      ]).toEqual([{}, true]);
 
       // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.list;

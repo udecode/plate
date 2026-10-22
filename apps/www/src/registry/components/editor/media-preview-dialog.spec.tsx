@@ -2,6 +2,8 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import * as actualMediaReact from 'platejs/media/react';
+import * as actualReact from 'platejs/react';
 import * as React from 'react';
 
 let extensionFactory: ((context: any) => any) | undefined;
@@ -42,10 +44,12 @@ let preview = {
 };
 
 mock.module('platejs/media/react', () => ({
+  ...actualMediaReact,
   ImagePlugin: imagePlugin,
 }));
 
 mock.module('platejs/react', () => ({
+  ...actualReact,
   useComposedRef: (...refs: unknown[]) => refs.find(Boolean),
   useEditor: () => ({
     api: { dom: { getWindow: () => window } },

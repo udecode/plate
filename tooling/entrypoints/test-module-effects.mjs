@@ -159,33 +159,12 @@ export const testModuleEffects = {
   'packages/test/test/node/device-witness.test.ts': {
     reads: ['packages/test/test/node/fixtures/*.json'],
   },
-  'packages/test/test/proof/keyboard-oracle-audit.test.ts': {
-    reads: ['playwright/integration/examples/*.test.ts'],
-  },
   'packages/test/test/proof/mobile-device-proof-command.test.ts': {
     reads: ['package.json'],
     runs: ['tooling/plite/donor/proof/mobile-device-proof.mjs'],
   },
   'packages/test/test/proof/package-scripts.test.ts': {
-    reads: [
-      'packages/test/README.md',
-      'packages/test/package.json',
-      'packages/test/src/browser/*.ts',
-      'packages/test/src/playwright/*.ts',
-      'packages/test/src/proof/*.ts',
-      'packages/test/tsdown.config.mts',
-    ],
-  },
-  'packages/test/test/proof/scenario.test.ts': {
-    reads: [
-      'CONTRIBUTING.md',
-      'README.md',
-      'package.json',
-      'packages/test/README.md',
-      'packages/test/src/playwright/*.ts',
-      'playwright/stress/stress-utils.ts',
-      'scripts/stress/*.mjs',
-    ],
+    reads: ['packages/test/package.json'],
   },
   'tooling/config/bunTestSetup.ts':
     'reads only the www modules Bun is loading, which the trace records, and reads the module registry without changing it',

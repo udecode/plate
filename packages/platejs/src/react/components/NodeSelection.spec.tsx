@@ -688,7 +688,7 @@ describe('NodeSelection', () => {
     });
   });
 
-  it('commits the highlight layer once per selected-set change', async () => {
+  it('commits the highlight layer once per selected-set change, never re-creating every existing highlight portal', async () => {
     const editor = createEditor({
       initialValue: Array.from({ length: 20 }, (_, index) => ({
         children: [{ text: `block ${index}` }],
@@ -746,84 +746,5 @@ describe('NodeSelection', () => {
     } finally {
       createPortalSpy.mockRestore();
     }
-  });
-
-  it('measures selectable geometry once per stable large drag', async () => {
-    const editor = createEditor({
-      initialValue: Array.from({ length: 100 }, (_, index) => ({
-        children: [{ text: `block ${index}` }],
-        type: 'paragraph',
-      })),
-      plugins: [BaseParagraphPlugin],
-    });
-    const view = render(
-      <EditorRoot editor={editor} suppressInstanceWarning>
-        <EditorContent />
-        <NodeSelectionDrag />
-      </EditorRoot>
-    );
-    const editable = view.container.querySelector<HTMLElement>('[data-editor]');
-    const elements = editable?.querySelectorAll<HTMLElement>(
-      '[data-editor-node="element"]'
-    );
-
-    expect(editable).toBeTruthy();
-    expect(elements).toHaveLength(100);
-
-    let layoutReads = 0;
-    const originalInnerHeight = window.innerHeight;
-
-    Object.defineProperty(window, 'innerHeight', {
-      configurable: true,
-      value: 1000,
-      writable: true,
-    });
-    const scroll = editable;
-
-    if (scroll) {
-      Object.defineProperty(scroll, 'getBoundingClientRect', {
-        configurable: true,
-        value: () => new DOMRect(0, 0, 1000, 1000),
-      });
-    }
-    for (const element of elements ?? []) {
-      Object.defineProperty(element, 'getBoundingClientRect', {
-        configurable: true,
-        value: () => {
-          layoutReads += 1;
-
-          return new DOMRect(20, 20, 80, 60);
-        },
-      });
-    }
-
-    fireEvent.pointerDown(editable!, {
-      button: 0,
-      clientX: 0,
-      clientY: 0,
-      pointerId: 3,
-    });
-    for (let index = 0; index < 10; index++) {
-      fireEvent.pointerMove(document, {
-        clientX: 120,
-        clientY: 120,
-        pointerId: 3,
-      });
-      await act(
-        () =>
-          new Promise<void>((resolve) => {
-            window.setTimeout(resolve, 20);
-          })
-      );
-    }
-    fireEvent.pointerUp(document, {
-      clientX: 120,
-      clientY: 120,
-      pointerId: 3,
-    });
-
-    expect(editor.read.selection.nodes()).toHaveLength(100);
-    expect(layoutReads).toBe(100);
-    window.innerHeight = originalInnerHeight;
   });
 });

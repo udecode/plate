@@ -10,9 +10,6 @@ import {
   createStaticRequestHandler,
   createStaticSnapshot,
   resolveStaticAsset,
-  STATIC_SERVER_HEADERS_TIMEOUT_MS,
-  STATIC_SERVER_KEEP_ALIVE_TIMEOUT_BUFFER_MS,
-  STATIC_SERVER_KEEP_ALIVE_TIMEOUT_MS,
 } from './plite-static-server.mjs';
 
 const createFixture = () => {
@@ -117,13 +114,45 @@ test('serves immutable chunks without touching the filesystem again', () => {
   }
 });
 
-test('keeps idle proof sockets alive across delayed lazy chunk loads', () => {
-  const server = configureStaticServer(http.createServer());
-
-  assert.equal(server.keepAliveTimeout, STATIC_SERVER_KEEP_ALIVE_TIMEOUT_MS);
-  assert.equal(
-    server.keepAliveTimeoutBuffer,
-    STATIC_SERVER_KEEP_ALIVE_TIMEOUT_BUFFER_MS
+test('keeps idle proof sockets alive across delayed lazy chunk loads', async () => {
+  const root = createFixture();
+  const server = configureStaticServer(
+    http.createServer(createStaticRequestHandler(createStaticSnapshot(root)))
   );
-  assert.equal(server.headersTimeout, STATIC_SERVER_HEADERS_TIMEOUT_MS);
+  const agent = new http.Agent({ keepAlive: true, maxSockets: 1 });
+
+  try {
+    await new Promise((resolve) => {
+      server.listen(0, '127.0.0.1', resolve);
+    });
+    const chunkURL = `http://127.0.0.1:${server.address().port}/_next/static/chunks/743.hash.js`;
+    const loadChunk = () =>
+      new Promise((resolve, reject) => {
+        const request = http.get(chunkURL, { agent }, (response) => {
+          response.resume();
+          response.on('end', () => {
+            resolve({
+              reusedSocket: request.reusedSocket,
+              status: response.statusCode,
+            });
+          });
+        });
+
+        request.on('error', reject);
+      });
+
+    assert.deepEqual(await loadChunk(), { reusedSocket: false, status: 200 });
+    await new Promise((resolve) => {
+      setTimeout(resolve, 6500);
+    });
+    assert.deepEqual(
+      await loadChunk(),
+      { reusedSocket: true, status: 200 },
+      'a chunk loaded after Node default idle close must reuse the socket'
+    );
+  } finally {
+    agent.destroy();
+    server.close();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
 });

@@ -371,44 +371,6 @@ test('proof monitor ignores writes inside an existing ignored directory', async 
   }
 });
 
-test('proof monitor allocates no recursive watchers for disjoint inputs', async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'plite-proof-topology-'));
-  const sourceEntries = Array.from({ length: 64 }, (_, index) => {
-    const directory = path.join(root, `package-${index}`, 'src');
-
-    fs.mkdirSync(directory, { recursive: true });
-
-    return directory;
-  });
-  const monitor = createProofIntegrityMonitor({ sourceEntries });
-
-  try {
-    await waitForMonitorReady(monitor);
-
-    assert.equal(monitor.watcherCount, 0);
-    assert.equal(await monitor.checkpoint(), null);
-  } finally {
-    await monitor.close();
-    fs.rmSync(root, { force: true, recursive: true });
-  }
-});
-
-test('proof monitor handles the real repository topology without native watchers', async () => {
-  const monitor = createProofIntegrityMonitor({
-    sourceEntries: browserRunEntries,
-    sourceIgnoredPaths: [path.join(repoRoot, 'packages/test/dist')],
-  });
-
-  try {
-    await waitForMonitorReady(monitor);
-
-    assert.equal(monitor.watcherCount, 0);
-    assert.equal(await monitor.checkpoint(), null);
-  } finally {
-    await monitor.close();
-  }
-});
-
 test('proof monitor ignores baseline metadata but catches later writes', async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'plite-proof-stale-'));
   const sourceFile = path.join(root, 'input.ts');

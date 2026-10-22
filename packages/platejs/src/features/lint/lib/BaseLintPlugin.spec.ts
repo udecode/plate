@@ -531,23 +531,15 @@ describe('selection, fixes and paint', () => {
       entry: editor.read.nodes.get([0])!,
     });
 
-    expect(
-      decorations.map(({ key, range }) => [key.split(':').at(-1), range])
-    ).toEqual([
-      [
-        '1',
-        {
-          anchor: { path: [0, 0], offset: 0 },
-          focus: { path: [0, 0], offset: 2 },
-        },
-      ],
-      [
-        '2',
-        {
-          anchor: { path: [0, 2], offset: 0 },
-          focus: { path: [0, 2], offset: 1 },
-        },
-      ],
+    expect(decorations.map(({ range }) => range)).toEqual([
+      {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 2 },
+      },
+      {
+        anchor: { path: [0, 2], offset: 0 },
+        focus: { path: [0, 2], offset: 1 },
+      },
     ]);
     expect(new Set(decorations.map(({ key }) => key)).size).toBe(2);
   });

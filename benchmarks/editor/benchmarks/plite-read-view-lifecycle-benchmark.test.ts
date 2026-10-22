@@ -4,10 +4,6 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
 const root = resolve(import.meta.dir, '../../..');
-const benchmarkPath = resolve(
-  root,
-  'benchmarks/editor/benchmarks/plite-read-view-lifecycle-benchmark.ts'
-);
 const registryPath = resolve(root, 'benchmarks/targets/slate-v2.json');
 const packagePath = resolve(root, 'package.json');
 
@@ -43,20 +39,6 @@ describe('read-view lifecycle benchmark authority', () => {
         required: true,
       },
     ]);
-  });
-
-  it('locks structural counters, commit stability, and the width budget', () => {
-    const source = readFileSync(benchmarkPath, 'utf-8');
-
-    assert.match(source, /runCohort\(1\)/u);
-    assert.match(source, /runCohort\(100\)/u);
-    assert.match(source, /warmFactoryCalls !== 0/u);
-    assert.match(
-      source,
-      /postCommitFactoryCalls !== row\.initialFactoryCalls/u
-    );
-    assert.match(source, /revision < 100/u);
-    assert.match(source, /widthRatio > 2/u);
   });
 
   it('runs the authority check in the strict Plite contract gate', () => {

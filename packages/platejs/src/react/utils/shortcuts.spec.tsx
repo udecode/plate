@@ -5,7 +5,9 @@ import { property } from '../../core';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { jsxt } from '../../testing';
 import { createEditor } from '../editor';
+import type { Editor } from '../editor/Editor';
 import { definePlugin } from '../plugin';
+import { dispatchPlateShortcut } from './dispatchPlateShortcut.internal';
 import { pipeHandler } from './pipeHandler.internal';
 
 jsxt;
@@ -56,6 +58,20 @@ it('uses custom hotkey handler for bold', () => {
   expect(editor.read.children()).toEqual(output.children);
 });
 
+const pressCtrl = (editor: Editor, key: string) =>
+  dispatchPlateShortcut(
+    editor,
+    new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      code: `Key${key.toUpperCase()}`,
+      ctrlKey: true,
+      key,
+    }),
+    'keydown',
+    getPlateRuntime(editor).shortcutTable
+  );
+
 describe('extend method with shortcuts', () => {
   it('publishes one frozen shortcut table in deterministic order', () => {
     const firstPlugin = definePlugin('first', {
@@ -101,102 +117,132 @@ describe('extend method with shortcuts', () => {
     const testPlugin = definePlugin('testPlugin', {
       shortcuts: {
         bold: {
-          keys: 'mod+b',
-          handler: () => {},
+          keys: 'ctrl+b',
+          handler: ({ editor }) => {
+            editor.update.text.insert('b');
+          },
         },
       },
     }).extend({
       shortcuts: {
         italic: {
-          keys: 'mod+i',
-          handler: () => {},
+          keys: 'ctrl+i',
+          handler: ({ editor }) => {
+            editor.update.text.insert('i');
+          },
         },
       },
     });
 
     const editor = createEditor({
       plugins: [testPlugin],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
     });
 
-    expect(getPlateRuntime(editor).shortcuts['testPlugin.bold']).toBeDefined();
-    expect(
-      getPlateRuntime(editor).shortcuts['testPlugin.italic']
-    ).toBeDefined();
+    pressCtrl(editor, 'b');
+    pressCtrl(editor, 'i');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'bi' }], type: 'paragraph' },
+    ]);
   });
 
   it('override existing shortcuts in a plugin', () => {
-    const originalCallback = mock();
-    const newCallback = mock();
-
     const testPlugin = definePlugin('testPlugin', {
       shortcuts: {
         bold: {
-          keys: 'mod+b',
-          handler: originalCallback,
+          keys: 'ctrl+b',
+          handler: ({ editor }) => {
+            editor.update.text.insert('original');
+          },
         },
       },
     }).extend({
       shortcuts: {
         bold: {
-          keys: 'mod+b',
-          handler: newCallback,
+          keys: 'ctrl+b',
+          handler: ({ editor }) => {
+            editor.update.text.insert('override');
+          },
         },
       },
     });
 
     const editor = createEditor({
       plugins: [testPlugin],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
     });
 
-    getPlateRuntime(editor).shortcuts['testPlugin.bold']?.handler?.({
-      editor,
-      event: {} as KeyboardEvent,
-      handler: {} as any,
-    } as any);
+    pressCtrl(editor, 'b');
 
-    expect(originalCallback).not.toHaveBeenCalled();
-    expect(newCallback).toHaveBeenCalled();
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'override' }], type: 'paragraph' },
+    ]);
   });
 
   it('configure existing shortcuts in a plugin', () => {
-    const originalCallback = mock();
-    const _newCallback = mock();
-
     const testPlugin = definePlugin('testPlugin', {
       shortcuts: {
         bold: {
-          keys: 'mod+b',
-          handler: originalCallback,
+          keys: 'ctrl+b',
+          handler: ({ editor, event }) => {
+            editor.update.text.insert(event.key);
+          },
         },
       },
     }).configure({
       shortcuts: {
         bold: {
-          handler: originalCallback,
-          keys: 'mod+bb',
+          handler: ({ editor, event }) => {
+            editor.update.text.insert(event.key);
+          },
+          keys: 'ctrl+i',
         },
       },
     });
 
     const editor = createEditor({
       plugins: [testPlugin],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
     });
 
-    expect(getPlateRuntime(editor).shortcuts['testPlugin.bold']?.keys).toBe(
-      'mod+bb'
-    );
+    pressCtrl(editor, 'b');
+    pressCtrl(editor, 'i');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'i' }], type: 'paragraph' },
+    ]);
   });
 
   it('allow removing shortcuts by setting them to null', () => {
     const testPlugin = definePlugin('testPlugin', {
       shortcuts: {
         bold: {
-          keys: 'mod+b',
-          handler: () => {},
+          keys: 'ctrl+b',
+          handler: ({ editor }) => {
+            editor.update.text.insert('b');
+          },
         },
         italic: {
-          keys: 'mod+i',
-          handler: () => {},
+          keys: 'ctrl+i',
+          handler: ({ editor }) => {
+            editor.update.text.insert('i');
+          },
         },
       },
     }).extend({
@@ -207,13 +253,19 @@ describe('extend method with shortcuts', () => {
 
     const editor = createEditor({
       plugins: [testPlugin],
+      initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
     });
 
-    expect(
-      getPlateRuntime(editor).shortcuts['testPlugin.bold']
-    ).toBeUndefined();
-    expect(
-      getPlateRuntime(editor).shortcuts['testPlugin.italic']
-    ).toBeDefined();
+    pressCtrl(editor, 'b');
+    pressCtrl(editor, 'i');
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'i' }], type: 'paragraph' },
+    ]);
   });
 });

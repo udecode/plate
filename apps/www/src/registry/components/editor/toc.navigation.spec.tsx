@@ -53,6 +53,28 @@ it('opens the collapsed Details around a TOC target before flashing it [EDIT-TOC
   view.unmount();
 });
 
+it('shows a renamed heading in the TOC', () => {
+  const editor = createEditor({
+    plugins: [...BasicBlocksKit, ...TocKit],
+    initialValue: [
+      { children: [{ text: '' }], type: 'toc' },
+      { children: [{ text: 'Intro' }], level: 1, type: 'heading' },
+    ],
+  });
+  const view = render(
+    <EditorRoot editor={editor}>
+      <EditorContent />
+    </EditorRoot>
+  );
+
+  act(() => {
+    editor.update.text.insert(' notes', { at: { offset: 5, path: [1, 0] } });
+  });
+
+  expect(view.getByRole('button', { name: 'Intro notes' })).toBeTruthy();
+  view.unmount();
+});
+
 it('opens the Details around a TOC target only in the view that jumped (R24)', async () => {
   const editor = createTocEditor();
   const view = render(

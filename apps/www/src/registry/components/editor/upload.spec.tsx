@@ -101,6 +101,7 @@ describe('ImageProgress', () => {
     );
 
     await waitFor(() => expect(view.getByText('100%')).toBeTruthy());
+    expect(view.container.querySelector('svg.animate-spin')).not.toBeNull();
     view.unmount();
   });
 });

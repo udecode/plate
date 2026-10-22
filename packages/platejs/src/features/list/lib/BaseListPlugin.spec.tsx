@@ -3171,7 +3171,7 @@ describe('BaseListPlugin block transfers', () => {
   });
 
   it.each(['copy', 'move'] as const)(
-    'walks only the deeper run beside the gap for a block %s, with 10 or 300 other list items',
+    'walks only the deeper run beside the gap for a block %s, with 10 or 300 other list items, never every sibling list item',
     (intent) => {
       const walkedFor = (others: number) => {
         const editor = createEditor({
@@ -3209,7 +3209,7 @@ describe('BaseListPlugin block transfers', () => {
     }
   );
 
-  it('walks nothing after the gap for a block copy that joins the list before it, with 10 or 300 deeper items after it', () => {
+  it('walks nothing after the gap for a block copy that joins the list before it, with 10 or 300 deeper items after it, never every deeper item', () => {
     const walkedFor = (others: number) => {
       const editor = createEditor({
         initialValue: [

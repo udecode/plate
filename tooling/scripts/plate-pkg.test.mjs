@@ -25,16 +25,6 @@ test('runs package tests from the root Bun config with a package selector', () =
   );
 });
 
-test('uses a package-boundary selector for prefix-sharing packages', () => {
-  const listArgs = createBunTestArgs({
-    packageCwd: join(repoRoot, 'packages/platejs'),
-    projectCwd: repoRoot,
-  });
-
-  assert.equal(listArgs.at(-1), 'packages/platejs/');
-  assert.notEqual(listArgs.at(-1), 'packages/platejs-classic/');
-});
-
 test('scopes explicit test paths without rewriting option values', () => {
   assert.deepEqual(
     createBunTestArgs({

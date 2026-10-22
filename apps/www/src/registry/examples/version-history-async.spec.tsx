@@ -1,4 +1,4 @@
-import { expect, it, spyOn } from 'bun:test';
+import { afterEach, expect, it, mock, spyOn } from 'bun:test';
 
 import { render, waitFor } from '@testing-library/react';
 import { createEditor, type Value } from 'platejs';
@@ -7,10 +7,14 @@ import React from 'react';
 import { VersionDiff } from './version-history-demo';
 
 const document = (): Value =>
-  Array.from({ length: 1000 }, (_, index) => ({
+  Array.from({ length: 100 }, (_, index) => ({
     children: [{ text: `Unique paragraph ${index}` }],
     type: 'paragraph',
   }));
+
+afterEach(() => {
+  mock.restore();
+});
 
 it('aborts an obsolete version comparison and never publishes its result', async () => {
   const before = document();
@@ -33,13 +37,9 @@ it('aborts an obsolete version comparison and never publishes its result', async
   view.rerender(<VersionDiff after={second} before={before} schema={schema} />);
 
   expect(abort).toHaveBeenCalled();
-  await waitFor(
-    () =>
-      expect(
-        view.container.querySelector('[data-comparison-id]')
-      ).not.toBeNull(),
-    { timeout: 8000 }
+  await waitFor(() =>
+    expect(view.container.querySelector('[data-comparison-id]')).not.toBeNull()
   );
   expect(view.container.textContent).toContain('Second request');
   expect(view.container.textContent).not.toContain('First request');
-}, 12_000);
+});

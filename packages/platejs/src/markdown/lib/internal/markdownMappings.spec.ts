@@ -140,7 +140,6 @@ describe('Markdown node mapping compiler', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, ElementPlugin, MarkPlugin, MarkdownPlugin],
     });
-    const compiled = compileMarkdownMappings(editor);
     const result = editor.api.markdown.serialize({
       document: {
         children: [
@@ -153,11 +152,7 @@ describe('Markdown node mapping compiler', () => {
       },
     });
 
-    expect(result.ok).toBe(true);
-    expect([...compiled.encodeByType.keys()]).toContain('persistedElement');
-    expect(compiled.encodeByType.has('elementCapability')).toBe(false);
-    expect([...compiled.markWriters.keys()]).toContain('persistedMark');
-    expect(compiled.markWriters.has('markCapability')).toBe(false);
+    expect(result).toMatchObject({ data: 'element\n\n**mark**\n', ok: true });
     expect(elementIdentity).toBe('persistedElement');
     expect(markIdentity).toBe('persistedMark');
     expect(elementContext).toEqual({
@@ -323,43 +318,37 @@ describe('Markdown node mapping compiler', () => {
     expect(omitted(false)).toMatchObject([{ key: 'tone' }]);
   });
 
-  it('orders decode claims by priority and caches the compiled editor view', () => {
-    const LowPlugin = elementPlugin('low').extend(({ defineFormats }) => ({
-      formats: defineFormats({
-        markdown: {
-          decode: ({ schema: innerSchema3 }) => ({
-            children: [{ text: '' }],
-            type: innerSchema3.type,
-          }),
-          node: 'html',
-          priority: 10,
-        },
-      }),
-    }));
-    const HighPlugin = elementPlugin('high').extend(({ defineFormats }) => ({
-      formats: defineFormats({
-        markdown: {
-          decode: ({ schema: innerSchema4 }) => ({
-            children: [{ text: '' }],
-            type: innerSchema4.type,
-          }),
-          node: 'html',
-          priority: 20,
-        },
-      }),
-    }));
+  it('dispatches a decode claim to the higher-priority plugin', () => {
+    const LowPlugin = elementPlugin('low').extend(
+      ({ defineFormats, schema: { type } }) => ({
+        formats: defineFormats({
+          markdown: {
+            decode: () => ({ children: [{ text: '' }], type }),
+            node: 'html',
+            priority: 10,
+          },
+        }),
+      })
+    );
+    const HighPlugin = elementPlugin('high').extend(
+      ({ defineFormats, schema: { type } }) => ({
+        formats: defineFormats({
+          markdown: {
+            decode: () => ({ children: [{ text: '' }], type }),
+            node: 'html',
+            priority: 20,
+          },
+        }),
+      })
+    );
     const editor = createEditor({
-      plugins: [LowPlugin, HighPlugin, MarkdownPlugin],
+      plugins: [BaseParagraphPlugin, LowPlugin, HighPlugin, MarkdownPlugin],
     });
-    const first = compileMarkdownMappings(editor);
 
-    // The built-in html decoder runs last, after every feature declines.
-    expect(first.decodeByNode.get('html')?.map(({ owner }) => owner)).toEqual([
-      'high',
-      'low',
-      'markdown',
-    ]);
-    expect(compileMarkdownMappings(editor)).toBe(first);
+    expect(editor.api.markdown.parse('<div>x</div>')).toMatchObject({
+      document: { children: [{ children: [{ text: '' }], type: 'high' }] },
+      ok: true,
+    });
   });
 
   it('does not compile formats from disabled plugins', () => {

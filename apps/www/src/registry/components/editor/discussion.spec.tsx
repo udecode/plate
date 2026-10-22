@@ -671,12 +671,17 @@ describe('DiscussionSlots', () => {
       const alphaBlock = [
         ...view.container.querySelectorAll('[data-editor-node="element"]'),
       ].find((element) => element.textContent === 'alpha')!;
-      const measure = spyOn(alphaBlock, 'getBoundingClientRect');
+      const alphaRect = new DOMRect(12, 340, 400, 24);
+      const measure = spyOn(
+        alphaBlock,
+        'getBoundingClientRect'
+      ).mockReturnValue(alphaRect);
 
-      (
-        floatingAnchor as { getBoundingClientRect: () => DOMRect }
-      ).getBoundingClientRect();
-      expect(measure).toHaveBeenCalled();
+      expect(
+        (
+          floatingAnchor as { getBoundingClientRect: () => DOMRect }
+        ).getBoundingClientRect()
+      ).toBe(alphaRect);
       measure.mockRestore();
       view.unmount();
     }

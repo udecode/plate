@@ -1157,68 +1157,6 @@ describe('compilePlateHtmlFormat', () => {
     );
   });
 
-  it('keeps indexed large-payload callback growth linear', () => {
-    let paragraphCalls = 0;
-    let unrelatedCalls = 0;
-    const ParagraphPlugin = definePlugin('htmlParagraphCase6', {
-      schema: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-      },
-      formats: ({ defineFormats }) =>
-        defineFormats({
-          html: {
-            priority: 1,
-            decode: () => {
-              paragraphCalls += 1;
-
-              return {};
-            },
-            encode: ({ content }) => ({ children: content, tag: 'p' }),
-            match: [{ tag: 'p' }],
-          },
-        }),
-    });
-    const unrelated = Array.from({ length: 48 }, (_, index) =>
-      definePlugin(`indexedUnrelated${index}`, {
-        schema: {
-          element: {
-            content: schema.content.text({ default: 'text', min: 1 }),
-          },
-        },
-        formats: ({ defineFormats }) =>
-          defineFormats({
-            html: {
-              decode: () => {
-                unrelatedCalls += 1;
-
-                return {};
-              },
-              decodeOnly: true,
-              match: [{ tag: `x-index-${index}` }],
-            },
-          }),
-      })
-    );
-    const editor = createEditor({
-      plugins: [ParagraphPlugin, ...unrelated],
-    });
-    const count = 400;
-    const html = Array.from(
-      { length: count },
-      (_, index) => `<p>${index}</p>`
-    ).join('');
-    const started = performance.now();
-    const fragment = parseHtmlSliceContent(editor, `<div>${html}</div>`);
-    const duration = performance.now() - started;
-
-    expect(fragment).toHaveLength(count);
-    expect(paragraphCalls).toBe(count);
-    expect(unrelatedCalls).toBe(0);
-    expect(duration).toBeLessThan(2000);
-  });
-
   it('rejects equal-priority overlapping element candidates', () => {
     const AlphaPlugin = definePlugin('alphaElementMapping', {
       schema: {

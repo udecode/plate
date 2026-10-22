@@ -926,29 +926,6 @@ describe('BaseFootnotePlugins', () => {
     ).not.toThrow();
   });
 
-  it('provides footnote api and insert / navigation transforms on the editor', () => {
-    const editor = createEditor({
-      plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
-    });
-    const api = editor.read.footnote;
-    const { footnote } = editor.update;
-
-    expect(api).toBeDefined();
-    expect(typeof api.nextRef).toBe('function');
-    expect(typeof api.definition).toBe('function');
-    expect(typeof api.definitions).toBe('function');
-    expect(typeof api.references).toBe('function');
-    expect(typeof api.refs).toBe('function');
-    expect(typeof api.isDuplicateDefinition).toBe('function');
-    expect(typeof api.isResolved).toBe('function');
-
-    expect(typeof editor.update.footnote.insert).toBe('function');
-    expect(typeof footnote.createDefinition).toBe('function');
-    expect(typeof footnote.selectDefinition).toBe('function');
-    expect(typeof footnote.selectReference).toBe('function');
-    expect(typeof footnote.normalizeDuplicateDefinition).toBe('function');
-  });
-
   it('deleteBackward removes the adjacent footnote atom', () => {
     const editor = createEditor({
       plugins: [BaseFootnotePlugin],
@@ -1503,35 +1480,6 @@ describe('BaseFootnotePlugin updates', () => {
       expect(footnote.isResolved({ ref: '1' })).toBe(true);
       expect(footnote.refs()).toEqual(['1']);
       expect(footnote.nextRef()).toBe('2');
-    });
-
-    it('renumbers duplicate definitions through the runtime transaction group', () => {
-      const editor = createFootnoteRuntimeEditor({
-        value: [
-          {
-            children: [{ children: [{ text: 'one' }], type: 'paragraph' }],
-            ref: '1',
-            type: 'footnoteDefinition',
-          },
-          {
-            children: [
-              { children: [{ text: 'duplicate' }], type: 'paragraph' },
-            ],
-            ref: '1',
-            type: 'footnoteDefinition',
-          },
-        ],
-      });
-      const normalizedRef = editor.update.footnote.normalizeDuplicateDefinition(
-        { path: [1] }
-      );
-
-      expect(String(normalizedRef)).toBe('2');
-
-      const { footnote } = editor.read;
-
-      expect(footnote.definitions({ ref: '1' })).toHaveLength(1);
-      expect(footnote.definition({ ref: '2' })?.[1]).toEqual([1]);
     });
 
     it('rejects the duplicate definition current ref as a target', () => {

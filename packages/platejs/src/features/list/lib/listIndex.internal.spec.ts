@@ -282,7 +282,7 @@ describe('list numbering by identity', () => {
     expect(insertInto(300)).toEqual(few);
   });
 
-  it('recounts nothing while typing after a mark toggle in a list item', () => {
+  it('recounts nothing while typing after a mark toggle in a list item, so a mark toggle never recounts every list entry', () => {
     const editor = editorOf([
       item('A', { listId: 'a' }),
       item('B', { listId: 'a' }),

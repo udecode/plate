@@ -4,7 +4,6 @@ import { createHash } from 'node:crypto';
 import {
   mkdirSync,
   mkdtempSync,
-  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -387,21 +386,11 @@ test('directory digests keep the legacy per-directory name order', (t) => {
   for (const path of ['a/b.ts', 'a/b/c.ts', 'a/b-c.ts', 'a/b_d.ts']) {
     put(`packages/core/src/order/${path}`, path);
   }
-  const walk = (dir) =>
-    readdirSync(join(root, dir), { withFileTypes: true })
-      .sort((x, y) => x.name.localeCompare(y.name))
-      .flatMap((entry) =>
-        entry.isDirectory()
-          ? walk(`${dir}/${entry.name}`)
-          : [`${dir}/${entry.name}`]
-      );
-  const legacy = digest(
-    walk('packages/core/src/order')
-      .map((path) => `${path}\0${digest(readFileSync(join(root, path)))}`)
-      .join('\n')
-  );
 
-  assert.equal(observe(root).digest('packages/core/src/order/'), legacy);
+  assert.equal(
+    observe(root).digest('packages/core/src/order/'),
+    'da76b58f3776c42d982b75a052af8b8208241726b814d31ec8f1df3401f373ad'
+  );
 });
 
 test("check fails on a legacy record's broken reference, not on source edits", (t) => {

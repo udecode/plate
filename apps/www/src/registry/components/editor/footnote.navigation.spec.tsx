@@ -194,6 +194,25 @@ it('keeps an editable plain chip click inert', () => {
   rendered.unmount();
 });
 
+it('refreshes the hover preview when the definition text changes while open', async () => {
+  const { editor, rendered, root } = setupNavigation({ readOnly: false });
+  const chip = within(root).getByRole('button', { name: '[1]' });
+  const preview = () =>
+    document.querySelector('[data-slot="hover-card-content"]')?.textContent;
+
+  fireEvent.pointerEnter(chip, { pointerType: 'mouse' });
+  await waitFor(() => expect(preview()).toBe('Definition'), { timeout: 2000 });
+
+  act(() => {
+    editor.update.text.insert(' revised', {
+      at: { offset: 10, path: [1, 0, 0] },
+    });
+  });
+
+  await waitFor(() => expect(preview()).toBe('Definition revised'));
+  rendered.unmount();
+});
+
 it('projects navigation feedback onto copied footnote references and definitions', async () => {
   const editor = createEditor({
     plugins: FootnoteKit,

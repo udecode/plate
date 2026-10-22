@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import fs from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { steps as checkSteps } from '../../../tooling/scripts/check.mjs';
 import { stopProcessTree } from '../../../tooling/scripts/run-bounded-process.mjs';
 import {
   applyWorkerCap,
@@ -1027,54 +1025,35 @@ test('combines per-test runtime weights with profile multipliers', () => {
   );
 });
 
-test('requires serial Playwright files to declare the serial workload policy', () => {
-  const testRoot = path.join(appRoot, 'tests/plite-browser');
-  const missingPolicy = [];
-  const visit = (directory) => {
-    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-      const entryPath = path.join(directory, entry.name);
-
-      if (entry.isDirectory()) {
-        visit(entryPath);
-      } else if (
-        entry.name.endsWith('.ts') &&
-        fs
-          .readFileSync(entryPath, 'utf-8')
-          .includes("test.describe.configure({ mode: 'serial' })")
-      ) {
-        const source = fs.readFileSync(entryPath, 'utf-8');
-
-        if (
-          !source.includes("type: 'plite-browser-profile'") ||
-          !source.includes("description: 'serial'")
-        ) {
-          missingPolicy.push(
-            path.relative(appRoot, entryPath).split(path.sep).join('/')
-          );
-        }
-      }
-    }
-  };
-
-  visit(testRoot);
-
-  assert.deepEqual(missingPolicy, []);
-});
-
 test('keeps raw and managed Playwright proof retry-free and worker-bounded', () => {
-  const configSource = fs.readFileSync(
-    path.join(appRoot, 'playwright.config.ts'),
-    'utf-8'
-  );
-  const runnerSource = fs.readFileSync(
-    path.join(appRoot, 'scripts/run-plite-browser.mjs'),
-    'utf-8'
-  );
-  const workflowSource = fs.readFileSync(
-    path.resolve(appRoot, '../../.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
+  const loadRawConfig = (environment, args = []) =>
+    spawnSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `const { default: config } = await import(${JSON.stringify(
+          pathToFileURL(path.join(appRoot, 'playwright.config.ts')).href
+        )}); console.log(JSON.stringify({ retries: config.retries, workers: config.workers }));`,
+        '--',
+        ...args,
+      ],
+      {
+        cwd: appRoot,
+        encoding: 'utf-8',
+        env: { ...process.env, ...environment },
+      }
+    );
+  const raw = loadRawConfig({ PLAYWRIGHT_WORKERS: '64' });
+  const rawOverride = loadRawConfig({}, ['--workers=64']);
 
+  assert.equal(raw.status, 0, raw.stderr);
+  assert.deepEqual(JSON.parse(raw.stdout), {
+    retries: 0,
+    workers: MAX_BROWSER_WORKERS,
+  });
+  assert.notEqual(rawOverride.status, 0);
+  assert.match(rawOverride.stderr, /capped at 8 workers; received 64/u);
   assert.deepEqual(assertRetryFreeBrowserArgs(['--project=chromium']), [
     '--project=chromium',
   ]);
@@ -1086,33 +1065,9 @@ test('keeps raw and managed Playwright proof retry-free and worker-bounded', () 
     () => assertRetryFreeBrowserArgs(['--retries', '2']),
     /forbids retry overrides/
   );
-  assert.match(configSource, /retries: 0/u);
-  assert.match(configSource, /assertBrowserWorkerArgs\(process\.argv\)/u);
-  assert.match(configSource, /MAX_BROWSER_WORKERS/u);
-  assert.match(configSource, /resolveBrowserWorkerCount/u);
-  assert.doesNotMatch(configSource, /PLAYWRIGHT_RETRIES|retryCount/u);
-  assert.match(runnerSource, /assertBrowserWorkerArgs\(args\)/u);
-  assert.match(runnerSource, /assertRetryFreeBrowserArgs\(args\)/u);
-  assert.match(runnerSource, /'--retries=0'/u);
-  assert.match(runnerSource, /`--workers=\$\{MAX_BROWSER_WORKERS\}`/u);
-  assert.doesNotMatch(runnerSource, /hasArg\(args, '--retries'\)/u);
-  assert.doesNotMatch(workflowSource, /PLAYWRIGHT_RETRIES/u);
 });
 
-test('bounds discovery and local build setup subprocesses', () => {
-  const runnerSource = fs.readFileSync(
-    path.join(appRoot, 'scripts/run-plite-browser.mjs'),
-    'utf-8'
-  );
-  const appBuildSource = fs.readFileSync(
-    path.join(appRoot, 'scripts/build-app-if-stale.mjs'),
-    'utf-8'
-  );
-  const browserBuildSource = fs.readFileSync(
-    path.join(appRoot, 'scripts/build-browser-if-stale.mjs'),
-    'utf-8'
-  );
-
+test('reads subprocess deadlines only from positive overrides', () => {
   assert.equal(resolveTimeoutMs(undefined, 60_000, 'timeout'), 60_000);
   assert.equal(resolveTimeoutMs('1250', 60_000, 'timeout'), 1250);
   assert.throws(
@@ -1122,140 +1077,6 @@ test('bounds discovery and local build setup subprocesses', () => {
   assert.throws(
     () => resolveTimeoutMs('invalid', 60_000, 'timeout'),
     /timeout must be a positive number/
-  );
-  assert.match(
-    runnerSource,
-    /buildAppIfStale\(\{[\s\S]*?timeoutMs: buildSetupTimeoutMs/u,
-    'local proof builds must have a process deadline'
-  );
-  assert.doesNotMatch(
-    runnerSource,
-    /spawnSync\([\s\S]*?build-app-if-stale/u,
-    'the browser runner must not wrap the bounded app build in another process'
-  );
-  for (const source of [appBuildSource, browserBuildSource]) {
-    assert.match(source, /await runBoundedProcess\(\{/u);
-    assert.doesNotMatch(source, /spawnSync|shell:\s*true/u);
-  }
-  assert.match(
-    runnerSource,
-    /\{ echo: false, projectRun, timeoutMs: discoveryTimeoutMs \}/u,
-    'Playwright --list discovery must have a process deadline'
-  );
-  assert.match(
-    runnerSource,
-    /const runCaptured = async \([\s\S]*?runBoundedProcess\(\{/u
-  );
-  assert.match(
-    runnerSource,
-    /PLITE_BROWSER_DIRECT_TIMEOUT_MS[\s\S]*?600_000/u,
-    'direct diagnostic proof must have a ten-minute default deadline'
-  );
-  assert.match(
-    runnerSource,
-    /const runDirect = async[\s\S]*?timeoutMs: directTimeoutMs/u
-  );
-  assert.match(
-    runnerSource,
-    /\? await runDirect\(stripSeparators\(passthroughArgs\)\)/u
-  );
-  assert.match(
-    runnerSource,
-    /detached: process\.platform !== 'win32'[\s\S]*?await stopProcessTree\(serverProcess\)/u,
-    'the owned proof server must terminate through the bounded process-tree owner'
-  );
-  assert.match(
-    runnerSource,
-    /finally \{\s*await stopActiveProcesses\(\);\s*await stopServer\(\);/u,
-    'top-level cleanup must drain every bounded subprocess before the server'
-  );
-  assert.doesNotMatch(runnerSource, /waitForExit/u);
-  assert.match(
-    runnerSource,
-    /spawnSync\(resolved, \['--version'\],[\s\S]*?timeout: 5000/u,
-    'custom browser identity probes must have a process deadline'
-  );
-});
-
-test('parallel local matrix isolates artifacts and keeps a serial override', () => {
-  const configSource = fs.readFileSync(
-    path.join(appRoot, 'playwright.config.ts'),
-    'utf-8'
-  );
-  const runnerSource = fs.readFileSync(
-    path.join(appRoot, 'scripts/run-plite-browser.mjs'),
-    'utf-8'
-  );
-
-  assert.match(runnerSource, /PLITE_BROWSER_PROJECT_CONCURRENCY/u);
-  assert.match(runnerSource, /PLITE_BROWSER_OUTPUT_DIR/u);
-  assert.match(runnerSource, /stopSiblings: \(\) => stopActiveProcesses\(\)/u);
-  assert.match(configSource, /PLITE_BROWSER_OUTPUT_DIR/u);
-});
-
-test('fans CI proof into independent project jobs with one build owner', () => {
-  const workflow = fs.readFileSync(
-    path.resolve(appRoot, '../../.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-  const { dependencies } = JSON.parse(
-    fs.readFileSync(path.join(appRoot, 'package.json'), 'utf-8')
-  );
-  const playwrightVersion = dependencies['@playwright/test'];
-
-  assert.equal(
-    workflow.match(/name: Build Plite proof app/g)?.length,
-    1,
-    'the proof app must have one build owner'
-  );
-  assert.match(workflow, /browser-chromium:[\s\S]*?needs: browser-build/);
-  assert.match(workflow, /browser-matrix-linux:[\s\S]*?needs: browser-build/);
-  assert.match(workflow, /browser-webkit:[\s\S]*?needs: browser-build/);
-  assert.match(workflow, /project: \[firefox, mobile\]/);
-  assert.match(workflow, /project: mobile-webkit/);
-  assert.match(workflow, /total: 1/);
-  assert.equal(
-    workflow.match(/shard: \[1, 2, 3, 4\]/g)?.length,
-    2,
-    'full browser lanes must fan out into four bounded jobs'
-  );
-  assert.equal(
-    workflow.match(/name: plite-browser-build/g)?.length,
-    4,
-    'one upload and three project-lane downloads must share the build artifact'
-  );
-  assert.match(workflow, /Verify exact Chromium coverage/);
-  assert.match(workflow, /Verify exact browser-matrix coverage/);
-  for (const command of [
-    'pnpm plite:bench:targets:check',
-    'pnpm plite:public-types',
-  ]) {
-    assert.ok(
-      checkSteps.some((step) => step.run === command),
-      command
-    );
-  }
-  assert.doesNotMatch(workflow, /pnpm plite:bench:targets:check/);
-  assert.doesNotMatch(workflow, /pnpm plite:public-types/);
-  assert.doesNotMatch(workflow, /run: pnpm --filter plite test:runner/);
-  assert.equal(
-    workflow.match(
-      new RegExp(
-        `mcr\\.microsoft\\.com/playwright:v${playwrightVersion}-noble`,
-        'g'
-      )
-    )?.length,
-    2,
-    'Linux browser jobs must use the workspace Playwright release'
-  );
-  assert.doesNotMatch(
-    workflow,
-    /plite-browser-runner-v2-.*-playwright-\d+\.\d+\.\d+-/u,
-    'proof-state caches must derive their Playwright identity from the workspace package'
-  );
-  assert.match(
-    workflow,
-    /playwright-\$\{\{ hashFiles\('apps\/plite\/package\.json'\) \}\}/u
   );
 });
 

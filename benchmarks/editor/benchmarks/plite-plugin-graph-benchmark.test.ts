@@ -4,10 +4,6 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
 const root = resolve(import.meta.dir, '../../..');
-const benchmarkPath = resolve(
-  root,
-  'benchmarks/editor/benchmarks/plite-plugin-graph-benchmark.ts'
-);
 const registryPath = resolve(root, 'benchmarks/targets/slate-v2.json');
 const packagePath = resolve(root, 'package.json');
 
@@ -40,21 +36,6 @@ describe('plugin graph benchmark authority', () => {
         required: true,
       },
     ]);
-  });
-
-  it('keeps cohorts, lifecycle proof, retention, and fixed budgets explicit', () => {
-    const source = readFileSync(benchmarkPath, 'utf-8');
-
-    assert.match(source, /descriptors: 10/u);
-    assert.match(source, /descriptors: 100/u);
-    assert.match(source, /descriptors: 1000/u);
-    assert.match(source, /pluginsByDescriptor\.size/u);
-    assert.match(source, /dependencyOrder\.length/u);
-    assert.match(source, /Object\.values\(installedRegistrySizes\)\.some/u);
-    assert.match(source, /removedRegistryRecords !== 0/u);
-    assert.match(source, /lifecycle\.activations/u);
-    assert.match(source, /lifecycle\.cleanups/u);
-    assert.match(source, /worstBudgetRatio >= 1/u);
   });
 
   it('runs the authority check in the strict Plite contract gate', () => {

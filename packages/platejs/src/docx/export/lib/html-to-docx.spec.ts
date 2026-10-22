@@ -11,11 +11,16 @@ describe('htmlToDocxBlob', () => {
     const blob = await htmlToDocxBlob('   ', {
       orientation: 'landscape',
     });
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
 
-    expect(blob.size).toBeGreaterThan(0);
     expect(blob.type).toBe(
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     );
+    expect(zip.file('[Content_Types].xml')).not.toBeNull();
+    expect(zip.file('word/styles.xml')).not.toBeNull();
+    expect(documentXml).toContain('<w:body>');
+    expect(documentXml).toContain('w:orient="landscape"');
   });
 
   it('fetches remote images only when explicitly enabled', async () => {
@@ -136,11 +141,21 @@ describe('htmlToDocxBlob', () => {
       throw new Error('unexpected fetch');
     });
 
-    await expect(
-      htmlToDocxBlob(
-        '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=" />'
-      )
-    ).resolves.toBeInstanceOf(Blob);
+    const blob = await htmlToDocxBlob(
+      '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=" />'
+    );
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const documentXml = await zip.file('word/document.xml')!.async('string');
+    const relationships = await zip
+      .file('word/_rels/document.xml.rels')!
+      .async('string');
+    const embedId = /r:embed="([^"]+)"/.exec(documentXml)?.[1];
+    const target = new RegExp(`Id="${embedId}"[^>]*Target="([^"]+)"`).exec(
+      relationships
+    )?.[1];
+
+    expect(target).toEndWith('.png');
+    expect(zip.file(`word/${target}`)).not.toBeNull();
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

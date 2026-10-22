@@ -290,7 +290,7 @@ describe('TableGrid compiler benchmark', () => {
             const byKey = grid.byKey.get(ids[index]);
             const byPath = grid.byPath.get(paths[index]);
 
-            if (byKey !== byPath) lookupMismatch = true;
+            if (!byKey || byKey !== byPath) lookupMismatch = true;
           }
         })
       );

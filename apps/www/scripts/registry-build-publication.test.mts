@@ -6,8 +6,6 @@ import path from 'node:path';
 
 import {
   acquireRegistryBuildLock,
-  createRegistryGeneration,
-  fingerprintRegistryDirectory,
   publishRegistryGeneration,
   recoverRegistryBuildLock,
   releaseRegistryBuildLock,
@@ -41,7 +39,7 @@ describe('registry build publication', () => {
     }
   });
 
-  it('fingerprints deterministic payloads and publishes the marker last', async () => {
+  it('publishes the staged payloads and the generation marker', async () => {
     const root = path.join(os.tmpdir(), `registry-publish-${randomUUID()}`);
     const stage = path.join(root, 'stage');
     const output = path.join(root, 'output');
@@ -52,11 +50,6 @@ describe('registry build publication', () => {
       await writeFile(path.join(stage, 'r/item.json'), '{"name":"item"}');
       await writeFile(path.join(stage, 'generation.json'), '{"id":"next"}');
       await writeFile(path.join(output, 'generation.json'), '{"id":"old"}');
-
-      const payloads = await fingerprintRegistryDirectory(
-        path.join(stage, 'r')
-      );
-      expect(createRegistryGeneration(payloads, 'source')).toHaveLength(64);
 
       await publishRegistryGeneration({
         marker: {

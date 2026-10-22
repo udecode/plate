@@ -343,9 +343,7 @@ describe('importDocx Word math', () => {
       latex: string;
     }>;
 
-    expect(() =>
-      katex.renderToString(found.latex, { throwOnError: true })
-    ).not.toThrow();
+    expect(presentation(found.latex)).toBe(presentation('〈x〉'));
     expect(result.diagnostics).toContainEqual(
       expect.objectContaining({ code: 'converter-message' })
     );
@@ -362,9 +360,7 @@ describe('importDocx Word math', () => {
       latex: string;
     }>;
 
-    expect(() =>
-      katex.renderToString(found.latex, { throwOnError: true })
-    ).not.toThrow();
+    expect(presentation(found.latex)).toBe(presentation('x\\ '));
   });
 
   it('reads the exporter TeX fallback back exactly', async () => {

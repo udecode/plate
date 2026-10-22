@@ -245,7 +245,7 @@ describe('Plate', () => {
     });
   });
   describe('when slots.wrapRoot renders null', () => {
-    it('renders without normalizing editor children', () => {
+    it('renders nothing and leaves editor children unchanged', () => {
       const plugins: PlatePlugins = [
         definePlugin('a', {
           slots: {
@@ -258,14 +258,16 @@ describe('Plate', () => {
         plugins,
         initialValue: [{ children: [{ text: '' }], type: 'paragraph' }],
       });
+      const children = editor.read.children();
 
-      expect(() =>
-        render(
-          <EditorRoot editor={editor}>
-            <EditorContent />
-          </EditorRoot>
-        )
-      ).not.toThrow();
+      const { container } = render(
+        <EditorRoot editor={editor}>
+          <EditorContent />
+        </EditorRoot>
+      );
+
+      expect(container.querySelector('[data-editor]')).toBeNull();
+      expect(editor.read.children()).toBe(children);
     });
   });
 

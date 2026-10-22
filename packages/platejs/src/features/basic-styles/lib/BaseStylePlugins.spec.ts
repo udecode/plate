@@ -708,12 +708,12 @@ describe('BaseTextIndentPlugin', () => {
       ],
     });
 
-    editor.update.nodes.set({ textIndent: 2 }, { at: [0] });
+    editor.update.textIndent.set(2, { at: [] });
 
     expect(editor.read.children()[0]).toMatchObject({ textIndent: 2 });
     expect(editor.read.children()[0]).not.toHaveProperty('legacyTextIndent');
 
-    editor.update.nodes.unset('textIndent', { at: [0] });
+    editor.update.textIndent.clear({ at: [] });
 
     expect(editor.read.children()[0]).not.toHaveProperty('textIndent');
   });

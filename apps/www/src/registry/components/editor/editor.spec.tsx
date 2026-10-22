@@ -1,6 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { render } from '@testing-library/react';
+import * as actualReact from 'platejs/react';
+import * as actualStatic from 'platejs/static';
 import * as React from 'react';
 
 const PlateContainerMock = mock(({ children, className, ...props }: any) => (
@@ -22,6 +24,7 @@ const PlateStaticMock = mock(({ className }: any) => (
 ));
 
 mock.module('platejs/react', () => ({
+  ...actualReact,
   NodeSelectionDrag: () => null,
   NodeSelectionHighlight: () => null,
   EditorContainer: PlateContainerMock,
@@ -30,6 +33,7 @@ mock.module('platejs/react', () => ({
 }));
 
 mock.module('platejs/static', () => ({
+  ...actualStatic,
   EditorStatic: PlateStaticMock,
 }));
 

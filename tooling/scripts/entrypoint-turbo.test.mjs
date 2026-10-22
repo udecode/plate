@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
@@ -9,7 +10,6 @@ import { globSync } from 'tinyglobby';
 import { vitestSuites } from '../config/test-suites.mjs';
 import {
   entrypointDags,
-  getPublicEntrypointRuntimeRows,
   partitionTypecheckTask,
 } from '../entrypoints/entrypoint-dag.mjs';
 import {
@@ -146,34 +146,189 @@ test('generated entrypoint Turbo state is current', () => {
   assert.doesNotThrow(() => assertWorkspaceSourcePathsGenerated(repoRoot));
 });
 
-test('generates the browser proof from every client runtime entrypoint', () => {
-  const rows = getPublicEntrypointRuntimeRows();
-  const source = createClientRuntimeProofSource(rows);
+const createRuntimeProofFixture = () => {
+  const dir = fs.mkdtempSync(path.join(tmpdir(), 'plate-runtime-proof-'));
+  const put = (file, content) => {
+    fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+    fs.writeFileSync(path.join(dir, file), content);
+  };
+  const entry = (file) => pathToFileURL(path.join(dir, file)).href;
 
-  for (const row of rows) {
-    assert.equal(
-      source.includes(`from ${JSON.stringify(row.specifier)}`),
-      row.runtime === 'client',
-      row.specifier
+  put('package.json', '{"type":"module"}');
+  put(
+    'node_modules/platejs/package.json',
+    JSON.stringify({
+      exports: { '.': './index.mjs', './react': './react.mjs' },
+      name: 'platejs',
+      type: 'module',
+    })
+  );
+  put(
+    'node_modules/platejs/index.mjs',
+    [
+      "export const BaseParagraphPlugin = { key: 'p' };",
+      'export const createEditor = ({ initialValue }) => ({ initialValue });',
+    ].join('\n')
+  );
+  put(
+    'node_modules/platejs/react.mjs',
+    [
+      "export const isNominalPluginDescriptor = (value) => value?.kind === 'plugin';",
+      'export const createEditor = ({ plugins }) => {',
+      '  for (const plugin of plugins) {',
+      '    if (plugin.broken) throw new Error(plugin.key + " cannot build an editor");',
+      '  }',
+      '};',
+    ].join('\n')
+  );
+
+  return {
+    entry,
+    load: (file, source) => {
+      put(file, source);
+
+      return import(entry(file));
+    },
+    put,
+  };
+};
+
+test('generates the browser proof from every client runtime entrypoint', async () => {
+  const { entry, load, put } = createRuntimeProofFixture();
+
+  put(
+    'plugin-entry.mjs',
+    "export const plugin = { key: 'a', kind: 'plugin' };"
+  );
+  put(
+    'broken-entry.mjs',
+    "export const plugin = { broken: true, key: 'b', kind: 'plugin' };"
+  );
+  put('plain-entry.mjs', 'export const value = 1;');
+  const proof = await load(
+    'client.ts',
+    createClientRuntimeProofSource([
+      {
+        runtime: 'client',
+        runtimeProof: 'plate-plugin-client',
+        specifier: entry('plugin-entry.mjs'),
+      },
+      {
+        runtime: 'client',
+        runtimeProof: null,
+        specifier: entry('plain-entry.mjs'),
+      },
+      {
+        runtime: 'ssr',
+        runtimeProof: 'plate-static-html',
+        specifier: entry('missing-ssr-entry.mjs'),
+      },
+    ])
+  );
+  const brokenProof = await load(
+    'broken-client.ts',
+    createClientRuntimeProofSource([
+      {
+        runtime: 'client',
+        runtimeProof: 'plate-plugin-client',
+        specifier: entry('broken-entry.mjs'),
+      },
+    ])
+  );
+
+  assert.deepEqual(proof.clientRuntimeEntrypointSpecifiers, [
+    entry('plugin-entry.mjs'),
+    entry('plain-entry.mjs'),
+  ]);
+  assert.throws(
+    () => proof.exerciseClientRuntimeEntrypoints(),
+    /requires a browser DOM/u
+  );
+  globalThis.window = globalThis;
+  globalThis.document = {
+    createElement: () => ({ dataset: {}, remove() {} }),
+  };
+  try {
+    assert.deepEqual(proof.exerciseClientRuntimeEntrypoints(), [
+      { exportCount: 1, specifier: entry('plugin-entry.mjs') },
+      { exportCount: 1, specifier: entry('plain-entry.mjs') },
+    ]);
+    assert.throws(
+      () => brokenProof.exerciseClientRuntimeEntrypoints(),
+      /b cannot build an editor/u
     );
+  } finally {
+    delete globalThis.window;
+    delete globalThis.document;
   }
-  assert.match(source, /typeof window === 'undefined'/u);
-  assert.match(source, /document\.createElement/u);
-  assert.match(source, /plate-plugin-client/u);
-  assert.match(source, /createRuntimeProofEditor/u);
 });
 
-test('generates DOM-free SSR behavior from each SSR proof adapter', () => {
-  const rows = getPublicEntrypointRuntimeRows().filter(
-    ({ runtime }) => runtime === 'ssr'
-  );
-  const source = createSsrRuntimeProofSource(rows);
+test('generates DOM-free SSR behavior from each SSR proof adapter', async () => {
+  const { entry, load, put } = createRuntimeProofFixture();
 
-  assert.match(source, /from "platejs\/html\/server"/u);
-  assert.match(source, /parseSsrHtml/u);
-  assert.match(source, /from "platejs\/static"/u);
-  assert.match(source, /renderSsrHtml/u);
-  assert.match(source, /typeof globalThis\.document/u);
+  put(
+    'html-server.mjs',
+    [
+      'export const parseHtml = (html) => ({',
+      '  document: { children: [{ children: [{ text: html.replace(/<[^>]+>/g, "") }] }] },',
+      '  ok: true,',
+      '});',
+    ].join('\n')
+  );
+  put(
+    'broken-html-server.mjs',
+    'export const parseHtml = () => ({ document: { children: [] }, ok: true });'
+  );
+  put(
+    'static.mjs',
+    [
+      'export const renderStaticHtml = async (editor) => ({',
+      '  data: editor.initialValue[0].children[0].text,',
+      '  diagnostics: [],',
+      '});',
+    ].join('\n')
+  );
+  const rows = [
+    {
+      runtime: 'ssr',
+      runtimeProof: 'plate-html-server',
+      specifier: entry('html-server.mjs'),
+    },
+    {
+      runtime: 'ssr',
+      runtimeProof: 'plate-static-html',
+      specifier: entry('static.mjs'),
+    },
+    {
+      runtime: 'client',
+      runtimeProof: 'plate-plugin-client',
+      specifier: entry('missing-client-entry.mjs'),
+    },
+  ];
+
+  await load('ssr.mjs', createSsrRuntimeProofSource(rows));
+  await assert.rejects(
+    load(
+      'broken-ssr.mjs',
+      createSsrRuntimeProofSource([
+        {
+          runtime: 'ssr',
+          runtimeProof: 'plate-html-server',
+          specifier: entry('broken-html-server.mjs'),
+        },
+      ])
+    ),
+    assert.AssertionError
+  );
+  globalThis.document = {};
+  try {
+    await assert.rejects(
+      load('dom-ssr.mjs', createSsrRuntimeProofSource(rows)),
+      assert.AssertionError
+    );
+  } finally {
+    delete globalThis.document;
+  }
   assert.throws(
     () =>
       createSsrRuntimeProofSource([
@@ -507,18 +662,13 @@ test('the repository root has no workspace dependencies', () => {
   }
 });
 
-test('root and Core checks preserve partition dependencies', () => {
+test('root checks preserve partition dependencies', () => {
   const manifest = JSON.parse(
     fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
-  );
-  const checkCore = fs.readFileSync(
-    path.join(repoRoot, 'tooling/scripts/check-core.mjs'),
-    'utf-8'
   );
 
   assert.doesNotMatch(manifest.scripts['g:typecheck'], /--only/u);
   assert.doesNotMatch(manifest.scripts['g:typecheck:all'], /--only/u);
-  assert.doesNotMatch(checkCore, /['"]--only['"]/u);
 });
 
 test('workspace consumers declare dependencies at their owning app', () => {

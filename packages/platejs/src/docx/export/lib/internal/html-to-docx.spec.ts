@@ -133,11 +133,29 @@ describe('htmlToDocxBlob', () => {
       const result = await htmlToDocxBlob(html);
       const zip = await loadZipFromBlob(result);
 
-      const docXml = await zip.file('word/document.xml')!.async('string');
-      expect(docXml).toContain('Heading 1');
-      expect(docXml).toContain('Heading 6');
-      expect(docXml).toContain('Heading1');
-      expect(docXml).toContain('Heading2');
+      const docXml = new DOMParser().parseFromString(
+        await zip.file('word/document.xml')!.async('string'),
+        'application/xml'
+      );
+      const paragraphs = [...docXml.getElementsByTagName('w:p')]
+        .filter((paragraph) =>
+          [...paragraph.getElementsByTagName('w:t')].some(({ textContent }) =>
+            textContent?.trim()
+          )
+        )
+        .map((paragraph) => [
+          paragraph.getElementsByTagName('w:pStyle')[0]?.getAttribute('w:val'),
+          [...paragraph.getElementsByTagName('w:t')]
+            .map(({ textContent }) => textContent)
+            .join(''),
+        ]);
+
+      expect(paragraphs).toEqual(
+        [1, 2, 3, 4, 5, 6].map((level) => [
+          `Heading${level}`,
+          `Heading ${level}`,
+        ])
+      );
     });
   });
 

@@ -50,9 +50,15 @@ const selected = isDiscovery
   : catalog.filter(({ line }) => locations.includes(line));
 const unitOrdinal = isDiscovery ? null : (control.unitOrdinal ?? 0) + 1;
 
+if (isDiscovery && control.hangDiscovery) {
+  setInterval(() => {}, 60_000);
+  return;
+}
+
 if (!isDiscovery) {
   control.unitOrdinal = unitOrdinal;
-  fs.writeFileSync(controlFile, JSON.stringify(control));
+  fs.writeFileSync(controlFile + '.' + process.pid, JSON.stringify(control));
+  fs.renameSync(controlFile + '.' + process.pid, controlFile);
 }
 
 fs.appendFileSync(
@@ -60,6 +66,7 @@ fs.appendFileSync(
   JSON.stringify({
     args,
     kind: isDiscovery ? 'discovery' : 'unit',
+    outputDir: process.env.PLITE_BROWSER_OUTPUT_DIR,
     selected: selected.map(({ id }) => id),
     unitOrdinal,
   }) + '\n'
@@ -262,7 +269,7 @@ const runnerControlEnvironmentNames = [
   'STRESS_SEED',
 ];
 
-const createFixtureRunner = (fixture, overrides = {}) => {
+const createFixtureRunner = (fixture, overrides = {}, mode = 'chromium') => {
   const environment = { ...process.env };
 
   for (const name of runnerControlEnvironmentNames) {
@@ -287,7 +294,7 @@ const createFixtureRunner = (fixture, overrides = {}) => {
     environment,
     run: () =>
       runBoundedProcess({
-        args: [fixture.runnerFile, 'chromium'],
+        args: [fixture.runnerFile, mode],
         command: process.execPath,
         cwd: fixture.appRoot,
         env: environment,
@@ -573,6 +580,69 @@ test(
     assert.equal(
       forcedSummary.units.every(({ reused }) => !reused),
       true
+    );
+  }
+);
+
+test(
+  'bounds a hung Playwright discovery with its process deadline',
+  { timeout: 30_000 },
+  async (context) => {
+    const fixture = createFixture();
+
+    context.after(() => {
+      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true });
+    });
+    writeFile(fixture.controlFile, '{"hangDiscovery":true,"unitOrdinal":0}\n');
+    const { run } = createFixtureRunner(fixture, {
+      PLITE_BROWSER_DISCOVERY_TIMEOUT_MS: '500',
+    });
+    const result = await run();
+
+    assert.equal(
+      result.timedOut,
+      false,
+      'the runner must stop a hung discovery at its own deadline'
+    );
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Unable to enumerate chromium browser tests/);
+  }
+);
+
+test(
+  'parallel local matrix isolates artifacts per project',
+  { timeout: 30_000 },
+  async (context) => {
+    const fixture = createFixture();
+
+    context.after(() => {
+      fs.rmSync(fixture.fixtureRoot, { force: true, recursive: true });
+    });
+    const { run } = createFixtureRunner(fixture, {}, 'matrix');
+    const result = await run();
+
+    assert.equal(result.status, 0, result.stderr);
+    const outputDirectories = new Map();
+
+    for (const { args, kind, outputDir } of readInvocations(fixture.logFile)) {
+      if (kind !== 'unit') continue;
+      const project = args
+        .find((argument) => argument.startsWith('--project='))
+        .slice('--project='.length);
+
+      outputDirectories.set(project, [
+        ...new Set([...(outputDirectories.get(project) ?? []), outputDir]),
+      ]);
+    }
+
+    assert.ok(
+      outputDirectories.size > 1,
+      'the matrix must run several projects'
+    );
+    assert.equal(
+      new Set([...outputDirectories.values()].flat()).size,
+      outputDirectories.size,
+      'each project must write every batch into its own artifact directory'
     );
   }
 );

@@ -1,11 +1,13 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { fireEvent, render } from '@testing-library/react';
+import * as actualReact from 'platejs/react';
 import * as React from 'react';
 
 const readOnlyMock = mock(() => false);
 
 mock.module('platejs/react', () => ({
+  ...actualReact,
   EditorElement: ({
     children,
     className,

@@ -138,28 +138,42 @@ describe('getInjectMatch', () => {
   });
 
   it('respects excludeBelowPlugins and maxLevel', () => {
-    const plugin = definePlugin('depthFilter', {
-      inject: {
-        excludeBelowPlugins: [QuotePlugin],
-        maxLevel: 1,
-      },
+    const belowPlugin = definePlugin('belowFilter', {
+      inject: { excludeBelowPlugins: [QuotePlugin] },
+    });
+    const depthPlugin = definePlugin('depthFilter', {
+      inject: { maxLevel: 1 },
     });
 
-    const editor = createMatchEditor(plugin);
-    const match = getInjectMatch(editor, editor.plugin(plugin));
+    const belowEditor = createMatchEditor(belowPlugin);
+    const belowMatch = getInjectMatch(
+      belowEditor,
+      belowEditor.plugin(belowPlugin)
+    );
+    const depthEditor = createMatchEditor(depthPlugin);
+    const depthMatch = getInjectMatch(
+      depthEditor,
+      depthEditor.plugin(depthPlugin)
+    );
 
     expect(
-      match({ children: [{ text: 'leaf' }], type: 'paragraph' } as any, [0, 0])
-    ).toBe(false);
-    expect(
-      match({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
-    ).toBe(true);
-    expect(
-      match(
+      belowMatch(
         { children: [{ text: 'leaf' }], type: 'paragraph' } as any,
-        [0, 0, 0]
+        [0, 0]
       )
     ).toBe(false);
+    expect(
+      belowMatch({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
+    ).toBe(true);
+    expect(
+      depthMatch(
+        { children: [{ text: 'leaf' }], type: 'paragraph' } as any,
+        [0, 0]
+      )
+    ).toBe(false);
+    expect(
+      depthMatch({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
+    ).toBe(true);
   });
 
   it('resolves string exclusions through configured schema types', () => {

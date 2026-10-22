@@ -9,6 +9,8 @@ import {
 } from 'bun:test';
 
 import { act, render } from '@testing-library/react';
+import * as actualAIReact from 'platejs/ai/react';
+import * as actualReact from 'platejs/react';
 import * as React from 'react';
 
 let clickOutside: () => void;
@@ -52,10 +54,12 @@ const editor = {
 };
 
 mock.module('platejs/ai/react', () => ({
+  ...actualAIReact,
   AIChatPlugin: { name: 'aiChat' },
 }));
 
 mock.module('platejs/react', () => ({
+  ...actualReact,
   BoldPlugin: { name: 'bold' },
   CodePlugin: { name: 'code' },
   definePlugin: (name: string, definition: object) => ({

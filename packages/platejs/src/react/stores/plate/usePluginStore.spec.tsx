@@ -164,16 +164,11 @@ describe('usePluginStore', () => {
     });
   });
 
-  it('evaluates named selectors against the supplied subscription snapshot', () => {
-    const snapshots: number[] = [];
+  it('updates a lone named-selector subscription when its store changes', () => {
     const CounterPlugin = definePlugin('counter', {
       initialState: { value: 1 },
       selectors: {
-        trackedValue: (state) => {
-          snapshots.push(state.value);
-
-          return state.value;
-        },
+        trackedValue: (state) => state.value,
       },
     });
     const editor = createEditor({ plugins: [CounterPlugin] });
@@ -190,8 +185,6 @@ describe('usePluginStore', () => {
     });
 
     expect(result.current).toBe(2);
-    expect(snapshots).toContain(1);
-    expect(snapshots).toContain(2);
   });
 
   it('selects the requested editor store inside nested providers', () => {

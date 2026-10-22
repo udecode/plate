@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 
-import { getPluginRegistry } from '../../../plitejs/src/core/plugin-registry';
-import { createEditorSchemaContract } from '../../../plitejs/src/core/schema-compiler';
-import type { RuntimePluginContributionInput } from '../../../plitejs/src/interfaces/editor';
 import { dataTransferFormats } from '../dom';
-import { definePlugin, property, schema, target, type Editor } from '../index';
+import {
+  definePlugin,
+  property,
+  schema,
+  target,
+  type Editor,
+  type PluginContributionInput,
+} from '../index';
 import { getPlateModelPublication } from '../internal/plugin/compilePlateModel';
 import { getPlateRuntimeCandidate } from '../internal/plugin/plateRuntime';
 import { getPluginStore } from '../internal/plugin/pluginStore';
@@ -83,9 +87,8 @@ describe('compileEditor', () => {
     expect(getPlateRuntimeCandidate(host!)).toBeUndefined();
     expect(getPluginStore(host!, Box)).toBeUndefined();
     const runtime = createEditor(input);
-    const committed = getPluginRegistry(runtime).schemaContributions.compiled;
-    expect(result.schema).toEqual(createEditorSchemaContract(committed));
-    expect(result.schema.identity).not.toBe(committed.identity);
+    expect(result.schema.identity).toEqual(runtime.read.schema.identity());
+    expect(result.schema.identity).not.toBe(runtime.read.schema.identity());
     expect(calls).toContain('activate');
     expect(calls).toContain('generate');
     expect(compileEditor(input)).toEqual(result);
@@ -156,7 +159,7 @@ describe('compileEditor', () => {
         return {};
       },
       contributions:
-        formats.contributions as readonly RuntimePluginContributionInput[],
+        formats.contributions as readonly PluginContributionInput[],
       initialState: { ready: true },
     });
 

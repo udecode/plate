@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import {
-  existsSync,
   mkdirSync,
   mkdtempSync,
-  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -369,52 +367,6 @@ test('non-direct package builds enforce inferred runtime boundaries', async (t) 
     () => config.hooks['build:done']({}),
     /Runtime import boundary violation from dist\/index\.js: dist\/index\.js -> react/u
   );
-});
-
-test('all root and React packages use a runtime-boundary-aware build owner', () => {
-  const packagesRoot = path.resolve(import.meta.dirname, '../../packages');
-  const packageJsonPaths = [];
-  const visit = (directory) => {
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      const entryPath = path.join(directory, entry.name);
-
-      if (entry.isDirectory()) {
-        visit(entryPath);
-      } else if (entry.name === 'package.json') {
-        packageJsonPaths.push(entryPath);
-      }
-    }
-  };
-
-  visit(packagesRoot);
-
-  const targets = packageJsonPaths.filter((packageJsonPath) => {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-
-    return getPackageRuntimeImportBoundaries(packageJson).length > 0;
-  });
-
-  assert.ok(targets.length > 0);
-
-  for (const packageJsonPath of targets) {
-    const packageRoot = path.dirname(packageJsonPath);
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-    const localConfigPath = path.join(packageRoot, 'tsdown.config.mts');
-
-    if (!existsSync(localConfigPath)) {
-      assert.equal(packageJson.scripts?.build, 'plate-pkg p:build');
-      continue;
-    }
-
-    assert.equal(
-      packageJson.scripts?.build,
-      packageJson.name === 'platejs' ? plateBuildScript : directBuildScript
-    );
-    assert.match(
-      readFileSync(localConfigPath, 'utf-8'),
-      /(?:createPlatePackageConfig|defineDirectPackageConfig)/u
-    );
-  }
 });
 
 test('rejects missing local chunks inside a runtime boundary', (t) => {

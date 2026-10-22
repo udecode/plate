@@ -11,7 +11,6 @@ import {
   SelectionApi,
   PLUGINS,
 } from '../../../core';
-import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { parseHtmlSliceContent } from '../../../internal/testing/parseHtmlSliceContent';
 import { BaseHeadingPlugin, HeadingRules } from './BaseHeadingPlugins';
 
@@ -351,24 +350,6 @@ describe('heading input rules', () => {
         type: 'sectionHeading',
       },
     ]);
-  });
-
-  it('registers one markdown rule for the heading capability', () => {
-    const editor = createEditor({
-      plugins: [
-        BaseHeadingPlugin.configure({
-          inputRules: [HeadingRules.markdown()],
-        }),
-      ],
-    });
-    const { inputRules } = getPlateRuntime(editor);
-
-    expect(inputRules.plugins.heading.rules.map((rule) => rule.id)).toEqual([
-      'heading.0',
-    ]);
-    expect(inputRules.insertText.byTrigger[' '].map((rule) => rule.id)).toEqual(
-      ['heading.0']
-    );
   });
 
   it.each([

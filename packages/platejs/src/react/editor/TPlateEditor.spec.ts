@@ -1,8 +1,5 @@
-import { property } from '../../facade';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { definePlugin } from '../../lib/plugin/definePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
-import { someHtmlElement } from '../../lib/plugins/html/htmlDom';
 import { createEditor } from './withPlate';
 
 describe('Editor', () => {
@@ -124,37 +121,6 @@ describe('Editor', () => {
 
       // @ts-expect-error -- unavailable plugin APIs must remain excluded
       editor.api.nonExistentMethod;
-    });
-  });
-
-  describe('Plugin', () => {
-    const BoldPlugin = definePlugin('bold', {
-      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-      formats: ({ defineFormats }) =>
-        defineFormats({
-          html: {
-            decode: ({ element }) =>
-              someHtmlElement(
-                element,
-                (node) => node.style.fontWeight === 'normal'
-              )
-                ? undefined
-                : true,
-            encode: ({ value }) => (value ? { tag: 'strong' } : null),
-            match: [
-              { tag: ['strong', 'b'] },
-              { style: { fontWeight: ['600', '700', 'bold'] } },
-            ],
-          },
-        }),
-    });
-
-    it('supports specific plugin generics on createEditor', () => {
-      const editor = createEditor({
-        plugins: [BoldPlugin],
-      });
-
-      expect(getPlateRuntime(editor).plugins[BoldPlugin.name]).toBeDefined();
     });
   });
 });

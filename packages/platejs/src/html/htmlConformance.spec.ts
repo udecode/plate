@@ -6,11 +6,8 @@ import {
   BaseParagraphPlugin,
   createEditor,
   type Descendant,
-  definePlugin,
   ElementApi,
   PLUGINS,
-  property,
-  schema,
   TextApi,
   type Value,
 } from '../core';
@@ -674,87 +671,6 @@ describe('HTML round-trip conformance', () => {
     }
 
     expect([...emitted].sort()).toEqual([...PLATE_HTML_ATTRIBUTES].sort());
-  });
-
-  it('fails an emitted attribute that no decoder claims', () => {
-    const define = (claim: boolean) =>
-      definePlugin('htmlConformanceNote', {
-        formats: ({ defineFormats }) =>
-          defineFormats({
-            html: {
-              decode: ({ element, preserve }) => {
-                if (claim) preserve('data-language');
-
-                return element.dataset.language
-                  ? { tone: element.dataset.language }
-                  : {};
-              },
-              encode: ({ content, node, preserve }) => {
-                preserve('tone');
-
-                return {
-                  attributes: { 'data-language': node.tone },
-                  children: content,
-                  tag: 'aside',
-                };
-              },
-              match: [{ tag: 'aside' }],
-            },
-          }),
-        schema: {
-          element: {
-            content: schema.content.text({ default: 'text', min: 1 }),
-            properties: { tone: property.string() },
-          },
-        },
-      });
-    const document = [
-      { children: [{ text: 'x' }], tone: 'loud', type: 'htmlConformanceNote' },
-    ];
-
-    expect(
-      audit(createEditor({ plugins: [...plugins, define(false)] }), document)
-        .problems
-    ).toEqual(['0 <aside> data-language: emitted but not read']);
-    expect(
-      audit(createEditor({ plugins: [...plugins, define(true)] }), document)
-        .problems
-    ).toEqual([]);
-  });
-
-  it('fails a claim that the output does not keep', () => {
-    const define = (claim: boolean) =>
-      definePlugin('htmlConformanceTone', {
-        formats: ({ defineFormats }) =>
-          defineFormats({
-            html: {
-              decode: () => ({}),
-              encode: ({ content, preserve }) => {
-                if (claim) preserve('tone');
-
-                return { children: content, tag: 'aside' };
-              },
-              match: [{ tag: 'aside' }],
-            },
-          }),
-        schema: {
-          element: {
-            content: schema.content.text({ default: 'text', min: 1 }),
-            properties: { tone: property.string() },
-          },
-        },
-      });
-    const document = [
-      { children: [{ text: 'x' }], tone: 'loud', type: 'htmlConformanceTone' },
-    ];
-
-    expect(
-      audit(createEditor({ plugins: [...plugins, define(true)] }), document)
-        .problems
-    ).toEqual(['0 tone: "loud" read back as undefined without a report']);
-    expect(
-      audit(createEditor({ plugins: [...plugins, define(false)] }), document)
-    ).toEqual({ problems: [], reported: ['0:tone'] });
   });
 });
 

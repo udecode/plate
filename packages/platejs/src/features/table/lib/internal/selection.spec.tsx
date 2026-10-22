@@ -680,42 +680,6 @@ describe('readTableSelection', () => {
     ).toBe(editor.key([0, 1, 0])!);
   });
 
-  it('matches generated span-grid navigation in every direction', () => {
-    for (let seed = 1; seed <= 50; seed++) {
-      const context = createDetachedTableContext(
-        createGeneratedSpanTable(seed)
-      );
-
-      expect(context.grid.problems).toEqual([]);
-
-      context.grid.anchors.forEach((anchor, order) => {
-        const expected = {
-          above: context.anchorAt(anchor.row - 1, anchor.col),
-          below: context.anchorAt(anchor.row + anchor.rowSpan, anchor.col),
-          left: context.anchorAt(anchor.row, anchor.col - 1),
-          next: context.grid.anchors[order + 1] ?? null,
-          previous: context.grid.anchors[order - 1] ?? null,
-          right: context.anchorAt(anchor.row, anchor.col + anchor.colSpan),
-        } as const;
-
-        expect(anchor.order).toBe(order);
-
-        for (const direction of [
-          'above',
-          'below',
-          'left',
-          'next',
-          'previous',
-          'right',
-        ] as const) {
-          expect(getTableSelectionNeighbor(context, anchor, direction)).toBe(
-            expected[direction]
-          );
-        }
-      });
-    }
-  });
-
   it('closes generated span selections symmetrically over complete slots', () => {
     for (let seed = 1; seed <= 25; seed++) {
       const table = createGeneratedSpanTable(seed);

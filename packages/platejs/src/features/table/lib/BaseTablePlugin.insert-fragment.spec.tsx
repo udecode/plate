@@ -956,7 +956,7 @@ describe('table clipboard contracts', () => {
 
   describe('BaseTablePlugin insertFragment fitContent', () => {
     for (const openDepth of [0, 1]) {
-      it(`delegates a ${openDepth === 0 ? 'closed' : 'open'} table slice outside tables to one core fit and commit`, () => {
+      it(`delegates a ${openDepth === 0 ? 'closed' : 'open'} table slice outside tables to core insertion in one commit`, () => {
         const editor = createTestTableEditor({
           plugins: [BaseTablePlugin],
           selection: {
@@ -1001,38 +1001,24 @@ describe('table clipboard contracts', () => {
           })
         );
 
-        const profilerGlobal = globalThis as typeof globalThis & {
-          __EDITOR_REACT_RENDER_PROFILER__?: {
-            acceptsCoreDuration: (id: string) => boolean;
-            record: (event: { id: string }) => void;
-          };
-        };
-        const previousProfiler =
-          profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__;
-        const fitEvents: string[] = [];
         const commits: unknown[] = [];
         const unsubscribe = editor.subscribeCommit((commit) => {
           commits.push(commit);
         });
 
-        profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = {
-          acceptsCoreDuration: (id) => id === 'slice-fit-input',
-          record: ({ id }) => {
-            if (id) fitEvents.push(id);
-          },
-        };
-
         try {
           assert.equal(editor.update.slice.replace(slice), true);
         } finally {
-          profilerGlobal.__EDITOR_REACT_RENDER_PROFILER__ = previousProfiler;
           unsubscribe();
         }
 
         assert.equal(seen.length, 1);
         assert.equal(seen[0], slice);
-        assert.deepEqual(fitEvents, ['slice-fit-input']);
         assert.equal(commits.length, 1);
+        expect(editor.read.children()).toMatchObject([
+          { children: [{ text: 'one' }], type: 'paragraph' },
+          table,
+        ]);
       });
     }
 

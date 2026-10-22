@@ -66,31 +66,6 @@ const renderPipe = (editor: Editor) => {
   );
 };
 
-const renderPipeBare = (editor: Editor) => {
-  const renderElement = pipeRenderElement(editor)!;
-  const element = editor.read.children()[0];
-
-  const RenderProbe = () =>
-    renderElement({
-      attributes: {} as any,
-      children: 'Body',
-      element,
-      slots: {
-        children: () => null,
-        contentBoundary: ({ children }) => children,
-        contentRoot: () => null,
-      },
-    });
-
-  return render(
-    <EditorRoot editor={editor}>
-      <PlateRoot>
-        <RenderProbe />
-      </PlateRoot>
-    </EditorRoot>
-  );
-};
-
 describe('pipeRenderElement', () => {
   it('renders dynamic heading levels as intrinsic elements', () => {
     const editor = createEditor({
@@ -281,26 +256,6 @@ describe('pipeRenderElement', () => {
     ).toHaveAttribute('data-default-injection', 'true');
   });
 
-  it('resolves the node path on the plain fast path', () => {
-    const editor = createEditor({
-      navigationFeedback: false,
-      plugins: [],
-      initialValue: createValue(),
-    });
-
-    expect(() => renderPipeBare(editor)).not.toThrow();
-  });
-
-  it('resolves the node path when elements carry application metadata', () => {
-    const editor = createEditor({
-      navigationFeedback: false,
-      plugins: [ElementIdPlugin],
-      initialValue: createValue('block-1'),
-    });
-
-    expect(() => renderPipeBare(editor)).not.toThrow();
-  });
-
   it('does not publish application metadata as DOM identity', () => {
     const editor = createEditor({
       navigationFeedback: false,
@@ -455,8 +410,9 @@ describe('pipeRenderElement', () => {
   });
 
   it('runs inactive wrapNodeChildren slots under element context', () => {
+    let path: readonly number[] | undefined;
     const useInactiveBelowNodes = ({ element }: any) => {
-      usePath();
+      path = usePath();
 
       return element.type === 'quote'
         ? ({ children }: any) => <section>{children}</section>
@@ -474,11 +430,9 @@ describe('pipeRenderElement', () => {
       initialValue: createValue(),
     });
 
-    const { container } = renderPipe(editor);
+    renderPipe(editor);
 
-    expect(
-      container.querySelector('[data-editor-node="element"]')
-    ).toBeTruthy();
+    expect(path).toEqual([0]);
   });
 
   it('keeps plain fast-path markup for inject.nodeProps', () => {
@@ -506,7 +460,7 @@ describe('pipeRenderElement', () => {
       ] as any,
     });
 
-    const { container } = renderPipeBare(editor);
+    const { container } = renderPipe(editor);
     const element = container.querySelector('[data-editor-node="element"]');
 
     expect((element as HTMLElement).style.listStyleType).toBe('disc');

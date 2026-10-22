@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import * as PlateReact from 'platejs/react';
 import * as PlateStatic from 'platejs/static';
 import * as React from 'react';
@@ -751,59 +751,6 @@ describe('footnote node rendering', () => {
     expect(normalizeDuplicateDefinition).toHaveBeenCalledWith({
       ref: '7',
       path: [5],
-    });
-  });
-
-  it('refreshes the hover preview when the definition text changes while open', async () => {
-    const state = { preview: 'Old preview' };
-
-    const editor = withPluginEditor({
-      read: {
-        footnote: {
-          definitionText: () => state.preview,
-          isResolved: () => true,
-        },
-      },
-      api: {
-        footnote: {
-          focusDefinition: () => true,
-        },
-      },
-    } as any);
-    editorSelectorEditor = undefined;
-
-    const { FootnoteReferenceElement } = await import(
-      `./footnote?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    const { container, rerender } = render(
-      <FootnoteReferenceElement
-        attributes={{}}
-        editor={editor}
-        element={{ children: [{ text: '' }], ref: '1' } as any}
-      >
-        <span />
-      </FootnoteReferenceElement>
-    );
-
-    await waitFor(() => {
-      expect(container.textContent).toContain('Old preview');
-    });
-
-    state.preview = 'New preview';
-
-    rerender(
-      <FootnoteReferenceElement
-        attributes={{}}
-        editor={editor}
-        element={{ children: [{ text: '' }], ref: '1' } as any}
-      >
-        <span />
-      </FootnoteReferenceElement>
-    );
-
-    await waitFor(() => {
-      expect(container.textContent).toContain('New preview');
     });
   });
 

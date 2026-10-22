@@ -1,6 +1,4 @@
 import { describe, expect, test } from 'bun:test';
-import { existsSync, readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 
 import {
   browserStep,
@@ -198,234 +196,6 @@ describe('scenario helpers', () => {
         ['table', 'table-cell-boundary-navigation', ['tables']],
       ])
     );
-  });
-
-  test('keeps generated stress parity out of the default check script', () => {
-    const packageJsonPath = fileURLToPath(
-      new URL('../../../../package.json', import.meta.url)
-    );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
-      scripts: Record<string, string>;
-    };
-    const { scripts } = packageJson;
-
-    expect(scripts.check).not.toContain('test:stress');
-    expect(scripts.check).not.toContain('test:integration-local');
-    expect(scripts.check).not.toContain('check:full');
-    expect(scripts['plite:browser:test']).toContain('@platejs/test test');
-    expect(scripts['plite:browser:test:proof']).toContain(
-      '@platejs/test test:proof'
-    );
-    expect(scripts['plite:browser:test:selection']).toContain(
-      '@platejs/test test:selection'
-    );
-  });
-
-  test('documents integration coverage outside the default check script', () => {
-    const packageJsonPath = fileURLToPath(
-      new URL('../../../../package.json', import.meta.url)
-    );
-    const readmePath = fileURLToPath(
-      new URL('../../../../README.md', import.meta.url)
-    );
-    const contributingPath = fileURLToPath(
-      new URL('../../../../CONTRIBUTING.md', import.meta.url)
-    );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
-      scripts: Record<string, string>;
-    };
-    const { scripts } = packageJson;
-    const docs = [
-      readFileSync(readmePath, 'utf-8'),
-      readFileSync(contributingPath, 'utf-8'),
-    ];
-
-    expect(scripts.check).not.toContain('plite:browser:test:proof');
-    expect(scripts.e2e).toContain('playwright test');
-    expect(scripts['plite:browser:test:proof']).toContain(
-      '@platejs/test test:proof'
-    );
-    for (const doc of docs) {
-      expect(doc).toContain('Plate');
-    }
-  });
-
-  test('builds plite-browser before public-export Playwright integration', () => {
-    const packageJsonPath = fileURLToPath(
-      new URL('../../../../package.json', import.meta.url)
-    );
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
-      scripts: Record<string, string>;
-    };
-    const { scripts } = packageJson;
-
-    if (!scripts.playwright) {
-      expect(scripts['plite:packages:build']).toContain('./packages/test');
-      expect(scripts['plite:browser:test:proof']).toContain(
-        '@platejs/test test:proof'
-      );
-      expect(scripts['plite:browser:test:selection']).toContain(
-        '@platejs/test test:selection'
-      );
-      return;
-    }
-
-    expect(scripts.playwright).toContain('bun --filter plite-browser build');
-    expect(scripts['test:integration']).toContain('bun run playwright');
-    expect(scripts['test:integration-local']).toContain('bun run playwright');
-    expect(scripts['test:stress']).toContain(
-      'bun --filter plite-browser build'
-    );
-    expect(scripts['test:stress']).toContain('playwright test');
-    expect(scripts['test:stress:audit']).toContain(
-      'scripts/stress/audit-artifacts.mjs'
-    );
-    expect(scripts['test:stress:audit']).toContain(
-      'STRESS_AUDIT_EXPECTED_PER_PROJECT=24'
-    );
-    expect(scripts['test:stress:audit']).toContain(
-      'STRESS_AUDIT_PROJECTS=chromium'
-    );
-    expect(scripts['test:stress:audit']).toContain(
-      'STRESS_AUDIT_MAX_AGE_MINUTES=30'
-    );
-    expect(scripts['test:stress:audit:desktop']).toContain(
-      'STRESS_AUDIT_EXPECTED_PER_PROJECT=24'
-    );
-    expect(scripts['test:stress:audit:desktop']).not.toContain(
-      'STRESS_AUDIT_MAX_AGE_MINUTES'
-    );
-    const stressAuditSource = readFileSync(
-      fileURLToPath(
-        new URL(
-          '../../../../scripts/stress/audit-artifacts.mjs',
-          import.meta.url
-        )
-      ),
-      'utf-8'
-    );
-
-    expect(stressAuditSource).toContain('expectedPerProject === null');
-    expect(stressAuditSource).toContain('? 30');
-    expect(stressAuditSource).toContain(': null');
-    expect(stressAuditSource).toContain(
-      "import { getDesktopProjects } from './desktop-projects.mjs'"
-    );
-    expect(stressAuditSource).toContain("getDesktopProjects().join(',')");
-    expect(stressAuditSource).toContain('.slice(0, expectedPerProject)');
-    expect(stressAuditSource).toContain('getBunScript(artifact.replayCommand)');
-    expect(stressAuditSource).toContain(
-      "getEnvAssignment(candidate.replayCommand, 'STRESS_REDUCTION')"
-    );
-    expect(scripts['test:stress:desktop']).toContain(
-      'bun --filter plite-browser build'
-    );
-    expect(scripts['test:stress:desktop']).toContain(
-      'scripts/stress/project-args.mjs desktop'
-    );
-    const stressProjectArgsSource = readFileSync(
-      fileURLToPath(
-        new URL('../../../../scripts/stress/project-args.mjs', import.meta.url)
-      ),
-      'utf-8'
-    );
-    const stressDesktopProjectsSource = readFileSync(
-      fileURLToPath(
-        new URL(
-          '../../../../scripts/stress/desktop-projects.mjs',
-          import.meta.url
-        )
-      ),
-      'utf-8'
-    );
-
-    expect(stressProjectArgsSource).toContain(
-      "import { getDesktopProjects } from './desktop-projects.mjs'"
-    );
-    expect(stressProjectArgsSource).toContain('getDesktopProjects()');
-    expect(stressDesktopProjectsSource).toContain("os.type() === 'Darwin'");
-    expect(scripts['test:stress:desktop']).toContain('playwright test');
-    expect(scripts['test:stress:replay']).toContain(
-      'bun --filter plite-browser build'
-    );
-    expect(scripts['test:stress:replay']).toContain('playwright test');
-    expect(scripts['test:stress:replay:desktop']).toContain(
-      'bun --filter plite-browser build'
-    );
-    expect(scripts['test:stress:replay:desktop']).toContain(
-      'scripts/stress/project-args.mjs desktop'
-    );
-    expect(scripts['test:stress:replay:firefox']).toContain(
-      '--project=firefox'
-    );
-    expect(scripts['test:stress:replay:webkit']).toContain('--project=webkit');
-  });
-
-  test('keeps stress artifacts reducible before a scenario succeeds', () => {
-    const sourcePath = fileURLToPath(
-      new URL('../../../../playwright/stress/stress-utils.ts', import.meta.url)
-    );
-    const readmePath = fileURLToPath(
-      new URL('../../README.md', import.meta.url)
-    );
-    const readme = readFileSync(readmePath, 'utf-8');
-
-    if (!existsSync(sourcePath)) {
-      expect(readme).toContain('@platejs/test');
-      return;
-    }
-
-    const source = readFileSync(sourcePath, 'utf-8');
-
-    expect(source).toContain('createScenarioReductionCandidates');
-    expect(source).toContain('summarizeScenarioReductionCandidate');
-    expect(source).toContain('reductionCandidates ??');
-    expect(source).toContain(
-      'reductionCandidates: artifactReductionCandidates'
-    );
-    expect(source).toContain('STRESS_REDUCTION=');
-    expect(source).toContain('artifactStepsToScenarioSteps = (');
-    expect(source).toContain('reductionLabel');
-    expect(readme).toContain('STRESS_REDUCTION=<label>');
-    expect(readme).toContain('.reduction-<label>.result.json');
-  });
-
-  test('keeps generic HTML assertion exact instead of substring-only', () => {
-    const sourcePath = fileURLToPath(
-      new URL('../../src/playwright/harness-assertions.ts', import.meta.url)
-    );
-    const source = readFileSync(sourcePath, 'utf-8');
-
-    expect(source).toContain('html: async (');
-    expect(source).toContain('expectedHtml: string');
-    expect(source).toContain(
-      'await getHarness().assert.htmlEquals(expectedHtml'
-    );
-    expect(source).toContain('htmlContains: async (expectedFragment: string)');
-  });
-
-  test('exposes blur-caret proof as a first-party Playwright assertion', () => {
-    const sourcePath = fileURLToPath(
-      new URL('../../src/playwright/harness-assertions.ts', import.meta.url)
-    );
-    const caretSourcePath = fileURLToPath(
-      new URL('../../src/playwright/caret-visibility.ts', import.meta.url)
-    );
-    const typeSourcePath = fileURLToPath(
-      new URL('../../src/playwright/types.ts', import.meta.url)
-    );
-    const readmePath = fileURLToPath(
-      new URL('../../README.md', import.meta.url)
-    );
-    const source = readFileSync(sourcePath, 'utf-8');
-    const caretSource = readFileSync(caretSourcePath, 'utf-8');
-    const typeSource = readFileSync(typeSourcePath, 'utf-8');
-    const readme = readFileSync(readmePath, 'utf-8');
-
-    expect(typeSource).toContain('noVisibleCaretInRoot: () => Promise<void>');
-    expect(caretSource).toContain('assertNoVisibleCaretInRoot');
-    expect(source).toContain('await assertNoVisibleCaretInRoot(root)');
-    expect(readme).toContain('editor.assert.noVisibleCaretInRoot()');
   });
 
   test('summarizes canonical reduction candidates as replayable data', () => {
@@ -682,25 +452,9 @@ describe('scenario helpers', () => {
       },
     ];
 
-    expect(createScenarioReplay(steps).replayable).toBe(true);
-    expect(createScenarioReplay(steps).steps.map((step) => step.kind)).toEqual([
-      'dragTextSelection',
-      'assertLocatorCount',
-      'assertLocatorCss',
-      'assertLocatorVerticalGap',
-      'assertLocatorVerticalOffset',
-      'assertModelSelectionExpanded',
-      'assertLocatorText',
-      'clickSelector',
-      'captureNodeKey',
-      'applyChange',
-      'assertCapturedNodeKeyPath',
-      'assertLastCommitTags',
-      'assertWindowSelectionText',
-      'assertSelectionContract',
-      'assertRenderBudget',
-      'resetRenderProfiler',
-    ]);
+    expect(createScenarioReplay(steps).steps.map((step) => step.value)).toEqual(
+      steps
+    );
   });
 
   test('rejects closures hidden inside canonical scenario data', () => {
@@ -1451,19 +1205,66 @@ describe('scenario helpers', () => {
     });
 
     expect(createScenarioReplay(steps).replayable).toBe(true);
-    expect(steps.map((step) => step.label)).toEqual(
+    const shape = { blockIndex: 0, noUnexpectedZeroWidthBreaks: true };
+
+    expect(steps).toEqual(
       expect.arrayContaining([
-        'paste-over-selected-range',
-        'assert-dom-shape-after-paste',
-        'delete-after-paste-Backspace',
-        'assert-dom-shape-after-delete-after-paste',
-        'assert-dom-shape-after-delete-follow-up',
-        'word-delete-backward-1',
-        'assert-dom-shape-after-word-delete-1',
-        'word-delete-backward-2',
-        'assert-dom-shape-after-word-delete-2',
-        'assert-tail-blocks-after-word-delete-follow-up',
-        'assert-dom-shape-after-word-delete-follow-up',
+        {
+          kind: 'pasteText',
+          label: 'paste-over-selected-range',
+          text: 'Paste',
+        },
+        {
+          kind: 'assertRenderedDOMShape',
+          label: 'assert-dom-shape-after-paste',
+          shape: { ...shape, textContent: 'Paste text' },
+        },
+        {
+          key: 'Backspace',
+          kind: 'press',
+          label: 'delete-after-paste-Backspace',
+        },
+        {
+          kind: 'assertRenderedDOMShape',
+          label: 'assert-dom-shape-after-delete-after-paste',
+          shape: { ...shape, textContent: 'Past text' },
+        },
+        {
+          kind: 'assertRenderedDOMShape',
+          label: 'assert-dom-shape-after-delete-follow-up',
+          shape: { ...shape, textContent: 'Past! text' },
+        },
+        {
+          key: 'Alt+Backspace',
+          kind: 'press',
+          label: 'word-delete-backward-1',
+        },
+        {
+          kind: 'assertRenderedDOMShape',
+          label: 'assert-dom-shape-after-word-delete-1',
+          shape,
+        },
+        {
+          key: 'Alt+Backspace',
+          kind: 'press',
+          label: 'word-delete-backward-2',
+        },
+        {
+          kind: 'assertRenderedDOMShape',
+          label: 'assert-dom-shape-after-word-delete-2',
+          shape,
+        },
+        {
+          kind: 'assertBlockTexts',
+          label: 'assert-tail-blocks-after-word-delete-follow-up',
+          startIndex: 1,
+          texts: ['tail'],
+        },
+        {
+          kind: 'assertRenderedDOMShape',
+          label: 'assert-dom-shape-after-word-delete-follow-up',
+          shape,
+        },
       ])
     );
     expect(

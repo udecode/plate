@@ -421,6 +421,27 @@ describe('AIChatPlugin read.commentRange', () => {
       ranges.push(range);
     }
 
-    expect(ranges).toMatchSnapshot();
+    expect(ranges).toEqual([
+      {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 32, path: [0, 0] },
+      },
+      {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 1, path: [1, 4] },
+      },
+      {
+        anchor: { offset: 0, path: [2, 0] },
+        focus: { offset: 42, path: [3, 0] },
+      },
+      {
+        anchor: { offset: 0, path: [4, 0] },
+        focus: { offset: 54, path: [7, 0] },
+      },
+      {
+        anchor: { offset: 0, path: [8, 0] },
+        focus: { offset: 9, path: [9, 26] },
+      },
+    ]);
   });
 });

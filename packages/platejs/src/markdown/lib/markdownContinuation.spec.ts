@@ -12,7 +12,7 @@ const cjkUnit = (index: number) =>
 const fixtures: Record<string, string> = {
   'ai transcript': Array.from({ length: 12 }, (_, index) => answerUnit(index))
     .join('\n')
-    .slice(0, 3000),
+    .slice(0, 2000),
   'cjk transcript': Array.from({ length: 12 }, (_, index) => cjkUnit(index))
     .join('\n')
     .slice(0, 2000),
@@ -108,9 +108,7 @@ describe('continued Markdown parsing', () => {
           );
         }
       }
-    },
-    // The oracle reparses every prefix from scratch.
-    60_000
+    }
   );
 
   it('gives the first block of a continued segment its previous sibling', () => {

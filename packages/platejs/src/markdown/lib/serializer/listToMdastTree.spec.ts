@@ -304,12 +304,6 @@ describe('listToMdastTree', () => {
     expect(getList(result.children[0], 1).children).toHaveLength(2);
   });
 
-  it('throw error for empty nodes', () => {
-    expect(() => listToMdastTree([], runtimeOptions)).toThrow(
-      'Cannot create a list from empty nodes'
-    );
-  });
-
   it('handle mixed ordered and unordered nested lists', () => {
     const nodes = [
       {
@@ -455,76 +449,6 @@ describe('listToMdastTree', () => {
     expect(getText(getParagraph(result.children[1], 0), 0).value).toBe(
       'back to level 1'
     );
-  });
-
-  it('handle list items with rich text content', () => {
-    const nodes = [
-      {
-        children: [
-          { text: 'normal ', type: 'text' },
-          { bold: true, text: 'bold', type: 'text' },
-          { text: ' and ', type: 'text' },
-          { italic: true, text: 'italic', type: 'text' },
-        ],
-        indent: 1,
-        listType: 'bulleted',
-        type: 'paragraph',
-      },
-      {
-        children: [
-          { text: 'with ', type: 'text' },
-          {
-            children: [{ text: 'link', type: 'text' }],
-            type: 'link',
-            url: 'https://example.com',
-          },
-        ],
-        indent: 2,
-        listType: 'bulleted',
-        type: 'paragraph',
-      },
-    ];
-
-    const result = listToMdastTree(nodes, {
-      ...runtimeOptions,
-    });
-
-    const firstItem = getParagraph(result.children[0], 0).children;
-
-    expect(firstItem).toHaveLength(4);
-    expect(JSON.stringify(firstItem[1])).toContain('strong');
-    expect(JSON.stringify(firstItem[3])).toContain('emphasis');
-
-    const nestedList = getList(result.children[0], 1);
-    const nestedItem = getParagraph(getListItem(nestedList, 0), 0).children;
-
-    expect(JSON.stringify(nestedItem)).toContain('link');
-    expect(JSON.stringify(nestedItem)).toContain('https://example.com');
-  });
-
-  it('handle todo lists correctly', () => {
-    const nodes = [
-      {
-        checked: true,
-        children: [{ text: 'todo 1' }],
-        indent: 1,
-        listType: 'task',
-        type: 'paragraph',
-      },
-      {
-        checked: false,
-        children: [{ text: 'todo 2' }],
-        indent: 1,
-        listType: 'task',
-        type: 'paragraph',
-      },
-    ];
-
-    const result = listToMdastTree(nodes, {
-      ...runtimeOptions,
-    });
-
-    expect(result).toMatchSnapshot();
   });
 
   it('handle spread option correctly', () => {

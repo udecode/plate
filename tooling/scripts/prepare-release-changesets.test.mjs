@@ -1,5 +1,17 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import {
+  chmodSync,
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import {
   createAutoChangesetContent,
@@ -59,22 +71,53 @@ test('auto-releases transitive runtime dependents of released packages', () => {
 });
 
 test('does not follow peer-only relationships', () => {
-  const workspacePackages = createWorkspacePackages({
-    '@fixture/optional-peer': [],
-    platejs: ['plitejs'],
-    plitejs: [],
-  });
+  const root = mkdtempSync(path.join(tmpdir(), 'plate-release-changesets-'));
+  const put = (file, content) => {
+    mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    writeFileSync(
+      path.join(root, file),
+      typeof content === 'string' ? content : JSON.stringify(content)
+    );
+  };
 
-  const autoReleasePackages = getAutoReleasePackages(
-    [{ name: 'plitejs', type: 'patch' }],
-    workspacePackages
+  mkdirSync(path.join(root, 'tooling/scripts'), { recursive: true });
+  copyFileSync(
+    fileURLToPath(new URL('prepare-release-changesets.mjs', import.meta.url)),
+    path.join(root, 'tooling/scripts/prepare-release-changesets.mjs')
+  );
+  put('packages/plitejs/package.json', { name: 'plitejs' });
+  put('packages/platejs/package.json', {
+    dependencies: { plitejs: 'workspace:^' },
+    name: 'platejs',
+  });
+  put('packages/optional-peer/package.json', {
+    name: '@fixture/optional-peer',
+    peerDependencies: { plitejs: 'workspace:^' },
+  });
+  put('.changeset/plitejs-fix.md', "---\n'plitejs': patch\n---\n\nFix.\n");
+  put(
+    'bin/pnpm',
+    `#!/bin/sh\necho '${JSON.stringify({ releases: [{ name: 'plitejs', type: 'patch' }] })}'\n`
+  );
+  chmodSync(path.join(root, 'bin/pnpm'), 0o755);
+
+  const result = spawnSync(
+    process.execPath,
+    ['tooling/scripts/prepare-release-changesets.mjs'],
+    {
+      cwd: root,
+      encoding: 'utf-8',
+      env: {
+        ...process.env,
+        PATH: `${path.join(root, 'bin')}${path.delimiter}${process.env.PATH}`,
+      },
+    }
   );
 
-  assert.deepEqual(autoReleasePackages, [
-    {
-      name: 'platejs',
-      updatedDependencyNames: ['plitejs'],
-    },
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(readdirSync(path.join(root, '.changeset')).toSorted(), [
+    'auto-runtime-dependent-platejs.md',
+    'plitejs-fix.md',
   ]);
 });
 

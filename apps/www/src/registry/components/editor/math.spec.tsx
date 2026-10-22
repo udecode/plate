@@ -1,6 +1,10 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
+import * as actualPlate from 'platejs';
+import * as actualMath from 'platejs/math';
+import * as actualMathReact from 'platejs/math/react';
+import * as actualReact from 'platejs/react';
 import * as React from 'react';
 
 let selected = true;
@@ -31,11 +35,13 @@ const mockPlugin = (name: string) => ({
 });
 
 mock.module('platejs/math/react', () => ({
+  ...actualMathReact,
   EquationPlugin: mockPlugin('equation'),
   InlineEquationPlugin: mockPlugin('inlineEquation'),
 }));
 
 mock.module('platejs/math', () => ({
+  ...actualMath,
   MathRules: { markdown: mock(() => ({})) },
 }));
 
@@ -52,6 +58,7 @@ mock.module('react-textarea-autosize', () => ({
 }));
 
 mock.module('platejs', () => ({
+  ...actualPlate,
   NodeApi: { isElement: () => true },
   isHotkey: (hotkey: string) => (event: KeyboardEvent) =>
     event.key.toLowerCase() === hotkey.toLowerCase(),
@@ -65,6 +72,7 @@ mock.module('platejs', () => ({
 }));
 
 mock.module('platejs/react', () => ({
+  ...actualReact,
   EditorElement: ({ children }: React.PropsWithChildren) => (
     <div>{children}</div>
   ),

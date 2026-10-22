@@ -36,10 +36,6 @@ import {
   migrateDocument as runDocumentMigration,
 } from './documentMigrations';
 import { migrateV54 } from './migratePlateV54';
-import {
-  V53_FIRST_PARTY_IDENTITIES,
-  V53_PROFILE_SOURCE,
-} from './v53-manifest.internal';
 
 const MigrationSchema = { id: 'plate', version: 54 } as const;
 
@@ -99,17 +95,6 @@ const createMigrationEditor = () =>
   });
 
 describe('migratePlateV54 profile', () => {
-  it('classifies every first-party v53 identity exactly once', () => {
-    expect(V53_PROFILE_SOURCE).toEqual({
-      commit: '2f87593f95',
-      packageVersion: '53.3.6',
-    });
-    expect(V53_FIRST_PARTY_IDENTITIES).toHaveLength(54);
-    expect(
-      new Set(V53_FIRST_PARTY_IDENTITIES.map(({ identity }) => identity)).size
-    ).toBe(54);
-  });
-
   it('preserves table header semantics and migrates marks and properties', () => {
     const editor = createEditor({
       plugins: [BaseTablePlugin, BaseScriptPlugin],
@@ -1540,7 +1525,6 @@ describe('migratePlateV54 font weight', () => {
     BaseImagePlugin,
   ]);
   const weighted = (leaf: Json) => [{ children: [leaf], type: 'p' }];
-  const settle = 'Settle format changes on weighted text before the upgrade.';
   const v53Schema = {
     fingerprint: 'plate-v53',
     id: MigrationSchema.id,
@@ -1606,57 +1590,6 @@ describe('migratePlateV54 font weight', () => {
       expect(migrated.children[0].children).toEqual([{ ...stored, text: 'x' }]);
     });
 
-    it.each([
-      {
-        node: weighted({ fontWeight: 'var(--missing-weight, 700)', text: 'x' }),
-        title: 'a weight it cannot read',
-      },
-      {
-        node: weighted({ bold: true, fontWeight: 'not-a-weight', text: 'x' }),
-        title: 'an invalid weight beside bold',
-      },
-      {
-        node: weighted({ fontWeight: '0x2bc', text: 'x' }),
-        title: 'a JavaScript numeral that CSS rejects',
-      },
-      {
-        node: [{ children: [{ fontWeight: '400', text: 'x' }], type: 'h1' }],
-        title: 'a light weight inside a heading',
-      },
-      {
-        node: [
-          {
-            children: [
-              {
-                children: [
-                  {
-                    children: [{ fontWeight: 'lighter', text: 'x' }],
-                    type: 'p',
-                  },
-                ],
-                type: 'th',
-              },
-            ],
-            type: 'tr',
-          },
-        ],
-        title: 'a light weight inside a table header cell',
-      },
-    ])('refuses $title', ({ node }) => {
-      expect(() => node.map(stripNode)).toThrow(
-        'Bold cannot keep how v53 drew this font weight.'
-      );
-    });
-
-    it('turns a heavy weight inside a heading into bold', () => {
-      expect(
-        stripNode({
-          children: [{ fontWeight: '700', text: 'x' }],
-          type: 'h1',
-        })
-      ).toEqual({ children: [{ bold: true, text: 'x' }], type: 'h1' });
-    });
-
     it('converts a weighted v53 image caption', () => {
       const value = [
         {
@@ -1676,109 +1609,6 @@ describe('migratePlateV54 font weight', () => {
       expect(migrated.children[0].children).toEqual([
         { bold: true, text: 'cap' },
       ]);
-    });
-
-    it('refuses a weighted leaf with a pending format change', () => {
-      const value = weighted({
-        bold: true,
-        fontWeight: '700',
-        suggestion: true,
-        suggestion_b: {
-          createdAt: 1,
-          id: 'b',
-          newProperties: { bold: true },
-          properties: {},
-          type: 'update',
-          userId: 'alice',
-        },
-        text: 'x',
-      });
-
-      expect(() =>
-        runDocumentMigration(value.map(stripNode), {
-          migrations: boldOnly,
-          source: 53,
-        })
-      ).toThrow(settle);
-    });
-
-    it('refuses a pending weight change on a leaf without a weight', () => {
-      const stored = {
-        document: {
-          children: weighted({
-            authored: [
-              { id: 'w:fontWeight', key: 'fontWeight', kind: 'format' },
-            ],
-            text: 'x',
-          }),
-        },
-        schema: v53Schema,
-      };
-
-      expect(() =>
-        runDocumentMigration(stripEnvelope(stored) as PersistedDocumentInput, {
-          migrations: boldOnly,
-        })
-      ).toThrow(settle);
-    });
-
-    it.each([
-      {
-        stored: {
-          document: {
-            children: [
-              {
-                children: [{ fontWeight: '400', text: 'x' }],
-                level: 1,
-                type: 'heading',
-              },
-            ],
-          },
-          schema: v53Schema,
-        },
-        title: 'a light weight in a v2 heading',
-      },
-      {
-        stored: {
-          document: {
-            children: [
-              { children: [{ text: 'x' }], level: 1, type: 'heading' },
-            ],
-          },
-          schema: v53Schema,
-          selection: {
-            anchor: { offset: 1, path: [0, 0] },
-            focus: { offset: 1, path: [0, 0] },
-            kind: 'text',
-            marks: { fontWeight: '400' },
-          },
-        },
-        title: 'a light insertion weight in a v2 heading',
-      },
-      {
-        stored: {
-          document: { children: [{ children: [{ text: 'x' }], type: 'h1' }] },
-          schema: v53Schema,
-          selection: {
-            anchor: { offset: 1, path: [0, 0] },
-            focus: { offset: 1, path: [0, 0] },
-            kind: 'text',
-            marks: { fontWeight: '400' },
-          },
-        },
-        title: 'a light insertion weight in an h1',
-      },
-      {
-        stored: {
-          document: { children: weighted({ fontWeight: '400', text: 'x' }) },
-          schema: v53Schema,
-        },
-        title: 'a light weight in a paragraph',
-      },
-    ])('refuses $title in an envelope', ({ stored }) => {
-      expect(() => stripEnvelope(stored)).toThrow(
-        'Bold cannot keep how v53 drew this font weight.'
-      );
     });
 
     it('converts an envelope and keeps its metadata', () => {

@@ -1,5 +1,4 @@
 import { expect, spyOn, test } from 'bun:test';
-import { readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 
 import {
@@ -254,7 +253,6 @@ const runMeasured = async (fixture: Fixture, spies: WorkSpies) => {
     htmlConversions: calls(spies.mammoth) - before.mammoth,
     packageGenerations: calls(spies.generate) - before.generate,
     xmlParts,
-    zipLoads: 1,
   };
 
   expect(work).toEqual({
@@ -262,7 +260,6 @@ const runMeasured = async (fixture: Fixture, spies: WorkSpies) => {
     htmlConversions: 1,
     packageGenerations: 1,
     xmlParts: ['w:document', 'w:numbering', 'w:styles'],
-    zipLoads: 1,
   });
 
   return {
@@ -468,15 +465,6 @@ test('DOCX revision import keeps heavy work constant and sparse', async () => {
     mammoth: spyOn(mammoth, 'convertToHtml'),
     parse: spyOn(DOMParser.prototype, 'parseFromString'),
   };
-  const packageSource = readFileSync(
-    new URL(
-      '../../../packages/platejs/src/docx/internal/docxPackage.ts',
-      import.meta.url
-    ),
-    'utf-8'
-  );
-
-  expect(packageSource.match(/new ZipReader\(/g)).toHaveLength(1);
   const rows = [];
 
   try {

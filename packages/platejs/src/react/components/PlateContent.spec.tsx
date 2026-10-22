@@ -374,28 +374,6 @@ describe('PlateContent', () => {
     await waitFor(() => expect(queryByTestId('store-decoration')).toBeNull());
   });
 
-  it('invalidates a plugin decoration when its own store changes', async () => {
-    const editor = createEditor({
-      initialValue: value,
-      plugins: [StoreDecorationPlugin],
-    });
-    const { queryByTestId } = render(
-      <EditorRoot editor={editor}>
-        <EditorContent />
-      </EditorRoot>
-    );
-
-    expect(queryByTestId('store-decoration')).not.toBeInTheDocument();
-
-    await act(async () => {
-      editor.plugin(StoreDecorationPlugin).store.set({ active: true });
-    });
-
-    await waitFor(() => {
-      expect(queryByTestId('store-decoration')).toBeInTheDocument();
-    });
-  });
-
   it('invalidates only the decoration source owned by the changed plugin', async () => {
     storeDecorationReadCount = 0;
     idleDecorationReadCount = 0;

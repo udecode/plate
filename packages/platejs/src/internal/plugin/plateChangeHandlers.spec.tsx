@@ -1,56 +1,12 @@
 /** @jsx jsxt */
 
-import {
-  type Descendant,
-  type EditorNodeChangeContext,
-  type EditorTextChangeContext,
-  property,
-  schema,
-  target,
-} from '../../core';
-import { type Editor, createEditor } from '../../lib/editor';
+import { property, schema, target } from '../../core';
+import { createEditor } from '../../lib/editor';
 import { definePlugin } from '../../lib/plugin';
 import { jsxt } from '../../testing';
-import {
-  createPlateChangeHandlersPlugin,
-  subscribePlateChangeCallbacks,
-} from './plateChangeHandlers';
+import { subscribePlateChangeCallbacks } from './plateChangeHandlers';
 
 jsxt;
-
-const textNode: Descendant = { text: 'node' };
-const createNodeChange = (editor: Editor): EditorNodeChangeContext<Editor> => ({
-  commit: editor.read.lastCommit()!,
-  editor,
-  kind: 'insert',
-  node: textNode,
-  path: [0],
-  previousPath: null,
-  previousNode: null,
-  root: 'main',
-});
-const createTextChange = (editor: Editor): EditorTextChangeContext<Editor> => ({
-  commit: editor.read.lastCommit()!,
-  editor,
-  node: textNode,
-  path: [0],
-  previousPath: [0],
-  previousText: 'prev',
-  root: 'main',
-  text: 'next',
-});
-const dispatchPlateChange = (
-  editor: Editor,
-  event: 'nodeChange' | 'textChange',
-  context: object
-) => {
-  const on = Reflect.get(createPlateChangeHandlersPlugin(editor), 'on');
-
-  if (typeof on !== 'object' || on === null) {
-    throw new Error('Expected Plate change lifecycle callbacks.');
-  }
-  Reflect.apply(Reflect.get(on, event), undefined, [context]);
-};
 
 describe('plate change handlers', () => {
   it('dispatches node change handlers from Plite node change events', () => {
@@ -196,9 +152,15 @@ describe('plate change handlers', () => {
 
     onTextChange.mockClear();
 
-    dispatchPlateChange(editor, 'textChange', createTextChange(editor));
+    editor.update((tx) => {
+      tx.text.insert('!', { at: { offset: 5, path: [0, 0] } });
+    });
 
     expect(onTextChange).toHaveBeenCalledTimes(1);
+    expect(onTextChange.mock.calls[0]?.[0]).toMatchObject({
+      previousText: 'hello',
+      text: 'hello!',
+    });
   });
 
   it('runs every text-change observer', () => {
@@ -244,9 +206,19 @@ describe('plate change handlers', () => {
 
     onNodeChange.mockClear();
 
-    dispatchPlateChange(editor, 'nodeChange', createNodeChange(editor));
+    editor.update((tx) => {
+      tx.nodes.insert(
+        { children: [{ text: 'inserted' }], type: 'paragraph' },
+        { at: [1] }
+      );
+    });
 
     expect(onNodeChange).toHaveBeenCalledTimes(1);
+    expect(onNodeChange.mock.calls[0]?.[0]).toMatchObject({
+      kind: 'insert',
+      node: { children: [{ text: 'inserted' }], type: 'paragraph' },
+      path: [1],
+    });
   });
 
   it('runs every node-change observer', () => {

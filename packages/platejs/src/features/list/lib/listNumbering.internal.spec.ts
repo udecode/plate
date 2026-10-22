@@ -32,7 +32,7 @@ const seeded = (seed: number) => {
 };
 
 describe('list lanes', () => {
-  it('keeps a lane within one chunk per 16 entries through splits and removals', () => {
+  it('keeps a lane in order within one chunk per 16 entries and 128 entries per chunk through splits and removals, so fragmented or oversized chunks never make placement linear', () => {
     const random = seeded(7);
     const live = new Map<number, ListEntry<number>>();
 

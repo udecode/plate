@@ -17,7 +17,7 @@ import {
   type InitialValue,
   type Value,
 } from '../../../core';
-import { CodeBlockPlugin, CodeHighlightPlugin } from './CodeBlockPlugin';
+import { CodeBlockPlugin } from './CodeBlockPlugin';
 
 const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
   options: Omit<CreateEditorOptions, 'plugins'> & {
@@ -33,11 +33,6 @@ const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
   jsxt;
 
   describe('CodeBlockPlugin', () => {
-    it('uses exact React dependencies', () => {
-      expect(CodeBlockPlugin.dependencies).toEqual([]);
-      expect(CodeHighlightPlugin.dependencies).toEqual([CodeBlockPlugin]);
-    });
-
     describe('deserialization inside a code block', () => {
       it('disable all deserializers except the ast serializer', () => {
         const input = (

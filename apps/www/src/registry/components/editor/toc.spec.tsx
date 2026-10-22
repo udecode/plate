@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, type RenderResult } from '@testing-library/react';
+import * as actualCoreReact from 'platejs/react';
 import * as React from 'react';
 
 const PlateElementMock = mock(
@@ -38,20 +39,6 @@ const sixHeadings = [
   { key: 'six', level: 6, title: 'Six' },
 ];
 let headings = twoHeadings;
-const useEditorSelectorMock = mock(
-  (
-    selector: (currentEditor: typeof editor) => unknown,
-    _options?: {
-      equalityFn?: (
-        previous: typeof headings | null,
-        next: typeof headings
-      ) => boolean;
-      shouldUpdate?: (change?: {
-        changed: { hasAny: (kind: string) => boolean };
-      }) => boolean;
-    }
-  ) => selector(editor)
-);
 const editor = {
   api: {
     dom: {
@@ -75,20 +62,26 @@ const editor = {
 };
 
 mock.module('platejs/react', () => ({
-  TocPlugin: {
-    configure: mock(() => ({ name: 'toc' })),
-    name: 'toc',
-  },
+  ...actualCoreReact,
   EditorElement: PlateElementMock,
   NavigationFeedbackPlugin: {},
   useEditor: () => editor,
-  useEditorSelector: useEditorSelectorMock,
+  useEditorSelector: (selector: (currentEditor: typeof editor) => unknown) =>
+    selector(editor),
   useElementSelected: () => false,
 }));
 
 mock.module('@/components/ui/button', () => ({
   Button: ButtonMock,
 }));
+
+const headingInsets = (view: RenderResult) =>
+  view.getAllByRole('button').map((button) => {
+    const [, pixels, spacing] =
+      /\bpl-(?:\[(\d+)px\]|([\d.]+))/.exec(button.className) ?? [];
+
+    return pixels ? Number(pixels) : Number(spacing ?? 0) * 4;
+  });
 
 const tocProps = {
   attributes: { 'data-editor-node': 'element' },
@@ -104,7 +97,6 @@ describe('toc node rendering', () => {
     flashTargetMock.mockReset();
     scrollIntoViewMock.mockReset();
     headingElement.style.scrollMarginTop = '';
-    useEditorSelectorMock.mockClear();
   });
 
   afterAll(() => {
@@ -136,39 +128,6 @@ describe('toc node rendering', () => {
     expect(headingElement.style.scrollMarginTop).toBe('80px');
   });
 
-  it('ignores selection commits and equal heading snapshots', async () => {
-    const { TocElement } = await import(
-      `./toc?test=${Math.random().toString(36).slice(2)}`
-    );
-
-    render(
-      <TocElement {...tocProps}>
-        <span />
-      </TocElement>
-    );
-
-    const options = useEditorSelectorMock.mock.calls[0]?.[1];
-
-    expect(options?.shouldUpdate?.()).toBe(true);
-    expect(options?.shouldUpdate?.({ changed: { hasAny: () => false } })).toBe(
-      false
-    );
-    expect(
-      options?.shouldUpdate?.({
-        changed: { hasAny: (kind) => kind === 'document' },
-      })
-    ).toBe(true);
-    expect(options?.equalityFn?.(null, headings)).toBe(false);
-    expect(options?.equalityFn?.([...headings], [...headings])).toBe(true);
-    expect(
-      options?.equalityFn?.(
-        headings.map((heading, index) =>
-          index === 0 ? { ...heading, title: 'Changed' } : heading
-        ),
-        headings
-      )
-    ).toBe(false);
-  });
   it('configures scrolling on the copied view', async () => {
     const { TocElement } = await import('./toc');
     const view = render(
@@ -182,39 +141,39 @@ describe('toc node rendering', () => {
     expect(flashTargetMock).toHaveBeenCalledTimes(1);
   });
 
-  it('insets each of the six heading levels differently', async () => {
+  it('insets each deeper heading level further', async () => {
     headings = sixHeadings;
     const { TocElement } = await import('./toc');
-    const view = render(
-      <TocElement {...tocProps}>
-        <span />
-      </TocElement>
+    const insets = headingInsets(
+      render(
+        <TocElement {...tocProps}>
+          <span />
+        </TocElement>
+      )
     );
 
-    expect(
-      new Set(view.getAllByRole('button').map((button) => button.className))
-        .size
-    ).toBe(6);
+    expect(insets).toEqual(insets.toSorted((a, b) => a - b));
+    expect(new Set(insets).size).toBe(6);
   });
 
-  it('insets each of the six heading levels differently in the static view', async () => {
+  it('insets each deeper heading level further in the static view', async () => {
     headings = sixHeadings;
     const { TocElementStatic } = await import('./toc-static');
-    const view = render(
-      <TocElementStatic
-        {...({
-          ...tocProps,
-          editor,
-          path: [0],
-        } as unknown as React.ComponentProps<typeof TocElementStatic>)}
-      >
-        <span />
-      </TocElementStatic>
+    const insets = headingInsets(
+      render(
+        <TocElementStatic
+          {...({
+            ...tocProps,
+            editor,
+            path: [0],
+          } as unknown as React.ComponentProps<typeof TocElementStatic>)}
+        >
+          <span />
+        </TocElementStatic>
+      )
     );
 
-    expect(
-      new Set(view.getAllByRole('button').map((button) => button.className))
-        .size
-    ).toBe(6);
+    expect(insets).toEqual(insets.toSorted((a, b) => a - b));
+    expect(new Set(insets).size).toBe(6);
   });
 });

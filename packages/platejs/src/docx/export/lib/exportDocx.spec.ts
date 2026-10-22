@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import { all, createLowlight } from 'lowlight';
 import React from 'react';
 
-import { createEditor, definePlugin, type Value } from '../../../core';
+import { createEditor, type Value } from '../../../core';
 import {
   BaseBlockquotePlugin,
   BaseBoldPlugin,
@@ -189,22 +189,6 @@ describe('exportDocx', () => {
     expect(documentXml).not.toContain('Calibri');
     expect(documentXml).toContain('Export me');
     expect(documentXml).toContain('w:orient="landscape"');
-  });
-
-  it('uses the current editor configuration', async () => {
-    const SerializationPlugin = definePlugin('serialization', {});
-    const editor = createEditor({
-      plugins: [SerializationPlugin],
-      initialValue: [{ children: [{ text: 'Export me' }], type: 'paragraph' }],
-    });
-
-    const result = await exportDocx(editor, {
-      projection: 'proposed',
-    });
-
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.blob).toBeInstanceOf(Blob);
   });
 
   it('rethrows caller serializer failures', async () => {

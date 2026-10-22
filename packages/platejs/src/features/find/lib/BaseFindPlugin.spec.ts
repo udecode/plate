@@ -310,7 +310,15 @@ test('reruns the search at once for a new query', () => {
   const { api } = editor.plugin(BaseFindPlugin);
   api.search('hello');
   api.search('world');
-  expect(results(editor)).toEqual(freshResults(editor, 'world'));
+  const world = {
+    anchor: { path: [0, 1, 0], offset: 0 },
+    focus: { path: [0, 1, 0], offset: 5 },
+  };
+  expect(results(editor)).toEqual({
+    active: world,
+    matches: [world],
+    paint: [[], [{ active: true, range: world }], [], []],
+  });
 });
 
 test('clears matches and highlights for an empty query', () => {
@@ -331,7 +339,12 @@ test('gives a later store subscriber the matches of a new query', () => {
   });
   try {
     api.search('world');
-    const { matches } = freshResults(editor, 'world');
+    const matches = [
+      {
+        anchor: { path: [0, 1, 0], offset: 0 },
+        focus: { path: [0, 1, 0], offset: 5 },
+      },
+    ];
     expect({
       lastNotified: seen,
       read: store.get('matches').map((match) => match.range),

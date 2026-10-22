@@ -1,76 +1,43 @@
-import { afterAll, describe, expect, it, mock } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 
-import { render } from '@testing-library/react';
-import type { CodeBlockElement } from 'platejs';
+import { BaseCodeBlockPlugin, createEditor } from 'platejs';
+import { renderStaticHtml } from 'platejs/static';
 import * as React from 'react';
 
-const element = {
-  children: [{ text: '' }],
-  language: 'python',
-  type: 'codeBlock',
-} satisfies CodeBlockElement;
+import { BaseCodeBlockKit, CodeBlockElementStatic } from './code-block-static';
 
-const mockPlugin = (name: string) => ({
-  name,
-  configure: mock(() => ({ name })),
-});
-
-mock.module('platejs', () => ({
-  BaseCodeBlockPlugin: mockPlugin('codeBlock'),
-  BaseCodeHighlightPlugin: mockPlugin('codeHighlight'),
-}));
-
-mock.module('platejs/static', () => ({
-  EditorElement: ({
-    attributes,
-    children,
-    className,
-  }: React.ComponentProps<'div'> & {
-    attributes?: React.ComponentProps<'div'>;
-  }) => (
-    <div className={className} data-testid="editor-element" {...attributes}>
-      {children}
-    </div>
-  ),
-  EditorLeaf: ({ children, className }: React.ComponentProps<'span'>) => (
-    <span className={className}>{children}</span>
-  ),
-}));
+const initialValue = [
+  {
+    children: [{ text: 'print("hello")' }],
+    language: 'python',
+    type: 'codeBlock',
+  },
+];
 
 describe('CodeBlockElementStatic', () => {
-  afterAll(() => {
-    mock.restore();
-  });
-
   it('renders the persisted code block language label', async () => {
-    const { CodeBlockElementStatic } = await import(
-      `./code-block-static?test=${Math.random().toString(36).slice(2)}`
-    );
+    const editor = createEditor({ plugins: BaseCodeBlockKit, initialValue });
 
-    const view = render(
-      <CodeBlockElementStatic attributes={{}} element={element}>
-        <span>print("hello")</span>
-      </CodeBlockElementStatic>
-    );
+    const { data: html } = await renderStaticHtml(editor);
 
-    expect(view.getByText('Python')).toBeTruthy();
+    expect(html).toContain('Python');
   });
 
   it('can hide the language label at the component boundary', async () => {
-    const { CodeBlockElementStatic } = await import(
-      `./code-block-static?test=${Math.random().toString(36).slice(2)}`
-    );
+    const editor = createEditor({
+      plugins: [
+        BaseCodeBlockPlugin.configure({
+          component: (props) => (
+            <CodeBlockElementStatic {...props} showLanguageLabel={false} />
+          ),
+        }),
+      ],
+      initialValue,
+    });
 
-    const view = render(
-      <CodeBlockElementStatic
-        attributes={{}}
-        element={element}
-        showLanguageLabel={false}
-      >
-        <span>print("hello")</span>
-      </CodeBlockElementStatic>
-    );
+    const { data: html } = await renderStaticHtml(editor);
 
-    expect(view.queryByText('Python')).toBeNull();
+    expect(html).toContain('print(&quot;hello&quot;)');
+    expect(html).not.toContain('Python');
   });
 });

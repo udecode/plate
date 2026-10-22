@@ -44,11 +44,19 @@ describe('CopilotPlugin triggerSuggestion', () => {
       },
       initialValue: [{ children: [{ text: 'one ' }], type: 'paragraph' }],
     });
+    const fetchCompletion = mock(async () =>
+      Response.json({ text: 'Completed' })
+    ) as unknown as typeof fetch;
+    editor.plugin(CopilotPlugin).store.set({
+      completeOptions: { api: '/completion', fetch: fetchCompletion },
+      getPrompt: () => 'Prompt',
+      triggerQuery: () => true,
+    });
 
-    editor.plugin(CopilotPlugin).store.set({ isLoading: true });
+    await editor.plugin(CopilotPlugin).api.triggerSuggestion();
 
-    expect(await editor.plugin(CopilotPlugin).api.triggerSuggestion()).toBe(
-      false
+    expect(editor.plugin(CopilotPlugin).store.get('suggestionText')).toBe(
+      'Completed'
     );
   });
 

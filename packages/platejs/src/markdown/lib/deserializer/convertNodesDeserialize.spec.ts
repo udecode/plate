@@ -10,8 +10,6 @@ describe('convertNodesDeserialize', () => {
 
   const baseOptions: DeserializeMdContext = getTestDeserializeOptions(editor);
 
-  describe('disabledNodes option', () => {});
-
   it('returns an empty array for unknown node types without a registered rule', () => {
     expect(
       buildSlateNode(

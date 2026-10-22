@@ -164,24 +164,6 @@ describe('table presentation', () => {
     };
 
     describe('getTableCellSize', () => {
-      it('returns null for a detached cell', () => {
-        const input = (
-          <editor>
-            <hp>document</hp>
-          </editor>
-        ) as TestEditor;
-
-        const editor = createTableEditor(input);
-        const element = {
-          children: [{ children: [{ text: 'detached' }], type: 'paragraph' }],
-          type: 'tableCell',
-        } as TableCellElement;
-
-        expect(
-          editor.plugin(BaseTablePlugin).read.cell({ at: element })
-        ).toBeNull();
-      });
-
       it('sums the table column widths across the current cell colSpan', () => {
         const input = (
           <editor>

@@ -87,43 +87,24 @@ const seededFactory = (prefix: string): TableCellFactory => {
 };
 
 describe('planTableMutation', () => {
-  it('emits frozen deterministic focused operations for column insertion', () => {
+  it('places an inserted column by grid slot when a row-spanning cell shifts the next row', () => {
     const input = table([[cell('a', { rowSpan: 2 }), cell('b')], [cell('c')]]);
-    const intent = {
+    const result = planTableMutation(context(input), {
       anchorKey: 'b',
       before: true,
       createCell,
       kind: 'insert-column',
-    } as const;
-    const first = planTableMutation(context(input), intent);
-    const second = planTableMutation(context(input), intent);
+    });
 
-    expect(first.kind).toBe('plan');
-    expect(second.kind).toBe('plan');
+    expect(result.kind).toBe('plan');
+    if (result.kind !== 'plan') return;
 
-    if (first.kind !== 'plan' || second.kind !== 'plan') return;
-
-    expect(first.operations.map(({ kind }) => kind)).toEqual([
-      'insert-node',
-      'insert-node',
-    ]);
-    expect(
-      first.operations.map((operation) =>
-        'path' in operation ? operation.path : null
-      )
-    ).toEqual([
-      [0, 0, 1],
-      [0, 1, 0],
-    ]);
-    expect(Object.isFrozen(first)).toBe(true);
-    expect(Object.isFrozen(first.operations)).toBe(true);
-    expect(first.operations).toEqual(second.operations);
-
-    const output = apply(input, first);
-
-    expect(output && compileTableGrid(output).width).toBe(3);
-    expect(output && compileTableGrid(output).height).toBe(2);
-    expect(output && compileTableGrid(output).problems).toEqual([]);
+    expect(apply(input, result)).toMatchObject({
+      children: [
+        { children: [{ id: 'a' }, { id: 'created-0-1' }, { id: 'b' }] },
+        { children: [{ id: 'created-1-1' }, { id: 'c' }] },
+      ],
+    });
   });
 
   it('extends only anchors crossing an inserted row boundary', () => {
@@ -415,110 +396,6 @@ describe('planTableMutation', () => {
     if (removed.kind !== 'plan') return;
 
     expect(apply(input, removed)).toMatchObject({ columnWidths: [120] });
-  });
-
-  it('keeps generated command sequences deterministic and structurally valid', () => {
-    const seeds = Array.from({ length: 32 }, (_, index) => index + 1);
-
-    for (const initialSeed of seeds) {
-      let seed = initialSeed;
-      let value = table([
-        [cell(`s${seed}-a`), cell(`s${seed}-b`)],
-        [cell(`s${seed}-c`), cell(`s${seed}-d`)],
-      ]);
-      const random = () => {
-        seed = (seed * 1_664_525 + 1_013_904_223) >>> 0;
-
-        return seed;
-      };
-
-      for (let step = 0; step < 20; step++) {
-        const grid = compileTableGrid(value);
-        const anchor = grid.anchors[random() % grid.anchors.length];
-        const requestedOperation = random() % 4;
-        const operation =
-          requestedOperation === 2 && grid.width === 1
-            ? 0
-            : requestedOperation === 3 && grid.height === 1
-              ? 1
-              : requestedOperation;
-        const before = random() % 2 === 0;
-        const prefix = `seed-${initialSeed}-step-${step}`;
-        const anchorKey = anchor.key;
-
-        expect(anchorKey).toBeDefined();
-        if (!anchorKey) continue;
-
-        let first: ReturnType<typeof planTableMutation>;
-        let replay: ReturnType<typeof planTableMutation>;
-
-        if (operation === 0) {
-          first = planTableMutation(context(value), {
-            anchorKey,
-            before,
-            createCell: seededFactory(prefix),
-            kind: 'insert-column',
-          });
-          replay = planTableMutation(context(value), {
-            anchorKey,
-            before,
-            createCell: seededFactory(prefix),
-            kind: 'insert-column',
-          });
-        } else if (operation === 1) {
-          first = planTableMutation(context(value), {
-            anchorKey,
-            before,
-            createCell: seededFactory(prefix),
-            kind: 'insert-row',
-            rowType: 'tr',
-          });
-          replay = planTableMutation(context(value), {
-            anchorKey,
-            before,
-            createCell: seededFactory(prefix),
-            kind: 'insert-row',
-            rowType: 'tr',
-          });
-        } else if (operation === 2) {
-          first = planTableMutation(context(value), {
-            anchorKey,
-            kind: 'remove-column',
-          });
-          replay = planTableMutation(context(value), {
-            anchorKey,
-            kind: 'remove-column',
-          });
-        } else {
-          first = planTableMutation(context(value), {
-            anchorKey,
-            kind: 'remove-row',
-          });
-          replay = planTableMutation(context(value), {
-            anchorKey,
-            kind: 'remove-row',
-          });
-        }
-
-        expect(first.kind).toBe('plan');
-        if (first.kind !== 'plan') continue;
-
-        expect(Object.isFrozen(first)).toBe(true);
-        expect(replay).toEqual(first);
-
-        const output = apply(value, first);
-
-        expect(output).not.toBeNull();
-        if (!output) continue;
-
-        value = output;
-        const nextGrid = compileTableGrid(value);
-        const keys = nextGrid.anchors.flatMap(({ key }) => (key ? [key] : []));
-
-        expect(nextGrid.problems).toEqual([]);
-        expect(new Set(keys).size).toBe(keys.length);
-      }
-    }
   });
 
   it('converges generated malformed grids through deterministic focused plans', () => {

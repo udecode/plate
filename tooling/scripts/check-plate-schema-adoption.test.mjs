@@ -2541,7 +2541,6 @@ test('rejects authoring chained after terminal configure', () => {
 test('rejects local named lineage on ordinary package editor construction', () => {
   for (const source of [
     `createEditor({ schema: { id: 'ordinary', version: 1 } })`,
-    `createEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `useCreateEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `useEditor({ schema: { id: 'ordinary', version: 1 } })`,
     `const makeEditor = createEditor; makeEditor({ schema: { id: 'ordinary', version: 1 } })`,

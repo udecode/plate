@@ -257,31 +257,6 @@ describe('pluginInjectNodeProps', () => {
     expect(getPath).not.toHaveBeenCalled();
   });
 
-  it('does not resolve a path for inject matching when the plugin has no path-based filters', () => {
-    const PathlessPlugin = definePlugin('pathless', {
-      inject: {
-        nodeProps: {
-          styleKey: '',
-          transformProps: ({ props }) => props,
-        },
-      },
-    });
-
-    const editor = createEditor({
-      plugins: [PathlessPlugin],
-    });
-    const getPath = mock(() => [0]);
-
-    pluginInjectNodeProps(
-      editor,
-      editor.plugin(PathlessPlugin),
-      { text: { text: 'hello' } },
-      getPath
-    );
-
-    expect(getPath).not.toHaveBeenCalled();
-  });
-
   it('skips path-based injection when the live node no longer resolves', () => {
     const transformProps = mock(({ props }) => props);
     const PathPlugin = definePlugin('path', {

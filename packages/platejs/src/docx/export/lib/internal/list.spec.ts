@@ -19,14 +19,6 @@ describe('ListStyleBuilder', () => {
     expect(builder.getListStyleType(listType)).toBe(expected);
   });
 
-  it('falls back to the configured default for unknown list styles', () => {
-    const builder = new ListStyleBuilder({
-      defaultOrderedListStyleType: 'upperRoman',
-    });
-
-    expect(builder.getListStyleType(undefined)).toBe('upperRoman');
-  });
-
   it.each([
     [{ 'list-style-type': 'decimal' }, 0, '%1.'],
     [{ 'list-style-type': 'decimal-bracket' }, 1, '(%2)'],

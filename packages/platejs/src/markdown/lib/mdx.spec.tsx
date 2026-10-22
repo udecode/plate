@@ -49,7 +49,7 @@ describe('roundTrip', () => {
     const md = serializeTestMarkdown(editor, {
       document: { children: input },
     }).data;
-    expect(md).toMatchSnapshot();
+    expect(md).toBe('<callout icon="💡">Callout</callout>\n');
   });
 
   it('serialize callout with icon attribute', () => {

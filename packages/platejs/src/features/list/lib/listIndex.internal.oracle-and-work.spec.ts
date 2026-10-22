@@ -377,7 +377,7 @@ describe('list numbering work', () => {
     }
   );
 
-  it('does a flat number of compares per visit while renumbering 1,000 level-2 items after 1,000 level-1 items', () => {
+  it('does a flat number of compares per visit while renumbering 1,000 level-2 items after 1,000 level-1 items, never a fresh search of the level-1 lane per visit', () => {
     const editor = editorOf([
       ...Array.from({ length: 1000 }, (_, index) => item(`p${index}`)),
       item('P'),

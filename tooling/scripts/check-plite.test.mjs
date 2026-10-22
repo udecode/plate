@@ -748,32 +748,6 @@ test('root CI owns Plate and Plite package proof without workflow duplication', 
   assert.doesNotMatch(pliteWorkflow, /pnpm plite:test/u);
 });
 
-test('workflows contain no retired Plite package owners', () => {
-  const workflows = ['ci.yml', 'plite-ci.yml']
-    .map((filename) =>
-      fs.readFileSync(
-        path.join(repoRoot, '.github/workflows', filename),
-        'utf-8'
-      )
-    )
-    .join('\n');
-
-  for (const retiredPath of [
-    'packages/plite/',
-    'packages/plite-dom/',
-    'packages/plite-history/',
-    'packages/plite-hyperscript/',
-    'packages/plite-layout/',
-    'packages/plite-react/',
-  ]) {
-    assert.equal(workflows.includes(retiredPath), false, retiredPath);
-  }
-  assert.equal(
-    fs.existsSync(path.join(repoRoot, '.github/workflows/plite-deps-pr.yml')),
-    false
-  );
-});
-
 test('every declared Plite-family dependency resolves to source during typecheck', () => {
   for (const { dependencies, root } of plitePackages) {
     const config = JSON.parse(

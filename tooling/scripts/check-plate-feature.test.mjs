@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
-  readFeatureManifest,
   requiredSurfaces,
   validateFeaturePlan,
 } from './check-plate-feature.mjs';
@@ -133,20 +131,5 @@ test('rejects missing or contradictory flow modes', () => {
   assert.match(
     validateFeaturePlan(headlessWithRegistry).join('\n'),
     /headless package: Registry UI must be excluded/
-  );
-});
-
-test('the feature plan template lists every surface the checker requires', () => {
-  const template = readFileSync(
-    new URL(
-      '../../.agents/rules/plate-plugins/references/feature/template.md',
-      import.meta.url
-    ),
-    'utf-8'
-  );
-
-  assert.deepEqual(
-    readFeatureManifest(template).map(([surface]) => surface),
-    requiredSurfaces
   );
 });

@@ -1,12 +1,24 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
-import { fireEvent, render, renderHook } from '@testing-library/react';
+import { act, fireEvent, render, renderHook } from '@testing-library/react';
+import { BaseParagraphPlugin } from 'platejs';
+import { BaseImagePlugin } from 'platejs/media';
+import * as plateReact from 'platejs/react';
 import * as React from 'react';
 
+const {
+  createEditor,
+  EditorContent,
+  EditorElement,
+  EditorRoot,
+  useEditor,
+  useElement,
+} = plateReact;
 const useEditorMock = mock();
 const useElementMock = mock();
 
 mock.module('platejs/react', () => ({
+  ...plateReact,
   useEditor: () => useEditorMock(),
   useElement: () => useElementMock(),
   useEditorSelector: (selector: (editor: unknown) => unknown) =>
@@ -140,30 +152,50 @@ describe('Caption', () => {
   });
 
   it('selects and focuses the first caption point', async () => {
-    const point = { offset: 0, path: [2, 0, 0] };
-    const focus = mock();
-    const setSelection = mock();
-    const element = {
-      children: [{ text: 'Caption' }],
-      type: 'image',
-    };
-
-    useEditorMock.mockReturnValue({
-      api: { dom: { focus } },
-      read: { points: { start: mock(() => point) } },
-      update: { selection: { set: setSelection } },
-    });
-    useElementMock.mockReturnValue(element);
+    useEditorMock.mockImplementation(useEditor);
+    useElementMock.mockImplementation(useElement);
 
     const { CaptionButton } = await import(
       `./caption?button=${Math.random().toString(36).slice(2)}`
     );
-    const view = render(<CaptionButton>Caption</CaptionButton>);
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseImagePlugin.configure({
+          component: (props) => (
+            <EditorElement {...props}>
+              {props.children}
+              <CaptionButton contentEditable={false}>Caption</CaptionButton>
+            </EditorElement>
+          ),
+        }),
+      ],
+      initialValue: [
+        { children: [{ text: 'Before' }], type: 'paragraph' },
+        {
+          children: [{ text: 'Caption' }],
+          type: 'image',
+          url: 'https://example.com/image.png',
+        },
+      ],
+    });
+    const view = render(
+      <EditorRoot editor={editor}>
+        <EditorContent />
+      </EditorRoot>
+    );
 
-    fireEvent.click(view.getByRole('button', { name: 'Caption' }));
+    await act(async () => {
+      fireEvent.click(view.getByRole('button', { name: 'Caption' }));
+    });
 
-    expect(setSelection).toHaveBeenCalledWith(point);
-    expect(focus).toHaveBeenCalledTimes(1);
+    expect(editor.read.selection()).toEqual({
+      anchor: { offset: 0, path: [1, 0] },
+      focus: { offset: 0, path: [1, 0] },
+    });
+    expect(document.activeElement).toBe(
+      view.container.querySelector('[data-editor="true"]')
+    );
   });
 
   it('does not focus a caption without an editable point', async () => {

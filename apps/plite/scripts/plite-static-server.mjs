@@ -25,10 +25,6 @@ const contentTypes = new Map([
 ]);
 const PATH_SUFFIX_PATTERN = /[?#]/;
 
-export const STATIC_SERVER_KEEP_ALIVE_TIMEOUT_MS = 300_000;
-export const STATIC_SERVER_KEEP_ALIVE_TIMEOUT_BUFFER_MS = 5000;
-export const STATIC_SERVER_HEADERS_TIMEOUT_MS = 310_000;
-
 const collectFiles = (directory) =>
   fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = path.join(directory, entry.name);
@@ -145,9 +141,9 @@ export const createStaticRequestHandler = (snapshot) => (request, response) => {
 };
 
 export const configureStaticServer = (server) => {
-  server.keepAliveTimeout = STATIC_SERVER_KEEP_ALIVE_TIMEOUT_MS;
-  server.keepAliveTimeoutBuffer = STATIC_SERVER_KEEP_ALIVE_TIMEOUT_BUFFER_MS;
-  server.headersTimeout = STATIC_SERVER_HEADERS_TIMEOUT_MS;
+  server.keepAliveTimeout = 300_000;
+  server.keepAliveTimeoutBuffer = 5000;
+  server.headersTimeout = 310_000;
 
   return server;
 };

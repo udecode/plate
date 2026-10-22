@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
+import { createEditor as createStaticEditor } from 'platejs';
 import { createEditor, ParagraphPlugin } from 'platejs/react';
 
 import { HtmlExportKit } from '@/registry/components/editor/html-export-kit';
@@ -16,8 +17,13 @@ describe('HtmlExportKit', () => {
     ],
   });
 
-  it('declares the static schema owner for element ids', () => {
-    expect(HtmlExportKit.map((plugin) => plugin.name)).toContain('elementId');
+  it('accepts ids in the static export editor value', () => {
+    expect(() =>
+      createStaticEditor({
+        plugins: HtmlExportKit,
+        initialValue: createValue(),
+      })
+    ).not.toThrow();
   });
 
   it('accepts ids in the client editor value', () => {

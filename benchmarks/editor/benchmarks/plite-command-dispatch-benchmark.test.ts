@@ -4,10 +4,6 @@ import { resolve } from 'node:path';
 import { describe, it } from 'node:test';
 
 const root = resolve(import.meta.dir, '../../..');
-const benchmarkPath = resolve(
-  root,
-  'benchmarks/editor/benchmarks/plite-command-dispatch-benchmark.ts'
-);
 const registryPath = resolve(root, 'benchmarks/targets/slate-v2.json');
 const packagePath = resolve(root, 'package.json');
 
@@ -56,25 +52,6 @@ describe('command dispatch benchmark authority', () => {
       targets[0].thresholds?.promotion ?? '',
       /simple 20k\/100-block p50 ratio<=2/u
     );
-  });
-
-  it('keeps the matrix, baseline honesty, and allocation proof explicit', () => {
-    const source = readFileSync(benchmarkPath, 'utf-8');
-
-    assert.match(source, /HANDLER_DEPTHS = \[0, 1, 8, 32\]/u);
-    assert.match(source, /DOCUMENT_BLOCKS = \[100, 20_000\]/u);
-    assert.match(source, /LANE_KINDS = \['simple', 'prefix'\]/u);
-    assert.match(source, /status: 'unavailable'/u);
-    assert.match(source, /comparisonPermitted: false/u);
-    assert.match(source, /predecessor: false/u);
-    assert.match(source, /status: 'synthetic-control'/u);
-    assert.match(source, /continuationIdentities: new Set/u);
-    assert.match(source, /commands: \(\{ around, handle \}\) =>/u);
-    assert.match(source, /'next' in context/u);
-    assert.match(source, /policy: 'record-only'/u);
-    assert.match(source, /fixed absolute microsecond budget/u);
-    assert.doesNotMatch(source, /process\.memoryUsage|heapUsed/u);
-    assert.doesNotMatch(source, /LEGACY_BASELINE/u);
   });
 
   it('runs the authority check in the strict Plite contract gate', () => {

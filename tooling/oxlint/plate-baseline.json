@@ -1,59 +1,5 @@
 {
-  "plate/mock-spreads-module": {
-    "apps/www/src/registry/components/editor/caption.spec.tsx": [
-      "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/code-block-static.spec.tsx": [
-      "mock.module('platejs', () => ({",
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/code-block.spec.tsx": [
-      "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/date-static.spec.tsx": [
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/editor.spec.tsx": [
-      "mock.module('platejs/react', () => ({",
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/export-toolbar-button.spec.tsx": [
-      "mock.module('platejs/docx/export', () => ({ exportDocx }));"
-    ],
-    "apps/www/src/registry/components/editor/floating-toolbar.spec.tsx": [
-      "mock.module('platejs/ai/react', () => ({",
-      "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/math.spec.tsx": [
-      "mock.module('platejs', () => ({",
-      "mock.module('platejs/math', () => ({",
-      "mock.module('platejs/math/react', () => ({",
-      "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/media-embed-static.spec.tsx": [
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/media-file.spec.tsx": [
-      "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/media-image-static.spec.tsx": [
-      "mock.module('platejs/static', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/media-preview-dialog.spec.tsx": [
-      "mock.module('platejs/media/react', () => ({",
-      "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/media-toolbar.spec.tsx": [
-      "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/components/editor/toc.spec.tsx": [
-      "mock.module('platejs/react', () => ({"
-    ],
-    "apps/www/src/registry/examples/collaboration-demo.spec.tsx": [
-      "mock.module('platejs/yjs', () => ({",
-      "mock.module('platejs/yjs/react', () => ({"
-    ]
-  },
+  "plate/mock-spreads-module": {},
   "plate/no-as-never": {
     "packages/platejs/src/docx/import/lib/importDocx.ts": [
       "{ arrayBuffer, buffer: arrayBuffer as never },"
@@ -117,59 +63,6 @@
   "plate/no-existence-only-test": {
     "apps/www/tests/browser/markdown-streaming-contract.spec.ts": [
       "test(cell, async ({ baseURL }) => {"
-    ],
-    "packages/platejs/src/features/link/lib/LinkRules.spec.tsx": [
-      "it('keeps an empty link when removeEmpty is disabled', () => {"
-    ],
-    "packages/platejs/src/lib/utils/isUrl.spec.ts": [
-      "it('//google.com', () => {",
-      "it('accepts an authenticated Sentry URL', () => {",
-      "it('accepts MongoDB user info', () => {",
-      "it('accepts Postgres user info', () => {",
-      "it('accepts Redis user info', () => {",
-      "it('empty', () => {",
-      "it('ftp://google.com', () => {",
-      "it('google.com', () => {",
-      "it('google', () => {",
-      "it('http://', () => {",
-      "it('http://0.0.0.0', () => {",
-      "it('http://google.', () => {",
-      "it('http://google.cat', () => {",
-      "it('http://google.co.uk', () => {",
-      "it('http://google.com?q=query', () => {",
-      "it('http://google.com', () => {",
-      "it('http://google.com/something?q=query#hash', () => {",
-      "it('http://google.com/something', () => {",
-      "it('http://google.com#hash', () => {",
-      "it('http://google', () => {",
-      "it('http://localhost:342/a/path', () => {",
-      "it('http://localhost:4000', () => {",
-      "it('http://localhost', () => {",
-      "it('http://www.google.co.uk', () => {",
-      "it('http://www.google.com', () => {",
-      "it('https://google.com', () => {",
-      "it('mailto:', () => {",
-      "it('mailto:sample-mail@gmail.com', () => {",
-      "it('null', () => {",
-      "it('object', () => {",
-      "it('re', () => {",
-      "it('redos exploit', () => {",
-      "it('undefined', () => {",
-      "it('whitespace in hostname', () => {",
-      "it('ws://chat.example.com/games', () => {",
-      "it('wss://secure.example.com/biz', () => {"
-    ],
-    "packages/platejs/src/react/editor/TPlateEditor.spec.ts": [
-      "it('supports specific plugin generics on createEditor', () => {"
-    ],
-    "packages/platejs/src/react/editor/TPlateEditorCore.spec.ts": [
-      "it('exposes link api after extending a plate plugin', () => {"
-    ],
-    "packages/platejs/src/react/utils/pipeRenderElement.spec.tsx": [
-      "it('runs inactive wrapNodeChildren slots under element context', () => {"
-    ],
-    "packages/platejs/src/react/utils/shortcuts.spec.tsx": [
-      "it('add new shortcuts to a plugin', () => {"
     ],
     "packages/plitejs/test/react/surface-contract.tsx": [
       "test('Editable consumes raw element, leaf, text, and void render props', () => {"
@@ -263,9 +156,6 @@
   },
   "plate/no-raised-test-timeout": {
     "apps/www/src/registry/components/editor/comment.spec.tsx": ["}, 20_000);"],
-    "apps/www/src/registry/examples/version-history-async.spec.tsx": [
-      "}, 12_000);"
-    ],
     "packages/cli/test/generate.test.ts": [
       "}, 45_000);",
       "}, 60_000);",
@@ -289,12 +179,6 @@
       "}, 60_000);",
       "}, 60_000);",
       "}, 60_000);"
-    ],
-    "packages/platejs/src/features/table/lib/BaseTablePlugin.resize.spec.ts": [
-      "}, 30_000);"
-    ],
-    "packages/platejs/src/markdown/lib/markdownContinuation.spec.ts": [
-      "60_000"
     ],
     "packages/plitejs/src/diff/lib/comparison-work.spec.ts": [
       "}, 60_000);",
@@ -332,11 +216,6 @@
     ],
     "apps/www/src/registry/examples/multiple-editors-demo.spec.tsx": [
       "import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';"
-    ],
-    "packages/platejs/src/compiler/compileEditor.test.ts": [
-      "import { createEditorSchemaContract } from '../../../plitejs/src/core/schema-compiler';",
-      "import { getPluginRegistry } from '../../../plitejs/src/core/plugin-registry';",
-      "import type { RuntimePluginContributionInput } from '../../../plitejs/src/interfaces/editor';"
     ]
   },
   "plate/no-schema-placement-copy": {
@@ -420,40 +299,8 @@
       "root: selection?.anchor.root,"
     ]
   },
-  "plate/no-snapshot": {
-    "apps/www/src/__tests__/package-integration/ai-utils/aiCommentToRange.spec.tsx": [
-      "expect(ranges).toMatchSnapshot();"
-    ],
-    "apps/www/src/__tests__/package-integration/markdown-rich/serializeMarkdown.spec.tsx": [
-      "expect(",
-      "expect(",
-      "expect(",
-      "expect(",
-      "expect(",
-      "expect(",
-      "expect(",
-      "expect(result).toMatchSnapshot();",
-      "expect(result).toMatchSnapshot();",
-      "expect(result).toMatchSnapshot();"
-    ],
-    "packages/platejs/src/markdown/lib/mdx.spec.tsx": [
-      "expect(md).toMatchSnapshot();"
-    ],
-    "packages/platejs/src/markdown/lib/serializer/listToMdastTree.spec.ts": [
-      "expect(result).toMatchSnapshot();"
-    ]
-  },
+  "plate/no-snapshot": {},
   "plate/no-source-text-test": {
-    "apps/www/src/lib/rehype-utils.spec.ts": [
-      "expect(await fs.readFile(filePath, 'utf-8')).toContain("
-    ],
-    "apps/www/src/registry/components/editor/turn-into-toolbar-button.spec.ts": [
-      "const source = readFileSync("
-    ],
-    "apps/www/src/registry/registry.test.ts": [
-      "const exportKit = readFileSync(",
-      "const exportToolbar = readFileSync("
-    ],
     "packages/plitejs/test/dom/public-surface-contract.ts": [
       "const indexSource = readFileSync(",
       "const source = readFileSync(sourcePath, 'utf-8');"
@@ -466,18 +313,6 @@
       "const indexSource = readFileSync(",
       "const indexSource = readFileSync(",
       "const indexSource = readFileSync("
-    ],
-    "packages/test/test/proof/package-scripts.test.ts": [
-      "const indexSource = readFileSync(",
-      "const playwrightSource = readFileSync(",
-      "const proofIndex = readFileSync(proofIndexPath, 'utf-8');",
-      "const source = readFileSync(sourcePath, 'utf-8');"
-    ],
-    "packages/test/test/proof/scenario.test.ts": [
-      "const caretSource = readFileSync(caretSourcePath, 'utf-8');",
-      "const source = readFileSync(sourcePath, 'utf-8');",
-      "const source = readFileSync(sourcePath, 'utf-8');",
-      "const typeSource = readFileSync(typeSourcePath, 'utf-8');"
     ]
   },
   "plate/no-structural-mark-copy": {
@@ -493,15 +328,6 @@
     ]
   },
   "plate/no-wall-clock-bound": {
-    "packages/platejs/src/features/media/lib/media/parseMediaUrl.spec.ts": [
-      "expect(performance.now() - start).toBeLessThan(100);"
-    ],
-    "packages/platejs/src/lib/plugins/html/HtmlPlugin.mapping.spec.ts": [
-      "expect(duration).toBeLessThan(2000);"
-    ],
-    "packages/platejs/src/lib/utils/isUrl.spec.ts": [
-      "expect(elapsed[0] < 1).toBeTruthy();"
-    ],
     "packages/plitejs/test/dom/dom-coverage.ts": ["expect("]
   }
 }

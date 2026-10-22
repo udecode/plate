@@ -191,7 +191,7 @@ function resources() {
   };
 }
 
-export function createProbeTransport() {
+function createProbeTransport() {
   const { fetch } = globalThis;
   const requests: Array<{
     readonly active: boolean;

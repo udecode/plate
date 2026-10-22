@@ -405,9 +405,6 @@ export const createProofIntegrityMonitor = ({
     get change() {
       return firstChange;
     },
-    get watcherCount() {
-      return 0;
-    },
     ready: () => readyPromise,
   };
 };

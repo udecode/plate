@@ -1,15 +1,6 @@
-import { defaultFont, defaultFontSize, defaultLang } from '../constants';
 import generateStylesXML from './styles';
 
 describe('generateStylesXML', () => {
-  it('uses the default typography values in the document defaults', () => {
-    const xml = generateStylesXML();
-
-    expect(xml).toContain(`w:ascii="${defaultFont}"`);
-    expect(xml).toContain(`w:val="${defaultFontSize}"`);
-    expect(xml).toContain(`w:val="${defaultLang}"`);
-  });
-
   it('renders custom font, sizes, and language values', () => {
     const xml = generateStylesXML('IBM Plex Sans', 30, 28, 'fr-FR');
 

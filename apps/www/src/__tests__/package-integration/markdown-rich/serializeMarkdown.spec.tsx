@@ -2,7 +2,6 @@
 
 import { jsxt } from '@platejs/test';
 
-import { testValue } from '../../../../../../packages/platejs/src/markdown/lib/__tests__/testValue';
 import { createTestEditor } from './createTestEditor';
 
 const editor = createTestEditor();
@@ -19,14 +18,6 @@ const serializeMarkdown = (
 jsxt;
 
 describe('editor.api.markdown.serialize', () => {
-  it('serializes a simple paragraph', () => {
-    const result = serializeMarkdown({
-      spread: true,
-      document: { children: testValue },
-    });
-    expect(result).toMatchSnapshot();
-  });
-
   describe('fixtures', () => {
     // https://github.com/inokawa/remark-slate-transformer/issues/44
     it('serializes marks with trailing whitespace', () => {
@@ -73,7 +64,9 @@ describe('editor.api.markdown.serialize', () => {
       const result = serializeMarkdown({
         document: { children: slateNodes },
       });
-      expect(result).toMatchSnapshot();
+      expect(result).toBe(
+        'Make text **bold**, _italic_, <u>underlined</u>, or apply a _**<u>combination</u>**_ of these styles for a visually striking effect.\n'
+      );
     });
 
     // https://github.com/inokawa/remark-slate-transformer/issues/90
@@ -116,7 +109,9 @@ describe('editor.api.markdown.serialize', () => {
       const result = serializeMarkdown({
         document: { children: slateNodes },
       });
-      expect(result).toMatchSnapshot();
+      expect(result).toBe(
+        '_**Italic**_ **in a bold paragraph**\n\n**This is an _Italic_** **in a bold paragraph**\n'
+      );
     });
 
     // https://github.com/inokawa/remark-slate-transformer/issues/145
@@ -134,9 +129,9 @@ describe('editor.api.markdown.serialize', () => {
         },
       ];
 
-      expect(
-        serializeMarkdown({ document: { children: slateNodes } })
-      ).toMatchSnapshot();
+      expect(serializeMarkdown({ document: { children: slateNodes } })).toBe(
+        '_**`Inline code`**_\n\n_`Inline code`_\n'
+      );
     });
 
     it('serializes a block quote as a single line', () => {
@@ -156,9 +151,9 @@ describe('editor.api.markdown.serialize', () => {
         },
       ];
 
-      expect(
-        serializeMarkdown({ document: { children: slateNodes } })
-      ).toMatchSnapshot();
+      expect(serializeMarkdown({ document: { children: slateNodes } })).toBe(
+        '> Block quote with a new line _**` Inline code`**_\n'
+      );
     });
 
     it('serializes a code block', () => {
@@ -173,9 +168,9 @@ describe('editor.api.markdown.serialize', () => {
         },
       ];
 
-      expect(
-        serializeMarkdown({ document: { children: slateNodes } })
-      ).toMatchSnapshot();
+      expect(serializeMarkdown({ document: { children: slateNodes } })).toBe(
+        '```\nCode block 1 line 1\nCode block 1 line 2\nCode block 1 line 3\nCode block 1 line 4\n```\n'
+      );
     });
 
     it(String.raw`serializes a \n within a block quote as a new line`, () => {
@@ -195,9 +190,9 @@ describe('editor.api.markdown.serialize', () => {
         },
       ];
 
-      expect(
-        serializeMarkdown({ document: { children: slateNodes } })
-      ).toMatchSnapshot();
+      expect(serializeMarkdown({ document: { children: slateNodes } })).toBe(
+        '> Block quote\\\n> with a new line\n'
+      );
     });
 
     it(
@@ -220,9 +215,9 @@ describe('editor.api.markdown.serialize', () => {
           },
         ];
 
-        expect(
-          serializeMarkdown({ document: { children: slateNodes } })
-        ).toMatchSnapshot();
+        expect(serializeMarkdown({ document: { children: slateNodes } })).toBe(
+          '> Block quote\\\n> \\\n> with a new line\n'
+        );
       }
     );
   });
@@ -235,9 +230,9 @@ describe('editor.api.markdown.serialize', () => {
       },
     ];
 
-    expect(
-      serializeMarkdown({ document: { children: slateNodes } })
-    ).toMatchSnapshot();
+    expect(serializeMarkdown({ document: { children: slateNodes } })).toBe(
+      'Paragaph with a new Line\n<br />\n'
+    );
   });
 
   it('serializes paragraphs containing only a new line as <br />', () => {
@@ -252,9 +247,9 @@ describe('editor.api.markdown.serialize', () => {
       },
     ];
 
-    expect(
-      serializeMarkdown({ document: { children: slateNodes } })
-    ).toMatchSnapshot();
+    expect(serializeMarkdown({ document: { children: slateNodes } })).toBe(
+      '\n<br />\n\n\n<br />\n'
+    );
   });
 
   it('serializes lists with spread correctly', () => {

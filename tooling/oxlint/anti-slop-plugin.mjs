@@ -26,7 +26,7 @@ const unwrapParentheses = (node) => {
 const isTopType = (type) =>
   type.type === 'TSAnyKeyword' || type.type === 'TSUnknownKeyword';
 
-export const hasExplicitTopTypeBridge = (node) => {
+const hasExplicitTopTypeBridge = (node) => {
   if (!assertionKinds.has(node.type) || isTopType(node.typeAnnotation)) {
     return false;
   }
@@ -42,7 +42,7 @@ export const hasExplicitTopTypeBridge = (node) => {
   return !assertionKinds.has(source.type);
 };
 
-export const isTypeAssertionAnnotation = (node) => {
+const isTypeAssertionAnnotation = (node) => {
   let current = node;
   let { parent } = current;
 
@@ -67,7 +67,7 @@ const typeReferenceName = (node) =>
     ? node.typeName.name
     : null;
 
-export const isAnyConditionalFallback = (node) => {
+const isAnyConditionalFallback = (node) => {
   let current = node;
   let { parent } = current;
 
@@ -87,7 +87,7 @@ export const isAnyConditionalFallback = (node) => {
   return false;
 };
 
-export const isJsxIntrinsicElementsDictionary = (node) => {
+const isJsxIntrinsicElementsDictionary = (node) => {
   let current = node.parent;
 
   while (current !== null && current.type !== 'Program') {
@@ -104,7 +104,7 @@ export const isJsxIntrinsicElementsDictionary = (node) => {
   return false;
 };
 
-export const isNamedTypeAlias = (node, name) => {
+const isNamedTypeAlias = (node, name) => {
   let current = node.parent;
 
   while (current !== null && current.type !== 'Program') {
@@ -118,7 +118,7 @@ export const isNamedTypeAlias = (node, name) => {
   return false;
 };
 
-export const shouldSuppressUnsafeDictionary = ({ data, node }) =>
+const shouldSuppressUnsafeDictionary = ({ data, node }) =>
   data?.value === 'unknown' ||
   isTypeAssertionAnnotation(node) ||
   isAnyConditionalFallback(node) ||

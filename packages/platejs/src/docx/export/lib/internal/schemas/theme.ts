@@ -1,6 +1,4 @@
-import { defaultFont } from '../constants';
-
-const generateThemeXML = (font: string = defaultFont): string => `
+const generateThemeXML = (font: string): string => `
     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
     <a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme">

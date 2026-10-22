@@ -2196,7 +2196,10 @@ describe('codeBlockToDecorations', () => {
   it('use auto detection when language is "auto"', () => {
     // Mock highlight auto result
     mockHighlightAuto.mockReturnValue(
-      highlightResult(highlightText('const x = 1;'))
+      highlightResult(
+        highlightText('const', ['token', 'keyword']),
+        highlightText(' x = 1;')
+      )
     );
 
     // Create a code block with auto language
@@ -2207,11 +2210,17 @@ describe('codeBlockToDecorations', () => {
     };
 
     const blockPath = [0];
-    getDecorations(editor, [codeBlock, blockPath]);
+    const result = getDecorations(editor, [codeBlock, blockPath]);
 
-    // Lowlight highlightAuto should be called with correct params
-    expect(mockHighlightAuto).toHaveBeenCalledWith('const x = 1;');
-    expect(mockHighlight).not.toHaveBeenCalled();
+    expect(result).toMatchObject([
+      {
+        attributes: { className: 'token keyword' },
+        range: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 5, path: [0, 0] },
+        },
+      },
+    ]);
   });
 
   it('use default language when no language is specified', () => {

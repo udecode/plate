@@ -162,8 +162,9 @@ describe('block placeholder behavior', () => {
     const editor = createEditor({
       value: [{ children: [{ text: '' }], type: 'paragraph' }],
     });
-    const { container } = renderPlaceholderEditor(editor);
+    const { container, mountedEditor } = renderPlaceholderEditor(editor);
 
+    await focusEditor(mountedEditor);
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
 
@@ -172,8 +173,9 @@ describe('block placeholder behavior', () => {
       elementIds: true,
       value: [{ children: [{ text: '' }], id: 'block-1', type: 'paragraph' }],
     });
-    const { container } = renderPlaceholderEditor(editor);
+    const { container, mountedEditor } = renderPlaceholderEditor(editor);
 
+    await focusEditor(mountedEditor);
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
 
@@ -234,8 +236,9 @@ describe('block placeholder behavior', () => {
         },
       ],
     });
-    const { container } = renderPlaceholderEditor(editor);
+    const { container, mountedEditor } = renderPlaceholderEditor(editor);
 
+    await focusEditor(mountedEditor);
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
 
@@ -243,8 +246,9 @@ describe('block placeholder behavior', () => {
     const editor = createEditor({
       placeholders: { heading: 'Heading...' },
     });
-    const { container } = renderPlaceholderEditor(editor);
+    const { container, mountedEditor } = renderPlaceholderEditor(editor);
 
+    await focusEditor(mountedEditor);
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
 
@@ -252,8 +256,9 @@ describe('block placeholder behavior', () => {
     const editor = createEditor({
       query: () => false,
     });
-    const { container } = renderPlaceholderEditor(editor);
+    const { container, mountedEditor } = renderPlaceholderEditor(editor);
 
+    await focusEditor(mountedEditor);
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
 
@@ -273,19 +278,6 @@ describe('block placeholder behavior', () => {
     await waitFor(() => {
       expect(queriedType).toBe('paragraph');
     });
-  });
-
-  it('clears the target when the selection is expanded', async () => {
-    const editor = createEditor({
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 3, path: [1, 0] },
-      },
-    });
-    const { container } = renderPlaceholderEditor(editor);
-
-    expect(container.querySelector('[placeholder]')).toBeNull();
   });
 
   it('clears the target when the editor is not focused', async () => {

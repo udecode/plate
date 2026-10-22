@@ -100,15 +100,12 @@ const readTable = (source, heading, firstColumn, columnCount) => {
   return rows;
 };
 
-export const readFeatureManifest = (source) =>
-  readTable(source, 'Feature Manifest:', 'Surface', 7);
-
 export const validateFeaturePlan = (source) => {
   const errors = [];
   let rows = [];
 
   try {
-    rows = readFeatureManifest(source);
+    rows = readTable(source, 'Feature Manifest:', 'Surface', 7);
   } catch (error) {
     return [error.message];
   }

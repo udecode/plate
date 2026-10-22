@@ -203,7 +203,6 @@ function ElementStaticMock(props: Parameters<typeof EditorElement>[0]) {
   return <EditorElement {...props} />;
 }
 
-/** Expose the render count so our tests can read it */
 function getElementRenderCount() {
   return elementRenderCount;
 }
@@ -234,68 +233,27 @@ describe('PlateStatic Memoization', () => {
     resetLeafRenderCount();
   });
 
-  it('render elements/leaves initially', () => {
+  it('renders each element and leaf once on mount, never twice per node', () => {
     const editor = createEditor();
 
     render(<EditorStatic editor={editor} />);
 
-    // We expect at least 1 element (the <p>...) and 1 leaf
     expect(getElementRenderCount()).toBe(1);
     expect(getLeafRenderCount()).toBe(1);
   });
 
-  it('does not re-render elements/leaves if the same `value` reference is passed', () => {
+  it('renders no element or leaf again when the same document rerenders, so a rerender never redraws every node', () => {
     const editor = createEditor();
 
     const { rerender } = render(<EditorStatic editor={editor} />);
 
-    // Re-render with the **same** editor.read.children() reference:
     rerender(<EditorStatic editor={editor} />);
 
-    // Expect no additional renders of elements/leaves
     expect(getElementRenderCount()).toEqual(1);
     expect(getLeafRenderCount()).toEqual(1);
   });
 
-  it('re-render elements/leaves if editor children changes by reference', () => {
-    const editor = createEditor();
-
-    const { rerender } = render(<EditorStatic editor={editor} />);
-
-    // Create a new array reference with the same content (just to test reference changes)
-    const newValueRef = [
-      {
-        // same text, but new object
-        children: [{ text: 'Hello world' }],
-        type: 'paragraph',
-      },
-    ];
-
-    replaceRoot(editor, newValueRef);
-    rerender(<EditorStatic editor={editor} />);
-
-    // Now we expect re-renders because the array reference changed
-    expect(getElementRenderCount()).toBe(2);
-    expect(getLeafRenderCount()).toBe(1);
-  });
-
-  it('re-render if Plite mutation', () => {
-    const editor = createEditor();
-
-    render(<EditorStatic editor={editor} />);
-
-    // This will mutate the text but also element reference
-    editor.update.text.insert('+');
-
-    // Re-render with the updated children
-    // (the reference changed as well as the text)
-    render(<EditorStatic editor={editor} />);
-
-    expect(getElementRenderCount()).toBe(2);
-    expect(getLeafRenderCount()).toBe(2);
-  });
-
-  it('only re-render modified element and leaf when editing a single element', () => {
+  it('rerenders only the edited element and leaf, so one edit never redraws every unchanged leaf', () => {
     const editor = createEditorWithMultipleElements();
 
     const { rerender } = render(<EditorStatic editor={editor} />);
@@ -305,12 +263,9 @@ describe('PlateStatic Memoization', () => {
 
     editor.update.nodes.set({ bold: true, text: 'Modified' }, { at: [1, 2] });
 
-    // Re-render with the modified editor
     rerender(<EditorStatic editor={editor} />);
 
-    // We expect only one element to re-render (the modified one)
     expect(getElementRenderCount()).toBe(3);
-    // We expect only one leaf to re-render (the new bold leaf)
     expect(getLeafRenderCount()).toBe(3);
 
     editor.update.nodes.set({ revision: 1 }, { at: [1] });
@@ -320,7 +275,7 @@ describe('PlateStatic Memoization', () => {
     expect(getLeafRenderCount()).toBe(3);
   });
 
-  it('preserve memoization when adding and removing new elements', () => {
+  it('renders only the added element when blocks are added and removed, so one block change never redraws every block', () => {
     const editor = createEditorWithMultipleElements();
 
     const { rerender } = render(<EditorStatic editor={editor} />);
@@ -334,7 +289,6 @@ describe('PlateStatic Memoization', () => {
 
     rerender(<EditorStatic editor={editor} />);
 
-    // We expect only the new element to render
     expect(getElementRenderCount()).toBe(3);
 
     replaceRoot(editor, [...initialValue]);

@@ -5,12 +5,10 @@ import {
   definePlugin,
   PLUGINS,
   schema,
-  type Editor,
   type Element,
   createEditor,
   NodeApi,
 } from 'platejs';
-import { BaseImagePlugin } from 'platejs/media';
 import {
   createEditor as createReactEditor,
   EditorContent,
@@ -60,9 +58,6 @@ const orderedElement = {
   type: 'paragraph',
 } as any;
 
-const getListNodeProps = (editor: Editor) =>
-  editor.plugin(BaseListPlugin).inject.nodeProps!;
-
 describe('ListKit unordered list rendering', () => {
   it('decodes configured list items as paragraphs with list properties', () => {
     const editor = createEditor({
@@ -107,73 +102,34 @@ describe('ListKit unordered list rendering', () => {
     expect(orderedMarkup).toContain('<li>One</li>');
   });
 
-  it('injects root list-item props without wiping indent margin', () => {
-    const interactiveEditor = createReactEditor({
-      plugins: [...ListTargetSchemaKit, ...ListKit],
-    });
-    const staticEditor = createEditor({
-      plugins: [...ListTargetSchemaKit, ...BaseListKit],
-    });
-
-    expect(interactiveEditor.plugin(BaseListPlugin).inject.isElement).toBe(
-      true
-    );
-    expect(staticEditor.plugin(BaseListPlugin).inject.isElement).toBe(true);
+  it('injects root list-item props without wiping indent margin', async () => {
+    const { container } = mountListKit([unorderedElement, orderedElement]);
+    const liveItems = [
+      ...container.querySelectorAll<HTMLElement>('[role="listitem"]'),
+    ];
 
     expect(
-      getListNodeProps(staticEditor).query?.({
-        editor: staticEditor,
-        nodeProps: { element: unorderedElement },
-      } as any)
-    ).toBe(false);
+      liveItems.map(({ style }) => [style.display, style.marginLeft])
+    ).toEqual([['list-item', '48px']]);
 
-    const staticImageEditor = createEditor({
-      plugins: [
-        ...ListTargetSchemaKit.filter(
-          (_, index) => ListTargetSchemaPlugins[index] !== PLUGINS.image
-        ),
-        BaseImagePlugin,
-        ...BaseListKit,
-      ],
-    });
-
-    for (const [editor, element] of [
-      [interactiveEditor, unorderedElement],
-      [
-        staticImageEditor,
+    const staticEditor = createEditor({
+      initialValue: [
         {
           ...unorderedElement,
-          type: staticImageEditor.plugin(BaseImagePlugin).schema.type,
+          children: [{ text: '' }],
+          type: 'image',
+          url: 'https://example.com/a.png',
         },
       ],
-    ] as const) {
-      const { query, transformProps } = getListNodeProps(editor);
-      if (!query || !transformProps) {
-        throw new Error('Expected configured list node props');
-      }
+      plugins: BaseEditorKit,
+    });
+    const { data } = await renderStaticHtml(staticEditor);
+    const host = document.createElement('div');
+    host.innerHTML = data;
+    const staticItem = host.querySelector<HTMLElement>('[role="listitem"]');
 
-      expect(query({ editor, nodeProps: { element } } as any)).toBe(true);
-      expect(
-        query({ editor, nodeProps: { element: orderedElement } } as any)
-      ).toBe(false);
-      expect(
-        transformProps({
-          props: {
-            style: {
-              listStyle: 'disc',
-              marginLeft: '48px',
-            },
-          },
-        } as any)
-      ).toEqual({
-        role: 'listitem',
-        style: {
-          display: 'list-item',
-          listStyle: 'disc',
-          marginLeft: '48px',
-        },
-      });
-    }
+    expect(staticItem?.style.display).toBe('list-item');
+    expect(staticItem?.style.marginLeft).toBe('48px');
   });
 });
 

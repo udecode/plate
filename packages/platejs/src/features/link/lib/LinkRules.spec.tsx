@@ -766,7 +766,11 @@ describe('LinkRules', () => {
       ],
     });
 
-    expect(findLink(editor)).toBeDefined();
+    expect(findLink(editor)).toEqual({
+      children: [{ text: '' }],
+      type: 'link',
+      url: 'https://example.com',
+    });
   });
 });
 

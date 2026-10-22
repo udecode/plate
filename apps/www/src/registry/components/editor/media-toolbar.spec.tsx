@@ -1,10 +1,20 @@
-import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from 'bun:test';
 
 import { fireEvent, render } from '@testing-library/react';
+import { createEditor } from 'platejs';
+import { BaseImagePlugin } from 'platejs/media';
+import * as PlateReact from 'platejs/react';
 import * as React from 'react';
 
 const focusMock = mock();
-const removeMock = mock();
 const setUrlMock = mock(() => false);
 
 const plugin = { name: 'media' } as any;
@@ -13,15 +23,14 @@ const element = {
   type: 'media',
   url: 'https://example.com/original',
 };
+let editor: unknown;
+let currentElement: unknown;
 
 mock.module('platejs/react', () => ({
-  useEditor: () => ({
-    api: { dom: { focus: focusMock } },
-    plugin: () => ({ update: { setUrl: setUrlMock } }),
-    update: { nodes: { remove: removeMock } },
-  }),
+  ...PlateReact,
+  useEditor: () => editor,
   useEditorReadOnly: () => false,
-  useElement: () => element,
+  useElement: () => currentElement,
   useFocusedLast: () => true,
 }));
 
@@ -60,9 +69,13 @@ describe('MediaToolbar', () => {
   beforeEach(() => {
     element.url = 'https://example.com/original';
     focusMock.mockReset();
-    removeMock.mockReset();
     setUrlMock.mockReset();
     setUrlMock.mockReturnValue(false);
+    editor = {
+      api: { dom: { focus: focusMock } },
+      plugin: () => ({ update: { setUrl: setUrlMock } }),
+    };
+    currentElement = element;
   });
 
   afterAll(() => {
@@ -96,6 +109,20 @@ describe('MediaToolbar', () => {
   });
 
   it('returns focus to the editor after deleting media', async () => {
+    const live = createEditor({
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: 'image',
+          url: 'https://example.com/a.png',
+        },
+        { children: [{ text: 'After' }], type: 'paragraph' },
+      ],
+      plugins: [BaseImagePlugin],
+    });
+    const focus = spyOn(live.api.dom, 'focus');
+    editor = live;
+    currentElement = live.read.children()[0];
     const { MediaToolbar } = await import(
       `./media-toolbar?test=${Math.random().toString(36).slice(2)}`
     );
@@ -107,7 +134,9 @@ describe('MediaToolbar', () => {
 
     fireEvent.click(view.getAllByRole('button').at(-1)!);
 
-    expect(removeMock).toHaveBeenCalledWith({ at: element });
-    expect(focusMock).toHaveBeenCalledTimes(1);
+    expect(live.read.children()).toEqual([
+      { children: [{ text: 'After' }], type: 'paragraph' },
+    ]);
+    expect(focus).toHaveBeenCalledTimes(1);
   });
 });

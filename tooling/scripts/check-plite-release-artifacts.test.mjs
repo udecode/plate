@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -54,6 +55,15 @@ const packageJson = {
   sideEffects: false,
   type: 'module',
   types: './dist/index.d.ts',
+};
+
+const runConsumer = (directory, filename, source, nodeArguments = []) => {
+  writeFileSync(join(directory, filename), source);
+
+  return spawnSync(process.execPath, [...nodeArguments, filename], {
+    cwd: directory,
+    encoding: 'utf-8',
+  });
 };
 
 const files = [
@@ -132,19 +142,6 @@ test('tracks root and every public Plate feature entrypoint bundle size', () => 
         { platejs: 100, 'platejs/media': 200 }
       ),
     /platejs: 100 -> 101 bytes \(\+1\)/
-  );
-});
-
-test('proves every JavaScript public export in isolated packed consumers', () => {
-  const source = readFileSync(
-    new URL('check-plite-release-artifacts.mjs', import.meta.url),
-    'utf-8'
-  );
-
-  assert.match(source, /createPackedPublicExportPeerProofs\(packedPackages\)/);
-  assert.match(
-    source,
-    /for \(const \[index, proof\] of peerProofs\.entries\(\)\)/
   );
 });
 
@@ -321,26 +318,6 @@ test('groups public exports only when their optional peers match', () => {
   } finally {
     rmSync(fixture, { force: true, recursive: true });
   }
-});
-
-test('proves Plite and Plate cross-subpath runtime identity', () => {
-  const source = readFileSync(
-    new URL('check-plite-release-artifacts.mjs', import.meta.url),
-    'utf-8'
-  );
-
-  assert.match(
-    source,
-    /releaseIdentityEqual\(releaseRoot\.definePlugin, releaseReact\.definePlugin\)/
-  );
-  assert.match(
-    source,
-    /releaseLayout\.measurePages,[\s\S]*releaseLayoutReact\.measurePages/
-  );
-  assert.match(
-    source,
-    /releaseReactPlugin\.dependencies\[0\],[\s\S]*releaseDOMPlugin/
-  );
 });
 
 test('materializes an isolated dependency closure and rejects forbidden transitives', () => {
@@ -736,7 +713,7 @@ test('rejects missing declarations, undeclared imports, and reversed layers', ()
   );
 });
 
-test('builds runtime, type, bare, and unused named consumer fixtures', () => {
+test('runtime, bare and unused named consumers load every packed JavaScript export', () => {
   const sources = createConsumerSources([
     {
       publicExports: getPublicExports(packageJson).map((packageExport) => ({
@@ -748,107 +725,52 @@ test('builds runtime, type, bare, and unused named consumer fixtures', () => {
       })),
     },
   ]);
-
-  assert.match(sources.types, /@fixture\/example\/internal/);
-  assert.match(
-    sources.types,
-    /import \{ publicValue as packageExport0Runtime0 \} from "@fixture\/example";/
+  const consumerDirectory = mkdtempSync(
+    join(tmpdir(), 'release-consumer-fixture-')
   );
-  assert.match(
-    sources.types,
-    /import \{ secondPublicValue as packageExport0Runtime1 \} from "@fixture\/example";/
-  );
-  assert.match(sources.types, /with \{ type: 'json' \}/);
-  assert.match(sources.runtime, /@fixture\/example\/internal/);
-  assert.match(sources.runtime, /with \{ type: 'json' \}/);
-  assert.match(sources.bare, /import "@fixture\/example";/);
-  assert.match(
-    sources.named,
-    /import \{ publicValue as unused0 \} from "@fixture\/example";/
-  );
-  assert.equal(sources.namedImportCount, 2);
-  assert.equal(sources.baseline, `${sources.bare.split('\n').at(-2)}\n`);
-});
-
-test('builds an executable typed Plite schema consumer without changing DCE fixtures', () => {
-  const sources = createConsumerSources([
-    {
-      publicExports: [
-        {
-          runtimeExportNames: ['createEditor'],
-          specifier: 'plitejs',
-          subpath: '.',
-        },
-      ],
-    },
-  ]);
-
-  for (const source of [sources.types, sources.runtime]) {
-    assert.match(source, /defineEditorSchema/);
-    assert.match(source, /createEditor/);
-    assert.match(source, /read\.schema\.identity\(\)/);
-    assert.match(source, /read\.schema\.create/);
-    assert.match(source, /release-consumer-schema/);
-  }
-
-  assert.match(sources.types, /SchemaElementFor/);
-  assert.match(sources.runtime, /releaseIdentityEqual/);
-  assert.match(sources.runtime, /plitejs\/pagination\/react/);
-
-  for (const source of [sources.baseline, sources.bare, sources.named]) {
-    assert.doesNotMatch(source, /release-consumer-schema/);
-  }
-});
-
-test('packs Plate and builds an executable final Plate schema consumer', () => {
-  const plateContract = PLITE_RELEASE_PACKAGES.find(
-    ({ name }) => name === 'platejs'
-  );
-  const sources = createConsumerSources([
-    {
-      publicExports: [
-        {
-          runtimeExportNames: ['createEditor'],
-          specifier: 'platejs',
-          subpath: '.',
-        },
-      ],
-    },
-  ]);
-
-  assert.deepEqual(plateContract, {
-    allowedPlateRuntime: ['plitejs'],
-    directory: 'packages/platejs',
-    name: 'platejs',
-  });
-  for (const source of [sources.types, sources.runtime]) {
-    assert.match(source, /createEditor/);
-    assert.match(source, /definePlugin/);
-    assert.match(source, /api: \(\{ store \}\) => \(\{/);
-    assert.match(source, /schema: \{/);
-    assert.match(source, /key: 'release-artifact-strong'/);
-    assert.match(source, /property: releasePlateProperty\.boolean/);
-    assert.match(source, /ReleaseParentPlugin/);
-    assert.match(source, /releaseHeldPlugin\.store\.set/);
-    assert.match(source, /releasePlateIdentityAfter/);
-    assert.doesNotMatch(source, /\.extend\(\(\{ store \}\) =>/);
-  }
-
-  assert.match(sources.types, /releaseCreatedElementType/);
-  assert.match(sources.types, /releaseNestedElementName/);
-  assert.doesNotMatch(sources.types, /@ts-expect-error/);
-  assert.doesNotMatch(sources.runtime, /@ts-expect-error/);
-  assert.match(
-    sources.runtime,
-    /ReleaseElementPlugin\.initialState\.label, 'draft'/
-  );
-  assert.match(
-    sources.runtime,
-    /releaseHeldPlugin\.api\.readConfiguredLabel\(\), 'published'/
+  const packageDirectory = join(
+    consumerDirectory,
+    'node_modules',
+    '@fixture',
+    'example'
   );
 
-  for (const source of [sources.baseline, sources.bare, sources.named]) {
-    assert.doesNotMatch(source, /release-consumer-plate-schema/);
+  try {
+    mkdirSync(join(packageDirectory, 'dist'), { recursive: true });
+    writeFileSync(
+      join(packageDirectory, 'package.json'),
+      JSON.stringify(packageJson)
+    );
+    for (const entry of ['index', 'internal']) {
+      writeFileSync(
+        join(packageDirectory, 'dist', `${entry}.js`),
+        `console.log('loaded ${entry}');\nexport const publicValue = 1;\nexport const secondPublicValue = 2;\n`
+      );
+    }
+
+    const loaded = Object.fromEntries(
+      ['baseline', 'bare', 'named', 'runtime'].map((name) => {
+        const { status, stderr, stdout } = runConsumer(
+          consumerDirectory,
+          `${name}.mjs`,
+          sources[name]
+        );
+
+        return [
+          name,
+          status === 0 ? stdout.split('\n').filter(Boolean) : stderr,
+        ];
+      })
+    );
+
+    assert.deepEqual(loaded, {
+      bare: ['loaded index', 'loaded internal'],
+      baseline: [],
+      named: ['loaded index', 'loaded internal'],
+      runtime: ['loaded index', 'loaded internal'],
+    });
+  } finally {
+    rmSync(consumerDirectory, { force: true, recursive: true });
   }
 });
 
@@ -867,16 +789,62 @@ test('builds a DOM-free SSR consumer from runtime proof metadata', () => {
       ],
     },
   ]);
+  const consumerDirectory = mkdtempSync(join(tmpdir(), 'release-ssr-fixture-'));
+  const plateDirectory = join(consumerDirectory, 'node_modules', 'platejs');
 
-  assert.match(sources.runtime, /platejs\/static/);
-  assert.match(sources.ssr, /typeof globalThis\.document/);
-  assert.match(sources.ssr, /renderSsrHtml0/);
-  assert.match(sources.ssr, /SSR entrypoint 0/);
-  assert.deepEqual(sources.runtimeRows, [
-    {
-      runtime: 'ssr',
-      runtimeProof: 'plate-static-html',
-      specifier: 'platejs/static',
-    },
-  ]);
+  try {
+    mkdirSync(plateDirectory, { recursive: true });
+    writeFileSync(
+      join(plateDirectory, 'package.json'),
+      JSON.stringify({
+        exports: { '.': './index.js', './static': './static.js' },
+        name: 'platejs',
+        type: 'module',
+      })
+    );
+    writeFileSync(
+      join(plateDirectory, 'index.js'),
+      'export const BaseParagraphPlugin = {};\nexport const createEditor = ({ initialValue }) => ({ initialValue });\n'
+    );
+    writeFileSync(
+      join(plateDirectory, 'static.js'),
+      [
+        'export const renderStaticHtml = async ({ initialValue }) => {',
+        '  const text = initialValue[0].children[0].text;',
+        '  console.log(`rendered ${text}`);',
+        '  return { data: `<p>${text}</p>`, diagnostics: [] };',
+        '};',
+        '',
+      ].join('\n')
+    );
+    writeFileSync(
+      join(consumerDirectory, 'dom.mjs'),
+      'globalThis.document = {};\n'
+    );
+
+    const ssr = runConsumer(consumerDirectory, 'ssr.mjs', sources.ssr);
+    const ssrWithDOM = runConsumer(consumerDirectory, 'ssr.mjs', sources.ssr, [
+      '--import',
+      './dom.mjs',
+    ]);
+
+    assert.deepEqual(
+      { status: ssr.status, stdout: ssr.stdout },
+      { status: 0, stdout: 'rendered SSR entrypoint 0\n' },
+      ssr.stderr
+    );
+    assert.match(
+      ssrWithDOM.stderr,
+      /actual: 'object',\s+expected: 'undefined'/
+    );
+    assert.deepEqual(sources.runtimeRows, [
+      {
+        runtime: 'ssr',
+        runtimeProof: 'plate-static-html',
+        specifier: 'platejs/static',
+      },
+    ]);
+  } finally {
+    rmSync(consumerDirectory, { force: true, recursive: true });
+  }
 });

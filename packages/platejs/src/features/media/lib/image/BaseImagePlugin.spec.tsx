@@ -1,4 +1,5 @@
 import { createEditor, definePlugin, property } from '../../../../core';
+import { domCommands } from '../../../../dom';
 import { BaseImagePlugin } from './BaseImagePlugin';
 
 const TestBoldPlugin = definePlugin('bold', {
@@ -8,32 +9,6 @@ const TestBoldPlugin = definePlugin('bold', {
 });
 
 describe('BaseImagePlugin clipboard behavior', () => {
-  let restoreWarn: (() => void) | undefined;
-
-  afterEach(() => {
-    restoreWarn?.();
-    restoreWarn = undefined;
-  });
-
-  const suppressInsertDataOverrideWarning = () => {
-    const originalWarn = console.warn;
-    const warnSpy = spyOn(console, 'warn').mockImplementation(
-      (message, ...args) => {
-        if (
-          typeof message === 'string' &&
-          message.includes('[OVERRIDE_MISSING]') &&
-          message.includes('editor.insertData()')
-        ) {
-          return;
-        }
-
-        originalWarn(message, ...args);
-      }
-    );
-
-    restoreWarn = () => warnSpy.mockRestore();
-  };
-
   const createTestEditor = () =>
     createEditor({
       plugins: [BaseImagePlugin, TestBoldPlugin],
@@ -228,9 +203,28 @@ describe('BaseImagePlugin clipboard behavior', () => {
   );
 
   it('leaves non-image files to the next clipboard handler', () => {
-    suppressInsertDataOverrideWarning();
+    const FileNamePlugin = definePlugin('fileName', {}).extend(() => ({
+      commands: ({ around }) => [
+        around(domCommands.insertData, ({ input, next, state }) => {
+          const [file] = Array.from(input.files ?? []);
 
-    const editor = createTestEditor();
+          return file
+            ? state.transaction((tx) => {
+                tx.text.insert(file.name);
+              })
+            : next();
+        }),
+      ],
+    }));
+    const editor = createEditor({
+      plugins: [BaseImagePlugin, FileNamePlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'test' }], type: 'paragraph' }],
+    });
     const data = {
       files: [new File(['test'], 'not-an-image')],
       getData: () => '',
@@ -239,23 +233,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'test' }], type: 'paragraph' },
-    ]);
-  });
-
-  it('leaves clipboard data without files to the next handler', () => {
-    suppressInsertDataOverrideWarning();
-
-    const editor = createTestEditor();
-    const data = {
-      files: [],
-      getData: () => '',
-    };
-
-    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
-
-    expect(editor.read.children()).toEqual([
-      { children: [{ text: 'test' }], type: 'paragraph' },
+      { children: [{ text: 'testnot-an-image' }], type: 'paragraph' },
     ]);
   });
 
