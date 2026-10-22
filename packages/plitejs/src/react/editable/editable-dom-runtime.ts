@@ -30,11 +30,12 @@ import {
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
   observeDataTransferInsertion,
+  resolveDOMReach,
+  resolveDOMTargetView,
   resolveDOMTextFlowEntry,
   resolveDOMTextFlowRecordDOMText,
 } from '../../dom/internal';
 import { isDOMNode } from '../../dom/utils/dom';
-import { matchesPresentationOf } from '../../editor-runtime-view';
 import type { EditableViewportRuntime } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import {
@@ -244,30 +245,23 @@ export const getMountedEditableDOMRuntime = <
     return owner.adapter;
   }
 
-  const exact = getMountedEditableDOMRuntimes(editor).filter((runtime) =>
-    Object.is(runtime.editor, editor)
+  const view = root
+    ? resolveDOMTargetView(editor, root)
+    : resolveDOMReach(editor);
+  const reached = getMountedEditableDOMRuntimes(editor).filter((runtime) =>
+    Object.is(runtime.editor, view)
   );
 
-  if (exact.length === 1) return exact[0] ?? null;
+  if (reached.length <= 1) return reached[0] ?? null;
 
-  const viewRoot = editor.read.view.root();
-  const matchesPresentation = matchesPresentationOf(editor);
-  const sameRoot = getMountedEditableDOMRuntimes(editor).filter(
-    (runtime) =>
-      runtime.editor.read.view.root() === viewRoot &&
-      matchesPresentation(runtime.editor)
-  );
-
-  const focused = sameRoot.filter((runtime) => {
+  const focused = reached.filter((runtime) => {
     const element = runtime.rootRef.current;
     const activeElement = element?.ownerDocument.activeElement;
 
     return !!element && !!activeElement && element.contains(activeElement);
   });
 
-  if (focused.length === 1) return focused[0] ?? null;
-
-  return sameRoot.length === 1 ? (sameRoot[0] ?? null) : null;
+  return focused.length === 1 ? (focused[0] ?? null) : null;
 };
 
 export const hasMountedEditableCompositionOwner = (

@@ -1,5 +1,15 @@
-import { setEditorFocused } from '../../core/public-state';
-import type { AnyEditor } from '../../interfaces/editor';
+import {
+  getEditorRuntimeOwner,
+  getEditorRuntimeRoot,
+  hasEditorRuntime,
+} from '../../core/editor-runtime';
+import { subscribeSource } from '../../core/listener-state';
+import { toInternalRoot } from '../../core/public-root';
+import { getBaseCallRoot, setEditorFocused } from '../../core/public-state';
+import { getCaretOwner, subscribeCaretOwner } from '../../core/view-carets';
+import type { ViewPresentation } from '../../core/view-presentation';
+import { getOwnViewPresentation } from '../../editor-runtime-view';
+import type { AnyEditor, Editor, RootKey } from '../../interfaces/editor';
 import {
   type DOMRootFactOverrides,
   type DOMRootQuirk,
@@ -66,19 +76,68 @@ const EMPTY_SCHEDULER_DIAGNOSTICS: DOMPhaseSchedulerDiagnostics = Object.freeze(
   }
 );
 
+type DOMTree = Document | ShadowRoot;
+
+type MountedViews = {
+  readonly trees: Map<DOMTree, Set<DOMRootRuntime>>;
+  readonly views: Set<AnyEditor>;
+};
+
 const DOM_ROOT_RUNTIME_BY_ROOT = new WeakMap<HTMLElement, DOMRootRuntime>();
 const DOM_ROOT_RUNTIMES_BY_EDITOR = new WeakMap<object, Set<DOMRootRuntime>>();
 const ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR = new WeakMap<object, DOMRootRuntime>();
+const MOUNTED_VIEWS_BY_DOCUMENT = new WeakMap<object, MountedViews>();
+const DOCUMENT_DOM_SCOPE_LISTENERS = new WeakMap<object, Set<() => void>>();
 const DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR = new WeakMap<
   AnyEditor,
   DOMInputRuntime
 >();
 const ELEMENT_NODE = 1;
 
+const documentOf = (editor: object): object =>
+  hasEditorRuntime(editor) ? getEditorRuntimeOwner(editor) : editor;
+
 export const notifyEditorDOMScopeListeners = (editor: object) => {
   EDITOR_TO_DOM_SCOPE_LISTENERS.get(editor)?.forEach((listener) => {
     listener();
   });
+  DOCUMENT_DOM_SCOPE_LISTENERS.get(documentOf(editor))?.forEach((listener) => {
+    listener();
+  });
+};
+
+export const subscribeDOMReach = (handle: object, listener: () => void) => {
+  const documentEditor = documentOf(handle);
+  const reached = () => {
+    if (!hasMountedDOMRoot(handle)) listener();
+  };
+  const listeners =
+    DOCUMENT_DOM_SCOPE_LISTENERS.get(documentEditor) ?? new Set();
+
+  listeners.add(reached);
+  DOCUMENT_DOM_SCOPE_LISTENERS.set(documentEditor, listeners);
+
+  if (handle !== documentEditor || !hasEditorRuntime(handle)) {
+    return () => {
+      listeners.delete(reached);
+    };
+  }
+
+  let root = getBaseCallRoot(handle);
+  const stopCaret = subscribeCaretOwner(handle, reached);
+  const stopSelection = subscribeSource(handle, 'selection', () => {
+    const next = getBaseCallRoot(handle);
+
+    if (next === root) return;
+    root = next;
+    reached();
+  });
+
+  return () => {
+    listeners.delete(reached);
+    stopCaret();
+    stopSelection();
+  };
 };
 
 const asElement = (node: Node): Element | null =>
@@ -154,6 +213,144 @@ const isRuntimeRootActive = (runtime: DOMRootRuntime) => {
   return (
     activeElement === root || (!!activeElement && root.contains(activeElement))
   );
+};
+
+export const hasMountedDOMRoot = (editor: object): editor is AnyEditor =>
+  DOM_ROOT_RUNTIMES_BY_EDITOR.has(editor);
+
+export const hasMountedDocumentView = (editor: object) =>
+  MOUNTED_VIEWS_BY_DOCUMENT.has(documentOf(editor));
+
+const onlyView = (
+  views: ReadonlySet<AnyEditor>,
+  matches: (view: AnyEditor) => boolean
+) => {
+  let found: AnyEditor | null = null;
+
+  for (const view of views) {
+    if (!matches(view)) continue;
+    if (found) return null;
+    found = view;
+  }
+
+  return found;
+};
+
+const focusedView = (
+  mounted: MountedViews,
+  matches: (view: AnyEditor) => boolean
+) => {
+  let found: AnyEditor | null = null;
+
+  for (const tree of mounted.trees.keys()) {
+    for (
+      let element = tree.activeElement;
+      element;
+      element = element.parentElement
+    ) {
+      const view = DOM_ROOT_RUNTIME_BY_ROOT.get(element as HTMLElement)?.editor;
+
+      if (!view || !mounted.views.has(view) || !matches(view)) continue;
+      if (found && found !== view) return null;
+      found = view;
+      break;
+    }
+  }
+
+  return found;
+};
+
+const pickView = (
+  mounted: MountedViews,
+  matches: (view: AnyEditor) => boolean
+) => onlyView(mounted.views, matches) ?? focusedView(mounted, matches);
+
+export type DOMReachRequest = Readonly<{
+  root?: RootKey;
+}>;
+
+const reachOwnView = (
+  mounted: MountedViews,
+  handle: Editor,
+  presentation: ViewPresentation,
+  request: DOMReachRequest
+) => {
+  const root = getEditorRuntimeRoot(handle);
+
+  if (request.root !== undefined && request.root !== root) return null;
+
+  return pickView(
+    mounted,
+    (view) =>
+      getOwnViewPresentation(view) === presentation &&
+      getEditorRuntimeRoot(view) === root
+  );
+};
+
+const reachDocumentView = (
+  mounted: MountedViews,
+  handle: Editor,
+  request: DOMReachRequest
+) => {
+  const root = request.root ?? getBaseCallRoot(handle);
+  const caret = getCaretOwner(handle);
+  const atRoot = (view: AnyEditor) => getEditorRuntimeRoot(view) === root;
+
+  return caret && toInternalRoot(caret.root) === root
+    ? pickView(
+        mounted,
+        (view) =>
+          atRoot(view) && getOwnViewPresentation(view) === caret.presentation
+      )
+    : pickView(mounted, atRoot);
+};
+
+export const resolveDOMReach = (
+  handle: object,
+  request: DOMReachRequest = {}
+): AnyEditor | null => {
+  if (hasMountedDOMRoot(handle)) {
+    return request.root === undefined ||
+      request.root === getEditorRuntimeRoot(handle)
+      ? handle
+      : null;
+  }
+
+  const owner = documentOf(handle);
+  const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(owner);
+
+  if (!mounted || !hasEditorRuntime(handle)) return null;
+
+  const presentation = getOwnViewPresentation(handle);
+
+  if (presentation) return reachOwnView(mounted, handle, presentation, request);
+
+  return handle === owner ? reachDocumentView(mounted, handle, request) : null;
+};
+
+export const resolveDOMTargetView = (
+  handle: object,
+  node: Node | null
+): AnyEditor | null => {
+  if (hasMountedDOMRoot(handle)) return handle;
+
+  const view = node ? findDOMRootRuntime(node)?.editor : null;
+
+  if (!view || !hasEditorRuntime(handle)) return null;
+
+  const presentation = getOwnViewPresentation(handle);
+
+  if (presentation) {
+    return getOwnViewPresentation(view) === presentation &&
+      getEditorRuntimeRoot(view) === getEditorRuntimeRoot(handle)
+      ? view
+      : null;
+  }
+
+  return handle === documentOf(handle) &&
+    MOUNTED_VIEWS_BY_DOCUMENT.get(handle)?.views.has(view)
+    ? view
+    : null;
 };
 
 /** Resolve the focused private root runtime for an editor. */
@@ -273,6 +470,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
   private destroyed = false;
 
   private schedulerImplementation: DOMPhaseScheduler | null;
+
+  private registeredTree: DOMTree | null = null;
 
   private rootInputActivationCleanup: (() => void) | null = null;
 
@@ -689,6 +888,19 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
       editorRuntimes.add(runtime);
       DOM_ROOT_RUNTIMES_BY_EDITOR.set(this.editor, editorRuntimes);
+      const documentEditor = documentOf(this.editor);
+      const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(documentEditor) ?? {
+        trees: new Map(),
+        views: new Set(),
+      };
+      const tree = root.getRootNode() as DOMTree;
+      const treeRuntimes = mounted.trees.get(tree) ?? new Set();
+
+      mounted.views.add(this.editor);
+      treeRuntimes.add(runtime);
+      mounted.trees.set(tree, treeRuntimes);
+      MOUNTED_VIEWS_BY_DOCUMENT.set(documentEditor, mounted);
+      this.registeredTree = tree;
       DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR.delete(this.editor);
       const markInputRuntimeActive = () => {
         ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, runtime);
@@ -715,6 +927,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
   private unregisterRootOwner() {
     this.rootInputActivationCleanup?.();
     this.rootInputActivationCleanup = null;
+    const runtime = this as unknown as DOMRootRuntime;
     const root = this.rootRef.current;
     const activeElement = (
       root?.getRootNode() as Document | ShadowRoot | undefined
@@ -725,21 +938,17 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     const otherFocusedView =
       focusedRuntime &&
       focusedRuntime.editor === this.editor &&
-      focusedRuntime !== (this as unknown as DOMRootRuntime);
+      focusedRuntime !== runtime;
 
-    if (
-      root &&
-      DOM_ROOT_RUNTIME_BY_ROOT.get(root) === (this as unknown as DOMRootRuntime)
-    ) {
+    if (root && DOM_ROOT_RUNTIME_BY_ROOT.get(root) === runtime) {
       DOM_ROOT_RUNTIME_BY_ROOT.delete(root);
     }
 
     const editorRuntimes = DOM_ROOT_RUNTIMES_BY_EDITOR.get(this.editor);
 
-    editorRuntimes?.delete(this as unknown as DOMRootRuntime);
+    editorRuntimes?.delete(runtime);
     const wasActive =
-      ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(this.editor) ===
-      (this as unknown as DOMRootRuntime);
+      ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(this.editor) === runtime;
     if (wasActive) {
       if (otherFocusedView) {
         ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, focusedRuntime);
@@ -747,8 +956,20 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
         ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.delete(this.editor);
       }
     }
+    const documentEditor = documentOf(this.editor);
+    const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(documentEditor);
+    const tree = this.registeredTree;
+    const treeRuntimes = tree ? mounted?.trees.get(tree) : undefined;
+
+    this.registeredTree = null;
+    treeRuntimes?.delete(runtime);
+    if (tree && treeRuntimes?.size === 0) mounted?.trees.delete(tree);
     if (editorRuntimes?.size === 0) {
       DOM_ROOT_RUNTIMES_BY_EDITOR.delete(this.editor);
+      mounted?.views.delete(this.editor);
+      if (mounted?.views.size === 0) {
+        MOUNTED_VIEWS_BY_DOCUMENT.delete(documentEditor);
+      }
     }
     if (!otherFocusedView && (wasActive || editorRuntimes?.size === 0)) {
       IS_FOCUSED.delete(this.editor);

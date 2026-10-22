@@ -2270,25 +2270,26 @@ const getRuntimeTargetRoot = (
     ? undefined
     : getTransactionSnapshot(editor);
 
-  for (const root of new Set([
-    getCurrentChildrenRoot(editor),
-    MAIN_ROOT_KEY,
-    LAST_TARGET_ROOTS.get(owner) ?? MAIN_ROOT_KEY,
-    ...getEditorRuntimeRootKeys(editor),
-  ])) {
-    const path = transactionSnapshot
+  const holds = (root: string) =>
+    transactionSnapshot
       ? getLookupIndex(owner, transactionSnapshot, root)?.pathOf(nodeKey)
       : withEditorRootChildren(editor, root, () =>
           getPathByNodeKey(editor, nodeKey)
         );
+  const likely = new Set([
+    getCurrentChildrenRoot(editor),
+    MAIN_ROOT_KEY,
+    LAST_TARGET_ROOTS.get(owner) ?? MAIN_ROOT_KEY,
+  ]);
+  const root =
+    [...likely].find(holds) ??
+    getEditorRuntimeRootKeys(editor).find(
+      (key) => !likely.has(key) && holds(key)
+    );
 
-    if (path) {
-      LAST_TARGET_ROOTS.set(owner, root);
-      return root;
-    }
-  }
+  if (root !== undefined) LAST_TARGET_ROOTS.set(owner, root);
 
-  return undefined;
+  return root;
 };
 
 export const getNodeTargetRoot = (
@@ -9409,7 +9410,7 @@ export const setCurrentMarks = (editor: Editor, marks: EditorMarks | null) => {
   syncImplicitTargetToCurrentSelection(editor);
 };
 
-export const getCurrentSelection = (editor: Editor): Selection => {
+const readCurrentSelection = (editor: Editor): Selection => {
   const owner = getEditorRuntimeOwner(editor);
   const context = getTransactionSpecContext(owner);
 
@@ -9419,14 +9420,15 @@ export const getCurrentSelection = (editor: Editor): Selection => {
   }
   const frame = READ_SELECTIONS.get(owner);
 
-  return cloneValue(
-    context
-      ? context.caret.selection
-      : frame
-        ? frame.selection()
-        : getSelectionStateSelection(owner)
-  );
+  return context
+    ? context.caret.selection
+    : frame
+      ? frame.selection()
+      : getSelectionStateSelection(owner);
 };
+
+export const getCurrentSelection = (editor: Editor): Selection =>
+  cloneValue(readCurrentSelection(editor));
 
 export const getCurrentSelectionRoot = (editor: Editor): string => {
   const owner = getEditorRuntimeOwner(editor);
@@ -9437,6 +9439,12 @@ export const getCurrentSelectionRoot = (editor: Editor): string => {
     getSelectionStateRoot(owner)
   );
 };
+
+export const getBaseCallRoot = (editor: Editor): string =>
+  readCurrentSelection(editor) ||
+  getTransactionSnapshot(editor)?.selectionInDroppedRoot
+    ? getCurrentSelectionRoot(editor)
+    : MAIN_ROOT_KEY;
 
 const selectionPositionEquals = (left: Selection, right: Selection) => {
   const withoutPendingMarks = (selection: Selection) => {

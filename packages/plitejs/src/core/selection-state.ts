@@ -8,11 +8,9 @@ const CURRENT_SELECTION = new WeakMap<Editor, Selection>();
 const CURRENT_SELECTION_ROOT = new WeakMap<Editor, string>();
 
 export const getSelectionStateSelection = (editor: Editor): Selection =>
-  cloneEditorJsonValue(
-    CURRENT_SELECTION.has(editor)
-      ? (CURRENT_SELECTION.get(editor) as Selection)
-      : null
-  );
+  CURRENT_SELECTION.has(editor)
+    ? (CURRENT_SELECTION.get(editor) as Selection)
+    : null;
 
 export const getSelectionStateRoot = (editor: Editor): string =>
   CURRENT_SELECTION_ROOT.get(editor) ?? MAIN_ROOT_KEY;

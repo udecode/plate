@@ -74,6 +74,8 @@ export {
   type DOMRootRuntimeOptions,
   findEditorDOMRootRuntime,
   findDOMRootRuntime,
+  resolveDOMReach,
+  resolveDOMTargetView,
 } from '../plugin/dom-root-runtime';
 export {
   getDOMHostLanguage,

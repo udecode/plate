@@ -19,9 +19,15 @@ import {
   TextApi,
   type Value,
 } from '../..';
-import { toInternalRoot } from '../../core/public-root';
+import { getEditorRuntimeRoot } from '../../core/editor-runtime';
+import {
+  getPublicExplicitLocationRoot,
+  toInternalRoot,
+  toPublicRoot,
+} from '../../core/public-root';
 import {
   getActiveEditorTransaction,
+  getNodeTargetRoot,
   resolveEditorNodeKeyForNode,
   setEditorFocused,
   withUpdateTagContext,
@@ -134,8 +140,13 @@ import {
 } from './dom-phase-scheduler';
 import {
   findDOMRootRuntime,
+  hasMountedDOMRoot,
+  hasMountedDocumentView,
   notifyEditorDOMScopeListeners,
+  resolveDOMReach,
+  resolveDOMTargetView,
   resolveMountedEditorDOMRoot,
+  subscribeDOMReach,
 } from './dom-root-runtime';
 import {
   resolveDOMTextFlowEntry,
@@ -791,6 +802,11 @@ const cachePliteDOMNode = (
   return domNode;
 };
 
+const hasPointPath = (editor: EditorType, point: Point) =>
+  point.root === undefined
+    ? editorHasPath(editor, point.path)
+    : editor.read((state) => state.nodes.get(point) !== undefined);
+
 const isMountedEditorDOMNode = (
   editor: DOMEditor<any>,
   domNode: HTMLElement
@@ -996,8 +1012,11 @@ export const subscribeEditorDOMScope = (
   listeners.add(listener);
   EDITOR_TO_DOM_SCOPE_LISTENERS.set(editor, listeners);
 
+  const stopReach = subscribeDOMReach(editor, listener);
+
   return () => {
     listeners.delete(listener);
+    stopReach();
 
     if (listeners.size === 0) {
       EDITOR_TO_DOM_SCOPE_LISTENERS.delete(editor);
@@ -1358,8 +1377,7 @@ export const resolveDOMRangeInRoot = (
   return domRange;
 };
 
-/** DOM translation, selection, focus, and clipboard operations for an editor. */
-export const DOMEditor: DOMEditorInterface = {
+const DOMEditorImpl: DOMEditorInterface = {
   androidPendingDiffs: (editor) => EDITOR_TO_PENDING_DIFFS.get(editor),
 
   androidScheduleFlush: (editor) => {
@@ -1858,12 +1876,8 @@ export const DOMEditor: DOMEditorInterface = {
     isDOMNode(target) &&
     DOMEditor.hasDOMNode(editor, target, { editable: true }),
 
-  hasRange: (editor, range) => {
-    const { anchor, focus } = range;
-    return (
-      editorHasPath(editor, anchor.path) && editorHasPath(editor, focus.path)
-    );
-  },
+  hasRange: (editor, { anchor, focus }) =>
+    hasPointPath(editor, anchor) && hasPointPath(editor, focus),
 
   hasSelectableTarget: (editor, target) =>
     DOMEditor.hasEditableTarget(editor, target) ||
@@ -2686,9 +2700,11 @@ export const DOMEditor: DOMEditorInterface = {
       focusOffset -= 1;
     }
 
-    const anchor = DOMEditor.resolvePoint(editor, [anchorNode, anchorOffset], {
-      exactMatch,
-    });
+    const anchor = DOMEditorImpl.resolvePoint(
+      editor,
+      [anchorNode, anchorOffset],
+      { exactMatch }
+    );
     if (!anchor) {
       return null;
     }
@@ -2698,7 +2714,7 @@ export const DOMEditor: DOMEditorInterface = {
       (anchorNode === focusNode && focusOffset < anchorOffset);
     const focus = isCollapsed
       ? anchor
-      : DOMEditor.resolvePoint(editor, [focusNode, focusOffset], {
+      : DOMEditorImpl.resolvePoint(editor, [focusNode, focusOffset], {
           exactMatch,
           searchDirection: focusBeforeAnchor ? 'forward' : 'backward',
         });
@@ -2735,6 +2751,183 @@ export const DOMEditor: DOMEditorInterface = {
       { details: { domRange } }
     );
   },
+};
+
+const reachView = (editor: EditorType) => resolveDOMReach(editor) ?? editor;
+
+const reachTarget = (
+  editor: EditorType,
+  target: EventTarget | null | undefined
+) => resolveDOMTargetView(editor, isDOMNode(target) ? target : null) ?? editor;
+
+const reachNode = (editor: EditorType, node: DOMNode | null) =>
+  resolveDOMTargetView(editor, node) ??
+  (node && findDOMRootRuntime(node) ? null : editor);
+
+const reachAt = (
+  editor: EditorType,
+  at: Node | NodeKey | Path | Point | Range
+) => {
+  if (!hasMountedDocumentView(editor)) return editor;
+  if (typeof at === 'string' || NodeApi.isDescendant(at)) {
+    return hasMountedDOMRoot(editor)
+      ? editor
+      : resolveDOMReach(editor, { root: getNodeTargetRoot(editor, at) });
+  }
+
+  return resolveDOMReach(editor, {
+    root:
+      PathApi.isPath(at) || PointApi.isPoint(at) || RangeApi.isRange(at)
+        ? (getPublicExplicitLocationRoot(at) ?? getEditorRuntimeRoot(editor))
+        : undefined,
+  });
+};
+
+const otherRoot = (editor: EditorType, view: EditorType) =>
+  view === editor || getEditorRuntimeRoot(view) === getEditorRuntimeRoot(editor)
+    ? undefined
+    : toPublicRoot(getEditorRuntimeRoot(view));
+
+const inRoot = (point: Point, root: string | undefined): Point =>
+  root === undefined ? point : { ...point, root };
+
+const pointFor = (editor: EditorType, view: EditorType, point: Point | null) =>
+  point && inRoot(point, otherRoot(editor, view));
+
+const rangeFor = (
+  editor: EditorType,
+  view: EditorType,
+  range: Range | null
+) => {
+  const root = otherRoot(editor, view);
+
+  return range && root !== undefined
+    ? {
+        ...range,
+        anchor: inRoot(range.anchor, root),
+        focus: inRoot(range.focus, root),
+      }
+    : range;
+};
+
+/** DOM translation, selection, focus, and clipboard operations for an editor. */
+export const DOMEditor: DOMEditorInterface = {
+  androidPendingDiffs: (editor) =>
+    DOMEditorImpl.androidPendingDiffs(reachView(editor)),
+  androidScheduleFlush: (editor) => {
+    DOMEditorImpl.androidScheduleFlush(reachView(editor));
+  },
+  blur: (editor) => {
+    DOMEditorImpl.blur(reachView(editor));
+  },
+  deselect: DOMEditorImpl.deselect,
+  editable: (editor, root) => {
+    const view =
+      root === undefined
+        ? reachView(editor)
+        : resolveDOMReach(editor, { root: toInternalRoot(root) });
+
+    return view && DOMEditorImpl.editable(view, root);
+  },
+  assertDocumentOrShadowRoot: (editor) =>
+    DOMEditorImpl.assertDocumentOrShadowRoot(reachView(editor)),
+  resolveDocumentOrShadowRoot: (editor) =>
+    DOMEditorImpl.resolveDocumentOrShadowRoot(reachView(editor)),
+  assertEventRange: (editor, event) =>
+    DOMEditorImpl.assertEventRange(editor, event),
+  resolveEventRange: (editor, event) => {
+    const view = reachNode(
+      editor,
+      isDOMNode(event.target) ? event.target : null
+    );
+
+    return (
+      view &&
+      rangeFor(editor, view, DOMEditorImpl.resolveEventRange(view, event))
+    );
+  },
+  findKey: (editor, node) => DOMEditorImpl.findKey(editor, node),
+  assertPath: (editor, node) => DOMEditorImpl.assertPath(editor, node),
+  focus: (editor, options) => {
+    DOMEditorImpl.focus(reachView(editor), options);
+  },
+  getWindow: (editor) => DOMEditorImpl.getWindow(reachView(editor)),
+  hasDOMNode: (editor, target, options) =>
+    DOMEditorImpl.hasDOMNode(reachTarget(editor, target), target, options),
+  hasEditableTarget: (editor, target): target is DOMNode =>
+    DOMEditorImpl.hasEditableTarget(reachTarget(editor, target), target),
+  hasRange: DOMEditorImpl.hasRange,
+  hasSelectableTarget: (editor, target) =>
+    DOMEditorImpl.hasSelectableTarget(reachTarget(editor, target), target),
+  hasTarget: (editor, target): target is DOMNode =>
+    DOMEditorImpl.hasTarget(reachTarget(editor, target), target),
+  clipboard: {
+    ...DOMEditorImpl.clipboard,
+    writeSelection: (editor, data) => {
+      DOMEditorImpl.clipboard.writeSelection(reachView(editor), data);
+    },
+  },
+  isComposing: (editor) => DOMEditorImpl.isComposing(reachView(editor)),
+  isFocused: (editor) => DOMEditorImpl.isFocused(reachView(editor)),
+  isReadOnly: (editor) => DOMEditorImpl.isReadOnly(reachView(editor)),
+  isTargetInsideNonReadonlyVoid: (editor, target) =>
+    DOMEditorImpl.isTargetInsideNonReadonlyVoid(
+      reachTarget(editor, target),
+      target
+    ),
+  resolveDOMNode: (editor, nodeOrKey) => {
+    if (nodeOrKey === editor) {
+      const view = reachView(editor);
+
+      return DOMEditorImpl.resolveDOMNode(view, view);
+    }
+
+    const view = reachAt(editor, nodeOrKey);
+
+    return view && DOMEditorImpl.resolveDOMNode(view, nodeOrKey);
+  },
+  resolveDOMPoint: (editor, point) => {
+    const view = reachAt(editor, point);
+
+    return view && DOMEditorImpl.resolveDOMPoint(view, point);
+  },
+  resolveDOMRange: (editor, range) => {
+    const view = reachAt(editor, range);
+
+    return view && DOMEditorImpl.resolveDOMRange(view, range);
+  },
+  resolvePath: DOMEditorImpl.resolvePath,
+  resolveRangeRect: (editor, range) => {
+    const view = reachAt(editor, range);
+
+    return view && DOMEditorImpl.resolveRangeRect(view, range);
+  },
+  root: (editor) => DOMEditorImpl.root(reachView(editor)),
+  scroll: (editor) =>
+    EDITOR_TO_DOM_SCROLL.get(editor) ?? DOMEditorImpl.scroll(reachView(editor)),
+  scrollIntoView: DOMEditorImpl.scrollIntoView,
+  resolveNode: (editor, domNode) =>
+    DOMEditorImpl.resolveNode(reachTarget(editor, domNode), domNode),
+  resolvePoint: (editor, domPoint, options) => {
+    const view = reachTarget(editor, domPoint[0]);
+
+    return pointFor(
+      editor,
+      view,
+      DOMEditorImpl.resolvePoint(view, domPoint, options)
+    );
+  },
+  resolveRange: DOMEditorImpl.resolveRange,
+  assertDOMNode: (editor, node) => DOMEditorImpl.assertDOMNode(editor, node),
+  assertDOMPoint: (editor, point) =>
+    DOMEditorImpl.assertDOMPoint(editor, point),
+  assertDOMRange: (editor, range) =>
+    DOMEditorImpl.assertDOMRange(editor, range),
+  assertNode: (editor, domNode) => DOMEditorImpl.assertNode(editor, domNode),
+  assertPoint: (editor, domPoint, options) =>
+    DOMEditorImpl.assertPoint(editor, domPoint, options),
+  assertRange: (editor, domRange, options) =>
+    DOMEditorImpl.assertRange(editor, domRange, options),
 };
 
 /** Check whether a mutation originates from an editable editor element. */
@@ -2786,8 +2979,11 @@ export const createDOMEditorCapability = <
     point: Point,
     options: DOMVisualPointOptions
   ): DOMVisualPoint | null => {
-    const root = DOMEditor.resolveDOMNode(editor, editor);
-    const domPoint = DOMEditor.resolveDOMPoint(editor, point);
+    const view = reachAt(editor, point);
+
+    if (!view) return null;
+    const root = DOMEditor.resolveDOMNode(view, view);
+    const domPoint = DOMEditor.resolveDOMPoint(view, point);
 
     if (!root || !domPoint) return null;
     const selection = root.ownerDocument.getSelection();
@@ -2862,6 +3058,19 @@ export const createDOMEditorCapability = <
       }
     }
   };
+  const paintedPoint = (point: Point) => {
+    const view = reachAt(editor, point);
+
+    return view && resolvePaintedDOMPoint(view, point);
+  };
+  const paintedRange = (range: Range) => {
+    const view = reachAt(editor, range);
+
+    return view && resolvePaintedDOMRange(view, range);
+  };
+  let indicatorView: EditorType | null = null;
+  const dropView = (view: EditorType | null) =>
+    view === editor || !editor.read.view.isReadOnly() ? view : null;
   const runClipboardInsert = (
     data: DataTransfer,
     fallback: (data: DataTransfer) => boolean | undefined
@@ -2940,31 +3149,65 @@ export const createDOMEditorCapability = <
           : 0;
       },
       indicate: (target: DOMDropTarget | null) => {
-        indicateDOMDropTarget(editor, target);
+        const view = dropView(
+          target && 'key' in target ? reachAt(editor, target.key) : null
+        );
+        const painted = indicatorView ?? reachView(editor);
+
+        if (painted !== view) indicateDOMDropTarget(painted, null);
+        indicatorView = view;
+        if (view) indicateDOMDropTarget(view, target);
       },
       start: (
         event: Pick<DragEvent, 'clientX' | 'clientY' | 'dataTransfer'>,
         options: { node: EditorElement }
-      ) => startDOMDrag(editor, event, options),
+      ) => {
+        const view = reachAt(editor, options.node);
+
+        return (
+          view &&
+          startDOMDrag(
+            view,
+            event,
+            options,
+            editor.read.view.isReadOnly() || view.read.view.isReadOnly()
+          )
+        );
+      },
     }),
     resolveDropTarget: (
       input: DOMDropTargetInput,
       options?: DOMDropTargetOptions
-    ) => resolveDOMDropTarget(editor, input, options),
+    ) => {
+      const view = dropView(
+        input.target ? reachTarget(editor, input.target) : reachView(editor)
+      );
+
+      if (!view) return null;
+      const target = resolveDOMDropTarget(view, input, options);
+
+      return target && 'point' in target
+        ? { point: inRoot(target.point, otherRoot(editor, view)) }
+        : target;
+    },
     isComposing: () => DOMEditor.isComposing(editor),
     isFocused: () => DOMEditor.isFocused(editor),
     isReadOnly: () => DOMEditor.isReadOnly(editor),
     isTargetInsideNonReadonlyVoid: (target) =>
       DOMEditor.isTargetInsideNonReadonlyVoid(editor, target),
     resolveDOMNode: (node) => DOMEditor.resolveDOMNode(editor, node),
-    resolveDOMPoint: (point) => resolvePaintedDOMPoint(editor, point),
-    resolveDOMRange: (range) => resolvePaintedDOMRange(editor, range),
+    resolveDOMPoint: paintedPoint,
+    resolveDOMRange: paintedRange,
     resolveEventRange: (event) => DOMEditor.resolveEventRange(editor, event),
     resolvePath: (node) => DOMEditor.resolvePath(editor, node),
     resolveRangeRect: (range) => DOMEditor.resolveRangeRect(editor, range),
     resolveVisualPoint,
     root: () => DOMEditor.root(editor),
-    textToCaret: (from) => readTextToCaret(editor, from),
+    textToCaret: (from) => {
+      const view = reachAt(editor, from);
+
+      return view && readTextToCaret(view, from);
+    },
     scroll: () => DOMEditor.scroll(editor),
     scrollIntoView: (target, options) =>
       DOMEditor.scrollIntoView(editor, target, options),
@@ -2975,10 +3218,8 @@ export const createDOMEditorCapability = <
     resolveRange: (domRange, options) =>
       DOMEditor.resolveRange(editor, domRange, options),
     assertDOMNode: (node) => DOMEditor.assertDOMNode(editor, node),
-    assertDOMPoint: (point) =>
-      resolvePaintedDOMPoint(editor, point) ?? throwUnresolved(point),
-    assertDOMRange: (range) =>
-      resolvePaintedDOMRange(editor, range) ?? throwUnresolved(range),
+    assertDOMPoint: (point) => paintedPoint(point) ?? throwUnresolved(point),
+    assertDOMRange: (range) => paintedRange(range) ?? throwUnresolved(range),
     assertNode: (domNode) => DOMEditor.assertNode(editor, domNode),
     assertPoint: (domPoint, options) =>
       DOMEditor.assertPoint(editor, domPoint, options),

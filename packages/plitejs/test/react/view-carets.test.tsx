@@ -683,7 +683,7 @@ describe('views of one editor', () => {
     await act(async () => {
       a.update((tx) => {
         tx.nodes.insert(paragraph('new'), { at: [0] });
-        mountedView('B editor').api.dom.focus();
+        b.api.dom.focus();
       });
       await wait();
     });
@@ -699,7 +699,7 @@ describe('views of one editor', () => {
     await act(async () => {
       a.update((tx) => {
         tx.selection.set({ path: [0, 0], offset: 3 });
-        mountedView('B editor').api.dom.focus();
+        b.api.dom.focus();
       });
       await wait();
     });
@@ -736,7 +736,7 @@ describe('views of one editor', () => {
       expect(() =>
         a.update((tx) => {
           tx.selection.set({ path: [0, 0], offset: 3 });
-          mountedView('B editor').api.dom.focus();
+          b.api.dom.focus();
           throw new Error('after focus');
         })
       ).toThrow('after focus');
@@ -4220,7 +4220,7 @@ describe('claims from native input (R30)', () => {
         await act(async () => {
           document.getSelection()!.setBaseAndExtent(text, 7, text, 7);
           observed.push(
-            mountedView('B editor').api.dom.resolveVisualPoint(
+            b.api.dom.resolveVisualPoint(
               { path: [0, 0], offset: 7 },
               { direction: 'right', unit: 'character' }
             )?.point

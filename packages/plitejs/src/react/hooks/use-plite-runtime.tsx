@@ -61,7 +61,6 @@ import {
   toReactRuntimeEditor,
 } from '../plugin/react-editor';
 import type { Editor as ReactEditorType, ReactApi } from '../plugin/with-react';
-import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { focusPliteEditable } from './focus-plite-editable';
@@ -71,7 +70,6 @@ import {
 } from './use-editor-selector';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
-import { useRuntimeFocusState } from './use-runtime-focus-state';
 
 const refEquality = <T,>(a: T | null, b: T) => a === b;
 const rootKeyEquality = (
@@ -134,8 +132,6 @@ const createReactApi = <V extends Value, TPlugins extends readonly unknown[]>(
 type MountedViewEditor = ReactRuntimeEditor<Value, PluginsOf<ReactEditorType>>;
 
 type PliteRuntimeContextValue = {
-  focusVersion: number;
-  focused: boolean;
   getActiveContentRootOwner: (root: RootKey) => PliteContentRootOwner | null;
   getContentRootOwnerViewEditor: (
     owner: PliteContentRootOwner
@@ -394,9 +390,6 @@ export function EditorRuntimeProvider({
   const activeContentRootOwnersRef = useRef(
     new Map<ViewPresentation, Map<RootKey, PliteContentRootOwner>>()
   );
-  const { focused, focusVersion, refreshFocused } =
-    useRuntimeFocusState(reactEditor);
-
   const getView = useCallback(
     (options: EditorViewOptions = {}, presentation?: ViewPresentation) =>
       createEditorViewRuntime(runtime, options, presentation),
@@ -583,8 +576,6 @@ export function EditorRuntimeProvider({
       commit
     ) => {
       maybeBatchUpdates(() => {
-        profilePliteReactDuration('focused-state', refreshFocused);
-
         handleSelectorChange(
           commit,
           getSchemaInvalidatedNodeKeys(runtime, commit)
@@ -620,18 +611,10 @@ export function EditorRuntimeProvider({
     }
 
     return unsubscribe;
-  }, [
-    commitPublicationQueue,
-    handleSelectorChange,
-    reactEditor,
-    refreshFocused,
-    runtime,
-  ]);
+  }, [commitPublicationQueue, handleSelectorChange, reactEditor, runtime]);
 
   const provider = useMemo(
     () => ({
-      focusVersion,
-      focused,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
       getMountedViewEditor: findMountedViewEditor,
@@ -644,8 +627,6 @@ export function EditorRuntimeProvider({
     }),
     [
       findMountedViewEditor,
-      focusVersion,
-      focused,
       getActiveContentRootOwner,
       getContentRootOwnerViewEditor,
       getView,

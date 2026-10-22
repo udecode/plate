@@ -16,6 +16,7 @@ import { getEditorRuntimeOwner } from './editor-runtime';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   assertRootPlaced,
+  getBaseCallRoot,
   getCurrentSelection,
   getCurrentSelectionRoot,
   getNodeTargetRoot,
@@ -155,12 +156,7 @@ export const dispatchPluginUpdate = (
       ? ownRoot
       : (targetRoot ??
         inheritedRoot ??
-        (isView
-          ? ownRoot
-          : getCurrentSelection(editor) ||
-              getTransactionSnapshot(editor)?.selectionInDroppedRoot
-            ? getCurrentSelectionRoot(editor)
-            : MAIN_ROOT_KEY));
+        (isView ? ownRoot : getBaseCallRoot(editor)));
   };
   const invoke = (framed: boolean) => {
     if (located === null) return undefined;

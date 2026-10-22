@@ -165,6 +165,7 @@ const COMMIT_CARETS = new WeakMap<
   Readonly<{ after: Carets; before: Carets }>
 >();
 const WATCHED = new WeakMap<Editor, Map<ViewPresentation, () => void>>();
+const CARET_OWNER_LISTENERS = new WeakMap<Editor, Set<() => void>>();
 const HIGHEST_MINTED = new WeakMap<Editor, number>();
 const SCOPED_PLACEMENTS = new WeakMap<
   Editor,
@@ -177,6 +178,26 @@ const samePair = (left: CaretPair | null, right: CaretPair | null) =>
     !!right &&
     left.presentation === right.presentation &&
     left.root === right.root);
+
+const setCommittedCarets = (owner: Editor, carets: Carets) => {
+  const before = getCommittedCarets(owner).owner;
+
+  COMMITTED.set(owner, carets);
+  if (samePair(before, carets.owner)) return;
+  for (const listener of CARET_OWNER_LISTENERS.get(owner) ?? []) listener();
+};
+
+export const subscribeCaretOwner = (editor: Editor, listener: () => void) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const listeners = CARET_OWNER_LISTENERS.get(owner) ?? new Set();
+
+  listeners.add(listener);
+  CARET_OWNER_LISTENERS.set(owner, listeners);
+
+  return () => {
+    listeners.delete(listener);
+  };
+};
 
 const keysOf = ({ selection }: Bookmark): NodeKey[] =>
   selection.kind === 'text'
@@ -629,7 +650,7 @@ const forgetPresentation = (owner: Editor, presentation: ViewPresentation) => {
     )
   );
 
-  COMMITTED.set(owner, {
+  setCommittedCarets(owner, {
     ...carets,
     book,
     owner: carets.owner?.presentation === presentation ? null : carets.owner,
@@ -677,7 +698,11 @@ export const commitCarets = (editor: Editor, carets: Carets) => {
       : null;
 
   if (pair) watch(owner, pair.presentation);
-  COMMITTED.set(owner, { book, generation: carets.generation, owner: pair });
+  setCommittedCarets(owner, {
+    book,
+    generation: carets.generation,
+    owner: pair,
+  });
 };
 
 export const sameCarets = (left: Carets, right: Carets) =>

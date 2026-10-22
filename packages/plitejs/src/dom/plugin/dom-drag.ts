@@ -887,7 +887,8 @@ const previewOf = (host: HTMLElement) => {
 export const startDOMDrag = (
   editor: AnyEditor,
   event: Pick<DragEvent, 'clientX' | 'clientY' | 'dataTransfer'>,
-  { node }: { node: EditorElement }
+  { node }: { node: EditorElement },
+  copyOnly: boolean
 ): DOMDragStart | null => {
   const { dataTransfer } = event;
   const dom = asDOM(editor);
@@ -899,8 +900,6 @@ export const startDOMDrag = (
   const hosts = entries.flatMap((entry) => dom.resolveDOMNode(entry) ?? []);
 
   if (keys.length === 0 || hosts.length === 0) return null;
-
-  const copyOnly = editor.read.view.isReadOnly();
 
   if (!copyOnly) {
     editor.update.selection.setNodes(entries);
