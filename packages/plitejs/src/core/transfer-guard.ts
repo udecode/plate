@@ -345,5 +345,6 @@ export const guardLanding = (
         message: 'Some dragged content does not fit here.',
       });
     },
-    'plain'
+    'plain',
+    'transaction'
   );

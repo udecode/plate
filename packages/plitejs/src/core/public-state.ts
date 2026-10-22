@@ -232,6 +232,7 @@ import {
   type EditorDocumentRecorder,
   getEditorDocumentRecorder,
   type PositionMap,
+  endEditorTransactionDraftGuards,
   runEditorDraftGuards,
 } from './document-recorder';
 import {
@@ -11391,6 +11392,7 @@ export const runEditorTransaction = <R>(
         'recorded',
         snapshot.builder.value as EditorDocumentValue
       );
+      endEditorTransactionDraftGuards(editor);
     }
   } catch (error) {
     transactionFailed = true;

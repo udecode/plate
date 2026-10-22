@@ -838,6 +838,30 @@ describe('transfer', () => {
 
     assert.deepEqual(announcements, ['Moved down']);
   });
+
+  it("lands a commit listener's own update during a move", () => {
+    const editor = createEditor({
+      initialValue: [paragraph('a'), paragraph('b'), paragraph('c')],
+      plugins: [transfer(), history(), authored({ authorId: 'alice' })],
+    });
+    const view = createEditorView(editor, {
+      authored: { intent: 'propose' },
+    });
+    const unsubscribe = editor.subscribeCommit(() => {
+      unsubscribe();
+      view.update.text.insert('!', { at: { offset: 1, path: [1, 0] } });
+    });
+
+    const outcome = editor.api.transfer.move({
+      nodes: [editor.key([0])!],
+      to: 'next',
+    });
+
+    assert.deepEqual(
+      { status: outcome.status, texts: texts(view) },
+      { status: 'moved', texts: ['b', 'a!', 'c'] }
+    );
+  });
 });
 
 describe('schema-derived landing', () => {

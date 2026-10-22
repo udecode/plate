@@ -86,7 +86,9 @@ type DraftGuard = (
 const DOCUMENT_RECORDERS = new WeakMap<object, EditorDocumentRecorder>();
 const DRAFT_GUARDS = new WeakMap<
   object,
-  Record<EditorDraftGuardPhase, Set<DraftGuard>>
+  Record<EditorDraftGuardPhase, Set<DraftGuard>> & {
+    transaction: Set<() => void>;
+  }
 >();
 
 /** @internal */
@@ -123,19 +125,18 @@ export const getEditorDocumentRecorder = (editor: Editor) =>
 export const registerEditorDraftGuard = (
   editor: Editor,
   guard: DraftGuard,
-  phase: EditorDraftGuardPhase = 'recorded'
+  phase: EditorDraftGuardPhase = 'recorded',
+  lifetime: 'release' | 'transaction' = 'release'
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const guards = DRAFT_GUARDS.get(owner) ?? {
     plain: new Set<DraftGuard>(),
     recorded: new Set<DraftGuard>(),
+    transaction: new Set<() => void>(),
   };
-
-  guards[phase].add(guard);
-  DRAFT_GUARDS.set(owner, guards);
-
-  return () => {
+  const release = () => {
     guards[phase].delete(guard);
+    guards.transaction.delete(release);
     if (
       guards.plain.size === 0 &&
       guards.recorded.size === 0 &&
@@ -144,6 +145,21 @@ export const registerEditorDraftGuard = (
       DRAFT_GUARDS.delete(owner);
     }
   };
+
+  guards[phase].add(guard);
+  if (lifetime === 'transaction') guards.transaction.add(release);
+  DRAFT_GUARDS.set(owner, guards);
+
+  return release;
+};
+
+/** @internal */
+export const endEditorTransactionDraftGuards = (editor: Editor) => {
+  for (const release of [
+    ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor))?.transaction ?? []),
+  ]) {
+    release();
+  }
 };
 
 /** @internal */
