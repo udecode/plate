@@ -40,7 +40,7 @@ Take the user's scope, or the files they name; `full` takes every tracked test f
 - Copied fixtures, inventories, manifests or export lists.
 - Exact source, import or string greps, and regexes over prose.
 - Tests of private state, internal entries or internal calls that fail the second edit. Rewrite one through the public interface when no public test covers its behavior, and cut it when one does.
-- Table rows that run no line another row does not and pin no edge of their own, such as a date, a timezone or an amount.
+- Table rows whose planted bug another kept row also fails on.
 - Duplicate invocations of the same contract, including a test this run just added and a test that builds its own fixture to recheck what a shared fixture already covers.
 - Tests whose only purpose is keeping a test-only export, global or wrapper alive.
 - Dead production code whose only callers are tests.
@@ -72,7 +72,7 @@ Every cut cites one of these proofs. A reader's verdict is not one, and neither 
 
 - **Shape.** Some shapes cannot catch a behavior break: a test with no assertion and no call that throws on failure, an assertion the owner's declared type makes always true, such as `toBeDefined` on a value the type never leaves undefined, `toBeTruthy` on an object or `typeof` on an export, and a wall-clock bound outside the project's benchmark lane. A test is a member only when every assertion in it has the shape, because one real assertion beside a junk one still catches its break. A test whose only check is an awaited call that throws on failure is a real test; give it an explicit assertion instead of cutting it. Prove the shape once per batch: a script that lists every member, one member that still passes against a mutant, and the type or rule that makes the rest the same. When that member fails its mutant, the shape is wrong, and its members move to the Test tier. Membership is the proof, so a member stays only with a keep's evidence, the contract it enforces and the mutant it fails. When the project lints the shape, the lint's baseline is the member list.
 - **Duplicate.** Two places hold the same input and the same expected result. Prove it with a script that matches them, and keep the copy at the owner the project picks.
-- **Covered.** A kept case catches the same mistake. Either a per-case coverage run lists this case's covered lines as a subset of the kept case's, or the mutant this case catches also fails the kept case. A row whose own expected value pins a distinct edge is not covered by a row that runs the same lines.
+- **Covered.** A kept case catches the same mistake: the mutant this case catches also fails the kept case. A per-case coverage run that lists this case's lines as a subset of another's only nominates the pair, because two cases on the same lines with different inputs and expected results catch different mistakes, such as a send plan that must say yes for email and no for portal-only.
 - **Internal.** The case reaches the code only through an export or file that the dead-code tool lists as used by tests alone. The code goes with the case when no production caller remains.
 - **Test.** Everything else, such as mock-call assertions, internal imports, schema parses, copied lists, tables with distinct inputs and contract-shaped tests, gets both edits one test at a time and every field of Candidate evidence. A schema case can catch a broken refinement, a call count can be the reads a server sees, and a copied list can be the value users are promised, so none of them is a shape.
 
