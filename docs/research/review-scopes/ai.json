@@ -11,8 +11,6 @@
     "packages/platejs/src/ai/"
   ],
   "members": [
-    "apps/www/src/app/api/ai/command/route.ts",
-    "apps/www/src/app/api/ai/copilot/route.ts",
     "apps/www/src/registry/app/api/ai/",
     "apps/www/src/registry/components/editor/ai-menu.guards.spec.tsx",
     "apps/www/src/registry/components/editor/ai-menu.spec.tsx",
@@ -37,7 +35,9 @@
     "packages/platejs/src/ai/index.ts",
     "packages/platejs/src/ai/lib/",
     "packages/platejs/src/ai/react/AIChatPlugin.actions.spec.ts",
+    "packages/platejs/src/ai/react/AIChatPlugin.details.spec.ts",
     "packages/platejs/src/ai/react/AIChatPlugin.focus.spec.tsx",
+    "packages/platejs/src/ai/react/AIChatPlugin.lists.spec.ts",
     "packages/platejs/src/ai/react/AIChatPlugin.markdown.spec.tsx",
     "packages/platejs/src/ai/react/AIChatPlugin.placeholders.spec.tsx",
     "packages/platejs/src/ai/react/AIChatPlugin.prompt.spec.ts",
@@ -53,6 +53,7 @@
     "packages/platejs/src/ai/react/CopilotPlugin.trigger-suggestion.spec.ts",
     "packages/platejs/src/ai/react/CopilotPlugin.spec.ts",
     "packages/platejs/src/ai/react/CopilotPlugin.tsx",
+    "packages/platejs/src/ai/react/aiOutputLanding.internal.ts",
     "packages/platejs/src/ai/react/index.ts",
     "packages/platejs/src/ai/react/useAIChat.spec.tsx",
     "packages/platejs/src/ai/react/useAIChat.ts",
@@ -61,8 +62,8 @@
   "consumers": [
     "apps/www/src/registry/components/editor/ai.tsx",
     "apps/www/src/registry/components/editor/use-chat.ts",
-    "apps/www/src/app/api/ai/command/route.ts",
-    "apps/www/src/app/api/ai/copilot/route.ts",
+    "apps/www/src/registry/app/api/ai/command/route.ts",
+    "apps/www/src/registry/app/api/ai/copilot/route.ts",
     "apps/www/src/registry/examples/ai-demo.tsx"
   ],
   "proof": [

@@ -296,6 +296,36 @@ reviewed by gpt-6.1-sol @xhigh, the decision-trail review.
 - Mount timing has no paired run yet, and a miss reopens Phase 1.
 - The zero-caller counts behind the Plate revert and the reentrant-end pick are inferred from literal searches.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/src/react/hooks/use-editor.ts`
+- `packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx`
+- `packages/plitejs/src/react/range-geometry.ts`
+- `packages/plitejs/src/react/components/plite.tsx`
+- `packages/plitejs/src/create-editor.ts`
+- `packages/plitejs/src/core/plugin.ts`
+- `packages/plitejs/src/interfaces/editor.ts`
+- `packages/plitejs/src/yjs/core/plugin.ts`
+- `packages/plitejs/src/yjs/core/controller-registry.ts`
+- `packages/plitejs/src/yjs/core/controller.ts`
+- `packages/plitejs/test/react/provider-hooks-contract.tsx`
+- `packages/plitejs/test/yjs/admission-lifecycle-contract.spec.ts`
+- `packages/platejs/src/react/editor/useCreateEditor.ts`
+- `packages/platejs/src/yjs/react/YjsPlugin.tsx`
+- `packages/platejs/src/features/comments/BaseCommentsPlugin.ts`
+- `packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts`
+- `packages/platejs/src/ai/react/AIChatPlugin.ts`
+- `apps/www/src/app/(app)/examples/plite/_examples/yjs-collaboration.tsx`
+- `apps/www/src/app/(app)/examples/plite/_examples/yjs-hocuspocus.tsx`
+- `apps/www/src/registry/examples/collaboration-demo.tsx`
+- `content/docs/(plugins)/(collaboration)/yjs.mdx`
+- `content/docs/plite/libraries/plite-yjs.mdx`
+- `docs/vision/plite.md`
+- `docs/plans/2026-09-14-collaboration-lifetimes.md`
+- `docs/research/decisions/collaboration-ownership.md`
+
 ## Open work
 
 - Time a Yjs editor's mount on a quiet host, base against head, through `.agents/rules/benchmark/scripts/paired-timing.mjs`, at 100 and 1,000 blocks; a head median above 1.5 times base reopens Phase 1 and sends the design back to `architect`. owner: the owner, through suggested task `t_27d327a0` in `docs/plans/suggested-tasks.decisions.tsv`. stop: a paired run passes or conclusively misses.

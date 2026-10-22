@@ -416,6 +416,28 @@ Reviewed by gpt-6.1-sol at xhigh, on frozen commit `bea2aa7217f6`, against the s
 - `/pstack:correct` was not invoked; the occurrence was added by hand, and the class's check stays the owner's call.
 - The base controls ran during the build, not before it, and the Entry step now names the direct runtime call it uses.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `VISION.md`
+- `docs/vision/common.md`
+- `packages/plitejs/src/react/editable/external-text-runtime.ts`
+- `packages/plitejs/src/react/editable/caret-engine.ts`
+- `packages/plitejs/src/react/editable/content-root-vertical-geometry.ts`
+- `packages/plitejs/src/react/editable/runtime-keyboard-events.ts`
+- `packages/plitejs/src/react/editable/editable-dom-runtime.ts`
+- `packages/plitejs/src/dom/plugin/dom-geometry.ts`
+- `packages/plitejs/test/react/external-text-contract.test.tsx`
+- `packages/platejs/src/code-block/codemirror/createCodeMirrorAdapter.ts`
+- `packages/platejs/src/code-block/codemirror/createCodeMirrorAdapter.spec.ts`
+- `apps/www/src/app/(app)/examples/plite/_examples/external-text.tsx`
+- `apps/www/src/app/(app)/examples/plite/_examples/authored-changes.tsx`
+- `apps/www/tests/browser/code-block-codemirror.spec.ts`
+- `content/docs/(guides)/external-text.mdx`
+- `content/docs/plite/libraries/plite-react/external-text.mdx`
+- `docs/plans/2026-10-15-codemirror-vertical-entry.md`
+
 ## Open work
 
 - Wrapped first or last lines: with line wrapping on, entry lands at the boundary line's edge, the bridge drops selection affinity at a wrap point, and the CodeMirror adapter still exits from a wrapped first or last line by its logical line. owner: zbeyens; stop: a kit enables line wrapping in the code view, or the owner drops it.

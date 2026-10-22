@@ -23,6 +23,7 @@
     "packages/plitejs/src/core/editor-read-execution.ts",
     "packages/plitejs/src/core/editor-read-runtime.ts",
     "packages/plitejs/src/core/editor-reads.ts",
+    "packages/plitejs/src/core/is-empty-element.ts",
     "packages/plitejs/src/core/listener-state.ts",
     "packages/plitejs/src/core/read-definition.ts",
     "packages/plitejs/src/core/read-registry.ts",

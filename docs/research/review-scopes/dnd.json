@@ -18,6 +18,7 @@
   ],
   "members": [
     "apps/www/src/app/(app)/examples/plite/_examples/cross-editor-drag.tsx",
+    "apps/www/src/app/(app)/examples/plite/_examples/inline-void-drag.tsx",
     "apps/www/src/app/(app)/examples/plite/_examples/plate-dnd-cross-editor.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
@@ -32,9 +33,10 @@
     "apps/www/tests/browser/dnd.spec.ts",
     "packages/platejs/src/utils/plate-keys.ts",
     "packages/plitejs/src/core/landing.ts",
+    "packages/plitejs/src/core/transfer-guard.ts",
     "packages/plitejs/src/core/transfer-types.ts",
     "packages/plitejs/src/core/transfer.ts",
-    "packages/plitejs/src/react/editable/drag-auto-scroll-target.ts",
+    "packages/plitejs/src/dom/plugin/dom-drag-scroll.ts",
     "packages/plitejs/src/react/editable/runtime-drag-events.ts"
   ],
   "consumers": [
@@ -70,7 +72,7 @@
     "packages/plitejs/src/core/public-state.ts",
     "packages/plitejs/src/core/target-runtime.ts",
     "packages/plitejs/src/react/editable/runtime-selection-state.ts",
-    "packages/plitejs/src/react/editable/drag-auto-scroll-target.ts",
+    "packages/plitejs/src/dom/plugin/dom-drag-scroll.ts",
     "packages/plitejs/src/react/editable/root-interaction-controller.ts",
     "packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts",
     "tooling/scripts/run-entrypoint-task.mjs",

@@ -290,6 +290,20 @@ Proof and its limits:
 
 Counts: 4 of 4 steps done, three plan review rounds and three diff review rounds.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/src/authored/facts/admission.ts`
+- `packages/plitejs/src/authored/facts/settle.ts`
+- `packages/plitejs/src/core/change/root-change.ts`
+- `packages/plitejs/src/yjs/core/canonical-split.ts`
+- `packages/plitejs/src/yjs/core/text-runs.ts`
+- `packages/plitejs/test/authored-tree-collab.test.ts`
+- `packages/plitejs/test/document-change.test.ts`
+- `packages/plitejs/test/yjs/split-merge-contract.spec.ts`
+- `docs/plans/2026-10-18-editing-format-gone-links.md`
+
 ## Open work
 
 - Characters another writer typed inside the undone write keep the replayed value. A block or empty text whose opening the undo replaced keeps the replayed values. An undo whose commit wrapped or unwrapped the block brings back the rejected value of the text in it, alone or beside other edits. History reads a replaced block as a color change, so an undo brings back a pending tag on the old block. These limit the undo sentence in the Rules of `docs/plans/topics/authored.md`, which step 3 makes say so. Suggested task t_128bbd1d decides where those nodes get their value. owner: the owner. stop: t_128bbd1d lands or is dropped.

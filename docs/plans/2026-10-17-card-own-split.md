@@ -160,3 +160,14 @@ reviewed by gpt-6.1-sol @xhigh, on the plan, log and authored files frozen at f2
 6. The log lacked the deferral of the storage row. A row now records it, and a rerun on a quiet host shows the whole partition passes on both trees.
 7. The semantics probe's third case failed on its own edit. The log marks that probe partial, and the plan says so.
 8. One log row overstated the reproduction. A correction row narrows it to the cases that split into one card per change.
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/test/authored-plugin.test.ts`
+- `packages/plitejs/src/authored/changes.ts`
+- `packages/plitejs/src/authored/ledger/cards.ts`
+- `packages/plitejs/src/authored/ledger/book.ts`
+- `packages/plitejs/src/authored/tree/record.ts`
+- `packages/plitejs/src/authored/tree/resolve.ts`

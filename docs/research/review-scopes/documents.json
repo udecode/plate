@@ -14,6 +14,7 @@
     "packages/platejs/src/docx/internal/"
   ],
   "members": [
+    "apps/www/src/registry/components/editor/docx-export.spec.tsx",
     "apps/www/src/registry/components/editor/docx-export.tsx",
     "apps/www/src/registry/components/editor/docx-source.spec.tsx",
     "apps/www/src/registry/components/editor/docx-source.tsx",
@@ -29,11 +30,14 @@
     "packages/platejs/src/docx/import/index.ts",
     "packages/platejs/src/docx/import/lib/docxPackage.spec.ts",
     "packages/platejs/src/docx/import/lib/docxPackage.ts",
+    "packages/platejs/src/docx/import/lib/importDocx.math.spec.tsx",
     "packages/platejs/src/docx/import/lib/importDocx.spec.tsx",
     "packages/platejs/src/docx/import/lib/importDocx.spec.ts",
     "packages/platejs/src/docx/import/lib/importDocx.ts",
     "packages/platejs/src/docx/import/lib/index.ts",
+    "packages/platejs/src/docx/import/lib/numbering/importDocxNumbering.spec.ts",
     "packages/platejs/src/docx/import/lib/sourceEligibility.spec.ts",
+    "packages/platejs/src/docx/import/lib/wordMath.ts",
     "packages/platejs/src/docx/internal/",
     "packages/platejs/src/docx/paste/index.ts",
     "packages/platejs/src/docx/paste/lib/WordPastePlugin.spec.ts",

@@ -553,6 +553,49 @@ reviewed by gpt-6.1-sol, on rows 630 onward only, cut to 15 minutes on your word
 - The timing task's quiet-host wait had no deadline; t_7b50bd87 now caps it at an hour.
 - The typecheck claim now names the remaining errors.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `docs/plans/2026-10-12-suggestions-complete.md`
+- `docs/plans/2026-10-13-suggesting-cost-benchmark.md`
+- `docs/plans/2026-10-12-keys-proposed-lines.md`
+- `docs/plans/topics/suggestions.md`
+- `docs/plans/topics/authored.md`
+- `VISION.md`
+- `docs/vision/plite.md`
+- `docs/vision/plate.md`
+- `packages/plitejs/src/authored/authored.ts`
+- `packages/plitejs/src/authored/changes.ts`
+- `packages/plitejs/src/authored/format.ts`
+- `packages/plitejs/src/authored/tree/marks.ts`
+- `packages/plitejs/src/authored/tree/record.ts`
+- `packages/plitejs/src/authored/tree/record-completion.ts`
+- `packages/plitejs/src/authored/tree/resolve.ts`
+- `packages/plitejs/src/authored/tree/command-projection.ts`
+- `packages/plitejs/src/core/public-state.ts`
+- `packages/plitejs/src/core/transfer.ts`
+- `packages/plitejs/src/core/change/document-index.ts`
+- `packages/plitejs/src/core/resolved-token-cursor.ts`
+- `packages/plitejs/src/core/command-document.ts`
+- `packages/plitejs/src/core/schema-compiler.ts`
+- `packages/plitejs/src/history/history-plugin.ts`
+- `packages/plitejs/src/yjs/core/controller.ts`
+- `packages/plitejs/src/yjs/core/schema-metadata.ts`
+- `packages/plitejs/src/yjs/core/set-valued-attributes.ts`
+- `packages/platejs/src/features/suggestion/BaseSuggestionPlugin.ts`
+- `packages/platejs/src/react/features/suggestion/useSuggestion.ts`
+- `apps/www/src/registry/components/editor/suggestion.tsx`
+- `apps/www/src/registry/components/editor/discussion.tsx`
+- `packages/platejs/src/migrations/migratePlateV54Suggestions.internal.ts`
+- `packages/platejs/src/docx/export/lib/internal/xml-builder.ts`
+- `packages/platejs/src/docx/export/lib/reviewProjection.tsx`
+- `packages/platejs/src/docx/import/lib/importDocx.ts`
+- `packages/platejs/src/ai/react/AIChatPlugin.ts`
+- `packages/plitejs/test/authored-tree-work.test.ts`
+- `packages/plitejs/test/authored-tree-collab.test.ts`
+- `packages/plitejs/test/authored-tree-recording-laws.slow.ts`
+
 ## Proof
 
 Each step names its proof. The phase keep decisions run the correctness guard from the frozen budget. Timing lines run interleaved against the control on a host whose load is logged, and a loaded host makes a timing line inconclusive, never a pass.

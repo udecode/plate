@@ -17,6 +17,8 @@
     "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
     "packages/platejs/src/utils/plate-keys.ts",
+    "packages/plitejs/src/core/plugin-dispatch.ts",
+    "packages/plitejs/src/core/plugin-point.ts",
     "packages/plitejs/src/core/plugin-registry.ts",
     "packages/plitejs/src/core/plugin-slot.ts",
     "packages/plitejs/src/core/plugin.ts",

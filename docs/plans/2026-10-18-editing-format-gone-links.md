@@ -336,6 +336,26 @@ Proof and its limits:
 
 Counts: 8 of 8 steps done, and three review rounds, round 1 on the plan and rounds 2 and 3 on the diff.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/src/authored/tree/layers.ts`
+- `packages/plitejs/src/authored/tree/record.ts`
+- `packages/plitejs/src/authored/tree/record-completion.ts`
+- `packages/plitejs/src/authored/tree/resolve.ts`
+- `packages/plitejs/src/authored/tree/marks.ts`
+- `packages/plitejs/src/authored/facts/settle.ts`
+- `packages/plitejs/src/authored/facts/admission.ts`
+- `packages/plitejs/src/authored/facts/records.ts`
+- `packages/plitejs/src/authored/facts/facts.ts`
+- `packages/plitejs/src/authored/authored.ts`
+- `packages/plitejs/src/authored/changes.ts`
+- `packages/plitejs/test/authored-tree-collab.test.ts`
+- `packages/plitejs/test/authored-facts.test.ts`
+- `packages/plitejs/test/authored-tree-record.test.ts`
+- `packages/plitejs/test/authored-tree-layers.test.ts`
+
 ## Open work
 
 - A decision or withdrawal at the same time as an Editing write can lose the edit, as on next (C15). Suggested task t_b8a4ce47 owns the fix and holds the arena's put-back sketch. owner: the owner. stop: t_b8a4ce47 lands or is dropped.

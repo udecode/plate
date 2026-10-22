@@ -15,13 +15,17 @@
     "packages/plitejs/src/utils/node-keys.ts"
   ],
   "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/content-completion.tsx",
     "packages/plitejs/package.json",
     "packages/plitejs/src/core/clone.ts",
+    "packages/plitejs/src/core/content-completion.ts",
     "packages/plitejs/src/core/document-shape.ts",
     "packages/plitejs/src/core/editor-schema.ts",
     "packages/plitejs/src/core/index.ts",
     "packages/plitejs/src/core/initial-value.ts",
+    "packages/plitejs/src/core/persistent-map.ts",
     "packages/plitejs/src/core/representation.ts",
+    "packages/plitejs/src/core/root-ownership.ts",
     "packages/plitejs/src/core/schema-definition.ts",
     "packages/plitejs/src/core/schema-source.internal.ts",
     "packages/plitejs/src/core/schema-validation.ts",

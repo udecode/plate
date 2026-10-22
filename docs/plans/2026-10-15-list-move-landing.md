@@ -176,3 +176,12 @@ Attention, reviewed by gpt-6.1-sol @xhigh (`docs/plans/artifacts/2026-10-15-list
 
 
 - **A keyboard step judges a payload before and after adoption.** A candidate edge that a veto or schema rule refuses for the unpatched payload but would admit once adopted is skipped, while a drag to that edge lands. Moves reach it now too, through a veto or a required property that reads an adopted value. No List veto or schema rule reads one today. Already listed under the list drag plan's review warnings in the subject file. owner: zbeyens. stop: a veto keyed on an adopted property lands, or zbeyens drops it.
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/test/transfer-contract.test.ts`
+- `packages/plitejs/test/react/dom-drag-geometry.test.ts`
+- `packages/platejs/src/features/list/lib/BaseListPlugin.spec.tsx`
+- `apps/www/tests/browser/list-keys.spec.ts`

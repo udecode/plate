@@ -3,7 +3,7 @@ review_scopes: [authored, suggestions]
 review_basis: [2026-10-08-authored-review]
 work_kind: implementation
 review_commit: 666f02406e936864cc61e5ccb6824321df4d9a42
-review_inputs: [docs/plans/2026-10-08-authored-review.md, docs/plans/2026-10-10-authored-values.md, docs/plans/2026-10-10-authored-values.decisions.tsv, docs/plans/artifacts/2026-10-08-authored-review/redesign/grounding.md, docs/plans/artifacts/2026-10-08-authored-review/redesign/explorer/answer.md, docs/plans/artifacts/2026-10-08-authored-review/redesign/explorer/answer-a2.md, docs/plans/artifacts/2026-10-08-authored-review/redesign/architect/task.md, docs/plans/artifacts/2026-10-08-authored-review/redesign/architect/runner-opus.md, docs/plans/artifacts/2026-10-08-authored-review/redesign/architect/runner-astra.md, docs/plans/artifacts/2026-10-08-authored-review/redesign/architect/runner-sol.md, docs/plans/artifacts/2026-10-08-authored-review/redesign/architect/judge.md, docs/plans/artifacts/2026-10-08-authored-review/redesign/probes/p1-fold-cost-a2.log, docs/plans/artifacts/2026-10-08-authored-review/redesign/probes/p2-cuts-a1.log, docs/plans/artifacts/2026-10-08-authored-review/redesign/probes/p5-survival-a3.log, docs/plans/artifacts/2026-10-08-authored-review/redesign/probes/p8-create-a1.log, docs/plans/artifacts/2026-10-08-authored-review/redesign/probes/p10-span-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/close/list-walk-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/bench/s9/relink-cost-a1.log, packages/plitejs/src/authored/tree/cuts.ts, packages/plitejs/src/authored/tree/record.ts, packages/plitejs/src/authored/tree/resolve.ts, packages/plitejs/src/authored/tree/proof-plugin.ts, packages/plitejs/src/core/change/root-change.ts, packages/plitejs/src/core/change/document-index.ts, packages/plitejs/src/core/editor-schema.ts, packages/plitejs/src/core/representation.ts, packages/plitejs/src/core/content.ts, packages/platejs/src/features/table/lib/internal/grid.ts, packages/platejs/src/features/table/lib/BaseTablePlugin.ts]
+review_inputs: [docs/plans/2026-10-08-authored-review.md, docs/plans/2026-10-10-authored-values.md, docs/plans/2026-10-10-authored-values.decisions.tsv, packages/plitejs/src/authored/tree/cuts.ts, packages/plitejs/src/authored/tree/record.ts, packages/plitejs/src/authored/tree/resolve.ts, packages/plitejs/src/authored/tree/proof-plugin.ts, packages/plitejs/src/core/change/root-change.ts, packages/plitejs/src/core/change/document-index.ts, packages/plitejs/src/core/editor-schema.ts, packages/plitejs/src/core/representation.ts, packages/plitejs/src/core/content.ts, packages/platejs/src/features/table/lib/internal/grid.ts, packages/platejs/src/features/table/lib/BaseTablePlugin.ts]
 ---
 
 # Authored: change-driven cut relink
@@ -297,3 +297,21 @@ Round 3, the last plan round, ran the same seats on frozen commit `68c7fdd791` (
 ### Proof limits
 
 The probes ran single-client on the working tree. The prior-art rows come from source reading, not runs. The design is unbuilt; every outcome above is a claim the steps must prove.
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `docs/plans/2026-10-08-authored-review.md`
+- `docs/plans/2026-10-10-authored-values.md`
+- `docs/plans/2026-10-10-authored-values.decisions.tsv`
+- `packages/plitejs/src/authored/tree/record.ts`
+- `packages/plitejs/src/authored/tree/resolve.ts`
+- `packages/plitejs/src/authored/tree/proof-plugin.ts`
+- `packages/plitejs/src/core/change/root-change.ts`
+- `packages/plitejs/src/core/change/document-index.ts`
+- `packages/plitejs/src/core/editor-schema.ts`
+- `packages/plitejs/src/core/representation.ts`
+- `packages/plitejs/src/core/content.ts`
+- `packages/platejs/src/features/table/lib/internal/grid.ts`
+- `packages/platejs/src/features/table/lib/BaseTablePlugin.ts`

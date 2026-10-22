@@ -4,7 +4,7 @@ review_basis: [2026-10-08-authored-review]
 verdict: pursue
 work_kind: implementation
 review_commit: 666f02406e936864cc61e5ccb6824321df4d9a42
-review_inputs: [docs/plans/2026-10-08-authored-review.md, docs/plans/2026-10-09-authored-structural.md, docs/plans/artifacts/2026-10-08-authored-review/values/grounding.md, docs/plans/artifacts/2026-10-08-authored-review/values/explorer/answer.md, docs/plans/artifacts/2026-10-08-authored-review/values/architect/task.md, docs/plans/artifacts/2026-10-08-authored-review/values/architect/runner-opus.md, docs/plans/artifacts/2026-10-08-authored-review/values/architect/runner-astra.md, docs/plans/artifacts/2026-10-08-authored-review/values/architect/runner-sol.md, docs/plans/artifacts/2026-10-08-authored-review/values/architect/judge.md, docs/plans/artifacts/2026-10-08-authored-review/values/panel-plan-1/seat-opus.md, docs/plans/artifacts/2026-10-08-authored-review/values/panel-plan-1/seat-astra.md, docs/plans/artifacts/2026-10-08-authored-review/values/panel-plan-1/seat-sol.md, docs/plans/artifacts/2026-10-08-authored-review/values/probes/controls-tree-a2.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/base-controls-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/derived-tree-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/derived-two-changes-a2.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/derived-preset-pending-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/derived-editing-correction-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/derived-struck-corrections-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/link-plain-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/link-empty-a2.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/link-url-base-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/probes/proto-copy-marks-a1.log, docs/plans/artifacts/2026-10-08-authored-review/values/bench/baseline-a2.log, docs/plans/artifacts/2026-10-08-authored-review/values/bench/evaluate-planted-a1.log, docs/plans/artifacts/2026-10-08-authored-review/structural/panel-build-3/repro/round3-main-after-a1.log, docs/plans/artifacts/2026-10-08-authored-review/structural/panel-build-3/seat-opus.md, docs/plans/artifacts/2026-10-08-authored-review/structural/panel-build-3/seat-astra.md, docs/plans/artifacts/2026-10-08-authored-review/structural/panel-build-3/seat-sol.md, docs/plans/artifacts/2026-10-08-authored-review/panel-3/seat-opus.md, docs/plans/artifacts/2026-10-08-authored-review/panel-3/seat-astra.md, docs/plans/artifacts/2026-10-08-authored-review/panel-3/seat-sol.md, packages/plitejs/src/authored/tree/marks.ts, packages/plitejs/src/authored/tree/record.ts, packages/plitejs/src/authored/tree/resolve.ts, packages/plitejs/src/authored/tree/proof-plugin.ts, packages/plitejs/src/core/change/builder.ts, packages/plitejs/src/core/public-state.ts, packages/plitejs/src/core/content-text.ts, packages/plitejs/src/editor/correct-document.ts, packages/plitejs/src/core/correction.ts, packages/plitejs/src/yjs/core/replacement.ts, packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts, packages/platejs/src/features/table/lib/internal/mutation.ts]
+review_inputs: [docs/plans/2026-10-08-authored-review.md, docs/plans/2026-10-09-authored-structural.md, packages/plitejs/src/authored/tree/marks.ts, packages/plitejs/src/authored/tree/record.ts, packages/plitejs/src/authored/tree/resolve.ts, packages/plitejs/src/authored/tree/proof-plugin.ts, packages/plitejs/src/core/change/builder.ts, packages/plitejs/src/core/public-state.ts, packages/plitejs/src/editor/correct-document.ts, packages/plitejs/src/core/correction.ts, packages/plitejs/src/yjs/core/replacement.ts, packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts, packages/platejs/src/features/table/lib/internal/mutation.ts]
 review_upstreams: ['../prosemirror-suggest-changes@653fba70ba29ef6ea6af3ad8d60244a58df7281b']
 ---
 
@@ -383,6 +383,24 @@ One opus reviewer applied the judgment, tooling and divergent lenses to the tran
 ### Open work
 
 The `## Open work` section lists each item with its owner and stop. The redesign iteration the owner approved on 2026-10-11 ("ok go, we want the long term route bestly redesigned from first principles to win this") takes seven of them: the cut relink's regions and its second index update, the table borders, the list walk and list numbering, the default-child fill, and a content read that follows the resolver's survival rule.
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `docs/plans/2026-10-08-authored-review.md`
+- `docs/plans/2026-10-09-authored-structural.md`
+- `packages/plitejs/src/authored/tree/marks.ts`
+- `packages/plitejs/src/authored/tree/record.ts`
+- `packages/plitejs/src/authored/tree/resolve.ts`
+- `packages/plitejs/src/authored/tree/proof-plugin.ts`
+- `packages/plitejs/src/core/change/builder.ts`
+- `packages/plitejs/src/core/public-state.ts`
+- `packages/plitejs/src/editor/correct-document.ts`
+- `packages/plitejs/src/core/correction.ts`
+- `packages/plitejs/src/yjs/core/replacement.ts`
+- `packages/platejs/src/features/layout/lib/BaseColumnPlugin.ts`
+- `packages/platejs/src/features/table/lib/internal/mutation.ts`
 
 ## Evidence
 

@@ -2,9 +2,9 @@
 review_scopes: [clipboard]
 review_basis: []
 work_kind: implementation
-review_commit: b1e70bb257
+review_commit: b1e70bb257d7a33c3a2f6160759a8ecb79e44500
 review_inputs: [packages/plitejs/test/slice-landing-contract.test.ts]
-review_upstreams: ['../prosemirror-transform@662b7a9', '../prosemirror-model@6264de0', '../lexical@dd5c41b13', '../slate@945a484df', '../tiptap@91c51be53']
+review_upstreams: ['../prosemirror-transform@662b7a937bafde19b7e2a83241dbc8888e257c89', '../prosemirror-model@6264de069d8439131e88f8ba06973551916184e4', '../lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988', '../slate@945a484df2497e4c448b33f417b0de2a49840032', '../tiptap@91c51be53c4655ef07e29ec489471524debfa0ca']
 ---
 
 # A paste refuses what commit refuses
@@ -267,3 +267,9 @@ reviewed by gpt-6.1-sol
 - Warning: the merged file landed before its checks ran. Recorded as a deviation; the checks pass on the landed bytes.
 - Warning: the flattening case had only probe coverage. Applied: a contract test now lands it as text, and it fails at base.
 - Nits: the owner-issue test was written after its fix, and the writing row cited a lint log. Both rows are corrected in the log.
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/test/slice-landing-contract.test.ts`

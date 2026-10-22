@@ -169,3 +169,18 @@ Open work, moved to the link subject's `## Open work`:
 - Benchmark's pre-acceptance probe has not run for the content range, and the final wrap was not timed; a timing check on round 1's wrap showed no measurable difference at 300 and 1000 paragraphs. owner: zbeyens. stop: a report of slow linking over a large selection, or the next change to Plite's inline wrap.
 - Smaller gaps: block wraps keep an edge move that can flip the range; a backward selection comes back forward; Plite fixtures for touched inlines with text between, an empty middle block and a void at an edge are missing. owner: zbeyens. stop: the next change to Plite's inline wrap, or a report.
 - The stale-claims hook runs only in Claude Code; moving the sweep into the shared freeze script is tracked in `docs/plans/topics/correct.md`.
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/src/transforms-node/wrap-nodes.ts`
+- `packages/plitejs/src/transforms-node/split-nodes.ts`
+- `packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts`
+- `packages/plitejs/src/dom/plugin/dom-editor.ts`
+- `packages/plitejs/src/editor/positions.ts`
+- `packages/plitejs/test/transforms/wrapNodes/split-inline/inline-mark.tsx`
+- `packages/platejs/src/features/link/lib/BaseLinkPlugin.ts`
+- `apps/www/src/app/(app)/examples/plite/_examples/inlines.tsx`
+- `apps/www/src/app/(app)/examples/plite/[example]/page.tsx`
+- `docs/research/review-records/2026-10-04-editing-audit.json`

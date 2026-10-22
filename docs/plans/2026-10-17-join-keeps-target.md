@@ -348,6 +348,34 @@ Proof limits: the probes ran in bun against next at `b40cebebee` and `dc06078008
 
 **Proof and limits.** The slices' red tests and mutants are under Completion Gates. The final checks are in `checks-final/` and in the Close of `2026-10-18-join-travels-as-join.md`. No browser drive confirmed that the review view stops drawing deleted text.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/src/authored/tree/resolve.ts`
+- `packages/plitejs/src/authored/tree/proposed.ts`
+- `packages/plitejs/src/authored/tree/marks.ts`
+- `packages/plitejs/src/authored/tree/cuts.ts`
+- `packages/plitejs/src/authored/facts/settle.ts`
+- `packages/plitejs/src/authored/facts/admission.ts`
+- `packages/plitejs/src/authored/facts/editing.ts`
+- `packages/plitejs/src/authored/facts/facts.ts`
+- `packages/plitejs/src/core/change/root-change.ts`
+- `packages/plitejs/src/react/editable/external-text-runtime.ts`
+- `packages/plitejs/src/react/editable/composition-state.ts`
+- `packages/plitejs/src/react/editable/clipboard-input-strategy.ts`
+- `packages/plitejs/test/authored-tree-decisions.test.ts`
+- `packages/plitejs/test/authored-facts.test.ts`
+- `packages/plitejs/test/authored-tree-collab.test.ts`
+- `packages/plitejs/test/authored-tree-cuts.test.ts`
+- `packages/plitejs/test/authored-tree-commands.test.ts`
+- `packages/plitejs/test/document-change-structural-transform.test.ts`
+- `packages/plitejs/test/collab-history-runtime-contract.ts`
+- `packages/plitejs/test/react/external-text-contract.test.tsx`
+- `packages/plitejs/test/react/composition-state-contract.test.ts`
+- `docs/vision/plite.md`
+- `docs/editor-behavior/scenarios/suggestions.md`
+
 ## Open work
 
 Each item is a line in `docs/plans/backlog.md`. owner: zbeyens, who takes or drops each one there. stop: its line leaves the backlog.

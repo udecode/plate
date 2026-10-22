@@ -29,6 +29,7 @@
     "packages/platejs/src/utils/plate-keys.ts",
     "packages/plitejs/package.json",
     "packages/plitejs/src/dom/",
+    "packages/plitejs/src/react/editable/android-composition.ts",
     "packages/plitejs/src/react/editable/browser-handle.ts",
     "packages/plitejs/src/react/editable/composition-state.ts",
     "packages/plitejs/src/react/editable/decoration-repair-bridge.ts",
@@ -57,7 +58,8 @@
     "packages/plitejs/src/react/editable/runtime-input-events.ts",
     "packages/plitejs/src/react/editable/runtime-keyboard-events.ts",
     "packages/plitejs/src/react/editable/runtime-mutation-state.ts",
-    "packages/plitejs/src/react/editable/runtime-repair-engine.ts"
+    "packages/plitejs/src/react/editable/runtime-repair-engine.ts",
+    "packages/plitejs/src/react/editable/selection-claim.ts"
   ],
   "consumers": [
     "packages/plitejs/src/react/editable/runtime-composition-events.ts",

@@ -27,7 +27,6 @@
     "packages/platejs/src/root.tsx",
     "packages/platejs/src/type.spec.ts",
     "packages/platejs/src/utils/index.ts",
-    "packages/platejs/src/utils/plate-keys.spec.ts",
     "packages/platejs/src/utils/plate-keys.ts",
     "packages/platejs/src/utils/plugins/ExitBreakPlugin.spec.ts",
     "packages/platejs/src/utils/plugins/ExitBreakPlugin.ts",

@@ -15,6 +15,7 @@
     "packages/plitejs/src/react/editable/editable-dom-runtime.ts"
   ],
   "members": [
+    "apps/www/src/app/(app)/examples/plite/_examples/render-contract.tsx",
     "apps/www/src/registry/components/editor/editor-static.tsx",
     "apps/www/src/registry/components/editor/editor.spec.tsx",
     "apps/www/src/registry/components/editor/editor.tsx",
@@ -40,7 +41,6 @@
     "packages/platejs/src/react/utils/dispatchPlateShortcut.internal.ts",
     "packages/platejs/src/react/utils/dispatchPlateShortcut.spec.ts",
     "packages/platejs/src/react/utils/dom-attributes.internal.ts",
-    "packages/platejs/src/react/utils/dom-attributes.spec.ts",
     "packages/platejs/src/react/utils/editableKeyDown.internal.ts",
     "packages/platejs/src/react/utils/getRenderNodeProps.internal.ts",
     "packages/platejs/src/react/utils/getRenderNodeProps.spec.ts",
@@ -72,6 +72,7 @@
     "packages/plitejs/src/react/editable/plite-string-coordinate-placement.ts",
     "packages/plitejs/src/react/editable/projected-collab-substrate.ts",
     "packages/plitejs/src/react/editable/projected-native-affordance.ts",
+    "packages/plitejs/src/react/editable/render-contract-monitor.ts",
     "packages/plitejs/src/react/editable/runtime-editor-api.ts",
     "packages/plitejs/src/react/editable/runtime-kernel-trace.ts",
     "packages/plitejs/src/react/editable/runtime-live-state.ts",

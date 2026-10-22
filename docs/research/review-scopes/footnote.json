@@ -10,6 +10,7 @@
     "packages/platejs/src/features/footnote/"
   ],
   "members": [
+    "apps/www/src/registry/components/editor/footnote-static.spec.tsx",
     "apps/www/src/registry/components/editor/footnote-static.tsx",
     "apps/www/src/registry/components/editor/footnote.combobox.spec.tsx",
     "apps/www/src/registry/components/editor/footnote.navigation.spec.tsx",
@@ -17,11 +18,15 @@
     "apps/www/src/registry/components/editor/footnote.tsx",
     "apps/www/src/registry/components/editor/markdown.spec.ts",
     "apps/www/src/registry/examples/values/footnote-value.tsx",
+    "apps/www/tests/browser/footnote-navigation.spec.ts",
+    "apps/www/tests/browser/footnote-paste.spec.ts",
     "packages/platejs/package.json",
     "packages/platejs/src/features/footnote/index.ts",
+    "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.authored-tree.spec.ts",
     "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.spec.ts",
     "packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts",
     "packages/platejs/src/features/footnote/lib/index.ts",
+    "packages/platejs/src/features/footnote/lib/internal/getFootnoteTarget.ts",
     "packages/platejs/src/utils/plate-keys.ts"
   ],
   "consumers": [

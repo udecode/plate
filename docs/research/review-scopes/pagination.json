@@ -13,6 +13,8 @@
     "apps/www/src/app/(app)/examples/plite/_examples/pagination.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/registry/examples/pagination-demo.tsx",
+    "apps/www/tests/browser/pagination.spec.ts",
     "packages/platejs/package.json",
     "packages/platejs/src/pagination/",
     "packages/plitejs/package.json",

@@ -27,7 +27,11 @@
     "packages/plitejs/src/core/content-slice.ts",
     "packages/plitejs/src/core/get-content-slice.ts",
     "packages/plitejs/src/core/get-fragment.ts",
+    "packages/plitejs/src/core/import-content-slice.ts",
+    "packages/plitejs/src/core/slice-end-matter.ts",
     "packages/plitejs/src/core/slice-fit/",
+    "packages/plitejs/src/core/slice-landing-types.ts",
+    "packages/plitejs/src/core/slice-landing.ts",
     "packages/plitejs/src/react/editable/clipboard-input-strategy.ts",
     "packages/plitejs/src/react/editable/projected-clipboard.ts",
     "packages/plitejs/src/react/editable/runtime-clipboard-events.ts"

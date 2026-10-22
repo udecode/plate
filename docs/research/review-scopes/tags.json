@@ -15,6 +15,7 @@
     "apps/www/src/app/dev/select-editor-scale/page.tsx",
     "apps/www/src/registry/components/editor/select-editor.spec.tsx",
     "apps/www/src/registry/components/editor/select-editor.tsx",
+    "apps/www/src/registry/components/editor/tag.spec.tsx",
     "apps/www/src/registry/components/editor/tag.tsx",
     "apps/www/src/registry/examples/select-editor-demo.tsx",
     "apps/www/tests/browser/select-editor.spec.ts"

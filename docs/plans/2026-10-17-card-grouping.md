@@ -170,3 +170,12 @@ reviewed by gpt-6.1-sol @xhigh (Codex)
 - Resolve the plain-Enter exception before treating empty-block continuation as a settled law.
 - Record the design-first deviation honestly.
 - Keep the Close provisional until landing is evidenced.
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/test/authored-plugin.test.ts`
+- `packages/plitejs/src/authored/ledger/cards.ts`
+- `docs/editor-behavior/scenarios/suggestions.md`
+- `docs/plans/2026-09-14-suggestion-grouping-regression.md`

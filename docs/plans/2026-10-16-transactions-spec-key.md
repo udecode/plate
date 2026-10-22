@@ -213,6 +213,20 @@ Attention, reviewed by gpt-6.1-sol on Codex:
 
 All 8 of the plan's steps are done. Two of the done steps closed under the accepted narrower reference check. Open work lists four items, each owned by a suggested task.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `VISION.md`
+- `docs/vision/common.md`
+- `docs/vision/plite.md`
+- `packages/plitejs/src/core/public-state.ts`
+- `packages/plitejs/src/core/command-frame.ts`
+- `packages/platejs/src/lib/editor/pluginRuntimeTypes.ts`
+- `packages/platejs/src/lib/plugins/input-rules/types.ts`
+- `packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts`
+- `docs/plans/2026-10-15-plite-draft-keys.md`
+
 ## Steps
 
 - [x] Run `architect` with three runners and a cross-judge, and synthesize. Proof: `docs/plans/artifacts/2026-10-16-transactions-spec-key/architect/synthesis.md`, the runner answers and `judge/` beside it.

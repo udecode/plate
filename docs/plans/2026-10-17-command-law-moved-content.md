@@ -32,6 +32,10 @@ Moves break that. A line moved between a join's two halves, a follower, shows af
 
 The fix has the resolver report where it lands each follower. The ledger maps carets through that order. The recorder splits an edit that crosses two stored pieces shown side by side, and refuses one it cannot split.
 
+## Public API
+
+No public call changes. Every change sits inside the framed-command flow that Main changes describes, in the resolver, the ledger, the recorder and the frame map of `packages/plitejs/src/core/command-document.ts`, which no `plitejs` entrypoint exports.
+
 ## Main changes
 
 The ownership flow for a framed command stays the same: the ledger projects the stored document, the frame maps the stored caret into that projection, the command runs there, and the recorder lifts the result back through the same map. This plan changes what four owners compute inside that flow.
@@ -190,6 +194,35 @@ Reviewed by claude-opus-5-5, same-family, because the ChatGPT login behind the C
 - N1, settled. The typed-text law passes at seed 697763044 on the landed code.
 - N2, dismissed. The Open work entry in the correct subject tracks the stale-log check.
 - N3, recorded. The run did not bisect which round moved the typed letter into the joining half, and the move-free control places it the same way.
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `VISION.md`
+- `docs/vision/common.md`
+- `docs/vision/plite.md`
+- `docs/plans/2026-10-13-review-tree-pivot.md`
+- `docs/plans/topics/authored.md`
+- `packages/plitejs/src/authored/authored.ts`
+- `packages/plitejs/src/authored/tree/resolve.ts`
+- `packages/plitejs/src/authored/tree/proposed.ts`
+- `packages/plitejs/src/authored/tree/record.ts`
+- `packages/plitejs/src/authored/tree/alignment.ts`
+- `packages/plitejs/src/authored/tree/marks.ts`
+- `packages/plitejs/src/authored/facts/settle.ts`
+- `packages/plitejs/src/authored/ledger/ledger.ts`
+- `packages/plitejs/src/authored/ledger/projection.ts`
+- `packages/plitejs/src/authored/ledger/runs.ts`
+- `packages/plitejs/src/core/command-frame.ts`
+- `packages/plitejs/src/core/command-document.ts`
+- `packages/plitejs/test/authored-tree-commands.test.ts`
+- `packages/plitejs/test/authored-tree-resolve.test.ts`
+- `packages/plitejs/test/authored-tree-work.test.ts`
+- `packages/plitejs/test/authored-tree-recording-laws.slow.ts`
+- `packages/platejs/src/authored/authored.api.spec.ts`
+- `packages/platejs/src/docx/export/lib/authoredDocx.spec.ts`
+- `packages/platejs/src/react/features/suggestion/SuggestionPlugin.spec.tsx`
 
 ## Open work
 

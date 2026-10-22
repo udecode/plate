@@ -163,6 +163,14 @@ reviewed by gpt-6.1-sol @xhigh
 - Warning. A candidate that loses badly while the incumbent is at the ceiling, such as 0 against 80 of 80 cases, reads inconclusive, so it can be tried again instead of being dropped. Diff round 1 dismissed this because the incumbent stays either way.
 - Nit. A failed mutation run that changed the tests had no row. It is logged now.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `tooling/scripts/trial-power.test.mjs`
+- `docs/plans/2026-10-15-trial-power.md`
+- `docs/plans/2026-10-15-trial-power.decisions.tsv`
+
 ## Open work
 
 - Suggested tasks t_895d65a0, t_47a5235c, t_f7148d32 and t_c4abe78e in `docs/plans/suggested-tasks.decisions.tsv` hold the findings outside the helper. owner: zbeyens. stop: each task lands or is dismissed.

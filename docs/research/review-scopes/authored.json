@@ -20,7 +20,12 @@
     "packages/plitejs/package.json",
     "packages/plitejs/src/authored/",
     "packages/plitejs/src/core/authored-document-capability.ts",
-    "packages/plitejs/src/core/authored-runtime.ts"
+    "packages/plitejs/src/core/authored-runtime.ts",
+    "packages/plitejs/src/core/authored-veto.ts",
+    "packages/plitejs/src/core/command-document.ts",
+    "packages/plitejs/src/core/measured-sequence.ts",
+    "packages/plitejs/src/core/record-store.ts",
+    "packages/plitejs/src/core/survival.ts"
   ],
   "consumers": [
     "packages/platejs/src/authored/index.ts",

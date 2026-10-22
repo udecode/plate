@@ -22,12 +22,12 @@
     "apps/www/src/registry/examples/values/cn/basic-marks-value.tsx",
     "apps/www/src/registry/examples/values/cn/font-value.tsx",
     "apps/www/src/registry/examples/values/font-value.tsx",
+    "apps/www/tests/browser/regressions/script-menu.spec.ts",
     "packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts",
     "packages/platejs/src/features/basic-styles/index.ts",
     "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.spec.ts",
     "packages/platejs/src/features/basic-styles/lib/BaseStylePlugins.ts",
     "packages/platejs/src/features/basic-styles/lib/index.ts",
-    "packages/platejs/src/utils/plate-keys.spec.ts",
     "packages/platejs/src/utils/plate-keys.ts"
   ],
   "consumers": [

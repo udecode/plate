@@ -36,6 +36,7 @@
     "apps/www/tests/browser/code-block-native-interactions.spec.ts",
     "apps/www/tests/browser/code-block-selection.spec.ts",
     "apps/www/tests/browser/code-block-syntax.spec.ts",
+    "apps/www/tests/browser/codeblock.spec.ts",
     "packages/platejs/src/ai/react/AIChatPlugin.streaming.spec.ts",
     "packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.ts",
     "packages/platejs/src/features/code-block/",

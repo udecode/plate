@@ -54,7 +54,6 @@
     "apps/www/src/registry/components/editor/toolbar-overlay.tsx",
     "apps/www/src/registry/components/editor/toolbar.spec.tsx",
     "apps/www/src/registry/components/editor/turn-into-toolbar-button.behavior.spec.tsx",
-    "apps/www/src/registry/components/editor/turn-into-toolbar-button.spec.ts",
     "apps/www/src/registry/components/editor/turn-into-toolbar-button.tsx",
     "apps/www/src/registry/examples/demo.tsx",
     "apps/www/src/registry/examples/editor-default.tsx",
@@ -94,7 +93,9 @@
     "apps/www/src/registry/registry.test.ts",
     "apps/www/src/registry/registry.ts",
     "apps/www/src/registry/styles/",
+    "apps/www/tests/browser/block-viewer-code.spec.ts",
     "apps/www/tests/browser/kit-lifetime-probe.spec.ts",
+    "apps/www/tests/browser/regressions/more-formatting-dismiss.spec.ts",
     "packages/platejs/src/utils/plate-keys.ts"
   ],
   "consumers": [

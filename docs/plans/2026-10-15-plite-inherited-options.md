@@ -320,3 +320,16 @@ Backlog, each with owner: zbeyens and stop: the owner starts or drops the task, 
 - The first two Accepted items are folded into `t_591359ab` "Decide who applies a card session's patch and when its waits clear", which already asks who applies such a patch. The fold quotes the owner's words.
 - The check is `t_33f1ebc3` "Check a done plan's Status against its delivery records".
 - The transcript end is `t_2c566c4e` "End a scoped reflect transcript at the reflect call".
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `VISION.md`
+- `docs/vision/common.md`
+- `docs/plans/2026-10-14-create-editor-options.md`
+- `docs/plans/2026-10-15-create-editor-options-types.md`
+- `packages/plitejs/src/core/public-state.ts`
+- `packages/plitejs/test/create-editor-options-message.test.ts`
+- `oxlint.config.ts`
+- `tooling/scripts/check-hook-generics.mjs`

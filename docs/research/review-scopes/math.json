@@ -23,6 +23,7 @@
     "packages/platejs/package.json",
     "packages/platejs/src/ai/react/AIChatPlugin.streaming.spec.ts",
     "packages/platejs/src/math/index.ts",
+    "packages/platejs/src/math/lib/BaseEquationPlugin.authored-tree.spec.ts",
     "packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx",
     "packages/platejs/src/math/lib/BaseEquationPlugin.ts",
     "packages/platejs/src/math/lib/index.ts",

@@ -13,7 +13,9 @@
     "apps/www/src/registry/components/editor/emoji.tsx",
     "apps/www/src/registry/examples/values/cn/emoji-value.tsx",
     "apps/www/src/registry/examples/values/emoji-value.tsx",
-    "apps/www/src/registry/lib/emoji-data.ts"
+    "apps/www/src/registry/lib/emoji-data.ts",
+    "apps/www/tests/browser/emoji.spec.ts",
+    "apps/www/tests/browser/emojibase-route.ts"
   ],
   "consumers": [
     "apps/www/src/registry/components/editor/callout.tsx",

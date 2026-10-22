@@ -19,6 +19,7 @@
     "apps/www/src/registry/examples/values/cn/link-value.tsx",
     "apps/www/src/registry/examples/values/link-value.tsx",
     "apps/www/tests/browser/link-floating-toolbar.spec.ts",
+    "apps/www/tests/browser/link-url-policy.spec.ts",
     "packages/platejs/src/features/link/index.ts",
     "packages/platejs/src/features/link/lib/BaseLinkInput.spec.ts",
     "packages/platejs/src/features/link/lib/BaseLinkPlugin.spec.tsx",

@@ -10,7 +10,6 @@
   "members": [
     "apps/plite/",
     "packages/platejs/THIRD_PARTY_NOTICES.md",
-    "packages/platejs/math/",
     "packages/platejs/package.json",
     "packages/platejs/scripts/",
     "packages/platejs/src/hyperscript/",

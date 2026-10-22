@@ -17,7 +17,8 @@
     "apps/www/src/app/dev/editor-perf/page.tsx",
     "benchmarks/editor/benchmarks/",
     "benchmarks/editor/package.json",
-    "packages/plitejs/src/core/profiling.ts"
+    "packages/plitejs/src/core/profiling.ts",
+    "packages/plitejs/src/core/work.ts"
   ],
   "consumers": [
     "benchmarks/editor/README.md",

@@ -2,9 +2,9 @@
 review_scopes: [transactions, model]
 review_basis: []
 work_kind: implementation
-review_commit: 0a5cb4f411
+review_commit: 0a5cb4f411c51a22bd494a908915b9f073fc2734
 review_inputs: [packages/plitejs/test/slice-roots-contract.test.ts, packages/plitejs/test/paste-blocks-contract.test.ts, packages/plitejs/test/content-root-lifecycle-contract.test.ts]
-review_upstreams: ['../prosemirror-transform@662b7a9', '../lexical@dd5c41b13', '../slate@945a484df', '../tiptap@91c51be53']
+review_upstreams: ['../prosemirror-transform@662b7a937bafde19b7e2a83241dbc8888e257c89', '../lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988', '../slate@945a484df2497e4c448b33f417b0de2a49840032', '../tiptap@91c51be53c4655ef07e29ec489471524debfa0ca']
 ---
 
 # Raw writes settle or refuse the roots they break
@@ -226,3 +226,11 @@ Side findings, each offered as a suggested task:
 - Clicking beside the content card throws a view-boundary error at base too (t_9150bc96).
 - The owner index cache can alias two documents (t_7453feaa).
 - Seven functions repeat one walk over the roots that elements own (t_50d32607).
+
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/test/slice-roots-contract.test.ts`
+- `packages/plitejs/test/paste-blocks-contract.test.ts`
+- `packages/plitejs/test/content-root-lifecycle-contract.test.ts`

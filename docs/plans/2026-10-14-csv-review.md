@@ -245,6 +245,20 @@ Reviewed by gpt-6.1-sol at xhigh, the decision-trail review. It read the log aga
 - **Slips.** It counted slips the log had missed. `sed -i` ran three times, twice as a no-op on `/dev/null`. Inline Python rewrote run-directory files. `build:registry` regenerated two generated files that held other sessions' edits before they were copied. Those files regenerate from their sources, so no loss is shown.
 - **Upheld.** It upheld the revert under the one-replacement rule, the Markdown and quoting dismissals, the registry-only generation and the unattributed demo error.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/platejs/src/csv/lib/CsvPlugin.spec.ts`
+- `packages/platejs/src/features/table/lib/BaseTablePlugin.paste.spec.tsx`
+- `packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.spec.tsx`
+- `packages/platejs/src/markdown/lib/MarkdownPlugin.ts`
+- `packages/plitejs/src/dom/plugin/data-transfer-format.ts`
+- `packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts`
+- `packages/platejs/src/internal/plugin/compilePlateFormats.ts`
+- `tooling/entrypoints/entrypoint-dag.mjs`
+- `tooling/e2e/table-demo.test.ts`
+
 ## Open work
 
 - Table crops HTML, Markdown and fragment pastes onto a smaller selection silently, and a ragged pasted table pads its whole rectangle before cropping (`probe-ragged-blowup-a1.log`). Reporting needs the paste outcome to carry the fitter's loss, a Plite change. owner: zbeyens. stop: a Table clipboard fitting plan, or 2026-11-30.

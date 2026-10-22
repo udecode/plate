@@ -247,6 +247,25 @@ Base's own behavior when a peer removed both lines is kept: Bob's undo there bri
 
 **Open work.** The items below, each a suggested task.
 
+### Review inputs
+
+The files this plan's `review_inputs` names, which its review and proof read:
+
+- `packages/plitejs/src/core/change/merge-rehome.ts`
+- `packages/plitejs/src/core/change/root-change.ts`
+- `packages/plitejs/src/core/change/document-change.ts`
+- `packages/plitejs/src/yjs/core/event-change-bridge.ts`
+- `packages/plitejs/src/yjs/core/text-runs.ts`
+- `packages/plitejs/src/yjs/core/controller.ts`
+- `packages/plitejs/src/yjs/core/document.ts`
+- `packages/plitejs/src/history/history-replay.ts`
+- `packages/plitejs/test/document-change-structural-transform.test.ts`
+- `packages/plitejs/test/yjs/merge-node-contract.spec.ts`
+- `packages/plitejs/test/authored-tree-collab.test.ts`
+- `docs/plans/2026-10-17-join-keeps-target.md`
+- `docs/plans/2026-10-18-rehome-merger-reading.md`
+- `docs/vision/plite.md`
+
 ## Open work
 
 - Bob's undo after a peer removes the two lines Bob edited, with or without the peer's typing in a third line, brings both lines back and drops the peer's typing on both peers, at base (`a3-proto-false-a1.log`). owner: zbeyens. stop: a suggested task at this plan's close.

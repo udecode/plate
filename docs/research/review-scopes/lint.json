@@ -10,6 +10,7 @@
   "members": [
     "apps/plite/tests/plite-browser/donor/examples/linting.test.ts",
     "apps/www/src/app/(app)/examples/plite/_examples/linting.tsx",
+    "apps/www/src/registry/components/editor/lint.spec.ts",
     "apps/www/src/registry/components/editor/lint.tsx",
     "apps/www/src/registry/examples/lint-demo.tsx",
     "apps/www/src/registry/examples/values/cn/lint-value.tsx",
