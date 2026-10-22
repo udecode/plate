@@ -1197,14 +1197,18 @@ details > summary {
   position: absolute;
   top: -9999px;
   left: -9999px;
-  z-index: 1;
+  z-index: 20;
   border-radius: 4px;
   background: white;
+  color: black;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
   padding: 3px;
 }
 
 .editor-mentions-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
   border-radius: 3px;
   cursor: pointer;
   padding: 1px 3px;
