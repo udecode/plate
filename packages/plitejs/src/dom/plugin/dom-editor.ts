@@ -145,6 +145,7 @@ import {
   notifyEditorDOMScopeListeners,
   resolveDOMReach,
   resolveDOMTargetView,
+  resolveInnermostElementAtPoint,
   resolveMountedEditorDOMRoot,
   subscribeDOMReach,
 } from './dom-root-runtime';
@@ -198,7 +199,9 @@ export interface DOMApi {
   /**
    * Resolve where a drop under a pointer lands: the innermost block edge or
    * side the transfer dry pass admits, or a text point for a text drag. A
-   * files drop resolves only to an edge.
+   * files drop resolves only to an edge. With no `target`, it resolves in the
+   * editor's view under the pointer, reading the coordinates as client
+   * coordinates of the window `root()` sits in.
    */
   resolveDropTarget: (
     input: DOMDropTargetInput,
@@ -298,8 +301,9 @@ export interface DOMEditorCapability<V extends Value = Value> extends DOMApi {
 export interface DOMDragApi {
   /**
    * Scroll one step for a drag whose pointer is at `point`, in client
-   * coordinates: the innermost scroller around this editor whose visible edge
-   * holds the point and that can still move that way, else the window. Returns
+   * coordinates of the window `root()` sits in: the innermost scroller around
+   * the editor's view under the point whose visible edge holds the point and
+   * that can still move that way, else the window. Returns
    * the pixels scrolled, 0 when nothing moved. Call it once per animation
    * frame while the drag lasts.
    */
@@ -2760,6 +2764,17 @@ const reachTarget = (
   target: EventTarget | null | undefined
 ) => resolveDOMTargetView(editor, isDOMNode(target) ? target : null) ?? editor;
 
+const reachPointer = (editor: EditorType, x: number, y: number) => {
+  const view = reachView(editor);
+
+  if (view === editor) return view;
+
+  const document = resolveLastEditorWindow(view)?.document;
+  const element = document && resolveInnermostElementAtPoint(document, x, y);
+
+  return (element && resolveDOMTargetView(editor, element)) ?? view;
+};
+
 const reachNode = (editor: EditorType, node: DOMNode | null) =>
   resolveDOMTargetView(editor, node) ??
   (node && findDOMRootRuntime(node) ? null : editor);
@@ -3138,7 +3153,7 @@ export const createDOMEditorCapability = <
     }),
     drag: Object.freeze({
       autoScroll: ({ x, y }: Readonly<{ x: number; y: number }>) => {
-        const rootElement = DOMEditor.root(editor);
+        const rootElement = DOMEditor.root(reachPointer(editor, x, y));
 
         return rootElement
           ? (getDragAutoScrollTarget({
@@ -3180,7 +3195,9 @@ export const createDOMEditorCapability = <
       options?: DOMDropTargetOptions
     ) => {
       const view = dropView(
-        input.target ? reachTarget(editor, input.target) : reachView(editor)
+        input.target
+          ? reachTarget(editor, input.target)
+          : reachPointer(editor, input.clientX, input.clientY)
       );
 
       if (!view) return null;

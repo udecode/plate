@@ -1,4 +1,155 @@
 {
+  "plate/editable-own-dom-tree": {
+    "packages/plitejs/src/react/editable/android-composition.ts": [
+      "const root = ReactEditor.editable(editor);",
+      "const root = ReactEditor.editable(editor);"
+    ],
+    "packages/plitejs/src/react/editable/browser-handle.ts": [
+      "(editor.api.dom.resolveDOMNode(",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/caret-engine.ts": [
+      "editor.api.dom?.root();",
+      "getMountedEditableDOMRuntime(editor)",
+      "getMountedEditableDOMRuntime(editor)?.clearModelSelectionDOMPreference();"
+    ],
+    "packages/plitejs/src/react/editable/clipboard-input-strategy.ts": [
+      "clearDragSession(ReactEditor.getWindow(editor).document, editor);",
+      "const { document } = ReactEditor.getWindow(editor);",
+      "const root = editor.api.dom.root();",
+      "document: ReactEditor.getWindow(editor).document,",
+      "ReactEditor.getWindow(editor).document,",
+      "ReactEditor.getWindow(editor).document,",
+      "setDragScrollRepaint(ReactEditor.getWindow(editor).document, editor, () => {"
+    ],
+    "packages/plitejs/src/react/editable/composition-state.ts": [
+      "const domPhaseScheduler = getMountedEditableDOMRuntime(",
+      "const rootRuntime = findEditorDOMRootRuntime(editor);"
+    ],
+    "packages/plitejs/src/react/editable/content-root-coordinate-navigation.ts": [
+      "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);"
+    ],
+    "packages/plitejs/src/react/editable/content-root-navigation.ts": [
+      "const sourceElement = sourceEditor.api.dom.resolveDOMNode(sourceEditor);",
+      "getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;",
+      "getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??",
+      "sourceEditor?.api.dom?.resolveDOMNode?.(sourceEditor) ?? null;"
+    ],
+    "packages/plitejs/src/react/editable/content-root-vertical-geometry.ts": [
+      "const root = editor.api.dom.root();",
+      "const targetElement = targetEditor.api.dom.resolveDOMNode(targetEditor);",
+      "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "targetRuntime = getMountedEditableDOMRuntime(targetEditor),"
+    ],
+    "packages/plitejs/src/react/editable/dom-coverage-vertical-selection.ts": [
+      "const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);"
+    ],
+    "packages/plitejs/src/react/editable/dom-repair-queue.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "ReactEditor.resolveDocumentOrShadowRoot(editor)",
+      "ReactEditor.resolveDOMNode(editor, editor)"
+    ],
+    "packages/plitejs/src/react/editable/editable-dom-runtime.ts": [
+      ": findEditorDOMRootRuntime(editor);"
+    ],
+    "packages/plitejs/src/react/editable/input-controller.ts": [
+      "const node = ReactEditor.editable(editor);"
+    ],
+    "packages/plitejs/src/react/editable/input-router.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/keyboard-input-strategy.ts": [
+      "const editorElement = ReactEditor.editable(editor);",
+      "const editorElement = ReactEditor.editable(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(nestedEditor);",
+      "const runtime = getMountedEditableDOMRuntime(editor);",
+      "getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??",
+      "getMountedEditableDOMRuntime(targetEditor)?.inputController,"
+    ],
+    "packages/plitejs/src/react/editable/model-input-strategy.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/model-selection-dom-preference.ts": [
+      ": getMountedEditableDOMRuntime(editor);",
+      "getMountedEditableDOMRuntime(editor)"
+    ],
+    "packages/plitejs/src/react/editable/mutation-controller.ts": [
+      "const editorElement = ReactEditor.editable(editor);"
+    ],
+    "packages/plitejs/src/react/editable/mutation-history.ts": [
+      "runtime = getMountedEditableDOMRuntime(editor),"
+    ],
+    "packages/plitejs/src/react/editable/native-input-strategy.ts": [
+      "const window = ReactEditor.getWindow(editor);"
+    ],
+    "packages/plitejs/src/react/editable/root-interaction-controller.ts": [
+      "const mountedElement = editor.api.dom.resolveDOMNode(editor);",
+      "focusEditor.api.dom.editable()?.focus({ preventScroll: true });",
+      "getMountedEditableDOMRuntime(editor);",
+      "getMountedEditableDOMRuntime(focusEditor);",
+      "getMountedEditableDOMRuntime(mountedEditor) ??"
+    ],
+    "packages/plitejs/src/react/editable/runtime-before-input-events.ts": [
+      "if (native || findEditorDOMRootRuntime(editor)?.isWebKitHost) return 'none';",
+      "ReactEditor.editable(editor)"
+    ],
+    "packages/plitejs/src/react/editable/runtime-focus-mouse-events.ts": [
+      "const editorElement = ReactEditor.editable(editor);"
+    ],
+    "packages/plitejs/src/react/editable/runtime-keyboard-events.ts": [
+      "const editorElement = editor.api.dom.resolveDOMNode(editor);",
+      "const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);"
+    ],
+    "packages/plitejs/src/react/editable/runtime-root-lifecycle.ts": [
+      "ReactEditor.getWindow(editor);"
+    ],
+    "packages/plitejs/src/react/editable/runtime-selection-engine.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "findEditorDOMRootRuntime(editor)?.rootRef.current !== rootRef.current"
+    ],
+    "packages/plitejs/src/react/editable/selection-controller.ts": [
+      "(getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundariesForRange(",
+      "const editorElement = explicitEditorElement ?? ReactEditor.editable(editor);",
+      "const editorElement = ReactEditor.editable(editor);",
+      "const editorElement = ReactEditor.editable(editor);",
+      "const editorElement = ReactEditor.editable(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/selection-projected-dom.ts": [
+      "const runtime = getMountedEditableDOMRuntime(editor);"
+    ],
+    "packages/plitejs/src/react/editable/selection-reconciler.ts": [
+      "const el = ReactEditor.editable(editor);",
+      "const el = ReactEditor.editable(editor);",
+      "const el = ReactEditor.editable(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "findEditorDOMRootRuntime(editor)?.adapter !== runtime"
+    ],
+    "packages/plitejs/src/react/editable/selection-triple-click.ts": [
+      "const editorElement = EDITOR_TO_ELEMENT.get(editor);"
+    ],
+    "packages/plitejs/src/react/editable/selection-void-target.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/view-caret-restore.ts": [
+      "const runtime = getMountedEditableDOMRuntime(view);"
+    ]
+  },
   "plate/mock-spreads-module": {},
   "plate/no-as-never": {
     "packages/platejs/src/docx/import/lib/importDocx.ts": [

@@ -240,6 +240,16 @@ const unmountedRangeAt = (
   return null;
 };
 
+// A page hit test stops at a shadow host, so a view inside a shadow root is
+// hit-tested in its own tree.
+const hitAt = (root: HTMLElement, x: number, y: number) => {
+  const tree = root.getRootNode();
+
+  return 'elementFromPoint' in tree
+    ? (tree as Document | ShadowRoot).elementFromPoint(x, y)
+    : null;
+};
+
 // The level's child at the pointer's height, hit-tested on the level's
 // center line, so a pointer in a gutter or padding costs one hit test.
 const probeAt = (
@@ -253,9 +263,9 @@ const probeAt = (
   if (!box) return null;
 
   let host =
-    root.ownerDocument
-      .elementFromPoint(box.left + box.width / 2, input.clientY)
-      ?.closest(ELEMENT_HOST) ?? null;
+    hitAt(root, box.left + box.width / 2, input.clientY)?.closest(
+      ELEMENT_HOST
+    ) ?? null;
 
   while (host && host !== level.host && root.contains(host)) {
     const entry = blockEntryOf(editor, host);
@@ -637,7 +647,7 @@ export const resolveDOMDropTarget = (
   const hit =
     input.target && 'nodeType' in input.target
       ? (input.target as globalThis.Node)
-      : document.elementFromPoint(input.clientX, input.clientY);
+      : root && hitAt(root, input.clientX, input.clientY);
 
   if (!root || !hit || !root.contains(hit)) return null;
 

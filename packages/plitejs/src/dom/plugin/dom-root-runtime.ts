@@ -76,10 +76,8 @@ const EMPTY_SCHEDULER_DIAGNOSTICS: DOMPhaseSchedulerDiagnostics = Object.freeze(
   }
 );
 
-type DOMTree = Document | ShadowRoot;
-
 type MountedViews = {
-  readonly trees: Map<DOMTree, Set<DOMRootRuntime>>;
+  readonly topDocuments: Map<Document, Set<DOMRootRuntime>>;
   readonly views: Set<AnyEditor>;
 };
 
@@ -87,6 +85,9 @@ const DOM_ROOT_RUNTIME_BY_ROOT = new WeakMap<HTMLElement, DOMRootRuntime>();
 const DOM_ROOT_RUNTIMES_BY_EDITOR = new WeakMap<object, Set<DOMRootRuntime>>();
 const ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR = new WeakMap<object, DOMRootRuntime>();
 const MOUNTED_VIEWS_BY_DOCUMENT = new WeakMap<object, MountedViews>();
+// A closed shadow root is reachable only from inside it, so registration
+// records each shadow root above a view.
+const SHADOW_ROOT_BY_HOST = new WeakMap<Element, ShadowRoot>();
 const DOCUMENT_DOM_SCOPE_LISTENERS = new WeakMap<object, Set<() => void>>();
 const DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR = new WeakMap<
   AnyEditor,
@@ -236,17 +237,86 @@ const onlyView = (
   return found;
 };
 
+const registerTreesAbove = (element: Element) => {
+  let node = element;
+
+  for (;;) {
+    const tree = node.getRootNode();
+
+    if ('host' in tree) {
+      const shadowRoot = tree as ShadowRoot;
+
+      SHADOW_ROOT_BY_HOST.set(shadowRoot.host, shadowRoot);
+      node = shadowRoot.host;
+    } else {
+      const frame = node.ownerDocument.defaultView?.frameElement;
+
+      if (!frame) return node.ownerDocument;
+      node = frame;
+    }
+  }
+};
+
+const shadowRootOf = (host: Element) =>
+  host.shadowRoot ?? SHADOW_ROOT_BY_HOST.get(host);
+
+export const resolveInnermostElementAtPoint = (
+  document: Document,
+  x: number,
+  y: number
+) => {
+  let element = document.elementFromPoint(x, y);
+
+  for (
+    let inner = element && shadowRootOf(element)?.elementFromPoint(x, y);
+    inner && inner !== element;
+    inner = shadowRootOf(element)?.elementFromPoint(x, y)
+  ) {
+    element = inner;
+  }
+
+  return element;
+};
+
+// A shadow host or a frame is its tree's focused element while focus sits
+// inside it, so only the chain down from the top document reaches the element
+// that holds focus.
+const focusedElementOf = (top: Document) => {
+  let element = top.activeElement;
+
+  while (element) {
+    const inner =
+      shadowRootOf(element)?.activeElement ??
+      (element as Partial<HTMLIFrameElement>).contentDocument?.activeElement;
+
+    if (!inner) return element;
+    element = inner;
+  }
+
+  return null;
+};
+
+const outerElementOf = (element: Element) => {
+  if (element.parentElement) return element.parentElement;
+
+  const parent = element.parentNode;
+
+  return parent && 'host' in parent
+    ? (parent as ShadowRoot).host
+    : (element.ownerDocument.defaultView?.frameElement ?? null);
+};
+
 const focusedView = (
   mounted: MountedViews,
   matches: (view: AnyEditor) => boolean
 ) => {
   let found: AnyEditor | null = null;
 
-  for (const tree of mounted.trees.keys()) {
+  for (const top of mounted.topDocuments.keys()) {
     for (
-      let element = tree.activeElement;
+      let element = focusedElementOf(top);
       element;
-      element = element.parentElement
+      element = outerElementOf(element)
     ) {
       const view = DOM_ROOT_RUNTIME_BY_ROOT.get(element as HTMLElement)?.editor;
 
@@ -471,7 +541,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   private schedulerImplementation: DOMPhaseScheduler | null;
 
-  private registeredTree: DOMTree | null = null;
+  private registeredTopDocument: Document | null = null;
 
   private rootInputActivationCleanup: (() => void) | null = null;
 
@@ -890,17 +960,17 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       DOM_ROOT_RUNTIMES_BY_EDITOR.set(this.editor, editorRuntimes);
       const documentEditor = documentOf(this.editor);
       const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(documentEditor) ?? {
-        trees: new Map(),
+        topDocuments: new Map(),
         views: new Set(),
       };
-      const tree = root.getRootNode() as DOMTree;
-      const treeRuntimes = mounted.trees.get(tree) ?? new Set();
+      const top = registerTreesAbove(root);
+      const topRuntimes = mounted.topDocuments.get(top) ?? new Set();
 
       mounted.views.add(this.editor);
-      treeRuntimes.add(runtime);
-      mounted.trees.set(tree, treeRuntimes);
+      topRuntimes.add(runtime);
+      mounted.topDocuments.set(top, topRuntimes);
       MOUNTED_VIEWS_BY_DOCUMENT.set(documentEditor, mounted);
-      this.registeredTree = tree;
+      this.registeredTopDocument = top;
       DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR.delete(this.editor);
       const markInputRuntimeActive = () => {
         ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, runtime);
@@ -958,12 +1028,12 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     }
     const documentEditor = documentOf(this.editor);
     const mounted = MOUNTED_VIEWS_BY_DOCUMENT.get(documentEditor);
-    const tree = this.registeredTree;
-    const treeRuntimes = tree ? mounted?.trees.get(tree) : undefined;
+    const top = this.registeredTopDocument;
+    const topRuntimes = top ? mounted?.topDocuments.get(top) : undefined;
 
-    this.registeredTree = null;
-    treeRuntimes?.delete(runtime);
-    if (tree && treeRuntimes?.size === 0) mounted?.trees.delete(tree);
+    this.registeredTopDocument = null;
+    topRuntimes?.delete(runtime);
+    if (top && topRuntimes?.size === 0) mounted?.topDocuments.delete(top);
     if (editorRuntimes?.size === 0) {
       DOM_ROOT_RUNTIMES_BY_EDITOR.delete(this.editor);
       mounted?.views.delete(this.editor);

@@ -21,6 +21,8 @@ const at = (file, code) => ({
 });
 const plite = (code) => at('packages/plitejs/src/case.tsx', code);
 const plate = (code) => at('packages/platejs/src/case.tsx', code);
+const editable = (code) =>
+  at('packages/plitejs/src/react/editable/case.tsx', code);
 const inDays = (days) =>
   new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
 const exception = (date) =>
@@ -682,6 +684,101 @@ describe('plate oxlint rules', () => {
     valid: [
       plite(
         'const api = { assertDOMNode: (node) => DOMEditor.assertDOMNode(editor, node) };'
+      ),
+    ],
+  });
+
+  tester.run('editable-own-dom-tree', plugin.rules['editable-own-dom-tree'], {
+    invalid: [
+      {
+        // 59f4816b75, collapseNativeSelectionForProjectedSelection
+        ...editable('const tree = resolveLastEditorWindow(editor)?.document;'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('const root = findEditorDOMRootRuntime(editor);'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('const win = EDITOR_TO_WINDOW.get(editor);'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('const element = EDITOR_TO_ELEMENT.get(editor);'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('if (EDITOR_TO_DOM_EDITABLE.has(editor)) {}'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable(
+          'const scheduler = getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;'
+        ),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('const root = editor.api.dom?.root();'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('const element = DOMEditor.editable(editor);'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('const doc = ReactEditor.getWindow(editor).document;'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable(
+          'const tree = editor.api.dom.resolveDocumentOrShadowRoot();'
+        ),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('const scroller = ReactEditor.scroll(editor);'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable('DOMEditor.deselect(editor);'),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable(
+          'const element = editor.api.dom?.resolveDOMNode?.(editor);'
+        ),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable(
+          'const element = ReactEditor.assertDOMNode(editor, editor);'
+        ),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable("const doc = ReactEditor['getWindow'](editor).document;"),
+        errors: [{ messageId: 'editorWide' }],
+      },
+      {
+        ...editable(
+          'const runtime = getMountedEditableDOMRuntime(editor, undefined);'
+        ),
+        errors: [{ messageId: 'editorWide' }],
+      },
+    ],
+    valid: [
+      editable(
+        'const runtime = getMountedEditableDOMRuntime(editor, event.currentTarget);'
+      ),
+      editable('const element = editor.api.dom.resolveDOMNode(node);'),
+      editable('const element = ReactEditor.resolveDOMNode(editor, key);'),
+      editable('const element = ReactEditor.resolveDOMNode();'),
+      editable('EDITOR_TO_ELEMENT.set(editor, rootRef.current);'),
+      editable('const root = layout.root();'),
+      plite('const tree = resolveLastEditorWindow(editor)?.document;'),
+      at(
+        'packages/plitejs/src/react/editable/case.test.tsx',
+        'const tree = resolveLastEditorWindow(editor)?.document;'
       ),
     ],
   });

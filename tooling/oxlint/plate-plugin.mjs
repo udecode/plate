@@ -1511,6 +1511,128 @@ const noStrictDOMLookup = {
   },
 };
 
+const EDITABLE_DIR = 'packages/plitejs/src/react/editable/';
+
+const TEST_PATH = /\.(?:spec|test)\.|\/__tests__\//u;
+
+const EDITOR_WIDE_CALLS = new Set([
+  'findEditorDOMRootRuntime',
+  'resolveLastEditorWindow',
+]);
+
+const EDITOR_WIDE_MAPS = new Set([
+  'EDITOR_TO_DOM_EDITABLE',
+  'EDITOR_TO_ELEMENT',
+  'EDITOR_TO_WINDOW',
+]);
+
+const SELF_REGISTRATION_WRITES = new Set(['delete', 'set']);
+
+const VIEW_WIDE_MEMBERS = new Set([
+  'deselect',
+  'editable',
+  'getWindow',
+  'resolveDocumentOrShadowRoot',
+  'root',
+  'scroll',
+]);
+
+const VIEW_WIDE_WHEN_NODE_IS_EDITOR = new Set([
+  'assertDOMNode',
+  'resolveDOMNode',
+]);
+
+const propertyName = ({ computed, property }) => {
+  if (!computed) return property.name;
+  return typeof property.value === 'string' ? property.value : null;
+};
+
+const isApiDom = (node) =>
+  node.type === 'MemberExpression' &&
+  !node.computed &&
+  node.property.name === 'dom' &&
+  node.object.type === 'MemberExpression' &&
+  !node.object.computed &&
+  node.object.property.name === 'api';
+
+const viewWideReceiver = (object) => {
+  if (
+    object.type === 'Identifier' &&
+    (object.name === 'DOMEditor' || object.name === 'ReactEditor')
+  ) {
+    return object.name;
+  }
+  return isApiDom(object) ? 'api.dom' : null;
+};
+
+const editableOwnDOMTree = {
+  create(context) {
+    const file = relativeFilename(context);
+    if (!file.startsWith(EDITABLE_DIR) || TEST_PATH.test(file)) return {};
+
+    const report = (node, lookup) =>
+      context.report({ data: { lookup }, messageId: 'editorWide', node });
+    const source = (node) =>
+      node && context.sourceCode.text.slice(...node.range);
+
+    return {
+      CallExpression(node) {
+        const { callee } = node;
+        if (callee.type === 'Identifier') {
+          const [, element] = node.arguments;
+          if (EDITOR_WIDE_CALLS.has(callee.name)) {
+            report(callee, callee.name);
+          } else if (
+            callee.name === 'getMountedEditableDOMRuntime' &&
+            (!element || source(element) === 'undefined')
+          ) {
+            report(callee, 'getMountedEditableDOMRuntime(editor)');
+          }
+          return;
+        }
+        if (callee.type !== 'MemberExpression') return;
+        const receiver = viewWideReceiver(callee.object);
+        const name = propertyName(callee);
+        if (!receiver || !name) return;
+        const [first, second] = node.arguments;
+        const [editorArgument, nodeArgument] =
+          receiver === 'api.dom'
+            ? [callee.object.object.object, first]
+            : [first, second];
+        if (
+          VIEW_WIDE_MEMBERS.has(name) ||
+          (VIEW_WIDE_WHEN_NODE_IS_EDITOR.has(name) &&
+            nodeArgument &&
+            source(nodeArgument) === source(editorArgument))
+        ) {
+          report(callee, `${receiver}.${name}`);
+        }
+      },
+      MemberExpression(node) {
+        const { object, property } = node;
+        if (
+          object.type === 'Identifier' &&
+          EDITOR_WIDE_MAPS.has(object.name) &&
+          (node.computed || !SELF_REGISTRATION_WRITES.has(property.name))
+        ) {
+          report(node, object.name);
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        "Code under the Editable reads its own DOM tree, not a lookup that answers for the editor's whole view.",
+    },
+    messages: {
+      editorWide:
+        "`{{lookup}}` answers for the editor's whole view, whose Editables share focus and selection (baselined in this file: {{baselined}}). Read this Editable's own element, such as the event's `currentTarget` or the runtime's `rootRef`, or its runtime from `findMountedEditableDOMRuntime(element)`.",
+    },
+    type: 'problem',
+  },
+};
+
 export { noAsNever };
 
 export default {
@@ -1518,6 +1640,10 @@ export default {
     name: 'plate',
   },
   rules: {
+    'editable-own-dom-tree': withBaseline(
+      'editable-own-dom-tree',
+      editableOwnDOMTree
+    ),
     'exception-format': exceptionFormat,
     'mock-spreads-module': withBaseline(
       'mock-spreads-module',

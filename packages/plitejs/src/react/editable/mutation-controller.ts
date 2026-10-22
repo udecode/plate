@@ -567,9 +567,11 @@ const applyRootLocalSelectionMoveCommand = ({
 export const applyEditableCommand = ({
   command,
   editor,
+  element = null,
 }: {
   command: EditableCommand;
   editor: RuntimeEditor;
+  element?: HTMLElement | null;
 }) => {
   switch (command.kind) {
     case 'delete': {
@@ -753,6 +755,7 @@ export const applyEditableCommand = ({
         applyContentRootSelectionMoveCommand({
           command,
           editor: editor as ReactRuntimeEditor,
+          element,
           selection: readRuntimeSelectionRange(editor),
         }).handled
       ) {

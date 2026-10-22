@@ -306,7 +306,11 @@ export const attachPliteBrowserHandle = ({
       targetOwner: 'editor',
     });
 
-    applyEditableCommand({ command, editor });
+    applyEditableCommand({
+      command,
+      editor,
+      element: getCurrentHandleElement(),
+    });
     const selectionAfter = readRuntimeSelection(editor);
     const viewportBackedSelection = isViewportBackedSelection(
       getSelectionDOMRange(editor, selectionAfter)

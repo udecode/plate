@@ -12,7 +12,6 @@ import {
   type RootKey,
 } from '../..';
 import { setShownSelectionAsView } from '../../core/view-carets';
-import { resolveLastEditorWindow } from '../../dom/internal';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { EditorSelectionTarget } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -77,7 +76,10 @@ import {
   isPointOnVisualBoundaryLine,
   resolveVerticalNavigationPoint,
 } from './content-root-vertical-geometry';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import {
+  findMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from './editable-dom-runtime';
 import { getLineBoundaryPoint } from './line-boundary';
 import {
   after as editorAfter,
@@ -162,27 +164,23 @@ const toViewBoundaryPoint = ({
 
 const collapseNativeSelectionForProjectedSelection = (
   editor: ReactRuntimeEditor,
-  selection: Range | null
+  selection: Range | null,
+  element: HTMLElement | null
 ) => {
-  if (!selection) {
-    return;
-  }
-
-  const tree = resolveLastEditorWindow(editor)?.document;
-
-  if (!tree) {
+  if (!selection || !element) {
     return;
   }
 
   const clear = () => {
+    if (!element.isConnected) return;
     const current = readPliteViewSelection(editor);
     if (!current || isPliteViewSelectionCollapsed(current)) return;
-    writeDOMSelection(tree, null);
+    writeDOMSelection(element.getRootNode() as Document | ShadowRoot, null);
   };
 
   clear();
   const domPhaseScheduler =
-    getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
+    findMountedEditableDOMRuntime(element)?.domPhaseScheduler;
 
   if (!domPhaseScheduler) return;
 
@@ -1260,6 +1258,7 @@ export const shouldModelOwnContentRootVerticalSelection = ({
 
 const applyContentRootViewSelectionAction = ({
   editor,
+  element,
   action,
   extend = true,
   getActiveContentRootOwner,
@@ -1270,6 +1269,7 @@ const applyContentRootViewSelectionAction = ({
   selection,
 }: {
   editor: ReactRuntimeEditor;
+  element: HTMLElement | null;
   action: ContentRootViewSelectionAction | null;
   extend?: boolean;
   getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
@@ -1407,7 +1407,11 @@ const applyContentRootViewSelectionAction = ({
       if (hasProjectedPart) {
         writePliteViewSelection(editor, projectedSelection);
         collapseModelSelectionForProjectedSelection(editor, selection);
-        collapseNativeSelectionForProjectedSelection(editor, selection);
+        collapseNativeSelectionForProjectedSelection(
+          editor,
+          selection,
+          element
+        );
         preventDefault?.();
 
         return { handled: true };
@@ -1416,7 +1420,7 @@ const applyContentRootViewSelectionAction = ({
 
     if (viewSelection) {
       collapseModelSelectionForProjectedSelection(editor, selection);
-      collapseNativeSelectionForProjectedSelection(editor, selection);
+      collapseNativeSelectionForProjectedSelection(editor, selection, element);
       preventDefault?.();
 
       return { handled: true };
@@ -1467,7 +1471,7 @@ const applyContentRootViewSelectionAction = ({
 
   writePliteViewSelection(editor, projectedSelection);
   collapseModelSelectionForProjectedSelection(editor, selection);
-  collapseNativeSelectionForProjectedSelection(editor, selection);
+  collapseNativeSelectionForProjectedSelection(editor, selection, element);
 
   preventDefault?.();
 
@@ -1480,6 +1484,7 @@ const applyContentRootViewSelectionAction = ({
 export const applyContentRootSelectionMoveCommand = ({
   command,
   editor,
+  element,
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
@@ -1488,6 +1493,7 @@ export const applyContentRootSelectionMoveCommand = ({
 }: {
   command: ContentRootSelectionMoveCommand;
   editor: ReactRuntimeEditor<any>;
+  element: HTMLElement | null;
   getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
   getContentRootOwnerViewEditor?: (
     owner: ContentRootOwner
@@ -1503,6 +1509,7 @@ export const applyContentRootSelectionMoveCommand = ({
     }),
     extend: Boolean(command.extend),
     editor,
+    element,
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
@@ -1542,6 +1549,7 @@ export const applyContentRootViewSelection = ({
     action: plugin ?? (navigation?.kind === 'enter' ? null : navigation),
     extend: Boolean(plugin),
     editor,
+    element: event.currentTarget,
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,

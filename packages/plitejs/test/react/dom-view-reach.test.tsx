@@ -1,4 +1,5 @@
 import { act, render } from '@testing-library/react';
+import { defineEditorSchema, schema } from 'plitejs';
 import { Activity, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -19,6 +20,14 @@ const paragraph = (text: string) => ({
 });
 
 const paragraphs = () => [paragraph('one'), paragraph('two')];
+
+const embedSchema = defineEditorSchema('schema:dom-view-reach-embed', {
+  elements: { embed: { void: 'block' } },
+  id: 'dom-view-reach-embed',
+  root: schema.content.not(schema.content.text()),
+  unknown: 'preserve',
+  version: 1,
+});
 
 const caretAt = (offset: number) => ({
   anchor: { path: [0, 0], offset },
@@ -248,13 +257,13 @@ describe("the app's editor reaches a mounted view", () => {
     ]);
   });
 
-  test("the app's editor reaches a focused view inside a shadow root", async () => {
+  test("the app's editor reaches a focused view inside a closed shadow root", async () => {
     const editor = createEditor({ initialValue: paragraphs() });
     const host = document.createElement('div');
     const container = document.createElement('div');
 
     document.body.append(host);
-    host.attachShadow({ mode: 'open' }).append(container);
+    host.attachShadow({ mode: 'closed' }).append(container);
     render(
       <>
         <EditorRoot editor={editor}>
@@ -283,6 +292,44 @@ describe("the app's editor reaches a mounted view", () => {
 
     host.remove();
     expect(reached).toBe(shadowEditable);
+  });
+
+  test("the app's editor reaches a focused view inside a shadow root that another view's editable hosts", async () => {
+    const editor = createEditor({
+      initialValue: [
+        paragraph('one'),
+        { type: 'embed', children: [{ text: '' }] },
+      ],
+    });
+
+    editor.install(embedSchema);
+    const outer = render(
+      <EditorRoot editor={editor}>
+        <Editable
+          aria-label="Outer"
+          renderVoid={() => <div data-testid="host" />}
+        />
+      </EditorRoot>
+    );
+    const container = document.createElement('div');
+
+    outer.getByTestId('host').attachShadow({ mode: 'open' }).append(container);
+    render(
+      <EditorRoot editor={editor}>
+        <Editable aria-label="Inner" />
+      </EditorRoot>,
+      { container }
+    );
+    const inner = container.querySelector<HTMLElement>('[aria-label="Inner"]')!;
+
+    await act(async () => {
+      inner.focus();
+    });
+    await act(async () => {
+      editor.update((tx) => tx.selection.set(null));
+    });
+
+    expect(editor.api.dom.resolveDOMNode(editor)).toBe(inner);
   });
 
   test("a caret in a root no view shows leaves the app's editor unfocused", async () => {

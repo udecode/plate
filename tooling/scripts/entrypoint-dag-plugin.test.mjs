@@ -143,6 +143,7 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'config/plite-test-jsx.js',
     'apps/www/src/app/(app)/examples/plite/**',
     'apps/plite/src/app/providers.tsx',
+    'apps/plite/src/app/dev/view-focus-chain/page.tsx',
     'apps/www/src/app/dev/combobox-typing/page.tsx',
     'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
     'apps/www/src/app/dev/editor-perf/page.tsx',
