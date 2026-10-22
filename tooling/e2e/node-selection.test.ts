@@ -93,11 +93,12 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
   try {
     await page.goto('/blocks/node-selection-demo');
     await expect(heading).toBeVisible();
-    // Pointer listeners install in an effect; begin the held-pointer oracle only after effects can run.
     await page.evaluate(
       () =>
         new Promise<void>((resolve) => {
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => requestIdleCallback(() => resolve()))
+          );
         })
     );
     runtimeErrors = recordBrowserRuntimeErrors(page, { strict: true });
@@ -242,6 +243,7 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
         anchorPath: expectedDraggedPaths[0].split(',').map(Number),
         focusPath: expectedDraggedPaths.at(-1)!.split(',').map(Number),
         kind: 'node',
+        mode: 'block',
         paths: expectedDraggedPaths.map((path) => path.split(',').map(Number)),
       });
     await expect
@@ -257,7 +259,9 @@ test('marquee selection stays editor-owned through focus, clipboard, input, dele
       .toEqual(expectedDraggedPaths);
 
     await page.keyboard.press('ArrowDown');
-    await expect.poll(() => selectedNodePaths(page)).toEqual([]);
+    await expect
+      .poll(() => selectedNodePaths(page))
+      .toEqual([visibleBlockBoxes[2].path]);
     await expect
       .poll(() =>
         page.evaluate(() =>
