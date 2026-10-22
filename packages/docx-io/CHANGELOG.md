@@ -1,5 +1,13 @@
 # @platejs/docx-io
 
+## 53.5.1
+
+### Patch Changes
+
+- [#5232](https://github.com/udecode/plate/pull/5232) by [@yulman2207](https://github.com/yulman2207) –
+  - Fix tables nested in table cells missing from the exported DOCX.
+  - Fix invalid DOCX output for a table cell that holds only a skipped image, such as a WebP.
+
 ## 53.5.0
 
 ### Minor Changes
