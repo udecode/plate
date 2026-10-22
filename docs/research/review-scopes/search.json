@@ -15,6 +15,7 @@
     "apps/www/src/app/(app)/examples/plite/_examples/search-highlighting.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-loaders.tsx",
     "apps/www/src/app/(app)/examples/plite/plite-example-registry.ts",
+    "apps/www/src/app/dev/editor-perf/find-surface.tsx",
     "apps/www/src/registry/components/editor/find.spec.tsx",
     "apps/www/src/registry/components/editor/find.tsx",
     "apps/www/src/registry/examples/find-demo.tsx",

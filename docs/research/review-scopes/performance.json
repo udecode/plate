@@ -14,6 +14,7 @@
     "packages/plitejs/src/react/render-profiler.ts"
   ],
   "members": [
+    "apps/www/src/app/dev/editor-perf/page.tsx",
     "benchmarks/editor/benchmarks/",
     "benchmarks/editor/package.json",
     "packages/plitejs/src/core/profiling.ts"
