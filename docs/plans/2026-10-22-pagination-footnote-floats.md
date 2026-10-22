@@ -68,7 +68,7 @@ type PageFloatProvider = (context: {
 | Notes at the bottom of each page | Wait until pages can measure a note | Plan the float contract now | plan | big |
 | What comes first | Decide how pages measure boxed blocks | Build page notes on sizes the app guesses | sized floats | big |
 | Further float work | Hold | Review again, or have other models challenge it | again, interrogate | small |
-| Where the next question lives | The pagination topic | A topic of its own for boxed blocks | split topic | detail |
+| Where the next question lives | A topic of its own for boxed blocks, review-pagination-containers, because in the pagination topic the board merges the footnote question into it and drops the wait between them | The pagination topic for both questions | one topic | detail |
 | Pagination page link | Keep the new page at https://claude.ai/artifact/FtcGuSe7rGtop8U1oRpswc, published because https://claude.ai/artifact/X2TpUgz6JwrqLGB8ahiEub no longer opened | Drop the new page if you deleted the old one on purpose | drop the new pagination page | detail |
 
 ## Evidence
