@@ -56,7 +56,7 @@
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, lstatSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
-import { findLead, leadLabel, maxEffort } from './lead.mjs';
+import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, committedLines, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
@@ -339,6 +339,7 @@ function stagePage(log) {
 }
 
 const args = process.argv.slice(2);
+const invokedFrom = process.cwd();
 runLedgerCommandFromMainCheckout(args);
 if (args[0] === 'rounds') {
   if (!args[1] || !existsSync(args[1])) {
@@ -398,7 +399,8 @@ if (args[0] === 'chips') {
       console.error("chips cleanup takes --sessions <file>, the session tool's list of every session, archived ones included, saved as a JSON array");
       process.exit(2);
     }
-    const { archive, remove, report } = cleanupOf(tasks, sessions, here);
+    // The shell may have moved out of the session's folder, which the runtime process keeps.
+    const { archive, remove, report } = cleanupOf(tasks, sessions, here, [invokedFrom, runtimeFolder()]);
     if (!report.length) {
       console.info('Nothing to clean up: no landed task has an idle card session or a worktree left.');
       process.exit(0);

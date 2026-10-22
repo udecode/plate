@@ -1119,9 +1119,12 @@ function deliveredBy(task, url) {
   return task.patch ? `no commit named, patch ${task.patch}` : 'no commit named';
 }
 
-export function cleanupOf(tasks, sessions, here) {
+export function cleanupOf(tasks, sessions, here, callerFolders) {
   const cardWorktreeRoot = realOrSelf(resolve(process.cwd(), '.claude', 'worktrees'));
   const isCardSession = (session) => Boolean(session.cwd) && contains(cardWorktreeRoot, realOrSelf(session.cwd));
+  // The Claude Code desktop app gives a new session the worktree folder of an archived one, and its session list leaves out the session that calls it.
+  const live = [...callerFolders, ...sessions.flatMap((session) => (session.isArchived ? [] : [session.cwd]))].filter(Boolean).map(realOrSelf);
+  const inUse = (path) => live.some((other) => other === path || contains(path, other));
   const bySession = new Map(sessions.map((session) => [session.sessionId, session]));
   const url = commitLink();
   const archive = new Map();
@@ -1130,7 +1133,7 @@ export function cleanupOf(tasks, sessions, here) {
   for (const task of [...tasks.values()].filter((each) => each.status === 'landed' && each.startedIn && each.startedIn !== here).sort(byOrder)) {
     const session = bySession.get(task.startedIn);
     if (!session || session.pinned || !isCardSession(session)) continue;
-    if (session.isArchived ? !existsSync(session.cwd) : session.isRunning) continue;
+    if (session.isArchived ? !existsSync(session.cwd) || inUse(realOrSelf(session.cwd)) : session.isRunning) continue;
     if (session.isArchived) remove.add(session.cwd);
     else archive.set(session.sessionId, session);
     report.push(`${task.id} ${displayTitle(task)}: ${deliveredBy(task, url)}`);

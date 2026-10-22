@@ -6,7 +6,7 @@
 //        (prints this session's "<model> @<effort>", or exits 1 when no
 //        runtime identity can be verified against its transcript)
 
-import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, readlinkSync, realpathSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
@@ -68,10 +68,18 @@ function nearestRuntime() {
     const match = result.match(/^(\d+)\s+(.+)$/u);
     if (!match) return null;
     const name = basename(match[2]);
-    if (name === 'claude' || name === 'codex') return name;
+    if (name === 'claude' || name === 'codex') return { name, pid };
     pid = Number(match[1]);
   }
   return null;
+}
+
+export function runtimeFolder() {
+  const runtime = nearestRuntime();
+  if (!runtime) return null;
+  if (process.platform === 'linux') return readlinkSync(`/proc/${runtime.pid}/cwd`);
+  const fields = execFileSync('lsof', ['-a', '-d', 'cwd', '-p', String(runtime.pid), '-Fn'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  return fields.split('\n').find((line) => line.startsWith('n'))?.slice(1) ?? null;
 }
 
 export function invocationRun(identity, transcripts) {
@@ -150,7 +158,7 @@ function claudeLead(sessionId) {
 
 export function findLead() {
   try {
-    const runtime = nearestRuntime();
+    const runtime = nearestRuntime()?.name;
     if (runtime === 'claude') return claudeLead(process.env.CLAUDE_CODE_SESSION_ID);
     if (runtime !== 'codex') return { miss: 'no claude or codex process is an ancestor of this command' };
     const claudeKey = ['CLAUDECODE', 'CLAUDE_SESSION_ID', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_PID', 'CLAUDE_CODE_ENTRYPOINT'].find((key) => process.env[key]);
