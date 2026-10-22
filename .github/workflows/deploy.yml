@@ -3,6 +3,14 @@ name: Deploy
 on:
   push:
     branches: [main, next]
+    paths-ignore:
+      - '.agents/**'
+      - '.claude/**'
+      - '.codex/**'
+      - 'AGENTS.md'
+      - 'CLAUDE.md'
+      - 'docs/development/agent-skills.md'
+      - 'skills-lock.json'
   workflow_dispatch:
 
 permissions:
