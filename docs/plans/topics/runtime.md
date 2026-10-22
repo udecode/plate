@@ -28,6 +28,61 @@ view.update.selection.set({ offset: 0, path: [0, 0, 0], root: 'note' });
 view.plugin(BaseCodeBlockPlugin).update.toggle();
 ```
 
+An app's editor runs a DOM call in a mounted view of the root the call is about, so focusing it works once a view shows.
+
+```ts
+// content/docs/api/dom.mdx
+import { createEditor } from "platejs/react";
+
+const editor = createEditor();
+
+// Once <EditorRoot editor={editor}> shows an EditorContent, this focuses the
+// view that holds the caret, or the only view.
+editor.api.dom.focus();
+```
+
+A root editor runs its DOM calls in its own `EditorRoot`'s view of that root.
+
+```tsx
+// content/docs/api/react-hooks.mdx
+const note = useRootEditor("note");
+
+return <button onClick={() => note.api.dom.focus()}>Edit note</button>;
+```
+
+To act on one of several views, an app holds that view's editor.
+
+```tsx
+// content/docs/api/dom.mdx
+import { EditorContent, EditorRoot, useEditor } from "platejs/react";
+
+function FocusThisView() {
+  const view = useEditor();
+
+  return <button onClick={() => view.api.dom.focus()}>Focus</button>;
+}
+
+<>
+  <EditorRoot editor={editor}>
+    <EditorContent />
+    <FocusThisView />
+  </EditorRoot>
+  <EditorRoot editor={editor}>
+    <EditorContent />
+    <FocusThisView />
+  </EditorRoot>
+</>
+```
+
+A test that holds a root editor focuses its view through it.
+
+```ts
+// packages/plitejs/test/react/view-carets.test.tsx
+const { a, b, registry } = renderTwoRoots();
+// ...
+b.api.dom.focus();
+```
+
 ## Layer and owner
 
 ```text
@@ -46,6 +101,10 @@ application UI state                 document runtime
 | Views | `editor-runtime-view.ts` reuses the owner's registry and state, projects reads and writes to one root, and owns view-local focus, composition and read-only state; extension API factories receive the actual view. |
 | Primary root | Implicit; public root validation rejects its internal name as a named root. |
 | Independent editors | Separate documents, as the multiple-editors demo shows; shared blocks reuse content roots of one document. |
+| Which view a DOM call reaches | Plite, `plitejs/dom`. `dom/plugin/dom-root-runtime.ts` keeps the index of mounted view editors by document and holds `resolveDOMReach`, the one rule that maps an editor handle and a call's target to the view editor the call runs on. `dom/plugin/dom-editor.ts` runs every `DOMEditor` method through it by the method's kind. It sits in the DOM layer because only that layer knows which Editables are mounted. |
+| The root a document-editor call with no target runs in | Plite core. `core/public-state.ts` gains `getBaseCallRoot`, which `plugin-dispatch.ts` computed inline, so a command and a DOM call on the document's editor pick the same root. `core/view-carets.ts` gains `subscribeCaretOwner`, which fires when the caret owner's presentation or root changes. |
+| Keyboard navigation's native clear | Plite, `plitejs/react` (`react/editable/content-root-navigation.ts`). The clear takes its tree and scheduler from the Editable that got the key, because mounted Editables share their view's focus and selection state. |
+| Editable code that reads editor-wide DOM lookups | A `plate/editable-own-dom-tree` lint rule under `tooling/oxlint`, with a baseline, over `packages/plitejs/src/react/editable`. |
 
 Rejected, and why:
 
@@ -63,6 +122,11 @@ Rejected, and why:
 - `packages/plitejs/src/core/public-state.ts` resolves targets: a key or a rooted point, range or node selection routes to its root, while a bare path or a live node resolves in the caller's root.
 - `packages/plitejs/src/core/tx-only.ts` holds the markers that say where a plugin update method's location arguments sit, which the review tree's command frame reads.
 - Plate commands that may run on the base editor over a named root pass that root by hand through `packages/platejs/src/internal/utils/inRoot.ts`.
+- `DOMEditor` is a forward table over the method bodies in `DOMEditorImpl`, typed `DOMEditorInterface`, so a method added without a forward fails typecheck. Each forward runs its method on the view editor that `resolveDOMReach` in `packages/plitejs/src/dom/plugin/dom-root-runtime.ts` returns for the method's kind, or that `resolveDOMTargetView` returns for a DOM node. `resolveRange` and `assertRange` run on the handle as passed. The `editor.api.dom` capability routes its own members by hand.
+- A view that React's `Activity` hides, or whose last Editable unmounts, leaves the mounted views while the caret owner still names it, so the document's editor reaches no view of that root until it shows again or another view takes the caret.
+- The document's editor's DOM scope hooks, `useEditorRootElement`, `useEditorEditableElement` and `useEditorScrollElement`, follow view mounts, focus, the caret owner and a commit that moves the selection to another root.
+- `resolveDropTarget` with no target, for a block or files drop, and `drag.autoScroll`, hit-test the pointer in the document where the picked view last rendered an Editable, through shadow roots but not iframes, and the drop resolver hit-tests in the view's own page or shadow root.
+- Keyboard navigation's native clear reads its tree from the key event's Editable, and `plate/editable-own-dom-tree` keeps editor-wide DOM lookups out of `packages/plitejs/src/react/editable`.
 
 ## What other editors do
 
@@ -76,6 +140,20 @@ The 2026-10-17 named-root review read the Lexical (`dd5c41b13`), ProseMirror (`p
 | Tiptap | One ProseMirror document | Commands act on `editor.state` |
 | Plite | Named roots of one document, each read and written through a view | The root of the editor or view the command was called on, except a key or rooted target, which routes to its own root |
 
+The 2026-10-22 DOM view lookups review read the ProseMirror (`prosemirror-view` `ca4c78e`), CodeMirror (`codemirror-view` `fbff59b`), Lexical (`dd5c41b13`) and Slate (`945a484df`) checkouts and ran none of them. In each, the object that answers DOM calls is one view, and no document object with several mounted views answers them.
+
+| Editor | Who answers focus and root lookups | Second view of the same content |
+| --- | --- | --- |
+| ProseMirror | `EditorView.focus()` and `view.root` (`prosemirror-view/src/index.ts:337`, `:348`); the app holds each view | A separate `EditorView`; the app calls the one it means |
+| CodeMirror | `EditorView.focus()` and `view.root` (`codemirror-view/src/editorview.ts:856`, `:125`) | A separate `EditorView` with its own state |
+| Lexical | `editor.focus()` and `editor.getRootElement()` (`lexical/packages/lexical/src/LexicalEditor.ts:1863`, `:1605`); one editor, one root element | A nested editor, which answers for itself |
+| Slate | `DOMEditor.focus(editor)` (`slate/packages/slate-dom/src/plugin/dom-editor.ts:420`); one editor, one Editable | Not supported |
+| Plite | Each mounted view's editor; the document's editor and a root editor run the call in the view they reach | A second `EditorRoot` gives the view its own editor |
+
 ## Open work
 
 - The Stop rejects replacements; it certifies no projection, cache or mounted-view path at scale. owner: Benchmark. stop: a change to runtime machinery brings its matched scale probe.
+- t_44e3acfa Make pointer lookups find the view under the pointer in iframes, shadow roots and nested editors. It holds the seven pointer cases the [DOM view lookups plan](../2026-10-22-runtime-dom-view-lookups.md) left open, and the capability routes of `textToCaret`, `resolveVisualPoint`, `resolveDropTarget` and `drag.autoScroll` on the document's editor, which no test checks. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_6c238731 Resolve a DOM target in its own mirror and keep the focus record after a canceled press. It also owns two limits of the DOM reach rule: `resolveRange` and `assertRange` run on the editor called, and a root editor's `resolveNode`, `resolvePoint` and `resolveRange` turn another same-root view's text into the shared model node. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_3fd19637 Find why Shift+ArrowDown out of a synced root collapses the selection, which the DOM view lookups run found on `/examples/plite/synced-blocks` and which predates it. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_aff1384b Show the www mention menu above the app shell with one item per row, which the DOM view lookups run found on `/examples/plite/mentions` and which predates it. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
