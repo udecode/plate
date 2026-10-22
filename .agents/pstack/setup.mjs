@@ -7,7 +7,8 @@
 // untracked env file (by default `.env` and `.env.local`, at any depth git
 // does not skip as an ignored directory) from the main checkout to the same
 // path when that path is free, and runs
-// --install once per worktree, again after a failed run. Then, in the main
+// --install once per worktree, again after a failed run; run by hand, a
+// failed install makes it exit 1. Then, in the main
 // checkout, it keeps the suggested-task ledger, which git ignores, in step
 // with refs/pstack/ledger on origin, and on the branch .agents/pstack.json
 // names it fast-forwards only when no other local edit, staged, unstaged or
@@ -68,8 +69,9 @@ if (linked) {
     if (run.status === 0) writeFileSync(installMarker, `${install}\n`);
     const tail = `${run.stdout}${run.stderr}`.trim().split('\n').at(-1);
     console.log(run.status === 0 ? `setup.mjs: ran ${install}` : `setup.mjs: ${install} failed (exit ${run.status}): ${tail}`);
+    if (run.status !== 0 && !hook) process.exitCode = 1;
   }
-  if (!main) process.exit(0);
+  if (!main) process.exit();
   process.chdir(main);
 }
 
@@ -147,9 +149,9 @@ const syncLedger = (ledger, former) => {
 const config = existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {};
 const { branch } = config;
 if (config.plans) syncLedger(ledgerPath(config.plans, 'trunk'), join(config.plans, LEDGER));
-if (!branch || out('branch', '--show-current') !== branch) process.exit(0);
+if (!branch || out('branch', '--show-current') !== branch) process.exit();
 const upstream = `refs/remotes/origin/${branch}`;
-if (out('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`) === null) process.exit(0);
+if (out('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`) === null) process.exit();
 
 const localEdits = () => {
   const local = git(['status', '--porcelain=v1', '-z', '--untracked-files=all']).stdout.split('\0').filter(Boolean);
@@ -162,16 +164,16 @@ const localEdits = () => {
 };
 
 const behind = Number(out('rev-list', '--count', `HEAD..${upstream}`) ?? 0);
-if (behind === 0) process.exit(0);
+if (behind === 0) process.exit();
 if (git(['merge-base', '--is-ancestor', 'HEAD', upstream]).status !== 0) {
   console.log(`setup.mjs: ${branch} has commits origin/${branch} lacks, so it was not fast-forwarded`);
-  process.exit(0);
+  process.exit();
 }
 const incoming = new Set(out('diff', '--name-only', 'HEAD', upstream).split('\n').filter(Boolean));
 const touched = localEdits().filter((path) => incoming.has(path));
 if (touched.length > 0) {
   console.log(`setup.mjs: ${behind} commit(s) on origin/${branch} not pulled, because local edits touch ${touched.slice(0, 10).join(', ')}`);
-  process.exit(0);
+  process.exit();
 }
 const merged = git(['merge', '--ff-only', '--quiet', upstream]);
 console.log(merged.status === 0 ? `setup.mjs: fast-forwarded ${branch} by ${behind} commit(s)` : `setup.mjs: fast-forward failed: ${merged.stderr.trim()}`);
