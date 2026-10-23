@@ -50,7 +50,8 @@ await startBrowserNativeEventTrace(locator, {
   session leaves it uncarded, as `AGENTS.md`'s Sweep handoff line says, and
   pushes the ledger at once, and the fixer's `/chips all` takes it over. The
   fix run builds a missing M6 check before its fix, and the task waits on a
-  check task that is already open.
+  check task that is already open. The task runs at `high` once triage has
+  traced every kind to its owner.
 - Triage takes a session logged blocked, which runs again next round. The
   tester closes each issue once its recheck passes on beta, and the next round
   waits only for the fixes the domain runs landed.
@@ -105,7 +106,13 @@ taps.
   stop: each lands or is dropped.
 - Nobody has run the handoff between two people. natamox's first filed domain
   shows whether its task reaches zbeyens's board. owner: natamox and zbeyens.
-  stop: the first domain task is carded on zbeyens's board.
+  stop: the first domain task reaches zbeyens's board, carded or listed as
+  `start <id>`.
+- The fixer's order trusts the board's priorities, and the board holds 22
+  Ready P0 and 48 Ready P1 tasks, most without a card. owner: zbeyens. stop: a
+  `/chips all` sweep judges each Ready P0's priority again.
+- No R5 session has run. owner: natamox and zbeyens. stop: round 2's tally
+  shows an R5 session, or zbeyens cuts R5.
 - The sweep's four hardening items have no chips, because a run offers chips
   only for new P0 and P1 finds (owner's word, 2026-10-23). Each belongs to the
   loop step that names it, as `docs/plans/2026-10-23-sweep-loop.md`'s Open work
