@@ -840,12 +840,16 @@ export class YjsController<
                 commit.changes,
                 (changed) => changed === root
               );
+        const readIndexes = () => ({
+          after: valueRootIndex(after, root),
+          before: valueRootIndex(before, root),
+        });
+        let indexes: ReturnType<typeof readIndexes> | undefined;
         const incremental = !reconciles
           ? binding.bridge.lower(rootChange, expected, {
-              indexes: () => ({
-                after: valueRootIndex(after, root),
-                before: valueRootIndex(before, root),
-              }),
+              // Several of the bridge's detectors read them, and a root other
+              // than the main one builds them anew on each read.
+              indexes: () => (indexes ??= readIndexes()),
               structureChanged,
             })
           : null;

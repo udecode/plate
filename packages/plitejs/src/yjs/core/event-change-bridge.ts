@@ -72,6 +72,7 @@ import {
   joinRunsOf,
   letterEditsIn,
   pushDiff,
+  replacedWhole,
   splitAtRuns,
   withoutEqualEdges,
 } from './joins';
@@ -2011,35 +2012,29 @@ export class YjsEventChangeBridge {
         at += 1;
         if (edit === 'kept') continue;
 
-        const yjsChildren = getYjsVisibleChildren(this.root, target.node);
-
         if (
           !canReplaceCompatibleYjsChildren(
             this.root,
-            yjsChildren,
-            segment.node.children,
-            next.children
+            [target.node],
+            [segment.node],
+            [next]
           )
         ) {
           return null;
         }
 
-        const inlineLocation = createYjsPropertyLocationAt(
-          middle.nodes as NodeList<Descendant>,
-          [...joinedPath, at - 1],
-          this.schemaRoot
-        );
+        const inlineLocation = location(at - 1);
 
         edits.push(() =>
           replaceCompatibleYjsChildren(
             this.root,
-            yjsChildren,
-            segment.node.children,
-            next.children,
+            [target.node],
+            [segment.node],
+            [next],
             0,
             this.isSetValued,
             inlineLocation,
-            retyped || segment.node.type !== next.type
+            retyped
           )
         );
       }
@@ -2144,7 +2139,8 @@ export class YjsEventChangeBridge {
         ? null
         : (this.lowerElementBoundarySplit(change, expected, window) ??
           this.lowerInlineTextCut(change, expected, window) ??
-          this.lowerNestedChildSplice(change, expected, window));
+          this.lowerNestedChildSplice(change, expected, window, indexes) ??
+          this.lowerRootSplice(change, expected, window, indexes));
 
     if (detected !== null) return detected;
 
@@ -2550,7 +2546,8 @@ export class YjsEventChangeBridge {
   private lowerNestedChildSplice(
     change: DocumentChange,
     expected: NodeList<Descendant>,
-    window: RootWindow
+    window: RootWindow,
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
   ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
     const splice = inRoot(
       findNestedChildSplice(window.before, window.after),
@@ -2583,77 +2580,71 @@ export class YjsEventChangeBridge {
           : !isText(sibling);
       });
 
-    if (!corresponds) {
-      return this.lowerElementSplice(
-        change,
-        expected,
-        splice,
-        parent,
-        elementOnlySpliceEdits(beforeSiblings.slice(), splice, visible)
-      );
-    }
-
-    const projected =
-      hasProjectedContent(parent) ||
-      touched.some((node) => hasProjectedContent(node));
-
-    const recreatesElement = () =>
-      !splice.before.every((node) => isText(node)) &&
-      !canReplaceCompatibleYjsChildren(
+    if (
+      corresponds &&
+      replaceCompatibleYjsChildren(
         this.root,
         touched,
         splice.before,
-        splice.after
-      );
+        splice.after,
+        0,
+        this.isSetValued,
+        createYjsPropertyLocationAt(
+          expected,
+          [...splice.parentPath],
+          this.schemaRoot,
+          splice.from
+        )
+      )
+    ) {
+      return this.loweredSplice(change, expected, splice, 0, 0, 'compatible');
+    }
+
+    const edits = this.elementSpliceEdits(
+      change,
+      splice,
+      beforeSiblings,
+      visible,
+      indexes
+    );
+
+    if (edits !== null) {
+      return this.lowerElementSplice(change, expected, splice, parent, edits);
+    }
+    if (!corresponds) return null;
 
     // Only the changed children are written, so a peer's concurrent edits to
     // the rest of the block survive. Outside a projection, it may re-create
     // texts, as a leaf split does, but not an element, as a wrap would: Yjs
     // drops a peer's concurrent edits inside a deleted element, and
     // lowerCompositeRelocations keeps them.
-    if (!projected && recreatesElement()) {
+    if (
+      !hasProjectedContent(parent) &&
+      !touched.some((node) => hasProjectedContent(node)) &&
+      !splice.before.every((node) => isText(node))
+    ) {
       return null;
     }
 
-    const compatible = replaceCompatibleYjsChildren(
-      this.root,
-      touched,
-      splice.before,
-      splice.after,
-      0,
-      this.isSetValued,
-      createYjsPropertyLocationAt(
-        expected,
-        [...splice.parentPath],
-        this.schemaRoot,
-        splice.from
+    const location = createYjsPropertyLocationAt(
+      expected,
+      [...splice.parentPath],
+      this.schemaRoot
+    );
+    const insertedNodes = splice.after.map((node, index) =>
+      createYjsNode(
+        node,
+        this.isSetValued,
+        createYjsPropertyContext(node, {
+          ...location,
+          path: [...splice.parentPath, splice.from + index],
+        })
       )
     );
-    const insertedNodes = compatible
-      ? []
-      : splice.after.map((node, index) => {
-          const location = createYjsPropertyLocationAt(
-            expected,
-            [...splice.parentPath],
-            this.schemaRoot
-          );
 
-          return createYjsNode(
-            node,
-            this.isSetValued,
-            createYjsPropertyContext(node, {
-              ...location,
-              path: [...splice.parentPath, splice.from + index],
-            })
-          );
-        });
-
-    if (!compatible) {
-      for (const node of splice.before) {
-        removeYjsChild(this.root, parent, splice.from, node);
-      }
+    for (const node of splice.before) {
+      removeYjsChild(this.root, parent, splice.from, node);
     }
-
     insertedNodes.forEach((node, index) => {
       insertYjsChild(this.root, parent, splice.from + index, node);
     });
@@ -2663,9 +2654,228 @@ export class YjsEventChangeBridge {
       expected,
       splice,
       insertedNodes.length,
-      compatible ? 0 : splice.before.length,
-      compatible ? 'compatible' : 'range'
+      splice.before.length,
+      'range'
     );
+  }
+
+  /**
+   * The splice as element writes, when its letters stay: the change says
+   * which elements it removes or inserts whole, and every other element
+   * keeps its Yjs node, so a peer who wrote the same element at the same time
+   * writes the same node instead of adding a copy. Null when a kept element's
+   * children cannot be written in place.
+   */
+  private elementSpliceEdits(
+    change: DocumentChange,
+    splice: NestedChildSplice,
+    siblings: NodeList<Descendant>,
+    children: readonly YjsNode[],
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+  ) {
+    const whole = this.wholeChildren(change, indexes, splice);
+    const edits =
+      whole &&
+      elementOnlySpliceEdits(siblings.slice(), splice, children, whole);
+
+    return edits?.updated.every((edit) =>
+      canReplaceCompatibleYjsChildren(
+        this.root,
+        [edit.node],
+        [edit.before],
+        [edit.after]
+      )
+    )
+      ? edits
+      : null;
+  }
+
+  /**
+   * Which of a stretch of siblings the change removes whole, and which of the
+   * nodes in their place it inserts whole.
+   */
+  private wholeChildren(
+    change: DocumentChange,
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>,
+    stretch: NestedChildSplice
+  ) {
+    const committed = getInternalDocumentRootChange(change, this.rootKey);
+
+    if (!committed) return null;
+
+    const { after, before } = indexes();
+    const inner = withoutEqualEdges(committed, before);
+    const rangesIn = (document: DocumentIndex, nodes: readonly Descendant[]) =>
+      nodes.map((_, index) =>
+        document.nodeRange([...stretch.parentPath, stretch.from + index])
+      );
+    const inserted = replacedWhole(inner, rangesIn(after, stretch.after), true);
+    const removed = replacedWhole(
+      inner,
+      rangesIn(before, stretch.before),
+      false
+    );
+    const keptIn = (nodes: readonly Descendant[], replaced: boolean[]) =>
+      nodes.flatMap((node, index) =>
+        replaced[index] || isText(node) ? [] : [index]
+      );
+    const sources = keptIn(stretch.before, removed);
+    const places = keptIn(stretch.after, inserted);
+    const depth = stretch.parentPath.length;
+    const childOf = (path: readonly number[]) =>
+      path.length > depth &&
+      stretch.parentPath.every((index, at) => path[at] === index)
+        ? getDefined(path[depth]) - stretch.from
+        : -1;
+    const movesPairInOrder = getDocumentChangeRelocations(
+      change,
+      this.rootKey,
+      before,
+      after
+    ).every(({ path, targetPath }) => {
+      const source = sources.indexOf(childOf(path));
+
+      return (
+        source !== -1 &&
+        places[source] === childOf(targetPath) &&
+        path.length === targetPath.length &&
+        path.every((index, at) => at <= depth || targetPath[at] === index)
+      );
+    });
+
+    return movesPairInOrder ? { inserted, removed } : null;
+  }
+
+  /**
+   * The changed top-level blocks as block writes, as lowerNestedChildSplice
+   * writes a block's children: the blocks the change removes or inserts whole,
+   * and each other block in its Yjs node.
+   */
+  private lowerRootSplice(
+    change: DocumentChange,
+    expected: NodeList<Descendant>,
+    window: RootWindow,
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+  ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
+    const whole = this.wholeChildren(change, indexes, {
+      ...window,
+      parentPath: [],
+    });
+
+    if (!whole) return null;
+
+    const touched = this.rootIndex.slice(
+      window.from,
+      window.from + window.before.length
+    );
+    const kept = window.before.flatMap((_, index) =>
+      whole.removed[index] ? [] : [index]
+    );
+    const places = window.after.flatMap((_, index) =>
+      whole.inserted[index] ? [] : [index]
+    );
+
+    if (kept.length === 0 || kept.length !== places.length) return null;
+
+    const pairs = kept.map((at, order) => ({
+      after: getDefined(window.after[places[order]]),
+      before: getDefined(window.before[at]),
+      index: window.from + places[order],
+      node: getDefined(touched[at]),
+    }));
+
+    if (
+      touched.some(
+        (node, index) => whole.removed[index] && hasProjectedContent(node)
+      ) ||
+      !pairs.every((pair) =>
+        canReplaceCompatibleYjsChildren(
+          this.root,
+          [pair.node],
+          [pair.before],
+          [pair.after]
+        )
+      )
+    ) {
+      return null;
+    }
+
+    for (const pair of pairs) {
+      replaceCompatibleYjsChildren(
+        this.root,
+        [pair.node],
+        [pair.before],
+        [pair.after],
+        0,
+        this.isSetValued,
+        { ancestors: [], offset: pair.index, path: [], root: this.schemaRoot }
+      );
+    }
+
+    let removed = 0;
+
+    for (let index = window.before.length - 1; index >= 0; index--) {
+      if (!whole.removed[index]) continue;
+
+      const at = window.from + index;
+
+      if (
+        !removeYjsVirtualPlaceholderChild(
+          this.root,
+          this.root,
+          at,
+          getDefined(touched[index])
+        )
+      ) {
+        removeYjsChild(this.root, this.root, at, window.before[index]);
+      }
+      removed += 1;
+    }
+
+    let inserted = 0;
+
+    for (const [index, node] of window.after.entries()) {
+      if (!whole.inserted[index]) continue;
+      insertYjsChild(
+        this.root,
+        this.root,
+        window.from + index,
+        createYjsNode(
+          node,
+          this.isSetValued,
+          createYjsPropertyContext(node, {
+            ancestors: [],
+            path: [window.from + index],
+            root: this.schemaRoot,
+          })
+        )
+      );
+      inserted += 1;
+    }
+
+    let changedRanges = 0;
+
+    change.iterChangedRanges((root) => {
+      if (internalDocumentChangeRoot(root) === this.rootKey) changedRanges += 1;
+    });
+
+    const tokenLengthNodes = this.lengths.splice(
+      window.from,
+      window.before.length,
+      window.after
+    );
+
+    this.ready = this.rootIndex.length === expected.length;
+
+    return {
+      changedRanges,
+      inserted,
+      kind: 'lowered',
+      removed,
+      start: window.from,
+      strategy: 'compatible',
+      tokenLengthNodes,
+    };
   }
 
   private lowerElementSplice(
@@ -2673,15 +2883,25 @@ export class YjsEventChangeBridge {
     expected: NodeList<Descendant>,
     splice: NestedChildSplice,
     parent: Y.XmlElement,
-    edits: ReturnType<typeof elementOnlySpliceEdits>
-  ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
-    if (edits === null) return null;
-
+    edits: NonNullable<ReturnType<typeof elementOnlySpliceEdits>>
+  ): Extract<YjsEventLowerResult, { kind: 'lowered' }> {
     const location = createYjsPropertyLocationAt(
       expected,
       [...splice.parentPath],
       this.schemaRoot
     );
+
+    for (const edit of edits.updated) {
+      replaceCompatibleYjsChildren(
+        this.root,
+        [edit.node],
+        [edit.before],
+        [edit.after],
+        0,
+        this.isSetValued,
+        { ...location, offset: edit.index }
+      );
+    }
     const writes = [
       ...edits.removed.map((edit) => ({ ...edit, kind: 'remove' as const })),
       ...edits.inserted.map((edit) => ({ ...edit, kind: 'insert' as const })),

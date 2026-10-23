@@ -3,7 +3,16 @@ import { describe, it } from 'node:test';
 
 import * as Y from 'yjs';
 
-import type { Descendant } from '../../src/index';
+import {
+  createEditor,
+  defineEditorSchema,
+  type Descendant,
+  type Element,
+  NodeApi,
+  property,
+  schema,
+  target,
+} from '../../src/index';
 import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import {
   createVirtualYjsMovePlaceholder,
@@ -18,11 +27,13 @@ import {
   connectYjsPeerAndSync,
   createSeededYjsHistoryPeers,
   createYjsHistoryPeer,
+  createYjsPeerWithEditor,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   type Peer,
   paragraph,
+  readPeerChildren,
   redoHistoryPeerAndSync,
   syncConnectedPeers,
   undoHistoryPeerAndSync,
@@ -50,6 +61,73 @@ const createPeer = (
 
 const createPeers = (clientIds: readonly string[]): Peer[] =>
   createSeededYjsHistoryPeers({ children: initialValue(), clientIds });
+
+const Links = defineEditorSchema('schema:yjs-remove-links', {
+  elements: {
+    link: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+    paragraph: {
+      content: schema.content.any(
+        [schema.content.text(), schema.content.type('link')],
+        { default: 'text', min: 1 }
+      ),
+    },
+  },
+  properties: [
+    schema.elementProperty('align', property.string(), {
+      target: target.type('paragraph'),
+    }),
+    schema.elementProperty('url', property.string(), {
+      target: target.type('link'),
+    }),
+    schema.elementProperty('ref', property.string(), {
+      split: 'drop',
+      target: target.type('link'),
+    }),
+  ],
+  root: schema.content.types(['paragraph'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'preserve',
+});
+
+const link = (url: string, text: string): Element => ({
+  children: [{ text }],
+  type: 'link',
+  url,
+});
+
+const linkPeers = (children: readonly Descendant[]): Peer[] => {
+  const create = (numericClientId: number, seedUpdate?: Uint8Array) =>
+    createYjsPeerWithEditor(
+      createEditor({
+        initialValue: children,
+        plugins: [Links] as never,
+      }) as never,
+      {
+        children,
+        clientId: String(numericClientId),
+        numericClientId,
+        seedUpdate,
+      }
+    );
+  const first = create(1);
+
+  return [first, create(2, Y.encodeStateAsUpdate(first.doc))];
+};
+
+/** Each block's children, a text as its letters and a link as `url:letters`. */
+const inlinesOf = (peer: Peer) =>
+  readPeerChildren(peer).map((block) =>
+    (block as Element).children.map((child) =>
+      NodeApi.isText(child)
+        ? child.text
+        : `${typeof child.url === 'string' ? child.url : ''}:${NodeApi.string(child)}`
+    )
+  );
 
 const removeMiddleBlock = (peer: Peer): void => {
   peer.editor.update.nodes.remove({ at: [1] });
@@ -250,5 +328,93 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
     syncConnectedPeers(peers);
 
     assertPeerTexts(peers, ['Be']);
+  });
+
+  it('keeps one copy of a link when two peers each remove the link before it and set its url', () => {
+    const peers = linkPeers([
+      {
+        children: [
+          { text: 'x' },
+          link('a', 'A'),
+          { text: 'y' },
+          link('b', 'B'),
+          { text: 'z' },
+        ],
+        type: 'paragraph',
+      },
+    ]);
+
+    for (const peer of peers) {
+      peer.editor.update((tx) => {
+        tx.nodes.set({ url: 'b7' } as never, { at: [0, 3] });
+        tx.nodes.remove({ at: [0, 1] });
+      });
+    }
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(inlinesOf), [
+      [['xy', 'b7:B', 'z']],
+      [['xy', 'b7:B', 'z']],
+    ]);
+  });
+
+  it('keeps one copy of a block when two peers each remove the block before it and set its align', () => {
+    const peers = linkPeers([
+      paragraph('one'),
+      paragraph('two'),
+      paragraph('three'),
+    ]);
+
+    for (const peer of peers) {
+      peer.editor.update((tx) => {
+        tx.nodes.remove({ at: [0] });
+        tx.nodes.set({ align: 'right' } as never, { at: [0] });
+      });
+    }
+    syncConnectedPeers(peers);
+
+    const merged = [paragraph('two', { align: 'right' }), paragraph('three')];
+
+    assert.deepEqual(peers.map(readPeerChildren), [merged, merged]);
+  });
+
+  it('writes a link url set in the update that joins its line into the line above to every peer', () => {
+    const peers = linkPeers([
+      paragraph('ab'),
+      {
+        children: [{ text: 'c' }, link('u', 'd'), { text: 'e' }],
+        type: 'paragraph',
+      },
+    ]);
+
+    peers[0].editor.update((tx) => {
+      tx.nodes.set({ url: 'v' } as never, { at: [1, 1] });
+      tx.nodes.merge({ at: [1] });
+    });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(inlinesOf), [
+      [['abc', 'v:d', 'e']],
+      [['abc', 'v:d', 'e']],
+    ]);
+  });
+
+  it("keeps a peer's typing on both sides of a link another peer removes", () => {
+    const peers = linkPeers([
+      {
+        children: [{ text: 'x' }, link('a', 'A'), { text: 'y' }],
+        type: 'paragraph',
+      },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update.nodes.remove({ at: [0, 1] });
+    b.editor.update((tx) => {
+      tx.text.insert('Q', { at: { offset: 1, path: [0, 0] } });
+      tx.text.insert('R', { at: { offset: 0, path: [0, 2] } });
+    });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(inlinesOf), [[['xQRy']], [['xQRy']]]);
   });
 });

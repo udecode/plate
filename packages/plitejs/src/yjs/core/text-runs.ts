@@ -162,10 +162,13 @@ const yjsCursor = (
     element() {
       if (offset !== 0) return null;
       settle();
-      if (!(children[at] instanceof Y.XmlElement)) return null;
+
+      const node = children[at];
+
+      if (!(node instanceof Y.XmlElement)) return null;
       at += 1;
 
-      return at - 1;
+      return { at: at - 1, node };
     },
     end() {
       if (offset !== 0) return false;
@@ -197,6 +200,12 @@ const yjsCursor = (
   };
 };
 
+/**
+ * The writes for a splice that keeps its letters: the elements the change
+ * removes or inserts whole, by `whole`, and each other element, which keeps
+ * its Yjs node and takes its new value there. Null when the letters move or
+ * the Yjs children do not line up with the splice.
+ */
 export const elementOnlySpliceEdits = (
   siblings: readonly Descendant[],
   splice: Readonly<{
@@ -204,7 +213,11 @@ export const elementOnlySpliceEdits = (
     before: readonly Descendant[];
     from: number;
   }>,
-  children: readonly YjsNode[]
+  children: readonly YjsNode[],
+  whole: Readonly<{
+    inserted: readonly boolean[];
+    removed: readonly boolean[];
+  }>
 ) => {
   if (
     !areJsonLikeValuesEqual(textRuns(splice.before), textRuns(splice.after))
@@ -214,15 +227,18 @@ export const elementOnlySpliceEdits = (
 
   const read = yjsCursor(children, new Set());
   const removed: Array<{ at: number; node: Element }> = [];
-  const walk = (nodes: readonly Descendant[], remove: boolean) =>
-    nodes.every((node) => {
+  const kept: Array<{ at: number; node: Element }> = [];
+  const walk = (nodes: readonly Descendant[], own: boolean) =>
+    nodes.every((node, index) => {
       if (NodeApi.isText(node)) return read.text(node.text.length);
 
-      const at = read.element();
+      const found = read.element();
 
-      if (at !== null && remove) removed.push({ at, node });
+      if (found !== null && own) {
+        (whole.removed[index] ? removed : kept).push({ at: found.at, node });
+      }
 
-      return at !== null;
+      return found !== null;
     });
 
   if (!walk(siblings.slice(0, splice.from), false)) return null;
@@ -243,20 +259,45 @@ export const elementOnlySpliceEdits = (
     start
   );
   const inserted: Array<{ at: number; index: number; node: Element }> = [];
+  const updated: Array<{
+    after: Element;
+    before: Element;
+    index: number;
+    node: Y.XmlElement;
+  }> = [];
+  let next = 0;
 
   for (const [index, node] of splice.after.entries()) {
     if (NodeApi.isText(node)) {
       if (!write.text(node.text.length)) return null;
       continue;
     }
+    if (whole.inserted[index]) {
+      const { at, offset } = write.position();
 
-    const { at, offset } = write.position();
+      if (offset !== 0) return null;
+      inserted.push({ at, index: splice.from + index, node });
+      continue;
+    }
 
-    if (offset !== 0) return null;
-    inserted.push({ at, index: splice.from + index, node });
+    const stay = kept[next];
+    const found = write.element();
+
+    next += 1;
+    if (stay === undefined || found === null || found.at !== stay.at) {
+      return null;
+    }
+    if (!areJsonLikeValuesEqual(stay.node, node)) {
+      updated.push({
+        after: node,
+        before: stay.node,
+        index: splice.from + index,
+        node: found.node,
+      });
+    }
   }
 
-  return { inserted, removed };
+  return next === kept.length ? { inserted, removed, updated } : null;
 };
 
 export const createYjsRunEncoder =

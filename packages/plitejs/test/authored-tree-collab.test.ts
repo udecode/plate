@@ -1659,8 +1659,9 @@ describe('authored property tags on several clients', () => {
       const sizes = (
         same([left, right])[0] as { children: Array<{ size: number }> }
       ).children.map((cell) => cell.size);
-      // An Editing insert of a sibling re-creates the cells in the Yjs
-      // binding, which drops a concurrent suggestion's tags on them.
+      // An Editing insert of a sibling keeps the cells' Yjs nodes, so a
+      // concurrent suggestion's tags on them stay and each size is the
+      // winning client's.
       const [first, second] = clients(['alice', 'bob'], group, order);
 
       preset(first, [40, 60]);
@@ -1672,7 +1673,7 @@ describe('authored property tags on several clients', () => {
         )
       );
       syncAll([first, second]);
-      const dropped = (
+      const tagged = (
         same([first, second])[0] as {
           children: Array<{ authored?: unknown[]; size: number }>;
         }
@@ -1681,19 +1682,26 @@ describe('authored property tags on several clients', () => {
       record(`named races, ${winner} winning`, {
         ...outcomes,
         cuts: links,
-        dropped,
         sizes,
+        tagged,
       });
       assert.deepEqual(
-        { ...outcomes, cuts: links, dropped, sizes },
+        { ...outcomes, cuts: links, sizes, tagged },
         {
           // The piece Alice removed comes back with the join.
           cuts: [['ac']],
-          dropped: [
-            [20, 0],
-            [46.6667, 0],
-            [33.3333, 0],
-          ],
+          tagged:
+            winner === 'bob'
+              ? [
+                  [20, 1],
+                  [46.6667, 1],
+                  [33.3333, 0],
+                ]
+              : [
+                  [40, 1],
+                  [60, 1],
+                  [33.3333, 0],
+                ],
           overlappingBatches: { color: null, tags: [] },
           rejectionRaceHoldsEditing: {
             color: winner === 'bob' ? 'green' : null,

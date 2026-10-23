@@ -1,6 +1,6 @@
 # Store the values people write, so a rejected cut or a retype never loses one
 
-Status: building: give-back slice
+Status: partial: give-back waits on its next plan iteration
 Topic: cut-join
 Playbook: bug-fix
 
@@ -8,11 +8,11 @@ Playbook: bug-fix
 
 ### What will change?
 
-Rejecting an Enter or split keeps halves apart when their values differ. A retype or a reload never loses a value someone wrote or crashes on it.
+Rejecting an Enter or split keeps differing halves apart, and a retype or reload keeps every written value. The give-back of a split's dropped value goes back to planning. A Yjs fix for duplicated blocks lands now.
 
 ### What could go wrong?
 
-Schemas with a left-out default, Plate's included, get a new fingerprint, so older and newer editors refuse each other's saves and rooms until the app migrates saves and reseeds rooms. Halves that used to merge can stay apart or wait.
+Schemas with a left-out default, Plate's included, get a new fingerprint, so older and newer editors refuse each other's saves and rooms until migrated. Until the give-back lands, rejecting a split whose left half is gone still loses its value.
 
 ## Teach
 
@@ -111,7 +111,7 @@ The joins slice tries at most 8 combinations, which is 3 touching changes, and p
 - [x] Moves build, from `docs/plans/2026-10-22-carried-moves.md`. Proof: rows S22 and S32 to S34 pass and S23 still passes, with that plan's own proof and the same gates.
 - [x] Joins slice. Proof: rows T1 to T7, T12, T22 to T24, S1, S2, S5, S8, S9, S13, S14, S17, S18, S21, S31, S35 and S42 pass, S17 once the moves build lands, the moves plan's merged-children row M1 passes, and S4, S6, S7, S19, S23, S26 and S30 still pass; the T42 peer probe and T37's two-peer variant; Benchmark's probe for decide latency, whose frozen lines are in `joins/latency/brief.md` and whose work lines 1 to 4 run in `authored-tree-work.test.ts`, with line 5 restated: at 10,000 paragraphs, C with 3 touching changes takes at most 1.5 times the base's paired median through `paired-timing.mjs` on the final tree, with planted and same-code arms, and D takes at most 1.5 times the base's paired median for C with 3 touching changes, because the base blocks D and C3 is the base's rejection that applies with as many touching changes; then the same gates.
 - [x] Architect on the give-back slice, since it changes how a rejection, a removal and the recorder share the cut's saved values. Proof: its synthesis in `docs/plans/artifacts/cut-join-values/giveback/`.
-- [ ] Give-back slice. Proof: rows T11, S20 and S36 to S39 pass; the cross-judge's order probes and its three `kept` probes become suite tests that fail on next first; a two-peer Yjs test with concurrent refreshes and concurrent give-backs reads the same on both peers; then the same gates.
+- [ ] Give-back slice. Proof: rows T11, S20 and S36 to S39 pass; the cross-judge's order probes and its three `kept` probes become suite tests that fail on next first; a two-peer Yjs test with concurrent refreshes and concurrent give-backs reads the same on both peers; then the same gates. The push panel's third and last round found that the give-back's key rule still leaves some suggestions decidable only together. Round 1 had already replaced that rule once, so the slice came out and goes back to planning. Its Yjs bridge and join fixes land on their own.
 
 The run is done when every P0 and P1 row here and in the redesign plan passes. A failing P2 row becomes a suggested task. No release goes out between slice 1a and the storage slice.
 
@@ -130,7 +130,8 @@ The run is done when every P0 and P1 row here and in the redesign plan passes. A
 | An exclusive group whose member's default differs by place | The schema fails to compile (look) | Allow it and let a retype drop one member | allow place defaults | small |
 | A type the rejected cut itself forced, such as a title's continuation | Joins back to the first line's type. Under a container with a prefix slot, the cut's change tags the right half's type, and an older save infers a forced type from the content program, which joins S42's direct retype in such a save as next does (look) | Stays apart like any other type difference | keep forced type | small |
 | A rejection with an undecided insertion or removal between its halves | Waits on it, so every order agrees (look) | Applies at once and leaves the order's result | no structural waits | small |
-| Two peers that remove a cut's left half directly at once | Give-back ships with the refresh of the values the cut saved, which writes in the removal's own update. When the left half's settled values changed since the split, each peer keeps its own copy of the right half, where next kept one. The cause is the Yjs bridge's nested child splice, which rewrites the block when one update removes a child and changes a sibling, and which already duplicates the right half on next when one peer sets a value on it while removing the left half. A suggested task fixes the bridge (look) | Hold give-back until the bridge fix lands | hold give-back | small |
+| Whether the Yjs bridge and join fixes land without the give-back they were built for | They land now. One update that removes a child and changes a sibling edits that sibling in place, so two peers doing it at once keep one copy, where next kept two. A join writes a link's own properties to the other peers. An update that also moves a child out of order still rewrites the parent, as next does (look) | Hold them for the give-back's next plan iteration | hold bridge | small |
+| An update that removes a child and moves another out of order while another peer edits their parent or the moved children | The parent is rewritten as on next, so a peer's property on the parent is lost and a peer's typing in a rewritten child can land in its sibling. Task t_043a0fd7 owns the fix (look) | Fix it in this run, which needs one Yjs writer for moves and splices at every depth | fix reorder | small |
 | A rejected Enter between lines whose type or properties differ | The lines stay apart, the same rule as link halves (look) | Join them and keep the first line's type and properties | join lines | big |
 | When the storage slice lands | In one land.mjs run with the moves build and the joins slice, so no release refuses a move next applies (S22, S32 to S34) or fails a proposed join next accepts (look) | Land the storage slice now, and let those moves refuse until the moves build lands | land storage | small |
 | Whether the joins slice lands apart from storage and moves | No; the three land in one run, because accepting a proposed join of content that holds such a value needs the joins slice's placement check (look) | Land storage and moves first, and let those joins fail until the joins slice lands | land joins apart | small |
@@ -142,10 +143,13 @@ The run is done when every P0 and P1 row here and in the redesign plan passes. A
 
 ## Open work
 
-- The give-back slice. Owner: this session, from t_9c25c288. Stop: its land.mjs push.
+- The give-back slice. Rows T11, S20 and S36 to S38 fail as on next. Each push panel round found an order bug in its key rule, and the third found one after round 1 had already replaced that rule, so it goes back to planning. Owner: this session, from t_9c25c288, through the give-back's next plan iteration on the cut-join subject. Stop: that iteration's land.mjs push.
 - The third copy of the retype rule (`heldProps`, the Editing retype rule `typeChangeKeep` and the schema's `dropMisplaced` mode) stays. The joins slice shares one place type between `heldProps` and its verdicts, but `dropMisplaced` needs the candidate declarations and `typeChangeKeep` returns canonical values, so one shared predicate would change their contracts for no behavior. Owner: zbeyens, through suggested task t_ebb7e783. Stop: that task lands or the owner drops it.
 - `docs/plans/topics/callout.md`'s open item on a prefix slot that fixes a property at its omitted default is stale, because suggested task t_527d5edc already landed that fix. Owner: zbeyens. Stop: the next edit of the callout subject removes the line.
-- The Yjs bridge's nested child splice rewrites the whole block when one update removes a child and changes a sibling's properties, so two peers that do so at once each keep a copy. Next does it when one peer sets a value on a right half while removing its left half, and give-back's `kept` refresh adds the case where both peers remove the same left half. Owner: zbeyens, through suggested task t_c3b7834f, which now carries this finding. Stop: that task's landing.
+- The Yjs bridge still rewrites the parent when one update removes a child and moves another out of order. Another peer's property on that parent is lost, and a peer's typing in a moved child that the same update also edits lands in its sibling. Next loses the property too, and loses that typing or puts it in the sibling. Owner: zbeyens, through suggested task t_043a0fd7. Stop: that task's landing.
+- One update that removes an inline element while another peer types beside it still re-creates the element. Owner: zbeyens, through suggested task t_c3b7834f. Stop: that task's landing.
+- Two peers racing a suggested and a direct property write on one element keep two blocks, on next too. Owner: zbeyens, through suggested task t_229f59cc. Stop: that task's landing.
+- The bridge writes a root splice and a nested splice through two writers, and one structural commit derives its relocations up to three times. Owner: zbeyens, through suggested task t_19f0dba7. Stop: that task lands or the owner drops it.
 - Three give-back cases the build's probes found fail on next and on the give-back slice alike, none of them a P0 or P1 row: a Suggesting removal of a left half in another content root gives back the split-time `kept`, because each root collects its own cut sides; a right half that is also the left half of a second rejected cut loses the value when both left halves are gone; and a write then removal of one's own inserted left half in one Suggesting update gives back the value from before the update, because the recorder reads the document as it was. Owner: zbeyens, through suggested task t_44385dec, which now carries these cases. Stop: that task's landing.
 - S7 with `ElementIdPlugin` waits on task t_f821f679. On next, every proposed edit under a generated element id does nothing, so the joins slice cannot prove that an id never keeps halves apart until that task lands. Owner: t_f821f679's session, whose brief now asks it to rerun `s7.sh`. Stop: that task's landing.
 - A Suggesting Backspace that joins root paragraphs after a large quote copies and indexes the whole quote, on next as on this tree, and breaks no budget. Owner: zbeyens, through suggested task t_bb100a7c. Stop: that task lands or the owner drops it.

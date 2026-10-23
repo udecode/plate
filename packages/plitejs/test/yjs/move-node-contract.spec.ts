@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { type Descendant, ElementApi } from '../../src/index';
+import { type Descendant, type Element, ElementApi } from '../../src/index';
 import { string as editorString } from '../../src/testing';
 import {
   assertCanonicalYjsTrace,
@@ -278,5 +278,47 @@ describe('plitejs/yjs move_node collaboration contract', () => {
     for (const peer of peers) {
       assert.deepEqual(nestedTexts(peer), [['beta'], ['gamma', 'alpha!']]);
     }
+  });
+
+  it("keeps a peer's typing in a nested block that one update moves while removing its sibling", () => {
+    const peers = createSeededYjsHistoryPeers({
+      children: [section(paragraph('a'), paragraph('b'), paragraph('c'))],
+      clientIds: ['a', 'b'],
+      numericClientIds: clientIds,
+    });
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.remove({ at: [0, 1] });
+      tx.nodes.move({ at: [0, 1], to: [0, 0] });
+    });
+    b.editor.update.text.insert('!', { at: { offset: 1, path: [0, 2, 0] } });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(nestedTexts), [[['c!', 'a']], [['c!', 'a']]]);
+  });
+
+  it("never moves a peer's property onto another block when one update removes a block and moves a nested one", () => {
+    const peers = createSeededYjsHistoryPeers({
+      children: [paragraph('drop'), section(paragraph('a'), paragraph('b'))],
+      clientIds: ['a', 'b'],
+      numericClientIds: clientIds,
+    });
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.remove({ at: [0] });
+      tx.nodes.move({ at: [0, 0], to: [0, 1] });
+    });
+    b.editor.update.nodes.set({ align: 'right' } as never, { at: [1, 0] });
+    syncConnectedPeers(peers);
+
+    const reads = peers.map(readPeerChildren);
+
+    assert.deepEqual(reads[0], reads[1]);
+    assert.deepEqual(
+      reads.map((read) => (read[0] as Element).children[0]),
+      [paragraph('b'), paragraph('b')]
+    );
   });
 });

@@ -220,6 +220,40 @@ export const editOf = (change: RootChange, from: number, to: number) => {
 };
 
 /**
+ * For each range, sorted and disjoint, whether one replacement in `change`
+ * covers it whole: a node the change removes, or with `output`, a range of
+ * the output, a node it inserts.
+ */
+export const replacedWhole = (
+  change: RootChange,
+  ranges: ReadonlyArray<Readonly<{ from: number; to: number }>>,
+  output: boolean
+): boolean[] => {
+  const { sections } = change;
+  const spanOf = (index: number) => {
+    const inserted = sections[index + 1];
+
+    return output && inserted >= 0 ? inserted : sections[index];
+  };
+  let index = 0;
+  let start = 0;
+
+  return ranges.map(({ from, to }) => {
+    while (index < sections.length && start + spanOf(index) <= from) {
+      start += spanOf(index);
+      index += 2;
+    }
+
+    return (
+      index < sections.length &&
+      sections[index + 1] >= 0 &&
+      start <= from &&
+      to <= start + spanOf(index)
+    );
+  });
+};
+
+/**
  * A join an import found: the joined lines, first first, as paths in the
  * document before the batch, and each line's letter edits, one list per text
  * of the line in order. `after` is the index, among the after nodes, of the
