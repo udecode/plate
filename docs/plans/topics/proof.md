@@ -115,7 +115,8 @@ taps.
   domain filed.
 - t_c4407e94 holds the autoformat rule-order bugs, with the four kinds the
   autoformat check found, and each fix lowers that check's baseline.
-  t_94ffdd65 and t_8276a635 start once their domain is filed.
+  The composition run t_1d843b2a, which took in t_94ffdd65, and t_8276a635
+  start once their domain is filed.
   t_01a87aed, the arrow regression, stays its own P0 task. owner: zbeyens.
   stop: each lands or is dropped.
 - Nobody has run the handoff between two people. natamox's first filed domain

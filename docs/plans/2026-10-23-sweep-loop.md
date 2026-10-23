@@ -119,7 +119,7 @@ Two or more kinds with one owner start a redesign run, as the Bug fix playbook's
 | Yjs bridge | K34's three kinds | `packages/plitejs/src/yjs/core/selection.ts:13`, `controller.ts:1810`, `text-runs.ts:822` (read) | Peers diverge, remote edits leave the caret behind, concurrent replacement loses letters |
 | Page geometry | K36's kinds | `packages/plitejs/src/pagination/react.tsx:573`, `page-geometry.internal.ts:27` (read) | Block boxes merge fragments across pages, so hit testing, selection paint and reflow disagree |
 
-Each run has its task. Composition is t_94ffdd65. It waits on t_1d843b2a, which moves one composition case onto the insert-text command, after t_eeed716f kept the desktop composition write as a bridge. Autoformat is t_c4407e94, and the two rule-order fixes t_167ab658 and t_dceb960e answer its question, so the next `/chips` merges them into it. The Yjs bridge is already the cut-join storage build, t_9c25c288, with its split question t_649d2131, so K34's members become round 2 rechecks and t_dd929413 checks convergence. Page geometry is t_8276a635, after the container-measuring question t_c8441921.
+Each run has its task. Composition is t_1d843b2a, which took in t_94ffdd65 and moves one composition case onto the insert-text command, after t_eeed716f kept the desktop composition write as a bridge. Autoformat is t_c4407e94, and the two rule-order fixes t_167ab658 and t_dceb960e answer its question, so the next `/chips` merges them into it. The Yjs bridge is already the cut-join storage build, t_9c25c288, with its split question t_649d2131, so K34's members become round 2 rechecks and t_dd929413 checks convergence. Page geometry is t_8276a635, after the container-measuring question t_c8441921.
 
 ### Kinds by domain
 
@@ -229,9 +229,9 @@ Each step names its proof, and the decision log cites each log by path.
 ## Open work
 
 - natamox files each domain from the triage: new issues per unfiled kind, the merges in the table and the member comments. owner: natamox. stop: every round 1 domain filed.
-- The redesign tasks t_94ffdd65, t_c4407e94 and t_8276a635 start once natamox files their domain. owner: zbeyens. stop: each lands or is dropped.
+- The redesign tasks t_1d843b2a, t_c4407e94 and t_8276a635 start once natamox files their domain. t_1d843b2a took in t_94ffdd65. owner: zbeyens. stop: each lands or is dropped.
 - The four hardening items have no chips, because a run offers chips only for new P0 and P1 finds (owner's word, 2026-10-23). Each belongs to the loop step that names it. Gating `apps/www/tests/browser/regressions/` in CI is the regression sweep's step 2.1. The expected-failure tests and the shipped-wiring check go to `/pstack:correct` from the first domain fix run that hits them. `/pstack:maintain-verification-skill` runs in After a round. owner: zbeyens. stop: round 2 starts.
-- The intake's five formal-check tasks run in its order: t_30422a81, t_a998edbb, t_dd929413, t_df2f315f, then t_589db800 once two checks exist. owner: zbeyens. stop: each lands or is dropped.
+- The intake's first formal check, t_30422a81, landed. The other four run in its order: t_a998edbb, t_dd929413, t_df2f315f, then t_589db800 once two checks exist. owner: zbeyens. stop: each lands or is dropped.
 - The six moves still have no trial. owner: zbeyens. stop: round 2's tally, or 2027-01-15.
 
 ## Close
