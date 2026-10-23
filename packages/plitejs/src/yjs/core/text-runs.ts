@@ -36,6 +36,7 @@ import {
 } from './keys';
 import {
   encodeYjsSetValueAttributes,
+  getYjsSetValueAttributeKeys,
   isYjsSetValueAttribute,
   readYjsSetValueAttributes,
 } from './set-valued-attributes';
@@ -840,6 +841,36 @@ const leafCursor = (leaves: readonly Text[]) => {
 };
 
 /**
+ * Compares decoded values so a value stored in another encoding, such as set
+ * members a peer is still adding to, is not rewritten as the new encoder would
+ * write it.
+ */
+const withoutKeptValues = (
+  patch: Readonly<YjsAttributeRecord>,
+  before: Readonly<YjsAttributeRecord>,
+  after: Readonly<YjsAttributeRecord>
+): YjsAttributeRecord => {
+  const oldValues = decodeRunAttributes(before);
+  const newValues = decodeRunAttributes(after);
+  const kept = new Set<string>();
+  for (const property of new Set([
+    ...Object.keys(oldValues),
+    ...Object.keys(newValues),
+  ])) {
+    if (!areJsonLikeValuesEqual(oldValues[property], newValues[property])) {
+      continue;
+    }
+    kept.add(property);
+    for (const key of getYjsSetValueAttributeKeys(patch, property)) {
+      kept.add(key);
+    }
+  }
+  return Object.fromEntries(
+    Object.entries(patch).filter(([key]) => !kept.has(key))
+  );
+};
+
+/**
  * Write `after` over the chain that shows `before`. Without `diff`, the
  * letters to keep come from a diff of the two texts, which cannot tell which
  * of two equal letters an edit removed. `encodeBefore` reads the attributes
@@ -929,7 +960,7 @@ export const writeTextRuns = (
         }
       } else if (source) {
         const oldAttributes = encodeBefore(source.leaf, source.index);
-        const patch: YjsAttributeRecord = {};
+        let patch: YjsAttributeRecord = {};
         for (const key of new Set([
           ...Object.keys(oldAttributes),
           ...Object.keys(attributes),
@@ -939,6 +970,9 @@ export const writeTextRuns = (
               ? attributes[key]
               : null;
           }
+        }
+        if (Object.keys(patch).length > 0) {
+          patch = withoutKeptValues(patch, oldAttributes, attributes);
         }
         if (Object.keys(patch).length > 0) {
           let rest = length;
@@ -977,7 +1011,8 @@ export const writeTextRuns = (
 export const rewriteTextRuns = (
   chain: YjsTextChain,
   after: readonly Text[],
-  encode: YjsRunEncoder
+  encode: YjsRunEncoder,
+  { diff }: Readonly<{ diff?: readonly Diff[] }> = {}
 ): void => {
   const runs: Array<{ text: string; attributes: YjsAttributeRecord }> = [];
   for (const text of chain) {
@@ -996,7 +1031,7 @@ export const rewriteTextRuns = (
     runs.map((run) => ({ text: run.text })),
     after,
     encode,
-    { encodeBefore: (_leaf, index) => runs[index].attributes }
+    { diff, encodeBefore: (_leaf, index) => runs[index].attributes }
   );
 };
 

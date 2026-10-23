@@ -22,6 +22,7 @@ import {
 } from './set-valued-attributes';
 import {
   createYjsRunEncoder,
+  rewriteTextRuns,
   segmentPliteChildren,
   segmentYjsChildren,
   writeTextRuns,
@@ -38,6 +39,17 @@ export const setYjsElementAttributes = (
   newProperties: YjsAttributeRecord,
   isSetValued: (key: string) => boolean = () => false
 ): void => {
+  let stored: YjsAttributeRecord | undefined;
+  const readStored = () => (stored ??= getYjsAttributes(node));
+  // A key's set entries are found by what the node stores, not by
+  // `isSetValued`, because a type change can make a key set-valued only under
+  // the old type.
+  const removeSetEntries = (key: string, kept: YjsAttributeRecord = {}) => {
+    for (const encodedKey of getYjsSetValueAttributeKeys(readStored(), key)) {
+      if (!Object.hasOwn(kept, encodedKey)) node.removeAttribute(encodedKey);
+    }
+  };
+
   for (const key in newProperties) {
     if (!Object.hasOwn(newProperties, key)) {
       continue;
@@ -52,23 +64,12 @@ export const setYjsElementAttributes = (
         throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
       }
 
-      const currentAttributes = getYjsAttributes(node);
       const encoded = encodeYjsSetValueAttributes(key, value);
 
       node.removeAttribute(key);
-
-      for (const encodedKey of getYjsSetValueAttributeKeys(
-        currentAttributes,
-        key
-      )) {
-        if (Object.hasOwn(encoded, encodedKey)) continue;
-
-        node.removeAttribute(encodedKey);
-      }
+      removeSetEntries(key, encoded);
       for (const [encodedKey, encodedValue] of Object.entries(encoded)) {
-        if (
-          areJsonLikeValuesEqual(currentAttributes[encodedKey], encodedValue)
-        ) {
+        if (areJsonLikeValuesEqual(readStored()[encodedKey], encodedValue)) {
           continue;
         }
 
@@ -79,6 +80,7 @@ export const setYjsElementAttributes = (
     }
 
     if (value === null || value === undefined) {
+      removeSetEntries(key);
       if (properties[key] === null || properties[key] === undefined) {
         continue;
       }
@@ -90,6 +92,8 @@ export const setYjsElementAttributes = (
     if (areJsonLikeValuesEqual(properties[key], value)) {
       continue;
     }
+
+    removeSetEntries(key);
 
     setYjsAttribute(node, key, value);
   }
@@ -103,22 +107,8 @@ export const setYjsElementAttributes = (
       continue;
     }
     assertPublicYjsAttributeCanBeSet(key);
-
-    if (isSetValued(key)) {
-      const currentAttributes = getYjsAttributes(node);
-
-      node.removeAttribute(key);
-      for (const encodedKey of getYjsSetValueAttributeKeys(
-        currentAttributes,
-        key
-      )) {
-        node.removeAttribute(encodedKey);
-      }
-
-      continue;
-    }
-
     node.removeAttribute(key);
+    removeSetEntries(key);
   }
 };
 
@@ -193,7 +183,9 @@ export const replaceCompatibleYjsChildren = (
   after: readonly Descendant[],
   start = 0,
   isSetValued: YjsSetPropertyResolver = () => false,
-  location: YjsPropertyLocation = { ancestors: [], path: [], root: null }
+  location: YjsPropertyLocation = { ancestors: [], path: [], root: null },
+  /** Whether `before` sits under an element whose type `after` changes. */
+  retyped = false
 ): boolean => {
   const read = createYjsVisibleChildrenReader(root);
   if (!canReplace(read, children, before, after, start)) return false;
@@ -208,15 +200,14 @@ export const replaceCompatibleYjsChildren = (
       previous.kind === 'text' &&
       next.kind === 'text'
     ) {
-      writeTextRuns(
-        target.chain,
-        previous.leaves,
-        next.leaves,
-        createYjsRunEncoder(isSetValued, {
-          ...location,
-          offset: (location.offset ?? start) + next.from,
-        })
-      );
+      const encode = createYjsRunEncoder(isSetValued, {
+        ...location,
+        offset: (location.offset ?? start) + next.from,
+      });
+      // Text under a retyped element was stored under the old type's rules, so
+      // it is compared with what the chain stores rather than re-encoded.
+      if (retyped) rewriteTextRuns(target.chain, next.leaves, encode);
+      else writeTextRuns(target.chain, previous.leaves, next.leaves, encode);
     } else if (
       target.kind === 'element' &&
       previous.kind === 'element' &&
@@ -243,7 +234,8 @@ export const replaceCompatibleYjsChildren = (
           ancestors: [context.type, ...context.ancestors],
           path: context.path,
           root: context.root,
-        }
+        },
+        retyped || previous.node.type !== next.node.type
       );
     }
   }

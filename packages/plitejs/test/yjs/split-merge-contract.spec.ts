@@ -119,9 +119,98 @@ const ParagraphSetSchema = defineEditorSchema(
       paragraph: { content: schema.content.text() },
     },
     properties: [
+      schema.elementProperty('tags', property.set(property.string()), {
+        target: target.type('paragraph'),
+      }),
       schema.textProperty('commentIds', property.set(property.string()), {
         target: target.type('paragraph'),
       }),
+    ],
+    root: schema.content.not(schema.content.text()),
+    unknown: 'reject',
+  }
+);
+
+const RetypeEncodingSchema = defineEditorSchema(
+  'schema:yjs-split-retype-encoding',
+  {
+    elements: {
+      heading: { content: schema.content.text() },
+      paragraph: { content: schema.content.text() },
+    },
+    properties: [
+      schema.elementProperty('tags', property.set(property.string()), {
+        target: target.type('paragraph'),
+      }),
+      schema.elementProperty('tags', property.json(), {
+        target: target.type('heading'),
+      }),
+      schema.textProperty('commentIds', property.set(property.string()), {
+        target: target.type('paragraph'),
+      }),
+      schema.textProperty('commentIds', property.json(), {
+        target: target.type('heading'),
+      }),
+    ],
+    root: schema.content.not(schema.content.text()),
+    unknown: 'reject',
+  }
+);
+
+const SectionSetSchema = defineEditorSchema('schema:yjs-split-section-set', {
+  elements: {
+    paragraph: { content: schema.content.text() },
+    section: { content: schema.content.open() },
+  },
+  properties: [
+    schema.elementProperty('tags', property.set(property.string()), {
+      target: target.and(
+        target.type('paragraph'),
+        target.parent(target.type('section'))
+      ),
+    }),
+  ],
+  root: schema.content.not(schema.content.text()),
+  unknown: 'reject',
+});
+
+const LinkSetSchema = defineEditorSchema('schema:yjs-split-link-set', {
+  elements: {
+    heading: { content: schema.content.open() },
+    link: { content: schema.content.text(), inline: true },
+    paragraph: { content: schema.content.open() },
+  },
+  properties: [
+    schema.textProperty('commentIds', property.set(property.string()), {
+      target: target.type('link'),
+    }),
+  ],
+  root: schema.content.not(schema.content.text()),
+  unknown: 'reject',
+});
+
+const LinkParentTagsSchema = defineEditorSchema(
+  'schema:yjs-split-link-parent-tags',
+  {
+    elements: {
+      heading: { content: schema.content.open() },
+      link: { content: schema.content.text(), inline: true },
+      paragraph: { content: schema.content.open() },
+    },
+    properties: [
+      schema.elementProperty('tags', property.set(property.string()), {
+        target: target.and(
+          target.type('link'),
+          target.parent(target.type('paragraph'))
+        ),
+      }),
+      schema.elementProperty('tags', property.json(), {
+        target: target.and(
+          target.type('link'),
+          target.parent(target.type('heading'))
+        ),
+      }),
+      schema.textProperty('color', property.string()),
     ],
     root: schema.content.not(schema.content.text()),
     unknown: 'reject',
@@ -132,7 +221,11 @@ const createSchemaPeers = (
   plugin:
     | typeof ColorSchema
     | typeof InlineMetadataSchema
-    | typeof ParagraphSetSchema,
+    | typeof LinkParentTagsSchema
+    | typeof LinkSetSchema
+    | typeof ParagraphSetSchema
+    | typeof RetypeEncodingSchema
+    | typeof SectionSetSchema,
   children: readonly Descendant[]
 ): Peer[] => {
   const create = (clientId: ClientId, seedUpdate?: Uint8Array) =>
@@ -472,6 +565,256 @@ describe('plitejs/yjs split and merge collaboration contract', () => {
     assert.deepEqual(readPeerPliteValue(a), readPeerPliteValue(b));
     for (const peer of peers) {
       assert.deepEqual(readPeerChildren(peer), readPeerPliteValue(b));
+    }
+  });
+
+  it('removes a set-valued property on every client when one commit makes a paragraph a heading in place and unsets the property', () => {
+    const peers = createSchemaPeers(ParagraphSetSchema, [
+      { type: 'paragraph', children: [{ commentIds: ['a'], text: 'word' }] },
+    ]);
+    const [a] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.set({ type: 'heading' }, { at: [0] });
+      tx.nodes.unset('commentIds', { at: [0, 0] });
+    });
+    syncConnectedPeers(peers);
+
+    const heading = [{ type: 'heading', children: [{ text: 'word' }] }];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), heading);
+      assert.deepEqual(readPeerChildren(peer), heading);
+    }
+  });
+
+  it("removes a block's own set-valued property from the shared document when one commit makes a paragraph a heading and unsets the property", () => {
+    const peers = createSchemaPeers(ParagraphSetSchema, [
+      { type: 'paragraph', tags: ['a'], children: [{ text: 'word' }] },
+    ]);
+    const [a] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.set({ type: 'heading' }, { at: [0] });
+      tx.nodes.unset('tags', { at: [0] });
+    });
+    syncConnectedPeers(peers);
+
+    const heading = [{ type: 'heading', children: [{ text: 'word' }] }];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), heading);
+      assert.deepEqual(readPeerChildren(peer), heading);
+    }
+  });
+
+  it("sends a block's new value on every client when one commit makes a paragraph a heading and sets a property that is a set only on paragraphs", () => {
+    const peers = createSchemaPeers(RetypeEncodingSchema, [
+      { type: 'paragraph', tags: ['a'], children: [{ text: 'word' }] },
+    ]);
+    const [a] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.set({ type: 'heading' }, { at: [0] });
+      tx.nodes.set({ tags: ['b'] }, { at: [0] });
+    });
+    syncConnectedPeers(peers);
+
+    const heading = [
+      { type: 'heading', tags: ['b'], children: [{ text: 'word' }] },
+    ];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), heading);
+      assert.deepEqual(readPeerChildren(peer), heading);
+    }
+  });
+
+  it("removes a property a peer set under the heading's rules when a later commit makes the paragraph a heading again and unsets it", () => {
+    const peers = createSchemaPeers(RetypeEncodingSchema, [
+      { type: 'heading', children: [{ text: 'word' }] },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.set({ type: 'paragraph' }, { at: [0] });
+    });
+    b.editor.update((tx) => {
+      tx.nodes.set({ commentIds: ['b'] }, { at: [0, 0] });
+    });
+    syncConnectedPeers(peers);
+    a.editor.update((tx) => {
+      tx.nodes.set({ type: 'heading' }, { at: [0] });
+      tx.nodes.unset('commentIds', { at: [0, 0] });
+    });
+    syncConnectedPeers(peers);
+
+    const heading = [{ type: 'heading', children: [{ text: 'word' }] }];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), heading);
+      assert.deepEqual(readPeerChildren(peer), heading);
+    }
+  });
+
+  it('removes a set-valued property on every client when one commit unsets it on a paragraph and merges the paragraph into a heading', () => {
+    const peers = createSchemaPeers(ParagraphSetSchema, [
+      { type: 'heading', children: [{ text: 'ab' }] },
+      { type: 'paragraph', children: [{ commentIds: ['a'], text: 'cd' }] },
+    ]);
+    const [a] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.unset('commentIds', { at: [1, 0] });
+      tx.nodes.merge({ at: [1] });
+    });
+    syncConnectedPeers(peers);
+
+    const heading = [{ type: 'heading', children: [{ text: 'abcd' }] }];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), heading);
+      assert.deepEqual(readPeerChildren(peer), heading);
+    }
+  });
+
+  it("keeps a peer's concurrent set member when one commit merges two paragraphs and changes the joined one's set-valued property, which is set-valued only under its parent", () => {
+    const peers = createSchemaPeers(SectionSetSchema, [
+      section([
+        { type: 'paragraph', tags: ['a'], children: [{ text: 'ab' }] },
+        { type: 'paragraph', children: [{ text: 'cd' }] },
+      ]),
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.merge({ at: [0, 1] });
+      tx.nodes.set({ tags: ['a', 'c'] }, { at: [0, 0] });
+    });
+    b.editor.update((tx) => {
+      tx.nodes.set({ tags: ['a', 'b'] }, { at: [0, 0] });
+    });
+    syncConnectedPeers(peers);
+
+    const merged = [
+      section([
+        {
+          type: 'paragraph',
+          tags: ['a', 'b', 'c'],
+          children: [{ text: 'abcd' }],
+        },
+      ]),
+    ];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), merged);
+      assert.deepEqual(readPeerChildren(peer), merged);
+    }
+  });
+
+  it("keeps a peer's concurrent set member in a link's text when one commit adds a member to it and merges its paragraph into a heading", () => {
+    const peers = createSchemaPeers(LinkSetSchema, [
+      { type: 'heading', children: [{ text: 'ab' }] },
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'x' },
+          { type: 'link', children: [{ commentIds: ['a'], text: 'cd' }] },
+          { text: 'y' },
+        ],
+      },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.set({ commentIds: ['a', 'c'] }, { at: [1, 1, 0] });
+      tx.nodes.merge({ at: [1] });
+    });
+    b.editor.update((tx) => {
+      tx.nodes.set({ commentIds: ['a', 'b'] }, { at: [1, 1, 0] });
+    });
+    syncConnectedPeers(peers);
+
+    const merged = [
+      {
+        type: 'heading',
+        children: [
+          { text: 'abx' },
+          {
+            type: 'link',
+            children: [{ commentIds: ['a', 'b', 'c'], text: 'cd' }],
+          },
+          { text: 'y' },
+        ],
+      },
+    ];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), merged);
+      assert.deepEqual(readPeerChildren(peer), merged);
+    }
+  });
+
+  it("keeps a peer's concurrent set member in merged text whose property the merge keeps but the heading stores as a scalar", () => {
+    const peers = createSchemaPeers(RetypeEncodingSchema, [
+      { type: 'heading', children: [{ text: 'ab' }] },
+      { type: 'paragraph', children: [{ commentIds: ['a'], text: 'cd' }] },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.merge({ at: [1] });
+    });
+    b.editor.update((tx) => {
+      tx.nodes.set({ commentIds: ['a', 'b'] }, { at: [1, 0] });
+    });
+    syncConnectedPeers(peers);
+
+    const merged = [
+      {
+        type: 'heading',
+        children: [{ text: 'ab' }, { commentIds: ['a', 'b'], text: 'cd' }],
+      },
+    ];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), merged);
+      assert.deepEqual(readPeerChildren(peer), merged);
+    }
+  });
+
+  it("keeps a peer's concurrent set member on a link whose property the merge keeps but its new parent stores as a scalar", () => {
+    const peers = createSchemaPeers(LinkParentTagsSchema, [
+      { type: 'heading', children: [{ text: 'ab' }] },
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'x' },
+          { type: 'link', tags: ['a'], children: [{ text: 'cd' }] },
+          { text: 'y' },
+        ],
+      },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.set({ color: 'red' }, { at: [1, 1, 0] });
+      tx.nodes.merge({ at: [1] });
+    });
+    b.editor.update((tx) => {
+      tx.nodes.set({ tags: ['a', 'b'] }, { at: [1, 1] });
+    });
+    syncConnectedPeers(peers);
+
+    const merged = [
+      {
+        type: 'heading',
+        children: [
+          { text: 'abx' },
+          {
+            type: 'link',
+            tags: ['a', 'b'],
+            children: [{ color: 'red', text: 'cd' }],
+          },
+          { text: 'y' },
+        ],
+      },
+    ];
+    for (const peer of peers) {
+      assert.deepEqual(readPeerPliteValue(peer), merged);
+      assert.deepEqual(readPeerChildren(peer), merged);
     }
   });
 

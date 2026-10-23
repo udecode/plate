@@ -96,6 +96,7 @@ import {
   createYjsRunEncoder,
   elementOnlySpliceEdits,
   retainTextChainRange,
+  rewriteTextRuns,
   segmentPliteChildren,
   segmentYjsChildren,
   writeTextRuns,
@@ -1942,6 +1943,7 @@ export class YjsEventChangeBridge {
 
       if (!NodeApi.isElement(line)) return null;
 
+      const retyped = line.type !== joined.type;
       const segments = segmentPliteChildren(line.children);
       const targets = alignSegments(
         segments,
@@ -1977,14 +1979,17 @@ export class YjsEventChangeBridge {
             continue;
           }
 
+          const encode = createYjsRunEncoder(
+            this.isSetValued,
+            location(offset)
+          );
+
           edits.push(() =>
-            writeTextRuns(
-              target.chain,
-              segment.leaves,
-              after,
-              createYjsRunEncoder(this.isSetValued, location(offset)),
-              { diff }
-            )
+            retyped
+              ? rewriteTextRuns(target.chain, after, encode, { diff })
+              : writeTextRuns(target.chain, segment.leaves, after, encode, {
+                  diff,
+                })
           );
           continue;
         }
@@ -2006,7 +2011,6 @@ export class YjsEventChangeBridge {
         at += 1;
         if (edit === 'kept') continue;
 
-        const offset = at - 1;
         const yjsChildren = getYjsVisibleChildren(this.root, target.node);
 
         if (
@@ -2019,6 +2023,13 @@ export class YjsEventChangeBridge {
         ) {
           return null;
         }
+
+        const inlineLocation = createYjsPropertyLocationAt(
+          middle.nodes as NodeList<Descendant>,
+          [...joinedPath, at - 1],
+          this.schemaRoot
+        );
+
         edits.push(() =>
           replaceCompatibleYjsChildren(
             this.root,
@@ -2027,10 +2038,8 @@ export class YjsEventChangeBridge {
             next.children,
             0,
             this.isSetValued,
-            {
-              ...location(offset),
-              path: [...joinedPath, offset],
-            }
+            inlineLocation,
+            retyped || segment.node.type !== next.type
           )
         );
       }
@@ -2043,7 +2052,11 @@ export class YjsEventChangeBridge {
 
     if (!areJsonLikeValuesEqual(firstProperties, joinedProperties)) {
       const context = createYjsPropertyContext(joined, {
-        ...location(0),
+        ...createYjsPropertyLocationAt(
+          middle.nodes as NodeList<Descendant>,
+          joinedPath.slice(0, -1),
+          this.schemaRoot
+        ),
         path: joinedPath,
       });
 
