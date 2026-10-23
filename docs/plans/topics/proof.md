@@ -57,6 +57,19 @@ await startBrowserNativeEventTrace(locator, {
   waits only for the fixes the domain runs landed.
 - Beta issues upload their recordings through `gh --attach`, and new members
   of a filed kind reach its issue as a comment.
+- `pnpm check` has an `autoformat-rules` step.
+  `apps/www/scripts/autoformat-input-rules.ts` reads every rule the www
+  autoformat and basic marks kits declare and types it key by key into a real
+  editor, then types every sequence of up to three keys over the rules' 15
+  characters. A shorthand must apply whole, no sequence may change another
+  paragraph, and one undo must take back each rule. The editor's own count of
+  text input rules must match the rules the script reads. It runs for a change
+  to the registry editor kits, platejs or plitejs source, the script or the
+  baseline helper.
+- Its 172 current failures sit in
+  `apps/www/scripts/autoformat-input-rules-baseline.json`, which only shrinks.
+  The `autoformat-input-rules` skill says how to read a failure, tell a real
+  bug from a modeling error and move its coverage record forward.
 
 ## What other editors do
 
@@ -100,8 +113,9 @@ taps.
   `docs/plans/2026-10-23-sweep-loop.md`, and offers its fix-run task as
   `sweep.md`'s Triage a domain says. owner: natamox. stop: every round 1
   domain filed.
-- t_c4407e94 holds the autoformat rule-order bugs and waits on the rule check
-  t_30422a81. t_94ffdd65 and t_8276a635 start once their domain is filed.
+- t_c4407e94 holds the autoformat rule-order bugs, with the four kinds the
+  autoformat check found, and each fix lowers that check's baseline.
+  t_94ffdd65 and t_8276a635 start once their domain is filed.
   t_01a87aed, the arrow regression, stays its own P0 task. owner: zbeyens.
   stop: each lands or is dropped.
 - Nobody has run the handoff between two people. natamox's first filed domain
@@ -117,8 +131,13 @@ taps.
   only for new P0 and P1 finds (owner's word, 2026-10-23). Each belongs to the
   loop step that names it, as `docs/plans/2026-10-23-sweep-loop.md`'s Open work
   says. owner: zbeyens. stop: round 2 starts.
-- The formal-check intake's tasks run in its order: t_30422a81, t_a998edbb,
-  t_dd929413, t_df2f315f, then t_589db800 once two checks exist. owner:
-  zbeyens. stop: each lands or is dropped.
+- The formal-check intake's tasks run in its order: t_a998edbb, t_dd929413,
+  t_df2f315f, which also runs the autoformat check at four keys, then
+  t_589db800 once two checks exist. owner: zbeyens. stop: each lands or is
+  dropped.
+- The autoformat and authored-order checks each wire their own workers and
+  baseline, and the autoformat reader walks parser nodes by hand. A shared
+  harness and typed node guards wait for the next check that needs them.
+  owner: zbeyens. stop: the next formal check lands.
 - The sweep's six moves have no trial. owner: zbeyens. stop: round 2's tally,
   or 2027-01-15.

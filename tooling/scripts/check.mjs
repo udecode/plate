@@ -164,6 +164,17 @@ export const steps = [
       'tooling/scripts/finding-baseline.mjs'
     ),
   },
+  {
+    name: 'autoformat-rules',
+    run: 'pnpm check:autoformat-rules',
+    affected: touches(
+      'apps/www/scripts/autoformat-input-rules',
+      'apps/www/src/registry/components/editor/',
+      'packages/platejs/src/',
+      'packages/plitejs/src/',
+      'tooling/scripts/finding-baseline.mjs'
+    ),
+  },
   { name: 'bench-targets', run: 'pnpm plite:bench:targets:check' },
   { name: 'public-types', run: 'pnpm plite:public-types', affected: source },
   {
