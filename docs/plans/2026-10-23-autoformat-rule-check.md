@@ -82,3 +82,44 @@ The proof, each from its decision-log row:
 The check reads the editor model with one model insert per key, never the browser, and the gate types three keys. A known failure that gets worse stays green, and the other kits of `EditorKit` are not read. The skill's What it does not cover section lists the rest.
 
 The owner's "Go here" covers two pieces. This check is the first, and the screen of which other domains earn a check follows in this session. Open work moved to the proof subject.
+
+## Reflect
+
+One reviewer applied the judgment, tooling and divergent lenses to the transcript from the sweep handoff's reflect to this one, which covers this check and the domain screen, and the lead sorted the findings. No lesson met the two kinds the lead applies without the owner, so every accepted lesson waits in Backlog. Before sorting, the lead checked four claims. Every compaction in that stretch restored deslop, unslop, no-comments and bro whole. The app's effort tool refuses to change its own session. The decision-order script's flag parser reads whole numbers only. `refs/pstack/ledger` is on the public `udecode/plate` remote.
+
+Fixed in this run. The fifth cleanup near miss joined t_bf9eb062 as a folded finding.
+
+Needs the owner. `setup.mjs` pushes the ledger to `refs/pstack/ledger` on `origin`, the public `udecode/plate`, so anyone can fetch its internal task text, local paths and session ids. Keep it, move it to a private remote or strip those fields.
+
+Backlog, each with owner: zbeyens and stop: the owner takes or drops it.
+
+- `sweep.md`'s After a round says "Before the next round", which the lead read as a start time until the owner corrected it. Say the verification-skill pass runs as soon as its scope is fixed.
+- A formal check's `pnpm check` reach comes from its imports, not a hand list, and each declared rule keeps one passing case outside the baseline. This check's first reach missed plitejs core, and 12 of 15 mark rules had every positive case in the baseline until review.
+- A hand-back reply starts with what landed and what is next, in plain words, before the page link. The owner asked for both twice.
+- A local rule that narrows a shared law cites its clause instead of restating it. Two rewrites of the sweep's step 6 invented chips rules before a cited version passed.
+- `verify`'s command recipes say that the repository's TypeScript has no compiler API, so a script parses with `@babel/parser`; that a bun probe runs from inside the checkout whose kits it imports; and which six places a new `pnpm check` step touches.
+- `lead.mjs` matches a compound or heredoc command, or `append` stops instead of writing an unknown lead. Two rows in this plan's log and 17 in the ledger say the lead is unknown.
+- `owns: none` stops reading as a check named none.
+- A `chips decision <id>` command prints a task's exact decision cell, and the Do list can write its own queue.
+- The chips Sweep says an overflowed `list_sessions` result is already the JSON array `--sessions` takes.
+- The chips skill's description names "next" and "what's next", which `AGENTS.md` routes there. One "next" answer came from an old board read.
+- A workflow helper that can archive a live session ranks above P3. t_bf9eb062 now holds five such near misses.
+- The board resolves who owns an archived session's tasks when it reads them, instead of one takeover row per task. Archiving three sessions wrote 470 rows.
+- The card pass weighs shared-host load, such as carding load-sensitive flake fixes one at a time. Four of the ten P0 cards are plitejs flakes.
+
+Rejected.
+
+- Audit the owned checks when judging P0 again. chips.md's Priority already keys P0 to the owned check, and one task claimed too broad a check.
+- Clear stale ownership before carding lower work. The run did that under the Owner rule.
+- Keep doing ready work instead of asking. The Autopilot rule already says it. The lead broke it, and the three helper frictions it kept asking about are now Backlog items above.
+- Brief reviewers with read-only runs and a false-green focus. The run did, and it worked.
+- `--tsconfig-override`, the input-rule registry path and the explorer command. The autoformat skill and the Extraction rule already hold them.
+- The fast typecheck command and slow-command timings. They drift.
+- The Write tool's refusal in the run directory, and land.mjs in the background. `land.md` and the hooks already say both.
+- Stage a second deliverable outside the worktree, and the doctype warning on publish. One-offs that change no later step.
+- Writing passes ran from memory after a compaction. False, because each compaction restored those skills whole and named only verify to reload.
+- Use the app's effort tool to lower a session's own effort. False, because the tool refuses this session.
+- Switching to verdict skipped pstack's investigation steps. Verdict's deltas replace three of its four steps, and the fourth is a one-line checkpoint.
+- The decision-order script's `flag()` drops text after a second `=`. Its flags take whole numbers only.
+- A stored title keeps an old `(xhigh)`. The Title rule keeps the stored decision on purpose and drops the tag from the brief.
+- Rereads after each compaction cost context. Open tasks t_211e4328 and t_e658793a already ask it.
