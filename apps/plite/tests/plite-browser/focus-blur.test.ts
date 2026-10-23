@@ -87,3 +87,54 @@ for (const [variant, tag] of [
     await expect(target).toHaveText('after blur');
   });
 }
+
+test('a mouse drag that starts while a focus call settles keeps its range', async ({
+  page,
+}) => {
+  await page.clock.install();
+  await page.goto('/focus-blur');
+
+  const fixture = page.getByRole('region', { name: 'default', exact: true });
+  const editor = page.getByRole('textbox', { name: 'default editor' });
+  const firstBlock = editor.locator('[data-editor-node="element"]').first();
+  const focusButton = (await fixture
+    .getByRole('button', { name: 'Focus', exact: true })
+    .boundingBox())!;
+  const [start, end] = await editor
+    .getByText('one', { exact: true })
+    .evaluate((element) => {
+      const range = document.createRange();
+      const charRect = (offset: number) => {
+        range.setStart(element.firstChild!, offset);
+        range.setEnd(element.firstChild!, offset + 1);
+
+        return range.getBoundingClientRect();
+      };
+      const n = charRect(1);
+      const e = charRect(2);
+
+      return [
+        { x: n.left + 1, y: n.top + n.height / 2 },
+        { x: e.right - 1, y: e.top + e.height / 2 },
+      ];
+    });
+  const nextTask = 1;
+  const focusSettleTimeout = 50;
+
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await page.mouse.click(
+    focusButton.x + focusButton.width / 2,
+    focusButton.y + focusButton.height / 2
+  );
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.clock.runFor(nextTask);
+  await page.mouse.move((start.x + end.x) / 2, start.y, { steps: 4 });
+  await page.clock.runFor(focusSettleTimeout);
+  await page.mouse.move(end.x, end.y, { steps: 4 });
+  await page.mouse.up();
+  await page.clock.resume();
+  await page.keyboard.type('X');
+
+  await expect(firstBlock).toHaveText('oX');
+});

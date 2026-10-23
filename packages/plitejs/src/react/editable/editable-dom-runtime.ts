@@ -39,6 +39,7 @@ import {
 import { isDOMNode } from '../../dom/utils/dom';
 import type { EditableViewportRuntime } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
+import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
 import {
   getPliteNodePathFromDOMElement,
   isPliteNodeFlowRootBound,
@@ -967,6 +968,7 @@ export class EditableDOMRuntime {
    * mousedown, so the press window closes at the next zero-delay timeout.
    */
   beginMousePress() {
+    supersedeEditableFocusRequests(this.editorValue);
     this.cancelPressTask?.();
 
     const cancel = this.domPhaseScheduler.schedule(
