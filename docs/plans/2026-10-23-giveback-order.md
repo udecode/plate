@@ -1,6 +1,6 @@
 # Give a removed left half's values back in every decision order
 
-Status: partial: the order check lands; the give-back waits on its next plan iteration
+Status: partial: the order check landed in `b214849c2a`; the give-back waits on its next plan iteration
 Topic: cut-join
 Playbook: bug-fix
 
@@ -82,7 +82,7 @@ The storage plan's Give-back paragraph stays the outcome law: a value on the rig
 
 ## Close
 
-The order check's give-back family lands as `test(plitejs): check every decision order of recorded give-back scripts`. It records each script through a real editor, decides every order through the public `decide` and compares what a reader sees. Its baseline holds next's 12 failures and 1,105 coupled sets at the gate bound, so a landing fails only on a new one. The give-back code went back to next's at `c1b3b46d56`.
+The order check's give-back family landed on next as `b214849c2a`, `test(plitejs): check every decision order of recorded give-back scripts`. It records each script through a real editor, decides every order through the public `decide` and compares what a reader sees. Its baseline holds next's 12 failures and 1,105 coupled sets at the gate bound, so a landing fails only on a new one. The give-back code went back to next's at `c1b3b46d56`.
 
 Reversal. The give-back build from this iteration's architect synthesis is not landing. It passed every row in both tables and the family at every bound tried, but round 3 found five order bugs the family does not build, each confirmed by a probe that fails on the build and passes on next. Round 2 had already replaced two of the parts they hit, the write gate and the chain donor.
 
