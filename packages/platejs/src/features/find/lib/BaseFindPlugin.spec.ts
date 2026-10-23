@@ -9,9 +9,11 @@ import {
   TextApi,
   createEditor,
   createEditorView,
+  defineEditorSchema,
   definePlugin,
   schema,
 } from '../../../core';
+import { defineRuntimePluginSlot } from '../../../facade';
 import { getPlateDecorationSources } from '../../../internal/plugin/getPlateDecorationSources';
 import { BaseLinkPlugin } from '../../link';
 import { BaseFindPlugin } from './BaseFindPlugin';
@@ -82,9 +84,10 @@ test('refreshes edited text, undo and replacement without a mounted view', () =>
   api.move(1);
   editor.update.text.insert('hello ', { at: { path: [1, 0], offset: 0 } });
   expect(store.get('count')).toBe(3);
-  expect(store.get('activeIndex')).toBe(1);
+  expect(store.get('activeIndex')).toBe(2);
   editor.api.history.undo();
   expect(store.get('count')).toBe(2);
+  expect(store.get('activeIndex')).toBe(1);
   editor.update.value.replace({
     children: [{ type: 'paragraph', children: [{ text: 'unmatched' }] }],
   });
@@ -128,12 +131,15 @@ const NoteHolder = definePlugin('findNoteHolder', {
   },
 });
 
-const createNoteEditor = (noteText = 'note text here') => {
+const createNoteEditor = (...texts: string[]) => {
   const editor = createEditor({
     plugins: [BaseParagraphPlugin, NoteHolder, BaseFindPlugin],
     initialValue: {
       children: [
-        { type: 'paragraph', children: [{ text: 'main hello' }] },
+        ...texts.map((text) => ({
+          type: 'paragraph',
+          children: [{ text }],
+        })),
         {
           type: 'findNoteHolder',
           childRoots: { body: 'note' },
@@ -141,7 +147,7 @@ const createNoteEditor = (noteText = 'note text here') => {
         },
       ],
       roots: {
-        note: [{ type: 'paragraph', children: [{ text: noteText }] }],
+        note: [{ type: 'paragraph', children: [{ text: 'note text here' }] }],
       },
     },
   });
@@ -149,11 +155,79 @@ const createNoteEditor = (noteText = 'note text here') => {
   return { editor, note: createEditorView(editor, { root: 'note' }) };
 };
 
-test('lands on the match that overlaps the active one when a self-overlapping query shifts', () => {
+test('keeps the active result on its match when a block with a match is inserted above it, and through undo', () => {
+  const editor = createFindEditor();
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  api.move(1);
+  editor.update.nodes.insert(
+    { type: 'paragraph', children: [{ text: 'hello above' }] },
+    { at: [0] }
+  );
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 2,
+    text: 'hello outside',
+  });
+  editor.api.history.undo();
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 1,
+    text: 'hello outside',
+  });
+});
+
+const deleteActiveBlockWithAnEarlierMatch = () => {
+  const editor = createParagraphEditor(
+    'hello a',
+    'hello b',
+    'hello c',
+    'hello d'
+  );
+  const { api } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  api.move(1);
+  api.move(1);
+  editor.update((tx) => {
+    tx.nodes.remove({ at: [2] });
+    tx.nodes.remove({ at: [0] });
+  });
+  return editor;
+};
+
+test('moves the active result to the next surviving match when one commit removes its block and an earlier match', () => {
+  const editor = deleteActiveBlockWithAnEarlierMatch();
+  expect({
+    activeIndex: editor.plugin(BaseFindPlugin).store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 1,
+    text: 'hello d',
+  });
+});
+
+test('keeps the next match active through undo of the commit that removed the active block', () => {
+  const editor = deleteActiveBlockWithAnEarlierMatch();
+  editor.api.history.undo();
+  expect({
+    activeIndex: editor.plugin(BaseFindPlugin).store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 3,
+    text: 'hello d',
+  });
+});
+
+test('lands on the match that overlaps the active one each time a self-overlapping query shifts', () => {
   const editor = createParagraphEditor('aaaa');
   const { api, store } = editor.plugin(BaseFindPlugin);
   api.search('aa');
   api.move(1);
+  editor.update.text.insert('a', { at: { path: [0, 0], offset: 0 } });
   editor.update.text.insert('a', { at: { path: [0, 0], offset: 0 } });
   expect({
     activeIndex: store.get('activeIndex'),
@@ -165,6 +239,148 @@ test('lands on the match that overlaps the active one when a self-overlapping qu
       focus: { path: [0, 0], offset: 4 },
     },
   });
+});
+
+test('keeps the active result on its match through undo that restores an earlier match', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  editor.update.text.delete({
+    at: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 5 },
+    },
+  });
+  api.search('hello');
+  api.move(1);
+  editor.api.history.undo();
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 2,
+    text: 'hello c',
+  });
+});
+
+test('keeps the active result on its match when a remote commit adds an earlier match', () => {
+  const editor = createParagraphEditor('hello a', 'hello b');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  api.move(1);
+  editor.update({ history: 'skip', tags: ['collaboration'] }, (tx) => {
+    tx.text.insert('hello ', { at: { path: [0, 0], offset: 0 } });
+  });
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 2,
+    text: 'hello b',
+  });
+});
+
+test('keeps an active result the app chose through an edit that adds a match in an earlier block', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  store.set({ activeIndex: 2 });
+  editor.update.text.insert('hello ', { at: { path: [0, 0], offset: 0 } });
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 3,
+    text: 'hello c',
+  });
+});
+
+test('keeps an active result the app chose through an edit that adds a match before it in its own block', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  store.set({ activeIndex: 1 });
+  editor.update.text.insert('hello ', { at: { path: [1, 0], offset: 0 } });
+  expect({
+    activeIndex: store.get('activeIndex'),
+    range: store.get('activeMatch')?.range,
+  }).toEqual({
+    activeIndex: 2,
+    range: {
+      anchor: { path: [1, 0], offset: 6 },
+      focus: { path: [1, 0], offset: 11 },
+    },
+  });
+});
+
+test('keeps an active result the app chose when a block with a match is inserted above it', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  store.set({ activeIndex: 1 });
+  editor.update.nodes.insert(
+    { type: 'paragraph', children: [{ text: 'hello above' }] },
+    { at: [0] }
+  );
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 2,
+    text: 'hello b',
+  });
+});
+
+test('keeps the active result on its match when its own block moves', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  api.move(1);
+  editor.update.nodes.move({ at: [1], to: [2] });
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 2,
+    text: 'hello b',
+  });
+});
+
+test('keeps an active result the app chose inside a named-root transaction through a main-document edit that adds an earlier match', () => {
+  const { editor, note } = createNoteEditor('hello a', 'hello b', 'hello c');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  note.update(() => {
+    note.plugin(BaseFindPlugin).store.set({ activeIndex: 2 });
+  });
+  editor.update.text.insert('hello ', { at: { path: [0, 0], offset: 0 } });
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 3,
+    text: 'hello c',
+  });
+});
+
+test('notifies a later store subscriber once per search and per commit that changes a match', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'plain');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  const heard: string[] = [];
+  const stop = store.subscribe((state, previous) => {
+    if (state.matches !== previous.matches) {
+      heard.push(`${state.query}: ${state.matches.length}`);
+    }
+  });
+  try {
+    api.search('hello');
+    editor.update.text.insert('hello ', { at: { path: [2, 0], offset: 0 } });
+    editor.update.text.insert('!', { at: { path: [0, 0], offset: 7 } });
+    editor.update.selection.set({ path: [1, 0], offset: 2 });
+    api.search('plain');
+    expect(heard).toEqual(['hello: 2', 'hello: 3', 'plain: 1']);
+  } finally {
+    stop();
+  }
 });
 
 test('advances once per change of matches for a later subscriber that moves on each change', () => {
@@ -185,6 +401,36 @@ test('advances once per change of matches for a later subscriber that moves on e
     expect({ afterCommit: activeText(editor), afterSearch }).toEqual({
       afterCommit: 'hello c',
       afterSearch: 'hello b',
+    });
+  } finally {
+    stop();
+  }
+});
+
+test('keeps an active result a subscriber picks while a commit publishes through the next edit', () => {
+  const editor = createParagraphEditor(
+    'hello a',
+    'hello b',
+    'hello c',
+    'plain'
+  );
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  let pickLast = true;
+  const stop = store.subscribe((state, previous) => {
+    if (!pickLast || state.matches === previous.matches) return;
+    pickLast = false;
+    store.set({ activeIndex: state.matches.length - 1 });
+  });
+  try {
+    editor.update.text.insert('hello ', { at: { path: [3, 0], offset: 0 } });
+    editor.update.text.insert('hello ', { at: { path: [0, 0], offset: 0 } });
+    expect({
+      activeIndex: store.get('activeIndex'),
+      text: activeText(editor),
+    }).toEqual({
+      activeIndex: 4,
+      text: 'hello plain',
     });
   } finally {
     stop();
@@ -242,6 +488,51 @@ test.each([
     }).toEqual(wanted);
   }
 );
+
+test.each([
+  ['an unrelated field', { error: null }],
+  ['the active result it already shows', { activeIndex: 1 }],
+] as const)(
+  'keeps following the active match when the app writes %s after a transaction types before it',
+  (_, write) => {
+    const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
+    const { api, store } = editor.plugin(BaseFindPlugin);
+    api.search('hello');
+    api.move(1);
+    editor.update((tx) => {
+      tx.text.insert('hello ', { at: { path: [1, 0], offset: 0 } });
+      store.set(write);
+    });
+    expect({
+      activeIndex: store.get('activeIndex'),
+      range: store.get('activeMatch')?.range,
+    }).toEqual(typedBeforeActive);
+  }
+);
+
+test('searches a new query inside a transaction that removed a block', () => {
+  const editor = createParagraphEditor('plain', 'hello');
+  const { api } = editor.plugin(BaseFindPlugin);
+  editor.update((tx) => {
+    tx.nodes.remove({ at: [0] });
+    api.search('hello');
+  });
+  expect(results(editor)).toEqual(freshResults(editor, 'hello'));
+});
+
+test('keeps following a match searched inside a transaction through a later edit in that transaction', () => {
+  const editor = createParagraphEditor('plain', 'hello');
+  const { api } = editor.plugin(BaseFindPlugin);
+  editor.update((tx) => {
+    tx.nodes.remove({ at: [0] });
+    api.search('hello');
+    tx.nodes.insert(
+      { type: 'paragraph', children: [{ text: 'hello new' }] },
+      { at: [0] }
+    );
+  });
+  expect(activeText(editor)).toBe('hello');
+});
 
 test('applies an active result written in a transaction that throws at the next edit', () => {
   const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
@@ -321,6 +612,21 @@ test('reruns the search at once for a new query', () => {
   });
 });
 
+test('starts a new query on its first match after the old query moved past its first', () => {
+  const editor = createFindEditor();
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  api.move(1);
+  api.search('hell');
+  expect({
+    activeIndex: store.get('activeIndex'),
+    text: activeText(editor),
+  }).toEqual({
+    activeIndex: 0,
+    text: 'hello world again',
+  });
+});
+
 test('clears matches and highlights for an empty query', () => {
   const editor = createFindEditor();
   const { api } = editor.plugin(BaseFindPlugin);
@@ -352,6 +658,33 @@ test('gives a later store subscriber the matches of a new query', () => {
   } finally {
     stop();
   }
+});
+
+test('keeps searching the last searched query at the next edit after the app writes a query to the store', () => {
+  const editor = createFindEditor();
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  store.set({ query: 'world' });
+  editor.update.text.insert(' hello', { at: { path: [1, 0], offset: 13 } });
+  expect(results(editor)).toEqual(freshResults(editor, 'hello'));
+});
+
+test('replaces a reordered match list the app writes with its own at the next commit, even one that only moves the selection', () => {
+  const editor = createFindEditor();
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  store.set({ matches: [...store.get('matches')].reverse() });
+  editor.update.selection.set({ path: [1, 0], offset: 0 });
+  expect(results(editor)).toEqual(freshResults(editor, 'hello'));
+});
+
+test('restores the query when the app searches its last query again after writing another to the store', () => {
+  const editor = createFindEditor();
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  store.set({ query: 'world' });
+  api.search('hello');
+  expect(store.get('query')).toBe('hello');
 });
 
 test('ends equal to a fresh search of the normalized query when subscribers search and move while the store notifies', () => {
@@ -453,8 +786,35 @@ test('matches a fresh search after the whole value is replaced with new text', (
   expect(results(editor)).toEqual(freshResults(editor, 'hello'));
 });
 
+test("searches and keys the main document when a named root's view searches inside its update", () => {
+  const { editor, note } = createNoteEditor('here a', 'plain');
+  const { store } = editor.plugin(BaseFindPlugin);
+  note.update(() => {
+    note.plugin(BaseFindPlugin).api.search('here');
+  });
+  const published = store.get('matches');
+  let notified = 0;
+  const stop = store.subscribe(() => {
+    notified += 1;
+  });
+  editor.update.text.insert('!', { at: { path: [1, 0], offset: 5 } });
+  stop();
+  expect({ notified, published }).toEqual({
+    notified: 0,
+    published: [
+      {
+        id: `${editor.key([0, 0])}:0`,
+        range: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 4 },
+        },
+      },
+    ],
+  });
+});
+
 test('selects nothing from a transaction in a named root', () => {
-  const { editor, note } = createNoteEditor();
+  const { editor, note } = createNoteEditor('main hello');
   editor.update.selection.set({ path: [0, 0], offset: 0 });
   editor.plugin(BaseFindPlugin).api.search('hello');
   const before = { main: editor.read.selection(), note: note.read.selection() };
@@ -465,7 +825,7 @@ test('selects nothing from a transaction in a named root', () => {
 });
 
 test('selects in the main document from the main editor while the caret is in a named root', () => {
-  const { editor, note } = createNoteEditor();
+  const { editor, note } = createNoteEditor('main hello');
   note.update.selection.set({ path: [0, 0], offset: 2 });
   const find = editor.plugin(BaseFindPlugin);
   find.api.search('hello');
@@ -480,35 +840,6 @@ test('selects in the main document from the main editor while the caret is in a 
     },
   });
 });
-
-for (const noteText of ['note text here', 'x']) {
-  test(`selects in the main document from a match on the note "${noteText}"`, () => {
-    const { editor, note } = createNoteEditor(noteText);
-    editor.plugin(BaseFindPlugin).api.search('hello');
-    let selected: boolean | undefined;
-    editor.update((tx) => {
-      tx.nodes.remove({
-        at: note.key([0]),
-        match: () => {
-          selected = tx.plugin(BaseFindPlugin).select();
-          return false;
-        },
-      });
-    });
-    expect({
-      selected,
-      selection: editor.read.selection(),
-      note: note.read.selection(),
-    }).toEqual({
-      selected: true,
-      selection: {
-        anchor: { path: [0, 0], offset: 5 },
-        focus: { path: [0, 0], offset: 10 },
-      },
-      note: null,
-    });
-  });
-}
 
 test('publishes a failed rescan as no matches and the error in one write', () => {
   const editor = createFindEditor();
@@ -561,6 +892,197 @@ test('publishes a failure and recovers on a subsequent query', () => {
     expect(store.get('count')).toBe(1);
   } finally {
     find.mockRestore();
+  }
+});
+
+test('searches the whole document again at the first edit after a failed search', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  const find = spyOn(NodeApi, 'findTextRanges').mockImplementation(() => {
+    throw new Error('Unavailable');
+  });
+  try {
+    api.search('hello');
+  } finally {
+    find.mockRestore();
+  }
+  editor.update.text.insert('!', { at: { path: [1, 0], offset: 7 } });
+  expect({
+    activeText: activeText(editor),
+    error: store.get('error'),
+    results: results(editor),
+  }).toEqual({
+    activeText: 'hello a',
+    error: null,
+    results: freshResults(editor, 'hello'),
+  });
+});
+
+test('falls back to the whole search when the search of a changed block throws', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'hello c');
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  api.move(1);
+  const search = NodeApi.findTextRanges;
+  let failed = false;
+  const find = spyOn(NodeApi, 'findTextRanges').mockImplementation(
+    (...args) => {
+      if (failed) return search(...args);
+      failed = true;
+      throw new Error('Unavailable');
+    }
+  );
+  try {
+    editor.update.text.insert('hello ', { at: { path: [1, 0], offset: 0 } });
+  } finally {
+    find.mockRestore();
+  }
+  expect({
+    activeText: activeText(editor),
+    error: store.get('error'),
+    results: results(editor),
+  }).toEqual({
+    activeText: 'hello hello b',
+    error: null,
+    results: freshResults(editor, 'hello'),
+  });
+});
+
+test('drops a match across an element in the commit that stops the schema treating it as inline', () => {
+  const slot = defineRuntimePluginSlot('find-schema');
+  const articleSchema = (inline: boolean) =>
+    defineEditorSchema('find-schema', {
+      id: 'find-schema',
+      elements: {
+        mixed: {
+          content: schema.content.any([
+            schema.content.text(),
+            schema.content.type('token'),
+          ]),
+        },
+        token: { content: schema.content.text(), inline },
+      },
+      root: schema.content.type('mixed'),
+      unknown: 'reject',
+      version: inline ? 1 : 2,
+    });
+  const editor = createEditor({
+    initialValue: [
+      {
+        type: 'mixed',
+        children: [
+          { text: 'a' },
+          { type: 'token', children: [{ text: 'b' }] },
+          { text: 'c' },
+        ],
+      },
+      { type: 'mixed', children: [{ text: 'elsewhere' }] },
+    ],
+    plugins: [slot.of(articleSchema(true)), BaseFindPlugin],
+  });
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('abc');
+  const found = store.get('count');
+  editor.update.plugins.reconfigure(slot, articleSchema(false));
+  expect({ found, after: store.get('count') }).toEqual({ found: 1, after: 0 });
+});
+
+test('drops a match across an inline element in the commit that turns it into a block', () => {
+  const Mixed = definePlugin('findFlipMixed', {
+    schema: {
+      element: {
+        content: schema.content.any([
+          schema.content.text(),
+          schema.content.type('link'),
+          schema.content.type('paragraph'),
+        ]),
+      },
+    },
+  });
+  const editor = createEditor({
+    initialValue: [
+      {
+        type: 'findFlipMixed',
+        children: [
+          { text: 'a' },
+          {
+            type: 'link',
+            url: 'https://platejs.org',
+            children: [{ text: 'b' }],
+          },
+          { text: 'c' },
+        ],
+      },
+    ],
+    plugins: [BaseFindPlugin, BaseLinkPlugin, Mixed],
+  });
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('abc');
+  const found = store.get('count');
+  editor.update.nodes.set({ type: 'paragraph' } as never, { at: [0, 1] });
+  expect({ found, after: store.get('count') }).toEqual({ found: 1, after: 0 });
+});
+
+test('finds a match across a block in the commit that turns it into an inline element', () => {
+  const Mixed = definePlugin('findFlipMixed', {
+    schema: {
+      element: {
+        content: schema.content.any([
+          schema.content.text(),
+          schema.content.type('link'),
+          schema.content.type('paragraph'),
+        ]),
+      },
+    },
+  });
+  const editor = createEditor({
+    initialValue: [
+      {
+        type: 'findFlipMixed',
+        children: [
+          { text: 'a' },
+          { type: 'paragraph', children: [{ text: 'b' }] },
+          { text: 'c' },
+        ],
+      },
+    ],
+    plugins: [BaseFindPlugin, BaseLinkPlugin, Mixed],
+  });
+  const { api, store } = editor.plugin(BaseFindPlugin);
+  api.search('abc');
+  const found = store.get('count');
+  editor.update.nodes.set(
+    { type: 'link', url: 'https://platejs.org' } as never,
+    { at: [0, 1] }
+  );
+  expect({ found, after: store.get('count') }).toEqual({ found: 0, after: 1 });
+});
+
+test('refreshes nothing on later commits after a clear in an update that threw', () => {
+  const editor = createParagraphEditor('hello a', 'hello b', 'plain');
+  const { api } = editor.plugin(BaseFindPlugin);
+  api.search('hello');
+  const [source] = getPlateDecorationSources(editor);
+  const refreshes: unknown[] = [];
+  const stop = source.observe!({
+    editor,
+    refresh: (input) => refreshes.push(input),
+  });
+  try {
+    expect(() =>
+      editor.update((tx) => {
+        tx.text.insert('!', { at: { path: [2, 0], offset: 5 } });
+        api.search('');
+        throw new Error('Rejected');
+      })
+    ).toThrow('Rejected');
+    editor.update.selection.set({ path: [2, 0], offset: 0 });
+    refreshes.length = 0;
+    editor.update.text.insert('x', { at: { path: [2, 0], offset: 5 } });
+    editor.update.selection.set({ path: [0, 0], offset: 0 });
+    expect(refreshes).toEqual([]);
+  } finally {
+    stop();
   }
 });
 

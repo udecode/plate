@@ -806,6 +806,7 @@ const FIND_COHORTS: readonly FindCohort[] = [
   findCohort('dense-10k', 'query-change'),
   findCohort('dense-10k', 'no-change', 'trusted'),
   findCohort('dense-10k', 'shift', 'trusted'),
+  findCohort('dense-10k', 'create-destroy', 'trusted'),
   findCohort('sparse-10k', 'no-change'),
   findCohort('idle-1k', 'no-change'),
   findCohort('idle-1k', 'no-change', 'trusted'),
@@ -817,14 +818,28 @@ type FindCountLine = Readonly<{
   refreshCalls?: number;
   searches?: number;
   storeWrites: number;
+  textRunsScanned?: number;
 }>;
 
 const FIND_COUNT_LINES: Partial<
   Record<`${FindDocKind}.${FindAction}`, FindCountLine>
 > = {
-  'dense.create-destroy': { refresh: 'edited-block', storeWrites: 1 },
-  'dense.no-change': { refresh: 'none', searches: 1, storeWrites: 0 },
-  'dense.shift': { refresh: 'edited-block', storeWrites: 1 },
+  'dense.create-destroy': {
+    refresh: 'edited-block',
+    storeWrites: 1,
+    textRunsScanned: 1,
+  },
+  'dense.no-change': {
+    refresh: 'none',
+    searches: 1,
+    storeWrites: 0,
+    textRunsScanned: 1,
+  },
+  'dense.shift': {
+    refresh: 'edited-block',
+    storeWrites: 1,
+    textRunsScanned: 1,
+  },
   'dense.split-above': { refresh: 'none', storeWrites: 1 },
   'idle.no-change': {
     refresh: 'none',
@@ -1341,6 +1356,7 @@ async function countFindCohort({
 
         expect('store writes', step.storeWrites, line.storeWrites);
         expect('searches', step.searches, line.searches);
+        expect('text runs scanned', step.textRunsScanned, line.textRunsScanned);
         expect('refresh calls', step.refreshCalls, line.refreshCalls);
         expect('refresh-all calls', step.refreshAllCalls, 0);
         if (line.refresh === 'none') {

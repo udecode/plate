@@ -10,7 +10,7 @@ review_upstreams: ['../vscode@df2411cf7d8f2e0cfc79109a3bc8eaab2c69165b', '../mon
 
 # Find: rescan only the paragraphs an edit changed
 
-Status: building: Phase 1 lands with this rescan as one change, built from Phase 1's saved patch
+Status: superseded by `2026-10-22-search-run-rescan`, which designs the rescan again after round 3's panel reverted it
 Topic: search
 Playbook: plan
 
@@ -24,7 +24,7 @@ With a search open, typing in a paragraph re-searches just that paragraph instea
 
 ### What could go wrong?
 
-If an edit shifts matches beyond its own paragraph, highlights could go stale, so adding, moving or changing a paragraph's properties still re-searches everything. Typing in huge documents stays slow, but that cost is not Find's.
+If an edit shifts matches beyond its own paragraph, highlights could go stale, so adding, removing or moving a paragraph still re-searches everything. Typing in huge documents stays slow, but that cost is not Find's.
 
 ## Teach
 
@@ -32,7 +32,7 @@ Find highlights every match of a search and steps through them. Each paragraph i
 
 Today, and with Phase 1, each edit made while a search is open searches the whole document again. Phase 1 then compares the new matches with the old ones paragraph by paragraph, so it redraws only what changed, but the search and the comparison still touch every paragraph.
 
-After this change, Find asks the edit which paragraphs it changed, searches only those, and swaps their matches into the list. Because no match crosses a paragraph, the list is the same as a full search would give. Adding, removing or moving a paragraph, or changing its properties, still searches everything, since later matches move too.
+After this change, Find asks the edit which paragraphs it changed, searches only those, and swaps their matches into the list. Because no match crosses a paragraph, the list is the same as a full search would give. Adding, removing or moving a paragraph still searches everything, since later matches move too.
 
 ## Public API
 
@@ -50,7 +50,11 @@ commit: ({ commit }) => {
 // packages/platejs/src/features/find/lib/BaseFindPlugin.ts
 commit: ({ commit }) => {
   if (!searchedQuery || !commit.changed.has('document')) return;
-  const blocks = store.get('error') ? null : changedTextBlocks(commit);
+  const blocks =
+    commit.before.children === lastSearch?.children &&
+    store.get().matches === lastSearch.matches
+      ? changedTextRuns(commit)
+      : null;
   if (blocks) patch(blocks);
   else publish(searchedQuery, true);
 },
@@ -62,7 +66,7 @@ This review read VS Code, Monaco, CodeMirror 6 and ProseMirror's view source at 
 
 | Delta | Editor | Where results live | Rescan on edit | Repaint on edit | Active match identity | Deleted or hidden text | Other roots |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| changed | Plate | Plugin store | Only the text blocks a commit changed; adding, removing or moving a block, a properties change, a changed block with an inline element, a whole replace or a commit after a search error searches the whole main document | Only text whose matches changed, from Phase 1 | A range anchor that follows its match, from Phase 1 | Searched | Not searched or painted |
+| changed | Plate | Plugin store | Only the text runs a commit changed, usually one paragraph; the whole main document after a block is added, removed or moved, after a whole replace, after an edit that changes where a run starts, after the app writes its own match list, and at the first commit after a failed search or an update whose search threw | Only text whose matches changed, from Phase 1 | A range anchor that follows its match, from Phase 1 | Searched | Not searched or painted |
 | added | VS Code and Monaco | A match list, then decoration ids in the text model's interval trees | The whole search scope, 100 ms after the edit, capped at 19,999 matches (`findModel.ts:81`, `:105-110`); Monaco packages the same core, not checked here | The interval trees move decorations with the edit at once; only rendered lines whose input changed redraw | A decoration id; an edit clears its active styling | Not checked | Not checked |
 | added | CodeMirror 6 (`@codemirror/search`) | A decoration set over the visible ranges | Only the visible ranges, on every doc, selection or viewport change (`search.ts:399-425`) | Rebuilt for the viewport, and only changed tiles redraw; `MatchDecorator` instead maps its set and rescans changed visible lines (`matchdecorator.ts:103-143`) | The editor selection | Not checked | Not checked |
 | added | Google Docs (public material only) | Unknown | Unknown | Canvas rendering is documented; what it redraws is not | Unknown | Unknown | Unknown |
@@ -73,16 +77,19 @@ This review read VS Code, Monaco, CodeMirror 6 and ProseMirror's view source at 
 
 | Change | Layer (Plite or Plate) | Package | Why |
 | --- | --- | --- | --- |
-| Rescan only the text blocks a commit changed and splice their matches into the list | Plate | `platejs/find` (`BaseFindPlugin.ts`) | Find owns its results. Plite already gives it a per-block search, `findTextRanges` with `at`, and the commit's changed node keys and before and after indexes |
+| Rescan only the text runs a commit changed and splice their matches into the list | Plate | `platejs/find` (`BaseFindPlugin.ts`) | Find owns its results. Plite already gives it a per-block search, `findTextRanges` with `at`, and the commit's changed node keys and before and after indexes |
+| Say which node holds the run around a path | Plite | `plitejs/internal` (`text-run.ts`) | `findTextRanges` owns the rule for what it searches as one string, so Plite holds the lookup too, and both call one test. It stays internal, with no docs or support promise, because only Find needs it |
 
-No Plite change, and no file moves between entrypoints.
+The Plite change adds no public export, and no file moves between entrypoints.
 
 ## Native behavior and proof
 
 | Behavior | What changes | Proof surface |
 | --- | --- | --- |
-| Typing inside a text block | Rescans that block alone | Package spec; the lane's trusted `shift` and `create-destroy` cohorts at 1,000 and 10,000 blocks count one text run scanned per step |
+| Typing inside a paragraph | Rescans that paragraph alone | Package spec; the lane's trusted `shift` and `create-destroy` cohorts at 1,000 and 10,000 blocks count one text run scanned per step |
 | Typing that splits or joins text nodes inside a block, such as at a mark boundary | Rescans that block alone | Package spec; the lane's trusted `shift`, where every other step splits the typed character into its own text node |
+| A mark or block property applied over a selection | Rescans the blocks it touches | Package spec |
+| A property change that turns an inline element into a block, or back | Searches the whole document | Package spec |
 | Enter, a join of two blocks, a paste of several blocks | Searches the whole document, as Phase 1 | Package spec; the lane's `split-above`, which scans every block |
 | Undo and redo | Follows the same rule as the edit it replays | Package spec |
 | A remote commit | Follows the same rule | Package spec |
@@ -90,12 +97,12 @@ No Plite change, and no file moves between entrypoints.
 
 ## Main changes
 
-- On a main-document commit with a query active, Find rescans only the text blocks the commit changed when every changed block holds only text and keeps its path, and every node the commit added, removed or moved sits directly in one of those blocks. It splices each block's new matches into the sorted list and keeps every other match object. Any other document commit runs Phase 1's whole search: one that adds, removes or moves a block, changes properties, replaces the document, reorders roots, changes a block that holds an inline element, or follows a search error. A rescan that throws falls back to the whole search.
+- On a main-document commit with a query active, Find rescans only the text runs the commit changed. A run is what `findTextRanges` searches as one string. It is the first node on a path whose children are all text or inline elements, or else a text that sits beside blocks, which it searches alone. When every top-level node is a run, the whole document is one run. Find gets each run from Plite's internal `getTextRunPath`, which shares its test with `findTextRanges`. The rescan runs when the commit starts from the document and the match list Find last published, every changed run keeps its path and was the same run before the commit, and every node the commit added, removed or moved sits inside one of those runs. Find splices each run's new matches into the stored list in one pass and keeps every other match object. Any other document commit runs Phase 1's whole search. That covers a commit that adds, removes or moves a block, replaces the document, reorders the top-level blocks or changes where a run starts, such as a link turned into a block. It also covers the first commit after the app writes its own match list, after a failed search or after an update that called `api.search` threw. A rescan that throws falls back to the whole search.
 - Phase 1's map from match id to text node key goes, because a match id already names its text node.
 
 ## Outcome
 
-With a query active, a keystroke inside a text block scans that block alone, whatever the document's size, and the matches, count, active result and paint equal a fresh search. Every other document commit keeps Phase 1's behavior. Every public call keeps its shape.
+With a query active, a keystroke inside a paragraph scans that paragraph alone, whatever the document's size, and the matches, count, active result and paint equal a fresh search. Every other document commit keeps Phase 1's behavior. Every public call keeps its shape.
 
 ## Scope
 
@@ -104,7 +111,7 @@ With a query active, a keystroke inside a text block scans that block alone, wha
 
 ## Decisions
 
-- **The rescan unit is the text block.** `findTextRanges` with `at` searches one block, and a match can span text nodes inside it, such as across a bold boundary. A rescan of changed text nodes alone would miss those matches.
+- **The rescan unit is the text run `findTextRanges` searches.** `findTextRanges` with `at` searches one run, and a match can span text nodes inside it, such as across a bold boundary. A rescan of changed text nodes alone would miss those matches. Find gets each run from Plite's internal `getTextRunPath`, and `findTextRanges` groups text through the same `isTextRunChildren` test, so the two cannot drift. Find's own copy of that rule assumed each element holds either text or blocks. Round 2's panel found two ways that broke. Plite lets one element hold text beside blocks, and a property change can turn an inline element into a block.
 - **A block added, removed or moved still searches everything.** It shifts every later match's path, so every later range must be rebuilt anyway, and Phase 1 already republishes them with no repaint. Skipping the scan there would save at most the scan, 6.2 ms per pair at 10,000 blocks, for a path-shifting splice no other edit needs.
 - **The rescan builds on Phase 1.** It reuses Phase 1's per-text-node comparison, which keeps unchanged match objects, its ids keyed by text node and its active-result anchor. Without Phase 1, a block rescan would still republish and repaint every match on each edit, which the 2026-10-21 probe measured as most of a dense keystroke.
 - **The decoration runtime stays.** It re-reads only the nodes each source marks dirty, shifts highlight slices through native text input, and cost 0.03 to 0.26 ms per pair in every profile of Phase 1 and the prototype. On `origin/next` it cost 18.1 ms per `dense-1k` `shift` pair, because Find there republishes every match and so marks every node dirty; Phase 1 already removes that. A mapped highlight set has nothing to save.
@@ -150,7 +157,7 @@ Completion Gates:
 | Pre-acceptance scale proof | yes | Step 3 | held on the prototype: one text run scanned per typing step at 100, 1,000 and 10,000 blocks, where Phase 1 scans every block |
 | Warm latency budget | yes | Step 3's timing lines | held on the prototype: against `origin/next`, 0.398, 0.426 and 0.114 against 0.5; against Phase 1, 0.881 on `dense-1k` `shift` and 0.777 on `sparse-10k` against 0.93; each conclusive; step 3 reruns them on the final bytes |
 | Large/stress scaling | yes | Step 3's 10,000-block cohorts | held on the prototype: `dense-10k` programmatic `no-change` at 0.114 of `origin/next`, `dense-10k` trusted `no-change` at 0.642 of Phase 1 against 0.8, and one text run scanned per step at 10,000 blocks |
-| Cold and failure paths | yes | Step 2's error and throw cases | open: the prototype falls back to the whole search on both, and no spec pins it yet |
+| Cold and failure paths | yes | Step 2's error and throw cases | held: `BaseFindPlugin.rescan.spec.ts` pins the whole search after a failed search, after an update whose search threw, and when a block's rescan throws |
 | Payload and fan-out | yes | Step 3's counts | held on the prototype: store writes, refreshed keys and leaf renders equal Phase 1's in every cohort |
 | Production-path rerun | yes | Step 3 on the final bytes | open |
 | Correctness guard | yes | Step 2 | held on the prototype: Phase 1's 52 package cases pass, and the lane's painted-range check passes in every cohort |
@@ -165,7 +172,9 @@ Completion Gates:
 | Verdict | Pursue: rescan only the paragraphs an edit changed, on top of Phase 1 (look) | Stop, and keep Phase 1's whole search | hold | big |
 | How the rescan lands | Together with Phase 1, as one change, because only the pair passes Phase 1's typing-speed line for sure; Phase 1 alone sits right on it (look) | Ship Phase 1 alone at its budget first, and this after it | land at budget | big |
 | When the rescan gets built | Now, starting from Phase 1's saved patch on top of the latest next branch (look) | Wait for your own word on Phase 1 first | hold phase 1 | detail |
-| Edits that still search everything | Adding, removing or moving a paragraph, a property change, a paragraph with a link or other inline element, a whole replace, and the first edit after a search error (safe) | Also shift later matches without a search when a paragraph is added or removed | shift paths | detail |
+| Phase 1's saved patch on next | Merged three ways, because next changed the Find tests and docs after the patch was saved; Phase 1's 52 tests pass on the merge, and the panel reviews it (look) | Stop until someone rebuilds Phase 1's patch on next by hand | rebuild phase 1 | detail |
+| Edits that still search everything | Adding, removing or moving a paragraph, a whole replace, and the first edit after a failed search or after an update whose search threw (safe) | Also shift later matches without a search when a paragraph is added or removed | shift paths | detail |
+| Bold, indent and other property edits | Rescan only the paragraphs they touch; one that turns a link into a block, or back, searches everything (safe) | Search everything on any property change, as the first build did | properties full | detail |
 | The old reopen rule | Reopen it. The scan alone is under 6 percent of a keystroke in a large document, but Phase 1's whole-document comparison costs more than the scan, and this removes both (look) | Keep it deferred, as the rule reads literally | keep deferred | small |
 | The highlight engine | Keep it; its own verdict waits as a suggested task (safe) | Rework it now into mapped highlight sets, as ProseMirror and CodeMirror keep | mapped sets | small |
 | Slow typing in huge documents | A suggested task finds why each keystroke at 10,000 paragraphs costs about 100 ms with no search open (safe) | Fold that work into this plan | fold editor cost | small |
@@ -194,7 +203,7 @@ This review reaffirms the 2026-10-21 Pursue (`2026-10-21-search-find-maintenance
 - **Search only the viewport,** as CodeMirror 6's built-in search does. It loses on the count and on navigation, as above.
 - **Rescan after a short pause,** as VS Code does. It loses, because the count and the ranges go stale between the edit and the rescan, against the no-hidden-latency law, and the block rescan already costs about 0.1 ms per pair.
 - **Rescan only changed text nodes.** It loses, because a match can span text nodes inside a block, so the unit must be the block.
-- **Rescan only the changed text blocks, on top of Phase 1,** CKEditor 5's shape. This wins. Its predicted benefit, which the Close marks held or falsified, is that Find's work per keystroke stops growing with the document, at about 0.1 ms per pair at 1,000 and 10,000 blocks. Phase 1 plus the rescan keeps all three of Phase 1's acceptance lines against `origin/next`, as the prototype did at 0.398, 0.426 and 0.114, and beats Phase 1 on this plan's three lines, as the prototype did at 0.881, 0.642 and 0.777.
+- **Rescan only the changed text blocks, on top of Phase 1,** CKEditor 5's shape. This wins. Its predicted benefit, which the Close marks held or falsified, is that Find's work on a keystroke that changes no match stops growing with the document, at about 0.1 ms per pair at 1,000 and 10,000 blocks. A keystroke that changes a match still copies and freezes the whole match list when Find publishes it. Phase 1 plus the rescan keeps all three of Phase 1's acceptance lines against `origin/next`, as the prototype did at 0.398, 0.426 and 0.114, and beats Phase 1 on this plan's three lines, as the prototype did at 0.881, 0.642 and 0.777.
 
 The proof has limits. The arms ran Next dev servers from source, with React in development mode, on an 18-core host whose one-minute load ran from 7.22 to 33.45 during timing. Profiles sample 30 pairs each. The closed editors rest on public material only, Monaco was not checked apart from VS Code, IME composition was not tested, and multi-view paint was not run again; it rests on Phase 1's mounted specs.
 
@@ -207,6 +216,8 @@ The proof has limits. The arms ran Next dev servers from source, with React in d
 
 ## Close
 
+Superseded. The build ported the prototype onto Phase 1, and three panel rounds reviewed its diff. Round 3 found a critical against each of the rescan's two mechanisms, the commit-metadata lookup of changed nodes and the run lookup that placed each one, after each had used its one replacement. The panel rule reverted both to Phase 1's whole search, and `2026-10-22-search-run-rescan` designs the rescan again through a new architect arena. Rows 52 to 58 of this plan's decision log record the revert, the saved patch and the hand-over. No product code from this plan landed. Steps done: 0 of 5. The paragraphs below are the verdict's own close and stay as written.
+
 Reversals first. The 2026-10-21 plan kept this rescan deferred until a profile showed the scan as a large share of a rendered `sparse-10k` keystroke. The profile shows 5.7 percent, so that condition, read as written, is not met. This review reopens the rescan anyway, because Phase 1's whole-document compare costs more than the scan, and the rescan removes both. The prototype's first version searched everything whenever a commit split or joined text nodes, so trusted `shift`, which splits a text node every other step, still scanned every block. It now keeps such a commit local when every change stays inside its own block. The specs, counts, `shift` profile and timing ran on the fixed bytes; the `no-change` and `sparse-10k` profiles of the prototype ran just before that fix, which changes only commits that add, remove or move nodes.
 
 What landed is this verdict page and its decision log, the research run `docs/plite/research/2026-10-22-find-incremental-decorations/`, and two scope fixes: `find-surface.tsx` joins the search scope and the editor-perf page joins the performance scope, so neither is unowned. No product code landed. The prototype lives only in the run directory, and Phase 1's saved patch is untouched. Steps done: 0 of 5. Step 1 waited on t_ab664f2a until a later chips sweep closed that task and settled Phase 1's landing, so the build starts next. The owner's three questions are answered: the block rescan in the lead paragraph and Lanes, the highlight engine in Decisions and Lanes, and the other editors in What other editors do.
@@ -217,6 +228,6 @@ Limits. Every arm ran a Next dev server from source with React in development mo
 
 ## Open work
 
-- Build the rescan with Phase 1, this plan's steps 1 to 5, starting from Phase 1's saved patch on `origin/next`. owner: zbeyens. stop: the change lands through `land.mjs`, or the owner says hold phase 1 or land at budget. Tracked in this plan's steps.
+- Build the rescan with Phase 1. owner: zbeyens. stop: `2026-10-22-search-run-rescan` lands through `land.mjs`, or the owner says hold or land at budget. Tracked in that plan's steps.
 - Decide whether the decoration runtime stays the fastest owner of editor highlights, for every source and not just Find. owner: zbeyens. stop: suggested task t_c5055d2a lands its verdict or is dropped. Tracked in the suggested-task ledger.
 - Find why a keystroke at 10,000 blocks costs about 100 ms with no search open; the profiles point at the two DOM selection writes and React's tree walks. owner: zbeyens. stop: suggested task t_c5a89c2a lands or is dropped. Tracked in the suggested-task ledger.

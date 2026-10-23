@@ -339,7 +339,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/find/lib/BaseFindPlugin.ts',
-    [[['api', 'decorate', 'on', 'selectors', 'update']]],
+    [[['activate', 'api', 'decorate', 'on', 'selectors', 'update']]],
   ],
   [
     'packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts',

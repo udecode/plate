@@ -7,7 +7,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { NodeApi } from 'platejs';
+import { NodeApi, createEditorView, schema } from 'platejs';
 import { BaseFindPlugin } from 'platejs/find';
 import {
   LinkPlugin,
@@ -553,6 +553,22 @@ describe('FindKit', () => {
     }
   });
 
+  it('moves the active highlight to the match navigation selects', async () => {
+    const { find, ui, view } = setup();
+    const activeBlock = () =>
+      view.container
+        .querySelector('[data-find-active]')
+        ?.closest('[data-editor-node="element"]')
+        ?.textContent?.replace(/\s+/g, ' ');
+
+    act(() => ui.open('hello'));
+    await waitFor(() => expect(activeBlock()).toBe('hello world again'));
+
+    act(() => find.api.move(1));
+
+    await waitFor(() => expect(activeBlock()).toBe('hello outside'));
+  });
+
   it('finds through inline descendants without persisting match state', async () => {
     const { editor, find, ui, view } = setup();
     const before = editor.read.children();
@@ -579,7 +595,7 @@ describe('FindKit', () => {
     });
   });
 
-  it('wraps navigation and rescans only after document commits', async () => {
+  it('wraps navigation and finds a match typed after it', async () => {
     const { editor, find, ui } = setup();
 
     act(() => ui.open('hello'));
@@ -618,6 +634,367 @@ describe('FindKit', () => {
       count: find.store.get('count'),
       highlights: highlights(),
     }).toEqual({ count: 3, highlights: ['hello', 'hello', 'hello'] });
+  });
+
+  it('paints a search made inside a transaction that edited another block', () => {
+    const { editor, find, view } = setup();
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => {
+      editor.update((tx) => {
+        tx.text.insert('!', { at: { offset: 13, path: [1, 0] } });
+        find.api.search('hello');
+      });
+    });
+
+    expect(highlights()).toEqual(['hello', 'hello']);
+  });
+
+  it('paints a search made between an edit and its removal inside one update', () => {
+    const { editor, find, view } = setup();
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => {
+      editor.update((tx) => {
+        tx.text.insert('hello ', { at: { offset: 0, path: [1, 0] } });
+        find.api.search('hello');
+        tx.text.delete({
+          at: {
+            anchor: { offset: 0, path: [1, 0] },
+            focus: { offset: 6, path: [1, 0] },
+          },
+        });
+        tx.selection.set({ offset: 0, path: [0, 0] });
+      });
+    });
+
+    expect({
+      count: find.store.get('count'),
+      highlights: highlights(),
+    }).toEqual({ count: 2, highlights: ['hello', 'hello'] });
+  });
+
+  it('paints a search made in an update that threw at the next commit that only moves the selection', () => {
+    const { editor, find, view } = setup();
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => {
+      expect(() =>
+        editor.update((tx) => {
+          tx.text.insert('hello ', { at: { offset: 0, path: [1, 0] } });
+          find.api.search('hello');
+          throw new Error('Rejected');
+        })
+      ).toThrow('Rejected');
+    });
+    act(() => {
+      editor.update.selection.set({ offset: 0, path: [0, 0] });
+    });
+
+    expect({
+      count: find.store.get('count'),
+      highlights: highlights(),
+    }).toEqual({ count: 2, highlights: ['hello', 'hello'] });
+  });
+
+  it('clears the highlights of a search cleared in an update that threw at the next commit', () => {
+    const { editor, find, view } = setup();
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => find.api.search('hello'));
+    const painted = highlights();
+    act(() => {
+      expect(() =>
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { offset: 13, path: [1, 0] } });
+          find.api.search('');
+          throw new Error('Rejected');
+        })
+      ).toThrow('Rejected');
+    });
+    act(() => {
+      editor.update.selection.set({ offset: 0, path: [0, 0] });
+    });
+
+    expect({
+      highlights: highlights(),
+      painted,
+      query: find.store.get('query'),
+    }).toEqual({ highlights: [], painted: ['hello', 'hello'], query: '' });
+  });
+
+  it('clears paint from a match the app wrote at the next commit', () => {
+    const editor = createEditor({
+      plugins: [LinkPlugin, ...FindKit],
+      initialValue: value,
+    });
+    const find = editor.plugin(BaseFindPlugin);
+
+    find.api.search('hello');
+    find.store.set({
+      matches: [
+        {
+          id: 'app',
+          range: {
+            anchor: { offset: 1, path: [0, 2] },
+            focus: { offset: 6, path: [0, 2] },
+          },
+        },
+      ],
+    });
+
+    const view = render(
+      <EditorRoot editor={editor}>
+        <EditorContent aria-label="Editor" />
+      </EditorRoot>
+    );
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+    const painted = highlights();
+
+    act(() => {
+      editor.update.text.insert('!', { at: { offset: 13, path: [1, 0] } });
+    });
+
+    expect({
+      count: find.store.get('count'),
+      highlights: highlights(),
+      painted,
+    }).toEqual({
+      count: 2,
+      highlights: ['hello', 'hello'],
+      painted: ['again'],
+    });
+  });
+
+  it("paints a match list the app writes, and clears it when the app restores Find's list", () => {
+    const { find, view } = setup();
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => find.api.search('hello'));
+    const results = find.store.get('matches');
+    act(() => {
+      find.store.set({
+        matches: [
+          {
+            id: 'app',
+            range: {
+              anchor: { offset: 1, path: [0, 2] },
+              focus: { offset: 6, path: [0, 2] },
+            },
+          },
+          results[1],
+        ],
+      });
+    });
+    const painted = highlights();
+    act(() => find.store.set({ matches: results }));
+
+    expect({ highlights: highlights(), painted }).toEqual({
+      highlights: ['hello', 'hello'],
+      painted: ['again', 'hello'],
+    });
+  });
+
+  it('moves the active highlight off a match the app wrote', () => {
+    const { find, view } = setup();
+    const active = () =>
+      Array.from(view.container.querySelectorAll('[data-find-active]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => find.api.search('hello'));
+    act(() => {
+      find.store.set({
+        matches: [
+          {
+            id: 'app',
+            range: {
+              anchor: { offset: 1, path: [0, 2] },
+              focus: { offset: 6, path: [0, 2] },
+            },
+          },
+          find.store.get('matches')[1],
+        ],
+      });
+    });
+    const before = active();
+    act(() => find.api.move(1));
+
+    expect({ active: active(), before }).toEqual({
+      active: ['hello'],
+      before: ['again'],
+    });
+  });
+
+  it('paints every match of a list the app writes out of document order', () => {
+    const { find, view } = setup();
+
+    act(() => {
+      find.api.search('hello');
+      find.store.set({ matches: [...find.store.get('matches')].reverse() });
+    });
+
+    expect(
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      )
+    ).toEqual(['hello', 'hello']);
+  });
+
+  it.each([
+    ['a cleared search', false],
+    ['a cleared search after an edit in the same update', true],
+  ])(
+    'clears paint from a match the app wrote when %s replaces it',
+    (_, edited) => {
+      const editor = createEditor({
+        plugins: [LinkPlugin, ...FindKit],
+        initialValue: value,
+      });
+      const find = editor.plugin(BaseFindPlugin);
+
+      find.api.search('hello');
+      find.store.set({
+        matches: [
+          {
+            id: 'app',
+            range: {
+              anchor: { offset: 1, path: [0, 2] },
+              focus: { offset: 6, path: [0, 2] },
+            },
+          },
+        ],
+      });
+
+      const view = render(
+        <EditorRoot editor={editor}>
+          <EditorContent aria-label="Editor" />
+        </EditorRoot>
+      );
+      const highlights = () =>
+        Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+          (element) => element.textContent
+        );
+      const painted = highlights();
+
+      act(() => {
+        if (!edited) {
+          find.api.search('');
+          return;
+        }
+        editor.update((tx) => {
+          tx.text.insert('!', { at: { offset: 0, path: [1, 0] } });
+          find.api.search('');
+        });
+      });
+
+      expect({
+        count: find.store.get('count'),
+        highlights: highlights(),
+        painted,
+      }).toEqual({ count: 0, highlights: [], painted: ['again'] });
+    }
+  );
+
+  it('paints the list a subscriber writes while Find publishes an edit', () => {
+    const { editor, find, view } = setup();
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => {
+      find.api.search('hello');
+      find.api.move(1);
+    });
+    const painted = highlights();
+    const stop = find.store.subscribe((state) => {
+      if (state.matches.length === 3) find.store.set({ matches: [] });
+    });
+    act(() => {
+      editor.update.text.insert(' hello', {
+        at: { offset: 13, path: [1, 0] },
+      });
+    });
+    stop();
+
+    expect({
+      count: find.store.get('count'),
+      highlights: highlights(),
+      painted,
+    }).toEqual({ count: 0, highlights: [], painted: ['hello', 'hello'] });
+  });
+
+  it("paints in the main view a search made inside a named root view's update", () => {
+    const NoteHolder = definePlugin('findNoteHolder', {
+      schema: {
+        element: {
+          blockContent: true,
+          contentRoots: {
+            body: {
+              content: schema.content.types(['paragraph'], {
+                default: { type: 'paragraph' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const editor = createEditor({
+      plugins: [LinkPlugin, NoteHolder, ...FindKit],
+      initialValue: {
+        children: [
+          ...value,
+          {
+            type: 'findNoteHolder',
+            childRoots: { body: 'note' },
+            children: [{ text: '' }],
+          },
+        ],
+        roots: {
+          note: [{ type: 'paragraph', children: [{ text: 'note hello' }] }],
+        },
+      },
+    });
+    const view = render(
+      <EditorRoot editor={editor}>
+        <EditorContent aria-label="Editor" />
+      </EditorRoot>
+    );
+    const note = createEditorView(editor, { root: 'note' });
+    const highlights = () =>
+      Array.from(view.container.querySelectorAll('[data-find-match]')).map(
+        (element) => element.textContent
+      );
+
+    act(() => {
+      note.update(() => {
+        note.plugin(BaseFindPlugin).api.search('hello');
+      });
+    });
+
+    expect(highlights()).toEqual(['hello', 'hello']);
   });
 
   it('clears a match broken by native input before the commit returns', async () => {
