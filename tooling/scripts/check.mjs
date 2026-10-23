@@ -249,12 +249,11 @@ export const steps = [
     affected: source,
   },
   {
-    // www typecheck and its generators run the plate CLI from packages/cli/dist.
     name: 'www',
-    run: 'pnpm --filter @platejs/cli build && pnpm --filter www typecheck',
+    run: 'pnpm turbo run build --filter=@platejs/cli && pnpm --filter www typecheck',
     affected: touches('apps/www/', 'content/', 'packages/'),
     write:
-      'pnpm --filter @platejs/cli build && pnpm --filter www editor:generate && pnpm --filter www api-reference && pnpm --filter www build:registry',
+      'pnpm turbo run build --filter=@platejs/cli && pnpm --filter www editor:generate && pnpm --filter www api-reference && pnpm --filter www build:registry',
   },
   {
     name: 'www-build',
