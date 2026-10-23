@@ -699,4 +699,141 @@ describe('plitejs/yjs merge_node collaboration contract', () => {
 
     assertPeerTexts(peers, ['aabxbcc']);
   });
+
+  it('undoes a line join that a peer bolded into equal text leaves', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [
+        {
+          type: 'paragraph',
+          children: [{ text: 'a' }, { text: 'b', bold: true }, { text: 'c' }],
+        },
+        paragraph('d'),
+        paragraph('q'),
+      ]
+    );
+    const [a, b] = peers;
+
+    b.editor.update.text.insert('Z', { at: { path: [2, 0], offset: 1 } });
+    b.editor.update((tx) => {
+      tx.history.newBatch();
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [1, 0], offset: 0 },
+        },
+      });
+    });
+    a.editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 2], offset: 1 },
+      });
+      tx.marks.toggle('bold');
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    for (const peer of peers) {
+      assert.deepEqual(readPeerChildren(peer), [
+        {
+          type: 'paragraph',
+          children: [{ text: 'ab', bold: true }, { text: 'c' }],
+        },
+        paragraph('d'),
+        paragraph('q'),
+      ]);
+    }
+  });
+
+  it('undoes a formatting line join that a peer bolded, then the edit before it', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [
+        {
+          type: 'paragraph',
+          children: [{ text: 'a' }, { text: 'b', bold: true }, { text: 'c' }],
+        },
+        paragraph('d'),
+        paragraph('q'),
+      ]
+    );
+    const [a, b] = peers;
+
+    b.editor.update.text.insert('Z', { at: { path: [2, 0], offset: 1 } });
+    b.editor.update((tx) => {
+      tx.history.newBatch();
+      tx.selection.set({
+        anchor: { path: [2, 0], offset: 0 },
+        focus: { path: [2, 0], offset: 2 },
+      });
+      tx.marks.toggle('bold');
+      tx.text.delete({
+        at: {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [1, 0], offset: 0 },
+        },
+      });
+    });
+    a.editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 2], offset: 1 },
+      });
+      tx.marks.toggle('bold');
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    assertPeerTexts(peers, ['abc', 'd', 'q']);
+    assert.equal(b.editor.read.history().undos.length, 0);
+  });
+
+  it('undoes a merge whose split-off line a peer emptied', () => {
+    const peers = createPeers(
+      ['a', 'b'],
+      [
+        {
+          type: 'paragraph',
+          children: [{ text: 'a' }, { text: 'bc', bold: true }],
+        },
+        {
+          type: 'paragraph',
+          children: [{ text: 'd' }, { text: 'e', bold: true }],
+        },
+        paragraph('f'),
+      ]
+    );
+    const [a, b] = peers;
+
+    mergeSecondParagraph(b);
+    a.editor.update.text.delete({
+      at: {
+        anchor: { path: [0, 1], offset: 2 },
+        focus: { path: [2, 0], offset: 1 },
+      },
+    });
+    a.editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 1 },
+      });
+      tx.break.insert();
+    });
+    syncConnectedPeers(peers);
+    undoHistoryPeerAndSync(b, peers);
+
+    for (const peer of peers) {
+      assert.deepEqual(readPeerChildren(peer), [
+        {
+          type: 'paragraph',
+          children: [{ text: 'a' }, { text: 'bc', bold: true }],
+        },
+        paragraph(''),
+        paragraph(''),
+      ]);
+    }
+  });
 });

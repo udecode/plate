@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   createEditor,
+  createEditorView,
   defineEditorSchema,
   DocumentChange,
   property,
@@ -182,6 +183,25 @@ describe('content completion laws', () => {
       editor.api.history.undo();
 
       assert.deepEqual(editor.read.children(), start);
+    });
+
+    it('restores the start on undo of a heading inserted above it after an unrecorded edit', () => {
+      const editor = titled();
+
+      editor.update((tx) => {
+        tx.nodes.insert(node('h1', [text('X')]), { at: [0] });
+      });
+      editor.update((tx) => {
+        tx.history.skip();
+        tx.text.insert('!', { at: { offset: 1, path: [3, 0] } });
+      });
+      editor.api.history.undo();
+
+      assert.deepEqual(editor.read.children(), [
+        node('h1', [text('Title')]),
+        node('h1', [text('Body')]),
+        node('paragraph', [text('p!')]),
+      ]);
     });
 
     it('builds a fresh title in Editing and keeps the next heading in place', () => {
@@ -674,6 +694,87 @@ describe('content completion laws', () => {
           }),
         prefixed
       );
+    });
+  });
+
+  describe('a selected inline spacer', () => {
+    it('undoes a link removal beside it after an unrecorded edit', () => {
+      const editor = createEditor({
+        initialValue: [
+          node('paragraph', [text('old')]),
+          node('paragraph', [text('q')]),
+        ] as never,
+        plugins: [
+          defineEditorSchema('completion-law-selected-spacer', {
+            elements: {
+              link: {
+                content: c.text({ default: 'text', min: 1 }),
+                inline: true,
+              },
+              paragraph: {
+                content: c.any([c.text(), c.type('link')], {
+                  default: 'text',
+                  min: 1,
+                }),
+              },
+            },
+            id: 'completion-law-selected-spacer',
+            root: c.type('paragraph', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+            unknown: 'reject',
+            version: 1,
+          }),
+          history(),
+        ],
+      });
+      const view = createEditorView(editor);
+      const link = node('link', [text('link')]);
+      const selection = {
+        anchor: { offset: 1, path: [0, 1, 0] },
+        focus: { offset: 1, path: [0, 1, 0] },
+        kind: 'text',
+      } as const;
+
+      editor.update.value.replace({
+        children: [
+          node('paragraph', [text('first'), link, text(''), text('last')]),
+          node('paragraph', [text('q')]),
+        ] as never,
+        selection,
+      });
+      editor.update((tx) => {
+        tx.history.newBatch();
+        tx.text.insert('Z', { at: { offset: 1, path: [1, 0] } });
+      });
+      editor.update((tx) => {
+        tx.history.newBatch();
+        tx.nodes.remove({ at: [0, 1] });
+      });
+      editor.update((tx) => {
+        tx.history.skip();
+        tx.text.insert('!', { at: { offset: 2, path: [1, 0] } });
+      });
+      view.update((tx) => {
+        tx.history.newBatch();
+        tx.value.replace({
+          children: [
+            node('paragraph', [text('first'), link, text('last')]),
+            node('paragraph', [text('qZ!Y')]),
+          ] as never,
+          selection,
+        });
+      });
+      editor.api.history.undo();
+      editor.api.history.undo();
+      editor.api.history.undo();
+
+      assert.deepEqual(editor.read.children(), [
+        node('paragraph', [text('first'), link, text('last')]),
+        node('paragraph', [text('q!')]),
+      ]);
+      assert.equal(editor.read.history().undos.length, 0);
     });
   });
 
