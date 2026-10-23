@@ -11,6 +11,7 @@ import {
   property,
   readEditorSchemaContract,
   schema,
+  type SchemaTarget,
   SelectionApi,
   target,
 } from 'plitejs';
@@ -419,6 +420,155 @@ describe('written default storage', () => {
           type: 'link',
         }),
       ]);
+    });
+  });
+
+  describe('a rejected Enter at a line’s start', () => {
+    const keysOn = (id: string, keyTarget: SchemaTarget) =>
+      inlineSchema(id, [
+        schema.elementProperty('key', property.string(), {
+          role: 'metadata',
+          split: 'drop',
+          target: keyTarget,
+        }),
+      ]);
+    const Every = keysOn('written-defaults-every-key', target.group('element'));
+    const line = [{ children: [{ text: 'ab' }], key: 'k1', type: 'paragraph' }];
+    const enterAt = (tx: EditorUpdateTransaction, path: number[]) => {
+      const point = { offset: 0, path };
+
+      tx.selection.set({ anchor: point, focus: point });
+      tx.break.insert();
+    };
+    const suggest = (
+      plugin: Plugin,
+      value: unknown,
+      author: string,
+      run: (tx: EditorUpdateTransaction) => void
+    ) => commit(plugin, value, author, 'propose', run);
+    const enterAtStart = (plugin: Plugin) =>
+      suggest(plugin, line, 'carol', (tx) => enterAt(tx, [0, 0]));
+    const deciding = (
+      plugin: Plugin,
+      value: unknown,
+      batches: ReadonlyArray<readonly ['accept' | 'reject', string[]]>
+    ) =>
+      batches.reduce(
+        (before, [action, changes]) => {
+          const editor = editorFor(plugin, before.value);
+          const { status } = authoredTestApi(editor).decide({
+            action,
+            changes,
+          });
+
+          return {
+            statuses: [...before.statuses, status],
+            value: editor.read.value(),
+          };
+        },
+        { statuses: [] as string[], value: value as Value }
+      );
+    const rejections = [
+      [['reject', ['carol', 'dave']]],
+      [
+        ['reject', ['carol']],
+        ['reject', ['dave']],
+      ],
+    ] as const;
+    const linesIn = (
+      plugin: Plugin,
+      value: unknown,
+      orders: ReadonlyArray<
+        ReadonlyArray<readonly ['accept' | 'reject', string[]]>
+      > = rejections
+    ) =>
+      orders.map((batches) => {
+        const { statuses, value: decided } = deciding(plugin, value, batches);
+
+        assert.ok(
+          statuses.every((status) => status !== 'blocked'),
+          `${JSON.stringify(batches)} applies`
+        );
+
+        return unmarked(decided.children);
+      });
+
+    it('gives the line back a value every element holds', () => {
+      const { statuses, value } = deciding(Every, enterAtStart(Every), [
+        ['reject', ['carol']],
+      ]);
+
+      assert.deepEqual(statuses, ['applied']);
+      assert.deepEqual(unmarked(value.children), line);
+    });
+
+    it('gives that value back in every order when the new line holds a proposal on it', () => {
+      const proposed = suggest(Every, enterAtStart(Every), 'dave', (tx) =>
+        tx.nodes.set({ key: 'k5' }, { at: [1] })
+      );
+
+      assert.deepEqual(
+        linesIn(Every, proposed, [
+          ...rejections,
+          [
+            ['reject', ['dave']],
+            ['reject', ['carol']],
+          ],
+          [
+            ['accept', ['dave']],
+            ['reject', ['carol']],
+          ],
+          [
+            ['reject', ['carol']],
+            ['accept', ['dave']],
+          ],
+        ]),
+        Array.from({ length: 5 }, () => line)
+      );
+    });
+
+    it('passes that value along two Enters at the line’s start in every order', () => {
+      const twice = suggest(Every, enterAtStart(Every), 'dave', (tx) =>
+        enterAt(tx, [1, 0])
+      );
+
+      assert.deepEqual(linesIn(Every, twice), [line, line]);
+    });
+
+    it('stores the same line in every order when the middle line is retyped, under a key on every element or on paragraphs only', () => {
+      for (const plugin of [
+        Every,
+        keysOn('written-defaults-paragraph-key', target.type('paragraph')),
+      ]) {
+        const retypedByEditing = commit(
+          plugin,
+          suggest(plugin, enterAtStart(plugin), 'dave', (tx) =>
+            enterAt(tx, [1, 0])
+          ),
+          'ed',
+          'edit',
+          (tx) => tx.nodes.set({ type: 'heading' }, { at: [1] })
+        );
+        const retypedBySuggestion = suggest(
+          plugin,
+          enterAtStart(plugin),
+          'dave',
+          (tx) => {
+            enterAt(tx, [1, 0]);
+            tx.nodes.set({ type: 'heading' }, { at: [1] });
+          }
+        );
+
+        for (const value of [retypedByEditing, retypedBySuggestion]) {
+          const [together, apart] = linesIn(plugin, value);
+
+          assert.deepEqual(apart, together);
+          assert.deepEqual(
+            deciding(plugin, value, [['reject', ['carol']]]).statuses,
+            ['applied']
+          );
+        }
+      }
     });
   });
 

@@ -185,35 +185,77 @@ export const spread = <T extends object>(node: T, item: AuthoredMark): T => {
   };
 };
 
-const Quotes = defineEditorSchema('laws-quotes', {
-  elements: {
-    link: { content: schemaBuilder.content.text({ min: 1 }), inline: true },
-    paragraph: schemaBuilder.element.textBlock(),
-    quote: { content: schemaBuilder.content.type('paragraph', { min: 1 }) },
-  },
-  id: 'laws-quotes',
-  properties: [
-    schemaBuilder.elementProperty('align', property.string(), {
-      target: target.type('quote'),
-    }),
-  ],
-  root: schemaBuilder.content.any(
-    [
-      schemaBuilder.content.type('paragraph'),
-      schemaBuilder.content.type('quote'),
+export const idGeneratorCalls = { count: 0 };
+let generatedId = 0;
+
+const quotesOf = (generated: boolean) =>
+  defineEditorSchema(generated ? 'laws-quotes-generated' : 'laws-quotes', {
+    elements: {
+      link: { content: schemaBuilder.content.text({ min: 1 }), inline: true },
+      paragraph: schemaBuilder.element.textBlock(),
+      quote: { content: schemaBuilder.content.type('paragraph', { min: 1 }) },
+    },
+    id: generated ? 'laws-quotes-generated' : 'laws-quotes',
+    properties: [
+      schemaBuilder.elementProperty(
+        'align',
+        generated
+          ? property.string({
+              validate: (value): value is string => typeof value === 'string',
+              validationVersion: 1,
+            })
+          : property.string(),
+        { target: target.type('quote') }
+      ),
+      ...(generated
+        ? [
+            schemaBuilder.elementProperty(
+              'id',
+              property.string({
+                generate: () => {
+                  idGeneratorCalls.count += 1;
+                  generatedId += 1;
+                  return `g${generatedId}`;
+                },
+              }),
+              {
+                copy: 'drop',
+                role: 'metadata',
+                split: 'drop',
+                target: target.group('element'),
+                typeChange: 'preserve-if-allowed',
+              }
+            ),
+          ]
+        : []),
     ],
-    { default: { type: 'paragraph' }, min: 1 }
-  ),
-  unknown: 'reject',
-  version: 1,
-});
-export const quotesEditor = (initialValue: readonly unknown[]) =>
-  createEditor({
-    plugins: [Quotes, createAuthoredPlugin({ authorId: 'laws' })],
-    initialValue: initialValue as Array<Record<string, unknown>>,
+    root: schemaBuilder.content.any(
+      [
+        schemaBuilder.content.type('paragraph'),
+        schemaBuilder.content.type('quote'),
+      ],
+      { default: { type: 'paragraph' }, min: 1 }
+    ),
+    unknown: 'reject',
+    version: 1,
   });
+const editorOf =
+  (definition: ReturnType<typeof quotesOf>) =>
+  (initialValue: readonly unknown[]) =>
+    createEditor({
+      plugins: [definition, createAuthoredPlugin({ authorId: 'laws' })],
+      initialValue: initialValue as Array<Record<string, unknown>>,
+    });
+export const quotesEditor = editorOf(quotesOf(false));
 export const quotesSchema = authoredResolveSchemaOf(
   quotesEditor([{ type: 'paragraph', children: [{ text: '' }] }])
+);
+/** Quotes whose every element has a generated id, as Plate's block ids do. */
+export const generatedQuotesEditor = editorOf(quotesOf(true));
+export const generatedQuotesSchema = authoredResolveSchemaOf(
+  generatedQuotesEditor([
+    { type: 'paragraph', id: 'g0', children: [{ text: '' }] },
+  ])
 );
 export const structuralMark = (kind: AuthoredMark['kind'], change: string) =>
   ({ at: 1, author: change, change, kind }) as AuthoredMark;

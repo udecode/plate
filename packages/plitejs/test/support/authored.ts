@@ -90,6 +90,7 @@ type AuthoredTestEditor = AnyEditor & {
   update: {
     authored: {
       decide: (decisions: readonly AuthoredDecision[]) => AuthoredResult;
+      withdraw: (changes: readonly AuthoredChange[]) => AuthoredResult;
     };
   };
 };
@@ -128,6 +129,10 @@ export const authoredTestApi = (input: AnyEditor) => {
     setIntent: (intent: 'edit' | 'propose') => {
       editor.api.authored.setView({ intent });
     },
+    withdraw: (ids: readonly string[]) =>
+      editor.update.authored.withdraw(
+        ids.flatMap((id) => editor.read.authored.change(id) ?? [])
+      ),
   };
 };
 

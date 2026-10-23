@@ -26,13 +26,7 @@ import type {
 /** `proposed` accepts every pending change; `accepted` rejects every one. */
 export type AuthoredFormatProjection = 'accepted' | 'proposed';
 
-/**
- * The refusal of a projection that would decide pending changes under a
- * schema that generates property values, or null.
- *
- * @internal
- */
-export const projectionRefusal = (
+const projectionRefusal = (
   document: EditorDocumentValue,
   schema: CompiledEditorSchema
 ): AuthoredProjectionRefusal | null => {

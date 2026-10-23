@@ -8,6 +8,7 @@ import {
   definePlugin,
   type Editor,
   type EditorDocumentValue,
+  ElementIdPlugin,
   property,
   schema,
 } from '../../../core';
@@ -150,6 +151,33 @@ describe('authored DOCX', () => {
       revisions: false,
       text: 'Base draft',
     });
+  });
+
+  it('exports a pending insertion under a generated block id', async () => {
+    const inserted = [
+      { at: 1, author: 'ann', change: 'ann:1', kind: 'insert' },
+    ];
+    const editor = createEditor({
+      plugins: [ElementIdPlugin, BaseParagraphPlugin, AuthoredPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'Base' }, { authored: inserted, text: ' draft' }],
+          id: 'p1',
+          type: 'paragraph',
+        },
+      ],
+      userId: 'zed',
+    });
+    const result = await exportDocx(editor, { projection: 'proposed' });
+    if (!result.ok) throw new Error('DOCX proposed export failed');
+    const zip = await JSZip.loadAsync(await result.blob.arrayBuffer());
+    const xml = await zip.file('word/document.xml')!.async('string');
+
+    expect(
+      [...xml.matchAll(/<w:t(?: [^>]*)?>([^<]*)<\/w:t>/g)]
+        .map(([, text]) => text)
+        .join('')
+    ).toBe('Base draft');
   });
 
   it('writes Word revisions that reimport with their authors', async () => {

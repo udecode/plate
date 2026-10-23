@@ -67,11 +67,12 @@ export type NativeAuthoredDocumentCapability = Readonly<{
    * another line.
    */
   claimsBreakBefore: (node: Node) => boolean;
+  pending: (document: EditorDocumentValue) => number;
   project: (
     document: EditorDocumentValue,
     projection: 'accepted' | 'proposed',
     schema: CompiledEditorSchema
-  ) => AuthoredDocumentProjection | AuthoredProjectionRefusal;
+  ) => AuthoredDocumentProjection;
 }>;
 
 export const authoredDocumentCapabilityPoint: PluginPoint<NativeAuthoredDocumentCapability> =

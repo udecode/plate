@@ -22,6 +22,7 @@ import {
   withCompiledEditorSchemaCapabilityEntries,
   withEditorDocumentProjection,
   createDormantEditor,
+  readingCovered,
   withPluginPortalCandidates,
 } from 'plitejs/internal';
 
@@ -1245,26 +1246,15 @@ const projectFormatDocument = (
   }
   if (!authored) return unchanged;
   if (!projection) {
-    if (authored.project(document, 'accepted', schema).pending > 0) {
-      throw new TypeError(required);
-    }
+    if (authored.pending(document) > 0) throw new TypeError(required);
 
     return unchanged;
   }
 
-  const projected = authored.project(document, projection, schema);
-
-  if (!projected.ok) throw new TypeError(projected.diagnostics[0].message);
-
-  return projected;
+  return authored.project(document, projection, schema);
 };
 
-/**
- * Project one export's document before it is read or turned into a view, so an
- * authored document never exports without an explicit projection.
- *
- * @internal
- */
+/** @internal */
 export const projectPlateFormatDocument = (
   editor: Editor,
   document: EditorDocumentValue,
@@ -1272,17 +1262,21 @@ export const projectPlateFormatDocument = (
 ): AuthoredDocumentProjection => {
   const schema: EditorStateSchemaApi = editor.read.schema;
 
-  schema.assertDocument(document);
-  const projected = projectFormatDocument(
-    document,
-    projection,
-    getEditorAuthoredDocumentCapability(editor),
-    getCompiledEditorSchema(editor)
-  );
+  return readingCovered({
+    cover: () => schema.assertDocument(document),
+    read: () => {
+      const projected = projectFormatDocument(
+        document,
+        projection,
+        getEditorAuthoredDocumentCapability(editor),
+        getCompiledEditorSchema(editor)
+      );
 
-  schema.assertDocument(projected.document);
+      schema.assertDocument(projected.document);
 
-  return projected;
+      return projected;
+    },
+  });
 };
 
 /** Run one format conversion against compiled plugin/schema facts without activation. @internal */
@@ -1304,6 +1298,7 @@ export const withPlateFormatCompilation = <T>(
           diagnostics: readonly AuthoredProjectionDiagnostic[]
         ) => R
       ) => R;
+      schema: CompiledEditorSchema;
     }>
   ) => T
 ): T =>
@@ -1352,6 +1347,7 @@ export const withPlateFormatCompilation = <T>(
             })
           );
         },
+        schema,
       })
     );
   });

@@ -24,6 +24,7 @@ export { assertEditorOptions, readEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
 export { getEditorCommitSnapshot } from '../core/commit';
+export { readingCovered } from '../core/property-validity';
 export {
   observeAnchorStateWork,
   type AnchorStateWork,

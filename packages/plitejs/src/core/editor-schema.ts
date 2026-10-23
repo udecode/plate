@@ -69,6 +69,7 @@ import {
 } from './element-owned-root-index';
 import { getPluginRegistry, type PluginRegistry } from './plugin-registry';
 import { profileCoreDuration } from './profiling';
+import { verdictOf } from './property-validity';
 import { getEditorDocumentValue } from './public-state';
 import { getValueRecords } from './record-store';
 import {
@@ -156,13 +157,31 @@ const refuseMissingProperty = <T>(build: () => T): T | null => {
   }
 };
 
+let generates = true;
+
+/** @internal */
+export const withoutGeneration = <T>(read: () => T): T => {
+  const outer = generates;
+
+  generates = false;
+  try {
+    return read();
+  } finally {
+    generates = outer;
+  }
+};
+
 /**
  * A `MissingPropertyError` from a generator's own schema build, such as
  * `schema.create`, fails the outer build instead of refusing it.
  */
-const generatePropertyValue = (
-  descriptor: Readonly<{ generate?: () => unknown }>
-) => {
+const generatePropertyValue = (descriptor: PropertyValueDescriptor) => {
+  if (!generates) {
+    throw new EditorSchemaValidationError(
+      'An export cannot generate a property value.'
+    );
+  }
+
   try {
     return descriptor.generate?.();
   } catch (error) {
@@ -685,7 +704,10 @@ const validatePropertyValue = (
       }
     }
 
-    if (currentDescriptor.validate && !currentDescriptor.validate(current)) {
+    if (
+      currentDescriptor.validate &&
+      !verdictOf(currentDescriptor.validate, current)
+    ) {
       throw new EditorSchemaValidationError(
         `${owner} fails custom property validation.`
       );
@@ -757,6 +779,7 @@ const COMPILED_SCHEMA_BY_API = new WeakMap<
   () => CompiledEditorSchema | null
 >();
 const INTERNAL_BY_API = new WeakMap<object, InternalEditorSchemaApi>();
+const REPRESENTATION_EDITOR_BY_API = new WeakMap<object, Editor>();
 const VALIDATED_DOCUMENT_ROOTS = new Map<string, WeakSet<object>>();
 const isRootValidatedBy = (children: object, authority: string) =>
   VALIDATED_DOCUMENT_ROOTS.get(authority)?.has(children) === true;
@@ -806,6 +829,16 @@ export const getCompiledEditorSchemaFromApi = (
 export const getInternalEditorSchemaFromApi = (
   schemaApi: EditorStateSchemaApi
 ) => getDefined(INTERNAL_BY_API.get(schemaApi));
+
+/**
+ * The editor `schemaApi` completes and canonicalizes content through, which
+ * reads only that schema, so a detached schema completes with no live editor.
+ *
+ * @internal
+ */
+export const getRepresentationEditorFromApi = (
+  schemaApi: EditorStateSchemaApi
+) => getDefined(REPRESENTATION_EDITOR_BY_API.get(schemaApi));
 
 /** @internal */
 export const placeElementAt = (
@@ -2296,7 +2329,9 @@ export const createEditorSchema = <V extends Value = Value>(
     return Object.freeze(repairs);
   };
 
-  const representationContext = Object.freeze({ getSchema: () => api });
+  const representationEditor = Object.freeze({
+    getSchema: () => api,
+  }) as unknown as Editor<V>;
   const sliceFitter = createCompiledSliceFitterDelegate<V>(() => ({
     canContain,
     collectPropertyRepairs,
@@ -2309,7 +2344,7 @@ export const createEditorSchema = <V extends Value = Value>(
     getDescendant,
     getDocumentRoot,
     getDocumentRootProgram,
-    getEditor: () => representationContext as unknown as Editor<V>,
+    getEditor: () => representationEditor,
     getElementAncestors,
     getElementBehavior,
     getElementContentRoots,
@@ -4961,6 +4996,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
   COMPILED_SCHEMA_BY_API.set(api, getDeclarativeSchema);
   INTERNAL_BY_API.set(api, api);
+  REPRESENTATION_EDITOR_BY_API.set(api, representationEditor);
 
   return api;
 };

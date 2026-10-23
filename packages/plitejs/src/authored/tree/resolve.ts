@@ -4,6 +4,7 @@ import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
 import { elementSplitOutput } from '../../core/default-storage';
+import { readingCovered } from '../../core/property-validity';
 import {
   composeRecordOps,
   deriveValue,
@@ -45,7 +46,12 @@ import {
   type Verdict,
   verdictOf,
 } from './halves';
-import { heldProps, type Place } from './holds';
+import {
+  coverStoredValues,
+  everyElementKeysOf,
+  heldProps,
+  type Place,
+} from './holds';
 import {
   decideKey,
   type FormatTag,
@@ -610,7 +616,11 @@ export const resolveAuthoredChildren = (
   root = 'main',
   options: AuthoredResolveOptions = {}
 ): AuthoredResolution =>
-  getDefined(resolveIn(given, outcome, schema, root, options, null));
+  readingCovered({
+    cover: () => schema && coverStoredValues(schema.ownership, given),
+    read: () =>
+      getDefined(resolveIn(given, outcome, schema, root, options, null)),
+  });
 
 /**
  * A run that reads one rejected cut's verdict under an assignment: the cut
@@ -840,6 +850,53 @@ const resolveIn = (
     const { [AUTHORED_MARKS_KEY]: _marks, ...values } = props;
 
     return values;
+  };
+  // A line that stands in the place of a piece the decision empties takes that
+  // piece's values for keys every element holds, as a mid-line join keeps the
+  // left half's, so the line's start keeps its block id whichever piece goes.
+  const takenKeys: ReadonlySet<string> = schema
+    ? everyElementKeysOf(schema.ownership)
+    : new Set();
+  const otherValuesOf = (props: Readonly<JsonRecord>) => {
+    const values: JsonRecord = valuesOf(props);
+
+    for (const key of takenKeys) delete values[key];
+
+    return values;
+  };
+  const takenBy = new Map<Node, JsonRecord>();
+  const takenFrom = new Map<Node, Node>();
+  const takenValuesOf = (node: Node): JsonRecord => {
+    const passed = takenBy.get(node);
+
+    if (passed) return passed;
+
+    const props = decidedPropsOf(node);
+
+    return Object.fromEntries(
+      [...takenKeys].flatMap((key) =>
+        Object.hasOwn(props, key) ? [[key, props[key]]] : []
+      )
+    );
+  };
+  const withTaken = (props: JsonRecord, taken: JsonRecord) => {
+    let next: JsonRecord | null = null;
+
+    for (const key of takenKeys) {
+      const has = Object.hasOwn(taken, key);
+
+      if (
+        has === Object.hasOwn(props, key) &&
+        (!has || jsonEqual(props[key], taken[key]))
+      ) {
+        continue;
+      }
+      next ??= { ...props };
+      if (has) next[key] = taken[key];
+      else delete next[key];
+    }
+
+    return next ?? props;
   };
   const probed = new Map<string | Node, Map<string, Settled>>();
   const probeUnder = (
@@ -1181,8 +1238,10 @@ const resolveIn = (
 
     if (
       !line ||
-      pending(split).some((mark) => mark.kind === 'format') ||
-      !jsonEqual(valuesOf(propsOf(line)), valuesOf(propsOf(split)))
+      pending(split).some(
+        (mark) => mark.kind === 'format' && !takenKeys.has(mark.key)
+      ) ||
+      !jsonEqual(otherValuesOf(propsOf(line)), otherValuesOf(propsOf(split)))
     ) {
       return null;
     }
@@ -1199,7 +1258,11 @@ const resolveIn = (
       )
     );
 
-    return { occupant, reads: [...removal, ...emptying, ...refilling] };
+    return {
+      line,
+      occupant,
+      reads: [...removal, ...emptying, ...refilling],
+    };
   };
   type JoinBlock = Readonly<{ index: number; mark: AuthoredMark; node: Node }>;
   let joinBlocks: Map<string, JoinBlock[]> | undefined;
@@ -1360,6 +1423,10 @@ const resolveIn = (
 
     if (emptied) {
       waited.push(...emptied.reads);
+      // The piece lands as the line completion builds in the container, so
+      // it takes that line's values, as it does when the container was
+      // completed by an earlier decision.
+      takenFrom.set(emptied.occupant, emptied.line);
       stand(emptied.occupant);
       return;
     }
@@ -1732,6 +1799,9 @@ const resolveIn = (
 
         hidden.add(original);
         if (line) {
+          if (takenKeys.size > 0) {
+            takenBy.set(line, takenValuesOf(takenFrom.get(node) ?? node));
+          }
           moves.push({ after: node, node: line });
           landHere([line]);
         }
@@ -1772,10 +1842,16 @@ const resolveIn = (
         continue;
       }
 
-      const props = propsOf(shell);
+      const taken = takenBy.get(node);
+      const own = propsOf(shell);
+      const props = taken ? withTaken(own, taken) : own;
       const formats = decideFormats(
         props,
-        marks,
+        taken
+          ? marks.filter(
+              (mark) => mark.kind !== 'format' || !takenKeys.has(mark.key)
+            )
+          : marks,
         reading,
         isText(node)
           ? (candidate, key) =>
@@ -1840,6 +1916,7 @@ const resolveIn = (
         props: placedProps,
       };
       const selfChanged =
+        props !== own ||
         (formats?.changed ?? false) ||
         dropsValue ||
         formatted.kept.length !== stored.length ||

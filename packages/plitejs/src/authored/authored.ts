@@ -47,12 +47,16 @@ import {
   getEditorSchema,
   type InternalEditorRuntime,
 } from '../core/editor-runtime';
-import type { InternalEditorSchemaApi } from '../core/editor-schema';
+import {
+  type InternalEditorSchemaApi,
+  withoutGeneration,
+} from '../core/editor-schema';
 import { definePlugin } from '../core/plugin';
 import {
   getCompiledEditorSchema,
   getPluginContributions,
 } from '../core/plugin-registry';
+import { readingCovered } from '../core/property-validity';
 import {
   getActiveEditorUpdateId,
   getCurrentSelection,
@@ -108,6 +112,7 @@ import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
 import {
   blockOccurrencesOf,
+  indexAuthoredChanges,
   type Occurrence,
   readAuthoredDetails,
 } from './changes';
@@ -139,7 +144,7 @@ import {
   type VerdictRecord,
   withStore,
 } from './facts/records';
-import { projectAuthoredDocumentUnder, projectionRefusal } from './format';
+import { projectAuthoredDocumentUnder } from './format';
 import type { BookSink, BookView } from './ledger/book';
 import {
   createReviewLedger,
@@ -160,10 +165,11 @@ import {
 } from './refusal';
 import {
   authoredResolveSchemaOf,
-  ownershipResolveSchemaOf,
+  storedResolveSchemaOf,
 } from './resolve-schema';
 import { characterAlignedChange, decidedContentChange } from './tree/alignment';
 import { relinkCuts } from './tree/cuts';
+import { coverStoredValues } from './tree/holds';
 import { acceptedValues, type FormatTag, type Standing } from './tree/layers';
 import {
   type AuthoredMark,
@@ -1450,12 +1456,15 @@ export const createAuthoredPlugin = (
       documentAdmissionPoint.of(authoredAdmission),
       authoredDocumentCapabilityPoint.of({
         claimsBreakBefore,
+        pending: (document) =>
+          indexAuthoredChanges(document as JsonEditorValue).changes.size,
         project: (document, projection, schema) =>
-          projectionRefusal(document, schema) ??
-          projectAuthoredDocumentUnder(
-            document,
-            projection,
-            ownershipResolveSchemaOf(schema)
+          withoutGeneration(() =>
+            projectAuthoredDocumentUnder(
+              document,
+              projection,
+              storedResolveSchemaOf(schema, document)
+            )
           ),
       }),
     ],
@@ -1712,10 +1721,26 @@ export const createAuthoredPlugin = (
         return decided.result;
       };
 
+      const decideCovered = (
+        decisions: AuthoredDecision | readonly AuthoredDecision[],
+        withdraws = false
+      ) => {
+        const value = tx.value();
+
+        return readingCovered({
+          cover: () =>
+            coverStoredValues(getCompiledEditorSchema(editor), [
+              ...value.children,
+              ...Object.values(value.roots ?? {}).flat(),
+            ]),
+          read: () => apply(decideOn(editor, value, decisions, withdraws)),
+        });
+      };
+
       return {
         decide: txStored(
           (decisions: AuthoredDecision | readonly AuthoredDecision[]) =>
-            apply(decideOn(editor, tx.value(), decisions))
+            decideCovered(decisions)
         ),
         withdraw: txStored((changes: readonly AuthoredChange[]) => {
           const author = authorOf(editor);
@@ -1727,9 +1752,7 @@ export const createAuthoredPlugin = (
             } satisfies AuthoredResult;
           }
 
-          return apply(
-            decideOn(editor, tx.value(), { action: 'reject', changes }, true)
-          );
+          return decideCovered({ action: 'reject', changes }, true);
         }),
         propose: txOnly((input: { changeId?: string } = {}) => {
           const state = stateOf(editor);

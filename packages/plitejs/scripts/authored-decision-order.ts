@@ -23,12 +23,15 @@ import {
   givebackStart,
   LANDED,
   type LinkHalf,
+  generatedQuotesEditor,
+  generatedQuotesSchema,
   quotesEditor,
   quotesSchema,
   recordGiveback,
   resolveWithVerdicts,
   settleAsAdmission,
   type Verdict,
+  idGeneratorCalls,
   withCuts,
   withMarksOf,
   writesOf,
@@ -52,6 +55,7 @@ type Option =
   | 'delete'
   | 'insert'
   | 'join'
+  | 'move'
   | 'split'
   | 'unwrap'
   | 'wrap';
@@ -60,6 +64,7 @@ type Node = {
   align?: string;
   authored?: AuthoredMark[];
   children?: Node[];
+  id?: string;
   text?: string;
   type?: string;
 };
@@ -68,6 +73,9 @@ type Family = (typeof FAMILIES)[number];
 
 const BOUNDARY: readonly Option[] = ['join', 'split'];
 const CONTENT: readonly Option[] = ['delete', 'insert'];
+// A suggested move strikes the block and inserts a copy with its values under
+// the same change; only generated ids tell the copy from new content.
+const MOVABLE: readonly Option[] = [...CONTENT, 'move'];
 const ENCLOSURE: readonly Option[] = ['unwrap', 'wrap'];
 const FORMAT: readonly Option[] = ['align', 'align-center'];
 
@@ -75,7 +83,7 @@ const stray = process.argv
   .slice(2)
   .filter(
     (arg) =>
-      !/^--(?:(?:blocks|changes|family|giveback-changes|giveback-edits|giveback-ops|giveback-script|jobs|marks|together)=.*|init|lower)$/.test(
+      !/^--(?:(?:blocks|changes|family|giveback-changes|giveback-edits|giveback-ops|giveback-script|jobs|marks|schema|together)=.*|init|lower)$/.test(
         arg
       )
   );
@@ -116,11 +124,23 @@ if (family !== undefined && !FAMILIES.includes(family as Family)) {
   process.exit(2);
 }
 const runs = (name: Family) => family === undefined || family === name;
+const schemaFlag = flag('schema') ?? 'plain';
+if (schemaFlag !== 'plain' && schemaFlag !== 'generated') {
+  console.error('--schema takes plain or generated.');
+  process.exit(2);
+}
+// Every element of a generated document has an id, which a decision may only
+// take from stored content.
+const generatedIds = schemaFlag === 'generated';
+const quotes = generatedIds
+  ? { editor: generatedQuotesEditor, schema: generatedQuotesSchema }
+  : { editor: quotesEditor, schema: quotesSchema };
 // Takes a script's name as a failure prints it, to rerun that script alone
 // within the bound.
 const onlyScript = flag('giveback-script');
 const atGate =
   family === undefined &&
+  !generatedIds &&
   onlyScript === undefined &&
   isDeepStrictEqual(bound, GATE) &&
   isDeepStrictEqual(givebackBound, GIVEBACK_GATE);
@@ -143,7 +163,7 @@ const slotsOf = (shape: readonly number[]) =>
   shape.flatMap((block, index) => {
     const paragraph = (first: boolean) => [
       ...(first ? [] : [BOUNDARY]),
-      CONTENT,
+      generatedIds ? MOVABLE : CONTENT,
       CONTENT,
     ];
     if (block === 0) return paragraph(index === 0);
@@ -221,19 +241,36 @@ const build = (shape: readonly number[], picks: readonly Choice[]) => {
       pick && { change: pick.change, kind: pick.option as AuthoredMark['kind'] }
     );
   };
+  const copies: Node[] = [];
+  let unrecorded = false;
   const paragraph = (first: boolean) => {
     const boundary = first ? undefined : next();
-    const content = next();
+    const pick = take();
     const leaf = next();
     const text = String.fromCharCode(97 + letter);
     letter += 1;
+    const id = generatedIds ? { id: `p${text}` } : {};
+    if (pick?.option === 'move') {
+      unrecorded ||= leaf !== undefined;
+      copies.push(
+        withMarksOf({ type: 'paragraph', ...id, children: [{ text }] }, [
+          { change: pick.change, kind: 'insert' },
+        ])
+      );
+    }
+    const content = pick && {
+      change: pick.change,
+      kind: (pick.option === 'move'
+        ? 'delete'
+        : pick.option) as AuthoredMark['kind'],
+    };
     return withMarksOf(
-      { type: 'paragraph', children: [withMarksOf({ text }, [leaf])] },
+      { type: 'paragraph', ...id, children: [withMarksOf({ text }, [leaf])] },
       [boundary, content]
     );
   };
 
-  return shape.map((block, index): Node | null => {
+  const blocks = shape.map((block, index): Node | null => {
     if (block === 0) return paragraph(index === 0);
     const boundary = index === 0 ? undefined : next();
     const content = next();
@@ -242,11 +279,10 @@ const build = (shape: readonly number[], picks: readonly Choice[]) => {
     const children = Array.from({ length: block }, (_, inner) =>
       paragraph(inner === 0)
     );
-    const quote: Node = withMarksOf({ type: 'quote', children }, [
-      boundary,
-      content,
-      enclosure,
-    ]);
+    const quote: Node = withMarksOf(
+      { type: 'quote', ...(generatedIds ? { id: `q${index}` } : {}), children },
+      [boundary, content, enclosure]
+    );
     if (!format) return quote;
     if (insertedBy(quote, format.change)) return null;
     return {
@@ -255,6 +291,23 @@ const build = (shape: readonly number[], picks: readonly Choice[]) => {
       authored: [...(quote.authored ?? []), alignTag(format.change)],
     };
   });
+  // The recorder lands a moved block's copy where it goes, here the end, and
+  // a copy of a leaf another change marks is not one it writes.
+  return unrecorded ? [null] : [...blocks, ...copies];
+};
+
+// Links a cut adds get ids too, since a generated id is on every element.
+const withIds = (nodes: readonly Node[]) => {
+  let count = 0;
+  const visit = (node: Node): Node =>
+    node.text === undefined
+      ? {
+          ...node,
+          ...(node.id ? {} : { id: `n${(count += 1)}` }),
+          children: node.children?.map(visit),
+        }
+      : node;
+  return nodes.map(visit);
 };
 
 const cutFlags = (blocks: readonly Block2[]) =>
@@ -280,7 +333,8 @@ const generate = () => {
         const blocks = build(shape, picks);
         if (blocks.includes(null)) continue;
         for (const flags of cutFlags(blocks as Block2[])) {
-          const document = withCuts(blocks as Block2[], flags) as Node[];
+          const cut = withCuts(blocks as Block2[], flags) as Node[];
+          const document = generatedIds ? withIds(cut) : cut;
           documents.set(JSON.stringify(document), document);
         }
       }
@@ -329,7 +383,7 @@ const changesIn = (nodes: readonly Node[]) => {
 const normalize = (generated: readonly Node[]) => {
   try {
     return JSON.stringify(
-      expandContexts(quotesEditor(generated).read.value()).children
+      expandContexts(quotes.editor(generated).read.value()).children
     );
   } catch {
     return null;
@@ -571,7 +625,7 @@ const quotesWalk = (
     const now = new Map([...decided, ...deciding]);
     return {
       kind: 'settled',
-      state: settleAsAdmission(now, result, landed, quotesSchema),
+      state: settleAsAdmission(now, result, landed, quotes.schema),
     };
   };
   return {
@@ -585,19 +639,27 @@ const quotesWalk = (
       };
     },
     start: { children: document, landed: LANDED },
-    step: (state, decided, deciding) =>
-      outcomeOf(
+    step: (state, decided, deciding) => {
+      const generatedBefore = idGeneratorCalls.count;
+      const outcome = outcomeOf(
         resolveWithVerdicts(
           decided,
           state.children,
           all(deciding),
-          quotesSchema,
+          quotes.schema,
           state.landed
         ),
         decided,
         deciding,
         state.landed
-      ),
+      );
+      const made = idGeneratorCalls.count - generatedBefore;
+      if (made === 0) return outcome;
+      return {
+        kind: 'refused',
+        reason: `calls the id generator ${made} times`,
+      };
+    },
   };
 };
 
@@ -796,7 +858,12 @@ if (shard === 'normalize') {
     Promise.all(
       Array.from({ length: jobs }, async (_, index) => {
         const child = Bun.spawn(
-          [process.execPath, ...process.execArgv, process.argv[1]],
+          [
+            process.execPath,
+            ...process.execArgv,
+            process.argv[1],
+            ...process.argv.slice(2),
+          ],
           {
             env: { ...process.env, AUTHORED_ORDER_SHARD: role },
             stderr: 'inherit',

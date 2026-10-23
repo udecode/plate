@@ -698,6 +698,64 @@ describe('authored review tree decisions that complete', () => {
     }
   });
 
+  const Keyed = define('decide-emptied-keyed', {
+    elements: {
+      paragraph: { content: textMin1() },
+      quote: { content: c.type('paragraph', { min: 1 }) },
+    },
+    properties: [
+      schema.elementProperty('key', property.string(), {
+        role: 'metadata',
+        split: 'drop',
+        target: target.group('element'),
+      }),
+    ],
+    root: blocks('paragraph', 'quote'),
+  });
+  const landsKeyed = (splitMarks: readonly object[]) => {
+    const value = [
+      el(
+        'quote',
+        whole({ ...el('paragraph', t('a')), key: 'k1' }, 'delete', 'a:1')
+      ),
+      { ...el('paragraph', t('b')), authored: splitMarks, key: 'k2' },
+    ];
+    const accept = { action: 'accept', changes: ['a:1'] } as const;
+    const reject = { action: 'reject', changes: ['b:1'] } as const;
+    const together = decided(Keyed, value, [accept, reject]);
+    const inTurn = decided(Keyed, value, accept, reject);
+
+    assert.deepEqual(
+      [...together.results, ...inTurn.results].map(({ status }) => status),
+      ['applied', 'applied', 'applied']
+    );
+    assert.deepEqual(plain(inTurn.children), plain(together.children));
+
+    return plain(together.children);
+  };
+
+  it('lands a rejected split in the quote the decision empties whatever the two lines hold under a key every element holds, as accepting the deletion first does', () => {
+    assert.deepEqual(landsKeyed([mark('split', 'b:1')]), [
+      el('quote', el('paragraph', t('b'))),
+    ]);
+  });
+
+  it('lands a rejected split in the quote the decision empties while another suggestion sets that key on the split line, as accepting the deletion first does', () => {
+    assert.deepEqual(
+      landsKeyed([
+        mark('split', 'b:1'),
+        {
+          ...mark('format', 'c:1'),
+          before: 'kb',
+          id: 'c-key',
+          key: 'key',
+          write: { kind: 'set', value: 'k2' },
+        },
+      ]),
+      [el('quote', el('paragraph', t('b')))]
+    );
+  });
+
   it('rejoins a rejected split past a quote whose unwrap it decides with the deletion of the quote’s paragraph, as deciding the two in turn does', () => {
     const value = [
       el('paragraph', t('x')),

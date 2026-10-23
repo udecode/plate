@@ -518,6 +518,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         editor.api.markdown.serialize({
           document: {
             children: document.children,
+            ...(document.records ? { records: document.records } : {}),
             ...(document.roots ? { roots: document.roots } : {}),
           },
           projection: 'proposed',

@@ -1,11 +1,7 @@
 import { dequal } from 'dequal';
 
 import type { AuthoredProjectionDiagnostic } from '../../../authored';
-import {
-  AuthoredPlugin,
-  projectAuthoredDocument,
-  projectAuthoredRange,
-} from '../../../authored';
+import { AuthoredPlugin, projectAuthoredRange } from '../../../authored';
 import {
   type BasePluginInput,
   type Descendant,
@@ -17,6 +13,7 @@ import {
   type Path,
   type Range,
 } from '../../../core';
+import { projectPlateFormatDocument } from '../../../lib/editor/withPlite';
 import type { EditorStaticProps } from '../../../static/components/PlateStatic';
 import { renderStaticHtmlWithOverrides } from '../../../static/internal/renderStaticHtmlWithOverrides';
 import type { StaticHtmlResult } from '../../../static/renderStaticHtml';
@@ -150,7 +147,7 @@ const captureExportSnapshot = (
     });
   }
 
-  const projected = projectAuthoredDocument(stored, { projection });
+  const projected = projectPlateFormatDocument(editor, stored, projection);
 
   return Object.freeze({
     diagnostics: projected.diagnostics,
