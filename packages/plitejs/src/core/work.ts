@@ -55,12 +55,16 @@ export type CoreWork = {
   reconciles: number;
   /** Runs of tokens a step recorded as relocated from another place. */
   relocations: number;
+  /** Nodes a mapping bound as they landed. */
+  landedNodeBinds: number;
   /** Root snapshots built from a root's current children. */
   rootSnapshots: number;
   /** Change sections read to map a position or compose a change. */
   sectionsWalked: number;
   /** Snapshot indexes built over a root's children. */
   snapshotIndexes: number;
+  /** Whole-root walks a snapshot index made to find a key it lacked. */
+  snapshotIndexWalks: number;
   /** Projected roots a frame installs as its snapshot's roots. */
   snapshotRoots: number;
   /** Sequence items a walk visited in order. */
@@ -109,9 +113,11 @@ export const coreWork: CoreWork = {
   projectionChanges: 0,
   reconciles: 0,
   relocations: 0,
+  landedNodeBinds: 0,
   rootSnapshots: 0,
   sectionsWalked: 0,
   snapshotIndexes: 0,
+  snapshotIndexWalks: 0,
   snapshotRoots: 0,
   walkedSlots: 0,
   wholeReadNodes: 0,

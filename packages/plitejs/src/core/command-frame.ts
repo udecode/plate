@@ -14,7 +14,7 @@ import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
-import { bindNodeKeyOnce } from '../utils/node-keys';
+import { bindNodeKeyOnce, deferNodeKeys } from '../utils/node-keys';
 import { enterAnchorScope } from './anchor-state';
 import {
   DocumentChange,
@@ -42,7 +42,7 @@ import {
   type PositionMap,
   runEditorDraftGuards,
 } from './document-recorder';
-import { getEditorSchema } from './editor-runtime';
+import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   advanceSnapshotIndex,
@@ -370,10 +370,13 @@ const enterFrameDraft = (
   snapshot.baseSnapshots = {};
   for (const root of projected.map.roots) {
     let mapped: SnapshotIndex | undefined;
-    snapshot.baseRuntimeIndexes[root] = () =>
+    const settle = () =>
       (mapped ??= frameIndexOf(editor, stored, projected, root, () =>
         storedIndex(root)
       ));
+
+    snapshot.baseRuntimeIndexes[root] = settle;
+    deferNodeKeys(getEditorRuntimeOwner(editor), frame.id, root, settle);
   }
   // The accept-all projection of a valid review tree is valid, so the frame
   // adopts it as its validated baseline.

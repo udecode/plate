@@ -1308,8 +1308,8 @@ describe('JSON document change algebra', () => {
       );
 
       assert.equal(hasMaterializedDocumentSliceTokens(slice), false);
-      assert.equal(getNodeKeyForNode(after.node([1]), owner), null);
-      assert.equal(getNodeKeyForNode(after.node([1, 0]), owner), null);
+      assert.equal(getNodeKeyForNode(after.node([1]), owner), blockNodeKey);
+      assert.equal(getNodeKeyForNode(after.node([1, 0]), owner), textNodeKey);
       assert.match(blockNodeKey, /^p\d+$/);
       assert.match(textNodeKey, /^p\d+$/);
       if (query === 'keyAt') {

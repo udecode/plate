@@ -99,6 +99,9 @@ export const testModuleEffects = {
       'packages/plitejs/test/utils/deep-equal/**',
     ],
   },
+  'packages/plitejs/test/insert-node-keys-contract.test.ts': {
+    runs: ['packages/plitejs/test/support/discard-arms.ts'],
+  },
   'packages/plitejs/test/pagination/package-config-contract.test.ts': {
     reads: ['packages/plitejs/package.json'],
   },

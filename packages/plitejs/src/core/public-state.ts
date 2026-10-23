@@ -143,6 +143,8 @@ import {
 import type { MaximizeMode } from '../types/types';
 import { getDefaultInsertLocation } from '../utils';
 import {
+  deferNodeKeys,
+  dropDeferredNodeKeys,
   getNodeKeyForNode,
   getOrCreateNodeKey,
   inheritNodeKey,
@@ -192,6 +194,7 @@ import {
   DocumentIndex,
   type NodeList,
   childAtPathIndex,
+  rootNodesOf,
 } from './change/document-index';
 import {
   copyFields,
@@ -373,6 +376,7 @@ import {
   buildSnapshotIndex,
   captureSnapshotIndexMapping,
   getSnapshotIndexElementEntries,
+  indexSurelyHoldsNodeKey,
   mapSnapshotIndexThroughChange,
   type NodeKeyBinding,
 } from './snapshot-index';
@@ -3334,6 +3338,52 @@ export const getPathByNodeKey = (
   const path = getCurrentRuntimeIndex(editor).pathOf(nodeKey);
 
   return path ? ([...path] as Path) : null;
+};
+
+export const findLiveNodeKeys = (
+  owner: Editor,
+  nodeKeys: readonly NodeKey[]
+): ReadonlySet<NodeKey> => {
+  if (nodeKeys.length === 0) return new Set();
+
+  const snapshot = getDefined(getTransactionSnapshot(owner));
+  const roots = getEditorDocumentRoots(owner);
+  const committedRoots = ROOTS.get(owner);
+  const currentRoot = getCurrentChildrenRoot(owner);
+  let committedCurrentIndex: SnapshotIndex | null | undefined;
+  const heldHereAtCommit = (nodeKey: NodeKey) => {
+    committedCurrentIndex ??=
+      SNAPSHOT_CACHE.get(owner)?.get(currentRoot)?.index ?? null;
+
+    return (
+      !!committedCurrentIndex &&
+      indexSurelyHoldsNodeKey(owner, committedCurrentIndex, nodeKey)
+    );
+  };
+  const pending = new Set(nodeKeys);
+  const live = new Set<NodeKey>();
+
+  for (const root of Object.keys(roots)) {
+    if (pending.size === 0) break;
+    const unchangedSinceCommit =
+      root !== currentRoot &&
+      !!committedRoots &&
+      rootNodesOf(roots, root) === rootNodesOf(committedRoots, root);
+    const keys = [...pending].filter(
+      (nodeKey) => !(unchangedSinceCommit && heldHereAtCommit(nodeKey))
+    );
+
+    if (keys.length === 0) continue;
+    const index = retainTransactionSnapshotIndex(owner, snapshot, root);
+
+    for (const nodeKey of keys) {
+      if (!index.pathOf(nodeKey)) continue;
+      pending.delete(nodeKey);
+      live.add(nodeKey);
+    }
+  }
+
+  return live;
 };
 
 export const getLastCommit = (editor: Editor): EditorCommit | null =>
@@ -8286,18 +8336,25 @@ export const createTransactionSpecContext = (
     selection,
   };
   const currentChildrenRoot = getCurrentChildrenRoot(editor);
-  const baseRuntimeIndex = parentSnapshot
-    ? () =>
-        retainTransactionSnapshotIndex(
-          editor,
-          parentSnapshot,
-          currentChildrenRoot
-        )
-    : (() => {
-        const baseSnapshot = getSnapshot(editor);
+  const baseRuntimeIndexes: Record<string, () => SnapshotIndex> = {};
 
-        return () => baseSnapshot.index;
-      })();
+  if (parentSnapshot) {
+    for (const root of Object.keys(roots)) {
+      baseRuntimeIndexes[root] = () =>
+        retainTransactionSnapshotIndex(editor, parentSnapshot, root);
+    }
+  } else {
+    const baseSnapshot = getSnapshot(editor);
+
+    for (const [root, cached] of SNAPSHOT_CACHE.get(
+      getEditorRuntimeOwner(editor)
+    ) ?? []) {
+      if (rootNodesOf(cached, 'children') === rootNodesOf(roots, root)) {
+        baseRuntimeIndexes[root] = () => cached.index;
+      }
+    }
+    baseRuntimeIndexes[currentChildrenRoot] = () => baseSnapshot.index;
+  }
   const records = getEditorDocumentRecords(editor);
   const source =
     parentSnapshot?.builder ??
@@ -8311,7 +8368,7 @@ export const createTransactionSpecContext = (
     activeChange: { change: builder.change },
     afterCommitHandlers: [],
     annotations: new Map(),
-    baseRuntimeIndexes: { [currentChildrenRoot]: baseRuntimeIndex },
+    baseRuntimeIndexes,
     baseSnapshots: {},
     builder,
     childrenRoot: getCurrentChildrenRoot(editor),
@@ -8388,6 +8445,7 @@ export const disposeTransactionSpecContext = (
   context: TransactionSpecContext
 ) => {
   closeScopedTransactionAnchors(context.snapshot);
+  dropDeferredNodeKeys(getEditorRuntimeOwner(editor), context.id);
   const contexts = TRANSACTION_SPEC_CONTEXTS.get(editor);
 
   if (contexts?.at(-1) !== context) {
@@ -10606,7 +10664,7 @@ const inheritDocumentChangeStepNodeKeys = (
   editor: Editor,
   snapshot: TransactionSnapshot,
   step: DocumentChangeStep,
-  options: Readonly<{ defer?: boolean }> = {}
+  options: Readonly<{ defer?: TransactionSpecContext['id'] }> = {}
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const publishNodeKeys = getTransactionSpecContext(editor)?.kind !== 'spec';
@@ -10696,9 +10754,11 @@ const inheritDocumentChangeStepNodeKeys = (
 
     if (options.defer) {
       let mappedIndex: SnapshotIndex | undefined;
+      const settle = () => (mappedIndex ??= mapIndex());
 
       delete snapshot.rootIndexes[root];
-      snapshot.baseRuntimeIndexes[root] = () => (mappedIndex ??= mapIndex());
+      snapshot.baseRuntimeIndexes[root] = settle;
+      deferNodeKeys(owner, options.defer, root, settle);
       continue;
     }
 
@@ -10767,7 +10827,9 @@ const applyTransactionSpecDocumentChangeStep = (
         defer:
           specContext.kind === 'spec' &&
           explicitSelection !== undefined &&
-          !changedRoots.some(([root]) => hasBookmarksIn(carets.book, root)),
+          !changedRoots.some(([root]) => hasBookmarksIn(carets.book, root))
+            ? specContext.id
+            : undefined,
       })
   );
   const selectionRuntimeIndexes = runtimeIndexes.get(selectionRoot);

@@ -573,6 +573,7 @@
         "$TURBO_ROOT$/packages/plitejs/src/transforms-text/delete-text-whole-blocks.ts",
         "$TURBO_ROOT$/packages/plitejs/test/interfaces/**",
         "$TURBO_ROOT$/packages/plitejs/test/normalization/**",
+        "$TURBO_ROOT$/packages/plitejs/test/support/discard-arms.ts",
         "$TURBO_ROOT$/packages/plitejs/test/support/snapshot.ts",
         "$TURBO_ROOT$/packages/plitejs/test/transforms/**",
         "$TURBO_ROOT$/packages/plitejs/test/tsconfig.json",

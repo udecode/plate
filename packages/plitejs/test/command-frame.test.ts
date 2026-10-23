@@ -4,6 +4,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   defineCommand,
+  defineEditorSchema,
   defineEffect,
   definePlugin,
   defineUpdateAnnotation,
@@ -16,12 +17,14 @@ import {
   PathApi,
   type PluginReference,
   type Point,
+  schema,
   SelectionApi,
   locateAt,
   txLocate,
   txSelection,
 } from 'plitejs';
 
+import { createAuthoredPlugin } from '../src/authored/authored';
 import { DocumentIndex } from '../src/core/change/document-index';
 import { getCommandRuntime } from '../src/core/command-definition';
 import {
@@ -435,6 +438,101 @@ describe('command frame', () => {
     assert.deepEqual(editor.read.value().children, [
       { children: [paragraph('a')], marked: true, type: 'quote' },
     ]);
+  });
+
+  it('gives a copy its own key when a method copies a block the projection rebuilt', () => {
+    let keys: unknown[] = [];
+    const Copy = definePlugin('copy', {
+      update: ({ tx }: any) => ({
+        copyFirst: txLocate(false, () => {
+          tx.nodes.insert(tx.children()[0], { at: [1] });
+          const copy = tx.children()[1];
+
+          keys = [tx.key([0]), tx.key([1]), tx.key(copy)];
+          tx.nodes.set({ marked: true }, { at: [0] });
+          tx.nodes.remove({ at: copy });
+        }),
+      }),
+    });
+    const editor = framedEditor(
+      [
+        {
+          children: [paragraph('gone', { hidden: true }), paragraph('kept')],
+          type: 'quote',
+        },
+      ],
+      { plugins: [Copy] }
+    );
+
+    editor.key([0, 1]);
+    editor.update.copy.copyFirst();
+    const [source, copy, copyByObject] = keys;
+
+    assert.deepEqual(
+      [
+        typeof copy === 'string' && copy !== source && copy === copyByObject,
+        editor.read.children().map((node: any) => node.marked),
+      ],
+      [true, [true]]
+    );
+  });
+
+  it('gives a copy its own key when a method copies a block beside one a pending deletion hides', () => {
+    const deleted = [{ at: 1, author: 'bob', change: 'bob:1', kind: 'delete' }];
+    let keys: unknown[] = [];
+    let count = 0;
+    const Copy = definePlugin('copy', {
+      update: ({ tx }: any) => ({
+        copyLast: txLocate(false, () => {
+          tx.nodes.insert(tx.children()[2], { at: [3] });
+          keys = [tx.key([2]), tx.key([3]), tx.key(tx.children()[3])];
+          tx.nodes.remove({ at: [3] });
+        }),
+      }),
+    });
+    const editor = createEditor({
+      initialValue: [
+        {
+          authored: deleted,
+          children: [{ authored: deleted, text: 'gone' }],
+          type: 'paragraph',
+        },
+        paragraph('a'),
+        paragraph('b'),
+        paragraph('c'),
+      ] as never,
+      plugins: [
+        defineEditorSchema('frame-blocks', {
+          elements: { paragraph: { content: schema.content.text() } },
+          id: 'frame-blocks',
+          root: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          unknown: 'reject',
+          version: 1,
+        }),
+        Copy,
+        createAuthoredPlugin({
+          authorId: 'alice',
+          createChangeId: () => `alice:${(count += 1)}`,
+          createTagId: () => `alice-tag:${(count += 1)}`,
+          intent: 'edit',
+          now: () => 1,
+        }),
+      ],
+    });
+
+    editor.update.copy.copyLast();
+    const [source, copy, copyByObject] = keys;
+
+    assert.deepEqual(
+      [
+        typeof copy === 'string' && copy !== source && copy === copyByObject,
+        editor.key([3]),
+      ],
+      [true, source]
+    );
   });
 
   it('runs a selection-only plugin method on the stored document', () => {
