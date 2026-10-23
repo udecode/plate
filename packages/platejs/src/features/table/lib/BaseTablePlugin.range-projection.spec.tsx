@@ -4,7 +4,7 @@
 import type { TestEditor } from '#platejs-test-internal';
 import { jsxt } from '#platejs-test-internal';
 
-import type { Element } from '../../../core';
+import type { Descendant, Element } from '../../../core';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -13,12 +13,10 @@ import {
 describe('table grid contracts', () => {
   jsxt;
 
-  const getTableShape = (element: Element) =>
+  const getTableShape = (node: Descendant) =>
     JSON.parse(
-      JSON.stringify(element, (key, value) =>
-        key === 'id' ? undefined : value
-      )
-    ) as Element;
+      JSON.stringify(node, (key, value) => (key === 'id' ? undefined : value))
+    );
 
   describe('table range projection', () => {
     describe('when selection is from cell 12 to 22', () => {

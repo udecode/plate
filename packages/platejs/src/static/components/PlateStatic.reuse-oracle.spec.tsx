@@ -801,7 +801,7 @@ const readDocument = (editor: Editor) => {
   for (const node of editor.read.children()) {
     const key = captionKey(node);
 
-    if (key) roots[key] = editor.read.root(key) as readonly Element[];
+    if (key) roots[key] = editor.read.root(key);
   }
 
   return withRoots(editor.read.children(), roots);

@@ -240,7 +240,7 @@ describe('DOCX list round trip', () => {
     expect(await structure(parseMarkdown('1. a\n2. [ ] t\n'))).toEqual([[1]]);
   });
 
-  const starts = async (value: unknown[]) => {
+  const starts = async (value: Value) => {
     const result = await exportDocx(
       createEditor({ initialValue: value, plugins: BaseListKit }),
       { lossPolicy: 'allow', projection: 'proposed' }

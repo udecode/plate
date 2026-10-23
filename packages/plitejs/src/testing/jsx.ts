@@ -1,10 +1,10 @@
 import {
   type Descendant,
-  type EditorSelection,
   type Element,
   type Range,
   type Selection,
   type Text,
+  type TextSelection,
   RangeApi,
   createEditor as createPliteEditor,
 } from '..';
@@ -21,7 +21,7 @@ export { createEditor, createHyperscript } from '../hyperscript';
 
 export type TestEditorFixture = {
   children: Element[];
-  selection?: Selection<EditorSelection>;
+  selection?: Selection<TextSelection>;
 };
 
 export type TestEditor = TestEditorFixture;

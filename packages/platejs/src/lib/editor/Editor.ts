@@ -107,29 +107,22 @@ export type InternalBaseEditorWithPlugins<
 
 /** Editor selected by value, runtime plugins, Plate plugins, and schema. */
 export type Editor<
-  V extends Value = never,
+  V extends Value = Value,
   TRuntimePlugins extends readonly unknown[] = never,
   TPlugins = never,
   TSchema = undefined,
 > = [TPlugins] extends [never]
-  ? [V] extends [never]
-    ? InternalBaseEditorWithInstalledPlugins<
-        any,
-        AnyBasePluginDefinition,
-        AnyBasePluginDefinition,
-        readonly RuntimePluginReference[]
-      >
-    : InternalBaseEditorWithInstalledPlugins<
-        V,
-        AnyBasePluginDefinition,
-        AnyBasePluginDefinition,
-        [TRuntimePlugins] extends [never]
-          ? readonly RuntimePluginReference[]
-          : TRuntimePlugins
-      >
+  ? InternalBaseEditorWithInstalledPlugins<
+      V,
+      AnyBasePluginDefinition,
+      AnyBasePluginDefinition,
+      [TRuntimePlugins] extends [never]
+        ? readonly RuntimePluginReference[]
+        : TRuntimePlugins
+    >
   : InferBaseEditorPlugins<TPlugins> extends infer D
     ? InternalBaseEditorWithInstalledPlugins<
-        [V] extends [never] ? Value : V,
+        V,
         D,
         InternalBaseEditorMutationProvider<TPlugins, D, TSchema>,
         [TRuntimePlugins] extends [never] ? readonly [] : TRuntimePlugins

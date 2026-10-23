@@ -341,22 +341,22 @@ module，不复制生成的 contract。
 }
 ```
 
-生成的 TypeScript 模块会导出精确的 editor/value 类型和静态 schema handle。
+生成的 TypeScript 模块会导出精确的 `Value` 类型和静态 schema handle。
 编译后的 schema 指纹保存在生成的 JSON 合约中。两种产物都不负责运行时插件组合：
 
 ```tsx title="src/editor/document-editor.tsx"
-import { EditorRoot, useCreateEditor } from "platejs/react";
+import { createEditor, EditorRoot, useCreateEditor } from "platejs/react";
 
-import {
-  schema as generatedSchema,
-  type Editor,
-  type Value,
-} from "./plugins.generated";
+import { schema as generatedSchema, type Value } from "./plugins.generated";
 import { EditorKit, EditorSchema } from "./editor";
 
-export function insertDocumentContent(editor: Editor) {
-  editor.update.heading.insert({ level: 1 });
-  editor.update.table.set({ marginLeft: 24 });
+export const createDocumentEditor = (initialValue?: Value) =>
+  createEditor({ plugins: EditorKit, schema: EditorSchema, initialValue });
+
+export type DocumentEditorInstance = ReturnType<typeof createDocumentEditor>;
+
+export function insertDocumentContent(editor: DocumentEditorInstance) {
+  editor.update.heading.toggle({ level: 1 });
 }
 
 export function DocumentEditor({ initialValue }: { initialValue: Value }) {
@@ -368,14 +368,19 @@ export function DocumentEditor({ initialValue }: { initialValue: Value }) {
 
   generatedSchema.properties.reviewState.key;
 
-  return <EditorRoot editor={editor} />;
+  return (
+    <EditorRoot editor={editor}>
+      <button type="button" onClick={() => insertDocumentContent(editor)}>
+        Heading
+      </button>
+    </EditorRoot>
+  );
 }
-
-export type DocumentEditorInstance = Editor;
 ```
 
-生成的 `Value` 和 `Editor` 只用于存储、协作和导出应用类型等静态边界。运行时
-constructor 和 hook 直接使用手写的 `EditorKit` 和 `EditorSchema`。
+生成的 `Value` 用于存储和协作等静态边界。运行中编辑器的文档类型是 `platejs` 的通用
+`Value`，所以它永远不是生成的 `Editor` 类型。接收编辑器的辅助函数使用工厂函数的返回类型，如 `insertDocumentContent`；只需要核心 API 时，使用 `platejs/react`
+的普通 `Editor`。运行时 constructor 和 hook 直接使用手写的 `EditorKit` 和 `EditorSchema`。
 
 CI 命令会重新编译手写的 editor module，并在已提交的生成产物过期时失败。
 
@@ -636,8 +641,8 @@ const editor = createEditor({
 
 ## 类型化编辑器
 
-`createEditor` 会根据安装的插件元组派生文档值和插件 API。
-`initialValue` 会根据该 schema 派生的值进行检查。
+`createEditor` 会根据安装的插件元组派生插件 API、read、update 和 store。编辑器的文档类型是
+`Value`。TypeScript 会根据 `Value` 检查 `initialValue`，但初始文档不会收窄编辑器类型，因为文档在第一次编辑后就会变化。
 
 ### 插件类型
 
@@ -658,11 +663,10 @@ editor.update((tx) => {
 
 ### 值类型
 
-先传入插件元组和初始文档创建编辑器，再从推断出的实例派生
-`typeof editor` 和 `ValueOf<typeof editor>`。
+无论 `initialValue` 是什么，每个编辑器的文档类型都是 `Value`。用 `typeof editor`
+命名编辑器类型；其他模块需要它时，使用工厂函数的 `ReturnType`。
 
 ```ts
-import type { ValueOf } from "platejs";
 import { createEditor, LinkPlugin } from "platejs/react";
 import { TablePlugin } from "platejs/table/react";
 
@@ -679,8 +683,17 @@ const editor = createEditor({
 });
 
 export type MyEditor = typeof editor;
-export type MyValue = ValueOf<typeof editor>;
 ```
+
+按插件读取节点，即可得到它的精确类型：
+
+```ts
+const table = editor.read.nodes.get([0], { type: TablePlugin })?.[0];
+```
+
+接收这个编辑器的辅助函数使用 `MyEditor`。只需要核心 API 的辅助函数接收 `platejs/react`
+的普通 `Editor`。需要覆盖整个插件图的单一精确递归 `Value`
+时，在存储和协作边界使用[精确的生成编辑器类型](#精确的生成编辑器类型)一节中生成的类型。
 
 组件从 context 读取当前 editor，无需重复 plugin tuple：
 

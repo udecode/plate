@@ -1154,7 +1154,7 @@ describe('table clipboard contracts', () => {
       assert.equal((slice.content[0] as Element).type, 'table');
       target.update.slice.replace(slice);
 
-      const table = target.read.children()[0] as Element;
+      const table = target.read.children()[0];
 
       assert.deepEqual(
         table.children.map((row) =>
@@ -1203,7 +1203,7 @@ describe('table clipboard contracts', () => {
 
       editor.update.fragment.replace([{ text: 'plain' }]);
 
-      const table = editor.read.children()[0] as Element;
+      const table = editor.read.children()[0];
       const row = table.children[0] as Element;
       const cells = row.children as Element[];
 

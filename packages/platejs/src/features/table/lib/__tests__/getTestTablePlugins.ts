@@ -50,7 +50,7 @@ export const createTestBaseTableEditor = (
 
 export const createTestTableEditor = (
   options: Omit<
-    CreateEditorOptions<Value, readonly BasePluginInput[]>,
+    CreateEditorOptions<readonly BasePluginInput[]>,
     'initialValue'
   > & {
     initialValue?: InitialValue<Value>;
@@ -64,7 +64,6 @@ export const createTestTableEditor = (
     : (rest.plugins ?? []);
 
   return createEditor<
-    Value,
     readonly BasePluginInput[],
     EditorApplicationSchema | undefined
   >({

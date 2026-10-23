@@ -46,9 +46,7 @@ const DisplayPlugin = definePlugin('display', {
 
 const plateEditor = createEditor({
   plugins: [DisplayPlugin],
-  initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }] as [
-    { children: [{ text: string }]; type: 'paragraph' },
-  ],
+  initialValue: [{ children: [{ text: 'hello' }], type: 'paragraph' }],
 });
 
 const nestedLevel: 1 | 2 = basePlateEditor
@@ -89,13 +87,3 @@ DisplayPlugin.configure({
 
 // @ts-expect-error custom editor api should stay narrow
 plateEditor.api.display.getLabel('extra');
-
-const invalidInferredValue: typeof plateValue = [
-  {
-    children: [{ text: 'nope' }],
-    // @ts-expect-error Explicit initial values retain their exact element type.
-    type: 'applicationNode',
-  },
-];
-
-void invalidInferredValue;

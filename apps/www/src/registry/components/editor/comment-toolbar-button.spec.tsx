@@ -167,7 +167,7 @@ it("lists a rejected suggestion's conversation as detached, not on the text besi
       target: { id: changeId, type: 'change' },
     })
   );
-  const view = renderButton(editor as never);
+  const view = renderButton(editor);
 
   act(() => {
     const authored = editor.plugin(AuthoredPlugin);

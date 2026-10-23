@@ -28,11 +28,10 @@ type UseCreateEditorReturn<TEnabled, TEditor> = TEnabled extends false
     : TEditor | null;
 
 type UseCreateEditorResult<
-  V extends Value,
   TPlugins extends readonly RuntimePluginReference[],
   TSchema,
 > = Editor<
-  V,
+  Value,
   RuntimePluginsFromTuple<TPlugins>,
   PlatePluginsFromTuple<TPlugins>,
   TSchema
@@ -79,49 +78,25 @@ type UseCreateEditorResult<
  * @see {@link createEditor} for imperative editor creation.
  */
 export function useCreateEditor<
-  const TInitialValue extends Value,
+  const TSchema extends EditorApplicationSchema | undefined = undefined,
+  TEnabled extends boolean | undefined = undefined,
+>(
+  options?: CreateEditorOptions<readonly [], TSchema> & {
+    enabled?: TEnabled;
+  },
+  deps?: React.DependencyList
+): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<readonly [], TSchema>>;
+export function useCreateEditor<
   const TPlugins extends readonly RuntimePluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
   TEnabled extends boolean | undefined = undefined,
 >(
-  options: Omit<
-    CreateEditorOptions<Value, TPlugins, TSchema>,
-    'initialValue'
-  > & {
-    enabled?: TEnabled;
-    initialValue: TInitialValue;
-    plugins: TPlugins;
-  },
-  deps?: React.DependencyList
-): UseCreateEditorReturn<
-  TEnabled,
-  UseCreateEditorResult<TInitialValue, TPlugins, TSchema>
->;
-export function useCreateEditor<
-  V extends Value = Value,
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
-  TEnabled extends boolean | undefined = undefined,
->(
-  options?: CreateEditorOptions<V, readonly [], TSchema> & {
-    enabled?: TEnabled;
-  },
-  deps?: React.DependencyList
-): UseCreateEditorReturn<
-  TEnabled,
-  UseCreateEditorResult<V, readonly [], TSchema>
->;
-export function useCreateEditor<
-  V extends Value = Value,
-  const TPlugins extends readonly RuntimePluginReference[] = readonly [],
-  const TSchema extends EditorApplicationSchema | undefined = undefined,
-  TEnabled extends boolean | undefined = undefined,
->(
-  options: CreateEditorOptions<V, TPlugins, TSchema> & {
+  options: CreateEditorOptions<TPlugins, TSchema> & {
     enabled?: TEnabled;
     plugins: TPlugins;
   },
   deps?: React.DependencyList
-): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<V, TPlugins, TSchema>>;
+): UseCreateEditorReturn<TEnabled, UseCreateEditorResult<TPlugins, TSchema>>;
 export function useCreateEditor(
   options: object = {},
   deps: React.DependencyList = []

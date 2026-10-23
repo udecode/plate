@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import type { TestEditor } from '#platejs-test-internal';
 import { jsxt } from '#platejs-test-internal';
 
-import { NodeApi } from '../../../core';
+import { ElementApi, NodeApi } from '../../../core';
 import {
   createTestTableEditor,
   getTestTablePlugins,
@@ -142,9 +142,10 @@ describe('table merge', () => {
         expect(view.cells).toHaveLength(4);
         expect(view.table[1]).toEqual([0]);
         const table = editor.read.slice.get().content[0];
-        const firstRow = table?.children[0] as TableRowElement | undefined;
+        assert.ok(ElementApi.isElement(table));
+        const firstRow = table.children[0] as TableRowElement | undefined;
 
-        expect(table?.children).toHaveLength(2);
+        expect(table.children).toHaveLength(2);
         expect(firstRow?.children).toHaveLength(2);
       });
 

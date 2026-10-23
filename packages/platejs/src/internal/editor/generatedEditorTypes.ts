@@ -45,29 +45,12 @@ export type GeneratedEditorTypeProvider<
   EditorValueTypeProvider<() => TTypes['value']> &
   Readonly<{ [generatedEditorTypes]: () => TTypes }>;
 
-type GeneratedValueFactory<TPlugins> =
-  TPlugins extends EditorValueTypeProvider<infer TValueFactory>
-    ? TValueFactory
-    : never;
-
 type GeneratedTypesFactory<TPlugins> =
   TPlugins extends Readonly<{
     [generatedEditorTypes]: infer TTypesFactory;
   }>
     ? TTypesFactory
     : never;
-
-/**
- * Exact generated value, or broad runtime `Value`.
- *
- * @internal
- */
-export type GeneratedEditorValue<TPlugins> =
-  GeneratedValueFactory<TPlugins> extends () => infer TValue
-    ? TValue extends Value
-      ? TValue
-      : Value
-    : Value;
 
 /**
  * Exact generated mutation map, or `never` for authored plugins.

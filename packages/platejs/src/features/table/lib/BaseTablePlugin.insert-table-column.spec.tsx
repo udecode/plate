@@ -914,7 +914,7 @@ describe('table insertion contracts', () => {
             editor.update.table.insertColumn();
 
             // Count cells in each row
-            const table = editor.read.children()[0] as Element;
+            const table = editor.read.children()[0];
             const rows = table.children as Element[];
 
             // Should have 3 rows with 3 cells each

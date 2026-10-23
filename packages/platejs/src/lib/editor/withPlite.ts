@@ -77,7 +77,6 @@ import {
   resolvePlugins,
   snapshotPlatePluginSources,
 } from '../../internal/plugin/resolvePlugins';
-import type { NoInfer } from '../../internal/types';
 import {
   getPluginSourceReferences,
   getPluginSchemaFamily,
@@ -358,20 +357,15 @@ const readPlateInitialValue = (
   return document as EditorDocumentValue;
 };
 
-const normalizeBaseInitialValue = <
-  V extends Value,
-  TPlugins extends readonly unknown[],
->(
-  editor: Editor<V, TPlugins>,
+const normalizeBaseInitialValue = (
+  editor: Editor,
   value: unknown
-): EditorDocumentValue<V> | PersistedDocumentInput<V> => {
+): EditorDocumentValue | PersistedDocumentInput => {
   if (value !== undefined) {
-    return readPlateInitialValue(value) as
-      | EditorDocumentValue<V>
-      | PersistedDocumentInput<V>;
+    return readPlateInitialValue(value);
   }
 
-  const currentValue = editor.read.value() as EditorDocumentValue<V>;
+  const currentValue = editor.read.value();
 
   return {
     document:
@@ -382,11 +376,8 @@ const normalizeBaseInitialValue = <
   };
 };
 
-const resolveBaseInitialValue = <
-  V extends Value,
-  TPlugins extends readonly unknown[],
->(
-  editor: Editor<V, TPlugins>,
+const resolveBaseInitialValue = (
+  editor: Editor,
   {
     autoSelect,
     initialValue,
@@ -394,12 +385,12 @@ const resolveBaseInitialValue = <
   }: {
     autoSelect?: boolean | 'end' | 'start';
     initialValue?:
-      | ((context: { editor: Editor<V, TPlugins> }) => EditorValueInput<V>)
-      | EditorValueInput<V>;
+      | ((context: { editor: Editor }) => EditorValueInput<Value>)
+      | EditorValueInput<Value>;
     selection?: Selection;
   }
 ) => {
-  const nextValue = normalizeBaseInitialValue<V, TPlugins>(
+  const nextValue = normalizeBaseInitialValue(
     editor,
     typeof initialValue === 'function' ? initialValue({ editor }) : initialValue
   );
@@ -811,7 +802,6 @@ export type EditorOptions<
 };
 
 type BaseEditorOptions<
-  V extends Value = Value,
   P extends BasePluginInput = CorePlugins[number],
   TPlugins extends readonly RuntimePluginReference[] = readonly [],
 > = Omit<EditorOptions<TPlugins>, 'id'> &
@@ -830,12 +820,12 @@ type BaseEditorOptions<
     initialValue?:
       | ((context: {
           editor: InternalBaseEditorWithInstalledPlugins<
-            V,
+            Value,
             InferBaseEditorPlugins<P[]>,
             InferBaseEditorSchemaPlugins<P[]>
           >;
-        }) => EditorValueInput<NoInfer<V>>)
-      | EditorValueInput<NoInfer<V>>;
+        }) => EditorValueInput<Value>)
+      | EditorValueInput<Value>;
   };
 
 const partitionPluginInputs = (
@@ -1374,14 +1364,13 @@ export const compilePlateEditor = (
   >
 ): EditorCompilation => compilePlateEditorTarget(options).artifact;
 
-type CreateEditorOptionsForValue<
-  V extends Value,
+export type CreateEditorOptions<
   TPlugins extends readonly RuntimePluginReference[] = readonly [],
   TSchema extends EditorApplicationSchema | undefined =
     | EditorApplicationSchema
     | undefined,
 > = Partial<
-  Omit<BaseEditorOptions<V, BasePluginInput, TPlugins>, 'plugins' | 'schema'>
+  Omit<BaseEditorOptions<BasePluginInput, TPlugins>, 'plugins' | 'schema'>
 > & {
   /** Stable logical identity for the created editor. */
   id?: string;
@@ -1392,14 +1381,6 @@ type CreateEditorOptionsForValue<
   plugins?: TPlugins;
   schema?: TSchema;
 };
-
-export type CreateEditorOptions<
-  V extends Value = Value,
-  TPlugins extends readonly RuntimePluginReference[] = readonly [],
-  TSchema extends EditorApplicationSchema | undefined =
-    | EditorApplicationSchema
-    | undefined,
-> = CreateEditorOptionsForValue<V, TPlugins, TSchema>;
 
 /** @internal */
 export const EDITOR_OPTION_KEYS = {
@@ -1499,28 +1480,23 @@ export type RuntimePluginsFromTuple<TPlugins extends readonly unknown[]> = [
  * @see {@link useCreateEditor} for a memoized React version.
  */
 export function createEditor<
-  V extends Value = Value,
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options?: CreateEditorOptions<V, readonly [], TSchema>
-): Editor<V, readonly [], readonly [], TSchema>;
+  options?: CreateEditorOptions<readonly [], TSchema>
+): Editor<Value, readonly [], readonly [], TSchema>;
 export function createEditor<
-  V extends Value = Value,
   const TPlugins extends readonly RuntimePluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options: CreateEditorOptions<V, TPlugins, TSchema> & { plugins: TPlugins }
+  options: CreateEditorOptions<TPlugins, TSchema> & { plugins: TPlugins }
 ): Editor<
-  V,
+  Value,
   RuntimePluginsFromTuple<TPlugins>,
   PlatePluginsFromTuple<TPlugins>,
   TSchema
 >;
 export function createEditor(
-  options: CreateEditorOptionsForValue<
-    Value,
-    readonly RuntimePluginReference[]
-  > = {}
+  options: CreateEditorOptions<readonly RuntimePluginReference[]> = {}
 ): unknown {
   return buildEditor(readConstructorOptions(options, EDITOR_OPTION_KEYS));
 }

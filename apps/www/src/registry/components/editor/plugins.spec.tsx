@@ -29,7 +29,7 @@ describe('EditorKit table policy', () => {
         },
       ],
     });
-    const table = editor.read.children()[0];
+    const table = editor.read.nodes.get([0], { type: TablePlugin })![0];
 
     expect(editor.plugin(TablePlugin).api.columnWidths(table)).toEqual([
       300, 300,

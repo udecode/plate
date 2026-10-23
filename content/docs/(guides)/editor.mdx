@@ -369,23 +369,23 @@ artifacts in CI:
 }
 ```
 
-The generated TypeScript module exports exact editor/value types and static
+The generated TypeScript module exports the exact `Value` type and static
 schema handles. The generated JSON contract carries the compiled schema
 fingerprint. Neither artifact owns runtime plugin composition:
 
 ```tsx title="src/editor/document-editor.tsx"
-import { EditorRoot, useCreateEditor } from "platejs/react";
+import { createEditor, EditorRoot, useCreateEditor } from "platejs/react";
 
-import {
-  schema as generatedSchema,
-  type Editor,
-  type Value,
-} from "./plugins.generated";
+import { schema as generatedSchema, type Value } from "./plugins.generated";
 import { EditorKit, EditorSchema } from "./editor";
 
-export function insertDocumentContent(editor: Editor) {
-  editor.update.heading.insert({ level: 1 });
-  editor.update.table.set({ marginLeft: 24 });
+export const createDocumentEditor = (initialValue?: Value) =>
+  createEditor({ plugins: EditorKit, schema: EditorSchema, initialValue });
+
+export type DocumentEditorInstance = ReturnType<typeof createDocumentEditor>;
+
+export function insertDocumentContent(editor: DocumentEditorInstance) {
+  editor.update.heading.toggle({ level: 1 });
 }
 
 export function DocumentEditor({ initialValue }: { initialValue: Value }) {
@@ -397,15 +397,23 @@ export function DocumentEditor({ initialValue }: { initialValue: Value }) {
 
   generatedSchema.properties.reviewState.key;
 
-  return <EditorRoot editor={editor} />;
+  return (
+    <EditorRoot editor={editor}>
+      <button type="button" onClick={() => insertDocumentContent(editor)}>
+        Heading
+      </button>
+    </EditorRoot>
+  );
 }
-
-export type DocumentEditorInstance = Editor;
 ```
 
-Use generated `Value` and `Editor` only at static boundaries such as storage,
-collaboration, and exported application types. Runtime constructors and hooks
-consume the authored `EditorKit` and `EditorSchema` directly.
+Use the generated `Value` at static boundaries such as storage and
+collaboration. A live editor's document type is the broad `Value` from
+`platejs`, so a live editor never has the generated `Editor` type. A helper
+that takes the editor uses the factory's return type, as
+`insertDocumentContent` does, or the plain `Editor` from `platejs/react` when it
+needs only core APIs. Runtime constructors and hooks consume the authored
+`EditorKit` and `EditorSchema` directly.
 
 The CI command recompiles the authored module and fails when committed
 generated artifacts are stale.
@@ -714,8 +722,10 @@ const editor = createEditor({
 
 ## Typed editor
 
-`createEditor` derives the document value and plugin APIs from the installed
-plugin tuple. `initialValue` is checked against that schema-derived value.
+`createEditor` derives plugin APIs, reads, updates and stores from the installed
+plugin tuple. The editor's document type is `Value`. TypeScript checks
+`initialValue` against `Value`, and the starting document never narrows the
+editor's type, because the document changes with the first edit.
 
 ### Plugins type
 
@@ -736,11 +746,11 @@ editor.update((tx) => {
 
 ### Value type
 
-Create the editor with its plugin tuple and initial document, then derive
-`typeof editor` and `ValueOf<typeof editor>` from that inferred instance.
+Every editor's document type is `Value`, whatever `initialValue` holds. Name the
+editor type with `typeof editor`, or with the `ReturnType` of a factory when
+another module needs it.
 
 ```ts
-import type { ValueOf } from "platejs";
 import { createEditor, LinkPlugin } from "platejs/react";
 import { TablePlugin } from "platejs/table/react";
 
@@ -757,8 +767,19 @@ const editor = createEditor({
 });
 
 export type MyEditor = typeof editor;
-export type MyValue = ValueOf<typeof editor>;
 ```
+
+Read a node by its plugin to get its exact type:
+
+```ts
+const table = editor.read.nodes.get([0], { type: TablePlugin })?.[0];
+```
+
+A helper that takes this editor uses `MyEditor`. A helper that needs only core
+APIs takes the plain `Editor` from `platejs/react`. For one exact recursive
+`Value` across the whole plugin graph, use the generated types from
+[Exact generated editor types](#exact-generated-editor-types) at storage and
+collaboration boundaries.
 
 A component reads the current editor from context without repeating its plugin
 tuple:
