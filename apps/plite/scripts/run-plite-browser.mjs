@@ -63,6 +63,25 @@ const requiredNodeVersion = fs
   .readFileSync(path.join(repoRoot, '.nvmrc'), 'utf-8')
   .trim();
 
+if (
+  process.versions.node.split('.')[0] !==
+    requiredNodeVersion.replace(/^v/, '') &&
+  spawnSync('fnm', ['--version']).status === 0
+) {
+  const rerun = spawnSync(
+    'fnm',
+    [
+      'exec',
+      `--using=${requiredNodeVersion}`,
+      '--',
+      'node',
+      ...process.argv.slice(1),
+    ],
+    { stdio: 'inherit' }
+  );
+  process.exit(rerun.status ?? 1);
+}
+
 assertBrowserNodeVersion(process.version, requiredNodeVersion);
 
 const baseArgs = ['test', '--config', 'playwright.config.ts'];
