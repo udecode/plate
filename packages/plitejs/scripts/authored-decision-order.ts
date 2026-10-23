@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { isDeepStrictEqual } from 'node:util';
 
@@ -59,7 +60,8 @@ const FORMAT: readonly Option[] = ['align', 'align-center'];
 const stray = process.argv
   .slice(2)
   .filter(
-    (arg) => !/^--(?:(?:blocks|changes|jobs|marks)=.*|init|lower)$/.test(arg)
+    (arg) =>
+      !/^--(?:(?:blocks|changes|jobs|marks|together)=.*|init|lower)$/.test(arg)
   );
 if (stray.length > 0) {
   console.error(
@@ -424,12 +426,17 @@ const explore = (generated: readonly Node[], document: readonly JsonNode[]) => {
   };
   descend(new Map(), [], document, LANDED, true);
 
-  const together: string[] = [];
+  const together: Array<[string, string]> = [];
   for (const decisions of verdictSets(pending)) {
     if (reached.has(keyOf(decisions))) continue;
     const identity = `${story(generated)}: ${keyOf(decisions)}`;
     const outcome = atOnceOf(decisions);
-    if (outcome.kind === 'settled') together.push(identity);
+    if (outcome.kind === 'settled') {
+      together.push([
+        identity,
+        `${story(outcome.children)} landed [${writesOf(outcome.landed, outcome.children)}]`,
+      ]);
+    }
     if (outcome.kind === 'refused') {
       failures.push({
         detail: `  all at once:   ${outcome.reason}, and no order reaches these verdicts`,
@@ -508,12 +515,15 @@ if (shard === 'normalize') {
     compared: number;
     failures: Failure[];
     idle: number;
-    together: string[];
+    together: Array<[string, string]>;
   }>('explore', [...unique.values()]);
   const failures = explored
     .flatMap((result) => result.failures)
     .sort((a, b) => a.identity.localeCompare(b.identity));
-  const together = explored.flatMap((result) => result.together).sort();
+  const settled = explored
+    .flatMap((result) => result.together)
+    .sort(([a], [b]) => a.localeCompare(b));
+  const together = settled.map(([identity]) => identity);
   const compared = explored.reduce((sum, result) => sum + result.compared, 0);
   const idle = explored.reduce((sum, result) => sum + result.idle, 0);
   const rejected = normalized.filter(([, document]) => document === null);
@@ -529,6 +539,13 @@ if (shard === 'normalize') {
       together: together.length,
     })
   );
+  const togetherFile = flag('together');
+  if (togetherFile) {
+    writeFileSync(
+      togetherFile,
+      settled.map(([identity, result]) => `${identity} => ${result}\n`).join('')
+    );
+  }
 
   if (
     rejected.length > 0 ||
