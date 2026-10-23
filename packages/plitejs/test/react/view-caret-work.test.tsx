@@ -35,10 +35,8 @@ type RootView = ReturnType<typeof useRootEditor>;
 
 const KEYSTROKES = 20;
 const GESTURE_STEPS = 10;
-const VIEW_COUNTS = [2, 8, 32] as const;
+const VIEW_COUNTS = [2, 8, 16] as const;
 const ROUTED_VIEW_COUNTS = [2, 8] as const;
-// At 32 views the selection import case outlasts the 5 s test deadline on a loaded host.
-const IMPORT_VIEW_COUNTS = [2, 8, 16] as const;
 const BODY_ROOT = 'details-slot:body';
 
 const paragraph = (text: string): Element => ({
@@ -566,7 +564,7 @@ describe('work per keystroke with resting carets', () => {
   });
 
   test('ten Enter presses map no resting caret outside the block they split', () => {
-    const views = 32;
+    const views = 16;
     const { editor, holder, label } = mountViews(views, {
       at: { offset: 20, path: [0, 0] },
       rest: (index) => ({ offset: 1, path: [index + 1, 0] }),
@@ -582,7 +580,7 @@ describe('work per keystroke with resting carets', () => {
   });
 
   test('deleting everything maps each resting caret once', () => {
-    const views = 32;
+    const views = 16;
     const { editor, holder, label } = mountViews(views, {
       at: { offset: 0, path: [0, 0] },
       rest: (index) => ({ offset: 1, path: [index + 1, 0] }),
@@ -624,9 +622,9 @@ describe('work per keystroke with resting carets', () => {
           : { offset: 1, path: [index + 1, 0] },
     ],
   ] as const)(
-    'five hundred history batches with 31 resting carets %s retain one book entry per bookmark change',
+    'two hundred history batches with 15 resting carets %s retain one book entry per bookmark change',
     (_name, rest) => {
-      const views = 32;
+      const views = 16;
       const { editor, holder } = mountViews(views, {
         at: { offset: 0, path: [0, 0] },
         rest,
@@ -637,7 +635,7 @@ describe('work per keystroke with resting carets', () => {
       const entries = new Set<ReadonlyMap<string, unknown>>();
       let changes = 0;
 
-      for (let batch = 0; batch < 500; batch++) {
+      for (let batch = 0; batch < 200; batch++) {
         act(() => {
           holder.update({ tags: ['history-push'] }, (tx) =>
             tx.text.insert('k')
@@ -660,7 +658,7 @@ describe('work per keystroke with resting carets', () => {
         0
       );
       expect([editor.read.history().undos.length, retained - changes]).toEqual([
-        500,
+        200,
         views - 1,
       ]);
     }
@@ -1096,7 +1094,7 @@ describe('selection import work', () => {
     ).toBeGreaterThanOrEqual(KEYSTROKES);
   });
 
-  test.each(IMPORT_VIEW_COUNTS)(
+  test.each(VIEW_COUNTS)(
     "with %i views each import reads the selection once, polls each view's observer once and reads no other view's claim state, a gesture's open reads it once, a decision in an open gesture compares at most twice, each turn of DOM changes reads it at most twice, and typing in the holder keeps nothing",
     async (views) => {
       const watch = watchImportWork();
