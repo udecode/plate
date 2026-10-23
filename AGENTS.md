@@ -59,6 +59,7 @@ Paths in these instructions are relative to the repository root.
 ## Plate overrides of pstack
 
 - **Astra effort.** Panel seats and `architect` and arena runners seat `codex:gpt-6-astra @xhigh` instead of the models sheets' `@high`, because at `high` most of Astra's findings repeated another seat's. The Opus and Sol seats keep the sheets' values. This wins over the models sheets (owner's word, 2026-10-06).
+- **Sweep handoff.** A sweep tester's session never cards the fix-run task its triage offers, in the `chips` skill's Close or in any `/chips` sweep, because a card keeps a task with the session that holds it. The fixer's `/chips all` takes the task over instead, as `.agents/rules/verify/references/sweep.md` says.
 
 ## Source authority
 

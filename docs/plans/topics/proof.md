@@ -41,6 +41,19 @@ await startBrowserNativeEventTrace(locator, {
   triaged into one issue per cause and fixed in one run, which adds the check
   that would have caught them. A formal check covers logic that shows without
   a browser.
+- The sweep's page tiers are R1 to R5. P0 to P3 is only a bug's priority, as
+  the chips board ranks it, and domain fix runs go in that order.
+- The sweep names two roles. The tester runs rounds, triage and filing. The
+  fixer runs the domain fix runs, babysits them and keeps the formal checks.
+  natamox is the tester and zbeyens the fixer (owner's word, 2026-10-23).
+- Filing a domain offers one suggested task for its fix run. The tester's
+  session leaves it uncarded, as `AGENTS.md`'s Sweep handoff line says, and
+  pushes the ledger at once, and the fixer's `/chips all` takes it over. The
+  fix run builds a missing M6 check before its fix, and the task waits on a
+  check task that is already open.
+- Triage takes a session logged blocked, which runs again next round. The
+  tester closes each issue once its recheck passes on beta, and the next round
+  waits only for the fixes the domain runs landed.
 - Beta issues upload their recordings through `gh --attach`, and new members
   of a filed kind reach its issue as a comment.
 
@@ -83,10 +96,16 @@ taps.
 ## Open work
 
 - natamox files each round 1 domain from the triage in
-  `docs/plans/2026-10-23-sweep-loop.md`. owner: natamox. stop: every round 1
+  `docs/plans/2026-10-23-sweep-loop.md`, and offers its fix-run task as
+  `sweep.md`'s Triage a domain says. owner: natamox. stop: every round 1
   domain filed.
-- The redesign tasks t_94ffdd65, t_c4407e94 and t_8276a635 start once their
-  domain is filed. owner: zbeyens. stop: each lands or is dropped.
+- t_c4407e94 holds the autoformat rule-order bugs and waits on the rule check
+  t_30422a81. t_94ffdd65 and t_8276a635 start once their domain is filed.
+  t_01a87aed, the arrow regression, stays its own P0 task. owner: zbeyens.
+  stop: each lands or is dropped.
+- Nobody has run the handoff between two people. natamox's first filed domain
+  shows whether its task reaches zbeyens's board. owner: natamox and zbeyens.
+  stop: the first domain task is carded on zbeyens's board.
 - The sweep's four hardening items have no chips, because a run offers chips
   only for new P0 and P1 finds (owner's word, 2026-10-23). Each belongs to the
   loop step that names it, as `docs/plans/2026-10-23-sweep-loop.md`'s Open work

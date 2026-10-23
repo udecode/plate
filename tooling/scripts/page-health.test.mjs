@@ -72,7 +72,7 @@ const stable = new Set([
   '/docs/table',
 ]);
 
-test('each session page lands in one priority beside its reference page', async () => {
+test('each session page lands in one tier beside its reference page', async () => {
   const pages = await sessionPages(root, {
     stableStatus: async (page) => (stable.has(page) ? 200 : 404),
     betaOnly: new Set(['/docs/back', '/docs/examples/fresh']),
@@ -83,34 +83,34 @@ test('each session page lands in one priority beside its reference page', async 
   });
 
   assert.deepEqual(
-    pages.map(({ page, priority, reference }) => [priority, page, reference]),
+    pages.map(({ page, reference, tier }) => [tier, page, reference]),
     [
       [
-        'P1',
+        'R1',
         '/examples/plite/richtext',
         'https://www.slatejs.org/examples/richtext',
       ],
-      ['P2', '/blocks/playground', 'https://platejs.org/blocks/playground'],
+      ['R2', '/blocks/playground', 'https://platejs.org/blocks/playground'],
       [
-        'P2',
+        'R2',
         '/docs/examples/html-export',
         'https://platejs.org/docs/examples/slate-to-html',
       ],
       [
-        'P2',
+        'R2',
         '/docs/examples/server-side',
         'https://platejs.org/docs/examples/server-side',
       ],
       [
-        'P2',
+        'R2',
         '/docs/examples/widget',
         'https://platejs.org/docs/examples/widget',
       ],
-      ['P2', '/docs/find', 'https://platejs.org/docs/find-replace'],
-      ['P2', '/docs/table', 'https://platejs.org/docs/table'],
-      ['P3', '/examples/plite/pagination', undefined],
-      ['P3', '/examples/plite/secret', undefined],
-      ['P4', '/docs/examples/fresh', undefined],
+      ['R2', '/docs/find', 'https://platejs.org/docs/find-replace'],
+      ['R2', '/docs/table', 'https://platejs.org/docs/table'],
+      ['R3', '/examples/plite/pagination', undefined],
+      ['R3', '/examples/plite/secret', undefined],
+      ['R4', '/docs/examples/fresh', undefined],
       ['unresolved', '/docs/back', undefined],
       ['unresolved', '/docs/lost', undefined],
     ]

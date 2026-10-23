@@ -8,7 +8,7 @@ review_inputs: [docs/plans/topics/proof.md, .agents/rules/verify.mdc, .agents/ru
 
 # Sweep: aim the team's hands-on beta pass at what tests missed
 
-Status: building: round 1 is ready to run on live beta, without the planted-bug trial
+Status: building: round 1 ran and is triaged; waiting on natamox to file its domains and on zbeyens to fix them
 Topic: proof
 Playbook: plan
 
@@ -249,8 +249,8 @@ The execution playbook is Build (`.agents/playbooks/build.md`). natamox runs it,
 - [x] 1.7 Write round 1's plan. Written as `docs/plans/2026-10-19-sweep-r1.md`, with no Arm column and only the plugin pages whose review is closed; its decision log names the check and the page counts. The round's lead writes `docs/plans/<date>-sweep-r1.md` under the Plan playbook, as `tester-pass.md` says. It holds a Sessions table (page, scope, priority, arm, browser, box, then minutes used, recording and find notes), the Rechecks (the open issues, the forced-layout Enter find, the eight-page undo class, the empty-line menu hypothesis, and the iPhone Bold drift after Slate's richtext page is checked on the same phone), the P5 areas and the schedule. #5142 goes straight to the fix list. Proof: `node .agents/pstack/plan-page.mjs <round plan> --check` passes; every page and scope `--list` and the scope rule give has one session row; the schedule adds up to the stated tester days with every reserve.
 - [ ] 1.8 Run round 1 on live beta, since step 1.6 was skipped. The round's lead runs `page-health.mjs` against beta. natamox and Sin split the sessions, rechecks and P5 areas as the round plan says, natamox runs the iPhone page checks, and each runs their own sessions, recording the screen and writing find notes. Since 2026-10-23 the round runs as `sweep.md` says: agents run each session first, a person retests each find, and each domain is triaged into one issue per failure kind before anything is filed (`docs/plans/2026-10-23-sweep-loop.md`). Proof: the script's log; every session row filled with minutes, recording and notes; every recheck marked pass, find or blocked with its browser and beta build.
 - [x] 1.9 Grade round 1's trial before any fix starts. Skipped with step 1.6: there is no sealed list to grade, and the six moves stay a candidate. A separate blind grader matches every find note and draft to the sealed list. Then the round's lead opens the list and applies the keep rule. When the moves lose, remove them from `tester-pass.md` and run `pnpm run prepare`. Proof: the grader's answer, and one decision-log row with each arm's chances, finds and the verdict.
-- [ ] 1.10 Fix round 1's finds, P1 first, then P2 to P4; P5 gaps go to `verdict` as proposals. natamox publishes each domain's drafts before its fix starts. Each triaged domain gets one Bug fix run over all its kinds, as `sweep.md`'s Fix a domain says, with step 1.3's delta. A test that sees the defect runs red at the fix's parent with `tooling/scripts/proof-worktree.mjs --expect-fail`. Proof: each fix's red and green logs, or its recorded human check, in its own plan.
-- [ ] 1.11 Phase 1 decision. Tally round 1's finds by priority, browser and move, finds per minute per page, and minutes against the schedule. Proof: one decision-log row with the tally.
+- [ ] 1.10 Fix round 1's finds by domain, P0 first, in the order `sweep.md`'s Fix a domain gives; R5 gaps go to `verdict` as proposals. natamox, the tester, publishes each domain's drafts and offers its fix-run task, and zbeyens, the fixer, takes the task and runs it (owner's word, 2026-10-23). Each triaged domain gets one Bug fix run over all its kinds, as `sweep.md`'s Fix a domain says, with step 1.3's delta. A test that sees the defect runs red at the fix's parent with `tooling/scripts/proof-worktree.mjs --expect-fail`. Proof: each fix's red and green logs, or its recorded human check, in its own plan.
+- [ ] 1.11 Phase 1 decision. Tally round 1's finds by priority, tier, browser and move, finds per minute per page, and minutes against the schedule. Proof: one decision-log row with the tally.
 
 ### Phase 2. Close the gaps round 1 shows
 
@@ -261,7 +261,7 @@ The execution playbook is Build (`.agents/playbooks/build.md`). natamox runs it,
 
 - [ ] 3.1 Prepare round 2 with `verify` and `sweep.md` once beta serves a build with every round 1 fix, on live beta unless the trial reruns. Proof: round 2's plan gives every page and scope its session in the rotation's next browser, lists each recheck that left with the test and gate it relied on, each recheck back with its reason, and the new pages.
 - [ ] 3.2 Run and fix round 2 as steps 1.8 and 1.10 do. Proof: as those steps.
-- [ ] 3.3 Repeat or hand off. A round that finds bugs or leaves a recheck blocked gets another round after its fixes. The sweep is done when a round gives every page and scope its session, finds no new P1 to P4 bug, leaves no recheck blocked and no page unresolved, and every P5 gap has a verdict. On 2026-12-15, every open find, blocked recheck, unvisited page and unresolved page moves to the proof subject's Open work with an owner and a stop, and the round loop stays in `sweep.md`. Proof: each round's tally row, and the handoff list.
+- [ ] 3.3 Repeat or hand off. A round that finds bugs or leaves a recheck blocked gets another round after its fixes. The sweep is done when a round gives every page and scope its session, finds no new bug on an R1 to R4 page, leaves no recheck blocked and no page unresolved, and every R5 gap has a verdict. On 2026-12-15, every open find, blocked recheck, unvisited page and unresolved page moves to the proof subject's Open work with an owner and a stop, and the round loop stays in `sweep.md`. Proof: each round's tally row, and the handoff list.
 
 ## Proof
 
