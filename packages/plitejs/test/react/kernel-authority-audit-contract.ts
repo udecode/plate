@@ -702,6 +702,7 @@ test('source timing and document focus primitives have named owners', () => {
     'packages/plitejs/src/react/hooks/use-plite-annotation-store.tsx': 1,
     'packages/plitejs/src/react/hooks/use-editor-selector.tsx': 1,
     'packages/plitejs/src/react/range-geometry.ts': 2,
+    'packages/plitejs/src/react/view-selection.ts': 1,
   });
   expect(
     getMatchesByFiles(

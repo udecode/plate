@@ -121,10 +121,22 @@ type ContentRootNavigationTarget = {
   root: RootKey;
 };
 
-export type ContentRootNavigationResult = {
-  handled: boolean;
-  target?: ContentRootNavigationTarget;
-};
+export type ContentRootNavigationResult =
+  | { handled: false }
+  | {
+      handled: true;
+      overtaken?: boolean;
+    };
+
+const ANSWERED_KEYS = new WeakSet<Event>();
+
+/**
+ * Whether a nested Editable already answered this key with a selection across
+ * content roots. The event bubbles on; answering again would re-place the
+ * anchor over a newer placement and repair focus away from it.
+ */
+export const isContentRootKeyAnswered = (event: { nativeEvent: Event }) =>
+  ANSWERED_KEYS.has(event.nativeEvent);
 
 const isPointInPath = (point: Point, path: Path) =>
   PathApi.equals(point.path, path) || PathApi.isDescendant(point.path, path);
@@ -216,6 +228,25 @@ const collapseModelSelectionForProjectedSelection = (
   }
 
   selectContentRoot(editor, range);
+};
+
+const showProjectedSelection = (
+  editor: ReactRuntimeEditor,
+  projectedSelection: PliteViewSelection,
+  selection: Range | null,
+  element: HTMLElement | null
+) => {
+  const placesNothing = !selection || RangeApi.isCollapsed(selection);
+  const shown =
+    (placesNothing && readPliteViewSelection(editor) === projectedSelection) ||
+    writePliteViewSelection(editor, projectedSelection, {
+      place: () =>
+        collapseModelSelectionForProjectedSelection(editor, selection),
+    });
+
+  collapseNativeSelectionForProjectedSelection(editor, selection, element);
+
+  return shown;
 };
 
 const getRootViewEditor = ({
@@ -876,6 +907,40 @@ const getRootLocalVerticalSelectionTarget = ({
   };
 };
 
+const getViewGraphTarget = ({
+  candidate,
+  getActiveContentRootOwner,
+  graph,
+  owners,
+}: {
+  candidate: ContentRootNavigationTarget | null;
+  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  graph: PliteViewBoundaryGraphModel;
+  owners: readonly ContentRootOwner[];
+}): ContentRootNavigationTarget | null => {
+  const holds = (target: ContentRootNavigationTarget) =>
+    !!PliteViewBoundaryGraph.resolvePointNode(
+      graph,
+      toViewBoundaryPoint({
+        owner: target.owner,
+        point: target.point,
+        root: target.root,
+      })
+    );
+
+  if (!candidate || holds(candidate)) return candidate;
+  if (candidate.owner) return null;
+
+  const owner = getOwnerForRoot({
+    currentRoot: candidate.root,
+    getActiveContentRootOwner,
+    owners,
+  });
+  const owned = owner && { ...candidate, owner };
+
+  return owned && holds(owned) ? owned : null;
+};
+
 const getProjectedGraphVerticalSelectionTarget = ({
   direction,
   editor,
@@ -1326,7 +1391,9 @@ const applyContentRootViewSelectionAction = ({
     owners,
     getCurrentRootOwner
   );
-  let target =
+  const inView = (candidate: ContentRootNavigationTarget | null) =>
+    getViewGraphTarget({ candidate, getActiveContentRootOwner, graph, owners });
+  let target = inView(
     action.kind === 'document-boundary'
       ? getDocumentBoundaryNavigationTarget({
           direction: action.direction,
@@ -1347,7 +1414,8 @@ const applyContentRootViewSelectionAction = ({
           owners,
           point,
           preferredX,
-        });
+        })
+  );
 
   if (
     !target &&
@@ -1406,25 +1474,28 @@ const applyContentRootViewSelectionAction = ({
       );
 
       if (hasProjectedPart) {
-        writePliteViewSelection(editor, projectedSelection);
-        collapseModelSelectionForProjectedSelection(editor, selection);
-        collapseNativeSelectionForProjectedSelection(
+        const shown = showProjectedSelection(
           editor,
+          projectedSelection,
           selection,
           element
         );
         preventDefault?.();
 
-        return { handled: true };
+        return { handled: true, overtaken: !shown };
       }
     }
 
     if (viewSelection) {
-      collapseModelSelectionForProjectedSelection(editor, selection);
-      collapseNativeSelectionForProjectedSelection(editor, selection, element);
+      const shown = showProjectedSelection(
+        editor,
+        viewSelection,
+        selection,
+        element
+      );
       preventDefault?.();
 
-      return { handled: true };
+      return { handled: true, overtaken: !shown };
     }
 
     return { handled: false };
@@ -1448,37 +1519,45 @@ const applyContentRootViewSelectionAction = ({
     }),
   });
 
-  if (action.kind === 'move') {
-    target = advanceVerticalBoundarySelectionTarget({
-      action,
-      anchorSelection: projectedSelection,
-      currentOwner,
-      currentRoot,
-      editor,
-      getContentRootOwnerViewEditor,
-      getMountedViewEditor,
-      owners,
-      target,
-    });
+  const advanced =
+    action.kind === 'move' &&
+    inView(
+      advanceVerticalBoundarySelectionTarget({
+        action,
+        anchorSelection: projectedSelection,
+        currentOwner,
+        currentRoot,
+        editor,
+        getContentRootOwnerViewEditor,
+        getMountedViewEditor,
+        owners,
+        target,
+      })
+    );
+
+  if (advanced) {
     projectedSelection = createPliteViewSelection(graph, {
       anchor,
       focus: toViewBoundaryPoint({
-        owner: target.owner,
-        point: target.point,
-        root: target.root,
+        owner: advanced.owner,
+        point: advanced.point,
+        root: advanced.root,
       }),
     });
   }
 
-  writePliteViewSelection(editor, projectedSelection);
-  collapseModelSelectionForProjectedSelection(editor, selection);
-  collapseNativeSelectionForProjectedSelection(editor, selection, element);
+  const shown = showProjectedSelection(
+    editor,
+    projectedSelection,
+    selection,
+    element
+  );
 
   preventDefault?.();
 
   return {
     handled: true,
-    target,
+    overtaken: !shown,
   };
 };
 
@@ -1546,7 +1625,7 @@ export const applyContentRootViewSelection = ({
       event.key === 'End')
       ? getContentRootNavigationAction({ event, isRTL })
       : null;
-  return applyContentRootViewSelectionAction({
+  const result = applyContentRootViewSelectionAction({
     action: plugin ?? (navigation?.kind === 'enter' ? null : navigation),
     extend: Boolean(plugin),
     editor,
@@ -1560,6 +1639,10 @@ export const applyContentRootViewSelection = ({
     },
     selection,
   });
+
+  if (result.handled) ANSWERED_KEYS.add(event.nativeEvent);
+
+  return result;
 };
 
 export const applyContentRootNavigation = ({
@@ -1634,8 +1717,5 @@ export const applyContentRootNavigation = ({
     );
   }
 
-  return {
-    handled: true,
-    target,
-  };
+  return { handled: true };
 };

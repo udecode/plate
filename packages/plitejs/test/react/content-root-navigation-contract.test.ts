@@ -7,6 +7,7 @@ import {
 } from 'plitejs';
 import { describe, expect, it, vi } from 'vitest';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
@@ -166,7 +167,8 @@ describe('content root navigation', () => {
                 anchor: { point: { path: [0, 0], offset: 0 } },
                 focus: { point: { path: [2, 0], offset: 0 } },
               }
-            )
+            ),
+            { placedAt: getPlacementGeneration(mainEditor) }
           );
         }
         const selection = mainEditor.read((state) => state.selection());
@@ -653,7 +655,8 @@ describe('content root navigation', () => {
           owner,
           point: { path: [0, 0], root: 'card:body', offset: 2 },
         },
-      })
+      }),
+      { placedAt: getPlacementGeneration(mainEditor) }
     );
 
     const result = applyContentRootViewSelection({
@@ -773,7 +776,8 @@ describe('content root navigation', () => {
           owner,
           point: { path: [0, 0], root: 'card:body', offset: 2 },
         },
-      })
+      }),
+      { placedAt: getPlacementGeneration(mainEditor) }
     );
 
     const result = applyContentRootViewSelection({

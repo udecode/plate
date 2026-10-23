@@ -17,6 +17,7 @@ import { dataTransferFormats, dom, domCommands } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import { describe, expect, it } from 'vitest';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import {
   observeDataTransferInsertion,
   setDOMClipboardFormatKey,
@@ -346,7 +347,8 @@ const writeForwardProjectedSelection = (
         owner: sharedOwner,
         point: point(SHARED_ROOT, [0, 0], 'In'.length),
       },
-    })
+    }),
+    { placedAt: getPlacementGeneration(editor) }
   );
 };
 
@@ -365,9 +367,12 @@ const writeAmbiguousRepeatedSelection = (
         owner: secondSharedOwner,
         point: point(SHARED_ROOT, [0, 0], 3),
       },
-    })
+    }),
+    { placedAt: getPlacementGeneration(editor) }
   );
 };
+
+const afterViewSelectionNotice = () => Promise.resolve();
 
 describe('projected editable commands', () => {
   it('pastes across proposed named-root coordinates without changing accepted content', () => {
@@ -394,7 +399,8 @@ describe('projected editable commands', () => {
       createPliteViewSelection(graph, {
         anchor: { owner: sharedOwner, point: point(SHARED_ROOT, [0, 0], 2) },
         focus: { point: point(undefined, [2, 0], 2) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
     const data = new FakeDataTransfer();
     data.setData('text/plain', 'Z');
@@ -439,7 +445,8 @@ describe('projected editable commands', () => {
       createPliteViewSelection(graph, {
         anchor: { point: point(undefined, [0, 1], 0) },
         focus: { point: point(undefined, [0, 1], 3) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
     applyEditableCommand({
       editor,
@@ -496,7 +503,9 @@ describe('projected editable commands', () => {
     });
     const data = new FakeDataTransfer();
 
-    writePliteViewSelection(editor, selection);
+    writePliteViewSelection(editor, selection, {
+      placedAt: getPlacementGeneration(editor),
+    });
     data.setData('text/plain', 'x');
 
     expect(
@@ -647,7 +656,8 @@ describe('projected editable commands', () => {
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
         },
         focus: { point: point(undefined, [2, 0], 'Af'.length) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
     data.setData('text/plain', 'Z');
 
@@ -684,7 +694,8 @@ describe('projected editable commands', () => {
             owner: sharedOwner,
             point: point(SHARED_ROOT, [0, 0], 'In'.length),
           },
-        })
+        }),
+        { placedAt: getPlacementGeneration(editor) }
       );
 
       expect(applyProjectedInput(editor, input)).toBe(true);
@@ -716,7 +727,8 @@ describe('projected editable commands', () => {
         createPliteViewSelection(graph, {
           anchor: { point: point(undefined, [0, 0], 'Before'.length) },
           focus: { point: point(undefined, [2, 0], 'Af'.length) },
-        })
+        }),
+        { placedAt: getPlacementGeneration(editor) }
       );
 
       expect(applyProjectedInput(editor, input)).toBe(true);
@@ -752,7 +764,8 @@ describe('projected editable commands', () => {
             point: point(SHARED_ROOT, [0, 0], 'In'.length),
           },
           focus: { point: point(undefined, [0, 0], 'Before'.length) },
-        })
+        }),
+        { placedAt: getPlacementGeneration(shared) }
       );
 
       expect(applyProjectedInput(shared, input)).toBe(true);
@@ -779,7 +792,8 @@ describe('projected editable commands', () => {
             point: point(SHARED_ROOT, [1, 0], 'More'.length),
           },
           focus: { point: point(undefined, [2, 0], 'Af'.length) },
-        })
+        }),
+        { placedAt: getPlacementGeneration(editor) }
       );
 
       expect(applyProjectedInput(editor, input)).toBe(true);
@@ -803,7 +817,8 @@ describe('projected editable commands', () => {
         createPliteViewSelection(graph, {
           anchor: { point: point(undefined, [0, 0], 'Before'.length) },
           focus: { point: point(undefined, [2, 0], 'Af'.length) },
-        })
+        }),
+        { placedAt: getPlacementGeneration(editor) }
       );
 
       expect(applyProjectedInput(editor, input)).toBe(true);
@@ -1185,7 +1200,8 @@ describe('projected editable commands', () => {
           owner,
           point: point(SHARED_ROOT, [0, 0], 2),
         },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(
@@ -1236,7 +1252,8 @@ describe('projected editable commands', () => {
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
         },
         focus: { point: point(undefined, [2, 0], 'Af'.length) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(
@@ -1304,7 +1321,8 @@ describe('projected editable commands', () => {
       createPliteViewSelection(graph, {
         anchor: { point: point(undefined, [1, 0], 0) },
         focus: { point: point(undefined, [1, 0], 'B'.length) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(
@@ -1328,7 +1346,8 @@ describe('projected editable commands', () => {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
         },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(
@@ -1366,7 +1385,8 @@ describe('projected editable commands', () => {
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
         },
         focus: { point: point(undefined, [2, 0], 'Af'.length) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(
@@ -1405,7 +1425,8 @@ describe('projected editable commands', () => {
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
         },
         focus: { point: point(undefined, [2, 0], 'Af'.length) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(
@@ -1803,7 +1824,9 @@ describe('projected editable commands', () => {
     editor.update((tx) => {
       tx.selection.set(selection);
     });
-    writePliteViewSelection(editor, projectedSelection);
+    writePliteViewSelection(editor, projectedSelection, {
+      placedAt: getPlacementGeneration(editor),
+    });
     data.setData('text/plain', 'Z');
 
     expect(
@@ -1836,6 +1859,7 @@ describe('projected editable commands', () => {
       editor,
     });
     expect(readPliteViewSelection(editor)).toBe(null);
+    await afterViewSelectionNotice();
 
     const events: unknown[] = [];
     const unsubscribe = subscribePliteViewSelection(editor, () => {
@@ -1945,11 +1969,6 @@ describe('projected editable commands', () => {
     writeForwardProjectedSelection(editor, graph);
     editor.update((tx) => {
       tx.roots.replace(SHARED_ROOT, []);
-      tx.selection.set({
-        kind: 'text',
-        anchor: point(undefined, [2, 0], 0),
-        focus: point(undefined, [2, 0], 0),
-      });
     });
 
     expect(readPliteViewSelection(editor)).not.toBe(null);
@@ -1964,6 +1983,29 @@ describe('projected editable commands', () => {
       children: [paragraph('Before'), contentCard(), paragraph('XAfter')],
       roots: { [SHARED_ROOT]: [] },
     });
+    expect(readPliteViewSelection(editor)).toBe(null);
+  });
+
+  it('ends a projected selection when a placement follows a root replace', () => {
+    const { editor, graph } = createFixture();
+
+    editor.update((tx) => {
+      tx.selection.set({
+        kind: 'text',
+        anchor: point(undefined, [2, 0], 0),
+        focus: point(undefined, [2, 0], 0),
+      });
+    });
+    writeForwardProjectedSelection(editor, graph);
+    editor.update((tx) => {
+      tx.roots.replace(SHARED_ROOT, []);
+      tx.selection.set({
+        kind: 'text',
+        anchor: point(undefined, [2, 0], 0),
+        focus: point(undefined, [2, 0], 0),
+      });
+    });
+
     expect(readPliteViewSelection(editor)).toBe(null);
   });
 
@@ -2116,7 +2158,8 @@ describe('projected editable commands', () => {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
         },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(
@@ -2154,7 +2197,8 @@ describe('projected editable commands', () => {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [0, 0], 'In'.length),
         },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(

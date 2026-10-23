@@ -2,6 +2,7 @@ import { act, render } from '@testing-library/react';
 import { ElementApi, TextApi, SelectionApi } from 'plitejs';
 import type { Value } from 'plitejs';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import {
   DOMCoverage,
   EDITOR_TO_ELEMENT,
@@ -282,7 +283,9 @@ test('beforeinput keeps a projected view selection authoritative over the DOM ca
   }
 
   try {
-    writePliteViewSelection(editor, viewSelection);
+    writePliteViewSelection(editor, viewSelection, {
+      placedAt: getPlacementGeneration(editor),
+    });
     domSelection.removeAllRanges();
     domSelection.setBaseAndExtent(text, 0, text, 0);
     vi.spyOn(ReactEditor, 'hasSelectableTarget').mockReturnValue(true);

@@ -3,6 +3,7 @@ import { TextApi } from 'plitejs';
 import { history } from 'plitejs/history';
 import { StrictMode, useContext } from 'react';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import { getNodeKey as editorGetNodeKey } from '../../src/internal';
 import {
   createEditor,
@@ -49,18 +50,24 @@ test('activates and retires projected selection paint without a document commit'
   };
   expect(store!.hasSources()).toBe(false);
   expect(store!.getNodeSnapshot(textKey)).toEqual([]);
-  act(() =>
-    writePliteViewSelection(view!, createMainRootPliteViewSelection(range))
-  );
+  act(() => {
+    writePliteViewSelection(view!, createMainRootPliteViewSelection(range), {
+      placedAt: getPlacementGeneration(view!),
+    });
+  });
   expect(store!.getNodeSnapshot(textKey)).toEqual([
     expect.objectContaining({ start: 0, end: 4 }),
   ]);
-  act(() => writePliteViewSelection(view!, null));
+  act(() => {
+    writePliteViewSelection(view!, null);
+  });
   expect(store!.getNodeSnapshot(textKey)).toEqual([]);
   expect(store!.hasSources()).toBe(false);
-  act(() =>
-    writePliteViewSelection(view!, createMainRootPliteViewSelection(range))
-  );
+  act(() => {
+    writePliteViewSelection(view!, createMainRootPliteViewSelection(range), {
+      placedAt: getPlacementGeneration(view!),
+    });
+  });
   expect(store!.getNodeSnapshot(textKey)).toEqual([
     expect.objectContaining({ start: 0, end: 4 }),
   ]);

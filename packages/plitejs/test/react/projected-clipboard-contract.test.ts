@@ -13,6 +13,7 @@ import { dataTransferFormats } from 'plitejs/dom';
 import type { ClipboardEvent } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -175,7 +176,8 @@ const createFixture = (
         owner: sharedOwner,
         point: point(SHARED_ROOT, [0, 0], 'In'.length),
       },
-    })
+    }),
+    { placedAt: getPlacementGeneration(editor) }
   );
 
   return { editor };
@@ -215,7 +217,8 @@ const createRepeatedFixture = () => {
         owner: secondSharedOwner,
         point: point(SHARED_ROOT, [0, 0], 'Insi'.length),
       },
-    })
+    }),
+    { placedAt: getPlacementGeneration(editor) }
   );
 
   return { editor };
@@ -412,7 +415,8 @@ describe('projected clipboard', () => {
       createPliteViewSelection(graph, {
         anchor: { point: point(SHARED_ROOT, [0, 0], 0) },
         focus: { point: point(SHARED_ROOT, [0, 0], 'Inside'.length) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(getProjectedViewSelectionSlice(editor)).toEqual({
@@ -592,7 +596,8 @@ describe('projected clipboard', () => {
           owner: sharedOwner,
           point: point(SHARED_ROOT, [1, 0], 1),
         },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     expect(getProjectedViewSelectionSlice(editor)?.roots).toEqual({
@@ -620,7 +625,8 @@ describe('projected clipboard', () => {
       createPliteViewSelection(graph, {
         anchor: { point: point(undefined, [0, 0, 0], 1) },
         focus: { point: point(undefined, [0, 0, 0], 2) },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
     const clipboardData = createClipboardData();
 

@@ -11,8 +11,6 @@ import {
 } from '../..';
 import {
   clearCaretUnlessHeldElsewhere,
-  nextMintedGeneration,
-  placedSince,
   setSelectionAsView,
   setShownSelectionAsView,
 } from '../../core/view-carets';
@@ -473,22 +471,23 @@ const importProjectedDOMSelection = ({
 
   if (!projectedSelection) return false;
 
-  const anchorGeneration = nextMintedGeneration(editor);
+  const shown = writePliteViewSelection(editor, projectedSelection, {
+    place: () =>
+      setShownSelectionAsView(
+        editor,
+        SelectionApi.text(
+          {
+            anchor: projectedSelection.anchor.point,
+            focus: projectedSelection.anchor.point,
+          },
+          isPliteViewSelectionCollapsed(projectedSelection)
+            ? { affinity: projectedSelection.anchor.affinity }
+            : undefined
+        )
+      ),
+  });
 
-  setShownSelectionAsView(
-    editor,
-    SelectionApi.text(
-      {
-        anchor: projectedSelection.anchor.point,
-        focus: projectedSelection.anchor.point,
-      },
-      isPliteViewSelectionCollapsed(projectedSelection)
-        ? { affinity: projectedSelection.anchor.affinity }
-        : undefined
-    )
-  );
-  if (placedSince(editor, anchorGeneration)) return true;
-  writePliteViewSelection(editor, projectedSelection);
+  if (!shown) return true;
   setEditableModelSelectionPreference({
     inputController,
     preferModelSelection: true,
@@ -1502,17 +1501,21 @@ const importDOMSelectionChange = ({
             owners: contentRootOwners,
             range,
           })
-        : null
+        : null,
+      {
+        place: () => {
+          if (
+            !ReactEditor.isComposing(editor) &&
+            !androidInputManager?.hasPendingChanges() &&
+            !androidInputManager?.isFlushing()
+          ) {
+            setShownSelectionAsView(editor, range);
+          } else {
+            androidInputManager?.handleUserSelect(range);
+          }
+        },
+      }
     );
-    if (
-      !ReactEditor.isComposing(editor) &&
-      !androidInputManager?.hasPendingChanges() &&
-      !androidInputManager?.isFlushing()
-    ) {
-      setShownSelectionAsView(editor, range);
-    } else {
-      androidInputManager?.handleUserSelect(range);
-    }
   }
 
   // Deselect the editor if the DOM selection is not selectable in read-only mode.

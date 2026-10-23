@@ -594,9 +594,12 @@ const applyProjectedDragSelection = ({
           point: focus.point,
         },
       }
-    )
+    ),
+    {
+      place: () =>
+        collapseModelSelectionToProjectedDragAnchor({ anchor, editor }),
+    }
   );
-  collapseModelSelectionToProjectedDragAnchor({ anchor, editor });
 
   return true;
 };
@@ -1028,11 +1031,16 @@ const applyModelDragSelection = ({
             focus: { point: rootedRange.focus },
           }
         )
-      : null
+      : null,
+    {
+      place: () =>
+        editor.update({ tags: 'skip-scroll-into-view' }, () => {
+          dispatchCommand(editor, editorCommands.select, {
+            target: rootedRange,
+          });
+        }),
+    }
   );
-  editor.update({ tags: 'skip-scroll-into-view' }, () => {
-    dispatchCommand(editor, editorCommands.select, { target: rootedRange });
-  });
   selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true });
 };
 
@@ -1288,6 +1296,7 @@ export const useRootInteractionController = ({
       activateViewCaret(getMountedViewEditor(root) ?? editor, {
         fallback: fallbackSelection === 'end' ? 'end' : undefined,
         focus: true,
+        press: true,
         receipt,
         target: selectionPreference === 'end' ? 'end' : undefined,
       });
@@ -1356,14 +1365,20 @@ export const useRootInteractionController = ({
                   focus: { point: range.focus },
                 }
               )
-            : null
+            : null,
+          {
+            place: () => {
+              writeCollapsedModelSelectionDOMPreference(
+                focusEditor,
+                range,
+                options.placementDOMPoint ?? null
+              );
+              dispatchCommand(focusEditor, editorCommands.select, {
+                target: range,
+              });
+            },
+          }
         );
-        writeCollapsedModelSelectionDOMPreference(
-          focusEditor,
-          range,
-          options.placementDOMPoint ?? null
-        );
-        dispatchCommand(focusEditor, editorCommands.select, { target: range });
         focusPliteEditableAfterEventFrame(focusEditor, {
           receipt: getPlacementGeneration(focusEditor),
         });

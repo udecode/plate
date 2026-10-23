@@ -8,6 +8,7 @@ import type { EditorLifecycleError } from '../../src';
 // React and Testing Library keep their development builds, which own `act`.
 vi.stubEnv('NODE_ENV', 'production');
 vi.resetModules();
+const { getPlacementGeneration } = await import('../../src/core/view-carets');
 const {
   createEditor,
   Editable,
@@ -330,7 +331,8 @@ test('a collapsed view caret in an omitted child reports once', async () => {
       createMainRootPliteViewSelection({
         anchor: { path: [1, 0, 0], offset: 1 },
         focus: { path: [1, 0, 0], offset: 1 },
-      })
+      }),
+      { placedAt: getPlacementGeneration(getRuntime()!.editor) }
     );
   });
   await waitLooks();
@@ -383,7 +385,8 @@ test('a view selection whose endpoint lies in another view root reports nothing'
       createMainRootPliteViewSelection({
         anchor: { path: [1, 0, 0], offset: 1, root: 'notes' },
         focus: { path: [1, 0, 0], offset: 1, root: 'notes' },
-      })
+      }),
+      { placedAt: getPlacementGeneration(getRuntime()!.editor) }
     );
   });
   await waitLooks();

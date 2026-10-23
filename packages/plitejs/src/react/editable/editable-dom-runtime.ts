@@ -18,6 +18,7 @@ import {
   readEditorHistoryReplayReceipt,
   withUpdateTagContext,
 } from '../../core/public-state';
+import { watchFirstPlacement } from '../../core/view-carets';
 import type { DataTransferDiagnostic, DOMRange } from '../../dom';
 import {
   DOMRootRuntime,
@@ -1137,6 +1138,9 @@ export class EditableDOMRuntime {
     const version =
       this.editorValue.read((state) => state.lastCommit()?.version) ?? 0;
     const run = () => history[direction]();
+    // The replay places first; a placement made while it settles is newer.
+    const stopPlacements = watchFirstPlacement(this.editorValue);
+    let placedAt: number;
 
     targetDocument.addEventListener('focusin', invalidatePresentation, true);
     targetDocument.addEventListener(
@@ -1162,6 +1166,7 @@ export class EditableDOMRuntime {
         ? replayed.settled
         : Promise.resolve(replayed));
     } finally {
+      placedAt = stopPlacements();
       targetDocument.removeEventListener(
         'focusin',
         invalidatePresentation,
@@ -1193,7 +1198,8 @@ export class EditableDOMRuntime {
     this.observeHistoryReplay(direction, () =>
       writePliteViewSelection(
         this.editorValue,
-        readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null
+        readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null,
+        { placedAt }
       )
     );
     this.observeHistoryReplay(direction, () =>
@@ -1323,10 +1329,11 @@ export class EditableDOMRuntime {
     if (!this.connected || !node || this.nativeInputListenersCleanup) return;
 
     const handleBeforeInput = (event: InputEvent) => {
-      if (getEditableInteractionOwner(node, event.target) === 'external-text') {
-        return;
-      }
+      const owner = getEditableInteractionOwner(node, event.target);
+
+      if (owner === 'external-text') return;
       if (
+        owner !== 'nested-editor' &&
         !this.webKitProbeActive.current &&
         activateViewCaret(this.editorValue)
       ) {

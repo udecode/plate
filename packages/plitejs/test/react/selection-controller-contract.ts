@@ -8,6 +8,7 @@ import {
 } from 'plitejs';
 import { dom } from 'plitejs/dom';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -674,7 +675,8 @@ test('view selection export clears stale native selection ranges', () => {
         anchor: { point: { path: [0, 0], offset: 0 } },
         focus: { point: { path: [0, 0], offset: 'model selection'.length } },
       }
-    )
+    ),
+    { placedAt: getPlacementGeneration(editor) }
   );
 
   vi.spyOn(ReactEditor, 'resolveDocumentOrShadowRoot').mockReturnValue(

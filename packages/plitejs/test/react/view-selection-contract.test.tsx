@@ -2,6 +2,7 @@ import { render } from '@testing-library/react';
 import { createEditorView, type Point } from 'plitejs';
 import { describe, expect, it } from 'vitest';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import { EditorRoot, useEditorContext, useRootEditor } from '../../src/react';
 import {
   createPliteDecorationManager,
@@ -168,7 +169,9 @@ describe('plite view selection', () => {
     const unsubscribe = subscribePliteViewSelection(a.content, (event) => {
       events.push(event ?? readPliteViewSelection(a.content));
     });
-    writePliteViewSelection(a.root, selection);
+    writePliteViewSelection(a.root, selection, {
+      placedAt: getPlacementGeneration(a.root),
+    });
     refreshPliteViewSelection(a.root);
     unsubscribe();
 
@@ -188,7 +191,9 @@ describe('plite view selection', () => {
       focus: { path: [0, 0], offset: 4 },
     });
 
-    writePliteViewSelection(editor, selection);
+    writePliteViewSelection(editor, selection, {
+      placedAt: getPlacementGeneration(editor),
+    });
     const source = createPliteViewSelectionDecorationSource(editor);
     const text = editorGetSnapshot(editor).children[0].children[0];
 
@@ -218,7 +223,8 @@ describe('plite view selection', () => {
       createMainRootPliteViewSelection({
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [2, 0], offset: 2 },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
     const manager = createPliteDecorationManager(editor, [
       createPliteViewSelectionDecorationSource(editor) as DecorationSource<
@@ -270,7 +276,9 @@ describe('plite view selection', () => {
     });
     const text = editorGetSnapshot(viewEditor).children[0].children[0];
 
-    writePliteViewSelection(viewEditor, selection);
+    writePliteViewSelection(viewEditor, selection, {
+      placedAt: getPlacementGeneration(viewEditor),
+    });
 
     expect(
       createPliteViewSelectionDecorationSource(

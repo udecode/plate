@@ -2,6 +2,7 @@ import { SelectionApi } from 'plitejs';
 import { DOMEditor } from 'plitejs/dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -179,7 +180,9 @@ describe('focusPliteEditable', () => {
   it('does not export a model selection over an active projected view selection', () => {
     const { editor, element, focus } = createFocusableEditor();
 
-    writePliteViewSelection(editor, createProjectedSelection());
+    writePliteViewSelection(editor, createProjectedSelection(), {
+      placedAt: getPlacementGeneration(editor),
+    });
 
     focusPliteEditable(editor);
 
@@ -190,7 +193,9 @@ describe('focusPliteEditable', () => {
   it('does not export a model selection when repair focus preserves an active projected view selection', () => {
     const { editor, element, focus } = createFocusableEditor();
 
-    writePliteViewSelection(editor, createProjectedSelection());
+    writePliteViewSelection(editor, createProjectedSelection(), {
+      placedAt: getPlacementGeneration(editor),
+    });
 
     expect(focusEditableRepairTarget(editor)).toBe(true);
     expect(focus).not.toHaveBeenCalled();
@@ -200,7 +205,9 @@ describe('focusPliteEditable', () => {
   it('restores the DOM focus path for a collapsed projected view selection', () => {
     const { editor, element, focus } = createFocusableEditor();
 
-    writePliteViewSelection(editor, createCollapsedProjectedSelection());
+    writePliteViewSelection(editor, createCollapsedProjectedSelection(), {
+      placedAt: getPlacementGeneration(editor),
+    });
 
     focusPliteEditable(editor);
 

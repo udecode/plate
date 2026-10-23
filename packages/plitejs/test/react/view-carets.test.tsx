@@ -1,10 +1,18 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import {
   createEditorView,
   defineCommand,
   defineEditorSchema,
   definePlugin,
   editorCommands,
+  type PluginReference,
   RangeApi,
   schema,
   TextApi,
@@ -27,9 +35,13 @@ import {
   getCommittedCarets,
   getPlacementGeneration,
 } from '../../src/core/view-carets';
+import { readCoreWork } from '../../src/core/work';
 import * as domInternal from '../../src/dom/internal';
 import { IS_NODE_MAP_DIRTY } from '../../src/dom/internal';
-import { FOCUS_SETTLE_TIMEOUT } from '../../src/dom/plugin/dom-editor';
+import {
+  DOMEditor,
+  FOCUS_SETTLE_TIMEOUT,
+} from '../../src/dom/plugin/dom-editor';
 import { markDOMSyncMutationTarget } from '../../src/dom/plugin/dom-sync-mutation-ownership';
 import { getViewPresentation } from '../../src/editor-runtime-view';
 import { evaluateCommand } from '../../src/internal';
@@ -50,13 +62,19 @@ import {
 import { DOMCoverageBoundaryRange } from '../../src/react/components/dom-coverage-boundary';
 import { WindowedEditable } from '../../src/react/components/windowed-editable.internal';
 import { applyContentRootNavigation } from '../../src/react/editable/content-root-navigation';
+import {
+  createContentRootViewBoundaryGraph,
+  findContentRootOwners,
+} from '../../src/react/editable/content-root-owners';
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import * as mouseUpReplay from '../../src/react/editable/root-interaction-dom-selection-replay';
 import { subscribeSource } from '../../src/react/editable/runtime-editor-api';
 import { focusPliteEditableAfterEventFrame } from '../../src/react/hooks/focus-plite-editable';
 import {
   createMainRootPliteViewSelection,
+  createPliteViewSelection,
   readPliteViewSelection,
+  subscribePliteViewSelection,
   writePliteViewSelection,
 } from '../../src/react/view-selection';
 import { VirtualizedEditable } from '../../src/react/virtualized';
@@ -916,7 +934,8 @@ describe('views of one editor', () => {
         createMainRootPliteViewSelection({
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 4 },
-        })
+        }),
+        { placedAt: getPlacementGeneration(a) }
       );
     });
     await place(b, 8);
@@ -1589,6 +1608,1297 @@ describe('content roots rendered by two views (R29)', () => {
     });
 
     expect(editor.read.text.string([0])).toBe('aQbove');
+  });
+});
+
+describe('a selection across content roots when a root activates', () => {
+  const contentRootLabels: Record<string, string> = {
+    [BODY_ROOT]: 'body editor',
+    [DEEP_ROOT]: 'deep editor',
+  };
+
+  const renderProjectionViews = ({
+    bodyAfter = false,
+    deep = false,
+    extraRoots = 0,
+    peer = false,
+    plugins = [],
+    stopKeyDown = false,
+  }: {
+    bodyAfter?: boolean;
+    deep?: boolean;
+    extraRoots?: number;
+    peer?: boolean;
+    plugins?: readonly PluginReference[];
+    stopKeyDown?: boolean;
+  } = {}) => {
+    const extras = Array.from({ length: extraRoots }, (_, index) => ({
+      owner: {
+        type: 'details-content',
+        childRoots: { body: `extra-${index}` },
+        children: [{ text: '' }],
+      },
+      root: `extra-${index}`,
+    }));
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          paragraph('above'),
+          {
+            type: 'details-content',
+            childRoots: { body: BODY_ROOT },
+            children: [{ text: '' }],
+          },
+          paragraph('below'),
+          ...extras.map(({ owner }) => owner),
+        ],
+        roots: deep
+          ? {
+              [BODY_ROOT]: [
+                paragraph('body text'),
+                {
+                  type: 'details-content',
+                  childRoots: { body: DEEP_ROOT },
+                  children: [{ text: '' }],
+                },
+                ...(bodyAfter ? [paragraph('after')] : []),
+              ],
+              [DEEP_ROOT]: [
+                paragraph('deep text'),
+                paragraph('more deep'),
+                paragraph('last deep'),
+              ],
+              note: [paragraph('note text')],
+            }
+          : {
+              [BODY_ROOT]: [paragraph('body text here')],
+              note: [paragraph('note text')],
+              ...Object.fromEntries(
+                extras.map(({ root }) => [root, [paragraph(root)]])
+              ),
+            },
+      },
+      plugins: [contentRootSchema, history(), ...plugins],
+    });
+    const views = new Map<string, RootView>();
+    const Note = () => {
+      const chrome = useRootChrome('note');
+      views.set('note', useRootEditor('note'));
+
+      return (
+        <section {...chrome.props}>
+          <span>note chrome</span>
+          <Editable aria-label="note editor" root="note" />
+        </section>
+      );
+    };
+    const Main = () => {
+      const chrome = useRootChrome();
+      views.set('main', useRootEditor());
+      views.set('body', useRootEditor(BODY_ROOT));
+
+      return (
+        <>
+          <div {...chrome.props}>
+            <span>main chrome</span>
+          </div>
+          <Editable
+            aria-label="main editor"
+            renderElement={(props) =>
+              props.element.type === 'details-content' ? (
+                <section
+                  {...props.attributes}
+                  onKeyDown={
+                    stopKeyDown ? (event) => event.stopPropagation() : undefined
+                  }
+                >
+                  {props.slots.contentRoot('body', {
+                    ariaLabel:
+                      contentRootLabels[
+                        (props.element as { childRoots?: { body: string } })
+                          .childRoots?.body ?? ''
+                      ],
+                  })}
+                </section>
+              ) : (
+                <p {...props.attributes}>{props.children}</p>
+              )
+            }
+          />
+        </>
+      );
+    };
+    const Deep = () => {
+      views.set('deep', useRootEditor(DEEP_ROOT));
+
+      return null;
+    };
+    const Peer = () => {
+      views.set('peer', useRootEditor());
+
+      return (
+        <Editable
+          aria-label="peer editor"
+          renderElement={(props) => (
+            <div {...props.attributes}>{props.children}</div>
+          )}
+        />
+      );
+    };
+
+    render(
+      <>
+        <EditorRoot editor={editor}>
+          <Note />
+          <Main />
+          {deep && <Deep />}
+        </EditorRoot>
+        {peer && (
+          <EditorRoot editor={editor}>
+            <Peer />
+          </EditorRoot>
+        )}
+      </>
+    );
+
+    return {
+      body: views.get('body')!,
+      deep: views.get('deep'),
+      editor,
+      main: views.get('main')!,
+      note: views.get('note')!,
+      peer: views.get('peer'),
+    };
+  };
+
+  const press = async (label: string, init: Record<string, unknown>) => {
+    await act(async () => {
+      screen.getByLabelText(label).focus();
+      fireEvent.keyDown(screen.getByLabelText(label), init);
+      await wait();
+    });
+  };
+
+  const selectToDocumentEnd = (label: string) =>
+    press(label, { ctrlKey: true, key: 'End', shiftKey: true });
+
+  const focusEditor = async (label: string) => {
+    await act(async () => {
+      screen.getByLabelText(label).focus();
+      await wait();
+    });
+  };
+
+  const typeQ = async (label: string) => {
+    await act(async () => {
+      typeInto(label, 'Q');
+      await wait();
+    });
+  };
+
+  const selectInView = async (
+    view: RootView,
+    anchor: number[],
+    focus: number[]
+  ) => {
+    await act(async () => {
+      view.update((tx) =>
+        tx.selection.set({
+          anchor: { path: anchor.slice(0, -1), offset: anchor.at(-1)! },
+          focus: { path: focus.slice(0, -1), offset: focus.at(-1)! },
+        })
+      );
+    });
+  };
+
+  const shown = (main: RootView) => readPliteViewSelection(main) !== null;
+
+  const shownFocusBlock = (main: RootView) => {
+    const point = readPliteViewSelection(main)?.focus.point;
+
+    return point ? `${point.root ?? 'main'}:${point.path[0]}` : null;
+  };
+
+  const texts = ({ body, main }: { body: RootView; main: RootView }) => [
+    main.read.text.string([0]),
+    body.read.text.string([0]),
+    main.read.text.string([2]),
+  ];
+
+  test('focus moving into the outer editor keeps a selection that spans it', async () => {
+    const { body, main } = renderProjectionViews();
+
+    await place(main, 2);
+    await selectInView(body, [0, 0, 1], [0, 0, 4]);
+    await selectToDocumentEnd('body editor');
+    await focusEditor('main editor');
+
+    expect([shown(main), caret(main)]).toEqual([true, null]);
+  });
+
+  test('a select handler that builds a transaction and declines leaves the selection current', async () => {
+    const declines = definePlugin('test.declined-select', {
+      commands: ({ handle }) => [
+        handle(editorCommands.select, ({ input, state }) => {
+          state.transaction((tx) => {
+            tx.selection.set(input.target);
+          });
+
+          return false;
+        }),
+      ],
+    });
+    const { body, main } = renderProjectionViews({ plugins: [declines] });
+
+    await place(main, 2);
+    await selectInView(body, [0, 0, 1], [0, 0, 4]);
+    await selectToDocumentEnd('body editor');
+    await focusEditor('main editor');
+
+    expect([shown(main), caret(main)]).toEqual([true, null]);
+  });
+
+  test('Ctrl+Shift+End from a root nested two deep selects to the document end', async () => {
+    const { body, deep, main } = renderProjectionViews({ deep: true });
+
+    await place(main, 2);
+    await place(body, 2);
+    await selectInView(deep!, [0, 0, 1], [1, 0, 1]);
+    await selectToDocumentEnd('deep editor');
+
+    expect([shownFocusBlock(main), caret(main)]).toEqual(['main:2', null]);
+  });
+
+  const keyErrors = async (run: () => Promise<void>) => {
+    const errors: unknown[] = [];
+    const onError = (event: ErrorEvent) => {
+      errors.push(event.error);
+    };
+
+    window.addEventListener('error', onError);
+    try {
+      await run();
+    } finally {
+      window.removeEventListener('error', onError);
+    }
+
+    return errors;
+  };
+
+  test('Shift+ArrowUp after Ctrl+Shift+End in a root extends back into its last block', async () => {
+    const { body, main } = renderProjectionViews();
+    let back: string | null = null;
+
+    await place(main, 2);
+    await place(body, 1);
+    const errors = await keyErrors(async () => {
+      await selectToDocumentEnd('body editor');
+      await press('body editor', { key: 'ArrowUp', shiftKey: true });
+      back = shownFocusBlock(main);
+    });
+
+    expect([back, errors]).toEqual([`${BODY_ROOT}:0`, []]);
+  });
+
+  test('Shift+ArrowUp back into a root nested two deep and Shift+ArrowDown out of it again extends the selection', async () => {
+    const { body, deep, main } = renderProjectionViews({ deep: true });
+    let back: string | null = null;
+
+    await place(main, 2);
+    await place(body, 2);
+    await place(deep!, 1);
+    const errors = await keyErrors(async () => {
+      await selectToDocumentEnd('deep editor');
+      await press('deep editor', { key: 'ArrowUp', shiftKey: true });
+      back = shownFocusBlock(main);
+      await press('deep editor', { key: 'ArrowDown', shiftKey: true });
+    });
+
+    expect([back, shownFocusBlock(main), errors]).toEqual([
+      `${DEEP_ROOT}:2`,
+      'main:2',
+      [],
+    ]);
+  });
+
+  test('Shift+ArrowUp from a native selection out of a root nested two deep extends back into it', async () => {
+    const { body, deep, main } = renderProjectionViews({ deep: true });
+
+    await place(main, 2);
+    await place(body, 2);
+    await place(deep!, 1);
+    await act(async () => {
+      screen.getByLabelText('deep editor').focus();
+      document.dispatchEvent(new Event('selectionchange'));
+      await afterFocusCommitExports();
+      document
+        .getSelection()!
+        .setBaseAndExtent(
+          textNodeOf(screen.getByText('deep text')),
+          1,
+          textNodeOf(screen.getByText('below')),
+          2
+        );
+      document.dispatchEvent(new Event('selectionchange'));
+      await wait(150);
+    });
+    const projected = shown(main);
+    const errors = await keyErrors(() =>
+      press('deep editor', { key: 'ArrowUp', shiftKey: true })
+    );
+
+    expect([projected, shownFocusBlock(main), errors]).toEqual([
+      true,
+      `${DEEP_ROOT}:2`,
+      [],
+    ]);
+  });
+
+  test('Shift+ArrowRight past the end of a root nested two deep extends into the next block of its host', async () => {
+    const { body, deep, main } = renderProjectionViews({
+      bodyAfter: true,
+      deep: true,
+    });
+
+    await place(main, 2);
+    await place(body, 2);
+    await selectInView(deep!, [0, 0, 1], [2, 0, 9]);
+    const errors = await keyErrors(() =>
+      press('deep editor', { key: 'ArrowRight', shiftKey: true })
+    );
+
+    expect([shownFocusBlock(main), errors]).toEqual([`${BODY_ROOT}:2`, []]);
+  });
+
+  test('a wrapper that stops keydown bubbling keeps the selection across a second key', async () => {
+    const { body, main } = renderProjectionViews({ stopKeyDown: true });
+
+    await place(main, 2);
+    await place(body, 1);
+    await selectToDocumentEnd('body editor');
+    const extended = shown(main);
+
+    await act(async () => {
+      fireEvent.keyDown(screen.getByLabelText('body editor'), {
+        key: 'ArrowLeft',
+        shiftKey: true,
+      });
+      await wait();
+    });
+
+    expect([extended, shown(main), caret(main)]).toEqual([true, true, null]);
+  });
+
+  test('a placement a selection listener makes once the selection shows gives the owner its caret back', async () => {
+    const views = renderProjectionViews();
+    const { body, main } = views;
+
+    await place(main, 2);
+    await selectInView(body, [0, 0, 1], [0, 0, 4]);
+    const stop = subscribePliteViewSelection(main, () => {
+      if (!readPliteViewSelection(main)) return;
+      stop();
+      body.update((tx) => tx.selection.set({ path: [0, 0], offset: 5 }));
+    });
+    await selectToDocumentEnd('body editor');
+    stop();
+    await focusEditor('main editor');
+    await typeQ('main editor');
+
+    expect(texts(views)).toEqual(['abQove', 'body text here', 'below']);
+  });
+
+  test('a newer placement in a spanned root gives the owner its parked caret back', async () => {
+    const views = renderProjectionViews();
+    const { body, main } = views;
+
+    await place(main, 2);
+    await place(body, 1);
+    await selectToDocumentEnd('body editor');
+    const projected = shown(main);
+
+    await place(body, 5);
+    await focusEditor('main editor');
+    await typeQ('main editor');
+
+    expect([projected, ...texts(views)]).toEqual([
+      true,
+      'abQove',
+      'body text here',
+      'below',
+    ]);
+  });
+
+  test("pressing a root's chrome restores its caret when the selection does not span it", async () => {
+    const views = renderProjectionViews();
+    const { body, main, note } = views;
+
+    await place(note, 3);
+    await place(main, 2);
+    await place(body, 1);
+    await selectToDocumentEnd('body editor');
+    const projected = shown(main);
+
+    await pressChrome('note');
+    await typeQ('note editor');
+
+    expect([projected, note.read.text.string([0]), ...texts(views)]).toEqual([
+      true,
+      'notQe text',
+      'above',
+      'body text here',
+      'below',
+    ]);
+  });
+
+  test('focusing the editor of a root the selection does not span restores its caret', async () => {
+    const views = renderProjectionViews();
+    const { body, main, note } = views;
+
+    await place(note, 3);
+    await place(main, 2);
+    await place(body, 1);
+    await selectToDocumentEnd('body editor');
+    const projected = shown(main);
+
+    await focusEditor('note editor');
+    await typeQ('note editor');
+
+    expect([projected, note.read.text.string([0]), ...texts(views)]).toEqual([
+      true,
+      'notQe text',
+      'above',
+      'body text here',
+      'below',
+    ]);
+  });
+
+  test('a placement made while the selection collapses to its anchor gives the owner its parked caret back', async () => {
+    const views = renderProjectionViews();
+    const { body, editor, main } = views;
+
+    await place(main, 2);
+    await selectInView(body, [0, 0, 1], [0, 0, 4]);
+    const stop = subscribeSource(editor, 'commit', () => {
+      if (!readPliteViewSelection(main)) return;
+      stop();
+      body.update((tx) => tx.selection.set({ path: [0, 0], offset: 5 }));
+    });
+    await selectToDocumentEnd('body editor');
+    stop();
+    await focusEditor('main editor');
+    await typeQ('main editor');
+
+    expect(texts(views)).toEqual(['abQove', 'body text here', 'below']);
+  });
+
+  test("pressing the outer editor's chrome restores its caret when the selection spans it", async () => {
+    const views = renderProjectionViews();
+    const { body, main } = views;
+
+    await place(main, 2);
+    await place(body, 1);
+    await selectToDocumentEnd('body editor');
+    const projected = shown(main);
+
+    await pressChrome('main');
+    await typeQ('main editor');
+
+    expect([projected, ...texts(views)]).toEqual([
+      true,
+      'abQove',
+      'body text here',
+      'below',
+    ]);
+  });
+
+  test('a selection shown from a root nested two deep stays when the outer editor takes focus', async () => {
+    const { body, deep, main } = renderProjectionViews({ deep: true });
+
+    await place(main, 2);
+    await place(body, 2);
+    await selectInView(deep!, [0, 0, 1], [2, 0, 1]);
+    await press('deep editor', { key: 'ArrowDown', shiftKey: true });
+    const extended = shown(main);
+
+    await focusEditor('main editor');
+
+    expect([extended, shown(main), caret(main)]).toEqual([true, true, null]);
+  });
+
+  test("pressing the chrome of the editor that holds the selection's anchor drops the selection", async () => {
+    const views = renderProjectionViews();
+    const { main } = views;
+
+    await place(main, 1);
+    await selectToDocumentEnd('main editor');
+    const projected = shown(main);
+
+    await pressChrome('main');
+    await typeQ('main editor');
+
+    expect([projected, ...texts(views)]).toEqual([
+      true,
+      'aQbove',
+      'body text here',
+      'below',
+    ]);
+  });
+
+  test('typing after a newer placement in the anchor root types at that caret', async () => {
+    const views = renderProjectionViews();
+    const { body, main } = views;
+
+    await place(main, 2);
+    await place(body, 1);
+    await selectToDocumentEnd('body editor');
+    const projected = shown(main);
+
+    await place(body, 5);
+    await typeQ('body editor');
+
+    expect([projected, ...texts(views)]).toEqual([
+      true,
+      'above',
+      'body Qtext here',
+      'below',
+    ]);
+  });
+
+  test('focus moving into the outer editor keeps a native selection from the body into it', async () => {
+    const { main } = renderProjectionViews();
+
+    await place(main, 2);
+    await act(async () => {
+      screen.getByLabelText('body editor').focus();
+      document.dispatchEvent(new Event('selectionchange'));
+      await afterFocusCommitExports();
+      document
+        .getSelection()!
+        .setBaseAndExtent(
+          textNodeOf(screen.getByLabelText('body editor')),
+          1,
+          textNodeOf(screen.getByText('below')),
+          2
+        );
+      document.dispatchEvent(new Event('selectionchange'));
+      await wait(150);
+    });
+    const projected = shown(main);
+
+    await focusEditor('main editor');
+
+    expect([projected, shown(main), caret(main)]).toEqual([true, true, null]);
+  });
+
+  test("another view's newer placement ends the selection before the outer editor takes focus", async () => {
+    const views = renderProjectionViews({ peer: true });
+    const { body, main, peer } = views;
+
+    await place(main, 2);
+    await place(body, 1);
+    await selectToDocumentEnd('body editor');
+    const projected = shown(main);
+
+    await place(peer!, 4);
+    await focusEditor('main editor');
+    await typeQ('main editor');
+
+    expect([projected, ...texts(views)]).toEqual([
+      true,
+      'abQove',
+      'body text here',
+      'below',
+    ]);
+  });
+
+  const typeQIntoFocus = async () => {
+    await act(async () => {
+      fireEvent(
+        document.activeElement!,
+        new InputEvent('beforeinput', {
+          bubbles: true,
+          cancelable: true,
+          data: 'Q',
+          inputType: 'insertText',
+        })
+      );
+      await wait();
+    });
+  };
+
+  const showMainRootRange = async (
+    main: RootView,
+    from: number,
+    to: number
+  ) => {
+    await act(async () => {
+      writePliteViewSelection(
+        main,
+        createMainRootPliteViewSelection({
+          anchor: { path: [0, 0], offset: from },
+          focus: { path: [0, 0], offset: to },
+        }),
+        {
+          place: () =>
+            main.update((tx) =>
+              tx.selection.set({ path: [0, 0], offset: from })
+            ),
+        }
+      );
+    });
+  };
+
+  test('a placement a selection listener makes once the selection shows keeps focus and typing there', async () => {
+    const views = renderProjectionViews();
+    const { body, main } = views;
+
+    await place(main, 2);
+    await selectInView(body, [0, 0, 1], [0, 0, 4]);
+    const stop = subscribePliteViewSelection(main, () => {
+      if (!readPliteViewSelection(main)) return;
+      stop();
+      body.update((tx) => tx.selection.set({ path: [0, 0], offset: 5 }));
+    });
+    await selectToDocumentEnd('body editor');
+    stop();
+    await typeQIntoFocus();
+
+    expect(texts(views)).toEqual(['above', 'body Qtext here', 'below']);
+  });
+
+  test('a placement a commit listener makes during the anchor placement keeps focus and typing there', async () => {
+    const views = renderProjectionViews();
+    const { body, editor, main } = views;
+
+    await place(main, 2);
+    await selectInView(body, [0, 0, 1], [0, 0, 4]);
+    const stop = subscribeSource(editor, 'commit', () => {
+      if (!readPliteViewSelection(main)) return;
+      stop();
+      body.update((tx) => tx.selection.set({ path: [0, 0], offset: 5 }));
+    });
+    await selectToDocumentEnd('body editor');
+    stop();
+    await typeQIntoFocus();
+
+    expect(texts(views)).toEqual(['above', 'body Qtext here', 'below']);
+  });
+
+  test('a selection listener that edits when a newer placement ends the selection sees the finished placement', async () => {
+    const views = renderProjectionViews();
+    const { main } = views;
+
+    await place(main, 1);
+    await showMainRootRange(main, 1, 4);
+    const projected = shown(main);
+    const stop = subscribePliteViewSelection(main, () => {
+      if (readPliteViewSelection(main)) return;
+      stop();
+      main.update((tx) => tx.text.insert('X'));
+    });
+
+    await place(main, 2);
+    stop();
+
+    expect([projected, main.read.text.string([0])]).toEqual([true, 'abXove']);
+  });
+
+  test('undo does not restore a selection a newer placement replaced while the undo settled', async () => {
+    const views = renderProjectionViews();
+    const { main } = views;
+
+    await place(main, 1);
+    await showMainRootRange(main, 1, 4);
+    await typeQ('main editor');
+    const replaced = main.read.text.string([0]);
+
+    await act(async () => {
+      const settled = new Promise<void>((resolve) => {
+        findMountedEditableDOMRuntime(
+          screen.getByLabelText('main editor')
+        )!.dispatchHistory('undo', 'none', () => resolve());
+      });
+
+      main.update((tx) => tx.selection.set(main.read.selection()));
+      await settled;
+      await wait();
+    });
+    await typeQ('main editor');
+
+    expect([replaced, main.read.text.string([0])]).toEqual(['aQe', 'aQbove']);
+  });
+
+  const renderSharedRootHosts = (order: 'shared first' | 'text first') => {
+    const A_ROOT = 'details-slot:a';
+    const B_ROOT = 'details-slot:b';
+    const SHARED_ROOT = 'details-slot:shared';
+    const labels: Record<string, string> = {
+      [A_ROOT]: 'a editor',
+      [B_ROOT]: 'b editor',
+      [SHARED_ROOT]: 'shared editor',
+    };
+    const owner = (root: string) => ({
+      type: 'details-content',
+      childRoots: { body: root },
+      children: [{ text: '' }],
+    });
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          paragraph('above'),
+          owner(A_ROOT),
+          owner(B_ROOT),
+          paragraph('below'),
+        ],
+        roots: {
+          [A_ROOT]: [paragraph('a text'), owner(SHARED_ROOT)],
+          [B_ROOT]:
+            order === 'shared first'
+              ? [owner(SHARED_ROOT), paragraph('b text')]
+              : [paragraph('b text'), owner(SHARED_ROOT)],
+          [SHARED_ROOT]: [paragraph('shared text')],
+        },
+      },
+      plugins: [contentRootSchema, history()],
+    });
+    const views = new Map<string, RootView>();
+    const Main = () => {
+      views.set('main', useRootEditor());
+      views.set('b', useRootEditor(B_ROOT));
+      views.set('shared', useRootEditor(SHARED_ROOT));
+
+      return (
+        <Editable
+          aria-label="main editor"
+          renderElement={(props) =>
+            props.element.type === 'details-content' ? (
+              <section {...props.attributes}>
+                {props.slots.contentRoot('body', {
+                  ariaLabel:
+                    labels[
+                      (props.element as { childRoots?: { body: string } })
+                        .childRoots?.body ?? ''
+                    ],
+                })}
+              </section>
+            ) : (
+              <p {...props.attributes}>{props.children}</p>
+            )
+          }
+        />
+      );
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <Main />
+      </EditorRoot>
+    );
+    return {
+      b: views.get('b')!,
+      main: views.get('main')!,
+      shared: views.get('shared')!,
+    };
+  };
+
+  test('focusing a root that nests another copy of a shared root restores its caret', async () => {
+    const { b, main, shared } = renderSharedRootHosts('text first');
+    const sharedInA = screen.getAllByLabelText('shared editor')[0];
+
+    await place(b, 3);
+    await place(shared, 4);
+    await act(async () => {
+      sharedInA.focus();
+      fireEvent.keyDown(sharedInA, {
+        ctrlKey: true,
+        key: 'Home',
+        shiftKey: true,
+      });
+      await wait();
+    });
+    const projected = shown(main);
+
+    await focusEditor('b editor');
+    await typeQ('b editor');
+
+    expect([projected, b.read.text.string([0])]).toEqual([true, 'b tQext']);
+  });
+
+  test('focusing a root that nests one of two selected copies of a shared root keeps the selection', async () => {
+    const { b, main, shared } = renderSharedRootHosts('shared first');
+    const owners = findContentRootOwners(main);
+    const copyIn = (host: string) =>
+      owners.find(
+        (owner) =>
+          owner.childRoot === 'details-slot:shared' && owner.ownerRoot === host
+      )!;
+
+    await place(b, 3, [1, 0]);
+    await act(async () => {
+      writePliteViewSelection(
+        main,
+        createPliteViewSelection(
+          createContentRootViewBoundaryGraph(main, owners),
+          {
+            anchor: {
+              owner: copyIn('details-slot:a'),
+              point: { offset: 2, path: [0, 0], root: 'details-slot:shared' },
+            },
+            focus: {
+              owner: copyIn('details-slot:b'),
+              point: { offset: 4, path: [0, 0], root: 'details-slot:shared' },
+            },
+          }
+        ),
+        {
+          place: () =>
+            shared.update((tx) =>
+              tx.selection.set({ path: [0, 0], offset: 2 })
+            ),
+        }
+      );
+    });
+    const projected = shown(main);
+
+    await focusEditor('b editor');
+
+    expect([projected, shown(main), caret(b)]).toEqual([true, true, null]);
+  });
+
+  test('placing the caret again where it is ends the selection, so typing types at the caret', async () => {
+    const views = renderProjectionViews();
+    const { main } = views;
+
+    await place(main, 1);
+    await focusEditor('main editor');
+    await showMainRootRange(main, 1, 4);
+    const projected = shown(main);
+
+    await place(main, 1);
+    await typeQ('main editor');
+
+    expect([projected, main.read.text.string([0])]).toEqual([true, 'aQbove']);
+  });
+
+  test('a write that names an older placement leaves the newer selection showing', async () => {
+    const { editor, main } = renderProjectionViews();
+
+    await place(main, 1);
+    const older = getPlacementGeneration(editor);
+
+    await focusEditor('main editor');
+    await showMainRootRange(main, 1, 4);
+    const newer = readPliteViewSelection(main);
+    const wrote = writePliteViewSelection(
+      main,
+      createMainRootPliteViewSelection({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 3 },
+      }),
+      { placedAt: older }
+    );
+
+    expect([wrote, !!newer, readPliteViewSelection(main) === newer]).toEqual([
+      false,
+      true,
+      true,
+    ]);
+  });
+
+  test('a clear that names an older placement leaves the newer selection showing', async () => {
+    const { editor, main } = renderProjectionViews();
+
+    await place(main, 1);
+    const older = getPlacementGeneration(editor);
+
+    await focusEditor('main editor');
+    await showMainRootRange(main, 1, 4);
+    const newer = readPliteViewSelection(main);
+    const wrote = writePliteViewSelection(main, null, { placedAt: older });
+
+    expect([wrote, !!newer, readPliteViewSelection(main) === newer]).toEqual([
+      false,
+      true,
+      true,
+    ]);
+  });
+
+  test('a replacement that places twice and then fails tells its subscribers once', async () => {
+    const { main } = renderProjectionViews();
+    let notices = 0;
+
+    await place(main, 1);
+    await showMainRootRange(main, 1, 4);
+    const projected = shown(main);
+    const stop = subscribePliteViewSelection(main, () => {
+      notices += 1;
+    });
+
+    expect(() =>
+      writePliteViewSelection(
+        main,
+        createMainRootPliteViewSelection({
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 3 },
+        }),
+        {
+          place: () => {
+            main.update((tx) => tx.selection.set({ path: [0, 0], offset: 2 }));
+            main.update((tx) => tx.selection.set({ path: [0, 0], offset: 2 }));
+            throw new Error('place failed');
+          },
+        }
+      )
+    ).toThrow('place failed');
+    await act(() => wait());
+    stop();
+
+    expect([projected, shown(main), notices]).toEqual([true, false, 1]);
+  });
+
+  test('a selection whose replacement fails to place stops showing and tells its subscribers', async () => {
+    const { main } = renderProjectionViews();
+    let notices = 0;
+
+    await place(main, 1);
+    await showMainRootRange(main, 1, 4);
+    const projected = shown(main);
+    const stop = subscribePliteViewSelection(main, () => {
+      notices += 1;
+    });
+
+    expect(() =>
+      writePliteViewSelection(
+        main,
+        createMainRootPliteViewSelection({
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 3 },
+        }),
+        {
+          place: () => {
+            throw new Error('place failed');
+          },
+        }
+      )
+    ).toThrow('place failed');
+    stop();
+
+    expect([projected, shown(main), notices]).toEqual([true, false, 1]);
+  });
+
+  test('a placement a selection listener makes as a native selection across roots shows keeps typing there', async () => {
+    const views = renderProjectionViews();
+    const { body, main } = views;
+
+    await place(main, 2);
+    const stop = subscribePliteViewSelection(main, () => {
+      if (!readPliteViewSelection(main)) return;
+      stop();
+      body.update((tx) => tx.selection.set({ path: [0, 0], offset: 5 }));
+    });
+    await act(async () => {
+      screen.getByLabelText('body editor').focus();
+      document.dispatchEvent(new Event('selectionchange'));
+      await afterFocusCommitExports();
+      document
+        .getSelection()!
+        .setBaseAndExtent(
+          textNodeOf(screen.getByLabelText('body editor')),
+          1,
+          textNodeOf(screen.getByText('below')),
+          2
+        );
+      document.dispatchEvent(new Event('selectionchange'));
+      await wait(150);
+    });
+    stop();
+    await typeQIntoFocus();
+
+    expect(texts(views)).toEqual(['above', 'body Qtext here', 'below']);
+  });
+
+  test.each(['ArrowRight', 'ArrowDown'])(
+    'Shift+%s with nowhere to go keeps a selection made natively across roots',
+    async (key) => {
+      const { main } = renderProjectionViews();
+
+      await place(main, 2);
+      await act(async () => {
+        screen.getByLabelText('main editor').focus();
+        document.dispatchEvent(new Event('selectionchange'));
+        await afterFocusCommitExports();
+        document
+          .getSelection()!
+          .setBaseAndExtent(
+            textNodeOf(screen.getByText('above')),
+            0,
+            textNodeOf(screen.getByText('below')),
+            5
+          );
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(150);
+      });
+      const projected = shown(main);
+
+      await press('main editor', { key, shiftKey: true });
+
+      expect([projected, shown(main)]).toEqual([true, true]);
+    }
+  );
+
+  test('with no selection across roots shown, a caret key in the body and a focus on the outer editor make five placements', async () => {
+    const { body, editor, main } = renderProjectionViews();
+
+    await place(main, 2);
+    await place(body, 1);
+    const before = getPlacementGeneration(editor);
+
+    await press('body editor', { key: 'ArrowRight' });
+    await focusEditor('main editor');
+
+    expect([getPlacementGeneration(editor) - before, caret(main)]).toEqual([
+      5,
+      '0.0.2',
+    ]);
+  });
+
+  test('with no selection across roots shown, focusing the outer editor reads no content root owners', async () => {
+    const { body, main } = renderProjectionViews();
+
+    await place(main, 2);
+    await place(body, 1);
+    const before = readCoreWork().contentRootOwnerScans;
+
+    await focusEditor('main editor');
+
+    expect(readCoreWork().contentRootOwnerScans - before).toBe(0);
+  });
+
+  test('focusing the outer editor reads the content root owners as often with ten roots after the selection as with none', async () => {
+    const scansOnFocus = async (extraRoots: number) => {
+      const { body, main } = renderProjectionViews({ extraRoots });
+
+      await place(main, 2);
+      await place(body, 1);
+      await selectToDocumentEnd('body editor');
+      const before = readCoreWork().contentRootOwnerScans;
+
+      await focusEditor('main editor');
+      const scans = readCoreWork().contentRootOwnerScans - before;
+      const kept = shown(main);
+
+      cleanup();
+
+      return { kept, scans };
+    };
+    const few = await scansOnFocus(0);
+    const many = await scansOnFocus(10);
+
+    expect([few.kept, many.kept, many.scans]).toEqual([true, true, few.scans]);
+  });
+
+  const placeAndFocusNote = (note: RootView) => {
+    note.update((tx) => tx.selection.set({ path: [0, 0], offset: 5 }));
+    screen.getByLabelText('note editor').focus();
+  };
+
+  const focusedLabel = () => document.activeElement?.getAttribute('aria-label');
+
+  test('a selection listener that moves the caret and focus to another root once the selection shows keeps focus and typing there', async () => {
+    const { body, main, note } = renderProjectionViews();
+
+    await place(main, 2);
+    await place(body, 1);
+    const stop = subscribePliteViewSelection(main, () => {
+      if (!readPliteViewSelection(main)) return;
+      stop();
+      placeAndFocusNote(note);
+    });
+    await selectToDocumentEnd('body editor');
+    stop();
+    const focused = focusedLabel();
+    await typeQIntoFocus();
+
+    expect([focused, note.read.text.string([0])]).toEqual([
+      'note editor',
+      'note Qtext',
+    ]);
+  });
+
+  test('a commit listener that moves the caret and focus to another root during the anchor placement keeps focus and typing there', async () => {
+    const { body, editor, main, note } = renderProjectionViews();
+
+    await place(main, 2);
+    await selectInView(body, [0, 0, 1], [0, 0, 4]);
+    const stop = subscribeSource(editor, 'commit', () => {
+      if (!readPliteViewSelection(main)) return;
+      stop();
+      placeAndFocusNote(note);
+    });
+    await selectToDocumentEnd('body editor');
+    stop();
+    const focused = focusedLabel();
+    await typeQIntoFocus();
+
+    expect([focused, note.read.text.string([0])]).toEqual([
+      'note editor',
+      'note Qtext',
+    ]);
+  });
+
+  test('a selection listener that moves the caret and focus to another root when a dead-end Shift+ArrowRight collapses a native selection keeps focus and typing there', async () => {
+    const { main, note } = renderProjectionViews();
+
+    await place(main, 2);
+    await act(async () => {
+      screen.getByLabelText('main editor').focus();
+      document.dispatchEvent(new Event('selectionchange'));
+      await afterFocusCommitExports();
+      document
+        .getSelection()!
+        .setBaseAndExtent(
+          textNodeOf(screen.getByText('above')),
+          0,
+          textNodeOf(screen.getByText('below')),
+          5
+        );
+      document.dispatchEvent(new Event('selectionchange'));
+      await wait(150);
+    });
+    const projected = shown(main);
+    let heard = false;
+    const stop = subscribePliteViewSelection(main, () => {
+      if (!readPliteViewSelection(main)) return;
+      stop();
+      heard = true;
+      placeAndFocusNote(note);
+    });
+    await press('main editor', { key: 'ArrowRight', shiftKey: true });
+    stop();
+    const focused = focusedLabel();
+    await typeQIntoFocus();
+
+    expect([projected, heard, focused, note.read.text.string([0])]).toEqual([
+      true,
+      true,
+      'note editor',
+      'note Qtext',
+    ]);
+  });
+
+  test("a selection listener that moves the caret and focus to another root when a press on the anchor holder's chrome ends the selection keeps focus and typing there", async () => {
+    const { main, note } = renderProjectionViews();
+
+    await place(main, 1);
+    await selectToDocumentEnd('main editor');
+    const projected = shown(main);
+    let heard = false;
+    const stop = subscribePliteViewSelection(main, () => {
+      if (readPliteViewSelection(main)) return;
+      stop();
+      heard = true;
+      placeAndFocusNote(note);
+    });
+    await pressChrome('main');
+    stop();
+    const focused = focusedLabel();
+    await typeQIntoFocus();
+
+    expect([
+      projected,
+      heard,
+      focused,
+      note.read.text.string([0]),
+      main.read.text.string([0]),
+    ]).toEqual([true, true, 'note editor', 'note Qtext', 'above']);
+  });
+
+  test('a dead-end Shift+ArrowRight while a selection across roots shows tells no subscriber and keeps the selection', async () => {
+    const { body, main } = renderProjectionViews();
+
+    await place(main, 2);
+    await place(body, 1);
+    await selectToDocumentEnd('body editor');
+    await focusEditor('body editor');
+    let heard = 0;
+    const stop = subscribePliteViewSelection(main, () => {
+      heard += 1;
+    });
+    await press('body editor', { key: 'ArrowRight', shiftKey: true });
+    stop();
+
+    expect([heard, shown(main)]).toEqual([0, true]);
+  });
+
+  test('a projected drag that passes back over its anchor after a press beside an expanded native selection keeps extending through mouseup', async () => {
+    const { main } = renderProjectionViews();
+    const textHost = (block: Element) =>
+      block.querySelector<HTMLElement>('[data-editor-node="text"]')!;
+    const block = (text: string) =>
+      [...screen.getByLabelText('main editor').querySelectorAll('p')].find(
+        (element) => element.textContent === text
+      )!;
+    const resolveEventRange = vi
+      .spyOn(DOMEditor, 'resolveEventRange')
+      .mockImplementation((_editor, event) => {
+        const { target } = event as MouseEvent;
+        if (!(target instanceof Node)) return null;
+        const point = block('above').contains(target)
+          ? { path: [0, 0], offset: 2 }
+          : block('below').contains(target)
+            ? { path: [2, 0], offset: 2 }
+            : null;
+
+        return point && { anchor: point, focus: point };
+      });
+    const move = async (text: string, clientX: number, clientY: number) => {
+      fireEvent.mouseMove(textHost(block(text)), {
+        buttons: 1,
+        clientX,
+        clientY,
+      });
+      await wait();
+    };
+
+    await place(main, 2);
+    // jsdom has no Range.prototype.getClientRects.
+    Object.defineProperty(Range.prototype, 'getClientRects', {
+      configurable: true,
+      value: () => [],
+    });
+    try {
+      await act(async () => {
+        const below = textNodeOf(block('below'));
+        document.getSelection()!.setBaseAndExtent(below, 0, below, 3);
+        fireEvent.mouseDown(textHost(block('above')), {
+          buttons: 1,
+          clientX: 10,
+          clientY: 10,
+        });
+        await wait();
+        await move('below', 40, 60);
+        await move('above', 10, 20);
+        await move('below', 40, 62);
+        fireEvent.mouseUp(textHost(block('below')), {
+          clientX: 40,
+          clientY: 62,
+        });
+        await wait();
+      });
+    } finally {
+      Reflect.deleteProperty(Range.prototype, 'getClientRects');
+      resolveEventRange.mockRestore();
+    }
+    const record = readPliteViewSelection(main);
+
+    expect(
+      record &&
+        [record.anchor.point, record.focus.point].map(
+          ({ offset, path, root }) =>
+            `${root ?? 'main'}:${path.join('.')}@${offset}`
+        )
+    ).toEqual(['main:0.0@2', 'main:2.0@2']);
   });
 });
 

@@ -4,7 +4,7 @@
 
 Keep a separate caret for each `EditorRoot` on one editor.
 
-- Restore a root's own caret when you click, tab, type or press a caret key in it, moved through the edits other roots made meanwhile.
+- Restore a root's own caret when you click, tab, type or press a caret key in it, moved through the edits other roots made meanwhile. A selection that runs into that root, such as Shift+ArrowDown out of a synced block, stays selected.
 - Restore each root's caret on undo and redo, unless that root placed a newer caret since the edit.
 - Move a root's caret to the end of a section's title when that root collapses or hides the section holding it.
 - Share one caret across the Editables, windowed and paged surfaces inside one `EditorRoot`, and keep the source's caret in `createEditorView(view)`.

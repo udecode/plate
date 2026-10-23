@@ -10,6 +10,7 @@ import { Hotkeys } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import { createDOMPhaseScheduler } from '../../src/dom/internal';
 import { getNodeKey } from '../../src/internal';
 import { getTextDirection } from '../../src/react/editable/caret-engine';
@@ -805,7 +806,8 @@ describe('keyboard input strategy', () => {
       createPliteViewSelection(graph, {
         anchor: { point: { path: [0, 0], offset: 1 } },
         focus: { point: { path: [0, 0], offset: 3 } },
-      })
+      }),
+      { placedAt: getPlacementGeneration(editor) }
     );
 
     try {
@@ -1263,7 +1265,9 @@ describe('keyboard input strategy', () => {
       .spyOn(ReactEditor, 'isComposing')
       .mockReturnValue(false);
 
-    writePliteViewSelection(editor, projectedSelection);
+    writePliteViewSelection(editor, projectedSelection, {
+      placedAt: getPlacementGeneration(editor),
+    });
     expect(
       applyEditableCommand({
         command: { inputType: 'insertText', kind: 'insert-text', text: 'X' },

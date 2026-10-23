@@ -12,7 +12,7 @@ import {
   getActiveEditorTransaction,
   withUpdateTagContext,
 } from '../../core/public-state';
-import { holdsCaretAt } from '../../core/view-carets';
+import { capturePlacement, holdsCaretAt } from '../../core/view-carets';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { domCommands } from '../../dom/internal';
 import { getViewPresentation } from '../../editor-runtime-view';
@@ -728,8 +728,10 @@ export const applyEditableCommand = ({
 
       if (!nextSelection) return true;
 
-      dispatchCommand(editor, editorCommands.select, {
-        target: nextSelection,
+      const placedAt = capturePlacement(editor, () => {
+        dispatchCommand(editor, editorCommands.select, {
+          target: nextSelection,
+        });
       });
       const appliedSelection = readRuntimeSelection(editor);
       writePliteViewSelection(
@@ -745,7 +747,8 @@ export const applyEditableCommand = ({
               appliedSelection,
               toInternalRoot(editor.read((state) => state.view.root()))
             )
-          : null
+          : null,
+        { placedAt }
       );
       return true;
     }

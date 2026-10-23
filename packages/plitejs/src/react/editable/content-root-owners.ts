@@ -8,6 +8,7 @@ import {
   type RootKey,
   type Value,
 } from '../..';
+import { countCoreWork } from '../../core/work';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '../../dom/internal';
 import { matchesPresentationOf } from '../../editor-runtime-view';
 import type { AnyEditor } from '../../interfaces/editor';
@@ -138,6 +139,8 @@ export const findContentRootOwners = <V extends Value>(
     return [];
   }
   const runtimeOwner = getEditorRuntimeOwner(runtimeEditor);
+
+  countCoreWork('contentRootOwnerScans');
 
   return editor.read((state) => {
     const owners: ContentRootOwner[] = [];

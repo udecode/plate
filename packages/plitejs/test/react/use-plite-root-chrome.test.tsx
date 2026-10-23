@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { Element } from 'plitejs';
 
+import { getPlacementGeneration } from '../../src/core/view-carets';
 import {
   createEditor,
   Editable,
@@ -329,7 +330,9 @@ describe('useRootChrome', () => {
       focus: { point: { path: [0, 0], offset: 1 } },
     });
 
-    writePliteViewSelection(headerEditor, staleSelection);
+    writePliteViewSelection(headerEditor, staleSelection, {
+      placedAt: getPlacementGeneration(headerEditor),
+    });
     expect(readPliteViewSelection(headerEditor)).toEqual(staleSelection);
 
     await act(async () => {

@@ -72,7 +72,9 @@ const getSyncedEditorByRoot = (
   root: string,
   index = 0
 ) =>
-  getSyncedBlockByRoot(page, root, index).locator('[data-editor="true"]');
+  getSyncedBlockByRoot(page, root, index).locator(
+    `[data-editor="true"][data-editor-root="${root}"]`
+  );
 
 const firstSharedOwner = {
   childRoot: SHARED_ROOT,
@@ -206,6 +208,21 @@ const getViewSelection = (
     return handle?.getViewSelection?.() ?? null;
   }, BROWSER_HANDLE_KEY);
 
+const getModelSelection = (
+  root:
+    | ReturnType<typeof getSyncedEditor>
+    | ReturnType<typeof getSyncedEditorByRoot>
+) =>
+  root.evaluate((element: HTMLElement, key) => {
+    const handle = (
+      element as HTMLElement & Record<string, {
+          getModelSelection?: () => unknown;
+        } | undefined>
+    )[key];
+
+    return handle?.getModelSelection?.() ?? null;
+  }, BROWSER_HANDLE_KEY);
+
 const setViewSelection = (
   root:
     | ReturnType<typeof getSyncedEditor>
@@ -240,6 +257,78 @@ const getProjectedNativeAffordanceMatrix = (
 
     return handle?.getProjectedNativeAffordanceMatrix?.() ?? null;
   }, BROWSER_HANDLE_KEY);
+
+const NESTED_ROOT = 'synced-block:nested:body';
+const NESTED_BODY_FIRST = 'Tiny one';
+const NESTED_BODY_SECOND = 'Tiny two';
+
+const nestedOwner = {
+  childRoot: NESTED_ROOT,
+  ownerPath: [1],
+  ownerRoot: SEPARATE_ROOT,
+};
+
+const separateOwner = {
+  childRoot: SEPARATE_ROOT,
+  ownerPath: [3],
+  ownerRoot: 'main',
+};
+
+type SyncedBlocksFixtureValue = {
+  children: readonly unknown[];
+  roots: Record<string, readonly unknown[]>;
+};
+
+const nestSyncedBlockInSeparateBody = (
+  page: Parameters<typeof openExample>[0]
+) =>
+  page.evaluate(
+    ([key, hostRoot, nestedRoot, first, second]) => {
+      const handle = (
+        document.querySelector('[data-editor="true"]') as
+          | (HTMLElement & Record<string, {
+                applyValueChange?: (value: SyncedBlocksFixtureValue) => void;
+                getValue?: () => SyncedBlocksFixtureValue;
+              } | undefined>)
+          | null
+      )?.[key];
+
+      if (!handle?.applyValueChange || !handle.getValue) {
+        throw new Error('This editor surface cannot nest a synced root');
+      }
+
+      const value = handle.getValue();
+      const host = value.roots[hostRoot];
+
+      handle.applyValueChange({
+        ...value,
+        roots: {
+          ...value.roots,
+          [hostRoot]: [
+            host[0],
+            {
+              childRoots: { body: nestedRoot },
+              children: [{ text: '' }],
+              copyId: 'nested',
+              type: 'synced-block',
+            },
+            host[1],
+          ],
+          [nestedRoot]: [
+            { children: [{ text: first }], type: 'paragraph' },
+            { children: [{ text: second }], type: 'paragraph' },
+          ],
+        },
+      });
+    },
+    [
+      BROWSER_HANDLE_KEY,
+      SEPARATE_ROOT,
+      NESTED_ROOT,
+      NESTED_BODY_FIRST,
+      NESTED_BODY_SECOND,
+    ] as const
+  );
 
 const skipMobileDesktopVerticalKeyboardProof = (testInfo: {
   project: { name: string };
@@ -1263,6 +1352,228 @@ test.describe('synced blocks example', () => {
       .toContain('Separate');
     await expect.poll(() => getNativeSelectionText(page)).toBe('');
     await outer.assert.noDoubleSelectionHighlight();
+  });
+
+  test('extends Shift+ArrowDown past a synced root that ArrowDown entered from its owner, and back', async ({
+    page,
+  }, testInfo) => {
+    skipMobileDesktopVerticalKeyboardProof(testInfo);
+
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
+      strict: true,
+    });
+
+    await openExample(page, 'plite/synced-blocks', {
+      ready: { editor: 'visible' },
+    });
+
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
+      page,
+      'synced-blocks-outer',
+      outerEditor
+    );
+    const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
+    const anchor = {
+      owner: firstSharedOwner,
+      point: { path: [0, 0], root: SHARED_ROOT, offset: 1 },
+    };
+
+    await outerEditor.getByText('p1', { exact: true }).click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('ArrowDown');
+    await expect(firstEditor).toBeFocused();
+
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect
+      .poll(() => getModelSelection(firstEditor))
+      .toMatchObject({
+        anchor: { path: [0, 0], root: SHARED_ROOT, offset: 1 },
+        focus: { path: [1, 0], root: SHARED_ROOT, offset: 1 },
+      });
+    await expect
+      .poll(() => getNativeSelectionText(page))
+      .toMatch(/statement\s+E/);
+
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect
+      .poll(() => getViewSelection(outerEditor))
+      .toMatchObject({
+        anchor,
+        focus: { point: { path: [2, 0] } },
+        segments: { backward: false },
+      });
+    await expect
+      .poll(() => getRenderedViewSelectionText(page))
+      .toContain(`${SHARED_BODY_SECOND}B`);
+    await expect.poll(() => getNativeSelectionText(page)).toBe('');
+    await outer.assert.noDoubleSelectionHighlight();
+
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect
+      .poll(() => getViewSelection(outerEditor))
+      .toMatchObject({
+        anchor,
+        focus: {
+          owner: separateOwner,
+          point: { path: [0, 0], root: SEPARATE_ROOT },
+        },
+        segments: { backward: false },
+      });
+    await expect
+      .poll(() => getRenderedViewSelectionText(page))
+      .toContain('Between synced copies.S');
+    await outer.assert.noDoubleSelectionHighlight();
+
+    await page.keyboard.press('Shift+ArrowUp');
+    await expect
+      .poll(() => getViewSelection(outerEditor))
+      .toMatchObject({
+        anchor,
+        focus: { point: { path: [2, 0] } },
+        segments: { backward: false },
+      });
+    await expect
+      .poll(() => getRenderedViewSelectionText(page))
+      .not.toContain('Between synced copies.');
+
+    await page.keyboard.press('Shift+ArrowUp');
+    await expect
+      .poll(() => getViewSelection(outerEditor))
+      .toMatchObject({
+        anchor,
+        focus: {
+          owner: firstSharedOwner,
+          point: { path: [1, 0], root: SHARED_ROOT, offset: 1 },
+        },
+        segments: { backward: false },
+      });
+    await expect
+      .poll(() => getRenderedViewSelectionText(page))
+      .toBe(`${SHARED_BODY_FIRST.slice(1)}E`);
+    await outer.assert.noDoubleSelectionHighlight();
+
+    await page.keyboard.press('Shift+ArrowUp');
+    await expect
+      .poll(() => getViewSelection(outerEditor))
+      .toMatchObject({ anchor, focus: anchor });
+    await expect.poll(() => getRenderedViewSelectionText(page)).toBe('');
+    runtimeErrors.assertNone();
+  });
+
+  test('extends Shift+ArrowDown out of a synced root nested inside a synced body the page shows once', async ({
+    page,
+  }, testInfo) => {
+    skipMobileDesktopVerticalKeyboardProof(testInfo);
+    test.skip(
+      testInfo.project.name !== 'chromium',
+      'ArrowDown into the nested body leaves it unfocused in Firefox and without a model selection in WebKit'
+    );
+
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
+      strict: true,
+    });
+
+    await openExample(page, 'plite/synced-blocks', {
+      ready: { editor: 'visible' },
+    });
+
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const outer = createBrowserEditorHarness(
+      page,
+      'synced-blocks-outer',
+      outerEditor
+    );
+
+    await nestSyncedBlockInSeparateBody(page);
+
+    const separateEditor = getSyncedEditorByRoot(page, SEPARATE_ROOT);
+    const nestedEditor = getSyncedEditorByRoot(page, NESTED_ROOT);
+    const anchor = {
+      owner: nestedOwner,
+      point: { path: [0, 0], root: NESTED_ROOT, offset: 0 },
+    };
+
+    await expect(nestedEditor).toContainText(NESTED_BODY_FIRST);
+
+    await outerEditor
+      .getByText('Between synced copies.', { exact: true })
+      .click();
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowDown');
+    await expect(separateEditor).toBeFocused();
+
+    await page.keyboard.press('ArrowDown');
+    await expect(nestedEditor).toBeFocused();
+    await expect
+      .poll(() => getModelSelection(nestedEditor))
+      .toMatchObject({
+        anchor: { path: [0, 0], root: NESTED_ROOT, offset: 0 },
+        focus: { path: [0, 0], root: NESTED_ROOT, offset: 0 },
+      });
+
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect
+      .poll(() => getModelSelection(nestedEditor))
+      .toMatchObject({
+        anchor: { path: [0, 0], root: NESTED_ROOT, offset: 0 },
+        focus: { path: [1, 0], root: NESTED_ROOT },
+      });
+    await expect
+      .poll(() => getNativeSelectionText(page))
+      .toContain(NESTED_BODY_FIRST);
+
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect
+      .poll(() => getViewSelection(outerEditor))
+      .toMatchObject({
+        anchor,
+        focus: {
+          owner: separateOwner,
+          point: { path: [2, 0], root: SEPARATE_ROOT },
+        },
+        segments: { backward: false },
+      });
+    await expect
+      .poll(() => getRenderedViewSelectionText(page))
+      .toContain(`${NESTED_BODY_FIRST}${NESTED_BODY_SECOND}T`);
+    await expect.poll(() => getNativeSelectionText(page)).toBe('');
+    await outer.assert.noDoubleSelectionHighlight();
+    runtimeErrors.assertNone();
+  });
+
+  test('keeps the caret in a synced root that ArrowDown entered from its owner while you type', async ({
+    page,
+  }, testInfo) => {
+    skipMobileDesktopVerticalKeyboardProof(testInfo);
+
+    const runtimeErrors = recordBrowserRuntimeErrors(page, {
+      strict: true,
+    });
+
+    await openExample(page, 'plite/synced-blocks', {
+      ready: { editor: 'visible' },
+    });
+
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
+
+    await outerEditor.getByText('p1', { exact: true }).click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('ArrowDown');
+    await expect(firstEditor).toBeFocused();
+
+    await page.keyboard.type('xy');
+
+    await expect(firstEditor).toContainText(`Sxy${SHARED_BODY_FIRST.slice(1)}`);
+    await expect
+      .poll(() => getModelSelection(firstEditor))
+      .toMatchObject({
+        anchor: { path: [0, 0], root: SHARED_ROOT, offset: 3 },
+        focus: { path: [0, 0], root: SHARED_ROOT, offset: 3 },
+      });
+    await expect.poll(() => getModelSelection(outerEditor)).toBe(null);
+    runtimeErrors.assertNone();
   });
 
   test('extends projected vertical selection to the document-bottom line end before no-op', async ({

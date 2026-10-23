@@ -43,6 +43,7 @@ import {
 import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
+  isContentRootKeyAnswered,
   readContentRootAwareSelection,
 } from './content-root-navigation';
 import { shouldModelOwnPlainVerticalLargeDocumentPlugin } from './dom-coverage-vertical-selection';
@@ -517,6 +518,8 @@ export const applyEditableKeyDown = ({
       nestedEditableTarget || selectionRoot !== viewRoot;
 
     if (shouldHandleProjectedSelection) {
+      if (isContentRootKeyAnswered(event)) return keyDownHandled();
+
       const focusEditor = nestedSelectionContext?.editor ?? editor;
       const focusSelection = nestedSelectionContext?.rawSelection ?? selection;
       const focusRange = getRangeSelection(focusSelection);
@@ -539,6 +542,7 @@ export const applyEditableKeyDown = ({
       });
 
       if (contentRootViewSelectionResult.handled) {
+        if (contentRootViewSelectionResult.overtaken) return keyDownHandled();
         return keyDownHandled({
           focus: true,
           forceRender: true,
@@ -644,6 +648,7 @@ export const applyEditableKeyDown = ({
       selection,
     });
     if (result.handled) {
+      if (result.overtaken) return keyDownHandled();
       return keyDownHandled({
         focus: true,
         kind: 'sync-selection',
@@ -968,6 +973,7 @@ export const applyEditableKeyDown = ({
     });
 
     if (contentRootViewSelectionResult.handled) {
+      if (contentRootViewSelectionResult.overtaken) return keyDownHandled();
       return keyDownHandled({
         focus: true,
         kind: 'sync-selection',
