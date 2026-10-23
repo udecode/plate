@@ -36,6 +36,13 @@ await startBrowserNativeEventTrace(locator, {
   method.
 - Mobile coverage is Playwright device emulation. Nothing types on a real soft
   keyboard, and the raw-mobile receipt schema has no producer.
+- Beta testing runs as a sweep, `.agents/rules/verify/references/sweep.md`.
+  Agents test each page first and a person retests. Each domain's finds are
+  triaged into one issue per cause and fixed in one run, which adds the check
+  that would have caught them. A formal check covers logic that shows without
+  a browser.
+- Beta issues upload their recordings through `gh --attach`, and new members
+  of a filed kind reach its issue as a comment.
 
 ## What other editors do
 
@@ -72,3 +79,18 @@ taps.
 | Pinyin preedit caret paint (#5137) | CDP composition only | CDP does not drive the OS input method |
 | iOS Safari typing | unproven | No lane |
 | Screen-reader output | unproven | Requires its own observed proof |
+
+## Open work
+
+- natamox files each round 1 domain from the triage in
+  `docs/plans/2026-10-23-sweep-loop.md`. owner: natamox. stop: every round 1
+  domain filed.
+- The redesign tasks t_94ffdd65, t_c4407e94 and t_8276a635 start once their
+  domain is filed, and the hardening tasks t_06071ac8, t_71251a31, t_34069906
+  and t_5de986e5 start from their chips. owner: zbeyens. stop: each lands or
+  is dropped.
+- The formal-check intake's tasks run in its order: t_30422a81, t_a998edbb,
+  t_dd929413, t_df2f315f, then t_589db800 once two checks exist. owner:
+  zbeyens. stop: each lands or is dropped.
+- The sweep's six moves have no trial. owner: zbeyens. stop: round 2's tally,
+  or 2027-01-15.

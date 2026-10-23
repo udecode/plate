@@ -1,5 +1,5 @@
 ---
-description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, before closing any change with a browser-visible result, to prepare a round of hands-on beta testing, a sweep round, or decide what follows one, and to playtest one editor feature.
+description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, before closing any change with a browser-visible result, to prepare a sweep round of beta testing, triage or fix a domain's sweep finds, or decide what follows a round, and to playtest one editor feature.
 argument-hint: '[package | route | cli | collaboration | testing audit | playtest] <target>'
 name: verify
 metadata:
@@ -328,13 +328,15 @@ old code. The Stop hook in Claude Code and Codex refuses the first stop while a
 cell is open; the owner's message that starts with "skip drive" waives the edits
 made before it.
 
-## Tester pass
+## Sweep
 
-A sweep is a series of rounds in which a person tests every beta page by hand
-beside its reference page. Read [the tester pass](./references/tester-pass.md)
-in full before preparing a round, writing its round plan, or deciding what
-follows a round. It holds the session, the six moves, the browser rotation, the
-find note, the rechecks and the round loop.
+A sweep is a series of rounds over every beta page beside its reference page.
+Agents test each page first, a person retests what they find, and each
+domain's finds are triaged into one issue per cause and fixed in one run. Read
+[the sweep](./references/sweep.md) in full before preparing a round, writing
+its round plan, triaging or fixing a domain's finds, or deciding what follows a
+round. It holds the session, the six moves, the browser rotation, the find
+note, the domain triage, the miss classes, the rechecks and the round loop.
 
 ## Playtest
 
