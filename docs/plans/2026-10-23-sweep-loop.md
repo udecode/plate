@@ -47,6 +47,7 @@ Two kinds of check share the work. A bug a test sees without a browser gets a fo
 | Where finds are recorded | Whatever the round plan names, such as natamox's sheet, exported to the run folder | A table inside the round plan | plan table | detail |
 | The older sweep plans | Their open steps point at the new loop; their history stays | Leave them as they were | leave plans | detail |
 | Plan review | No panel, since this changes the workflow and no public API | Run a panel on the plan | panel | detail |
+| Page link | A new proof page, XqsY1CcceaevUNqabTFPbw, because claude.ai now reads Evweke9u3BjCdc42mnonEk as another account's and refuses updates | Keep trying the old page | old page | detail |
 
 ## Outcome
 

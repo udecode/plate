@@ -1,6 +1,6 @@
 # Editor proof
 
-Page: https://claude.ai/artifact/Evweke9u3BjCdc42mnonEk
+Page: https://claude.ai/artifact/XqsY1CcceaevUNqabTFPbw
 
 How Plate proves editor behavior that unit and DOM tests miss, through real
 input and a model oracle that reads the page. Every plan for the `proof` scope
