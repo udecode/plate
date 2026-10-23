@@ -1349,6 +1349,7 @@ describe('roots Plite mounts for its own surfaces (R26)', () => {
 });
 
 const BODY_ROOT = 'details-slot:body';
+const DEEP_ROOT = 'details-slot:deep';
 
 const contentRootSchema = defineEditorSchema('schema:test-view-carets', {
   elements: {
@@ -1715,6 +1716,362 @@ const ClosableSectionView = ({
     />
   );
 };
+
+describe('the document edge across content roots', () => {
+  test('Ctrl+End from a root nested two deep moves the caret to the end of the outer document', async () => {
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          paragraph('above'),
+          {
+            type: 'details-content',
+            childRoots: { body: BODY_ROOT },
+            children: [{ text: '' }],
+          },
+          paragraph('below'),
+        ],
+        roots: {
+          [BODY_ROOT]: [
+            paragraph('body text'),
+            {
+              type: 'details-content',
+              childRoots: { body: DEEP_ROOT },
+              children: [{ text: '' }],
+            },
+          ],
+          [DEEP_ROOT]: [paragraph('deep text'), paragraph('last deep')],
+        },
+      },
+      plugins: [contentRootSchema, history()],
+    });
+    const labels: Record<string, string> = {
+      [BODY_ROOT]: 'body editor',
+      [DEEP_ROOT]: 'deep editor',
+    };
+    const views = new Map<string, RootView>();
+    const Main = () => {
+      views.set('main', useRootEditor());
+      views.set('body', useRootEditor(BODY_ROOT));
+      views.set('deep', useRootEditor(DEEP_ROOT));
+
+      return (
+        <Editable
+          aria-label="main editor"
+          renderElement={(props) =>
+            props.element.type === 'details-content' ? (
+              <section {...props.attributes}>
+                {props.slots.contentRoot('body', {
+                  ariaLabel:
+                    labels[
+                      (props.element as { childRoots?: { body: string } })
+                        .childRoots?.body ?? ''
+                    ],
+                })}
+              </section>
+            ) : (
+              <p {...props.attributes}>{props.children}</p>
+            )
+          }
+        />
+      );
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <Main />
+      </EditorRoot>
+    );
+
+    const main = views.get('main')!;
+    const deep = views.get('deep')!;
+
+    await place(main, 2);
+    await place(views.get('body')!, 2);
+    await place(deep, 1);
+    await act(async () => {
+      const target = screen.getByLabelText('deep editor');
+
+      target.focus();
+      fireEvent.keyDown(target, { ctrlKey: true, key: 'End' });
+      await wait();
+    });
+
+    expect([caret(main), caret(deep)]).toEqual(['2.0.5', null]);
+  });
+
+  test.each([1, 2])(
+    "Ctrl+End in a root that a root outside the main document hosts %i times moves the caret to that root's end",
+    async (copies) => {
+      const NOTE_CHILD_ROOT = 'details-slot:note-child';
+      const editor = createEditor({
+        initialValue: {
+          children: [paragraph('above')],
+          roots: {
+            note: [
+              paragraph('note text'),
+              ...Array.from({ length: copies }, () => ({
+                type: 'details-content',
+                childRoots: { body: NOTE_CHILD_ROOT },
+                children: [{ text: '' }],
+              })),
+              paragraph('note end'),
+            ],
+            [NOTE_CHILD_ROOT]: [paragraph('child text')],
+          },
+        },
+        plugins: [contentRootSchema, history()],
+      });
+      const views = new Map<string, RootView>();
+      const Views = () => {
+        views.set('note', useRootEditor('note'));
+        views.set('child', useRootEditor(NOTE_CHILD_ROOT));
+
+        return (
+          <>
+            <Editable aria-label="main editor" />
+            <Editable
+              aria-label="note editor"
+              renderElement={(props) =>
+                props.element.type === 'details-content' ? (
+                  <section {...props.attributes}>
+                    {props.slots.contentRoot('body', {
+                      ariaLabel: 'child editor',
+                    })}
+                  </section>
+                ) : (
+                  <p {...props.attributes}>{props.children}</p>
+                )
+              }
+              root="note"
+            />
+          </>
+        );
+      };
+
+      render(
+        <EditorRoot editor={editor}>
+          <Views />
+        </EditorRoot>
+      );
+
+      const note = views.get('note')!;
+      const child = views.get('child')!;
+
+      await place(note, 1);
+      await place(child, 2);
+      await act(async () => {
+        const target = screen.getAllByLabelText('child editor')[0];
+
+        target.focus();
+        fireEvent.keyDown(target, { ctrlKey: true, key: 'End' });
+        await wait();
+      });
+
+      expect([caret(note), caret(child)]).toEqual([`${copies + 1}.0.8`, null]);
+    }
+  );
+
+  const SHARED_ROOT = 'details-slot:shared';
+
+  const renderSharedRoot = () => {
+    const owner = {
+      type: 'details-content',
+      childRoots: { body: SHARED_ROOT },
+      children: [{ text: '' }],
+    };
+    const editor = createEditor({
+      initialValue: {
+        children: [paragraph('main start'), owner, paragraph('main end')],
+        roots: {
+          note: [paragraph('note start'), owner, paragraph('note end')],
+          [SHARED_ROOT]: [paragraph('child text')],
+        },
+      },
+      plugins: [contentRootSchema, history()],
+    });
+    const views = new Map<string, RootView>();
+    const renderHost =
+      (label: string): ComponentProps<typeof Editable>['renderElement'] =>
+      (props) =>
+        props.element.type === 'details-content' ? (
+          <section {...props.attributes}>
+            {props.slots.contentRoot('body', { ariaLabel: label })}
+          </section>
+        ) : (
+          <p {...props.attributes}>{props.children}</p>
+        );
+    const Views = () => {
+      views.set('main', useRootEditor());
+      views.set('note', useRootEditor('note'));
+      views.set('shared', useRootEditor(SHARED_ROOT));
+
+      return (
+        <>
+          <Editable
+            aria-label="main editor"
+            renderElement={renderHost('main child')}
+          />
+          <Editable
+            aria-label="note editor"
+            renderElement={renderHost('note child')}
+            root="note"
+          />
+        </>
+      );
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <Views />
+      </EditorRoot>
+    );
+
+    return {
+      main: views.get('main')!,
+      note: views.get('note')!,
+      shared: views.get('shared')!,
+    };
+  };
+
+  const pressIn = async (label: string, init: Record<string, unknown>) => {
+    await act(async () => {
+      const target = screen.getByLabelText(label);
+
+      target.focus();
+      fireEvent.keyDown(target, init);
+      await wait();
+    });
+  };
+
+  test('Ctrl+End in a root that both the main document and a detached root host moves the caret to the end of the host it was pressed in, so typing lands there', async () => {
+    const { main, note, shared } = renderSharedRoot();
+
+    await place(shared, 10);
+    await pressIn('note child', { ctrlKey: true, key: 'End' });
+    await act(async () => {
+      typeInto('note editor', 'Q');
+      await wait();
+    });
+
+    expect([
+      note.read.text.string([2]),
+      main.read.text.string([2]),
+      shared.read.text.string([0]),
+    ]).toEqual(['note endQ', 'main end', 'child text']);
+  });
+
+  test("Ctrl+Shift+End in a detached root's copy of a root the main document also hosts extends the selection to that detached root's end without throwing", async () => {
+    const { note, shared } = renderSharedRoot();
+    const errors: unknown[] = [];
+    const onError = (event: ErrorEvent) => {
+      errors.push(event.error);
+    };
+
+    await place(shared, 10);
+    window.addEventListener('error', onError);
+    try {
+      await pressIn('note child', {
+        ctrlKey: true,
+        key: 'End',
+        shiftKey: true,
+      });
+    } finally {
+      window.removeEventListener('error', onError);
+    }
+
+    expect([errors, readPliteViewSelection(note)?.focus.point]).toEqual([
+      [],
+      { offset: 8, path: [2, 0], root: 'note' },
+    ]);
+  });
+
+  const renderEdgeRoot = (edge: 'end' | 'start') => {
+    const owner = {
+      type: 'details-content',
+      childRoots: { body: BODY_ROOT },
+      children: [{ text: '' }],
+    };
+    const editor = createEditor({
+      initialValue: {
+        children:
+          edge === 'end'
+            ? [paragraph('above'), owner]
+            : [owner, paragraph('below')],
+        roots: { [BODY_ROOT]: [paragraph('body text'), paragraph('body end')] },
+      },
+      plugins: [contentRootSchema, history()],
+    });
+    const views = new Map<string, RootView>();
+    const Main = () => {
+      views.set('main', useRootEditor());
+      views.set('body', useRootEditor(BODY_ROOT));
+
+      return (
+        <Editable
+          aria-label="main editor"
+          renderElement={(props) =>
+            props.element.type === 'details-content' ? (
+              <section {...props.attributes}>
+                {props.slots.contentRoot('body', { ariaLabel: 'body editor' })}
+              </section>
+            ) : (
+              <p {...props.attributes}>{props.children}</p>
+            )
+          }
+        />
+      );
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <Main />
+      </EditorRoot>
+    );
+
+    return { body: views.get('body')!, main: views.get('main')! };
+  };
+
+  const pressInMain = async (init: Record<string, unknown>) => {
+    await act(async () => {
+      const target = screen.getByLabelText('main editor');
+
+      target.focus();
+      fireEvent.keyDown(target, init);
+      await wait();
+    });
+  };
+
+  test('Ctrl+End in a document that ends with a content root moves the caret to the end of that root', async () => {
+    const { body, main } = renderEdgeRoot('end');
+
+    await place(main, 1);
+    await pressInMain({ ctrlKey: true, key: 'End' });
+
+    expect([caret(main), caret(body)]).toEqual([null, '1.0.8']);
+  });
+
+  test('Ctrl+Home in a document that starts with a content root moves the caret to the start of that root', async () => {
+    const { body, main } = renderEdgeRoot('start');
+
+    await place(main, 2, [1, 0]);
+    await pressInMain({ ctrlKey: true, key: 'Home' });
+
+    expect([caret(main), caret(body)]).toEqual([null, '0.0.0']);
+  });
+
+  test('Ctrl+Shift+End in a document that ends with a content root selects to the end of that root', async () => {
+    const { main } = renderEdgeRoot('end');
+
+    await place(main, 1);
+    await pressInMain({ ctrlKey: true, key: 'End', shiftKey: true });
+
+    expect(readPliteViewSelection(main)?.focus.point).toEqual({
+      offset: 8,
+      path: [1, 0],
+      root: BODY_ROOT,
+    });
+  });
+});
 
 describe('claims from native input (R30)', () => {
   test("the echo of Plite's DOM export in a surface that does not hold the caret leaves the owner alone", async () => {

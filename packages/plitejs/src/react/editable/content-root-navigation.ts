@@ -1176,7 +1176,6 @@ export const getContentRootNavigationTarget = ({
 
   if (action.kind === 'document-boundary') {
     return getDocumentBoundaryNavigationTarget({
-      currentRoot,
       direction: action.direction,
       editor,
       getActiveContentRootOwner: getCurrentRootOwner,
@@ -1322,12 +1321,14 @@ const applyContentRootViewSelectionAction = ({
     root === currentRoot && isKnownContentRootOwner(owners, currentOwner)
       ? currentOwner
       : (getActiveContentRootOwner?.(root) ?? null);
-
-  const graph = createContentRootViewBoundaryGraph(editor, owners);
+  const graph = createContentRootViewBoundaryGraph(
+    editor,
+    owners,
+    getCurrentRootOwner
+  );
   let target =
     action.kind === 'document-boundary'
       ? getDocumentBoundaryNavigationTarget({
-          currentRoot,
           direction: action.direction,
           editor,
           getActiveContentRootOwner: getCurrentRootOwner,

@@ -15,7 +15,8 @@ import type { ContentRootNavigationDirection } from './content-root-navigation-a
 import {
   type ContentRootNavigationEditor,
   type ContentRootOwner,
-  isKnownContentRootOwner,
+  getContentRootViewBoundaryPoint,
+  getContentRootViewEdgeNode,
 } from './content-root-owners';
 
 export type ContentRootAdjacentBoundary = {
@@ -208,29 +209,30 @@ export const getRootBoundaryNavigationTarget = ({
 };
 
 export const getDocumentBoundaryNavigationTarget = ({
-  currentRoot,
   direction,
   editor,
   getActiveContentRootOwner,
   owners,
 }: {
-  currentRoot: RootKey;
   direction: ContentRootNavigationDirection;
   editor: ContentRootNavigationEditor;
   getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  owners: ContentRootOwner[];
+  owners: readonly ContentRootOwner[];
 }): ContentRootBoundaryNavigationTarget | null => {
-  const activeOwner = getActiveContentRootOwner?.(currentRoot);
-  const ownerForCurrentRoot = isKnownContentRootOwner(owners, activeOwner)
-    ? activeOwner
-    : owners.find((owner) => owner.childRoot === currentRoot);
-  const targetRoot = ownerForCurrentRoot?.ownerRoot ?? currentRoot;
-  const point = editor.read((state) =>
-    getPliteRootBoundaryPoint(
-      readRootChildren(state, targetRoot),
-      direction === 'forward' ? 'end' : 'start'
-    )
+  const edge = direction === 'forward' ? 'end' : 'start';
+  const node = getContentRootViewEdgeNode(
+    editor,
+    owners,
+    edge,
+    getActiveContentRootOwner
   );
+  const boundary = node && getContentRootViewBoundaryPoint(editor, node, edge);
 
-  return point ? { point, root: targetRoot } : null;
+  return boundary
+    ? {
+        ...(boundary.owner ? { owner: boundary.owner } : {}),
+        point: boundary.point,
+        root: node.root,
+      }
+    : null;
 };
