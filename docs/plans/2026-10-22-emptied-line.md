@@ -77,6 +77,7 @@ No editor checkout was read, because the decision is internal to how Plite recor
 | What a raw write next to hidden text leaves | The same as today, listed as a known limit of the test (look) | Stretch a raw range over the hidden text beside it | stretch raw ranges | small |
 | Whether deciding an unwrap waits for a pending deletion of its quote | It waits, as it already does for any such deletion (look) | Drop the wait, so the unwrap is decided on its own | drop lift wait | small |
 | What deciding gives after the unwrap is rejected | Bob's edit as recorded, listed as a known limit (look) | Rerun Bob's command on the document with the quote kept | replay rejected unwrap | big |
+| The authored page link | A new page at https://claude.ai/artifact/C5zrU46DjyucvH1hwC3jHP, because https://claude.ai/artifact/V1tpozSyUe7nsDoYrYUj9N no longer opens for this account | Go back to the old page | old page | detail |
 
 ## Steps
 
