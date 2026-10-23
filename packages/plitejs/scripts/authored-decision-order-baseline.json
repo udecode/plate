@@ -1179,20 +1179,5 @@
       "s1 unsets whole, s2 sets whole v1, s2 sets whole v2, s0 splits: reject s1, accept s2"
     ]
   },
-  "giveback-decision-order": {
-    "packages/plitejs/src/authored/tree/cuts.ts": [
-      "s0 splits, s0 sets right v1, s1 sets left v2, s2 unsets left: accept s1, reject s0, accept s2",
-      "s0 splits, s0 sets right v1, s1 sets left v2, s2 unsets left: reject s0, accept s1, accept s2",
-      "s0 splits, s1 sets left v1, s0 sets right v2, s2 unsets left: accept s1, reject s0, accept s2",
-      "s0 splits, s1 sets left v1, s0 sets right v2, s2 unsets left: reject s0, accept s1, accept s2",
-      "s0 splits, s1 sets left v1, s2 unsets left, s0 sets right v2: accept s1, reject s0, accept s2",
-      "s0 splits, s1 sets left v1, s2 unsets left, s0 sets right v2: reject s0, accept s1, accept s2",
-      "s1 sets whole v1, s0 splits, s0 sets right v2, s2 unsets left: accept s1, reject s0, accept s2",
-      "s1 sets whole v1, s0 splits, s0 sets right v2, s2 unsets left: reject s0, accept s1, accept s2",
-      "s1 sets whole v1, s0 splits, s2 unsets left, s0 sets right v2: accept s1, reject s0, accept s2",
-      "s1 sets whole v1, s0 splits, s2 unsets left, s0 sets right v2: reject s0, accept s1, accept s2",
-      "s1 sets whole v1, s2 unsets whole, s0 splits, s0 sets right v2: accept s1, reject s0, accept s2",
-      "s1 sets whole v1, s2 unsets whole, s0 splits, s0 sets right v2: reject s0, accept s1, accept s2"
-    ]
-  }
+  "giveback-decision-order": {}
 }

@@ -20,6 +20,8 @@ export type Half = Readonly<{
   props: Readonly<JsonRecord>;
   /** Its marks whose changes this run leaves pending. */
   pending: readonly AuthoredMark[];
+  splitHistory: ReadonlySet<AuthoredMark>;
+  readsCopies: ReadonlySet<string>;
 }>;
 
 /** Whether a left half supplies `key` to its join: a decided value there, or a pending write of it. */
@@ -87,8 +89,47 @@ const dropsOnSplit = (schema: CompiledEditorSchema | null, key: string) =>
   );
 
 /**
+ * Whether the right half reads `key` as its split's output, which the left
+ * half's value stands for when the halves meet.
+ */
+const readsSplitOutput = (
+  schema: CompiledEditorSchema | null,
+  right: Half,
+  key: string
+) =>
+  right.readsCopies.has(key) ||
+  (dropsOnSplit(schema, key) && isSplitOutput(schema, right.props, key));
+
+/**
+ * Whether the right half stands for the left half's value of `key`: it reads
+ * only the split's output there and has no pending write of its own on it.
+ */
+const readsLeft = (
+  schema: CompiledEditorSchema | null,
+  right: Half,
+  key: string
+) =>
+  readsSplitOutput(schema, right, key) &&
+  !right.pending.some(
+    (mark) =>
+      mark.kind === 'format' &&
+      mark.key === key &&
+      !right.splitHistory.has(mark)
+  );
+
+/**
+ * Whether the left half supplies `key` when the halves join: it holds or
+ * writes the key, or the right half stands for the left half's value there,
+ * even where that value is absent.
+ */
+export const leftSupplies =
+  (schema: CompiledEditorSchema | null, { left, right }: Halves) =>
+  (key: string) =>
+    supplies(left, key) || readsLeft(schema, right, key);
+
+/**
  * Whether the halves read differently where they stand, with the cut's own
- * change undone. A right half that holds a dropped key's split output reads
+ * change undone. A right half that reads a dropped key's split output reads
  * the left's value there.
  */
 const halvesDiffer = (
@@ -110,10 +151,9 @@ const halvesDiffer = (
   ])) {
     if (!compares(schema, key)) continue;
     const value = reads(left.props, key);
-    const rightValue =
-      dropsOnSplit(schema, key) && isSplitOutput(schema, right.props, key)
-        ? value
-        : reads(right.props, key);
+    const rightValue = readsSplitOutput(schema, right, key)
+      ? value
+      : reads(right.props, key);
 
     if (!jsonEqual(value, rightValue)) return true;
   }
@@ -141,11 +181,16 @@ const touchingOf = (
     for (const child of node.children ?? []) addBetween(child);
   };
 
+  // The right half's copies stand for the left half's tags, which count
+  // there, unless the right half stands for the left half's value.
   for (const half of [halves.left, halves.right]) {
     add(
       half.pending.filter((mark) =>
         mark.kind === 'format'
-          ? mark.key === 'type' || compares(schema, mark.key)
+          ? (half === halves.left
+              ? !readsLeft(schema, halves.right, mark.key)
+              : !half.splitHistory.has(mark)) &&
+            (mark.key === 'type' || compares(schema, mark.key))
           : mark.kind === 'insert' || mark.kind === 'delete'
       )
     );

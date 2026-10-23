@@ -2,6 +2,7 @@ import { jsonEqual } from '../../core/change/json';
 import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
 import { isEditingChange } from '../facts/editing';
+import type { AuthoredMark } from './marks';
 
 /** A property value, with `undefined` for an absent property; `null` counts as absent. */
 export type LayerValue = EditorJsonValue | undefined;
@@ -20,7 +21,10 @@ export type FormatLink = Readonly<{ id: string; write: FormatWrite }>;
 export type FormatTag = Readonly<{
   at: number;
   author: string;
-  /** The key's value with every tag in `over` undone. */
+  /**
+   * The key's value with every tag in `over` undone, where a split's own tag
+   * counts as its write, the split's output.
+   */
   base?: FormatWrite;
   /** The value this write replaced; absent when the property was absent. */
   before?: EditorJsonValue;
@@ -34,6 +38,13 @@ export type FormatTag = Readonly<{
    * write or the first write of the run it replaced was made.
    */
   over?: ReadonlyArray<readonly FormatLink[]>;
+  /**
+   * The change whose proposed split wrote this tag on the split's second half,
+   * over copies of the first half's tags on a key the split dropped. The
+   * copies keep their own fields, and once the split is accepted they leave
+   * without landing.
+   */
+  split?: string;
   write: FormatWrite;
 }>;
 
@@ -48,9 +59,15 @@ export type Standing = Readonly<{ accepted: IsAccepted; landed: IsLanded }>;
 
 export type LayerOutcome = (tag: FormatTag) => 'accept' | 'keep' | 'reject';
 
-export type KeyReading = Standing & Readonly<{ outcome: LayerOutcome }>;
+/** Whether `value` is what a split leaves on `key`: absent, a default some place fills, or a generated value. */
+export type IsSplitOutput = (key: string, value: LayerValue) => boolean;
+
+export type ValueReading = Standing & Readonly<{ output: IsSplitOutput }>;
+
+export type KeyReading = ValueReading & Readonly<{ outcome: LayerOutcome }>;
 
 export type KeyDecision = Readonly<{
+  readsCopies: boolean;
   /** The tags left on the key, each the same object as an input tag. */
   kept: readonly FormatTag[];
   /**
@@ -92,6 +109,49 @@ const smallestId = (roots: readonly FormatTag[], all: readonly FormatTag[]) =>
   );
 
 const linksOf = (tag: FormatTag) => (tag.over ?? []).flat();
+
+const historyOnKey = (tags: readonly FormatTag[]) => {
+  const byId = new Map(tags.map((tag) => [tag.id, tag]));
+  const copies = new Set<FormatTag>();
+  const open = tags.filter((tag) => tag.split !== undefined);
+
+  for (let tag = open.pop(); tag; tag = open.pop()) {
+    for (const { id } of linksOf(tag)) {
+      const below = byId.get(id);
+
+      if (below && below !== tag && !copies.has(below)) {
+        copies.add(below);
+        open.push(below);
+      }
+    }
+  }
+
+  return {
+    copies,
+    topSplits: tags.filter(
+      (tag) => tag.split !== undefined && !copies.has(tag)
+    ),
+  };
+};
+
+export const splitHistoryOf = (
+  marks: readonly AuthoredMark[]
+): ReadonlySet<AuthoredMark> => {
+  const history = new Set<AuthoredMark>();
+  const formats = marks.filter(
+    (mark): mark is FormatTag => mark.kind === 'format'
+  );
+
+  if (!formats.some((tag) => tag.split !== undefined)) return history;
+
+  for (const onKey of Map.groupBy(formats, (tag) => tag.key).values()) {
+    const { copies, topSplits } = historyOnKey(onKey);
+
+    for (const tag of [...topSplits, ...copies]) history.add(tag);
+  }
+
+  return history;
+};
 
 const valueBelow = (
   tag: FormatTag,
@@ -256,7 +316,8 @@ type Status = 'accept' | 'keep' | 'reject' | 'replaced' | 'settled';
 
 export const decideKey = (
   tags: readonly FormatTag[],
-  reading: KeyReading
+  reading: KeyReading,
+  live: LayerValue
 ): KeyDecision => {
   const statusOf = new Map<FormatTag, Status>(
     tags.map((tag) => [
@@ -275,6 +336,18 @@ export const decideKey = (
   const of = (tag: FormatTag) => getDefined(statusOf.get(tag));
   const stands = (tag: FormatTag) =>
     of(tag) === 'accept' || of(tag) === 'settled';
+  const { copies, topSplits } = historyOnKey(tags);
+  const inHistory = (tag: FormatTag) =>
+    copies.has(tag) || topSplits.includes(tag);
+  const splitRejected = topSplits.some((tag) => of(tag) === 'reject');
+  // A rejected split's history reads as one until none of its tags is
+  // pending, and every split's tag in it is what marks the copies under it
+  // as history, so it stays stored whole until then.
+  const keepsHistory =
+    splitRejected && tags.some((tag) => inHistory(tag) && of(tag) === 'keep');
+  // A copy the accepted split carried only stands for the first half's tag,
+  // which decides there.
+  const leaves = (tag: FormatTag) => copies.has(tag) && topSplits.some(stands);
   const byId = new Map(tags.map((tag) => [tag.id, tag]));
   const linkStays = ({ id }: FormatLink) => {
     const tag = byId.get(id);
@@ -282,24 +355,38 @@ export const decideKey = (
     return tag ? of(tag) !== 'reject' : reading.landed(id);
   };
   // An undo of a standing tag reads the links under it, so the tag stays
-  // stored while one of them neither stays nor landed.
+  // stored while one of them neither stays nor landed. A split's tag links
+  // only its copies, which leave with its accept without landing.
   const holds = (tag: FormatTag) =>
+    tag.split === undefined &&
     stands(tag) &&
     linksOf(tag).some((link) => link.id !== tag.id && !linkStays(link));
   const decided = (
     stepsKept: readonly FormatTag[],
-    value: KeyDecision['value']
+    value: KeyDecision['value'],
+    goes: (tag: FormatTag) => boolean = leaves
   ): KeyDecision => {
-    const kept = [
+    const held = [
       ...stepsKept,
       ...tags.filter((tag) => holds(tag) && !stepsKept.includes(tag)),
-    ];
+    ].filter((tag) => !goes(tag));
+    const kept = keepsHistory
+      ? [
+          ...held,
+          ...tags.filter((tag) => inHistory(tag) && !held.includes(tag)),
+        ]
+      : held;
     const keeps = new Set(kept);
 
     return {
+      readsCopies: false,
       kept,
       landed: tags.filter(
-        (tag) => !keeps.has(tag) && stands(tag) && !isEditingChange(tag.change)
+        (tag) =>
+          !keeps.has(tag) &&
+          !leaves(tag) &&
+          stands(tag) &&
+          !isEditingChange(tag.change)
       ),
       value,
       waits: [],
@@ -317,7 +404,10 @@ export const decideKey = (
   const steps = keySteps(tags, reading.landed);
 
   if (kinds.size === 1) {
-    return decided([], { kind: 'set', value: getDefined(steps[0]).below });
+    return {
+      ...decided([], { kind: 'set', value: getDefined(steps[0]).below }),
+      readsCopies: splitRejected,
+    };
   }
 
   const waits = new Set<string>();
@@ -340,15 +430,20 @@ export const decideKey = (
 
     return 'accept';
   });
+  // The split's own tags and the copies under them follow the first half's
+  // decisions, so no verdict waits across them.
+  const free = steps.map((step) => step.tags.every(inHistory));
   const firstReject = statuses.findIndex(
-    (status) => status === 'reject' || status === 'replaced'
+    (status, index) =>
+      !free[index] && (status === 'reject' || status === 'replaced')
   );
-  const lastAccept = steps.findLastIndex((step) =>
-    step.tags.some((tag) => of(tag) === 'accept')
+  const lastAccept = steps.findLastIndex(
+    (step, index) =>
+      !free[index] && step.tags.some((tag) => of(tag) === 'accept')
   );
 
   steps.forEach((step, index) => {
-    if (statuses[index] !== 'keep') return;
+    if (statuses[index] !== 'keep' || free[index]) return;
     if ((firstReject !== -1 && index > firstReject) || index < lastAccept) {
       for (const tag of step.tags) {
         if (of(tag) === 'keep') waits.add(tag.change);
@@ -358,6 +453,7 @@ export const decideKey = (
 
   if (waits.size > 0) {
     return {
+      readsCopies: false,
       kept: tags,
       landed: [],
       value: { kind: 'unchanged' },
@@ -365,46 +461,124 @@ export const decideKey = (
     };
   }
 
+  const splitPending = topSplits.some((tag) => of(tag) === 'keep');
+  const awaitsSplit = (index: number) => splitPending && free[index];
+  // Whether a rejected split's copies decide the key stays open while a write
+  // of the second half's own is pending, so the split's tags and the standing
+  // writes over them stay stored until then.
+  const open =
+    splitRejected &&
+    statuses.some((status, index) => status === 'keep' && !free[index]);
   // A pending tag over a standing one reads it through its landed write, so
   // only a pending step under it keeps a standing tag stored.
-  const kept = steps.flatMap((step, index) =>
-    statuses[index] === 'keep'
-      ? step.tags
-      : statuses.slice(0, index).includes('keep')
-        ? step.tags.filter(stands)
-        : []
-  );
+  const kept = open
+    ? steps.flatMap((step, index) =>
+        free[index]
+          ? step.tags
+          : step.tags.filter((tag) => of(tag) !== 'reject')
+      )
+    : steps.flatMap((step, index) =>
+        statuses[index] === 'keep' || awaitsSplit(index)
+          ? step.tags
+          : statuses.slice(0, index).includes('keep')
+            ? step.tags.filter(stands)
+            : []
+      );
   const highest = statuses.findLastIndex((status) => status !== 'reject');
+  const writeAt = (index: number) => {
+    const step = getDefined(steps[index]);
+    const standing = step.tags.filter(stands);
+    const from = standing.length > 0 ? standing : step.tags;
 
-  if (highest === -1) {
-    return decided(kept, { kind: 'set', value: getDefined(steps[0]).below });
-  }
-  if (statuses[highest] === 'replaced') {
-    const standing = getDefined(steps[highest]).tags.filter(stands);
-
-    return decided(kept, {
-      kind: 'set',
-      value: valueOf(smallestId(standing, standing).write),
-    });
-  }
-
+    return valueOf(smallestId(from, from).write);
+  };
   const above = steps[highest + 1];
+  const own: KeyDecision['value'] =
+    highest === -1
+      ? { kind: 'set', value: getDefined(steps[0]).below }
+      : statuses[highest] === 'replaced'
+        ? { kind: 'set', value: writeAt(highest) }
+        : above
+          ? { kind: 'set', value: above.below }
+          : { kind: 'unchanged' };
 
-  return decided(
-    kept,
-    above ? { kind: 'set', value: above.below } : { kind: 'unchanged' }
-  );
+  // Rejecting a split reads what its copies read wherever the second half's
+  // own writes over them leave only the split's output, and those writes go.
+  if (
+    splitRejected &&
+    !open &&
+    (highest === -1 ||
+      free[highest] ||
+      reading.output(
+        getDefined(tags[0]).key,
+        own.kind === 'set' ? own.value : live
+      ))
+  ) {
+    const goes = (tag: FormatTag) =>
+      leaves(tag) || (!inHistory(tag) && stands(tag));
+    const below = tags.filter((tag) => copies.has(tag));
+    const underHistoryTop = getDefined(steps[free.lastIndexOf(true)]).below;
+
+    if (below.some((tag) => tag.split !== undefined)) {
+      const earlierSplit = decideKey(below, reading, underHistoryTop);
+
+      if (earlierSplit.waits.length === 0) {
+        return {
+          ...decided(
+            earlierSplit.kept,
+            {
+              kind: 'set',
+              value:
+                earlierSplit.value.kind === 'set'
+                  ? earlierSplit.value.value
+                  : underHistoryTop,
+            },
+            goes
+          ),
+          readsCopies: true,
+        };
+      }
+    }
+
+    const copied = statuses.findLastIndex(
+      (status, index) => free[index] && status !== 'reject'
+    );
+
+    return {
+      ...decided(
+        kept,
+        {
+          kind: 'set',
+          value:
+            copied === -1
+              ? getDefined(steps[0]).below
+              : statuses[copied] === 'replaced'
+                ? writeAt(copied)
+                : getDefined(steps[copied + 1]).below,
+        },
+        goes
+      ),
+      readsCopies: true,
+    };
+  }
+
+  return decided(kept, own);
 };
 
 export const valueAfterLeaving = (
   tags: readonly FormatTag[],
   left: ReadonlySet<FormatTag>,
-  reading: KeyReading
+  reading: KeyReading,
+  live: LayerValue
 ): KeyDecision['value'] | undefined => {
-  const decision = decideKey(tags, {
-    ...reading,
-    outcome: (tag) => (left.has(tag) ? 'reject' : reading.outcome(tag)),
-  });
+  const decision = decideKey(
+    tags,
+    {
+      ...reading,
+      outcome: (tag) => (left.has(tag) ? 'reject' : reading.outcome(tag)),
+    },
+    live
+  );
 
   return decision.waits.length > 0 ? undefined : decision.value;
 };
@@ -412,9 +586,13 @@ export const valueAfterLeaving = (
 const acceptedValue = (
   live: LayerValue,
   tags: readonly FormatTag[],
-  standing: Standing
+  reading: ValueReading
 ): LayerValue => {
-  const decision = decideKey(tags, { ...standing, outcome: () => 'reject' });
+  const decision = decideKey(
+    tags,
+    { ...reading, outcome: () => 'reject' },
+    live
+  );
 
   return decision.value.kind === 'set' ? decision.value.value : live;
 };
@@ -422,12 +600,12 @@ const acceptedValue = (
 export const acceptedValues = (
   props: Readonly<Record<string, unknown>>,
   tags: readonly FormatTag[],
-  standing: Standing
+  reading: ValueReading
 ): Readonly<Record<string, LayerValue>> =>
   Object.fromEntries(
     [...Map.groupBy(tags, (tag) => tag.key)].map(([key, written]) => [
       key,
-      acceptedValue(props[key] as LayerValue, written, standing),
+      acceptedValue(props[key] as LayerValue, written, reading),
     ])
   );
 
@@ -459,9 +637,14 @@ const writeLayer = (
     return tags;
   }
 
-  const joinsRun = editing
-    ? (tag: FormatTag) => tag.change === writer.change
-    : (tag: FormatTag) => !input.standing.accepted(tag) && writer.isOwn(tag);
+  const { copies, topSplits } = historyOnKey(tags);
+  // A split's tags keep their place under later writes, even its own.
+  const joinsRun = (tag: FormatTag) =>
+    !copies.has(tag) &&
+    !topSplits.includes(tag) &&
+    (editing
+      ? tag.change === writer.change
+      : !input.standing.accepted(tag) && writer.isOwn(tag));
   const tag = (
     fields: Readonly<{
       base: FormatWrite | undefined;
@@ -506,12 +689,19 @@ const writeLayer = (
     ];
   }
 
+  const isTopSplit = (other: FormatTag) => topSplits.includes(other);
+  const topSplitStep = Math.max(
+    0,
+    steps.findLastIndex((step) => step.tags.some(isTopSplit))
+  );
+  const topSplit = steps[topSplitStep]?.tags.find(isTopSplit);
+
   return [
     ...tags,
     tag({
-      base: writeOf(steps[0]?.below),
+      base: topSplit ? topSplit.write : writeOf(steps[0]?.below),
       before: input.previous,
-      over: steps.map((step) => step.tags.map(linkOf)),
+      over: steps.slice(topSplitStep).map((step) => step.tags.map(linkOf)),
     }),
   ];
 };

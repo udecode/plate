@@ -14,6 +14,7 @@ import {
 } from 'plitejs';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
+import { getDefined } from '../src/internal/get-defined';
 import { authoredTestApi, reviewRecords } from './support/authored';
 
 // S4 of docs/plans/2026-10-10-authored-values.md: an Enter inside an inline
@@ -110,7 +111,12 @@ const editorFor = (
 type Editor = ReturnType<typeof editorFor>;
 type AuthoredRead = {
   read: {
-    authored: { groups: (input: { at: number[] }) => Array<{ id: string }> };
+    authored: {
+      groups: (input: { at: number[] }) => Array<{ id: string }>;
+      reviewOf: (node: unknown) => {
+        accepted: Readonly<Record<string, unknown>>;
+      };
+    };
   };
 };
 
@@ -128,8 +134,9 @@ const enter = (editor: Editor, path: number[], offset: number) =>
 const decide = (value: unknown, decisions: Decision | Decision[]) => {
   const editor = editorFor(value, 'zed', 'edit');
   const result = authoredTestApi(editor).decide(decisions);
+  const document = editor.read.value();
 
-  return { result, value: editor.read.value().children as readonly Node[] };
+  return { document, result, value: document.children as readonly Node[] };
 };
 
 /** Each block's links as `text@url`, without review marks. */
@@ -175,11 +182,18 @@ const everyOrder = (
         const step = decide(current, decisionsOf(waiting));
 
         if (step.result.status === 'blocked') continue;
-        current = step.value;
+        current = step.document;
         waiting = [];
       }
 
-      return { shape: shape(current as Node[]), waiting };
+      return {
+        shape: shape(
+          Array.isArray(current)
+            ? current
+            : (current as { children: Node[] }).children
+        ),
+        waiting,
+      };
     }),
   };
 };
@@ -1028,6 +1042,8 @@ const linkPaths = (nodes: readonly Node[]) =>
       child.type === 'link' ? [[at, index]] : []
     )
   );
+const withIdRank = (tag: { id: string }, rank: string) =>
+  JSON.parse(JSON.stringify(tag).replaceAll(tag.id, `${rank}-${tag.id}`));
 
 describe('rejected cuts at the place their halves land', () => {
   const inline = () =>
@@ -1386,7 +1402,7 @@ describe('rejected cuts compare their halves', () => {
     ed.update((tx) =>
       tx.nodes.set({ ref: 'r2' } as never, { at: linkPaths(split)[1] })
     );
-    const value = ed.read.value().children;
+    const value = ed.read.value();
 
     assert.deepEqual(
       {
@@ -1582,5 +1598,823 @@ describe('rejected cuts compare their halves', () => {
       },
       { refs: ['v', 'w'], status: 'applied' }
     );
+  });
+
+  const rejectedOverAFork = (
+    removesLeft: boolean,
+    winner: 'alice' | 'bob',
+    leftRef?: string
+  ) => {
+    const RefFilled = defineEditorSchema('cuts-ref-filled', {
+      elements: {
+        link: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        },
+      },
+      id: 'cuts-ref-filled',
+      properties: [
+        schema.elementProperty('url', property.string(), {
+          target: target.type('link'),
+        }),
+        schema.elementProperty('ref', property.string({ default: 'w' }), {
+          split: 'drop',
+          target: target.type('link'),
+        }),
+      ],
+      root: schema.content.not(schema.content.text()),
+      unknown: 'preserve',
+      version: 1,
+    });
+    const carol = commit(
+      RefFilled,
+      [linked(link('ab', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const [left, right] = linkPaths(carol.children);
+    const ed = commit(RefFilled, carol, 'ed', 'edit', (tx) => {
+      tx.nodes.set({ ref: 'r0' } as never, { at: right });
+      if (leftRef) tx.nodes.set({ ref: leftRef } as never, { at: left });
+      if (removesLeft) tx.nodes.remove({ at: left });
+    });
+    const at = getDefined(linkPaths(ed.children).at(-1));
+    const [block = 0, child = 0] = at;
+    const written = (author: string, ref: string, rank: string) => {
+      const { children } = commit(RefFilled, ed, author, 'propose', (tx) =>
+        tx.nodes.set({ ref } as never, { at })
+      );
+      const node = getDefined(children[block]?.children?.[child]);
+      const marks = node.authored as Array<{ change: string; id: string }>;
+      const own = getDefined(marks.find((mark) => mark.change === author));
+
+      return { node, tag: withIdRank(own, rank) };
+    };
+    // Yjs keeps both tags as one fork and lets either write win the value,
+    // while Alice's tag has the smaller id.
+    const alice = written('alice', 'w', '0');
+    const bob = written('bob', 'r2', '1');
+    const won = winner === 'alice' ? alice : bob;
+    const marks = (won.node.authored as Array<{ change: string }>).filter(
+      (mark) => mark.change !== winner
+    );
+    const forked = structuredClone(ed);
+
+    getDefined(forked.children[block]?.children)[child] = {
+      ...won.node,
+      authored: [...marks, alice.tag, bob.tag],
+    };
+    const accepted = decideIn(RefFilled, forked, {
+      action: 'accept',
+      changes: ['alice', 'bob'],
+    }).editor.read.value();
+
+    return decideIn(RefFilled, accepted, {
+      action: 'reject',
+      changes: ['carol'],
+    }).value;
+  };
+
+  it('keeps the accepted value of a concurrent pair of writes on the right half when one of them writes the filled default and the split is rejected', () => {
+    assert.deepEqual(shape(rejectedOverAFork(true, 'bob')), [['b@u#r2']]);
+  });
+
+  it('gives back the copied value when the filled default wins a concurrent pair of writes on the right half and the split is rejected', () => {
+    assert.deepEqual(shape(rejectedOverAFork(true, 'alice')), [['b@u#r1']]);
+  });
+
+  it('keeps apart the halves of a rejected split when a concurrent pair of writes on the right half leaves a value other than the filled default', () => {
+    assert.deepEqual(shape(rejectedOverAFork(false, 'bob')), [
+      ['a@u#r1', 'b@u#r2'],
+    ]);
+  });
+
+  it('joins the halves of a rejected split on the later value of the left half when the filled default wins a concurrent pair of writes on the right half', () => {
+    assert.deepEqual(shape(rejectedOverAFork(false, 'alice', 'r7')), [
+      ['ab@u#r7'],
+    ]);
+  });
+
+  it('gives back the copied value when every branch of a fork on the right half removes the dropped key and the split is rejected', () => {
+    const carol = commit(
+      Links,
+      [linked(link('ab', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const [left, right] = linkPaths(carol.children);
+    const ed = commit(Links, carol, 'ed', 'edit', (tx) => {
+      tx.nodes.set({ ref: 'r0' } as never, { at: right });
+      tx.nodes.remove({ at: left });
+    });
+    const at = getDefined(linkPaths(ed.children).at(-1));
+    const [block = 0, child = 0] = at;
+    const nodeOf = (value: { children: Node[] }) =>
+      getDefined(value.children[block]?.children?.[child]);
+    const alice = commit(Links, ed, 'alice', 'propose', (tx) =>
+      tx.nodes.set({ ref: 'r2' } as never, { at })
+    );
+    const cat = commit(Links, alice, 'cat', 'propose', (tx) =>
+      tx.nodes.unset('ref', { at })
+    );
+    const bob = commit(Links, ed, 'bob', 'propose', (tx) =>
+      tx.nodes.unset('ref', { at })
+    );
+    const bobTag = getDefined(
+      (nodeOf(bob).authored as Array<{ change: string; id: string }>).find(
+        (mark) => mark.change === 'bob'
+      )
+    );
+    const forked = structuredClone(cat);
+
+    getDefined(forked.children[block]?.children)[child] = {
+      ...nodeOf(cat),
+      authored: [
+        ...(nodeOf(cat).authored as unknown[]),
+        withIdRank(bobTag, '1'),
+      ],
+    };
+    const accepted = decideIn(Links, forked, {
+      action: 'accept',
+      changes: ['alice', 'bob', 'cat'],
+    }).editor.read.value();
+
+    assert.deepEqual(
+      shape(
+        decideIn(Links, accepted, { action: 'reject', changes: ['carol'] })
+          .value
+      ),
+      [['b@u#r1']]
+    );
+  });
+
+  const forkBobWins = (
+    value: unknown,
+    at: number[],
+    alice: string | null,
+    bob: string
+  ) => {
+    const [block = 0, child = 0] = at;
+    const written = (author: string, ref: string | null, rank: string) => {
+      const after = commit(Links, value, author, 'propose', (tx) =>
+        ref === null
+          ? tx.nodes.unset('ref', { at })
+          : tx.nodes.set({ ref } as never, { at })
+      );
+      const node = getDefined(after.children[block]?.children?.[child]);
+      const marks = node.authored as Array<{ change: string; id: string }>;
+      const own = getDefined(marks.find((mark) => mark.change === author));
+
+      return { after, node, tag: withIdRank(own, rank) };
+    };
+    const first = written('alice', alice, '0');
+    const second = written('bob', bob, '1');
+    const result = structuredClone(second.after);
+
+    getDefined(result.children[block]?.children)[child] = {
+      ...second.node,
+      authored: [
+        ...(second.node.authored as Array<{ change: string }>).filter(
+          (mark) => mark.change !== 'bob'
+        ),
+        first.tag,
+        second.tag,
+      ],
+    };
+
+    return result;
+  };
+  const rejectedOverACopiedFork = (alice: string | null) => {
+    const start = [linked(link('ab', 'u', { ref: 'r1' }))];
+    const carol = commit(
+      Links,
+      forkBobWins(start, getDefined(linkPaths(start)[0]), alice, 'r3'),
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const accepted = decideIn(Links, carol, {
+      action: 'accept',
+      changes: ['alice', 'bob'],
+    }).editor.read.value();
+    const removed = commit(Links, accepted, 'ed', 'edit', (tx) =>
+      tx.nodes.remove({ at: getDefined(linkPaths(carol.children)[0]) })
+    );
+
+    return decideIn(Links, removed, { action: 'reject', changes: ['carol'] })
+      .value;
+  };
+
+  it('gives back the value a fork the split copied settled on, not the write with the smaller id', () => {
+    assert.deepEqual(shape(rejectedOverACopiedFork('r2')), [['b@u#r3']]);
+  });
+
+  it('gives back the value a fork the split copied settled on when its other write removes the ref', () => {
+    assert.deepEqual(shape(rejectedOverACopiedFork(null)), [['b@u#r3']]);
+  });
+
+  it('gives back the value an accepted fork settled on through a chain of rejected splits, in every order', () => {
+    const carol = commit(
+      Links,
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const right = getDefined(linkPaths(carol.children)[1]);
+    const accepted = decideIn(Links, forkBobWins(carol, right, 'r3', 'r2'), {
+      action: 'accept',
+      changes: ['alice', 'bob'],
+    }).editor.read.value();
+    const cat = commit(Links, accepted, 'cat', 'propose', (tx) =>
+      splitLink(tx, [...right, 0])
+    );
+    const [a = [], b = []] = linkPaths(cat.children);
+    const removed = commit(Links, cat, 'ed', 'edit', (tx) => {
+      tx.nodes.remove({ at: b });
+      tx.nodes.remove({ at: a });
+    });
+    const inTurn = (first: string, second: string) =>
+      decideIn(
+        Links,
+        decideIn(Links, removed, {
+          action: 'reject',
+          changes: [first],
+        }).editor.read.value(),
+        { action: 'reject', changes: [second] }
+      ).value;
+
+    assert.deepEqual(
+      {
+        atOnce: shape(
+          decideIn(Links, removed, {
+            action: 'reject',
+            changes: ['carol', 'cat'],
+          }).value
+        ),
+        carolFirst: shape(inTurn('carol', 'cat')),
+        catFirst: shape(inTurn('cat', 'carol')),
+      },
+      {
+        atOnce: [['c@u#r2']],
+        carolFirst: [['c@u#r2']],
+        catFirst: [['c@u#r2']],
+      }
+    );
+  });
+});
+
+describe('rejected cuts give back what the split took', () => {
+  const change = (
+    value: unknown,
+    author: string,
+    intent: 'edit' | 'propose',
+    run: (tx: EditorUpdateTransaction, links: number[][]) => void
+  ) => {
+    const editor = editorFor(value, author, intent);
+    const links = linkPaths(editor.read.value().children);
+
+    editor.update((tx) => run(tx, links));
+
+    return editor.read.value();
+  };
+  const after = (value: unknown, ...steps: Array<Decision | Decision[]>) => {
+    let current = value;
+
+    for (const step of steps) current = decide(current, step).document;
+
+    return shape((current as { children: Node[] }).children);
+  };
+  const accept = (...changes: string[]) => ({
+    action: 'accept' as const,
+    changes,
+  });
+  const reject = (...changes: string[]) => ({
+    action: 'reject' as const,
+    changes,
+  });
+  const start = () => [linked(link('ab', 'u', { ref: 'r1' }))];
+  const cut = (value: unknown) =>
+    change(value, 'carol', 'propose', (tx) => splitLink(tx, [0, 1, 0]));
+  const bobOnWhole = () =>
+    change(start(), 'bob', 'propose', (tx) =>
+      tx.nodes.set({ ref: 'r2' } as never, { at: [0, 1] })
+    );
+  // Carol's Enter, with an Editing Enter that keeps its halves in two blocks.
+  const inTwoBlocks = () => {
+    const carol = editorFor(start(), 'carol');
+
+    enter(carol, [0, 1, 0], 1);
+
+    return change(carol.read.value(), 'eve', 'edit', (tx) => {
+      const at = { offset: 0, path: [1, 0] };
+
+      tx.selection.set({ anchor: at, focus: at });
+      tx.break.insert();
+    });
+  };
+
+  it('gives the right half the ref of a removed left half after a suggestion made before the split is rejected, in every order', () => {
+    const value = change(cut(bobOnWhole()), 'dave', 'propose', (tx, [left]) =>
+      tx.nodes.remove({ at: left ?? [] })
+    );
+    const removal = [accept('dave:1'), reject('carol:1')];
+
+    assert.deepEqual(
+      {
+        batch: after(value, [...removal, reject('bob:1')]),
+        bobFirst: after(value, reject('bob:1'), removal),
+        bobLast: after(value, removal, reject('bob:1')),
+      },
+      {
+        batch: [['b@u#r1']],
+        bobFirst: [['b@u#r1']],
+        bobLast: [['b@u#r1']],
+      }
+    );
+  });
+
+  it('lets a suggestion made before the split decide the right half after the left half is removed directly', () => {
+    const value = change(cut(bobOnWhole()), 'ed', 'edit', (tx, [left]) =>
+      tx.nodes.remove({ at: left ?? [] })
+    );
+    const rejected = decide(value, reject('carol:1')).document;
+
+    assert.deepEqual(
+      {
+        accepted: after(rejected, accept('bob:1')),
+        pending: after(rejected),
+        rejected: after(rejected, reject('bob:1')),
+      },
+      {
+        accepted: [['b@u#r2']],
+        pending: [['b@u#r2']],
+        rejected: [['b@u#r1']],
+      }
+    );
+  });
+
+  it('gives the right half the value from before the split, never a direct write the left half took after it', () => {
+    const bobRejected = decide(cut(bobOnWhole()), reject('bob:1')).document;
+    const rewritten = change(cut(start()), 'ed', 'edit', (tx, [left]) =>
+      tx.nodes.set({ ref: 'r7' } as never, { at: left ?? [] })
+    );
+    const removed = change(bobRejected, 'ed', 'edit', (tx, [left]) => {
+      tx.nodes.set({ ref: 'r9' } as never, { at: left ?? [] });
+      tx.nodes.remove({ at: left ?? [] });
+    });
+
+    assert.deepEqual(
+      {
+        joined: after(rewritten, reject('carol:1')),
+        removed: after(removed, reject('carol:1')),
+      },
+      { joined: [['ab@u#r7']], removed: [['b@u#r1']] }
+    );
+  });
+
+  it('gives the ref back over a value Editing wrote and removed again on the right half', () => {
+    const written = change(cut(start()), 'ed', 'edit', (tx, [, right]) =>
+      tx.nodes.set({ ref: 'r8' } as never, { at: right ?? [] })
+    );
+    const unset = change(written, 'ed', 'edit', (tx, [, right]) =>
+      tx.nodes.unset('ref', { at: right ?? [] })
+    );
+    const value = change(unset, 'ed', 'edit', (tx, [left]) =>
+      tx.nodes.remove({ at: left ?? [] })
+    );
+
+    assert.deepEqual(after(value, reject('carol:1')), [['b@u#r1']]);
+  });
+
+  it("keeps the split's own later write on the right half when a suggestion beneath it is rejected, in every order", () => {
+    const value = change(
+      cut(bobOnWhole()),
+      'carol',
+      'propose',
+      (tx, [, right]) =>
+        tx.nodes.set({ ref: 'r2' } as never, { at: right ?? [] })
+    );
+    const kept = [['a@u#r1', 'b@u#r2']];
+
+    assert.deepEqual(
+      everyOrder(value, { 'bob:1': 'reject', 'carol:1': 'accept' }),
+      {
+        batch: kept,
+        orders: [
+          { shape: kept, waiting: [] },
+          { shape: kept, waiting: [] },
+        ],
+      }
+    );
+  });
+
+  it("rejects each of two cuts of one link alone when the later cut's change also removes the first piece", () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const value = change(first, 'cat', 'propose', (tx, [left, rest]) => {
+      splitLink(tx, [...(rest ?? []), 0]);
+      tx.nodes.remove({ at: left ?? [] });
+    });
+    const joined = [['abc@u#r1']];
+
+    assert.deepEqual(
+      everyOrder(value, { 'carol:1': 'reject', 'cat:1': 'reject' }),
+      {
+        batch: joined,
+        orders: [
+          { shape: joined, waiting: [] },
+          { shape: joined, waiting: [] },
+        ],
+      }
+    );
+  });
+
+  it('keeps the dropped ref on the left half alone when the halves of a rejected split stay apart, in every order', () => {
+    const value = change(
+      cut(start()),
+      'alice',
+      'propose',
+      (tx, [left, right]) => {
+        tx.nodes.set({ url: 'v' } as never, { at: left ?? [] });
+        tx.nodes.set({ url: 'w' } as never, { at: right ?? [] });
+      }
+    );
+    const apart = [['a@v#r1', 'b@w']];
+
+    assert.deepEqual(
+      everyOrder(value, { 'alice:1': 'accept', 'carol:1': 'reject' }),
+      {
+        batch: apart,
+        orders: [
+          { shape: apart, waiting: [] },
+          { shape: apart, waiting: [] },
+        ],
+      }
+    );
+  });
+
+  it('gives no ref back to the right half of a rejected Enter in another block when only the left half’s own pending removal removes it, in every order', () => {
+    const value = change(inTwoBlocks(), 'dave', 'propose', (tx, [left]) =>
+      tx.nodes.remove({ at: left ?? [] })
+    );
+    const apart = [[], ['b@u']];
+
+    assert.deepEqual(
+      everyOrder(value, { 'carol:1': 'reject', 'dave:1': 'accept' }),
+      {
+        batch: apart,
+        orders: [
+          { shape: apart, waiting: [] },
+          { shape: apart, waiting: [] },
+        ],
+      }
+    );
+  });
+
+  it('gives the ref back to the right half of a rejected Enter in another block when the left half goes with its block, in every order', () => {
+    const value = change(inTwoBlocks(), 'dave', 'propose', (tx) =>
+      tx.nodes.remove({ at: [0] })
+    );
+    const givenBack = [[], ['b@u#r1']];
+
+    assert.deepEqual(
+      everyOrder(value, { 'carol:1': 'reject', 'dave:1': 'accept' }),
+      {
+        batch: givenBack,
+        orders: [
+          { shape: givenBack, waiting: [] },
+          { shape: givenBack, waiting: [] },
+        ],
+      }
+    );
+  });
+
+  it("decides a rejected cut one step at a time as at once while the right half's own write is pending", () => {
+    const alice = change(
+      cut(start()),
+      'alice',
+      'propose',
+      (tx, [left, right]) => {
+        tx.nodes.set({ ref: 'v1' } as never, { at: right ?? [] });
+        tx.nodes.remove({ at: left ?? [] });
+      }
+    );
+    const bob = change(alice, 'bob', 'propose', (tx, links) =>
+      tx.nodes.unset('ref', { at: links.at(-1) ?? [] })
+    );
+    const value = change(bob, 'dave', 'propose', (tx, links) =>
+      tx.nodes.set({ ref: 'v2' } as never, { at: links.at(-1) ?? [] })
+    );
+    const decided = [reject('carol:1'), accept('alice:1')];
+
+    assert.deepEqual(
+      {
+        batch: after(value, [...decided, reject('dave:1')]),
+        steps: after(value, decided, reject('dave:1')),
+      },
+      { batch: [['b@u']], steps: [['b@u']] }
+    );
+  });
+
+  it("gives a right half that stays apart no ref when a write over the split's output is rejected, in every order", () => {
+    const apart = change(cut(start()), 'ed', 'edit', (tx, [, right]) =>
+      tx.nodes.set({ url: 'w' } as never, { at: right ?? [] })
+    );
+    const value = change(apart, 'alice', 'propose', (tx, [, right]) =>
+      tx.nodes.set({ ref: 'r3' } as never, { at: right ?? [] })
+    );
+    const kept = [['a@u#r1', 'b@w']];
+
+    assert.deepEqual(
+      everyOrder(value, { 'alice:1': 'reject', 'carol:1': 'reject' }),
+      {
+        batch: kept,
+        orders: [
+          { shape: kept, waiting: [] },
+          { shape: kept, waiting: [] },
+        ],
+      }
+    );
+  });
+
+  it("keeps the right half's accepted write above a given-back write that is decided later", () => {
+    const unset = change(start(), 'bob', 'propose', (tx) =>
+      tx.nodes.unset('ref', { at: [0, 1] })
+    );
+    const dan = change(unset, 'dan', 'propose', (tx) =>
+      tx.nodes.set({ ref: 'v1' } as never, { at: [0, 1] })
+    );
+    const written = change(cut(dan), 'alice', 'propose', (tx, [, right]) =>
+      tx.nodes.set({ ref: 'v2' } as never, { at: right ?? [] })
+    );
+    const value = change(written, 'alice', 'propose', (tx, [left]) =>
+      tx.nodes.remove({ at: left ?? [] })
+    );
+    const decided = [reject('carol:1'), accept('dan:1', 'alice:1')];
+
+    assert.deepEqual(
+      {
+        atOnce: after(value, [...decided, reject('bob:1')]),
+        inTurn: after(value, decided, reject('bob:1')),
+      },
+      { atOnce: [['b@u#v2']], inTurn: [['b@u#v2']] }
+    );
+  });
+
+  it("copies the splitter's own earlier write, so an accepted split leaves the right half no ref", () => {
+    const bob = change(start(), 'bob', 'propose', (tx) =>
+      tx.nodes.unset('ref', { at: [0, 1] })
+    );
+    const value = change(bob, 'carol', 'propose', (tx) => {
+      tx.nodes.set({ ref: 'r5' } as never, { at: [0, 1] });
+      splitLink(tx, [0, 1, 0]);
+    });
+
+    assert.deepEqual(after(value, [accept('carol:1'), reject('bob:1')]), [
+      ['a@u#r5', 'b@u'],
+    ]);
+  });
+
+  it("gives back the splitter's accepted earlier change once the left half is removed", () => {
+    const carol = editorFor(start(), 'carol');
+
+    carol.update((tx) => tx.nodes.set({ ref: 'r5' } as never, { at: [0, 1] }));
+    carol.update((tx) => splitLink(tx, [0, 1, 0]));
+    const value = change(carol.read.value(), 'ed', 'edit', (tx, [left]) =>
+      tx.nodes.remove({ at: left ?? [] })
+    );
+
+    assert.deepEqual(after(value, [accept('carol:1'), reject('carol:2')]), [
+      ['b@u#r5'],
+    ]);
+  });
+
+  it('leaves the last piece no ref when a later split that wrote the ref first is accepted and the earlier split rejected', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const cat = change(first, 'cat', 'propose', (tx, [, right]) => {
+      tx.nodes.set({ ref: 'r9' } as never, { at: right ?? [] });
+      splitLink(tx, [...(right ?? []), 0]);
+    });
+    const value = change(cat, 'ed', 'edit', (tx, [left]) =>
+      tx.nodes.remove({ at: left ?? [] })
+    );
+
+    assert.deepEqual(after(value, [accept('cat:1'), reject('carol:1')]), [
+      ['b@u#r9', 'c@u'],
+    ]);
+  });
+
+  it('withdraws a split whose copy is pending without bringing the split back', () => {
+    const value = change(cut(bobOnWhole()), 'ed', 'edit', (tx, [left]) =>
+      tx.nodes.remove({ at: left ?? [] })
+    );
+    const carol = editorFor(value, 'carol');
+    const status = carol.update((tx) =>
+      tx.authored.withdraw([getDefined(carol.read.authored.change('carol:1'))])
+    );
+    const withdrawn = carol.read.value();
+    const pending = editorFor(withdrawn, 'zed', 'edit')
+      .read.authored.changes()
+      .items.map((item) => item.id);
+
+    assert.deepEqual(
+      {
+        pending,
+        rejected: after(withdrawn, reject('bob:1')),
+        status: status.status,
+        stored: after(withdrawn),
+      },
+      {
+        pending: ['bob:1'],
+        rejected: [['b@u#r1']],
+        status: 'applied',
+        stored: [['b@u#r2']],
+      }
+    );
+  });
+
+  it('keeps a later direct write on the last piece when a suggestion under two rejected splits is decided last', () => {
+    const alice = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'alice',
+      'propose',
+      (tx) => tx.nodes.set({ ref: 'w' } as never, { at: [0, 1] })
+    );
+    const carol = change(alice, 'carol', 'propose', (tx) =>
+      splitLink(tx, [0, 1, 0])
+    );
+    const bob = change(carol, 'bob', 'propose', (tx, [, right]) =>
+      tx.nodes.set({ ref: 'q' } as never, { at: right ?? [] })
+    );
+    const cat = change(bob, 'cat', 'propose', (tx, [, right]) =>
+      splitLink(tx, [...(right ?? []), 0])
+    );
+    const ed = change(cat, 'ed', 'edit', (tx, links) =>
+      tx.nodes.set({ ref: 'v' } as never, { at: links.at(-1) ?? [] })
+    );
+    const value = change(ed, 'ed', 'edit', (tx, [first, second]) => {
+      tx.nodes.remove({ at: second ?? [] });
+      tx.nodes.remove({ at: first ?? [] });
+    });
+
+    assert.deepEqual(
+      {
+        atOnce: after(value, [
+          accept('alice:1', 'bob:1'),
+          reject('carol:1', 'cat:1'),
+        ]),
+        inTurn: after(
+          value,
+          reject('carol:1'),
+          accept('bob:1'),
+          reject('cat:1'),
+          accept('alice:1')
+        ),
+      },
+      { atOnce: [['c@u#v']], inTurn: [['c@u#v']] }
+    );
+  });
+
+  it('stores no tag on the right half once the split is accepted and a suggestion under it rejected', () => {
+    const decided = decide(cut(bobOnWhole()), [
+      accept('carol:1'),
+      reject('bob:1'),
+    ]).value;
+    const [, right = []] = linkPaths(decided);
+    const [block = 0, at = 0] = right;
+
+    assert.deepEqual(decided[block]?.children?.[at]?.authored ?? [], []);
+  });
+
+  describe('a split of a right half whose rejected split waits on a write over it', () => {
+    const split = () =>
+      change(
+        [linked(link('abc', 'u', { ref: 'r1' }))],
+        'carol',
+        'propose',
+        (tx) => splitLink(tx, [0, 1, 0])
+      );
+    const open = (write = (value: unknown) => value) => {
+      const written = change(split(), 'ed', 'edit', (tx, [, right]) =>
+        tx.nodes.set({ ref: 'r8' } as never, { at: right ?? [] })
+      );
+      const unset = change(written, 'ed', 'edit', (tx, [, right]) =>
+        tx.nodes.unset('ref', { at: right ?? [] })
+      );
+      const removed = change(unset, 'ed', 'edit', (tx, [left]) =>
+        tx.nodes.remove({ at: left ?? [] })
+      );
+      const alice = change(removed, 'alice', 'propose', (tx, links) =>
+        tx.nodes.set({ ref: 'v' } as never, { at: links.at(-1) ?? [] })
+      );
+
+      return decide(write(alice), reject('carol:1')).document;
+    };
+
+    it('gives back the ref the earlier split took when the later split and the write are rejected, in every order', () => {
+      const cat = change(open(), 'cat', 'propose', (tx, links) =>
+        splitLink(tx, [...(links.at(-1) ?? []), 0])
+      );
+      const value = change(cat, 'ed', 'edit', (tx, [left]) =>
+        tx.nodes.remove({ at: left ?? [] })
+      );
+      const givenBack = [['c@u#r1']];
+
+      assert.deepEqual(
+        everyOrder(value, { 'alice:1': 'reject', 'cat:1': 'reject' }),
+        {
+          batch: givenBack,
+          orders: [
+            { shape: givenBack, waiting: [] },
+            { shape: givenBack, waiting: [] },
+          ],
+        }
+      );
+    });
+
+    it('gives back the ref the earlier split took when a write over its history is rejected last', () => {
+      const bob = (value: unknown) =>
+        change(value, 'bob', 'propose', (tx, links) =>
+          tx.nodes.set({ ref: 'w' } as never, { at: links.at(-1) ?? [] })
+        );
+      const cat = change(open(bob), 'cat', 'propose', (tx, links) =>
+        splitLink(tx, [...(links.at(-1) ?? []), 0])
+      );
+      const value = change(cat, 'ed', 'edit', (tx, [left]) =>
+        tx.nodes.remove({ at: left ?? [] })
+      );
+
+      assert.deepEqual(
+        {
+          atOnce: after(value, [reject('alice:1', 'bob:1', 'cat:1')]),
+          inTurn: after(
+            value,
+            reject('alice:1'),
+            reject('cat:1'),
+            reject('bob:1')
+          ),
+        },
+        { atOnce: [['c@u#r1']], inTurn: [['c@u#r1']] }
+      );
+    });
+
+    it('reviews the accepted ref as rejecting the write gives it', () => {
+      const value = open();
+      const reader = editorFor(value, 'zed', 'edit');
+      const [path = []] = linkPaths(reader.read.value().children);
+      const [block = 0, at = 0] = path;
+      const node = (reader.read.value().children as Node[])[block]?.children?.[
+        at
+      ];
+
+      assert.deepEqual(
+        {
+          accepted:
+            (reader as unknown as AuthoredRead).read.authored.reviewOf(node)
+              .accepted.ref ?? null,
+          rejected: after(value, reject('alice:1')),
+        },
+        { accepted: 'r1', rejected: [['bc@u#r1']] }
+      );
+    });
+
+    it('joins the halves of a second rejected split at once as in turn', () => {
+      const written = change(split(), 'ed', 'edit', (tx, [, right]) =>
+        tx.nodes.set({ ref: 'r2' } as never, { at: right ?? [] })
+      );
+      const bob = change(written, 'bob', 'propose', (tx, [, right]) =>
+        tx.nodes.unset('ref', { at: right ?? [] })
+      );
+      const cat = change(bob, 'cat', 'propose', (tx, [, right]) =>
+        splitLink(tx, [...(right ?? []), 0])
+      );
+      const set = change(cat, 'ed', 'edit', (tx, links) =>
+        tx.nodes.set({ ref: 'r1' } as never, { at: links.at(-1) ?? [] })
+      );
+      const removed = change(set, 'ed', 'edit', (tx, [left]) =>
+        tx.nodes.remove({ at: left ?? [] })
+      );
+      const value = decide(removed, reject('carol:1')).document;
+
+      assert.deepEqual(
+        {
+          steps: after(value, accept('bob:1'), reject('cat:1')),
+          together: after(value, [accept('bob:1'), reject('cat:1')]),
+        },
+        { steps: [['bc@u#r1']], together: [['bc@u#r1']] }
+      );
+    });
   });
 });

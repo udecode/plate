@@ -33,6 +33,7 @@ import {
 } from '../core/command-document';
 import { prepareCommandFrame } from '../core/command-frame';
 import { registerEditorContent } from '../core/content';
+import { elementSplitOutput } from '../core/default-storage';
 import { documentAdmissionPoint } from '../core/document-admission';
 import {
   registerEditorDocumentRecorder,
@@ -237,8 +238,9 @@ type AuthoredUpdate = {
   >;
   /**
    * Take back this editor's author's own pending changes as if never
-   * proposed: rejected with no verdict record and no held member. Another
-   * author's change gives an invalid result.
+   * proposed: rejected with no verdict record and no held member. A change
+   * whose mark stays stored, such as a copy under a split's tag, gets a
+   * rejection record. Another author's change gives an invalid result.
    */
   withdraw: TxDeclaredMethod<
     (changes: readonly AuthoredChange[]) => AuthoredResult
@@ -333,7 +335,10 @@ const isStruck = (editor: Editor, node: unknown) => {
   );
 };
 
-const claimOf = (value: EditorDocumentValue, change: string) => {
+const claimOf = (
+  value: EditorDocumentValue | JsonEditorValue,
+  change: string
+) => {
   const facts = factsOf(value);
   const find = (nodes: readonly unknown[]): AuthoredMark | null => {
     for (const node of nodes) {
@@ -1367,17 +1372,19 @@ export const createAuthoredPlugin = (
     // One token per decision, so a peer's decision on the same incarnation
     // gets its own key and an undo drops only this one.
     const decision = createIncarnationId();
-    const verdicts = withdraws
-      ? []
-      : [...actions].flatMap(([id, verdict]) =>
-          [...incarnationsOf(book.occurrences(id))].map(
-            ({ at, change, inc }): VerdictRecord => ({
-              decision,
-              member: inc === undefined ? { at, change } : { at, change, inc },
-              verdict,
-            })
-          )
-        );
+    // A withdrawal leaves no record unless a mark of the change stays stored,
+    // which every later read must see as rejected.
+    const verdicts = [...actions]
+      .filter(([id]) => !withdraws || claimOf(resolution.value, id))
+      .flatMap(([id, verdict]) =>
+        [...incarnationsOf(book.occurrences(id))].map(
+          ({ at, change, inc }): VerdictRecord => ({
+            decision,
+            member: inc === undefined ? { at, change } : { at, change, inc },
+            verdict,
+          })
+        )
+      );
     const decidedValue = withVerdicts(resolution.value, verdicts);
     // A change whose inserted text the decision removes, such as text typed
     // inside a rejected insertion, goes only when it is decided too. An empty
@@ -1677,6 +1684,7 @@ export const createAuthoredPlugin = (
               {
                 accepted: (member) => isAccepted(facts, member),
                 landed: facts.landed,
+                output: elementSplitOutput(getCompiledEditorSchema(editor)),
               }
             )
           ),

@@ -149,6 +149,7 @@ const FORMAT_FIELDS: ReadonlySet<string> = new Set([
   'key',
   'kind',
   'over',
+  'split',
   'write',
 ]);
 
@@ -210,7 +211,7 @@ const isFormatLink = (value: unknown) =>
   Object.keys(value).every((field) => LINK_FIELDS.has(field));
 
 const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
-  const { base, id, key, over, write } = value;
+  const { base, id, key, over, split, write } = value;
 
   return (
     typeof id === 'string' &&
@@ -219,6 +220,7 @@ const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
     key.length > 0 &&
     key !== AUTHORED_MARKS_KEY &&
     isFormatWrite(write) &&
+    (split === undefined || (typeof split === 'string' && split.length > 0)) &&
     (over === undefined
       ? base === undefined
       : Array.isArray(over) &&

@@ -13,7 +13,7 @@ import {
 import type { EditorDocumentRecords } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import { countLedgerWork } from '../ledger/work';
-import type { IsLanded } from '../tree/layers';
+import { type IsLanded, splitHistoryOf } from '../tree/layers';
 import {
   type AuthoredMark,
   AuthoredMarkError,
@@ -759,7 +759,8 @@ export const marksOf = (
 /**
  * A node's claims a decision still acts on: the pending ones and the accepted
  * ones still stored, which are Editing's claims and structure whose landing
- * waited. Only a rejection settles a claim away.
+ * waited. Only a rejection settles a claim away, and not in a split's
+ * history, which `decideKey` reads whole.
  */
 export const standingClaimsOf = (
   node: unknown,
@@ -768,9 +769,13 @@ export const standingClaimsOf = (
 ): readonly AuthoredMark[] => {
   const claims = claimsOf(node, lookup);
 
-  return !facts.hasVerdicts
-    ? claims
-    : claims.filter((mark) => outcomeOf(facts, mark) !== 'reject');
+  if (!facts.hasVerdicts) return claims;
+
+  const history = splitHistoryOf(claims);
+
+  return claims.filter(
+    (mark) => history.has(mark) || outcomeOf(facts, mark) !== 'reject'
+  );
 };
 
 export const isAccepted = (
@@ -779,6 +784,9 @@ export const isAccepted = (
 ) =>
   isEditingChange(member.change) ||
   (facts.hasVerdicts && facts.hasVerdict(incarnationOf(member), 'accept'));
+
+export const isRejected = (facts: ReviewFacts, mark: AuthoredMark) =>
+  facts.hasVerdicts && outcomeOf(facts, mark) === 'reject';
 
 export const isSettledDeletion = (node: unknown, facts: ReviewFacts) =>
   readAuthoredMarks(node).some(

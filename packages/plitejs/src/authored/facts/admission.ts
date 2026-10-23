@@ -393,7 +393,7 @@ export const authoredAdmission: DocumentAdmission = {
     const repairs = new Map<string, RootChange>();
 
     if (getActiveEditorUpdateTags(editor).includes('historic')) {
-      const reading = keyReadingOf(facts);
+      const reading = keyReadingOf(facts, getCompiledEditorSchema(editor));
 
       for (const root of scope.keys()) {
         const rootChange = getInternalDocumentRootChange(change, root);

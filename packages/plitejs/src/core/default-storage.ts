@@ -91,6 +91,10 @@ export const isSplitOutput = (
       ({ descriptor }) => unwrittenAs(descriptor, node[key]) === 'filled'
     ));
 
+export const elementSplitOutput =
+  (schema: CompiledEditorSchema | null) => (key: string, value: unknown) =>
+    isSplitOutput(schema, { [key]: value }, key);
+
 /**
  * Whether `node` may drop `key` where it stands now, because it carried the
  * value from `place`: the node there held the same value, and that value was

@@ -3,6 +3,7 @@ import type { NodeList } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
+import { elementSplitOutput } from '../../core/default-storage';
 import {
   composeRecordOps,
   deriveValue,
@@ -19,6 +20,7 @@ import { isEditingChange } from '../facts/editing';
 import {
   factsOf,
   isAccepted,
+  isRejected,
   NO_FACTS,
   type ReviewFacts,
   standingClaimsOf,
@@ -37,6 +39,7 @@ import {
   type Assignment,
   type Half,
   type Halves,
+  leftSupplies,
   type Settled,
   supplies,
   type Verdict,
@@ -47,6 +50,8 @@ import {
   decideKey,
   type FormatTag,
   type KeyReading,
+  type LayerValue,
+  splitHistoryOf,
   tipsWrittenValue,
 } from './layers';
 import {
@@ -734,7 +739,11 @@ const resolveIn = (
   const dirtyChildren = new WeakMap<Node, readonly number[]>();
   let unplaceable = false;
   const decisionOf = (mark: AuthoredMark) =>
-    isAccepted(facts, mark) ? ('accept' as const) : outcomeOf(mark.change);
+    isAccepted(facts, mark)
+      ? ('accept' as const)
+      : isRejected(facts, mark)
+        ? ('reject' as const)
+        : outcomeOf(mark.change);
   const resultOf = (mark: AuthoredMark) => {
     if (isAccepted(facts, mark)) return 'accept';
 
@@ -783,7 +792,9 @@ const resolveIn = (
   const reading: KeyReading = {
     accepted: (member) => isAccepted(facts, member),
     landed: facts.landed,
-    outcome: (tag) => outcomeOf(tag.change),
+    outcome: (tag) =>
+      isRejected(facts, tag) ? 'reject' : outcomeOf(tag.change),
+    output: elementSplitOutput(schema?.ownership ?? null),
   };
   const decidedPropsOf = (node: Node) =>
     decideFormats(propsOf(node), pending(node), reading)?.props ??
@@ -806,13 +817,15 @@ const resolveIn = (
     claims: readonly AuthoredMark[],
     place: Place
   ): Half => {
-    const values =
-      decideFormats(propsOf(node), claims, reading)?.props ?? propsOf(node);
+    const formats = decideFormats(propsOf(node), claims, reading);
+    const values = formats?.props ?? propsOf(node);
 
     return {
       decided: values,
+      splitHistory: splitHistoryOf(claims),
       node,
       pending: claims.filter((mark) => decisionOf(mark) === 'keep'),
+      readsCopies: formats?.readsCopies ?? new Set(),
       props: schema
         ? heldProps(schema.ownership, values, { ...place, text: false })
         : values,
@@ -863,10 +876,25 @@ const resolveIn = (
   // decisions changes the joined values.
   const joinKeeps = (
     key: string | Node,
-    { left, right }: Halves,
+    halves: Halves,
     rightKeys: ReadonlySet<string>
-  ) =>
-    jsonEqual(
+  ) => {
+    const { left, right } = halves;
+    const fromLeft = leftSupplies(schema?.ownership ?? null, halves);
+    const later = Object.fromEntries(
+      [
+        ...new Set([
+          ...Object.keys(valuesOf(left.decided)),
+          ...Object.keys(valuesOf(right.decided)),
+        ]),
+      ].flatMap((name) => {
+        const from = fromLeft(name) ? left.decided : right.decided;
+
+        return Object.hasOwn(from, name) ? [[name, from[name]]] : [];
+      })
+    );
+
+    return jsonEqual(
       valuesOf(
         decidedPropsOf(
           joinedShell(
@@ -878,17 +906,21 @@ const resolveIn = (
           )
         )
       ),
-      { ...valuesOf(right.decided), ...valuesOf(left.decided) }
+      later
     );
-  const rightKeysOf = ({ left, right }: Halves) =>
-    new Set(
+  };
+  const rightKeysOf = (halves: Halves) => {
+    const fromLeft = leftSupplies(schema?.ownership ?? null, halves);
+
+    return new Set(
       [
-        ...Object.keys(propsOf(right.node)),
-        ...right.pending.flatMap((mark) =>
+        ...Object.keys(propsOf(halves.right.node)),
+        ...halves.right.pending.flatMap((mark) =>
           mark.kind === 'format' ? [mark.key] : []
         ),
-      ].filter((name) => !supplies(left, name))
+      ].filter((name) => !fromLeft(name))
     );
+  };
   /**
    * The verdict on a rejected cut, or 'wait' once its touching changes join
    * this run's waits. `left` is the left half as the stored tree holds it.
@@ -1603,11 +1635,6 @@ const resolveIn = (
     const { joined, nodes } = joinsCuts
       ? joinRejectedCuts(input, {
           dependencies,
-          endSurvives: (cut) => {
-            const end = cutSides.get(cut)?.endNode;
-
-            return end !== undefined && survives(end);
-          },
           join: ({ between, cut, left, original, right }) => {
             const halves = {
               change: cut.change,
@@ -1622,11 +1649,23 @@ const resolveIn = (
               met: true,
               place: above,
             }) === 'together'
-              ? (key: string) => supplies(halves.left, key)
+              ? leftSupplies(schema?.ownership ?? null, halves)
               : null;
           },
           rejected: (cut) => resultOf(cut) === 'reject',
-          schema: schema?.ownership ?? null,
+          // A left fragment's own removal waits on its cut, so the cut
+          // decides first and finds it standing. A removal of its whole block
+          // makes the cut wait instead, so the cut finds it gone.
+          standsApart: (cut) => {
+            const { end, endNode } = cutSides.get(cut.cut) ?? {};
+
+            return (
+              end !== undefined &&
+              endNode !== undefined &&
+              (survives(endNode) ||
+                (settled(endNode) && survives(getDefined(blocks[end]).node)))
+            );
+          },
           survives,
         })
       : { joined: new Map<Node, Node>(), nodes: input };
@@ -2296,6 +2335,7 @@ const decideFormats = (
 ) => {
   if (!marks.some((mark) => mark.kind === 'format')) return null;
 
+  const readsCopies = new Set<string>();
   const kept = new Set<AuthoredMark>();
   const landed: FormatTag[] = [];
   const waits: string[] = [];
@@ -2309,8 +2349,9 @@ const decideFormats = (
     const tags = marks.filter(
       (mark): mark is FormatTag => mark.kind === 'format' && mark.key === key
     );
-    const decision = decideKey(tags, reading);
+    const decision = decideKey(tags, reading, props[key] as LayerValue);
 
+    if (decision.readsCopies) readsCopies.add(key);
     waits.push(...decision.waits);
     landed.push(...decision.landed);
     for (const tag of decision.kept) kept.add(tag);
@@ -2340,7 +2381,7 @@ const decideFormats = (
     else next[key] = decision.value.value;
   }
 
-  return { changed, kept, landed, props: next, waits };
+  return { changed, kept, landed, props: next, readsCopies, waits };
 };
 
 const mergeTextsWithEqualProps = (nodes: readonly Node[]): Node[] => {

@@ -78,7 +78,7 @@ The gate bound has 66 coupled sets. Each merges two paragraphs, by accepting a j
 
 At `--marks=3 --changes=3`, measured before the generator added format tags on deleted quotes, 84 orders decide two changes one at a time where deciding the same two together waits on a third change, a split that is still pending. One is `paragraph("a") quote{unwrap s0}(paragraph{delete s1}("b"{delete s1}) paragraph{split s2}("c"))` with `s0` and `s1` accepted. Lifting a quote's children, by accepting an unwrap or rejecting a wrap, waits on the join boundary of its first child, as the comment beside that wait in `resolve.ts` says. Decided together, that child is the split paragraph, so the resolver waits on `s2`. One at a time, the first child is still `b` when the unwrap lands. The script skips those comparisons. Nothing shows that the wait loses content, but it makes deciding together stricter than deciding one at a time.
 
-The give-back family's gate finds 12 failures and 1,105 coupled sets. Each failure rejects a cut whose left half stays. In `s0 splits, s0 sets right v1, s1 sets left v2, s2 unsets left: accept s1, reject s0, accept s2`, one at a time reads `link("ab")`, and at once reads `link[ref v2]("ab")`. `--giveback-edits=1` finds 65 failures, `--giveback-changes=1 --giveback-edits=1` 33, `--giveback-changes=3` 24 failures and 1,303 coupled sets, and `--giveback-ops=4 --giveback-changes=3` 773 failures and 29,937 coupled sets. The five-operation script in What a pass proves gives 3 coupled sets.
+The give-back family finds no failure at any bound run. Its gate has 1,105 coupled sets, `--giveback-edits=1` 1,550, `--giveback-changes=1 --giveback-edits=1` 672, `--giveback-changes=3` 1,303 and `--giveback-ops=4 --giveback-changes=3` 29,937, and the five-operation script in What a pass proves gives 3. Each is the same set as before the split copied what it drops, compared one by one. Before that copy, the gate found 12 failures, each rejecting a cut whose left half stays. In `s0 splits, s0 sets right v1, s1 sets left v2, s2 unsets left: accept s1, reject s0, accept s2`, one at a time read `link("ab")`, and at once read `link[ref v2]("ab")`. `--giveback-edits=1` found 65 failures, `--giveback-changes=1 --giveback-edits=1` 33, `--giveback-changes=3` 24 and `--giveback-ops=4 --giveback-changes=3` 773.
 
 ## What a pass proves
 
@@ -118,12 +118,14 @@ Synced at commit `b2228e62ef`. The verification describes these files and functi
 | `packages/plitejs/test/support/authored-laws.ts` | the step, the settle, `admissionOf` and the comparison |
 | `packages/plitejs/src/authored/tree/record.ts` | not run; `slotsOf` and `build` copy where recording puts marks and format tags |
 
-The give-back family is synced at the commit that adds it, `test(plitejs): check every decision order of recorded give-back scripts`. It runs recording and the public `decide` whole, so it describes these files as they stand there:
+The give-back family is synced at `fix(plitejs): copy what a split drops onto its second half, so rejecting it gives it back in any order`. It runs recording and the public `decide` whole, so it describes these files as they stand there:
 
 | File | What the family exercises |
 | --- | --- |
-| `packages/plitejs/src/authored/tree/cuts.ts` | `joinRejectedCuts`, which gives a right half its cut's `kept` values when the left half is gone, and `relinkCuts`, which saves `kept` when a decision removes the left half |
-| `packages/plitejs/src/authored/tree/layers.ts` | `decideKey` and `keySteps` on the dropped key, and `recordFormats` while recording |
+| `packages/plitejs/src/authored/tree/record.ts` | `splitHistoryTags`, which copies the left half's tags on the dropped key onto the right half under the cut's own tag |
+| `packages/plitejs/src/authored/tree/cuts.ts` | `joinRejectedCuts`, which joins a rejected cut's halves or keeps them apart, and then drops the right half's copies |
+| `packages/plitejs/src/authored/tree/halves.ts` | `leftSupplies` and the halves comparison, which read the dropped key from the left half while the right half holds only the split's output |
+| `packages/plitejs/src/authored/tree/layers.ts` | `decideKey` and `keySteps` on the dropped key, which read a rejected split's copies, and `recordFormats` while recording |
 | `packages/plitejs/src/authored/authored.ts` | `decide` through `authoredTestApi`, with its blockers, placement and settle |
 | `packages/plitejs/test/support/authored-laws.ts` | the links schema, the recorded scripts and the reader's view the family compares |
 

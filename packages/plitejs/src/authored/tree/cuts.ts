@@ -7,11 +7,10 @@ import { DocumentIndex } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
-import { isSplitOutput } from '../../core/default-storage';
-import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { incarnationOf } from '../facts/records';
+import { splitHistoryOf } from './layers';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
@@ -30,6 +29,7 @@ export const cutsOf = (node: unknown) => readAuthoredMarks(node).filter(isCut);
  * What a join keeps, without children: the properties `{ ...right, ...left }`
  * over the keys the left holds, each key's format tags from the half that
  * supplies the key, the left's other marks, and the right's other cut tags.
+ * The tags a split wrote on the right stand for the left's, so none joins.
  * `cut` is null for a block, whose split leaves no cut tag. An inline join
  * drops the cut and any insert or delete tag the right lacks, since the
  * element's tags cover all of its content. A block keeps them, since the
@@ -43,6 +43,7 @@ export const joinedShell = (
   leftHolds: (key: string) => boolean
 ): Node => {
   const rightMarks = dependencies.marks(right);
+  const history = splitHistoryOf(rightMarks);
   const { children: _left, ...props } = left;
   const {
     children: _right,
@@ -76,7 +77,7 @@ export const joinedShell = (
     ...rightMarks.filter((mark) =>
       isCut(mark)
         ? mark.cut !== cut
-        : mark.kind === 'format' && !leftHolds(mark.key)
+        : mark.kind === 'format' && !history.has(mark) && !leftHolds(mark.key)
     ),
   ];
 
@@ -84,19 +85,37 @@ export const joinedShell = (
 };
 
 /**
+ * The right half of a rejected cut whose left half stays apart from it: the
+ * tags its split wrote leave, as when the cut is accepted, so it keeps the
+ * split's output and never takes the left half's value of a dropped key.
+ */
+const apartFrom = (node: Node, dependencies: Dependencies): Node => {
+  const marks = dependencies.marks(node);
+  const history = splitHistoryOf(marks);
+  const kept = marks.filter((mark) => !history.has(mark));
+
+  if (kept.length === marks.length) return node;
+
+  const { children, ...props } = node;
+
+  return {
+    ...dependencies.props(props, kept),
+    ...(children ? { children } : {}),
+  };
+};
+
+/**
  * One block's inline children with each rejected cut joined: the fragment
  * holding the cut's `end` and the later fragment holding its `start` become
- * one element when `join` says so. A `start` fragment takes back the
- * properties the split dropped only when the decision keeps its `end`
- * fragment nowhere, since a surviving `end` fragment still holds them.
- * `joined` maps each new element to the left fragment it continues.
+ * one element when `join` says so. `joined` maps each new element to the
+ * left fragment it continues. A later fragment whose left fragment survives
+ * apart from it, here or in another block, keeps the split's output.
  */
 export const joinRejectedCuts = (
   nodes: readonly Node[],
   decision: Readonly<{
     /** Reads each fragment's insertions, its context's included, and writes the join's. */
     dependencies: Dependencies;
-    endSurvives: (cut: string) => boolean;
     /**
      * The keys the left fragment supplies when the fragments join, or null
      * when they stay apart: `left` as this list holds it, `original` the
@@ -112,7 +131,8 @@ export const joinRejectedCuts = (
       }>
     ) => ((key: string) => boolean) | null;
     rejected: (cut: CutTag) => boolean;
-    schema: CompiledEditorSchema | null;
+    /** Whether a cut's left fragment in another block stands when the cut decides. */
+    standsApart: (cut: CutTag) => boolean;
     survives: (node: Node) => boolean;
   }>
 ): Readonly<{ joined: ReadonlyMap<Node, Node>; nodes: readonly Node[] }> => {
@@ -137,22 +157,13 @@ export const joinRejectedCuts = (
       );
       const left = out[leftIndex];
 
-      if (!left || !decision.survives(left)) {
-        if (!decision.endSurvives(start.cut)) {
-          const right = current;
-
-          current = Object.assign(
-            {},
-            current,
-            Object.fromEntries(
-              Object.entries(start.kept ?? {}).filter(([key]) =>
-                isSplitOutput(decision.schema, right, key)
-              )
-            )
-          );
+      if (!left) {
+        if (decision.standsApart(start)) {
+          current = apartFrom(current, decision.dependencies);
         }
         continue;
       }
+      if (!decision.survives(left)) continue;
 
       const between = out.slice(leftIndex + 1);
       const original = joined.get(left) ?? left;
@@ -165,7 +176,10 @@ export const joinRejectedCuts = (
         right: current,
       });
 
-      if (!leftHolds) continue;
+      if (!leftHolds) {
+        current = apartFrom(current, decision.dependencies);
+        continue;
+      }
       out.splice(leftIndex);
       current = {
         ...joinedShell(

@@ -14,7 +14,10 @@ import {
   type JsonNode,
   PreparedTokenSlice,
 } from '../../core/change/tokens';
-import { isLeftOutDefault } from '../../core/default-storage';
+import {
+  elementSplitOutput,
+  isLeftOutDefault,
+} from '../../core/default-storage';
 import { composeRecordOps, deriveValue } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { rootOf } from '../ledger/roots';
@@ -25,6 +28,7 @@ import {
   type FormatTag,
   type KeyReading,
   keyTips,
+  type LayerValue,
   tipsWrittenValue,
   valueAfterLeaving,
 } from '../tree/layers';
@@ -94,10 +98,14 @@ const placed = (node: Node, pass: Pass, site: Site) => {
   });
 };
 
-export const keyReadingOf = (facts: ReviewFacts): KeyReading => ({
+export const keyReadingOf = (
+  facts: ReviewFacts,
+  schema: CompiledEditorSchema
+): KeyReading => ({
   accepted: (member) => isAccepted(facts, member),
   landed: facts.landed,
   outcome: (tag) => (outcomeOf(facts, tag) === 'reject' ? 'reject' : 'keep'),
+  output: elementSplitOutput(schema),
 });
 
 const settleFormats = (
@@ -105,7 +113,7 @@ const settleFormats = (
   tags: readonly FormatTag[],
   { facts, landed, loading, schema }: Pass
 ) => {
-  const reading = keyReadingOf(facts);
+  const reading = keyReadingOf(facts, schema);
   const dropped = new Set<FormatTag>();
   const props: Record<string, unknown> = {};
 
@@ -134,7 +142,7 @@ const settleFormats = (
       continue;
     }
 
-    const decision = decideKey(onKey, reading);
+    const decision = decideKey(onKey, reading, node[key] as LayerValue);
 
     if (decision.waits.length > 0) continue;
     for (const tag of decision.landed) {
@@ -383,7 +391,12 @@ export const repairKeys = (
       continue;
     }
 
-    const decided = valueAfterLeaving(wasOnKey, left, reading);
+    const decided = valueAfterLeaving(
+      wasOnKey,
+      left,
+      reading,
+      before[key] as LayerValue
+    );
 
     if (!decided) continue;
 

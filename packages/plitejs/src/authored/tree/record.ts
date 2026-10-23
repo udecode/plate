@@ -42,7 +42,6 @@ import type {
 } from '../../core/command-document';
 import type { ResolvedTokenEntry } from '../../core/resolved-token-cursor';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
-import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
@@ -3781,6 +3780,18 @@ class RootRecorder {
           suggested,
           claim
         );
+        const splitTags =
+          continued &&
+          rightCuts?.some((mark) => isCut(mark) && mark.side === 'start')
+            ? this.splitHistoryTags(
+                continued,
+                token.props,
+                marks,
+                dropped,
+                claim
+              )
+            : [];
+        const splitKeys = new Set(splitTags.map((tag) => tag.key));
 
         if (continued && fills.has(continued)) {
           fills.add(getDefined(stack.at(-1)));
@@ -3815,7 +3826,10 @@ class RootRecorder {
             'element',
             this.withMarks(token.props, [
               ...this.marks(token.props),
-              ...carried,
+              ...carried.filter(
+                (mark) => mark.kind !== 'format' || !splitKeys.has(mark.key)
+              ),
+              ...splitTags,
               ...(rightCuts ?? []),
               ...(suggested && !rightCuts
                 ? [
@@ -3892,9 +3906,8 @@ class RootRecorder {
   /**
    * A split of an inline element: the left fragment's `end` cuts move to the
    * new right fragment, and a suggested split adds a cut, its `end` on the
-   * left fragment and its `start` on the right, which keeps the properties
-   * the split dropped. Returns the right fragment's cut tags, or `null` when
-   * it gets none.
+   * left fragment and its `start` on the right. Returns the right fragment's
+   * cut tags, or `null` when it gets none.
    */
   private splitInline(
     continued: Context | undefined,
@@ -3926,12 +3939,6 @@ class RootRecorder {
           kind: 'split' as const,
         }
       : null;
-    const kept = Object.fromEntries(
-      Object.entries(continued.props).filter(
-        ([key]) => key !== AUTHORED_MARKS_KEY && !Object.hasOwn(rightProps, key)
-      )
-    ) as Readonly<Record<string, EditorJsonValue>>;
-
     this.ops.push({
       at: continued.contentFrom - 1,
       kind: 'props',
@@ -3941,18 +3948,48 @@ class RootRecorder {
       ]),
     });
 
-    return [
-      ...moved,
-      ...(cut
-        ? [
-            {
-              ...cut,
-              ...(Object.keys(kept).length > 0 ? { kept } : {}),
-              side: 'start' as const,
-            },
-          ]
-        : []),
-    ];
+    return [...moved, ...(cut ? [{ ...cut, side: 'start' as const }] : [])];
+  }
+
+  private splitHistoryTags(
+    source: Context,
+    output: Props,
+    marks: readonly AuthoredMark[],
+    dropped: ReadonlySet<string> | null,
+    claim: AuthoredMark
+  ): readonly FormatTag[] {
+    const keys = new Set([
+      ...Object.keys(source.props).filter(
+        (key) => key !== AUTHORED_MARKS_KEY && !Object.hasOwn(output, key)
+      ),
+      ...(dropped ?? []),
+    ]);
+
+    if (keys.size === 0) return [];
+    const { source: origin, standing, commitWriteId } = this.options;
+    const { at, author, change, inc } = claim;
+    const copies = marks.filter(
+      (mark): mark is FormatTag => mark.kind === 'format' && keys.has(mark.key)
+    );
+
+    return recordFormats({
+      keys,
+      next: output,
+      ownInsertion: false,
+      previous: source.props,
+      source: origin,
+      standing,
+      tags: copies,
+      writer: {
+        at,
+        author,
+        change,
+        ...(inc === undefined ? {} : { inc }),
+        // The split's tag sits over every copy, its own change's included.
+        isOwn: () => false,
+        commitWriteId,
+      },
+    }).map((tag) => (copies.includes(tag) ? tag : { ...tag, split: change }));
   }
 
   /**
