@@ -6,6 +6,7 @@ import {
   target,
 } from 'plitejs';
 
+import type { AuthoredResult } from '../../src/authored';
 import { createAuthoredPlugin } from '../../src/authored/authored';
 import { factsOf } from '../../src/authored/facts/facts';
 import { type LandedRecord, landedOf } from '../../src/authored/facts/records';
@@ -17,7 +18,7 @@ import {
   resolveAuthoredChildren,
 } from '../../src/authored/tree/resolve';
 import type { JsonNode } from '../../src/core/change/tokens';
-import { reviewRecords } from './authored';
+import { authoredTestApi, reviewRecords } from './authored';
 
 // The laws hold for the editor's canonical form, which decisions produce.
 export const schema = authoredResolveSchemaOf(
@@ -308,4 +309,194 @@ export const withCuts = (
           ],
         }
   );
+};
+
+const inline = () =>
+  schemaBuilder.content.any(
+    [schemaBuilder.content.text(), schemaBuilder.content.type('link')],
+    { default: 'text', min: 1 }
+  );
+const Links = defineEditorSchema('laws-links', {
+  elements: {
+    link: {
+      content: schemaBuilder.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+    paragraph: { content: inline() },
+  },
+  id: 'laws-links',
+  properties: [
+    // Stands for an element id, which a split drops from its new half.
+    schemaBuilder.elementProperty('ref', property.string(), {
+      split: 'drop',
+      target: target.type('link'),
+    }),
+  ],
+  root: schemaBuilder.content.type('paragraph', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
+/** The author of every Editing operation in a give-back script. */
+export const EDITING = 'edit';
+
+const linksEditor = (
+  initialValue: unknown,
+  author = 'laws',
+  intent: 'edit' | 'propose' = 'edit',
+  tags = 't'
+) => {
+  let count = 0;
+
+  return createEditor({
+    initialValue: initialValue as never,
+    plugins: [
+      Links,
+      createAuthoredPlugin({
+        authorId: author,
+        createChangeId: () => author,
+        createTagId: () => `${tags}.${(count += 1)}`,
+        intent,
+        now: () => 1,
+      }),
+    ],
+  });
+};
+
+export type LinkHalf = 'left' | 'right' | 'whole';
+
+/**
+ * One update of a give-back script, by a proposing change or by
+ * {@link EDITING}. Change `s0` proposes the one split.
+ */
+export type GivebackOp = Readonly<
+  | { by: string; kind: 'remove' }
+  | { by: string; kind: 'split' }
+  | { at: LinkHalf; by: string; kind: 'set'; value: string }
+  | { at: LinkHalf; by: string; kind: 'unset' }
+>;
+
+type LinkNode = Readonly<{
+  authored?: unknown;
+  children?: readonly LinkNode[];
+  text?: string;
+  type?: string;
+}>;
+type LinkValue = Readonly<{ children: readonly LinkNode[] }>;
+
+export const givebackStart = (): LinkValue => ({
+  children: [
+    {
+      children: [
+        { text: '' },
+        { children: [{ text: 'ab' }], ref: 'r1', type: 'link' } as LinkNode,
+        { text: '' },
+      ],
+      type: 'paragraph',
+    },
+  ],
+});
+
+const linkPathsOf = (value: LinkValue) =>
+  value.children.flatMap((block, at) =>
+    (block.children ?? []).flatMap((child, index) =>
+      child.type === 'link' ? [[at, index]] : []
+    )
+  );
+
+/**
+ * Records `op`, the script's operation at `index`, on `value` as its author
+ * writes it, in one update. Tag ids name the operation, since random ones
+ * would make a decision's result differ from run to run.
+ */
+export const recordGiveback = (
+  value: unknown,
+  op: GivebackOp,
+  index: number
+) => {
+  const editing = op.by === EDITING;
+  const editor = linksEditor(
+    value,
+    editing ? 'editor' : op.by,
+    editing ? 'edit' : 'propose',
+    `op${index}`
+  );
+  const links = linkPathsOf(value as LinkValue);
+
+  editor.update((tx) => {
+    if (op.kind === 'split') {
+      tx.nodes.split({
+        always: true,
+        at: { offset: 1, path: [...links[0], 0] },
+        match: (node) => (node as LinkNode).type === 'link',
+      });
+    } else if (op.kind === 'remove') {
+      tx.nodes.remove({ at: links[0] });
+    } else {
+      const at = op.at === 'right' ? links.at(-1) : links[0];
+      if (op.kind === 'set') tx.nodes.set({ ref: op.value }, { at });
+      else tx.nodes.unset('ref', { at });
+    }
+  });
+
+  return editor.read.value() as LinkValue;
+};
+
+const unmarked = (node: LinkNode): LinkNode => {
+  const { authored: _authored, children, ...rest } = node;
+
+  return children ? { ...rest, children: children.map(unmarked) } : rest;
+};
+
+/** What a reader sees: the children without any review mark. */
+export const givebackRead = (value: unknown) =>
+  (value as LinkValue).children.map(unmarked);
+
+/** Decides `decisions` in one call of the public `decide`. */
+export const decideGiveback = (
+  value: unknown,
+  decisions: ReadonlyMap<string, Verdict>
+) => {
+  const editor = linksEditor(value, 'zed');
+  const result = authoredTestApi(editor).decide(
+    (['accept', 'reject'] as const).flatMap((action) => {
+      const changes = [...decisions]
+        .filter(([, verdict]) => verdict === action)
+        .map(([change]) => change);
+
+      return changes.length > 0 ? [{ action, changes }] : [];
+    })
+  );
+
+  return { result, value: editor.read.value() as LinkValue };
+};
+
+/**
+ * Judges a public `decide` result as {@link admissionOf} judges a resolve: a
+ * wait on another pending change waits, and any other refusal is a failure.
+ */
+export const decisionAdmission = (
+  result: AuthoredResult,
+  decided: ReadonlyMap<string, Verdict>,
+  pending: readonly string[]
+): StepAdmission => {
+  if (result.status === 'applied' || result.status === 'unchanged') {
+    return { kind: 'settles' };
+  }
+  if (result.status !== 'blocked') {
+    return { kind: 'refused', reason: result.status };
+  }
+  const held = result.with.filter(
+    (blocker) => decided.has(blocker) || !pending.includes(blocker)
+  );
+
+  return held.length > 0
+    ? {
+        kind: 'refused',
+        reason: `waiting on ${held.join(', ')}, which is not another pending change`,
+      }
+    : { kind: 'waits' };
 };

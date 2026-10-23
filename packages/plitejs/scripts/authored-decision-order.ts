@@ -15,9 +15,17 @@ import {
   admissionOf,
   all,
   type Block2,
+  decideGiveback,
+  decisionAdmission,
+  EDITING,
+  type GivebackOp,
+  givebackRead,
+  givebackStart,
   LANDED,
+  type LinkHalf,
   quotesEditor,
   quotesSchema,
+  recordGiveback,
   resolveWithVerdicts,
   settleAsAdmission,
   type Verdict,
@@ -31,7 +39,12 @@ const BASELINE =
 const RULE = 'decision-order';
 const TOGETHER = 'decided-together';
 const OWNER = 'packages/plitejs/src/authored/tree/resolve.ts';
+const GIVEBACK_RULE = 'giveback-decision-order';
+const GIVEBACK_TOGETHER = 'giveback-decided-together';
+const GIVEBACK_OWNER = 'packages/plitejs/src/authored/tree/cuts.ts';
 const GATE = { blocks: 2, changes: 2, marks: 2 };
+const GIVEBACK_GATE = { changes: 2, edits: 0, ops: 3 };
+const FAMILIES = ['giveback', 'quotes'] as const;
 
 type Option =
   | 'align'
@@ -51,6 +64,7 @@ type Node = {
   type?: string;
 };
 type Failure = { detail: string; identity: string };
+type Family = (typeof FAMILIES)[number];
 
 const BOUNDARY: readonly Option[] = ['join', 'split'];
 const CONTENT: readonly Option[] = ['delete', 'insert'];
@@ -61,7 +75,9 @@ const stray = process.argv
   .slice(2)
   .filter(
     (arg) =>
-      !/^--(?:(?:blocks|changes|jobs|marks|together)=.*|init|lower)$/.test(arg)
+      !/^--(?:(?:blocks|changes|family|giveback-changes|giveback-edits|giveback-ops|giveback-script|jobs|marks|together)=.*|init|lower)$/.test(
+        arg
+      )
   );
 if (stray.length > 0) {
   console.error(
@@ -72,10 +88,10 @@ if (stray.length > 0) {
 
 const flag = (name: string) =>
   process.argv.find((arg) => arg.startsWith(`--${name}=`))?.split('=')[1];
-const wholeFlag = (name: string, fallback: number) => {
+const wholeFlag = (name: string, fallback: number, least = 1) => {
   const value = Number(flag(name) ?? fallback);
-  if (!Number.isInteger(value) || value < 1) {
-    console.error(`--${name} takes a whole number above 0.`);
+  if (!Number.isInteger(value) || value < least) {
+    console.error(`--${name} takes a whole number of at least ${least}.`);
     process.exit(2);
   }
   return value;
@@ -85,7 +101,29 @@ const bound = {
   changes: wholeFlag('changes', GATE.changes),
   marks: wholeFlag('marks', GATE.marks),
 };
-const atGate = isDeepStrictEqual(bound, GATE);
+const givebackBound = {
+  changes: wholeFlag('giveback-changes', GIVEBACK_GATE.changes),
+  edits: wholeFlag('giveback-edits', GIVEBACK_GATE.edits, 0),
+  ops: wholeFlag('giveback-ops', GIVEBACK_GATE.ops, 0),
+};
+if (givebackBound.edits > 1) {
+  console.error('--giveback-edits takes 0 or 1.');
+  process.exit(2);
+}
+const family = flag('family');
+if (family !== undefined && !FAMILIES.includes(family as Family)) {
+  console.error(`--family takes ${FAMILIES.join(' or ')}.`);
+  process.exit(2);
+}
+const runs = (name: Family) => family === undefined || family === name;
+// Takes a script's name as a failure prints it, to rerun that script alone
+// within the bound.
+const onlyScript = flag('giveback-script');
+const atGate =
+  family === undefined &&
+  onlyScript === undefined &&
+  isDeepStrictEqual(bound, GATE) &&
+  isDeepStrictEqual(givebackBound, GIVEBACK_GATE);
 
 function* shapes(): Generator<number[]> {
   for (let count = 1; count <= bound.blocks; count++) {
@@ -263,8 +301,17 @@ const describe = (node: Node): string => {
   );
   const own = marks.length > 0 ? `{${marks.join(', ')}}` : '';
   if (node.text !== undefined) return `${JSON.stringify(node.text)}${own}`;
-  const align = node.align ? `[align ${node.align}]` : '';
-  return `${node.type}${align}${own}(${(node.children ?? []).map(describe).join(' ')})`;
+  const {
+    authored: _marks,
+    children = [],
+    text: _text,
+    type,
+    ...stored
+  } = node;
+  const props = Object.entries(stored)
+    .map(([key, value]) => `[${key} ${value}]`)
+    .join('');
+  return `${type}${props}${own}(${children.map(describe).join(' ')})`;
 };
 const story = (nodes: readonly unknown[]) =>
   (nodes as Node[]).map(describe).join(' ');
@@ -289,14 +336,39 @@ const normalize = (generated: readonly Node[]) => {
   }
 };
 
-type Outcome =
-  | Readonly<{
-      children: readonly JsonNode[];
-      kind: 'settled';
-      landed: readonly LandedRecord[];
-    }>
+type Outcome<State> =
   | Readonly<{ kind: 'refused'; reason: string }>
+  | Readonly<{ kind: 'settled'; state: State }>
   | Readonly<{ kind: 'waits' }>;
+
+/**
+ * One document's decisions: `step` decides a set of verdicts in one call on
+ * the state the earlier calls left, and `read` is what deciding in turn and
+ * deciding at once must agree on.
+ */
+type Walk<State> = Readonly<{
+  name: string;
+  pending: readonly string[];
+  read: (state: State) => Readonly<{ seen: unknown; shown: string }>;
+  /**
+   * A key two states share only when every later step gives both the same
+   * outcome, so an order that reaches a state another order reached is not
+   * walked again.
+   */
+  same?: (state: State) => string;
+  start: State;
+  step: (
+    state: State,
+    decided: ReadonlyMap<string, Verdict>,
+    deciding: ReadonlyMap<string, Verdict>
+  ) => Outcome<State>;
+}>;
+
+type Reached<State> = Readonly<{
+  decided: ReadonlyMap<string, Verdict>;
+  order: readonly string[];
+  state: State;
+}>;
 
 const keyOf = (decisions: ReadonlyMap<string, Verdict>) =>
   [...decisions]
@@ -316,62 +388,79 @@ function* verdictSets(changes: readonly string[]) {
   }
 }
 
-const explore = (generated: readonly Node[], document: readonly JsonNode[]) => {
+const within = (
+  part: ReadonlyMap<string, Verdict>,
+  whole: ReadonlyMap<string, Verdict>
+) => [...part].every(([change, verdict]) => whole.get(change) === verdict);
+
+const explore = <State>(walk: Walk<State>) => {
   const failures: Failure[] = [];
-  const pending = changesIn(document as Node[]);
-  const outcomeOf = (
-    result: AuthoredResolution,
-    decided: ReadonlyMap<string, Verdict>,
-    deciding: ReadonlyMap<string, Verdict>,
-    landed: readonly LandedRecord[]
-  ): Outcome => {
-    const admission = admissionOf(result, decided, deciding, pending);
-    if (admission.kind !== 'settles') return admission;
-    const now = new Map([...decided, ...deciding]);
-    return {
-      kind: 'settled',
-      ...settleAsAdmission(now, result, landed, quotesSchema),
-    };
-  };
-  const atOnce = new Map<string, Outcome>();
-  const reached = new Set<string>();
+  const { pending } = walk;
+  const atOnce = new Map<string, Outcome<State>>();
+  // Each set of verdicts some calls reached, with each distinct state it
+  // reached and the first order that reached it.
+  const reached = new Map<string, Map<string, Reached<State>>>();
+  const walked = new Map<string, boolean>();
   let compared = 0;
   const atOnceOf = (decisions: ReadonlyMap<string, Verdict>) => {
     const key = keyOf(decisions);
     const cached = atOnce.get(key);
     if (cached) return cached;
-    const resolved = resolveWithVerdicts(
-      new Map(),
-      document,
-      all(decisions),
-      quotesSchema
-    );
-    const outcome = outcomeOf(resolved, new Map(), decisions, LANDED);
+    const outcome = walk.step(walk.start, new Map(), decisions);
     atOnce.set(key, outcome);
     return outcome;
+  };
+  const reach = (
+    decided: ReadonlyMap<string, Verdict>,
+    order: readonly string[],
+    state: State
+  ) => {
+    const key = keyOf(decided);
+    const states = reached.get(key) ?? new Map<string, Reached<State>>();
+    reached.set(key, states);
+    const same = walk.same?.(state) ?? JSON.stringify(state);
+    if (!states.has(same)) states.set(same, { decided, order, state });
+  };
+  // Whether a state that more than one call reached reads as deciding its
+  // verdicts at once does; a call that waits there leaves nothing to compare.
+  const agrees = (
+    decided: ReadonlyMap<string, Verdict>,
+    identity: string,
+    state: State
+  ) => {
+    const expected = atOnceOf(decided);
+    if (expected.kind === 'waits') return true;
+    compared += 1;
+    const actual = walk.read(state);
+    const told = `  one at a time: ${actual.shown}`;
+    if (expected.kind === 'refused') {
+      failures.push({
+        detail: `${told}\n  all at once:   ${expected.reason}`,
+        identity,
+      });
+      return false;
+    }
+    const wanted = walk.read(expected.state);
+    if (isDeepStrictEqual(actual.seen, wanted.seen)) return true;
+    failures.push({
+      detail: `${told}\n  all at once:   ${wanted.shown}`,
+      identity,
+    });
+    return false;
   };
   const descend = (
     decided: ReadonlyMap<string, Verdict>,
     order: readonly string[],
-    stepped: readonly JsonNode[],
-    landed: readonly LandedRecord[],
+    state: State,
     reporting: boolean
   ) => {
     for (const change of pending) {
       if (decided.has(change)) continue;
       for (const verdict of ['accept', 'reject'] as const) {
-        const deciding = new Map([[change, verdict]]);
-        const step = resolveWithVerdicts(
-          decided,
-          stepped,
-          all(deciding),
-          quotesSchema,
-          landed
-        );
         const steps = [...order, `${verdict} ${change}`];
-        const identity = `${story(generated)}: ${steps.join(', ')}`;
+        const identity = `${walk.name}: ${steps.join(', ')}`;
         const now = new Map(decided).set(change, verdict);
-        const outcome = outcomeOf(step, decided, deciding, landed);
+        const outcome = walk.step(state, decided, new Map([[change, verdict]]));
         if (outcome.kind === 'waits') continue;
         if (outcome.kind === 'refused') {
           if (reporting) {
@@ -382,75 +471,291 @@ const explore = (generated: readonly Node[], document: readonly JsonNode[]) => {
           }
           continue;
         }
-        reached.add(keyOf(now));
-        const next = (reports: boolean) =>
-          descend(now, steps, outcome.children, outcome.landed, reports);
+        reach(now, steps, outcome.state);
+        if (walk.same) {
+          const same = `${keyOf(now)} ${walk.same(outcome.state)}`;
+          if (walked.get(same) || (walked.has(same) && !reporting)) continue;
+          walked.set(same, reporting);
+        }
         const decidesAlone = order.length === 0;
-        if (!reporting || decidesAlone) {
-          next(reporting);
-          continue;
-        }
-        const expected = atOnceOf(now);
-        if (expected.kind === 'waits') {
-          next(true);
-          continue;
-        }
-        compared += 1;
-        const actual = writesOf(outcome.landed, outcome.children);
-        const told = `  one at a time: ${story(outcome.children)} landed [${actual}]`;
-        if (expected.kind === 'refused') {
-          failures.push({
-            detail: `${told}\n  all at once:   ${expected.reason}`,
-            identity,
-          });
-          next(false);
-          continue;
-        }
-        const wanted = writesOf(expected.landed, expected.children);
-        if (
-          !isDeepStrictEqual(
-            { children: outcome.children, landed: actual },
-            { children: expected.children, landed: wanted }
-          )
-        ) {
-          failures.push({
-            detail: `${told}\n  all at once:   ${story(expected.children)} landed [${wanted}]`,
-            identity,
-          });
-          next(false);
-          continue;
-        }
-        next(true);
+        descend(
+          now,
+          steps,
+          outcome.state,
+          reporting && (decidesAlone || agrees(now, identity, outcome.state))
+        );
       }
     }
   };
-  descend(new Map(), [], document, LANDED, true);
+  reach(new Map(), [], walk.start);
+  descend(new Map(), [], walk.start, true);
 
+  // A set of verdicts no order of single steps reaches may settle when the
+  // verdicts it adds to a reached set are decided in one call. That call is a
+  // step too, and the walk goes on from its result, so a set behind it is
+  // checked as well. The smallest sets are tried first, from the largest
+  // reached set inside them, so each coupled set reported is a minimal one.
   const together: Array<[string, string]> = [];
-  for (const decisions of verdictSets(pending)) {
-    if (reached.has(keyOf(decisions))) continue;
-    const identity = `${story(generated)}: ${keyOf(decisions)}`;
-    const outcome = atOnceOf(decisions);
-    if (outcome.kind === 'settled') {
+  const bySize = [...verdictSets(pending)].sort((a, b) => a.size - b.size);
+  for (const decisions of bySize) {
+    const key = keyOf(decisions);
+    if (reached.has(key)) continue;
+    const from = [...reached.values()]
+      .flatMap((states) => [...states.values()])
+      .filter(
+        ({ decided }) =>
+          decisions.size - decided.size >= 2 && within(decided, decisions)
+      )
+      .sort((a, b) => b.decided.size - a.decided.size);
+    for (const { decided, order, state } of from) {
+      const deciding = new Map(
+        [...decisions].filter(([change]) => !decided.has(change))
+      );
+      const outcome =
+        decided.size === 0
+          ? atOnceOf(decisions)
+          : walk.step(state, decided, deciding);
+      if (outcome.kind !== 'settled') continue;
       together.push([
-        identity,
-        `${story(outcome.children)} landed [${writesOf(outcome.landed, outcome.children)}]`,
+        decided.size === 0
+          ? `${walk.name}: ${key}`
+          : `${walk.name}: ${keyOf(decided)}, then (${keyOf(deciding)})`,
+        walk.read(outcome.state).shown,
       ]);
+      const steps = [...order, `(${keyOf(deciding)})`];
+      reach(decisions, steps, outcome.state);
+      descend(
+        decisions,
+        steps,
+        outcome.state,
+        decided.size === 0 ||
+          agrees(decisions, `${walk.name}: ${steps.join(', ')}`, outcome.state)
+      );
+      break;
     }
+    if (reached.has(key)) continue;
+    const outcome = atOnceOf(decisions);
     if (outcome.kind === 'refused') {
       failures.push({
         detail: `  all at once:   ${outcome.reason}, and no order reaches these verdicts`,
-        identity: `${identity} at once`,
+        identity: `${walk.name}: ${key} at once`,
       });
     }
   }
   return {
     compared,
     failures,
-    idle: pending.length > 1 && compared === 0,
+    idle: pending.length > 1 && compared === 0 ? [walk.name] : [],
     together,
   };
 };
+
+type QuotesState = Readonly<{
+  children: readonly JsonNode[];
+  landed: readonly LandedRecord[];
+}>;
+
+const quotesWalk = (
+  generated: readonly Node[],
+  document: readonly JsonNode[]
+): Walk<QuotesState> => {
+  const pending = changesIn(document as Node[]);
+  const outcomeOf = (
+    result: AuthoredResolution,
+    decided: ReadonlyMap<string, Verdict>,
+    deciding: ReadonlyMap<string, Verdict>,
+    landed: readonly LandedRecord[]
+  ): Outcome<QuotesState> => {
+    const admission = admissionOf(result, decided, deciding, pending);
+    if (admission.kind !== 'settles') return admission;
+    const now = new Map([...decided, ...deciding]);
+    return {
+      kind: 'settled',
+      state: settleAsAdmission(now, result, landed, quotesSchema),
+    };
+  };
+  return {
+    name: story(generated),
+    pending,
+    read: ({ children, landed }) => {
+      const writes = writesOf(landed, children);
+      return {
+        seen: { children, landed: writes },
+        shown: `${story(children)} landed [${writes}]`,
+      };
+    },
+    start: { children: document, landed: LANDED },
+    step: (state, decided, deciding) =>
+      outcomeOf(
+        resolveWithVerdicts(
+          decided,
+          state.children,
+          all(deciding),
+          quotesSchema,
+          state.landed
+        ),
+        decided,
+        deciding,
+        state.landed
+      ),
+  };
+};
+
+// Every give-back script edits the whole link before the split and either
+// half after it. An operation besides the split is by a proposing change,
+// labeled by first use as in `pickings`, or by the one Editing author; after
+// the split, `s0` may also set or unset a half, as its author does when they
+// keep editing inside their own suggestion. A set writes a fresh value, and
+// an unset runs only where the stored ref is set, since the split drops it
+// from the right half.
+function* scripts(): Generator<GivebackOp[]> {
+  const ops: GivebackOp[] = [];
+  function* extend(
+    stored: ReadonlyMap<LinkHalf, boolean>,
+    removed: boolean,
+    fresh: number
+  ): Generator<GivebackOp[]> {
+    const split = ops.some((op) => op.kind === 'split');
+    if (split) yield [...ops];
+    function* run(op: GivebackOp, next: ReadonlyMap<LinkHalf, boolean>) {
+      ops.push(op);
+      yield* extend(
+        next,
+        removed || op.kind === 'remove',
+        op.by === `s${fresh + 1}` ? fresh + 1 : fresh
+      );
+      ops.pop();
+    }
+    if (!split) {
+      yield* run(
+        { by: 's0', kind: 'split' },
+        new Map([
+          ['left', stored.get('whole') ?? false],
+          ['right', false],
+        ])
+      );
+    }
+    if (ops.length - (split ? 1 : 0) === givebackBound.ops) return;
+    const authors = [
+      ...(split ? ['s0'] : []),
+      ...Array.from(
+        { length: Math.min(fresh + 1, givebackBound.changes) },
+        (_, at) => `s${at + 1}`
+      ),
+      ...(givebackBound.edits === 1 ? [EDITING] : []),
+    ];
+    const places: readonly LinkHalf[] = split
+      ? removed
+        ? ['right']
+        : ['left', 'right']
+      : ['whole'];
+    for (const by of authors) {
+      for (const at of places) {
+        yield* run(
+          {
+            at,
+            by,
+            kind: 'set',
+            value: `v${ops.filter((op) => op.kind === 'set').length + 1}`,
+          },
+          new Map(stored).set(at, true)
+        );
+        if (stored.get(at)) {
+          yield* run({ at, by, kind: 'unset' }, new Map(stored).set(at, false));
+        }
+      }
+      if (split && !removed && by !== 's0') {
+        yield* run({ by, kind: 'remove' }, stored);
+      }
+    }
+  }
+  yield* extend(new Map([['whole', true]]), false, 0);
+}
+
+const opStory = (op: GivebackOp) => {
+  const by = op.by === EDITING ? 'editing' : op.by;
+  if (op.kind === 'split') return `${by} splits`;
+  if (op.kind === 'remove') return `${by} removes left`;
+  if (op.kind === 'unset') return `${by} unsets ${op.at}`;
+  return `${by} sets ${op.at} ${op.value}`;
+};
+
+const givebackWalk = (
+  script: readonly GivebackOp[],
+  start: unknown
+): Walk<unknown> => {
+  const proposers = new Set(
+    script.flatMap((op) => (op.by === EDITING ? [] : [op.by]))
+  );
+  const pending = changesIn((start as { children: Node[] }).children).filter(
+    (change) => proposers.has(change)
+  );
+  const outcomeOf = (
+    { result, value }: ReturnType<typeof decideGiveback>,
+    decided: ReadonlyMap<string, Verdict>
+  ): Outcome<unknown> => {
+    const admission = decisionAdmission(result, decided, pending);
+    return admission.kind === 'settles'
+      ? { kind: 'settled', state: value }
+      : admission;
+  };
+  return {
+    name: script.map(opStory).join(', '),
+    pending,
+    read: (state) => {
+      const seen = givebackRead(state);
+      return { seen, shown: story(seen) };
+    },
+    // Each call stores a fresh random token that only groups the verdicts it
+    // decided, so states that differ in tokens alone decide alike.
+    same: (state) =>
+      JSON.stringify(state).replaceAll(/[0-9a-f]{8}:\d+/g, 'decision'),
+    start,
+    step: (state, decided, deciding) =>
+      outcomeOf(decideGiveback(state, deciding), decided),
+  };
+};
+
+// Scripts share prefixes, so a worker records each prefix once.
+const prefixes = new Map<string, unknown>();
+
+// A script whose operation throws, or leaves the children and their marks as
+// they were, models a write recording never makes.
+const recorded = (script: readonly GivebackOp[]) => {
+  let value: unknown = givebackStart();
+  for (const [at, op] of script.entries()) {
+    const prefix = JSON.stringify(script.slice(0, at + 1));
+    const known = prefixes.get(prefix);
+    if (known !== undefined) {
+      value = known;
+      continue;
+    }
+    let next: unknown;
+    try {
+      next = recordGiveback(value, op, at);
+    } catch (error) {
+      return `${opStory(op)} throws ${(error as Error).message}`;
+    }
+    if (
+      isDeepStrictEqual(
+        (next as { children: unknown }).children,
+        (value as { children: unknown }).children
+      )
+    ) {
+      return `${opStory(op)} changes nothing`;
+    }
+    prefixes.set(prefix, next);
+    value = next;
+  }
+  return { value };
+};
+
+const summed = (results: ReadonlyArray<ReturnType<typeof explore>>) => ({
+  compared: results.reduce((sum, result) => sum + result.compared, 0),
+  failures: results.flatMap((result) => result.failures),
+  idle: results.flatMap((result) => result.idle),
+  together: results.flatMap((result) => result.together),
+});
 
 const shard = process.env.AUTHORED_ORDER_SHARD;
 
@@ -463,19 +768,29 @@ if (shard === 'normalize') {
   );
 } else if (shard === 'explore') {
   const items: Array<[Node[], JsonNode[]]> = JSON.parse(await Bun.stdin.text());
-  const results = items.map(([generated, document]) =>
-    explore(generated, document)
-  );
   console.log(
     JSON.stringify({
-      compared: results.reduce((sum, result) => sum + result.compared, 0),
-      failures: results.flatMap((result) => result.failures),
-      idle: results.filter((result) => result.idle).length,
-      together: results.flatMap((result) => result.together),
+      ...summed(
+        items.map(([generated, document]) =>
+          explore(quotesWalk(generated, document))
+        )
+      ),
+      unchecked: [],
     })
   );
+} else if (shard === 'giveback') {
+  const items: GivebackOp[][] = JSON.parse(await Bun.stdin.text());
+  const unchecked: string[] = [];
+  const results = items.flatMap((script) => {
+    const outcome = recorded(script);
+    if (typeof outcome === 'string') {
+      unchecked.push(outcome);
+      return [];
+    }
+    return [explore(givebackWalk(script, outcome.value))];
+  });
+  console.log(JSON.stringify({ ...summed(results), unchecked }));
 } else {
-  const started = performance.now();
   const jobs = wholeFlag('jobs', availableParallelism());
   const fanOut = async <T>(role: string, items: readonly unknown[]) =>
     Promise.all(
@@ -493,72 +808,133 @@ if (shard === 'normalize') {
         );
         const output = await new Response(child.stdout).text();
         if ((await child.exited) !== 0) {
-          throw new Error(`${role} shard ${index} exited ${child.exitCode}`);
+          throw new Error(
+            `${role} shard ${index} exited ${child.exitCode ?? child.signalCode}`
+          );
         }
         return JSON.parse(output.trim().split('\n').at(-1) ?? '') as T;
       })
     );
+  type Explored = ReturnType<typeof summed> & { unchecked: string[] };
+  const gathered = (explored: readonly Explored[]) => {
+    const settled = explored
+      .flatMap((result) => result.together)
+      .sort(([a], [b]) => a.localeCompare(b));
+    return {
+      compared: explored.reduce((sum, result) => sum + result.compared, 0),
+      failures: explored
+        .flatMap((result) => result.failures)
+        .sort((a, b) => a.identity.localeCompare(b.identity)),
+      idle: explored.flatMap((result) => result.idle),
+      settled,
+      together: settled.map(([identity]) => identity),
+      unchecked: explored.flatMap((result) => result.unchecked),
+    };
+  };
+  const seconds = (started: number) =>
+    Math.round((performance.now() - started) / 100) / 10;
+  const unchecked: string[] = [];
+  const found = new Map<Family, ReturnType<typeof gathered>>();
 
-  const generated = generate();
-  const shards = await fanOut<Array<[number, string | null]>>(
-    'normalize',
-    generated.map((document, index) => [index, document])
-  );
-  const normalized = shards.flat().sort(([a], [b]) => a - b);
-  const unique = new Map<string, [Node[], JsonNode[]]>();
-  for (const [index, document] of normalized) {
-    if (document !== null && !unique.has(document)) {
-      unique.set(document, [generated[index] as Node[], JSON.parse(document)]);
+  if (runs('quotes')) {
+    const started = performance.now();
+    const generated = generate();
+    const shards = await fanOut<Array<[number, string | null]>>(
+      'normalize',
+      generated.map((document, index) => [index, document])
+    );
+    const normalized = shards.flat().sort(([a], [b]) => a - b);
+    const unique = new Map<string, [Node[], JsonNode[]]>();
+    for (const [index, document] of normalized) {
+      if (document !== null && !unique.has(document)) {
+        unique.set(document, [
+          generated[index] as Node[],
+          JSON.parse(document),
+        ]);
+      }
+    }
+    const result = gathered(
+      await fanOut<Explored>('explore', [...unique.values()])
+    );
+    found.set('quotes', result);
+    console.info(
+      JSON.stringify({
+        bound,
+        compared: result.compared,
+        documents: unique.size,
+        failures: result.failures.length,
+        family: 'quotes',
+        generated: generated.length,
+        seconds: seconds(started),
+        together: result.together.length,
+      })
+    );
+    const rejected = normalized.filter(([, document]) => document === null);
+    const merged = normalized.length - rejected.length - unique.size;
+    if (
+      rejected.length > 0 ||
+      merged > 0 ||
+      normalized.length < generated.length ||
+      result.idle.length > 0
+    ) {
+      unchecked.push(
+        `Of ${generated.length} generated documents, ${normalized.length} came back from the workers, ${rejected.length} fail to load in the quotes editor, ${merged} normalize to a document another one gives, and ${result.idle.length} with two or more changes have no order the script could compare. Either the generator builds a shape recording never writes, or the editor or resolver now refuses or rewrites documents and decisions it accepted, which leaves the property unchecked on those documents.`
+      );
     }
   }
-  const explored = await fanOut<{
-    compared: number;
-    failures: Failure[];
-    idle: number;
-    together: Array<[string, string]>;
-  }>('explore', [...unique.values()]);
-  const failures = explored
-    .flatMap((result) => result.failures)
-    .sort((a, b) => a.identity.localeCompare(b.identity));
-  const settled = explored
-    .flatMap((result) => result.together)
-    .sort(([a], [b]) => a.localeCompare(b));
-  const together = settled.map(([identity]) => identity);
-  const compared = explored.reduce((sum, result) => sum + result.compared, 0);
-  const idle = explored.reduce((sum, result) => sum + result.idle, 0);
-  const rejected = normalized.filter(([, document]) => document === null);
-  const merged = normalized.length - rejected.length - unique.size;
-  console.info(
-    JSON.stringify({
-      bound,
-      compared,
-      documents: unique.size,
-      failures: failures.length,
-      generated: generated.length,
-      seconds: Math.round((performance.now() - started) / 100) / 10,
-      together: together.length,
-    })
-  );
+
+  if (runs('giveback')) {
+    const started = performance.now();
+    const written = [...scripts()].filter(
+      (script) =>
+        onlyScript === undefined ||
+        script.map(opStory).join(', ') === onlyScript
+    );
+    if (written.length === 0) {
+      console.error(`No give-back script in the bound reads ${onlyScript}.`);
+      process.exit(2);
+    }
+    const result = gathered(await fanOut<Explored>('giveback', written));
+    found.set('giveback', result);
+    console.info(
+      JSON.stringify({
+        bound: givebackBound,
+        compared: result.compared,
+        documents: written.length - result.unchecked.length,
+        failures: result.failures.length,
+        family: 'giveback',
+        idle: result.idle.length,
+        seconds: seconds(started),
+        together: result.together.length,
+      })
+    );
+    // Unlike a quotes document, a script can leave no order to compare: two
+    // changes that each wait on the other settle only in one call, so their
+    // coupled set is all that checks it.
+    if (result.unchecked.length > 0) {
+      unchecked.push(
+        `Of ${written.length} give-back scripts, ${result.unchecked.length} do not record, such as ${result.unchecked[0]}. The generator writes an operation recording never makes, which leaves the property unchecked on those scripts.`
+      );
+    }
+  }
+
+  if (unchecked.length > 0) {
+    for (const reason of unchecked) console.error(reason);
+    process.exit(1);
+  }
+
   const togetherFile = flag('together');
   if (togetherFile) {
     writeFileSync(
       togetherFile,
-      settled.map(([identity, result]) => `${identity} => ${result}\n`).join('')
+      [...found.values()]
+        .flatMap((result) => result.settled)
+        .map(([identity, result]) => `${identity} => ${result}\n`)
+        .join('')
     );
   }
 
-  if (
-    rejected.length > 0 ||
-    merged > 0 ||
-    normalized.length < generated.length ||
-    idle > 0
-  ) {
-    console.error(
-      `Of ${generated.length} generated documents, ${normalized.length} came back from the workers, ${rejected.length} fail to load in the quotes editor, ${merged} normalize to a document another one gives, and ${idle} with two or more changes have no order the script could compare. Either the generator builds a shape recording never writes, or the editor or resolver now refuses or rewrites documents and decisions it accepted, which leaves the property unchecked on those documents.`
-    );
-    process.exit(1);
-  }
-
+  const failures = [...found.values()].flatMap((result) => result.failures);
   const show = (identities: ReadonlySet<string>) => {
     for (const failure of failures.filter((item) =>
       identities.has(item.identity)
@@ -566,14 +942,23 @@ if (shard === 'normalize') {
       console.error(`\n${failure.identity}\n${failure.detail}`);
     }
   };
+  const showTogether = (identities: readonly string[]) => {
+    for (const identity of identities) {
+      console.error(
+        `\n${identity}\n  settles when decided together, while every order of single steps waits`
+      );
+    }
+  };
+  const rules = [
+    ['quotes', RULE, TOGETHER, OWNER],
+    ['giveback', GIVEBACK_RULE, GIVEBACK_TOGETHER, GIVEBACK_OWNER],
+  ] as const;
 
   if (atGate) {
-    const found = {
-      [RULE]: { [OWNER]: failures.map((failure) => failure.identity) },
-      [TOGETHER]: { [OWNER]: together },
-    };
     const known = readBaseline(BASELINE);
-    const listed = new Set<string>(known[RULE]?.[OWNER]);
+    const listed = new Set(
+      rules.flatMap(([, rule, , owner]) => known[rule]?.[owner] ?? [])
+    );
     show(
       new Set(
         failures
@@ -581,23 +966,35 @@ if (shard === 'normalize') {
           .filter((identity) => !listed.has(identity))
       )
     );
-    const coupled = new Set<string>(known[TOGETHER]?.[OWNER]);
-    for (const identity of together.filter((item) => !coupled.has(item))) {
-      console.error(
-        `\n${identity}\n  settles when decided together, while every order of single steps waits`
+    for (const [name, , together, owner] of rules) {
+      const coupled = new Set<string>(known[together]?.[owner]);
+      showTogether(
+        (found.get(name)?.together ?? []).filter((item) => !coupled.has(item))
       );
     }
     process.exitCode = enforceBaseline({
       file: BASELINE,
-      found,
+      found: Object.fromEntries(
+        rules.flatMap(([name, rule, together, owner]) => [
+          [
+            rule,
+            {
+              [owner]:
+                found.get(name)?.failures.map((failure) => failure.identity) ??
+                [],
+            },
+          ],
+          [together, { [owner]: found.get(name)?.together ?? [] }],
+        ])
+      ),
       lowerCommand: 'pnpm check:authored-order --lower',
       mode: process.argv.includes('--lower')
         ? 'lower'
         : process.argv.includes('--init')
           ? 'init'
           : 'check',
-      newFindingsHelp: `A ${RULE} entry decides its changes one at a time and gets another document than deciding them at once, or the resolver refuses a step no other pending change holds. A ${TOGETHER} entry settles only when its verdicts are decided at once, so no order checks it, and a resolver change that adds such a wait can hide a ${RULE} failure. Fix the resolver; the baseline never grows.`,
-      rules: [RULE, TOGETHER],
+      newFindingsHelp: `A ${RULE} or ${GIVEBACK_RULE} entry decides its changes one at a time and gets another document than deciding them at once, or the resolver refuses a step no other pending change holds. A ${TOGETHER} or ${GIVEBACK_TOGETHER} entry settles only when its verdicts are decided at once, so no order checks it, and a resolver change that adds such a wait can hide a decision-order failure. Fix the resolver; the baseline never grows.`,
+      rules: rules.flatMap(([, rule, together]) => [rule, together]),
     });
   } else {
     show(new Set(failures.map((failure) => failure.identity)));
