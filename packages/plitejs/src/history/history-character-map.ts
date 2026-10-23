@@ -6,7 +6,10 @@ import {
 } from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
 import { joinsOf } from '../core/change/join';
-import { getDocumentChangeRelocations } from '../core/change/mapping';
+import {
+  type DocumentChangeRelocation,
+  getDocumentChangeRelocations,
+} from '../core/change/mapping';
 import { RootChange } from '../core/change/root-change';
 import {
   isTextNode,
@@ -179,6 +182,7 @@ export const createCharacterCorrespondence = (
   const source = valueRootIndex(before, root);
   const target = valueRootIndex(after, root);
   let joinedLines: ReadonlySet<number> | undefined;
+  let relocations: readonly DocumentChangeRelocation[] | undefined;
   let retained: readonly Retained[] | undefined;
   const joinedChange = (line: Readonly<{ from: number }>) => {
     const rootChange = getInternalDocumentRootChange(change, root);
@@ -218,12 +222,13 @@ export const createCharacterCorrespondence = (
     let nextPath =
       mapped === null ? undefined : target.nodeStartingAt(mapped)?.path;
     if (!nextPath) {
-      const relocation = getDocumentChangeRelocations(
+      relocations ??= getDocumentChangeRelocations(
         change,
         root,
         source,
         target
-      ).find(
+      );
+      const relocation = relocations.find(
         (move) =>
           move.path.length <= parentPath.length &&
           move.path.every((part, at) => part === parentPath[at])
