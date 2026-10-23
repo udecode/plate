@@ -11,7 +11,7 @@ review_upstreams: ['../slate@945a484df2497e4c448b33f417b0de2a49840032', '../lexi
 # A starting document no longer types the editor
 
 Status: executed: landed on next
-Page: https://claude.ai/artifact/51oK1H4weY4guyk7U6FSfN
+Page: https://claude.ai/artifact/3MJBaiJVbDRUTqTAFNfsoH
 Playbook: plan
 
 Pursue: `createEditor` widens a literal or typed `initialValue`. Every Plate editor's document type is `Value`, and the starting document is only checked against it. The plain Plate `Editor` type also means `Value`, not `any`. The state view does not become assignable across `V`. The strongest reason is that the starting document's type is false after the first edit. An editor seeded with `'a'` still claims `'a'` and one child after the user types more text (probe lines 74-79), and nothing stops the write. Making `Editor` covariant would let more helpers accept that false type, and about ten transaction methods would have to stop taking `V` as input. The Plate vision already says raw plugin tuples keep "editor-wide `Value` broad" (`docs/vision/plate.md:279-280`), and the 2026-08-02 value-types plan already cut caller value generics from the factories (slice 4, `docs/plans/2026-08-02-schema-derived-editor-value-types.md:131`). Today's overloads bring them back. This page answers suggested task `t_f51d6de6` and judges the question under the `editor-options` review scope.
@@ -237,6 +237,7 @@ No live Plate editor has an exact document type without a cast. A helper that ta
 | Exact document type from the generator | Nothing new; apps keep using the generated types in their own type declarations (safe) | Let the plugin list carry the generated document type into the editor | generated value | small |
 | Registry test that reads a table node | Read the node with a type check (safe) | Add a type to the starting document | annotate seed | detail |
 | Build once the plan panel passes | Build in this run (safe) | Stop at the plan | hold | detail |
+| This plan's page | A new page, https://claude.ai/artifact/3MJBaiJVbDRUTqTAFNfsoH, because the old one, https://claude.ai/artifact/51oK1H4weY4guyk7U6FSfN, no longer opens (safe) | Delete the new page and leave the plan without one | drop new page | detail |
 
 ## Evidence
 
