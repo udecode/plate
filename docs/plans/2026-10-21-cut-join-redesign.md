@@ -1,6 +1,6 @@
 # Drop a decided value that its retyped block can no longer hold
 
-Status: partial: T11 waits on the storage plan's give-back
+Status: executed: T11 passes since the give-back landed in `e1922aa309`
 Topic: cut-join
 Playbook: bug-fix
 
@@ -90,7 +90,7 @@ The plan panel's critical findings all trace to one premise. The editor leaves a
 ## Steps
 
 - [x] Slice 1a: a decided place holds only its own values. Proof: rows T17 to T20, T26, T28 to T30, T34, T36, T37, T41 and T42 pass and no other row changes, T32, T33, T39 and T40 pass as on next, the G1 probes read as next's apart from `retype-next`'s planned result, each new suite test fails on next or on the slice before its fix, a mutant of the settle's placement, its rewritten check, resolve's retype gate, its descent and the text parent fails a test, then the plitejs suite, typecheck and lint, a push panel on the diff and land.mjs. No mutant covers the `root` argument or the undeclared-type guard.
-- [ ] Storage, joins and give-back. Moved to the storage plan, which landed storage and joins; its give-back waits on its next plan iteration.
+- [x] Storage, joins and give-back. Moved to the storage plan, which landed storage and joins; `docs/plans/2026-10-23-giveback-copy.md` landed the give-back in `e1922aa309`, so T11 passes.
 
 The run is done when every P0 and P1 row here and in the storage plan passes. A failing P2 row becomes a suggested task.
 
@@ -110,7 +110,6 @@ The run is done when every P0 and P1 row here and in the storage plan passes. A 
 
 ## Open work
 
-- The give-back slice in `docs/plans/2026-10-21-cut-join-storage.md`, so T11 still fails. Its storage and joins slices landed. Owner: the storage plan's session, through the give-back's next plan iteration. Stop: that iteration's land.mjs push.
 - The speed line, each 1,000-block cohort of the decide bench within 1.25 times next, is still a gate. Run a2 read candidate ratios of 0.81 to 0.93, but host load passed the runner's limit in both paired runs, so neither is conclusive. Owner: suggested task t_37895e33, which reruns it on a quiet host. Stop: that run; a conclusive miss sends the design back to `architect`.
 - T38, a rejected move that leaves a review mark, waits as suggested task t_0d2139f7.
 

@@ -1,6 +1,6 @@
 # Copy what a split takes onto the second half, so rejecting it gives it back in any order
 
-Status: building: waiting on land.mjs
+Status: executed: landed in `e1922aa309`
 Topic: cut-join
 Playbook: bug-fix
 
@@ -123,7 +123,7 @@ Three architect runners and a cross-judge chose this shape. The judge's verdict,
 
 ## Open work
 
-- The order check's gaps that the give-back order plan deferred: `decide` returns an empty decision for a change it does not list, the family compares only children, its explorer skips batch states whose history later decisions could read, S39's check skips past three pending changes, the script parses verdicts with a regular expression, and `finding-baseline.mjs` checks only the base's rules. Owner: this session. Stop: this plan's land.mjs push, after which each still open goes to the subject's Open work.
+- The order check's gaps that the give-back order plan deferred: `decide` returns an empty decision for a change it does not list, the family compares only children, its explorer skips batch states whose history later decisions could read, S39's check skips past three pending changes, the script parses verdicts with a regular expression, and `finding-baseline.mjs` checks only the base's rules. Owner: zbeyens, in the subject's Open work. Stop: the next change to the order check's give-back family.
 - The give-back cases that fail on next and on the reverted slice alike stay with suggested task t_44385dec, as the storage plan says. Owner: zbeyens. Stop: that task's landing.
 - The decide-latency brief's paired wall-clock line, C with three touching changes and D at 10,000 paragraphs, did not run for this change. No cohort covers withdrawal either, which now reads the whole document once per withdrawn change. Owner: zbeyens. Stop: a decide-latency report on authored review.
 - Copies grow with the square of a chain of pending cuts on one link (G9). Owner: zbeyens. Stop: a chain longer than sixteen cuts in real use, or a decide-latency limit missed.
@@ -131,4 +131,16 @@ Three architect runners and a cross-judge chose this shape. The judge's verdict,
 - `decideKey` has four split rules: the copies' exemption from waits, the open history, the whole history kept while a tag in it is pending, and the rejected-split read. The diff panel's Opus seat sketched deciding the history and the right half's own writes apart and combining them by the cut's verdict. Owner: zbeyens. Stop: the next change to those rules.
 - Two Yjs peers that each reject the same cut before they sync leave its paragraph twice on both peers, on next too, while Y1's own requirement, that both read the same, holds. Owner: suggested task t_649d2131. Stop: that task's landing.
 - A rejected cut whose first half sits inside an element a suggestion removes, or on a line in another container, can still decide differently by click order, as on next. Owner: zbeyens. Stop: a report of it, when the cut would wait on any pending removal of the first half's block or ancestor.
-- The order check's give-back family builds one split whose halves differ only on the dropped key, so chained cuts and halves kept apart by another key are covered by tests A1, A2, S1, S2 and S3 alone. Owner: this session. Stop: this plan's land.mjs push.
+- The order check's give-back family builds one split whose halves differ only on the dropped key, so chained cuts and halves kept apart by another key are covered by tests A1, A2, S1, S2 and S3 alone. Owner: zbeyens, in the subject's Open work. Stop: the next change to the order check's give-back family.
+
+## Close
+
+The give-back copy landed on next as `e1922aa309`, `fix(plitejs): copy what a split drops onto its second half, so rejecting it gives it back in any order`. A proposed split copies the first half's tags on each key it drops onto the second half, under one tag of the split. Rejecting the split reads those copies, so the second half gets its value back in every decision order, whether or not someone removed the first half. Halves that stay apart drop the copies, so an id never stands on both links.
+
+Deviations. Each of the diff panel's three rounds found a case where the rejected split read the wrong write of a fork. Round 2 replaced round 1's fork rule with the value the second half's own writes leave, and made `decideKey` report its read to the joins comparison, so the two cannot disagree. Round 3 made the copies read their stored values too, so a copied fork gives back what its peers settled on, even through a chain of rejected splits. Rows N1 to N8 come from round 1, N9 to N11 from round 2 and N12 to N14 from round 3. Round 3 was the last round the cap allows, so its fix shipped on its own tests, two mutants and a full rerun of the gates.
+
+Proof. Every P0 and P1 row of this plan passes. The storage plan's table fails only T38, a P2 row, where next fails T11, S20 and T38. The redesign plan's table fails T12, T23, T31 and T38, as it does on next; the storage plan's table states T12, T23 and T31 with stored values and passes them. T42 and T37's two-peer variant converge. In Y1 both peers read the same, though both keep the paragraph twice, as on next. The order check's give-back family has no failure at its gate bound, where next has 12, and the same coupled sets as next at the gate bound, at `--giveback-edits=1`, `--giveback-changes=1 --giveback-edits=1`, `--giveback-changes=3` and `--giveback-ops=4 --giveback-changes=3`, and for the five-operation script. The quote family passes at `--marks=3` and `--blocks=3`. The plitejs typecheck, lint and authored suite pass, the decide-latency probe's work lines match next's, and land.mjs's `pnpm check --affected` passed all 26 steps.
+
+Limits. The decide-latency probe's paired wall-clock line did not run. The order check's give-back family builds one split whose halves differ only on the dropped key, so chained cuts and halves kept apart by another key rest on tests A1, A2, S1, S2 and S3. CB, a new pair that must be decided together, takes four changes on two links, more than any bound the order check runs, and the Defaults row keeps it.
+
+Counts. 3 plan panel rounds and 3 diff panel rounds, each of 3 seats; 17 critical findings, all applied. Open work above lists what stays open, each item with its owner and stop.

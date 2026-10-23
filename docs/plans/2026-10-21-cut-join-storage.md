@@ -1,6 +1,6 @@
 # Store the values people write, so a rejected cut or a retype never loses one
 
-Status: partial: give-back waits on its next plan iteration
+Status: executed: the give-back landed through `docs/plans/2026-10-23-giveback-copy.md` in `e1922aa309`
 Topic: cut-join
 Playbook: bug-fix
 
@@ -111,7 +111,7 @@ The joins slice tries at most 8 combinations, which is 3 touching changes, and p
 - [x] Moves build, from `docs/plans/2026-10-22-carried-moves.md`. Proof: rows S22 and S32 to S34 pass and S23 still passes, with that plan's own proof and the same gates.
 - [x] Joins slice. Proof: rows T1 to T7, T12, T22 to T24, S1, S2, S5, S8, S9, S13, S14, S17, S18, S21, S31, S35 and S42 pass, S17 once the moves build lands, the moves plan's merged-children row M1 passes, and S4, S6, S7, S19, S23, S26 and S30 still pass; the T42 peer probe and T37's two-peer variant; Benchmark's probe for decide latency, whose frozen lines are in `joins/latency/brief.md` and whose work lines 1 to 4 run in `authored-tree-work.test.ts`, with line 5 restated: at 10,000 paragraphs, C with 3 touching changes takes at most 1.5 times the base's paired median through `paired-timing.mjs` on the final tree, with planted and same-code arms, and D takes at most 1.5 times the base's paired median for C with 3 touching changes, because the base blocks D and C3 is the base's rejection that applies with as many touching changes; then the same gates.
 - [x] Architect on the give-back slice, since it changes how a rejection, a removal and the recorder share the cut's saved values. Proof: its synthesis in `docs/plans/artifacts/cut-join-values/giveback/`.
-- [ ] Give-back slice. Proof: rows T11, S20 and S36 to S39 pass; the cross-judge's order probes and its three `kept` probes become suite tests that fail on next first; a two-peer Yjs test with concurrent refreshes and concurrent give-backs reads the same on both peers; then the same gates. The push panel's third and last round found that the give-back's key rule still leaves some suggestions decidable only together. Round 1 had already replaced that rule once, so the slice came out and goes back to planning. Its Yjs bridge and join fixes land on their own.
+- [x] Give-back slice. Proof: rows T11, S20 and S36 to S39 pass; the cross-judge's order probes and its three `kept` probes become suite tests that fail on next first; a two-peer Yjs test with concurrent refreshes and concurrent give-backs reads the same on both peers; then the same gates. The push panel's third and last round found that the give-back's key rule still leaves some suggestions decidable only together. Round 1 had already replaced that rule once, so the slice came out and goes back to planning. Its Yjs bridge and join fixes land on their own. `docs/plans/2026-10-23-giveback-copy.md` designed the give-back again and landed it in `e1922aa309`, where T11, S20 and S36 to S39 pass.
 
 The run is done when every P0 and P1 row here and in the redesign plan passes. A failing P2 row becomes a suggested task. No release goes out between slice 1a and the storage slice.
 
@@ -143,7 +143,6 @@ The run is done when every P0 and P1 row here and in the redesign plan passes. A
 
 ## Open work
 
-- The give-back slice. Rows T11, S20 and S36 to S38 fail as on next. Each push panel round found an order bug in its key rule, and the third found one after round 1 had already replaced that rule, so it goes back to planning. Owner: this session, from t_9c25c288, through the give-back's next plan iteration on the cut-join subject. Stop: that iteration's land.mjs push.
 - The third copy of the retype rule (`heldProps`, the Editing retype rule `typeChangeKeep` and the schema's `dropMisplaced` mode) stays. The joins slice shares one place type between `heldProps` and its verdicts, but `dropMisplaced` needs the candidate declarations and `typeChangeKeep` returns canonical values, so one shared predicate would change their contracts for no behavior. Owner: zbeyens, through suggested task t_ebb7e783. Stop: that task lands or the owner drops it.
 - `docs/plans/topics/callout.md`'s open item on a prefix slot that fixes a property at its omitted default is stale, because suggested task t_527d5edc already landed that fix. Owner: zbeyens. Stop: the next edit of the callout subject removes the line.
 - The Yjs bridge still rewrites the parent when one update removes a child and moves another out of order. Another peer's property on that parent is lost, and a peer's typing in a moved child that the same update also edits lands in its sibling. Next loses the property too, and loses that typing or puts it in the sibling. Owner: zbeyens, through suggested task t_043a0fd7. Stop: that task's landing.
@@ -154,3 +153,15 @@ The run is done when every P0 and P1 row here and in the redesign plan passes. A
 - S7 with `ElementIdPlugin` waits on task t_f821f679. On next, every proposed edit under a generated element id does nothing, so the joins slice cannot prove that an id never keeps halves apart until that task lands. Owner: t_f821f679's session, whose brief now asks it to rerun `s7.sh`. Stop: that task's landing.
 - A Suggesting Backspace that joins root paragraphs after a large quote copies and indexes the whole quote, on next as on this tree, and breaks no budget. Owner: zbeyens, through suggested task t_bb100a7c. Stop: that task lands or the owner drops it.
 - A cut's forced-type tag is an ordinary type tag, and a mark kind of its own would change the stored shape. Owner: zbeyens, through suggested task t_34a6d511. Stop: that task lands or the owner drops it.
+
+## Close
+
+The storage, moves and joins slices landed on next together as `28ad3ba7f5`, `fix(plitejs): keep written defaults through rejected splits, joins and moves`, and the Yjs bridge and join fixes as `a8114ee15d`, `fix(plitejs): keep one copy of a block when a Yjs update removes its neighbor and changes it`. The editor now stores every written value, even one equal to its default, so a rejected cut, a retype or a move no longer loses one.
+
+Reversal. The give-back slice came out after its third push panel round. `docs/plans/2026-10-23-giveback-order.md` landed the decision-order check that judges it as `b214849c2a`, and `docs/plans/2026-10-23-giveback-copy.md` designed the give-back again and landed it as `e1922aa309`.
+
+Proof. On `e1922aa309`, this plan's table fails only T38, a P2 row that suggested task t_0d2139f7 owns. The redesign plan's table fails T12, T23, T31 and T38, as it does on next; this plan's table states T12, T23 and T31 with stored values and passes them. So every P0 and P1 row of both plans passes. Each slice's proof is in this plan's decision log, and the give-back's in the give-back copy plan's Close.
+
+Limits. Open work above lists what stays open, each item with its owner and stop. The Editing write and removal of a dropped key stays as the Defaults row on record removals says.
+
+Counts. 3 plan panel rounds and 9 push panel rounds, each of 3 seats; 51 critical findings, 48 applied. Of the 3 left open, the give-back landed through `e1922aa309`, the removal record waits on the owner's word "record removals", and the reorder rewrite waits on suggested task t_043a0fd7.

@@ -1,6 +1,6 @@
 # Give a removed left half's values back in every decision order
 
-Status: partial: the order check landed in `b214849c2a`; the give-back waits on its next plan iteration
+Status: executed: the order check landed in `b214849c2a`, and the give-back through `docs/plans/2026-10-23-giveback-copy.md` in `e1922aa309`
 Topic: cut-join
 Playbook: bug-fix
 
@@ -63,7 +63,7 @@ The storage plan's Give-back paragraph stays the outcome law: a value on the rig
 
 - [x] Extend the decision-order check to give-back documents. Proof: on next its gate bound passes and seeds next's findings; on the reverted slice's commits it reports the bug each review round found.
 - [x] Architect on the give-back rule, with the extended check as the judge's proof. Proof: its synthesis.
-- [ ] Give-back build. Built, reviewed in three push panel rounds and reverted to next at `c1b3b46d56`; it moves to the give-back's next plan iteration. Proof: every row above passes, rows T11 and S20 and S36 to S39 through both plans' table checks; the order check at its gate bound and at O2's bound; every row passing on next still passes in both tables; T42 and T37's two-peer variant converge; the plitejs suite, typecheck and lint; Benchmark's decide-latency probe within the joins slice's limits; writing passes, a push panel on the design and the diff together, and one land.mjs run that carries the order check and the give-back.
+- [x] Give-back build. Built, reviewed in three push panel rounds and reverted to next at `c1b3b46d56`; it moved to the give-back's next plan iteration, `docs/plans/2026-10-23-giveback-copy.md`, which landed it in `e1922aa309`. Proof: every row above passes, rows T11 and S20 and S36 to S39 through both plans' table checks; the order check at its gate bound and at O2's bound; every row passing on next still passes in both tables; T42 and T37's two-peer variant converge; the plitejs suite, typecheck and lint; Benchmark's decide-latency probe within the joins slice's limits; writing passes, a push panel on the design and the diff together, and one land.mjs run that carries the order check and the give-back.
 
 ## Defaults
 
@@ -75,9 +75,7 @@ The storage plan's Give-back paragraph stays the outcome law: a value on the rig
 
 ## Open work
 
-- The give-back itself. T11, S20 and S36 to S38 fail as on next. Its next plan iteration designs it again, with round 3's five probes as its first tests and a plan panel before any build. Owner: this session, from t_9c25c288. Stop: that iteration's land.mjs push.
-- The order check's gate finds 12 give-back failures on next, each rejecting a cut whose left half stays. Owner: this session, through the give-back's next plan iteration, which must not add one. Stop: that iteration's land.mjs push.
-- The order check's gaps that rounds 1 and 2 deferred: `decide` returns an empty decision for a change it does not list, the family compares only children, its explorer skips batch states whose history later decisions could read, S39's check skips past three pending changes, the script parses verdicts with a regular expression, and `finding-baseline.mjs` checks only the base's rules. Owner: this session, through the give-back's next plan iteration, which uses the check as its judge. Stop: that iteration's land.mjs push.
+- The order check's gaps that rounds 1 and 2 deferred: `decide` returns an empty decision for a change it does not list, the family compares only children, its explorer skips batch states whose history later decisions could read, S39's check skips past three pending changes, the script parses verdicts with a regular expression, and `finding-baseline.mjs` checks only the base's rules. Owner: zbeyens, in the cut-join subject's Open work. Stop: the next change to the order check's give-back family.
 - The give-back cases that fail on next and on the reverted slice alike stay with suggested task t_44385dec, as the storage plan says. Owner: zbeyens. Stop: that task's landing.
 
 ## Close
@@ -89,3 +87,5 @@ Reversal. The give-back build from this iteration's architect synthesis is not l
 Proof. On the tree rebased onto next, the gate passes. The quote documents have no failures, since next fixed its two, and their 66 coupled sets; the give-back family has the 12 failures and 1,105 coupled sets its baseline lists. `--together=<file>`, which next added while this ran, writes all 1,171 sets with this branch's walks. The plitejs typecheck, the authored partition and lint of the script and its helper pass, as they did on the reverted tree before the rebase. Limits. The check proves only the scripts its bound builds, as the rule's What it does not cover lists. The rule cites the four reverted builds by commit, and those commits live only in this machine's branches `giveback-r3-274a34` and `giveback-r4-274a34`.
 
 Counts. 3 push panel rounds of 3 seats each, 13 critical findings applied, 5 by revert.
+
+The give-back's next plan iteration, `docs/plans/2026-10-23-giveback-copy.md`, landed the give-back as `e1922aa309`. Its gate run finds none of the 12 failures, and the baseline dropped them.
