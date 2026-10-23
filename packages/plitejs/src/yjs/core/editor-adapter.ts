@@ -1,5 +1,7 @@
 import { valueRootNodes } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
+import { withoutRepairOrphans } from '../../core/document-admission';
+import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import { runTrustedUpdate } from '../../core/public-state';
 import { withoutPlacement } from '../../core/view-carets';
@@ -124,11 +126,24 @@ export const createYjsEditorAdapter = (
     selection,
   }) => {
     let nextSelection: EditorSelection | null = null;
+    // Two peers can each remove one owner of a shared root, so neither update
+    // deletes it; the merge orphans it, and a closed schema refuses that
+    // change unless the import drops the root with it.
+    const imported =
+      change && !change.empty && editor.read.schema.hasContentRoots()
+        ? withoutRepairOrphans(getCompiledEditorSchema(editor), readValue(), {
+            change,
+            value: change.apply(readValue()),
+          })
+        : null;
+    const publishable = imported?.change ?? change;
 
     if (selection !== undefined && selection !== null) {
-      const currentValue = editor.read.value();
+      const currentValue = readValue();
       const nextValue =
-        replacement ?? (change ? change.apply(currentValue) : currentValue);
+        replacement ??
+        imported?.value ??
+        (change ? change.apply(currentValue) : currentValue);
       const editorRoot =
         !SelectionApi.isNode(selection) && !RangeApi.isRange(selection)
           ? normalizeRootKey(editor.read.view.root())
@@ -148,8 +163,8 @@ export const createYjsEditorAdapter = (
         (tx) => {
           if (records) tx.changes.apply(records);
           if (replacement) tx.value.replace(replacement);
-          if (change && !change.empty) {
-            tx.changes.apply(change);
+          if (publishable && !publishable.empty) {
+            tx.changes.apply(publishable);
           }
           if (selection !== undefined) {
             withoutPlacement(editor, () => tx.selection.set(nextSelection));

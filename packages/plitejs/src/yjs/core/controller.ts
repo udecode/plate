@@ -692,6 +692,13 @@ export class YjsController<
         }
       }
     }
+    if (this.editorAdapter.importing()) {
+      // An import mirrors the Y.Doc, so a root it deletes that the Y.Doc still
+      // holds is one the merge orphaned.
+      for (const root of commit.changes.deleteRoots) {
+        if (this.roots.has(root)) this.remoteRepairDeletedRoots.add(root);
+      }
+    }
     if (
       this.admissionStatusValue.state === 'error' &&
       commit.dirtyStateKeys.includes('$configuration')

@@ -2,7 +2,7 @@
 'plitejs': patch
 ---
 
-Remove a shared content root with its last owner when the schema sets `unknown: 'reject'`, so deleting the last block that shows it no longer throws. An open schema keeps the root.
+Remove a shared content root with its last owner when the schema sets `unknown: 'reject'`, so deleting the last block that shows it no longer throws. Two Yjs peers that each delete one of its blocks at the same time now also drop it, instead of stopping with an admission error. An open schema keeps the root.
 
 Remove the content roots owned inside a removed root along with it, instead of throwing or leaving them behind when the update commits.
 

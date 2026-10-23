@@ -65,32 +65,33 @@ const ContentRootSchema = defineEditorSchema('schema:yjs-content-root', {
   version: 1,
 });
 
-const SharedCaptionSchema = defineEditorSchema('schema:yjs-shared-caption', {
-  elements: {
-    media: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      contentRoots: {
-        caption: {
-          content: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-          ownership: 'shared',
+const sharedCaptionSchema = (unknown: 'preserve' | 'reject') =>
+  defineEditorSchema(`schema:yjs-shared-caption-${unknown}`, {
+    elements: {
+      media: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        contentRoots: {
+          caption: {
+            content: schema.content.type('paragraph', {
+              default: { type: 'paragraph' },
+              min: 1,
+            }),
+            ownership: 'shared',
+          },
         },
       },
+      paragraph: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
     },
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
-  id: 'yjs-shared-caption',
-  root: schema.content.types(['media', 'paragraph'], {
-    default: { type: 'paragraph' },
-    min: 1,
-  }),
-  unknown: 'preserve',
-  version: 1,
-});
+    id: `yjs-shared-caption-${unknown}`,
+    root: schema.content.types(['media', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown,
+    version: 1,
+  });
 
 const createPeer = (
   doc: Y.Doc,
@@ -174,6 +175,30 @@ const rootsOf = (peer: { doc: Y.Doc; editor: AnyEditor }) => [
   Object.keys(peer.editor.read.value().roots ?? {}),
   [...peer.doc.getMap('document:roots').keys()],
 ];
+
+const removeEachOwnerOfSharedCaption = (unknown: 'preserve' | 'reject') => {
+  const plugins = [sharedCaptionSchema(unknown)];
+  const left = joinPeer(new Y.Doc(), plugins, {
+    children: [
+      media('caption:1', 'A'),
+      media('caption:1', 'B'),
+      paragraph('Body'),
+    ],
+    roots: { 'caption:1': [paragraph('Shared')] },
+  });
+  const right = { doc: new Y.Doc() };
+
+  sync(left, right);
+  const peers = [left, joinPeer(right.doc, plugins)];
+
+  peers[0].editor.update((tx) => tx.nodes.remove({ at: [0] }));
+  peers[1].editor.update((tx) => tx.nodes.remove({ at: [1] }));
+  sync(peers[0], peers[1]);
+  sync(peers[1], peers[0]);
+  sync(peers[0], peers[1]);
+
+  return peers;
+};
 
 describe('plitejs/yjs multi-root document contract', () => {
   it('owns the whole runtime when installed from a named-root view', () => {
@@ -477,25 +502,7 @@ describe('plitejs/yjs multi-root document contract', () => {
   });
 
   it('keeps a shared root whose two owners two peers remove at the same time, in an open schema', () => {
-    const left = joinPeer(new Y.Doc(), [SharedCaptionSchema], {
-      children: [
-        media('caption:1', 'A'),
-        media('caption:1', 'B'),
-        paragraph('Body'),
-      ],
-      roots: { 'caption:1': [paragraph('Shared')] },
-    });
-    const right = { doc: new Y.Doc() };
-
-    sync(left, right);
-    const peers = [left, joinPeer(right.doc, [SharedCaptionSchema])];
-
-    peers[0].editor.update((tx) => tx.nodes.remove({ at: [0] }));
-    peers[1].editor.update((tx) => tx.nodes.remove({ at: [1] }));
-    sync(peers[0], peers[1]);
-    sync(peers[1], peers[0]);
-
-    for (const peer of peers) {
+    for (const peer of removeEachOwnerOfSharedCaption('preserve')) {
       assert.deepEqual(
         [
           peer.editor.read.children(),
@@ -508,6 +515,20 @@ describe('plitejs/yjs multi-root document contract', () => {
           [['caption:1'], ['caption:1']],
         ],
         'an open schema keeps the shared root'
+      );
+    }
+  });
+
+  it('drops a shared root whose two owners two peers remove at the same time, in a closed schema', () => {
+    for (const peer of removeEachOwnerOfSharedCaption('reject')) {
+      assert.deepEqual(
+        [
+          peer.editor.api.yjs.admissionStatus().state,
+          peer.editor.read.children(),
+          rootsOf(peer),
+        ],
+        ['ready', [paragraph('Body')], [[], []]],
+        'a closed schema drops the orphaned shared root on both peers'
       );
     }
   });
