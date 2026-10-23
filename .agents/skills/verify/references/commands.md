@@ -75,6 +75,13 @@ Rules:
 - use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
+- the managed Plite runner passes `-g` to Playwright as `--grep`, a regular
+  expression, so escape `+` and `(` in a test title, or pass a plain part of
+  it. It refuses every other Playwright flag, such as `--output` or
+  `--workers`; `node scripts/run-plite-browser.mjs direct` from `apps/plite`
+  takes them for diagnostics. A file stops at its first failing batch and
+  resumes its passing batches on the next run, so a case after a known
+  failure runs only once its file runs without that failure;
 - do not run multiple managed Playwright commands in parallel,
   including through `multi_tool_use.parallel`. The managed route builds and
   serves the Next example app, and concurrent runs can trip the Next build lock
@@ -314,7 +321,8 @@ The helper has four modes for these cases:
   anything, the helper refuses a `--with` that names no file inside this
   checkout or reaches it through a symlink.
 - `--install` runs `pnpm install --offline --frozen-lockfile --ignore-scripts`
-  instead of linking `node_modules`. A www server needs it, because Turbopack
+  instead of linking `node_modules`. A www server and the managed Plite
+  runner's app build need it, because Turbopack
   refuses `node_modules` linked from outside the worktree root. Then run
   `PLATE_WWW_DYNAMIC_DOCS=1 pnpm build:source:dev` in `apps/www` before
   `next dev`.
