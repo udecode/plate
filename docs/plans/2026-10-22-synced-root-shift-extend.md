@@ -317,6 +317,35 @@ The review inputs are `packages/plitejs/src/react/view-selection.ts`, `packages/
 
 The open work is under Open work, each item with its owner and its stop.
 
+## Reflect
+
+One reviewer read this run's transcript through the judgment, tooling and divergent lenses, and the lead synthesized its findings (`reflect-review.md` in the run directory). No lesson was a script fix for a case its own rule allows or a rewording that adds no words, the two kinds the reflect rule applies at once, so each accepted lesson became a suggested task. Each task's owner is the owner, and its stop is that the owner takes or drops it.
+
+Backlog:
+
+- t_a2f9ef97: two verified rows cited test typecheck logs that ended in failure, and a filter to the changed files hid the callers a narrowed signature broke (judgment 1, 2 and 10, divergent 6).
+- t_cb7a68c4: a browser case passed because the handler under test threw, and page error capture is opt-in per spec (judgment 3).
+- t_964792d3: panel criticals that also fail at 254cc45304 kept widening the diff, and one widening caused a regression (divergent 1).
+- t_7cf92706: the recipes never name the Firefox and WebKit script, and a linked base worktree fails late in the runner's build (tooling 2 and 4).
+- t_42afc07a, folded: the zsh `=`, git grep option order, glob and inline-script classes came back after every compaction. The task's hook denies commands, so it stays a task instead of a build in this run (judgment 9, divergent 3).
+- t_a6b15953 and t_5c79160d, offered at the close, already hold the bare test typecheck and the decisions-check usage findings (tooling 1 and 9).
+
+Rejected:
+
+- Treating a carded repro's expected value as a guess is already in verify's completion boundary.
+- Reading a control's verdict only as wide as its assertions is already in verify's rule that an inferred result is no baseline.
+- Waiting for a delegate's report before writing its claims is already in poteto-mode's Subagents section.
+- Freezing bytes before a proof is already in verify's Evidence rule and the recipes' `source-changed` bullet.
+- Forcing a race's timing before blaming a change for a failure under load came from one lens, and the recipes' fresh-server rule already covers attribution.
+- The runner's Node 22 check, proof.mjs's attempt suffix, `git apply --3way` and `rg -uu` each print or document their own fix.
+- Module identity after `vi.resetModules` and Vitest's worker profiling flag are library facts from one lens.
+- `land.mjs` committing the whole worktree and building slices in one worktree are already in land.md and long-runs.md.
+- Checking that timed arms do equal work is already step 4 of the benchmark probe.
+- A fresh session after a pivot goes against the owner's 2026-10-22 word that a plan's phases build in one session.
+- Restoring a comment a reviewer asks back for came from one lens and changes no decision.
+- Checking that an engine skip's task stays open came from one lens.
+- The refusals of decisions-check and page-stop each name their own fix.
+
 ## Evidence
 
 Model: claude-opus-5-5 at xhigh.
