@@ -9,7 +9,7 @@ review_inputs: [packages/plitejs/src/react/view-selection.ts, packages/plitejs/s
 
 # How a selection across content roots survives a root taking focus
 
-Status: building: slice 1 landed as e7151f6289; slice 2 lands next, then the fold
+Status: partial: both slices landed; the fold into the runtime subject waits on the drag task t_95972f5a or your word "accept drag"
 Playbook: plan
 
 **Pursue.** On `/examples/plite/synced-blocks`, Shift+ArrowDown from inside a synced root into the outer editor snaps the selection back to the outer editor's own caret. Two rules collide. The [synced blocks plan](2026-05-27-synced-blocks-sibling-selection.md) keeps a selection across content roots alive through Plite's own focus repair, and the [view caret plan](2026-10-20-view-caret-placement.md) has every root that takes focus, a caret key or typing restore its own caret and clear that selection, unless it already holds the caret. The outer root never holds the caret while such a selection runs, because the live caret sits at the selection's anchor in the synced root. This task's first fix stamped the selection with a guessed placement number and kept it only for the root that wrote it. Three diff panels found five critical defects in those two mechanisms, each after its one replacement, so the fix becomes this redesign. The strongest reason for Pursue is that one owner can decide when the selection is current from what the editor committed, and which roots keep it from what it covers, which deletes the guess, the writer root and the per-writer special cases. The execution playbook is Build, run as the Bug fix playbook's redesign run.
@@ -18,11 +18,11 @@ Playbook: plan
 
 ### What will change?
 
-Shift+ArrowDown out of a synced block keeps extending into the next outer paragraph, as the task asks, instead of snapping back. One rule then decides when a selection across blocks is still current, for every key, click and focus.
+Shift+ArrowDown out of a synced block now keeps selecting into the next outer paragraph instead of jumping back. Keys, focus and clicks now agree on when that selection still counts, and Ctrl+Home and Ctrl+End work from blocks inside blocks.
 
 ### What could go wrong?
 
-The rule runs on every focus and caret key. A mistake there drops a selection, or keeps a stale one that typing then replaces. Blocks nested two deep and Firefox are where the earlier fixes broke.
+As before, a mouse drag shows an old selection after another caret takes over, and wipes that caret. Blocks nested two deep keep three gaps, each with a task, and the speed check couldn't settle on a busy machine.
 
 ## Teach
 
@@ -31,6 +31,10 @@ A synced block is a separate editing area inside the page's editor. A selection 
 Each editing area also keeps its own caret. When an area gets focus, a caret key or typing, it brings its own caret back and wipes the side record, unless it already holds the caret. The outer editor never holds it during such a selection, so Plite's own focus repair wipes the selection.
 
 The plan gives the side record one writer and one reader. A selection counts as current until any newer caret placement, read from what the editor committed instead of guessed. An area the selection covers keeps it when it takes focus. Three review rounds broke the guessed version.
+
+## Demo
+
+1. Open `/examples/plite/synced-blocks`. Click at the end of p1, press End, then ArrowDown, so the caret lands in the first synced block. Press Shift+ArrowDown twice. The first press selects to the start of "Editing any copy"; the second extends past the synced block into "Between synced copies." instead of snapping back to p1. Shift+ArrowUp then pulls the selection back inside the synced block. ![before](artifacts/2026-10-22-synced-root-shift-extend/demo/before.png) ![after](artifacts/2026-10-22-synced-root-shift-extend/demo/after.jpg)
 
 ## Public API
 
@@ -238,6 +242,7 @@ At 254cc45304 the selection never shows in U6 to U8, U10, U14 and U16, because m
 | The key's after-render focus retry and the click's receipt, neither of which names a placement | Offered as a task. The key's synchronous focus runs right after the write the writer guards. A placement in the frame between a key and its retry, or one a listener makes during a click's write, can still lose focus. U12b presses with mousedown only, and a real click's mouseup activates the pressed root again with no receipt, so it would take focus back from note (Opus, the diff panel's round 2) (look) | Give both a placement receipt in this run | receipt now | small |
 | The dead-end rule outside the writer, two deferred native clears with different freshness checks, activation's clear, whose null write returns nothing a caller can check, so activation reads the placement generation again, and the writer's bare boolean return, which comment-sicko flagged once it deleted the writer's comment | Offered as tasks, since each repeats a rule and no case fails on it | Move the rule into the writer and share one clear in this run | fold now | detail |
 | The runtime page's link | https://claude.ai/artifact/TBgmnQqQjBpGCdLdgYWwy1 no longer opens from this account, so the page now lives at https://claude.ai/artifact/DTJFCxEv5oHSaaL2m4u8xQ (look) | Drop the new page, if the old one was deleted on purpose | drop new page | detail |
+| Whether the plan counts as done without the drag's ending | The plan stays partial and out of the runtime subject until the drag task lands, because this run dropped the drag's ending on its own (look) | Count the keyboard fix as done, fold this plan into the runtime subject and mark it executed | accept drag | small |
 
 ## Decision ledger
 
@@ -265,7 +270,7 @@ At 254cc45304 the selection never shows in U6 to U8, U10, U14 and U16, because m
 
 ## Completion gates
 
-The Build playbook's gates for both slices. This table was written at the close, not when the build started, so its cells cite the rows each gate already logged.
+The Build playbook's gates for both slices. The run wrote this table at the close, not when the build started, so its cells cite the rows each gate already logged.
 
 | Gate | Applies | Required action | Evidence |
 | --- | --- | --- | --- |
@@ -281,7 +286,36 @@ The Build playbook's gates for both slices. This table was written at the close,
 | Hand drive | yes | B1 on `/examples/plite/synced-blocks` with a screenshot and `hand-drive.mjs check` | done: log row "check" for the hand drive; the second Shift+ArrowDown reaches "Between synced copies." on screen, and check covers the page's desktop cell |
 | Playtest | skip | `playtest.mjs scope` on the task's files | skip: it names no scenario catalog for these files |
 | Docs | skip | `plate-docs` on each public docs page the change affects | skip: no public call or docs page changes |
-| Land | yes | `land.mjs --check 'pnpm check --affected'` for each slice | done for slice 1: e7151f6289; pending for slice 2 |
+| Land | yes | `land.mjs --check 'pnpm check --affected'` for each slice | done: slice 1 as e7151f6289 and slice 2 as bd36fd90cd |
+
+## Close
+
+Reversals and deviations come first.
+
+- The drag's ending is back at its code at 254cc45304. The plan gave an overtaken drag two endings, and the build's diff panel broke both (U25e, U25f and U25g), so the claim narrows to the key path and the writers that place first. A drag that a newer placement overtakes shows its selection again at its next event, and each drag write clears the DOM selection (U25h), as at 254cc45304. The run made that cut itself, so the plan stays partial until the drag task t_95972f5a lands or the owner says "accept drag", and the fold into the runtime subject waits with it.
+- B5 moved from the shared body the page shows twice to the separate synced block, because the shared body's nested root throws "Duplicate view-boundary node key" at 254cc45304 too (B6). B5 runs only in Chromium, since the ArrowDown entry fails in Firefox and WebKit at both trees.
+- This run first left moving focus back after an overtaken show (U5c) as a task, then fixed it when the third plan panel showed that slice 2's own repair took focus back.
+- A check row before the final proofs read the bare test typecheck's errors for unbuilt partitions as slice 1's baseline. The full typecheck then found 46 test errors, test writes that named no placement and one plugin list type, which the build fixed before slice 2 landed.
+- The run wrote the Completion gates table at the close, not when the build started.
+
+What landed, on `next`:
+
+- Slice 1, "fix(plitejs): send Ctrl+Home and Ctrl+End across content roots to the document edge" (e7151f6289).
+- Slice 2, "fix(plitejs): keep a selection across content roots while a root it covers takes focus" (bd36fd90cd), with `.changeset/plitejs-view-carets.md` amended and `.changeset/plitejs-nested-content-root-keys.md` added.
+
+Proof and its limits:
+
+- B1 passes five warm runs in Chromium and five in Firefox. B1, B2 and B4 pass in Chromium, Firefox and WebKit, except Firefox's `schema-reconfiguration.test.ts:151`, which fails at 254cc45304, and B5, which runs only in Chromium.
+- A hand drive on `/examples/plite/synced-blocks` shows the second Shift+ArrowDown reaching "Between synced copies." and Shift+ArrowUp coming back into the synced root, with no console error.
+- Every P1 U and S row passes in jsdom. The plitejs React suite passes 1952 of 1952 tests, the full plitejs typecheck passes with nothing cached, lint passes, and the two-file IME command passes 27 of 27 in each of five runs.
+- The timing probe passes 3 of its 10 lines and misses none. The other 7 are inconclusive from host load, and t_4b2d897f reruns them on the landed commit.
+- The U rows run in jsdom with model-set selections, and only the B rows drive native keys. Safari, screen readers and phones stay unproven, and the Android pick is inferred with no phone run.
+
+Counts: one ask, the card's, done; 13 gates in Completion gates, 7 done, 4 skipped with a reason, 1 partial and 1 inconclusive.
+
+The review inputs are `packages/plitejs/src/react/view-selection.ts`, `packages/plitejs/src/core/view-carets.ts`, `packages/plitejs/src/react/editable/view-caret-restore.ts`, `packages/plitejs/src/react/editable/content-root-boundaries.ts`, `packages/plitejs/src/react/editable/content-root-navigation.ts`, `packages/plitejs/src/react/editable/selection-controller.ts`, `packages/plitejs/src/react/editable/keyboard-input-strategy.ts`, `packages/plitejs/src/react/editable/root-interaction-controller.ts`, `packages/plitejs/test/react/view-carets.test.tsx`, `apps/plite/tests/plite-browser/donor/examples/synced-blocks.test.ts`, `docs/plans/2026-10-20-view-caret-placement.md`, `docs/plans/2026-10-21-view-selection-import.md`, `docs/plans/2026-05-27-synced-blocks-sibling-selection.md`, `docs/plans/topics/selection.md` and `apps/www/src/app/(app)/examples/plite/plite-example-client.tsx`.
+
+The open work is under Open work, each item with its owner and its stop.
 
 ## Evidence
 
@@ -405,3 +439,19 @@ Both protocols ran on the diff panel's round 3 tree, whose later bytes change co
 - This review retains 2026-10-22-runtime-dom-view-lookups, the runtime head, because it answers which view a DOM call reaches and this review changes nothing it decided ([plan](2026-10-22-runtime-dom-view-lookups.md)).
 - It narrows the [view caret plan](2026-10-20-view-caret-placement.md)'s rule that activation clears the selection across roots, and flags that plan here instead of editing it.
 - The recall brief for this run is `recall-brief.md` in the run directory, cited by the decision log.
+
+## Open work
+
+- The fold of this plan into the runtime subject, drafted with this run's Close. owner: t_95972f5a, the drag task. stop: that task lands, or the owner says "accept drag".
+- t_95972f5a Give every cross-root selection writer and reader one freshness rule. Every writer but the projected drag now has it; the task holds the drag's ending, which this plan left as at 254cc45304, with its U25c, U25e, U25f and U25h cases and the browser case B7. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_74d9b55b Key each view-boundary node by its owner chain, so a nested root under a host the page shows twice builds its graph instead of throwing "Duplicate view-boundary node key" (B6). owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_cd1f2d4d Extend Shift+ArrowRight past a root nested two deep that ends its host, which extends nothing (U22b). owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_45e00e70 Find why ArrowDown into a synced block nested inside another leaves its body without a caret in Firefox and WebKit; until it lands, `synced-blocks.test.ts` runs B5 only in Chromium. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_b7df33ce Find why the first Shift+ArrowDown after a click into a synced body does nothing. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_4b2d897f Rerun the cross-root selection timing protocol on the landed fix; the final run was inconclusive on 7 of 8 cohorts from host noise and missed no budget. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_311c5484 Stop Ctrl+End from placing the caret in a content root no view renders. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_896d964e Keep a selection across content roots made while an Android keyboard has a change pending, which shrinks to one block, inferred with no phone run. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_5d868e6d Stop an outer Editable from activating its caret for a key a nested Editable answered. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_08722716 Move the Shift+Arrow dead-end rule into the view selection writer, share one deferred native clear, and give the writer a result that says whether it showed. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_c422f5bc Give the key's focus retry, a click's mouseup and activation's focus receipt a placement, which none of them names. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
+- t_fa13f697 Keep input in the frame after a Shift+click from editing through the plain model selection; the Shift+click typing and pasting cases in `synced-blocks.test.ts` lose their selection under forced key timing, at 254cc45304 too. owner: the owner, from the suggested-task ledger. stop: started or dismissed.
