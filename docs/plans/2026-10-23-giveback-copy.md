@@ -132,6 +132,21 @@ Three architect runners and a cross-judge chose this shape. The judge's verdict,
 - Two Yjs peers that each reject the same cut before they sync leave its paragraph twice on both peers, on next too, while Y1's own requirement, that both read the same, holds. Owner: suggested task t_649d2131. Stop: that task's landing.
 - A rejected cut whose first half sits inside an element a suggestion removes, or on a line in another container, can still decide differently by click order, as on next. Owner: zbeyens. Stop: a report of it, when the cut would wait on any pending removal of the first half's block or ancestor.
 - The order check's give-back family builds one split whose halves differ only on the dropped key, so chained cuts and halves kept apart by another key are covered by tests A1, A2, S1, S2 and S3 alone. Owner: zbeyens, in the subject's Open work. Stop: the next change to the order check's give-back family.
+- Reflect's Backlog from this run's last stretch, each a workflow change for the owner to take or drop:
+  1. Stop a run by TaskStop or its recorded PID, never by `pkill -f` on a pattern, because other sessions on this host run the same commands. A hook that denies `pkill -f` and `killall` would enforce it.
+  2. A package's `lint:partition:*` runs `ultracite check` without the type-aware rules that land's `lint:task` adds, so two casts passed every gate and failed land. A pre-land gate can run `pnpm lint:task` on the changed files, or the partition lint can gain the type-aware pass once its existing violations are counted.
+  3. The verify skill's commands can name oxfmt as the formatter and bun with the plite source preload as plitejs's test runner. Each was mistaken twice here, both times after a compaction.
+  4. A test or probe of the authored tree carries the whole document between decide calls, because the verdict records live on its root. Carrying only the children hid a real panel finding.
+  5. A finished, independent piece, such as the order check, lands once it passes, rather than waiting for an unfinished one.
+  6. An answer about how long landing takes estimates from how the remaining gate has gone so far, not from its best case.
+  7. When panels keep finding bugs in shapes the order check never builds, such as forks and chains of splits, the check grows those shapes before the next fix.
+  8. A panel round saves the exact bytes its seats review before they start.
+  9. A test's expected values come from the plan or from next, never from the candidate's own output.
+  10. A row claims a pass only for a check that asserts, run on the final bytes.
+  11. Skipping the plan panel to save time moved design discovery after the build, which a revert then undid.
+  12. The lead prototypes in its own clean worktree, where its Edit calls work.
+
+  Owner: zbeyens. Stop: the owner takes or drops each item.
 
 ## Close
 
@@ -144,3 +159,5 @@ Proof. Every P0 and P1 row of this plan passes. The storage plan's table fails o
 Limits. The decide-latency probe's paired wall-clock line did not run. The order check's give-back family builds one split whose halves differ only on the dropped key, so chained cuts and halves kept apart by another key rest on tests A1, A2, S1, S2 and S3. CB, a new pair that must be decided together, takes four changes on two links, more than any bound the order check runs, and the Defaults row keeps it.
 
 Counts. 3 plan panel rounds and 3 diff panel rounds, each of 3 seats; 17 critical findings, all applied. Open work above lists what stays open, each item with its owner and stop.
+
+Reflect. One reviewer read this run from the owner's "this task is getting long" to the end, through the judgment, tooling and divergent lenses, and returned 19 findings. None qualified for applying in the run: none fixes a helper that refuses a case its rule allows, and none rewords a rule without adding words. Twelve went to the Backlog in Open work. Seven were dropped: a partitioned test command's own error names its fix; the harness already says how to wait on long runs and what `get_session` takes; the main checkout's run directories are already written with the shell, as the landing rule says; the claim that a checker that catches past bugs will catch future ones joins items 7 and 11; landing at the panel cap is disclosed in Deviations, and the checker's blind spot is in Open work; re-reading the facts behind repeated mistakes after a compaction joins item 3; and the tooling lens found no context the owner supplied by hand.
