@@ -92,6 +92,7 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 
 | Skill | Purpose |
 | --- | --- |
+| [authored-decision-order](../../.agents/skills/authored-decision-order/SKILL.md) | Check that deciding the authored review tree's pending changes one at a time, in any order, gives the document that deciding them at once gives, and that no change adds a set of verdicts a reviewer can only decide together, for every document up to a bound. |
 | [benchmark](../../.agents/skills/benchmark/SKILL.md) | Measure and repair Plate/Plite performance, or review a performance design before running its applicable benchmark lanes. |
 | [best-api](../../.agents/skills/best-api/SKILL.md) | Design, review or repair a Plate or Plite public call shape with the Plate API lens. |
 | [verdict](../../.agents/skills/verdict/SKILL.md) | Say what to do from any input, or judge one Plate or Plite review scope by its exact id. |

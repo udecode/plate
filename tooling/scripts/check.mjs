@@ -156,6 +156,14 @@ export const steps = [
       'tooling/entrypoints/'
     ),
   },
+  {
+    name: 'authored-order',
+    run: 'pnpm check:authored-order',
+    affected: touches(
+      'packages/plitejs/',
+      'tooling/scripts/finding-baseline.mjs'
+    ),
+  },
   { name: 'bench-targets', run: 'pnpm plite:bench:targets:check' },
   { name: 'public-types', run: 'pnpm plite:public-types', affected: source },
   {

@@ -40,6 +40,7 @@
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "node tooling/scripts/check.mjs",
     "kb": "node tooling/scripts/knowledge/kb.mjs",
+    "check:authored-order": "bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/authored-decision-order.ts",
     "check:core": "node tooling/scripts/check-core.mjs",
     "check:plate-feature": "node tooling/scripts/check-plate-feature.mjs",
     "check:plite": "node tooling/scripts/check-plite.mjs strict",

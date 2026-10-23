@@ -147,6 +147,7 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
         'type-tests',
         'test',
         'plite-test',
+        'authored-order',
         'public-types',
         'cli-test',
         'core-audits',
@@ -164,6 +165,7 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
       docsData: [
         'test',
         'plite-test',
+        'authored-order',
         'cli-test',
         'review-ledger',
         'knowledge',
@@ -172,11 +174,12 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
       browserSpec: [
         'test',
         'plite-test',
+        'authored-order',
         'cli-test',
         'review-ledger',
         'knowledge',
       ],
-      cli: ['plite-test', 'review-ledger', 'knowledge'],
+      cli: ['plite-test', 'authored-order', 'review-ledger', 'knowledge'],
       plite: ['review-ledger', 'knowledge'],
       lockfile: ['review-ledger', 'knowledge'],
     }

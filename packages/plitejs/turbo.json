@@ -453,6 +453,7 @@
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
         "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
         "$TURBO_ROOT$/tsconfig.json",
+        "test/support/authored-laws.ts",
         "test/support/authored.ts",
         "test/support/content-shapes.ts",
         "test/support/law-check.ts",
