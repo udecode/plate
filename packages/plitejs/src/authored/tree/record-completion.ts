@@ -17,13 +17,16 @@ import {
   type JsonNode,
 } from '../../core/change/tokens';
 import { getEditorSchema } from '../../core/editor-runtime';
+import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { completeChildrenAt } from '../../core/representation';
 import type { AnyEditor as Editor } from '../../interfaces/editor';
 import { type Element, ElementApi } from '../../interfaces/element';
 import type { Descendant } from '../../interfaces/node';
+import { PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
+import { heldNode, type Place } from './holds';
 import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
   AUTHORED_MARKS_KEY,
@@ -255,6 +258,7 @@ export const completeProposed = (
   input: RecordCompletionInput
 ): RecordCompletion | null => {
   const schema = getEditorSchema(input.editor);
+  const compiled = getCompiledEditorSchema(input.editor);
   const changes = new Map<string, RootChange>();
   const indexes = new Map(input.indexes);
   const insertMark: AuthoredMark = { ...input.mark, kind: 'insert' };
@@ -360,13 +364,25 @@ export const completeProposed = (
         .map((_, depth) => nodeAt(afterChildren, hostPath.slice(0, depth + 1)))
         .filter((node): node is Element => ElementApi.isElement(node))
         .reverse();
+      const place: Place = {
+        outerTypes: site.slice(1).map((node) => String(node.type)),
+        parentType: site[0] ? String(site[0].type) : null,
+        root,
+      };
       // A text's marks are not formatting, so they must not keep it from
-      // merging with its neighbours.
+      // merging with its neighbours. Content a pending join or unwrap brings
+      // here from elsewhere in the review tree drops the values this place
+      // cannot hold.
+      const proposedNode = ({ node, path }: ProposedChild) => {
+        const own = isText(node) ? withoutMarks(node) : node;
+
+        return PathApi.isParent(hostPath, path)
+          ? own
+          : heldNode(compiled, own, place);
+      };
       const entryOf = new Map<Descendant, ProposedChild>();
       const inputs = after.map((entry) => {
-        const node = (
-          isText(entry.node) ? withoutMarks(entry.node) : entry.node
-        ) as Descendant;
+        const node = proposedNode(entry) as Descendant;
 
         entryOf.set(node, entry);
 
@@ -409,9 +425,7 @@ export const completeProposed = (
           nodes.splice(
             ahead === -1 ? inputs.length : ahead,
             0,
-            (isText(item.node)
-              ? withoutMarks(item.node)
-              : item.node) as Descendant
+            proposedNode(item) as Descendant
           );
         }
 

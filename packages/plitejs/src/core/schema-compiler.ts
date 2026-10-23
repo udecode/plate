@@ -25,6 +25,7 @@ import type {
 } from '../interfaces/schema';
 import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
+import { jsonEqual } from './change/json';
 import { cloneFrozen } from './clone';
 import { profileCoreDuration } from './profiling';
 
@@ -1339,8 +1340,8 @@ const canonicalJson = (
     return value;
   }
   if (typeof value === 'number') {
-    if (Number.isFinite(value)) return value;
-    throw new Error('JSON numbers must be finite.');
+    if (Number.isFinite(value) && !Object.is(value, -0)) return value;
+    throw new Error('JSON numbers must be finite and not -0.');
   }
   if (typeof value === 'object' && value && ancestors.has(value)) {
     throw new Error('Values cannot be cyclic.');
@@ -3199,6 +3200,21 @@ const clonePropertyDescriptor = (
 const propertyKeyLabel = (key: SchemaPropertyKey) =>
   typeof key === 'string' ? key : `${key.prefix}*`;
 
+export const unwrittenAs = (
+  descriptor: PropertyValueDescriptor,
+  value: unknown
+) => {
+  if (descriptor.generate !== undefined) return 'filled';
+  if (
+    !Object.hasOwn(descriptor, 'default') ||
+    !jsonEqual(value, descriptor.default)
+  ) {
+    return null;
+  }
+
+  return descriptor.omitDefault ? 'left-out' : 'filled';
+};
+
 /** Canonical persisted identity for one schema property declaration. */
 export const getCompiledSchemaPropertyId = (
   declaration: Readonly<{
@@ -3445,13 +3461,17 @@ export const getCompiledPropertyCandidates = (
   });
 };
 
+type ContextAncestor =
+  | Readonly<{ type?: unknown }>
+  | Readonly<Record<string, unknown>>;
+
 export const toCompiledTargetContext = (
   type: string,
   {
     ancestors = [],
     root,
   }: Readonly<{
-    ancestors?: ReadonlyArray<Readonly<{ type?: unknown }>>;
+    ancestors?: readonly ContextAncestor[];
     root?: string;
   }> = {}
 ): CompiledSchemaTargetContext => ({
@@ -3463,6 +3483,167 @@ export const toCompiledTargetContext = (
   root: root === undefined || root === 'main' ? null : root,
   type,
 });
+
+export const toCompiledNodeContext = (
+  node: Readonly<{ text?: unknown; type?: unknown }>,
+  ancestors: readonly ContextAncestor[],
+  root?: string
+): CompiledSchemaTargetContext => {
+  const typeOf = (at?: ContextAncestor) =>
+    typeof at?.type === 'string' ? at.type : '';
+
+  return typeof node.text === 'string'
+    ? toCompiledTargetContext(typeOf(ancestors[0]), {
+        ancestors: ancestors.slice(1),
+        root,
+      })
+    : toCompiledTargetContext(typeOf(node), { ancestors, root });
+};
+
+const tracksPlacesBySchema = new WeakMap<object, boolean>();
+
+/**
+ * Whether some declaration's target can fail at one place where its node
+ * can stand and hold at another, so moving the node can leave its value
+ * where the key has no place. For each type the node can have (a text's is
+ * its parent's, which an undeclared element can be where the schema
+ * preserves one), the target's context atoms, `parent` and `root`, take
+ * every truth assignment, and a target whose answer changes tracks places.
+ * Atoms count as independent, so the answer errs toward tracking.
+ *
+ * @internal
+ */
+export const tracksPlaces = (
+  schema: Pick<CompiledEditorSchema, 'elements' | 'properties' | 'unknown'>
+): boolean => {
+  const cached = tracksPlacesBySchema.get(schema);
+
+  if (cached !== undefined) return cached;
+
+  const types = [
+    ...schema.elements.byType.keys(),
+    ...(schema.unknown === 'preserve' ? [UNKNOWN_TYPE] : []),
+  ];
+  const atomsOf = (target: SchemaTarget, atoms: Set<string>) => {
+    if (target.kind === 'and' || target.kind === 'or') {
+      for (const child of target.targets) atomsOf(child, atoms);
+    } else if (target.kind === 'not') {
+      atomsOf(target.target, atoms);
+    } else if (target.kind === 'parent' || target.kind === 'root') {
+      atoms.add(canonicalTarget(target));
+    }
+
+    return atoms;
+  };
+  const holds = (
+    target: SchemaTarget,
+    type: string,
+    truth: ReadonlyMap<string, boolean>
+  ): boolean => {
+    switch (target.kind) {
+      case 'and': {
+        return target.targets.every((child) => holds(child, type, truth));
+      }
+      case 'or': {
+        return target.targets.some((child) => holds(child, type, truth));
+      }
+      case 'not': {
+        return !holds(target.target, type, truth);
+      }
+      case 'type': {
+        return target.type === type;
+      }
+      case 'types': {
+        return target.types.includes(type);
+      }
+      case 'group': {
+        return schema.elements.groups.get(target.group)?.has(type) ?? false;
+      }
+      default: {
+        return getDefined(truth.get(canonicalTarget(target)));
+      }
+    }
+  };
+  const varies = (target: SchemaTarget, placement: 'element' | 'text') => {
+    const atoms = [...atomsOf(target, new Set())];
+
+    if (atoms.length > 12) return true;
+
+    const answers = new Set<boolean>();
+
+    for (const type of types) {
+      for (let mask = 0; mask < 1 << atoms.length; mask += 1) {
+        answers.add(
+          holds(
+            target,
+            type,
+            new Map(atoms.map((atom, bit) => [atom, (mask >> bit) % 2 === 1]))
+          )
+        );
+      }
+      // A text's type is its parent's, which changes with its place, so any
+      // change across types counts; an element keeps its type.
+      if (placement === 'element' && answers.size > 1) return true;
+      if (placement === 'element') answers.clear();
+    }
+
+    return answers.size > 1;
+  };
+  const tracks = [...schema.properties.byId.values()].some(
+    (property) =>
+      property.target !== null && varies(property.target, property.placement)
+  );
+
+  tracksPlacesBySchema.set(schema, tracks);
+
+  return tracks;
+};
+
+const leftOutDefaultOf = ({ descriptor }: MutableProperty) =>
+  unwrittenAs(descriptor, descriptor.default) === 'left-out'
+    ? stableStringify(descriptor.default)
+    : null;
+
+const assertPropertyAgreesAcrossPlaces = (
+  properties: readonly MutableProperty[]
+) => {
+  properties.forEach((left, index) => {
+    for (const right of properties.slice(index + 1)) {
+      if (
+        left.placement !== right.placement ||
+        !propertySelectorsOverlap(left.key, right.key)
+      ) {
+        continue;
+      }
+      const keys = [...new Set([left.key, right.key].map(propertyKeyLabel))];
+      const label = `${left.placement} property ${keys
+        .map((key) => `"${key}"`)
+        .join(' and ')}`;
+      const owners = `in declarations from "${left.owner}" and "${right.owner}"`;
+
+      if (left.lifecycle.split !== right.lifecycle.split) {
+        compileFailure(
+          'property-split-by-place',
+          `Schema ${label} drops on a split in one place and keeps in another, ${owners}.`,
+          [left.source, right.source],
+          right.source.path
+        );
+      }
+      if (
+        (left.exclusiveGroupIds.length > 0 ||
+          right.exclusiveGroupIds.length > 0) &&
+        leftOutDefaultOf(left) !== leftOutDefaultOf(right)
+      ) {
+        compileFailure(
+          'exclusive-property-default-by-place',
+          `Schema ${label} is an exclusive group member whose default differs by place, ${owners}.`,
+          [left.source, right.source],
+          right.source.path
+        );
+      }
+    }
+  });
+};
 
 const compileEditorSchemaInternal = (
   inputRecords: readonly EditorSchemaContributionRecord[],
@@ -4442,6 +4623,8 @@ const compileEditorSchemaInternal = (
     throw new EditorSchemaCompileError(selectorDiagnostics);
   }
 
+  assertPropertyAgreesAcrossPlaces(mutableProperties);
+
   const compiledProperties = mutableProperties
     .map((property) => {
       const id = property.semanticId ?? getCompiledSchemaPropertyId(property);
@@ -4951,6 +5134,7 @@ const compileEditorSchemaInternal = (
       ...canonicalContentProgram(root.content),
       name,
     })),
+    ...storageRevisionOf(compiledProperties),
     unknown: unknownPolicy,
   };
   const fingerprint = `fnv1a64:${hashSchemaIdentityString(
@@ -5424,9 +5608,29 @@ export type EditorSchemaContract = Readonly<{
   }>;
   revision: number;
   roots: readonly EditorSchemaContractRoot[];
+  /**
+   * Present when a property leaves its default out of storage. Revision 1
+   * stores every written value, even one equal to its default, so a contract
+   * without it describes an editor that dropped such writes.
+   */
+  storageRevision?: typeof EDITOR_SCHEMA_STORAGE_REVISION;
   unknown: EditorSchemaUnknownPolicy;
   vocabulary: CompiledSchemaVocabulary;
 }>;
+
+const EDITOR_SCHEMA_STORAGE_REVISION = 1;
+
+const storageRevisionOf = (
+  properties: Iterable<StructuralCompiledSchemaProperty>
+) => {
+  for (const property of properties) {
+    if (property.descriptor.omitDefault) {
+      return { storageRevision: EDITOR_SCHEMA_STORAGE_REVISION } as const;
+    }
+  }
+
+  return {};
+};
 
 export type EditorSchemaContractChangeKind =
   | 'element-added'
@@ -5445,6 +5649,7 @@ export type EditorSchemaContractChangeKind =
   | 'root-content-expanded'
   | 'root-content-restricted'
   | 'root-removed'
+  | 'storage-revision-changed'
   | 'unknown-policy-expanded'
   | 'unknown-policy-restricted';
 
@@ -5611,6 +5816,7 @@ export const createEditorSchemaContract = (
       ),
     }),
     revision: structural.revision,
+    ...storageRevisionOf(structural.properties.byId.values()),
     roots: Object.freeze(
       [...structural.roots.values()]
         .sort((left, right) =>
@@ -5958,6 +6164,8 @@ const isEditorSchemaContractShape = (value: Record<string, unknown>) => {
     isContractRoot(value.primaryRoot) &&
     Array.isArray(value.roots) &&
     value.roots.every(isContractRoot) &&
+    (value.storageRevision === undefined ||
+      value.storageRevision === EDITOR_SCHEMA_STORAGE_REVISION) &&
     isContractVocabulary(value.vocabulary)
   );
 };
@@ -6018,6 +6226,9 @@ const editorSchemaContractFingerprint = (contract: EditorSchemaContract) => {
         ...rootContent(root.content),
         name: root.name,
       })),
+    ...(contract.storageRevision === undefined
+      ? {}
+      : { storageRevision: contract.storageRevision }),
     unknown: contract.unknown,
   };
 
@@ -6357,12 +6568,20 @@ export const diffEditorSchemaContracts = (
     }
     const becameRequired =
       !contractPropertyRequired(before) && contractPropertyRequired(after);
+    // A stored document keeps every value it holds when its default starts
+    // being left out, so only leaving the default out reads it unchanged.
+    const leavesDefaultOut =
+      !before.descriptor.omitDefault &&
+      contractPropertySemanticSignature({
+        ...before,
+        descriptor: { ...before.descriptor, omitDefault: true },
+      }) === contractPropertySemanticSignature(after);
 
     changes.push(
       contractChange(
         becameRequired ? 'property-required' : 'property-changed',
         `properties.${before.id}`,
-        'migration-required'
+        leavesDefaultOut ? 'compatible' : 'migration-required'
       )
     );
   }
@@ -6411,6 +6630,26 @@ export const diffEditorSchemaContracts = (
   for (const name of new Set([...previousRoots.keys(), ...nextRoots.keys()])) {
     if (name === 'main') continue;
     compareRoot(`roots.${name}`, previousRoots.get(name), nextRoots.get(name));
+  }
+
+  if (previous.storageRevision !== next.storageRevision) {
+    const leftNothingOut =
+      previous.storageRevision === undefined &&
+      !previous.properties.byId.some(
+        ({ descriptor }) => descriptor.omitDefault
+      );
+
+    changes.push(
+      contractChange(
+        'storage-revision-changed',
+        'storageRevision',
+        leftNothingOut ? 'compatible' : 'migration-required',
+        {
+          from: String(previous.storageRevision ?? 0),
+          to: String(next.storageRevision ?? 0),
+        }
+      )
+    );
   }
 
   if (previous.unknown !== next.unknown) {

@@ -7,6 +7,8 @@ import { DocumentIndex } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { RootChange } from '../../core/change/root-change';
 import type { JsonEditorValue } from '../../core/change/tokens';
+import { isSplitOutput } from '../../core/default-storage';
+import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { incarnationOf } from '../facts/records';
@@ -24,22 +26,38 @@ export const isCut = (mark: AuthoredMark): mark is CutTag =>
 
 export const cutsOf = (node: unknown) => readAuthoredMarks(node).filter(isCut);
 
-const isText = (node: Node) => typeof node.text === 'string';
-
 /**
- * The element a rejected cut joins: the left fragment's properties and tags,
- * except the cut, the right fragment's other cut tags, and only the insert
- * and delete tags both fragments carry, over both fragments' children with
- * the nodes between them in the middle.
+ * What a join keeps, without children: the properties `{ ...right, ...left }`
+ * over the keys the left holds, each key's format tags from the half that
+ * supplies the key, the left's other marks, and the right's other cut tags.
+ * `cut` is null for a block, whose split leaves no cut tag. An inline join
+ * drops the cut and any insert or delete tag the right lacks, since the
+ * element's tags cover all of its content. A block keeps them, since the
+ * line it takes in keeps its own tags on its children.
  */
-const joinFragments = (
+export const joinedShell = (
   left: Node,
-  between: readonly Node[],
   right: Node,
-  cut: string,
-  dependencies: Dependencies
+  cut: string | null,
+  dependencies: Dependencies,
+  leftHolds: (key: string) => boolean
 ): Node => {
   const rightMarks = dependencies.marks(right);
+  const { children: _left, ...props } = left;
+  const {
+    children: _right,
+    [AUTHORED_MARKS_KEY]: _rightMarks,
+    ...rightProps
+  } = right;
+
+  for (const key of new Set([
+    ...Object.keys(props),
+    ...Object.keys(rightProps),
+  ])) {
+    if (key === AUTHORED_MARKS_KEY || leftHolds(key)) continue;
+    if (Object.hasOwn(rightProps, key)) props[key] = rightProps[key];
+    else delete props[key];
+  }
   const sharedByRight = (mark: AuthoredMark) =>
     rightMarks.some(
       (other) =>
@@ -51,57 +69,27 @@ const joinFragments = (
       .filter((mark) =>
         isCut(mark)
           ? mark.cut !== cut
-          : (mark.kind !== 'insert' && mark.kind !== 'delete') ||
+          : cut === null ||
+            (mark.kind !== 'insert' && mark.kind !== 'delete') ||
             sharedByRight(mark)
       ),
-    ...rightMarks.filter((mark) => isCut(mark) && mark.cut !== cut),
+    ...rightMarks.filter((mark) =>
+      isCut(mark)
+        ? mark.cut !== cut
+        : mark.kind === 'format' && !leftHolds(mark.key)
+    ),
   ];
-  const { children: _children, ...props } = left;
 
-  return {
-    ...dependencies.props(props, marks),
-    children: [...(left.children ?? []), ...between, ...(right.children ?? [])],
-  };
+  return dependencies.props(props, marks);
 };
-
-/** Tags one fragment carries and the other lacks, which a join would lose. */
-const oneSided = (
-  mine: readonly AuthoredMark[],
-  theirs: readonly AuthoredMark[]
-) =>
-  mine.filter(
-    (mark) =>
-      !isCut(mark) &&
-      !theirs.some(
-        (other) =>
-          other.kind === mark.kind &&
-          incarnationOf(other) === incarnationOf(mark) &&
-          (mark.kind !== 'format' ||
-            (other.kind === 'format' && other.key === mark.key))
-      )
-  );
-
-const contentMarksIn = (
-  node: Node,
-  dependencies: Dependencies
-): AuthoredMark[] => [
-  ...dependencies
-    .marks(node)
-    .filter((mark) => mark.kind === 'insert' || mark.kind === 'delete'),
-  ...(node.children ?? []).flatMap((child) =>
-    contentMarksIn(child, dependencies)
-  ),
-];
 
 /**
  * One block's inline children with each rejected cut joined: the fragment
  * holding the cut's `end` and the later fragment holding its `start` become
- * one element, when every node the decision keeps between them is text. A
- * `start` fragment takes back the properties the split dropped only when the
- * decision keeps its `end` fragment nowhere, since a surviving `end` fragment
- * still holds them. A join waits on pending content between the
- * fragments and on any pending tag only one of them carries. `joined` maps
- * each new element to the left fragment it continues.
+ * one element when `join` says so. A `start` fragment takes back the
+ * properties the split dropped only when the decision keeps its `end`
+ * fragment nowhere, since a surviving `end` fragment still holds them.
+ * `joined` maps each new element to the left fragment it continues.
  */
 export const joinRejectedCuts = (
   nodes: readonly Node[],
@@ -109,9 +97,23 @@ export const joinRejectedCuts = (
     /** Reads each fragment's insertions, its context's included, and writes the join's. */
     dependencies: Dependencies;
     endSurvives: (cut: string) => boolean;
+    /**
+     * The keys the left fragment supplies when the fragments join, or null
+     * when they stay apart: `left` as this list holds it, `original` the
+     * fragment it continues, and the nodes `between` them.
+     */
+    join: (
+      halves: Readonly<{
+        between: readonly Node[];
+        cut: CutTag;
+        left: Node;
+        original: Node;
+        right: Node;
+      }>
+    ) => ((key: string) => boolean) | null;
     rejected: (cut: CutTag) => boolean;
+    schema: CompiledEditorSchema | null;
     survives: (node: Node) => boolean;
-    wait: (marks: readonly AuthoredMark[]) => void;
   }>
 ): Readonly<{ joined: ReadonlyMap<Node, Node>; nodes: readonly Node[] }> => {
   const joined = new Map<Node, Node>();
@@ -137,28 +139,49 @@ export const joinRejectedCuts = (
 
       if (!left || !decision.survives(left)) {
         if (!decision.endSurvives(start.cut)) {
-          current = Object.assign({}, current, start.kept);
+          const right = current;
+
+          current = Object.assign(
+            {},
+            current,
+            Object.fromEntries(
+              Object.entries(start.kept ?? {}).filter(([key]) =>
+                isSplitOutput(decision.schema, right, key)
+              )
+            )
+          );
         }
         continue;
       }
 
       const between = out.slice(leftIndex + 1);
+      const original = joined.get(left) ?? left;
 
-      if (between.some((other) => !isText(other) && decision.survives(other))) {
-        continue;
-      }
-      const { dependencies } = decision;
-      const leftMarks = dependencies.marks(left);
-      const rightMarks = dependencies.marks(current);
+      const leftHolds = decision.join({
+        between,
+        cut: start,
+        left,
+        original,
+        right: current,
+      });
 
-      decision.wait([
-        ...oneSided(leftMarks, rightMarks),
-        ...oneSided(rightMarks, leftMarks),
-        ...between.flatMap((other) => contentMarksIn(other, dependencies)),
-      ]);
+      if (!leftHolds) continue;
       out.splice(leftIndex);
-      current = joinFragments(left, between, current, start.cut, dependencies);
-      joined.set(current, joined.get(left) ?? left);
+      current = {
+        ...joinedShell(
+          left,
+          current,
+          start.cut,
+          decision.dependencies,
+          leftHolds
+        ),
+        children: [
+          ...(left.children ?? []),
+          ...between,
+          ...(current.children ?? []),
+        ],
+      };
+      joined.set(current, original);
     }
     out.push(current);
   }

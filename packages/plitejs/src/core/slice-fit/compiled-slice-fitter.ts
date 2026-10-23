@@ -22,9 +22,11 @@ import { ChangeDraft, type DocumentChangeStep } from '../change/builder';
 import {
   DocumentChange,
   createInternalDocumentChange,
+  getInternalDocumentChangeEntries,
   mapInternalDocumentChangePosition,
 } from '../change/document-change';
 import { decodeNodes, DocumentIndex } from '../change/document-index';
+import type { Relocation } from '../change/lineage';
 import {
   RootChange,
   reconcileChildrenStep,
@@ -97,6 +99,8 @@ import {
   createRootFitPathProvenance,
   getTextEdge,
   isEmptyDescendant,
+  isLandingMove,
+  landedRelocations,
   pointsEqual,
   visitDescendantPaths,
   type ClosedFitOriginTracker,
@@ -328,6 +332,26 @@ const withoutUnchangedTail = (
         insert: candidate.insert.slice(0, candidate.insert.length - tail),
         to: candidate.to - tail,
       });
+};
+
+/**
+ * A move's raw landing, with the relocations that tie each landed text to
+ * the text it came from, so the canonical pass can judge a value it carried.
+ */
+const landedMove = (builder: ChangeDraft, change: DocumentChange) => {
+  if (!builder.tracksPlaces || !isLandingMove()) return {};
+
+  const indexedAfter = new Map<string, DocumentIndex>();
+  const relocations: Relocation[] = [];
+
+  for (const [root, rootChange] of getInternalDocumentChangeEntries(change)) {
+    const after = rootChange.apply(builder.getIndex(root));
+
+    indexedAfter.set(root, after);
+    relocations.push(...landedRelocations(root, after, rootChange));
+  }
+
+  return relocations.length > 0 ? { indexedAfter, relocations } : {};
 };
 
 export const compileSliceFitter = <V extends Value>(
@@ -1850,7 +1874,11 @@ export const compileSliceFitter = <V extends Value>(
     }
 
     const rawStep = profileCoreDuration('slice-fit-changeset-apply', () =>
-      builder.apply(rawChange, { classify: false, origin: 'slice' })
+      builder.apply(rawChange, {
+        classify: false,
+        origin: 'slice',
+        ...landedMove(builder, rawChange),
+      })
     );
     const constructionStep = profileCoreDuration(
       'slice-fit-canonical-change-finalize',

@@ -27,7 +27,7 @@ mock.module(join(import.meta.dir, '../src/core/representation.ts'), () => ({
   },
 }));
 
-const { createEditor, defineEditorSchema, property, schema } =
+const { createEditor, defineEditorSchema, property, schema, target } =
   await import('plitejs');
 const { createAuthoredPlugin } = await import('../src/authored/authored');
 const { authoredTestApi, expandedChildren } =
@@ -659,6 +659,103 @@ describe('authored review tree completion while recording', () => {
       acceptAll(editor, ['c1', 'c2', 'c4', 'c5']),
       plain(children(edit))
     );
+  });
+
+  const Lines = defineEditorSchema('completion-lines', {
+    elements: {
+      item: {
+        content: c.any([c.text(), c.type('link')], { default: 'text', min: 1 }),
+      },
+      link: { content: textMin1(), inline: true },
+      note: {
+        content: c.any([c.text(), c.type('link'), c.type('item')], {
+          default: 'text',
+          min: 1,
+        }),
+      },
+      paragraph: {
+        content: c.any([c.text(), c.type('link')], { default: 'text', min: 1 }),
+      },
+    },
+    id: 'completion-lines',
+    properties: [
+      schema.elementProperty('url', property.string(), {
+        target: target.and(
+          target.type('link'),
+          target.parent(
+            target.or(target.type('paragraph'), target.type('note'))
+          )
+        ),
+      }),
+    ],
+    root: c.not(c.text()),
+    unknown: 'preserve',
+    version: 1,
+  });
+  const urlByEve = [
+    {
+      at: 1,
+      author: 'eve',
+      before: 'v',
+      change: 'eve:1',
+      id: 'e1',
+      key: 'url',
+      kind: 'format',
+      write: { kind: 'set', value: 'w' },
+    },
+  ];
+  const joinedByMia = (...lines: Node[]): Node => ({
+    authored: [{ at: 1, author: 'mia', change: 'mia:1', kind: 'join' }],
+    children: lines,
+    type: 'paragraph',
+  });
+  const urlLink = (text: string, url: string, authored?: unknown): Node =>
+    ({
+      ...(authored ? { authored } : {}),
+      children: [t(text)],
+      type: 'link',
+      url,
+    }) as Node;
+
+  it('moves a link out of a line a pending join folds away without reading the next line into the link', () => {
+    const start = [
+      el('paragraph', t(''), urlLink('a', 'v'), t('')),
+      joinedByMia(
+        t(''),
+        urlLink('b', 'w', urlByEve),
+        t(''),
+        urlLink('c', 'w'),
+        t('')
+      ),
+    ];
+    const move: Parameters<ReturnType<typeof editorWith>['update']>[0] = (tx) =>
+      tx.nodes.move({ at: [1, 1], to: [0, 1] });
+    const plainEditor = createEditor({
+      initialValue: plain(start) as never,
+      plugins: [Lines] as never,
+    });
+
+    plainEditor.update(move);
+
+    assert.deepEqual(
+      editing(Lines, start, move),
+      plain(plainEditor.read.value().children as readonly Node[])
+    );
+  });
+
+  it('reads the line a pending join folds away into the mixed block that holds the line before it, not into that line', () => {
+    const start = [
+      el('note', t('x'), el('item', t('y'), el('link', t('k')), t('')), t('')),
+      joinedByMia(t(''), urlLink('c', 'w', urlByEve), t('')),
+    ];
+    const remove: Parameters<ReturnType<typeof editorWith>['update']>[0] = (
+      tx
+    ) => tx.nodes.remove({ at: [0, 1, 1] });
+    const editor = editorWith(Lines, start, 'propose');
+
+    suggest(editor, remove);
+
+    assert.deepEqual(acceptAll(editor, ['c1']), editing(Lines, start, remove));
   });
 
   it('runs no completion for typing, Enter or a mark, and none would build anything there', () => {

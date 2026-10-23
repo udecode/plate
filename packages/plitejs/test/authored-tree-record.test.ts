@@ -2964,6 +2964,54 @@ describe('authored review tree recording laws', () => {
       return { children: alice.read.children(), result };
     };
 
+    it('stores the type a proposed Enter under a slotted root gives its tail as a write over the type it split from', () => {
+      const alice = editorFor(
+        [title({}), paragraph({ text: 'Body' })],
+        'propose',
+        'alice',
+        [TitleThenParagraphs('drop')]
+      );
+
+      for (const at of [
+        [0, 0],
+        [2, 0],
+      ]) {
+        alice.update((tx) => {
+          tx.selection.set({ anchor: point(2, at), focus: point(2, at) });
+          tx.break.insert();
+        });
+      }
+      const typeWrites = (
+        alice.read.children() as Array<Record<string, unknown>>
+      )
+        .flatMap((block) =>
+          ((block.authored as Array<Record<string, unknown>>) ?? []).filter(
+            (member) => member.kind === 'format'
+          )
+        )
+        .map(({ before, change, key, write }) => ({
+          before,
+          change,
+          key,
+          write,
+        }));
+
+      assert.deepEqual(typeWrites, [
+        {
+          before: 'title',
+          change: 'alice:1',
+          key: 'type',
+          write: { kind: 'set', value: 'paragraph' },
+        },
+        {
+          before: 'paragraph',
+          change: 'alice:2',
+          key: 'type',
+          write: { kind: 'set', value: 'paragraph' },
+        },
+      ]);
+    });
+
     it('rejects a pending level change on the title, in both modes', () => {
       for (const intent of ['edit', 'propose'] as const) {
         const { children, result } = enterThenReject(
@@ -2981,7 +3029,17 @@ describe('authored review tree recording laws', () => {
               ? paragraph({ text: 'tle' })
               : {
                   ...paragraph({ text: 'tle' }),
-                  authored: [mark('split', 'alice')],
+                  authored: [
+                    {
+                      ...mark('split', 'alice'),
+                      before: 'title',
+                      id: 'alice-tag:1',
+                      key: 'type',
+                      kind: 'format',
+                      write: { kind: 'set', value: 'paragraph' },
+                    },
+                    mark('split', 'alice'),
+                  ],
                 },
             paragraph({ text: 'Body' }),
           ],

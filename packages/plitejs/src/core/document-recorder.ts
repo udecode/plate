@@ -114,6 +114,32 @@ export const registerEditorDocumentRecorder = (
 export const getEditorDocumentRecorder = (editor: Editor) =>
   DOCUMENT_RECORDERS.get(getEditorRuntimeOwner(editor));
 
+const DRAFT_VIEWS = new WeakMap<object, () => boolean>();
+
+/**
+ * Register whether the active update's plain draft is a view the recorder
+ * judges, such as a proposal, which is never stored, so its canonical pass
+ * drops what its places cannot hold instead of refusing it.
+ *
+ * @internal
+ */
+export const registerEditorDraftView = (
+  editor: Editor,
+  isView: () => boolean
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  DRAFT_VIEWS.set(owner, isView);
+
+  return () => {
+    if (DRAFT_VIEWS.get(owner) === isView) DRAFT_VIEWS.delete(owner);
+  };
+};
+
+/** @internal */
+export const isEditorDraftView = (editor: Editor) =>
+  DRAFT_VIEWS.get(getEditorRuntimeOwner(editor))?.() ?? false;
+
 /**
  * Register an internal guard over a transaction's draft. A `recorded` guard,
  * the default, sees the draft the transaction commits, in the projection the

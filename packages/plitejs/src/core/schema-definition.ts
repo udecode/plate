@@ -99,9 +99,9 @@ const cloneFrozenJson = <TValue>(
     return value;
   }
   if (typeof value === 'number') {
-    if (Number.isFinite(value)) return value;
+    if (Number.isFinite(value) && !Object.is(value, -0)) return value;
 
-    throw new Error(`${owner} must contain only finite JSON numbers.`);
+    throw new Error(`${owner} must contain only finite JSON numbers, not -0.`);
   }
   if (typeof value !== 'object') {
     throw new Error(`${owner} must be JSON data.`);

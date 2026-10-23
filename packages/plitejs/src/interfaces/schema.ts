@@ -21,7 +21,6 @@ export type EditorSchemaRepairCode =
   | 'insert-inline-spacer'
   | 'insert-required-content'
   | 'merge-text'
-  | 'omit-default-property'
   | 'omit-empty-text-property'
   | 'remove-empty-text'
   | 'remove-noncanonical-child'

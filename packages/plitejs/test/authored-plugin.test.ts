@@ -405,6 +405,74 @@ describe('authored plugin', () => {
     assert.equal(read.change('ann:1').ranges.length, 3);
   });
 
+  it('reads a proposed Enter whose tail keeps its type as only a break, and still shows a type the title slot forces and a property set where none was', () => {
+    const Titled = defineEditorSchema('authored-plugin-titled', {
+      elements: {
+        paragraph: schema.element.textBlock(),
+        title: schema.element.textBlock(),
+      },
+      id: 'authored-plugin-titled',
+      properties: [
+        schema.elementProperty('tone', property.string(), {
+          target: nodeTarget.type('paragraph'),
+        }),
+      ],
+      root: schema.content.prefix(
+        [{ element: 'title' }],
+        schema.content.types(['paragraph'], { default: { type: 'paragraph' } })
+      ),
+      unknown: 'reject',
+      version: 1,
+    });
+    const proposed = (write: (tx: EditorUpdateTransaction) => void) => {
+      const editor = createEditor({
+        initialValue: [
+          { children: [{ text: 'Title' }], type: 'title' },
+          { children: [{ text: 'Body' }], type: 'paragraph' },
+        ] as never,
+        plugins: [
+          Titled,
+          createAuthoredPlugin({
+            authorId: 'alice',
+            createChangeId: () => 'alice:1',
+            intent: 'propose',
+            now: () => 1,
+          }),
+        ],
+      });
+
+      editor.update(write);
+
+      const { read } = editor as unknown as ReturnType<typeof make>['authored'];
+
+      return {
+        kind: read.authored.change('alice:1').kind,
+        parts: read.authored
+          .details('alice:1')
+          .parts.map((part: { kind: string }) => part.kind),
+      };
+    };
+    const enterAt = (path: number[]) => (tx: EditorUpdateTransaction) => {
+      tx.selection.set(caret(path, 2));
+      tx.break.insert();
+    };
+
+    assert.deepEqual(
+      {
+        body: proposed(enterAt([1, 0])),
+        title: proposed(enterAt([0, 0])),
+        tone: proposed((tx) =>
+          tx.nodes.set({ tone: 'v' } as never, { at: [1] })
+        ),
+      },
+      {
+        body: { kind: 'structure', parts: ['boundary'] },
+        title: { kind: 'mixed', parts: ['properties', 'boundary'] },
+        tone: { kind: 'format', parts: ['properties'] },
+      }
+    );
+  });
+
   it('reads a card of ten thousand touching changes as one summary', () => {
     // The oldest change sits mid-card.
     const editor = createEditor({

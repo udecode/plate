@@ -24,7 +24,7 @@ This plan first covered the cut fixes too. Its panel traced them to how the edit
 
 ## Expected results
 
-Each row starts from the document named, runs the steps in order and must give the result. "Proposes" is a suggestion, "directly" is an Editing change, and "every order" means each order of single decisions and all of them in one call, with decisions that each wait on the other decided together. The table check is `docs/plans/artifacts/cut-join-values/redesign/table/table-check.r6.template.ts`, run by its `run.sh` against a tree. It runs outside the suite. "next" is its run on `origin/next` b7fb129af6.
+Each row starts from the document named, runs the steps in order and must give the result. "Proposes" is a suggestion, "directly" is an Editing change, and "every order" means each order of single decisions and all of them in one call, with decisions that each wait on the other decided together. The table check is `docs/plans/artifacts/cut-join-values/redesign/table/table-check.r6.template.ts`, run by its `run.sh` against a tree. It runs outside the suite. "next" is its run on `origin/next` b7fb129af6. Since the storage slice a node keeps every value written to it, so r6, which compares saved bytes, no longer fits T12, T23 and T31; the storage plan's table check runs those three by what each node reads.
 
 | Row | Rank | Start and steps | Must give | next | Slice |
 | --- | --- | --- | --- | --- | --- |
@@ -39,7 +39,7 @@ Each row starts from the document named, runs the steps in order and must give t
 | T9 | P0 | ab at u; Carol's Enter; Ed sets a's ref to r7 directly; reject Carol | ab at u ref r7 | passes | guard |
 | T10 | P0 | ab at u with ref r1; Carol's split; Bob proposes removing a; Alice proposes ref r2 on b; accept Bob and Alice, reject Carol, every order | b at u ref r2 | b at u ref r1 | give-back |
 | T11 | P0 | as T10; accept Bob, reject Alice and Carol, every order | b at u ref r1 | b at u in one call | give-back |
-| T12 | P0 | url defaults to w and leaves it out; Carol's split of ab at u; Alice proposes v and w; accept Alice, reject Carol, every order | a at v, and b with no url, reading w | ab at v | joins |
+| T12 | P0 | url defaults to w and leaves it out; Carol's split of ab at u; Alice proposes v and w; accept Alice, reject Carol, every order | a at v, and b reading w | ab at v | joins |
 | T13 | P0 | url defaults to w and leaves it out; Bob proposes u, then Eve proposes w; accept Bob, then reject Eve | both apply; url u | accepting crashes | storage |
 | T14 | P0 | T13 on a text color | both apply; color u | accepting crashes | storage |
 | T15 | P0 | tone only on headings, default w left out; Bob proposes u, Eve w; accept Bob; retype to paragraph directly; reject Eve; reload | each step applies; the paragraph has no tone; reload the same | accepting crashes | storage |

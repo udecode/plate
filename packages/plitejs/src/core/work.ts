@@ -16,6 +16,8 @@ export type CoreWork = {
   bookCopies: number;
   /** Change builders started on a projected document. */
   builders: number;
+  /** Nodes the canonical pass opened past its check that a node is unchanged. */
+  canonicalNodes: number;
   clampWrites: number;
   collapsedBoundaryVisits: number;
   composedProjectionSections: number;
@@ -25,12 +27,20 @@ export type CoreWork = {
   copiedSlots: number;
   /** Incremental paths a collaboration binding refused for a fallback. */
   fallbacks: number;
+  /** Former-place lookups for a value a node carried into a new place. */
+  formerPlaceCalls: number;
+  /** Steps, landed nodes and pieces those lookups examined. */
+  formerPlaceVisits: number;
   /** Nodes an index was built from, out of a whole array. */
   indexedNodes: number;
+  /** Nodes a moved range's landing read to find where its payload stood. */
+  landingSources: number;
   /** Bookmarks a step mapped. */
   mappedBookmarks: number;
   /** Plugin update method calls that reached the dispatcher. */
   pluginDispatches: number;
+  /** Nodes judged for the values their place can hold. */
+  placeChecks: number;
   /** Candidate roots the orphan judge counted owners for. */
   ownedRootsJudged: number;
   /** Roots' ownership indexes the orphan judge fetched. */
@@ -43,6 +53,8 @@ export type CoreWork = {
   projectionChanges: number;
   /** Roots a collaboration binding reconciled whole by diffing them. */
   reconciles: number;
+  /** Runs of tokens a step recorded as relocated from another place. */
+  relocations: number;
   /** Root snapshots built from a root's current children. */
   rootSnapshots: number;
   /** Change sections read to map a position or compose a change. */
@@ -75,6 +87,7 @@ export const coreWork: CoreWork = {
   baselines: 0,
   bookCopies: 0,
   builders: 0,
+  canonicalNodes: 0,
   clampWrites: 0,
   collapsedBoundaryVisits: 0,
   composedProjectionSections: 0,
@@ -82,15 +95,20 @@ export const coreWork: CoreWork = {
   coverageQueries: 0,
   copiedSlots: 0,
   fallbacks: 0,
+  formerPlaceCalls: 0,
+  formerPlaceVisits: 0,
   indexedNodes: 0,
+  landingSources: 0,
   mappedBookmarks: 0,
   pluginDispatches: 0,
+  placeChecks: 0,
   ownedRootsJudged: 0,
   ownerIndexReads: 0,
   ownershipBuilds: 0,
   projectedIndexes: 0,
   projectionChanges: 0,
   reconciles: 0,
+  relocations: 0,
   rootSnapshots: 0,
   sectionsWalked: 0,
   snapshotIndexes: 0,

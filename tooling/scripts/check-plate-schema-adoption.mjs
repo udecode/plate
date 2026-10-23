@@ -432,6 +432,7 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/platejs/src/migrations/migratePlateV54Urls.internal.ts', 1],
   ['packages/platejs/type-tests/plugin-schema-contracts.ts', 8],
   ['packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx', 2],
+  ['packages/plitejs/test/carried-moves.test.ts', 1],
   ['packages/plitejs/test/editor-foundation-contract.ts', 2],
   ['packages/plitejs/test/schema-contract.ts', 10],
   ['packages/plitejs/test/schema-inference-contract.ts', 2],

@@ -23,6 +23,8 @@ type Node = Record<string, unknown> & {
   children?: readonly Node[];
   ref?: string;
   text?: string;
+  tone?: string;
+  type?: string;
   url?: string;
 };
 type Decision = { action: 'accept' | 'reject'; changes: string[] };
@@ -296,7 +298,7 @@ describe('cuts', () => {
     );
   });
 
-  it('keeps the left half url when a url change on the right half is accepted and the Enter rejected, and waits while it is pending', () => {
+  it('keeps both halves when a url change on the right half is accepted and the Enter rejected, and waits while it is pending', () => {
     const bob = editorFor([linked(link('ab'))], 'bob');
 
     enter(bob, [0, 1, 0], 1);
@@ -321,10 +323,10 @@ describe('cuts', () => {
         },
         alone: { ids: ['bob:1'], status: 'blocked', with: ['carol:1'] },
         rejected: {
-          batch: [['ab@u']],
+          batch: [['a@u', 'b@u2']],
           orders: [
-            { shape: [['ab@u']], waiting: [] },
-            { shape: [['ab@u']], waiting: [] },
+            { shape: [['a@u', 'b@u2']], waiting: [] },
+            { shape: [['a@u', 'b@u2']], waiting: [] },
           ],
         },
       }
@@ -952,6 +954,633 @@ describe('cuts', () => {
         loaded: [['a@u'], []],
         rejected: [['a@u']],
       }
+    );
+  });
+});
+
+const editorIn = (
+  plugin: unknown,
+  value: unknown,
+  author: string,
+  intent: 'edit' | 'propose'
+) =>
+  createEditor({
+    initialValue: value as never,
+    plugins: [
+      plugin,
+      createAuthoredPlugin({
+        authorId: author,
+        createChangeId: () => author,
+        intent,
+        now: () => 1,
+      }),
+    ] as never,
+  });
+const commit = (
+  plugin: unknown,
+  value: unknown,
+  author: string,
+  intent: 'edit' | 'propose',
+  run: (tx: EditorUpdateTransaction) => void
+) => {
+  const editor = editorIn(plugin, value, author, intent);
+
+  editor.update(run);
+
+  return editor.read.value() as { children: Node[] };
+};
+const decideIn = (
+  plugin: unknown,
+  value: unknown,
+  decisions: Decision | Decision[]
+) => {
+  const editor = editorIn(plugin, value, 'zed', 'edit');
+  const result = authoredTestApi(editor).decide(decisions);
+
+  return {
+    editor,
+    result,
+    value: editor.read.value().children as readonly Node[],
+  };
+};
+const lines = (nodes: readonly Node[]) =>
+  nodes.map(
+    (block) =>
+      `${block.type}${block.tone ? `(${block.tone})` : ''}: ${(
+        block.children ?? []
+      )
+        .map((child) =>
+          child.type === 'link'
+            ? `[${(child.children ?? []).map((leaf) => leaf.text).join('')}${child.ref ? `#${child.ref}` : ''}]`
+            : child.text
+        )
+        .join('')}`
+  );
+const splitLink = (tx: EditorUpdateTransaction, path: number[]) =>
+  tx.nodes.split({
+    always: true,
+    at: { offset: 1, path },
+    match: (node) => (node as Node).type === 'link',
+  });
+const linkPaths = (nodes: readonly Node[]) =>
+  nodes.flatMap((block, at) =>
+    (block.children ?? []).flatMap((child, index) =>
+      child.type === 'link' ? [[at, index]] : []
+    )
+  );
+
+describe('rejected cuts at the place their halves land', () => {
+  const inline = () =>
+    schema.content.any([schema.content.text(), schema.content.type('link')], {
+      default: 'text',
+      min: 1,
+    });
+  const RefInParagraph = defineEditorSchema('cuts-ref-in-paragraph', {
+    elements: {
+      heading: { content: inline() },
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+      paragraph: { content: inline() },
+    },
+    id: 'cuts-ref-in-paragraph',
+    properties: [
+      schema.elementProperty('ref', property.string(), {
+        target: target.and(
+          target.type('link'),
+          target.parent(target.type('paragraph'))
+        ),
+      }),
+    ],
+    root: schema.content.types(['heading', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'preserve',
+    version: 1,
+  });
+
+  it('drops a value a merge carries into a block whose links cannot hold it, so the merge and the rejected cut apply', () => {
+    const carol = commit(
+      RefInParagraph,
+      [
+        { children: [{ text: 'h' }], type: 'heading' },
+        paragraph(
+          { text: '' },
+          { children: [{ text: 'ab' }], type: 'link' },
+          { text: '' }
+        ),
+      ],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [1, 1, 0])
+    );
+    const ed = commit(RefInParagraph, carol, 'ed', 'edit', (tx) => {
+      tx.nodes.set({ ref: 'x' } as never, { at: [1, 1] });
+      tx.nodes.set({ ref: 'y' } as never, { at: [1, 3] });
+    });
+    // The stored form of Dave's proposed Backspace into the heading.
+    const value = structuredClone(ed);
+
+    value.children[1].authored = [
+      ...((value.children[1].authored as unknown[]) ?? []),
+      { at: 1, author: 'dave', change: 'dave', kind: 'join' },
+    ];
+    const decided = decideIn(RefInParagraph, value, [
+      { action: 'accept', changes: ['dave'] },
+      { action: 'reject', changes: ['carol'] },
+    ]);
+
+    assert.deepEqual(
+      { lines: lines(decided.value), status: decided.result.status },
+      { lines: ['heading: h[ab]'], status: 'applied' }
+    );
+  });
+
+  const ColorInParagraph = defineEditorSchema('cuts-color-in-paragraph', {
+    elements: {
+      heading: { content: schema.content.text() },
+      paragraph: { content: schema.content.text() },
+    },
+    id: 'cuts-color-in-paragraph',
+    properties: [
+      schema.textProperty(
+        'color',
+        property.string({ default: 'u', omitDefault: true }),
+        { target: target.type('paragraph') }
+      ),
+    ],
+    root: schema.content.types(['heading', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'preserve',
+    version: 1,
+  });
+  // Eve's unrelated proposed line, Ed's direct writes on the paragraph, and
+  // the stored form of Dave's proposed Backspace into the heading.
+  const mergedState = (
+    plugin: unknown,
+    second: Node,
+    write: (tx: EditorUpdateTransaction) => void
+  ) => {
+    const eve = commit(
+      plugin,
+      [{ children: [{ text: 'h' }], type: 'heading' }, second],
+      'eve',
+      'propose',
+      (tx) => tx.nodes.insert(paragraph({ text: 'z' }) as never, { at: [2] })
+    );
+    const value = structuredClone(commit(plugin, eve, 'ed', 'edit', write));
+
+    value.children[1].authored = [
+      ...((value.children[1].authored as unknown[]) ?? []),
+      { at: 1, author: 'dave', change: 'dave', kind: 'join' },
+    ];
+
+    return value;
+  };
+  const merges = [
+    {
+      name: 'a written text color',
+      plugin: ColorInParagraph,
+      value: () =>
+        mergedState(ColorInParagraph, paragraph({ text: 'ab' }), (tx) =>
+          tx.nodes.set({ color: 'u' } as never, { at: [1, 0] })
+        ),
+      joined: 'heading: hab',
+      kept: 'paragraph: ab',
+      held: '"color":"u"',
+    },
+    {
+      name: 'link refs',
+      plugin: RefInParagraph,
+      value: () =>
+        mergedState(RefInParagraph, linked(link('a'), link('b')), (tx) => {
+          tx.nodes.set({ ref: 'x' } as never, { at: [1, 1] });
+          tx.nodes.set({ ref: 'y' } as never, { at: [1, 3] });
+        }),
+      joined: 'heading: h[a][b]',
+      kept: 'paragraph: [a#x][b#y]',
+      held: '"ref":"x"',
+    },
+  ];
+
+  for (const { name, plugin, value, joined, kept, held } of merges) {
+    it(`previews a merge into a heading that cannot hold ${name}, without the value`, () => {
+      const editor = editorIn(plugin, value(), 'zed', 'edit') as ReturnType<
+        typeof editorIn
+      > & {
+        api: { authored: { setView: (view: unknown) => void } };
+      };
+
+      editor.api.authored.setView({ preview: 'proposed' });
+      const preview = editor.read.children() as readonly Node[];
+
+      assert.deepEqual(
+        { held: JSON.stringify(preview).includes(held), lines: lines(preview) },
+        { held: false, lines: [joined, 'paragraph: z'] }
+      );
+    });
+
+    for (const changes of [['dave'], ['dave', 'eve']]) {
+      it(`accepts ${changes.join(' and ')} into a heading that cannot hold ${name}, without the value`, () => {
+        const decided = decideIn(plugin, value(), {
+          action: 'accept',
+          changes,
+        });
+
+        assert.deepEqual(
+          {
+            held: JSON.stringify(decided.value).includes(held),
+            lines: lines(decided.value),
+            status: decided.result.status,
+          },
+          {
+            held: false,
+            lines: [joined, 'paragraph: z'],
+            status: 'applied',
+          }
+        );
+      });
+    }
+
+    it(`keeps ${name} under the paragraph when the merge into a heading is rejected`, () => {
+      const decided = decideIn(plugin, value(), {
+        action: 'reject',
+        changes: ['dave'],
+      });
+
+      assert.deepEqual(
+        {
+          held: JSON.stringify(decided.value).includes(held),
+          lines: lines(decided.value),
+          status: decided.result.status,
+        },
+        {
+          held: true,
+          lines: ['heading: h', kept, 'paragraph: z'],
+          status: 'applied',
+        }
+      );
+    });
+  }
+});
+
+describe('rejected cuts compare their halves', () => {
+  const entered = () => {
+    const carol = editorFor([linked(link('ab'))], 'carol');
+
+    enter(carol, [0, 1, 0], 1);
+
+    return carol.read.value().children;
+  };
+  const urls = (
+    value: unknown,
+    author: string,
+    left: string,
+    right: string
+  ) => {
+    const editor = editorFor(value, author);
+
+    editor.update((tx) => {
+      tx.nodes.set({ url: left } as never, { at: [0, 1] });
+      tx.nodes.set({ url: right } as never, { at: [1, 1] });
+    });
+
+    return editor.read.value().children;
+  };
+  const splitOf = (value: unknown) => {
+    const carol = editorFor(value, 'carol');
+
+    carol.update((tx) => splitLink(tx, [0, 1, 0]));
+
+    return carol.read.value().children as readonly Node[];
+  };
+  const withRefOnWhole = () => {
+    const bob = editorFor([linked(link('ab', 'u', { ref: 'r1' }))], 'bob');
+
+    bob.update((tx) => tx.nodes.set({ ref: 'r2' } as never, { at: [0, 1] }));
+
+    return bob.read.value().children;
+  };
+  const Paras = defineEditorSchema('cuts-paras', {
+    elements: { paragraph: { content: schema.content.text() } },
+    id: 'cuts-paras',
+    properties: [
+      schema.elementProperty('tone', property.string(), {
+        target: target.type('paragraph'),
+      }),
+    ],
+    root: schema.content.types(['paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'preserve',
+    version: 1,
+  });
+  const Titled = defineEditorSchema('cuts-titled', {
+    elements: {
+      paragraph: { content: schema.content.text() },
+      title: { content: schema.content.text() },
+    },
+    id: 'cuts-titled',
+    properties: [],
+    root: schema.content.prefix(
+      [{ element: 'title' }],
+      schema.content.types(['paragraph'], { default: { type: 'paragraph' } })
+    ),
+    unknown: 'preserve',
+    version: 1,
+  });
+  const RefW = defineEditorSchema('cuts-ref-w', {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+    },
+    id: 'cuts-ref-w',
+    properties: [
+      schema.elementProperty('url', property.string(), {
+        target: target.type('link'),
+      }),
+      schema.elementProperty(
+        'ref',
+        property.string({ default: 'w', omitDefault: true }),
+        { split: 'drop', target: target.type('link') }
+      ),
+    ],
+    root: schema.content.not(schema.content.text()),
+    unknown: 'preserve',
+    version: 1,
+  });
+
+  it('waits to reject an Enter on the one pending change that wrote different urls on its halves', () => {
+    const value = urls(entered(), 'alice', 'v', 'w');
+
+    assert.deepEqual(
+      decide(value, { action: 'reject', changes: ['carol:1'] }).result,
+      { ids: ['carol:1'], status: 'blocked', with: ['alice:1'] }
+    );
+  });
+
+  it('waits to reject an Enter on every pending change that still decides whether its halves differ', () => {
+    const value = urls(urls(entered(), 'alice', 'v', 'w'), 'bob', 'q', 'q');
+
+    assert.deepEqual(
+      decide(value, { action: 'reject', changes: ['carol:1'] }).result,
+      { ids: ['carol:1'], status: 'blocked', with: ['alice:1', 'bob:1'] }
+    );
+  });
+
+  it('waits to reject an inline split on a pending insertion between its halves', () => {
+    const split = splitOf([linked(link('ab'))]);
+    const dave = editorFor(split, 'dave');
+
+    dave.update((tx) =>
+      tx.nodes.insert(link('x', 'z') as never, { at: linkPaths(split)[1] })
+    );
+    const value = dave.read.value().children;
+
+    assert.deepEqual(
+      {
+        alone: decide(value, { action: 'reject', changes: ['carol:1'] }).result,
+        decided: shape(
+          decide(value, { action: 'reject', changes: ['carol:1', 'dave:1'] })
+            .value
+        ),
+      },
+      {
+        alone: { ids: ['carol:1'], status: 'blocked', with: ['dave:1'] },
+        decided: [['ab@u']],
+      }
+    );
+  });
+
+  it('rejects an inline split at once under a pending ref on the whole link, and rejecting that ref gives r1 back', () => {
+    const rejected = decide(splitOf(withRefOnWhole()), {
+      action: 'reject',
+      changes: ['carol:1'],
+    });
+
+    assert.deepEqual(
+      {
+        bob: shape(
+          decide(rejected.value, { action: 'reject', changes: ['bob:1'] }).value
+        ),
+        carol: { shape: shape(rejected.value), status: rejected.result.status },
+      },
+      {
+        bob: [['ab@u#r1']],
+        carol: { shape: [['ab@u#r2']], status: 'applied' },
+      }
+    );
+  });
+
+  it('waits to reject an inline split on a pending ref once the right half holds its own value, and every order keeps both refs', () => {
+    const split = splitOf(withRefOnWhole());
+    const ed = editorFor(split, 'ed', 'edit');
+
+    ed.update((tx) =>
+      tx.nodes.set({ ref: 'r2' } as never, { at: linkPaths(split)[1] })
+    );
+    const value = ed.read.value().children;
+
+    assert.deepEqual(
+      {
+        alone: decide(value, { action: 'reject', changes: ['carol:1'] }).result,
+        rejected: everyOrder(value, { 'bob:1': 'reject', 'carol:1': 'reject' }),
+      },
+      {
+        alone: { ids: ['carol:1'], status: 'blocked', with: ['bob:1'] },
+        rejected: {
+          batch: [['a@u#r1', 'b@u#r2']],
+          orders: [
+            { shape: [['a@u#r1', 'b@u#r2']], waiting: [] },
+            { shape: [['a@u#r1', 'b@u#r2']], waiting: [] },
+          ],
+        },
+      }
+    );
+  });
+
+  it('keeps apart the paragraphs of a rejected Enter whose accepted tones differ, and waits while the tones are pending', () => {
+    const carol = commit(
+      Paras,
+      [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+      'carol',
+      'propose',
+      (tx) => enterIn(tx, [0, 0], 1)
+    );
+    const value = commit(Paras, carol, 'alice', 'propose', (tx) => {
+      tx.nodes.set({ tone: 'v' } as never, { at: [0] });
+      tx.nodes.set({ tone: 'w' } as never, { at: [1] });
+    });
+    const acceptAlice = { action: 'accept' as const, changes: ['alice'] };
+    const rejectCarol = { action: 'reject' as const, changes: ['carol'] };
+
+    assert.deepEqual(
+      {
+        alone: decideIn(Paras, value, rejectCarol).result,
+        batch: lines(decideIn(Paras, value, [acceptAlice, rejectCarol]).value),
+        ordered: lines(
+          decideIn(
+            Paras,
+            decideIn(Paras, value, acceptAlice).value,
+            rejectCarol
+          ).value
+        ),
+      },
+      {
+        alone: { ids: ['carol'], status: 'blocked', with: ['alice'] },
+        batch: ['paragraph(v): a', 'paragraph(w): b'],
+        ordered: ['paragraph(v): a', 'paragraph(w): b'],
+      }
+    );
+  });
+
+  it('keeps apart the halves of a rejected Enter that an Editing retype made differ, though the root would force the same type', () => {
+    const carol = commit(
+      Titled,
+      [
+        { children: [{ text: 'h' }], type: 'title' },
+        { children: [{ text: 'ab' }], type: 'paragraph' },
+      ],
+      'carol',
+      'propose',
+      (tx) => enterIn(tx, [1, 0], 1)
+    );
+    const ed = commit(Titled, carol, 'ed', 'edit', (tx) => {
+      tx.nodes.set({ type: 'title' } as never, { at: [1] });
+      tx.nodes.remove({ at: [0] });
+    });
+    const rejected = decideIn(Titled, ed, {
+      action: 'reject',
+      changes: ['carol'],
+    });
+
+    assert.deepEqual(
+      { lines: lines(rejected.value), status: rejected.result.status },
+      { lines: ['title: a', 'paragraph: b'], status: 'applied' }
+    );
+  });
+
+  it('joins a rejected Enter in a required title back into the title, also from a save that left no type tag', () => {
+    const carol = commit(
+      Titled,
+      [{ children: [{ text: 'ab' }], type: 'title' }],
+      'carol',
+      'propose',
+      (tx) => enterIn(tx, [0, 0], 1)
+    );
+    const untagged = structuredClone(carol);
+
+    untagged.children[1].authored = (
+      untagged.children[1].authored as Array<{ key?: string }>
+    ).filter((mark) => mark.key !== 'type');
+    const rejected = (value: unknown) =>
+      lines(
+        decideIn(Titled, value, { action: 'reject', changes: ['carol'] }).value
+      );
+
+    assert.deepEqual(
+      { tagged: rejected(carol), untagged: rejected(untagged) },
+      { tagged: ['title: ab'], untagged: ['title: ab'] }
+    );
+  });
+
+  it('stores the same url in every order when two changes write the left-out default on the halves of a rejected Enter', () => {
+    const UrlU = defineEditorSchema('cuts-url-u', {
+      elements: {
+        link: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+          inline: true,
+        },
+      },
+      id: 'cuts-url-u',
+      properties: [
+        schema.elementProperty(
+          'url',
+          property.string({ default: 'u', omitDefault: true }),
+          { target: target.type('link') }
+        ),
+      ],
+      root: schema.content.not(schema.content.text()),
+      unknown: 'preserve',
+      version: 1,
+    });
+    const carol = commit(
+      UrlU,
+      [linked({ children: [{ text: 'ab' }], type: 'link' })],
+      'carol',
+      'propose',
+      (tx) => enterIn(tx, [0, 1, 0], 1)
+    );
+    const alice = commit(UrlU, carol, 'alice', 'propose', (tx) =>
+      tx.nodes.set({ url: 'u' } as never, { at: [0, 1] })
+    );
+    const value = commit(UrlU, alice, 'bob', 'propose', (tx) =>
+      tx.nodes.set({ url: 'u' } as never, { at: [1, 1] })
+    );
+    const rest = [
+      { action: 'reject' as const, changes: ['alice'] },
+      { action: 'accept' as const, changes: ['bob'] },
+    ];
+    const rejectCarol = { action: 'reject' as const, changes: ['carol'] };
+    const stored = (nodes: readonly Node[]) =>
+      linkPaths(nodes).map(
+        ([block, child]) => nodes[block].children?.[child].url ?? null
+      );
+
+    assert.deepEqual(
+      {
+        alone: decideIn(UrlU, value, rejectCarol).result.status,
+        batch: stored(decideIn(UrlU, value, [rejectCarol, ...rest]).value),
+        last: stored(
+          decideIn(UrlU, decideIn(UrlU, value, rest).value, rejectCarol).value
+        ),
+      },
+      { alone: 'blocked', batch: ['u'], last: ['u'] }
+    );
+  });
+
+  it('keeps apart at once the halves of a rejected split that Editing wrote different refs on', () => {
+    const carol = commit(
+      RefW,
+      [linked(link('ab', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const [left, right] = linkPaths(carol.children);
+    const ed = commit(RefW, carol, 'ed', 'edit', (tx) =>
+      tx.nodes.set({ ref: 'z' } as never, { at: right })
+    );
+    const frank = commit(RefW, ed, 'frank', 'edit', (tx) => {
+      tx.nodes.set({ ref: 'v' } as never, { at: left });
+      tx.nodes.set({ ref: 'w' } as never, { at: right });
+    });
+    const { editor, result, value } = decideIn(RefW, frank, {
+      action: 'reject',
+      changes: ['carol'],
+    });
+    const read = editor.read.schema as unknown as {
+      getProperty: (node: unknown, key: string, at: unknown) => unknown;
+    };
+
+    assert.deepEqual(
+      {
+        refs: linkPaths(value).map(([block, child]) =>
+          read.getProperty(value[block].children?.[child], 'ref', {
+            ancestors: [value[block]],
+            parent: value[block],
+          })
+        ),
+        status: result.status,
+      },
+      { refs: ['v', 'w'], status: 'applied' }
     );
   });
 });

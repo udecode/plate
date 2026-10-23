@@ -128,11 +128,11 @@ describe('complete document fitting', () => {
   }
 });
 
-const DefaultStripSchema = defineEditorSchema('schema:document-fit-strip', {
+const BoldSchema = defineEditorSchema('schema:document-fit-bold', {
   elements: {
     paragraph: { content: schema.content.text() },
   },
-  id: 'document-fit-strip',
+  id: 'document-fit-bold',
   properties: [
     schema.textProperty(
       'bold',
@@ -150,7 +150,7 @@ const DefaultStripSchema = defineEditorSchema('schema:document-fit-strip', {
 const positionsConcatenated = (paragraphs: number) => {
   const editor = createEditor({
     initialValue: [paragraph('initial')],
-    plugins: [DefaultStripSchema],
+    plugins: [BoldSchema],
   });
   const { concat } = PreparedTokenSlice;
   let positions = 0;
@@ -166,8 +166,7 @@ const positionsConcatenated = (paragraphs: number) => {
       children: Array.from({ length: paragraphs }, () => ({
         children: [
           { bold: true, text: 'a ' },
-          { bold: false, text: 'b' },
-          { bold: true, text: ' c' },
+          { bold: true, text: 'b' },
         ],
         type: 'paragraph',
       })),
@@ -176,11 +175,7 @@ const positionsConcatenated = (paragraphs: number) => {
     assert.deepEqual(
       fitted.children,
       Array.from({ length: paragraphs }, () => ({
-        children: [
-          { bold: true, text: 'a ' },
-          { text: 'b' },
-          { bold: true, text: ' c' },
-        ],
+        children: [{ bold: true, text: 'a b' }],
         type: 'paragraph',
       }))
     );
@@ -191,7 +186,7 @@ const positionsConcatenated = (paragraphs: number) => {
   return positions;
 };
 
-it('concatenates each slice position once when fitting strips a default from every paragraph', () => {
+it('concatenates each slice position once when fitting merges the runs of every paragraph', () => {
   const small = positionsConcatenated(100);
   const large = positionsConcatenated(400);
 

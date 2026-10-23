@@ -82,6 +82,30 @@ export type AuthoredMark =
 export const isContextInsertion = (mark: AuthoredMark) =>
   mark.kind === 'insert' && mark.follows === undefined;
 
+export const isStructureChange = (mark: AuthoredMark) =>
+  mark.kind === 'join' ||
+  mark.kind === 'split' ||
+  mark.kind === 'unwrap' ||
+  mark.kind === 'wrap';
+
+export const isUnwrap = (mark: AuthoredMark) => mark.kind === 'unwrap';
+
+export const isEnclosureChange = (mark: AuthoredMark) =>
+  isUnwrap(mark) || mark.kind === 'wrap';
+
+export const isPlaceChange = (mark: AuthoredMark) =>
+  isStructureChange(mark) || (mark.kind === 'format' && mark.key === 'type');
+
+/**
+ * Whether a mark on content between the halves of a cut can decide whether
+ * they meet.
+ */
+export const isBetweenChange = (mark: AuthoredMark) =>
+  mark.kind === 'insert' ||
+  mark.kind === 'delete' ||
+  mark.kind === 'split' ||
+  mark.kind === 'join';
+
 const TEXT_KINDS: ReadonlySet<AuthoredMarkKind> = new Set([
   'delete',
   'format',

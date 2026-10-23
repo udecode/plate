@@ -28,6 +28,7 @@ export {
   observeAnchorStateWork,
   type AnchorStateWork,
 } from '../core/anchor-state';
+export { readCoreWork, type CoreWork } from '../core/work';
 export { getNodeKeyDOMValue } from '../utils/node-keys';
 export { getTextSearchScope } from './text-run';
 export {
@@ -175,6 +176,7 @@ export {
   matchesCompiledSchemaTarget,
   preserveCompiledSchemaPropertyIdentity,
   resolveCompiledSchemaProperty,
+  tracksPlaces,
   type CompiledEditorSchema,
   type CompiledSchemaConstructionPlan,
   type CompiledSchemaContentProgram,

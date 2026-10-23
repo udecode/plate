@@ -1,8 +1,6 @@
 {
   "decided-together": {
     "packages/plitejs/src/authored/tree/resolve.ts": [
-      "paragraph(\"\" link{split s0 end}(\"a\") \"\") paragraph{split s0, delete s1}(\"\" link{split s0 start}(\"b\"{delete s1}) \"\"): reject s0, accept s1",
-      "paragraph(\"\" link{split s0 end}(\"a\") \"\") paragraph{split s0, insert s1}(\"\" link{split s0 start}(\"b\"{insert s1}) \"\"): reject s0, reject s1",
       "paragraph(\"a\") paragraph{join s0}(\"b\"{delete s1}): accept s0, accept s1",
       "paragraph(\"a\") paragraph{join s0}(\"b\"{insert s1}): accept s0, reject s1",
       "paragraph(\"a\") paragraph{split s0}(\"b\"{delete s1}): reject s0, accept s1",

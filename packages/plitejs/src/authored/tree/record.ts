@@ -41,12 +41,15 @@ import type {
   ProjectionBreak,
 } from '../../core/command-document';
 import type { ResolvedTokenEntry } from '../../core/resolved-token-cursor';
+import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import type { EditorJsonValue } from '../../interfaces/json';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
 import { incarnationOf } from '../facts/records';
+import { countLedgerWork } from '../ledger/work';
 import { movedRefusal, unrepresentable } from '../refusal';
+import { carriedJudge, type MovedCopy } from './carried';
 import { isCut } from './cuts';
 import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
@@ -107,10 +110,21 @@ export type AuthoredRecordInput = Readonly<{
     split: SplitContinuation,
     root: string
   ) => (key: string, value: unknown) => boolean;
+  /**
+   * Whether the content of the element `type` names, or of the root when it
+   * is null, has a prefix slot, where a split's tail can take a type the
+   * slot forces.
+   */
+  slotted: (type: string | null, root: string) => boolean;
   now: number;
   /** Element types that hold exactly one text, which marks must not split. */
   oneText?: (type: string) => boolean;
   ownedRoots?: (props: Readonly<JsonRecord>) => readonly OwnedRoot[];
+  /**
+   * The compiled schema when it tracks places: the recorder then judges each
+   * value the write carried where the review document stores it.
+   */
+  schema?: CompiledEditorSchema | null;
   /** The collapsed caret's position in the before document, and its root. */
   selectionBefore?: Readonly<{ position: number; root: string }> | null;
   standing: Standing;
@@ -336,10 +350,55 @@ const changesOnlyProperties = (step: RootChange) =>
   step.sections.every((value, index) => index % 2 === 0 || value < 0);
 
 /**
- * Rebase a step that changes only properties onto a framed root. It moves no
- * content, so each edited token maps on its own, in the review draft's order,
- * wherever the frame shows it, and the step leaves every position where it
- * was.
+ * The open tokens of the review texts that hold the letters of the plain text
+ * opening at `open`. A letter maps by its end with backward association, so
+ * the letter after a mid-text insertion lands in its own review text. The map
+ * keeps the letters' order, so each review text costs one lookup and a binary
+ * search for the first letter past it.
+ */
+const reviewOpensOf = (
+  map: PosMap,
+  review: DocumentIndex,
+  open: number,
+  length: number
+) => {
+  const endOf = (letter: number) => {
+    countLedgerWork('lettersMapped');
+
+    return map(open + 2 + letter, -1, false);
+  };
+  const opens: number[] = [];
+  let letter = 0;
+
+  while (letter < length) {
+    const at = review.openContextAt(endOf(letter)).at(-1);
+
+    if (at?.kind !== 'text') {
+      letter += 1;
+      continue;
+    }
+    if (opens.at(-1) !== at.from) opens.push(at.from);
+    if (endOf(length - 1) <= at.contentTo) break;
+
+    let low = letter + 1;
+    let high = length - 1;
+
+    while (low < high) {
+      const middle = (low + high) >> 1;
+
+      if (endOf(middle) > at.contentTo) high = middle;
+      else low = middle + 1;
+    }
+    letter = low;
+  }
+
+  return opens;
+};
+
+/**
+ * Rebase a step that changes only properties. It moves no content, so each
+ * edited token maps on its own, in the review draft's order, wherever `plain`
+ * shows it, and the step leaves every position where it was.
  */
 const rebaseProperties = (
   step: RootChange,
@@ -353,25 +412,18 @@ const rebaseProperties = (
     plainAt: number;
   }> = [];
   // A text's properties sit on its open token, and the review draft can save
-  // its letters in several texts, such as a merged line's, so each of those
-  // takes the edit.
+  // its letters in several texts, such as a merged line's or one split by an
+  // insertion of this change, so each of those takes the edit. Before any
+  // step changes the root, the review draft is the plain draft itself.
   const reviewTokens = (token: number) => {
-    const entry = plain.nodeStartingAt(token);
+    const entry = plain === review ? null : plain.nodeStartingAt(token);
     const text = entry && plain.node(entry.path).text;
 
     if (!entry || typeof text !== 'string' || text === '') {
       return [map(token, 1, false)];
     }
 
-    const opens = new Set<number>();
-
-    for (let letter = token + 1; letter <= token + text.length; letter += 1) {
-      const at = review.openContextAt(map(letter, 1, false)).at(-1);
-
-      if (at?.kind === 'text') opens.add(at.from);
-    }
-
-    return [...opens];
+    return reviewOpensOf(map, review, token, text.length);
   };
   let before = 0;
 
@@ -1190,6 +1242,35 @@ export const recordAuthoredSteps = (
 
     return fold;
   };
+  const storedIndexes = new Map<string, DocumentIndex | null>();
+  const carried =
+    input.schema &&
+    carriedJudge({
+      before: (root) => {
+        if (!storedIndexes.has(root)) {
+          storedIndexes.set(
+            root,
+            input.createRoots.has(root)
+              ? null
+              : valueRootIndex(input.before, root)
+          );
+        }
+
+        return storedIndexes.get(root) ?? null;
+      },
+      dependencies: input.dependencies,
+      editing: isEditingChange(changeId),
+      isOwn,
+      projection: input.projection,
+      schema: input.schema,
+      standing: input.standing,
+      writer: { ...base, commitWriteId: input.commitWriteId, isOwn },
+    });
+  const foldIn = (fold: RootFold, change: RootChange | null) => {
+    if (!change) return;
+    fold.index = change.apply(fold.index);
+    fold.composed = fold.composed ? fold.composed.compose(change) : change;
+  };
 
   const stepChanges = input.steps.map((step) => ({
     changes: [...getInternalDocumentChangeEntries(step.change)].flatMap(
@@ -1302,6 +1383,19 @@ export const recordAuthoredSteps = (
       // which is recorded so a caret inside that leaf has a stored place.
       if (step.origin === 'canonical') {
         const previous = fold.map;
+
+        if (carried && step.drops) {
+          foldIn(
+            fold,
+            carried.drops(
+              root,
+              fold.index,
+              getDefined(step.indexedBefore.get(root)),
+              step.drops,
+              (position, assoc) => previous(position, assoc, false)
+            )
+          );
+        }
         const back: PosMap = (position, assoc, caret) =>
           previous(
             getDefined(
@@ -1325,10 +1419,7 @@ export const recordAuthoredSteps = (
           fold.map = back;
           continue;
         }
-        fold.index = recorded.apply(fold.index);
-        fold.composed = fold.composed
-          ? fold.composed.compose(recorded)
-          : recorded;
+        foldIn(fold, recorded);
         fold.map = (position, assoc, caret) => {
           const leaf = leaves.find(
             ({ from, to }) => from <= position && position <= to
@@ -1343,12 +1434,11 @@ export const recordAuthoredSteps = (
         continue;
       }
 
-      // A framed property step maps token by token wherever the frame shows
-      // each token, so it needs no lowering across breaks.
-      const framedProperties =
-        fold.frameIndex !== null && changesOnlyProperties(rootChange);
+      // A property step maps token by token wherever the frame, or the plain
+      // draft, shows each token, so it needs no lowering across breaks.
+      const properties = changesOnlyProperties(rootChange);
       const lowered =
-        fold.frameIndex && !framedProperties
+        fold.frameIndex && !properties
           ? lowerAcrossBreaks(
               rootChange,
               fold.breaks,
@@ -1368,16 +1458,17 @@ export const recordAuthoredSteps = (
           }
         }
         const plainToReview = fold.map;
-        const { afterMap, groups } = framedProperties
+        const { afterMap, groups } = properties
           ? rebaseProperties(
               sub.change,
               plainToReview,
-              getDefined(fold.frameIndex),
+              fold.frameIndex ?? getDefined(step.indexedBefore.get(root)),
               fold.index
             )
           : rebase(sub.change, plainToReview, fold.index.length);
         let recorded: RootChange;
         let mapRecorded: PosMap = identity;
+        let copies: readonly MovedCopy[] = [];
 
         // A migration is not the writer's edit, and a created root is never
         // pending, so both apply as written.
@@ -1398,6 +1489,7 @@ export const recordAuthoredSteps = (
             isInline: input.isInline,
             isOwn,
             keepsOnSplit: (split) => input.keepsOnSplit(split, root),
+            slotted: (type) => input.slotted(type, root),
             leftward: fold.leftward,
             markOf,
             moveRole: sub.role,
@@ -1414,6 +1506,7 @@ export const recordAuthoredSteps = (
 
           recorded = result.change;
           mapRecorded = result.mapPosition;
+          ({ copies } = result);
           fold.leftward = result.leftward;
           writtenPlain &&= result.writtenPlain;
         }
@@ -1421,15 +1514,26 @@ export const recordAuthoredSteps = (
         if (fold.frameIndex) {
           fold.frameIndex = sub.change.apply(fold.frameIndex);
         }
-        if (!recorded.empty) {
-          fold.index = recorded.apply(fold.index);
-          fold.composed = fold.composed
-            ? fold.composed.compose(recorded)
-            : recorded;
+        const composedBefore = fold.composed;
+
+        foldIn(fold, recorded.empty ? null : recorded);
+        if (carried && copies.length > 0) {
+          foldIn(
+            fold,
+            carried.copied(root, fold.index, composedBefore, copies)
+          );
         }
         fold.breaks = advanceBreaks(fold.breaks, sub.change, recorded);
         fold.map = (position, assoc, caret) =>
           mapRecorded(afterMap(position, assoc, caret), assoc, caret);
+      }
+    }
+  }
+
+  if (carried) {
+    for (const [root, fold] of folds) {
+      if (!fold.created && fold.composed && !fold.composed.empty) {
+        foldIn(fold, carried.settle(root, fold.index, fold.composed));
       }
     }
   }
@@ -1593,6 +1697,7 @@ type RecorderOptions = Readonly<{
   keepsOnSplit: (
     split: SplitContinuation
   ) => (key: string, value: unknown) => boolean;
+  slotted: (type: string | null) => boolean;
   leftward: boolean;
   markOf: (kind: Exclude<AuthoredMark['kind'], 'format'>) => AuthoredMark;
   moveRole: 'landing' | 'source' | null;
@@ -1609,6 +1714,9 @@ type StrikeMode = 'delete' | 'move';
 type Span = Readonly<{ from: number; to: number }>;
 
 class RootRecorder {
+  private readonly copies: Array<
+    Readonly<{ at: number; from: number; offset: number; to: number }>
+  > = [];
   private readonly ops: Op[] = [];
   private readonly pieces: Piece[] = [];
   private readonly framedStrikes: Array<
@@ -1722,6 +1830,11 @@ class RootRecorder {
 
     return {
       change: recorded,
+      copies: this.copies.map(({ at, from, offset, to }): MovedCopy => ({
+        at: getDefined(recorded.mapPos(at, -1)) + offset,
+        from,
+        to,
+      })),
       leftward:
         this.pieces.findLast((piece) => piece.kind === 'removed')?.leftward ??
         this.options.leftward,
@@ -2027,6 +2140,36 @@ class RootRecorder {
       return;
     }
 
+    const { isOwn } = this.options;
+    const withdrawsWrap = this.index
+      .slice(before, before + depth)
+      .tokens.every((token) => {
+        const marks = token.kind === 'open' ? this.marks(token.props) : [];
+
+        return (
+          marks.length > 0 &&
+          marks.every((mark) => mark.kind === 'wrap' && isOwn(mark))
+        );
+      });
+
+    // Unwrapping the writer's own pending wrap withdraws it, so the review
+    // document never holds an enclosure that every decision dissolves.
+    if (withdrawsWrap) {
+      const close = before + removed - depth;
+
+      this.ops.push({ from: before, kind: 'remove', to: before + depth });
+      this.pushRemoved(after, before, before + depth);
+      this.pieces.push({
+        afterFrom: after,
+        afterTo: after + slice.length,
+        kind: 'shifted',
+        plainFrom: group.plainFrom + depth,
+      });
+      this.ops.push({ from: close, kind: 'remove', to: before + removed });
+      this.pushRemoved(after + slice.length, close, before + removed);
+      return;
+    }
+
     this.recordReplacement(
       before,
       before + depth,
@@ -2106,7 +2249,7 @@ class RootRecorder {
     this.ops.push({
       at: before,
       kind: 'insert',
-      tokens: this.movedCopy(children.tokens),
+      tokens: this.recordCopy(right.contentFrom, right.contentTo, before),
     });
     this.strike(right.from, right.to, this.contextAt(right.from), 'move');
     this.pieces.push({
@@ -2196,7 +2339,7 @@ class RootRecorder {
             this.options.markOf('insert'),
           ])
         ),
-        ...this.movedCopy(children.tokens),
+        ...this.recordCopy(before, container.contentTo, entry.to, 1),
         closeToken('element'),
       ],
     });
@@ -2242,7 +2385,6 @@ class RootRecorder {
       source.before,
       source.before + source.removed
     );
-    const copy = this.index.slice(copyFrom, copyTo).tokens;
 
     for (const group of groups) {
       if (group.kind === 'kept') {
@@ -2259,7 +2401,7 @@ class RootRecorder {
         this.ops.push({
           at: landing.before,
           kind: 'insert',
-          tokens: this.movedCopy(copy),
+          tokens: this.recordCopy(copyFrom, copyTo, landing.before),
         });
         this.followJoin(landing, this.ops.length - 1);
         this.pieces.push({
@@ -2445,20 +2587,28 @@ class RootRecorder {
     return start < end ? [at(start), at(end)] : [from, to];
   }
 
-  private movedCopy(tokens: readonly JsonToken[]) {
+  /**
+   * The content at `[from, to)` under the writer's insertion, recorded as a
+   * moved copy that an insert at `at` lands `offset` tokens into.
+   */
+  private recordCopy(from: number, to: number, at: number, offset = 0) {
     const mark = this.options.markOf('insert');
 
-    return tokens.map((token) =>
-      token.kind === 'open'
-        ? openToken(
-            token.nodeKind,
-            this.withMarks(token.props, [
-              ...this.withoutCuts(token.props),
-              mark,
-            ])
-          )
-        : token
-    );
+    this.copies.push({ at, from, offset, to });
+
+    return this.index
+      .slice(from, to)
+      .tokens.map((token) =>
+        token.kind === 'open'
+          ? openToken(
+              token.nodeKind,
+              this.withMarks(token.props, [
+                ...this.withoutCuts(token.props),
+                mark,
+              ])
+            )
+          : token
+      );
   }
 
   private pushRemoved(after: number, from: number, to: number) {
@@ -3637,12 +3787,35 @@ class RootRecorder {
           filled += 1;
         }
 
+        // A slot can force the tail's type, so the split writes the tail's
+        // type over the type it split from, even an equal one, and rejecting
+        // it reads the type back.
+        const writesType =
+          continued !== undefined &&
+          closedElement &&
+          suggested &&
+          !rightCuts &&
+          this.options.slotted(this.containerType(continued.path));
+        const isTypeTag = (mark: AuthoredMark) =>
+          mark.kind === 'format' && mark.key === 'type';
+        const carried = writesType
+          ? [
+              ...inherited.filter((mark) => !isTypeTag(mark)),
+              ...this.splitTypeTags(
+                continued,
+                token.props,
+                inherited.filter((mark): mark is FormatTag => isTypeTag(mark)),
+                claim
+              ),
+            ]
+          : inherited;
+
         emit(
           openToken(
             'element',
             this.withMarks(token.props, [
               ...this.marks(token.props),
-              ...inherited,
+              ...carried,
               ...(rightCuts ?? []),
               ...(suggested && !rightCuts
                 ? [
@@ -3887,6 +4060,42 @@ class RootRecorder {
       ...(follows === undefined ? {} : { follows }),
       kind: 'split',
     };
+  }
+
+  private containerType(path: readonly number[]) {
+    if (path.length < 2) return null;
+    const { type } = this.index.node(path.slice(0, -1));
+
+    return typeof type === 'string' ? type : null;
+  }
+
+  /** The type tags of a split's tail, with the split's write over `tags`. */
+  private splitTypeTags(
+    source: Context,
+    tail: Props,
+    tags: readonly FormatTag[],
+    claim: AuthoredMark
+  ) {
+    const { isOwn, source: origin, standing, commitWriteId } = this.options;
+    const { at, author, change, inc } = claim;
+
+    return recordFormats({
+      keys: ['type'],
+      next: tail,
+      ownInsertion: false,
+      previous: source.props,
+      source: origin,
+      standing,
+      tags,
+      writer: {
+        at,
+        author,
+        change,
+        ...(inc === undefined ? {} : { inc }),
+        isOwn,
+        commitWriteId,
+      },
+    });
   }
 
   private rejectingEmpties(node: unknown, own: AuthoredMark): boolean {

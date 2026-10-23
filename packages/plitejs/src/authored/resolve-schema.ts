@@ -64,6 +64,22 @@ export const authoredResolveSchemaOf = (
     },
     fitsPrefix: (node, slot, root) =>
       schema.canContainAt(null, node as Descendant, slot, root),
+    continuationType: (source, slot, site, root) => {
+      const parent = (site[0] ?? null) as Element | null;
+      const content = parent
+        ? schema.getElementContent(String(parent.type))
+        : schema.getRootContent(root);
+
+      if (
+        !content ||
+        schema.canContainAt(parent, source as Descendant, slot, root)
+      ) {
+        return typeof source.type === 'string' ? source.type : null;
+      }
+      const plan = content.prefix?.[slot] ?? content.defaultPlan;
+
+      return plan && 'type' in plan ? plan.type : null;
+    },
     content: (type, root) => {
       const content =
         type === null

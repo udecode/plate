@@ -29,9 +29,14 @@ import type { DocumentIndex } from './change/document-index';
 import { getRangeEndpointAssociations } from './change/range-association';
 import { isRootChangeRangeReplaced } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
+import { withoutUnheldDefaults } from './default-storage';
 import { getEditorSchema } from './editor-runtime';
-import type { InternalEditorSchemaApi } from './editor-schema';
+import {
+  getCompiledEditorSchemaFromApi,
+  type InternalEditorSchemaApi,
+} from './editor-schema';
 import { toPublicRoot } from './public-root';
+import { toCompiledNodeContext } from './schema-compiler';
 import {
   assertEditorJsonValue,
   decodeVersionedValue,
@@ -905,6 +910,38 @@ export const mapSelectionWithContext = (
   return Object.freeze({ ...selection, ...range });
 };
 
+const withLandedMarks = (
+  editor: Editor,
+  selection: Selection,
+  value: EditorDocumentValue,
+  root: RootKey
+): Selection => {
+  if (!SelectionApi.isText(selection) || !selection.marks) return selection;
+
+  const marksRoot = pointRoot(selection.focus, root);
+  const { path } = selection.focus;
+  const marks = withoutUnheldDefaults(
+    getCompiledEditorSchemaFromApi(selectionSchema(editor)),
+    selection.marks,
+    () => {
+      const document = valueRootIndex(value, marksRoot);
+
+      return toCompiledNodeContext(
+        { text: '' },
+        path
+          .slice(1)
+          .map((_, index) => rawNodeAt(document, path.slice(0, -1 - index)))
+          .filter((node) => node !== null),
+        marksRoot
+      );
+    }
+  );
+
+  return marks === selection.marks
+    ? selection
+    : Object.freeze({ ...selection, marks });
+};
+
 /** @internal */
 export const mapSelectionThroughChange = (
   editor: Editor,
@@ -951,10 +988,15 @@ export const mapSelectionThroughChange = (
     }
   }
 
-  const result = settleSelectionMode(
-    selectionSchema(editor),
-    mapSelectionWithContext(selection, context, options),
-    valueRootIndex(after, root)
+  const result = withLandedMarks(
+    editor,
+    settleSelectionMode(
+      selectionSchema(editor),
+      mapSelectionWithContext(selection, context, options),
+      valueRootIndex(after, root)
+    ),
+    after,
+    root
   );
 
   if (result) {

@@ -109,6 +109,7 @@ Every load path reads the stored document. An application that saved a field at 
 | Migration steps | See only document fields; `FromDocument` and `ToDocument` are closed, a legacy top-level field arrives in a typed `legacy` channel, and completion refuses a field no step lifted. The v54 suggestions step keeps fitting mid-chain. |
 | Identities | Runtime `NodeKey` is opaque and never serialized; persisted element IDs are optional and stay with `ElementIdPlugin`, whose `read.id` is the persistence-boundary conversion; the schema fingerprint identifies document semantics, with application lineage kept apart. |
 | Plate | Its nonempty-root product policy and the application migration adapter. |
+| Stored properties | A key a node stores was written, and an absent key was never written. `omitDefault` leaves a default out of a node nobody wrote it on, and admission stores a written value even when it equals the default. A schema that declares an `omitDefault` property carries `storageRevision` in its contract and fingerprint. An older editor, which dropped such writes, refuses the new envelopes, and the new editor refuses the older ones. `diffEditorSchemaContracts` reports a changed revision as `storage-revision-changed`, which requires a migration. Admission in `packages/plitejs/src/core/editor-schema.ts` and the contract in `schema-compiler.ts` own it. |
 
 Rejected, and why:
 
@@ -119,6 +120,7 @@ Rejected, and why:
 | Validation in Plate or the codecs | Raw editors and other imports keep the hole. |
 | An ID-indexed public store or class-based AST | Solves admission no better than one boundary check. |
 | Silently dropping unknown top-level keys | Silent loss is the failure the comparison shows most; the cost is that a new top-level field needs a doctrine change and a migration. |
+| Leaving out a written value equal to its default | "Written as the default" and "never written" become one state, so a rejected cut, a retype or a move cannot tell a dropped value from a written one ([cut-join](cut-join.md)). |
 
 ## Main changes
 

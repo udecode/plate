@@ -37,6 +37,7 @@ import { documentAdmissionPoint } from '../core/document-admission';
 import {
   registerEditorDocumentRecorder,
   registerEditorDraftGuard,
+  registerEditorDraftView,
 } from '../core/document-recorder';
 import {
   getEditorRuntime,
@@ -79,6 +80,7 @@ import {
   orphanedValueRoots,
   rootsDeletedByName,
 } from '../core/root-ownership';
+import { tracksPlaces } from '../core/schema-compiler';
 import { EditorSchemaValidationError } from '../core/schema-validation';
 import {
   type TxDeclaredMethod,
@@ -1906,6 +1908,21 @@ export const createAuthoredPlugin = (
           unplaced,
         })
       );
+      onCleanup(
+        registerEditorDraftView(editor, () => {
+          if (passesThrough() || isReplay(getActiveEditorUpdateTags(editor))) {
+            return false;
+          }
+
+          const update = getActiveEditorUpdateId(editor);
+          const view = viewOf(getAuthoredUpdateView(editor));
+
+          return (
+            (update !== null && state.forced.has(update)) ||
+            ('intent' in view && view.intent === 'propose')
+          );
+        })
+      );
       // Every frame of one update records under the same change.
       const minted = new WeakMap<object, { at: number; changeId: string }>();
       onCleanup(
@@ -2063,6 +2080,7 @@ export const createAuthoredPlugin = (
             accepted: (member) => isAccepted(known, member),
             landed: landedHere,
           };
+          const compiled = getCompiledEditorSchema(editor);
           const recorded = recordAuthoredSteps({
             before,
             changeId,
@@ -2098,6 +2116,9 @@ export const createAuthoredPlugin = (
                   root,
                 }
               ),
+            slotted: (type, root) =>
+              (authoredResolveSchemaOf(editor).content(type, root)?.prefix ??
+                0) > 0,
             now: at,
             oneText: (type) => {
               const content = getEditorSchema(editor).getElementContent(type);
@@ -2121,6 +2142,7 @@ export const createAuthoredPlugin = (
                     position: selectionPosition,
                     root: input.selectionBeforeRoot,
                   },
+            schema: tracksPlaces(compiled) ? compiled : null,
             standing,
             steps,
             commitWriteId,

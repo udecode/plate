@@ -4773,7 +4773,7 @@ describe('blocks built for a required position', () => {
     ]);
   });
 
-  it("keeps a required slot's fixed property when its default is omitted", () => {
+  it("stores a required slot's fixed property even when it equals the omitted default", () => {
     const editor = createEditor({
       plugins: [
         defineEditorSchema('schema:card-required-omitted-tone', {
@@ -4818,7 +4818,7 @@ describe('blocks built for a required position', () => {
     assert.deepEqual(editor.read.children(), [
       card(
         { ...caption('Ti'), tone: 'loud' },
-        paragraph('tle'),
+        { ...paragraph('tle'), tone: 'plain' },
         paragraph('Body')
       ),
     ]);

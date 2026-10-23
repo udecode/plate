@@ -14,6 +14,7 @@ import {
   type JsonNode,
   PreparedTokenSlice,
 } from '../../core/change/tokens';
+import { isLeftOutDefault } from '../../core/default-storage';
 import { composeRecordOps, deriveValue } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { rootOf } from '../ledger/roots';
@@ -23,6 +24,7 @@ import {
   decideKey,
   type FormatTag,
   type KeyReading,
+  keyTips,
   tipsWrittenValue,
   valueAfterLeaving,
 } from '../tree/layers';
@@ -60,6 +62,7 @@ type Pass = Readonly<{
   dependencies: Dependencies;
   facts: ReviewFacts;
   landed: Map<string, LandedRecord>;
+  loading: boolean;
   reopenedRejections: Set<string>;
   returnsHeld: boolean;
   schema: CompiledEditorSchema;
@@ -100,8 +103,7 @@ export const keyReadingOf = (facts: ReviewFacts): KeyReading => ({
 const settleFormats = (
   node: Node,
   tags: readonly FormatTag[],
-  facts: ReviewFacts,
-  landed: Map<string, LandedRecord>
+  { facts, landed, loading, schema }: Pass
 ) => {
   const reading = keyReadingOf(facts);
   const dropped = new Set<FormatTag>();
@@ -115,16 +117,20 @@ const settleFormats = (
         (tag) => !reading.accepted(tag) && reading.outcome(tag) === 'keep'
       )
     ) {
+      const value =
+        node[key] === undefined ? tipsWrittenValue(onKey) : undefined;
+
+      if (value === undefined) continue;
       const present = new Set(onKey.map((tag) => tag.id));
-      if (
-        node[key] === undefined &&
-        onKey.some((tag) =>
-          tag.over?.some((step) => step.some(({ id }) => !present.has(id)))
-        )
-      ) {
-        const value = tipsWrittenValue(onKey);
-        if (value !== undefined) props[key] = value;
-      }
+      const strippedByOlderEditor =
+        loading &&
+        keyTips(onKey).length === 1 &&
+        isLeftOutDefault(schema, node, key, value);
+      const overNamesLostWrite = onKey.some((tag) =>
+        tag.over?.some((step) => step.some(({ id }) => !present.has(id)))
+      );
+
+      if (strippedByOlderEditor || overNamesLostWrite) props[key] = value;
       continue;
     }
 
@@ -156,8 +162,7 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
     readAuthoredMarks(node).filter(
       (mark): mark is FormatTag => mark.kind === 'format'
     ),
-    facts,
-    pass.landed
+    pass
   );
   const written: Record<string, unknown> = { ...node };
   for (const [key, value] of Object.entries(props)) {
@@ -416,6 +421,7 @@ export const settleValue = <V extends JsonEditorValue>(
     dependencies: createDependencies(facts),
     facts,
     landed: new Map(),
+    loading: scope === 'document',
     reopenedRejections: new Set(),
     returnsHeld,
     schema,

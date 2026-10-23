@@ -644,7 +644,7 @@ export const resolveRun = (
       : deepFreeze(
           resolveAuthoredChildren(
             nodes,
-            () => (context.mode === 'proposed' ? 'accept' : 'reject'),
+            context.mode === 'proposed' ? 'accept' : 'reject',
             context.schema,
             context.root,
             {

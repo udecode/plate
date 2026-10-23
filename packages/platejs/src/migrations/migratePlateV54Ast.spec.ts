@@ -994,10 +994,15 @@ describe('migratePlateV54 AST contracts', () => {
           properties: {
             indent: property.string(),
             lineHeight: property.string(),
-            listStart: property.string(),
             textAlign: property.string(),
           },
         }),
+        properties: {
+          listStart: schema.elementProperty(property.string(), {
+            split: 'drop',
+            target: target.type('chart'),
+          }),
+        },
       },
     });
     const migrations = defineDocumentMigrations({

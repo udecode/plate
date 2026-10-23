@@ -149,7 +149,6 @@ describe('reported schema fitting', () => {
         'canonicalize-set-property',
         'default-property',
         'generate-property',
-        'omit-default-property',
         'resolve-exclusive-property',
       ])
     );

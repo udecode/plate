@@ -583,6 +583,15 @@ void describe('compiled schema generated laws', () => {
       {
         code: 'invalid-property-default',
         descriptor: {
+          default: -0,
+          kind: 'number',
+          omitDefault: true,
+        },
+        name: 'negative zero default, which no stored value can equal',
+      },
+      {
+        code: 'invalid-property-default',
+        descriptor: {
           kind: 'string',
           omitDefault: true,
         },

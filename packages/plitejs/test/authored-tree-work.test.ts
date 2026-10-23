@@ -3,8 +3,11 @@ import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { isDeepStrictEqual } from 'node:util';
 
+import * as dependencies from '../src/authored/facts/dependencies';
+import * as facts from '../src/authored/facts/facts';
 import * as ledgerModule from '../src/authored/ledger/ledger';
 import { readLedgerWork } from '../src/authored/ledger/work';
+import * as halves from '../src/authored/tree/halves';
 import * as marks from '../src/authored/tree/marks';
 import * as recordCompletion from '../src/authored/tree/record-completion';
 import * as resolve from '../src/authored/tree/resolve';
@@ -96,6 +99,77 @@ mock.module(join(import.meta.dir, '../src/authored/ledger/ledger.ts'), () => ({
     return ledger;
   },
 }));
+// A resolution is one resolver entry from outside resolve.ts. Its work is the
+// pending-mark reads it makes, and a probe is one call of the probe that
+// `verdictOf` gets, with the reads and the resolves it starts.
+type Probe = { resolves: number; work: number };
+type Resolution = { probes: Probe[]; work: number };
+let collected: Resolution[] | null = null;
+const probing: Probe[] = [];
+let resolution: Resolution | null = null;
+const realFacts = { ...facts };
+const realDependencies = { ...dependencies };
+const realHalves = { ...halves };
+
+const resolving = <T>(run: () => T): T => {
+  if (resolution) return run();
+  resolution = { probes: [], work: 0 };
+  try {
+    return run();
+  } finally {
+    collected?.push(resolution);
+    resolution = null;
+  }
+};
+
+mock.module(join(import.meta.dir, '../src/authored/facts/facts.ts'), () => ({
+  ...realFacts,
+  standingClaimsOf: (...args: Parameters<typeof facts.standingClaimsOf>) => {
+    if (resolution) (probing.at(-1) ?? resolution).work += 1;
+
+    return realFacts.standingClaimsOf(...args);
+  },
+}));
+mock.module(
+  join(import.meta.dir, '../src/authored/facts/dependencies.ts'),
+  () => ({
+    ...realDependencies,
+    createDependencies: (
+      ...args: Parameters<typeof dependencies.createDependencies>
+    ) => {
+      const probe = probing.at(-1);
+
+      if (probe) probe.resolves += 1;
+
+      return realDependencies.createDependencies(...args);
+    },
+  })
+);
+mock.module(join(import.meta.dir, '../src/authored/tree/halves.ts'), () => ({
+  ...realHalves,
+  verdictOf: (
+    ...[schema, cut, around, run]: Parameters<typeof halves.verdictOf>
+  ) => {
+    const decide = run.probe;
+
+    return realHalves.verdictOf(schema, cut, around, {
+      ...run,
+      probe:
+        decide &&
+        ((assignment) => {
+          const probe = { resolves: 0, work: 0 };
+
+          probing.push(probe);
+          try {
+            return decide(assignment);
+          } finally {
+            probing.pop();
+            resolution?.probes.push(probe);
+          }
+        }),
+    });
+  },
+}));
 mock.module(join(import.meta.dir, '../src/authored/tree/resolve.ts'), () => ({
   ...realResolve,
   resolveAuthoredChildren: (
@@ -103,8 +177,11 @@ mock.module(join(import.meta.dir, '../src/authored/tree/resolve.ts'), () => ({
   ) => {
     resolvedNodes += nodeCount(args[0]);
 
-    return realResolve.resolveAuthoredChildren(...args);
+    return resolving(() => realResolve.resolveAuthoredChildren(...args));
   },
+  resolveAuthoredValue: (
+    ...args: Parameters<typeof resolve.resolveAuthoredValue>
+  ) => resolving(() => realResolve.resolveAuthoredValue(...args)),
 }));
 mock.module(join(import.meta.dir, '../src/core/representation.ts'), () => ({
   ...realRepresentation,
@@ -216,6 +293,37 @@ const NestedQuotes = defineEditorSchema('work-nested-quotes', {
   version: 1,
 });
 
+// Only a paragraph's text outside a quote holds the color, so the schema
+// tracks places.
+const QuoteAccent = defineEditorSchema('work-quote-accent', {
+  elements: {
+    paragraph: { content: schema.content.text() },
+    quote: { content: schema.content.type('paragraph', { min: 1 }) },
+  },
+  id: 'work-quote-accent',
+  properties: [
+    schema.textProperty(
+      'color',
+      property.string({ default: 'u', omitDefault: true }),
+      {
+        target: target.and(
+          target.type('paragraph'),
+          target.not(target.parent(target.type('quote')))
+        ),
+      }
+    ),
+    schema.elementProperty('accent', property.string(), {
+      target: target.type('quote'),
+    }),
+  ],
+  root: schema.content.types(['paragraph', 'quote'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
+
 type Node = Record<string, unknown> & {
   children?: readonly Node[];
   text?: string;
@@ -234,7 +342,7 @@ const editorFor = (
   value: readonly Node[],
   intent: 'edit' | 'propose',
   author = 'alice',
-  content: typeof Inline | typeof Blocks = Inline,
+  content: typeof Inline | typeof Blocks | typeof QuoteAccent = Inline,
   veto?: Parameters<typeof authoredVeto.of>[0]
 ) =>
   createEditor({
@@ -349,6 +457,19 @@ const workPerEdit = (editor: Editor, edit: (run: number) => void) => {
   }
 
   return counts;
+};
+
+const coreWorkOf = (edit: () => void) => {
+  const before = readCoreWork();
+
+  edit();
+
+  return Object.fromEntries(
+    Object.entries(readCoreWork()).map(([kind, value]) => [
+      kind,
+      value - before[kind as keyof typeof before],
+    ])
+  );
 };
 
 const buildFirstIndexOutsideCount = (editor: Editor) => {
@@ -827,6 +948,56 @@ describe('authored review tree work per edit', () => {
     assert.deepEqual(large, small);
   });
 
+  for (const intent of ['edit', 'propose'] as const) {
+    it(`reads the index as often for ${intent === 'edit' ? 'an Editing' : 'a Suggesting'} bold set on a 10,000-character leaf as on a 1,000-character one`, () => {
+      const reads = spyOn(DocumentIndex.prototype, 'openContextAt');
+
+      try {
+        const [short, long] = [1000, 10_000].map((length) => {
+          const editor = editorFor(
+            [paragraph({ text: 'x'.repeat(length) })],
+            intent
+          );
+
+          return [true, false, true].map((bold) => {
+            const before = reads.mock.calls.length;
+
+            editor.update((tx) => tx.nodes.set({ bold }, { at: [0, 0] }));
+
+            return reads.mock.calls.length - before;
+          });
+        });
+
+        assert.ok(short.every((opened) => opened > 0));
+        assert.deepEqual(long, short);
+      } finally {
+        reads.mockRestore();
+      }
+    });
+
+    it(`does as much work for ${intent === 'edit' ? 'an Editing' : 'a Suggesting'} property set on a quote of 1,000 paragraphs as of 10 or 100, where the schema tracks places`, () => {
+      const [smallest, ...larger] = [10, 100, 1000].map((size) => {
+        const editor = editorFor(
+          [{ children: blocks(size, []), type: 'quote' }],
+          intent,
+          'alice',
+          QuoteAccent
+        );
+        const accent = (run: number) =>
+          editor.update((tx) =>
+            tx.nodes.set({ accent: `a${run}` }, { at: [0] })
+          );
+
+        accent(0);
+
+        return [1, 2, 3].map((run) => coreWorkOf(() => accent(run)));
+      });
+
+      assert.ok(smallest.every((work) => work.placeChecks > 0));
+      for (const counts of larger) assert.deepEqual(counts, smallest);
+    });
+  }
+
   it('does as much work for a Suggesting Enter inside a link at 2,000 blocks as at 100', () => {
     const [small, large] = atBothSizes(
       (size) =>
@@ -927,6 +1098,42 @@ describe('authored review tree work per edit', () => {
       small.map((work) => work.recorderReads)
     );
   });
+
+  for (const content of [QuoteAccent, Blocks]) {
+    it(`does as much work for Suggesting Backspaces that join root paragraphs after a quote of 2,000 paragraphs as of 100, where the schema tracks ${content === QuoteAccent ? 'places' : 'none'}`, () => {
+      const [small, large] = [100, 2000].map((size) => {
+        const editor = editorFor(
+          [{ children: blocks(size, []), type: 'quote' }, ...blocks(3, [])],
+          'propose',
+          'alice',
+          content
+        );
+
+        editor.update((tx) =>
+          tx.text.insert('k', { at: { offset: 0, path: [1, 0] } })
+        );
+
+        // Completing the root also canonicalizes and indexes the quote, so
+        // only the judging is compared.
+        return [3, 2, 1].map(
+          (block) =>
+            coreWorkOf(() =>
+              editor.update((tx) => {
+                const caret = { offset: 0, path: [block, 0] };
+
+                tx.selection.set({ anchor: caret, focus: caret });
+                tx.command(editorCommands.delete, {
+                  direction: 'backward',
+                  unit: 'character',
+                });
+              })
+            ).placeChecks
+        );
+      });
+
+      assert.deepEqual(large, small);
+    });
+  }
 
   it('reads as many nodes to complete a Suggesting Backspace join at 20,000 blocks as at 100', () => {
     const [small, large] = atBothSizes(
@@ -2524,5 +2731,285 @@ describe('authored review tree storage', () => {
       (twoHundred - hundred) / 100 <= ((hundred - fifty) / 50) * 1.1,
       `bytes grow faster than k: ${JSON.stringify(stored)}`
     );
+  });
+});
+
+describe('rejected cut verdicts', () => {
+  withoutLawCheck();
+
+  const SIZES = [200, 1000];
+  const Halves = defineEditorSchema('work-halves', {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+      paragraph: {
+        content: schema.content.any(
+          [schema.content.text(), schema.content.type('link')],
+          { default: 'text', min: 1 }
+        ),
+      },
+    },
+    id: 'work-halves',
+    properties: [
+      schema.elementProperty('url', property.string(), {
+        target: target.type('link'),
+      }),
+      schema.elementProperty('tone', property.string(), {
+        target: target.type('paragraph'),
+      }),
+    ],
+    root: schema.content.types(['paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'preserve',
+    version: 1,
+  });
+  const halvesEditor = (
+    value: unknown,
+    author: () => string,
+    intent: 'edit' | 'propose'
+  ) =>
+    createEditor({
+      initialValue: value as never,
+      plugins: [
+        Halves,
+        createAuthoredPlugin({
+          authorId: author,
+          createChangeId: author,
+          intent,
+          now: () => 1,
+        }),
+      ],
+    });
+  // One Suggesting editor whose updates each record a change by `as`'s author.
+  const proposing = (value: unknown) => {
+    let author = '';
+    const editor = halvesEditor(value, () => author, 'propose');
+
+    return (as: string) => {
+      author = as;
+
+      return editor;
+    };
+  };
+  const linesWith = (size: number, links: readonly number[]) =>
+    Array.from({ length: size }, (_, at) =>
+      links.includes(at)
+        ? paragraph(
+            { text: '' },
+            { children: [{ text: `ab${at}` }], type: 'link', url: 'u' },
+            { text: '' }
+          )
+        : paragraph({ text: `plain ${at}` })
+    );
+  const TOUCHING = ['alice', 'bob', 'dave', 'erin'];
+  // Carol proposes an Enter inside a link and another inside a paragraph,
+  // and each touching author formats both halves of each alike.
+  const documentsAt = (size: number) => {
+    const middle = size / 2;
+    const carolEnters = (as: ReturnType<typeof proposing>, path: number[]) =>
+      as('carol').update((tx) => {
+        const caret = { offset: 1, path };
+
+        tx.selection.set({ anchor: caret, focus: caret });
+        tx.break.insert();
+      });
+    const link = proposing(linesWith(size, [middle]));
+    const block = proposing(linesWith(size, []));
+
+    carolEnters(link, [middle, 1, 0]);
+    carolEnters(block, [middle, 0]);
+    const touched = [link('carol').read.value()];
+
+    for (const [index, author] of TOUCHING.entries()) {
+      link(author).update((tx) => {
+        tx.nodes.set({ url: author }, { at: [middle, 1] });
+        tx.nodes.set({ url: author }, { at: [middle + 1, 1] });
+      });
+      touched.push(link(author).read.value());
+      if (index < 3) {
+        block(author).update((tx) => {
+          tx.nodes.set({ tone: author }, { at: [middle] });
+          tx.nodes.set({ tone: author }, { at: [middle + 1] });
+        });
+      }
+    }
+    const far = proposing(touched[3]);
+
+    far('frank').update((tx) => tx.nodes.set({ tone: 'far' }, { at: [0] }));
+
+    return {
+      far: far('frank').read.value(),
+      split: block('carol').read.value(),
+      touched,
+    };
+  };
+  const measured = (
+    value: unknown,
+    act: (editor: ReturnType<typeof halvesEditor>) => string | undefined
+  ) => {
+    const editor = halvesEditor(value, () => 'zed', 'edit');
+
+    collected = [];
+    try {
+      const status = act(editor);
+
+      return { resolutions: collected, status };
+    } finally {
+      collected = null;
+    }
+  };
+  const decided = (value: unknown, action: 'accept' | 'reject', id: string) =>
+    measured(
+      value,
+      (editor) =>
+        editor.update.authored.decide([
+          { action, changes: [editor.read.authored.change(id)!] },
+        ])?.status
+    );
+  const previewed = (value: unknown, preview: 'accepted' | 'proposed') =>
+    measured(value, (editor) => {
+      editor.api.authored.setView({ preview });
+      editor.read.children();
+
+      return preview;
+    });
+  const runs = new Map<
+    number,
+    Record<string, () => ReturnType<typeof measured>>
+  >();
+  // Each cohort at a size, run once: Ct rejects a link's cut that t pending
+  // changes touch, D rejects a paragraph split that three changes format, A
+  // accepts a change away from the cut and F previews the C3 document.
+  const runOf = (size: number, cohort: string) => {
+    if (!runs.has(size)) {
+      const { far, split, touched } = documentsAt(size);
+      const once = (run: () => ReturnType<typeof measured>) => {
+        let done: ReturnType<typeof measured> | undefined;
+
+        return () => (done ??= run());
+      };
+
+      runs.set(size, {
+        A: once(() => decided(far, 'accept', 'frank')),
+        ...Object.fromEntries(
+          touched.map((value, t) => [
+            `C${t}`,
+            once(() => decided(value, 'reject', 'carol')),
+          ])
+        ),
+        D: once(() => decided(split, 'reject', 'carol')),
+        'F-original': once(() => previewed(touched[3], 'accepted')),
+        'F-proposed': once(() => previewed(touched[3], 'proposed')),
+      });
+    }
+
+    return runs.get(size)![cohort]();
+  };
+  const probesOf = ({ resolutions }: ReturnType<typeof measured>) =>
+    resolutions.flatMap((entry) =>
+      entry.probes.map((probe) => ({ ...probe, served: entry.work }))
+    );
+  const readsOf = (run: ReturnType<typeof measured>) =>
+    run.resolutions.reduce((sum, entry) => sum + entry.work, 0) +
+    probesOf(run).reduce((sum, probe) => sum + probe.work, 0);
+  // The pending-mark reads of the storage slice, before a rejected cut
+  // compared its halves (2a4d950df3), for these documents.
+  const STORAGE_READS = [
+    { C0: 1840, 'F-original': 49, size: 200 },
+    { C0: 9040, 'F-original': 49, size: 1000 },
+  ];
+
+  it('rejects a link cut no pending change touches with at most 5 more pending-mark reads than the storage slice', () => {
+    const over = STORAGE_READS.flatMap(({ C0, size }) => {
+      const reads = readsOf(runOf(size, 'C0'));
+
+      return reads > C0 + 5 ? [`C0 at ${size}: ${reads} > ${C0} + 5`] : [];
+    });
+
+    assert.deepEqual(over, []);
+  });
+
+  it('previews the original of a document whose rejected cut three changes touch with at most 1.05 times the pending-mark reads of the storage slice', () => {
+    const over = STORAGE_READS.flatMap(({ 'F-original': stored, size }) => {
+      const reads = readsOf(runOf(size, 'F-original'));
+      const limit = Math.floor(stored * 1.05);
+
+      return reads > limit
+        ? [`F-original at ${size}: ${reads} > ${limit}`]
+        : [];
+    });
+
+    assert.deepEqual(over, []);
+  });
+
+  it('runs no probe for a decision or a preview whose rejected cut no pending change touches', () => {
+    const probed = SIZES.flatMap((size) =>
+      ['A', 'C0', 'F-original', 'F-proposed'].flatMap((cohort) => {
+        const probes = probesOf(runOf(size, cohort)).length;
+
+        return probes > 0 ? [`${cohort} at ${size}: ${probes} probes`] : [];
+      })
+    );
+
+    assert.deepEqual(probed, []);
+  });
+
+  it('probes each accept-or-reject combination of up to three changes touching a rejected cut at most once, and waits on four without probing', () => {
+    const over = SIZES.flatMap((size) =>
+      [0, 1, 2, 3, 4].flatMap((t) => {
+        const run = runOf(size, `C${t}`);
+        const probes = probesOf(run);
+        const resolves = probes.reduce((sum, probe) => sum + probe.resolves, 0);
+        const cap = t === 0 || t === 4 ? 0 : 2 ** t;
+        const waits = run.status === 'blocked';
+
+        return probes.length > cap || resolves > cap || (t === 4) !== waits
+          ? [
+              `C${t} at ${size}: ${probes.length} probes, ${resolves} resolves, waits ${waits}`,
+            ]
+          : [];
+      })
+    );
+
+    assert.deepEqual(over, []);
+  });
+
+  it('does less resolver work in each probe than in the deciding run it serves', () => {
+    const over = SIZES.flatMap((size) =>
+      ['C1', 'C2', 'C3', 'D'].flatMap((cohort) =>
+        probesOf(runOf(size, cohort)).flatMap(({ served, work }) =>
+          work > served ? [`${cohort} at ${size}: ${work} > ${served}`] : []
+        )
+      )
+    );
+
+    assert.deepEqual(over, []);
+  });
+
+  it('grows the probes of a decision with the document as fast as its deciding run, within 5%', () => {
+    const COHORTS = ['A', 'C0', 'C1', 'C2', 'C3', 'C4', 'D', 'F-original'];
+    const overDeciding = (run: ReturnType<typeof measured>) => {
+      const own = run.resolutions.reduce((sum, entry) => sum + entry.work, 0);
+
+      return (
+        (own + probesOf(run).reduce((sum, probe) => sum + probe.work, 0)) / own
+      );
+    };
+    const [small, large] = SIZES.map((size) =>
+      COHORTS.map((cohort) => overDeciding(runOf(size, cohort)))
+    );
+    const drifted = COHORTS.flatMap((cohort, index) =>
+      Math.abs(large[index] / small[index] - 1) > 0.05
+        ? [
+            `${cohort}: ${small[index].toFixed(3)} at ${SIZES[0]}, ${large[index].toFixed(3)} at ${SIZES[1]}`,
+          ]
+        : []
+    );
+
+    assert.deepEqual(drifted, []);
   });
 });

@@ -1,3 +1,4 @@
+import { jsonEqual } from '../core/change/json';
 import type { JsonEditorValue } from '../core/change/tokens';
 import type { ContentSlice } from '../interfaces/editor';
 import type { Path } from '../interfaces/path';
@@ -121,6 +122,13 @@ export const touches = (left: Occurrence, right: Occurrence) => {
 
 const isContent = (mark: AuthoredMark) =>
   mark.kind === 'insert' || mark.kind === 'delete';
+
+// A proposed Enter under a slotted container tags its tail's type even when
+// the type stays, so rejecting reads it back. Readers show no such write.
+const keepsValue = (mark: AuthoredMark) =>
+  mark.kind === 'format' &&
+  mark.write.kind === 'set' &&
+  jsonEqual(mark.write.value, mark.before);
 
 /** @internal */
 export const continues = (end: Occurrence, first: Occurrence) =>
@@ -286,7 +294,9 @@ export const changeOf = (
   id: string,
   list: readonly Occurrence[]
 ): AuthoredChange => {
-  const kinds = new Set(list.map(({ mark }) => KINDS[mark.kind]));
+  const kinds = new Set(
+    list.flatMap(({ mark }) => (keepsValue(mark) ? [] : [KINDS[mark.kind]]))
+  );
   const ranges: Range[] = [];
   const covered = covering(list);
 
@@ -515,6 +525,7 @@ export const readAuthoredDetails = (
   for (const occurrence of covering(index.occurrences.get(id) ?? [])) {
     const { mark, node, path } = occurrence;
 
+    if (keepsValue(mark)) continue;
     if (mark.kind === 'insert' || mark.kind === 'delete') {
       const range = rangeOf(occurrence);
 

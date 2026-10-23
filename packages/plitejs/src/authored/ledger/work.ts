@@ -54,6 +54,8 @@ export type LedgerWork = {
   insertionCounts: number;
   /** Text blocks read to find where a join's first block stands. */
   joinScans: number;
+  /** Letters of a plain text mapped to find the review texts that hold them. */
+  lettersMapped: number;
   /** Levels built for a container's children where none was carried. */
   levelBuilds: number;
   /** Slots the levels inside containers resolved or adopted. */
@@ -123,6 +125,7 @@ const work: LedgerWork = {
   holderReads: 0,
   insertionCounts: 0,
   joinScans: 0,
+  lettersMapped: 0,
   levelBuilds: 0,
   levelSlots: 0,
   narrowedChildren: 0,

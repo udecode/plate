@@ -1,7 +1,7 @@
 import { createAuthoredPlugin } from 'plitejs/authored';
 
 import { authoredTestApi } from '../../../authored/__tests__/authoredTestApi';
-import { createEditor } from '../../../core';
+import { createEditor, editorCommands } from '../../../core';
 import { BaseDetailsPlugin } from './BaseDetailsPlugin';
 
 const details = (title: unknown, body = 'Body') => [
@@ -78,5 +78,23 @@ describe('details beside a pending title deletion', () => {
     run.api.decide({ action: 'accept', changes: ['bob:1'] });
 
     expect(run.editor.read.children()).toEqual(editing.editor.read.children());
+  });
+});
+
+describe('a suggested Enter in the details body', () => {
+  it('shows only the paragraph break, with no type change', () => {
+    const run = make();
+
+    run.api.propose('bob:1', (tx) => {
+      tx.selection.set({
+        anchor: { offset: 2, path: [0, 1, 0] },
+        focus: { offset: 2, path: [0, 1, 0] },
+      });
+      tx.command(editorCommands.insertBreak);
+    });
+
+    expect(
+      run.editor.read.authored.details('bob:1')?.parts.map((part) => part.kind)
+    ).toEqual(['boundary']);
   });
 });

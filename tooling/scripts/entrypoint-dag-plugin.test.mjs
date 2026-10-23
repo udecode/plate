@@ -147,6 +147,7 @@ test('allows only exact Plate facade bridges and raw Plite proofs to import plit
     'apps/www/src/app/dev/combobox-typing/page.tsx',
     'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
     'apps/www/src/app/dev/editor-perf/page.tsx',
+    'packages/platejs/src/react/editor-kit-carried-moves.spec.tsx',
     'apps/www/src/app/dev/authored-review/page.tsx',
     'packages/platejs/src/authored/__tests__/authoredTestApi.ts',
     'packages/platejs/src/features/basic-nodes/lib/BaseBlockPlugins.authored-tree.spec.ts',

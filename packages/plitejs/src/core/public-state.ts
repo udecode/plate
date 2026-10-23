@@ -233,6 +233,7 @@ import {
   getEditorDocumentRecorder,
   type PositionMap,
   endEditorTransactionDraftGuards,
+  isEditorDraftView,
   runEditorDraftGuards,
 } from './document-recorder';
 import {
@@ -338,11 +339,15 @@ import {
 import { EditorRefusalError, publishEditorRefusal } from './refusal';
 import {
   canonicalizeRootChildren,
+  carriedHook,
   constructCanonicalDocumentChange,
   getProtectedInlineSpacerEntries,
 } from './representation';
 import { changedRootsOf } from './root-ownership';
-import { areEditorSchemaIdentitiesEqual } from './schema-compiler';
+import {
+  areEditorSchemaIdentitiesEqual,
+  tracksPlaces,
+} from './schema-compiler';
 import {
   EditorNoncanonicalChangeError,
   EditorSchemaValidationError,
@@ -1552,6 +1557,7 @@ export const commitRecordedDraft = (
       { notifyTransactionListeners: false }
     );
   }
+  snapshot.builder.beginSpan();
   moveDraftTracks(
     snapshot,
     plainBuilder,
@@ -10209,6 +10215,8 @@ export const createEditorDocumentChangeBuilder = (
   options: Readonly<{
     /** Configuration publication performs one explicit full-document validation. */
     validation?: 'configuration-publication' | 'incremental';
+    /** A command frame's draft is a view under someone's pending change. */
+    view?: boolean;
   }> = {}
 ) => {
   const revision = getPluginRegistry(editor);
@@ -10222,7 +10230,11 @@ export const createEditorDocumentChangeBuilder = (
     }
   };
 
+  const compiled = getCompiledEditorSchema(editor);
+
   return new ChangeDraft(value, {
+    tracksPlaces: tracksPlaces(compiled),
+    view: options.view ? () => true : () => isEditorDraftView(editor),
     adoptCanonicalBaseline: (candidate) => {
       schema.adoptDocumentBaseline(candidate as EditorDocumentValue);
     },
@@ -10240,13 +10252,14 @@ export const createEditorDocumentChangeBuilder = (
       }
     },
     construct: (
-      { after, before, change, indexedAfter, indexedBefore },
+      { after, before, carried, change, indexedAfter, indexedBefore },
       preparation
     ) => {
       assertRevision();
 
       return constructCanonicalDocumentChange(editor, after, change, {
         before,
+        carried: carried && carriedHook(compiled, carried),
         fitPreparation: preparation,
         indexedAfter,
         indexedBefore,
@@ -10309,7 +10322,7 @@ const rebindTransactionBuilderToCurrentSchema = (
 
   if (!accumulated.empty) {
     builder.apply(accumulated);
-    builder.keepSteps(snapshot.builder.draftSteps);
+    builder.keepSteps(snapshot.builder);
   }
 
   snapshot.builder = builder;

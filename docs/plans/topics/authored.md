@@ -319,7 +319,9 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   records each write under its author,
   and a write inside another pending change depends on that change's context, so
   rejecting the outer change removes it too. Editing records the same way and
-  accepts the writer's own claims in the same commit. It leaves every other
+  accepts the writer's own claims in the same commit. Editing refuses a
+  carried value that is not the left-out default, while proposing and then
+  accepting the same change drops it where it lands. It leaves every other
   author's claims pending, so text it writes inside another author's pending
   insertion joins that insertion. A format write in Editing stacks an accepted
   claim over the format claims on that property, replacing only its writer's

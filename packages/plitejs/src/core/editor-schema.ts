@@ -47,6 +47,7 @@ import { normalizeSetValues } from './change/transform';
 import { cloneFrozen, isImmutable, isOwnedJsonValue } from './clone';
 import { completeContent } from './content-completion';
 import { ContentSlice as ContentSliceValue } from './content-slice';
+import { getPropertyDefault } from './default-storage';
 import {
   getEditorDocumentShapeIssueMessage,
   readEditorDocument,
@@ -86,7 +87,9 @@ import {
   getCompiledPropertyCandidates,
   matchesCompiledSchemaTarget,
   resolveCompiledSchemaProperty,
+  toCompiledNodeContext,
   toCompiledTargetContext,
+  unwrittenAs,
 } from './schema-compiler';
 import {
   createEditorSchemaValidationError,
@@ -113,6 +116,20 @@ import {
   assertEditorJsonValue,
   snapshotEditorJsonValue,
 } from './value-codec';
+import { countCoreWork } from './work';
+
+/**
+ * Asked only for a value its new place cannot hold: whether the node at
+ * `path`, relative to the children being canonicalized, carried `key` from
+ * a place that left it out, so the pass drops it.
+ *
+ * @internal
+ */
+export type CarriedPropertyHook = (
+  path: readonly number[],
+  node: Readonly<Record<string, unknown>>,
+  key: string
+) => boolean;
 
 /**
  * A required property that nothing supplies. Only `createDeclarativeAndFill`
@@ -284,7 +301,8 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
         document: DocumentIndex;
         path: readonly number[];
         from: number;
-      }>
+      }>,
+      carried?: CarriedPropertyHook
     ) => readonly Descendant[];
     copyChildren: (
       children: readonly Descendant[],
@@ -395,13 +413,6 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       node: JsonNode,
       key: string,
       context: DocumentPropertyContext
-    ) => boolean;
-    isTextPropertyEqualAt: (
-      key: string,
-      left: unknown,
-      right: unknown,
-      path: Path,
-      root?: RootKey
     ) => boolean;
     mergeTextPropertyAt: (
       key: string,
@@ -542,9 +553,11 @@ export const canonicalizeCompiledExclusiveTextProperties = (
     );
   })) {
     const { property } = entry;
+    const active =
+      property && unwrittenAs(property.descriptor, entry.value) !== 'left-out';
 
     if (
-      property &&
+      active &&
       [...acceptedIds].some((acceptedId) =>
         schema.properties.conflictsByPropertyId
           .get(acceptedId)
@@ -554,7 +567,7 @@ export const canonicalizeCompiledExclusiveTextProperties = (
       continue;
     }
     acceptedKeys.add(entry.key);
-    if (property) acceptedIds.add(property.id);
+    if (active) acceptedIds.add(property.id);
   }
 
   if (acceptedKeys.size === entries.length) return source;
@@ -696,11 +709,6 @@ export const acceptsPropertyValue = (
     return false;
   }
 };
-
-const getPropertyDefault = (property: CompiledSchemaProperty) =>
-  Object.hasOwn(property.descriptor, 'default')
-    ? property.descriptor.default
-    : undefined;
 
 const getDocumentRoot = (value: EditorDocumentValue, root: string) =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
@@ -1800,20 +1808,11 @@ export const createEditorSchema = <V extends Value = Value>(
         continue;
       }
 
-      const canonical = validatePropertyValue(
+      nextProperties[key] = validatePropertyValue(
         `Editor element "${type}" property "${key}"`,
         property.descriptor,
         value
       );
-
-      if (
-        !property.descriptor.omitDefault ||
-        (!Object.hasOwn(property.descriptor, 'default') &&
-          !property.descriptor.generate) ||
-        !structurallyEqual(canonical, property.descriptor.default)
-      ) {
-        nextProperties[key] = canonical;
-      }
     }
 
     const children: Descendant[] = [];
@@ -2242,24 +2241,18 @@ export const createEditorSchema = <V extends Value = Value>(
             continue;
           }
           if (had && !has) {
-            const omittedDefault =
-              property.descriptor.omitDefault &&
-              Object.hasOwn(property.descriptor, 'default') &&
-              structurallyEqual(sourceRecord[key], property.descriptor.default);
-            const exclusive =
-              placement === 'text' && property.exclusiveGroupIds.length > 0;
-
-            if (!omittedDefault && !exclusive) {
+            if (
+              placement !== 'text' ||
+              property.exclusiveGroupIds.length === 0
+            ) {
               throw new Error(
                 `Unclassified removed schema property "${key}" in editor root "${root}" at [${path}].`
               );
             }
             repairs.push(
               schemaRepair({
-                code: omittedDefault
-                  ? 'omit-default-property'
-                  : 'resolve-exclusive-property',
-                impact: omittedDefault ? 'lossless' : 'lossy',
+                code: 'resolve-exclusive-property',
+                impact: 'lossy',
                 inputs: inputLocations,
                 owner: 'property',
               })
@@ -2357,7 +2350,8 @@ export const createEditorSchema = <V extends Value = Value>(
     reserved: ReadonlySet<string>,
     dropMisplaced: boolean,
     openAncestorBoundary = false,
-    validationLocation?: EditorSchemaValidationLocation
+    validationLocation?: EditorSchemaValidationLocation,
+    carried?: (key: string) => boolean
   ) => {
     const output: Record<string, unknown> = {};
     const canonicalizeProperty = (
@@ -2417,7 +2411,7 @@ export const createEditorSchema = <V extends Value = Value>(
             output[key] = canonicalizeProperty(key, boundaryProperty, value);
             continue;
           }
-          if (dropMisplaced) continue;
+          if (dropMisplaced || carried?.(key)) continue;
           const message = `Schema ${placement} property "${key}" cannot target ${
             placement === 'text'
               ? `text under "${context.type}"`
@@ -2451,16 +2445,15 @@ export const createEditorSchema = <V extends Value = Value>(
         continue;
       }
 
-      const canonical = canonicalizeProperty(key, property, value);
-
-      if (
-        property.descriptor.omitDefault &&
-        Object.hasOwn(property.descriptor, 'default') &&
-        structurallyEqual(canonical, property.descriptor.default)
-      ) {
-        continue;
+      try {
+        output[key] = canonicalizeProperty(key, property, value);
+      } catch (error) {
+        // A place whose declaration rejects the value cannot hold it either.
+        if (error instanceof EditorSchemaValidationError && carried?.(key)) {
+          continue;
+        }
+        throw error;
       }
-      output[key] = canonical;
     }
 
     const allowedIds =
@@ -2563,27 +2556,31 @@ export const createEditorSchema = <V extends Value = Value>(
     ancestors: readonly Element[],
     dropMisplaced: boolean,
     baseline?: NodeList<Descendant>,
-    offset = 0
+    offset = 0,
+    carried?: CarriedPropertyHook,
+    prefix: readonly number[] = []
   ): readonly Descendant[] => {
     const canonical = children.map((node, index) => {
       const previous = baseline?.at(index + offset);
 
       if (node === previous) return node;
+      countCoreWork('canonicalNodes');
+      const path = carried ? [...prefix, index] : prefix;
+      const carriedKey = carried && ((key: string) => carried(path, node, key));
+
       if (NodeApi.isText(node)) {
-        const parent = ancestors[0];
-        const context = toCompiledTargetContext(
-          getElementType(parent ?? {}) ?? '',
-          { ancestors: ancestors.slice(1), root }
-        );
         const source = node as unknown as Readonly<Record<string, unknown>>;
 
         return canonicalizeDeclarativePropertyRecord(
           source,
           schema,
           'text',
-          context,
+          toCompiledNodeContext(node, ancestors, root),
           new Set(['text']),
-          dropMisplaced
+          dropMisplaced,
+          false,
+          undefined,
+          carriedKey
         ) as Text;
       }
 
@@ -2608,7 +2605,10 @@ export const createEditorSchema = <V extends Value = Value>(
           root,
           [node, ...ancestors],
           dropMisplaced,
-          previousChildren
+          previousChildren,
+          0,
+          carried,
+          path
         );
 
         return nested === node.children ? node : { ...node, children: nested };
@@ -2618,7 +2618,7 @@ export const createEditorSchema = <V extends Value = Value>(
         node,
         schema,
         'element',
-        toCompiledTargetContext(type, { ancestors, root }),
+        toCompiledNodeContext(node, ancestors, root),
         new Set([
           'children',
           'type',
@@ -2626,7 +2626,10 @@ export const createEditorSchema = <V extends Value = Value>(
             ? ['childRoots']
             : []),
         ]),
-        dropMisplaced
+        dropMisplaced,
+        false,
+        undefined,
+        carriedKey
       );
       const candidate = properties as unknown as Element;
       const nested = canonicalizeDeclarativeChildren(
@@ -2635,7 +2638,10 @@ export const createEditorSchema = <V extends Value = Value>(
         root,
         [candidate, ...ancestors],
         dropMisplaced,
-        previousChildren
+        previousChildren,
+        0,
+        carried,
+        path
       );
 
       if (candidate === node && nested === node.children) return node;
@@ -2649,7 +2655,7 @@ export const createEditorSchema = <V extends Value = Value>(
   };
 
   const canonicalizeChildren: InternalEditorSchemaApi['canonicalizeChildren'] =
-    (children, root, ancestors, dropMisplaced, baseline) => {
+    (children, root, ancestors, dropMisplaced, baseline, carried) => {
       const schema = getDeclarativeSchema();
       // Only the validated immutable before-root can prove unchanged properties.
       let previous: NodeList<Descendant> | undefined =
@@ -2683,7 +2689,8 @@ export const createEditorSchema = <V extends Value = Value>(
             ancestors,
             dropMisplaced,
             previous,
-            baseline?.from ?? 0
+            baseline?.from ?? 0,
+            carried
           )
         : children;
 
@@ -2734,24 +2741,18 @@ export const createEditorSchema = <V extends Value = Value>(
 
     const copied = children.map((node) => {
       if (NodeApi.isText(node)) {
-        const parent = ancestors[0];
-
         return copyProperties(
           node,
           'text',
-          toCompiledTargetContext(getElementType(parent ?? {}) ?? '', {
-            ancestors: ancestors.slice(1),
-            root,
-          }),
+          toCompiledNodeContext(node, ancestors, root),
           new Set(['text'])
         );
       }
 
-      const type = getElementType(node) ?? '';
       const candidate = copyProperties(
         node,
         'element',
-        toCompiledTargetContext(type, { ancestors, root }),
+        toCompiledNodeContext(node, ancestors, root),
         new Set(['childRoots', 'children', 'type'])
       ) as Element;
       const nested = copyDeclarativeChildren(node.children, schema, root, [
@@ -3081,31 +3082,6 @@ export const createEditorSchema = <V extends Value = Value>(
       textPropertyAppliesToContext(options.parent, key, options)
     );
   };
-
-  const isTextPropertyEqual = (
-    key: string,
-    left: unknown,
-    right: unknown,
-    options: RuntimeTextTargetOptions = {}
-  ) => {
-    const schema = getDeclarativeSchema();
-    const property = schema ? getTextProperty(schema, key, options) : null;
-    const normalize = (value: unknown) =>
-      property?.descriptor.omitDefault && value === undefined
-        ? property.descriptor.default
-        : value;
-
-    return structurallyEqual(normalize(left), normalize(right));
-  };
-
-  const isTextPropertyEqualAt = (
-    key: string,
-    left: unknown,
-    right: unknown,
-    path: Path,
-    root: RootKey = 'main'
-  ) =>
-    isTextPropertyEqual(key, left, right, getTextTargetOptionsAt(path, root));
 
   const mergeCompiledTextProperty = (
     key: string,
@@ -4960,7 +4936,6 @@ export const createEditorSchema = <V extends Value = Value>(
     isElementTypeInGroup,
     isSetValuedProperty,
     isTextPropertyAllowedAt,
-    isTextPropertyEqualAt,
     isInline: (element: Node) =>
       ElementApi.isElement(element) && getElementBehavior(element).inline,
     isIsolating: (element: Node) =>

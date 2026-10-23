@@ -382,7 +382,13 @@ const enterFrameDraft = (
     projected.carried
   );
   countCoreWork('baselines');
-  snapshot.builder = createEditorDocumentChangeBuilder(editor, projected.value);
+  snapshot.builder = createEditorDocumentChangeBuilder(
+    editor,
+    projected.value,
+    {
+      view: true,
+    }
+  );
   countCoreWork('builders');
   snapshot.activeChange = { change: snapshot.builder.change };
   const { book } = frame.caret;
