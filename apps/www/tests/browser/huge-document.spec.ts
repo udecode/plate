@@ -27,7 +27,13 @@ test('huge document mounts both editors with the current heading schema', async 
     await expect(platePane.locator('h1').first()).toBeVisible();
     await expect(slatePane.locator('h1').first()).toBeVisible();
 
-    const paragraph = platePane.locator('p').last();
+    const pathBeforeScroll = await platePane
+      .locator('p')
+      .last()
+      .getAttribute('data-editor-path');
+    const paragraph = platePane.locator(
+      `p[data-editor-path="${pathBeforeScroll}"]`
+    );
 
     await paragraph.click();
     await page.keyboard.press('End');

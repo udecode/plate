@@ -378,7 +378,9 @@ test(AI_CASE_ID, async ({ page }, testInfo) => {
     const before = await editorHarness.get.modelValue();
     await paragraph.dblclick();
     const selection = await editorHarness.get.selection();
-    const askAI = page.getByRole('button', { name: 'Ask AI' });
+    const askAI = page
+      .getByRole('button', { name: 'AI commands' })
+      .filter({ hasText: 'Ask AI' });
     await expect(askAI).toBeVisible();
     await askAI.click();
 

@@ -459,11 +459,23 @@ const readBuildId = (page: Page) =>
     return ids.size === 1 ? [...ids][0] : null;
   });
 
-const outputHTML = (page: Page, composition: Composition) =>
-  page.evaluate(
-    (selector) => document.querySelector(selector)?.innerHTML ?? null,
-    outputFor(composition).root
-  );
+const outputHTMLWithListIdsByAppearance = (
+  page: Page,
+  composition: Composition
+) =>
+  page.evaluate((selector) => {
+    const html = document.querySelector(selector)?.innerHTML;
+
+    if (html === undefined) return null;
+
+    const listIds = new Map<string, number>();
+
+    return html.replaceAll(/data-list-id="([^"]*)"/g, (_, id: string) => {
+      if (!listIds.has(id)) listIds.set(id, listIds.size);
+
+      return `data-list-id="${listIds.get(id)}"`;
+    });
+  }, outputFor(composition).root);
 
 // Resolves once the output has been quiet for `quietMs`.
 const settle = async (page: Page, quietMs = 250) => {
@@ -1076,7 +1088,10 @@ const runStream = async ({
 
       mkdirSync(process.env.S5_SAVE_TEXT, { recursive: true });
       writeFileSync(`${file}.txt`, text);
-      writeFileSync(`${file}.html`, (await outputHTML(page, composition))!);
+      writeFileSync(
+        `${file}.html`,
+        (await outputHTMLWithListIdsByAppearance(page, composition))!
+      );
     }
 
     return {
@@ -1205,7 +1220,7 @@ const runAICorrectness = async (
     return {
       buildId,
       eligible: previews.reduce((sum, batch) => sum + batch.eligible, 0),
-      html: await outputHTML(page, 'ai'),
+      html: await outputHTMLWithListIdsByAppearance(page, 'ai'),
       kept: previews.reduce((sum, batch) => sum + batch.kept, 0),
       text: await outputText(page, 'ai'),
       texts: batches.map((batch) => batch.text ?? ''),
@@ -1241,7 +1256,7 @@ const runDemoCorrectness = async (
     await startStream(page, mode);
     await waitForFinish(page, mode, STREAM_CAP_MS);
     const streamed = {
-      html: await outputHTML(page, mode),
+      html: await outputHTMLWithListIdsByAppearance(page, mode),
       text: await outputText(page, mode),
     };
 
@@ -1263,7 +1278,7 @@ const runDemoCorrectness = async (
     return {
       buildId,
       fresh: {
-        html: await outputHTML(page, mode),
+        html: await outputHTMLWithListIdsByAppearance(page, mode),
         text: await outputText(page, mode),
       },
       streamed,

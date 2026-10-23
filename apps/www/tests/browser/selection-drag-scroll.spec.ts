@@ -2,10 +2,15 @@ import {
   createBrowserEditorHarness,
   recordBrowserRuntimeErrors,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const CASE_ID = 'keeps native selection drag scrolling outside the editor';
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
+
+const floatingAskAI = (page: Page) =>
+  page
+    .getByRole('button', { name: 'AI commands' })
+    .filter({ hasText: 'Ask AI' });
 
 type SelectionSnapshot = {
   anchorOffset: number;
@@ -253,7 +258,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
       expect(positiveSamples.at(-1)!.anchorTop).toBeLessThan(
         positiveSamples[0].anchorTop
       );
-      await expect(page.getByRole('button', { name: 'Ask AI' })).toHaveCount(0);
+      await expect(floatingAskAI(page)).toHaveCount(0);
     } finally {
       await page.mouse.up();
       await page.mouse.move(x, insideY);
@@ -338,7 +343,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
 
     try {
       await page.mouse.move(upwardStart.x, 1, { steps: 30 });
-      await expect(page.getByRole('button', { name: 'Ask AI' })).toHaveCount(0);
+      await expect(floatingAskAI(page)).toHaveCount(0);
 
       await expect
         .poll(() => scroller.evaluate((element) => element.scrollTop), {
@@ -441,7 +446,7 @@ test(CASE_ID, async ({ page }, testInfo) => {
       .toBe(releasedScrollTop);
 
     await heading.click();
-    await expect(page.getByRole('button', { name: 'Ask AI' })).toHaveCount(0);
+    await expect(floatingAskAI(page)).toHaveCount(0);
     await editorRoot.press('ArrowRight');
     await expect(editorRoot).toBeFocused();
     expect(await editor.get.selection()).not.toBeNull();

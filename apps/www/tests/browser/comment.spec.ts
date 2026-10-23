@@ -20,7 +20,7 @@ const selectEditorMode = async (
     root.locator(EDITOR).first()
   ).ready({ editor: 'visible' });
   const trigger = root.getByRole('button', {
-    name: mode === 'Suggestion' ? 'Editing' : 'Suggestion',
+    name: `Editing mode: ${mode === 'Suggestion' ? 'Editing' : 'Suggestion'}`,
     exact: true,
   });
   await expect(trigger).toBeVisible({ timeout: 20_000 });
@@ -29,7 +29,7 @@ const selectEditorMode = async (
   await expect(menu).toBeVisible();
   await menu.getByRole('menuitemradio', { name: mode, exact: true }).click();
   await expect(
-    root.getByRole('button', { name: mode, exact: true })
+    root.getByRole('button', { name: `Editing mode: ${mode}`, exact: true })
   ).toBeVisible();
 };
 
@@ -44,7 +44,7 @@ test('Playground opens in Editing with its full document and starter discussions
       page.getByRole('heading', { name: 'Welcome to the Plate Playground!' })
     ).toBeVisible({ timeout: 20_000 });
     const editingMode = page.getByRole('button', {
-      name: 'Editing',
+      name: 'Editing mode: Editing',
       exact: true,
     });
     await expect(editingMode).toBeVisible();
@@ -52,10 +52,11 @@ test('Playground opens in Editing with its full document and starter discussions
       page
         .locator('[data-editor-authored-change]')
         .filter({ hasText: 'suggestions' })
+        .first()
     ).toBeVisible();
     await expect(
-      page.getByRole('textbox', { name: 'Enter your code here...' })
-    ).toContainText('classDiagram');
+      page.getByRole('code').filter({ hasText: 'classDiagram' })
+    ).toBeVisible();
     await page
       .getByRole('button', { name: 'Open 5 discussion items for this block' })
       .click();
@@ -2542,7 +2543,9 @@ test('AI editor keeps its toolbar above the full-width editor', async ({
     const firstElement = editor.locator('[data-editor-node="element"]').first();
 
     await selectCharacterWithKeyboard(page, firstElement, 0);
-    const askAI = page.getByRole('button', { name: 'Ask AI' });
+    const askAI = page
+      .getByRole('button', { name: 'AI commands' })
+      .filter({ hasText: 'Ask AI' });
 
     await expect(askAI).toBeVisible();
     await askAI.click();
@@ -2570,7 +2573,9 @@ test('AI editor keeps Floating Discussion usable on narrow screens', async ({
 
     const editor = page.locator(EDITOR).first();
 
-    await expect(editor).toBeVisible();
+    await createBrowserEditorHarness(page, 'narrow discussion', editor).ready({
+      editor: 'visible',
+    });
     const overlappingSuggestion = editor
       .locator('[data-editor-authored-change]')
       .filter({ hasText: 'overlapping' })
