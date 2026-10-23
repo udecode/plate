@@ -1,7 +1,7 @@
 ---
 review_scopes: [search]
 verdict: pursue
-review_basis: [2026-10-21-search-find-maintenance]
+review_basis: [2026-10-21-search-find-maintenance, 2026-10-22-search-block-rescan]
 work_kind: implementation
 review_commit: 89a3a795f43b072441fc6947f14c2767c7005f20
 review_inputs: [packages/platejs/src/features/find/lib/BaseFindPlugin.ts, packages/platejs/src/features/find/lib/BaseFindPlugin.spec.ts, packages/platejs/src/features/find/lib/BaseFindPlugin.oracle-and-work.spec.ts, packages/platejs/src/internal/plugin/pluginStore.ts, packages/platejs/src/facade.ts, packages/plitejs/src/interfaces/node.ts, packages/plitejs/src/internal/index.ts, packages/plitejs/src/core/commit.ts, 'content/docs/(plugins)/(functionality)/find.mdx', docs/development/enforcement.md, docs/plans/2026-10-22-search-block-rescan.md, docs/plans/2026-10-21-search-find-maintenance.md, VISION.md, docs/vision/common.md]
@@ -10,7 +10,7 @@ review_upstreams: ['../vscode@df2411cf7d8f2e0cfc79109a3bc8eaab2c69165b', '../cod
 
 # Find: rescan only the part of the document an edit changed
 
-Status: building: steps 1 to 7 done; landing, then step 8
+Status: executed: landed as e75126b0a3; four timing lines rerun in t_9c5320bd
 Topic: search
 Playbook: plan
 
@@ -20,11 +20,11 @@ This plan replaces `2026-10-22-search-block-rescan`, whose rescan round 3's pane
 
 ### What will change?
 
-Typing in one paragraph re-searches only that paragraph, as you asked. Round 3's review threw out the last try, so this one finds the edited part by comparing the document before and after the edit.
+Typing in one paragraph now searches only that paragraph again, as you asked, and Phase 1 shipped with it. In 1,000 paragraphs that all match, a real keystroke that adds or removes no match takes about 45 ms, down from 115 to 164 ms before Phase 1. At 10,000 paragraphs the editor's own work takes most of the time, and the drop from about 250 ms to 200 ms was too noisy to call.
 
 ### What could go wrong?
 
-Tests check every edit against a fresh search, since a wrong guess leaves stale highlights. Enter or Backspace across paragraphs still searches everything. A match list other code writes shows as written until the next change or search.
+Four of the six speed checks were too noisy to call, and none failed. A suggested task reruns them. Enter or Backspace across paragraphs, and pastes, still search everything.
 
 ## Teach
 
@@ -274,7 +274,7 @@ Diff round 3, the last diff round, reviewed round 2's fixes with the same seats.
 - [x] **5. Docs.** Run `plate-docs` on `content/docs/(plugins)/(functionality)/find.mdx` and its Chinese twin. Say that an edit re-searches only the part it changed. Change "Searches through adjacent text leaves and inline descendants" to say a match can run across text leaves and inline elements within one block, and that text placed directly beside a block is searched on its own. Change "A commit that leaves the main document unchanged, such as a selection change or an edit in a named root, runs no search" to say such a commit searches only when the results went stale: after a schema change, an app's write to `matches`, or a search inside an update that threw. This also closes Phase 1's step 6. Proof: the docs checks, the registry build, and the rendered page read back in the browser.
 - [x] **6. Measure the final bytes.** In `apps/www/scripts/run-editor-perf.mts`, add a `dense-10k` trusted `create-destroy` cohort and a `textRunsScanned: 1` line for each cohort the work line names, and show that `--find-assert-lines` fails on Phase 1's bytes with those lines. Run the Find lane's counts with `--find-assert-lines`, then both frozen paired-timing configs, against Phase 1 and against the base, with every source pointing at the final bytes. Then hand-drive the Find demo with `node tooling/scripts/hand-drive.mjs scope` and `check`. Proof: the runner's known-bad run, and the counts, timing and hand-drive logs, checked with `pstack:benchmark-checklist`, and a `proof` row for each run. A conclusive miss against Phase 1 sends the design back to `architect`; an inconclusive line stays a `gate`.
 - [x] **7. Review and land.** Run `deslop`, `no-comments` and `unslop`, then a panel on the diff, because it changes Plite core (reviews: push). Land through `node .agents/pstack/land.mjs --check 'pnpm check --affected'`. Proof: the writing rows, the panel rows and the land log.
-- [ ] **8. Fold and close.** Run `/pstack:correct` on row 58's class, per-keystroke work that grows with the document, which this run repeated in round 1's warnings 2 and 4 and round 3's walk finding. Fold the delta into `docs/plans/topics/search.md`, write the Close and flip `Status:`. Close Phase 1's steps 5, 6 and 10 in its plan, citing step 6's timing as its acceptance. Proof: `node .agents/pstack/plan-page.mjs docs/plans/2026-10-22-search-run-rescan.md --folded` renders.
+- [x] **8. Fold and close.** Run `/pstack:correct` on row 58's class, per-keystroke work that grows with the document, which this run repeated in round 1's warnings 2 and 4 and round 3's walk finding. Fold the delta into `docs/plans/topics/search.md`, write the Close and flip `Status:`. Close Phase 1's steps 5, 6 and 10 in its plan, citing step 6's timing as its acceptance. Proof: `node .agents/pstack/plan-page.mjs docs/plans/2026-10-22-search-run-rescan.md --folded` renders.
 
 ## Proof
 
@@ -308,7 +308,7 @@ Completion Gates:
 |-----------------|---------|-----------------|----------|
 | Pre-acceptance scale proof | yes | Step 6 | One text run scanned per keystroke for typing, no-change and create-destroy at 1,000 and 10,000 blocks, where Phase 1 scans 1,000 or 10,000, in `counts-r2-a1.log`; the runner's count lines fail on Phase 1's bytes in `build-s6-runner-lines-p1-knownbad-a1.log` |
 | Warm latency budget | yes | Step 6's timing lines | Two lines pass and four are inconclusive, with no conclusive miss. Against Phase 1, `dense-1k` trusted `shift` passes at 0.908 of its 0.93, in `vs-p1-final-s30-a1.log`. Against the base, `dense-1k` trusted `no-change` passes at 0.352 of its 0.5, in `vs-head-final-s30-a1.log`. `dense-10k` trusted `no-change` at 0.799 of 0.8, `sparse-10k` at 0.784 of 0.93 with 0.158 of noise, `dense-1k` trusted `shift` against the base at 0.441 of 0.5 with 0.064 of noise, and `dense-10k` programmatic `no-change` at 0.121 of 0.5, whose planted arm could not fail the line, stay gates |
-| Large/stress scaling | yes | Step 6's 10,000-block cohorts | One text run scanned per keystroke at 10,000 blocks; a programmatic keystroke takes about 105 ms against the base's 860 ms, and a trusted one about 200 ms against Phase 1's 250 ms, where the rest is the editor's own cost; both 10,000-block timing lines stay gates, as the row above says |
+| Large/stress scaling | yes | Step 6's 10,000-block cohorts | One text run scanned per keystroke at 10,000 blocks; a programmatic keystroke, a proxy whose timing line is inconclusive, takes about 105 ms against the base's 860 ms, and a trusted one about 200 ms against Phase 1's 250 ms, where the rest is the editor's own cost; both 10,000-block timing lines stay gates, as the row above says |
 | Cold and failure paths | yes | Step 4's fallback floor and step 3's throw fallback | 74 fallbacks against a floor of 1, and the throw case passes, in `build-s3-platejs-test-find-a3.log` |
 | Payload and fan-out | yes | Step 6's counts | Store writes and refreshed keys equal Phase 1's: none for a keystroke that changes no match, one for `shift` and `create-destroy`, in `counts-r2-a1.log` |
 | Production-path rerun | yes | Step 6 on the final bytes | The counts and both timing configs ran on the final plugin bytes, sha256 `0495708b…`, served from source |
@@ -337,6 +337,8 @@ Completion Gates:
 | Slow typing in huge documents | A suggested task finds why each keystroke at 10,000 paragraphs costs about 100 ms with no search open (safe) | Fold that work into this plan | fold editor cost | small |
 | The inline-check work case's control on Phase 1 | It fails on Phase 1 only on its at-least-one check, because Phase 1's whole search reads the schema through a getter the case cannot count. Its controls are the round 2 tree, 2,006 checks against 26, and the planted run test (look) | Count Phase 1's schema reads too, through a test-only hook in Plite | count phase 1 checks | detail |
 | The pstack version this run uses | Keep going on the installed 0.9.101 skills, though the project pins 0.9.88, because a downgrade needs a new session (look) | Reinstall 0.9.88 and restart the run | pin pstack | detail |
+| Moving through a match list the app wrote | Every highlight repaints, because apps rarely write their own list (safe) | Repaint only the two matches that changed | key app moves | detail |
+| The search page's link | A new page at https://claude.ai/artifact/DCidvFLzNdy3rqoDBckCk8, because the old one, https://claude.ai/artifact/3aQ4FYJESBeEveayH6n7vn, was deleted (safe) | Drop the new page and keep the subject without one | drop new page | detail |
 
 ## Evidence
 
@@ -383,11 +385,86 @@ This plan supersedes 2026-10-22-search-block-rescan, because round 3's panel rev
 - `performance` is unaffected. Its editor-perf page mounts the Find lane's `find-surface.tsx`, whose actions and counters this plan reads and does not change.
 - Lint calls `findTextRanges` through a text-range view. Step 1's base-versus-after run covers the shared test it calls.
 
+## Close
+
+Reversals and deviations come first.
+
+- Step 6 ran each timing arm at 30 samples, not 40. One 40-sample arm took 153 s at a load of 82, so a whole config would have run past the hour. Budgets, cohorts, planted arms and packet order stayed frozen.
+- Four of the six timing lines are inconclusive, and none missed conclusively, so the design stands. Under the Time budget rule, suggested task t_9c5320bd reruns them on the landed change, and this Close claims only what step 6 measured.
+- Diff round 1 cut the table-cell work case and the find partition's table dependency, because the nested-container case covers every container. Row 58 of the rules table still named that case until this close removed it.
+- The `store-write-active-root` planted bug fails no case while t_bcd9a432 is open, so round 1's fix for the store subscriber's root read is unproven.
+- Diff round 3 left a move through a list the app wrote refreshing every text node. The Defaults row on moving through an app's list names the word that changes it.
+- The first `land.mjs` rebase conflicted on the four generated registry files. The lead kept next's copies, rebuilt the registry and checked it fresh before the rebase went on.
+- The next landing failed two checks. The core audit refused Find's extend stage, because Phase 1 added an `activate` stage that its allowlist of audited stages did not list. The landing commit adds it there, as Upload's entry already lists one. The Plite React partition's 32-view selection import case timed out under load, a flake that suggested task t_1bf5e7d5 owns. The rerun failed that partition again at a load near 49, on two view-caret-work timeouts and an IME decoration case that t_42d7d65a owns, and that file passed 5 of 5 alone. The third run landed.
+- The landing commit's message leads with the programmatic 10,000-block line, which step 6 scored inconclusive. Reflect caught it after the push, so the brief now leads with the trusted lines and the commit message stays as pushed.
+- The project moved its pstack pin from v0.9.88 to v0.9.101 during the run, so the Defaults row on the pstack version no longer describes a mismatch.
+
+Landed as e75126b0a3 on next through `land.mjs`, on its third run of `pnpm check --affected`.
+
+The predicted benefit held. Find's search work on a keystroke inside one paragraph no longer grows with the document. The lane scans one text run per keystroke at 1,000 and 10,000 blocks, where Phase 1 scans 1,000 or 10,000.
+
+All 8 steps are done. None are partial, skipped or blocked.
+
+The rescan lives in `packages/platejs/src/features/find/lib/BaseFindPlugin.ts`, and its cases in `packages/platejs/src/features/find/lib/BaseFindPlugin.spec.ts` and `packages/platejs/src/features/find/lib/BaseFindPlugin.oracle-and-work.spec.ts`. Plite's run test moved out of `packages/plitejs/src/interfaces/node.ts` into `internal/text-run.ts`, which `packages/plitejs/src/internal/index.ts` exports and `packages/platejs/src/facade.ts` passes through. The review read `packages/platejs/src/internal/plugin/pluginStore.ts` and `packages/plitejs/src/core/commit.ts` and left them unchanged. `content/docs/(plugins)/(functionality)/find.mdx` and its Chinese twin describe the new rescan, and row 58 of `docs/development/enforcement.md` names its work cases. The plan replaces `docs/plans/2026-10-22-search-block-rescan.md`, builds on `docs/plans/2026-10-21-search-find-maintenance.md`, and follows `VISION.md` and `docs/vision/common.md`.
+
+Proof:
+
+- Step 1's seeded run of `findTextRanges` over 400 generated documents printed the base's hash `5b244d5e…` over 7,084 searches after the edit, and its second leg printed `52742695…` over 14,134. A planted change that lets an empty block join a text run changes the hash.
+- In steps 3 and 4, 70 package cases pass and compare 285 commits with a fresh search, 194 of them local rescans and 15 local undo rescans. 38 mounted cases pass. 27 of 28 planted bugs fail a spec by assertion, and all ten work cases fail on Phase 1's bytes.
+- Step 6's counts scan one text run per keystroke for typing, no-change and create-destroy at 1,000 and 10,000 blocks, with store writes and refreshed keys equal to Phase 1's. The runner's count lines fail on Phase 1's bytes with 48 misses.
+- Step 6's timing ran on the final plugin bytes `0495708b…`. Against Phase 1, `dense-1k` trusted `shift` passes at 0.908 of its 0.93 budget, with 0.019 of same-code noise. Against the base, `dense-1k` trusted `no-change` passes at 0.352 of its 0.5 budget, 44.5 to 47.3 ms per keystroke against 114.6 to 164.0 ms.
+- Step 6's hand drive on `/blocks/find-demo`, `/docs/find` and `/cn/docs/find` typed a match before the active one and deleted it. The bar read 3 of 3, then 2 of 2, with the active result on its match, and the model matched the DOM.
+- The plan panel ran three rounds, which raised 6, 2 and 1 critical findings, and the diff panel ran three, which raised 4, 1 and 0. Each round's fixes got their writing passes.
+- Suggested task t_e7f55348's repro, `api.move` after an update that searched and then threw, passes on the final bytes.
+- `land.mjs` pushed after every step of `pnpm check --affected` passed.
+
+Limits:
+
+- Four timing lines are inconclusive. Against Phase 1, `dense-10k` trusted `no-change` scores 0.799 against 0.8, and `sparse-10k` programmatic `no-change` scores 0.784 against 0.93 with 0.158 of noise and a planted arm that could not fail. Against the base, `dense-1k` trusted `shift` scores 0.441 against 0.5 with 0.064 of noise against a 0.059 margin, and `dense-10k` programmatic `no-change` scores 0.121 against 0.5 with a planted arm at 0.430 that could not fail.
+- At 10,000 blocks the editor's own keystroke cost dominates. A trusted keystroke takes about 200 ms against Phase 1's 250 ms, and t_c5a89c2a owns the rest.
+- Enter or Backspace across top-level blocks, pastes, and an edit in two places still search the whole document.
+- A store subscriber's write during Find's publish leaves that commit unequal to a fresh search.
+- An active result picked inside `editor.update` jumps to a match typed right before it in a later commit. t_bcd9a432 owns the fix in Plite.
+- An update that searches and then throws leaves its ranges in the store until the next commit, as the base does.
+- A keystroke that changes a match still copies the whole match list. t_95b5151d owns it.
+- Remote commits' locality and IME composition are unproven.
+
+## Reflect
+
+One Opus reviewer ran the judgment, tooling and divergent lenses over this session, and I synthesized its findings with pstack's synthesizer prompt as the checklist.
+
+I applied nothing in this run. No finding fixes a helper that crashes on or refuses a case its rule allows, and none rewords a rule without adding words. One finding changed this page. The brief led with a programmatic speed line that step 6 could not call, and it now leads with the trusted lines.
+
+Accepted, then moved to Backlog. Each has owner: zbeyens and stop: the owner takes or drops it, and each is a suggested task.
+
+- A speed prototype passed example specs and an edit oracle that never built the shapes its scope rule tells apart, and three diff rounds then forced a revert. Task t_8b98006c asks whether a Pursue on a scoped recompute first needs a comparison with the full recompute and one panel round.
+- Timing at a high load left four lines inconclusive after about 100 minutes, though the work counts had already proved locality. Task t_e932b9fc asks whether work counts gate a locality claim and every speed claim leads with the trusted input path.
+- No gate runs platejs's spec tsconfig, so no gate typechecks a platejs spec (t_d22bbecc).
+- seats.mjs's default timeout killed two xhigh Opus seats, and it reads `--help` as a seat name (t_ad8aa079).
+- Reloading skills after each compaction filled the context fast enough to bring on the next one, and the lead searched its own transcript six times for commands the summary had paraphrased (t_211e4328).
+- origin/next moved the pstack pin mid-run, and the session lost agent types with no warning (t_3c9c864e).
+- Claude Code shows only the first 2 KB of a long tool output, so reading a long rule with `cat` misses most of it (t_e658793a).
+- Six criticals came from writers outside Find through one input path, and the run kept adding guards instead of sending the design back (t_fd4ec61a).
+- The architect bakeoff picked the lead's own candidate by one point, on a rubric the lead wrote (t_6cac3b3d).
+- A saved patch handed between sessions stopped applying once next moved (t_35454d1f).
+- Four findings joined open tasks: the Bun install that proof worktrees skip (t_8cdc7a71), Write refused on the main checkout's run directory (t_08bb9e40), the registry rebase conflict (t_f20cd302), and seat probes kept only in temporary folders (t_59ddea32).
+
+Rejected:
+
+- "Call the core's predicate instead of a local copy": the run did that when it moved the run rule into Plite's shared `isTextRun`, so nothing failed to fire.
+- "Check a peer's settling message against the ledger before acting": the run did that.
+- Bun's `spyOn` import and its 5 s default timeout: one Bun version's behavior, and t_1bf5e7d5 owns the load timeout in the gate.
+- Plite's node identity, changed-key order and marks commits: facts about today's internals, which drift.
+- Coordinate clicks on the docs pages: one page's layout.
+- The inline `node -e` filler the hook denied 14 times: the hook already blocks every form, so the cost was wasted calls, not a gap.
+- chips cleanup listing this live worktree: t_6a472976 already holds a card for it.
+
 ## Open work
 
-- Build this plan's steps 1 to 8. owner: zbeyens. stop: the change lands through `land.mjs`, or the owner says hold or land at budget. Tracked in this plan's steps.
+- Rerun step 6's four inconclusive timing lines, and Phase 1's production-rerun lines, on the landed change. owner: zbeyens. stop: suggested task t_9c5320bd lands or is dropped. Tracked in the suggested-task ledger.
+- Refresh only the changed matches when the user moves through a match list the app wrote. owner: zbeyens. stop: the owner says key app moves, or an app reports slow moves. Tracked in this plan's Defaults.
 - Keep a store subscriber's write to `matches` during Find's publish from leaving results unequal to a fresh search. owner: zbeyens. stop: the owner says read-only matches, or drops the limit. Tracked in this plan's Defaults. Once the fix lands, restore the Brief's risk line, the Outcome, and the fresh-search and paint Requirements, which this limit narrows.
-- Decide whether the decoration runtime stays the fastest owner of editor highlights, for every source and not just Find. owner: zbeyens. stop: suggested task t_c5055d2a lands its verdict or is dropped. Tracked in the suggested-task ledger.
+- Decide whether the decoration runtime stays the fastest owner of editor highlights, for every highlight source, Find included. owner: zbeyens. stop: suggested task t_c5055d2a lands its verdict or is dropped. Tracked in the suggested-task ledger.
 - Find why a keystroke at 10,000 blocks costs about 100 ms with no search open. owner: zbeyens. stop: suggested task t_c5a89c2a lands or is dropped. Tracked in the suggested-task ledger.
 - Keep an active result picked inside `editor.update` on its match when a later commit types a new match right before it. owner: zbeyens. stop: suggested task t_bcd9a432 lands or is dropped. Tracked in the suggested-task ledger. Once the fix lands, cut the limit sentence from both Find pages.
 - Stop copying the whole match list when one match changes. owner: zbeyens. stop: suggested task t_95b5151d lands or is dropped. Tracked in the suggested-task ledger.
