@@ -159,10 +159,25 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.url }}
         run: |
-          head="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$GITHUB_REF_NAME" --jq .object.sha)"
-          if [[ "$head" != "$GITHUB_SHA" ]]; then
-            echo 'A newer branch commit exists; leaving domains unchanged.'
-            exit 1
+          if [[ "$GITHUB_REF_NAME" == main ]]; then
+            domain=platejs.org
+          else
+            domain=beta.platejs.org
+          fi
+          # A [skip ci] or path-ignored push moves the branch head but starts no newer run,
+          # so compare with the commit the domain serves, not the head.
+          live="$(curl --fail --silent --show-error --max-time 60 \
+            --header "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v4/aliases/$domain?teamId=$VERCEL_ORG_ID" | jq --exit-status --raw-output .deploymentId)"
+          live_sha="$(curl --fail --silent --show-error --max-time 60 \
+            --header "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v13/deployments/$live?teamId=$VERCEL_ORG_ID" | jq --raw-output '.meta.githubCommitSha // empty')"
+          if [[ -n "$live_sha" ]]; then
+            order="$(gh api "repos/$GITHUB_REPOSITORY/compare/$live_sha...$GITHUB_SHA" --jq .status)"
+            if [[ "$order" != ahead && "$order" != identical ]]; then
+              echo "::error::https://$domain serves $live_sha, which $GITHUB_SHA does not follow ($order); leaving domains unchanged."
+              exit 1
+            fi
           fi
           deployment="$(curl --fail --silent --show-error --max-time 60 \
             --header "Authorization: Bearer $VERCEL_TOKEN" \
@@ -185,14 +200,12 @@ jobs:
               sleep 5
             done
             [[ "$matched" == true ]]
-            domain=platejs.org
           else
             curl --fail --silent --show-error --max-time 60 \
               --header "Authorization: Bearer $VERCEL_TOKEN" \
               --json '{"alias":"beta.platejs.org"}' \
               "https://api.vercel.com/v2/deployments/$deployment/aliases?teamId=$VERCEL_ORG_ID" \
               | jq --exit-status '.alias == "beta.platejs.org"' > /dev/null
-            domain=beta.platejs.org
           fi
           echo "Deployed $GITHUB_SHA to https://$domain" >> "$GITHUB_STEP_SUMMARY"
 
