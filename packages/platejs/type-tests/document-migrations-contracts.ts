@@ -191,6 +191,9 @@ migrateDocument(envelope, { migrations });
 // @ts-expect-error an envelope carries its own source
 migrateDocument(envelope, { migrations, source: 1 });
 
+migrateDocument(JSON.parse('{}'), { migrations });
+migrateDocument(JSON.parse('{}'), { migrations, source: 1 });
+
 // @ts-expect-error an inferred step's document admits only document fields
 defineDocumentMigrations({
   plugins: [BaseParagraphPlugin],

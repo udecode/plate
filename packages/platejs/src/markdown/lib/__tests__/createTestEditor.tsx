@@ -64,7 +64,7 @@ import type {
   MarkdownSerializePolicy,
 } from '../types';
 
-const testSchemaPlugins: readonly BasePluginInput[] = [
+const testSchemaPlugins = [
   BaseHeadingPlugin,
 
   BaseBlockquotePlugin,
@@ -100,7 +100,7 @@ const testSchemaPlugins: readonly BasePluginInput[] = [
   BaseTablePlugin,
   BaseCalloutPlugin,
   BaseTocPlugin,
-];
+] as const;
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {

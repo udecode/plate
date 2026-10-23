@@ -1,5 +1,3 @@
-import { expect, test } from 'bun:test';
-
 import { createFiles } from 'files-sdk';
 import { createFilesRouter } from 'files-sdk/api';
 import { createFilesClient, type Transport } from 'files-sdk/client';
@@ -37,7 +35,11 @@ test('FilesClient completes a keyless upload into the committed draft', async ()
   };
   const client = createFilesClient({
     endpoint,
-    fetchImpl: (input, init) => route(new Request(input, init)),
+    fetchImpl: Object.assign(
+      (input: RequestInfo | URL, init?: RequestInit) =>
+        route(new Request(input, init)),
+      { preconnect: fetch.preconnect }
+    ),
     transport,
   });
   const editor = createEditor({

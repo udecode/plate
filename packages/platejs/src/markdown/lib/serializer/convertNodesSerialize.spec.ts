@@ -1,4 +1,4 @@
-import type { Descendant } from '../../../core';
+import type { Element } from '../../../core';
 import {
   createTestEditor,
   getTestSerializeOptions,
@@ -14,23 +14,23 @@ import {
 describe('convertNodesSerialize', () => {
   const editor = createTestEditor();
 
-  const mockParagraphNodeSlate: Descendant = {
+  const mockParagraphNodeSlate: Element = {
     children: [{ text: 'Hello' }],
     type: 'paragraph',
   };
 
-  const mockHeadingNodeSlate: Descendant = {
+  const mockHeadingNodeSlate: Element = {
     children: [{ text: 'Title' }],
     level: 1,
     type: 'heading',
   };
 
-  const mockThematicBreakNodeSlate: Descendant = {
+  const mockThematicBreakNodeSlate: Element = {
     children: [{ text: '' }],
     type: 'horizontalRule',
   };
 
-  const mockBoldNodeSlate: Descendant = {
+  const mockBoldNodeSlate: Element = {
     children: [{ bold: true, text: 'Hello' }, { text: 'World' }],
     type: 'paragraph',
   };
@@ -60,7 +60,7 @@ describe('convertNodesSerialize', () => {
   const baseOptions: SerializeMdContext = getTestSerializeOptions(editor);
 
   const convertNodesSerialize = (
-    nodes: Parameters<typeof convertNodesSerializeWithContext>[0],
+    nodes: readonly Element[],
     options: SerializeMdContext
   ) =>
     convertNodesSerializeWithContext(
@@ -116,7 +116,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('treat multiple marks as plain text', () => {
-      const mockItalicBoldNodeSlate: Descendant = {
+      const mockItalicBoldNodeSlate: Element = {
         children: [
           { bold: true, italic: true, text: 'BoldItalic' },
           { text: ' normal' },
@@ -140,7 +140,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('only treat specified marks as plain text', () => {
-      const mockItalicBoldNodeSlate: Descendant = {
+      const mockItalicBoldNodeSlate: Element = {
         children: [
           { bold: true, italic: true, text: 'BoldItalic' },
           { text: ' normal' },
@@ -251,7 +251,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('keeps task and bullet items one list and splits where ordered changes', () => {
-      const listNodes: Descendant[] = [
+      const listNodes: Element[] = [
         {
           children: [{ text: 'unordered' }],
           indent: 1,
@@ -329,7 +329,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('split nested sibling lists when style changes at same indent', () => {
-      const listNodes: Descendant[] = [
+      const listNodes: Element[] = [
         {
           children: [{ text: 'parent bullet' }],
           indent: 1,
@@ -414,7 +414,7 @@ describe('convertNodesSerialize', () => {
     });
 
     it('split when listType changes across indentation', () => {
-      const listNodes: Descendant[] = [
+      const listNodes: Element[] = [
         {
           children: [{ text: 'parent bullet' }],
           indent: 1,

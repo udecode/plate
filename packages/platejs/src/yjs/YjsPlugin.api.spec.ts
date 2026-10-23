@@ -14,9 +14,13 @@ const schema = { id: 'plate:yjs-api-test', version: 1 } as const;
 
 const CopiedYjsPlugin = YjsPlugin.require('awareness').map({
   decorate: {
-    attributes: ({ api, decoration }) => ({
-      'data-collaborator': api.remoteCursor(Number(decoration.key))?.data?.name,
-    }),
+    attributes: ({ api, decoration }) => {
+      const name = api.remoteCursor(Number(decoration.key))?.data?.name;
+
+      return {
+        'data-collaborator': typeof name === 'string' ? name : undefined,
+      };
+    },
   },
 });
 

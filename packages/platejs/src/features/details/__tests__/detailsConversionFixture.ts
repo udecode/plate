@@ -1,7 +1,9 @@
 import {
   BaseParagraphPlugin,
   createEditor,
+  type Descendant,
   definePlugin,
+  type Editor,
   type EditorUpdateTransaction,
   schema,
 } from '../../../core';
@@ -11,7 +13,7 @@ import { BaseDetailsPlugin } from '../lib/BaseDetailsPlugin';
 
 export const section = (
   title: string,
-  body: Array<Record<string, unknown>> = [
+  body: Descendant[] = [
     { type: 'paragraph', children: [{ text: `${title} body` }] },
   ],
   props: Record<string, unknown> = {}
@@ -21,17 +23,17 @@ export const section = (
   children: [{ type: 'summary', children: [{ text: title }] }, ...body],
 });
 
-export const holder = (
-  name: string,
-  { max, types = ['details', 'paragraph'] }: { max?: number; types?: string[] }
-) =>
+export const holder = (name: string, { max }: { max?: number }) =>
   definePlugin(name, {
     dependencies: [BaseParagraphPlugin, BaseDetailsPlugin],
     schema: {
       element: {
         blockContent: true,
         content: schema.content.any(
-          types.map((type) => schema.content.type(type).allowed),
+          [
+            schema.content.type('details').allowed,
+            schema.content.type('paragraph').allowed,
+          ],
           { default: { type: 'paragraph' }, min: 1, ...(max ? { max } : {}) }
         ),
       },
@@ -98,7 +100,7 @@ export const added = { type: 'paragraph', children: [{ text: 'Added' }] };
 // Converts inside an update that first writes an unrelated block, so a refusal
 // must leave exactly that write.
 export const convertAfterWrite = (
-  editor: ReturnType<typeof createEditor>,
+  editor: Editor,
   convert: (tx: EditorUpdateTransaction) => boolean | undefined
 ) => {
   let result: boolean | undefined;

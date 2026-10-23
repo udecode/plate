@@ -1,5 +1,5 @@
 import type { CompiledPlateShortcut } from '../../internal/plugin/compilePlateShortcuts';
-import type { Editor } from '../editor/Editor';
+import type { Editor } from '../../lib/editor';
 
 const isFormTargetEnabled = (
   event: KeyboardEvent,

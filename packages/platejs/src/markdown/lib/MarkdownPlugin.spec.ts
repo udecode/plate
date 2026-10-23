@@ -110,7 +110,11 @@ describe('MarkdownPlugin', () => {
       },
     });
 
-    expect(view.plugin(MarkdownPlugin).api.serialize().data).toBe('Preview\n');
+    expect(view.plugin(MarkdownPlugin).api.serialize()).toEqual({
+      data: 'Preview\n',
+      diagnostics: [],
+      ok: true,
+    });
   });
 
   it('reads live Markdown options without changing document schema identity', () => {

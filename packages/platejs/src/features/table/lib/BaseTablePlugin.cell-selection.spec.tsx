@@ -558,7 +558,9 @@ describe('table selection contracts', () => {
             }
           );
 
-          editor.update.list.toggle({ type: ListType.Bulleted });
+          editor
+            .plugin(BaseListPlugin)
+            .update.toggle({ type: ListType.Bulleted });
 
           expect(editor.read.children()).toEqual(
             (
@@ -590,7 +592,9 @@ describe('table selection contracts', () => {
           );
           assertNodeSelection(getEditorLiveSelection(editor));
 
-          editor.update.list.toggle({ type: ListType.Bulleted });
+          editor
+            .plugin(BaseListPlugin)
+            .update.toggle({ type: ListType.Bulleted });
 
           expect(editor.read.children()).toEqual(
             (

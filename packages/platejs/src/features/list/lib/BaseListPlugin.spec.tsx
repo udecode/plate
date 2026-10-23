@@ -3892,7 +3892,7 @@ describe('BaseListPlugin list identity', () => {
         anchor: { offset: 2, path: [1, 0] },
         focus: { offset: 2, path: [1, 0] },
       },
-    } as never);
+    });
 
     editor.update.text.insert(' ');
 
@@ -5726,9 +5726,38 @@ describe('BaseListPlugin keystroke cost', () => {
     children: [{ text }],
     type: 'paragraph',
   });
-  type KeystrokeEditor = ReturnType<typeof createProductEditor>;
+  const createCostEditor = (lists: number) => {
+    const at = lists * 11;
+
+    return createProductEditor({
+      initialValue: [
+        ...Array.from({ length: lists }, (_list, list) => [
+          ...Array.from({ length: 10 }, (_item, index) =>
+            listed(`${list}.${index}`, `l${list}`)
+          ),
+          paragraph('Between'),
+        ]).flat(),
+        listed('One', 'a'),
+        listed('Two', 'a'),
+        listed('Three', 'a'),
+        paragraph('Note'),
+        paragraph('4.'),
+      ],
+      plugins: [
+        BaseIndentPlugin,
+        BaseListPlugin.configure({
+          inputRules: [OrderedListRules.markdown()],
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 3, path: [at + 1, 0] },
+        focus: { offset: 3, path: [at + 1, 0] },
+      },
+    });
+  };
   const keystrokes: Array<
-    [string, (editor: KeystrokeEditor, at: number) => void]
+    [string, (editor: ReturnType<typeof createCostEditor>, at: number) => void]
   > = [
     ['typing in an item', (editor) => editor.update.text.insert('x')],
     ['Enter at the end of an item', (editor) => editor.update.break.insert()],
@@ -5769,32 +5798,7 @@ describe('BaseListPlugin keystroke cost', () => {
     (_name, keystroke) => {
       const recountFor = (lists: number) => {
         const at = lists * 11;
-        const editor = createProductEditor({
-          initialValue: [
-            ...Array.from({ length: lists }, (_list, list) => [
-              ...Array.from({ length: 10 }, (_item, index) =>
-                listed(`${list}.${index}`, `l${list}`)
-              ),
-              paragraph('Between'),
-            ]).flat(),
-            listed('One', 'a'),
-            listed('Two', 'a'),
-            listed('Three', 'a'),
-            paragraph('Note'),
-            paragraph('4.'),
-          ],
-          plugins: [
-            BaseIndentPlugin,
-            BaseListPlugin.configure({
-              inputRules: [OrderedListRules.markdown()],
-            }),
-          ],
-          selection: {
-            kind: 'text',
-            anchor: { offset: 3, path: [at + 1, 0] },
-            focus: { offset: 3, path: [at + 1, 0] },
-          },
-        } as never);
+        const editor = createCostEditor(lists);
 
         editor.read.list.ordinal([0]);
 

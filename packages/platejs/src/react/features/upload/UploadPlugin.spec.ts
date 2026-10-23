@@ -1,14 +1,12 @@
-import { describe, expect, it, mock, spyOn } from 'bun:test';
-
 import { createFilesClient } from 'files-sdk/client';
 
-import { createEditor } from '../../../core';
 import { BaseDetailsPlugin } from '../../../features/details/lib/BaseDetailsPlugin';
 import { BaseImagePlugin } from '../../../features/media/lib/image/BaseImagePlugin';
 import type {
   UploadFailure,
   UploadRules,
 } from '../../../features/upload/lib/BaseUploadPlugin';
+import { createEditor } from '../../core';
 import { pipeHandler } from '../../utils/pipeHandler.internal';
 import { UploadPlugin } from './UploadPlugin';
 
@@ -49,7 +47,7 @@ const configured = (
     initialState: { client, getUrl: ({ key }) => key, ...state },
   });
 
-const createSelectedEditor = (plugin = UploadPlugin, text = '') =>
+const createSelectedEditor = (plugin = configured(), text = '') =>
   createEditor({
     plugins: [BaseImagePlugin, plugin],
     selection: {
@@ -71,7 +69,7 @@ describe('UploadPlugin', () => {
   });
 
   it('lands a file drop at the resolved edge with no drop configuration', () => {
-    const editor = createSelectedEditor(configured());
+    const editor = createSelectedEditor();
     const { event, preventDefault, stopPropagation } = createDropEvent();
     spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue({
       edge: 'after',
@@ -88,7 +86,7 @@ describe('UploadPlugin', () => {
   });
 
   it('accepts a file drag with no drop configuration', () => {
-    const editor = createSelectedEditor(configured());
+    const editor = createSelectedEditor();
     const { event, preventDefault } = createDropEvent();
     spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue({
       edge: 'after',
@@ -102,7 +100,7 @@ describe('UploadPlugin', () => {
   });
 
   it('uploads the files of a drop that also carries HTML', () => {
-    const editor = createSelectedEditor(configured());
+    const editor = createSelectedEditor();
     const { event } = createDropEvent(['Files', 'text/html']);
     spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue({
       edge: 'after',
@@ -117,7 +115,7 @@ describe('UploadPlugin', () => {
   });
 
   it('passes a drag without files through', () => {
-    const editor = createSelectedEditor(configured());
+    const editor = createSelectedEditor();
     const { event, preventDefault } = createDropEvent(['text/html']);
 
     const handled = pipeHandler(editor, { handlerKey: 'onDrop' })?.(event);
@@ -127,7 +125,7 @@ describe('UploadPlugin', () => {
   });
 
   it('consumes a refused file landing without an upload', () => {
-    const editor = createSelectedEditor(configured());
+    const editor = createSelectedEditor();
     const { event, preventDefault } = createDropEvent();
     spyOn(editor.api.dom, 'resolveDropTarget').mockReturnValue(null);
 
@@ -190,7 +188,7 @@ describe('UploadPlugin', () => {
   });
 
   it('associates each submitted file with its own committed slot', () => {
-    const editor = createSelectedEditor(configured());
+    const editor = createSelectedEditor();
     const first = new File(['first'], 'first.png', { type: 'image/png' });
     const second = new File(['second'], 'second.png', { type: 'image/png' });
 

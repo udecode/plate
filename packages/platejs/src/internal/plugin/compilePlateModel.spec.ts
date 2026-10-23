@@ -1,5 +1,5 @@
 import { property, schema, target, txLocate } from '../../facade';
-import { createEditor } from '../../lib/editor';
+import { createEditor, type Editor } from '../../lib/editor';
 import type { PluginReference } from '../../lib/plugin';
 import { definePlugin as defineHeadlessPlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
@@ -85,10 +85,10 @@ describe('compilePlateModel', () => {
     expect('schema' in editor.plugin(BehaviorPlugin)).toBe(false);
     expect(editor.plugin(ElementPlugin).schema.type).toBe('persistedElement');
     expect(editor.plugin(MarkPlugin).schema.key).toBe('persistedMark');
-    expect(() => editor.plugin(ElementPlugin).schema.key).toThrow(
-      'does not own a primary mark schema identity'
-    );
-    expect(() => editor.plugin(MarkPlugin).schema.type).toThrow(
+    expect(() =>
+      Reflect.get(editor.plugin(ElementPlugin).schema, 'key')
+    ).toThrow('does not own a primary mark schema identity');
+    expect(() => Reflect.get(editor.plugin(MarkPlugin).schema, 'type')).toThrow(
       'does not own a primary element schema identity'
     );
   });
@@ -108,7 +108,7 @@ describe('compilePlateModel', () => {
       focus: { offset: 3, path: [0, 0] },
       kind: 'text',
     } as const;
-    const editor = createEditor({
+    const editor: Editor = createEditor({
       initialValue,
       plugins: [ElementPlugin],
       schema: {

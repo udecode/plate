@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 
 import { AuthoredPlugin } from '../../../authored';
-import { NodeApi, schema } from '../../../core';
+import { type NodeKey, NodeApi, schema } from '../../../core';
 import { createEditorView } from '../../../facade';
 import { definePlugin } from '../../../lib';
 import {
@@ -10,6 +10,7 @@ import {
   EditorElement,
 } from '../../../react/components/plate-nodes';
 import {
+  type EditorRootProps,
   createEditor,
   EditorContent,
   EditorRoot,
@@ -86,9 +87,10 @@ const createSectionEditor = () =>
     plugins: [DetailsPlugin],
   });
 
-type ViewsEditor = ReturnType<typeof createNoteEditor>;
-
-const renderViews = (editor: ViewsEditor, { authored = false } = {}) => {
+const renderViews = <E,>(
+  editor: E,
+  options: { authored?: EditorRootProps<E>['authored'] } = {}
+) => {
   const views = new Map<string, RootView>();
   const Register = ({ name }: { name: string }) => {
     views.set(name, useRootEditor());
@@ -100,7 +102,7 @@ const renderViews = (editor: ViewsEditor, { authored = false } = {}) => {
     <>
       {['a', 'b'].map((name) => (
         <EditorRoot
-          authored={authored ? { intent: 'propose' } : undefined}
+          {...options}
           editor={editor}
           key={name}
           suppressInstanceWarning
@@ -115,7 +117,7 @@ const renderViews = (editor: ViewsEditor, { authored = false } = {}) => {
   return { a: views.get('a')!, b: views.get('b')! };
 };
 
-const setOpen = async (view: RootView, key: string, open: boolean) => {
+const setOpen = async (view: RootView, key: NodeKey, open: boolean) => {
   await act(async () => {
     view.plugin(BaseDetailsPlugin).api.setOpen(key, open);
   });
@@ -186,7 +188,7 @@ const projectedInputs = {
   },
 };
 
-const noteText = (editor: ViewsEditor) =>
+const noteText = (editor: ReturnType<typeof createNoteEditor>) =>
   createEditorView(editor, { authored: { preview: 'proposed' }, root: 'note' })
     .read.root('note')
     .map((node) =>
@@ -212,7 +214,10 @@ describe('projected input into another root (R13)', () => {
 
       for (const name of ['a', 'b']) {
         const editor = createNoteEditor();
-        const views = renderViews(editor, { authored });
+        const views = renderViews(
+          editor,
+          authored ? { authored: { intent: 'propose' } } : {}
+        );
 
         await setOpen(
           views.a,

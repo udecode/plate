@@ -12,6 +12,7 @@ import {
   inputRuleVeto,
 } from '../../lib/plugins/input-rules';
 import {
+  createDataTransfer,
   insertBreak,
   insertText,
   jsxt,
@@ -23,11 +24,7 @@ import { definePlugin } from '../plugin';
 jsxt;
 
 const createTextDataTransfer = (text: string) =>
-  ({
-    files: [],
-    getData: (type: string) => (type === 'text/plain' ? text : ''),
-    types: ['text/plain'],
-  }) as DataTransfer;
+  createDataTransfer(new Map([['text/plain', text]]));
 
 const setEndSelection = (editor: ReturnType<typeof createEditor>) => {
   editor.update.selection.set({

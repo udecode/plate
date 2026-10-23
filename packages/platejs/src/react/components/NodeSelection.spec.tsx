@@ -1,7 +1,5 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import { describe, expect, it, spyOn } from 'bun:test';
-
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import ReactDOM from 'react-dom';

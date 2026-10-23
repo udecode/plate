@@ -62,12 +62,18 @@ const migrateDocument = (
 ) =>
   runDocumentMigration(input, {
     migrations: options.editor?.migrations ?? options.migrations,
-    ...(!input ||
-    typeof input !== 'object' ||
-    Array.isArray(input) ||
-    !Object.hasOwn(input, 'document')
-      ? { source: 53 as const }
-      : {}),
+    source: 53,
+  }).output;
+
+const migrateEnvelope = (
+  input: Readonly<{ document: unknown; schema: unknown; selection?: unknown }>,
+  options: Readonly<{
+    editor?: Readonly<{ migrations: DocumentMigrations }>;
+    migrations: DocumentMigrations;
+  }>
+) =>
+  runDocumentMigration(input, {
+    migrations: options.editor?.migrations ?? options.migrations,
   }).output;
 
 const reviewPlugins = [
@@ -89,11 +95,17 @@ const codeBlockCountsByProjection = (children: readonly unknown[]) => {
     plugins: reviewPlugins,
     schema: MigrationSchema,
   });
-  const count = (projection: 'accepted' | 'proposed') =>
-    projectAuthoredDocument(editor.read.value(), {
+  const count = (projection: 'accepted' | 'proposed') => {
+    const result = projectAuthoredDocument(editor.read.value(), {
       editor,
       projection,
-    }).document.children.filter((node) => node.type === 'codeBlock').length;
+    });
+
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+    return result.document.children.filter((node) => node.type === 'codeBlock')
+      .length;
+  };
 
   return { accepted: count('accepted'), proposed: count('proposed') };
 };
@@ -107,7 +119,7 @@ const suggestion = (type: 'insert' | 'remove', id: string = type) => ({
 describe('migratePlateV54 code blocks', () => {
   it('flattens legacy physical lines and preserves empty lines', () => {
     const editor = createMigrationEditor();
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [
@@ -179,7 +191,7 @@ describe('migratePlateV54 code blocks', () => {
 
   it('maps persisted selections into the flattened text', () => {
     const editor = createMigrationEditor();
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [
@@ -216,7 +228,7 @@ describe('migratePlateV54 code blocks', () => {
 
   it('maps persisted selections inside named roots', () => {
     const editor = createMigrationEditor();
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [
@@ -273,7 +285,7 @@ describe('migratePlateV54 code blocks', () => {
       schema: MigrationSchema,
       skipInitialization: true,
     });
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [
@@ -319,7 +331,7 @@ describe('migratePlateV54 code blocks', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, ...defaultPlugins],
     });
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [
@@ -360,7 +372,7 @@ describe('migratePlateV54 code blocks', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, ...defaultPlugins],
     });
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [
@@ -407,7 +419,7 @@ describe('migratePlateV54 code blocks', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, ...defaultPlugins, AuthoredPlugin],
     });
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [
@@ -609,7 +621,7 @@ describe('migratePlateV54 drawings', () => {
   });
 
   it('turns a drawing into a Mermaid code block and puts a caret inside it at the start of its source', () => {
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       v53(neighbors(mermaidDrawing), {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
@@ -631,7 +643,7 @@ describe('migratePlateV54 drawings', () => {
   });
 
   it('keeps a range whose ends sit in paragraphs around a converted drawing', () => {
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       v53(neighbors(mermaidDrawing), {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 3, path: [2, 0] },
@@ -664,7 +676,7 @@ describe('migratePlateV54 drawings', () => {
       [turnedInto({ code: 'graph TD;' }), caret([1, 1], 2)],
       [turnedInto({ code: null }), caret([1, 1], 2)],
     ].map(([drawing, selection]) =>
-      migrateDocument(v53(neighbors(drawing), selection), {
+      migrateEnvelope(v53(neighbors(drawing), selection), {
         editor,
         migrations,
       })
@@ -771,7 +783,7 @@ describe('migratePlateV54 drawings', () => {
       focus: { offset, path, root: 'footnotes' },
       kind: 'text',
     });
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [
@@ -825,7 +837,7 @@ describe('migratePlateV54 drawings', () => {
   });
 
   it('upgrades a numbered drawing the way it upgrades a numbered code block', () => {
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       v53([
         {
           ...mermaidDrawing,
@@ -865,7 +877,7 @@ describe('migratePlateV54 drawings', () => {
       ...(data === undefined ? {} : { data }),
       type: 'code_drawing',
     });
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       v53([
         drawing(),
         drawing({ code: null, drawingType: null }),
@@ -902,7 +914,7 @@ describe('migratePlateV54 drawings', () => {
       },
     });
     const kept = { children: [{ text: 'kept' }], type: 'code_drawing' };
-    const result = migrateDocument(v53([kept]), {
+    const result = migrateEnvelope(v53([kept]), {
       editor: createEditor({ plugins: [...defaultPlugins, appDrawing] }),
       migrations,
     });

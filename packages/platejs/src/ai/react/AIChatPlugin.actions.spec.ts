@@ -118,9 +118,7 @@ describe('ai chat action utils', () => {
       .plugin(AIChatPlugin)
       .api.setTablePreview({ content: 'ai', ref: 'c1' });
 
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(0);
+    expect(editor.read.authored.changes().items).toHaveLength(0);
     expect(editor.read.value().children).toEqual([
       {
         children: [
@@ -151,9 +149,7 @@ describe('ai chat action utils', () => {
     editor.plugin(AIChatPlugin).api.accept();
 
     expect(editor.read.text.string([])).toBe('suggested');
-    expect(editor.read.authored.changes({ status: 'pending' }).items).toEqual(
-      []
-    );
+    expect(editor.read.authored.changes().items).toEqual([]);
   });
 
   it('discards the draft without a document edit', () => {

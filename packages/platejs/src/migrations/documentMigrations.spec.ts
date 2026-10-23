@@ -201,14 +201,17 @@ describe('document migrations', () => {
       )
     ).toThrow('Unknown schema fingerprint');
     expect(() =>
-      migrateDocument(source(1), {
-        migrations: {
-          id: migrations.id,
-          sourceFingerprints: migrations.sourceFingerprints,
-          steps: migrations.steps,
-          version: migrations.version,
-        } as DocumentMigrations,
-      })
+      Reflect.apply(migrateDocument, undefined, [
+        source(1),
+        {
+          migrations: {
+            id: migrations.id,
+            sourceFingerprints: migrations.sourceFingerprints,
+            steps: migrations.steps,
+            version: migrations.version,
+          },
+        },
+      ])
     ).toThrow('must come from defineDocumentMigrations');
 
     const hostile = Object.defineProperty({}, 'children', {

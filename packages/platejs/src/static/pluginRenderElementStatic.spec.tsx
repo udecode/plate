@@ -8,12 +8,17 @@ import {
   type RenderElementProps,
   definePlugin,
 } from '../lib';
+import type { EditorElementProps } from './components/plite-nodes';
 import { pluginRenderElementStatic } from './pluginRenderElementStatic.internal';
 
 describe('pluginRenderElementStatic', () => {
   it('renders a configured dynamic heading component', () => {
     const HeadingPlugin = BaseHeadingPlugin.configure({
-      component: ({ attributes, children, element }) => {
+      component: ({
+        attributes,
+        children,
+        element,
+      }: EditorElementProps<typeof BaseHeadingPlugin>) => {
         const Tag = `h${element.level}` as const;
 
         return <Tag {...attributes}>{children}</Tag>;

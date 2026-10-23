@@ -6,7 +6,7 @@ import {
   tracksPlaces,
 } from 'plitejs/internal';
 
-import { EditorKit } from '../../../../apps/www/src/registry/components/editor/plugins';
+import { EditorKit } from '@/registry/components/editor/plugins';
 
 describe('EditorKit carried moves', () => {
   for (const mode of ['editing', 'suggesting'] as const) {
@@ -37,13 +37,7 @@ describe('EditorKit carried moves', () => {
       expect(
         compiled.properties.lookup.element.exact.get('authored')?.length
       ).toBeGreaterThan(0);
-      expect(
-        (
-          editor.read.children()[0] as { children: Array<{ text: string }> }
-        ).children
-          .map(({ text }) => text)
-          .join('')
-      ).toBe('helloxxxxxxxxxx');
+      expect(editor.read.text.string([0])).toBe('helloxxxxxxxxxx');
       expect(tracksPlaces(compiled)).toBe(false);
       expect(after.relocations - before.relocations).toBe(0);
       expect(after.formerPlaceCalls - before.formerPlaceCalls).toBe(0);

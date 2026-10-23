@@ -237,6 +237,9 @@ const pliteRootModulePattern = /^plitejs$/;
 const privatePliteModulePattern = /^plitejs\/internal(?:\/|$)/;
 const internalPliteBridgeConsumerPattern =
   /^packages\/(?:platejs|plitejs)\/(?:src|test|type-tests)(?:\/|$)/;
+const internalPliteBridgeConsumerFiles = new Set([
+  'apps/www/src/__tests__/package-integration/editor-kit-carried-moves.spec.tsx',
+]);
 const publicCoreModulePattern =
   /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;
 const plateModulePattern = /^(?:platejs|@platejs\/)/;
@@ -5301,7 +5304,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     if (
       node.type === 'ImportDeclaration' &&
       privatePliteModulePattern.test(node.source.value) &&
-      !internalPliteBridgeConsumerPattern.test(file)
+      !internalPliteBridgeConsumerPattern.test(file) &&
+      !internalPliteBridgeConsumerFiles.has(file)
     ) {
       report(node, 'plitejs/internal is not a public package entrypoint');
     }

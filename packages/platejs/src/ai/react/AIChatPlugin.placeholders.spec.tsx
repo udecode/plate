@@ -1,8 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsxt */
 
-import { describe, expect, it } from 'bun:test';
-
 import { jsxt, type TestEditor } from '#platejs-test-internal';
 
 import { BaseParagraphPlugin } from '../../core';

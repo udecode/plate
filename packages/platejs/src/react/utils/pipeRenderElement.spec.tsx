@@ -228,7 +228,6 @@ describe('pipeRenderElement', () => {
 
   it('applies pure element injection through the default renderer', () => {
     const DefaultInjectionPlugin = definePlugin('defaultInjection', {
-      isBlock: true,
       inject: {
         nodeProps: {
           transformProps: ({ props }) => ({

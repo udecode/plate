@@ -9,7 +9,7 @@ import {
 import { migrateListIdentity } from './migrateListIdentity';
 
 type Block = Record<string, unknown> & {
-  children: Block[] | Array<{ text: string }>;
+  children: readonly Block[] | ReadonlyArray<{ text: string }>;
 };
 
 const plugins = [
@@ -31,7 +31,7 @@ const migrations = defineDocumentMigrations({
 const migrate = (children: readonly Block[]) =>
   (
     migrateDocument({ children }, { migrations, source: 1 }).output as {
-      document: { children: Block[] };
+      document: { children: readonly Block[] };
     }
   ).document.children;
 
@@ -89,7 +89,7 @@ const adjacencyNumbers = (children: readonly Block[]) => {
       } else {
         numbers.push(null);
       }
-      visit(block.children as Block[]);
+      visit(block.children as readonly Block[]);
     });
   };
 
@@ -112,11 +112,11 @@ const identityNumbers = (children: readonly Block[]) => {
           ? (editor.plugin(BaseListPlugin).read.ordinal(path) ?? null)
           : null
       );
-      visit(block.children as Block[], path);
+      visit(block.children as readonly Block[], path);
     });
   };
 
-  visit(editor.read.children() as Block[], []);
+  visit(editor.read.children() as readonly Block[], []);
 
   return numbers;
 };

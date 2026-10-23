@@ -70,6 +70,8 @@ const runtimeTestEnv = {
   platejs: ['PLATE_*', 'PLITE_*', 'TZ'],
   plitejs: ['FILL_LAW_*', 'PLITE_*'],
 };
+const packagesWithTypecheckedTests = new Set(['platejs', 'plitejs']);
+
 const typecheckedExternalTestFiles = {
   plitejs: [
     'test/authored-tree-recording-laws.spec.ts',
@@ -430,7 +432,7 @@ export const createManagedPackageScripts = (packageName) => {
     ),
   };
 
-  if (packageName === 'plitejs') {
+  if (packagesWithTypecheckedTests.has(packageName)) {
     scripts['typecheck:tests'] = partitionScript(
       'typecheck-package-tests',
       packageName,
@@ -605,7 +607,7 @@ const createPackageTestsTsconfig = (packageName) => {
     extends:
       packageName === 'platejs' ? '../tsconfig.test.json' : '../tsconfig.json',
     files: testFiles,
-    include: [],
+    include: ['../src/**/*.d.ts'],
     references: projectReferences(packageName, taskDependencies),
   };
 };
@@ -835,7 +837,7 @@ export const createPackageTurboConfig = (packageName) => {
     outputLogs: 'errors-only',
     outputs: [],
   };
-  if (packageName === 'plitejs') {
+  if (packagesWithTypecheckedTests.has(packageName)) {
     const packageTestFiles = [
       ...getPackageSourceFiles(packageName, { tests: true }),
       ...getTypecheckedExternalTestFiles(packageName),
@@ -854,7 +856,9 @@ export const createPackageTurboConfig = (packageName) => {
         'src/**/*.test.*',
         'src/**/*-contract.*',
         'src/**/__tests__/**',
-        'test/**',
+        ...(packageName === 'platejs'
+          ? ['test/testing/**', 'tsconfig.test.json']
+          : ['test/**']),
         ...sharedTypecheckInputs(),
         'tsconfig.entrypoints/tests.json',
       ],
@@ -881,7 +885,9 @@ export const createPackageTurboConfig = (packageName) => {
     dependsOn: [
       ...typecheckTasks,
       'typecheck:contracts',
-      ...(packageName === 'plitejs' ? ['typecheck:tests'] : []),
+      ...(packagesWithTypecheckedTests.has(packageName)
+        ? ['typecheck:tests']
+        : []),
     ],
     inputs: aggregateTaskInputs(),
     outputLogs: 'errors-only',
@@ -907,7 +913,7 @@ export const createPackageTurboConfig = (packageName) => {
           partitionTaskDependencies.get(partitionName)
         ),
       ]),
-      ...(packageName === 'plitejs'
+      ...(packagesWithTypecheckedTests.has(packageName)
         ? [
             [
               path.join(

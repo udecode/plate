@@ -64,13 +64,18 @@ const reviewSnapshot = (document: EditorDocumentValue) => {
   });
 
   const value = editor.read.value();
+  const project = (projection: 'accepted' | 'proposed') => {
+    const result = projectAuthoredDocument(value, { editor, projection });
+
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+    return result.document;
+  };
 
   return {
-    accepted: projectAuthoredDocument(value, { editor, projection: 'accepted' })
-      .document,
+    accepted: project('accepted'),
     changes: editor.plugin(AuthoredPlugin).read.changes().items,
-    proposed: projectAuthoredDocument(value, { editor, projection: 'proposed' })
-      .document,
+    proposed: project('proposed'),
   };
 };
 

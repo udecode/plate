@@ -546,7 +546,8 @@
     "typecheck:partition:upload": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs upload",
     "typecheck:partition:upload-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs upload-react",
     "typecheck:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs",
-    "typecheck:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs-react"
+    "typecheck:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs-react",
+    "typecheck:tests": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-package-tests platejs core"
   },
   "dependencies": {
     "@types/is-hotkey": "0.1.10",

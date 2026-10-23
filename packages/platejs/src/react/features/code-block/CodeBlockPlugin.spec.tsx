@@ -34,7 +34,7 @@ const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
 
   describe('CodeBlockPlugin', () => {
     describe('deserialization inside a code block', () => {
-      it('disable all deserializers except the ast serializer', () => {
+      it('inserts pasted plain text literally instead of a document decoder slice', () => {
         const input = (
           <editor>
             <hcodeblock>
@@ -55,17 +55,44 @@ const createFixtureEditor = <const P extends readonly BasePluginInput[]>(
             BaseParagraphPlugin,
             CodeBlockPlugin,
             definePlugin('a', {
-              formats: ({ defineFormats }) =>
-                defineFormats({
-                  plainText: {
-                    scope: 'document',
-                    decode() {
-                      return ContentSlice.closed([{ text: 'test' }]);
-                    },
-                  },
-                }),
+              dataTransferFormats: [
+                {
+                  mimeType: 'text/plain',
+                  scope: 'document',
+                  decode: () => ContentSlice.closed([{ text: 'decoded' }]),
+                },
+              ],
             }),
           ],
+          selection: input.selection,
+          initialValue: input.children,
+        });
+
+        editor.api.dom.clipboard.insertData(
+          createDataTransfer(new Map([['text/plain', 'test']]))
+        );
+
+        expect(editor.read.children()).toEqual(output.children);
+      });
+
+      it('inserts the text of pasted markup whose plain text repeats the HTML', () => {
+        const input = (
+          <editor>
+            <hcodeblock>
+              <htext />
+              <cursor />
+            </hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const output = (
+          <editor>
+            <hcodeblock>test</hcodeblock>
+          </editor>
+        ) as TestEditor;
+
+        const editor = createFixtureEditor({
+          plugins: [BaseParagraphPlugin, CodeBlockPlugin],
           selection: input.selection,
           initialValue: input.children,
         });
@@ -297,7 +324,7 @@ describe('toggle code block', () => {
     });
 
     editor.update((tx) => {
-      tx.selection.set(input.selection);
+      tx.selection.set(input.selection ?? null);
       tx.codeBlock.toggle();
     });
 

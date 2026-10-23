@@ -25,8 +25,8 @@ const HeadingPlugin = definePlugin('heading', {
     defineFormats({
       markdown: {
         node: 'heading',
-        decode: ({ decode, decoration, node }) => ({
-          children: decode(node.children, decoration),
+        decode: ({ decode, marks, node }) => ({
+          children: decode(node.children, marks),
           level: node.depth,
           type,
         }),
@@ -70,17 +70,6 @@ const createEditor = (
 
   return editor;
 };
-
-// What the document reads with every pending change rejected.
-const accepted = (editor: { read: { value: () => Value | object } }) =>
-  projectAuthoredDocument(editor.read.value() as never, {
-    projection: 'accepted',
-  }).document.children;
-
-const textIn = (
-  editor: Parameters<typeof createEditorView>[0],
-  preview: 'accepted' | 'proposed'
-) => createEditorView(editor, { authored: { preview } }).read.text.string([]);
 
 describe('AIChatPlugin suggestions', () => {
   it('lets parsed Markdown change the source block type', () => {
@@ -141,11 +130,16 @@ describe('AIChatPlugin suggestions', () => {
 
     ai.api.setPreview('new');
 
-    expect(accepted(editor)).toEqual(chatNodes);
-    expect(textIn(editor, 'proposed')).toBe('prefix new suffix');
     expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
+      projectAuthoredDocument(editor.read.value(), { projection: 'accepted' })
+        .document.children
+    ).toEqual(chatNodes);
+    expect(
+      createEditorView(editor, {
+        authored: { preview: 'proposed' },
+      }).read.text.string([])
+    ).toBe('prefix new suffix');
+    expect(editor.read.authored.changes().items).toHaveLength(1);
     ai.api.accept();
     expect(editor.read.value().children).toEqual([
       { children: [{ text: 'prefix new suffix' }], type: 'paragraph' },
@@ -172,13 +166,14 @@ describe('AIChatPlugin suggestions', () => {
     const proposed = createEditorView(editor, {
       authored: { preview: 'proposed' },
     });
-    expect(accepted(editor)).toEqual(chatNodes);
+    expect(
+      projectAuthoredDocument(editor.read.value(), { projection: 'accepted' })
+        .document.children
+    ).toEqual(chatNodes);
     expect(
       proposed.read.children().map((node) => NodeApi.string(node))
     ).toEqual(['first rewritten', 'second rewritten']);
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
+    expect(editor.read.authored.changes().items).toHaveLength(1);
   });
 
   it('discards all streamed chunks without changing adjacent blocks', () => {
@@ -226,10 +221,12 @@ describe('AIChatPlugin suggestions', () => {
 
     expect(ai.store.get('streaming')).toBe(false);
     expect(ai.store.get('_changeId')).toBe(changeId);
+    expect(editor.read.authored.changes().items).toHaveLength(1);
     expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
-    expect(textIn(editor, 'proposed')).toBe('new');
+      createEditorView(editor, {
+        authored: { preview: 'proposed' },
+      }).read.text.string([])
+    ).toBe('new');
   });
 
   it('dismisses a selection suggestion without applying it', () => {
@@ -251,9 +248,7 @@ describe('AIChatPlugin suggestions', () => {
     expect(ai.store.get('open')).toBe(false);
     expect(ai.store.get('previewValue')).toEqual([]);
     expect(editor.read.text.string([])).toBe('old');
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(0);
+    expect(editor.read.authored.changes().items).toHaveLength(0);
   });
 
   it('cancels only the AI proposal and preserves an independent accepted edit', () => {
@@ -282,9 +277,7 @@ describe('AIChatPlugin suggestions', () => {
     ai.api.reset();
 
     expect(editor.read.text.string([])).toBe('oldtail foreign');
-    expect(editor.read.authored.changes({ status: 'pending' }).items).toEqual(
-      []
-    );
+    expect(editor.read.authored.changes().items).toEqual([]);
   });
 
   it('discards a granular AI change while preserving a later proposal from another author', () => {
@@ -342,13 +335,15 @@ describe('AIChatPlugin suggestions', () => {
 
     expect({
       pending: editor.read.authored
-        .changes({ status: 'pending' })
+        .changes()
         .items.map(({ authorId }) => authorId),
       proposed: createEditorView(editor, {
         authored: { intent: 'propose' },
       }).read.text.string([]),
       status: result?.status,
-      text: textIn(editor, 'accepted'),
+      text: createEditorView(editor, {
+        authored: { preview: 'accepted' },
+      }).read.text.string([]),
     }).toEqual({
       pending: ['bob'],
       proposed: 'old!',
@@ -448,15 +443,18 @@ describe('AIChatPlugin suggestions', () => {
 
     ai.api.setPreview('next-a\n\nnext-b');
 
-    expect(accepted(editor)).toEqual(chatNodes);
-    expect(textIn(editor, 'proposed')).toBe('next-anext-b');
     expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
+      projectAuthoredDocument(editor.read.value(), { projection: 'accepted' })
+        .document.children
+    ).toEqual(chatNodes);
+    expect(
+      createEditorView(editor, {
+        authored: { preview: 'proposed' },
+      }).read.text.string([])
+    ).toBe('next-anext-b');
+    expect(editor.read.authored.changes().items).toHaveLength(1);
     ai.api.accept();
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(0);
+    expect(editor.read.authored.changes().items).toHaveLength(0);
     expect(editor.read.text.string([])).toContain('next-a');
     expect(editor.read.text.string([])).toContain('next-b');
   });
@@ -477,7 +475,11 @@ describe('AIChatPlugin suggestions', () => {
     expect(
       editor.read.authored
         .details(changeId)
-        ?.parts.map((part) => editor.read.text.string(part.range))
+        ?.parts.map((part) =>
+          part.kind === 'content'
+            ? editor.read.text.string(part.range)
+            : part.kind
+        )
     ).toEqual(['1️⃣ ', ' ➡️']);
     ai.api.accept();
     expect(editor.read.text.string([])).toBe(`1️⃣ ${text} ➡️`);
@@ -502,7 +504,11 @@ describe('AIChatPlugin suggestions', () => {
     expect(
       editor.read.authored
         .details(changeId)
-        ?.parts.map((part) => editor.read.text.string(part.range))
+        ?.parts.map((part) =>
+          part.kind === 'content'
+            ? editor.read.text.string(part.range)
+            : part.kind
+        )
     ).toEqual(['✨ ', '📦 ', '🌍 ']);
     ai.api.accept();
     expect(editor.read.text.string([])).toBe(output);
@@ -530,13 +536,18 @@ describe('AIChatPlugin suggestions', () => {
     const parts = editor.read.authored.details(changeId)?.parts ?? [];
 
     expect(editor.read.authored.change(changeId)?.kind).toBe('insert');
-    expect(parts.flatMap((part) => (part.before ? [part.before] : []))).toEqual(
-      []
-    );
-    expect(parts.map((part) => editor.read.text.string(part.range))).toEqual([
-      ' ✨',
-      ' ✍️',
-    ]);
+    expect(
+      parts.flatMap((part) =>
+        part.kind === 'content' && part.before ? [part.before] : []
+      )
+    ).toEqual([]);
+    expect(
+      parts.map((part) =>
+        part.kind === 'content'
+          ? editor.read.text.string(part.range)
+          : part.kind
+      )
+    ).toEqual([' ✨', ' ✍️']);
     ai.api.accept();
     expect(editor.read.text.string([])).toBe('title ✨unchangedtail ✍️');
   });
@@ -739,9 +750,7 @@ describe('AIChatPlugin suggestions', () => {
     aiChat.api.setPreview('last-a\n\nlast-b\n\nlast-c\n\nlast-d');
 
     expect(aiChat.store.get('_changeId')).toBe(changeId);
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
+    expect(editor.read.authored.changes().items).toHaveLength(1);
     aiChat.api.accept();
     expect(
       editor.read
@@ -939,11 +948,16 @@ describe('AIChatPlugin suggestions', () => {
     editor.api.authored.setView({ intent: 'edit' });
     ai.store.set({ toolName: 'edit' });
     ai.api.setPreview('done');
+    expect(editor.read.authored.changes().items).toHaveLength(1);
     expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
-    expect(accepted(editor)).toEqual(nodes);
-    expect(textIn(editor, 'proposed')).toBe('done');
+      projectAuthoredDocument(editor.read.value(), { projection: 'accepted' })
+        .document.children
+    ).toEqual(nodes);
+    expect(
+      createEditorView(editor, {
+        authored: { preview: 'proposed' },
+      }).read.text.string([])
+    ).toBe('done');
     expect(editor.read.authored.view()).toEqual({ intent: 'edit' });
   });
 });
@@ -1073,7 +1087,11 @@ describe('AIChatPlugin suggestions beside review marks', () => {
     const ai = editor.plugin(AIChatPlugin);
 
     ai.api.setPreview('Another sentence');
-    expect(textIn(editor, 'proposed')).toBe('Another sentence');
+    expect(
+      createEditorView(editor, {
+        authored: { preview: 'proposed' },
+      }).read.text.string([])
+    ).toBe('Another sentence');
     ai.api.reset();
 
     expect(editor.read.value()).toEqual(before);

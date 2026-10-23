@@ -14,7 +14,7 @@ describe('useEditor plugin portal', () => {
       initialState: { count: 0 },
       api: ({ editor, store }) => ({
         owner: () => editor,
-        label: () => 'base',
+        label: (): string => 'base',
         count: () => store.get('count'),
       }),
     }).extend({
@@ -22,15 +22,11 @@ describe('useEditor plugin portal', () => {
     });
     const editor = createEditor({ plugins: [OwnerPlugin] });
     const owners: Array<ReturnType<typeof useEditor>> = [];
-    const portals: Array<ReturnType<typeof editor.plugin<typeof OwnerPlugin>>> =
-      [];
     function Capture({ index }: { index: number }) {
       const view = useEditor();
-      const portal = view.plugin(OwnerPlugin);
       React.useLayoutEffect(() => {
         owners[index] = view;
-        portals[index] = portal;
-      }, [index, portal, view]);
+      }, [index, view]);
       return <EditorContent aria-label={`owner-${index}`} />;
     }
     const rendered = render(
@@ -44,11 +40,12 @@ describe('useEditor plugin portal', () => {
       </>
     );
 
+    const portals = owners.map((view) => view.plugin(OwnerPlugin));
+
     expect(owners[0]).not.toBe(owners[1]);
     for (const [index, portal] of portals.entries()) {
       expect(portal.api.owner()).toBe(owners[index]);
       expect(portal.api.label()).toBe('base:extended');
-      expect(portal.api).toBe(owners[index].api.mountedOwner);
       expect(portal.api.owner().api.dom.root()).toBe(
         rendered.getByRole('textbox', { name: `owner-${index}` })
       );

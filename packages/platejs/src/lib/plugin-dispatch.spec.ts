@@ -10,25 +10,7 @@ import {
 } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 
-import { BaseEditorKit } from '../../../../apps/www/src/registry/components/editor/plugins-static';
-import {
-  censusRuntimeEditor,
-  collectUpdateDeclarations,
-} from '../../../plitejs/test/support/plugin-dispatch-census';
 import { BaseIndentPlugin } from '../features/indent/lib/BaseIndentPlugin';
-
-describe('plugin update declarations', () => {
-  it('declares every first-party method that takes arguments, including nested and function members', () => {
-    const results = [
-      createEditor({ plugins: BaseEditorKit }),
-      censusRuntimeEditor(),
-    ].map(collectUpdateDeclarations);
-    for (const result of results) {
-      expect(result.methods).toBeGreaterThan(0);
-      expect(result.undeclared).toEqual([]);
-    }
-  });
-});
 
 describe('plugin dispatch with DOM and indent', () => {
   const NoteHolder = definePlugin('noteHolder', {

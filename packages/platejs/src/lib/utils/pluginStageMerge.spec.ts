@@ -41,13 +41,13 @@ describe('plugin API projection', () => {
     const NativePlugin = defineRuntimePlugin('projection', {
       api: () => ({
         nativeName: () => 'projection',
-        source: () => 'native',
+        source: (): string => 'native',
       }),
     });
     const ProjectionPlugin = definePlugin('projection', {
       api: () => ({
         plate: () => 'plate',
-        source: () => 'plate',
+        source: (): string => 'plate',
       }),
     })
       .extend(NativePlugin)
@@ -77,19 +77,19 @@ describe('plugin API projection', () => {
     const Plugin = definePlugin('staged', {
       api: () => ({
         first: () => 1,
-        value: () => 1,
+        value: (): number => 1,
       }),
     })
       .extend(({ api }) => ({
         api: () => ({
           second: () => api.first() + 1,
-          value: () => 2,
+          value: (): number => 2,
         }),
       }))
       .extend(({ api }) => ({
         api: () => ({
           third: () => api.first() + api.second(),
-          value: () => 3,
+          value: (): number => 3,
         }),
       }));
     const editor = createEditor({ plugins: [Plugin] });

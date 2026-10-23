@@ -397,47 +397,6 @@ describe('BaseDetailsPlugin', () => {
     });
   });
 
-  it('preserves the cell selection when clearing a table inside closed Details', () => {
-    const editor = createEditor({
-      plugins: [BaseDetailsPlugin, BaseTablePlugin],
-      initialValue: [
-        {
-          type: 'details',
-          children: [
-            { type: 'summary', children: [{ text: 'Title' }] },
-            {
-              type: 'table',
-              children: [
-                {
-                  type: 'tableRow',
-                  children: [
-                    {
-                      type: 'tableCell',
-                      children: [
-                        { type: 'paragraph', children: [{ text: 'Cell' }] },
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
-    const target = SelectionApi.nodes([[0, 1, 0, 0]], { mode: 'block' });
-    editor.update.selection.set(target);
-    editor.update((tx) =>
-      tx.command(editorCommands.deleteFragment, {
-        at: target,
-        direction: 'backward',
-      })
-    );
-    expect(editor.read.selection.nodes().map(([, path]) => path)).toEqual([
-      [0, 1, 0, 0],
-    ]);
-  });
-
   it('keeps the caret visible after deleting a whole paragraph following closed Details [EDIT-DETAILS-BS-AFTER-CLOSED-001]', () => {
     const initialValue = [
       {

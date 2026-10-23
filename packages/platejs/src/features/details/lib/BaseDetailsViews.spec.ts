@@ -213,10 +213,8 @@ describe('Details in two views of one editor', () => {
       tx.plugin(BaseDetailsPlugin).insert({}, { after: note.key([1, 0])! })
     );
 
-    expect([open, note.read.nodes.get([1, 1])?.[0].type]).toEqual([
-      [true, false],
-      'details',
-    ]);
+    expect(open).toEqual([true, false]);
+    expect(note.read.nodes.get([1, 1])?.[0]).toMatchObject({ type: 'details' });
   });
 
   it("a close moves a caret out of a named root section's body to its summary end", () => {

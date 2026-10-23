@@ -10,7 +10,6 @@ import {
 import { Hotkeys } from '../../../core';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
-import { DOMPlugin } from '../../../lib/plugins/dom/DOMPlugin';
 import { pipeHandler } from '../../utils/pipeHandler.internal';
 import { TablePlugin } from './TablePlugin';
 
@@ -130,28 +129,15 @@ const createDOMRangeMock = (rects: Array<Partial<DOMRect>>) => {
   return range;
 };
 
-const domRanges = new WeakMap<
-  object,
-  { index: number; ranges: Array<ReturnType<typeof createDOMRangeMock>> }
->();
-
-const TestDOMRangePlugin = DOMPlugin.extend(({ editor }) => ({
-  api: () => ({
-    resolveDOMRange: () => {
-      const state = domRanges.get(editor);
-
-      if (!state) return null;
-
-      return state.ranges[(state.index += 1) - 1] ?? null;
-    },
-  }),
-}));
-
 const mockToDOMRange = (
-  editor: object,
+  editor: ReturnType<typeof createTableEditor>,
   ...ranges: Array<ReturnType<typeof createDOMRangeMock>>
 ) => {
-  domRanges.set(editor, { index: 0, ranges });
+  let index = 0;
+
+  spyOn(editor.api.dom, 'resolveDOMRange').mockImplementation(
+    () => ranges[(index += 1) - 1] ?? null
+  );
 };
 
 const createTableEditor = (input: TestEditor) =>
@@ -160,7 +146,6 @@ const createTableEditor = (input: TestEditor) =>
       TablePlugin.configure({
         initialState: { allowCellSpanEditing: false },
       }),
-      TestDOMRangePlugin,
     ],
     selection: input.selection,
     initialValue: input.children,

@@ -1,6 +1,6 @@
 import { BaseParagraphPlugin, createEditor, definePlugin } from 'platejs';
 
-import { type Element, property, schema, target } from '../core';
+import { type Element, ElementApi, property, schema, target } from '../core';
 import { BaseExcalidrawPlugin } from '../excalidraw';
 import {
   BaseLineHeightPlugin,
@@ -119,12 +119,7 @@ const migrateDocument = (
 ) =>
   runDocumentMigration(input, {
     migrations: options.migrations,
-    ...(!input ||
-    typeof input !== 'object' ||
-    Array.isArray(input) ||
-    !Object.hasOwn(input, 'document')
-      ? { source: 53 as const }
-      : {}),
+    source: 53,
   }).output;
 
 describe('migratePlateV54 AST contracts', () => {
@@ -1322,9 +1317,12 @@ describe('migratePlateV54 AST contracts', () => {
     ).document;
 
     expect(() => editor.read.schema.assertDocument(result)).not.toThrow();
-    expect(result.children[0].children[1]?.children[1]).not.toHaveProperty(
-      'indent'
-    );
+
+    const body = result.children[0].children[1];
+
+    if (!ElementApi.isElement(body)) throw new Error('Expected a Toggle body.');
+
+    expect(body.children[1]).not.toHaveProperty('indent');
   });
 
   it('keeps a drawing width the target declares under Details in a converted Toggle body', () => {

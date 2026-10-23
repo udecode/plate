@@ -2,6 +2,7 @@ import { AuthoredPlugin } from '../../authored';
 import {
   createEditor,
   definePlugin,
+  type EditorDocumentValue,
   type HistoryResult,
   NodeApi,
   type Range,
@@ -1379,10 +1380,7 @@ describe('Comments mapping and conversation history', () => {
     const source = getPlateDecorationSources(editor).find(
       ({ id }) => id === BaseCommentsPlugin.name
     )!;
-    const ranges = (
-      document: Parameters<typeof createEditorView>[1]['document'],
-      path: number[]
-    ) => {
+    const ranges = (document: EditorDocumentValue, path: number[]) => {
       const view = createEditorView(editor, { document });
 
       return source

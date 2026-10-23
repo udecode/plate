@@ -221,7 +221,7 @@ export default defineConfig({
         'apps/www/src/app/dev/editor-perf/page.tsx',
         // This spec proves Plate's kit compiles to a schema that tracks no
         // places, so moves in Plate record nothing new.
-        'packages/platejs/src/react/editor-kit-carried-moves.spec.tsx',
+        'apps/www/src/__tests__/package-integration/editor-kit-carried-moves.spec.tsx',
         // Phase 1 proof surfaces of the authored review tree, which installs
         // a raw Plite plugin; the phase's revert removes them.
         'apps/www/src/app/dev/authored-review/page.tsx',

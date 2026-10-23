@@ -214,9 +214,9 @@ describe('Plate', () => {
             {
               event: 'content',
               correct({ entry, tx }) {
-                const [node, path] = entry;
+                const [, path] = entry;
 
-                if (path.length && node.path !== path) {
+                if (path.length) {
                   fn();
                   tx.nodes.set({ path }, { at: path });
                 }

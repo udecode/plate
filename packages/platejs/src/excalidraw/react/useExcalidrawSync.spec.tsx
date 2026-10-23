@@ -1,5 +1,4 @@
-import { expect, it, spyOn } from 'bun:test';
-
+import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { act, render } from '@testing-library/react';
 import * as React from 'react';
@@ -33,7 +32,7 @@ function setup({
     null,
     null
   );
-  let { elements } = scene;
+  let elements: readonly ExcalidrawElement[] = scene.elements;
   let state = {
     ...scene.appState,
     isLoading: loading,
@@ -57,8 +56,6 @@ function setup({
       for (const file of added) files[file.id] = file;
     },
     getAppState: () => state,
-    getFiles: () => files,
-    getSceneElements: () => elements,
     history: {
       clear: () => {
         cleared += 1;
@@ -79,7 +76,7 @@ function setup({
       state = { ...state, ...next.appState };
       fire();
     },
-  } as ExcalidrawImperativeAPI;
+  } satisfies Partial<ExcalidrawImperativeAPI>;
   const Renderer = (props: EditorElementProps<typeof ExcalidrawPlugin>) => {
     useExcalidrawSync({ api, excalidraw });
     return (
@@ -143,6 +140,7 @@ function setup({
     disposed,
     editor,
     element,
+    elements: () => elements,
     fire,
     files,
     key,
@@ -310,7 +308,7 @@ it('uses the latest source after loading and rejects stale callbacks before effe
     )
   );
   act(() => target.ready());
-  expect(target.api.getSceneElements()).toHaveLength(0);
+  expect(target.elements()).toHaveLength(0);
   expect(target.api.getAppState().viewBackgroundColor).toBe('#000000');
   expect(target.commits).toBe(1);
   act(() => {
@@ -338,7 +336,7 @@ it('ignores readonly, removed-node and disposed callbacks', () => {
   target.view.unmount();
   act(() =>
     target.disposed.forEach((cb) =>
-      cb(target.api.getSceneElements(), target.api.getAppState(), target.files)
+      cb(target.elements(), target.api.getAppState(), target.files)
     )
   );
   expect(target.commits).toBe(commits);
@@ -373,12 +371,12 @@ it('restores referenced image files without mutating the stored payload', () => 
   };
   const original = JSON.stringify(data);
   act(() => target.editor.update.nodes.set({ data }, { at: target.key }));
-  expect(target.api.getFiles().asset.dataURL).toBe(data.files.asset.dataURL);
+  expect(target.files.asset.dataURL).toBe(data.files.asset.dataURL);
   act(() => target.edit());
   expect(target.data()?.files).toEqual(data.files);
   expect(JSON.stringify(data)).toBe(original);
   act(() => target.editor.update.nodes.set({ data: null }, { at: target.key }));
-  expect(target.api.getSceneElements()).toHaveLength(0);
+  expect(target.elements()).toHaveLength(0);
   expect(target.api.getAppState().viewBackgroundColor).toBe('#ffffff');
   target.dispose();
 });

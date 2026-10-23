@@ -232,7 +232,7 @@ describe('PreparedTablePaste benchmark', () => {
     expect(result.operations.every(({ path }) => path.length === 2)).toBe(true);
   });
 
-  it.if(measured)(
+  (measured ? it : it.skip)(
     'does not retain transient preparations or plans',
     async () => {
       const prepared = prepare(denseTable(4, 'source'));

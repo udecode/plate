@@ -7,7 +7,7 @@ import {
   createEditorView,
   DebugPlugin,
   definePlugin,
-  type RuntimePluginReference,
+  type PluginReference,
 } from 'platejs';
 import { AuthoredPlugin } from 'platejs/authored';
 import { BaseCommentsPlugin } from 'platejs/comments';
@@ -162,12 +162,13 @@ it('rejects a user ID that authored changes cannot store', () => {
   );
 });
 
-const collaboration = () => ({
-  doc: new Y.Doc(),
-  initialReady: true,
-  rootName: 'authored-user',
-  seed: true,
-});
+const collaboration = () =>
+  ({
+    doc: new Y.Doc(),
+    initialReady: true,
+    rootName: 'authored-user',
+    seed: true,
+  }) as const;
 
 const yjsCompositions = {
   'a Yjs plugin': () => [YjsPlugin.create(collaboration())],
@@ -177,7 +178,7 @@ const yjsCompositions = {
 } as const;
 
 const countUserWarnings = (
-  plugins: readonly RuntimePluginReference[],
+  plugins: readonly PluginReference[],
   {
     install,
     suggestions = true,

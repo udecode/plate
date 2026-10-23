@@ -704,14 +704,6 @@ describe('AIChatPlugin list output', () => {
         },
         userId: 'alice',
       });
-    const captured = (editor: ReturnType<typeof createEditor>) => ({
-      nodes: editor
-        .plugin(AIChatPlugin)
-        .store.get('chatNodes')
-        .map(({ node }) => NodeApi.string(node)),
-      selection: editor.plugin(AIChatPlugin).store.get('chatSelection'),
-    });
-
     it("keeps both tasks of a task answer over all of an item's text", () => {
       const editor = createEditor(
         [item('A'), item('B')],
@@ -782,7 +774,10 @@ describe('AIChatPlugin list output', () => {
       editor.plugin(AIChatPlugin).api.submit('rewrite');
 
       expect({
-        ...captured(editor),
+        nodes: editor
+          .plugin(AIChatPlugin)
+          .store.get('chatNodes')
+          .map(({ node }) => NodeApi.string(node)),
         request: sendMessage.mock.calls[0][1].body.ctx.selection,
       }).toMatchObject({
         nodes: ['Alpha'],
@@ -799,7 +794,13 @@ describe('AIChatPlugin list output', () => {
         textRange([[0, 0], 5], [[1, 0], 2])
       );
 
-      expect(captured(editor)).toMatchObject({
+      expect({
+        nodes: editor
+          .plugin(AIChatPlugin)
+          .store.get('chatNodes')
+          .map(({ node }) => NodeApi.string(node)),
+        selection: editor.plugin(AIChatPlugin).store.get('chatSelection'),
+      }).toMatchObject({
         nodes: ['Bravo'],
         selection: {
           anchor: { offset: 0, path: [1, 0] },
@@ -1096,7 +1097,13 @@ describe('AIChatPlugin list output', () => {
 
       editor.plugin(AIChatPlugin).api.show();
 
-      expect(captured(editor)).toMatchObject({
+      expect({
+        nodes: editor
+          .plugin(AIChatPlugin)
+          .store.get('chatNodes')
+          .map(({ node }) => NodeApi.string(node)),
+        selection: editor.plugin(AIChatPlugin).store.get('chatSelection'),
+      }).toMatchObject({
         nodes: ['Alpha'],
         selection: {
           anchor: { offset: 2, path: [0, 0], root: 'header' },

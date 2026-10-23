@@ -847,6 +847,20 @@ test('keeps root dependency references shallow and internal carriers internal', 
     ),
     []
   );
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      `import { readCoreWork } from 'plitejs/internal';`,
+      'apps/www/src/__tests__/package-integration/editor-kit-carried-moves.spec.tsx'
+    ),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `import { readCoreWork } from 'plitejs/internal';`,
+      'apps/www/src/__tests__/package-integration/other.spec.tsx'
+    )[0]?.reason ?? '',
+    /not a public package entrypoint/
+  );
   assert.match(
     auditPlateSchemaSource(
       `export type { PluginTypeProviderOf } from './interfaces/editor';`,

@@ -1,5 +1,5 @@
 import type { ChatTransport, UIMessage } from 'ai';
-import type React from 'react';
+import React from 'react';
 
 import { definePlugin, useEditor, usePluginStore } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
@@ -54,7 +54,7 @@ function CustomAIView({
   transport,
 }: {
   editableRef: React.RefObject<HTMLElement | null>;
-  transport: ChatTransport<UIMessage<unknown, { custom: { message: string } }>>;
+  transport: ChatTransport<UIMessage>;
 }) {
   useAIChat({
     editableRef,

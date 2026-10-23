@@ -25,9 +25,9 @@ describe('assertElementIds', () => {
   });
 
   it.each([
-    ['', 'empty'],
-    [42, 'numeric'],
-  ])('rejects a %s element id', (id) => {
+    { id: '', title: 'an empty' },
+    { id: 42, title: 'a numeric' },
+  ])('rejects $title element id', ({ id }) => {
     expect(() =>
       assertElementIds({
         children: [{ children: [{ text: 'invalid' }], id, type: 'paragraph' }],

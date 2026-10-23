@@ -14,7 +14,7 @@ export const censusRuntimeEditor = () =>
 
 // `length` stops counting at the first default or rest parameter, so
 // `(options = {}) => …` reports 0; read the parameter list instead.
-const takesArguments = (method: (...args: never[]) => unknown) => {
+const takesArguments = (method: object) => {
   const source = Function.prototype.toString.call(method);
 
   if (/^(?:async\s+)?[\w$]+\s*=>/.test(source)) return true;

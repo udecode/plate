@@ -1350,5 +1350,7 @@ it('converts a quote line in a named view while the main root starts with a Deta
   header.plugin(BaseColumnGroupPlugin).update.toggle({ at: [0, 0] });
 
   assert.deepEqual(NodeApi.string(header.read.nodes.get([0, 0, 0])![0]), 'Q');
-  assert.equal(header.read.nodes.get([0, 0])![0].type, PLUGINS.columnGroup);
+  expect(header.read.nodes.get([0, 0])?.[0]).toMatchObject({
+    type: 'columnGroup',
+  });
 });

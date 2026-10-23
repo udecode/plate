@@ -196,7 +196,7 @@ describe('TableMutationPlan benchmark', () => {
 });
 
 describe('TableGrid compiler benchmark', () => {
-  it.if(measured)(
+  (measured ? it : it.skip)(
     'keeps dense and sparse cold compilation inside cohort budgets',
     () => {
       compileTableGrid(createDenseTable(8));

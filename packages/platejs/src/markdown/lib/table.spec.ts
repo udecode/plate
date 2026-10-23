@@ -5,6 +5,8 @@ import {
   BaseParagraphPlugin,
   createEditor,
   type Descendant,
+  type Element,
+  ElementApi,
   NodeApi,
 } from '../../core';
 import { BaseTablePlugin } from '../../features/table';
@@ -473,15 +475,15 @@ describe('markdown tables', () => {
   });
 
   describe('cells holding blocks', () => {
-    type Node = Record<string, unknown> & { children: Node[] | Text[] };
-    type Text = Record<string, unknown> & { text: string };
-
-    const paragraph = (text: string, props: object = {}): Node => ({
+    const paragraph = (text: string, props: object = {}): Element => ({
       ...props,
       children: [{ text }],
       type: 'paragraph',
     });
-    const inline = (props: object, text = ''): Node => ({
+    const inline = (
+      props: Readonly<{ type: string }> & Readonly<Record<string, unknown>>,
+      text = ''
+    ): Element => ({
       children: [
         { text: '' },
         { children: [{ text }], ...props },
@@ -489,12 +491,15 @@ describe('markdown tables', () => {
       ],
       type: 'paragraph',
     });
-    const cell = (children: Node[], props: object = {}): Node => ({
+    const cell = (
+      children: readonly Descendant[],
+      props: object = {}
+    ): Element => ({
       ...props,
       children,
       type: 'tableCell',
     });
-    const table = (rows: Node[][]) => ({
+    const table = (rows: ReadonlyArray<readonly Descendant[]>) => ({
       children: [
         {
           children: rows.map((children) => ({ children, type: 'tableRow' })),
@@ -502,7 +507,7 @@ describe('markdown tables', () => {
         },
       ],
     });
-    const headed = (content: Node[]) =>
+    const headed = (content: readonly Descendant[]) =>
       table([
         [
           cell([paragraph('A')], { header: true }),
@@ -527,10 +532,11 @@ describe('markdown tables', () => {
           ? node.children
               .slice(1)
               .map((row) =>
-                (row as { children: Descendant[] }).children.map(
-                  (tableCell) =>
-                    (tableCell as { children: Descendant[] }).children
-                )
+                ElementApi.isElement(row)
+                  ? row.children.map((tableCell) =>
+                      ElementApi.isElement(tableCell) ? tableCell.children : []
+                    )
+                  : []
               )
           : []
       );
@@ -791,11 +797,7 @@ describe('markdown tables', () => {
       );
 
       expect(
-        result.ok &&
-          NodeApi.string(
-            (result.document.children[0] as { children: Descendant[] })
-              .children[1]
-          )
+        result.ok && NodeApi.string(result.document.children[0].children[1])
       ).toBe(`<ul><li>a</li></ul> and ${deep}`);
     });
 
@@ -828,9 +830,7 @@ describe('markdown tables', () => {
         paragraph('b'),
       ];
       const once = write(headed(content)).data;
-      const twice = write(
-        headed(bodyCellChildren(once)[0][0] as unknown as Node[])
-      ).data;
+      const twice = write(headed(bodyCellChildren(once)[0][0])).data;
 
       expect(twice).toBe(once);
     });
@@ -867,7 +867,7 @@ describe('markdown tables', () => {
     ])(
       'reads a CRLF line ending in a cell as one break: $text, bold $bold',
       ({ bold, read, text }) => {
-        const content: Node = {
+        const content = {
           children: [{ ...(bold && { bold }), text }],
           type: 'paragraph',
         };
@@ -889,15 +889,21 @@ describe('markdown tables', () => {
       const [[cellBlocks, sentinel]] = bodyCellChildren(
         write(headed([inline({ latex, type: 'inlineEquation' })])).data
       );
-      const equation = (cellBlocks[0] as { children: Node[] }).children.find(
-        (node) => node.type === 'inlineEquation'
-      ) as { latex: string } | undefined;
+      const [block] = cellBlocks;
+      const equation = ElementApi.isElement(block)
+        ? block.children.find(
+            (node) =>
+              ElementApi.isElement(node) && node.type === 'inlineEquation'
+          )
+        : undefined;
       const rendered = (tex: string) =>
         katex
           .renderToString(tex, { output: 'html' })
           .replaceAll(/<[^>]+>/g, '');
 
-      expect(rendered(equation?.latex ?? '')).toBe(rendered(latex));
+      expect(
+        rendered(typeof equation?.latex === 'string' ? equation.latex : '')
+      ).toBe(rendered(latex));
       expect(NodeApi.string(sentinel[0])).toBe('sentinel');
     });
 
@@ -1006,7 +1012,7 @@ describe('markdown tables', () => {
         ],
       },
     ])('keeps the row on one line around $carrier', ({ content }) => {
-      expect(bodyCells(write(headed(content as Node[])).data)).toEqual([
+      expect(bodyCells(write(headed(content)).data)).toEqual([
         [expect.any(String), 'sentinel'],
       ]);
     });

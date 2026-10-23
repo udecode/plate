@@ -406,7 +406,7 @@ it('keeps five shared conversations attached and painted in independently config
   const source = getPlateDecorationSources(editor).find(
     ({ id }) => id === 'comments'
   )!;
-  const projected = {
+  const projected: Range = {
     anchor: { path: [0, 1], offset: 1 },
     focus: { path: [0, 1], offset: 4 },
   };

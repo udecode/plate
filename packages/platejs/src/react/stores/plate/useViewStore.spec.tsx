@@ -1,5 +1,3 @@
-import { describe, expect, it, mock } from 'bun:test';
-
 import { act, render } from '@testing-library/react';
 import React from 'react';
 
@@ -62,8 +60,8 @@ describe('useViewStore', () => {
       secondRenders: after.secondRenders - before.secondRenders,
       secondSelects: after.secondSelects - before.secondSelects,
       shown: [
-        calls.first.shown.mock.lastCall?.[0],
-        calls.second.shown.mock.lastCall?.[0],
+        calls.first.shown.mock.calls.at(-1)?.[0],
+        calls.second.shown.mock.calls.at(-1)?.[0],
       ],
     }).toEqual({
       firstRenders: 1,

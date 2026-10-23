@@ -18,7 +18,7 @@ import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { createEditor as createReactEditor } from '../../react/editor/withPlate';
 import { definePlugin } from '../../react/plugin/definePlugin';
-import { brandPluginDescriptor } from '../utils/mergePlugins';
+import { brandPluginDescriptor, mergePlugins } from '../utils/mergePlugins';
 import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
 import { getPluginStore } from './pluginStore';
 import { resolveAndSortPlugins, resolvePlugins } from './resolvePlugins';
@@ -269,11 +269,17 @@ describe('resolvePlugins', () => {
 
   it('compiles nested capability trees without descriptor merge machinery', () => {
     const Plugin = defineHeadlessPlugin('nestedCapabilities', {
-      api: () => ({ nested: { first: () => 'first' }, values: ['first'] }),
+      api: () => ({
+        nested: { first: () => 'first' },
+        values: Array.of('first'),
+      }),
       read: () => ({ nested: { first: () => 'first' } }),
       update: () => ({ nested: { first: () => 'first' } }),
     }).extend(() => ({
-      api: () => ({ nested: { second: () => 'second' }, values: ['second'] }),
+      api: () => ({
+        nested: { second: () => 'second' },
+        values: Array.of('second'),
+      }),
       read: () => ({ nested: { second: () => 'second' } }),
       update: () => ({ nested: { second: () => 'second' } }),
     }));
@@ -468,17 +474,15 @@ describe('resolvePlugins', () => {
 
   it('overwrite API methods with the same name', () => {
     const Plugin = defineHeadlessPlugin('apiOverride', {
-      api: () => ({ method: (_: string) => 'first' }),
+      api: () => ({ method: (_: string): string => 'first' }),
     }).extend(() => ({
-      api: () => ({ method: (_: number) => 'second' }),
+      api: () => ({ method: (_: number | string) => 'second' }),
     }));
     const editor = createEditor({
       plugins: [Plugin],
     });
 
-    expect(Reflect.apply(editor.api.apiOverride.method, undefined, [1])).toBe(
-      'second'
-    );
+    expect(editor.api.apiOverride.method(1)).toBe('second');
   });
 
   it('fills plugin cache buckets for node, render, view attributes, rule, and handler metadata', () => {
@@ -1126,13 +1130,8 @@ describe('resolveAndSortPlugins', () => {
   });
 
   it('rejects named dependency cycles', () => {
-    const a = brandPluginDescriptor({
-      ...defineHeadlessPlugin('a', {}),
-    }) as AnyBasePlugin;
-    const b = brandPluginDescriptor({
-      ...defineHeadlessPlugin('b', {}),
-      dependencies: [a],
-    }) as AnyBasePlugin;
+    const a = mergePlugins(defineHeadlessPlugin('a', {}));
+    const b = defineHeadlessPlugin('b', { dependencies: [a] });
 
     Object.assign(a, { dependencies: [b] });
 

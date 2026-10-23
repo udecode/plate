@@ -1257,13 +1257,13 @@ describe('BaseCodeBlockPlugin input rules', () => {
   jsxt;
 
   const BaseCommentMappingPlugin = definePlugin('commentParser', {
-    formats: ({ defineFormats }) =>
-      defineFormats({
-        plainText: {
-          scope: 'document',
-          decode: () => ContentSlice.closed([{ text: 'comment parser' }]),
-        },
-      }),
+    dataTransferFormats: [
+      {
+        decode: () => ContentSlice.closed([{ text: 'comment parser' }]),
+        mimeType: 'text/plain',
+        scope: 'document',
+      },
+    ],
   });
 
   const createTestEditor = (input: TestEditor) =>

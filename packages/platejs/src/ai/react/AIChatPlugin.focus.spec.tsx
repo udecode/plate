@@ -1,5 +1,3 @@
-import { expect, test } from 'bun:test';
-
 import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
 

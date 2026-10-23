@@ -418,9 +418,16 @@ describe('migratePlateV54 unsafe URLs', () => {
       plugins,
       schema: MigrationSchema,
     });
-    const read = (projection: 'accepted' | 'proposed') =>
-      projectAuthoredDocument(editor.read.value(), { editor, projection })
-        .document.children;
+    const read = (projection: 'accepted' | 'proposed') => {
+      const result = projectAuthoredDocument(editor.read.value(), {
+        editor,
+        projection,
+      });
+
+      if (!result.ok) throw new Error(result.diagnostics[0].message);
+
+      return result.document.children;
+    };
 
     expect(read('accepted')).toEqual([paragraph('Open docs')]);
     expect(read('proposed')).toEqual([paragraph('Open docs page')]);

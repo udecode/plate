@@ -1572,7 +1572,7 @@ describe('compilePlateHtmlFormat', () => {
         defineFormats({
           html: {
             decode: () => ({}),
-            encode: ({ children }) => ({ children, tag: 'blockquote' }),
+            encode: ({ content }) => ({ children: content, tag: 'blockquote' }),
             match: [{ tag: 'blockquote' }],
           },
         }),

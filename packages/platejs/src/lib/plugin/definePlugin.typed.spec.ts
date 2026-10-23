@@ -788,19 +788,11 @@ const assertTypedDecorate = () => {
 
   definePlugin('invalidDecorationAttribute', {
     decorate: {
-      read: () => [
-        {
-          attributes: {
-            // @ts-expect-error Decoration output rejects event handlers.
-            onClick: () => {},
-          },
-          key: 'invalid-decoration',
-          range: {
-            anchor: { offset: 0, path: [0, 0] },
-            focus: { offset: 1, path: [0, 0] },
-          },
-        },
-      ],
+      attributes: {
+        // @ts-expect-error Decoration attributes reject event handlers.
+        onClick: () => {},
+      },
+      read: () => [],
     },
   });
 };

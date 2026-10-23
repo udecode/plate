@@ -80,6 +80,8 @@ describe('HtmlPlugin', () => {
     });
     const result = editor.api.html.serialize();
 
+    if (!result.ok) throw new Error(result.diagnostics[0].message);
+
     expect(result.data).toBe('<p>Hello</p>');
     expect(result.diagnostics.map(({ code }) => code)).toEqual([
       'html-unsupported-metadata',

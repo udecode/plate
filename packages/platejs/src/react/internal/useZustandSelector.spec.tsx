@@ -1,5 +1,3 @@
-import { describe, expect, it, mock, spyOn } from 'bun:test';
-
 import { act, render, renderHook } from '@testing-library/react';
 import React, { Component, startTransition, Suspense } from 'react';
 import { renderToString } from 'react-dom/server';
@@ -11,7 +9,7 @@ describe('useZustandSelector', () => {
   it('delivers a thrown selector error to React and can remount after recovery', () => {
     const store = createStore(() => ({ value: 1 }));
     const expected = new Error('selector failed');
-    const caught = mock<(error: Error) => void>(() => {});
+    const caught = mock();
     const consoleError = spyOn(console, 'error').mockImplementation(() => {});
 
     class Boundary extends Component<

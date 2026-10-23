@@ -7,15 +7,10 @@ import {
 } from '../../../core';
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { MarkdownPlugin } from '../MarkdownPlugin';
+import type { MarkdownDocumentParseResult } from '../types';
 import { compileMarkdownMappings } from './markdownMappings';
 
-const parseDocument = (
-  editor: ReturnType<typeof createEditor>,
-  source: string,
-  options?: Parameters<typeof editor.api.markdown.parse>[1]
-) => {
-  const result = editor.api.markdown.parse(source, options);
-
+const parsedDocument = (result: MarkdownDocumentParseResult) => {
   if (!result.ok) {
     throw new Error(
       result.diagnostics.map(({ message }) => message).join('\n')
@@ -226,7 +221,7 @@ describe('Markdown node mapping compiler', () => {
       },
     });
     const markdown = '<customElement label="Round trip" />';
-    const document = parseDocument(editor, markdown);
+    const document = parsedDocument(editor.api.markdown.parse(markdown));
 
     expect(document.children).toEqual([
       {
@@ -240,7 +235,9 @@ describe('Markdown node mapping compiler', () => {
     expect(serialized.ok).toBe(true);
     if (!serialized.ok) throw new Error('Expected Markdown serialization.');
     expect(serialized.data).toBe(`${markdown}\n`);
-    expect(parseDocument(editor, 'Paragraph').children).toEqual([
+    expect(
+      parsedDocument(editor.api.markdown.parse('Paragraph')).children
+    ).toEqual([
       {
         children: [{ text: 'Paragraph' }],
         type: 'customParagraph',
@@ -263,7 +260,9 @@ describe('Markdown node mapping compiler', () => {
       ok: true,
     });
     expect(
-      parseDocument(editor, 'First\n\n\nSecond').children.every(
+      parsedDocument(
+        editor.api.markdown.parse('First\n\n\nSecond')
+      ).children.every(
         (node) => 'type' in node && node.type === 'customParagraph'
       )
     ).toBe(true);
@@ -353,12 +352,12 @@ describe('Markdown node mapping compiler', () => {
 
   it('does not compile formats from disabled plugins', () => {
     const DisabledPlugin = elementPlugin('disabled')
-      .extend(({ defineFormats }) => ({
+      .extend(({ defineFormats, schema: { type } }) => ({
         formats: defineFormats({
           markdown: {
-            decode: ({ schema: innerSchema5 }) => ({
+            decode: () => ({
               children: [{ text: '' }],
-              type: innerSchema5.type,
+              type,
             }),
             node: 'html',
           },
@@ -378,20 +377,20 @@ describe('Markdown node mapping compiler', () => {
 
   it('rejects ambiguous equal-priority decode claims from one target', () => {
     const ConflictPlugin = elementPlugin('conflict').extend(
-      ({ defineFormats }) => ({
+      ({ defineFormats, schema: { type } }) => ({
         formats: defineFormats({
           markdown: [
             {
-              decode: ({ schema: innerSchema6 }) => ({
+              decode: () => ({
                 children: [{ text: '' }],
-                type: innerSchema6.type,
+                type,
               }),
               node: 'html',
             },
             {
-              decode: ({ schema: innerSchema7 }) => ({
+              decode: () => ({
                 children: [{ text: '' }],
-                type: innerSchema7.type,
+                type,
               }),
               node: 'html',
             },
@@ -454,7 +453,9 @@ describe('Markdown node mapping compiler', () => {
       plugins: [BaseParagraphPlugin, DecliningPlugin, MarkdownPlugin],
     });
 
-    expect(parseDocument(editor, 'claim\n\nplain').children).toEqual([
+    expect(
+      parsedDocument(editor.api.markdown.parse('claim\n\nplain')).children
+    ).toEqual([
       { children: [{ text: 'claimed' }], type: 'declining' },
       { children: [{ text: 'plain' }], type: 'paragraph' },
     ]);
@@ -516,9 +517,10 @@ describe('Markdown node mapping compiler', () => {
     const editor = createTestEditor();
 
     expect(
-      parseDocument(
-        editor,
-        'a <span style="color: red; background-color: yellow;">**b**</span>'
+      parsedDocument(
+        editor.api.markdown.parse(
+          'a <span style="color: red; background-color: yellow;">**b**</span>'
+        )
       ).children
     ).toEqual([
       {
@@ -653,9 +655,10 @@ describe('Markdown node mapping compiler', () => {
     const editor = createEditor({
       plugins: [BaseParagraphPlugin, Level, Tone, MarkdownPlugin],
     });
-    const document = parseDocument(
-      editor,
-      '<low>a</low><hi>b</hi><span style="color: red;">c</span>'
+    const document = parsedDocument(
+      editor.api.markdown.parse(
+        '<low>a</low><hi>b</hi><span style="color: red;">c</span>'
+      )
     );
 
     expect(document.children).toEqual([

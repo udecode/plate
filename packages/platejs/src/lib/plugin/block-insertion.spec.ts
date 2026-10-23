@@ -427,9 +427,7 @@ it('inserts a table from a closed Details title in a cell after that table', () 
   editor.plugin(BaseTablePlugin).update.insert();
 
   expect({
-    cell: editor.read.nodes
-      .get([0, 0, 0])?.[0]
-      .children.map((node: { type?: string }) => node.type),
+    cell: editor.read.nodes.children([0, 0, 0]).map((node) => node.type),
     types: editor.read.children().map((node) => node.type),
   }).toEqual({ cell: ['details'], types: ['table', 'table'] });
 });

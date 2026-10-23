@@ -9,6 +9,7 @@ import {
   type Selection,
   type Value,
 } from '../../../../core';
+import type { RuntimePluginReference } from '../../../../facade';
 import {
   createEditor,
   type CreateEditorOptions,
@@ -50,21 +51,21 @@ export const createTestBaseTableEditor = (
 
 export const createTestTableEditor = (
   options: Omit<
-    CreateEditorOptions<readonly BasePluginInput[]>,
+    CreateEditorOptions<readonly RuntimePluginReference[]>,
     'initialValue'
   > & {
     initialValue?: InitialValue<Value>;
   }
 ): TableTestEditor => {
   const { initialValue, ...rest } = options;
-  const plugins: readonly BasePluginInput[] = hasPersistedElementId(
+  const plugins: readonly RuntimePluginReference[] = hasPersistedElementId(
     initialValue
   )
     ? [ElementIdPlugin, ...(rest.plugins ?? [])]
     : (rest.plugins ?? []);
 
   return createEditor<
-    readonly BasePluginInput[],
+    readonly RuntimePluginReference[],
     EditorApplicationSchema | undefined
   >({
     ...rest,

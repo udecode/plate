@@ -2,6 +2,7 @@ import { act, render, renderHook } from '@testing-library/react';
 import React from 'react';
 
 import { createEditor } from '../editor';
+import { definePlugin } from '../plugin';
 import {
   useEditor,
   useEditorReadOnly,
@@ -133,7 +134,17 @@ test('a controller only offers views with an editable DOM mount', () => {
 });
 
 test('replacing the editable DOM retires the captured command view', async () => {
-  const editor = createEditor();
+  const Sectioned = React.createContext(false);
+  function Host({ children }: { children: React.ReactNode }) {
+    return React.useContext(Sectioned) ? (
+      <section>{children}</section>
+    ) : (
+      <>{children}</>
+    );
+  }
+  const editor = createEditor({
+    plugins: [definePlugin('host', { slots: { wrapContent: Host } })],
+  });
   let selected: ReturnType<typeof useEditor>;
   function Probe() {
     selected = useEditor();
@@ -143,25 +154,27 @@ test('replacing the editable DOM retires the captured command view', async () =>
     return <output>{String(useEditorReadOnly())}</output>;
   }
   const tree = (
-    as: React.ElementType,
+    sectioned: boolean,
     captured: ReturnType<typeof useEditor> | null = null
   ) => (
     <React.StrictMode>
-      <EditorRoot editor={editor}>
-        <EditorContent as={as} aria-label="editor" />
-        <Probe />
-        {captured && (
-          <EditorProvider editor={captured}>
-            <Captured />
-          </EditorProvider>
-        )}
-      </EditorRoot>
+      <Sectioned.Provider value={sectioned}>
+        <EditorRoot editor={editor}>
+          <EditorContent aria-label="editor" />
+          <Probe />
+          {captured && (
+            <EditorProvider editor={captured}>
+              <Captured />
+            </EditorProvider>
+          )}
+        </EditorRoot>
+      </Sectioned.Provider>
     </React.StrictMode>
   );
-  const result = render(tree('div'));
+  const result = render(tree(false));
   const original = selected!;
   const originalElement = result.getByRole('textbox');
-  await act(async () => result.rerender(tree('section', original)));
+  await act(async () => result.rerender(tree(true, original)));
   expect(selected!).not.toBe(original);
   expect(result.getByRole('textbox')).not.toBe(originalElement);
   expect(original.read.view.isReadOnly()).toBe(true);

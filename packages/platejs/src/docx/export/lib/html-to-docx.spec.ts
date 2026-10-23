@@ -154,7 +154,7 @@ describe('htmlToDocxBlob', () => {
       relationships
     )?.[1];
 
-    expect(target).toEndWith('.png');
+    expect(target).toMatch(/\.png$/);
     expect(zip.file(`word/${target}`)).not.toBeNull();
     expect(fetchSpy).not.toHaveBeenCalled();
   });

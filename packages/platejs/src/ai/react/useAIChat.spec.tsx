@@ -8,16 +8,6 @@ import { createEditor, ParagraphPlugin, EditorRoot } from '../../react/core';
 import { AIChatPlugin } from './AIChatPlugin';
 import { useAIChat } from './useAIChat';
 
-const accepted = (editor: Parameters<typeof createEditorView>[0]) =>
-  projectAuthoredDocument(editor.read.value(), {
-    projection: 'accepted',
-  }).document.children;
-
-const proposedText = (editor: Parameters<typeof createEditorView>[0]) =>
-  createEditorView(editor, {
-    authored: { preview: 'proposed' },
-  }).read.text.string([]);
-
 function controlledTransport() {
   let stream!: ReadableStreamDefaultController<UIMessageChunk>;
   let markReady!: () => void;
@@ -110,19 +100,20 @@ it('streams edit output into one native suggestion without changing the view', a
     expect(chat?.status).toBe('ready');
 
     expect(editor.plugin(AIChatPlugin).store.get('previewValue')).toEqual([]);
+    expect(editor.read.authored.changes().items).toHaveLength(1);
     expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
-    expect(accepted(editor)).toEqual([
-      { type: 'paragraph', children: [{ text: 'original' }] },
-    ]);
-    expect(proposedText(editor)).toBe('rewritten');
+      projectAuthoredDocument(editor.read.value(), { projection: 'accepted' })
+        .document.children
+    ).toEqual([{ type: 'paragraph', children: [{ text: 'original' }] }]);
+    expect(
+      createEditorView(editor, {
+        authored: { preview: 'proposed' },
+      }).read.text.string([])
+    ).toBe('rewritten');
     expect(editor.read.authored.view()).toEqual({ intent: 'edit' });
 
     await act(async () => editor.plugin(AIChatPlugin).api.accept());
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(0);
+    expect(editor.read.authored.changes().items).toHaveLength(0);
     expect(editor.read.value().children).toEqual([
       { type: 'paragraph', children: [{ text: 'rewritten' }] },
     ]);
@@ -188,10 +179,12 @@ it('keeps all assistant parts in one cross-block edit suggestion', async () => {
     if (chat?.error) throw chat.error;
     expect(chat?.status).toBe('ready');
 
-    expect(proposedText(editor)).toBe('Generated preview text.');
     expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(1);
+      createEditorView(editor, {
+        authored: { preview: 'proposed' },
+      }).read.text.string([])
+    ).toBe('Generated preview text.');
+    expect(editor.read.authored.changes().items).toHaveLength(1);
   } finally {
     view.unmount();
   }
@@ -253,10 +246,14 @@ it('retries an edit by rejecting the previous request-owned suggestion', async (
     await source.waitForRequest(2);
     await respond('second');
 
-    const pending = editor.read.authored.changes({ status: 'pending' }).items;
+    const pending = editor.read.authored.changes().items;
     expect(pending).toHaveLength(1);
     expect(pending[0].id).not.toBe(firstChange);
-    expect(proposedText(editor)).toBe('second');
+    expect(
+      createEditorView(editor, {
+        authored: { preview: 'proposed' },
+      }).read.text.string([])
+    ).toBe('second');
     expect(editor.read.authored.view()).toEqual({ intent: 'edit' });
   } finally {
     view.unmount();
@@ -498,9 +495,7 @@ for (const action of ['hide', 'reload'] as const) {
       await settle();
 
       expect(source.signals[0]?.aborted).toBe(true);
-      expect(
-        editor.read.authored.changes({ status: 'pending' }).items
-      ).toHaveLength(0);
+      expect(editor.read.authored.changes().items).toHaveLength(0);
       expect(editor.read.history().undos).toHaveLength(undos);
       expect(editor.read.value().children).toEqual([
         { type: 'paragraph', children: [{ text: 'original' }] },
@@ -548,9 +543,7 @@ for (const end of ['finish', 'stop'] as const) {
       else expect(ai.store.get('chat')?.status).toBe('ready');
       expect(ai.store.get('streaming')).toBe(false);
       expect(ai.store.get('chat')?.error).toBeUndefined();
-      expect(
-        editor.read.authored.changes({ status: 'pending' }).items
-      ).toHaveLength(0);
+      expect(editor.read.authored.changes().items).toHaveLength(0);
       await act(async () => ai.api.accept());
       expect(editor.read.value().children).toEqual([
         { type: 'paragraph', children: [{ text: 'original' }] },

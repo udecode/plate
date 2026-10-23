@@ -15,7 +15,10 @@ export function useExcalidrawSync({
   api,
   excalidraw,
 }: {
-  api: ExcalidrawImperativeAPI | null;
+  api: Pick<
+    ExcalidrawImperativeAPI,
+    'addFiles' | 'getAppState' | 'history' | 'onChange' | 'updateScene'
+  > | null;
   excalidraw: Pick<
     typeof import('@excalidraw/excalidraw'),
     'restore' | 'serializeAsJSON'

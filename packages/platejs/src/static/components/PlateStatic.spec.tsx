@@ -26,7 +26,11 @@ import {
 import { getEditorLiveSelection } from '../../testing';
 import { renderStaticHtml } from '../renderStaticHtml';
 import { EditorStatic } from './PlateStatic';
-import { EditorElement, EditorLeaf } from './plite-nodes';
+import {
+  type EditorElementProps,
+  EditorElement,
+  EditorLeaf,
+} from './plite-nodes';
 
 const RevisionPlugin = definePlugin('revision', {
   schema: {
@@ -683,7 +687,9 @@ describe('EditorStatic document', () => {
       plugins: [
         BaseHeadingPlugin,
         BaseTocPlugin.configure({
-          component: ({ editor: rendered }) => (
+          component: ({
+            editor: rendered,
+          }: EditorElementProps<typeof BaseTocPlugin>) => (
             <aside>
               {rendered
                 .plugin(BaseTocPlugin)
@@ -769,7 +775,9 @@ describe('EditorStatic document', () => {
       plugins: [
         BaseHeadingPlugin,
         BaseTocPlugin.configure({
-          component: ({ editor: rendered }) => (
+          component: ({
+            editor: rendered,
+          }: EditorElementProps<typeof BaseTocPlugin>) => (
             <aside>
               {rendered
                 .plugin(BaseTocPlugin)
@@ -807,7 +815,9 @@ describe('EditorStatic document', () => {
       plugins: [
         BaseHeadingPlugin,
         BaseTocPlugin.configure({
-          component: ({ editor: rendered }) => (
+          component: ({
+            editor: rendered,
+          }: EditorElementProps<typeof BaseTocPlugin>) => (
             <aside>
               {rendered
                 .plugin(BaseTocPlugin)

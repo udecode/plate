@@ -1,3 +1,4 @@
+import type { Root } from 'mdast';
 import { unified } from 'unified';
 
 import type { MarkdownSyncPlugin } from '../types';
@@ -18,8 +19,9 @@ describe('materializeRemarkPlugins', () => {
     const plugin = (() => () =>
       Promise.resolve()) as unknown as MarkdownSyncPlugin;
     const processor = unified().use(materializeRemarkPlugins([plugin]));
+    const tree: Root = { children: [], type: 'root' };
 
-    expect(() => processor.runSync({ children: [], type: 'root' })).toThrow(
+    expect(() => processor.runSync(tree)).toThrow(
       'thenable transformer result'
     );
   });
@@ -28,9 +30,8 @@ describe('materializeRemarkPlugins', () => {
     const plugin = (() => (_tree: unknown, _file: unknown, next: () => void) =>
       next()) as unknown as MarkdownSyncPlugin;
     const processor = unified().use(materializeRemarkPlugins([plugin]));
+    const tree: Root = { children: [], type: 'root' };
 
-    expect(() => processor.runSync({ children: [], type: 'root' })).toThrow(
-      'callback-style transformer'
-    );
+    expect(() => processor.runSync(tree)).toThrow('callback-style transformer');
   });
 });

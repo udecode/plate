@@ -1,6 +1,5 @@
-import { expect, it, mock } from 'bun:test';
-
 import {
+  type BlockInsertOptions,
   BaseParagraphPlugin,
   createEditor,
   createEditorView,
@@ -200,11 +199,16 @@ it('propagates a rejected resolver without changing the document', async () => {
 });
 
 it('uses the installed insertion override after URL resolution', async () => {
+  const inserts: Array<BlockInsertOptions | undefined> = [];
   const insert = txLocate(
     false,
-    mock(() => false)
+    (_input: unknown, options?: BlockInsertOptions) => {
+      inserts.push(options);
+
+      return false;
+    }
   );
-  const plugin = BaseImagePlugin.extend({ update: () => ({ insert }) });
+  const plugin = BaseImagePlugin.extend(() => ({ update: () => ({ insert }) }));
   const editor = createEditor({
     plugins: [plugin],
     initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
@@ -214,16 +218,21 @@ it('uses the installed insertion override after URL resolution', async () => {
       .plugin(plugin)
       .api.insertUrl(() => 'https://example.com/image.png', { at: [1] })
   ).toBe(false);
-  expect(insert).toHaveBeenCalledTimes(1);
+  expect(inserts).toHaveLength(1);
   expect(editor.read.children()).toHaveLength(1);
 });
 
 it('uses the installed insertion override for a captured source block', async () => {
+  const inserts: Array<BlockInsertOptions | undefined> = [];
   const insert = txLocate(
     false,
-    mock(() => false)
+    (_input: unknown, options?: BlockInsertOptions) => {
+      inserts.push(options);
+
+      return false;
+    }
   );
-  const plugin = BaseImagePlugin.extend({ update: () => ({ insert }) });
+  const plugin = BaseImagePlugin.extend(() => ({ update: () => ({ insert }) }));
   const editor = createEditor({
     plugins: [plugin],
     initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
@@ -240,8 +249,8 @@ it('uses the installed insertion override for a captured source block', async ()
         replaceEmpty: true,
       })
   ).toBe(false);
-  expect(insert).toHaveBeenCalledTimes(1);
-  expect(insert.mock.calls[0][1]).toMatchObject({
+  expect(inserts).toHaveLength(1);
+  expect(inserts[0]).toMatchObject({
     after: editor.key([0]),
     replaceEmpty: true,
   });

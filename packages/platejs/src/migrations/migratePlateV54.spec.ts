@@ -81,12 +81,18 @@ const migrateDocument = (
 ) =>
   runDocumentMigration(input, {
     migrations: options.editor?.migrations ?? options.migrations,
-    ...(!input ||
-    typeof input !== 'object' ||
-    Array.isArray(input) ||
-    !Object.hasOwn(input, 'document')
-      ? { source: 53 as const }
-      : {}),
+    source: 53,
+  }).output;
+
+const migrateEnvelope = (
+  input: Readonly<{ document: unknown; schema: unknown; selection?: unknown }>,
+  options: Readonly<{
+    editor?: Readonly<{ migrations: DocumentMigrations }>;
+    migrations: DocumentMigrations;
+  }>
+) =>
+  runDocumentMigration(input, {
+    migrations: options.editor?.migrations ?? options.migrations,
   }).output;
 
 const createMigrationEditor = () =>
@@ -1383,7 +1389,7 @@ describe('migratePlateV54 selection', () => {
         BaseDetailsPlugin,
       ],
     });
-    const result = migrateDocument(
+    const result = migrateEnvelope(
       {
         document: {
           children: [

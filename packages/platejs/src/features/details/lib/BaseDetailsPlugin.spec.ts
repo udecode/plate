@@ -3,6 +3,7 @@ import {
   BaseParagraphPlugin,
   createEditor,
   definePlugin,
+  ElementApi,
   schema,
   NodeApi,
   PLUGINS,
@@ -282,9 +283,14 @@ describe('BaseDetailsPlugin', () => {
       },
     ]);
     const encoded = editor.api.html.serialize({
-      document: { children: parsed.slice.content },
+      document: {
+        children: parsed.slice.content.filter((node) =>
+          ElementApi.isElement(node)
+        ),
+      },
     });
     expect(encoded.diagnostics).toEqual([]);
+    if (!encoded.ok) throw new Error('HTML serialization failed');
     expect(encoded.data).toContain('<summary><h2>');
     expect(parseHtmlSliceContent(editor, encoded.data)).toEqual(
       parsed.slice.content

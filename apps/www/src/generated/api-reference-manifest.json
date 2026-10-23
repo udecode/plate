@@ -5210,13 +5210,13 @@
         },
         "platejs:InferRead": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "The runtime binds a callable read root to itself, so callers never supply its `this`.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "InferRead",
           "route": null,
           "runtime": false,
-          "signature": "type InferRead<P> = P extends {\n  read: infer R extends EditorReadMethodTree;\n} ? R : {};",
+          "signature": "type InferRead<P> = P extends {\n  read: infer R extends EditorReadMethodTree;\n} ? R extends ((...args: never[]) => unknown) ? OmitThisParameter<R> & { [K in keyof R]: R[K]; } : R : {};",
           "source": null,
           "typeParameters": [
             "P"

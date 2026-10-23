@@ -12,14 +12,14 @@ import {
 } from '#platejs-test-internal';
 
 import { AuthoredPlugin } from '../../../authored';
-import type { BasePluginInput, Element, Value } from '../../../core';
+import type { Element, Value } from '../../../core';
 import {
   ContentSlice,
   createEditorView,
   ElementIdPlugin,
   NodeApi,
 } from '../../../core';
-import type { Editor } from '../../../react/core';
+import { type Editor, createEditor } from '../../../react/core';
 import { YjsPlugin } from '../../../yjs/react';
 import {
   createTestTableEditor,
@@ -40,11 +40,8 @@ const tableText = (editor: Editor & { read: { children: () => Value } }) => {
   );
 };
 
-const createTarget = (
-  plugins: readonly BasePluginInput[] = getTestTablePlugins(),
-  userId?: string
-) => {
-  const input = (
+const targetInput = () =>
+  (
     <editor>
       <htable>
         <htr>
@@ -71,11 +68,13 @@ const createTarget = (
     </editor>
   ) as TestEditor;
 
+const createTarget = () => {
+  const input = targetInput();
+
   return createTestTableEditor({
-    plugins,
+    plugins: getTestTablePlugins(),
     selection: input.selection,
     initialValue: input.children,
-    userId,
   });
 };
 
@@ -118,10 +117,11 @@ describe('BaseTablePlugin prepared paste', () => {
   });
 
   it('undoes and redoes edge expansion in an authored markup view', async () => {
-    const model = createTarget(
-      [AuthoredPlugin, ...getTestTablePlugins()],
-      'alice'
-    );
+    const model = createEditor({
+      initialValue: targetInput().children,
+      plugins: [AuthoredPlugin, ...getTestTablePlugins()],
+      userId: 'alice',
+    });
     model.update.selection.set({
       anchor: { offset: 1, path: [0, 1, 1, 0, 0] },
       focus: { offset: 1, path: [0, 1, 1, 0, 0] },

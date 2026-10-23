@@ -725,10 +725,13 @@ export type InferName<P> = P extends { name: infer N } ? N : never;
 
 export type InferApi<P> = P extends { api: infer A extends object } ? A : {};
 
+/** The runtime binds a callable read root to itself, so callers never supply its `this`. */
 export type InferRead<P> = P extends {
   read: infer R extends EditorReadMethodTree;
 }
-  ? R
+  ? R extends (...args: never[]) => unknown
+    ? OmitThisParameter<R> & { [K in keyof R]: R[K] }
+    : R
   : {};
 
 export type InferUpdate<P> = P extends { update: infer U extends object }

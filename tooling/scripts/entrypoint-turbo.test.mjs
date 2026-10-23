@@ -622,7 +622,7 @@ test('package aggregates preserve the existing typecheck coverage', () => {
   const plite = generatedByPackage.get('plitejs').config.tasks;
 
   assert.ok(plate.typecheck.dependsOn.includes('typecheck:contracts'));
-  assert.equal(plate.typecheck.dependsOn.includes('typecheck:tests'), false);
+  assert.ok(plate.typecheck.dependsOn.includes('typecheck:tests'));
   assert.ok(plite.typecheck.dependsOn.includes('typecheck:contracts'));
   assert.ok(plite.typecheck.dependsOn.includes('typecheck:tests'));
 });

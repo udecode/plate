@@ -1,5 +1,3 @@
-import { expect, spyOn, test } from 'bun:test';
-
 import {
   BaseParagraphPlugin,
   type Descendant,
@@ -880,19 +878,19 @@ test('publishes a failure and recovers on a subsequent query', () => {
   const editor = createFindEditor();
   const { api, store } = editor.plugin(BaseFindPlugin);
   const failure = new Error('Unavailable');
-  const find = spyOn(NodeApi, 'findTextRanges').mockImplementationOnce(() => {
+  const find = spyOn(NodeApi, 'findTextRanges').mockImplementation(() => {
     throw failure;
   });
   try {
     api.search('hello');
-    expect(store.get('error')).toBe(failure);
-    expect(store.get('count')).toBe(0);
-    api.search('world');
-    expect(store.get('error')).toBeNull();
-    expect(store.get('count')).toBe(1);
   } finally {
     find.mockRestore();
   }
+  expect(store.get('error')).toBe(failure);
+  expect(store.get('count')).toBe(0);
+  api.search('world');
+  expect(store.get('error')).toBeNull();
+  expect(store.get('count')).toBe(1);
 });
 
 test('searches the whole document again at the first edit after a failed search', () => {
@@ -926,8 +924,8 @@ test('falls back to the whole search when the search of a changed block throws',
   const search = NodeApi.findTextRanges;
   let failed = false;
   const find = spyOn(NodeApi, 'findTextRanges').mockImplementation(
-    (...args) => {
-      if (failed) return search(...args);
+    (root, query, options) => {
+      if (failed) return search(root, query, options);
       failed = true;
       throw new Error('Unavailable');
     }

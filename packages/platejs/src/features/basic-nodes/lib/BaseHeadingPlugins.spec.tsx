@@ -21,13 +21,13 @@ const checkPrefixTypes = () => {
     [{ element: BaseHeadingPlugin, properties: { level: 1 } }],
     schema.content.group('block')
   );
-  // @ts-expect-error Heading levels must come from the descriptor.
   schema.content.prefix(
+    // @ts-expect-error Heading levels must come from the descriptor.
     [{ element: BaseHeadingPlugin, properties: { level: 7 } }],
     schema.content.group('block')
   );
-  // @ts-expect-error The heading descriptor does not own this property.
   schema.content.prefix(
+    // @ts-expect-error The heading descriptor does not own this property.
     [{ element: BaseHeadingPlugin, properties: { unknown: true } }],
     schema.content.group('block')
   );

@@ -419,5 +419,7 @@ describe('definePlugin', () => {
     const editor = createEditor({ plugins: [Plugin], initialValue: value });
 
     expect(createPluginContext(editor, Plugin).read()).toBe('nested');
+    expect(editor.plugin(Plugin).read()).toBe('nested');
+    expect(editor.read.selfRead()).toBe('nested');
   });
 });

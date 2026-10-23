@@ -1,10 +1,9 @@
-import { describe, expect, it } from 'bun:test';
-
 import {
   ContentSlice,
   createEditor,
   createEditorView,
   definePlugin,
+  ElementApi,
   schema,
 } from '../../../core';
 import { writeDataTransferFragment } from '../../../dom';
@@ -56,9 +55,11 @@ describe('BaseUploadPlugin', () => {
     const copied = ContentSlice.fromJSON(
       JSON.parse(JSON.stringify(slice)) as unknown
     );
+    const blocks = copied.content.filter((node) => ElementApi.isElement(node));
+    expect(blocks).toHaveLength(copied.content.length);
     const target = createEditor({
       plugins: [BaseUploadPlugin],
-      initialValue: copied.content,
+      initialValue: blocks,
     });
 
     expect(target.read.children()[1]).toEqual({

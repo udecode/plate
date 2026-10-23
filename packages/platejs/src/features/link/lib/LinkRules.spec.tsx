@@ -1,5 +1,3 @@
-import { describe, expect, it } from 'bun:test';
-
 import { createDataTransfer } from '#platejs-test-internal';
 
 import {
@@ -447,7 +445,9 @@ describe('LinkRules', () => {
       ],
     });
 
-    paste(editor, 'https://new.example');
+    editor.api.dom.clipboard.insertData(
+      createDataTransfer(new Map([['text/plain', 'https://new.example']]))
+    );
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'a https://new.exampleb' }], type: 'paragraph' },

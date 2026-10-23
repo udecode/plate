@@ -1,9 +1,8 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import * as React from 'react';
 
-import { NodeApi } from '../../../core';
+import { ElementApi, NodeApi } from '../../../core';
 import { createTestTableEditor } from '../../../features/table/lib/__tests__/getTestTablePlugins';
-import type { TableElement } from '../../../features/table/lib/BaseTablePlugin';
 import {
   type EditorElementProps,
   EditorContent,
@@ -87,9 +86,13 @@ const mountTable = (
 };
 
 const cellTexts = (editor: ReturnType<typeof mountTable>['editor']) =>
-  (editor.read.children()[0] as TableElement).children.flatMap((row) =>
-    row.children.map((tableCell) => NodeApi.string(tableCell))
-  );
+  editor.read
+    .children()[0]
+    .children.flatMap((row) =>
+      ElementApi.isElement(row)
+        ? row.children.map((tableCell) => NodeApi.string(tableCell))
+        : []
+    );
 
 afterEach(() => {
   cleanup();

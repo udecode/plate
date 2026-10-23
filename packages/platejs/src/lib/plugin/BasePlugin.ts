@@ -136,7 +136,7 @@ type ResolvePluginSchemaForRead<C extends AnyBasePluginDefinition> =
     ? TSchema extends (...args: never[]) => infer TDeclaration
       ? TDeclaration
       : TSchema
-    : never;
+    : undefined;
 
 type PluginReadMethodTree<C extends AnyBasePluginDefinition> =
   ResolvePluginSchemaForRead<C> extends Readonly<{ mark: unknown }>
@@ -1396,6 +1396,7 @@ type BasePluginRuntimeDescriptor<
   | 'schema'
   | 'update'
 > &
+  Pick<BasePluginRuntime, 'component'> &
   BasePluginRuntimeShell<C> &
   ProjectBasePluginFields<C>;
 

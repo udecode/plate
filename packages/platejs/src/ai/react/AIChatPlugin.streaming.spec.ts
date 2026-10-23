@@ -59,8 +59,8 @@ const createEditor = (paragraphType = 'paragraph') => {
         defineFormats({
           markdown: {
             node: 'heading',
-            decode: ({ decode, decoration, node }) => ({
-              children: decode(node.children, decoration),
+            decode: ({ decode, marks, node }) => ({
+              children: decode(node.children, marks),
               level: node.depth,
               type,
             }),
@@ -187,9 +187,7 @@ describe('AIChatPlugin streaming', () => {
     ai.api.accept();
 
     expect(editor.read.text.string([])).toBe('hello world');
-    expect(
-      editor.read.authored.changes({ status: 'pending' }).items
-    ).toHaveLength(0);
+    expect(editor.read.authored.changes().items).toHaveLength(0);
     editor.api.history.undo();
     expect(editor.read.text.string([])).toBe('');
   });

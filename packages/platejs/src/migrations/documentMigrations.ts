@@ -616,15 +616,23 @@ const readEnvelopeSource = (
   return source;
 };
 
-/** An envelope carries its own source; raw input, envelope-shaped or not, needs one. */
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+type IsEnvelopeInput<TInput> =
+  TInput extends Readonly<{ document: unknown }>
+    ? 'children' extends keyof TInput
+      ? false
+      : true
+    : false;
+
 type MigrationOptions<TInput> = Readonly<{
   migrations: DocumentMigrations;
 }> &
-  (TInput extends PersistedDocumentInput
-    ? TInput extends Readonly<{ children: unknown }>
-      ? Readonly<{ source: number | 'current' }>
-      : Readonly<{ source?: never }>
-    : Readonly<{ source: number | 'current' }>);
+  (IsAny<TInput> extends true
+    ? Readonly<{ source?: number | 'current' }>
+    : IsEnvelopeInput<TInput> extends true
+      ? Readonly<{ source?: never }>
+      : Readonly<{ source: number | 'current' }>);
 
 /** Convert one external document into the definition's exact current envelope. */
 export const migrateDocument = <const TInput>(

@@ -40,7 +40,7 @@ const paragraph = (...children: Descendant[]) => ({
   type: 'paragraph',
 });
 
-const fixtures: Record<string, Descendant[]> = {
+const fixtures: Record<string, Element[]> = {
   'aligned paragraph': [
     { children: [{ text: 'x' }], textAlign: 'center', type: 'paragraph' },
   ],
@@ -385,7 +385,7 @@ const ordinals = (children: readonly Descendant[]) => {
   );
 };
 
-const audit = (children: Descendant[]) => {
+const audit = (children: readonly Element[]) => {
   const serialized = editor.api.markdown.serialize({
     document: { children },
     lossPolicy: 'allow',

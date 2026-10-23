@@ -24,7 +24,7 @@
     "../test/yjs/structural-soak-contract.spec.ts",
     "../../../tooling/config/global.d.ts"
   ],
-  "include": [],
+  "include": ["../src/**/*.d.ts"],
   "references": [
     {
       "path": "./authored.json"
