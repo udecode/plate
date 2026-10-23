@@ -413,7 +413,18 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   decision keeps, and the merged line keeps that line's type and properties,
   whatever that line still shows.
 - A rejected split rejoins its pieces into the piece before it while that
-  piece keeps content, and into the piece after it otherwise. This is current
+  piece keeps content, and into the piece after it otherwise. When the
+  decision removes the piece before it, the split looks further back for the
+  nearest block the decision keeps. Only the first container it meets that
+  the decision keeps but empties, or whose children it lifts out, can take
+  the later piece. The later piece takes the place of that container's line
+  only when the decision does not lift the container's children, the
+  container has no prefix slot, completion would rebuild it as one empty
+  line with exactly the later piece's properties, and the later piece
+  carries no format tag.
+  Deciding the removal first gives the same result, because the split then
+  rejoins the empty line that completion builds there. Otherwise no
+  container further back can take the later piece. This is current
   behavior, not law, until the split-order task decides it.
 - A deletion Editing records applies in that commit, a pending join beside it
   included.

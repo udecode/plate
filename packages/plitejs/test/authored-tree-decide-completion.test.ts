@@ -246,6 +246,51 @@ const Lifted = define('decide-lifted', {
   root: blocks('paragraph', 'group', 'row'),
 });
 
+const Emptied = define('decide-emptied', {
+  elements: {
+    cell: { content: c.text() },
+    h1: { content: textMin1() },
+    item: { content: textMin1() },
+    list: { content: c.type('item', { min: 1 }) },
+    mix: { content: c.prefix([{ element: 'cell' }], c.text()) },
+    mixes: { content: c.type('mix', { min: 1 }) },
+    nest: {
+      content: c.types(['paragraph', 'quote'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    },
+    note: { content: c.type('paragraph', { min: 1 }) },
+    pair: { content: c.type('paragraph', { min: 2 }) },
+    paragraph: { content: textMin1() },
+    quote: { content: c.type('paragraph', { min: 1 }) },
+    slot: {
+      content: c.prefix([{ element: 'paragraph' }], c.text({ max: 0 })),
+    },
+  },
+  properties: [
+    schema.textProperty('bold', property.boolean()),
+    schema.elementProperty('role', property.string({ default: 'inner' }), {
+      target: target.and(
+        target.type('paragraph'),
+        target.parent(target.type('note'))
+      ),
+    }),
+  ],
+  root: blocks(
+    'paragraph',
+    'h1',
+    'list',
+    'mix',
+    'mixes',
+    'nest',
+    'note',
+    'pair',
+    'quote',
+    'slot'
+  ),
+});
+
 const lead = el('paragraph', t('p'));
 const grid = () => [lead, el('group', el('cell', t('a')), el('cell', t('b')))];
 
@@ -551,6 +596,129 @@ describe('authored review tree decisions that complete', () => {
         plain(decided(Grid, value, ...decisions).children),
         expected
       );
+    }
+  });
+
+  it('keeps a rejected split in place when the first container the decision empties or lifts before it is not one completion rebuilds, outside any prefix slot, as one empty line with exactly the split block’s properties, or when the split block carries a format tag', () => {
+    const split = (node: Node, ...authored: object[]) => ({
+      ...node,
+      authored: [...authored, mark('split', 'b:1')],
+    });
+    const p = (text: string) => el('paragraph', t(text));
+    const accept = { action: 'accept', changes: ['a:1'] } as const;
+    const reject = { action: 'reject', changes: ['a:1'] } as const;
+    const cases = [
+      [
+        [
+          el('quote', whole(p('a'), 'delete', 'a:1')),
+          el('list', whole(el('item', t('c')), 'delete', 'a:1')),
+          split(p('b')),
+        ],
+        [accept],
+        [el('quote', p('')), el('list', el('item', t(''))), p('b')],
+      ],
+      [
+        [
+          el(
+            'pair',
+            whole(p('a'), 'delete', 'a:1'),
+            whole(p('c'), 'delete', 'a:1')
+          ),
+          split(p('b')),
+        ],
+        [accept],
+        [el('pair', p(''), p('')), p('b')],
+      ],
+      [
+        [el('slot', whole(p('a'), 'insert', 'a:1')), split(p('b'))],
+        [reject],
+        [el('slot', p('')), p('b')],
+      ],
+      [
+        [
+          el(
+            'mixes',
+            whole(el('mix', el('cell', t('a')), t('a')), 'delete', 'a:1')
+          ),
+          split(el('mix', el('cell', t('b')), t('b'))),
+        ],
+        [accept],
+        [
+          el('mixes', el('mix', el('cell', t('')), t(''))),
+          el('mix', el('cell', t('b')), t('b')),
+        ],
+      ],
+      [
+        [
+          el('quote', whole(p('a'), 'insert', 'b:1')),
+          split(p('b'), {
+            ...mark('format', 'b:1'),
+            before: 'h1',
+            id: 'b-tag:1',
+            key: 'type',
+            write: { kind: 'set', value: 'paragraph' },
+          }),
+        ],
+        [],
+        [el('quote', p('')), el('h1', t('b'))],
+      ],
+      [
+        [
+          el('note', whole({ ...p('a'), role: 'inner' }, 'delete', 'a:1')),
+          split(p('b')),
+        ],
+        [accept],
+        [el('note', { ...p(''), role: 'inner' }), p('b')],
+      ],
+      [
+        [
+          el('quote', whole(p('x'), 'delete', 'a:1')),
+          el('nest', {
+            ...el('quote', whole(p('a'), 'delete', 'a:1')),
+            authored: [mark('unwrap', 'a:1')],
+          }),
+          split(p('b')),
+        ],
+        [accept],
+        [el('quote', p('')), el('nest', p('')), p('b')],
+      ],
+    ] as const;
+
+    for (const [value, decisions, expected] of cases) {
+      const { children, results } = decided(Emptied, value, [
+        ...decisions,
+        { action: 'reject', changes: ['b:1'] },
+      ]);
+
+      assert.deepEqual(
+        results.map(({ status }) => status),
+        ['applied']
+      );
+      assert.deepEqual(plain(children), expected);
+    }
+  });
+
+  it('rejoins a rejected split past a quote whose unwrap it decides with the deletion of the quote’s paragraph, as deciding the two in turn does', () => {
+    const value = [
+      el('paragraph', t('x')),
+      {
+        ...el('quote', whole(el('paragraph', t('a')), 'delete', 'a:1')),
+        authored: [mark('unwrap', 'a:1')],
+      },
+      whole(el('paragraph', t('z')), 'delete', 'a:1'),
+      { ...el('paragraph', t('b')), authored: [mark('split', 'b:1')] },
+    ];
+    const accept = { action: 'accept', changes: ['a:1'] } as const;
+    const reject = { action: 'reject', changes: ['b:1'] } as const;
+
+    for (const decisions of [[[accept, reject]], [accept, reject]]) {
+      const { children, results } = decided(Emptied, value, ...decisions);
+
+      assert.deepEqual(
+        results.map(({ status }) => status),
+        decisions.map(() => 'applied')
+      );
+      assert.deepEqual(plain(children), [el('paragraph', t('xb'))]);
     }
   });
 

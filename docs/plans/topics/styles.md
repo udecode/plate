@@ -167,4 +167,3 @@ const plugins = [BoldPlugin, FontSizePlugin];
 - On the server, linkedom keeps style text as written. A repeated style property reads its last declaration, so an earlier `!important` weight loses, and the server ignores a weight in a `font` shorthand, under a capitalized property or beside a comment. Other styles keep `!important` in their value. Owner: a suggested task for a server CSS parser that honors priority, case and shorthands. Stop: none.
 - The guide's pre-pass lives in three copies, and nothing checks that they match. Owner: a suggested task for a check script. Stop: none.
 - `t_15c1b9b9` Time bold's pasted-weight decode on a quiet host. Owner: the owner. Stop: that task landing or being dropped.
-- `t_6e758b7d` Make the structural decision law give one document for every decision order. Owner: the owner. Stop: that task landing or being dropped.

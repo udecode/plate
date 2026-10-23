@@ -69,10 +69,5 @@
       "quote{insert s0}(paragraph{insert s0}(\"a\"{insert s0})) paragraph{join s1}(\"b\"): reject s0, accept s1"
     ]
   },
-  "decision-order": {
-    "packages/plitejs/src/authored/tree/resolve.ts": [
-      "quote(paragraph{delete s0}(\"a\"{delete s0})) paragraph{split s1}(\"b\"): accept s0, reject s1",
-      "quote(paragraph{insert s0}(\"a\"{insert s0})) paragraph{split s1}(\"b\"): reject s0, reject s1"
-    ]
-  }
+  "decision-order": {}
 }

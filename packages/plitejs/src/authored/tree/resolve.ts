@@ -140,7 +140,8 @@ export type AuthoredResolution = Readonly<{
    * order they land: each lands as the next sibling of `after`, once the
    * placements before it have landed. A block goes with a join it follows,
    * merges into a block that does, or stands, as a rejected split's piece, in
-   * the place of the piece it rejoins when the decision empties that piece.
+   * the place of the piece it rejoins when the decision empties that piece, or
+   * of a removed block when the decision empties the container that held it.
    * It counts only when a line the decision shows lies between its place and
    * its landing point, or it leaves an element the decision shows.
    */
@@ -1098,6 +1099,76 @@ const resolveIn = (
       ? { merges: true, reads }
       : { merges: false, reads: [...reads, ...subtreeMarks(into)] };
   };
+  const emptyLines = new Map<Node, Node | null>();
+  const emptyLineOf = (host: Node, outer: readonly Node[]) => {
+    let line = emptyLines.get(host);
+
+    if (line === undefined) {
+      const props = decidedPropsOf(host);
+      const hasPrefixSlots = (contentOf(typeOf(props))?.prefix ?? 0) > 0;
+      const refill = hasPrefixSlots
+        ? []
+        : complete(
+            [],
+            [{ ...props, children: [] }, ...outer],
+            host.children ?? [],
+            () => false,
+            undefined
+          ).children;
+
+      line =
+        refill.length === 1 &&
+        (refill[0].children ?? []).every((child) => child.text === '')
+          ? refill[0]
+          : null;
+      emptyLines.set(host, line);
+    }
+
+    return line;
+  };
+  const emptiedDepthOf = (ancestors: readonly Node[]) => {
+    const depth = ancestors.findLastIndex(survives);
+    const host = ancestors[depth];
+
+    return host &&
+      (structureOf(host).unwrap || !(host.children ?? []).some(survives))
+      ? depth
+      : -1;
+  };
+  const emptiedPlaceOf = (
+    { ancestors, node }: TextBlock,
+    depth: number,
+    split: Node
+  ) => {
+    const host = ancestors[depth];
+
+    if (structureOf(host).unwrap) return null;
+
+    const outer = [...ancestors.slice(0, depth).toReversed(), ...site];
+    const line = emptyLineOf(host, outer);
+
+    if (
+      !line ||
+      pending(split).some((mark) => mark.kind === 'format') ||
+      !jsonEqual(valuesOf(propsOf(line)), valuesOf(propsOf(split)))
+    ) {
+      return null;
+    }
+
+    const occupant = ancestors[depth + 1] ?? node;
+    const removal = [
+      ...(occupant.children ?? []).flatMap(contentMarksIn),
+      ...cutsOf(occupant),
+    ];
+    const emptying = pending(host);
+    const refilling = outer.flatMap((item) =>
+      pending(item).filter(
+        (mark) => mark.kind === 'insert' || isStructureChange(mark)
+      )
+    );
+
+    return { occupant, reads: [...removal, ...emptying, ...refilling] };
+  };
   type JoinBlock = Readonly<{ index: number; mark: AuthoredMark; node: Node }>;
   let joinBlocks: Map<string, JoinBlock[]> | undefined;
   const joinBlocksOf = (incarnation: string) => {
@@ -1216,6 +1287,9 @@ const resolveIn = (
       )
     );
 
+    let seeksEmptied = !!cutFrom;
+    let emptied: ReturnType<typeof emptiedPlaceOf> = null;
+
     for (let previous = index - 1; previous >= 0; previous -= 1) {
       const candidate = blocks[previous];
 
@@ -1229,17 +1303,34 @@ const resolveIn = (
         );
         break;
       }
-      if (
-        emptiedTargets.has(candidate.node) ||
-        (!survives(candidate.node) && !rejoins(candidate.node)) ||
-        precedesJoin(candidate, keys)
-      ) {
+      if (emptiedTargets.has(candidate.node)) continue;
+      if (!survives(candidate.node) && !rejoins(candidate.node)) {
+        const depth = seeksEmptied ? emptiedDepthOf(candidate.ancestors) : -1;
+
+        if (depth >= 0) {
+          seeksEmptied = false;
+          emptied = emptiedPlaceOf(candidate, depth, node);
+          if (emptied) break;
+        }
         continue;
       }
+      if (precedesJoin(candidate, keys)) continue;
       target = finalOf(candidate.node);
       break;
     }
 
+    const stand = (into: Node) =>
+      land(() => {
+        emptiedTargets.add(into);
+        standsFor.set(into, node);
+        standsIn.add(node);
+      });
+
+    if (emptied) {
+      waited.push(...emptied.reads);
+      stand(emptied.occupant);
+      return;
+    }
     // With no block to merge into, the join drops and its block stays.
     if (!target) {
       land();
@@ -1260,11 +1351,7 @@ const resolveIn = (
       ...landing.reads
     );
     if (!landing.merges) {
-      land(() => {
-        emptiedTargets.add(into);
-        standsFor.set(into, node);
-        standsIn.add(node);
-      });
+      stand(into);
       return;
     }
     const own = pending(node);
