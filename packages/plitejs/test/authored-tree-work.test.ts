@@ -197,6 +197,24 @@ const Blocks = defineEditorSchema('work-blocks', {
   unknown: 'reject',
   version: 1,
 });
+const NestedQuotes = defineEditorSchema('work-nested-quotes', {
+  elements: {
+    paragraph: { content: schema.content.text() },
+    quote: {
+      content: schema.content.types(['paragraph', 'quote'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    },
+  },
+  id: 'work-nested-quotes',
+  root: schema.content.types(['paragraph', 'quote'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
 
 type Node = Record<string, unknown> & {
   children?: readonly Node[];
@@ -629,6 +647,73 @@ describe('authored review tree work per edit', () => {
       assert.deepEqual(other(large), other(small));
     });
   }
+
+  it('reads as many index tokens for a range deletion inside a long quote, alone or inside another, that another author’s pending unwrap dissolves at 2,000 quoted blocks as at 100, in either intent', () => {
+    const realSlice = DocumentIndex.prototype.slice;
+    let sliced = 0;
+    const unwrapped = (node: Node) => ({
+      ...node,
+      authored: [{ at: 1, author: 'bob', change: 'bob:1', kind: 'unwrap' }],
+    });
+    const shapes = {
+      alone: (size: number) => ({
+        line: [0],
+        value: [unwrapped(quote(size))],
+      }),
+      inside: (size: number) => ({
+        line: [0, 0],
+        value: [unwrapped({ children: [quote(size)], type: 'quote' })],
+      }),
+    };
+
+    DocumentIndex.prototype.slice = function slice(
+      this: DocumentIndex,
+      ...args: Parameters<DocumentIndex['slice']>
+    ) {
+      const prepared = realSlice.apply(this, args);
+
+      sliced += prepared.tokens.length;
+
+      return prepared;
+    };
+    try {
+      for (const [name, shape] of Object.entries(shapes)) {
+        for (const intent of ['edit', 'propose'] as const) {
+          const read = new Map<number, number[]>();
+
+          atBothSizes(
+            (size) =>
+              editorFor(shape(size).value, intent, 'alice', NestedQuotes),
+            (editor, size, run) => {
+              const before = sliced;
+              const { line } = shape(size);
+
+              editor.update((tx) => {
+                tx.selection.set({
+                  anchor: { offset: 3, path: [...line, 50 + run, 0] },
+                  focus: { offset: 3, path: [...line, 51 + run, 0] },
+                });
+                tx.command(editorCommands.deleteFragment, {
+                  direction: 'backward',
+                });
+              });
+              read.set(size, [...(read.get(size) ?? []), sliced - before]);
+            }
+          );
+
+          const label = `${name} in ${intent}`;
+
+          assert.ok(
+            read.get(100)?.every((reads) => reads > 0),
+            label
+          );
+          assert.deepEqual(read.get(2000), read.get(100), label);
+        }
+      }
+    } finally {
+      DocumentIndex.prototype.slice = realSlice;
+    }
+  });
 
   it('does as much work for Suggesting typing at 2,000 blocks as at 100', () => {
     const [small, large] = atBothSizes(

@@ -1606,9 +1606,14 @@ type RecorderOptions = Readonly<{
 
 type StrikeMode = 'delete' | 'move';
 
+type Span = Readonly<{ from: number; to: number }>;
+
 class RootRecorder {
   private readonly ops: Op[] = [];
   private readonly pieces: Piece[] = [];
+  private readonly framedStrikes: Array<
+    Span & Readonly<{ contexts: readonly Context[] }>
+  > = [];
   private readonly index: DocumentIndex;
   private readonly options: RecorderOptions;
 
@@ -1712,6 +1717,7 @@ class RootRecorder {
       }
     }
 
+    this.strikeEmptiedWrappers();
     const recorded = RootChange.create(this.index, this.sections());
 
     return {
@@ -2694,8 +2700,8 @@ class RootRecorder {
       to > line.contentTo ||
       !isTextBlock(this.index.node(line.path)) ||
       !this.hasMarkKind(line.props, 'delete') ||
-      !this.holdsLiveContent(line, from, from) ||
-      this.holdsLiveContent(line, from, to)
+      !this.holdsLiveContent(line, [{ from, to: from }]) ||
+      this.holdsLiveContent(line, [{ from, to }])
     ) {
       return;
     }
@@ -2736,22 +2742,108 @@ class RootRecorder {
   }
 
   /**
-   * Whether `line` keeps content that accepting everything leaves once
-   * `[from, to)` is gone: a letter of a leaf no deletion strikes, or an
-   * element none strikes.
+   * A wrapper a pending unwrap dissolves never stands in the frame. When the
+   * frame's removals take the last of its live content and the step lands no
+   * live node inside it, the frame holds nothing in its place, so the wrapper
+   * takes the writer's strike too and goes once nothing inside it survives.
    */
-  private holdsLiveContent(line: Context, from: number, to: number) {
+  private strikeEmptiedWrappers() {
+    const wrappers = new Map<number, Context>();
+
+    for (const { contexts } of this.framedStrikes) {
+      for (const context of contexts) {
+        // A pending deletion of the wrapper from another change waits on that
+        // change's decision, so it never stands in for the writer's strike.
+        if (
+          context.kind === 'element' &&
+          this.hasMarkKind(context.props, 'unwrap') &&
+          !this.marks(context.props).some(
+            (mark) =>
+              mark.kind === 'delete' && mark.change === this.options.changeId
+          )
+        ) {
+          wrappers.set(context.contentFrom, context);
+        }
+      }
+    }
+    if (wrappers.size === 0) return;
+
+    const removed: Span[] = [...this.framedStrikes];
+    const liveLandings = this.ops.flatMap((op) =>
+      op.kind === 'insert' &&
+      op.tokens.some(
+        (token) =>
+          token.kind === 'open' && !this.hasMarkKind(token.props, 'delete')
+      )
+        ? [op.at]
+        : []
+    );
+
+    for (const wrapper of [...wrappers.values()].sort(
+      (left, right) => right.path.length - left.path.length
+    )) {
+      if (
+        liveLandings.some(
+          (at) => at >= wrapper.contentFrom && at <= wrapper.contentTo
+        ) ||
+        this.holdsLiveContent(wrapper, removed)
+      ) {
+        continue;
+      }
+      this.ops.push({
+        at: wrapper.contentFrom - 1,
+        kind: 'props',
+        props: this.withMarks(wrapper.props, [
+          ...this.marks(wrapper.props),
+          this.options.markOf('delete'),
+        ]),
+      });
+      removed.push({
+        from: wrapper.contentFrom - 1,
+        to: wrapper.contentTo + 1,
+      });
+    }
+  }
+
+  private holdsLiveContent(
+    element: Pick<Context, 'contentFrom' | 'contentTo' | 'path'>,
+    removed: readonly Span[]
+  ): boolean {
+    const gone = (from: number, to: number) =>
+      removed.some((span) => span.from <= from && to <= span.to);
+
+    if (!isTextBlock(this.index.node(element.path))) {
+      for (let from = element.contentFrom; from < element.contentTo;) {
+        const child = getDefined(this.index.nodeStartingAt(from));
+
+        from = child.to;
+        if (gone(child.from, child.to)) continue;
+
+        const live = !this.hasMarkKind(
+          propsOf(this.index.node(child.path)),
+          'delete'
+        );
+        const keepsAnEdge =
+          !gone(child.from, child.from + 1) || !gone(child.to - 1, child.to);
+
+        if (live && keepsAnEdge) return true;
+        if (this.holdsLiveContent(child, removed)) return true;
+      }
+
+      return false;
+    }
+
     const { offsets, tokens } = this.index.slice(
-      line.contentFrom,
-      line.contentTo
+      element.contentFrom,
+      element.contentTo
     );
     let liveLeaf = false;
 
     return tokens.some((token, index) => {
-      const at = line.contentFrom + offsets[index];
+      const at = element.contentFrom + offsets[index];
 
       if (token.kind === 'text') {
-        return liveLeaf && (at < from || at + token.text.length > to);
+        return liveLeaf && !gone(at, at + token.text.length);
       }
       if (token.kind !== 'open') return false;
 
@@ -2762,7 +2854,7 @@ class RootRecorder {
         return false;
       }
 
-      return live && (at < from || at >= to);
+      return live && !gone(at, at + 1);
     });
   }
 
@@ -3176,6 +3268,14 @@ class RootRecorder {
             this.options.dependencies.throughout(child, marks)
           )
         ).slice.tokens,
+      });
+    }
+
+    if (this.options.framed && from < to) {
+      this.framedStrikes.push({
+        contexts: [...startContext, ...stack],
+        from,
+        to,
       });
     }
 

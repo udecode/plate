@@ -646,6 +646,44 @@ describe('authored review tree commands', () => {
     start: [p('ab'), { ...q(p('cd')), authored: [mark('unwrap')] }],
   });
   law({
+    accepted: [p('xab'), p('f')],
+    at: [
+      [[1, 0, 0], 0],
+      [[2, 0], 1],
+    ],
+    name: "U5 deleting a range that empties a quote another author's pending unwrap dissolves",
+    plainAt: [
+      [[1, 0], 0],
+      [[2, 0], 1],
+    ],
+    run: fragment,
+    start: [p('xab'), { ...q(p('cd')), authored: [mark('unwrap')] }, p('ef')],
+  });
+  law({
+    accepted: [p('xab'), p('f')],
+    at: [
+      [[1, 0, 0], 0],
+      [[2, 0], 1],
+    ],
+    name: "U6 deleting a range that empties a quote another author's pending unwrap dissolves and a third author's pending deletion strikes",
+    plainAt: [
+      [[1, 0], 0],
+      [[2, 0], 1],
+    ],
+    run: fragment,
+    start: [
+      p('xab'),
+      {
+        ...q(p('cd')),
+        authored: [
+          mark('unwrap'),
+          { ...mark('delete'), author: 'dana', change: 'dana:1' },
+        ],
+      },
+      p('ef'),
+    ],
+  });
+  law({
     accepted: [p('abd'), p('ef')],
     at: [[0, 0], 2],
     name: 'Delete at a line end joins a line that starts with struck letters, and the caret stays before its live text',

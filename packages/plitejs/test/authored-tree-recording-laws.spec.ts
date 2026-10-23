@@ -552,8 +552,9 @@ const TYPED = 'Z';
 /**
  * A text write run in a plain editor on the document accepting everything
  * gives, when each letter it targets appears once in `before`, unstruck, so
- * the letter names the same position in both documents, and `before` holds no
- * pending join; null otherwise.
+ * the letter names the same position in both documents, `before` holds no
+ * pending join, and the same write on `before` accepts to the same document;
+ * null otherwise.
  */
 const onProposed = (before: readonly Node[], command: Command) => {
   if (
@@ -610,15 +611,21 @@ const onProposed = (before: readonly Node[], command: Command) => {
     'plain',
     'bob:plain'
   );
+  const stored = editorFor(before, 'bob', 'plain', 'bob:plain');
 
   try {
-    if (!run(editor, command, TYPED)) return null;
+    if (!(run(editor, command, TYPED) && run(stored, command, TYPED))) {
+      return null;
+    }
   } catch (error) {
     if (isRefusal(error)) return null;
     throw error;
   }
 
-  return expandedChildren(editor) as readonly Node[];
+  const plain = expandedChildren(editor) as readonly Node[];
+  const storedAccepted = projection(expandedChildren(stored), 'proposed');
+
+  return isDeepStrictEqual(storedAccepted, plain) ? plain : null;
 };
 
 const deleteAcrossOwnPasteBetweenQuotes = [
@@ -2272,6 +2279,52 @@ const MAIN_ROOT: LedgerRoot = {
               unit: 'character',
             },
           },
+        ],
+      ],
+    'an Editing deletion that moves the only line out of a quote a pending unwrap dissolves':
+      [
+        [
+          {
+            children: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+            type: 'quote',
+          },
+          { children: [{ text: 'cd' }], type: 'paragraph' },
+          {
+            children: [{ children: [{ text: 'ef' }], type: 'paragraph' }],
+            type: 'quote',
+          },
+          { children: [{ text: 'gh' }], type: 'paragraph' },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { at: 'a', kind: 'nest', side: 0 },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { at: 'a', kind: 'nest', side: 0 },
+            intent: 'propose',
+          },
+          {
+            author: 'alice',
+            command: { at: 'e', kind: 'unwrap' },
+            intent: 'propose',
+          },
+        ],
+        0,
+        [
+          {
+            intent: 'edit',
+            kind: 'framed',
+            step: {
+              direction: 'backward',
+              from: { letter: 'e', side: 0 },
+              kind: 'fragment',
+              to: { letter: 'a', side: 0 },
+            },
+          },
+          { kind: 'redo' },
         ],
       ],
   },

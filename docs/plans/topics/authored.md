@@ -415,6 +415,22 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   behavior, not law, until the split-order task decides it.
 - A deletion Editing records applies in that commit, a pending join beside it
   included.
+- A framed step whose removals take the last live content out of a wrapper
+  a pending unwrap dissolves, and land no live node inside it, marks that
+  wrapper deleted under the writer's change, so it goes once nothing inside
+  it survives, whichever way the unwrap is decided. A block with no pending
+  deletion that keeps its opening or its end is live content at any depth,
+  so a line that joins out of a nested wrapper keeps it until the join
+  lands, and another author's pending deletion of the wrapper never stands
+  in for the writer's. Deciding the unwrap then waits on that deletion, as
+  it does on any pending deletion of the wrapper.
+  Once the unwrap is rejected, decisions follow the recorded edit, not a
+  replay of the command, so a framed removal of the last line as a node,
+  with no merge, loses the wrapper there. A raw write inside `update` acts
+  on stored positions, so where its stored result, once accepted, differs
+  from its result on the accepted document, such as a range that struck
+  text keeps off a block's edge, a plain editor on the accepted document
+  cannot stand in for it.
 - A pending join can show a block away from where it is stored. The proposed
   preview shows a block split off the joined line, or inserted between the
   join's halves, after the joined line. Both intents record Backspace or
@@ -570,7 +586,9 @@ For review reads on a preview, [One map of a preview's places](../2026-10-19-pre
 - A container the parent groups with a sibling resolves whole on each key while the link stands. A framed step of the ledger laws resolves or adopts one whole on 22 of 168 framed steps. Cutting it at its edge belongs with the edits beside a container and the claim keys a key inside a container copies (rows 158 and 159 of `docs/plans/2026-10-17-preview-review-origins.decisions.tsv`). owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
 - `ledger.carry` advances every preview mode a reader ever indexed on each owner commit, even with no view showing it (`packages/plitejs/src/authored/ledger/ledger.ts`). It limits the line "A preview mode costs nothing per commit while no view shows it" in `docs/plans/2026-10-13-review-tree-pivot.md`. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
 - A later key on a loaded document reads the whole root through the caret read and, in Editing, the saved baseline (row 190 of `docs/plans/2026-10-17-preview-review-origins.decisions.tsv`). owner: zbeyens; stop: t_1a6aacfb lands or is dropped; tracked: the suggested-task ledger.
-- The recording laws leave out three documents that the recorder cannot record. These are the identity law's two Editing-join documents, with `REORDERED`'s proposed floor at 41 instead of 44, and the ledger-law example of an Editing deletion that moves the only line out of a quote a pending unwrap dissolves. owner: zbeyens; stop: t_084ac465 and t_de241d0c each land or are dropped; tracked: the suggested-task ledger.
+- The recording laws leave out two documents that the recorder cannot record, the identity law's two Editing-join documents, with `REORDERED`'s proposed floor at 41 instead of 44. owner: zbeyens; stop: t_084ac465 lands or is dropped; tracked: the suggested-task ledger.
+- The emptied-wrapper check visits each of the wrapper's children to tell blocks from text and reads each block before the first live one, the writer's own pending deletions included, so deleting a long quote's lines one at a time from the top costs more with each line. owner: zbeyens; stop: t_c2ca1bf8 lands or is dropped; tracked: the suggested-task ledger.
+- The plain-editor command law skips a raw write whose stored result, once accepted, differs from the plain editor's, instead of asserting that stored result. owner: zbeyens; stop: t_6100e44c lands or is dropped; tracked: the suggested-task ledger.
 - A split or join card's revision does not cover the block a decision merges it into (rows 191 and 206 of `docs/plans/2026-10-17-preview-review-origins.decisions.tsv`). It limits this subject's revision rule and the revision paragraphs of `content/docs/(guides)/authored-changes.mdx` and `content/docs/plite/libraries/plite-authored.mdx` with their Chinese twins. Covering the keys of the blocks before it costs work that grows with them on each key, so it needs a design of its own. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
 - A hand-written document with two followers of one join, one of them a join target with its own follower, shows only its first paragraph under Proposed. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
 - The ledger laws fail on 30 of 72 hunt seeds for reasons older than the preview map, and a nested root in the second ledger law fails six seeds the same way without it. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.

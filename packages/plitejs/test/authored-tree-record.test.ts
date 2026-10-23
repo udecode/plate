@@ -64,6 +64,24 @@ const Quotes = defineEditorSchema('record-quotes', {
   unknown: 'reject',
   version: 1,
 });
+const NestedQuotes = defineEditorSchema('record-nested-quotes', {
+  elements: {
+    paragraph: { content: schema.content.text() },
+    quote: {
+      content: schema.content.types(['paragraph', 'quote'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    },
+  },
+  id: 'record-nested-quotes',
+  root: schema.content.types(['paragraph', 'quote'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+  version: 1,
+});
 const Links = defineEditorSchema('record-links', {
   elements: {
     link: { content: schema.content.text(), inline: true },
@@ -2097,6 +2115,236 @@ describe('authored review tree recording', () => {
     authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] });
 
     assert.deepEqual(editor.read.children(), [paragraph({ text: 'af' })]);
+  });
+
+  it('keeps an Editing join out of a quote nested in another until both pending unwraps that dissolve them are decided', () => {
+    const editor = editorFor(
+      [
+        paragraph({ text: 'a' }),
+        {
+          type: 'quote',
+          authored: [mark('unwrap', 'alice')],
+          children: [
+            {
+              type: 'quote',
+              authored: [mark('unwrap', 'carol')],
+              children: [paragraph({ text: 'b' })],
+            },
+            paragraph({ text: 'c' }),
+          ],
+        },
+      ],
+      'edit',
+      'bob',
+      [NestedQuotes]
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({ anchor: point(1), focus: point(1, [1, 0, 0, 0]) });
+      tx.command(editorCommands.deleteFragment, { direction: 'forward' });
+    });
+    authoredTestApi(editor).decide({
+      action: 'accept',
+      changes: ['alice:1', 'carol:1'],
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'a' }),
+      paragraph({ text: 'c' }),
+    ]);
+  });
+
+  it('keeps an Editing join out of a quote another author’s pending deletion strikes, nested in quotes pending unwraps dissolve', () => {
+    const editor = editorFor(
+      [
+        paragraph({ text: 'a' }),
+        {
+          type: 'quote',
+          authored: [mark('unwrap', 'alice')],
+          children: [
+            {
+              type: 'quote',
+              authored: [mark('unwrap', 'carol')],
+              children: [
+                {
+                  type: 'quote',
+                  authored: [mark('unwrap', 'eve'), mark('delete', 'dana')],
+                  children: [paragraph({ text: 'b' })],
+                },
+              ],
+            },
+            paragraph({ text: 'c' }),
+          ],
+        },
+      ],
+      'edit',
+      'bob',
+      [NestedQuotes]
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: point(1),
+        focus: point(1, [1, 0, 0, 0, 0]),
+      });
+      tx.command(editorCommands.deleteFragment, { direction: 'forward' });
+    });
+    authoredTestApi(editor).decide({
+      action: 'accept',
+      changes: ['alice:1', 'carol:1', 'dana:1', 'eve:1'],
+    });
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph({ text: 'a' }),
+      paragraph({ text: 'c' }),
+    ]);
+  });
+
+  it('removes the quote a Suggesting deletion empties even when the pending unwrap of that quote is rejected', () => {
+    const editor = editorFor(
+      [
+        { type: 'quote', children: [paragraph({ text: 'xab' })] },
+        paragraph({ text: 'cd' }),
+        {
+          type: 'quote',
+          authored: [mark('unwrap', 'alice')],
+          children: [paragraph({ text: 'ef' })],
+        },
+        paragraph({ text: 'gh' }),
+      ],
+      'propose',
+      'bob',
+      [Quotes]
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: point(0, [2, 0, 0]),
+        focus: point(1, [0, 0, 0]),
+      });
+      tx.command(editorCommands.deleteFragment, { direction: 'backward' });
+    });
+    authoredTestApi(editor).decide([
+      { action: 'reject', changes: ['alice:1'] },
+      { action: 'accept', changes: ['bob:1'] },
+    ]);
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'quote', children: [paragraph({ text: 'xef' })] },
+      paragraph({ text: 'gh' }),
+    ]);
+  });
+
+  it('removes both nested quotes a Suggesting deletion moves the only line out of even when the pending unwraps of both are rejected', () => {
+    const editor = editorFor(
+      [
+        { type: 'quote', children: [paragraph({ text: 'xab' })] },
+        paragraph({ text: 'cd' }),
+        {
+          type: 'quote',
+          authored: [mark('unwrap', 'alice')],
+          children: [
+            {
+              type: 'quote',
+              authored: [mark('unwrap', 'carol')],
+              children: [paragraph({ text: 'ef' })],
+            },
+          ],
+        },
+        paragraph({ text: 'gh' }),
+      ],
+      'propose',
+      'bob',
+      [NestedQuotes]
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: point(0, [2, 0, 0, 0]),
+        focus: point(1, [0, 0, 0]),
+      });
+      tx.command(editorCommands.deleteFragment, { direction: 'backward' });
+    });
+    authoredTestApi(editor).decide([
+      { action: 'reject', changes: ['alice:1', 'carol:1'] },
+      { action: 'accept', changes: ['bob:1'] },
+    ]);
+
+    assert.deepEqual(editor.read.children(), [
+      { type: 'quote', children: [paragraph({ text: 'xef' })] },
+      paragraph({ text: 'gh' }),
+    ]);
+  });
+
+  it('decides the pending unwrap of a quote alone after a Suggesting deletion that keeps a line of it', () => {
+    const editor = editorFor(
+      [
+        paragraph({ text: 'ab' }),
+        {
+          type: 'quote',
+          authored: [mark('unwrap', 'alice')],
+          children: [paragraph({ text: 'cd' }), paragraph({ text: 'kl' })],
+        },
+      ],
+      'propose',
+      'bob',
+      [Quotes]
+    );
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: point(1, [1, 1, 0]),
+        focus: point(1, [1, 0, 0]),
+      });
+      tx.command(editorCommands.deleteFragment, { direction: 'backward' });
+    });
+
+    assert.equal(
+      authoredTestApi(editor).decide({ action: 'accept', changes: ['alice:1'] })
+        .status,
+      'applied'
+    );
+  });
+
+  it('decides the pending unwrap of a quote alone after a deletion takes the last live letter of a line another author’s pending deletion strikes in it, in either intent', () => {
+    const decided = (['edit', 'propose'] as const).map((intent) => {
+      const editor = editorFor(
+        [
+          paragraph({ text: 'xy' }),
+          {
+            type: 'quote',
+            authored: [mark('unwrap', 'alice')],
+            children: [
+              {
+                ...paragraph(
+                  { text: 'ab', authored: [mark('delete', 'dana')] },
+                  { text: 'N' }
+                ),
+                authored: [mark('delete', 'dana')],
+              },
+            ],
+          },
+        ],
+        intent,
+        'bob',
+        [Quotes]
+      );
+
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: point(1, [1, 0, 1]),
+          focus: point(0, [1, 0, 1]),
+        });
+        tx.command(editorCommands.deleteFragment, { direction: 'backward' });
+      });
+
+      return authoredTestApi(editor).decide({
+        action: 'accept',
+        changes: ['alice:1'],
+      }).status;
+    });
+
+    assert.deepEqual(decided, ['applied', 'applied']);
   });
 
   it('joins a line holding another author’s pending insertion at once on an Editing Backspace', () => {
