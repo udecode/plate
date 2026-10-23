@@ -425,7 +425,11 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   Deciding the removal first gives the same result, because the split then
   rejoins the empty line that completion builds there. Otherwise no
   container further back can take the later piece. This is current
-  behavior, not law, until the split-order task decides it.
+  behavior, not law, until the split-order task decides it. When the piece
+  before it keeps no content, the piece after it stands in the emptied
+  piece's place with its own values, so rejecting an Enter at a line's start
+  loses every value the split dropped, the line's block id among them. The
+  Construction values plan owns the fix.
 - A deletion Editing records applies in that commit, a pending join beside it
   included.
 - A framed step whose removals take the last live content out of a wrapper
