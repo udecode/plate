@@ -114,7 +114,7 @@ Two or more kinds with one owner start a redesign run, as the Bug fix playbook's
 
 | Run | Kinds | Owner | Why one run |
 | --- | --- | --- | --- |
-| Composition and typing marks | K1 to K4 and four single composition finds | `packages/plitejs/src/react/editable/composition-state.ts`, `android-composition.ts`, `native-input-strategy.ts` (inferred) | Every kind loses where composed or typed text lands or which marks it takes; the native scope's last verdict was Stop, so the failed-fix review runs `verdict` on it first |
+| Composition and typing marks | K1 to K4, K50 to K52 | `packages/plitejs/src/react/editable/composition-state.ts`, `android-composition.ts`, `native-input-strategy.ts` (inferred) | Every kind loses where composed or typed text lands or which marks it takes; the native scope's last verdict was Stop, so the failed-fix review runs `verdict` on it first |
 | Autoformat input rules | K7 and K9, and K8 once its fix run traces it to `createInputRules.ts` instead of `BaseMarkPlugins.ts` | `packages/platejs/src/lib/plugins/input-rules/createInputRules.ts` in plate-api, and the kit's rule table in `apps/www/src/registry/components/editor/autoformat.tsx` in editing (read, strong) | Rules match one at a time over a sequence another rule already consumed; the intake's autoformat check, t_30422a81, types every short sequence through the whole kit |
 | Yjs bridge | K34's three kinds | `packages/plitejs/src/yjs/core/selection.ts:13`, `controller.ts:1810`, `text-runs.ts:822` (read) | Peers diverge, remote edits leave the caret behind, concurrent replacement loses letters |
 | Page geometry | K36's kinds | `packages/plitejs/src/pagination/react.tsx:573`, `page-geometry.internal.ts:27` (read) | Block boxes merge fragments across pages, so hit testing, selection paint and reflow disagree |
@@ -127,11 +127,11 @@ Members name the page route and the browser the find came from. A kind with "unf
 
 | Kind | Domain | What breaks | Members | Issue | Owner | Miss |
 | --- | --- | --- | --- | --- | --- | --- |
-| K1 | native | Composition over a selection does not replace it in place | `/docs/block-menu`, `/docs/examples/huge-document`, `/examples/plite/huge-document`, `/examples/plite/plaintext` (Android); `/examples/plite/mentions` (Chrome) | unfiled | `composition-state.ts:1086`, `android-composition.ts:467` (inferred) | M4, M6 |
-| K2 | native | A mark turned on is lost on composed text | `/docs/subscript`, `/docs/underline` (Android); `/docs/subscript` (desktop; browser and input method not recorded) | unfiled | `composition-state.ts:1072` (inferred) | M4, M6 |
-| K3 | native | Composing in a new empty paragraph lands in the block above, or crashes on Return or undo | `/docs/indent` ×2, `/docs/list` ×2 (Safari) | unfiled | composition state, no stack captured (inferred) | M4, M6 |
+| K1 | native | Composition over a selection does not replace it in place | `/docs/block-menu`, `/docs/examples/huge-document`, `/examples/plite/huge-document`, `/examples/plite/plaintext` (Android); `/examples/plite/mentions` (Chrome) | #5244 | `composition-state.ts:1086` on desktop, `android-composition.ts:894` on Android (inferred) | M4, M6 |
+| K2 | native | A mark turned on is lost on composed text | `/docs/subscript`, `/docs/underline` (Android); `/docs/subscript` (desktop; browser and input method not recorded) | #5245 | `composition-state.ts:1072` on desktop; the Android path returns at `:1065` before it, and its owner is not traced (read) | M4, M6 |
+| K3 | native | Composing in a new empty paragraph lands in the block above, or crashes on Return or undo | `/docs/indent` ×2, `/docs/list` ×2 (Safari); agent runs on `/examples/plite/forced-layout` and `/examples/plite/richtext` (Safari) that natamox's manual retests did not reproduce | #5242, whose Repro 3 and 4 are the two agent runs | composition state, no stack captured (inferred) | M4, M6 |
 | K4 | native | A mark turned off by its shortcut still formats the next text | `/docs/basic-marks` ×2, `/docs/bold`, `/docs/installation/react`, `/docs/italic`, `/docs/strikethrough` | #5224, whose Repro 2 to 4 are `/docs/installation/react`, `/docs/italic` and `/docs/strikethrough` | `native-input-strategy.ts:56` (inferred) | M2, M5 |
-| K5 | native | Undo inside an input in a void runs the editor's undo | `/examples/plite/editable-voids`, `/examples/plite/embeds` | unfiled | `keyboard-input-strategy.ts:492` (read) | M1, M6 |
+| K5 | native | Undo inside an input in a void runs the editor's undo | `/examples/plite/editable-voids`, `/examples/plite/embeds` | #5246 | `keyboard-input-strategy.ts:492` (read) | M1, M6 |
 | K6 | native | Option with a digit fires no heading shortcut in Safari | `/docs/basic-blocks` | #5225 | `packages/plitejs/src/dom/utils/hotkey-match.ts:182` (inferred) | M2, M4 |
 | K7 | plate-api | An early substitution eats a longer syntax's delimiters | `==` highlight, `!>=`, `!<=`, `!~=`, `H~2~O`, `X^2^` on `/docs/autoformat` | #5201, which took in #5202 and #5204 as Repro 2 and 3 | `autoformat.tsx:16` to `:123`, `createInputRules.ts:479` (inferred, strong) | M3, M5, M6 |
 | K8 | basic | Triple asterisks stay literal | `/docs/autoformat` | #5203 | `BaseMarkPlugins.ts:198` (inferred, strong) | M3, M6 |
@@ -154,7 +154,7 @@ Members name the page route and the browser the find came from. A kind with "unf
 | K25 | history | Plite examples install no history, so undo does nothing | 16 example pages | unfiled; recheck 24 | the 16 example files (read) | M5 |
 | K26 | history | Content completion splits undo and adds empty steps | `/examples/plite/content-completion` ×2 | unfiled | `history-merge-policy.ts:267` (read) | M1 |
 | K27 | commands | Selection in a projected root acts on the wrong root | `/examples/plite/schema-reconfiguration`, `/examples/plite/synced-blocks` ×2 | unfiled | `editor-commands.ts:620` (inferred) | M6 |
-| K28 | editing | Enter and paste split a read-only guard, and blocked typing moves the caret | `/examples/plite/schema-reconfiguration` ×2, and Enter on Android | unfiled | `insert-text.ts:45` against `insert-break.ts:75` (read) | M6 |
+| K28 | editing | Enter and paste split a read-only guard, and blocked typing moves the caret | `/examples/plite/schema-reconfiguration` ×2, and Enter on Android | #5250 | `insert-text.ts:45` against `insert-break.ts:75` (read) | M6 |
 | K29 | commands | Undoing Unsync loses the caret; a cross-root drag throws | `/examples/plite/synced-blocks`, `/examples/plite/multi-root-document` | unfiled | not traced | M1 |
 | K30 | commands | Backspace over all of a heading's text deletes the heading | `/docs/heading` (Firefox) | unfiled | `editor-commands.ts:620` (read) | M7 |
 | K31 | authored | Editing across a pending join leaves the paragraphs split | `/docs/suggestion` | #5194 | `ledger.ts:1254`, `record.ts:3362` (inferred) | M3, M6 |
@@ -168,16 +168,19 @@ Members name the page route and the browser the find came from. A kind with "unf
 | K39 | documents | An exported Word file names html-to-docx as its author | `/docs/examples/export` | unfiled | not traced | M1 |
 | K40 | docs | Chinese pages show English content | `/cn/docs/footnote`, `/cn/docs/pagination`, `/cn/docs/underline` | unfiled | `doc-page.tsx:76` falls back to English; `underline.cn.mdx` holds English (read) | M1 |
 | K41 | clipboard | Paste on Android inserts the text twice | `/examples/plite/editable-voids`, `huge-document`, `markdown-preview`, `plaintext`, `shadow-dom`, `comment-mode`, `document-state`, `inline-void-drag`, `schema-reconfiguration` (Android) | unfiled | not traced; the `paste` event and `insertFromPaste` may each insert once (inferred) | M4 |
-| K42 | editing | Paste over a tapped guard crashes the page | `/examples/plite/schema-reconfiguration` (Android) | unfiled | not traced; it may share K28's guard handling (inferred) | M4 |
+| K42 | editing | Paste over a tapped guard crashes the page | `/examples/plite/schema-reconfiguration` (Android) | #5243 | not traced; it may share K28's guard handling (inferred) | M4 |
 | K43 | ui | A long press turns the paragraph into a block selection with no Copy | `/docs/docx`, `/docs/examples/export` (Android) | unfiled | `block-menu.tsx:158` disables the context menu on touch, but its `onContextMenu` handler still runs and `:192` replaces the word selection (read) | M4, M7 |
 | K44 | clipboard | Copy after typing writes nothing to the clipboard | `/examples/plite/huge-document` (Android) | unfiled | `clipboard-input-strategy.ts:330`, `dom-clipboard-runtime.ts:513` (inferred) | M4 |
 | K45 | selection | After a blur, the first long press selects no word | `/examples/plite/huge-document`, `/examples/plite/comment-mode` (Android) | unfiled | `selection-reconciler.ts:1432` writes the stale caret back on focusin (inferred) | M4 |
-| K46 | native | No caret handle after a tap | `/examples/plite/markdown-preview`, `plaintext`, `shadow-dom` (Android) | unfiled | not traced | M4 |
+| K46 | native | No caret handle after a tap | `/examples/plite/markdown-preview`, `plaintext`, `shadow-dom` (Android) | #5247 | not traced | M4 |
 | K47 | react | A long press in a nested editor drags the whole card and loses the next keystroke | `/examples/plite/editable-voids` (Android) | unfiled | `plite-void-shell.tsx:21` renders the card draggable; the error comes from `selection-protocol.ts:780` (read) | M4 |
 | K48 | media | Insert via URL throws and inserts no image | `/docs/docx`, `/docs/media` (Chromium) | unfiled | `media-toolbar-button.tsx:200` passes `name: undefined`, which `update.insert` at `:204` refuses (read) | M1 |
 | K49 | dnd | The column handle cannot move a column to the right of its neighbor | `/docs/column` (Firefox) | unfiled; #5001, closed, tracks the stable site's fix and stays closed | `column.tsx:119` calls `startBlockDrag`, the block handle's entry at `dnd.tsx:305` (read); it may share K18's cause (inferred) | M1 |
+| K50 | native | The placeholder stays visible over a composition | `/examples/plite/custom-placeholder` (Firefox) | #5248 | `hidePlaceholder` at `android-composition.ts:469` hides it, and only the Android path calls it (read) | M4 |
+| K51 | native | Backspace in a composition inside `[]` deletes the left bracket | `/docs/footnote` (Safari) | #5249 | not traced | M4 |
+| K52 | native | iPhone pinyin in an editable-void child root leaves raw letters, and Backspace deletes the void | `/examples/plite/editable-voids` (iPhone) | #5240, filed by felixfeng33 | not traced | M4 |
 
-K41 to K49 come from finds recorded after this triage, mostly natamox's Android retest; K48 and K49 are earlier finds the triage missed.
+K41 to K49 come from finds recorded after this triage, mostly natamox's Android retest; K48 and K49 are earlier finds the triage missed. K50 and K51 are single composition finds filed in batch 1, and K52 is #5240, an open issue that matches the editable-voids find on iPhone.
 
 Thirteen more single finds are unfiled kinds of their own, each M1 until its fix run says otherwise: multiline paste splits a JSX code block, forced-layout split and merge leave an empty paragraph, its placeholder never shows, cross-cell delete breaks a table, `@r` shows no mention at the document end, Excalidraw focus jumps to the outer editor, footnotes show doubled numbers, the DOM-coverage copy payload leaks labels and attributes, hidden-content blocks redraw stale text, an `inclusive: false` mark extends on typing, an unregistered inline link renders as a block, Keep selection visible clips its preview, and the docs Demo example starts empty. Two layout finds on Android, the editable-voids card and huge-document's sideways scroll, join K37's layout work.
 
@@ -194,12 +197,16 @@ Thirteen more single finds are unfiled kinds of their own, each M1 until its fix
 
 natamox published the K7, K10, K4, K18 and K14 rows on 2026-10-24 (UTC); the K14 issue is #5241. K17 still waits for its fix run.
 
+natamox published batch 1 the same day: nine new issues, #5242 to #5250, for K1 to K3, K5, K28, K42, K46, K50 and K51. Every native and editing kind now has an issue. #5242's Repro 3 and 4 are agent runs that natamox's manual retests did not reproduce, and the issue does not say so yet.
+
 ### Not bugs yet
 
 - #5197 and #5198 propose new suggestion policies and capabilities, and the tests pin today's behavior on purpose. Scenario S14 in `docs/editor-behavior/scenarios/suggestions.md` promises list continuation that the tests refuse, so the catalog and the tests disagree. Both go to `verdict`.
 - #5205, outdent before Backspace joins, and #5211, Callout in the Insert menu, are proposals for `verdict`.
 - K30's heading case conflicts with whole-block deletion the testers accepted on lists and checklists; it needs a spec row before a test.
 - #5196's ghost text is fixed on `next` by f3202e1c61 and did not reproduce in four engines later in the round; natamox closed it on 2026-10-24 (UTC), with iPhone unchecked, and closed #5125, fixed by 58a6755ece, the same day. #5149 is a report against the stable packages, so the Beta rechecks leave it open.
+- #22's table pinyin and #37's Escape in a comment draft did not reproduce when natamox retested them on 2026-10-23 (PT), so neither is filed.
+- On `/examples/plite/schema-reconfiguration`, a click still puts the caret in the guard and edits its text after the switch to a non-selectable schema, on desktop and Android. No kind holds it, and natamox marked it pending on 2026-10-24 (UTC).
 - #5195, #5209, #5210, #5212 and #5213 are closed. #5210 and #5213 gained tests with their fixes, and #5212's fix added none.
 
 ### Why tests missed them
@@ -207,7 +214,7 @@ natamox published the K7, K10, K4, K18 and K14 rows on 2026-10-24 (UTC); the K14
 | Class | Kinds | What closes it this time |
 | --- | --- | --- |
 | M6 composition gap | 15: K1 to K3, K5, K7 to K10, K14, K24, K27, K28, K31, K32, K34 | The intake's formal checks: autoformat for K7 to K9 (t_30422a81), suggestion recording for K31 (t_a998edbb) and Yjs peers for K34 (t_dd929413); a generated browser matrix of composition, selection and block for the composition redesign; `authored-decision-order`'s skill when K31's fix touches its coverage |
-| M4 engine gap | 17: K1 to K3, K6, K14 to K16, K18, K21, K36, K41 to K47 | Gate `apps/www/tests/browser/regressions/` in CI, whose trigger in the sweep plan's step 2.1 has fired; `/pstack:maintain-verification-skill` on what agents could not drive: iPhone, OS input methods and the Hocuspocus server |
+| M4 engine gap | 20: K1 to K3, K6, K14 to K16, K18, K21, K36, K41 to K47, K50 to K52 | Gate `apps/www/tests/browser/regressions/` in CI, whose trigger in the sweep plan's step 2.1 has fired; `/pstack:maintain-verification-skill` on what agents could not drive: iPhone, OS input methods and the Hocuspocus server |
 | M3 wrong assertion | 7: K7 to K9, K17, K20, K21, K31 | `/pstack:correct` on expected-failure tests, because K7's full-kit test, `apps/www/src/__tests__/package-integration/autoformat/current-kit.spec.tsx:31`, catches the bug and is marked `it.failing`, so it gates nothing; `test-audit` on the input-rule and link tests |
 | M2 wrong layer | 7: K4, K6, K10, K14, K17, K21, K32 | Tests at the shortcut, click or render the user takes, not the command beneath it; `/pstack:correct` when the next round repeats it |
 | M5 wiring gap | 3: K4, K7, K25, plus #5212 and #5198 | `/pstack:correct` on a check over the shipped examples and kits: every Plite example installs history unless it says why, toolbar hints come from the kit's binding, and authored fixtures keep production vetoes |
@@ -242,7 +249,8 @@ Each step names its proof, and the decision log cites each log by path.
 ## Open work
 
 - natamox files each domain from the triage: new issues per unfiled kind, the merges in the table and the member comments. owner: natamox. stop: every round 1 domain filed.
-- The redesign tasks t_1d843b2a, t_c4407e94 and t_8276a635 start once natamox files their domain. t_1d843b2a took in t_94ffdd65. owner: zbeyens. stop: each lands or is dropped.
+- natamox filed the native domain on 2026-10-24 (UTC), so t_1d843b2a can start; it took in t_94ffdd65. t_c4407e94 and t_8276a635 start once natamox files their domain. owner: zbeyens. stop: each lands or is dropped.
+- A drafted comment for #5242 says that natamox's manual retests did not reproduce its Repro 3 and 4. owner: natamox. stop: posted or dropped.
 - The four hardening items have no chips, because a run offers chips only for new P0 and P1 finds (owner's word, 2026-10-23). Each belongs to the loop step that names it. Gating `apps/www/tests/browser/regressions/` in CI is the regression sweep's step 2.1. The expected-failure tests and the shipped-wiring check go to `/pstack:correct` from the first domain fix run that hits them. `/pstack:maintain-verification-skill` runs in After a round. owner: zbeyens. stop: round 2 starts.
 - The intake's first formal check, t_30422a81, landed. The other four run in its order: t_a998edbb, t_dd929413, t_df2f315f, then t_589db800 once two checks exist. owner: zbeyens. stop: each lands or is dropped.
 - The six moves still have no trial. owner: zbeyens. stop: round 2's tally, or 2027-01-15.
