@@ -47,6 +47,7 @@ import {
   registerEditorHistoryRuntime,
   registerEditorTransactionGuard,
 } from '../core/public-state';
+import { EditorNoncanonicalChangeError } from '../core/schema-validation';
 import { createEditorEffect } from '../core/transaction-values';
 import { consumeCommitCarets, restoreHistoryCarets } from '../core/view-carets';
 import { type Batch, History, type HistoryJSON } from './history';
@@ -78,11 +79,14 @@ import {
   clearHistoryState,
   completeHistoryAction,
   configureHistoryState,
+  dropHistoryHead,
   dropPendingHistoryReplayEntry,
   getHistory,
   getWorkingHistory,
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
+  peekHistoryReplayEntry,
+  takeDroppedHistoryCauses,
   queuePendingHistoryReplayMapping,
   queueHistoryMapping,
   readPendingHistoryReplay,
@@ -201,6 +205,40 @@ const historyAction = defineUpdateAnnotation<HistoryAction>({
   combine: (_previous, next) => next,
   key: 'history.action',
 });
+
+const historyReplayDrop = defineUpdateAnnotation<HistoryAction>({
+  combine: (_previous, next) => next,
+  key: 'history.replay-drop',
+});
+
+const reportFailedHistoryReplay = <V extends Value>(
+  editor: Editor<V>,
+  direction: HistoryAction,
+  cause: unknown
+) => {
+  reportEditorLifecycleError({
+    cause,
+    direction,
+    editor,
+    phase: 'replay',
+    source: 'history',
+  });
+};
+
+const dropFailedHistoryHead = <V extends Value>(
+  editor: Editor<V>,
+  direction: HistoryAction,
+  cause: unknown
+) => {
+  try {
+    editor.update((tx) => {
+      tx.tags.add('history-skip');
+      tx.annotations.set(historyReplayDrop, direction);
+    });
+  } finally {
+    reportFailedHistoryReplay(editor, direction, cause);
+  }
+};
 
 const historyReplayRequest = defineUpdateAnnotation<number>({
   combine: (_previous, next) => next,
@@ -335,9 +373,10 @@ const applyHistoryAction = <V extends Value>(
   tx: HistoryTransaction<V>,
   direction: HistoryAction,
   root: string,
-  request: number
+  request: number,
+  canonical: boolean
 ) => {
-  const entry = peekHistoryEntry(
+  const entry = (canonical ? peekHistoryReplayEntry : peekHistoryEntry)(
     editor,
     direction === 'undo' ? 'undos' : 'redos'
   );
@@ -597,6 +636,9 @@ const createHistoryPlugin = <
     const action = commit.annotations[historyAction.key] as
       | HistoryAction
       | undefined;
+    const dropped = commit.annotations[historyReplayDrop.key] as
+      | HistoryAction
+      | undefined;
     const replayRequest = commit.annotations[historyReplayRequest.key] as
       | number
       | undefined;
@@ -672,6 +714,12 @@ const createHistoryPlugin = <
         );
       }
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      return undefined;
+    }
+
+    if (dropped) {
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      dropHistoryHead(editor, dropped === 'undo' ? 'undos' : 'redos', after);
       return undefined;
     }
 
@@ -890,20 +938,49 @@ const createHistoryPlugin = <
         const request = nextHistoryReplayRequest;
         nextHistoryReplayRequest += 1;
         let hasEntry = false;
+        let failedAt: 'commit' | 'replay' | null = null;
+        const attempt = (canonical: boolean) => {
+          failedAt = null;
+          editor.update((tx) => {
+            try {
+              hasEntry = applyHistoryAction(
+                editor,
+                tx,
+                direction,
+                getEditorUpdateRoot(editor),
+                request,
+                canonical
+              );
+            } catch (error) {
+              failedAt = 'replay';
+              throw error;
+            }
+            failedAt = 'commit';
+          });
+        };
 
         try {
-          editor.update((tx) => {
-            hasEntry = applyHistoryAction(
-              editor,
-              tx,
-              direction,
-              getEditorUpdateRoot(editor),
-              request
-            );
-          });
+          try {
+            attempt(false);
+          } catch (error) {
+            if (
+              !failedAt ||
+              !(error instanceof EditorNoncanonicalChangeError)
+            ) {
+              throw error;
+            }
+            PREPARED_HISTORY_REPLAYS.delete(request);
+            attempt(true);
+          }
         } catch (error) {
           PREPARED_HISTORY_REPLAYS.delete(request);
-          throw error;
+          if (!failedAt) throw error;
+          if (failedAt === 'replay') {
+            dropFailedHistoryHead(editor, direction, error);
+          } else {
+            reportFailedHistoryReplay(editor, direction, error);
+          }
+          return FAILED_HISTORY_RESULT;
         }
 
         if (!hasEntry) return EMPTY_HISTORY_RESULT;
@@ -1050,7 +1127,7 @@ const createHistoryPlugin = <
           status: 'pending',
         });
       };
-      const replay = (direction: HistoryAction): HistoryResult => {
+      const replayHead = (direction: HistoryAction): HistoryResult => {
         const owner = getEditorRuntimeOwner(editor);
 
         if (isInTransaction(owner) || isBuildingTransactionSpec(owner)) {
@@ -1060,10 +1137,17 @@ const createHistoryPlugin = <
         }
         if (readPendingHistoryReplay(editor)) return BUSY_HISTORY_RESULT;
 
-        const entry = peekHistoryEntry(
-          editor,
-          direction === 'undo' ? 'undos' : 'redos'
-        );
+        let entry: ReturnType<typeof peekHistoryEntry>;
+
+        try {
+          entry = peekHistoryEntry(
+            editor,
+            direction === 'undo' ? 'undos' : 'redos'
+          );
+        } catch (error) {
+          dropFailedHistoryHead(editor, direction, error);
+          return FAILED_HISTORY_RESULT;
+        }
 
         if (!entry) return EMPTY_HISTORY_RESULT;
 
@@ -1074,6 +1158,15 @@ const createHistoryPlugin = <
         return sessionEffect
           ? replaySession(direction, entry, sessionEffect)
           : applyReplay(direction);
+      };
+      const replay = (direction: HistoryAction): HistoryResult => {
+        try {
+          return replayHead(direction);
+        } finally {
+          for (const cause of takeDroppedHistoryCauses(editor)) {
+            reportFailedHistoryReplay(editor, direction, cause);
+          }
+        }
       };
 
       return {

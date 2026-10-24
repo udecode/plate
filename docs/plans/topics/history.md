@@ -72,7 +72,7 @@ export type HistoryApi = {
 };
 ```
 
-History's preconditions, such as a replay inside a transaction, and a document replay's own update throw, like any `editor.update`. Once a session batch is claimed, an owner or settle failure settles `failed`, keeps the entry at the head and reports to the editor's lifecycle error sink. With no sink set, the report goes to `globalThis.reportError` when the platform has it, and to `console.error` otherwise.
+History's preconditions, such as a replay inside a transaction, throw, like any `editor.update`. A document replay that throws while it resolves or applies its entry reports to the lifecycle error sink, drops the entry so the next press replays the entry below, and returns `failed`. An entry below the head whose mapping cannot resolve is dropped when the stack rebases onto it, and the replay reports its cause. A guard that rejects the replay's commit, such as a Yjs binding's admission error, also reports and returns `failed` but keeps the entry, so every press fails until the binding recovers; owner: the Yjs binding, whose lowering of a second local split can leave that error (suggested task t_7e5b1707). Once a session batch is claimed, an owner or settle failure settles `failed`, keeps the entry at the head and reports to the editor's lifecycle error sink. With no sink set, the report goes to `globalThis.reportError` when the platform has it, and to `console.error` otherwise.
 
 ```ts
 // packages/plitejs/src/history/history-plugin.ts

@@ -591,6 +591,44 @@ describe('authored review tree on two clients', () => {
     );
   });
 
+  it('undoes an Editing peer’s typing after a join it deleted into is accepted', () => {
+    const { alice, bob } = pair(
+      [
+        paragraph({ text: 'x' }),
+        { type: 'heading', children: [{ text: 'ab' }] },
+        paragraph({ text: 'cd' }),
+      ],
+      ['propose', 'edit']
+    );
+    const sync = () => {
+      deliver(alice, bob);
+      deliver(bob, alice);
+    };
+
+    bob.editor.update((tx) => tx.text.insert('Z', { at: point(1) }));
+    api(alice).propose('alice:1', (tx) => {
+      tx.nodes.merge({ at: [2] });
+      tx.text.insert(' ', { at: point(2, [1, 0]) });
+    });
+    sync();
+    bob.editor.update((tx) =>
+      tx.text.delete({
+        at: { anchor: point(0, [1, 0]), focus: point(2, [1, 0]) },
+      })
+    );
+    sync();
+    api(alice).decide({ action: 'accept', changes: ['alice:1'] });
+    sync();
+
+    const undos = [1, 2].map(() => bob.editor.api.history.undo().status);
+
+    sync();
+    assert.deepEqual(
+      { first: converged(alice, bob)[0], undos },
+      { first: paragraph({ text: 'x' }), undos: ['applied', 'applied'] }
+    );
+  });
+
   it('records the plain-editing control for an identical concurrent merge', () => {
     const { alice, bob } = pair(
       [paragraph({ text: 'ab' }), paragraph({ text: 'cd' })],

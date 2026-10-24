@@ -10,9 +10,11 @@ import {
   type EditorLifecycleError,
   type Element,
   type HistoryResult,
+  SelectionApi,
 } from 'plitejs';
 
 import { History, history } from '../../src/history';
+import { defineTestSchema } from '../support/schema';
 
 const paragraph = (text: string): Element => ({
   type: 'paragraph',
@@ -882,8 +884,10 @@ describe('immutable history branches', () => {
     ]);
   });
 
-  it('throws an unresolvable mapping instead of silently deleting history', () => {
+  it('reports and drops an undo whose mapping cannot resolve, so the undo below replays', () => {
+    const errors: EditorLifecycleError[] = [];
     const editor = createEditor({
+      lifecycleErrorSink: (error) => errors.push(error),
       plugins: [history()],
       initialValue: {
         children: [paragraph('body')],
@@ -891,19 +895,135 @@ describe('immutable history branches', () => {
       },
     });
 
-    editor.update((tx) => tx.roots.delete('header'));
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.nodes.set({ type: 'heading' }, { at: [0] });
+    });
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.roots.delete('header');
+    });
     editor.update({ history: 'skip' }, (tx) => {
       tx.roots.create('header', [paragraph('remote')]);
     });
 
-    assert.throws(
-      () => editor.api.history.undo(),
-      /Cannot transform concurrent root lifecycle changes/
+    const statuses = [
+      editor.api.history.undo().status,
+      editor.api.history.undo().status,
+    ];
+
+    assert.deepEqual(
+      {
+        children: editor.read.children(),
+        causes: errors.map((error) => String(error.cause)),
+        statuses,
+      },
+      {
+        children: [paragraph('body')],
+        causes: [
+          'Error: Cannot transform concurrent root lifecycle changes for header.',
+        ],
+        statuses: ['failed', 'applied'],
+      }
     );
-    assert.throws(
-      () => editor.api.history.undo(),
-      /Cannot transform concurrent root lifecycle changes/
+  });
+
+  it('reports and drops an entry below whose mapping cannot resolve once the head replays', () => {
+    const errors: EditorLifecycleError[] = [];
+    const editor = createEditor({
+      lifecycleErrorSink: (error) => errors.push(error),
+      plugins: [history()],
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('old')] },
+      },
+    });
+
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.roots.delete('header');
+    });
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.nodes.set({ type: 'heading' }, { at: [0] });
+    });
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.roots.create('header', [paragraph('remote')]);
+    });
+
+    const statuses = [
+      editor.api.history.undo().status,
+      editor.api.history.undo().status,
+    ];
+
+    assert.deepEqual(
+      {
+        children: editor.read.children(),
+        causes: errors.map((error) => String(error.cause)),
+        statuses,
+      },
+      {
+        children: [paragraph('body')],
+        causes: [
+          'Error: Cannot transform concurrent root lifecycle changes for header.',
+        ],
+        statuses: ['applied', 'empty'],
+      }
     );
+  });
+
+  it('undoes a link removal whose empty spacer only an earlier caret kept', () => {
+    const editor = createEditor({
+      plugins: [
+        defineTestSchema('history-spacer', { link: { inline: true } }),
+        history(),
+      ],
+      initialValue: [paragraph('old'), paragraph('q')],
+    });
+    const caret = (path: number[], offset: number) =>
+      SelectionApi.text({ anchor: { offset, path }, focus: { offset, path } });
+    const link: Element = { type: 'link', children: [{ text: 'link' }] };
+
+    editor.update.value.replace({
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'first' }, link, { text: '' }, { text: 'last' }],
+        },
+        paragraph('q'),
+      ],
+      selection: caret([0, 1, 0], 1),
+    });
+    editor.update((tx) => tx.selection.set(caret([1, 0], 0)));
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.text.insert('Z');
+    });
+    editor.update((tx) => {
+      tx.history.newBatch();
+      tx.nodes.remove({ at: [0, 1] });
+    });
+
+    const replays = (['undo', 'undo', 'redo', 'redo'] as const).map(
+      (direction) => ({
+        status: editor.api.history[direction]().status,
+        children: editor.read.children(),
+      })
+    );
+    const restored: Element = {
+      type: 'paragraph',
+      children: [{ text: 'first' }, link, { text: 'last' }],
+    };
+
+    assert.deepEqual(replays, [
+      { children: [restored, paragraph('Zq')], status: 'applied' },
+      { children: [restored, paragraph('q')], status: 'applied' },
+      { children: [restored, paragraph('Zq')], status: 'applied' },
+      {
+        children: [paragraph('firstlast'), paragraph('Zq')],
+        status: 'applied',
+      },
+    ]);
   });
 
   it('decodes without mutation and restores in one observable commit', () => {

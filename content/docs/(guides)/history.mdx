@@ -233,8 +233,15 @@ external owner works, unless the owner answers synchronously.
   reports the error to its `lifecycleErrorSink`. With no sink, it uses
   `reportError`, or `console.error` where `reportError` does not exist.
 
-A blocked or failed replay leaves the same batch at the branch head. Errors in
-the call itself, such as a replay inside `editor.update(...)`, still throw.
+A blocked or failed live-session replay leaves the same batch at the branch
+head. A document replay that throws while it resolves or applies its batch,
+for example because the schema rejects the restored document, reports the
+error the same way, drops that batch and returns `{ status: "failed" }`, so
+the next call replays the batch below. A batch below the head that can no
+longer map onto the document is dropped and reported the same way. An error
+raised when the replay commits, such as a Yjs admission error, also reports and
+returns `{ status: "failed" }`, but the batch stays at the head. Errors in the call itself, such as a replay
+inside `editor.update(...)`, still throw.
 
 Call these services outside `editor.read(...)` and `editor.update(...)`. A
 history batch can cover several document roots; replay always applies the

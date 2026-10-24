@@ -4852,7 +4852,7 @@
         },
         "platejs:HistoryResult": {
           "aliases": [],
-          "documentation": "Result of one undo or redo call. A document batch has already applied when\nthe call returns; only a batch whose effect owner is still working returns\n`pending`.",
+          "documentation": "Result of one undo or redo call. A document batch has already applied or\nfailed when the call returns; only a batch whose effect owner is still\nworking returns `pending`.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "HistoryResult",
@@ -4864,7 +4864,7 @@
         },
         "platejs:HistorySettlement": {
           "aliases": [],
-          "documentation": "Final outcome of a replay that waited on its effect owner.",
+          "documentation": "Final outcome of a replay that waited on its effect owner or failed.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "HistorySettlement",

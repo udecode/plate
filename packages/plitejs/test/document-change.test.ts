@@ -3116,6 +3116,113 @@ describe('JSON document change algebra', () => {
     }
   });
 
+  it('converges a deletion of whole blocks against an edit inside them, keeping property changes outside', () => {
+    const before: JsonEditorValue = {
+      children: asJsonNodes([
+        paragraph('ab'),
+        paragraph('cd'),
+        paragraph('tail'),
+      ]),
+    };
+    const document = DocumentIndex.fromValue(before.children);
+    const split = createTestDocumentChange({
+      primary: splitNodeChange(document, [0, 0], 1, {}),
+    });
+    const afterSplit = DocumentIndex.fromValue(split.apply(before).children);
+    const deletion = createTestDocumentChange({
+      primary: RootChange.create(document, {
+        from: document.nodeRange([0]).from,
+        to: document.nodeRange([1]).to,
+      }),
+    });
+    const afterDeletion = DocumentIndex.fromValue(
+      deletion.apply(before).children
+    );
+    const centered = split.compose(
+      createTestDocumentChange({
+        primary: updateNodePropertiesChange(afterSplit, [2], {
+          set: { align: 'center' },
+        }),
+      })
+    );
+    const retyped = deletion.compose(
+      createTestDocumentChange({
+        primary: setNodeChange(afterDeletion, [0], { type: 'heading' }),
+      })
+    );
+    const cases = [
+      {
+        a: centered,
+        b: deletion,
+        expected: [paragraph('tail', { align: 'center' })],
+      },
+      {
+        a: split,
+        b: retyped,
+        expected: [{ type: 'heading', children: [{ text: 'tail' }] }],
+      },
+      {
+        a: centered,
+        b: retyped,
+        expected: [
+          { type: 'heading', align: 'center', children: [{ text: 'tail' }] },
+        ],
+      },
+    ];
+    const results = cases.flatMap(({ a, b }) =>
+      [
+        [a, b],
+        [b, a],
+      ].map(([first, second]) => {
+        const transformed = DocumentChange.transform(first, second, before);
+
+        return [
+          transformed.b.apply(first.apply(before)).children,
+          transformed.a.apply(second.apply(before)).children,
+        ];
+      })
+    );
+
+    assert.deepEqual(
+      results,
+      cases.flatMap(({ expected }) => [
+        [expected, expected],
+        [expected, expected],
+      ])
+    );
+  });
+
+  it('maps the surviving block, not an equal deleted one, through a deletion of whole blocks', () => {
+    const before: JsonEditorValue = {
+      children: asJsonNodes([
+        paragraph('tail'),
+        paragraph('ab'),
+        paragraph('tail'),
+      ]),
+    };
+    const document = DocumentIndex.fromValue(before.children);
+    const split = createTestDocumentChange({
+      primary: splitNodeChange(document, [1, 0], 1, {}),
+    });
+    const deletion = createTestDocumentChange({
+      primary: RootChange.create(document, {
+        from: document.nodeRange([0]).from,
+        to: document.nodeRange([1]).to,
+      }),
+    });
+    const afterSplit = DocumentIndex.fromValue(split.apply(before).children);
+    const merged = DocumentIndex.fromValue(deletion.apply(before).children);
+    const transformed = DocumentChange.transform(split, deletion, before);
+
+    assert.equal(
+      transformed.b.mapPosition(
+        afterSplit.positionAt({ offset: 2, path: [2, 0] }),
+        { association: 'forward', track: 'around' }
+      ),
+      merged.positionAt({ offset: 2, path: [0, 0] })
+    );
+  });
+
   it('keeps property deltas attached to concurrently moved nodes', () => {
     const before: JsonEditorValue = {
       children: asJsonNodes([

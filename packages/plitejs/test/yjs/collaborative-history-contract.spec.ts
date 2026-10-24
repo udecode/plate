@@ -4,11 +4,14 @@ import { describe, it } from 'node:test';
 import { history } from '../../src/history';
 import {
   createEditor,
+  defineEditorSchema,
   definePlugin,
   defineEffect,
   defineStateField,
   type Descendant,
   type Path,
+  property,
+  schema,
   valueCodecs,
 } from '../../src/index';
 import {
@@ -730,6 +733,229 @@ describe('plitejs/yjs collaborative history contract', () => {
     assert.deepEqual(final.peers.b?.document, {
       children: [paragraph('alpha'), paragraph('beta?'), paragraph('gamma')],
     });
+  });
+
+  const deletedMergeTraces: ReadonlyArray<{
+    readonly children: readonly Descendant[];
+    readonly deleted: number;
+    readonly name: string;
+    readonly offline: CollaborativeHistoryTrace['steps'];
+  }> = [
+    {
+      children: [paragraph('alpha'), paragraph('beta'), paragraph('tail')],
+      deleted: 'alpha'.length + 2,
+      name: 'one edit',
+      offline: [
+        {
+          kind: 'edit',
+          operation: {
+            at: { path: [1, 0], offset: 0 },
+            kind: 'insert-text',
+            text: '!',
+          },
+          peer: 'b',
+        },
+      ],
+    },
+    {
+      children: [paragraph('ab'), paragraph('c'), paragraph('tail')],
+      deleted: 'a'.length + 2,
+      name: 'two edits',
+      offline: [
+        {
+          kind: 'edit',
+          operation: {
+            at: { path: [0, 0], offset: 1 },
+            distance: 1,
+            kind: 'delete-text',
+          },
+          peer: 'b',
+        },
+        {
+          kind: 'edit',
+          operation: {
+            at: { path: [1, 0], offset: 0 },
+            kind: 'insert-text',
+            text: 'Q',
+          },
+          peer: 'b',
+        },
+      ],
+    },
+  ];
+
+  for (const { children, deleted, name, offline } of deletedMergeTraces) {
+    it(`undoes ${name} below an offline merge into a block a peer deleted`, () => {
+      const run = runCollaborativeHistoryTrace({
+        allowedFallbacks: [
+          'remote-event-projected-content',
+          'remote-event-invalid-delta',
+          'remote-event-empty-root',
+        ],
+        children,
+        clientIds,
+        numericClientIds,
+        trace: {
+          seed: 14_013,
+          steps: [
+            ...offline,
+            { kind: 'sync', peer: 'b' },
+            { kind: 'disconnect', peer: 'b' },
+            {
+              kind: 'edit',
+              operation: {
+                at: { path: [0, 0], offset: 0 },
+                distance: deleted,
+                kind: 'delete-text',
+              },
+              peer: 'a',
+            },
+            {
+              kind: 'edit',
+              operation: { at: [1], kind: 'merge-node' },
+              peer: 'b',
+            },
+            { kind: 'sync', peer: 'a' },
+            { kind: 'reconnect', peer: 'b' },
+            ...offline.map(() => ({ kind: 'undo', peer: 'b' }) as const),
+            { kind: 'undo', peer: 'b' },
+            { kind: 'sync', peer: 'b' },
+          ],
+        },
+      });
+      const final = run.observations.at(-1)?.peers;
+
+      assert.deepEqual(
+        {
+          a: final?.a?.document,
+          b: final?.b?.document,
+          history: final?.b?.history,
+        },
+        {
+          a: { children: [paragraph('tail')] },
+          b: { children: [paragraph('tail')] },
+          history: { redos: 0, undos: 0 },
+        }
+      );
+    });
+  }
+
+  it('drops an undo the schema rejects after a peer’s join, so the undo below still replays', () => {
+    const LinkSchema = defineEditorSchema('collaborative-history-link', {
+      elements: {
+        heading: schema.element.textBlock(),
+        link: { content: schema.content.text(), inline: true },
+        paragraph: schema.element.textBlock(),
+      },
+      id: 'collaborative-history-link',
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: schema.content.types(['paragraph', 'heading'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      version: 1,
+    });
+    const children: Descendant[] = [
+      {
+        type: 'heading',
+        children: [{ text: 'ab' }, { bold: true, text: 'cd' }],
+      },
+      paragraph('ef'),
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'gh' },
+          { type: 'link', children: [{ text: 'a' }] },
+          { text: '' },
+        ],
+      },
+    ];
+    const errors: string[] = [];
+    const run = runCollaborativeHistoryTrace({
+      allowedFallbacks: ['remote-event-projected-content'],
+      applyCustomOperation: (tx, operation) => {
+        if (operation.name === 'remove-link') tx.nodes.remove({ at: [2, 1] });
+        else {
+          tx.text.delete({
+            at: {
+              anchor: { offset: 'cd'.length, path: [0, 1] },
+              focus: { offset: 'gh'.length, path: [2, 0] },
+            },
+          });
+        }
+      },
+      children,
+      clientIds: ['a', 'b'],
+      createEditor: () =>
+        createEditor({
+          initialValue: structuredClone(children),
+          lifecycleErrorSink: (error) => errors.push(String(error.cause)),
+          plugins: [LinkSchema, history()],
+        }),
+      numericClientIds,
+      trace: {
+        seed: 14_014,
+        steps: [
+          {
+            kind: 'edit',
+            operation: {
+              at: { path: [0, 0], offset: 0 },
+              kind: 'insert-text',
+              text: 'Z',
+            },
+            peer: 'b',
+          },
+          { kind: 'sync', peer: 'b' },
+          { kind: 'disconnect', peer: 'b' },
+          {
+            kind: 'edit',
+            operation: { kind: 'custom', name: 'join-lines' },
+            peer: 'a',
+          },
+          {
+            kind: 'edit',
+            operation: { kind: 'custom', name: 'remove-link' },
+            peer: 'b',
+          },
+          { kind: 'sync', peer: 'a' },
+          { kind: 'reconnect', peer: 'b' },
+          { kind: 'undo', peer: 'b' },
+          { kind: 'undo', peer: 'b' },
+          { kind: 'sync', peer: 'b' },
+          { kind: 'redo', peer: 'b' },
+          { kind: 'sync', peer: 'b' },
+        ],
+      },
+    });
+    const heading = (first: string) => ({
+      children: [
+        {
+          type: 'heading',
+          children: [{ text: first }, { bold: true, text: 'cd' }],
+        },
+      ],
+    });
+
+    assert.deepEqual(
+      {
+        errors,
+        replays: run.observations.flatMap(({ peers, step }) =>
+          step.kind === 'undo' || step.kind === 'redo'
+            ? [{ document: peers.b?.document, history: peers.b?.history }]
+            : []
+        ),
+      },
+      {
+        errors: [
+          'EditorSchemaValidationError: Editor primary root cannot contain "link".',
+        ],
+        replays: [
+          { document: heading('Zab'), history: { redos: 0, undos: 1 } },
+          { document: heading('ab'), history: { redos: 1, undos: 0 } },
+          { document: heading('Zab'), history: { redos: 0, undos: 1 } },
+        ],
+      }
+    );
   });
 
   it('replays twelve deterministic text and property seeds', () => {

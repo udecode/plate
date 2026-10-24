@@ -556,6 +556,89 @@ const resolveTop = <V extends Value>(
   return current;
 };
 
+const resolveCanonicalTop = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V> | null
+): HistoryBranch<V> | null => {
+  const head = resolveTop(editor, value);
+
+  if (!head) return null;
+
+  const schema = historyReplaySchemaOf(editor);
+  const target = head.replay.change.apply(head.base);
+  const repair = schema.repairCanonical(head.base, head.replay.change, target);
+
+  if (repair.empty) return head;
+
+  const repaired = repair.apply(target);
+  const change = head.replay.change.compose(repair);
+  const undo = head.replay.direction === 'undo';
+  const unmoved = {
+    after: head.base,
+    before: head.base,
+    change: DocumentChange.between(head.base, head.base),
+  };
+  const moved = { after: repaired, before: target, change: repair };
+  const restored = (selection: Batch<V>['selectionBefore'], root?: string) =>
+    mapHistorySelection(
+      editor,
+      selection,
+      repair,
+      target,
+      repaired,
+      root ?? MAIN_ROOT_KEY
+    );
+
+  return branch<V>(
+    freezeBatch<V>(
+      undo
+        ? {
+            ...head.batch,
+            change,
+            selectionBefore: restored(
+              head.batch.selectionBefore,
+              head.batch.selectionBeforeRoot
+            ),
+          }
+        : {
+            ...head.batch,
+            change,
+            selectionAfter: restored(
+              head.batch.selectionAfter,
+              head.batch.selectionAfterRoot
+            ),
+          }
+    ),
+    head.base,
+    recordHistoryReplay(schema, head.base, change, head.replay.direction),
+    addMapping<V>(head.next, {
+      after: repaired,
+      change: repair,
+      textOnly: isTextOnlyMapping(repair),
+    }),
+    null,
+    head.group,
+    mapAnchorHistoryRecovery(
+      head.recovery,
+      undo ? 'before' : 'after',
+      repair,
+      target,
+      repaired
+    ),
+    head.anchorCeiling,
+    head.identity,
+    head.carets &&
+      mapHistoryCarets(
+        editor,
+        head.carets,
+        head.batch,
+        undo
+          ? { after: unmoved, before: moved }
+          : { after: moved, before: unmoved }
+      )
+  );
+};
+
 const resolveAll = <V extends Value>(
   editor: Editor<V>,
   value: HistoryBranch<V> | null
@@ -985,12 +1068,13 @@ export const getWorkingHistory = <V extends Value>(
 export const getHistory = <V extends Value>(editor: Editor<V>): History<V> =>
   withPublishedHistoryState(editor, () => getWorkingHistory(editor));
 
-export const peekHistoryEntry = <V extends Value>(
+const peekResolvedEntry = <V extends Value>(
   editor: Editor<V>,
-  stack: HistoryStack
+  stack: HistoryStack,
+  resolve: typeof resolveTop
 ) => {
   const store = getStore(editor);
-  const resolved = resolveTop(editor, store[stack]);
+  const resolved = resolve(editor, store[stack]);
 
   if (resolved !== store[stack]) {
     setStore(
@@ -1015,6 +1099,16 @@ export const peekHistoryEntry = <V extends Value>(
       })
     : undefined;
 };
+
+export const peekHistoryEntry = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack
+) => peekResolvedEntry(editor, stack, resolveTop);
+
+export const peekHistoryReplayEntry = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack
+) => peekResolvedEntry(editor, stack, resolveCanonicalTop);
 
 export const peekHistoryBatch = <V extends Value>(
   editor: Editor<V>,
@@ -1098,6 +1192,69 @@ export const replaceHistoryHead = <V extends Value>(
   });
 };
 
+const DROPPED_HISTORY_CAUSES = new WeakMap<AnyEditor, unknown[]>();
+
+export const takeDroppedHistoryCauses = (editor: AnyEditor) => {
+  const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
+
+  DROPPED_HISTORY_CAUSES.delete(editor);
+
+  return causes;
+};
+
+const resolveSurvivingTop = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V> | null
+) => {
+  for (let entry = value; entry; entry = entry.next) {
+    try {
+      return resolveTop(editor, entry);
+    } catch (error) {
+      const causes = DROPPED_HISTORY_CAUSES.get(editor) ?? [];
+
+      causes.push(error);
+      DROPPED_HISTORY_CAUSES.set(editor, causes);
+    }
+  }
+
+  return null;
+};
+
+const rebaseOnto = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V> | null,
+  current: EditorDocumentValue<V>
+) => {
+  const head = resolveSurvivingTop(editor, value);
+
+  if (!head) return null;
+
+  const correction = DocumentChange.between(head.base, current);
+
+  return correction.empty
+    ? head
+    : addMapping(head, {
+        after: current,
+        change: correction,
+        textOnly: isTextOnlyMapping(correction),
+      });
+};
+
+export const dropHistoryHead = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack,
+  current: EditorDocumentValue<V>
+) => {
+  const store = getStore(editor);
+  const value = store[stack];
+
+  if (!value) return;
+
+  publish(editor, store, {
+    [stack]: rebaseOnto(editor, value.next, current),
+  });
+};
+
 export const completeHistoryAction = <V extends Value>(
   editor: Editor<V>,
   source: HistoryStack,
@@ -1111,19 +1268,7 @@ export const completeHistoryAction = <V extends Value>(
 
   if (!resolved) throw new Error(`Missing ${source} history batch.`);
 
-  let nextSource = resolveTop(editor, resolved.next);
-
-  if (nextSource) {
-    const correction = DocumentChange.between(nextSource.base, current);
-
-    if (!correction.empty) {
-      nextSource = addMapping(nextSource, {
-        after: current,
-        change: correction,
-        textOnly: isTextOnlyMapping(correction),
-      });
-    }
-  }
+  const nextSource = rebaseOnto(editor, resolved.next, current);
 
   publish(editor, store, {
     [destination]: pushBranch(

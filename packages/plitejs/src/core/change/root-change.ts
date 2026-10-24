@@ -2134,10 +2134,26 @@ export class RootChange {
     const [bReplacement] = bReplacements;
     const hasSingleReplacement =
       aReplacements.length === 1 && bReplacements.length === 1;
-    const isNodeDeletion = (replacement: Replacement | undefined): boolean => {
+    const deletesWholeSiblings = (
+      replacement: Replacement | undefined
+    ): boolean => {
       if (!replacement || replacement.insert.length > 0) return false;
 
-      return document.nodeStartingAt(replacement.from)?.to === replacement.to;
+      const first = document.nodeStartingAt(replacement.from);
+
+      if (!first) return false;
+
+      const parent = pathKey(first.path.slice(0, -1));
+      let { to } = first;
+
+      while (to < replacement.to) {
+        const next = document.nodeStartingAt(to);
+
+        if (!next || pathKey(next.path.slice(0, -1)) !== parent) return false;
+        ({ to } = next);
+      }
+
+      return to === replacement.to;
     };
     const contains = (
       outer: Replacement | undefined,
@@ -2423,34 +2439,76 @@ export class RootChange {
       };
     }
 
-    if (
+    const keepOutsideDeletion = (
+      deletion: Replacement,
+      afterDeletion: DocumentIndex,
+      propertyChanges: readonly PropertyChange[]
+    ) => {
+      const sections: number[] = [];
+      const data: SectionData[] = [];
+      let position = 0;
+
+      for (const { from, modifications, to } of propertyChanges) {
+        if (to > deletion.from && from < deletion.to) continue;
+        const start =
+          from < deletion.from ? from : from - (deletion.to - deletion.from);
+
+        if (start > position) {
+          addSection(sections, data, start - position, -1, null);
+        }
+        addSection(sections, data, to - from, -2, modifications);
+        position = start + to - from;
+      }
+      if (position < afterDeletion.length) {
+        addSection(sections, data, afterDeletion.length - position, -1, null);
+      }
+
+      return RootChange.fromSections(sections, data).apply(afterDeletion);
+    };
+    const deletion =
       hasSingleReplacement &&
-      isNodeDeletion(bReplacement) &&
+      deletesWholeSiblings(bReplacement) &&
       contains(bReplacement, aReplacement)
-    ) {
-      const deletedPath = getDefined(
-        document.nodeStartingAt(bReplacement.from)
-      ).path;
+        ? {
+            edit: a,
+            kept: aPropertyChanges,
+            replacement: bReplacement,
+            side: 'b' as const,
+          }
+        : hasSingleReplacement &&
+            deletesWholeSiblings(aReplacement) &&
+            contains(aReplacement, bReplacement)
+          ? {
+              edit: b,
+              kept: bPropertyChanges,
+              replacement: aReplacement,
+              side: 'a' as const,
+            }
+          : null;
 
-      return {
-        a: RootChange.empty(afterB.length),
-        b: removeNodeChange(afterA, deletedPath),
-      };
-    }
+    if (deletion) {
+      const [afterEdit, afterDeletion] =
+        deletion.side === 'b' ? [afterA, afterB] : [afterB, afterA];
+      const merged = keepOutsideDeletion(
+        deletion.replacement,
+        afterDeletion,
+        deletion.kept
+      );
+      const deletionAfterEdit = RootChange.create(afterEdit, {
+        from: deletion.replacement.from,
+        to:
+          deletion.replacement.to +
+          deletion.edit.newLength -
+          deletion.edit.length,
+      });
+      const deleted = deletionAfterEdit.compose(
+        RootChange.between(deletionAfterEdit.apply(afterEdit), merged)
+      );
+      const edited = RootChange.between(afterDeletion, merged);
 
-    if (
-      hasSingleReplacement &&
-      isNodeDeletion(aReplacement) &&
-      contains(aReplacement, bReplacement)
-    ) {
-      const deletedPath = getDefined(
-        document.nodeStartingAt(aReplacement.from)
-      ).path;
-
-      return {
-        a: removeNodeChange(afterB, deletedPath),
-        b: RootChange.empty(afterA.length),
-      };
+      return deletion.side === 'b'
+        ? { a: edited, b: deleted }
+        : { a: deleted, b: edited };
     }
 
     return {
