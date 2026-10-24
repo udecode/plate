@@ -155,7 +155,7 @@ const nextFrame = () =>
     setTimeout(resolve, 16);
   });
 
-const afterFocusCommitExports = async () => {
+const afterCommitExports = async () => {
   await wait(20);
   await nextFrame();
 };
@@ -1512,7 +1512,7 @@ describe('content roots rendered by two views (R29)', () => {
     await act(async () => {
       screen.getByLabelText('A editor').focus();
       document.dispatchEvent(new Event('selectionchange'));
-      await afterFocusCommitExports();
+      await afterCommitExports();
       document
         .getSelection()!
         .setBaseAndExtent(
@@ -1930,7 +1930,7 @@ describe('a selection across content roots when a root activates', () => {
     await act(async () => {
       screen.getByLabelText('deep editor').focus();
       document.dispatchEvent(new Event('selectionchange'));
-      await afterFocusCommitExports();
+      await afterCommitExports();
       document
         .getSelection()!
         .setBaseAndExtent(
@@ -2172,7 +2172,7 @@ describe('a selection across content roots when a root activates', () => {
     await act(async () => {
       screen.getByLabelText('body editor').focus();
       document.dispatchEvent(new Event('selectionchange'));
-      await afterFocusCommitExports();
+      await afterCommitExports();
       document
         .getSelection()!
         .setBaseAndExtent(
@@ -2600,7 +2600,7 @@ describe('a selection across content roots when a root activates', () => {
     await act(async () => {
       screen.getByLabelText('body editor').focus();
       document.dispatchEvent(new Event('selectionchange'));
-      await afterFocusCommitExports();
+      await afterCommitExports();
       document
         .getSelection()!
         .setBaseAndExtent(
@@ -2627,7 +2627,7 @@ describe('a selection across content roots when a root activates', () => {
       await act(async () => {
         screen.getByLabelText('main editor').focus();
         document.dispatchEvent(new Event('selectionchange'));
-        await afterFocusCommitExports();
+        await afterCommitExports();
         document
           .getSelection()!
           .setBaseAndExtent(
@@ -2754,7 +2754,7 @@ describe('a selection across content roots when a root activates', () => {
     await act(async () => {
       screen.getByLabelText('main editor').focus();
       document.dispatchEvent(new Event('selectionchange'));
-      await afterFocusCommitExports();
+      await afterCommitExports();
       document
         .getSelection()!
         .setBaseAndExtent(
@@ -4716,7 +4716,7 @@ describe('claims from native input (R30)', () => {
       await act(async () => {
         screen.getByLabelText('A editor').focus();
         document.dispatchEvent(new Event('selectionchange'));
-        await afterFocusCommitExports();
+        await afterCommitExports();
         selectAcrossRoots();
         document.dispatchEvent(new Event('selectionchange'));
         beforeImport();
@@ -4987,7 +4987,7 @@ describe('claims from native input (R30)', () => {
         document.dispatchEvent(new Event('selectionchange'));
         await wait(20);
         a.update((tx) => tx.nodes.set({ checked: true } as never, { at: [0] }));
-        await wait(20);
+        await afterCommitExports();
         selectNative('B editor', 7);
         await wait(150);
       });
