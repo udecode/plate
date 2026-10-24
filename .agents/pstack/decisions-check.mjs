@@ -33,7 +33,7 @@
 //        <ledger> defaults to <plans>/artifacts/suggested-tasks.decisions.tsv in trunk
 //        delivery and <plans>/suggested-tasks.decisions.tsv otherwise,
 //        --fetch refreshes the remote branches that PR waits read, and --session names
-//        this session, so it cards only the tasks it owns and the ship-list tasks, and each card it does not hold
+//        this session, so it cards only the tasks it owns, and each card it does not hold
 //        gets a check item instead of a withdraw problem)
 //        node .agents/pstack/decisions-check.mjs chips all --session <id> [--sessions <file>] [<ledger>]
 //        (lists every priority, also cards the tasks no session owns, and with the session
@@ -341,6 +341,13 @@ function stagePage(log) {
 const args = process.argv.slice(2);
 const invokedFrom = process.cwd();
 runLedgerCommandFromMainCheckout(args);
+if (args[0] === '--help' || args[0] === '-h') {
+  const source = readFileSync(new URL(import.meta.url), 'utf8').split('\n');
+  const from = source.findIndex((line) => line.startsWith('// Usage:'));
+  const to = source.findIndex((line, index) => index > from && !line.startsWith('//'));
+  console.info(source.slice(from, to).map((line) => line.replace(/^\/\/ ?/, '')).join('\n'));
+  process.exit(0);
+}
 if (args[0] === 'rounds') {
   if (!args[1] || !existsSync(args[1])) {
     console.error(args[1] ? `no log at ${args[1]}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv>');
@@ -500,6 +507,11 @@ const paths =
     : args;
 if (paths.length === 0 && args[0] !== '--all') {
   console.error('Usage: node .agents/pstack/decisions-check.mjs <log.decisions.tsv> [...] | --all');
+  process.exit(2);
+}
+const missing = paths.filter((path) => !existsSync(path));
+if (missing.length > 0) {
+  console.error(`no log at ${missing.join(', ')}; --help prints the usage`);
   process.exit(2);
 }
 const found = paths.flatMap(problems);

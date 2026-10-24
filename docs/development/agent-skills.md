@@ -14,7 +14,7 @@ playbooks in [`.agents/playbooks/`](../../.agents/playbooks/) build on pstack's.
 | You say | What runs |
 | --- | --- |
 | "next" | [chips](../../.agents/skills/chips/SKILL.md), answering about open chips |
-| `/chips` | [chips](../../.agents/skills/chips/SKILL.md)'s Sweep, which offers and cards the suggested tasks |
+| `/chips` | [chips](../../.agents/skills/chips/SKILL.md)'s Sweep, which offers and cards this session's suggested tasks; `/chips all` also cards the ship-list tasks and the ones no live session owns |
 | "verdict <doc, draft, issue or idea>" or "what would you do from this?" | [Verdict](../../.agents/playbooks/verdict.md)'s intake |
 | "review <scope id>", then "again" or "panel" | [Verdict](../../.agents/playbooks/verdict.md)'s deep path |
 | "plan" or `plan <goal>` | [Plan](../../.agents/playbooks/plan.md) |

@@ -416,8 +416,6 @@ export function chipRowProblems(cells, before, where) {
 // matches, because an account switch can change one of them.
 export const ownedBy = (task, here) => Boolean(here) && ((here.session && ownerOf(task) === here.session) || (here.transcript && ownerTranscriptOf(task) === here.transcript));
 
-// No session owns a ship-list task, whatever session: its rows name, so any
-// session cards it.
 export const ownerOf = (task) => (task.ship ? null : task.owner);
 const ownerTranscriptOf = (task) => (task.ship ? null : task.ownerTranscript);
 
@@ -815,7 +813,7 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
         : `find the session that started ${task.id} with the session tool, archived sessions included, as the one whose transcript opens with its card prompt, and log started with session: <its id>; when the search finds none, ${task.id} stays started`,
     }));
   const me = here === null ? null : { session: here, transcript };
-  const mine = (task) => here === null || ownedBy(task, me) || Boolean(task.ship);
+  const mine = (task) => !task.ship && (here === null || ownedBy(task, me));
   const ownerless = (task) => !ownerOf(task) && !ownerTranscriptOf(task);
   const mayCard = (task) => mine(task) || (all && ownerless(task));
   const others = offered.filter((task) => !mine(task));
@@ -965,7 +963,7 @@ export function renderBoard(view, ledger, max = null) {
   const out = [`${view.open.length} open suggested tasks in ${ledger}. ${view.note}`, 'A session a card started works from chips brief <its task id>, because its task can change after the card.'];
   if (view.shipNote) out.push(`No ship list: ${view.shipNote}.`);
   if (view.here && view.all) out.push('This session cards the tasks it owns, the ship-list tasks and the ones no session owns, and takes over each task whose owner session is archived or gone.');
-  else if (view.here) out.push('This session cards the tasks it owns, the ones it offered or carded first when the offer named no session, and the ship-list tasks, which no session owns. chips all also takes the tasks no live session owns.');
+  else if (view.here) out.push('This session cards the tasks it owns, the ones it offered or carded first when the offer named no session. chips all also takes the ship-list tasks, which no session owns, and the tasks no live session owns.');
   const section = (title, rows) => {
     if (rows.length > 0) out.push('', `${title} (${rows.length})`, ...rows);
   };

@@ -40,7 +40,7 @@ export const SEVERITIES = ['critical', 'warning', 'nit'];
 export const STAGE_PHASES = {
   Design: ['architect', 'prototype', 'arena', 'how', 'why', 'design'],
   Review: ['panel', 'interrogate'],
-  Build: ['build'],
+  Build: ['build', 'fix'],
   Writing: ['writing'],
   Verify: ['verify', 'proof'],
   Ship: ['ship', 'delivery'],
@@ -48,7 +48,7 @@ export const STAGE_PHASES = {
   Audit: ['trail'],
 };
 
-// Panel rounds before the first build row review the plan; later ones review the code.
+// Panel rounds before the first build or fix row review the plan; later ones review the code.
 export function stageOfRow(phases, index) {
   const phase = phases[index];
   if (isHandOffReview(phase)) return 'Audit';
