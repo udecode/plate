@@ -1,4 +1,10 @@
-import { type FocusEvent, type MouseEvent, useCallback, useRef } from 'react';
+import {
+  type FocusEvent,
+  type MouseEvent,
+  type PointerEvent,
+  useCallback,
+  useRef,
+} from 'react';
 
 import { SelectionApi } from '../..';
 import { holdsCaret } from '../../core/view-carets';
@@ -76,22 +82,44 @@ export const useRuntimeFocusMouseEvents = ({
   const nativePointerFocusRef = useRef(false);
   const externalMouseGestureRef = useRef(false);
 
+  const clearNativePointerFocusSoon = useCallback(() => {
+    domPhaseScheduler.schedule(
+      'model',
+      'clear-native-pointer-focus',
+      () => {
+        nativePointerFocusRef.current = false;
+      },
+      { timing: 'timeout' }
+    );
+  }, [domPhaseScheduler]);
+
   const markNativePointerFocus = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
       nativePointerFocusRef.current = !isInteractiveInternalTarget(
         editor,
         event.target
       );
-      domPhaseScheduler.schedule(
-        'model',
-        'clear-native-pointer-focus',
-        () => {
-          nativePointerFocusRef.current = false;
-        },
-        { timing: 'timeout' }
+      clearNativePointerFocusSoon();
+    },
+    [clearNativePointerFocusSoon, editor]
+  );
+
+  const handlePointerDownCapture = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (event.pointerType === 'mouse') return;
+      nativePointerFocusRef.current = !isInteractiveInternalTarget(
+        editor,
+        event.target
       );
     },
-    [domPhaseScheduler, editor]
+    [editor]
+  );
+
+  const handlePointerEndCapture = useCallback(
+    (event: PointerEvent<HTMLDivElement>) => {
+      if (event.pointerType !== 'mouse') clearNativePointerFocusSoon();
+    },
+    [clearNativePointerFocusSoon]
   );
 
   const handleBlur = useCallback(
@@ -441,5 +469,8 @@ export const useRuntimeFocusMouseEvents = ({
     onMouseDownCapture: onRuntimeMouseDownCapture,
     onMouseDown: onRuntimeMouseDown,
     onMouseUp: onRuntimeMouseUp,
+    onPointerCancelCapture: handlePointerEndCapture,
+    onPointerDownCapture: handlePointerDownCapture,
+    onPointerUpCapture: handlePointerEndCapture,
   };
 };
