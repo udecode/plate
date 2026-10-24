@@ -287,12 +287,24 @@ const failLines = {
   tsc: /^\s*\S+\(\d+,\d+\): error TS\d+:/u,
 };
 const lines = stripVTControlCharacters(proof.output).split('\n');
+// bun prints a case's errors above its result line, so an error line belongs
+// to the next case result below it.
+const bunCaseErrors = new Set();
+let nextCaseFails = false;
+for (let index = lines.length - 1; index >= 0; index -= 1) {
+  const result = /^\s*\((pass|fail|skip|todo)\)/u.exec(lines[index]);
+  if (result) nextCaseFails = result[1] === 'fail';
+  else if (nextCaseFails && lines[index].startsWith('error: ')) {
+    bunCaseErrors.add(index);
+  }
+}
 const missing = args.expectFail.filter(
   (text) =>
     !lines.some(
-      (line) =>
+      (line, index) =>
         line.includes(text) &&
-        Object.values(failLines).some((failLine) => failLine.test(line))
+        (bunCaseErrors.has(index) ||
+          Object.values(failLines).some((failLine) => failLine.test(line)))
     )
 );
 if (missing.length > 0) {

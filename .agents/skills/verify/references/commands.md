@@ -347,11 +347,13 @@ The helper has four modes for these cases:
   `x <rule>:` without it, with the file on a later line. A `<rule>` reads like
   `entrypoint-dag(no-forbidden-imports)`, and an oxlint warning never counts.
   Pass each case's failure line, such as bun's `(fail) <describe> > <title>`.
-  For a lint failure, pass the rule and the start of its message. A matcher
-  line such as bun's `error: expect(received).toEqual(expected)` is not a
-  failing line. A failure line also matches a longer title that starts the
-  same way, and a match does not show which case printed it, so read the log
-  to tie the failure to its defect. A
+  For a lint failure, pass the rule and the start of its message. bun prints a
+  case's errors above its result line, so a line that starts with `error: `
+  also counts when the next case result below it is `(fail)`. From such a line,
+  pass the thrown or asserted message, never a generic matcher line such as
+  `error: expect(received).toEqual(expected)`. A failure line also matches a
+  longer title that starts the same way, and a match does not show which case
+  printed it, so read the log to tie the failure to its defect. A
   case designed to pass at the base, such as a must-pass control or a case
   whose defect only a mutation shows, goes to a mutation run instead. The
   helper exits 0 when the command fails with every text, and 1 when the command

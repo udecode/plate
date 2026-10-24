@@ -420,6 +420,27 @@ test('refuses an --expect-fail run whose named failure appears only in its comma
   assert.match(result.stderr, /does not show: \(fail\) named case/u);
 });
 
+test('accepts an --expect-fail run whose named error bun prints above a failing case', (t) => {
+  const result = runExpectingFailure(
+    t,
+    'echo "error: Snapshot index mappings are not sequential"; echo "      at map (src/a.ts:3:9)"; echo "(fail) law > named case"; exit 1',
+    ['Snapshot index mappings are not sequential']
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test('refuses an --expect-fail run whose named error bun prints above a passing case', (t) => {
+  const result = runExpectingFailure(
+    t,
+    'echo "error: logged defect"; echo "(pass) law > logging case"; echo "(fail) law > other case"; exit 1',
+    ['logged defect']
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /does not show: logged defect/u);
+});
+
 test('refuses an --expect-fail run whose named text shows only on a passing line', (t) => {
   const result = runExpectingFailure(
     t,
