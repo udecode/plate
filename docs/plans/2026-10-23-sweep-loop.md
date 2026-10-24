@@ -127,34 +127,34 @@ Members name the page route and the browser the find came from. A kind with "unf
 
 | Kind | Domain | What breaks | Members | Issue | Owner | Miss |
 | --- | --- | --- | --- | --- | --- | --- |
-| K1 | native | Composition over a selection does not replace it in place | `/docs/block-menu`, `/docs/examples/huge-document` (Android); `/examples/plite/mentions` (Chrome) | unfiled | `composition-state.ts:1086`, `android-composition.ts:467` (inferred) | M4, M6 |
-| K2 | native | A mark turned on is lost on composed text | `/docs/subscript`, `/docs/underline` (Android) | unfiled | `composition-state.ts:1072` (inferred) | M4, M6 |
+| K1 | native | Composition over a selection does not replace it in place | `/docs/block-menu`, `/docs/examples/huge-document`, `/examples/plite/huge-document`, `/examples/plite/plaintext` (Android); `/examples/plite/mentions` (Chrome) | unfiled | `composition-state.ts:1086`, `android-composition.ts:467` (inferred) | M4, M6 |
+| K2 | native | A mark turned on is lost on composed text | `/docs/subscript`, `/docs/underline` (Android); `/docs/subscript` (desktop; browser and input method not recorded) | unfiled | `composition-state.ts:1072` (inferred) | M4, M6 |
 | K3 | native | Composing in a new empty paragraph lands in the block above, or crashes on Return or undo | `/docs/indent` ×2, `/docs/list` ×2 (Safari) | unfiled | composition state, no stack captured (inferred) | M4, M6 |
-| K4 | native | A mark turned off by its shortcut still formats the next text | `/docs/basic-marks` ×2, `/docs/bold`, `/docs/installation/react`, `/docs/italic`, `/docs/strikethrough` | #5224 | `native-input-strategy.ts:56` (inferred) | M2, M5 |
+| K4 | native | A mark turned off by its shortcut still formats the next text | `/docs/basic-marks` ×2, `/docs/bold`, `/docs/installation/react`, `/docs/italic`, `/docs/strikethrough` | #5224, whose Repro 2 to 4 are `/docs/installation/react`, `/docs/italic` and `/docs/strikethrough` | `native-input-strategy.ts:56` (inferred) | M2, M5 |
 | K5 | native | Undo inside an input in a void runs the editor's undo | `/examples/plite/editable-voids`, `/examples/plite/embeds` | unfiled | `keyboard-input-strategy.ts:492` (read) | M1, M6 |
 | K6 | native | Option with a digit fires no heading shortcut in Safari | `/docs/basic-blocks` | #5225 | `packages/plitejs/src/dom/utils/hotkey-match.ts:182` (inferred) | M2, M4 |
-| K7 | plate-api | An early substitution eats a longer syntax's delimiters | `==` highlight, `!>=`, `!<=`, `!~=`, `H~2~O`, `X^2^` on `/docs/autoformat` | #5201, #5202, #5204 | `autoformat.tsx:16` to `:123`, `createInputRules.ts:479` (inferred, strong) | M3, M5, M6 |
+| K7 | plate-api | An early substitution eats a longer syntax's delimiters | `==` highlight, `!>=`, `!<=`, `!~=`, `H~2~O`, `X^2^` on `/docs/autoformat` | #5201, which took in #5202 and #5204 as Repro 2 and 3 | `autoformat.tsx:16` to `:123`, `createInputRules.ts:479` (inferred, strong) | M3, M5, M6 |
 | K8 | basic | Triple asterisks stay literal | `/docs/autoformat` | #5203 | `BaseMarkPlugins.ts:198` (inferred, strong) | M3, M6 |
 | K9 | plate-api | Closing an inline-code backtick joins the next paragraph | `/docs/code` | #5226, fix in PR #5237 | `createInputRules.ts:112` (read) | M3, M6 |
-| K10 | list | Tab is refused where the indent command applies | Details summary, a two-paragraph range on `/docs/indent` | #5199, #5200 | `BaseIndentPlugin.ts:196` (inferred, strong) | M2, M6 |
+| K10 | list | Tab is refused where the indent command applies | Details summary, a two-paragraph range on `/docs/indent` | #5199, which took in #5200 as Repro 2 | `BaseIndentPlugin.ts:196` (inferred, strong) | M2, M6 |
 | K11 | list | Indenting keeps the old list marker | `/docs/list` (Safari) | unfiled | not traced | M1 |
 | K12 | basic | Enter in the font size field keeps focus there; Safari ignores the size | `/docs/font`, `/docs/toolbar`, `/docs/footnote` | unfiled | `font-size-toolbar-button.tsx:154` (read) | M1 |
 | K13 | basic | The keyboard-key toggle on a mixed selection keeps the keycaps | `/docs/kbd` | unfiled | not traced | M1 |
-| K14 | ui | A floating toolbar menu closes the toolbar or does not open | `/docs/kbd`, `/docs/block-menu` (Firefox, Safari, Chrome), Turn into on `/docs/footnote` | #5209 closed covers the second click; the rest unfiled | `more-toolbar-button.tsx:23`, `floating-toolbar.tsx:156` (read) | M2, M4, M6 |
+| K14 | ui | A floating toolbar menu closes the toolbar or does not open | `/docs/kbd`, `/docs/block-menu` (Firefox, Safari, Chrome), Turn into on `/docs/footnote` | #5241 for the Safari first click and Turn into; #5209, closed, covers the second click, which no longer reproduces in Firefox on `/docs/block-menu` or `/docs/kbd` | `more-toolbar-button.tsx:23`, `floating-toolbar.tsx:156` (read) | M2, M4, M6 |
 | K15 | ui | Swiping the toolbar opens Turn into | `/docs/highlight`, `/docs/underline` (Android) | unfiled | dropdown trigger (inferred) | M4 |
 | K16 | ui | A long press selects text instead of opening the block menu | `/docs/block-menu` (Android) | unfiled | not traced | M4 |
 | K17 | link | Edit link shows an empty text field, and saving hides the toolbar | `/blocks/playground`, `/docs/link` ×2 | #5228 covers the empty field | `link.tsx:161` to `:410` (read; cause inferred) | M2, M3 |
-| K18 | dnd | A block drag copies instead of moving | `/docs/dnd`, `/blocks/playground` ×3 (Firefox) | #5223 | drag session in `clipboard-input-strategy.ts:640` (inferred) | M1, M4 |
-| K19 | dnd | An inline void drag copies, or lands at the paragraph start | `/examples/plite/inline-void-drag` ×2 | unfiled | `dom-drag.ts:571` (inferred) | M1 |
-| K20 | dnd | Block selection stops scrolling past the viewport edge | `/blocks/playground` (Safari, Firefox) | #5208, fix 5983e2d60e not yet seen on beta | `dom-drag-scroll.ts:113` (read) | M3 |
-| K21 | accessibility | Clicking empty editor padding focuses with no caret | `/docs/examples/editor-full-width`, `/docs/installation/manual` (Firefox) | #5227 | `runtime-focus-mouse-events.ts:78` (inferred) | M2, M3, M4 |
+| K18 | dnd | A block drag copies instead of moving | `/docs/dnd`, `/blocks/playground` ×3 (Firefox) | #5223, whose Repro 2 and 3 are the playground's quote and code-block copies | drag session in `clipboard-input-strategy.ts:640` (inferred) | M1, M4 |
+| K19 | dnd | An inline void drag copies, or lands at the paragraph start | `/examples/plite/inline-void-drag` ×2, and once on Android | unfiled | `dom-drag.ts:571` (inferred) | M1 |
+| K20 | dnd | Block selection stops scrolling past the viewport edge | `/blocks/playground` (Safari, Firefox) | #5208, with Safari and Firefox as Repro 2; 5983e2d60e on `codex/sin/fix-details-blockSelection` targets it but never reached `next` | `dom-drag-scroll.ts:113` (read) | M3 |
+| K21 | accessibility | Clicking empty editor padding focuses with no caret | `/docs/examples/editor-full-width`, `/docs/installation/manual` (Firefox) | #5227, whose Repro 2 is `/docs/installation/manual` | `runtime-focus-mouse-events.ts:78` (inferred) | M2, M3, M4 |
 | K22 | runtime | Clicks inside an inline button place no caret | `/examples/plite/inlines` | unfiled | not traced | M1 |
 | K23 | react | A read-only editor still shows a caret and the edit menu | `/examples/plite/read-only`, `/docs/examples/html-export` | unfiled | `editable.tsx:516` (read) | M1 |
 | K24 | react | With several views, history buttons and blank clicks miss the editor | `/examples/plite/external-text` ×3 | unfiled | `editable-dom-runtime.ts:257`, `use-plite-history.ts:153` (read) | M6 |
 | K25 | history | Plite examples install no history, so undo does nothing | 16 example pages | unfiled; recheck 24 | the 16 example files (read) | M5 |
 | K26 | history | Content completion splits undo and adds empty steps | `/examples/plite/content-completion` ×2 | unfiled | `history-merge-policy.ts:267` (read) | M1 |
 | K27 | commands | Selection in a projected root acts on the wrong root | `/examples/plite/schema-reconfiguration`, `/examples/plite/synced-blocks` ×2 | unfiled | `editor-commands.ts:620` (inferred) | M6 |
-| K28 | editing | Enter and paste split a read-only guard, and blocked typing moves the caret | `/examples/plite/schema-reconfiguration` ×2 | unfiled | `insert-text.ts:45` against `insert-break.ts:75` (read) | M6 |
+| K28 | editing | Enter and paste split a read-only guard, and blocked typing moves the caret | `/examples/plite/schema-reconfiguration` ×2, and Enter on Android | unfiled | `insert-text.ts:45` against `insert-break.ts:75` (read) | M6 |
 | K29 | commands | Undoing Unsync loses the caret; a cross-root drag throws | `/examples/plite/synced-blocks`, `/examples/plite/multi-root-document` | unfiled | not traced | M1 |
 | K30 | commands | Backspace over all of a heading's text deletes the heading | `/docs/heading` (Firefox) | unfiled | `editor-commands.ts:620` (read) | M7 |
 | K31 | authored | Editing across a pending join leaves the paragraphs split | `/docs/suggestion` | #5194 | `ledger.ts:1254`, `record.ts:3362` (inferred) | M3, M6 |
@@ -167,6 +167,17 @@ Members name the page route and the browser the find came from. A kind with "unf
 | K38 | documents | DOCX import refuses common files and drops formatting | `/docs/docx` | unfiled | `importDocx.ts:2020`, `import-toolbar-button.tsx:255` (read) | M1, M7 |
 | K39 | documents | An exported Word file names html-to-docx as its author | `/docs/examples/export` | unfiled | not traced | M1 |
 | K40 | docs | Chinese pages show English content | `/cn/docs/footnote`, `/cn/docs/pagination`, `/cn/docs/underline` | unfiled | `doc-page.tsx:76` falls back to English; `underline.cn.mdx` holds English (read) | M1 |
+| K41 | clipboard | Paste on Android inserts the text twice | `/examples/plite/editable-voids`, `huge-document`, `markdown-preview`, `plaintext`, `shadow-dom`, `comment-mode`, `document-state`, `inline-void-drag`, `schema-reconfiguration` (Android) | unfiled | not traced; the `paste` event and `insertFromPaste` may each insert once (inferred) | M4 |
+| K42 | editing | Paste over a tapped guard crashes the page | `/examples/plite/schema-reconfiguration` (Android) | unfiled | not traced; it may share K28's guard handling (inferred) | M4 |
+| K43 | ui | A long press turns the paragraph into a block selection with no Copy | `/docs/docx`, `/docs/examples/export` (Android) | unfiled | `block-menu.tsx:158` disables the context menu on touch, but its `onContextMenu` handler still runs and `:192` replaces the word selection (read) | M4, M7 |
+| K44 | clipboard | Copy after typing writes nothing to the clipboard | `/examples/plite/huge-document` (Android) | unfiled | `clipboard-input-strategy.ts:330`, `dom-clipboard-runtime.ts:513` (inferred) | M4 |
+| K45 | selection | After a blur, the first long press selects no word | `/examples/plite/huge-document`, `/examples/plite/comment-mode` (Android) | unfiled | `selection-reconciler.ts:1432` writes the stale caret back on focusin (inferred) | M4 |
+| K46 | native | No caret handle after a tap | `/examples/plite/markdown-preview`, `plaintext`, `shadow-dom` (Android) | unfiled | not traced | M4 |
+| K47 | react | A long press in a nested editor drags the whole card and loses the next keystroke | `/examples/plite/editable-voids` (Android) | unfiled | `plite-void-shell.tsx:21` renders the card draggable; the error comes from `selection-protocol.ts:780` (read) | M4 |
+| K48 | media | Insert via URL throws and inserts no image | `/docs/docx`, `/docs/media` (Chromium) | unfiled | `media-toolbar-button.tsx:200` passes `name: undefined`, which `update.insert` at `:204` refuses (read) | M1 |
+| K49 | dnd | The column handle cannot move a column to the right of its neighbor | `/docs/column` (Firefox) | unfiled; #5001, closed, tracks the stable site's fix and stays closed | `column.tsx:119` calls `startBlockDrag`, the block handle's entry at `dnd.tsx:305` (read); it may share K18's cause (inferred) | M1 |
+
+K41 to K49 come from finds recorded after this triage, mostly natamox's Android retest; K48 and K49 are earlier finds the triage missed.
 
 Thirteen more single finds are unfiled kinds of their own, each M1 until its fix run says otherwise: multiline paste splits a JSX code block, forced-layout split and merge leave an empty paragraph, its placeholder never shows, cross-cell delete breaks a table, `@r` shows no mention at the document end, Excalidraw focus jumps to the outer editor, footnotes show doubled numbers, the DOM-coverage copy payload leaks labels and attributes, hidden-content blocks redraw stale text, an `inclusive: false` mark extends on typing, an unregistered inline link renders as a block, Keep selection visible clips its preview, and the docs Demo example starts empty. Two layout finds on Android, the editable-voids card and huge-document's sideways scroll, join K37's layout work.
 
@@ -181,12 +192,14 @@ Thirteen more single finds are unfiled kinds of their own, each M1 until its fix
 | K17 | #5228 | Add the post-save toolbar loss as a repro, once its fix run confirms one fix removes both (inferred) |
 | K14 | new issue | First-click and Turn into failures; link closed #5209 as the neighbor |
 
+natamox published the K7, K10, K4, K18 and K14 rows on 2026-10-24 (UTC); the K14 issue is #5241. K17 still waits for its fix run.
+
 ### Not bugs yet
 
 - #5197 and #5198 propose new suggestion policies and capabilities, and the tests pin today's behavior on purpose. Scenario S14 in `docs/editor-behavior/scenarios/suggestions.md` promises list continuation that the tests refuse, so the catalog and the tests disagree. Both go to `verdict`.
 - #5205, outdent before Backspace joins, and #5211, Callout in the Insert menu, are proposals for `verdict`.
 - K30's heading case conflicts with whole-block deletion the testers accepted on lists and checklists; it needs a spec row before a test.
-- #5196's ghost text is fixed on `next` by f3202e1c61 and did not reproduce in four engines later in the round; natamox can close it once beta serves that commit.
+- #5196's ghost text is fixed on `next` by f3202e1c61 and did not reproduce in four engines later in the round; natamox closed it on 2026-10-24 (UTC), with iPhone unchecked, and closed #5125, fixed by 58a6755ece, the same day. #5149 is a report against the stable packages, so the Beta rechecks leave it open.
 - #5195, #5209, #5210, #5212 and #5213 are closed. #5210 and #5213 gained tests with their fixes, and #5212's fix added none.
 
 ### Why tests missed them
@@ -194,11 +207,11 @@ Thirteen more single finds are unfiled kinds of their own, each M1 until its fix
 | Class | Kinds | What closes it this time |
 | --- | --- | --- |
 | M6 composition gap | 15: K1 to K3, K5, K7 to K10, K14, K24, K27, K28, K31, K32, K34 | The intake's formal checks: autoformat for K7 to K9 (t_30422a81), suggestion recording for K31 (t_a998edbb) and Yjs peers for K34 (t_dd929413); a generated browser matrix of composition, selection and block for the composition redesign; `authored-decision-order`'s skill when K31's fix touches its coverage |
-| M4 engine gap | 10: K1 to K3, K6, K14 to K16, K18, K21, K36 | Gate `apps/www/tests/browser/regressions/` in CI, whose trigger in the sweep plan's step 2.1 has fired; `/pstack:maintain-verification-skill` on what agents could not drive: iPhone, OS input methods and the Hocuspocus server |
+| M4 engine gap | 17: K1 to K3, K6, K14 to K16, K18, K21, K36, K41 to K47 | Gate `apps/www/tests/browser/regressions/` in CI, whose trigger in the sweep plan's step 2.1 has fired; `/pstack:maintain-verification-skill` on what agents could not drive: iPhone, OS input methods and the Hocuspocus server |
 | M3 wrong assertion | 7: K7 to K9, K17, K20, K21, K31 | `/pstack:correct` on expected-failure tests, because K7's full-kit test, `apps/www/src/__tests__/package-integration/autoformat/current-kit.spec.tsx:31`, catches the bug and is marked `it.failing`, so it gates nothing; `test-audit` on the input-rule and link tests |
 | M2 wrong layer | 7: K4, K6, K10, K14, K17, K21, K32 | Tests at the shortcut, click or render the user takes, not the command beneath it; `/pstack:correct` when the next round repeats it |
 | M5 wiring gap | 3: K4, K7, K25, plus #5212 and #5198 | `/pstack:correct` on a check over the shipped examples and kits: every Plite example installs history unless it says why, toolbar hints come from the kit's binding, and authored fixtures keep production vetoes |
-| M7 spec gap | 2: K30, K38, plus the four proposals | Spec rows first, through `verdict` |
+| M7 spec gap | 3: K30, K38, K43, plus the four proposals | Spec rows first, through `verdict` |
 | M1 no test | the rest | The fix's own test and a scenario catalog row |
 
 One finding sits under every class: `apps/www` browser specs run only by hand, Plite's Firefox and WebKit jobs run only on demand, and pull requests into `next` skip CI. A test written at the right layer still gates nothing until a lane runs it. The formal checks have the same gap at their deeper sizes, which no step runs; t_df2f315f adds them to the daily full check.
