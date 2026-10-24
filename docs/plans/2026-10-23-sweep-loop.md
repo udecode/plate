@@ -129,7 +129,7 @@ Members name the page route and the browser the find came from. A kind with "unf
 | --- | --- | --- | --- | --- | --- | --- |
 | K1 | native | Composition over a selection does not replace it in place | `/docs/block-menu`, `/docs/examples/huge-document`, `/examples/plite/huge-document`, `/examples/plite/plaintext` (Android); `/examples/plite/mentions` (Chrome) | #5244 | `composition-state.ts:1086` on desktop, `android-composition.ts:894` on Android (inferred) | M4, M6 |
 | K2 | native | A mark turned on is lost on composed text | `/docs/subscript`, `/docs/underline` (Android); `/docs/subscript` (desktop; browser and input method not recorded) | #5245 | `composition-state.ts:1072` on desktop; the Android path returns at `:1065` before it, and its owner is not traced (read) | M4, M6 |
-| K3 | native | Composing in a new empty paragraph lands in the block above, or crashes on Return or undo | `/docs/indent` ×2, `/docs/list` ×2 (Safari); agent runs on `/examples/plite/forced-layout` and `/examples/plite/richtext` (Safari) that natamox's manual retests did not reproduce | #5242, whose Repro 3 and 4 are the two agent runs | composition state, no stack captured (inferred) | M4, M6 |
+| K3 | native | Composing in a new empty paragraph lands in the block above, or crashes on Return or undo | `/docs/indent` ×2, `/docs/list` ×2, `/examples/plite/forced-layout`, `/examples/plite/richtext` (Safari; Chrome keeps the text on the last two) | #5242 | composition state, no stack captured (inferred) | M4, M6 |
 | K4 | native | A mark turned off by its shortcut still formats the next text | `/docs/basic-marks` ×2, `/docs/bold`, `/docs/installation/react`, `/docs/italic`, `/docs/strikethrough` | #5224, whose Repro 2 to 4 are `/docs/installation/react`, `/docs/italic` and `/docs/strikethrough` | `native-input-strategy.ts:56` (inferred) | M2, M5 |
 | K5 | native | Undo inside an input in a void runs the editor's undo | `/examples/plite/editable-voids`, `/examples/plite/embeds` | #5246 | `keyboard-input-strategy.ts:492` (read) | M1, M6 |
 | K6 | native | Option with a digit fires no heading shortcut in Safari | `/docs/basic-blocks` | #5225 | `packages/plitejs/src/dom/utils/hotkey-match.ts:182` (inferred) | M2, M4 |
@@ -197,7 +197,7 @@ Thirteen more single finds are unfiled kinds of their own, each M1 until its fix
 
 natamox published the K7, K10, K4, K18 and K14 rows on 2026-10-24 (UTC); the K14 issue is #5241. K17 still waits for its fix run.
 
-natamox published batch 1 the same day: nine new issues, #5242 to #5250, for K1 to K3, K5, K28, K42, K46, K50 and K51. Every native and editing kind now has an issue. #5242's Repro 3 and 4 are agent runs that natamox's manual retests did not reproduce, and the issue does not say so yet.
+natamox published batch 1 the same day: nine new issues, #5242 to #5250, for K1 to K3, K5, K28, K42, K46, K50 and K51. Every native and editing kind now has an issue. natamox reproduced #5242's Repro 3 and 4 by hand in Safari on 2026-10-24 (PT), after earlier retests had not, and Chrome keeps the text in both.
 
 ### Not bugs yet
 
@@ -250,7 +250,7 @@ Each step names its proof, and the decision log cites each log by path.
 
 - natamox files each domain from the triage: new issues per unfiled kind, the merges in the table and the member comments. owner: natamox. stop: every round 1 domain filed.
 - natamox filed the native domain on 2026-10-24 (UTC), so t_1d843b2a can start; it took in t_94ffdd65. t_c4407e94 and t_8276a635 start once natamox files their domain. owner: zbeyens. stop: each lands or is dropped.
-- A drafted comment for #5242 says that natamox's manual retests did not reproduce its Repro 3 and 4. owner: natamox. stop: posted or dropped.
+- A drafted comment for #5242 records that Safari retest and Chrome's result. owner: natamox. stop: posted or dropped.
 - The four hardening items have no chips, because a run offers chips only for new P0 and P1 finds (owner's word, 2026-10-23). Each belongs to the loop step that names it. Gating `apps/www/tests/browser/regressions/` in CI is the regression sweep's step 2.1. The expected-failure tests and the shipped-wiring check go to `/pstack:correct` from the first domain fix run that hits them. `/pstack:maintain-verification-skill` runs in After a round. owner: zbeyens. stop: round 2 starts.
 - The intake's first formal check, t_30422a81, landed. The other four run in its order: t_a998edbb, t_dd929413, t_df2f315f, then t_589db800 once two checks exist. owner: zbeyens. stop: each lands or is dropped.
 - The six moves still have no trial. owner: zbeyens. stop: round 2's tally, or 2027-01-15.
