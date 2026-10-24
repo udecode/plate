@@ -379,6 +379,7 @@ import {
   indexSurelyHoldsNodeKey,
   mapSnapshotIndexThroughChange,
   type NodeKeyBinding,
+  snapshotIndexFrom,
 } from './snapshot-index';
 import {
   getInstalledStateField,
@@ -691,15 +692,16 @@ export const inheritEditorProjectionIndexes = (
     const next = valueRootNodes(after, root);
     const index = indexes.get(previous);
     if (!index || previous === next || indexes.has(next)) continue;
+    const beforeIndex = valueRootIndex(before, root);
 
     indexes.set(
       next,
       advanceSnapshotIndex(
         owner,
-        valueRootIndex(before, root),
+        beforeIndex,
         valueRootIndex(after, root),
         rootChange,
-        index,
+        snapshotIndexFrom(beforeIndex, index, owner),
         {
           binding: 'publish',
           classification: getInternalDocumentChangeClassification(change, root),

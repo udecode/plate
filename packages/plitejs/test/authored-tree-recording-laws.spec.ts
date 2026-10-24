@@ -7599,6 +7599,47 @@ describe('authored review delta law', () => {
         ];
       })
     );
+  const deltaExamples = {
+    'a suggested insertion changes only the proposed preview of the root both previews show, and a rotation then maps the accepted preview from that root':
+      [
+        [
+          { type: 'paragraph', children: [{ text: 'ab' }] },
+          { type: 'paragraph', children: [{ text: 'cd' }] },
+        ],
+        [
+          {
+            author: 'alice',
+            command: { at: 'a', kind: 'nest', side: 0 },
+            intent: 'propose',
+          },
+        ],
+        [
+          [
+            {
+              command: { at: 'a', edge: 'after', kind: 'moveNode', to: 'd' },
+              intent: 'edit',
+              kind: 'command',
+            },
+            { action: 'accept', kind: 'decide' },
+          ],
+          [
+            {
+              command: { at: 'c', kind: 'transferText', to: 'a' },
+              intent: 'edit',
+              kind: 'command',
+            },
+          ],
+          [{ at: 'a', kind: 'forced', side: 0 }],
+          [
+            {
+              command: { kind: 'replaceChildren', shift: 1 },
+              intent: 'edit',
+              kind: 'command',
+            },
+          ],
+        ],
+      ],
+  };
   it('names each top-level view block whose read of cards changed since its publisher last published, under each preview and with none', () => {
     const counts = {
       batches: 0,
@@ -7729,7 +7770,12 @@ describe('authored review delta law', () => {
           }
         }
       ),
-      { numRuns: 20, seed: LEDGER_SEED }
+      {
+        examples: Object.values(deltaExamples) as never,
+        // fast-check counts the pinned example inside numRuns.
+        numRuns: 21,
+        seed: LEDGER_SEED,
+      }
     );
     console.info(`delta law seed ${LEDGER_SEED}:`, counts);
     assert.ok(

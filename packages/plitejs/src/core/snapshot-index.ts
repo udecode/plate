@@ -1993,6 +1993,26 @@ export const mapSnapshotIndexThroughChange = (
   return mappedIndex;
 };
 
+export const snapshotIndexFrom = (
+  document: DocumentIndex,
+  index: SnapshotIndex,
+  editor: Editor
+): SnapshotIndex => {
+  const last = MAPPED_SNAPSHOT_INDEXES.get(index)?.segments.at(-1);
+
+  if (!last || last.after === document) return index;
+  if (last.change) {
+    throw new Error(
+      `Snapshot index mappings are not sequential: previous target length ${last.after.length}, next source length ${document.length}.`
+    );
+  }
+
+  return buildSnapshotIndex(
+    editor,
+    document.value as unknown as readonly Descendant[]
+  );
+};
+
 /**
  * Advance lazy mapping provenance for a change that cannot move node paths.
  * The public index remains path-identical, while a later structural mapping
@@ -2011,14 +2031,7 @@ export const advancePathStableSnapshotIndex = (
   assertMappingLengths(before, after, change);
 
   const previous = MAPPED_SNAPSHOT_INDEXES.get(index);
-  const previousAfter = previous?.segments.at(-1)?.after;
-  const sourceIndex =
-    previousAfter && previousAfter !== before
-      ? buildSnapshotIndex(
-          editor,
-          before.value as unknown as readonly Descendant[]
-        )
-      : index;
+  const sourceIndex = snapshotIndexFrom(before, index, editor);
 
   const keyed = (runtimeCandidates ?? []).map((candidate) => {
     const path = [...candidate.path] as Path;

@@ -2024,6 +2024,20 @@ describe('JSON document change algebra', () => {
       /Snapshot index mappings are not sequential/
     );
 
+    const unrelatedEdit = insertTextChange(before, [2, 0], 1, '!');
+
+    assert.throws(
+      () =>
+        advancePathStableSnapshotIndex(
+          before,
+          unrelatedEdit.apply(before),
+          unrelatedEdit,
+          mapped,
+          owner
+        ),
+      /Snapshot index mappings are not sequential/
+    );
+
     const sibling = DocumentIndex.fromValue(
       asJsonNodes([paragraph('x'), paragraph('y')])
     );
