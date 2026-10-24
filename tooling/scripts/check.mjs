@@ -230,8 +230,8 @@ export const steps = [
     fix: 'pnpm install',
   },
   {
-    // Both docs checks judge every plan, so another session's open plan can
-    // turn them red; the daily full check runs them instead of each landing.
+    // It judges every plan, so another session's open plan can turn it red;
+    // the daily full check runs it instead of each landing.
     name: 'review-ledger',
     run: 'node tooling/scripts/review-ledger.mjs check',
     affected: never,
@@ -244,7 +244,12 @@ export const steps = [
     name: 'knowledge',
     run: 'node tooling/scripts/knowledge/kb.mjs check',
     fix: 'node tooling/scripts/knowledge/kb.mjs check --lower',
-    affected: never,
+    affected: touches(
+      'docs/research/',
+      'docs/editor-behavior/',
+      'docs/plans/topics/',
+      'tooling/scripts/knowledge/'
+    ),
   },
   { name: 'manifests', run: 'pnpm test:manifests' },
   {

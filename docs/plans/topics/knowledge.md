@@ -17,7 +17,7 @@ The state on 2026-10-24, after the landed phases of the [2026-10-06 knowledge pl
 | Upstream issues | `docs/editor-issue-harvester/<repo>`, `c70bacbd4a:docs/plite-issues`, the maintainer queue | typed `issue-harvester` and maintainer, `pnpm kb` | issue-harvester, maintainer |
 | Harvested tests | `docs/editor-test-harvester/<repo>` | typed `research harvest`, `pnpm kb <editor>` | research harvest |
 | Measurements | `benchmarks/targets`, `benchmarks/editor`, plans with Cause History, git-ignored `tmp/` | the benchmark rule and the Perf issue playbook | benchmark runners |
-| Lessons | `docs/research/sources/plate-notes/*.md`, with the old `docs/solutions` notes compiled in | Bug fix and Perf issue playbooks | research's maintain mode |
+| Lessons | `docs/research/sources/plate-notes/*.md`, with the old `3b6e49c964:docs/solutions` notes compiled in | Bug fix and Perf issue playbooks | research's maintain mode |
 | Verdicts and adoption | `docs/research/review-scopes`, `review-records`, review pages in plan front matter | the review ledger in API review, Plan and Build | Verdict playbook |
 | Current conclusions | the scope's subject file, `docs/plans/topics/<scope>.md`, which the ledger lookup names; one-feature rules sit under its `## Rules` | lookup, plan pages | API review, plan fold |
 | Plans and trails | active plans and subjects in `docs/plans`, beside 923 settled legacy plans the review ledger indexes; 1,107 more sit in `../plate-archive/` outside git and open at `c70bacbd4a:<path>` | plan-page, review ledger | Plan, Build and other playbooks |

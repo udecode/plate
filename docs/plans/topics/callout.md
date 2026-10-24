@@ -136,19 +136,19 @@ Read from source, not run: Tiptap `91c51be53c`, ProseMirror transform `662b7a937
 
 | Editor | Where the title rule lives | A block type change on the title | Notes |
 | --- | --- | --- | --- |
-| Tiptap | `details` content `detailsSummary detailsContent` in the schema (`packages/extension-details/src/details.ts:72`) | Skipped by ProseMirror's `setBlockType`, whose `canChangeType` refuses a type the parent cannot hold (`prosemirror-transform` `src/structure.ts:117-170`) | The summary holds only text; the body is its own container |
+| Tiptap | `details` content `detailsSummary detailsContent` in the schema (`ueberdosis/tiptap@91c51be53c:packages/extension-details/src/details.ts:72`) | Skipped by ProseMirror's `setBlockType`, whose `canChangeType` refuses a type the parent cannot hold (`prosemirror-transform` `src/structure.ts:117-170`) | The summary holds only text; the body is its own container |
 | ProseMirror | Content expressions on each node type | Same `canChangeType` skip | Parsers fill missing required nodes from the content match |
 | Lexical | Node transforms in the playground's Collapsible extension (`CollapsibleExtension/index.ts:204-235`) | A broken title or content child makes the transform unwrap the whole container | No schema; structure is repaired after the edit |
 | Slate | No schema; `normalizeNode` repairs | Whatever the app's normalizer does | Plate's current corrections follow this model |
-| BlockNote | A toggle heading is a heading block with `isToggleable` (`packages/core/src/blocks/Heading/block.ts:54`) | The title is the block itself, so a type change turns the whole toggle | Children nest under the block |
+| BlockNote | A toggle heading is a heading block with `isToggleable` (`TypeCellOS/BlockNote@1e26f1c5e1:packages/core/src/blocks/Heading/block.ts:54`) | The title is the block itself, so a type change turns the whole toggle | Children nest under the block |
 | Notion | Not read this session; its public block API models a toggle heading as a heading with `is_toggleable` | Same as BlockNote | Inferred from its public API, not checked |
 
 How an extension finds an optional peer, read from source, not run: Lexical `dd5c41b131`, Tiptap `91c51be53c`, ProseMirror model `6264de069d` and Slate `945a484df2`. Class-based editors check a peer by its class; name-based editors look it up by name and add types by declaration merging, which Plate's law refuses for lookups.
 
 | Editor | How an extension finds an optional peer | Where its types come from |
 | --- | --- | --- |
-| Lexical | `editor.hasNodes([HeadingNode])`, a check by class (`packages/lexical/src/LexicalEditor.ts:1570`) | The imported class |
-| Tiptap | `getNodeType(name, schema)`, a lookup in `schema.nodes` by name (`packages/core/src/helpers/getNodeType.ts`) | Module augmentation of `Commands` (`packages/extension-heading/src/heading.ts:25`) |
+| Lexical | `editor.hasNodes([HeadingNode])`, a check by class (`facebook/lexical@dd5c41b131:packages/lexical/src/LexicalEditor.ts:1570`) | The imported class |
+| Tiptap | `getNodeType(name, schema)`, a lookup in `schema.nodes` by name (`ueberdosis/tiptap@91c51be53c:packages/core/src/helpers/getNodeType.ts`) | Module augmentation of `Commands` (`ueberdosis/tiptap@91c51be53c:packages/extension-heading/src/heading.ts:25`) |
 | ProseMirror | `schema.nodes[name]`, keyed by name (`src/schema.ts:585`) | None; node types are untyped by name |
 | Slate | No plugin registry; plugins compare `element.type` strings | The app's own custom types |
 

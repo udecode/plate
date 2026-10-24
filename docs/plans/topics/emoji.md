@@ -108,7 +108,6 @@ All of these live in Plate's copied registry layer; no `platejs` or `plitejs` en
 
 ## Open work
 
-- CI on `next` fails at install, because merge `1efe622706` tracks `apps/www/node_modules` as a symlink to a path on one Mac. Commit its removal with `git rm --cached apps/www/node_modules` and the root `.gitignore` line `node_modules`, then push `next`. owner: zbeyens. stop: CI on `next` passes its install step.
 - The `emoji-picker` and `emoji-toolbar-button` registry items link the `emoji-pro` example and Plate Pro's emoji picker page, which runs `@platejs/emoji` 52 on emoji-mart with another picker API. owner: zbeyens. stop: the next Plate Pro emoji sync, or 2026-11-30.
 - Hovering an inline combobox option only highlights it, so Enter after a hover picks the keyboard choice. owner: zbeyens. stop: a combobox hover plan, or 2026-11-30.
 - A new query does not scroll a hand-scrolled list back to its active first option. owner: zbeyens. stop: a combobox scroll plan, or 2026-11-30.

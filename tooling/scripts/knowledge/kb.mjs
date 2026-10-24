@@ -56,7 +56,7 @@ const root = fileURLToPath(new URL('../../..', import.meta.url)).replace(
   ''
 );
 const BASELINE = 'tooling/scripts/knowledge/baseline.json';
-const RULES = ['K0', 'K1', 'K4', 'K7', 'K12', 'K15'];
+const RULES = ['K0', 'K1', 'K4', 'K7', 'K12', 'K15', 'K17'];
 
 const clip = (text = '', limit = 120) => {
   const flat = String(text).replace(/\s+/g, ' ').trim();
@@ -290,7 +290,7 @@ function check(mode) {
     lowerCommand: 'pnpm kb check --lower',
     mode,
     newFindingsHelp:
-      "Fix each new knowledge finding. K0: a store or test file parsed to fewer records than it holds. K1: a rule ID is malformed or defined twice. K4: a test tag names no rule, editor or issue row. K7: a citation into this repository that a fresh checkout cannot open; commit the cited file, cite a tracked path or a <commit>:<path> on origin/next, or narrow the claim. Cite another editor's file as <owner>/<repo>@<commit>:<path> or under ../raw, which K7 leaves to K6. K12: a rule status outside locked, proposed, audit and deviation. K15: a folded file changed, a folded directory gained a file, or folded.tsv lost or changed a row; write new knowledge to the file's home.",
+      "Fix each new knowledge finding. K0: a store or test file parsed to fewer records than it holds. K1: a rule ID is malformed or defined twice. K4: a test tag names no rule, editor or issue row. K7: a citation into this repository that a fresh checkout cannot open; commit the cited file, cite a tracked path or a <commit>:<path> on origin/next, or narrow the claim. Cite another editor's file as <owner>/<repo>@<commit>:<path> or under ../raw, which K7 leaves to K6. K12: a rule status outside locked, proposed, audit and deviation. K15: a folded file changed, a folded directory gained a file, or folded.tsv lost or changed a row; write new knowledge to the file's home. K17: a file added under docs/plite/research, docs/research/probes or docs/research/raw, which are frozen; keep run notes in the ignored docs/plans/artifacts/<slug>/ and findings on the area page.",
     rules: RULES,
   });
   if (status !== 0) {

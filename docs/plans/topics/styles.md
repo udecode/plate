@@ -46,7 +46,7 @@ export const BasicMarksKit = [
 The DOCX font test installs only the style marks.
 
 ```tsx
-// apps/www/src/__tests__/package-integration/docx/font.slow.tsx
+// apps/www/src/__tests__/package-integration/docx/font.spec.tsx
 plugins: [
   FontBackgroundColorPlugin,
   FontFamilyPlugin,
@@ -58,7 +58,7 @@ plugins: [
 A bold Word run imports as one bold flag.
 
 ```tsx
-// apps/www/src/__tests__/package-integration/docx/font.slow.tsx
+// apps/www/src/__tests__/package-integration/docx/font.spec.tsx
 <htext fontFamily="Cambria, serif" fontSize="12pt" bold>
   Definition Term
 </htext>

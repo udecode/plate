@@ -1328,6 +1328,14 @@ const REPO_PATH = new RegExp(
 );
 const EVIDENCE_LAYER = /^(?:\.\.\/)+raw\//;
 const ROOT_PATH = new RegExp(`^${ROOTS}`);
+// Research runs keep their notes in the ignored run directory since this
+// commit; `kb` still reads what these folders held there.
+const FREEZE_COMMIT = '2111c23ad713e25263f30eea80ed48cf11fc60ba';
+const FROZEN = [
+  'docs/plite/research/',
+  'docs/research/probes/',
+  'docs/research/raw/',
+];
 const ANCHOR = /#.*$/;
 const LINE_RANGE = /:\d+(?:-\d+)?$/;
 
@@ -1593,6 +1601,42 @@ export function findings(
         );
       }
     });
+  }
+
+  const inFrozen = tree
+    .list()
+    .filter((path) => FROZEN.some((dir) => path.startsWith(dir)));
+  if (inFrozen.length) {
+    const listed = git(tree.repo, [
+      'ls-tree',
+      '-r',
+      '--name-only',
+      FREEZE_COMMIT,
+      '--',
+      ...FROZEN,
+    ]);
+    if (listed.status !== 0) {
+      at(
+        'K17',
+        FROZEN[0],
+        1,
+        `cannot list the freeze commit ${FREEZE_COMMIT}: ${listed.stderr.trim()}`,
+        FREEZE_COMMIT
+      );
+    } else {
+      const held = new Set(listed.stdout.split('\n').filter(Boolean));
+      for (const path of inFrozen) {
+        if (!held.has(path)) {
+          at(
+            'K17',
+            path,
+            1,
+            `adds a file to a folder frozen at ${FREEZE_COMMIT.slice(0, 10)}`,
+            path
+          );
+        }
+      }
+    }
   }
   return out;
 }

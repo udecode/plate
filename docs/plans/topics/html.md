@@ -163,7 +163,7 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
 - The registry export toolbar catches a thrown HTML or Word export, logs it and shows an error toast.
 - `BaseIndentKit` and `BaseListKit` target images like `IndentKit` and `ListKit`, so an editor built from the static kit loads a document with an indented image or an image in a list.
 - Rendering reads a read-only document view of the editor, made with `createEditorView(editor, { document })`, so one editor renders many documents without changing its own.
-- `packages/platejs/src/static/editor/` and `packages/platejs/src/react/editor/useStaticEditor.ts` are gone. Every editor that draws static output, in package code, apps and tests, comes from root or React `createEditor`, and `platejs/static` no longer re-exports the zustand store or six node prop types.
+- `6fa1169c5e:packages/platejs/src/static/editor/` and `6fa1169c5e:packages/platejs/src/react/editor/useStaticEditor.ts` are gone. Every editor that draws static output, in package code, apps and tests, comes from root or React `createEditor`, and `platejs/static` no longer re-exports the zustand store or six node prop types.
 - The schema adoption audit and the docs code-contract check recognize `useCreateEditor` as a constructor, so migrated preview callers stay audited.
 
 ## Open work

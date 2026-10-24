@@ -190,7 +190,7 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
         'knowledge',
       ],
       plite: ['autoformat-rules', 'review-ledger', 'knowledge'],
-      lockfile: ['review-ledger', 'knowledge'],
+      lockfile: ['review-ledger'],
     }
   );
 });

@@ -28,7 +28,7 @@ const result = target.api.markdown.parseSlice(
 Parsing HTML whose list item holds a paragraph and then a code block keeps both blocks, as Markdown does for the same item.
 
 ```ts
-// docs/plans/artifacts/2026-10-12-conversion-boundary-review/list-blocks-kit.probe.test.ts
+// list-blocks-kit probe, named in docs/plans/2026-10-12-conversion-boundary-review.md
 const result = editor.api.html.parse(
   '<ol><li><p>Install</p><pre><code>npm i</code></pre></li></ol>'
 );
@@ -38,7 +38,7 @@ const result = editor.api.html.parse(
 Parsing the same item as Markdown, in an editor whose Indent plugin targets only paragraphs, keeps the document and warns about the one lost indent.
 
 ```ts
-// docs/plans/artifacts/2026-10-12-conversion-boundary-review/md-diag.probe.test.ts
+// md-diag probe, named in docs/plans/2026-10-12-conversion-boundary-review.md
 const result = editor.api.markdown.parse('1. Install\n\n   ```\n   npm i\n   ```');
 // ok: numbered paragraph "Install", then code block "npm i" with no indent, and one
 // markdown-unsupported-node warning: List Markdown omitted property "indent" on "codeBlock"
@@ -114,8 +114,8 @@ Rejected, and why:
 
 | Change | Layer (Plite or Plate) | Package | Why |
 | --- | --- | --- | --- |
-| An HTML list item's later blocks become blocks one level deeper | Plate | `platejs` root, `BaseListPlugin`'s HTML mapping | `ListPlugin` owns its format mappings ([plate.md](../vision/plate.md) line 1379) |
-| The Markdown list decoder keeps each block's type and reports each list property the schema cannot place | Plate | `platejs` root, `BaseListPlugin`'s Markdown mapping | A lost property warns under every policy, and only the producer can tell that loss from a decoder bug, which throws ([plate.md](../vision/plate.md) lines 733 to 749) |
+| An HTML list item's later blocks become blocks one level deeper | Plate | `platejs` root, `BaseListPlugin`'s HTML mapping | `ListPlugin` owns its format mappings ([plate.md](../../vision/plate.md) line 1379) |
+| The Markdown list decoder keeps each block's type and reports each list property the schema cannot place | Plate | `platejs` root, `BaseListPlugin`'s Markdown mapping | A lost property warns under every policy, and only the producer can tell that loss from a decoder bug, which throws ([plate.md](../../vision/plate.md) lines 733 to 749) |
 | A format decoder can ask the schema whether a property fits a block type | Plate | `platejs` root, `PluginFormatSchemaView` in `PluginFormatContext.ts`, built in `pluginFormatOperation.ts` | The editor schema already answers `property({ key, placement, type })`; the view passes that read through with its existing type |
 | A list item's margin becomes its level before List moves the item's blocks | Plate | `platejs` root, `BaseIndentPlugin`'s HTML mapping | Indent owns turning a margin into a level, with its configured offset and unit |
 | A custom or namespaced tag, and ruby markup, reads as inline | Plate | `platejs` root, `htmlDom.ts` | The HTML runtime owns block detection for every mapping |

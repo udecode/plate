@@ -246,7 +246,7 @@ The list drag review read four editors in local source, without running them. Ev
 | Slate `945a484df` | Deletes the dragged range, then `insertData`, the paste call | `insertData` overrides | No list model in core |
 | Notion (not read) | not read | not read | Positional numbering: a dropped numbered block numbers with the run it lands in |
 
-Source: `docs/plans/artifacts/2026-10-15-list-drag-landing/prior-art.md`.
+Source: the prior-art notes that [the list drag landing plan](../2026-10-15-list-drag-landing.md) names.
 
 The move guard review read the same four editors' paste paths for what checks a move after it lands. None compares what landed with what moved, so none refuses a move a paste hook changed (inferred from those paste paths; no editor was run).
 
@@ -258,7 +258,7 @@ The move guard review read the same four editors' paste paths for what checks a 
 | Slate | The range is deleted, then `insertData`, the paste call, inserts it | None |
 | Plite | The paste plan with intent `move`, then a guard after corrections | Text and marks, and every block the move carries, an empty last block included, except the block the moved text joins at the drop point and the blocks that hold it |
 
-Source: `docs/plans/artifacts/2026-10-15-move-landing-guard/prior-art.md`.
+Source: the prior-art notes that [the move landing guard plan](../2026-10-15-move-landing-guard.md) names.
 
 ## Layer and owner
 
@@ -449,7 +449,7 @@ Sources: `plan` is `docs/plans/2026-10-01-dnd-transfer-consolidation.md`, `landi
 | Keyboard move into another list | A step that lands beside another list of its kind joins it; stepping back past a paragraph rejoins its old list, while a step back out of a list right next to its own stays in the list it joined | List spec step cases; Chromium `Mod+Shift+ArrowDown` on `/blocks/list-demo` with rendered numbers | `list move plan` |
 | Text drag whose landing changes the block that holds the range's end, empty or not, or a block containing it | Refuses and changes nothing | Step 1's raw Plite cases, through a landing read and through a correction | `move guard plan` Step 1 |
 | Text drag whose range ends at the start of a block the source merges away, from inside a block or from a block's end | Lands, with that block's settings around the drop point's following text. Before, such a range refused when a whole block sat between its ends (F3) | Step 1's controls; probes F3 and A2 (`proof/p1-d3-probes-a1.log`, `proof/p1-v5-probes-a1.log`) | `move guard plan` Step 1 |
-| Text drag or Option-drag copy whose range starts at a block's end or ends at a block's start | The returned range and the selection after the drop start at the end of the drop point's text block, or end at the start of the block that holds the drop point's following text | Step 1's copy-range and empty-edge cases; the copy run (`docs/plans/artifacts/2026-10-15-move-landing-guard/proof/v7/oracle-copies.log`) | `move guard plan` Step 1 |
+| Text drag or Option-drag copy whose range starts at a block's end or ends at a block's start | The returned range and the selection after the drop start at the end of the drop point's text block, or end at the start of the block that holds the drop point's following text | Step 1's copy-range and empty-edge cases; the copy run, whose log [the move landing guard plan](../2026-10-15-move-landing-guard.md) names | `move guard plan` Step 1 |
 | Text drag or Option-drag copy with an end at a link's edge | The returned range and the selection cover the link the landing wrote, and stop outside a link the drop splits | Step 1's link cases; the copy run | `move guard plan` Step 1 |
 | Option-drag copy that starts at a block's end or ends at a block's start | Lands without saying that some content does not fit (486 copies in the copy run). A copy that holds no characters and ends at a link's start, dropped at the end of a link's text, now says it (14 copies), though it lands the same | Step 1's copy cases compare the whole outcome; the copy run | `move guard plan` Step 1 |
 | Text drag of whole list items out of a quote into an empty paragraph | Lands at the drop's depth; one undo restores the source | Step 2's List case | `move guard plan` Step 2 |

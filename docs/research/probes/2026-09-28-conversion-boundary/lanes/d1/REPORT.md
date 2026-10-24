@@ -101,8 +101,8 @@ Run from the repository root unless noted; all results are from the final code.
 | `pnpm --filter platejs typecheck:contracts` | exit 2 only on the formats lane's `parseHtmlSlice` `@ts-expect-error` lines; D1 contracts clean |
 | `tsc --noEmit -p tsconfig.json` and `-p tsconfig.package-integration.json` (in `apps/www`) | no D1 errors; remaining errors in `markdownConversion.ts`, `markdownSafety.ts` and `HtmlPlugin.ts` (other lanes, mid-edit) |
 | `bun --config=bunfig.toml test` on the export and import toolbar specs and `docx-source.spec.tsx` | 1, 2 and 1 pass |
-| `bun --config=bunfig.toml test packages/platejs/src/docx/import/lib/importDocx.slow.tsx` | 5 pass (real Mammoth) |
-| `bun --config=bunfig.toml test apps/www/src/__tests__/package-integration/docx.roundtrip.slow.tsx` | 5 pass; the TOC `renderStaticHtml` test fails outside DOCX |
+| `bun --config=bunfig.toml test` on `009c8c3a5b:packages/platejs/src/docx/import/lib/importDocx.slow.tsx`, now `importDocx.spec.tsx` | 5 pass (real Mammoth) |
+| `bun --config=bunfig.toml test` on `009c8c3a5b:apps/www/src/__tests__/package-integration/docx.roundtrip.slow.tsx`, now `docx.roundtrip.spec.tsx` | 5 pass; the TOC `renderStaticHtml` test fails outside DOCX |
 | `bun test ./docs/research/probes/2026-09-28-conversion-boundary/lanes/d1/eligibility-measurement.test.ts` | 2 pass; writes `results.json` (sha256 `bb2d8306…`) and `supplementary.json` (`fb469d43…`) |
 | `npx oxfmt` / `npx oxlint` on D1 files | formatted; lint exit 0 |
 

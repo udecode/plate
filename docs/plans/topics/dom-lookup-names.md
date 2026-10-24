@@ -50,9 +50,9 @@ Read from Slate 945a484df, prosemirror-view ca4c78e, Lexical dd5c41b13 and CodeM
 
 | Editor | Root lookup | Missing root | DOM for an undrawn position |
 | --- | --- | --- | --- |
-| Slate | `DOMEditor.findDocumentOrShadowRoot` (`packages/slate-dom/src/plugin/dom-editor.ts:303-312`) | Throws through `toDOMNode`; no soft form | `toDOMPoint` throws |
+| Slate | `DOMEditor.findDocumentOrShadowRoot` (`ianstormtaylor/slate@945a484df2:packages/slate-dom/src/plugin/dom-editor.ts:303-312`) | Throws through `toDOMNode`; no soft form | `toDOMPoint` throws |
 | ProseMirror | `view.root` getter (`src/index.ts:348-358`) | Never null; falls back to `document` | A view draws its whole document |
-| Lexical | `editor.getRootElement()` (`packages/lexical/src/LexicalEditor.ts:1605`) | Returns `null`; no strict form | No virtualization |
+| Lexical | `editor.getRootElement()` (`facebook/lexical@dd5c41b131:packages/lexical/src/LexicalEditor.ts:1605`) | Returns `null`; no strict form | No virtualization |
 | CodeMirror | `view.root` getter (`src/editorview.ts:125`) | Never null; falls back to `document` (`:201`) | `domAtPos` always answers, maybe beside a placeholder; `visibleRanges` says what is drawn (`src/editorview.ts:722-730`, `:103`) |
 | Plite today | `resolveDocumentOrShadowRoot` and strict `assertDocumentOrShadowRoot` | `null`, or a throw | `resolveDOMPoint` returns `null`; `getBoundaryForPoint` names the hiding boundary |
 

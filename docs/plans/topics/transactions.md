@@ -282,9 +282,9 @@ This page's 2026-10-13 review read the Lexical (`dd5c41b13`), Slate (`945a484df`
 | Editor | A helper usable only inside an open update | A command's location arguments when the document it decides on changes |
 | --- | --- | --- |
 | ProseMirror | No marker; a command is `(state, dispatch?)` and runs anywhere | The caller maps positions through `Mapping.map` (`prosemirror-transform` `src/map.ts:252`) |
-| Lexical | `$` helpers and node methods throw outside `editor.update` or `read` (`packages/lexical/src/LexicalUpdates.ts:103`), a naming rule with no type | No remapping; commands read the selection from the active state |
-| Slate | No marker; transforms take `at` and run anywhere | `PathRef` and `PointRef` follow operations (`packages/slate/src/interfaces/path-ref.ts:24`) |
-| Tiptap | No marker; a command runs directly, in `chain()` or as `can()` (`packages/core/src/CommandManager.ts:51`) | The caller's job |
+| Lexical | `$` helpers and node methods throw outside `editor.update` or `read` (`facebook/lexical@dd5c41b131:packages/lexical/src/LexicalUpdates.ts:103`), a naming rule with no type | No remapping; commands read the selection from the active state |
+| Slate | No marker; transforms take `at` and run anywhere | `PathRef` and `PointRef` follow operations (`ianstormtaylor/slate@945a484df2:packages/slate/src/interfaces/path-ref.ts:24`) |
+| Tiptap | No marker; a command runs directly, in `chain()` or as `can()` (`ueberdosis/tiptap@91c51be53c:packages/core/src/CommandManager.ts:51`) | The caller's job |
 | Plite | `txOnly` brands the type, and every direct call refuses it at runtime | Each command or method declares where its locations land on the review tree's proposed document |
 
 The 2026-10-15 placement review read the same Slate, Lexical, ProseMirror and Tiptap checkouts. None takes more than one placement for an insert, and none returns a coordinate that is wrong outside one tree. Lexical's insert hands back the inserted node, the closest model to Plite's returned keys.
@@ -293,7 +293,7 @@ The 2026-10-16 spec key review read the Lexical (`dd5c41b13`), Slate (`945a484df
 
 | Editor | Node identity | Built ahead of time, then applied |
 | --- | --- | --- |
-| Lexical | `getKey()` on every node, stable across the writable copies an update makes (`packages/lexical/src/LexicalNode.ts:1008`) | No; an update runs against the live state |
+| Lexical | `getKey()` on every node, stable across the writable copies an update makes (`facebook/lexical@dd5c41b131:packages/lexical/src/LexicalNode.ts:1008`) | No; an update runs against the live state |
 | ProseMirror | None; positions, remapped through `tr.mapping` | A `Transaction` is a `Transform` built off a state and dispatched later (`prosemirror-state` `src/transaction.ts:42`) |
 | Slate | None; paths | No |
 | Tiptap | None; ProseMirror positions | Commands build on ProseMirror's `Transaction` |
