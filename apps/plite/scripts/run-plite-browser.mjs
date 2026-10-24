@@ -454,8 +454,11 @@ const normalizeSelectors = (args) => {
     }
 
     throw new Error(
-      `Managed browser proof does not accept "${value}". ` +
-        'Use the explicit direct mode for diagnostic Playwright options.'
+      `Managed browser proof does not accept "${value}". ${
+        value.startsWith('--repeat-each')
+          ? 'To repeat a proof, run this command once per run with PLITE_BROWSER_FORCE_PROOF=1, which runs it again instead of replaying a matching proof.'
+          : 'Use the explicit direct mode for diagnostic Playwright options.'
+      }`
     );
   }
 
