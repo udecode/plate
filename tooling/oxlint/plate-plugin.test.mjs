@@ -85,8 +85,20 @@ describe('plate oxlint rules', () => {
         ),
         errors: [{ messageId: 'raised' }],
       },
+      {
+        // 7b7b76573b
+        ...ts(
+          "const SLOW = { timeout: 20_000 };\nit('does as much work at 1,000 cards as at 20', SLOW, () => {});"
+        ),
+        errors: [{ messageId: 'raised' }],
+      },
     ],
-    valid: [ts("it('visits owners', () => {}, { timeout: 5000 });")],
+    valid: [
+      ts("it('visits owners', () => {}, { timeout: 5000 });"),
+      ts(
+        "const FAST = { timeout: 5000 };\nconst visit = () => {};\nit('visits owners', FAST, visit);"
+      ),
+    ],
   });
 
   tester.run(

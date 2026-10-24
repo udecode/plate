@@ -198,22 +198,37 @@ const noAnnotatedInferredCallback = {
   },
 };
 
+const valuesOf = (context, node) =>
+  node.type === 'Identifier' ? writtenValues(context, node) : [node];
+
+const largestNumber = (context, node) =>
+  Math.max(
+    ...valuesOf(context, node).map((value) => numericValue(value) ?? -1)
+  );
+
 // Bun takes the timeout as a trailing number or options object; node:test
 // takes the options object before the callback.
-const timeoutOf = (node) => {
+const timeoutOf = (context, node) => {
   for (const argument of node.arguments) {
-    if (argument.type !== 'ObjectExpression') continue;
-    const property = argument.properties.find(
-      (entry) =>
-        entry.type === 'Property' &&
-        !entry.computed &&
-        (entry.key.name ?? entry.key.value) === 'timeout'
-    );
-    if (property) return { ms: numericValue(property.value), node: property };
+    for (const value of valuesOf(context, argument)) {
+      if (value.type !== 'ObjectExpression') continue;
+      const property = value.properties.find(
+        (entry) =>
+          entry.type === 'Property' &&
+          !entry.computed &&
+          (entry.key.name ?? entry.key.value) === 'timeout'
+      );
+      if (property) {
+        return {
+          ms: largestNumber(context, property.value),
+          node: value === argument ? property : argument,
+        };
+      }
+    }
   }
   const last = node.arguments.at(-1);
   return node.arguments.length > 1 && last
-    ? { ms: numericValue(last), node: last }
+    ? { ms: largestNumber(context, last), node: last }
     : null;
 };
 
@@ -230,13 +245,15 @@ const noRaisedTestTimeout = {
             : name === 'setDefaultTimeout';
 
         if (TEST_CALLEES.has(name)) {
-          timeout = timeoutOf(node);
-        } else if (setsDefault) {
-          const ms = numericValue(node.arguments[0]);
-          timeout = ms === null ? null : { ms, node: node.arguments[0] };
+          timeout = timeoutOf(context, node);
+        } else if (setsDefault && node.arguments[0]) {
+          timeout = {
+            ms: largestNumber(context, node.arguments[0]),
+            node: node.arguments[0],
+          };
         }
 
-        if (!timeout || timeout.ms === null) return;
+        if (!timeout) return;
         if (timeout.ms <= FAST_TEST_TIMEOUT_MS) return;
 
         context.report({
