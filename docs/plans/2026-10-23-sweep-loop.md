@@ -149,8 +149,8 @@ Members name the page route and the browser the find came from. A kind with "unf
 | K20 | dnd | Block selection stops scrolling past the viewport edge | `/blocks/playground` (Safari, Firefox) | #5208, with Safari and Firefox as Repro 2; 5983e2d60e on `codex/sin/fix-details-blockSelection` targets it but never reached `next` | `dom-drag-scroll.ts:113` (read) | M3 |
 | K21 | accessibility | Clicking empty editor padding focuses with no caret | `/docs/examples/editor-full-width`, `/docs/installation/manual` (Firefox) | #5227, whose Repro 2 is `/docs/installation/manual` | `runtime-focus-mouse-events.ts:78` (inferred) | M2, M3, M4 |
 | K22 | runtime | Clicks inside an inline button place no caret | `/examples/plite/inlines` | unfiled | not traced | M1 |
-| K23 | react | A read-only editor still shows a caret and the edit menu | `/examples/plite/read-only`, `/docs/examples/html-export` | unfiled | `editable.tsx:516` (read) | M1 |
-| K24 | react | With several views, history buttons and blank clicks miss the editor | `/examples/plite/external-text` ×3 | unfiled | `editable-dom-runtime.ts:257`, `use-plite-history.ts:153` (read) | M6 |
+| K23 | react | A read-only editor still shows a caret and the edit menu | `/examples/plite/read-only`, `/docs/examples/html-export` | #5252 | `editable.tsx:516` (read) | M1 |
+| K24 | react | With several views, history buttons and blank clicks miss the editor | `/examples/plite/external-text` ×2 | #5259 | `editable-dom-runtime.ts:257`, `use-plite-history.ts:153` (read) | M6 |
 | K25 | history | Plite examples install no history, so undo does nothing | 16 example pages | unfiled; recheck 24 | the 16 example files (read) | M5 |
 | K26 | history | Content completion splits undo and adds empty steps | `/examples/plite/content-completion` ×2 | unfiled | `history-merge-policy.ts:267` (read) | M1 |
 | K27 | commands | Selection in a projected root acts on the wrong root | `/examples/plite/schema-reconfiguration`, `/examples/plite/synced-blocks` ×2 | unfiled | `editor-commands.ts:620` (inferred) | M6 |
@@ -162,8 +162,8 @@ Members name the page route and the browser the find came from. A kind with "unf
 | K33 | authored | Three single authored-changes kinds: media deletion leaves no paragraph, atomic deletions show no mark, suggest-mode code edits throw | `/examples/plite/authored-changes` | unfiled | not traced | M1 |
 | K34 | collaboration | Enter at a mark edge splits peers, remote edits leave the caret behind, concurrent replacement loses letters | `/examples/plite/collaboration-demo` | unfiled | `yjs/core/selection.ts:13`, `controller.ts:1810`, `text-runs.ts:822` (read) | M1, M6 |
 | K35 | collaboration | Copy or paste over a whole line clears it for every peer | `/examples/plite/yjs-collaboration` | unfiled | the example's line handler, copied in the Hocuspocus example (read) | M1 |
-| K36 | pagination | A spanning block covers its page; Safari selection stalls, overlaps and reflows; typing lags | `/examples/plite/pagination` ×2, `/docs/pagination` ×3 | unfiled | `pagination/react.tsx:573`, `page-geometry.internal.ts:27` (read) | M1, M4 |
-| K37 | pagination | The docs sidebar covers the paper and clips the right page | `/examples/plite/pagination` | unfiled | layout, not traced | M1 |
+| K36 | pagination | A spanning block covers its page; Safari selection stalls, overlaps and reflows; typing lags | `/examples/plite/pagination` ×2, `/docs/pagination` ×3 | Four issues, because their causes differ: #5253 for the spanning block, #5257 for Safari's reflow and overlap, #5260 for Safari's Shift+Down and #5258 for the typing lag | `pagination/react.tsx:573`, `page-geometry.internal.ts:27` (read) | M1, M4 |
+| K37 | pagination | The docs sidebar covers the paper and clips the right page | `/examples/plite/pagination` | #5254 for the sidebar and #5255 for the clipped page, because the page is still clipped at 1000 px, where the sidebar covers nothing | `plite-example-styles.css:877` for the sidebar, `pagination.tsx:941` for the first zoom (read) | M1 |
 | K38 | documents | DOCX import refuses common files and drops formatting | `/docs/docx` | unfiled | `importDocx.ts:2020`, `import-toolbar-button.tsx:255` (read) | M1, M7 |
 | K39 | documents | An exported Word file names html-to-docx as its author | `/docs/examples/export` | unfiled | not traced | M1 |
 | K40 | docs | Chinese pages show English content | `/cn/docs/footnote`, `/cn/docs/pagination`, `/cn/docs/underline` | unfiled | `doc-page.tsx:76` falls back to English; `underline.cn.mdx` holds English (read) | M1 |
@@ -173,16 +173,18 @@ Members name the page route and the browser the find came from. A kind with "unf
 | K44 | clipboard | Copy after typing writes nothing to the clipboard | `/examples/plite/huge-document` (Android) | unfiled | `clipboard-input-strategy.ts:330`, `dom-clipboard-runtime.ts:513` (inferred) | M4 |
 | K45 | selection | After a blur, the first long press selects no word | `/examples/plite/huge-document`, `/examples/plite/comment-mode` (Android) | unfiled | `selection-reconciler.ts:1432` writes the stale caret back on focusin (inferred) | M4 |
 | K46 | native | No caret handle after a tap | `/examples/plite/markdown-preview`, `plaintext`, `shadow-dom` (Android) | #5247 | not traced | M4 |
-| K47 | react | A long press in a nested editor drags the whole card and loses the next keystroke | `/examples/plite/editable-voids` (Android) | unfiled | `plite-void-shell.tsx:21` renders the card draggable; the error comes from `selection-protocol.ts:780` (read) | M4 |
+| K47 | react | A long press in a nested editor drags the whole card and loses the next keystroke | `/examples/plite/editable-voids` (Android) | #5251 | `plite-void-shell.tsx:21` renders the card draggable; the error comes from `selection-protocol.ts:780` (read) | M4 |
 | K48 | media | Insert via URL throws and inserts no image | `/docs/docx`, `/docs/media` (Chromium) | unfiled | `media-toolbar-button.tsx:200` passes `name: undefined`, which `update.insert` at `:204` refuses (read) | M1 |
 | K49 | dnd | The column handle cannot move a column to the right of its neighbor | `/docs/column` (Firefox) | unfiled; #5001, closed, tracks the stable site's fix and stays closed | `column.tsx:119` calls `startBlockDrag`, the block handle's entry at `dnd.tsx:305` (read); it may share K18's cause (inferred) | M1 |
 | K50 | native | The placeholder stays visible over a composition | `/examples/plite/custom-placeholder` (Firefox) | #5248 | `hidePlaceholder` at `android-composition.ts:469` hides it, and only the Android path calls it (read) | M4 |
 | K51 | native | Backspace in a composition inside `[]` deletes the left bracket | `/docs/footnote` (Safari) | #5249 | not traced | M4 |
 | K52 | native | iPhone pinyin in an editable-void child root leaves raw letters, and Backspace deletes the void | `/examples/plite/editable-voids` (iPhone) | #5240, filed by felixfeng33 | not traced | M4 |
+| K53 | external-text | Shift+Tab cannot move focus out of an external text textarea | `/examples/plite/external-text` | #5261 | `external-text-runtime.ts:523` hands focus back to the textarea (read) | M1 |
+| K54 | ui | On Android the docs editable-voids card overflows, and a tap in its nested editor shifts the card sideways | `/docs/examples/editable-voids` (Android Chrome and Via) | #5256 | not traced | M4 |
 
-K41 to K49 come from finds recorded after this triage, mostly natamox's Android retest; K48 and K49 are earlier finds the triage missed. K50 and K51 are single composition finds filed in batch 1, and K52 is #5240, an open issue that matches the editable-voids find on iPhone.
+K41 to K49 come from finds recorded after this triage, mostly natamox's Android retest; K48 and K49 are earlier finds the triage missed. K50 and K51 are single composition finds filed in batch 1, and K52 is #5240, an open issue that matches the editable-voids find on iPhone. K53 and K54 split off in batch 2. K53 was K24's third member, whose owner sits in external-text. K54 is the Android editable-voids card, which this triage had joined to K37's layout work, though its page, device and likely cause differ.
 
-Thirteen more single finds are unfiled kinds of their own, each M1 until its fix run says otherwise: multiline paste splits a JSX code block, forced-layout split and merge leave an empty paragraph, its placeholder never shows, cross-cell delete breaks a table, `@r` shows no mention at the document end, Excalidraw focus jumps to the outer editor, footnotes show doubled numbers, the DOM-coverage copy payload leaks labels and attributes, hidden-content blocks redraw stale text, an `inclusive: false` mark extends on typing, an unregistered inline link renders as a block, Keep selection visible clips its preview, and the docs Demo example starts empty. Two layout finds on Android, the editable-voids card and huge-document's sideways scroll, join K37's layout work.
+Thirteen more single finds are unfiled kinds of their own, each M1 until its fix run says otherwise: multiline paste splits a JSX code block, forced-layout split and merge leave an empty paragraph, its placeholder never shows, cross-cell delete breaks a table, `@r` shows no mention at the document end, Excalidraw focus jumps to the outer editor, footnotes show doubled numbers, the DOM-coverage copy payload leaks labels and attributes, hidden-content blocks redraw stale text, an `inclusive: false` mark extends on typing, an unregistered inline link renders as a block, Keep selection visible clips its preview, and the docs Demo example starts empty. huge-document's sideways scroll on a phone has no recording and no element found that widens the page, so it is not filed.
 
 ### Issue merges natamox can publish
 
@@ -199,6 +201,8 @@ natamox published the K7, K10, K4, K18 and K14 rows on 2026-10-24 (UTC); the K14
 
 natamox published batch 1 the same day: nine new issues, #5242 to #5250, for K1 to K3, K5, K28, K42, K46, K50 and K51. Every native and editing kind now has an issue. natamox reproduced #5242's Repro 3 and 4 by hand in Safari on 2026-10-24 (PT), after earlier retests had not, and Chrome keeps the text in both.
 
+natamox published batch 2 the same day: eleven new issues, #5251 to #5261, for K23, K24, K36, K37, K47, K53 and K54. K36 became four issues and K37 two, because one fix does not remove all their members. The six pagination issues link to each other. Every react and pagination kind now has an issue.
+
 ### Not bugs yet
 
 - #5197 and #5198 propose new suggestion policies and capabilities, and the tests pin today's behavior on purpose. Scenario S14 in `docs/editor-behavior/scenarios/suggestions.md` promises list continuation that the tests refuse, so the catalog and the tests disagree. Both go to `verdict`.
@@ -207,6 +211,7 @@ natamox published batch 1 the same day: nine new issues, #5242 to #5250, for K1 
 - #5196's ghost text is fixed on `next` by f3202e1c61 and did not reproduce in four engines later in the round; natamox closed it on 2026-10-24 (UTC), with iPhone unchecked, and closed #5125, fixed by 58a6755ece, the same day. #5149 is a report against the stable packages, so the Beta rechecks leave it open.
 - #22's table pinyin and #37's Escape in a comment draft did not reproduce when natamox retested them on 2026-10-23 (PT), so neither is filed.
 - On `/examples/plite/schema-reconfiguration`, a click still puts the caret in the guard and edits its text after the switch to a non-selectable schema, on desktop and Android. No kind holds it, and natamox marked it pending on 2026-10-24 (UTC).
+- On `/examples/plite/editable-voids`, natamox judged three differences from Slate not bugs on 2026-10-24 (UTC): a click in the gap above the card puts the caret in its nested editor, Add on Android leaves focus on the page, and a new card's nested editor starts empty.
 - #5195, #5209, #5210, #5212 and #5213 are closed. #5210 and #5213 gained tests with their fixes, and #5212's fix added none.
 
 ### Why tests missed them
@@ -214,7 +219,7 @@ natamox published batch 1 the same day: nine new issues, #5242 to #5250, for K1 
 | Class | Kinds | What closes it this time |
 | --- | --- | --- |
 | M6 composition gap | 15: K1 to K3, K5, K7 to K10, K14, K24, K27, K28, K31, K32, K34 | The intake's formal checks: autoformat for K7 to K9 (t_30422a81), suggestion recording for K31 (t_a998edbb) and Yjs peers for K34 (t_dd929413); a generated browser matrix of composition, selection and block for the composition redesign; `authored-decision-order`'s skill when K31's fix touches its coverage |
-| M4 engine gap | 20: K1 to K3, K6, K14 to K16, K18, K21, K36, K41 to K47, K50 to K52 | Gate `apps/www/tests/browser/regressions/` in CI, whose trigger in the sweep plan's step 2.1 has fired; `/pstack:maintain-verification-skill` on what agents could not drive: iPhone, OS input methods and the Hocuspocus server |
+| M4 engine gap | 21: K1 to K3, K6, K14 to K16, K18, K21, K36, K41 to K47, K50 to K52, K54 | Gate `apps/www/tests/browser/regressions/` in CI, whose trigger in the sweep plan's step 2.1 has fired; `/pstack:maintain-verification-skill` on what agents could not drive: iPhone, OS input methods and the Hocuspocus server |
 | M3 wrong assertion | 7: K7 to K9, K17, K20, K21, K31 | `/pstack:correct` on expected-failure tests, because K7's full-kit test, `apps/www/src/__tests__/package-integration/autoformat/current-kit.spec.tsx:31`, catches the bug and is marked `it.failing`, so it gates nothing; `test-audit` on the input-rule and link tests |
 | M2 wrong layer | 7: K4, K6, K10, K14, K17, K21, K32 | Tests at the shortcut, click or render the user takes, not the command beneath it; `/pstack:correct` when the next round repeats it |
 | M5 wiring gap | 3: K4, K7, K25, plus #5212 and #5198 | `/pstack:correct` on a check over the shipped examples and kits: every Plite example installs history unless it says why, toolbar hints come from the kit's binding, and authored fixtures keep production vetoes |
@@ -249,7 +254,7 @@ Each step names its proof, and the decision log cites each log by path.
 ## Open work
 
 - natamox files each domain from the triage: new issues per unfiled kind, the merges in the table and the member comments. owner: natamox. stop: every round 1 domain filed.
-- natamox filed the native domain on 2026-10-24 (UTC), so t_1d843b2a can start; it took in t_94ffdd65. t_c4407e94 and t_8276a635 start once natamox files their domain. owner: zbeyens. stop: each lands or is dropped.
+- natamox filed the native domain on 2026-10-24 (UTC), so t_1d843b2a can start; it took in t_94ffdd65. Autoformat's kinds K7 to K9 hold #5201, #5203 and #5226, so t_c4407e94 can start too. natamox filed the pagination domain the same day, so t_8276a635 can start after its container-measuring question t_c8441921. owner: zbeyens. stop: each lands or is dropped.
 - The four hardening items have no chips, because a run offers chips only for new P0 and P1 finds (owner's word, 2026-10-23). Each belongs to the loop step that names it. Gating `apps/www/tests/browser/regressions/` in CI is the regression sweep's step 2.1. The expected-failure tests and the shipped-wiring check go to `/pstack:correct` from the first domain fix run that hits them. `/pstack:maintain-verification-skill` runs in After a round. owner: zbeyens. stop: round 2 starts.
 - The intake's first formal check, t_30422a81, landed. The other four run in its order: t_a998edbb, t_dd929413, t_df2f315f, then t_589db800 once two checks exist. owner: zbeyens. stop: each lands or is dropped.
 - The six moves still have no trial. owner: zbeyens. stop: round 2's tally, or 2027-01-15.
