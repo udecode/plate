@@ -10,6 +10,28 @@ import {
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { getNodeKey } from '../../src/react/editable/runtime-editor-api';
 
+// A source re-reads committed text only after the decoration manager's quiet
+// window, which a loaded host can push past any fixed delay. The bound fails a
+// missing re-read in its own case instead of leaving act open for the next.
+const watchSourceReads = () => {
+  const waiting = new Map<string, () => void>();
+
+  return {
+    next: (text: string) =>
+      new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error(`The decoration source never re-read "${text}"`));
+        }, 2000);
+
+        waiting.set(text, () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      }),
+    record: (text: string) => waiting.get(text)?.(),
+  };
+};
+
 test('applies a cancelled host decoration while the next host composes', async () => {
   const editor = createEditor({
     initialValue: ['abcdef', 'second'].map((text) => ({
@@ -18,6 +40,7 @@ test('applies a cancelled host decoration while the next host composes', async (
     })),
   });
   const versions = [0, 0];
+  const reads = watchSourceReads();
   let refresh: Parameters<
     NonNullable<DecorationSource['observe']>
   >[0]['refresh'];
@@ -27,8 +50,11 @@ test('applies a cancelled host decoration while the next host composes', async (
       refresh = nextRefresh;
       return () => {};
     },
-    read: ({ entry: [node, path] }) =>
-      TextApi.isText(node) && versions[path[0]] > 0
+    read: ({ entry: [node, path] }) => {
+      if (!TextApi.isText(node)) return [];
+      reads.record(node.text);
+
+      return versions[path[0]] > 0
         ? [
             {
               attributes: { 'data-ime-decoration': String(versions[path[0]]) },
@@ -39,7 +65,8 @@ test('applies a cancelled host decoration while the next host composes', async (
               },
             },
           ]
-        : [],
+        : [];
+    },
   };
   const rendered = render(
     <EditorRoot decorations={[source]} editor={editor}>
@@ -116,12 +143,16 @@ test('applies a cancelled host decoration while the next host composes', async (
     expect(secondHost().querySelector('[data-ime-decoration]')).toBeNull();
 
     await act(async () => {
+      const committed = reads.next('se好cond');
       secondText.replaceData(2, 3, '好');
       selection.setBaseAndExtent(secondText, 3, secondText, 3);
       fireEvent.compositionEnd(root, { data: '好' });
-      await new Promise((resolve) => {
-        setTimeout(resolve, 100);
-      });
+      await Promise.all([
+        committed,
+        new Promise((resolve) => {
+          setTimeout(resolve, 100);
+        }),
+      ]);
     });
     expect(
       secondHost().querySelector('[data-ime-decoration="2"]')?.textContent
@@ -152,6 +183,7 @@ describe.each(['retained', 'custom-leaf'])(
           })),
         });
         let version = 0;
+        const reads = watchSourceReads();
         let refresh:
           | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
           | undefined;
@@ -161,8 +193,11 @@ describe.each(['retained', 'custom-leaf'])(
             refresh = nextRefresh;
             return () => {};
           },
-          read: ({ entry: [node, path] }) =>
-            TextApi.isText(node) && version > 0
+          read: ({ entry: [node, path] }) => {
+            if (!TextApi.isText(node)) return [];
+            reads.record(node.text);
+
+            return version > 0
               ? [
                   {
                     attributes: { 'data-ime-decoration': String(version) },
@@ -176,7 +211,8 @@ describe.each(['retained', 'custom-leaf'])(
                     },
                   },
                 ]
-              : [],
+              : [];
+          },
         };
         const rendered = render(
           <EditorRoot decorations={[source]} editor={editor}>
@@ -284,9 +320,13 @@ describe.each(['retained', 'custom-leaf'])(
               ? '你'
               : '';
           const nextOffset = 2 + committedText.length;
+          const inserted = consecutive ? `${committedText}好` : committedText;
+          const finalText = `ab${inserted}cdef`;
           let nextText = text;
           let nextNativeOffset = nextOffset;
           await act(async () => {
+            const committed =
+              completion === 'commit' ? reads.next(finalText) : undefined;
             text.replaceData(2, 2, committedText);
             const offset = 2 + committedText.length;
             selection.setBaseAndExtent(text, offset, text, offset);
@@ -323,9 +363,12 @@ describe.each(['retained', 'custom-leaf'])(
                 isComposing: true,
               });
             }
-            await new Promise((resolve) => {
-              setTimeout(resolve, 100);
-            });
+            await Promise.all([
+              committed,
+              new Promise((resolve) => {
+                setTimeout(resolve, 100);
+              }),
+            ]);
           });
           if (consecutive) {
             expect(runtime.inputController.state.isComposing).toBe(true);
@@ -334,6 +377,7 @@ describe.each(['retained', 'custom-leaf'])(
             expect(selection.focusOffset).toBe(nextNativeOffset + 3);
             expect(firstFlow.textContent).toBe(`ab${committedText}haocdef`);
             await act(async () => {
+              const committed = reads.next(finalText);
               nextText.replaceData(nextNativeOffset, 3, '好');
               selection.setBaseAndExtent(
                 nextText,
@@ -342,13 +386,14 @@ describe.each(['retained', 'custom-leaf'])(
                 nextNativeOffset + 1
               );
               fireEvent.compositionEnd(root, { data: '好' });
-              await new Promise((resolve) => {
-                setTimeout(resolve, 100);
-              });
+              await Promise.all([
+                committed,
+                new Promise((resolve) => {
+                  setTimeout(resolve, 100);
+                }),
+              ]);
             });
           }
-          const inserted = consecutive ? `${committedText}好` : committedText;
-          const finalText = `ab${inserted}cdef`;
           expect(runtime.inputController.state.isComposing).toBe(false);
           expect(firstFlow.textContent).toBe(finalText);
           expect(runtime.editor.read((state) => state.text.string([0]))).toBe(
