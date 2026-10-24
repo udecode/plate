@@ -186,6 +186,7 @@ export class ExternalTextRuntime {
   } | null = null;
   private decorations: PliteDecorationStore | null = null;
   private focused: Entry | null = null;
+  private tabbingBackward: Entry | null = null;
   private readonly counters = {
     validationVisits: 0,
     callbackFailures: 0,
@@ -306,7 +307,22 @@ export class ExternalTextRuntime {
     entry.disposeHost = registerExternalTextHost(host, {
       root: () => this.runtime.rootElement,
       focus: () => this.focusChanged(entry, true),
-      blur: () => this.focusChanged(entry, false),
+      blur: (relatedTarget) => {
+        if (
+          this.tabbingBackward === entry &&
+          relatedTarget === this.runtime.rootElement
+        ) {
+          this.selectBefore(entry);
+        }
+        this.tabbingBackward = null;
+        this.focusChanged(entry, false);
+      },
+      keyDown: (event) => {
+        this.tabbingBackward =
+          event.key === 'Tab' && event.shiftKey && !event.defaultPrevented
+            ? entry
+            : null;
+      },
     });
     this.registerCoverage(entry, binding);
     this.call(entry, 'mount', () => {
@@ -565,6 +581,24 @@ export class ExternalTextRuntime {
       source: 'external-text',
       phase: 'offsetAt',
     });
+  }
+
+  private selectBefore(entry: Entry) {
+    const binding = readExternalTextBinding(
+      this.runtime.editor,
+      entry.elementKey
+    );
+    if (!binding) return;
+    const point = this.runtime.editor.read((state) =>
+      state.points.before(binding.path)
+    );
+    if (!point) return;
+    setShownSelectionAsView(this.runtime.editor, {
+      anchor: point,
+      focus: point,
+    });
+    this.runtime.clearVerticalGoal();
+    this.endComposition(entry);
   }
 
   private focusModelSelection() {
