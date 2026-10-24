@@ -1,5 +1,7 @@
 # Collaboration binding, transport and presence
 
+Page: https://claude.ai/artifact/SAjFbdLhSgdDodmntTwMxG
+
 The app owns the `Y.Doc`, initial-load readiness, awareness and the provider. One native Yjs binding consumes accepted commits and imports remote changes canonically, and its inferred `api.yjs` exposes presence and compaction methods only when their inputs are supplied. Plate composes that binding with no store of its own, and there is no `read.yjs` or `tx.yjs`. The 2026-10-04 audit found the 2026-09-14 lifetime target live and stopped ([triage audit](../2026-10-04-ledger-triage-audit.md), [lifetime plan](../2026-09-14-collaboration-lifetimes.md)). `node tooling/scripts/review-ledger.mjs show collaboration` prints the full history.
 
 ## Layer and owner
@@ -31,6 +33,8 @@ Rejected, and why:
 | Awareness merged into document content | Presence has its own expiry and undo semantics. |
 | All collaboration inside Plate | Raw Plite examples need neutral synchronization and cursor reads. |
 | Generic commit or snapshot broadcast instead of Yjs | Local changes alone give no concurrent or offline convergence or durable relative identity. |
+| One Yjs writer for every local move, a single move included | It fixes nothing the current writers miss once three of their rules are fixed. Those writers still leave the peers apart in 66 of 12,000 generated updates over top-level paragraphs and headings, each with the receiving import's signature ([2026-10-24 review](../2026-10-24-collaboration-move-lowering.md)). Each single move would cost work that grows with the moved block, inferred from source and not measured. |
+| Writing each changed window as removals and insertions | A moved block would become a new Yjs node, so a peer's typing inside it would be lost. |
 
 ## Rules
 
