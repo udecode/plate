@@ -25,7 +25,13 @@
 // landed it, and a `Plan:` line when the task changes exactly one plan, so
 // review.mjs lists each session's commits together. A rebase conflict stops
 // with the rebase in progress and lists the conflicting paths. A push rejected because <branch> moved rebases and
-// retries up to three times. It never force-pushes.
+// retries up to three times. A push GitHub declines with GH006 and no reason is
+// pushed again after 1, 2, 4, 8 and 16 minutes. land.mjs exits 75 after the
+// last try, or before a wait that would end past 55 minutes into the run;
+// PSTACK_LAND_WAIT_SCALE multiplies those waits. Once the checks pass, and
+// after each clean rebase onto a moved <branch>, land.mjs records the commit
+// it would push, so a rerun with the same tree, parent, message and checks
+// pushes without running the checks again. It never force-pushes.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
@@ -40,12 +46,19 @@ const PLAN = /^Plan: \S/mu;
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
 const PR_SECTIONS = ['Why', 'Verification'];
 const RETRIES = 3;
+const DECLINED_WAITS = [1, 2, 4, 8, 16];
+const COMMAND_LIMIT = 60 * 60_000;
+const DEADLINE = COMMAND_LIMIT - 5 * 60_000;
+const EX_TEMPFAIL = 75;
 const session = process.env.CLAUDE_CODE_HOST_SESSION_ID || process.env.CLAUDE_CODE_SESSION_ID || process.env.CODEX_SESSION_ID || '';
 
 const fail = (message, code = 1) => {
   console.error(`land.mjs: ${message}`);
   process.exit(code);
 };
+const scale = process.env.PSTACK_LAND_WAIT_SCALE ?? '1';
+if (!/^\d+(\.\d+)?$/u.test(scale)) fail(`PSTACK_LAND_WAIT_SCALE must be a decimal number of at least 0, not "${scale}"`, 2);
+const MINUTE = 60_000 * Number(scale);
 const git = (...args) => spawnSync('git', args, { encoding: 'utf8' });
 const must = (...args) => {
   const run = git(...args);
@@ -53,6 +66,19 @@ const must = (...args) => {
   return run.stdout.trim();
 };
 const quote = (text) => `'${text.replaceAll("'", "'\\''")}'`;
+
+// GitHub sometimes declines a push with GH006 and no reason, then accepts a push of the same change later, sometimes more than an hour later.
+function declinedWithoutReason(stderr) {
+  const lines = stderr.split('\n');
+  const at = lines.findIndex((line) => line.startsWith('remote: error: GH006: '));
+  if (at < 0) return false;
+  const after = [];
+  for (const line of lines.slice(at + 1)) {
+    if (!line.startsWith('remote:')) break;
+    after.push(line.replace(/^remote:(\s*error:)?/u, '').trim());
+  }
+  return after.length > 0 && after.every((text) => text === '');
+}
 
 const args = process.argv.slice(2);
 let messageFile = null;
@@ -192,32 +218,60 @@ const message = validate(messageText ?? must('log', '-1', '--format=%B'));
 const plan = squash(message);
 rebase();
 
-const changed = must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD').split('\n').filter(Boolean);
-if (lintFix && changed.length > 0) {
-  const run = spawnSync(`${lintFix} ${changed.map(quote).join(' ')}`, { shell: true, stdio: 'inherit' });
-  if (run.status !== 0) fail(`${lintFix} failed on the changed files; fix them and run land.mjs again`);
-  if (dirty()) {
-    must('add', '--all');
-    must('commit', '--quiet', '--amend', '--no-edit');
+const record = must('rev-parse', '--git-path', 'pstack-land-checked');
+const stamp = () =>
+  JSON.stringify({ tree: must('rev-parse', 'HEAD^{tree}'), parent: must('rev-parse', 'HEAD^'), message: must('log', '-1', '--format=%B'), lintFix: lintFix ?? null, checks });
+const markChecked = () => writeFileSync(record, stamp());
+if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
+  console.log('land.mjs recorded this commit in an earlier run, so it pushes without running the checks again.');
+} else {
+  const changed = must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD').split('\n').filter(Boolean);
+  if (lintFix && changed.length > 0) {
+    const run = spawnSync(`${lintFix} ${changed.map(quote).join(' ')}`, { shell: true, stdio: 'inherit' });
+    if (run.status !== 0) fail(`${lintFix} failed on the changed files; fix them and run land.mjs again`);
+    if (dirty()) {
+      must('add', '--all');
+      must('commit', '--quiet', '--amend', '--no-edit');
+    }
   }
-}
-for (const check of checks) {
-  const run = spawnSync(check, { shell: true, stdio: 'inherit' });
-  if (run.status !== 0) fail(`check failed: ${check}; the squashed commit stays local`);
-}
-if (dirty()) {
-  fail(`the checks changed files; review them and run land.mjs again, which folds them into the commit:\n${must('status', '--short')}`);
+  for (const check of checks) {
+    const run = spawnSync(check, { shell: true, stdio: 'inherit' });
+    if (run.status !== 0) fail(`check failed: ${check}; the squashed commit stays local`);
+  }
+  if (dirty()) {
+    fail(`the checks changed files; review them and run land.mjs again, which folds them into the commit:\n${must('status', '--short')}`);
+  }
+  markChecked();
 }
 
 if (mode === 'push') {
-  for (let attempt = 0; ; attempt += 1) {
+  let moves = 0;
+  let declines = 0;
+  for (;;) {
     const run = git('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
     if (run.status === 0) break;
     const moved = /\[rejected\]|fetch first|non-fast-forward/u.test(run.stderr);
-    if (!moved || attempt === RETRIES) fail(`git push origin HEAD:${branch} failed: ${run.stderr.trim()}`);
-    console.log(`origin/${branch} moved; rebasing and pushing again (retry ${attempt + 1} of ${RETRIES})`);
-    fetch();
-    rebase();
+    const declined = declinedWithoutReason(run.stderr);
+    const wait = DECLINED_WAITS[declines];
+    if (moved && moves < RETRIES) {
+      moves += 1;
+      console.log(`origin/${branch} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
+      fetch();
+      rebase();
+      markChecked();
+    } else if (declined && wait !== undefined && performance.now() + wait * MINUTE <= DEADLINE) {
+      declines += 1;
+      console.log(`GitHub declined the push to ${branch} with an empty GH006; pushing again in ${wait} min (retry ${declines} of ${DECLINED_WAITS.length})`);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, wait * MINUTE);
+    } else if (declined) {
+      fail(
+        `GitHub declined the push to ${branch} with an empty GH006 ${declines === 0 ? 'once' : `${declines + 1} times`}, over the ${Math.round(performance.now() / 60_000)} minutes land.mjs has run. ` +
+          `The squashed commit stays local and land.mjs recorded it, so run land.mjs again with the same --check options and no --message; it skips the checks unless origin/${branch} has moved since this run last rebased onto it.\n${run.stderr.trim()}`,
+        EX_TEMPFAIL
+      );
+    } else {
+      fail(`git push origin HEAD:${branch} failed: ${run.stderr.trim()}`);
+    }
   }
   console.log(`Landed ${must('rev-parse', '--short', 'HEAD')} on origin/${branch}: ${message.subject}`);
 } else {
