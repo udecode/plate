@@ -66,21 +66,26 @@ export const withBaseline = (ruleName, rule, entries = baseline) => ({
   ...rule,
   baselined: true,
   create(context) {
-    if (process.env.PLATE_LINT_BASELINE === reportAllEnv.PLATE_LINT_BASELINE) {
-      return rule.create(context);
-    }
-
     const listed =
       entries[`plate/${ruleName}`]?.[relativeFilename(context)] ?? [];
+    const counted = (descriptor) => ({
+      ...descriptor,
+      data: { ...descriptor.data, baselined: String(listed.length) },
+    });
+    const reportAll =
+      process.env.PLATE_LINT_BASELINE === reportAllEnv.PLATE_LINT_BASELINE;
     const found = [];
     const descriptors = Object.getOwnPropertyDescriptors(context);
     descriptors.report = {
       ...descriptors.report,
-      value: (descriptor) => found.push(descriptor),
+      value: reportAll
+        ? (descriptor) => context.report(counted(descriptor))
+        : (descriptor) => found.push(descriptor),
     };
     const visitors = rule.create(
       Object.create(Object.getPrototypeOf(context), descriptors)
     );
+    if (reportAll) return visitors;
     const exit = visitors['Program:exit'];
 
     return {
@@ -99,10 +104,7 @@ export const withBaseline = (ruleName, rule, entries = baseline) => ({
             unlisted.splice(index, 1);
             continue;
           }
-          context.report({
-            ...descriptor,
-            data: { ...descriptor.data, baselined: String(listed.length) },
-          });
+          context.report(counted(descriptor));
         }
       },
     };
