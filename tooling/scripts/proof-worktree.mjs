@@ -179,19 +179,19 @@ for (const dir of new Set(['.', ...packages])) {
   }
 }
 if (args.install) {
-  const install = spawnSync(
-    'pnpm',
+  // --ignore-scripts also skips bun's postinstall, which links the binary that
+  // node_modules/.bin/bun runs, so bun alone is rebuilt.
+  for (const step of [
     ['install', '--offline', '--frozen-lockfile', '--ignore-scripts'],
-    {
-      cwd: path,
-      stdio: 'inherit',
+    ['rebuild', 'bun'],
+  ]) {
+    const run = spawnSync('pnpm', step, { cwd: path, stdio: 'inherit' });
+    if (run.status !== 0) {
+      console.error(
+        `pnpm ${step[0]} failed in ${path}; it is not a usable worktree`
+      );
+      process.exit(1);
     }
-  );
-  if (install.status !== 0) {
-    console.error(
-      `pnpm install failed in ${path}; it is not a usable worktree`
-    );
-    process.exit(1);
   }
 }
 for (const file of overlay) {
