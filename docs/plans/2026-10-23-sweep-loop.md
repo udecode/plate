@@ -47,7 +47,7 @@ Two kinds of check share the work. A bug a test sees without a browser gets a fo
 | Where finds are recorded | Whatever the round plan names, such as natamox's sheet, exported to the run folder | A table inside the round plan | plan table | detail |
 | The older sweep plans | Their open steps point at the new loop; their history stays | Leave them as they were | leave plans | detail |
 | Plan review | No panel, since this changes the workflow and no public API | Run a panel on the plan | panel | detail |
-| Page link | A new proof page, SpwtqQ2my4ityxzWgsqzus, because XqsY1CcceaevUNqabTFPbw was deleted on claude.ai; that page had replaced Evweke9u3BjCdc42mnonEk, which claude.ai reads as another account's | Publish no page for this subject | drop page | detail |
+| Page link | A new proof page, XqsY1CcceaevUNqabTFPbw, because claude.ai now reads Evweke9u3BjCdc42mnonEk as another account's and refuses updates | Keep trying the old page | old page | detail |
 | Which runs may offer a P2 or P3 chip | A verdict run, a babysit run and a measurement the Time budget rule hands off, each naming its route as `via:`; `append` refuses any other new P2 or P3 offer (look) | Only verdict and babysit runs; a measurement goes to Open work | no measurement chips | small |
 | A hard cut's question outside a verdict | A line in the plan's Open work, unless it is P0 or P1 | A `decide` chip, as before | hard cut chips | detail |
 | A sweep's owner question that no law answers | A `decide` task only when it is P0 or P1; otherwise the sweep's report lists it | A `decide` task at any priority | sweep decide chips | detail |
