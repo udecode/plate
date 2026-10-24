@@ -346,6 +346,12 @@ test.describe('external text', () => {
     await expect(primary(page)).toBeFocused();
     await page.keyboard.press('Tab');
     await expect(input(page)).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(primary(page)).toBeFocused();
+    await page.waitForTimeout(100);
+    await expect(primary(page)).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(page.locator('#external-text-native')).toBeFocused();
   });
 
   test('external-text-follow-up: outer native typing and copy resume after leaving the host', async ({ page }, info) => {
