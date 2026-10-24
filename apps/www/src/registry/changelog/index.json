@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-24-mermaid-pele-1-9",
+      "href": "/registry/changelog/2026-10-24-mermaid-pele-1-9.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Draw copied Mermaid diagrams with Pele 1.9.0",
+      "change": {
+        "type": "source",
+        "date": "2026-10-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block-diagram-mermaid"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-21-docx-export-spacing",
       "href": "/registry/changelog/2026-10-21-docx-export-spacing.json",
       "status": "draft",

@@ -492,8 +492,8 @@ importers:
         specifier: 2.4.3
         version: 2.4.3(next@16.3.2(@babel/core@8.0.1)(@opentelemetry/api@1.9.0)(@playwright/test@1.61.0)(@types/node@24.12.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(sass@1.89.2))(react@19.2.8)
       pele:
-        specifier: 1.6.0
-        version: 1.6.0
+        specifier: 1.9.0
+        version: 1.9.0
       plantuml-encoder:
         specifier: 1.4.0
         version: 1.4.0
@@ -9704,8 +9704,8 @@ packages:
     resolution: {integrity: sha512-Q3CG/cYvCO1ye4QKkuH7EXxs3VC/rI1/trd+qX2+PolbaKG0H+bgcZzrTt96mMyRtejk+JMCiLUn3y29W8qmFQ==}
     engines: {node: '>= 0.10'}
 
-  pele@1.6.0:
-    resolution: {integrity: sha512-VfAiVItsOGlGhvnBfphdT28VCG7mXMZxQNOwAGsCtxI2ztbUsT39MraEOYjsapLxVETkdUZscm0DdotYDQMLdw==}
+  pele@1.9.0:
+    resolution: {integrity: sha512-KUmBt7P5JduVKQaP6FKfXiRgH3LBVIKsmdgPJZU7jD3ye6F+Z8fbms+OjivE7rWY09Qx+5X65VKe/9ywKFJ9Sw==}
     engines: {node: '>=20'}
 
   pend@1.2.0:
@@ -20909,7 +20909,7 @@ snapshots:
       sha.js: 2.4.12
       to-buffer: 1.2.2
 
-  pele@1.6.0: {}
+  pele@1.9.0: {}
 
   pend@1.2.0: {}
 

@@ -32,7 +32,7 @@ export const DiagramEditorKit = EditorKit.map((plugin) =>
 );
 ```
 
-The copied Mermaid renderer item draws with Pele and returns its SVG. Each copied renderer item installs the exact engine version the site runs, such as `pele@1.6.0`. The site's `apps/www/package.json` pins the same versions.
+The copied Mermaid renderer item draws with Pele and returns its SVG. Each copied renderer item installs the exact engine version the site runs, such as `pele@1.9.0`. The site's `apps/www/package.json` pins the same versions.
 
 ```ts
 // apps/www/src/registry/components/editor/code-block-diagram-mermaid.ts
@@ -42,7 +42,7 @@ export const mermaidRenderer: DiagramRenderer = {
   render: async (source) => {
     const { renderAsync } = await import('pele/lazy');
 
-    const { svg } = await renderAsync(source);
+    const { svg } = await renderAsync(source, { idPrefix: 'pele' });
 
     return svg;
   },

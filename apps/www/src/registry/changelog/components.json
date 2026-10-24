@@ -1,6 +1,11 @@
 {
   "schemaVersion": 1,
   "components": {
+    "code-block-diagram-mermaid": [
+      "2026-10-24-mermaid-pele-1-9",
+      "2026-10-20-pin-diagram-engines",
+      "2026-10-16-code-block-diagrams"
+    ],
     "docx-export": [
       "2026-10-21-docx-export-spacing",
       "2026-10-09-export-static-presentation",
@@ -65,10 +70,6 @@
       "2026-10-08-registry-install-dependencies",
       "2026-08-18-complete-v54-ast-contracts",
       "2026-08-17-flat-editor-registry"
-    ],
-    "code-block-diagram-mermaid": [
-      "2026-10-20-pin-diagram-engines",
-      "2026-10-16-code-block-diagrams"
     ],
     "code-block-diagram-graphviz": [
       "2026-10-20-pin-diagram-engines",
