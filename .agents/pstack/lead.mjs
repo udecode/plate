@@ -7,7 +7,7 @@
 //        runtime identity can be verified against its transcript)
 
 import { closeSync, existsSync, fstatSync, openSync, readdirSync, readFileSync, readlinkSync, readSync, realpathSync, statSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -170,7 +170,23 @@ function openClaudeCalls(transcripts) {
   });
 }
 
-const runningCalls = (calls, command) => (command === null ? calls : calls.filter((call) => typeof call.command === 'string' && ranAs(call.command, command)));
+// macOS ps prints argv through vis(3) with VIS_TAB | VIS_NL | VIS_NOSLASH: a
+// tab or newline as \011 or \012, another control character in caret form,
+// such as ^M or ^?, and a backslash as itself.
+export const asDarwinPsPrints = (text) => text.replace(/[\u0001-\u001f\u007f]/gu, (char) => (char === '\t' || char === '\n' ? `\\0${char.charCodeAt(0).toString(8)}` : `^${char === '\u007f' ? '?' : String.fromCharCode(char.charCodeAt(0) + 64)}`));
+const psPrints = process.platform === 'darwin' ? asDarwinPsPrints : (text) => text;
+
+// rtk's hook runs the rewrite `rtk rewrite` prints, which can replace words, as
+// `head -1 f` becomes `rtk read f --head-lines 1`.
+const hookRewrite = (command) => spawnSync('rtk', ['rewrite', command], { encoding: 'utf8', timeout: 2000 }).stdout?.trim() || null;
+
+const shownForms = new Map();
+const shownAs = (recorded) => {
+  if (!shownForms.has(recorded)) shownForms.set(recorded, [recorded, hookRewrite(recorded)].filter(Boolean).map(psPrints));
+  return shownForms.get(recorded);
+};
+
+const runningCalls = (calls, command) => (command === null ? calls : calls.filter((call) => typeof call.command === 'string' && shownAs(call.command).some((shown) => ranAs(shown, command))));
 
 function claudeVerdict(found, command) {
   if (found.length === 0) return { miss: command === null ? 'no Bash call is open in the session transcripts' : 'no open Bash call in the session transcripts runs this command' };
