@@ -424,7 +424,14 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-package-task.mjs"
       ],
       "outputLogs": "errors-only",
-      "outputs": []
+      "outputs": [],
+      "passThroughEnv": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "FILL_LAW_*",
+        "PLITE_*"
+      ]
     },
     "test:partition:authored": {
       "cache": true,

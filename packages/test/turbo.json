@@ -247,7 +247,8 @@
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-package-task.mjs"
       ],
       "outputLogs": "errors-only",
-      "outputs": []
+      "outputs": [],
+      "passThroughEnv": ["BENCH_MEASURE", "CI", "FAST_CHECK_SEED"]
     },
     "test:partition:browser": {
       "cache": true,

@@ -66,10 +66,15 @@ const runtimeTestHarnessInputs = () => [
 ];
 // Strict env mode hides any variable a task does not declare, so a replay
 // seed, a run count or the plitejs law switch would never reach the test.
-const runtimeTestEnv = {
-  platejs: ['PLATE_*', 'PLITE_*', 'TZ'],
-  plitejs: ['FILL_LAW_*', 'PLITE_*'],
-};
+const partitionTestEnv = (packageName) => [
+  'BENCH_MEASURE',
+  'CI',
+  'FAST_CHECK_SEED',
+  ...({
+    platejs: ['PLATE_*', 'PLITE_*', 'TZ'],
+    plitejs: ['FILL_LAW_*', 'PLITE_*'],
+  }[packageName] ?? []),
+];
 const packagesWithTypecheckedTests = new Set(['platejs', 'plitejs']);
 
 const typecheckedExternalTestFiles = {
@@ -781,12 +786,7 @@ export const createPackageTurboConfig = (packageName) => {
           ...testGraph.inputs,
           ...runtimeTestHarnessInputs(),
         ],
-        env: [
-          'BENCH_MEASURE',
-          'CI',
-          'FAST_CHECK_SEED',
-          ...(runtimeTestEnv[packageName] ?? []),
-        ],
+        env: partitionTestEnv(packageName),
         outputLogs: 'errors-only',
         outputs: [],
       };
@@ -879,6 +879,7 @@ export const createPackageTurboConfig = (packageName) => {
     inputs: aggregateTaskInputs(),
     outputLogs: 'errors-only',
     outputs: [],
+    passThroughEnv: partitionTestEnv(packageName),
   };
   tasks.typecheck = {
     cache: true,

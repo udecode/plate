@@ -407,13 +407,19 @@ test('only behavior-sensitive tasks hash CI', () => {
         shouldHashCi,
         `${packageName}#${taskName}`
       );
-      // Strict env mode hides an undeclared variable, so a partition would
-      // ignore the daily run's FAST_CHECK_SEED=random.
       assert.equal(
         task.env?.includes('FAST_CHECK_SEED') ?? false,
         taskName.startsWith('test:partition:'),
         `${packageName}#${taskName}`
       );
+      if (taskName.startsWith('test:partition:')) {
+        for (const name of task.env) {
+          assert.ok(
+            config.tasks.test.passThroughEnv?.includes(name),
+            `${packageName}#test cannot see ${name}`
+          );
+        }
+      }
     }
   }
 
