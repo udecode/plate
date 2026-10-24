@@ -80,11 +80,6 @@ const inNextFrameBeforeItsTask = (change: () => void) =>
     });
   });
 
-const afterSecondLookFrameBeforeItsTask = async (change: () => void) => {
-  await nextCycle();
-  await inNextFrameBeforeItsTask(change);
-};
-
 const createRecordingEditor = (
   options: Parameters<typeof createEditor>[0] = {}
 ) => {
@@ -171,6 +166,21 @@ const insertAndSelect = async (
       tx.selection.set(selection as never);
     });
   });
+};
+
+const insertShellThenInSecondLookFrame = async (
+  editor: Editor,
+  change: () => void
+) => {
+  editor.update((tx) => {
+    tx.nodes.insert(shell() as never, { at: [1] });
+    tx.selection.set({ offset: 1, path: [1, 0, 0] });
+  });
+  // jsdom runs every pending frame in one tick, so requesting this frame in the
+  // update's task keeps it in the first look's tick even when the commit
+  // outlasts a frame.
+  await nextCycle();
+  await inNextFrameBeforeItsTask(change);
 };
 
 const getRuntime = () => {
@@ -509,8 +519,7 @@ test.each([
     const reveal = mountRevealable(editor, strict);
 
     await waitLooks();
-    await insertAndSelect(editor, shell());
-    await afterSecondLookFrameBeforeItsTask(() => {
+    await insertShellThenInSecondLookFrame(editor, () => {
       reveal(mode);
     });
     await waitLooks();
@@ -524,8 +533,7 @@ test('a loading fallback held through both looks reports once, even when the rev
   const reveal = mountRevealable(editor);
 
   await waitLooks();
-  await insertAndSelect(editor, shell());
-  await afterSecondLookFrameBeforeItsTask(() => {
+  await insertShellThenInSecondLookFrame(editor, () => {
     reveal('state');
   });
   await waitLooks();
