@@ -593,6 +593,40 @@ describe('basic mark input rules', () => {
     expect(editor.read.children()).toEqual(output.children);
   });
 
+  it('formats code at a block start without joining the next block', () => {
+    const input = (
+      <editor>
+        <hp>before</hp>
+        <hp>
+          `bug
+          <cursor />
+        </hp>
+        <hp>after</hp>
+      </editor>
+    );
+    const output = (
+      <editor>
+        <hp>before</hp>
+        <hp>
+          <htext code>bug</htext>
+        </hp>
+        <hp>after</hp>
+      </editor>
+    );
+
+    const editor = createEditor({
+      plugins: [
+        BaseCodePlugin.configure({ inputRules: [CodeRules.markdown()] }),
+      ],
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    editor.update.text.insert('`');
+
+    expect(editor.read.children()).toEqual(output.children);
+  });
+
   it.each([
     {
       input: (
