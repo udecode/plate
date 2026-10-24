@@ -135,7 +135,8 @@ export const clampCaretAtRegistration = (
 
 export type ViewCaretActivation = Readonly<{
   /**
-   * With no bookmark and no live caret, place the caret at the document end.
+   * With no bookmark and no live caret in the view's root, place the caret at
+   * the end of the view's root.
    * Without it the view's next write takes the caret where the user puts it.
    */
   fallback?: 'end';
@@ -148,11 +149,11 @@ export type ViewCaretActivation = Readonly<{
   press?: boolean;
   /** The placement generation the request saw; a newer placement cancels it. */
   receipt?: number;
-  /** Place the caret at the document end instead of the view's own caret. */
+  /** Place the caret at the end of the view's root instead of its own caret. */
   target?: 'end';
 }>;
 
-const documentEnd = (view: CaretView): Selection => {
+const rootEnd = (view: CaretView): Selection => {
   const end = view.read((state) => state.points.end([]));
 
   return end ? SelectionApi.text({ anchor: end, focus: end }) : null;
@@ -168,9 +169,9 @@ const activationTarget = (
 
   const live = resolveLiveCaret(view);
 
-  if (!live) return fallback === 'end' ? documentEnd(view) : null;
+  if (live && inViewRoot(view, live)) return live;
 
-  return inViewRoot(view, live) ? live : null;
+  return fallback === 'end' ? rootEnd(view) : null;
 };
 
 export const activateViewCaret = (
@@ -211,7 +212,7 @@ export const activateViewCaret = (
     wrote = false;
   } else {
     const target =
-      at === 'end' ? documentEnd(view) : activationTarget(view, fallback);
+      at === 'end' ? rootEnd(view) : activationTarget(view, fallback);
 
     wrote = !!target;
     if (target) {

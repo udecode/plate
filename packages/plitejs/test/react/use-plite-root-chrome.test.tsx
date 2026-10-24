@@ -83,6 +83,48 @@ describe('useRootChrome', () => {
     });
   });
 
+  test('focuses the root end while another root holds the caret', async () => {
+    const editor = createEditor({ initialValue: initialValue() });
+    let headerEditor!: ReturnType<typeof useRootEditor>;
+    let mainEditor!: ReturnType<typeof useRootEditor>;
+
+    const HeaderChrome = () => {
+      const chrome = useRootChrome('header');
+      headerEditor = useRootEditor('header');
+      mainEditor = useRootEditor();
+
+      return (
+        <section {...chrome.props}>
+          <span>Header chrome</span>
+          <Editable aria-label="Header editor" root="header" />
+        </section>
+      );
+    };
+
+    render(
+      <EditorRoot editor={editor}>
+        <HeaderChrome />
+        <Editable aria-label="Main editor" />
+      </EditorRoot>
+    );
+
+    await act(async () => {
+      mainEditor.update((tx) => {
+        tx.selection.set({ path: [0, 0], offset: 0 });
+      });
+    });
+
+    await act(async () => {
+      fireEvent.mouseDown(screen.getByText('Header chrome'));
+      await flushRootChromeFocus();
+    });
+
+    expect(headerEditor.read((state) => state.selection())).toEqual({
+      anchor: { offset: 6, path: [0, 0], root: 'header' },
+      focus: { offset: 6, path: [0, 0], root: 'header' },
+    });
+  });
+
   test('places selection at the root end when explicitly requested', async () => {
     const editor = createEditor({ initialValue: initialValue() });
     let headerEditor!: ReturnType<typeof useRootEditor>;
