@@ -417,4 +417,209 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
 
     assert.deepEqual(peers.map(inlinesOf), [[['xQRy']], [['xQRy']]]);
   });
+
+  it("keeps a peer's typing beside a link another peer removes while typing there", () => {
+    const peers = linkPeers([
+      {
+        children: [{ text: 'x' }, link('a', 'A'), { text: 'y' }],
+        type: 'paragraph',
+      },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.remove({ at: [0, 1] });
+      tx.text.insert('P', { at: { offset: 1, path: [0, 0] } });
+    });
+    b.editor.update((tx) => {
+      tx.text.insert('Q', { at: { offset: 1, path: [0, 0] } });
+      tx.text.insert('R', { at: { offset: 0, path: [0, 2] } });
+    });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(inlinesOf), [[['xPQRy']], [['xPQRy']]]);
+  });
+
+  it('deletes the letter each peer deleted when one also removes the link between two equal letters', () => {
+    const peers = linkPeers([
+      {
+        children: [{ text: 'a' }, link('a', 'A'), { text: 'a' }],
+        type: 'paragraph',
+      },
+    ]);
+    const [a, b] = peers;
+    const lastLetter = {
+      anchor: { offset: 0, path: [0, 2] },
+      focus: { offset: 1, path: [0, 2] },
+    };
+
+    a.editor.update((tx) => {
+      tx.text.delete({ at: lastLetter });
+      tx.nodes.remove({ at: [0, 1] });
+      tx.text.insert('P', { at: { offset: 0, path: [0, 0] } });
+    });
+    b.editor.update.text.delete({ at: lastLetter });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(inlinesOf), [[['Pa']], [['Pa']]]);
+  });
+
+  it("keeps a peer's marks beside a link another peer removes while typing on its other side", () => {
+    const peers = linkPeers([
+      {
+        children: [{ bold: true, text: 'x' }, link('a', 'A'), { text: 'y' }],
+        type: 'paragraph',
+      },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.remove({ at: [0, 1] });
+      tx.text.insert('P', { at: { offset: 0, path: [0, 1] } });
+    });
+    b.editor.update.text.insert('Q', { at: { offset: 1, path: [0, 0] } });
+    syncConnectedPeers(peers);
+
+    const merged = [
+      {
+        children: [{ bold: true, text: 'xQ' }, { text: 'Py' }],
+        type: 'paragraph',
+      },
+    ];
+
+    assert.deepEqual(peers.map(readPeerChildren), [merged, merged]);
+  });
+
+  it("keeps a peer's typing beside a link another peer removes while typing a new mark in its place", () => {
+    const peers = linkPeers([
+      {
+        children: [{ bold: true, text: 'x' }, link('a', 'A'), { text: 'y' }],
+        type: 'paragraph',
+      },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.remove({ at: [0, 1] });
+      tx.selection.set({
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      });
+      tx.marks.set({ italic: true } as never);
+      tx.text.insert('P');
+    });
+    b.editor.update((tx) => {
+      tx.text.insert('Q', { at: { offset: 1, path: [0, 0] } });
+      tx.text.insert('R', { at: { offset: 0, path: [0, 2] } });
+    });
+    syncConnectedPeers(peers);
+
+    const block = {
+      children: [
+        { bold: true, text: 'xQ' },
+        { italic: true, text: 'P' },
+        { text: 'Ry' },
+      ],
+      type: 'paragraph',
+    };
+
+    assert.deepEqual(peers.map(readPeerChildren), [[block], [block]]);
+  });
+
+  it("keeps a peer's typing on one side of a link another peer removes while inserting a text on its other side", () => {
+    const peers = linkPeers([
+      {
+        children: [{ text: 'x' }, link('a', 'A'), { text: 'y' }],
+        type: 'paragraph',
+      },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.insert({ italic: true, text: 'P' } as never, { at: [0, 2] });
+      tx.nodes.remove({ at: [0, 1] });
+    });
+    b.editor.update.text.insert('Q', { at: { offset: 1, path: [0, 0] } });
+    syncConnectedPeers(peers);
+
+    const block = {
+      children: [{ text: 'xQ' }, { italic: true, text: 'P' }, { text: 'y' }],
+      type: 'paragraph',
+    };
+
+    assert.deepEqual(peers.map(readPeerChildren), [[block], [block]]);
+  });
+
+  for (const first of [0, 1]) {
+    it(`keeps a peer's typing beside a link another peer removes while typing into an empty text before it, typist ${first + 1}`, () => {
+      const peers = linkPeers([
+        {
+          children: [{ text: '' }, link('a', 'A'), { text: 'y' }],
+          type: 'paragraph',
+        },
+      ]);
+
+      syncConnectedPeers(peers);
+      peers[first].editor.update((tx) => {
+        tx.text.insert('P', { at: { offset: 0, path: [0, 0] } });
+        tx.nodes.remove({ at: [0, 1] });
+      });
+      peers[1 - first].editor.update((tx) => {
+        tx.text.insert('R', { at: { offset: 0, path: [0, 2] } });
+        tx.nodes.remove({ at: [0, 1] });
+      });
+      syncConnectedPeers(peers);
+
+      assert.deepEqual(peers.map(inlinesOf), [[['PRy']], [['PRy']]]);
+    });
+  }
+
+  it("keeps both peers' typing when each removes a link between two empty texts", () => {
+    const peers = linkPeers([
+      {
+        children: [{ text: '' }, link('a', 'A'), { text: '' }],
+        type: 'paragraph',
+      },
+    ]);
+    const [a, b] = peers;
+
+    syncConnectedPeers(peers);
+    a.editor.update((tx) => {
+      tx.text.insert('P', { at: { offset: 0, path: [0, 0] } });
+      tx.nodes.remove({ at: [0, 1] });
+    });
+    b.editor.update((tx) => {
+      tx.text.insert('R', { at: { offset: 0, path: [0, 2] } });
+      tx.nodes.remove({ at: [0, 1] });
+    });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(inlinesOf), [[['PR']], [['PR']]]);
+  });
+
+  it('keeps the letters a peer retypes over a link while another peer deletes a letter they replaced', () => {
+    const peers = linkPeers([
+      {
+        children: [{ text: 'xa' }, link('a', 'A'), { text: 'bz' }],
+        type: 'paragraph',
+      },
+    ]);
+    const [a, b] = peers;
+
+    a.editor.update.fragment.replace([{ text: 'ab' }], {
+      at: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 2] },
+      },
+    });
+    b.editor.update.text.delete({
+      at: {
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+    });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(inlinesOf), [[['xabz']], [['xabz']]]);
+  });
 });

@@ -60,6 +60,7 @@ import {
   withYjsRootIds,
   withYjsRootIndex,
   yjsRootNeedsNormalization,
+  type YjsPropertyLocation,
   type YjsPropertyContext,
   type YjsSetPropertyResolver,
 } from './document';
@@ -71,6 +72,7 @@ import {
   type JoinRun,
   joinRunsOf,
   letterEditsIn,
+  lettersInsertedAt,
   pushDiff,
   replacedWhole,
   splitAtRuns,
@@ -95,6 +97,7 @@ import { RootProjectionIndex } from './root-projection-index';
 import {
   alignSegments,
   createYjsRunEncoder,
+  createYjsTextChain,
   elementOnlySpliceEdits,
   retainTextChainRange,
   rewriteTextRuns,
@@ -1892,7 +1895,6 @@ export class YjsEventChangeBridge {
     }
 
     const yjsLines = lines as Y.XmlElement[];
-    const { children } = joined;
     const location = (offset: number) =>
       createYjsPropertyLocationAt(
         middle.nodes as NodeList<Descendant>,
@@ -1900,6 +1902,80 @@ export class YjsEventChangeBridge {
         this.schemaRoot,
         offset
       );
+    const plan = this.planLineWrites(
+      inner,
+      before,
+      run.lines.map((path, index) => [path, yjsLines[index]] as const),
+      joined,
+      location
+    );
+
+    if (!plan) return null;
+
+    const { edits, gone } = plan;
+    const firstProperties = propertiesOf(first);
+    const joinedProperties = propertiesOf(joined);
+
+    if (!areJsonLikeValuesEqual(firstProperties, joinedProperties)) {
+      const context = createYjsPropertyContext(joined, {
+        ...createYjsPropertyLocationAt(
+          middle.nodes as NodeList<Descendant>,
+          joinedPath.slice(0, -1),
+          this.schemaRoot
+        ),
+        path: joinedPath,
+      });
+
+      edits.push(() =>
+        setYjsElementAttributes(
+          yjsLines[0],
+          firstProperties,
+          joinedProperties,
+          (key) => this.isSetValued(joined, key, context)
+        )
+      );
+    }
+
+    return {
+      edit: () => {
+        for (const write of edits) write();
+        this.removeLineChildren(gone);
+      },
+      joined: joinedPath,
+      lines: run.lines,
+      parent,
+      place: () => {
+        let end = getYjsVisibleChildren(this.root, yjsLines[0]).length;
+
+        for (const line of yjsLines.slice(1)) {
+          for (const child of getYjsVisibleChildren(this.root, line)) {
+            insertYjsChild(
+              this.root,
+              yjsLines[0],
+              end,
+              createVirtualYjsMovePlaceholder(child)
+            );
+            end += 1;
+          }
+        }
+      },
+      removed: [...yjsLines.slice(1), ...removed],
+    };
+  }
+
+  /**
+   * Yjs drops a peer's concurrent edits inside a text it deletes, so each
+   * kept text takes its letter edits in its own Yjs text instead of being
+   * re-created.
+   */
+  private planLineWrites(
+    inner: RootChange,
+    before: DocumentIndex,
+    lines: ReadonlyArray<readonly [readonly number[], Y.XmlElement]>,
+    joined: Element,
+    location: (offset: number) => YjsPropertyLocation
+  ) {
+    const { children } = joined;
     let at = 0;
     let used = 0;
     const take = (count: number): Text[] | null => {
@@ -1937,10 +2013,28 @@ export class YjsEventChangeBridge {
     };
     const edits: Array<() => void> = [];
     const gone: Array<readonly [Y.XmlElement, YjsNode]> = [];
+    const insertNewText = (
+      yjsLine: Y.XmlElement,
+      anchor: YjsNode | null,
+      leaves: readonly Text[],
+      offset: number
+    ) => {
+      const encode = createYjsRunEncoder(this.isSetValued, location(offset));
 
-    for (const [index, path] of run.lines.entries()) {
+      edits.push(() => {
+        const visible = getYjsVisibleChildren(this.root, yjsLine);
+
+        insertYjsChild(
+          this.root,
+          yjsLine,
+          anchor ? visible.indexOf(anchor) : visible.length,
+          createYjsTextChain(leaves, encode)
+        );
+      });
+    };
+
+    for (const [path, yjsLine] of lines) {
       const line = before.node(path);
-      const yjsLine = yjsLines[index];
 
       if (!NodeApi.isElement(line)) return null;
 
@@ -1952,6 +2046,8 @@ export class YjsEventChangeBridge {
       );
 
       if (!targets) return null;
+
+      let collected = -1;
 
       for (const [order, segment] of segments.entries()) {
         const target = targets[order];
@@ -1976,7 +2072,16 @@ export class YjsEventChangeBridge {
 
           if (!diff || !after) return null;
           if (target?.kind !== 'text') {
-            if (after.some((leaf) => leaf.text !== '')) return null;
+            if (after.some((leaf) => leaf.text !== '')) {
+              const next = targets[order + 1];
+
+              insertNewText(
+                yjsLine,
+                next?.kind === 'element' ? next.node : null,
+                after,
+                offset
+              );
+            }
             continue;
           }
 
@@ -2001,6 +2106,17 @@ export class YjsEventChangeBridge {
         const edit = editOf(inner, range.from, range.to);
 
         if (edit === 'removed') {
+          const inserted = lettersInsertedAt(
+            inner,
+            Math.max(range.from, collected + 1),
+            range.to
+          );
+          const offset = at;
+          const after = inserted ? take(inserted.length) : [];
+
+          if (inserted === null || !after) return null;
+          if (inserted) insertNewText(yjsLine, target.node, after, offset);
+          collected = range.to;
           gone.push([yjsLine, target.node]);
           continue;
         }
@@ -2040,65 +2156,22 @@ export class YjsEventChangeBridge {
       }
     }
 
-    if (at !== children.length || used !== 0) return null;
+    return at === children.length && used === 0 ? { edits, gone } : null;
+  }
 
-    const firstProperties = propertiesOf(first);
-    const joinedProperties = propertiesOf(joined);
+  private removeLineChildren(
+    gone: ReadonlyArray<readonly [Y.XmlElement, YjsNode]>
+  ) {
+    for (const [line, node] of gone) {
+      const index = getYjsVisibleChildren(this.root, line).indexOf(node);
 
-    if (!areJsonLikeValuesEqual(firstProperties, joinedProperties)) {
-      const context = createYjsPropertyContext(joined, {
-        ...createYjsPropertyLocationAt(
-          middle.nodes as NodeList<Descendant>,
-          joinedPath.slice(0, -1),
-          this.schemaRoot
-        ),
-        path: joinedPath,
-      });
-
-      edits.push(() =>
-        setYjsElementAttributes(
-          yjsLines[0],
-          firstProperties,
-          joinedProperties,
-          (key) => this.isSetValued(joined, key, context)
-        )
-      );
+      if (
+        index !== -1 &&
+        !removeYjsVirtualPlaceholderChild(this.root, line, index, node)
+      ) {
+        removeYjsChild(this.root, line, index);
+      }
     }
-
-    return {
-      edit: () => {
-        for (const write of edits) write();
-        for (const [line, node] of gone) {
-          const index = getYjsVisibleChildren(this.root, line).indexOf(node);
-
-          if (
-            index !== -1 &&
-            !removeYjsVirtualPlaceholderChild(this.root, line, index, node)
-          ) {
-            removeYjsChild(this.root, line, index);
-          }
-        }
-      },
-      joined: joinedPath,
-      lines: run.lines,
-      parent,
-      place: () => {
-        let end = getYjsVisibleChildren(this.root, yjsLines[0]).length;
-
-        for (const line of yjsLines.slice(1)) {
-          for (const child of getYjsVisibleChildren(this.root, line)) {
-            insertYjsChild(
-              this.root,
-              yjsLines[0],
-              end,
-              createVirtualYjsMovePlaceholder(child)
-            );
-            end += 1;
-          }
-        }
-      },
-      removed: [...yjsLines.slice(1), ...removed],
-    };
   }
 
   private lowerStructure(
@@ -2600,6 +2673,16 @@ export class YjsEventChangeBridge {
       return this.loweredSplice(change, expected, splice, 0, 0, 'compatible');
     }
 
+    const letters = this.lowerLetterSplice(
+      change,
+      expected,
+      splice,
+      parent,
+      indexes
+    );
+
+    if (letters !== null) return letters;
+
     const edits = this.elementSpliceEdits(
       change,
       splice,
@@ -2613,11 +2696,9 @@ export class YjsEventChangeBridge {
     }
     if (!corresponds) return null;
 
-    // Only the changed children are written, so a peer's concurrent edits to
-    // the rest of the block survive. Outside a projection, it may re-create
-    // texts, as a leaf split does, but not an element, as a wrap would: Yjs
-    // drops a peer's concurrent edits inside a deleted element, and
-    // lowerCompositeRelocations keeps them.
+    // Yjs drops a peer's concurrent edits inside a deleted element, so outside
+    // a projection this path re-creates only texts, and
+    // lowerCompositeRelocations keeps an element's edits.
     if (
       !hasProjectedContent(parent) &&
       !touched.some((node) => hasProjectedContent(node)) &&
@@ -2688,6 +2769,53 @@ export class YjsEventChangeBridge {
     )
       ? edits
       : null;
+  }
+
+  private lowerLetterSplice(
+    change: DocumentChange,
+    expected: NodeList<Descendant>,
+    splice: NestedChildSplice,
+    parent: Y.XmlElement,
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+  ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
+    const committed = getInternalDocumentRootChange(change, this.rootKey);
+
+    if (!committed) return null;
+
+    const { after, before } = indexes();
+    const path = [...splice.parentPath];
+    const line = before.node(path);
+    const next = after.node(path);
+
+    if (
+      !NodeApi.isElement(line) ||
+      !NodeApi.isElement(next) ||
+      !areJsonLikeValuesEqual(propertiesOf(line), propertiesOf(next))
+    ) {
+      return null;
+    }
+
+    const plan = this.planLineWrites(
+      withoutEqualEdges(committed, before),
+      before,
+      [[path, parent]],
+      next,
+      (offset) =>
+        createYjsPropertyLocationAt(expected, path, this.schemaRoot, offset)
+    );
+
+    if (!plan || plan.gone.length === 0) return null;
+    for (const write of plan.edits) write();
+    this.removeLineChildren(plan.gone);
+
+    return this.loweredSplice(
+      change,
+      expected,
+      splice,
+      0,
+      plan.gone.length,
+      'compatible'
+    );
   }
 
   /**

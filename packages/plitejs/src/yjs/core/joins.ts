@@ -188,6 +188,43 @@ export const letterEditsIn = (
   return diff;
 };
 
+/**
+ * The letters a change inserts at positions `from` to `to` of the document,
+ * both included, such as at the edges of an element it removes whole, where
+ * `letterEditsIn` credits them to no text. Returns null when it inserts an
+ * element there.
+ */
+export const lettersInsertedAt = (
+  change: RootChange,
+  from: number,
+  to: number
+): string | null => {
+  let letters = '';
+  let position = 0;
+
+  for (
+    let index = 0;
+    index < change.sections.length && position <= to;
+    index += 2
+  ) {
+    if (change.sections[index + 1] > 0 && from <= position) {
+      const { tokens } = change.data[index / 2] as PreparedTokenSlice;
+
+      if (
+        tokens.some(
+          (token) => token.kind !== 'text' && token.nodeKind !== 'text'
+        )
+      ) {
+        return null;
+      }
+      letters += lettersOf(tokens);
+    }
+    position += change.sections[index];
+  }
+
+  return letters;
+};
+
 /** Whether a change leaves `[from, to)` alone, removes it whole, or edits it. */
 export const editOf = (change: RootChange, from: number, to: number) => {
   let position = 0;
@@ -692,18 +729,21 @@ export const composeTextDeltas = (
   return diff;
 };
 
-const tokenLength = (token: JsonToken) =>
-  token.kind === 'text' ? token.text.length : 1;
-
-const sameToken = (left: JsonToken | undefined, right: JsonToken | undefined) =>
+const sameStructure = (
+  left: JsonToken | undefined,
+  right: JsonToken | undefined
+) =>
   left !== undefined &&
   right !== undefined &&
+  left.kind !== 'text' &&
   JSON.stringify(left) === JSON.stringify(right);
 
 /**
- * The same change with each replacement's equal tokens at either edge kept
- * instead, as a commit that replaces a join's close with an equal close
- * writes.
+ * The same change with each replacement's equal open and close tokens at
+ * either edge kept instead, as a commit that replaces a join's close with an
+ * equal close writes. Letters stay replaced even where they equal the old
+ * ones, so a peer's concurrent delete of an old letter cannot take the new
+ * one.
  */
 export const withoutEqualEdges = (
   change: RootChange,
@@ -728,29 +768,25 @@ export const withoutEqualEdges = (
     const removed = document.slice(position, position + length).tokens;
     const { tokens } = value as PreparedTokenSlice;
     let head = 0;
-    let headLength = 0;
 
     while (
       head < removed.length &&
       head < tokens.length &&
-      sameToken(removed[head], tokens[head])
+      sameStructure(removed[head], tokens[head])
     ) {
-      headLength += tokenLength(removed[head]);
       head += 1;
     }
 
     let tail = 0;
-    let tailLength = 0;
 
     while (
       tail < removed.length - head &&
       tail < tokens.length - head &&
-      sameToken(
+      sameStructure(
         removed[removed.length - 1 - tail],
         tokens[tokens.length - 1 - tail]
       )
     ) {
-      tailLength += tokenLength(removed[removed.length - 1 - tail]);
       tail += 1;
     }
 
@@ -762,17 +798,11 @@ export const withoutEqualEdges = (
       );
 
       trimmed = true;
-      addSection(sections, data, headLength, -1, null);
-      if (length - headLength - tailLength > 0 || kept.length > 0) {
-        addSection(
-          sections,
-          data,
-          length - headLength - tailLength,
-          kept.length,
-          kept
-        );
+      addSection(sections, data, head, -1, null);
+      if (length - head - tail > 0 || kept.length > 0) {
+        addSection(sections, data, length - head - tail, kept.length, kept);
       }
-      addSection(sections, data, tailLength, -1, null);
+      addSection(sections, data, tail, -1, null);
     }
     position += length;
   }
