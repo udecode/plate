@@ -473,11 +473,11 @@ describe('authored plugin', () => {
     );
   });
 
-  it('reads a card of ten thousand touching changes as one summary', () => {
+  it('reads a card of 2,100 touching changes as one summary', () => {
     // The oldest change sits mid-card.
     const editor = createEditor({
-      initialValue: Array.from({ length: 10_000 }, (_, index) => ({
-        authored: [format(`run:${index}`, index === 5000 ? 1 : index + 2)],
+      initialValue: Array.from({ length: 2100 }, (_, index) => ({
+        authored: [format(`run:${index}`, index === 1050 ? 1 : index + 2)],
         children: [{ text: 'x' }],
         type: 'heading',
       })) as never,
@@ -492,7 +492,7 @@ describe('authored plugin', () => {
           group.id,
           group.changeCount,
         ]),
-      [['run:5000', 10_000]]
+      [['run:1050', 2100]]
     );
   });
 

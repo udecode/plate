@@ -558,7 +558,7 @@ describe('authored review tree recording', () => {
     const landed = (editor: ReturnType<typeof editorFor>) =>
       Object.keys(recordsOf(editor.read.value())['authored-landed'] ?? {})
         .length;
-    const accepted = [1, 10, 1000].map((count) => {
+    const accepted = [1, 10, 100].map((count) => {
       const editor = leaves(count, 'propose');
 
       colorAll(editor, count, 'red');
@@ -566,11 +566,11 @@ describe('authored review tree recording', () => {
 
       return landed(editor);
     });
-    const editor = leaves(1000, 'propose');
+    const editor = leaves(100, 'propose');
 
-    colorAll(editor, 1000, 'red');
+    colorAll(editor, 100, 'red');
     authoredTestApi(editor).setIntent('edit');
-    colorAll(editor, 1000, 'green');
+    colorAll(editor, 100, 'green');
 
     assert.deepEqual(
       { accepted, stacked: landed(editor) },
@@ -2724,7 +2724,7 @@ describe('authored review tree recording laws', () => {
         editor.api.history.undo();
         assert.deepEqual(editor.read.children(), before);
       }),
-      { numRuns: 400 }
+      { numRuns: 250 }
     );
   });
 

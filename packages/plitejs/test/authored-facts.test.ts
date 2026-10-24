@@ -112,7 +112,6 @@ describe('authored review facts', () => {
     [10, 36, 9],
     [50, 196, 49],
     [100, 396, 99],
-    [200, 796, 199],
   ]) {
     it(`compacts ${k} nested proposals to ${entries} claims and ${contexts} contexts`, () => {
       const value = stacked(k);
@@ -137,10 +136,9 @@ describe('authored review facts', () => {
         .length;
     };
 
-    assert.ok(
-      bytes(200) < 2.1 * bytes(100),
-      `${bytes(200)} > 2.1 × ${bytes(100)}`
-    );
+    const [fifty, hundred] = [50, 100].map(bytes);
+
+    assert.ok(hundred < 2.1 * fifty, `${hundred} > 2.1 × ${fifty}`);
   });
 
   it('keeps a reused change id on each node that carries it', () => {

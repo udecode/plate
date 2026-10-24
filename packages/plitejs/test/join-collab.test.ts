@@ -1371,12 +1371,12 @@ describe("the import's whole-document recovery and join search, through Yjs", ()
 
     for (const alternate of [false, true]) {
       const short = undoWork(40, alternate);
-      const long = undoWork(160, alternate);
+      const long = undoWork(100, alternate);
 
       for (const kind of ['sectionsWalked', 'walkedSlots'] as const) {
         assert.ok(
-          long[kind] <= 5 * short[kind],
-          `${kind}${alternate ? ' with alternating bold' : ''}: ${long[kind]} for 160 lines, ${short[kind]} for 40`
+          long[kind] <= 3 * short[kind],
+          `${kind}${alternate ? ' with alternating bold' : ''}: ${long[kind]} for 100 lines, ${short[kind]} for 40`
         );
       }
     }

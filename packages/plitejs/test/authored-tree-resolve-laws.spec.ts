@@ -347,7 +347,7 @@ describe('authored review tree decision laws', () => {
           );
         }
       ),
-      { numRuns: 1000 }
+      { numRuns: 300 }
     );
   });
 

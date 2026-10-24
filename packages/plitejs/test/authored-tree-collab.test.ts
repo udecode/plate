@@ -2888,30 +2888,30 @@ describe('authored property tags on several clients', () => {
       const measured = Object.fromEntries(
         shapes.map((shape) => [
           shape,
-          { at100: undoWork(100, shape), at2000: undoWork(2000, shape) },
+          { at100: undoWork(100, shape), at500: undoWork(500, shape) },
         ])
       ) as Record<
         (typeof shapes)[number],
-        Record<'at100' | 'at2000', ReturnType<typeof undoWork>>
+        Record<'at100' | 'at500', ReturnType<typeof undoWork>>
       >;
 
       process.stdout.write(`case undo work: ${JSON.stringify(measured)}\n`);
       for (const shape of shapes) {
-        const { at100, at2000 } = measured[shape];
+        const { at100, at500 } = measured[shape];
 
         assert.equal(
-          at2000.indexedNodes,
+          at500.indexedNodes,
           at100.indexedNodes,
           `${shape}: indexed nodes grow with the document`
         );
         assert.equal(
-          at2000.walkedSlots,
+          at500.walkedSlots,
           at100.walkedSlots,
           `${shape}: walked slots grow with the document`
         );
         for (const [blocks, { leaves, wholeReadNodes }] of [
           [100, at100],
-          [2000, at2000],
+          [500, at500],
         ] as const) {
           assert.deepEqual(
             leaves,

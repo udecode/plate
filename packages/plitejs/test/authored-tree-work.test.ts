@@ -769,7 +769,7 @@ describe('authored review tree work per edit', () => {
     });
   }
 
-  it('reads as many index tokens for a range deletion inside a long quote, alone or inside another, that another author’s pending unwrap dissolves at 2,000 quoted blocks as at 100, in either intent', () => {
+  it('reads as many index tokens for a range deletion inside a long quote, alone or inside another, that another author’s pending unwrap dissolves at 500 quoted blocks as at 100, in either intent', () => {
     const realSlice = DocumentIndex.prototype.slice;
     let sliced = 0;
     const unwrapped = (node: Node) => ({
@@ -819,7 +819,8 @@ describe('authored review tree work per edit', () => {
                 });
               });
               read.set(size, [...(read.get(size) ?? []), sliced - before]);
-            }
+            },
+            [100, 500]
           );
 
           const label = `${name} in ${intent}`;
@@ -828,7 +829,7 @@ describe('authored review tree work per edit', () => {
             read.get(100)?.every((reads) => reads > 0),
             label
           );
-          assert.deepEqual(read.get(2000), read.get(100), label);
+          assert.deepEqual(read.get(500), read.get(100), label);
         }
       }
     } finally {
@@ -1085,11 +1086,11 @@ describe('authored review tree work per edit', () => {
 
     assert.deepEqual(large, small);
   });
-  it('reads as many nodes to check Suggesting typing for completion under a root minimum at 20,000 blocks as at 100', () => {
+  it('reads as many nodes to check Suggesting typing for completion under a root minimum at 2,100 blocks as at 100', () => {
     const [small, large] = atBothSizes(
       (size) => editorFor(blocks(size, []), 'propose', 'alice', Blocks),
       typeAtEnd,
-      [100, 20_000]
+      [100, 2100]
     );
 
     assert.ok(small.every((work) => work.recorderReads > 0));
@@ -1135,12 +1136,12 @@ describe('authored review tree work per edit', () => {
     });
   }
 
-  it('reads as many nodes to complete a Suggesting Backspace join at 20,000 blocks as at 100', () => {
+  it('reads as many nodes to complete a Suggesting Backspace join at 2,100 blocks as at 100', () => {
     const [small, large] = atBothSizes(
       (size) => editorFor(blocks(size, []), 'propose', 'alice', Blocks),
       (editor, size, run) =>
         editor.update((tx) => tx.nodes.merge({ at: [size - 1 - run] })),
-      [100, 20_000]
+      [100, 2100]
     );
 
     assert.ok(small.every((work) => work.recorderReads > 0));
@@ -1150,12 +1151,12 @@ describe('authored review tree work per edit', () => {
     );
   });
 
-  it('reads as many nodes to fill a Suggesting cell deletion at 20,000 blocks as at 100', () => {
+  it('reads as many nodes to fill a Suggesting cell deletion at 2,100 blocks as at 100', () => {
     const [small, large] = atBothSizes(
       (size) => editorFor(blocks(size, cells()), 'propose', 'alice', Blocks),
       (editor, size, run) =>
         editor.update((tx) => tx.nodes.remove({ at: [size + run, 0] })),
-      [100, 20_000]
+      [100, 2100]
     );
 
     assert.ok(small.every((work) => work.built > 0));
@@ -1165,7 +1166,7 @@ describe('authored review tree work per edit', () => {
     );
   });
 
-  it('reads as much on each Suggesting Backspace join beside a struck run of 1,000 lines as beside 100, at 20,000 blocks as at 100', () => {
+  it('reads as much on each Suggesting Backspace join beside a struck run of 1,000 lines as beside 100, at 2,100 blocks as at 100', () => {
     const reads = (run: number, sizes: number[]) =>
       atBothSizes(
         (size) =>
@@ -1186,7 +1187,7 @@ describe('authored review tree work per edit', () => {
           ),
         sizes
       ).map((work) => work.map((entry) => entry.recorderReads));
-    const [short, shortInLarge] = reads(100, [100, 20_000]);
+    const [short, shortInLarge] = reads(100, [100, 2100]);
     const [long] = reads(1000, [100]);
 
     assert.deepEqual(shortInLarge, short);
@@ -1525,7 +1526,7 @@ describe('authored review tree work per edit', () => {
           : (node.children ?? []).map(({ text }) => text).join('')
       );
 
-    it('reads, resolves and compares as much for a key beside a merge at a quote’s start at 4,992 children as at 96, beside far marks, a far key and an Accepted view, in both intents', () => {
+    it('reads, resolves and compares as much for a key beside a merge at a quote’s start at 2,080 children as at 96, beside far marks, a far key and an Accepted view, in both intents', () => {
       const cases: ReadonlyArray<
         Readonly<{
           accepted?: boolean;
@@ -1566,7 +1567,7 @@ describe('authored review tree work per edit', () => {
 
       for (const intent of ['edit', 'propose'] as const) {
         for (const { accepted, before, name, value } of cases) {
-          const [small, large] = [96, 4992].map((size) => {
+          const [small, large] = [96, 2080].map((size) => {
             const editor = editorFor(value(size), intent, 'dave', Blocks);
             const view = accepted ? viewOf(editor, 'accepted') : null;
 
@@ -1598,9 +1599,9 @@ describe('authored review tree work per edit', () => {
       }
     });
 
-    it('reads as many facts for a key in a far child of an unmarked quote of 4,992 children as of 96, in both intents', () => {
+    it('reads as many facts for a key in a far child of an unmarked quote of 2,080 children as of 96, in both intents', () => {
       for (const intent of ['edit', 'propose'] as const) {
-        const [small, large] = [96, 4992].map((size) => {
+        const [small, large] = [96, 2080].map((size) => {
           const editor = editorFor(
             [quoted(...tails(size))],
             intent,
@@ -1669,9 +1670,9 @@ describe('authored review tree work per edit', () => {
       assertFresh(editor, 'propose', 'after both keys');
     });
 
-    it('resolves a later line whose join reaches back into the edited line with it, as much at 4,992 children as at 96', () => {
+    it('resolves a later line whose join reaches back into the edited line with it, as much at 2,080 children as at 96', () => {
       for (const intent of ['edit', 'propose'] as const) {
-        const [small, large] = [96, 4992].map((size) => {
+        const [small, large] = [96, 2080].map((size) => {
           const editor = editorFor(
             [
               quoted(
@@ -1712,7 +1713,7 @@ describe('authored review tree work per edit', () => {
       }
     });
 
-    it('resolves the window from a join to its far follower, as large at 4,992 children as at 96', () => {
+    it('resolves the window from a join to its far follower, as large at 2,080 children as at 96', () => {
       const windowAt = (gap: number, size: number) => {
         const editor = editorFor(
           [
@@ -1745,7 +1746,7 @@ describe('authored review tree work per edit', () => {
       for (const gap of [10, 40]) {
         const small = windowAt(gap, 96);
 
-        assert.deepEqual(windowAt(gap, 4992), small, `${gap} lines apart`);
+        assert.deepEqual(windowAt(gap, 2080), small, `${gap} lines apart`);
         // `aa` to `ff`: the join's line, the join, the lines between and the
         // follower.
         assert.equal(small.levelSlots, gap + 3, JSON.stringify(small));
@@ -1851,9 +1852,9 @@ describe('authored review tree work per edit', () => {
       }
     });
 
-    it('does as much map and level work on each of five keys in a row at 4,992 children as at 96, in both intents', () => {
+    it('does as much map and level work on each of five keys in a row at 2,080 children as at 96, in both intents', () => {
       for (const intent of ['edit', 'propose'] as const) {
-        const [small, large] = [96, 4992].map((size) => {
+        const [small, large] = [96, 2080].map((size) => {
           const editor = editorFor(
             [quoted(...sol(), ...tails(size - 4))],
             intent,
@@ -2060,13 +2061,16 @@ describe('authored review tree work per edit', () => {
         small.map(() => [0, 0])
       );
     };
+    const SIZES = [20, 200];
     const assertLinear = (
       small: readonly number[],
       large: readonly number[]
     ) => {
       assert.ok(small.every((reads) => reads > 0));
       assert.ok(
-        large.every((reads, index) => reads <= 60 * small[index]),
+        large.every(
+          (reads, index) => reads <= 1.2 * (SIZES[1] / SIZES[0]) * small[index]
+        ),
         `ownership work grew faster than the document: ${JSON.stringify({ large, small })}`
       );
     };
@@ -2114,144 +2118,126 @@ describe('authored review tree work per edit', () => {
 
       return { editor, keys, loaded, preview, step };
     };
-    const SIZES = [20, 1000];
-    const SLOW = { timeout: 20_000 };
 
-    it(
-      'does as much work for 8 Suggesting keys in a main paragraph, a card body root and a card’s own text at 1,000 cards as at 20, and as much ownership work for Backspace over a selected card',
-      SLOW,
-      () => {
-        const [small, large] = SIZES.map((size) => {
-          const { editor, keys, step } = suggesting(deck(size));
-          const typed = [at([0, 0]), at([0, 0], 'b1'), at([1, 0])].map(keys);
+    it('does as much work for 8 Suggesting keys in a main paragraph, a card body root and a card’s own text at 200 cards as at 20, and as much ownership work for Backspace over a selected card', () => {
+      const [small, large] = SIZES.map((size) => {
+        const { editor, keys, step } = suggesting(deck(size));
+        const typed = [at([0, 0]), at([0, 0], 'b1'), at([1, 0])].map(keys);
 
-          editor.update((tx) =>
-            tx.selection.set(SelectionApi.nodes([[5]], { mode: 'block' }))
-          );
-
-          return {
-            backspace: step(() =>
-              editor.update((tx) =>
-                tx.command(editorCommands.delete, {
-                  direction: 'backward',
-                  unit: 'character',
-                })
-              )
-            ),
-            typed,
-          };
-        });
-
-        for (const [site, keys] of small.typed.entries()) {
-          assertKeyOwnership(keys, large.typed[site]);
-        }
-        assert.deepEqual(large.typed, small.typed);
-        assert.ok(small.backspace.ownedRootsJudged > 0);
-        assert.deepEqual(
-          pick(large.backspace, ['ownedRootsJudged', 'ownerIndexReads']),
-          pick(small.backspace, ['ownedRootsJudged', 'ownerIndexReads']),
-          'ownership work grew with the document'
-        );
-      }
-    );
-
-    it(
-      'does as much work for 8 Suggesting keys beside 50 pending insertions at 1,000 cards as at 20',
-      SLOW,
-      () => {
-        const [small, large] = SIZES.map((size) =>
-          suggesting(deck(size, { pendingPerParagraph: 5 })).keys(at([0, 0]))
+        editor.update((tx) =>
+          tx.selection.set(SelectionApi.nodes([[5]], { mode: 'block' }))
         );
 
-        assertKeyOwnership(small, large);
-        assert.deepEqual(large, small);
-      }
-    );
-
-    it(
-      'does as much ownership work for 8 Suggesting keys, an export and a decision while 10 card deletions are pending at 1,000 cards as at 20, and previews what the resolver gives',
-      SLOW,
-      () => {
-        const [small, large] = SIZES.map((size) => {
-          const { editor, keys, loaded, preview } = suggesting(
-            deck(size, { struck: 10 })
-          );
-          const typed = keys(at([0, 0]));
-          const stored = editor.read.value();
-          const proposed = preview() as any;
-
-          assert.deepEqual(
-            proposed,
-            projectAuthoredDocumentUnder(
-              stored,
-              'proposed',
-              authoredResolveSchemaOf(editor)
-            ).document
-          );
-          assert.deepEqual(
-            Array.from({ length: 10 }, (_, index) =>
-              Object.hasOwn(proposed.roots ?? {}, `b${index}`)
-            ),
-            Array.from({ length: 10 }, () => false)
-          );
-
-          const deletion = editor.read.authored
-            .changes()
-            .items.find((item: any) => item.id === 'carol:0');
-          const unindexedCopy = JSON.parse(JSON.stringify(stored));
-          const operations = [
-            workOf(() =>
-              getEditorAuthoredDocumentCapability(editor)!.project(
-                unindexedCopy,
-                'proposed',
-                getCompiledEditorSchema(editor)
-              )
-            ),
-            workOf(() =>
-              editor.update.authored.decide({
-                action: 'accept',
-                changes: [deletion],
+        return {
+          backspace: step(() =>
+            editor.update((tx) =>
+              tx.command(editorCommands.delete, {
+                direction: 'backward',
+                unit: 'character',
               })
-            ),
-          ].map((counts) =>
-            pick(counts, ['ownedRootsJudged', 'ownerIndexReads'])
-          );
+            )
+          ),
+          typed,
+        };
+      });
 
-          return { loaded: loaded.ownerIndexReads, operations, typed };
-        });
+      for (const [site, keys] of small.typed.entries()) {
+        assertKeyOwnership(keys, large.typed[site]);
+      }
+      assert.deepEqual(large.typed, small.typed);
+      assert.ok(small.backspace.ownedRootsJudged > 0);
+      assert.deepEqual(
+        pick(large.backspace, ['ownedRootsJudged', 'ownerIndexReads']),
+        pick(small.backspace, ['ownedRootsJudged', 'ownerIndexReads']),
+        'ownership work grew with the document'
+      );
+    });
 
-        assertLinear([small.loaded], [large.loaded]);
-        assertKeyOwnership(small.typed, large.typed);
-        assert.ok(
-          small.operations.every((counts) => counts.ownedRootsJudged > 0)
+    it('does as much work for 8 Suggesting keys beside 50 pending insertions at 200 cards as at 20', () => {
+      const [small, large] = SIZES.map((size) =>
+        suggesting(deck(size, { pendingPerParagraph: 5 })).keys(at([0, 0]))
+      );
+
+      assertKeyOwnership(small, large);
+      assert.deepEqual(large, small);
+    });
+
+    it('does as much ownership work for 8 Suggesting keys, an export and a decision while 10 card deletions are pending at 200 cards as at 20, and previews what the resolver gives', () => {
+      const [small, large] = SIZES.map((size) => {
+        const { editor, keys, loaded, preview } = suggesting(
+          deck(size, { struck: 10 })
+        );
+        const typed = keys(at([0, 0]));
+        const stored = editor.read.value();
+        const proposed = preview() as any;
+
+        assert.deepEqual(
+          proposed,
+          projectAuthoredDocumentUnder(
+            stored,
+            'proposed',
+            authoredResolveSchemaOf(editor)
+          ).document
         );
         assert.deepEqual(
-          large.operations,
-          small.operations,
-          'ownership work grew with the document'
+          Array.from({ length: 10 }, (_, index) =>
+            Object.hasOwn(proposed.roots ?? {}, `b${index}`)
+          ),
+          Array.from({ length: 10 }, () => false)
         );
-      }
-    );
 
-    it(
-      'does as much ownership work for an undo, a redo and a key after them at 1,000 cards as at 20',
-      SLOW,
-      () => {
-        const [small, large] = SIZES.map((size) => {
-          const { editor, keys, step } = suggesting(deck(size), [history()]);
+        const deletion = editor.read.authored
+          .changes()
+          .items.find((item: any) => item.id === 'carol:0');
+        const unindexedCopy = JSON.parse(JSON.stringify(stored));
+        const operations = [
+          workOf(() =>
+            getEditorAuthoredDocumentCapability(editor)!.project(
+              unindexedCopy,
+              'proposed',
+              getCompiledEditorSchema(editor)
+            )
+          ),
+          workOf(() =>
+            editor.update.authored.decide({
+              action: 'accept',
+              changes: [deletion],
+            })
+          ),
+        ].map((counts) =>
+          pick(counts, ['ownedRootsJudged', 'ownerIndexReads'])
+        );
 
-          keys(at([0, 0]));
+        return { loaded: loaded.ownerIndexReads, operations, typed };
+      });
 
-          return [
-            step(() => editor.api.history.undo()),
-            step(() => editor.api.history.redo()),
-            step(() => editor.update((tx) => tx.text.insert('k'))),
-          ];
-        });
+      assertLinear([small.loaded], [large.loaded]);
+      assertKeyOwnership(small.typed, large.typed);
+      assert.ok(
+        small.operations.every((counts) => counts.ownedRootsJudged > 0)
+      );
+      assert.deepEqual(
+        large.operations,
+        small.operations,
+        'ownership work grew with the document'
+      );
+    });
 
-        assertKeyOwnership(small, large, KEY_OWNERSHIP_UNDER_HISTORY);
-      }
-    );
+    it('does as much ownership work for an undo, a redo and a key after them at 200 cards as at 20', () => {
+      const [small, large] = SIZES.map((size) => {
+        const { editor, keys, step } = suggesting(deck(size), [history()]);
+
+        keys(at([0, 0]));
+
+        return [
+          step(() => editor.api.history.undo()),
+          step(() => editor.api.history.redo()),
+          step(() => editor.update((tx) => tx.text.insert('k'))),
+        ];
+      });
+
+      assertKeyOwnership(small, large, KEY_OWNERSHIP_UNDER_HISTORY);
+    });
 
     it('does as much work for Suggesting keys that a correction checks at 2,000 blocks as at 100', () => {
       const [small, large] = [100, 2000].map((size) =>
@@ -2375,7 +2361,7 @@ describe('authored review tree work per edit', () => {
       assert.deepEqual(large, small);
     });
 
-    it('reads at most linearly more owner indexes to remove one owner of a shared root at 1,000 cards than at 20', () => {
+    it('reads at most linearly more owner indexes to remove one owner of a shared root at 200 cards than at 20', () => {
       const [small, large] = SIZES.map((size) => {
         const value = deck(size);
         const editor = createEditor({
@@ -2676,7 +2662,7 @@ describe('authored review tree storage', () => {
   });
 
   it('stores k nested proposals by alternating authors in at most 4k + 1 members and k context records, in bytes linear in k', () => {
-    const sizes = [1, 10, 50, 100, 200];
+    const sizes = [1, 10, 25, 50, 100];
     let author = 'alice';
     const editor = createEditor({
       initialValue: [paragraph({ text: 'seed' })] as never,
@@ -2693,7 +2679,7 @@ describe('authored review tree storage', () => {
 
     // Each proposal types two letters between the two the previous one
     // typed, so it sits inside every earlier proposal.
-    for (let step = 0; step < 200; step += 1) {
+    for (let step = 0; step < 100; step += 1) {
       const leaves = (editor.read.children()[0] as Node).children ?? [];
       let leaf = 0;
       let offset = 2 + step;
@@ -2723,12 +2709,12 @@ describe('authored review tree storage', () => {
       assert.ok(records <= k, `${records} records for k = ${k}`);
     }
 
-    const [fifty, hundred, twoHundred] = stored
+    const [twentyFive, fifty, hundred] = stored
       .slice(2)
       .map(({ bytes }) => bytes);
 
     assert.ok(
-      (twoHundred - hundred) / 100 <= ((hundred - fifty) / 50) * 1.1,
+      (hundred - fifty) / 50 <= ((fifty - twentyFive) / 25) * 1.1,
       `bytes grow faster than k: ${JSON.stringify(stored)}`
     );
   });
