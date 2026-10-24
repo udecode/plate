@@ -16,8 +16,18 @@ import {
 
 const NATIVE_CHAR_RE = /^[ -~]$/;
 
-const hasNativeBlockingMarks = (marks: Record<string, unknown> | null) =>
-  marks != null && Object.keys(marks).length > 0;
+const hasNativeBlockingMarks = (
+  editor: ReactRuntimeEditor,
+  marks: Record<string, unknown> | null,
+  selection: Range
+) =>
+  marks != null &&
+  (Object.keys(marks).length > 0 ||
+    editor.read((state) => {
+      const [node] = state.nodes.get(selection.anchor.path) ?? [];
+
+      return !node || Object.keys(node).length > 1;
+    }));
 
 const canUseNativeTextHost = (textHost: Element | null | undefined) =>
   textHost?.getAttribute('data-editor-dom-sync') === 'true' &&
@@ -55,7 +65,13 @@ export const getNativeSingleCharacterInputDecision = ({
 
   // Skip native if there are marks, as
   // `insertText` will insert a node, not just text.
-  if (hasNativeBlockingMarks(editor.read((state) => state.marks()))) {
+  if (
+    hasNativeBlockingMarks(
+      editor,
+      editor.read((state) => state.marks()),
+      selection
+    )
+  ) {
     return blocked('active-marks');
   }
 

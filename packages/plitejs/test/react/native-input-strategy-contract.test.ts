@@ -93,6 +93,34 @@ test.each([{ intent: 'edit' }, { intent: 'propose' }] as const)(
   }
 );
 
+test('routes typing after a mark is turned off through model input', () => {
+  const editor = createReactRuntimeViewEditor(
+    createEditorView(
+      createEditor({
+        initialValue: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'plain ' }, { text: 'bold', bold: true }],
+          },
+        ],
+      })
+    )
+  );
+  editor.update.selection.set({ path: [0, 1], offset: 4 });
+  editor.update.marks.toggle('bold');
+
+  expect(editor.read((state) => state.marks())).toEqual({});
+  expect(
+    getNativeSingleCharacterInputDecision({
+      editor,
+      eventData: 'x',
+      hasAppDOMInputPolicy: false,
+      isCommandNativeEquivalent: () => true,
+      selection: readTextSelection(editor),
+    })
+  ).toEqual({ blocker: 'active-marks', native: false });
+});
+
 test('native anchor checks use the editor window NodeFilter realm', () => {
   const { frame, frameDocument, frameWindow } = createFrameDocument();
   const nodeFilterDescriptor = Object.getOwnPropertyDescriptor(
