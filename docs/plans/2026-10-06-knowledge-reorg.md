@@ -5,7 +5,7 @@ review_commit: da4898bb61
 
 # Knowledge layer: one lookup, one join, owners that write back
 
-Status: paused: on your word to stop subagents; waits on the ungraded phase 3 trial and the diff panel
+Status: superseded: by the research loop plan (2026-10-24), which cuts phase 3 and step 5.3 and triages the open work
 Topic: knowledge
 Playbook: plan
 
@@ -345,6 +345,10 @@ Improved after the five reviews of the phase 2 to 5 rewrite:
 - Froze the legacy plan compile at a dated snapshot whose plans are settled by status or by a reader, so active plans, this one included, are not compiled.
 
 ## Close
+
+### Superseded (2026-10-24)
+
+You asked to cut phase 3 and rewrite the rest, because the plan had gone stale. The [research loop plan](2026-10-24-research-loop.md) replaces it. Phase 3 (steps 3.1 to 3.4) and step 5.3 are cut: their trial graded wiring for a lookup card the new plan changes, and the code their panel would review is deleted there. Phase 5 stops at batches p5-001 to p5-004. Each of the 44 items under Open work has one call in the new plan's Old plan triage table: cut with a reason, carried to the subject that owns it, or taken into one of its steps. The knowledge subject's Layer and owner table now shows what this plan landed. Until the new plan's step 1.1 lands, its triage table tracks every item below.
 
 ### Phases 2 to 5 (2026-10-08)
 
