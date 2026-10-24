@@ -379,6 +379,30 @@ const findOwnerContainingPoint = (
       ) ?? null)
     : null;
 
+// A content root owner renders no model text, so the native hit test on its
+// chrome returns an engine-dependent point, which can sit in another block.
+const findOwnerAtChromeTarget = (
+  owners: readonly ContentRootOwner[],
+  root: RootKey,
+  target: EventTarget | null
+) => {
+  if (root !== MAIN_ROOT_KEY || getEditableRootFromTarget(target) !== root) {
+    return null;
+  }
+
+  const element = mouseEventTargetToElement(target)?.closest(
+    '[data-editor-node="element"][data-editor-path]'
+  );
+  const path = element ? getPliteNodePathFromDOMElement(element) : null;
+
+  return path
+    ? (owners.find(
+        (owner) =>
+          owner.ownerRoot === root && PathApi.equals(owner.ownerPath, path)
+      ) ?? null)
+    : null;
+};
+
 const resolveContentRootOwnerChromeEdge = ({
   event,
   owner,
@@ -418,7 +442,9 @@ const resolveContentRootOwnerChromeEndpoint = ({
   point: Point;
   root: RootKey;
 }): RootInteractionDragEndpoint | null => {
-  const owner = findOwnerContainingPoint(owners, root, point);
+  const owner =
+    findOwnerAtChromeTarget(owners, root, event.target) ??
+    findOwnerContainingPoint(owners, root, point);
 
   if (!owner) {
     return null;
