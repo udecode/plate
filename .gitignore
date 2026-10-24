@@ -3,7 +3,6 @@
 **/test-results
 
 # Allow claude to read these files
-apps/www/src/app/api/ai
 apps/www/public/rd
 **/*.tsbuildinfo
 templates/my-app
