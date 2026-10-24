@@ -153,6 +153,24 @@ const shape = (nodes: readonly Node[]) =>
     )
   );
 
+const blocksOf = (document: unknown) => {
+  const { children, roots = {} } = document as {
+    children: readonly Node[];
+    roots?: Record<string, readonly Node[]>;
+  };
+
+  return [...children, ...Object.values(roots).flat()];
+};
+
+const permutations = <T>(items: readonly T[]): T[][] =>
+  items.length <= 1
+    ? [[...items]]
+    : items.flatMap((item, index) =>
+        permutations(items.filter((_, other) => other !== index)).map(
+          (rest) => [item, ...rest]
+        )
+      );
+
 /**
  * Decides `actions` one change at a time in every order, carrying a change
  * that waits into the next step; returns each order's shape and the batch's.
@@ -168,11 +186,10 @@ const everyOrder = (
       return picked.length > 0 ? [{ action, changes: picked }] : [];
     });
   const changes = Object.keys(actions);
-  const orders =
-    changes.length === 2 ? [changes, [...changes].reverse()] : [changes];
+  const orders = permutations(changes);
 
   return {
-    batch: shape(decide(value, decisionsOf(changes)).value),
+    batch: shape(blocksOf(decide(value, decisionsOf(changes)).document)),
     orders: orders.map((order) => {
       let current = value;
       let waiting: string[] = [];
@@ -187,11 +204,7 @@ const everyOrder = (
       }
 
       return {
-        shape: shape(
-          Array.isArray(current)
-            ? current
-            : (current as { children: Node[] }).children
-        ),
+        shape: shape(Array.isArray(current) ? current : blocksOf(current)),
         waiting,
       };
     }),
@@ -2093,6 +2106,636 @@ describe('rejected cuts give back what the split took', () => {
           { shape: givenBack, waiting: [] },
         ],
       }
+    );
+  });
+
+  describe('with the halves in two roots', () => {
+    const inTwoRoots = () => {
+      const apart = change(cut(start()), 'eve', 'edit', (tx) =>
+        tx.nodes.split({ always: true, at: { offset: 0, path: [0, 2] } })
+      );
+
+      return change(apart, 'eve', 'edit', (tx) => {
+        const [left, right] = blocksOf(tx.value());
+
+        tx.changes.apply(
+          DocumentChange.between(tx.value(), {
+            children: [left, paragraph({ text: 'x' })],
+            roots: { other: [right] },
+          } as never)
+        );
+      });
+    };
+
+    it('gives no ref back when only the left half’s own pending removal removes it, in every order', () => {
+      const value = change(inTwoRoots(), 'dave', 'propose', (tx, [left]) =>
+        tx.nodes.remove({ at: left ?? [] })
+      );
+      const apart = [[], ['x'], ['b@u']];
+
+      assert.deepEqual(
+        everyOrder(value, { 'carol:1': 'reject', 'dave:1': 'accept' }),
+        {
+          batch: apart,
+          orders: [
+            { shape: apart, waiting: [] },
+            { shape: apart, waiting: [] },
+          ],
+        }
+      );
+    });
+
+    it('gives the ref back when the left half goes with its block, in every order', () => {
+      const value = change(inTwoRoots(), 'dave', 'propose', (tx) =>
+        tx.nodes.remove({ at: [0] })
+      );
+      const givenBack = [['x'], ['b@u#r1']];
+
+      assert.deepEqual(
+        everyOrder(value, { 'carol:1': 'reject', 'dave:1': 'accept' }),
+        {
+          batch: givenBack,
+          orders: [
+            { shape: givenBack, waiting: [] },
+            { shape: givenBack, waiting: [] },
+          ],
+        }
+      );
+    });
+  });
+
+  it('gives the ref back in every order when the left half goes with its block before the right half’s', () => {
+    const apart = change(cut(start()), 'eve', 'edit', (tx) =>
+      tx.nodes.split({ always: true, at: { offset: 0, path: [0, 2] } })
+    );
+    const reversed = change(apart, 'eve', 'edit', (tx) => {
+      const [left, right] = blocksOf(tx.value());
+
+      tx.changes.apply(
+        DocumentChange.between(tx.value(), {
+          children: [right, left],
+        } as never)
+      );
+    });
+    const value = change(reversed, 'dave', 'propose', (tx) =>
+      tx.nodes.remove({ at: [1] })
+    );
+    const givenBack = [['b@u#r1']];
+
+    assert.deepEqual(
+      everyOrder(value, { 'carol:1': 'reject', 'dave:1': 'accept' }),
+      {
+        batch: givenBack,
+        orders: [
+          { shape: givenBack, waiting: [] },
+          { shape: givenBack, waiting: [] },
+        ],
+      }
+    );
+  });
+
+  it('keeps the ref off the right half in every order when the left half stands in a later block', () => {
+    const apart = change(cut(start()), 'eve', 'edit', (tx) =>
+      tx.nodes.split({ always: true, at: { offset: 0, path: [0, 2] } })
+    );
+    const reversed = change(apart, 'eve', 'edit', (tx) => {
+      const [left, right] = blocksOf(tx.value());
+
+      tx.changes.apply(
+        DocumentChange.between(tx.value(), {
+          children: [right, left],
+        } as never)
+      );
+    });
+    const value = change(reversed, 'dave', 'propose', (tx) =>
+      tx.nodes.remove({ at: [1] })
+    );
+    const apartHalves = [['b@u'], ['a@u#r1']];
+
+    assert.deepEqual(
+      everyOrder(value, { 'carol:1': 'reject', 'dave:1': 'reject' }),
+      {
+        batch: apartHalves,
+        orders: [
+          { shape: apartHalves, waiting: [] },
+          { shape: apartHalves, waiting: [] },
+        ],
+      }
+    );
+  });
+
+  it('keeps the ref off the last fragment of two rejected cuts in every order when the middle goes and the first stands', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const second = change(first, 'gina', 'propose', (tx) =>
+      splitLink(tx, [0, 3, 0])
+    );
+    const blocks = change(second, 'eve', 'edit', (tx) => {
+      tx.nodes.split({ always: true, at: { offset: 0, path: [0, 4] } });
+      tx.nodes.split({ always: true, at: { offset: 0, path: [0, 2] } });
+    });
+    const value = change(blocks, 'dave', 'propose', (tx) =>
+      tx.nodes.remove({ at: [1] })
+    );
+    const firstStands = [['a@u#r1'], ['c@u']];
+    const result = everyOrder(value, {
+      'carol:1': 'reject',
+      'dave:1': 'accept',
+      'gina:1': 'reject',
+    });
+
+    assert.deepEqual(result, {
+      batch: firstStands,
+      orders: result.orders.map(() => ({ shape: firstStands, waiting: [] })),
+    });
+    assert.equal(result.orders.length, 6);
+  });
+
+  it('gives the last fragment of two rejected cuts the first fragment’s ref in every order when both earlier fragments go', () => {
+    const bob = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'bob',
+      'propose',
+      (tx) => tx.nodes.set({ ref: 'r2' } as never, { at: [0, 1] })
+    );
+    const second = change(cut(bob), 'gina', 'propose', (tx) =>
+      splitLink(tx, [0, 3, 0])
+    );
+    const value = change(
+      change(second, 'dave', 'propose', (tx, [first]) =>
+        tx.nodes.remove({ at: first ?? [] })
+      ),
+      'ida',
+      'propose',
+      (tx, [, middle]) => tx.nodes.remove({ at: middle ?? [] })
+    );
+    const givenBack = [['c@u#r2']];
+    const result = everyOrder(value, {
+      'carol:1': 'reject',
+      'dave:1': 'accept',
+      'gina:1': 'reject',
+      'ida:1': 'accept',
+    });
+
+    assert.deepEqual(result, {
+      batch: givenBack,
+      orders: result.orders.map(() => ({ shape: givenBack, waiting: [] })),
+    });
+  });
+
+  it('gives back the ref from before a Suggesting update that writes and then removes the left half, in every order', () => {
+    const value = change(cut(bobOnWhole()), 'dave', 'propose', (tx, [left]) => {
+      tx.nodes.set({ ref: 'r5' } as never, { at: left ?? [] });
+      tx.nodes.remove({ at: left ?? [] });
+    });
+    const givenBack = [['b@u#r1']];
+    const result = everyOrder(value, {
+      'bob:1': 'reject',
+      'carol:1': 'reject',
+      'dave:1': 'accept',
+    });
+
+    assert.deepEqual(result, {
+      batch: givenBack,
+      orders: result.orders.map(() => ({ shape: givenBack, waiting: [] })),
+    });
+  });
+
+  const inThreeBlocks = (value: unknown) =>
+    change(value, 'eve', 'edit', (tx) => {
+      tx.nodes.split({ always: true, at: { offset: 0, path: [0, 4] } });
+      tx.nodes.split({ always: true, at: { offset: 0, path: [0, 2] } });
+    });
+  const sameEveryOrder = (
+    value: unknown,
+    actions: Readonly<Record<string, Decision['action']>>,
+    expected: unknown
+  ) => {
+    const result = everyOrder(value, actions);
+
+    assert.deepEqual(result, {
+      batch: expected,
+      orders: result.orders.map(() => ({ shape: expected, waiting: [] })),
+    });
+  };
+
+  it('gives the ref back in every order when a rejected Enter’s left half goes through its own removal', () => {
+    const bob = editorFor(start(), 'bob');
+
+    enter(bob, [0, 1, 0], 1);
+    const value = change(bob.read.value(), 'carol', 'propose', (tx) =>
+      tx.nodes.remove({ at: [0, 1] })
+    );
+
+    sameEveryOrder(value, { 'bob:1': 'reject', 'carol:1': 'accept' }, [
+      ['b@u#r1'],
+    ]);
+  });
+
+  it('keeps an update’s other write when the last fragment of two rejected cuts drops the first cut’s copies, in every order', () => {
+    const bob = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'bob',
+      'propose',
+      (tx) => tx.nodes.set({ ref: 'r2', url: 'u2' } as never, { at: [0, 1] })
+    );
+    const second = change(cut(bob), 'gina', 'propose', (tx) =>
+      splitLink(tx, [0, 3, 0])
+    );
+    const value = change(inThreeBlocks(second), 'dave', 'propose', (tx) =>
+      tx.nodes.remove({ at: [1] })
+    );
+
+    sameEveryOrder(
+      value,
+      {
+        'bob:1': 'reject',
+        'carol:1': 'reject',
+        'dave:1': 'accept',
+        'gina:1': 'reject',
+      },
+      [['a@u#r1'], ['c@u']]
+    );
+  });
+
+  it('gives the last fragment the first fragment’s ref in every order when both earlier fragments of a rejected Enter and a rejected cut go', () => {
+    const bob = editorFor(
+      change([linked(link('abc', 'u', { ref: 'r1' }))], 'bob', 'edit', (tx) =>
+        tx.nodes.set({ ref: 'r2' } as never, { at: [0, 1] })
+      ),
+      'carol'
+    );
+
+    enter(bob, [0, 1, 0], 1);
+    const second = change(bob.read.value(), 'gina', 'propose', (tx) =>
+      splitLink(tx, [1, 1, 0])
+    );
+    const value = change(
+      change(second, 'dave', 'propose', (tx, [first]) =>
+        tx.nodes.remove({ at: first ?? [] })
+      ),
+      'ida',
+      'propose',
+      (tx, [, middle]) => tx.nodes.remove({ at: middle ?? [] })
+    );
+
+    sameEveryOrder(
+      value,
+      {
+        'carol:1': 'reject',
+        'dave:1': 'accept',
+        'gina:1': 'reject',
+        'ida:1': 'accept',
+      },
+      [['c@u#r2']]
+    );
+  });
+
+  it('gives the last fragment its own ref back in every order when the cut before its left half is accepted and the left half goes', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const written = change(first, 'eve', 'edit', (tx, [, right]) =>
+      tx.nodes.set({ ref: 'r2' } as never, { at: right ?? [] })
+    );
+    const second = change(written, 'gina', 'propose', (tx) =>
+      splitLink(tx, [0, 3, 0])
+    );
+    const value = change(inThreeBlocks(second), 'dave', 'propose', (tx) =>
+      tx.nodes.remove({ at: [1] })
+    );
+
+    sameEveryOrder(
+      value,
+      { 'carol:1': 'accept', 'dave:1': 'accept', 'gina:1': 'reject' },
+      [['a@u#r1'], ['c@u#r2']]
+    );
+  });
+
+  it('gives the last fragment of two rejected cuts the ref back in every order when pending removals take both earlier blocks', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const second = change(first, 'gina', 'propose', (tx) =>
+      splitLink(tx, [0, 3, 0])
+    );
+    const value = change(
+      change(inThreeBlocks(second), 'dave', 'propose', (tx) =>
+        tx.nodes.remove({ at: [0] })
+      ),
+      'ida',
+      'propose',
+      (tx) => tx.nodes.remove({ at: [1] })
+    );
+
+    sameEveryOrder(
+      value,
+      {
+        'carol:1': 'reject',
+        'dave:1': 'accept',
+        'gina:1': 'reject',
+        'ida:1': 'accept',
+      },
+      [['c@u#r1']]
+    );
+  });
+
+  it('gives the ref back in every order when a rejected Enter’s left half and the piece before it go through their own removals', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const bob = editorFor(first, 'bob');
+
+    enter(bob, [0, 3, 0], 1);
+    const value = change(
+      change(bob.read.value(), 'dave', 'propose', (tx, [before]) =>
+        tx.nodes.remove({ at: before ?? [] })
+      ),
+      'ida',
+      'propose',
+      (tx, [, left]) => tx.nodes.remove({ at: left ?? [] })
+    );
+
+    sameEveryOrder(
+      value,
+      {
+        'bob:1': 'reject',
+        'carol:1': 'reject',
+        'dave:1': 'accept',
+        'ida:1': 'accept',
+      },
+      [['c@u#r1']]
+    );
+  });
+
+  it('keeps the ref off the right half in every order when a link stands between and an accepted cut’s piece of the left half goes by its own removal', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) =>
+        tx.nodes.split({
+          always: true,
+          at: { offset: 2, path: [0, 1, 0] },
+          match: (node) => (node as Node).type === 'link',
+        })
+    );
+    const between = change(first, 'eve', 'edit', (tx) =>
+      tx.nodes.insert(
+        { children: [{ text: 'x' }], type: 'link', url: 'z' } as never,
+        { at: [0, 2] }
+      )
+    );
+    const inner = change(between, 'dave', 'propose', (tx) =>
+      splitLink(tx, [0, 1, 0])
+    );
+    const value = change(inner, 'rae', 'propose', (tx, [, piece]) =>
+      tx.nodes.remove({ at: piece ?? [] })
+    );
+
+    sameEveryOrder(
+      value,
+      { 'carol:1': 'reject', 'dave:1': 'accept', 'rae:1': 'accept' },
+      [['a@u#r1', 'x@z', 'c@u']]
+    );
+  });
+
+  const splitLinkAt =
+    (offset: number, path: number[]) => (tx: EditorUpdateTransaction) =>
+      tx.nodes.split({
+        always: true,
+        at: { offset, path },
+        match: (node) => (node as Node).type === 'link',
+      });
+
+  it('keeps the ref off the right half in every order when the pieces of two later accepted splits go and the first piece stands', () => {
+    const outer = change(
+      [linked(link('xabc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      splitLinkAt(3, [0, 1, 0])
+    );
+    const first = change(outer, 'dave', 'propose', splitLinkAt(1, [0, 1, 0]));
+    const second = change(first, 'fay', 'propose', splitLinkAt(1, [0, 3, 0]));
+    const value = change(second, 'rae', 'propose', (tx) => {
+      tx.nodes.remove({ at: [0, 5] });
+      tx.nodes.remove({ at: [0, 3] });
+    });
+
+    sameEveryOrder(
+      value,
+      {
+        'carol:1': 'reject',
+        'dave:1': 'accept',
+        'fay:1': 'accept',
+        'rae:1': 'accept',
+      },
+      [['x@u#r1', 'c@u']]
+    );
+  });
+
+  it('keeps the ref off the right half in every order when a rejected later split keeps its first piece apart and the left half goes', () => {
+    const outer = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      splitLinkAt(2, [0, 1, 0])
+    );
+    const inner = change(outer, 'dave', 'propose', (tx) =>
+      splitLink(tx, [0, 1, 0])
+    );
+    const url = change(inner, 'ed', 'edit', (tx) =>
+      tx.nodes.set({ url: 'z' } as never, { at: [0, 1] })
+    );
+    const value = change(url, 'rae', 'propose', (tx) =>
+      tx.nodes.remove({ at: [0, 3] })
+    );
+
+    sameEveryOrder(
+      value,
+      { 'carol:1': 'reject', 'dave:1': 'reject', 'rae:1': 'accept' },
+      [['a@z#r1', 'c@u']]
+    );
+  });
+
+  it('keeps the right half’s own write in every order when one update also wrote a link whose rejected split stays apart', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' })), linked(link('uv', 'w'))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const second = change(first, 'gina', 'propose', (tx) =>
+      splitLink(tx, [0, 3, 0])
+    );
+    const bob = change(second, 'bob', 'propose', (tx) => {
+      tx.nodes.set({ ref: 'r2' } as never, { at: [0, 5] });
+      tx.nodes.set({ ref: 'r2' } as never, { at: [1, 1] });
+    });
+    const other = change(bob, 'mia', 'propose', (tx) =>
+      splitLink(tx, [1, 1, 0])
+    );
+    const value = change(other, 'eve', 'edit', (tx) => {
+      tx.nodes.split({ always: true, at: { offset: 0, path: [1, 2] } });
+      tx.nodes.split({ always: true, at: { offset: 0, path: [0, 4] } });
+      tx.nodes.split({ always: true, at: { offset: 0, path: [0, 2] } });
+    });
+
+    sameEveryOrder(
+      value,
+      {
+        'bob:1': 'reject',
+        'carol:1': 'reject',
+        'gina:1': 'accept',
+        'mia:1': 'reject',
+      },
+      [['a@u#r1'], ['b@u'], ['c@u'], ['u@w'], ['v@w']]
+    );
+  });
+
+  it('keeps the ref off the right half in every order when a rejected earlier split joins the first piece with a removed one', () => {
+    const outer = change(
+      [linked(link('abcd', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      splitLinkAt(3, [0, 1, 0])
+    );
+    const first = change(outer, 'dave', 'propose', splitLinkAt(1, [0, 1, 0]));
+    const second = change(first, 'fay', 'propose', splitLinkAt(1, [0, 3, 0]));
+    const value = change(second, 'rae', 'propose', (tx) => {
+      tx.nodes.remove({ at: [0, 5] });
+      tx.nodes.remove({ at: [0, 3] });
+    });
+
+    sameEveryOrder(
+      value,
+      {
+        'carol:1': 'reject',
+        'dave:1': 'reject',
+        'fay:1': 'accept',
+        'rae:1': 'accept',
+      },
+      [['a@u#r1', 'd@u']]
+    );
+  });
+
+  it('gives the ref back in every order when the left half and the piece an accepted cut split from it both go', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) =>
+        tx.nodes.split({
+          always: true,
+          at: { offset: 2, path: [0, 1, 0] },
+          match: (node) => (node as Node).type === 'link',
+        })
+    );
+    const between = change(first, 'eve', 'edit', (tx) =>
+      tx.nodes.insert(
+        { children: [{ text: 'x' }], type: 'link', url: 'z' } as never,
+        { at: [0, 2] }
+      )
+    );
+    const inner = change(between, 'dave', 'propose', (tx) =>
+      splitLink(tx, [0, 1, 0])
+    );
+    const value = change(
+      change(inner, 'rae', 'propose', (tx, [, piece]) =>
+        tx.nodes.remove({ at: piece ?? [] })
+      ),
+      'ida',
+      'propose',
+      (tx, [piece]) => tx.nodes.remove({ at: piece ?? [] })
+    );
+
+    sameEveryOrder(
+      value,
+      {
+        'carol:1': 'reject',
+        'dave:1': 'accept',
+        'ida:1': 'accept',
+        'rae:1': 'accept',
+      },
+      [['x@z', 'c@u#r1']]
+    );
+  });
+
+  it('gives the ref back in every order when a link stands between and the left half goes by its own removal', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const between = change(first, 'eve', 'edit', (tx) =>
+      tx.nodes.insert(
+        { children: [{ text: 'x' }], type: 'link', url: 'z' } as never,
+        { at: [0, 2] }
+      )
+    );
+    const value = change(between, 'rae', 'propose', (tx, [piece]) =>
+      tx.nodes.remove({ at: piece ?? [] })
+    );
+
+    sameEveryOrder(value, { 'carol:1': 'reject', 'rae:1': 'accept' }, [
+      ['x@z', 'bc@u#r1'],
+    ]);
+  });
+
+  it('gives the ref back in every order when an Editing unset on the left half lands before its removal', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'carol',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const unset = change(first, 'ed', 'edit', (tx, [piece]) =>
+      tx.nodes.unset('ref', { at: piece ?? [] })
+    );
+    const value = change(unset, 'rae', 'propose', (tx, [piece]) =>
+      tx.nodes.remove({ at: piece ?? [] })
+    );
+
+    sameEveryOrder(value, { 'carol:1': 'reject', 'rae:1': 'accept' }, [
+      ['bc@u#r1'],
+    ]);
+  });
+
+  it('gives the right half its value in every order when an accepted cut made before the rejected one split the left half off', () => {
+    const first = change(
+      [linked(link('abc', 'u', { ref: 'r1' }))],
+      'dave',
+      'propose',
+      (tx) => splitLink(tx, [0, 1, 0])
+    );
+    const own = change(first, 'eve', 'edit', (tx, [, piece]) =>
+      tx.nodes.set({ ref: 'r5' } as never, { at: piece ?? [] })
+    );
+    const later = change(own, 'carol', 'propose', (tx) =>
+      splitLink(tx, [0, 3, 0])
+    );
+    const value = change(later, 'rae', 'propose', (tx, [, piece]) =>
+      tx.nodes.remove({ at: piece ?? [] })
+    );
+
+    sameEveryOrder(
+      value,
+      { 'carol:1': 'reject', 'dave:1': 'accept', 'rae:1': 'accept' },
+      [['a@u#r1', 'c@u#r5']]
     );
   });
 

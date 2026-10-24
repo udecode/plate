@@ -11,7 +11,10 @@ import {
   withoutValueRoots,
 } from '../../core/record-store';
 import type { ListPart } from '../../core/representation';
-import { orphanedValueRoots } from '../../core/root-ownership';
+import {
+  orphanedValueRoots,
+  schemaHasContentRoots,
+} from '../../core/root-ownership';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { survivalUnder } from '../../core/survival';
 import { type Path, PathApi } from '../../interfaces/path';
@@ -54,9 +57,11 @@ import {
 } from './holds';
 import {
   decideKey,
+  copyKeyOf,
   type FormatTag,
   type KeyReading,
   type LayerValue,
+  splitCopiesOf,
   splitHistoryOf,
   tipsWrittenValue,
 } from './layers';
@@ -307,7 +312,29 @@ export type AuthoredResolveOptions = Readonly<{
   removed?: ReadonlySet<JsonNode>;
   /** The containers the children sit in, nearest first; none at a root. */
   site?: readonly JsonNode[];
+  cutIndex?: CutIndex;
 }>;
+
+type LeftFragment = Readonly<{ block: TextBlock; node: Node; root: string }>;
+
+type CutIndex = Readonly<{
+  copiedFrom: (key: string) => readonly SplitCopies[];
+  leftOf?: (cut: string) => LeftFragment | undefined;
+}>;
+
+type SplitCopies = Readonly<{
+  copied: ReadonlySet<string>;
+  cut: CutTag;
+  right: Readonly<{ block: Node; root: string }>;
+}>;
+
+type CutSides = {
+  end?: number;
+  endNode?: Node;
+  start?: number;
+  startNode?: Node;
+  tag: CutTag;
+};
 
 const propsOf = (node: Node) => {
   const { children: _children, text: _text, ...props } = node;
@@ -465,6 +492,70 @@ const textBlocksOf = (children: NodeList<Node>) => {
   collect(children, [], []);
 
   return blocks;
+};
+
+const cutIndexIn = (
+  value: JsonEditorValue,
+  dependencies: Dependencies,
+  schema: AuthoredResolveSchema | null
+): CutIndex => {
+  const ownedRootsDropLate =
+    !!schema && schemaHasContentRoots(schema.ownership);
+  let index:
+    | Readonly<{
+        copies: Map<string, SplitCopies[]>;
+        fragments: Map<string, LeftFragment>;
+      }>
+    | undefined;
+  const read = () => {
+    if (index) return index;
+    const fragments = new Map<string, LeftFragment>();
+    const copies = new Map<string, SplitCopies[]>();
+    const visit = (nodes: readonly Node[], block: TextBlock, root: string) => {
+      for (const node of nodes) {
+        for (const tag of cutsOf(node)) {
+          if (tag.side === 'end') {
+            fragments.set(tag.cut, { block, node, root });
+            continue;
+          }
+          const copied = splitCopiesOf(dependencies.marks(node), tag.change);
+
+          const entry = {
+            copied,
+            cut: tag,
+            right: { block: block.node, root },
+          };
+
+          for (const key of copied) {
+            const list = copies.get(key);
+
+            if (list) list.push(entry);
+            else copies.set(key, [entry]);
+          }
+        }
+        if (node.children) visit(node.children, block, root);
+      }
+    };
+
+    for (const [root, children] of [
+      ['main', value.children] as const,
+      ...Object.entries(value.roots ?? {}),
+    ]) {
+      for (const block of textBlocksOf(children)) {
+        visit(block.node.children ?? [], block, root);
+      }
+    }
+    index = { copies, fragments };
+
+    return index;
+  };
+
+  return {
+    copiedFrom: (key) => read().copies.get(key) ?? [],
+    ...(ownedRootsDropLate
+      ? {}
+      : { leftOf: (cut: string) => read().fragments.get(cut) }),
+  };
 };
 
 export const pastFollowers = (
@@ -651,6 +742,7 @@ const resolveIn = (
     part,
     removed,
     site = [],
+    cutIndex,
   } = options;
   const children = removed ? given.filter((node) => !removed.has(node)) : given;
   const outcomeOf = typeof outcome === 'string' ? () => outcome : outcome;
@@ -1164,7 +1256,7 @@ const resolveIn = (
         place,
         right: halfOf(node, own, place),
       },
-      { between: [], met: true, place: chain }
+      { between: [], place: chain }
     ) === 'together'
       ? left
       : null;
@@ -1566,21 +1658,22 @@ const resolveIn = (
     }
   });
 
-  // A rejected cut joins only fragments that end up in one block. Its
-  // fragments in two blocks stay apart, unless a pending change could bring
-  // them together.
-  const cutSides = new Map<
-    string,
-    {
-      end?: number;
-      endNode?: Node;
-      start?: number;
-      startNode?: Node;
-      tag: CutTag;
-    }
-  >();
+  const cutSides = new Map<string, CutSides>();
+  const holdsRejectedSplitCopies = (node: Node) => {
+    const own = new Set(cutsOf(node).map(({ change }) => change));
+
+    return readAuthoredMarks(node).some(
+      (mark) =>
+        mark.kind === 'format' &&
+        mark.split !== undefined &&
+        !own.has(mark.split) &&
+        decisionOf(mark) === 'reject'
+    );
+  };
+  let holdsRejectedCopies = false;
   const collectCuts = (nodes: readonly Node[], index: number) => {
     for (const child of nodes) {
+      holdsRejectedCopies ||= holdsRejectedSplitCopies(child);
       for (const cut of cutsOf(child)) {
         const sides = cutSides.get(cut.cut) ?? { tag: cut };
 
@@ -1593,48 +1686,152 @@ const resolveIn = (
   };
 
   blocks.forEach(({ node }, index) => collectCuts(node.children ?? [], index));
-  const joinsCuts = [...cutSides.values()].some(
-    ({ tag }) => decisionOf(tag) === 'reject'
-  );
+  const joinsCuts =
+    [...cutSides.values()].some(({ tag }) => decisionOf(tag) === 'reject') ||
+    holdsRejectedCopies;
   const lineChain = ({ ancestors, node }: TextBlock): readonly Node[] => [
     node,
     ...[...ancestors].reverse(),
     ...site,
   ];
 
-  for (const { end, endNode, start, startNode, tag } of cutSides.values()) {
-    if (
-      end === undefined ||
-      start === undefined ||
-      !endNode ||
-      !startNode ||
-      end >= start ||
-      decisionOf(tag) !== 'reject' ||
-      finalOf(getDefined(blocks[start]).node) ===
-        finalOf(getDefined(blocks[end]).node)
-    ) {
+  const leftOf = (cut: string): LeftFragment | undefined => {
+    const { end, endNode } = cutSides.get(cut) ?? {};
+
+    return end !== undefined && endNode
+      ? { block: getDefined(blocks[end]), node: endNode, root }
+      : cutIndex?.leftOf?.(cut);
+  };
+
+  const standsWhenCutDecides = ({ block, node }: LeftFragment) =>
+    survives(node) || (settled(node) && survives(block.node));
+  const predecessorsOf = (
+    { node }: LeftFragment,
+    seen = new Set<Node>()
+  ): LeftFragment[] => {
+    if (seen.has(node)) return [];
+    seen.add(node);
+
+    return cutsOf(node).flatMap((tag) => {
+      if (tag.side !== 'start' || resultOf(tag) === 'accept') return [];
+      const before = leftOf(tag.cut);
+
+      return before ? [before, ...predecessorsOf(before, seen)] : [];
+    });
+  };
+  const leftStands = (left: LeftFragment) =>
+    standsWhenCutDecides(left) ||
+    predecessorsOf(left).some(standsWhenCutDecides);
+
+  const finalBlockOf = (block: Node) => standingOf(finalOf(block));
+  const meets = ({ end, start }: CutSides, left: LeftFragment) =>
+    end !== undefined &&
+    start !== undefined &&
+    (end === start ||
+      finalBlockOf(getDefined(blocks[start]).node) ===
+        finalBlockOf(left.block.node));
+
+  const copiesToStrip = (node: Node): ReadonlySet<string> | null => {
+    if (!cutIndex || !holdsRejectedSplitCopies(node)) return null;
+    const own = new Set(cutsOf(node).map(({ cut }) => cut));
+    const lineage = new Set<string>();
+    const walk = (fragment: Node) => {
+      for (const { cut, side } of cutsOf(fragment)) {
+        if (side !== 'start' || lineage.has(cut)) continue;
+        lineage.add(cut);
+        const left = leftOf(cut);
+
+        if (left) walk(left.node);
+      }
+    };
+
+    walk(node);
+    const keys = new Set<string>();
+
+    for (const mark of dependencies.marks(node)) {
+      if (mark.kind !== 'format') continue;
+
+      for (const copied of cutIndex.copiedFrom(copyKeyOf(mark))) {
+        if (
+          own.has(copied.cut.cut) ||
+          !lineage.has(copied.cut.cut) ||
+          resultOf(copied.cut) !== 'reject'
+        ) {
+          continue;
+        }
+        const left = leftOf(copied.cut.cut);
+
+        if (
+          left &&
+          (left.root !== copied.right.root ||
+            finalBlockOf(left.block.node) !==
+              finalBlockOf(copied.right.block)) &&
+          leftStands(left)
+        ) {
+          for (const key of copied.copied) keys.add(key);
+        }
+      }
+    }
+
+    return keys.size > 0 ? keys : null;
+  };
+
+  for (const sides of cutSides.values()) {
+    const { end, start, startNode, tag } = sides;
+
+    if (decisionOf(tag) !== 'reject') continue;
+    const left = leftOf(tag.cut);
+
+    if (!left || start === undefined || !startNode || meets(sides, left)) {
       continue;
     }
-    const left = lineChain(getDefined(blocks[end]));
+    const leftChain =
+      end === undefined
+        ? [left.block.node, ...[...left.block.ancestors].reverse()]
+        : lineChain(left.block);
     const right = lineChain(getDefined(blocks[start]));
-    const place = placeUnder(left);
+    const before = predecessorsOf(left);
+    const place = { ...placeUnder(leftChain), root: left.root };
 
     cutVerdict(
       tag.cut,
-      endNode,
+      left.node,
       {
         change: tag.change,
         forced: null,
-        left: halfOf(endNode, pending(endNode), place),
+        left: halfOf(left.node, pending(left.node), place),
         place,
         right: halfOf(startNode, pending(startNode), placeUnder(right)),
       },
       {
-        between: blocks.slice(end + 1, start).map(({ node }) => node),
-        met: false,
-        place: [...left, ...right],
+        between: [
+          ...(end === undefined
+            ? []
+            : blocks.slice(end + 1, start).map(({ node }) => node)),
+          ...before.map(({ node }) => node),
+        ],
+        place: [
+          ...leftChain,
+          ...right,
+          ...before.flatMap(({ block }) => [
+            block.node,
+            ...[...block.ancestors].reverse(),
+          ]),
+        ],
+        unmet: leftStands(left) ? 'apart' : 'gone',
       }
     );
+  }
+
+  for (const { endNode, tag } of cutSides.values()) {
+    if (!endNode || decisionOf(tag) !== 'keep') continue;
+    const starts = cutsOf(endNode).filter(({ side }) => side === 'start');
+
+    if (starts.every((start) => decisionOf(start) === 'keep')) {
+      if (!survives(endNode)) wait(starts);
+    } else if (survives(endNode)) {
+      wait(pending(endNode).filter(({ kind }) => kind === 'delete'));
+    }
   }
 
   if (probe?.settled) return null;
@@ -1713,25 +1910,83 @@ const resolveIn = (
 
             return cutVerdict(cut.cut, original, halves, {
               between,
-              met: true,
               place: above,
             }) === 'together'
               ? leftSupplies(schema?.ownership ?? null, halves)
               : null;
           },
-          rejected: (cut) => resultOf(cut) === 'reject',
-          // A left fragment's own removal waits on its cut, so the cut
-          // decides first and finds it standing. A removal of its whole block
-          // makes the cut wait instead, so the cut finds it gone.
-          standsApart: (cut) => {
-            const { end, endNode } = cutSides.get(cut.cut) ?? {};
+          apartFromRemoved: ({ cut, left, original, right }) => {
+            const splitsOn = (node: Node) =>
+              new Set(
+                pending(node).flatMap((mark) =>
+                  mark.kind === 'format' && mark.split !== undefined
+                    ? [mark.split]
+                    : []
+                )
+              );
+            const rightSplits = splitsOn(right);
+            const seen = new Set<string>();
+            const pendingRemovals = new Set<string>();
+            let piecesStand = false;
+            const walk = (fragment: Node) => {
+              const fragmentSplits = splitsOn(fragment);
 
-            return (
-              end !== undefined &&
-              endNode !== undefined &&
-              (survives(endNode) ||
-                (settled(endNode) && survives(getDefined(blocks[end]).node)))
-            );
+              for (const split of cutsOf(fragment)) {
+                if (
+                  split.side !== 'start' ||
+                  split.change === cut.change ||
+                  seen.has(split.cut) ||
+                  !fragmentSplits.has(split.change) ||
+                  rightSplits.has(split.change)
+                ) {
+                  continue;
+                }
+                seen.add(split.cut);
+                const piece = leftOf(split.cut);
+
+                if (!piece) continue;
+                if (!survives(piece.node)) {
+                  walk(piece.node);
+                  continue;
+                }
+                piecesStand = true;
+                for (const mark of [
+                  ...pending(piece.node),
+                  ...pending(piece.block.node),
+                ]) {
+                  if (mark.kind === 'delete' && decisionOf(mark) === 'keep') {
+                    pendingRemovals.add(mark.change);
+                  }
+                }
+              }
+            };
+
+            walk(leftOf(cut.cut)?.node ?? left);
+            const settles: Settled =
+              pendingRemovals.size > 0
+                ? { waits: [...pendingRemovals] }
+                : { verdict: piecesStand ? 'apart' : 'gone' };
+
+            if (probe?.key === cut.cut) {
+              probe.settled =
+                probe.left === original ? settles : { verdict: 'apart' };
+            }
+            for (const change of pendingRemovals) waits.add(change);
+
+            return piecesStand;
+          },
+          copiesToStrip,
+          rejected: (cut) => resultOf(cut) === 'reject',
+          removedByItself: settled,
+          standsApart: (cut) => {
+            const sides = cutSides.get(cut.cut);
+            const left = leftOf(cut.cut);
+
+            if (!left) return false;
+
+            return sides && meets(sides, left)
+              ? predecessorsOf(left).some(({ node }) => survives(node))
+              : leftStands(left);
           },
           survives,
         })
@@ -2493,7 +2748,12 @@ export const resolveAuthoredValue = (
 ) => {
   const facts = factsOf(value);
   const dependencies = createDependencies(facts);
-  const resolveOptions = { ...options, dependencies, facts };
+  const resolveOptions = {
+    ...options,
+    dependencies,
+    facts,
+    cutIndex: cutIndexIn(value, dependencies, schema),
+  };
   const main = resolveAuthoredChildren(
     value.children,
     outcome,

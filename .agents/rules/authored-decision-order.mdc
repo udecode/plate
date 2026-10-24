@@ -114,14 +114,15 @@ Synced at commit `b2228e62ef`. The verification describes these files and functi
 | `packages/plitejs/test/support/authored-laws.ts` | the step, the settle, `admissionOf` and the comparison |
 | `packages/plitejs/src/authored/tree/record.ts` | not run; `slotsOf` and `build` copy where recording puts marks and format tags |
 
-The give-back family is synced at `fix(plitejs): copy what a split drops onto its second half, so rejecting it gives it back in any order`. It runs recording and the public `decide` whole, so it describes these files as they stand there:
+The give-back family is synced at `fix(plitejs): keep the right half's own write when a rejected split's left half is gone`. It runs recording and the public `decide` whole, so it describes these files as they stand there:
 
 | File | What the family exercises |
 | --- | --- |
 | `packages/plitejs/src/authored/tree/record.ts` | `splitHistoryTags`, which copies the left half's tags on the dropped key onto the right half under the cut's own tag |
 | `packages/plitejs/src/authored/tree/cuts.ts` | `joinRejectedCuts`, which joins a rejected cut's halves or keeps them apart, and then drops the right half's copies |
+| `packages/plitejs/src/authored/tree/resolve.ts` | in `resolveIn`, the walk to the fragment before a removed one, the met halves, the waits of a pending cut's removed left fragment, and `apartFromRemoved`, which keeps a right half apart from a left half its own removal takes |
 | `packages/plitejs/src/authored/tree/halves.ts` | `leftSupplies` and the halves comparison, which read the dropped key from the left half while the right half holds only the split's output |
-| `packages/plitejs/src/authored/tree/layers.ts` | `decideKey` and `keySteps` on the dropped key, which read a rejected split's copies, and `recordFormats` while recording |
+| `packages/plitejs/src/authored/tree/layers.ts` | `decideKey` and `keySteps` on the dropped key, which read a rejected split's copies, `splitCopiesOf` and `copyKeyOf`, which key each copy by key and write id, and `recordFormats` while recording |
 | `packages/plitejs/src/authored/authored.ts` | `decide` through `authoredTestApi`, with its blockers, placement and settle |
 | `packages/plitejs/test/support/authored-laws.ts` | the links schema, the recorded scripts and the reader's view the family compares |
 

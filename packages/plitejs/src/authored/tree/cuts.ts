@@ -10,7 +10,7 @@ import type { JsonEditorValue } from '../../core/change/tokens';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { incarnationOf } from '../facts/records';
-import { splitHistoryOf } from './layers';
+import { copyKeyOf, splitHistoryOf } from './layers';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
@@ -92,9 +92,35 @@ export const joinedShell = (
 const apartFrom = (node: Node, dependencies: Dependencies): Node => {
   const marks = dependencies.marks(node);
   const history = splitHistoryOf(marks);
-  const kept = marks.filter((mark) => !history.has(mark));
 
-  if (kept.length === marks.length) return node;
+  return withMarks(
+    node,
+    marks.filter((mark) => !history.has(mark)),
+    dependencies
+  );
+};
+
+const withoutCopies = (
+  node: Node,
+  copies: ReadonlySet<string>,
+  dependencies: Dependencies
+): Node =>
+  withMarks(
+    node,
+    dependencies
+      .marks(node)
+      .filter(
+        (mark) => !(mark.kind === 'format' && copies.has(copyKeyOf(mark)))
+      ),
+    dependencies
+  );
+
+const withMarks = (
+  node: Node,
+  kept: readonly AuthoredMark[],
+  dependencies: Dependencies
+): Node => {
+  if (kept.length === dependencies.marks(node).length) return node;
 
   const { children, ...props } = node;
 
@@ -131,6 +157,18 @@ export const joinRejectedCuts = (
       }>
     ) => ((key: string) => boolean) | null;
     rejected: (cut: CutTag) => boolean;
+    /** Whether a fragment's own removal, which waits on its cuts, takes it. */
+    removedByItself: (node: Node) => boolean;
+    apartFromRemoved: (
+      halves: Readonly<{
+        between: readonly Node[];
+        cut: CutTag;
+        left: Node;
+        original: Node;
+        right: Node;
+      }>
+    ) => boolean;
+    copiesToStrip: (node: Node) => ReadonlySet<string> | null;
     /** Whether a cut's left fragment in another block stands when the cut decides. */
     standsApart: (cut: CutTag) => boolean;
     survives: (node: Node) => boolean;
@@ -138,14 +176,28 @@ export const joinRejectedCuts = (
 ): Readonly<{ joined: ReadonlyMap<Node, Node>; nodes: readonly Node[] }> => {
   const joined = new Map<Node, Node>();
 
-  if (!nodes.some((node) => cutsOf(node).some(decision.rejected))) {
+  const copiesOf = new Map(
+    nodes.flatMap((node) => {
+      const copies = decision.copiesToStrip(node);
+
+      return copies ? [[node, copies] as const] : [];
+    })
+  );
+
+  if (
+    copiesOf.size === 0 &&
+    !nodes.some((node) => cutsOf(node).some(decision.rejected))
+  ) {
     return { joined, nodes };
   }
 
   const out: Node[] = [];
 
   for (const node of nodes) {
-    let current = node;
+    const copies = copiesOf.get(node);
+    let current = copies
+      ? withoutCopies(node, copies, decision.dependencies)
+      : node;
 
     for (const start of cutsOf(node)) {
       if (start.side !== 'start' || !decision.rejected(start)) continue;
@@ -156,25 +208,27 @@ export const joinRejectedCuts = (
         )
       );
       const left = out[leftIndex];
-
-      if (!left) {
-        if (decision.standsApart(start)) {
-          current = apartFrom(current, decision.dependencies);
-        }
-        continue;
-      }
-      if (!decision.survives(left)) continue;
-
       const between = out.slice(leftIndex + 1);
-      const original = joined.get(left) ?? left;
-
-      const leftHolds = decision.join({
+      const halves = (fragment: Node) => ({
         between,
         cut: start,
-        left,
-        original,
+        left: fragment,
+        original: joined.get(fragment) ?? fragment,
         right: current,
       });
+
+      if (!left || !decision.survives(left)) {
+        const apart =
+          left && decision.removedByItself(left)
+            ? decision.apartFromRemoved(halves(left))
+            : decision.standsApart(start);
+
+        if (apart) current = apartFrom(current, decision.dependencies);
+        continue;
+      }
+
+      const original = joined.get(left) ?? left;
+      const leftHolds = decision.join(halves(left));
 
       if (!leftHolds) {
         current = apartFrom(current, decision.dependencies);
