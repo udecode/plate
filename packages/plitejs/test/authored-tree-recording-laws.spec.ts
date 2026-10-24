@@ -497,9 +497,32 @@ const historyArbitrary = withNesting(
   fc.array(editArbitrary, { maxLength: 3, minLength: 0 })
 );
 
-const projection = (value: readonly Node[], read: 'accepted' | 'proposed') =>
-  authoredTestApi(editorFor(value, 'carol', 'edit', 'carol:1')).project(read)
-    .value.children as Node[];
+const projection = (
+  value: readonly Node[],
+  read: 'accepted' | 'proposed',
+  { plugin, root = 'main' }: Pick<LedgerRoot, 'plugin' | 'root'> = {
+    plugin: Quotes,
+  }
+) => {
+  const projected = authoredTestApi(
+    editorFor(
+      root === 'main'
+        ? value
+        : ({
+            children: [{ children: [{ text: '' }], type: 'paragraph' }],
+            roots: { [root]: value },
+          } as never),
+      'carol',
+      'edit',
+      'carol:1',
+      plugin
+    )
+  ).project(read).value;
+
+  return (
+    root === 'main' ? projected.children : getDefined(projected.roots?.[root])
+  ) as Node[];
+};
 const letterCounts = (value: readonly Node[]) => {
   const counts = new Map<string, number>();
 
@@ -1188,7 +1211,8 @@ const survives = (node: Node): boolean =>
 const acceptedSpot = (
   before: readonly Node[],
   point: Point,
-  lean: 'ahead' | 'back' | 'caret'
+  lean: 'ahead' | 'back' | 'caret',
+  place: Pick<LedgerRoot, 'plugin' | 'root'> = { plugin: Quotes }
 ): Readonly<{ block: number; offset: number }> => {
   const nodeAt = (path: readonly number[]) =>
     path.reduce<Node | undefined>((node, index) => node?.children?.[index], {
@@ -1230,7 +1254,9 @@ const acceptedSpot = (
             ? { children: [{ text: MARKER }], type: 'paragraph' }
             : { ...node, children: replace(node.children ?? [], at.slice(1)) }
       );
-    const blocks = textBlocks(projection(replace(before, path), 'proposed'));
+    const blocks = textBlocks(
+      projection(replace(before, path), 'proposed', place)
+    );
 
     return {
       block: blocks.findIndex(({ text }) => text.includes(MARKER)),
@@ -1246,7 +1272,7 @@ const acceptedSpot = (
       for (let index = at + step; nodeAt([...parent, index]); index += step) {
         const landed = edgeOf([...parent, index], step < 0);
 
-        if (landed) return acceptedSpot(before, landed, lean);
+        if (landed) return acceptedSpot(before, landed, lean, place);
       }
     }
 
@@ -1271,7 +1297,7 @@ const acceptedSpot = (
         : ((previous && edgeOf(previous.path, true)) ??
           (next && edgeOf(next.path, false)));
 
-    if (landing) return acceptedSpot(before, landing, lean);
+    if (landing) return acceptedSpot(before, landing, lean, place);
 
     // With no line left, every place is a line completion gives: the nearest
     // top-level container's that stays, else the root's.
@@ -1290,7 +1316,9 @@ const acceptedSpot = (
     return completed(gone);
   }
 
-  const blocks = textBlocks(projection(withMarker(before, point), 'proposed'));
+  const blocks = textBlocks(
+    projection(withMarker(before, point), 'proposed', place)
+  );
   const block = blocks.findIndex(({ text }) => text.includes(MARKER));
 
   return { block, offset: blocks[block].text.indexOf(MARKER) };
@@ -2448,6 +2476,39 @@ const OTHER_ROOTS: Readonly<Record<string, LedgerRoot>> = {
           0,
           [{ action: 'accept', kind: 'decide' }],
         ],
+      'a line an Editing delete joins into the title lands there, not in the struck line holding a suggested split':
+        [
+          [
+            { children: [{ text: 'ab' }], type: 'paragraph' },
+            { children: [{ text: 'cd' }], type: 'paragraph' },
+            {
+              children: [
+                { children: [{ text: 'ef' }], type: 'paragraph' },
+                { children: [{ text: 'gh' }], type: 'paragraph' },
+              ],
+              type: 'quote',
+            },
+          ],
+          [],
+          0,
+          [
+            {
+              intent: 'propose',
+              kind: 'framed',
+              step: { at: { letter: 'a', side: 1 }, kind: 'break' },
+            },
+            {
+              intent: 'edit',
+              kind: 'framed',
+              step: {
+                direction: 'backward',
+                from: { letter: 'a', side: 1 },
+                kind: 'fragment',
+                to: { letter: 'g', side: 0 },
+              },
+            },
+          ],
+        ],
     },
     padding: 2,
     plugin: defineEditorSchema('recording-laws-titled', {
@@ -2867,7 +2928,7 @@ const orderTruth = (
  * between two kept letters across blocks, where the ledger aligns run by
  * run, so only the letters compare.
  */
-const assertLedger = (editor: Editor, label: string) => {
+const assertLedger = (editor: Editor, label: string, plugin: typeof Quotes) => {
   const ledger = getDefined(getReviewLedger(editor as never));
   const stored = editor.read.value() as unknown as JsonEditorValue;
   const resolveSchema = authoredResolveSchemaOf(editor as never);
@@ -3097,7 +3158,10 @@ const assertLedger = (editor: Editor, label: string) => {
 
           if (kept(position) || map.hides(root, position)) continue;
           COMPARED.moved += 1;
-          const expected = acceptedSpot(expanded, point, 'caret');
+          const expected = acceptedSpot(expanded, point, 'caret', {
+            plugin,
+            root,
+          });
 
           for (const assoc of [-1, 1] as const) {
             const mapped = getDefined(
@@ -3496,7 +3560,7 @@ const ledgerSteps = (
           const leaderDeltas = watchDeltas(leader);
           const followerDeltas = watchDeltas(follower);
 
-          assertLedger(leader, `load ${label}`);
+          assertLedger(leader, `load ${label}`, shape.plugin);
           for (const [index, step] of plan.entries()) {
             const before = rootChildren(actor);
             const ordered =
@@ -3607,7 +3671,7 @@ const ledgerSteps = (
               if (reasons.includes('reordered')) counts.reordered.push(at);
               continue;
             }
-            assertLedger(leader, `step ${index} ${label}`);
+            assertLedger(leader, `step ${index} ${label}`, shape.plugin);
             leaderDeltas(`step ${index} ${label}`);
             const windows = takeGateWindows();
             const levels = takeLevelFacts();
@@ -3659,7 +3723,11 @@ const ledgerSteps = (
                   )
               );
             }
-            assertLedger(follower, `remote step ${index} ${label}`);
+            assertLedger(
+              follower,
+              `remote step ${index} ${label}`,
+              shape.plugin
+            );
             followerDeltas(`remote step ${index} ${label}`);
             if (random && !isDeepStrictEqual(rootChildren(actor), before)) {
               randomEdits += 1;
@@ -7523,6 +7591,34 @@ describe('authored review tree folded defects', () => {
         from: { letter: 'c', side: 1 },
         kind: 'fragment',
         to: { letter: 'f', side: 0 },
+      },
+      'edit'
+    );
+    assert.equal(counts.compared, 1);
+  });
+
+  it('accepts Bob’s Editing delete across the line Alice suggested moving a letter out of as a plain editor does (seed 1144417495)', () => {
+    const counts = commandCounts();
+
+    commandCase(counts)(
+      [p('ab'), p('cd'), quote(p('ef'), p('gh'))],
+      [
+        {
+          author: 'alice',
+          command: { kind: 'replaceChildren', shift: 1 },
+          intent: 'edit',
+        },
+        {
+          author: 'alice',
+          command: { at: 'g', kind: 'transferText', to: 'a' },
+          intent: 'propose',
+        },
+      ],
+      {
+        direction: 'backward',
+        from: { letter: 'f', side: 0 },
+        kind: 'fragment',
+        to: { letter: 'a', side: 0 },
       },
       'edit'
     );

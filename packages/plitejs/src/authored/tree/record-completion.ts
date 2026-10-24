@@ -431,7 +431,12 @@ export const completeProposed = (
 
         return nodes;
       };
+      const holdsJoinedLine = (shell: Placed) =>
+        proposedChildren(afterChildren, shell.path).some(
+          ({ path }) => !PathApi.isAncestor(shell.path, path)
+        );
       const keeps = (shell: Placed, node: Descendant) =>
+        !holdsJoinedLine(shell) &&
         shapeOf(
           complete(proposedWith([{ node, path: shell.path }])).children
         ) === shapeOf(completion.children);

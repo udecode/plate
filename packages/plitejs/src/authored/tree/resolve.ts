@@ -879,18 +879,18 @@ const resolveIn = (
     return node;
   };
 
-  const settledMemo = new WeakMap<Node, boolean>();
-  const settled = (node: Node) => {
-    let value = settledMemo.get(node);
+  const ownRemovalMemo = new WeakMap<Node, boolean>();
+  const ownMarkRemoves = (node: Node) => {
+    let value = ownRemovalMemo.get(node);
 
     if (value === undefined) {
       value = pending(node).some((mark) => removes(mark, resultOf(mark)));
-      settledMemo.set(node, value);
+      ownRemovalMemo.set(node, value);
     }
 
     return value;
   };
-  const { survives } = survivalUnder(settled);
+  const { survives } = survivalUnder(ownMarkRemoves);
   const reading: KeyReading = {
     accepted: (member) => isAccepted(facts, member),
     landed: facts.landed,
@@ -1116,7 +1116,7 @@ const resolveIn = (
   // Insert and delete marks of content the decision leaves standing, whose
   // own decisions say whether it stays.
   const contentMarksIn = (node: Node): AuthoredMark[] => [
-    ...(settled(node)
+    ...(ownMarkRemoves(node)
       ? []
       : pending(node).filter(
           (mark) => mark.kind === 'insert' || mark.kind === 'delete'
@@ -1261,22 +1261,19 @@ const resolveIn = (
       ? left
       : null;
   };
-  // Where the decided join on `node` lands in its target `into`, and the
-  // pending marks that landing reads. An accepted join merges into the
-  // target, which keeps its type and properties whatever it still shows. A
-  // rejected split rejoins into the piece before it while that piece keeps
-  // content. Otherwise that piece goes with its pending marks, and the
-  // joining piece keeps its own type and properties, as Editing's merge of
-  // an empty line does.
   const landingOf = (node: Node, into: Node) => {
-    if (!rejoinsSplit(node)) return { merges: true, reads: [] };
+    const rejoins = rejoinsSplit(node);
+
+    if (!rejoins && !ownMarkRemoves(into)) {
+      return { merges: true, reads: [] };
+    }
 
     // Content no pending change touches keeps the piece either way.
     const reads = (into.children ?? []).some(keptContent)
       ? []
       : (into.children ?? []).flatMap(contentMarksIn);
 
-    return keepsContent(into, joinOf(node))
+    return !rejoins || keepsContent(into, joinOf(node))
       ? { merges: true, reads }
       : { merges: false, reads: [...reads, ...subtreeMarks(into)] };
   };
@@ -1704,7 +1701,7 @@ const resolveIn = (
   };
 
   const standsWhenCutDecides = ({ block, node }: LeftFragment) =>
-    survives(node) || (settled(node) && survives(block.node));
+    survives(node) || (ownMarkRemoves(node) && survives(block.node));
   const predecessorsOf = (
     { node }: LeftFragment,
     seen = new Set<Node>()
@@ -1977,7 +1974,7 @@ const resolveIn = (
           },
           copiesToStrip,
           rejected: (cut) => resultOf(cut) === 'reject',
-          removedByItself: settled,
+          removedByItself: ownMarkRemoves,
           standsApart: (cut) => {
             const sides = cutSides.get(cut.cut);
             const left = leftOf(cut.cut);
@@ -2080,12 +2077,12 @@ const resolveIn = (
       // Deciding a block's own removal decides with the content pending
       // inside it, which keeps the block or lets it go.
       const inner =
-        !isText(node) && (settled(node) || unwrapsLine)
+        !isText(node) && (ownMarkRemoves(node) || unwrapsLine)
           ? (node.children ?? []).flatMap(contentMarksIn)
           : [];
 
       wait(inner);
-      if (settled(node) && !survives(node)) {
+      if (ownMarkRemoves(node) && !survives(node)) {
         // Its pending cuts would have nothing to join, so they decide with it.
         wait(cutsOf(node));
         // Corrections derive values from elements, not from text runs.

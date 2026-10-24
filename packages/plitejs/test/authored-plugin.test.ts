@@ -1699,6 +1699,100 @@ describe('authored plugin', () => {
     assert.equal(textOf(proposed.read.children()), 'abcd\nef');
   });
 
+  describe('where a pending join meets a bold line', () => {
+    const JoinedLines = defineEditorSchema('authored-plugin-joined-lines', {
+      elements: {
+        paragraph: schema.element.textBlock(),
+        quote: { content: schema.content.type('paragraph', { min: 1 }) },
+      },
+      id: 'authored-plugin-joined-lines',
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: schema.content.types(['paragraph', 'quote'], {
+        default: { type: 'paragraph' },
+        min: 2,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const boldJoined = {
+      authored: [mark('carol:1', 'join', 1)],
+      children: [{ bold: true, text: 'cd' }],
+      type: 'paragraph',
+    };
+    const quoted = (text: string) => ({
+      children: [{ children: [{ text }], type: 'paragraph' }],
+      type: 'quote',
+    });
+    const shown = (nodes: readonly unknown[]): string =>
+      (
+        nodes as Array<{
+          bold?: boolean;
+          children?: unknown[];
+          text?: string;
+          type?: string;
+        }>
+      )
+        .map((node) => {
+          if (typeof node.text !== 'string') {
+            return `${node.type}(${shown(node.children ?? [])})`;
+          }
+
+          return node.bold ? `*${node.text}*` : node.text;
+        })
+        .join(' ');
+    const editorIn = (value: unknown[], intent: 'edit' | 'propose') => {
+      const editor = createEditor({
+        initialValue: value as never,
+        plugins: [
+          JoinedLines,
+          createAuthoredPlugin({ authorId: 'alice', intent }),
+        ],
+      });
+
+      return {
+        editor,
+        proposed: createEditorView(editor, {
+          authored: { preview: 'proposed' },
+        }),
+      };
+    };
+
+    it('keeps the bold line joined into a quote bold when Enter splits before it', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          [quoted('ab'), boldJoined],
+          intent
+        );
+
+        editor.update((tx) => {
+          tx.selection.set(caret([1, 0], 0));
+          tx.command(editorCommands.insertBreak);
+        });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'quote(paragraph(ab) paragraph(*cd*)) paragraph()'
+        );
+      }
+    });
+
+    it('types bold into the empty quote line a bold line joins', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn([quoted(''), boldJoined], intent);
+
+        editor.update((tx) => {
+          tx.selection.set(caret([0, 0, 0], 0));
+          tx.command(editorCommands.insertText, { text: 'Y' });
+        });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'quote(paragraph(*Ycd*)) paragraph()'
+        );
+      }
+    });
+  });
+
   it('previews a document no change touches as the stored document, without a copy', () => {
     const editor = createEditor({
       initialValue: [{ children: [{ text: 'alpha' }], type: 'paragraph' }],
