@@ -41,6 +41,9 @@ ffmpeg -hide_banner -loglevel error -y -f lavfi -i color=c=white:s=16x16:d=0.1 \
 dry_run=$(publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run)
 jq -e '.repo == "udecode/plate" and .title == "[Beta]: Editor drag crashes the page" and .command[0:3] == ["gh","issue","create"]' <<<"$dry_run" >/dev/null
 
+printf '%s\n' '## Summary' '' 'The export call is at lines 50-56 of `exportHtmlToDocx.internal.ts`.' >"$test_dir/identifier-body.md"
+publish --title-file "$test_dir/title.txt" --body-file "$test_dir/identifier-body.md" --dry-run >/dev/null
+
 two_file_dry_run=$(publish \
   --title-file "$test_dir/title.txt" \
   --body-file "$test_dir/body.md" \
@@ -82,6 +85,8 @@ refuses 'a non-Plate repository' bash "$script_dir/publish-issue.sh" --repo exam
   --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run
 refuses 'unresolved placeholders' publish --title-file "$skill_dir/assets/title.example.txt" \
   --body-file "$skill_dir/assets/issue-body.md" --dry-run
+printf '%s\n' '## Summary' '' 'TODO: add the repro.' >"$test_dir/todo-body.md"
+refuses 'a TODO in the body' publish --title-file "$test_dir/title.txt" --body-file "$test_dir/todo-body.md" --dry-run
 refuses 'a file gh cannot attach' publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
   --attach "$test_dir/notes.txt" --dry-run
 refuses 'a role count that does not match the attachments' publish --title-file "$test_dir/title.txt" \

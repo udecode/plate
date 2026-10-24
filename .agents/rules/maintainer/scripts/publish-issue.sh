@@ -62,7 +62,8 @@ if [[ -z "$comment_on" ]]; then
   title=$(tr '\n' ' ' <"$title_file" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')
   [[ "$title" == "[Beta]: "?* ]] || { echo "Title must start with [Beta]: " >&2; exit 2; }
 fi
-if grep -Eiq 'TODO|TBD|<one sentence|<setup>|<action>|<failure trigger>|<expected behavior|<observed behavior|<verified value|<timestamp note|<inference' ${title_file:+"$title_file"} "$body_file"; then
+if grep -Eq 'TODO|TBD' ${title_file:+"$title_file"} "$body_file" ||
+  grep -Eiq '<one sentence|<setup>|<action>|<failure trigger>|<expected behavior|<observed behavior|<verified value|<timestamp note|<inference' ${title_file:+"$title_file"} "$body_file"; then
   echo "Title or body contains unresolved template placeholders" >&2
   exit 2
 fi
