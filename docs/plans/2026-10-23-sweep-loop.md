@@ -250,7 +250,6 @@ Each step names its proof, and the decision log cites each log by path.
 
 - natamox files each domain from the triage: new issues per unfiled kind, the merges in the table and the member comments. owner: natamox. stop: every round 1 domain filed.
 - natamox filed the native domain on 2026-10-24 (UTC), so t_1d843b2a can start; it took in t_94ffdd65. t_c4407e94 and t_8276a635 start once natamox files their domain. owner: zbeyens. stop: each lands or is dropped.
-- A drafted comment for #5242 records that Safari retest and Chrome's result. owner: natamox. stop: posted or dropped.
 - The four hardening items have no chips, because a run offers chips only for new P0 and P1 finds (owner's word, 2026-10-23). Each belongs to the loop step that names it. Gating `apps/www/tests/browser/regressions/` in CI is the regression sweep's step 2.1. The expected-failure tests and the shipped-wiring check go to `/pstack:correct` from the first domain fix run that hits them. `/pstack:maintain-verification-skill` runs in After a round. owner: zbeyens. stop: round 2 starts.
 - The intake's first formal check, t_30422a81, landed. The other four run in its order: t_a998edbb, t_dd929413, t_df2f315f, then t_589db800 once two checks exist. owner: zbeyens. stop: each lands or is dropped.
 - The six moves still have no trial. owner: zbeyens. stop: round 2's tally, or 2027-01-15.
