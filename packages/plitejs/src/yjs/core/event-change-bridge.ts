@@ -148,6 +148,61 @@ type EventImportRegion = {
   beforeTo: number;
 };
 
+const splitOffMovedEdges = (
+  region: EventImportRegion,
+  sources: ReadonlySet<number>,
+  targets: ReadonlySet<number>
+): EventImportRegion[] => {
+  const head: EventImportRegion[] = [];
+  const tail: EventImportRegion[] = [];
+  let { afterFrom, afterTo, beforeFrom, beforeTo } = region;
+
+  for (;;) {
+    if (beforeFrom < beforeTo && sources.has(beforeFrom)) {
+      head.push({
+        afterFrom,
+        afterTo: afterFrom,
+        beforeFrom,
+        beforeTo: beforeFrom + 1,
+      });
+      beforeFrom += 1;
+    } else if (afterFrom < afterTo && targets.has(afterFrom)) {
+      head.push({
+        afterFrom,
+        afterTo: afterFrom + 1,
+        beforeFrom,
+        beforeTo: beforeFrom,
+      });
+      afterFrom += 1;
+    } else if (beforeFrom < beforeTo && sources.has(beforeTo - 1)) {
+      tail.unshift({
+        afterFrom: afterTo,
+        afterTo,
+        beforeFrom: beforeTo - 1,
+        beforeTo,
+      });
+      beforeTo -= 1;
+    } else if (afterFrom < afterTo && targets.has(afterTo - 1)) {
+      tail.unshift({
+        afterFrom: afterTo - 1,
+        afterTo,
+        beforeFrom: beforeTo,
+        beforeTo,
+      });
+      afterTo -= 1;
+    } else {
+      break;
+    }
+  }
+
+  const rest =
+    beforeFrom < beforeTo || afterFrom < afterTo
+      ? [{ afterFrom, afterTo, beforeFrom, beforeTo }]
+      : [];
+
+  return [...head, ...rest, ...tail];
+};
+
 /**
  * How a remote import fits what it reads into the editor's schema: `block`
  * fits one read top-level block and throws when its content cannot fit;
@@ -176,6 +231,14 @@ type RootWindow = Readonly<{
   before: readonly Descendant[];
   from: number;
 }>;
+
+const inPlaceRegions = ({ before, from }: RootWindow): EventImportRegion[] =>
+  before.map((_, index) => ({
+    afterFrom: from + index,
+    afterTo: from + index + 1,
+    beforeFrom: from + index,
+    beforeTo: from + index + 1,
+  }));
 
 const shiftPath = (path: readonly number[], by: number) =>
   by === 0
@@ -1362,7 +1425,6 @@ type LowerTokenRange = Readonly<{
   fromAfter: number;
   fromBefore: number;
   toAfter: number;
-  toBefore: number;
 }>;
 
 const internalDocumentChangeRoot = (root: string | null) => root ?? 'main';
@@ -1387,29 +1449,45 @@ const sparseLowerRegions = (
       fromAfter,
       fromBefore,
       toAfter,
-      toBefore,
     });
   });
-
-  if (before.length === after.length) {
-    return mergeRegions(
-      ranges.map(({ beforeFrom, beforeTo }) => ({
-        afterFrom: beforeFrom,
-        afterTo: beforeTo,
-        beforeFrom,
-        beforeTo,
-      }))
-    );
-  }
 
   ranges.sort(
     (left, right) =>
       left.beforeFrom - right.beforeFrom || left.fromBefore - right.fromBefore
   );
 
-  const regions: EventImportRegion[] = [];
+  const stretches: LowerTokenRange[] = [];
 
   for (const range of ranges) {
+    const previous = stretches.at(-1);
+
+    if (previous && range.beforeFrom < previous.beforeTo) {
+      stretches[stretches.length - 1] = {
+        ...previous,
+        beforeTo: Math.max(previous.beforeTo, range.beforeTo),
+        toAfter: range.toAfter,
+      };
+    } else {
+      stretches.push(range);
+    }
+  }
+
+  const loneStretchKeepsPositions =
+    before.length === after.length && stretches.length <= 1;
+
+  if (loneStretchKeepsPositions) {
+    return stretches.map(({ beforeFrom, beforeTo }) => ({
+      afterFrom: beforeFrom,
+      afterTo: beforeTo,
+      beforeFrom,
+      beforeTo,
+    }));
+  }
+
+  const regions: EventImportRegion[] = [];
+
+  for (const range of stretches) {
     const previous = regions.at(-1);
     const afterFrom = previous
       ? previous.afterTo + (range.beforeFrom - previous.beforeTo)
@@ -1418,12 +1496,7 @@ const sparseLowerRegions = (
     const afterBoundary = range.fromAfter - (range.fromBefore - beforeBoundary);
     const requiredLength = range.toAfter - afterBoundary;
 
-    if (
-      afterFrom < 0 ||
-      afterFrom > after.length ||
-      requiredLength < 0 ||
-      range.beforeFrom < (previous?.beforeTo ?? 0)
-    ) {
+    if (afterFrom < 0 || afterFrom > after.length || requiredLength < 0) {
       return null;
     }
 
@@ -1455,7 +1528,7 @@ const sparseLowerRegions = (
     return null;
   }
 
-  return mergeRegions(regions);
+  return regions;
 };
 
 const createEventDocumentChange = (
@@ -2185,8 +2258,32 @@ export class YjsEventChangeBridge {
       return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
     }
     if (window === null) return this.lowerRegions(change, expected, []);
-    if (window !== 'many' && sameSkeleton(window.before, window.after)) {
-      return this.lowerRegions(change, expected, []);
+
+    const inPlace =
+      window !== 'many' && sameSkeleton(window.before, window.after)
+        ? inPlaceRegions(window)
+        : null;
+    let regions: EventImportRegion[] | null | undefined;
+
+    if (inPlace) {
+      regions = sparseLowerRegions(
+        change,
+        this.rootKey,
+        this.mirror,
+        expected,
+        this.lengths
+      );
+
+      if (
+        regions === null ||
+        regions.every(
+          (region) =>
+            region.beforeTo - region.beforeFrom ===
+            region.afterTo - region.afterFrom
+        )
+      ) {
+        return this.lowerRegions(change, expected, [], regions);
+      }
     }
 
     const splitResult =
@@ -2218,14 +2315,18 @@ export class YjsEventChangeBridge {
     if (detected !== null) return detected;
 
     const { after, before } = indexes();
-
-    return this.lowerRegions(
+    const relocations = getDocumentChangeRelocations(
       change,
-      expected,
-      exactMove
-        ? [exactMove]
-        : getDocumentChangeRelocations(change, this.rootKey, before, after)
+      this.rootKey,
+      before,
+      after
     );
+
+    if (relocations.length === 0 && inPlace) {
+      return this.lowerRegions(change, expected, [], inPlace);
+    }
+
+    return this.lowerRegions(change, expected, relocations, regions);
   }
 
   /**
@@ -2279,16 +2380,15 @@ export class YjsEventChangeBridge {
   private lowerRegions(
     change: DocumentChange,
     expected: NodeList<Descendant>,
-    relocations: readonly DocumentChangeRelocation[]
-  ): YjsEventLowerResult {
-    const mergedRegions = sparseLowerRegions(
+    relocations: readonly DocumentChangeRelocation[],
+    mergedRegions = sparseLowerRegions(
       change,
       this.rootKey,
       this.mirror,
       expected,
       this.lengths
-    );
-
+    )
+  ): YjsEventLowerResult {
     if (mergedRegions === null) {
       return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
     }
@@ -3260,76 +3360,110 @@ export class YjsEventChangeBridge {
 
     if (relocationTargets.size === 0) return null;
 
-    const beforeNodes = regions.map((region) =>
-      this.rootIndex.slice(region.beforeFrom, region.beforeTo)
+    const blockMoves = relocations.filter(
+      ({ path, targetPath }) => path.length === 1 && targetPath.length === 1
     );
-    const prepared = regions.map((region) => ({
-      nodes: expected
-        .slice(region.afterFrom, region.afterTo)
-        .map((node, index) =>
-          createYjsNodeWithRelocations(
-            node,
-            [region.afterFrom + index],
-            relocationTargets,
-            this.isSetValued,
-            propertyContexts
-          )
-        ),
-      region,
+    const sources = new Set(blockMoves.map(({ path }) => getDefined(path[0])));
+    const targets = new Set(
+      blockMoves.map(({ targetPath }) => getDefined(targetPath[0]))
+    );
+    const touchesMove = (region: EventImportRegion) =>
+      relocations.some(
+        ({ path, targetPath }) =>
+          (path[0] !== undefined &&
+            region.beforeFrom <= path[0] &&
+            path[0] < region.beforeTo) ||
+          (targetPath[0] !== undefined &&
+            region.afterFrom <= targetPath[0] &&
+            targetPath[0] < region.afterTo)
+      );
+    const prepared = regions
+      .flatMap((region) => splitOffMovedEdges(region, sources, targets))
+      .map((region) => {
+        const touched = this.rootIndex.slice(
+          region.beforeFrom,
+          region.beforeTo
+        );
+        const before = this.mirror.slice(region.beforeFrom, region.beforeTo);
+        const after = expected.slice(region.afterFrom, region.afterTo);
+        const compatible =
+          canReplaceCompatibleYjsChildren(
+            this.root,
+            touched,
+            before,
+            after,
+            0
+          ) && !touchesMove(region);
+
+        return { after, before, compatible, region, touched };
+      });
+
+    for (const entry of prepared) {
+      if (!entry.compatible) continue;
+      replaceCompatibleYjsChildren(
+        this.root,
+        entry.touched,
+        entry.before,
+        entry.after,
+        0,
+        this.isSetValued,
+        {
+          ancestors: [],
+          offset: entry.region.afterFrom,
+          path: [],
+          root: this.schemaRoot,
+        }
+      );
+    }
+
+    const built = prepared.map((entry) => ({
+      at: entry.region.afterFrom,
+      nodes: entry.compatible
+        ? []
+        : entry.after.map((node, index) =>
+            createYjsNodeWithRelocations(
+              node,
+              [entry.region.afterFrom + index],
+              relocationTargets,
+              this.isSetValued,
+              propertyContexts
+            )
+          ),
     }));
     let inserted = 0;
     let removed = 0;
-    let regionIndex = prepared.length - 1;
 
-    while (regionIndex >= 0) {
-      const entry = prepared[regionIndex];
+    for (const entry of prepared) {
+      if (entry.compatible) continue;
 
-      if (entry === undefined) {
-        regionIndex -= 1;
-        continue;
-      }
+      entry.touched.forEach((oldTopNode, offset) => {
+        const visibleIndex = this.rootIndex.indexOf(oldTopNode);
 
-      let beforeIndex = entry.region.beforeTo - 1;
-
-      while (beforeIndex >= entry.region.beforeFrom) {
-        const oldTopNode =
-          beforeNodes[regionIndex]?.[beforeIndex - entry.region.beforeFrom];
-
-        if (oldTopNode !== undefined) {
-          const visibleIndex = this.rootIndex.indexOf(oldTopNode);
-
-          if (visibleIndex !== -1) {
-            if (
-              !removeYjsVirtualPlaceholderChild(
-                this.root,
-                this.root,
-                visibleIndex,
-                oldTopNode
-              )
-            ) {
-              removeYjsChild(
-                this.root,
-                this.root,
-                visibleIndex,
-                this.mirror.at(beforeIndex)
-              );
-            }
-            removed += 1;
-          }
+        if (visibleIndex === -1) return;
+        if (
+          !removeYjsVirtualPlaceholderChild(
+            this.root,
+            this.root,
+            visibleIndex,
+            oldTopNode
+          )
+        ) {
+          removeYjsChild(
+            this.root,
+            this.root,
+            visibleIndex,
+            this.mirror.at(entry.region.beforeFrom + offset)
+          );
         }
-        beforeIndex -= 1;
-      }
+        removed += 1;
+      });
+    }
 
-      const insertionIndex = Math.min(
-        entry.region.beforeFrom,
-        this.rootIndex.length
-      );
-
-      entry.nodes.forEach((node, index) => {
-        insertYjsChild(this.root, this.root, insertionIndex + index, node);
+    for (const { at, nodes } of built) {
+      nodes.forEach((node, index) => {
+        insertYjsChild(this.root, this.root, at + index, node);
         inserted += 1;
       });
-      regionIndex -= 1;
     }
 
     let tokenLengthNodes = 0;

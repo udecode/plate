@@ -175,6 +175,27 @@ describe('plitejs/yjs canonical change collaboration contract', () => {
     assertCanonicalYjsTrace(peer);
   });
 
+  it('applies an insert_node and two edits in one block without a root snapshot fallback', () => {
+    const peer = createPeer('b');
+    const beta = getVisibleYjsNodeAt(peer, [1]);
+
+    disconnectAndClearYjsTrace(peer);
+    peer.editor.update((tx) => {
+      tx.nodes.insert(paragraph('new'), { at: [0] });
+      tx.text.insert('X', { at: { offset: 0, path: [2, 0] } });
+      tx.text.insert('Y', { at: { offset: 4, path: [2, 0] } });
+    });
+
+    assert.deepEqual(getPeerTopLevelTexts(peer), [
+      'new',
+      'alpha',
+      'XbetYa',
+      'gamma',
+    ]);
+    assert.equal(getVisibleYjsNodeAt(peer, [2]), beta);
+    assertCanonicalYjsTrace(peer);
+  });
+
   it('inserts before a leading moved child', () => {
     const peer = createPeer('b', [
       { type: 'quote', children: [] },

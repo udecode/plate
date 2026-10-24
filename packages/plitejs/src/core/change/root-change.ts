@@ -3066,6 +3066,12 @@ export class RootChange {
     return changes;
   }
 
+  exactMove(document: DocumentIndex) {
+    return this.propertyChanges().length === 0
+      ? this.movedNode(document)
+      : null;
+  }
+
   movedNode(document: DocumentIndex): Readonly<{
     path: readonly number[];
     targetPath: readonly number[];

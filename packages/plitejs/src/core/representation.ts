@@ -1561,7 +1561,7 @@ export const constructCanonicalDocumentChange = (
       : null;
     const move =
       beforeDocument && rootChange
-        ? rootChange.movedNode(beforeDocument)
+        ? rootChange.exactMove(beforeDocument)
         : null;
     const movedNode = move ? document.node(move.targetPath) : undefined;
     const moveParent = move?.path.slice(0, -1);

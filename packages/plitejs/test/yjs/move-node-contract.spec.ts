@@ -280,6 +280,198 @@ describe('plitejs/yjs move_node collaboration contract', () => {
     }
   });
 
+  it('keeps the text of a block that one update moves and types in', () => {
+    const peers = createPeers(['a', 'b']);
+    const [a] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.move({ at: [0], to: [1] });
+      tx.text.insert('X', { at: { offset: 0, path: [1, 0] } });
+    });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(getPeerTopLevelTexts), [
+      ['beta', 'Xalpha', 'gamma'],
+      ['beta', 'Xalpha', 'gamma'],
+    ]);
+  });
+
+  it("keeps a peer's typing in both blocks when one update moves a block and types in its new neighbor", () => {
+    const peers = createPeers(['a', 'b']);
+    const [a, b] = peers;
+
+    disconnectYjsPeer(b);
+    a.editor.update((tx) => {
+      tx.nodes.move({ at: [0], to: [1] });
+      tx.text.insert('X', { at: { offset: 0, path: [0, 0] } });
+    });
+    b.editor.update((tx) => {
+      tx.text.insert('!', { at: { offset: 'alpha'.length, path: [0, 0] } });
+      tx.text.insert('?', { at: { offset: 'beta'.length, path: [1, 0] } });
+    });
+    connectYjsPeerAndSync(b, peers);
+
+    assert.deepEqual(peers.map(getPeerTopLevelTexts), [
+      ['Xbeta?', 'alpha!', 'gamma'],
+      ['Xbeta?', 'alpha!', 'gamma'],
+    ]);
+  });
+
+  it("keeps a peer's typing when one update moves a block past the block it types in", () => {
+    const peers = createPeers(['a', 'b']);
+    const [a, b] = peers;
+
+    disconnectYjsPeer(b);
+    a.editor.update((tx) => {
+      tx.nodes.move({ at: [0], to: [2] });
+      tx.text.insert('X', { at: { offset: 0, path: [0, 0] } });
+    });
+    b.editor.update((tx) => {
+      tx.text.insert('!', { at: { offset: 'alpha'.length, path: [0, 0] } });
+      tx.text.insert('?', { at: { offset: 'beta'.length, path: [1, 0] } });
+    });
+    connectYjsPeerAndSync(b, peers);
+
+    assert.deepEqual(peers.map(getPeerTopLevelTexts), [
+      ['Xbeta?', 'gamma', 'alpha!'],
+      ['Xbeta?', 'gamma', 'alpha!'],
+    ]);
+  });
+
+  it('keeps every block when one update inserts a block, moves another to the front and sets a property on it', () => {
+    const peers = createPeers(['a', 'b']);
+    const [a] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.insert(paragraph('new'), { at: [3] });
+      tx.nodes.move({ at: [2], to: [0] });
+      tx.nodes.set({ align: 'right' } as never, { at: [0] });
+    });
+    syncConnectedPeers(peers);
+
+    const expected = [
+      { ...paragraph('gamma'), align: 'right' },
+      paragraph('alpha'),
+      paragraph('beta'),
+      paragraph('new'),
+    ];
+
+    assert.deepEqual(peers.map(readPeerChildren), [expected, expected]);
+  });
+
+  it("keeps a peer's typing when one update removes a block with no Yjs text and splits its neighbor", () => {
+    const peers = createPeers(['a', 'b']);
+    const [a, b] = peers;
+    const empty = getVisibleYjsNodeAt(a, [0]);
+
+    empty.delete(0, empty.length);
+    syncConnectedPeers(peers);
+    disconnectYjsPeer(b);
+    a.editor.update((tx) => {
+      tx.nodes.remove({ at: [0] });
+      tx.nodes.split({ at: { offset: 'be'.length, path: [0, 0] } });
+    });
+    b.editor.update.text.insert('!', {
+      at: { offset: 'beta'.length, path: [1, 0] },
+    });
+    connectYjsPeerAndSync(b, peers);
+
+    assert.deepEqual(peers.map(getPeerTopLevelTexts), [
+      ['be', 'ta!', 'gamma'],
+      ['be', 'ta!', 'gamma'],
+    ]);
+  });
+
+  it('keeps every block when one update moves a block and inserts another', () => {
+    const peers = createPeers(['a', 'b']);
+    const [a] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.move({ at: [0], to: [1] });
+      tx.nodes.insert(paragraph('new'), { at: [3] });
+    });
+    syncConnectedPeers(peers);
+
+    assert.deepEqual(peers.map(getPeerTopLevelTexts), [
+      ['beta', 'alpha', 'gamma', 'new'],
+      ['beta', 'alpha', 'gamma', 'new'],
+    ]);
+  });
+
+  it("keeps a peer's typing in a block that one update sets a property on while moving a block past it", () => {
+    const peers = createPeers(['a', 'b']);
+    const [a, b] = peers;
+
+    disconnectYjsPeer(b);
+    a.editor.update((tx) => {
+      tx.nodes.move({ at: [0], to: [2] });
+      tx.nodes.set({ align: 'right' } as never, { at: [0] });
+    });
+    b.editor.update.text.insert('?', {
+      at: { offset: 'beta'.length, path: [1, 0] },
+    });
+    connectYjsPeerAndSync(b, peers);
+
+    const expected = [
+      { ...paragraph('beta?'), align: 'right' },
+      paragraph('gamma'),
+      paragraph('alpha'),
+    ];
+
+    assert.deepEqual(peers.map(readPeerChildren), [expected, expected]);
+  });
+
+  it('keeps every peer on one document when one update moves a block and unsets a mark in another', () => {
+    const peers = createSeededYjsHistoryPeers({
+      children: [
+        paragraph('alpha'),
+        {
+          children: [{ text: 'a' }, { bold: true, text: 'b' }],
+          type: 'paragraph',
+        },
+        paragraph('gamma'),
+      ],
+      clientIds: ['a', 'b'],
+      numericClientIds: clientIds,
+    });
+    const [a] = peers;
+
+    a.editor.update((tx) => {
+      tx.nodes.move({ at: [0], to: [2] });
+      tx.nodes.unset('bold', { at: [0, 1] });
+    });
+    syncConnectedPeers(peers);
+
+    const expected = [paragraph('ab'), paragraph('gamma'), paragraph('alpha')];
+
+    assert.deepEqual(peers.map(readPeerChildren), [expected, expected]);
+  });
+
+  it("keeps a peer's typing in a nested block that one update moves into another section while removing that section's block", () => {
+    const peers = createSeededYjsHistoryPeers({
+      children: [
+        section(paragraph('a'), paragraph('b')),
+        section(paragraph('c')),
+      ],
+      clientIds: ['a', 'b'],
+      numericClientIds: clientIds,
+    });
+    const [a, b] = peers;
+
+    disconnectYjsPeer(b);
+    a.editor.update((tx) => {
+      tx.nodes.move({ at: [0, 0], to: [1, 0] });
+      tx.nodes.remove({ at: [1, 1] });
+    });
+    b.editor.update.text.insert('!', { at: { offset: 1, path: [0, 0, 0] } });
+    connectYjsPeerAndSync(b, peers);
+
+    assert.deepEqual(peers.map(nestedTexts), [
+      [['b'], ['a!']],
+      [['b'], ['a!']],
+    ]);
+  });
+
   it("keeps a peer's typing in a nested block that one update moves while removing its sibling", () => {
     const peers = createSeededYjsHistoryPeers({
       children: [section(paragraph('a'), paragraph('b'), paragraph('c'))],
