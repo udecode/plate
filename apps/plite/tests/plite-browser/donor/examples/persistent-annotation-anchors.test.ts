@@ -96,5 +96,13 @@ test.describe('persistent annotation anchors example', () => {
     await expect(editor.page.locator('#annotation-sidebar')).toHaveText(
       'comment-anchor:Comment anchor:none'
     );
+    await expect(editor.page.locator('#delete-anchor-text')).toBeDisabled();
+    await expect(editor.page.locator('#insert-prefix')).toBeDisabled();
+    await expect(editor.page.locator('#insert-fragment')).toBeDisabled();
+
+    await editor.page.locator('#clear-anchor').click();
+
+    await expect(editor.page.locator('#annotation-sidebar')).toHaveText('none');
+    await expect(editor.page.locator('#add-anchor')).toBeDisabled();
   });
 });

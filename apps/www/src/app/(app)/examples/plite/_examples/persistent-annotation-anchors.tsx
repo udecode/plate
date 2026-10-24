@@ -345,7 +345,7 @@ const AnchoredProjectionContent = ({
 
       <div className="editor-persistent-annotation-anchors-controls">
         <Button
-          disabled={!!annotation}
+          disabled={!!annotation || !alphaRow}
           id="add-anchor"
           onClick={() => {
             const path = getLeafPathByText(editor, (text) =>
@@ -368,6 +368,7 @@ const AnchoredProjectionContent = ({
           Add anchor
         </Button>
         <Button
+          disabled={!alphaRow}
           id="insert-fragment"
           onClick={() => {
             const path = getLeafPathByText(editor, (text) =>
@@ -398,6 +399,7 @@ const AnchoredProjectionContent = ({
           Insert fragment before anchor
         </Button>
         <Button
+          disabled={!alphaRow}
           id="insert-prefix"
           onClick={() => {
             const at = getPointBeforeText(editor, 'alpha');
@@ -412,7 +414,7 @@ const AnchoredProjectionContent = ({
           Insert prefix
         </Button>
         <Button
-          disabled={!annotation}
+          disabled={!annotation || !alphaRow}
           id="delete-anchor-text"
           onClick={() => {
             const range = getRangeInsideText(editor, 'alpha', 1, 4);
