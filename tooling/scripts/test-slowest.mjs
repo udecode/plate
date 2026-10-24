@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 import {
@@ -14,6 +20,7 @@ import {
 const rawArgs = process.argv.slice(2);
 const bunArgs = [];
 let limit = 50;
+let partition = null;
 let profileOnly = false;
 
 for (let i = 0; i < rawArgs.length; i++) {
@@ -25,6 +32,20 @@ for (let i = 0; i < rawArgs.length; i++) {
 
   if (arg === '--profile') {
     profileOnly = true;
+    continue;
+  }
+
+  if (arg === '--partition') {
+    partition = rawArgs[i + 1]?.split(':') ?? [];
+
+    if (partition.length !== 2) {
+      console.error(
+        `Invalid --partition value: ${rawArgs[i + 1] ?? ''}; use <package>:<partition>, such as plitejs:authored`
+      );
+      process.exit(1);
+    }
+
+    i += 1;
     continue;
   }
 
@@ -44,28 +65,63 @@ for (let i = 0; i < rawArgs.length; i++) {
   bunArgs.push(arg);
 }
 
+if (partition && bunArgs.length > 0) {
+  console.error(
+    `--partition runs the package's own test runner, which takes no Bun arguments: ${bunArgs.join(' ')}`
+  );
+  process.exit(1);
+}
+
 const outputDir = '/tmp/plate-test-slowest';
-const junitFile = join(outputDir, 'junit-fast.xml');
 
 mkdirSync(outputDir, { recursive: true });
 
-const command = [
-  'tooling/scripts/test-suite.mjs',
-  ...bunArgs,
-  '--reporter=junit',
-  '--reporter-outfile',
-  junitFile,
-];
+const runSuite = () => {
+  const junitFile = join(outputDir, 'junit-fast.xml');
+  const run = spawnSync(
+    process.execPath,
+    [
+      'tooling/scripts/test-suite.mjs',
+      ...bunArgs,
+      '--reporter=junit',
+      '--reporter-outfile',
+      junitFile,
+    ],
+    { stdio: 'inherit' }
+  );
 
-const run = spawnSync(process.execPath, command, { stdio: 'inherit' });
+  return { reports: [junitFile], run };
+};
 
-let xml = '';
+const runPartition = ([packageName, partitionName]) => {
+  const junitDir = mkdtempSync(
+    join(outputDir, `${packageName}-${partitionName}-`)
+  );
+  const run = spawnSync(
+    'node',
+    [
+      'tooling/scripts/run-entrypoint-task.mjs',
+      'test',
+      packageName,
+      partitionName,
+    ],
+    {
+      env: { ...process.env, PLATE_TEST_JUNIT_DIR: junitDir },
+      stdio: 'inherit',
+    }
+  );
 
-try {
-  xml = readFileSync(junitFile, 'utf-8');
-} catch {
-  xml = '';
-}
+  return {
+    reports: readdirSync(junitDir).map((file) => join(junitDir, file)),
+    run,
+  };
+};
+
+const { reports, run } = partition ? runPartition(partition) : runSuite();
+const xml = reports
+  .filter((report) => existsSync(report))
+  .map((report) => readFileSync(report, 'utf-8'))
+  .join('\n');
 
 if (xml) {
   const rows = [];
@@ -118,8 +174,17 @@ if (xml) {
     (sum, row) => sum + row.milliseconds,
     0
   );
-  const slowSuite = suiteMilliseconds >= FAST_TEST_SLOW_SUITE_THRESHOLD_MS;
-  const warnSuite = suiteMilliseconds >= FAST_TEST_WARN_SUITE_THRESHOLD_MS;
+  const rootSuiteBudget = partition
+    ? null
+    : {
+        slow: FAST_TEST_SLOW_SUITE_THRESHOLD_MS,
+        warn: FAST_TEST_WARN_SUITE_THRESHOLD_MS,
+      };
+  const slowSuite =
+    !!rootSuiteBudget && suiteMilliseconds >= rootSuiteBudget.slow;
+  const warnSuite =
+    !!rootSuiteBudget && suiteMilliseconds >= rootSuiteBudget.warn;
+  const suiteLimit = (ms) => (rootSuiteBudget ? `, ${ms}ms/suite total` : '');
   const averageMs =
     rows.length === 0
       ? 0
@@ -131,15 +196,15 @@ if (xml) {
           Math.floor(rows.length / 2)
         ].milliseconds;
   console.log('');
-  console.log(`JUnit report: ${junitFile}`);
+  console.log(`JUnit reports: ${reports.join(', ')}`);
   console.log(
     `Average: ${averageMs.toFixed(3)}ms  Median: ${medianMs.toFixed(3)}ms`
   );
   console.log(
-    `Hard limits: ${FAST_TEST_SLOW_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_SLOW_SUITE_THRESHOLD_MS}ms/suite total`
+    `Hard limits: ${FAST_TEST_SLOW_CASE_THRESHOLD_MS}ms/test${suiteLimit(FAST_TEST_SLOW_SUITE_THRESHOLD_MS)}`
   );
   console.log(
-    `Warning zone: ${FAST_TEST_WARN_CASE_THRESHOLD_MS}ms/test, ${FAST_TEST_WARN_SUITE_THRESHOLD_MS}ms/suite total`
+    `Warning zone: ${FAST_TEST_WARN_CASE_THRESHOLD_MS}ms/test${suiteLimit(FAST_TEST_WARN_SUITE_THRESHOLD_MS)}`
   );
   console.log(`Measured suite total: ${suiteMilliseconds.toFixed(2)}ms`);
   console.log(`Top ${Math.min(limit, rows.length)} slowest tests`);

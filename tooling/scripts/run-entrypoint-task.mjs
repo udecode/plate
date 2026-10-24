@@ -93,6 +93,17 @@ const runTests = (runtimeTestFiles, traceEnv) => {
 
   if (files.length === 0) return 0;
 
+  const junitDir = process.env.PLATE_TEST_JUNIT_DIR;
+  let batches = 0;
+  const reporterArgs = () => {
+    if (!junitDir) return [];
+    batches += 1;
+    return [
+      '--reporter=junit',
+      `--reporter-outfile=${path.join(junitDir, `batch-${batches}.xml`)}`,
+    ];
+  };
+
   const runBunTestBatch = (testFiles) => {
     if (packageName === 'platejs') {
       return runTest(
@@ -103,6 +114,7 @@ const runTests = (runtimeTestFiles, traceEnv) => {
           `--cwd=${repoRoot}`,
           'test',
           `--timeout=${BUN_TEST_TIMEOUT_MS}`,
+          ...reporterArgs(),
           // Without `./`, bun treats each path as a substring filter and scans the whole repository for matching test files.
           ...testFiles.map(
             (filename) => `./${path.join(definition.packageRoot, filename)}`
@@ -116,6 +128,7 @@ const runTests = (runtimeTestFiles, traceEnv) => {
     return runTest(path.join(packageRoot, 'bunfig.toml'), 'bun', [
       'test',
       `--timeout=${BUN_TEST_TIMEOUT_MS}`,
+      ...reporterArgs(),
       `--preload=${path.join(repoRoot, 'config/plite-source-test-setup.ts')}`,
       ...testFiles.map((filename) => `./${filename}`),
     ]);
