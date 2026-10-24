@@ -901,9 +901,10 @@ const usePliteNodeRefBinding = (
       }
 
       nodeRef.current = nextNode;
+      if (!nextNode) editableRuntime?.importUnreadPressBeforeUnmount(null);
       bindNode(nextNode);
     },
-    [bindNode]
+    [bindNode, editableRuntime]
   );
 };
 

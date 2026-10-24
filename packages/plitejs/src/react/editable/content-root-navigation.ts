@@ -91,6 +91,7 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
+import { claimPageSelection } from './unread-press';
 
 export {
   type ContentRootOwner,
@@ -187,6 +188,7 @@ const collapseNativeSelectionForProjectedSelection = (
     if (!element.isConnected) return;
     const current = readPliteViewSelection(editor);
     if (!current || isPliteViewSelectionCollapsed(current)) return;
+    if (!claimPageSelection()) return;
     writeDOMSelection(element.getRootNode() as Document | ShadowRoot, null);
   };
 
@@ -1700,18 +1702,16 @@ export const applyContentRootNavigation = ({
       getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
     const { version } = editor.read.runtime.snapshot();
     const viewSelection = readPliteViewSelection(editor);
+    const nothingSelectedSince = () =>
+      editor.read.runtime.snapshot().version === version &&
+      readPliteViewSelection(editor) === viewSelection &&
+      claimPageSelection();
 
     domPhaseScheduler?.schedule(
       'dom-write',
       'focus-content-root-editor',
       () => {
-        // A settled native event must not reclaim focus from a later selection.
-        if (
-          editor.read.runtime.snapshot().version === version &&
-          readPliteViewSelection(editor) === viewSelection
-        ) {
-          focusEditor?.(targetEditor);
-        }
+        if (nothingSelectedSince()) focusEditor?.(targetEditor);
       },
       { timing: 'animation-frame' }
     );

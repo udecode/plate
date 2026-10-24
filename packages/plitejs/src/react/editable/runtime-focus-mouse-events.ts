@@ -6,6 +6,7 @@ import { isDOMNode } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
+import { findMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableFocusMouseKernel } from './editing-kernel';
 import {
   getNestedEditableDOMSelectionRoot,
@@ -423,6 +424,9 @@ export const useRuntimeFocusMouseEvents = ({
       if (!handled) {
         selection.syncDOMSelectionFromRuntime();
       }
+      findMountedEditableDOMRuntime(
+        event.currentTarget
+      )?.unreadPress.released();
     },
     [domPhaseScheduler, editor, onMouseUp, selection, syncDOMSelectionToEditor]
   );

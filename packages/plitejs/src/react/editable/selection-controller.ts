@@ -79,7 +79,11 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
-import { decideSelectionImport } from './selection-claim';
+import {
+  decideSelectionImport,
+  type SelectionImportSink,
+  type TreeSelection,
+} from './selection-claim';
 import {
   canUseNativeViewSelection,
   resolveNativeViewSelectionDOMRange,
@@ -90,6 +94,7 @@ import {
   shouldSkipDOMSelection,
   shouldSkipSelectionScroll,
 } from './selection-side-effect-policy';
+import { claimPageSelection } from './unread-press';
 
 export type EditableSelectionController = {
   inputController: EditableInputController;
@@ -411,29 +416,38 @@ export const isStaleModelOwnedTextInputDOMRange = ({
   );
 };
 
-const claimsOf = (editor: ReactRuntimeEditor, editorElement?: HTMLElement) =>
-  getMountedEditableDOMRuntime(editor, editorElement)?.selectionClaims;
+const decideEditableSelectionImport = (
+  editor: ReactRuntimeEditor,
+  editorElement: HTMLElement,
+  sink: SelectionImportSink,
+  probe?: TreeSelection
+) => {
+  const runtime = getMountedEditableDOMRuntime(editor, editorElement);
+
+  runtime?.unreadPress.markRead();
+
+  return decideSelectionImport(runtime?.selectionClaims, sink, probe);
+};
 
 export const decideWebKitProbeImport = (
   editor: ReactRuntimeEditor,
   range: AbstractRange
 ) => {
   const editable = findDOMRootRuntime(range.startContainer)?.rootRef.current;
-  const claims = editable ? claimsOf(editor, editable) : null;
+  const points = getDOMRangeSelectionPoints(range);
 
-  return decideSelectionImport(
-    claims,
-    'place',
-    getDOMRangeSelectionPoints(range)
-  );
+  return editable
+    ? decideEditableSelectionImport(editor, editable, 'place', points)
+    : decideSelectionImport(null, 'place', points);
 };
 
 const clearDisappearedSelection = (
   editor: ReactRuntimeEditor,
   editorElement: HTMLElement
 ) => {
-  const decision = decideSelectionImport(
-    claimsOf(editor, editorElement),
+  const decision = decideEditableSelectionImport(
+    editor,
+    editorElement,
     'disappear'
   );
 
@@ -550,8 +564,9 @@ export const syncEditorSelectionFromDOM = ({
     return;
   }
 
-  const decision = decideSelectionImport(
-    claimsOf(editor, editorElement),
+  const decision = decideEditableSelectionImport(
+    editor,
+    editorElement,
     'place'
   );
 
@@ -1185,8 +1200,9 @@ export const applyEditableDOMSelectionChange = ({
     return;
   }
 
-  const decision = decideSelectionImport(
-    claimsOf(editor, editorElement),
+  const decision = decideEditableSelectionImport(
+    editor,
+    editorElement,
     'place'
   );
 
@@ -1561,6 +1577,7 @@ export const syncEditableDOMSelectionToEditor = ({
   const runtime = getMountedEditableDOMRuntime(editor, explicitEditorElement);
 
   if (!runtime) return;
+  if (!claimPageSelection()) return;
   if (runtime.externalText.focusSelection()) return;
   if (runtime.shouldDeferCompositionSelectionExport()) return;
   if (runtime.androidInputManagerRef.current?.hasPendingAction()) return;
@@ -1681,6 +1698,7 @@ export const syncEditableDOMSelectionToEditor = ({
       state.selectionChangeOrigin = 'programmatic-export';
       writeDOMSelection(root, null);
       const clearNativeSelection = () => {
+        if (!claimPageSelection()) return;
         const current = readPliteViewSelection(editor);
         if (current && canUseNativeViewSelection(editor, current)) return;
         if (

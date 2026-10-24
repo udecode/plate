@@ -48,10 +48,16 @@ export const getEditableInteractionOwner = (
   if (!root.contains(node)) return 'outside' as const;
   const editor = element?.closest('[data-editor="true"]');
   if (editor && editor !== root) return 'nested-editor' as const;
-  if (element?.closest('input,textarea,select,button,[role="button"]')) {
+  const within = (owner: Element | null | undefined) =>
+    !!owner && owner !== root && root.contains(owner);
+  if (
+    within(element?.closest('input,textarea,select,button,[role="button"]'))
+  ) {
     return 'control' as const;
   }
-  if (element?.closest('[contenteditable="false"]')) return 'chrome' as const;
+  if (within(element?.closest('[contenteditable="false"]'))) {
+    return 'chrome' as const;
+  }
   return 'editor' as const;
 };
 

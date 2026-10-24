@@ -77,9 +77,11 @@ import {
   setEditorComposing,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
+import { importUnreadPressCaret } from './runtime-selection-engine';
 import { attachEditableSelectionChangeListener } from './selection-change-listener';
 import { SelectionClaims } from './selection-claim';
 import { setEditableModelSelectionPreference } from './selection-controller';
+import { UnreadPress } from './unread-press';
 import {
   activateViewCaret,
   clampCaretAtRegistration,
@@ -350,6 +352,8 @@ export class EditableDOMRuntime {
 
   private readonly editorValue: ReactRuntimeEditor;
 
+  readonly unreadPress: UnreadPress;
+
   private integrityRepairHandler: (
     evidence: DOMIntegrityRepairEvidence
   ) => void = () => {};
@@ -534,6 +538,7 @@ export class EditableDOMRuntime {
           () => {
             this.disconnectVerticalGoalOwner();
           },
+          () => this.unreadPress.markRead(),
         ]);
       },
       onRepair: (evidence) => {
@@ -570,6 +575,11 @@ export class EditableDOMRuntime {
     this.rootRef = this.rootRuntime.rootRef;
     this.domInputRuntime = this.rootRuntime.domInputRuntime;
     this.domPhaseScheduler = this.rootRuntime.domPhaseScheduler;
+    this.unreadPress = new UnreadPress(
+      editor,
+      () => this.rootRef.current,
+      this.domPhaseScheduler.schedule
+    );
     this.inputController = createEditableInputController({
       domInputRuntime: this.domInputRuntime,
       preferModelSelectionForInputRef: { current: false },
@@ -935,7 +945,22 @@ export class EditableDOMRuntime {
   }
 
   prepareReactCommit() {
+    this.importUnreadPressCaret();
     this.rootRuntime.prepareHostCommit();
+  }
+
+  readonly importUnreadPressBeforeUnmount = (node: Node | null) => {
+    if (!node && this.importUnreadPressCaret()) {
+      this.requestSelectionExportAfterDOMCommit();
+    }
+  };
+
+  private importUnreadPressCaret() {
+    return importUnreadPressCaret({
+      editor: this.editorValue,
+      inputController: this.inputController,
+      unreadPress: this.unreadPress,
+    });
   }
 
   completeReactCommit() {
@@ -1029,7 +1054,12 @@ export class EditableDOMRuntime {
     owner: DOMIntegrityMutationOwner,
     callback: () => T
   ): T {
-    return this.rootRuntime.runOwnedDOMMutation(owner, callback);
+    const imported = this.importUnreadPressCaret();
+    const result = this.rootRuntime.runOwnedDOMMutation(owner, callback);
+
+    if (imported) this.requestSelectionExportAfterDOMCommit();
+
+    return result;
   }
 
   runUnobservedDOMMutation<T>(callback: () => T): T {
@@ -1358,7 +1388,14 @@ export class EditableDOMRuntime {
     // A page's document-capture pointerdown can focus the Editable and prevent
     // the mousedown, so the press opens here, before any document listener.
     const notePointerPress = (event: PointerEvent) => {
-      if (event.composedPath().includes(node)) this.beginMousePress();
+      const inRoot = event.composedPath().includes(node);
+
+      this.unreadPress.pointerDown(
+        inRoot &&
+          this.readOnlyValue &&
+          getEditableInteractionOwner(node, event.target) === 'editor'
+      );
+      if (inRoot) this.beginMousePress();
     };
     const ownerWindow = node.ownerDocument.defaultView;
     const claims = new SelectionClaims(

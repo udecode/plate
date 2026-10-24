@@ -66,6 +66,7 @@ import {
   getSelectableOwnerAncestorNodeSelection,
   getSelectableOwnerNodeSelection,
 } from './selection-void-target';
+import { claimPageSelection } from './unread-press';
 
 export type EditableCaretMovementResult = {
   handled: boolean;
@@ -236,6 +237,7 @@ const clearNativeSelectionForViewSelection = (
 
   const clearWhileShown = () => {
     if (readPliteViewSelection(editor) !== viewSelection) return;
+    if (!claimPageSelection()) return;
     writeDOMSelection(rootElement.getRootNode() as Document | ShadowRoot, null);
   };
 

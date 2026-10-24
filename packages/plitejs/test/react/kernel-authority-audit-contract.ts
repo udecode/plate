@@ -1042,11 +1042,11 @@ test('selection bridge authority has an explicit remaining inventory', () => {
           'The browser handle is the explicit semantic test bridge, not app runtime mutation.',
       },
       'packages/plitejs/src/react/editable/runtime-selection-engine.ts': {
-        count: 2,
+        count: 3,
         next: 'central-owner',
         owner: 'Runtime selection engine',
         rationale:
-          'DOM-to-model selection import policy for editable events is owned by the runtime selection engine.',
+          'DOM-to-model selection import policy for editable events, and for the unread press caret read before a commit or unmount replaces the clicked text, is owned by the runtime selection engine.',
       },
       'packages/plitejs/src/react/editable/selection-reconciler.ts': {
         count: 1,

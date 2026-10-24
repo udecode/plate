@@ -411,10 +411,15 @@ const RenderEditableText = ({
               <DecoratedTextString
                 attributes={innermostDecoration.attributes}
                 isTrailing={isTrailing}
+                ref={runtime?.importUnreadPressBeforeUnmount}
                 text={segment.text}
               />
             ) : (
-              <TextString isTrailing={isTrailing} text={segment.text} />
+              <TextString
+                isTrailing={isTrailing}
+                ref={runtime?.importUnreadPressBeforeUnmount}
+                text={segment.text}
+              />
             );
           let decoratedSegmentContent: ReactNode = baseContent;
           const wrapperCount =

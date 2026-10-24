@@ -29,6 +29,7 @@ import {
   setEditableModelSelectionPreference,
   syncEditorSelectionFromDOM,
 } from './selection-controller';
+import type { UnreadPress } from './unread-press';
 
 export type RuntimeSelectionChangeHandler = (() => void) & {
   cancel: () => void;
@@ -314,6 +315,26 @@ export const shouldFlushSelectionChangeAfterKeyDownPolicy = ({
 }) =>
   decision.selectionPolicy.kind !== 'preserve-model' ||
   !isEditableModelSelectionPreferred(inputController);
+
+export const importUnreadPressCaret = ({
+  editor,
+  inputController,
+  unreadPress,
+}: {
+  editor: ReactRuntimeEditor;
+  inputController: EditableInputController;
+  unreadPress: Pick<UnreadPress, 'claimPage'>;
+}) => {
+  if (unreadPress.claimPage()) return false;
+
+  syncEditorSelectionFromDOM({
+    editor,
+    ignoreModelSelectionPreference: true,
+    inputController,
+  });
+
+  return unreadPress.claimPage();
+};
 
 export const createRuntimeSelectionImportController = ({
   editor,
