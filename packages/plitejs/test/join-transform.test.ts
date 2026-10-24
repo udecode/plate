@@ -23,7 +23,6 @@ import { PreparedTokenSlice } from '../src/core/change/tokens';
 import { canonicalizeInlineChildren } from '../src/core/content-completion';
 import { editorCommands } from '../src/core/editor-commands';
 import { getEditorSchema } from '../src/core/editor-runtime';
-import { emptyTextDrops } from '../src/core/representation';
 import { readCoreWork } from '../src/core/work';
 import { history } from '../src/history';
 import { getDefined } from '../src/internal/get-defined';
@@ -920,7 +919,7 @@ describe('a settled junction', () => {
     const editorSchema = getEditorSchema(editor);
     const canonical = (line: Element) =>
       canonicalizeInlineChildren(line.children, {
-        dropsFromEmptyText: emptyTextDrops(editorSchema, {
+        dropsFromEmptyText: editorSchema.emptyTextDrops({
           ancestors: [],
           parent: line,
           root: 'main',

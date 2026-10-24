@@ -156,22 +156,6 @@ const completionSchemaAt = (
   isInline: schema.isInline,
 });
 
-export const emptyTextDrops = (
-  schema: RepresentationSchema,
-  at: Readonly<{
-    ancestors: readonly Element[];
-    parent: Element | undefined;
-    root: string;
-  }>
-) => {
-  const { parent } = at;
-
-  if (!parent || schema.isVoid(parent)) return undefined;
-
-  return (key: string, value: unknown) =>
-    !schema.emptyTextKeeps(key, value, { ...at, parent });
-};
-
 const inlineContentWithoutProgram = (
   editor: Editor,
   parent: Editor | Element,
@@ -333,7 +317,7 @@ const completeDirectChildren = (
           return false;
         });
   const runOptions = {
-    dropsFromEmptyText: emptyTextDrops(schema, {
+    dropsFromEmptyText: schema.emptyTextDrops({
       ancestors,
       parent: element ? parent : undefined,
       root,
@@ -1129,7 +1113,7 @@ const replaceCanonicalChildWindow = (
 
     if (ancestor && ElementApi.isElement(ancestor)) ancestors.push(ancestor);
   }
-  const dropsFromEmptyText = emptyTextDrops(schema, {
+  const dropsFromEmptyText = schema.emptyTextDrops({
     ancestors: ancestors.slice(1),
     parent: ancestors[0],
     root,

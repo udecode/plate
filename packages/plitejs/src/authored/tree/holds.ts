@@ -54,6 +54,12 @@ export const elementContextAt = (
     : null;
 };
 
+export const textContextAt = ({ outerTypes, parentType, root }: Place) =>
+  toCompiledTargetContext(parentType ?? '', {
+    ancestors: outerTypes.map((type) => ({ type })),
+    root,
+  });
+
 export const heldProps = <P extends Readonly<Record<string, unknown>>>(
   schema: CompiledEditorSchema,
   props: P,
@@ -61,10 +67,7 @@ export const heldProps = <P extends Readonly<Record<string, unknown>>>(
 ): P => {
   countCoreWork('placeChecks');
   const context = place.text
-    ? toCompiledTargetContext(place.parentType ?? '', {
-        ancestors: place.outerTypes.map((type) => ({ type })),
-        root: place.root,
-      })
+    ? textContextAt(place)
     : elementContextAt(schema, props.type, place);
 
   if (!context) return props;

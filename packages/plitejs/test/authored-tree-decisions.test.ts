@@ -129,6 +129,14 @@ const decide = (
 
   return { result, value: editor.read.children() as Node[] };
 };
+const permutations = (items: readonly string[]): string[][] =>
+  items.length <= 1
+    ? [[...items]]
+    : items.flatMap((item, index) =>
+        permutations(items.filter((_, other) => other !== index)).map(
+          (rest) => [item, ...rest]
+        )
+      );
 
 /**
  * Accepting the changes together, or one at a time in every order where a
@@ -153,14 +161,6 @@ const assertOneResult = (
   const recorded = record(initial, history, 'propose', withSchema);
   const changes = [...initialChanges, ...history.map((edit) => edit.change)];
   const together = decide(recorded, changes, withSchema);
-  const permutations = (items: readonly string[]): string[][] =>
-    items.length <= 1
-      ? [[...items]]
-      : items.flatMap((item, index) =>
-          permutations(items.filter((_, other) => other !== index)).map(
-            (rest) => [item, ...rest]
-          )
-        );
 
   assert.equal(together.result.status, 'applied');
   if (editing) {
@@ -1886,5 +1886,251 @@ describe('authored review tree decisions that change where a value stands', () =
       'applied'
     );
     assert.deepEqual(zed.read.value().children, start);
+  });
+});
+
+describe('authored review tree decisions on values the canonical form drops', () => {
+  const position = schema.property.exclusive('script-position');
+  const tone = schema.property.exclusive('tone');
+  const paragraphRoot = schema.content.type('paragraph', {
+    default: { type: 'paragraph' },
+    min: 1,
+  });
+  const Marks = defineEditorSchema('decisions-dropped-values', {
+    elements: {
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+      paragraph: {
+        content: schema.content.any(
+          [schema.content.text(), schema.content.type('link')],
+          { default: 'text', min: 1 }
+        ),
+      },
+    },
+    id: 'decisions-dropped-values',
+    properties: [
+      schema.textProperty('color', property.string()),
+      schema.textProperty('italic', property.boolean()),
+      schema.textProperty('subscript', property.boolean(), {
+        exclusive: [position],
+      }),
+      schema.textProperty('superscript', property.boolean(), {
+        exclusive: [position],
+      }),
+    ],
+    root: paragraphRoot,
+    unknown: 'reject',
+    version: 1,
+  });
+  const Toned = defineEditorSchema('decisions-toned', {
+    elements: { paragraph: { content: schema.content.text() } },
+    id: 'decisions-toned',
+    properties: [
+      schema.textProperty('color', property.string(), { exclusive: [tone] }),
+      schema.textProperty('tone', property.string({ default: 'plain' }), {
+        exclusive: [tone],
+      }),
+    ],
+    root: paragraphRoot,
+    unknown: 'reject',
+    version: 1,
+  });
+  const markEditor = (
+    value: unknown,
+    author: string,
+    intent: 'edit' | 'propose',
+    schemaPlugin: typeof Marks | typeof Toned = Marks
+  ) =>
+    createEditor({
+      initialValue: value as never,
+      plugins: [
+        schemaPlugin,
+        createAuthoredPlugin({
+          authorId: author,
+          createChangeId: () => author,
+          intent,
+          now: () => 1,
+        }),
+      ],
+    });
+  type MarkEditor = ReturnType<typeof markEditor>;
+  const recorded = (
+    value: readonly Node[],
+    steps: ReadonlyArray<
+      readonly [
+        author: string,
+        intent: 'edit' | 'propose',
+        run: (editor: MarkEditor) => void,
+      ]
+    >
+  ) =>
+    steps.reduce<unknown>((current, [author, intent, run]) => {
+      const editor = markEditor(current, author, intent);
+
+      run(editor);
+      return editor.read.value();
+    }, value);
+  const range = (from: number[], to: number[], toOffset: number) => ({
+    anchor: { offset: 0, path: from },
+    focus: { offset: toOffset, path: to },
+  });
+  const formats =
+    (
+      props: Readonly<Record<string, unknown>>,
+      at: number[] | ReturnType<typeof range>
+    ) =>
+    (editor: MarkEditor) =>
+      editor.update((tx) =>
+        tx.nodes.set(props as never, {
+          at,
+          match: (node) => typeof (node as Node).text === 'string',
+          split: true,
+        })
+      );
+  const deletes = (path: number[]) => (editor: MarkEditor) =>
+    editor.update((tx) => tx.text.delete({ at: range(path, path, 1) }));
+  const assertEveryOrder = (
+    value: unknown,
+    actions: Readonly<Record<string, 'accept' | 'reject'>>,
+    schemaPlugin: typeof Marks | typeof Toned = Marks
+  ) => {
+    const decideSome = (editor: MarkEditor, changes: readonly string[]) =>
+      authoredTestApi(editor).decide(
+        (['accept', 'reject'] as const)
+          .map((action) => ({
+            action,
+            changes: changes.filter((change) => actions[change] === action),
+          }))
+          .filter((decision) => decision.changes.length > 0)
+      );
+    const changes = Object.keys(actions);
+    const pending = (editor: MarkEditor) =>
+      changes.filter((change) => editor.read.authored.change(change));
+    const together = markEditor(value, 'zed', 'edit', schemaPlugin);
+
+    assert.deepEqual(pending(together), changes);
+    assert.equal(decideSome(together, changes).status, 'applied');
+    assert.deepEqual(pending(together), []);
+    for (const order of permutations(changes)) {
+      const editor = markEditor(value, 'zed', 'edit', schemaPlugin);
+      let remaining = order;
+
+      while (remaining.length > 0) {
+        const batch = new Set(remaining.slice(0, 1));
+        let result = decideSome(editor, [...batch]);
+
+        while (result.status === 'blocked') {
+          const { size } = batch;
+
+          for (const change of result.with) batch.add(change);
+          assert.ok(batch.size > size, `order ${order.join(', ')}`);
+          result = decideSome(editor, [...batch]);
+        }
+        assert.equal(result.status, 'applied', `order ${order.join(', ')}`);
+        remaining = remaining.filter((change) => !batch.has(change));
+        assert.deepEqual(
+          pending(editor),
+          changes.filter((change) => remaining.includes(change)),
+          `order ${order.join(', ')}`
+        );
+      }
+      assert.deepEqual(
+        editor.read.children(),
+        together.read.children(),
+        `order ${order.join(', ')}`
+      );
+    }
+  };
+
+  it('decides a color under a later pending color on a text an edit emptied in any order', () => {
+    assertEveryOrder(
+      recorded(
+        [{ children: [{ color: 'red', text: 'x' }], type: 'paragraph' }],
+        [
+          ['eve', 'propose', formats({ color: 'green' }, [0, 0])],
+          ['bob', 'propose', formats({ color: 'blue' }, [0, 0])],
+          ['ed', 'edit', deletes([0, 0])],
+        ]
+      ),
+      { bob: 'reject', eve: 'accept' }
+    );
+  });
+
+  it('decides colors on a text an edit emptied beside a link in any order', () => {
+    const both = range([0, 0], [0, 1], 1);
+
+    assertEveryOrder(
+      recorded(
+        [
+          {
+            children: [
+              { color: 'red', text: 'x' },
+              { color: 'red', italic: true, text: 'y' },
+              { children: [{ text: 'l' }], type: 'link' },
+              { text: '' },
+            ],
+            type: 'paragraph',
+          },
+        ],
+        [
+          ['eve', 'propose', formats({ color: 'green' }, both)],
+          ['bob', 'propose', formats({ color: 'blue' }, both)],
+          ['ed', 'edit', deletes([0, 1])],
+        ]
+      ),
+      { bob: 'accept', eve: 'accept' }
+    );
+  });
+
+  it('decides scripts of both kinds in any order', () => {
+    assertEveryOrder(
+      recorded(
+        [{ children: [{ text: 'xy' }], type: 'paragraph' }],
+        [
+          ['eve', 'propose', formats({ superscript: true }, [0, 0])],
+          ['bob', 'propose', formats({ subscript: true }, [0, 0])],
+          ['ann', 'propose', formats({ superscript: true }, [0, 0])],
+        ]
+      ),
+      { ann: 'accept', bob: 'accept', eve: 'accept' }
+    );
+  });
+
+  it('decides a color on an emptied text whose exclusive partner has a default in any order', () => {
+    const eve = {
+      at: 1,
+      author: 'eve',
+      before: 'red',
+      change: 'eve',
+      id: 'e',
+      key: 'color',
+      kind: 'format',
+      write: { kind: 'set', value: 'green' },
+    };
+    const bob = {
+      at: 1,
+      author: 'bob',
+      base: { kind: 'set', value: 'red' },
+      before: 'green',
+      change: 'bob',
+      id: 'b',
+      key: 'color',
+      kind: 'format',
+      over: [[{ id: 'e', write: eve.write }]],
+      write: { kind: 'set', value: 'blue' },
+    };
+
+    assertEveryOrder(
+      [
+        {
+          children: [{ authored: [eve, bob], text: '', tone: 'plain' }],
+          type: 'paragraph',
+        },
+      ],
+      { bob: 'reject', eve: 'accept' },
+      Toned
+    );
   });
 });

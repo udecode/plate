@@ -79,7 +79,7 @@ import {
   publishEditorRefusal,
   subscribeEditorRefusals,
 } from '../core/refusal';
-import { completeChildrenAt, emptyTextDrops } from '../core/representation';
+import { completeChildrenAt } from '../core/representation';
 import {
   changedRootsOf,
   orphanedValueRoots,
@@ -2131,7 +2131,7 @@ export const createAuthoredPlugin = (
             emptyTextKeeps: (key, value, parents, root) => {
               const [parent, ...ancestors] = parents.map(elementOf);
 
-              return !emptyTextDrops(getEditorSchema(editor), {
+              return !getEditorSchema(editor).emptyTextDrops({
                 ancestors,
                 parent,
                 root,

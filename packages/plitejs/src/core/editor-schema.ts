@@ -218,15 +218,13 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       index?: number,
       root?: RootKey
     ) => boolean;
-    emptyTextKeeps: (
-      key: string,
-      value: unknown,
+    emptyTextDrops: (
       at: Readonly<{
         ancestors: readonly Element[];
-        parent: Element;
+        parent: Element | undefined;
         root: RootKey;
       }>
-    ) => boolean;
+    ) => ((key: string, value: unknown) => boolean) | undefined;
     fitReportSink: (root: RootKey) => RepresentationRepairSink | undefined;
     /**
      * Build an element in its canonical empty form at a site: `ancestors` are
@@ -598,6 +596,70 @@ export const canonicalizeCompiledExclusiveTextProperties = (
       )
     )
   );
+};
+
+const getTextPropertyInParent = (
+  schema: CompiledEditorSchema,
+  key: string,
+  parentContext: CompiledSchemaTargetContext | null
+) => {
+  if (parentContext) {
+    return resolveCompiledSchemaProperty(schema, 'text', key, parentContext);
+  }
+  const candidates = getCompiledPropertyCandidates(schema, 'text', key);
+
+  return candidates.length === 1 ? candidates[0] : null;
+};
+
+export const getCompiledEmptyTextDrops = (
+  schema: CompiledEditorSchema | null,
+  context: CompiledSchemaTargetContext
+) => {
+  if (schema?.elements.byType.get(context.type)?.behavior.void) {
+    return undefined;
+  }
+
+  return (key: string, value: unknown) => {
+    const property =
+      schema &&
+      getTextPropertyInParent(schema, key, context.type ? context : null);
+
+    if (!property) return true;
+
+    const { descriptor } = property;
+
+    return !(
+      property.role === 'metadata' ||
+      descriptor.required ||
+      descriptor.generate !== undefined ||
+      (Object.hasOwn(descriptor, 'default') &&
+        areEditorJsonValuesEqual(descriptor.default, value))
+    );
+  };
+};
+
+export const canonicalizeCompiledTextProperties = <
+  T extends Readonly<Record<string, unknown>>,
+>(
+  schema: CompiledEditorSchema,
+  text: T,
+  context: CompiledSchemaTargetContext
+): T => {
+  const drops =
+    text.text === '' ? getCompiledEmptyTextDrops(schema, context) : undefined;
+  const kept =
+    drops &&
+    Object.entries(text).filter(
+      ([key, value]) => key === 'text' || !drops(key, value)
+    );
+
+  return canonicalizeCompiledExclusiveTextProperties(
+    schema,
+    kept && kept.length < Object.keys(text).length
+      ? Object.fromEntries(kept)
+      : text,
+    context
+  ) as T;
 };
 
 const getElementType = (element: { type?: unknown }) =>
@@ -1918,26 +1980,20 @@ export const createEditorSchema = <V extends Value = Value>(
     );
   }) as InternalEditorSchemaApi['create'];
 
-  const emptyTextKeeps: InternalEditorSchemaApi['emptyTextKeeps'] = (
-    key,
-    value,
-    at
-  ) => {
-    const declarative = getDeclarativeSchema();
-    const property = declarative && getTextProperty(declarative, key, at);
-
-    if (!property) return false;
-
-    const { descriptor } = property;
-
-    return (
-      property.role === 'metadata' ||
-      descriptor.required ||
-      descriptor.generate !== undefined ||
-      (Object.hasOwn(descriptor, 'default') &&
-        areEditorJsonValuesEqual(descriptor.default, value))
-    );
-  };
+  const emptyTextDrops: InternalEditorSchemaApi['emptyTextDrops'] = ({
+    ancestors,
+    parent,
+    root,
+  }) =>
+    parent
+      ? getCompiledEmptyTextDrops(
+          getDeclarativeSchema(),
+          toCompiledTargetContext(getElementType(parent) ?? '', {
+            ancestors,
+            root,
+          })
+        )
+      : undefined;
 
   const createAt: InternalEditorSchemaApi['createAt'] = (
     type,
@@ -2842,19 +2898,6 @@ export const createEditorSchema = <V extends Value = Value>(
       root,
       getElementAncestors(children, path)
     )[0];
-  };
-
-  const getTextPropertyInParent = (
-    schema: CompiledEditorSchema,
-    key: string,
-    parentContext: CompiledSchemaTargetContext | null
-  ) => {
-    if (parentContext) {
-      return resolveCompiledSchemaProperty(schema, 'text', key, parentContext);
-    }
-    const candidates = getCompiledPropertyCandidates(schema, 'text', key);
-
-    return candidates.length === 1 ? candidates[0] : null;
   };
 
   const getTextProperty = (
@@ -4941,7 +4984,7 @@ export const createEditorSchema = <V extends Value = Value>(
       copyNodeAt(node, options.at, options.root ?? 'main') as typeof node,
     createAt,
     createDefaultChild,
-    emptyTextKeeps,
+    emptyTextDrops,
     fitReportSink,
     delta: () => getRegistry().schemaContributions.delta,
     element: getPublicElement,

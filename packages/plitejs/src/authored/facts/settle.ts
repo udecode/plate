@@ -18,11 +18,12 @@ import {
   elementSplitOutput,
   isLeftOutDefault,
 } from '../../core/default-storage';
+import { canonicalizeCompiledTextProperties } from '../../core/editor-schema';
 import { composeRecordOps, deriveValue } from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { rootOf } from '../ledger/roots';
 import { countLedgerWork } from '../ledger/work';
-import { heldProps } from '../tree/holds';
+import { heldProps, textContextAt } from '../tree/holds';
 import {
   decideKey,
   type FormatTag,
@@ -90,12 +91,20 @@ const placed = (node: Node, pass: Pass, site: Site) => {
     if (type) outerTypes.push(type);
   }
 
-  return heldProps(pass.schema, node, {
+  const place = {
     outerTypes,
     parentType: typeOf(site.parent),
     root: site.root,
-    text: isText(node),
-  });
+  };
+  const held = heldProps(pass.schema, node, { ...place, text: isText(node) });
+
+  return isText(held)
+    ? canonicalizeCompiledTextProperties(
+        pass.schema,
+        held,
+        textContextAt(place)
+      )
+    : held;
 };
 
 export const keyReadingOf = (
