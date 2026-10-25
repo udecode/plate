@@ -173,4 +173,4 @@ The dated Plite runs under `docs/plite/research/` are frozen. `research <key-or-
 
 For broad terms, redirect the JSON result to an artifact and inspect bounded matches instead of streaming every source row into the conversation.
 
-Search by semantic lead key and relevant terms. This command locates evidence; it cannot decide semantic equivalence. Reuse a read only when question, source version and dependencies match. Preserve rejection reasons and reopening conditions.
+Search by semantic lead key and relevant terms. This command locates evidence; it cannot decide semantic equivalence. Reuse a read only when question, source version and dependencies match. Preserve rejection reasons and reopening conditions. New run ledgers add `scope_id`, `review_id`, `source_revision`, `source_fingerprint` and `checked_at` where applicable without replacing their existing required columns.

@@ -11,10 +11,10 @@ metadata:
 
 Handle $ARGUMENTS.
 
-Research is a loop over what Plate already knows, not chat browsing:
+Research is a resumable evidence system, not chat browsing:
 
 ```txt
-lookup -> pick -> new repos -> read what changed -> score -> promote -> write back
+pick -> question -> registry -> queries -> leads -> read log -> score -> promote
 ```
 
 It discovers and synthesizes. It does not run measured packets (`benchmark`), close an issue corpus row by row (`issue-harvester`, which also owns issue-by-issue closure after `harvest --issues`) or patch product code. `best-api` decides call shapes and the Plan playbook plans adoption. Discovery never escalates into `audit` or `harvest` on its own.
@@ -23,7 +23,7 @@ It discovers and synthesizes. It does not run measured packets (`benchmark`), cl
 
 | Arguments | Does |
 | --- | --- |
-| `<feature or question>` | Picks the most valuable open research question for it, then runs the loop below. |
+| `<feature or question>` | Picks the most valuable open research question for it, then runs a discovery run. |
 | none | Picks the top item of `node tooling/scripts/review-ledger.mjs status` (its `queue`) that has no research yet. |
 | `full <area>` | Ingests and compiles every relevant corpus into `docs/research` (see Compiled layer below). |
 | `maintain <area>` | Cleans an existing research lane: contradictions, freshness, backlinks, synthesis (see Compiled layer below). |
@@ -37,39 +37,45 @@ It discovers and synthesizes. It does not run measured packets (`benchmark`), cl
 ## Pick what to research
 
 1. **Layer.** Pick it from the architecture reference's Pick the layer (`.agents/playbooks/references/architecture.md`).
-2. **What is known.** Run `pnpm kb <area>`, `pnpm kb <scope>` or `pnpm kb <repo>` before any search; `docs/research/areas.tsv` lists each area with its aliases and review scopes. An area card lists the area's page in each home, the scope's subject files, sweep round rows, upstream issues, harvested tests, lessons from `docs/research/sources/plate-notes/`, the reads, leads and rejections of frozen runs, and each repo filed under the area. A repo card lists its clone and each lane's last-read commit, with the clone's commits since each one. Read the subject file and the pages the card lists, `node tooling/scripts/review-ledger.mjs lookup <scope>` for the decision, its current review, limits and open questions, and `docs/research/sources/editor-architecture/candidates.md` for editors not yet compared.
-3. **The gap.** Choose the one question most likely to change a decision, in this order: an open question or `defer` limit in the subject file; a candidate editor or library not yet compared for this feature; a rejected lead whose reopen condition is now met; evidence whose source changed since it was read, such as a saved repo whose clone has commits since its research mark in the area's paths.
+2. **What is known.** Run `node tooling/scripts/review-ledger.mjs lookup <scope-or-feature>` for the decision, its current review, limits and open questions, and `node tooling/scripts/review-ledger.mjs research <key-or-term>` for the reads, leads and rejections of the frozen runs under `docs/plite/research`. Read the scope's subject file, `docs/plans/topics/<scope>.md`, which holds its current decisions, the matching compiled pages under `docs/research/sources/`, which hold later runs' findings and rejected leads, the candidates in `docs/research/sources/editor-architecture/candidates.md`, and the matching pages in `docs/research/sources/plate-notes/`, every part its README's index lists, which hold lessons compiled from retired solution notes.
+3. **The gap.** Choose the one question most likely to change a decision, in this order: an open question or `defer` limit in the subject file; a candidate editor or library not yet compared for this feature; a rejected lead whose reopen condition is now met; evidence whose source changed since it was read.
 4. State the pick, its layer and why it beats the next candidate, then start the run.
 
-Reuse a finding, read or lead the card already shows instead of repeating it. Compare the question, source revision, dependencies and reopening condition first, and read a rejection's reopen condition before reading its repo again; a new source can support an existing finding without creating another. Unknown historical provenance needs inspection before reuse. A lookup never advances Editor Audit's architecture, test-harvest or issue-refresh cursors.
+Reuse a matching read or lead instead of repeating it. Compare the question, source revision, dependencies and reopening condition first; a new source can support an existing lead without creating another. Unknown historical provenance needs inspection before reuse. A lookup never advances Editor Audit's architecture, test-harvest or issue-refresh cursors.
 
-## New repos
+## Discovery run
 
-Each new task or verdict that researches runs one search, of at most 10 minutes, for repos in its area that `docs/research/repos.tsv` lacks, editors or not.
+Record the question and scope, stop rule, artifact path, expected promotion owner, current local evidence gap and explicit exclusions before the first search.
 
-1. Run `pnpm kb discover <area>`. It searches GitHub with the area's `seeds` from `areas.tsv`, sorted by stars, drops every repo the list holds, saved or skipped, and prints the rest with stars, last push and description. Add `--seed '<phrase>'` for a library family the question needs that the seeds miss, such as Yjs providers for collaboration or virtualization libraries for large documents, and add a phrase worth keeping to the area's `seeds`.
-2. Judge each printed repo from its description, and open the README or source of each that may hold what the question asks.
-3. Record every printed repo in `repos.tsv`. `--record` adds each one as `skipped`, with its description as the note. Change each repo the run reads to `saved`, with its areas, clone and a note on what it holds, and give a skip its reason when the description does not show it. The next search hides both.
-
-A search that finds nothing new is a result; the run's notes say so.
-
-## Read what changed
-
-Record the question and scope, stop rule, expected promotion owner, current local evidence gap and explicit exclusions in the run's notes before the first search.
-
-Read only what Plate has not read. For a saved repo with a mark, which is a research, audit or harvest commit its repo card shows, fetch the clone and read `git log <mark>..origin/HEAD -- <paths>` over the paths its area page cites, then only the files those commits touched. An unread repo gets one bounded first read of the paths the question names. Clone a missing repository to `../<repo>`, as `AGENTS.md`'s Source authority section says, and reuse an existing clone wherever it sits, `../raw` included.
+Once per new task or verdict that researches, run `pnpm kb discover <area>` before the open search, with an area id or alias from `docs/research/areas.tsv`. It searches GitHub by the area's seeds for at most 10 minutes and prints the repos `docs/research/repos.tsv` lacks; `--record` adds every printed repo as `skipped`.
 
 Search the web and GitHub (code search, issues, PRs, discussions, examples, benchmark harnesses, browser test fixtures, commit history). Go beyond the usual three editors when relevant: ProseMirror, Lexical, Tiptap, CodeMirror, Milkdown, Remirror, Monaco, Quill, document editors, browser editor test suites, pagination and virtualization libraries, and TypeScript-heavy runtimes. Use ProseKit for headless extension composition, framework adapters, autocomplete and editor UI prior art, and Meowdown for hybrid Markdown, hidden-syntax caret and selection behavior, touch input, IME and WebKit proof ideas. Separate what those projects own from what they inherit through ProseMirror; Meowdown's desktop WebKit and touch-emulation tests are scoped browser evidence, not iOS proof.
 
 Web and GitHub hits are leads only. Inspect the real source locally before any code-level claim, and never patch from snippets, titles, READMEs or discussions. Extract invariants, test cases, API shape, benchmark technique, architecture pressure and browser proof strategy; write Plate- or Plite-native code, never copied code. External editors are pressure sources, not architecture to clone: translate each lesson into Plite or Plate model, change, selection, DOM, browser and package-owner proof vocabulary before it can change a decision.
 
-### Run notes
+### Artifacts
 
-A run keeps its question, queries, leads, reads, rejections and shard summaries in its ignored run directory, `docs/plans/artifacts/<slug>/`, in whatever shape it needs. Nothing there is committed; the area page, the subject file and `repos.tsv` hold what the next run reads. Bulk corpora live in `../raw`. `docs/research/raw`, `docs/research/probes` and `docs/plite/research` are frozen, and `kb check` refuses a file added under them; `pnpm kb` and `review-ledger.mjs research` still read their runs. A search's output over another project's code stays outside the repository, and the notes record its pattern, hit counts and revision. Never stream bulk results into chat.
+Each run, for either layer, lives in the main checkout's ignored `docs/plans/artifacts/<slug>/`, written by absolute path because removing a worktree deletes its copy. What a later run needs goes to the committed homes that Promotion names:
+
+```txt
+README.md              # question, scope, stop rule, current verdict
+repo-registry.tsv      # repo_key, url, host, license, stars_or_signal, last_activity, topic_tags, local_path, status, score, notes
+query-ledger.tsv       # query_key, surface, query, filters, result_count, sampled_count, new_repo_keys, new_lead_keys, next_query
+lead-ledger.tsv        # lead_key, repo_key, source_ref, topic, claim, evidence_grade, novelty, applicability, proof_owner, next_action, status
+read-log.tsv           # source_ref, repo_key, kind, path_or_url, lines_or_id, read_reason, takeaway, lead_key
+rejected-ledger.tsv    # dedupe_key, repo_key, lead_key, reason, reopen_condition
+promoted-ledger.tsv    # lead_key, packet_id, owner, test_or_benchmark, verification_command, decision
+shards/NNN-<theme>.md  # one bounded batch summary each
+sources/               # tiny excerpts and metadata, not dumps
+```
+
+New lead, read and promotion rows also record `scope_id`, `review_id`, `source_revision`, `source_fingerprint` and `checked_at`, with `unknown` for unavailable provenance. Historical headers and rows stay as they are. Clone a missing repository to `../<repo>`, as `AGENTS.md`'s Source authority section says, and reuse an existing clone wherever it sits, `../raw` included. Bulk corpora live in `../raw`. Small raw notes a run cites go in that run directory; `docs/research/raw`, `docs/research/probes` and `docs/plite/research` are frozen, and `kb check` refuses a file added under them. A search's output over another project's code stays outside the repository; the run records its pattern, hit counts and revision in `query-ledger.tsv`. Never stream bulk results into chat: the ledgers are the state, and a run resumes from `query-ledger.tsv` and `lead-ledger.tsv`.
+
+Keys: `repo_key` is the normalized lowercase `host/owner/repo` without `.git`; `query_key` is a slug of surface plus normalized query; `lead_key` is `<topic>:<normalized invariant>:<proof family>`, independent of repo; `dedupe_key` is the normalized problem signature, such as `selection:projected-native-double-highlight:visual-oracle`. `docs/research/repos.tsv` keys a repo by the `owner/name` part of its `repo_key`. Before reading a repo deeply, check `repos.tsv` and this run's registry for it, and the area page, the frozen runs and this run's lead ledger for the same `lead_key` or `dedupe_key`; add support to an existing lead, read a rejected lead's `reopen_condition` first, and reuse an existing clone.
 
 ### Shards
 
-Work in batches of about 10-20 repos, 20-40 issues or PRs, or one theme, whichever is smaller. Each shard's summary in the run's notes gives its scope, sources sampled, top, rejected and duplicate leads, score changes and next query. Update the notes after every shard, and stop a shard early when it yields a concrete proof packet.
+Work in batches of about 10-20 repos, 20-40 issues or PRs, or one theme, whichever is smaller. Each shard gets a summary with its scope, sources sampled, top, rejected and duplicate leads, score changes and next query. Update the ledgers after every shard, and stop a shard early when it yields a concrete proof packet.
 
 ### Grades and scores
 
@@ -87,21 +93,12 @@ A lead becomes exactly one of:
 - `test-packet`: a native unit, Playwright or Browser oracle with its verification command;
 - `benchmark-packet`: a metric or harness repair with a target and before/after command;
 - `plan-packet`: a `best-api` verdict on the call shape, plus a decision-ledger row (`.agents/playbooks/references/architecture.md`) when runtime or adoption ownership is unclear;
-- `docs-packet`: a finding on the area page or a current-state decision in the subject file;
+- `docs-packet`: a finding on the area page of its home under `docs/research/sources/`, which cites `<owner>/<repo>@<commit>:<path>` or, for a closed product, its URL and the date it was checked; or a current-state decision in the scope's subject file;
 - `no-code-decision`: rejected or quarantined with its reason and reopen condition.
 
-A likely fix becomes a Bug fix, Benchmark, oracle or plan packet with its baseline, proof gate and keep, revert or quarantine decision. A clean negative result goes on the area page as a rejected lead with its reason, reopen condition and next search angle. A material Stop, Pursue or Defer assessment is written as a review page's verdict through `verdict`; the scope's subject file links that page instead of copying rows.
+A likely fix becomes a Bug fix, Benchmark, oracle or plan packet with its baseline, proof gate and keep, revert or quarantine decision. Each rejected lead, a clean negative result included, goes on the area page with its reason, reopen condition and next search angle. Before the run ends, add each repo it read to `docs/research/repos.tsv` as `saved`, and each repo the search printed that it skipped as `skipped` with the reason in `note`. A material Stop, Pursue or Defer assessment is written as a review page's verdict through `verdict`; the scope's subject file links that page instead of copying rows.
 
-## Write back
-
-Each run ends by writing what the next run reads, then runs `pnpm kb check`:
-
-- Findings go on the area page of each repo's home, `docs/research/sources/<home>/<area>.md`, as `- **Title** text` findings that each cite `<owner>/<repo>@<commit>:<path>`. The newest commit an area page cites for a repo is research's mark for it, which its repo card shows. A repo with no home gets one, an editor or a library family, whose README's `Repos:` line names it.
-- A conclusion goes in the scope's subject file, `docs/plans/topics/<scope>.md`, a lesson about Plate's own code in `docs/research/sources/plate-notes/<area>.md`, and a rejected lead on the area page with its reason and reopen condition.
-- `repos.tsv` gains or updates the row of each repo the run read or skipped.
-- An area that `areas.tsv` lacks gets its row, with its review scopes and seeds, when a run writes its first page.
-
-The handoff counts repos searched, new repos the search showed, repos read, issues and PRs read, leads kept, merged and rejected, and packets promoted; lists the top promoted leads with grade, owner and proof command, and the rejections that prevent repeated work; and names the next shard or `none` with a reason.
+The handoff counts repos searched and read, issues and PRs read, leads kept, merged and rejected, and packets promoted; lists the top promoted leads with `lead_key`, grade, owner and proof command, and the rejections that prevent repeated work; and names the next shard or `none` with a reason.
 
 ## Compiled layer (`full` and `maintain`)
 

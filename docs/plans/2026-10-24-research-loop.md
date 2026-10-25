@@ -7,7 +7,7 @@ review_commit: bc28cccad4775bd5972c19b35c089c48377bf81a
 
 # Research loop: one lookup, one repo list, write back to the area
 
-Status: partial: built and landed; step 3.4's trial waits for you to start it
+Status: executed: the trial failed, so the lookup-first lines came back out
 Topic: knowledge
 Playbook: build
 
@@ -15,11 +15,11 @@ Playbook: build
 
 ### What will change?
 
-Research now starts from one lookup by area, scope or repo, reads only what changed, searches once for new repos and writes back to the area page. The compile finished, and its tools are gone.
+Research keeps the area lookup, the saved repo list, one new-repo search per task and the write-back to area pages. Telling every workflow to start from the lookup did no better on four test questions, so those lines came out.
 
 ### What could go wrong?
 
-Nobody has tested the new loop yet, because the paired trial still waits, and our last test scored lookup-first agents lowest. Compiled facts landed with no second reader, and 863 older ones no longer match their pages.
+Agents use the lookup only when they think of it. Nothing has tested the new-repo search or the write-back yet. No trial session ran them, and the one smoke that tried the search had no network. Compiled facts landed with no second reader, and answers caught stale ones.
 
 ## Teach
 
@@ -27,7 +27,7 @@ Research is how Plate learns from other projects before it designs or fixes some
 
 Nothing records which repos we read, or at which commit. So a run rereads Tiptap from scratch, and nobody notices a new collaboration or virtualization library.
 
-This plan makes research a loop. Each run starts with one lookup by area, scope or repo. It returns the area's pages, its sweep rows and each saved repo with the commit we last read. The run reads only what changed, plus new repos one short search finds. It writes findings to the area page and notes the commit it read. Plan, verdict, bug fix, perf and sweep use the same lookup.
+This plan gave research an area lookup that shows each saved repo with the commit we last read, and one short search per task for repos we have not saved. Research now writes findings back to the area page and the repo list. A trial asked whether telling every workflow to start from the lookup helps. On four test questions it did no better, so those lines came back out.
 
 ## Defaults
 
@@ -56,6 +56,8 @@ This plan makes research a loop. Each run starts with one lookup by area, scope 
 | Shared source | The loop stays in this repo's research rule until the trial passes | Send a generic loop to the shared pstack source now | share the loop now | detail |
 | Lookup speed | Two seconds for area, scope and repo lookups; broad word searches may take up to 3.3 seconds | Two seconds for every lookup | two seconds everywhere | detail |
 | Knowledge page | The subject moves to a new page, https://claude.ai/artifact/2DJZ9eDVACXLPG6BJ29kXy, because https://claude.ai/artifact/Cp3hdNMXy9EvTQR7MQaNu3 no longer opens | Drop the new page and leave the subject without one | drop the new page | detail |
+| What the revert keeps | Research keeps its one new-repo search per task, the repo rows it writes and the write-back to area pages, which no trial session ran; only the lines that start every workflow from the lookup come out (look) | Take the new-repo search out too | drop the new repo search | small |
+| Trial's control arm | Today's rules without this plan's instruction lines, so both arms read the same pages | Today's rules at this plan's start, before the compile landed | arm A at the base | detail |
 
 ## What other editors do
 
@@ -74,12 +76,12 @@ The prior art for this plan is workflows, in pstack and in this repository, not 
 
 | Delta | Knowledge job | Owner | Read by | Written by |
 | --- | --- | --- | --- | --- |
-| changed | External-editor evidence | the same homes, joined across homes by area; `docs/research/areas.tsv` names each area with its aliases, review scopes and search seeds; a home is an editor or a library family, such as Yjs, Word file libraries, React runtime libraries or drawing tools; new clones go to `../<repo>` | `pnpm kb <area>`, `<scope>` or `<repo>` at the first step of research, Plan, Verdict, Bug fix, Perf issue, `best-api` and sweep's gap move | research's write-back step, and sweep's accepted gaps |
-| added | Repo registry | `docs/research/repos.tsv`: one row per repo research saved or skipped, with its URL, clone path, kind, status and areas; each lane's last-read commit stays with its owner, and `kb` derives it | `pnpm kb`, research's New repos step, `kb discover` | research's write-back step |
-| added | Repo discovery | `pnpm kb discover <area>`, which searches GitHub by the area's seeds and prints the repos `repos.tsv` lacks; research's New repos step runs it once per new task or verdict, within 10 minutes | research's New repos step, at the first step of Plan and Verdict | research's write-back step, which records each repo it saved or skipped |
-| changed | Source inventory | `docs/research/homes.tsv` maps each page a reader homed; `kb homes` derives the rest from the path | `kb homes` and its K14 no-home check | research's write-back step for each new page |
-| changed | Run evidence | run state in the ignored `docs/plans/artifacts/<slug>/`; `docs/plite/research`, `docs/research/probes` and `docs/research/raw` frozen and read by path | records and plans by path, `pnpm kb` | research, benchmark |
-| changed | Knowledge checks and tool | `pnpm kb` with the lookup, `check`, `gaps`, `homes` and `discover`; the compile verbs are gone once the last batch lands; K16 checks the repo list and the area list; a new file in a frozen folder fails `kb check` | `pnpm check --affected` whenever a knowledge path changes, and every lookup caller above | the knowledge module's owner |
+| changed | External-editor evidence | the same homes, joined across homes by area; `docs/research/areas.tsv` names each area with its aliases, review scopes and search seeds; a home is an editor or a library family, such as Yjs, Word file libraries, React runtime libraries or drawing tools; new clones go to `../<repo>` | the research rule's What is known, Plan's What other editors do, and `pnpm kb <area>`, `<scope>` or `<repo>` for whoever runs it | the research rule's modes; a discovery run writes its findings and rejected leads to the area page |
+| added | Repo registry | `docs/research/repos.tsv`: one row per repo research saved or skipped, with its URL, clone path, kind, status and areas; each lane's last-read commit stays with its owner, and `kb` derives it | `pnpm kb`, `kb discover` and research's repo check | research, for each repo a run read or skipped; `kb discover --record`; `seed-repos.mjs`, which seeded it from the frozen runs |
+| added | Repo discovery | `pnpm kb discover <area>`, which searches GitHub by the area's seeds and prints the repos `repos.tsv` lacks; research runs it once per new task or verdict that researches, within 10 minutes | research's Discovery run | its `--record` flag, which adds each printed repo as skipped |
+| changed | Source inventory | `docs/research/homes.tsv` maps each page a reader homed; `kb homes` derives the rest from the path | `kb homes` and its K14 no-home check | nobody since the compile ended; `kb homes` derives a new page's home from its path |
+| changed | Run evidence | run state in the main checkout's ignored `docs/plans/artifacts/<slug>/`; `docs/plite/research`, `docs/research/probes` and `docs/research/raw` frozen and read by path | `review-ledger.mjs research` for the frozen runs, records and plans by path, `pnpm kb` | research, benchmark |
+| changed | Knowledge checks and tool | `pnpm kb` with the lookup, `check`, `gaps`, `homes` and `discover`; the compile verbs are gone; K16 checks the repo list and the area list; K17 fails a new file in a frozen folder | `pnpm check --affected` whenever a knowledge path changes; sweep rechecks, Bug fix for sweep finds, Triage, `review-comment` and research's search | the knowledge module's owner |
 
 ## Main changes
 
@@ -90,7 +92,7 @@ The prior art for this plan is workflows, in pstack and in this repository, not 
 
 ## Outcome
 
-An agent that researches a feature, a fix or a performance question starts from what Plate already knows and spends its reads on what changed. `pnpm kb <area>`, `<scope>` or `<repo>` answers in 2 seconds or less. Research's Pick step starts there, and each research run ends by writing to the area page and the repo list. Plan, Verdict, Bug fix, Perf issue, `best-api` and sweep's gap move call the same lookup. Each new task or verdict that researches runs one search, of at most 10 minutes, for repos the list lacks, editors or not. The 159 remaining compile batches land in their homes. `pnpm kb check` passes and runs whenever knowledge files change.
+An agent that researches a feature, a fix or a performance question can ask `pnpm kb <area>`, `<scope>` or `<repo>` what Plate already knows and gets an answer in 2 seconds or less. Each new task or verdict that researches runs one search, of at most 10 minutes, for repos the list lacks, editors or not, and each research run writes its findings and rejected leads to the area page and its repos to the repo list. Step 3.4's trial found no gain from making research and the other playbooks start from the lookup, so they do not. The 159 remaining compile batches land in their homes. `pnpm kb check` passes and runs whenever knowledge files change.
 
 ## Scope
 
@@ -103,13 +105,13 @@ Out of scope: moving existing pages, plans newer than the compile's snapshot, th
 - Transpose at read time, not on disk. The 19 area names that three or more homes share already join pages across homes, so `kb` groups by area without moving 229 pages or repointing their citations.
 - The repo list holds identity and pointers only. Three owners already record last-read commits (the audit index, the test harvests and the issue harvests). A fourth copy would drift, so `kb` derives each mark, and research's own mark is the newest `<repo>@<sha>` its area page cites.
 - Run state is run evidence. The seven per-run TSVs become ignored run files. `review-ledger.mjs research` keeps reading the frozen ones.
-- The superseded plan's phase 3 graded wiring lines for a card this plan changes, so its trial is cut. Step 3.4's smaller paired trial on the new loop needs fresh sessions, which fast mode drops, so it waits in Open work and the playbook lines land unmeasured.
+- The superseded plan's phase 3 graded wiring lines for a card this plan changes, so its trial is cut. Step 3.4's smaller paired trial on the new loop ran after the build, outside fast mode. The lookup-first lines lost it and came back out.
 - Search for new repos when a task starts, not on a schedule. A monthly report sits unread until some task asks about its area, while a search at the task's start answers the question being asked. `repos.tsv` records the repos a search showed and research skipped, so the next search shows only new ones.
 - Each phase is worth keeping without the next. Phase 1 turns a red check green. Phase 2 gives a human or agent the area and repo lookup even if no playbook calls it. Phase 3 wires it in. Phase 4 lands the compile, whose Codex readers run in the background from the start, and then deletes the compile tools.
 
 ## Steps
 
-The execution playbook is Build, run fast: no subagents, panels or review seats, except the compile's Codex readers. Execution authority is your "build the rest after finishing the compile (FAST mode)" and "1), but dont wait for all of it, do it as background job while doing all the rest" (2026-10-25). Load `verify` before any proof below. The base controls run in this worktree before its first build edit, because no other session writes here.
+The execution playbook is Build, run fast: no subagents, panels or review seats, except the compile's Codex readers. Execution authority is your "build the rest after finishing the compile (FAST mode)" and "1), but dont wait for all of it, do it as background job while doing all the rest" (2026-10-25). Load `verify` before any proof below. The base controls run in this worktree before its first build edit, because no other session writes here. Step 3.4 ran afterwards in its own session, outside fast mode: fresh sessions, a blind grader and one panel round on the revert.
 
 ### Phase 1: go green
 
@@ -132,12 +134,12 @@ Exit: `pnpm kb` answers area, scope and repo keys in 2 seconds or less with deri
 
 ### Phase 3: wire the loop in
 
-Exit: research and each consumer call the lookup, and `kb discover` works. When the trial in Open work later fails, revert steps 3.1 and 3.2 to their text before this phase and keep the rest.
+Exit: research and each consumer call the lookup, and `kb discover` works. When the trial in Open work later fails, revert steps 3.1 and 3.2 to their text before this phase and keep the rest. The trial failed. Steps 3.1 and 3.2 reverted, except research's new-repo search, its repo rows and its write-back to the area page, which no trial session ran and the kept defaults need.
 
-- [x] 3.1 Rewrite `research.mdc`'s run method as the loop. Pick runs `pnpm kb <area>`, `<scope>` or `<repo>` first, then picks the gap. The registry step takes the area's rows in `repos.tsv`, one `pnpm kb discover <area>` search of at most 10 minutes and any library family the question needs. It adds each repo it reads as `saved` and each it skips as `skipped`, with the reason. Reads are update-only: a repo with a mark reads `git log <mark>..HEAD` over the area's paths first, and an unread repo gets one bounded first read. Queries, leads, reads and rejections go to the ignored run directory instead of seven committed TSVs. Write-back puts findings on the area page with `<repo>@<sha>` evidence, the conclusion in the scope's subject file, and new rows in `repos.tsv`. The editor-audit, harvest and maintain modes keep their method. Update `docs/research/schema.md`'s Reuse research section to match. Proof: `pnpm run prepare` and `sync-resources.mjs --check` pass, and the lead reads the rewritten method against this step.
-- [x] 3.2 Add one line at the first step of each consumer: Plan's What other editors do, Verdict's prior art, Bug fix's binary search (the area card already lists its `plate-notes` lessons), Perf issue's `how` step, `best-api`'s prior art, and sweep's gap move, which reads the area card and writes each accepted gap to the area page. Plan's and Verdict's lines also run one `kb discover` search, because those start new tasks. Proof: `check-playbooks.mjs` passes, and `pnpm run prepare` and `sync-resources.mjs --check` pass.
+- [x] 3.1 Rewrite `research.mdc`'s run method as the loop. Pick runs `pnpm kb <area>`, `<scope>` or `<repo>` first, then picks the gap. The registry step takes the area's rows in `repos.tsv`, one `pnpm kb discover <area>` search of at most 10 minutes and any library family the question needs. It adds each repo it reads as `saved` and each it skips as `skipped`, with the reason. Reads are update-only: a repo with a mark reads `git log <mark>..HEAD` over the area's paths first, and an unread repo gets one bounded first read. Queries, leads, reads and rejections go to the ignored run directory instead of seven committed TSVs. Write-back puts findings on the area page with `<repo>@<sha>` evidence, the conclusion in the scope's subject file, and new rows in `repos.tsv`. The editor-audit, harvest and maintain modes keep their method. Update `docs/research/schema.md`'s Reuse research section to match. Proof: `pnpm run prepare` and `sync-resources.mjs --check` pass, and the lead reads the rewritten method against this step. Reverted after step 3.4, apart from the search, the repo rows and the write-back.
+- [x] 3.2 Add one line at the first step of each consumer: Plan's What other editors do, Verdict's prior art, Bug fix's binary search (the area card already lists its `plate-notes` lessons), Perf issue's `how` step, `best-api`'s prior art, and sweep's gap move, which reads the area card and writes each accepted gap to the area page. Plan's and Verdict's lines also run one `kb discover` search, because those start new tasks. Proof: `check-playbooks.mjs` passes, and `pnpm run prepare` and `sync-resources.mjs --check` pass. Reverted after step 3.4.
 - [x] 3.3 Build `kb discover`. For an area, it runs `gh search repos` with each seed, sorted by stars, drops every repo `repos.tsv` lists, and prints the rest with stars, last push and description. It stops at its time limit and says so. Proof: one run per seeded area prints at least one repo the list lacks or names the area that had none, a rerun after those repos are recorded as skipped prints none of them, and a run with a short limit stops and says so.
-- [ ] 3.4 Waits in Open work, because fast mode drops the fresh sessions it needs. Run the trial and the smokes. A reader the lead never sees writes four questions, one each for collaboration, Word files, virtualization and tables, and the keys a complete answer cites from current pages and repos. Arm A runs today's rules at this plan's base, and arm B runs the built loop, two fresh read-only Claude sessions per question and arm, graded by a separate grader. B keeps phase 3 when its total is at least A's and no question drops more than one key. Then send one plain request per changed route (research, Plan, Verdict, Bug fix, Perf issue and sweep triage) and an adjacent one that should stay outside research, such as "how does our table plugin work", and read each transcript for the lookup call and the write-back. Proof: the grader's score table and the transcript notes in the decision log.
+- [x] 3.4 Run the trial and the smokes. A reader the lead never sees writes four questions, one each for collaboration, Word files, virtualization and tables, and the keys a complete answer cites from current pages and repos. Arm A runs today's rules without this phase's lines, and arm B runs the built loop, two fresh read-only Claude sessions per question and arm, graded by a separate grader. B keeps phase 3 when its total is at least A's and no question drops more than one key. Then send one plain request per changed route (research, Plan, Verdict, Bug fix, Perf issue and sweep triage) and an adjacent one that should stay outside research, such as "how does our table plugin work", and read each transcript for the lookup call and the write-back. Proof: the blind grader gave A 46 and B 44 of 58 keys, and the worst drop was 1.0 key, on the virtualization question, so B failed and steps 3.1 and 3.2 reverted. B's sessions ran the lookup in 2 of 8 and the search in none. The arm B smokes ran the lookup on 5 of 6 routes and the search on none. After the revert, the smokes in Claude Code and Codex found no clash between lines this commit changes. Both runtimes name research's search and write-back, and neither runs the lookup on Plan, Verdict or Bug fix because a rule says so. Sweep differs. Codex loads research for an R5 comparison and would write the area page, and Claude would not.
 
 ### Phase 4: finish the compile
 
@@ -156,7 +158,7 @@ Each step names its proof. Base controls ran on 2026-10-24, and the decision log
 | Gate | Evidence |
 | --- | --- |
 | `thermos` per slice | skip: fast mode drops subagents |
-| Panel on the diff (reviews: push) | skip: fast mode |
+| Panel on the diff (reviews: push) | skip for phases 1 to 4: fast mode; step 3.4's revert got one round of three seats |
 | `blast-radius`, `best-api repair` | skip: no public API changes |
 | `plate-docs` | skip: no public docs page changes |
 | Hand drive and playtest | skip: nothing a browser shows changes |
@@ -164,17 +166,19 @@ Each step names its proof. Base controls ran on 2026-10-24, and the decision log
 | `benchmark` rerun | skip: no product path changes; step 2.3 logs the lookup's own timing |
 | `deslop` | done per phase; step 4.3's pass found nothing to cut |
 | `no-comments` | skip: fast |
-| `unslop` | done per phase, per compile group and on the law pass |
+| `unslop` | done per phase, per compile group, on the law pass and on step 3.4's rule fixes and Close |
 
 ## Close
 
 **Deviations and narrowed proof.**
 
-- Step 3.4's trial and the route smokes never ran, because fast mode drops the fresh sessions they need. The playbook lines landed unmeasured, so the plan stays partial.
+- Step 3.4's trial failed, so the lookup-first lines came back out. A scored 46 and B 44 of 58 keys. The gap sits inside the spread between the two sessions of one question, up to 4 keys, and B's sessions ran the lookup in only 2 of 8. So the record shows that the pass rule fired, not that the lookup makes answers worse.
+- The revert keeps three parts of steps 3.1 and 3.2, beyond Phase 3's exit: research's one new-repo search per task or verdict, which you asked for; the repo rows that search writes; and the write-back of findings and rejected leads to the area page. No trial or smoke session ran any of them, and phase 1's freeze leaves research no other committed home. The panel raised both as critical. The word "drop the new repo search" takes the search out.
+- Restored lines that pointed past kept phases changed: research's run folder and reuse lines now name the frozen runs and the area pages, and Bug fix and Perf issue name every part of the split plate-notes pages. `docs/research/schema.md` and `docs/development/agent-skills.md` keep their phase 3 text, which describes the kept tools, and schema gets back one sentence phase 3 had cut.
+- Arm A ran next without phase 3's lines, not this plan's base, because the base lacked the compiled pages the keys cite. The word "arm A at the base" reruns it at the base.
 - Step 1.3 also froze `docs/research/raw`, beyond the two folders it names. The word "unfreeze raw notes" reverses it.
 - Step 1.2's proof is narrower than the step. No code writer into `docs/research/probes` exists, so the proof covers research's raw-notes line and K17's refusal.
-- The compile's facts landed with no second reader, as you chose on 2026-10-25.
-- The subject file keeps its state from before this plan, apart from two rows that named what step 4.3 deleted. The fold waits for step 3.4.
+- The compile's facts landed with no second reader, as you chose on 2026-10-25. Trial answers caught stale statements in four pages, listed in Open work.
 
 **Landed.**
 
@@ -182,6 +186,7 @@ Each step names its proof. Base controls ran on 2026-10-24, and the decision log
 - Phase 2, in e406da3177: `repos.tsv` with 423 repos, `areas.tsv` with 20 areas, three library-family homes, area, scope and repo lookups, and K16.
 - Phase 3, in 87ac1f8ebc: research's run method as a loop, one lookup line in each consumer, and `kb discover`.
 - Phase 4: compile batches p5-005 to p5-163 in four groups, bf32a0a66b, 22737ba0ff, 7b6b0df213 and 53f17baa3e; the law pass in 42b9cda4ad, which adds 82 proposed rules from 93 law units; and step 4.3's delete in 9643fcccf8.
+- Step 3.4: the trial and the revert of the lookup-first lines, in the commit that carries this Close.
 - After the plan, the shared `cross.mjs` waits for its output to drain before it exits, so a Codex reply longer than 64 KB reaches its caller whole. The fix is dotai 62bba2c, synced here in the commit after 9643fcccf8. Piping a 200,000-byte stub reply through it delivers every byte, where the old copy stopped at 65,536.
 
 **Proof.**
@@ -191,14 +196,18 @@ Each step names its proof. Base controls ran on 2026-10-24, and the decision log
 - Phase 3. `check-playbooks.mjs` and the mirror check pass. One live `kb discover` run per area printed at least one unlisted repo for all 20 areas. A rerun after `--record` hid the recorded repos, and a tiny time limit stopped the search and said so.
 - Phase 4. Each batch's resolved file covers every source line, and `kb check` passed after each group. The quote check finds no lost unit of this plan's batches, and older batches lose none beyond the 863 already lost. Each land ran `pnpm check --affected` green.
 - Step 4.3. The knowledge and homes tests pass 57 of 57, `kb check` matches its baseline before and after, and `kb homes` reports 0 K14 findings.
+- Step 3.4. A reader the lead never saw wrote four questions and 58 keys, and a blind grader scored 16 fresh read-only Opus sessions, two per question and arm. Mean keys per session, A then B: collaboration 5.5 and 5.5, Word files 6.5 and 6.0, virtualization 5.0 and 4.0, tables 6.0 and 6.5. B ran the lookup in 2 of 8 sessions and A in none, and no session ran the search. One panel round of three seats on the revert raised 3 criticals, all applied. After the fixes, `pnpm run prepare`, the mirror check, `check-playbooks.mjs` and `kb check` pass. The post-fix smokes in both runtimes found no clash between changed lines; Codex's research session ran `kb discover`, which failed for lack of network.
 
 **Limits.**
 
 - Law reader a's last side findings were cut at 64 KB and are lost.
 - About one in three repos `kb discover` prints for generic seeds is spam. Research skips them, and `--record` hides them next time.
 - The law rules carry Proof lines their readers wrote from reading the tests, and no law test was rerun.
+- The trial asked read-only questions, so it measured the lookup's effect on answers and never ran the search or the write-back.
+- The Claude Code smokes ran the CLI in plan mode, so its clashes with "edit nothing" are harness artifacts, logged one row each.
+- No Perf issue smoke reached the `how` step, so no session read the two performance pages it names.
 
-**Asks.** You made six asks in the request this plan builds: no monthly scan, one new-repo search per new task or verdict, a time limit on that search, the rest built fast after the compile, the old phase 3 cut, and the compile run in the background. All six are done, and step 3.4 is the one step left open.
+**Asks.** You made six asks in the request this plan builds: no monthly scan, one new-repo search per new task or verdict, a time limit on that search, the rest built fast after the compile, the old phase 3 cut, and the compile run in the background. All six are done, and the revert keeps the search and its limit. The session that ran step 3.4 had four asks in its brief: the paired trial, the route smokes, a panel on the revert and this close. All four are done.
 
 **Open work.** Each item below has its owner and its stop.
 
@@ -262,8 +271,9 @@ The superseded plan's 44 open items, each with one call. A "carry" moves to the 
 - 863 units from compile batches landed before this plan no longer match their pages: 425 differ only in commit pins or spacing, 243 were rewritten and 195 sit on pages that were removed. 862 of them were already lost when this plan started. Step 4.3 deletes the quote check, so the list in this plan's run folder, `p4/old-lost-at-head.tsv`, is the only record. owner: Ziad. stop: research's maintain mode checks the 438 rewritten or removed ones, or they are dropped. Tracked here.
 - The ellie and plate checkouts still run the old `cross.mjs`, which cuts a piped reply at 65,536 bytes. Both sit dozens of shared files behind dotai on pstack v0.9.88, so this run synced only this repository. owner: Ziad. stop: their next sync-pstack run, which carries the fix. Tracked here.
 - `EDIT-STYLE-FONT-SIZE-SELECTION-001`'s Proof line says `tooling/e2e/font-size-selection.test.ts` looks for an input with `data-editor-focus="true"`, which the font-size toolbar button no longer renders, so that test is no proof until its locator is fixed and it is run again. owner: Ziad. stop: the test passes on the current button, or the rule names other proof. Tracked here.
-- Step 3.4's paired trial and route smokes. Fast mode drops the fresh sessions they need, so the playbook lines land unmeasured. owner: Ziad. stop: you start the trial as its own task, or say the wiring stays. Tracked here.
-- Send a generic version of the loop (a repo list with derived marks, an area join and write-back) to the shared pstack source. owner: Ziad. stop: step 3.4's trial passes, or this plan closes without it. Tracked here.
+- Trial answers named stale statements in four pages: `docs/research/sources/plite/conversion-and-export.md:45` still lists the empty previous properties gap, a collaboration page dated 2026-05-18 still targets `tx.yjs`, the documents subject's review part is out of date, and the tables subject still says no review compared other editors. One answer also misread `docs/research/sources/plite/collaboration.md` on the June soak seeds 96 and 115. Nobody checked which of these the compile wrote. owner: Ziad. stop: research's maintain mode fixes or drops each. Tracked here.
+- An R5 sweep comparison writes the area page in Codex, which loads research for it, and not in Claude Code, which keeps the finds in the round's run folder and the subject file. `sweep.md` never says which. owner: Ziad. stop: `sweep.md` says where an R5 comparison's evidence goes. Tracked here.
+- Two research-rule ambiguities predate this plan. Research and `AGENTS.md` put clones at `..`. From a worktree that is the main checkout's worktrees folder, not the folder beside the main checkout, though `kb` resolves clones from the main checkout. And `docs/research/schema.md` makes an open design question a chips `decide` task with no page, while research puts an unresolved ambiguity on the page it blocks. owner: Ziad. stop: the next change to the research rule words both. Tracked here.
 - Areas that only one or two homes use today join `areas.tsv` when a run writes them. owner: Ziad. stop: K16 reports none missing. Tracked here.
 - Slate's ledger rebuild, `classify-delta.mjs`, reads an ignored corpus under `.tmp/editor-issue-harvester/slate/raw/`, so an assessment written into the script survives only while that corpus exists on the machine that rebuilds it. owner: Ziad. stop: the corpus or its decisions move into a tracked input, or the Slate ledger is retired. Carried from the superseded knowledge plan.
 - Deferred review findings in the knowledge tool: K0 counts depend on recognizing a harvest's format; K7 skips reference-style links, untracked citing files and unstaged deletions; the scanner does not read node:test's `{ skip }` option or `t.skip()`; `kb` copies the runners' selection policy; `knowledge.mjs` mixes seven concerns; and `candidates.md:201` calls an existing file retired. owner: Ziad. stop: each is fixed or dropped at the next change to its code. Carried from the superseded knowledge plan.

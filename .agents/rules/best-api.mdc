@@ -24,7 +24,7 @@ A `design` or `review` verdict goes on a page, per `AGENTS.md`'s Plan pages: the
 Read only what can change the decision:
 
 1. Root `VISION.md`, `docs/vision/common.md` and the relevant Plate or Plite detail file.
-2. Prior art first, as `docs/vision/common.md`'s Redesign from First Principles says: existing Plite primitives, Plate components and the reference editors. `pnpm kb <area>` lists what Plate already recorded about the reference editors and each repo's last-read commit. A source-level editor comparison consumes `research audit` evidence.
+2. Prior art first, as `docs/vision/common.md`'s Redesign from First Principles says: existing Plite primitives, Plate components and the reference editors. A source-level editor comparison consumes `research audit` evidence.
 3. The public types, exports, docs, representative call sites, and owning implementation for the named surface.
 4. Existing plans and compatibility constraints, only after the ideal target is clear on its own.
 
