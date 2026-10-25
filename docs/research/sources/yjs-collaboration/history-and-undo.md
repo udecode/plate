@@ -14,3 +14,7 @@
 ## Undo scope
 
 - Yjs's `UndoManager` scopes undo by tracked types and transaction origins (https://docs.yjs.dev/api/undo-manager, retrieved 2026-09-10); an origin is not a durable human identity, so the undo manager cannot serve as authored history. Source: `docs/plite/research/2026-09-10-authored-changes/read-log.tsv:47`.
+
+## Transaction origins and capture boundaries
+
+- Yjs exposes transaction origins and UndoManager tracked-origin selection, while `stopCapturing` supplies an explicit undo capture boundary. Adapter-owned identity-bearing origins should remain distinct from serializable application labels. Source: `docs/plans/2026-07-15-plite-update-lifecycle-api.md:474`, citing https://docs.yjs.dev/api/y.doc and https://docs.yjs.dev/api/undo-manager in its 2026-07-15 review. This is unversioned documentation evidence, not proof that a particular binding prevents echo or preserves local history.

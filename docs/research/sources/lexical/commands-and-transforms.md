@@ -84,3 +84,11 @@
   - an expanded delete that starts at an inline link (#1083).
 
   Apart from the plain line-edge and grapheme rows, each case deletes or merges at a block or leaf edge next to something that is not plain text: an inline decorator, a list item, a horizontal rule, a mention, an emoji or a link. Plate notes hold the rule #1083 produced ('An expanded delete removes a selected inline only when the range crosses out of it', `docs/research/sources/plate-notes/selection-and-editing.md`). Source: `c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:809-814`, `:868`, `:874`, `:876`. Limit: not rerun; #1258, #1730, #7163 and #1083 were read only through the ledger.
+
+## Relative insertion
+
+- Lexical exposes next-sibling placement as LexicalNode.insertAfter with a separate restoreSelection control; generic selection insertion is a different operation. The July 2026 source comparison read facebook/lexical@d52f66e:packages/lexical/src/LexicalNode.ts, reported as Lexical 0.42.0 (c70bacbd4a:docs/plans/2026-07-13-plite-block-relative-insertion-api.md:467). This supports separating the structural relation from selection policy; it does not establish Lexical's node-instance mutation as a suitable Plite API. This was a source comparison, not an executed test.
+
+## Deletion and browser measurement
+
+- The May inline-delete investigation reported that Lexical routes Backspace through `DELETE_CHARACTER_COMMAND` and `RangeSelection.deleteCharacter`, while movement can use DOM `selection.modify` and import its result. This distinguishes browser measurement of a movement from model ownership of deletion. Evidence: `c70bacbd4a:docs/plans/2026-05-07-plite-inline-delete-boundary-repro-ralplan.md:107-108`, citing the local Lexical checkout's `facebook/lexical:packages/lexical-rich-text/src/index.ts:581` and `facebook/lexical:packages/lexical/src/LexicalSelection.ts:1627,1743`. The plan records no upstream commit, so this is an unpinned historical source observation.

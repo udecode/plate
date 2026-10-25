@@ -29,3 +29,7 @@
 ## Test recorder
 
 - Lexical's playground `TestRecorderPlugin` records click, press, type, select-all and snapshot steps and emits Playwright test code that asserts an HTML snapshot and the selection (`facebook/lexical@dd5c41b1:packages/lexical-playground/src/plugins/TestRecorderPlugin/index.tsx:58-90`). Plite covers the durable part without a recorder UI through scenario replay (`createScenarioReplay`, `packages/test/src/playwright/scenario-replay.ts:1084`, used in `packages/test/src/playwright/harness-scenario.ts:115`), stress artifacts and selection assertions. Read 2026-10-08.
+
+## Interaction timing
+
+- **The typing probe names its event clock.** Lexical's playground TypingPerfPlugin starts a `performance.now()` clock around accepted keyboard/input activity and ends it through `setTimeout(0)`; its comment explicitly avoids requestAnimationFrame because browser sequencing differs. Evidence: `facebook/lexical@dd5c41b13193efa9ab1574234d8593d2c9e4f988:packages/lexical-playground/src/plugins/TypingPerfPlugin/index.ts:34-80`. Source: `docs/plans/2026-05-08-plite-performance-scalability-plite-issues-ralplan.md:675-677`. Limit: this is the probe's event-to-timer measurement, not proof of paint or a cross-browser INP comparison.

@@ -13,3 +13,7 @@
 ## Edits outside history
 
 - ProseMirror's history keeps a step map beside every undoable step in its branches, so a transaction with `addToHistory: false` or a remote change still adds its maps, and older undo events are remapped or dropped through them; edits made outside history stay authoritative instead of being undone. `test/test-history.ts` covers this with 'allows changes that aren't part of the history', 'supports overlapping edits' and 'supports overlapping unsynced deletes'. Evidence: `ProseMirror/prosemirror-history@768b74205ad59919ed54d75e197312964ddcf3c2:src/history.ts:24-150` (Branch, `remapping`, rebase) and `test/test-history.ts:94-170`, checked 2026-10-08 at the local checkout; the run read `src/history.ts:1-120`, `:260-420` unpinned.
+
+## History policy
+
+- ProseMirror history combines transaction metadata (`addToHistory`, `closeHistory`, `composition` and `rebased`) with selection bookmarks and edit adjacency to decide recording, grouping and restoration. The April 30 source read cites `history/src/history.ts:258-368` (`c70bacbd4a:docs/plans/2026-04-30-plite-next-rewrite-candidates-ralplan.md:103`). The useful distinction is explicit edit intent alongside structural changes; operation shape alone does not explain every history policy. Limit: this plan's checkout revision is unpinned, and it records source inspection rather than a history run.

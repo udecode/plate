@@ -28,6 +28,7 @@ Pages in this folder:
 - [Slate: tables](tables.md)
 - [Slate: testing and proof](testing-and-proof.md)
 - [Slate walkthrough, concepts, and API doc patterns](walkthrough-concepts-and-api-doc-patterns.md)
+- [Slate: commands and transforms](commands-and-transforms.md)
 
 Decisions:
 

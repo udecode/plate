@@ -49,6 +49,7 @@ This plan makes research a loop. Each run starts with one lookup by area, scope 
 | Old findings | Hand each group of the 102 old findings to the subject that owns it | Keep them all under knowledge | keep the findings here | small |
 | Clone folder | New clones go next to the plate repo, as the repo rules already say; old clones stay put and the list records where | Move every clone into one folder | move the clones | detail |
 | Compile tools | Delete the five compile commands once the last batch lands | Keep them for a later compile | keep the compile tools | detail |
+| Law pass | One Codex reader shapes the law units as the spec's rules, with the earlier law pass's brief, and the lead dry-runs and lands its plan | The lead shapes every rule by hand | law pass by hand | small |
 | Old lost units | The quote check gates this plan's batches; the 863 units older batches lost before phase 4 go to Open work | Resolve all 863 one by one before deleting the quote check | resolve the old units | small |
 | Search time | 10 minutes for the new repo search in each task or verdict | 20 minutes | longer search | detail |
 | Skipped repos | The repo list also records repos a search showed and research skipped, so the next search hides them | Show every unsaved repo each time | show skipped repos | detail |

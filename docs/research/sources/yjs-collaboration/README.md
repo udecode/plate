@@ -16,6 +16,7 @@ Pages in this folder:
 - [Yjs collaboration: marks decorations and annotations](marks-decorations-and-annotations.md)
 - [Yjs collaboration: selection and caret](selection-and-caret.md)
 - [Yjs collaboration: testing and proof](testing-and-proof.md)
+- [Yjs collaboration: commands and transforms](commands-and-transforms.md)
 
 Decisions:
 

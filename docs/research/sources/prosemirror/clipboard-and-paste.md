@@ -19,3 +19,7 @@
 ## Custom views
 
 - A canvas-based editor built on ProseMirror's state and plugin system still reuses ProseMirror's schema-based HTML parsing and serialization at the model boundary for copy and paste instead of inventing a separate clipboard model (https://discuss.prosemirror.net/t/building-a-canvas-based-editor-on-top-of-prosemirror-s-state-and-plugin-system/8982, 2026-03, read 2026-06-13).
+
+## Paste replacement
+
+ProseMirror parses clipboard text and HTML into a slice before its default paste mutation. A handlePaste hook can take ownership; otherwise doPaste chooses replaceSelectionWith for a single node or replaceSelection for the slice, then dispatches the transaction with paste and uiEvent metadata. Evidence: c70bacbd4a:docs/plans/2026-05-05-plite-best-pasting-strategy-ralplan.md:283-310; confirmed in ProseMirror/prosemirror-view@c752c6ef7225199f73cb433dd3179e7d69b840d8:src/input.ts:634-645. This establishes the default dispatch mechanism, not a latency bound or a guarantee that every fitted slice produces exactly one internal step.

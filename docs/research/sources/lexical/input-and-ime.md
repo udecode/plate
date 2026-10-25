@@ -35,3 +35,7 @@
 ## Input ownership
 
 - **When Lexical takes over text input.** `$shouldPreventDefaultAndInsertText` decides whether Lexical prevents the browser's text insertion and inserts the text itself (`facebook/lexical@dd5c41b1:packages/lexical/src/LexicalEvents.ts:231-305`). It takes over when the selection spans nodes or sits outside a text node, when the anchor is a token or segmented text node, when a dirty node receives more than one character, when the DOM selection's text node differs from the anchor's backing DOM node or the `beforeinput` target range differs from the DOM selection, and when the selection's format or style differs from the anchor node's; several of these tests are skipped while the anchor node is composing. Read 2026-10-08; the June run read it unpinned at `:214-266`.
+
+## Keyboard layout matching
+
+- Lexical's shortcut matcher checks modifier masks and compares `event.key` without case sensitivity. For a single-letter shortcut, it permits physical `event.code` fallback for a non-ASCII typed key, while preserving character-based matching on ASCII-remapped layouts such as Dvorak. Its unit tests distinguish these cases. Source: `docs/plans/2026-05-03-plite-hotkey-runtime-dependency-ralplan.md:87-92`, citing `facebook/lexical:packages/lexical/src/LexicalUtils.ts:995-1023` and `facebook/lexical:packages/lexical/src/__tests__/unit/LexicalUtils.test.ts:187-284`. Limit: the May local source read pins no Lexical revision.
