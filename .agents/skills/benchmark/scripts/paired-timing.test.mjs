@@ -21,14 +21,14 @@ const baseConfig = {
   budget: 1.05,
   cohorts: ['small'],
   arms: { base: arm('base'), candidate: arm('candidate'), planted: arm('planted'), copy: arm('copy') },
-  planted: { planted: ['small'] },
+  planted: { planted: { small: 1.2 } },
   sameCode: { copy: ['small'] },
 };
 
 const twoCohorts = {
   ...baseConfig,
   cohorts: ['small', 'large'],
-  planted: { planted: ['small', 'large'] },
+  planted: { planted: { small: 1.2, large: 1.2 } },
   sameCode: { copy: ['small', 'large'] },
 };
 
@@ -111,6 +111,19 @@ test('reports a planted arm that fails by no more than the same-code noise as in
   assert.doesNotMatch(run.stderr, /reaches the candidate's margin/);
 });
 
+test('reports a planted arm that reads far past the ratio it plants as inconclusive', (t) => {
+  const run = analyze(t, baseConfig, small({ base: flat(10), candidate: flat(10.1), planted: flat(30), copy: flat(10.1) }));
+  assert.equal(run.status, 3, run.stderr);
+  assert.match(run.stderr, /planted planted scored 3\.000, further from the 1\.2 it plants than that ratio's distance to the budget 1\.05 plus the same-code noise 0\.000/);
+});
+
+test('passes a planted arm that reads near the ratio it plants on either side', (t) => {
+  for (const planted of [11, 13]) {
+    const run = analyze(t, baseConfig, small({ base: flat(10), candidate: flat(10.1), planted: flat(planted), copy: flat(10.1) }));
+    assert.equal(run.status, 0, run.stderr);
+  }
+});
+
 test('reports a passing candidate as inconclusive when its same-code copy fails', (t) => {
   const run = analyze(t, baseConfig, small({ base: flat(10), candidate: flat(10.2), planted: flat(11), copy: flat(10.8) }));
   assert.equal(run.status, 3, run.stderr);
@@ -158,7 +171,7 @@ test('takes the noisiest of several same-code arms', (t) => {
 });
 
 test('requires every planted arm on a cohort to fail past the noise', (t) => {
-  const config = { ...baseConfig, arms: { ...baseConfig.arms, weak: arm('weak') }, planted: { planted: ['small'], weak: ['small'] } };
+  const config = { ...baseConfig, arms: { ...baseConfig.arms, weak: arm('weak') }, planted: { planted: { small: 1.2 }, weak: { small: 1.2 } } };
   const run = analyze(
     t,
     config,
@@ -210,7 +223,8 @@ test('keeps linear drift from failing identical code across mirrored packets', (
       invocation += 1;
     }
   }
-  const run = analyze(t, baseConfig, { config: baseConfig, runs });
+  const config = { ...baseConfig, planted: { planted: { small: 2 } } };
+  const run = analyze(t, config, { config, runs });
   assert.equal(run.status, 0, run.stderr);
 });
 
@@ -277,7 +291,9 @@ test('judges extreme finite measurements by their ratios and refuses a ratio out
 test('refuses a config that leaves a cohort without a control, or that a control cannot check', (t) => {
   const values = small({ base: flat(10), candidate: flat(10), planted: flat(11), copy: flat(10) });
   const refusals = [
-    [{ ...twoCohorts, planted: { planted: ['small'] } }, /config\.planted has no arm for large; a line with no planted slowdown cannot fail/],
+    [{ ...twoCohorts, planted: { planted: { small: 1.2 } } }, /config\.planted has no arm for large; a line with no planted slowdown cannot fail/],
+    [{ ...baseConfig, planted: { planted: ['small'] } }, /config\.planted\.planted must map each cohort to the ratio over base its slowdown plants/],
+    [{ ...baseConfig, planted: { planted: { small: 1.04 } } }, /config\.planted\.planted\.small must be a ratio past the budget 1\.05/],
     [{ ...twoCohorts, sameCode: { copy: ['small'] } }, /config\.sameCode has no arm for large; without a same-code arm, the run cannot measure its own noise/],
     [{ ...baseConfig, sameCode: { copy: ['small'], planted: ['small'] } }, /planted cannot be both a planted arm and a same-code arm/],
     [{ ...baseConfig, sameCode: { candidate: ['small'] } }, /config\.sameCode cannot use the candidate arm/],

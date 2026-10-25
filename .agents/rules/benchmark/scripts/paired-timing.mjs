@@ -2,11 +2,14 @@
 // Runs paired timing arms in mirrored packet pairs and judges one frozen ratio
 // line per cohort. A cohort is inconclusive when a planted arm does not exceed
 // the budget by more than the same-code noise, or when that noise reaches the
-// candidate's distance to the budget. The run fails when the candidate misses
-// any conclusive cohort, and passes only when every cohort is conclusive and
-// passes. Host load never decides a verdict, because interleaved arms share it
-// and the same-code noise measures what it costs this run. The runner records
-// the one-minute load beside each run.
+// candidate's distance to the budget. It is also inconclusive when a planted
+// arm reads further from the ratio it plants than that ratio's distance to the
+// budget plus the noise, because the line then measured something other than
+// the plant. The run fails when the candidate misses any conclusive cohort, and
+// passes only when every cohort is conclusive and passes. Host load never
+// decides a verdict, because interleaved arms share it and the same-code noise
+// measures what it costs this run. The runner records the one-minute load
+// beside each run.
 //
 // Usage:
 //   node paired-timing.mjs <config.json> <measurements.json>
@@ -19,13 +22,14 @@
 //     "budget": 1.05,
 //     "cohorts": ["normal", "large"],
 //     "arms": { "base": { "cwd": "...", "command": ["bun", "bench.ts"], "source": "/wt-base/" }, "candidate": {...}, ... },
-//     "planted": { "<arm>": ["<cohort>", ...] },
+//     "planted": { "<arm>": { "<cohort>": 1.15, ... } },
 //     "sameCode": { "<arm>": ["<cohort>", ...] }
 //   }
 // `budget` is one ratio for every cohort, or an object with one for each cohort.
 // Every run has six packets, three mirrored pairs. Every cohort needs a
 // planted arm and a same-code arm. No arm is both, and base and candidate are
-// neither. Planted arms carry a deliberate slowdown on their cohorts.
+// neither. A planted arm carries a deliberate slowdown on its cohorts and names,
+// for each, the ratio over base the slowdown should read, past that budget.
 // Same-code arms run the candidate's code on their cohorts, such as a second
 // copy of the candidate.
 // Each arm's cwd resolves against the config file's directory, which is also
@@ -91,12 +95,13 @@ const readConfig = (configPath) => {
     arm.cwd = path.resolve(base, arm.cwd ?? '.');
   }
 
-  const coverage = (name, group, reason) => {
+  const coverage = (name, group, reason, cohortsOf) => {
     const covered = new Set();
-    for (const [arm, armCohorts] of Object.entries(group ?? {})) {
+    for (const [arm, value] of Object.entries(group ?? {})) {
       if (!arms[arm]) fail(`config.${name} names ${arm}, which config.arms lacks`);
       if (arm === 'base' || arm === 'candidate') fail(`config.${name} cannot use the ${arm} arm`);
-      if (!Array.isArray(armCohorts) || armCohorts.length === 0) fail(`config.${name}.${arm} names no cohort`);
+      const armCohorts = cohortsOf(arm, value);
+      if (armCohorts.length === 0) fail(`config.${name}.${arm} names no cohort`);
       for (const cohort of armCohorts) {
         if (!cohorts.includes(cohort)) fail(`config.${name}.${arm} names ${cohort}, which config.cohorts lacks`);
         covered.add(cohort);
@@ -106,8 +111,21 @@ const readConfig = (configPath) => {
       if (!covered.has(cohort)) fail(`config.${name} has no arm for ${cohort}; ${reason}`);
     }
   };
-  coverage('planted', planted, 'a line with no planted slowdown cannot fail');
-  coverage('sameCode', sameCode, 'without a same-code arm, the run cannot measure its own noise');
+  coverage('planted', planted, 'a line with no planted slowdown cannot fail', (arm, plants) => {
+    if (plants === null || typeof plants !== 'object' || Array.isArray(plants)) {
+      fail(`config.planted.${arm} must map each cohort to the ratio over base its slowdown plants`);
+    }
+    for (const [cohort, ratio] of Object.entries(plants)) {
+      if (Object.hasOwn(budgets, cohort) && !(isPositive(ratio) && ratio > budgets[cohort])) {
+        fail(`config.planted.${arm}.${cohort} must be a ratio past the budget ${budgets[cohort]}, which the slowdown has to cross`);
+      }
+    }
+    return Object.keys(plants);
+  });
+  coverage('sameCode', sameCode, 'without a same-code arm, the run cannot measure its own noise', (arm, armCohorts) => {
+    if (!Array.isArray(armCohorts)) fail(`config.sameCode.${arm} must list its cohorts`);
+    return armCohorts;
+  });
   for (const arm of Object.keys(sameCode)) {
     if (Object.hasOwn(planted, arm)) fail(`${arm} cannot be both a planted arm and a same-code arm`);
   }
@@ -195,7 +213,8 @@ const judge = (config, { runs }) => {
       if (!isPositive(ratio)) fail(`${arm}'s pair ${pair} ratio on ${cohort} is out of range: ${ratio}`);
       return ratio;
     });
-  const armsOn = (group, cohort) => Object.keys(group).filter((arm) => group[arm].includes(cohort));
+  const sameCodeOn = (cohort) => Object.keys(config.sameCode).filter((arm) => config.sameCode[arm].includes(cohort));
+  const plantedOn = (cohort) => Object.keys(config.planted).filter((arm) => Object.hasOwn(config.planted[arm], cohort));
 
   const cohorts = config.cohorts.map((cohort) => {
     const rows = Object.keys(config.arms)
@@ -207,7 +226,7 @@ const judge = (config, { runs }) => {
     const row = (arm) => rows.find((entry) => entry.arm === arm);
     const candidate = row('candidate');
     const noise = Math.max(
-      ...armsOn(config.sameCode, cohort).map((arm) =>
+      ...sameCodeOn(cohort).map((arm) =>
         Math.max(
           Math.abs(row(arm).statistic - candidate.statistic),
           median(row(arm).pairs.map((ratio, pair) => Math.abs(ratio - candidate.pairs[pair])))
@@ -217,11 +236,16 @@ const judge = (config, { runs }) => {
     const budget = config.budgets[cohort];
     const margin = Math.abs(budget - candidate.statistic);
     const reasons = [];
-    for (const arm of armsOn(config.planted, cohort)) {
+    for (const arm of plantedOn(cohort)) {
       const { statistic } = row(arm);
+      const plant = config.planted[arm][cohort];
       if (statistic - budget <= noise) {
         reasons.push(
           `planted ${arm} scored ${statistic.toFixed(3)}, not past the budget ${budget} by more than the same-code noise ${noise.toFixed(3)}, so the line could not fail there`
+        );
+      } else if (Math.abs(statistic - plant) > plant - budget + noise) {
+        reasons.push(
+          `planted ${arm} scored ${statistic.toFixed(3)}, further from the ${plant} it plants than that ratio's distance to the budget ${budget} plus the same-code noise ${noise.toFixed(3)}, so the line measured something other than the plant`
         );
       }
     }

@@ -289,12 +289,14 @@ No public docs page changes, because `content/docs` teaches only the binding's o
 - A peer whose editor lost focus keeps its caret at the same offset when a teammate types before it, so the caret ends before another letter, as on `next` (`push-r3/drive/blurred-caret-control.md`). owner: the collaboration subject; stop: a report of a blurred peer's caret or typing landing in the wrong place after a teammate's insert.
 - `2026-10-10-authored-values.md` keeps an Open work item that waits until the races test pins Alice's removed piece gone. This plan's landing pins it gone, so that item reaches its stop. owner: the authored subject; stop: this plan's landing.
 - A saved comment range holds paths, and the comments plugin reads them against the document after loading has corrected it. A document saved by an earlier beta loses each empty text between a link and a text with other marks when it loads, so a range saved after one in that paragraph points one child too far, and creating the editor throws when that path ends inside a text, as the saved playground's did (`land/playground-head-a1-a1.log`). Any later change to the stored shape does the same. owner: the comments subject; stop: a report of a saved comment that fails to load or moves, or Plate v2 promising a saved-document format.
+- Reflect's eleven Backlog items wait under Evidence's Reflect section. owner: the owner; stop: the owner takes or drops each.
+- `2026-10-13-basic-review.md` step 15 reruns `paired-timing.mjs` with a config the runner refuses twice: its `loadLimit` field is gone, and since this run's fix each planted arm must name the ratio it plants, such as `{ "typing-paragraph": 1.3 }` for its 0.3 slowdown. owner: that plan's rerun; stop: the rerun's config drops `loadLimit` and names its planted ratios.
 
 ## Close
 
 Reversals first. The push panel's third round found that this plan's cut, which kept a cut chain's texts in the first line, brought back a letter a teammate deleted where `next` keeps it deleted. This plan had already replaced the cut once, so it went back to `next`'s and the claim narrowed. Enter after a link while a teammate types at the start of the text after it still loses that letter, as on `next`, in 5 of 1544 race cases, all in row 21, with every peer reading the same lines; `t_649d2131` owns it. The separate-process timing gate stayed inconclusive under this machine's load, so the interleaved probe, which times every arm in one process, judged the budget; the word "rerun the gate" restores the old gate.
 
-What landed. One `plitejs` commit on `next` through `land.mjs`. Neither Yjs import deletes a text inside an element. Each local edit first writes the empty texts its blocks lack, and a structural edit fills its result's blocks before the caret is published. A schema with content roots fills every block before the root's rewrite. A link inserted after an empty text lands after it, so link cycles store no new texts. A read inside a lowering finds each referenced node through the root's lent index. The core correction drops an empty text beside an inline where a lettered text shares its run, and a caret at the start of a lettered text stays in that text. The saved rich-text playground loses its empty text after the suggestion link, so its comment range and its test's paths move one child left. Its generator now anchors the range the fixture stores. `empty-text-runs-contract.spec.ts` adds seventeen cases, and the changeset, the research page and row 58 of `docs/development/enforcement.md` describe the final behavior.
+What landed. One `plitejs` commit on `next` through `land.mjs`, then the paired-timing fix in a commit of its own. Neither Yjs import deletes a text inside an element. Each local edit first writes the empty texts its blocks lack, and a structural edit fills its result's blocks before the caret is published. A schema with content roots fills every block before the root's rewrite. A link inserted after an empty text lands after it, so link cycles store no new texts. A read inside a lowering finds each referenced node through the root's lent index. The core correction drops an empty text beside an inline where a lettered text shares its run, and a caret at the start of a lettered text stays in that text. The saved rich-text playground loses its empty text after the suggestion link, so its comment range and its test's paths move one child left. Its generator now anchors the range the fixture stores. `empty-text-runs-contract.spec.ts` adds seventeen cases, and the changeset, the research page and row 58 of `docs/development/enforcement.md` describe the final behavior.
 
 Proof, each from its decision row's scope:
 
@@ -311,7 +313,9 @@ Limits. Bun and Playwright's Chromium ran the proof, with no Firefox, WebKit, re
 
 The run had one ask, and it is done. "Keep one block when two peers race a suggested and a direct property write on one element" holds in all five rooms, and the proposal stays proposed on every peer (`race-table6.ts`, spec cases 1 and 14).
 
-Open work moved to the collaboration subject's Open work, fourteen items, each with its owner and stop. The comments subject owns the comment ranges saved before this landing. `t_649d2131` owns the three Enter items. The collaboration subject owns the trimmed-room caret, the void inline read, the stray container text, the two range ends, the race table without content roots and the blurred peer's caret. The www Plite examples own the awareness stand-in, and the authored subject owns the cross-peer `revision` and the authored-values item this landing closes.
+Open work moved to the collaboration subject's Open work, fourteen items, each with its owner and stop. The comments subject owns the comment ranges saved before this landing. This plan's own Open work also holds reflect's Backlog and the step 15 config the paired-timing fix refuses.
+
+Workflow fix. The paired-timing runner printed a verdict while its planted arm read 31% away from the slowdown it planted. Each planted arm now names the ratio it plants, and a cohort whose planted arm reads further from that ratio than its distance to the budget plus the noise is inconclusive. The runner's tests pass 36 of 36, and the benchmark rule, its methodology and row 34 of `docs/development/enforcement.md` say so; the rule's two stale sentences about a load limit went with it. `t_649d2131` owns the three Enter items. The collaboration subject owns the trimmed-room caret, the void inline read, the stray container text, the two range ends, the race table without content roots and the blurred peer's caret. The www Plite examples own the awareness stand-in, and the authored subject owns the cross-peer `revision` and the authored-values item this landing closes.
 
 ## Evidence
 
@@ -422,3 +426,34 @@ The lead reran every check on the final bytes in the worktree (`push-r3/fix/` an
 
 - distribution, editing: unaffected; `packages/platejs/src/internal/plugin/markdownParagraph.ts`, `packages/platejs/src/utils/plugins/ExitBreakPlugin.ts`, `packages/platejs/src/utils/plugins/SingleBlockPlugin.ts` and `packages/platejs/src/utils/plugins/SingleLinePlugin.ts` import only plugin keys from `plate-keys`, which this change does not touch.
 - ui: unaffected; the Plite example pages import the example registry, which this change does not touch.
+
+### Reflect
+
+One Opus reviewer read the session's main thread through the judgment, tooling and divergent lenses, and the lead sorted its 29 findings. None is a kind the reflect rule applies without the owner, so the lead applied none. Each Accepted finding is a Backlog item below, owner: the owner; stop: the owner takes or drops it. The paired-timing fix lands on its own as this run's workflow fix.
+
+Backlog:
+
+1. A finding that names a missing input axis widens the race table's generator, not only its rows. Three push rounds each found an axis the 1544-case table lacked: blocks without links, fresh rooms and content roots. Mechanism: verify's testing reference asks each differential table to list its axes.
+2. A change outside the ask that draws a critical in two panel rounds is reverted, not reworked. The cut rule was reworked five times and reverted in the last round the panel cap allows. Mechanism: one line in the bug-fix playbook.
+3. A plan that adopts part of an architect winner lists each dropped part and why, and the lead's cheapest insert-only candidate runs first as the baseline. The lead's own fill passed 1543 of 1544 cases after two architect runs. Home: the shared source.
+4. Claude seats run in plan mode, so they cannot run probes while Codex seats can, which skews the panel's model comparison. The counterexample behind the cut's revert came from a Codex probe. This repeats the plan-mode items in `2026-10-06-knowledge-reorg.md`, `2026-10-11-ai-list-landing.md` and `2026-10-13-html-review.md`; giving seats a scratch folder changes what they may write, so it waits for the owner. Home: `cross.mjs` in the shared source.
+5. A long run hands off at phase boundaries instead of compacting again. This run compacted 31 times, each time rereading about 50,000 characters of skills, and stopped twice at a usage limit. Home: the long-runs rule.
+6. Wall-clock limits in `pnpm test` fail under the load that linked sessions add. Two Yjs work-count tests passed their 5-second limit and the DOCX benchmark its 240 seconds, on `next` as well. Mechanism: the test suite scales its per-test limit, or benchmark tests move to the benchmark lane.
+7. A failed `land.mjs` check names each failing step's log. The first landing's combined output hid which tests failed, so each step was rerun by hand. Mechanism: `land.mjs` writes each check's output to a file and prints its path. Home: the shared source.
+8. The inline-script hook's deny message names a form that works, such as `jq` or a quoted heredoc. The hook denied `node -e`, `perl -e` and `python3 -c` eight times. Home: the owner's user-scope hook.
+9. Write and Edit refuse the main checkout's run directory, so run files start in the scratchpad and reach it through `cp`. That cost five refusals. Mechanism: the Plans and trails rule names the route. Home: the shared source.
+10. The hand drive resizes to desktop width before its first cell, not only before drags. The first drive ran at 1024 pixels and was redone, while `hand-drive.mjs` wants 1200. Home: verify's hand-drive reference.
+11. A change to the stored document shape lists saved, path-addressed data in its blast radius, such as comment ranges. The playground's saved range broke only at the landing. Home: verify.
+
+Rejected:
+
+- Rerun a check after a fold edits files it reads. Reason: already-covered, because the landing's knowledge step caught it and the fix was one citation form.
+- Run the repository's tests before landing a stored-shape change. Reason: already-covered, because the Tests rule asks for one `pnpm check` on the settled change and the landing runs it.
+- A timing verdict counts only when its planted arm reads near its plant, and a plant must exceed the budget plus the noise. Reason: duplicate of the paired-timing fix.
+- Fix a lying gate when it is found. Reason: already-covered, because the Landing rule has a session fix friction once its task lands.
+- Never write to a tree a background run reads. Reason: already-covered by verify's detached-worktree rule.
+- A mutant removes only the fix, and its runner reads the whole log. Reason: convergence.
+- One Yjs per probe process, the root's name and how an attribute overwrite deletes. Reason: specificity.
+- Compare JSON by value, not as strings. Reason: specificity.
+- Learn the page checker's limits before drafting. Reason: already-covered by `plan-page.mjs --check`.
+- The guard blocks the app's base-branch sync. Reason: already-covered, because its deny message names the fetch and rebase.

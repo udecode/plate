@@ -52,8 +52,10 @@ Host load never gates a timing line, and no run waits for a quiet host. A
 timing verdict compares arms interleaved in one run, as
 `scripts/paired-timing.mjs` does, so load hits every arm alike, and a same-code
 arm measures the noise that load leaves. Only that noise and a planted arm
-decide whether a line is conclusive. Compare only ratios within one run,
-because absolute medians drift between runs. An inconclusive line reruns now,
+decide whether a line is conclusive, and a planted arm that reads far from
+the ratio it plants shows the line measured something other than the plant.
+Compare only ratios within one run, because absolute medians drift between
+runs. An inconclusive line reruns now,
 or its claim narrows to what a deterministic work count proves. An unpaired
 run never rewrites a tracked receipt or accepts a target. In Chromium, count per-keystroke work through CDP
 `Performance.getMetrics`: `LayoutCount`, `RecalcStyleCount` and
