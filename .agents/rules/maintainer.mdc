@@ -61,7 +61,7 @@ A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
    or merge attention, issues needing triage, stale user-visible bugs, then docs
    or setup breakage.
 3. Take udecode/plate issue picks from `pnpm triage queue`, which lists every
-   open issue without a current triage record; a Slate snapshot keeps its own
+   open issue that still needs a triage call from you; a Slate snapshot keeps its own
    issue list. Build the candidate matrix for PRs, advisories and Slate items,
    pick at most one safe item, verify its live state and authority, then route
    it, run its safe local slice, or stop with a decision-ready brief.

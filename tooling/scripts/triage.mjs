@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Keeps the triage register, docs/triage/issues.tsv: one row per triage call on
 // an issue of the triage repository, with the commit and issue text it read and
-// the model and effort that wrote it. Every state is derived at read time from
-// fresh reads of the trunk branch, the suggested-task ledger and GitHub.
+// the GitHub account, model and effort that wrote it. Every state is derived at
+// read time from fresh reads of the trunk branch, the suggested-task ledger and
+// GitHub.
 // Usage: pnpm triage show <N>... [--brief] [--json]
 //        pnpm triage queue [--label <label>] [--json]
 //        pnpm triage record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]
@@ -31,13 +32,14 @@ const COLUMNS = [
   'seen',
   'rev',
   'by',
+  'who',
   'prev',
   'why',
 ];
 const BATCH_COLUMNS = ['issue', 'outcome', 'detail', 'seen', 'why'];
 // A private copy, so this helper never moves the ref setup.mjs syncs the ledger file with.
 const LEDGER_COPY = 'refs/pstack/triage-ledger';
-const GH_FIELDS = 'number,title,body,state,comments,labels';
+const GH_FIELDS = 'number,title,body,state,comments,labels,author';
 const REOPEN_BATCH = 50;
 const QUEUE_LIMIT = 5000;
 // A triage draft ends in a marker holding the hash of its own text, so posting it unchanged keeps its record current and editing it does not.
@@ -48,10 +50,18 @@ const LINE_LIMIT = 400;
 // gh prints a bot comment's author without its [bot] suffix.
 const BOTS = new Set(['dosubot', 'github-actions', 'copilot', 'claude']);
 const RUNTIMES = new Set(['claude', 'codex']);
-const STATE_ORDER = ['conflict', 'stale', 'unchecked', 'untriaged', 'current'];
+const STATE_ORDER = [
+  'conflict',
+  'stale',
+  'unchecked',
+  'untriaged',
+  'unconfirmed',
+  'current',
+];
 
 const PATH_REF = /^[^\s:,;]+(?::\d+(?:-\d+)?)?$/u;
 const ISSUE = /^[1-9]\d*$/u;
+const LOGIN = /^[A-Za-z\d](?:[A-Za-z\d-]{0,38})$/u;
 const paths = (value) => value.split(/,\s*/u);
 const KEY_VALUES = {
   scope: /^[a-z][a-z0-9-]*$/u,
@@ -88,6 +98,7 @@ const ROW_SHAPE = {
   seen: /^[0-9a-f]{16}$/u,
   rev: /^[1-9]\d*$/u,
   by: new RegExp(`^\\S+ @(?:${EFFORTS.join('|')})$`, 'u'),
+  who: LOGIN,
   why: /\S/u,
 };
 
@@ -170,7 +181,9 @@ const meets = (model, effort, floor, max = null) =>
 
 function policyProblems(config) {
   const policy = config?.triage;
-  if (!policy) return [`${CONFIG} has no triage key with repo, floor and rev`];
+  if (!policy) {
+    return [`${CONFIG} has no triage key with repo, floor, owners and rev`];
+  }
   const found = [];
   if (!/^[\w.-]+\/[\w.-]+$/u.test(policy.repo ?? '')) {
     found.push(`${CONFIG}: triage.repo names the repository as owner/name`);
@@ -195,6 +208,16 @@ function policyProblems(config) {
       );
     }
   }
+  if (!Array.isArray(policy.owners) || policy.owners.length === 0) {
+    found.push(`${CONFIG}: triage.owners lists at least one GitHub login`);
+  }
+  for (const entry of Array.isArray(policy.owners) ? policy.owners : []) {
+    if (typeof entry !== 'string' || !LOGIN.test(entry)) {
+      found.push(
+        `${CONFIG}: triage.owners entry ${JSON.stringify(entry)} is not a GitHub login`
+      );
+    }
+  }
   if (!Number.isInteger(policy.rev) || policy.rev < 1) {
     found.push(`${CONFIG}: triage.rev is a positive integer`);
   }
@@ -205,6 +228,8 @@ const policyOf = (config) => ({
   repo: config.triage.repo,
   floor: config.triage.floor.map(parseLabel),
   floorText: config.triage.floor.join(' or '),
+  owners: config.triage.owners,
+  ownersText: config.triage.owners.join(' or '),
   rev: config.triage.rev,
   max: config.maxEffort ?? null,
 });
@@ -678,7 +703,7 @@ function computeState(issue, reads, visiting) {
   if (heads.length > 1) {
     return {
       state: 'conflict',
-      reasons: heads.map((row) => `${row.id} by ${row.by}`),
+      reasons: heads.map((row) => `${row.id} by ${row.who} on ${row.by}`),
       heads,
     };
   }
@@ -739,6 +764,9 @@ function computeState(issue, reads, visiting) {
   }
   if (stale.length > 0) return { state: 'stale', reasons: stale, head };
   if (unknown.length > 0) return { state: 'unchecked', reasons: unknown, head };
+  if (!reads.policy.owners.includes(head.who)) {
+    return { state: 'unconfirmed', reasons: [`by ${head.who}`], head };
+  }
   return { state: 'current', reasons: [], head };
 }
 
@@ -910,6 +938,15 @@ function toolOutputs(lead, chain) {
   );
 }
 
+const ghLogin = () => {
+  const result = spawnSync('gh', ['api', 'user', '--jq', '.login'], {
+    encoding: 'utf-8',
+    timeout: NETWORK_MS,
+  });
+  const login = result.status === 0 ? result.stdout.trim() : '';
+  return LOGIN.test(login) ? login : null;
+};
+
 function recorder(policy) {
   const { run: lead, miss } = findLead();
   if (!lead) {
@@ -964,7 +1001,14 @@ function recorder(policy) {
       refusal: `this session's transcripts (${read}) have turns at ${off.join(', ')}; a triage record needs ${policy.floorText} on every turn${policy.max ? `, at most ${policy.max}` : ''}. Start a new session at that level`,
     };
   }
-  return { by: leadLabel(lead), lead, chain };
+  const who = ghLogin();
+  if (!who) {
+    return {
+      refusal:
+        'gh could not say which GitHub account runs this session; run gh auth login',
+    };
+  }
+  return { by: leadLabel(lead), who, lead, chain };
 }
 
 // A file read in pieces counts, so a line may carry the line number a reader prefixes.
@@ -1012,6 +1056,7 @@ const summary = (issue, reads) => {
   return {
     issue: Number(issue),
     title: reads.issues.get(issue)?.title ?? null,
+    opener: reads.issues.get(issue)?.author?.login ?? null,
     state,
     reasons,
     head: head
@@ -1020,6 +1065,7 @@ const summary = (issue, reads) => {
           outcome: head.outcome,
           detail: head.detail,
           by: head.by,
+          who: head.who,
           read: head.read,
         }
       : null,
@@ -1048,7 +1094,7 @@ function show(argv) {
     ? recorder(reads.policy)
     : { refusal: reads.problems.join('; ') };
   const session = identity.by
-    ? `${identity.by} can record`
+    ? `${identity.who} on ${identity.by} can record${reads.policy.owners.includes(identity.who) ? '' : `; its records read unconfirmed until ${reads.policy.ownersText} records the issue again`}`
     : `cannot record: ${identity.refusal}`;
   const results = options.positional.map(issueNumber).map((number) => ({
     ...summary(number, reads),
@@ -1075,9 +1121,10 @@ function show(argv) {
     console.log(
       `\n#${result.issue} ${result.state}${result.reasons.length ? ` (${result.reasons.join('; ')})` : ''}`
     );
+    console.log(`opened by ${result.opener ?? 'unknown'}`);
     if (result.head) {
       console.log(
-        `record: ${result.head.outcome} ${result.head.detail}; by ${result.head.by}; read ${result.head.read.slice(0, 10)}`
+        `record: ${result.head.outcome} ${result.head.detail}; by ${result.head.who} on ${result.head.by}; read ${result.head.read.slice(0, 10)}`
       );
     }
     console.log(`tasks: ${result.tasks ? taskText(result.tasks) : 'unread'}`);
@@ -1151,6 +1198,9 @@ function queue(argv) {
     return;
   }
   for (const note of reads.notes) console.log(`note: ${note}`);
+  // A record by someone who is not an owner reads unconfirmed, so a non-owner's queue would list their own records forever.
+  const login = ghLogin();
+  const owner = login !== null && reads.policy.owners.includes(login);
   const counts = STATE_ORDER.map(
     (state) =>
       `${results.filter((result) => result.state === state).length} ${state}`
@@ -1158,7 +1208,18 @@ function queue(argv) {
   console.log(
     `${results.length} open issues${options.label ? ` labeled ${options.label}` : ''}: ${counts.join(', ')}`
   );
-  for (const result of results.filter((entry) => entry.state !== 'current')) {
+  const hidden = owner
+    ? 0
+    : results.filter((result) => result.state === 'unconfirmed').length;
+  if (hidden > 0) {
+    console.log(
+      `note: ${hidden} unconfirmed issue(s) wait for ${reads.policy.ownersText} to triage them again`
+    );
+  }
+  for (const result of results.filter(
+    (entry) =>
+      entry.state !== 'current' && (owner || entry.state !== 'unconfirmed')
+  )) {
     console.log(
       [
         `#${result.issue}`,
@@ -1366,14 +1427,16 @@ function recordCommand(argv) {
       seen,
       String(reads.policy.rev),
       identity.by,
+      identity.who,
       prev.length ? prev.join(',') : 'none',
       entry.why,
     ].join('\t');
   });
 
+  const author = `${identity.who} on ${identity.by}${reads.policy.owners.includes(identity.who) ? '' : `; they read unconfirmed until ${reads.policy.ownersText} records them again`}`;
   if (options['dry-run']) {
     console.log(
-      `dry run, nothing written: ${rows.length} row(s) would be recorded by ${identity.by}`
+      `dry run, nothing written: ${rows.length} row(s) would be recorded by ${author}`
     );
     for (const row of rows) console.log(row);
     return;
@@ -1384,7 +1447,7 @@ function recordCommand(argv) {
     `${text === '' || text.endsWith('\n') ? '' : '\n'}${rows.join('\n')}\n`
   );
   console.log(
-    `recorded ${rows.length} row(s) in ${REGISTER} by ${identity.by}; commit the file and land it`
+    `recorded ${rows.length} row(s) in ${REGISTER} by ${author}; commit the file and land it`
   );
   for (const row of rows) console.log(row);
 }

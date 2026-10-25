@@ -57,6 +57,9 @@
       "claude-opus-5 @xhigh",
       "gpt-6.1-sol @xhigh"
     ],
+    "owners": [
+      "zbeyens"
+    ],
     "rev": 1
   },
   "plans": "docs/plans",

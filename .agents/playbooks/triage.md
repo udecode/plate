@@ -18,11 +18,12 @@ Triage turns an open udecode/plate issue into a call: what it is, whether it rep
 
 ## Who records
 
-1. Run `pnpm triage show <N>...` first, a few issues per call. Its `session:` line says whether this session can record. Only the root session of a person's own Claude or Codex launch can, on Opus or Sol at xhigh on every turn of it and of every transcript it continues.
-2. Read the whole output. When the runtime saves a long output to a file, read that file to its end; `record` refuses an issue unless every line of its text and its `seen:` line reached this session's tool results.
-3. A Codex session runs `pnpm triage` outside the sandbox, because `workspace-write` blocks `ps` and writes to `.git`. It saves `show`'s output to a file in the run directory and reads that file in pieces of about 200 lines, because Codex cuts the middle out of a longer tool output.
-4. A session that cannot record still triages and drafts. Its reply names each issue it could not record and says that `triage #<N>` in a fresh Opus or Sol xhigh session records it. It never starts another session to record for it, because only a person's own launch records.
-5. Subagents and seats may search neighbors and trace owners, as the Extraction rule says, and return evidence. The lead reads each issue's show output itself and makes every call.
+1. Run `pnpm triage show <N>...` first, a few issues per call. It prints who opened each issue, and its `session:` line says whether this session can record. Only the root session of a person's own Claude or Codex launch can, on Opus or Sol at xhigh on every turn of it and of every transcript it continues.
+2. `record` saves the GitHub account `gh` is signed in as beside the model. A record by an account that `triage.owners` in `.agents/pstack.json` does not list reads `unconfirmed` until an owner triages the issue again, so an owner checks every call made in anyone else's session, its priority included. The owner's record confirms the call or replaces it. `queue` lists unconfirmed issues only for an owner, and `labels` keeps the `triaged` label off them.
+3. Read the whole output. When the runtime saves a long output to a file, read that file to its end; `record` refuses an issue unless every line of its text and its `seen:` line reached this session's tool results.
+4. A Codex session runs `pnpm triage` outside the sandbox, because `workspace-write` blocks `ps` and writes to `.git`. It saves `show`'s output to a file in the run directory and reads that file in pieces of about 200 lines, because Codex cuts the middle out of a longer tool output.
+5. A session that cannot record still triages and drafts. Its reply names each issue it could not record and says that `triage #<N>` in a fresh Opus or Sol xhigh session records it. It never starts another session to record for it, because only a person's own launch records.
+6. Subagents and seats may search neighbors and trace owners, as the Extraction rule says, and return evidence. The lead reads each issue's show output itself and makes every call.
 
 ## Method
 
@@ -73,7 +74,7 @@ A duplicate close, a repro ask, a `not-bug` answer or a `spec` question for the 
 
 ## The global run
 
-`triage` and `triage label:<label>` save `pnpm triage queue` to the run directory. It lists every open issue that is not current, conflicts first, then stale, unchecked and untriaged, grouped by scope. Take one scope at a time, so kinds that share an owner are read together. An issue whose task has started still gets its record, and its task stays with that task's session. An `unchecked` issue waits until its reads work, because `record` refuses on refs fetched last.
+`triage` and `triage label:<label>` save `pnpm triage queue` to the run directory. It lists every open issue that is not current, conflicts first, then stale, unchecked, untriaged and, for an owner, unconfirmed, grouped by scope. Take one scope at a time, so kinds that share an owner are read together. An issue whose task has started still gets its record, and its task stays with that task's session. An `unchecked` issue waits until its reads work, because `record` refuses on refs fetched last.
 
 ## Sweep domains
 

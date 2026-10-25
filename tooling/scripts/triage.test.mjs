@@ -26,7 +26,7 @@ const FLOOR = ['claude-opus-5 @xhigh', 'gpt-6.1-sol @xhigh'];
 const KIND =
   'scope: editing; priority: P0; owner: packages/a/src/owner.ts:3; cause: read';
 const HEADER =
-  'id\tts\tissue\toutcome\tdetail\tread\tseen\trev\tby\tprev\twhy\n';
+  'id\tts\tissue\toutcome\tdetail\tread\tseen\trev\tby\twho\tprev\twhy\n';
 const LEDGER_HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult\n';
 const later = () => new Date(Date.now() + 60_000).toISOString();
 const lines = (records) => `${records.join('\n')}\n`;
@@ -44,6 +44,9 @@ if (args[0] === 'issue' && args[1] === 'view') {
   const label = args.includes('--label') ? args[args.indexOf('--label') + 1] : null;
   const open = Object.values(fixture.issues).filter((issue) => issue.state === 'OPEN' && (!label || issue.labels.some((each) => each.name === label)));
   console.log(JSON.stringify(open));
+} else if (args[0] === 'api' && args[1] === 'user') {
+  if (fixture.login === null) { console.error('gh: not logged in'); process.exit(1); }
+  console.log(fixture.login ?? 'zbeyens');
 } else if (args[0] === 'api' && args[1] === 'graphql') {
   const query = args[args.indexOf('-f') + 1].slice('query='.length);
   const repository = {};
@@ -105,7 +108,12 @@ function git(box, cwd, ...args) {
 
 const config = (policy) =>
   `${JSON.stringify({ branch: 'next', maxEffort: 'xhigh', ...(policy === null ? {} : { triage: policy }) }, null, 2)}\n`;
-const POLICY = { repo: 'udecode/plate', floor: FLOOR, rev: 1 };
+const POLICY = {
+  repo: 'udecode/plate',
+  floor: FLOOR,
+  owners: ['zbeyens'],
+  rev: 1,
+};
 
 const issue = (number, extra = {}) => ({
   number,
@@ -510,7 +518,7 @@ describe('triage', { concurrency: 8 }, () => {
     const [row] = registerRows(box);
     assert.match(row[0], /^5250-\d{4}-\d{2}-\d{2}T[\d:.]+Z-[0-9a-f]{6}$/u);
     assert.equal(row[8], 'claude-opus-5-5 @xhigh');
-    assert.equal(row[9], 'none');
+    assert.equal(row[10], 'none');
     assert.equal(row[7], '1');
     assert.equal(await stateLine(box, 5250), '#5250 current');
     assert.equal(await statusOf(box, ['check']), 0);
@@ -527,7 +535,7 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(result.status, 0, result.stderr);
     assert.match(
       result.stdout,
-      /dry run, nothing written: 1 row\(s\) would be recorded by claude-opus-5-5 @xhigh/u
+      /dry run, nothing written: 1 row\(s\) would be recorded by zbeyens on claude-opus-5-5 @xhigh/u
     );
     assert.deepEqual(registerRows(box), []);
   });
@@ -911,7 +919,7 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(await statusOf(box, ['check']), 0);
     writeFileSync(
       join(box.work, 'bad.tsv'),
-      `${HEADER}5250-x\t2026-10-25T10:00:00.000Z\t5250\tkind\tscope: editing\tabc\tseen\t1\topus\tnone\twhy\n(\t(\t(\tdup\tof: 5250\tabc\tseen\t1\topus\tnone\twhy\n`
+      `${HEADER}5250-x\t2026-10-25T10:00:00.000Z\t5250\tkind\tscope: editing\tabc\tseen\t1\topus\tzbeyens\tnone\twhy\n(\t(\t(\tdup\tof: 5250\tabc\tseen\t1\topus\tzbeyens\tnone\twhy\n`
     );
     const result = await triage(box, ['check', 'bad.tsv']);
     assert.equal(result.status, 1);
@@ -919,6 +927,16 @@ describe('triage', { concurrency: 8 }, () => {
     assert.match(result.stderr, /a kind detail needs owner:/u);
     assert.match(result.stderr, /read "abc" is malformed/u);
     assert.match(result.stderr, /bad\.tsv:3: issue "\(" is malformed/u);
+    writeFileSync(
+      join(box.work, '.agents/pstack.json'),
+      config({ ...POLICY, owners: [] })
+    );
+    const ownerless = await triage(box, ['check']);
+    assert.equal(ownerless.status, 1);
+    assert.match(
+      ownerless.stderr,
+      /triage\.owners lists at least one GitHub login/u
+    );
   });
 
   test('check accepts a prev that names a row below it, as a merge orders them', async () => {
@@ -934,6 +952,7 @@ describe('triage', { concurrency: 8 }, () => {
         'b'.repeat(16),
         '1',
         'claude-opus-5-5 @xhigh',
+        'zbeyens',
         prev,
         'asked for the steps',
       ].join('\t');
@@ -956,7 +975,7 @@ describe('triage', { concurrency: 8 }, () => {
       { runtime: 'codex' }
     );
     assert.equal(root.status, 0, root.stderr);
-    assert.match(root.stdout, /recorded by gpt-6\.1-sol @xhigh/u);
+    assert.match(root.stdout, /recorded by zbeyens on gpt-6\.1-sol @xhigh/u);
     codexSession(box, shown, { thread: CHILD, parent: THREAD });
     const child = await triage(box, recordArgs(5250, seenOf(shown, 5250)), {
       runtime: 'codex',
@@ -1189,7 +1208,7 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(await statusOf(box, recordArgs(5250, seen), { cwd: b }), 0);
     const rows = registerRows(box, b);
     assert.equal(rows.length, 4);
-    assert.equal(rows.at(-1)[9].split(',').length, 2);
+    assert.equal(rows.at(-1)[10].split(',').length, 2);
     assert.equal(await stateLine(box, 5250, { cwd: b }), '#5250 current');
   });
 
@@ -1222,10 +1241,42 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(status, 0);
     assert.match(
       stdout,
-      /^2 open issues: 0 conflict, 0 stale, 0 unchecked, 1 untriaged, 1 current$/mu
+      /^2 open issues: 0 conflict, 0 stale, 0 unchecked, 1 untriaged, 0 unconfirmed, 1 current$/mu
     );
     assert.match(stdout, /^#5251\tuntriaged\t-\t-\t-\tIssue 5251$/mu);
     assert.doesNotMatch(stdout, /^#5250\t/mu);
+  });
+
+  test("a record by a login that is not an owner reads unconfirmed, leaves that login's queue and counts once an owner records again", async () => {
+    const box = sandbox();
+    const issues = [issue(5250), issue(5251)];
+    setIssues(box, issues, { login: 'natamox' });
+    assert.equal(await recordStatus(box, [[5250]]), 0);
+    assert.equal(await stateLine(box, 5250), '#5250 unconfirmed (by natamox)');
+    const theirs = await stdoutOf(box, ['queue']);
+    assert.match(
+      theirs,
+      /^2 open issues: 0 conflict, 0 stale, 0 unchecked, 1 untriaged, 1 unconfirmed, 0 current$/mu
+    );
+    assert.doesNotMatch(theirs, /^#5250\t/mu);
+    setIssues(box, issues);
+    assert.match(
+      await stdoutOf(box, ['queue']),
+      /^#5250\tunconfirmed\tby natamox\t/mu
+    );
+    assert.equal(await recordStatus(box, [[5250]]), 0);
+    assert.equal(await stateLine(box, 5250), '#5250 current');
+    const [first, second] = registerRows(box);
+    assert.equal(second[10], first[0]);
+  });
+
+  test('record refuses and writes nothing when gh cannot say which account runs the session', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250), issue(5251)], { login: null });
+    const result = await firstResult(box, [[5250]]);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /gh could not say which GitHub account/u);
+    assert.deepEqual(registerRows(box), []);
   });
 
   test('show reads every issue unchecked when gh fails', async () => {
