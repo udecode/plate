@@ -1,6 +1,6 @@
 # Keep framed recordings equal to what the editor showed beside pending joins
 
-Status: building: the land, then the close once the joined-line-end plan lands
+Status: executed
 Topic: authored
 Playbook: bug-fix
 
@@ -8,11 +8,11 @@ Playbook: bug-fix
 
 ### What will change?
 
-For your ledger-law task, deletes next to a pending join no longer save marks that give a different document once accepted. The ledger law now passes at seeds 5 and 1936384615, and a pinned test holds seed 1144417495's history.
+For your ledger-law task, deletes next to a pending join no longer save marks that give a different document once accepted. The ledger law passes at seeds 5 and 1936384615, and a pinned test holds seed 1144417495's history. Typing at the end of a joined line landed later, through its own plan.
 
 ### What could go wrong?
 
-A Suggesting delete from a title across a split line now records, where next did nothing. Typing at the end of a joined line still fails as on next, until the joined-line-end plan lands.
+A Suggesting delete from a title across a split line now records, where next did nothing. Enter beside the empty line a pending join leaves still has its own task.
 
 ## Teach
 
@@ -43,6 +43,16 @@ Now the recorder no longer keeps a deleted line that a join would land in, and t
 | A Suggesting delete from a title across a split line | It records now, where next left the document unchanged (look) | Keep it doing nothing, as before | ignore title deletes | small |
 | Typing at the end of a joined line | Land the other fixes now and fix this one in its own plan, because two ways of matching lines by shape broke other edits (look) | Hold this land until that plan is built too | hold the land | small |
 | Enter beside the empty line the page adds after a pending join | Leave it to its own task, since next fails it the same way and fixing it overturns an existing test (answer) | Fix it in this change, which means picking which empty line Enter keeps and rewriting the test that drops a filled line | fix filler here | small |
+
+## Close
+
+Reversals. The fix for finding 4 in the map from the stored tree to the preview was reverted after two panel rounds, because two ways of matching lines by shape broke other edits. `docs/plans/2026-10-24-authored-joined-line-end.md` took finding 4 over.
+
+What landed. Slice 1, commit 6a059d12fb, fixes completion's struck element and the join that reads pending content, so the ledger law passes at seeds 5 and 1936384615 and the pinned test holds seed 1144417495's history. Finding 4 landed in commit 90166d7680, "fix(plitejs): record edits beside the empty lines a review preview adds", through the joined-line-end plan and its 2026-10-25 iteration.
+
+Proof and its limits. On slice 1 rebased onto next, the recording laws pass 91 tests, the ledger laws pass at seeds 5, 1936384615 and 1806324954, the pinned history passes at fast-check seed 1144417495, and the authored plugin suite passes 127. The decision-order checks exit 0 at their three bounds, and all 27 landing check steps passed. The joined-line-end plan's Close holds the proof of the later commit.
+
+Counts. 4 steps, 4 done. Three panel rounds ran, each with Opus, Astra and Sol at xhigh. The card's ask, keeping the review ledger equal to the kernel in the two recording laws that fail on next, is done.
 
 ## Open work
 

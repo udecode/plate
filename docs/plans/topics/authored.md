@@ -112,6 +112,17 @@ Exports pick a projection explicitly.
 const markdown = editor.api.markdown.serialize({ projection: "proposed" });
 ```
 
+Inside plitejs, the recording map takes the resolve result's children together with the lines completion built, so no caller can drop them.
+
+```ts
+// packages/plitejs/src/authored/ledger/runs.ts, resolveRun
+const { aligned, change: alignment } = changeOf(
+  aligning,
+  resolution ?? { children: output, unstored: NOTHING_UNSTORED },
+  context
+);
+```
+
 ## Document shape
 
 Admission's validator, every decision, the change cards, Yjs and saved documents read a stacked format suggestion. Yjs merges `authored` as a set of whole members and each record set as a map keyed by record id. A stacked tag stores its links grouped by step, bottom step first, each with the linked tag's id and written value, plus `base`, the key's value with every tag on it undone.
@@ -183,6 +194,7 @@ Every format tag one commit writes shares that commit's write id, so the record 
 | Plate | Review workflow and presentation. |
 | Applications | The ordinary `initialValue` and `editor.read.value()` calls; there is no public authored loader, cache, trusted-input mode, worker protocol or background replay controller. Authentication and access policy stay outside the engine. |
 | Writer identity | Every non-empty write through the capability needs a current author ID, accepted edits included, so accepted and proposed writes share one path. A resolver may return `null` while an editor only reads; the first write validates a non-empty ID. Plite never invents an anonymous or system author. |
+| Added lines | Plite's authored resolver adds empty lines to a preview when accepting leaves a root or a container short of lines, and no stored node or key names them. The resolver, the map, the lens and the ledger's comparison all read which lines it built ([Typing at the end of a line a pending join pulls up](../2026-10-24-authored-joined-line-end.md), [A caret in a line the preview adds](../2026-10-25-authored-added-line-caret.md)). |
 
 Rejected, and why:
 
@@ -200,6 +212,9 @@ Rejected, and why:
 | Grouping a property step's tokens in stored order | It assumes each token maps forward of the last, so a crossing or select-all Bold records wrongly. |
 | A refusal reason for a Suggesting merge that would give a content root two owners | The suggestion toast already tells the writer to switch to Editing. |
 | A resolver origin for every token | A wider rewrite than one map of placements needs. |
+| Pairing added lines with stored ones by shape | An added empty line has the shape of a stored one, so a letter typed at the end of a joined line landed in the line below. Two sets of better shape rules each broke other edits. |
+| Storing the added lines | Changes stored documents and the cards they show, and the construction-values plan owns the spares completion takes. |
+| Acting in the added line at a caret the preview draws there | Moving the command frame's caret into the added line threw on a block type change, a paste and typing in a titled root, lost a bold letter and moved an Editing view's caret into a line it does not show. |
 
 The undo repair of [Undo finds what each node was](../2026-10-18-undo-repair-nodes.md) puts its changes in these layers:
 
@@ -493,6 +508,25 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   still refuse this way. Typing at a caret inside the joined line
   still applies. A refused edit rolls back the whole update and reaches
   `subscribeRefusals` as `unrepresentable` with its reason.
+- Completion keeps a struck element as the line its root or container needs
+  only when no pending join past it would land in it. An accepted join whose
+  target the decision removes reads the pending content that target holds,
+  so an Editing join into a line that holds another author's pending move
+  stays pending until that move is decided.
+- When accepting leaves a root or a container short of the lines its schema
+  needs, the preview adds empty lines that nothing stores. The resolver hands
+  the map every line it built, and the map sets them aside before it pairs
+  stored content with the preview, so no stored place pairs with an added
+  line. A caret placed in an added line is stored at the end of the text
+  before it, leaning forward, and commands act there. The preview draws that
+  caret in the last added line after the text only while the preview's own
+  placement stands, in every preview of the kind that placed it; any other
+  caret stored there draws at the end of the text. A write inside an added
+  line records as that whole line. Wherever a window or a rebuilt root held
+  an added line, the ledger compares what accepting a framed write gives
+  with what its commands wrote, and refuses a mismatch with `diverged`, or
+  `reordered` when only the order differs. Added lines left untouched at the
+  end of what the commands wrote may be gone once accepted.
 - Settling applies a claim as a decision would. Deleted text goes, and an
   inline element whose deletion is accepted goes once none of its content
   survives, its pending cuts moving to its other pieces.
@@ -512,6 +546,10 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
 - `recordFormats` in `packages/plitejs/src/authored/tree/layers.ts` records every format write. An Editing write over pending tags stacks its writer's accepted tag on top and leaves them pending.
 - Admission repairs each node an undo or redo replays from the nodes its kept tokens came from. `keptRunsOf` in `packages/plitejs/src/core/change/root-change.ts` gives those runs, and `applyIndexed` there merges an insertion with the replacement that starts where it ends, so a split repair applies in place instead of rebuilding the root.
 - The Yjs split write in `packages/plitejs/src/yjs/core/canonical-split.ts` writes the right half's text properties onto the runs it moves, through `rewriteTextRuns` in `text-runs.ts`, so a split that also formats its new block reaches other clients with that format.
+
+- The resolution carries `unstored`, the nodes completion built that its final children still hold, each canonical copy in place of its source (`packages/plitejs/src/authored/tree/resolve.ts`). The recording map wraps its alignment chain in `settledChange`, which sets those subtrees aside before any matching and composes their insertion after (`packages/plitejs/src/authored/tree/alignment.ts`). A run the commands wrote is not reused for a window that holds a slot whose run built a line, so a normal resolve supplies the set (`packages/plitejs/src/authored/ledger/level.ts`).
+
+- `packages/plitejs/src/authored/ledger/preview-lens.ts` draws a forward caret at the end of a text in the last added line after it only when the authored plugin asks, which it does while core's placement generation equals the one a preview's own placement in an added line got. `packages/plitejs/src/authored/ledger/projection.ts` compares each window and rebuilt root that held an added line with what the commands wrote, through the registry of built lines in `runs.ts`, and `packages/plitejs/src/authored/tree/record.ts` records a step that writes only inside an added line as that whole line.
 
 ## What other editors do
 
@@ -564,6 +602,8 @@ For review reads on a preview, [One map of a preview's places](../2026-10-19-pre
 | BlockNote `1e26f1c` | Viewing suggestions, base document; no accept-all preview | Suggestion marks stay in viewing mode | Mark ranges and CRDT ids | Raw block ids kept, sometimes duplicated | `TypeCellOS/BlockNote@1e26f1c:packages/core/src/y/extensions/Suggestions.ts` |
 | prosemirror-suggest-changes `653fba7` | None built in; `applySuggestionsToNode` returns the accepted document | No sidebar | None returned | No block ids | `handlewithcarecollective/prosemirror-suggest-changes@653fba7:src/commands.ts` |
 
+For the lines a preview adds, [Typing at the end of a line a pending join pulls up](../2026-10-24-authored-joined-line-end.md) read `prosemirror-changeset` at e215757 in source. Each step's map records the ranges it inserted and deleted, and content matching runs only inside a changed range, to shrink it to the real difference; its docs say that match can shift with range boundaries. Plite takes the same split. The resolver says which lines it added, and matching runs only on the rest. Lexical and Slate have no review mode in core, and Tiptap's review features were not read.
+
 ## Open work
 
 - Suggesting a move of a block that owns an exclusive content root fails validation, which reports two owners of its root. owner: the owner, through session card `task_04df43cd`. stop: that session lands or is dropped.
@@ -580,7 +620,6 @@ For review reads on a preview, [One map of a preview's places](../2026-10-19-pre
 - Suggestions on both sides of an Editing edit wait on each other. Suggested task t_7314eae0 owns the question. owner: the owner. stop: t_7314eae0 lands or is dropped.
 - The accepted line join that blocks decisions on the same block stays with suggested task t_a269db34. owner: the owner. stop: t_a269db34 lands or is dropped.
 - The many-records reject line of step 7 is inconclusive, and its next probe counts landed-record reads before it times the line again on a quiet host. Suggested task t_541200bb runs it, and t_a7c7c429 owns core's rebuild of the records JSON on each record write. owner: the owner. stop: each task lands or is dropped.
-- The recording law suite fails two laws, the same way on next. Suggested tasks t_cbe5346a and t_820a6175 own them. owner: the owner. stop: each task lands or is dropped.
 - Undoing one's own suggestion after another writer's Enter split it leaves the suggestion's tag on the half the Enter split off. It is suggested task t_ecea0fff. owner: the owner. stop: t_ecea0fff lands or is dropped.
 - Undo reads the whole document about ten times through history's replay and redo record. It is suggested task t_d78c9655. owner: the owner. stop: t_d78c9655 lands or is dropped.
 - Returning any repair costs 2 more whole reads in core admission's orphan check, and settle copies the whole root when a decision settles blocks. Suggested task t_1a6aacfb holds both. owner: the owner. stop: t_1a6aacfb lands or is dropped.
@@ -615,3 +654,21 @@ For review reads on a preview, [One map of a preview's places](../2026-10-19-pre
 - The `unaligned` refusal's message names no action, and `rebaseProperties` throws a plain `Error`. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
 - The planted `crosses` control for typing at a caret fails on a Backspace the case must apply before it reaches the typed-caret assertion, so it does not yet prove that assertion. owner: zbeyens, through a suggested task. stop: before the next change to the frame's caret refusal.
 - `RunPlaces.toProjected` moves a stored position inside blocks the preview hides whole to their edge, because `orderOf` in `packages/plitejs/src/authored/ledger/runs.ts` groups a hidden block with the order segment after it. owner: zbeyens, through a suggested task. stop: that task lands or is dropped.
+- A remote commit that moves and shifts nodes under a pending range delete reports an empty review delta, where the kernel counts the delete as changed, as on next. owner: zbeyens; stop: t_235e0cbb lands or is dropped; tracked: the suggested-task ledger.
+- The undo law's floor of 24 compared histories fails at some random fast-check seeds, because the generator sometimes samples too few undoable histories, as on next. The every-order decision law's floor of 12 compared decision orders fails the same way, and next and the joined-line-end build both compare exactly 12 at fast-check seed 7. owner: zbeyens; stop: the next change to either law; tracked: `docs/plans/2026-10-24-authored-joined-line-end.md`.
+- Enter beside a line the preview adds stays with suggested task t_9cb6f7a6, apart from Enter at the end of a line joined into a quote. Enter in the first line, at the start or end of a joined line and at the end of the last line records what accepting gives, because accepting may drop added lines left untouched at the end. Enter at the end of a required title before a line another author deletes stores what next stores, and the test-only law still throws there, because the registry does not hold the line the preview adds. owner: zbeyens; stop: t_9cb6f7a6 lands or is dropped; tracked: the suggested-task ledger.
+- A line added after a line another author deletes, when the root needs that line, is refused with `diverged`, where next stored it and the test-only law threw. owner: zbeyens; stop: t_9cb6f7a6 lands or is dropped; tracked: the suggested-task ledger, word store the line.
+- A Delete that changes nothing visible can store empty paragraphs. A Suggesting removal of ef, in ab, cd joined, then ef in a root that needs 3 lines, stores ef as deleted and two empty paragraphs alice inserted, so the editor shows two suggested empty lines; decisions agree in every order a seat tried. owner: zbeyens; stop: t_9cb6f7a6 lands or is dropped; tracked: the suggested-task ledger.
+- A caret placed after a link before a decision rejects the link's insertion lands in the link, as on next. owner: zbeyens; stop: a report or a test that needs that caret kept out; tracked: `docs/plans/2026-10-24-authored-joined-line-end.md`, word decision lean.
+- A caret placed in the first of two or more added lines shows in the last one, as on next. owner: zbeyens; stop: a report or a test that needs that caret; tracked: `docs/plans/2026-10-24-authored-joined-line-end.md`, word caret number.
+- Spares. When the construction-values plan lands spares, a spare that completion takes for a read must reach `completion.built`, so it joins the `unstored` set. A spare a decision consumed is stored and stays out of it. That plan calls such a consumed spare built, which is why the set is named `unstored`. Its step 6 does not say this yet, so its owner adds it there. owner: zbeyens; stop: that plan's step 6 lands spares; tracked: `docs/plans/2026-10-24-authored-joined-line-end.md`.
+- The authored work test ran 5,518 ms under a parallel load, past Bun's 5,000 ms deadline, while alone it ran 3.6 s and 3.7 s on the joined-line-end build and 3.4 s and 4.0 s on slice 1. owner: zbeyens; stop: a run of the test past its deadline alone; tracked: `docs/plans/2026-10-24-authored-joined-line-end.md`.
+- A block or mark toggle, or an explicit edit at the caret, at a caret a preview placed in an added line changes the line above while the preview still draws the caret in the added line. owner: zbeyens; stop: a report or a test that needs the caret moved; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`, word end on use.
+- A view that parks and restores a caret a preview placed in an added line ends the drawing, though the caret did not move, because the restore places it again as a view caret. Keeping the drawing needs core's caret restore and the React restore to carry the preview's placement. owner: zbeyens; stop: a report or a test that parks and restores that caret; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`, word end on use.
+- The preview can move its drawn caret without a commit, when the editor sets the same caret again or a preview places a caret where one already is. React's selection hooks update only on commits, so after the editor sets its own caret again, `useSelectionPaths` and `useTopLevelSelectionIndex` still point at the added line, and they still do after the next letter. That letter's commit starts from where a view last read the caret, not from where the hooks last saw it. Fixing it means each preview commit starts from the caret its listeners last got, and the preview commits when only its drawing changes, which changes how every preview commit starts. owner: zbeyens; stop: an app reports a selection highlight stuck on the added line, or work that changes how preview commits start; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`.
+- A backward range whose anchor is in an added line reads its anchor back at the end of the joined line, as on next. owner: zbeyens; stop: a report or a test that needs that range; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`.
+- A frame that appends a line and removes the first, beside an added line, is refused with `reordered`, where next records it. owner: zbeyens; stop: a report or a test that needs it; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`, word take it.
+- An app that shows a preview and sends keys to the editor acts on the line above a caret the preview draws in an added line, because previews are read-only and the editor keeps the caret there. Typing lands at the end of that line, and Backspace deletes its last letter, where next's Backspace did nothing. owner: zbeyens; stop: an app that needs edits in the added line; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`, word act there.
+- A refusal a caller catches inside an update, such as `crosses` or `unaligned` from a frame, lets the rest of the update commit with no notice, as on next. owner: zbeyens; stop: a report or a test that needs the notice; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`, word drop all.
+- A command that inserts a line between a joined line and the added line after it stores nothing and refuses nothing, as on next, and so does one between x and a line another author deletes after it, in a root that needs 2 lines. A plugin insert before an added line is refused. owner: zbeyens; stop: a report or a test that needs it; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`.
+- The registry recognizes an added line by its object, and the accepted document can reuse that object for an equal empty line the write saved. So if a recording lost a saved empty line at the end, next to an added line, both checks would miss it. This was found by reading the code, not measured. Tracking added lines by their position in the level, or never reusing an added line's object for a saved line, would close it. owner: zbeyens; stop: a report or a test that loses such a line; tracked: `docs/plans/2026-10-25-authored-added-line-caret.md`.

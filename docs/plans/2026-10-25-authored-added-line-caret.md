@@ -8,7 +8,7 @@ review_inputs: [VISION.md, docs/vision/common.md, docs/vision/plite.md, docs/pla
 
 # A caret in a line the preview adds, and an insert after that line
 
-Status: building: waits on the landing
+Status: executed
 Topic: authored
 Playbook: plan
 
@@ -18,11 +18,11 @@ Pursue, on two wrong results that diff panel round 3 of `docs/plans/2026-10-24-a
 
 ### What will change?
 
-Your ledger-law diff panel's round 3 found two bugs. The preview shows the caret in an added line only when you put it there. The editor refuses a write that accepting everything changes, except leftover added lines at the end.
+The last review round of your ledger-law fix found two bugs, and both fixes have landed. The preview shows the caret in an added line only when you put it there. The editor now refuses a write whose result would change once you accept everything, apart from leftover added lines at the end.
 
 ### What could go wrong?
 
-Edits at that caret change the line above, so Backspace deletes that line's last letter. After a toggle, the preview draws the caret there until you type or move it. Some writes next stored are now refused.
+Edits at that caret change the line above, so Backspace deletes that line's last letter. After a toggle, the preview draws the caret there until you type or move it. Some writes next stored are now refused. The tests ran in a simulated browser only, and nobody tried it in a real one.
 
 ## Teach
 
@@ -97,8 +97,22 @@ Each row runs in Editing and in Suggesting through the authored plugin and its P
 - [x] **3. Diff round 2 fixes.** Accepting may drop added lines that end their list untouched, in the ledger's comparison and in the framed law, through a registry of the lines completion builds; a preview commit's `selectionBefore` reads where a view last saw that caret. Three tests: a line added before a joined line in a root and a quote, the split of a line a pending join completes in finding 4's two- and three-line documents, and the commit that starts from the drawn caret. Proof: each test fails on the round 1 build or with its fix removed and passes on the worktree; the table's rows other than N-13, N-19 and N-21 to N-28 give what they gave before; the plugin suite, the recording laws and typecheck pass.
 - [x] **4. Diff round 3 fixes.** The comparison drops the trailing added lines of the written list before it compares, as the law does, and a write inside an added line records that whole line. Two tests: Enter at the end of the last line in finding 4's deleted-line and three-line roots, then X, and a plugin frame that types into the added line, then appends a line or moves the first line after it. N-17 leaves the refusal test, and N-19's refusal reads `reordered`. Proof: each test fails on the tree diff round 3 reviewed and with only its own fix reverted, and passes on the worktree; the plugin suite and the recording laws pass.
 - [x] **5. Proof.** The table in both intents, PR 5218's preview-selection tests in the React suite, the authored plugin suite, the recording laws at the default seed and seeds 5, 1936384615 and 1806324954, fast-check seed 1144417495, the plitejs Bun suite, the React vitest suite and the decision-order gate at its gate bounds. The authored work-count tests pass unchanged, since the comparison runs only beside an added line. Proof: their logs.
-- [ ] **6. Ship.** Writing passes, the diff panel on the whole diff with the joined-line-end slice, and one `land.mjs` run that lands both. Proof: the panel's rows and the landed commit.
-- [ ] **7. Close.** The authored subject's rules gain the drawing rule and the check with the joined-line-end fold, then the Close and the folded render. Proof: `review-ledger.mjs check` and a `--folded` render.
+- [x] **6. Ship.** Writing passes, the diff panel on the whole diff with the joined-line-end slice, and one `land.mjs` run that lands both. Proof: the panel's rows and the landed commit.
+- [x] **7. Close.** The authored subject's rules gain the drawing rule and the check with the joined-line-end fold, then the Close and the folded render. Proof: `review-ledger.mjs check` and a `--folded` render.
+
+## Close
+
+Reversals. The check first compared one window's whole write. Plan round 1 found that it missed frames that change another line or list, an edit in the added line and an insert between two added lines, so the build compares every window and rebuild that held an added line. Diff round 2 found that comparison and the test-only law at odds over an added line a write leaves unneeded, so both now let accepting drop untouched added lines at the end of their list. Diff round 3 found Enter at the end of the last line refused, because the comparison dropped those lines only when both sides ended in them. It also found that a plugin frame threw when it typed into an added line and then moved or added a line. The comparison now drops leftover added lines from the written side alone, and a write inside an added line records that whole line.
+
+Deviations. The lead kept Opus's drawing base, where the cross-judge picked Sol's base with Astra's trigger, and the word end on use takes the judge's trigger. Landing took four `land.mjs` runs. Each failed run timed out cases of `packages/plitejs/test/react/view-caret-work.test.tsx` at Vitest's 5,000 ms deadline under host loads of 50 to 95. This change does not touch that file, and it passes alone on this tree and on next.
+
+What landed. Commit 90166d7680, "fix(plitejs): record edits beside the empty lines a review preview adds", holds this build and the joined-line-end slice. The preview draws its own caret in an added line until something moves it. Wherever an added line was, the ledger refuses a framed write that accepting changes, apart from added lines left over at the end. A write inside an added line records as that whole line.
+
+Proof and its limits. Every proof ran on the bytes that land, the diff hashing 27cca97a3800. The table probes, law on and off, give what their earlier runs gave, apart from the rows round 3 changed: N-17 records, N-19 reads `reordered` and E-5 records. The authored plugin suite passes 161 tests and the recording laws 91. The ledger laws pass at seeds 5, 1936384615 and 1806324954, and the pinned history at fast-check seed 1144417495. The plitejs Bun suite passes 6,233 tests and the React vitest suite 1,972 in 102 files, PR 5218's preview-selection tests among them. Typecheck and lint pass. The decision-order gate finds no failure in 17,472 comparisons over 4,467 documents at its gate bounds, 303,134 at three marks and 137,656 at three blocks. Speed lines L1 to L3 pass. Everything ran in jsdom, and nobody drove the change in a browser. A fresh-seed search of 12 runs found only the every-order law's floor of 12, which next misses at the same seed. Opus found the registry gap in diff round 3 by reading the code, and nobody measured it.
+
+Counts. 7 steps, 7 done. Three panel rounds ran, one on the plan and two on both plans' diff, each with Opus, Astra and Sol at xhigh. One owner message, "c", continued the run, done. No decision-trail review ran.
+
+Inputs. The design read `VISION.md`, `docs/vision/common.md`, `docs/vision/plite.md`, `docs/plans/topics/authored.md`, `docs/plans/2026-10-24-authored-joined-line-end.md` and `docs/plans/2026-10-24-framed-recording-accept.md`. The build read or changed `packages/plitejs/src/authored/authored.ts`, `packages/plitejs/src/authored/ledger/preview-lens.ts`, `packages/plitejs/src/authored/ledger/ledger.ts`, `packages/plitejs/src/authored/ledger/projection.ts`, `packages/plitejs/src/authored/ledger/level.ts`, `packages/plitejs/src/authored/ledger/runs.ts`, `packages/plitejs/src/core/view-carets.ts` and `packages/plitejs/src/core/command-frame.ts`. Its proof ran `packages/plitejs/test/authored-plugin.test.ts` and `packages/plitejs/test/react/authored-preview-selection.test.tsx`.
 
 ## Open work
 
