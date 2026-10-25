@@ -19,3 +19,7 @@
 ## Backspace command ownership
 
 - The May inline-delete investigation described ProseMirror's Backspace chain as `deleteSelection`, `joinBackward`, then `selectNodeBackward`; schema flags including `inline`, `atom`, `selectable` and `isolating` constrain the boundary behavior. Evidence: `c70bacbd4a:docs/plans/2026-05-07-plite-inline-delete-boundary-repro-ralplan.md:109-110`, citing `prosemirror-commands/src/commands.ts:8,30,138,736` and `prosemirror-model/src/schema.ts:390,441` in local checkouts. The architectural lesson is to separate selection deletion, structural joining and node-boundary selection. No upstream revision was recorded, so the exact source locations are historical.
+
+## Command composition
+
+- **`chainCommands` is ordered fallback.** ProseMirror calls each supplied command with the same state, dispatch and view until one returns true; later commands then do not run. It does not batch all commands into a shared transaction. Evidence: `ProseMirror/prosemirror-commands@52a84a842774fadec3b167bcdbd56085ec6c85df:src/commands.ts:726-733`, confirming the distinction recorded in `docs/plans/2026-07-12-list-v2-api.md:382`. Limit: this describes `chainCommands`, not every composition technique available to ProseMirror callers.

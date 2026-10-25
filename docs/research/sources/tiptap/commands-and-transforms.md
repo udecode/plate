@@ -23,3 +23,11 @@
 ## Keyboard shortcut dispatch
 
 - Tiptap's `keyboardShortcut` command normalizes a shortcut, synthesizes a `KeyboardEvent` and routes it through ProseMirror `handleKeyDown`. Its core keymap composes product commands on the ProseMirror runtime. Source: `docs/plans/2026-05-03-plite-hotkey-runtime-dependency-ralplan.md:101-106`, citing `ueberdosis/tiptap:packages/core/src/commands/keyboardShortcut.ts:5-89` and `ueberdosis/tiptap:packages/core/src/extensions/keymap.ts:68-99`. Limit: the local May source read pins no Tiptap revision; it establishes an integration boundary rather than a portable low-level matcher.
+
+## Command composition
+
+- **A command chain shares its transaction and dispatches at its boundary.** Tiptap's `createChain` creates or receives one transaction, passes that transaction to each command, and dispatches from `run()` only when the chain owns the transaction and dispatch is enabled. Nested chains therefore compose without independently dispatching the supplied transaction. Evidence: `ueberdosis/tiptap@91c51be53c4655ef07e29ec489471524debfa0ca:packages/core/src/CommandManager.ts:61-100`; the historical comparison is `docs/plans/2026-07-12-list-v2-api.md:381`. Limit: this establishes transaction composition, not a recommendation to copy Tiptap's global command namespace.
+
+## Optional node reads
+
+- Tiptap's list-joining helpers consume nullable ProseMirror node reads at the command boundary. In `toggleList.ts`, the backward and forward helpers compare the list type with `nodeBefore?.type` or `nodeAfter?.type` after `tr.doc.nodeAt`, and return without joining when the comparison fails (ueberdosis/tiptap@91c51be53:packages/core/src/commands/toggleList.ts; c70bacbd4a:docs/plans/2026-07-15-internalize-required-node-reads.md:452). This supports guarding optional reads inside product commands; it is evidence from these helpers, not a claim about every Tiptap command.

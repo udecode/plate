@@ -9,3 +9,7 @@
 ## Normalization boundaries
 
 - Legacy Slate's withoutNormalizing restores the normalization flag and immediately calls Editor.normalize on exit. That exit is an actual normalization boundary, so a similarly named helper inside a longer-lived draft transaction need not preserve the same timing. Evidence: `ianstormtaylor/slate@945a484d:packages/slate/src/editor/without-normalizing.ts` and `ianstormtaylor/slate:packages/slate/src/editor/normalize.ts`, reviewed in `c70bacbd4a:docs/plans/2026-07-12-plite-normalization-lifecycle-architecture.md:457`. This describes upstream legacy Slate, not the fork's draft or current Plite API.
+
+## Node lookup
+
+- Legacy Slate separates `Node.getIf` from `Node.get`. `getIf` returns `undefined` when traversal cannot continue, while `get` delegates to it and throws a contextual missing-descendant error when no node is found; `getIf` still throws for a non-numeric path index (ianstormtaylor/slate@945a484df:packages/slate/src/interfaces/node.ts:419-459; c70bacbd4a:docs/plans/2026-07-15-internalize-required-node-reads.md:453). Here Slate means legacy Slate, not the Plite draft. Optional absence does not imply accepting malformed paths.

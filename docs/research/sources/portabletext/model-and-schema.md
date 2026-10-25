@@ -11,3 +11,7 @@
 ## Portable Text model
 
 - Portable Text blocks use `_type: 'block'` and `style`; spans carry `marks` arrays that reference `markDefs`; and lists are flat, with `listItem` and `level` on blocks (`portabletext/portabletext@d17f7289:README.md:16-185`). Flat lists and portable annotations work, at the cost of mark-reference indirection. Source: `c70bacbd4a:docs/plite/research/2026-08-17-editor-node-model-standards/README.md:101`, `read-log.tsv:15`.
+
+## Schema applicability
+
+- **Schema applicability is a query for authoring UI.** The May 28 review identifies Portable Text's applicable-schema selector as prior art for asking which schema actions are allowed at the current selection, rather than guessing toolbar enablement from rendered content. It cites `portabletext/editor:packages/editor/src/selectors/selector.get-applicable-schema.test.ts:129-168` in the local Portable Text checkout. Source: `docs/plans/2026-05-28-portable-text-architecture-steal-review.md:205`. The review pins no upstream commit and ran no selector test; this is historical source-read evidence, not a recommendation to adopt Portable Text's categories in Plite.

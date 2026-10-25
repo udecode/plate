@@ -11,3 +11,7 @@
 ## DOM mutation import
 
 - **Mutation import.** `test/webtest-dom-changes.ts` lines 51-148 at b5ad0d0 pin that later input targets and DOM-to-model coordinates stay current through stacked native mutations, edits in earlier or adjacent hosts, intervening model commits, command reinterpretation and newly created text nodes; randomized mixed edits never use stale positions. Plite's `packages/plitejs/test/react/input-router-contract.test.tsx` proves same-host coalescing, cross-host preservation, model and native interleaving, stale-target rejection and retargeting. Its `selection-reconciler-contract.test.tsx` and rich-text browser rows (nested-mark mutations and a generated mixed-editing gauntlet) cover the rest. Plite does not expose Wordgard's private ledger of integer positions (report.md:115).
+
+## Mobile default-action routing
+
+- At Wordgard revision `01eb2b5eae509509677345fd603acad001827dff`, the July 27 audit identified a mobile Enter/Backspace bypass in `src/editor/input.ts:710-714` that lets native beforeinput own those actions. Its useful hypothesis was preservation of virtual-keyboard capitalization and semantic word deletion. Its platform guard also bypassed custom mobile key bindings, including modified or hardware-keyboard input, so the audit rejected copying that guard wholesale. The change added no regression test, and the audit had no physical-device receipt. Source: `docs/plans/2026-07-25-multi-editor-full-architecture-audit.md:625-640`; this is historical source evidence, not certification of mobile behavior.

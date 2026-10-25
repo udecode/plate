@@ -22,6 +22,7 @@ Pages in this folder:
 - [Plite: marks decorations and annotations](marks-decorations-and-annotations.md)
 - [Plite: model and schema](model-and-schema.md)
 - [Plite: performance](performance.md)
+- [Plite: performance, part 2](performance-2.md)
 - [Plite: plugins and extensions](plugins-and-extensions.md)
 - [Plite: rendering and DOM](rendering-and-dom.md)
 - [Plite: selection and caret](selection-and-caret.md)

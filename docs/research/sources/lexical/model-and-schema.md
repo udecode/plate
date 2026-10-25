@@ -29,3 +29,7 @@
 ## Transform settlement
 
 - Lexical tracks intentionally and unintentionally dirty leaves and elements, repeats node transforms to a fixpoint, runs the Root transform last, and then reconciles. This places structural settlement before publication instead of repairing through an update listener that starts another state and render cycle. Evidence: the July source review of `facebook/lexical@74f0b086:packages/lexical/src/LexicalUpdates.ts`, recorded in `c70bacbd4a:docs/plans/2026-07-12-plite-normalization-lifecycle-architecture.md:454`. This is a historical source finding, not a current upstream execution result or a recommendation to adopt Lexical's node classes.
+
+## Node lookup
+
+- Lexical separates nullable lookup from explicit failure: `$getNodeByKey` returns `null` for a missing key, while `$getNodeByKeyOrThrow` calls the invariant helper with the missing key in its message (facebook/lexical@d52f66e25:packages/lexical/src/LexicalUtils.ts:516-527,1655-1665). The July Plite review used this as evidence for separating lookup from assertion, not for copying Lexical's public strict getter (c70bacbd4a:docs/plans/2026-07-15-internalize-required-node-reads.md:450). These are source contracts at that revision, not newly run runtime tests.
