@@ -104,7 +104,7 @@ Each row runs in Editing and in Suggesting through the authored plugin and its P
 
 Reversals. The check first compared one window's whole write. Plan round 1 found that it missed frames that change another line or list, an edit in the added line and an insert between two added lines, so the build compares every window and rebuild that held an added line. Diff round 2 found that comparison and the test-only law at odds over an added line a write leaves unneeded, so both now let accepting drop untouched added lines at the end of their list. Diff round 3 found Enter at the end of the last line refused, because the comparison dropped those lines only when both sides ended in them. It also found that a plugin frame threw when it typed into an added line and then moved or added a line. The comparison now drops leftover added lines from the written side alone, and a write inside an added line records that whole line.
 
-Deviations. The lead kept Opus's drawing base, where the cross-judge picked Sol's base with Astra's trigger, and the word end on use takes the judge's trigger. Landing took four `land.mjs` runs. Each failed run timed out cases of `packages/plitejs/test/react/view-caret-work.test.tsx` at Vitest's 5,000 ms deadline under host loads of 50 to 95. This change does not touch that file, and it passes alone on this tree and on next.
+Deviations. The lead kept Opus's drawing base, where the cross-judge picked Sol's base with Astra's trigger, and the word end on use takes the judge's trigger. Landing took four `land.mjs` runs. Each failed run timed out cases of `packages/plitejs/test/react/view-caret-work.test.tsx` at Vitest's 5,000 ms deadline under host loads of 50 to 95. That file imports the authored plugin. So after landing, the lead ran it four times at the commit before this change and four times at the landed tree, alternating, at loads of 60 to 88. Its 16 tests took 19.0 to 19.6 seconds at the landed tree and 17.5 to 18.9 at the commit before, about 6% more, and every run passed. Its slowest test took 2.2 to 2.6 seconds on both, so the timeouts needed the landing's own parallel load on top of this change.
 
 What landed. Commit 90166d7680, "fix(plitejs): record edits beside the empty lines a review preview adds", holds this build and the joined-line-end slice. The preview draws its own caret in an added line until something moves it. Wherever an added line was, the ledger refuses a framed write that accepting changes, apart from added lines left over at the end. A write inside an added line records as that whole line.
 
@@ -113,6 +113,34 @@ Proof and its limits. Every proof ran on the bytes that land, the diff hashing 2
 Counts. 7 steps, 7 done. Three panel rounds ran, one on the plan and two on both plans' diff, each with Opus, Astra and Sol at xhigh. One owner message, "c", continued the run, done. No decision-trail review ran.
 
 Inputs. The design read `VISION.md`, `docs/vision/common.md`, `docs/vision/plite.md`, `docs/plans/topics/authored.md`, `docs/plans/2026-10-24-authored-joined-line-end.md` and `docs/plans/2026-10-24-framed-recording-accept.md`. The build read or changed `packages/plitejs/src/authored/authored.ts`, `packages/plitejs/src/authored/ledger/preview-lens.ts`, `packages/plitejs/src/authored/ledger/ledger.ts`, `packages/plitejs/src/authored/ledger/projection.ts`, `packages/plitejs/src/authored/ledger/level.ts`, `packages/plitejs/src/authored/ledger/runs.ts`, `packages/plitejs/src/core/view-carets.ts` and `packages/plitejs/src/core/command-frame.ts`. Its proof ran `packages/plitejs/test/authored-plugin.test.ts` and `packages/plitejs/test/react/authored-preview-selection.test.tsx`.
+
+## Reflect
+
+One reviewer applied the judgment, tooling and divergent lenses to a digest of this card session's whole transcript, and the lead sorted its findings. No lesson met the two kinds the lead applies without the owner, so every accepted lesson waits in Backlog. Before sorting, the lead checked four claims. `decisions-check.mjs --help` prints its usage now, though it crashed once early in this session. `decisions-check.mjs rounds` caps panel rounds at three since the last restart, and each pivot restarted the count. The React caret test that timed out imports the authored plugin, so the lead timed it at base and head, as Deviations says. Open tasks t_211e4328 and t_e658793a already ask how a long run rereads its rules.
+
+Backlog, each with owner: zbeyens and stop: the owner takes or drops it.
+
+- The panel's three-round cap restarts with each pivot. This card ran 12 panel rounds across three plans, each with three seats at xhigh, and stopped at least twice on usage limits. Count rounds per task across restarts. Past a set budget, record a `look` Defaults row with the spend so far, so the cost shows before the next round starts.
+- When panels keep finding siblings of one law's counterexample, give the law's generator the move that draws them, instead of one pinned test per sibling. This card added 36 cases to `packages/plitejs/test/authored-plugin.test.ts` for caret, Enter and insert cases the ledger law could have drawn.
+- Hold the docs and `best-api` edits for a new public refusal reason until the diff panel accepts its design. This run wrote both for an `unstored` refusal, then reverted them with the design.
+- When a law fails at a new seed, check whether the law's own oracle is wrong before designing a product fix. One ledger seed here failed on the law's titled-root schema, not on the authored tree.
+
+Rejected.
+
+- Record a Defaults row before widening past the asked-for laws. The Autopilot rule already asks for one per call.
+- Load the attack-the-premise principle after two failed fixes. Its description already names that trigger.
+- Run the cheap static checks before `land.mjs`. `land.mjs` runs the same affected check, so a run beforehand doubles its cost when it passes.
+- Write run-directory files with the shell when the Write tool refuses. `land.md` and the hooks already say it, and an earlier reflect rejected the same item.
+- A shared parser for background agents' output files. Each agent's completion notice carries its result.
+- `rg` for long regex windows, and BSD and zsh traps. The owner's own instructions hold the shell conventions, and each was a one-off retry.
+- Print the log's row words on `--help`. `append` names the allowed words when it refuses a row.
+- Run `/pstack:correct` on repeated hook denials. Each denial was the hook already enforcing its rule.
+- Repair a dead `Page:` link. The `plan-page` skill's Render step already says how.
+- Split rule files so that rereads after a compaction cost less. Open tasks t_211e4328 and t_e658793a ask it.
+- Check imports and time base and head together before calling a timeout unrelated. The `verify` skill already asks it, and the lead ran that timing here.
+- Drive a caret change in a browser before closing it. The `verify` skill already asks it, and the brief names the jsdom-only limit.
+- Panel load slowed the landing's tests. The Time budget rule covers load, and the first Backlog item covers the spend.
+- A spend stop on usage limits. The first Backlog item covers it.
 
 ## Open work
 
