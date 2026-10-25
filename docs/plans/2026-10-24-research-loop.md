@@ -7,7 +7,7 @@ review_commit: bc28cccad4775bd5972c19b35c089c48377bf81a
 
 # Research loop: one lookup, one repo list, write back to the area
 
-Status: building: phase 4, landing the law pass, then deleting the compile tools
+Status: partial: built and landed; step 3.4's trial waits for you to start it
 Topic: knowledge
 Playbook: build
 
@@ -15,11 +15,11 @@ Playbook: build
 
 ### What will change?
 
-Each research run checks what we know, reads only the repos that changed, searches once for new repos and writes findings to one page per area. The old plan's compile finishes in the background, and its phase 3 is cut.
+Research now starts from one lookup by area, scope or repo, reads only what changed, searches once for new repos and writes back to the area page. The compile finished, and its tools are gone.
 
 ### What could go wrong?
 
-Fast mode skips the trial, so the playbook changes land unmeasured, though our last test scored lookup-first agents lowest. Compiled facts land with no second reader checking them.
+Nobody has tested the new loop yet, because the paired trial still waits, and our last test scored lookup-first agents lowest. Compiled facts landed with no second reader, and 863 older ones no longer match their pages.
 
 ## Teach
 
@@ -144,7 +144,7 @@ The readers started on 2026-10-25 and run in chunks of under an hour in the back
 
 - [x] 4.1 Read the 142 unread batches, p5-022 to p5-163, on Codex with the superseded plan's phase 5 brief, through `compile-first.mjs` in this plan's run directory, which resumes where it stopped. A failed batch reruns once. Proof: every batch folder holds an `answer.md` with a units block. p5-163's reply was cut at 64 KB. Its complete units went to `answer-c1.md`, and a second reader read its last 39 sources into `answer-c2.md`.
 - [x] 4.2 Land every answered batch from p5-005 on without a second reader. Merge its units, run `unslop` on the added ones, resolve it, write it with `kb write`, and pass the quote check and `kb check`. Batches land in groups, one commit per group, and law units land last in one pass under their spec sections. Proof: each batch's resolved file covers every source line, `kb check` passes after each group, and the quote check finds no lost unit in these batches outside the waiting law units and none beyond the 863 that older batches had already lost at the start of phase 4. The batches landed in four groups. Three law readers then placed the 93 law units as 82 new proposed rules, for 163 in the spec, and the quote check finds no lost unit of this plan's.
-- [ ] 4.3 Delete `compile.mjs`, `compile.test.mjs`, `kb`'s `fold`, `write`, `resolve`, `quote` and `pins` verbs, K15 and `docs/research/folded.tsv`. Proof: `git grep -nE 'kb (fold|write|resolve|quote|pins)|compile\.mjs|folded\.tsv'` outside dated plans prints nothing, `knowledge.test.mjs` passes, and `kb check` prints the same findings before and after the delete.
+- [x] 4.3 Delete `compile.mjs`, `compile.test.mjs`, `kb`'s `fold`, `write`, `resolve`, `quote` and `pins` verbs, K15 and `docs/research/folded.tsv`. Proof: `git grep -nE 'kb (fold|write|resolve|quote|pins)|compile\.mjs|folded\.tsv'` outside dated plans prints nothing, `knowledge.test.mjs` passes, and `kb check` prints the same findings before and after the delete. The homes index and K14 moved to `homes.mjs`, with their 10 tests in `homes.test.mjs`. The grep's one remaining hit is a frozen probe capture, which K17 keeps as it is.
 
 ## Proof
 
@@ -161,9 +161,44 @@ Each step names its proof. Base controls ran on 2026-10-24, and the decision log
 | Hand drive and playtest | skip: nothing a browser shows changes |
 | `changeset` | skip: no published package changes |
 | `benchmark` rerun | skip: no product path changes; step 2.3 logs the lookup's own timing |
-| `deslop` | pending |
+| `deslop` | done per phase; step 4.3's pass found nothing to cut |
 | `no-comments` | skip: fast |
-| `unslop` | pending |
+| `unslop` | done per phase, per compile group and on the law pass |
+
+## Close
+
+**Deviations and narrowed proof.**
+
+- Step 3.4's trial and the route smokes never ran, because fast mode drops the fresh sessions they need. The playbook lines landed unmeasured, so the plan stays partial.
+- Step 1.3 also froze `docs/research/raw`, beyond the two folders it names. The word "unfreeze raw notes" reverses it.
+- Step 1.2's proof is narrower than the step. No code writer into `docs/research/probes` exists, so the proof covers research's raw-notes line and K17's refusal.
+- The compile's facts landed with no second reader, as you chose on 2026-10-25.
+- The subject file keeps its state from before this plan, apart from two rows that named what step 4.3 deleted. The fold waits for step 3.4.
+
+**Landed.**
+
+- Phase 1, in a9776d262f: the old plan's triage, the frozen run folders with K17, a green knowledge check that runs on affected paths, and one clone rule.
+- Phase 2, in e406da3177: `repos.tsv` with 423 repos, `areas.tsv` with 20 areas, three library-family homes, area, scope and repo lookups, and K16.
+- Phase 3, in 87ac1f8ebc: research's run method as a loop, one lookup line in each consumer, and `kb discover`.
+- Phase 4: compile batches p5-005 to p5-163 in four groups, bf32a0a66b, 22737ba0ff, 7b6b0df213 and 53f17baa3e; the law pass in 42b9cda4ad, which adds 82 proposed rules from 93 law units; and step 4.3's delete in the last commit.
+
+**Proof.**
+
+- Phase 1. `kb check` went from exit 1 with 86 K7 findings to exit 0. An affected-path probe runs the knowledge step for a research page, the spec, a subject file and `kb.mjs`, and skips a package file and a plan. K17 fails a seeded file and passes the clean tree.
+- Phase 2. The seed writes 423 repos, a rerun changes nothing, and 20 sampled rows match their clones on disk. Ten area, scope and repo keys answered in 631 to 765 ms at load average 25. `kb tiptap` names harvest 91c51be53. Each K16 form fails its seeded case and failed on the code before it.
+- Phase 3. `check-playbooks.mjs` and the mirror check pass. One live `kb discover` run per area printed at least one unlisted repo for all 20 areas. A rerun after `--record` hid the recorded repos, and a tiny time limit stopped the search and said so.
+- Phase 4. Each batch's resolved file covers every source line, and `kb check` passed after each group. The quote check finds no lost unit of this plan's batches, and older batches lose none beyond the 863 already lost. Each land ran `pnpm check --affected` green.
+- Step 4.3. The knowledge and homes tests pass 57 of 57, `kb check` matches its baseline before and after, and `kb homes` reports 0 K14 findings.
+
+**Limits.**
+
+- Law reader a's last side findings were cut at 64 KB and are lost.
+- About one in three repos `kb discover` prints for generic seeds is spam. Research skips them, and `--record` hides them next time.
+- The law rules carry Proof lines their readers wrote from reading the tests, and no law test was rerun.
+
+**Asks.** You made six asks in the request this plan builds: no monthly scan, one new-repo search per new task or verdict, a time limit on that search, the rest built fast after the compile, the old phase 3 cut, and the compile run in the background. All six are done, and step 3.4 is the one step left open.
+
+**Open work.** Each item below has its owner and its stop.
 
 ## Old plan triage
 

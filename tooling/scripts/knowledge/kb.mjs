@@ -1,23 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  realpathSync,
-  renameSync,
-  writeFileSync,
-} from 'node:fs';
-import {
-  basename,
-  dirname,
-  join,
-  relative,
-  resolve as resolvePath,
-} from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -26,19 +10,7 @@ import {
   groupFindings,
   readBaseline,
 } from '../finding-baseline.mjs';
-import {
-  blobOf,
-  FOLDED_FILE,
-  foldFindings,
-  foldSource,
-  homeFindings,
-  homesFor,
-  pins,
-  quote,
-  readmeHomes,
-  resolve,
-  write,
-} from './compile.mjs';
+import { homeFindings, readmeHomes } from './homes.mjs';
 import {
   card,
   commitTree,
@@ -58,7 +30,7 @@ const root = fileURLToPath(new URL('../../..', import.meta.url)).replace(
   ''
 );
 const BASELINE = 'tooling/scripts/knowledge/baseline.json';
-const RULES = ['K0', 'K1', 'K4', 'K7', 'K12', 'K15', 'K16', 'K17'];
+const RULES = ['K0', 'K1', 'K4', 'K7', 'K12', 'K16', 'K17'];
 
 const clip = (text = '', limit = 120) => {
   const flat = String(text).replace(/\s+/g, ' ').trim();
@@ -317,16 +289,7 @@ function check(mode) {
     );
     return 1;
   }
-  const folded = spawnSync('git', ['show', `${base}:${FOLDED_FILE}`], {
-    cwd: root,
-    encoding: 'utf-8',
-  });
-  const found = [
-    ...findings(loadIndex(workTree(root))),
-    ...foldFindings(workTree(root), {
-      base: folded.status === 0 ? folded.stdout : '',
-    }),
-  ];
+  const found = findings(loadIndex(workTree(root)));
   if (mode === 'check') {
     const violations = newRuleViolations(base, readBaseline(BASELINE));
     if (violations.length) {
@@ -352,7 +315,7 @@ function check(mode) {
     lowerCommand: 'pnpm kb check --lower',
     mode,
     newFindingsHelp:
-      "Fix each new knowledge finding. K0: a store or test file parsed to fewer records than it holds. K1: a rule ID is malformed or defined twice. K4: a test tag names no rule, editor or issue row. K7: a citation into this repository that a fresh checkout cannot open; commit the cited file, cite a tracked path or a <commit>:<path> on origin/next, or narrow the claim. Cite another editor's file as <owner>/<repo>@<commit>:<path> or under ../raw, which K7 leaves to K6. K12: a rule status outside locked, proposed, audit and deviation. K15: a folded file changed, a folded directory gained a file, or folded.tsv lost or changed a row; write new knowledge to the file's home. K16: docs/research/repos.tsv lists a repo twice or gives it a kind outside editor, library and app, a status outside saved and skipped or an area docs/research/areas.tsv lacks; an area names a scope with no review-scope file; or a home README's Repos line names a repo the list lacks. K17: a file added under docs/plite/research, docs/research/probes or docs/research/raw, which are frozen; keep run notes in the ignored docs/plans/artifacts/<slug>/ and findings on the area page.",
+      "Fix each new knowledge finding. K0: a store or test file parsed to fewer records than it holds. K1: a rule ID is malformed or defined twice. K4: a test tag names no rule, editor or issue row. K7: a citation into this repository that a fresh checkout cannot open; commit the cited file, cite a tracked path or a <commit>:<path> on origin/next, or narrow the claim. Cite another editor's file as <owner>/<repo>@<commit>:<path> or under ../raw, which K7 leaves to K6. K12: a rule status outside locked, proposed, audit and deviation. K16: docs/research/repos.tsv lists a repo twice or gives it a kind outside editor, library and app, a status outside saved and skipped or an area docs/research/areas.tsv lacks; an area names a scope with no review-scope file; or a home README's Repos line names a repo the list lacks. K17: a file added under docs/plite/research, docs/research/probes or docs/research/raw, which are frozen; keep run notes in the ignored docs/plans/artifacts/<slug>/ and findings on the area page.",
     rules: RULES,
   });
 }
@@ -363,7 +326,7 @@ const words = args.filter((arg) => !arg.startsWith('--'));
 
 if (!words.length) {
   console.error(
-    'Usage: pnpm kb <area | scope | repo | query> [--detail] [--json] | pnpm kb discover <area> [--seed <phrase>]... [--minutes <n>] [--record] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>] | pnpm kb batch <batch dir> <batch> <source...> | pnpm kb write <change.json> --log <file> --resolved <batches dir> | pnpm kb resolve <batch dir> [--seed <seed>] [--sample <n>] | pnpm kb fold <resolved.json> <path...> | pnpm kb quote <batches dir> --plan <plan> | pnpm kb pins <home>'
+    'Usage: pnpm kb <area | scope | repo | query> [--detail] [--json] | pnpm kb discover <area> [--seed <phrase>]... [--minutes <n>] [--record] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>]'
   );
   process.exit(2);
 }
@@ -379,309 +342,6 @@ const need = (ok, usage) => {
     process.exit(2);
   }
 };
-
-if (words[0] === 'batch') {
-  const [, dir, batch, ...paths] = words;
-  need(dir && batch && paths.length, 'batch <batch dir> <batch> <source...>');
-  const homesOf = homesFor(workTree(root));
-  const sources = paths.map((path) => ({
-    path,
-    homes: homesOf(path),
-    blob: blobOf(readFileSync(join(root, path))),
-  }));
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, 'batch.json'),
-    `${JSON.stringify({ batch, sources }, null, 2)}\n`
-  );
-  console.info(
-    `batch ${batch}: ${sources.length} sources recorded at their current blobs`
-  );
-  process.exit(0);
-}
-
-if (words[0] === 'fold') {
-  const [, resolvedFile, ...paths] = words;
-  need(
-    resolvedFile && existsSync(resolvedFile) && paths.length,
-    'fold <resolved.json> <path...>'
-  );
-  const resolved = JSON.parse(readFileSync(resolvedFile, 'utf-8'));
-  const table = join(root, FOLDED_FILE);
-  const rows = new Map(
-    (existsSync(table) ? readFileSync(table, 'utf-8') : '')
-      .split('\n')
-      .slice(1)
-      .filter(Boolean)
-      .map((line) => [line.split('\t')[0], line])
-  );
-  const folds = [];
-  for (const path of paths) {
-    const sources = resolved.sources.filter((source) =>
-      path.endsWith('/') ? source.path.startsWith(path) : source.path === path
-    );
-    if (!sources.length) {
-      console.error(`[kb] ${resolvedFile} records no source at ${path}`);
-      process.exit(1);
-    }
-    for (const source of sources) {
-      const file = join(root, source.path);
-      const text = readFileSync(file);
-      let next;
-      try {
-        next = foldSource(source.path, text, source.blob, source.homes);
-      } catch (error) {
-        console.error(`[kb] ${source.path}: ${error.message}`);
-        process.exit(1);
-      }
-      folds.push([file, text, next]);
-      rows.set(source.path, `${source.path}\t${blobOf(next)}`);
-    }
-    if (path.endsWith('/')) rows.set(path, `${path}\t-`);
-  }
-  for (const [file, text, next] of folds) {
-    if (next !== text) writeFileSync(file, next);
-  }
-  writeFileSync(table, `path\tblob\n${[...rows.values()].join('\n')}\n`);
-  process.exit(0);
-}
-
-// A batch is named by its resolved file's path under `dir`, not by the
-// file's own `batch` field, so two batches never share a name.
-const resolvedFiles = (dir) =>
-  readdirSync(dir, { recursive: true })
-    .map(String)
-    .filter((name) => name.endsWith('.resolved.json'))
-    .map((name) => ({
-      ...JSON.parse(readFileSync(join(dir, name), 'utf-8')),
-      batch: name.slice(0, -'.resolved.json'.length),
-    }));
-
-const realRoot = realpathSync.native(root);
-
-// realpathSync.native returns the filesystem's own spelling, case included,
-// which realpathSync does not, so a case or `./` variant of an existing file
-// names the same file.
-const canonical = (path) => {
-  let probe = resolvePath(root, path);
-  const rest = [];
-  while (!existsSync(probe)) {
-    rest.unshift(basename(probe));
-    probe = dirname(probe);
-  }
-  return relative(realRoot, join(realpathSync.native(probe), ...rest));
-};
-
-if (words[0] === 'write') {
-  need(
-    words[1] && existsSync(words[1]),
-    'write <change.json> --log <file> --resolved <batches dir>'
-  );
-  const change = JSON.parse(readFileSync(words[1], 'utf-8'));
-  const log = option('--log');
-  if (!log) {
-    console.error(
-      '[kb] kb write needs --log <file>, the run log each write is recorded in'
-    );
-    process.exit(2);
-  }
-  const runDir = option('--resolved');
-  if (!runDir) {
-    console.error(
-      '[kb] kb write needs --resolved <batches dir>, whose resolved batches name the spans it keeps'
-    );
-    process.exit(2);
-  }
-  const batches = existsSync(runDir) ? resolvedFiles(runDir) : [];
-  if (!batches.length) {
-    console.error(
-      `[kb] ${runDir} holds no resolved batch; pass the folder kb quote reads`
-    );
-    process.exit(2);
-  }
-  for (const named of [change.path, change.to?.home].filter(Boolean)) {
-    const own = canonical(named);
-    const problem = /^(\.\.|\/)/.test(own)
-      ? `${named} is outside the repository`
-      : own !== named && `name ${own}, the file's own spelling, not ${named}`;
-    if (problem) {
-      console.error(`[kb] ${problem}`);
-      process.exit(1);
-    }
-  }
-  const again = join(runDir, 'resolutions.json');
-  const resolutions = existsSync(again)
-    ? JSON.parse(readFileSync(again, 'utf-8'))
-    : [];
-  // A target in a resolved file or resolutions.json keeps its reader's
-  // spelling, so it is compared by the file it names.
-  const here = (target) => Boolean(target) && canonical(target) === change.path;
-  const kept = [
-    ...batches.flatMap(({ batch, units }) =>
-      units
-        .filter(
-          (unit) =>
-            here(unit.target) &&
-            unit.verdict === 'accepted' &&
-            ['covered', 'added'].includes(unit.disposition)
-        )
-        .map((unit) => ({ key: `${batch}#${unit.key}`, span: unit.span }))
-    ),
-    ...resolutions
-      .filter((item) => item.verdict === 'covered' && here(item.target))
-      .map((item) => ({ key: item.unit, span: item.span })),
-  ];
-  if (change.verdict) {
-    const recorded = resolutions.findLast((item) => item.unit === change.unit);
-    const matches =
-      change.verdict === 'move'
-        ? recorded?.verdict === 'covered' &&
-          canonical(recorded.target) === change.to?.home &&
-          recorded.span === change.to?.span
-        : recorded?.verdict === change.verdict && Boolean(recorded.reason);
-    if (!matches) {
-      console.error(
-        `[kb] ${change.unit} has no ${change.verdict} resolution in ${again} that this write carries out`
-      );
-      process.exit(1);
-    }
-  }
-  const file = join(root, change.path);
-  const text = existsSync(file) ? readFileSync(file, 'utf-8') : undefined;
-  const stands = (to) => {
-    const home = to && join(root, to.home);
-    return Boolean(
-      home && existsSync(home) && readFileSync(home, 'utf-8').includes(to.span)
-    );
-  };
-  let next;
-  try {
-    next = write(change.path, text, change, { kept, stands });
-  } catch (error) {
-    console.error(`[kb] ${error.message}`);
-    process.exit(1);
-  }
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(`${file}.kb-write`, next);
-  renameSync(`${file}.kb-write`, file);
-  if (text === undefined) {
-    // Intent-to-add puts the new page in the index, which is the tracked set
-    // K7 scans and accepts as a citation target.
-    spawnSync('git', ['add', '-N', '--', change.path], { cwd: root });
-  }
-  if (!existsSync(log)) {
-    writeFileSync(log, 'time\tkind\tstep\tbatch\tsession\tunit\tfile\n');
-  }
-  appendFileSync(
-    log,
-    `${[new Date().toISOString(), change.op, change.step, change.batch, change.session, change.unit ?? '-', change.path].join('\t')}\n`
-  );
-  process.exit(0);
-}
-
-if (words[0] === 'resolve') {
-  const dir = words[1];
-  need(
-    dir && existsSync(join(dir, 'batch.json')),
-    'resolve <batch dir> [--seed <seed>] [--sample <n>]'
-  );
-  const { batch, sources } = JSON.parse(
-    readFileSync(join(dir, 'batch.json'), 'utf-8')
-  );
-  const seed = option('--seed') ?? randomBytes(4).toString('hex');
-  const tree = workTree(root);
-  let resolved;
-  try {
-    resolved = resolve({
-      batch,
-      sources: sources.map((source) => {
-        const bytes = readFileSync(join(root, source.path));
-        return {
-          ...source,
-          text: bytes.toString('utf-8'),
-          current: blobOf(bytes),
-        };
-      }),
-      units: JSON.parse(readFileSync(join(dir, 'units.json'), 'utf-8')),
-      verdicts: readFileSync(join(dir, 'verdicts.tsv'), 'utf-8')
-        .split('\n')
-        .slice(1)
-        .filter(Boolean)
-        .map((line) => {
-          const [key, verdict, note] = line.split('\t');
-          return { key, verdict, note };
-        }),
-      seed,
-      sample: Number(option('--sample') ?? 5),
-      has: (path) => tree.has(path),
-    });
-  } catch (error) {
-    console.error(`[kb] ${error.message}`);
-    process.exit(1);
-  }
-  writeFileSync(
-    join(dir, `${batch}.resolved.json`),
-    `${JSON.stringify(resolved, null, 2)}\n`
-  );
-  console.info(
-    `resolved ${batch}: ${resolved.units.length} units; recall sample (seed ${seed}): ${resolved.sample.join(', ') || 'none'}`
-  );
-  process.exit(0);
-}
-
-if (words[0] === 'quote') {
-  const dir = words[1];
-  need(dir && existsSync(dir), 'quote <batches dir> --plan <plan>');
-  const plan = option('--plan');
-  const again = join(dir, 'resolutions.json');
-  const read = (path) =>
-    existsSync(join(root, path))
-      ? readFileSync(join(root, path), 'utf-8')
-      : undefined;
-  const { counts, lost } = quote({
-    resolved: resolvedFiles(dir),
-    read,
-    resolutions: existsSync(again)
-      ? JSON.parse(readFileSync(again, 'utf-8'))
-      : [],
-    openWork: plan
-      ? (readFileSync(plan, 'utf-8').split(/^## Open work$/m)[1] ?? '').split(
-          /^## /m
-        )[0]
-      : '',
-  });
-  console.info(
-    Object.entries(counts)
-      .map(([word, n]) => `${n} ${word}`)
-      .join(', ') || 'no resolved units'
-  );
-  for (const item of lost) {
-    console.info(`lost ${item.batch} ${item.key}: ${item.why}`);
-  }
-  process.exit(lost.length ? 1 : 0);
-}
-
-if (words[0] === 'pins') {
-  need(words[1], 'pins <home>');
-  const folder = `docs/research/sources/${words[1]}/`;
-  const tree = workTree(root);
-  const cited = new Map();
-  for (const path of tree
-    .list()
-    .filter((item) => item.startsWith(folder) && item.endsWith('.md'))) {
-    for (const pin of pins(tree.read(path))) {
-      const key = `${pin.repo}@${pin.commit}`;
-      cited.set(key, (cited.get(key) ?? new Set()).add(path));
-    }
-  }
-  for (const [key, pages] of [...cited].sort(([a], [b]) =>
-    a.localeCompare(b)
-  )) {
-    console.info(`${key}\t${pages.size} pages`);
-  }
-  console.info(`${cited.size} revisions cited under ${folder}`);
-  process.exit(0);
-}
 
 const searchGitHub = (seed, timeout) => {
   const run = spawnSync(
