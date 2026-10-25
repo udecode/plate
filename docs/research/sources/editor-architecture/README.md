@@ -153,6 +153,8 @@ Research runs:
 - [2026-10-02-dnd-landing-policy](../../../plite/research/2026-10-02-dnd-landing-policy). Plite transfer landing pipeline and Plate DnD feature rules mapped file by file, then compared with source-read drop-target, handle and container policy in ProseMirror, Tiptap, BlockNote, Lexical, ProseKit, Slate (zbeyens fork) and CKEditor 5.
 - [2026-10-02-dnd-library-choice](../../../plite/research/2026-10-02-dnd-library-choice). Keeps Plite's native drag driver and transfer owner and the copied DndKit over Pragmatic DnD, dnd-kit and React DnD, and a cross-editor table states drag implementation and test-limit facts for ProseMirror, Tiptap, Lexical, a Slate fork and BlockNote.
 - [2026-10-06-docx-native-state](../../../plite/research/2026-10-06-docx-native-state). Judges Plate's hidden DOCX `editor/authored.json` envelope against 15 editor and DOCX-library clones; Tiptap (DOCX only as a Pro/cloud feature, none in the tree) and Wordgard (no DOCX code) each get a sourced disposition. Second reader removed tiptap, wordgard.
+- [2026-10-13-editor-comparison](../../../plite/research/2026-10-13-editor-comparison). Which current open-source editors earn a place in Plate and Plite comparisons, from a discovery pass over rich-text engines, editor frameworks, block, Markdown and code editors and input or layout projects; it records 274 repos, most seen but not read.
+- [2026-10-22-find-incremental-decorations](../../../plite/research/2026-10-22-find-incremental-decorations). Whether Find should rescan and repaint only the changed paragraph, and whether Plite decorations or a mapped range set paints its results best, read across VS Code, Monaco, CodeMirror 6, ProseMirror, Lexical and CKEditor 5.
 
 Other pages:
 

@@ -425,3 +425,177 @@ test('a test hash changes with whitespace inside a string or a line break after 
     { comment: false, string: false }
   );
 });
+
+const AUDITED = 'a'.repeat(40);
+const HARVESTED = 'b'.repeat(40);
+const areaTree = () =>
+  tree({
+    'docs/research/areas.tsv': [
+      'area\ttitle\tscopes\taliases\tseeds',
+      'collaboration\tCollaboration\tcollaboration\tyjs,crdt\tyjs binding',
+      'tables\tTables\ttable\tgrid\trich text table',
+      '',
+    ].join('\n'),
+    'docs/research/repos.tsv': [
+      'repo\turl\tclone\tkind\tstatus\tareas\tadded\tnote',
+      'a/editor\thttps://github.com/a/editor\t\teditor\tskipped\t\t2026-10-13\t',
+      'b/editor\thttps://github.com/b/editor\t\teditor\tskipped\t\t2026-10-13\t',
+      'ueberdosis/tiptap\thttps://github.com/ueberdosis/tiptap\t\teditor\tsaved\ttables\t2026-05-25\t',
+      'yjs/yjs\thttps://github.com/yjs/yjs\t\tlibrary\tsaved\tcollaboration\t2026-09-10\t',
+      '',
+    ].join('\n'),
+    'docs/research/review-scopes/dnd.json': '{}',
+    'docs/research/review-scopes/table.json': '{}',
+    'docs/research/sources/lexical/collaboration.md':
+      '# Lexical: collaboration\n',
+    'docs/research/sources/lexical/tables.md': '# Lexical: tables\n',
+    'docs/editor-audits/index.json': JSON.stringify({
+      audits: [
+        {
+          id: 'audit-1',
+          references: [
+            {
+              repoKey: 'github.com/ueberdosis/tiptap',
+              auditedCommit: AUDITED,
+              auditedAt: '2026-09-06T00:00:00Z',
+            },
+          ],
+        },
+      ],
+    }),
+    'docs/editor-test-harvester/tiptap/test-index.md': `# TipTap Test-Name Index\n\ntarget: \`../tiptap\`\nsource_commit: \`${HARVESTED}\`\n\n## \`../tiptap/a.spec.js\`\n\n- L10: pastes html\n`,
+  });
+
+test("an area alias opens its area's page in each home and the repos filed under it", () => {
+  const result = card(loadIndex(areaTree()), 'yjs');
+  assert.deepEqual(
+    {
+      pages: result.areaPages.map((page) => page.file),
+      repos: result.areaRepos.map((row) => row.repo),
+    },
+    {
+      pages: ['docs/research/sources/lexical/collaboration.md'],
+      repos: ['yjs/yjs'],
+    }
+  );
+});
+
+test('an area alias inside a longer query stays a word search', () => {
+  const { keys } = card(loadIndex(areaTree()), 'yjs cursor');
+  assert.deepEqual(
+    { areas: keys.areas, words: keys.words },
+    { areas: [], words: ['yjs', 'cursor'] }
+  );
+});
+
+test('a scope an area lists opens that area', () => {
+  assert.deepEqual(
+    card(loadIndex(areaTree()), 'table').areas.map((area) => area.area),
+    ['tables']
+  );
+});
+
+test('a scope no area lists stays a word for the ledger lookup', () => {
+  const { keys } = card(loadIndex(areaTree()), 'dnd');
+  assert.deepEqual(
+    { areas: keys.areas, words: keys.words },
+    { areas: [], words: ['dnd'] }
+  );
+});
+
+test('an editor key opens its repo card with the audit and harvest commits', () => {
+  const [repo] = card(loadIndex(areaTree()), 'tiptap').repoCards;
+  assert.deepEqual(
+    repo.marks.map((mark) => `${mark.lane} ${mark.commit}`),
+    [`audit ${AUDITED}`, `harvest ${HARVESTED}`]
+  );
+});
+
+test('a bare name two repos share names no repo', () => {
+  const { keys } = card(loadIndex(areaTree()), 'editor');
+  assert.deepEqual(
+    { repos: keys.repos, words: keys.words },
+    { repos: [], words: ['editor'] }
+  );
+});
+
+const repoListTree = (rows, files = {}) =>
+  tree({
+    'docs/research/areas.tsv': [
+      'area\ttitle\tscopes\taliases\tseeds',
+      'tables\tTables\ttable\tgrid\trich text table',
+      '',
+    ].join('\n'),
+    'docs/research/repos.tsv': [
+      'repo\turl\tclone\tkind\tstatus\tareas\tadded\tnote',
+      ...rows,
+      '',
+    ].join('\n'),
+    'docs/research/review-scopes/table.json': '{}',
+    ...files,
+  });
+const k16 = (rows, files) =>
+  findings(loadIndex(repoListTree(rows, files)), {
+    tracked: new Set(),
+  })
+    .filter((finding) => finding.rule === 'K16')
+    .map((finding) => finding.message);
+const repoRow = (repo, kind = 'editor', status = 'saved', areas = 'tables') =>
+  `${repo}\thttps://github.com/${repo}\t\t${kind}\t${status}\t${areas}\t2026-10-25\t`;
+
+test('a repo list with known kinds, statuses, areas and README repos passes K16', () => {
+  assert.deepEqual(
+    k16(
+      [
+        repoRow('ueberdosis/tiptap'),
+        repoRow('yjs/yjs', 'library', 'skipped', ''),
+      ],
+      {
+        'docs/research/sources/tiptap/README.md':
+          '# Tiptap\n\nRepos: `ueberdosis/tiptap`\n',
+      }
+    ),
+    []
+  );
+});
+
+test('a repo listed twice in any case is a K16 finding', () => {
+  assert.deepEqual(k16([repoRow('yjs/yjs'), repoRow('Yjs/Yjs')]), [
+    'Yjs/Yjs is listed again (first at line 2)',
+  ]);
+});
+
+test('a repo kind or status outside the list is a K16 finding', () => {
+  assert.deepEqual(k16([repoRow('yjs/yjs', 'crdt', 'read')]), [
+    'yjs/yjs has kind crdt, not editor, library or app',
+    'yjs/yjs has status read, not saved or skipped',
+  ]);
+});
+
+test('a repo filed under an area the areas list lacks is a K16 finding', () => {
+  assert.deepEqual(k16([repoRow('yjs/yjs', 'library', 'saved', 'sync')]), [
+    'yjs/yjs names area sync, which docs/research/areas.tsv lacks',
+  ]);
+});
+
+test('an area naming a scope with no scope file is a K16 finding', () => {
+  assert.deepEqual(
+    k16([], {
+      'docs/research/areas.tsv':
+        'area\ttitle\tscopes\taliases\tseeds\ntables\tTables\ttable,grid\t\t\n',
+    }),
+    [
+      'tables names scope grid, which has no docs/research/review-scopes/grid.json',
+    ]
+  );
+});
+
+test("a home README's Repos line naming an unlisted repo is a K16 finding", () => {
+  assert.deepEqual(
+    k16([repoRow('ueberdosis/tiptap')], {
+      'docs/research/sources/tiptap/README.md':
+        '# Tiptap\n\nRepos: `ueberdosis/tiptap`, `ueberdosis/hocuspocus`\n',
+    }),
+    ['Repos names ueberdosis/hocuspocus, which docs/research/repos.tsv lacks']
+  );
+});

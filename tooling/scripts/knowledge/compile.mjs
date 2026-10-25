@@ -31,6 +31,8 @@ const LAYER = new Set([
   'docs/research/README.md',
   'docs/research/schema.md',
   'docs/research/log.md',
+  'docs/research/areas.tsv',
+  'docs/research/repos.tsv',
   HOMES_FILE,
   FOLDED_FILE,
   `${SOURCES}README.md`,

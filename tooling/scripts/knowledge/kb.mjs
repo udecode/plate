@@ -56,7 +56,7 @@ const root = fileURLToPath(new URL('../../..', import.meta.url)).replace(
   ''
 );
 const BASELINE = 'tooling/scripts/knowledge/baseline.json';
-const RULES = ['K0', 'K1', 'K4', 'K7', 'K12', 'K15', 'K17'];
+const RULES = ['K0', 'K1', 'K4', 'K7', 'K12', 'K15', 'K16', 'K17'];
 
 const clip = (text = '', limit = 120) => {
   const flat = String(text).replace(/\s+/g, ' ').trim();
@@ -134,7 +134,52 @@ function scopeLines(scope, detail) {
   ].map((line, i) => (i ? `    ${line}` : line));
 }
 
+const sinceText = (since) => {
+  if (!since) return '';
+  return since.missing
+    ? `  HEAD lacks ${since.missing} of its commits; fetch and check out a newer commit`
+    : `  ${since.after} commits since`;
+};
+
+const marked = (mark) =>
+  `${mark.lane.padEnd(8)} ${mark.commit?.slice(0, 9) ?? 'no commit recorded'}${mark.cited ? ` (newest of ${mark.cited} cited)` : ''}${sinceText(mark.since)}${mark.source ? `  (${mark.source})` : ''}`;
+
 const sections = [
+  {
+    key: 'areas',
+    label: 'AREAS',
+    line: (area) =>
+      `${area.area}  ${area.title}  scopes ${area.scopes.join(',') || 'none'}  aliases ${area.aliases.join(',') || 'none'}  (${area.file}:${area.line})`,
+  },
+  {
+    key: 'repoCards',
+    label: 'REPO',
+    line: (repo) => [
+      `${repo.repo}  ${repo.status} ${repo.kind}  areas ${repo.areas.join(',') || 'none'}  added ${repo.added || '?'}  (${repo.file}:${repo.line})`,
+      `  ${repo.url}`,
+      `  clone ${repo.clone ? `${repo.clone}${repo.cloned ? `  HEAD ${repo.head}` : ', not on disk'}` : 'none'}`,
+      ...(repo.homes.length ? [`  homes ${repo.homes.join(', ')}`] : []),
+      ...repo.marks.map((mark) => `  ${marked(mark)}`),
+      ...(repo.marks.length ? [] : ['  no lane has read it']),
+      ...(repo.note ? [`  note ${clip(repo.note, 160)}`] : []),
+    ],
+  },
+  {
+    key: 'areaPages',
+    label: 'AREA PAGES',
+    line: (page) => `${clip(page.title, 100)}  (${page.file})`,
+  },
+  {
+    key: 'areaRepos',
+    label: 'AREA REPOS',
+    line: (repo) =>
+      `${repo.repo}  ${repo.status} ${repo.kind}${repo.clone ? `  ${repo.clone}` : ''}  ${clip(repo.note, 90)}`,
+  },
+  {
+    key: 'sweeps',
+    label: 'SWEEP ROWS',
+    line: (row) => `${clip(row.cells.join(' | '))}  (${row.file}:${row.line})`,
+  },
   {
     key: 'law',
     label: 'LAW',
@@ -168,12 +213,11 @@ const sections = [
     key: 'research',
     label: 'RESEARCH RUNS',
     line: (row) =>
-      `${clip(
-        Object.values(row.row ?? {})
-          .filter(Boolean)
-          .slice(0, 4)
-          .join(' · ')
-      )}  (${row.path}:${row.line})`,
+      `${
+        row.row
+          ? clip(Object.values(row.row).filter(Boolean).slice(0, 4).join(' · '))
+          : `malformed row: ${clip(row.text)}`
+      }  (${row.path}:${row.line})`,
   },
   {
     key: 'lessons',
@@ -208,7 +252,9 @@ function printCard(result, query, detail) {
   for (const { key, label, line } of sections) {
     if (!result[key]?.length) continue;
     console.info(`\n${label}${more(key) || ''}`);
-    for (const item of result[key]) console.info(`  ${line(item)}`);
+    for (const item of result[key]) {
+      for (const text of [line(item)].flat()) console.info(`  ${text}`);
+    }
   }
   if (result.scopes.length) {
     console.info(
@@ -219,6 +265,11 @@ function printCard(result, query, detail) {
     }
   }
   if (result.scopeNote) console.info(`\nSCOPES  ${result.scopeNote}`);
+  if (result.areaMode) {
+    console.info(
+      '\nTESTS  not searched for an area; add a word, a rule ID or a path to search them'
+    );
+  }
   console.info(
     '\nNOT SEARCHED  plans outside a scope (docs/plans), docs/editor-behavior/current-evidence.md (partial proofs and law-versus-test conflicts per rule), benchmark results, review records and the ../raw evidence layer'
   );
@@ -284,30 +335,24 @@ function check(mode) {
       return 1;
     }
   }
-  const status = enforceBaseline({
+  const described = new Map();
+  for (const item of found) {
+    const key = `${item.rule} ${item.file}: ${JSON.stringify(item.identity)}`;
+    described.set(key, [
+      ...(described.get(key) ?? []),
+      `${item.rule} ${item.file}:${item.line} ${item.message}`,
+    ]);
+  }
+  return enforceBaseline({
+    describe: (key) => described.get(key)?.join('\n') ?? key,
     file: BASELINE,
     found: groupFindings(found),
     lowerCommand: 'pnpm kb check --lower',
     mode,
     newFindingsHelp:
-      "Fix each new knowledge finding. K0: a store or test file parsed to fewer records than it holds. K1: a rule ID is malformed or defined twice. K4: a test tag names no rule, editor or issue row. K7: a citation into this repository that a fresh checkout cannot open; commit the cited file, cite a tracked path or a <commit>:<path> on origin/next, or narrow the claim. Cite another editor's file as <owner>/<repo>@<commit>:<path> or under ../raw, which K7 leaves to K6. K12: a rule status outside locked, proposed, audit and deviation. K15: a folded file changed, a folded directory gained a file, or folded.tsv lost or changed a row; write new knowledge to the file's home. K17: a file added under docs/plite/research, docs/research/probes or docs/research/raw, which are frozen; keep run notes in the ignored docs/plans/artifacts/<slug>/ and findings on the area page.",
+      "Fix each new knowledge finding. K0: a store or test file parsed to fewer records than it holds. K1: a rule ID is malformed or defined twice. K4: a test tag names no rule, editor or issue row. K7: a citation into this repository that a fresh checkout cannot open; commit the cited file, cite a tracked path or a <commit>:<path> on origin/next, or narrow the claim. Cite another editor's file as <owner>/<repo>@<commit>:<path> or under ../raw, which K7 leaves to K6. K12: a rule status outside locked, proposed, audit and deviation. K15: a folded file changed, a folded directory gained a file, or folded.tsv lost or changed a row; write new knowledge to the file's home. K16: docs/research/repos.tsv lists a repo twice or gives it a kind outside editor, library and app, a status outside saved and skipped or an area docs/research/areas.tsv lacks; an area names a scope with no review-scope file; or a home README's Repos line names a repo the list lacks. K17: a file added under docs/plite/research, docs/research/probes or docs/research/raw, which are frozen; keep run notes in the ignored docs/plans/artifacts/<slug>/ and findings on the area page.",
     rules: RULES,
   });
-  if (status !== 0) {
-    const unlisted = new Set(
-      differences(groupFindings(found), readBaseline(BASELINE))
-    );
-    for (const item of found) {
-      if (
-        unlisted.has(
-          `${item.rule} ${item.file}: ${JSON.stringify(item.identity)}`
-        )
-      ) {
-        console.error(`${item.rule} ${item.file}:${item.line} ${item.message}`);
-      }
-    }
-  }
-  return status;
 }
 
 const args = process.argv.slice(2);
@@ -316,7 +361,7 @@ const words = args.filter((arg) => !arg.startsWith('--'));
 
 if (!words.length) {
   console.error(
-    'Usage: pnpm kb <query> [--detail] [--json] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>] | pnpm kb batch <batch dir> <batch> <source...> | pnpm kb write <change.json> --log <file> --resolved <batches dir> | pnpm kb resolve <batch dir> [--seed <seed>] [--sample <n>] | pnpm kb fold <resolved.json> <path...> | pnpm kb quote <batches dir> --plan <plan> | pnpm kb pins <home>'
+    'Usage: pnpm kb <area | scope | repo | query> [--detail] [--json] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>] | pnpm kb batch <batch dir> <batch> <source...> | pnpm kb write <change.json> --log <file> --resolved <batches dir> | pnpm kb resolve <batch dir> [--seed <seed>] [--sample <n>] | pnpm kb fold <resolved.json> <path...> | pnpm kb quote <batches dir> --plan <plan> | pnpm kb pins <home>'
   );
   process.exit(2);
 }

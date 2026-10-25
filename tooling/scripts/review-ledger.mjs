@@ -1074,7 +1074,13 @@ function unresolvedCandidates(ledger, scope) {
   );
 }
 
-function compact(ledger, tree, plans, scope) {
+function compact(
+  ledger,
+  tree,
+  plans,
+  scope,
+  { freshness: withFreshness = true } = {}
+) {
   const state = openState(ledger, scope.id, plans);
   const dependents = dependentsOf(ledger, scope);
   const head = latest(headsOf(ledger, scope.id));
@@ -1091,7 +1097,8 @@ function compact(ledger, tree, plans, scope) {
     ...(scope.group ? { group: scope.group } : {}),
     open: state,
     head: headSummary(head),
-    freshness: head ? briefFreshness(freshness(tree, head)) : null,
+    freshness:
+      head && withFreshness ? briefFreshness(freshness(tree, head)) : null,
     executions: bounded(
       executions
         .slice()
@@ -1110,7 +1117,10 @@ function compact(ledger, tree, plans, scope) {
         path: plan.path,
         status: plan.status,
         reviewBasis: plan.reviewBasis,
-        freshness: plan.commit ? briefFreshness(freshness(tree, plan)) : null,
+        freshness:
+          plan.commit && withFreshness
+            ? briefFreshness(freshness(tree, plan))
+            : null,
       })),
       5
     ),
@@ -1184,7 +1194,7 @@ export const lookup = (root, query, options) =>
 export function lookupIn(
   { ledger, tree, plans },
   query,
-  { detail = false } = {}
+  { detail = false, freshness: withFreshness = true } = {}
 ) {
   assert.ok(isText(query), 'Supply a scope, group, path or search term');
   const needle = query.toLowerCase();
@@ -1245,7 +1255,11 @@ export function lookupIn(
   assert.ok(matched.length, `No scope, group or path matches: ${query}`);
   const shown = matched
     .slice(0, lookupLimit)
-    .map((scope) => (detail ? detailed : compact)(ledger, tree, plans, scope));
+    .map((scope) =>
+      detail
+        ? detailed(ledger, tree, plans, scope)
+        : compact(ledger, tree, plans, scope, { freshness: withFreshness })
+    );
   return matched.length > lookupLimit
     ? [
         ...shown,

@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join, normalize } from 'node:path';
+import { basename, dirname, join, normalize } from 'node:path';
 
 // Parsers stay private to this file so a store's legacy format never leaks past
 // it.
@@ -25,10 +25,21 @@ const SPEC = 'docs/editor-behavior/markdown-editing-spec.md';
 const ISSUES = 'docs/editor-issue-harvester';
 const HARVEST = 'docs/editor-test-harvester';
 const LESSONS = 'docs/research/sources/plate-notes';
+const AREAS = 'docs/research/areas.tsv';
+const REPOS = 'docs/research/repos.tsv';
+const AUDITS = 'docs/editor-audits/index.json';
+const HOMES = 'docs/research/sources';
+const HOME_README = /^docs\/research\/sources\/[^/]+\/README\.md$/;
+const REPO_KINDS = new Set(['editor', 'library', 'app']);
+const REPO_STATUSES = new Set(['saved', 'skipped']);
 
-const editorRepos = {
+/** The repository each editor's home, harvest folder and issue ledger studies. */
+export const editorRepos = {
   lexical: 'facebook/lexical',
+  meowdown: 'prosekit/meowdown',
+  milkdown: 'milkdown/milkdown',
   plate: 'udecode/plate',
+  portabletext: 'portabletext/editor',
   prosekit: 'prosekit/prosekit',
   prosemirror: 'prosemirror/prosemirror',
   slate: 'ianstormtaylor/slate',
@@ -59,6 +70,20 @@ const STATUSES = new Set(['locked', 'proposed', 'audit', 'deviation']);
 
 const git = (repo, args) =>
   spawnSync('git', args, { cwd: repo, encoding: 'utf-8', maxBuffer: 1 << 30 });
+
+const REPO_URL =
+  /(?:github\.com|codeberg\.org|code\.haverbeke\.berlin)[/:]([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:[/#?].*)?$/i;
+/** The lowercase `owner/name` a clone URL or repo key names, or null. */
+const repoOfUrl = (url) => {
+  const match = REPO_URL.exec(url);
+  return match ? `${match[1]}/${match[2]}`.toLowerCase() : null;
+};
+
+/** The repos a home README's `Repos:` line names. */
+export const readmeRepos = (readme) =>
+  [...(/^Repos: (.+)$/m.exec(readme)?.[1] ?? '').matchAll(/`([^`]+)`/g)].map(
+    (match) => match[1]
+  );
 
 // node:path's matchesGlob compiles the pattern on every call, which took the
 // index load from 0.85 s to 2.6 s, so each pattern compiles once here.
@@ -767,6 +792,10 @@ const stores = {
   subjects: ['docs/plans/topics/*.md'],
   pages: ['docs/research/**/*.md', 'docs/editor-audits/**/*.md'],
   scopes: ['docs/research/review-scopes/*.json'],
+  areas: [AREAS],
+  repos: [REPOS],
+  audits: [AUDITS],
+  sweeps: ['docs/plans/*-sweep-r*.md'],
 };
 const pageIgnore = [
   'docs/research/raw/**',
@@ -833,10 +862,18 @@ export function loadIndex(tree) {
   }
 
   const harvested = [];
+  const harvests = [];
   for (const path of files(tree, stores.harvests)) {
-    const parsed = parseTestIndex(tree.read(path), path, path.split('/')[2]);
+    const editor = path.split('/')[2];
+    const parsed = parseTestIndex(tree.read(path), path, editor);
     covered('test-harvests', path, parsed.harvested.length, parsed.expected);
     harvested.push(...parsed.harvested);
+    harvests.push({
+      editor,
+      file: path,
+      revision:
+        parsed.harvested.find((test) => test.revision)?.revision ?? null,
+    });
   }
 
   const lessons = files(tree, stores.lessons).flatMap((path) => {
@@ -889,34 +926,109 @@ export function loadIndex(tree) {
       .replace(/\.json$/, '')
   );
 
-  const tests = [];
-  for (const [path, run] of testFiles(tree)) {
-    if (!tree.has(path)) continue;
-    const parsed = parseTests(tree.read(path), path);
-    if (parsed.problem) covered('tests', path, 0, 1, parsed.problem);
-    for (const test of parsed.tests) tests.push({ ...test, ...run });
-  }
-  const byTag = new Map();
-  for (const test of tests) {
-    for (const tag of test.tags) {
-      if (!byTag.has(tag)) byTag.set(tag, []);
-      byTag.get(tag).push(test);
+  const cellList = (cell = '') =>
+    cell
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  const areas = files(tree, stores.areas).flatMap((path) =>
+    tsvRows(tree.read(path)).map(({ line, cells }) => ({
+      ...cells,
+      scopes: cellList(cells.scopes),
+      aliases: cellList(cells.aliases),
+      seeds: (cells.seeds ?? '')
+        .split(';')
+        .map((seed) => seed.trim())
+        .filter(Boolean),
+      file: path,
+      line,
+    }))
+  );
+  const repos = files(tree, stores.repos).flatMap((path) =>
+    tsvRows(tree.read(path)).map(({ line, cells }) => ({
+      ...cells,
+      areas: cellList(cells.areas),
+      file: path,
+      line,
+    }))
+  );
+  const audits = files(tree, stores.audits).flatMap((path) =>
+    JSON.parse(tree.read(path)).audits.flatMap((audit) =>
+      (audit.references ?? []).flatMap((reference) => {
+        const repo = repoOfUrl(reference.repoKey ?? reference.source ?? '');
+        return repo && reference.auditedCommit
+          ? [
+              {
+                audit: audit.id,
+                repo,
+                commit: reference.auditedCommit,
+                at: reference.auditedAt ?? '',
+                file: path,
+              },
+            ]
+          : [];
+      })
+    )
+  );
+  const sweeps = files(tree, stores.sweeps).flatMap((path) =>
+    tree
+      .read(path)
+      .split('\n')
+      .flatMap((line, i) =>
+        TABLE_BODY(line)
+          ? [{ file: path, line: i + 1, cells: cellsOf(line) }]
+          : []
+      )
+  );
+
+  // Parsing every test file is most of an index load, and area and repo cards
+  // never read a test, so the first reader parses them.
+  let parsed;
+  const parseOnce = () => {
+    if (parsed) return parsed;
+    const tests = [];
+    for (const [path, run] of testFiles(tree)) {
+      if (!tree.has(path)) continue;
+      const file = parseTests(tree.read(path), path);
+      if (file.problem) covered('tests', path, 0, 1, file.problem);
+      for (const test of file.tests) tests.push({ ...test, ...run });
     }
-  }
+    const byTag = new Map();
+    for (const test of tests) {
+      for (const tag of test.tags) {
+        if (!byTag.has(tag)) byTag.set(tag, []);
+        byTag.get(tag).push(test);
+      }
+    }
+    parsed = { tests, byTag };
+    return parsed;
+  };
   return {
     tree,
     rules,
     issues,
     harvested,
+    harvests,
     lessons,
     targets,
     notes,
     subjects,
     pages,
     scopeIds,
-    tests,
-    byTag,
-    coverage,
+    areas,
+    repos,
+    audits,
+    sweeps,
+    get tests() {
+      return parseOnce().tests;
+    },
+    get byTag() {
+      return parseOnce().byTag;
+    },
+    get coverage() {
+      parseOnce();
+      return coverage;
+    },
   };
 }
 
@@ -983,8 +1095,12 @@ const hits = (text, groups) =>
     patternsOf(group).some((pattern) => pattern.test(text))
   ).length;
 
-function ranked(items, groups, fields) {
-  const need = groups.length > 2 ? 2 : groups.length;
+function ranked(
+  items,
+  groups,
+  fields,
+  need = groups.length > 2 ? 2 : groups.length
+) {
   return items
     .map((item) => {
       const [title = '', body = ''] = fields(item);
@@ -1015,6 +1131,32 @@ const issueFields = (issue) => [
 ];
 const testFields = (test) => [test.title, test.suite.join(' ')];
 
+// A query of one token may name an area by its id or an alias, or a review
+// scope that areas list, which picks every area that lists it.
+function areasOf(index, token) {
+  const named = index.areas.filter(
+    (area) => area.area === token || area.aliases.includes(token)
+  );
+  return named.length
+    ? named
+    : index.areas.filter((area) => area.scopes.includes(token));
+}
+
+// An exact `owner/name` or an editor key names a repo in any query; a bare
+// name names one only alone and only when one repo has it.
+function repoOf(index, token, alone) {
+  const named = (name) =>
+    index.repos.find((row) => row.repo.toLowerCase() === name.toLowerCase());
+  const exact =
+    named(token) ?? (editorRepos[token] && named(editorRepos[token]));
+  if (exact) return exact;
+  if (!alone) return undefined;
+  const byName = index.repos.filter(
+    (row) => row.repo.toLowerCase().split('/')[1] === token.toLowerCase()
+  );
+  return byName.length === 1 ? byName[0] : undefined;
+}
+
 function keysAndWords(index, query) {
   const keys = {
     rules: new Set(),
@@ -1022,9 +1164,25 @@ function keysAndWords(index, query) {
     paths: [],
     targets: [],
     editors: [],
+    areas: [],
+    scopes: [],
+    repos: [],
     words: [],
   };
-  for (const token of query.trim().split(/\s+/)) {
+  const tokens = query.trim().split(/\s+/);
+  for (const token of tokens) {
+    const areas =
+      tokens.length === 1 ? areasOf(index, token.toLowerCase()) : [];
+    const repo = repoOf(index, token, tokens.length === 1);
+    if (areas.length) {
+      keys.areas.push(...areas.map((area) => area.area));
+      keys.scopes.push(
+        ...(index.scopeIds.includes(token.toLowerCase())
+          ? [token.toLowerCase()]
+          : union(areas.flatMap((area) => area.scopes)))
+      );
+    }
+    if (repo) keys.repos.push(repo.repo);
     if (RULE_ID.test(token)) keys.rules.add(token);
     else if (RULE_PREFIX.test(token)) {
       for (const rule of index.rules) {
@@ -1036,10 +1194,141 @@ function keysAndWords(index, query) {
     else if (index.targets.some((target) => target.id === token)) {
       keys.targets.push(token);
     } else if (editorRepos[token]) keys.editors.push(token);
+    else if (areas.length || repo) continue;
     else if (token.includes('/')) keys.paths.push(token.replace(/^\.\//, ''));
     else keys.words.push(token);
   }
   return keys;
+}
+
+// An area searches by its title words, aliases and scopes, and one hit is
+// enough. Each word is singular, because a search form also matches its plural.
+const singular = (word) =>
+  /^\w{2,}[^aiosu]s$/.test(word) ? word.slice(0, -1) : word;
+const areaGroups = (areas, scopes) =>
+  groupsOf(
+    union(
+      [...areas.flatMap((area) => [area.title, ...area.aliases]), ...scopes]
+        .flatMap((term) => term.toLowerCase().split(/\W+/))
+        .map(singular)
+    )
+  );
+
+const isAreaPage = (areas) => (page) =>
+  page.file.startsWith(`${HOMES}/`) &&
+  areas.includes(
+    page.file
+      .split('/')
+      .at(-1)
+      .replace(/(?:-\d+)?\.md$/, '')
+  );
+
+// Clone paths in the repo list are relative to the main checkout, which every
+// worktree of it shares.
+function plateRoot(repo) {
+  const common = git(repo, [
+    'rev-parse',
+    '--path-format=absolute',
+    '--git-common-dir',
+  ]);
+  return common.status === 0 ? dirname(common.stdout.trim()) : repo;
+}
+
+/**
+ * One repo's row, the homes that name it and the last commit each lane read:
+ * the newest audit, its harvest and the newest pin a research page cites, each
+ * with the commits the local clone holds since.
+ */
+function repoCard(index, name) {
+  const row = index.repos.find(
+    (item) => item.repo.toLowerCase() === name.toLowerCase()
+  );
+  const id = row.repo.toLowerCase();
+  const clone = row.clone ? join(plateRoot(index.tree.repo), row.clone) : null;
+  const cloned = Boolean(clone && existsSync(join(clone, '.git')));
+  const since = (commit) => {
+    if (!cloned) return null;
+    const counts = git(clone, [
+      'rev-list',
+      '--left-right',
+      '--count',
+      `${commit}...HEAD`,
+    ]);
+    if (counts.status !== 0) return null;
+    const [missing, after] = counts.stdout.trim().split(/\s+/).map(Number);
+    return { after, missing };
+  };
+  const pin = new RegExp(
+    `(?<![\\w./-])${escapeRegExp(row.repo)}@([0-9a-f]{7,40})(?!\\w)`,
+    'gi'
+  );
+  const pins = new Map();
+  for (const page of index.pages) {
+    for (const [, commit] of page.text.matchAll(pin)) {
+      if (!pins.has(commit)) pins.set(commit, page.file);
+    }
+  }
+  let newestPin = null;
+  if (cloned && pins.size) {
+    const dated = git(clone, [
+      'log',
+      '--no-walk',
+      '--ignore-missing',
+      '--format=%H %ct',
+      ...pins.keys(),
+    ]);
+    const times = dated.stdout
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => line.split(' '));
+    for (const [commit, file] of pins) {
+      const time = Number(times.find(([full]) => full.startsWith(commit))?.[1]);
+      if (time > (newestPin?.time ?? 0)) newestPin = { commit, file, time };
+    }
+  }
+  const audit = index.audits
+    .filter((mark) => mark.repo === id)
+    .sort((a, b) => b.at.localeCompare(a.at))[0];
+  const harvest = index.harvests.find(
+    (mark) => editorRepos[mark.editor]?.toLowerCase() === id
+  );
+  const marks = [
+    audit && {
+      lane: 'audit',
+      commit: audit.commit,
+      source: `${audit.file} ${audit.audit}`,
+    },
+    harvest && {
+      lane: 'harvest',
+      commit: harvest.revision,
+      source: harvest.file,
+    },
+    pins.size && {
+      lane: 'research',
+      commit: newestPin?.commit ?? null,
+      source: newestPin?.file ?? null,
+      cited: pins.size,
+    },
+  ]
+    .filter(Boolean)
+    .map((mark) => ({
+      ...mark,
+      since: mark.commit ? since(mark.commit) : null,
+    }));
+  const head = cloned ? git(clone, ['rev-parse', '--short=9', 'HEAD']) : null;
+  return {
+    ...row,
+    cloned,
+    head: head?.status === 0 ? head.stdout.trim() : null,
+    homes: index.pages
+      .filter(
+        (page) =>
+          HOME_README.test(page.file) &&
+          readmeRepos(page.text).some((repo) => repo.toLowerCase() === id)
+      )
+      .map((page) => page.file),
+    marks,
+  };
 }
 
 const TEST_FILE = /\.(?:test|spec)\.[cm]?[jt]sx?$/;
@@ -1069,6 +1358,26 @@ function addReachedTags(index, { rules, issues }, tests = []) {
   tagsOf([...issues].flatMap((ref) => index.byTag.get(ref) ?? []));
 }
 
+// The rules the best word-matched tests prove, and the tests and issues the
+// best word-matched rules reach.
+function nearTags(index, found, limit) {
+  const viaTests = { rules: new Set(), issues: new Set() };
+  addReachedTags(index, viaTests, found.tests.slice(0, limit));
+  const viaRules = {
+    rules: new Set(found.law.slice(0, limit).map((rule) => rule.id)),
+    issues: new Set(),
+  };
+  addReachedTags(index, viaRules);
+  return {
+    law: index.rules.filter((rule) => viaTests.rules.has(rule.id)),
+    tests: tagged(index, { rules: viaRules.rules, issues: viaTests.issues }),
+    upstream: index.issues.filter(
+      (issue) =>
+        viaTests.issues.has(issue.ref) || viaRules.issues.has(issue.ref)
+    ),
+  };
+}
+
 const tagged = (index, keys) =>
   [...keys.rules, ...keys.issues].flatMap((tag) => index.byTag.get(tag) ?? []);
 const union = (...lists) => [...new Set(lists.flat())];
@@ -1080,6 +1389,7 @@ const union = (...lists) => [...new Set(lists.flat())];
 export function card(index, query, { detail = false } = {}) {
   const limit = detail ? 25 : 5;
   const keys = keysAndWords(index, query);
+  const areaMode = keys.areas.length > 0 && !keys.words.length;
   const pathTests = keys.paths.flatMap((path) => testsOfPath(index, path));
   addReachedTags(index, keys, pathTests);
   const issueRows = index.issues.filter((issue) => keys.issues.has(issue.ref));
@@ -1105,7 +1415,24 @@ export function card(index, query, { detail = false } = {}) {
     ),
     research: [],
     pages: [],
-    subjects: [],
+    subjects: index.subjects.filter((subject) =>
+      keys.scopes.includes(basename(subject.file, '.md'))
+    ),
+    areas: index.areas.filter((area) => keys.areas.includes(area.area)),
+    repoCards: keys.repos.map((name) => repoCard(index, name)),
+    areaPages: index.pages.filter(isAreaPage(keys.areas)),
+    areaRepos: index.repos
+      .filter((row) => row.areas.some((area) => keys.areas.includes(area)))
+      .sort(
+        (a, b) =>
+          (a.status === 'saved' ? 0 : 1) - (b.status === 'saved' ? 0 : 1) ||
+          b.added.localeCompare(a.added)
+      ),
+    sweeps: index.sweeps.filter((row) =>
+      row.cells.some((cell) =>
+        keys.scopes.includes(cell.replaceAll('`', '').toLowerCase())
+      )
+    ),
   };
 
   // An issue key alone also searches with its title, so a card finds the law
@@ -1113,65 +1440,47 @@ export function card(index, query, { detail = false } = {}) {
   const words = keys.words.length
     ? keys.words
     : issueRows.slice(0, 1).flatMap((issue) => issue.title.split(/[^\w+]+/));
-  const groups = groupsOf(words);
+  const groups = areaMode
+    ? areaGroups(keyed.areas, keys.scopes)
+    : groupsOf(words);
   if (groups.length) {
+    const need = areaMode ? 1 : undefined;
+    const by = (items, fields) => ranked(items, groups, fields, need);
     const found = {
-      law: ranked(index.rules, groups, ruleFields),
-      tests: ranked(
-        index.tests.filter((test) => test.title),
-        groups,
-        testFields
-      ),
-      upstream: ranked(index.issues, groups, issueFields),
-      harvested: ranked(
+      law: by(index.rules, ruleFields),
+      ...(areaMode
+        ? {}
+        : {
+            tests: by(
+              index.tests.filter((test) => test.title),
+              testFields
+            ),
+          }),
+      upstream: by(index.issues, issueFields),
+      harvested: by(
         index.harvested.filter((test) => test.title),
-        groups,
         (test) => [test.title]
       ),
-      lessons: ranked(index.lessons, groups, (lesson) => [
-        lesson.title,
-        lesson.text,
-      ]),
-      targets: ranked(index.targets, groups, (target) => [
-        target.id,
-        target.question,
-      ]),
-      notes: ranked(index.notes, groups, (note) => [note.title, note.text]),
-      research: ranked(
+      lessons: by(index.lessons, (lesson) => [lesson.title, lesson.text]),
+      targets: by(index.targets, (target) => [target.id, target.question]),
+      notes: by(index.notes, (note) => [note.title, note.text]),
+      research: by(
         (index.researchRows ??= index.tree.repo
           ? researchRows(index.tree.repo).rows
           : []),
-        groups,
         (row) => [row.run, row.text]
       ),
-      pages: ranked(index.pages, groups, (page) => [page.title, page.text]),
+      pages: by(index.pages, (page) => [page.title, page.text]),
       // A subject's lead outranks its body, which `ranked` penalizes for length.
       subjects: union(
-        ranked(index.subjects, groups, (subject) => [
+        by(index.subjects, (subject) => [
           `${subject.file} ${subject.title}`,
           subject.lead,
         ]),
-        ranked(index.subjects, groups, (subject) => [
-          subject.title,
-          subject.text,
-        ])
+        by(index.subjects, (subject) => [subject.title, subject.text])
       ),
     };
-    const viaTests = { rules: new Set(), issues: new Set() };
-    addReachedTags(index, viaTests, found.tests.slice(0, limit));
-    const viaRules = {
-      rules: new Set(found.law.slice(0, limit).map((rule) => rule.id)),
-      issues: new Set(),
-    };
-    addReachedTags(index, viaRules);
-    const near = {
-      law: index.rules.filter((rule) => viaTests.rules.has(rule.id)),
-      tests: tagged(index, { rules: viaRules.rules, issues: viaTests.issues }),
-      upstream: index.issues.filter(
-        (issue) =>
-          viaTests.issues.has(issue.ref) || viaRules.issues.has(issue.ref)
-      ),
-    };
+    const near = areaMode ? {} : nearTags(index, found, limit);
     for (const section of Object.keys(found)) {
       keyed[section] = union(
         keyed[section],
@@ -1183,9 +1492,12 @@ export function card(index, query, { detail = false } = {}) {
 
   // Paths, the words that name a scope, or the whole word query when nothing
   // names one go to the review ledger's lookup, which loads once per index.
-  const named = keys.words
-    .filter((word) => index.scopeIds.includes(word.toLowerCase()))
-    .map((word) => word.toLowerCase());
+  const named = union(
+    keys.words
+      .filter((word) => index.scopeIds.includes(word.toLowerCase()))
+      .map((word) => word.toLowerCase()),
+    keys.scopes.filter((scope) => index.scopeIds.includes(scope))
+  );
   const wordsOnly =
     keys.words.length > 0 && !named.length && !keys.paths.length;
   const ledger =
@@ -1205,7 +1517,10 @@ export function card(index, query, { detail = false } = {}) {
   let scopeNote;
   for (const scopeQuery of scopeQueries) {
     try {
-      for (const item of lookupIn(ledger, scopeQuery, { detail })) {
+      for (const item of lookupIn(ledger, scopeQuery, {
+        detail,
+        freshness: false,
+      })) {
         scopeCards.set(item.id ?? JSON.stringify(item), item);
       }
     } catch (error) {
@@ -1222,8 +1537,12 @@ export function card(index, query, { detail = false } = {}) {
       paths: keys.paths,
       targets: keys.targets,
       editors: keys.editors,
+      areas: keys.areas,
+      scopes: keys.scopes,
+      repos: keys.repos,
       words: keys.words,
     },
+    areaMode,
     more: {},
   };
   for (const [section, items] of Object.entries({
@@ -1264,8 +1583,9 @@ export function writeBack(result) {
     ['lesson', lesson ? lesson.file : `${LESSONS}/<area>.md`],
     [
       'external finding',
-      'a research run in docs/plite/research/<date>-<slug>/ through the research rule',
+      `${HOMES}/<home>/${result.areas[0]?.area ?? '<area>'}.md, citing <owner>/<repo>@<commit>:<path>`,
     ],
+    ['repo', `${REPOS}, for each repo a search showed, saved or skipped`],
   ];
 }
 
@@ -1527,6 +1847,67 @@ export function findings(
         rule.line,
         `${rule.id} has status ${rule.status ?? 'none'}`
       );
+    }
+  }
+
+  const areaIds = new Set(index.areas.map((area) => area.area));
+  const listedRepos = new Map();
+  for (const row of index.repos) {
+    const id = row.repo.toLowerCase();
+    if (listedRepos.has(id)) {
+      at(
+        'K16',
+        row.file,
+        row.line,
+        `${row.repo} is listed again (first at line ${listedRepos.get(id)})`
+      );
+    } else listedRepos.set(id, row.line);
+    if (!REPO_KINDS.has(row.kind)) {
+      at(
+        'K16',
+        row.file,
+        row.line,
+        `${row.repo} has kind ${row.kind || 'none'}, not editor, library or app`
+      );
+    }
+    if (!REPO_STATUSES.has(row.status)) {
+      at(
+        'K16',
+        row.file,
+        row.line,
+        `${row.repo} has status ${row.status || 'none'}, not saved or skipped`
+      );
+    }
+    for (const area of row.areas.filter((name) => !areaIds.has(name))) {
+      at(
+        'K16',
+        row.file,
+        row.line,
+        `${row.repo} names area ${area}, which ${AREAS} lacks`
+      );
+    }
+  }
+  for (const area of index.areas) {
+    for (const scope of area.scopes.filter(
+      (name) => !index.scopeIds.includes(name)
+    )) {
+      at(
+        'K16',
+        area.file,
+        area.line,
+        `${area.area} names scope ${scope}, which has no docs/research/review-scopes/${scope}.json`
+      );
+    }
+  }
+  for (const page of index.pages.filter((item) =>
+    HOME_README.test(item.file)
+  )) {
+    const line =
+      page.text.split('\n').findIndex((text) => text.startsWith('Repos: ')) + 1;
+    for (const repo of readmeRepos(page.text)) {
+      if (!listedRepos.has(repo.toLowerCase())) {
+        at('K16', page.file, line, `Repos names ${repo}, which ${REPOS} lacks`);
+      }
     }
   }
 

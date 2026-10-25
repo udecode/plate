@@ -100,9 +100,11 @@ export const differences = (from, minus) =>
  *
  * `check` fails on any difference. `lower` fails on a finding the baseline
  * does not list and otherwise drops the entries the tree no longer holds.
- * `init` seeds every rule the file lacks.
+ * `init` seeds every rule the file lacks. `describe` turns a new finding's
+ * baseline key into the line the caller prints for it.
  */
 export function enforceBaseline({
+  describe = (key) => key,
   file,
   found,
   lowerCommand,
@@ -171,7 +173,7 @@ export function enforceBaseline({
   const decreases = differences(old, found);
 
   if (increases.length > 0) {
-    console.error(increases.join('\n'));
+    console.error(increases.map(describe).join('\n'));
     console.error(newFindingsHelp);
     return 1;
   }
