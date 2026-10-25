@@ -24,6 +24,7 @@ Pages in this folder:
 - [Wordgard: selection and caret](selection-and-caret.md)
 - [Wordgard: tables](tables.md)
 - [Wordgard: testing and proof](testing-and-proof.md)
+- [Wordgard: performance](performance.md)
 
 Research runs:
 

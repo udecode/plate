@@ -13,15 +13,20 @@ Pages in this folder:
 - [Model, plugin and history API](model-and-plugin-api.md)
 - [Model, plugin and history API, part 2](model-and-plugin-api-2.md)
 - [Model, plugin and history API, part 3](model-and-plugin-api-3.md)
+- [Model, plugin and history API, part 4](model-and-plugin-api-4.md)
 - [Performance diagnosis](performance.md)
 - [Performance diagnosis, part 2](performance-2.md)
 - [Rendering, decorations and overlays](rendering-and-overlays.md)
 - [Rendering, decorations and overlays, part 2](rendering-and-overlays-2.md)
 - [Selection, navigation and delete](selection-and-editing.md)
+- [Selection, navigation and delete, part 2](selection-and-editing-2.md)
 - [Testing and browser proof](testing-and-proof.md)
 - [Testing and browser proof, part 2](testing-and-proof-2.md)
 - [Testing and browser proof, part 3](testing-and-proof-3.md)
+- [Testing and browser proof, part 4](testing-and-proof-4.md)
 - [Tooling, docs build and release](tooling-and-release.md)
+- [Tooling, docs build and release, part 2](tooling-and-release-2.md)
+- [plate-notes: docs and API design](docs-and-api-design.md)
 
 Other pages:
 

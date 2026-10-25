@@ -44,6 +44,7 @@ Pages in this folder:
 - [Typora math delimiter triggers](math-delimiter-triggers.md)
 - [Typora media authoring and path policy](media-authoring-and-path-policy.md)
 - [Typora navigation, search, outline, and TOC](navigation-search-outline-and-toc.md)
+- [typora: selection and caret](selection-and-caret.md)
 
 Decisions:
 

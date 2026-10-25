@@ -35,6 +35,8 @@ of the broader math editing surface.
   - typing `$$`
   - pressing `Return`
 
+- The April 4, 2026 Typora corpus scan records two sides of block-math interaction: `$$` followed by Return enters math input, and Up/Down or Ctrl/Command+Return exits math editing. Evidence: `c70bacbd4a:docs/plans/2026-04-04-typora-corpus-spec-gap-scan.md:48-50`, citing the cached Math page. The scan is unversioned documentation evidence; it does not establish current Plate behavior or native behavior on every Typora platform.
+
 ## Plate-relevant takeaways
 
 - inline `$` pairing and block `$$` promotion are separate input-assist

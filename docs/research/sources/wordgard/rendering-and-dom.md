@@ -4,6 +4,8 @@
 
 - **Bidi and tiles.** Wordgard has its own bidi engine, which the 2026-07-27 audit kept as a tradeoff rather than a proven win. Its tile rendering had no benchmark shared with Plite and no local non-React consumer, so the audit makes no claim either way. Tile performance and universal bidi superiority were left unknown (wordgard-full-strict.md:24-25, 38-40).
 
+Wordgard's code block is line-shaped state, not bounded rendering of one canonical text. At `wordgard/wordgard@b5ad0d057e2790c8cf971c85a9d2fb7e4a82da54:src/types/schema.ts:46-54` and `src/doc/parse.ts:338-365`, Text and LineBreak leaves represent source lines. `src/editor/tile.ts:668-708,1259-1270` permits adjacent text to merge without a fixed length cap; `src/state/textblock.ts:18-90` caches flattened block offsets. The 2026-09-02 10,000-line fixture counted 20,000 model nodes and 20,006 DOM descendants, yet Wordgard outperformed historical Plite CodeLines in that run. Source: `docs/plans/2026-09-02-wordgard-huge-code-block-benchmark.md:260-264,294-307,362-369`. Line count alone therefore did not isolate the cause of that comparison's rendering cost.
+
 ## Incremental rendering
 
 - **Incremental equals fresh.** `test/webtest-content.ts` lines 50-274 at b5ad0d0 pin that incremental rendering matches a fresh render after arbitrary edit sequences, keeps the DOM identity of unaffected nodes and keeps empty-block placeholders valid. Plite's `packages/plitejs/test/react/rendered-dom-shape-contract.tsx` proves sibling DOM identity, placeholder shape, schema-shape reconfiguration and incremental versus fresh equivalence over deterministic edit traces (report.md:109).

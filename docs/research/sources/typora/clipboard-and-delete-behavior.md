@@ -40,6 +40,8 @@ commands.
   - math-line delete
   - empty-block delete
 
+- The April 4, 2026 Typora corpus scan records that ordinary paste prefers HTML and converts it to Markdown, while Paste as Plain Text means Paste as Markdown Source. Copy as Markdown and Copy without Theme Styling are separate product commands. Evidence: `c70bacbd4a:docs/plans/2026-04-04-typora-corpus-spec-gap-scan.md:20-24`, referring to the cached Copy and Paste page. The scan does not pin a Typora application version or cache revision; these are documented Typora behaviors, not adopted Plate laws.
+
 ## Plate-relevant takeaways
 
 - clipboard should be treated as a first-class research lane, not as a side

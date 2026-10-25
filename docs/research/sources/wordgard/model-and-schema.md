@@ -19,3 +19,7 @@
 ## Corrections
 
 - **Corrections.** `test/test-correction.ts` lines 9-85 at b5ad0d0 pin three things: corrections (Wordgard's normalization) receive only the affected node, content or property regions; they can emit several repairs; and they repair an invalid initial state. Plite's `packages/plitejs/test/normalization-contract.ts` covers initial repair, extension ordering, changed targets, scoped reruns, fixpoint, cycles and fuzz. The node and text notification contract the report also named, `extension-change-events-contract.test.ts`, was renamed to `packages/plitejs/test/plugin-change-events-contract.test.ts` in e0c1500b95 (2026-09-15) and still notifies node and text changes from committed intents (report.md:91; checked 2026-10-08).
+
+## Historical value and state purity findings
+
+The August audit of Wordgard at `c715d4ded8fc780f52c13206e589ea31e4148dd4` found that Plot, Slice and mark constructors retained caller arrays, allowing later mutation to invalidate cached lengths and value assumptions. Its state probes also found writable `Transaction.newDoc`, partial state cached after a failed lazy-field update, and embedded-state mutation during collaboration transport and History serialization. Source: `docs/plans/2026-08-01-wordgard-exhaustive-architecture-re-audit.md:137-138`, with state/value probe receipts at line 212. Limit: these are recorded findings from the frozen August source, not fresh verification of later Wordgard.

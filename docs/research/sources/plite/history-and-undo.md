@@ -73,3 +73,7 @@
 ## Persistent anchor recovery
 
 - **Persistent anchor recovery is private branch state.** Plite records before/after geometry for affected persistent nearest anchors and restores the selected side during historic anchor publication. Current `packages/plitejs/src/core/anchor-state.ts:22-58` encodes each record as seven Int32 values plus a shared root table; capture iterates the transaction's affected listeners, and restoration resolves runtime IDs through the live registry. `packages/plitejs/src/history/history-state.ts` carries the packet through branch construction and mapping. This avoids a separate application range cache and restores geometry before observers see publication. Source: `docs/plans/2026-09-03-plite-comment-anchor-edit-and-history.md:248-282`. Seven integers are the raw record payload, not the total retained heap cost.
+
+## Native grouping
+
+- The August 2026 Wordgard adoption added an idle boundary to automatic compatible native edit groups, rather than making elapsed time override explicit merge or split intent. Current `packages/plitejs/src/history/history-plugin.ts:133-201` retains `newBatchDelay`, defaults it to 500 ms and rejects negative or non-finite values. This is a grouping option, not a timestamp persisted with document history or a claim about observed browser typing latency. Source: `c70bacbd4a:docs/plans/2026-08-01-final-wordgard-adoption-plan.md:281`.
