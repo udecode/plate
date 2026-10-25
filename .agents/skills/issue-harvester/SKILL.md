@@ -237,7 +237,7 @@ objective. For each unchecked row:
 Do not patch runtime just because an external issue exists. Patch runtime only
 after a local failing proof exists or the missing test proves a current behavior
 contract gap. Return that issue-bearing candidate to `maintainer slate-issue` for
-one public Slate issue or `maintainer` for any other public issue; only the
+one public Slate issue or the Triage playbook for a udecode/plate issue; only the
 coordinator hands the normalized local repair packet to pstack's Bug fix playbook.
 
 ## Coverage Search

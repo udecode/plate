@@ -133,6 +133,7 @@
     "test:types": "tsc -p tooling/config/tsconfig.type-tests.json --noEmit",
     "test:watch": "bun tooling/scripts/test-suite.mjs --watch",
     "translate": "ts-node tooling/scripts/translate.mjs",
+    "triage": "node tooling/scripts/triage.mjs",
     "typecheck": "pnpm g:typecheck",
     "typecheck:all": "pnpm g:typecheck:all"
   },

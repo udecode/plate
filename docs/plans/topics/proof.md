@@ -48,7 +48,11 @@ await startBrowserNativeEventTrace(locator, {
   natamox is the tester and zbeyens the fixer (owner's word, 2026-10-23).
 - Filing a domain offers one suggested task for its fix run. The tester's
   session leaves it uncarded, as `AGENTS.md`'s Sweep handoff line says, and
-  pushes the ledger at once, and the fixer's `/chips all` takes it over. The
+  pushes the ledger at once, and the fixer's `/chips all` takes it over. It
+  first ran between two machines on 2026-10-24, when zbeyens's `/chips all`
+  took over 14 tasks natamox's tester session had offered.
+  `docs/plans/2026-10-23-sweep-handoff.md` and its ten smoke rounds hold the
+  proof of the routes. The
   fix run builds a missing M6 check before its fix, and the task waits on a
   check task that is already open. The task runs at `high` once triage has
   traced every kind to its owner.
@@ -119,10 +123,6 @@ taps.
   start once their domain is filed.
   t_01a87aed, the arrow regression, stays its own P0 task. owner: zbeyens.
   stop: each lands or is dropped.
-- Nobody has run the handoff between two people. natamox's first filed domain
-  shows whether its task reaches zbeyens's board. owner: natamox and zbeyens.
-  stop: the first domain task reaches zbeyens's board, carded or listed as
-  `start <id>`.
 - The fixer's order trusts the board's priorities, and the board holds 22
   Ready P0 and 48 Ready P1 tasks, most without a card. owner: zbeyens. stop: a
   `/chips all` sweep judges each Ready P0's priority again.

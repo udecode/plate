@@ -1,6 +1,6 @@
 ---
 description: Review implementation ownership and verify Plate/Plite packages, editor states, CLI outputs and registry artifacts through their actual proof owners. Use before writing a plan's phase exits or proof gates, before checking, skipping, deferring or moving any plan proof gate to limits, before writing or changing any test, including `tooling/scripts` and `.agents/rules` `*.test.mjs` files, before calling a dependency or toolchain upgrade done, before calling a failure pre-existing or unrelated, before running a base or HEAD control, including an evidence probe or browser control run during an API review or investigation, before claiming a fix works, before closing any change with a browser-visible result, to prepare a sweep round of beta testing, triage or fix a domain's sweep finds, or decide what follows a round, and to playtest one editor feature.
-argument-hint: '[package | route | cli | collaboration | testing audit | playtest] <target>'
+argument-hint: '[package | route | cli | collaboration | testing audit | sweep | playtest] <target>'
 name: verify
 metadata:
   skiller:

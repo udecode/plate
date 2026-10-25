@@ -23,6 +23,7 @@ playbooks in [`.agents/playbooks/`](../../.agents/playbooks/) build on pstack's.
 | "babysit <number>", "clean up PR <number>", "finish the current tree" or "review PR <number>" | [Babysit](../../.agents/playbooks/babysit.md) |
 | "clean up <surface>" | [Refactoring](../../.agents/playbooks/refactoring.md) |
 | A slowness report or `benchmark <scope>` | [Perf issue](../../.agents/playbooks/perf-issue.md) |
+| `triage`, `triage label:<label>`, `triage #<N>` or `triage fix #<N>` | [Triage](../../.agents/playbooks/triage.md), which records each call in `docs/triage/issues.tsv` |
 
 For example:
 
@@ -51,7 +52,8 @@ These are shortcuts for one job, not a sequence to run.
 | Draft, edit or audit general prose | `/pstack:technical-writing <text or file>` |
 | Explain behavior, rationale or a body of work | `/pstack:how`, `/pstack:why` or `/pstack:teach` |
 | Present existing visual proof | `$walkthrough <completed work>` |
-| Work a public issue, PR or security queue | `$maintainer <scope>` |
+| Work a public PR or security queue, or a Slate issue | `$maintainer <scope>` |
+| Prepare a beta sweep round, or triage or fix a domain's finds | `$verify sweep <round or domain>` |
 | Draft a review comment on a Slate PR or a Plate `main` PR | `/review-comment <PR>` |
 | Draft a Plate Beta issue from video or text | `$maintainer issue-draft <video or text>` |
 | Inspect, sync, promote or verify release lanes | `$release-lanes status`, `sync dry-run`, `sync`, `promote`, `promote execute` or `verify` |
@@ -100,7 +102,7 @@ rg --files --hidden --no-ignore .agents/skills -g SKILL.md | sort
 | [contributor-setup](../../.agents/skills/contributor-setup/SKILL.md) | Bring a branch that predates next's agent rules up to date once, then fix the bodies of your open PRs into next. Its doctor runs at every Claude Code and Codex session start and prints a fix for each plugin or Codex setting behind the checkout's pins. |
 | [changeset](../../.agents/skills/changeset/SKILL.md) | Write and verify package release changesets, registry changelog entries, and the PR’s managed auto-release choice. |
 | [issue-harvester](../../.agents/skills/issue-harvester/SKILL.md) | Maintain exhaustive Slate/Plate issue-closure ledgers from current issue, PR, test and local proof evidence. |
-| [maintainer](../../.agents/skills/maintainer/SKILL.md) | Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof. |
+| [maintainer](../../.agents/skills/maintainer/SKILL.md) | Handle public Plate/Slate GitHub work, such as issue drafts, Slate issues, PRs, security and the queue snapshot, and hold the public truth gate. Triage of udecode/plate issues runs the Triage playbook. |
 | [review-comment](../../.agents/skills/review-comment/SKILL.md) | Review a Slate PR or a Plate PR based on `main` with Plate v2's research, code and tests, and draft the GitHub review comment. |
 | [plate-docs](../../.agents/skills/plate-docs/SKILL.md) | Write or audit Plate public documentation, page design, examples, installation, MDX and navigation. |
 | [plate-next](../../.agents/skills/plate-next/SKILL.md) | Review a live Plate package, file or API path against the Plate v2 target, or sync live packages by repairing their review findings. |

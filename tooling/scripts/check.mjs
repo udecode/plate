@@ -251,6 +251,7 @@ export const steps = [
       'tooling/scripts/knowledge/'
     ),
   },
+  { name: 'triage', run: 'node tooling/scripts/triage.mjs check' },
   { name: 'manifests', run: 'pnpm test:manifests' },
   {
     name: 'toolbar-variants',

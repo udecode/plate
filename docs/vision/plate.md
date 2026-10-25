@@ -1296,7 +1296,8 @@ Owner map:
 
 | Concern                                              | Owner                                     |
 | ---------------------------------------------------- | ----------------------------------------- |
-| public GitHub issue/PR/security queue control plane  | `maintainer`                              |
+| udecode/plate issue triage, its record and fix run   | the Triage playbook                       |
+| public GitHub PRs, security, Slate issues, drafts    | `maintainer`                              |
 | local Plate/Plite behavior-bug or regression repair  | pstack Bug fix playbook, via `verify` |
 | internal Plate/Plite long quality loops              | pstack Autonomous run                     |
 | performance measurement, diagnosis, and fix/rerun    | `benchmark`                               |

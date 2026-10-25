@@ -257,19 +257,20 @@ function problems(path) {
 // The page shows which model and effort wrote each stretch of the log, so a
 // batch from a session whose lead differs from the log's last lead row opens
 // with a new one.
-function leadRow(existing, run) {
+function leadRow(existing, run, miss) {
   const last = existing.findLast((line) => line.split('\t')[1] === 'lead')?.split('\t')[2];
   const label = run ? leadLabel(run) : 'unknown';
-  if (!run) return last === label ? [] : [['lead', label, 'runtime identity could not be verified', 'proof: none', 'recorded unknown session']];
+  const why = `runtime identity could not be verified${miss ? ` because ${miss.replace(/\s+/gu, ' ')}` : ''}`;
+  if (!run) return last === label ? [] : [['lead', label, why, 'proof: none', 'recorded unknown session']];
   return last === label ? [] : [['lead', label, 'read from the session transcript, since an agent cannot see its own effort', `transcript ${basename(run.transcript)}`, `recorded ${run.runtime} session`]];
 }
 
-function append(path, batch, run) {
+function append(path, batch, run, miss = null) {
   const stamp = new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z');
   const text = existsSync(path) ? readFileSync(path, 'utf8') : null;
   const existing = (text ?? '').split('\n');
   const count = batch.length;
-  const attribution = leadRow(existing, run);
+  const attribution = leadRow(existing, run, miss);
   batch = [...attribution, ...batch];
   let opened = existing.some(opens);
   const isWriting = (line) => line.split('\t')[1] === 'writing';
@@ -486,7 +487,7 @@ if (args[0] === 'append') {
   const lead = findLead();
   const run = lead.run ?? null;
   if (!run) console.error(`Runtime identity is unknown because ${lead.miss}, so ${args[1]} records an unknown lead boundary.`);
-  const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run);
+  const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run, lead.miss);
   if (found.length > 0) {
     console.error(`${batch.length > 1 ? 'No row written' : 'Row not written'}:\n${found.join('\n')}`);
     process.exit(1);

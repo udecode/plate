@@ -11,6 +11,8 @@ issue intake/classification -> bug-fix evidence packet
 Bare issue numbers target `udecode/slate`; an issue URL keeps its explicit
 repository. Use `maintainer` for queue selection or batches. Use pstack's Bug
 fix playbook for a local behavior bug or regression with no public mutation.
+A duplicate or fit call follows the [Triage playbook](../../../playbooks/triage.md)'s
+Duplicates and Fit Gate, and a Slate issue gets no row in `docs/triage/issues.tsv`.
 
 ## Authority
 
@@ -70,7 +72,7 @@ Extract:
 | `local-only-fix` | Treat as `red-current`; unmerged local state is not integrated. |
 | `already-accounted` | Verify exact current `next` behavior, comment with evidence, and close only within the proven claim. |
 | `needs-manual-proof` | Run honest supporting proof, request the exact human flow, comment, and leave open. |
-| `plate-owned` | Run local repair through pstack's Bug fix playbook; keep Slate issue coordination here or use `maintainer` when the public target is Plate. |
+| `plate-owned` | Run local repair through pstack's Bug fix playbook; keep Slate issue coordination here or use the Triage playbook when the public target is a udecode/plate issue. |
 | `invalid-or-out-of-scope` | Comment only with decisive evidence; close only when ownership and confidence justify it. |
 | `blocked` | Report missing evidence/access/tooling; do not claim fixed or close. |
 
@@ -78,7 +80,7 @@ Extract:
 
 For `red-current` or `local-only-fix`, run pstack's Bug fix playbook on the
 normalized behavior report and issue constraints, and require back the evidence
-packet `maintainer` names for a public behavior bug. Reject an incomplete
+packet the Bug fix playbook names for a public issue. Reject an incomplete
 packet.
 
 ## Ship And Synchronize
