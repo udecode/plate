@@ -69,6 +69,18 @@
           }
         ]
       }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Artifact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.agents/pstack/page-stop.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/.agents/pstack/page-stop.mjs\" --hook",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "worktree": {

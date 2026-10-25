@@ -270,6 +270,11 @@ const worktrees = (root) => (gitOrNull(root, 'worktree', 'list', '--porcelain') 
 
 export const mainCheckout = (root) => worktrees(root)[0] ?? root;
 
+export const gonePagesFile = (root) => {
+  const common = gitOrNull(root, 'rev-parse', '--path-format=absolute', '--git-common-dir');
+  return common ? join(common, 'pstack-pages-gone') : null;
+};
+
 export function pageUrlOf(root, file) {
   const rel = relative(root, file);
   const lineOf = (text) => (text === null ? null : (parsePlan(text).fields.page ?? null));
@@ -278,13 +283,10 @@ export function pageUrlOf(root, file) {
   const base = gitOrNull(root, 'merge-base', 'HEAD', remote);
   const forked = base ? lineOf(gitOrNull(root, 'show', `${base}:${rel}`)) : null;
   const landedLine = base ? lineOf(gitOrNull(root, 'show', `${remote}:${rel}`)) : null;
-  const rebindStands = own !== forked && landedLine === forked;
-  const url = !base || rebindStands ? own : (landedLine ?? own);
-  const others = worktrees(root)
-    .filter((tree) => tree !== root && existsSync(join(tree, rel)))
-    .map((tree) => ({ tree, url: lineOf(readFileSync(join(tree, rel), 'utf-8')) }))
-    .filter((other) => other.url && other.url !== url);
-  return { url, others };
+  const store = gonePagesFile(root);
+  const gone = store && existsSync(store) ? readFileSync(store, 'utf-8').split('\n') : [];
+  const rebindStands = own !== forked && (landedLine === forked || gone.includes(landedLine));
+  return { url: !base || rebindStands ? own : (landedLine ?? own) };
 }
 
 const PSTACK_PLAYBOOKS = [
@@ -2808,6 +2810,6 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, rendered.html);
   const { root, subjectPath } = contextOf(planPath);
-  const bound = pageUrlOf(root, subjectPath ?? planPath);
-  console.info([...(bound.url ? [`Page: ${bound.url} (publish through page-stop.mjs)`] : []), ...bound.others.map((other) => `Page in ${other.tree}: ${other.url}`), out].join('\n'));
+  const { url } = pageUrlOf(root, subjectPath ?? planPath);
+  console.info([...(url ? [`Page: ${url} (publish through page-stop.mjs)`] : []), out].join('\n'));
 }

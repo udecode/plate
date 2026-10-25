@@ -53,7 +53,7 @@ A record goes stale when the issue text, owner code, duplicate target, task or m
 | The guard's scratch-push lesson | Reverted after the lesson panel. The guard denies every plain push to next again, and a test fixture that pushes to a scratch repository names its branch something else (look) | A pass for a push that reaches none of the project's remotes, telling them apart by how the command spells its destination | scratch pass | detail |
 | Push config the guard does not read | Left open. A push with no refspec that git's push settings send to next passes, and the guard's header says so. The fix reads those settings, a branch's push remote included, for every push with no refspec (look) | Read git's push config in the guard in this run | fix push config | small |
 | What counts as naming a public issue | A hash and a number, alone or after a repository name, or an issues URL; prose such as step #2 also counts, and the real ledger holds no such repro | Only a hash after a repository name, and issues URLs | qualified issues only | detail |
-| The pstack page link | A new page at https://claude.ai/artifact/J9MTBVhDHUnKQZxJ3AyAx6, because https://claude.ai/artifact/XaMiMyTT4RWb4m9QK3zjhp no longer opens (look) | No page for this subject | no page | detail |
+| The pstack page link | A new page at https://claude.ai/artifact/5NABpdSVKTYNJ57igZeY98, because https://claude.ai/artifact/J9MTBVhDHUnKQZxJ3AyAx6 no longer opens, as https://claude.ai/artifact/XaMiMyTT4RWb4m9QK3zjhp did before it (safe) | No page for this subject | no page | detail |
 
 ## Public API
 
