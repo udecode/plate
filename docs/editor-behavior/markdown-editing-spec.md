@@ -433,6 +433,20 @@ $$
 - `EDIT-GLOBAL-004` `locked`: `⌫` deletes or merges the current empty block in place before any structural lift
 - `EDIT-GLOBAL-005` `locked`: expanded selections operate on all selected blocks without silently dropping structure
 
+- `EDIT-HISTORY-CROSS-ROOT-SELECTION-001` `proposed` `undo or redo through a root view`: replay may change content belonging to another root, but must not restore that other root's saved selection into the invoking view or move the invoking view's caret. A content batch restores its saved selection only in the root that owns that selection and participates in the batch.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked. This is a local root-ownership contract, not a claimed reference-editor behavior.
+Source: c70bacbd4a:docs/plans/2026-05-20-plite-non-node-editor-state-architecture-ralplan.md:106-114
+Proof: `packages/plitejs/src/history/history-selection.ts` checks the saved selection's root and the batch's changed roots before restoration, and restoreHistoricSelection writes only when the saved root equals the view root. `apps/plite/tests/plite-browser/donor/examples/multi-root-document.test.ts` "document undo keeps the focused root caret when undoing another root's batch" undoes body content, then header content, and asserts identical body DOM selection and focus across the header undo; subsequent typing stays in the body. This is Plite browser-example proof for undo. That case does not exercise redo or Plate's plugin stack. Test read, not run.
+
+- `EDIT-SELECTION-ASYNC-DECORATION-001` `proposed` `delayed highlight refresh after typing`: a highlight that restructures text DOM preserves the model caret or range and leaves browser selection representing the same model positions. Highlight presentation changes no document content or history. Active composition follows the separate composition repair policy.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked. This is a local presentation invariant, not an observed reference-editor rule.
+Source: docs/plans/2026-05-23-plite-async-decoration-caret-cluster-proof.md:18-25,47-50
+Proof: `apps/plite/tests/plite-browser/donor/examples/decorations-async.test.ts` "keeps the caret at the typed end when delayed decorations restructure text" types a suffix, waits for highlight count to rise from two to three, and asserts the unchanged model caret and matching DOM text offset. It covers a collapsed caret, not an expanded range or history. Mobile uses the harness insertion method. `packages/plitejs/src/react/editable/decoration-repair-bridge.ts` requests model-owned selection repair after changed decoration DOM commits and skips active composition. Only a Plite example supplies browser proof. Test read, not run.
+
 ## Node Model And Affinity Classes
 
 Use these model classes everywhere in this stack:
@@ -563,6 +577,20 @@ abc
 |def
 ```
 
+- `EDIT-P-ENTER-MARKED-END-501` `proposed` `↵`: with a collapsed caret at the end of a paragraph whose final text is formatted, Enter creates the next empty paragraph and puts the collapsed caret at its start. The original paragraph keeps its text and formatting; its separate text leaves must not leave the caret behind. This rule does not choose which marks subsequent typing inherits.
+
+```text
+plain **marked|**
+=>
+plain **marked**
+|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; the split must leave a usable caret in the new paragraph
+Authority: syntax: CommonMark; primary UX ref: Typora; secondary ref: Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-05-07-plite-core-caret-movement-word-insert-break-ralplan.md:19-20
+Proof: packages/plitejs/test/snapshot-contract.ts, 'insertBreak after marked text moves selection into the new block', asserts the unchanged plain and bold leaves, an empty following paragraph and both caret endpoints at its start. packages/plitejs/src/editor/insert-break.ts performs the split and preserves applicable typing marks on the caret. Raw Plite model proof only; no Plate browser keypress was rerun.
+
 - `EDIT-P-ENTER-EMPTY-001` `locked` `↵`
 
 ```text
@@ -570,6 +598,36 @@ abc
 ```
 
 note: keep generic root split behavior
+
+- `EDIT-P-SOFT-BREAK-401` `proposed` `Shift+Enter`: at a collapsed caret in ordinary paragraph text, Shift+Enter inserts one newline character in the same paragraph and advances the caret past it. It does not split the paragraph. A stronger feature owner may claim the gesture first.
+
+```text
+paragraph: abc|def
+=>
+paragraph: abc\n|def
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; the ordinary soft-break input must preserve its distinction from a paragraph split
+Authority: syntax: CommonMark paragraph text; primary UX ref: Typora; secondary ref: Milkdown; inherited family references, with no reference editor checked for this case
+Source: c70bacbd4a:docs/plans/2026-07-05-plite-soft-break-newline-semantics.md:19-23
+Proof: packages/plitejs/test/snapshot-contract.ts, 'insertSoftBreak inserts a newline through its own command', asserts newline insertion into an existing paragraph and both caret endpoints after it. packages/plitejs/src/dom/utils/hotkeys.ts maps Shift+Enter to soft break, and packages/plitejs/src/editor/insert-soft-break.ts inserts the newline. Raw Plite model proof; the test does not press the physical shortcut.
+
+- `EDIT-P-SOFTBREAK-LINE-001` `proposed` `consecutive soft breaks, a trailing soft break, then click and type`: each soft break leaves its own editable paragraph line, including an empty intervening line and the final trailing line. Clicking either line places the caret at its corresponding model offset; typing inserts there. Rendering support characters never become document text, and the soft breaks do not create separate paragraph blocks.
+
+```text
+one paragraph: alpha\n\nbeta\n
+click the empty line, then type middle
+=>
+one paragraph: alpha\nmiddle|\nbeta\n
+click the trailing line, then type tail
+=>
+one paragraph: alpha\nmiddle\nbeta\ntail|
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160; every retained soft-break line must remain editable without introducing document text for rendering support.
+Authority: syntax: CommonMark paragraph text; primary UX ref: Typora; secondary ref: Milkdown. These inherit the Paragraph family's references; no reference editor was checked for this case.
+Source: docs/plans/2026-09-02-wordgard-diff-proof-closure.md:126-138
+Proof: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts`, "keeps consecutive soft-break lines and a trailing break clickable", types alpha, two Shift+Enter breaks, beta and a final break; clicks the empty and trailing lines; and asserts exact model text and caret offsets after inserting middle and tail. It skips mobile. `packages/plitejs/src/react/components/editable-text.tsx` marks the final newline segment as trailing, and `packages/plitejs/src/react/components/text-string.tsx` appends a rendering newline while declaring the logical text length; `packages/plitejs/src/dom/plugin/dom-editor.ts` uses that declared length when resolving model points. This is Plite example proof, not Plate product or physical-device proof. Test read, not run.
 
 - `EDIT-P-BS-START-001` `locked` `⌫`
 
@@ -651,6 +709,13 @@ indented |alpha
 =>
 |alpha
 ```
+
+- `EDIT-P-SPACE-WRAP-001` `proposed` `type ordinary spaces between paragraph words`: the paragraph preserves every typed space and wraps a long space run within the editor's available width without horizontal overflow. The spaces remain paragraph text, and the caret advances through them in typing order. Code-block whitespace follows its own owner.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; ordinary prose input must remain preserved and usable within its wrapping surface
+Authority: syntax: CommonMark paragraph text; primary UX ref: Typora; secondary ref: Milkdown; inherited family references, with no reference editor checked for this case
+Source: c70bacbd4a:docs/plans/4637-fix-editor-space-wrapping.md:211-214
+Proof: apps/www/src/registry/components/editor/editor.spec.tsx checks whitespace-break-spaces classes on mocked editable, view and static surfaces. It measures neither wrapping nor retained spaces or caret movement. apps/www/src/registry/components/editor/editor.tsx and apps/www/src/registry/components/editor/editor-static.tsx apply that CSS mode; the editable also disables default inline styles. No inspected current browser test proves the long-space-run geometry.
 
 ## Heading
 
@@ -1219,6 +1284,13 @@ note: the first `⌘+A` inside a code block selects the whole code block
 
 - `EDIT-CB-BLOCK-SELECTION-001` `proposed`: Code on a block selection turns each run of adjacent selected blocks into one code block, one line per block, and leaves the blocks between runs as they were. The block selection then holds the new code blocks. When any run cannot become a code block where it sits, Code changes nothing. Proof: `packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx` "codes each run of a sparse block selection and leaves the blocks between them", "codes a sparse block selection around a code block it does not hold" and "codes no run of a block selection when one run cannot become code".
 
+- `EDIT-CB-SELECT-ALL-ESCALATE-001` `proposed` `Mod+A`: inside a code block, the first press selects the block's complete text. When that complete text is already selected, the code-block handler yields to document-wide Select All instead of selecting the block again. Neither press changes content.
+
+Classification: substitutable capability, by the tests in docs/vision/plate.md:150-160; without code-local selection expansion, ordinary document Select All remains a complete fallback
+Authority: syntax: CommonMark fenced code blocks; primary UX ref: Typora; secondary ref: Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-07-09-plate-next-code-block-drift-closure.md:370
+Proof: packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.spec.tsx, 'expands the selection to the whole code block', asserts both selection endpoints; 'falls through after the whole code block is selected' asserts Mod+A registration, a false handler result and unchanged selection. packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts implements that fallthrough. This is model proof of local expansion and delegation, not proof of the second physical keypress or its document-wide result.
+
 ## Math Block
 
 Authority:
@@ -1282,9 +1354,38 @@ note: keep tab owned by math editing unless a stronger math-specific surface ove
 
 - `EDIT-MATH-INLINE-ARROW-001` `locked`: `ArrowLeft` and `ArrowRight` at the edges of an inline equation's input hand control back to the editor
 
+- `EDIT-MATH-INLINE-OPEN-001` `proposed` `one primary click on an inline equation from outside editor focus`: the first click opens the equation editor and focuses its textarea without changing the stored expression merely by opening. Editing, closing and one-click reopening remain usable. The same change must preserve the block equation's existing one-click opening behavior.
+
+Classification: invariant within equation editing, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: LaTeX-style math delimiters adopted through remark-math; primary UX ref: Typora; secondary ref: Milkdown. These inherit the Math Block family's authority; no reference editor was checked for this click case.
+Source: docs/plans/2026-08-29-date-calendar-single-click-regression.md:416
+Proof: `apps/www/tests/browser/inline-void-first-click.spec.ts` "inline equation opens from the first focus-owning click" starts outside editor focus, verifies physical pointerdown and mousedown, opens with one click, asserts textarea focus, edits and commits, then reopens with one click and reads the edited expression. "block equation remains a one-click control" checks the block case still opens. The inline test does not compare the document immediately before and after opening. `apps/www/src/registry/components/editor/math.tsx` opens local popover state on click, focuses the textarea after opening, and writes latex only when a changed draft commits. These are Plate browser proof owners, read and not run; no device claim is established.
+
+- `EDIT-MATH-INLINE-EXIT-001` `proposed` `ArrowLeft at the start of an inline equation's input`: with a collapsed input caret at offset zero and no composition active, close the popover, focus the editor and place its collapsed caret immediately before the inline equation. Popover focus restoration must preserve that landing point. Leaving the input does not delete or relocate the equation.
+
+```text
+before [inline equation x; input caret |x] after
+ArrowLeft
+=>
+before |[inline equation x] after
+popover closed; editor focused
+```
+
+Classification: invariant within inline-equation edge navigation, by the tests in docs/vision/plate.md:151-160; leaving through the left edge must produce the corresponding usable editor position.
+Authority: syntax: LaTeX-style math delimiters as adopted through remark-math; primary UX ref: Typora; secondary ref: Milkdown. These inherit the Math Block family's references; no reference editor was checked for this exact landing.
+Source: c70bacbd4a:docs/plans/5071-fix-inline-equation-arrowleft-dismissal.md:28-30
+Proof: `apps/www/src/registry/components/editor/math.tsx` checks both input endpoints are zero, calls close(true, 'before'), selects the point before the equation, focuses the editor and prevents the inline popover's final-focus restoration. Its composition guard yields before edge handling. The inspected `apps/www/src/registry/components/editor/math.spec.tsx` and `apps/www/src/registry/components/editor/math.lifecycle.spec.tsx` cover dismissal, draft lifecycle and composition submission, but neither presses ArrowLeft or asserts the before-equation landing. No inspected current test proves this complete gesture; support is source inspection only, and no test was run.
+
 - `EDIT-MATH-BLOCK-INSERT-001` `locked`: inserting an equation inserts a void block equation at the requested path
 
 - `EDIT-MATH-BLOCK-BS-START-001` `locked` `⌫`: at the start of the block after a block equation, the selection moves onto the equation instead of deleting through it
+
+- `EDIT-MATH-SELECTION-LAYOUT-001` `proposed` `select a block equation or close its equation editor`: the copied block-equation surface keeps the equation in normal full-row flow, with the formula horizontally centered at its natural size and the following block's normal spacing preserved. Selection must not compress the formula or create an extra caret row inside the block atom.
+
+Classification: product policy, by the tests in docs/vision/plate.md:150-160; full-row centered presentation belongs to this copied editor surface rather than every possible math renderer
+Authority: syntax: LaTeX-style math delimiters as adopted through remark-math; primary UX ref: Typora; secondary ref: Milkdown; inherited family references, with no reference editor checked for this layout
+Source: docs/plans/2026-08-29-block-void-layout-regression-attempt-3.md:49-64
+Proof: apps/www/tests/browser/block-void-caret.spec.ts, 'block-void:native-caret-not-painted-below-void', asserts full-row button width, button centering and formula size before and after opening the equation editor and clicking Done; it also checks that the selection anchor is outside the equation. It does not directly measure the following block's spacing or the formula's center. apps/www/src/registry/components/editor/math.tsx uses a full-width centered flex button. The browser test was read, not rerun.
 
 ## Table
 
@@ -1462,6 +1563,115 @@ Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: none, since GFM tables carry no widths; primary UX ref: Google Docs for table feel; secondary ref: Notion
 Source: docs/plite/research/2026-09-17-table-substrate-ownership/REPORT.md:20-22
 Proof: `packages/platejs/src/react/features/table/useTableResize.spec.tsx:128` "previews without writes and commits one complete undoable gesture" asserts two previews with unchanged children, then one `columnWidths` write, one undo entry and one `onResizeEnd` on pointerup, and `:149` "ignores other pointers and discards a cancelled gesture" asserts `pointercancel` writes nothing and adds no undo entry; the www browser tests "table resize previews, commits, and undoes at ${width}px" and "table resize cancellation restores the rendered sizes" in `apps/www/tests/browser/table-resize.spec.ts` (Chromium, Firefox and WebKit, `/blocks/table-demo`) cover a column and a row commit with undo, and cancellation. No test mounts two views, so the preview staying in the dragged view is unproven, and the row drag asserts no absence of writes during the drag. Code: the preview stays in the caller's `onResize`, and pointerup calls one `update.resize` (`packages/platejs/src/react/features/table/useTableResize.ts:105`, `:115`). Checked 2026-10-08.
+
+- `EDIT-TABLE-COPY-CROSSING-301` `proposed` `copy an ordinary document text range across a table`: when a text range starts before a table and ends after it, the copied content keeps the complete table and its cells in document order. Cell-selection projection must not replace or discard that table. Copy leaves the source content and selection unchanged.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; omitting selected table structure loses document content
+Authority: syntax: GFM tables; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-07-14-plate-next-table-no-drift-re-audit.md:738-741; c70bacbd4a:docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md:1563
+Proof: packages/platejs/src/features/table/lib/BaseTablePlugin.clipboard.spec.tsx, 'preserves a table inside an ordinary document range', exports a range from before a two-cell table to after it and asserts that the slice contains a table. It does not compare every cell or assert native clipboard serialization. The slice middleware in packages/platejs/src/features/table/lib/BaseTablePlugin.ts returns the ordinary slice when no table selection resolves. Model slice-export proof only.
+
+- `EDIT-TABLE-BORDER-UNDO-001` `proposed` `change borders across selected cells, then Undo`: one border action changes all affected cell edges in one undo step. One Undo restores every border changed by that action without changing table content or shape.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; a partial replay would leave one logical formatting action only partly undone
+Authority: syntax: none for borders, which GFM does not represent; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-07-14-plate-next-table-package-review.md:749-750
+Proof: packages/platejs/src/features/table/lib/BaseTablePlugin.borders.spec.tsx, 'toggles the left border for every selected non-first-column cell in a multi-row selection', asserts the changed adjacent borders, one undo entry and restoration of the original children after Undo. packages/platejs/src/features/table/lib/BaseTablePlugin.ts applies the selected edges through one transaction. Model proof; the test does not drive a native toolbar.
+
+- `EDIT-TABLE-RESIZE-AFTER-EDIT-001` `proposed` `column-boundary drag after a cell edit or its Undo`: resizing still previews and commits from the table's current state after editing a cell, including after undoing that edit. Undo restores the previous widths. After explicitly refocusing a cell, typing remains usable; this rule does not require the drag to restore text focus automatically.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; ordinary editing must not disable the installed resize capability
+Authority: syntax: none for widths, which GFM does not represent; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-09-09-editor-performance-phase-5.md:400-406
+Proof: packages/platejs/src/react/features/table/useTableResize.spec.tsx, 'starts from current table state after a cell edit (undo: %s)', covers both branches with synthetic pointer events, asserts a preview without document writes, committed widths and exact restoration after Undo. It does not test subsequent typing. packages/platejs/src/react/features/table/useTableResize.ts resolves the current table by its stable key at pointerdown. The inspected apps/www/tests/browser/table-resize.spec.ts covers ordinary resize and Undo, without the preceding edit sequence.
+
+- `EDIT-TABLE-SELECTION-CURSOR-001` `proposed` `hold a selection drag across table resize handles`: ignored resize handles show the text-selection cursor before pointer entry and throughout the crossing. Crossing preserves the held cell selection, starts no resize or preview and permits further selection extension. After release, idle handles regain their resize cursor and normal resizing remains available.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; ignored chrome must neither interrupt selection nor advertise an action it will not perform
+Authority: syntax: none for pointer feedback; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-26-table-selection-cursor-regression.md:398-410
+Proof: apps/www/tests/browser/table-selection.spec.ts, 'table:ignore-resize-handle-hover-during-cell-selection-drag', asserts the pre-entry and target-capture computed cursor, unchanged selection, absent preview and resize state, continued drag extension and restored idle hover. It does not perform a subsequent resize or capture OS cursor pixels. apps/www/src/registry/components/editor/table.tsx supplies the held-pointer cursor CSS and declines hover previews while buttons are held. The test was read, not rerun.
+
+- `EDIT-TABLE-SELECTION-HANDLES-001` `proposed` `drag-select cells in different table rows, then release`: block, selected-cell and row drag affordances stay absent over or beside the selected content during the held drag and after release. Releasing the pointer preserves the selected cells. This rule does not forbid the row handle for a selection confined to one row.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; drag chrome must not obscure or compete with the active multi-row cell selection
+Authority: syntax: none for drag affordances; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-26-table-selection-drag-handle-regression-repair.md:359-369
+Proof: apps/www/tests/browser/table-selection.spec.ts, 'table:hide-block-handles-during-cell-selection', checks absent Drag block and Move selected cells controls during and after same-row and multi-row drags. It explicitly permits one hovered row handle in the same-row case and requires none in the multi-row case. apps/www/src/registry/components/editor/dnd.tsx hides block handles for a cell selection; apps/www/src/registry/components/editor/table.tsx hides row handles for multi-row selections. The browser test was read, not rerun.
+
+- `EDIT-TABLE-MERGE-RICH-001` `proposed` `merge selected cells, then split the merged cell`: merging preserves every source cell's rich content in row-major order, including media-only content, nested tables, marks and semantically meaningful empty objects. Only default empty placeholders may be discarded. The retained anchor cell becomes selected. Splitting keeps the merged content in that anchor cell, creates empty peer cells and keeps the anchor selected without duplicating its content.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; changing table structure must not lose or duplicate semantic content
+Authority: syntax: GFM tables, with local rich-cell and merged-cell extensions; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-09-17-table-api-design.md:248
+Proof: packages/platejs/src/features/table/lib/BaseTablePlugin.merge-split-remove.spec.tsx asserts row-major text order, preservation of a nested table, empty split peers and content retained in the first cell. It does not prove media-only sources, marks or semantic empty objects. packages/platejs/src/features/table/lib/BaseTablePlugin.ts moves complete child nodes by key, removes only a structurally default placeholder, and selects the retained anchor after merge and split. Model proof only.
+
+- `EDIT-TABLE-DRAG-HIGHLIGHT-001` `proposed` `hold a pointer drag selecting more than one table cell`: native text-selection highlight stays hidden throughout the table, including intervening cells outside the projected cell selection. Pointer release preserves the selected cells, clears the temporary native range and leaves the editor focused.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; native range paint must not contradict the editor's cell selection
+Authority: syntax: none for selection paint; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-26-table-native-highlight-reporter-contradiction-regression.md:296-307
+Proof: apps/www/tests/browser/table-selection.spec.ts, 'table:hide-native-highlight-during-multi-cell-drag', holds a real pointer drag, checks two projected cells while a native range crosses intervening text, compares pixels with transparent and positive highlight controls, then asserts retained cells, no native range and editor focus after release. apps/www/src/registry/components/editor/table.tsx applies transparent native selection paint table-wide when several cells are selected. The browser test was read, not rerun.
+
+- `EDIT-TABLE-SELECTION-PAINT-001` `proposed` `select table cells or the whole table`: selection paints one layer inside each selected cell and no table-wide layer in the wrapper or gutter. Whole-table selection uses the same cell-only paint. The selection model, applicable toolbar and subsequent cell editing remain usable.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; selection paint must identify selected content without adding a misleading outer layer
+Authority: syntax: none for selection paint; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-26-table-cell-only-selection-paint-regression.md:102-106
+Proof: apps/www/tests/browser/table-selection.spec.ts, 'table:paint-only-selected-cells', selects the whole table with Mod+A, checks all 16 cells selected and a visible popup, compares pixels with cell-only, absent and duplicate controls, then edits a cell and undoes the edit. The same file's mixed-block-selection cases cover the table without an outer overlay. apps/www/src/registry/components/editor/table.tsx paints selected cells and routes a table block highlight through cell pseudo-elements. The browser tests were read, not rerun.
+
+- `EDIT-TABLE-DRAG-PAINT-001` `proposed` `pointer drag within or across table cells`: ordinary text selection confined to one cell retains its normal native highlight. Once the drag selects several cells, native text-selection paint stays hidden throughout the table. Releasing preserves the selected cells and editor focus without leaving a competing native highlight. Painting changes no document content.
+
+Classification: invariant within table selection, by the tests in docs/vision/plate.md:151-160; native text paint must remain usable for text selection and must not misrepresent a cell selection.
+Authority: syntax: GFM tables; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown. These inherit the Table family's references; no reference editor was checked for this case.
+Source: docs/plans/2026-08-26-hide-native-table-highlight-during-drag.md:300-314
+Proof: `apps/www/tests/browser/table-selection.spec.ts`, "table:hide-native-highlight-during-multi-cell-drag", checks a nontransparent selection background before dragging, holds a real multi-cell drag, compares native-highlight pixels against transparent and positive controls, and asserts two selected cells, no native range and editor focus after release. It does not perform a separate within-cell text-selection drag or compare exact selection endpoints after release. `apps/www/src/registry/components/editor/table.tsx` applies transparent selection backgrounds only when the table has an expanded cell selection; `packages/platejs/src/react/features/table/TablePlugin.tsx` imports the released native range as a cell selection. This extends the existing multi-cell highlight rule with the ordinary single-cell paint requirement. Test read, not run.
+
+- `EDIT-TABLE-DRAG-CONTRACT-001` `proposed` `move a held table-cell selection drag back toward its origin`: the selected rectangle contracts to the current pointer position. Returning inside the origin cell restores a text selection confined to that cell, with no expanded-cell highlight before or after release. Document content stays unchanged, and release leaves editor focus usable.
+
+```text
+start in cell r1c1; drag to r3c2
+selected rectangle: rows 1 to 3, columns 1 to 2
+move back inside r1c1 while still held
+=>
+text selection confined to r1c1; no expanded-cell highlight
+release
+=>
+the selection remains confined to r1c1
+```
+
+Classification: invariant within table selection, by the tests in docs/vision/plate.md:151-160; the selected rectangle must follow the current drag rather than its greatest extent.
+Authority: syntax: GFM tables; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown. These inherit the Table family's references; no reference editor was checked for this case.
+Source: docs/plans/2026-08-26-shrink-table-cell-selection-on-drag-back.md:295-315
+Proof: `apps/www/tests/browser/table-selection.spec.ts`, "table:contract-selection-on-drag-back", drags from Plugin to a six-cell rectangle, returns to the origin while held, and asserts both model endpoints lie in one text path, native selected text is empty or belongs to Plugin, and no cells carry the expanded-selection marker. After release it again asserts no expanded-cell markers and editor focus. It does not compare every intermediate rectangle or exact final offsets. `packages/plitejs/src/react/editable/root-interaction-controller.ts` applies each newly resolved live drag range without retaining its earlier maximum extent; `packages/platejs/src/react/features/table/TablePlugin.tsx` projects only multi-cell ranges as cell selections. Test read, not run.
+
+- `EDIT-TABLE-DRAG-RESIZE-IGNORE-001` `proposed` `enter or release over a resize handle during a table-cell selection drag`: the handle preserves the last valid cell range and starts no resize. Resize hover preview remains hidden while the pointer button is held. Returning to cells continues selection from the same anchor. Release preserves the range; subsequent idle hover and a new resize gesture remain available. Crossing the handle changes no document content or caret ownership.
+
+Classification: invariant within table selection and resizing, by the tests in docs/vision/plate.md:151-160; resize chrome must not redirect an existing selection gesture.
+Authority: syntax: none for resize chrome; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown. These inherit the Table family's references; no reference editor was checked for this case.
+Source: docs/plans/2026-08-26-ignore-table-resize-handles-during-cell-selection-drag.md:261-269
+Proof: `apps/www/tests/browser/table-selection.spec.ts`, "table:ignore-resize-handle-hover-during-cell-selection-drag", crosses a column handle while held and asserts exact preservation of the saved selection, two selected cells, no preview or resizing row, then extends to three cells and verifies restored idle hover. It releases over a cell, not the handle, and performs no subsequent resize. `apps/www/src/registry/components/editor/table.tsx` marks resize chrome to be ignored and suppresses hover preview while buttons are held; `packages/plitejs/src/react/editable/root-interaction-controller.ts` ignores interactive drag targets on both move and release. The release-over-handle clause has source support but no exact proof in the inspected browser case. Test read, not run.
+
+- `EDIT-TABLE-BORDER-LEFT-401` `proposed` `toggle the left border of a multi-row cell selection`: update every cell edge on the selection's left boundary, including when that boundary is after the table's first column. Keep the table's content, shape and selected range. A shared edge may be stored on the adjacent cell without changing which visible boundary is toggled.
+
+```text
+2 × 2 table; select the second-column cells in both rows
+Toggle left border
+=>
+the left edge of both selected cells toggles; both rows remain selected
+```
+
+Classification: invariant within table border formatting, by the tests in docs/vision/plate.md:151-160; one selected boundary must be formatted consistently across its rows.
+Authority: syntax: none for borders, which GFM does not represent; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown. These inherit the Table family's references; no reference editor was checked for this case.
+Source: docs/plans/4798-fix-table-left-border-multirow-selection.md:5-18
+Proof: `packages/platejs/src/features/table/lib/BaseTablePlugin.borders.spec.tsx`, "toggles the left border for every selected first-column cell in a multi-row selection", asserts left borders on both selected first-column cells. "toggles the left border for every selected non-first-column cell in a multi-row selection" asserts the shared edges as right borders on both adjacent cells, one undo entry and restoration after Undo. Neither separately asserts the resulting selection. `packages/platejs/src/features/table/lib/BaseTablePlugin.ts` filters anchors to the selected left boundary and resolves shared physical edges before applying the border updates. Model proof only; tests read, not run.
+
+- `EDIT-TABLE-ROW-HANDLE-401` `proposed` `select several cells in one row or across several rows`: in the editable table surface, a selection confined to one row keeps that row's Select or move row control available on its normal control-column hover. A selection spanning at least two rows hides row drag handles. Generic block handles and the selected-cell move control remain absent during expanded cell selection in both cases, including after release. These affordances do not change the selected range or document content.
+
+Classification: product policy, by the tests in docs/vision/plate.md:151-160; this copied table surface chooses which drag controls remain available for each selection shape.
+Authority: syntax: none for drag controls; primary UX ref: Google Docs for table feel; secondary refs: Notion and Milkdown. These inherit the Table family's references; no reference editor was checked for this policy.
+Source: docs/plans/2026-08-26-keep-row-drag-handle-for-one-row-selection.md:3-25
+Proof: `apps/www/tests/browser/table-selection.spec.ts`, "table:hide-block-handles-during-cell-selection", performs same-row and multi-row drags, requires Drag block and Move selected cells absent during and after each drag, then hovers the control column and asserts one row handle for the same-row selection and none for the multi-row selection. It checks selected-cell counts, not exact range endpoints or document equality. `apps/www/src/registry/components/editor/table.tsx` hides row handles when canonical rectangular bounds span several rows; `apps/www/src/registry/components/editor/dnd.tsx` suppresses generic gutters for cell selections while distinguishing a whole-table block pick. Test read, not run.
 
 ### Rectangular Paste
 
@@ -1689,6 +1899,13 @@ Authority: syntax: CommonMark; primary UX ref: Typora for markdown-native link e
 Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:27
 Proof: in a browser only a Plite example proves it: `apps/plite/tests/plite-browser/donor/examples/inlines.test.ts:146` "keeps selected text selected after toolbar link wrapping" asserts the native selected text but not the model selection, and `:117` "inserts a toolbar link at a collapsed selection" asserts later typing stays out of the link, both under that example's own `wrapLink`. Plate's link specs check the wrapped children but not the selection afterwards (`packages/platejs/src/features/link/lib/BaseLinkPlugin.spec.tsx:574`, `:824`), and `:873` "creates and selects a text leaf after a terminal link" shows typing at a link's end lands after it. A model probe on 2026-10-08 (Bun, package source, happy-dom) found `link.upsert` and `link.wrap` over `world` keep `world` selected, and a collapsed upsert leaves the caret at the link's end, where typing lands outside it. The copied toolbar submit path (`apps/www/src/registry/components/editor/link.tsx:128-146`) has no browser proof. Checked 2026-10-08.
 
+- `EDIT-LINK-EMPTY-SHORTCUT-001` `proposed` `Mod+K in an empty paragraph, then Escape`: with a collapsed caret in an empty paragraph that admits links, Mod+K opens the link insertion toolbar at that paragraph's caret line and focuses its URL input. Opening changes no document content. Escape closes the toolbar and restores editor focus and the empty-paragraph caret.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; the installed link-entry shortcut must provide a usable editing target even in an empty paragraph
+Authority: syntax: CommonMark links; primary UX ref: Typora for markdown-native editing feel; secondary ref: GitHub Docs where GFM is more specific; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-31-fix-floating-link-toolbar-in-empty-paragraph.md:334-369
+Proof: apps/www/tests/browser/transient-editor-geometry.spec.ts, 'link floating editor opens from an empty paragraph 5/5', covers normal and reduced motion, checks placement relative to the empty line, URL-input focus and typing, Tab movement, Escape, restored editor focus and follow-up typing, ending at the empty caret. apps/www/src/registry/components/editor/link.tsx owns Mod+K, selection geometry and focus restoration. The browser test was read, not rerun.
+
 ### Image
 
 - `EDIT-IMG-*` `locked`
@@ -1811,6 +2028,22 @@ Ownership:
 - `EDIT-DETAILS-INSERT-CLOSED-001` `proposed`: a block inserted from a closed Summary, by an insert command, the slash menu, a file pasted or submitted there or AI, lands after the whole Details; from an open Summary it lands at the start of the body. An explicit target stays where it points, and an empty Summary keeps its place and key. Proof: `packages/platejs/src/features/details/lib/BaseDetailsLanding.spec.ts`, `packages/platejs/src/ai/react/AIChatPlugin.details.spec.ts`, `packages/platejs/src/react/features/upload/UploadPlugin.spec.ts` "submits a file from a closed details title after the section" and `apps/www/src/registry/components/editor/slash.spec.tsx` "inserts ${option} after a closed Details with title %j".
 - `EDIT-DETAILS-TITLE-TYPE-001` `proposed`: Quote, Callout, Columns, Paragraph, `blocks.set` and three typed dashes on a Summary change nothing, because the schema refuses another block in the title's place; the Summary keeps its place, text and node key, and the paragraph shortcut only drops its level. Code and List still apply as `EDIT-DETAILS-TITLE-CODE-001` and `EDIT-DETAILS-TITLE-LIST-001` say. A refused Quote toggle returns `false`, so the copied menus leave a selected body list item alone. Proof: `packages/platejs/src/features/details/lib/BaseDetailsPlugin.spec.ts` "Details title slot", `packages/platejs/src/features/layout/lib/BaseColumnPlugin.spec.ts` "changes nothing when Columns cannot replace a Details title" and `apps/www/src/registry/components/editor/turn-into-toolbar-button.behavior.spec.tsx` "keeps a body list item when Quote is refused on its Details title".
 - `EDIT-DETAILS-TITLE-LAND-001` `proposed`: a block made from a Summary lands as a body paragraph. Enter in the middle of a Summary or over a selection in it splits off a body paragraph; each line after the first of a plain-text paste, and Duplicate of a picked Summary or of one holding the caret become body paragraphs, and a copied Summary pasted into a body line joins that line; an open slice pasted at a Summary's end stays inside it. An AI answer that rewrites a picked Summary keeps the first block as the title, and a table answer goes below the title. Proof: `packages/platejs/src/features/details/lib/BaseDetailsCommands.spec.ts` "splits a title over a selection or around an inserted block into a body paragraph", `BaseDetailsPlugin.spec.ts` "Details title slot", whose "duplicates the title or body line holding the caret" covers the caret, and `packages/platejs/src/ai/react/AIChatPlugin.details.spec.ts` "AIChatPlugin over a Details title".
+
+- `EDIT-DETAILS-CLOSE-SELECTION-001` `proposed` `close Details`: each mounted view owns its Details open state. Before hiding a Details body, a writable closing view moves the selection to the Summary end when a text-selection endpoint or selected block lies in that body and the closing view owns the caret or no view owns it. Closing from another view, or from a read-only view, must not move the caret owner's selection. Closing changes no document content.
+
+```text
+::details[open] Summary
+  bo|dy
+close in the writable caret-owning view
+=>
+::details[closed] Summary|
+  body (hidden)
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; a view must not strand its caret in hidden content or steal another view's caret
+Authority: syntax: HTML details and summary; primary UX ref: Notion; secondary ref: Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-29-semantic-details-hard-cut.md:79-83; docs/plans/2026-08-29-replace-toggle-with-semantic-details.md:242-255
+Proof: packages/platejs/src/features/details/lib/BaseDetailsViews.spec.ts and packages/platejs/src/features/details/lib/BaseDetailsViews.mounted.spec.tsx assert the closing owner's Summary-end caret, preservation of another view's body caret and the no-owner case. The mounted other-view case also checks native selection and focus. packages/platejs/src/features/details/lib/BaseDetailsPlugin.ts performs selection repair before changing its view store and guards writability and caret ownership. The inspected cases do not separately prove an expanded endpoint, selected block or read-only close; no browser replay ran.
 
 ## Drawing Blocks
 
@@ -1996,6 +2229,13 @@ note: deleting backward at the boundary removes the whole date atom
 ```
 
 note: deleting forward at the boundary removes the whole date atom
+
+- `EDIT-DATE-OPEN-001` `proposed` `primary click on an editable Date`: with a text caret already in ordinary editor text and external feedback capture inactive, one click opens the Date's calendar in that gesture. A second click is unnecessary. Opening alone preserves the stored date; choosing a day changes it.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; the editable Date control must act on its first activation
+Authority: syntax: local MDX date contract; primary UX ref: Notion; secondary ref: Google Docs; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-29-date-calendar-single-click-regression.md:51-66
+Proof: apps/www/tests/browser/inline-void-first-click.spec.ts, 'date opens from the first physical click after a text caret', places the preceding text caret, clicks through page mouse input, checks the complete gesture, aria-expanded and a visible calendar. It does not assert the stored value. apps/www/src/registry/components/editor/date.tsx preserves the opening gesture and writes the value only from Calendar onSelect. The browser test was read, not rerun.
 
 - `EDIT-DATE-MDX-001` `locked`
 
@@ -2277,6 +2517,13 @@ Authority: syntax: local media and caption contracts; primary UX ref: Notion; se
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:429
 Proof: the upload owner calls `next()` when no files arrive (`packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts:880-887`), and a model probe on 2026-10-08 (Bun, package source) pasted `text/plain` `hello` with a configured upload owner and got the text inserted; none of the nine specs that install the upload owner pastes file-less data. The image owner's own pass-through is proven by `packages/platejs/src/features/media/lib/image/BaseImagePlugin.spec.tsx:246` "leaves clipboard data without files to the next handler" and `:213` "leaves non-image text to the next clipboard handler: %s", without an upload owner. Checked 2026-10-08.
 
+- `EDIT-MEDIA-SELECTALL-CHROME-001` `proposed` `Mod+A from document text`: an expanded document text selection that crosses images must not activate each image's individual asset-selection ring. The document range remains a text selection; selecting image content as part of that range is distinct from picking its asset.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; asset focus must not misrepresent an expanded document text selection
+Authority: syntax: local media and caption contracts; primary UX ref: Notion; secondary ref: Google Docs for file-ish behavior; inherited family references, with no reference editor checked for this case
+Source: c70bacbd4a:docs/plans/2026-05-12-plite-use-element-selected-collapsed-mode-ralplan.md:153-164
+Proof: apps/plite/tests/plite-browser/donor/examples/images.test.ts, 'selects image editor text content from text focus with keyboard select all', presses Mod+A and asserts the document range, selected text and boxShadow: none on both images. This proves a raw Plite block-void example only. Current Plate apps/www/src/registry/components/editor/media-image.tsx gates the ring on useElementSelected({ mode: 'object' }); packages/plitejs/src/react/hooks/use-element-selected.ts rejects text ranges in that mode. No inspected browser case proves this exact gesture for Plate's non-void media owners.
+
 - `EDIT-CAPTION-NAV-001` `locked`
 
 ```text
@@ -2475,6 +2722,35 @@ font family / size / weight / color / background
 
 note: these are local mark-style contracts informed by document-style formatting
 
+- `EDIT-STYLE-FIELD-COMMIT-ONCE-001` `proposed` `Enter, size choice or blur in the font-size field`: committing a valid uncommitted font-size draft consumes it once and applies formatting to the retained editor selection. If Undo reverses that formatting, a later blur caused by restoring editor focus must not apply the consumed draft again.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; focus changes must not silently undo the user's Undo
+Authority: syntax: local style contracts; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: c70bacbd4a:docs/plans/2026-09-08-multi-editor-architecture-and-api-review.md:179
+Proof: apps/www/src/registry/components/editor/font-size-toolbar-button.tsx clears inputDirtyRef before applying a size and ignores clean drafts on blur. apps/www/src/registry/components/editor/mark-toolbar-button.spec.tsx tests input and size-choice commits with mocked plugin calls; apps/www/tests/browser/multi-editor.spec.ts tests a blur commit to the correct editor. Neither inspected test performs the required commit, Undo and later-blur sequence. The complete history requirement currently rests on source inspection, not a current replay.
+
+- `EDIT-STYLE-FONT-SIZE-SELECTION-001` `proposed` `change font size through the toolbar`: formatting preserves the selected text and selection direction. While focus remains in toolbar chrome, the editor paints one inactive selection fitted to the resized text, without an additional native highlight or stale old-size paint. Choosing a size closes the size popup.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; formatting must retain its target and show that target without misleading selection paint
+Authority: syntax: local style contracts; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/5091-current-stale-selection-paint-regression.md:259-285
+Proof: tooling/e2e/font-size-selection.test.ts, 'font-size command refreshes expanded selection paint (#5091)', contains assertions for resized text, one painted layer, preserved selection direction and empty native selection. Proof drift: its input[data-editor-focus="true"][value="16"] locator no longer matches apps/www/src/registry/components/editor/font-size-toolbar-button.tsx, whose Input uses data-editor-keep-selection-visible. That test cannot currently be treated as browser proof without repair and replay. apps/www/src/registry/components/editor/mark-toolbar-button.spec.tsx proves only mocked formatting calls without forced editor focus.
+
+- `EDIT-STYLE-SELECTION-PAINT-001` `proposed` `change the font size of text represented by an expanded native selection`: preserve the selection's model endpoints and direction, and make the settled native highlight fit the resized text. Correct model offsets or DOM Range rectangles alone do not satisfy the paint requirement. The selection stays expanded; only the requested formatting changes. While toolbar chrome owns focus, inactive presentation instead follows EDIT-STYLE-FONT-SIZE-SELECTION-001.
+
+```text
+abc[[def]]ghi, with an expanded native selection at font size 16
+set the selected text to font size 24 while editor selection remains native
+=>
+abc[[def]]ghi, with the same anchor and focus
+selected text and its native highlight use the new size
+```
+
+Classification: invariant within formatting and selection presentation, by the tests in docs/vision/plate.md:151-160; formatting must retain its target and accurately display the retained selection.
+Authority: syntax: local style contracts; primary UX ref: Google Docs; secondary ref: Notion. These inherit Styling And Layout's references; no reference editor was checked for this paint case.
+Source: docs/plans/5091-stale-selection-geometry-after-font-size-change.md:225-233
+Proof: `tooling/e2e/font-size-selection.test.ts`, "font-size command refreshes expanded selection paint (#5091)", checks selected text and direction before and after toolbar formatting, but its final oracle requires an inactive overlay and an empty native selection. Its input[data-editor-focus="true"][value="16"] locator also disagrees with the current marker in `apps/www/src/registry/components/editor/font-size-toolbar-button.tsx`. It therefore does not prove this native-highlight requirement. `packages/plitejs/src/react/editable/selection-controller.ts` exports model endpoints in selection direction, but `packages/plitejs/src/dom/utils/selection-writes.ts` deliberately skips a native selection write when endpoints already match; source inspection cannot establish whether the browser repaints correctly after resizing. No inspected current test proves the native pixels. Test read, not run.
+
 ## Collaboration And Review
 
 Authority:
@@ -2512,6 +2788,91 @@ Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary 
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:396
 Proof: `packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts:1325` "maps attachments through block move, split and merge without a view" asserts one comment range keeps covering `lph` through `nodes.move`, `nodes.split` and `nodes.merge` calls rather than keys, and the browser tests in `apps/www/tests/browser/comment.spec.ts` "interior insertion and deletion keep overlapping comments exact through history" (two overlapping comments both gain a typed `X` and lose a deleted character, through undo and redo) and "inward comment boundaries exclude text inserted on either side" (text typed at both edges of one comment stays outside) prove typing, deleting, the edges and overlap; tag candidates. Overlapping ranges through a move, split or merge are unproven, and the browser suite runs outside `pnpm check`. Checked 2026-10-08.
 
+- `EDIT-COMMENT-DELETE-HISTORY-001` `proposed` `delete all text targeted by a published comment, then Undo or Redo`: complete deletion keeps the conversation discoverable with an unavailable target and highlights no unrelated text. Undo restores the comment's exact former range; Redo restores the deleted-target state. Repeated cycles must not move the attachment onto other text.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; deleting a target must neither lose its conversation nor attach it to unrelated content
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-09-03-plite-comment-anchor-edit-and-history.md:217-246
+Proof: apps/www/tests/browser/comment.spec.ts, 'a fully deleted comment stays reachable and exact through repeated history', deletes a one-character target, checks its unavailable conversation and absent highlight, types unrelated text without reattaching it, and checks exact restoration and deletion over five history cycles. packages/platejs/src/features/comments/BaseCommentsPlugin.ts retains the thread and reports a collapsed attachment as unavailable. This is an inspected browser test, not a rerun.
+
+- `EDIT-COMMENT-COMPOSER-FIRST-KEY-001` `proposed` `open New comment from the fixed toolbar, selection toolbar or native shortcut`: opening the composer transfers focus and the native caret to its inner editor before the first printable key after the trigger. That key inserts exactly once in the composer without another click or refocus. Opening preserves the source document and its selected range.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; opening an editing control must not send its first character into the source document
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: c70bacbd4a:docs/plans/2026-09-14-issue-5127-comments-inactive-selection-regression.md:499-503
+Proof: apps/www/tests/browser/comment.spec.ts, 'Issue 5127 keeps a multi-line selection visibly painted while the comment composer owns focus', covers all three entry paths, waits for composer focus, inserts x and asserts unchanged source value. That wait does not prove immediate first-key delivery or exactly-once native input. apps/www/src/registry/components/editor/discussion.tsx enables autofocus after popup placement; packages/plitejs/src/react/editable/runtime-root-engine.ts applies it in a layout effect, and packages/plitejs/src/dom/plugin/dom-editor.ts owns native focus settlement. The trigger-to-first-key timing remains unproved by the inspected current test.
+
+- `EDIT-COMMENT-COMPOSER-SELECTION-VISIBILITY-001` `proposed` `focus New comment over a source selection`: while the composer owns focus, the complete visible source range retains one inactive-selection paint layer. The composer clears every selected line, including the final line of a multiline selection, and remains within the viewport. The source content and selected range stay unchanged.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; the composer must not hide or duplicate the selection it annotates
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: c70bacbd4a:docs/plans/2026-09-14-issue-5127-comments-inactive-selection-regression.md:535-537
+Proof: apps/www/tests/browser/comment.spec.ts, 'Issue 5127 keeps a multi-line selection visibly painted while the comment composer owns focus', asserts the selected text, composer focus, popup placement below the selected bounds, vertical viewport bounds and pixels against single, absent and duplicate paint controls. Its fixture does not cover every viewport or selection geometry. apps/www/src/registry/components/editor/discussion.tsx anchors to the last nonempty client rect and constrains popup dimensions. The browser test was read, not rerun.
+
+- `EDIT-REVIEW-HOVER-SCROLL-001` `proposed` `scroll upward across comments or suggestions beneath a stationary pointer`: with the editor selection elsewhere in the document, an annotation entering beneath the pointer retains hover feedback without snapping the viewport back toward that selection. Hover changes neither document content nor selection or focus, and subsequent upward scrolling remains usable.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; passive annotation feedback must not take over document navigation
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-29-comment-suggestion-scroll-jump-regression.md:377-399
+Proof: source inspection only for this complete interaction. apps/www/src/registry/components/editor/comment.tsx and apps/www/src/registry/components/editor/suggestion.tsx implement the relevant feedback with native CSS hover. The source plan's annotation-hover component test is no longer present at its cited path, and its recorded Chrome result is not current proof. No current scroll sequence was replayed.
+
+- `EDIT-COMMENT-CANCEL-301` `proposed` `click document text to dismiss an unsubmitted comment`: dismissal discards the pending comment, preserves existing comments and keeps the live collapsed caret created by the click. It must not restore the earlier expanded comment target. Typing without another click inserts at that caret.
+
+```text
+pending composer targets [[modern]] elsewhere
+click rich-t|ext, then type X
+=>
+rich-tX|ext
+pending comment discarded; existing comments retained
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; canceling a draft must not overwrite the user's newer caret
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/5112-comment-popover-lifecycle-regression.md:267-270
+Proof: packages/platejs/src/features/comments/BaseCommentsPlugin.ts cancels by releasing the pending anchor and publishing no pending composer, without setting selection. apps/www/src/registry/components/editor/discussion.tsx invokes cancellation on dismissal and avoids final-focus restoration when another connected target owns focus. The historical named cancellation case is absent from the inspected current apps/www/tests/browser/comment.spec.ts. Source inspection supports ownership; no current test inspected proves the complete click, caret and follow-up typing sequence.
+
+- `EDIT-COMMENT-HISTORY-ORDER-501` `proposed` `create a local comment, then Undo or Redo`: successful local comment creation joins document undo order after persistence commits. For document edit A, comment creation B and document edit C, Undo visits C, B, A and Redo visits A, B, C. Replaying B restores the same comment identity without changing unrelated document text. Remote comment changes do not enter this local order. This rule concerns live-session creation, not persisted undo or reply/edit history.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; local history must preserve action order and comment identity
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-09-19-taskhub-22-comment-creation-undo-redo-regression.md:168-177
+Proof: packages/platejs/src/features/comments/BaseCommentsPlugin.spec.ts, 'orders successful local thread creation with document undo and redo', asserts three entries, both replay orders and one restored thread with the same ID. apps/www/tests/browser/comment.spec.ts, 'local comment creation shares document undo order and keeps composer history local', drives the corresponding native shortcuts. packages/platejs/src/features/comments/BaseCommentsPlugin.ts emits its creation-history effect only after an applied local commit. The inspected ordering cases do not independently prove remote-history exclusion. Tests were read, not rerun.
+
+- `EDIT-COMMENT-HISTORY-FOCUS-501` `proposed` `Undo or Redo shortcut`: while the comment composer owns focus, history shortcuts act on its inner editor and leave outer document history untouched. From the main editor or its page history route, the shortcuts act on outer document history, including successful local comment creation.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; history must follow the active editor instead of undoing another editor's work
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-09-19-taskhub-22-comment-creation-undo-redo-regression.md:178-179
+Proof: apps/www/tests/browser/comment.spec.ts, 'local comment creation shares document undo order and keeps composer history local', undoes composer typing without changing the document, then drives outer creation Undo and Redo after returning to the main editor. It does not exercise composer Redo or a page-only shortcut route. apps/www/src/registry/components/editor/comment.tsx creates a separate composer editor; apps/www/src/registry/components/editor/history-toolbar-button.tsx targets its supplied editor. The browser test was read, not rerun.
+
+- `EDIT-COMMENT-RESOLVE-TOOLBAR-001` `proposed` `resolve a submitted comment, then select and format text`: successful resolution closes its discussion without changing document text or leaving an invalid native selection. A subsequent valid expanded text selection can open the floating toolbar, and a formatting action there applies to that new selection.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; resolving a conversation must not disable subsequent text editing
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/5112-resolve-comment-floating-toolbar-regression.md:285-309
+Proof: packages/platejs/src/features/comments/BaseCommentsPlugin.ts changes thread resolution metadata; apps/www/src/registry/components/editor/discussion.tsx owns discussion visibility and focus settlement, and apps/www/src/registry/components/editor/floating-toolbar.tsx opens from a valid expanded native range and scoped editor focus. The historical resolve-then-Bold case is absent from the inspected current apps/www/tests/browser/comment.spec.ts. No inspected test proves this complete recovery sequence, and no browser replay ran.
+
+- `EDIT-COMMENT-ACTIVE-CLEAR-146` `proposed` `click unmarked content inside the editor`: clear the active comment group without deleting conversations or changing document content. Comment activation must not replace the caret or text selection produced by ordinary click handling.
+
+Classification: product policy, by the tests in docs/vision/plate.md:151-160; clearing comment activation on an unmarked click is this editor's interaction policy.
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion. These inherit Collaboration And Review's references; no reference editor was checked for this activation policy.
+Source: docs/plans/2026-09-02-comments-discussion-product-recovery.md:155
+Proof: `packages/platejs/src/react/features/comments/CommentsPlugin.spec.tsx`, "activates the ordered group at the clicked point and clears outside comments", invokes the click pipeline on an unmarked span inside the editor root and asserts an empty activeIds array. It does not assert document content, conversation retention or the resulting caret. `packages/platejs/src/react/features/comments/CommentsPlugin.ts` calls setActive([]) when the click has no contained comment element and makes no selection or document write. This is handler-level DOM proof, not a native browser click replay. Test read, not run.
+
+- `EDIT-COMMENT-OVERLAP-ACTIVATE-146` `proposed` `click commented text at a resolved model point`: activate every comment covering that point in deterministic source order. A single comment identifier on the clicked DOM element must not reduce an overlapping group to one thread. Activation changes neither document content nor the selection produced by the click. This rule does not decide unresolved-point fallback.
+
+Classification: invariant within point-based comment-group activation, by the tests in docs/vision/plate.md:151-160; the activated group must represent the complete hit result.
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion. These inherit Collaboration And Review's references; no reference editor was checked for this case.
+Source: docs/plans/2026-09-02-comments-discussion-product-recovery.md:197
+Proof: `packages/platejs/src/react/features/comments/CommentsPlugin.spec.tsx`, "activates the ordered group at the clicked point and clears outside comments", mocks point resolution inside two overlapping ranges, clicks an element carrying only the overlap ID, and asserts activeIds ['first', 'overlap'] and active decoration attributes for both. `packages/platejs/src/react/features/comments/CommentsPlugin.ts` uses idsAt at the resolved point; `packages/platejs/src/features/comments/BaseCommentsPlugin.ts` sorts indexed hits by sourceOrder. The test does not assert caret or content preservation and supplies a mocked DOM-to-model resolution. Test read, not run.
+
+- `EDIT-COMMENT-COMPOSER-ENTER-001` `proposed` `Enter in a comment composer`: outside composition, unshifted Enter invokes the submission path and never inserts a paragraph, including for an empty draft, a refused submission or a pending submission. A refused submission retains the draft; pending submission admits no duplicate request. The key creates no split-related caret movement. Shift+Enter retains the composer's line-break behavior, and composition Enter does not submit.
+
+Classification: product policy, by the tests in docs/vision/plate.md:151-160; Enter-to-submit and Shift+Enter-to-break belong to this comment-composer interaction policy.
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion. These inherit Collaboration And Review's references; no reference editor was checked for this key policy.
+Source: docs/plans/2026-09-05-comments-improve.md:67
+Proof: `apps/www/src/registry/components/editor/comment.spec.tsx`, "keeps the paragraph intact when Enter submits a comment (%s)", covers empty, rejected, invalid, stale, error and pending outcomes with a mounted composer. It dispatches Enter, asserts one paragraph and unchanged text, checks submission counts, and verifies that a pending form submission adds no duplicate request. It does not assert caret endpoints or exercise Shift+Enter and composition Enter. `apps/www/src/registry/components/editor/comment.tsx` prevents default and returns true for handled Enter, guards Shift and native composition, and protects pending submission with a ref and read-only composer state. Mounted synthetic-event proof only; test read, not run.
+
 - `EDIT-SUGGESTION-*` `locked`
 
 ```text
@@ -2527,6 +2888,42 @@ Classification: invariant, by the tests in docs/vision/plate.md:129-137
 Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:398
 Proof: `packages/platejs/src/markdown/lib/MarkdownPlugin.spec.ts:68` "exports authored documents only through explicit semantic projections" proposes the insertion ` draft` into `Base` and asserts that serializing without a projection throws, that the `accepted` projection writes `Base` with an `authored-lossy-projection` diagnostic, and that the `proposed` projection writes `Base draft` with no `plate-authored` markup, which proves the exclusion for an inserted suggestion; no test serializes a suggested deletion, mark or block change. Tag candidate. Code: the serializer requires the caller to name an `accepted` or `proposed` projection for any authored document (`packages/platejs/src/markdown/lib/MarkdownPlugin.ts:394-403`). Checked 2026-10-08.
+
+- `EDIT-SUGGESTION-SELF-CANCEL-001` `proposed` `delete one's own pending inserted text`: deletion withdraws the selected part of the insertion instead of creating a deletion suggestion. When the insertion becomes empty, its review card and discussion trigger disappear, including from an open discussion. The caret remains at the deletion point. Undo restores the insertion and its review identity; Redo cancels them again. Another author's pending contribution remains independently reviewable.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; withdrawing one's proposal must not create a second proposal to delete it
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-09-13-suggestion-self-edit-regression.md:91
+Proof: packages/plitejs/test/authored-tree-record.test.ts, 'removes one’s own pending insertion for real when deleting it', asserts partial withdrawal. apps/www/tests/browser/suggestion.spec.ts, 'removes a canceled own insertion from its open discussion and restores it through undo', asserts complete cancellation, model and DOM caret, absent deletion markup, card and trigger removal, and the same review ID after Undo before Redo cancels it. packages/plitejs/src/authored/tree/record.ts withdraws the writer's innermost insertion during deletion. Tests were read, not rerun.
+
+- `EDIT-SUGGESTION-SPLIT-CANCEL-001` `proposed` `↵ followed immediately by ⌫ in Suggesting`: after suggesting a paragraph break in ordinary text, Backspace at the new paragraph's start restores the original paragraph and caret position. The canceled break's review card and discussion trigger disappear, including from an open card, and subsequent typing works at the restored caret. This simple inverse does not prescribe withdrawal across other pending structural changes.
+
+```text
+ab|cd (Suggesting)
+↵, then ⌫
+=>
+ab|cd (no break suggestion)
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; canceling the writer's immediate structural proposal must not leave a residual review
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-09-13-suggestion-self-edit-regression.md:94
+Proof: packages/plitejs/test/authored-tree-record.test.ts, 'withdraws one’s own pending split for real on Backspace', asserts the joined paragraph. apps/www/tests/browser/suggestion.spec.ts, 'clears an inserted paragraph break when Backspace immediately rejoins it', drives Enter and Backspace with the review open, asserts original blocks and model/DOM caret, absent card, trigger and deletion markup, and successful follow-up typing. packages/plitejs/src/authored/tree/record.ts owns structural withdrawal. Tests were read, not rerun.
+
+- `EDIT-SUGGESTION-FOREIGN-RESTORATION-001` `proposed` `type matching text beside another author's pending deletion in Suggesting mode`: record the typed text as a separate contribution by the current author, even when it matches a prefix, suffix or all of the deleted text. Typing alone must not accept, reject or rewrite the other author's proposal. The caret follows the inserted text, and the two contributions remain subject to explicit review decisions.
+
+```text
+Bob's pending deletion: mark text
+Alice types the matching prefix mark
+=>
+Bob's deletion remains pending and unchanged
+Alice's mark is a separate pending insertion, with the caret after it
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160; typing must not silently decide or rewrite another author's independently reviewable contribution.
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion. These inherit Collaboration And Review's references; no reference editor was checked in this pass for matching foreign deletion text.
+Source: docs/plans/2026-09-14-suggestion-restoration-resolver.md:159
+Proof: `packages/plitejs/src/authored/tree/record.ts` defines ownership by writer identity and records inserted text through suggestedTextProps with an insertion mark rather than deciding a foreign deletion. The inspected `packages/plitejs/test/authored-tree-record.test.ts` case "records a replacement as struck text followed by the new text" asserts separate delete and insert marks for one writer; "leaves already struck text unchanged when deleting it again" preserves another author's deletion under repeated deletion. Neither types matching text as a different author or checks the resulting caret and independent review sequence. The former exact matching-prefix test is retired. This rule has source support and adjacent Plite model tests, but no inspected current test proves its complete scenario; no test was run.
 
 - `EDIT-DISCUSSION-*` `locked`
 
@@ -2545,6 +2942,13 @@ show remote cursor / presence
 
 note: Yjs presence and remote cursor overlays are runtime collaboration state,
 not persisted markdown content
+
+- `EDIT-COLLAB-CURSOR-RENDER-401` `proposed` `receive or update remote presence`: an expanded remote selection paints every visible selected segment, including multiline, backward and RTL ranges, and shows one caret and label at its logical focus endpoint. A collapsed remote selection shows its caret and label without selection fill. Presence rendering changes neither document content nor the local selection.
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; presence must represent the remote range and its focus without misrepresenting a collapsed caret
+Authority: syntax: editor-only contract; primary UX ref: Google Docs; secondary ref: Notion; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-08-30-cursor-find-overlay-architecture.md:1020
+Proof: source inspection supports the intended ownership: packages/platejs/src/yjs/react/YjsPlugin.tsx excludes collapsed ranges from selection decorations, and apps/www/src/registry/components/editor/remote-cursor-overlay.tsx places the caret and label from focusRect. packages/plitejs/test/yjs/remote-cursor-geometry.spec.ts tests keyed geometry with mocked DOM rectangles, not multiline or RTL paint. No inspected test proves the complete rendering rule, and no browser replay ran.
 
 ## Cross-Surface Interaction Classes
 
@@ -2619,6 +3023,79 @@ Authority: syntax: HTML clipboard input; primary UX ref: Typora for markdown-fir
 Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1330-1370.md:28
 Proof: Plate meets it for bold and not for the other marks. Bold reads each element's own `font-weight`, so a weight below 600 turns bold off for that element's text only, and `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.spec.tsx:165` "pastes %s with only the reset text plain" pastes `<b>a<span style="font-weight: 400">b</span>c</b>` and the same with `initial`, and keeps `a` and `c` bold. The italic, underline and strikethrough HTML readers still veto the mark for the whole matched element when any element inside it resets the style (`someHtmlElement` in `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts:311`, `:385`, `:413`); `BaseMarkPlugins.spec.tsx:143` "vetoes %s parsing when a descendant resets the style" asserts that veto on fixtures with no parent text of their own. Checked 2026-10-19. ProseMirror's nested-list fixture passes in Plate only because each item becomes its own block. `apps/plite/tests/plite-browser/donor/examples/paste-html.test.ts:1610` "does not leak parent list item marks into nested pasted list items" runs the paste-html example's own deserializer and never checks the parent items. Checked 2026-10-08.
 
+- `EDIT-CLIPBOARD-SOFTWRAP-COPY-001` `proposed` `copy, then plain-text paste`: copying a paragraph that wraps only because of viewport width preserves its logical text without layout-wrap newlines. Pasting that plain text into an empty paragraph restores the same paragraph text; copying leaves the source unchanged.
+
+```text
+one paragraph displayed on several visual lines
+copy its text, then paste as plain text into an empty paragraph
+=>
+one paragraph with the same logical text and no layout-wrap newlines
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: plain-text clipboard representation; primary UX ref: Typora for general markdown-first clipboard behavior; secondary ref: none checked. No reference editor was checked for this case.
+Source: c70bacbd4a:docs/plans/2026-06-10-plite-8h-automation.md:774
+Proof: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts` "copies a visually wrapped long paragraph without hard-wrap newlines" narrows the editor to 220px, copies a selected paragraph, asserts exact clipboard text without a newline, deletes the document text and pastes it back as one paragraph. It excludes WebKit clipboard reads and mobile, and asserts no final caret. `packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts` serializes selected logical content rather than visual line boxes. Only a Plite plaintext example supplies browser proof; Plate's product surface is unproven. Test read, not run.
+
+- `EDIT-CLIPBOARD-PLAIN-ACTIVE-MARKS-001` `proposed` `plain-text paste at a collapsed caret`: every pasted line carries the caret's active marks, including when several lines replace an empty paragraph. The caret lands after the last pasted character, before any surviving suffix. This rule applies when plain text is the accepted paste format.
+
+```text
+Hello | (bold active)
+paste plain text world, newline, Next
+=>
+Hello **world**
+**Next|**
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: plain-text clipboard representation; primary UX ref: Typora for general markdown-first paste; secondary ref: none checked. No reference editor was checked for active-mark inheritance.
+Source: docs/plans/2026-06-13-plite-10h-auto-proof-transport-selection.md:851-854
+Proof: `packages/plitejs/test/dom/clipboard-boundary.ts` "applies collapsed active marks to plain text fallback", "applies collapsed active marks to multiline plain text fallback" and "applies collapsed active marks to multiline plain text replacing an empty block" assert bold on inserted text and the exact final caret. `packages/plitejs/src/dom/plugin/data-transfer-format.ts` applies active marks while constructing inline text and line blocks; `packages/platejs/src/lib/plugins/dom/DOMPlugin.ts` installs the shared DOM path. This is Plite decoder and DOM-boundary proof, not native Plate browser paste through arbitrary plugin configurations. Tests read, not run.
+
+- `EDIT-CLIPBOARD-PROJECTED-ORDER-001` `proposed` `copy across rendered content roots`: copy emits selected content in visible document order. Each selected occurrence of a shared root contributes its selected content, even when several occurrences share storage identity. Copy changes neither source content nor selection.
+
+```text
+selected tail of shared root, selected Between paragraph, selected head of the same root's next occurrence
+copy
+=>
+tail, Between and head in that order, with both root occurrences represented
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: clipboard representations of the local content-root model; primary UX ref: Google Docs for document-fidelity copy; secondary ref: none checked. No reference editor was checked for repeated shared-root occurrences.
+Source: docs/plans/2026-05-26-plite-projection-selection-architecture.md:519
+Proof: `packages/plitejs/test/react/projected-clipboard-contract.test.ts` "serializes repeated content-root owners as visible clipboard fragments" asserts a slice containing side, Between and Insi, plain text in that order, and the same decoded exact fragment. `packages/plitejs/src/react/editable/projected-clipboard.ts` appends every ordered selection segment without deduplicating by root identity. This is Plite contract proof; it does not establish native clipboard transport or Plate browser parity. Test read, not run.
+
+- `EDIT-CLIPBOARD-MIDDLE-BLOCKS-401` `proposed` `paste compatible ordinary text blocks inside a paragraph`: with a collapsed caret between a paragraph's prefix and suffix, the first pasted block joins the prefix, the last joins the suffix, and intermediate pasted blocks remain separate. The caret lands after the last pasted text and before the surviving suffix.
+
+```text
+before |after
+paste paragraphs one and two
+=>
+before one
+two|after
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: ordinary block clipboard structure; primary UX ref: Typora for markdown-first paste; secondary ref: none checked. No reference editor was checked for this insertion shape.
+Source: c70bacbd4a:docs/plans/2026-05-07-plite-multiblock-fragment-middle-insert-ralplan.md:31-40
+Proof: `packages/plitejs/test/clipboard-contract.ts` "preserves block separation for a multi-block fragment inserted in the middle of a text block" asserts the scenario through slice replacement. `packages/plitejs/test/dom/clipboard-boundary.ts` "preserves block separation when a rich multi-block fragment is pasted in the middle of a text block" copies an exact fragment and asserts both resulting paragraphs and the caret after two. Current slice replacement is owned by `packages/plitejs/src/core/public-state.ts` and its canonical fitter. These are Plite core and DOM-boundary contracts, not native browser clipboard proof or a rule for arbitrary nested wrappers. Tests read, not run.
+
+- `EDIT-CLIPBOARD-EMPTY-EXACT-001` `proposed` `paste a valid empty exact editor slice over selected content`: consume the paste without deleting selected content, changing selection or trying another format. An invalid or unfit exact envelope may fall back to an eligible format, but refusal by every format preserves the document and selection.
+
+```text
+before [[selected]] after
+paste a valid empty exact slice, also carrying plain text Z
+=>
+before [[selected]] after
+no fallback text inserts
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: the exact editor clipboard envelope and local slice contract; primary UX ref: none checked; secondary ref: none checked. The valid-empty versus invalid distinction is an explicit local decision.
+Source: docs/plans/2026-09-13-clipboard-transfer-policy.md:285-289
+Proof: `packages/plitejs/test/react/projected-command-contract.test.ts` "preserves projected selection for an empty Plite fragment paste so typing can replace it" preserves content and projected selection when no fallback text is present; "declining clipboard handlers preserve unsupported projected paste payloads" preserves both when handlers refuse. Drift: "falls back to plain text for empty Plite fragments over projected selections" supplies a valid empty exact envelope plus Z and asserts replacement with Z, contrary to the no-fallback clause. `packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts` tries host formats when exact replaceSlice returns false; `packages/plitejs/src/core/public-state.ts` returns false for an empty slice at a collapsed range. The projected adapter in `packages/plitejs/src/react/editable/mutation-controller.ts` preserves its deletion prefix on refusal but publishes it with an accepted fallback. Thus the intended rule lacks complete proof and current code and test explicitly drift for projected paste with plain text. Tests read, not run; no native Plate browser proof is mapped.
+
 ### Interactive Preview And Navigation
 
 - `EDIT-INTERACT-*` `locked`
@@ -2641,6 +3118,65 @@ note: keyboard-accessible navigation controls should expose the same activation
 result on `↵` / `Space` as on pointer activation
 
 note: the TOC block never highlights the current heading while the user edits or scrolls through the document (`EDIT-TOC-NAV-003`)
+
+- `EDIT-FOCUS-REFOCUS-SCROLL-001` `proposed` `refocus a scrollable editor`: when the saved collapsed caret is near the bottom of a scrolled editor, refocusing restores that caret visibly without jumping to the document's top. Scrolling needed to reveal the caret is allowed; refocusing changes no document content.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document navigation; secondary ref: none checked. No reference editor was checked for this case.
+Source: c70bacbd4a:docs/plans/2026-06-10-plite-8h-automation.md:1327-1339
+Proof: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts` "does not scroll to top when refocusing a scrollable editor" places a caret in the final block, scrolls to the bottom, focuses an outside input and refocuses the editor. It asserts caret visibility and final scrollTop at least 75 percent of the previous value, rather than exact scroll preservation. Mobile is skipped. `packages/plitejs/src/react/hooks/focus-plite-editable.ts` focuses with preventScroll, and `packages/plitejs/src/react/components/editable.tsx` reveals the selection through its scroll walker. Only a Plite richtext example supplies browser proof. Test read, not run.
+
+- `EDIT-ROOT-CHILD-ARROW-001` `proposed` `ArrowLeft or ArrowRight at an embedded editable-root boundary`: for a content root declared to participate in document navigation, horizontal caret movement follows document flow. In LTR flow, ArrowRight from the preceding text's end enters the child at its first valid point, and ArrowLeft from the following text's start enters at its last valid point. Moving beyond either child edge returns to the corresponding parent-flow position and focuses that editable. A repeated shared root exits beside its active owner occurrence. Ordinary atomic voids stay atomic, and native controls inside the owner keep their own keys. Content stays unchanged.
+
+```text
+before| [owner with editable child: child] after
+ArrowRight
+=>
+before [owner with editable child: |child] after
+ArrowLeft
+=>
+before| [owner with editable child: child] after
+```
+
+Classification: invariant within declared document-flow navigation, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document navigation; secondary ref: Notion for block-shell interaction. No reference editor was checked for embedded-root traversal; this is an explicit local contract.
+Source: docs/plans/2026-05-25-plite-editable-void-keyboard-click-navigation.md:139-153; docs/plans/2026-05-25-plite-void-roots-and-editable-islands.md:305-310
+Proof: `apps/plite/tests/plite-browser/donor/examples/editable-voids.test.ts` "moves across editable void child-root boundaries with keyboard" asserts forward entry, backward exit and forward exit with model endpoints, native entry endpoints and parent focus; mobile is skipped. `packages/plitejs/test/react/content-root-navigation-contract.test.ts` "moves forward from the previous sibling into the content root start" checks entry and focus dispatch, and the two active repeated-content-root cases check exits beside the selected occurrence. `packages/plitejs/src/react/editable/content-root-navigation.ts` selects the rooted target and focuses its mounted owner view. The browser proof is a Plite example; native-control isolation and every atomic-void variant are not established by those cases. Tests read, not run.
+
+- `EDIT-INTERACT-HIDDEN-TAB-001` `proposed` `ArrowRight from the end of a visible tab panel`: navigation leaves an inactive panel closed under skip or model selection policy. If the app enables materialize policy, navigation into that panel requests its activation and places the caret in its editable content. Navigation changes no document content.
+
+Classification: parameter, by the tests in docs/vision/plate.md:151-160; the app chooses selection policy, and navigation honoring it is an invariant
+Authority: syntax: none; primary UX ref: Notion for block-shell interaction; secondary ref: none checked. No reference editor was checked for this hidden-panel policy; the policy split is local.
+Source: c70bacbd4a:docs/plans/2026-05-26-plite-hidden-content-policy-controls.md:11-13
+Proof: `apps/plite/tests/plite-browser/donor/examples/hidden-content-blocks.test.ts` "controls selection policy for inactive tab navigation" asserts inactive tabs stay inactive under skip and model, then activate under materialize. "materializes inactive tab keyboard selection matrix forward" asserts one ArrowRight lands at offset zero in the activated panel. `packages/plitejs/src/react/editable/caret-engine.ts` skips skip boundaries; `packages/plitejs/src/react/editable/dom-coverage-selection.ts` requests materialization only for materialize boundaries. This is Plite example proof, not a Plate product or physical-device claim. Tests read, not run.
+
+- `EDIT-NAV-CONTENT-ROOT-VERTICAL-001` `proposed` `plain ArrowUp or ArrowDown across an embedded editable-root boundary`: with a collapsed caret on the adjacent terminal visual line, the arrow moves focus and caret into the neighboring mounted editable root near the same horizontal column, as its text permits. ArrowDown enters from the parent text above and exits below the child's last visual line; ArrowUp enters from below and exits above the child's first visual line. Crossing must not force offset zero. Movement inside a root stays browser-native until a boundary requires root navigation; content stays unchanged.
+
+Classification: invariant within declared document-flow navigation, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document navigation; secondary ref: Notion for block-shell interaction. No reference editor was checked for embedded-root column preservation; this is a local contract.
+Source: c70bacbd4a:docs/plans/2026-05-25-plite-vertical-content-root-navigation.md:242-245,406-450; c70bacbd4a:docs/plans/2026-06-15-beta-public-release-readiness.md:344
+Proof: `apps/plite/tests/plite-browser/donor/examples/editable-voids.test.ts` "moves vertically across editable void child-root boundaries with keyboard" checks focus, model destination and visual-column geometry for downward entry, upward exit and downward exit; the upward exit must have a nonzero offset. It skips mobile and does not exercise upward entry from below. `packages/plitejs/src/react/editable/content-root-navigation.ts` claims visual-boundary crossings, and `packages/plitejs/src/react/editable/content-root-vertical-geometry.ts` resolves the destination using horizontal geometry. Ordinary local movement yields when no crossing target exists. Only a Plite desktop example supplies browser proof. Test read, not run.
+
+- `EDIT-INTERACT-AI-CLOSE-001` `proposed` `Escape in an unapplied Ask AI prompt`: cancellation closes the prompt, preserves document content and the editor selection, and returns keyboard focus to the mounted editor that opened it. Immediate typing without another click edits that editor, and undo reverses that follow-up edit.
+
+Classification: invariant for editor focus restoration on cancellation, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked. This local rule governs editor input after cancellation, not the AI workflow or response-acceptance policy.
+Source: docs/plans/2026-09-10-editor-performance-follow-through.md:419-443
+Proof: the Ask AI case in `apps/www/tests/browser/link-floating-toolbar.spec.ts` opens the prompt from selected text, presses Escape, asserts editor focus, exact selection and unchanged model value, then types and undoes back to the original value. `packages/platejs/src/ai/react/AIChatPlugin.ts` hide resets the session and focuses the bound command editor. This is a Plate product browser test; physical-device behavior and all alternative prompt hosts are unproven. Test read, not run.
+
+- `EDIT-TOOLBAR-CAPTURED-MOUNT-001` `proposed` `open an editor toolbar interaction, then invoke its action`: opening captures the mounted editor target. Focusing another editor must not redirect the action. Removing or replacing the captured mount must not redirect it to a replacement. The action obeys the captured view's current permission and installed capabilities, changing only that admitted target's content or selection; a refused action changes nothing.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked. This local rule governs editor mutation targeting, not toolbar appearance or menu design.
+Source: c70bacbd4a:docs/plans/2026-09-08-multi-editor-architecture-and-api-review.md:130
+Proof: `apps/www/src/registry/components/editor/toolbar-overlay.tsx` captures the editor when the first overlay opens and provides it through EditorProvider until the overlays close. `packages/platejs/src/react/components/EditorProvider.tsx` retains that editor's target. `packages/platejs/src/react/components/PlateController.lifecycle.spec.tsx` "replacing the editable DOM retires the captured command view" asserts a replacement has a different command view, the retired view becomes read-only and its insertion throws rather than targeting the replacement. This is Plate lifecycle proof, not an end-to-end toolbar proof of focus switching, live permission changes or every installed-capability check. Those clauses lack mapped proof in this pass. Test read, not run.
+
+- `EDIT-FOCUS-NATIVE-HANDOFF-001` `proposed` `native focus handoff after an editor focus request`: once the request has focused its editor, moving native focus to an input or button supersedes that request's deferred retries. After settlement, the next key without another click remains with the newly focused control and leaves editor content unchanged.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: platform native-control focus ownership; secondary ref: none checked. No reference editor was checked.
+Source: c70bacbd4a:docs/plans/2026-09-08-multi-editor-architecture-and-api-review.md:188
+Proof: `packages/plitejs/test/react/focus-plite-editable-contract.test.ts` "keeps a native %s focus handoff through pending retries" covers input and button, schedules editor focus, focuses the control, flushes scheduled phases and asserts control focus. It stubs DOMEditor.focus and types no follow-up key, so input routing and unchanged editor content remain unproven. `packages/plitejs/src/react/hooks/focus-plite-editable.ts` snapshots the native focus owner and refuses retries after that owner changes. This is Plite DOM-contract proof, not a native browser typing test. Test read, not run.
 
 ### Navigation Feedback
 
@@ -2682,7 +3218,57 @@ note: cross-file search and open-quickly are app-shell behaviors, not core
 content-editing law, but when Plate needs a product precedent for those
 surfaces, Obsidian is stronger than Typora
 note: search jumps should also use the shared navigation-feedback primitive
-note: `platejs/find` ships current-document literal search, next and previous match movement, and active-match selection (`packages/platejs/src/features/find/lib/BaseFindPlugin.ts`); replace, search seeded from the selection, jump-to-selection and outline header search are locked law with no shipped surface
+note: `platejs/find` ships current-document literal search, next and previous match movement, and active-match selection (`packages/platejs/src/features/find/lib/BaseFindPlugin.ts`), and the copied Find bar seeds its query from an expanded text selection (`apps/www/src/registry/components/editor/find.tsx`, `EDIT-SEARCH-FIND-005`); replace, jump-to-selection and outline header search are locked law with no shipped surface
+
+- `EDIT-SEARCH-INLINE-507` `proposed` `current-document literal find`: within one text block, a literal query matches across consecutive text leaves and editable inline descendants, including formatting boundaries. Each match retains its model endpoints, and searching the inline subtree does not duplicate that match. Finding changes neither document content nor the editor selection.
+
+```text
+hello [world](https://example.com) again
+find HELLO world again
+=>
+one match from before hello to after again; content and selection unchanged
+```
+
+Classification: invariant within literal find, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Typora for current-document find; secondary ref: none checked. These inherit Search And Find-Jump's authority; no reference editor was checked for this case.
+Source: docs/plans/2026-07-12-plate-next-excalidraw-find-replace-floating-package-reviews.md:594-596
+Proof: `packages/platejs/src/features/find/lib/BaseFindPlugin.spec.ts` "finds literal case-insensitive text across inline nodes without document writes" asserts one match across plain text, a link and following text, its exact endpoints, and unchanged children. It changes selection only through the subsequent explicit select command. `packages/plitejs/src/interfaces/node.ts` searches a complete inline text run once and returns before descending again; `packages/plitejs/src/internal/text-run.ts` collects schema-inline descendants. This is model proof, not browser Find proof; no test separately asserts duplicate suppression for a query wholly inside the inline. Tests were read, not run.
+
+- `EDIT-SEARCH-BLOCK-507` `proposed` `current-document literal find`: find never creates a match by concatenating different blocks or parent text across a nested block boundary. Nested blocks are searched independently, and searching changes neither document content nor selection.
+
+```text
+foo
+bar
+find foobar
+=>
+no match; both paragraphs and the selection stay unchanged
+```
+
+Classification: invariant within literal find, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Typora for current-document find; secondary ref: none checked. These inherit Search And Find-Jump's authority; no reference editor was checked for this case.
+Source: docs/plans/2026-07-12-plate-next-excalidraw-find-replace-floating-package-reviews.md:602-604
+Proof: `packages/plitejs/test/find-text-ranges-contract.ts` "does not join separate text runs" rejects foobar across adjacent paragraphs; "joins text through schema inline descendants for live editor roots" also rejects againoutside across paragraphs. `packages/plitejs/src/internal/text-run.ts` rejects a joined run containing any block child, and `packages/plitejs/src/interfaces/node.ts` then visits the children independently. Plate's `packages/platejs/src/features/find/lib/BaseFindPlugin.ts` uses that traversal. The adjacent-block case has Plite model proof; the nested-block clause has source inspection only. Tests were read, not run.
+
+- `EDIT-SEARCH-INPUT-FOCUS-001` `proposed` `type in a document-search input`: updating a query and its document highlights keeps keyboard focus in that input, including after the editor previously held focus. Typing the query changes no document content and does not replace the editor's saved selection with a search-input selection.
+
+Classification: invariant within document search, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Typora for current-document find; secondary ref: Obsidian for search chrome. No reference editor was checked for this focus case.
+Source: c70bacbd4a:docs/plans/2026-04-27-plite-search-highlighting-input-focus.md:48-58
+Proof: `apps/plite/tests/plite-browser/donor/examples/search-highlighting.test.ts` "keeps focus in search input after the editor was focused" focuses the editor, clicks the query input, types t and asserts input focus, value t and nonempty highlights. It does not assert unchanged content or the saved model range. The copied Plate Find input in `apps/www/src/registry/components/editor/find.tsx` updates search state without selecting a match, and `apps/www/tests/browser/transient-editor-geometry.spec.ts` "Find scrolls distant ranges while retaining input focus and selection" asserts retained input focus and unchanged editor selection during navigation. The typing-specific browser case is a Plite example. Tests read, not run.
+
+- `EDIT-SEARCH-FIND-005` `proposed` `Mod+F, Enter, Shift+Enter or Escape in Find`: Mod+F in an Editable opens that view's Find bar and seeds its query from an expanded text selection. Enter moves to the next match and Shift+Enter to the previous match, wrapping through available results, scrolling the active result into view, keeping focus in the Find input and leaving editor selection unchanged. Escape closes Find and restores editor focus without inventing a selection. Finding changes no document content.
+
+Classification: substitutable capability, by the tests in docs/vision/plate.md:151-160; an editor without Find retains ordinary editing and browser search fallback
+Authority: syntax: none; primary UX ref: Typora for current-document find and Obsidian for selected-text kickoff; secondary ref: Google Docs for document navigation. These inherit Search And Find-Jump's authority; no reference editor was checked for these exact keys.
+Source: docs/plans/2026-08-30-cursor-find-overlay-architecture.md:853-855,1022
+Proof: `apps/www/src/registry/components/editor/find.tsx` owns view-local open state, selected-text seeding, match movement, scrolling and close focus. `apps/www/tests/browser/transient-editor-geometry.spec.ts` "Find highlights, wraps, closes, and returns editor input 5/5" checks seeding, forward and backward wrap, closing, editor focus and follow-up typing with undo. "Find scrolls distant ranges while retaining input focus and selection" checks distant-result visibility, input focus and unchanged selection in two viewport sizes. These are Plate browser tests, read and not run. Spec drift: the existing Search And Find-Jump note still says selection-seeded search has no shipped surface, despite this implementation and proof.
+
+- `EDIT-SEARCH-FIND-VISIBLE-001` `proposed` `Mod+F in a focused Editable`: the installed Find surface opens exactly one complete, visible Find bar above overlapping editor chrome and focuses its search input. Enter moves to the next match. Escape closes the bar and restores editor focus without changing document content or inventing a new editor selection.
+
+Classification: invariant within the installed Find capability, by the tests in docs/vision/plate.md:151-160; the search control must remain visible and operable.
+Authority: syntax: none; primary UX ref: Typora for current-document find; secondary refs: Obsidian for search chrome and Google Docs for document navigation. These inherit Search And Find-Jump's references; no reference editor was checked for this visibility case.
+Source: docs/plans/2026-08-31-fix-hidden-find-bar.md:22-27
+Proof: `apps/www/tests/browser/transient-editor-geometry.spec.ts`, "Find highlights, wraps, closes, and returns editor input 5/5", presses Mod+F, asserts one search surface and focused input, checks that the bar wins hit testing at a sampled toolbar overlap, navigates with Enter, checks horizontal viewport containment at narrow width, closes with Escape or the close button, and types and undoes in the editor. The stacking check passes vacuously when no overlap exists and does not inspect every pixel of the complete bar. `apps/www/src/registry/components/editor/find.tsx` owns one view-local open state, a z-[60] bar, input focus and key handling. Test read, not run.
 
 ### Mouse Drag And Selection
 
@@ -2747,6 +3333,55 @@ Authority: syntax: none; primary UX ref: Google Docs for document selection; sec
 Source: c70bacbd4a:docs/editor-issue-harvester/prosemirror/full/checkpoints/issues-1523-1568.md:24-30
 Proof: only Plite proves it: `apps/plite/tests/plite-browser/donor/examples/read-only.test.ts:48` "clicking inside a read-only selection collapses DOM and Plite selection" (a plain read-only Editable, Chromium, Firefox and WebKit) selects `This example` programmatically, clicks at text offset 5 and asserts an empty native selection and a collapsed model selection, not that it collapsed at the click point. `packages/plitejs/test/react/read-only-press-selection.test.tsx` "a click inside a read-only selection keeps its caret through a render on click" (jsdom) asserts the model selection at the click point after a render that runs before the selectionchange, not the native selection. No Plate or www test clicks inside a read-only selection, and Plate's editor content adds its own pointer plugins around the same Editable. Checked 2026-10-24.
 
+- `EDIT-MOUSE-DOUBLECLICK-DRAG-001` `proposed` `double-click and hold the second press, then drag`: in editable paragraph text, dragging extends the word selection beyond the clicked word. The model and native selections agree on the resulting text and endpoints, and one selection highlight paints. Word boundaries may follow each browser's native behavior; document content stays unchanged.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: browser-native word selection. No reference editor was checked for this case.
+Source: c70bacbd4a:docs/plans/2026-06-10-plite-8h-automation.md:1261-1273
+Proof: `apps/plite/tests/plite-browser/donor/examples/plaintext.test.ts` "extends a double-click word selection while dragging" performs the held second-click drag, asserts selected text starts with editable plain, native text equals model text, exact model endpoints derived from that text, and no double highlight. Mobile is skipped. `packages/plitejs/src/react/editable/root-interaction-controller.ts` leaves native text multi-click interactions browser-owned. This is Plite plaintext desktop proof, with no Plate product or physical-device proof. Test read, not run.
+
+- `EDIT-ROOT-CHILD-MOUSE-EXIT-001` `proposed` `click parent text or an empty parent block after editing a child root`: clicking in the parent moves focus and selection to the clicked parent position and clears the child root's active selection. Clicking inside the child keeps selection ownership there. Neither click changes document content.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: Notion for block-shell interaction. No reference editor was checked for this embedded-root case.
+Source: docs/plans/2026-05-25-plite-editable-void-mouse-unfocus.md:4,138-151
+Proof: `apps/plite/tests/plite-browser/donor/examples/editable-voids.test.ts` "unfocuses editable void child root when clicking outside it" first clicks a child text position and asserts its selection, then clicks parent text and asserts parent focus, null child selection and the exact parent caret. It skips mobile and does not click an empty parent block. `packages/plitejs/src/react/editable/root-interaction-controller.ts` routes pointer placement by the editable root, with selection reconciliation in `packages/plitejs/src/react/editable/selection-controller.ts`. Only a Plite desktop example proves the populated-parent case; empty-block placement remains unproven. Test read, not run.
+
+- `EDIT-SELECTION-SCROLL-CLICK-TYPE-001` `proposed` `scroll, click visible paragraph text, then type`: typing inserts at the newly clicked caret and reveals that caret instead of returning to an older selection. Repeating scroll, click and type keeps using the latest clicked position. Only the typed content changes.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document selection and navigation; secondary ref: browser-native caret placement. No reference editor was checked.
+Source: docs/plans/2026-05-11-plite-scroll-selection-visibility-ralplan.md:31-35
+Proof: `packages/plitejs/src/react/editable/selection-controller.ts` imports native-user selection, and `packages/plitejs/src/react/components/editable.tsx` reveals the current selection through the scroll walker. No inspected current test proves the repeated scroll-click-type sequence. The plan's former browser path is absent; the nearby richtext typing-visibility and refocus tests do not perform this gesture sequence. This rule has source inspection only, with no current exact browser proof, no Plate product proof and no raw-mobile or RTL proof. No test was run.
+
+- `EDIT-SELECTION-NESTED-POINTER-001` `proposed` `primary pointer press into a nested editable`: clear the outer editor's inactive selection paint before mousedown, while retaining its model range for later restoration. A secondary or non-primary press, a press inside contentEditable=false chrome, or a press on a marked selection-preserving control keeps that paint. Presentation changes neither document content nor the retained range.
+
+Classification: invariant within inactive-selection presentation, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked. This is a local focus and presentation contract.
+Source: docs/plans/2026-09-10-editor-performance-execution.md:94-97
+Proof: `packages/plitejs/test/react/editable-behavior.tsx` "resolves inactive selection before mousedown for $name" dispatches pointerdown and mousedown into a nested editable, secondary and non-primary variants, embedded noneditable chrome and marked controls, then asserts visibility at mousedown. The fixture uses a selection-paint store without a model range, so range preservation is not asserted there. `packages/plitejs/src/react/inactive-selection.ts` installs capture-phase pointerdown handling and changes only paint-store state. This is a Plite DOM contract with synthetic events, not native browser paint proof. Test read, not run.
+
+- `EDIT-SELECTION-RETAIN-002` `proposed` `blur into selection-preserving chrome`: when an Editable loses focus to a control marked data-editor-keep-selection-visible, or its descendant, keep one visual representation of that Editable's live selection: fill for an expanded range or a caret for a collapsed selection. Keep it while focus moves within marked chrome; clear it when focus returns to the editor, enters unmarked content or leaves the window. Painting reads the canonical selection without copying or changing it, the document or history.
+
+Classification: substitutable capability, by the tests in docs/vision/plate.md:151-160; without opt-in chrome, ordinary blurred-selection presentation remains defined
+Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked. This is a local opt-in presentation contract.
+Source: docs/plans/2026-08-30-cursor-find-overlay-architecture.md:241-280
+Proof: `packages/plitejs/test/react/editable-behavior.tsx` tests expanded selection under a marked ancestor, updates to the live range, unmarked focus, return to the Editable and window blur. `apps/www/tests/browser/transient-editor-geometry.spec.ts` "inactive selection paints expanded and collapsed selections 5/5" asserts one fill or one caret, never both, and their removal at an unmarked control. `packages/plitejs/src/react/inactive-selection.ts` reads canonical selection into decoration output and coordinates visibility; `packages/plitejs/src/react/components/editable-text-blocks.tsx` renders the collapsed caret. These prove DOM presentation and focus transitions, not classified pixels or unchanged history in every case. Tests read, not run.
+
+- `EDIT-SEL-DRAG-AUTOSCROLL-001` `proposed` `hold the primary button during an ordinary native text-selection drag`: holding beyond the editor's upper or lower scrolling boundary visibly scrolls in that direction while native selection remains live and the model follows it. Further scrolling and pointer movement extend or shrink the selection without jumping the viewport back to its anchor. Model-to-DOM selection export must not interrupt the drag, and the floating text-selection toolbar stays hidden until release. Releasing stops continued scrolling and permits the next editor interaction. Projected selection and root-chrome gestures retain their separate owners.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: the browser's ordinary contenteditable drag behavior. No reference editor was checked.
+Source: c70bacbd4a:docs/plans/2026-08-27-outside-editor-native-autoscroll-failed-fix-repair.md:434-435; docs/plans/5113-selection-drag-scrolling-regression.md:318-346
+Proof: `apps/www/tests/browser/selection-drag-scroll.spec.ts` "keeps native selection drag scrolling outside the editor" drives held-button downward and upward drags, asserts directional scroll, substantial native selected text, model selection, no premature release and no floating Ask AI toolbar, then checks scrolling stops after release and the next click and arrow work. It checks model movement explicitly upward, but does not assert exact native/model endpoint equality throughout both drags or every shrink step. `packages/plitejs/src/react/editable/root-interaction-controller.ts` leaves ordinary native text dragging browser-owned, and `packages/plitejs/src/react/editable/selection-controller.ts` skips model selection export while an unprojected native drag is active. This is a Plate browser proof owner, read and not run; the source's desktop Chrome result does not establish other engines or devices.
+
+- `EDIT-DRAG-CHROME-SELECTION-001` `proposed` `drag a native text selection across visible block-handle chrome`: the handle and its gutter remain excluded from native selection paint and selected text. Document text remains selectable, and the handle's actions, editor focus and subsequent typing remain usable. The chrome does not introduce document text or move the selection's model boundaries.
+
+Classification: invariant within document text selection, by the tests in docs/vision/plate.md:151-160; editor controls must not become selected document content.
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: Notion for block drag semantics. These inherit Mouse Drag And Selection's references; no reference editor was checked for this case.
+Source: docs/plans/2026-08-25-fix-drag-handle-selection-paint.md:22-29
+Proof: `apps/www/tests/browser/dnd.spec.ts`, "dnd:drag-handle-excluded-from-native-selection", drags from preceding text into Collaborative Editing on the homepage, asserts the native selected text includes that heading and excludes the handle glyph, and checks computed user-select: none on the handle. It does not inspect highlight pixels, assert the gutter separately or exercise handle actions and subsequent typing in that case. `apps/www/src/registry/components/editor/dnd.tsx` applies select-none and contentEditable=false to the shared Gutter while retaining its controls. This is partial Plate browser-test coverage, read and not run.
+
 ### Platform Shortcuts
 
 - `EDIT-SHORTCUT-*` `locked`
@@ -2787,6 +3422,27 @@ Authority: syntax: none; primary UX ref: the macOS text system's `Ctrl+O` open l
 Source: c70bacbd4a:docs/editor-test-harvester/lexical/plite-processing-ledger.md:875
 Proof: only a Plite example proves it: `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts:5032` "opens a line with Mac Ctrl+O without moving past following text" (Chromium desktop with a Mac user agent) asserts `foo`, an empty block and `bar`, the model caret in the empty block, the DOM location and an `open-line` kernel trace. Plate has no binding or test of its own and inherits Plite's. Mid-block, read from the code and not run, Plite opens the empty paragraph above the whole block instead of splitting it (`packages/plitejs/src/react/editable/mutation-controller.ts:136-192`). Checked 2026-10-08.
 
+- `EDIT-SEL-WORD-LEAVES-501` `proposed` `word-forward caret movement`: from the start of a word, movement crosses adjacent differently formatted text leaves to the logical word boundary. A formatting edge introduces no extra stop, and document content stays unchanged.
+
+```text
+**|he**llo world
+word-forward
+=>
+**he**llo| world
+```
+
+Classification: invariant within word movement, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: platform text-navigation conventions; secondary ref: none checked. No reference editor or native platform shortcut was checked; punctuation policy is not decided here.
+Source: docs/plans/2026-05-07-plite-core-caret-movement-word-insert-break-ralplan.md:21-23
+Proof: `packages/plitejs/test/transaction-contract.ts` "moves word selection across initial sibling text leaves" starts before bold he followed by plain llo and world, calls selection.move with unit word, and asserts a collapsed caret after hello. `packages/plitejs/src/transforms-selection/move.ts` resolves word movement through editorBefore/editorAfter rather than treating a leaf edge as a stop. This is Plite model proof; platform-specific keyboard transport is unproven. Test read, not run.
+
+- `EDIT-HISTORY-EXTERNAL-CONTROL-FOCUS-001` `proposed` `keyboard undo or redo in an external control wired to editor history`: replay keeps focus in the control. Repeated undo that reaches an earlier editor-content change still keeps that control focused and raises no editor focus-repair error. Replayed editor content may change, but its saved caret must not steal the control's native focus.
+
+Classification: invariant within a control that participates in editor history, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: platform focus ownership for native controls; secondary ref: none checked. No reference editor was checked; unrelated native inputs are outside this rule.
+Source: docs/plans/2026-05-20-plite-document-state-undo-selection-bug.md:52-57,67-84
+Proof: `apps/plite/tests/plite-browser/donor/examples/document-state.test.ts` "keeps title input undo redo outside editor focus repair" asserts title undo and redo retain input focus and leave earlier body typing intact. "keeps title input focused while repeated undo crosses editor history" then undoes the earlier body edit while asserting title focus, editor blur and no focus-repair error. Both skip mobile. The title handler in `apps/www/src/app/(app)/examples/plite/_examples/document-state.tsx` invokes the history portal and restores title focus. This is Plite example proof, not a framework guarantee for controls that omit that wiring. Tests read, not run.
+
 ### Delete Commands
 
 - `EDIT-CMD-DELETE-*` `locked`
@@ -2803,6 +3459,27 @@ note: a delete command in a table deletes the current row instead of applying ge
 note: a delete command in a code block deletes the current code line like a code editor instead of structurally exiting the block
 
 note: a delete command in a math block deletes the current math line like a code-like editing surface instead of structurally exiting the block
+
+- `EDIT-INLINE-BS-EMPTY-001` `proposed` `Backspace at the start of an empty editable inline`: with a collapsed caret there, Backspace removes that inline alone, preserves preceding text and any required inline spacers, and places the caret at a surviving adjacent editable point.
+
+```text
+an [empty editable inline: |]!
+⌫
+=>
+an |!
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Typora for text deletion; secondary ref: none checked. No reference editor was checked for empty-inline removal.
+Source: c70bacbd4a:docs/plans/2026-05-07-plite-inline-delete-boundary-repro-ralplan.md:283-298
+Proof: `packages/plitejs/test/delete-contract.ts` "removes an empty editable inline on Backspace without deleting preceding text" asserts an ! and the caret after an after deleting the inline. `apps/plite/tests/plite-browser/donor/examples/inlines.test.ts` "removes an empty editable inline with Backspace without deleting preceding text" empties an editable button, presses Backspace again, and checks the preceding character survives and native selection stays collapsed and usable; mobile is skipped. `packages/plitejs/src/transforms-text/delete-text-collapsed-path-targets.ts` targets an empty schema-inline parent only when it is editable and non-void. Browser proof belongs to a Plite example; nested-inline and Plate browser behavior remain unproven. Tests read, not run.
+
+- `EDIT-DELETE-LEAF-DOM-001` `proposed` `Backspace, Delete, word deletion, range deletion or cut across formatting boundaries`: removing text must not introduce blank visual lines into a surviving nonempty paragraph. After an emptied leaf is removed, the caret resolves to surviving editable text or a required inline spacer. An empty paragraph retains a caret-addressable placeholder.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Typora for paragraph deletion; secondary ref: none checked. No reference editor was checked for this DOM representation case.
+Source: c70bacbd4a:docs/plans/2026-04-25-plite-leaf-lifecycle-dom-shape-conformance-plan.md:104-159
+Proof: `packages/plitejs/test/leaf-lifecycle-contract.ts` "removes removable empty marked leaves after destructive word deletes" asserts no empty text leaves and an exact surviving caret after four word deletes. `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts` "keeps rendered DOM shape after repeated leaf-boundary word-delete" checks Chromium innerText against model text, no unexpected zero-width breaks, a collapsed editable DOM selection and subsequent insertion. It does not cover every deletion transport or the empty-paragraph placeholder. `packages/plitejs/src/core/representation.ts` canonicalizes inline children; resolveTextZeroWidth in `packages/plitejs/src/react/components/editable-text-blocks.tsx` reserves a line-break placeholder for an empty block rather than an empty leaf in a nonempty block. This is partial Plite model and browser-example proof; no pixel or raw-mobile claim is established. Tests read, not run.
 
 ### Autocomplete
 
@@ -2990,6 +3667,26 @@ note: IME composition should stay inside the active text owner and must not
 double-apply committed text at block or inline-atom boundaries
 
 note: platform text-editing norms decide IME behavior, with product-specific owner behavior at atoms, code blocks and tables
+
+- `EDIT-IME-REPLACEMENT-UNDO-001` `proposed` `IME composition replacing an expanded text selection, then undo or redo`: one composition forms one undo action, including replacement across marked leaves, a composition longer than ordinary typing's grouping delay, and compositionend before terminal input. One undo restores the exact prior content, marks and expanded selection, including its direction. One redo restores the exact composed content and selection, with no duplicate committed text.
+
+```text
+This is [[editable **rich** text]], done
+replace the selection with one composition of すし
+=>
+This is すし|, done
+undo
+=>
+This is [[editable **rich** text]], done
+redo
+=>
+This is すし|, done
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: platform text-editing norms for composition; secondary ref: none checked. No reference editor or physical IME was checked.
+Source: docs/plans/2026-05-07-plite-mobile-ime-input-runtime-ralplan.md:2349-2359; docs/plans/2026-08-22-plite-long-ime-history-atomicity-regression.md:295-306
+Proof: `packages/plitejs/test/react/composition-state-contract.test.ts` "keeps a marked multi-leaf composition replacement in one history unit" asserts complete prior value and selection after one undo, and composed value and selection after redo. Its fixture is forward-selected. `apps/plite/tests/plite-browser/donor/examples/richtext.test.ts` "keeps long expanded marked composition atomic when compositionend precedes final input" waits 1100ms during a synthetic desktop Chromium composition, dispatches compositionend before final beforeinput, and asserts exact value and selection through one undo and redo. `packages/plitejs/src/react/editable/composition-state.ts` carries replacement history merging through the composition session. Backward direction has source support from saved-selection restoration but is not asserted by these inspected current cases. Browser proof is a Plite example, not physical IME, mobile or Plate product proof. Tests read, not run.
 
 - `EDIT-IME-NONOVERLAP-KEEP-001` `proposed` `app, model or remote edit outside the composition`: an edit whose range lies outside the active IME composition leaves the composition running under browser ownership, and the composition commits once, at the caret that edit adjusted
 
@@ -3179,6 +3876,13 @@ Authority: syntax: none; primary UX ref: none checked; the rule narrows `EDIT-AT
 Source: 52625e85025313eebd4eeb9be2254249ded58676:docs/solutions/logic-errors/2026-04-26-plite-selectable-voids-should-be-atomic-navigation-points.md:82-90
 Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-browser/donor/examples/images.test.ts:828` "removes an empty paragraph after an image before deleting the image" presses Backspace in the empty paragraph after the first image and asserts both images kept, the caret in the image's child `[1, 0]` and the image's selected style, on Chromium and WebKit; Firefox and mobile skip it. No Plate test covers it. A model probe on 2026-10-08 (Bun, package source, no DOM) with a `void: 'block'` plugin ran `deleteBackward` in the empty paragraph after the void: the paragraph was removed and the caret landed in the void's child `[1, 0]`, the selection form that `packages/platejs/src/lib/plugins/override/OverridePlugin.spec.tsx:50` asserts for `EDIT-ATOMIC-BS-START-001`. Checked 2026-10-08.
 
+- `EDIT-ATOMIC-VOID-CARET-001` `proposed` `select a horizontal rule or block equation`: the atom remains selected without an extra editable blank row or a painted text caret below it. Any hidden text anchor exists only to support selection and focus; subsequent deletion, navigation and typing remain usable without changing content merely to hide the caret.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: CommonMark thematic break and adopted math delimiters; primary UX ref: Typora; secondary ref: Milkdown. These inherit the atomic-block and math families' authority; no reference editor was checked for caret paint.
+Source: c70bacbd4a:docs/plans/2026-08-29-block-void-caret-regression-attempt-2.md:496-500
+Proof: `apps/www/tests/browser/block-void-caret.spec.ts` "block-void:native-caret-not-painted-below-void" clicks a horizontal rule, checks editor focus, selected state, transparent spacer caret and a zero-width node without br, then deletes and undoes it. Closing the block-equation editor checks its block selection, transparent caret and no br; later click, typing and undo remain usable. `packages/plitejs/src/react/components/editable-text-blocks.tsx` wraps block-void children in a spacer and renders void zero-width text without a line-break placeholder; `packages/plitejs/src/react/shell-runtime.ts` makes that spacer zero-height with transparent caret. This is a current Plate browser test with DOM/style assertions, not inspected pixel proof that no native caret paints. Test read, not run; Safari paint is unproven.
+
 ## Hard Line Break
 
 Authority:
@@ -3345,6 +4049,81 @@ Proof: only a Plite example proves it in a browser: `apps/plite/tests/plite-brow
 Classification: substitutable capability, by the tests in docs/vision/plate.md:129-137; without these rules, `↑` and `↓` leave a block selection for a caret beside it (inferred from `getSelectableOwnerVerticalNavigationTarget` in `packages/plitejs/src/react/editable/caret-engine.ts`)
 Authority: syntax: none; primary UX ref: none checked; secondary ref: none checked
 Proof: `apps/www/tests/browser/node-selection-input.spec.ts` drives real keys in Chromium: Details body and top-level block moves, Shift extension and contraction, the first-body-block edge, a block range through an image, a stop before an unmounted sibling (`packages/platejs/src/react/components/NodeSelection.spec.tsx`), the reveal of each newly selected block in a short viewport, and table cell `⇧↓`; `apps/www/tests/browser/media-caption.spec.ts:412` covers `↓` into an image caption. `EDIT-SEL-BLOCK-ONE-001`: `apps/www/tests/browser/media-caption.spec.ts` "a marquee over one media block paints it blue with no ring or toolbar" and "clicking an image makes an object pick that block gestures turn blue" in Chromium, which also covers `↓` from a block-picked image to the next block. `EDIT-SEL-BLOCK-HORIZONTAL-001`: `packages/plitejs/test/react/object-selection.test.tsx` "a block pick of one object leaves it with arrows instead of entering it", "horizontal arrows on a block pick pick a neighboring object and stop at the document edge" and "RTL block picks leave in reading direction" in jsdom, and `packages/platejs/src/react/features/table/TablePlugin.navigation.spec.tsx` "lands Left and Right inside a cell pick"; no browser case drives `←` or `→` on a block pick. Code: `packages/platejs/src/react/components/NodeSelection.tsx` `onKey` in `NodeSelectionDrag`; `getNodeSelectionExitTarget` in `packages/plitejs/src/react/editable/caret-engine.ts`.
+
+- `EDIT-SEL-UNDO-RANGE-501` `proposed` `undo after a destructive edit over a text range`: undo restores the previous content and the original expanded selection, including its anchor, focus and direction. Clearing selection and refocusing between the edit and undo must not replace that saved range with a collapsed caret.
+
+```text
+abcdef with anchor after d and focus before b
+remove the selected bcd, then undo
+=>
+abcdef with the same backward selection over bcd
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: none checked. No reference editor was checked for this history case.
+Source: docs/plans/2026-05-06-plite-core-history-selection-undo-ralplan.md:216-220
+Proof: `packages/plitejs/test/history/history-contract.ts` "reselects the restored text after deleteFragment and undo" restores a forward range. "restores the saved expanded selection after deleteFragment, blur, refocus, and undo" deletes backward-selected Hello, clears and replaces selection, then asserts the exact restored content and backward range. These simulate blur and refocus through model selection writes. `packages/plitejs/src/history/history-selection.ts` clones saved anchor and focus without reversing them and restores them only in their owning root. This is Plite model proof, not native focus or Plate browser proof. Tests read, not run.
+
+- `EDIT-SEL-VERTICAL-001` `proposed` `repeated Shift+ArrowDown or Shift+ArrowUp`: text selection extends or contracts through visual lines while preserving its anchor. With equal text and layout, explicit virtualization preserves the target sequence of the complete DOM across mounted boundaries. Reversing to the anchor collapses the model selection and any native range representing it; content stays unchanged.
+
+Classification: invariant, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: native selection in the complete DOM as the local comparison. No reference editor was checked.
+Source: c70bacbd4a:docs/plans/2026-06-05-plite-huge-doc-native-shift-down-parity.md:407-412
+Proof: `apps/plite/tests/plite-browser/donor/examples/huge-document.test.ts` "keeps virtualized repeated Shift+ArrowDown and Shift+ArrowUp aligned with complete and bounded" compares 24 downward and 12 upward steps in complete and virtualized 5000-block examples, asserts the original anchor, and compares target paths with offset tolerance of one character. Virtualized selection uses projected markers with empty native selected text. It never reverses fully to the anchor, so collapse and exact offset equality remain unproven. Current visual targeting and boundary handling are in `packages/plitejs/src/react/editable/dom-coverage-vertical-selection.ts` and `packages/plitejs/src/react/editable/caret-engine.ts`. This is a Plite desktop example, not Plate product or device proof. Test read, not run; no performance result is claimed.
+
+- `EDIT-SEL-HIDDEN-CHROME-001` `proposed` `Shift+ArrowRight or shifted word-right across skipped hidden content`: extension preserves the selection anchor and advances through visible editable text without selecting intervening controls or opening inactive content. The native or projected selection represents the visible selected text; document content stays unchanged.
+
+```text
+Intro visible before hidden bloc[[ks.]]
+[collapsed content and tab controls]
+Overview tab visible text
+Shift+ArrowRight
+=>
+Intro visible before hidden bloc[[ks.
+O]]verview tab visible text
+hidden content stays closed; controls are not selected
+```
+
+Classification: invariant under skip selection policy, by the tests in docs/vision/plate.md:151-160
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: Notion for block-shell interaction. No reference editor was checked for hidden-content extension.
+Source: docs/plans/2026-05-26-plite-shift-boundary-selection.md:173-199
+Proof: `apps/plite/tests/plite-browser/donor/examples/hidden-content-blocks.test.ts` "keeps shifted boundary navigation out of shadcn chrome selection" asserts the unchanged anchor, native selected text ks. followed by O and Ov, then Control+Shift+ArrowRight selecting Overview, while hidden accordion and inactive-tab text remain absent. `packages/plitejs/src/react/editable/caret-engine.ts` skips boundaries while preserving the anchor, and `packages/plitejs/src/react/editable/dom-coverage-selection.ts` projects the resulting range. This is Plite example proof; the earlier empty-native-highlight result is not the current oracle. Test read, not run.
+
+- `EDIT-SEL-MARQUEE-001` `proposed` `gutter drag across selectable blocks`: a visible marquee follows the pointer and crossed blocks become structurally selected. Native text selection and the floating text toolbar stay absent, with focus held by the editor's structural-selection owner. Release hides the marquee and preserves a usable block selection; the gesture changes no document content.
+
+Classification: substitutable capability, by the tests in docs/vision/plate.md:151-160; ordinary text and explicit block selection remain defined without marquee gestures
+Authority: syntax: none; primary UX ref: Notion for block drag semantics; secondary ref: Google Docs for document-selection interaction. No reference editor was checked for marquee paint.
+Source: c70bacbd4a:docs/plans/5088-block-marquee-paint.md:103-106,345-355
+Proof: `tooling/e2e/node-selection.test.ts` "marquee selection stays editor-owned through focus, clipboard, input, delete, and undo" drags from the gutter, asserts selected block paths, visible marquee dimensions and nontransparent fill and border, then asserts release hides it while preserving selection, editable focus, no native range and no floating toolbar. Copy, typing, deletion and undo establish a usable resulting selection. `packages/platejs/src/react/components/NodeSelection.tsx` owns the pointer gesture, rectangle and structural selection and focuses the editable. The current owner is the editable, not the retired shadow input. This is Plate browser-test coverage of geometry and computed styles, not inspected pixel proof; its synthetic touch segment proves no physical touch behavior. Test read, not run.
+
+- `EDIT-SEL-BLOCK-MARQUEE-CONTRACT-001` `proposed` `move a held block-selection marquee back toward its anchor`: blocks selected by the current marquee cease to be selected when the shrinking marquee no longer intersects them. Contraction happens before pointer release. The gesture retains structural selection ownership and changes no document content; it creates no text caret.
+
+```text
+marquee starts above blocks A and B
+held drag covers A and B
+move back until the marquee covers only A
+=>
+A selected; B unselected, while the pointer remains held
+```
+
+Classification: invariant within marquee selection, by the tests in docs/vision/plate.md:151-160; a live marquee must represent its current covered blocks.
+Authority: syntax: none; primary UX ref: Notion for block drag semantics; secondary ref: Google Docs for document-selection interaction. These inherit the existing marquee rule's references; no reference editor was checked for contraction.
+Source: docs/plans/2026-08-26-extract-node-selection-primitives.md:265
+Proof: `packages/platejs/src/react/components/NodeSelection.spec.tsx`, "contracts the live selection when a drag returns toward its anchor", supplies mocked block rectangles, dispatches pointer events, asserts blocks [0] and [1] selected, moves back while held, and asserts only [0] selected before pointerup. `packages/platejs/src/react/components/NodeSelection.tsx` recomputes intersecting candidates from the current rectangle and publishes the resulting paths. This is a mounted DOM contract with synthetic events and mocked geometry, not native browser drag or pixel proof. Test read, not run.
+
+- `EDIT-SEL-SYNCED-001` `proposed` `Shift+Arrow expansion or mouse selection across visible synced-content roots`: selection follows displayed sibling order in either direction and preserves its gesture anchor. Repeated occurrences of one shared root are distinguished by the displayed occurrence where the gesture began or entered that root; selection must not jump to another occurrence with the same storage identity. Ordinary Shift+Arrow inside a paragraph remains a local text selection. Selection changes no document content.
+
+```text
+before | [first occurrence of shared text] between [second occurrence of shared text] after
+Shift+ArrowRight into the first occurrence
+=>
+selection extends into the first occurrence; the second remains unpainted
+```
+
+Classification: invariant within selection across displayed content roots, by the tests in docs/vision/plate.md:151-160; shared storage identity must not replace displayed document order or gesture ownership.
+Authority: syntax: none; primary UX ref: Google Docs for document selection; secondary ref: Notion for block-shell interaction. These inherit the adjacent selection and content-root rules' references; no reference editor was checked for synced roots.
+Source: docs/plans/2026-05-27-synced-blocks-sibling-selection.md:3-13
+Proof: `apps/plite/tests/plite-browser/donor/examples/synced-blocks.test.ts`, "extends Shift+Arrow through synced blocks like sibling blocks" and "extends Shift+ArrowLeft and Shift+ArrowRight through synced blocks like sibling text", assert forward and backward projected endpoints with occurrence owners. "renders projected Shift+ArrowRight selection on the active synced block copy" asserts paint text only in the first shared copy. "mouse selection across synced blocks becomes the same visible-order selection as sibling blocks" checks forward mouse crossings, and "keeps ordinary Shift+Arrow selection local inside normal paragraphs" asserts the local model and native range. The inspected mouse case does not prove reverse mouse dragging. `packages/plitejs/src/react/editable/content-root-navigation.ts` constructs projected selections from occurrence-aware boundaries and retains their anchor. Proof belongs to Plite examples and does not establish native-selection parity or Plate product coverage. Tests read, not run.
 
 ## Affinity Rules
 
@@ -3626,6 +4405,22 @@ Classification: invariant, by the tests in docs/vision/plate.md:129-137; turning
 Authority: syntax: GFM and GitHub Docs; primary UX ref: Typora; secondary ref: the unresolved-reference repair under `EDIT-FOOTNOTE-NAV-001`
 Source: c70bacbd4a7523ae3ebfd820cec0ea8ec228e9ad:docs/editor-behavior/editor-protocol-matrix.md:301
 Proof: `packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.spec.ts:392` "creates one definition and reuses it on later requests" calls `createDefinition` with `focus: false` and asserts the definition at `[1]`, no inserted reference and the selection kept, then calls it again with the default focus and asserts the same definition and the caret at offset 0 of `[1, 0, 0]`, which proves creation, no reference, focus off and reuse; the default focus on a fresh creation is asserted only through `insert`, by `:464` "uses selected content as the initial definition body [EDIT-FOOTNOTE-INSERT-001]", and a model probe on 2026-10-08 (Bun, package source) confirmed it for a direct call. Code: the reuse branch at `packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts:415-439` and the fresh creation at `:467-479`, which never checks that a reference exists. The Plugin surface line for `editor.update.footnote.createDefinition` under Footnotes states the creation half. Checked 2026-10-08.
+
+- `EDIT-FOOTNOTE-CARET-507` `proposed` `insert footnote with focusDefinition: false`: at a collapsed current text selection, insertion creates the reference and any missing definition, then leaves a collapsed caret immediately after the reference in its source paragraph. If no following text position exists there, insertion creates one. The default insertion still focuses the definition.
+
+```text
+|text
+insert footnote with focusDefinition: false
+=>
+[^1]|text
+
+[^1]:
+```
+
+Classification: invariant, by the tests in docs/vision/plate.md:150-160; choosing whether insertion focuses the definition is a parameter
+Authority: syntax: GFM and GitHub Docs; primary UX ref: Typora; secondary ref: Milkdown; inherited family references, with no reference editor checked for this case
+Source: docs/plans/2026-07-12-plate-next-footnote-indent-juice-package-reviews.md:630
+Proof: packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.spec.ts, 'keeps the caret after a reference inserted at the start of text', asserts the reference and the selection anchor in the following text. It does not independently assert the focus endpoint or terminal-spacer creation. packages/platejs/src/features/footnote/lib/BaseFootnotePlugin.ts calls selectAfterInline in packages/platejs/src/internal/plugin/inlineInsertion.ts, which selects following sibling text or inserts and selects an empty text sibling. Model proof only; no browser gesture was rerun.
 
 ## Behavior-Policy Options
 
