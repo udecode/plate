@@ -778,6 +778,211 @@ describe('content completion laws', () => {
     });
   });
 
+  describe('an empty text beside an inline element', () => {
+    const Links = defineEditorSchema('completion-law-links', {
+      elements: {
+        link: { content: c.text({ default: 'text', min: 1 }), inline: true },
+        paragraph: {
+          content: c.any([c.text(), c.type('link')], {
+            default: 'text',
+            min: 1,
+          }),
+        },
+      },
+      id: 'completion-law-links',
+      properties: [
+        schema.textProperty('bold', property.boolean()),
+        schema.textProperty('italic', property.boolean()),
+      ],
+      root: c.type('paragraph', { default: { type: 'paragraph' }, min: 1 }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const linked = (children: Json[]) =>
+      createEditor({
+        initialValue: [node('paragraph', children)] as never,
+        plugins: [Links],
+      });
+    const lineOf = (editor: ReturnType<typeof linked>) =>
+      (editor.read.children() as Json[])[0].children;
+    const link = node('link', [text('ab')]);
+    const bold = (value: string) => text(value, { bold: true });
+    const replaced = (
+      children: Json[],
+      anchor: Readonly<{ offset: number; path: number[] }>,
+      focus = anchor
+    ) => {
+      const editor = linked([text()]);
+
+      editor.update.value.replace({
+        children: [node('paragraph', children)],
+        selection: { anchor, focus, kind: 'text' },
+      } as never);
+
+      return editor;
+    };
+
+    it('loads empty texts between a link and a bold letter as none, and loads that result unchanged', () => {
+      const editor = linked([text(), link, text(), text(), bold('X')]);
+      const other = linked([text('q')]);
+
+      assert.deepEqual(lineOf(editor), [text(), link, bold('X')]);
+      assert.deepEqual(
+        linked(lineOf(editor)).read.children(),
+        editor.read.children()
+      );
+      assert.doesNotThrow(() =>
+        other.update((tx) => {
+          tx.changes.apply(
+            DocumentChange.between(other.read.value(), editor.read.value())
+          );
+        })
+      );
+    });
+
+    it('keeps a replaced caret in the bold text it starts when the empty text before it goes', () => {
+      const editor = replaced([text('a'), text(), bold('b')], {
+        offset: 0,
+        path: [0, 2],
+      });
+
+      editor.update.text.insert('Z');
+
+      assert.deepEqual(lineOf(editor), [text('a'), bold('Zb')]);
+    });
+
+    const typedAfterRemovedLink = (next: Json) => {
+      const editor = createEditor({
+        plugins: [
+          defineEditorSchema('completion-law-removed-link', {
+            elements: {
+              el: { content: c.open() },
+              link: { content: c.text(), inline: true },
+              p: { content: c.text() },
+            },
+            id: 'completion-law-removed-link',
+            root: c.type('el', { default: { type: 'el' }, min: 1 }),
+            unknown: 'preserve',
+            version: 1,
+          }),
+        ],
+      });
+      const caret = { offset: 0, path: [0, 0, 2] };
+
+      editor.update.value.replace({
+        children: [
+          node('el', [
+            node('u', [
+              text('c'),
+              node('v', [node('p', [text('a')]), node('link', [text()])]),
+              text(),
+              next,
+              text('de'),
+            ]),
+          ]),
+        ],
+        selection: { anchor: caret, focus: caret, kind: 'text' },
+      } as never);
+      editor.update.text.insert('Z');
+
+      return (editor.read.children() as Json[])[0].children[0].children;
+    };
+
+    it('keeps a replaced caret out of the next link when an empty link between it and the last letter goes', () => {
+      assert.deepEqual(typedAfterRemovedLink(node('link', [text('B')])), [
+        text('caZ'),
+        node('link', [text('B')]),
+        text('de'),
+      ]);
+    });
+
+    it('keeps a replaced caret before an empty link when an empty link between it and the last letter goes', () => {
+      assert.deepEqual(typedAfterRemovedLink(node('link', [text()])), [
+        text('caZ'),
+        node('link', [text()]),
+        text('de'),
+      ]);
+    });
+
+    it('keeps the empty text beside a link that holds the caret', () => {
+      const children = [text(), link, text(), text('X')];
+
+      assert.deepEqual(
+        lineOf(replaced(children, { offset: 1, path: [0, 1, 0] })),
+        children
+      );
+    });
+
+    it('keeps a replaced caret before a link outside it when the empty text holding it goes', () => {
+      const editor = replaced([bold('X'), text(), link, text()], {
+        offset: 0,
+        path: [0, 1],
+      });
+
+      editor.update.text.insert('Z');
+
+      assert.deepEqual(lineOf(editor), [bold('XZ'), link, text()]);
+    });
+
+    it('keeps a replaced caret after its letter when an empty link earlier in the block goes', () => {
+      const Open = defineEditorSchema('completion-law-open-links', {
+        elements: {
+          el: { content: c.open() },
+          link: { content: c.text(), inline: true },
+          p: { content: c.text() },
+        },
+        root: c.type('el', { default: { type: 'el' }, min: 1 }),
+        unknown: 'preserve',
+      });
+      const editor = createEditor({ plugins: [Open] });
+      const caret = { offset: 1, path: [0, 0, 2] };
+
+      editor.update.value.replace({
+        children: [
+          node('el', [
+            node('u', [
+              text('c'),
+              node('v', [node('p', [text('a')]), node('link', [text()])]),
+              text('de'),
+            ]),
+          ]),
+        ],
+        selection: { anchor: caret, focus: caret, kind: 'text' },
+      } as never);
+      editor.update.text.insert('Z');
+
+      assert.deepEqual(
+        (editor.read.children() as Json[])[0].children[0].children,
+        [text('cadZe')]
+      );
+    });
+
+    it('drops an emptied text beside a link inside a run of formats longer than the edit window', () => {
+      const formats = [
+        bold('1'),
+        text('2', { italic: true }),
+        bold('3'),
+        text('4', { italic: true }),
+        bold('5'),
+      ];
+      const editor = linked([text(), link, text('q'), ...formats]);
+
+      editor.update((tx) => {
+        tx.text.delete({
+          at: {
+            anchor: { offset: 0, path: [0, 2] },
+            focus: { offset: 1, path: [0, 2] },
+          },
+        });
+      });
+
+      const children = editor.read.children();
+
+      assert.deepEqual(lineOf(editor), [text(), link, ...formats]);
+      assert.equal(canonicalizeRootChildren(editor, children, null), children);
+    });
+  });
+
   describe('sites, policies and reports', () => {
     const editorWith = (definition: Json, initialValue: unknown) =>
       createEditor({
@@ -1363,7 +1568,7 @@ describe('content completion laws', () => {
         );
       });
 
-      it('reports one merge for a text that merges again after a spacer drops its formatting', () => {
+      it('reports a formatted empty text after an inline as removed when letters follow it', () => {
         assert.deepEqual(
           reportOf(runs, [
             node('p', [
@@ -1375,15 +1580,10 @@ describe('content completion laws', () => {
           ]).repairs,
           [
             { code: 'insert-inline-spacer', inputs: [], outputs: [[0, 0]] },
-            {
-              code: 'omit-empty-text-property',
-              inputs: [[0, 1, 'bold']],
-              outputs: [[0, 2]],
-            },
+            { code: 'remove-empty-text', inputs: [[0, 1]], outputs: [] },
             {
               code: 'merge-text',
               inputs: [
-                [0, 1],
                 [0, 2],
                 [0, 3],
               ],
@@ -1393,7 +1593,7 @@ describe('content completion laws', () => {
         );
       });
 
-      it('reports one merge for a merged run that absorbs the spacer after it', () => {
+      it('reports a formatted empty text before an inline as removed when letters precede it', () => {
         assert.deepEqual(
           reportOf(runs, [
             node('p', [
@@ -1405,17 +1605,12 @@ describe('content completion laws', () => {
             ]),
           ]).repairs,
           [
-            {
-              code: 'omit-empty-text-property',
-              inputs: [[0, 2, 'bold']],
-              outputs: [[0, 0]],
-            },
+            { code: 'remove-empty-text', inputs: [[0, 2]], outputs: [] },
             {
               code: 'merge-text',
               inputs: [
                 [0, 0],
                 [0, 1],
-                [0, 2],
               ],
               outputs: [[0, 0]],
             },

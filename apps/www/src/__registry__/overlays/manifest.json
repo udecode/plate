@@ -159,7 +159,7 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "6722468a2f79448f6bc88c639953df805ff4e950394347b829255514b2fc88ae",
+  "generation": "7087a382d699af90a0c057da0cbb2bcfa3c649f1407f75f04b8454cbd05e06cb",
   "itemCount": 322,
   "payloads": {
     "overlays/base-luma/floating-popover.json": "970d8e66abcc67a92801140819b2a1d80d66d6e03d75e9270d5a53b6219e3bcc",
@@ -357,7 +357,7 @@
     "r/docx.json": "c59b0230308976347306e5949e2c5b8b6ca9fb219b43e8841be376a0cd68b72e",
     "r/dom-coverage-docs.json": "2d9015564fc448dd75c7a92e633d534734f47a45e5b51a63e04ddb026fc9bb7f",
     "r/editing-behavior-docs.json": "b9b7bf1e4b4f5d8116592ea4d2b10eaf3bbef6d326be93c51f7ceaef1f08ee2b",
-    "r/editor-ai.json": "b47d9f0a48209f33edfe1df0ef5bfbfe991a8ea7f586afef2819f22d34b23f1f",
+    "r/editor-ai.json": "34ec51c2426cc5fa3799e0aa196ec216ca4ef4073a15b67fa5796c2564712137",
     "r/editor-basic.json": "994facfbb8aeb8f3fa3f12a8c4438c5d8a0d2ebb6a810d854a37cc555f9cd351",
     "r/editor-context-menu.json": "b3091557c7b1f42047a961c58ea7a66725893b95fd38837cd95b2a5b30bc3a17",
     "r/editor-docs.json": "cc9f0e2fd49b2ed12f6801f18ba06fa27b4aebd80f6cdf37c51c1bb751d7f753",
@@ -680,7 +680,7 @@
     "rd/docx.json": "c59b0230308976347306e5949e2c5b8b6ca9fb219b43e8841be376a0cd68b72e",
     "rd/dom-coverage-docs.json": "2d9015564fc448dd75c7a92e633d534734f47a45e5b51a63e04ddb026fc9bb7f",
     "rd/editing-behavior-docs.json": "b9b7bf1e4b4f5d8116592ea4d2b10eaf3bbef6d326be93c51f7ceaef1f08ee2b",
-    "rd/editor-ai.json": "e4d40ebb51215fe7494a79914f70cbdacb48798a82503b4581534b63ae1d7e3e",
+    "rd/editor-ai.json": "021bf35169c9b07b085ee574551f9f18eaad5712b6a1c77207c5437a971702a6",
     "rd/editor-basic.json": "09fda20b51fdf0b5cf19046d42e7d1dff2422c994662e6c3e9a3bea1ae9ac234",
     "rd/editor-context-menu.json": "b3091557c7b1f42047a961c58ea7a66725893b95fd38837cd95b2a5b30bc3a17",
     "rd/editor-docs.json": "cc9f0e2fd49b2ed12f6801f18ba06fa27b4aebd80f6cdf37c51c1bb751d7f753",

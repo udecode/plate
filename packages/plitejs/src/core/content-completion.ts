@@ -119,54 +119,131 @@ const runMerger = (
   };
 };
 
-const mergeEqualTexts = (
-  children: readonly Descendant[],
+export const admitsEmptyText = (content: CompiledSchemaContentProgram) =>
+  content.allowsText && (content.max === null || content.max > 0);
+
+/**
+ * The texts between two inline elements, or between one and the edge of the
+ * children. `before` and `after` are those inline elements, a sibling text
+ * when the run goes on past a window, or undefined at the element's edge.
+ */
+type TextRun = Readonly<{
+  after: Descendant | undefined;
+  before: Descendant | undefined;
+  texts: readonly Text[];
+}>;
+
+const splitAtInlines = (
+  content: readonly Descendant[],
+  before: Descendant | undefined,
+  after: Descendant | undefined
+) => {
+  const inlines: Descendant[] = [];
+  const runs: TextRun[] = [];
+  let texts: Text[] = [];
+
+  for (const child of content) {
+    if (TextApi.isText(child)) {
+      texts.push(child);
+      continue;
+    }
+    runs.push({ after: child, before: inlines.at(-1) ?? before, texts });
+    inlines.push(child);
+    texts = [];
+  }
+  runs.push({ after, before: inlines.at(-1) ?? before, texts });
+
+  return { inlines, runs };
+};
+
+/**
+ * The one place that decides which empty texts survive, read off one run. A
+ * run with letters keeps no empty text but a protected spacer at its edge. A
+ * run without letters keeps or builds exactly one where an inline element
+ * needs a spacer or the line needs an anchor, unless a sibling text past the
+ * window holds that place.
+ */
+const keptTexts = (
+  { after, before, texts }: TextRun,
   {
+    anchorsLine,
+    dropsFromEmptyText,
     editor,
+    fillsEmpty,
     preserveInlineSpacersAdjacentTo,
     report,
     schema,
-    siblingAfter: after,
-    siblingBefore: before,
   }: Readonly<{
+    anchorsLine: boolean;
+    dropsFromEmptyText?: (key: string, value: unknown) => boolean;
     editor?: Editor;
+    fillsEmpty: boolean;
     preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
     report?: RepresentationRepairSink;
     schema: InlineSchema;
-    siblingAfter?: Descendant;
-    siblingBefore?: Descendant;
   }>
-) => {
-  const protectedSpacer = (text: Text, neighbour: Descendant | undefined) =>
-    text.text === '' &&
-    neighbour !== undefined &&
-    isInlineNode(schema, neighbour) &&
-    preserveInlineSpacersAdjacentTo?.has(neighbour) === true;
-  const merged: Descendant[] = [];
-  const merger = runMerger(editor, report);
-
-  for (const [index, child] of children.entries()) {
-    const previous = merged.at(-1);
-
-    if (
-      TextApi.isText(previous) &&
-      TextApi.isText(child) &&
-      !protectedSpacer(previous, merged.at(-2) ?? before) &&
-      !protectedSpacer(child, children[index + 1] ?? after) &&
-      textPropertiesEqual(previous, child)
-    ) {
-      merged[merged.length - 1] = merger.merge(previous, child);
-    } else {
-      merged.push(child);
+): Text[] => {
+  const protects = (node: Descendant | undefined) =>
+    node !== undefined &&
+    isInlineNode(schema, node) &&
+    preserveInlineSpacersAdjacentTo?.has(node) === true;
+  const protectedAt = (index: number) =>
+    texts[index]?.text === '' &&
+    ((index === 0 && protects(before)) ||
+      (index === texts.length - 1 && protects(after)));
+  const spaces = isInlineNode(schema, before) || isInlineNode(schema, after);
+  const needsOne =
+    !TextApi.isText(before) &&
+    !TextApi.isText(after) &&
+    (spaces || anchorsLine) &&
+    texts.every((text, index) => text.text === '' && !protectedAt(index));
+  const survivor = !needsOne
+    ? -1
+    : isInlineNode(schema, before)
+      ? 0
+      : isInlineNode(schema, after) || texts.length === 1
+        ? texts.length - 1
+        : -1;
+  const kept = texts.filter((text, index) => {
+    if (text.text !== '' || index === survivor || protectedAt(index)) {
+      return true;
     }
+    report?.({ code: 'remove-empty-text', inputs: [text] });
+
+    return false;
+  });
+
+  if (kept.length === 0 && needsOne && (spaces || fillsEmpty)) {
+    const text = { text: '' };
+
+    report?.({
+      code: spaces ? 'insert-inline-spacer' : 'insert-empty-text',
+      inputs: [],
+      output: text,
+    });
+
+    return [text];
   }
-  merger.flush();
 
-  return merged;
+  return kept.map((text) => {
+    if (text.text !== '' || !dropsFromEmptyText) return text;
+
+    const plain = plainEmptyText(text, dropsFromEmptyText, editor);
+
+    if (plain !== text) {
+      report?.({
+        code: 'omit-empty-text-property',
+        inputs: [text],
+        output: plain,
+        properties: Object.keys(text).filter(
+          (key) => !Object.hasOwn(plain, key)
+        ),
+      });
+    }
+
+    return plain;
+  });
 };
-
-export const admitsEmptyText = (content: CompiledSchemaContentProgram) =>
-  content.allowsText && (content.max === null || content.max > 0);
 
 export const canonicalizeInlineChildren = (
   children: readonly Descendant[],
@@ -175,6 +252,7 @@ export const canonicalizeInlineChildren = (
     editor,
     fillsEmpty = true,
     flattenInto,
+    lineAnchor = true,
     preserveInlineSpacersAdjacentTo,
     report,
     schema,
@@ -185,6 +263,8 @@ export const canonicalizeInlineChildren = (
     editor?: Editor;
     fillsEmpty?: boolean;
     flattenInto?: Element;
+    /** False for a run between blocks, which a block already anchors. */
+    lineAnchor?: boolean;
     preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
     report?: RepresentationRepairSink;
     schema: InlineSchema;
@@ -214,126 +294,46 @@ export const canonicalizeInlineChildren = (
 
     return content;
   });
-  const content = flattened.filter((child, index) => {
-    if (!TextApi.isText(child) || child.text !== '') return true;
-    if (flattened.length === 1 && before === undefined && after === undefined) {
-      return true;
-    }
-
-    const keep =
-      isInlineNode(schema, flattened[index - 1] ?? before) ||
-      isInlineNode(schema, flattened[index + 1] ?? after);
-
-    if (!keep) report?.({ code: 'remove-empty-text', inputs: [child] });
-
-    return keep;
-  });
+  const { inlines, runs } = splitAtInlines(flattened, before, after);
+  const site = {
+    anchorsLine:
+      lineAnchor &&
+      inlines.length === 0 &&
+      before === undefined &&
+      after === undefined,
+    dropsFromEmptyText,
+    editor,
+    fillsEmpty,
+    preserveInlineSpacersAdjacentTo,
+    report,
+    schema,
+  };
   const canonical: Descendant[] = [];
   const merger = runMerger(editor, report);
-  const insert = (code: 'insert-empty-text' | 'insert-inline-spacer') => {
-    const text = { text: '' };
 
-    canonical.push(text);
-    report?.({ code, inputs: [], output: text });
-  };
+  for (const [index, run] of runs.entries()) {
+    for (const text of keptTexts(run, site)) {
+      const previous = canonical.at(-1);
 
-  for (const [index, child] of content.entries()) {
-    if (isInlineNode(schema, child)) {
-      if (!TextApi.isText(canonical.at(-1) ?? before)) {
-        insert('insert-inline-spacer');
+      if (
+        TextApi.isText(previous) &&
+        previous.text !== '' &&
+        text.text !== '' &&
+        textPropertiesEqual(previous, text)
+      ) {
+        canonical[canonical.length - 1] = merger.merge(previous, text);
+      } else {
+        canonical.push(text);
       }
-      canonical.push(child);
-      continue;
     }
-    if (!TextApi.isText(child)) continue;
 
-    const previous = canonical.at(-1);
-    const previousInline = canonical.at(-2) ?? before;
-    const nextInline = content[index + 1] ?? after;
-    const preservePreviousInlineSpacer =
-      previousInline !== undefined &&
-      preserveInlineSpacersAdjacentTo?.has(previousInline) === true;
-    const preserveChildInlineSpacer =
-      nextInline !== undefined &&
-      preserveInlineSpacersAdjacentTo?.has(nextInline) === true;
-    const previousIsInlineSpacer =
-      TextApi.isText(previous) &&
-      previous.text === '' &&
-      isInlineNode(schema, previousInline) &&
-      preservePreviousInlineSpacer;
-    const childIsInlineSpacer =
-      child.text === '' &&
-      isInlineNode(schema, nextInline) &&
-      preserveChildInlineSpacer;
+    const inline = inlines[index];
 
-    if (
-      TextApi.isText(previous) &&
-      !previousIsInlineSpacer &&
-      !childIsInlineSpacer &&
-      textPropertiesEqual(previous, child)
-    ) {
-      canonical[canonical.length - 1] = merger.merge(previous, child);
-    } else {
-      canonical.push(child);
-    }
+    if (inline) canonical.push(inline);
   }
   merger.flush();
 
-  if (isInlineNode(schema, canonical.at(-1)) && !TextApi.isText(after)) {
-    insert('insert-inline-spacer');
-  }
-  if (
-    fillsEmpty &&
-    canonical.length === 0 &&
-    before === undefined &&
-    after === undefined
-  ) {
-    insert('insert-empty-text');
-  }
-  let stripped = false;
-
-  if (dropsFromEmptyText) {
-    const lone =
-      canonical.length === 1 && before === undefined && after === undefined;
-
-    for (const [index, child] of canonical.entries()) {
-      if (
-        TextApi.isText(child) &&
-        child.text === '' &&
-        (lone ||
-          isInlineNode(schema, canonical[index - 1] ?? before) ||
-          isInlineNode(schema, canonical[index + 1] ?? after))
-      ) {
-        const plain = plainEmptyText(child, dropsFromEmptyText, editor);
-
-        if (plain === child) continue;
-        stripped = true;
-        canonical[index] = plain;
-        report?.({
-          code: 'omit-empty-text-property',
-          inputs: [child],
-          output: plain,
-          properties: Object.keys(child).filter(
-            (key) => !Object.hasOwn(plain, key)
-          ),
-        });
-      }
-    }
-  }
-
-  // A spacer that lost its formatting can now equal the text beside it.
-  const result = stripped
-    ? mergeEqualTexts(canonical, {
-        editor,
-        preserveInlineSpacersAdjacentTo,
-        report,
-        schema,
-        siblingAfter: after,
-        siblingBefore: before,
-      })
-    : canonical;
-
-  return sameChildren(result, children) ? children : result;
+  return sameChildren(canonical, children) ? children : canonical;
 };
 
 const CONTENT_KINDS = new WeakMap<CompiledSchemaContentProgram, ContentKind>();
@@ -361,9 +361,6 @@ export const contentKindOf = (
 
   return kind;
 };
-
-const isLoneEmptyText = (run: readonly Descendant[]) =>
-  run.length === 1 && TextApi.isText(run[0]) && run[0].text === '';
 
 const isBlock = (child: Descendant | undefined, schema: InlineSchema) =>
   child !== undefined && ElementApi.isElement(child) && !schema.isInline(child);
@@ -475,17 +472,11 @@ const canonicalizeRuns = (
   }
 
   const canonical: Descendant[] = [];
-  const runOptions = { ...options, fillsEmpty: false };
+  const runOptions = { ...options, fillsEmpty: false, lineAnchor: false };
   let run: Descendant[] = [];
   const flush = () => {
     if (run.length > 0) {
-      const runCanonical = canonicalizeInlineChildren(run, runOptions);
-
-      if (isLoneEmptyText(runCanonical)) {
-        options.report?.({ code: 'remove-empty-text', inputs: runCanonical });
-      } else {
-        canonical.push(...runCanonical);
-      }
+      canonical.push(...canonicalizeInlineChildren(run, runOptions));
       run = [];
     }
   };

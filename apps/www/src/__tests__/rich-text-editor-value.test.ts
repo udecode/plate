@@ -75,8 +75,8 @@ describe('saved rich-text playground', () => {
       type: 'range',
       status: 'attached',
       range: {
-        anchor: { path: [3, 7, 0], offset: 0 },
-        focus: { path: [3, 8], offset: 22 },
+        anchor: { path: [3, 6, 0], offset: 0 },
+        focus: { path: [3, 7], offset: 22 },
       },
     });
     expect(threads.find(({ id }) => id === 'discussion2')?.target).toEqual({
@@ -111,7 +111,7 @@ describe('saved rich-text playground', () => {
     const resolution = await comments.resolve('discussion1');
     expect(resolution.status).toBe('applied');
     primary.update((tx) => {
-      tx.text.insert('Updated ', { at: { path: [3, 8], offset: 0 } });
+      tx.text.insert('Updated ', { at: { path: [3, 7], offset: 0 } });
     });
 
     for (const independent of [reviewer, snapshot]) {

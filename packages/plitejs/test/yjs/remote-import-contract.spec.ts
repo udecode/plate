@@ -1454,7 +1454,7 @@ describe('plitejs/yjs remote import contract', () => {
     ]);
   });
 
-  it('normalizes only the parent touched by an empty-text event', () => {
+  it('reads only the parent an empty-text event touches, and keeps that text', () => {
     const [peer] = createSeededYjsPeers({
       children: largeValue(128),
       clientIds: ['peer'],
@@ -1472,7 +1472,7 @@ describe('plitejs/yjs remote import contract', () => {
       paragraphNode.insert(1, [new Y.XmlText()]);
     });
 
-    assert.equal(paragraphNode.toArray().length, 1);
+    assert.equal(paragraphNode.toArray().length, 2);
     assert.equal(getPeerTopLevelTexts(peer)[96], 'block-096');
     assert.deepEqual(getYjsTrace(peer), [
       {

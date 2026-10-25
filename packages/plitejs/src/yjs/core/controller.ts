@@ -845,6 +845,7 @@ export class YjsController<
           before: valueRootIndex(before, root),
         });
         let indexes: ReturnType<typeof readIndexes> | undefined;
+        if (reconciles) binding.bridge.fillBeforeReconcile();
         const incremental = !reconciles
           ? binding.bridge.lower(rootChange, expected, {
               // Several of the bridge's detectors read them, and a root other
@@ -915,8 +916,10 @@ export class YjsController<
 
       if (!binding) continue;
 
-      if (reconciles || fallbacks.has(root)) {
+      if (fallbacks.has(root)) {
         binding.bridge.reset(childrenOf(after, root));
+      } else if (reconciles) {
+        binding.bridge.resync(childrenOf(after, root));
       }
     }
     this.awarenessAdapter?.publishMappedRoots(changedRoots, {

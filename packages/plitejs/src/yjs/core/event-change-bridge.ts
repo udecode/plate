@@ -99,6 +99,7 @@ import {
   createYjsRunEncoder,
   createYjsTextChain,
   elementOnlySpliceEdits,
+  fillYjsTextGaps,
   retainTextChainRange,
   rewriteTextRuns,
   segmentPliteChildren,
@@ -1698,6 +1699,8 @@ export class YjsEventChangeBridge {
   private readonly lengths: TokenLengthIndex;
   private readonly maskedBlocks = new Set<YjsNode>();
   private readonly writtenMaskedBlocks = new Set<YjsNode>();
+  /** Stored blocks the fill already checked against their mirror block. */
+  private checkedBlocks = new WeakSet<YjsNode>();
   private ready = false;
   private readonly root: Y.XmlElement;
   private readonly rootIndex = new RootProjectionIndex();
@@ -1747,15 +1750,65 @@ export class YjsEventChangeBridge {
         this.writtenMaskedBlocks.add(node);
       }
     }
-    const result = withYjsRootIndex(this.root, this.rootIndex, () =>
-      this.lowerAgainstMirror(change, expected, options)
+    return withYjsRootIndex(this.root, this.rootIndex, () => {
+      this.fillTextGaps(change, 'before');
+      const lowered = this.lowerAgainstMirror(change, expected, options);
+
+      if (lowered.kind !== 'lowered') return lowered;
+      // Keep the list the caller passes, so its next commit finds the mirror
+      // by identity.
+      this.setMirror(expected);
+      if (options.structureChanged) this.fillTextGaps(change, 'after');
+
+      return lowered;
+    });
+  }
+
+  /**
+   * The root rewrite compares every block, so every block is filled, not only
+   * the ones the change touches.
+   */
+  fillBeforeReconcile(): void {
+    withYjsRootIndex(this.root, this.rootIndex, () =>
+      this.fillBlocks(
+        Array.from({ length: this.mirror.length }, (_, index) => index),
+        'before'
+      )
     );
+  }
 
-    // Keep the list the caller passes, so its next commit finds the mirror
-    // by identity.
-    if (result.kind === 'lowered') this.setMirror(expected);
+  private fillTextGaps(change: DocumentChange, side: 'after' | 'before') {
+    const blocks = new Set<number>();
+    change.iterChangedRanges((root, fromA, toA, fromB, toB) => {
+      if (internalDocumentChangeRoot(root) !== this.rootKey) return;
+      const [from, to] =
+        side === 'before'
+          ? this.lengths.span(fromA, toA)
+          : this.lengths.span(fromB, toB);
+      for (let index = from; index < to; index += 1) blocks.add(index);
+    });
+    this.fillBlocks(blocks, side);
+  }
 
-    return result;
+  private fillBlocks(blocks: Iterable<number>, side: 'after' | 'before') {
+    const children = this.mirror;
+
+    if (!this.ready || this.rootIndex.length !== children.length) return;
+    for (const index of blocks) {
+      const stored = this.rootIndex.at(index);
+      const node = children.at(index);
+      if (
+        !(stored instanceof Y.XmlElement) ||
+        !node ||
+        !NodeApi.isElement(node)
+      ) {
+        continue;
+      }
+      if (side === 'after' || !this.checkedBlocks.has(stored)) {
+        fillYjsTextGaps(this.root, stored, node);
+      }
+      this.checkedBlocks.add(stored);
+    }
   }
 
   private lowerAgainstMirror(
@@ -3497,6 +3550,12 @@ export class YjsEventChangeBridge {
    * canonicalize transaction.
    */
   prepareRemote(batch: CapturedYjsEventBatch): YjsEventImportResult {
+    const textOnly = batch.events.every(
+      ({ target }) => target instanceof Y.XmlText
+    );
+
+    if (!textOnly) this.checkedBlocks = new WeakSet();
+
     return withYjsRootIds(this.root, this.rootIndex, () => {
       this.noteRemoteIds(batch);
 
@@ -3688,6 +3747,16 @@ export class YjsEventChangeBridge {
   }
 
   reset(children: NodeList<Descendant>): number {
+    this.checkedBlocks = new WeakSet();
+
+    return this.resync(children);
+  }
+
+  /**
+   * Like `reset`, after a root rewrite that kept each stored block it did not
+   * replace, so the blocks the fill checked stay checked.
+   */
+  resync(children: NodeList<Descendant>): number {
     this.setMirror(children);
     this.lengths.reset(children);
     this.ready =

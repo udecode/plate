@@ -702,7 +702,9 @@ const getVirtualYjsChild = (
 
     const virtualChild = resolveNodeById
       ? resolveNodeById(virtualChildId)
-      : findYjsNodeById(root, virtualChildId);
+      : lent !== null && lent.root === root
+        ? lent.index.resolve(virtualChildId)
+        : findYjsNodeById(root, virtualChildId);
 
     if (
       virtualChild instanceof Y.XmlElement &&
@@ -1334,6 +1336,8 @@ const removeRedundantEmptyYjsTextChildren = (
     resolveNodeById,
     removed
   );
+
+  if (parent !== root) return;
 
   const rawChildren = getRawYjsChildren(parent);
   const visibleSlots = getYjsVisibleChildSlots(

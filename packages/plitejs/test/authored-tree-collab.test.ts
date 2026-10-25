@@ -1726,8 +1726,8 @@ describe('authored property tags on several clients', () => {
       assert.deepEqual(
         { ...outcomes, cuts: links, sizes, tagged },
         {
-          // The piece Alice removed comes back with the join.
-          cuts: [['ac']],
+          // Both removed pieces stay gone after the join.
+          cuts: [['c']],
           tagged:
             winner === 'bob'
               ? [

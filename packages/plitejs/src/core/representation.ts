@@ -694,6 +694,10 @@ export const mapCanonicalRepresentationPoint = (
   const edgeWidth = options.countInlineEdges ? 1 : 0;
   const beforeChildren = beforeDocument.value as readonly Descendant[];
   const afterChildren = afterDocument.value as readonly Descendant[];
+  const node = getDescendant(beforeChildren, point.path);
+  const startsLetteredText =
+    point.offset === 0 && node && TextApi.isText(node) && node.text !== '';
+  const side = startsLetteredText ? 1 : association;
 
   for (let depth = point.path.length - 1; depth > 0; depth--) {
     const ancestorPath = point.path.slice(0, depth);
@@ -734,7 +738,7 @@ export const mapCanonicalRepresentationPoint = (
       afterChildren,
       mappedAncestor.path,
       textOffset,
-      association,
+      side,
       edgeWidth
     );
 

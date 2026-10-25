@@ -123,6 +123,52 @@ export const alignSegments = (
   return at === yjs.length ? aligned : null;
 };
 
+/**
+ * Stores an empty text wherever the editor holds an empty run that storage
+ * lacks, in `stored` and its inline elements, so stored and editor children
+ * pair one to one. It deletes no text: two peers that fill one place at once
+ * leave two empty texts, which read as one run.
+ */
+export const fillYjsTextGaps = (
+  root: Y.XmlElement,
+  stored: Y.XmlElement,
+  node: Element
+): void => {
+  if (
+    !node.children.some((child) => !NodeApi.isText(child) || child.text === '')
+  ) {
+    return;
+  }
+  const visible = getYjsVisibleChildren(root, stored);
+  const storedElements = visible.filter(
+    (child): child is Y.XmlElement => child instanceof Y.XmlElement
+  );
+  const elements = node.children.filter((child) => NodeApi.isElement(child));
+  if (storedElements.length === elements.length) {
+    elements.forEach((child, index) =>
+      fillYjsTextGaps(root, storedElements[index], child)
+    );
+  }
+  const segments = segmentPliteChildren(node.children);
+  if (!segments.some(isEmptyTextRun)) return;
+  const slots = alignSegments(segments, segmentYjsChildren(visible));
+  if (!slots) return;
+  let next = visible.length;
+  for (let index = slots.length - 1; index >= 0; index -= 1) {
+    const slot = slots[index];
+    if (slot) {
+      next = slot.from;
+      continue;
+    }
+    insertYjsChild(
+      root,
+      stored,
+      next,
+      createYjsTextChain([{ text: '' }], () => ({}))
+    );
+  }
+};
+
 const textRuns = (nodes: readonly Descendant[]) => {
   const runs: Text[] = [];
 
@@ -178,6 +224,16 @@ const yjsCursor = (
     },
     position: () => ({ at, offset }),
     text(length: number) {
+      // An empty text claims the stored empty text in its place, so an
+      // element inserted after it lands after that text, not before it.
+      if (
+        length === 0 &&
+        offset === 0 &&
+        children[at] instanceof Y.XmlText &&
+        children[at].length === 0
+      ) {
+        at += 1;
+      }
       for (let rest = length; rest > 0;) {
         if (offset === 0) settle();
 
