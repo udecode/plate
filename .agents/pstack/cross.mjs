@@ -217,7 +217,9 @@ async function main(argv) {
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  // A pipe on macOS takes writes asynchronously, so exiting before both
+  // streams drain drops every byte of a reply past the 64 KB pipe buffer.
   main(process.argv.slice(2)).then((code) => {
-    process.exit(code);
+    process.stdout.write('', () => process.stderr.write('', () => process.exit(code)));
   });
 }

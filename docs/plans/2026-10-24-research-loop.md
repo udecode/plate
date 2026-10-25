@@ -180,7 +180,8 @@ Each step names its proof. Base controls ran on 2026-10-24, and the decision log
 - Phase 1, in a9776d262f: the old plan's triage, the frozen run folders with K17, a green knowledge check that runs on affected paths, and one clone rule.
 - Phase 2, in e406da3177: `repos.tsv` with 423 repos, `areas.tsv` with 20 areas, three library-family homes, area, scope and repo lookups, and K16.
 - Phase 3, in 87ac1f8ebc: research's run method as a loop, one lookup line in each consumer, and `kb discover`.
-- Phase 4: compile batches p5-005 to p5-163 in four groups, bf32a0a66b, 22737ba0ff, 7b6b0df213 and 53f17baa3e; the law pass in 42b9cda4ad, which adds 82 proposed rules from 93 law units; and step 4.3's delete in the last commit.
+- Phase 4: compile batches p5-005 to p5-163 in four groups, bf32a0a66b, 22737ba0ff, 7b6b0df213 and 53f17baa3e; the law pass in 42b9cda4ad, which adds 82 proposed rules from 93 law units; and step 4.3's delete in 9643fcccf8.
+- After the plan, the shared `cross.mjs` waits for its output to drain before it exits, so a Codex reply longer than 64 KB reaches its caller whole. The fix is dotai 62bba2c, synced here in the commit after 9643fcccf8. Piping a 200,000-byte stub reply through it delivers every byte, where the old copy stopped at 65,536.
 
 **Proof.**
 
@@ -258,7 +259,7 @@ The superseded plan's 44 open items, each with one call. A "carry" moves to the 
 ## Open work
 
 - 863 units from compile batches landed before this plan no longer match their pages: 425 differ only in commit pins or spacing, 243 were rewritten and 195 sit on pages that were removed. 862 of them were already lost when this plan started. Step 4.3 deletes the quote check, so the list in this plan's run folder, `p4/old-lost-at-head.tsv`, is the only record. owner: Ziad. stop: research's maintain mode checks the 438 rewritten or removed ones, or they are dropped. Tracked here.
-- `.agents/pstack/cross.mjs` prints a seat's reply and then calls `process.exit`, so on macOS a reply piped to its caller stops at 65,536 bytes. It cut compile batch p5-163's reply and law reader a's side findings in this plan. This plan's runners now send replies to a file. owner: Ziad. stop: the shared helper waits for its output to drain before it exits, through sync-pstack's Lesson mode. Tracked here.
+- The ellie and plate checkouts still run the old `cross.mjs`, which cuts a piped reply at 65,536 bytes. Both sit dozens of shared files behind dotai on pstack v0.9.88, so this run synced only this repository. owner: Ziad. stop: their next sync-pstack run, which carries the fix. Tracked here.
 - `EDIT-STYLE-FONT-SIZE-SELECTION-001`'s Proof line says `tooling/e2e/font-size-selection.test.ts` looks for an input with `data-editor-focus="true"`, which the font-size toolbar button no longer renders, so that test is no proof until its locator is fixed and it is run again. owner: Ziad. stop: the test passes on the current button, or the rule names other proof. Tracked here.
 - Step 3.4's paired trial and route smokes. Fast mode drops the fresh sessions they need, so the playbook lines land unmeasured. owner: Ziad. stop: you start the trial as its own task, or say the wiring stays. Tracked here.
 - Send a generic version of the loop (a repo list with derived marks, an area join and write-back) to the shared pstack source. owner: Ziad. stop: step 3.4's trial passes, or this plan closes without it. Tracked here.
