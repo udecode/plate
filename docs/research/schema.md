@@ -165,8 +165,12 @@ The records written before the front-matter cutover keep their original shape an
 
 ### Reuse research
 
-`research <key-or-term>` searches all immediate dated Plite run directories' repository, query, read, lead, rejection and promotion TSVs. Output preserves each original header, path and line. An exact `status` column takes precedence; an absent status stays null instead of borrowing a decision column. Malformed rows return their original header and cells, a null parsed row and status, and a warning. Shifted columns are never presented as a valid status.
+`docs/research/repos.tsv` lists each repo research saved or skipped, one row each: `repo` (lowercase owner/name), `url`, `clone` (relative to the plate root, such as `../tiptap`), `kind` (`editor`, `library` or `app`), `status` (`saved` or `skipped`), `areas`, `added` and `note`. It stores no last-read commit, because each lane keeps its own: the audit and harvest commits in [Editor Audit](../editor-audits/index.json) and the harvest indexes, and research's as the newest `<repo>@<commit>` an area page cites. `docs/research/areas.tsv` names each area with its `title`, review `scopes`, `aliases` and the `seeds` that `pnpm kb discover` searches. K16 checks both lists.
+
+`pnpm kb <area | scope | repo>` joins them with every home's area page, the subjects and each repo's marks, and `pnpm kb discover <area>` prints the repos the seeds find that the list lacks.
+
+The dated Plite runs under `docs/plite/research/` are frozen. `research <key-or-term>` searches all immediate dated Plite run directories' repository, query, read, lead, rejection and promotion TSVs. Output preserves each original header, path and line. An exact `status` column takes precedence; an absent status stays null instead of borrowing a decision column. Malformed rows return their original header and cells, a null parsed row and status, and a warning. Shifted columns are never presented as a valid status.
 
 For broad terms, redirect the JSON result to an artifact and inspect bounded matches instead of streaming every source row into the conversation.
 
-Search by semantic lead key and relevant terms. This command locates evidence; it cannot decide semantic equivalence. Reuse a read only when question, source version and dependencies match. Preserve rejection reasons and reopening conditions. Future ledgers add `scope_id`, `review_id`, `source_revision`, `source_fingerprint` and `checked_at` where applicable without replacing their existing required columns. External audit architecture, test and issue cursors remain separate under [Editor Audit](../editor-audits/index.json).
+Search by semantic lead key and relevant terms. This command locates evidence; it cannot decide semantic equivalence. Reuse a read only when question, source version and dependencies match. Preserve rejection reasons and reopening conditions.

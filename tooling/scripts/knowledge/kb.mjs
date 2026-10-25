@@ -42,10 +42,12 @@ import {
 import {
   card,
   commitTree,
+  discover,
   findings,
   gaps,
   indexPatterns,
   loadIndex,
+  REPOS,
   trackedPaths,
   workTree,
   writeBack,
@@ -361,7 +363,7 @@ const words = args.filter((arg) => !arg.startsWith('--'));
 
 if (!words.length) {
   console.error(
-    'Usage: pnpm kb <area | scope | repo | query> [--detail] [--json] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>] | pnpm kb batch <batch dir> <batch> <source...> | pnpm kb write <change.json> --log <file> --resolved <batches dir> | pnpm kb resolve <batch dir> [--seed <seed>] [--sample <n>] | pnpm kb fold <resolved.json> <path...> | pnpm kb quote <batches dir> --plan <plan> | pnpm kb pins <home>'
+    'Usage: pnpm kb <area | scope | repo | query> [--detail] [--json] | pnpm kb discover <area> [--seed <phrase>]... [--minutes <n>] [--record] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>] | pnpm kb batch <batch dir> <batch> <source...> | pnpm kb write <change.json> --log <file> --resolved <batches dir> | pnpm kb resolve <batch dir> [--seed <seed>] [--sample <n>] | pnpm kb fold <resolved.json> <path...> | pnpm kb quote <batches dir> --plan <plan> | pnpm kb pins <home>'
   );
   process.exit(2);
 }
@@ -679,6 +681,115 @@ if (words[0] === 'pins') {
   }
   console.info(`${cited.size} revisions cited under ${folder}`);
   process.exit(0);
+}
+
+const searchGitHub = (seed, timeout) => {
+  const run = spawnSync(
+    'gh',
+    [
+      'search',
+      'repos',
+      ...seed.split(/\s+/),
+      '--sort',
+      'stars',
+      '--order',
+      'desc',
+      '--archived=false',
+      '--limit',
+      '10',
+      '--json',
+      'fullName,url,stargazersCount,pushedAt,description',
+    ],
+    { encoding: 'utf-8', timeout }
+  );
+  if (run.error?.code === 'ETIMEDOUT') return { error: 'limit' };
+  if (run.status !== 0) {
+    return {
+      error: (
+        run.stderr ||
+        run.error?.message ||
+        `gh exited ${run.status}`
+      ).trim(),
+    };
+  }
+  return {
+    items: JSON.parse(run.stdout).map((item) => ({
+      repo: item.fullName,
+      url: item.url,
+      stars: item.stargazersCount,
+      pushed: item.pushedAt.slice(0, 10),
+      description: (item.description ?? '').replace(/\s+/g, ' ').trim(),
+    })),
+  };
+};
+
+const recordSkipped = (repos, area) => {
+  const path = join(root, REPOS);
+  const [head, ...rows] = readFileSync(path, 'utf-8').trimEnd().split('\n');
+  const added = new Date().toISOString().slice(0, 10);
+  const kind = (repo) =>
+    /editor/i.test(`${repo.repo} ${repo.description}`) ? 'editor' : 'library';
+  const lines = [
+    ...rows,
+    ...repos.map((repo) =>
+      [
+        repo.repo,
+        repo.url,
+        '',
+        kind(repo),
+        'skipped',
+        area,
+        added,
+        `discovery-only: ${repo.description}`.trim(),
+      ].join('\t')
+    ),
+  ].sort((a, b) => a.split('\t')[0].localeCompare(b.split('\t')[0]));
+  writeFileSync(path, `${[head, ...lines].join('\n')}\n`);
+};
+
+if (words[0] === 'discover') {
+  const [, token] = args;
+  const minutes = Number(option('--minutes') ?? 10);
+  need(
+    token && !token.startsWith('--') && minutes > 0,
+    "discover <area> [--seed '<phrase>']... [--minutes <n>] [--record]"
+  );
+  const index = loadIndex(workTree(root));
+  const result = discover(index, token, {
+    limitMs: minutes * 60_000,
+    search: searchGitHub,
+    seeds: args.flatMap((arg, at) => (arg === '--seed' ? [args[at + 1]] : [])),
+  });
+  if (!result.area) {
+    console.error(
+      result.candidates.length
+        ? `${token} names the areas ${result.candidates.join(', ')}; pass one of them.`
+        : `No area is named ${token}. Areas: ${index.areas.map((area) => area.area).join(', ')}.`
+    );
+    process.exit(2);
+  }
+  console.info(
+    `${result.area}: searched ${result.searched} of ${result.seeds.length} seeds, ${result.repos.length} repos ${REPOS} lacks`
+  );
+  for (const repo of result.repos) {
+    console.info(
+      `  ${repo.repo}  ${repo.stars} stars  pushed ${repo.pushed}  ${clip(repo.description, 100)}  (${repo.seed})`
+    );
+  }
+  if (result.stopped === 'limit') {
+    console.info(
+      `Stopped at the ${minutes}-minute limit; ${result.seeds.length - result.searched} seeds not searched.`
+    );
+  } else if (result.stopped) {
+    console.error(`Stopped: ${result.stopped}`);
+  }
+  if (flags.has('--record') && result.repos.length) {
+    recordSkipped(result.repos, result.area);
+    console.info(
+      `Recorded ${result.repos.length} repos as skipped in ${REPOS}; change each one you read to saved.`
+    );
+  }
+  process.exit(result.stopped && result.stopped !== 'limit' ? 1 : 0);
 }
 
 if (words[0] === 'homes') {

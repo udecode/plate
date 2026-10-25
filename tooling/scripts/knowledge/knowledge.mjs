@@ -26,7 +26,7 @@ const ISSUES = 'docs/editor-issue-harvester';
 const HARVEST = 'docs/editor-test-harvester';
 const LESSONS = 'docs/research/sources/plate-notes';
 const AREAS = 'docs/research/areas.tsv';
-const REPOS = 'docs/research/repos.tsv';
+export const REPOS = 'docs/research/repos.tsv';
 const AUDITS = 'docs/editor-audits/index.json';
 const HOMES = 'docs/research/sources';
 const HOME_README = /^docs\/research\/sources\/[^/]+\/README\.md$/;
@@ -1155,6 +1155,43 @@ function repoOf(index, token, alone) {
     (row) => row.repo.toLowerCase().split('/')[1] === token.toLowerCase()
   );
   return byName.length === 1 ? byName[0] : undefined;
+}
+
+export function discover(
+  index,
+  token,
+  { limitMs, now = Date.now, search, seeds: extra = [] }
+) {
+  const areas = areasOf(index, token.toLowerCase());
+  if (areas.length !== 1) {
+    return { area: null, candidates: areas.map((area) => area.area) };
+  }
+  const seeds = [...areas[0].seeds, ...extra];
+  const listed = new Set(index.repos.map((row) => row.repo.toLowerCase()));
+  const found = new Map();
+  const deadline = now() + limitMs;
+  let searched = 0;
+  let stopped = null;
+  for (const seed of seeds) {
+    const left = deadline - now();
+    const answer = left > 0 ? search(seed, left) : { error: 'limit' };
+    if (answer.error) {
+      stopped = answer.error;
+      break;
+    }
+    searched += 1;
+    for (const item of answer.items) {
+      const repo = item.repo.toLowerCase();
+      if (!listed.has(repo)) found.set(repo, { ...item, repo, seed });
+    }
+  }
+  return {
+    area: areas[0].area,
+    seeds,
+    searched,
+    stopped,
+    repos: [...found.values()],
+  };
 }
 
 function keysAndWords(index, query) {

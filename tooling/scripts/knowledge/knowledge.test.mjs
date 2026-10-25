@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { card, findings, gaps, loadIndex } from './knowledge.mjs';
+import { card, discover, findings, gaps, loadIndex } from './knowledge.mjs';
 
 const spec = [
   '## Table',
@@ -465,6 +465,49 @@ const areaTree = () =>
     }),
     'docs/editor-test-harvester/tiptap/test-index.md': `# TipTap Test-Name Index\n\ntarget: \`../tiptap\`\nsource_commit: \`${HARVESTED}\`\n\n## \`../tiptap/a.spec.js\`\n\n- L10: pastes html\n`,
   });
+
+const found = (...repos) => ({
+  items: repos.map((repo) => ({
+    repo,
+    url: `https://github.com/${repo}`,
+    stars: 1,
+    pushed: '2026-10-01',
+    description: '',
+  })),
+});
+
+test('discover prints each repo the seeds find that the repo list lacks, once', () => {
+  const answers = {
+    'yjs binding': found('YJS/yjs', 'new/sync'),
+    'crdt text': found('new/sync', 'new/crdt'),
+  };
+  const result = discover(loadIndex(areaTree()), 'collaboration', {
+    limitMs: 60_000,
+    search: (seed) => answers[seed],
+    seeds: ['crdt text'],
+  });
+  assert.deepEqual(
+    result.repos.map((repo) => repo.repo),
+    ['new/sync', 'new/crdt']
+  );
+});
+
+test('discover searches no seed once its time limit has passed', () => {
+  let clock = 0;
+  const result = discover(loadIndex(areaTree()), 'collaboration', {
+    limitMs: 1000,
+    now: () => clock,
+    search: () => {
+      clock += 1000;
+      return found('new/sync');
+    },
+    seeds: ['crdt text'],
+  });
+  assert.deepEqual(
+    { searched: result.searched, stopped: result.stopped },
+    { searched: 1, stopped: 'limit' }
+  );
+});
 
 test("an area alias opens its area's page in each home and the repos filed under it", () => {
   const result = card(loadIndex(areaTree()), 'yjs');

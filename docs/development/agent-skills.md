@@ -44,7 +44,7 @@ These are shortcuts for one job, not a sequence to run.
 | Find important behavior with no test, or prune existing tests | `$test-audit <scope>`, or `$test-audit full` |
 | Test one editor feature by hand against its reference editor | `$verify playtest <feature>` |
 | Measure, diagnose and improve slow behavior | `$benchmark <operation and workload>` |
-| Join a rule or issue to its tagged tests, list locked rules no test proves, or check the knowledge stores | `pnpm kb <rule ID or issue ref>`, `pnpm kb gaps`, `pnpm kb check` |
+| Look up what Plate knows about an area, a review scope or a repo, find repos the repo list lacks, join a rule or issue to its tagged tests, list locked rules no test proves, or check the knowledge stores | `pnpm kb <area, scope or repo>`, `pnpm kb discover <area>`, `pnpm kb <rule ID or issue ref>`, `pnpm kb gaps`, `pnpm kb check` |
 | Research external editor approaches | `$research <feature or question>` |
 | Compare external editor architectures, or harvest their tests | `$research audit <repo>`, `$research harvest <repo>` |
 | Write or audit Plate public documentation | `$plate-docs <page or topic>` |
