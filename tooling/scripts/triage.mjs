@@ -40,7 +40,14 @@ const BATCH_COLUMNS = ['issue', 'outcome', 'detail', 'seen', 'why'];
 // A private copy, so this helper never moves the ref setup.mjs syncs the ledger file with.
 const LEDGER_COPY = 'refs/pstack/triage-ledger';
 const GH_FIELDS = 'number,title,body,state,comments,labels,author';
-const REOPEN_BATCH = 50;
+const GRAPHQL_BATCH = 50;
+const PRIORITY_FIELD = 'Priority';
+const PRIORITY_OPTIONS = { P0: 'Urgent', P1: 'High', P2: 'Medium', P3: 'Low' };
+const OUTCOME_LABELS = {
+  dup: 'duplicate',
+  'needs-repro': 'needs reproduction',
+  spec: 'enhancement',
+};
 const QUEUE_LIMIT = 5000;
 // A triage draft ends in a marker holding the hash of its own text, so posting it unchanged keeps its record current and editing it does not.
 const DRAFT_MARK = /\n*<!-- triage:([0-9a-f]{12}) -->\s*$/u;
@@ -465,8 +472,8 @@ function ledgerOf(text, repo) {
 function reopenIds(repo, numbers) {
   const [owner, name] = repo.split('/');
   const found = new Map();
-  for (let at = 0; at < numbers.length; at += REOPEN_BATCH) {
-    const part = numbers.slice(at, at + REOPEN_BATCH);
+  for (let at = 0; at < numbers.length; at += GRAPHQL_BATCH) {
+    const part = numbers.slice(at, at + GRAPHQL_BATCH);
     const fields = part.map(
       (number) =>
         `i${number}: issue(number: ${number}) { timelineItems(itemTypes: [REOPENED_EVENT], last: 1) { nodes { ... on ReopenedEvent { id } } } }`
@@ -486,6 +493,72 @@ function reopenIds(repo, numbers) {
     }
   }
   return found;
+}
+
+// gh issue list cannot return issue fields, so the org's field and each issue's value come from GraphQL.
+function priorityValues(repo, numbers) {
+  const [owner, name] = repo.split('/');
+  const issues = new Map();
+  let fields = null;
+  for (let at = 0; at < numbers.length; at += GRAPHQL_BATCH) {
+    const part = numbers.slice(at, at + GRAPHQL_BATCH);
+    const aliases = part.map(
+      (number) =>
+        `i${number}: issue(number: ${number}) { id issueFieldValues(first: 20) { nodes { ... on IssueFieldSingleSelectValue { optionId field { ... on IssueFieldSingleSelect { id } } } } } }`
+    );
+    const query = `query { organization(login: ${JSON.stringify(owner)}) { issueFields(first: 50) { nodes { ... on IssueFieldSingleSelect { id name options { id name } } } } } repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { ${aliases.join(' ')} } }`;
+    const result = spawnSync('gh', ['api', 'graphql', '-f', `query=${query}`], {
+      encoding: 'utf-8',
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: NETWORK_MS,
+    });
+    const data = readJson(result.stdout)?.data;
+    if (!data) {
+      refuse(
+        `labels could not read the ${PRIORITY_FIELD} field of ${repo} issues: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
+      );
+    }
+    fields ??= data.organization?.issueFields?.nodes ?? [];
+    for (const number of part) {
+      const node = data.repository?.[`i${number}`];
+      if (!node?.id) {
+        refuse(`labels could not read the id of ${repo}#${number}`);
+      }
+      issues.set(number, node);
+    }
+  }
+  const field = fields.find(
+    (node) => node?.name === PRIORITY_FIELD && Array.isArray(node.options)
+  );
+  if (!field) {
+    refuse(
+      `the ${owner} organization has no single-select issue field named ${PRIORITY_FIELD}`
+    );
+  }
+  const optionIds = new Map(
+    field.options.map((option) => [option.name, option.id])
+  );
+  const missing = Object.values(PRIORITY_OPTIONS).filter(
+    (option) => !optionIds.has(option)
+  );
+  if (missing.length > 0) {
+    refuse(
+      `the ${owner} ${PRIORITY_FIELD} field has no option named ${missing.join(', ')}`
+    );
+  }
+  const values = new Map(
+    [...issues].map(([number, node]) => [
+      number,
+      {
+        issueId: node.id,
+        optionId:
+          node.issueFieldValues?.nodes?.find(
+            (value) => value?.field?.id === field.id
+          )?.optionId ?? null,
+      },
+    ])
+  );
+  return { fieldId: field.id, optionIds, values };
 }
 
 function issueReader(repo) {
@@ -1246,26 +1319,62 @@ function labels() {
     );
   }
   const { repo } = reads.policy;
-  const open = openIssues(reads);
-  console.log(
-    `gh label create triaged --repo ${repo} --color 0e8a16 --description "Has a current record in ${REGISTER}" --force`
+  const open = openIssues(reads).map((issue) => ({
+    issue,
+    ...stateFor(String(issue.number), reads),
+  }));
+  const kinds = open.filter(
+    ({ state, head }) => state === 'current' && head.outcome === 'kind'
   );
-  for (const issue of open) {
+  const priority =
+    kinds.length > 0
+      ? priorityValues(
+          repo,
+          kinds.map(({ issue }) => issue.number)
+        )
+      : null;
+  const quoted = (label) => (label.includes(' ') ? `'${label}'` : label);
+  const commands = [
+    `gh label create triaged --repo ${repo} --color 0e8a16 --description "Has a current record in ${REGISTER}" --force`,
+  ];
+  const sets = [];
+  for (const { issue, state, head } of open) {
     const names = new Set((issue.labels ?? []).map((label) => label.name));
-    const { state } = stateFor(String(issue.number), reads);
     const edits = [];
     if (state === 'current') {
       if (!names.has('triaged')) edits.push('--add-label triaged');
       if (names.has('needs-triage')) edits.push('--remove-label needs-triage');
+      for (const [outcome, label] of Object.entries(OUTCOME_LABELS)) {
+        const wanted = head.outcome === outcome;
+        if (wanted && !names.has(label)) {
+          edits.push(`--add-label ${quoted(label)}`);
+        } else if (!wanted && names.has(label)) {
+          edits.push(`--remove-label ${quoted(label)}`);
+        }
+      }
+      if (head.outcome === 'kind') {
+        const level = parseDetail(head.detail).get('priority');
+        const option = PRIORITY_OPTIONS[level];
+        const optionId = priority.optionIds.get(option);
+        const { issueId, optionId: currentId } = priority.values.get(
+          issue.number
+        );
+        if (currentId !== optionId) {
+          sets.push(
+            `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#${issue.number} ${level} ${option}", issueId: "${issueId}", issueFields: [{ fieldId: "${priority.fieldId}", singleSelectOptionId: "${optionId}" }] }) { clientMutationId } }'`
+          );
+        }
+      }
     } else if (state !== 'unchecked' && names.has('triaged')) {
       edits.push('--remove-label triaged');
     }
     if (edits.length > 0) {
-      console.log(
+      commands.push(
         `gh issue edit ${issue.number} --repo ${repo} ${edits.join(' ')}`
       );
     }
   }
+  console.log([...commands, ...sets].join('\n'));
 }
 
 function entriesOf(options) {

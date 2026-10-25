@@ -49,12 +49,16 @@ if (args[0] === 'issue' && args[1] === 'view') {
   console.log(fixture.login ?? 'zbeyens');
 } else if (args[0] === 'api' && args[1] === 'graphql') {
   const query = args[args.indexOf('-f') + 1].slice('query='.length);
+  const fields = query.includes('issueFieldValues');
   const repository = {};
   for (const [, alias, number] of query.matchAll(/(i\\d+): issue\\(number: (\\d+)\\)/g)) {
     const issue = fixture.issues[number];
-    repository[alias] = issue ? { timelineItems: { nodes: issue.reopened ? [{ id: issue.reopened }] : [] } } : null;
+    repository[alias] = !issue ? null : fields
+      ? { id: 'I_' + number, issueFieldValues: { nodes: issue.priority ? [{}, { optionId: 'OPT_' + issue.priority, field: { id: 'FIELD_PRIORITY' } }] : [{}] } }
+      : { timelineItems: { nodes: issue.reopened ? [{ id: issue.reopened }] : [] } };
   }
-  console.log(JSON.stringify({ data: { repository } }));
+  const organization = { issueFields: { nodes: fixture.issueFields ?? [{}, { id: 'FIELD_PRIORITY', name: 'Priority', options: ['Urgent', 'High', 'Medium', 'Low'].map((name) => ({ id: 'OPT_' + name, name })) }] } };
+  console.log(JSON.stringify({ data: fields ? { organization, repository } : { repository } }));
 } else { console.error('gh stub: ' + args.join(' ')); process.exit(1); }
 `;
 // Orphans the fake runtime so no real agent process is its ancestor.
@@ -479,6 +483,14 @@ const firstResult = async (...args) => {
 const recordStatus = async (...args) => {
   const { status } = await firstResult(...args);
   return status;
+};
+
+const recordAll = async (box, records) => {
+  const { results } = await recordIn(box, records);
+  assert.deepEqual(
+    results.map((result) => result.status),
+    records.map(() => 0)
+  );
 };
 
 const registerRows = (box, cwd = box.work) =>
@@ -1232,21 +1244,66 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(await stateLine(box, 5250, { cwd: b }), '#5250 current');
   });
 
-  test('labels prints the gh commands that make the triaged label match, and runs none', async () => {
+  test('labels prints the gh commands that make the triaged and outcome labels match a current record, and runs none', async () => {
     const box = sandbox();
     setIssues(box, [
-      issue(5250, { labels: [{ name: 'needs-triage' }] }),
-      issue(5251, { labels: [{ name: 'triaged' }] }),
+      issue(5250, {
+        labels: [{ name: 'needs-triage' }, { name: 'needs reproduction' }],
+        priority: 'Urgent',
+      }),
+      issue(5251, {
+        labels: [{ name: 'triaged' }, { name: 'needs reproduction' }],
+      }),
       issue(5252, { labels: [{ name: 'needs-triage' }] }),
+      issue(5253),
     ]);
-    assert.equal(await recordStatus(box, [[5250]]), 0);
+    await recordAll(box, [[5250], [5253, 'needs-repro', 'missing: the steps']]);
     const { status, stdout } = await triage(box, ['labels']);
     assert.equal(status, 0);
     assert.deepEqual(stdout.trim().split('\n'), [
       'gh label create triaged --repo udecode/plate --color 0e8a16 --description "Has a current record in docs/triage/issues.tsv" --force',
-      'gh issue edit 5250 --repo udecode/plate --add-label triaged --remove-label needs-triage',
+      "gh issue edit 5250 --repo udecode/plate --add-label triaged --remove-label needs-triage --remove-label 'needs reproduction'",
       'gh issue edit 5251 --repo udecode/plate --remove-label triaged',
+      "gh issue edit 5253 --repo udecode/plate --add-label triaged --add-label 'needs reproduction'",
     ]);
+  });
+
+  test('labels sets the Priority field from a current kind record only where it differs', async () => {
+    const box = sandbox();
+    setIssues(box, [
+      issue(5250),
+      issue(5251, { priority: 'Low' }),
+      issue(5252, { priority: 'Urgent' }),
+      issue(5253, { priority: 'Low' }),
+      issue(5254),
+    ]);
+    await recordAll(box, [
+      [5250],
+      [5251, 'kind', KIND.replace('P0', 'P2')],
+      [5252],
+      [5253, 'needs-repro', 'missing: the steps'],
+    ]);
+    const { status, stdout } = await triage(box, ['labels']);
+    assert.equal(status, 0);
+    assert.deepEqual(
+      stdout.split('\n').filter((line) => line.startsWith('gh api graphql')),
+      [
+        `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#5250 P0 Urgent", issueId: "I_5250", issueFields: [{ fieldId: "FIELD_PRIORITY", singleSelectOptionId: "OPT_Urgent" }] }) { clientMutationId } }'`,
+        `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#5251 P2 Medium", issueId: "I_5251", issueFields: [{ fieldId: "FIELD_PRIORITY", singleSelectOptionId: "OPT_Medium" }] }) { clientMutationId } }'`,
+      ]
+    );
+  });
+
+  test('labels refuses and prints no command when the organization has no Priority field', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250), issue(5251)], {
+      issueFields: [{}, { id: 'FIELD_STATUS', name: 'Status', options: [] }],
+    });
+    await recordAll(box, [[5250]]);
+    const { status, stdout, stderr } = await triage(box, ['labels']);
+    assert.equal(status, 1);
+    assert.equal(stdout, '');
+    assert.match(stderr, /no single-select issue field named Priority/u);
   });
 
   test('queue counts every open issue by state and lists the ones that need triage', async () => {
