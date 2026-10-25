@@ -7,6 +7,8 @@ import {
   createEditorView,
   defineCommand,
   defineEditorSchema,
+  definePlugin,
+  DocumentChange,
   editorCommands,
   type EditorUpdateTransaction,
   property,
@@ -16,6 +18,7 @@ import {
   transfer,
 } from 'plitejs';
 import * as authoredEntry from 'plitejs/authored';
+import { history } from 'plitejs/history';
 
 import type {
   AuthoredChangesDelta,
@@ -26,7 +29,12 @@ import { createAuthoredPlugin } from '../src/authored/authored';
 import { readLedgerWork, resetLedgerWork } from '../src/authored/ledger/work';
 import { evaluateCommand } from '../src/core/command-registry';
 import { applyTransactionSpec } from '../src/core/public-state';
-import { setEditorComposing } from '../src/internal';
+import {
+  resolveParkedCaret,
+  setSelectionAsView,
+  setShownSelectionAsView,
+} from '../src/core/view-carets';
+import { retainViewPresentation, setEditorComposing } from '../src/internal';
 import { reviewedValue, reviewRecords } from './support/authored';
 
 const Blocks = defineEditorSchema('authored-plugin-blocks', {
@@ -1788,6 +1796,1185 @@ describe('authored plugin', () => {
         assert.equal(
           shown(proposed.read.children()),
           'quote(paragraph(*Ycd*)) paragraph()'
+        );
+      }
+    });
+  });
+
+  describe('where a pending join meets the lines completion builds', () => {
+    const blocks = (min: number) =>
+      schema.content.types(['paragraph', 'quote'], {
+        default: { type: 'paragraph' },
+        min,
+      });
+    const lineElements = (quote: number) => ({
+      link: { content: schema.content.text({ min: 1 }), inline: true },
+      paragraph: schema.element.textBlock(),
+      quote: { content: schema.content.type('paragraph', { min: quote }) },
+    });
+    let schemas = 0;
+    const lines = (root: number, quote = 1) => {
+      const id = `authored-plugin-built-lines-${(schemas += 1)}`;
+
+      return defineEditorSchema(id, {
+        elements: lineElements(quote),
+        id,
+        root: blocks(root),
+        unknown: 'reject',
+        version: 1,
+      });
+    };
+    const NotedLines = defineEditorSchema('authored-plugin-noted-lines', {
+      elements: lineElements(1),
+      id: 'authored-plugin-noted-lines',
+      root: blocks(1),
+      roots: { notes: blocks(2) },
+      unknown: 'reject',
+      version: 1,
+    });
+    const TitledLines = defineEditorSchema('authored-plugin-titled-lines', {
+      elements: {
+        paragraph: schema.element.textBlock(),
+        title: schema.element.textBlock(),
+      },
+      id: 'authored-plugin-titled-lines',
+      root: schema.content.prefix(
+        [{ element: 'title' }],
+        schema.content.types(['paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        })
+      ),
+      unknown: 'reject',
+      version: 1,
+    });
+    const CellPair = defineEditorSchema('authored-plugin-cell-pair', {
+      elements: {
+        cell: { content: schema.content.text({ min: 1 }) },
+        group: { content: schema.content.type('cell', { max: 2, min: 2 }) },
+        paragraph: schema.element.textBlock(),
+      },
+      id: 'authored-plugin-cell-pair',
+      root: schema.content.types(['paragraph', 'group'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const NestedQuotes = defineEditorSchema('authored-plugin-nested-quotes', {
+      elements: {
+        paragraph: schema.element.textBlock(),
+        quote: {
+          content: schema.content.types(['paragraph', 'quote'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+        },
+      },
+      id: 'authored-plugin-nested-quotes',
+      root: schema.content.types(['paragraph', 'quote'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const boxElements = {
+      box: { content: schema.content.type('inline_box', { min: 1 }) },
+      link: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+      paragraph: {
+        content: schema.content.any([
+          schema.content.text(),
+          schema.content.type('link'),
+        ]),
+      },
+    };
+    const boxRoot = schema.content.types(['box', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    });
+    // A link placed in a paragraph defaults a role, so placing a built link
+    // there copies it.
+    const LinkBoxes = defineEditorSchema('authored-plugin-link-boxes', {
+      elements: {
+        ...boxElements,
+        inline_box: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('link')],
+            { default: { type: 'link' }, min: 4 }
+          ),
+        },
+      },
+      id: 'authored-plugin-link-boxes',
+      properties: [
+        schema.elementProperty(
+          'role',
+          property.string({ default: 'paragraph-link' }),
+          {
+            target: nodeTarget.and(
+              nodeTarget.type('link'),
+              nodeTarget.parent(nodeTarget.type('paragraph'))
+            ),
+          }
+        ),
+      ],
+      root: boxRoot,
+      unknown: 'reject',
+      version: 1,
+    });
+    // An inline box fills with a widget, which holds a link and which a
+    // paragraph flattens.
+    const WidgetBoxes = defineEditorSchema('authored-plugin-widget-boxes', {
+      elements: {
+        ...boxElements,
+        inline_box: {
+          content: schema.content.any(
+            [
+              schema.content.text(),
+              schema.content.type('link'),
+              schema.content.type('widget'),
+            ],
+            { default: { type: 'widget' }, min: 4 }
+          ),
+        },
+        widget: {
+          content: schema.content.any(
+            [schema.content.text(), schema.content.type('link')],
+            { default: { type: 'link' }, min: 2 }
+          ),
+        },
+      },
+      id: 'authored-plugin-widget-boxes',
+      root: boxRoot,
+      unknown: 'reject',
+      version: 1,
+    });
+    const join = (n: number) => mark(`carol:${n}`, 'join', 1);
+    const insert = mark('carol:1', 'insert', 1);
+    const retype = (before: string, value: string) => ({
+      ...format('carol:2', 2),
+      before,
+      write: { kind: 'set', value },
+    });
+    const line = (text: string, ...authored: unknown[]) => ({
+      ...(authored.length > 0 && { authored }),
+      children: [{ text }],
+      type: 'paragraph',
+    });
+    const inserted = (text: string) => ({
+      authored: [insert],
+      children: [{ authored: [insert], text }],
+      type: 'paragraph',
+    });
+    const deletion = mark('carol:1', 'delete', 1);
+    const deleted = (text: string) => ({
+      authored: [deletion],
+      children: [{ authored: [deletion], text }],
+      type: 'paragraph',
+    });
+    const quoted = (...children: unknown[]) => ({ children, type: 'quote' });
+    // An inline box carol suggests as a box over a paragraph, holding her
+    // inserted link ab after an empty link.
+    const boxed = {
+      authored: [retype('paragraph', 'box')],
+      children: [
+        {
+          children: [
+            { text: '' },
+            { children: [{ text: '' }], type: 'link' },
+            { text: '' },
+            {
+              authored: [insert],
+              children: [{ authored: [insert], text: 'ab' }],
+              type: 'link',
+            },
+            { text: '' },
+          ],
+          type: 'inline_box',
+        },
+      ],
+      type: 'box',
+    };
+    // Texts next to each other read as one, as marks split them in Suggesting.
+    const shown = (nodes: readonly unknown[]): string => {
+      const parts: string[] = [];
+      let joined: string | null = null;
+
+      for (const node of nodes as Array<{
+        children?: unknown[];
+        text?: string;
+        type?: string;
+      }>) {
+        if (typeof node.text === 'string') {
+          joined = (joined ?? '') + node.text;
+          continue;
+        }
+        if (joined !== null) parts.push(JSON.stringify(joined));
+        joined = null;
+        parts.push(`${node.type}(${shown(node.children ?? [])})`);
+      }
+      if (joined !== null) parts.push(JSON.stringify(joined));
+
+      return parts.join(' ');
+    };
+    const editorIn = (
+      plugin: ReturnType<typeof defineEditorSchema>,
+      value: unknown,
+      intent: 'edit' | 'propose' = 'edit',
+      root?: string
+    ) => {
+      const editor = createEditor({
+        initialValue: value as never,
+        plugins: [plugin, createAuthoredPlugin({ authorId: 'alice', intent })],
+      });
+
+      return {
+        editor,
+        proposed: createEditorView(editor, {
+          authored: { preview: 'proposed' },
+          ...(root && { root }),
+        }),
+      };
+    };
+    type Built = ReturnType<typeof editorIn>;
+    const decide = (
+      editor: Built['editor'],
+      action: 'accept' | 'reject',
+      ...ids: string[]
+    ) => {
+      const { read } = editor as unknown as {
+        read: { authored: { change: (id: string) => unknown } };
+      };
+
+      return run(editor as never, (tx) =>
+        tx.authored.decide({
+          action,
+          changes: ids.map((id) => read.authored.change(id)),
+        })
+      ) as { status: string };
+    };
+    const typeIn = (editor: Built['editor'], text: string) =>
+      editor.update((tx) => tx.command(editorCommands.insertText, { text }));
+    const caretShown = (proposed: Built['proposed']) => {
+      const focus = proposed.read.selection()?.focus;
+
+      return focus ? `${focus.path.join(',')}:${focus.offset}` : null;
+    };
+    const showCaret = (
+      proposed: Built['proposed'],
+      at: ReturnType<typeof caret>,
+      affinity?: 'forward'
+    ) =>
+      setShownSelectionAsView(
+        proposed,
+        SelectionApi.text(at, affinity ? { affinity } : {})
+      );
+
+    it('keeps a letter typed at the end of the last of two joined lines in that line', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(3),
+          [line('ab'), line('cd', join(1)), line('ef', join(2))],
+          intent
+        );
+
+        editor.update.text.insert('x', { at: caret([2, 0], 2).anchor });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abcdefx") paragraph("") paragraph("")'
+        );
+      }
+    });
+
+    it('keeps the letter typed next to it in that line too', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(3),
+          [line('ab'), line('cd', join(1)), line('ef', join(2))],
+          intent
+        );
+
+        editor.update((tx) => {
+          tx.selection.set(caret([2, 0], 2));
+          tx.command(editorCommands.insertText, { text: 'x' });
+        });
+        typeIn(editor, 'y');
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abcdefxy") paragraph("") paragraph("")'
+        );
+      }
+    });
+
+    it('keeps a letter typed in an empty joined line in the line it joins', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [line('ab'), line('', join(1))],
+          intent
+        );
+
+        editor.update.text.insert('x', { at: caret([1, 0], 0).anchor });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abx") paragraph("")'
+        );
+      }
+    });
+
+    it('keeps a letter typed after a link at the end of a joined line in that line', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [
+            line('ab'),
+            {
+              authored: [join(1)],
+              children: [
+                { text: '' },
+                { children: [{ text: 'ef' }], type: 'link' },
+                { text: '' },
+              ],
+              type: 'paragraph',
+            },
+          ],
+          intent
+        );
+
+        editor.update.text.insert('x', { at: caret([1, 2], 0).anchor });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("ab" link("ef") "x") paragraph("")'
+        );
+      }
+    });
+
+    it('types into the line Enter adds at the end of a line joined into a quote', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [quoted(line('ab')), line('cd', join(1))],
+          intent
+        );
+
+        editor.update((tx) => {
+          tx.selection.set(caret([1, 0], 2));
+          tx.command(editorCommands.insertBreak);
+        });
+        typeIn(editor, 'X');
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'quote(paragraph("abcd") paragraph("X")) paragraph("")'
+        );
+      }
+    });
+
+    it('keeps a letter typed at the end of a line joined inside a quote that needs two lines in that line', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(1, 2),
+          [quoted(line('ab'), line('cd', join(1)))],
+          intent
+        );
+
+        editor.update.text.insert('x', { at: caret([0, 1, 0], 2).anchor });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'quote(paragraph("abcdx") paragraph(""))'
+        );
+      }
+    });
+
+    it('keeps that letter in its line after a suggestion earlier in the quote', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(1, 2),
+          [line('top'), quoted(line('ab'), line('cd', join(1)))],
+          intent
+        );
+        const suggester =
+          intent === 'propose'
+            ? editor
+            : createEditorView(editor, { authored: { intent: 'propose' } });
+
+        suggester.update.text.insert('m', { at: caret([1, 0, 0], 1).anchor });
+        editor.update.text.insert('x', { at: caret([1, 1, 0], 2).anchor });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("top") quote(paragraph("ambcdx") paragraph(""))'
+        );
+      }
+    });
+
+    it("keeps a letter typed at the end of a joined line in a named root's line", () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          NotedLines,
+          {
+            children: [line('zz')],
+            roots: { notes: [line('ab'), line('cd', join(1))] },
+          },
+          intent,
+          'notes'
+        );
+
+        editor.update.text.insert('x', {
+          at: { ...caret([1, 0], 2).anchor, root: 'notes' },
+        });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abcdx") paragraph("")'
+        );
+      }
+    });
+
+    it('keeps letters typed beside the fill a removed cell defers in their cell', () => {
+      const cell = (text: string) => ({ children: [{ text }], type: 'cell' });
+
+      for (const intent of ['edit', 'propose'] as const) {
+        const editor = createEditor({
+          initialValue: [
+            line('p'),
+            { children: [cell('a'), cell('b')], type: 'group' },
+          ] as never,
+          plugins: [
+            CellPair,
+            createAuthoredPlugin({ authorId: 'carol', intent: 'propose' }),
+          ],
+        });
+        const proposed = createEditorView(editor, {
+          authored: { preview: 'proposed' },
+        });
+        const typist = createEditorView(editor, { authored: { intent } });
+
+        editor.update((tx) => tx.nodes.remove({ at: [1, 0] }));
+        typist.update((tx) => {
+          tx.selection.set(caret([1, 1, 0], 1));
+          tx.command(editorCommands.insertText, { text: 'x' });
+        });
+        typist.update((tx) =>
+          tx.command(editorCommands.insertText, { text: 'y' })
+        );
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("p") group(cell("bxy") cell(""))'
+        );
+      }
+    });
+
+    it('rejects an insertion and the retype of the quote around it together', () => {
+      const { editor } = editorIn(NestedQuotes, [
+        {
+          authored: [retype('paragraph', 'quote')],
+          children: [quoted(inserted('ab'))],
+          type: 'quote',
+        },
+      ]);
+
+      assert.equal(
+        decide(editor, 'reject', 'carol:1', 'carol:2').status,
+        'applied'
+      );
+      assert.equal(shown(editor.read.children()), 'paragraph("")');
+    });
+
+    it('keeps a letter typed after a rejected link out of the link its placement copies', () => {
+      const { editor } = editorIn(LinkBoxes, [boxed]);
+
+      decide(editor, 'reject', 'carol:1', 'carol:2');
+      editor.update((tx) => tx.selection.set(caret([0, 4], 0)));
+      typeIn(editor, 'x');
+
+      assert.equal(
+        shown(editor.read.children()),
+        'paragraph("" link("") "" link("") "x")'
+      );
+    });
+
+    it('keeps a letter typed after a rejected link out of the link a flattened fill holds', () => {
+      const { editor } = editorIn(WidgetBoxes, [boxed]);
+
+      decide(editor, 'reject', 'carol:1', 'carol:2');
+      editor.update((tx) => tx.selection.set(caret([0, 4], 0)));
+      typeIn(editor, 'x');
+
+      assert.equal(
+        shown(editor.read.children()),
+        'paragraph("" link("") "" link("") "x")'
+      );
+    });
+
+    it('keeps a caret in the line added after a joined line there once the join is accepted', () => {
+      const { editor, proposed } = editorIn(lines(2), [
+        line('ab'),
+        line('cd', join(1)),
+      ]);
+
+      showCaret(proposed, caret([1, 0], 0));
+      decide(editor, 'accept', 'carol:1');
+      typeIn(editor, 'X');
+
+      assert.equal(
+        shown(editor.read.children()),
+        'paragraph("abcd") paragraph("X")'
+      );
+    });
+
+    it('keeps a caret in the last of two added lines there once both joins are accepted', () => {
+      const { editor, proposed } = editorIn(lines(3), [
+        line('ab'),
+        line('cd', join(1)),
+        line('ef', join(2)),
+      ]);
+
+      showCaret(proposed, caret([2, 0], 0));
+      decide(editor, 'accept', 'carol:1', 'carol:2');
+      typeIn(editor, 'X');
+
+      assert.equal(
+        shown(editor.read.children()),
+        'paragraph("abcdef") paragraph("") paragraph("X")'
+      );
+    });
+
+    it("keeps a caret in a named root's added line in that root once the join is accepted", () => {
+      const { editor, proposed } = editorIn(
+        NotedLines,
+        {
+          children: [line('MAIN'), line('END')],
+          roots: { notes: [line('ab'), line('cd', join(1))] },
+        },
+        'edit',
+        'notes'
+      );
+      const notes = createEditorView(editor, { root: 'notes' });
+
+      showCaret(proposed, caret([1, 0], 0));
+      decide(editor, 'accept', 'carol:1');
+      typeIn(editor, 'X');
+
+      assert.deepEqual(
+        [shown(editor.read.children()), shown(notes.read.children())],
+        [
+          'paragraph("MAIN") paragraph("END")',
+          'paragraph("abcd") paragraph("X")',
+        ]
+      );
+    });
+
+    it('keeps a caret before a rejected line out of the line the rejection adds', () => {
+      const { editor, proposed } = editorIn(lines(2), [
+        line('ab'),
+        inserted('cd'),
+      ]);
+
+      showCaret(proposed, caret([0, 0], 2), 'forward');
+      decide(editor, 'reject', 'carol:1');
+      typeIn(editor, 'X');
+
+      assert.equal(
+        shown(editor.read.children()),
+        'paragraph("abX") paragraph("")'
+      );
+    });
+
+    it('keeps a caret in the line added after a quote there across an edit and once the join is accepted', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [quoted(line('ab')), line('cd', join(1))],
+          intent
+        );
+
+        showCaret(proposed, caret([1, 0], 0));
+        editor.update.text.insert('!', { at: caret([0, 0, 0], 0).anchor });
+
+        assert.equal(caretShown(proposed), '1,0:0');
+
+        decide(editor, 'accept', 'carol:1');
+        typeIn(editor, 'X');
+
+        assert.equal(
+          shown(editor.read.children()),
+          'quote(paragraph("!abcd")) paragraph("X")'
+        );
+      }
+    });
+
+    it('types at the end of a joined line where the editor puts a forward caret', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [line('ab'), line('cd', join(1))],
+          intent
+        );
+
+        editor.update((tx) =>
+          tx.selection.set(
+            SelectionApi.text(caret([1, 0], 2), { affinity: 'forward' })
+          )
+        );
+
+        assert.equal(caretShown(proposed), '0,0:4');
+
+        typeIn(editor, 'x');
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abcdx") paragraph("")'
+        );
+        assert.equal(caretShown(proposed), '0,0:5');
+      }
+    });
+
+    it('draws the caret after a letter typed where the preview placed it in the line completion builds', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [line('ab'), line('cd', join(1))],
+          intent
+        );
+
+        showCaret(proposed, caret([1, 0], 0));
+
+        assert.equal(caretShown(proposed), '1,0:0');
+
+        typeIn(editor, 'Y');
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abcdY") paragraph("")'
+        );
+        assert.equal(caretShown(proposed), '0,0:5');
+      }
+    });
+
+    it('draws a forward caret an editing view places at the end of a joined line there, whichever view came first', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        for (const first of ['preview', 'editing view'] as const) {
+          const editor = createEditor({
+            initialValue: [line('ab'), line('cd', join(1))] as never,
+            plugins: [
+              lines(2),
+              createAuthoredPlugin({ authorId: 'alice', intent }),
+            ],
+          });
+          const preview = () =>
+            createEditorView(editor, { authored: { preview: 'proposed' } });
+          const early = first === 'preview' ? preview() : null;
+
+          setShownSelectionAsView(
+            createEditorView(editor),
+            SelectionApi.text(caret([1, 0], 2), { affinity: 'forward' })
+          );
+
+          const proposed = early ?? preview();
+
+          assert.equal(caretShown(proposed), '0,0:4', `${intent}, ${first}`);
+
+          typeIn(editor, 'x');
+
+          assert.equal(caretShown(proposed), '0,0:5', `${intent}, ${first}`);
+        }
+      }
+    });
+
+    it('keeps drawing the caret where the preview placed it after a refused update places it again', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [line('ab'), line('cd', join(1))],
+          intent
+        );
+
+        showCaret(proposed, caret([1, 0], 0));
+        editor.update((tx) => {
+          showCaret(proposed, caret([1, 0], 0));
+          tx.command(editorCommands.insertNodes, {
+            nodes: [{ children: [{ text: 'W' }], type: 'paragraph' }],
+            options: { at: [2] },
+          });
+        });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abcd") paragraph("")'
+        );
+        assert.equal(caretShown(proposed), '1,0:0');
+      }
+    });
+
+    it('draws the caret at the end of the joined line once typing there is undone', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const editor = createEditor({
+          initialValue: [line('ab'), line('cd', join(1))] as never,
+          plugins: [
+            lines(2),
+            history(),
+            createAuthoredPlugin({ authorId: 'alice', intent }),
+          ],
+        });
+        const proposed = createEditorView(editor, {
+          authored: { preview: 'proposed' },
+        });
+
+        showCaret(proposed, caret([1, 0], 0));
+        typeIn(editor, 'Y');
+        editor.api.history.undo();
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abcd") paragraph("")'
+        );
+        assert.equal(caretShown(proposed), '0,0:4');
+      }
+    });
+
+    it('refuses a frame that writes after a line completion builds, wherever it builds one', () => {
+      const W = { children: [{ text: 'W' }], type: 'paragraph' } as never;
+      let steps = (_tx: EditorUpdateTransaction) => {};
+      const Writer = definePlugin('writer', {
+        update: ({ tx }) => ({
+          apply: () => steps(tx),
+        }),
+      });
+      const insertAt = (at: number[]) => ({
+        update: (tx: EditorUpdateTransaction) =>
+          tx.command(editorCommands.insertNodes, {
+            nodes: [W],
+            options: { at },
+          }),
+      });
+      const method = (write: (tx: EditorUpdateTransaction) => void) => ({
+        steps: write,
+      });
+      const joined = [line('ab'), line('cd', join(1))];
+      const cases = [
+        ['a root', lines(2), joined, insertAt([2]), 'diverged'],
+        [
+          'a quote',
+          lines(1, 2),
+          [quoted(...joined)],
+          insertAt([0, 2]),
+          'diverged',
+        ],
+        [
+          'a titled root',
+          TitledLines,
+          [{ children: [{ text: 'ab' }], type: 'title' }, joined[1]],
+          insertAt([2]),
+          'diverged',
+        ],
+        [
+          'a named root',
+          NotedLines,
+          { children: [line('zz')], roots: { notes: joined } },
+          insertAt([2]),
+          'diverged',
+          'notes',
+        ],
+        [
+          'a plugin method',
+          lines(2),
+          joined,
+          method((tx) => tx.nodes.insert(W, { at: [tx.children().length] })),
+          'diverged',
+        ],
+        [
+          'a plugin method that also edits the line before',
+          lines(2),
+          joined,
+          method((tx) => {
+            tx.text.insert('X', { at: caret([0, 0], 0).anchor });
+            tx.nodes.insert(W, { at: [2] });
+          }),
+          'diverged',
+        ],
+        [
+          'a plugin method that adds a line between two lines completion builds',
+          lines(3),
+          [...joined, line('ef', join(2))],
+          method((tx) => tx.nodes.insert(W, { at: [2] })),
+          'reordered',
+        ],
+        [
+          'a quote, in a frame that also edits the line before it',
+          lines(1, 2),
+          [line('x'), quoted(...joined)],
+          method((tx) => {
+            tx.nodes.insert(W, { at: [1, 2] });
+            tx.text.insert('!', { at: caret([0, 0], 0).anchor });
+          }),
+          'diverged',
+        ],
+      ] as const;
+
+      for (const intent of ['edit', 'propose'] as const) {
+        for (const [where, plugin, value, write, reason, root] of cases) {
+          const editor = createEditor({
+            initialValue: value as never,
+            plugins: [
+              plugin,
+              Writer,
+              createAuthoredPlugin({ authorId: 'alice', intent }),
+            ],
+          });
+          const before = root ? editor.read.root(root) : editor.read.children();
+          const refusals: Array<readonly string[]> = [];
+
+          editor.api.authored.subscribeRefusals((refusal) =>
+            refusals.push(refusal.reasons)
+          );
+          if ('steps' in write) {
+            ({ steps } = write);
+            editor.update.writer.apply();
+          } else {
+            (root ? createEditorView(editor, { root }) : editor).update(
+              write.update
+            );
+          }
+
+          assert.deepEqual(refusals, [[reason]], `${intent}, ${where}`);
+          assert.equal(
+            root ? editor.read.root(root) : editor.read.children(),
+            before,
+            `${intent}, ${where}`
+          );
+        }
+      }
+    });
+
+    it('records Enter at the end of the last line, which leaves the line completion builds unneeded', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        for (const [plugin, value, end, preview] of [
+          [
+            lines(2),
+            [deleted('ab'), line('ef')],
+            [1, 0],
+            'paragraph("ef") paragraph("X")',
+          ],
+          [
+            lines(3),
+            [line('ab'), line('cd', join(1)), line('ef')],
+            [2, 0],
+            'paragraph("abcd") paragraph("ef") paragraph("X")',
+          ],
+        ] as const) {
+          const { editor, proposed } = editorIn(plugin, value, intent);
+
+          editor.update((tx) => tx.selection.set(caret([...end], 2)));
+          editor.update((tx) => tx.command(editorCommands.insertBreak));
+          typeIn(editor, 'X');
+
+          assert.equal(shown(proposed.read.children()), preview, intent);
+        }
+      }
+    });
+
+    it('records a frame that types into the line completion builds, then writes after it', () => {
+      const W = { children: [{ text: 'W' }], type: 'paragraph' } as never;
+      let steps = (_tx: EditorUpdateTransaction) => {};
+      const Writer = definePlugin('writer', {
+        update: ({ tx }) => ({
+          apply: () => steps(tx),
+        }),
+      });
+      const cases = [
+        [
+          (tx: EditorUpdateTransaction) => tx.nodes.insert(W, { at: [2] }),
+          'paragraph("abcd") paragraph("X") paragraph("W")',
+        ],
+        [
+          (tx: EditorUpdateTransaction) => tx.nodes.move({ at: [0], to: [2] }),
+          'paragraph("X") paragraph("abcd")',
+        ],
+      ] as const;
+
+      for (const intent of ['edit', 'propose'] as const) {
+        for (const [write, preview] of cases) {
+          const editor = createEditor({
+            initialValue: [line('ab'), line('cd', join(1))] as never,
+            plugins: [
+              lines(2),
+              Writer,
+              createAuthoredPlugin({ authorId: 'alice', intent }),
+            ],
+          });
+          const proposed = createEditorView(editor, {
+            authored: { preview: 'proposed' },
+          });
+
+          steps = (tx) => {
+            tx.text.insert('X', { at: caret([1, 0], 0).anchor });
+            write(tx);
+          };
+          editor.update.writer.apply();
+
+          assert.equal(shown(proposed.read.children()), preview, intent);
+        }
+      }
+    });
+
+    it('records a line inserted after a required title another author deletes', () => {
+      const Prefixed = defineEditorSchema('authored-plugin-prefixed-lines', {
+        elements: {
+          paragraph: schema.element.textBlock(),
+          title: schema.element.textBlock(),
+        },
+        id: 'authored-plugin-prefixed-lines',
+        root: schema.content.prefix(
+          [{ element: 'title' }],
+          schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 0,
+          })
+        ),
+        unknown: 'reject',
+        version: 1,
+      });
+      const { editor, proposed } = editorIn(Prefixed, [
+        { ...deleted('ab'), type: 'title' },
+      ]);
+
+      editor.update((tx) =>
+        tx.command(editorCommands.insertNodes, {
+          nodes: [{ children: [{ text: 'W' }], type: 'paragraph' }],
+          options: { at: [1] },
+        })
+      );
+
+      assert.equal(shown(proposed.read.children()), 'title("") paragraph("W")');
+    });
+
+    it('starts a commit from where the preview showed the caret placed in the line completion builds', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [line('ab'), line('cd', join(1))],
+          intent
+        );
+        const moves: string[] = [];
+
+        showCaret(proposed, caret([1, 0], 0));
+        assert.equal(caretShown(proposed), '1,0:0');
+        proposed.subscribeCommit(({ selectionAfter, selectionBefore }) =>
+          moves.push(
+            [selectionBefore, selectionAfter]
+              .map((selection) =>
+                selection && SelectionApi.isText(selection)
+                  ? `${selection.focus.path.join(',')}:${selection.focus.offset}`
+                  : null
+              )
+              .join(' ')
+          )
+        );
+        typeIn(editor, 'Y');
+
+        assert.deepEqual(moves, ['1,0:0 0,0:5'], intent);
+      }
+    });
+
+    it('records a line added before a joined line, which leaves the line completion builds unneeded', () => {
+      const joined = [line('ab'), line('cd', join(1))];
+
+      for (const intent of ['edit', 'propose'] as const) {
+        for (const [plugin, value, at, preview] of [
+          [lines(2), joined, [0], 'paragraph("W") paragraph("abcd")'],
+          [
+            lines(1, 2),
+            [quoted(...joined)],
+            [0, 0],
+            'quote(paragraph("W") paragraph("abcd"))',
+          ],
+        ] as const) {
+          const { editor, proposed } = editorIn(plugin, value, intent);
+
+          editor.update((tx) =>
+            tx.command(editorCommands.insertNodes, {
+              nodes: [{ children: [{ text: 'W' }], type: 'paragraph' }],
+              options: { at: [...at] },
+            })
+          );
+
+          assert.equal(shown(proposed.read.children()), preview, intent);
+        }
+      }
+    });
+
+    it('splits the line a pending join pulls the next line up into', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        for (const [plugin, value, offset, preview] of [
+          [
+            lines(2),
+            [line('ab'), line('cd', join(1))],
+            2,
+            'paragraph("ab") paragraph("Xcd")',
+          ],
+          [
+            lines(3),
+            [line('ab'), line('cd', join(1)), line('ef', join(2))],
+            1,
+            'paragraph("a") paragraph("Xbcdef") paragraph("")',
+          ],
+        ] as const) {
+          const { editor, proposed } = editorIn(plugin, value, intent);
+
+          editor.update((tx) => {
+            tx.selection.set(caret([0, 0], offset));
+            tx.command(editorCommands.insertBreak);
+          });
+          typeIn(editor, 'X');
+
+          assert.equal(shown(proposed.read.children()), preview, intent);
+        }
+      }
+    });
+
+    it('deletes forward at the end of a joined line into the line completion builds, which it builds again', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [line('ab'), line('cd', join(1))],
+          intent
+        );
+
+        editor.update((tx) => {
+          tx.selection.set(caret([1, 0], 2));
+          tx.command(editorCommands.delete, {
+            direction: 'forward',
+            unit: 'character',
+          });
+        });
+
+        assert.equal(
+          shown(proposed.read.children()),
+          'paragraph("abcd") paragraph("")'
+        );
+      }
+    });
+
+    it('keeps the caret at the end of a line when Delete meets lines another author deletes', () => {
+      for (const [need, value, preview] of [
+        [2, [line('ab'), deleted('cd')], 'paragraph("ab") paragraph("")'],
+        [
+          3,
+          [line('ab'), deleted('cd'), deleted('ef')],
+          'paragraph("ab") paragraph("") paragraph("")',
+        ],
+      ] as const) {
+        for (const intent of ['edit', 'propose'] as const) {
+          const { editor, proposed } = editorIn(
+            lines(need),
+            [...value],
+            intent
+          );
+
+          editor.update((tx) => {
+            tx.selection.set(caret([0, 0], 2));
+            tx.command(editorCommands.delete, {
+              direction: 'forward',
+              unit: 'character',
+            });
+          });
+
+          assert.deepEqual(
+            [shown(proposed.read.children()), caretShown(proposed)],
+            [preview, '0,0:2']
+          );
+        }
+      }
+    });
+
+    it('keeps a caret in the added line there when a peer accepts the join', () => {
+      const Lines = lines(2);
+      const value = [line('ab'), line('cd', join(1))];
+
+      for (const intent of ['edit', 'propose'] as const) {
+        const peer = editorIn(Lines, structuredClone(value)).editor;
+        const { editor, proposed } = editorIn(Lines, value, intent);
+        const delivered: unknown[] = [];
+
+        peer.subscribeCommit((commit) =>
+          delivered.push(commit.changes.toJSON())
+        );
+        showCaret(proposed, caret([1, 0], 0));
+        decide(peer, 'accept', 'carol:1');
+        for (const change of delivered) {
+          editor.update({ tags: ['collaboration', 'history-skip'] }, (tx) =>
+            tx.changes.apply(
+              DocumentChange.fromJSON(JSON.parse(JSON.stringify(change)))
+            )
+          );
+        }
+        typeIn(editor, 'X');
+
+        assert.equal(
+          shown(editor.read.children()),
+          'paragraph("abcd") paragraph("X")'
+        );
+      }
+    });
+
+    it('keeps a caret before a rejected line out of it after an accepted view was read', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [line('ab'), inserted('cd')],
+          intent
+        );
+
+        createEditorView(editor, {
+          authored: { preview: 'accepted' },
+        }).read.children();
+        showCaret(proposed, caret([0, 0], 2), 'forward');
+        decide(editor, 'reject', 'carol:1');
+        typeIn(editor, 'X');
+
+        assert.equal(
+          shown(editor.read.children()),
+          'paragraph("abX") paragraph("")'
+        );
+      }
+    });
+
+    it('restores a caret parked in the added line there once the join is accepted', () => {
+      for (const intent of ['edit', 'propose'] as const) {
+        const { editor, proposed } = editorIn(
+          lines(2),
+          [line('ab'), line('cd', join(1))],
+          intent
+        );
+        const other = createEditorView(editor, {
+          authored: { preview: 'proposed' },
+        });
+        const release = [
+          retainViewPresentation(proposed),
+          retainViewPresentation(other),
+        ];
+
+        showCaret(proposed, caret([1, 0], 0), 'forward');
+        showCaret(other, caret([0, 0], 1));
+        decide(editor, 'accept', 'carol:1');
+        setSelectionAsView(proposed, resolveParkedCaret(proposed));
+        typeIn(editor, 'X');
+        for (const free of release) free();
+
+        assert.equal(
+          shown(editor.read.children()),
+          'paragraph("abcd") paragraph("X")'
         );
       }
     });

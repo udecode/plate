@@ -46,6 +46,7 @@ const resolveSchemaOver = (
         slot,
       })),
       children: completion.children,
+      sources: completion.sources,
     };
   },
   fitsPrefix: (node, slot, root) =>

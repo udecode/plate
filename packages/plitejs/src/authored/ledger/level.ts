@@ -51,7 +51,8 @@ const ORDERED_RUNS = 7;
 const MARKED = 8;
 const UNSETTLED = 9;
 const STOPS = 10;
-const MEASURES = 11;
+const BUILT = 11;
+const MEASURES = 12;
 
 const KEPT_LINES = {
   accepted: KEPT_ACCEPTED,
@@ -103,6 +104,11 @@ type OrderedSpan = Readonly<{
 }>;
 
 type BlockSlot = Slot & {
+  /**
+   * On a pending slot, whether a run it replaced built an element, which the
+   * frame's write may still hold with no stored node behind it.
+   */
+  built?: boolean;
   facts: BlockFacts;
   /** The container's children, projected, while they complete apart and hold no text. */
   level: Level | null;
@@ -123,12 +129,14 @@ const measuresOf = (
   { facts, level, node }: Pick<BlockSlot, 'facts' | 'level' | 'node'>,
   {
     blocks = 0,
+    built = false,
     changed = false,
     length = 0,
     ordered = false,
     pending = false,
   }: Readonly<{
     blocks?: number;
+    built?: boolean;
     changed?: boolean;
     length?: number;
     ordered?: boolean;
@@ -146,6 +154,7 @@ const measuresOf = (
   facts.unmarked ? 0 : 1,
   facts.settles ? 0 : 1,
   facts.unmarked || facts.opensWithStructure ? 1 : 0,
+  built ? 1 : 0,
 ];
 
 const isPending = (slot: BlockSlot) => slot.measures[PENDING] === 1;
@@ -204,6 +213,7 @@ const runSlots = (group: readonly BlockSlot[], run: Run) =>
       offset === 0
         ? {
             blocks: run.output.length,
+            built: run.builds,
             changed: run.changed,
             length: run.outputLength,
             ordered: !!run.order,
@@ -222,6 +232,7 @@ const levelSlot = (slot: BlockSlot, run: LevelRun): BlockSlot => ({
   level: run.level,
   measures: measuresOf(slot, {
     blocks: 1,
+    built: run.builds,
     changed: run.changed,
     length: run.outputLength,
     ordered: run.level.reorders,
@@ -357,6 +368,9 @@ export const settles = (
       context.facts.insertedIncarnations().has(incarnation)
     ));
 
+const unsettled = (window: readonly BlockSlot[], context: RunContext) =>
+  window.some((slot) => slot.built || !settles(slot.facts, context));
+
 /**
  * The window's slots when the frame's commands wrote its `output`: unmarked
  * blocks stay themselves, and the window's one other group takes the rest of
@@ -373,7 +387,7 @@ const writtenWindow = (
   part: WindowPart,
   output: readonly JsonNode[]
 ) => {
-  if (window.some((slot) => !settles(slot.facts, context))) return null;
+  if (unsettled(window, context)) return null;
 
   const groups = groupsOf(window, joinsPrevious);
   const before = groups.findIndex((group) => !isUnmarked(group));
@@ -536,6 +550,10 @@ export class Level {
 
   readonly mode: AuthoredFormatProjection;
 
+  protected get builds() {
+    return this.slots.total(BUILT) > 0;
+  }
+
   constructor(
     mode: AuthoredFormatProjection,
     stored: DocumentIndex,
@@ -658,6 +676,7 @@ export class Level {
     return {
       alignment: null,
       aligned: true,
+      builds: this.builds,
       get change() {
         if (change === undefined) {
           change = this.level.changed
@@ -805,6 +824,7 @@ export class Level {
         this.slots.sumBefore(to, OUTPUT_LENGTH) -
         this.slots.sumBefore(from, OUTPUT_LENGTH),
     };
+    const built = old.some((slot) => slot.run?.builds);
     const carried = new Set<Level>();
     const levelOf = (node: JsonNode, rank: number, offset: number) => {
       if (!completesApart(node, context)) return null;
@@ -833,12 +853,13 @@ export class Level {
       const facts = level ? level.factsOf(node) : blockFactsOf(node);
 
       return {
+        ...(built ? { built } : {}),
         facts,
         leaf: null,
         level,
         measures: measuresOf(
           { facts, level, node },
-          { ...(offset === 0 ? replaced : {}), pending: true }
+          { ...(offset === 0 ? replaced : {}), built, pending: true }
         ),
         node,
         offset: 0,
@@ -954,9 +975,7 @@ export class Level {
           )
       );
 
-      if (records && window.some((slot) => !settles(slot.facts, context))) {
-        record(windows, edit);
-      }
+      if (records && unsettled(window, context)) record(windows, edit);
 
       if (embeddedRun(edit)) {
         flush();

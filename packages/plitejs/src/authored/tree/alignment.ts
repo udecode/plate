@@ -22,6 +22,7 @@ import {
 import { deriveValue } from '../../core/record-store';
 import { survivalUnder } from '../../core/survival';
 import { marksOf, type ReviewFacts } from '../facts/facts';
+import { countLedgerWork } from '../ledger/work';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
@@ -31,6 +32,7 @@ import {
 import { proposedSurvival } from './proposed';
 import {
   acceptedOwnShape,
+  failInTests,
   hasJoinMark,
   isTextBlock,
   mergesUp,
@@ -96,6 +98,144 @@ export const tokenLength = (node: JsonNode): number => {
   }
 
   return value;
+};
+
+/**
+ * A settled tree and the elements in it that no stored node becomes, which
+ * completion built. The map adds those instead of pairing them.
+ */
+export type Settled = Readonly<{
+  children: readonly JsonNode[];
+  unstored: ReadonlySet<JsonNode>;
+}>;
+
+export const NOTHING_UNSTORED: ReadonlySet<JsonNode> = Object.freeze(
+  new Set<JsonNode>()
+);
+
+const setAside = (
+  children: readonly JsonNode[],
+  unstored: ReadonlySet<JsonNode>
+) => {
+  let found = 0;
+  let position = 0;
+  let read = 0;
+  let removed = 0;
+  const spans: Array<{ at: number; nodes: JsonNode[]; to: number }> = [];
+  const count = (node: JsonNode) => {
+    read += 1;
+    if (unstored.has(node)) found += 1;
+    node.children?.forEach(count);
+  };
+  const strip = (nodes: readonly JsonNode[]): readonly JsonNode[] => {
+    let out: JsonNode[] | null = null;
+
+    for (let index = 0; index < nodes.length; index += 1) {
+      const node = nodes[index];
+      const length = tokenLength(node);
+
+      if (unstored.has(node)) {
+        count(node);
+
+        const last = spans.at(-1);
+
+        if (last && last.to === position) {
+          last.nodes.push(node);
+          last.to += length;
+        } else {
+          spans.push({
+            at: position - removed,
+            nodes: [node],
+            to: position + length,
+          });
+        }
+        position += length;
+        removed += length;
+        out ??= nodes.slice(0, index);
+        continue;
+      }
+
+      let kept = node;
+
+      read += 1;
+      if (typeof node.text === 'string') {
+        position += length;
+      } else {
+        position += 1;
+
+        const inner = strip(node.children ?? []);
+
+        position += 1;
+        if (inner !== node.children) kept = { ...node, children: inner };
+      }
+      if (kept !== node) out ??= nodes.slice(0, index);
+      out?.push(kept);
+    }
+
+    return out ?? nodes;
+  };
+  const reduced = strip(children);
+
+  countLedgerWork('setAsideNodes', read);
+
+  const restore = (): RootChange | null => {
+    if (spans.length === 0) return null;
+
+    const sections: number[] = [];
+    const data: Array<PreparedTokenSlice | null> = [];
+    let at = 0;
+
+    for (const span of spans) {
+      if (span.at > at) {
+        sections.push(span.at - at, -1);
+        data.push(null);
+      }
+
+      const insert = DocumentIndex.fromValue(span.nodes).slice(0);
+
+      sections.push(0, insert.length);
+      data.push(insert);
+      ({ at } = span);
+    }
+
+    const length = position - removed;
+
+    if (length > at) {
+      sections.push(length - at, -1);
+      data.push(null);
+    }
+
+    return RootChange.fromSections(sections, data);
+  };
+
+  return { found, reduced, restore };
+};
+
+type Align = (
+  stored: JsonEditorValue,
+  settled: JsonEditorValue
+) => DocumentChange | null;
+
+export const settledChange = (
+  stored: JsonEditorValue,
+  { children, unstored }: Settled,
+  align: Align
+) => {
+  if (unstored.size === 0) return align(stored, { children });
+
+  const aside = setAside(children, unstored);
+  const change = align(stored, { children: aside.reduced });
+  const restore = aside.restore();
+
+  if (aside.found !== unstored.size) {
+    failInTests(
+      `The settled tree holds ${aside.found} of the ${unstored.size} elements completion built.`
+    );
+  }
+
+  return change && restore
+    ? change.compose(createInternalDocumentChange(new Map([['main', restore]])))
+    : change;
 };
 
 // The accept-all change of kept top-level blocks, built in one token walk:
@@ -619,20 +759,3 @@ export const diffedAcceptedChange = (
     DocumentChange.between(unstruck, accepted, options)
   );
 };
-
-/**
- * The change from a stored document to its accepted form: structural when the walk
- * reproduces the resolver, else aligned by characters, else two diffs, struck
- * nodes first, so a kept leaf stays aligned.
- */
-export const acceptedChange = (
-  stored: JsonEditorValue,
-  accepted: JsonEditorValue,
-  options: AlignmentOptions
-): DocumentChange =>
-  rootByRoot(
-    stored,
-    accepted,
-    (from, to) =>
-      acceptedAlignment(from, to) ?? diffedAcceptedChange(from, to, options)
-  );

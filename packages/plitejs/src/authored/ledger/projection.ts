@@ -1,9 +1,10 @@
-import type { DocumentIndex } from '../../core/change/document-index';
+import { DocumentIndex } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
 import { RootChange } from '../../core/change/root-change';
 import type { JsonNode } from '../../core/change/tokens';
 import { canonicalJsonKey } from '../../core/change/transform';
 import type { ChangedRange } from '../../core/measured-sequence';
+import { getDefined } from '../../internal/get-defined';
 import type { AuthoredFormatProjection } from '../format';
 import { movedRefusal } from '../refusal';
 import type { AuthoredResolveSchema } from '../tree/resolve';
@@ -15,7 +16,7 @@ import {
   settles,
   type WrittenList,
 } from './level';
-import type { RunContext } from './runs';
+import { isBuilt, type RunContext } from './runs';
 import { countLedgerWork, nodesIn } from './work';
 
 // Each block's own fields, and its text when it holds no block, so the same
@@ -42,10 +43,20 @@ const blocksOf = (nodes: readonly JsonNode[]): string[] =>
  * roots hold that container with the same fields.
  */
 const assertShowsWritten = (
-  written: DocumentIndex,
+  whole: DocumentIndex,
   shown: DocumentIndex,
   windows: readonly ResolvedWindow[]
 ) => {
+  let kept = whole.size;
+
+  while (kept > shown.size && isBuilt(getDefined(whole.child(kept - 1)))) {
+    kept -= 1;
+  }
+
+  const written =
+    kept === whole.size
+      ? whole
+      : DocumentIndex.fromIndexedNodes(whole.nodes.slice(0, kept));
   const compare = ([fromA, toA, fromB, toB]: ChangedRange) => {
     const wroteNodes = written.nodes.slice(fromA, toA);
     const shownNodes = shown.nodes.slice(fromB, toB);
@@ -197,11 +208,13 @@ export class RootProjection extends Level {
     const from = this.projected;
 
     if (sharesNothing(ranges, this.stored, stored)) {
+      const builtBefore = this.builds;
+
       this.build(stored, context);
 
       // The rebuild resolves the root as one window.
       if (written) {
-        let settled = true;
+        let settled = !builtBefore;
 
         this.slots.forEach(0, this.slots.size, (slot) => {
           settled &&= settles(slot.facts, context);

@@ -46,4 +46,4 @@ Now the recorder no longer keeps a deleted line that a join would land in, and t
 
 ## Open work
 
-- Enter beside an empty line a root adds after a pending join, in the first line, the joined line or a line after it, writes nothing and drops the caret, or loses that line once everything is accepted, as on next. Finding 4's own documents show it with no decision made. owner: zbeyens; stop: t_9cb6f7a6 lands or is dropped; tracked: the suggested-task ledger.
+- Enter at the end of a joined line, beside an empty line a root adds after a pending join, wrote nothing on next, even in finding 4's own documents with no decision made; the 2026-10-25 iteration records it. Enter inside the first line stores what next stored, and the 2026-10-25 iteration lets accepting drop the added line it leaves unneeded. Enter at the start of a joined line now splits it, where next wrote nothing. Enter at the end of a required title before a line another author deletes stores what next stores, and the test-only law still throws there. owner: zbeyens; stop: t_9cb6f7a6 lands or is dropped; tracked: the suggested-task ledger.

@@ -2561,6 +2561,28 @@ const OTHER_ROOTS: Readonly<Record<string, LedgerRoot>> = {
         [{ kind: 'undo' }],
       ],
       'a letter typed in a line Bob suggested moving': typedInSuggestedMove,
+      'a letter typed at the end of the last line a pending join pulls up stays in that line':
+        [
+          [
+            { children: [{ text: 'ab' }], type: 'paragraph' },
+            { children: [{ text: 'cd' }], type: 'paragraph' },
+          ],
+          [
+            {
+              author: 'bob',
+              command: { at: 'c', direction: 'backward', kind: 'delete' },
+              intent: 'propose',
+            },
+          ],
+          0,
+          [
+            {
+              intent: 'edit',
+              kind: 'framed',
+              step: { at: { letter: 'd', side: 1 }, kind: 'type' },
+            },
+          ],
+        ],
     },
     padding: 2,
     plugin: defineEditorSchema('recording-laws-two-block', {

@@ -718,7 +718,8 @@ class ModeProjection {
     before: JsonEditorValue,
     after: JsonEditorValue,
     schema: AuthoredResolveSchema | null,
-    selections: Readonly<{ after: RootedSelection; before: RootedSelection }>
+    selections: Readonly<{ after: RootedSelection; before: RootedSelection }>,
+    leans = false
   ) {
     const content = contentRootsOf(before);
     const held = [this.history?.last, this.history?.prior].find(
@@ -732,22 +733,22 @@ class ModeProjection {
 
       return apart;
     };
-    // Syncing to `after` leaves `before`, so its selection maps first, or
-    // comes from what a view read through it.
+    // Syncing to `after` leaves `before`, so its selection comes first from
+    // where a view last read it, even leaning otherwise than `leans`, or maps.
     const shownBefore = (): Selection => {
       const { root, selection } = selections.before;
 
       if (!selection) return null;
-      if (held && held === this.history?.last) {
-        return this.lastLens().toView(selection, root);
-      }
 
-      const read = held && this.lenses.get(held)?.lastView(selection, root);
+      const current = !!held && held === this.history?.last;
+      const lens = current ? this.lastLens() : held && this.lenses.get(held);
+      const read = lens?.lastView(selection, root);
 
       if (read !== undefined) return read;
+      if (current) return this.lastLens().toView(selection, root, leans);
       if (held) countLedgerWork('apartSelections');
 
-      return apartFrom().lens(before, schema).toView(selection, root);
+      return apartFrom().lens(before, schema).toView(selection, root, leans);
     };
     const selectionBefore = shownBefore();
     const to = this.sync(after, schema);
@@ -759,7 +760,8 @@ class ModeProjection {
       changes: this.changeOf(from, to),
       selectionAfter: this.lastLens().toView(
         selections.after.selection,
-        selections.after.root
+        selections.after.root,
+        leans
       ),
       selectionBefore,
     };
@@ -973,7 +975,7 @@ export class ReviewLedger {
   private checked: Roots = new Map();
   private readonly commits = new WeakMap<
     EditorCommit,
-    Partial<Record<AuthoredFormatProjection, EditorCommit>>
+    Partial<Record<`${AuthoredFormatProjection}${'' | ':leans'}`, EditorCommit>>
   >();
   private readonly modes = new Map<AuthoredFormatProjection, ModeProjection>();
   private lastFrame: Readonly<{
@@ -1344,10 +1346,12 @@ export class ReviewLedger {
 
   previewCommit(
     commit: EditorCommit,
-    mode: AuthoredFormatProjection
+    mode: AuthoredFormatProjection,
+    leans = false
   ): EditorCommit {
     const cached = this.commits.get(commit) ?? {};
-    const known = cached[mode];
+    const key = leans ? (`${mode}:leans` as const) : mode;
+    const known = cached[key];
 
     if (known) return known;
 
@@ -1361,7 +1365,8 @@ export class ReviewLedger {
         {
           after: { root: afterRoot, selection: commit.selectionAfter },
           before: { root: beforeRoot, selection: commit.selectionBefore },
-        }
+        },
+        leans
       );
 
     if (!changes.empty) {
@@ -1408,7 +1413,7 @@ export class ReviewLedger {
       { previousVersion: commit.previousVersion, version: commit.version }
     );
 
-    cached[mode] = projected;
+    cached[key] = projected;
     this.commits.set(commit, cached);
 
     return projected;

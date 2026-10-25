@@ -90,6 +90,8 @@ export type AuthoredOutcome =
 type Completion<N> = Readonly<{
   built: ReadonlyArray<Readonly<{ node: N; slot: number | null }>>;
   children: readonly N[];
+  /** At each index of `children`, the node before the canonical pass. */
+  sources?: readonly N[];
 }>;
 
 /**
@@ -176,6 +178,11 @@ export type AuthoredResolution = Readonly<{
    * among blocks.
    */
   unplaceable: boolean;
+  /**
+   * The elements completion built that `children` holds, which no stored
+   * node becomes. One a later completion flattened away is not among them.
+   */
+  unstored: ReadonlySet<JsonNode>;
 }>;
 
 export type AuthoredPlacement = Readonly<{ after: JsonNode; node: JsonNode }>;
@@ -830,6 +837,7 @@ const resolveIn = (
               : mergeTextsWithEqualProps(nodes),
         };
   const decided = new Set<string>();
+  const unstored = new Set<Node>();
   const waits = new Set<string>();
   const landings = new Map<string, LandedRecord>();
   const diagnostics: AuthoredProjectionDiagnostic[] = [];
@@ -2382,6 +2390,45 @@ const resolveIn = (
       children: completion.children.map((node) => marked.get(node) ?? node),
     };
   };
+  // Completion builds each element whole, so every element inside one is
+  // unstored too, and stays so when a later completion flattens its parent.
+  const addUnstored = (node: Node) => {
+    unstored.add(node);
+    for (const child of node.children ?? []) {
+      if (child.children) addUnstored(child);
+    }
+  };
+  // A canonical copy of an unstored element, such as one given a property
+  // its new placement defaults, takes its place in the set.
+  const carryUnstored = ({ children: copies, sources }: Completion<Node>) => {
+    if (!sources || unstored.size === 0) return;
+
+    const carry = (source: Node, copy: Node) => {
+      if (source === copy) return;
+      if (unstored.delete(source)) unstored.add(copy);
+
+      const from = (source.children ?? []).filter((node) => node.children);
+      const to = (copy.children ?? []).filter((node) => node.children);
+
+      if (from.length !== to.length) return;
+      from.forEach((node, index) => carry(node, getDefined(to[index])));
+    };
+
+    copies.forEach((copy, index) => {
+      const source = sources[index];
+
+      if (source) carry(source, copy);
+    });
+  };
+  const dropFlattened = (before: readonly Node[], after: readonly Node[]) => {
+    if (unstored.size === 0) return;
+
+    const kept = shownOf(unstored, after);
+
+    for (const node of shownOf(unstored, before)) {
+      if (!kept.has(node)) unstored.delete(node);
+    }
+  };
   // Each element at its final placement, children first. Only the given
   // children are a part of their list; each element below them holds all of
   // its own children.
@@ -2430,10 +2477,16 @@ const resolveIn = (
           ),
         listPart
       );
-    const completion = underInsertions(completeHere(nodes), at);
+    const completed = completeHere(nodes);
+
+    carryUnstored(completed);
+    dropFlattened(nodes, completed.sources ?? completed.children);
+
+    const completion = underInsertions(completed, at);
     const slots = contentOf(at[0] ? typeOf(at[0]) : null)?.prefix ?? 0;
 
     if (completion.built.length > 0) {
+      for (const item of completion.built) addUnstored(item.node);
       waitOnBuild(nodes, at);
     }
     if (slots > 0) {
@@ -2529,6 +2582,7 @@ const resolveIn = (
     placements,
     resolvedOf: (original) => resolvedOf(original) as JsonNode | null,
     unplaceable,
+    unstored: shownAll(unstored, resolvedChildren),
   };
 };
 
@@ -2711,6 +2765,45 @@ const decideFormats = (
   }
 
   return { changed, kept, landed, props: next, readsCopies, waits };
+};
+
+const shownOf = (unstored: ReadonlySet<Node>, nodes: readonly Node[]) => {
+  const shown = new Set<JsonNode>();
+  const visit = (list: readonly Node[]) => {
+    for (const node of list) {
+      if (shown.size === unstored.size) return;
+      if (unstored.has(node)) shown.add(node as JsonNode);
+      if (node.children) visit(node.children);
+    }
+  };
+
+  if (unstored.size > 0) visit(nodes);
+
+  return shown;
+};
+
+/**
+ * Throws only under the test environment, because production pairs a lost
+ * unstored element with stored content by shape instead.
+ */
+export const failInTests = (message: string) => {
+  const env = (
+    globalThis as { process?: { env?: Record<string, string | undefined> } }
+  ).process?.env;
+
+  if (env?.NODE_ENV === 'test') throw new Error(message);
+};
+
+const shownAll = (unstored: ReadonlySet<Node>, nodes: readonly Node[]) => {
+  const shown = shownOf(unstored, nodes);
+
+  if (shown.size !== unstored.size) {
+    failInTests(
+      `The resolved children hold ${shown.size} of the ${unstored.size} elements completion built.`
+    );
+  }
+
+  return shown;
 };
 
 const mergeTextsWithEqualProps = (nodes: readonly Node[]): Node[] => {

@@ -936,6 +936,39 @@ const lineHolding = (
     isLine(index, entry, isInline)
   );
 
+const writtenAddedLine = (
+  change: RootChange,
+  frame: DocumentIndex,
+  earlier: RootChange | null,
+  added: (position: number) => Readonly<{ from: number; to: number }> | null,
+  isInline: RecorderOptions['isInline']
+) => {
+  const stretch = changedStretch([change]);
+  const line = stretch && lineHolding(frame, stretch.from, isInline);
+
+  if (!line || stretch.from <= line.from || stretch.to >= line.to) {
+    return change;
+  }
+
+  const back = (position: number, assoc: -1 | 1) =>
+    earlier
+      ? getDefined(mapRootChangePositionBackward(earlier, position, assoc))
+      : position;
+  const span = added(back(line.from + 1, 1));
+
+  if (!span || span.from > back(line.from, -1) || back(line.to, 1) > span.to) {
+    return change;
+  }
+
+  const after = change.apply(frame);
+
+  return RootChange.create(frame, {
+    from: line.from,
+    insert: after.slice(line.from, line.to + after.length - frame.length),
+    to: line.to,
+  });
+};
+
 const lineClosedAt = (
   index: DocumentIndex,
   position: number,
@@ -1143,6 +1176,7 @@ const lowerAcrossBreaks = (
 type RootFold = {
   breaks: readonly ProjectionBreak[];
   composed: RootChange | null;
+  frameChange: RootChange | null;
   frameIndex: DocumentIndex | null;
   index: DocumentIndex;
   leftward: boolean;
@@ -1227,6 +1261,7 @@ export const recordAuthoredSteps = (
       fold = {
         breaks: [],
         composed: null,
+        frameChange: null,
         frameIndex: null,
         index: created
           ? DocumentIndex.fromValue([])
@@ -1265,6 +1300,8 @@ export const recordAuthoredSteps = (
       standing: input.standing,
       writer: { ...base, commitWriteId: input.commitWriteId, isOwn },
     });
+  const composeFrame = (fold: RootFold, change: RootChange) =>
+    fold.frameChange ? fold.frameChange.compose(change) : change;
   const foldIn = (fold: RootFold, change: RootChange | null) => {
     if (!change) return;
     fold.index = change.apply(fold.index);
@@ -1413,6 +1450,7 @@ export const recordAuthoredSteps = (
         );
 
         fold.frameIndex = frame;
+        if (frame) fold.frameChange = composeFrame(fold, rootChange);
         fold.breaks = advanceBreaks(fold.breaks, rootChange, recorded);
         if (recorded.empty) {
           fold.map = back;
@@ -1436,17 +1474,28 @@ export const recordAuthoredSteps = (
       // A property step maps token by token wherever the frame, or the plain
       // draft, shows each token, so it needs no lowering across breaks.
       const properties = changesOnlyProperties(rootChange);
+      const { projection } = input;
+      const written =
+        fold.frameIndex && projection && !properties
+          ? writtenAddedLine(
+              rootChange,
+              fold.frameIndex,
+              fold.frameChange,
+              (position) => projection.map.added(root, position),
+              input.isInline
+            )
+          : rootChange;
       const lowered =
         fold.frameIndex && !properties
           ? lowerAcrossBreaks(
-              rootChange,
+              written,
               fold.breaks,
               fold.frameIndex,
               input.isInline
             )
           : null;
       const subSteps = lowered ?? [
-        { change: rootChange, role: step.move?.role ?? null },
+        { change: written, role: step.move?.role ?? null },
       ];
 
       for (const sub of subSteps) {
@@ -1512,6 +1561,7 @@ export const recordAuthoredSteps = (
         fold.touched = true;
         if (fold.frameIndex) {
           fold.frameIndex = sub.change.apply(fold.frameIndex);
+          fold.frameChange = composeFrame(fold, sub.change);
         }
         const composedBefore = fold.composed;
 
@@ -4440,15 +4490,45 @@ class RootRecorder {
       const right = caret ? !removed.leftward : assoc === 1;
       const edge = right ? removed.beforeTo : removed.beforeFrom;
 
-      return (
-        recorded.mapPos(
-          caret ? this.intoLeaf(edge, right) : edge,
-          right ? 1 : -1
-        ) ?? position
-      );
+      if (!caret) return recorded.mapPos(edge, right ? 1 : -1) ?? position;
+
+      return recorded.mapPos(...this.caretLanding(removed, right)) ?? position;
     }
 
     return position;
+  }
+
+  private caretLanding(
+    removed: Extract<Piece, { kind: 'removed' }>,
+    right: boolean
+  ): readonly [number, -1 | 1] {
+    const past = this.intoLeaf(
+      right ? removed.beforeTo : removed.beforeFrom,
+      right
+    );
+    const near = this.intoLeaf(
+      right ? removed.beforeFrom : removed.beforeTo,
+      !right
+    );
+
+    return !this.inLeaf(past) && this.inLeaf(near)
+      ? [near, right ? -1 : 1]
+      : [past, right ? 1 : -1];
+  }
+
+  private inLeaf(position: number) {
+    const [before, after] = [position - 1, position].map((at) =>
+      at >= 0 && at < this.index.length
+        ? this.index.slice(at, at + 1).tokens[0]
+        : undefined
+    );
+
+    return (
+      before?.kind === 'text' ||
+      (before?.kind === 'open' && before.nodeKind === 'text') ||
+      after?.kind === 'text' ||
+      (after?.kind === 'close' && after.nodeKind === 'text')
+    );
   }
 
   /**
@@ -4496,7 +4576,7 @@ class RootRecorder {
     let at = position;
 
     if (right) {
-      while (boundary(at, 'open')) at += 1;
+      while (at < this.index.length && boundary(at, 'open')) at += 1;
     } else {
       while (at > 0 && boundary(at - 1, 'close')) at -= 1;
     }

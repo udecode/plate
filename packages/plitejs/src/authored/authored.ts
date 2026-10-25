@@ -93,6 +93,11 @@ import {
   type TxOnlyMethod,
   txStored,
 } from '../core/tx-only';
+import {
+  getPlacementGeneration,
+  nextMintedGeneration,
+  subscribeCommittedPlacement,
+} from '../core/view-carets';
 import { countCoreWork } from '../core/work';
 import type {
   AnyEditor as Editor,
@@ -144,7 +149,10 @@ import {
   type VerdictRecord,
   withStore,
 } from './facts/records';
-import { projectAuthoredDocumentUnder } from './format';
+import {
+  type AuthoredFormatProjection,
+  projectAuthoredDocumentUnder,
+} from './format';
 import type { BookSink, BookView } from './ledger/book';
 import {
   createReviewLedger,
@@ -152,7 +160,7 @@ import {
   type ViewPlaces,
 } from './ledger/ledger';
 import { rootOf } from './ledger/roots';
-import { blockFactsOf } from './ledger/runs';
+import { blockFactsOf, isBuilt } from './ledger/runs';
 import { countLedgerWork } from './ledger/work';
 import {
   type AuthoredRefusal,
@@ -463,6 +471,54 @@ const framedLawCheck = () => {
   return env?.NODE_ENV === 'test' ? env.PLITE_LAW_CHECK : '0';
 };
 
+// Accepting drops lines completion built that end their list as the commands
+// left them, since nothing written needs them.
+const listAcceptsTo = (
+  accepted: readonly JsonNode[],
+  wrote: readonly JsonNode[]
+): boolean => {
+  let end = wrote.length;
+
+  while (end > accepted.length && isBuilt(getDefined(wrote[end - 1]))) {
+    end -= 1;
+  }
+
+  return (
+    end === accepted.length &&
+    accepted.every((node, index) => {
+      const other = getDefined(wrote[index]);
+
+      return (
+        jsonEqual(node, other) ||
+        (!!node.children &&
+          !!other.children &&
+          jsonEqual(nodePropsOf(node), nodePropsOf(other)) &&
+          listAcceptsTo(node.children, other.children))
+      );
+    })
+  );
+};
+
+const acceptsTo = (accepted: JsonEditorValue, wrote: JsonEditorValue) => {
+  const { children, records: _records, roots = {}, ...fields } = accepted;
+  const {
+    children: wroteChildren,
+    records: _wroteRecords,
+    roots: wroteRoots = {},
+    ...wroteFields
+  } = wrote;
+  const names = Object.keys(roots);
+
+  return (
+    jsonEqual(fields, wroteFields) &&
+    listAcceptsTo(children, wroteChildren) &&
+    jsonEqual(names.toSorted(), Object.keys(wroteRoots).toSorted()) &&
+    names.every((name) =>
+      listAcceptsTo(getDefined(roots[name]), getDefined(wroteRoots[name]))
+    )
+  );
+};
+
 const assertFramedLaw = (
   input: EditorFrameRecording,
   schema: AuthoredResolveSchema,
@@ -475,7 +531,7 @@ const assertFramedLaw = (
     projectAuthoredValue(stored.value, 'proposed', schema).value
   );
 
-  if (!jsonEqual(accepted, contentOf(frame.value))) {
+  if (!acceptsTo(accepted, contentOf(frame.value))) {
     throw new Error(
       `A framed recording does not accept to what its commands wrote: ${JSON.stringify(
         { accepted: accepted.children, wrote: frame.value.children }
@@ -1821,6 +1877,18 @@ export const createAuthoredPlugin = (
         )
       );
 
+      const builtPlacements = new Map<number, AuthoredFormatProjection>();
+      const leansFor = (preview: AuthoredFormatProjection) =>
+        builtPlacements.get(getPlacementGeneration(owner)) === preview;
+
+      onCleanup(
+        subscribeCommittedPlacement(owner, (generation) => {
+          for (const placed of builtPlacements.keys()) {
+            if (placed !== generation) builtPlacements.delete(placed);
+          }
+        })
+      );
+
       onCleanup(
         registerAuthoredRuntime(owner, {
           mapToView: (view, root, value) => {
@@ -1861,7 +1929,8 @@ export const createAuthoredPlugin = (
                     withEditorDocumentProjection(owner, undefined, () =>
                       getCurrentSelection(owner)
                     ),
-                    root
+                    root,
+                    leansFor(preview)
                   ),
               }
             );
@@ -1872,15 +1941,25 @@ export const createAuthoredPlugin = (
           toStored: (view, root, target) => {
             const preview = previewModeOf(view);
 
-            return preview
-              ? ledger.lens(storedValue(owner), preview).fromView(target, root)
-              : { kind: 'stored', target };
+            if (!preview) return { kind: 'stored', target };
+
+            const lifted = ledger
+              .lens(storedValue(owner), preview)
+              .fromView(target, root);
+
+            if (lifted.kind === 'stored' && lifted.shownInBuilt) {
+              builtPlacements.set(nextMintedGeneration(owner), preview);
+            }
+
+            return lifted;
           },
           view: viewOf,
           viewCommit: (view, commit) => {
             const preview = previewModeOf(view);
 
-            return preview ? ledger.previewCommit(commit, preview) : commit;
+            return preview
+              ? ledger.previewCommit(commit, preview, leansFor(preview))
+              : commit;
           },
         })
       );
