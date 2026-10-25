@@ -7,7 +7,7 @@ source_refs:
   - ../../plite/research/2026-09-14-docx-interoperability-oss/source-manifest.json
   - ../../plite/research/2026-09-14-docx-interoperability-oss/read-log.tsv
 related:
-  - ../decisions/documents-conversion-fidelity.md
+  - ../../plans/topics/imports.md
 ---
 
 # DOCX conversion and preservation

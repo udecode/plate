@@ -19,7 +19,7 @@ The roles meet at one handoff. Triage a domain ends by offering the domain's fix
 - R2 is each Plate docs page with a live demo, each example page no docs page shows and the playground, beside the same page on platejs.org.
 - R3 is every other Plite example, hidden and experimental ones included. It has no reference page.
 - R4 is a Plate page only beta has.
-- R5 is the gaps against other editors, in the areas the round plan names. Its sessions produce proposals for `verdict`, not bugs.
+- R5 is the gaps against other editors, in the areas the round plan names. Its sessions produce proposals for `verdict`, not bugs. An R5 session loads `research` with the comparison the round plan names as its question, inside the session's time budget. It writes what it learns about one editor to that editor's area page and a comparison across editors to the matching `editor-architecture/` page, each as a `docs-packet`, as research's Promotion and `docs/research/sources/README.md` say, and leaves a question the sources do not settle as an open question on that page. Each gap between Plate and the other editor is a find, not a `decide` task or an Open work item, and Triage a domain sends it to `verdict`.
 - A page whose platejs.org twin the script cannot settle prints as unresolved and keeps the round open until the script's `STABLE_TWINS` names its twin or its `BETA_ONLY` lists it as a page only beta has.
 
 Without `--list`, the script opens every docs and example route on beta in Chromium, Firefox and WebKit and prints each page error, rendered Not Found, failed status and missing editor. Run it at the start of every round.

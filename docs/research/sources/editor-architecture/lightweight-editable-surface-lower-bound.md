@@ -6,7 +6,9 @@ source_refs:
   - ../edix/README.md
   - ../use-editable/README.md
   - ../rich-textarea/README.md
-updated: 2026-04-14
+  - ../rich-textarea/src/textarea.tsx
+  - ../markdown-editor/src/CustomEditor/CustomEditor.tsx
+updated: 2026-10-25
 related: []
 ---
 
@@ -45,6 +47,10 @@ It is:
 
 - keep the heavy overlay architecture for serious document editors
 - avoid dragging that architecture into lightweight surfaces that do not need it
+
+### 3. A textarea with an overlay avoids offset accounting
+
+rich-textarea renders a real `textarea` and paints the styled text on a backdrop behind it with `pointer-events: none` (`inokawa/rich-textarea@9652cad73d:src/textarea.tsx:30-65`, `:321`), so editing, selection and IME stay the browser's. markdown-editor projects Markdown into `contenteditable` instead and maps the caret by walking text nodes and counting characters (`ReactLibraries/markdown-editor@c75679cc36:src/CustomEditor/CustomEditor.tsx:150-216`). Its README warns that a custom component breaks when it changes the character count of its children (`README.md:137`). For a lightweight text surface, prefer the native textarea with an overlay (inferred, kept from the 2026 candidates review). Limit: source read on 2026-10-25, nothing run.
 
 ## Take for Slate v2
 

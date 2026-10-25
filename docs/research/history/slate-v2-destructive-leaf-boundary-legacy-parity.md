@@ -126,7 +126,7 @@ back in.
 
 ## Evidence Commands
 
-Current accepted proof for this decision:
+Historical proof commands for this decision. They ran against the retired `packages/slate*` layout and are not current proof commands. The three guard tests that survive are `packages/plitejs/test/leaf-lifecycle-contract.ts`, `packages/plitejs/test/selection-rebase-contract.ts` and `packages/plitejs/test/react/rendered-dom-shape-contract.tsx`.
 
 ```bash
 bun test ./packages/slate/test/leaf-lifecycle-contract.ts ./packages/slate/test/selection-rebase-contract.ts ./packages/slate/test/transaction-target-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts --bail 1

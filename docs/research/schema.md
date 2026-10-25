@@ -21,7 +21,7 @@ updated: YYYY-MM-DD
 
 ### Open questions
 
-An open design question has no page of its own. It is a chips `decide` task, as the Verdict playbook's Topics says, naming its owner and the evidence that would close it. A hard cut's question is the exception and gets a scope file.
+An open design question, a choice between owners, stored shapes, APIs or behaviors that only a decision settles, has no page of its own. It is a chips `decide` task, as the Verdict playbook's Topics says, naming its owner and the evidence that would close it, when `.agents/pstack/rules/chips.md`'s Offer lets the run offer one; otherwise it goes where that Offer lists a finding the run cannot offer, with that owner and evidence. A hard cut's question is the exception and gets a scope file. An evidence gap, a question about what is true that more reading or a probe would answer, stays an open question on the subject file or area page it blocks, as the `research` rule says.
 
 ## Field Meanings
 
@@ -165,7 +165,7 @@ The records written before the front-matter cutover keep their original shape an
 
 ### Reuse research
 
-`docs/research/repos.tsv` lists each repo research saved or skipped, one row each: `repo` (lowercase owner/name), `url`, `clone` (relative to the plate root, such as `../tiptap`), `kind` (`editor`, `library` or `app`), `status` (`saved` or `skipped`), `areas`, `added` and `note`. It stores no last-read commit, because each lane keeps its own: the audit and harvest commits in [Editor Audit](../editor-audits/index.json) and the harvest indexes, and research's as the newest `<repo>@<commit>` an area page cites. `docs/research/areas.tsv` names each area with its `title`, review `scopes`, `aliases` and the `seeds` that `pnpm kb discover` searches. K16 checks both lists.
+`docs/research/repos.tsv` lists each repo research saved or skipped, one row each: `repo` (lowercase owner/name), `url`, `clone` (relative to the main checkout, as `kb` resolves it, such as `../tiptap`), `kind` (`editor`, `library` or `app`), `status` (`saved` or `skipped`), `areas`, `added` and `note`. It stores no last-read commit, because each lane keeps its own: the audit and harvest commits in [Editor Audit](../editor-audits/index.json) and the harvest indexes, and research's as the newest `<repo>@<commit>` an area page cites. `docs/research/areas.tsv` names each area with its `title`, review `scopes`, `aliases` and the `seeds` that `pnpm kb discover` searches. K16 checks both lists.
 
 `pnpm kb <area | scope | repo>` joins them with every home's area page, the subjects and each repo's marks, and `pnpm kb discover <area>` prints the repos the seeds find that the list lacks.
 

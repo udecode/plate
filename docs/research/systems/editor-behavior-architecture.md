@@ -309,10 +309,11 @@ kit constant containing that plugin array. Runtime switching, serialization,
 fingerprints, and profile receipts require separate real jobs and separate API
 review; they are not part of behavior authoring by default.
 
-Plate codec declarations stay inside their semantic plugin owner. The
-`.extend()` callback supplies the single inference anchor:
-`defineCodecs(map)` for self/product codecs or
-`defineCodecs(TargetPlugin, map)` for a foreign contribution. The helper
+Plate format mappings stay inside their semantic plugin owner, under
+`formats`. The `.extend()` callback supplies the single inference anchor:
+`defineFormats(map)` for the owner's own mappings or
+`defineFormats(TargetPlugin, map)` for a foreign contribution
+(`packages/platejs/src/lib/plugin/BasePlugin.ts:986-1030`). The helper
 injects the foreign target, while the map stays MIME-keyed; one HTML rule or a
 non-empty ordered tuple remains one contribution.
 

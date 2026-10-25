@@ -2,7 +2,7 @@
 title: Yjs collaboration binding architecture
 type: source
 status: accepted
-updated: 2026-05-18
+updated: 2026-10-25
 source_refs:
   - ../slate-v2/packages/slate/src/core/editor-extension.ts
   - ../slate-v2/packages/slate/test/collab-adapter-extension-contract.ts
@@ -30,6 +30,8 @@ related:
 ---
 
 # Yjs collaboration binding architecture
+
+> Current Plite (checked 2026-10-25): the `state.yjs` and `tx.yjs` target below was not adopted. Plite ships the `yjs(options)` plugin factory (`packages/plitejs/src/yjs/core/plugin.ts:386`). Its plugin API exposes the admission status, `retryImport` and an admission subscription (`:55-63`), plus presence services when the options carry awareness and compaction services when they configure compaction (`:268-320`). No `tx.yjs` group exists, so section 6's connect, disconnect, pause, resume, flush and reconcile commands stay an unadopted sketch.
 
 ## Purpose
 

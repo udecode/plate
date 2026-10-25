@@ -2,7 +2,7 @@
 
 Page: https://claude.ai/artifact/SxNXgniwmjam3P6VxYPfit
 
-DOCX file import, DOCX file export and Word clipboard paste in `platejs`. The ledger asks which document conversion laws the three share, and where fidelity limits must be explicit (`docs/research/review-scopes/documents.json`). `importDocx` returns one document or a failure, `exportDocx` captures one editor snapshot under an explicit authored projection, every loss is a structured diagnostic, an opt-in `DocxSource` gives exact or safely overlaid re-export, output passes a safety gate, and `WordPastePlugin` owns paste. A Word file carries only what Word displays: text, comments and tracked revisions. Exact review state persists as canonical authored JSON beside the file. An edited source-aware export keeps custom properties and one-section headers and footers from the source, and reports every other source part it leaves out. The 2026-10-06 build's acceptance and benchmark receipts are in `docs/plans/2026-10-06-documents-review.md`'s Close. The September retained-source proof passed 146 focused DOCX package tests, packed-consumer checks, a Chromium file-picker and download flow, and a LibreOffice render, resave and reimport of an edited overlay; this page did not rerun it.
+DOCX file import, DOCX file export and Word clipboard paste in `platejs`. The ledger asks which document conversion laws the three share, and where fidelity limits must be explicit (`docs/research/review-scopes/documents.json`). `importDocx` returns one document or a failure, `exportDocx` captures one editor snapshot under an explicit authored projection, every loss is a structured diagnostic, an opt-in `DocxSource` gives exact or safely overlaid re-export, output passes a safety gate, and `WordPastePlugin` owns paste. A Word file shows text, comments and tracked revisions, and a review export also writes the reviewed blocks and review records into a custom XML part (`packages/platejs/src/docx/export/lib/reviewPart.ts:367-372`). Exact review state persists as canonical authored JSON beside the file. An edited source-aware export keeps custom properties and one-section headers and footers from the source, and reports every other source part it leaves out. The 2026-10-06 build's acceptance and benchmark receipts are in `docs/plans/2026-10-06-documents-review.md`'s Close. The September retained-source proof passed 146 focused DOCX package tests, packed-consumer checks, a Chromium file-picker and download flow, and a LibreOffice render, resave and reimport of an edited overlay; this page did not rerun it.
 
 ## Public API
 
@@ -55,7 +55,7 @@ const exported = await exportDocx(editor, {
 imported.source?.dispose();
 ```
 
-A review export writes Word revisions and comments only.
+A review export writes Word revisions and comments, plus a custom XML part holding the reviewed blocks and review records.
 
 ```ts
 // packages/platejs/src/docx/export/lib/authoredDocx.spec.ts
@@ -64,7 +64,7 @@ const result = await exportDocx(editor, {
 });
 ```
 
-Import always derives the document from the Word-visible package.
+Import derives the document from the Word-visible package, then puts each reviewed block back where its binding markers survive and reports a diagnostic for each binding whose place the conversion lost (`packages/platejs/src/docx/import/lib/importDocx.ts:1281-1318`, `:1874-1888`).
 
 ```ts
 // packages/platejs/src/docx/export/lib/authoredDocx.spec.ts

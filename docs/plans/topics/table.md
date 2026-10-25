@@ -41,7 +41,7 @@ The 2026-09-17 owner probe ran the repaired painter, an explicit scalar channel 
 
 ## What other editors do
 
-Not compared in this scope's reviews. They weighed Plite and Plate owners only; `docs/research/sources/` holds the editor pages to compare against.
+The 2026-09-17 substrate review pinned seven upstream repositories, among them prosemirror-tables, prosemirror-state, Tiptap and Lexical, and read their source without running their tests (`docs/research/review-records/2026-09-17-table-substrate-ownership.json`). Its verdict pursued headless Plate table selection and kept topology, width policy and canonical edits with their current owners. The compiled pages are `docs/research/sources/prosemirror/tables.md`, `tiptap/tables.md`, `lexical/tables.md` and `editor-architecture/tables.md`.
 
 ## Main changes
 

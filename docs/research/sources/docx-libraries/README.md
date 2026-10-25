@@ -1,6 +1,6 @@
 # Word file libraries
 
-What Plate learned from libraries that read, write, preview or edit Word (DOCX) files. Their findings belong to the `conversion-and-export` area, so a new one goes on this home's `conversion-and-export.md` with `<owner>/<repo>@<commit>:<path>` evidence.
+What Plate learned from libraries that read, write, preview or edit Word (DOCX) files. Their findings belong to the `conversion-and-export` area. This home's page for that area is [DOCX conversion and preservation](../docx-interoperability-oss.md), which keeps its path because review records cite it, so a new finding goes there with `<owner>/<repo>@<commit>:<path>` evidence.
 
 Repos: `mwilliamson/mammoth.js`, `turbodocx/html-to-docx`, `dolanmiu/docx`, `volodymyrbaydalka/docxjs`, `superdoc/docx-editor`, `eigenpal/docx-editor`, `casualoffice/opendoc`, `jgm/pandoc`, `python-openxml/python-docx`, `dotnet/open-xml-sdk`, `stella/folio`, `truespar/scriptor`, `kklimuk/docx-cli`, `ansonlai/docx-redline-js`
 

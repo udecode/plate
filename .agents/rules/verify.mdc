@@ -330,7 +330,7 @@ A sweep is a series of rounds over every beta page beside its reference page.
 Agents test each page first, a person retests what they find, and each
 domain's finds are triaged into one issue per cause and fixed in one run. Read
 [the sweep](./references/sweep.md) in full before preparing a round, writing
-its round plan, triaging or fixing a domain's finds, or deciding what follows a
+its round plan, running one of its sessions, triaging or fixing a domain's finds, or deciding what follows a
 round. It holds the session, the six moves, the browser rotation, the find
 note, the domain triage, the miss classes, the rechecks and the round loop.
 

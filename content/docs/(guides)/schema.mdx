@@ -57,6 +57,7 @@ Structural children use the same content grammar. Set `blockContent: false` on i
 | `schema.content.type(type, ...)` | A persisted type selected at a dynamic boundary |
 | `schema.content.types(types, ...)` | Any listed persisted type |
 | `schema.content.group(group, ...)` | Members of a compiled group |
+| `schema.content.open(...)` | Text and every installed element type, plus undeclared types when the schema's `unknown` policy is `'preserve'` |
 | `schema.content.any(rules, ...)` | At least one nested rule |
 | `schema.content.all(rules, ...)` | Every nested rule |
 | `schema.content.not(rule, ...)` | Content outside the nested rule |

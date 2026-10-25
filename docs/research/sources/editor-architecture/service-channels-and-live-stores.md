@@ -9,7 +9,9 @@ source_refs:
   - ../vscode/src/vs/editor/common/viewModel/viewModelImpl.ts
   - ../db/README.md
   - ../db/packages/react-db/src/useLiveQuery.ts
-updated: 2026-04-15
+  - ../language-server-protocol/_overviews/lsp/overview.md
+  - ../vscode/src/vs/editor/common/languageFeatureRegistry.ts
+updated: 2026-10-25
 related:
   - docs/research/history/slate-v2-overlay-architecture-cuts.md
 ---
@@ -71,6 +73,13 @@ TanStack DB shows the cleaner React posture:
 
 That is a much better analogy for annotation metadata than array-registration
 hooks.
+
+## Semantic services: LSP and VS Code providers
+
+- LSP talks to a language server in document URIs and text positions, which are the same for every language, never in an AST or compiler symbols (`microsoft/language-server-protocol@8c26a839f8:_overviews/lsp/overview.md:25-33`). The tool owns an open document's contents and sends each edit with `textDocument/didChange`, and the server answers with `textDocument/publishDiagnostics`.
+- LSP 3.17 negotiates client capabilities in `initialize` (`_specifications/lsp/3.17/general/initialize.md:80-82`). A document's version number rises after each change, undo and redo included (`_specifications/lsp/3.17/types/versionedTextDocumentIdentifier.md:1-12`). A client cancels a request with `$/cancelRequest`, which a server may ignore, so cancellation is cooperative (`_specifications/lsp/3.17/specification.md:334-341`).
+- VS Code keeps one provider registry per language feature (`microsoft/vscode@df2411cf7d:src/vs/editor/common/services/languageFeaturesService.ts:16-19`). It scores each provider's selector against the document, lets one exclusive selector override every other provider, and on a tied score ranks built-in providers last and then the newest registration first (`src/vs/editor/common/languageFeatureRegistry.ts:180-222`).
+- The lesson kept from the 2026 candidates review (inferred) is that a future Plate semantic service would exchange documents, positions, edits, diagnostics and capabilities with the editor, not Plite nodes, and would add nothing to Plite core. Limit: source read on 2026-10-25, nothing run.
 
 ## Take for Slate v2
 

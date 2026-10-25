@@ -336,7 +336,7 @@ inline children store captions.
 </APIOptions>
 </API>
 
-`UploadPlugin` handles pasted image files. `ImagePlugin` handles image URLs.
+`UploadPlugin` handles pasted image files. `ImagePlugin` inserts a pasted image URL as an image when no earlier paste rule takes it. In `EditorKit`, the link kit's `LinkRules.autolink({ variant: 'paste' })` rule runs first and takes any valid URL, image URLs included, as a link.
 
 ### `VideoPlugin`
 
