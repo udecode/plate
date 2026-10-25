@@ -89,6 +89,7 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
   const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, ...env } = process.env;
   return new Promise((resolve) => {
     let settled = false;
+    let late = false;
     const timers = [];
     const done = (answer) => {
       if (settled) return;
@@ -107,7 +108,10 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
     };
     running.add(killAll);
     timers.push(
-      setTimeout(() => killAll('SIGTERM'), timeout * 1000),
+      setTimeout(() => {
+        late = child.exitCode === null && child.signalCode === null;
+        killAll('SIGTERM');
+      }, timeout * 1000),
       setTimeout(() => killAll('SIGKILL'), timeout * 1000 + 2000),
       setTimeout(() => done({ runtime, ok: false, text: `no answer within ${timeout} seconds` }), timeout * 1000 + 3000),
     );
@@ -121,11 +125,11 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
         if (computerUse) writeFileSync(computerUse.events, stdout);
         const text = (runtime === 'codex' ? (existsSync(answerFile) ? readFileSync(answerFile, 'utf8') : '') : stdout).trim();
         // The Claude CLI prints a usage-limit refusal on stdout and nothing on stderr.
-        const failure = `${code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${(stderr.trim() || stdout.trim()).split('\n').slice(-5).join('\n')}`;
+        const failure = `${late ? `no answer within ${timeout} seconds` : code === 0 ? 'no answer' : `exit ${code ?? signal}`}: ${(stderr.trim() || stdout.trim()).split('\n').slice(-5).join('\n')}`;
         // A Claude seat without --effort runs at the machine's default, which only its transcript records.
         const ran = runtime === 'claude' ? claudeSessionRun(sessionId) : null;
         const seat = `${ran?.model ?? model} @${ran?.effort ?? effort ?? 'default'}`;
-        done(code === 0 && text ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat });
+        done(code === 0 && text && !late ? { runtime, ok: true, text, seat } : { runtime, ok: false, text: failure, seat });
       } catch (error) {
         done({ runtime, ok: false, text: error.message });
       }
