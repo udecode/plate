@@ -7,7 +7,7 @@ review_commit: bc28cccad4775bd5972c19b35c089c48377bf81a
 
 # Research loop: one lookup, one repo list, write back to the area
 
-Status: building: phase 4, with the compile readers running on Codex in the background
+Status: building: phase 4, landing the compile in groups while the last readers run
 Topic: knowledge
 Playbook: build
 
@@ -49,6 +49,7 @@ This plan makes research a loop. Each run starts with one lookup by area, scope 
 | Old findings | Hand each group of the 102 old findings to the subject that owns it | Keep them all under knowledge | keep the findings here | small |
 | Clone folder | New clones go next to the plate repo, as the repo rules already say; old clones stay put and the list records where | Move every clone into one folder | move the clones | detail |
 | Compile tools | Delete the five compile commands once the last batch lands | Keep them for a later compile | keep the compile tools | detail |
+| Old lost units | The quote check gates this plan's batches; the 863 units older batches lost before phase 4 go to Open work | Resolve all 863 one by one before deleting the quote check | resolve the old units | small |
 | Search time | 10 minutes for the new repo search in each task or verdict | 20 minutes | longer search | detail |
 | Skipped repos | The repo list also records repos a search showed and research skipped, so the next search hides them | Show every unsaved repo each time | show skipped repos | detail |
 | Shared source | The loop stays in this repo's research rule until the trial passes | Send a generic loop to the shared pstack source now | share the loop now | detail |
@@ -138,10 +139,10 @@ Exit: research and each consumer call the lookup, and `kb discover` works. When 
 
 ### Phase 4: finish the compile
 
-The readers started on 2026-10-25 and run in chunks of under an hour in the background during phases 1 to 3. Exit: all 163 batches are resolved and landed, the quote check and `kb check` pass, and the compile tools are gone.
+The readers started on 2026-10-25 and run in chunks of under an hour in the background during phases 1 to 3. Exit: all 163 batches are resolved and landed, every unit of batches p5-005 on quotes on its page, older batches lose nothing new, `kb check` passes, and the compile tools are gone.
 
 - [ ] 4.1 Read the 142 unread batches, p5-022 to p5-163, on Codex with the superseded plan's phase 5 brief, through `compile-first.mjs` in this plan's run directory, which resumes where it stopped. A failed batch reruns once. Proof: every batch folder holds an `answer.md` with a units block.
-- [ ] 4.2 Land every answered batch from p5-005 on without a second reader. Merge its units, run `unslop` on the added ones, resolve it, write it with `kb write`, and pass the quote check and `kb check`. Batches land in groups, one commit per group. Proof: each batch's resolved file covers every source line, and `kb check` passes after each group.
+- [ ] 4.2 Land every answered batch from p5-005 on without a second reader. Merge its units, run `unslop` on the added ones, resolve it, write it with `kb write`, and pass the quote check and `kb check`. Batches land in groups, one commit per group, and law units land last in one pass under their spec sections. Proof: each batch's resolved file covers every source line, `kb check` passes after each group, and the quote check finds no lost unit in these batches outside the waiting law units and none beyond the 863 that older batches had already lost at the start of phase 4.
 - [ ] 4.3 Delete `compile.mjs`, `compile.test.mjs`, `kb`'s `fold`, `write`, `resolve`, `quote` and `pins` verbs, K15 and `docs/research/folded.tsv`. Proof: `git grep -nE 'kb (fold|write|resolve|quote|pins)|compile\.mjs|folded\.tsv'` outside dated plans prints nothing, `knowledge.test.mjs` passes, and `kb check` prints the same findings before and after the delete.
 
 ## Proof
@@ -220,6 +221,7 @@ The superseded plan's 44 open items, each with one call. A "carry" moves to the 
 
 ## Open work
 
+- 863 units from compile batches landed before this plan no longer match their pages: 425 differ only in commit pins or spacing, 243 were rewritten and 195 sit on pages that were removed. 862 of them were already lost when this plan started. Step 4.3 deletes the quote check, so the list in this plan's run folder, `p4/old-lost-at-head.tsv`, is the only record. owner: Ziad. stop: research's maintain mode checks the 438 rewritten or removed ones, or they are dropped. Tracked here.
 - Step 3.4's paired trial and route smokes. Fast mode drops the fresh sessions they need, so the playbook lines land unmeasured. owner: Ziad. stop: you start the trial as its own task, or say the wiring stays. Tracked here.
 - Send a generic version of the loop (a repo list with derived marks, an area join and write-back) to the shared pstack source. owner: Ziad. stop: step 3.4's trial passes, or this plan closes without it. Tracked here.
 - Areas that only one or two homes use today join `areas.tsv` when a run writes them. owner: Ziad. stop: K16 reports none missing. Tracked here.

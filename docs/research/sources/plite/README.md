@@ -27,6 +27,7 @@ Pages in this folder:
 - [Plite: selection and caret](selection-and-caret.md)
 - [Plite: tables](tables.md)
 - [Plite: testing and proof](testing-and-proof.md)
+- [Plite: testing and proof, part 2](testing-and-proof-2.md)
 
 Decisions:
 

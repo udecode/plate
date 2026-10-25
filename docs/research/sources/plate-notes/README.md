@@ -11,10 +11,12 @@ Pages in this folder:
 - [Clipboard, paste and serialization](clipboard-and-serialization.md)
 - [Input, IME and event handlers](input-and-events.md)
 - [Model, plugin and history API](model-and-plugin-api.md)
+- [Model, plugin and history API, part 2](model-and-plugin-api-2.md)
 - [Performance diagnosis](performance.md)
 - [Rendering, decorations and overlays](rendering-and-overlays.md)
 - [Selection, navigation and delete](selection-and-editing.md)
 - [Testing and browser proof](testing-and-proof.md)
+- [Testing and browser proof, part 2](testing-and-proof-2.md)
 - [Tooling, docs build and release](tooling-and-release.md)
 
 Other pages:

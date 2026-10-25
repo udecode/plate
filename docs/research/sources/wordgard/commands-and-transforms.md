@@ -19,3 +19,7 @@
 - **List toggling.** `test/test-commands.ts` lines 650-778 at b5ad0d0 pin list toggling over collapsed, expanded, nested, mixed and multi-range targets without leaking the selection. Plate owns this, and `packages/platejs/src/features/list/lib/BaseListPlugin.scale.spec.tsx` covers the cases (report.md:103).
 
 - **Join into nested list items.** `test/test-commands.ts` lines 394-401 at b5ad0d0 pin a forward join from a paragraph into the first block of a nested list item that holds several blocks, keeping the rest of the list structure. Wordgard issue #68 reported this case building an invalid document (issues.md:76, title only). Plate represents lists as flat list-item properties (`packages/platejs/src/features/list/lib/BaseListPlugin.ts`), not as nested multi-block containers, so the case has no Plate counterpart (report.md:125, 169).
+
+## Command dispatch
+
+- **Automatic fallback and explicit continuation are different capabilities.** The July 2026 local Wordgard read found that `src/command/command.ts:84-91` advances automatically when a handler returns false. Its handler API has no continuation for rewriting the remaining chain's input. Plite retained automatic fallback for `handle` and reserved downstream rewriting for `around`; current `packages/plitejs/src/core/command-registry.ts` still implements that distinction. Source: `docs/plans/2026-07-21-wordgard-plite-command-dispatch-architecture.md:253-255`. The donor checkout revision was not pinned, so this describes that July read rather than current Wordgard.
