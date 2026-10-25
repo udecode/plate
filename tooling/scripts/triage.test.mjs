@@ -564,6 +564,26 @@ describe('triage', { concurrency: 8 }, () => {
     });
   }
 
+  test('a dry run in a session that may not record still checks its rows', async () => {
+    const box = sandbox();
+    const shown = await stdoutOf(box, ['show', '5250']);
+    claudeSession(box, shown, { effort: 'max' });
+    const seen = seenOf(shown, 5250);
+    const bad = await triage(box, [
+      ...recordArgs(5250, seen, 'kind', 'scope: editing'),
+      '--dry-run',
+    ]);
+    assert.equal(bad.status, 1);
+    assert.match(bad.stderr, /#5250: a kind detail needs priority:/u);
+    const good = await triage(box, [...recordArgs(5250, seen), '--dry-run']);
+    assert.equal(good.status, 1);
+    assert.match(
+      good.stderr,
+      /1 row\(s\) pass the checks that need no session, but this session's transcripts .* have turns at claude-opus-5-5 @max/u
+    );
+    assert.deepEqual(registerRows(box), []);
+  });
+
   test('reads the whole transcript, past the tail lead.mjs reads', async () => {
     const box = sandbox();
     const padding = Array.from({ length: 700 }, () =>

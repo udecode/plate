@@ -1305,42 +1305,9 @@ function entriesOf(options) {
   ];
 }
 
-function recordCommand(argv) {
-  const options = parseArgs(argv, {
-    boolean: ['dry-run'],
-    value: ['from', 'outcome', 'detail', 'seen', 'why'],
-  });
-  const entries = entriesOf(options);
-  const reads = freshReads({ fallback: false });
-  if (!reads.policy) {
-    refuse(
-      `a record needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
-    );
-  }
-  if (!reads.ledger) {
-    refuse(
-      `a record needs the suggested-task ledger from ${reads.remote}: ${reads.notes.join('; ') || `${LEDGER_REF} holds no ${LEDGER}`}`
-    );
-  }
-  const identity = recorder(reads.policy);
-  if (!identity.by) refuse(identity.refusal);
-  const shown = shownLines(toolOutputs(identity.lead, identity.chain));
-  const workTree = join(root, REGISTER);
-  if (!existsSync(workTree)) {
-    refuse(
-      `this checkout has no ${REGISTER}; rebase it onto ${reads.remote}/${reads.branch}`
-    );
-  }
-  const read = gitOut('merge-base', 'HEAD', reads.tip)?.trim();
-  if (!read) {
-    refuse(
-      `this checkout shares no commit with ${reads.remote}/${reads.branch}`
-    );
-  }
-
+function refuseBadRowsBeforeAnyRead(entries) {
   const recorded = new Set();
-  const start = Date.now();
-  const rows = entries.map((entry, index) => {
+  for (const entry of entries) {
     const issue = issueNumber(entry.issue);
     const where = `#${issue}`;
     if (recorded.has(issue)) {
@@ -1355,6 +1322,53 @@ function recordCommand(argv) {
     }
     const problems = detailProblems(entry.outcome, entry.detail);
     if (problems.length > 0) refuse(`${where}: ${problems.join('; ')}`);
+  }
+}
+
+function recordCommand(argv) {
+  const options = parseArgs(argv, {
+    boolean: ['dry-run'],
+    value: ['from', 'outcome', 'detail', 'seen', 'why'],
+  });
+  const entries = entriesOf(options);
+  refuseBadRowsBeforeAnyRead(entries);
+  const reads = freshReads({ fallback: false });
+  if (!reads.policy) {
+    refuse(
+      `a record needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  if (!reads.ledger) {
+    refuse(
+      `a record needs the suggested-task ledger from ${reads.remote}: ${reads.notes.join('; ') || `${LEDGER_REF} holds no ${LEDGER}`}`
+    );
+  }
+  const identity = recorder(reads.policy);
+  if (!identity.by) {
+    refuse(
+      options['dry-run']
+        ? `${entries.length} row(s) pass the checks that need no session, but ${identity.refusal}`
+        : identity.refusal
+    );
+  }
+  const shown = shownLines(toolOutputs(identity.lead, identity.chain));
+  const workTree = join(root, REGISTER);
+  if (!existsSync(workTree)) {
+    refuse(
+      `this checkout has no ${REGISTER}; rebase it onto ${reads.remote}/${reads.branch}`
+    );
+  }
+  const read = gitOut('merge-base', 'HEAD', reads.tip)?.trim();
+  if (!read) {
+    refuse(
+      `this checkout shares no commit with ${reads.remote}/${reads.branch}`
+    );
+  }
+
+  const start = Date.now();
+  const rows = entries.map((entry, index) => {
+    const issue = issueNumber(entry.issue);
+    const where = `#${issue}`;
     const current = reads.issues.get(issue);
     if (!current) {
       refuse(`${where}: gh could not read the issue from ${reads.policy.repo}`);
