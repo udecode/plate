@@ -55,6 +55,7 @@ This plan makes research a loop. Each run starts with one lookup by area, scope 
 | Skipped repos | The repo list also records repos a search showed and research skipped, so the next search hides them | Show every unsaved repo each time | show skipped repos | detail |
 | Shared source | The loop stays in this repo's research rule until the trial passes | Send a generic loop to the shared pstack source now | share the loop now | detail |
 | Lookup speed | Two seconds for area, scope and repo lookups; broad word searches may take up to 3.3 seconds | Two seconds for every lookup | two seconds everywhere | detail |
+| Knowledge page | The subject moves to a new page, https://claude.ai/artifact/2DJZ9eDVACXLPG6BJ29kXy, because https://claude.ai/artifact/Cp3hdNMXy9EvTQR7MQaNu3 no longer opens | Drop the new page and leave the subject without one | drop the new page | detail |
 
 ## What other editors do
 

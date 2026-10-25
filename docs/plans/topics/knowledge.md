@@ -1,6 +1,6 @@
 # Plate knowledge layer
 
-Page: https://claude.ai/artifact/Cp3hdNMXy9EvTQR7MQaNu3
+Page: https://claude.ai/artifact/2DJZ9eDVACXLPG6BJ29kXy
 
 Where Plate keeps what it learns about editors (behavior law and its proof, external-editor research, upstream issues and harvested tests, measurements, lessons, decisions and plans) and which workflow step reads and writes each piece. Every plan below is one iteration of this subject.
 
