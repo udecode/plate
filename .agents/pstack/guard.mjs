@@ -11,8 +11,11 @@
 // except a dry run and a push prefixed with PSTACK_RELEASE=1, which only a
 // project's release skill writes. A push with no refspec, or one whose
 // destination is HEAD, targets the current branch, and one with --tags and no
-// refspec targets no branch. It reads every command in
-// the line, including `bash -c` payloads and `$(...)` bodies, skips heredoc
+// refspec targets no branch. A matching `:` refspec and a wildcard refspec
+// target each branch they match. The guard reads no git config, so a push with
+// no refspec that `remote.<name>.push` or `push.default` sends to the branch
+// passes. It reads every command in the line, including `$(...)` bodies and a
+// shell's `-c` payload wherever `-c` sits among its options, skips heredoc
 // bodies, passes every other command, and prints the command for the owner to
 // run in their own terminal. The owner's terminal never runs this hook. It
 // denies an agent's `gh pr create` or `gh pr new` into the branch or with no
@@ -117,8 +120,9 @@ function eachCommand(command, visit, depth = 0) {
     visit(words.slice(start), words.slice(0, start));
     if (depth >= 4) continue;
     for (const [index, word] of words.entries()) {
-      if (SHELLS.has(word.split('/').at(-1)) && /^-[A-Za-z]*c[A-Za-z]*$/u.test(words[index + 1] ?? '') && words[index + 2]) {
-        eachCommand(words[index + 2], visit, depth + 1);
+      const rest = words.slice(index + 1);
+      if (SHELLS.has(word.split('/').at(-1)) && rest.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/u.test(arg))) {
+        for (const arg of rest) if (!arg.startsWith('-')) eachCommand(arg, visit, depth + 1);
       }
       for (let at = word.indexOf('$('); at !== -1; at = word.indexOf('$(', at + 2)) {
         eachCommand(word.slice(at + 2, closingParen(word, at + 2)), visit, depth + 1);
@@ -169,6 +173,10 @@ function pushes(words, cwd) {
   for (const spec of refspecs) {
     const plain = spec.replace(/^\+/u, '');
     if (spec.startsWith('+')) forced = true;
+    if (plain === ':') {
+      targets.push('*');
+      continue;
+    }
     if (plain.startsWith(':')) deleting = true;
     const dst = plain.includes(':') ? plain.slice(plain.lastIndexOf(':') + 1) : plain;
     targets.push(dst === 'HEAD' || dst === '@' ? current() : dst.replace(/^refs\/heads\//u, ''));
@@ -191,6 +199,9 @@ function opensPr(words, branch) {
   }
   return base === null || base.replace(/^refs\/heads\//u, '') === branch;
 }
+
+const globMatches = (pattern, name) =>
+  new RegExp(`^${pattern.split('*').map((part) => part.replace(/[.+?^${}()|[\]\\]/gu, '\\$&')).join('.*')}$`, 'u').test(name);
 
 const git = (dir, ...args) => {
   const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', timeout: 1000, killSignal: 'SIGKILL' });
@@ -309,7 +320,7 @@ let pr = false;
 eachCommand(command, (words, prefix) => {
   const push = pushes(words, input.cwd ?? process.cwd());
   for (const target of push?.targets ?? []) {
-    for (const name of target === '*' ? kept : [target]) {
+    for (const name of target.includes('*') ? [...kept].filter((branch) => globMatches(target, branch)) : [target]) {
       if (push.rewriting) {
         if (kept.has(name)) hits.add(name);
       } else if (name === config.branch && !push.dry && !prefix.includes('PSTACK_RELEASE=1')) direct = true;

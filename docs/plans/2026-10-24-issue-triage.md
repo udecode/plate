@@ -1,6 +1,6 @@
 # Issue triage: one playbook, one record, a model bar
 
-Status: building: phase 3 delivery and land
+Status: executed
 Topic: pstack
 Playbook: build
 
@@ -50,6 +50,9 @@ A record goes stale when the issue text, owner code, duplicate target, task or m
 | maintainer queue and maintainer issues | Still work; maintainer issues runs Triage | Removed | drop aliases | detail |
 | Security issues | Kept out of the file | Recorded with no details | security rows | detail |
 | The background-run fix in the shared lead reader | Lands in dotai in this run and syncs to every project | A copy in Plate only | plate only | detail |
+| The guard's scratch-push lesson | Reverted after the lesson panel. The guard denies every plain push to next again, and a test fixture that pushes to a scratch repository names its branch something else (look) | A pass for a push that reaches none of the project's remotes, telling them apart by how the command spells its destination | scratch pass | detail |
+| Push config the guard does not read | Left open. A push with no refspec that git's push settings send to next passes, and the guard's header says so. The fix reads those settings, a branch's push remote included, for every push with no refspec (look) | Read git's push config in the guard in this run | fix push config | small |
+| What counts as naming a public issue | A hash and a number, alone or after a repository name, or an issues URL; prose such as step #2 also counts, and the real ledger holds no such repro | Only a hash after a repository name, and issues URLs | qualified issues only | detail |
 | The pstack page link | A new page at https://claude.ai/artifact/J9MTBVhDHUnKQZxJ3AyAx6, because https://claude.ai/artifact/XaMiMyTT4RWb4m9QK3zjhp no longer opens (look) | No page for this subject | no page | detail |
 
 ## Public API
@@ -161,9 +164,9 @@ Nothing lands before the diff panel. The live proof runs in a disposable clone w
 
 ### Close
 
-- [ ] Land through `land.mjs --check 'pnpm check --affected'`. Proof: the pushed commits on `origin/next`.
-- [ ] Card the five P0 domain fix runs, which this session owns, through `/chips`, whose card pass cards this session's own Ready tasks: editing t_4b6a74a2, react t_ad6343ea, commands t_cf942036, authored t_eb03327b and media t_e97e42b9. Proof: one `carded` row per task, or an `updated` row naming the task it waits on.
-- [ ] Hand back the first global triage: the reply names the untriaged count `pnpm triage queue` prints and says that typing `triage` in a fresh Opus or Sol xhigh session starts it, and Open work lists it. Proof: the reply line, the Open work entry and the queue log.
+- [x] Land through `land.mjs --check 'pnpm check --affected'`. Proof: the pushed commits on `origin/next`.
+- [x] Card the five P0 domain fix runs, which this session owns, through `/chips`, whose card pass cards this session's own Ready tasks: editing t_4b6a74a2, react t_ad6343ea, commands t_cf942036, authored t_eb03327b and media t_e97e42b9. Proof: one `carded` row per task, or an `updated` row naming the task it waits on.
+- [x] Hand back the first global triage: the reply names the untriaged count `pnpm triage queue` prints and says that typing `triage` in a fresh Opus or Sol xhigh session starts it, and Open work lists it. Proof: the reply line, the Open work entry and the queue log.
 
 ## Completion Gates
 
@@ -172,6 +175,7 @@ Nothing lands before the diff panel. The live proof runs in a disposable clone w
 | Panel on this plan (owner's "full") | yes | round 1: 13 critical, 12 applied and 1 dismissed; round 2: 9 critical, all applied; round 3: 5 critical, all applied; round 3 is the last before the build |
 | Writing passes: deslop and no-comments on code, unslop on prose | yes | deslop fixed a swapped count in the batch-file message and a copied config read; no-comments cut 12 comment lines and rewrote 3; unslop rewrote three sentences in triage.md |
 | Panel on the diff (owner's "full") | yes | round 1: 18 critical findings across seats, 11 distinct, all applied; a change to agent instructions and their helpers gets this one round |
+| Panel on the dotai lesson diff, the tie-break and the guard | yes | one round: 13 critical findings across seats, 4 distinct; the guard's scratch-push pass reverted, two older guard holes fixed, and one left open with its limit in the guard's header |
 | Typed lint on the task's lintable files before the diff panel | yes | 0 warnings and 0 errors on triage.mjs, triage.test.mjs and check.mjs |
 | Workflow smoke in both runtimes | yes | every triage prompt loaded triage.md in both runtimes and review PR 5221 went to Babysit; plan mode kept sessions from running `show`, which fetches; outside plan mode, a plain Fix request ran `show` and the live claim check, then went on into the reproduction without a record |
 | thermos per slice | skip: the owner's request owes a panel on the diff | skip |
@@ -181,9 +185,42 @@ Nothing lands before the diff panel. The live proof runs in a disposable clone w
 
 Every command that proves a step runs through `node .agents/pstack/proof.mjs --dir /Users/zbeyens/git/plate-2/docs/plans/artifacts/2026-10-24-triage --name <name> -- <command>`, and the decision row that claims it cites that log. The design's premises were run before this plan, as the synthesis lists: `findLead` inside `node` and `pnpm exec`, per-record effort in the transcript, union merge through a rebase, the gh fields and the ledger's task lookup. Plan panel round 1 added a probe showing a fold replaces a task's `repro:`.
 
+## Reflect
+
+One reviewer read this run's transcript through the judgment, tooling and divergent lenses, and the lead sorted its findings.
+
+Applied in this run:
+
+- The issue tie-break, proposed three times and missing from this plan, was the owner's ask. Within a priority, chips now lists and cards first a task whose repro names a public issue.
+- The five sweep P0s waited behind older P0s at the last card pass. This close cards them.
+
+Built, then reverted:
+
+- The push guard denied a push of `next` to a scratch bare repository, a push the Delivery rule never meant to stop. The lead built a pass for a push that reaches none of the project's remotes, and the lesson panel found eight ways a push through it still reaches the project remote. The guard denies every plain push to `next` again. The same round fixed two older holes the panel found and left a third open.
+
+Backlog, each with owner: zbeyens and stop: the owner takes or drops it:
+
+- A guard pass for a scratch push asks git where the push goes, such as with `git ls-remote --get-url`, instead of parsing the command. It still denies a push whose destination a shell expansion or a `cd` hides.
+
+- An approval of "all your suggestions" becomes one quoted todo per suggestion, taken from the replies that made them.
+- Before diagnosing a shared helper's bug, check whether dotai already holds an unsynced fix, and whether the reporter's clone synced before the failing data was written.
+- A panel brief names the threats the plan's Defaults accept, such as a forged register row, so seats stop asking to harden against them.
+- A session that `get_session` cannot find may be live on a teammate's machine, so the board does not take over its tasks.
+- Three repeat blocks of one forbidden command class by a hook in one session count as a repeat correction for `/pstack:correct`.
+
+Rejected:
+
+- The Write hook refuses the run directory, and `land.md`'s Worktrees rule already names the shell route.
+- Checking a row's evidence against its claim repeats an earlier reflect's Backlog item.
+- The Bug fix record gap and the second-machine proof are both in Open work.
+- The one-off tool facts about transcripts, background calls, fetch deadlines and the Teach cap need nothing new, because the helpers this run built already handle each.
+
 ## Open work
 
-- The first global triage of every open udecode/plate issue. owner: zbeyens; stop: you type triage in a fresh Opus or Sol xhigh session.
+- The first global triage of every open udecode/plate issue. `pnpm triage queue` counts 100 open issues, all untriaged. owner: zbeyens; stop: you type triage in a fresh Opus or Sol xhigh session.
+- dotai's guard reads no git config, so an agent's push with no refspec that `remote.<name>.push` or `push.default` sends to the branch passes. guard.mjs's header states that limit; once the guard reads push config, that header sentence goes. owner: the next guard.mjs change in dotai; stop: an agent push that git config sends to next.
+- A task whose priority rises because an issue-backed task waits on it does not sort as issue-backed, and a dup merge keeps only the keeper's repro. owner: the next tasks.mjs change in dotai; stop: a 10-card cut that orders a raised or merged task wrongly.
+- No session on another person's machine has run `show` and `record` yet, which is the case the owner feared most: another person triaging with a weaker model. owner: zbeyens; stop: natamox's first record or refusal.
 - Whether refs/pstack/ledger should stay on the public origin. owner: zbeyens; stop: their call.
 - A bot that gh names without a `[bot]` suffix, other than dosubot, github-actions, copilot and claude, counts as a person, so its comment makes a record stale. owner: the next triage.mjs change; stop: a record gone stale on a bot comment.
 - A predecessor transcript in another project folder, such as one left by a resume from another directory, is not searched, so `record` refuses that session. owner: the next triage.mjs change; stop: such a refusal.
@@ -198,5 +235,5 @@ Every command that proves a step runs through `node .agents/pstack/proof.mjs --d
 - A background call whose Claude Code process quit before the call ended keeps an output file with no exit line, so lead.mjs reads it as open while that file stays. owner: the next lead.mjs change in dotai; stop: a lead row misread after a relaunch.
 - 13 older calls in dotai's `lead.test.mjs` still go through `claudeInvocationRun`, an export only tests use; this run's two tests go through `lead.mjs`'s main entry. owner: the next lead.mjs change in dotai; stop: that change.
 - In the smoke outside plan mode, a plain Fix session on an untriaged issue went on to Reproduce without running `pnpm triage record`, though Bug fix's Before line says to record first. Its 40 turns ran out before it could record later. owner: the next Bug fix playbook change; stop: a second Fix session that reaches Reproduce without a record.
-- ellie and plate, the other managed pstack projects, still run v0.9.88 helpers from dotai 89423d0 and f232729, so they get dotai 6206d2c only at their next sync, which pushes each one's main branch. owner: zbeyens; stop: your word to sync them.
+- ellie and plate, the other managed pstack projects, still run v0.9.88 helpers from dotai 89423d0 and f232729, so they get dotai 6206d2c and the tie-break and guard commit only at their next sync, which pushes each one's main branch. owner: zbeyens; stop: your word to sync them.
 - Three unknown lead rows from natamox's machine are still undiagnosed. owner: the next lead.mjs change in dotai; stop: a repro on that machine.

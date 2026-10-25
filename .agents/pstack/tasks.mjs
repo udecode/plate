@@ -904,7 +904,9 @@ const rank = (task) => {
   return at === -1 ? PRIORITIES.length : at;
 };
 
-const byPriority = (a, b) => rank(a) - rank(b) || byOrder(a, b);
+const PUBLIC_ISSUE = /(?<![&\w])[\w.-]*#\d+\b|:\/\/\S+\/issues\/\d+/u;
+const issueRank = (task) => (PUBLIC_ISSUE.test(task.repro ?? '') ? 0 : 1);
+const byPriority = (a, b) => rank(a) - rank(b) || issueRank(a) - issueRank(b) || byOrder(a, b);
 
 function shipOffers(items, tasks, open) {
   const served = new Set(open.map((task) => task.ship).filter(Boolean));
