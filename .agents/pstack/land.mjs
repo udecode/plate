@@ -19,24 +19,9 @@
 // auto-merge, so the PR merges once a reviewer approves its latest push.
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is.
-//
-// The message is one Conventional Commit whose body holds a `Beyond the ask:`
-// line. The commit gains a `Session:` line naming the agent session that
-// landed it, and a `Plan:` line when the task changes exactly one plan, so
-// review.mjs lists each session's commits together. A rebase conflict stops
-// with the rebase in progress and lists the conflicting paths. A push rejected because <branch> moved rebases and
-// retries up to three times. A push GitHub declines with GH006 and no reason is
-// pushed again after 1, 2, 4, 8 and 16 minutes. land.mjs exits 75 after the
-// last try, or before a wait that would end past 55 minutes into the run;
-// PSTACK_LAND_WAIT_SCALE multiplies those waits. Once the checks pass, and
-// after each clean rebase onto a moved <branch>, land.mjs records the commit
-// it would push, so a rerun with the same tree, parent, message and checks
-// pushes without running the checks again. The lint fix and the checks hold
-// half of this machine's cores from the pool proof.mjs keeps, and wait for
-// them while other sessions hold the pool. It never force-pushes.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { availableParallelism, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { reserve } from './proof.mjs';
@@ -46,6 +31,7 @@ const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(
 const BEYOND = /^Beyond the ask: \S/mu;
 const SESSION = /^Session: \S/mu;
 const PLAN = /^Plan: \S/mu;
+const INTRODUCED = /^Introduced-by:(.*)$/gmu;
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
 const PR_SECTIONS = ['Why', 'Verification'];
 const RETRIES = 3;
@@ -145,7 +131,29 @@ function validate(text) {
   }
   if (rest.length > 0 && gap !== '') fail('a blank line must separate the subject from the body');
   if (!BEYOND.test(rest.join('\n'))) fail('the body has no `Beyond the ask:` line; name every change the request did not ask for, or write `Beyond the ask: none`');
+  if (SUBJECT.exec(subject)[1] === 'fix') introduced(rest.join('\n'));
   return { subject, body: rest.join('\n').trim() };
+}
+
+function introduced(body) {
+  const trace =
+    `Trace the cause with \`git log -L <start>,<end>:<file> ${target}\`, \`git blame ${target} -- <file>\` or \`git bisect\`. ` +
+    '`none` fits only a cause older than the history or outside the repository, such as a dependency or the platform; code that was broken when it landed names the commit that landed it.';
+  const lines = [...body.matchAll(INTRODUCED)].map((match) => match[1]);
+  if (lines.some((rest) => rest.trim() !== '' && !rest.startsWith(' '))) fail('write each line as `Introduced-by: <value>`, with a space after the colon');
+  const values = lines.map((rest) => rest.trim());
+  if (values.length === 0) fail(`the fix names no commit that introduced its bug; add an \`Introduced-by: <sha>\` line for each commit on ${target} that did, or one \`Introduced-by: none\`, to the message file and run land.mjs again with --message. ${trace}`);
+  if (values.includes('none')) {
+    if (values.length > 1) fail(`\`Introduced-by: none\` cannot stand beside another \`Introduced-by:\` line; keep the commits or write \`none\` alone. ${trace}`);
+    return;
+  }
+  for (const value of values) {
+    if (value === '') fail(`an \`Introduced-by:\` line has no value; name a commit on ${target} or write \`none\`. ${trace}`);
+    if (!/^[0-9a-f]{7,40}$/u.test(value)) fail(`Introduced-by: ${value} is not a lowercase sha of 7 to 40 characters; write the commit's sha alone. ${trace}`);
+    const sha = git('rev-parse', '--verify', '--quiet', `${value}^{commit}`).stdout.trim();
+    if (!sha) fail(`Introduced-by: ${value} names no commit this clone knows; name it by its sha. ${trace}`);
+    if (git('merge-base', '--is-ancestor', sha, upstream).status !== 0) fail(`Introduced-by: ${value} names a commit ${target} does not contain; name the landed commit that introduced the bug. ${trace}`);
+  }
 }
 
 // The one dated plan the task changes, or null when it changes none or several.
@@ -224,10 +232,12 @@ rebase();
 const record = must('rev-parse', '--git-path', 'pstack-land-checked');
 const stamp = () =>
   JSON.stringify({ tree: must('rev-parse', 'HEAD^{tree}'), parent: must('rev-parse', 'HEAD^'), message: must('log', '-1', '--format=%B'), lintFix: lintFix ?? null, checks });
-const markChecked = () => writeFileSync(record, stamp());
-if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
-  console.log('land.mjs recorded this commit in an earlier run, so it pushes without running the checks again.');
-} else {
+
+let checkTime = 0;
+
+function check(rebased = false) {
+  const started = performance.now();
+  rmSync(record, { force: true });
   const changed = must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD').split('\n').filter(Boolean);
   const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs checks');
   if (lintFix && changed.length > 0) {
@@ -238,15 +248,22 @@ if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
       must('commit', '--quiet', '--amend', '--no-edit');
     }
   }
-  for (const check of checks) {
-    const run = spawnSync(check, { shell: true, stdio: 'inherit' });
-    if (run.status !== 0) fail(`check failed: ${check}; the squashed commit stays local`);
+  for (const command of checks) {
+    const run = spawnSync(command, { shell: true, stdio: 'inherit' });
+    if (run.status !== 0) fail(`check failed: ${command}; the squashed commit stays local${rebased ? `, rebased onto the commits origin/${branch} gained while its checks ran, which may cause the failure` : ''}`);
   }
   release();
   if (dirty()) {
     fail(`the checks changed files; review them and run land.mjs again, which folds them into the commit:\n${must('status', '--short')}`);
   }
-  markChecked();
+  writeFileSync(record, stamp());
+  checkTime = performance.now() - started;
+}
+
+if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
+  console.log('land.mjs recorded this commit in an earlier run, so it pushes without running the checks again.');
+} else {
+  check();
 }
 
 if (mode === 'push') {
@@ -258,12 +275,18 @@ if (mode === 'push') {
     const moved = /\[rejected\]|fetch first|non-fast-forward/u.test(run.stderr);
     const declined = declinedWithoutReason(run.stderr);
     const wait = DECLINED_WAITS[declines];
-    if (moved && moves < RETRIES) {
+    if (moved && moves < RETRIES && performance.now() + checkTime > DEADLINE) {
+      fail(
+        `origin/${branch} moved, and checking the rebased commit again would end past ${DEADLINE / MINUTE} minutes into the run. ` +
+          'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
+        EX_TEMPFAIL
+      );
+    } else if (moved && moves < RETRIES) {
       moves += 1;
       console.log(`origin/${branch} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
       fetch();
       rebase();
-      markChecked();
+      check(true);
     } else if (declined && wait !== undefined && performance.now() + wait * MINUTE <= DEADLINE) {
       declines += 1;
       console.log(`GitHub declined the push to ${branch} with an empty GH006; pushing again in ${wait} min (retry ${declines} of ${DECLINED_WAITS.length})`);

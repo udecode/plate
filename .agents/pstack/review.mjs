@@ -126,7 +126,7 @@ const commits = log
       weak,
       session: body.match(/^Session: (\S+)$/mu)?.[1] ?? 'none',
       plan: `${subject}\n${body}`.match(PLAN)?.[0] ?? 'No plan link',
-      beyond: body.match(/^Beyond the ask:.*(?:\n(?!(?:Session|Plan): ).+)*/mu)?.[0].replaceAll('\n', ' ') ?? 'No Beyond the ask: line',
+      beyond: body.match(/^Beyond the ask:.*(?:\n(?!(?:Session|Plan|Introduced-by): ).+)*/mu)?.[0].replaceAll('\n', ' ') ?? 'No Beyond the ask: line',
       fast: /^Shipped fast, no review\.$/mu.test(body),
     };
   });
