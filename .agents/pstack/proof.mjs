@@ -9,9 +9,10 @@
 // --timeout defaults to 3,600 seconds and a longer one is refused. A run its
 // timeout stopped logs that before `exit=ETIMEDOUT`, whatever the command
 // returned, and stops every process still in the command's process group.
-// Before it starts, it holds --cores (default 1) of this machine's core pool,
-// which every proof.mjs and land.mjs check of every session shares, and waits
-// while the pool is full or free memory is low.
+// Before it starts, it holds half a core of this machine's core pool for each
+// of its --cores (default 1) workers. Every proof.mjs and land.mjs check of
+// every session shares the pool. It waits while the pool is full or free
+// memory is low, and waiters enter in the order they arrived.
 
 import { spawn, spawnSync } from 'node:child_process';
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, realpathSync, rmSync, statSync, writeFileSync, writeSync } from 'node:fs';
@@ -41,6 +42,11 @@ const POOL = join(tmpdir(), 'pstack-slots');
 const POOL_LOCK = join(POOL, '.lock');
 const HELD = 'PSTACK_SLOT';
 const MIN_FREE_MEMORY = 0.15;
+// The owner allows twice as many workers as cores (2026-10-26), because the
+// memory floor, not the core count, keeps the machine from freezing. Pool
+// files stay in cores, so a proof.mjs from an older checkout reads the same
+// fill.
+const CORES_PER_WORKER = 0.5;
 const POLL_MS = 2000;
 const STALE_LOCK_MS = 10_000;
 
@@ -75,36 +81,48 @@ function lockPool() {
   }
 }
 
-function holders() {
+// The holders (`.json`) or waiters (`.wait`) whose process still runs.
+function entries(suffix) {
   const live = [];
-  for (const file of readdirSync(POOL).filter((name) => name.endsWith('.json'))) {
+  for (const file of readdirSync(POOL).filter((name) => name.endsWith(suffix))) {
     const path = join(POOL, file);
-    const holder = JSON.parse(readFileSync(path, 'utf8'));
-    if (alive(holder.pid)) live.push(holder);
+    const entry = JSON.parse(readFileSync(path, 'utf8'));
+    if (alive(entry.pid)) live.push(entry);
     else rmSync(path, { force: true });
   }
   return live;
 }
 
-// Holds `cores` of the machine-wide pool until the returned release runs or
-// this process exits. A process whose ancestor holds a share takes none, so a
-// proof started inside a proof or a land check never waits on its own parent.
-export function reserve(cores, label) {
+// Holds the machine-wide pool's share for `workers` until the returned release
+// runs or this process exits. A process whose ancestor holds a share takes
+// none, so a proof started inside a proof or a land check never waits on its
+// own parent. A waiter counts every earlier waiter's ask as held, so small
+// proofs that arrive later never take the cores a land check is waiting for.
+export function reserve(workers, label) {
   if (process.env[HELD]) return () => {};
   const capacity = availableParallelism();
-  const want = Math.min(cores, capacity);
+  const want = Math.min(workers * CORES_PER_WORKER, capacity);
   mkdirSync(POOL, { recursive: true });
   const mine = join(POOL, `${process.pid}.json`);
+  const ticket = join(POOL, `${process.pid}.wait`);
+  let since = null;
   let reported = false;
   for (;;) {
     if (lockPool()) {
       let reason;
       try {
-        const live = holders();
+        if (since === null) {
+          since = Date.now();
+          writeFileSync(ticket, JSON.stringify({ pid: process.pid, cores: want, label, since }));
+        }
+        const live = entries('.json');
         const held = live.reduce((sum, holder) => sum + holder.cores, 0);
+        const ahead = entries('.wait').filter((waiter) => waiter.since < since || (waiter.since === since && waiter.pid < process.pid));
+        const queued = ahead.reduce((sum, waiter) => sum + waiter.cores, 0);
         const free = freeMemory();
-        if (held + want <= capacity && free >= MIN_FREE_MEMORY) {
+        if (held + queued + want <= capacity && free >= MIN_FREE_MEMORY) {
           writeFileSync(mine, JSON.stringify({ pid: process.pid, cores: want, label }));
+          rmSync(ticket, { force: true });
           process.env[HELD] = '1';
           const release = () => {
             rmSync(mine, { force: true });
@@ -113,9 +131,10 @@ export function reserve(cores, label) {
           process.once('exit', release);
           return release;
         }
+        const behind = ahead.length > 0 ? `, and ${queued} asked for by ${ahead.length} earlier waiter${ahead.length === 1 ? '' : 's'}` : '';
         reason =
-          held + want > capacity
-            ? `${held} of ${capacity} cores held by ${live.map((holder) => `${holder.label} (${holder.pid}, ${holder.cores})`).join(', ')}`
+          held + queued + want > capacity
+            ? `${held} of ${capacity} cores held by ${live.map((holder) => `${holder.label} (${holder.pid}, ${holder.cores})`).join(', ') || 'nobody'}${behind}`
             : `free memory is ${Math.round(free * 100)}%, under ${MIN_FREE_MEMORY * 100}%`;
       } finally {
         rmSync(POOL_LOCK, { recursive: true, force: true });
