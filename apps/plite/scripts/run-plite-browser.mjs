@@ -11,6 +11,7 @@ import {
   stopProcessTree,
 } from '../../../tooling/scripts/run-bounded-process.mjs';
 import { buildAppIfStale } from './build-app-if-stale.mjs';
+import { buildBrowserIfStale } from './build-browser-if-stale.mjs';
 import {
   applyWorkerCap,
   assertBrowserNodeVersion,
@@ -329,7 +330,9 @@ const startServer = async (projectRun) => {
   if (await canReachServer()) {
     console.error(
       `Refusing to reuse the unowned Plite proof server at ${baseURL}. ` +
-        'Stop it or pass PLAYWRIGHT_BASE_URL explicitly.'
+        'Stop it if you own it. Otherwise serve this checkout on a free port with ' +
+        '`node scripts/build-app-if-stale.mjs && PORT=<port> node scripts/serve.mjs` ' +
+        'and pass PLAYWRIGHT_BASE_URL=http://127.0.0.1:<port>.'
     );
 
     return 1;
@@ -1280,7 +1283,10 @@ try {
   } else if (mode === 'dev' || mode === 'smoke') {
     status = await runManagedProject('chromium', smokeSelectors);
   } else if (mode === 'direct') {
-    const serverStatus = await ensureServer();
+    // The package scripts' pre hooks build @platejs/test, and no package script
+    // runs direct mode.
+    const buildStatus = await buildBrowserIfStale({ environment: childEnv() });
+    const serverStatus = buildStatus === 0 ? await ensureServer() : buildStatus;
 
     status =
       serverStatus === 0

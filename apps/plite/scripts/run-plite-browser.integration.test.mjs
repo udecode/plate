@@ -138,6 +138,7 @@ const createFixture = () => {
 
   for (const name of [
     'build-app-if-stale.mjs',
+    'build-browser-if-stale.mjs',
     'plite-browser-runner.mjs',
     'plite-proof-inputs.mjs',
     'run-plite-browser.mjs',
