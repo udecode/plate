@@ -400,7 +400,7 @@ const recordSkipped = (repos, area) => {
         'skipped',
         area,
         added,
-        `discovery-only: ${repo.description}`.trim(),
+        clip(`discovery-only: ${repo.description}`, 160),
       ].join('\t')
     ),
   ].sort((a, b) => a.split('\t')[0].localeCompare(b.split('\t')[0]));
