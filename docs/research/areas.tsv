@@ -10,7 +10,7 @@ history-and-undo	History and undo	history	undo,redo	undo manager rich text; coll
 input-and-ime	Input and IME	native,editing	ime,composition,beforeinput,android-input	contenteditable ime composition; beforeinput editor; android keyboard contenteditable
 issues-and-regressions	Issues and regressions		bugs,regressions	contenteditable browser bugs; rich text editor regression tests
 large-documents	Large documents	large-documents,performance,pagination	virtualization,windowing,huge-documents	list virtualization react; virtualized text editor; word processor pagination
-marks-decorations-and-annotations	Marks, decorations and annotations	annotations,comments,suggestions,authored,styles,search,diff	marks,decorations,track-changes,highlights	track changes rich text editor; editor comments annotations; text range decorations
+marks-decorations-and-annotations	Marks, decorations and annotations	annotations,comments,suggestions,authored,styles,search,diff	marks,decorations,track-changes,highlights	prosemirror track changes; tiptap comments; prosemirror decorations
 media-and-embeds	Media and embeds	media,uploads	images,video,upload,embed	image upload editor; media embed block editor; resumable upload javascript
 model-and-schema	Model and schema	model,schema,state,persistence	document-model,nodes	immutable document tree model; editor schema validation; structured content model
 performance	Performance	performance	perf,speed,benchmarks	react rendering performance; rich text editor benchmark; fine-grained reactivity library
