@@ -51,13 +51,14 @@ two_file_dry_run=$(publish \
   --attach-role 'Slate — normal behavior (expected baseline)' \
   --attach "$test_dir/next frame.png" \
   --attach-role 'next — current Beta bug (actual behavior)' \
-  --labels 'plugin:dnd' \
+  --labels 'mobile, performance issue' \
   --dry-run)
 jq -e --arg main "$test_dir/main.mp4" --arg next "$test_dir/next frame.png" '
   ([.command | indices("--attach")[]] | length) == 2 and
   (.command | index($main)) != null and
   (.command | index($next)) != null and
-  ([.command | indices("--label")[]] | length) == 1 and
+  ([.command | indices("--label")[]] | length) == 2 and
+  (.command | index("performance issue")) != null and
   (.body | contains("#### Slate — normal behavior (expected baseline)\n\n![Slate — normal behavior (expected baseline)](<" + $main + ">)")) and
   (.body | contains("#### next — current Beta bug (actual behavior)\n\n![next — current Beta bug (actual behavior)](<" + $next + ">)"))
 ' <<<"$two_file_dry_run" >/dev/null
@@ -98,7 +99,9 @@ refuses 'a role count that does not match the attachments' publish --title-file 
   --attach-role 'only one' --dry-run
 refuses 'a comment with a title' publish --comment-on 5224 --title-file "$test_dir/title.txt" \
   --body-file "$test_dir/body.md" --dry-run
-refuses 'a comment with labels' publish --comment-on 5224 --labels plugin:dnd --body-file "$test_dir/body.md" --dry-run
+refuses 'a comment with labels' publish --comment-on 5224 --labels mobile --body-file "$test_dir/body.md" --dry-run
+refuses 'a label that is not a facet' publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
+  --labels 'mobile,plugin:dnd' --dry-run
 refuses 'a comment on something other than an issue number' publish --comment-on '#5224' \
   --body-file "$test_dir/body.md" --dry-run
 
@@ -119,15 +122,15 @@ case "$*" in
       ok)
         jq -n '{title:"Editor drag crashes the page",
           body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
-          issueType:{name:"Bug"}, milestone:{title:"v54"}, labels:[{name:"plugin:dnd"}]}' ;;
+          issueType:{name:"Bug"}, milestone:{title:"v54"}, labels:[{name:"mobile"}]}' ;;
       untyped)
         jq -n '{title:"Editor drag crashes the page",
           body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
-          issueType:null, milestone:{title:"v54"}, labels:[{name:"plugin:dnd"}]}' ;;
+          issueType:null, milestone:{title:"v54"}, labels:[{name:"mobile"}]}' ;;
       unmilestoned)
         jq -n '{title:"Editor drag crashes the page",
           body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
-          issueType:{name:"Bug"}, milestone:null, labels:[{name:"plugin:dnd"}]}' ;;
+          issueType:{name:"Bug"}, milestone:null, labels:[{name:"mobile"}]}' ;;
       wrong-body) jq -n '{title:"Editor drag crashes the page", body:"Wrong body.", labels:[]}' ;;
       *) exit 1 ;;
     esac
@@ -140,7 +143,7 @@ create() {
   PATH="$fake_bin:$PATH" TEST_ISSUE_READBACK=$1 bash "$script_dir/publish-issue.sh" --repo udecode/plate \
     --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
     --attach "$test_dir/main.mp4" --attach "$test_dir/next frame.png" \
-    --labels 'plugin:dnd' --confirm-create 2>&1
+    --labels 'mobile' --confirm-create 2>&1
 }
 
 created=$(create ok)

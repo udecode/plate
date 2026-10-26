@@ -73,10 +73,11 @@ if (args[0] === 'issue' && args[1] === 'view') {
           comments: { pageInfo: { hasPreviousPage: Boolean(issue.moreComments) }, nodes: issue.comments.map((each, at) => ({ databaseId: 900 + at, author: { login: each.author.login, __typename: each.bot ? 'Bot' : 'User' }, createdAt: each.createdAt ?? '2026-01-01T00:00:00Z', body: each.body })) },
         }
       : fields
-      ? { id: 'I_' + number, issueFieldValues: { nodes: issue.priority ? [{}, { optionId: 'OPT_' + issue.priority, field: { id: 'FIELD_PRIORITY' } }] : [{}] } }
+      ? { id: 'I_' + number, issueFieldValues: { nodes: [{}, ...(issue.priority ? [{ optionId: 'OPT_' + issue.priority, field: { id: 'FIELD_PRIORITY' } }] : []), ...(issue.scopes ? [{ options: issue.scopes.map((each) => ({ id: 'OPT_' + each })), field: { id: 'FIELD_SCOPE' } }] : [])] } }
       : { timelineItems: { nodes: issue.reopened ? [{ id: issue.reopened }] : [] } };
   }
-  const organization = { issueFields: { nodes: fixture.issueFields ?? [{}, { id: 'FIELD_PRIORITY', name: 'Priority', options: ['Urgent', 'High', 'Medium', 'Low'].map((name) => ({ id: 'OPT_' + name, name })) }] } };
+  const options = (names) => names.map((name) => ({ id: 'OPT_' + name, name }));
+  const organization = { issueFields: { nodes: fixture.issueFields ?? [{}, { __typename: 'IssueFieldSingleSelect', id: 'FIELD_PRIORITY', name: 'Priority', options: options(['P0', 'P1', 'P2', 'P3']) }, { __typename: 'IssueFieldMultiSelect', id: 'FIELD_SCOPE', name: 'Scope', options: options(['editing', 'paste']) }] } };
   console.log(JSON.stringify({ data: fields ? { organization, repository } : { repository } }));
 } else { console.error('gh stub: ' + args.join(' ')); process.exit(1); }
 `;
@@ -153,6 +154,8 @@ const comment = (login, association, body) => ({
   body,
 });
 
+const scopeFile = (owners) => `${JSON.stringify({ owners, members: [] })}\n`;
+
 function sandbox({ ledger = '' } = {}) {
   const dir = mkdtempSync(join(tmpdir(), 'triage-'));
   const box = {
@@ -187,6 +190,9 @@ function sandbox({ ledger = '' } = {}) {
     '.gitattributes': 'docs/triage/issues.tsv merge=union\n',
     'docs/triage/issues.tsv': HEADER,
     'docs/law.md': '# Law\n\nEnter splits a list item.\n',
+    'docs/research/review-scopes/editing.json': scopeFile(['packages/a/']),
+    'docs/research/review-scopes/paste.json': scopeFile(['packages/a/']),
+    'docs/research/review-scopes/tables.json': scopeFile(['packages/b/']),
     'packages/a/src/owner.ts':
       'export const a = 1;\nexport const b = 2;\nexport const c = 3;\n',
   };
@@ -1050,6 +1056,33 @@ describe('triage', { concurrency: 8 }, () => {
     );
   });
 
+  test('refuses a kind record whose scope has no review-scope file', async () => {
+    const box = sandbox();
+    const { results } = await recordIn(box, [[5250, 'kind', kind('docs')]]);
+    assert.equal(results[0].status, 1);
+    assert.match(
+      results[0].stderr,
+      /scope: docs has no docs\/research\/review-scopes\/docs\.json/u
+    );
+  });
+
+  test('warns when a kind record names a scope that lists none of its owner files', async () => {
+    const box = sandbox();
+    const { results } = await recordIn(box, [
+      [5250, 'kind', kind('tables')],
+      [5251, 'kind', kind('editing')],
+    ]);
+    assert.deepEqual(
+      results.map((result) => result.status),
+      [0, 0]
+    );
+    assert.match(
+      results[0].stderr,
+      /the tables scope lists none of packages\/a\/src\/owner\.ts/u
+    );
+    assert.doesNotMatch(results[1].stderr, /scope lists none/u);
+  });
+
   test('refuses a fixed record whose commit is not on next', async () => {
     const box = sandbox();
     writeFileSync(
@@ -1434,7 +1467,8 @@ describe('triage', { concurrency: 8 }, () => {
     setIssues(box, [
       issue(5250, {
         labels: [{ name: 'needs-triage' }, { name: 'needs reproduction' }],
-        priority: 'Urgent',
+        priority: 'P0',
+        scopes: ['editing'],
       }),
       issue(5251, {
         labels: [{ name: 'triaged' }, { name: 'needs reproduction' }],
@@ -1448,7 +1482,8 @@ describe('triage', { concurrency: 8 }, () => {
       issue(5255, {
         labels: [{ name: 'triaged' }],
         issueType: { name: 'Bug' },
-        priority: 'Urgent',
+        priority: 'P0',
+        scopes: ['editing'],
       }),
     ]);
     await recordAll(box, [
@@ -1462,7 +1497,7 @@ describe('triage', { concurrency: 8 }, () => {
     assert.deepEqual(stdout.trim().split('\n'), [
       'gh label create triaged --repo udecode/plate --color 0e8a16 --description "Has a current record in docs/triage/issues.tsv" --force',
       `gh label create 'needs retest' --repo udecode/plate --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
-      "gh issue edit 5250 --repo udecode/plate --add-label triaged --remove-label needs-triage --remove-label 'needs reproduction' --type Bug",
+      "gh issue edit 5250 --repo udecode/plate --add-label triaged --remove-label 'needs reproduction' --type Bug",
       'gh issue edit 5251 --repo udecode/plate --remove-label triaged',
       "gh issue edit 5253 --repo udecode/plate --add-label triaged --add-label 'needs reproduction'",
       'gh issue edit 5254 --repo udecode/plate --type Feature',
@@ -1482,7 +1517,8 @@ describe('triage', { concurrency: 8 }, () => {
       issue(5253, {
         labels: waiting,
         issueType: { name: 'Bug' },
-        priority: 'Urgent',
+        priority: 'P0',
+        scopes: ['editing'],
       }),
     ]);
     await recordAll(box, [
@@ -1513,7 +1549,7 @@ describe('triage', { concurrency: 8 }, () => {
     const open = (body5250) => [
       issue(5250, body5250 ? { body: body5250 } : {}),
       issue(5251),
-      issue(5252, { priority: 'Urgent' }),
+      issue(5252, { priority: 'P0', scopes: ['editing'] }),
       issue(5253),
     ];
     setIssues(box, open());
@@ -1541,28 +1577,54 @@ describe('triage', { concurrency: 8 }, () => {
     );
   });
 
-  test('labels sets the Priority field from a current kind record only where it differs', async () => {
+  test('labels sets the Priority and Scope fields from a current kind record only where they differ, and names a scope the field has no option for', async () => {
     const box = sandbox();
     setIssues(box, [
       issue(5250),
-      issue(5251, { priority: 'Low' }),
-      issue(5252, { priority: 'Urgent' }),
-      issue(5253, { priority: 'Low' }),
-      issue(5254),
+      issue(5251, { priority: 'P3', scopes: ['editing'] }),
+      issue(5252, { priority: 'P0', scopes: ['editing'] }),
+      issue(5253, { priority: 'P3' }),
+      issue(5254, { priority: 'P0', scopes: ['editing', 'paste'] }),
+      issue(5255, { priority: 'P0', scopes: ['editing'] }),
+      issue(5256, { priority: 'P3' }),
     ]);
     await recordAll(box, [
       [5250],
       [5251, 'kind', KIND.replace('P0', 'P2')],
       [5252],
       [5253, 'needs-repro', 'missing: the steps'],
+      [5254],
+      [5255, 'kind', kind('paste')],
+      [5256, 'kind', kind('tables')],
     ]);
-    const { status, stdout } = await triage(box, ['labels']);
+    const { status, stdout, stderr } = await triage(box, ['labels']);
     assert.equal(status, 0);
+    assert.match(stderr, /the Scope field has no option for #5256 tables;/u);
+    const set = (id, fields) =>
+      `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "${id}", issueId: "I_${id.slice(1, 5)}", issueFields: [${fields}] }) { clientMutationId } }'`;
     assert.deepEqual(
       stdout.split('\n').filter((line) => line.startsWith('gh api graphql')),
       [
-        `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#5250 P0 Urgent", issueId: "I_5250", issueFields: [{ fieldId: "FIELD_PRIORITY", singleSelectOptionId: "OPT_Urgent" }] }) { clientMutationId } }'`,
-        `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#5251 P2 Medium", issueId: "I_5251", issueFields: [{ fieldId: "FIELD_PRIORITY", singleSelectOptionId: "OPT_Medium" }] }) { clientMutationId } }'`,
+        set(
+          '#5250 P0 editing',
+          '{ fieldId: "FIELD_PRIORITY", singleSelectOptionId: "OPT_P0" }, { fieldId: "FIELD_SCOPE", multiSelectOptionIds: ["OPT_editing"] }'
+        ),
+        set(
+          '#5251 P2 editing',
+          '{ fieldId: "FIELD_PRIORITY", singleSelectOptionId: "OPT_P2" }'
+        ),
+        set(
+          '#5254 P0 editing',
+          '{ fieldId: "FIELD_SCOPE", multiSelectOptionIds: ["OPT_editing"] }'
+        ),
+        set(
+          '#5255 P0 paste',
+          '{ fieldId: "FIELD_SCOPE", multiSelectOptionIds: ["OPT_paste"] }'
+        ),
+        set(
+          '#5256 P0 tables',
+          '{ fieldId: "FIELD_PRIORITY", singleSelectOptionId: "OPT_P0" }'
+        ),
       ]
     );
   });

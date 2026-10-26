@@ -1,6 +1,5 @@
 name: Bug report
 description: Report defects, including regressions, crashes, and behavior bugs.
-title: '[Bug]: '
 type: Bug
 body:
   - type: markdown

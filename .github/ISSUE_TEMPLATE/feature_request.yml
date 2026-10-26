@@ -1,6 +1,5 @@
 name: Feature request
 description: Propose a new Plate or Plite capability.
-title: '[Feature]: '
 type: Feature
 body:
   - type: markdown

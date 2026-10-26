@@ -55,6 +55,17 @@ done
 for role in ${attach_roles[@]+"${attach_roles[@]}"}; do
   [[ -n "$role" && "$role" != *$'\n'* && "$role" != *"["* && "$role" != *"]"* ]] || { echo "Attachment roles must be non-empty single lines without brackets" >&2; exit 2; }
 done
+facet_labels=(mobile safari firefox ime a11y regression 'performance issue')
+IFS=',' read -r -a label_items <<<"$labels"
+clean_labels=()
+for label in ${label_items[@]+"${label_items[@]}"}; do
+  label=$(sed -E 's/^[[:space:]]+|[[:space:]]+$//g' <<<"$label")
+  [[ -n "$label" ]] || continue
+  facet=false
+  for each in "${facet_labels[@]}"; do [[ "$label" == "$each" ]] && facet=true; done
+  [[ "$facet" == true ]] || { echo "Label '$label' is not a facet label (${facet_labels[*]}); the Scope issue field names the domain and the v54 milestone marks Beta" >&2; exit 2; }
+  clean_labels+=("$label")
+done
 command -v jq >/dev/null || { echo "Missing command: jq" >&2; exit 3; }
 
 title=""
@@ -96,14 +107,8 @@ fi
 for abs_path in ${abs_paths[@]+"${abs_paths[@]}"}; do
   args+=(--attach "$abs_path")
 done
-IFS=',' read -r -a label_items <<<"$labels"
-clean_labels=()
-for label in ${label_items[@]+"${label_items[@]}"}; do
-  label=$(sed -E 's/^[[:space:]]+|[[:space:]]+$//g' <<<"$label")
-  if [[ -n "$label" ]]; then
-    clean_labels+=("$label")
-    args+=(--label "$label")
-  fi
+for label in ${clean_labels[@]+"${clean_labels[@]}"}; do
+  args+=(--label "$label")
 done
 
 if [[ "$mode" == dry-run ]]; then

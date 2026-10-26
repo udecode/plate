@@ -78,7 +78,9 @@ const LEDGER_COPY = 'refs/pstack/triage-ledger';
 const GH_FIELDS = 'number,title,body,state,comments,labels,issueType,author';
 const GRAPHQL_BATCH = 50;
 const PRIORITY_FIELD = 'Priority';
-const PRIORITY_OPTIONS = { P0: 'Urgent', P1: 'High', P2: 'Medium', P3: 'Low' };
+const PRIORITY_ORDER = ['P0', 'P1', 'P2', 'P3'];
+const SCOPE_FIELD = 'Scope';
+const SCOPES = 'docs/research/review-scopes';
 const OUTCOME_LABELS = {
   dup: 'duplicate',
   'needs-repro': 'needs reproduction',
@@ -603,8 +605,8 @@ function reopenIds(repo, numbers) {
   return found;
 }
 
-// gh issue list cannot return issue fields, so the org's field and each issue's value come from GraphQL.
-function priorityValues(repo, numbers) {
+// gh issue list cannot return issue fields, so the org's Priority and Scope fields and each issue's values come from GraphQL.
+function fieldValues(repo, numbers) {
   const [owner, name] = repo.split('/');
   const issues = new Map();
   let fields = null;
@@ -612,9 +614,9 @@ function priorityValues(repo, numbers) {
     const part = numbers.slice(at, at + GRAPHQL_BATCH);
     const aliases = part.map(
       (number) =>
-        `i${number}: issue(number: ${number}) { id issueFieldValues(first: 20) { nodes { ... on IssueFieldSingleSelectValue { optionId field { ... on IssueFieldSingleSelect { id } } } } } }`
+        `i${number}: issue(number: ${number}) { id issueFieldValues(first: 20) { nodes { ... on IssueFieldSingleSelectValue { optionId field { ... on IssueFieldSingleSelect { id } } } ... on IssueFieldMultiSelectValue { options { id } field { ... on IssueFieldMultiSelect { id } } } } } }`
     );
-    const query = `query { organization(login: ${JSON.stringify(owner)}) { issueFields(first: 50) { nodes { ... on IssueFieldSingleSelect { id name options { id name } } } } } repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { ${aliases.join(' ')} } }`;
+    const query = `query { organization(login: ${JSON.stringify(owner)}) { issueFields(first: 50) { nodes { __typename ... on IssueFieldSingleSelect { id name options { id name } } ... on IssueFieldMultiSelect { id name options { id name } } } } } repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { ${aliases.join(' ')} } }`;
     const result = spawnSync('gh', ['api', 'graphql', '-f', `query=${query}`], {
       encoding: 'utf-8',
       maxBuffer: 64 * 1024 * 1024,
@@ -623,7 +625,7 @@ function priorityValues(repo, numbers) {
     const data = readJson(result.stdout)?.data;
     if (!data) {
       refuse(
-        `labels could not read the ${PRIORITY_FIELD} field of ${repo} issues: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
+        `labels could not read the ${PRIORITY_FIELD} and ${SCOPE_FIELD} fields of ${repo} issues: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
       );
     }
     fields ??= data.organization?.issueFields?.nodes ?? [];
@@ -635,38 +637,47 @@ function priorityValues(repo, numbers) {
       issues.set(number, node);
     }
   }
-  const field = fields.find(
-    (node) => node?.name === PRIORITY_FIELD && Array.isArray(node.options)
-  );
-  if (!field) {
-    refuse(
-      `the ${owner} organization has no single-select issue field named ${PRIORITY_FIELD}`
+  const fieldOf = (fieldName, kind, wanted) => {
+    const field = fields.find(
+      (node) =>
+        node?.name === fieldName &&
+        node.__typename === `IssueField${kind}Select`
     );
-  }
-  const optionIds = new Map(
-    field.options.map((option) => [option.name, option.id])
-  );
-  const missing = Object.values(PRIORITY_OPTIONS).filter(
-    (option) => !optionIds.has(option)
-  );
-  if (missing.length > 0) {
-    refuse(
-      `the ${owner} ${PRIORITY_FIELD} field has no option named ${missing.join(', ')}`
+    if (!field) {
+      refuse(
+        `the ${owner} organization has no ${kind.toLowerCase()}-select issue field named ${fieldName}`
+      );
+    }
+    const optionIds = new Map(
+      field.options.map((option) => [option.name, option.id])
     );
-  }
+    const missing = wanted.filter((option) => !optionIds.has(option));
+    if (missing.length > 0) {
+      refuse(
+        `the ${owner} ${fieldName} field has no option named ${missing.join(', ')}`
+      );
+    }
+    return { id: field.id, optionIds };
+  };
+  const priority = fieldOf(PRIORITY_FIELD, 'Single', PRIORITY_ORDER);
+  const scope = fieldOf(SCOPE_FIELD, 'Multi', []);
   const values = new Map(
-    [...issues].map(([number, node]) => [
-      number,
-      {
-        issueId: node.id,
-        optionId:
-          node.issueFieldValues?.nodes?.find(
-            (value) => value?.field?.id === field.id
-          )?.optionId ?? null,
-      },
-    ])
+    [...issues].map(([number, node]) => {
+      const valueOf = (field) =>
+        node.issueFieldValues?.nodes?.find(
+          (value) => value?.field?.id === field.id
+        );
+      return [
+        number,
+        {
+          issueId: node.id,
+          priority: valueOf(priority)?.optionId ?? null,
+          scopes: (valueOf(scope)?.options ?? []).map((option) => option.id),
+        },
+      ];
+    })
   );
-  return { fieldId: field.id, optionIds, values };
+  return { priority, scope, values };
 }
 
 function issueReader(repo) {
@@ -1454,9 +1465,9 @@ function labels() {
   const kinds = open.filter(
     ({ state, head }) => state === 'current' && head.outcome === 'kind'
   );
-  const priority =
+  const fields =
     kinds.length > 0
-      ? priorityValues(
+      ? fieldValues(
           repo,
           kinds.map(({ issue }) => issue.number)
         )
@@ -1467,6 +1478,7 @@ function labels() {
     `gh label create 'needs retest' --repo ${repo} --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
   ];
   const sets = [];
+  const unscoped = [];
   for (const { issue, state, head } of open) {
     const names = new Set((issue.labels ?? []).map((label) => label.name));
     const edits = [];
@@ -1478,7 +1490,6 @@ function labels() {
       deviceLaneOf(String(issue.number), reads).length === 0;
     if (state === 'current') {
       if (!names.has('triaged')) edits.push('--add-label triaged');
-      if (names.has('needs-triage')) edits.push('--remove-label needs-triage');
       for (const [label, wanted] of [
         ...Object.entries(OUTCOME_LABELS).map(([outcome, name]) => [
           name,
@@ -1497,15 +1508,29 @@ function labels() {
         edits.push(`--type ${type}`);
       }
       if (head.outcome === 'kind') {
-        const level = parseDetail(head.detail).get('priority');
-        const option = PRIORITY_OPTIONS[level];
-        const optionId = priority.optionIds.get(option);
-        const { issueId, optionId: currentId } = priority.values.get(
-          issue.number
-        );
-        if (currentId !== optionId) {
+        const detail = parseDetail(head.detail);
+        const level = detail.get('priority');
+        const scope = detail.get('scope');
+        const priorityId = fields.priority.optionIds.get(level);
+        const scopeId = fields.scope.optionIds.get(scope);
+        const { issueId, priority, scopes } = fields.values.get(issue.number);
+        if (scopeId === undefined) unscoped.push(`#${issue.number} ${scope}`);
+        const changes = [
+          ...(priority === priorityId
+            ? []
+            : [
+                `{ fieldId: "${fields.priority.id}", singleSelectOptionId: "${priorityId}" }`,
+              ]),
+          ...(scopeId === undefined ||
+          (scopes.length === 1 && scopes[0] === scopeId)
+            ? []
+            : [
+                `{ fieldId: "${fields.scope.id}", multiSelectOptionIds: ["${scopeId}"] }`,
+              ]),
+        ];
+        if (changes.length > 0) {
           sets.push(
-            `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#${issue.number} ${level} ${option}", issueId: "${issueId}", issueFields: [{ fieldId: "${priority.fieldId}", singleSelectOptionId: "${optionId}" }] }) { clientMutationId } }'`
+            `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#${issue.number} ${level} ${scope}", issueId: "${issueId}", issueFields: [${changes.join(', ')}] }) { clientMutationId } }'`
           );
         }
       }
@@ -1522,6 +1547,11 @@ function labels() {
         `gh issue close ${issue.number} --repo ${repo} --reason completed`
       );
     }
+  }
+  if (unscoped.length > 0) {
+    console.error(
+      `triage labels: the ${SCOPE_FIELD} field has no option for ${unscoped.join(', ')}; add the option in the organization's issue field settings, or record the issue again with a scope that has one`
+    );
   }
   console.log([...commands, ...sets].join('\n'));
 }
@@ -2362,8 +2392,6 @@ function releaseCommand(argv) {
   }
 }
 
-const PRIORITY_ORDER = ['P0', 'P1', 'P2', 'P3'];
-
 function lane(argv) {
   const options = parseArgs(argv, {});
   const [device, extra] = options.positional;
@@ -2580,6 +2608,29 @@ function recordCommand(argv) {
       refuse(
         `${where}: ${reads.remote}/${reads.branch} changed ${owned.join(', ')} after this checkout's base; rebase and read them again`
       );
+    }
+    if (entry.outcome === 'kind') {
+      const scope = fields.get('scope');
+      const file = readJson(
+        gitOut('show', `${read}:${SCOPES}/${scope}.json`) ?? ''
+      );
+      if (!file) {
+        refuse(
+          `${where}: scope: ${scope} has no ${SCOPES}/${scope}.json at ${read.slice(0, 10)}; name the review scope that owns the cause`
+        );
+      }
+      const listed = [...(file.owners ?? []), ...(file.members ?? [])];
+      if (
+        !owned.some((path) =>
+          listed.some((each) =>
+            each.endsWith('/') ? path.startsWith(each) : path === each
+          )
+        )
+      ) {
+        console.error(
+          `triage record: ${where}: the ${scope} scope lists none of ${owned.join(', ')} among its owners or members; check that scope: names the scope that owns the cause`
+        );
+      }
     }
     const ts = new Date(start + index).toISOString();
     const prev = headsOf([...(reads.rows.get(issue)?.values() ?? [])]).map(

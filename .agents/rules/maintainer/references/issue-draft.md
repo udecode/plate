@@ -231,9 +231,12 @@ The publisher:
 
 1. refuses any repository other than `udecode/plate`, a new issue whose title
    starts with a bracket prefix such as `[Beta]: `, an unresolved template
-   placeholder, a file
+   placeholder, a label outside the facet set (`mobile`, `safari`, `firefox`,
+   `ime`, `a11y`, `regression`, `performance issue`), a file
    that is not an image or video gh attaches (png, jpg, jpeg, gif, webp, svg,
-   mp4, mov or webm) and a role count that differs from the file count;
+   mp4, mov or webm) and a role count that differs from the file count. The
+   Scope issue field, which `pnpm triage labels` sets, names the domain, so no
+   label does;
 2. puts each file under the body's `## Evidence` section, which it adds when
    the body has none. Each file gets a `#### <role>` line above an image
    reference alone in its paragraph, so gh embeds an image and leaves a
