@@ -18,8 +18,11 @@ Rejected, and why:
 | --- | --- |
 | A shared code-text recipe | Rejected during the 2026-09-04 execution. |
 | Hidden grammar-registry mutation in syntax reads | Removed; the reader leaves the caller's highlighter unchanged. |
-| An incremental native parser | Needs a matched benchmark and full language and rendering oracles first. |
+| An incremental native parser | Needs a matched benchmark and full language and rendering oracles first. On 2026-10-26 Lowlight took 9 to 13% of a key in the 10,000-line demo, so any engine faces the same ceiling ([review](../2026-10-26-code-highlights-techniques.md)). |
 | Splitting a copied backend out | Only worth it with a whole CodeMirror composition change and measured value; moving controls alone keeps Lowlight imports. |
+| Highlights behind the `lowlight` slot, with Lowlight as fallback | Lowlight is about a tenth of a key, so a free highlighter saves at most about 11%, under the 20% gate, and the kit would ship two engines. Reopen when Lowlight is over a fifth of a key on a quiet host. |
+| Resuming Lowlight from a saved line state | highlight.js 11's public `highlight()` takes no continuation. Reopen if highlight.js exposes resumable state. |
+| Merging equal adjacent styles | Saved 0% of ranges on the demo and 1.8% on platejs source, and Highlights merges colors, which needs the theme while tokenizing. Reopen if Plate themes with inline colors. |
 
 ## Rules
 
@@ -34,7 +37,25 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
 
 ## What other editors do
 
-Not compared in this scope's reviews; CodeMirror is the adopted optional editor, and its source pages live under `docs/research/sources/`.
+- **Highlights** (`pierrecomputer/pierre@f3afb935:packages/highlights`) uses hand-written WebAssembly lexers, and its live tokenizer keeps each line's end state so an edit re-reads lines only until a line ends the same way. It lacks 23 to 28 of the picker's languages and has no language detection. The [2026-10-26 review](../2026-10-26-code-highlights-techniques.md) kept Lowlight.
+- **CodeMirror** is the adopted optional editor. It parses incrementally with Lezer and paints only the visible lines, which the native view's full-DOM rule does not allow.
+- **Tiptap**'s code block also uses Lowlight and parsed once per key in the 2026-09-06 comparison on the Plite performance page.
+
+## Public API
+
+The copied native kit builds one Lowlight with every registered grammar and hands it to the syntax plugin.
+
+```ts
+// apps/www/src/registry/components/editor/code-block.tsx
+const lowlight = createCodeBlockLowlight();
+
+export const CodeBlockKit = [
+  createCodeBlockPlugin(CodeBlockElement),
+  CodeHighlightPlugin.configure({
+    initialState: { lowlight },
+  }),
+];
+```
 
 ## Main changes
 
@@ -43,3 +64,5 @@ Not compared in this scope's reviews; CodeMirror is the adopted optional editor,
 ## Open work
 
 - No browser device, IME, assistive-technology, distribution or new performance comparison; backend separation stays deferred. owner: the next code review. stop: a measured backend split proposal.
+- Since cf15725603 the syntax reader reads the block, so Plite re-projects every syntax range on each key, about 30% of a key in the 10,000-line demo. owner: task t_31c0b52b. stop: its fix lands with a contract test.
+- Auto language detection runs all 192 registered grammars over the whole block on each read. owner: decide task t_b2f9d9c5. stop: the owner keeps or cuts it.
