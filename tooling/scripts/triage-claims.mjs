@@ -424,6 +424,49 @@ export function decide(request, world) {
   };
 }
 
+export const domainsOf = (world) =>
+  [
+    ...new Set(
+      [...world.open.keys()]
+        .map((issue) => world.head(issue))
+        .filter((head) => head?.outcome === 'kind')
+        .map((head) => head.fields.get('scope'))
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+
+export function decideNext(request, world) {
+  const [best] = domainsOf(world)
+    .map((domain) => {
+      const target = { domain, task: null };
+      const result = decide({ ...request, target }, world);
+      const priorities = result.held
+        .map((issue) => world.head(issue))
+        .filter((head) => head?.outcome === 'kind')
+        .map((head) => head.fields.get('priority'))
+        .sort((a, b) => a.localeCompare(b));
+      return { ...result, target, priorities };
+    })
+    .filter((result) => result.exit === 0)
+    .sort(
+      (a, b) =>
+        a.priorities[0].localeCompare(b.priorities[0]) ||
+        b.priorities.length - a.priorities.length
+    );
+  return (
+    best ?? {
+      members: [],
+      results: [],
+      writes: [],
+      held: [],
+      starts: [],
+      offer: null,
+      refusal: null,
+      exit: 1,
+      target: null,
+    }
+  );
+}
+
 // chips.md lets only a verdict, babysit or time run offer a P2 or P3 task.
 const OFFERED = new Set(['P0', 'P1']);
 

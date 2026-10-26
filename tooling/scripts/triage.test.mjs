@@ -2582,6 +2582,26 @@ describe('triage claim', { concurrency: 8 }, () => {
     assert.deepEqual(claimedIssues(box), ['5250']);
   });
 
+  test('--next claims the domain whose worst kind nobody holds ranks first', async () => {
+    const box = trunkSandbox('');
+    setIssues(box, [
+      issue(5250, { assignees: ['natamox'] }),
+      issue(5251),
+      issue(5252),
+    ]);
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind('table').replace('P0', 'P1')],
+      [5252, 'kind', kind('list').replace('P0', 'P2')],
+    ]);
+    const result = await claim(box, ['--next', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, claimed: claimedIssues(box) },
+      { status: 0, claimed: ['5251'] },
+      result.stdout + result.stderr
+    );
+  });
+
   test("--domain with --task claims the task's issues and the domain's kinds with no open task", async () => {
     const box = sandbox();
     setIssues(box, issues(5250, 5251, 5252));
@@ -2897,6 +2917,7 @@ put(['update-ref', 'refs/pstack/ledger', commit]);
     const calls = [
       ['claim'],
       ['claim', '5250', '--domain', 'editing'],
+      ['claim', '--next', '--domain', 'editing'],
       ['claim', 'x5250'],
       ['claim', '5250', '--drives', 'ipad'],
       ['claim', '5250', '--take', 'assignee:natamox'],

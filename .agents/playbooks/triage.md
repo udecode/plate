@@ -1,6 +1,6 @@
 ---
 extends: investigation
-when: Use it for `triage`, `triage label:<label>`, `triage #<N>`, `triage fix #<N>` or `triage fix <domain>`, for `maintainer issues`, and for a udecode/plate issue URL. A Slate issue stays with `maintainer slate-issue`, and a security-shaped report with `maintainer security`.
+when: Use it for `triage`, `triage label:<label>`, `triage #<N>`, `triage fix #<N>`, `triage fix <domain>` or `triage fix next`, for `maintainer issues`, and for a udecode/plate issue URL. A Slate issue stays with `maintainer slate-issue`, and a security-shaped report with `maintainer security`.
 ---
 
 # Triage
@@ -16,6 +16,7 @@ Triage turns an open udecode/plate issue into a call: what it is, whether it rep
 | `triage #<N>`, or a udecode/plate issue URL | issue N and its neighbors | N's record and its domain's fix run; a current one is printed and the run stops |
 | `triage fix #<N>` | issue N's group | the claim, records, then the Bug fix playbook over what the claim holds |
 | `triage fix <domain>` | the domain's group | the claim, records, then one Bug fix run over every kind the claim holds |
+| `triage fix next` | the group of the domain the claim picks | the same as `triage fix <domain>` for that domain |
 
 ## Who records
 
@@ -109,9 +110,9 @@ A `kind` record with `device:` waits for a person who tests on that device, beca
 
 ## Fix
 
-`triage fix #<N>` and `triage fix <domain>` continue into a fix in the same session.
+`triage fix #<N>`, `triage fix <domain>` and `triage fix next` continue into a fix in the same session.
 
-1. Claim the work first, even on a current record. `triage fix #<N>` runs `pnpm triage claim <N>`. `triage fix <domain>` runs `pnpm triage claim --domain <scope>`, with `--task <id>` only for the task whose card started this session. Pass `--session <id>` with this session's id from the runtime's session tool, as the `chips` skill does, so a started row names the session `chips` looks up.
+1. Claim the work first, even on a current record. `triage fix #<N>` runs `pnpm triage claim <N>`. `triage fix <domain>` runs `pnpm triage claim --domain <scope>`, with `--task <id>` only for the task whose card started this session. `triage fix next` runs `pnpm triage claim --next`. That claim looks at each domain with an open `kind` and picks the one whose worst kind it can hold ranks first: P0 first, then the domain with more such kinds. It claims that domain as `--domain` would and prints it as `next: --domain <scope>`. The run then goes on as `triage fix <scope>`, so each later claim in it uses `--domain <scope>`. Pass `--session <id>` with this session's id from the runtime's session tool, as the `chips` skill does, so a started row names the session `chips` looks up.
    - **What it takes.** The claim takes N's group, which starts from the issues that hold N's call. When N's record is `dup`, that is the issue its `of` names, followed through each `dup` record to the first issue whose record is not `dup`. When it is `split`, they are the issues its `into` names. Otherwise it is N. The group is N and those issues, each open issue whose `kind` record shares an owner file with one of theirs, and every issue that a `dup` record or an open task ties to one of these, down every chain of dups. With `--task`, a domain's group is the task's issues, every other open issue whose current `kind` record names that domain and whose `tasks:` line names no open task, and each open issue recorded `dup` of one of them. Without `--task`, the claim takes the domain's kinds and each offered task the domain covers whole, a card another session holds included, and skips started tasks.
    - **What holds.** The claim checks every hold live: another session's claim, another assignee, an open PR that closes the issue or whose title or body says it fixes, closes or resolves it, a recent comment that claims it and a started task. A hold quiet for 48 hours with no commit on its owner files prints `stale` and still holds. A hold newer than this session's own claim holds too, so a rerun stops once someone else took the issue. Some signals only print as notes and hold nothing: a branch named for the issue, and an open task whose finding names the issue only in prose, which `show` lists under `mentions:`.
    - **Whole or in units.** An issue target claims its whole group or none of it. It skips the members that are closed, fixed or in another [lane](#device-lane), and one held member, or a root that is closed, fixed or in another lane, stops the whole claim. A reopened issue whose record still reads `fixed` gets `triage #<N>` first, which records it again. A domain or task target splits its group into units, each an issue with every issue its dups and open tasks tie it to. It skips each unit with a held member or with an issue outside the target, which it prints as `outside this target`, and claims the rest.

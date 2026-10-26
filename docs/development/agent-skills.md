@@ -23,7 +23,7 @@ playbooks in [`.agents/playbooks/`](../../.agents/playbooks/) build on pstack's.
 | "babysit <number>", "clean up PR <number>", "finish the current tree" or "review PR <number>" | [Babysit](../../.agents/playbooks/babysit.md) |
 | "clean up <surface>" | [Refactoring](../../.agents/playbooks/refactoring.md) |
 | A slowness report or `benchmark <scope>` | [Perf issue](../../.agents/playbooks/perf-issue.md) |
-| `triage`, `triage label:<label>`, `triage #<N>`, `triage fix #<N>` or `triage fix <domain>` | [Triage](../../.agents/playbooks/triage.md), which records each call in `docs/triage/issues.tsv` |
+| `triage`, `triage label:<label>`, `triage #<N>`, `triage fix #<N>`, `triage fix <domain>` or `triage fix next` | [Triage](../../.agents/playbooks/triage.md), which records each call in `docs/triage/issues.tsv` |
 
 For example:
 

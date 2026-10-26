@@ -7,6 +7,7 @@
 // Usage: pnpm triage claim <N>... [--take <hold>,... --why "<owner's words>"] [--drives <device>] [--session <id>]
 //        pnpm triage claim --domain <scope> [--task <id>] [same flags]
 //        pnpm triage claim --task <id> [same flags]
+//        pnpm triage claim --next [--drives <device>] [--session <id>]
 //        pnpm triage release <N>... --why "<reason>" [--session <id>]
 //        pnpm triage lane [<device>]
 //        pnpm triage show <N>... [--brief] [--json]
@@ -42,7 +43,9 @@ import {
   claimLine,
   COMMENT_WINDOW_MS,
   decide,
+  decideNext,
   DEVICES,
+  domainsOf,
   devicesOf,
   foldClaims,
   laneOf,
@@ -1883,6 +1886,7 @@ const holdText = (hold) =>
 
 function claimCommand(argv) {
   const options = parseArgs(argv, {
+    boolean: ['next'],
     value: ['domain', 'task', 'take', 'why', 'drives', 'session'],
   });
   const issues = usageIssues(options.positional, 'claim');
@@ -1890,10 +1894,11 @@ function claimCommand(argv) {
     issues.length > 0,
     options.domain !== undefined,
     options.task !== undefined && options.domain === undefined,
+    options.next === true,
   ].filter(Boolean).length;
   if (forms !== 1) {
     usage(
-      'claim takes issue numbers, --domain <scope> [--task <id>], or --task <id>'
+      'claim takes issue numbers, --domain <scope> [--task <id>], --task <id>, or --next'
     );
   }
   if (options.domain !== undefined && !KEY_VALUES.scope.test(options.domain)) {
@@ -1914,6 +1919,9 @@ function claimCommand(argv) {
     .filter(Boolean);
   if (take.length > 0 && !options.why?.trim()) {
     usage("--take needs --why with the owner's words, quoted");
+  }
+  if (take.length > 0 && options.next) {
+    usage('--next takes no --take; name the issues or the domain to take over');
   }
   if (options.why !== undefined && take.length === 0) {
     usage('--why goes with --take, quoting the words that take the holds over');
@@ -1940,42 +1948,51 @@ function claimCommand(argv) {
   const actor = actorOf(options);
   const open = openList(repo);
   const git = gitMerges({ branch: reads.branch });
-  const target =
-    issues.length > 0
-      ? { issues }
-      : { domain: options.domain ?? null, task: options.task ?? null };
+  let target = null;
+  if (issues.length > 0) target = { issues };
+  else if (!options.next) {
+    target = { domain: options.domain ?? null, task: options.task ?? null };
+  }
   const request = {
     target,
     take,
     drives: options.drives ?? null,
     offerId: newId(),
   };
-  const { members } = targetMembers(
-    target,
-    claimWorld(reads, open, [], new Map(), actor, git)
-  );
+  const scan = claimWorld(reads, open, [], new Map(), actor, git);
+  const members = [
+    ...new Set(
+      (target
+        ? [target]
+        : domainsOf(scan).map((domain) => ({ domain, task: null }))
+      ).flatMap((each) => targetMembers(each, scan).members)
+    ),
+  ];
   const readGitHub = () =>
     liveSignals(
       repo,
       members.filter((issue) => open.has(issue))
     );
   let live = readGitHub();
-  const named =
+  const nameOf = (chosen) =>
     issues.length > 0
       ? issues.map((issue) => `#${issue}`).join(' ')
       : [
-          options.domain && `--domain ${options.domain}`,
-          options.task && `--task ${options.task}`,
+          options.next && '--next',
+          chosen?.domain && `--domain ${chosen.domain}`,
+          chosen?.task && `--task ${chosen.task}`,
         ]
           .filter(Boolean)
           .join(' ');
+  let named = nameOf(target);
   let world;
   let written = [];
   const decision = pushClaims(reads.remote, (text, attempt) => {
     if (attempt > 0) live = readGitHub();
     world = claimWorld(reads, open, parseClaims(text), live, actor, git);
-    const result = decide(request, world);
+    const result = target ? decide(request, world) : decideNext(request, world);
     if (result.refusal) refuse(result.refusal);
+    named = nameOf(result.target ?? target);
     const start = Date.now();
     written = result.writes.map((write, at) =>
       claimLine({
@@ -1993,8 +2010,15 @@ function claimCommand(argv) {
   console.log(
     `actor: ${actor.who}, session ${actor.session}${actor.transcript ? ` (transcript ${actor.transcript})` : ''}`
   );
+  if (options.next) {
+    console.log(
+      decision.target
+        ? `next: --domain ${decision.target.domain}, whose worst kind this claim holds is ${decision.priorities[0]}`
+        : 'next: no domain has a kind this claim can hold'
+    );
+  }
   console.log(
-    `group: ${members.map((issue) => `#${issue}`).join(' ') || 'none'}`
+    `group: ${decision.members.map((issue) => `#${issue}`).join(' ') || 'none'}`
   );
   for (const result of decision.results) {
     const at = `#${result.issue}`;
@@ -2133,7 +2157,10 @@ function claimCommand(argv) {
     ...parseClaims(`${CLAIM_COLUMNS.join('\t')}\n${written.join('\n')}`),
   ];
   const fresh = claimWorld({ ...reads, ledger }, open, rows, live, actor, git);
-  const recheck = decide(request, fresh);
+  const recheck = decide(
+    { ...request, target: decision.target ?? target },
+    fresh
+  );
   const why = `claimed by pnpm triage claim ${named}`;
   const current = () => ledgerNow(reads);
   for (const id of decision.starts) {
