@@ -51,6 +51,7 @@ The claim command keeps one log of who holds each issue, stored on GitHub beside
 | A task dismissed after a claim | Ends the claim only when it stops the claim's own start | Any dismissal after the claim ends it | any dismissal ends | detail |
 | A device kind on a desktop kind's owner file | The agent's run that holds the desktop kind writes the fix; the person rechecks on the device and fixes only what still fails | The person's session writes the shared fix too | person writes shared fix | small |
 | Device proof | The person's recheck on the device, five times where the Bug fix playbook asks for five warm runs | An emulator run counts as the device proof | emulator proves device | detail |
+| The subject page link | A new page at https://claude.ai/artifact/2hz8UXsyGd6wYpE6YsUwDj, because https://claude.ai/artifact/5NABpdSVKTYNJ57igZeY98 no longer opens | Publish no page for this subject | no page | detail |
 | A fixed record that says nothing about a retest | Waits for its reporter's retest, so the two fixed records from before this wait too | Every fixed record must say whether it needs a retest, and those two are recorded again | retest required | small |
 | A device issue whose fixed record says no retest is needed | The record command refuses it, so a device fix waits for a retest on the device | Allowed when the proof names a device run | device closes on proof | small |
 | The label a fixed issue waits under | needs retest | fixed on next | label fixed on next | detail |
