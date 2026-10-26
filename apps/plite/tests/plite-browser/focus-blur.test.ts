@@ -100,24 +100,29 @@ test('a mouse drag that starts while a focus call settles keeps its range', asyn
   const focusButton = (await fixture
     .getByRole('button', { name: 'Focus', exact: true })
     .boundingBox())!;
-  const [start, end] = await editor
-    .getByText('one', { exact: true })
-    .evaluate((element) => {
-      const range = document.createRange();
-      const charRect = (offset: number) => {
-        range.setStart(element.firstChild!, offset);
-        range.setEnd(element.firstChild!, offset + 1);
+  // The render after hydration replaces the server-rendered text, and a
+  // detached text node measures as zero, so find the text from the block,
+  // which survives that render, in the same call that measures it.
+  const [start, end] = await firstBlock.evaluate((block) => {
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    let text = walker.nextNode()!;
 
-        return range.getBoundingClientRect();
-      };
-      const n = charRect(1);
-      const e = charRect(2);
+    while (text.textContent !== 'one') text = walker.nextNode()!;
+    const range = document.createRange();
+    const charRect = (offset: number) => {
+      range.setStart(text, offset);
+      range.setEnd(text, offset + 1);
 
-      return [
-        { x: n.left + 1, y: n.top + n.height / 2 },
-        { x: e.right - 1, y: e.top + e.height / 2 },
-      ];
-    });
+      return range.getBoundingClientRect();
+    };
+    const n = charRect(1);
+    const e = charRect(2);
+
+    return [
+      { x: n.left + 1, y: n.top + n.height / 2 },
+      { x: e.right - 1, y: e.top + e.height / 2 },
+    ];
+  });
   const nextTask = 1;
   const focusSettleTimeout = 50;
 
