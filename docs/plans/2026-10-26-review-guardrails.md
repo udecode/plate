@@ -1,6 +1,6 @@
 # Review guardrails: count what review misses, close the land race, undo a session
 
-Status: building: phases 1 to 3 in one run
+Status: partial: the first real replay waits on the claude CLI login
 Topic: pstack
 Playbook: build
 
@@ -12,11 +12,11 @@ The owner then said "go all 1 to 6 without break". That is the build's authority
 
 ### What will change?
 
-Each fix names the commit that broke things, so you can count bugs that slip through. Raced landings rerun their checks, and you get a seat scorecard, one-command session undo, a reviewer replay, and Babysit skips old code.
+All six are on next. Fixes name the commit that broke things, raced landings recheck, and you get a seat scorecard, one-command session undo and a Babysit that leaves old code alone.
 
 ### What could go wrong?
 
-Every pstack project gets the stricter fix rule at once, and agents may dodge it by naming no commit. About half of plate's code landings race and run their checks twice. Each replay run costs model time.
+The reviewer replay has not run on real bugs, and no Claude Code check ran, because the Claude login expired. A second model's review found four overstated claims, all now fixed. The first count of escaped bugs comes on 2026-11-09.
 
 ## Teach
 
@@ -47,7 +47,7 @@ Each fix will name the commit it repairs. That one line gives a count of bugs th
 | Design pass | This plan's own comparison, without the three-model design contest | Run the design contest on the revert and scorecard | architect | detail |
 | When phase 3 starts | Now, because you said to build all six (look) | Wait until ten fixes name a commit | wait for ten | small |
 | The replay's first real run | The replay also takes pairs traced by hand, and the first run uses a few traced from recent history | Wait for fixes that carry the new line | no hand cases | small |
-| Replay review copies | The commit's files in a new one-commit repository in a temp folder, with no dependency install, so a reviewer can reach neither the fix nor the main checkout | Install dependencies in each copy | install deps | detail |
+| Replay review copies | The change and its parent in a new two-commit repository in a temp folder, with no dependency install; the prompt forbids every other folder, though a reviewer could still open one by its full path | Install dependencies in each copy | install deps | detail |
 | The plan page's link | The subject's page on the next branch, https://claude.ai/artifact/2hz8UXsyGd6wYpE6YsUwDj, which another session made after https://claude.ai/artifact/5NABpdSVKTYNJ57igZeY98 stopped opening; this run's own https://claude.ai/artifact/7my4Ucu6WgRJnNaegV4qTo is retired (look) | Publish no page for this subject | no page | detail |
 
 ## Main changes
@@ -103,7 +103,7 @@ Replay cases come from `Introduced-by:` lines that name a commit, and from pairs
 
 ### Phase 2. Count the seats and undo a session
 
-- [x] In `decisions-check.mjs`, a new panel `critical` row opens with `critical [<seat>, ...]:`, each seat a model name on its round's `seats` row or `lead`. Committed rows stay exempt. `rules/panel.md`'s critical-row sentence names the form and asks for every seat that raised the issue at any severity. Proof: the accepting case at `sync-pstack.test.mjs:2688–2693` (`critical The seat writes files`) flips to refused, a row naming roster models passes, a name off the roster is refused and `lead` passes. Corpus: `decisions-check.mjs --all` over every project's logs, before and after, finds no newly failing committed row.
+- [x] In `decisions-check.mjs`, a new panel `critical` row opens with `critical [<seat>, ...]:`, each seat a model name on its round's `seats` row or `lead`. Committed rows stay exempt. `rules/panel.md`'s critical-row sentence names the form and asks for every seat that raised the issue at any severity. Proof: the accepting case at `sync-pstack.test.mjs:2688–2693` (`critical The seat writes files`) flips to refused, a row naming roster models passes, a name off the roster is refused and `lead` passes. Corpus: `decisions-check.mjs --all` over every project's logs, before and after, finds no newly failing committed row. It ran on plate, the one project synced; Ellie and the v1 plate checkout get the same check from their next sync's corpus.
 - [x] Add `scorecard.mjs` to dotai's assets and to `HELPER_FILES` in `sync-pstack.mjs`. It reads every decision log in the plans directory and places each critical row's reporters through its round's `seats` row, by model name, by the aliases opus, astra and sol, or by letter or number in roster order. Per model it prints the rounds sat, the criticals raised, applied, dismissed, open and other, and the applied ones it alone raised. It also prints the rows it could not place. A second table reads `Introduced-by:` lines on the branch, merged fixes included and `fix(revert)` commits in a column of their own: fixes per week, the share that name a commit, the share of `none`, the median days from landing to fix, and how many introducing commits had panel rows in their plan's log. Proof: a fixture log covers letters, a fallback row such as "opus for gpt-6-astra", which counts as opus, and a severity-qualified row. On plate it places at least the 3,054 of 3,262 rows the explorer's simple parser placed, and a hand check of 20 random rows matches its attribution.
 - [x] Add `review.mjs --revert <session> [--check <command>]...`. It refuses the main checkout and a worktree with commits ahead of `origin/<branch>`, finds every first-parent commit whose body holds that exact `Session:` line whatever its review state or tier, refuses a merge commit, and reverts newest first. On a conflict it stops with the paths. Otherwise it writes `fix(revert): undo session <first 8 characters>` with a body listing each commit, `Beyond the ask: none` and one `Introduced-by:` line per commit, then runs `land.mjs` with the `--check` values. With `--stage` it stops once the revert is staged and prints that `land.mjs` command instead. Proof: in `trunk.test.mjs`, two interleaved sessions land, and reverting the first lands one commit that restores its files and keeps the second's. The message passes the new validator. A conflict stops mid-revert with nothing pushed, an unknown session and the main checkout are refused, and a failed check leaves the revert local.
 - [x] Deliver phase 2 as in phase 1. Proof: each project's `verify` passes and plate's land log names the commit.
@@ -144,35 +144,59 @@ The decision log cites each control's log.
 | One panel round on the helper diff | 1, 2, 3 | phase 1: p1-panel round 1; phase 2: p2-panel round 1; phase 3: p3-panel round 1 |
 | Smoke of the changed rules in both runtimes | 1, 2, 3 | phase 1: Codex only, p1-smoke-new.log and p1-smoke-live-a1-a1.log; phase 2: Codex only, p2-smoke-new.log, p2-smoke-live.log and p2-resmoke-a1.log; phase 3: Codex only, p3-smoke-new-a1.log and p3-resmoke-a1.log; Claude Code is a gap while its CLI login is expired |
 | dotai push, `apply` and `verify` | 1, 2, 3 | phase 1: dotai 518ec28, p1-verify.log; phase 2: dotai 1fcdb1c and 75c3325, p2-apply-a1.log, p2-verify-a1.log, p2-stage-apply-a1.log and p2-stage-verify-a1.log; phase 3: dotai 7c71268, p3-apply-a1.log and p3-verify-a1.log |
-| plate land through `land.mjs` | 1, 2, 3 | phase 1: 3f920c3bfe, p1-land-a1.log; phase 2: 2865bddc03; phase 3: lands with this tick |
+| plate land through `land.mjs` | 1, 2, 3 | phase 1: 3f920c3bfe, p1-land-a1.log; phase 2: 2865bddc03, p2-land-a2.log; phase 3: 2a90cafae3, p3-land-a1.log |
 | Phase exit | 1, 2, 3 | 1: waits for the escape table on 2026-11-09, in Open work; 2: the scorecard tables in the Close, no seat under 5%; 3: waits for the first real replay, in Open work |
 | `pstack:thermos` per slice | all | skip: the Lesson mode's helper panel reviews each diff, which the Build playbook says replaces it |
 | `pstack:blast-radius`, `best-api repair`, Hand drive, playtest, `plate-docs`, benchmark | all | skip: no public Plate API, browser surface, docs page or measured path changes |
-| Fold into the subject file, page and chips Close | close | pending |
-| Decision-trail review | close | pending |
+| Fold into the subject file, page and chips Close | close | fold deferred: the plan stays partial, so `docs/plans/topics/pstack.md` keeps its state until both open exits are decided; the page publishes at each stop; no chips Close, because the run offered no task |
+| Decision-trail review | close | gpt-6.1-sol @xhigh through `cross.mjs`: four criticals corrected, two warnings applied and one deferred, in the Close's Attention |
+| Reflect | close | one Opus reviewer at xhigh with three lenses: five lessons to Open work, three plan fixes and 20 findings rejected, in the Close's Reflect |
 
 ## Close
 
-All three phases are built. Phases 1 and 2 have landed on next, and phase 3 lands with this tick.
+All six items are on next. Five have test proof, though no Claude Code smoke has run for any of them. The reviewer replay has run only on fixtures, so its exit and the phase 1 exit wait in Open work. The owner's four messages held four asks, and the build covered items 1 to 6. One of three phase exits is decided.
 
-- Phase 1 landed as 3f920c3bfe from dotai 518ec28. Phase 2 landed as 2865bddc03 from dotai 1fcdb1c and 75c3325, which adds `--stage` after the live smoke found that plate's push panel clashed with a revert that lands in one command. Phase 3 lands from dotai 7c71268.
-- No real replay has run. Its Claude seats and its Opus judge need the claude CLI login, so the replay table and phase 3's exit wait in Open work.
-- Codex smoked every changed rule on plate exports before and after each change, and again on this worktree after each apply. Claude Code's smoke could not run, because the claude CLI on this machine is logged out.
+Reversals and deviations:
 
-### Seats on plate, 2026-10-26
+- Phase 3 started at once instead of after ten traced fixes, on the owner's "go all 1 to 6 without break". Its first real run uses pairs traced by hand.
+- Phase 2's session undo first landed in one command. The live smoke showed that it skipped plate's panel on a push that deletes behavior, so dotai 75c3325 added `--stage`, which stops at the staged revert and prints the land command.
+- The race count showed that about half of plate's code landings race. The full recheck stayed, and its Defaults row moved to look with a big impact.
+- Every smoke ran in Codex only. The claude CLI login expired before phase 1's smoke, so no Claude Code smoke ran, which is narrower than the plan's gate for both runtimes.
+- Beyond the ask, b2cd87d440 made `pnpm check --affected` run only the scripts that read a changed agent config under `.agents/`. Phase 2's first land ran every type-heavy step for 27 minutes because of `pstack.json`, and a SIGTERM whose sender is unknown stopped its recheck. The fix landed alone, before phase 2's second land.
+- Beyond the ask, `cross.mjs` now kills a seat that survives a stop and removes its temp folders after every panel round.
+
+What landed:
+
+- Phase 1 as 3f920c3bfe, from dotai 518ec28.
+- Phase 2 as 2865bddc03, from dotai 1fcdb1c and 75c3325.
+- Phase 3 as 2a90cafae3, from dotai 7c71268.
+- The check fix as b2cd87d440.
+
+Proof and its limits:
+
+- Raced landing. In `trunk.test.mjs`'s race case, B's check passes alone, A lands during it, and B's land then fails on the recheck with its commit local. On plate's old `land.mjs` the same race landed B unchecked and broke next's check. A recheck that would end past 55 minutes exits 75, in a test whose clock starts 10 seconds short of that deadline.
+- Fix line. The validator's fixture cases refuse a missing line, an empty value, an unknown sha and a sha off the branch, and accept a landed sha, `none` and a `feat` with no line. Over 626 plate messages from 30 days, the new rules refused the 119 fixes the old rules took and changed no other outcome.
+- Seat names. The checker refuses a critical row with no seats or a seat off its round's roster, and takes `lead`. `decisions-check --all` on plate's logs, with the installed and the new checker, finds no committed row newly failing. Ellie and the v1 plate checkout have not synced, so their next sync's corpus judges their logs.
+- Scorecard. Its fixture tests pass, and on plate at 2a90cafae3 it places 3,350 of 3,367 critical rows. A hand check of 20 random rows on the earlier run matched.
+- Session undo. `trunk.test.mjs` lands two interleaved sessions and reverts the first in one commit that keeps the second's files, and refuses a conflict, an unknown session and the main checkout. The `--stage` test fails on the old `review.mjs` and passes on the new one. In Codex's read-only smoke, the lead said it would revert the session with `--stage`, read the staged diff and land through the printed command; it ran nothing.
+- Replay. Its 22 tests pass, the planted-bug case and the session-undo skip included. Probes with fake runtimes record the seat commands, and find no process or temp folder left after a stop. No real seat or judge has run. A seat could still open another folder by its full path, which its prompt forbids. Whether a Claude seat's shell can reach the network in plan mode is unproven. The prompt holds the plan as it read at the introducing commit, so a plan that already listed the defect as a known limit hands it to every seat.
+- Babysit. `check-playbooks.mjs` passes. In Codex's read-only smoke, the lead said it would fix the changed function and send the untouched helper to open work.
+- Each plate land ran `pnpm check --affected`, with all 24 steps for phase 1 and, after the check fix, the 12 steps its paths reach for phases 2 and 3.
+
+### Seats on plate at 2a90cafae3, 2026-10-26
 
 | model | rounds sat | criticals | applied | dismissed | open | other | applied, raised alone |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| gpt-6-astra | 987 | 2371 | 2141 | 98 | 132 | 0 | 378 |
-| gpt-6.1-sol | 986 | 2253 | 2017 | 103 | 133 | 0 | 288 |
-| opus | 1013 | 1834 | 1674 | 42 | 102 | 16 | 403 |
+| gpt-6-astra | 988 | 2375 | 2145 | 98 | 132 | 0 | 378 |
+| gpt-6.1-sol | 987 | 2256 | 2020 | 103 | 133 | 0 | 288 |
+| opus | 1014 | 1838 | 1678 | 42 | 102 | 16 | 404 |
 | fable | 3 | 3 | 3 | 0 | 0 | 0 | 0 |
 | sonnet | 3 | 2 | 2 | 0 | 0 | 0 | 0 |
 | lead | - | 9 | 6 | 0 | 3 | 0 | 2 |
 
-The scorecard places 3,345 of 3,362 critical rows. The 17 it leaves out cite a stand-in by the seat it replaced, or name no seat at all. A hand check of 20 random rows matched every placement. Of the 1,069 applied criticals that one seat raised alone, Opus raised 403, Astra 378 and Sol 288. Each seat holds more than a quarter, far above the 5% bar, so no seat goes to the owner as a models-sheet question. Fable and Sonnet sat three rounds each as stand-ins.
+The scorecard places 3,350 of 3,367 critical rows. The 17 it leaves out cite a stand-in by the seat it replaced, or name no seat at all. A hand check of 20 random rows, on the earlier run at 2865bddc03, matched every placement. Of the 1,070 applied criticals that one seat raised alone, Opus raised 404, Astra 378 and Sol 288. Each seat holds more than a quarter, far above the 5% bar, so no seat goes to the owner as a models-sheet question. Applied means the lead accepted a critical, and no judge confirmed it. So the table shows each seat's unique share, while precision waits for the replay's judge. Fable and Sonnet sat three rounds each as stand-ins.
 
-### Escapes on next since 2026-09-07
+### Escapes on next at 2a90cafae3, since 2026-09-07
 
 | week | fixes | naming a commit | none | no line | median days to fix | introducing commit's plan log had a panel round | reverts |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -183,18 +207,61 @@ The scorecard places 3,345 of 3,362 critical rows. The 17 it leaves out cite a s
 | 2026-W41 | 19 | 0 (0%) | 0 (0%) | 19 | - | 0 of 0 | 0 |
 | 2026-W42 | 51 | 0 (0%) | 0 (0%) | 51 | - | 0 of 0 | 0 |
 | 2026-W43 | 105 | 0 (0%) | 0 (0%) | 105 | - | 0 of 0 | 0 |
-| 2026-W44 | 8 | 0 (0%) | 0 (0%) | 8 | - | 0 of 0 | 0 |
+| 2026-W44 | 10 | 2 (20%) | 0 (0%) | 8 | 2.8 | 0 of 2 | 0 |
 
-No fix names its cause yet, because the `Introduced-by:` refusal started with phase 1 today. The table also counts fix commits that reached next through a merge. The phase 1 exit reads this table again on 2026-11-09.
+Two fixes name their cause so far, b2cd87d440 among them, because the `Introduced-by:` refusal started with phase 1 today. Neither introducing commit's plan log had a panel round. The table also counts fix commits that reached next through a merge. The phase 1 exit reads this table again on 2026-11-09.
+
+### Attention
+
+reviewed by gpt-6.1-sol @xhigh
+
+1. Critical, corrected. The Close said Codex's smokes reverted a session and fixed the Babysit example. Both smokes were read-only and only said what the lead would do, so the Close now says so.
+2. Critical, corrected. The Close said `decisions-check --all` ran on every project's logs. It ran on plate only, so the Close and step 2.1 now name plate and leave Ellie and the v1 checkout to their next sync.
+3. Critical, corrected. The replay copies' Defaults row promised that a seat could reach neither the fix nor the main checkout. Phase 3's panel row said two isolation limits stayed on the page, but the page never showed them. The Defaults row, the Close and Open work now state three limits, the plan text in the prompt included. The code keeps the plan in the prompt, because phase 3's step asks for it.
+4. Critical, corrected. The escape table and "no fix names its cause" came from a scorecard run before b2cd87d440 landed with an `Introduced-by:` line. Both tables now come from a run at 2a90cafae3, where two of this week's ten fixes name their cause.
+5. Warning, applied. "Five have their proof" read as if the both-runtimes smoke gate passed. The lead sentence now says no Claude Code smoke ran.
+6. Warning, deferred. The `levels.mjs` dismissal holds for plate's one Astra line, but a per-role effort rule would report only its highest level. It is in Open work.
+7. Warning, applied. The first real replay needs four more traced pairs and smaller clean commits, as well as the login. Its Open work item now says so.
+
+### Reflect
+
+One Opus reviewer at xhigh read this session from "go all 1 to 6 without break" to the reflect call through pstack's judgment, tooling and divergent lenses. It returned 28 findings.
+
+The lead accepted five lessons. All five go to Open work, because none fixes a refused case or only rewords a rule:
+
+1. Overstated smoke claims reached two landed commit bodies, because the trail review ran only at the close.
+2. The lead queued a writing row before its pass ran, and the row described an edit that never happened.
+3. The expired claude login emptied a seat at 15:52, and the ask reached the owner at 20:11.
+4. The lead needed two scratch probes to learn which steps `pnpm check --affected` would run.
+5. The desktop app refuses Write and Edit in the main checkout's run directory, where the Plans and trails rule queues decision rows.
+
+Three findings changed this plan. The seats table now says it measures each seat's unique share, not its precision. The first-replay item says the panel rule's replay gives an unchecked number until that run. A new Open work item names the recheck's doubled exposure to load flakes.
+
+The lead rejected the other 20:
+
+- Seven repeat a rule the lead missed in execution: read-only smokes prove routing only, ask the owner early, load interrogate and show-me-your-work, check every consumer of a new commit shape, hand-sample a parser, run red controls on the reviewed bytes, and price a gate before building it.
+- Four are already done or recorded: replay isolation is in Open work, b2cd87d440 fixed the check selector, the Decisions and the phase 1 exit cover a fix line that only checks format, and `plan-page.mjs` and `append` already report every refusal in one run.
+- Two are refuted. Each landed body says Claude Code's smoke could not run, and names both runtimes only as the ones that get the rule. Replay already reads the plan as it read at the introducing commit.
+- Two go against the owner's word: one session per phase, against the Long runs rule of 2026-10-22, and dotai edits on main, which dotai's `AGENTS.md` requires.
+- Four are trivial or one-off: a command batched with the Write it needed, a seat answer written by hand, the session tool's arguments, and reloading only a mode's steps after a compaction.
+- One tooling check found no context the owner had to supply.
 
 ## Open work
 
 - Phase 1 exit. On 2026-11-09, two weeks after the sync, run `scorecard.mjs` on plate and read its escape table. Keep the `Introduced-by:` refusal while most fixes name a commit, and turn it into a warning, with the reason logged, when most say `none`. owner: zbeyens. stop: the escape table and the keep or warn decision written in this plan's Close.
 - `refs/pstack/reviewed` is unset in this clone, so `review.mjs` shows only the last 20 commits and records no post-landing review. owner: zbeyens. stop: the owner says whether that review happens elsewhere, or starts marking sessions with `--done`.
 - `review.mjs --revert` also reverts the session's own plan and decision-log edits, so the record of why the work existed leaves the tree, though history keeps it. owner: zbeyens. stop: the owner keeps that, or asks the revert to leave the plans directory alone.
-- First real replay. The claude CLI on this machine has an expired login, so no Claude seat or Opus judge can run, and the Claude Code half of every smoke in this run failed. owner: zbeyens, who logs in with `claude` in a terminal. stop: the lead runs `replay.mjs` on plate with the current seats over six traced cases, checks the judge's verdicts against a hand reading, writes the table in this plan's Close, decides the phase 3 exit and reruns the Claude Code smokes of phases 1 to 3.
+- First real replay. The claude CLI on this machine has an expired login, so no Claude seat or Opus judge can run, and the Claude Code half of every smoke in this run failed. The run also lacks cases: only two pairs are traced by hand, and the two clean picks are bulk commits of 422 and 368 files that measure little. Until that run, the panel rule's replay before a seat change gives a number no hand reading has checked. owner: zbeyens, who logs in with `claude` in a terminal. stop: the lead traces four more pairs and picks two smaller clean commits, runs `replay.mjs` on plate with the current seats over six traced cases, checks the judge's verdicts against a hand reading, writes the table in this plan's Close, decides the phase 3 exit and reruns the Claude Code smokes of phases 1 to 3.
+- Replay's seat isolation has three limits (phase 3 panel rows 59 and 63, trail review flag 3). A seat could open another folder by its full path, which its prompt forbids. Whether a Claude seat's shell can reach the network in plan mode is unproven. The prompt holds the plan as it read at the introducing commit, so when that plan already listed the defect, every seat gets credit for naming it. owner: zbeyens. stop: the first real replay's hand reading finds a seat answer that quotes a path outside its copy or text only the plan held.
+- `levels.mjs` takes the highest effort a project rule names for a model across panel seats, architect runners and arena runners, so a rule that sets one model's effort per role reports only the highest (trail review flag 6). owner: zbeyens. stop: a project rule gives one model different efforts per role.
+- The full recheck runs every check twice on a raced landing, so a test that flakes under load fails twice as many landings. Phase 2's recheck failed on tests cancelled under load after its first check passed all 25 steps (reflect). owner: zbeyens. stop: a recheck fails on a test that passes when rerun alone.
 - Replay starts every seat at once, with no provider cap and no rerun of a failed seat (phase 3 panel warning 4). owner: zbeyens. stop: the first real replay shows a rate refusal, or the owner asks for a cap.
 - A stop during replay's copy setup takes effect only after replay builds every copy, up to about 6 minutes (warning 14). owner: zbeyens. stop: a stop during setup needs to end sooner.
 - A failed opus seat's error file shows only the untrusted-folder warning (warning 15). owner: zbeyens. stop: the Claude login works again and a seat failure needs its cause.
 - `cross.mjs` passes each prompt as one argument, over Linux's 131,072-byte limit (warning 17). owner: zbeyens. stop: a pstack project runs panels on Linux.
 - Three helpers copy `land.mjs`'s choice of remote, and `replay.mjs` and `scorecard.mjs` copy its `Introduced-by:` parser, scorecard's without the space after the colon. owner: zbeyens. stop: a copy disagrees with `land.mjs` on a real commit.
+- Check each proof claim in a phase's land message against its log before that phase lands. A landed body on next cannot change, and the trail review runs only at the close (reflect lesson 1). owner: zbeyens. stop: the owner takes or drops it.
+- Log a decision row only for output already in context. The Calls rule sends an append with the next working call, which invites a row for work that call has not done (reflect lesson 2). owner: zbeyens. stop: the owner takes or drops it.
+- Have `cross.mjs`, `seats.mjs` and `sync-pstack smoke` check each CLI's login before a run and fail with the login command, so the Blocked rule's ask fires at the first empty seat (reflect lesson 3). owner: zbeyens. stop: the owner takes or drops it.
+- Add a print-only mode to `pnpm check --affected` that lists the steps a change reaches before `land.mjs` runs them (reflect lesson 4). owner: zbeyens. stop: the owner takes or drops it.
+- Let the decision-row queue live in the session's scratchpad, because the desktop app refuses Write and Edit in the main checkout's run directory (reflect lesson 5). owner: zbeyens. stop: the owner takes or drops it.
