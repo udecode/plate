@@ -12,12 +12,8 @@ const artifactPath = resolve(
 
 describe('schema-backed sparse edit benchmark authority', () => {
   it(
-    'installs a real compiled schema before measuring locality',
-    {
-      // The child enforces the benchmark budgets. This outer process timeout only
-      // needs enough headroom to avoid killing valid work on a shared CI host.
-      timeout: 180_000,
-    },
+    'installs a real compiled schema and keeps every cohort local; the strict target owns timing',
+    { timeout: 180_000 },
     () => {
       const result = spawnSync(
         process.execPath,
@@ -25,17 +21,10 @@ describe('schema-backed sparse edit benchmark authority', () => {
           '--preload',
           './config/plite-source-aliases.ts',
           'benchmarks/editor/benchmarks/plite-schema-construction-benchmark.ts',
-          '--iterations=20',
+          '--iterations=1',
           '--output=tmp/plite-schema-construction-contract.json',
         ],
-        {
-          cwd: root,
-          encoding: 'utf-8',
-          env: {
-            ...process.env,
-            PLITE_SCHEMA_CONSTRUCTION_STRICT: '1',
-          },
-        }
+        { cwd: root, encoding: 'utf-8' }
       );
 
       assert.equal(
@@ -65,24 +54,12 @@ describe('schema-backed sparse edit benchmark authority', () => {
           contractBytes: number;
           bodyMaximumChangedSpan: number;
           maximumChangedSpan: number;
-          plainPropertyEdit: {
-            p50Ms: number;
-            p95Ms: number;
-            samplesMs: number[];
-          };
+          plainPropertyEdit: { samplesMs: number[] };
           pairedPropertyDelta: { samplesMs: number[] };
           prefixLength: number;
-          prefixPropertyEdit: {
-            p50Ms: number;
-            p95Ms: number;
-            samplesMs: number[];
-          };
+          prefixPropertyEdit: { samplesMs: number[] };
           prefixPropertyMaximumChangedSpan: number;
-          propertyOverheadBudgetMs: number;
-          propertyOverheadMs: number;
-          propertyOverheadWithinBudget: boolean;
         }>;
-        prefixPropertyOverheadWithinBudget: boolean;
         propertyOnlyDiagnostic: boolean;
       };
 
@@ -98,7 +75,6 @@ describe('schema-backed sparse edit benchmark authority', () => {
       );
       assert.equal(artifact.immutablePublicationDiagnostic.rows.length, 4);
       assert.equal(artifact.propertyOnlyDiagnostic, false);
-      assert.equal(artifact.prefixPropertyOverheadWithinBudget, true);
       assert.equal(
         artifact.immutablePublicationDiagnostic.rows.every(
           ({ maximumChangedSpan }) => maximumChangedSpan < 64
@@ -122,13 +98,9 @@ describe('schema-backed sparse edit benchmark authority', () => {
             row.maximumChangedSpan < 64 &&
             row.prefixPropertyMaximumChangedSpan < 64 &&
             row.bodyMaximumChangedSpan < 64 &&
-            row.plainPropertyEdit.samplesMs.length === 20 &&
-            row.prefixPropertyEdit.samplesMs.length === 20 &&
-            row.pairedPropertyDelta.samplesMs.length === 20 &&
-            row.plainPropertyEdit.p50Ms <= row.plainPropertyEdit.p95Ms &&
-            row.prefixPropertyEdit.p50Ms <= row.prefixPropertyEdit.p95Ms &&
-            row.propertyOverheadWithinBudget &&
-            row.propertyOverheadMs <= row.propertyOverheadBudgetMs
+            row.plainPropertyEdit.samplesMs.length === 1 &&
+            row.prefixPropertyEdit.samplesMs.length === 1 &&
+            row.pairedPropertyDelta.samplesMs.length === 1
         ),
         true
       );
