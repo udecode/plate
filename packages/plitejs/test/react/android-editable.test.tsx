@@ -619,6 +619,16 @@ const caretIn = (text: Text, offset: number): StaticRangeLike => ({
   startOffset: offset,
 });
 
+const placeholderShown = (root: HTMLElement) => {
+  const element = root.querySelector<HTMLElement>('[data-editor-placeholder]');
+
+  if (!element) return false;
+
+  const { display, visibility } = getComputedStyle(element);
+
+  return display !== 'none' && visibility !== 'hidden';
+};
+
 describe('Android composition boundaries', () => {
   test.each(['custom-leaf', 'retained'] as const)(
     'a draft before a trailing soft break excludes the display newline (%s)',
@@ -1389,13 +1399,6 @@ describe('Android composition commits through the editor', () => {
 
   test('Enter during a draft under the placeholder commits the word, then splits', async () => {
     const mounted = mount([''], { placeholder: 'Type here' });
-    const placeholderShown = () => {
-      const element = mounted.root.querySelector<HTMLElement>(
-        '[data-editor-placeholder]'
-      );
-
-      return !!element && element.style.display !== 'none';
-    };
 
     try {
       await placeCaretAtEnd(mounted, 0);
@@ -1412,7 +1415,7 @@ describe('Android composition commits through the editor', () => {
         await ime.update(next);
       }
 
-      const during = placeholderShown();
+      const during = placeholderShown(mounted.root);
       const modelDuring = blockText(mounted.editor, 0);
 
       await nativeInput(mounted.root, {
@@ -1460,12 +1463,8 @@ describe('Android composition commits through the editor', () => {
         }
         await ime.end();
 
-        const placeholder = mounted.root.querySelector<HTMLElement>(
-          '[data-editor-placeholder]'
-        );
-
         expect({
-          shown: !!placeholder && placeholder.style.display !== 'none',
+          shown: placeholderShown(mounted.root),
           text: blockText(mounted.editor, 0),
         }).toEqual({ shown: true, text: '' });
       } finally {

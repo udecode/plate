@@ -3080,6 +3080,57 @@ test.describe('On richtext example', () => {
     });
   });
 
+  test('keeps the opening bracket when Backspace cancels a composition and its IME keydown follows compositionend [plate#5249]', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'Desktop WebKit composition event order'
+    );
+
+    const editor = await openExample(page, 'plite/richtext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    await editor.click();
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.insertText('id []');
+    await editor.assert.blockTexts(['id []']);
+    await editor.selection.selectDOM({
+      anchor: { path: [0, 0], offset: 'id ['.length },
+      focus: { path: [0, 0], offset: 'id ['.length },
+    });
+
+    await editor.root.evaluate((element: HTMLElement) => {
+      for (const [type, data] of [
+        ['compositionstart', ''],
+        ['compositionupdate', 'd'],
+        ['compositionupdate', ''],
+        ['compositionend', ''],
+      ] as const) {
+        element.dispatchEvent(
+          new CompositionEvent(type, { bubbles: true, data })
+        );
+      }
+      element.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          code: 'Backspace',
+          key: 'Backspace',
+          keyCode: 229,
+        })
+      );
+    });
+    await page.keyboard.insertText('d');
+
+    await editor.assert.blockTexts(['id [d]']);
+    await expect.poll(() => editor.get.modelText()).toBe('id [d]');
+  });
+
   test('keeps model selection when focus moves outside the editor', async ({
     page,
   }) => {

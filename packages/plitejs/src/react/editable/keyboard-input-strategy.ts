@@ -97,6 +97,11 @@ const keyDownHandled = (
 });
 const keyDownUnhandled = (): EditableKeyDownResult => ({ handled: false });
 
+const isImeKeyDown = (nativeEvent: KeyboardEvent) =>
+  nativeEvent.isComposing ||
+  // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] WebKit sends the keydown that ends a composition, such as a Backspace that empties it, after compositionend, so only keyCode 229 marks it as consumed by the IME.
+  nativeEvent.keyCode === 229;
+
 const getSelectionFocusEditor = ({
   editor,
   getActiveContentRootOwner,
@@ -491,6 +496,12 @@ export const applyEditableKeyDown = ({
 
   if (isInteractiveInternalTarget(editor, event.target)) {
     const { nativeEvent } = event;
+
+    if (isImeKeyDown(nativeEvent)) {
+      event.stopPropagation();
+      return keyDownHandled();
+    }
+
     const nestedEditableTarget =
       !!editorElement && isNestedEditableDOMTarget(editorElement, event.target);
     const nestedSelectionContext = nestedEditableTarget
@@ -695,6 +706,10 @@ export const applyEditableKeyDown = ({
     });
     if (userKeyDownResult.handled) {
       return userKeyDownResult;
+    }
+
+    if (isImeKeyDown(nativeEvent)) {
+      return keyDownUnhandled();
     }
 
     const projectedSelection = readPliteViewSelection(editor);

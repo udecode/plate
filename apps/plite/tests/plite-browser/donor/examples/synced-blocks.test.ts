@@ -2853,6 +2853,66 @@ test.describe('synced blocks example', () => {
     }
   });
 
+  test('keeps a projected selection from a synced body when an IME-consumed Backspace follows compositionend', async ({
+    page,
+  }, testInfo) => {
+    skipMobileDesktopProjectedSelectionProof(testInfo);
+
+    await openExample(page, 'plite/synced-blocks', {
+      ready: { editor: 'visible' },
+    });
+
+    const outerEditor = page.locator('[data-editor="true"]').first();
+    const firstEditor = getSyncedEditorByRoot(page, SHARED_ROOT, 0);
+    const first = createBrowserEditorHarness(
+      page,
+      'synced-blocks-first-copy',
+      firstEditor
+    );
+    const outer = createBrowserEditorHarness(
+      page,
+      'synced-blocks-outer',
+      outerEditor
+    );
+    const anchorOffset = SHARED_BODY_SECOND.indexOf('any');
+
+    await first.selection.selectDOM({
+      anchor: { path: [1, 0], offset: anchorOffset },
+      focus: { path: [1, 0], offset: SHARED_BODY_SECOND.length },
+    });
+    await focusRoot(firstEditor);
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect.poll(() => getViewSelection(outerEditor)).not.toBe(null);
+
+    const firstText = await first.get.modelText();
+    const outerText = await outer.get.modelText();
+
+    await firstEditor.evaluate((element: HTMLElement) => {
+      element.dispatchEvent(
+        new CompositionEvent('compositionend', { bubbles: true, data: '' })
+      );
+      element.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          bubbles: true,
+          cancelable: true,
+          code: 'Backspace',
+          key: 'Backspace',
+          keyCode: 229,
+        })
+      );
+    });
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+        )
+    );
+
+    expect(await first.get.modelText()).toBe(firstText);
+    expect(await outer.get.modelText()).toBe(outerText);
+    expect(await getViewSelection(outerEditor)).not.toBe(null);
+  });
+
   test('Enter over a projected selection from a synced body into the owner document inserts a paragraph break without crashing', async ({
     page,
   }, testInfo) => {

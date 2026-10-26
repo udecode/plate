@@ -166,6 +166,35 @@ test.describe('placeholder example', () => {
     });
   });
 
+  test('hides the placeholder while an IME composes in the empty editor and shows it after a cancel [plate#5248]', async ({
+    page,
+  }) => {
+    const editor = await openExample(page, 'plite/custom-placeholder', {
+      ready: {
+        editor: 'visible',
+        placeholder: 'visible',
+      },
+    });
+
+    await editor.selection.selectDOM({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
+    await editor.ime.startSynthetic({ text: 'n' });
+    await editor.ime.updateSynthetic({ text: "ni'hao" });
+
+    await editor.assert.placeholderVisible(false);
+
+    await editor.root.evaluate((element: HTMLElement) => {
+      element.dispatchEvent(
+        new CompositionEvent('compositionend', { bubbles: true, data: '' })
+      );
+    });
+
+    await editor.assert.placeholderVisible(true);
+    await expect.poll(() => editor.get.modelText()).toBe('');
+  });
+
   test('commits dictation-style insertText beforeinput from the custom placeholder empty state', async ({
     page,
   }, testInfo) => {

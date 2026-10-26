@@ -16,7 +16,6 @@ import {
 } from '../../core/commit';
 import { mapSelectionThroughChange } from '../../core/selection-protocol';
 import { getSelection } from '../../dom';
-import { EDITOR_TO_PLACEHOLDER_ELEMENT } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   beginEditableCompositionSession,
@@ -464,22 +463,6 @@ const listenForLeave = (
   };
 };
 
-// The model stays empty while the keyboard drafts into an empty editor, so
-// the placeholder would show over the draft.
-const hidePlaceholder = (editor: ReactRuntimeEditor) => {
-  const placeholder = EDITOR_TO_PLACEHOLDER_ELEMENT.get(editor);
-
-  if (!placeholder) return () => {};
-
-  const { display } = placeholder.style;
-
-  placeholder.style.display = 'none';
-
-  return () => {
-    placeholder.style.display = display === 'none' ? '' : display;
-  };
-};
-
 export const hasAndroidComposition = (
   inputController: EditableInputController
 ) => RUNS.has(inputController);
@@ -522,7 +505,6 @@ export const openAndroidComposition = ({
     }
   });
   const releaseLeave = listenForLeave(editor, base.lines, end);
-  const showPlaceholder = hidePlaceholder(editor);
   const run: AndroidCompositionRun = {
     base,
     cancelEnd: null,
@@ -530,7 +512,6 @@ export const openAndroidComposition = ({
     release: () => {
       releaseCommits();
       releaseLeave();
-      showPlaceholder();
       base.target.release();
     },
     setComposing,

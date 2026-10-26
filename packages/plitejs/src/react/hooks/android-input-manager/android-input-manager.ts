@@ -438,11 +438,7 @@ export function createAndroidInputManager({
       return;
     }
 
-    if (
-      hasPendingDiffs() ||
-      hasAndroidComposition(inputController) ||
-      forceHide
-    ) {
+    if (hasPendingDiffs() || forceHide) {
       placeholderElement.style.display = 'none';
       return;
     }
