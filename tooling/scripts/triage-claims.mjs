@@ -75,6 +75,13 @@ export function foldClaims(rows, { owners, endedAt }) {
     if (row.move === 'take' || (row.move === 'claim' && !held)) {
       live.set(row.issue, claim);
     } else if (
+      row.move === 'claim' &&
+      row.task !== null &&
+      sameActor(current.actor, row)
+    ) {
+      // The holder claims again only to name the task its claim offered.
+      live.set(row.issue, { ...current, task: row.task });
+    } else if (
       row.move === 'release' &&
       held &&
       (sameActor(current.actor, row) || owners.includes(row.who))
@@ -371,19 +378,34 @@ export function decide(request, world) {
       world.ready(task)
     );
   });
+  const loose =
+    request.drives || request.target.task
+      ? []
+      : held.filter((issue) =>
+          tiedTo([issue], world, { tasks: false }).every(
+            (each) => openTasks(each, world).length === 0
+          )
+        );
+  const offer = offerOf(loose, world);
+  const offered = (issue) =>
+    offer?.skip === null && offer.issues.includes(issue);
   const taskOf = (issue) =>
     starts.find((id) => world.taskIssues(id).includes(issue)) ??
     (request.target.task &&
     world.taskIssues(request.target.task).includes(issue)
       ? request.target.task
-      : null);
+      : null) ??
+    (offered(issue) ? request.offerId : null);
   const writes = members.flatMap((issue) => {
     const result = results.get(issue);
-    if (result.verdict !== 'claim' && result.verdict !== 'take') return [];
+    const naming = result.verdict === 'mine' && offered(issue);
+    if (result.verdict !== 'claim' && result.verdict !== 'take' && !naming) {
+      return [];
+    }
     return [
       {
         issue,
-        move: result.verdict,
+        move: result.verdict === 'take' ? 'take' : 'claim',
         task: taskOf(issue),
         drives: laneOf(issue, world).length > 0 ? request.drives : null,
         over: (result.taken ?? []).map((hold) => hold.key),
@@ -396,7 +418,36 @@ export function decide(request, world) {
     writes,
     held,
     starts,
+    offer,
     refusal: null,
     exit: held.length > 0 ? 0 : 1,
+  };
+}
+
+// chips.md lets only a verdict, babysit or time run offer a P2 or P3 task.
+const OFFERED = new Set(['P0', 'P1']);
+
+function offerOf(loose, world) {
+  const unrecorded = loose.filter((issue) => !world.head(issue));
+  if (unrecorded.length > 0) return { skip: 'unrecorded', issues: unrecorded };
+  const kinds = [...new Set(loose.map((issue) => rootOf(issue, world)))].filter(
+    (issue) => world.head(issue)?.outcome === 'kind'
+  );
+  if (kinds.length === 0) return null;
+  const issues = loose
+    .filter((issue) => kinds.includes(rootOf(issue, world)))
+    .sort((a, b) => Number(a) - Number(b));
+  const priority = kinds
+    .map((issue) => world.head(issue).fields.get('priority'))
+    .sort((a, b) => a.localeCompare(b))[0];
+  if (!OFFERED.has(priority)) return { skip: 'priority', issues, priority };
+  return {
+    skip: null,
+    issues,
+    kinds,
+    priority,
+    files: [
+      ...new Set(kinds.flatMap((issue) => ownerFiles(world.head(issue)))),
+    ],
   };
 }

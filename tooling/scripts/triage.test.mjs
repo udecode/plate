@@ -1856,6 +1856,7 @@ describe('triage claim', { concurrency: 8 }, () => {
         notes: [
           'note: t_bbbb2222 (offered) names #5250 in its finding, not in repro:',
           'note: branch fix-5250-enter names #5250',
+          'note: no task covers #5250, which has no record yet, so the claim offers none; run it again once the records are written',
         ],
       },
       result.stdout
@@ -2171,6 +2172,19 @@ describe('triage claim', { concurrency: 8 }, () => {
       );
     });
   }
+
+  test("a claim ends once the task that the holder's later claim row names lands", async () => {
+    const box = sandbox();
+    setClaims(box, [
+      held({ ts: ago(2) }),
+      held({ ts: ago(1.5), task: 't_aaaa1111' }),
+    ]);
+    setLedger(
+      box,
+      `${offer('t_aaaa1111', 'plate#5250')}${startedIn('t_aaaa1111', 'A', ago(1))}${chip('t_aaaa1111', 'landed', 'fixed', 'commit: abc1234', ago(0.5))}`
+    );
+    assert.equal(await claimLineOf(box), 'claim: none');
+  });
 
   test('show prints the live claim and the open tasks whose findings name the issue, and tasks: stays with repro:', async () => {
     const box = sandbox();
@@ -2614,6 +2628,132 @@ put(['update-ref', 'refs/pstack/ledger', commit]);
       { status: 0, sessions: ['session: local_other'] },
       result.stdout + result.stderr
     );
+  });
+
+  const offeredFixes = (box) =>
+    ledgerOnOrigin(box).match(
+      /\tchip\tt_[0-9a-f]{8} Fix plate#[^\n]*\toffered$/gmu
+    ) ?? [];
+
+  test('a claim on kinds no task covers offers one task at their worst priority and starts it for the session', async () => {
+    const box = trunkSandbox('');
+    setIssues(box, [issue(5250), issue(5251), issue(5252)]);
+    setRecords(box, [
+      [5250, 'kind', kind().replace('P0', 'P2')],
+      [5251, 'kind', kind()],
+      [5252, 'dup', 'of: 5251'],
+    ]);
+    const result = await claim(box, ['5251', '--session', 'A']);
+    assert.match(
+      ledgerOnOrigin(box),
+      /\tchip\t(t_[0-9a-f]{8}) Fix plate#5250 plate#5251 and plate#5252\t[^\t]*plate#5252 \(dup of plate#5251\) "Issue 5252"\.\twrites: packages\/a\/src\/owner\.ts; topic: plate-5250; kind: fix; priority: P0; repro: plate#5250 plate#5251 and plate#5252 numbered repros hold the exact steps; session: A[^\t]*\toffered\n(?:[^\n]*\n)*?[^\n]*\tchip\t\1 Fix plate#5250 plate#5251 and plate#5252\t[^\t]+\tsession: A[^\t]*\tstarted\n/u,
+      result.stdout + result.stderr
+    );
+  });
+
+  test("a session's second claim writes no claim row and offers no second task", async () => {
+    const box = trunkSandbox('');
+    setRecords(box, [[5250, 'kind', kind()]]);
+    await claim(box, ['5250', '--session', 'A']);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      { offers: offeredFixes(box).length, rows: claimRows(box).length },
+      { offers: 1, rows: 1 },
+      result.stdout + result.stderr
+    );
+  });
+
+  test('a rerun whose earlier offer never reached the shared ledger offers no second task', async () => {
+    const box = trunkSandbox('');
+    setRecords(box, [[5250, 'kind', kind()]]);
+    const hook = join(box.origin, 'hooks', 'pre-receive');
+    writeFileSync(hook, '#!/bin/sh\n! grep -q refs/pstack/ledger\n');
+    chmodSync(hook, 0o755);
+    await claim(box, ['5250', '--session', 'A']);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    const local = readFileSync(
+      join(box.work, 'docs/plans/artifacts/suggested-tasks.decisions.tsv'),
+      'utf-8'
+    );
+    assert.equal(
+      local.match(/\tchip\tt_[0-9a-f]{8} Fix plate#5250\t[^\n]*\toffered$/gmu)
+        ?.length,
+      1,
+      result.stdout + result.stderr
+    );
+  });
+
+  test('a released claim frees the task it offered for the next session', async () => {
+    const first = trunkSandbox('');
+    setRecords(first, [[5250, 'kind', kind()]]);
+    await claim(first, ['5250', '--session', 'A']);
+    const rerun = trunkSandbox('');
+    await claim(rerun, ['5250', '--session', 'A']);
+    setRecords(rerun, [[5250, 'kind', kind()]]);
+    await claim(rerun, ['5250', '--session', 'A']);
+    const next = [];
+    for (const box of [first, rerun]) {
+      await triage(box, [
+        'release',
+        '5250',
+        '--session',
+        'A',
+        '--why',
+        'stopped: no repro',
+      ]);
+      next.push(await claim(box, ['5250', '--session', 'B']));
+    }
+    assert.deepEqual(
+      {
+        offers: [offeredFixes(first).length, offeredFixes(rerun).length],
+        claimed: next.map((result) => result.status),
+      },
+      { offers: [1, 1], claimed: [0, 0] },
+      next.map((result) => result.stdout).join('\n')
+    );
+  });
+
+  test('a claim on a P2 kind no task covers offers no task and says why', async () => {
+    const box = sandbox();
+    setRecords(box, [[5250, 'kind', kind().replace('P0', 'P2')]]);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.match(
+      result.stdout,
+      /^note: no task covers #5250, whose worst kind is P2, so the claim offers none; a run offers only P0 or P1 tasks$/mu
+    );
+  });
+
+  test('a task claim and a device claim offer no task', async () => {
+    const task = trunkSandbox(offer('t_aaaa1111', 'plate#5251'));
+    setRecords(task, [[5250, 'kind', kind()]]);
+    const device = trunkSandbox('');
+    setRecords(device, [[5250, 'kind', kind('editing', '; device: ios')]]);
+    const results = [
+      await claim(task, [
+        '--domain',
+        'editing',
+        '--task',
+        't_aaaa1111',
+        '--session',
+        'A',
+      ]),
+      await claim(device, ['5250', '--drives', 'ios', '--session', 'A']),
+    ];
+    assert.deepEqual(
+      [offeredFixes(task).length, offeredFixes(device).length],
+      [0, 0],
+      results.map((result) => result.stdout + result.stderr).join('\n')
+    );
+  });
+
+  test('a dup of an issue an open task covers gets no task of its own', async () => {
+    const box = trunkSandbox(offer('t_aaaa1111', 'plate#5250'));
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'dup', 'of: 5250'],
+    ]);
+    const result = await claim(box, ['5251', '--session', 'A']);
+    assert.deepEqual(offeredFixes(box), [], result.stdout + result.stderr);
   });
 
   test('usage errors exit 2', async () => {

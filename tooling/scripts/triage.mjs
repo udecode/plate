@@ -31,6 +31,7 @@ import {
   LEDGER,
   LEDGER_REF,
   ledgerPath,
+  newId,
   readTasks,
   SESSION,
 } from '../../.agents/pstack/tasks.mjs';
@@ -1900,7 +1901,12 @@ function claimCommand(argv) {
     issues.length > 0
       ? { issues }
       : { domain: options.domain ?? null, task: options.task ?? null };
-  const request = { target, take, drives: options.drives ?? null };
+  const request = {
+    target,
+    take,
+    drives: options.drives ?? null,
+    offerId: newId(),
+  };
   const { members } = targetMembers(
     target,
     claimWorld(reads, open, [], new Map(), actor, git)
@@ -2053,7 +2059,20 @@ function claimCommand(argv) {
     process.exitCode = 1;
     return;
   }
-  if (decision.starts.length === 0) return;
+  const { offer } = decision;
+  const listed = (numbers) => numbers.map((issue) => `#${issue}`).join(' ');
+  if (offer?.skip === 'unrecorded') {
+    console.log(
+      `note: no task covers ${listed(offer.issues)}, which has no record yet, so the claim offers none; run it again once the records are written`
+    );
+  }
+  if (offer?.skip === 'priority') {
+    console.log(
+      `note: no task covers ${listed(offer.issues)}, whose worst kind is ${offer.priority}, so the claim offers none; a run offers only P0 or P1 tasks`
+    );
+  }
+  const offering = offer?.skip === null;
+  if (decision.starts.length === 0 && !offering) return;
   const main =
     gitOut('worktree', 'list', '--porcelain')?.match(
       /^worktree (.+)$/mu
@@ -2070,23 +2089,85 @@ function claimCommand(argv) {
     ...world.claimRows,
     ...parseClaims(`${CLAIM_COLUMNS.join('\t')}\n${written.join('\n')}`),
   ];
-  const recheck = decide(
-    request,
-    claimWorld({ ...reads, ledger }, open, rows, live, actor, git)
-  );
+  const fresh = claimWorld({ ...reads, ledger }, open, rows, live, actor, git);
+  const recheck = decide(request, fresh);
+  const why = `claimed by pnpm triage claim ${named}`;
+  const current = () => ledgerNow(reads);
   for (const id of decision.starts) {
     console.log(
       recheck.starts.includes(id)
-        ? startTask(
-            ledger.tasks.get(id),
-            actor,
-            `claimed by pnpm triage claim ${named}`,
-            main,
-            () => ledgerNow(reads)
-          )
+        ? startTask(ledger.tasks.get(id), actor, why, main, current)
         : `note: ${id} changed after the claim decided, so the claim leaves it ${ledger.tasks.get(id)?.status ?? 'as it is'}`
     );
   }
+  if (!offering) return;
+  console.log(
+    recheck.offer?.skip === null
+      ? offerTask(recheck.offer, {
+          id: request.offerId,
+          world: fresh,
+          repo,
+          actor,
+          named,
+          main,
+          current,
+        })
+      : `note: the shared ledger changed after the claim decided, so it offers no task for ${listed(offer.issues)}`
+  );
+}
+
+function offerTask(offer, { id, world, repo, actor, named, main, current }) {
+  const name = repo.split('/')[1];
+  const refs = offer.issues.map((issue) => `${name}#${issue}`);
+  const names =
+    refs.length > 1
+      ? `${refs.slice(0, -1).join(' ')} and ${refs.at(-1)}`
+      : refs[0];
+  const file = ledgerIn(main);
+  // A start whose push failed leaves its rows only in this file, so the shared ledger the claim read cannot show them.
+  const local = existsSync(file)
+    ? ledgerOf(readFileSync(file, 'utf-8'), repo)
+    : null;
+  const waiting = local
+    ? offer.issues
+        .flatMap((issue) => linkedTasks(issue, local))
+        .find((task) => task.status === 'offered' || task.status === 'started')
+    : undefined;
+  if (waiting) {
+    return `note: ${waiting.id} in ${file} already covers ${names}, so the claim offers no task; node .agents/pstack/setup.mjs run in ${main} pushes it`;
+  }
+  const details = offer.issues.map((issue) => {
+    const { outcome, fields } = world.head(issue);
+    const about =
+      outcome === 'kind'
+        ? `${fields.get('priority')}, ${fields.get('scope')}, ${fields.get('owner')}`
+        : `dup of ${name}#${fields.get('of')}`;
+    return `${name}#${issue} (${about}) "${world.open.get(issue).title.replace(/\s+/gu, ' ')}".`;
+  });
+  const decision = `${id} Fix ${names}`;
+  const appended = run(
+    process.execPath,
+    [
+      PSTACK('decisions-check.mjs'),
+      'append',
+      file,
+      'chip',
+      decision,
+      `pnpm triage claim ${named} holds ${names}, which no open task covers, so it offers this task and starts it for its own session. ${details.join(' ')}`,
+      `writes: ${offer.files.join(', ')}; topic: ${name}-${offer.issues[0]}; kind: fix; priority: ${offer.priority}; repro: ${names} numbered repros hold the exact steps; session: ${actor.session}`,
+      'offered',
+    ],
+    { cwd: main }
+  );
+  if (appended.status !== 0) {
+    return `note: the claim offers no task for ${names}, because its offered row was refused: ${appended.stderr.trim().split('\n').at(-1)}`;
+  }
+  return `offered ${decision}\n${startTask({ id, decision }, actor, `claimed by pnpm triage claim ${named}`, main, current)}`;
+}
+
+function ledgerIn(main) {
+  const config = readJson(readFileSync(join(main, CONFIG), 'utf-8')) ?? {};
+  return join(main, ledgerPath(config.plans || 'docs/plans', config.delivery));
 }
 
 const PSTACK = (name) =>
@@ -2106,11 +2187,7 @@ function ledgerNow(reads) {
 }
 
 function startTask(task, actor, why, main, current) {
-  const config = readJson(readFileSync(join(main, CONFIG), 'utf-8')) ?? {};
-  const ledger = join(
-    main,
-    ledgerPath(config.plans || 'docs/plans', config.delivery)
-  );
+  const ledger = ledgerIn(main);
   const appended = run(
     process.execPath,
     [
