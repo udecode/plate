@@ -222,6 +222,19 @@ test('pnpm check --affected runs a tooling script with its tests and the steps t
   );
 });
 
+test('pnpm check --affected runs an agent config file with the scripts that read it', async () => {
+  const { planAffected } = await import('./check.mjs');
+  const config = Object.fromEntries(
+    planAffected(['.agents/pstack.json']).map(({ step, command }) => [
+      step.name,
+      command,
+    ])
+  );
+
+  assert.equal(config.typecheck, null);
+  assert.match(config.test, /'tooling\/scripts\/triage\.test\.mjs'/u);
+});
+
 test('pnpm check refuses --write with --build instead of dropping the build', () => {
   const result = spawnSync(
     process.execPath,

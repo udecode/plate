@@ -41,28 +41,32 @@ const inTestSuite = (file) =>
 const isToolingScript = (file) =>
   CODE.test(file) &&
   (file.startsWith('tooling/scripts/') || file.startsWith('.agents/'));
+const isAgentFile = (file) => file.startsWith('.agents/') && !isProse(file);
 
 const toolingOnlyReaches = new Map();
 const toolingOnlyReach = (file) => {
-  if (!isToolingScript(file)) return null;
+  if (!isToolingScript(file) && !isAgentFile(file)) return null;
   if (toolingOnlyReaches.has(file)) return toolingOnlyReaches.get(file);
   const scripts = new Set([file]);
   const tests = new Set(TEST.test(file) ? [file] : []);
-  const queue = [file];
-  while (queue.length > 0) {
-    const name = basename(queue.pop()).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  let level = [file];
+  while (level.length > 0) {
+    const names = level
+      .map((path) => basename(path).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
+      .join('|');
     const { stdout } = spawnSync(
       'git',
-      ['grep', '-l', '-P', `(?<![\\w.-])${name}`, '--', ':!docs'],
+      ['grep', '-l', '-P', `(?<![\\w.-])(?:${names})`, '--', ':!docs'],
       { cwd: root, encoding: 'utf-8' }
     );
+    level = [];
     for (const hit of stdout.split('\n').filter(Boolean)) {
       if (TEST.test(hit)) {
         tests.add(hit);
       } else if (isToolingScript(hit)) {
         if (scripts.has(hit)) continue;
         scripts.add(hit);
-        queue.push(hit);
+        level.push(hit);
       } else if (
         hit !== 'package.json' &&
         (CODE.test(hit) || BUILD_CONFIG.test(hit))
