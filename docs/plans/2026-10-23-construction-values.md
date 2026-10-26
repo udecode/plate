@@ -199,6 +199,7 @@ Phases A and B land as their own commits and keep the refusal. Phase A keeps gen
 | Two Yjs peers that admit one room before they exchange, when an admission repair renames a line only the editors hold | Keep the repair's fallback and state the limit. The fallback compares the room as the editors build it, and it keeps the room's own form of a set-valued property the repair leaves unchanged. So a repair elsewhere rewrites no block between lines only the editors hold, and their spares stay unbuilt in the room. A repair that renames such a line still rewrites every block from that line's container to the last block the repair changes. Two peers that admit before they exchange then hold that range twice and differ. The panel's first round wrote the missing line into the room, and its second round showed that each peer then inserts that line (look) | Lower the repair in the room's own form, which leaves lines only the editors hold unbuilt and keeps the room's built marks | room-form repair | small |
 | Ids when a stored block repeats a spare's unique value | Land with them depending on decision order, as Open work states, after the diff panel's third round, the last, narrowed the claim (look) | Reserve spare values in the unique index so a write that repeats one gets a fresh value, which round 1 built and round 2 reverted because it missed a peer's write and its load replacement could repeat a held value | reserve spare values | small |
 | Step 13's one decide-join miss, 1.485 against 1.3 at load 211 | No pivot, because four later runs of the same bytes pass decide-join at 0.94 to 1.11, each past its own noise (look) | Send the spare row back to `architect` on that one run | pivot on decide-join | small |
+| The page link | A new page at https://claude.ai/artifact/U2Yg2iumuZ1iUMpu75A9A4, because the earlier one, https://claude.ai/artifact/6FpJFueXmmfsFVMGXU8R5p, no longer opens from this account (safe) | Go back to the earlier page | old page | detail |
 
 ## Steps
 
@@ -235,14 +236,14 @@ The Build playbook's gates for the three phases. The build wrote this table afte
 | Cheap checks | yes | Type-aware oxlint on the task's files before each diff panel, and the `pnpm check` steps the edits reach | phase A: partial, `pnpm lint:task`, which runs type-aware oxlint, passed before round 3 (`r2-lint-a1.log`) and on the final bytes (`r3final-lint-a1.log`), and no run before rounds 1 and 2 is logged; phases B and C: done, `lint:task` on each round's fixes and on the final bytes (`step13/lint-task-a2.log`) |
 | Diff panel | yes | The `push` row for each phase, since each changes Plite core | phase A: done, three rounds; phase B: done, three merge rounds; phase C: done, three rounds; log rows "panel" |
 | Scale gate | yes | Step 5's and step 8's frozen lines on each phase's final bytes, through `benchmark` | phase A: done, log row "bench" for step 5's gate; phase B: done on Spare resolve's cohorts, the rest in t_c79519a1; phase C: the load line passes, the Suggesting and Editing lines are inconclusive by their own noise, log rows "bench: step 13" |
-| Suites | yes | The plitejs suite, the affected platejs partitions and both typechecks | phase A: done, `r3final-*-a1.log`; phase B: done, `landB-a2.log`; phase C: partial, one core timeout that reproduces at `ee0b38ca07` (`step13/plite-test-a1.log`) |
+| Suites | yes | The plitejs suite, the affected platejs partitions and both typechecks | phase A: done, `r3final-*-a1.log`; phase B: done, `landB-a2.log`; phase C: done, the landing's `test` and `plite-test` steps (`step13/landC-a4.log`), after one core timeout that also failed at `ee0b38ca07` (`step13/plite-test-a1.log`) |
 | Thermos | skip | `pstack:thermos` on each slice | skip: the `push` row owes a panel on each phase's diff, and every seat applies both lenses |
 | Hand drive | yes | `verify`'s hand drive on the suggestion pages once Suggesting works under generated ids | phase A: none needed, `hand-drive.mjs scope` maps none of its files to a page; phase C: none needed, no page runs Suggesting under a generated element property (`step13/hand-drive-check-a2.log`) |
 | Playtest | yes | The spec runner for the `suggestions` catalog that `playtest.mjs scope` names | partial: www passes 113 of 114 in Chromium and 112 of 113 in Firefox and WebKit, Plite 39 of 39 (`step13/playtest/specs-a1.md`); the one failure fails the same at `4a36877cb6` and at `83634eef5e` (`step13/playtest-base/specs-a1.md`) |
 | Docs | yes | `plate-docs` on each page step 12 names | done, step 12 (log row "build: step 12") |
 | Public API | yes | `best-api repair` on the refusal code and the split default | done, step 12's `best-api repair` (log row "build: step 12") |
 | Review ledger | yes | `review-ledger.mjs check` on this plan at the close | done (`step13/review-ledger-check-a1.log`) |
-| Land | yes | `land.mjs --check 'pnpm check --affected'` for each phase | phase A: `ee0b38ca07`; phase B: `4a36877cb6`; phase C: the commit that ticks step 13 |
+| Land | yes | `land.mjs --check 'pnpm check --affected'` for each phase | phase A: `ee0b38ca07`; phase B: `4a36877cb6`; phase C: `6978280a93` |
 
 ## Challenge delta
 
@@ -278,7 +279,7 @@ Phase A also gets its own speed check against `1d6d319837`. The validity table l
 
 ## Close
 
-Phases A, B and C landed on `next` as `ee0b38ca07`, `4a36877cb6` and the commit that ticks step 13. Suggesting, previews and exports now run in an editor whose schema generates element ids, such as one with `ElementIdPlugin`. Carol's suggested Enter inside a link, or in the text after it, splits `paragraph[p1]`, and accepting or rejecting it gives the document Editing would.
+Phases A, B and C landed on `next` as `ee0b38ca07`, `4a36877cb6` and `6978280a93`. Suggesting, previews and exports now run in an editor whose schema generates element ids, such as one with `ElementIdPlugin`. Carol's suggested Enter inside a link, or in the text after it, splits `paragraph[p1]`, and accepting or rejecting it gives the document Editing would.
 
 Reversals and deviations:
 - Phase C's first diff round reserved a spare's id so that a block Editing wrote with that id kept it. The second round reverted the reservation, because it missed a peer's write, its load replacement could repeat another stored id, and two loads of one document stored different replacements. The claim narrowed. When a stored block repeats a spare's id, accepting gives the built block a fresh id, and the third round showed that stored ids then depend on decision order. The subject file's Open work holds the case for the owner's call.
@@ -291,7 +292,7 @@ Proof and its limits:
 - `authored-refusal.test.ts` records Suggesting and projects under a generated element id and under a generated text property alone, and still refuses each refused kind (log row "build: step 10").
 - The six Suggesting cases under `ElementIdPlugin` pass, the card's probe splits `p1` at both places, and S7 passes with and without `ElementIdPlugin` (rows "build: step 11" and "proof").
 - On the final bytes, the authored-order gate, the generated-schema order checks, the three typechecks, both `platejs` partitions and the `ElementIdPlugin` specs pass (row "proof").
-- `pnpm plite:test` fails one core test, a deferred snapshot index read that passes its 15 s limit at neither this tree nor `ee0b38ca07` under the host's load, so that row is partial. The landing's affected check runs the suite again.
+- `pnpm plite:test` fails one core test, a deferred snapshot index read that passes its 15 s limit at neither this tree nor `ee0b38ca07` under the host's load, so that row is partial. The landing's affected check ran the suite again, and it passed there (`landC-a4.log`).
 - Step 8's load line passes every cohort on the final bytes. The Suggesting and Editing lines are inconclusive by their own same-code noise, with no miss that reproduces, and t_c79519a1 is the next probe.
 - The blast radius found no reader of the refusal codes that breaks, since every schema the old check admitted is still admitted (`blast-refusal-test-a1.log`, 20 of 20). The hand drive had no page to drive, because no page runs Suggesting under a generated element property.
 - The `suggestions` catalog's spec runner passes 113 of 114 www specs in Chromium, 112 of 113 in Firefox and WebKit, and all 39 Plite specs. The one failure, a canceled insertion inside another author's suggestion, fails the same in every engine at `4a36877cb6` and in Chromium at `83634eef5e`, before phase B, so this plan did not cause it, and Open work holds it.
