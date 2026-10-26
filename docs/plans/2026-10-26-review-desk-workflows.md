@@ -32,6 +32,7 @@ Phase 5 reads the register as data, like the chips ledger. A Domains view groups
 | Daily check | No daily check panel, because each failure it finds already arrives as a chip | A header line with the last daily check's result | daily check | small |
 | Baseline growth | A landing that adds entries to either formal check's baseline gets a badge and counts as left until you accept it, because accepting new coupled behavior is your call | A badge only, with no effect on what is left | badge only | small |
 | Teammates' sessions | A session with no file on this Mac takes its plan's title, or its first landing's subject, and shows its author | Bare session ids, as today | session ids | detail |
+| Plan page link | A new page, because the old page no longer opens from this account, which it says was deleted or not shared | The old page, LmfrwLCc1YFTNhZjEFVb4w, once it opens again | old page | detail |
 | Where phase 5 builds | In this session, fast, with no panel, like phases 2 to 4 | A fresh session per step | new session | detail |
 
 ## Outcome

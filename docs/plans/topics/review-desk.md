@@ -1,6 +1,6 @@
 # Review desk
 
-Page: https://claude.ai/artifact/LmfrwLCc1YFTNhZjEFVb4w
+Page: https://claude.ai/artifact/M137ykGBZuHq5UN3ndKsED
 
 How the owner reviews what pstack lands on next: the commits, their plans and decision logs, their proof and the chips around them.
 
