@@ -171,6 +171,7 @@
     "../src/lib/plugins/debug/DebugPlugin.spec.ts",
     "../src/lib/plugins/dom/DOMPlugin.spec.ts",
     "../src/lib/plugins/element-id/elementIdAdmission.internal.spec.ts",
+    "../src/lib/plugins/element-id/ElementIdPlugin.collaboration.spec.ts",
     "../src/lib/plugins/element-id/ElementIdPlugin.spec.tsx",
     "../src/lib/plugins/element-state/ElementStatePlugin.spec.tsx",
     "../src/lib/plugins/HistoryPlugin.spec.ts",

@@ -16,9 +16,11 @@ import {
   type JsonEditorValue,
   type JsonNode,
 } from '../../core/change/tokens';
+import type { ConstructionSlot } from '../../core/content-completion';
 import { getEditorSchema } from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { completeChildrenAt } from '../../core/representation';
+import { uniquePropertiesOf } from '../../core/schema-compiler';
 import type { AnyEditor as Editor } from '../../interfaces/editor';
 import { type Element, ElementApi } from '../../interfaces/element';
 import type { Descendant } from '../../interfaces/node';
@@ -36,6 +38,7 @@ import {
   withMembers,
 } from './marks';
 import { type ProposedChild, proposedChildren, proposedHost } from './proposed';
+import { type SpareSite, storesSpares } from './reserves';
 
 type Mark = Readonly<{
   at: number;
@@ -58,10 +61,23 @@ export type RecordCompletionInput = Readonly<{
   commitWriteId: () => string;
 }>;
 
+/**
+ * A built element an element's maximum leaves no room for beside its struck
+ * content: its host, at its path after the fills, the slot it fills and its
+ * place among the children completion gives.
+ */
+export type DeferredBuild = SpareSite &
+  Readonly<{
+    index: number;
+    node: Element;
+    slot: ConstructionSlot;
+    /** The host's type, or null for a root. */
+    type: string | null;
+  }>;
+
 export type RecordCompletion = Readonly<{
   change: DocumentChange;
-  /** Built elements an element's maximum leaves no room for beside its struck content. */
-  deferred: number;
+  deferred: readonly DeferredBuild[];
   indexes: ReadonlyMap<string, DocumentIndex>;
 }>;
 
@@ -264,7 +280,10 @@ export const completeProposed = (
   const insertMark: AuthoredMark = { ...input.mark, kind: 'insert' };
   const isOwn = (mark: Readonly<{ change: string }>) =>
     mark.change === input.mark.change;
-  let deferred = 0;
+  // Under a schema that stores spares, a kept shell would keep the removed
+  // element's generated values, so every fill is inserted.
+  const keepsShells = !storesSpares(compiled);
+  const deferred: DeferredBuild[] = [];
 
   for (const [root, index] of input.indexes) {
     const rootChange = getInternalDocumentRootChange(input.change, root);
@@ -277,6 +296,9 @@ export const completeProposed = (
     const startAfter = (path: readonly number[]) =>
       rootChange.mapPos(beforeIndex.nodeRange(path).from, 1, 'after');
     const edits: Edit[] = [];
+    const deferredHere: Array<
+      Omit<DeferredBuild, 'path'> & { from: number | null }
+    > = [];
 
     for (const {
       after: hostPath,
@@ -444,12 +466,12 @@ export const completeProposed = (
 
       for (const built of completion.built) {
         const node = built.node as JsonNode;
-        const prefix = built.slot !== null;
+        const prefix = 'prefix' in built.slot;
         const rests = prefix ? reshapes : [...reshapes, ...deletions];
         // A kept element cannot depend on another change, so a fill that
         // rests on one is inserted.
         const shell =
-          rests.length === 0
+          rests.length === 0 && keepsShells
             ? struckNow.find(
                 (item) => !used.has(item.node) && item.node.type === node.type
               )
@@ -473,7 +495,14 @@ export const completeProposed = (
           content.max !== null &&
           hostChildren.length + inserted + 1 > content.max
         ) {
-          deferred += 1;
+          deferredHere.push({
+            from: hostPath.length === 0 ? null : index.nodeRange(hostPath).from,
+            index: built.index,
+            node: built.node,
+            root,
+            slot: built.slot,
+            type: host ? String(host.type) : null,
+          });
           continue;
         }
 
@@ -505,7 +534,24 @@ export const completeProposed = (
       }
     }
 
-    if (edits.length === 0) continue;
+    const placeDeferred = (change: RootChange | null, after: DocumentIndex) => {
+      for (const { from, ...build } of deferredHere) {
+        deferred.push({
+          ...build,
+          path:
+            from === null
+              ? []
+              : getDefined(
+                  after.nodeStartingAt(change?.mapPos(from, 1) ?? from)
+                ).path,
+        });
+      }
+    };
+
+    if (edits.length === 0) {
+      placeDeferred(null, index);
+      continue;
+    }
 
     const kept = new Map(
       edits.flatMap((edit) =>
@@ -518,6 +564,7 @@ export const completeProposed = (
                   mark: input.mark,
                   standing: input.standing,
                   commitWriteId: input.commitWriteId,
+                  unique: uniquePropertiesOf(compiled),
                 }),
               ] as const,
             ]
@@ -555,13 +602,64 @@ export const completeProposed = (
       )) {
       edited = edited.withInsertedNode(edit.path, edit.node);
     }
-    changes.set(root, RootChange.create(index, sections));
+
+    const filled = RootChange.create(index, sections);
+
+    changes.set(root, filled);
     indexes.set(root, edited);
+    placeDeferred(filled, edited);
   }
 
-  if (changes.size === 0 && deferred === 0) return null;
+  if (changes.size === 0 && deferred.length === 0) return null;
 
   return { change: createInternalDocumentChange(changes), deferred, indexes };
+};
+
+/**
+ * The element the command `frame` holds at child `index` of the host that
+ * starts at `start` in the recorded document, or of the root when `start` is
+ * null, when it has `type`; `map` takes a frame position there.
+ */
+export const framedChild = (
+  frame: DocumentIndex,
+  start: number | null,
+  index: number,
+  type: string,
+  map: (position: number, assoc: -1 | 1) => number
+): Element | null => {
+  if (start === null) {
+    const child = frame.nodes.at(index);
+
+    return child && child.type === type ? (child as Element) : null;
+  }
+
+  let host: JsonNode | null = null;
+  let path: readonly number[] = [];
+
+  while (!host) {
+    const level =
+      path.length === 0 ? frame.nodes : (frame.node(path).children ?? []);
+    let inside: readonly number[] | null = null;
+
+    for (let at = 0; at < level.length && !host && !inside; at += 1) {
+      const node = getDefined(level.at(at));
+
+      if (isText(node)) continue;
+
+      const childPath = [...path, at];
+      const { from, to } = frame.nodeRange(childPath);
+      const mapped = map(from, 1);
+
+      if (mapped === start) host = node;
+      else if (mapped < start && start < map(to, -1)) inside = childPath;
+    }
+    if (!host && !inside) return null;
+    if (inside) path = inside;
+  }
+
+  const child = host.children?.[index];
+
+  return child && child.type === type ? (child as Element) : null;
 };
 
 /**
@@ -627,6 +725,7 @@ const keptShell = (
     mark: Mark;
     standing: Standing;
     commitWriteId: () => string;
+    unique: ReadonlyMap<string, unknown>;
   }>
 ) => {
   const marks = readAuthoredMarks(shell);
@@ -641,7 +740,7 @@ const keptShell = (
     (mark): mark is FormatTag => mark.kind === 'format'
   );
   const written = recordFormats({
-    keys,
+    keys: keys.filter((key) => !options.unique.has(key)),
     next: props,
     ownInsertion: false,
     previous,

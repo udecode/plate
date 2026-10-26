@@ -3,11 +3,14 @@ import type { NodeList } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
+import type { ConstructionSlot } from '../../core/content-completion';
 import { elementSplitOutput } from '../../core/default-storage';
 import { readingCovered } from '../../core/property-validity';
 import {
   composeRecordOps,
   deriveValue,
+  getValueRecords,
+  NO_RECORD_OPS,
   withoutValueRoots,
 } from '../../core/record-store';
 import type { ListPart } from '../../core/representation';
@@ -15,7 +18,11 @@ import {
   orphanedValueRoots,
   schemaHasContentRoots,
 } from '../../core/root-ownership';
-import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import {
+  type CompiledEditorSchema,
+  handoverKeysOf,
+  splitDroppedKeysOf,
+} from '../../core/schema-compiler';
 import { survivalUnder } from '../../core/survival';
 import { type Path, PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
@@ -35,6 +42,9 @@ import {
   landedOf,
   putContexts,
   putLanded,
+  RESERVES,
+  reserveDropsOf,
+  reserveNodesIn,
 } from '../facts/records';
 import { countLedgerWork } from '../ledger/work';
 import { cutsOf, joinedShell, joinRejectedCuts } from './cuts';
@@ -49,12 +59,8 @@ import {
   type Verdict,
   verdictOf,
 } from './halves';
-import {
-  coverStoredValues,
-  everyElementKeysOf,
-  heldProps,
-  type Place,
-} from './holds';
+import { shownOf } from './holders';
+import { coverStoredValues, heldNode, heldProps, type Place } from './holds';
 import {
   decideKey,
   copyKeyOf,
@@ -71,12 +77,21 @@ import {
   AUTHORED_MARKS_KEY,
   type CutTag,
   heldOf,
+  isClaim,
   isPlaceChange,
   isStructureChange,
   readAuthoredMarks,
   readMembers,
   withMembers,
 } from './marks';
+import {
+  putRootSpares,
+  type Spare,
+  slotKeyOf,
+  sparesIn,
+  takeSpare,
+  withBuiltSpares,
+} from './spares';
 
 /**
  * One verdict for every change, as a projection reads them, or one per
@@ -88,7 +103,7 @@ export type AuthoredOutcome =
   | ((changeId: string) => 'accept' | 'keep' | 'reject');
 
 type Completion<N> = Readonly<{
-  built: ReadonlyArray<Readonly<{ node: N; slot: number | null }>>;
+  built: ReadonlyArray<Readonly<{ node: N; slot: ConstructionSlot }>>;
   children: readonly N[];
   /** At each index of `children`, the node before the canonical pass. */
   sources?: readonly N[];
@@ -102,14 +117,16 @@ export type AuthoredResolveSchema = Readonly<{
   /**
    * Canonical children at their site, the element and its ancestors nearest
    * first or none at the root, as Editing's completion gives them, and each
-   * element it built; `vacated` names the prefix slots a decision emptied.
+   * element it built; `vacated` names the prefix slots a decision emptied,
+   * and `take` gives the spare a build of the children takes.
    */
   complete?: (
     children: readonly JsonNode[],
     site: readonly JsonRecord[],
     root: string,
     vacated: (slot: number, candidate: JsonNode) => boolean,
-    part?: ListPart
+    part?: ListPart,
+    take?: (type: string, slot: ConstructionSlot) => JsonNode | null
   ) => Completion<JsonNode>;
   /** Whether `node` can stand in prefix slot `slot` of `root`. */
   fitsPrefix?: (node: JsonNode, slot: number, root: string) => boolean;
@@ -144,6 +161,8 @@ export type AuthoredResolveSchema = Readonly<{
     root: string
   ) => string | null;
   ownership: CompiledEditorSchema;
+  /** Whether the schema stores spares, so a block can show an `as` value. */
+  storesSpares?: boolean;
 }>;
 
 export type AuthoredResolution = Readonly<{
@@ -166,6 +185,12 @@ export type AuthoredResolution = Readonly<{
   placements: readonly AuthoredPlacement[];
   /** The blocks the decision hides whole, with the shown block each collapses into. */
   hidden: readonly AuthoredHiddenBlock[];
+  /**
+   * The root's spare records a storing decision rewrites, by id: each one of
+   * a slot it built, marked built, or null for each one once no pending claim
+   * could change what completing the root builds.
+   */
+  spares: ReadonlyMap<string, string | null>;
   /**
    * The node an original node became in the resolved tree, or null when a
    * decision removed it or merged it into the block before it, the canonical
@@ -200,6 +225,8 @@ export type AuthoredHiddenBlock = Readonly<{
 type Node = JsonRecord & { children?: readonly Node[]; text?: string };
 
 const isText = (node: Node) => typeof node.text === 'string';
+
+const notSpare = (member: AuthoredMember) => member.kind !== 'reserve';
 
 /** @internal */
 export const acceptedOwnShape = (
@@ -394,11 +421,86 @@ export const mergesUp = (mark: AuthoredMark, result: Result) =>
   (mark.kind === 'join' && result === 'accept') ||
   (mark.kind === 'split' && result === 'reject');
 
+/**
+ * Whether rejecting `mark` takes away the element that carries it: an
+ * insertion's element, a split's second half or a wrap's wrapper.
+ *
+ * @internal
+ */
+export const buildsElement = (mark: AuthoredMark) =>
+  removes(mark, 'reject') || mergesUp(mark, 'reject') || mark.kind === 'wrap';
+
+/**
+ * The joins among `marks`, by the incarnation a follower's `follows` names.
+ *
+ * @internal
+ */
+export const joinsByIncarnation = (marks: readonly AuthoredMark[]) =>
+  new Map(
+    marks.flatMap((mark) =>
+      mark.kind === 'join' ? [[incarnationOf(mark), mark] as const] : []
+    )
+  );
+
+/**
+ * Whether some verdict on `mark` can change what completing a container
+ * builds: on the container, a type or structure change, which picks the
+ * content a build waits on; on a child, a removal `removes` decides, a merge
+ * `mergesUp` decides or another structure change a build waits on. A format
+ * tag on a child changes nothing a completion builds.
+ *
+ * @internal
+ */
+export const changesBuild = (mark: AuthoredMark, on: 'child' | 'container') =>
+  on === 'container'
+    ? isPlaceChange(mark)
+    : removes(mark, 'accept') ||
+      removes(mark, 'reject') ||
+      mergesUp(mark, 'accept') ||
+      mergesUp(mark, 'reject') ||
+      isStructureChange(mark);
+
 /** The pending join a block's claim says the block goes with. */
 export const followsOf = (mark: AuthoredMark) =>
   (mark.kind === 'split' && mark.cut === undefined) || mark.kind === 'insert'
     ? mark.follows
     : undefined;
+
+/**
+ * The claims that can change what completing a container builds: the
+ * container's own and each child's that `changesBuild` names, among those
+ * `isPending` keeps, and each pending join a child goes with, which takes
+ * the child out of the container when it lands. `claimsOf` reads a node's
+ * standing claims, decided ones included, since a follower's own claim can
+ * be decided while its join stays pending; `joinOf` gives the pending join
+ * an incarnation names, or null.
+ *
+ * @internal
+ */
+export const buildClaimsOf = <N>(
+  container: N | null,
+  children: readonly N[],
+  claimsOf: (node: N) => readonly AuthoredMark[],
+  isPending: (mark: AuthoredMark) => boolean,
+  joinOf: (incarnation: string) => AuthoredMark | null
+): AuthoredMark[] => [
+  ...(container === null
+    ? []
+    : claimsOf(container).filter(
+        (mark) => isPending(mark) && changesBuild(mark, 'container')
+      )),
+  ...children.flatMap((child) =>
+    claimsOf(child).flatMap((mark) => {
+      const follows = followsOf(mark);
+      const join = follows === undefined ? null : joinOf(follows);
+
+      return [
+        ...(isPending(mark) && changesBuild(mark, 'child') ? [mark] : []),
+        ...(join ? [join] : []),
+      ];
+    })
+  ),
+];
 
 export const joinKeysOf = (marks: readonly AuthoredMark[]) =>
   new Set(
@@ -766,6 +868,57 @@ type Probe = {
   settled: Settled | undefined;
 };
 
+const lineHandover = (
+  keys: ReadonlySet<string>,
+  decidedPropsOf: (node: Node) => JsonRecord
+) => {
+  const taken = new Map<Node, JsonRecord>();
+  const sources = new Map<Node, Node>();
+  const valuesOf = (node: Node): JsonRecord => {
+    const passed = taken.get(node);
+
+    if (passed) return passed;
+
+    const props = decidedPropsOf(node);
+
+    return Object.fromEntries(
+      [...keys].flatMap((key) =>
+        Object.hasOwn(props, key) ? [[key, props[key]]] : []
+      )
+    );
+  };
+
+  return {
+    keys,
+    takeFrom: (node: Node, source: Node) => {
+      sources.set(node, source);
+    },
+    pass: (node: Node, line: Node) => {
+      if (keys.size > 0) taken.set(line, valuesOf(sources.get(node) ?? node));
+    },
+    takenBy: (line: Node) => taken.get(line),
+    apply: (props: JsonRecord, values: JsonRecord) => {
+      let next: JsonRecord | null = null;
+
+      for (const key of keys) {
+        const has = Object.hasOwn(values, key);
+
+        if (
+          has === Object.hasOwn(props, key) &&
+          (!has || jsonEqual(props[key], values[key]))
+        ) {
+          continue;
+        }
+        next ??= { ...props };
+        if (has) next[key] = values[key];
+        else delete next[key];
+      }
+
+      return next ?? props;
+    },
+  };
+};
+
 const resolveIn = (
   given: readonly JsonNode[],
   outcome: AuthoredOutcome,
@@ -798,7 +951,8 @@ const resolveIn = (
   const keptMembers = (
     node: Node,
     pendingMarks: readonly AuthoredMark[],
-    keeps: (mark: AuthoredMark) => boolean
+    keeps: (mark: AuthoredMark) => boolean,
+    keepsSpares: boolean
   ) => {
     const pendingSet = new Set<unknown>(pendingMarks);
     const stored = readMembers(node);
@@ -806,7 +960,12 @@ const resolveIn = (
     const resting = contextual.filter((mark) => decisionOf(mark) === 'keep');
     const contextIntact = resting.length === contextual.length;
     const kept = stored.flatMap((member): AuthoredMember[] => {
-      if (member.kind === 'held') return stores ? [member] : [];
+      if (member.kind === 'held' || member.kind === 'as') {
+        return stores ? [member] : [];
+      }
+      if (member.kind === 'reserve') {
+        return stores && keepsSpares ? [member] : [];
+      }
       if (member.kind === 'in') {
         return resting.length > 0 && contextIntact ? [member] : [];
       }
@@ -829,46 +988,109 @@ const resolveIn = (
       return kept;
     }
 
-    const own = kept.filter(
-      (member): member is AuthoredMark =>
-        member.kind !== 'in' && member.kind !== 'held'
-    );
-
     return readMembers(
-      dependencies.props(
-        withMembers(
-          {},
-          kept.filter((member) => member.kind === 'held')
-        ),
-        [...resting, ...own]
-      )
+      dependencies.props(withMembers({}, kept), [
+        ...resting,
+        ...kept.filter(isClaim),
+      ])
     );
   };
   const contentOf = (type: string | null) =>
     schema?.content(type, root) ?? null;
+  // The spares each container's builds take, by its stored node, and the
+  // slots this run's outcome built from them.
+  type Pool = Readonly<{ spares: Spare[]; used: Set<string> }>;
+  const pools = new Map<object, Pool>();
+  const rootSpares = site.length === 0 ? facts.reserves(root) : [];
+  /** `container`'s pool, or the root's; `from` adds the spares a join merged. */
+  const poolOf = (
+    container: Node | undefined,
+    from: Node | undefined = container
+  ) => {
+    const key = container ?? pools;
+    let pool = pools.get(key);
+
+    if (!pool) {
+      pool = {
+        spares: container
+          ? [...sparesIn(container)]
+          : rootSpares.map((record) => ({ ...record, type: null })),
+        used: new Set(),
+      };
+      pools.set(key, pool);
+    }
+    if (from && from !== container) {
+      for (const spare of sparesIn(from)) {
+        if (!pool.spares.includes(spare)) pool.spares.push(spare);
+      }
+    }
+
+    return pool;
+  };
   // Without a schema, a text block a decision empties keeps an empty text.
+  // `taken` holds the slots the built elements took spares from, which a
+  // committing build counts as built for the rest of the run.
   const complete = (
     nodes: readonly Node[],
     at: readonly Node[],
     startLevel: readonly Node[],
     vacated: (slot: number, candidate: Node) => boolean,
-    listPart: ListPart | undefined
-  ) =>
-    schema?.complete
-      ? (schema.complete(
-          nodes as readonly JsonNode[],
-          at,
-          root,
-          vacated,
-          listPart
-        ) as Completion<Node>)
-      : {
-          built: [],
-          children:
-            nodes.length === 0 && at.length > 0 && startLevel.some(isText)
-              ? [{ text: '' }]
-              : mergeTextsWithEqualProps(nodes),
-        };
+    listPart: ListPart | undefined,
+    pool: Pool,
+    commit: boolean
+  ): Completion<Node> & Readonly<{ taken: readonly string[] }> => {
+    if (!schema?.complete) {
+      return {
+        built: [],
+        children:
+          nodes.length === 0 && at.length > 0 && startLevel.some(isText)
+            ? [{ text: '' }]
+            : mergeTextsWithEqualProps(nodes),
+        taken: [],
+      };
+    }
+
+    const tentative = new Set(pool.used);
+    const takenAt = new Map<string, string>();
+    const completion = schema.complete(
+      nodes as readonly JsonNode[],
+      at,
+      root,
+      vacated,
+      listPart,
+      pool.spares.length === 0
+        ? undefined
+        : (nodeType, slot) => {
+            const [parentType = null, ...outer] = at.map(typeOf);
+            const spare = takeSpare(
+              pool.spares,
+              parentType,
+              nodeType,
+              slot,
+              tentative
+            );
+
+            if (!spare) return null;
+            takenAt.set(slotKeyOf(slot), spare.key);
+
+            // A spare stored elsewhere lands here as a moved node does.
+            return heldNode(schema.ownership, spare.node, {
+              outerTypes: outer.flatMap((outerType) => outerType ?? []),
+              parentType,
+              root,
+            });
+          }
+    ) as Completion<Node>;
+    const taken = completion.built.flatMap(({ slot }) => {
+      const key = takenAt.get(slotKeyOf(slot));
+
+      return key ? [key] : [];
+    });
+
+    if (commit) for (const key of taken) pool.used.add(key);
+
+    return { ...completion, taken };
+  };
   const decided = new Set<string>();
   const unstored = new Set<Node>();
   const waits = new Set<string>();
@@ -984,52 +1206,19 @@ const resolveIn = (
 
     return values;
   };
-  // A line that stands in the place of a piece the decision empties takes that
-  // piece's values for keys every element holds, as a mid-line join keeps the
-  // left half's, so the line's start keeps its block id whichever piece goes.
-  const takenKeys: ReadonlySet<string> = schema
-    ? everyElementKeysOf(schema.ownership)
+  const handover = lineHandover(
+    schema ? handoverKeysOf(schema.ownership) : new Set(),
+    decidedPropsOf
+  );
+  const splitDropped: ReadonlySet<string> = schema
+    ? splitDroppedKeysOf(schema.ownership)
     : new Set();
   const otherValuesOf = (props: Readonly<JsonRecord>) => {
     const values: JsonRecord = valuesOf(props);
 
-    for (const key of takenKeys) delete values[key];
+    for (const key of splitDropped) delete values[key];
 
     return values;
-  };
-  const takenBy = new Map<Node, JsonRecord>();
-  const takenFrom = new Map<Node, Node>();
-  const takenValuesOf = (node: Node): JsonRecord => {
-    const passed = takenBy.get(node);
-
-    if (passed) return passed;
-
-    const props = decidedPropsOf(node);
-
-    return Object.fromEntries(
-      [...takenKeys].flatMap((key) =>
-        Object.hasOwn(props, key) ? [[key, props[key]]] : []
-      )
-    );
-  };
-  const withTaken = (props: JsonRecord, taken: JsonRecord) => {
-    let next: JsonRecord | null = null;
-
-    for (const key of takenKeys) {
-      const has = Object.hasOwn(taken, key);
-
-      if (
-        has === Object.hasOwn(props, key) &&
-        (!has || jsonEqual(props[key], taken[key]))
-      ) {
-        continue;
-      }
-      next ??= { ...props };
-      if (has) next[key] = taken[key];
-      else delete next[key];
-    }
-
-    return next ?? props;
   };
   const probed = new Map<string | Node, Map<string, Settled>>();
   const probeUnder = (
@@ -1319,6 +1508,9 @@ const resolveIn = (
       : { merges: false, reads: [...reads, ...subtreeMarks(into)] };
   };
   const emptyLines = new Map<Node, Node | null>();
+  // The spare slots each host's line took, built only once its piece lands.
+  const lineSpares = new Map<Node, readonly string[]>();
+  const landedSpares = new Map<Node, Set<string>>();
   const emptyLineOf = (host: Node, outer: readonly Node[]) => {
     let line = emptyLines.get(host);
 
@@ -1326,24 +1518,38 @@ const resolveIn = (
       const props = decidedPropsOf(host);
       const hasPrefixSlots = (contentOf(typeOf(props))?.prefix ?? 0) > 0;
       const refill = hasPrefixSlots
-        ? []
+        ? null
         : complete(
             [],
             [{ ...props, children: [] }, ...outer],
             host.children ?? [],
             () => false,
-            undefined
-          ).children;
+            undefined,
+            poolOf(host),
+            false
+          );
+      const built = refill?.children ?? [];
 
       line =
-        refill.length === 1 &&
-        (refill[0].children ?? []).every((child) => child.text === '')
-          ? refill[0]
+        built.length === 1 &&
+        (built[0].children ?? []).every((child) => child.text === '')
+          ? built[0]
           : null;
       emptyLines.set(host, line);
+      if (line && refill) lineSpares.set(host, refill.taken);
     }
 
     return line;
+  };
+  const landLine = (host: Node) => {
+    const pool = poolOf(host);
+    const landed = landedSpares.get(host) ?? new Set();
+
+    for (const key of lineSpares.get(host) ?? []) {
+      pool.used.add(key);
+      landed.add(key);
+    }
+    landedSpares.set(host, landed);
   };
   const emptiedDepthOf = (ancestors: readonly Node[]) => {
     const depth = ancestors.findLastIndex(survives);
@@ -1369,7 +1575,7 @@ const resolveIn = (
     if (
       !line ||
       pending(split).some(
-        (mark) => mark.kind === 'format' && !takenKeys.has(mark.key)
+        (mark) => mark.kind === 'format' && !splitDropped.has(mark.key)
       ) ||
       !jsonEqual(otherValuesOf(propsOf(line)), otherValuesOf(propsOf(split)))
     ) {
@@ -1389,6 +1595,7 @@ const resolveIn = (
     );
 
     return {
+      host,
       line,
       occupant,
       reads: [...removal, ...emptying, ...refilling],
@@ -1556,7 +1763,8 @@ const resolveIn = (
       // The piece lands as the line completion builds in the container, so
       // it takes that line's values, as it does when the container was
       // completed by an earlier decision.
-      takenFrom.set(emptied.occupant, emptied.line);
+      handover.takeFrom(emptied.occupant, emptied.line);
+      landLine(emptied.host);
       stand(emptied.occupant);
       return;
     }
@@ -2092,9 +2300,7 @@ const resolveIn = (
 
         hidden.add(original);
         if (line) {
-          if (takenKeys.size > 0) {
-            takenBy.set(line, takenValuesOf(takenFrom.get(node) ?? node));
-          }
+          handover.pass(node, line);
           moves.push({ after: node, node: line });
           landHere([line]);
         }
@@ -2135,14 +2341,14 @@ const resolveIn = (
         continue;
       }
 
-      const taken = takenBy.get(node);
+      const taken = handover.takenBy(node);
       const own = propsOf(shell);
-      const props = taken ? withTaken(own, taken) : own;
+      const props = taken ? handover.apply(own, taken) : own;
       const formats = decideFormats(
         props,
         taken
           ? marks.filter(
-              (mark) => mark.kind !== 'format' || !takenKeys.has(mark.key)
+              (mark) => mark.kind !== 'format' || !handover.keys.has(mark.key)
             )
           : marks,
         reading,
@@ -2161,13 +2367,22 @@ const resolveIn = (
       for (const tag of formats?.landed ?? []) {
         if (!facts.landed(tag.id)) landings.set(tag.id, landedOf(tag));
       }
-      const decidedProps = formats?.props ?? props;
+      // The proposed view shows the values an element's command gave it;
+      // admission's settle stage stores them once nothing they wait on is
+      // pending.
+      const shownAs =
+        !stores && outcome === 'accept' && !isText(node)
+          ? shownOf(shell)
+          : null;
+      const decidedProps = shownAs
+        ? { ...(formats?.props ?? props), ...shownAs }
+        : (formats?.props ?? props);
       const placeChanged =
         placeChangedAbove ||
         movedFrom(owner, original) ||
         typeOf(decidedProps) !== typeOf(props);
       const placedProps =
-        schema && (placeChanged || formats?.changed)
+        schema && (placeChanged || formats?.changed || shownAs)
           ? heldProps(schema.ownership, decidedProps, {
               outerTypes: ancestors,
               parentType,
@@ -2176,20 +2391,36 @@ const resolveIn = (
             })
           : decidedProps;
 
+      if (!isText(node)) poolOf(original, shell);
+
+      const kept = withBuiltSpares(
+        keptMembers(
+          shell,
+          marks,
+          (mark) => {
+            const result = resultOf(mark);
+
+            return mark.kind === 'format'
+              ? (formats?.kept.has(mark) ?? false)
+              : result === 'keep' ||
+                  (mark.kind === 'join' && retainedJoins.has(node)) ||
+                  ((mark.kind === 'split' || followsOf(mark) !== undefined) &&
+                    retainedFollowers.has(node));
+          },
+          stores &&
+            sparesIn(shell).length > 0 &&
+            stillBuilds(shell, [
+              ...(node.children ?? []),
+              ...(mergedBlocks.get(node) ?? []).flatMap(
+                (block) => block.children ?? []
+              ),
+            ])
+        ),
+        landedSpares.get(original) ?? landedSpares.get(node)
+      );
       const dropsValue = placedProps !== decidedProps;
 
       if (dropsValue) waitOnPlaceChanges([node, ...above]);
-
-      const kept = keptMembers(shell, marks, (mark) => {
-        const result = resultOf(mark);
-
-        return mark.kind === 'format'
-          ? (formats?.kept.has(mark) ?? false)
-          : result === 'keep' ||
-              (mark.kind === 'join' && retainedJoins.has(node)) ||
-              ((mark.kind === 'split' || followsOf(mark) !== undefined) &&
-                retainedFollowers.has(node));
-      });
       // A block whose removal is decided stands only for the pending content
       // inside it, so it takes that content's deletions and goes with it.
       const outlived = [
@@ -2208,12 +2439,16 @@ const resolveIn = (
         kept: outlived.length > 0 ? [...kept, ...outlived] : kept,
         props: placedProps,
       };
+      // Completion reads which children are inserted, never their spares, so
+      // a change to spares alone leaves the completion of the level alone.
+      const members = formatted.kept.filter(notSpare);
+      const storedMembers = stored.filter(notSpare);
       const selfChanged =
         props !== own ||
         (formats?.changed ?? false) ||
         dropsValue ||
-        formatted.kept.length !== stored.length ||
-        formatted.kept.some((member, at) => member !== stored[at]);
+        members.length !== storedMembers.length ||
+        members.some((member, at) => member !== storedMembers[at]);
 
       if (selfChanged) changed = true;
       shown.add(node);
@@ -2335,6 +2570,32 @@ const resolveIn = (
     return { changed: changed || restructured, dirty, list: out };
   };
 
+  // Whether a claim still pending after this decision could change what
+  // completing `container` builds, as the write rule that stored its spares
+  // reads it, so the container keeps them.
+  const stillBuilds = (container: Node | null, inside: readonly Node[]) => {
+    const keeps = (mark: AuthoredMark) => decisionOf(mark) === 'keep';
+    // A child whose enclosure the decision lifts leaves its children here.
+    const standing = (level: readonly Node[]): readonly Node[] =>
+      level.flatMap((child) =>
+        structureOf(child).unwrap ? standing(child.children ?? []) : [child]
+      );
+
+    return (
+      buildClaimsOf(
+        container,
+        standing(inside),
+        pending,
+        keeps,
+        (incarnation) =>
+          joinBlocksOf(incarnation).find(({ mark }) => keeps(mark))?.mark ??
+          null
+      ).length > 0
+    );
+  };
+  // The slots each element's completion built from its spares, and the root's.
+  const builtIn = new WeakMap<Node, ReadonlySet<string>>();
+  const rootBuilt = new Set<string>();
   // A decision that builds waits on every pending change whose outcome
   // changes what it builds. A built element's properties can read any
   // ancestor, so it waits on each ancestor's pending restructuring.
@@ -2436,9 +2697,9 @@ const resolveIn = (
   const dropFlattened = (before: readonly Node[], after: readonly Node[]) => {
     if (unstored.size === 0) return;
 
-    const kept = shownOf(unstored, after);
+    const kept = unstoredIn(unstored, after);
 
-    for (const node of shownOf(unstored, before)) {
+    for (const node of unstoredIn(unstored, before)) {
       if (!kept.has(node)) unstored.delete(node);
     }
   };
@@ -2454,6 +2715,17 @@ const resolveIn = (
     listPart?: ListPart
   ): readonly Node[] => {
     let copy: Node[] | null = null;
+    const withBuilt = (node: Node, completed: readonly Node[]) => {
+      const keys = stores ? builtIn.get(node) : undefined;
+      const rebuilt = { ...node, children: completed };
+
+      return keys
+        ? (withMembers(
+            rebuilt,
+            withBuiltSpares(readMembers(node), keys)
+          ) as Node)
+        : rebuilt;
+    };
 
     for (const index of dirty) {
       const node = getDefined(level[index]);
@@ -2468,7 +2740,7 @@ const resolveIn = (
 
       if (completed === node.children) continue;
       copy ??= [...level];
-      copy[index] = track({ ...node, children: completed }, original);
+      copy[index] = track(withBuilt(node, completed), original);
     }
 
     const nodes = copy ?? level;
@@ -2476,7 +2748,17 @@ const resolveIn = (
     if (!changed) return nodes;
 
     const start = startOccupants(startLevel, isInserted);
-    const completeHere = (items: readonly Node[]) =>
+    const pool = poolOf(
+      at[0] ? ((origins.get(at[0]) ?? at[0]) as Node) : undefined
+    );
+    // Only the completion this decision shows builds; a speculative one, such
+    // as `waitOnPrefix`'s, leaves its spares for it and takes from the pool
+    // as it stood before that completion's takes.
+    const untaken: typeof pool = {
+      spares: pool.spares,
+      used: new Set(pool.used),
+    };
+    const completeHere = (items: readonly Node[], commit = false) =>
       complete(
         items,
         at,
@@ -2488,12 +2770,20 @@ const resolveIn = (
             origins.get(candidate) ?? candidate,
             isInserted
           ),
-        listPart
+        listPart,
+        commit ? pool : untaken,
+        commit
       );
-    const completed = completeHere(nodes);
+    const completed = completeHere(nodes, true);
 
     carryUnstored(completed);
     dropFlattened(nodes, completed.sources ?? completed.children);
+    if (completed.taken.length > 0) {
+      const keys = new Set(completed.taken);
+
+      if (at[0]) builtIn.set(at[0], keys);
+      else for (const key of keys) rootBuilt.add(key);
+    }
 
     const completion = underInsertions(completed, at);
     const slots = contentOf(at[0] ? typeOf(at[0]) : null)?.prefix ?? 0;
@@ -2566,6 +2856,12 @@ const resolveIn = (
 
   for (const node of removed ?? []) hidden.add(node);
 
+  const spares = new Map<string, string | null>();
+
+  if (stores && rootSpares.length > 0) {
+    putRootSpares(rootSpares, stillBuilds(null, given), rootBuilt, spares);
+  }
+
   return {
     blockers: [...waits],
     children: resolvedChildren as readonly JsonNode[],
@@ -2594,6 +2890,7 @@ const resolveIn = (
     landed: [...landings.values()],
     placements,
     resolvedOf: (original) => resolvedOf(original) as JsonNode | null,
+    spares,
     unplaceable,
     unstored: shownAll(unstored, resolvedChildren),
   };
@@ -2780,7 +3077,7 @@ const decideFormats = (
   return { changed, kept, landed, props: next, readsCopies, waits };
 };
 
-const shownOf = (unstored: ReadonlySet<Node>, nodes: readonly Node[]) => {
+const unstoredIn = (unstored: ReadonlySet<Node>, nodes: readonly Node[]) => {
   const shown = new Set<JsonNode>();
   const visit = (list: readonly Node[]) => {
     for (const node of list) {
@@ -2808,7 +3105,7 @@ export const failInTests = (message: string) => {
 };
 
 const shownAll = (unstored: ReadonlySet<Node>, nodes: readonly Node[]) => {
-  const shown = shownOf(unstored, nodes);
+  const shown = unstoredIn(unstored, nodes);
 
   if (shown.size !== unstored.size) {
     failInTests(
@@ -2843,11 +3140,36 @@ const mergeTextsWithEqualProps = (nodes: readonly Node[]): Node[] => {
   return out;
 };
 
+type ValueResolveOptions = Readonly<{ stores?: boolean; withdraws?: boolean }>;
+
+const spareOpsOf = (resolutions: readonly AuthoredResolution[]) => {
+  const ops = new Map(resolutions.flatMap(({ spares }) => [...spares]));
+
+  return ops.size === 0 ? NO_RECORD_OPS : new Map([[RESERVES, ops]]);
+};
+
+/** Resolves every root, after a cover pass over the roots' own spare blocks. */
 export const resolveAuthoredValue = (
   value: JsonEditorValue,
   outcome: AuthoredOutcome,
   schema: AuthoredResolveSchema | null = null,
-  options: Readonly<{ stores?: boolean; withdraws?: boolean }> = {}
+  options: ValueResolveOptions = {}
+) =>
+  readingCovered({
+    cover: () =>
+      schema &&
+      coverStoredValues(
+        schema.ownership,
+        reserveNodesIn(getValueRecords(value))
+      ),
+    read: () => resolveValueIn(value, outcome, schema, options),
+  });
+
+const resolveValueIn = (
+  value: JsonEditorValue,
+  outcome: AuthoredOutcome,
+  schema: AuthoredResolveSchema | null,
+  options: ValueResolveOptions
 ) => {
   const facts = factsOf(value);
   const dependencies = createDependencies(facts);
@@ -2904,12 +3226,19 @@ export const resolveAuthoredValue = (
   const kept = roots.filter(([root]) => !dropped.has(root));
   const live = [main, ...kept.map(([, resolution]) => resolution)];
   const byRoot = new Map([['main', main], ...kept]);
+  const records = getValueRecords(value);
+  const reserveOps = composeRecordOps(
+    reserveDropsOf(records, dropped),
+    spareOpsOf(live)
+  );
+  const childrenIn = (root: string) => getDefined(byRoot.get(root)).children;
   const base = dropped.size > 0 ? withoutValueRoots(value, dropped) : value;
 
   return {
     blockers: [...new Set(all.flatMap((resolution) => resolution.blockers))],
     decided: [...new Set(all.flatMap((resolution) => resolution.decided))],
     diagnostics: live.flatMap((resolution) => resolution.diagnostics),
+    hiddenIn: (root: string) => byRoot.get(root)?.hidden ?? null,
     landed: live.flatMap((resolution) => resolution.landed),
     resolvedIn: (root: string) => byRoot.get(root)?.resolvedOf ?? null,
     resolvedOf: (original: unknown) =>
@@ -2921,18 +3250,21 @@ export const resolveAuthoredValue = (
     value: deriveValue(
       base,
       {
-        children: main.children,
+        children: childrenIn('main'),
         ...(base.roots
           ? {
               roots: Object.fromEntries(
-                kept.map(([root, resolution]) => [root, resolution.children])
+                kept.map(([root]) => [root, childrenIn(root)])
               ),
             }
           : {}),
       },
       composeRecordOps(
-        putContexts(dependencies.minted()),
-        putLanded(live.flatMap((resolution) => resolution.landed))
+        composeRecordOps(
+          putContexts(dependencies.minted()),
+          putLanded(live.flatMap((resolution) => resolution.landed))
+        ),
+        reserveOps
       )
     ),
   };

@@ -847,6 +847,370 @@ describe('authored settle of a deleted block', () => {
     );
   });
 
+  describe('under a unique generated id', () => {
+    let minted = 0;
+    const Generated = defineEditorSchema('authored-facts-generated', {
+      elements: {
+        blockquote: { content: schema.content.type('paragraph', { min: 1 }) },
+        callout: { content: schema.content.type('paragraph', { min: 1 }) },
+        paragraph: schema.element.textBlock(),
+      },
+      id: 'authored-facts-generated',
+      properties: [
+        schema.elementProperty(
+          'id',
+          property.string({ generate: () => `g${(minted += 1)}` }),
+          {
+            role: 'metadata',
+            target: target.group('element'),
+            typeChange: 'preserve-if-allowed',
+            unique: true,
+          }
+        ),
+        schema.elementProperty('align', property.string(), {
+          target: target.type('paragraph'),
+        }),
+      ],
+      root: schema.content.any(
+        ['blockquote', 'callout', 'paragraph'].map((type) =>
+          schema.content.type(type)
+        ),
+        { default: { type: 'paragraph' }, min: 1 }
+      ),
+      unknown: 'reject',
+      version: 1,
+    });
+    const quoted = [
+      { ...line('keep'), id: 'a' },
+      {
+        children: [{ ...deleted('gone'), id: 'b' }],
+        id: 'q',
+        type: 'blockquote',
+      },
+    ];
+    const decidedAndSettled = (children: readonly Node[], change: string) => {
+      minted = 0;
+      const deciding = editorOf({ children }, Generated);
+
+      authoredTestApi(deciding).decide({ action: 'accept', changes: [change] });
+      minted = 0;
+
+      const peer = editorOf({ children }, Generated);
+      const verdicts =
+        recordsOf(deciding.read.value())['authored-verdicts'] ?? {};
+
+      peer.update({ tags: ['collaboration'] }, (tx) => {
+        for (const [id, record] of Object.entries(verdicts)) {
+          tx.records.put('authored-verdicts', id, record);
+        }
+      });
+
+      return { deciding: deciding.read.value(), settled: peer.read.value() };
+    };
+
+    it('loads a quote whose only line a verdict removed with a new empty line', () => {
+      const [, emptied] = editorOf(
+        { children: quoted, records: accepted },
+        Generated
+      ).read.children() as readonly Node[];
+
+      assert.deepEqual(
+        emptied?.children?.map(({ id: _id, ...rest }) => rest),
+        [line('')]
+      );
+    });
+
+    it('builds the line a peer’s verdict leaves a quote from its stored spare, as deciding does', () => {
+      const { deciding, settled } = decidedAndSettled(quoted, 'carol:1');
+
+      assert.deepEqual(settled, deciding);
+    });
+
+    it('drops a quote’s spare on a peer once the verdict leaves only a format pending in it, as deciding does', () => {
+      const { deciding, settled } = decidedAndSettled(
+        [
+          { ...line('keep'), id: 'a' },
+          {
+            children: [
+              { ...deleted('gone'), id: 'b' },
+              {
+                ...line('stay'),
+                align: 'center',
+                authored: [
+                  {
+                    at: 1,
+                    author: 'dave',
+                    change: 'dave:1',
+                    id: 'dave-align',
+                    key: 'align',
+                    kind: 'format',
+                    write: { kind: 'set', value: 'center' },
+                  },
+                ],
+                id: 'c',
+              },
+            ],
+            id: 'q',
+            type: 'blockquote',
+          },
+        ],
+        'carol:1'
+      );
+
+      assert.deepEqual(settled, deciding);
+    });
+
+    it('drops a container’s spares on a peer once the verdict accepts its only pending change, its type, as deciding does', () => {
+      const { deciding, settled } = decidedAndSettled(
+        [
+          {
+            authored: [
+              {
+                at: 1,
+                author: 'erin',
+                before: 'blockquote',
+                change: 'erin:1',
+                id: 'erin-type',
+                key: 'type',
+                kind: 'format',
+                write: { kind: 'set', value: 'callout' },
+              },
+            ],
+            children: [{ ...line('stay'), id: 'c' }],
+            id: 'q',
+            type: 'callout',
+          },
+        ],
+        'erin:1'
+      );
+
+      assert.deepEqual(settled, deciding);
+    });
+
+    it('drops the root’s spare on a peer once the verdict empties the root and builds from it, as deciding does', () => {
+      const { deciding, settled } = decidedAndSettled(
+        [{ ...deleted('gone'), id: 'b' }],
+        'carol:1'
+      );
+
+      assert.deepEqual(settled, deciding);
+    });
+
+    it('drops the root’s spare on a peer once the verdict leaves the root nothing to build, as deciding does', () => {
+      const { deciding, settled } = decidedAndSettled(
+        [
+          { ...line('keep'), id: 'a' },
+          { ...deleted('gone'), id: 'b' },
+        ],
+        'carol:1'
+      );
+
+      assert.deepEqual(settled, deciding);
+    });
+
+    it('drops the root’s spare on a peer once the verdict removes a line whose only text is empty and unmarked, as deciding does', () => {
+      const { deciding, settled } = decidedAndSettled(
+        [
+          { ...line('keep'), id: 'a' },
+          {
+            authored: [carol],
+            children: [{ text: '' }],
+            id: 'b',
+            type: 'paragraph',
+          },
+        ],
+        'carol:1'
+      );
+
+      assert.deepEqual(settled, deciding);
+    });
+
+    const listed = (types: readonly string[]) =>
+      schema.content.any(
+        types.map((type) => schema.content.type(type)),
+        { default: { type: 'list' }, min: 1 }
+      );
+    const ListedGenerated = defineEditorSchema(
+      'authored-facts-listed-generated',
+      {
+        elements: {
+          list: { content: schema.content.type('paragraph', { min: 1 }) },
+          paragraph: schema.element.textBlock(),
+          section: { content: listed(['list', 'paragraph']) },
+        },
+        id: 'authored-facts-listed-generated',
+        properties: [
+          schema.elementProperty(
+            'id',
+            property.string({ generate: () => `g${(minted += 1)}` }),
+            {
+              role: 'metadata',
+              target: target.group('element'),
+              typeChange: 'preserve-if-allowed',
+              unique: true,
+            }
+          ),
+        ],
+        root: listed(['list', 'paragraph', 'section']),
+        unknown: 'reject',
+        version: 1,
+      }
+    );
+    const withheld = (block: Node) => {
+      minted = 0;
+      const deciding = editorOf({ children: [block] }, ListedGenerated);
+      const peer = editorOf({ children: [block] }, ListedGenerated);
+      const before = peer.read.value();
+
+      authoredTestApi(deciding).decide({
+        action: 'accept',
+        changes: ['carol:1'],
+      });
+
+      const verdicts =
+        recordsOf(deciding.read.value())['authored-verdicts'] ?? {};
+
+      return { before, peer, verdicts };
+    };
+    const sparesOf = (value: Value) => ({
+      members: value.children.map(({ authored }) =>
+        (authored ?? []).filter(
+          (item) => (item as { kind?: unknown }).kind === 'reserve'
+        )
+      ),
+      records: recordsOf(value)['authored-reserves'],
+    });
+
+    for (const [name, removed] of [
+      [
+        'whose only text is empty and unmarked',
+        {
+          authored: [carol],
+          children: [{ text: '' }],
+          id: 'b',
+          type: 'paragraph',
+        },
+      ],
+      ['whose text it deletes', { ...deleted('gone'), id: 'b' }],
+    ] as const) {
+      for (const [owner, block] of [
+        ['root’s', removed],
+        ['section’s', { children: [removed], id: 's', type: 'section' }],
+      ] as const) {
+        it(`keeps the ${owner} spare on a peer while it cannot yet replace a removed block ${name}`, () => {
+          const { before, peer, verdicts } = withheld(block);
+
+          peer.update({ tags: ['collaboration'] }, (tx) => {
+            for (const [id, record] of Object.entries(verdicts)) {
+              tx.records.put('authored-verdicts', id, record);
+            }
+          });
+
+          assert.deepEqual(sparesOf(peer.read.value()), sparesOf(before));
+        });
+
+        it(`loads the ${owner} spare unchanged while it cannot yet replace a removed block ${name}`, () => {
+          const { before, verdicts } = withheld(block);
+          const value = structuredClone(before) as Value & {
+            records?: Record<string, Record<string, unknown>>;
+          };
+
+          value.records = { ...value.records, 'authored-verdicts': verdicts };
+
+          assert.deepEqual(
+            sparesOf(editorOf(value, ListedGenerated).read.value()),
+            sparesOf(before)
+          );
+        });
+      }
+    }
+
+    const decidedAndReloaded = (
+      children: readonly Node[],
+      decision: Parameters<ReturnType<typeof authoredTestApi>['decide']>[0]
+    ) => {
+      minted = 0;
+      const deciding = editorOf({ children }, Generated);
+
+      authoredTestApi(deciding).decide(decision);
+
+      const stored = deciding.read.value();
+
+      return {
+        reloaded: editorOf(structuredClone(stored), Generated).read.value(),
+        stored,
+      };
+    };
+    const s0 = { at: 1, author: 'sam', change: 's0' };
+    const s1 = { at: 1, author: 'sue', change: 's1' };
+
+    it('loads unchanged the root’s spare a decision kept for the join of a block it removed', () => {
+      const { reloaded, stored } = decidedAndReloaded(
+        [
+          { ...line('a'), id: 'pa' },
+          {
+            authored: [
+              { ...s0, kind: 'join' },
+              { ...s1, kind: 'delete' },
+            ],
+            children: [{ authored: [{ ...s1, kind: 'delete' }], text: 'b' }],
+            id: 'pb',
+            type: 'paragraph',
+          },
+        ],
+        { action: 'accept', changes: ['s1'] }
+      );
+
+      assert.deepEqual(reloaded, stored);
+    });
+  });
+
+  it('builds a new line, not the stored spare, in a quote a verdict empties under a schema that generates no id', () => {
+    const Optional = defineEditorSchema('authored-facts-optional-id', {
+      elements: {
+        blockquote: { content: schema.content.type('paragraph', { min: 1 }) },
+        paragraph: schema.element.textBlock(),
+      },
+      id: 'authored-facts-optional-id',
+      properties: [
+        schema.elementProperty('id', property.string(), {
+          target: target.group('element'),
+        }),
+      ],
+      root: schema.content.any(
+        ['blockquote', 'paragraph'].map((type) => schema.content.type(type)),
+        { default: { type: 'paragraph' }, min: 1 }
+      ),
+      unknown: 'reject',
+      version: 1,
+    });
+    const [, emptied] = editorOf(
+      {
+        children: [
+          { ...line('keep'), id: 'a' },
+          {
+            authored: [
+              {
+                ...carol,
+                kind: 'reserve',
+                node: { ...line(''), id: 'spare' },
+                slot: { min: 0 },
+                type: 'blockquote',
+              },
+            ],
+            children: [{ ...deleted('gone'), id: 'b' }],
+            id: 'q',
+            type: 'blockquote',
+          },
+        ],
+        records: accepted,
+      },
+      Optional
+    ).read.children() as readonly Node[];
+
+    assert.deepEqual(emptied?.children, [line('')]);
+  });
+
   it('leaves an empty line when the only block goes', () => {
     assert.deepEqual(loaded([deleted('gone')]), [line('')]);
   });

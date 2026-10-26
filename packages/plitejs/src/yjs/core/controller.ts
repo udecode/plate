@@ -1,5 +1,6 @@
 import * as Y from 'yjs';
 
+import { authoredDocumentCapabilityPoint } from '../../core/authored-document-capability';
 import {
   createInternalDocumentChange,
   filterDocumentChangeRoots,
@@ -8,6 +9,7 @@ import {
   getInternalDocumentRootChange,
   valueRootIndex,
   valueRootNodes,
+  withDocumentChangeRecords,
   withInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
@@ -18,6 +20,7 @@ import { holdsImportedRoot, readEmptyText } from '../../core/editor-schema';
 import { isMissingReference } from '../../core/missing-reference';
 import {
   getCompiledEditorSchema,
+  getPluginContributions,
   getPluginRegistry,
 } from '../../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../../core/public-root';
@@ -52,6 +55,7 @@ import type {
   JsonEditorValue,
 } from '../../index';
 import { DocumentChange, RangeApi, SelectionApi } from '../../index';
+import { getDefined } from '../../internal/get-defined';
 import {
   createYjsAwarenessAdapter,
   type YjsAwarenessAdapter,
@@ -76,6 +80,7 @@ import {
   type YjsEditorAdapter,
   type YjsImportOutcome,
 } from './editor-adapter';
+import { EditorOnlyRoots } from './editor-only-roots';
 import type { YjsEditor } from './editor-types';
 import {
   type CapturedYjsEventBatch,
@@ -166,6 +171,27 @@ type YjsRootBinding = {
   readonly root: Y.XmlElement;
 };
 
+const mergeRecordOps = (
+  into: RecordOps | null,
+  ops: RecordOps | null
+): RecordOps | null => {
+  if (!ops || ops.size === 0) return into;
+  if (!into) return ops;
+
+  const merged = new Map(into);
+
+  for (const [set, writes] of ops) {
+    merged.set(set, new Map([...(merged.get(set) ?? []), ...writes]));
+  }
+
+  return merged;
+};
+
+const withSpareRecords = (change: DocumentChange, records: RecordOps | null) =>
+  records && records.size > 0
+    ? withDocumentChangeRecords(change, records)
+    : change;
+
 type YjsRemoteInput = Readonly<{
   effects: readonly PendingYjsEffect[];
   records: DocumentChange | null;
@@ -253,6 +279,7 @@ export class YjsController<
   private pendingRemoteEffects = false;
   private readonly pendingRemoteNamedRoots = new Set<string>();
   private readonly pendingRemoteRecords = new Map<string, Set<string>>();
+  private readonly editorOnlyRoots = new EditorOnlyRoots();
   private pendingRemoteRootChange = false;
   private pendingRemoteSchemaChange = false;
   private published = false;
@@ -455,6 +482,14 @@ export class YjsController<
     return false;
   }
 
+  private storedBlock(node: Descendant, root: string): Descendant {
+    return fitImportedBlock(
+      this.editor,
+      this.authored()?.spareBlock(this.editor, root, node) ?? node,
+      root
+    );
+  }
+
   private createRootBinding(root: string, yRoot: Y.XmlElement): YjsRootBinding {
     const bridge = new YjsEventChangeBridge(
       yRoot,
@@ -463,7 +498,7 @@ export class YjsController<
       this.isSetValued,
       {
         admitsText: this.admitsText,
-        block: (node) => fitImportedBlock(this.editor, node, root),
+        block: (node) => this.storedBlock(node, root),
         holds: (after, windows) =>
           holdsImportedRoot(getEditorSchema(this.editor), root, after, windows),
       }
@@ -528,6 +563,7 @@ export class YjsController<
 
       for (const id of event.keysChanged) {
         addRecordId(this.pendingRemoteRecords, set, id);
+        this.editorOnlyRoots.drop(set, id);
       }
     };
 
@@ -538,6 +574,27 @@ export class YjsController<
   private unobserveRecordMaps(): void {
     for (const unobserve of this.recordUnobservers.values()) unobserve();
     this.recordUnobservers.clear();
+  }
+
+  private lowerRootSpares(root: string): void {
+    const ids = this.editorOnlyRoots.take(root);
+
+    if (ids) this.lowerRecords(this.editorRecordsOf(ids));
+  }
+
+  private editorRecordsOf(
+    ids: ReadonlyMap<string, Iterable<string>>
+  ): RecordOps {
+    const store = getEditorDocumentRecords(this.editor);
+
+    return new Map(
+      [...ids].map(([set, setIds]) => [
+        set,
+        new Map(
+          [...setIds].map((id) => [id, getRecord(store, set, id) ?? null])
+        ),
+      ])
+    );
   }
 
   /** Write record puts and drops into their maps, skipping unchanged ids. */
@@ -557,17 +614,28 @@ export class YjsController<
    * for every pending id, checked as canonical record JSON.
    */
   private raiseRecords(): DocumentChange | null {
-    if (this.pendingRemoteRecords.size === 0) return null;
+    const records = this.raisedRecords(this.pendingRemoteRecords);
+
+    return records
+      ? createInternalDocumentChange(new Map(), { records })
+      : null;
+  }
+
+  /** The record writes that bring the editor's `ids` to the maps' values. */
+  private raisedRecords(
+    ids: ReadonlyMap<string, Iterable<string>>
+  ): RecordOps | null {
+    if (ids.size === 0) return null;
 
     const store = getEditorDocumentRecords(this.editor);
     // No prototype, so an id such as "__proto__" stays an own key.
     const writes: Record<string, Record<string, unknown>> = Object.create(null);
     let changed = false;
 
-    for (const [set, ids] of this.pendingRemoteRecords) {
+    for (const [set, setIds] of ids) {
       const map = this.recordMap(set);
 
-      for (const id of ids) {
+      for (const id of setIds) {
         const json = map.get(id) ?? null;
 
         if (json === (getRecord(store, set, id) ?? null)) continue;
@@ -578,11 +646,7 @@ export class YjsController<
       }
     }
 
-    return changed
-      ? createInternalDocumentChange(new Map(), {
-          records: recordOpsFromJson(writes),
-        })
-      : null;
+    return changed ? recordOpsFromJson(writes) : null;
   }
 
   /** Mark every id the maps or the editor hold, so a raise replaces them. */
@@ -790,6 +854,9 @@ export class YjsController<
         }
       }
     }
+    for (const root of this.editorOnlyRoots.rootsWriting(records)) {
+      changedRoots.add(root);
+    }
     const documentChanged = changedRoots.size > 0;
 
     if (!documentChanged && records.size === 0 && sharedEffects.length === 0) {
@@ -820,6 +887,9 @@ export class YjsController<
     this.transact((writeOf) => {
       this.lowerRecords(records);
       for (const root of changedRoots) {
+        const editorOnly = this.editorOnlyRoots.has(root);
+
+        this.lowerRootSpares(root);
         if (commit.changes.deleteRoots.has(root)) {
           this.roots.delete(root);
           removedBindings.push(root);
@@ -879,6 +949,9 @@ export class YjsController<
         });
         let indexes: ReturnType<typeof readIndexes> | undefined;
         const write = writeOf(binding.root);
+
+        if (editorOnly) binding.bridge.writeMissingRoot(write);
+
         const incremental = binding.bridge.lower(write, rootChange, expected, {
           // Several of the bridge's detectors read them, and a root other
           // than the main one builds them anew on each read.
@@ -893,7 +966,12 @@ export class YjsController<
                   admitsText: this.admitsText,
                   base: childrenOf(before, root).slice(),
                   canonicalize: (children) =>
-                    this.canonicalizeRootInDocument(root, children, before),
+                    this.canonicalizeRootInDocument(
+                      root,
+                      this.readRoomRoot(getDefined(binding), root, children)
+                        .children,
+                      before
+                    ),
                   change: rootChange,
                   emptyValue: binding.emptyValue,
                   expected: expected.slice(),
@@ -1185,18 +1263,11 @@ export class YjsController<
       return;
     }
 
-    const store = getEditorDocumentRecords(this.editor);
-    const records: RecordOps = new Map(
-      [...(repair ? getInternalDocumentChangeRecords(repair) : [])].map(
-        ([set, writes]) => [
-          set,
-          new Map(
-            [...writes.keys()].map((id) => [
-              id,
-              getRecord(store, set, id) ?? null,
-            ])
-          ),
-        ]
+    const records = this.editorRecordsOf(
+      new Map(
+        [...(repair ? getInternalDocumentChangeRecords(repair) : [])].map(
+          ([set, writes]) => [set, writes.keys()]
+        )
       )
     );
     const repaired = admission
@@ -1223,7 +1294,10 @@ export class YjsController<
 
     this.transact((writeOf) => {
       this.lowerRecords(records);
-      for (const root of deleted) this.roots.delete(root);
+      for (const root of deleted) {
+        this.lowerRootSpares(root);
+        this.roots.delete(root);
+      }
       for (const { base, binding, change, children, root } of repaired) {
         const write = writeOf(binding.root);
         const schemaRoot = root === MAIN_ROOT_KEY ? null : root;
@@ -1245,15 +1319,18 @@ export class YjsController<
               this.isSetValued,
               schemaRoot,
               readEmpty,
-              (block) => fitImportedBlock(this.editor, block, root)
+              (block) => this.storedBlock(block, root)
             )
           );
 
         if (!retracted) {
+          this.lowerRootSpares(root);
           binding.bridge.rewrite(write, () =>
             reconcileYjsRoot(
               write,
-              this.readYjsRootValue(binding),
+              this.readYjsRootValue(binding).map((block) =>
+                this.storedBlock(block, root)
+              ),
               children,
               this.isSetValued,
               schemaRoot
@@ -1654,14 +1731,17 @@ export class YjsController<
     }, this.canonicalizeOrigin);
 
     const before = this.editorAdapter.readChildren(root);
-    const children = this.editorAdapter.canonicalize(
-      root,
-      this.readYjsRootValue(binding)
-    );
+    const room = this.readRoomRoot(binding, root);
+    const children = this.editorAdapter.canonicalize(root, room.children);
+
+    const records = this.importSpareRecords(root, room.records);
     const joined = recover?.(before, children) ?? null;
-    const change = joined
-      ? createInternalDocumentChange(new Map([[root, joined]]))
-      : createRootDocumentChange(root, before, children, this.isSetValued);
+    const change = withSpareRecords(
+      joined
+        ? createInternalDocumentChange(new Map([[root, joined]]))
+        : createRootDocumentChange(root, before, children, this.isSetValued),
+      records
+    );
 
     this.traceEntries.push({
       changedChildren: countChangedTopLevelChildren(before, children),
@@ -1730,11 +1810,14 @@ export class YjsController<
     }, this.canonicalizeOrigin);
 
     const before = this.editorAdapter.readValue();
-    const next = this.readYjsDocumentValue(before, {
+    const { records, value: next } = this.readYjsDocumentValue(before, {
       main: changed?.main ?? true,
       named: namedRoots,
     });
-    let change = DocumentChange.between(before, next);
+    let change = withSpareRecords(
+      DocumentChange.between(before, next),
+      records
+    );
 
     for (const [root, recover] of recoveries) {
       if (
@@ -1811,7 +1894,7 @@ export class YjsController<
       main: boolean;
       named: ReadonlySet<string>;
     }>
-  ): JsonEditorValue {
+  ): Readonly<{ records: RecordOps | null; value: JsonEditorValue }> {
     const primary = this.bindings.get(MAIN_ROOT_KEY);
 
     if (!primary) {
@@ -1821,12 +1904,24 @@ export class YjsController<
     const roots: Record<string, JsonEditorValue['children']> = {
       ...before.roots,
     };
+    let records: RecordOps | null = null;
+    const read = (root: string, binding: YjsRootBinding) => {
+      const room = this.readRoomRoot(binding, root);
+
+      records = mergeRecordOps(
+        records,
+        this.importSpareRecords(root, room.records)
+      );
+
+      return room.children;
+    };
 
     for (const root of changed.named) {
       const yRoot = this.roots.get(root);
 
       if (yRoot === undefined) {
         delete roots[root];
+        this.editorOnlyRoots.take(root);
         continue;
       }
       if (!(yRoot instanceof Y.XmlElement)) {
@@ -1838,14 +1933,79 @@ export class YjsController<
         binding = this.createRootBinding(root, yRoot);
         this.bindings.set(root, binding);
       }
-      roots[root] = this.readYjsRootValue(binding);
+      roots[root] = read(root, binding);
     }
 
-    return this.editorAdapter.canonicalizeDocument({
-      children: changed.main ? this.readYjsRootValue(primary) : before.children,
-      ...(before.meta === undefined ? {} : { meta: before.meta }),
-      ...(Object.keys(roots).length === 0 ? {} : { roots }),
-    });
+    const children = changed.main
+      ? read(MAIN_ROOT_KEY, primary)
+      : before.children;
+
+    return {
+      records,
+      value: this.editorAdapter.canonicalizeDocument({
+        children,
+        ...(before.meta === undefined ? {} : { meta: before.meta }),
+        ...(Object.keys(roots).length === 0 ? {} : { roots }),
+      }),
+    };
+  }
+
+  /**
+   * The room's content of `root` as every editor builds it: each container
+   * and the root itself that lack a required child built from their unbuilt
+   * spares, with the record writes that mark the root's spares built. A root
+   * with no spare to build from reads `emptyValue` when the room holds none.
+   */
+  private readRoomRoot(
+    binding: YjsRootBinding,
+    root: string,
+    children: readonly Descendant[] = readPliteValueFromYjs(
+      binding.root,
+      undefined,
+      this.admitsText
+    )
+  ): Readonly<{ children: readonly Descendant[]; records: RecordOps | null }> {
+    const spared = this.authored()?.spareRoot(
+      this.editor,
+      root,
+      children,
+      (set) => this.recordMap(set).entries()
+    );
+
+    if (spared) return spared;
+
+    return {
+      children: children.length > 0 ? children : [...binding.emptyValue],
+      records: null,
+    };
+  }
+
+  private importSpareRecords(
+    root: string,
+    records: RecordOps | null
+  ): RecordOps | null {
+    const previous = this.editorOnlyRoots.replace(root, records);
+
+    if (!previous) return records;
+
+    return mergeRecordOps(
+      this.raisedRecords(
+        new Map(
+          [...previous].map(([set, ids]) => [
+            set,
+            [...ids].filter((id) => !records?.get(set)?.has(id)),
+          ])
+        )
+      ),
+      records
+    );
+  }
+
+  private authored() {
+    return (
+      getPluginContributions(this.editor, authoredDocumentCapabilityPoint)[0] ??
+      null
+    );
   }
 
   private readYjsRootValue(binding: YjsRootBinding): readonly Descendant[] {

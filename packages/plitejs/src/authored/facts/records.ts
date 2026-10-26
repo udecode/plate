@@ -1,18 +1,22 @@
 import { copyFields } from '../../core/change/lazy-root';
 import { canonicalJsonKey } from '../../core/change/transform';
+import type { ConstructionSlot } from '../../core/content-completion';
 import { definePlugin } from '../../core/plugin';
 import {
   canonicalRecordJson,
+  getRecordEntries,
   NO_RECORD_OPS,
   type RecordOps,
   type RecordStore,
   withValueRecords,
 } from '../../core/record-store';
 import { hashSchemaIdentityString } from '../../core/schema-compiler';
-import type { MarkBase } from '../tree/marks';
+import type { Element } from '../../interfaces/element';
+import { isReserveNode, isReserveSlot, type MarkBase } from '../tree/marks';
 
 export const CONTEXTS = 'authored-contexts';
 export const LANDED = 'authored-landed';
+export const RESERVES = 'authored-reserves';
 export const VERDICTS = 'authored-verdicts';
 
 /**
@@ -212,6 +216,119 @@ export const parseVerdict = (
   return verdictIdOf(record) === id ? record : null;
 };
 
+/** A spare block of a root's own content, as a container member holds one. */
+export type ReserveRecord = MarkBase &
+  Readonly<{
+    built?: true;
+    node: Element;
+    root: string;
+    slot: ConstructionSlot;
+  }>;
+
+/**
+ * The JSON text of `[root, change, inc, slot]`, with `p<index>` or
+ * `m<ordinal>` naming the slot. A built spare's id adds the hash of its
+ * node, so a later write's spare for the same slot under the same change
+ * gets an id of its own.
+ */
+export const reserveIdOf = ({
+  built,
+  change,
+  inc,
+  node,
+  root,
+  slot,
+}: Pick<
+  ReserveRecord,
+  'built' | 'change' | 'inc' | 'node' | 'root' | 'slot'
+>) =>
+  JSON.stringify([
+    root,
+    change,
+    inc ?? null,
+    'prefix' in slot ? `p${slot.prefix}` : `m${slot.min}`,
+    ...(built ? [`b:${hashSchemaIdentityString(canonicalJsonKey(node))}`] : []),
+  ]);
+
+export const reserveRootOf = (id: string) => (JSON.parse(id) as [string])[0];
+
+const RESERVE_FIELDS: ReadonlySet<string> = new Set([
+  'at',
+  'author',
+  'built',
+  'change',
+  'inc',
+  'node',
+  'root',
+  'slot',
+]);
+
+/** A stored spare, refused unless its id names its root, change and slot. */
+export const parseReserve = (
+  id: string,
+  json: string
+): ReserveRecord | null => {
+  const node: unknown = JSON.parse(json);
+
+  if (!isRecordNode(node)) return null;
+
+  const { at, author, built, change, inc, root, slot } = node;
+
+  if (
+    typeof at !== 'number' ||
+    !Number.isFinite(at) ||
+    !isText(author) ||
+    !isText(change) ||
+    (inc !== undefined && !isText(inc)) ||
+    (built !== undefined && built !== true) ||
+    !isText(root) ||
+    !isReserveSlot(slot) ||
+    !isReserveNode(node.node) ||
+    !Object.keys(node).every((field) => RESERVE_FIELDS.has(field))
+  ) {
+    return null;
+  }
+
+  const record = node as ReserveRecord;
+
+  return reserveIdOf(record) === id ? record : null;
+};
+
+/** The node of every spare `store` holds for a root's own content. */
+export const reserveNodesIn = (store: RecordStore): Element[] =>
+  [...getRecordEntries(store, RESERVES)].map(
+    ([, json]) => (JSON.parse(json) as ReserveRecord).node
+  );
+
+/** The node of every spare `store` holds for a root's own content that no build took. */
+export const unbuiltReserveNodesIn = (store: RecordStore): Element[] =>
+  [...getRecordEntries(store, RESERVES)].flatMap(([, json]) => {
+    const record = JSON.parse(json) as ReserveRecord;
+
+    return record.built ? [] : [record.node];
+  });
+
+/**
+ * The ops that delete every spare record `store` holds for one of `roots`,
+ * which a change removes, so no record outlives its root.
+ */
+export const reserveDropsOf = (
+  store: RecordStore,
+  roots: ReadonlySet<string>
+): RecordOps => {
+  if (roots.size === 0) return NO_RECORD_OPS;
+
+  const drops = new Map<string, null>();
+
+  for (const [id, json] of getRecordEntries(store, RESERVES)) {
+    if (roots.has((JSON.parse(json) as ReserveRecord).root)) {
+      drops.set(id, null);
+    }
+  }
+
+  return drops.size === 0 ? NO_RECORD_OPS : new Map([[RESERVES, drops]]);
+};
+
 export const parseLanded = (
   write: string,
   json: string
@@ -281,7 +398,8 @@ export const withStore = <V extends object>(value: V, store: RecordStore): V =>
   );
 
 /**
- * The record sets that hold review contexts, verdicts and landed writes.
+ * The record sets that hold review contexts, verdicts, landed writes and the
+ * spare blocks of a root's own content.
  * `authored()` depends on it, so a host that mirrors plugin dependencies,
  * such as Plate, names it. Undo carries a verdict or a landed write with the
  * commit that stored it.
@@ -291,6 +409,7 @@ export const authoredRecords = definePlugin('authored-records', {
     records: {
       [CONTEXTS]: { history: 'retain' },
       [LANDED]: {},
+      [RESERVES]: {},
       [VERDICTS]: {},
     },
   },

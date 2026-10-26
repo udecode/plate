@@ -24,6 +24,7 @@ import {
   deleteFragment as editorDeleteFragment,
   moveNodes as editorMoveNodes,
 } from '../../src/internal';
+import { getDefined } from '../../src/internal/get-defined';
 import {
   deleteBackward as editorDeleteBackward,
   getSnapshot as editorGetSnapshot,
@@ -32,6 +33,7 @@ import {
   string as editorString,
 } from '../../src/testing';
 import { inheritNodeKeys } from '../../src/utils/node-keys';
+import { defineTestSchema } from '../support/schema';
 
 const nativeGroupingInput = defineUpdateAnnotation<{
   composition?: number;
@@ -1325,6 +1327,77 @@ describe('plite-history contract', () => {
     assert.equal(editorString(editor, [0]), 'b');
     assert.equal(getHistory(editor).undos.length, 0);
     assert.equal(getHistory(editor).redos.length, 0);
+  });
+
+  it('keeps the undo caret before a peer’s letter typed at it when the peer also sets a link’s property and changes its text', () => {
+    const Links = defineTestSchema('history-peer-link', {
+      link: { inline: true },
+    });
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [
+            { text: 'a' },
+            { children: [{ text: 'bc' }], type: 'link', url: 'u' },
+            { text: 'd' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      plugins: [Links, history()],
+    });
+
+    editor.update((tx) =>
+      tx.selection.set(
+        SelectionApi.text({
+          anchor: { path: [0, 2], offset: 1 },
+          focus: { path: [0, 2], offset: 1 },
+        })
+      )
+    );
+    editor.update((tx) => tx.text.insert('X'));
+
+    const peer = createEditor({
+      initialValue: structuredClone(editor.read.children()),
+      plugins: [Links],
+    });
+
+    peer.update((tx) => {
+      tx.nodes.set({ url: 'v' }, { at: [0, 1] });
+      tx.text.insert('!', { at: { path: [0, 1, 0], offset: 2 } });
+      tx.text.insert('Z', { at: { path: [0, 2], offset: 2 } });
+    });
+    editor.update({ history: 'skip', tags: ['collaboration'] }, (tx) => {
+      tx.changes.apply(getDefined(peer.read.lastCommit()).changes);
+    });
+
+    const replayed = [undo, redo].map((replay) => {
+      replay(editor);
+
+      return {
+        children: editor.read.children(),
+        selection: editor.read.selection(),
+      };
+    });
+    const line = (text: string) => [
+      {
+        children: [
+          { text: 'a' },
+          { children: [{ text: 'bc!' }], type: 'link', url: 'v' },
+          { text },
+        ],
+        type: 'paragraph',
+      },
+    ];
+    const caret = (offset: number) => ({
+      anchor: { path: [0, 2], offset },
+      focus: { path: [0, 2], offset },
+    });
+
+    assert.deepEqual(replayed, [
+      { children: line('dZ'), selection: caret(1) },
+      { children: line('dXZ'), selection: caret(2) },
+    ]);
   });
 
   it('rebases saved non-main split positions across history-skip text edits', () => {

@@ -464,6 +464,8 @@
         "test/support/authored.ts",
         "test/support/content-shapes.ts",
         "test/support/law-check.ts",
+        "test/yjs/support/collaboration.ts",
+        "test/yjs/support/provider.ts",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/config/test-suites.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",

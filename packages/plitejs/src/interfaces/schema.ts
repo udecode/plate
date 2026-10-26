@@ -210,6 +210,8 @@ export type SchemaTextPropertyOptions = Readonly<{
   split?: SchemaPropertySplitPolicy;
   target?: SchemaTarget;
   typeChange?: SchemaPropertyTypeChangePolicy;
+  /** Only an element property can be unique. */
+  unique?: never;
 }>;
 
 export type SchemaElementPropertyOptions = Readonly<{
@@ -217,9 +219,25 @@ export type SchemaElementPropertyOptions = Readonly<{
   /** Defaults to `preserve`. */
   landing?: SchemaPropertyLandingPolicy;
   role?: SchemaPropertyRole;
+  /** Defaults to `drop` for a generated value, and `preserve` otherwise. */
   split?: SchemaPropertySplitPolicy;
   target: SchemaTarget;
   typeChange?: SchemaPropertyTypeChangePolicy;
+  /**
+   * No two elements store one value of this property. A commit or a load that
+   * stores a value another element holds gives one of them a fresh value from
+   * the generator, so a write that stores a held value lands with a new one:
+   * read the value back from the landed node. A peer's concurrent repair can
+   * change it again. Requires a generator that never repeats a value, an
+   * exact key, a value other than a set, the `metadata` role, a target that
+   * holds wherever its types stand and on every type that can take a held
+   * type's place, so no retype drops the value, `landing: 'preserve'` and
+   * `typeChange: 'preserve-if-allowed'`. Sets `copy` and `split` to `drop`.
+   * The key takes no other element declaration, since every holder's fresh
+   * value comes from this one's generator.
+   * Suggesting writes the value in place, with no suggestion.
+   */
+  unique?: true;
 }>;
 
 export type SchemaTextProperty<
@@ -252,6 +270,7 @@ export type SchemaElementProperty<
   split: SchemaPropertySplitPolicy;
   target: TTarget;
   typeChange: SchemaPropertyTypeChangePolicy;
+  unique?: true;
   value: TDescriptor;
 }>;
 

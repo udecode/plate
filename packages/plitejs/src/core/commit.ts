@@ -78,6 +78,7 @@ type CommitInput<V extends Value> = Omit<
   beforeValue: EditorDocumentValue<V>;
   editor: Editor<V>;
   replace?: boolean;
+  settlement?: EditorCommitSettlement;
   selectionAfterRoot: RootKey;
   selectionBeforeRoot: RootKey;
 };
@@ -93,6 +94,16 @@ const EDITOR_COMMIT_SNAPSHOT_SOURCES = new WeakMap<
   EditorCommitSnapshotSource
 >();
 const EDITOR_COMMIT_STARTED_AT = new WeakMap<EditorCommit, number>();
+
+export type EditorCommitSettlement = Readonly<{
+  admitted: EditorDocumentValue;
+  change: DocumentChange;
+}>;
+
+const EDITOR_COMMIT_UNSETTLES = new WeakMap<
+  EditorCommit,
+  () => DocumentChange
+>();
 const EDITOR_COMMIT_ROOT_SNAPSHOTS = new WeakMap<
   EditorCommit,
   { after: Map<RootKey, EditorSnapshot>; before: Map<RootKey, EditorSnapshot> }
@@ -175,6 +186,11 @@ export const getEditorCommitValue = (
 
   return phase === 'before' ? source.beforeValue : source.value;
 };
+
+/** @internal */
+export const getEditorCommitUnsettle = (
+  commit: EditorCommit
+): DocumentChange | null => EDITOR_COMMIT_UNSETTLES.get(commit)?.() ?? null;
 
 /** @internal */
 export const getEditorCommitStartedAt = (commit: EditorCommit): number =>
@@ -1079,6 +1095,7 @@ export const createEditorCommit = <V extends Value>(
     beforeValue,
     editor,
     replace = false,
+    settlement,
     ...body
   } = input;
   const commit = {
@@ -1137,6 +1154,14 @@ export const createEditorCommit = <V extends Value>(
     commit,
     versions.startedAt ?? globalThis.performance?.now?.() ?? Date.now()
   );
+  if (settlement) {
+    let unsettle: DocumentChange | undefined;
+
+    EDITOR_COMMIT_UNSETTLES.set(
+      commit,
+      () => (unsettle ??= settlement.change.invert(settlement.admitted))
+    );
+  }
 
   return Object.freeze(commit);
 };

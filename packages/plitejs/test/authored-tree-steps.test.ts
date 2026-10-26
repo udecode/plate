@@ -557,6 +557,46 @@ describe('authored review tree recording, step by step', () => {
     ]);
   });
 
+  it('takes the next edit after a plugin reconfiguration whose migration writes the document', () => {
+    const slot = definePluginSlot('steps-migration-then-edit');
+    const revision = (version: number) =>
+      defineEditorSchema('steps-migration-then-edit-schema', {
+        elements: { paragraph: { content: schema.content.text() } },
+        id: 'steps-migration-then-edit-schema',
+        properties:
+          version === 2
+            ? [
+                schema.elementProperty('align', property.string(), {
+                  target: target.type('paragraph'),
+                }),
+              ]
+            : [],
+        root: schema.content.type('paragraph', { min: 1 }),
+        unknown: 'reject',
+        version,
+      });
+    const editor = editorFor([paragraph(text('a'))], 'edit', 'bob', [
+      slot.of(revision(1)),
+    ]);
+
+    editor.update((tx) => {
+      tx.plugins.reconfigure(slot, revision(2), {
+        migrate: ({ document }) => ({
+          ...document,
+          children: document.children.map((node) => ({
+            ...node,
+            align: 'left',
+          })),
+        }),
+      });
+    });
+    editor.update((tx) => tx.text.insert('z', { at: point(0, [0, 0]) }));
+
+    assert.deepEqual(editor.read.children(), [
+      { ...paragraph(text('za')), align: 'left' },
+    ]);
+  });
+
   it('reads text typed in Editing inside a struck paragraph as content before the deletion is decided', () => {
     const editor = editorFor(struckBy([paragraph(text('gone'))], [0]), 'edit');
 

@@ -16,7 +16,10 @@ import {
   type AuthoredMark,
   type CutTag,
   readAuthoredMarks,
+  readMembers,
+  withMembers,
 } from './marks';
+import { sparesIn } from './spares';
 
 type Node = JsonRecord & { children?: readonly Node[]; text?: string };
 
@@ -33,7 +36,8 @@ export const cutsOf = (node: unknown) => readAuthoredMarks(node).filter(isCut);
  * `cut` is null for a block, whose split leaves no cut tag. An inline join
  * drops the cut and any insert or delete tag the right lacks, since the
  * element's tags cover all of its content. A block keeps them, since the
- * line it takes in keeps its own tags on its children.
+ * line it takes in keeps its own tags on its children. The joined element
+ * holds the spare blocks of both halves, built marks included.
  */
 export const joinedShell = (
   left: Node,
@@ -81,7 +85,12 @@ export const joinedShell = (
     ),
   ];
 
-  return dependencies.props(props, marks);
+  const joined = dependencies.props(props, marks);
+  const spares = sparesIn(right);
+
+  return spares.length === 0
+    ? joined
+    : withMembers(joined, [...readMembers(joined), ...spares]);
 };
 
 /**

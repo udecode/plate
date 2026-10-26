@@ -7,6 +7,7 @@ import * as dependencies from '../src/authored/facts/dependencies';
 import * as facts from '../src/authored/facts/facts';
 import * as ledgerModule from '../src/authored/ledger/ledger';
 import { readLedgerWork } from '../src/authored/ledger/work';
+import * as authoredRefusal from '../src/authored/refusal';
 import * as halves from '../src/authored/tree/halves';
 import * as marks from '../src/authored/tree/marks';
 import * as recordCompletion from '../src/authored/tree/record-completion';
@@ -194,6 +195,10 @@ mock.module(join(import.meta.dir, '../src/core/representation.ts'), () => ({
 
     return completion;
   },
+}));
+mock.module(join(import.meta.dir, '../src/authored/refusal.ts'), () => ({
+  ...authoredRefusal,
+  constructsValues: () => false,
 }));
 mock.module(join(import.meta.dir, '../src/core/change/tokens.ts'), () => ({
   ...realTokens,
@@ -2997,5 +3002,150 @@ describe('rejected cut verdicts', () => {
     );
 
     assert.deepEqual(drifted, []);
+  });
+});
+
+describe('authored review tree work beside spare records', () => {
+  withoutLawCheck();
+
+  let made = 0;
+  const Ids = defineEditorSchema('work-unique-ids', {
+    elements: { paragraph: { content: schema.content.text() } },
+    id: 'work-unique-ids',
+    properties: [
+      schema.elementProperty(
+        'id',
+        property.string({ generate: () => `g${(made += 1)}` }),
+        {
+          role: 'metadata',
+          target: target.group('element'),
+          typeChange: 'preserve-if-allowed',
+          unique: true,
+        }
+      ),
+    ],
+    root: schema.content.types(['paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const idsEditor = (children: readonly Node[], intent: 'edit' | 'propose') =>
+    createEditor({
+      initialValue: children as never,
+      plugins: [
+        Ids,
+        createAuthoredPlugin({
+          authorId: 'carol',
+          createChangeId: () => `carol:${(count += 1)}`,
+          intent,
+          now: () => 1,
+        }),
+      ],
+    });
+  const lines = (size: number) =>
+    Array.from({ length: size }, (_, index) => ({
+      ...paragraph({ text: `line ${index}` }),
+      id: `l${index}`,
+    }));
+  type IdsEditor = ReturnType<typeof idsEditor>;
+  const readViews = (editor: IdsEditor) => {
+    for (const preview of ['accepted', 'proposed'] as const) {
+      createEditorView(editor, { authored: { preview } }).read.children();
+    }
+  };
+  const ledgerWorkOf = (editor: IdsEditor, write: () => void) => {
+    readViews(editor);
+
+    const before = readLedgerWork();
+
+    write();
+    readViews(editor);
+
+    const after = readLedgerWork();
+
+    return {
+      rebuilds: after.rebuilds - before.rebuilds,
+      runs: after.resolvedRuns - before.resolvedRuns,
+      slots: after.windowSlots - before.windowSlots,
+    };
+  };
+
+  it('builds no root and resolves as many slots at 1,000 paragraphs as at 10 for a Suggesting Enter, a deletion inside the document and a deletion of the first block under a unique generated id', () => {
+    const writes = {
+      enter: (editor: IdsEditor, size: number) =>
+        editor.update((tx) => {
+          const at = { offset: 3, path: [size >> 1, 0] };
+
+          tx.selection.set({ anchor: at, focus: at });
+          tx.break.insert();
+        }),
+      first: (editor: IdsEditor) =>
+        editor.update((tx) => tx.nodes.remove({ at: [0] })),
+      inside: (editor: IdsEditor, size: number) =>
+        editor.update((tx) => tx.nodes.remove({ at: [(size >> 1) + 2] })),
+    };
+
+    assert.deepEqual(
+      Object.fromEntries(
+        Object.entries(writes).map(([name, write]) => {
+          const workAt = (size: number) => {
+            const editor = idsEditor(lines(size), 'propose');
+            const work = ledgerWorkOf(editor, () => write(editor, size));
+
+            return {
+              pending: editor.read.authored.changes({ limit: 10 }).items.length,
+              ...work,
+            };
+          };
+          const { pending, rebuilds, slots } = workAt(1000);
+
+          return [
+            name,
+            { pending, rebuilds, sameSlots: slots === workAt(10).slots },
+          ];
+        })
+      ),
+      {
+        enter: { pending: 1, rebuilds: 0, sameSlots: true },
+        first: { pending: 1, rebuilds: 0, sameSlots: true },
+        inside: { pending: 1, rebuilds: 0, sameSlots: true },
+      }
+    );
+  });
+
+  it('resolves no run for a record write alone in a root of 1,000 paragraphs that holds a pending suggestion', () => {
+    const editor = idsEditor(
+      lines(1000).map((line, index) =>
+        index === 500
+          ? {
+              ...line,
+              authored: deletedBy('bob:1'),
+              children: [{ authored: deletedBy('bob:1'), text: 'line 500' }],
+            }
+          : line
+      ),
+      'edit'
+    );
+    const spare = {
+      at: 1,
+      author: 'bob',
+      change: 'bob:2',
+      node: { children: [{ text: '' }], id: 'spare', type: 'paragraph' },
+      root: 'main',
+      slot: { min: 0 },
+    };
+    const { rebuilds, runs } = ledgerWorkOf(editor, () =>
+      editor.update((tx) =>
+        tx.records.put(
+          'authored-reserves',
+          JSON.stringify(['main', 'bob:2', null, 'm0']),
+          spare
+        )
+      )
+    );
+
+    assert.deepEqual({ rebuilds, runs }, { rebuilds: 0, runs: 0 });
   });
 });

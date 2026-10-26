@@ -15,6 +15,11 @@ import { history } from 'plitejs/history';
 import { createAuthoredPlugin } from '../src/authored/authored';
 import { getEditorSchema } from '../src/core/editor-runtime';
 import {
+  ElementGenerationMaskedError,
+  withoutGenerationOf,
+} from '../src/core/editor-schema';
+import { getCompiledEditorSchema } from '../src/core/plugin-registry';
+import {
   canonicalizeRootChildren,
   constructCanonicalDocumentChange,
 } from '../src/core/representation';
@@ -608,6 +613,63 @@ describe('content completion laws', () => {
           )
       );
     }
+  });
+
+  it('runs unmasked generators and refuses a masked property’s generated value', () => {
+    let made = 0;
+    const generated = () =>
+      property.string({
+        generate: () => {
+          made += 1;
+
+          return `g${made}`;
+        },
+      });
+    const editor = createEditor({
+      initialValue: [
+        { children: [{ text: 'a', tid: 's' }], type: 'paragraph' },
+      ] as never,
+      plugins: [
+        defineEditorSchema('completion-law-masked-generation', {
+          elements: {
+            box: { content: c.type('paragraph', { min: 1 }) },
+            paragraph: { content: c.text() },
+          },
+          id: 'completion-law-masked-generation',
+          properties: [
+            schema.elementProperty('gid', generated(), {
+              target: target.types(['box']),
+            }),
+            schema.textProperty('tid', generated()),
+          ],
+          root: c.types(['paragraph', 'box'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          unknown: 'reject',
+          version: 1,
+        }),
+      ],
+    });
+    const gid = [
+      ...getCompiledEditorSchema(editor).properties.byId.values(),
+    ].find((compiled) => compiled.key === 'gid');
+    const builds = withoutGenerationOf(new Set([getDefined(gid)]), () =>
+      (['paragraph', 'box'] as const).map((type) => {
+        try {
+          return getEditorSchema(editor).create(type);
+        } catch (error) {
+          return error instanceof ElementGenerationMaskedError
+            ? 'masked'
+            : error;
+        }
+      })
+    );
+
+    assert.deepEqual(builds, [
+      { children: [{ text: '', tid: 'g1' }], type: 'paragraph' },
+      'masked',
+    ]);
   });
 
   it('keeps a block inserted after a text in mixed content', () => {

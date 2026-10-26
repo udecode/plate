@@ -9,6 +9,7 @@ import {
 } from 'platejs';
 
 import { AuthoredPlugin, projectAuthoredDocument } from '../authored';
+import { ElementIdPlugin } from '../core';
 import type { EditorDocumentValue } from '../facade';
 import { BaseTextAlignPlugin } from '../features/basic-styles/lib/BaseStylePlugins';
 import {
@@ -354,6 +355,97 @@ describe('legacy suggestions the target must reject', () => {
       })
     ).toThrow(/could not reject/);
   });
+
+  it('stores the spare a pending removal of the only paragraph needs under a generated block id', () => {
+    const removal = {
+      createdAt: 1,
+      id: 'gone',
+      type: 'remove',
+      userId: 'alice',
+    };
+    const migrated = migrateDocument(
+      {
+        children: [
+          {
+            children: [
+              { suggestion: true, suggestion_gone: removal, text: 'gone' },
+            ],
+            suggestion: removal,
+            type: 'p',
+          },
+        ],
+      },
+      {
+        migrations: defineDocumentMigrations({
+          plugins: [ElementIdPlugin, ...migrationPlugins],
+          schema: MigrationSchema,
+          steps: { 54: migrateV54 },
+        }),
+        source: 53,
+      }
+    ).output.document;
+    const spares = Object.values(
+      migrated.records?.['authored-reserves'] ?? {}
+    ) as Array<{ node: { id?: unknown; type: string } }>;
+
+    expect(spares.map(({ node }) => [node.type, typeof node.id])).toEqual([
+      ['paragraph', 'string'],
+    ]);
+  });
+
+  it.each([
+    [
+      'a generated text property',
+      definePlugin('token', {
+        schema: { mark: property.string({ generate: () => 'token' }) },
+      }),
+    ],
+    [
+      'a generated element property with the content role',
+      definePlugin('uid', {
+        schema: {
+          properties: {
+            uid: schema.elementProperty(
+              property.string({ generate: () => 'uid' }),
+              { target: target.group('element') }
+            ),
+          },
+        },
+      }),
+    ],
+  ])(
+    'converts a pending insertion of the only paragraph under %s',
+    (_name, plugin) => {
+      const migrated = migrateDocument(
+        {
+          children: [
+            {
+              children: [{ text: 'new' }],
+              suggestion: {
+                createdAt: 1,
+                id: 'added',
+                type: 'insert',
+                userId: 'alice',
+              },
+              type: 'p',
+            },
+          ],
+        },
+        {
+          migrations: defineDocumentMigrations({
+            plugins: [...migrationPlugins, plugin],
+            schema: MigrationSchema,
+            steps: { 54: migrateV54 },
+          }),
+          source: 53,
+        }
+      ).output.document;
+
+      expect(
+        projectAuthoredDocument(migrated, { projection: 'proposed' }).pending
+      ).toBe(1);
+    }
+  );
 
   it('converts a pending update of a declared element property', () => {
     const plugins = [...migrationPlugins, BaseTextAlignPlugin] as const;

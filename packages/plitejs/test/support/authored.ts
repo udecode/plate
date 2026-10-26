@@ -7,6 +7,10 @@ import type {
   AuthoredReview,
   AuthoredView,
 } from '../../src/authored';
+import {
+  authoredAdmission,
+  settleShownValues,
+} from '../../src/authored/facts/admission';
 import { expandContexts } from '../../src/authored/facts/compact';
 import {
   type ContextRecord,
@@ -16,9 +20,17 @@ import {
   putVerdicts,
   type VerdictRecord,
 } from '../../src/authored/facts/records';
+import { getReviewLedger } from '../../src/authored/ledger/ledger';
 import { authoredResolveSchemaOf } from '../../src/authored/resolve-schema';
+import { ShownBook } from '../../src/authored/tree/readiness';
+import { storesSpares } from '../../src/authored/tree/reserves';
 import { projectAuthoredValue } from '../../src/authored/tree/resolve';
+import { valueRootIndex } from '../../src/core/change/document-change';
+import type { DocumentIndex } from '../../src/core/change/document-index';
 import type { JsonEditorValue } from '../../src/core/change/tokens';
+import { registerEditorDraftGuard } from '../../src/core/document-recorder';
+import { getEditorRuntimeOwner } from '../../src/core/editor-runtime';
+import { getCompiledEditorSchema } from '../../src/core/plugin-registry';
 import {
   composeRecordOps,
   getValueRecords,
@@ -27,7 +39,9 @@ import {
 import type {
   AnyEditor,
   EditorDocumentRecords,
+  EditorDocumentValue,
 } from '../../src/interfaces/editor';
+import { getDefined } from '../../src/internal/get-defined';
 
 export const reviewRecords = ({
   contexts = [],
@@ -195,5 +209,92 @@ export const reviewedValue = (input: AnyEditor) => {
   return {
     children: review(value.children),
     ...(roots.length > 0 ? { roots: Object.fromEntries(roots) } : {}),
+  };
+};
+
+/** By owner editor, where a watched editor's guards report what they find. */
+const WATCHED = new WeakMap<object, string[]>();
+const { settle } = authoredAdmission;
+
+// Each watched commit settles a second time through a fresh record, which
+// reads the whole document, and both must write the same document.
+Object.assign(authoredAdmission, {
+  settle: (...args: Parameters<NonNullable<typeof settle>>) => {
+    const settled = getDefined(settle)(...args);
+    const [value, schema, commit] = args;
+    const found = commit && WATCHED.get(getEditorRuntimeOwner(commit.editor));
+
+    if (found && storesSpares(schema)) {
+      const fresh = settleShownValues(value, schema, commit, null);
+      const [ours, theirs] = [settled, fresh].map((change) =>
+        JSON.stringify(change ? change.apply(value) : value)
+      );
+
+      if (ours !== theirs) {
+        found.push(
+          `the record settled ${ours} where a fresh one settled ${theirs}`
+        );
+      }
+    }
+
+    return settled;
+  },
+});
+
+export const staleRecordOf = <E extends AnyEditor>(
+  editor: E,
+  value: EditorDocumentValue
+) => {
+  const kept = getReviewLedger(getEditorRuntimeOwner(editor))?.shown;
+  const ours = kept?.fingerprint(value);
+
+  if (!kept || ours === null) return null;
+
+  const fresh = new ShownBook();
+  const indexes = new Map<string, DocumentIndex>();
+
+  fresh.settled(value, getCompiledEditorSchema(editor), (root) => {
+    const index = indexes.get(root) ?? valueRootIndex(value, root);
+
+    indexes.set(root, index);
+
+    return index;
+  });
+
+  const theirs = fresh.fingerprint(value);
+
+  return ours === theirs
+    ? null
+    : `the ledger's record ${ours} where a fresh one holds ${theirs}`;
+};
+
+/**
+ * Watches editors for a commit after which settling the whole document would
+ * still change it, for a commit the record settles otherwise than a fresh
+ * record would, and for a commit after which the ledger's record differs
+ * from one built from the committed document: `guard` watches an editor, and
+ * `take` returns and forgets what such commits stored.
+ */
+export const unsettledCommits = () => {
+  const found: string[] = [];
+
+  return {
+    guard: <E extends AnyEditor>(editor: E) => {
+      WATCHED.set(getEditorRuntimeOwner(editor), found);
+      registerEditorDraftGuard(editor, (value) => {
+        const schema = getCompiledEditorSchema(editor);
+
+        if (settle?.(value, schema, null)) {
+          found.push(JSON.stringify(value.children));
+        }
+
+        const stale = staleRecordOf(editor, value);
+
+        if (stale) found.push(stale);
+      });
+
+      return editor;
+    },
+    take: () => found.splice(0),
   };
 };

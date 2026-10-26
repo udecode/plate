@@ -28,14 +28,19 @@ import {
   canonicalizeCompiledTextProperties,
   readEmptyText,
 } from '../../core/editor-schema';
-import { composeRecordOps, deriveValue } from '../../core/record-store';
+import {
+  composeRecordOps,
+  deriveValue,
+  NO_RECORD_OPS,
+  type RecordOps,
+} from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { survivalUnder } from '../../core/survival';
 import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { rootOf } from '../ledger/roots';
 import { countLedgerWork } from '../ledger/work';
-import { heldProps, textContextAt } from '../tree/holds';
+import { heldNode, heldProps, textContextAt } from '../tree/holds';
 import {
   decideKey,
   type FormatTag,
@@ -57,12 +62,21 @@ import {
   readMembers,
   withMembers,
 } from '../tree/marks';
+import { buildClaimsIn } from '../tree/reserves';
 import {
   type AuthoredResolveSchema,
   slotDecidingInsertions,
   startOccupants,
   vacatesSlot,
 } from '../tree/resolve';
+import {
+  putRootSpares,
+  type Spare,
+  sparesIn,
+  slotKeyOf,
+  takeSpare,
+  withBuiltSpares,
+} from '../tree/spares';
 import { createDependencies, type Dependencies } from './dependencies';
 import { isEditingChange } from './editing';
 import {
@@ -78,6 +92,7 @@ import {
   landedOf,
   putContexts,
   putLanded,
+  RESERVES,
 } from './records';
 
 type Node = Readonly<Record<string, unknown>> & {
@@ -107,9 +122,11 @@ type Pass = Readonly<{
   landed: Map<string, LandedRecord>;
   loading: boolean;
   reopenedRejections: Set<string>;
+  reserveWrites: Map<string, string | null>;
   resolveSchema: () => AuthoredResolveSchema;
   returnsHeld: boolean;
   schema: CompiledEditorSchema;
+  stillBuilds: (container: Node | null, children: readonly Node[]) => boolean;
 }>;
 
 type Site = Readonly<{
@@ -120,6 +137,19 @@ type Site = Readonly<{
 }>;
 
 type Level = Readonly<{ nodes: readonly Node[]; readIndex: readonly number[] }>;
+
+type Replacements = Readonly<{
+  into: ReadonlyMap<number, readonly Node[]>;
+  taken: ReadonlySet<string>;
+}>;
+
+type LeftLevel = Readonly<{
+  nodes: NodeList<Node> | readonly Node[];
+  taken: ReadonlySet<string>;
+  waits: boolean;
+}>;
+
+const NOTHING_TAKEN: ReadonlySet<string> = new Set();
 
 const propsOf = ({ children: _children, text: _text, ...props }: Node) => props;
 
@@ -367,7 +397,7 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
 
   for (const member of members) {
     if (member.kind === 'format' && dropped.has(member)) continue;
-    if (follows(member)) {
+    if (follows(member) || member.kind === 'reserve' || member.kind === 'as') {
       kept.push(member);
       continue;
     }
@@ -506,7 +536,7 @@ const replacementsOf = (
   readAt: (at: number) => Node,
   site: Site,
   pass: Pass
-): ReadonlyMap<number, readonly Node[]> | null => {
+): Replacements | null => {
   const chain = chainOf(site);
   const schema = pass.resolveSchema();
   const content = schema.content(typeOf(chain[0] ?? null), site.root);
@@ -516,7 +546,10 @@ const replacementsOf = (
     getDefined(removed[0]) >= content.prefix &&
     size - removed.length >= content.min
   ) {
-    return new Map(removed.map((at) => [at, []]));
+    return {
+      into: new Map(removed.map((at) => [at, []])),
+      taken: NOTHING_TAKEN,
+    };
   }
 
   const { complete } = schema;
@@ -533,13 +566,49 @@ const replacementsOf = (
       (mark) => mark.kind === 'insert'
     );
   const start = startOccupants(level.map(origin), inserted);
-  const completeHere = (nodes: readonly Node[]) =>
-    complete(
+  const [parentType = null, ...outer] = chain.map(typeOf);
+  const spares: readonly Spare[] = !schema.storesSpares
+    ? []
+    : chain[0]
+      ? sparesIn(chain[0])
+      : pass.facts
+          .reserves(site.root)
+          .map((record) => ({ ...record, type: null }));
+  const completeHere = (nodes: readonly Node[]) => {
+    const used = new Set<string>();
+    const takenAt = new Map<string, string>();
+    const completion = complete(
       nodes as readonly JsonNode[],
       chain,
       site.root,
-      (slot, candidate) => vacatesSlot(start, slot, origin(candidate), inserted)
+      (slot, candidate) =>
+        vacatesSlot(start, slot, origin(candidate), inserted),
+      undefined,
+      spares.length === 0
+        ? undefined
+        : (nodeType, slot) => {
+            const spare = takeSpare(spares, parentType, nodeType, slot, used);
+
+            if (!spare) return null;
+            takenAt.set(slotKeyOf(slot), spare.key);
+
+            return heldNode(schema.ownership, spare.node, {
+              outerTypes: outer.flatMap((type) => type ?? []),
+              parentType,
+              root: site.root,
+            });
+          }
     );
+    const taken: ReadonlySet<string> = new Set(
+      completion.built.flatMap(({ slot }) => {
+        const key = takenAt.get(slotKeyOf(slot));
+
+        return key ? [key] : [];
+      })
+    );
+
+    return { ...completion, taken };
+  };
   const completion = completeHere(left);
   const slots = content?.prefix ?? 0;
 
@@ -595,8 +664,47 @@ const replacementsOf = (
   return [...into].every(
     ([at, [built]]) => !built || donationRetracts(readAt(at), built, site, pass)
   )
-    ? into
+    ? { into, taken: completion.taken }
     : null;
+};
+
+const withSettledSpares = (
+  stored: Node,
+  container: Node,
+  taken: ReadonlySet<string>,
+  pass: Pass
+) => {
+  const members = readMembers(container);
+
+  if (!members.some((member) => member.kind === 'reserve')) return container;
+  if (!pass.stillBuilds(stored, stored.children ?? [])) {
+    return withMembers(
+      container,
+      members.filter((member) => member.kind !== 'reserve')
+    );
+  }
+
+  return taken.size > 0
+    ? withMembers(container, withBuiltSpares(members, taken))
+    : container;
+};
+
+const settleRootSpares = (
+  pass: Pass,
+  root: string,
+  stored: () => readonly Node[],
+  taken: ReadonlySet<string>
+) => {
+  const records = pass.facts.reserves(root);
+
+  if (records.length > 0) {
+    putRootSpares(
+      records,
+      pass.stillBuilds(null, stored()),
+      taken,
+      pass.reserveWrites
+    );
+  }
 };
 
 const leaveLevel = (
@@ -604,17 +712,19 @@ const leaveLevel = (
   stored: NodeList<Node>,
   site: Site,
   pass: Pass
-): NodeList<Node> | readonly Node[] => {
+): LeftLevel => {
   const { nodes, readIndex } = level;
   const removed = nodes.flatMap((node, at) =>
     pass.gone.has(node) ? [at] : []
   );
 
-  if (removed.length === 0) return nodes;
+  if (removed.length === 0) {
+    return { nodes, taken: NOTHING_TAKEN, waits: false };
+  }
 
   const readAt = (at: number) =>
     getDefined(stored.at(getDefined(readIndex[at])));
-  const into = replacementsOf(
+  const replacements = replacementsOf(
     nodes.length,
     removed,
     (at) => getDefined(nodes[at]),
@@ -623,13 +733,19 @@ const leaveLevel = (
     pass
   );
 
-  if (into === null) {
-    return nodes.length === stored.length &&
-      nodes.every((node, at) => node === stored.at(at))
-      ? stored
-      : nodes;
+  if (replacements === null) {
+    return {
+      nodes:
+        nodes.length === stored.length &&
+        nodes.every((node, at) => node === stored.at(at))
+          ? stored
+          : nodes,
+      taken: NOTHING_TAKEN,
+      waits: true,
+    };
   }
 
+  const { into, taken } = replacements;
   const edits = editsOf(pass, site.root);
 
   for (const [at, [built]] of into) {
@@ -639,7 +755,11 @@ const leaveLevel = (
     else edits.drop(path);
   }
 
-  return nodes.flatMap((node, at) => into.get(at) ?? [node]);
+  return {
+    nodes: nodes.flatMap((node, at) => into.get(at) ?? [node]),
+    taken,
+    waits: false,
+  };
 };
 
 const settleChild = (
@@ -698,16 +818,21 @@ const settleChild = (
     pass
   );
 
-  if (kept !== node) edits.props(path, node, kept);
+  const left = level ? leaveLevel(level, settled.children, inner, pass) : null;
+  const settles = left ? !left.waits : kept !== node;
+  const marked = settles
+    ? withSettledSpares(node, kept, left?.taken ?? NOTHING_TAKEN, pass)
+    : kept;
 
-  const left = level
-    ? leaveLevel(level, settled.children, inner, pass)
-    : settled.children;
+  if (marked !== node) edits.props(path, node, marked);
 
-  return left === settled.children
-    ? kept
-    : { ...kept, children: left as readonly Node[] };
+  return !left || left.nodes === settled.children
+    ? marked
+    : { ...marked, children: left.nodes as readonly Node[] };
 };
+
+const settleChanges = (node: Node, settled: Node | null, pass: Pass) =>
+  settled !== node || (settled !== null && pass.gone.has(settled));
 
 const settleNodes = (
   nodes: NodeList<Node>,
@@ -725,9 +850,7 @@ const settleNodes = (
 
     const settled = settleChild(node, at, pass, site, inline);
 
-    if (settled !== node || (settled && pass.gone.has(settled))) {
-      changed = true;
-    }
+    if (settleChanges(node, settled, pass)) changed = true;
     if (!settled) return;
     readIndex.push(at);
     next.push(settled);
@@ -764,7 +887,7 @@ const settleBlocks = (
     pass.gone.has(node) ? [at] : []
   );
   const readAt = (at: number) => index.child(at) as Node;
-  const into =
+  const replacements =
     removed.length === 0
       ? null
       : replacementsOf(
@@ -776,9 +899,21 @@ const settleBlocks = (
           pass
         );
 
-  for (const [at, [built]] of into ?? []) {
+  for (const [at, [built]] of replacements?.into ?? []) {
     if (built) editsOf(pass, root).donate([at], readAt(at), built);
     else editsOf(pass, root).drop([at]);
+  }
+  const changed = [...settled].some(([at, node]) =>
+    settleChanges(readAt(at), node, pass)
+  );
+
+  if (changed && (removed.length === 0 || replacements)) {
+    settleRootSpares(
+      pass,
+      root,
+      () => (index.nodes as NodeList<Node>).slice(),
+      replacements?.taken ?? NOTHING_TAKEN
+    );
   }
 };
 
@@ -786,7 +921,11 @@ const settleRoot = (nodes: NodeList<Node>, pass: Pass, root: string) => {
   const site: Site = { outer: null, parent: null, parentPath: [], root };
   const level = settleNodes(nodes, pass, site);
 
-  if (level) leaveLevel(level, nodes, site, pass);
+  const left = level && leaveLevel(level, nodes, site, pass);
+
+  if (left && !left.waits) {
+    settleRootSpares(pass, root, () => nodes.slice(), left.taken);
+  }
 };
 
 const formatTagsOf = (node: Node) =>
@@ -869,8 +1008,13 @@ export const settleValue = <V extends JsonEditorValue>(
   value: V | null;
 }> => {
   let resolve: AuthoredResolveSchema | undefined;
+  const dependencies = createDependencies(facts);
+  const buildClaims = buildClaimsIn<Node>(facts, dependencies, (visit) => {
+    rootNodesOf<Node, 'children'>(value, 'children').forEach(visit);
+    for (const nodes of Object.values(value.roots ?? {})) nodes.forEach(visit);
+  });
   const pass: Pass = {
-    dependencies: createDependencies(facts),
+    dependencies,
     edits: new Map(),
     facts,
     gone: new WeakSet(),
@@ -878,9 +1022,12 @@ export const settleValue = <V extends JsonEditorValue>(
     landed: new Map(),
     loading: scope === 'document',
     reopenedRejections: new Set(),
+    reserveWrites: new Map(),
     resolveSchema: () => (resolve ??= resolveSchema()),
     returnsHeld,
     schema,
+    stillBuilds: (container, children) =>
+      buildClaims(container, children).length > 0,
   };
 
   if (!facts.hasVerdicts && !restoreMissingFormats) {
@@ -912,19 +1059,26 @@ export const settleValue = <V extends JsonEditorValue>(
   const change =
     changes.size === 0 ? null : createInternalDocumentChange(changes);
   const minted = pass.dependencies.minted();
+  const reserves: RecordOps =
+    pass.reserveWrites.size === 0
+      ? NO_RECORD_OPS
+      : new Map([[RESERVES, pass.reserveWrites]]);
 
   return {
     change,
     reopenedRejections: pass.reopenedRejections,
     value:
-      !change && minted.length === 0
+      !change && minted.length === 0 && pass.reserveWrites.size === 0
         ? null
         : deriveValue(
             change ? change.apply(value) : value,
             {},
             composeRecordOps(
-              putContexts(minted),
-              putLanded(pass.landed.values())
+              composeRecordOps(
+                putContexts(minted),
+                putLanded(pass.landed.values())
+              ),
+              reserves
             )
           ),
   };

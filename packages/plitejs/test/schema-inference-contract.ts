@@ -1019,3 +1019,73 @@ void supportedDeepHeading;
 void textKey;
 void unknownRootedImage;
 void value;
+
+const generateId = () => 'id';
+const uniqueOptions = {
+  role: 'metadata',
+  target: target.group('element'),
+  typeChange: 'preserve-if-allowed',
+  unique: true,
+} as const;
+const uniqueIds = [
+  schema.elementProperty(property.string({ generate: generateId }), {
+    ...uniqueOptions,
+  }),
+  schema.elementProperty('id', property.string({ generate: generateId }), {
+    ...uniqueOptions,
+  }),
+  // @ts-expect-error unique needs a generator
+  schema.elementProperty(property.string(), { ...uniqueOptions }),
+  schema.elementProperty(property.string({ generate: generateId }), {
+    ...uniqueOptions,
+    // @ts-expect-error unique requires copy: drop
+    copy: 'preserve',
+  }),
+  schema.elementProperty(property.string({ generate: generateId }), {
+    ...uniqueOptions,
+    // @ts-expect-error unique requires split: drop
+    split: 'preserve',
+  }),
+  schema.elementProperty(property.string({ generate: generateId }), {
+    ...uniqueOptions,
+    // @ts-expect-error unique requires landing: preserve
+    landing: 'adopt',
+  }),
+  schema.elementProperty(property.string({ generate: generateId }), {
+    ...uniqueOptions,
+    // @ts-expect-error unique requires landing: preserve
+    landing: 'rebase',
+  }),
+  schema.elementProperty(property.string({ generate: generateId }), {
+    ...uniqueOptions,
+    // @ts-expect-error unique requires typeChange: preserve-if-allowed
+    typeChange: 'drop',
+  }),
+  schema.elementProperty(property.string({ generate: generateId }), {
+    ...uniqueOptions,
+    // @ts-expect-error unique requires role: metadata
+    role: 'content',
+  }),
+  schema.elementProperty(property.string({ generate: generateId }), {
+    ...uniqueOptions,
+    // @ts-expect-error unique refuses a target that names one type
+    target: target.type('paragraph'),
+  }),
+  schema.elementProperty(
+    property.set(property.string(), { generate: () => [] }),
+    // @ts-expect-error unique cannot hold a set
+    { ...uniqueOptions }
+  ),
+  schema.elementProperty(
+    schema.key.prefix('data-'),
+    property.string({ generate: generateId }),
+    // @ts-expect-error unique needs an exact key
+    { ...uniqueOptions }
+  ),
+  // @ts-expect-error only an element property can be unique
+  schema.textProperty(property.string({ generate: generateId }), {
+    unique: true,
+  }),
+];
+
+void uniqueIds;

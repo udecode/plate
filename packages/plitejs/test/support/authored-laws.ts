@@ -19,6 +19,7 @@ import {
   resolveAuthoredChildren,
 } from '../../src/authored/tree/resolve';
 import type { JsonNode } from '../../src/core/change/tokens';
+import type { AnyEditor } from '../../src/interfaces/editor';
 import { authoredTestApi, reviewRecords } from './authored';
 
 // The laws hold for the editor's canonical form, which decisions produce.
@@ -83,6 +84,11 @@ const recordsOf = (
     })),
   });
 
+/**
+ * Resolves `children` under `outcome` with `decided` stored as verdicts, as a
+ * decision's view does. A decision that stores spares or shown values runs
+ * through {@link decideIn} instead, since admission settles what it stores.
+ */
 export const resolveWithVerdicts = (
   decided: ReadonlyMap<string, Verdict>,
   children: readonly JsonNode[],
@@ -96,10 +102,7 @@ export const resolveWithVerdicts = (
 
 export const settleAsAdmission = (
   decided: ReadonlyMap<string, Verdict>,
-  step: Readonly<{
-    children: readonly JsonNode[];
-    landed: readonly LandedRecord[];
-  }>,
+  step: Pick<AuthoredResolution, 'children' | 'landed'>,
   landed: readonly LandedRecord[],
   resolveSchema = schema
 ) => {
@@ -112,7 +115,10 @@ export const settleAsAdmission = (
     stored
   );
 
-  return { children: settled.children, landed: [...stored, ...settled.landed] };
+  return {
+    children: settled.children,
+    landed: [...stored, ...settled.landed],
+  };
 };
 
 export const loadWithVerdicts = (
@@ -205,18 +211,140 @@ export const spread = <T extends object>(node: T, item: AuthoredMark): T => {
 export const idGeneratorCalls = { count: 0 };
 let generatedId = 0;
 
-const quotesOf = (generated: boolean) =>
-  defineEditorSchema(generated ? 'laws-quotes-generated' : 'laws-quotes', {
+/**
+ * Where a generated id holds: on every element with unique values, as
+ * Plate's block ids do, on blocks, on blocks beside an unused element whose
+ * content admits text, paragraphs and links, or on paragraphs. Under
+ * `placed`, paragraphs generate theirs and a heading holds an id it states,
+ * one that is not a line's own `p` id while it sits in a quote.
+ */
+export type IdPlaces =
+  | 'blocks'
+  | 'elements'
+  | 'mixed'
+  | 'paragraphs'
+  | 'placed';
+export const ID_PLACES: readonly IdPlaces[] = [
+  'elements',
+  'blocks',
+  'mixed',
+  'paragraphs',
+  'placed',
+];
+
+const generateId = () => {
+  idGeneratorCalls.count += 1;
+  generatedId += 1;
+  return `g${generatedId}`;
+};
+
+const underQuote = target.parent(target.type('quote'));
+
+const idProperties = (places: IdPlaces) => {
+  if (places === 'elements') {
+    return [
+      schemaBuilder.elementProperty(
+        'id',
+        property.string({ generate: generateId }),
+        {
+          role: 'metadata',
+          target: target.group('element'),
+          typeChange: 'preserve-if-allowed',
+          unique: true,
+        }
+      ),
+    ];
+  }
+  const generated = schemaBuilder.elementProperty(
+    'id',
+    property.string({ generate: generateId }),
+    {
+      copy: 'drop',
+      role: 'metadata',
+      target:
+        places === 'blocks' || places === 'mixed'
+          ? target.group('block')
+          : target.type('paragraph'),
+      typeChange: 'preserve-if-allowed',
+    }
+  );
+  if (places !== 'placed') return [generated];
+  return [
+    generated,
+    schemaBuilder.elementProperty(
+      'id',
+      property.string({
+        validate: (value): value is string =>
+          typeof value === 'string' && !value.startsWith('p'),
+        validationVersion: 1,
+      }),
+      {
+        role: 'metadata',
+        split: 'drop',
+        target: target.and(target.type('heading'), underQuote),
+        typeChange: 'preserve-if-allowed',
+      }
+    ),
+    schemaBuilder.elementProperty('id', property.string(), {
+      role: 'metadata',
+      split: 'drop',
+      target: target.and(target.type('heading'), target.not(underQuote)),
+      typeChange: 'preserve-if-allowed',
+    }),
+  ];
+};
+
+/**
+ * The quotes schema, and with `places` its generated-id variant, whose
+ * blocks include headings, sections and cards whose body is a root of its
+ * own; a `twin` has the variant's elements and no id.
+ */
+const quotesOf = (places?: IdPlaces, twin = false) => {
+  const name = `laws-quotes${places ? `-${places}` : ''}${twin ? '-twin' : ''}`;
+  const c = schemaBuilder.content;
+  const blocks = places
+    ? c.any([c.type('paragraph'), c.type('heading')], {
+        default: { type: 'paragraph' },
+        min: 1,
+      })
+    : c.type('paragraph', { min: 1 });
+
+  return defineEditorSchema(name, {
     elements: {
-      link: { content: schemaBuilder.content.text({ min: 1 }), inline: true },
+      ...(places
+        ? {
+            card: {
+              content: c.text({ default: 'text', min: 1 }),
+              contentRoots: {
+                body: {
+                  content: c.type('paragraph', {
+                    default: { type: 'paragraph' },
+                    min: 1,
+                  }),
+                  ownership: 'exclusive' as const,
+                },
+              },
+            },
+            heading: schemaBuilder.element.textBlock(),
+            section: { content: blocks },
+          }
+        : {}),
+      link: { content: c.text({ min: 1 }), inline: true },
+      ...(places === 'mixed'
+        ? {
+            mixed: {
+              content: c.any([c.text(), c.type('paragraph'), c.type('link')]),
+            },
+          }
+        : {}),
       paragraph: schemaBuilder.element.textBlock(),
-      quote: { content: schemaBuilder.content.type('paragraph', { min: 1 }) },
+      quote: { content: blocks },
     },
-    id: generated ? 'laws-quotes-generated' : 'laws-quotes',
+    id: name,
     properties: [
       schemaBuilder.elementProperty(
         'align',
-        generated
+        places && !twin
           ? property.string({
               validate: (value): value is string => typeof value === 'string',
               validationVersion: 1,
@@ -224,56 +352,46 @@ const quotesOf = (generated: boolean) =>
           : property.string(),
         { target: target.type('quote') }
       ),
-      ...(generated
-        ? [
-            schemaBuilder.elementProperty(
-              'id',
-              property.string({
-                generate: () => {
-                  idGeneratorCalls.count += 1;
-                  generatedId += 1;
-                  return `g${generatedId}`;
-                },
-              }),
-              {
-                copy: 'drop',
-                role: 'metadata',
-                split: 'drop',
-                target: target.group('element'),
-                typeChange: 'preserve-if-allowed',
-              }
-            ),
-          ]
-        : []),
+      ...(places && !twin ? idProperties(places) : []),
     ],
-    root: schemaBuilder.content.any(
+    root: c.any(
       [
-        schemaBuilder.content.type('paragraph'),
-        schemaBuilder.content.type('quote'),
+        c.type('paragraph'),
+        ...(places
+          ? [c.type('heading'), c.type('section'), c.type('card')]
+          : []),
+        c.type('quote'),
       ],
       { default: { type: 'paragraph' }, min: 1 }
     ),
     unknown: 'reject',
     version: 1,
   });
+};
 const editorOf =
-  (definition: ReturnType<typeof quotesOf>) =>
-  (initialValue: readonly unknown[]) =>
+  (definition: ReturnType<typeof quotesOf>) => (initialValue: unknown) =>
     createEditor({
       plugins: [definition, createAuthoredPlugin({ authorId: 'laws' })],
       initialValue: initialValue as Array<Record<string, unknown>>,
     });
-export const quotesEditor = editorOf(quotesOf(false));
+export const quotesEditor = editorOf(quotesOf());
 export const quotesSchema = authoredResolveSchemaOf(
   quotesEditor([{ type: 'paragraph', children: [{ text: '' }] }])
 );
-/** Quotes whose every element has a generated id, as Plate's block ids do. */
-export const generatedQuotesEditor = editorOf(quotesOf(true));
-export const generatedQuotesSchema = authoredResolveSchemaOf(
-  generatedQuotesEditor([
-    { type: 'paragraph', id: 'g0', children: [{ text: '' }] },
+
+/**
+ * The editor of each id variant, and of its twin, which stores the same marks
+ * with no id.
+ */
+export const generatedQuotes = Object.fromEntries(
+  ID_PLACES.map((places) => [
+    places,
+    {
+      editor: editorOf(quotesOf(places)),
+      twin: editorOf(quotesOf(places, true)),
+    },
   ])
-);
+) as Record<IdPlaces, Readonly<Record<'editor' | 'twin', typeof quotesEditor>>>;
 export const structuralMark = (kind: AuthoredMark['kind'], change: string) =>
   ({ at: 1, author: change, change, kind }) as AuthoredMark;
 export const withMarksOf = <T extends object>(
@@ -514,12 +632,11 @@ const unmarked = (node: LinkNode): LinkNode => {
 export const givebackRead = (value: unknown) =>
   (value as LinkValue).children.map(unmarked);
 
-/** Decides `decisions` in one call of the public `decide`. */
-export const decideGiveback = (
-  value: unknown,
+/** Decides `decisions` in one call of `editor`'s public `decide`. */
+export const decideIn = (
+  editor: AnyEditor,
   decisions: ReadonlyMap<string, Verdict>
 ) => {
-  const editor = linksEditor(value, 'zed');
   const result = authoredTestApi(editor).decide(
     (['accept', 'reject'] as const).flatMap((action) => {
       const changes = [...decisions]
@@ -530,8 +647,13 @@ export const decideGiveback = (
     })
   );
 
-  return { result, value: editor.read.value() as LinkValue };
+  return { result, value: editor.read.value() };
 };
+
+export const decideGiveback = (
+  value: unknown,
+  decisions: ReadonlyMap<string, Verdict>
+) => decideIn(linksEditor(value, 'zed'), decisions);
 
 /**
  * Judges a public `decide` result as {@link admissionOf} judges a resolve: a

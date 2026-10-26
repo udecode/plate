@@ -1,16 +1,21 @@
+import type { AuthoredBlocksProjection } from '../core/authored-document-capability';
 import {
   DocumentChange,
   getInternalDocumentRootChange,
   valueRoot,
 } from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
+import type { JsonRecord } from '../core/change/json';
 import type { JsonEditorValue } from '../core/change/tokens';
+import { ElementGenerationMaskedError } from '../core/editor-schema';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import type { CompiledEditorSchema } from '../core/schema-compiler';
 import type { AnyEditor, EditorDocumentValue } from '../interfaces/editor';
+import type { Node } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
+import { getDefined } from '../internal/get-defined';
 import { indexAuthoredChanges } from './changes';
 import { constructsValues } from './refusal';
 import { authoredResolveSchemaOf } from './resolve-schema';
@@ -87,15 +92,52 @@ export function projectAuthoredDocument(
   );
 }
 
-/** @internal */
+const resolvedOrUncovered = (
+  value: JsonEditorValue,
+  projection: AuthoredFormatProjection,
+  schema: AuthoredResolveSchema | null
+) => {
+  try {
+    return projectAuthoredValue(value, projection, schema);
+  } catch (error) {
+    if (!(error instanceof ElementGenerationMaskedError)) throw error;
+
+    return null;
+  }
+};
+
+const uncoveredRefusal = (
+  projection: AuthoredFormatProjection,
+  pending: number
+): AuthoredProjectionRefusal =>
+  Object.freeze({
+    diagnostics: Object.freeze([
+      Object.freeze({
+        code: 'authored-uncovered' as const,
+        message: `The ${projection} projection builds an element that needs a generated value, and the document stores no spare block for it.`,
+        severity: 'error' as const,
+      }),
+    ] as const),
+    ok: false as const,
+    pending,
+  });
+
+/**
+ * The projection, or an `authored-uncovered` refusal when it builds an element
+ * that needs a generated value and finds no spare block for it.
+ *
+ * @internal
+ */
 export const projectAuthoredDocumentUnder = (
   document: EditorDocumentValue,
   projection: AuthoredFormatProjection,
   schema: AuthoredResolveSchema | null
-): AuthoredDocumentProjection => {
+): AuthoredDocumentProjection | AuthoredProjectionRefusal => {
   const value = document as JsonEditorValue;
-  const resolution = projectAuthoredValue(value, projection, schema);
   const pending = indexAuthoredChanges(value).changes.size;
+  const resolution = resolvedOrUncovered(value, projection, schema);
+
+  if (!resolution) return uncoveredRefusal(projection, pending);
 
   return Object.freeze({
     diagnostics: Object.freeze([
@@ -199,4 +241,108 @@ export const projectAuthoredRange = (
     DocumentChange.between(before, after),
     range.anchor.root ?? 'main'
   ).range(range);
+};
+
+type BlockNode = JsonRecord & {
+  children?: readonly BlockNode[];
+  text?: string;
+};
+
+const isLine = (node: BlockNode) =>
+  node.children?.some((child) => typeof child.text === 'string') ?? false;
+
+/**
+ * The blocks at `paths` of `root` as one projection of the whole document
+ * shows them, each once, in the projection's order. A block the projection
+ * keeps reads as itself, and one it merges into the line before it, as a
+ * pending join's right block, reads as that line. A block it removes, or
+ * one in a root it removes with the root's owner, reads nothing.
+ *
+ * @internal
+ */
+export const projectAuthoredBlocks = (
+  document: EditorDocumentValue,
+  projection: AuthoredFormatProjection,
+  schema: AuthoredResolveSchema | null,
+  root: string,
+  paths: readonly Path[]
+): AuthoredBlocksProjection | AuthoredProjectionRefusal => {
+  const value = document as JsonEditorValue;
+  const resolution = resolvedOrUncovered(value, projection, schema);
+
+  if (!resolution) {
+    return uncoveredRefusal(
+      projection,
+      indexAuthoredChanges(value).changes.size
+    );
+  }
+
+  const resolvedOf = resolution.resolvedIn(root);
+
+  if (!resolvedOf) {
+    return Object.freeze({ blocks: Object.freeze([]), ok: true as const });
+  }
+
+  const removed = new Set(
+    (resolution.hiddenIn(root) ?? []).map(({ at }) => at.join(','))
+  );
+  const stored: Array<Readonly<{ node: BlockNode; path: Path }>> = [];
+  const order = new Map<unknown, number>();
+  const walk = (
+    nodes: readonly BlockNode[],
+    parent: Path,
+    into: (node: BlockNode, path: Path) => void
+  ) => {
+    for (const [index, node] of nodes.entries()) {
+      if (typeof node.text === 'string') continue;
+      into(node, [...parent, index]);
+      walk(node.children ?? [], [...parent, index], into);
+    }
+  };
+
+  walk(valueRoot(value, root), [], (node, path) => stored.push({ node, path }));
+  walk(valueRoot(resolution.value, root), [], (node) =>
+    order.set(node, order.size)
+  );
+
+  const at = new Map(stored.map(({ path }, index) => [path.join(','), index]));
+  const shownOf = (index: number): unknown => {
+    const { node, path } = getDefined(stored[index]);
+    const shown = resolvedOf(node);
+
+    if (
+      shown ||
+      path.some((_, depth) => removed.has(path.slice(0, depth + 1).join(',')))
+    ) {
+      return shown;
+    }
+
+    // Lines between the pieces of a joined line merge or go with it.
+    for (let before = index - 1; before >= 0; before -= 1) {
+      const line = getDefined(stored[before]).node;
+      const merged = isLine(line) ? resolvedOf(line) : null;
+
+      if (merged) return merged;
+    }
+
+    return null;
+  };
+  const blocks = new Set<unknown>();
+
+  for (const path of paths) {
+    const index = at.get(path.join(','));
+    const shown = index === undefined ? null : shownOf(index);
+
+    if (shown !== null && order.has(shown)) blocks.add(shown);
+  }
+
+  return Object.freeze({
+    blocks: Object.freeze(
+      [...blocks].toSorted(
+        (left, right) =>
+          getDefined(order.get(left)) - getDefined(order.get(right))
+      )
+    ) as readonly Node[],
+    ok: true as const,
+  });
 };

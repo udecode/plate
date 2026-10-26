@@ -124,6 +124,11 @@ export type AuthoredRecordInput = Readonly<{
    * value the write carried where the review document stores it.
    */
   schema?: CompiledEditorSchema | null;
+  /**
+   * The unique properties by key, whose writes land in place with no format
+   * tag, because a value that names its element is no suggestion to reject.
+   */
+  unique?: ReadonlyMap<string, unknown>;
   /** The collapsed caret's position in the before document, and its root. */
   selectionBefore?: Readonly<{ position: number; root: string }> | null;
   standing: Standing;
@@ -257,6 +262,24 @@ const withoutHeld = (props: Props) => {
     ? withMembers(
         props,
         members.filter((member) => member.kind !== 'held')
+      )
+    : props;
+};
+
+// A copy of content holding spares or shown values drops them: spares belong
+// to the container copied from, and the write rule stores the copy's own, and
+// the closing pass gives the copy the values its command shows.
+const withoutSpares = (props: Props) => {
+  const members = readMembers(props);
+
+  return members.some(
+    (member) => member.kind === 'reserve' || member.kind === 'as'
+  )
+    ? withMembers(
+        props,
+        members.filter(
+          (member) => member.kind !== 'reserve' && member.kind !== 'as'
+        )
       )
     : props;
 };
@@ -754,6 +777,11 @@ const groupsChange = (groups: readonly Group[]) => {
   return RootChange.fromSections(sections, data);
 };
 
+// A section that keeps its tokens, `-1` as they were and `-2` with new
+// properties, adds no leaf, so a canonical step that also writes a generated
+// value onto a node still records the empty leaves it adds.
+const keepsTokens = (added: number) => added === -1 || added === -2;
+
 const insertsEmptyLeaves = (change: RootChange) => {
   let inserted = false;
 
@@ -761,7 +789,7 @@ const insertsEmptyLeaves = (change: RootChange) => {
     const length = change.sections[pair * 2];
     const added = change.sections[pair * 2 + 1];
 
-    if (added === -1) continue;
+    if (keepsTokens(added)) continue;
     const data = change.data[pair];
 
     if (length !== 0 || !(data instanceof PreparedTokenSlice)) return false;
@@ -837,15 +865,25 @@ const emptyLeavesOf = (
     }
   };
 
-  change.iterChangedRanges((_fromA, _toA, from, to) => {
-    for (let at = from; at < to; at += 2) {
+  let position = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+    const added = change.sections[index + 1];
+
+    if (keepsTokens(added)) {
+      position += length;
+      continue;
+    }
+    for (let at = position; at < position + added; at += 2) {
       record(at + 1);
 
       const next = frame.pointAt(lineOf(at).to, 1);
 
       if (next) record(frame.positionAt(next));
     }
-  });
+    position += added;
+  }
 
   return leaves;
 };
@@ -1550,6 +1588,7 @@ export const recordAuthoredSteps = (
                 ? input.selectionBefore.position
                 : null,
             source: step.source,
+            unique: input.unique,
           }).record(groups);
 
           recorded = result.change;
@@ -1756,6 +1795,7 @@ type RecorderOptions = Readonly<{
   source: DraftStepSource;
   standing: Standing;
   commitWriteId: () => string;
+  unique?: ReadonlyMap<string, unknown>;
 }>;
 
 type StrikeMode = 'delete' | 'move';
@@ -1956,6 +1996,7 @@ class RootRecorder {
         (member) =>
           member.kind === 'insert' ||
           member.kind === 'in' ||
+          member.kind === 'as' ||
           (whole && member.kind === 'join')
       ) && (node.children ?? []).every(goes);
     const removals: Array<readonly [number, number]> = [];
@@ -2651,7 +2692,7 @@ class RootRecorder {
         token.kind === 'open'
           ? openToken(
               token.nodeKind,
-              this.withMarks(token.props, [
+              this.withMarks(withoutSpares(token.props), [
                 ...this.withoutCuts(token.props),
                 mark,
               ])
@@ -2800,17 +2841,32 @@ class RootRecorder {
 
     if (keys.length === 0) return null;
 
+    const { unique } = this.options;
+    const formatted = unique ? keys.filter((key) => !unique.has(key)) : keys;
     const marks = this.marks(previous);
 
-    if (marks.some((mark) => mark.kind === 'delete')) {
-      return null;
+    if (
+      formatted.length === 0 ||
+      marks.some((mark) => mark.kind === 'delete')
+    ) {
+      if (formatted.length === keys.length) return null;
+
+      const inPlace = { ...previous };
+
+      for (const key of keys) {
+        if (!unique?.has(key)) continue;
+        if (Object.hasOwn(next, key)) inPlace[key] = next[key];
+        else delete inPlace[key];
+      }
+
+      return this.withMarks(inPlace, marks);
     }
 
     const { isOwn, markOf, source, standing, commitWriteId } = this.options;
     const { at, author, change, inc } = markOf('insert');
     const innermost = innermostInsert(marks);
     const tags = recordFormats({
-      keys,
+      keys: formatted,
       next,
       ownInsertion: innermost !== undefined && isOwn(innermost),
       previous,
@@ -3575,12 +3631,15 @@ class RootRecorder {
           ];
     };
     const withInserted = (props: Props, added: readonly AuthoredMark[]) =>
-      this.withMarks(props, [...this.marks(props), ...added]);
+      this.withMarks(withoutSpares(props), [...this.marks(props), ...added]);
     const insertedLeaves = new Set<Context>();
     const landed = (props: Props) => {
       const marks = this.withoutCuts(props);
 
-      return this.withMarks(props, [...marks, this.options.markOf('insert')]);
+      return this.withMarks(withoutSpares(props), [
+        ...marks,
+        this.options.markOf('insert'),
+      ]);
     };
     let trailingLeafProps: Props | null = input.reopen ?? leafOf(stack);
     let closedElement = false;

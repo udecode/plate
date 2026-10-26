@@ -342,7 +342,7 @@ describe('validators a decision calls', () => {
     );
   });
 
-  it('judge the values a decision generates once, after it builds them all', () => {
+  it('judge the values a decision generates once, after it builds them all, and generate none a spare holds', () => {
     const generatedIn = (placement: 'element' | 'text') => {
       let made = 0;
       const generated = validated({
@@ -370,7 +370,10 @@ describe('validators a decision calls', () => {
             placement === 'text'
               ? schema.textProperty('gid', generated)
               : schema.elementProperty('gid', generated, {
+                  copy: 'drop',
+                  role: 'metadata',
                   target: target.group('element'),
+                  typeChange: 'preserve-if-allowed',
                 }),
           ],
           root: schema.content.types(['paragraph', 'box'], {
@@ -411,19 +414,140 @@ describe('validators a decision calls', () => {
 
       return { calls, ids, status: decision.status };
     };
-    const decisions = (['element', 'text'] as const).map(generatedIn);
+    const [element, text] = (['element', 'text'] as const).map(generatedIn);
 
     assert.deepEqual(
-      decisions.map(({ calls, ids, status }) => ({
+      [element, text].map(({ calls, ids, status }) => ({
         calls,
         count: ids.length,
         status,
       })),
-      decisions.map(({ ids }) => ({
-        calls: [...ids.map((id) => `made ${id}`), ...ids],
-        count: 2,
-        status: 'applied',
-      }))
+      [
+        // The box's spares, stored when the document loaded, hold its two
+        // lines' ids, so the decision generates none and judges each once.
+        { calls: ['g1', 'g2'], count: 0, status: 'applied' },
+        {
+          calls: [...text.ids.map((id) => `made ${id}`), ...text.ids],
+          count: 2,
+          status: 'applied',
+        },
+      ]
+    );
+  });
+
+  it('judge each value only a spare block holds once per decision', () => {
+    // Only a schema that generates an element property keeps spares.
+    let made = 0;
+    const Spared = defineEditorSchema(
+      'schema:authored-validator-calls-spared',
+      {
+        elements: {
+          paragraph: schema.element.textBlock({
+            properties: { align: validated({ default: 'center' }) },
+          }),
+          quote: { content: schema.content.type('paragraph', { min: 1 }) },
+        },
+        id: 'authored-validator-calls-spared',
+        properties: [
+          schema.elementProperty(
+            'ref',
+            validated({ generate: () => `made-${(made += 1)}` }),
+            {
+              copy: 'drop',
+              role: 'metadata',
+              target: target.group('element'),
+              typeChange: 'preserve-if-allowed',
+            }
+          ),
+          schema.textProperty('tag', validated()),
+        ],
+        root: schema.content.types(['paragraph', 'quote'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      } as never
+    );
+    const spareLine = (align: string) => ({
+      align,
+      children: [{ tag: `${align}-tag`, text: '' }],
+      ref: `${align}-ref`,
+      type: 'paragraph',
+    });
+    const editor = createEditor({
+      initialValue: {
+        children: [
+          {
+            authored: [
+              {
+                at: 1,
+                author: 'cara',
+                change: 'cara:1',
+                kind: 'reserve',
+                node: spareLine('member'),
+                slot: { min: 0 },
+                type: 'quote',
+              },
+            ],
+            children: [
+              {
+                align: 'left',
+                authored: deleted,
+                children: [{ authored: deleted, tag: 't0', text: 'a' }],
+                ref: 'r0',
+                type: 'paragraph',
+              },
+              {
+                align: 'left',
+                children: [{ tag: 't1', text: 'b' }],
+                ref: 'r1',
+                type: 'paragraph',
+              },
+            ],
+            ref: 'q0',
+            type: 'quote',
+          },
+        ],
+        records: {
+          'authored-reserves': {
+            [JSON.stringify(['main', 'cara:1', null, 'm0'])]: {
+              at: 1,
+              author: 'cara',
+              change: 'cara:1',
+              node: spareLine('root'),
+              root: 'main',
+              slot: { min: 0 },
+            },
+          },
+        },
+      } as never,
+      plugins: [Spared, createAuthoredPlugin({ authorId: 'zed' })] as never,
+    });
+    const decision = judging(() =>
+      authoredTestApi(editor).decide({ action: 'accept', changes: ['ann:1'] })
+    );
+    const spareValues = [
+      'member',
+      'member-tag',
+      'member-ref',
+      'root',
+      'root-tag',
+      'root-ref',
+    ];
+
+    assert.deepEqual(
+      [
+        decision.status,
+        decision.judged
+          .map(String)
+          .filter((value) => spareValues.includes(value))
+          .sort((left, right) => left.localeCompare(right)),
+      ],
+      [
+        'applied',
+        spareValues.toSorted((left, right) => left.localeCompare(right)),
+      ]
     );
   });
 

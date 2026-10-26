@@ -327,6 +327,7 @@ export type Run = Readonly<{
   output: readonly JsonNode[];
   outputLength: number;
   part: ListPart;
+  spares: RecordSetVersion;
   storedLength: number;
   verdicts: RecordSetVersion;
 }>;
@@ -397,9 +398,13 @@ export type RunContext = Readonly<{
   schema: AuthoredResolveSchema | null;
   /** The containers the run's list sits in, nearest first; none at a root. */
   site?: readonly JsonNode[];
+  spares: RecordSetVersion;
   /** The verdict set's version `facts` reads. */
   verdicts: RecordSetVersion;
 }>;
+
+export const readsRootSpares = (part: ListPart, context: RunContext) =>
+  !context.site && (part.head || part.min > 0);
 
 const localChange = (
   kept: readonly JsonNode[],
@@ -456,6 +461,7 @@ export const removedRun = (node: JsonNode, context: RunContext): Run => {
     output: [],
     outputLength: 0,
     part: { head: false, min: 0 },
+    spares: context.spares,
     storedLength,
     verdicts: context.verdicts,
   };
@@ -638,6 +644,7 @@ export const resolveRun = (
   if (
     cached &&
     cached.verdicts === context.verdicts &&
+    (!readsRootSpares(part, context) || cached.spares === context.spares) &&
     samePart(cached.part, part) &&
     cached.nodes.length === nodes.length &&
     cached.nodes.every((node, index) => node === nodes[index])
@@ -716,6 +723,7 @@ export const resolveRun = (
     output,
     outputLength,
     part,
+    spares: context.spares,
     storedLength: input.storedLength,
     verdicts: context.verdicts,
   };
@@ -787,6 +795,7 @@ export const writtenRun = (
     output,
     outputLength,
     part,
+    spares: context.spares,
     storedLength: input.storedLength,
     verdicts: context.verdicts,
   };

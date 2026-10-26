@@ -1638,6 +1638,111 @@ describe('authored plugin', () => {
     assert.deepEqual(keysOf().slice(0, 4), keys);
   });
 
+  it('keeps a preview quote’s node key when a commit that changes every block sets the quote’s property and removes one of its lines', () => {
+    const line = (text: string) => ({
+      children: [{ text }],
+      type: 'paragraph',
+    });
+    const editor = createEditor({
+      initialValue: [
+        {
+          children: [{ authored: [mark('carol:1', 'insert', 1)], text: 'a' }],
+          type: 'paragraph',
+        },
+        { children: [line('x'), line('y')], type: 'quote' },
+      ],
+      plugins: [Quotes, createAuthoredPlugin({ authorId: 'alice' })],
+    });
+    const accepted = createEditorView(editor, {
+      authored: { preview: 'accepted' },
+    });
+    const key = accepted.key([1]);
+
+    editor.update((tx) => {
+      tx.text.insert('!', { at: caret([0, 0], 0).anchor });
+      tx.nodes.set({ cite: 'c' }, { at: [1] });
+      tx.nodes.remove({ at: [1, 1] });
+    });
+
+    assert.deepEqual(
+      { children: accepted.read.children(), key: accepted.key([1]) },
+      {
+        children: [
+          line('!'),
+          { children: [line('x')], cite: 'c', type: 'quote' },
+        ],
+        key,
+      }
+    );
+  });
+
+  it('keeps a preview quote’s node key when a value replace sets the quote’s property, removes one of its lines and adds the root’s first suggestion', () => {
+    let made = 0;
+    const Spares = defineEditorSchema('authored-plugin-spares', {
+      elements: {
+        paragraph: schema.element.textBlock(),
+        quote: { content: schema.content.type('paragraph', { min: 1 }) },
+      },
+      id: 'authored-plugin-spares',
+      properties: [
+        schema.elementProperty(
+          'id',
+          property.string({ generate: () => `g${(made += 1)}` }),
+          {
+            role: 'metadata',
+            target: nodeTarget.group('element'),
+            typeChange: 'preserve-if-allowed',
+          }
+        ),
+        schema.elementProperty('cite', property.string(), {
+          target: nodeTarget.type('quote'),
+        }),
+      ],
+      root: schema.content.types(['paragraph', 'quote'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const line = (text: string) => ({
+      children: [{ text }],
+      id: text,
+      type: 'paragraph',
+    });
+    const editor = createEditor({
+      initialValue: [
+        { children: [line('a'), line('b')], id: 'q', type: 'quote' },
+      ],
+      plugins: [Spares, createAuthoredPlugin({ authorId: 'alice' })],
+    });
+    const accepted = createEditorView(editor, {
+      authored: { preview: 'accepted' },
+    });
+    const key = accepted.key([0]);
+    const quote = { children: [line('a')], cite: 'c', id: 'q', type: 'quote' };
+    const inserted = [mark('carol:1', 'insert', 1)];
+
+    editor.update((tx) =>
+      tx.value.replace({
+        children: [
+          quote,
+          {
+            authored: inserted,
+            children: [{ authored: inserted, text: 'z' }],
+            id: 'z',
+            type: 'paragraph',
+          },
+        ],
+      })
+    );
+
+    assert.deepEqual(
+      { children: accepted.read.children(), key: accepted.key([0]) },
+      { children: [quote], key }
+    );
+  });
+
   it('keeps the accepted preview blocks while a suggestion strikes every block', () => {
     const editor = createEditor({
       initialValue: [

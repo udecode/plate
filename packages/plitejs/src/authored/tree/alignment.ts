@@ -10,6 +10,7 @@ import {
   type DocumentSetPropertyResolver,
   RootChange,
   type RootChangeSection,
+  type SectionData,
 } from '../../core/change/root-change';
 import {
   type JsonEditorValue,
@@ -19,6 +20,10 @@ import {
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
 } from '../../core/change/tokens';
+import {
+  normalizeSetValues,
+  type PropertyModification,
+} from '../../core/change/transform';
 import { deriveValue } from '../../core/record-store';
 import { survivalUnder } from '../../core/survival';
 import { marksOf, type ReviewFacts } from '../facts/facts';
@@ -28,6 +33,7 @@ import {
   type AuthoredMark,
   isAuthoredSetValued,
   readAuthoredMarks,
+  readMembers,
 } from './marks';
 import { proposedSurvival } from './proposed';
 import {
@@ -38,6 +44,7 @@ import {
   mergesUp,
   removes,
 } from './resolve';
+import { sparesIn } from './spares';
 
 export type AlignmentOptions = Readonly<{
   isSetValued?: DocumentSetPropertyResolver;
@@ -238,16 +245,55 @@ export const settledChange = (
     : change;
 };
 
+// The node of `nodes` whose open token sits at each of `offsets`, ascending,
+// or null when one sits on another token.
+const nodesOpeningAt = (
+  nodes: readonly JsonNode[],
+  offsets: readonly number[]
+): readonly JsonNode[] | null => {
+  const found: JsonNode[] = [];
+  const visit = (list: readonly JsonNode[], start: number): boolean => {
+    let at = start;
+
+    for (const node of list) {
+      const end = at + tokenLength(node);
+      const offset = offsets[found.length];
+
+      if (offset === undefined) return true;
+      if (offset < end) {
+        if (offset === at) found.push(node);
+        if (
+          typeof node.text !== 'string' &&
+          !visit(node.children ?? [], at + 1)
+        ) {
+          return false;
+        }
+        if ((offsets[found.length] ?? end) < end) return false;
+      }
+      at = end;
+    }
+
+    return true;
+  };
+
+  return visit(nodes, 0) && found.length === offsets.length ? found : null;
+};
+
 // The accept-all change of kept top-level blocks, built in one token walk:
 // struck nodes and the boundary each join removes leave, equal neighboring
-// leaves merge, and marks unset. Null when the result is not the resolver's,
-// such as a join whose emptied first line gives way to the second.
+// leaves merge, and marks unset. A kept element storing spares takes those
+// the decided element it aligns with keeps, because the resolver owns which
+// spares a decision keeps. Null when the result is not the resolver's, such
+// as a join whose emptied first line gives way to the second.
 const structuralChange = (
   blocks: readonly JsonNode[],
   accepted: readonly JsonNode[]
 ): RootChange | null => {
-  // 0 keeps a token, 1 drops it, 2 keeps it and unsets its marks.
+  // 0 keeps a token, 1 drops it, 2 keeps it and changes its members: it
+  // unsets them unless `members` names its write.
   const ops: number[] = [];
+  const members = new Map<number, readonly PropertyModification[]>();
+  const spareHolders: Array<Readonly<{ at: number; node: JsonNode }>> = [];
   type Leaf = { close: number; node: JsonNode } | null;
   // The last kept leaf a following leaf can merge with, and the last leaf of
   // the previous kept block, which a joined block's first leaf meets.
@@ -287,6 +333,9 @@ const structuralChange = (
     } else if (unwraps) {
       ops.push(1);
     } else {
+      if (sparesIn(node).length > 0) {
+        spareHolders.push({ at: ops.length, node });
+      }
       ops.push(marked ? 2 : 0);
       leaf = null;
     }
@@ -306,15 +355,46 @@ const structuralChange = (
 
   for (const block of blocks) if (!visit(block, true)) return null;
 
+  if (spareHolders.length > 0) {
+    const offsets: number[] = [];
+    let kept = 0;
+
+    for (let index = 0; offsets.length < spareHolders.length; index += 1) {
+      if (index === spareHolders[offsets.length].at) offsets.push(kept);
+      if (ops[index] !== 1) kept += 1;
+    }
+
+    const decided = nodesOpeningAt(accepted, offsets);
+
+    if (!decided) return null;
+    for (const [rank, { at, node }] of spareHolders.entries()) {
+      const stored = readMembers(node);
+      const modeled = normalizeSetValues([
+        ...(ops[at] === 2
+          ? []
+          : stored.filter((member) => member.kind !== 'reserve')),
+        ...sparesIn(decided[rank]),
+      ]);
+
+      if (ops[at] === 0 && jsonEqual(modeled, stored)) continue;
+      ops[at] = 2;
+      if (modeled.length > 0) {
+        members.set(at, [
+          { key: AUTHORED_MARKS_KEY, type: 'set', value: modeled },
+        ]);
+      }
+    }
+  }
+
   const sections: number[] = [];
-  const data: Array<PreparedTokenSlice | null | typeof UNSET_MARKS> = [];
+  const data: SectionData[] = [];
 
   for (let index = 0; index < ops.length;) {
     const op = ops[index];
 
     if (op === 2) {
       sections.push(1, -2);
-      data.push(UNSET_MARKS);
+      data.push(members.get(index) ?? UNSET_MARKS);
       index += 1;
       continue;
     }

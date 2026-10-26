@@ -61,8 +61,14 @@ interface Batch {
   readonly selectionAfterRoot?: string;
   readonly selectionBefore: Selection;
   readonly selectionBeforeRoot?: string;
+  readonly unsettle?: DocumentChange;
 }
 ```
+
+`unsettle` appears only on an undo step whose commit stored a value that a
+pending suggestion had kept an element from storing, such as a unique ID. It
+takes that write back, so undoing the step and redoing it decides the value
+again.
 
 ## Static methods
 
@@ -75,7 +81,8 @@ type guard.
 
 Encode the installed undo and redo stacks as validated version 4 JSON. The
 envelope records the editor's schema identity, and each batch stores its
-canonical `DocumentChange`, registered effects, and selection envelopes.
+canonical `DocumentChange`, registered effects, selection envelopes, and
+`unsettle` when it has one.
 
 Compatible typing and same-node property updates coalesce from canonical
 change classifications and changed ranges. Grouping fingerprints are

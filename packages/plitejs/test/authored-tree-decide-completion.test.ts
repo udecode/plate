@@ -698,7 +698,7 @@ describe('authored review tree decisions that complete', () => {
     }
   });
 
-  const Keyed = define('decide-emptied-keyed', {
+  const keyed = {
     elements: {
       paragraph: { content: textMin1() },
       quote: { content: c.type('paragraph', { min: 1 }) },
@@ -711,8 +711,14 @@ describe('authored review tree decisions that complete', () => {
       }),
     ],
     root: blocks('paragraph', 'quote'),
+  };
+  const Keyed = define('decide-emptied-keyed', keyed);
+  const KeyedKeepingUnknown = define('decide-emptied-keyed-unknown', {
+    ...keyed,
+    root: c.not(c.text()),
+    unknown: 'preserve',
   });
-  const landsKeyed = (splitMarks: readonly object[]) => {
+  const landsKeyed = (splitMarks: readonly object[], plugin = Keyed) => {
     const value = [
       el(
         'quote',
@@ -722,8 +728,8 @@ describe('authored review tree decisions that complete', () => {
     ];
     const accept = { action: 'accept', changes: ['a:1'] } as const;
     const reject = { action: 'reject', changes: ['b:1'] } as const;
-    const together = decided(Keyed, value, [accept, reject]);
-    const inTurn = decided(Keyed, value, accept, reject);
+    const together = decided(plugin, value, [accept, reject]);
+    const inTurn = decided(plugin, value, accept, reject);
 
     assert.deepEqual(
       [...together.results, ...inTurn.results].map(({ status }) => status),
@@ -753,6 +759,152 @@ describe('authored review tree decisions that complete', () => {
         },
       ]),
       [el('quote', el('paragraph', t('b')))]
+    );
+  });
+
+  it('lands a rejected split in the quote the decision empties, keeping its own value of a key a retype to an unknown type can drop, as accepting the deletion first does', () => {
+    assert.deepEqual(landsKeyed([mark('split', 'b:1')], KeyedKeepingUnknown), [
+      el('quote', { ...el('paragraph', t('b')), key: 'k2' }),
+    ]);
+  });
+
+  it('keeps the split line’s content value whether the deletion before it is decided with the rejected split or first, when another type holds that key as metadata', () => {
+    const Tokens = define('decide-emptied-token', {
+      elements: {
+        heading: { content: textMin1() },
+        paragraph: { content: textMin1() },
+        pbox: { content: c.type('paragraph', { min: 1 }) },
+        quote: { content: c.type('heading', { min: 1 }) },
+      },
+      properties: [
+        schema.elementProperty('token', property.string(), {
+          role: 'metadata',
+          target: target.type('paragraph'),
+        }),
+        schema.elementProperty('token', property.string(), {
+          role: 'content',
+          target: target.type('heading'),
+        }),
+      ],
+      root: blocks('quote', 'heading', 'pbox'),
+    });
+    const value = [
+      el('quote', whole(el('heading', t('a')), 'delete', 'a:1')),
+      {
+        ...el('heading', t('b')),
+        authored: [mark('split', 'b:1')],
+        token: 'two',
+      },
+    ];
+    const accept = { action: 'accept', changes: ['a:1'] } as const;
+    const reject = { action: 'reject', changes: ['b:1'] } as const;
+    const tokenOfB = (nodes: readonly Node[]): unknown =>
+      nodes
+        .map((node) =>
+          node.children?.some((child) => child.text === 'b')
+            ? node.token
+            : tokenOfB(node.children ?? [])
+        )
+        .find((token) => token !== undefined);
+
+    assert.deepEqual(
+      [
+        tokenOfB(decided(Tokens, value, [accept, reject]).children),
+        tokenOfB(decided(Tokens, value, accept, reject).children),
+      ],
+      ['two', 'two']
+    );
+  });
+
+  it('rejoins a rejected split into the quote the deletion before it empties in both orders, the line keeping its content value and its pending tag, under a content key a split drops', () => {
+    const KeyedContent = define('decide-emptied-keyed-content', {
+      ...keyed,
+      properties: [
+        schema.elementProperty('key', property.string(), {
+          role: 'content',
+          split: 'drop',
+          target: target.group('element'),
+        }),
+      ],
+    });
+    const tag = {
+      ...mark('format', 'c:1'),
+      before: 'kb',
+      id: 'c-key',
+      key: 'key',
+      write: { kind: 'set', value: 'k2' },
+    };
+    const value = [
+      el(
+        'quote',
+        whole({ ...el('paragraph', t('a')), key: 'k1' }, 'delete', 'a:1')
+      ),
+      {
+        ...el('paragraph', t('b')),
+        authored: [mark('split', 'b:1'), tag],
+        key: 'k2',
+      },
+    ];
+    const accept = { action: 'accept', changes: ['a:1'] } as const;
+    const reject = { action: 'reject', changes: ['b:1'] } as const;
+    const line = { ...el('paragraph', t('b')), authored: [tag], key: 'k2' };
+
+    assert.deepEqual(
+      [
+        decided(KeyedContent, value, [accept, reject]).children,
+        decided(KeyedContent, value, accept, reject).children,
+      ],
+      [[el('quote', line)], [el('quote', line)]]
+    );
+  });
+
+  it('rejoins a rejected split into the quote the deletion before it empties in both orders, the line keeping its content value and its pending tag, when another type holds that key as metadata and both drop it on split', () => {
+    const Tokens = define('decide-emptied-token-dropped', {
+      elements: {
+        heading: { content: textMin1() },
+        paragraph: { content: textMin1() },
+        pbox: { content: c.type('paragraph', { min: 1 }) },
+        quote: { content: c.type('heading', { min: 1 }) },
+      },
+      properties: [
+        schema.elementProperty('token', property.string(), {
+          role: 'metadata',
+          split: 'drop',
+          target: target.type('paragraph'),
+        }),
+        schema.elementProperty('token', property.string(), {
+          role: 'content',
+          split: 'drop',
+          target: target.type('heading'),
+        }),
+      ],
+      root: blocks('quote', 'heading', 'pbox'),
+    });
+    const tag = {
+      ...mark('format', 'c:1'),
+      before: 'one',
+      id: 'c-token',
+      key: 'token',
+      write: { kind: 'set', value: 'two' },
+    };
+    const value = [
+      el('quote', whole(el('heading', t('a')), 'delete', 'a:1')),
+      {
+        ...el('heading', t('b')),
+        authored: [mark('split', 'b:1'), tag],
+        token: 'two',
+      },
+    ];
+    const accept = { action: 'accept', changes: ['a:1'] } as const;
+    const reject = { action: 'reject', changes: ['b:1'] } as const;
+    const line = { ...el('heading', t('b')), authored: [tag], token: 'two' };
+
+    assert.deepEqual(
+      [
+        decided(Tokens, value, [accept, reject]).children,
+        decided(Tokens, value, accept, reject).children,
+      ],
+      [[el('quote', line)], [el('quote', line)]]
     );
   });
 

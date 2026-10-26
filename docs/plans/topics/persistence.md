@@ -57,7 +57,7 @@ saved { document, schema, selection? }
 | Applications | Lineage, supported historical identities and steps; conversion runs at the app's load boundary, before editor construction. Comment thread records and Yjs room cutovers stay app jobs. |
 | CLI | Files, dry-run, check and write, and reports, through the same detached operation. |
 | Authored state | Codec v6 persists live footprints; a directly validated live checkpoint is current authority, and retained operation bodies stay cold. |
-| Identity | The existing ElementId owner keeps its pure admission validator; schema generation alone admits empty or duplicate IDs. |
+| Identity | No commit or load stores two elements with one value of a `unique` generated property. A load, a commit tagged `collaboration` and a commit that wrote every holder keep the value on the first holder in document order. Any other commit keeps it on the holders it did not write and gives the rest fresh values. Suggesting writes a unique value in place, with no format tag. ElementId marks its id `unique`, checks that each id a commit writes is a non-empty string, and keeps its pure validator at the migration boundary, which refuses a repeated id. |
 | Failure | Wrong lineage, unknown fingerprints, future versions, incomplete chains and invalid output fail before a replacement publishes. Ordinary unversioned current content works without the CLI or generated types. |
 
 Rejected, and why:

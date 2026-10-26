@@ -41,7 +41,7 @@ const getElementAttributes = (node: Descendant): YjsAttributeRecord =>
 
 export const setYjsElementAttributes = (
   node: Y.XmlElement,
-  properties: YjsAttributeRecord,
+  previousProperties: YjsAttributeRecord,
   newProperties: YjsAttributeRecord,
   isSetValued: (key: string) => boolean = () => false
 ): void => {
@@ -69,6 +69,7 @@ export const setYjsElementAttributes = (
       if (!Array.isArray(value)) {
         throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
       }
+      if (areJsonLikeValuesEqual(previousProperties[key], value)) continue;
 
       const encoded = encodeYjsSetValueAttributes(key, value);
 
@@ -87,7 +88,10 @@ export const setYjsElementAttributes = (
 
     if (value === null || value === undefined) {
       removeSetEntries(key);
-      if (properties[key] === null || properties[key] === undefined) {
+      if (
+        previousProperties[key] === null ||
+        previousProperties[key] === undefined
+      ) {
         continue;
       }
 
@@ -95,7 +99,7 @@ export const setYjsElementAttributes = (
       continue;
     }
 
-    if (areJsonLikeValuesEqual(properties[key], value)) {
+    if (areJsonLikeValuesEqual(previousProperties[key], value)) {
       continue;
     }
 
@@ -104,8 +108,8 @@ export const setYjsElementAttributes = (
     setYjsAttribute(node, key, value);
   }
 
-  for (const key in properties) {
-    if (!Object.hasOwn(properties, key)) {
+  for (const key in previousProperties) {
+    if (!Object.hasOwn(previousProperties, key)) {
       continue;
     }
 
@@ -144,6 +148,14 @@ export type YjsReplacedElement = (index: number) => boolean;
 
 const notReplaced: YjsReplacedElement = () => false;
 
+// Children the change leaves as they are need no write, so a room that holds
+// fewer of them than the editor, such as a line every editor built from a
+// spare, still takes the change of their element's properties in place.
+const unchanged = (
+  before: readonly Descendant[],
+  after: readonly Descendant[]
+) => before === after || areJsonLikeValuesEqual(before, after);
+
 /**
  * Pairs each Plite segment with the Yjs segment it writes to. Yjs stores no
  * child for an empty Plite text, so such a run pairs with null. Inside an
@@ -161,6 +173,13 @@ const alignReplacement = (
   start: number,
   replaced: YjsReplacedElement
 ): Array<YjsSegment | null> | null => {
+  if (
+    start === 0 &&
+    unchanged(before, after) &&
+    !before.some((_, index) => replaced(index))
+  ) {
+    return [];
+  }
   if (!sameSkeleton(before, after)) return null;
   const aligned = alignYjsChildren(before, children.slice(start));
   const nextSegments = segmentPliteChildren(after);

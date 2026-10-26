@@ -20,6 +20,7 @@ import type {
 } from '../../core/command-document';
 import { createEditorCommit, getEditorCommitValue } from '../../core/commit';
 import { getEditorSchema } from '../../core/editor-runtime';
+import { ElementGenerationMaskedError } from '../../core/editor-schema';
 import {
   ensureElementOwnedRootIndex,
   rebaseElementOwnedRootIndex,
@@ -58,10 +59,17 @@ import { getDefined } from '../../internal/get-defined';
 import { getNodeKeyForNode } from '../../utils/node-keys';
 import type { createDocumentMarksValidator } from '../facts/admission';
 import { factsOf, primeInsertions } from '../facts/facts';
-import { VERDICTS, verdictIncarnationsOf } from '../facts/records';
+import {
+  RESERVES,
+  reserveRootOf,
+  VERDICTS,
+  verdictIncarnationsOf,
+} from '../facts/records';
 import type { AuthoredFormatProjection } from '../format';
 import { tokenLength } from '../tree/alignment';
+import { ElementReads, ValueHolders } from '../tree/holders';
 import { isAuthoredSetValued } from '../tree/marks';
+import { ShownBook } from '../tree/readiness';
 import { type AuthoredResolveSchema, isTextBlock } from '../tree/resolve';
 import { type BookSink, ChangeBook } from './book';
 import type { WrittenList } from './level';
@@ -101,6 +109,16 @@ type History = Readonly<{
   changes: ReadonlyMap<string, RootChange>;
   last: Synced;
   prior: Synced | null;
+}>;
+
+/**
+ * What a mode shows of one stored document: each root as it shows it, null
+ * where it drops the root, and the path at which a stored element shows
+ * whole, null where it shows none in its place.
+ */
+export type PeekedView = Readonly<{
+  index: (root: string) => DocumentIndex | null;
+  path: (root: string, path: readonly number[]) => readonly number[] | null;
 }>;
 
 /**
@@ -233,7 +251,6 @@ type Moving = Readonly<{
   before: DocumentIndex;
   /** The projection still at `before`, or null where it shows it unchanged. */
   shown: RootProjection | null;
-  /** The ranks of `after` whose runs a verdict changed. */
   touched: readonly number[];
   /** What the mode showed at `before`. */
   view: DocumentIndex;
@@ -473,7 +490,10 @@ class ModeProjection {
   private history: History | null = null;
   private readonly lenses = new WeakMap<Synced, PreviewLens>();
   private syncing = false;
+  // A peek moves the mode and back without the views reading it noticing.
+  private quiet = false;
   private verdicts: RecordSetVersion | undefined;
+  private spares: RecordSetVersion | undefined;
   readonly mode: AuthoredFormatProjection;
   private readonly book: ChangeBook;
   private readonly schema: () => SelectionModeSchema;
@@ -509,6 +529,12 @@ class ModeProjection {
     const facts = factsOf(value);
     const records = getValueRecords(value);
     const verdicts = getRecordSetVersion(records, VERDICTS);
+    const spares = getRecordSetVersion(records, RESERVES);
+    const respared = new Set(
+      this.spares === undefined
+        ? []
+        : recordSetChanges(this.spares, spares).map(reserveRootOf)
+    );
     const written =
       write &&
       last &&
@@ -518,7 +544,7 @@ class ModeProjection {
         ? write
         : null;
     const writtenRoot = (root: string): WrittenList | null => {
-      if (!written) return null;
+      if (!written || respared.has(root)) return null;
       const droppedByFrame =
         root !== 'main' && !Object.hasOwn(written.value.roots ?? {}, root);
 
@@ -539,23 +565,37 @@ class ModeProjection {
       mode: this.mode,
       root,
       schema,
+      spares,
       verdicts,
     });
     // A verdict changes what the runs naming its incarnation resolve to.
-    const touched =
+    const touched = new Map(
       this.verdicts === undefined || verdicts === this.verdicts
-        ? new Map<string, readonly number[]>()
+        ? []
         : this.book
             .sync(value)
             .ranksNaming(
               verdictIncarnationsOf(recordSetChanges(this.verdicts, verdicts))
-            );
+            )
+    );
     const changes = new Map<string, RootChange>();
 
     for (const root of this.roots.keys()) {
       if (!content.has(root)) this.roots.delete(root);
     }
-    if (last && this.holder) {
+    for (const root of respared) {
+      const projection = this.roots.get(root);
+      const index = content.get(root);
+      const readers =
+        projection &&
+        index &&
+        projection.unpendedSpareReaders(index, contextOf(root));
+
+      if (readers && readers.length > 0) {
+        touched.set(root, [...(touched.get(root) ?? []), ...readers]);
+      }
+    }
+    if (last && this.holder && !this.quiet) {
       for (const [root, index] of content) {
         const projection = this.roots.get(root);
         const before = last.stored.get(root);
@@ -605,6 +645,7 @@ class ModeProjection {
       this.syncing = false;
     }
     this.verdicts = verdicts;
+    this.spares = spares;
 
     // Back at the document before, the mode shows it as it did, so the
     // preview a reader holds stays.
@@ -614,9 +655,9 @@ class ModeProjection {
     if (back) {
       for (const [root, projection] of this.roots) {
         projection.adopt(getDefined(back.roots.get(root)).index);
-        this.holder?.move(this.mode, root, null);
+        if (!this.quiet) this.holder?.move(this.mode, root, null);
       }
-    } else if (this.holder) {
+    } else if (this.holder && !this.quiet) {
       for (const [root, change] of changes) {
         const from = last?.roots.get(root)?.index;
         const to = getDefined(this.roots.get(root)).previewRoot;
@@ -671,6 +712,102 @@ class ModeProjection {
     }
 
     return this.roots;
+  }
+
+  /**
+   * Calls `read` with what the mode shows of each of `values`, synced in
+   * turn, then returns the mode to the document it held, its last state and
+   * the previews built from it untouched. A root a sync refused part way is
+   * derived again.
+   */
+  peek(
+    values: readonly JsonEditorValue[],
+    schema: AuthoredResolveSchema | null,
+    read: (view: PeekedView, at: number) => void
+  ) {
+    const { history, spares, verdicts } = this;
+    const known = new Map(this.roots);
+    const syncTo = (
+      value: JsonEditorValue,
+      to: AuthoredResolveSchema | null
+    ) => {
+      const content = contentRootsOf(value);
+
+      // A root a sync left out is as that sync found it, so a later one moves
+      // it from there.
+      for (const [root, projection] of known) {
+        if (content.has(root) && !this.roots.has(root)) {
+          this.roots.set(root, projection);
+        }
+      }
+      try {
+        return this.sync(value, to);
+      } catch (error) {
+        for (const root of content.keys()) {
+          if (!this.roots.has(root)) known.delete(root);
+        }
+        throw error;
+      } finally {
+        for (const [root, projection] of this.roots) {
+          known.set(root, projection);
+        }
+      }
+    };
+
+    this.quiet = true;
+    try {
+      values.forEach((value, at) => {
+        const synced = syncTo(value, schema);
+
+        read(
+          {
+            index: (root) =>
+              synced.dropped.has(root)
+                ? null
+                : (synced.roots.get(root)?.index ?? null),
+            path: (root, path) => {
+              if (synced.dropped.has(root)) return null;
+
+              const state = synced.roots.get(root);
+
+              if (!state?.changed) return state ? path : null;
+
+              const shown = getDefined(this.roots.get(root));
+              const { from } = rootOf(synced.value, root).nodeRange(path);
+              const place = shown.toProjected(from, 1);
+
+              if (shown.toProjected(from + 1, -1) !== place + 1) return null;
+
+              const entry = state.index.nodeStartingAt(place);
+
+              return entry?.from === place && entry.kind === 'element'
+                ? entry.path
+                : null;
+            },
+          },
+          at
+        );
+      });
+    } finally {
+      try {
+        if (history) {
+          syncTo(history.last.value, history.last.schema);
+          for (const [root, projection] of this.roots) {
+            projection.adopt(getDefined(history.last.roots.get(root)).index);
+          }
+          this.history = history;
+        } else {
+          // A mode with no history holds no document to go back to, so its
+          // next sync derives its roots afresh.
+          this.roots.clear();
+          this.history = null;
+        }
+        this.verdicts = verdicts;
+        this.spares = spares;
+      } finally {
+        this.quiet = false;
+      }
+    }
   }
 
   carried(root: string) {
@@ -965,6 +1102,10 @@ const DROPPED_PLACES: ViewPlaces = Object.freeze({
  * @internal
  */
 export class ReviewLedger {
+  private readonly reads = new ElementReads();
+  readonly holders = new ValueHolders(this.reads);
+  /** What decides which shown values are ready to settle. */
+  readonly shown = new ShownBook(this.reads);
   private readonly book = new ChangeBook((node) => this.identity(node));
   private readonly identity = (node: JsonNode): unknown =>
     getNodeKeyForNode(node, this.owner) ?? node;
@@ -1234,9 +1375,15 @@ export class ReviewLedger {
       this.frame(value);
       return { framed: true };
     } catch (error) {
-      // A document whose accepted form the schema refuses still loads; the
-      // command or decision that reads that form reports the refusal.
-      if (!(error instanceof EditorSchemaValidationError)) throw error;
+      // A document whose accepted form the schema refuses, or needs a spare
+      // it lacks, still loads; the command or decision that reads that form
+      // reports the refusal.
+      if (
+        !(error instanceof EditorSchemaValidationError) &&
+        !(error instanceof ElementGenerationMaskedError)
+      ) {
+        throw error;
+      }
       return { framed: false };
     }
   }
@@ -1247,6 +1394,14 @@ export class ReviewLedger {
       preview: projection.value,
       value: frame.value,
     });
+  }
+
+  /** What the proposed view shows of each of `values`, as the mode's peek. */
+  peek(
+    values: readonly JsonEditorValue[],
+    read: (view: PeekedView, at: number) => void
+  ) {
+    this.modeOf('proposed').peek(values, this.schemaOf(), read);
   }
 
   dropped(stored: JsonEditorValue) {

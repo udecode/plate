@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { isDeepStrictEqual } from 'node:util';
 
 import * as Y from 'yjs';
 
@@ -8,11 +9,13 @@ import {
   createEditor,
   defineEditorSchema,
   type Descendant,
+  type EditorUpdateTransaction as Transaction,
   NodeApi,
   property,
   schema,
   target,
 } from '../../src/index';
+import { getDefined } from '../../src/internal/get-defined';
 import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
@@ -24,9 +27,11 @@ import {
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getVisibleYjsNodeAt,
+  getYjsTrace,
   type Peer,
   paragraph,
   readPeerChildren,
+  readPeerPliteValue,
   redoHistoryPeerAndSync,
   syncConnectedPeers,
   undoHistoryPeerAndSync,
@@ -42,6 +47,9 @@ type ClientId = keyof typeof clientIds;
 
 const initialValue = (): Descendant[] => [paragraph('alpha')];
 const roleValue = (): Descendant[] => [paragraph('alpha', { role: 'title' })];
+const quoteValue = (): Descendant[] => [
+  { children: [paragraph('alpha'), paragraph('beta')], type: 'quote' },
+];
 
 const createPeer = (
   clientId: ClientId,
@@ -315,6 +323,316 @@ describe('plitejs/yjs set_node collaboration contract', () => {
         { type: 'paragraph', children: [{ text: 'alpha' }] },
       ]);
     }
+  });
+
+  for (const [name, children] of [
+    ['removes', [paragraph('alpha')]],
+    ['inserts', [paragraph('alpha'), paragraph('beta'), paragraph('gamma')]],
+  ] as const) {
+    for (const first of ['property', 'child'] as const) {
+      it(`keeps the Yjs element of a container when one commit sets its property and ${name} a child, the ${first} first`, () => {
+        const peer = createPeer('b', quoteValue());
+        const element = getVisibleYjsNodeAt(peer, [0]);
+        const setRole = (tx: Transaction) =>
+          tx.nodes.set({ role: 'title' }, { at: [0] });
+        const changeChild = (tx: Transaction) => {
+          if (name === 'removes') tx.nodes.remove({ at: [0, 1] });
+          else tx.nodes.insert(paragraph('gamma'), { at: [0, 2] });
+        };
+
+        peer.editor.update((tx) => {
+          for (const step of first === 'property'
+            ? [setRole, changeChild]
+            : [changeChild, setRole]) {
+            step(tx);
+          }
+        });
+
+        assert.deepEqual(
+          {
+            kept: getVisibleYjsNodeAt(peer, [0]) === element,
+            room: readPeerPliteValue(peer),
+          },
+          {
+            kept: true,
+            room: [{ children: [...children], role: 'title', type: 'quote' }],
+          }
+        );
+      });
+    }
+  }
+
+  it('keeps each of two equal sibling containers’ Yjs elements when one commit sets both their properties and removes a child from each', () => {
+    const peer = createPeer('b', [...quoteValue(), ...quoteValue()]);
+    const elements = [[0], [1]].map((path) => getVisibleYjsNodeAt(peer, path));
+
+    peer.editor.update((tx) => {
+      tx.nodes.set({ role: 'title' }, { at: [0] });
+      tx.nodes.set({ role: 'title' }, { at: [1] });
+      tx.nodes.remove({ at: [1, 1] });
+      tx.nodes.remove({ at: [0, 1] });
+    });
+
+    const quote = {
+      children: [paragraph('alpha')],
+      role: 'title',
+      type: 'quote',
+    };
+
+    assert.deepEqual(
+      {
+        kept: [[0], [1]].map(
+          (path, at) => getVisibleYjsNodeAt(peer, path) === elements[at]
+        ),
+        room: readPeerPliteValue(peer),
+      },
+      { kept: [true, true], room: [quote, quote] }
+    );
+  });
+
+  it('leaves the room equal to the editor when one commit lowers one container in place and rewrites another', () => {
+    const peer = createPeer('b', [
+      ...quoteValue(),
+      paragraph('mid'),
+      ...quoteValue(),
+    ]);
+    const element = getVisibleYjsNodeAt(peer, [0]);
+
+    peer.editor.update((tx) => {
+      tx.nodes.set({ role: 'title' }, { at: [0] });
+      tx.nodes.remove({ at: [0, 1] });
+      tx.nodes.set({ type: 'aside' }, { at: [2] });
+      tx.nodes.remove({ at: [2, 1] });
+    });
+
+    assert.deepEqual(
+      {
+        kept: getVisibleYjsNodeAt(peer, [0]) === element,
+        room: readPeerPliteValue(peer),
+      },
+      {
+        kept: true,
+        room: [
+          { children: [paragraph('alpha')], role: 'title', type: 'quote' },
+          paragraph('mid'),
+          { children: [paragraph('alpha')], type: 'aside' },
+        ],
+      }
+    );
+  });
+
+  it('keeps a column’s and its quote’s Yjs elements when one commit sets the column’s property, removes a quote line and types into another', () => {
+    const peer = createPeer('b', [
+      { children: [...quoteValue(), paragraph('after')], type: 'column' },
+    ]);
+    const elements = [[0], [0, 0]].map((path) =>
+      getVisibleYjsNodeAt(peer, path)
+    );
+
+    peer.editor.update((tx) => {
+      tx.nodes.set({ role: 'title' }, { at: [0] });
+      tx.nodes.remove({ at: [0, 0, 1] });
+      tx.text.insert('!', { at: { offset: 0, path: [0, 0, 0, 0] } });
+    });
+
+    assert.deepEqual(
+      {
+        kept: [[0], [0, 0]].map(
+          (path, at) => getVisibleYjsNodeAt(peer, path) === elements[at]
+        ),
+        room: readPeerPliteValue(peer),
+      },
+      {
+        kept: [true, true],
+        room: [
+          {
+            children: [
+              { children: [paragraph('!alpha')], type: 'quote' },
+              paragraph('after'),
+            ],
+            role: 'title',
+            type: 'column',
+          },
+        ],
+      }
+    );
+  });
+
+  for (const [name, edit] of [
+    ['join', (tx: Transaction) => tx.nodes.merge({ at: [0, 1] })],
+    [
+      'wrap',
+      (tx: Transaction) =>
+        tx.nodes.wrap({ children: [], type: 'quote' }, { at: [0, 0] }),
+    ],
+  ] as const) {
+    it(`lowers a ${name} inside a container the same way when the commit also sets the container’s property`, () => {
+      const lowered = [false, true].map((setsRole) => {
+        const peer = createPeer('b', quoteValue());
+        const elements = [[0], [0, 0]].map((path) =>
+          getVisibleYjsNodeAt(peer, path)
+        );
+
+        peer.editor.update((tx) => {
+          if (setsRole) tx.nodes.set({ role: 'title' }, { at: [0] });
+          edit(tx);
+        });
+
+        return {
+          kept: [
+            getVisibleYjsNodeAt(peer, [0]) === elements[0],
+            [
+              [0, 0],
+              [0, 0, 0],
+            ].some((path) => getVisibleYjsNodeAt(peer, path) === elements[1]),
+          ],
+          roomIsEditor: isDeepStrictEqual(
+            readPeerPliteValue(peer),
+            readPeerChildren(peer)
+          ),
+        };
+      });
+
+      assert.deepEqual(lowered[1], lowered[0]);
+    });
+  }
+
+  it('rewrites a container whose type and child one commit changed', () => {
+    const peer = createPeer('b', quoteValue());
+    const element = getVisibleYjsNodeAt(peer, [0]);
+
+    peer.editor.update((tx) => {
+      tx.nodes.set({ type: 'aside' }, { at: [0] });
+      tx.nodes.remove({ at: [0, 1] });
+    });
+
+    assert.deepEqual(
+      {
+        kept: getVisibleYjsNodeAt(peer, [0]) === element,
+        room: readPeerPliteValue(peer),
+      },
+      {
+        kept: false,
+        room: [{ children: [paragraph('alpha')], type: 'aside' }],
+      }
+    );
+  });
+
+  for (const projectedFirst of [true, false]) {
+    it(`leaves the room equal to the editor and writes no attribute to an element it deletes when a commit that sets a container’s property falls back, the projected container ${projectedFirst ? 'first' : 'last'}`, () => {
+      const lines = (...texts: string[]) => ({
+        children: texts.map((text) => paragraph(text)),
+        type: 'quote',
+      });
+      const [projected, peeled] = projectedFirst ? [0, 2] : [2, 0];
+      const [a, b] = createPeers(
+        ['a', 'b'],
+        projectedFirst
+          ? [
+              lines('alpha', 'beta', 'x'),
+              paragraph('mid'),
+              lines('gamma', 'delta'),
+            ]
+          : [
+              lines('gamma', 'delta'),
+              paragraph('mid'),
+              lines('alpha', 'beta', 'x'),
+            ]
+      );
+
+      a.editor.update.nodes.merge({ at: [projected, 1] });
+      syncConnectedPeers([a, b]);
+
+      const doc = getDefined(getVisibleYjsNodeAt(b, [0]).doc);
+      const written: Y.XmlElement[] = [];
+
+      doc.on('afterTransaction', (transaction: Y.Transaction) => {
+        for (const [type, keys] of transaction.changed) {
+          if (type instanceof Y.XmlElement && [...keys].some(Boolean)) {
+            written.push(type);
+          }
+        }
+      });
+      b.editor.update((tx) => {
+        tx.nodes.set({ role: 'title' }, { at: [peeled] });
+        tx.nodes.remove({ at: [peeled, 1] });
+        tx.nodes.set({ type: 'aside' }, { at: [projected] });
+        tx.nodes.remove({ at: [projected, 1] });
+      });
+      syncConnectedPeers([a, b]);
+
+      assert.deepEqual(
+        {
+          deletedWritten: written.filter((element) => element._item?.deleted)
+            .length,
+          editor: readPeerChildren(a),
+          fallback: getYjsTrace(b).at(-1)?.fallback,
+          room: readPeerPliteValue(b),
+        },
+        {
+          deletedWritten: 0,
+          editor: readPeerChildren(b),
+          fallback: 'canonical-change-projected-content',
+          room: readPeerChildren(b),
+        }
+      );
+    });
+  }
+
+  it('keeps the node key of a remote container whose property and child one commit changed', () => {
+    const [a, b] = createPeers(['a', 'b'], quoteValue());
+    const key = b.editor.key([0]);
+
+    a.editor.update((tx) => {
+      tx.nodes.set({ role: 'title' }, { at: [0] });
+      tx.nodes.remove({ at: [0, 1] });
+    });
+    syncConnectedPeers([a, b]);
+
+    assert.deepEqual(
+      { children: readPeerChildren(b), key: b.editor.key([0]) },
+      {
+        children: [
+          { children: [paragraph('alpha')], role: 'title', type: 'quote' },
+        ],
+        key,
+      }
+    );
+  });
+
+  it('converges on one document when a peer receives joins that set the properties of the blocks they join into, then edits the joined line', () => {
+    const [a, b] = createPeers(
+      ['a', 'b'],
+      [...quoteValue(), { children: [paragraph('gamma')], type: 'quote' }]
+    );
+
+    a.editor.update((tx) => {
+      tx.nodes.set({ role: 'x' }, { at: [0, 0] });
+      tx.nodes.merge({ at: [0, 1] });
+    });
+    a.editor.update((tx) => {
+      tx.nodes.set({ role: 'title' }, { at: [0] });
+      tx.nodes.merge({ at: [1] });
+    });
+    syncConnectedPeers([a, b]);
+    b.editor.update((tx) => {
+      tx.nodes.set({ role: 'y' }, { at: [0, 0] });
+      tx.text.insert('!', { at: { offset: 0, path: [0, 0, 0] } });
+    });
+    syncConnectedPeers([a, b]);
+
+    const children = [
+      {
+        children: [paragraph('!alphabeta', { role: 'y' }), paragraph('gamma')],
+        role: 'title',
+        type: 'quote',
+      },
+    ];
+
+    assert.deepEqual(
+      [readPeerChildren(a), readPeerChildren(b), readPeerPliteValue(b)],
+      [children, children, children]
+    );
   });
 
   it('marks the end of a text leaf while keeping a concurrent append', () => {

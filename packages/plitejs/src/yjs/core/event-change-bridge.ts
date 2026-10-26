@@ -30,6 +30,7 @@ import {
 import { failInvariant } from '../../internal/fail-invariant';
 import { getDefined } from '../../internal/get-defined';
 import { yjsAddressesOf, yjsNodeOf } from './addresses';
+import { splitAncestorPropertyEdits } from './ancestor-properties';
 import type { YjsNode } from './attributes';
 import { getYjsAttributes } from './attributes';
 import {
@@ -42,6 +43,11 @@ import {
   type YjsBatchView,
 } from './boundaries';
 import { writeSplit } from './canonical-split';
+import {
+  type ChangeRegionPart,
+  editsNodeOf,
+  splitChangeRegions,
+} from './change-regions';
 import {
   createVirtualYjsMovePlaceholder,
   createYjsNode,
@@ -63,6 +69,7 @@ import {
   removeRedundantEmptyYjsTextNodesAt,
   removeYjsChild,
   removeYjsVirtualPlaceholderChild,
+  replaceYjsChildren,
   setVirtualYjsMove,
   settleYjsMoveContests,
   withYjsRootIds,
@@ -97,6 +104,7 @@ import {
   YJS_VIRTUAL_CHILD_ID_KEY,
   YJS_VIRTUAL_PLACEHOLDER_KEY,
 } from './keys';
+import { parentPath } from './path';
 import {
   canReplaceCompatibleYjsChildren,
   replaceCompatibleYjsChildren,
@@ -380,6 +388,50 @@ const nodePropertiesEqual = (
   delete rightProperties[contentKey];
 
   return areJsonLikeValuesEqual(leftProperties, rightProperties);
+};
+
+/**
+ * Whether the room's `held` node is the mirror's `node` less children every
+ * editor built and the room lacks. A container's `authored` set differs by
+ * the built marks those children carry.
+ */
+const holdsPartOf = (held: Descendant, node: Descendant): boolean => {
+  if (areJsonLikeValuesEqual(held, node)) return true;
+  if (!NodeApi.isElement(held) || !NodeApi.isElement(node)) return false;
+
+  const { authored: _held, children: heldChildren, ...heldProperties } = held;
+  const { authored: _node, children, ...nodeProperties } = node;
+
+  return (
+    areJsonLikeValuesEqual(heldProperties, nodeProperties) &&
+    matchHeldChildren(heldChildren, children) !== null
+  );
+};
+
+const matchHeldChildren = (
+  held: readonly Descendant[],
+  children: readonly Descendant[]
+): Array<number | 'lacking'> | null => {
+  let lacking = children.length - held.length;
+
+  if (lacking < 0) return null;
+
+  const matched: Array<number | 'lacking'> = [];
+  let at = 0;
+
+  for (const child of children) {
+    if (at < held.length && holdsPartOf(held[at], child)) {
+      matched.push(at);
+      at += 1;
+    } else if (lacking > 0 && NodeApi.isElement(child)) {
+      matched.push('lacking');
+      lacking -= 1;
+    } else {
+      return null;
+    }
+  }
+
+  return matched;
 };
 
 const textOf = (nodes: readonly Descendant[]): string =>
@@ -1740,6 +1792,12 @@ type JoinWrite = Readonly<{
   removed: readonly YjsNode[];
 }>;
 
+type MirrorLowering = Readonly<{
+  inlineJoinedLines: readonly Y.XmlElement[];
+  lowered: YjsEventLowerResult;
+  writtenLines: readonly Y.XmlElement[];
+}>;
+
 const combineLowered = (
   left: YjsEventLowerResult,
   right: YjsEventLowerResult
@@ -1817,11 +1875,21 @@ export class YjsEventChangeBridge {
     }>
   ): YjsEventLowerResult {
     this.writtenMaskedBlocks.clear();
+
+    const committed = getInternalDocumentRootChange(change, this.rootKey);
+    const editsNode = (path: readonly number[]) =>
+      committed !== undefined &&
+      editsNodeOf(committed, options.indexes().before, path);
+
     for (const node of this.maskedBlocks) {
       const index = this.rootIndex.indexOf(node);
+      const block = this.mirror.at(index);
 
-      if (index !== -1 && this.mirror.at(index) !== expected.at(index)) {
+      if (index !== -1 && block !== expected.at(index)) {
         this.writtenMaskedBlocks.add(node);
+        if (node instanceof Y.XmlElement && NodeApi.isElement(block)) {
+          this.writeMissingIn(write, node, block, [index], editsNode);
+        }
       }
     }
     return withYjsRootIndex(write, this.rootIndex, () => {
@@ -1912,11 +1980,7 @@ export class YjsEventChangeBridge {
       indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>;
       structureChanged: boolean;
     }>
-  ): Readonly<{
-    inlineJoinedLines: readonly Y.XmlElement[];
-    lowered: YjsEventLowerResult;
-    writtenLines: readonly Y.XmlElement[];
-  }> {
+  ): MirrorLowering {
     if (!this.ready || this.rootIndex.length !== this.mirror.length) {
       return {
         inlineJoinedLines: [],
@@ -1932,6 +1996,239 @@ export class YjsEventChangeBridge {
       };
     }
 
+    const committed = getInternalDocumentRootChange(change, this.rootKey);
+    const split = committed
+      ? splitAncestorPropertyEdits(committed, indexes().before)
+      : null;
+
+    if (!split) {
+      return this.lowerJoinsAndStructure(write, change, expected, indexes);
+    }
+
+    const { mirror } = this;
+    const middle = split.inner.apply(indexes().before);
+    const addresses = yjsAddressesOf(this.root, mirror);
+    const elements = split.peeled.map(({ path }) => ({
+      node: addresses.elementAt(path),
+      path,
+    }));
+
+    const middleNodes = middle.nodes as NodeList<Descendant>;
+
+    this.setMirror(middleNodes);
+
+    const rest = this.lowerJoinsAndStructure(
+      write,
+      createInternalDocumentChange(new Map([[this.rootKey, split.outer]])),
+      expected,
+      () => ({ after: indexes().after, before: middle })
+    );
+
+    // A rest that falls back before writing leaves the room as the mirror
+    // was. One that wrote a region first leaves the mirror on the written
+    // document, which the peeled properties then join, so the fallback starts
+    // from a mirror the room matches.
+    if (rest.lowered.kind !== 'lowered' && this.mirror === middleNodes) {
+      this.setMirror(mirror);
+    } else {
+      this.lowerAncestorProperties(elements, indexes().before, middle);
+    }
+
+    return rest;
+  }
+
+  /**
+   * Write the peeled properties of each element whose Yjs element the rest of
+   * the commit kept. One the rest wrote anew already carries them.
+   */
+  private lowerAncestorProperties(
+    elements: ReadonlyArray<
+      Readonly<{ node: YjsNode | null; path: readonly number[] }>
+    >,
+    before: DocumentIndex,
+    middle: DocumentIndex
+  ): void {
+    for (const { node, path } of elements) {
+      if (!(node instanceof Y.XmlElement) || !this.isLiveInRoot(node)) continue;
+
+      const next = middle.node(path) as Element;
+      const context = createYjsPropertyContext(next, {
+        ...createYjsPropertyLocationAt(
+          middle.nodes as NodeList<Descendant>,
+          parentPath(path),
+          this.schemaRoot
+        ),
+        path,
+      });
+
+      setYjsElementAttributes(
+        node,
+        propertiesOf(before.node(path) as Element),
+        propertiesOf(next),
+        (key) => this.isSetValued(next, key, context)
+      );
+    }
+  }
+
+  /**
+   * Writes each root child the mirror holds and the room lacks where the room
+   * holds the rest, so a commit in a root every editor built from its spare
+   * lowers against a room that holds it.
+   */
+  writeMissingRoot(write: YjsWrite): void {
+    const visible = getYjsVisibleChildren(this.root, this.root);
+
+    if (!visible.every((child) => child instanceof Y.XmlElement)) return;
+
+    const children = Array.from({ length: this.mirror.length }, (_, index) =>
+      getDefined(this.mirror.at(index))
+    );
+    const matched = matchHeldChildren(
+      visible.map((child) => readPliteNodeFromYjs(this.root, child)),
+      children
+    );
+
+    if (!matched?.includes('lacking')) return;
+
+    const location = createYjsPropertyLocationAt(
+      this.mirror,
+      [],
+      this.schemaRoot
+    );
+
+    for (const [index, at] of matched.entries()) {
+      if (at !== 'lacking') continue;
+
+      const child = children[index];
+
+      insertYjsChild(
+        write,
+        this.root,
+        index,
+        createYjsNode(
+          child,
+          this.isSetValued,
+          createYjsPropertyContext(child, { ...location, path: [index] })
+        )
+      );
+    }
+    this.reset(this.mirror);
+  }
+
+  private writeMissingIn(
+    write: YjsWrite,
+    node: Y.XmlElement,
+    element: Element,
+    path: readonly number[],
+    editsNode: (path: readonly number[]) => boolean
+  ): void {
+    if (!element.children.some(NodeApi.isElement)) return;
+
+    const visible = getYjsVisibleChildren(this.root, node);
+    let missing: number[] | null = null;
+
+    if (visible.some((child) => child instanceof Y.XmlElement)) {
+      const matched =
+        visible.length === element.children.length
+          ? visible.map((_, index) => index)
+          : visible.every((child) => child instanceof Y.XmlElement)
+            ? matchHeldChildren(
+                visible.map((child) => readPliteNodeFromYjs(this.root, child)),
+                element.children
+              )
+            : null;
+
+      if (!matched) return;
+      missing = [];
+      for (const [index, at] of matched.entries()) {
+        const next = element.children[index];
+
+        if (at === 'lacking') {
+          missing.push(index);
+          continue;
+        }
+
+        const child = visible[at];
+
+        if (child instanceof Y.XmlElement && NodeApi.isElement(next)) {
+          this.writeMissingIn(write, child, next, [...path, index], editsNode);
+        }
+      }
+      if (missing.length === 0) return;
+    } else if (visible.some((child) => child.length > 0)) {
+      return;
+    }
+    if (!editsNode(path)) return;
+
+    const room = readPliteNodeFromYjs(this.root, node) as Element;
+    const location = createYjsPropertyLocationAt(
+      this.mirror,
+      path,
+      this.schemaRoot
+    );
+    const context = createYjsPropertyContext(element, {
+      ...createYjsPropertyLocationAt(
+        this.mirror,
+        parentPath(path),
+        this.schemaRoot
+      ),
+      path,
+    });
+
+    if (missing) {
+      for (const index of missing) {
+        const child = element.children[index];
+
+        insertYjsChild(
+          write,
+          node,
+          index,
+          createYjsNode(
+            child,
+            this.isSetValued,
+            createYjsPropertyContext(child, {
+              ...location,
+              path: [...path, index],
+            })
+          )
+        );
+      }
+    } else {
+      replaceYjsChildren(
+        write,
+        node,
+        element.children,
+        this.isSetValued,
+        location
+      );
+    }
+    setYjsElementAttributes(
+      node,
+      propertiesOf(room),
+      { ...propertiesOf(room), ...propertiesOf(element) },
+      (key) => this.isSetValued(element, key, context)
+    );
+  }
+
+  private isLiveInRoot(node: YjsNode): boolean {
+    if (node._item?.deleted) return false;
+
+    let current = node.parent;
+
+    while (current !== null && current !== this.root) {
+      if (current._item?.deleted) return false;
+      current = current.parent;
+    }
+
+    return current === this.root;
+  }
+
+  private lowerJoinsAndStructure(
+    write: YjsWrite,
+    change: DocumentChange,
+    expected: NodeList<Descendant>,
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+  ): MirrorLowering {
     const joined = this.lowerJoins(write, change, indexes().before);
     const afterJoins = joined
       ? joined.rest && { change: joined.rest, before: joined.middle }
@@ -2706,6 +3003,10 @@ export class YjsEventChangeBridge {
       return this.lowerRegions(write, change, expected, [], inPlace, before);
     }
 
+    const parts = this.regionPartsOf(change, expected, indexes);
+
+    if (parts) return this.lowerRegionParts(write, parts, expected, indexes);
+
     return this.lowerRegions(
       write,
       change,
@@ -2750,6 +3051,140 @@ export class YjsEventChangeBridge {
       }
     }
     return replaced;
+  }
+
+  /**
+   * The change's regions as parts each lowered on its own, so a region that
+   * keeps its element is written inside it whatever another region needs.
+   * Null for one region, a move, or a change whose top-level regions all
+   * replace in place already.
+   */
+  private regionPartsOf(
+    change: DocumentChange,
+    expected: NodeList<Descendant>,
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+  ) {
+    const committed = getInternalDocumentRootChange(change, this.rootKey);
+    const { after, before } = indexes();
+
+    if (!committed || this.replacesInPlace(change, expected, before)) {
+      return null;
+    }
+
+    const parts = splitChangeRegions(committed, before, (from, to) =>
+      this.lengths.span(from, to)
+    );
+
+    return parts && this.movesOf(change, before, after).length === 0
+      ? parts
+      : null;
+  }
+
+  private replacesInPlace(
+    change: DocumentChange,
+    expected: NodeList<Descendant>,
+    before: DocumentIndex
+  ) {
+    const regions = sparseLowerRegions(
+      change,
+      this.rootKey,
+      this.mirror,
+      expected,
+      this.lengths
+    );
+    const removed = this.replacedElements(change, before);
+
+    return (
+      regions !== null &&
+      regions.every((region) =>
+        canReplaceCompatibleYjsChildren(
+          this.root,
+          this.rootIndex.slice(region.beforeFrom, region.beforeTo),
+          this.mirror.slice(region.beforeFrom, region.beforeTo),
+          expected.slice(region.afterFrom, region.afterTo),
+          0,
+          (index) => removed.has(region.beforeFrom + index)
+        )
+      )
+    );
+  }
+
+  /**
+   * The change's relocations that move a node. A sibling that only shifts
+   * reads as a relocation too, but a move removes its node from inside one of
+   * the change's ranges.
+   */
+  private movesOf(
+    change: DocumentChange,
+    before: DocumentIndex,
+    after: DocumentIndex
+  ) {
+    const removed: Array<readonly [number, number]> = [];
+
+    getInternalDocumentRootChange(change, this.rootKey)?.iterChangedRanges(
+      (from, to) => {
+        if (from < to) removed.push([from, to]);
+      }
+    );
+
+    return getDocumentChangeRelocations(
+      change,
+      this.rootKey,
+      before,
+      after
+    ).filter(({ path }) => {
+      const range = before.nodeRange(path);
+
+      return removed.some(([from, to]) => from <= range.from && range.to <= to);
+    });
+  }
+
+  private lowerRegionParts(
+    write: YjsWrite,
+    parts: readonly ChangeRegionPart[],
+    expected: NodeList<Descendant>,
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+  ): YjsEventLowerResult {
+    let changedRanges = 0;
+    let inserted = 0;
+    let removed = 0;
+    let start = Number.POSITIVE_INFINITY;
+    let strategy: 'compatible' | 'range' = 'compatible';
+    let tokenLengthNodes = 0;
+
+    for (const [index, part] of parts.entries()) {
+      const last = index === parts.length - 1;
+      const next = last ? expected : (part.after.nodes as NodeList<Descendant>);
+      const result = this.lowerStructure(
+        write,
+        createInternalDocumentChange(new Map([[this.rootKey, part.change]])),
+        next,
+        () => ({
+          after: last ? indexes().after : part.after,
+          before: part.before,
+        })
+      );
+
+      if (result.kind !== 'lowered') return result;
+
+      this.setMirror(next);
+      changedRanges += result.changedRanges;
+      inserted += result.inserted;
+      removed += result.removed;
+      start = Math.min(start, result.start);
+      tokenLengthNodes += result.tokenLengthNodes;
+      if (result.strategy === 'range') strategy = 'range';
+    }
+
+    return {
+      changedRanges,
+      inserted,
+      kind: 'lowered',
+      removed,
+      start,
+      strategy,
+      tokenLengthNodes,
+    };
   }
 
   /**
@@ -3354,21 +3789,18 @@ export class YjsEventChangeBridge {
       stretch.parentPath.every((index, at) => path[at] === index)
         ? getDefined(path[depth]) - stretch.from
         : -1;
-    const movesPairInOrder = getDocumentChangeRelocations(
-      change,
-      this.rootKey,
-      before,
-      after
-    ).every(({ path, targetPath }) => {
-      const source = sources.indexOf(childOf(path));
+    const movesPairInOrder = this.movesOf(change, before, after).every(
+      ({ path, targetPath }) => {
+        const source = sources.indexOf(childOf(path));
 
-      return (
-        source !== -1 &&
-        places[source] === childOf(targetPath) &&
-        path.length === targetPath.length &&
-        path.every((index, at) => at <= depth || targetPath[at] === index)
-      );
-    });
+        return (
+          source !== -1 &&
+          places[source] === childOf(targetPath) &&
+          path.length === targetPath.length &&
+          path.every((index, at) => at <= depth || targetPath[at] === index)
+        );
+      }
+    );
 
     return movesPairInOrder ? { inserted, removed } : null;
   }

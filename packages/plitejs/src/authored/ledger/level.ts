@@ -119,7 +119,7 @@ type BlockSlot = Slot & {
   shows: Level | null;
 };
 
-const isLevelRun = (run: Run | null): run is LevelRun =>
+export const isLevelRun = (run: Run | null): run is LevelRun =>
   !!run && 'level' in run;
 
 const placesAt = (run: Run | LevelRun) =>
@@ -696,6 +696,7 @@ export class Level {
       outputLength,
       part,
       places: new ContainerPlaces(this, storedLength, outputLength),
+      spares: context.spares,
       step,
       storedLength,
       verdicts: context.verdicts,
@@ -772,6 +773,12 @@ export class Level {
     const filler = this.headRank(rank - 1);
 
     return (this.slots.at(filler).run?.part.min ?? 0) > 0 ? filler : rank;
+  }
+
+  protected pendReaches([fromA, toA]: ChangedRange, rank: number) {
+    const end = toA > fromA ? this.endOf(toA - 1) : fromA;
+
+    return this.reachStart(fromA) <= rank && rank < end;
   }
 
   protected pendRun(rank: number, context: RunContext) {
@@ -1784,7 +1791,7 @@ export class Level {
     return RootChange.fromSections(sections, data);
   }
 
-  private headRank(rank: number) {
+  protected headRank(rank: number) {
     return rank - this.slots.at(rank).offset;
   }
 
@@ -1802,7 +1809,7 @@ export class Level {
     return start;
   }
 
-  private endOf(rank: number) {
+  protected endOf(rank: number) {
     const slot = this.slots.at(rank);
 
     if (slot.run) return this.headRank(rank) + slot.run.nodes.length;

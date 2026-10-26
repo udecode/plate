@@ -34,11 +34,7 @@
       "export const BaseTableRowPlugin = definePlugin(PLUGINS.tableRow, {"
     ]
   },
-  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [corrections, on, read]": {
-    "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts": [
-      "export const ElementIdPlugin = definePlugin('elementId', {"
-    ]
-  },
+  "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [corrections, on, read]": {},
   "direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found [dataTransferFormats]": {
     "packages/platejs/src/docx/paste/lib/WordPastePlugin.ts": [
       "export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {"
@@ -85,7 +81,6 @@
     "packages/platejs/src/ai/react/AIChatPlugin.ts": [""],
     "packages/platejs/src/features/media/lib/image/BaseImagePlugin.ts": [""],
     "packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts": [""],
-    "packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts": [""],
     "packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts": [""]
   },
   "production extend-stage allowlist expects exact 1 audited chain but found 2; signatures did not match": {

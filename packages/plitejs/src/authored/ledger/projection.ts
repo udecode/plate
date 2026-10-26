@@ -10,13 +10,14 @@ import { movedRefusal } from '../refusal';
 import type { AuthoredResolveSchema } from '../tree/resolve';
 import {
   compose,
+  isLevelRun,
   keepsOwn,
   Level,
   type ResolvedWindow,
   settles,
   type WrittenList,
 } from './level';
-import { isBuilt, type RunContext } from './runs';
+import { isBuilt, type RunContext, readsRootSpares } from './runs';
 import { countLedgerWork, nodesIn } from './work';
 
 // Each block's own fields, and its text when it holds no block, so the same
@@ -154,14 +155,37 @@ export class RootProjection extends Level {
     this.projected = index;
   }
 
-  /**
-   * Move to `stored`, resolving again the runs a verdict changed at
-   * `touched`, in `stored`'s ranks, and every run when the schema changed.
-   * Given `written`, what a frame's commands wrote in this root, a lone
-   * pending window takes its slice of that root instead of resolving.
-   * Returns the change from the previous index, or null when the content
-   * did not move.
-   */
+  unpendedSpareReaders(stored: DocumentIndex, context: RunContext): number[] {
+    const { size } = this.slots;
+
+    if (size === 0) return [];
+
+    const ranges = this.stored.changedChildren(stored);
+    const readers: number[] = [];
+
+    for (const first of new Set([0, this.headRank(size - 1)])) {
+      const { run } = this.slots.at(first);
+
+      if (!run || isLevelRun(run) || !readsRootSpares(run.part, context)) {
+        continue;
+      }
+
+      let shift = 0;
+      let reached = false;
+
+      for (const range of ranges) {
+        const [fromA, toA, fromB, toB] = range;
+
+        reached = this.pendReaches(range, first);
+        if (reached || fromA > first) break;
+        shift += toB - fromB - (toA - fromA);
+      }
+      if (!reached) readers.push(first + shift);
+    }
+
+    return readers;
+  }
+
   sync(
     stored: DocumentIndex,
     context: RunContext,

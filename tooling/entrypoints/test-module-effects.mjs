@@ -29,6 +29,8 @@ export const testModuleEffects = {
     { reads: ['apps/www/src/__tests__/package-integration/docx/*.docx'] },
   'packages/platejs/src/html/server/index.ts':
     'loads linkedom from node_modules through createRequire',
+  'packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.collaboration.spec.ts':
+    { runs: ['packages/plitejs/src/authored/refusal.ts'] },
   'packages/platejs/test/public-package-import-smoke.spec.ts': {
     reads: ['packages/plitejs/package.json', 'packages/test/package.json'],
   },

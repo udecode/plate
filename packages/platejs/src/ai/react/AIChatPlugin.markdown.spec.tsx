@@ -11,6 +11,7 @@ import {
   schema,
   SelectionApi,
 } from '../../core';
+import { BaseBlockquotePlugin } from '../../features/basic-nodes';
 import {
   BaseTableCellPlugin,
   BaseTablePlugin,
@@ -83,6 +84,171 @@ describe('AIChatPlugin read.markdown', () => {
     expect(
       editor.plugin(AIChatPlugin).read.markdown({ type: 'block' }).trim()
     ).toBe('aX');
+  });
+
+  it('reads a selected block as the whole document’s proposed projection shows it', async () => {
+    const { AIChatPlugin } = await import('./AIChatPlugin');
+    const mark = (kind: 'delete' | 'join', change: string) => ({
+      at: 1,
+      author: 'bob',
+      change,
+      kind,
+    });
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseBlockquotePlugin,
+        AuthoredPlugin,
+        MarkdownPlugin,
+        AIChatPlugin,
+      ],
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'a' }] },
+        {
+          authored: [mark('join', 'J')],
+          type: 'paragraph',
+          children: [{ text: 'b' }],
+        },
+        {
+          authored: [mark('delete', 'D')],
+          type: 'paragraph',
+          children: [{ authored: [mark('delete', 'D')], text: 'x' }],
+        },
+        {
+          authored: [mark('delete', 'Q')],
+          type: 'blockquote',
+          children: [
+            {
+              authored: [mark('delete', 'Q')],
+              type: 'paragraph',
+              children: [{ authored: [mark('delete', 'Q')], text: 'q' }],
+            },
+          ],
+        },
+      ],
+    });
+    const readAt = (path: number[]) => {
+      editor.update.selection.set({
+        anchor: { path, offset: 0 },
+        focus: { path, offset: 1 },
+      });
+
+      return editor.plugin(AIChatPlugin).read.markdown({ type: 'block' });
+    };
+
+    expect([
+      readAt([1, 0]).trim(),
+      readAt([2, 0]).trim(),
+      readAt([3, 0, 0]).trim(),
+    ]).toEqual(['ab', '', '']);
+  });
+
+  it('reads the block a proposed view selects after a deleted one', async () => {
+    const { AIChatPlugin } = await import('./AIChatPlugin');
+    const mark = { at: 1, author: 'bob', change: 'D', kind: 'delete' };
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        AuthoredPlugin,
+        MarkdownPlugin,
+        AIChatPlugin,
+      ],
+      initialValue: [
+        {
+          authored: [mark],
+          type: 'paragraph',
+          children: [{ authored: [mark], text: 'gone' }],
+        },
+        { type: 'paragraph', children: [{ text: 'keep' }] },
+      ],
+    });
+    const proposed = createEditorView(editor, {
+      authored: { preview: 'proposed' },
+    });
+
+    editor.update.selection.set({
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 4 },
+    });
+
+    expect(
+      proposed.plugin(AIChatPlugin).read.markdown({ type: 'block' }).trim()
+    ).toBe('keep');
+  });
+
+  it('reads no block in a named root whose owner a pending deletion removes', async () => {
+    const { AIChatPlugin } = await import('./AIChatPlugin');
+    const RootHolderPlugin = definePlugin('tableRootHolder', {
+      schema: {
+        element: {
+          blockContent: true,
+          contentRoots: {
+            body: {
+              content: schema.content.type('table', {
+                default: { type: 'table' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          void: 'block',
+        },
+      },
+    });
+    const mark = { at: 1, author: 'bob', change: 'H', kind: 'delete' };
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseTablePlugin,
+        BaseTableRowPlugin,
+        BaseTableCellPlugin,
+        AuthoredPlugin,
+        MarkdownPlugin,
+        AIChatPlugin,
+        RootHolderPlugin,
+      ],
+      userId: 'alice',
+      selection: {
+        anchor: { offset: 0, path: [0, 0, 0, 0, 0], root: 'header' },
+        focus: { offset: 4, path: [0, 0, 0, 0, 0], root: 'header' },
+        kind: 'text',
+      },
+      initialValue: {
+        children: [
+          {
+            authored: [mark],
+            childRoots: { body: 'header' },
+            children: [{ authored: [mark], text: '' }],
+            type: 'tableRootHolder',
+          },
+          { type: 'paragraph', children: [{ text: 'after' }] },
+        ],
+        roots: {
+          header: [
+            {
+              children: [
+                {
+                  children: [
+                    {
+                      children: [
+                        { children: [{ text: 'cell' }], type: 'paragraph' },
+                      ],
+                      type: 'tableCell',
+                    },
+                  ],
+                  type: 'tableRow',
+                },
+              ],
+              type: 'table',
+            },
+          ],
+        },
+      },
+    });
+
+    expect(editor.plugin(AIChatPlugin).read.markdown({ type: 'block' })).toBe(
+      ''
+    );
   });
 
   it('maps a comment back into the exact authored view that submitted the selected heading', async () => {

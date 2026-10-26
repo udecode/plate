@@ -167,6 +167,12 @@ donor checkout as proof after the transplant.
   declaring one never changes the schema identity. The Yjs binding keeps each
   set in one top-level `Y.Map` and applies a transaction's records before its
   content.
+- A generated element property that declares `unique: true` never has one
+  value on two stored elements. Core gives a repeated holder a fresh value at
+  commit and load, and Suggesting writes the value in place, with no format
+  tag. Unlike a record set, `unique` counts in the schema contract and
+  fingerprint, because it changes what a suggestion stores, so editors that
+  disagree on it never share a room.
 - An unvalidated `property.json()` value is `EditorJsonValue`, and a narrower
   value type requires a runtime type predicate and a `validationVersion` on the
   property. Property meaning belongs to placement: `role: "metadata"` goes on

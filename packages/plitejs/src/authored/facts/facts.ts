@@ -1,4 +1,14 @@
-import { type NodeList, rootNodesOf } from '../../core/change/document-index';
+import {
+  type DocumentChange,
+  getInternalDocumentChangeRecords,
+} from '../../core/change/document-change';
+import {
+  type DocumentIndex,
+  NO_NODES,
+  type NodeList,
+  rootNodesOf,
+} from '../../core/change/document-index';
+import type { JsonEditorValue } from '../../core/change/tokens';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
 import {
   getRecord,
@@ -12,6 +22,7 @@ import {
 } from '../../core/record-store';
 import type { EditorDocumentRecords } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
+import { rootOf } from '../ledger/roots';
 import { countLedgerWork } from '../ledger/work';
 import { type IsLanded, splitHistoryOf } from '../tree/layers';
 import {
@@ -32,9 +43,13 @@ import {
   LANDED,
   parseContext,
   parseLanded,
+  parseReserve,
   parseVerdict,
+  RESERVES,
+  type ReserveRecord,
   type Verdict,
   VERDICTS,
+  verdictIncarnationsOf,
   verdictProbeOf,
 } from './records';
 
@@ -50,6 +65,8 @@ export type ReviewFacts = Readonly<{
     has: (incarnation: string) => boolean;
   }>;
   landed: IsLanded;
+  /** The spare blocks stored for `root`'s own content. */
+  reserves: (root: string) => readonly ReserveRecord[];
 }>;
 
 /** Where context records are read from: a document's, or a recording's that adds to them. */
@@ -158,6 +175,7 @@ const PARSERS: ReadonlyArray<
 > = [
   [VERDICTS, 'verdict', parseVerdict],
   [LANDED, 'landed write', parseLanded],
+  [RESERVES, 'spare block', parseReserve],
 ];
 
 const assertParsed = (
@@ -274,12 +292,14 @@ const NO_RECORD_FACTS: RecordFacts = Object.freeze({
   },
   hasVerdicts: false,
   landed: () => false,
+  reserves: () => [],
 });
 
 const recordFactsOf = (store: RecordStore): RecordFacts => {
   if (
     getRecordSetVersion(store, CONTEXTS) === null &&
     getRecordSetVersion(store, LANDED) === null &&
+    getRecordSetVersion(store, RESERVES) === null &&
     getRecordSetVersion(store, VERDICTS) === null
   ) {
     return NO_RECORD_FACTS;
@@ -297,6 +317,7 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
         verdictProbeOf(incarnation, verdict)
       );
     };
+    let reserves: Map<string, ReserveRecord[]> | null = null;
 
     facts = Object.freeze({
       contexts: Object.freeze({
@@ -324,6 +345,21 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
           (isEditingChange(member.change) ||
             hasVerdict(incarnationOf(member), 'accept'))
         );
+      },
+      reserves: (root: string) => {
+        if (!reserves) {
+          reserves = new Map();
+          for (const [, json] of getRecordEntries(store, RESERVES)) {
+            const record = JSON.parse(json) as ReserveRecord;
+
+            reserves.set(record.root, [
+              ...(reserves.get(record.root) ?? []),
+              record,
+            ]);
+          }
+        }
+
+        return reserves.get(root) ?? [];
       },
     });
     RECORD_FACTS.set(store, facts);
@@ -544,18 +580,23 @@ export const insertionsIn = (
   return summary;
 };
 
-export const insertionsOf = (value: Value): Insertions => {
+const rememberedInsertions = (value: Value) => {
   const roots = contentRootsOf(value);
   const cached = INSERTIONS.get(getDefined(roots.get('main')));
 
-  if (
-    cached &&
+  return cached &&
     cached.roots.size === roots.size &&
     [...roots].every(([root, nodes]) => cached.roots.get(root) === nodes)
-  ) {
-    return cached;
-  }
+    ? cached
+    : null;
+};
 
+export const insertionsOf = (value: Value): Insertions => {
+  const cached = rememberedInsertions(value);
+
+  if (cached) return cached;
+
+  const roots = contentRootsOf(value);
   const facts = factsOf(value);
   const counts = new Map<string, number>();
 
@@ -581,6 +622,105 @@ export const rememberInsertions = (
 
 export const primeInsertions = (value: Value) => {
   insertionsOf(value);
+};
+
+export const changedChildrenOf = (
+  change: DocumentChange,
+  root: string,
+  before: JsonEditorValue,
+  after: DocumentIndex
+): ReadonlyArray<readonly [number, number, number, number]> => {
+  if (change.createRoots.has(root) || change.deleteRoots.has(root)) {
+    return [
+      [
+        0,
+        change.createRoots.has(root) ? 0 : rootOf(before, root).size,
+        0,
+        after.size,
+      ],
+    ];
+  }
+
+  return rootOf(before, root).changedChildren(after);
+};
+
+const DECIDED = new WeakMap<
+  object,
+  Readonly<{ before: Value; decided: readonly string[] }>
+>();
+
+/**
+ * The incarnations a commit from `before` to `after` decides: each one a
+ * verdict `change` writes names, and each one a verdict names whose insertion
+ * count changed sign, since `outcomeOf` reads that count for a rejected
+ * format or deletion. It counts from the children `change` replaced and
+ * remembers `after`'s counts, so admission reads them and a second call for
+ * the same commit reads this one's result.
+ */
+export const decidedIn = (
+  before: JsonEditorValue,
+  after: JsonEditorValue,
+  change: DocumentChange,
+  indexOf: (root: string) => DocumentIndex
+): readonly string[] => {
+  const known = DECIDED.get(after);
+
+  if (known?.before === before) return known.decided;
+
+  const previous = insertionsOf(before);
+  const roots = contentRootsOf(after);
+  const beforeFacts = factsOf(before);
+  const facts = factsOf(after);
+  const added = new Map<string, number>();
+
+  for (const root of new Set([...previous.roots.keys(), ...roots.keys()])) {
+    const old = previous.roots.get(root) ?? NO_NODES;
+    const next = roots.get(root) ?? NO_NODES;
+
+    if (old === next) continue;
+    for (const [fromBefore, toBefore, from, to] of changedChildrenOf(
+      change,
+      root,
+      before,
+      indexOf(root)
+    )) {
+      for (const node of old.slice(fromBefore, toBefore)) {
+        addCounts(added, insertionsIn(node, beforeFacts), -1);
+      }
+      for (const node of next.slice(from, to)) {
+        addCounts(added, insertionsIn(node, facts), 1);
+      }
+    }
+  }
+
+  const writes = new Map<string, number | undefined>();
+  const flipped: string[] = [];
+
+  for (const [incarnation, count] of added) {
+    const was = previous.counts.get(incarnation) ?? 0;
+    const now = was + count;
+
+    writes.set(incarnation, now === 0 ? undefined : now);
+    // A replaced block takes its insertions away and back, so only an
+    // incarnation whose count changed sign across the commit flipped.
+    if (was > 0 !== now > 0 && facts.hasVerdict(incarnation)) {
+      flipped.push(incarnation);
+    }
+  }
+  if (!rememberedInsertions(after)) {
+    rememberInsertions(after, previous.counts.with(writes));
+  }
+
+  const decided = [
+    ...verdictIncarnationsOf(
+      getInternalDocumentChangeRecords(change).get(VERDICTS)?.keys() ?? []
+    ),
+    ...flipped,
+  ];
+
+  DECIDED.set(after, { before, decided });
+
+  return decided;
 };
 
 const MEMBERS = new WeakMap<ContextRecord, readonly MarkBase[]>();
@@ -679,6 +819,12 @@ const insertOf = (member: MarkBase): AuthoredMark => {
 };
 
 const NO_CLAIMS: readonly AuthoredMark[] = Object.freeze([]);
+
+/** The insertions the context `ctx` carries, its bases' included. */
+export const contextInsertsOf = (
+  facts: ContextLookup,
+  ctx: string
+): readonly AuthoredMark[] => membersIn(facts, ctx).map(insertOf);
 
 /** The members of a node's context it holds no own insertion of. */
 export const contextClaimsOf = (
@@ -787,6 +933,9 @@ export const isAccepted = (
 
 export const isRejected = (facts: ReviewFacts, mark: AuthoredMark) =>
   facts.hasVerdicts && outcomeOf(facts, mark) === 'reject';
+
+export const undecided = (facts: ReviewFacts, mark: AuthoredMark) =>
+  !isAccepted(facts, mark) && !isRejected(facts, mark);
 
 export const isSettledDeletion = (node: unknown, facts: ReviewFacts) =>
   readAuthoredMarks(node).some(

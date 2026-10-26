@@ -42,6 +42,8 @@ type TextHistoryGroup = Readonly<{
 }>;
 
 export type HistoryBatchGroup = Readonly<{
+  /** No later commit merges into the entry. */
+  closed?: true;
   native?: NativeHistoryGrouping;
   scope?: object;
 }> &

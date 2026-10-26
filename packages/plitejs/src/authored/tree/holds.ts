@@ -8,17 +8,12 @@ import {
   type CompiledEditorSchema,
   type CompiledSchemaContentProgram,
   getCompiledPropertyCandidates,
-  matchesCompiledSchemaTarget,
   resolveCompiledSchemaProperty,
   toCompiledTargetContext,
   tracksPlaces,
 } from '../../core/schema-compiler';
 import { countCoreWork } from '../../core/work';
-import type {
-  PropertyValueDescriptor,
-  SchemaTarget,
-} from '../../interfaces/schema';
-import { cutsOf } from './cuts';
+import type { PropertyValueDescriptor } from '../../interfaces/schema';
 import type { FormatTag } from './layers';
 import { AUTHORED_MARKS_KEY, readMembers } from './marks';
 
@@ -139,64 +134,6 @@ const heldTree = <N extends Readonly<Record<string, unknown>>>(
   return changed ? { ...held, children: next } : held;
 };
 
-const placeFree = (target: SchemaTarget | null): boolean => {
-  if (!target) return true;
-
-  switch (target.kind) {
-    case 'parent':
-    case 'root': {
-      return false;
-    }
-    case 'not': {
-      return placeFree(target.target);
-    }
-    case 'and':
-    case 'or': {
-      return target.targets.every(placeFree);
-    }
-    default: {
-      return true;
-    }
-  }
-};
-
-const EVERY_ELEMENT_KEYS = new WeakMap<
-  CompiledEditorSchema,
-  ReadonlySet<string>
->();
-
-/**
- * Metadata keys whose target holds on every element type at every place, such
- * as Plate's block id, so no retype or move can drop their values.
- */
-export const everyElementKeysOf = (schema: CompiledEditorSchema) => {
-  let keys = EVERY_ELEMENT_KEYS.get(schema);
-
-  if (!keys) {
-    const types = [...schema.elements.byType.keys()];
-
-    keys = new Set(
-      [...schema.properties.byId.values()].flatMap((property) =>
-        property.placement === 'element' &&
-        property.role === 'metadata' &&
-        typeof property.key === 'string' &&
-        placeFree(property.target) &&
-        types.every((type) =>
-          matchesCompiledSchemaTarget(schema, property.target, {
-            root: null,
-            type,
-          })
-        )
-          ? [property.key]
-          : []
-      )
-    );
-    EVERY_ELEMENT_KEYS.set(schema, keys);
-  }
-
-  return keys;
-};
-
 const hasValidator = (descriptor: PropertyValueDescriptor): boolean =>
   !!descriptor.validate ||
   (descriptor.kind === 'set' &&
@@ -223,7 +160,8 @@ const validates = (schema: CompiledEditorSchema) => {
   return found;
 };
 
-const tagValues = (tag: FormatTag): unknown[] => [
+/** Each value `tag` or a write in its history sets, which deciding them can leave on its key. */
+export const tagValues = (tag: FormatTag): unknown[] => [
   ...(tag.write.kind === 'set' ? [tag.write.value] : []),
   ...(tag.before === undefined ? [] : [tag.before]),
   ...(tag.base?.kind === 'set' ? [tag.base.value] : []),
@@ -288,9 +226,10 @@ const completionValueVerdicts = (schema: CompiledEditorSchema) => {
 
 /**
  * Records a verdict for every stored value of a validated key, those format
- * tags and cuts keep included, then adds the schema's verdicts for the values
- * completion can write, so resolution and the checks after it read verdicts
- * and call no validator.
+ * tags keep, the values elements show in place of stored ones and the nodes
+ * of spare blocks included, then adds the schema's
+ * verdicts for the values completion can write, so resolution and the checks
+ * after it read verdicts and call no validator.
  */
 export const coverStoredValues = (
   schema: CompiledEditorSchema,
@@ -327,11 +266,12 @@ export const coverStoredValues = (
         for (const value of tagValues(member)) {
           check(placement, member.key, value);
         }
-      }
-    }
-    for (const cut of cutsOf(record)) {
-      for (const [key, value] of Object.entries(cut.kept ?? {})) {
-        check('element', key, value);
+      } else if (member.kind === 'reserve') {
+        visit(member.node);
+      } else if (member.kind === 'as') {
+        for (const [key, value] of Object.entries(member.values)) {
+          check(placement, key, value);
+        }
       }
     }
     if (Array.isArray(record.children)) record.children.forEach(visit);

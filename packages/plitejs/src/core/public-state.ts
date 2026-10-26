@@ -111,7 +111,9 @@ import type {
   NodeInsertNodesOptions,
   NodeUnsetNodesOptions,
 } from '../interfaces/transforms/node';
+import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
+import { lawCheckEnabled } from '../internal/law-check';
 import { stripLocationRoots } from '../internal/root-location';
 import {
   insertNodes,
@@ -182,6 +184,7 @@ import {
 } from './change/classification';
 import {
   createInternalDocumentChange,
+  documentChangeWritesOnlyElementProperties,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
@@ -216,7 +219,12 @@ import {
   FRAMED_SPECS,
   runInEditorCommandFrame,
 } from './command-frame';
-import { createEditorCommit } from './commit';
+import {
+  createEditorCommit,
+  type EditorCommitSettlement,
+  getEditorCommitSnapshot,
+  getEditorCommitValue,
+} from './commit';
 import { isEditorContent } from './content';
 import { landTextWrite } from './content-landing';
 import { ContentSlice, createContentSliceFromFragment } from './content-slice';
@@ -227,6 +235,7 @@ import {
 import {
   type AdmittedDocument,
   admitEditorDocument,
+  DOCUMENT_SETTLED_TAG,
   documentAdmissionPoint,
   onlyDocumentAdmission,
   withoutRepairOrphans,
@@ -350,6 +359,7 @@ import { changedRootsOf } from './root-ownership';
 import {
   areEditorSchemaIdentitiesEqual,
   tracksPlaces,
+  uniquePropertiesOf,
 } from './schema-compiler';
 import {
   EditorNoncanonicalChangeError,
@@ -400,6 +410,13 @@ import {
 } from './transaction-values';
 import { copyTxMethodMarkers, isTxOnlyMethod } from './tx-only';
 import {
+  advanceUniqueIndex,
+  buildUniqueIndex,
+  repairCommittedUniqueValues,
+  sameUniqueIndex,
+  type UniqueIndex,
+} from './unique-values';
+import {
   getCurrentUpdateTags,
   popUpdateTagContext,
   pushUpdateTagContext,
@@ -435,7 +452,7 @@ import {
   setStatePresentation,
   type ViewPresentation,
 } from './view-presentation';
-import { countCoreWork } from './work';
+import { countCoreWork, readCoreWork, restoreCoreWork } from './work';
 
 export {
   hasListeners,
@@ -461,6 +478,7 @@ type TransactionSnapshot = {
   };
   admissionBase?: EditorDocumentValue;
   admissionRepair?: DocumentChange;
+  settlement?: EditorCommitSettlement;
   baseRuntimeIndexes: Record<string, () => SnapshotIndex>;
   baseSnapshots: Record<string, EditorSnapshot>;
   builder: ChangeDraft;
@@ -508,7 +526,8 @@ type TransactionSnapshot = {
   records: RecordStore;
   reservedRoots: ReadonlySet<string>;
   selectionInDroppedRoot: boolean;
-  runtimeIndexRollbacks: Map<SnapshotIndex, () => void>;
+  /** By what it moved, what puts each index or record back when the transaction fails. */
+  runtimeIndexRollbacks: Map<object, () => void>;
   selection: Selection;
   selectionRoot: string;
   skipCorrections: boolean;
@@ -1673,6 +1692,121 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
   });
 };
 
+const UNIQUE_INDEXES = new WeakMap<Editor, UniqueIndex>();
+const UNIQUE_INDEX_GUARDS = new WeakSet<Editor>();
+const HOLDER_CHANGE_KINDS = ['node', 'presence'] as const;
+
+const advanceUniqueIndexOnCommit = (owner: Editor) => {
+  if (UNIQUE_INDEX_GUARDS.has(owner)) return;
+  UNIQUE_INDEX_GUARDS.add(owner);
+  registerEditorTransactionGuard(owner, ({ commit }) => {
+    const index = UNIQUE_INDEXES.get(owner);
+
+    if (!index) return undefined;
+
+    const after = getEditorCommitValue(commit);
+    const before = getEditorCommitValue(commit, 'before');
+    const roots = new Set([
+      MAIN_ROOT_KEY,
+      ...Object.keys(after.roots ?? {}),
+      ...Object.keys(before.roots ?? {}),
+    ]);
+    const changed = new Map<string, Set<NodeKey>>();
+
+    for (const root of roots) {
+      const keys = new Set<NodeKey>();
+
+      for (const kind of HOLDER_CHANGE_KINDS) {
+        for (const nodeKey of commit.changed.nodeKeys(
+          kind,
+          root === MAIN_ROOT_KEY ? undefined : root
+        )) {
+          keys.add(nodeKey);
+        }
+      }
+      if (keys.size > 0) changed.set(root, keys);
+    }
+
+    return () => {
+      if (index.schema !== getCompiledEditorSchema(owner)) {
+        UNIQUE_INDEXES.delete(owner);
+
+        return;
+      }
+      advanceUniqueIndex(
+        index,
+        changed,
+        (root, nodeKey) => {
+          if (
+            root !== MAIN_ROOT_KEY &&
+            !Object.hasOwn(after.roots ?? {}, root)
+          ) {
+            return null;
+          }
+          const rootSnapshot = getEditorCommitSnapshot(commit, root);
+          const path = rootSnapshot.index.pathOf(nodeKey);
+
+          return path && { children: rootSnapshot.children, path };
+        },
+        commit.version,
+        Object.keys(before.roots ?? {}).filter(
+          (root) => !Object.hasOwn(after.roots ?? {}, root)
+        )
+      );
+      if (lawCheckEnabled()) {
+        const work = readCoreWork();
+        const built = buildUniqueIndex(
+          index.schema,
+          after,
+          commit.version,
+          (root) => getEditorCommitSnapshot(commit, root).index
+        );
+
+        restoreCoreWork(work);
+        if (!sameUniqueIndex(index, built)) {
+          failInvariant(
+            `The unique index a commit advanced to version ${commit.version} differs from one built from the document it published.`
+          );
+        }
+      }
+    };
+  });
+};
+
+const uniqueIndexOf = (
+  editor: Editor,
+  stored: EditorDocumentValue,
+  version: number,
+  keysOf: (root: string) => SnapshotIndex
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const schema = getCompiledEditorSchema(editor);
+  const current = UNIQUE_INDEXES.get(owner);
+
+  if (current?.schema === schema && current.version === version) {
+    return current;
+  }
+
+  const index = buildUniqueIndex(schema, stored, version, keysOf);
+
+  UNIQUE_INDEXES.set(owner, index);
+  advanceUniqueIndexOnCommit(owner);
+
+  return index;
+};
+
+export const seedUniqueIndex = (editor: Editor) => {
+  if (uniquePropertiesOf(getCompiledEditorSchema(editor)).size === 0) return;
+
+  uniqueIndexOf(
+    editor,
+    getEditorDocumentValue(editor),
+    getSnapshotVersion(editor),
+    (root) =>
+      withEditorRootChildren(editor, root, () => getSnapshot(editor)).index
+  );
+};
+
 const admitTransactionDraft = (editor: Editor) => {
   const snapshot = getTransactionSnapshot(editor);
 
@@ -1681,37 +1815,28 @@ const admitTransactionDraft = (editor: Editor) => {
   const admission = onlyDocumentAdmission(
     getPluginContributions(editor, documentAdmissionPoint)
   );
+  const schema = getCompiledEditorSchema(editor);
+  const unique = uniquePropertiesOf(schema).size > 0;
 
-  if (!admission) return;
+  if (!admission && !unique) return;
 
-  let before = getChangeValue(
+  const stored = getChangeValue(
     snapshot.roots,
     snapshot.records
   ) as EditorDocumentValue;
-  let { change } = snapshot.activeChange;
-
-  for (let pass = 0; ; pass += 1) {
-    const after = snapshot.builder.value as EditorDocumentValue;
-    const repaired = admission.commit({
-      after,
-      before,
-      change,
-      editor,
-      indexOf: (root) => snapshot.builder.getIndex(root),
-    });
-
-    if (!repaired) return;
-    if (pass === 2) {
-      throw new Error('Document admission repaired its own repair twice.');
-    }
-    const repair = withoutRepairOrphans(
-      getCompiledEditorSchema(editor),
-      after,
-      {
-        change: repaired,
-        value: repaired.apply(after),
-      }
-    ).change;
+  const collaboration =
+    getActiveEditorUpdateTags(editor).includes('collaboration');
+  const replaces =
+    snapshot.annotations.get(documentReplacement.key)?.value === true;
+  const loads = replaces && !collaboration;
+  const applyRepair = (
+    after: EditorDocumentValue,
+    repaired: DocumentChange
+  ) => {
+    const repair = withoutRepairOrphans(schema, after, {
+      change: repaired,
+      value: repaired.apply(after),
+    }).change;
 
     applyTransactionSpecDocumentChangeStep(
       editor,
@@ -1727,12 +1852,98 @@ const admitTransactionDraft = (editor: Editor) => {
         selectionMapping: 'representation',
       });
     }
-    before = after;
-    change = constructed ? repair.compose(constructed.change) : repair;
+    const change = constructed ? repair.compose(constructed.change) : repair;
+
     snapshot.admissionBase ??= after;
     snapshot.admissionRepair =
       snapshot.admissionRepair?.compose(change) ?? change;
+
+    return change;
+  };
+  const admit = (from: EditorDocumentValue, by: DocumentChange) => {
+    if (!admission) return null;
+    let before = from;
+    let change = by;
+    let repairs: DocumentChange | null = null;
+
+    for (let pass = 0; ; pass += 1) {
+      const after = snapshot.builder.value as EditorDocumentValue;
+      const repaired = admission.commit({
+        after,
+        before,
+        change,
+        editor,
+        indexOf: (root) => snapshot.builder.getIndex(root),
+        loads,
+      });
+
+      if (!repaired) return repairs;
+      if (pass === 2) {
+        throw new Error('Document admission repaired its own repair twice.');
+      }
+      change = applyRepair(after, repaired);
+      repairs = repairs ? repairs.compose(change) : change;
+      before = after;
+    }
+  };
+
+  admit(stored, snapshot.activeChange.change);
+  if (unique) {
+    const after = snapshot.builder.value as EditorDocumentValue;
+    const renamed = repairCommittedUniqueValues({
+      after,
+      afterIndexOf: (root) => snapshot.builder.getIndex(root),
+      afterKeysOf: (root) =>
+        retainTransactionSnapshotIndex(editor, snapshot, root),
+      change: snapshot.builder.change,
+      index: () =>
+        uniqueIndexOf(
+          editor,
+          stored,
+          snapshot.previousVersion,
+          (root) =>
+            snapshot.baseSnapshots[root]?.index ??
+            buildSnapshotIndex(
+              getEditorRuntimeOwner(editor),
+              getDocumentRootChildren(stored, root)
+            )
+        ),
+      keepFirst: collaboration || replaces,
+      schema,
+      stored,
+    });
+
+    if (renamed) admit(after, applyRepair(after, renamed));
   }
+  if (!admission?.settle) return;
+
+  const admitted = snapshot.builder.value as EditorDocumentValue;
+  const settled = admission.settle(admitted, schema, {
+    before: stored,
+    change: snapshot.builder.change,
+    editor,
+    indexOf: (root) => snapshot.builder.getIndex(root),
+  });
+
+  if (!settled) return;
+  applyEditorUpdateTag(snapshot.tags, DOCUMENT_SETTLED_TAG);
+
+  const settlement = applyRepair(admitted, settled);
+  const closing = admit(admitted, settlement);
+  const change = closing ? settlement.compose(closing) : settlement;
+
+  if (!documentChangeWritesOnlyElementProperties(change, admitted)) {
+    reportEditorLifecycleError({
+      cause: new Error(
+        'The settle stage wrote more than element properties, so history replays it.'
+      ),
+      editor,
+      phase: 'after-commit',
+      pluginName: '$editor',
+    });
+    return;
+  }
+  snapshot.settlement = { admitted, change };
 };
 
 /** Reject an external side effect while an editor transaction is speculative. */
@@ -11602,6 +11813,7 @@ export const runEditorTransaction = <R>(
             const change = profileCoreDuration('build-change', () =>
               createEditorCommit(
                 {
+                  settlement: snapshot.settlement,
                   after: afterSnapshot,
                   afterValue,
                   annotations: Object.fromEntries(
@@ -11767,6 +11979,7 @@ export const runEditorTransaction = <R>(
           for (const publishPrepared of publications) publishPrepared();
           pluginPublication?.finalize();
           if (pluginPublication) {
+            seedUniqueIndex(editor);
             for (const staged of snapshot.pluginReconfigurations.values()) {
               staged.onPublished?.(pluginPublication.cleanup);
             }

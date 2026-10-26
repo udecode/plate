@@ -1,9 +1,10 @@
 import {
   createInternalDocumentChange,
-  type DocumentChange,
+  DocumentChange,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
+  valueRootIndex,
 } from '../../core/change/document-change';
 import {
   type DocumentIndex,
@@ -25,12 +26,24 @@ import {
   type JsonNode,
   PreparedTokenSlice,
 } from '../../core/change/tokens';
-import type { DocumentAdmission } from '../../core/document-admission';
+import type {
+  DocumentAdmission,
+  DocumentSettleCommit,
+} from '../../core/document-admission';
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
-import { getActiveEditorUpdateTags } from '../../core/public-state';
-import { getValueRecords, recordOpsBetween } from '../../core/record-store';
+import {
+  getActiveEditorUpdateTags,
+  getTransactionSnapshot,
+} from '../../core/public-state';
+import {
+  deriveValue,
+  getValueRecords,
+  NO_RECORD_OPS,
+  recordOpsBetween,
+} from '../../core/record-store';
+import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import type { EditorDocumentValue } from '../../interfaces/editor';
 import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
@@ -41,45 +54,35 @@ import {
   storedResolveSchemaOf,
 } from '../resolve-schema';
 import { relinkCuts } from '../tree/cuts';
+import { quietCommit } from '../tree/holders';
 import type { KeyReading } from '../tree/layers';
 import {
   AuthoredMarkError,
   createAuthoredMarksValidator,
   isAuthoredSetValued,
 } from '../tree/marks';
+import { ShownBook } from '../tree/readiness';
+import {
+  claimSitesOf,
+  NO_SPARE_WRITES,
+  sparesFor,
+  storesSpares,
+  withReadableStorage,
+  withSpareWrites,
+} from '../tree/reserves';
+import { type SettledBlocks, settleReady } from '../tree/shown';
 import { compactClaims, type TopLevelIndicesByRoot } from './compact';
 import {
-  addCounts,
   assertRecordStore,
   assertRecordWrites,
+  changedChildrenOf,
   contentRootsOf,
+  decidedIn,
   factsOf,
-  insertionsIn,
   insertionsOf,
-  rememberInsertions,
 } from './facts';
-import { CONTEXTS, VERDICTS, verdictIncarnationsOf } from './records';
+import { CONTEXTS, reserveDropsOf } from './records';
 import { keyReadingOf, repairKeys, settleValue } from './settle';
-
-const changedChildren = (
-  change: DocumentChange,
-  root: string,
-  before: JsonEditorValue,
-  after: DocumentIndex
-): ReadonlyArray<readonly [number, number, number, number]> => {
-  if (change.createRoots.has(root) || change.deleteRoots.has(root)) {
-    return [
-      [
-        0,
-        change.createRoots.has(root) ? 0 : rootOf(before, root).size,
-        0,
-        after.size,
-      ],
-    ];
-  }
-
-  return rootOf(before, root).changedChildren(after);
-};
 
 /**
  * The children of `after` that admission settles: each replaced child and
@@ -229,7 +232,7 @@ type Props = Readonly<Record<string, unknown>> & {
 const ownProps = ({ children: _children, text: _text, ...props }: Props) =>
   props;
 
-const compactionChange = (
+const propertiesChange = (
   before: JsonEditorValue,
   after: JsonEditorValue,
   blocks?: TopLevelIndicesByRoot
@@ -279,6 +282,47 @@ const compactionChange = (
   }
 
   return changes.size === 0 ? null : createInternalDocumentChange(changes);
+};
+
+/**
+ * The change that replaces, in each root, the top-level block at each rank
+ * with the block it becomes, with the index of each root it changes.
+ */
+const blocksChange = (
+  replaced: SettledBlocks,
+  indexOf: (root: string) => DocumentIndex
+) => {
+  const changes = new Map<string, RootChange>();
+  const indexes = new Map<string, DocumentIndex>();
+
+  for (const [root, blocks] of replaced) {
+    let index = indexOf(root);
+    let composed: RootChange | null = null;
+
+    for (const [child, { after, before }] of [...blocks].sort(
+      ([left], [right]) => left - right
+    )) {
+      const step = getDefined(
+        getInternalDocumentRootChange(
+          DocumentChange.between(
+            { children: [before] },
+            { children: [after] },
+            { isSetValued: isAuthoredSetValued }
+          ),
+          'main'
+        )
+      ).embed(index.length, index.childPosition([], child));
+
+      index = step.apply(index);
+      composed = composed ? composed.compose(step) : step;
+    }
+    if (composed) {
+      changes.set(root, composed);
+      indexes.set(root, index);
+    }
+  }
+
+  return { changes, indexes };
 };
 
 const repairOf = (
@@ -360,8 +404,38 @@ const assertDroppedContextsUnused = (
   }
 };
 
+const settledLoad = (
+  document: EditorDocumentValue,
+  schema: CompiledEditorSchema
+) => {
+  assertRecordStore(getValueRecords(document));
+  createDocumentMarksValidator().validate(document);
+
+  const compacted = compactClaims(document);
+  const settlement = settleValue(compacted, factsOf(compacted), 'document', {
+    resolveSchema: () =>
+      storedResolveSchemaOf(schema, compacted, { generates: true }),
+    schema,
+  });
+  const value = settlement.value ?? compacted;
+
+  if (value === document) return null;
+
+  const change = repairOf(
+    document,
+    value,
+    [
+      compacted === document ? null : propertiesChange(document, compacted),
+      settlement.change,
+    ],
+    (root) => rootOf(document, root)
+  );
+
+  return { change, value: change.apply(document) };
+};
+
 export const authoredAdmission: DocumentAdmission = {
-  commit: ({ after, before, change, editor, indexOf }) => {
+  commit: ({ after, before, change, editor, indexOf, loads }) => {
     const records = getInternalDocumentChangeRecords(change);
     const dropped = new Set(
       [...(records.get(CONTEXTS) ?? [])].flatMap(([ctx, json]) =>
@@ -373,51 +447,25 @@ export const authoredAdmission: DocumentAdmission = {
     if (dropped.size > 0) assertDroppedContextsUnused(after, dropped);
 
     const previous = insertionsOf(before);
-    const added = new Map<string, number>();
+    // A verdict, or an incarnation a verdict names starting or stopping to
+    // insert, settles claims in every block naming that incarnation.
+    const decided = decidedIn(before, after, change, indexOf);
+    const { counts } = insertionsOf(after);
     const roots = contentRootsOf(after);
     const scope = new Map<string, readonly number[]>();
-    const beforeFacts = factsOf(before);
     const facts = factsOf(after);
 
     for (const root of new Set([...previous.roots.keys(), ...roots.keys()])) {
-      const old = previous.roots.get(root) ?? NO_NODES;
       const next = roots.get(root) ?? NO_NODES;
 
-      if (old === next) continue;
+      if ((previous.roots.get(root) ?? NO_NODES) === next) continue;
 
-      const ranges = changedChildren(change, root, before, indexOf(root));
+      const ranges = changedChildrenOf(change, root, before, indexOf(root));
 
-      for (const [fromBefore, toBefore, from, to] of ranges) {
-        for (const node of old.slice(fromBefore, toBefore)) {
-          addCounts(added, insertionsIn(node, beforeFacts), -1);
-        }
-        for (const node of next.slice(from, to)) {
-          addCounts(added, insertionsIn(node, facts), 1);
-        }
-      }
       if (next.length > 0 && ranges.length > 0) {
         scope.set(root, childrenAround(ranges, next.length));
       }
     }
-
-    const writes = new Map<string, number | undefined>();
-    const flipped: string[] = [];
-
-    for (const [incarnation, count] of added) {
-      const was = previous.counts.get(incarnation) ?? 0;
-      const now = was + count;
-
-      writes.set(incarnation, now === 0 ? undefined : now);
-      // A replaced block takes its insertions away and back, so only an
-      // incarnation whose count changed sign across the commit flipped.
-      if (was > 0 !== now > 0 && facts.hasVerdict(incarnation)) {
-        flipped.push(incarnation);
-      }
-    }
-
-    const counts = previous.counts.with(writes);
-
-    rememberInsertions(after, counts);
 
     const repairs = new Map<string, RootChange>();
 
@@ -445,12 +493,6 @@ export const authoredAdmission: DocumentAdmission = {
     const replayed = replay ? replay.apply(after) : after;
     const compacted = compactClaims(replayed, scope);
     const compactedFacts = factsOf(compacted);
-    // A verdict, or an incarnation a verdict names starting or stopping to
-    // insert, settles claims in every block naming that incarnation.
-    const decided = [
-      ...verdictIncarnationsOf(records.get(VERDICTS)?.keys() ?? []),
-      ...flipped,
-    ];
     const settled = new Map(
       [...scope].map(([root, at]) => [root, new Set(at)])
     );
@@ -488,58 +530,135 @@ export const authoredAdmission: DocumentAdmission = {
       }
     }
 
+    const schema = getCompiledEditorSchema(editor);
     const settlement = settleValue(
       compacted,
       { ...compactedFacts, insertedIncarnations: () => counts },
       settled,
       {
-        resolveSchema: () => authoredResolveSchemaOf(editor),
+        resolveSchema: () =>
+          authoredResolveSchemaOf(editor, { generates: loads }),
         returnsHeld: true,
         restoreMissingFormats,
-        schema: getCompiledEditorSchema(editor),
+        schema,
       }
     );
     const admitted = settlement.value ?? compacted;
+    // A replacement loads its document, whose pending changes may lack spares
+    // or hold storage the schema no longer reads.
+    const readable = loads ? withReadableStorage(admitted, schema) : admitted;
+    const spares = loads
+      ? sparesFor(readable, schema, claimSitesOf(readable))
+      : NO_SPARE_WRITES;
+    const drops = reserveDropsOf(getValueRecords(readable), change.deleteRoots);
+    const spared = withSpareWrites(
+      drops === NO_RECORD_OPS ? readable : deriveValue(readable, {}, drops),
+      spares
+    );
 
-    return admitted === after
+    return spared === after
       ? null
       : repairOf(
           after,
-          admitted,
+          spared,
           [
             replay,
             compacted === replayed
               ? null
-              : compactionChange(replayed, compacted, scope),
+              : propertiesChange(replayed, compacted, scope),
             settlement.change,
+            spared === admitted ? null : propertiesChange(admitted, spared),
           ],
           indexOf
         );
   },
+  // A document whose pending changes lack spares gets them, and storage the
+  // schema no longer reads leaves, as a repair.
   load: (document, schema) => {
-    assertRecordStore(getValueRecords(document));
-    createDocumentMarksValidator().validate(document);
-
-    const compacted = compactClaims(document);
-    const facts = factsOf(compacted);
-    const settlement = settleValue(compacted, facts, 'document', {
-      resolveSchema: () => storedResolveSchemaOf(schema, compacted),
-      schema,
-    });
-    const value = settlement.value ?? compacted;
-
-    if (value === document) return null;
-
-    const change = repairOf(
-      document,
-      value,
-      [
-        compacted === document ? null : compactionChange(document, compacted),
-        settlement.change,
-      ],
-      (root) => rootOf(document, root)
+    const settled = settledLoad(document, schema);
+    const base = settled?.value ?? document;
+    const readable = withReadableStorage(base, schema);
+    const spared = withSpareWrites(
+      readable,
+      sparesFor(readable, schema, claimSitesOf(readable))
     );
 
-    return { change, value: change.apply(document) };
+    if (spared === base) return settled;
+
+    const spares = DocumentChange.between(base, spared, {
+      isSetValued: isAuthoredSetValued,
+    });
+
+    return {
+      change: settled ? settled.change.compose(spares) : spares,
+      value: spared,
+    };
   },
+  settle: (value, schema, commit) => {
+    if (!storesSpares(schema) || (commit && quietCommit(value, commit))) {
+      return null;
+    }
+
+    const ledger =
+      commit && getReviewLedger(getEditorRuntimeOwner(commit.editor));
+
+    return settleShownValues(
+      value,
+      schema,
+      ledger ? commit : null,
+      ledger ? ledger.shown : null
+    );
+  },
+};
+
+const NO_DECIDED: readonly string[] = [];
+
+export const settleShownValues = (
+  value: EditorDocumentValue,
+  schema: CompiledEditorSchema,
+  commit: DocumentSettleCommit | null,
+  book: ShownBook | null
+) => {
+  const indexes = new Map<string, DocumentIndex>();
+  // A value without a built index gets new nodes from each index built over
+  // it, and settlement finds the blocks it read by identity.
+  const indexOf = commit
+    ? commit.indexOf
+    : (root: string) => {
+        let index = indexes.get(root);
+
+        if (!index) {
+          index = valueRootIndex(value, root);
+          indexes.set(root, index);
+        }
+
+        return index;
+      };
+  const record = book ?? new ShownBook();
+
+  record.begin(
+    book && commit
+      ? getTransactionSnapshot(commit.editor)?.runtimeIndexRollbacks
+      : undefined
+  );
+
+  const ready = record.ready(
+    value,
+    schema,
+    indexOf,
+    book && commit
+      ? decidedIn(commit.before, value, commit.change, commit.indexOf)
+      : NO_DECIDED
+  );
+  const settled = ready && settleReady(value, schema, ready, indexOf);
+
+  if (!settled) return null;
+
+  const { changes, indexes: after } = blocksChange(settled, indexOf);
+
+  // The settlement changes only blocks, so the record reads its facts from
+  // the document it admitted.
+  book?.settled(value, schema, (root) => after.get(root) ?? indexOf(root));
+
+  return createInternalDocumentChange(changes);
 };

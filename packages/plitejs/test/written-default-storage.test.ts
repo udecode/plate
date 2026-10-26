@@ -264,6 +264,310 @@ describe('written default storage', () => {
     );
   });
 
+  describe('a schema whose blocks get generated ids', () => {
+    const contractWith = (
+      id: string,
+      properties: Parameters<typeof defineEditorSchema>[1]['properties']
+    ) => {
+      const plugin = defineEditorSchema(`schema:${id}`, {
+        elements: { paragraph: { content: schema.content.text() } },
+        id,
+        properties,
+        root: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
+        unknown: 'reject',
+        version: 1,
+      });
+
+      return createEditorSchemaContract(
+        compileEditorSchemaContributions([
+          { contribution: plugin.schema, pluginName: plugin.name },
+        ])
+      );
+    };
+    const generated = () => property.string({ generate: () => 'g' });
+    const blockId = schema.elementProperty('id', generated(), {
+      copy: 'drop',
+      role: 'metadata',
+      split: 'drop',
+      target: target.group('element'),
+      typeChange: 'preserve-if-allowed',
+    });
+    const bold = schema.textProperty(
+      'bold',
+      property.boolean({ default: false, omitDefault: true })
+    );
+
+    it('stores at revision 2 with a new fingerprint, while a text generator alone keeps its contract', () => {
+      const element = contractWith('storage-revision-element-id', [blockId]);
+      const text = contractWith('storage-revision-text-id', [
+        schema.textProperty('tid', generated()),
+      ]);
+
+      // Both fingerprints are the ones ee0b38ca07 computed for these schemas.
+      assert.deepEqual(
+        {
+          element: [
+            element.storageRevision,
+            element.fingerprint === 'fnv1a64:cf928edda54f476d',
+          ],
+          text: [text.storageRevision, text.fingerprint],
+        },
+        {
+          element: [2, false],
+          text: [undefined, 'fnv1a64:14efa1f8feacd63c'],
+        }
+      );
+    });
+
+    it('needs a migration across revision 2 either way', () => {
+      const written = contractWith('storage-revision-written', [bold]);
+      const spared = contractWith('storage-revision-written', [bold, blockId]);
+      const revisionChange = (previous: unknown, next: unknown) =>
+        diffEditorSchemaContracts(previous, next).changes.find(
+          ({ kind }) => kind === 'storage-revision-changed'
+        );
+
+      assert.deepEqual(
+        [revisionChange(written, spared), revisionChange(spared, written)],
+        [
+          {
+            from: '1',
+            impact: 'migration-required',
+            kind: 'storage-revision-changed',
+            path: 'storageRevision',
+            to: '2',
+          },
+          {
+            from: '2',
+            impact: 'migration-required',
+            kind: 'storage-revision-changed',
+            path: 'storageRevision',
+            to: '1',
+          },
+        ]
+      );
+    });
+
+    const enter = (split: 'preserve' | undefined, offsetPath: number[]) => {
+      let made = 0;
+      const ids = inlineSchema(`written-defaults-enter-${split ?? 'none'}`, [
+        schema.elementProperty(
+          'gid',
+          property.string({
+            generate: () => {
+              made += 1;
+
+              return `g${made}`;
+            },
+          }),
+          {
+            role: 'metadata',
+            target: target.types(['link', 'paragraph']),
+            ...(split ? { split } : {}),
+          }
+        ),
+      ]);
+      const editor = editorFor(ids, [
+        {
+          children: [
+            { text: 'ab' },
+            { children: [{ text: 'cd' }], gid: 'l1', type: 'link' },
+            { text: '' },
+          ],
+          gid: 'p1',
+          type: 'paragraph',
+        },
+      ]);
+      const at = { offset: 1, path: offsetPath };
+
+      editor.update((tx) => {
+        tx.selection.set({ anchor: at, focus: at });
+        tx.command(editorCommands.insertBreak);
+      });
+
+      return editor.read.children();
+    };
+
+    const fresh = (children: unknown) =>
+      JSON.parse(
+        JSON.stringify(children, (key, value) =>
+          key === 'gid' && value !== 'p1' && value !== 'l1' ? 'fresh' : value
+        )
+      );
+
+    it('gives the second half of an Enter a fresh generated id unless the id keeps it on split', () => {
+      const halves = (split: 'preserve' | undefined) => ({
+        inLink: fresh(enter(split, [0, 1, 0])),
+        inText: fresh(enter(split, [0, 0])),
+      });
+
+      assert.deepEqual(
+        [halves(undefined), halves('preserve')],
+        [
+          {
+            inLink: [
+              {
+                children: [
+                  { text: 'ab' },
+                  { children: [{ text: 'c' }], gid: 'l1', type: 'link' },
+                  { text: '' },
+                ],
+                gid: 'p1',
+                type: 'paragraph',
+              },
+              {
+                children: [
+                  { text: '' },
+                  { children: [{ text: 'd' }], gid: 'fresh', type: 'link' },
+                  { text: '' },
+                ],
+                gid: 'fresh',
+                type: 'paragraph',
+              },
+            ],
+            inText: [
+              { children: [{ text: 'a' }], gid: 'p1', type: 'paragraph' },
+              {
+                children: [
+                  { text: 'b' },
+                  { children: [{ text: 'cd' }], gid: 'l1', type: 'link' },
+                  { text: '' },
+                ],
+                gid: 'fresh',
+                type: 'paragraph',
+              },
+            ],
+          },
+          {
+            inLink: [
+              {
+                children: [
+                  { text: 'ab' },
+                  { children: [{ text: 'c' }], gid: 'l1', type: 'link' },
+                  { text: '' },
+                ],
+                gid: 'p1',
+                type: 'paragraph',
+              },
+              {
+                children: [
+                  { text: '' },
+                  { children: [{ text: 'd' }], gid: 'l1', type: 'link' },
+                  { text: '' },
+                ],
+                gid: 'p1',
+                type: 'paragraph',
+              },
+            ],
+            inText: [
+              { children: [{ text: 'a' }], gid: 'p1', type: 'paragraph' },
+              {
+                children: [
+                  { text: 'b' },
+                  { children: [{ text: 'cd' }], gid: 'l1', type: 'link' },
+                  { text: '' },
+                ],
+                gid: 'p1',
+                type: 'paragraph',
+              },
+            ],
+          },
+        ]
+      );
+    });
+
+    it('gives the second half of an Enter a fresh value of a generated property its element declares', () => {
+      let made = 0;
+      const gid = property.string({
+        generate: () => {
+          made += 1;
+
+          return `g${made}`;
+        },
+      });
+      const editor = editorFor(
+        defineEditorSchema('written-defaults-enter-element', {
+          elements: {
+            link: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+              inline: true,
+              properties: { gid },
+            },
+            paragraph: {
+              content: schema.content.any(
+                [schema.content.text(), schema.content.type('link')],
+                { default: 'text', min: 1 }
+              ),
+              properties: { gid },
+            },
+          },
+          id: 'written-defaults-enter-element',
+          root: schema.content.types(['paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
+          unknown: 'preserve',
+          version: 1,
+        }),
+        [
+          {
+            children: [
+              { text: 'ab' },
+              { children: [{ text: 'cd' }], gid: 'l1', type: 'link' },
+              { text: '' },
+            ],
+            gid: 'p1',
+            type: 'paragraph',
+          },
+        ]
+      );
+      const at = { offset: 1, path: [0, 1, 0] };
+
+      editor.update((tx) => {
+        tx.selection.set({ anchor: at, focus: at });
+        tx.command(editorCommands.insertBreak);
+      });
+
+      assert.deepEqual(fresh(editor.read.children()), [
+        {
+          children: [
+            { text: 'ab' },
+            { children: [{ text: 'c' }], gid: 'l1', type: 'link' },
+            { text: '' },
+          ],
+          gid: 'p1',
+          type: 'paragraph',
+        },
+        {
+          children: [
+            { text: '' },
+            { children: [{ text: 'd' }], gid: 'fresh', type: 'link' },
+            { text: '' },
+          ],
+          gid: 'fresh',
+          type: 'paragraph',
+        },
+      ]);
+    });
+
+    it('reads a contract at revision 2 and refuses one at a revision it does not know', () => {
+      const contract = JSON.parse(
+        JSON.stringify(contractWith('storage-revision-read', [blockId]))
+      );
+
+      assert.deepEqual(
+        [
+          readEditorSchemaContract(contract)?.storageRevision,
+          readEditorSchemaContract({ ...contract, storageRevision: 3 }),
+        ],
+        [2, undefined]
+      );
+    });
+  });
+
   it('keeps a filled default active in its exclusive group, as next does', () => {
     const tone = schema.property.exclusive('written-defaults-filled-tone');
     const Filled = defineEditorSchema('written-defaults-filled', {

@@ -7,24 +7,33 @@ import {
   readBaseline,
 } from '../../../tooling/scripts/finding-baseline.mjs';
 import { expandContexts } from '../src/authored/facts/compact';
-import type { LandedRecord } from '../src/authored/facts/records';
-import type { AuthoredMark } from '../src/authored/tree/marks';
-import type { AuthoredResolution } from '../src/authored/tree/resolve';
+import {
+  type LandedRecord,
+  LANDED as LANDED_RECORDS,
+  parseLanded,
+  RESERVES,
+  VERDICTS,
+} from '../src/authored/facts/records';
+import type { AuthoredMark, AuthoredMember } from '../src/authored/tree/marks';
 import type { JsonNode } from '../src/core/change/tokens';
+import { ElementGenerationMaskedError } from '../src/core/editor-schema';
+import { recordsOf, reviewRecords } from '../test/support/authored';
 import {
   admissionOf,
   all,
   type Block2,
   decideGiveback,
+  decideIn,
   decisionAdmission,
   EDITING,
   type GivebackOp,
   givebackRead,
   givebackStart,
+  generatedQuotes,
+  ID_PLACES,
+  type IdPlaces,
   LANDED,
   type LinkHalf,
-  generatedQuotesEditor,
-  generatedQuotesSchema,
   quotesEditor,
   quotesSchema,
   recordGiveback,
@@ -54,16 +63,20 @@ type Option =
   | 'align'
   | 'align-center'
   | 'delete'
+  | 'delete-spare'
   | 'insert'
   | 'join'
   | 'move'
+  | 'move-in'
+  | 'retype'
   | 'split'
   | 'unwrap'
   | 'wrap';
 type Choice = { change: string; option: Option } | undefined;
 type Node = {
   align?: string;
-  authored?: AuthoredMark[];
+  authored?: AuthoredMember[];
+  childRoots?: Readonly<Record<string, string>>;
   children?: Node[];
   id?: string;
   text?: string;
@@ -74,11 +87,23 @@ type Family = (typeof FAMILIES)[number];
 
 const BOUNDARY: readonly Option[] = ['join', 'split'];
 const CONTENT: readonly Option[] = ['delete', 'insert'];
-// A suggested move strikes the block and inserts a copy with its values under
-// the same change; only generated ids tell the copy from new content.
-const MOVABLE: readonly Option[] = [...CONTENT, 'move'];
+// A suggested move strikes the block and inserts a copy under the same
+// change. The struck block keeps its id, so the copy stores a fresh one and
+// shows the original's through an `as` member, as the recorder writes it.
+// `move` lands the copy after the last block and `move-in` as the last line
+// of the last quote, so a quote's type tag sits above it.
+const MOVABLE: readonly Option[] = [...CONTENT, 'move', 'move-in'];
+// Another change can retype a copy into a heading or join it into the block
+// before it.
+const COPY_TYPE: readonly Option[] = ['retype'];
+const COPY_BOUNDARY: readonly Option[] = ['join'];
+// A deletion of a quote's content can store a spare that holds the value a
+// copy of one of its lines shows.
+const QUOTE_CONTENT: readonly Option[] = [...CONTENT, 'delete-spare'];
 const ENCLOSURE: readonly Option[] = ['unwrap', 'wrap'];
 const FORMAT: readonly Option[] = ['align', 'align-center'];
+// A suggested retype of a section into the quote.
+const QUOTE_FORMAT: readonly Option[] = [...FORMAT, 'retype'];
 
 const stray = process.argv
   .slice(2)
@@ -125,33 +150,45 @@ if (family !== undefined && !FAMILIES.includes(family as Family)) {
   process.exit(2);
 }
 const runs = (name: Family) => family === undefined || family === name;
+const SCHEMAS = [
+  'plain',
+  'generated',
+  ...ID_PLACES.map((places) => `generated-${places}`),
+];
 const schemaFlag = flag('schema') ?? 'plain';
-if (schemaFlag !== 'plain' && schemaFlag !== 'generated') {
-  console.error('--schema takes plain or generated.');
+if (!SCHEMAS.includes(schemaFlag)) {
+  console.error(`--schema takes ${SCHEMAS.join(', ')}.`);
   process.exit(2);
 }
-// Every element of a generated document has an id, which a decision may only
-// take from stored content.
-const generatedIds = schemaFlag === 'generated';
-const quotes = generatedIds
-  ? { editor: generatedQuotesEditor, schema: generatedQuotesSchema }
-  : { editor: quotesEditor, schema: quotesSchema };
+// Each quotes run: the plain schema, or one variant for each place a
+// generated id holds. `generated` runs every variant.
+const schemas: ReadonlyArray<IdPlaces | null> =
+  schemaFlag === 'plain'
+    ? [null]
+    : schemaFlag === 'generated'
+      ? ID_PLACES
+      : [schemaFlag.slice('generated-'.length) as IdPlaces];
 // Takes a script's name as a failure prints it, to rerun that script alone
 // within the bound.
 const onlyScript = flag('giveback-script');
 const atGate =
   family === undefined &&
-  !generatedIds &&
+  schemaFlag === 'plain' &&
   onlyScript === undefined &&
   isDeepStrictEqual(bound, GATE) &&
   isDeepStrictEqual(givebackBound, GIVEBACK_GATE);
 
-function* shapes(): Generator<number[]> {
+// A block is a paragraph, a quote of one or two lines, or, under a generated
+// id, a card whose body root holds one line.
+const CARD = 3;
+
+function* shapes(places: IdPlaces | null): Generator<number[]> {
+  const kinds = places ? 4 : 3;
   for (let count = 1; count <= bound.blocks; count++) {
-    for (let code = 0; code < 3 ** count; code++) {
+    for (let code = 0; code < kinds ** count; code++) {
       yield Array.from(
         { length: count },
-        (_, index) => Math.floor(code / 3 ** index) % 3
+        (_, index) => Math.floor(code / kinds ** index) % kinds
       );
     }
   }
@@ -159,22 +196,27 @@ function* shapes(): Generator<number[]> {
 
 // The places a recorded change can mark, in document order: a block's
 // boundary with the block before it, its whole content, a quote's enclosure
-// and align tag, and each paragraph's one leaf.
-const slotsOf = (shape: readonly number[]) =>
+// and format tag, and each line's one leaf. Under a generated id, a line's
+// copy can also be retyped or joined by another change. A card takes no
+// boundary, and neither does the block after it.
+const slotsOf = (shape: readonly number[], places: IdPlaces | null) =>
   shape.flatMap((block, index) => {
-    const paragraph = (first: boolean) => [
-      ...(first ? [] : [BOUNDARY]),
-      generatedIds ? MOVABLE : CONTENT,
-      CONTENT,
+    const boundary = index > 0 && shape[index - 1] !== CARD;
+    const paragraph = (bounded: boolean) => [
+      ...(bounded ? [BOUNDARY] : []),
+      ...(places
+        ? [MOVABLE, CONTENT, COPY_TYPE, COPY_BOUNDARY]
+        : [CONTENT, CONTENT]),
     ];
-    if (block === 0) return paragraph(index === 0);
+    if (block === 0) return paragraph(boundary);
+    if (block === CARD) return [CONTENT, ...paragraph(false)];
     return [
-      ...(index === 0 ? [] : [BOUNDARY]),
-      CONTENT,
+      ...(boundary ? [BOUNDARY] : []),
+      places ? QUOTE_CONTENT : CONTENT,
       ENCLOSURE,
-      FORMAT,
+      places ? QUOTE_FORMAT : FORMAT,
       ...Array.from({ length: block }, (_, inner) =>
-        paragraph(inner === 0)
+        paragraph(inner > 0)
       ).flat(),
     ];
   });
@@ -212,23 +254,54 @@ function* pickings(
   yield* fill(0, 0, 0);
 }
 
-const alignTag = (change: string) =>
+const formatTag = (
+  change: string,
+  key: string,
+  fields: Readonly<Record<string, unknown>>
+) =>
   ({
     at: 1,
     author: change,
     change,
-    id: `align0${change}`,
-    key: 'align',
+    id: `${key}0${change}`,
+    key,
     kind: 'format',
-    write: { kind: 'set', value: 'center' },
+    ...fields,
   }) as AuthoredMark;
+
+const alignTag = (change: string) =>
+  formatTag(change, 'align', { write: { kind: 'set', value: 'center' } });
+
+// Whether a variant's generated id holds on an element of `type`. Under
+// `placed`, a heading's id is not generated and a copy states its own.
+const holdsId = (places: IdPlaces | null, type: string | undefined) =>
+  places === 'elements' ||
+  (places !== null &&
+    (type === 'paragraph' ||
+      (places !== 'paragraphs' && places !== 'placed' && type !== 'link')));
 
 const insertedBy = (node: Node, change: string) =>
   node.authored?.some(
     (item) => item.change === change && item.kind === 'insert'
   ) ?? false;
 
-const build = (shape: readonly number[], picks: readonly Choice[]) => {
+type Doc = Readonly<{
+  children: readonly Node[];
+  roots?: Readonly<Record<string, readonly Node[]>>;
+}>;
+type Copy = Readonly<{
+  join: Choice;
+  move: NonNullable<Choice>;
+  quote: number | null;
+  retype: Choice;
+  text: string;
+}>;
+
+const build = (
+  shape: readonly number[],
+  picks: readonly Choice[],
+  places: IdPlaces | null
+): Doc | null => {
   let cursor = 0;
   let letter = 0;
   const take = () => {
@@ -242,26 +315,32 @@ const build = (shape: readonly number[], picks: readonly Choice[]) => {
       pick && { change: pick.change, kind: pick.option as AuthoredMark['kind'] }
     );
   };
-  const copies: Node[] = [];
+  const moves: Copy[] = [];
+  const roots: Record<string, Node[]> = {};
   let unrecorded = false;
-  const paragraph = (first: boolean) => {
-    const boundary = first ? undefined : next();
+  const paragraph = (bounded: boolean, quote: number | null) => {
+    const boundary = bounded ? next() : undefined;
     const pick = take();
     const leaf = next();
+    const retype = places ? take() : undefined;
+    const join = places ? take() : undefined;
     const text = String.fromCharCode(97 + letter);
     letter += 1;
-    const id = generatedIds ? { id: `p${text}` } : {};
-    if (pick?.option === 'move') {
-      unrecorded ||= leaf !== undefined;
-      copies.push(
-        withMarksOf({ type: 'paragraph', ...id, children: [{ text }] }, [
-          { change: pick.change, kind: 'insert' },
-        ])
-      );
+    const id = places ? { id: `p${text}` } : {};
+    if (pick?.option === 'move' || pick?.option === 'move-in') {
+      // The recorder writes no copy of a leaf another change marks, and a
+      // change neither tags nor joins a copy it inserted.
+      unrecorded ||=
+        leaf !== undefined ||
+        retype?.change === pick.change ||
+        join?.change === pick.change;
+      moves.push({ join, move: pick, quote, retype, text });
+    } else {
+      unrecorded ||= retype !== undefined || join !== undefined;
     }
     const content = pick && {
       change: pick.change,
-      kind: (pick.option === 'move'
+      kind: (pick.option.startsWith('move')
         ? 'delete'
         : pick.option) as AuthoredMark['kind'],
     };
@@ -271,40 +350,170 @@ const build = (shape: readonly number[], picks: readonly Choice[]) => {
     );
   };
 
+  const spares = new Map<number, string>();
   const blocks = shape.map((block, index): Node | null => {
-    if (block === 0) return paragraph(index === 0);
-    const boundary = index === 0 ? undefined : next();
-    const content = next();
+    const bounded = index > 0 && shape[index - 1] !== CARD;
+    if (block === 0) return paragraph(bounded, null);
+    if (block === CARD) {
+      const content = next();
+      const root = `r${index}`;
+      roots[root] = [paragraph(false, null)];
+      return withMarksOf(
+        {
+          type: 'card',
+          ...(holdsId(places, 'card') ? { id: `c${index}` } : {}),
+          childRoots: { body: root },
+          children: [{ text: 'C' }],
+        },
+        [content]
+      );
+    }
+    const boundary = bounded ? next() : undefined;
+    const contentPick = take();
+    const content = contentPick && {
+      change: contentPick.change,
+      kind: (contentPick.option === 'delete-spare'
+        ? 'delete'
+        : contentPick.option) as AuthoredMark['kind'],
+    };
+    if (contentPick?.option === 'delete-spare') {
+      spares.set(index, contentPick.change);
+    }
     const enclosure = next();
     const format = take();
     const children = Array.from({ length: block }, (_, inner) =>
-      paragraph(inner === 0)
+      paragraph(inner > 0, index)
     );
     const quote: Node = withMarksOf(
-      { type: 'quote', ...(generatedIds ? { id: `q${index}` } : {}), children },
+      {
+        type: 'quote',
+        ...(holdsId(places, 'quote') ? { id: `q${index}` } : {}),
+        children,
+      },
       [boundary, content, enclosure]
     );
     if (!format) return quote;
     if (insertedBy(quote, format.change)) return null;
+    if (format.option === 'retype') {
+      return {
+        ...quote,
+        authored: [
+          ...(quote.authored ?? []),
+          formatTag(format.change, 'type', {
+            before: 'section',
+            write: { kind: 'set', value: 'quote' },
+          }),
+        ],
+      };
+    }
     return {
       ...quote,
       ...(format.option === 'align-center' ? { align: 'center' } : {}),
       authored: [...(quote.authored ?? []), alignTag(format.change)],
     };
   });
-  // The recorder lands a moved block's copy where it goes, here the end, and
-  // a copy of a leaf another change marks is not one it writes.
-  return unrecorded ? [null] : [...blocks, ...copies];
+  if (unrecorded || blocks.includes(null)) return null;
+
+  const main = blocks as Node[];
+  const last = main.findLastIndex((node) => node.type === 'quote');
+  const landed: Node[] = [];
+  for (const { join, move, quote, retype, text } of moves) {
+    const inQuote = move.option === 'move-in';
+    // A copy lands only in a quote no other change's content mark covers.
+    if (inQuote && (last === -1 || main[last].authored?.some(marksContent))) {
+      return null;
+    }
+    // Under `placed`, a copy its author moves into a quote is a heading, as
+    // if they retyped their own insertion.
+    const heading = retype !== undefined || (places === 'placed' && inQuote);
+    const fresh = `m${text}`;
+    const holds =
+      places === 'placed' || holdsId(places, heading ? 'heading' : 'paragraph');
+    const node: Node = withMarksOf(
+      {
+        type: heading ? 'heading' : 'paragraph',
+        ...(holds ? { id: fresh } : {}),
+        children: [{ text }],
+      },
+      [
+        { change: move.change, kind: 'insert' },
+        join && { change: join.change, kind: 'join' },
+      ]
+    );
+    const copy: Node = {
+      ...node,
+      authored: [
+        ...(node.authored ?? []),
+        { kind: 'as', values: { id: `p${text}` } },
+        ...(retype
+          ? [
+              formatTag(retype.change, 'type', {
+                before: 'paragraph',
+                write: { kind: 'set', value: 'heading' },
+              }),
+              ...(holds
+                ? []
+                : [
+                    formatTag(retype.change, 'id', {
+                      before: fresh,
+                      write: { kind: 'remove' },
+                    }),
+                  ]),
+            ]
+          : []),
+      ],
+    };
+    if (inQuote) {
+      main[last] = {
+        ...main[last],
+        children: [...(main[last].children ?? []), copy],
+      };
+    } else {
+      landed.push(copy);
+    }
+    for (const [index, change] of spares) {
+      if (quote !== index) continue;
+      main[index] = {
+        ...main[index],
+        authored: [
+          ...(main[index].authored ?? []),
+          {
+            at: 1,
+            author: change,
+            change,
+            kind: 'reserve',
+            node: {
+              children: [{ text: '' }],
+              id: `p${text}`,
+              type: 'paragraph',
+            },
+            slot: { min: 0 },
+            type: 'quote',
+          },
+        ],
+      };
+      spares.delete(index);
+    }
+  }
+  // A spare holds the value a copy of one of its quote's lines shows.
+  if (spares.size > 0) return null;
+  const children = [...main, ...landed];
+  return Object.keys(roots).length > 0 ? { children, roots } : { children };
 };
 
-// Links a cut adds get ids too, since a generated id is on every element.
-const withIds = (nodes: readonly Node[]) => {
+const marksContent = (item: AuthoredMember) =>
+  item.kind === 'delete' || item.kind === 'insert';
+
+// Links a cut adds get ids too where the variant holds one on every element.
+const withIds = (nodes: readonly Node[], places: IdPlaces) => {
   let count = 0;
   const visit = (node: Node): Node =>
     node.text === undefined
       ? {
           ...node,
-          ...(node.id ? {} : { id: `n${(count += 1)}` }),
+          ...(node.id || !holdsId(places, node.type)
+            ? {}
+            : { id: `n${(count += 1)}` }),
           children: node.children?.map(visit),
         }
       : node;
@@ -326,16 +535,21 @@ const cutFlags = (blocks: readonly Block2[]) =>
     [blocks.map(() => false)]
   );
 
-const generate = () => {
-  const documents = new Map<string, readonly Node[]>();
+const generate = (places: IdPlaces | null) => {
+  const documents = new Map<string, Doc>();
   for (let marks = 1; marks <= bound.marks; marks++) {
-    for (const shape of shapes()) {
-      for (const picks of pickings(slotsOf(shape), marks)) {
-        const blocks = build(shape, picks);
-        if (blocks.includes(null)) continue;
-        for (const flags of cutFlags(blocks as Block2[])) {
-          const cut = withCuts(blocks as Block2[], flags) as Node[];
-          const document = generatedIds ? withIds(cut) : cut;
+    for (const shape of shapes(places)) {
+      for (const picks of pickings(slotsOf(shape, places), marks)) {
+        const built = build(shape, picks, places);
+        if (!built) continue;
+        for (const flags of cutFlags(built.children as Block2[])) {
+          const cut = withCuts(built.children as Block2[], flags) as Node[];
+          const document: Doc = places
+            ? {
+                ...built,
+                children: withIds(cut, places),
+              }
+            : { ...built, children: cut };
           documents.set(JSON.stringify(document), document);
         }
       }
@@ -350,6 +564,7 @@ const describe = (node: Node): string => {
       item.kind === 'format' ? item.key : item.kind,
       item.change,
       (item as { side?: string }).side,
+      item.kind === 'reserve' && item.built ? 'built' : undefined,
     ]
       .filter(Boolean)
       .join(' ')
@@ -364,12 +579,20 @@ const describe = (node: Node): string => {
     ...stored
   } = node;
   const props = Object.entries(stored)
-    .map(([key, value]) => `[${key} ${value}]`)
+    .map(
+      ([key, value]) =>
+        `[${key} ${typeof value === 'string' ? value : JSON.stringify(value)}]`
+    )
     .join('');
   return `${type}${props}${own}(${children.map(describe).join(' ')})`;
 };
 const story = (nodes: readonly unknown[]) =>
   (nodes as Node[]).map(describe).join(' ');
+const storyOf = ({ children, roots = {} }: Doc) =>
+  [
+    story(children),
+    ...Object.entries(roots).map(([root, nodes]) => `${root}: ${story(nodes)}`),
+  ].join(' | ');
 
 const kindsOf = (nodes: readonly Node[], change: string) => {
   const kinds = new Set<string>();
@@ -383,21 +606,44 @@ const kindsOf = (nodes: readonly Node[], change: string) => {
   return [...kinds];
 };
 
-const changesIn = (nodes: readonly Node[]) => {
+const changesIn = ({ children, roots = {} }: Doc) => {
   const found = new Set<string>();
   const walk = (node: Node) => {
-    for (const item of node.authored ?? []) found.add(item.change);
+    for (const item of node.authored ?? []) {
+      if (item.kind !== 'reserve' && item.kind !== 'as') {
+        found.add(item.change);
+      }
+    }
     for (const child of node.children ?? []) walk(child);
   };
-  for (const node of nodes) walk(node);
+  for (const node of [...children, ...Object.values(roots).flat()]) walk(node);
   return [...found].sort();
 };
 
-const normalize = (generated: readonly Node[]) => {
+/** Every root's spare records by id, as a document stores them. */
+type StoredReserves = Readonly<Record<string, unknown>>;
+type Loaded = Readonly<{
+  children: readonly JsonNode[];
+  reserves: StoredReserves;
+  roots?: Readonly<Record<string, readonly JsonNode[]>>;
+}>;
+type QuotesEditor = typeof quotesEditor;
+
+const editorFor = (places: IdPlaces | null): QuotesEditor =>
+  places ? generatedQuotes[places].editor : quotesEditor;
+
+// The document loading stores, with every root's spare records.
+const normalize = (generated: Doc, editor: QuotesEditor) => {
   try {
-    return JSON.stringify(
-      expandContexts(quotes.editor(generated).read.value()).children
-    );
+    const value = editor(
+      generated.roots ? generated : generated.children
+    ).read.value();
+    const { children, roots } = expandContexts(value);
+    return JSON.stringify({
+      children,
+      reserves: recordsOf(value)[RESERVES] ?? {},
+      ...(roots && Object.keys(roots).length > 0 ? { roots } : {}),
+    });
   } catch {
     return null;
   }
@@ -618,29 +864,58 @@ const explore = <State>(walk: Walk<State>) => {
   };
 };
 
-type QuotesState = Readonly<{
-  children: readonly JsonNode[];
-  landed: readonly LandedRecord[];
-}>;
+type QuotesState = Loaded & Readonly<{ landed: readonly LandedRecord[] }>;
 
+// Every spare a state stores, named by what it holds and not by whether a
+// build took it.
+const sparesOf = ({ children, reserves }: QuotesState) => {
+  const found = new Set<string>();
+  const add = ({ built: _built, ...spare }: { built?: boolean }) =>
+    found.add(JSON.stringify(spare));
+  for (const record of Object.values(reserves)) add(record as never);
+  const walk = (node: Node) => {
+    for (const item of node.authored ?? []) {
+      if (item.kind === 'reserve') add(item);
+    }
+    for (const child of node.children ?? []) walk(child);
+  };
+  for (const node of children) walk(node as Node);
+  return found;
+};
+
+const readQuotes = ({ children, landed, reserves, roots }: QuotesState) => {
+  const writes = writesOf(landed, [
+    ...children,
+    ...Object.values(roots ?? {}).flat(),
+  ]);
+  const records = Object.keys(reserves).length;
+  return {
+    seen: { children, landed: writes, reserves, roots },
+    shown: `${storyOf({ children: children as Node[], roots: roots as never })} landed [${writes}]${records > 0 ? ` reserves ${JSON.stringify(reserves)}` : ''}`,
+  };
+};
+
+const acceptsOnlyContent = (
+  children: readonly unknown[],
+  deciding: ReadonlyMap<string, Verdict>
+) =>
+  [...deciding].every(
+    ([change, verdict]) =>
+      verdict === 'accept' &&
+      kindsOf(children as Node[], change).every(
+        (kind) => kind === 'insert' || kind === 'delete'
+      )
+  );
+
+// The plain schema stores no spare and no shown value, so a decision there
+// is its resolve and the run-scoped resolve of the commit after it.
 const quotesWalk = (
-  generated: readonly Node[],
-  document: readonly JsonNode[]
+  generated: Doc,
+  { children: document }: Loaded
 ): Walk<QuotesState> => {
-  const pending = changesIn(document as Node[]);
-  const name = story(generated);
+  const pending = changesIn(generated);
+  const name = storyOf(generated);
   const failures = new Map<string, Failure>();
-  const acceptsOnlyContent = (
-    from: QuotesState,
-    deciding: ReadonlyMap<string, Verdict>
-  ) =>
-    [...deciding].every(
-      ([change, verdict]) =>
-        verdict === 'accept' &&
-        kindsOf(from.children as Node[], change).every(
-          (kind) => kind === 'insert' || kind === 'delete'
-        )
-    );
   const checkSettle = (
     from: QuotesState,
     now: ReadonlyMap<string, Verdict>,
@@ -649,7 +924,7 @@ const quotesWalk = (
     const identity = `${name}: settle ${keyOf(now)} over ${story(from.children)}`;
     if (failures.has(identity)) return;
     const stored = loadWithVerdicts(
-      quotes.editor,
+      quotesEditor,
       now,
       from.children,
       from.landed
@@ -660,19 +935,132 @@ const quotesWalk = (
       identity,
     });
   };
-  const outcomeOf = (
-    result: AuthoredResolution,
-    decided: ReadonlyMap<string, Verdict>,
-    deciding: ReadonlyMap<string, Verdict>,
-    landed: readonly LandedRecord[]
-  ): Outcome<QuotesState> => {
-    const admission = admissionOf(result, decided, deciding, pending);
-    if (admission.kind !== 'settles') return admission;
-    const now = new Map([...decided, ...deciding]);
-    return {
-      kind: 'settled',
-      state: settleAsAdmission(now, result, landed, quotes.schema),
-    };
+  return {
+    get failures() {
+      return [...failures.values()];
+    },
+    name,
+    pending,
+    read: readQuotes,
+    start: { children: document, landed: LANDED, reserves: {} },
+    step: (state, decided, deciding) => {
+      const result = resolveWithVerdicts(
+        decided,
+        state.children,
+        all(deciding),
+        quotesSchema,
+        state.landed
+      );
+      const admission = admissionOf(result, decided, deciding, pending);
+      if (admission.kind !== 'settles') return admission;
+      const now = new Map([...decided, ...deciding]);
+      const settled = settleAsAdmission(
+        now,
+        result,
+        state.landed,
+        quotesSchema
+      );
+      if (acceptsOnlyContent(state.children, deciding)) {
+        checkSettle(state, now, settled.children);
+      }
+      return { kind: 'settled', state: { ...settled, reserves: {} } };
+    },
+  };
+};
+
+type Committed = ReturnType<ReturnType<QuotesEditor>['read']['value']>;
+
+// What a committed value stores: its children with each insertion written
+// out on its nodes, its landed writes and every root's spare records.
+const storedIn = (value: Committed): QuotesState => {
+  const records = recordsOf(value);
+  const { children, roots } = expandContexts(value);
+  return {
+    children,
+    ...(roots && Object.keys(roots).length > 0 ? { roots } : {}),
+    landed: Object.entries(records[LANDED_RECORDS] ?? {}).flatMap(
+      ([write, json]) => parseLanded(write, JSON.stringify(json)) ?? []
+    ),
+    reserves: records[RESERVES] ?? {},
+  };
+};
+
+// Each decision stores a fresh random token that only groups the verdicts it
+// decided, so values that differ in tokens alone decide alike.
+const withoutTokens = (value: unknown) =>
+  JSON.stringify(value).replaceAll(/[0-9a-f]{8}:\d+/g, 'decision');
+
+// A generated id may only come from stored content: the spares loading
+// stores for each container and root a pending change can empty, and the
+// values a shown id's group settles. So each step loads the value the step
+// before committed and decides through the editor's public `decide`, whose
+// commit admission settles, as a reviewer's does.
+const committedWalk = (
+  generated: Doc,
+  { children, reserves, roots }: Loaded,
+  editor: QuotesEditor
+): Walk<Committed> => {
+  const pending = changesIn(generated);
+  const start = {
+    children,
+    ...(roots ? { roots } : {}),
+    records: {
+      ...reviewRecords({ landed: LANDED }),
+      ...(Object.keys(reserves).length > 0 ? { [RESERVES]: reserves } : {}),
+    },
+  } as unknown as Committed;
+  const name = storyOf(generated);
+  const failures = new Map<string, Failure>();
+  const checkSettle = (from: Committed, decided: Committed, now: string) => {
+    const origin = storedIn(from);
+    const identity = `${name}: settle ${now} over ${story(origin.children)}`;
+    if (failures.has(identity)) return;
+    const result = storedIn(decided);
+    const dropsRoot = Object.keys(origin.roots ?? {}).some(
+      (root) => !result.roots?.[root]
+    );
+    if (dropsRoot) return;
+    const { children: stored, roots: storedRoots } = from as unknown as Doc;
+    let loaded: QuotesState | string;
+    try {
+      loaded = storedIn(
+        editor({
+          children: stored,
+          ...(storedRoots ? { roots: storedRoots } : {}),
+          records: {
+            ...recordsOf(from),
+            [VERDICTS]: recordsOf(decided)[VERDICTS] ?? {},
+          },
+        }).read.value()
+      );
+    } catch (error) {
+      loaded = `throws ${(error as Error).message}`;
+    }
+    const modeled = shownIn(result);
+    const settled = typeof loaded === 'string' ? loaded : shownIn(loaded);
+    const kept = typeof loaded === 'string' ? [] : storedSpares(loaded);
+    const shown = typeof loaded === 'string' ? new Set() : idsIn(loaded);
+    const left = storedSpares(result);
+    const started = sparesOutside(storedSpares(origin), left, false).map(
+      ({ content }) => content
+    );
+    const missing = sparesOutside(left, kept).map(
+      ({ content, owner }) => `${owner} ${content}`
+    );
+    const extra = sparesOutside(kept, left)
+      .filter(({ built, content, id }) => {
+        const at = started.indexOf(content);
+        if (at !== -1) started.splice(at, 1);
+        return at === -1 || (!built && shown.has(id));
+      })
+      .map(({ content, owner }) => `${owner} ${content}`);
+    if (settled === modeled && missing.length === 0 && extra.length === 0) {
+      return;
+    }
+    failures.set(identity, {
+      detail: `  loaded with the verdicts: ${settled}\n  decided:                  ${modeled}\n  spares the load lacks: ${missing.join(' ')}\n  spares only the load adds: ${extra.join(' ')}`,
+      identity,
+    });
   };
   return {
     get failures() {
@@ -680,40 +1068,240 @@ const quotesWalk = (
     },
     name,
     pending,
-    read: ({ children, landed }) => {
-      const writes = writesOf(landed, children);
-      return {
-        seen: { children, landed: writes },
-        shown: `${story(children)} landed [${writes}]`,
-      };
+    read: (state) => {
+      const stored = storedIn(state);
+      return readQuotes({
+        ...stored,
+        children: withoutHeld(stored.children as Node[]) as never,
+      });
     },
-    start: { children: document, landed: LANDED },
+    same: withoutTokens,
+    start,
     step: (state, decided, deciding) => {
+      // Loading mints a spare for each place before it finds the one stored
+      // there, so only the decision's own calls count.
+      const loaded = editor(state);
       const generatedBefore = idGeneratorCalls.count;
-      const result = resolveWithVerdicts(
-        decided,
-        state.children,
-        all(deciding),
-        quotes.schema,
-        state.landed
-      );
-      const outcome = outcomeOf(result, decided, deciding, state.landed);
-      const made = idGeneratorCalls.count - generatedBefore;
-      if (made === 0) {
-        if (outcome.kind === 'settled' && acceptsOnlyContent(state, deciding)) {
-          checkSettle(
-            state,
-            new Map([...decided, ...deciding]),
-            outcome.state.children
-          );
-        }
-        return outcome;
+      let decision: ReturnType<typeof decideIn>;
+      try {
+        decision = decideIn(loaded, deciding);
+      } catch (error) {
+        if (!(error instanceof ElementGenerationMaskedError)) throw error;
+        return { kind: 'refused', reason: 'a build that finds no spare' };
       }
-      return {
-        kind: 'refused',
-        reason: `calls the id generator ${made} times`,
-      };
+      const made = idGeneratorCalls.count - generatedBefore;
+      if (made > 0) {
+        return {
+          kind: 'refused',
+          reason: `calls the id generator ${made} times`,
+        };
+      }
+      const admission = decisionAdmission(decision.result, decided, pending);
+      if (admission.kind !== 'settles') return admission;
+      const before = sparesOf(storedIn(state));
+      const added = [...sparesOf(storedIn(decision.value))].filter(
+        (spare) => !before.has(spare)
+      );
+      if (added.length > 0) {
+        return {
+          kind: 'refused',
+          reason: `a decision that adds the spares ${added.join(', ')}`,
+        };
+      }
+      if (acceptsOnlyContent(storedIn(state).children, deciding)) {
+        checkSettle(
+          state,
+          decision.value,
+          keyOf(new Map([...decided, ...deciding]))
+        );
+      }
+      return { kind: 'settled', state: decision.value };
     },
+  };
+};
+
+// Resolving for storage keeps a held member where a decision rejects a
+// deletion of inserted content, and in 456 orders at --changes=3 --marks=3
+// it keeps one that deciding at once does not, under the plain schema too.
+// No reader sees a held member, so the comparison leaves them out.
+const withoutMembers = (
+  nodes: readonly Node[],
+  kinds: ReadonlySet<string>
+): Node[] =>
+  nodes.map((node) => {
+    const members = node.authored?.filter((item) => !kinds.has(item.kind));
+    const { authored: _authored, ...rest } = node;
+    return {
+      ...rest,
+      ...(members && members.length > 0 ? { authored: members } : {}),
+      ...(node.children
+        ? { children: withoutMembers(node.children, kinds) }
+        : {}),
+    };
+  });
+const withoutHeld = (nodes: readonly Node[]) =>
+  withoutMembers(nodes, new Set(['held']));
+
+const canonical = (value: unknown): unknown =>
+  Array.isArray(value)
+    ? value.map(canonical)
+    : value && typeof value === 'object'
+      ? Object.fromEntries(
+          Object.keys(value)
+            .sort()
+            .map((key) => [
+              key,
+              canonical((value as Record<string, unknown>)[key]),
+            ])
+        )
+      : value;
+
+const shownIn = ({ children, roots }: QuotesState) => {
+  const kinds = new Set(['held', 'reserve']);
+  return withoutTokens(
+    canonical({
+      children: withoutMembers(children as Node[], kinds),
+      roots: Object.fromEntries(
+        Object.entries(roots ?? {}).map(([root, nodes]) => [
+          root,
+          withoutMembers(nodes as Node[], kinds),
+        ])
+      ),
+    })
+  );
+};
+
+type Spare = Readonly<{
+  built: boolean;
+  content: string;
+  id: unknown;
+  owner: string;
+}>;
+
+const spareOf = (spare: unknown, owner: string): Spare => {
+  const { built, node } = spare as Readonly<{ built?: unknown; node?: Node }>;
+
+  return {
+    built: built === true,
+    content: withoutTokens(canonical(spare)),
+    id: node?.id,
+    owner,
+  };
+};
+
+const idsIn = ({ children, roots }: QuotesState) => {
+  const ids = new Set<unknown>();
+  const walk = (node: Node) => {
+    if (node.id !== undefined) ids.add(node.id);
+    node.children?.forEach(walk);
+  };
+  for (const node of [...children, ...Object.values(roots ?? {}).flat()]) {
+    walk(node as Node);
+  }
+  return ids;
+};
+
+const storedSpares = ({ children, reserves, roots }: QuotesState) => {
+  const found: Spare[] = [];
+  const walk = (node: Node, owner: string) => {
+    for (const item of node.authored ?? []) {
+      if (item.kind === 'reserve') found.push(spareOf(item, owner));
+    }
+    node.children?.forEach((child, at) => walk(child, `${owner}.${at}`));
+  };
+  for (const record of Object.values(reserves)) {
+    found.push(spareOf(record, 'records'));
+  }
+  for (const [root, nodes] of [
+    ['main', children],
+    ...Object.entries(roots ?? {}),
+  ] as const) {
+    (nodes as Node[]).forEach((node, at) => walk(node, `${root}.${at}`));
+  }
+  return found;
+};
+
+const sparesOutside = (
+  spares: readonly Spare[],
+  other: readonly Spare[],
+  byOwner = true
+) => {
+  const matchOf = ({ content, owner }: Spare) =>
+    byOwner ? `${owner} ${content}` : content;
+  const left = other.map(matchOf);
+  return spares.filter((spare) => {
+    const at = left.indexOf(matchOf(spare));
+    if (at === -1) return true;
+    left.splice(at, 1);
+    return false;
+  });
+};
+
+const withoutIdsIn = (nodes: readonly Node[]): Node[] =>
+  nodes.map(({ authored, id: _id, ...node }) => {
+    const members = authored?.filter(
+      (item) =>
+        item.kind !== 'as' && (item.kind !== 'format' || item.key !== 'id')
+    );
+    return {
+      ...node,
+      ...(members && members.length > 0 ? { authored: members } : {}),
+      ...(node.children ? { children: withoutIdsIn(node.children) } : {}),
+    };
+  });
+const withoutIds = ({ children, roots }: Doc): Doc => ({
+  children: withoutIdsIn(children),
+  ...(roots
+    ? {
+        roots: Object.fromEntries(
+          Object.entries(roots).map(([root, nodes]) => [
+            root,
+            withoutIdsIn(nodes),
+          ])
+        ),
+      }
+    : {}),
+});
+
+// A spare stands in only for a value the plain schema never builds, so a
+// generated document couples no set of verdicts that its plain twin decides
+// one at a time.
+const againstTwin = (
+  generated: Doc,
+  result: ReturnType<typeof explore>,
+  places: IdPlaces
+): ReturnType<typeof explore> => {
+  const twin = withoutIds(generated);
+  const twinEditor = generatedQuotes[places].twin;
+  const loaded = normalize(twin, twinEditor);
+  const name = storyOf(generated);
+  if (loaded === null) {
+    return {
+      ...result,
+      failures: [
+        ...result.failures,
+        { detail: '  its plain twin fails to load', identity: `${name}: twin` },
+      ],
+    };
+  }
+  const twinName = storyOf(twin);
+  const coupled = new Set(
+    explore(committedWalk(twin, JSON.parse(loaded), twinEditor)).together.map(
+      ([identity]) => identity.slice(twinName.length)
+    )
+  );
+  return {
+    ...result,
+    failures: [
+      ...result.failures,
+      ...result.together
+        .filter(([identity]) => !coupled.has(identity.slice(name.length)))
+        .map(([identity]) => ({
+          detail:
+            '  settles when decided together, while every order of single steps waits, and its plain twin decides it one at a time',
+          identity,
+        })),
+    ],
   };
 };
 
@@ -803,8 +1391,8 @@ const givebackWalk = (
   const proposers = new Set(
     script.flatMap((op) => (op.by === EDITING ? [] : [op.by]))
   );
-  const pending = changesIn((start as { children: Node[] }).children).filter(
-    (change) => proposers.has(change)
+  const pending = changesIn(start as Doc).filter((change) =>
+    proposers.has(change)
   );
   const outcomeOf = (
     { result, value }: ReturnType<typeof decideGiveback>,
@@ -822,10 +1410,7 @@ const givebackWalk = (
       const seen = givebackRead(state);
       return { seen, shown: story(seen) };
     },
-    // Each call stores a fresh random token that only groups the verdicts it
-    // decided, so states that differ in tokens alone decide alike.
-    same: (state) =>
-      JSON.stringify(state).replaceAll(/[0-9a-f]{8}:\d+/g, 'decision'),
+    same: withoutTokens,
     start,
     step: (state, decided, deciding) =>
       outcomeOf(decideGiveback(state, deciding), decided),
@@ -874,21 +1459,34 @@ const summed = (results: ReadonlyArray<ReturnType<typeof explore>>) => ({
 });
 
 const shard = process.env.AUTHORED_ORDER_SHARD;
+// The id variant a quotes worker runs, or none for the plain schema.
+const shardPlaces = (process.env.AUTHORED_ORDER_IDS || null) as IdPlaces | null;
 
 if (shard === 'normalize') {
-  const items: Array<[number, Node[]]> = JSON.parse(await Bun.stdin.text());
+  const items: Array<[number, Doc]> = JSON.parse(await Bun.stdin.text());
   console.log(
     JSON.stringify(
-      items.map(([index, generated]) => [index, normalize(generated)])
+      items.map(([index, generated]) => [
+        index,
+        normalize(generated, editorFor(shardPlaces)),
+      ])
     )
   );
 } else if (shard === 'explore') {
-  const items: Array<[Node[], JsonNode[]]> = JSON.parse(await Bun.stdin.text());
+  const items: Array<[Doc, Loaded]> = JSON.parse(await Bun.stdin.text());
   console.log(
     JSON.stringify({
       ...summed(
         items.map(([generated, document]) =>
-          explore(quotesWalk(generated, document))
+          shardPlaces
+            ? againstTwin(
+                generated,
+                explore(
+                  committedWalk(generated, document, editorFor(shardPlaces))
+                ),
+                shardPlaces
+              )
+            : explore(quotesWalk(generated, document))
         )
       ),
       unchecked: [],
@@ -908,7 +1506,11 @@ if (shard === 'normalize') {
   console.log(JSON.stringify({ ...summed(results), unchecked }));
 } else {
   const jobs = wholeFlag('jobs', availableParallelism());
-  const fanOut = async <T>(role: string, items: readonly unknown[]) =>
+  const fanOut = async <T>(
+    role: string,
+    items: readonly unknown[],
+    places: IdPlaces | null = null
+  ) =>
     Promise.all(
       Array.from({ length: jobs }, async (_, index) => {
         const child = Bun.spawn(
@@ -919,7 +1521,11 @@ if (shard === 'normalize') {
             ...process.argv.slice(2),
           ],
           {
-            env: { ...process.env, AUTHORED_ORDER_SHARD: role },
+            env: {
+              ...process.env,
+              AUTHORED_ORDER_IDS: places ?? '',
+              AUTHORED_ORDER_SHARD: role,
+            },
             stderr: 'inherit',
             stdin: new Blob([
               JSON.stringify(items.filter((_item, at) => at % jobs === index)),
@@ -958,50 +1564,60 @@ if (shard === 'normalize') {
   const found = new Map<Family, ReturnType<typeof gathered>>();
 
   if (runs('quotes')) {
-    const started = performance.now();
-    const generated = generate();
-    const shards = await fanOut<Array<[number, string | null]>>(
-      'normalize',
-      generated.map((document, index) => [index, document])
-    );
-    const normalized = shards.flat().sort(([a], [b]) => a - b);
-    const unique = new Map<string, [Node[], JsonNode[]]>();
-    for (const [index, document] of normalized) {
-      if (document !== null && !unique.has(document)) {
-        unique.set(document, [
-          generated[index] as Node[],
-          JSON.parse(document),
-        ]);
+    const runsOf: Array<ReturnType<typeof gathered>> = [];
+    for (const places of schemas) {
+      const started = performance.now();
+      const generated = generate(places);
+      const shards = await fanOut<Array<[number, string | null]>>(
+        'normalize',
+        generated.map((document, index) => [index, document]),
+        places
+      );
+      const normalized = shards.flat().sort(([a], [b]) => a - b);
+      const unique = new Map<string, [Doc, Loaded]>();
+      for (const [index, document] of normalized) {
+        if (document !== null && !unique.has(document)) {
+          unique.set(document, [generated[index], JSON.parse(document)]);
+        }
+      }
+      const result = gathered(
+        await fanOut<Explored>('explore', [...unique.values()], places)
+      );
+      runsOf.push(result);
+      console.info(
+        JSON.stringify({
+          bound,
+          compared: result.compared,
+          documents: unique.size,
+          failures: result.failures.length,
+          family: 'quotes',
+          generated: generated.length,
+          schema: places ?? 'plain',
+          seconds: seconds(started),
+          together: result.together.length,
+        })
+      );
+      const rejected = normalized.filter(([, document]) => document === null);
+      const merged = normalized.length - rejected.length - unique.size;
+      if (
+        rejected.length > 0 ||
+        merged > 0 ||
+        normalized.length < generated.length ||
+        result.idle.length > 0
+      ) {
+        unchecked.push(
+          `Of ${generated.length} generated documents under the ${places ?? 'plain'} schema, ${normalized.length} came back from the workers, ${rejected.length} fail to load in the quotes editor, ${merged} normalize to a document another one gives, and ${result.idle.length} with two or more changes have no order the script could compare. Either the generator builds a shape recording never writes, or the editor or resolver now refuses or rewrites documents and decisions it accepted, which leaves the property unchecked on those documents.`
+        );
       }
     }
-    const result = gathered(
-      await fanOut<Explored>('explore', [...unique.values()])
-    );
-    found.set('quotes', result);
-    console.info(
-      JSON.stringify({
-        bound,
-        compared: result.compared,
-        documents: unique.size,
-        failures: result.failures.length,
-        family: 'quotes',
-        generated: generated.length,
-        seconds: seconds(started),
-        together: result.together.length,
-      })
-    );
-    const rejected = normalized.filter(([, document]) => document === null);
-    const merged = normalized.length - rejected.length - unique.size;
-    if (
-      rejected.length > 0 ||
-      merged > 0 ||
-      normalized.length < generated.length ||
-      result.idle.length > 0
-    ) {
-      unchecked.push(
-        `Of ${generated.length} generated documents, ${normalized.length} came back from the workers, ${rejected.length} fail to load in the quotes editor, ${merged} normalize to a document another one gives, and ${result.idle.length} with two or more changes have no order the script could compare. Either the generator builds a shape recording never writes, or the editor or resolver now refuses or rewrites documents and decisions it accepted, which leaves the property unchecked on those documents.`
-      );
-    }
+    found.set('quotes', {
+      compared: runsOf.reduce((sum, result) => sum + result.compared, 0),
+      failures: runsOf.flatMap((result) => result.failures),
+      idle: runsOf.flatMap((result) => result.idle),
+      settled: runsOf.flatMap((result) => result.settled),
+      together: runsOf.flatMap((result) => result.together),
+      unchecked: runsOf.flatMap((result) => result.unchecked),
+    });
   }
 
   if (runs('giveback')) {

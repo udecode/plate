@@ -7,6 +7,7 @@ import {
 } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import { failInvariant } from '../internal/fail-invariant';
+import { getDefined } from '../internal/get-defined';
 import { inheritNodeKey } from '../utils/node-keys';
 import type { NodeList } from './change/document-index';
 import type { CompiledSchemaContentProgram } from './schema-compiler';
@@ -19,15 +20,34 @@ type InlineSchema = Readonly<{ isInline: (node: Node) => boolean }>;
 export type ContentKind = 'block' | 'inline' | 'mixed';
 
 /**
+ * Where completion builds an element: prefix slot `prefix`, or the `min`th
+ * element a minimum adds past the prefix, counted from 0 in build order.
+ */
+export type ConstructionSlot =
+  | Readonly<{ prefix: number }>
+  | Readonly<{ min: number }>;
+
+/**
+ * The stored element a build of `type` at `slot` takes instead of building
+ * one, or null when it builds its own.
+ */
+export type ConstructionTake = (
+  type: string,
+  slot: ConstructionSlot
+) => Element | null;
+
+/**
  * The schema a completion builds through, already bound to the completed
- * element's site: `create` builds an element there in its canonical empty
- * form, and `fitsPrefix` reads a child against one prefix slot there.
+ * element's site: `create` builds an element there at `slot` in its
+ * canonical empty form, and `fitsPrefix` reads a child against one prefix
+ * slot there.
  */
 export type ContentCompletionSchema = InlineSchema &
   Readonly<{
     create: (
       type: string,
-      properties: Readonly<Record<string, unknown>> | undefined
+      properties: Readonly<Record<string, unknown>> | undefined,
+      slot: ConstructionSlot
     ) => Element;
     fitsPrefix: (child: Descendant, slot: number) => boolean;
   }>;
@@ -37,7 +57,7 @@ export type ContentCompletion = Readonly<{
     Readonly<{
       index: number;
       node: Element;
-      slot: number | null;
+      slot: ConstructionSlot;
     }>
   >;
   children: readonly Descendant[];
@@ -519,7 +539,7 @@ const startCompletion = ({
   const remainder = content.remainder ?? content;
   const built: Element[] = [];
   const required: Descendant[] = [];
-  const builtSlots = new Map<Element, number>();
+  const builtSlots = new Map<Element, ConstructionSlot>();
   const inserted = new Set<Descendant>();
   let consumed = 0;
 
@@ -535,9 +555,11 @@ const startCompletion = ({
     }
     if (candidate && !displaced && editing) return null;
 
-    const node = schema.create(prefix.type, prefix.properties);
+    const node = schema.create(prefix.type, prefix.properties, {
+      prefix: slot,
+    });
 
-    builtSlots.set(node, slot);
+    builtSlots.set(node, { prefix: slot });
     inserted.add(node);
     built.push(node);
     required.push(node);
@@ -599,6 +621,7 @@ export const completeContent = (
     ? [emptyText]
     : children.slice(consumed);
   const count = () => required.length + rest.length;
+  let ordinal = 0;
 
   while (count() < content.min) {
     const plan = remainder.defaultPlan;
@@ -612,7 +635,7 @@ export const completeContent = (
     const unit: Descendant =
       plan.kind === 'text'
         ? { text: '' }
-        : schema.create(plan.type, plan.properties);
+        : schema.create(plan.type, plan.properties, { min: ordinal });
     const next = element
       ? canonicalizeContentChildren([...rest, unit], remainder, {
           dropsFromEmptyText,
@@ -632,7 +655,11 @@ export const completeContent = (
         `a text unit merged into a trailing text below a minimum of ${content.min}, which the compiler refuses`
       );
     }
-    if (ElementApi.isElement(unit)) built.push(unit);
+    if (ElementApi.isElement(unit)) {
+      built.push(unit);
+      builtSlots.set(unit, { min: ordinal });
+      ordinal += 1;
+    }
     inserted.add(unit);
     rest = next;
   }
@@ -653,7 +680,7 @@ export const completeContent = (
     built: built.map((node) => ({
       index: completed.indexOf(node),
       node,
-      slot: builtSlots.get(node) ?? null,
+      slot: getDefined(builtSlots.get(node)),
     })),
     children: completed,
   };

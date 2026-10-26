@@ -180,6 +180,74 @@ describe('authored DOCX', () => {
     ).toBe('Base draft');
   });
 
+  it('stores the spare a tracked deletion of the only paragraph needs when it imports a review part that lacks one under a generated block id', async () => {
+    const deleted = [{ at: 1, author: 'ann', change: 'ann:1', kind: 'delete' }];
+    // A schema without a generated id stores no spare.
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
+      initialValue: [
+        {
+          authored: deleted,
+          children: [{ authored: deleted, text: 'gone' }],
+          type: 'paragraph',
+        },
+      ],
+      userId: 'zed',
+    });
+    const exported = await exportDocx(editor, { projection: 'review' });
+
+    if (!exported.ok) throw new Error(JSON.stringify(exported.diagnostics));
+
+    const plugins = [
+      ElementIdPlugin,
+      BaseParagraphPlugin,
+      AuthoredPlugin,
+    ] as const;
+    const imported = await importDocx(await exported.blob.arrayBuffer(), {
+      plugins,
+    });
+
+    if (!imported.ok) throw new Error(JSON.stringify(imported.diagnostics));
+
+    const spares = Object.values(
+      imported.document.records?.['authored-reserves'] ?? {}
+    ) as Array<{ node: { id: string } }>;
+
+    expect({
+      marks: imported.document.children[0]?.authored,
+      spares: spares.map(({ node }) => typeof node.id),
+    }).toEqual({ marks: deleted, spares: ['string'] });
+  });
+
+  it('keeps a tracked deletion of the only paragraph when it imports under a generated text property', async () => {
+    const deleted = [{ at: 1, author: 'ann', change: 'ann:1', kind: 'delete' }];
+    const editor = createEditor({
+      plugins: [BaseParagraphPlugin, AuthoredPlugin],
+      initialValue: [
+        {
+          authored: deleted,
+          children: [{ authored: deleted, text: 'gone' }],
+          type: 'paragraph',
+        },
+      ],
+      userId: 'zed',
+    });
+    const exported = await exportDocx(editor, { projection: 'review' });
+
+    if (!exported.ok) throw new Error(JSON.stringify(exported.diagnostics));
+
+    const TokenPlugin = definePlugin('token', {
+      schema: { mark: property.string({ generate: () => 'token' }) },
+    });
+    const imported = await importDocx(await exported.blob.arrayBuffer(), {
+      plugins: [TokenPlugin, BaseParagraphPlugin, AuthoredPlugin],
+    });
+
+    if (!imported.ok) throw new Error(JSON.stringify(imported.diagnostics));
+
+    expect(imported.document.children[0]?.authored).toEqual(deleted);
+  });
+
   it('writes Word revisions that reimport with their authors', async () => {
     const HeadingPlugin = BaseHeadingPlugin.configure({
       component: ({ attributes, children, element }) =>

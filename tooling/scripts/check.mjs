@@ -158,7 +158,7 @@ export const steps = [
   },
   {
     name: 'authored-order',
-    run: 'pnpm check:authored-order',
+    run: 'pnpm check:authored-order && pnpm check:authored-order --schema=generated-elements --family=quotes --blocks=1',
     affected: touches(
       'packages/plitejs/',
       'tooling/scripts/finding-baseline.mjs'

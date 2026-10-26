@@ -102,6 +102,18 @@ const externalValueEffect = defineEffect<Transition>({
 });
 ```
 
+An undo step whose commit settled a shown value carries `unsettle`, the change that takes that settling back. Redo then brings back the document from before the undo, and the settle stage decides those values again. Undo and redo steps keep one `Batch` type. Only undo steps carry the field, and saved history writes and reads it in version 4. A separate undo step type would split each stack's element type for one optional field that only history reads (best-api review, 2026-10-26, redo-settlement plan).
+
+```ts
+// packages/plitejs/src/history/history.ts
+/**
+ * On an undo step whose commit settled shown values: the change from the
+ * step's base that takes back what the commit's settle stage wrote. A redo
+ * step never has it.
+ */
+readonly unsettle?: DocumentChange;
+```
+
 ## What other editors do
 
 The 2026-10-05 review read eleven editors and VS Code in local source at the revisions below, without running them. Ordinary editor undo is synchronous in all eleven. VS Code's undo service and Monaco's `ITextModel.undo()` return `Promise<void> | void`, used for file, notebook and confirmation-dialog undo. No editor makes undo wait on a server, and BlockNote, the Lexical playground and Liveblocks keep comment threads out of document history.
