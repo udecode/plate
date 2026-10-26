@@ -137,7 +137,7 @@ Start gate: the five running sessions landed. A script lists every worktree with
 
 | Decision | Pick | Alternative | Word | Impact |
 | --- | --- | --- | --- | --- |
-| Where the private repo lives | A folder inside Plate that public git ignores | Plate inside the private repo; or a submodule | submodule | big |
+| Where the private repo lives | A folder inside Plate that public git ignores | A submodule; or Plate inside the private repo | submodule | big |
 | What moves private | Every test, plan and research file outside the agent skills | Keep unit tests public and move only browser tests | keep unit tests | big |
 | Agent skills and their own tests | Stay public whole | Move the skills' tests private too | move skill tests | small |
 | Vision and editor behavior law | Stay public, because the public skills read them | Move them private | private vision | small |
