@@ -64,6 +64,7 @@ import {
   type EditableRepairRequest,
   isInteractiveInternalTarget,
   isNamedInputMethodKey,
+  isNativeTextControlTarget,
   isNestedEditableDOMTarget,
   setEditableModelSelectionPreference,
 } from './input-controller';
@@ -613,14 +614,16 @@ export const applyEditableKeyDown = ({
       );
     }
 
-    if (!readOnly && Hotkeys.isRedo(nativeEvent)) {
+    const ownsHistory = !readOnly && !isNativeTextControlTarget(event.target);
+
+    if (ownsHistory && Hotkeys.isRedo(nativeEvent)) {
       if (!replay('redo')) return keyDownUnhandled();
       event.preventDefault();
       event.stopPropagation();
       return keyDownHandled();
     }
 
-    if (!readOnly && Hotkeys.isUndo(nativeEvent)) {
+    if (ownsHistory && Hotkeys.isUndo(nativeEvent)) {
       if (!replay('undo')) return keyDownUnhandled();
       event.preventDefault();
       event.stopPropagation();

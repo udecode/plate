@@ -101,6 +101,21 @@ type PliteFocusableEditor = Parameters<typeof focusPliteEditable>[0];
 const NATIVE_EDITABLE_TEXT_TARGET =
   '[data-editor-string], [data-editor-zero-width], [data-editor-leaf], [data-editor-node="text"]';
 
+// Chromium shows its touch handles only beside a caret the tap placed itself,
+// and marks the mouse events it synthesizes from that tap.
+const isTapOnTextBlock = (event: MouseEvent<HTMLElement>, target: Element) =>
+  (
+    event.nativeEvent as globalThis.MouseEvent & {
+      sourceCapabilities?: { firesTouchEvents: boolean } | null;
+    }
+  ).sourceCapabilities?.firesTouchEvents === true &&
+  target instanceof HTMLElement &&
+  target.isContentEditable &&
+  !target.matches('[data-editor-void="true"]') &&
+  target
+    .querySelector('[data-editor-node="text"]')
+    ?.closest('[data-editor-node="element"]') === target;
+
 export type RootInteractionEditor = ReactRuntimeEditor &
   PliteFocusableEditor & {
     api: ReactRuntimeEditor['api'] &
@@ -1456,14 +1471,16 @@ export const useRootInteractionController = ({
             : undefined,
           target,
         });
-        const nativeEditableTextTarget =
+        const nativeEditableTextHit =
           target.kind === 'native-editable' &&
-          Boolean(
-            target.target.closest(NATIVE_EDITABLE_TEXT_TARGET) ??
+          (isTapOnTextBlock(event, target.target) ||
+            target.target.closest(NATIVE_EDITABLE_TEXT_TARGET) !== null);
+        const nativeEditableTextTarget =
+          nativeEditableTextHit ||
+          (target.kind === 'native-editable' &&
             target.target.closest(
               '[data-editor-inline="true"][data-editor-node="element"]'
-            )
-          );
+            ) !== null);
         const nativeEditableMultiClick =
           nativeEditableTextTarget && event.detail > 1;
         const nativeEditableSelectedTextTarget =
@@ -1523,8 +1540,7 @@ export const useRootInteractionController = ({
         const placeRootChromeFromCoordinates =
           rootChromeCoordinatePlacement !== null;
         const nativeEditableChromeTarget =
-          target.kind === 'native-editable' &&
-          !target.target.closest(NATIVE_EDITABLE_TEXT_TARGET);
+          target.kind === 'native-editable' && !nativeEditableTextHit;
         const focusedNativeEditableCoordinateTarget =
           !nativeEditableMultiClick &&
           !nativeEditableModifiedClick &&

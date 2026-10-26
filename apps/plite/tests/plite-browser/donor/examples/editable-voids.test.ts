@@ -98,12 +98,51 @@ test.describe('editable voids', () => {
     await expect(page.locator(input)).toHaveValue('Typing');
   });
 
-  test('undo from a new editable void input removes the inserted void block', async ({
+  test('undo and redo in an editable void input replay the input, not the editor [plate#5246]', async ({
     page,
   }, testInfo) => {
     test.skip(
       testInfo.project.name === 'mobile',
       'Native input undo proof needs desktop keyboard shortcuts'
+    );
+
+    const nameInput = page.locator(input);
+    const childRoot = createBrowserEditorHarness(
+      page,
+      'editable-voids-child-root',
+      page.locator('[aria-label="Editable void rich content"]').first()
+    );
+
+    await page.getByText('A wise quote.').click();
+    await page.keyboard.press('End');
+    await page.keyboard.type('alpha');
+    await expect
+      .poll(() => childRoot.get.modelText())
+      .toContain('A wise quote.alpha');
+
+    await nameInput.click();
+    await page.keyboard.type('a');
+    await page.keyboard.press('Shift+ArrowLeft');
+    await page.keyboard.press('Backspace');
+    await expect(nameInput).toHaveValue('');
+
+    await page.keyboard.press('ControlOrMeta+Z');
+    await expect(nameInput).toHaveValue('a');
+    await expect(nameInput).toBeFocused();
+    expect(await childRoot.get.modelText()).toContain('A wise quote.alpha');
+
+    await page.keyboard.press('ControlOrMeta+Shift+Z');
+    await expect(nameInput).toHaveValue('');
+    await expect(nameInput).toBeFocused();
+    expect(await childRoot.get.modelText()).toContain('A wise quote.alpha');
+  });
+
+  test('undo from a radio in an editable void replays the editor history', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'Undo shortcut proof needs desktop keyboard shortcuts'
     );
 
     const runtimeErrors = recordBrowserRuntimeErrors(page, {
@@ -114,11 +153,10 @@ test.describe('editable voids', () => {
       await page.getByRole('button', { name: 'Add' }).click();
       await expect(page.locator(input)).toHaveCount(2);
 
-      const insertedInput = page.locator(input).last();
+      const radio = page.locator('input[type="radio"]').last();
 
-      await insertedInput.fill('abc');
-      await expect(insertedInput).toHaveValue('abc');
-
+      await radio.focus();
+      await expect(radio).toBeFocused();
       await page.keyboard.press('ControlOrMeta+Z');
 
       await expect(page.locator(input)).toHaveCount(1);

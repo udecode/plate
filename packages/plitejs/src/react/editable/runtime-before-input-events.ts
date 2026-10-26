@@ -476,6 +476,7 @@ export const useRuntimeBeforeInputEvents = ({
           })
         );
         if (
+          decision.intent === 'history' &&
           profilePliteReactDuration('beforeinput-native-history', () =>
             applyModelOwnedNativeHistoryEvent({
               editor,

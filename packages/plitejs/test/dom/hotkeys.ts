@@ -135,6 +135,70 @@ describe('plite-dom hotkeys', () => {
     ).toBe(true);
   });
 
+  test('matches digit shortcuts by physical code when Option turns the digit into a symbol', () => {
+    expect(
+      isHotkey(
+        'mod+alt+1',
+        { platform: 'apple' },
+        event({ altKey: true, code: 'Digit1', key: '¡', metaKey: true })
+      )
+    ).toBe(true);
+    expect(
+      isHotkey(
+        'mod+alt+5',
+        { platform: 'apple' },
+        event({ altKey: true, code: 'Digit5', key: '[', metaKey: true })
+      )
+    ).toBe(true);
+  });
+
+  test('matches digit shortcuts by physical code only while Command and Option are held', () => {
+    expect(
+      isHotkey(
+        'mod+shift+1',
+        { platform: 'apple' },
+        event({ code: 'Digit1', key: '!', metaKey: true, shiftKey: true })
+      )
+    ).toBe(false);
+    expect(
+      isHotkey(
+        'alt+5',
+        { platform: 'apple' },
+        event({ altKey: true, code: 'Digit5', key: '[' })
+      )
+    ).toBe(false);
+    expect(
+      isHotkey(
+        'mod+alt+8',
+        { platform: 'other' },
+        event({ altKey: true, code: 'Digit8', ctrlKey: true, key: '[' })
+      )
+    ).toBe(false);
+    expect(
+      isHotkey(
+        '2',
+        { ignoreModifiers: true, platform: 'windows' },
+        event({
+          altKey: true,
+          code: 'Digit2',
+          ctrlKey: true,
+          getModifierState: (key) => key === 'AltGraph',
+          key: '@',
+        })
+      )
+    ).toBe(false);
+  });
+
+  test('does not match a digit shortcut by physical code when the key is another digit', () => {
+    expect(
+      isHotkey(
+        'mod+alt+1',
+        { platform: 'apple' },
+        event({ altKey: true, code: 'Digit1', key: '2', metaKey: true })
+      )
+    ).toBe(false);
+  });
+
   test('does not treat ASCII remapped layouts as physical-key shortcuts', () => {
     expect(
       Hotkeys.isUndo(event({ code: 'KeyZ', ctrlKey: true, key: 'x' }))

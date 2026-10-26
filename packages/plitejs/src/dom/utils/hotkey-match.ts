@@ -85,6 +85,7 @@ const MODIFIER_TOKEN_NAMES: Record<string, ModifierKey | 'mod'> = {
 };
 
 const SINGLE_LETTER_RE = /^[a-z]$/i;
+const SINGLE_DIGIT_RE = /^\d$/;
 
 const isApplePlatform = (platform: HotkeyPlatform | undefined) =>
   platform === 'apple';
@@ -191,6 +192,15 @@ const matchKey = (event: KeyboardEventLike, expectedKey: string) => {
   }
 
   if (event.code?.toLowerCase() === expectedLower) return true;
+  // Under Command, Option still turns a digit into a symbol, ASCII on some
+  // layouts, that is never typed.
+  if (SINGLE_DIGIT_RE.test(expectedKey)) {
+    return (
+      Boolean(event.altKey && event.metaKey) &&
+      !(typeof actualKey === 'string' && SINGLE_DIGIT_RE.test(actualKey)) &&
+      event.code === `Digit${expectedKey}`
+    );
+  }
   if (!isSingleLetter(expectedKey)) return false;
   if (typeof actualKey === 'string' && isAscii(actualKey)) return false;
 
