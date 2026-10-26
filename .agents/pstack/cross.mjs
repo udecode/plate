@@ -3,7 +3,7 @@
 
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdtempSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { constants, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,16 +33,38 @@ const VALUE_FLAGS = new Map([
 // Each child runs in its own process group, which outlives this process, so
 // stopping a run stops every runtime it launched.
 const running = new Set();
+const cleanups = new Set();
+const folders = new Set();
+export const STOP_GRACE_MS = 3000;
+export const GIVE_UP_MS = 3000;
 let stopsOnSignals = false;
+let stopping = false;
+const removeFolder = (folder) => {
+  rmSync(folder, { recursive: true, force: true });
+  folders.delete(folder);
+};
 const stopOnSignals = () => {
   if (stopsOnSignals) return;
   stopsOnSignals = true;
   for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
-    process.on(signal, () => {
-      for (const killAll of running) killAll('SIGTERM');
+    process.on(signal, async () => {
+      if (stopping) return;
+      stopping = true;
+      const groups = [...running];
+      for (const signalGroup of groups) signalGroup('SIGTERM');
+      await Promise.allSettled([...cleanups].map(async (cleanup) => cleanup()));
+      const deadline = Date.now() + STOP_GRACE_MS;
+      while (groups.some((signalGroup) => signalGroup(0)) && Date.now() < deadline) await new Promise((wake) => setTimeout(wake, 100));
+      for (const signalGroup of groups) signalGroup('SIGKILL');
+      for (const folder of folders) removeFolder(folder);
       process.exit(128 + constants.signals[signal]);
     });
   }
+};
+
+export const onStop = (cleanup) => {
+  cleanups.add(cleanup);
+  stopOnSignals();
 };
 
 // Codex writes its final message only to the -o file, and reads a piped stdin
@@ -50,8 +72,8 @@ const stopOnSignals = () => {
 // A child that ignores SIGTERM, or leaves a descendant holding its pipes, is
 // killed and abandoned at the deadline.
 // A project hook, such as a Stop hook that stages files, would still write from a read-only run.
-export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false } = {}) {
-  const max = maxEffort(cwd);
+export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout = 900, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false } = {}) {
+  const max = maxEffort(effortRoot);
   effort = capEffort(effort ?? max, max);
   const managed = runtime === 'codex' && !bypass && !reach && managedCodexConfig();
   if (managed) return { runtime, ok: false, text: `${managed} would still load over the command line; refusing to run` };
@@ -63,11 +85,14 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
     if (launch.refusal) return { runtime, ok: false, text: `refusing the browser lane: ${launch.refusal}` };
   }
   stopOnSignals();
-  const answerFile = join(mkdtempSync(join(tmpdir(), 'pstack-cross-')), 'answer.txt');
+  const answerDir = mkdtempSync(join(tmpdir(), 'pstack-cross-'));
+  folders.add(answerDir);
+  if (reach) folders.add(runCwd);
+  const answerFile = join(answerDir, 'answer.txt');
   const sessionId = randomUUID();
   const [command, args] =
     runtime === 'claude'
-      ? ['claude', ['-p', '--session-id', sessionId, '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), ...readDirs.flatMap((dir) => ['--add-dir', dir]), '--permission-mode', 'plan', '--', prompt]]
+      ? ['claude', ['-p', '--session-id', sessionId, '--model', model, ...(effort ? ['--effort', effort] : []), ...(hooks ? [] : ['--settings', '{"disableAllHooks":true}']), ...readDirs.flatMap((dir) => ['--add-dir', dir]), ...(offline ? ['--disallowed-tools', 'WebFetch,WebSearch', '--strict-mcp-config'] : []), '--permission-mode', 'plan', '--', prompt]]
       : [
           'codex',
           [
@@ -92,28 +117,31 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), timeout = 900,
     let late = false;
     const timers = [];
     const done = (answer) => {
-      if (settled) return;
+      if (settled || stopping) return;
       settled = true;
-      running.delete(killAll);
+      running.delete(signalGroup);
       for (const timer of timers) clearTimeout(timer);
+      removeFolder(answerDir);
+      if (reach) removeFolder(runCwd);
       resolve(answer);
     };
     const child = spawn(command, args, { cwd: runCwd, env, stdio: ['ignore', 'pipe', 'pipe'], detached: true });
-    const killAll = (signal) => {
+    const signalGroup = (signal) => {
       try {
         process.kill(-child.pid, signal);
+        return true;
       } catch {
-        // The process group is already gone.
+        return false;
       }
     };
-    running.add(killAll);
+    running.add(signalGroup);
     timers.push(
       setTimeout(() => {
         late = child.exitCode === null && child.signalCode === null;
-        killAll('SIGTERM');
+        signalGroup('SIGTERM');
       }, timeout * 1000),
-      setTimeout(() => killAll('SIGKILL'), timeout * 1000 + 2000),
-      setTimeout(() => done({ runtime, ok: false, text: `no answer within ${timeout} seconds` }), timeout * 1000 + 3000),
+      setTimeout(() => signalGroup('SIGKILL'), timeout * 1000 + 2000),
+      setTimeout(() => done({ runtime, ok: false, text: `no answer within ${timeout} seconds` }), timeout * 1000 + GIVE_UP_MS),
     );
     let stdout = '';
     let stderr = '';

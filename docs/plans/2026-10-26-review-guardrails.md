@@ -113,10 +113,10 @@ Replay cases come from `Introduced-by:` lines that name a commit, and from pairs
 
 This phase was to start once ten fixes named a commit. It starts now on the owner's word, as the Defaults say.
 
-- [ ] Add `replay.mjs` to dotai's assets. It picks up to six cases, each an introducing commit and its fix, builds a review packet from the introducing commit's diff and its plan when it has one, and runs the models sheet's panel seats through `seats.mjs`. One Opus judge per case reads each seat's answer beside the fix's diff and test and records whether the seat named the defect. It also replays two commits that no fix has named after 30 days and has the judge rate each critical finding there real or not. A run fits the hour; a bigger sample becomes a suggested task with `via: time`. Proof: a fixture case with a planted obvious bug is caught, and on the first real run the judge's verdicts match a hand reading of the seat answers.
-- [ ] Dotai's panel rule says a change to the panel seats in a models sheet runs `replay.mjs` once before the next panel relies on it. Proof: the smoke for that rule loads it on a plain "switch astra to high" request.
-- [ ] Deliver phase 3 as in phase 1. Proof: each project's `verify` passes and plate's land log names the commit.
-- [ ] Phase 3 exit. Keep the replay when two seats' recall on the same cases differs by at least two of six, or it catches a seat change that loses a case. Otherwise quarantine it as a manual command. Proof: the replay table in the Close.
+- [ ] Add `replay.mjs` to dotai's assets. It picks up to six cases, each an introducing commit and its fix, builds a review packet from the introducing commit's diff and its plan when it has one, and runs the models sheet's panel seats through `seats.mjs`. One Opus judge per case reads each seat's answer beside the fix's diff and test and records whether the seat named the defect. It also replays two commits that no fix has named after 30 days and has the judge rate each critical finding there real or not. A run fits the hour; a bigger sample becomes a suggested task with `via: time`. Proof: a fixture case with a planted obvious bug is caught, and on the first real run the judge's verdicts match a hand reading of the seat answers. Built and synced. The planted-bug fixture case passes in `p3-push-replay-a1.log`. The first real run waits on the Claude Code login, in Open work.
+- [x] Dotai's panel rule says a change to the panel seats in a models sheet runs `replay.mjs` once before the next panel relies on it. Proof: the smoke for that rule loads it on a plain "switch astra to high" request. Codex's smoke did, on an export and again on this worktree after the apply. Claude Code's could not run while its CLI login is expired.
+- [x] Deliver phase 3 as in phase 1. Proof: each project's `verify` passes and plate's land log names the commit.
+- [ ] Phase 3 exit. Keep the replay when two seats' recall on the same cases differs by at least two of six, or it catches a seat change that loses a case. Otherwise quarantine it as a manual command. Proof: the replay table in the Close. Waits on the first real run, in Open work.
 
 ## Proof
 
@@ -138,14 +138,14 @@ The decision log cites each control's log.
 
 | Gate | Phase | Evidence |
 | --- | --- | --- |
-| `deslop` and `no-comments` on the helper diff | 1, 2, 3 | phase 1: the writing rows of 15:47 and 16:47; phase 2: the writing rows of 17:00 and 17:58; 3 pending |
-| `unslop` on rule and playbook prose | 1, 2, 3 | phase 1: the writing row of 16:47; phase 2: the writing rows of 17:00 and 17:58; 3 pending |
-| dotai tests, `validate-skills` and `corpus` | 1, 2, 3 | phase 1: p1-trunk-final-a1.log, p1-sync-final-a1.log, corpus-p1.log and corpus-p1-apply.log; phase 2: p2-final-trunk-a1.log, p2-final-sync-a1.log, p2-corpus-a1.log and p2-all-pre-apply-a1.log; 3 pending |
-| One panel round on the helper diff | 1, 2, 3 | phase 1: p1-panel round 1; phase 2: p2-panel round 1; 3 pending |
-| Smoke of the changed rules in both runtimes | 1, 2, 3 | phase 1: Codex only, p1-smoke-new.log and p1-smoke-live-a1-a1.log; phase 2: Codex only, p2-smoke-new.log, p2-smoke-live.log and p2-resmoke-a1.log; Claude Code is a gap while its CLI is logged out; 3 pending |
-| dotai push, `apply` and `verify` | 1, 2, 3 | phase 1: dotai 518ec28, p1-verify.log; phase 2: dotai 1fcdb1c and 75c3325, p2-apply-a1.log, p2-verify-a1.log, p2-stage-apply-a1.log and p2-stage-verify-a1.log; 3 pending |
-| plate land through `land.mjs` | 1, 2, 3 | phase 1: 3f920c3bfe, p1-land-a1.log; phase 2: lands with this tick; 3 pending |
-| Phase exit | 1, 2, 3 | 1: waits for the escape table on 2026-11-09, in Open work; 2: the scorecard tables in the Close, no seat under 5%; 3 pending |
+| `deslop` and `no-comments` on the helper diff | 1, 2, 3 | phase 1: the writing rows of 15:47 and 16:47; phase 2: the writing rows of 17:00 and 17:58; phase 3: the writing rows of 19:58 and 20:00 |
+| `unslop` on rule and playbook prose | 1, 2, 3 | phase 1: the writing row of 16:47; phase 2: the writing rows of 17:00 and 17:58; phase 3: the writing rows of 19:58 and 20:00 |
+| dotai tests, `validate-skills` and `corpus` | 1, 2, 3 | phase 1: p1-trunk-final-a1.log, p1-sync-final-a1.log, corpus-p1.log and corpus-p1-apply.log; phase 2: p2-final-trunk-a1.log, p2-final-sync-a1.log, p2-corpus-a1.log and p2-all-pre-apply-a1.log; phase 3: p3-push-replay-a1.log, p3-push-trunk-a1.log, p3-push-sync-a2.log and p3-push-validate-a1.log, and no corpus, because phase 3 changes no ledger helper |
+| One panel round on the helper diff | 1, 2, 3 | phase 1: p1-panel round 1; phase 2: p2-panel round 1; phase 3: p3-panel round 1 |
+| Smoke of the changed rules in both runtimes | 1, 2, 3 | phase 1: Codex only, p1-smoke-new.log and p1-smoke-live-a1-a1.log; phase 2: Codex only, p2-smoke-new.log, p2-smoke-live.log and p2-resmoke-a1.log; phase 3: Codex only, p3-smoke-new-a1.log and p3-resmoke-a1.log; Claude Code is a gap while its CLI login is expired |
+| dotai push, `apply` and `verify` | 1, 2, 3 | phase 1: dotai 518ec28, p1-verify.log; phase 2: dotai 1fcdb1c and 75c3325, p2-apply-a1.log, p2-verify-a1.log, p2-stage-apply-a1.log and p2-stage-verify-a1.log; phase 3: dotai 7c71268, p3-apply-a1.log and p3-verify-a1.log |
+| plate land through `land.mjs` | 1, 2, 3 | phase 1: 3f920c3bfe, p1-land-a1.log; phase 2: 2865bddc03; phase 3: lands with this tick |
+| Phase exit | 1, 2, 3 | 1: waits for the escape table on 2026-11-09, in Open work; 2: the scorecard tables in the Close, no seat under 5%; 3: waits for the first real replay, in Open work |
 | `pstack:thermos` per slice | all | skip: the Lesson mode's helper panel reviews each diff, which the Build playbook says replaces it |
 | `pstack:blast-radius`, `best-api repair`, Hand drive, playtest, `plate-docs`, benchmark | all | skip: no public Plate API, browser surface, docs page or measured path changes |
 | Fold into the subject file, page and chips Close | close | pending |
@@ -153,9 +153,10 @@ The decision log cites each control's log.
 
 ## Close
 
-Phases 1 and 2 have landed on next, and phase 3 is building in this session.
+All three phases are built. Phases 1 and 2 have landed on next, and phase 3 lands with this tick.
 
-- Phase 1 landed as 3f920c3bfe from dotai 518ec28. Phase 2 lands with this tick from dotai 1fcdb1c and 75c3325, which adds `--stage` after the live smoke found that plate's push panel clashed with a revert that lands in one command.
+- Phase 1 landed as 3f920c3bfe from dotai 518ec28. Phase 2 landed as 2865bddc03 from dotai 1fcdb1c and 75c3325, which adds `--stage` after the live smoke found that plate's push panel clashed with a revert that lands in one command. Phase 3 lands from dotai 7c71268.
+- No real replay has run. Its Claude seats and its Opus judge need the claude CLI login, so the replay table and phase 3's exit wait in Open work.
 - Codex smoked every changed rule on plate exports before and after each change, and again on this worktree after each apply. Claude Code's smoke could not run, because the claude CLI on this machine is logged out.
 
 ### Seats on plate, 2026-10-26
@@ -191,3 +192,9 @@ No fix names its cause yet, because the `Introduced-by:` refusal started with ph
 - Phase 1 exit. On 2026-11-09, two weeks after the sync, run `scorecard.mjs` on plate and read its escape table. Keep the `Introduced-by:` refusal while most fixes name a commit, and turn it into a warning, with the reason logged, when most say `none`. owner: zbeyens. stop: the escape table and the keep or warn decision written in this plan's Close.
 - `refs/pstack/reviewed` is unset in this clone, so `review.mjs` shows only the last 20 commits and records no post-landing review. owner: zbeyens. stop: the owner says whether that review happens elsewhere, or starts marking sessions with `--done`.
 - `review.mjs --revert` also reverts the session's own plan and decision-log edits, so the record of why the work existed leaves the tree, though history keeps it. owner: zbeyens. stop: the owner keeps that, or asks the revert to leave the plans directory alone.
+- First real replay. The claude CLI on this machine has an expired login, so no Claude seat or Opus judge can run, and the Claude Code half of every smoke in this run failed. owner: zbeyens, who logs in with `claude` in a terminal. stop: the lead runs `replay.mjs` on plate with the current seats over six traced cases, checks the judge's verdicts against a hand reading, writes the table in this plan's Close, decides the phase 3 exit and reruns the Claude Code smokes of phases 1 to 3.
+- Replay starts every seat at once, with no provider cap and no rerun of a failed seat (phase 3 panel warning 4). owner: zbeyens. stop: the first real replay shows a rate refusal, or the owner asks for a cap.
+- A stop during replay's copy setup takes effect only after replay builds every copy, up to about 6 minutes (warning 14). owner: zbeyens. stop: a stop during setup needs to end sooner.
+- A failed opus seat's error file shows only the untrusted-folder warning (warning 15). owner: zbeyens. stop: the Claude login works again and a seat failure needs its cause.
+- `cross.mjs` passes each prompt as one argument, over Linux's 131,072-byte limit (warning 17). owner: zbeyens. stop: a pstack project runs panels on Linux.
+- Three helpers copy `land.mjs`'s choice of remote, and `replay.mjs` and `scorecard.mjs` copy its `Introduced-by:` parser, scorecard's without the space after the colon. owner: zbeyens. stop: a copy disagrees with `land.mjs` on a real commit.
