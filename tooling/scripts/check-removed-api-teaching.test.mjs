@@ -17,14 +17,17 @@ const repository = () => {
     const result = spawnSync('git', args, { cwd: root, encoding: 'utf-8' });
     assert.equal(result.status, 0, result.stderr);
   };
-  const publish = (names, exports) => {
+  const publish = (names, exports, signatures = {}) => {
     write(
       'apps/www/src/generated/api-reference-manifest.json',
       JSON.stringify({
         packages: {
           platejs: {
             symbols: Object.fromEntries(
-              names.map((name) => [`platejs:${name}`, { name }])
+              names.map((name) => [
+                `platejs:${name}`,
+                { name, signature: signatures[name] },
+              ])
             ),
           },
         },
@@ -95,6 +98,65 @@ test('a teaching file that still names a removed export or entrypoint fails unti
       findRemovedApiTeaching({ base: 'HEAD', cwd: root }).hits,
       []
     );
+  } finally {
+    rmSync(root, { force: true, recursive: true });
+  }
+});
+
+test('a teaching file that still names a member cut from a public type fails, unless the API or package source still uses it', () => {
+  const { git, publish, root, write } = repository();
+  const buzz = 'type BuzzOptions = {\n  classPrefix?: string;\n};';
+  try {
+    publish(
+      ['FizzHighlighter', 'BuzzOptions'],
+      { '.': './index.js' },
+      {
+        BuzzOptions: buzz,
+        FizzHighlighter:
+          'type FizzHighlighter = {\n  highlight(value: string): Root;\n  highlightAuto(value: string): Root;\n  classPrefix?: string;\n  lineNumbers?: boolean;\n  scrollOffset?: number;\n};',
+      }
+    );
+    write(
+      'docs/research/sources/fizz.md',
+      'The reader calls `highlightAuto(text)` for `auto`.'
+    );
+    write(
+      'docs/plans/topics/fizz.md',
+      '| `highlightAuto` | Cut because it ran every grammar. |'
+    );
+    write(
+      'content/docs/migration/v2.mdx',
+      'Remove `highlightAuto` and pick a language.'
+    );
+    write('.agents/rules/fizz/fixtures/pr.json', '{ "highlightAuto": false }');
+    write('content/docs/fizz.mdx', 'Pass a `classPrefix` to name the classes.');
+    write('content/docs/lines.mdx', 'Set `lineNumbers` to number the lines.');
+    write('packages/fizz/src/lines.ts', 'export const lineNumbers = true;');
+    write('content/docs/toc.mdx', 'Pass `scrollOffset` to the copied element.');
+    write(
+      'apps/www/src/registry/components/editor/toc.tsx',
+      'export function Toc({ scrollOffset }) {}'
+    );
+    git('add', '-A');
+    git('commit', '-q', '-m', 'base');
+
+    publish(
+      ['FizzHighlighter', 'BuzzOptions'],
+      { '.': './index.js' },
+      {
+        BuzzOptions: buzz,
+        FizzHighlighter:
+          'type FizzHighlighter = {\n  highlight(value: string): Root;\n};',
+      }
+    );
+
+    assert.deepEqual(findRemovedApiTeaching({ base: 'HEAD', cwd: root }), {
+      hits: [
+        'docs/research/sources/fizz.md:1:The reader calls `highlightAuto(text)` for `auto`.',
+      ],
+      names: ['highlightAuto'],
+      specifiers: [],
+    });
   } finally {
     rmSync(root, { force: true, recursive: true });
   }
