@@ -3014,6 +3014,48 @@ test.describe('On richtext example', () => {
     });
   });
 
+  test('keeps a composed word in its line when Safari sends the confirming Return after compositionend [EDIT-IME-ENTER-COMPOSING-001]', async ({
+    page,
+  }) => {
+    const editor = await openExample(page, 'plite/richtext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+
+    await editor.selectAll();
+    await editor.deleteFragment();
+    await editor.insertText('one');
+    await editor.press('Enter');
+    await page.evaluate(() => {
+      window.addEventListener(
+        'compositionend',
+        (event) => {
+          event.target?.dispatchEvent(
+            new KeyboardEvent('keydown', {
+              bubbles: true,
+              cancelable: true,
+              code: 'Enter',
+              key: 'Enter',
+              keyCode: 229,
+            })
+          );
+        },
+        { once: true }
+      );
+    });
+    await editor.ime.compose({
+      committedText: '你好',
+      steps: ['n', 'ni', 'ni hao'],
+      text: '你好',
+      transport: 'synthetic',
+    });
+    await editor.press('Enter');
+    await editor.type('x');
+
+    await editor.assert.blockTexts(['one', '你好', 'x']);
+  });
+
   test('deletes rich text line selection after WebKit compositionend', async ({
     page,
   }, testInfo) => {

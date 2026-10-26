@@ -63,6 +63,7 @@ import {
   type EditableInputController,
   type EditableRepairRequest,
   isInteractiveInternalTarget,
+  isNamedInputMethodKey,
   isNestedEditableDOMTarget,
   setEditableModelSelectionPreference,
 } from './input-controller';
@@ -706,6 +707,9 @@ export const applyEditableKeyDown = ({
     });
     if (userKeyDownResult.handled) {
       return userKeyDownResult;
+    }
+    if (isNamedInputMethodKey(nativeEvent)) {
+      return keyDownUnhandled();
     }
 
     if (isImeKeyDown(nativeEvent)) {
