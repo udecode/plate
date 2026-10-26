@@ -32,9 +32,11 @@ const later = () => new Date(Date.now() + 60_000).toISOString();
 const lines = (records) => `${records.join('\n')}\n`;
 
 const GH = `#!/usr/bin/env node
-const { readFileSync } = require('node:fs');
+const { appendFileSync, readFileSync, writeFileSync } = require('node:fs');
 const fixture = JSON.parse(readFileSync(process.env.GH_FIXTURE, 'utf8'));
 const args = process.argv.slice(2);
+const login = fixture.login ?? 'zbeyens';
+const people = (logins) => (logins ?? []).map((each) => ({ login: each }));
 if (fixture.fail) { console.error('gh: network down'); process.exit(1); }
 if (args[0] === 'issue' && args[1] === 'view') {
   const issue = fixture.issues[args[2]];
@@ -43,17 +45,34 @@ if (args[0] === 'issue' && args[1] === 'view') {
 } else if (args[0] === 'issue' && args[1] === 'list') {
   const label = args.includes('--label') ? args[args.indexOf('--label') + 1] : null;
   const open = Object.values(fixture.issues).filter((issue) => issue.state === 'OPEN' && (!label || issue.labels.some((each) => each.name === label)));
-  console.log(JSON.stringify(open));
+  console.log(JSON.stringify(open.map((issue) => ({ ...issue, assignees: people(issue.assignees) }))));
+} else if (args[0] === 'issue' && args[1] === 'edit') {
+  appendFileSync(process.env.GH_EDITS, args.join(' ') + '\\n');
+  const issue = fixture.issues[args[2]];
+  const added = args.includes('--add-assignee') ? args[args.indexOf('--add-assignee') + 1] : null;
+  if (issue && added && fixture.assignable !== false) {
+    issue.assignees = [...(issue.assignees ?? []), added === '@me' ? login : added];
+    writeFileSync(process.env.GH_FIXTURE, JSON.stringify(fixture));
+  }
 } else if (args[0] === 'api' && args[1] === 'user') {
   if (fixture.login === null) { console.error('gh: not logged in'); process.exit(1); }
-  console.log(fixture.login ?? 'zbeyens');
+  console.log(login);
 } else if (args[0] === 'api' && args[1] === 'graphql') {
   const query = args[args.indexOf('-f') + 1].slice('query='.length);
   const fields = query.includes('issueFieldValues');
+  const signals = query.includes('closedByPullRequestsReferences');
   const repository = {};
   for (const [, alias, number] of query.matchAll(/(i\\d+): issue\\(number: (\\d+)\\)/g)) {
     const issue = fixture.issues[number];
-    repository[alias] = !issue ? null : fields
+    repository[alias] = !issue ? null : signals
+      ? {
+          assignees: { nodes: people(issue.assignees) },
+          timelineItems: { nodes: Object.entries(issue.assignedAt ?? {}).map(([each, createdAt]) => ({ createdAt, assignee: { login: each } })) },
+          referenced: { nodes: (issue.refs ?? []).map((pr) => ({ source: { state: 'OPEN', ...pr } })) },
+          closedByPullRequestsReferences: { nodes: (issue.prs ?? []).map((pr) => ({ state: 'OPEN', ...pr })) },
+          comments: { pageInfo: { hasPreviousPage: Boolean(issue.moreComments) }, nodes: issue.comments.map((each, at) => ({ databaseId: 900 + at, author: { login: each.author.login, __typename: each.bot ? 'Bot' : 'User' }, createdAt: each.createdAt ?? '2026-01-01T00:00:00Z', body: each.body })) },
+        }
+      : fields
       ? { id: 'I_' + number, issueFieldValues: { nodes: issue.priority ? [{}, { optionId: 'OPT_' + issue.priority, field: { id: 'FIELD_PRIORITY' } }] : [{}] } }
       : { timelineItems: { nodes: issue.reopened ? [{ id: issue.reopened }] : [] } };
   }
@@ -142,6 +161,7 @@ function sandbox({ ledger = '' } = {}) {
     bin: join(dir, 'bin'),
     codexHome: join(dir, 'codex'),
     fixture: join(dir, 'gh.json'),
+    edits: join(dir, 'gh-edits.log'),
     origin: join(dir, 'origin.git'),
     work: join(dir, 'work'),
     runs: 0,
@@ -194,20 +214,20 @@ function setIssues(box, issues, extra = {}) {
   );
 }
 
-function setLedger(box, rows) {
+function setRef(box, ref, file, text) {
   const blob = spawnSync('git', ['hash-object', '-w', '--stdin'], {
     cwd: box.work,
-    input: `${LEDGER_HEADER}${rows}`,
+    input: text,
     encoding: 'utf-8',
     env: gitEnv(box.home),
   }).stdout.trim();
   const tree = spawnSync('git', ['mktree'], {
     cwd: box.work,
-    input: `100644 blob ${blob}\tsuggested-tasks.decisions.tsv\n`,
+    input: `100644 blob ${blob}\t${file}\n`,
     encoding: 'utf-8',
     env: gitEnv(box.home),
   }).stdout.trim();
-  const commit = git(box, box.work, 'commit-tree', tree, '-m', 'ledger');
+  const commit = git(box, box.work, 'commit-tree', tree, '-m', file);
   git(
     box,
     box.work,
@@ -215,9 +235,17 @@ function setLedger(box, rows) {
     '--quiet',
     '--force',
     'origin',
-    `${commit}:refs/pstack/ledger`
+    `${commit}:${ref}`
   );
 }
+
+const setLedger = (box, rows) =>
+  setRef(
+    box,
+    'refs/pstack/ledger',
+    'suggested-tasks.decisions.tsv',
+    `${LEDGER_HEADER}${rows}`
+  );
 
 function land(box, path, text) {
   const other = join(box.dir, `other-${(box.runs += 1)}`);
@@ -270,6 +298,7 @@ async function triage(
         ...gitEnv(box.home),
         PATH: `${box.bin}:${process.env.PATH}`,
         GH_FIXTURE: box.fixture,
+        GH_EDITS: box.edits,
         ...runtimeEnv,
         ...env,
       },
@@ -508,6 +537,114 @@ const stateLine = async (box, number, options) => {
   );
   return stdout.split('\n').find((line) => line.startsWith(`#${number} `));
 };
+
+function cloneOf(box, name) {
+  const path = join(box.dir, `clone-${name}`);
+  git(box, box.dir, 'clone', '--quiet', '-b', 'next', box.origin, path);
+  return path;
+}
+
+const claimRows = (box) => {
+  const shown = spawnSync(
+    'git',
+    ['--git-dir', box.origin, 'show', 'refs/triage/claims:claims.tsv'],
+    { encoding: 'utf-8' }
+  );
+  return shown.status === 0
+    ? shown.stdout
+        .split('\n')
+        .slice(1)
+        .filter(Boolean)
+        .map((line) => line.split('\t'))
+    : [];
+};
+
+// Runs another clone's claim once this clone has fetched the claims tip, so that claim lands between this one's fetch
+// and its push. A pre-push hook runs too late: git's own check of the advertised tip then rejects even a forced push.
+function claimAfterFetch(box, clone, other, args, { first = ':' } = {}) {
+  setClaims(box, []);
+  const result = join(box.dir, `after-fetch-${basename(other)}`);
+  const hook = join(clone, '.git', 'hooks', 'reference-transaction');
+  writeFileSync(
+    hook,
+    [
+      '#!/bin/sh',
+      '[ "$1" = committed ] || exit 0',
+      'grep -q refs/triage/claims || exit 0',
+      `[ -e '${result}.status' ] && exit 0`,
+      'unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE',
+      first,
+      `cd '${other}' && '${NODE}' '${script}' ${args.map((arg) => `'${arg}'`).join(' ')} > '${result}.out' 2>&1`,
+      `echo $? > '${result}.status'`,
+      'exit 0',
+      '',
+    ].join('\n')
+  );
+  chmodSync(hook, 0o755);
+  return () => ({
+    status: existsSync(`${result}.status`)
+      ? Number(readFileSync(`${result}.status`, 'utf-8'))
+      : null,
+    output: existsSync(`${result}.out`)
+      ? readFileSync(`${result}.out`, 'utf-8')
+      : '',
+  });
+}
+
+const ago = (hours) => new Date(Date.now() - hours * 3_600_000).toISOString();
+const CLAIMS_HEADER =
+  'ts\tissue\tmove\twho\tsession\ttranscript\ttask\tdrives\tover\twhy\n';
+const held = ({
+  ts = ago(1),
+  issue: number = 5250,
+  move = 'claim',
+  who = 'zbeyens',
+  session = 'A',
+  task = '-',
+  over = '-',
+} = {}) =>
+  [ts, String(number), move, who, session, '-', task, '-', over, 'seeded'].join(
+    '\t'
+  );
+const setClaims = (box, rows) =>
+  setRef(
+    box,
+    'refs/triage/claims',
+    'claims.tsv',
+    `${CLAIMS_HEADER}${rows.map((row) => `${row}\n`).join('')}`
+  );
+
+const recordsText = (records) =>
+  `${HEADER}${records
+    .map(
+      ([number, outcome, detail, ts = '2026-10-20T10:00:00.000Z']) =>
+        `${[`${number}-${ts}-aaaaaa`, ts, String(number), outcome, detail, 'a'.repeat(40), 'b'.repeat(16), '1', `${OPUS} @xhigh`, 'zbeyens', 'none', 'triaged'].join('\t')}\n`
+    )
+    .join('')}`;
+// Register rows written straight into the checkout, which a claim reads beside next's.
+const setRecords = (box, records) =>
+  writeFileSync(join(box.work, 'docs/triage/issues.tsv'), recordsText(records));
+const kind = (scope = 'editing', extra = '') =>
+  `scope: ${scope}; priority: P0; owner: packages/a/src/owner.ts:3; cause: read${extra}`;
+
+const chip = (id, result, why, evidence, ts = '2026-10-24T10:00:00Z') =>
+  `${ts}\tchip\t${id} Fix Enter in lists\t${why}\t${evidence}\t${result}\n`;
+const offer = (id, repro, why = 'Enter splits wrong') =>
+  chip(
+    id,
+    'offered',
+    why,
+    `writes: packages/a; topic: lists; kind: fix; priority: P0; repro: ${repro} holds the steps`
+  );
+const startedIn = (id, session, ts = '2026-10-24T11:00:00Z') =>
+  chip(id, 'started', 'started it', `session: ${session}`, ts);
+
+const claim = (box, args, options) => triage(box, ['claim', ...args], options);
+const claimed = (box) => claimRows(box).map((row) => [row[1], row[2]]);
+const edits = (box) =>
+  existsSync(box.edits)
+    ? readFileSync(box.edits, 'utf-8').split('\n').filter(Boolean)
+    : [];
 
 // Each test builds its own sandbox, so they run side by side.
 describe('triage', { concurrency: 8 }, () => {
@@ -1401,5 +1538,1101 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(await recordStatus(box, [[5250]]), 0);
     assert.equal(registerRows(box).length, 1);
     assert.equal(await statusOf(box, ['check']), 0);
+  });
+});
+
+describe('triage claim', { concurrency: 8 }, () => {
+  test('two sessions that claim one issue at once leave exactly one holder and one claim row', async () => {
+    const box = sandbox();
+    const [a, b] = [cloneOf(box, 'a'), cloneOf(box, 'b')];
+    const during = claimAfterFetch(box, a, b, [
+      'claim',
+      '5250',
+      '--session',
+      'B',
+    ]);
+    const first = await triage(box, ['claim', '5250', '--session', 'A'], {
+      cwd: a,
+    });
+    assert.deepEqual(
+      {
+        a: first.status,
+        b: during().status,
+        holders: claimRows(box).map((row) => row[4]),
+      },
+      { a: 1, b: 0, holders: ['B'] },
+      `${first.stdout}${first.stderr}${during().output}`
+    );
+  });
+
+  test('a claim whose push another claim beat decides again on the new tip and lands', async () => {
+    const box = sandbox();
+    const [a, b] = [cloneOf(box, 'a'), cloneOf(box, 'b')];
+    claimAfterFetch(box, a, b, ['claim', '5251', '--session', 'B']);
+    const result = await claim(box, ['5250', '--session', 'A'], { cwd: a });
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).map((row) => [row[1], row[4]]),
+      },
+      {
+        status: 0,
+        rows: [
+          ['5251', 'B'],
+          ['5250', 'A'],
+        ],
+      },
+      result.stderr
+    );
+  });
+
+  test('a rerun by the session that holds the claim writes nothing', async () => {
+    const box = sandbox();
+    await claim(box, ['5250', '--session', 'A']);
+    const again = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      { status: again.status, rows: claimRows(box).length },
+      { status: 0, rows: 1 },
+      again.stdout
+    );
+  });
+
+  for (const { name, key, arrange } of [
+    {
+      name: "another session's live claim",
+      key: 'claim:zbeyens/A',
+      arrange: (box) => setClaims(box, [held()]),
+    },
+    {
+      name: 'another login assigned on GitHub',
+      key: 'assignee:natamox',
+      arrange: (box) =>
+        setIssues(box, [issue(5250, { assignees: ['natamox'] })]),
+    },
+    {
+      name: 'an open PR that closes it',
+      key: 'pr:77',
+      arrange: (box) =>
+        setIssues(box, [
+          issue(5250, {
+            prs: [
+              {
+                number: 77,
+                author: { login: 'zbeyens' },
+                createdAt: ago(2),
+                updatedAt: ago(1),
+              },
+            ],
+          }),
+        ]),
+    },
+    {
+      name: 'an open PR into another branch whose body says it fixes it',
+      key: 'pr:5316',
+      arrange: (box) =>
+        setIssues(box, [
+          issue(5250, {
+            refs: [
+              {
+                number: 5316,
+                author: { login: 'dylans' },
+                title: 'fix lists',
+                body: 'Fixes #5250',
+                createdAt: ago(2),
+                updatedAt: ago(1),
+              },
+            ],
+          }),
+        ]),
+    },
+    {
+      name: 'a started task whose started row names no session',
+      key: 'task:t_aaaa1111',
+      arrange: (box) =>
+        setLedger(
+          box,
+          `${offer('t_aaaa1111', 'plate#5250')}${chip('t_aaaa1111', 'started', 'started it', 'writes: packages/a', '2026-10-24T11:00:00Z')}`
+        ),
+    },
+    {
+      name: "another login's recent comment that claims it",
+      key: 'comment:900',
+      arrange: (box) =>
+        setIssues(box, [
+          issue(5250, {
+            comments: [
+              {
+                ...comment('natamox', 'NONE', "I'll take this one tonight."),
+                createdAt: ago(5),
+              },
+            ],
+          }),
+        ]),
+    },
+    {
+      name: 'a started task no claim row names',
+      key: 'task:t_aaaa1111',
+      arrange: (box) =>
+        setLedger(
+          box,
+          `${offer('t_aaaa1111', 'plate#5250')}${startedIn('t_aaaa1111', 'local_old')}`
+        ),
+    },
+  ]) {
+    test(`${name} holds the issue and the claim writes nothing`, async () => {
+      const box = sandbox();
+      arrange(box);
+      const result = await claim(box, ['5250', '--session', 'B']);
+      assert.deepEqual(
+        {
+          status: result.status,
+          key: new RegExp(`^ {2}${key}[ ,]`, 'mu').test(result.stdout),
+          rows: claimRows(box).filter((row) => row[4] === 'B').length,
+        },
+        { status: 1, key: true, rows: 0 },
+        result.stdout + result.stderr
+      );
+    });
+  }
+
+  test('an open PR that only mentions the issue leaves it free', async () => {
+    const box = sandbox();
+    setIssues(box, [
+      issue(5250, {
+        refs: [
+          {
+            number: 5316,
+            author: { login: 'dylans' },
+            title: 'fix lists',
+            body: 'Unlike #5250, this one pastes',
+            createdAt: ago(2),
+            updatedAt: ago(1),
+          },
+        ],
+      }),
+    ]);
+    const result = await claim(box, ['5250', '--session', 'B']);
+    assert.equal(result.status, 0, result.stdout);
+  });
+
+  test('a claim refuses when one read returns fewer of the last 30 days of comments than there are', async () => {
+    const box = sandbox();
+    setIssues(box, [
+      issue(5250, {
+        moreComments: true,
+        comments: [
+          { ...comment('natamox', 'NONE', 'Same here.'), createdAt: ago(1) },
+        ],
+      }),
+    ]);
+    const result = await claim(box, ['5250', '--session', 'B']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).length,
+        said: /more comments than one read returns/u.test(result.stderr),
+      },
+      { status: 1, rows: 0, said: true },
+      result.stdout + result.stderr
+    );
+  });
+
+  test('a claim without --session names the desktop session first', async () => {
+    const box = sandbox();
+    const result = await claim(box, ['5250'], {
+      env: { CLAUDE_CODE_HOST_SESSION_ID: 'local_host' },
+    });
+    assert.match(
+      result.stdout,
+      /^actor: zbeyens, session local_host\b/mu,
+      result.stdout
+    );
+  });
+
+  test('a push the remote refuses for another reason stops at once', async () => {
+    const box = sandbox();
+    writeFileSync(
+      join(box.origin, 'hooks', 'pre-receive'),
+      '#!/bin/sh\nexit 1\n'
+    );
+    chmodSync(join(box.origin, 'hooks', 'pre-receive'), 0o755);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.match(
+      result.stderr,
+      /could not push refs\/triage\/claims/u,
+      result.stderr
+    );
+  });
+
+  test('a retry after another claim beat the push reads GitHub again', async () => {
+    const box = sandbox();
+    const [a, b] = [cloneOf(box, 'a'), cloneOf(box, 'b')];
+    const assigned = join(box.dir, 'assigned.json');
+    writeFileSync(
+      assigned,
+      JSON.stringify({
+        issues: {
+          5250: issue(5250, { assignees: ['natamox'] }),
+          5251: issue(5251),
+        },
+      })
+    );
+    claimAfterFetch(box, a, b, ['claim', '5251', '--session', 'B'], {
+      first: `cp '${assigned}' '${box.fixture}'`,
+    });
+    const result = await claim(box, ['5250', '--session', 'A'], { cwd: a });
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).map((row) => [row[1], row[4]]),
+      },
+      { status: 1, rows: [['5251', 'B']] },
+      result.stdout + result.stderr
+    );
+  });
+
+  test('a comment that claims nothing, a claim comment older than 30 days and a bot comment leave the issue free', async () => {
+    const box = sandbox();
+    setIssues(box, [
+      issue(5250, {
+        comments: [
+          {
+            ...comment('natamox', 'NONE', 'Same here on Safari, thanks.'),
+            createdAt: ago(2),
+          },
+          {
+            ...comment('sin', 'NONE', "I'll take this."),
+            createdAt: ago(31 * 24),
+          },
+          {
+            ...comment('helper', 'NONE', "I'll work on it."),
+            createdAt: ago(1),
+            bot: true,
+          },
+        ],
+      }),
+    ]);
+    const result = await claim(box, ['5250', '--session', 'B']);
+    assert.equal(result.status, 0, result.stdout);
+  });
+
+  test('a merged PR that closed the issue before it reopened leaves it free', async () => {
+    const box = sandbox();
+    setIssues(box, [
+      issue(5250, {
+        prs: [
+          {
+            number: 77,
+            state: 'MERGED',
+            author: { login: 'sin' },
+            createdAt: ago(48),
+            updatedAt: ago(47),
+          },
+        ],
+      }),
+    ]);
+    const result = await claim(box, ['5250', '--session', 'B']);
+    assert.equal(result.status, 0, result.stdout);
+  });
+
+  test('a branch and an offered task that name the issue only print notes', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250), issue(5251)]);
+    setLedger(
+      box,
+      offer('t_bbbb2222', '#5251', 'unlike plate#5250 this one pastes')
+    );
+    git(box, box.work, 'push', '--quiet', 'origin', 'next:fix-5250-enter');
+    const result = await claim(box, ['5250', '--session', 'B']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        notes: result.stdout
+          .split('\n')
+          .filter((line) => line.startsWith('note:')),
+      },
+      {
+        status: 0,
+        notes: [
+          'note: t_bbbb2222 (offered) names #5250 in its finding, not in repro:',
+          'note: branch fix-5250-enter names #5250',
+        ],
+      },
+      result.stdout
+    );
+  });
+
+  test("a hold newer than the session's own claim still holds the issue", async () => {
+    const box = sandbox();
+    setClaims(box, [held({ ts: ago(2) })]);
+    setIssues(box, [
+      issue(5250, {
+        assignees: ['natamox'],
+        assignedAt: { natamox: ago(1) },
+      }),
+    ]);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        held: result.stdout.includes('\n  assignee:natamox by natamox'),
+      },
+      { status: 1, held: true },
+      result.stdout
+    );
+  });
+
+  test('a commit on the owner file of a quiet claim keeps it from reading stale', async () => {
+    const box = sandbox();
+    git(box, box.work, 'checkout', '--quiet', '-b', 'side');
+    writeFileSync(
+      join(box.work, 'packages/a/src/owner.ts'),
+      'export const a = 9;\n'
+    );
+    git(box, box.work, 'commit', '--quiet', '-am', 'work on the owner');
+    git(box, box.work, 'checkout', '--quiet', 'next');
+    setRecords(box, [[5250, 'kind', kind()]]);
+    setClaims(box, [held({ ts: ago(49) })]);
+    const result = await claim(box, ['5250', '--session', 'B']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        stale: /^ {2}claim:zbeyens\/A .*, stale$/mu.test(result.stdout),
+      },
+      { status: 1, stale: false },
+      result.stdout
+    );
+  });
+
+  test('a hold quiet for 48 hours prints stale and still holds', async () => {
+    const box = sandbox();
+    setClaims(box, [held({ ts: ago(49) })]);
+    const result = await claim(box, ['5250', '--session', 'B']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        stale: /^ {2}claim:zbeyens\/A .*, stale$/mu.test(result.stdout),
+      },
+      { status: 1, stale: true },
+      result.stdout
+    );
+  });
+
+  const TAKE = [
+    '--take',
+    'assignee:natamox',
+    '--why',
+    'take it, natamox moved to mobile',
+  ];
+
+  test('an owner takes over exactly the holds it names', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250, { assignees: ['natamox'] })]);
+    const result = await claim(box, ['5250', '--session', 'B', ...TAKE]);
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).map((row) => [row[1], row[2], row[8]]),
+      },
+      { status: 0, rows: [['5250', 'take', 'assignee:natamox']] },
+      result.stdout + result.stderr
+    );
+  });
+
+  test('a take leaves the unassign to the owner and prints its command', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250, { assignees: ['natamox'] })]);
+    const result = await claim(box, ['5250', '--session', 'B', ...TAKE]);
+    assert.deepEqual(
+      {
+        printed: result.stdout.includes(
+          'gh issue edit 5250 --repo udecode/plate --remove-assignee natamox'
+        ),
+        removed: edits(box).filter((line) =>
+          line.includes('--remove-assignee')
+        ),
+      },
+      { printed: true, removed: [] },
+      result.stdout
+    );
+  });
+
+  test("a login that is not a triage owner cannot take another login's hold", async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250, { assignees: ['natamox'] })], { login: 'sin' });
+    const result = await claim(box, ['5250', '--session', 'B', ...TAKE]);
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).length,
+        said: /only zbeyens takes over another login's hold \(assignee:natamox\)/u.test(
+          result.stderr
+        ),
+      },
+      { status: 1, rows: 0, said: true },
+      result.stderr
+    );
+  });
+
+  test('any login takes over a hold of its own login from another session', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250)], { login: 'natamox' });
+    setClaims(box, [held({ who: 'natamox' })]);
+    const result = await claim(box, [
+      '5250',
+      '--session',
+      'B',
+      '--take',
+      'claim:natamox/A',
+      '--why',
+      'my old session died',
+    ]);
+    assert.deepEqual(
+      { status: result.status, last: claimRows(box).at(-1)[2] },
+      { status: 0, last: 'take' },
+      result.stdout + result.stderr
+    );
+  });
+
+  test('a hold the take does not name still holds', async () => {
+    const box = sandbox();
+    setIssues(box, [
+      issue(5250, {
+        assignees: ['natamox'],
+        prs: [
+          {
+            number: 77,
+            author: { login: 'sin' },
+            createdAt: ago(2),
+            updatedAt: ago(1),
+          },
+        ],
+      }),
+    ]);
+    const result = await claim(box, ['5250', '--session', 'B', ...TAKE]);
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).length,
+        held: result.stdout.includes('\n  pr:77 by sin'),
+      },
+      { status: 1, rows: 0, held: true },
+      result.stdout
+    );
+  });
+
+  test("a take names again each hold that another session's take covered", async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250, { assignees: ['natamox'] })]);
+    setClaims(box, [held({ move: 'take', over: 'assignee:natamox' })]);
+    const result = await claim(box, [
+      '5250',
+      '--session',
+      'B',
+      '--take',
+      'claim:zbeyens/A',
+      '--why',
+      'my old session died',
+    ]);
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).length,
+        held: result.stdout.includes('\n  assignee:natamox '),
+      },
+      { status: 1, rows: 1, held: true },
+      result.stdout + result.stderr
+    );
+  });
+
+  test('the holder releases its claim and another session then claims the issue', async () => {
+    const box = sandbox();
+    setClaims(box, [held()]);
+    const released = await triage(box, [
+      'release',
+      '5250',
+      '--session',
+      'A',
+      '--why',
+      'stopped: no repro',
+    ]);
+    const next = await claim(box, ['5250', '--session', 'B']);
+    assert.deepEqual(
+      { released: released.status, claimed: next.status },
+      { released: 0, claimed: 0 },
+      released.stderr + next.stdout
+    );
+  });
+
+  test("a triage owner releases another login's claim", async () => {
+    const box = sandbox();
+    setClaims(box, [held({ who: 'natamox', session: 'X' })]);
+    const result = await triage(box, [
+      'release',
+      '5250',
+      '--session',
+      'B',
+      '--why',
+      'natamox moved on',
+    ]);
+    assert.deepEqual(
+      { status: result.status, last: claimRows(box).at(-1)[2] },
+      { status: 0, last: 'release' },
+      result.stderr
+    );
+  });
+
+  test('a login that neither holds the claim nor owns triage cannot release it', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250)], { login: 'sin' });
+    setClaims(box, [held({ who: 'natamox', session: 'X' })]);
+    const result = await triage(box, [
+      'release',
+      '5250',
+      '--session',
+      'B',
+      '--why',
+      'mine now',
+    ]);
+    assert.deepEqual(
+      { status: result.status, rows: claimRows(box).length },
+      { status: 1, rows: 1 },
+      result.stderr
+    );
+  });
+
+  const FIXED =
+    'commit: abc1234; owner: packages/a/src/owner.ts; proof: the owner test';
+  const claimLineOf = async (box) => {
+    const shown = await stdoutOf(box, ['show', '5250', '--brief']);
+    return shown.split('\n').find((line) => line.startsWith('claim: '));
+  };
+  for (const { name, ends, arrange } of [
+    {
+      name: 'the issue closes',
+      ends: true,
+      arrange: (box) => setIssues(box, [issue(5250, { state: 'CLOSED' })]),
+    },
+    {
+      name: 'its record reads fixed on next after the claim',
+      ends: true,
+      arrange: (box) =>
+        land(
+          box,
+          'docs/triage/issues.tsv',
+          recordsText([[5250, 'fixed', FIXED, ago(0.5)]])
+        ),
+    },
+    {
+      name: 'a fixed record newer than the claim waits unlanded in this checkout',
+      ends: false,
+      arrange: (box) => setRecords(box, [[5250, 'fixed', FIXED, ago(0.5)]]),
+    },
+    {
+      name: 'its task lands after the claim',
+      ends: true,
+      arrange: (box) =>
+        setLedger(
+          box,
+          `${offer('t_aaaa1111', 'plate#5250')}${startedIn('t_aaaa1111', 'A', ago(1))}${chip('t_aaaa1111', 'landed', 'fixed', 'commit: abc1234', ago(0.5))}`
+        ),
+    },
+    {
+      name: "its task is dismissed after the claim's own session started it",
+      ends: true,
+      arrange: (box) =>
+        setLedger(
+          box,
+          `${offer('t_aaaa1111', 'plate#5250')}${startedIn('t_aaaa1111', 'A', ago(1))}${chip('t_aaaa1111', 'dismissed stopped', 'stopped', 'session: local_sweep', ago(0.5))}`
+        ),
+    },
+    {
+      name: 'its task is dismissed after another session started it',
+      ends: false,
+      arrange: (box) =>
+        setLedger(
+          box,
+          `${offer('t_aaaa1111', 'plate#5250')}${startedIn('t_aaaa1111', 'local_card', ago(0.8))}${chip('t_aaaa1111', 'dismissed stopped', 'card session archived', 'session: local_sweep', ago(0.5))}`
+        ),
+    },
+    {
+      name: 'its record read fixed before the claim',
+      ends: false,
+      arrange: (box) => setRecords(box, [[5250, 'fixed', FIXED, ago(2)]]),
+    },
+  ]) {
+    test(`a claim ${ends ? 'ends with no row once' : 'stays live when'} ${name}`, async () => {
+      const box = sandbox();
+      setClaims(box, [held({ task: 't_aaaa1111' })]);
+      arrange(box);
+      assert.match(
+        await claimLineOf(box),
+        ends ? /^claim: none$/u : /^claim: zbeyens session A since /u
+      );
+    });
+  }
+
+  test('show prints the live claim and the open tasks whose findings name the issue, and tasks: stays with repro:', async () => {
+    const box = sandbox();
+    const since = ago(1);
+    setClaims(box, [held({ ts: since })]);
+    setLedger(
+      box,
+      offer('t_bbbb2222', '#5251', 'unlike plate#5250 this one pastes')
+    );
+    const shown = await stdoutOf(box, ['show', '5250', '--brief']);
+    assert.deepEqual(
+      shown
+        .split('\n')
+        .filter((line) => /^(?:tasks|claim|mentions): /u.test(line)),
+      [
+        'tasks: -',
+        `claim: zbeyens session A since ${since}, last activity ${since}`,
+        'mentions: t_bbbb2222 offered',
+      ]
+    );
+  });
+
+  const issues = (...numbers) => numbers.map((number) => issue(number));
+  const claimedIssues = (box) =>
+    claimed(box)
+      .map(([number]) => number)
+      .sort();
+
+  test("a held member of the issue's group stops the issue target whole", async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250), issue(5251, { assignees: ['natamox'] })]);
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'dup', 'of: 5250'],
+    ]);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, rows: claimRows(box).length },
+      { status: 1, rows: 0 },
+      result.stdout
+    );
+  });
+
+  test('an issue target whose root is a device kind claims none of its group', async () => {
+    const box = sandbox();
+    setRecords(box, [
+      [5250, 'kind', kind('editing', '; device: ios')],
+      [5251, 'kind', kind()],
+    ]);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, rows: claimRows(box).length },
+      { status: 1, rows: 0 },
+      result.stdout
+    );
+  });
+
+  test('an issue target claims a split issue with its parts', async () => {
+    const box = sandbox();
+    setIssues(box, issues(5250, 5251, 5252));
+    setRecords(box, [[5252, 'split', 'into: 5250, 5251']]);
+    await claim(box, ['5252', '--session', 'A']);
+    assert.deepEqual(claimedIssues(box), ['5250', '5251', '5252']);
+  });
+
+  const chain = (box, assigned) => {
+    setIssues(box, [
+      issue(5250),
+      issue(5251),
+      issue(5252, { assignees: [assigned] }),
+    ]);
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'dup', 'of: 5250'],
+      [5252, 'dup', 'of: 5251'],
+    ]);
+  };
+
+  test('an issue target checks every dup down a chain of dups', async () => {
+    const box = sandbox();
+    chain(box, 'natamox');
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, rows: claimRows(box).length },
+      { status: 1, rows: 0 },
+      result.stdout
+    );
+  });
+
+  test('an issue at the end of a dup chain belongs to its own group', async () => {
+    const box = sandbox();
+    chain(box, 'natamox');
+    const result = await claim(box, ['5252', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, rows: claimRows(box).length },
+      { status: 1, rows: 0 },
+      result.stdout
+    );
+  });
+
+  test('an issue target stops whole when an open task of its group names a held issue', async () => {
+    const box = trunkSandbox(offer('t_aaaa1111', 'plate#5250 and plate#5251'));
+    setIssues(box, [issue(5250), issue(5251, { assignees: ['natamox'] })]);
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind('paste').replace('owner.ts', 'other.ts')],
+    ]);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).length,
+        started: /\tstarted\n/u.test(ledgerOnOrigin(box)),
+      },
+      { status: 1, rows: 0, started: false },
+      result.stdout
+    );
+  });
+
+  test('a domain target skips an issue whose open task names a held issue of another domain', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250), issue(5251, { assignees: ['natamox'] })]);
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind('paste')],
+    ]);
+    setLedger(box, offer('t_aaaa1111', 'plate#5250 and plate#5251'));
+    const result = await claim(box, ['--domain', 'editing', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, claimed: claimedIssues(box) },
+      { status: 1, claimed: [] },
+      result.stdout
+    );
+  });
+
+  test('a domain target leaves a free issue of another domain that its open task names, and the task with it', async () => {
+    const box = sandbox();
+    setIssues(box, issues(5250, 5251, 5252));
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind('paste')],
+      [5252, 'kind', kind()],
+    ]);
+    setLedger(box, offer('t_aaaa1111', 'plate#5250 and plate#5251'));
+    const result = await claim(box, ['--domain', 'editing', '--session', 'A']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        claimed: claimedIssues(box),
+        said: result.stdout.includes('skipped #5251: outside this target'),
+      },
+      { status: 0, claimed: ['5252'], said: true },
+      result.stdout
+    );
+  });
+
+  test("an agent's domain claim skips the dup of a device kind with it", async () => {
+    const box = sandbox();
+    setRecords(box, [
+      [5250, 'kind', kind('editing', '; device: ios')],
+      [5251, 'dup', 'of: 5250'],
+    ]);
+    setLedger(box, offer('t_aaaa1111', 'plate#5250 and plate#5251'));
+    const result = await claim(box, ['--domain', 'editing', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, claimed: claimedIssues(box) },
+      { status: 1, claimed: [] },
+      result.stdout
+    );
+  });
+
+  test('a person who drives the device claims its kind with its dup and leaves the desktop kind on its owner file', async () => {
+    const box = sandbox();
+    setIssues(box, issues(5250, 5251, 5252));
+    setRecords(box, [
+      [5250, 'kind', kind('editing', '; device: ios')],
+      [5251, 'dup', 'of: 5250'],
+      [5252, 'kind', kind()],
+    ]);
+    const result = await claim(box, [
+      '5250',
+      '--session',
+      'P',
+      '--drives',
+      'ios',
+    ]);
+    assert.deepEqual(
+      { status: result.status, claimed: claimedIssues(box) },
+      { status: 0, claimed: ['5250', '5251'] },
+      result.stdout
+    );
+  });
+
+  test('an issue target claims the open issues whose kind shares an owner file', async () => {
+    const box = sandbox();
+    setIssues(box, issues(5250, 5251, 5252));
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind('paste').replace(':3', ':1')],
+      [5252, 'kind', kind().replace('owner.ts:3', 'other.ts:3')],
+    ]);
+    await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(claimedIssues(box), ['5250', '5251']);
+  });
+
+  test('a domain target skips the unit a held member holds and claims the rest', async () => {
+    const box = sandbox();
+    setIssues(box, [
+      issue(5250),
+      issue(5251),
+      issue(5252, { assignees: ['natamox'] }),
+    ]);
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind()],
+      [5252, 'dup', 'of: 5250'],
+    ]);
+    const result = await claim(box, ['--domain', 'editing', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, claimed: claimedIssues(box) },
+      { status: 0, claimed: ['5251'] },
+      result.stdout
+    );
+  });
+
+  test('a domain target skips every issue of an open task that a held member holds', async () => {
+    const box = sandbox();
+    setIssues(box, [
+      issue(5250, { assignees: ['natamox'] }),
+      issue(5251),
+      issue(5252),
+    ]);
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind()],
+      [5252, 'kind', kind()],
+    ]);
+    setLedger(box, offer('t_aaaa1111', 'plate#5250 and plate#5251'));
+    const result = await claim(box, ['--domain', 'editing', '--session', 'A']);
+    assert.deepEqual(
+      { status: result.status, claimed: claimedIssues(box) },
+      { status: 0, claimed: ['5252'] },
+      result.stdout
+    );
+  });
+
+  test("--domain without --task claims the domain's kinds and skips the issues of a task another session started", async () => {
+    const box = sandbox();
+    setIssues(box, issues(5250, 5251));
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind()],
+    ]);
+    setLedger(
+      box,
+      `${offer('t_bbbb2222', '#5251')}${startedIn('t_bbbb2222', 'local_old')}`
+    );
+    await claim(box, ['--domain', 'editing', '--session', 'A']);
+    assert.deepEqual(claimedIssues(box), ['5250']);
+  });
+
+  test("--domain with --task claims the task's issues and the domain's kinds with no open task", async () => {
+    const box = sandbox();
+    setIssues(box, issues(5250, 5251, 5252));
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind()],
+      [5252, 'kind', kind('paste')],
+    ]);
+    setLedger(
+      box,
+      `${offer('t_aaaa1111', '#5252')}${offer('t_cccc3333', '#5251')}`
+    );
+    await claim(box, [
+      '--domain',
+      'editing',
+      '--task',
+      't_aaaa1111',
+      '--session',
+      'A',
+    ]);
+    assert.deepEqual(claimedIssues(box), ['5250', '5252']);
+  });
+
+  test('a claim skips a device kind unless --drives names its device', async () => {
+    const box = sandbox();
+    setRecords(box, [[5250, 'kind', kind('editing', '; device: ios')]]);
+    const skipped = await claim(box, ['5250', '--session', 'A']);
+    const driven = await claim(box, [
+      '5250',
+      '--session',
+      'A',
+      '--drives',
+      'ios',
+    ]);
+    assert.deepEqual(
+      {
+        skipped: skipped.status,
+        driven: driven.status,
+        rows: claimRows(box).map((row) => [row[1], row[7]]),
+      },
+      { skipped: 1, driven: 0, rows: [['5250', 'ios']] },
+      skipped.stdout + driven.stdout
+    );
+  });
+
+  test('lane lists the open device kinds with their holders, highest priority first', async () => {
+    const box = sandbox();
+    setIssues(box, issues(5250, 5251, 5252, 5253));
+    setRecords(box, [
+      [5250, 'kind', kind('editing', '; device: ios').replace('P0', 'P2')],
+      [5251, 'kind', kind('editing', '; device: android, ime')],
+      [5252, 'kind', kind('editing', '; device: ios').replace('P0', 'P1')],
+      [5253, 'kind', kind()],
+    ]);
+    setClaims(box, [held({ issue: 5252, who: 'natamox', session: 'X' })]);
+    const listed = await stdoutOf(box, ['lane']);
+    assert.deepEqual(listed.trim().split('\n'), [
+      '#5251\tP0\tediting\tandroid,ime\tfree\tIssue 5251',
+      '#5252\tP1\tediting\tios\tnatamox/X\tIssue 5252',
+      '#5250\tP2\tediting\tios\tfree\tIssue 5250',
+    ]);
+  });
+
+  test('record refuses a device other than ios, android or ime', async () => {
+    const box = sandbox();
+    const result = await firstResult(box, [
+      [5250, 'kind', `${KIND}; device: ipad`],
+    ]);
+    assert.match(result.stderr, /#5250: device: "ipad" is not a valid value/u);
+  });
+
+  test('record accepts a kind whose device lists ios and ime', async () => {
+    const box = sandbox();
+    assert.equal(
+      await recordStatus(box, [[5250, 'kind', `${KIND}; device: ios, ime`]]),
+      0
+    );
+  });
+
+  test('a claim assigns the login only where GitHub does not show it assigned', async () => {
+    const box = sandbox();
+    setIssues(box, [issue(5250), issue(5251, { assignees: ['zbeyens'] })]);
+    setRecords(box, [
+      [5250, 'kind', kind()],
+      [5251, 'kind', kind()],
+    ]);
+    await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(edits(box), [
+      'issue edit 5250 --repo udecode/plate --add-assignee @me',
+    ]);
+  });
+
+  test('a claim whose assignment GitHub does not show keeps the claim and exits 1', async () => {
+    const box = sandbox();
+    setIssues(box, issues(5250), { assignable: false });
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        rows: claimRows(box).length,
+        said: result.stdout.includes('running this claim again repairs it'),
+      },
+      { status: 1, rows: 1, said: true },
+      result.stdout
+    );
+  });
+
+  const ledgerOnOrigin = (box) =>
+    spawnSync(
+      'git',
+      [
+        '--git-dir',
+        box.origin,
+        'show',
+        'refs/pstack/ledger:suggested-tasks.decisions.tsv',
+      ],
+      { encoding: 'utf-8' }
+    ).stdout;
+  function trunkSandbox(ledger) {
+    const box = sandbox({ ledger });
+    writeFileSync(
+      join(box.work, '.agents/pstack.json'),
+      `${JSON.stringify({ branch: 'next', delivery: 'trunk', plans: 'docs/plans', maxEffort: 'xhigh', triage: POLICY }, null, 2)}\n`
+    );
+    git(box, box.work, 'commit', '--quiet', '-am', 'trunk delivery');
+    git(box, box.work, 'push', '--quiet', 'origin', 'next');
+    return box;
+  }
+
+  test('a claim that covers an offered, ready task whole logs its started row on the ledger ref', async () => {
+    const box = trunkSandbox(offer('t_aaaa1111', 'plate#5250'));
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.match(
+      ledgerOnOrigin(box),
+      /\tchip\tt_aaaa1111 Fix Enter in lists\t[^\t]+\tsession: A\tstarted\n/u,
+      result.stdout + result.stderr
+    );
+  });
+
+  test('a task another session starts after the claim decided stays with that session', async () => {
+    const box = trunkSandbox(offer('t_aaaa1111', 'plate#5250'));
+    const other = join(box.dir, 'start-other.mjs');
+    writeFileSync(
+      other,
+      `import { spawnSync } from 'node:child_process';
+const put = (args, input = '') => spawnSync('git', ['--git-dir', ${JSON.stringify(box.origin)}, ...args], { encoding: 'utf-8', input }).stdout.trim();
+const tip = put(['rev-parse', 'refs/pstack/ledger']);
+const text = put(['show', tip + ':suggested-tasks.decisions.tsv']) + '\\n' + ${JSON.stringify(startedIn('t_aaaa1111', 'local_other', ago(0)))};
+const blob = put(['hash-object', '-w', '--stdin'], text);
+const tree = put(['mktree'], '100644 blob ' + blob + '\\tsuggested-tasks.decisions.tsv\\n');
+const commit = put(['commit-tree', tree, '-p', tip, '-m', 'other start']);
+put(['update-ref', 'refs/pstack/ledger', commit]);
+`
+    );
+    const done = join(box.dir, 'start-other.done');
+    const hook = join(box.work, '.git', 'hooks', 'reference-transaction');
+    writeFileSync(
+      hook,
+      [
+        '#!/bin/sh',
+        '[ "$1" = committed ] || exit 0',
+        'grep -q refs/triage/claims || exit 0',
+        `[ -e '${done}' ] && exit 0`,
+        `touch '${done}'`,
+        `'${NODE}' '${other}'`,
+        'exit 0',
+        '',
+      ].join('\n')
+    );
+    chmodSync(hook, 0o755);
+    const result = await claim(box, ['5250', '--session', 'A']);
+    assert.deepEqual(
+      {
+        status: result.status,
+        sessions: ledgerOnOrigin(box)
+          .split('\n')
+          .filter((line) => line.endsWith('\tstarted'))
+          .map((line) => line.split('\t')[4]),
+      },
+      { status: 0, sessions: ['session: local_other'] },
+      result.stdout + result.stderr
+    );
+  });
+
+  test('usage errors exit 2', async () => {
+    const box = sandbox();
+    const calls = [
+      ['claim'],
+      ['claim', '5250', '--domain', 'editing'],
+      ['claim', 'x5250'],
+      ['claim', '5250', '--drives', 'ipad'],
+      ['claim', '5250', '--take', 'assignee:natamox'],
+      ['claim', '5250', '--session', 'two words'],
+      ['release', '5250'],
+      ['lane', 'ipad'],
+    ];
+    const statuses = [];
+    for (const args of calls) statuses.push(await statusOf(box, args));
+    assert.deepEqual(
+      statuses,
+      calls.map(() => 2)
+    );
   });
 });

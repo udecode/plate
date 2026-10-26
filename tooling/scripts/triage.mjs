@@ -4,7 +4,12 @@
 // the GitHub account, model and effort that wrote it. Every state is derived at
 // read time from fresh reads of the trunk branch, the suggested-task ledger and
 // GitHub.
-// Usage: pnpm triage show <N>... [--brief] [--json]
+// Usage: pnpm triage claim <N>... [--take <hold>,... --why "<owner's words>"] [--drives <device>] [--session <id>]
+//        pnpm triage claim --domain <scope> [--task <id>] [same flags]
+//        pnpm triage claim --task <id> [same flags]
+//        pnpm triage release <N>... --why "<reason>" [--session <id>]
+//        pnpm triage lane [<device>]
+//        pnpm triage show <N>... [--brief] [--json]
 //        pnpm triage queue [--label <label>] [--json]
 //        pnpm triage record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]
 //        pnpm triage record --from <batch.tsv> [--dry-run]
@@ -16,9 +21,35 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { EFFORTS, findLead, leadLabel } from '../../.agents/pstack/lead.mjs';
-import { LEDGER, LEDGER_REF, readTasks } from '../../.agents/pstack/tasks.mjs';
+import {
+  board,
+  boardState,
+  gitMerges,
+  LEDGER,
+  LEDGER_REF,
+  ledgerPath,
+  readTasks,
+  SESSION,
+} from '../../.agents/pstack/tasks.mjs';
+import {
+  CLAIM_COLUMNS,
+  CLAIMS_FILE,
+  CLAIMS_REF,
+  claimLine,
+  COMMENT_WINDOW_MS,
+  decide,
+  DEVICES,
+  devicesOf,
+  foldClaims,
+  ownerFiles,
+  parseClaims,
+  sameActor,
+  STALE_MS,
+  targetMembers,
+} from './triage-claims.mjs';
 
 const REGISTER = 'docs/triage/issues.tsv';
 const CONFIG = '.agents/pstack.json';
@@ -77,6 +108,7 @@ const KEY_VALUES = {
   cause: /^(?:read|inferred)$/u,
   miss: /\S/u,
   moved: /\S/u,
+  device: (value) => paths(value).every((device) => DEVICES.includes(device)),
   of: ISSUE,
   commit: /^[0-9a-f]{7,40}$/u,
   proof: /\S/u,
@@ -89,7 +121,7 @@ const KEY_VALUES = {
 const OUTCOMES = {
   kind: {
     required: ['scope', 'priority', 'owner', 'cause'],
-    optional: ['miss', 'moved'],
+    optional: ['miss', 'moved', 'device'],
   },
   dup: { required: ['of'], optional: [] },
   fixed: { required: ['commit', 'owner', 'proof'], optional: [] },
@@ -117,6 +149,15 @@ class RefusalError extends Error {
 }
 const refuse = (message) => {
   throw new RefusalError(message);
+};
+class UsageError extends RefusalError {
+  constructor(message) {
+    super(message);
+    this.name = 'UsageError';
+  }
+}
+const usage = (message) => {
+  throw new UsageError(message);
 };
 
 const root = (() => {
@@ -364,7 +405,7 @@ const canonicalRemote = () => {
 };
 
 // With fallback, a failed fetch reads the refs fetched last, so a read-only seat still sees the records, all unchecked.
-function freshReads({ fallback }) {
+function freshReads({ fallback, claims = false }) {
   const branch = localConfig()?.branch ?? 'main';
   const remote = canonicalRemote();
   const tipRef = `refs/remotes/${remote}/${branch}`;
@@ -398,18 +439,22 @@ function freshReads({ fallback }) {
   const policy = problems.length === 0 ? policyOf(config) : null;
 
   const rows = new Map();
-  const add = (row) => {
-    if (!rows.has(row.issue)) rows.set(row.issue, new Map());
-    rows.get(row.issue).set(row.id, row);
+  const landed = new Map();
+  const add = (into, row) => {
+    if (!into.has(row.issue)) into.set(row.issue, new Map());
+    into.get(row.issue).set(row.id, row);
   };
   if (tip) {
     for (const row of parseRows(gitOut('show', `${tip}:${REGISTER}`) ?? '')) {
-      add(row);
+      add(rows, row);
+      add(landed, row);
     }
   }
   const workTree = join(root, REGISTER);
   if (existsSync(workTree)) {
-    for (const row of parseRows(readFileSync(workTree, 'utf-8'))) add(row);
+    for (const row of parseRows(readFileSync(workTree, 'utf-8'))) {
+      add(rows, row);
+    }
   }
 
   // A second fetch from a remote that gave no answer would double the wait past a caller's two-minute timeout.
@@ -437,6 +482,23 @@ function freshReads({ fallback }) {
   const ledger =
     ledgerText === null || !policy ? null : ledgerOf(ledgerText, policy.repo);
 
+  let claimRows = null;
+  if (claims) {
+    const read = fetchError?.timedOut
+      ? { error: { message: 'skipped, because the fetch gave no answer' } }
+      : fetchClaims(remote);
+    if (read.error) {
+      notes.push(
+        `could not fetch ${CLAIMS_REF} from ${remote} (${read.error.message})`
+      );
+    }
+    const text =
+      read.error && fallback
+        ? (gitOut('show', `${CLAIMS_REF}:${CLAIMS_FILE}`) ?? '')
+        : (read.text ?? '');
+    claimRows = parseClaims(text);
+  }
+
   return {
     remote,
     branch,
@@ -447,11 +509,17 @@ function freshReads({ fallback }) {
     problems,
     notes,
     rows,
+    landed,
     ledger,
+    claimRows,
     issues: issueReader(policy?.repo),
     stateMemo: new Map(),
   };
 }
+
+const taskIdOf = (cells) => cells[2].split(' ')[0];
+
+const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
 function ledgerOf(text, repo) {
   const lines = text
@@ -460,12 +528,46 @@ function ledgerOf(text, repo) {
   const chips = lines
     .map((line) => line.split('\t'))
     .filter((cells) => cells[1] === 'chip');
-  const name = repo.split('/')[1].replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const name = literal(repo.split('/')[1]);
   const reference = new RegExp(
-    `(?:\\b${name}#|(?<![\\w/#])#|github\\.com/${repo.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}/issues/)(\\d+)\\b`,
+    `(?:\\b${name}#|(?<![\\w/#])#|github\\.com/${literal(repo)}/issues/)(\\d+)\\b`,
     'gu'
   );
-  return { chips, tasks: readTasks(lines), reference };
+  const times = new Map();
+  for (const cells of chips) {
+    const id = taskIdOf(cells);
+    const time = times.get(id) ?? {};
+    const move = (cells[5] ?? '').split(' ')[0];
+    if (move === 'started') time.started ??= cells[0];
+    if (move === 'landed' || move === 'dismissed') time[move] = cells[0];
+    time.last = cells[0];
+    times.set(id, time);
+  }
+  return {
+    chips,
+    tasks: readTasks(lines),
+    reference,
+    times,
+    // Every row's repro: counts because a fold replaces it, and only repro: counts because a finding's prose names unrelated issues.
+    links: issueIndex(chips, reference, reproOf),
+    mentions: issueIndex(chips, reference, (cells) => cells[3] ?? ''),
+  };
+}
+
+const reproOf = (cells) =>
+  (cells[4] ?? '')
+    .split(/;\s+/u)
+    .find((token) => token.startsWith('repro: ')) ?? '';
+
+function issueIndex(chips, reference, textOf) {
+  const index = new Map();
+  for (const cells of chips) {
+    for (const match of textOf(cells).matchAll(reference)) {
+      if (!index.has(match[1])) index.set(match[1], new Set());
+      index.get(match[1]).add(taskIdOf(cells));
+    }
+  }
+  return index;
 }
 
 // An issue's last reopen id survives a later close and changes on another reopen.
@@ -687,32 +789,22 @@ const ownerMoved = (read, tip, owned) => {
   return log === null ? null : log.trim() !== '';
 };
 
-const taskIdOf = (cells) => cells[2].split(' ')[0];
-
 const dismissedAt = (ledger, id) =>
-  Math.max(
-    ...ledger.chips
-      .filter(
-        (cells) => taskIdOf(cells) === id && cells[5].startsWith('dismissed')
-      )
-      .map((cells) => Date.parse(cells[0])),
-    -Infinity
-  );
+  Date.parse(ledger.times.get(id)?.dismissed ?? '') || -Infinity;
 
-// Every row's repro: counts because a fold replaces it, and only repro: counts because a finding's prose names unrelated issues.
-function linkedTasks(issue, ledger) {
-  const ids = new Set();
-  for (const cells of ledger.chips) {
-    const repro = (cells[4] ?? '')
-      .split(/;\s+/u)
-      .find((token) => token.startsWith('repro: '));
-    if (
-      repro &&
-      [...repro.matchAll(ledger.reference)].some((match) => match[1] === issue)
-    ) {
-      ids.add(taskIdOf(cells));
-    }
-  }
+const linkedTasks = (issue, ledger) =>
+  keptTasks(ledger.links.get(issue) ?? [], ledger);
+
+const mentionedTasks = (issue, ledger) => {
+  const linked = new Set(linkedTasks(issue, ledger).map((task) => task.id));
+  return keptTasks(ledger.mentions.get(issue) ?? [], ledger).filter(
+    (task) =>
+      !linked.has(task.id) &&
+      (task.status === 'offered' || task.status === 'started')
+  );
+};
+
+function keptTasks(ids, ledger) {
   // A task dismissed into another, as a dup or a replacement, lives on as that one, as tasks.mjs's follow reads it.
   const kept = new Map();
   for (const id of ids) {
@@ -1111,7 +1203,7 @@ function parseArgs(argv, flags) {
     } else if (flags.value?.includes(arg.slice(2)) && index + 1 < argv.length) {
       index += 1;
       options[arg.slice(2)] = argv[index];
-    } else refuse(`unknown or incomplete option ${arg}`);
+    } else usage(`unknown or incomplete option ${arg}`);
   }
   return options;
 }
@@ -1162,15 +1254,36 @@ function show(argv) {
   if (options.positional.length === 0) {
     refuse('show takes one or more issue numbers');
   }
-  const reads = freshReads({ fallback: true });
+  const reads = freshReads({ fallback: true, claims: true });
   const identity = reads.policy
     ? recorder(reads.policy)
     : { refusal: reads.problems.join('; ') };
+  const numbers = options.positional.map(issueNumber);
+  // Only the shown issues' rows fold, so an issue's open state is read only for the issues shown.
+  const claims = liveClaims(
+    reads,
+    reads.claimRows.filter((row) => numbers.includes(row.issue)),
+    (issue) => reads.issues.get(issue)?.state !== 'CLOSED'
+  );
+  const claimOf = (issue) => {
+    const claim = claims.get(issue);
+    if (!claim) return null;
+    const activity = claimActivity(reads, claim, issue);
+    return {
+      who: claim.actor.who,
+      session: claim.actor.session,
+      since: claim.since,
+      activity,
+      stale: Date.now() - Date.parse(activity) > STALE_MS,
+    };
+  };
   const session = identity.by
     ? `${identity.who} on ${identity.by} can record${reads.policy.owners.includes(identity.who) ? '' : `; its records read unconfirmed until ${reads.policy.ownersText} records the issue again`}`
     : `cannot record: ${identity.refusal}`;
-  const results = options.positional.map(issueNumber).map((number) => ({
+  const results = numbers.map((number) => ({
     ...summary(number, reads),
+    claim: claimOf(number),
+    mentions: reads.ledger ? mentionedTasks(number, reads.ledger) : null,
     text: options.brief || options.json ? null : reads.issues.get(number),
   }));
   // JSON carries the state only: record reads the issue's text back from a plain show, line by line.
@@ -1201,6 +1314,12 @@ function show(argv) {
       );
     }
     console.log(`tasks: ${result.tasks ? taskText(result.tasks) : 'unread'}`);
+    console.log(
+      `claim: ${result.claim ? `${result.claim.who} session ${result.claim.session} since ${result.claim.since}, last activity ${result.claim.activity}${result.claim.stale ? ', stale' : ''}` : 'none'}`
+    );
+    console.log(
+      `mentions: ${result.mentions ? taskText(result.mentions) : 'unread'}`
+    );
     if (!result.text) continue;
     console.log(issueText(result.text));
     console.log(`seen: ${fingerprint(result.text)}`);
@@ -1375,6 +1494,777 @@ function labels() {
     }
   }
   console.log([...commands, ...sets].join('\n'));
+}
+
+function fetchClaims(remote) {
+  const error = fetchRef(remote, `+${CLAIMS_REF}:${CLAIMS_REF}`);
+  if (error && !/couldn't find remote ref/u.test(error.message)) {
+    return { error };
+  }
+  const tip = error
+    ? null
+    : gitOut(
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        `${CLAIMS_REF}^{commit}`
+      )?.trim() || null;
+  return {
+    tip,
+    text: tip ? (gitOut('show', `${tip}:${CLAIMS_FILE}`) ?? '') : '',
+  };
+}
+
+const PUSH_TRIES = 4;
+
+// The push is the lock: each try decides on the tip it fetched and pushes a commit whose parent is that tip, without
+// force, so a push that another writer beat is rejected and the next try decides again on the new tip.
+function pushClaims(remote, decideOn) {
+  for (let attempt = 0; attempt < PUSH_TRIES; attempt += 1) {
+    const { error, tip, text } = fetchClaims(remote);
+    if (error) {
+      refuse(`could not fetch ${CLAIMS_REF} from ${remote} (${error.message})`);
+    }
+    const { lines, result } = decideOn(text, attempt);
+    if (lines.length === 0) return result;
+    const base = text || `${CLAIM_COLUMNS.join('\t')}\n`;
+    const blob = run('git', ['hash-object', '-w', '--stdin'], {
+      input: `${base}${base.endsWith('\n') ? '' : '\n'}${lines.join('\n')}\n`,
+    }).stdout.trim();
+    const tree = run('git', ['mktree'], {
+      input: `100644 blob ${blob}\t${CLAIMS_FILE}\n`,
+    }).stdout.trim();
+    const commit = run('git', [
+      'commit-tree',
+      tree,
+      ...(tip ? ['-p', tip] : []),
+      '-m',
+      `${lines.length} triage claim move(s)`,
+    ]).stdout.trim();
+    const pushed = run(
+      'git',
+      ['push', '--quiet', remote, `${commit}:${CLAIMS_REF}`],
+      {
+        env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
+        timeout: NETWORK_MS,
+      }
+    );
+    if (pushed.status === 0) {
+      run('git', ['update-ref', CLAIMS_REF, commit]);
+      return result;
+    }
+    if (!/\[rejected\]/u.test(pushed.stderr)) {
+      refuse(
+        `could not push ${CLAIMS_REF} to ${remote}: ${pushed.stderr.trim().split('\n')[0] || `git push exited ${pushed.status}`}`
+      );
+    }
+  }
+  throw new RefusalError(
+    `${CLAIMS_REF} on ${remote} moved ${PUSH_TRIES} times while this claim decided; run it again`
+  );
+}
+
+const EVERY_TERMINAL = 'person';
+
+function actorOf(options) {
+  const who = ghLogin();
+  if (!who) {
+    refuse(
+      'gh could not say which GitHub account runs this session; run gh auth login'
+    );
+  }
+  const { run: lead } = findLead();
+  const transcript = lead ? basename(lead.transcript, '.jsonl') : null;
+  return {
+    who,
+    session:
+      options.session ??
+      (process.env.CLAUDE_CODE_HOST_SESSION_ID ||
+        process.env.CLAUDE_CODE_SESSION_ID ||
+        process.env.CODEX_SESSION_ID ||
+        transcript ||
+        EVERY_TERMINAL),
+    transcript,
+  };
+}
+
+function openList(repo) {
+  const listed = spawnSync(
+    'gh',
+    [
+      'issue',
+      'list',
+      '--repo',
+      repo,
+      '--state',
+      'open',
+      '--limit',
+      String(QUEUE_LIMIT),
+      '--json',
+      'number,title,assignees',
+    ],
+    { encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024, timeout: NETWORK_MS }
+  );
+  const open = listed.status === 0 ? readJson(listed.stdout) : null;
+  if (!Array.isArray(open)) {
+    refuse(
+      `gh could not list the open issues of ${repo}: ${listed.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : listed.stderr.trim()}`
+    );
+  }
+  if (open.length >= QUEUE_LIMIT) {
+    refuse(
+      `gh listed ${open.length} open issues, the most one call asks for, so some may be missing`
+    );
+  }
+  return new Map(
+    open.map((issue) => [
+      String(issue.number),
+      {
+        title: issue.title,
+        assignees: issue.assignees.map((assignee) => assignee.login),
+      },
+    ])
+  );
+}
+
+function liveSignals(repo, numbers) {
+  const [owner, name] = repo.split('/');
+  const found = new Map();
+  for (let at = 0; at < numbers.length; at += GRAPHQL_BATCH) {
+    const part = numbers.slice(at, at + GRAPHQL_BATCH);
+    const fields = part.map(
+      (number) =>
+        `i${number}: issue(number: ${number}) { assignees(first: 20) { nodes { login } } timelineItems: timelineItems(itemTypes: [ASSIGNED_EVENT], last: 50) { nodes { ... on AssignedEvent { createdAt assignee { ... on User { login } } } } } referenced: timelineItems(itemTypes: [CROSS_REFERENCED_EVENT], last: 50) { nodes { ... on CrossReferencedEvent { source { ... on PullRequest { number state author { login } createdAt updatedAt title body } } } } } closedByPullRequestsReferences(first: 20, includeClosedPrs: false) { nodes { number state author { login } createdAt updatedAt } } comments(last: 100) { pageInfo { hasPreviousPage } nodes { databaseId author { login __typename } createdAt body } } }`
+    );
+    const query = `query { repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { ${fields.join(' ')} } }`;
+    const result = spawnSync('gh', ['api', 'graphql', '-f', `query=${query}`], {
+      encoding: 'utf-8',
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: NETWORK_MS,
+    });
+    const repository = readJson(result.stdout)?.data?.repository;
+    for (const number of part) {
+      const node = repository?.[`i${number}`];
+      if (!node) {
+        refuse(
+          `gh could not read the assignees, closing PRs and comments of ${repo}#${number}: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
+        );
+      }
+      const assignedAt = new Map(
+        node.timelineItems.nodes
+          .filter((event) => event?.assignee?.login)
+          .map((event) => [event.assignee.login, event.createdAt])
+      );
+      const oldest = Math.min(
+        ...node.comments.nodes.map((each) => Date.parse(each.createdAt))
+      );
+      if (
+        node.comments.pageInfo.hasPreviousPage &&
+        Date.now() - oldest <= COMMENT_WINDOW_MS
+      ) {
+        refuse(
+          `${repo}#${number} has more comments than one read returns in the last 30 days; read them with gh issue view ${number} --repo ${repo} --comments`
+        );
+      }
+      // GitHub links a closing PR only when it targets the default branch, so a PR into next shows up as a reference.
+      const closes = new RegExp(
+        `\\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\\s+(?:${literal(repo)})?#${number}\\b`,
+        'iu'
+      );
+      const prs = new Map();
+      for (const pr of [
+        ...node.closedByPullRequestsReferences.nodes,
+        ...node.referenced.nodes
+          .map((event) => event?.source ?? {})
+          .filter((source) =>
+            closes.test(`${source.title ?? ''}\n${source.body ?? ''}`)
+          ),
+      ]) {
+        // includeClosedPrs: false still returns a merged PR, which keeps holding an issue reopened after it.
+        if (pr.state === 'OPEN' && !prs.has(pr.number)) {
+          prs.set(pr.number, {
+            number: pr.number,
+            author: pr.author?.login ?? null,
+            createdAt: pr.createdAt,
+            updatedAt: pr.updatedAt,
+          });
+        }
+      }
+      found.set(String(number), {
+        assignees: node.assignees.nodes.map(({ login }) => ({
+          login,
+          at: assignedAt.get(login) ?? null,
+        })),
+        prs: [...prs.values()],
+        comments: node.comments.nodes.map((comment) => ({
+          id: comment.databaseId,
+          author: comment.author?.login ?? 'ghost',
+          bot:
+            comment.author?.__typename === 'Bot' ||
+            isBot(comment.author?.login ?? ''),
+          createdAt: comment.createdAt,
+          body: comment.body,
+        })),
+      });
+    }
+  }
+  return found;
+}
+
+const latest = (...times) =>
+  times
+    .filter(Boolean)
+    .reduce((a, b) => (Date.parse(b) > Date.parse(a) ? b : a));
+
+function headOf(issue, reads) {
+  const [head] = headsOf([...(reads.rows.get(issue)?.values() ?? [])]).sort(
+    (a, b) => Date.parse(b.ts) - Date.parse(a.ts)
+  );
+  return head
+    ? {
+        outcome: head.outcome,
+        fields: parseDetail(head.detail) ?? new Map(),
+        ts: head.ts,
+      }
+    : null;
+}
+
+const claimEnd = (reads, isOpen) => (issue, claim) => {
+  if (!isOpen(issue)) return claim.since;
+  const landedHead = headOf(issue, { rows: reads.landed });
+  const task = claim.task ? reads.ledger?.tasks.get(claim.task) : null;
+  const times = task ? reads.ledger.times.get(task.id) : null;
+  const ownStart =
+    Boolean(task?.startedIn) &&
+    [claim.actor.session, claim.actor.transcript].includes(task.startedIn);
+  const after = [
+    landedHead?.outcome === 'fixed' ? landedHead.ts : null,
+    times?.landed,
+    ownStart ? times?.dismissed : null,
+  ].filter((at) => at && Date.parse(at) > Date.parse(claim.since));
+  return after.length > 0
+    ? after.reduce((a, b) => (Date.parse(b) < Date.parse(a) ? b : a))
+    : null;
+};
+
+function claimActivity(reads, claim, issue) {
+  const files = ownerFiles(headOf(issue, reads));
+  const touched =
+    files.length > 0
+      ? gitOut(
+          'log',
+          '--all',
+          '-1',
+          '--format=%cI',
+          `--since=${claim.since}`,
+          '--',
+          ...files
+        )?.trim()
+      : null;
+  return latest(
+    claim.since,
+    claim.task ? reads.ledger?.times.get(claim.task)?.last : null,
+    touched || null
+  );
+}
+
+const liveClaims = (reads, rows, isOpen) =>
+  foldClaims(rows, {
+    owners: reads.policy?.owners ?? [],
+    endedAt: claimEnd(reads, isOpen),
+  });
+
+function claimWorld(reads, open, rows, live, actor, git) {
+  const { tasks } = reads.ledger;
+  const heads = new Map();
+  const head = (issue) => {
+    if (!heads.has(issue)) heads.set(issue, headOf(issue, reads));
+    return heads.get(issue);
+  };
+  const linked = new Map();
+  const links = (issue) => {
+    if (!linked.has(issue)) {
+      linked.set(issue, linkedTasks(issue, reads.ledger));
+    }
+    return linked.get(issue);
+  };
+  const byTask = new Map();
+  for (const issue of open.keys()) {
+    for (const task of links(issue)) {
+      byTask.set(task.id, [...(byTask.get(task.id) ?? []), issue]);
+    }
+  }
+  const times = (id) => reads.ledger.times.get(id) ?? {};
+  let whole = null;
+  return {
+    actor,
+    now: Date.now(),
+    owners: reads.policy.owners,
+    open,
+    head,
+    tasks,
+    linked: links,
+    taskIssues: (id) => byTask.get(id) ?? [],
+    times,
+    activity: (claim, issue) => claimActivity(reads, claim, issue),
+    claimRows: rows,
+    claims: liveClaims(reads, rows, (issue) => open.has(issue)),
+    live,
+    ready: (task) =>
+      boardState(tasks, task, git, () => (whole ??= board(tasks, git))) ===
+      'Ready',
+  };
+}
+
+const ISSUE_ARG = /^#?([1-9]\d*)$/u;
+const usageIssues = (values, command) =>
+  values.map((value) => {
+    const match = ISSUE_ARG.exec(value);
+    if (!match) {
+      usage(`${command}: ${JSON.stringify(value)} is not an issue number`);
+    }
+    return match[1];
+  });
+
+function sessionOption(options) {
+  if (options.session !== undefined && !SESSION.test(options.session)) {
+    usage(
+      `--session takes the runtime session tool's id as one token, not ${JSON.stringify(options.session)}`
+    );
+  }
+}
+
+const holdText = (hold) =>
+  `  ${hold.key}${hold.who ? ` by ${hold.who}` : ''}${hold.session ? ` in session ${hold.session}` : ''}, since ${hold.since ?? 'an unknown time'}${hold.activity ? `, last activity ${hold.activity}` : ''}${hold.stale ? ', stale' : ''}`;
+
+function claimCommand(argv) {
+  const options = parseArgs(argv, {
+    value: ['domain', 'task', 'take', 'why', 'drives', 'session'],
+  });
+  const issues = usageIssues(options.positional, 'claim');
+  const forms = [
+    issues.length > 0,
+    options.domain !== undefined,
+    options.task !== undefined && options.domain === undefined,
+  ].filter(Boolean).length;
+  if (forms !== 1) {
+    usage(
+      'claim takes issue numbers, --domain <scope> [--task <id>], or --task <id>'
+    );
+  }
+  if (options.domain !== undefined && !KEY_VALUES.scope.test(options.domain)) {
+    usage(
+      `--domain takes a review scope such as editing, not ${JSON.stringify(options.domain)}`
+    );
+  }
+  if (options.task !== undefined && !SESSION.test(options.task)) {
+    usage(`--task takes one task id, not ${JSON.stringify(options.task)}`);
+  }
+  if (options.drives !== undefined && !DEVICES.includes(options.drives)) {
+    usage(`--drives takes one of ${DEVICES.join(', ')}`);
+  }
+  sessionOption(options);
+  const take = (options.take ?? '')
+    .split(',')
+    .map((key) => key.trim())
+    .filter(Boolean);
+  if (take.length > 0 && !options.why?.trim()) {
+    usage("--take needs --why with the owner's words, quoted");
+  }
+  if (options.why !== undefined && take.length === 0) {
+    usage('--why goes with --take, quoting the words that take the holds over');
+  }
+  if (/[\t\n]/u.test(options.why ?? '')) usage('--why holds a tab or newline');
+  const reads = freshReads({ fallback: false });
+  if (!reads.policy) {
+    refuse(
+      `a claim needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  if (!reads.ledger) {
+    refuse(
+      `a claim needs the suggested-task ledger from ${reads.remote}: ${reads.notes.join('; ') || `${LEDGER_REF} holds no ${LEDGER}`}`
+    );
+  }
+  const task = options.task ? reads.ledger.tasks.get(options.task) : null;
+  if (options.task && !['offered', 'started'].includes(task?.status)) {
+    refuse(
+      `${options.task} is ${task ? task.status : 'no task the ledger holds'}, so there is nothing to claim for it`
+    );
+  }
+  const { repo } = reads.policy;
+  const actor = actorOf(options);
+  const open = openList(repo);
+  const git = gitMerges({ branch: reads.branch });
+  const target =
+    issues.length > 0
+      ? { issues }
+      : { domain: options.domain ?? null, task: options.task ?? null };
+  const request = { target, take, drives: options.drives ?? null };
+  const { members } = targetMembers(
+    target,
+    claimWorld(reads, open, [], new Map(), actor, git)
+  );
+  const readGitHub = () =>
+    liveSignals(
+      repo,
+      members.filter((issue) => open.has(issue))
+    );
+  let live = readGitHub();
+  const named =
+    issues.length > 0
+      ? issues.map((issue) => `#${issue}`).join(' ')
+      : [
+          options.domain && `--domain ${options.domain}`,
+          options.task && `--task ${options.task}`,
+        ]
+          .filter(Boolean)
+          .join(' ');
+  let world;
+  let written = [];
+  const decision = pushClaims(reads.remote, (text, attempt) => {
+    if (attempt > 0) live = readGitHub();
+    world = claimWorld(reads, open, parseClaims(text), live, actor, git);
+    const result = decide(request, world);
+    if (result.refusal) refuse(result.refusal);
+    const start = Date.now();
+    written = result.writes.map((write, at) =>
+      claimLine({
+        ...write,
+        ts: new Date(start + at).toISOString(),
+        who: actor.who,
+        session: actor.session,
+        transcript: actor.transcript,
+        why: options.why ?? `claim ${named}`,
+      })
+    );
+    return { lines: written, result };
+  });
+
+  console.log(
+    `actor: ${actor.who}, session ${actor.session}${actor.transcript ? ` (transcript ${actor.transcript})` : ''}`
+  );
+  console.log(
+    `group: ${members.map((issue) => `#${issue}`).join(' ') || 'none'}`
+  );
+  for (const result of decision.results) {
+    const at = `#${result.issue}`;
+    if (result.verdict === 'claim') console.log(`${at} claimed`);
+    if (result.verdict === 'mine') console.log(`${at} yours already`);
+    if (result.verdict === 'take') {
+      console.log(
+        `${at} taken over ${result.taken.map((hold) => hold.key).join(', ')}`
+      );
+      for (const hold of result.taken.filter((each) =>
+        each.key.startsWith('assignee:')
+      )) {
+        console.log(
+          `  GitHub still assigns ${hold.who}; the owner runs gh issue edit ${result.issue} --repo ${repo} --remove-assignee ${hold.who}`
+        );
+      }
+    }
+    if (result.verdict === 'held') {
+      console.log(`held ${at}:`);
+      for (const hold of result.holds) console.log(holdText(hold));
+      console.log(
+        `  it stays held until its holder releases it, or the owner's words take it: --take ${result.holds.map((hold) => hold.key).join(',')} --why "<their words, quoted>"`
+      );
+    }
+    if (result.verdict === 'follows') {
+      console.log(
+        `skipped ${at}: it claims together with #${result.blocker.issue}, which is ${result.blocker.verdict}`
+      );
+    }
+    if (result.verdict === 'device') {
+      console.log(
+        `skipped ${at}: device lane (${result.devices.join(', ')}); a person who drives it runs pnpm triage claim ${result.issue} --drives ${result.devices[0]}`
+      );
+    }
+    if (result.verdict === 'desktop') {
+      console.log(
+        `skipped ${at}: no ${request.drives} kind; claim it without --drives`
+      );
+    }
+    if (result.verdict === 'outside') {
+      console.log(`skipped ${at}: outside this target`);
+    }
+    if (result.verdict === 'closed') console.log(`skipped ${at}: closed`);
+    if (result.verdict === 'fixed') {
+      console.log(
+        `skipped ${at}: its record reads fixed, so its close waits; if it reopened, triage #${result.issue} records it again first`
+      );
+    }
+  }
+  const branches = (gitOut('ls-remote', '--heads', reads.remote) ?? '')
+    .split('\n')
+    .map((line) => line.split('\t')[1]?.replace('refs/heads/', ''))
+    .filter(Boolean);
+  for (const issue of decision.held) {
+    for (const mention of mentionedTasks(issue, reads.ledger)) {
+      console.log(
+        `note: ${mention.id} (${mention.status}) names #${issue} in its finding, not in repro:`
+      );
+    }
+    for (const branch of branches.filter((name) =>
+      new RegExp(`(?<!\\d)${issue}(?!\\d)`, 'u').test(name)
+    )) {
+      console.log(`note: branch ${branch} names #${issue}`);
+    }
+  }
+  if (decision.exit === 1) {
+    console.log('nothing claimed');
+    process.exitCode = 1;
+    return;
+  }
+
+  const unassigned = decision.held.filter(
+    (issue) =>
+      !live
+        .get(issue)
+        .assignees.some((assignee) => assignee.login === actor.who)
+  );
+  for (const issue of unassigned) {
+    run(
+      'gh',
+      ['issue', 'edit', issue, '--repo', repo, '--add-assignee', '@me'],
+      { timeout: NETWORK_MS }
+    );
+  }
+  const back =
+    unassigned.length > 0 ? liveSignals(repo, unassigned) : new Map();
+  const missing = unassigned.filter(
+    (issue) =>
+      !back
+        .get(issue)
+        .assignees.some((assignee) => assignee.login === actor.who)
+  );
+  if (unassigned.length > missing.length) {
+    console.log(
+      `assigned ${actor.who} on ${unassigned
+        .filter((issue) => !missing.includes(issue))
+        .map((issue) => `#${issue}`)
+        .join(' ')}`
+    );
+  }
+  if (missing.length > 0) {
+    console.log(
+      `GitHub does not show ${actor.who} assigned on ${missing.map((issue) => `#${issue}`).join(' ')}; the claim stands, and running this claim again repairs it, or pnpm triage release ${decision.held.join(' ')} --why "<reason>" --session ${actor.session} frees it`
+    );
+    process.exitCode = 1;
+    return;
+  }
+  if (decision.starts.length === 0) return;
+  const main =
+    gitOut('worktree', 'list', '--porcelain')?.match(
+      /^worktree (.+)$/mu
+    )?.[1] ?? root;
+  setupIn(main);
+  const ledger = ledgerNow(reads);
+  if (!ledger) {
+    console.log(
+      `note: could not read ${LEDGER_REF} again, so the claim starts no task; a rerun starts them`
+    );
+    return;
+  }
+  const rows = [
+    ...world.claimRows,
+    ...parseClaims(`${CLAIM_COLUMNS.join('\t')}\n${written.join('\n')}`),
+  ];
+  const recheck = decide(
+    request,
+    claimWorld({ ...reads, ledger }, open, rows, live, actor, git)
+  );
+  for (const id of decision.starts) {
+    console.log(
+      recheck.starts.includes(id)
+        ? startTask(
+            ledger.tasks.get(id),
+            actor,
+            `claimed by pnpm triage claim ${named}`,
+            main,
+            () => ledgerNow(reads)
+          )
+        : `note: ${id} changed after the claim decided, so the claim leaves it ${ledger.tasks.get(id)?.status ?? 'as it is'}`
+    );
+  }
+}
+
+const PSTACK = (name) =>
+  fileURLToPath(new URL(`../../.agents/pstack/${name}`, import.meta.url));
+
+// The ledger file lives in the main checkout, which setup.mjs keeps in step with refs/pstack/ledger.
+const setupIn = (main) =>
+  run(process.execPath, [PSTACK('setup.mjs')], {
+    cwd: main,
+    timeout: 2 * NETWORK_MS,
+  });
+
+function ledgerNow(reads) {
+  if (fetchRef(reads.remote, `+${LEDGER_REF}:${LEDGER_COPY}`)) return null;
+  const text = gitOut('show', `${LEDGER_COPY}:${LEDGER}`);
+  return text === null ? null : ledgerOf(text, reads.policy.repo);
+}
+
+function startTask(task, actor, why, main, current) {
+  const config = readJson(readFileSync(join(main, CONFIG), 'utf-8')) ?? {};
+  const ledger = join(
+    main,
+    ledgerPath(config.plans || 'docs/plans', config.delivery)
+  );
+  const appended = run(
+    process.execPath,
+    [
+      PSTACK('decisions-check.mjs'),
+      'append',
+      ledger,
+      'chip',
+      task.decision,
+      why,
+      `session: ${actor.session}`,
+      'started',
+    ],
+    { cwd: main }
+  );
+  if (appended.status !== 0) {
+    return `note: ${task.id} stays offered, because its started row was refused: ${appended.stderr.trim().split('\n').at(-1)}`;
+  }
+  // setup.mjs returns at once while another start holds the ledger lock, so only the shared ref shows the push.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (attempt > 0) {
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2000);
+    }
+    setupIn(main);
+    const shared = current()?.tasks.get(task.id);
+    if (shared?.status === 'started' && shared.startedIn === actor.session) {
+      return `task ${task.id} started for session ${actor.session}`;
+    }
+  }
+  return `task ${task.id} started for session ${actor.session}; note: its row is only in ${ledger}, and node .agents/pstack/setup.mjs run in ${main} pushes it`;
+}
+
+function releaseCommand(argv) {
+  const options = parseArgs(argv, { value: ['why', 'session'] });
+  const issues = usageIssues(options.positional, 'release');
+  if (issues.length === 0) usage('release takes one or more issue numbers');
+  if (!options.why?.trim()) {
+    usage('release needs --why with the reason it stops');
+  }
+  if (/[\t\n]/u.test(options.why)) usage('--why holds a tab or newline');
+  sessionOption(options);
+  const reads = freshReads({ fallback: false });
+  if (!reads.policy) {
+    refuse(
+      `a release needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  const { repo, owners } = reads.policy;
+  const actor = actorOf(options);
+  const open = openList(repo);
+  const { claims, released } = pushClaims(reads.remote, (text) => {
+    const live = liveClaims(reads, parseClaims(text), (issue) =>
+      open.has(issue)
+    );
+    const theirs = issues.filter(
+      (issue) =>
+        live.has(issue) &&
+        !sameActor(live.get(issue).actor, actor) &&
+        !owners.includes(actor.who)
+    );
+    if (theirs.length > 0) {
+      refuse(
+        `${theirs
+          .map(
+            (issue) =>
+              `#${issue} is held by ${live.get(issue).actor.who} in session ${live.get(issue).actor.session}`
+          )
+          .join('; ')}; only that session or ${owners.join(' or ')} releases it`
+      );
+    }
+    const held = issues.filter((issue) => live.has(issue));
+    const start = Date.now();
+    return {
+      lines: held.map((issue, at) =>
+        claimLine({
+          ts: new Date(start + at).toISOString(),
+          issue,
+          move: 'release',
+          who: actor.who,
+          session: actor.session,
+          transcript: actor.transcript,
+          task: live.get(issue).task,
+          drives: null,
+          over: [],
+          why: options.why,
+        })
+      ),
+      result: { claims: live, released: held },
+    };
+  });
+  for (const issue of issues) {
+    if (!released.includes(issue)) {
+      console.log(`#${issue} has no live claim`);
+      continue;
+    }
+    const { who } = claims.get(issue).actor;
+    console.log(`#${issue} released`);
+    if (open.get(issue)?.assignees.includes(who)) {
+      console.log(
+        `  GitHub still assigns ${who}; gh issue edit ${issue} --repo ${repo} --remove-assignee ${who} unassigns them`
+      );
+    }
+  }
+}
+
+const PRIORITY_ORDER = ['P0', 'P1', 'P2', 'P3'];
+
+function lane(argv) {
+  const options = parseArgs(argv, {});
+  const [device, extra] = options.positional;
+  if (extra || (device !== undefined && !DEVICES.includes(device))) {
+    usage(`lane takes one device of ${DEVICES.join(', ')}, or none`);
+  }
+  const reads = freshReads({ fallback: true, claims: true });
+  if (!reads.policy) {
+    refuse(
+      `the lane needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  const open = openList(reads.policy.repo);
+  const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
+  const entries = [...open].flatMap(([issue, { title, assignees }]) => {
+    const head = headOf(issue, reads);
+    const devices = devicesOf(head);
+    if (devices.length === 0 || (device && !devices.includes(device))) {
+      return [];
+    }
+    const claim = claims.get(issue);
+    return [
+      {
+        issue,
+        priority: head.fields.get('priority'),
+        line: [
+          `#${issue}`,
+          head.fields.get('priority'),
+          head.fields.get('scope'),
+          devices.join(','),
+          claim
+            ? `${claim.actor.who}/${claim.actor.session}`
+            : assignees.join(',') || 'free',
+          title,
+        ].join('\t'),
+      },
+    ];
+  });
+  entries.sort(
+    (a, b) =>
+      PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority) ||
+      Number(a.issue) - Number(b.issue)
+  );
+  for (const note of reads.notes) console.log(`note: ${note}`);
+  if (entries.length === 0) {
+    console.log(`no open kind needs ${device ?? 'a device'}`);
+  }
+  for (const entry of entries) console.log(entry.line);
 }
 
 function entriesOf(options) {
@@ -1591,7 +2481,17 @@ function check(argv) {
   );
 }
 
-const COMMANDS = { show, queue, record: recordCommand, mark, labels, check };
+const COMMANDS = {
+  claim: claimCommand,
+  release: releaseCommand,
+  lane,
+  show,
+  queue,
+  record: recordCommand,
+  mark,
+  labels,
+  check,
+};
 const [command, ...rest] = process.argv.slice(2);
 if (!COMMANDS[command]) {
   console.error(`usage: pnpm triage <${Object.keys(COMMANDS).join('|')}> ...`);
@@ -1602,5 +2502,5 @@ try {
 } catch (error) {
   if (!(error instanceof RefusalError)) throw error;
   console.error(`triage ${command}: ${error.message}`);
-  process.exit(1);
+  process.exit(error instanceof UsageError ? 2 : 1);
 }
