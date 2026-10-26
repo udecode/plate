@@ -336,7 +336,7 @@ domain's finds are triaged into one issue per cause and fixed in one run. Read
 [the sweep](./references/sweep.md) in full before preparing a round, writing
 its round plan, running one of its sessions, triaging or fixing a domain's finds, or deciding what follows a
 round. It holds the session, the six moves, the browser rotation, the find
-note, the domain triage, the miss classes, the rechecks and the round loop.
+note, the domain triage, the rechecks and the round loop.
 
 ## Playtest
 
