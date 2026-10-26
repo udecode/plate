@@ -473,31 +473,40 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
 
       return imported;
     };
-    const baselineCold = await measure(baselineImport);
-    const targetCold = await measure(retainedImport);
+    const timeImports = async () => {
+      const baselineCold = await measure(baselineImport);
+      const targetCold = await measure(retainedImport);
 
-    targetCold.value.source.dispose();
-    await baselineImport();
-    const warmedTarget = await retainedImport();
-    warmedTarget.source.dispose();
-    const baselineSamples = [];
-    const targetSamples = [];
+      targetCold.value.source.dispose();
+      await baselineImport();
+      const warmedTarget = await retainedImport();
+      warmedTarget.source.dispose();
+      const baselineSamples = [];
+      const targetSamples = [];
 
-    for (let index = 0; index < cohort.samples; index++) {
-      let target;
+      for (let index = 0; index < cohort.samples; index++) {
+        let target;
 
-      if (index % 2 === 0) {
-        baselineSamples.push(sampleMetrics(await measure(baselineImport)));
-        target = await measure(retainedImport);
-      } else {
-        target = await measure(retainedImport);
-        baselineSamples.push(sampleMetrics(await measure(baselineImport)));
+        if (index % 2 === 0) {
+          baselineSamples.push(sampleMetrics(await measure(baselineImport)));
+          target = await measure(retainedImport);
+        } else {
+          target = await measure(retainedImport);
+          baselineSamples.push(sampleMetrics(await measure(baselineImport)));
+        }
+
+        target.value.source.dispose();
+        targetSamples.push(sampleMetrics(target));
       }
 
-      target.value.source.dispose();
-      targetSamples.push(sampleMetrics(target));
-    }
-
+      return {
+        baselineColdMs: baselineCold.durationMs,
+        baselineSamples,
+        targetColdMs: targetCold.durationMs,
+        targetSamples,
+      };
+    };
+    const importTiming = measured ? await timeImports() : undefined;
     const exactFixture = await retainedImport();
     const exactEditor = createEditor({
       plugins: [BaseParagraphPlugin, AuthoredPlugin],
@@ -522,19 +531,6 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
 
       return result.blob;
     };
-    const semanticCold = await measure(semanticExport);
-    const exactCold = await measure(exactExport);
-
-    await semanticExport();
-    await exactExport();
-    const semanticSamples = [];
-    const exactSamples = [];
-
-    for (let index = 0; index < cohort.samples; index++) {
-      semanticSamples.push(sampleMetrics(await measure(semanticExport)));
-      exactSamples.push(sampleMetrics(await measure(exactExport)));
-    }
-
     const overlayExport = async () => {
       const result = await exportDocx(exactEditor, {
         projection: 'review',
@@ -546,13 +542,39 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
 
       return result;
     };
+    const timeExports = async () => {
+      const semanticCold = await measure(semanticExport);
+      const exactCold = await measure(exactExport);
 
-    await overlayExport();
-    const overlaySamples = [];
+      await semanticExport();
+      await exactExport();
+      const semanticSamples = [];
+      const exactSamples = [];
 
-    for (let index = 0; index < cohort.overlaySamples; index++) {
-      overlaySamples.push(sampleMetrics(await measure(overlayExport)));
-    }
+      for (let index = 0; index < cohort.samples; index++) {
+        semanticSamples.push(sampleMetrics(await measure(semanticExport)));
+        exactSamples.push(sampleMetrics(await measure(exactExport)));
+      }
+
+      await overlayExport();
+      const overlaySamples = [];
+
+      for (let index = 0; index < cohort.overlaySamples; index++) {
+        overlaySamples.push(sampleMetrics(await measure(overlayExport)));
+      }
+
+      return {
+        exactColdMs: exactCold.durationMs,
+        exactSamples,
+        overlaySamples,
+        semanticColdMs: semanticCold.durationMs,
+        semanticSamples,
+      };
+    };
+    const timing = importTiming && {
+      ...importTiming,
+      ...(await timeExports()),
+    };
     const overlayCorrectness = await overlayExport();
     const overlayZip = await JSZip.loadAsync(
       await overlayCorrectness.blob.arrayBuffer()
@@ -650,11 +672,6 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
         reason: 'schema-mismatch',
       })
     );
-    const baselineDocumentBytes = jsonBytes(exactFixture.document);
-    const baselineCommentBytes = jsonBytes(exactFixture.comments);
-    const retainedBytes =
-      fixture.bytes.byteLength + baselineDocumentBytes + baselineCommentBytes;
-
     exactFixture.source.dispose();
     exactFixture.source.dispose();
     const disposed = await exportDocx(exactEditor, {
@@ -669,13 +686,18 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       })
     );
 
-    const baselineImportSummary = summarize(baselineSamples);
-    const targetImportSummary = summarize(targetSamples);
-    const semanticExportSummary = summarize(semanticSamples);
-    const exactExportSummary = summarize(exactSamples);
-    const overlayExportSummary = summarize(overlaySamples);
+    if (!timing) continue;
+    const baselineDocumentBytes = jsonBytes(exactFixture.document);
+    const baselineCommentBytes = jsonBytes(exactFixture.comments);
+    const retainedBytes =
+      fixture.bytes.byteLength + baselineDocumentBytes + baselineCommentBytes;
+    const baselineImportSummary = summarize(timing.baselineSamples);
+    const targetImportSummary = summarize(timing.targetSamples);
+    const semanticExportSummary = summarize(timing.semanticSamples);
+    const exactExportSummary = summarize(timing.exactSamples);
+    const overlayExportSummary = summarize(timing.overlaySamples);
     const importP95BudgetMs = baselineImportSummary.p95Ms * 1.3 + 5;
-    const importColdBudgetMs = baselineCold.durationMs * 1.5 + 10;
+    const importColdBudgetMs = timing.baselineColdMs * 1.5 + 10;
     const targetRssBudgetBytes =
       baselineImportSummary.rssDeltaMaxBytes +
       2 * fixture.bytes.byteLength +
@@ -693,28 +715,26 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       3 * fixture.bytes.byteLength +
       64 * MEBIBYTE;
 
-    if (measured) {
-      expect(targetImportSummary.p95Ms).toBeLessThanOrEqual(importP95BudgetMs);
-      expect(targetCold.durationMs).toBeLessThanOrEqual(importColdBudgetMs);
-      expect(targetImportSummary.rssDeltaMaxBytes).toBeLessThanOrEqual(
-        targetRssBudgetBytes
-      );
-      expect(exactExportSummary.p95Ms).toBeLessThanOrEqual(
-        exactExportP95BudgetMs
-      );
-      expect(overlayExportSummary.p95Ms).toBeLessThanOrEqual(
-        overlayExportP95BudgetMs
-      );
-      expect(overlayExportSummary.rssDeltaMaxBytes).toBeLessThanOrEqual(
-        overlayRssBudgetBytes
-      );
-    }
+    expect(targetImportSummary.p95Ms).toBeLessThanOrEqual(importP95BudgetMs);
+    expect(timing.targetColdMs).toBeLessThanOrEqual(importColdBudgetMs);
+    expect(targetImportSummary.rssDeltaMaxBytes).toBeLessThanOrEqual(
+      targetRssBudgetBytes
+    );
+    expect(exactExportSummary.p95Ms).toBeLessThanOrEqual(
+      exactExportP95BudgetMs
+    );
+    expect(overlayExportSummary.p95Ms).toBeLessThanOrEqual(
+      overlayExportP95BudgetMs
+    );
+    expect(overlayExportSummary.rssDeltaMaxBytes).toBeLessThanOrEqual(
+      overlayRssBudgetBytes
+    );
     rows.push({
       ...cohort,
       baselineCommentBytes,
       baselineDocumentBytes,
       baselineImport: {
-        coldMs: baselineCold.durationMs,
+        coldMs: timing.baselineColdMs,
         ...baselineImportSummary,
       },
       budgets: {
@@ -731,17 +751,20 @@ test('retained DOCX source stays bounded and makes unchanged export exact', asyn
       },
       compressedBytes: fixture.bytes.byteLength,
       documentXmlBytes: fixture.documentXmlBytes,
-      exactExport: { coldMs: exactCold.durationMs, ...exactExportSummary },
+      exactExport: { coldMs: timing.exactColdMs, ...exactExportSummary },
       overlayExport: {
         ...overlayExportSummary,
         work: overlayWork,
       },
       retainedBytes,
       semanticExport: {
-        coldMs: semanticCold.durationMs,
+        coldMs: timing.semanticColdMs,
         ...semanticExportSummary,
       },
-      targetImport: { coldMs: targetCold.durationMs, ...targetImportSummary },
+      targetImport: {
+        coldMs: timing.targetColdMs,
+        ...targetImportSummary,
+      },
       work: {
         baseline: {
           baselineClones: 0,
