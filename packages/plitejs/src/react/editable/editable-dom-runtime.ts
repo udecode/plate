@@ -1011,6 +1011,11 @@ export class EditableDOMRuntime {
     };
   }
 
+  beginCaretKey() {
+    supersedeEditableFocusRequests(this.editorValue);
+    this.selectionClaimsValue?.openKeyGesture();
+  }
+
   duringEditableMouseUp(handler: () => void) {
     this.inEditableMouseUp = true;
     try {

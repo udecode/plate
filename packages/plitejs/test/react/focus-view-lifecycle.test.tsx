@@ -1,6 +1,7 @@
-import { act, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { StrictMode } from 'react';
 
+import { FOCUS_SETTLE_TIMEOUT } from '../../src/dom/plugin/dom-editor';
 import {
   createEditor,
   Editable,
@@ -69,4 +70,50 @@ test('an editor refocused right after an outside press reports focus', async () 
 
   expect(document.activeElement).toBe(textbox);
   expect(view.getByTestId('focused').textContent).toBe('true');
+});
+
+test('a caret key keeps the selection it moves from a focus request still settling', async () => {
+  const editor = createEditor({
+    initialValue: [
+      { type: 'paragraph', children: [{ text: 'Hello' }] },
+      { type: 'paragraph', children: [{ text: 'World' }] },
+    ],
+  });
+  const view = render(
+    <EditorRoot editor={editor}>
+      <Editable aria-label="editor" />
+    </EditorRoot>
+  );
+  const textbox = view.getByRole('textbox');
+  const [hello, world] = [
+    ...textbox.querySelectorAll('[data-editor-string]'),
+  ].map((string) => string.firstChild!);
+  const wait = (ms: number) =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  // WebKit can report the key's selection move after the settle timeout.
+  const holdSelectionChange = (event: Event) =>
+    event.stopImmediatePropagation();
+
+  await act(async () => {
+    textbox.focus();
+    editor.update((tx) => tx.selection.set({ path: [1, 0], offset: 5 }));
+  });
+  await act(async () => {
+    document.addEventListener('selectionchange', holdSelectionChange, true);
+    editor.api.dom.focus();
+    fireEvent.keyDown(textbox, { key: 'ArrowUp', shiftKey: true });
+    await wait(10);
+    document.getSelection()!.setBaseAndExtent(world, 5, hello, 5);
+    await wait(FOCUS_SETTLE_TIMEOUT + 20);
+    document.removeEventListener('selectionchange', holdSelectionChange, true);
+    document.dispatchEvent(new Event('selectionchange'));
+    await wait(20);
+  });
+
+  expect(editor.read((state) => state.selection())).toEqual({
+    anchor: { offset: 5, path: [1, 0] },
+    focus: { offset: 5, path: [0, 0] },
+  });
 });
