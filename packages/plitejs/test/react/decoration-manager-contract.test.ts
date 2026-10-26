@@ -561,6 +561,105 @@ test('retains immutable compiled inputs while checking duplicate keys and curren
   manager.destroy();
 });
 
+test('retains immutable compiled ranges a block reader puts on its child text', () => {
+  const editor = createViewEditor();
+  const blockKey = editor.key([0])!;
+  const textKey = editor.key([0, 0])!;
+  const path = Object.freeze([0, 0]);
+  const stable = Object.freeze({
+    attributes: Object.freeze({ className: 'stable' }),
+    key: 'stable',
+    range: Object.freeze({
+      anchor: Object.freeze({ path, offset: 1 }),
+      focus: Object.freeze({ path, offset: 4 }),
+    }),
+  });
+  let revision = 0;
+  let refresh:
+    | Parameters<NonNullable<DecorationSource['observe']>>[0]['refresh']
+    | undefined;
+  const manager = createPliteDecorationManager(editor, [
+    {
+      id: 'block',
+      observe: ({ refresh: nextRefresh }) => {
+        refresh = nextRefresh;
+        return () => {};
+      },
+      read: ({ entry: [node, entryPath] }) =>
+        !TextApi.isText(node) && entryPath[0] === 0
+          ? [
+              stable,
+              {
+                attributes: { 'data-revision': revision },
+                key: 'head',
+                range: {
+                  anchor: { path, offset: 0 },
+                  focus: { path, offset: 1 },
+                },
+              },
+            ]
+          : [],
+    },
+  ]);
+  const unmount = manager.mount();
+  const before = manager.getNodeSnapshot(textKey);
+
+  for (revision = 1; revision <= 2; revision++) {
+    refresh?.({ nodeKeys: [blockKey] });
+  }
+  const after = manager.getNodeSnapshot(textKey);
+
+  expect(after).not.toBe(before);
+  expect(after.find(({ key }) => key === 'stable')).toBe(
+    before.find(({ key }) => key === 'stable')
+  );
+  expect(manager.getMetrics().reusedRangeCount).toBe(1);
+
+  unmount();
+  manager.destroy();
+});
+
+test('resolves a shared mutable path again after an attribute getter moves it', () => {
+  const editor = createViewEditor();
+  const path = [0, 0];
+  const manager = createPliteDecorationManager(editor, [
+    {
+      id: 'moving-path',
+      read: ({ entry: [node, entryPath] }) =>
+        !TextApi.isText(node) && entryPath[0] === 0
+          ? [
+              {
+                attributes: {
+                  get className() {
+                    path[0] = 1;
+                    return 'first';
+                  },
+                },
+                key: 'first',
+                range: {
+                  anchor: { offset: 0, path },
+                  focus: { offset: 1, path },
+                },
+              },
+              {
+                attributes: { className: 'second' },
+                key: 'second',
+                range: {
+                  anchor: { offset: 0, path },
+                  focus: { offset: 4, path },
+                },
+              },
+            ]
+          : [],
+    },
+  ]);
+
+  expect(
+    manager.getNodeSnapshot(editor.key([1, 0])!).map(({ key }) => key)
+  ).toEqual(['second']);
+  manager.destroy();
+});
+
 test.each(['getter', 'inherited', 'mutable-path'] as const)(
   'snapshots mutable decoration inputs without trusting a frozen %s shell',
   (kind) => {
@@ -1084,51 +1183,69 @@ test('keeps the last valid buckets when an incremental source read fails', () =>
   manager.destroy();
 });
 
-test('drops empty and out-of-bounds ranges without dropping valid output', () => {
-  const editor = createViewEditor();
-  const firstKey = getNodeKey(editor, [0, 0])!;
-  const manager = createPliteDecorationManager(editor, [
-    {
-      id: 'validated-ranges',
-      read: ({ entry: [node, path] }) => {
-        if (!TextApi.isText(node) || path[0] !== 0) return [];
+test.each(['text', 'block'] as const)(
+  'drops empty, out-of-bounds and missing-text ranges a %s reader returns without dropping valid output',
+  (reader) => {
+    const editor = createViewEditor();
+    const firstKey = getNodeKey(editor, [0, 0])!;
+    const path = [0, 0];
+    const missing = [0, 9];
+    const manager = createPliteDecorationManager(editor, [
+      {
+        id: 'validated-ranges',
+        read: ({ entry: [node, entryPath] }) => {
+          if (
+            TextApi.isText(node) !== (reader === 'text') ||
+            entryPath[0] !== 0
+          ) {
+            return [];
+          }
 
-        return [
-          {
-            attributes: { 'data-valid': true },
-            key: 'valid',
-            range: {
-              anchor: { offset: 0, path },
-              focus: { offset: node.text.length, path },
+          return [
+            {
+              attributes: { 'data-valid': true },
+              key: 'valid',
+              range: {
+                anchor: { offset: 0, path },
+                focus: { offset: 5, path },
+              },
             },
-          },
-          {
-            attributes: {},
-            key: 'empty',
-            range: {
-              anchor: { offset: 1, path },
-              focus: { offset: 1, path },
+            {
+              attributes: {},
+              key: 'empty',
+              range: {
+                anchor: { offset: 1, path },
+                focus: { offset: 1, path },
+              },
             },
-          },
-          {
-            attributes: {},
-            key: 'outside',
-            range: {
-              anchor: { offset: 0, path },
-              focus: { offset: node.text.length + 1, path },
+            {
+              attributes: {},
+              key: 'outside',
+              range: {
+                anchor: { offset: 0, path },
+                focus: { offset: 6, path },
+              },
             },
-          },
-        ];
+            {
+              attributes: {},
+              key: 'missing',
+              range: {
+                anchor: { offset: 0, path: missing },
+                focus: { offset: 1, path: missing },
+              },
+            },
+          ];
+        },
       },
-    },
-  ]);
+    ]);
 
-  expect(manager.getNodeSnapshot(firstKey)).toEqual([
-    expect.objectContaining({ key: 'valid' }),
-  ]);
-  expect(manager.getMetrics().invalidRangeDropCount).toBe(2);
-  manager.destroy();
-});
+    expect(manager.getNodeSnapshot(firstKey)).toEqual([
+      expect.objectContaining({ key: 'valid' }),
+    ]);
+    expect(manager.getMetrics().invalidRangeDropCount).toBe(3);
+    manager.destroy();
+  }
+);
 
 test('paints only output for the reader root, before the input-path fast path', () => {
   const editor = createEditor({

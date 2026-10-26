@@ -77,6 +77,7 @@ export type PliteDecorationManagerMetrics = Readonly<{
   downstreamNodeSubscriptionCount: number;
   failureCount: number;
   invalidRangeDropCount: number;
+  reusedRangeCount: number;
   sourceCount: number;
   sourceObserverCount: number;
   sourceReadCount: number;
@@ -592,6 +593,7 @@ export const createPliteDecorationManager = <E>(
     downstreamNodeSubscriptionCount: 0,
     failureCount: 0,
     invalidRangeDropCount: 0,
+    reusedRangeCount: 0,
     sourceCount: initialSources.length,
     sourceObserverCount: 0,
     sourceReadCount: 0,
@@ -600,15 +602,7 @@ export const createPliteDecorationManager = <E>(
 
   const compiledInputs = new WeakMap<
     Decoration,
-    | {
-        anchorRoot: string | undefined;
-        focusRoot: string | undefined;
-        inputKey: NodeKey;
-        path: Path;
-        slice: DecorationSlice;
-        source: ExactSource;
-        sourceId: string;
-      }
+    | { slice: DecorationSlice; source: ExactSource; sourceId: string }
     | { slice: DecorationSlice }
   >();
 
@@ -626,6 +620,27 @@ export const createPliteDecorationManager = <E>(
 
       slices.push(slice);
       slicesByOutputKey.set(nodeKey, slices);
+    };
+    // One remembered text serves a code block's syntax ranges, which all sit
+    // on the block's one text.
+    let targetPath: Path | null = null;
+    let targetText: Readonly<{ key: NodeKey; length: number }> | null = null;
+    const getTargetText = (path: Path) => {
+      if (targetPath && arePathsEqual(targetPath, path)) return targetText;
+      const onInput = arePathsEqual(path, input.path);
+      const node = onInput
+        ? input.node
+        : getDescendantAtPath(snapshot.children, path);
+
+      targetPath = [...path];
+      targetText = null;
+      if (NodeApi.isText(node)) {
+        const key = onInput ? input.nodeKey : snapshot.index.keyAt(path);
+
+        if (key) targetText = { key, length: node.text.length };
+      }
+
+      return targetText;
     };
 
     for (const decoration of decorations) {
@@ -645,24 +660,6 @@ export const createPliteDecorationManager = <E>(
         );
       }
       const cached = compiledInputs.get(decoration);
-
-      if (
-        cached &&
-        'source' in cached &&
-        cached.source === source &&
-        cached.sourceId === source.id &&
-        cached.inputKey === input.nodeKey &&
-        NodeApi.isText(input.node) &&
-        cached.slice.end <= input.node.text.length &&
-        arePathsEqual(cached.path, input.path) &&
-        decoration.range.anchor.root === cached.anchorRoot &&
-        decoration.range.focus.root === cached.focusRoot
-      ) {
-        keyOwners.set(decoration.key, input.nodeKey);
-        keys.push(decoration.key);
-        addSlice(input.nodeKey, cached.slice);
-        continue;
-      }
       const range =
         isDecorationRange(decoration.range) &&
         getReaderRange(decoration.range, readerRoot);
@@ -672,34 +669,34 @@ export const createPliteDecorationManager = <E>(
         continue;
       }
       const { anchor, focus } = range;
-      const anchorOnInput = arePathsEqual(anchor.path, input.path);
-      const focusOnInput = arePathsEqual(focus.path, input.path);
+      if (arePathsEqual(anchor.path, focus.path)) {
+        const text = getTargetText(anchor.path);
 
-      if (
-        anchor.offset === focus.offset &&
-        (anchorOnInput && focusOnInput
-          ? true
-          : arePathsEqual(anchor.path, focus.path))
-      ) {
-        metrics.invalidRangeDropCount += 1;
-        continue;
-      }
-
-      if (NodeApi.isText(input.node) && anchorOnInput && focusOnInput) {
         if (
+          anchor.offset === focus.offset ||
+          !text ||
           anchor.offset < 0 ||
-          anchor.offset > input.node.text.length ||
+          anchor.offset > text.length ||
           focus.offset < 0 ||
-          focus.offset > input.node.text.length
+          focus.offset > text.length
         ) {
           metrics.invalidRangeDropCount += 1;
           continue;
         }
 
-        const attributes = cloneDecorationAttributes(decoration.attributes);
-
         keyOwners.set(decoration.key, input.nodeKey);
         keys.push(decoration.key);
+        if (
+          cached &&
+          'source' in cached &&
+          cached.source === source &&
+          cached.sourceId === source.id
+        ) {
+          metrics.reusedRangeCount += 1;
+          addSlice(text.key, cached.slice);
+          continue;
+        }
+        const attributes = cloneDecorationAttributes(decoration.attributes);
         const compiledSlice = createDecorationSlice(source.id, {
           attributes,
           end: Math.max(anchor.offset, focus.offset),
@@ -711,7 +708,7 @@ export const createPliteDecorationManager = <E>(
           cached && areDecorationSlicesEqual(cached.slice, compiledSlice)
             ? cached.slice
             : compiledSlice;
-        addSlice(input.nodeKey, slice);
+        addSlice(text.key, slice);
         if (
           cached !== undefined &&
           isFrozenDataRecord(decoration, ['key', 'range', 'attributes']) &&
@@ -728,10 +725,6 @@ export const createPliteDecorationManager = <E>(
         ) {
           immutableAttributes.add(decoration.attributes);
           compiledInputs.set(decoration, {
-            anchorRoot: decoration.range.anchor.root,
-            focusRoot: decoration.range.focus.root,
-            inputKey: input.nodeKey,
-            path: anchor.path,
             slice,
             source,
             sourceId: source.id,
