@@ -485,13 +485,17 @@ test('check does not count a page shown inside a frame, such as a block preview,
   );
 });
 
-test('check covers a page only from a light visit at desktop width', () => {
-  const states = [{ theme: 'dark' }, { width: 375 }, {}].map((overrides) => {
-    const { cell, run } = visitedWidget(overrides);
-    return cell(run(['check', DOC]).stdout).split(' ')[0];
-  });
+test('check covers a page only from a light visit at desktop width, and names the width and theme of a fresh visit that missed', () => {
+  const [dark, narrow, desktop] = [{ theme: 'dark' }, { width: 0 }, {}].map(
+    (overrides) => {
+      const { cell, run } = visitedWidget(overrides);
+      return cell(run(['check', DOC]).stdout);
+    }
+  );
 
-  assert.deepEqual(states, ['open', 'open', 'covered']);
+  assert.match(dark, /^open .*1280 px wide in dark/);
+  assert.match(narrow, /^open .*0 px wide in light/);
+  assert.match(desktop, /^covered /);
 });
 
 test('check reports the error the page showed', () => {
