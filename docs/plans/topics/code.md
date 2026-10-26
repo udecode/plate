@@ -1,5 +1,7 @@
 # Code text
 
+Page: https://claude.ai/artifact/47Fj8ksuqHzUCU1Un1K6d7
+
 A code block is one newline-bearing Text, rendered natively or statically with syntax highlighting, with CodeMirror as an optional editor. Code insertion builds the final schema node; JSON formatting is a copied-UI button with one canonical granular update; native indentation leaves an untouched endpoint line alone; the package syntax reader reads the supplied Lowlight without changing it. The 2026-10-04 audit found this in live source and stopped ([triage audit](../2026-10-04-ledger-triage-audit.md), [execution](../2026-09-22-code-commands-and-highlighter-ownership.md)). `node tooling/scripts/review-ledger.mjs show code` prints the full history.
 
 ## Layer and owner
