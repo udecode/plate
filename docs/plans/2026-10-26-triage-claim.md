@@ -10,11 +10,11 @@ On 2026-10-26 natamox wrote in Discord that natamox and Sin took four domain tas
 
 ### What will change?
 
-Every public-issue fix starts with one claim command. It reserves the issue on every clone and GitHub, or stops because someone else holds it. When no task covers what it holds, it starts a task on the chips board.
+Each public-issue fix starts with a claim that reserves the issue and starts a task when none covers it. A fixed issue closes only on proof of the report; otherwise its reporter retests it on beta.platejs.org and closes it.
 
 ### What could go wrong?
 
-No claim has run against GitHub yet, only a fake one in the tests. Sessions carded before this skip the claim. A claim on P2, P3 or unrecorded issues starts no task.
+No claim or close has run against GitHub, only fakes in tests. Sessions carded before the claim skip it. Claims on P2, P3 or unrecorded issues start no task, and closes and labels wait until you run them.
 
 ## Teach
 
@@ -34,7 +34,7 @@ The claim command keeps one log of who holds each issue, stored on GitHub beside
 | A claim of one task, or by a person on a device | Offers no task, because the domain kinds a task claim adds belong to that task's run, and a person on a device starts no task | Offers a second task for what no task covers | offer beside task | detail |
 | The offered task's name | Fix plate#N and plate#M, filed under the lowest issue number, with each issue's priority, scope, owner file and GitHub title in its finding | A title written from the issues' GitHub titles | title from issue titles | detail |
 | A claim that starts a task and holds other kinds no task covers | Offers a second task beside the one it starts | Folds those kinds into the task it starts | fold into start | detail |
-| Review of the offer | One fresh reviewer on the diff, since the change adds no public API | A three-seat panel round | panel | detail |
+| Review of the offer and of the fixed issue's exit | One fresh reviewer on each diff, since neither adds a public API | A three-seat panel round | panel | detail |
 | Takeover | You name the exact holds to take, quoted in your words | One takeover covers every hold at that moment | take all holds | small |
 | Domain fix task effort | xhigh, so the session can record triage, overriding the task title rule for these tasks | high, and the session drafts records for an xhigh session | domain tasks at high | small |
 | Device issues | Marked iOS, Android or input method; agents skip them and a lane lists them | A free-text device note on each issue | device text | small |
@@ -51,6 +51,10 @@ The claim command keeps one log of who holds each issue, stored on GitHub beside
 | A task dismissed after a claim | Ends the claim only when it stops the claim's own start | Any dismissal after the claim ends it | any dismissal ends | detail |
 | A device kind on a desktop kind's owner file | The agent's run that holds the desktop kind writes the fix; the person rechecks on the device and fixes only what still fails | The person's session writes the shared fix too | person writes shared fix | small |
 | Device proof | The person's recheck on the device, five times where the Bug fix playbook asks for five warm runs | An emulator run counts as the device proof | emulator proves device | detail |
+| A fixed record that says nothing about a retest | Waits for its reporter's retest, so the two fixed records from before this wait too | Every fixed record must say whether it needs a retest, and those two are recorded again | retest required | small |
+| A device issue whose fixed record says no retest is needed | The record command refuses it, so a device fix waits for a retest on the device | Allowed when the proof names a device run | device closes on proof | small |
+| The label a fixed issue waits under | needs retest | fixed on next | label fixed on next | detail |
+| Where the reporter retests | beta.platejs.org, which deploys every push to next, once that deploy finishes | After the next release | retest after release | small |
 
 ## Public API
 
@@ -78,10 +82,10 @@ pnpm triage release <N>... --why "<reason>" [--session <id>]
 pnpm triage lane [ios|android|ime]
 pnpm triage show <N>...        [--brief] [--json]   (adds claim: and mentions: lines)
 pnpm triage queue              [--label <label>] [--json]
-pnpm triage record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]   (kind takes an optional device:)
+pnpm triage record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]   (kind takes an optional device:, fixed an optional retest:)
 pnpm triage record --from <batch.tsv> [--dry-run]
 pnpm triage mark <draft.md>
-pnpm triage labels
+pnpm triage labels             (prints the close for a fixed record with retest: none, and the needs retest label for every other)
 pnpm triage check [<register>]
 ```
 
@@ -94,6 +98,7 @@ pnpm triage check [<register>]
 - **What a claim writes.** After the push, it assigns the actor on GitHub where the login is not yet assigned and reads the assignees back. Then it syncs the ledger, decides again on the shared ledger, and logs `started` with `session:` only on each offered, Ready task whose desktop issues the claim still covers whole, through `decisions-check.mjs append` and `setup.mjs` in the main checkout. It reads the shared ref back and retries the push twice, because `setup.mjs` returns at once while another start holds its lock. An issue or domain claim, without `--task` or `--drives`, may hold kinds and their dups that no open task covers. When their worst priority is P0 or P1, it takes a fresh task id, logs an `offered` row in the same way and starts that task. The row's `repro:` lists those issues, `writes:` their owner files, `topic:` is `plate-<lowest number>` and `session:` is this session, and its finding gives each issue's title. The claim rows name the new task, so a release frees it and its landing ends the claim. A rerun after the records land writes one more claim row per issue, which only names the task. Before it offers, the claim also reads the main checkout's ledger file. A start whose push failed leaves its rows there, so the claim offers nothing when a task in that file covers those issues. Otherwise it offers none and prints why, such as an issue with no record yet or a worst priority of P2 or P3. chips.md lets only a verdict, babysit or time run offer a P2 or P3 task. Exit 0 means the session holds work and GitHub shows it; exit 1 means stop, including a failed assignment, which keeps the claim and prints both the rerun that repairs it and the release that frees it.
 - **Takeover.** `--take` lists the hold keys the refusal printed, such as `assignee:natamox` or `claim:zbeyens/local_…`, and `--why` quotes the owner's words. Only a triage owner takes over another login's hold. A take names every hold it takes, including the ones an earlier take overrode. Neither a take nor a release unassigns anyone; each prints the `--remove-assignee` command for the owner.
 - **Device lane.** A `kind` record takes an optional `device:` list of `ios`, `android` and `ime`, and its dups share its lane. A claim skips a device kind and its dups unless `--drives` names one of its devices, which only a person who said they drive that device passes. A claim with `--drives` takes only that device's kinds and their dups, starts no task, and leaves the group's desktop kinds to an agent. When a desktop kind shares the device kind's owner file, the agent's run writes the fix there, and the person rechecks on the device once it lands. That recheck is the kind's device proof. `pnpm triage lane [<device>]` lists the open device kinds with their holders, highest priority first.
+- **A fixed issue's exit.** A `fixed` record takes an optional `retest:`. `retest: none` says its proof replays the reporter's own steps. `labels` then prints `gh issue close <N> --reason completed` once that record has landed on `next` and neither its kind nor the kind its dup chain leads to needs a device. Every other current fixed record gets the `needs retest` label, `labels` prints the command that creates that label, and the fix comment asks the reporter to retest on beta.platejs.org and close the issue once it passes. A current record of any other outcome drops the label. `record` refuses `retest: none` when the issue's kind, or the kind its dup chain leads to, has `device:`.
 - **show.** `show` adds `claim:`, the live holder with its session, since and last activity, and `mentions:`, the open tasks whose findings name the issue outside `repro:`. `tasks:` and the stale reasons keep reading `repro:` alone.
 - **Playbooks.** triage.md's Steps replace Investigation's `how` and `why` step with Fix step 1's claim, which runs before Who records or any read of the issues, and its Fix steps 1 and 2 become the claim, then triage of what it holds, with a second claim when the new records change the group or when the first claim offered no task because an issue had no record. Fix step 4 logs `landed` on each task the claim started. Offer fix runs leaves out held issues and device kinds, opens each domain task's finding with its claim line and sets `effort: xhigh` on it. Kinds and Record gain `device:`, and a Device lane section says who takes those kinds. bug-fix.md line 27 sends every public-issue fix through `triage fix #<N>`.
 
@@ -123,22 +128,27 @@ pnpm triage check [<register>]
 - [x] 8. In `decide()`, list the kinds and dups an issue or domain claim holds that no open task covers, with their worst priority and owner files. In `claimCommand`, offer one task for them under a fresh task id through `decisions-check.mjs append`, then start it with the existing start. Update triage.md's Fix steps 1, 2 and 4 to match. Proof: one test each for the offer and its start on the ledger ref, the P2 note, a `--task` or `--drives` claim, a dup of an issue an open task covers, a rerun, a rerun after a failed ledger push, a release, and a claim that ends when the task its later row names lands; each mutant that reverts one of those conditions fails its test, logged through `proof.mjs`; `check-playbooks.mjs` passes.
 - [x] 9. Writing passes, one fresh reviewer on the diff, lint, land through `land.mjs` with `--check 'pnpm check --affected'`, then chips Close.
 
+### Phase 5. The fixed issue's exit
+
+- [x] 10. Give `fixed` an optional `retest:`. Have `labels` print the close for `retest: none` and the `needs retest` label for every other current fixed record, and have `record` refuse `retest: none` on a device kind. Rewrite triage.md's Record, Drafts and Fix step 4 to match. Proof: one test each for the close, the label, the refusal and a close that a stale, unlanded or device-lane record withholds; each mutant that reverts one of those conditions fails its test, logged through `proof.mjs`; `check-playbooks.mjs` passes.
+- [x] 11. Draft the retest follow-ups for #5248 and #5249, run the writing passes and one fresh reviewer on the diff, lint, and land through `land.mjs` with `--check 'pnpm check --affected'`.
+
 ## Completion Gates
 
 | Gate | Evidence |
 | --- | --- |
-| `verify` loaded before the first proof | loaded before the first test; after a compaction it was reloaded only once the mutants and smokes had run, on the method it set before; for the offer, reloaded after the last compaction, before its gates closed |
+| `verify` loaded before the first proof | loaded before the first test; after a compaction it was reloaded only once the mutants and smokes had run, on the method it set before; for the offer, reloaded after the last compaction, before its gates closed; for the exit, reloaded after the last compaction, before its final mutants and suite ran |
 | Tests rule read before the first test | read 2026-10-26 |
 | `pstack:blast-radius` for a public API change | skip: no package API changes |
 | `pstack:thermos` per slice | skip: the panel round on the diff applies both lenses |
-| `oxlint --type-aware` before the panel | clean before the panel and again on the final code; `ultracite check` and `oxlint --type-aware` are clean on the offer's final code |
-| Panel round on the diff | one round, three seats at xhigh: 7 critical findings applied, 16 warnings and nits applied, 2 deferred; the offer got one fresh reviewer instead, and five of its six findings are fixed, while the sixth stays as the Defaults row "fold into start" |
-| Tests and mutants | 112 of 112 passed on the claim's final code, and 24 mutants, each reverting one guarded condition, failed their named tests; with the offer, 120 of 120 pass, and 13 more mutants, each reverting one condition of the offer, fail their named tests |
-| `deslop`, then `no-comments` | run on the build and again on the panel round's fixes; on the offer, deslop cut nothing and comment-sicko kept its three comments |
-| `unslop` on the plan and playbooks | run on the playbooks after the round, and on the plan at the close; for the offer, run on its plan text, its playbook steps, this Close and its commit message |
+| `oxlint --type-aware` before the panel | clean before the panel and again on the final code; `ultracite check` and `oxlint --type-aware` are clean on the offer's final code and on the exit's |
+| Panel round on the diff | one round, three seats at xhigh: 7 critical findings applied, 16 warnings and nits applied, 2 deferred; the offer got one fresh reviewer instead, and five of its six findings are fixed, while the sixth stays as the Defaults row "fold into start"; the exit got one fresh reviewer after the first stopped on the weekly API limit, and its three warnings and six of its eight nits are fixed |
+| Tests and mutants | 112 of 112 passed on the claim's final code, and 24 mutants, each reverting one guarded condition, failed their named tests; with the offer, 120 of 120 pass, and 13 more mutants, each reverting one condition of the offer, fail their named tests; with the exit, 123 of 123 pass, and 14 more mutants, each reverting one condition of the close, the label or the device refusal, fail their named tests |
+| `deslop`, then `no-comments` | run on the build and again on the panel round's fixes; on the offer, deslop cut nothing and comment-sicko kept its three comments; on the exit, comment-sicko's two reshapes became `laneHeadOf` and `replaysReport`, and deslop cut nothing from the review fixes, which add no comment line |
+| `unslop` on the plan and playbooks | run on the playbooks after the round, and on the plan at the close; for the offer, run on its plan text, its playbook steps, this Close and its commit message; for the exit, run on its plan text, its playbook text, the two retest drafts, this Close and its commit message |
 | `check-playbooks.mjs` | passes on the final text |
 | Workflow smokes in Claude Code and Codex | four rounds of four prompts; in the two before the land, every fix route ran the claim before any read of the issues, except one Claude answer that chose `next`'s text; after the land, all four Codex answers ran it first, and the Claude half failed on an expired login; one more round on the offer's text ran the claim first in both runtimes and logged `landed` on each task it started, but neither answer named the offer |
-| `land.mjs --check 'pnpm check --affected'` | the claim landed as d0404fa86b with all 11 steps passing, and the reflect record and these rows landed after it; the offer lands with the same check in the commit that carries this row |
+| `land.mjs --check 'pnpm check --affected'` | the claim landed as d0404fa86b with all 11 steps passing, and the reflect record and these rows landed after it; the offer landed as feb5f0c12a with the same check, and the exit lands with it in the commit that carries this row |
 | chips Close | skip: this run offered no task; it only set `effort: xhigh` on t_aeb32d57, and the offer's tests offered tasks only on sandbox ledgers |
 | Hand drive, playtest, `plate-docs` | skip: no browser or docs page changes |
 
@@ -153,6 +163,10 @@ The first seven items landed in d0404fa86b: the claim command with its holds, it
 At that land, all 112 tests passed, and each of 24 mutants, which revert one guarded condition each, failed its named test. One panel round with three seats at xhigh found 7 critical findings. Each is fixed, and its test failed on the reviewed patch. In the last two smoke rounds, four prompts each in Claude Code and Codex, every fix route ran the claim before it read any issue, with one exception. One Claude answer chose `next`'s committed text, which has no claim until this lands. After the land, all four Codex answers ran the claim first again, and the Claude half could not run because the local `claude` login had expired. The proof stops short of GitHub writes. A read-only run of the claim's query against eight real issues came back with no errors, but the tests run against a fake `gh` and a local bare remote, so no claim push and no `gh issue edit` has run against udecode/plate. The smokes read the playbooks and ran no claim.
 
 For the offer, all 120 tests pass on the final code, and each of 13 more mutants, which revert one condition of the offer each, fails its named test. One fresh reviewer found six issues, and five are fixed. The claim rows did not name the offered task, a rerun after a failed ledger push offered a second task, the finding quoted a field that holds only read or inferred, the tests missed a dup and an unsorted claim, and the playbook said "one of them". The sixth asked to fold held kinds into a task the claim starts, and it stays as the Defaults row "fold into start". A smoke in Claude Code and Codex ran the claim first and logged `landed` on each task the claim started, but neither answer named the offer. Like the claim, the offer has run only against a fake `gh` and local bare remotes, never on udecode/plate or the shared ledger.
+
+The fixed issue's exit, asked for after the offer landed, is built as asked. A `fixed` record takes an optional `retest:`. `pnpm triage labels` prints `gh issue close <N> --reason completed` only for a current fixed record with `retest: none` that has landed on `next`, and only when neither its kind nor the kind its dup chain leads to needs a device. Every other current fixed record gets the `needs retest` label, and `record` refuses `retest: none` on a device kind. Fix step 4 of `.agents/playbooks/triage.md` allows `retest: none` only when the proof replays the reporter's own steps in their browser and input method on the pushed commit. Its Drafts section has the fix comment ask the reporter to retest on beta.platejs.org and close the issue once the steps pass. #5248 and #5249 are input-method kinds, so their fixed records wait for natamox's retest. Two follow-up drafts in the run directory correct their posted comments, which implied a wait for the next release.
+
+All 123 tests pass on the final code, and each of 14 mutants, which revert one condition of the close, the label or the device refusal each, fails its named test. The first fresh reviewer stopped on the weekly API limit before it reported. The second found no critical bug and three warnings, and all three are fixed. `labels` could print a close for a record that had not landed, or for an issue whose kind gained `device:` after its fixed record, and three planted bugs survived the first tests. Six of its eight nits are fixed, and two stay in Open work. Like the claim, the close and the label have run only against a fake `gh`, never on udecode/plate.
 
 ## Reflect
 
@@ -195,6 +209,10 @@ Rejected:
 ## Open work
 
 - Tell natamox and Sin that t_67f3cb5e was already started by an owner session, that t_f3360813 is not started yet, and that #5243 and #5251 now wait in their device lane, against natamox's note. owner: zbeyens. stop: a team message the owner sends.
+- Post the retest follow-ups on #5248 and #5249, the two marked drafts the decision log's review row names, with `gh issue comment <N> --repo udecode/plate --body-file <file>`. This session holds no landed record of either issue, so the playbook's standing word to post does not cover them. owner: zbeyens. stop: a public comment the owner posts.
+- Run `pnpm triage labels` on `next` and the label and close commands it prints. A read on 2026-10-26 printed the `needs retest` label create and its add on #5248. #5249's fixed record reads stale, because its owner lines in `keyboard-input-strategy.ts` moved on `next`, so `triage #5249` records it again before it gets the label. owner: zbeyens. stop: public label and close commands the owner runs.
+- A reporter's "still fails" comment changes the issue's fingerprint, so its fixed record goes stale and keeps `needs retest`, because `labels` only removes `triaged` from a stale record. The next `triage #<N>` records it again and clears it. owner: zbeyens. stop: none.
+- `retest: None`, or `none` with extra spaces, reads as a retest the reporter must run, and `record` says nothing. It fails safe. owner: zbeyens. stop: none.
 - Sessions carded before this lands follow their old briefs and skip the claim. owner: zbeyens. stop: none; their started rows still hold as legacy.
 - A fork clone cannot push the claims ref and asks a maintainer. owner: zbeyens. stop: none.
 - A claim on P2 or P3 issues that no task covers offers no task, because chips.md lets only a verdict, babysit or time run offer one. The claim still holds them and shows on the issue and in `show`. owner: zbeyens. stop: the word "claim route".

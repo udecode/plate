@@ -45,6 +45,7 @@ import {
   DEVICES,
   devicesOf,
   foldClaims,
+  laneOf,
   ownerFiles,
   parseClaims,
   sameActor,
@@ -113,6 +114,7 @@ const KEY_VALUES = {
   of: ISSUE,
   commit: /^[0-9a-f]{7,40}$/u,
   proof: /\S/u,
+  retest: /\S/u,
   missing: /\S/u,
   law: PATH_REF,
   into: (value) =>
@@ -125,7 +127,7 @@ const OUTCOMES = {
     optional: ['miss', 'moved', 'device'],
   },
   dup: { required: ['of'], optional: [] },
-  fixed: { required: ['commit', 'owner', 'proof'], optional: [] },
+  fixed: { required: ['commit', 'owner', 'proof'], optional: ['retest'] },
   'needs-repro': { required: ['missing'], optional: [] },
   'not-bug': { required: ['law'], optional: [] },
   split: { required: ['into'], optional: [] },
@@ -1456,16 +1458,28 @@ function labels() {
   const quoted = (label) => (label.includes(' ') ? `'${label}'` : label);
   const commands = [
     `gh label create triaged --repo ${repo} --color 0e8a16 --description "Has a current record in ${REGISTER}" --force`,
+    `gh label create 'needs retest' --repo ${repo} --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
   ];
   const sets = [];
   for (const { issue, state, head } of open) {
     const names = new Set((issue.labels ?? []).map((label) => label.name));
     const edits = [];
+    const closes =
+      state === 'current' &&
+      head.outcome === 'fixed' &&
+      replaysReport(parseDetail(head.detail)) &&
+      reads.landed.get(String(issue.number))?.has(head.id) === true &&
+      deviceLaneOf(String(issue.number), reads).length === 0;
     if (state === 'current') {
       if (!names.has('triaged')) edits.push('--add-label triaged');
       if (names.has('needs-triage')) edits.push('--remove-label needs-triage');
-      for (const [outcome, label] of Object.entries(OUTCOME_LABELS)) {
-        const wanted = head.outcome === outcome;
+      for (const [label, wanted] of [
+        ...Object.entries(OUTCOME_LABELS).map(([outcome, name]) => [
+          name,
+          head.outcome === outcome,
+        ]),
+        ['needs retest', head.outcome === 'fixed' && !closes],
+      ]) {
         if (wanted && !names.has(label)) {
           edits.push(`--add-label ${quoted(label)}`);
         } else if (!wanted && names.has(label)) {
@@ -1491,6 +1505,11 @@ function labels() {
     if (edits.length > 0) {
       commands.push(
         `gh issue edit ${issue.number} --repo ${repo} ${edits.join(' ')}`
+      );
+    }
+    if (closes) {
+      commands.push(
+        `gh issue close ${issue.number} --repo ${repo} --reason completed`
       );
     }
   }
@@ -1729,6 +1748,23 @@ function headOf(issue, reads) {
       }
     : null;
 }
+
+const replaysReport = (fields) => fields.get('retest') === 'none';
+
+const laneHeadOf = (issue, reads) => {
+  const [newest] = [...(reads.rows.get(issue)?.values() ?? [])]
+    .filter((row) => row.outcome === 'kind' || row.outcome === 'dup')
+    .sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts));
+  return (
+    newest && {
+      outcome: newest.outcome,
+      fields: parseDetail(newest.detail) ?? new Map(),
+    }
+  );
+};
+
+const deviceLaneOf = (issue, reads) =>
+  laneOf(issue, { head: (number) => laneHeadOf(number, reads) });
 
 const claimEnd = (reads, isOpen) => (issue, claim) => {
   if (!isOpen(issue)) return claim.since;
@@ -1997,7 +2033,7 @@ function claimCommand(argv) {
     if (result.verdict === 'closed') console.log(`skipped ${at}: closed`);
     if (result.verdict === 'fixed') {
       console.log(
-        `skipped ${at}: its record reads fixed, so its close waits; if it reopened, triage #${result.issue} records it again first`
+        `skipped ${at}: its record reads fixed, so it waits for its close or its reporter's retest; if it reopened or its reporter says it still fails, triage #${result.issue} records it again first`
       );
     }
   }
@@ -2489,6 +2525,14 @@ function recordCommand(argv) {
       refuse(
         `${where}: commit ${fields.get('commit')} is not on ${reads.remote}/${reads.branch}`
       );
+    }
+    if (entry.outcome === 'fixed' && replaysReport(fields)) {
+      const devices = deviceLaneOf(issue, reads);
+      if (devices.length > 0) {
+        refuse(
+          `${where}: its kind needs ${devices.join(', ')}, so only a retest on that device proves the fix; record what the reporter retests as retest: instead of none`
+        );
+      }
     }
     const owned = ownerPaths({ outcome: entry.outcome, detail: entry.detail });
     for (const path of owned) {

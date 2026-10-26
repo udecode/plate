@@ -1072,6 +1072,37 @@ describe('triage', { concurrency: 8 }, () => {
     );
   });
 
+  test('refuses retest: none on a fixed record whose kind, or the kind its dup leads to, needs a device', async () => {
+    const box = sandbox();
+    const commit = git(box, box.work, 'rev-parse', 'HEAD');
+    const fixed = (retest) =>
+      `commit: ${commit}; owner: packages/a/src/owner.ts; proof: the owner test; retest: ${retest}`;
+    const { results } = await recordIn(box, [
+      [5250, 'kind', kind('editing', '; device: ios')],
+      [5251, 'dup', 'of: 5250'],
+      [5250, 'fixed', fixed('none')],
+      [5250, 'fixed', fixed('an iPhone with Safari')],
+      [5251, 'fixed', fixed('none')],
+      [5250, 'kind', kind('editing')],
+      [5250, 'fixed', fixed('none')],
+    ]);
+    assert.deepEqual(
+      results.map(({ status, stderr }) => [
+        status,
+        /its kind needs ios/u.test(stderr),
+      ]),
+      [
+        [0, false],
+        [0, false],
+        [1, true],
+        [0, false],
+        [1, true],
+        [0, false],
+        [0, false],
+      ]
+    );
+  });
+
   test('refuses a duplicate of an issue that is not open', async () => {
     const box = sandbox();
     setIssues(box, [issue(5250, { state: 'CLOSED' }), issue(5251)]);
@@ -1399,10 +1430,79 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(status, 0);
     assert.deepEqual(stdout.trim().split('\n'), [
       'gh label create triaged --repo udecode/plate --color 0e8a16 --description "Has a current record in docs/triage/issues.tsv" --force',
+      `gh label create 'needs retest' --repo udecode/plate --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
       "gh issue edit 5250 --repo udecode/plate --add-label triaged --remove-label needs-triage --remove-label 'needs reproduction'",
       'gh issue edit 5251 --repo udecode/plate --remove-label triaged',
       "gh issue edit 5253 --repo udecode/plate --add-label triaged --add-label 'needs reproduction'",
     ]);
+  });
+
+  test('labels closes a fixed issue only when its proof replays the report, and labels every other fixed issue needs retest', async () => {
+    const box = sandbox();
+    const commit = git(box, box.work, 'rev-parse', 'HEAD');
+    const fixed = (retest) =>
+      `commit: ${commit}; owner: packages/a/src/owner.ts; proof: the owner test${retest}`;
+    const waiting = [{ name: 'triaged' }, { name: 'needs retest' }];
+    setIssues(box, [
+      issue(5250, { labels: [{ name: 'triaged' }] }),
+      issue(5251),
+      issue(5252, { labels: waiting }),
+      issue(5253, { labels: waiting, priority: 'Urgent' }),
+    ]);
+    await recordAll(box, [
+      [5250, 'fixed', fixed('; retest: none')],
+      [5251, 'fixed', fixed('')],
+      [5252, 'fixed', fixed('; retest: Safari with a real input method')],
+      [5253],
+    ]);
+    land(
+      box,
+      'docs/triage/issues.tsv',
+      readFileSync(join(box.work, 'docs/triage/issues.tsv'), 'utf-8')
+    );
+    const { status, stdout } = await triage(box, ['labels']);
+    assert.equal(status, 0);
+    assert.deepEqual(stdout.trim().split('\n').slice(1), [
+      `gh label create 'needs retest' --repo udecode/plate --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
+      'gh issue close 5250 --repo udecode/plate --reason completed',
+      "gh issue edit 5251 --repo udecode/plate --add-label triaged --add-label 'needs retest'",
+      "gh issue edit 5253 --repo udecode/plate --remove-label 'needs retest'",
+    ]);
+  });
+
+  test('labels prints no close for a fixed record that has not landed, that went stale, or whose kind now needs a device', async () => {
+    const box = sandbox();
+    const commit = git(box, box.work, 'rev-parse', 'HEAD');
+    const none = `commit: ${commit}; owner: packages/a/src/owner.ts; proof: the owner test; retest: none`;
+    const open = (body5250) => [
+      issue(5250, body5250 ? { body: body5250 } : {}),
+      issue(5251),
+      issue(5252, { priority: 'Urgent' }),
+      issue(5253),
+    ];
+    setIssues(box, open());
+    await recordAll(box, [
+      [5250, 'fixed', none],
+      [5252],
+      [5251, 'dup', 'of: 5252'],
+      [5251, 'fixed', none],
+    ]);
+    land(
+      box,
+      'docs/triage/issues.tsv',
+      readFileSync(join(box.work, 'docs/triage/issues.tsv'), 'utf-8')
+    );
+    await recordAll(box, [
+      [5252, 'kind', kind('editing', '; device: ios')],
+      [5253, 'fixed', none],
+    ]);
+    setIssues(box, open('Steps for 5250, edited after the fix.'));
+    const { status, stdout } = await triage(box, ['labels']);
+    assert.equal(status, 0);
+    assert.deepEqual(
+      stdout.split('\n').filter((line) => line.startsWith('gh issue close')),
+      []
+    );
   });
 
   test('labels sets the Priority field from a current kind record only where it differs', async () => {
