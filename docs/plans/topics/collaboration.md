@@ -55,7 +55,7 @@ mounted editor view → mapped cursor reads → copied Plate presentation
 | Responsibility | Decision |
 | --- | --- |
 | Document truth | Accepted canonical changes; a discarded spec or aborted update publishes none of its effects. |
-| Remote import | Keeps schema admission, named roots, selection mapping, history policy and shared authored effects; pre-sync room content is never replaced by a placeholder, and an import never deletes a stored text inside an element. |
+| Remote import | Keeps schema admission, named roots, selection mapping, history policy and shared authored effects; pre-sync room content is never replaced by a placeholder, and an import never deletes a stored text inside an element unless an authored admission repair removes it. |
 | Transport | The app or provider owns connection, errors and teardown; the editor has no transport commands. |
 | Presence | Transient and view-specific; automatic selection publication stays commit-owned. |
 | Plate configuration | `YjsPlugin.create(options)` builds the complete descriptor; copied UI derives `CollaborationPlugin` once with `YjsPlugin.require('awareness').map(stage)`. The native owner is the only source of option-dependent document, presence, compaction and cursor-data capabilities. |
@@ -97,8 +97,9 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   document when its editor goes live and frees it when the editor is released, so a
   remount or a replaced editor binds the same document again. Before that, its
   status answers waiting and its cursors answer none.
-- An import never deletes a stored text inside an element; only bare texts
-  among a block root's children and duplicate placeholders are pruned. Before
+- An import never deletes a stored text inside an element unless an authored
+  admission repair removes it; otherwise only bare texts among a block root's
+  children and duplicate placeholders are pruned. Before
   a local change is written to storage, the binding writes an empty text into
   each gap of every block the change touches, and after a structural change
   into each gap of the result's blocks, so every reader that pairs stored and
@@ -108,6 +109,34 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   block it already checked until a peer's update does more than type into
   stored texts. A read inside a lowering finds each referenced node through
   the root's lent index instead of walking the document.
+- When authored admission repairs an import, the binding lowers that repair
+  once, after the import's own bookkeeping. It writes deletions of the stored
+  items and letters the repair removes and attribute writes on the items it
+  keeps, never insertions, so admitting peers that write the same repair merge
+  into one copy. Settle names
+  each node it removes or reuses in the repair itself; the writer never pairs
+  stored and editor children by value to find it. The writer compares each
+  stored block with the repair's base as the import reads it, defaults
+  included, and leaves out an empty text's properties, because the import
+  reads a spacer text that storage does not hold.
+  When a peer's update changes the binding's Yjs types after an import and
+  before the binding lowers its repair, such as from a listener of the
+  import's commit, the binding writes nothing and imports storage again with
+  every record pending, so admission settles what storage now holds. A write
+  to a Yjs type the binding did not open does not count. A repair the writer
+  cannot express, or a stored block that still differs from the repair's base,
+  takes the root rewrite, traced as `rewrite`. Limit: a peer update that a
+  `beforeTransaction` listener applies inside one of the binding's own Yjs
+  transactions joins it under the binding's origin and is never read, so a
+  repair's root rewrite can remove it. No provider in this repository delivers
+  updates that way. Owner: zbeyens, until the binding reads such an update.
+  Limit: when peers receive a late claim that empties a level and the verdict
+  on one of its sibling claims in different orders, they reuse
+  different removed blocks, so the level can end empty in storage and two
+  peers typing into it store two lines. A peer that imports storage again
+  receives both at once, which is one such order. Owner: zbeyens, until a donor
+  every peer agrees on or a binding that keeps an emptied level
+  ([2026-10-26 plan](../2026-10-26-settle-repair-identity.md)).
 
 ## What other editors do
 
@@ -128,6 +157,7 @@ slate-yjs at `69f3e0ea` and y-prosemirror at `9200946f` were read, not run. Neit
 - Every peer keeps the empty texts beside an inline element that storage holds, and each local edit first writes the ones its blocks lack, so two peers changing one link at once keep one paragraph.
 - When a change only inserts or removes elements, an empty editor text takes the stored empty text in its place, so adding and removing a link stores no new text.
 - Core corrections keep an empty text beside an inline only where no lettered text shares its run, and a caret at the start of a lettered text stays in that text when the empty text before it goes.
+- The binding lowers an import's admission repair through `retractYjsRoot` in `packages/plitejs/src/yjs/core/retraction.ts`, as deletions and attribute writes in place, and checks each stored block against the repair's base first. `packages/plitejs/src/yjs/core/controller.ts` records each Yjs type the binding opens, notes each remote transaction as it starts and, when one changed those types between an import and its repair, imports storage again instead of writing the repair ([2026-10-26 plan](../2026-10-26-settle-repair-identity.md)).
 
 ## Open work
 
@@ -146,3 +176,7 @@ slate-yjs at `69f3e0ea` and y-prosemirror at `9200946f` were read, not run. Neit
 - A peer whose editor lost focus keeps its caret at the same offset when a teammate types before it, so the caret ends before another letter, as on `next` (`push-r3/drive/blurred-caret-control.md`). owner: the collaboration subject; stop: a report of a blurred peer's caret or typing landing in the wrong place after a teammate's insert.
 - `2026-10-10-authored-values.md` keeps an Open work item that waits until the races test pins Alice's removed piece gone. This plan's landing pins it gone, so that item reaches its stop. owner: the authored subject; stop: this plan's landing.
 - A saved comment range holds paths, and the comments plugin reads them against the document after loading has corrected it. A document saved by an earlier beta loses each empty text between a link and a text with other marks when it loads, so a range saved after one in that paragraph points one child too far, and creating the editor throws when that path ends inside a text, as the saved playground's did (`land/playground-head-a1-a1.log`). Any later change to the stored shape does the same. owner: the comments subject; stop: a report of a saved comment that fails to load or moves, or Plate v2 promising a saved-document format.
+- A peer update that a `beforeTransaction` listener applies inside one of the binding's own Yjs transactions joins it under the binding's origin, and the binding never reads it. When that transaction is a repair, the base check refuses and the root rewrite removes that peer's new line and letter on every peer. No provider in this repository delivers updates that way, and local-commit transactions have the same gap ([2026-10-26 plan](../2026-10-26-settle-repair-identity.md)). owner: zbeyens. stop: the binding reads an update that joins any of its own transactions, or the owner drops it.
+- An import that carries only records reads no storage, so its repair's base is the editor's state, and the stale-write check trusts a peer update applied during the import transaction's own cleanup as read. If that update inserted a block before the repaired one, the base check refuses and the rewrite removes that block on every peer (Opus, diff panel round 3, not run). owner: zbeyens. stop: a base-check refusal imports storage again instead of rewriting, or the owner drops it.
+- The writer's base check leaves out the properties of every empty text, though the binding keeps a stored empty text's properties as attributes and only an implicit spacer has none. The stale-write check catches a peer's write there first, so no known case differs. owner: zbeyens. stop: the check leaves out only properties storage leaves implicit, or the owner drops it.
+- An import with no repair still clears the events of a peer's update that lands while it notifies its commit outside a Yjs cleanup, so the editor misses that update until the next full import, as on `next`. owner: zbeyens. stop: every import that sees a storage write in its window imports again, or the owner drops it.

@@ -6,6 +6,7 @@ import {
   createEditorView,
   defineEditorSchema,
   DocumentChange,
+  type EditorUpdateTransaction,
   property,
   schema,
   target,
@@ -676,6 +677,460 @@ describe('authored settle of a deleted link', () => {
           type: 'paragraph',
         },
       ]
+    );
+  });
+});
+
+describe('authored settle of a deleted block', () => {
+  const Shapes = defineEditorSchema('authored-facts-shapes', {
+    elements: {
+      blockquote: { content: schema.content.type('paragraph', { min: 1 }) },
+      heading: schema.element.textBlock(),
+      paragraph: schema.element.textBlock(),
+    },
+    id: 'authored-facts-shapes',
+    root: schema.content.any(
+      ['blockquote', 'heading', 'paragraph'].map((type) =>
+        schema.content.type(type)
+      ),
+      { default: { type: 'paragraph' }, min: 1 }
+    ),
+    unknown: 'reject',
+    version: 1,
+  });
+  const carol = { at: 1, author: 'carol', change: 'carol:1', kind: 'delete' };
+  const dan = { at: 2, author: 'dan', change: 'dan:1' };
+  const accepted = reviewRecords({
+    verdicts: [
+      {
+        decision: 'd:1',
+        member: { at: carol.at, change: carol.change },
+        verdict: 'accept',
+      },
+    ],
+  });
+  const line = (text: string, type = 'paragraph') => ({
+    children: [{ text }],
+    type,
+  });
+  const deleted = (text: string, authored: readonly unknown[] = []) => ({
+    authored: [carol, ...authored],
+    children: [{ authored: [carol], text }],
+    type: 'paragraph',
+  });
+  const editorOf = (value: Value, shapes = Shapes) =>
+    createEditor({
+      initialValue: value as never,
+      plugins: [shapes, createAuthoredPlugin({ authorId: 'bob' })],
+    });
+  const decided = (
+    children: readonly Node[],
+    decisions: Parameters<ReturnType<typeof authoredTestApi>['decide']>[0],
+    shapes = Shapes
+  ) => {
+    const editor = editorOf({ children }, shapes);
+
+    authoredTestApi(editor).decide(decisions);
+
+    return editor.read.children();
+  };
+  const assertMatchesDecidingAtOnce = (
+    children: readonly Node[],
+    action: 'accept' | 'reject',
+    shapes = Shapes
+  ) => {
+    const editor = editorOf({ children, records: accepted }, shapes);
+
+    authoredTestApi(editor).decide({ action, changes: ['dan:1'] });
+    assert.deepEqual(
+      editor.read.children(),
+      decided(
+        children,
+        [
+          { action: 'accept', changes: ['carol:1'] },
+          { action, changes: ['dan:1'] },
+        ],
+        shapes
+      )
+    );
+  };
+  const Titled = defineEditorSchema('authored-facts-titled', {
+    elements: {
+      paragraph: schema.element.textBlock(),
+      title: schema.element.textBlock(),
+    },
+    id: 'authored-facts-titled',
+    root: schema.content.prefix(
+      [{ element: 'title' }],
+      schema.content.types(['paragraph'], { default: { type: 'paragraph' } })
+    ),
+    unknown: 'reject',
+    version: 1,
+  });
+  const HeadingFirst = defineEditorSchema('authored-facts-heading-first', {
+    elements: {
+      heading: schema.element.textBlock(),
+      paragraph: schema.element.textBlock(),
+    },
+    id: 'authored-facts-heading-first',
+    root: schema.content.prefix(
+      [{ element: 'heading' }],
+      schema.content.types(['heading', 'paragraph'], {
+        default: { type: 'paragraph' },
+      })
+    ),
+    unknown: 'reject',
+    version: 1,
+  });
+  const quote = (
+    children: readonly unknown[],
+    authored: readonly unknown[] = []
+  ) => ({ authored, children, type: 'blockquote' });
+  const loaded = (children: readonly Node[]) =>
+    editorOf({ children, records: accepted }).read.children();
+  const committed = (
+    children: readonly Node[],
+    write: (tx: EditorUpdateTransaction) => void
+  ) => {
+    const editor = editorOf({ children, records: accepted });
+
+    editor.update({ tags: ['collaboration'] }, write);
+
+    return editor.read.children();
+  };
+
+  it('removes a paragraph whose deletion a verdict accepted', () => {
+    assert.deepEqual(loaded([line('keep'), deleted('gone'), line('after')]), [
+      line('keep'),
+      line('after'),
+    ]);
+  });
+
+  it('keeps the empty paragraph an accepted deletion of only its text leaves', () => {
+    assert.deepEqual(
+      loaded([
+        line('keep'),
+        { children: [{ authored: [carol], text: 'gone' }], type: 'paragraph' },
+        line('after'),
+      ]),
+      [line('keep'), line(''), line('after')]
+    );
+  });
+
+  it('removes a deleted quote with its lines', () => {
+    assert.deepEqual(
+      loaded([
+        line('keep'),
+        {
+          authored: [carol],
+          children: [deleted('a'), deleted('b')],
+          type: 'blockquote',
+        },
+        line('after'),
+      ]),
+      [line('keep'), line('after')]
+    );
+  });
+
+  it('leaves an empty line in a quote whose only line goes', () => {
+    assert.deepEqual(
+      loaded([
+        line('keep'),
+        { children: [deleted('gone')], type: 'blockquote' },
+        line('after'),
+      ]),
+      [
+        line('keep'),
+        { children: [line('')], type: 'blockquote' },
+        line('after'),
+      ]
+    );
+  });
+
+  it('leaves an empty line when the only block goes', () => {
+    assert.deepEqual(loaded([deleted('gone')]), [line('')]);
+  });
+
+  it('removes the paragraphs a peer’s commit brings after their deletion was accepted', () => {
+    assert.deepEqual(
+      committed([line('keep'), line('after')], (tx) => {
+        tx.nodes.insert(deleted('one') as never, { at: [1] });
+        tx.nodes.insert(deleted('two') as never, { at: [2] });
+      }),
+      [line('keep'), line('after')]
+    );
+  });
+
+  it('leaves an empty line when a peer’s commit leaves only a block whose deletion was accepted', () => {
+    assert.deepEqual(
+      committed([line('x')], (tx) => {
+        tx.nodes.insert(deleted('gone') as never, { at: [1] });
+        tx.nodes.remove({ at: [0] });
+      }),
+      [line('')]
+    );
+  });
+
+  it('joins a pending join after a removed paragraph into the line before it, as deciding both does', () => {
+    const editor = editorOf({
+      children: [
+        line('keep', 'heading'),
+        deleted('gone'),
+        { ...line('after'), authored: [{ ...dan, kind: 'join' }] },
+      ],
+      records: accepted,
+    });
+
+    authoredTestApi(editor).decide({ action: 'accept', changes: ['dan:1'] });
+    assert.deepEqual(editor.read.children(), [line('keepafter', 'heading')]);
+  });
+
+  it('drops another author’s pending split with the paragraph it sits on, as deciding both does', () => {
+    const editor = editorOf({
+      children: [
+        line('keep', 'heading'),
+        deleted('gone', [{ ...dan, kind: 'split' }]),
+        line('after'),
+      ],
+      records: accepted,
+    });
+
+    authoredTestApi(editor).decide({ action: 'reject', changes: ['dan:1'] });
+    assert.deepEqual(editor.read.children(), [
+      line('keep', 'heading'),
+      line('after'),
+    ]);
+  });
+
+  it('settles a removed line Editing moved after a pending join as deciding both does', () => {
+    assertMatchesDecidingAtOnce(
+      [
+        line('cd'),
+        deleted('ab', [
+          {
+            at: 1,
+            author: 'erin',
+            change: '~edit:erin',
+            follows: JSON.stringify([dan.change, dan.at]),
+            kind: 'insert',
+          },
+        ]),
+        { ...line('ef'), authored: [{ ...dan, kind: 'join' }] },
+      ],
+      'accept'
+    );
+  });
+
+  it('keeps the line a pending unwrap of its quote would dissolve', () => {
+    assertMatchesDecidingAtOnce(
+      [
+        line('keep'),
+        quote([deleted('gone')], [{ ...dan, kind: 'unwrap' }]),
+        line('after'),
+      ],
+      'accept'
+    );
+  });
+
+  it('keeps the line of a quote whose own deletion is pending', () => {
+    assertMatchesDecidingAtOnce(
+      [
+        line('keep'),
+        quote([deleted('gone')], [{ ...dan, kind: 'delete' }]),
+        line('after'),
+      ],
+      'accept'
+    );
+  });
+
+  it('keeps the line of a quote whose insertion is pending', () => {
+    assertMatchesDecidingAtOnce(
+      [
+        line('keep'),
+        quote([deleted('gone')], [{ ...dan, kind: 'insert' }]),
+        line('after'),
+      ],
+      'reject'
+    );
+  });
+
+  it('builds the block its root needs to stay at its minimum', () => {
+    const Pair = defineEditorSchema('authored-facts-pair', {
+      elements: { paragraph: schema.element.textBlock() },
+      id: 'authored-facts-pair',
+      root: schema.content.types(['paragraph'], {
+        default: { type: 'paragraph' },
+        min: 2,
+      }),
+      unknown: 'reject',
+      version: 1,
+    });
+    const children = [line('keep'), deleted('gone')];
+
+    assert.deepEqual(
+      editorOf({ children, records: accepted }, Pair).read.children(),
+      decided(children, { action: 'accept', changes: ['carol:1'] }, Pair)
+    );
+  });
+
+  it('builds the title its root’s prefix needs', () => {
+    const children = [{ ...deleted('gone'), type: 'title' }, line('x')];
+
+    assert.deepEqual(
+      editorOf({ children, records: accepted }, Titled).read.children(),
+      decided(children, { action: 'accept', changes: ['carol:1'] }, Titled)
+    );
+  });
+
+  it('builds a fresh heading in a vacated slot instead of moving the next one up', () => {
+    const children = [
+      { ...deleted('gone'), type: 'heading' },
+      line('x', 'heading'),
+      line('p'),
+    ];
+
+    assert.deepEqual(
+      editorOf({ children, records: accepted }, HeadingFirst).read.children(),
+      decided(
+        children,
+        { action: 'accept', changes: ['carol:1'] },
+        HeadingFirst
+      )
+    );
+  });
+
+  it('keeps a heading a pending insertion after it could take the place of', () => {
+    const insert = { ...dan, kind: 'insert' };
+
+    assertMatchesDecidingAtOnce(
+      [
+        { ...deleted('gone'), type: 'heading' },
+        {
+          authored: [insert],
+          children: [{ authored: [insert], text: 'new' }],
+          type: 'heading',
+        },
+        line('p'),
+      ],
+      'reject',
+      HeadingFirst
+    );
+  });
+
+  it('lets a heading whose insertion was accepted take the place of a removed heading before it, as deciding both does', () => {
+    const insert = { ...dan, kind: 'insert' };
+    const children = [
+      { ...deleted('gone'), type: 'heading' },
+      {
+        authored: [insert],
+        children: [{ authored: [insert], text: 'new' }],
+        type: 'heading',
+      },
+      line('p'),
+    ];
+    const both = reviewRecords({
+      verdicts: [
+        {
+          decision: 'd:1',
+          member: { at: carol.at, change: carol.change },
+          verdict: 'accept',
+        },
+        {
+          decision: 'd:2',
+          member: { at: dan.at, change: dan.change },
+          verdict: 'accept',
+        },
+      ],
+    });
+
+    assert.deepEqual(
+      editorOf({ children, records: both }, HeadingFirst).read.children(),
+      decided(
+        children,
+        { action: 'accept', changes: ['carol:1', 'dan:1'] },
+        HeadingFirst
+      )
+    );
+  });
+
+  it('keeps a title whose rebuild waits on a pending join after it', () => {
+    assertMatchesDecidingAtOnce(
+      [
+        { ...deleted('gone'), type: 'title' },
+        { ...line('x'), authored: [{ ...dan, kind: 'join' }] },
+      ],
+      'accept',
+      Titled
+    );
+  });
+
+  it('keeps the emptied line when the root’s default is a list no removed line becomes', () => {
+    const Listed = defineEditorSchema('authored-facts-listed', {
+      elements: {
+        list: { content: schema.content.type('paragraph', { min: 1 }) },
+        paragraph: schema.element.textBlock(),
+      },
+      id: 'authored-facts-listed',
+      root: schema.content.any(
+        ['list', 'paragraph'].map((type) => schema.content.type(type)),
+        { default: { type: 'list' }, min: 1 }
+      ),
+      unknown: 'reject',
+      version: 1,
+    });
+
+    assert.deepEqual(
+      editorOf(
+        { children: [deleted('gone')], records: accepted },
+        Listed
+      ).read.children(),
+      [{ ...deleted(''), children: [{ text: '' }] }]
+    );
+  });
+
+  it('makes the only removed quote the line that completes the root', () => {
+    assert.deepEqual(loaded([quote([deleted('gone')], [carol])]), [line('')]);
+  });
+
+  it('makes each of two removed blocks one of the two its root needs', () => {
+    const TitledLine = defineEditorSchema('authored-facts-titled-line', {
+      elements: {
+        paragraph: schema.element.textBlock(),
+        title: schema.element.textBlock(),
+      },
+      id: 'authored-facts-titled-line',
+      root: schema.content.prefix(
+        [{ element: 'title' }],
+        schema.content.types(['paragraph'], {
+          default: { type: 'paragraph' },
+          min: 1,
+        })
+      ),
+      unknown: 'reject',
+      version: 1,
+    });
+
+    assert.deepEqual(
+      editorOf(
+        {
+          children: [{ ...deleted('one'), type: 'title' }, deleted('two')],
+          records: accepted,
+        },
+        TitledLine
+      ).read.children(),
+      [line('', 'title'), line('')]
+    );
+  });
+
+  it('settles a block after one a peer’s commit removes', () => {
+    assert.deepEqual(
+      committed([line('keep'), line('after')], (tx) => {
+        tx.nodes.insert(deleted('one') as never, { at: [1] });
+        tx.nodes.insert({ authored: [carol], text: 'x' } as never, {
+          at: [2, 0],
+        });
+      }),
+      [line('keep'), line('after')]
     );
   });
 });

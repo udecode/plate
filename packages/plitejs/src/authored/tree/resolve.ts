@@ -254,7 +254,7 @@ const deletesBeforeJoin = (mark: AuthoredMark, join: JoinMoment) =>
   mark.at <= join.at && !join.own.has(incarnationOf(mark));
 
 /** The review children of a level that hold its prefix slots at the start. */
-const startOccupants = <N>(
+export const startOccupants = <N>(
   level: readonly N[],
   isInserted: (node: unknown) => boolean
 ) => level.filter((node) => !isInserted(node));
@@ -265,12 +265,45 @@ const startOccupants = <N>(
  * occupant nor an inserted node, so the decision builds a fresh element there
  * as Editing does and never promotes a later sibling.
  */
-const vacatesSlot = (
+export const vacatesSlot = (
   start: readonly unknown[],
   slot: number,
   original: unknown,
   isInserted: (node: unknown) => boolean
 ) => original !== start[slot] && !isInserted(original);
+
+export const slotDecidingInsertions = <N>(
+  level: readonly N[],
+  completed: Completion<N>,
+  completeHere: (nodes: readonly N[]) => Completion<N>,
+  slots: number,
+  isStart: (node: N) => boolean,
+  isInserted: (node: N) => boolean
+): readonly N[] => {
+  const occupied = level.findIndex(isStart);
+  const front = new Set(
+    level.slice(0, (occupied === -1 ? level.length : occupied) + slots)
+  );
+  const inserted = [...front].filter(isInserted);
+
+  if (inserted.length === 0) return [];
+
+  const without = completeHere(
+    level.filter((node) => !front.has(node) || !isInserted(node))
+  );
+  const head = ({ built, children: nodes }: Completion<N>) =>
+    nodes
+      .slice(0, slots)
+      .map(
+        (node) =>
+          `${built.some((item) => item.node === node) ? '+' : ''}${typeOf(
+            node as Node
+          )}`
+      )
+      .join(',');
+
+  return head(completed) === head(without) ? [] : inserted;
+};
 
 /** An element holding texts; one with no children holds no blocks, so it counts. */
 export const isTextBlock = (node: unknown) => {
@@ -2321,9 +2354,6 @@ const resolveIn = (
       wait(pending(ancestor).filter(isStructureChange));
     }
   };
-  // A pending insertion between a prefix slot and the slot's start occupant
-  // decides what fills the slot, so the decision waits on it when the slots
-  // differ with it rejected.
   const waitOnPrefix = (
     level: readonly Node[],
     completed: Completion<Node>,
@@ -2331,35 +2361,18 @@ const resolveIn = (
     completeHere: (nodes: readonly Node[]) => Completion<Node>,
     slots: number
   ) => {
-    const occupied = level.findIndex((node) =>
-      start.includes((origins.get(node) ?? node) as Node)
+    wait(
+      slotDecidingInsertions(
+        level,
+        completed,
+        completeHere,
+        slots,
+        (node) => start.includes((origins.get(node) ?? node) as Node),
+        isInserted
+      ).flatMap((node) =>
+        pending(node).filter((mark) => mark.kind === 'insert')
+      )
     );
-    const front = new Set(
-      level.slice(0, (occupied === -1 ? level.length : occupied) + slots)
-    );
-    const insertions = [...front].flatMap((node) =>
-      pending(node).filter((mark) => mark.kind === 'insert')
-    );
-
-    if (insertions.length === 0) return;
-
-    const without = completeHere(
-      level.filter((node) => !front.has(node) || !isInserted(node))
-    );
-    const head = ({ built, children: nodes }: Completion<Node>) =>
-      nodes
-        .slice(0, slots)
-        .map(
-          (node) =>
-            `${built.some((item) => item.node === node) ? '+' : ''}${typeOf(
-              node
-            )}`
-        )
-        .join(',');
-
-    if (head(completed) !== head(without)) {
-      wait(insertions);
-    }
   };
   // An element built inside pending insertions is part of them, as the
   // recorder's fills are, so rejecting any of them removes it.

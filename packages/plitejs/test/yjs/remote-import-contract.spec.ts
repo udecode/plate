@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import * as Y from 'yjs';
 
+import { createAuthoredPlugin } from '../../src/authored/authored';
 import {
   createEditor,
   createEditorView,
@@ -53,6 +54,7 @@ import {
   paragraph,
   readEditorYjsState,
   readPeerChildren,
+  runEditorYjsUpdate,
   syncConnectedPeers,
 } from './support/collaboration';
 
@@ -860,6 +862,57 @@ describe('plitejs/yjs remote import contract', () => {
         readTopLevelNodes: 1,
       },
     ]);
+  });
+
+  it('imports an authored keystroke at an admitting peer without writing back to Yjs', () => {
+    const Lines = defineEditorSchema('schema:yjs-admitting-lines', {
+      elements: { paragraph: schema.element.textBlock() },
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+    });
+    const admitting = (doc: Y.Doc, authorId: string, seeded?: Descendant[]) => {
+      const editor = createEditor({
+        initialValue: seeded ?? [paragraph('')],
+        plugins: [Lines, createAuthoredPlugin({ authorId })],
+      });
+
+      editor.install(
+        yjs({ doc, initialReady: true, ...(seeded ? { seed: true } : {}) })
+      );
+
+      return editor;
+    };
+    const sourceDoc = new Y.Doc();
+    const source = admitting(sourceDoc, 'ann', largeValue());
+    const receiverDoc = new Y.Doc();
+
+    Y.applyUpdate(receiverDoc, Y.encodeStateAsUpdate(sourceDoc));
+
+    const receiver = admitting(receiverDoc, 'bob');
+    const writes: unknown[] = [];
+
+    receiverDoc.on('update', (_update, origin, _doc, transaction) => {
+      if (transaction.local) writes.push(origin);
+    });
+    runEditorYjsUpdate(receiver, ({ clearTrace }) => clearTrace());
+    source.update.text.insert('!', {
+      at: { path: [0, 0], offset: 'block-000'.length },
+    });
+    Y.applyUpdate(
+      receiverDoc,
+      Y.encodeStateAsUpdate(sourceDoc, Y.encodeStateVector(receiverDoc))
+    );
+
+    assert.deepEqual(receiver.read.children(), source.read.children());
+    assert.deepEqual(writes, []);
+    assert.deepEqual(
+      readEditorYjsState(receiver)
+        .trace()
+        .map(({ importKind, mode }) => ({ importKind, mode })),
+      [{ importKind: 'event-change', mode: 'remote-reconcile' }]
+    );
   });
 
   it('lowers canonical changes without replacing Yjs siblings', () => {

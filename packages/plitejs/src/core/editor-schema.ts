@@ -638,6 +638,57 @@ export const getCompiledEmptyTextDrops = (
   };
 };
 
+const fillDefaultedProperties = (
+  schema: CompiledEditorSchema,
+  placement: 'element' | 'text',
+  context: CompiledSchemaTargetContext,
+  output: Record<string, unknown>,
+  valueOf: (property: CompiledSchemaProperty, key: string) => unknown
+) => {
+  const allowedIds =
+    placement === 'element'
+      ? schema.properties.elementAllowedByType.get(context.type)
+      : schema.properties.textAllowedByParentType.get(context.type);
+
+  for (const id of allowedIds ?? []) {
+    const property = schema.properties.byId.get(id);
+
+    if (
+      !property ||
+      typeof property.key !== 'string' ||
+      Object.hasOwn(output, property.key) ||
+      !matchesCompiledSchemaTarget(schema, property.target, context) ||
+      (!Object.hasOwn(property.descriptor, 'default') &&
+        !property.descriptor.generate) ||
+      property.descriptor.omitDefault
+    ) {
+      continue;
+    }
+    output[property.key] = valueOf(property, property.key);
+  }
+};
+
+/** @internal */
+export const readEmptyText = (
+  schema: CompiledEditorSchema,
+  ancestors: ReadonlyArray<Readonly<Record<string, unknown>>>,
+  root?: string
+): Readonly<Record<string, unknown>> | null => {
+  const context = toCompiledNodeContext({ text: '' }, ancestors, root);
+  const output: Record<string, unknown> = { text: '' };
+  let generated = false;
+
+  fillDefaultedProperties(schema, 'text', context, output, (property) => {
+    generated ||= !!property.descriptor.generate;
+
+    return property.descriptor.default;
+  });
+
+  return generated
+    ? null
+    : canonicalizeCompiledExclusiveTextProperties(schema, output, context);
+};
+
 export const canonicalizeCompiledTextProperties = <
   T extends Readonly<Record<string, unknown>>,
 >(
@@ -2547,47 +2598,41 @@ export const createEditorSchema = <V extends Value = Value>(
       }
     }
 
+    fillDefaultedProperties(
+      schema,
+      placement,
+      context,
+      output,
+      (property, key) => {
+        if (validationLocation) {
+          throw createEditorSchemaValidationError(
+            'missing-property',
+            `Editor ${placement} requires canonical property "${key}".`,
+            validationLocation,
+            {
+              property: {
+                candidates: [property],
+                key,
+                placement,
+              },
+            }
+          );
+        }
+
+        return property.descriptor.generate
+          ? canonicalizeProperty(
+              key,
+              property,
+              generatePropertyValue(property.descriptor)
+            )
+          : property.descriptor.default;
+      }
+    );
+
     const allowedIds =
       placement === 'element'
         ? schema.properties.elementAllowedByType.get(context.type)
         : schema.properties.textAllowedByParentType.get(context.type);
-
-    for (const id of allowedIds ?? []) {
-      const property = schema.properties.byId.get(id);
-
-      if (
-        !property ||
-        typeof property.key !== 'string' ||
-        Object.hasOwn(output, property.key) ||
-        !matchesCompiledSchemaTarget(schema, property.target, context) ||
-        (!Object.hasOwn(property.descriptor, 'default') &&
-          !property.descriptor.generate) ||
-        property.descriptor.omitDefault
-      ) {
-        continue;
-      }
-      if (validationLocation) {
-        throw createEditorSchemaValidationError(
-          'missing-property',
-          `Editor ${placement} requires canonical property "${property.key}".`,
-          validationLocation,
-          {
-            property: {
-              candidates: [property],
-              key: property.key,
-              placement,
-            },
-          }
-        );
-      }
-      output[property.key] = property.descriptor.generate
-        ? canonicalizeProperty(
-            property.key,
-            property,
-            generatePropertyValue(property.descriptor)
-          )
-        : property.descriptor.default;
-    }
 
     for (const id of allowedIds ?? []) {
       const property = schema.properties.byId.get(id);

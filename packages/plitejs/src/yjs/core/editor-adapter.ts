@@ -3,7 +3,7 @@ import type { NodeList } from '../../core/change/document-index';
 import { withoutRepairOrphans } from '../../core/document-admission';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
-import { runTrustedUpdate } from '../../core/public-state';
+import { type AdmittedRepair, runTrustedUpdate } from '../../core/public-state';
 import { withoutPlacement } from '../../core/view-carets';
 import type {
   Descendant,
@@ -20,15 +20,22 @@ import { NodeApi, RangeApi, SelectionApi } from '../../index';
 import type { YjsEditor } from './editor-types';
 import type { PendingYjsEffect } from './shared-effect-log';
 
+type YjsRemoteImport = Readonly<{
+  replacement?: EditorDocumentValue;
+  change?: DocumentChange;
+  effects: readonly PendingYjsEffect[];
+  /** Record writes applied before the content change, in the same commit. */
+  records?: DocumentChange | null;
+  selection?: Range | Selection;
+}>;
+
+export type YjsImportOutcome = Readonly<{
+  admission: AdmittedRepair | null;
+  deletedRoots: readonly string[];
+}>;
+
 export type YjsEditorAdapter = {
-  readonly applyRemote: (input: {
-    readonly replacement?: EditorDocumentValue;
-    readonly change?: DocumentChange;
-    readonly effects: readonly PendingYjsEffect[];
-    /** Record writes applied before the content change, in the same commit. */
-    readonly records?: DocumentChange | null;
-    readonly selection?: Range | Selection;
-  }) => void;
+  readonly applyRemote: (input: YjsRemoteImport) => YjsImportOutcome;
   readonly canonicalize: (
     root: string,
     children: readonly Descendant[]
@@ -106,6 +113,8 @@ const isValidImportSelectionPoint = (
   );
 };
 
+const NO_ROOTS: readonly string[] = Object.freeze([]);
+
 export const createYjsEditorAdapter = (
   editor: YjsEditor,
   canonicalize: YjsEditorAdapter['canonicalize']
@@ -158,7 +167,7 @@ export const createYjsEditorAdapter = (
     importing = true;
 
     try {
-      runTrustedUpdate(
+      const { admission } = runTrustedUpdate(
         editor,
         (tx) => {
           if (records) tx.changes.apply(records);
@@ -177,6 +186,11 @@ export const createYjsEditorAdapter = (
         },
         { tags: YjsUpdatePolicy.remote.tags }
       );
+
+      return Object.freeze({
+        admission,
+        deletedRoots: imported ? [...imported.change.deleteRoots] : NO_ROOTS,
+      });
     } finally {
       importing = false;
     }

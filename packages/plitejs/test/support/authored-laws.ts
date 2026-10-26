@@ -8,6 +8,7 @@ import {
 
 import type { AuthoredResult } from '../../src/authored';
 import { createAuthoredPlugin } from '../../src/authored/authored';
+import { expandContexts } from '../../src/authored/facts/compact';
 import { factsOf } from '../../src/authored/facts/facts';
 import { type LandedRecord, landedOf } from '../../src/authored/facts/records';
 import { authoredResolveSchemaOf } from '../../src/authored/resolve-schema';
@@ -69,6 +70,19 @@ export const writesOf = (
     .sort();
 };
 
+const recordsOf = (
+  decided: ReadonlyMap<string, Verdict>,
+  landed: readonly LandedRecord[]
+) =>
+  reviewRecords({
+    landed,
+    verdicts: [...decided].map(([change, verdict], index) => ({
+      decision: `d:${index}`,
+      member: { at: 1, change },
+      verdict,
+    })),
+  });
+
 export const resolveWithVerdicts = (
   decided: ReadonlyMap<string, Verdict>,
   children: readonly JsonNode[],
@@ -77,17 +91,7 @@ export const resolveWithVerdicts = (
   landed: readonly LandedRecord[] = LANDED
 ) =>
   resolveAuthoredChildren(children, outcome, resolveSchema, 'main', {
-    facts: factsOf({
-      children,
-      records: reviewRecords({
-        landed,
-        verdicts: [...decided].map(([change, verdict], index) => ({
-          decision: `d:${index}`,
-          member: { at: 1, change },
-          verdict,
-        })),
-      }),
-    }),
+    facts: factsOf({ children, records: recordsOf(decided, landed) }),
   });
 
 export const settleAsAdmission = (
@@ -110,6 +114,19 @@ export const settleAsAdmission = (
 
   return { children: settled.children, landed: [...stored, ...settled.landed] };
 };
+
+export const loadWithVerdicts = (
+  editor: (initialValue: readonly unknown[]) => ReturnType<typeof createEditor>,
+  decided: ReadonlyMap<string, Verdict>,
+  children: readonly JsonNode[],
+  landed: readonly LandedRecord[]
+) =>
+  expandContexts(
+    editor({
+      children,
+      records: recordsOf(decided, landed),
+    } as never).read.value()
+  ).children as readonly JsonNode[];
 
 export type StepAdmission =
   | Readonly<{ kind: 'refused'; reason: string }>

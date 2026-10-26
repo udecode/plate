@@ -1777,6 +1777,12 @@ export class YjsEventChangeBridge {
     );
   }
 
+  withRootIndex<T>(write: () => T): T {
+    return typeof this.root.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) === 'string'
+      ? write()
+      : withYjsRootIndex(this.root, this.rootIndex, write);
+  }
+
   private fillTextGaps(change: DocumentChange, side: 'after' | 'before') {
     const blocks = new Set<number>();
     change.iterChangedRanges((root, fromA, toA, fromB, toB) => {

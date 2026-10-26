@@ -5,17 +5,16 @@ import {
   filterDocumentChangeRoots,
   getInternalDocumentChangeRecords,
   getInternalDocumentChangeRootKeys as getDocumentChangeRootKeys,
+  getInternalDocumentRootChange,
   valueRootIndex,
   valueRootNodes,
   withInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
-import {
-  getEditorCommitAdmissionRepair,
-  getEditorCommitValue,
-} from '../../core/commit';
+import { type EmptyTextRead, retractionOf } from '../../core/change/retraction';
+import { getEditorCommitValue } from '../../core/commit';
 import { getEditorSchema } from '../../core/editor-runtime';
-import { holdsImportedRoot } from '../../core/editor-schema';
+import { holdsImportedRoot, readEmptyText } from '../../core/editor-schema';
 import { isMissingReference } from '../../core/missing-reference';
 import {
   getCompiledEditorSchema,
@@ -72,6 +71,7 @@ import {
 import {
   createYjsEditorAdapter,
   type YjsEditorAdapter,
+  type YjsImportOutcome,
 } from './editor-adapter';
 import type { YjsEditor } from './editor-types';
 import {
@@ -84,6 +84,7 @@ import {
 } from './event-change-bridge';
 import { DEFAULT_YJS_ROOT_NAME } from './keys';
 import { isRecord } from './record';
+import { retractYjsRoot } from './retraction';
 import {
   assertYjsDocumentSchemaFormats,
   assertYjsSchemaIdentity,
@@ -167,6 +168,9 @@ type YjsRemoteInput = Readonly<{
   records: DocumentChange | null;
 }>;
 
+type YjsAdmittedImport = YjsImportOutcome &
+  Readonly<{ storageMoved: () => boolean }>;
+
 const addRecordId = (
   ids: Map<string, Set<string>>,
   set: string,
@@ -227,6 +231,9 @@ export class YjsController<
   private readonly afterTransactionObserver: (
     transaction: Y.Transaction
   ) => void;
+  private readonly beforeTransactionObserver: (
+    transaction: Y.Transaction
+  ) => void;
   private readonly readinessObserver: () => void;
   private readonly seedGranted: boolean;
   private readonly traceEntries: YjsTraceEntry[] = [];
@@ -241,13 +248,15 @@ export class YjsController<
   private pendingRemoteEffects = false;
   private readonly pendingRemoteNamedRoots = new Set<string>();
   private readonly pendingRemoteRecords = new Map<string, Set<string>>();
-  private readonly remoteRepairRoots = new Set<string>();
-  private readonly remoteRepairDeletedRoots = new Set<string>();
-  private readonly remoteRepairRecords = new Map<string, Set<string>>();
   private pendingRemoteRootChange = false;
   private pendingRemoteSchemaChange = false;
   private published = false;
   private readinessUnsubscribe: (() => void) | undefined;
+  private readonly openRemoteTransactions = new Set<Y.Transaction>();
+  private importsDone = 0;
+  private importsOwed = 0;
+  private readonly storageTypes = new Set<unknown>();
+  private storageWrites = 0;
   private unregisterTransactionGuard: (() => void) | undefined;
 
   constructor(
@@ -298,6 +307,9 @@ export class YjsController<
     this.schemaMetadata = this.doc.getMap(
       getYjsSchemaMetadataName(this.rootName)
     );
+    this.storageTypes.add(this.root);
+    this.storageTypes.add(this.roots);
+    this.storageTypes.add(this.schemaMetadata);
     this.sharedEffectLog = new YjsSharedEffectLog(
       this.doc,
       this.rootName,
@@ -398,6 +410,12 @@ export class YjsController<
     };
     this.afterTransactionObserver = (transaction) => {
       if (
+        this.openRemoteTransactions.delete(transaction) &&
+        this.writesStorage(transaction)
+      ) {
+        this.storageWrites += 1;
+      }
+      if (
         this.disposed ||
         !this.published ||
         this.shouldIgnoreRemoteTransaction(transaction) ||
@@ -408,6 +426,28 @@ export class YjsController<
 
       this.processAvailableInput();
     };
+    // Yjs runs the observers of a transaction that starts inside another's
+    // cleanup only after that cleanup, too late for an import lowering its
+    // repair, so the binding notes each remote transaction when it starts.
+    this.beforeTransactionObserver = (transaction) => {
+      if (
+        !this.shouldIgnoreRemoteTransaction(transaction) &&
+        !this.sharedEffectLog.isInternalTransaction(transaction)
+      ) {
+        this.openRemoteTransactions.add(transaction);
+      }
+    };
+  }
+
+  private writesStorage(transaction: Y.Transaction): boolean {
+    for (const type of transaction.changed.keys()) {
+      let top = type;
+
+      while (top._item) top = top._item.parent as typeof top;
+      if (this.storageTypes.has(top)) return true;
+    }
+
+    return false;
   }
 
   private createRootBinding(root: string, yRoot: Y.XmlElement): YjsRootBinding {
@@ -446,6 +486,7 @@ export class YjsController<
     const map = this.doc.getMap(`${this.rootName}:records:${set}`);
 
     this.recordMaps.set(set, map);
+    this.storageTypes.add(map);
     if (this.initialized) this.observeRecordMap(set, map);
 
     return map;
@@ -565,6 +606,7 @@ export class YjsController<
     for (const [set, map] of this.recordMaps) this.observeRecordMap(set, map);
     this.sharedEffectLog.observe(this.sharedEffectsObserver);
     this.doc.on('afterTransaction', this.afterTransactionObserver);
+    this.doc.on('beforeTransaction', this.beforeTransactionObserver);
 
     try {
       this.bindExternalEvents();
@@ -586,6 +628,7 @@ export class YjsController<
       this.unobserveRecordMaps();
       this.sharedEffectLog.unobserve(this.sharedEffectsObserver);
       this.doc.off('afterTransaction', this.afterTransactionObserver);
+      this.doc.off('beforeTransaction', this.beforeTransactionObserver);
       throw error;
     }
   }
@@ -616,6 +659,9 @@ export class YjsController<
       run(() => this.sharedEffectLog.unobserve(this.sharedEffectsObserver));
       run(() =>
         this.doc.off('afterTransaction', this.afterTransactionObserver)
+      );
+      run(() =>
+        this.doc.off('beforeTransaction', this.beforeTransactionObserver)
       );
     }
     run(() => this.awarenessAdapter?.destroy());
@@ -675,30 +721,6 @@ export class YjsController<
   }
 
   handleCommit(commit: EditorCommit, _snapshot: EditorSnapshot): void {
-    const repair = commit.tags.includes('collaboration')
-      ? getEditorCommitAdmissionRepair(commit)
-      : null;
-
-    if (repair) {
-      for (const root of getDocumentChangeRootKeys(repair)) {
-        this.remoteRepairRoots.add(root);
-      }
-      for (const root of repair.deleteRoots) {
-        this.remoteRepairDeletedRoots.add(root);
-      }
-      for (const [set, writes] of getInternalDocumentChangeRecords(repair)) {
-        for (const id of writes.keys()) {
-          addRecordId(this.remoteRepairRecords, set, id);
-        }
-      }
-    }
-    if (this.editorAdapter.importing()) {
-      // An import mirrors the Y.Doc, so a root it deletes that the Y.Doc still
-      // holds is one the merge orphaned.
-      for (const root of commit.changes.deleteRoots) {
-        if (this.roots.has(root)) this.remoteRepairDeletedRoots.add(root);
-      }
-    }
     if (
       this.admissionStatusValue.state === 'error' &&
       commit.dirtyStateKeys.includes('$configuration')
@@ -954,7 +976,7 @@ export class YjsController<
         : null;
 
       scheduleAfterCommitNotification(this.editor, () => {
-        this.editorAdapter.applyRemote({
+        const outcome = this.admitRemote({
           change: drift.change,
           effects: [],
           ...(mapped
@@ -966,7 +988,9 @@ export class YjsController<
               }
             : {}),
         });
+
         drift.accept(valueRootIndex(this.editorAdapter.readValue(), root));
+        this.lowerAdmissionRepair(outcome);
         this.awarenessAdapter?.publishMappedRoots(new Set([root]));
       });
     }
@@ -1070,7 +1094,9 @@ export class YjsController<
         } else {
           this.seedInitialValue();
           if (pending.effects.length > 0) {
-            this.editorAdapter.applyRemote({ effects: pending.effects });
+            this.lowerAdmissionRepair(
+              this.admitRemote({ effects: pending.effects })
+            );
           }
         }
 
@@ -1082,8 +1108,23 @@ export class YjsController<
         this.assertRoomSchemaForImport();
         this.flushRemoteTransaction();
       }
+      while (this.importsDone !== this.importsOwed) {
+        const owed = this.importsOwed;
 
-      this.lowerRemoteCommitRepairs();
+        this.assertRoomSchemaForImport();
+        this.markAllRecordsPending();
+
+        const pending = this.sharedEffectLog.pending();
+
+        this.importDocumentFromYjs('remote-reconcile', {
+          effects: pending.effects,
+          records: this.raiseRecords(),
+        });
+        this.sharedEffectLog.acknowledge(pending.eventIds);
+        this.clearPendingInput();
+        this.importsDone = owed;
+      }
+
       this.sharedEffectLog.settle();
       this.publishReady();
     } catch (error) {
@@ -1097,50 +1138,128 @@ export class YjsController<
     }
   }
 
-  private lowerRemoteCommitRepairs(): void {
-    if (
-      this.remoteRepairRoots.size === 0 &&
-      this.remoteRepairRecords.size === 0 &&
-      this.remoteRepairDeletedRoots.size === 0
-    ) {
+  private admitRemote(
+    input: Parameters<YjsEditorAdapter['applyRemote']>[0]
+  ): YjsAdmittedImport {
+    const writes = this.storageWrites;
+    const open = new Set(this.openRemoteTransactions);
+
+    return {
+      ...this.editorAdapter.applyRemote(input),
+      storageMoved: () =>
+        writes !== this.storageWrites ||
+        [...this.openRemoteTransactions].some(
+          (transaction) =>
+            !open.has(transaction) && this.writesStorage(transaction)
+        ),
+    };
+  }
+
+  private importAgain(): void {
+    this.importsOwed += 1;
+    if (!this.admissionAttempting) this.processAvailableInput();
+  }
+
+  /**
+   * Each admitting peer computes the same repair of one import and writes it,
+   * so only deletions and in-place writes merge into one copy.
+   */
+  private lowerAdmissionRepair({
+    admission,
+    deletedRoots,
+    storageMoved,
+  }: YjsAdmittedImport): void {
+    const repair = admission?.repair;
+    const deleted = new Set(
+      [...deletedRoots, ...(repair?.deleteRoots ?? [])].filter((root) =>
+        this.roots.has(root)
+      )
+    );
+
+    if (!repair && deleted.size === 0) return;
+    if (storageMoved()) {
+      this.importAgain();
+
       return;
     }
 
     const store = getEditorDocumentRecords(this.editor);
     const records: RecordOps = new Map(
-      [...this.remoteRepairRecords].map(([set, ids]) => [
-        set,
-        new Map([...ids].map((id) => [id, getRecord(store, set, id) ?? null])),
-      ])
+      [...(repair ? getInternalDocumentChangeRecords(repair) : [])].map(
+        ([set, writes]) => [
+          set,
+          new Map(
+            [...writes.keys()].map((id) => [
+              id,
+              getRecord(store, set, id) ?? null,
+            ])
+          ),
+        ]
+      )
     );
-    const deleted = new Set(this.remoteRepairDeletedRoots);
-    const roots = new Set(
-      [...this.remoteRepairRoots].filter((root) => !deleted.has(root))
-    );
-    const repaired = [...roots].map((root) => {
-      const binding = this.bindings.get(root);
+    const repaired = admission
+      ? getDocumentChangeRootKeys(admission.repair).flatMap((root) => {
+          if (admission.repair.deleteRoots.has(root)) return [];
 
-      if (!binding) {
-        throw new Error(`Yjs root binding "${root}" is unavailable.`);
-      }
+          const binding = this.bindings.get(root);
 
-      return { binding, children: this.editorAdapter.readChildren(root), root };
-    });
+          if (!binding) {
+            throw new Error(`Yjs root binding "${root}" is unavailable.`);
+          }
 
-    this.remoteRepairRoots.clear();
-    this.remoteRepairRecords.clear();
-    this.remoteRepairDeletedRoots.clear();
+          return [
+            {
+              base: valueRootIndex(admission.base, root),
+              binding,
+              change: getInternalDocumentRootChange(admission.repair, root),
+              children: this.editorAdapter.readChildren(root),
+              root,
+            },
+          ];
+        })
+      : [];
+
     this.doc.transact(() => {
       this.lowerRecords(records);
       for (const root of deleted) this.roots.delete(root);
-      for (const { binding, children, root } of repaired) {
-        reconcileYjsRoot(
-          binding.root,
-          this.readYjsRootValue(binding),
-          children,
-          this.isSetValued,
-          root === MAIN_ROOT_KEY ? null : root
-        );
+      for (const { base, binding, change, children, root } of repaired) {
+        const schemaRoot = root === MAIN_ROOT_KEY ? null : root;
+        const readEmpty: EmptyTextRead = (ancestors) =>
+          readEmptyText(
+            getCompiledEditorSchema(this.editor),
+            ancestors,
+            schemaRoot ?? undefined
+          );
+        const retraction = change && retractionOf(base, change, readEmpty);
+        const retracted =
+          !!retraction &&
+          binding.bridge.withRootIndex(() =>
+            retractYjsRoot(
+              binding.root,
+              base,
+              children,
+              retraction,
+              this.isSetValued,
+              schemaRoot,
+              readEmpty,
+              (block) => fitImportedBlock(this.editor, block, root)
+            )
+          );
+
+        if (!retracted) {
+          reconcileYjsRoot(
+            binding.root,
+            this.readYjsRootValue(binding),
+            children,
+            this.isSetValued,
+            schemaRoot
+          );
+        }
+        this.traceEntries.push({
+          mode: 'admission-repair',
+          ...(root === MAIN_ROOT_KEY ? {} : { root }),
+          strategy: retracted ? 'retraction' : 'rewrite',
+        });
       }
     }, this.canonicalizeOrigin);
     for (const root of deleted) this.bindings.delete(root);
@@ -1148,7 +1267,7 @@ export class YjsController<
       binding.bridge.reset(children);
     }
 
-    const mapped = new Set([...roots, ...deleted]);
+    const mapped = new Set([...repaired.map(({ root }) => root), ...deleted]);
 
     if (mapped.size > 0) {
       this.awarenessAdapter?.publishMappedRoots(mapped, {
@@ -1258,7 +1377,7 @@ export class YjsController<
         this.importYjsEvents(events, remote);
       }
     } else if (remote.effects.length > 0 || remote.records) {
-      this.editorAdapter.applyRemote(remote);
+      this.lowerAdmissionRepair(this.admitRemote(remote));
     }
     this.sharedEffectLog.acknowledge(pending.eventIds);
     this.clearPendingInput();
@@ -1532,13 +1651,15 @@ export class YjsController<
       mode,
       ...(root === MAIN_ROOT_KEY ? {} : { root }),
     });
-    this.editorAdapter.applyRemote({
+    const outcome = this.admitRemote({
       ...remote,
       change,
       selection: this.currentSelection(),
     });
+
     binding.bridge.reset(children);
     binding.bridge.refreshMasks(children);
+    this.lowerAdmissionRepair(outcome);
     const changedRoots = new Set([root]);
 
     this.awarenessAdapter?.publishMappedRoots(changedRoots, {
@@ -1649,15 +1770,17 @@ export class YjsController<
       });
     }
 
-    this.editorAdapter.applyRemote({
+    const outcome = this.admitRemote({
       ...remote,
       change,
       selection: this.currentSelection(),
     });
+
     this.resetBindingsFromYjs({
       main: changed?.main ?? true,
       named: namedRoots,
     });
+    this.lowerAdmissionRepair(outcome);
     this.awarenessAdapter?.publishMappedRoots(roots, {
       fallbackRoots: roots,
     });
@@ -1810,12 +1933,14 @@ export class YjsController<
       readTopLevelNodes: result.import.readTopLevelNodes,
       ...(root === MAIN_ROOT_KEY ? {} : { root }),
     });
-    this.editorAdapter.applyRemote({
+    const outcome = this.admitRemote({
       ...remote,
       change: result.import.change,
       selection: this.currentSelection(),
     });
+
     result.import.accept(valueRootIndex(this.editorAdapter.readValue(), root));
+    this.lowerAdmissionRepair(outcome);
     this.awarenessAdapter?.publishMappedRoots(new Set([root]));
   }
 }

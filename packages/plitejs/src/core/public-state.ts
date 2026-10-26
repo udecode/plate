@@ -459,6 +459,7 @@ type TransactionSnapshot = {
   activeChange: {
     change: DocumentChange;
   };
+  admissionBase?: EditorDocumentValue;
   admissionRepair?: DocumentChange;
   baseRuntimeIndexes: Record<string, () => SnapshotIndex>;
   baseSnapshots: Record<string, EditorSnapshot>;
@@ -1728,6 +1729,7 @@ const admitTransactionDraft = (editor: Editor) => {
     }
     before = after;
     change = constructed ? repair.compose(constructed.change) : repair;
+    snapshot.admissionBase ??= after;
     snapshot.admissionRepair =
       snapshot.admissionRepair?.compose(change) ?? change;
   }
@@ -9135,6 +9137,7 @@ export const updateEditor = <
       () => fn(getUpdateView(editor), getUpdateContext(editor)),
       {
         authority: 'update',
+        onAdmission: options.onAdmission,
         placement: options.placement,
         skipCorrections: options.skipCorrections,
       }
@@ -9150,6 +9153,12 @@ export const updateEditor = <
 };
 
 /** @internal */
+export type AdmittedRepair = Readonly<{
+  base: EditorDocumentValue;
+  repair: DocumentChange;
+}>;
+
+/** @internal */
 export const runTrustedUpdate = <
   V extends Value,
   TPlugins extends readonly unknown[] = readonly [],
@@ -9160,7 +9169,7 @@ export const runTrustedUpdate = <
     context: EditorUpdateContext<Editor<V, TPlugins>>
   ) => void,
   options: Pick<InternalEditorUpdateOptions, 'tags'> = {}
-) => {
+): Readonly<{ admission: AdmittedRepair | null }> => {
   const owner = getEditorRuntimeOwner(editor) as Editor<V, TPlugins>;
   const snapshot = getTransactionSnapshot(owner);
 
@@ -9168,15 +9177,25 @@ export const runTrustedUpdate = <
     snapshot.skipCorrections = true;
     applyEditorUpdateTags(snapshot.tags, options.tags ?? []);
     fn(getUpdateView(owner), getUpdateContext(owner));
-    return;
+    return { admission: null };
   }
+
+  let admission: AdmittedRepair | null = null;
 
   getEditorRuntime(owner).update(
     (transaction, context) => {
       fn(transaction as EditorUpdateTransaction<V, TPlugins>, context);
     },
-    { ...options, skipCorrections: true }
+    {
+      ...options,
+      onAdmission: (admitted) => {
+        admission = admitted;
+      },
+      skipCorrections: true,
+    }
   );
+
+  return { admission };
 };
 
 export const withEditorRootChildren = <T>(
@@ -11296,6 +11315,7 @@ export const runEditorTransaction = <R>(
   fn: (transaction: EditorTransaction) => R,
   options: {
     authority?: TransactionAuthority;
+    onAdmission?: (admission: AdmittedRepair | null) => void;
     placement?: ViewPresentation;
     skipCorrections?: boolean;
   } = {}
@@ -11492,6 +11512,12 @@ export const runEditorTransaction = <R>(
         }
         disposeTransactionSpecContext(editor, draftContext);
       } else {
+        const admitted = snapshot.admissionRepair
+          ? Object.freeze({
+              base: getDefined(snapshot.admissionBase),
+              repair: snapshot.admissionRepair,
+            })
+          : null;
         const changed =
           draftContext.changed &&
           profileCoreDuration('transaction-has-net-changes', () =>
@@ -11505,6 +11531,7 @@ export const runEditorTransaction = <R>(
             restore();
           }
           disposeTransactionSpecContext(editor, draftContext);
+          options.onAdmission?.(admitted);
           // An update whose only change is a placement still commits it, so a
           // spec built before it goes stale.
           if (
@@ -11575,7 +11602,6 @@ export const runEditorTransaction = <R>(
             const change = profileCoreDuration('build-change', () =>
               createEditorCommit(
                 {
-                  admissionRepair: snapshot.admissionRepair,
                   after: afterSnapshot,
                   afterValue,
                   annotations: Object.fromEntries(
@@ -11736,6 +11762,7 @@ export const runEditorTransaction = <R>(
           });
 
           committed = change;
+          options.onAdmission?.(admitted);
           anchorPublication?.publish();
           for (const publishPrepared of publications) publishPrepared();
           pluginPublication?.finalize();

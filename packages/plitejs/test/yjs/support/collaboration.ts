@@ -396,7 +396,7 @@ type TestYjsActions = Readonly<{
 }>;
 
 export const runEditorYjsUpdate = (
-  editor: TestEditor,
+  editor: AnyEditor,
   fn: (actions: TestYjsActions) => void
 ): void => {
   const controller = requireYjsController(editor);

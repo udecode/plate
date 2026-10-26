@@ -30,6 +30,7 @@ import {
   recordGiveback,
   resolveWithVerdicts,
   settleAsAdmission,
+  loadWithVerdicts,
   type Verdict,
   idGeneratorCalls,
   withCuts,
@@ -370,6 +371,18 @@ const describe = (node: Node): string => {
 const story = (nodes: readonly unknown[]) =>
   (nodes as Node[]).map(describe).join(' ');
 
+const kindsOf = (nodes: readonly Node[], change: string) => {
+  const kinds = new Set<string>();
+  const walk = (node: Node) => {
+    for (const item of node.authored ?? []) {
+      if (item.change === change) kinds.add(item.kind);
+    }
+    for (const child of node.children ?? []) walk(child);
+  };
+  for (const node of nodes) walk(node);
+  return [...kinds];
+};
+
 const changesIn = (nodes: readonly Node[]) => {
   const found = new Set<string>();
   const walk = (node: Node) => {
@@ -401,6 +414,7 @@ type Outcome<State> =
  * deciding at once must agree on.
  */
 type Walk<State> = Readonly<{
+  failures?: readonly Failure[];
   name: string;
   pending: readonly string[];
   read: (state: State) => Readonly<{ seen: unknown; shown: string }>;
@@ -598,7 +612,7 @@ const explore = <State>(walk: Walk<State>) => {
   }
   return {
     compared,
-    failures,
+    failures: [...failures, ...(walk.failures ?? [])],
     idle: pending.length > 1 && compared === 0 ? [walk.name] : [],
     together,
   };
@@ -614,6 +628,38 @@ const quotesWalk = (
   document: readonly JsonNode[]
 ): Walk<QuotesState> => {
   const pending = changesIn(document as Node[]);
+  const name = story(generated);
+  const failures = new Map<string, Failure>();
+  const acceptsOnlyContent = (
+    from: QuotesState,
+    deciding: ReadonlyMap<string, Verdict>
+  ) =>
+    [...deciding].every(
+      ([change, verdict]) =>
+        verdict === 'accept' &&
+        kindsOf(from.children as Node[], change).every(
+          (kind) => kind === 'insert' || kind === 'delete'
+        )
+    );
+  const checkSettle = (
+    from: QuotesState,
+    now: ReadonlyMap<string, Verdict>,
+    modeled: readonly JsonNode[]
+  ) => {
+    const identity = `${name}: settle ${keyOf(now)} over ${story(from.children)}`;
+    if (failures.has(identity)) return;
+    const stored = loadWithVerdicts(
+      quotes.editor,
+      now,
+      from.children,
+      from.landed
+    );
+    if (isDeepStrictEqual(stored, modeled)) return;
+    failures.set(identity, {
+      detail: `  loaded with the verdicts: ${story(stored)}\n  decided:                  ${story(modeled)}`,
+      identity,
+    });
+  };
   const outcomeOf = (
     result: AuthoredResolution,
     decided: ReadonlyMap<string, Verdict>,
@@ -629,7 +675,10 @@ const quotesWalk = (
     };
   };
   return {
-    name: story(generated),
+    get failures() {
+      return [...failures.values()];
+    },
+    name,
     pending,
     read: ({ children, landed }) => {
       const writes = writesOf(landed, children);
@@ -641,20 +690,25 @@ const quotesWalk = (
     start: { children: document, landed: LANDED },
     step: (state, decided, deciding) => {
       const generatedBefore = idGeneratorCalls.count;
-      const outcome = outcomeOf(
-        resolveWithVerdicts(
-          decided,
-          state.children,
-          all(deciding),
-          quotes.schema,
-          state.landed
-        ),
+      const result = resolveWithVerdicts(
         decided,
-        deciding,
+        state.children,
+        all(deciding),
+        quotes.schema,
         state.landed
       );
+      const outcome = outcomeOf(result, decided, deciding, state.landed);
       const made = idGeneratorCalls.count - generatedBefore;
-      if (made === 0) return outcome;
+      if (made === 0) {
+        if (outcome.kind === 'settled' && acceptsOnlyContent(state, deciding)) {
+          checkSettle(
+            state,
+            new Map([...decided, ...deciding]),
+            outcome.state.children
+          );
+        }
+        return outcome;
+      }
       return {
         kind: 'refused',
         reason: `calls the id generator ${made} times`,

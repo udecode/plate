@@ -1,11 +1,9 @@
 import {
   createInternalDocumentChange,
-  DocumentChange,
+  type DocumentChange,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
-  valueRoot,
-  valueRootIndex,
 } from '../../core/change/document-change';
 import {
   type DocumentIndex,
@@ -17,8 +15,10 @@ import { jsonEqual } from '../../core/change/json';
 import {
   type KeptRun,
   keptRunsOf,
+  propertyDeltaFromModifications,
   RootChange,
   type RootChangeSection,
+  semanticPropertyModifications,
 } from '../../core/change/root-change';
 import {
   type JsonEditorValue,
@@ -30,16 +30,16 @@ import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { EditorMissingReferenceError } from '../../core/missing-reference';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { getActiveEditorUpdateTags } from '../../core/public-state';
-import {
-  deriveValue,
-  getValueRecords,
-  recordOpsBetween,
-} from '../../core/record-store';
+import { getValueRecords, recordOpsBetween } from '../../core/record-store';
 import type { EditorDocumentValue } from '../../interfaces/editor';
 import type { Path } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import { getReviewLedger } from '../ledger/ledger';
 import { rootOf } from '../ledger/roots';
+import {
+  authoredResolveSchemaOf,
+  storedResolveSchemaOf,
+} from '../resolve-schema';
 import { relinkCuts } from '../tree/cuts';
 import type { KeyReading } from '../tree/layers';
 import {
@@ -47,7 +47,7 @@ import {
   createAuthoredMarksValidator,
   isAuthoredSetValued,
 } from '../tree/marks';
-import { compactClaims } from './compact';
+import { compactClaims, type TopLevelIndicesByRoot } from './compact';
 import {
   addCounts,
   assertRecordStore,
@@ -222,56 +222,85 @@ const repairRejectedTags = (
   return sections.length === 0 ? null : RootChange.create(after, sections);
 };
 
-const repairOf = (
+type Props = Readonly<Record<string, unknown>> & {
+  children?: readonly Props[];
+};
+
+const ownProps = ({ children: _children, text: _text, ...props }: Props) =>
+  props;
+
+const compactionChange = (
+  before: JsonEditorValue,
   after: JsonEditorValue,
-  settled: JsonEditorValue,
-  scope: ReadonlyMap<string, Iterable<number>>,
-  indexOf: (root: string) => DocumentIndex
+  blocks?: TopLevelIndicesByRoot
 ) => {
   const changes = new Map<string, RootChange>();
-  const indexes = new Map<string, DocumentIndex>();
-  const settledRoots = contentRootsOf(settled);
+
+  const roots = contentRootsOf(before);
 
   for (const [root, nodes] of contentRootsOf(after)) {
-    const next = settledRoots.get(root) ?? NO_NODES;
+    if (roots.get(root) === nodes) continue;
 
-    if (next === nodes) continue;
+    const was = rootOf(before, root);
 
-    let index = indexOf(root);
-    let composed: RootChange | null = null;
-    const at = [...(scope.get(root) ?? [])].sort((left, right) => left - right);
+    const sections: RootChangeSection[] = [];
+    const walk = (left: Props, right: Props, path: readonly number[]) => {
+      if (left === right) return;
 
-    for (const child of at) {
-      if (next.at(child) === nodes.at(child)) continue;
+      const modifications = semanticPropertyModifications(
+        ownProps(left),
+        ownProps(right),
+        (key) => isAuthoredSetValued(null, key)
+      );
 
-      const step = getDefined(
-        getInternalDocumentRootChange(
-          DocumentChange.between(
-            { children: [getDefined(nodes.at(child))] },
-            { children: [getDefined(next.at(child))] },
-            { isSetValued: isAuthoredSetValued }
-          ),
-          'main'
-        )
-      ).embed(index.length, index.childPosition([], child));
+      if (modifications.length > 0) {
+        const { from } = was.nodeRange(path);
 
-      index = step.apply(index);
-      composed = composed ? composed.compose(step) : step;
+        sections.push({
+          from,
+          properties: propertyDeltaFromModifications(modifications),
+          to: from + 1,
+        });
+      }
+      for (const [at, child] of (left.children ?? []).entries()) {
+        walk(child, getDefined(right.children?.[at]), [...path, at]);
+      }
+    };
+
+    for (const at of blocks?.get(root) ??
+      Array.from({ length: nodes.length }, (_, index) => index)) {
+      const left = was.child(at) as Props | undefined;
+
+      if (left) walk(left, getDefined(nodes.at(at)), [at]);
     }
-    if (composed) {
-      changes.set(root, composed);
-      indexes.set(root, index);
+    if (sections.length > 0) {
+      changes.set(root, RootChange.create(was, sections));
     }
   }
 
-  const repair = createInternalDocumentChange(changes, {
-    records: recordOpsBetween(getValueRecords(after), getValueRecords(settled)),
-  });
+  return changes.size === 0 ? null : createInternalDocumentChange(changes);
+};
+
+const repairOf = (
+  after: JsonEditorValue,
+  settled: JsonEditorValue,
+  steps: ReadonlyArray<DocumentChange | null>,
+  indexOf: (root: string) => DocumentIndex
+) => {
+  const repair = [
+    ...steps.filter((step) => step !== null),
+    createInternalDocumentChange(new Map(), {
+      records: recordOpsBetween(
+        getValueRecords(after),
+        getValueRecords(settled)
+      ),
+    }),
+  ].reduce((composed, step) => composed.compose(step));
   const relink = relinkCuts(
     repair,
     after,
     settled,
-    (root) => indexes.get(root) ?? indexOf(root),
+    (root) => rootOf(settled, root),
     indexOf
   );
 
@@ -411,10 +440,9 @@ export const authoredAdmission: DocumentAdmission = {
       }
     }
 
-    const replayed =
-      repairs.size === 0
-        ? after
-        : createInternalDocumentChange(repairs).apply(after);
+    const replay =
+      repairs.size === 0 ? null : createInternalDocumentChange(repairs);
+    const replayed = replay ? replay.apply(after) : after;
     const compacted = compactClaims(replayed, scope);
     const compactedFacts = factsOf(compacted);
     // A verdict, or an incarnation a verdict names starting or stopping to
@@ -460,21 +488,33 @@ export const authoredAdmission: DocumentAdmission = {
       }
     }
 
-    const admitted =
-      settleValue(
-        compacted,
-        { ...compactedFacts, insertedIncarnations: () => counts },
-        settled,
-        {
-          returnsHeld: true,
-          restoreMissingFormats,
-          schema: getCompiledEditorSchema(editor),
-        }
-      ).value ?? compacted;
+    const settlement = settleValue(
+      compacted,
+      { ...compactedFacts, insertedIncarnations: () => counts },
+      settled,
+      {
+        resolveSchema: () => authoredResolveSchemaOf(editor),
+        returnsHeld: true,
+        restoreMissingFormats,
+        schema: getCompiledEditorSchema(editor),
+      }
+    );
+    const admitted = settlement.value ?? compacted;
 
     return admitted === after
       ? null
-      : repairOf(after, admitted, settled, indexOf);
+      : repairOf(
+          after,
+          admitted,
+          [
+            replay,
+            compacted === replayed
+              ? null
+              : compactionChange(replayed, compacted, scope),
+            settlement.change,
+          ],
+          indexOf
+        );
   },
   load: (document, schema) => {
     assertRecordStore(getValueRecords(document));
@@ -482,33 +522,24 @@ export const authoredAdmission: DocumentAdmission = {
 
     const compacted = compactClaims(document);
     const facts = factsOf(compacted);
-    const value =
-      settleValue(compacted, facts, 'document', { schema }).value ?? compacted;
+    const settlement = settleValue(compacted, facts, 'document', {
+      resolveSchema: () => storedResolveSchemaOf(schema, compacted),
+      schema,
+    });
+    const value = settlement.value ?? compacted;
 
     if (value === document) return null;
 
-    const change = DocumentChange.between(document, value, {
-      isSetValued: isAuthoredSetValued,
-    });
-    const relink = relinkCuts(change, document, value, (root) =>
-      valueRootIndex(value, root)
+    const change = repairOf(
+      document,
+      value,
+      [
+        compacted === document ? null : compactionChange(document, compacted),
+        settlement.change,
+      ],
+      (root) => rootOf(document, root)
     );
 
-    if (!relink) return { change, value };
-
-    const relinked = (root: string) =>
-      relink.indexes.get(root)?.value ?? valueRoot(value, root);
-
-    return {
-      change: change.compose(relink.change),
-      value: deriveValue(value, {
-        children: relinked('main'),
-        ...(value.roots && {
-          roots: Object.fromEntries(
-            Object.keys(value.roots).map((root) => [root, relinked(root)])
-          ),
-        }),
-      } as Partial<typeof value>),
-    };
+    return { change, value: change.apply(document) };
   },
 };
