@@ -1192,6 +1192,23 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(await stateLine(box, 5250), '#5250 stale (owner-moved)');
   });
 
+  test('a commit to the owner path of a fixed record leaves it current', async () => {
+    const box = sandbox();
+    const commit = git(box, box.work, 'rev-parse', 'HEAD');
+    assert.equal(
+      await recordStatus(box, [
+        [
+          5250,
+          'fixed',
+          `commit: ${commit}; owner: packages/a/src/owner.ts; proof: the owner test`,
+        ],
+      ]),
+      0
+    );
+    land(box, 'packages/a/src/owner.ts', 'export const a = 10;\n');
+    assert.equal(await stateLine(box, 5250), '#5250 current');
+  });
+
   test('new comments from anyone make the record stale, and an unchanged triage draft from the team does not', async () => {
     const box = sandbox();
     assert.equal(await recordStatus(box, [[5250]]), 0);

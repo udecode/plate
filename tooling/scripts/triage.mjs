@@ -780,6 +780,9 @@ function ownerPaths(row) {
   return [];
 }
 
+const stalingOwnerPaths = (head) =>
+  head.outcome === 'fixed' ? [] : ownerPaths(head);
+
 const ownerMoved = (read, tip, owned) => {
   const log = gitOut(
     'log',
@@ -889,7 +892,7 @@ function computeState(issue, reads, visiting) {
   const current = reads.issues.get(issue);
   if (!current) unknown.push(`gh could not read #${issue}`);
   else if (fingerprint(current) !== head.seen) stale.push('issue-changed');
-  const owned = ownerPaths(head);
+  const owned = stalingOwnerPaths(head);
   if (owned.length > 0) {
     const moved = ownerMoved(head.read, reads.tip, owned);
     if (moved === null) {
