@@ -1,35 +1,67 @@
-# Move tests, plans and research into a private repo inside Plate
+# Move tests, plans and research into a private repo
 
-Status: planning, waits for your five running sessions to land, then your go
+Status: planning, waits for your pick of the repo layout
 Page: https://claude.ai/artifact/Fvy3AvCJwNugx2L7FeU8ZM
 Playbook: plan
 
-Shipped code stays MIT and public. Tests, plans and research move to a new private repository, `udecode/plate-private`, which the team clones at `private/` inside the public checkout. Public git ignores that folder. Agents keep one working folder, every skill stays in `.agents/`, and no file lives in both repositories. Nothing moves until the five running sessions land.
+Shipped code stays MIT and public. Tests, plans and research go private, agents keep one working folder, and every skill stays public in `.agents/`. The first design put the private files in a `private/` folder inside the public checkout. The plan panel's first round broke it before any build, so this plan waits for your pick of the layout. Nothing is built, and nothing has moved.
 
 ## Brief
 
 ### What will change?
 
-Tests, plans and research move to a private repo. The team clones it into a folder inside Plate. Code and agent skills stay public, so contributors still file issues and agents still work from one folder.
+The panel found that moving tests into a private folder breaks about a dozen tools. I stopped before building anything. You pick the layout, then I rewrite the plan and build it.
 
 ### What could go wrong?
 
-A test may import a public file in a way the loader doesn't catch, and break after the move. A file left off the list stays public. Contributors can't see the tests, so their bug reports get weaker.
+The public copy reverses your no-duplicates call. Keeping the folder means fourteen fixes that can break again. Today the task ledger already sits on the public repo.
 
 ## Teach
 
-Today one public repository holds all of it: the code people install, the tests that prove it, and the plans and research behind it. Anyone can clone the lot and point an agent at the tests to rebuild what we built.
+Plate keeps each test next to the code it checks. A test finds its tools, such as its test library, by looking upward from its own folder. Many tests also read files by where they sit, like the package's settings.
 
-After the split, the team clones a second, private repository into a folder inside the public one, and public git ignores that folder. Each private file keeps its old path, moved under the private folder. When a test imports a file that used to sit next to it, a small loader finds that file in the public tree, so no import changes. The type checker gets the same rule from one setting.
+The first design moved every test into one private folder at the top. From there a test looks upward and never reaches its package's tools or files. Each test runner needed its own patch to fake the old spot, and the reviewers found four runners and many file reads the patches miss.
 
-Agents still work in one folder. Ripgrep, their main search tool, sees the private files, and the land helper commits to both repositories together. A contributor without access can still build and run the code, and files bugs with a reproduction.
+Two layouts keep tests where they are. In the first, the team works in one private repo, and a script copies everything except tests, plans and research to the public repo. In the second, a second git repo tracks the test files inside the same folder.
+
+## Open questions
+
+### Repo layout
+
+Which layout should hold the private tests?
+
+Why it needs you: It reopens your no-duplicates call and moves where production releases run.
+
+- All three reviewers found that moving tests out breaks about a dozen tools.
+- Tests find their packages from their own folder, so they must stay in place.
+
+- **Generated public copy** (recommended): The team works in one private repo, and a script publishes the public part. Cost: Public holds a generated copy nobody edits, and releases move to the private side.
+- **Second git repo**: Tests stay in place, and a second git repo tracks them in the same folder. Cost: Every git command, worktree and landing needs a wrapper for the second repo.
+- **Rebuild private folder**: I fix the folder design with package links, private CI and more loaders. Cost: Fourteen known breakages to fix, and a new test runner can break again.
+
+Why I pick it: Nothing in the team's tree moves, so every tool keeps working unchanged.
+
+Attention: look
 
 ## Outcome
 
-- The public repository keeps packages, apps, templates, `content/docs`, `.agents`, `AGENTS.md`, `VISION.md`, `docs/vision`, `docs/editor-behavior` and `docs/development`. A fresh public clone installs, builds, typechecks and lints green, and holds no file from the move manifest.
-- `private/` holds the 6,607 manifest files, each at its public path under `private/`.
-- In a team checkout, `pnpm check --build` runs the same test count as the baseline taken at the start gate.
-- One task worktree holds both repositories on one branch, and `land.mjs` lands both.
+- The public repository holds shipped code, `.agents`, `AGENTS.md`, `VISION.md` and the public docs. A fresh public clone installs and builds green, and holds no test, plan or research file.
+- A team checkout runs `pnpm check --build` with the same test count as before.
+- Private tests run only on private CI, so no public log or artifact shows them.
+- The suggested-task ledger lives on the private remote.
+- Agents work from one folder.
+
+## Panel round 1
+
+Three seats reviewed the plan: Opus, GPT-6 Astra and GPT-6.1 Sol, all at xhigh. They raised 14 critical findings, and the lead checked each against the code. Every one comes from the same premise: that a test can leave its folder. The findings and their proof are in the decision log.
+
+| Layout | What the team's tree looks like | What it needs | What it removes |
+| --- | --- | --- | --- |
+| Generated public copy | Today's tree, unchanged, in a private repo | An export script on each landing, private CI, releases from private | Every loader, resolver and paired landing |
+| Second git repo | Today's tree; a second git directory tracks the private files in place | A wrapper for git, worktrees, landing and cleanup; private CI | The loaders and resolvers |
+| Rebuild private folder | Tests under `private/` at mirrored paths | Package links, four resolvers, edits to 157 files, generated configs split by checkout, paired landing, private CI | Nothing |
+
+Two findings hold under every layout. Public CI logs and artifacts are world-readable, so private tests run only on private CI. The suggested-task ledger already pushes 5,019 rows to `refs/pstack/ledger` on the public repo today, so it moves to the private remote.
 
 ## Scope
 
@@ -64,7 +96,7 @@ Owner decisions from the conversation:
 - Agents run from one folder, and no file is kept in two repositories.
 - Public history does not matter, because v2 has over 100 open bugs and a fork of today's tests gains little.
 
-Lead decisions:
+Lead decisions, from the first design. The panel's first round rejected the first three, and the fourth needs a manifest that sorts files by owner instead of by glob:
 
 - **Private nests inside public.** Skills, hooks and `AGENTS.md` load from the public root, so the public root stays the one working folder. The reverse nesting would make every contributor clone a repository they cannot read.
 - **A plain nested clone, not a submodule.** A submodule puts a private URL in every public clone and breaks `git clone --recursive` for contributors.
@@ -74,15 +106,11 @@ Lead decisions:
 
 ## Main changes
 
-No public call changes. Packages, entrypoints and their exports stay as they are.
-
-- A `private` key in `.agents/pstack.json` names the overlay folder. With the key unset, every pstack helper behaves as today.
-- Test resolution gains a twin fallback. A bun preload rewrites a private file's missing relative imports to the public twin, a Vite plugin does the same for the two vitest suites, and TypeScript's `rootDirs` lists both roots.
-- `setup.mjs` pairs each task worktree with a private worktree on the same branch, and `cleanup` removes both. `land.mjs` commits and pushes both, and the private commit records the public commit it pairs with.
-- `pnpm check` gains a leak-guard step. It fails when a tracked public file matches the manifest.
-- Public CI checks out `plate-private` with a read-only deploy key on team branches and runs the full check.
+No public call changes, and nothing is built yet. The panel rejected the first design's changes: twin loaders, paired worktrees and landing, a leak guard over a nested folder, and a private checkout in public CI. The rewritten plan lists the new changes after your pick.
 
 ## Steps
+
+On hold. These steps build the first design, which the panel rejected. They get rewritten after your layout pick.
 
 ### Phase 1. The overlay ships with nothing moved
 
@@ -100,18 +128,21 @@ Exit: `private/` is empty or absent, and every check runs the same tests as befo
 - [ ] In dotai, teach `setup.mjs`, `land.mjs`, `guard.mjs`, `review.mjs`, `cleanup`, `decisions-check.mjs`, `page-stop.mjs` and `plan-page.mjs` the `private` key, and render the rule text's plan paths from `plans` instead of a literal `docs/plans`. Proof: new sync-pstack test cases for a paired setup, a paired land and a paired cleanup pass, and a plate sync with the key unset changes no file.
 - [ ] Full baseline proof. Proof: `TURBO_FORCE=true pnpm check --build` passes with the same test count as `next` at the same commit, logged through `proof.mjs`.
 
-### Phase 2. Cutover
+### Phase 2. The move script, rehearsed now, pushed later
 
-Start gate: the five running sessions landed. A script lists every worktree with commits not on `origin/next` or uncommitted changes that touch a manifest path, and its output is empty. Take the test-count baseline here.
+Your five sessions keep editing tests and plans that move, so a move commit carried across their landings would conflict on thousands of files. The move is a script instead. The build rehearses it in this worktree, and at push time it reruns on a fresh `origin/next`, so it picks up whatever those sessions landed.
 
-- [ ] Create `udecode/plate-private` as a private repository with no outside collaborators. Fill it from a fresh clone with `git filter-repo --paths-from-file` on the manifest, so each file keeps its history. Proof: the private tree's file list equals the manifest, and `git log` shows history for three sampled files.
-- [ ] Remove the manifest files from public, add `private/` to `.gitignore`, and add `!/private/` to a root `.ignore` so ripgrep sees it. Proof: `git status` in public shows no private file, and `rg -l` from the root finds a private plan (as in `search-probe-a1.log`).
-- [ ] Set `"private": "private"` and point `plans` and `pageTopic.hub` into `private/` in `.agents/pstack.json`. Run a codemod over public files, outside the synced block, that rewrites references to moved paths. Proof: the knowledge check and the docs link check pass with `private/` present, and `plan-page.mjs --check` passes on this plan at its new path.
+- [ ] Write the move script under `tooling/scripts/`. From a public checkout at any commit, it fills a private repository with `git filter-repo --paths-from-file` on the manifest, so each file keeps its history. It then removes the manifest files from public, adds `private/` to `.gitignore` and `!/private/` to a root `.ignore`, sets `"private": "private"` and points `plans` and `pageTopic.hub` into `private/` in `.agents/pstack.json`, and rewrites references to moved paths in public files outside the synced block. Proof: two runs on the same commit give the same public and private trees, the private file list equals the manifest, and `git log` shows history for three sampled files.
 - [ ] Add the leak guard to `pnpm check`. Proof: a planted `foo.spec.ts` in public fails the step, and removing it passes.
-- [ ] Teach agent rules to search with `rg` or `git -C private grep`, because the shell's `grep` wrapper skips ignored folders. Proof: `search-wrapper-a1.log` shows the wrapper missing `private/` and `rg` finding it. A smoke session asked to find a plan finds it.
-- [ ] Add the deploy key secret and the private checkout step to `ci.yml`. Proof: CI on a team branch shows the checkout step and a green `pnpm check --build`.
-- [ ] Full cutover proof. Proof: `TURBO_FORCE=true pnpm check --build` in a team checkout runs the baseline test count. A fresh public clone runs `pnpm install --frozen-lockfile`, build, typecheck and lint green, with zero manifest files. A new task worktree has `private/` on its branch. A trivial paired change lands through `land.mjs`, and both remotes show it.
-- [ ] Land both repositories through `land.mjs`.
+- [ ] Teach agent rules to search with `rg` or `git -C private grep`, because the shell's `grep` wrapper skips ignored folders. Proof: `search-wrapper-a1.log` shows the wrapper missing `private/` and `rg` finding it.
+- [ ] Add the private checkout step to `ci.yml`, reading a deploy key secret, and skip it when the secret is absent. Proof: the workflow lints, and the step's condition skips on a fork-style run with no secret.
+- [ ] Rehearse the whole move in this worktree, with a local bare repository standing in for `udecode/plate-private`. Proof: `TURBO_FORCE=true pnpm check --build` runs the same test count as before the move. A fresh public clone of the rehearsal runs `pnpm install --frozen-lockfile`, build, typecheck and lint green, with zero manifest files. `rg -l` from the root finds a private plan, and `plan-page.mjs --check` passes on this plan at its new path. A new task worktree gets `private/` on its branch, and a trivial paired change lands to both bare remotes.
+
+### Push, after your five sessions land
+
+- [ ] Push gate. A script lists every worktree with commits not on `origin/next` or uncommitted changes that touch a manifest path, and its output is empty.
+- [ ] Rebase this worktree onto `origin/next`, rerun the move script, and rerun the rehearsal's proof on that commit.
+- [ ] Create `udecode/plate-private` as a private repository with no outside collaborators, push the private tree, and land public through `land.mjs`. Proof: both remotes show the paired commits, and CI on `next` shows the private checkout step and a green check once you add the deploy key.
 
 ### Phase 3. The contributor path without private/
 
@@ -132,22 +163,22 @@ Start gate: the five running sessions landed. A script lists every worktree with
 - An earlier reply kept unit tests public and moved only browser tests. The plan moves every test outside `.agents`.
 - An earlier reply moved `VISION.md` private. It stays public, because the public skills read it.
 - An earlier reply moved the verify recipes private. `.agents` stays public whole.
+- An earlier reply said the nested folder needed only a small loader and one type setting. The panel proved it needs far more, so the layout is open again.
 
 ## Defaults
 
 | Decision | Pick | Alternative | Word | Impact |
 | --- | --- | --- | --- | --- |
-| Where the private repo lives | A folder inside Plate that public git ignores | A submodule; or Plate inside the private repo | submodule | big |
 | What moves private | Every test, plan and research file outside the agent skills | Keep unit tests public and move only browser tests | keep unit tests | big |
 | Agent skills and their own tests | Stay public whole | Move the skills' tests private too | move skill tests | small |
 | Vision and editor behavior law | Stay public, because the public skills read them | Move them private | private vision | small |
 | Benchmark runner | The runner stays public, and its notes and tests move | Move the whole benchmark package, which then needs its own install | private benchmarks | small |
 | Old tests in public history | Stay readable in past commits | Rewrite history, which breaks every fork and open pull request | rewrite history | small |
-| Where tests run in CI | Public CI fetches the private repo with a read-only key, on team branches only (look) | The private repo runs the tests on its own CI | private CI | small |
+| Where tests run in CI | The private repo runs every test on its own CI, and public CI only builds (look) | Public CI fetches the private repo with a read-only key | public CI | small |
 | Who gets access | I create the repo with nobody added, and you add each person | I add the people you name | add people | detail |
 | Plan review | A panel on this plan when you say go, before any build (look) | Build without a panel | skip panel | detail |
 | Contributor guide | Tells people to file an issue with a reproduction, and the team writes the fix (look) | Keep inviting outside pull requests | keep outside PRs | small |
-| When to cut over | After your five sessions land and nothing unlanded touches a moving file | Cut over now and rebase those sessions | cut now | detail |
+| When to build and push | Build and rehearse now in this worktree, and push after your five sessions land with nothing unlanded on a moving file | Push now and rebase those sessions | push now | detail |
 
 ## Open work
 
