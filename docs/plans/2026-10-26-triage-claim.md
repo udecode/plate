@@ -138,11 +138,49 @@ One approved item is not built. A claim on an issue with no task was to offer an
 
 The other seven items landed: the claim command with its holds, its push lock, the GitHub assignment and the stale flag; the claim as the first step of both fix routes; `mentions:` in `show`; the owner's domain claim taking the tasks nobody started; domain tasks at xhigh; the device lane; and one fix entry point. All of it lives in this project. The code is `pnpm triage claim`, `release` and `lane` in `tooling/scripts/triage.mjs` and the new `tooling/scripts/triage-claims.mjs`. The text is Fix and the Device lane in `.agents/playbooks/triage.md` and the fix entry in `.agents/playbooks/bug-fix.md`. Fifteen kind records in `docs/triage/issues.tsv` now carry `device:`.
 
-All 112 tests pass on the final code, and each of 24 mutants, which revert one guarded condition each, fails its named test. One panel round with three seats at xhigh found 7 critical findings. Each is fixed, and its test failed on the reviewed patch. In the last two smoke rounds, four prompts each in Claude Code and Codex, every fix route ran the claim before it read any issue, with one exception. One Claude answer chose `next`'s committed text, which has no claim until this lands. The proof stops short of GitHub. The tests run against a fake `gh` and a local bare remote, so no claim and no `gh issue edit` has run against udecode/plate. The smokes read the playbooks and ran no claim.
+All 112 tests pass on the final code, and each of 24 mutants, which revert one guarded condition each, fails its named test. One panel round with three seats at xhigh found 7 critical findings. Each is fixed, and its test failed on the reviewed patch. In the last two smoke rounds, four prompts each in Claude Code and Codex, every fix route ran the claim before it read any issue, with one exception. One Claude answer chose `next`'s committed text, which has no claim until this lands. After the land, all four Codex answers ran the claim first again, and the Claude half could not run because the local `claude` login had expired. The proof stops short of GitHub writes. A read-only run of the claim's query against eight real issues came back with no errors, but the tests run against a fake `gh` and a local bare remote, so no claim push and no `gh issue edit` has run against udecode/plate. The smokes read the playbooks and ran no claim.
+
+## Reflect
+
+One Opus reviewer ran the judgment, tooling and divergent lenses over this session, from the first reflect's call to this one, and I synthesized its 28 findings with pstack's synthesizer prompt as the checklist.
+
+I applied nothing to a rule or helper in this run. No finding fixes a helper that crashes on or refuses a case its rule allows, and none rewords a rule without adding words. Three findings changed this run instead. The claim's GitHub query got a read-only run against eight real issues, and GitHub answered it with no errors. The note to natamox and Sin now says #5243 and #5251 moved to their device lane. The smoke ran again on the landed text.
+
+Accepted, then moved to Backlog. Each has owner: zbeyens and stop: the owner takes or drops it.
+
+- Give `lead.mjs` one resolver that returns the desktop session id and the transcript id under different names, so Fix step 1 can drop its `--session` sentence (`sync-pstack` helpers).
+- Make `reread.mjs --dir` print its `reload:` line too, or have `proof.mjs` warn when a compaction came after the last load of `verify`. This run reloaded `verify` only after its mutant proofs (`sync-pstack` helpers).
+- Deny an unquoted shell word that starts with `=` in a hook. An earlier reflect found it too, and it cost three reruns here.
+- Teach `verify`'s testing reference to start a competing push from a `reference-transaction` hook when it tests a compare-and-swap race. A pre-push hook fires too late, so a force-push bug passes.
+- Name `pnpm exec ultracite check <files>` as the lint gate for tooling scripts in `verify`'s command recipes. oxlint alone misses formatting, and Prettier is not this repository's formatter.
+- Say in chips.md that `decisions-check.mjs append` writes only the main checkout's ledger file, that other clones see a row only after `setup.mjs` pushes `refs/pstack/ledger`, and that `setup.mjs` exits 0 when that push fails (`sync-pstack`).
+- Have `page-stop.mjs` read the live page before a session's first publish to an existing subject page, which the tool otherwise refuses once (`plan-page`).
+- Tell co-tenant records apart by `version` alone in reflect.md. A `parentUuid` walk drops parallel tool results and stops at a compaction boundary (`sync-pstack`).
+- When a step moves to first, search the playbook for every other sentence that says it runs first (`workflow-change.md`). Who records step 1 and the Steps list still put `show` first until the panel caught them.
+- Run a panel on the plan, not only on the diff, for a design that defines a lock or a fold across clones (`sync-pstack` panel rule). The diff panel found 7 criticals that were rules of the design.
+- Treat a red test whose failure is the command's usage line as proof only that the command was missing, and have `decisions-check.mjs` refuse it as red evidence (`verify`).
+- Pair a mutant run with a list of the cases the design never names, such as two writers between a read and a push, state that lives in one clone, and links two steps away (`verify`). Every mutant died before the panel found 7 missing conditions.
+- Run one live read-only call of a helper's exact remote query before it lands (`verify`). This run ran it after landing.
+- Make the standing OK to assign on claim a switch in `.agents/pstack.json` that the owner controls, whose default prints the `gh issue edit` command instead (`triage.md`).
+- Give "who is on this issue" one answer. Either `decisions-check.mjs append` pushes `started` rows, or the chips board reads `refs/triage/claims` (`sync-pstack` chips rule). The Defaults row "shared ledger push" deferred this.
+- Tell smoke readers that the checkout's text is the current rule, or smoke after landing (`sync-pstack` smoke). Before the land, readers spent their conflict slots on the gap between this checkout and `next`.
+- Name in a delegate's brief the helper that owns each fact it needs (`poteto-mode`, upstream). The delegate's own session-id chain and the lead's scan for prose mentions were both wrong.
+
+Rejected:
+
+- GitHub's closing-PR list misses PRs into `next`. The claim's query now reads cross-referenced PRs, and no check by hand remains.
+- The worktree guard refuses Write in the run directory. land.md already says a worktree session writes there with the shell, and t_08bb9e40 holds the helper.
+- Rebuilding the reviewed bytes with a scratch index. It is one run's technique.
+- Loading a deferred tool in its own call. The Calls rule already keeps a retitle out of a call of its own, so the cost was execution.
+- Reading a named session's state before a coordination answer. The claims ref and the GitHub assignment now answer it.
+- "What's next" after a triage. a04bf5d24c already makes every triage hand-back offer the domain fix runs.
+- Measuring a refusal's hit rate before building it. The run did that.
+- A writing delegate ran in the lead's worktree. land.md and poteto-mode already give it its own, so this was a deviation, not a gap.
+- The note to natamox and Sin left out #5243 and #5251. Open work now says it.
 
 ## Open work
 
-- Tell natamox and Sin that t_67f3cb5e was already started by an owner session and that t_f3360813 is not started yet. owner: zbeyens. stop: a team message the owner sends.
+- Tell natamox and Sin that t_67f3cb5e was already started by an owner session, that t_f3360813 is not started yet, and that #5243 and #5251 now wait in their device lane, against natamox's note. owner: zbeyens. stop: a team message the owner sends.
 - Sessions carded before this lands follow their old briefs and skip the claim. owner: zbeyens. stop: none; their started rows still hold as legacy.
 - A fork clone cannot push the claims ref and asks a maintainer. owner: zbeyens. stop: none.
 - The approved "offer and start a new task whose `repro:` lists every issue" for a claim with no task is not built; such a claim shows on the issue and in triage's lists, not on the chips board. owner: zbeyens. stop: the word "offer on claim" builds it.
