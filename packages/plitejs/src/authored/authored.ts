@@ -169,7 +169,7 @@ import { blockFactsOf, isBuilt } from './ledger/runs';
 import { countLedgerWork } from './ledger/work';
 import {
   type AuthoredRefusal,
-  constructsValues,
+  storesGeneratedValues,
   GENERATED_VALUES_REFUSAL,
   movedRefusal,
   proposalRefusal,
@@ -1572,11 +1572,9 @@ export const createAuthoredPlugin = (
           notifyEditorViewState(editor, 'authored');
         };
 
-        // Suggesting, and previews that decide changes, would mint values a
-        // generating schema makes differently each time.
         if (
           ('preview' in view || view.intent === 'propose') &&
-          constructsValues(getCompiledEditorSchema(editor))
+          !storesGeneratedValues(getCompiledEditorSchema(editor))
         ) {
           publishEditorRefusal(editor, GENERATED_VALUES_REFUSAL);
           return;
@@ -1909,7 +1907,6 @@ export const createAuthoredPlugin = (
         state.marks
       );
       const { holders } = ledger;
-      // The stored blocks a write reads, as `roots` of `value` hold them.
       const spareBlocksOf = (value: JsonEditorValue): SpareBlocks => {
         const schema = getCompiledEditorSchema(editor);
         const generated = generatedOf(schema);
@@ -2231,7 +2228,7 @@ export const createAuthoredPlugin = (
                 : getPluginContributions(editor, authoredVeto);
             const refusal =
               (update && state.refused.get(update)) ??
-              (constructsValues(getCompiledEditorSchema(editor))
+              (!storesGeneratedValues(getCompiledEditorSchema(editor))
                 ? GENERATED_VALUES_REFUSAL
                 : vetoes.length > 0
                   ? proposalRefusal(contentSteps, vetoes)

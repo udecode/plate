@@ -6,7 +6,10 @@ import { applyPropertyModifications } from '../core/change/root-change';
 import { nodeProps, PreparedTokenSlice } from '../core/change/tokens';
 import type { PropertyModification } from '../core/change/transform';
 import { EditorRefusalError } from '../core/refusal';
-import type { CompiledEditorSchema } from '../core/schema-compiler';
+import {
+  type CompiledEditorSchema,
+  isSupportedGeneratedElementProperty,
+} from '../core/schema-compiler';
 import { getDefined } from '../internal/get-defined';
 
 /**
@@ -30,9 +33,10 @@ export type UnrepresentableReason =
 export type AuthoredRefusal = Readonly<{
   /**
    * `veto`: the change touches elements a feature's review marks cannot hold
-   * yet, named in `reasons`. `generated-values`: the schema constructs
-   * property values, which would differ between recording, accepting and
-   * rejecting. `unrepresentable`: the review marks cannot hold the change,
+   * yet, named in `reasons`. `generated-values`: the schema generates a
+   * property value a suggestion cannot store, such as one whose target reads
+   * its parent, so recording, accepting and rejecting could each build a
+   * different one. `unrepresentable`: the review marks cannot hold the change,
    * such as deleting a named root or writing inside the root of a block
    * whose deletion is pending. Only `unrepresentable` refuses an Editing
    * write, such as Enter in a pending join's second half with moved lines
@@ -166,28 +170,34 @@ export const proposalRefusal = (
   });
 };
 
-const CONSTRUCTS = new WeakMap<CompiledEditorSchema, boolean>();
+const STORES = new WeakMap<CompiledEditorSchema, boolean>();
 
-/** Whether the schema generates a value for an element property. */
-export const constructsValues = (schema: CompiledEditorSchema) => {
-  let constructs = CONSTRUCTS.get(schema);
+export const storesGeneratedValues = (schema: CompiledEditorSchema) => {
+  let stores = STORES.get(schema);
 
-  if (constructs === undefined) {
-    constructs = [...schema.properties.byId.values()].some(
-      (property) =>
-        property.placement === 'element' &&
-        typeof property.descriptor.generate === 'function'
+  if (stores === undefined) {
+    const generated = [...schema.properties.byId.values()].filter(
+      (property) => typeof property.descriptor.generate === 'function'
     );
-    CONSTRUCTS.set(schema, constructs);
+    const elements = generated.filter(
+      (property) => property.placement === 'element'
+    );
+    const generatesTextBesideElements = elements.length !== generated.length;
+
+    stores =
+      elements.length === 0 ||
+      (!generatesTextBesideElements &&
+        elements.every(isSupportedGeneratedElementProperty));
+    STORES.set(schema, stores);
   }
 
-  return constructs;
+  return stores;
 };
 
 export const GENERATED_VALUES_REFUSAL: AuthoredRefusal = Object.freeze({
   code: 'generated-values',
   message:
-    'Suggesting is off in an editor whose schema generates property values.',
+    'Suggesting is off in an editor whose schema generates a property value a suggestion cannot store.',
   reasons: Object.freeze([]),
 });
 

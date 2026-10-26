@@ -17,7 +17,7 @@ import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { getDefined } from '../internal/get-defined';
 import { indexAuthoredChanges } from './changes';
-import { constructsValues } from './refusal';
+import { storesGeneratedValues } from './refusal';
 import { authoredResolveSchemaOf } from './resolve-schema';
 import {
   type AuthoredResolveSchema,
@@ -35,7 +35,7 @@ const projectionRefusal = (
   document: EditorDocumentValue,
   schema: CompiledEditorSchema
 ): AuthoredProjectionRefusal | null => {
-  if (!constructsValues(schema)) return null;
+  if (storesGeneratedValues(schema)) return null;
   const pending = indexAuthoredChanges(document).changes.size;
 
   return pending === 0
@@ -45,7 +45,7 @@ const projectionRefusal = (
           Object.freeze({
             code: 'authored-generated-values' as const,
             message:
-              'This schema generates property values, so its documents with suggestions have no accepted or proposed projection.',
+              'This schema generates a property value a suggestion cannot store, so its documents with suggestions have no accepted or proposed projection.',
             severity: 'error' as const,
           }),
         ] as const),
@@ -58,8 +58,8 @@ const projectionRefusal = (
  * Read a stored document with every pending change accepted (`proposed`) or
  * rejected (`accepted`). An editor's schema completes containers a decision
  * empties; without one, the pure resolver leaves them as the decision did.
- * With pending changes under a schema that generates property values, it
- * builds nothing and reports why.
+ * With pending changes under a schema that generates a property value a
+ * suggestion cannot store, it builds nothing and reports why.
  */
 export function projectAuthoredDocument(
   document: EditorDocumentValue,

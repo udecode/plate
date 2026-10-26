@@ -493,29 +493,32 @@ const inline = () =>
     [schemaBuilder.content.text(), schemaBuilder.content.type('link')],
     { default: 'text', min: 1 }
   );
-const Links = defineEditorSchema('laws-links', {
-  elements: {
-    link: {
-      content: schemaBuilder.content.text({ default: 'text', min: 1 }),
-      inline: true,
+const linksSchema = (ids: boolean) =>
+  defineEditorSchema(ids ? 'laws-links-ids' : 'laws-links', {
+    elements: {
+      link: {
+        content: schemaBuilder.content.text({ default: 'text', min: 1 }),
+        inline: true,
+      },
+      paragraph: { content: inline() },
     },
-    paragraph: { content: inline() },
-  },
-  id: 'laws-links',
-  properties: [
-    // Stands for an element id, which a split drops from its new half.
-    schemaBuilder.elementProperty('ref', property.string(), {
-      split: 'drop',
-      target: target.type('link'),
+    id: ids ? 'laws-links-ids' : 'laws-links',
+    properties: [
+      schemaBuilder.elementProperty('ref', property.string(), {
+        split: 'drop',
+        target: target.type('link'),
+      }),
+      ...(ids ? idProperties('elements') : []),
+    ],
+    root: schemaBuilder.content.type('paragraph', {
+      default: { type: 'paragraph' },
+      min: 1,
     }),
-  ],
-  root: schemaBuilder.content.type('paragraph', {
-    default: { type: 'paragraph' },
-    min: 1,
-  }),
-  unknown: 'reject',
-  version: 1,
-});
+    unknown: 'reject',
+    version: 1,
+  });
+const Links = linksSchema(false);
+const LinksWithIds = linksSchema(true);
 
 /** The author of every Editing operation in a give-back script. */
 export const EDITING = 'edit';
@@ -524,14 +527,15 @@ const linksEditor = (
   initialValue: unknown,
   author = 'laws',
   intent: 'edit' | 'propose' = 'edit',
-  tags = 't'
+  tags = 't',
+  ids = false
 ) => {
   let count = 0;
 
   return createEditor({
     initialValue: initialValue as never,
     plugins: [
-      Links,
+      ids ? LinksWithIds : Links,
       createAuthoredPlugin({
         authorId: author,
         createChangeId: () => author,
@@ -564,14 +568,20 @@ type LinkNode = Readonly<{
 }>;
 type LinkValue = Readonly<{ children: readonly LinkNode[] }>;
 
-export const givebackStart = (): LinkValue => ({
+export const givebackStart = (ids = false): LinkValue => ({
   children: [
     {
       children: [
         { text: '' },
-        { children: [{ text: 'ab' }], ref: 'r1', type: 'link' } as LinkNode,
+        {
+          children: [{ text: 'ab' }],
+          ...(ids ? { id: 'l1' } : {}),
+          ref: 'r1',
+          type: 'link',
+        } as LinkNode,
         { text: '' },
       ],
+      ...(ids ? { id: 'p1' } : {}),
       type: 'paragraph',
     },
   ],
@@ -592,14 +602,16 @@ const linkPathsOf = (value: LinkValue) =>
 export const recordGiveback = (
   value: unknown,
   op: GivebackOp,
-  index: number
+  index: number,
+  ids = false
 ) => {
   const editing = op.by === EDITING;
   const editor = linksEditor(
     value,
     editing ? 'editor' : op.by,
     editing ? 'edit' : 'propose',
-    `op${index}`
+    `op${index}`,
+    ids
   );
   const links = linkPathsOf(value as LinkValue);
 
@@ -650,10 +662,8 @@ export const decideIn = (
   return { result, value: editor.read.value() };
 };
 
-export const decideGiveback = (
-  value: unknown,
-  decisions: ReadonlyMap<string, Verdict>
-) => decideIn(linksEditor(value, 'zed'), decisions);
+export const givebackEditor = (value: unknown, ids = false) =>
+  linksEditor(value, 'zed', 'edit', 't', ids);
 
 /**
  * Judges a public `decide` result as {@link admissionOf} judges a resolve: a

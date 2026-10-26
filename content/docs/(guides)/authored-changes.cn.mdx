@@ -134,6 +134,8 @@ Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改存
 
 在被划掉的文本中输入时，待处理删除会在新文本两侧拆开。`edit` view 按原样应用这段文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如表格内的修改，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
 
+在只生成 text 属性的 schema 下，或者生成的属性都是具有精确键、值不是集合、target 不取决于元素位置、角色不是 `content` 的 element 属性时（例如 `ElementIdPlugin` 的 `id`），`propose` view 和两种 preview 都可以使用。`content` 是默认角色，因此请声明 `role: 'metadata'`。建议会在记录时生成之后构建所需的元素值。建议的 Enter 把新元素的 id 存放在该元素上。决定可能移除容器子元素（例如删除引用块中唯一的一行）或改变容器类型的建议，还会把该决定将在那里构建的 block 作为备用 block 存放在文档的审阅 mark 和 `records` 中。之后 preview、projection 和决定都显示这些已存储的值，不调用 element 属性的生成器。当已存储的 block（例如建议之后写入的 block）重复备用 block 所持的唯一值时，构建该备用 block 的决定会给它一个新值，与 preview 显示的值不同。在其他生成属性下，或在同时生成 element 属性和 text 属性的 schema 下，`setView` 保留当前 view，proposal 不写入任何内容，两者都报告拒绝代码 `generated-values`。
+
 在 `propose` view 中删除一个拥有 [content root](/cn/docs/roots#content-roots) 的 block 时，该 block 会被划掉，root 的内容保持原样且不带审阅标记，因此请在 block 的组件中把 root 显示为已删除。在该 root 中输入或粘贴不会写入任何内容，直到有人决定这个删除。接受删除会移除该 block 及其 root；若 root 中有另一个待处理 change 插入的文本，结果为 `blocked`。拒绝删除会保留两者。拒绝一个拥有 content root 的待处理插入 block 时，root 也会一并移除。`propose` view 仍会拒绝删除没有任何元素拥有的 named root。
 
 待处理的合并可能让一个段落显示在其存储位置之外。`proposed` preview 会把从被合并行拆出的段落，或插入到合并两半之间的段落，显示在被合并行之后。`edit` view 和 `propose` view 会把跨越被移动段落边缘的 Backspace 或 Delete，以及跨越被移动段落的删除，记录为它们造成的合并。当被移动的行包含某个 content root 的 owner 时，`propose` view 会拒绝这次 Backspace，因为提议的合并会让该 root 有两个 owner；`edit` view 会记录它。全选会覆盖 preview 显示的每个段落，包括被移动的最后一个段落。两种 view 都会拒绝以下编辑，并给出所列原因：
@@ -249,6 +251,8 @@ const restored = createEditor({
 
 对含有待处理 change 的 document 执行 HTML、Markdown、plain text 与 static HTML 导出时，`projection` 必须是 `accepted` 或 `proposed`，否则抛出 `TypeError`。没有待处理 change 的 document 不需要 projection。DOCX export 始终需要 projection。
 
+每个导出都通过 editor 的 schema 进行投影，因此被决定清空的容器（例如待处理删除移除了唯一一行的引用）会得到默认内容。editor 拒绝该投影时，导出会抛出带有拒绝消息的 `EditorSchemaValidationError`。
+
 ### JSON
 
 把 `editor.read.value()` 保存为 JSON 即可保留审阅。需要 clean document 时，先投影：
@@ -346,6 +350,6 @@ Yjs binding 在一个 remote transaction 中应用 content、审阅 mark 和审�
 
 `platejs/authored` 导出 authored plugin 描述符，`AuthoredPlaceError`，change、卡片、query、page、delta、decision 和 result 类型，`proposeAuthoredComparison`，以及下面的格式辅助函数。
 
-`projectAuthoredDocument(document, { projection })` 为 `accepted` 或 `proposed` projection 返回 `{ ok, document, diagnostics, pending }`。它是纯 document operation：不会构造、激活或订阅 editor runtime。同时传入 `editor` 时，会用该 editor 的 schema 补全结果；在会生成属性值的 schema 下，含有待处理 change 的 document 会改为返回 `AuthoredProjectionRefusal`。
+`projectAuthoredDocument(document, { projection })` 为 `accepted` 或 `proposed` projection 返回 `{ ok, document, diagnostics, pending }`。它是纯 document operation：不会构造、激活或订阅 editor runtime。同时传入 `editor` 时，会用该 editor 的 schema 补全结果，因此被决定清空的容器会得到默认内容。传入 `editor` 时，若 schema 的生成属性会让 `propose` view 拒绝，含有待处理 change 的 document 会改为返回代码为 `authored-generated-values` 的 `AuthoredProjectionRefusal`。若 projection 需要构建一个带生成值的元素，而 document 没有为它存储备用 block（例如由其他工具写入的 document），也会返回代码为 `authored-uncovered` 的拒绝。
 
 `projectAuthoredRange(document, projected, range)` 把存储文档的 range 映射到它的某个 projection；若 projection 不保留其中任何内容，则返回 `null`。

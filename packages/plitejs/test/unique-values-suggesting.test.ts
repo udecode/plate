@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { join } from 'node:path';
-import { afterEach, describe, it } from 'node:test';
+import { describe, it } from 'node:test';
 
 import {
   createEditor,
@@ -13,24 +12,9 @@ import {
 } from 'plitejs';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
-import * as refusal from '../src/authored/refusal';
+import { projectAuthoredDocument } from '../src/authored/format';
+import { getDefined } from '../src/internal/get-defined';
 import { authoredTestApi } from './support/authored';
-
-const real = { ...refusal };
-// Suggesting stays off under any element generator until the construction
-// values plan's step 10 narrows the refusal, so these tests lift it to reach
-// the recorder that step will open.
-let lifted = false;
-
-mock.module(join(import.meta.dir, '../src/authored/refusal.ts'), () => ({
-  ...real,
-  constructsValues: (...args: Parameters<typeof real.constructsValues>) =>
-    !lifted && real.constructsValues(...args),
-}));
-
-afterEach(() => {
-  lifted = false;
-});
 
 type Node = Readonly<{
   authored?: readonly unknown[];
@@ -123,8 +107,6 @@ const suggested = (
 
 describe('a unique generated property under Suggesting', () => {
   it('stores a new id on a kept block in place, with no format tag', () => {
-    lifted = true;
-
     assert.deepEqual(
       suggested([p('a', 'a'), p('b', 'b')], 'alice', (tx) => {
         tx.nodes.set({ id: 'z' }, { at: [0] });
@@ -134,8 +116,6 @@ describe('a unique generated property under Suggesting', () => {
   });
 
   it('gives the right half of a rejected cut the id of the left half whose text a decision deleted, in either order', () => {
-    lifted = true;
-
     const entered = suggested([linked('ab', 'l', 'x')], 'alice', (tx) => {
       const at = { offset: 1, path: [0, 1, 0] };
 
@@ -194,8 +174,6 @@ describe('a unique generated property under Suggesting', () => {
   });
 
   it('gives the right half of a rejected cut the id of the left half Editing removed', () => {
-    lifted = true;
-
     const entered = suggested([linked('ab', 'l', 'x')], 'alice', (tx) => {
       const at = { offset: 1, path: [0, 1, 0] };
 
@@ -214,5 +192,71 @@ describe('a unique generated property under Suggesting', () => {
     });
 
     assert.deepEqual(blocks(reviewer), [linked('b', 'l', 'x')]);
+  });
+
+  it("keeps the id a block Editing wrote when accepting a quote line's deletion builds a spare that holds it", () => {
+    const mark = { at: 1, author: 'carol', change: 'carol:1', kind: 'delete' };
+    const editing = editorOf(
+      [
+        {
+          children: [
+            {
+              authored: [mark],
+              children: [{ authored: [mark], text: 'a' }],
+              id: 'a',
+              type: 'paragraph',
+            },
+          ],
+          id: 'q',
+          type: 'quote',
+        },
+        p('b', 'b'),
+      ],
+      'eve',
+      'edit'
+    );
+    const projected = projectAuthoredDocument(editing.read.value(), {
+      editor: editing,
+      projection: 'proposed',
+    });
+
+    assert.ok(projected.ok);
+    const spare = getDefined(
+      (projected.document.children as readonly Node[])[0].children?.[0]?.id
+    );
+
+    editing.update((tx) => tx.nodes.insert(p('c', spare), { at: [2] }));
+
+    const reviewer = editorOf(blocks(editing), 'zed', 'edit');
+
+    const { status } = authoredTestApi(reviewer).decide({
+      action: 'accept',
+      changes: ['carol:1'],
+    });
+    const [quote, , written] = blocks(reviewer);
+    const ids = blocks(reviewer).flatMap((block) => [
+      block.id,
+      ...(block.children ?? []).flatMap((child) => child.id ?? []),
+    ]);
+
+    assert.deepEqual(
+      {
+        built: ![undefined, 'a', spare].includes(quote.children?.[0]?.id),
+        lines: quote.children?.map(({ children, type }) => ({
+          children,
+          type,
+        })),
+        status,
+        unique: new Set(ids).size === ids.length,
+        written: written.id,
+      },
+      {
+        built: true,
+        lines: [{ children: [{ text: '' }], type: 'paragraph' }],
+        status: 'applied',
+        unique: true,
+        written: spare,
+      }
+    );
   });
 });

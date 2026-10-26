@@ -16,17 +16,16 @@ import {
 } from '../src/authored/facts/records';
 import type { AuthoredMark, AuthoredMember } from '../src/authored/tree/marks';
 import type { JsonNode } from '../src/core/change/tokens';
-import { ElementGenerationMaskedError } from '../src/core/editor-schema';
 import { recordsOf, reviewRecords } from '../test/support/authored';
 import {
   admissionOf,
   all,
   type Block2,
-  decideGiveback,
   decideIn,
   decisionAdmission,
   EDITING,
   type GivebackOp,
+  givebackEditor,
   givebackRead,
   givebackStart,
   generatedQuotes,
@@ -1082,13 +1081,7 @@ const committedWalk = (
       // there, so only the decision's own calls count.
       const loaded = editor(state);
       const generatedBefore = idGeneratorCalls.count;
-      let decision: ReturnType<typeof decideIn>;
-      try {
-        decision = decideIn(loaded, deciding);
-      } catch (error) {
-        if (!(error instanceof ElementGenerationMaskedError)) throw error;
-        return { kind: 'refused', reason: 'a build that finds no spare' };
-      }
+      const decision = decideIn(loaded, deciding);
       const made = idGeneratorCalls.count - generatedBefore;
       if (made > 0) {
         return {
@@ -1395,7 +1388,7 @@ const givebackWalk = (
     proposers.has(change)
   );
   const outcomeOf = (
-    { result, value }: ReturnType<typeof decideGiveback>,
+    { result, value }: ReturnType<typeof decideIn>,
     decided: ReadonlyMap<string, Verdict>
   ): Outcome<unknown> => {
     const admission = decisionAdmission(result, decided, pending);
@@ -1412,8 +1405,19 @@ const givebackWalk = (
     },
     same: withoutTokens,
     start,
-    step: (state, decided, deciding) =>
-      outcomeOf(decideGiveback(state, deciding), decided),
+    step: (state, decided, deciding) => {
+      const loaded = givebackEditor(state, givebackIds);
+      const generatedBefore = idGeneratorCalls.count;
+      const decision = decideIn(loaded, deciding);
+      const made = idGeneratorCalls.count - generatedBefore;
+      if (made > 0) {
+        return {
+          kind: 'refused',
+          reason: `calls the id generator ${made} times`,
+        };
+      }
+      return outcomeOf(decision, decided);
+    },
   };
 };
 
@@ -1423,7 +1427,7 @@ const prefixes = new Map<string, unknown>();
 // A script whose operation throws, or leaves the children and their marks as
 // they were, models a write recording never makes.
 const recorded = (script: readonly GivebackOp[]) => {
-  let value: unknown = givebackStart();
+  let value: unknown = givebackStart(givebackIds);
   for (const [at, op] of script.entries()) {
     const prefix = JSON.stringify(script.slice(0, at + 1));
     const known = prefixes.get(prefix);
@@ -1433,7 +1437,7 @@ const recorded = (script: readonly GivebackOp[]) => {
     }
     let next: unknown;
     try {
-      next = recordGiveback(value, op, at);
+      next = recordGiveback(value, op, at, givebackIds);
     } catch (error) {
       return `${opStory(op)} throws ${(error as Error).message}`;
     }
@@ -1461,6 +1465,7 @@ const summed = (results: ReadonlyArray<ReturnType<typeof explore>>) => ({
 const shard = process.env.AUTHORED_ORDER_SHARD;
 // The id variant a quotes worker runs, or none for the plain schema.
 const shardPlaces = (process.env.AUTHORED_ORDER_IDS || null) as IdPlaces | null;
+const givebackIds = shardPlaces !== null;
 
 if (shard === 'normalize') {
   const items: Array<[number, Doc]> = JSON.parse(await Bun.stdin.text());
@@ -1631,7 +1636,10 @@ if (shard === 'normalize') {
       console.error(`No give-back script in the bound reads ${onlyScript}.`);
       process.exit(2);
     }
-    const result = gathered(await fanOut<Explored>('giveback', written));
+    const givebackPlaces = schemaFlag === 'plain' ? null : 'elements';
+    const result = gathered(
+      await fanOut<Explored>('giveback', written, givebackPlaces)
+    );
     found.set('giveback', result);
     console.info(
       JSON.stringify({
@@ -1641,6 +1649,7 @@ if (shard === 'normalize') {
         failures: result.failures.length,
         family: 'giveback',
         idle: result.idle.length,
+        schema: givebackPlaces ?? 'plain',
         seconds: seconds(started),
         together: result.together.length,
       })

@@ -26,6 +26,7 @@
     "../src/ai/react/CopilotPlugin.trigger-suggestion.spec.ts",
     "../src/ai/react/useAIChat.spec.tsx",
     "../src/authored/authored.api.spec.ts",
+    "../src/authored/ElementIdPlugin.authored-tree.spec.ts",
     "../src/code-block/codemirror/createCodeMirrorAdapter.integration.spec.tsx",
     "../src/code-block/codemirror/createCodeMirrorAdapter.spec.ts",
     "../src/compiler/compileEditor.test.ts",

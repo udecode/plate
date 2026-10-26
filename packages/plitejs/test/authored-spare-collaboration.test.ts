@@ -1180,6 +1180,117 @@ describe('a line only the editors hold', () => {
     }
   });
 
+  for (const action of ['accept', 'reject'] as const) {
+    it(`gives every editor and room the same document and unique ids, and calls no generator, when a peer suggests moving a typed line the editors built from its spare out of its quote and another peer ${action}s it, in both delivery orders`, () => {
+      const liveIds = (nodes: readonly Node[]): string[] =>
+        nodes.flatMap((node) => [
+          ...(node.id ? [node.id] : []),
+          ...liveIds(node.children ?? []),
+        ]);
+
+      for (const order of orders) {
+        const room = decided(emptiedQuote(), both, order);
+
+        typeInto('X', [0, 0, 0])(room.peers[0]);
+        room.settle();
+
+        const id = children(room.peers)[0][0].children?.[0]?.id;
+
+        (
+          room.peers[2].api as unknown as {
+            authored: { setView: (view: object) => void };
+          }
+        ).authored.setView({ intent: 'propose' });
+        room.peers[2].update((tx) => tx.nodes.move({ at: [0, 0], to: [1] }));
+        room.settle();
+
+        const minted = made;
+
+        authoredTestApi(room.peers[0]).decide({ action, changes: ['M'] });
+        room.settle();
+
+        const [value] = values(room.peers);
+        const nodes = value.children as Node[];
+        const [quote, moved] = nodes;
+        const ids = liveIds(nodes);
+
+        assert.deepEqual(
+          {
+            editors: values(room.peers),
+            generated: made - minted,
+            line: (action === 'accept' ? moved : quote?.children?.[0])?.id,
+            quote: textsOf([quote]),
+            rooms: rooms(room.peers),
+            unique: new Set(ids).size === ids.length,
+          },
+          {
+            editors: [value, value, value],
+            generated: 0,
+            line: id,
+            quote: [{ quote: [action === 'accept' ? '' : 'X'] }],
+            rooms: [value.children, value.children, value.children],
+            unique: true,
+          },
+          `${action}, ${order}`
+        );
+      }
+    });
+  }
+
+  it('gives a late joiner the editors’ document and builds the next line from a new spare, calling no generator, when a peer suggests deleting a typed line the editors built from its quote’s spare and another peer accepts it, in both delivery orders', () => {
+    for (const order of orders) {
+      const room = decided(emptiedQuote(), both, order);
+
+      typeInto('X', [0, 0, 0])(room.peers[0]);
+      room.settle();
+
+      const [typed] = values(room.peers);
+      const builtId = (typed.children as Node[])[0].children?.[0]?.id;
+      const late = room.latecomer();
+
+      (
+        room.peers[2].api as unknown as {
+          authored: { setView: (view: object) => void };
+        }
+      ).authored.setView({ intent: 'propose' });
+      room.peers[2].update((tx) => tx.nodes.remove({ at: [0, 0] }));
+      room.settle();
+
+      const minted = made;
+
+      authoredTestApi(room.peers[0]).decide({
+        action: 'accept',
+        changes: ['M'],
+      });
+      room.settle();
+
+      const [value] = values(room.peers);
+      const [quote] = value.children as Node[];
+      const lines = (quote.children ?? []).map(({ id }) => id);
+      const ids = idsOf(value.children);
+
+      assert.deepEqual(
+        {
+          editors: values(room.peers),
+          generated: made - minted,
+          late: late.peer.read.value(),
+          newLine: lines.length === 1 && lines[0] !== builtId,
+          rooms: rooms(room.peers),
+          unique: new Set(ids).size === ids.length,
+        },
+        {
+          editors: [value, value, value],
+          generated: 0,
+          late: typed,
+          newLine: true,
+          rooms: [value.children, value.children, value.children],
+          unique: true,
+        },
+        order
+      );
+    }
+  });
+
   /**
    * Peers 0 and 1 accept D1 and D2 and exchange them while peer 2 types X at
    * `typed`; the typing then reaches them, and then their accepts reach it.

@@ -112,6 +112,37 @@ Exports pick a projection explicitly.
 const markdown = editor.api.markdown.serialize({ projection: "proposed" });
 ```
 
+DOCX export completes its projection through the editor it holds, as Markdown and HTML export do.
+
+```ts
+// packages/platejs/src/docx/export/lib/exportDocx.tsx
+const projected = projectPlateFormatDocument(editor, stored, projection);
+```
+
+A projection with an editor refuses with `authored-uncovered` a document whose pending changes need a block and store no spare, such as one another tool wrote. Callers that branch on `ok` already handle it.
+
+```ts
+// packages/plitejs/src/core/authored-document-capability.ts
+export type AuthoredProjectionRefusal = Readonly<{
+  diagnostics: readonly [
+    Readonly<{
+      code: 'authored-generated-values' | 'authored-uncovered';
+      message: string;
+      severity: 'error';
+    }>,
+  ];
+  ok: false;
+  pending: number;
+}>;
+```
+
+A schema that generates a supported element value writes storage revision 2 into its contract, so its fingerprint changes and an older editor refuses its saved documents and rooms.
+
+```ts
+// packages/plitejs/src/core/schema-compiler.ts
+storageRevision?: 1 | 2;
+```
+
 Inside plitejs, the recording map takes the resolve result's children together with the lines completion built, so no caller can drop them.
 
 ```ts
@@ -566,9 +597,12 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   container further back can take the later piece. This is current
   behavior, not law, until the split-order task decides it. When the piece
   before it keeps no content, the piece after it stands in the emptied
-  piece's place with its own values, so rejecting an Enter at a line's start
-  loses every value the split dropped, the line's block id among them. The
-  Construction values plan owns the fix.
+  piece's place. It takes the emptied line's decided values for each key that
+  every declaration drops on a split and declares as element metadata under
+  that exact key, with a target that does not depend on place and holds on
+  every type that can take a held type's place. It keeps its own values for
+  every other key, a key a split preserves included. So rejecting an Enter at
+  a line's start gives back the line's block id.
 - A deletion Editing records applies in that commit, a pending join beside it
   included.
 - A framed step whose removals take the last live content out of a wrapper
@@ -659,6 +693,36 @@ These rules bind this feature alone, so they live here instead of in `docs/visio
   element can become the node the completion builds. Settle records each
   decision as a deletion or a property write at the node it read, and that
   change is the repair storage lowers.
+- Suggesting, previews and projections run under a schema whose generated
+  properties are text properties only, or element properties with an exact
+  key, a value that is not a set, a target that does not depend on place and
+  a role other than `content`, the default role. `storesGeneratedValues` in
+  `refusal.ts` decides it for the recorder, `setView` and the projection
+  refusal. A suggested Enter stores its new element's generated values on
+  that element. A write that leaves a pending change able to remove a
+  container's child or change the container's type stores the block a
+  decision would build there as a spare, so a preview, a projection and a
+  decision call no element property's generator. The exception is an
+  element whose unique value an unbuilt spare also holds, such as one
+  written after the suggestion. The decision that builds that spare repeats
+  the value, and while that element is stored, the commit's unique repair
+  gives the built block a fresh value, so that block differs from its
+  preview. The stored ids then depend on decision order. Two such decisions
+  draw their values in the order they run, and deciding a pending removal of
+  that element before or with the build keeps the spare's value (Open work,
+  owner: zbeyens). Under a schema
+  that generates only text
+  properties, a build that needs an empty text still calls the text
+  generator, as it does on next (construction-values log row 19). Under any
+  other generated element property, or a generated text property beside a
+  generated element property, Suggesting refuses with `generated-values`,
+  and `projectAuthoredDocument` with an editor refuses a document with
+  pending changes with `authored-generated-values`.
+  A projection that builds an element needing a generated value and finds no
+  spare for it refuses with `authored-uncovered`. A generated element
+  property that names no `split` rule drops its value on a split. A schema
+  with a supported generated element property stores revision 2
+  ([persistence](persistence.md)).
 
 ## Main changes
 
@@ -905,9 +969,8 @@ For the work after a spare record change and the unique index, [Resolve only wha
 - Two peers can each repair one duplicate with their own fresh value; Yjs keeps one per element, so the rooms converge, as concurrent Editing does. owner: zbeyens. stop: none in the spare-collaboration plan.
 - A concurrent accept and reject of one change keeps the accept's built block and both verdict records. owner: zbeyens. stop: none in the spare-collaboration plan.
 - A line only the editors hold reaches the room when someone first edits in, on or beside it, or a decision drops its spare, so until then the room keeps its container empty, as on base. owner: zbeyens. stop: none in the spare-collaboration plan.
-- Suggesting refuses writes under an element generator until the construction-values plan's step 10, so the spare-collaboration plan's step 4 in-place id write and decision schedules run through a module mock of that refusal, and its step 3 Suggesting move waits. owner: zbeyens. stop: the construction-values plan's step 10, which drops the mock and runs both through a real editor.
 - One commit that sets a top-level block's property and moves another top-level block leaves the room without the property, as at `2493189e74`. owner: zbeyens. stop: suggested task t_c313ad28, which this run folded it into (the set-move-room probe fails at `989c703aa5` and `ee0b38ca07`).
-- No test fails when the bridge writes a container's line without the built mark on the container's `authored` set; a root's spare records have their tests. The mark matters once a later build can take the same spare, such as a suggested deletion that empties the container again. owner: zbeyens. stop: the construction-values plan's step 10, which lets Suggesting run under a generated element id.
+- No test fails when the bridge writes a container's line without the built mark on the container's `authored` set; a root's spare records have their tests. In the quote case of `authored-spare-collaboration.test.ts`, typing into the line drops the quote's spare in every editor and in the room, so the mark reaches no later build there, and a suggested deletion that empties the quote again builds from a new spare. The mark matters only for a spare that outlives the first edit. owner: zbeyens. stop: a case whose container spare outlives the first edit in the line it built.
 - A collaboration repair the bridge cannot lower still reconciles the whole root, as every admission repair does today. owner: zbeyens. stop: a repair that falls back in the race tests or a miss of the construction-values plan's step 8 budget on the race at 10,000 paragraphs.
 - A decision that empties a container and builds its line from a spare gives the container a new node key in a receiving editor, as on base, because the alignment pairs elements only through shared text. owner: zbeyens. stop: none in the spare-collaboration plan.
 - Peers whose documents differ, such as one with an unsynced move, can rank two copies in different orders and each rename a different one, so no copy keeps the value; the room still converges. owner: zbeyens. stop: none in the spare-collaboration plan.
@@ -915,7 +978,7 @@ For the work after a spare record change and the unique index, [Resolve only wha
 - A document saved before its schema marked a key unique can hold format tags on that key, and rejecting one can bring back a value another block stores, which the repair then renames inside the decision. Adding `unique` changes the fingerprint, so such a document goes through a migration, and that migration keeps the tags. `ElementIdPlugin` gains `unique` in the landing that first lets Suggesting run under it, so no Plate document holds such a tag. owner: zbeyens. stop: an app that adds `unique` to a key with stored suggestions.
 - A change whose element changes type, or whose alignment finds no shared text or too many sibling pairs, still arrives flat and rewrites the element, as on base. owner: zbeyens. stop: none in the spare-collaboration plan.
 - The remote-repair reconcile in `lowerRemoteCommitRepairs` writes a root's stored spare records too, so every path that writes the root writes them. No test reaches it, because the build found no schedule where a remote commit's repair rewrites a root whose line only the editors hold. owner: zbeyens. stop: a schedule that reaches it.
-- An Editing insertion that copies a value only an unbuilt spare holds stores it, because the recorder's closing pass in `command-values.ts` counts no spare as a holder, so building that spare later stores the value twice. The bytes do not depend on decision order, and the repair renames a unique value. owner: zbeyens. stop: a non-unique property whose copies must stay single.
+- An Editing insertion that copies a value only an unbuilt spare holds stores it, because the recorder's closing pass in `command-values.ts` counts no spare as a holder, so building that spare later stores the value twice. For a property that is not unique, the bytes do not depend on decision order. Under a unique key the repair renames the built block's value while the element that holds it is stored, which calls the generator inside the decision and gives the built block a value its preview did not show. Any write of that value ends the same way, such as a peer's write made before it received the spare, a loaded document that holds it, a spare whose generated value another element already held, or, by the construction-values diff panel's reading, an undo that restores the spare after a peer moved the block it built. That panel's second round reverted a reservation that covered local writes and loads alone (`probes-revert-a2.log`). Its third round showed that the stored ids then depend on decision order. Two such decisions draw their values in the order they run, and deciding a pending removal of the holding element before or with the build keeps the spare's value (`probes-r3-a1.log`, `probes-r3-opus1-a1.log`). owner: zbeyens. stop: a non-unique property whose copies must stay single, a report of a built block whose id differs from its preview's or of ids that differ between two decision orders, or the owner's call on the authored-redesign plan's Construction values item, which asks for one document in every admissible order.
 - Resolution checks a value that a rejected inline split gives back through its cut's kept properties against the joined element's place only when the place or a format changed; both halves share one type. owner: zbeyens. stop: a split whose halves differ in type.
 - When a peer changes only a link's text and types after it, the undo caret jumps past the peer's letter, because the receiving editor gets a flat change rather than an aligned one. owner: zbeyens. stop: none in the spare-collaboration plan.
 - The spare-collaboration plan did not check the list and code-block plugins' commit-updated caches for the draft-read defect `ElementIdPlugin` had. owner: zbeyens. stop: none in the spare-collaboration plan.
@@ -933,7 +996,6 @@ For the work after a spare record change and the unique index, [Resolve only wha
 - The abort case has no content root and no nested shower, so a journal that rolls back only main and top-level showers passes it. owner: zbeyens. stop: a change to `ShownBook`'s journal.
 - An invariant in the `authored-decision-order` checker that settlement writes element properties only, over every document up to its bound, beside core's assertion on the cases that run. owner: zbeyens. stop: a settle stage that writes structure.
 - A skipped insertion at the place a redo inserts drops that redo step, at `26b1d3efab` as well, so the import case of the redo-settlement plan's step 3 puts its insertion elsewhere. owner: zbeyens. stop: a report or a case that needs that redo.
-- History saved on `next` under Plate's id plugin likely fails the schema identity check once this run makes that id unique (the redo-settlement plan's Premises). owner: construction-values step 12. stop: construction-values step 12, whose migration note checks and states it.
 - Undo takes back a format edit skipped after the commit when that commit wrote the same mark twice and also wrote text in another root, on `ee0b38ca07` too (Astra, diff round 3, `r3-astra2-base-ee0b-a1.log`). Composing the two writes drops the root's classification, and history's text-only replay path reads the classifications left as if they covered every root. A commit that also creates a root and writes in it escapes only because that compose diffs the whole document and classifies every root again. owner: zbeyens, tracked as t_6430ff19 in the suggested-task ledger. stop: that task lands.
 - `DocumentChange.compose` asks for the source value whenever two changes touch a root that one of them creates or deletes. So a commit that creates a root and writes in it composes through a diff of the whole document (Opus, diff round 2). The composes in `commitRecordedDraft`, `admit` and the settlement capture pass no source value, so a framed command that writes in a root a plain write created in the same update, or deletes one the frontier wrote in, likely throws (Opus, diff rounds 2 and 3, untested). Narrowing the guard to a root the first change creates broke the replay path above. owner: zbeyens. stop: the replay fix, or a report of the throw.
 - The fresh-record guard's fingerprint leaves out where a shower sits inside its block, so a stale record whose container kept its properties and reordered its children passes it (Astra, diff round 1). owner: zbeyens. stop: a stale-record report or the next change to `readiness.ts`.
@@ -946,3 +1008,29 @@ For the work after a spare record change and the unique index, [Resolve only wha
 - When settling an accepted removal builds a root's line from its spare record, settle marks that record built but never drops the root's spare records once nothing pending in the root needs them, as a decision does, so a load or a peer that settles the verdict can keep records the deciding editor dropped. Dropping them needs every pending claim in the root, which settle does not read per commit. owner: zbeyens. stop: a peer or load whose records differ from the deciding editor's after a settled removal.
 - Three completions take stored spares through their own copy of the same callback, which takes a spare, records its slot and holds its node: a decision's in `tree/resolve.ts`, the canonical pass's in `tree/spare-lines.ts` and settle's in `facts/settle.ts`. A change to one that misses the others makes settling build a different line than deciding. owner: zbeyens. stop: the next change to how a completion takes a spare.
 - The Enter still reads about 3,007 and 30,007 whole nodes, the id property's own Editing cost (`how/whole-reads.md`), which the budget's factors allow. owner: zbeyens. stop: a budget that excludes the id property's cost.
+- Step 8 ran only the cohorts the spare-resolve plan's step 5 names on phase B's final bytes, because the frozen protocol, both lines with their known-bad copies and step 4's counts, runs more than an hour and 45 minutes. The rest runs as suggested task t_c79519a1 on phase C's landed commit. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: that task lands or is dropped.
+- `ElementIdPlugin` lookups read stored ids under a preview, as on next for every id, so under the proposed view a moved block's shown id names its struck original. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a plan that indexes the view being read.
+- A decision on a document loaded under a schema that generates a text property runs the generator inside resolution, as on next (open critical h, `textgen-base-a2.log`), and the Defaults row's word "spare leaves" reverses it. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a plan that stores spare leaves or refuses those decisions.
+- Metadata keys that some element type cannot hold, and compared values a split drops, at a line's start. From [Construction values](../2026-10-23-construction-values.md). owner: the suggested task Generated values offers. stop: none in this plan.
+- An export's view and serializer check the projected document again outside the validity table, as on next, so an export can judge a stored value twice. A detached conversion also opens no table around its input check or its check of what it projected, so a detached Markdown export of the gate's document judges 95 values where next judged 78. Detached HTML and plain text judge 69 where next judged 52, while live exports judge 43 where next judged 52 (`r3-export-counts-a1.log`, `r1-export-counts-base2-a1.log`). From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a plan that gives every export, detached ones included, one table from its input check to its serializer.
+- No runtime check enforces that resolution judges no stored value. This phase removed its test-only law check after the third diff panel showed that it threw on values a generator makes inside resolution, so the validator tests check the law only for the cases they decide. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a plan that restores the check once no generator runs inside resolution.
+- `projectAuthoredDocument` without an editor stays a structural read that never completes; removing it is a hard cut nobody asked for. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: the owner's word to remove it.
+- An Enter in the middle of a 10,000 line quote with generated ids, beside a waiting group, takes 300 ms against 134 ms on next, and 26 ms against 14 ms at 1,000 lines (medians of 7, `quote-enter-wt-shown-a1.log`, `quote-enter-wt-base3-a1.log`). The closing pass projects the whole touched top-level block again through the ledger, so its work grows with the quote's line count. Step 8's Enter cohorts split top-level paragraphs, so they do not cover it. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a plan that projects the ledger below the top-level block.
+- `ElementIdPlugin`'s Enter at 10,000 paragraphs costs 3.01 times the Enter without it on next, in Editing (`bench/step8-redit-a2.log`). From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens, through a suggested task offered at the close. stop: none in this plan.
+- Rejecting a child's type tag at a container's prefix slot refuses when the slot must then build an element with a generated value and that tag is the container's only claim, as it did at phase A (`opus4-base-a2.log`). Counting every child's type tag as a build claim would store a spare for every pending retype. Phase C admits Suggesting under `ElementIdPlugin`, so the case can now arise in principle; this run did not check whether a recording reaches it. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a recorder test or a report that reaches it.
+- A decision that builds a spare whose unique value a stored element also holds, such as one written after the suggestion, gives the built block a fresh value from the generator, so that block differs from its preview. The diff panel's second round reverted round 1's reservation, because it missed a peer's write, its load replacement could repeat another held value, and two loads stored different replacements (`probes-round2-bytes-a4.log`, `probes-revert-a2.log`). Its third round showed that the stored ids then depend on decision order, both between two such decisions and between deciding a pending removal of the holding element before or after the build (`probes-r3-a1.log`, `probes-r3-opus1-a1.log`). So the authored-redesign plan's Construction values item, which asks for one document in every admissible order, holds except in this case, which waits on the owner's call. authored.md's Open work lists the case. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a report of a built block whose id differs from its preview's or of ids that differ between two decision orders, or the owner's call on that item.
+- Deciding in the same update as a structural write, such as `tx.nodes.insert` followed by `tx.authored.decide`, throws `TypeError: null is not an object (evaluating 'current.revision')` in `decideOn`. It throws under a plain schema too, and at `be4cac3bd5`, before this plan (`probes-r3-opus6-plain-base-be4cac3bd5-a1.log`). The diff panel's third round reached it while tracing a unique repair. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a decision in the same update as a write returns a result or a refusal.
+- The order check leaves held members out of its comparison, because next's decide already stores a held member when it rejects two changes at once that it drops one at a time. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens, through a suggested task offered at the close. stop: none in this plan.
+- A Word-style DOCX, which has no Plate review bindings, still imports with its revisions flattened when its tracked deletion empties a quote's line or a paragraph's text, with and without `ElementIdPlugin`, as at `1d6d319837`. The proposed arm drops a paragraph whose text alone is deleted, while the review arm keeps an empty one (`step4-docx-import-next-a1.log`). From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a DOCX import fix of its own.
+- A Yjs split and merge that retypes a block keeps the old encoding's set members in the Yjs text, so a peer reads marks the block lost, on next `238d4c3f08` as on this phase (`f1-retype-base-238d4c3f08-a1.log`). From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a `writeTextRuns` fix that removes those members on a retype.
+- Loading the verdict of an accepted card deletion throws `Composing overlapping lifecycle changes for root rN requires the source value`, on next `238d4c3f08` and on this phase, under a plain card schema (`card-throw-plain-base-238d4c3f08-a1.log`). Until it lands, the order check's settle comparison skips a step whose decision drops a root. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a load that composes a removed root's lifecycle change without its source value.
+- Decide keeps a root's spare for a join on a block the same decision removes, because `stillBuilds` in `tree/resolve.ts` counts claims on children the decision removes, and settle, which asks the same rule, keeps it too. The order check lets a load keep a spare the step started with, so it does not see this. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: `buildClaimsOf` skips claims on children the decision removes.
+- Settle's `replacementsOf` checks `schema.storesSpares` before it takes a stored spare, because a load can reach a spare take under a schema that stores none. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: an admission order in which a load never reaches a spare take under such a schema.
+- In a Yjs room, an admission repair that renames a line only the editors hold rewrites every block from that line's container to the last block the repair changes. Two peers that admit the room before they exchange then hold that range twice and differ (`yjs-lineid-limit-a1.log`). The source shows that a third peer's typing in the range is lost too; no probe ran that case. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: the Defaults row's "room-form repair".
+- The order check lets a peer's load keep a spare the decision drops when the step started with it, because settle keeps a spare while the build that would replace its block waits. A settle that never drops a root record or a container's spare still passes, and so does one that moves such a spare under another container. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a comparison that excuses only a spare whose build waits, under its own container, over documents whose root or container default the schema cannot build, proven by a mutant that never drops those spares, at two blocks.
+- The order check's settle comparison loads through a fresh editor, so it never drives `settleBlocks`, which a peer's collaboration commit runs; only `authored-facts.test.ts`'s `decidedAndSettled` cases do. It also leaves out the formats and contexts a settle lands. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a block-scope variant of the comparison that commits the verdicts into a live editor and compares landed writes.
+- Settle takes stored spares before the schema's own repair replaces an unbuilt spare that no longer fits or that its validator rejects, so a load that carries a verdict may build from a spare a decide would replace, read from the source. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a load that replaces invalid spares before settle.
+- Loading a document with a pending change calls the id generator once for each spare slot a change claims, even when a stored spare fits, because `sparesFor` builds the slot's default block to learn its type before it looks for a fitting spare, and then drops the block. The stored value stays the same. `platejs-suggesting-a2.log` counts two calls for each load of a suggested Enter: one fits the editor's empty default document, as on next, and the other builds the root's spare. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a spare check that reads the slot's type without building the block.
+- Settle's root rule reads every reserve record on a commit that changes a block in a root, even a root that holds no spare, read from the source with no measurement. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: a verdict-import benchmark lane with many reserve records.
+- This run's reflect Backlog holds 15 items in `docs/plans/artifacts/generated-id-split/reflect/answer.md`, such as a ceiling on pivots for one card, a `decisions-check` refusal of a row whose cited log exited nonzero, and a `proof.mjs` warning when a parallel command runs without `--cores`. From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: the owner takes or drops each item.
+- `tooling/entrypoints/entrypoint-turbo.mjs` lists a test-side file that a partition's test loads from another entrypoint's folder as an input, but the partition's own exclusion of that folder keeps Turbo from hashing it. So `pnpm entrypoint:turbo:check` passes while the test's load trace fails, as it did for the core partition's `ElementIdPlugin` spec and `src/authored/__tests__/authoredTestApi.ts` (`docs/plans/artifacts/generated-id-split/step13/landC-a3.log`). From [Construction values](../2026-10-23-construction-values.md). owner: zbeyens. stop: the generator refuses such an input and names the partition that owns the file.

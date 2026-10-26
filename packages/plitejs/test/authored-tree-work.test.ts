@@ -7,7 +7,6 @@ import * as dependencies from '../src/authored/facts/dependencies';
 import * as facts from '../src/authored/facts/facts';
 import * as ledgerModule from '../src/authored/ledger/ledger';
 import { readLedgerWork } from '../src/authored/ledger/work';
-import * as authoredRefusal from '../src/authored/refusal';
 import * as halves from '../src/authored/tree/halves';
 import * as marks from '../src/authored/tree/marks';
 import * as recordCompletion from '../src/authored/tree/record-completion';
@@ -195,10 +194,6 @@ mock.module(join(import.meta.dir, '../src/core/representation.ts'), () => ({
 
     return completion;
   },
-}));
-mock.module(join(import.meta.dir, '../src/authored/refusal.ts'), () => ({
-  ...authoredRefusal,
-  constructsValues: () => false,
 }));
 mock.module(join(import.meta.dir, '../src/core/change/tokens.ts'), () => ({
   ...realTokens,

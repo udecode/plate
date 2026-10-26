@@ -3382,7 +3382,6 @@
     "test:partition:core": {
       "cache": true,
       "dependsOn": [
-        "plitejs#typecheck:partition:authored",
         "plitejs#typecheck:partition:core",
         "plitejs#typecheck:partition:testing",
         "typecheck:partition:authored",
@@ -3727,7 +3726,6 @@
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/packages/*/package.json",
         "$TURBO_ROOT$/packages/platejs/tsconfig.json",
-        "$TURBO_ROOT$/packages/plitejs/src/authored/refusal.ts",
         "$TURBO_ROOT$/packages/plitejs/tsconfig.json",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
         "$TURBO_ROOT$/tooling/config/tsconfig.base.json",

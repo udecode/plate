@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { join } from 'node:path';
 import { afterEach, describe, it } from 'node:test';
 
 import {
@@ -18,7 +17,6 @@ import * as Y from 'yjs';
 import { createAuthoredPlugin } from '../src/authored/authored';
 import { contextRecordOf, reserveIdOf } from '../src/authored/facts/records';
 import { getReviewLedger } from '../src/authored/ledger/ledger';
-import * as refusal from '../src/authored/refusal';
 import { valueRootIndex } from '../src/core/change/document-change';
 import type { DocumentIndex } from '../src/core/change/document-index';
 import {
@@ -42,17 +40,7 @@ import {
   unsettledCommits,
 } from './support/authored';
 
-const real = { ...refusal };
-// Suggesting stays off under any element generator until the construction
-// values plan's step 10 narrows the refusal, so the Suggesting rows lift it.
-let lifted = false;
 let fixedIds = false;
-
-mock.module(join(import.meta.dir, '../src/authored/refusal.ts'), () => ({
-  ...real,
-  constructsValues: (...args: Parameters<typeof real.constructsValues>) =>
-    !lifted && real.constructsValues(...args),
-}));
 
 type Node = Readonly<{
   authored?: ReadonlyArray<Record<string, unknown>>;
@@ -292,7 +280,6 @@ const documents = new Set<Y.Doc>();
 const { guard: guarded, take: unsettled } = unsettledCommits();
 
 afterEach(() => {
-  lifted = false;
   fixedIds = false;
   for (const doc of documents) doc.destroy();
   documents.clear();
@@ -2126,8 +2113,6 @@ describe('history redoing a settled commit without its settlement', () => {
     itWithFixedIds(
       `keeps a format a peer suggests on the shower while the step sits on the ${stack} stack`,
       () => {
-        lifted = true;
-
         const suggesting: Write = (tx) => {
           authoredIn(tx).propose({ changeId: 'bob:uid' });
           tx.nodes.set(
@@ -3246,8 +3231,6 @@ describe('a keystroke beside groups that wait', () => {
 
 describe('a keystroke in Suggesting beside groups that wait', () => {
   it('reads no holder index and no group beside a pending move of a 50 line section and inside a 50 line quote, locally and imported', () => {
-    lifted = true;
-
     assert.deepEqual(keystrokeReads(true), noReads(true));
   });
 });
@@ -3383,8 +3366,6 @@ describe('the record a commit settles shown values through', () => {
   });
 
   it('reads no group for the first two Suggesting Enters or imported unrelated decisions after a load beside a pending move of a 50 line section, and visits at most 5 holders deciding a group whose value 50 blocks store', () => {
-    lifted = true;
-
     const work = (run: () => void) => {
       const before = readCoreWork();
 

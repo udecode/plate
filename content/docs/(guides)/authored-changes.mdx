@@ -136,6 +136,8 @@ A preview throws on a plain edit, but some other writes still change the stored 
 
 Typing inside struck text splits the pending deletion around the new text. An `edit` view applies that text as written, and a `propose` view records it as an insertion. A `propose` view refuses a write it cannot record as a proposal, such as a change inside a table, and rolls it back; `api.subscribeRefusals(listener)` reports each refusal.
 
+A `propose` view and both previews work when the schema's generated properties are all text properties, or all element properties with an exact key, a value that is not a set, a target that does not depend on the element's place, and a role other than `content`. `content` is the default role, so declare `role: 'metadata'`. `ElementIdPlugin`'s `id` is such a property. When it records, a suggestion generates the element values that a later build needs. A suggested Enter stores the new element's id on that element. A suggestion whose decision could remove a container's child, such as deleting a quote's only line, or change the container's type also stores the block that decision would build there, as a spare block in the document's review marks and `records`. Previews, projections and decisions show those stored values and call no element property's generator. When a stored block, such as one written after the suggestion, repeats a unique value that a spare block holds, the decision that builds that spare block gives it a fresh value, which differs from the value the preview showed. Under any other generated property, or a schema that generates both an element property and a text property, `setView` keeps the current view and a proposal writes nothing. Each reports the refusal code `generated-values`.
+
 Deleting a block that owns a [content root](/docs/roots#content-roots) in a `propose` view strikes the block and leaves the root's content unchanged and unmarked, so style the root as deleted in the block's component. Typing or pasting inside that root writes nothing until someone decides the deletion. Accepting it removes the block and its root, and returns `blocked` while the root holds text another pending change inserted. Rejecting it keeps both. Rejecting a proposed block that owns a content root removes the root too. A `propose` view still refuses deleting a named root that no element owns.
 
 A pending join can show a paragraph away from where it is saved. The `proposed` preview shows a paragraph split off the joined line, or inserted between the join's halves, after the joined line. An `edit` view and a `propose` view record Backspace or Delete across a moved paragraph's edge, and a deletion over moved paragraphs, as the merges they make. A `propose` view refuses that Backspace when the moved line holds the owner of a content root, because the proposed merge would give the root two owners; an `edit` view records it. Select-all covers every paragraph the preview shows, a moved last paragraph included. Both views refuse these edits, each with the reason shown:
@@ -259,6 +261,11 @@ changes throw a `TypeError` unless `projection` is `accepted` or `proposed`. A
 document without pending changes needs no projection. DOCX export always takes
 one.
 
+Each export projects through the editor's schema, so a container that a
+decision empties, such as a quote whose only line a pending deletion removes,
+gets its default content. When the editor refuses that projection, the export
+throws `EditorSchemaValidationError` with the refusal's message.
+
 ### JSON
 
 Save `editor.read.value()` as JSON to keep the review. For a clean document,
@@ -378,8 +385,13 @@ the change, card, query, page, delta, decision, and result types,
 `{ ok, document, diagnostics, pending }` for an `accepted` or `proposed`
 projection. It is a pure document operation: it does not construct, activate, or
 subscribe an editor runtime. Pass `editor` as well to complete the result with
-that editor's schema; under a schema that generates property values, a document
-with pending changes returns an `AuthoredProjectionRefusal` instead.
+that editor's schema, so a container a decision empties gets its default
+content. With `editor`, a document with pending changes returns an
+`AuthoredProjectionRefusal` instead under a schema whose generated properties a
+`propose` view refuses, with the code `authored-generated-values`. It also
+returns one, with the code `authored-uncovered`, when the projection builds an
+element that needs a generated value and the document stores no spare block for
+it, such as a document another tool wrote.
 
 `projectAuthoredRange(document, projected, range)` maps a range of the stored
 document onto one of its projections, or returns `null` when the projection

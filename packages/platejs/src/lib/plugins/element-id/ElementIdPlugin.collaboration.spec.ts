@@ -1,5 +1,3 @@
-import { dirname, join } from 'node:path';
-
 import * as Y from 'yjs';
 
 import { AuthoredPlugin } from '../../../authored';
@@ -8,24 +6,6 @@ import { YjsPlugin } from '../../../yjs/react';
 import { createEditor } from '../../editor';
 import { definePlugin } from '../../plugin';
 import { ElementIdPlugin } from './ElementIdPlugin';
-
-const refusalPath = join(
-  dirname(Bun.resolveSync('plitejs/authored', import.meta.dir)),
-  'refusal.ts'
-);
-const refusal = await import(refusalPath);
-const real = { ...refusal };
-let lifted = false;
-
-void mock.module(refusalPath, () => ({
-  ...real,
-  constructsValues: (...args: Parameters<typeof real.constructsValues>) =>
-    !lifted && real.constructsValues(...args),
-}));
-
-afterEach(() => {
-  lifted = false;
-});
 
 type Node = Readonly<{
   authored?: ReadonlyArray<Record<string, unknown>>;
@@ -712,8 +692,6 @@ describe('ElementIdPlugin deciding suggestions that change ids', () => {
   for (const [name, { decisions, record }] of Object.entries(schedules)) {
     it(`gives ${name} schedule the same document and unique ids when its changes are decided in one order, the other or together, and calls no generator in a decide commit`, () => {
       const decided = (steps: ReadonlyArray<readonly Decision[]>) => {
-        lifted = true;
-
         const room = record();
         const reviewer = room.peers[0];
         const before = room.ids.calls();

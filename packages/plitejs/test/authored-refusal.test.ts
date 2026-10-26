@@ -18,7 +18,77 @@ import { projectAuthoredDocument } from 'plitejs/authored';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
 
-const blocks = (generates = false) =>
+const generate = () => 'generated';
+const metadata = (place: ReturnType<typeof target.group>) => ({
+  role: 'metadata' as const,
+  target: place,
+});
+const generators = {
+  beside: [
+    schema.elementProperty(
+      'id',
+      property.string({ generate }),
+      metadata(target.group('element'))
+    ),
+    schema.elementProperty(
+      'owner',
+      property.string({ generate }),
+      metadata(target.parent(target.type('box')))
+    ),
+  ],
+  both: [
+    schema.elementProperty(
+      'id',
+      property.string({ generate }),
+      metadata(target.group('element'))
+    ),
+    schema.textProperty('stamp', property.string({ generate })),
+  ],
+  content: [
+    schema.elementProperty('id', property.string({ generate }), {
+      role: 'content',
+      target: target.group('element'),
+    }),
+  ],
+  id: [
+    schema.elementProperty(
+      'id',
+      property.string({ generate }),
+      metadata(target.group('element'))
+    ),
+  ],
+  parent: [
+    schema.elementProperty(
+      'id',
+      property.string({ generate }),
+      metadata(target.parent(target.type('box')))
+    ),
+  ],
+  prefix: [
+    schema.elementProperty(
+      { kind: 'prefix', prefix: 'data-' },
+      property.string({ generate }),
+      metadata(target.group('element'))
+    ),
+  ],
+  root: [
+    schema.elementProperty(
+      'id',
+      property.string({ generate }),
+      metadata(target.root())
+    ),
+  ],
+  set: [
+    schema.elementProperty(
+      'tags',
+      property.set(property.string(), { generate: () => ['generated'] }),
+      metadata(target.group('element'))
+    ),
+  ],
+  text: [schema.textProperty('stamp', property.string({ generate }))],
+};
+
+const blocks = (generates?: keyof typeof generators) =>
   defineEditorSchema('authored-refusal-blocks', {
     elements: {
       box: {
@@ -34,15 +104,7 @@ const blocks = (generates = false) =>
     id: 'authored-refusal-blocks',
     properties: [
       schema.textProperty('bold', property.boolean()),
-      ...(generates
-        ? [
-            schema.elementProperty(
-              'id',
-              property.string({ generate: () => 'generated' }),
-              { role: 'metadata', target: target.group('element') }
-            ),
-          ]
-        : []),
+      ...(generates ? generators[generates] : []),
     ],
     root: schema.content.types(['paragraph', 'box'], {
       default: { type: 'paragraph' },
@@ -76,7 +138,7 @@ const initial = () => [
 
 const make = (
   intent: 'edit' | 'propose' = 'propose',
-  options: { generates?: boolean; value?: unknown[] } = {}
+  options: { generates?: keyof typeof generators; value?: unknown[] } = {}
 ) => {
   const editor = createEditor({
     initialValue: (options.value ?? initial()) as never,
@@ -106,6 +168,50 @@ const make = (
   return { editor, refusals };
 };
 const point = (path: number[], offset: number) => ({ offset, path });
+const stored: Record<
+  keyof typeof generators,
+  Readonly<{
+    element?: (line: number) => Record<string, unknown>;
+    text?: Record<string, unknown>;
+  }>
+> = {
+  beside: { element: (line) => ({ id: `p${line}` }) },
+  both: { element: (line) => ({ id: `p${line}` }), text: { stamp: 's' } },
+  content: { element: (line) => ({ id: `p${line}` }) },
+  id: { element: (line) => ({ id: `p${line}` }) },
+  parent: {},
+  prefix: {},
+  root: { element: (line) => ({ id: `p${line}` }) },
+  set: { element: (line) => ({ tags: [`t${line}`] }) },
+  text: { text: { stamp: 's' } },
+};
+const marked = (generates: keyof typeof generators) => {
+  const { element = () => ({}), text = {} } = stored[generates];
+
+  return [
+    {
+      type: 'paragraph',
+      ...element(1),
+      children: [
+        {
+          text: 'new',
+          ...text,
+          authored: [{ at: 1, author: 'ann', change: 'ann:1', kind: 'insert' }],
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
+      ...element(2),
+      children: [{ text: 'plain', ...text }],
+    },
+  ];
+};
+const viewApi = (editor: unknown) =>
+  editor as {
+    api: { authored: { setView: (view: unknown) => void } };
+    read: { authored: { view: () => unknown } };
+  };
 
 describe('authored refusal', () => {
   it('records text inserted at the end of a list item', () => {
@@ -454,53 +560,107 @@ describe('authored refusal', () => {
     assert.equal(editor.read.text.string([1]), 'Xinside');
   });
 
-  it('refuses Suggesting and projections that would decide changes when the schema generates values', () => {
-    const marked = [
-      {
-        ...paragraph('kept', { id: 'p1' }),
-        children: [
-          {
-            text: 'new',
-            authored: [
-              { at: 1, author: 'ann', change: 'ann:1', kind: 'insert' },
-            ],
-          },
-        ],
-      },
-    ];
-    const { editor, refusals } = make('edit', {
-      generates: true,
-      value: marked,
-    });
-    const api = editor as unknown as {
-      api: { authored: { setView: (view: unknown) => void } };
-      read: { authored: { view: () => unknown } };
-    };
+  it('records Suggesting and projects under a schema that generates element ids or only a text property', () => {
+    for (const generates of ['id', 'text'] as const) {
+      const { editor, refusals } = make('edit', {
+        generates,
+        value: marked(generates),
+      });
 
-    api.api.authored.setView({ intent: 'propose' });
+      viewApi(editor).api.authored.setView({ intent: 'propose' });
+      editor.update((tx) => {
+        tx.text.insert('X', { at: point([1, 0], 5) });
+      });
 
-    assert.deepEqual(api.read.authored.view(), { intent: 'edit' });
-    assert.deepEqual(
-      refusals.map((refusal) => (refusal as { code: string }).code),
-      ['generated-values']
-    );
-    assert.deepEqual(
-      projectAuthoredDocument(editor.read.value(), {
-        editor,
-        projection: 'accepted',
-      }),
-      {
-        diagnostics: [
+      assert.deepEqual(
+        viewApi(editor).read.authored.view(),
+        { intent: 'propose' },
+        generates
+      );
+      assert.deepEqual(refusals, [], generates);
+      assert.equal(editor.read.text.string([1]), 'plainX', generates);
+      assert.equal(editor.read.authored.changes().items.length, 2, generates);
+      assert.equal(
+        projectAuthoredDocument(editor.read.value(), {
+          editor,
+          projection: 'accepted',
+        }).ok,
+        true,
+        generates
+      );
+    }
+  });
+
+  it('refuses Suggesting, a proposal and projections when the schema generates a value a suggestion cannot store', () => {
+    for (const generates of [
+      'beside',
+      'both',
+      'content',
+      'parent',
+      'prefix',
+      'root',
+      'set',
+    ] as const) {
+      const { editor, refusals } = make('edit', {
+        generates,
+        value: marked(generates),
+      });
+
+      viewApi(editor).api.authored.setView({ intent: 'propose' });
+
+      assert.deepEqual(
+        viewApi(editor).read.authored.view(),
+        { intent: 'edit' },
+        generates
+      );
+      assert.deepEqual(
+        refusals.map((refusal) => (refusal as { code: string }).code),
+        ['generated-values'],
+        generates
+      );
+      assert.deepEqual(
+        projectAuthoredDocument(editor.read.value(), {
+          editor,
+          projection: 'accepted',
+        }),
+        {
+          diagnostics: [
+            {
+              code: 'authored-generated-values',
+              message:
+                'This schema generates a property value a suggestion cannot store, so its documents with suggestions have no accepted or proposed projection.',
+              severity: 'error',
+            },
+          ],
+          ok: false,
+          pending: 1,
+        },
+        generates
+      );
+
+      const proposing = make('propose', {
+        generates,
+        value: marked(generates),
+      });
+      const before = proposing.editor.read.children();
+
+      proposing.editor.update((tx) => {
+        tx.text.insert('X', { at: point([1, 0], 5) });
+      });
+
+      assert.deepEqual(proposing.editor.read.children(), before, generates);
+      assert.deepEqual(
+        proposing.refusals,
+        [
           {
-            code: 'authored-generated-values',
+            code: 'generated-values',
             message:
-              'This schema generates property values, so its documents with suggestions have no accepted or proposed projection.',
-            severity: 'error',
+              'Suggesting is off in an editor whose schema generates a property value a suggestion cannot store.',
+            reasons: [],
           },
         ],
-        ok: false,
-        pending: 1,
-      }
-    );
+        generates
+      );
+    }
   });
 });
