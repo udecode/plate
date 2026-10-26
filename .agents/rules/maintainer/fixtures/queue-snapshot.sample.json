@@ -12,7 +12,8 @@
     {
       "assignees": [],
       "comments": 3,
-      "labels": [{ "name": "bug" }],
+      "issueType": { "name": "Bug" },
+      "labels": [],
       "number": 1001,
       "title": "Editor selection loses focus after paste",
       "updatedAt": "2026-06-15T00:00:00Z",

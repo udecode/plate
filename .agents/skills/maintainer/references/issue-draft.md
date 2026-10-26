@@ -175,8 +175,8 @@ not to. Otherwise use [assets/issue-body.md](../assets/issue-body.md). Override 
 bug form's default title prefix. Keep the title behavioral and searchable. Do
 not include implementation guesses as facts.
 
-The title follows the `[Beta]: ` rule above, even when a `bug` label or the
-bug-report template supplies another prefix.
+The title follows the `[Beta]: ` rule above, even when the bug-report template
+supplies another prefix.
 
 The body must contain:
 
@@ -239,9 +239,10 @@ The publisher:
    reference alone in its paragraph, so gh embeds an image and leaves a
    video's bare URL, which GitHub plays;
 3. refuses a gh without `--attach`;
-4. creates the issue or comment, reads it back and checks the title, the
-   body's first line and the labels, that no local path remains, and that the
-   body holds a `github.com/user-attachments` URL for each file;
+4. creates the issue with the Bug issue type, or the comment, reads it back and
+   checks the title, the body's first line, the issue type and the labels, that
+   no local path remains, and that the body holds a
+   `github.com/user-attachments` URL for each file;
 5. prints the URL and every attachment URL.
 
 A failure after the issue or comment exists exits 7 and names its URL. Never

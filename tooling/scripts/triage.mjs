@@ -72,15 +72,15 @@ const COLUMNS = [
 const BATCH_COLUMNS = ['issue', 'outcome', 'detail', 'seen', 'why'];
 // A private copy, so this helper never moves the ref setup.mjs syncs the ledger file with.
 const LEDGER_COPY = 'refs/pstack/triage-ledger';
-const GH_FIELDS = 'number,title,body,state,comments,labels,author';
+const GH_FIELDS = 'number,title,body,state,comments,labels,issueType,author';
 const GRAPHQL_BATCH = 50;
 const PRIORITY_FIELD = 'Priority';
 const PRIORITY_OPTIONS = { P0: 'Urgent', P1: 'High', P2: 'Medium', P3: 'Low' };
 const OUTCOME_LABELS = {
   dup: 'duplicate',
   'needs-repro': 'needs reproduction',
-  spec: 'enhancement',
 };
+const OUTCOME_TYPES = { kind: 'Bug', spec: 'Feature' };
 const QUEUE_LIMIT = 5000;
 // A triage draft ends in a marker holding the hash of its own text, so posting it unchanged keeps its record current and editing it does not.
 const DRAFT_MARK = /\n*<!-- triage:([0-9a-f]{12}) -->\s*$/u;
@@ -1488,6 +1488,10 @@ function labels() {
         } else if (!wanted && names.has(label)) {
           edits.push(`--remove-label ${quoted(label)}`);
         }
+      }
+      const type = OUTCOME_TYPES[head.outcome];
+      if (type && issue.issueType?.name !== type) {
+        edits.push(`--type ${type}`);
       }
       if (head.outcome === 'kind') {
         const level = parseDetail(head.detail).get('priority');

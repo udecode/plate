@@ -1429,7 +1429,7 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(await stateLine(box, 5250, { cwd: b }), '#5250 current');
   });
 
-  test('labels prints the gh commands that make the triaged and outcome labels match a current record, and runs none', async () => {
+  test('labels prints the gh commands that make the triaged and outcome labels and the issue type match a current record, and runs none', async () => {
     const box = sandbox();
     setIssues(box, [
       issue(5250, {
@@ -1441,16 +1441,31 @@ describe('triage', { concurrency: 8 }, () => {
       }),
       issue(5252, { labels: [{ name: 'needs-triage' }] }),
       issue(5253),
+      issue(5254, {
+        labels: [{ name: 'triaged' }],
+        issueType: { name: 'Bug' },
+      }),
+      issue(5255, {
+        labels: [{ name: 'triaged' }],
+        issueType: { name: 'Bug' },
+        priority: 'Urgent',
+      }),
     ]);
-    await recordAll(box, [[5250], [5253, 'needs-repro', 'missing: the steps']]);
+    await recordAll(box, [
+      [5250],
+      [5253, 'needs-repro', 'missing: the steps'],
+      [5254, 'spec', 'question: should Tab indent a list item?'],
+      [5255],
+    ]);
     const { status, stdout } = await triage(box, ['labels']);
     assert.equal(status, 0);
     assert.deepEqual(stdout.trim().split('\n'), [
       'gh label create triaged --repo udecode/plate --color 0e8a16 --description "Has a current record in docs/triage/issues.tsv" --force',
       `gh label create 'needs retest' --repo udecode/plate --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
-      "gh issue edit 5250 --repo udecode/plate --add-label triaged --remove-label needs-triage --remove-label 'needs reproduction'",
+      "gh issue edit 5250 --repo udecode/plate --add-label triaged --remove-label needs-triage --remove-label 'needs reproduction' --type Bug",
       'gh issue edit 5251 --repo udecode/plate --remove-label triaged',
       "gh issue edit 5253 --repo udecode/plate --add-label triaged --add-label 'needs reproduction'",
+      'gh issue edit 5254 --repo udecode/plate --type Feature',
     ]);
   });
 
@@ -1464,7 +1479,11 @@ describe('triage', { concurrency: 8 }, () => {
       issue(5250, { labels: [{ name: 'triaged' }] }),
       issue(5251),
       issue(5252, { labels: waiting }),
-      issue(5253, { labels: waiting, priority: 'Urgent' }),
+      issue(5253, {
+        labels: waiting,
+        issueType: { name: 'Bug' },
+        priority: 'Urgent',
+      }),
     ]);
     await recordAll(box, [
       [5250, 'fixed', fixed('; retest: none')],

@@ -97,7 +97,7 @@ function loadSnapshot(args) {
         '--limit',
         String(args.limit),
         '--json',
-        'number,title,url,updatedAt,labels,assignees,comments',
+        'number,title,url,updatedAt,labels,issueType,assignees,comments',
       ]),
     warnings,
     'issues'
@@ -159,6 +159,7 @@ function labelsOf(item) {
 
 function scoreIssue(issue) {
   const labels = labelsOf(issue).map((label) => label.toLowerCase());
+  const bug = issue.issueType?.name === 'Bug';
   let score = 30;
   const reasons = [];
 
@@ -166,7 +167,7 @@ function scoreIssue(issue) {
     score += 60;
     reasons.push('security-shaped');
   }
-  if (labels.includes('bug')) {
+  if (bug) {
     score += 25;
     reasons.push('bug');
   }
@@ -186,7 +187,7 @@ function scoreIssue(issue) {
   return {
     category: labels.some((label) => label.includes('security'))
       ? 'security'
-      : labels.includes('bug')
+      : bug
         ? 'issue bug'
         : 'issue triage',
     decision: labels.some((label) => label.includes('needs reproduction'))
