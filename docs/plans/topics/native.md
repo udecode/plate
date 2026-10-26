@@ -1,6 +1,6 @@
 # Native input
 
-Page: https://claude.ai/artifact/F3ekdJXtcuz8X3tMerafke
+Page: https://claude.ai/artifact/EBmyC5xS9iaGutbfSB3hjJ
 
 The ledger asks how browser input becomes canonical edits. The 2026-10-04 audit stopped. Each mounted Editable has one input controller built on the shared `DOMInputRuntime`, every accepted edit lands as a canonical transaction through either the model command path or the single native-text writer, and the integrity observer restores DOM mutations nothing authorized. No competing write path exists to remove. `node tooling/scripts/review-ledger.mjs show native` prints the scope's history. Since 2026-10-24, every write of the page's selection first checks whether a read-only press holds a click Plite has not read yet, and leaves that click alone ([the plan](../2026-10-24-native-unread-press-selection.md)).
 

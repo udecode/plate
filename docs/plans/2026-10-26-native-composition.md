@@ -1,6 +1,6 @@
 # Keep composed text where the input method put it
 
-Status: building: lands the Safari Return fix, then takes the struck-text question
+Status: building: the Safari Return fix landed; the struck-text question goes on in 2026-10-26-native-ime-composition-commit.md
 Topic: native
 Playbook: bug-fix
 
