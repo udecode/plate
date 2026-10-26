@@ -198,6 +198,10 @@ export const steps = [
     run: 'node tooling/scripts/check-selection-writes.mjs',
   },
   {
+    name: 'yjs-element-deletes',
+    run: 'node tooling/scripts/check-yjs-element-deletes.mjs',
+  },
+  {
     name: 'hook-generics',
     run: 'node tooling/scripts/check-hook-generics.mjs --check',
     fix: 'node tooling/scripts/check-hook-generics.mjs',

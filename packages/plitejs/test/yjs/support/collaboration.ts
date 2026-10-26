@@ -25,7 +25,7 @@ import type { YjsNode } from '../../../src/yjs/core/attributes';
 import type { YjsRemoteCursorCacheMetrics } from '../../../src/yjs/core/awareness-adapter';
 import { getActiveYjsController } from '../../../src/yjs/core/controller-registry';
 import {
-  getYjsNode,
+  getYjsVisibleChild,
   readPliteValueFromYjs,
 } from '../../../src/yjs/core/document';
 import { yjs } from '../../../src/yjs/core/plugin';
@@ -278,10 +278,32 @@ export const getYjsNodeAt = (peer: Peer, path: readonly number[]): YjsNode => {
   return current;
 };
 
+export const getVisibleYjsNode = (
+  root: Y.XmlElement,
+  path: readonly number[]
+): YjsNode => {
+  let current: YjsNode = root;
+
+  for (const index of path) {
+    const child: YjsNode | undefined =
+      current instanceof Y.XmlElement
+        ? getYjsVisibleChild(root, current, index)
+        : undefined;
+
+    if (child === undefined) {
+      throw new Error(`No Yjs node at ${path.join('.')}`);
+    }
+
+    current = child;
+  }
+
+  return current;
+};
+
 export const getVisibleYjsNodeAt = (
   peer: Peer,
   path: readonly number[]
-): YjsNode => getYjsNode(getYjsRoot(peer), path);
+): YjsNode => getVisibleYjsNode(getYjsRoot(peer), path);
 
 const requireYjsController = (editor: AnyEditor) => {
   const controller = getActiveYjsController(editor);

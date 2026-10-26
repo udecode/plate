@@ -6,8 +6,6 @@ import * as Y from 'yjs';
 import type { Descendant } from '../../src/index';
 import {
   createYjsNode,
-  getYjsNode,
-  getYjsParent,
   readPliteValueFromYjs,
 } from '../../src/yjs/core/document';
 
@@ -24,24 +22,6 @@ describe('plitejs/yjs document id contract', () => {
       ]),
       [{ children: [{ text: '' }], type: 'schema-block' }]
     );
-  });
-
-  it('resolves empty paths to the Yjs root', () => {
-    const doc = new Y.Doc();
-    const root = doc.get('document', Y.XmlElement);
-    const node = createYjsNode({
-      children: [{ text: 'plain' }],
-    } as unknown as Descendant);
-
-    root.insert(0, [node]);
-
-    assert.equal(getYjsNode(root, []), root);
-
-    const { index, parent } = getYjsParent(root, [0]);
-
-    assert.equal(index, 0);
-    assert.equal(parent, root);
-    assert.throws(() => getYjsParent(root, []), /Yjs root/);
   });
 
   it('uses the fallback element type consistently for typeless elements', () => {
@@ -73,7 +53,9 @@ describe('plitejs/yjs document id contract', () => {
     const firstText = new Y.XmlText();
 
     firstRoot.insert(0, [firstText]);
-    first.createVirtualYjsMovePlaceholder(firstText);
+    first.withYjsWrite(firstRoot, (write: unknown) =>
+      first.createVirtualYjsMovePlaceholder(write, firstText)
+    );
 
     const secondDoc = new Y.Doc();
     secondDoc.clientID = 202;
@@ -82,7 +64,9 @@ describe('plitejs/yjs document id contract', () => {
     const secondWrapper = new Y.XmlElement('block-quote');
 
     secondRoot.insert(0, [secondWrapper, secondParagraph]);
-    second.setVirtualYjsMove(secondParagraph, secondWrapper);
+    second.withYjsWrite(secondRoot, (write: unknown) =>
+      second.setVirtualYjsMove(write, secondParagraph, secondWrapper)
+    );
 
     assert.notEqual(
       firstText.getAttribute('yjs:id'),

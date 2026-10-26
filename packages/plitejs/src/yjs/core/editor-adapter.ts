@@ -1,4 +1,10 @@
-import { valueRootNodes } from '../../core/change/document-change';
+import {
+  hasInternalDocumentChangeRoot,
+  mapInternalDocumentChangePosition,
+  valueRoot,
+  valueRootNodes,
+} from '../../core/change/document-change';
+import { DocumentIndex } from '../../core/change/document-index';
 import type { NodeList } from '../../core/change/document-index';
 import { withoutRepairOrphans } from '../../core/document-admission';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
@@ -99,6 +105,48 @@ const sanitizeImportSelection = (
     : null;
 };
 
+/**
+ * Map a text range through an import's change. Null when the change deletes
+ * the content around a point, as a value diff that replaces its block does.
+ */
+const mapImportRange = (
+  change: DocumentChange,
+  before: EditorDocumentValue,
+  after: EditorDocumentValue,
+  root: string,
+  range: Range
+): Range | null => {
+  if (!hasInternalDocumentChangeRoot(change, root)) return range;
+
+  const nodes = valueRootNodes(before, root) as NodeList<Descendant>;
+
+  if (
+    !isValidImportSelectionPoint(nodes, range.anchor) ||
+    !isValidImportSelectionPoint(nodes, range.focus)
+  ) {
+    return null;
+  }
+
+  const source = DocumentIndex.fromValue(valueRoot(before, root));
+  const target = DocumentIndex.fromValue(valueRoot(after, root));
+  const map = (point: Range['anchor']) => {
+    const position = mapInternalDocumentChangePosition(
+      change,
+      root,
+      source.positionAt(point),
+      -1,
+      'around'
+    );
+    const mapped = position === null ? null : target.pointAt(position, -1);
+
+    return mapped && { ...point, offset: mapped.offset, path: mapped.path };
+  };
+  const anchor = map(range.anchor);
+  const focus = map(range.focus);
+
+  return anchor && focus ? { ...range, anchor, focus } : null;
+};
+
 const isValidImportSelectionPoint = (
   children: NodeList<Descendant>,
   point: Range['anchor']
@@ -158,9 +206,26 @@ export const createYjsEditorAdapter = (
           ? normalizeRootKey(editor.read.view.root())
           : normalizeRootKey(SelectionApi.root(selection));
 
+      // A text selection maps through the change, so a caret after a
+      // remote split moves into the line that now holds its letters.
+      const mapped =
+        replacement === undefined &&
+        publishable &&
+        !publishable.empty &&
+        !SelectionApi.isNode(selection) &&
+        !('kind' in selection && selection.kind !== 'text')
+          ? (mapImportRange(
+              publishable,
+              currentValue,
+              nextValue,
+              editorRoot,
+              selection
+            ) ?? selection)
+          : selection;
+
       nextSelection = sanitizeImportSelection(
         valueRootNodes(nextValue, editorRoot) as NodeList<Descendant>,
-        selection
+        mapped
       );
     }
 

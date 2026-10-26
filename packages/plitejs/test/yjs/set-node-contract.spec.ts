@@ -1,13 +1,25 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { type Descendant, NodeApi } from '../../src/index';
+import * as Y from 'yjs';
+
+import { history } from '../../src/history';
+import {
+  createEditor,
+  defineEditorSchema,
+  type Descendant,
+  NodeApi,
+  property,
+  schema,
+  target,
+} from '../../src/index';
 import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
   createSeededYjsHistoryPeers,
   createYjsHistoryPeer,
+  createYjsPeerWithEditor,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
@@ -69,13 +81,101 @@ const setTextMark = (peer: Peer): void => {
   );
 };
 
+const link = (url: string, text: string) => ({
+  children: [{ text }],
+  type: 'link',
+  url,
+});
+
 const appendRemoteText = (peer: Peer): void => {
   peer.editor.update.text.insert('!', {
     at: { path: [0, 0], offset: 'alpha'.length },
   });
 };
 
+const LinkSchema = defineEditorSchema('schema:yjs-set-link-url', {
+  elements: {
+    link: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
+    paragraph: {
+      content: schema.content.any(
+        [schema.content.text(), schema.content.type('link')],
+        { default: 'text', min: 1 }
+      ),
+    },
+  },
+  properties: [
+    schema.elementProperty('url', property.string(), {
+      target: target.type('link'),
+    }),
+  ],
+  root: schema.content.types(['paragraph'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  unknown: 'reject',
+});
+
+const createLinkPeers = (children: readonly Descendant[]): Peer[] => {
+  const create = (numericClientId: number, seedUpdate?: Uint8Array) =>
+    createYjsPeerWithEditor(
+      createEditor({
+        initialValue: children,
+        plugins: [LinkSchema, history()],
+      }),
+      {
+        children,
+        clientId: String(numericClientId),
+        numericClientId,
+        seedUpdate,
+      }
+    );
+  const first = create(1);
+
+  return [first, create(2, Y.encodeStateAsUpdate(first.doc))];
+};
+
+const urlWritesBesideTyping = [
+  {
+    before: '',
+    expected: [{ text: '' }, link('v', 'aXb'), { text: '' }],
+    title: 'inside the link',
+    typed: { path: [0, 1, 0], offset: 1 },
+  },
+  {
+    before: 'word',
+    expected: [{ text: 'woXrd' }, link('v', 'ab'), { text: '' }],
+    title: 'before the link',
+    typed: { path: [0, 0], offset: 2 },
+  },
+] as const;
+
 describe('plitejs/yjs set_node collaboration contract', () => {
+  for (const { before, expected, title, typed } of urlWritesBesideTyping) {
+    for (const order of ['writer-first', 'typist-first'] as const) {
+      it(`keeps a link url write while a peer types ${title}, ${order}`, () => {
+        const peers = createLinkPeers([
+          {
+            children: [{ text: before }, link('u', 'ab'), { text: '' }],
+            type: 'paragraph',
+          },
+        ]);
+        const [writer, typist] = peers;
+
+        writer.editor.update.nodes.set({ url: 'v' }, { at: [0, 1] });
+        typist.editor.update.text.insert('X', { at: typed });
+        syncConnectedPeers(order === 'writer-first' ? peers : [typist, writer]);
+
+        assert.deepEqual(peers.map(readPeerChildren), [
+          [{ children: expected, type: 'paragraph' }],
+          [{ children: expected, type: 'paragraph' }],
+        ]);
+      });
+    }
+  }
+
   it('applies local offline element set_node without replacing the Yjs element', () => {
     const peer = createPeer('b');
     const element = getVisibleYjsNodeAt(peer, [0]);

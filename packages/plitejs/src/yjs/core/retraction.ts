@@ -17,6 +17,7 @@ import {
   removeYjsChild,
   type YjsPropertyLocation,
   type YjsSetPropertyResolver,
+  type YjsWrite,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
 import { setYjsElementAttributes } from './replacement';
@@ -68,7 +69,7 @@ const diffOf = (text: string, cuts: readonly Cut[]): Diff[] => {
 };
 
 export const retractYjsRoot = (
-  root: Y.XmlElement,
+  write: YjsWrite,
   base: DocumentIndex,
   expected: NodeList<Descendant>,
   retraction: Retraction,
@@ -77,11 +78,12 @@ export const retractYjsRoot = (
   readEmpty: EmptyTextRead,
   readStored: (block: Descendant) => Descendant
 ): boolean => {
+  const { root } = write;
   const read = createYjsVisibleChildrenReader(root);
   const top = read(root);
   const gone = new Set(retraction.elements.map(pathKey));
   const cuts = new Map<string, Cut[]>();
-  const writes: Array<() => void> = [];
+  const edits: Array<() => void> = [];
   const removals: Array<() => void> = [];
 
   for (const cut of retraction.characters) {
@@ -108,7 +110,7 @@ export const retractYjsRoot = (
       return !!empty && areJsonLikeValuesEqual(leaves, [empty]);
     };
 
-    writes.push(() =>
+    edits.push(() =>
       setYjsElementAttributes(
         stored,
         attributesOf(was),
@@ -138,7 +140,7 @@ export const retractYjsRoot = (
 
         if (target?.kind !== 'element') return false;
         if (gone.has(pathKey(at))) {
-          removals.push(() => removeYjsChild(root, stored, target.from));
+          removals.push(() => removeYjsChild(write, stored, target.from));
         } else {
           groups.push({
             kind: 'element',
@@ -207,7 +209,7 @@ export const retractYjsRoot = (
         offset: segment.from,
       });
 
-      writes.push(() => {
+      edits.push(() => {
         if (retypes) {
           rewriteTextRuns(chain, segment.leaves, encode, { diff: group.diff });
         } else {
@@ -241,7 +243,7 @@ export const retractYjsRoot = (
     }
     if (gone.has(pathKey([block]))) {
       removedBefore += 1;
-      removals.push(() => removeYjsChild(root, root, block));
+      removals.push(() => removeYjsChild(write, root, block));
       continue;
     }
 
@@ -262,7 +264,7 @@ export const retractYjsRoot = (
     }
   }
 
-  for (const write of writes) write();
+  for (const edit of edits) edit();
   for (const remove of removals.reverse()) remove();
 
   return true;

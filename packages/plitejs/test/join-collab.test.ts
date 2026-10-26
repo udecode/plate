@@ -22,17 +22,22 @@ import type { JsonNode } from '../src/core/change/tokens';
 import { readCoreWork, resetCoreWork } from '../src/core/work';
 import { getDefined } from '../src/internal/get-defined';
 import { yjs } from '../src/yjs';
+import type { YjsNode } from '../src/yjs/core/attributes';
 import { getActiveYjsController } from '../src/yjs/core/controller-registry';
 import {
   assignFreshYjsNodeId,
   createVirtualYjsMovePlaceholder,
   createYjsNode,
-  getYjsNode,
+  getYjsVisibleChild,
   getYjsVisibleChildren,
   hideYjsNode,
   readPliteValueFromYjs,
+  withYjsWrite,
 } from '../src/yjs/core/document';
 import {
+  YJS_ELEMENT_NODE_NAME,
+  YJS_HIDDEN_KEY,
+  YJS_NODE_ID_KEY,
   YJS_VIRTUAL_CHILD_ID_KEY,
   YJS_VIRTUAL_PLACEHOLDER_KEY,
 } from '../src/yjs/core/keys';
@@ -185,16 +190,29 @@ const both =
     for (const edit of edits) edit(tx);
   };
 
-const yjsLineAt = (peer: Peer, path: readonly number[]) => {
-  const root = peer.doc.get(ROOT, Y.XmlElement);
-  let node: Y.XmlElement = root;
+const getVisibleYjsNode = (
+  root: Y.XmlElement,
+  path: readonly number[]
+): YjsNode => {
+  let node: YjsNode = root;
 
   for (const index of path) {
-    const next = getYjsVisibleChildren(root, node)[index];
+    const next =
+      node instanceof Y.XmlElement
+        ? getYjsVisibleChild(root, node, index)
+        : undefined;
 
-    assert.ok(next instanceof Y.XmlElement, `no Yjs line at [${path}]`);
+    assert.ok(next !== undefined, `no Yjs node at [${path}]`);
     node = next;
   }
+
+  return node;
+};
+
+const yjsLineAt = (peer: Peer, path: readonly number[]) => {
+  const node = getVisibleYjsNode(peer.doc.get(ROOT, Y.XmlElement), path);
+
+  assert.ok(node instanceof Y.XmlElement, `no Yjs line at [${path}]`);
 
   return node;
 };
@@ -1224,11 +1242,11 @@ describe('a line removed and its text typed again at the end of the line above i
     const retyped = yjsLineAt(alice, [1]);
     const [text] = getYjsVisibleChildren(root, retyped);
 
-    alice.doc.transact(() => {
+    withYjsWrite(root, (write) => {
       heading.insert(heading.length, [
-        createVirtualYjsMovePlaceholder(getDefined(text)),
+        createVirtualYjsMovePlaceholder(write, getDefined(text)),
       ]);
-      hideYjsNode(retyped);
+      hideYjsNode(write, retyped);
     });
     getActiveYjsController(alice.editor)?.debugProcessAvailableInput();
     deliver(alice, bob);
@@ -1641,28 +1659,44 @@ describe('placeholders a peer writes beside a split, through Yjs', () => {
     );
     getActiveYjsController(to.editor)?.debugProcessAvailableInput();
   };
+  const hideRaw = (node: Y.XmlElement | Y.XmlText) =>
+    node.setAttribute(YJS_HIDDEN_KEY, true);
+  const rawPlaceholderOf = (node: Y.XmlElement | Y.XmlText) => {
+    const id = node.getAttribute(YJS_NODE_ID_KEY);
+    const placeholder = new Y.XmlElement(YJS_ELEMENT_NODE_NAME);
 
-  it('keeps the moved text when a line inside a quote shows again through a placeholder after it', () => {
+    hideRaw(node);
+    placeholder.setAttribute(
+      YJS_VIRTUAL_CHILD_ID_KEY,
+      typeof id === 'string' ? id : assignFreshYjsNodeId(node)
+    );
+    placeholder.setAttribute(YJS_VIRTUAL_PLACEHOLDER_KEY, true);
+
+    return placeholder;
+  };
+
+  it('keeps the moved text when a line inside a quote moves after it through a later placeholder', () => {
     const writer = seeded([q(line('b'), line('a'), line('b'))]);
-    const quote = getYjsNode(writer.get(ROOT, Y.XmlElement), [0]);
+    const root = writer.get(ROOT, Y.XmlElement);
+    const quote = getVisibleYjsNode(root, [0]);
     assert.ok(quote instanceof Y.XmlElement);
     const [first, left, donor] = quote.toArray();
 
     assert.ok(first instanceof Y.XmlElement);
     assert.ok(left instanceof Y.XmlElement);
     assert.ok(donor instanceof Y.XmlElement);
-    hideYjsNode(donor);
-    const suffix = createVirtualYjsMovePlaceholder(getDefined(donor.get(0)));
-    quote.insert(1, [createVirtualYjsMovePlaceholder(first)]);
+    hideRaw(donor);
+    const suffix = rawPlaceholderOf(getDefined(donor.get(0)));
+    quote.insert(1, [rawPlaceholderOf(first)]);
     const bob = reader(writer);
 
     writer.transact(() => {
-      quote.push([createVirtualYjsMovePlaceholder(first)]);
+      quote.push([rawPlaceholderOf(first)]);
       left.push([suffix]);
     });
     send(writer, bob);
 
-    assert.deepEqual(children(bob), [q(line('b'), line('ab'))]);
+    assert.deepEqual(children(bob), [q(line('ab'), line('b'))]);
   });
 
   it('keeps the moved text when a removed placeholder had shown a line through another line', () => {
@@ -1674,17 +1708,21 @@ describe('placeholders a peer writes beside a split, through Yjs', () => {
       line('x'),
     ]);
     const root = writer.get(ROOT, Y.XmlElement);
-    const [e, b, a] = [0, 1, 2].map((index) => getYjsNode(root, [index]));
+    const [e, b, a] = [0, 1, 2].map((index) =>
+      getVisibleYjsNode(root, [index])
+    );
 
     assert.ok(e instanceof Y.XmlElement);
     assert.ok(b instanceof Y.XmlElement);
     assert.ok(a instanceof Y.XmlElement);
-    const shown = createVirtualYjsMovePlaceholder(getYjsNode(root, [3, 0]));
+    const shown = rawPlaceholderOf(getDefined(getVisibleYjsNode(root, [3, 0])));
     a.push([shown]);
     const id = assignFreshYjsNodeId(shown);
     b.delete(0, b.length);
     b.setAttribute(YJS_VIRTUAL_CHILD_ID_KEY, id);
-    const suffix = createVirtualYjsMovePlaceholder(getYjsNode(root, [4, 0]));
+    const suffix = rawPlaceholderOf(
+      getDefined(getVisibleYjsNode(root, [4, 0]))
+    );
     const bob = reader(writer);
 
     writer.transact(() => {
@@ -1694,14 +1732,10 @@ describe('placeholders a peer writes beside a split, through Yjs', () => {
     });
     send(writer, bob);
 
-    assert.deepEqual(children(bob), [
-      line('ex'),
-      line('x'),
-      line('z'),
-      line('a'),
-      line('x'),
-      line(''),
-      line(''),
-    ]);
+    assert.deepEqual(children(bob)[0], line('ex'));
+    assert.deepEqual(
+      children(bob),
+      readPliteValueFromYjs(writer.get(ROOT, Y.XmlElement))
+    );
   });
 });

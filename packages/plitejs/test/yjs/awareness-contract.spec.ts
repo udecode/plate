@@ -1,14 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import * as Y from 'yjs';
+
 import { createAuthoredPlugin } from '../../src/authored/authored';
 import { releaseEditorViewLifetime } from '../../src/core/editor-view-lifetime';
 import {
   createEditor,
   createEditorView,
+  defineEditorSchema,
   type Descendant,
   type Range,
+  schema,
 } from '../../src/index';
+import { getDefined } from '../../src/internal/get-defined';
 import type { YjsCursorDataSchema } from '../../src/yjs/core';
 import { getActiveYjsController } from '../../src/yjs/core/controller-registry';
 import {
@@ -25,9 +30,11 @@ import {
   type Peer,
   paragraph,
   readEditorYjsState,
+  readPeerChildren,
   runYjsUpdate,
   subscribeYjsAwareness,
   subscribeYjsRemoteCursor,
+  syncConnectedPeers,
 } from './support/collaboration';
 
 type AwarePeer = {
@@ -476,6 +483,95 @@ describe('plitejs/yjs awareness contract', () => {
       metricsAfter.endpointConversionCount,
       metricsBefore.endpointConversionCount
     );
+  });
+
+  it('keeps the binding ready and shares carets in a line that Enter before a link starts', () => {
+    const InlineSchema = defineEditorSchema('schema:yjs-awareness-inline', {
+      elements: {
+        link: { content: schema.content.text(), inline: true },
+        paragraph: { content: schema.content.open() },
+      },
+      root: schema.content.not(schema.content.text()),
+      unknown: 'preserve',
+    });
+    const children: Descendant[] = [
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'word' },
+          { type: 'link', children: [{ text: 'LINK' }] },
+          { text: 'tail' },
+        ],
+      },
+    ];
+    const create = (numericClientId: number, seedUpdate?: Uint8Array) => {
+      const awareness = new FakeAwareness(numericClientId);
+      const peer = createYjsPeerWithEditor(
+        createEditor({ initialValue: children, plugins: [InlineSchema] }),
+        {
+          awareness,
+          children,
+          clientId: String(numericClientId),
+          numericClientId,
+          seedUpdate,
+        }
+      );
+
+      return { awareness, peer };
+    };
+    const a = create(1);
+    const b = create(2, Y.encodeStateAsUpdate(a.peer.doc));
+    const caret = (path: number[], offset: number): Range => ({
+      anchor: { path, offset },
+      focus: { path, offset },
+    });
+
+    runYjsUpdate(a.peer, (yjs) => yjs.sendSelection(caret([0, 0], 4)));
+    a.peer.editor.update((tx) => {
+      tx.selection.set({ kind: 'text', ...caret([0, 0], 4) });
+      tx.break.insert();
+    });
+    syncConnectedPeers([a.peer, b.peer]);
+    syncConnectedPeers([b.peer, a.peer]);
+
+    const split: Descendant[] = [
+      paragraph('word'),
+      {
+        type: 'paragraph',
+        children: [
+          { text: '' },
+          { type: 'link', children: [{ text: 'LINK' }] },
+          { text: 'tail' },
+        ],
+      },
+    ];
+
+    assert.deepEqual(readPeerChildren(a.peer), split);
+    assert.deepEqual(readPeerChildren(b.peer), split);
+    assert.equal(a.peer.editor.api.yjs.admissionStatus().state, 'ready');
+
+    for (const point of [
+      caret([1, 0], 0),
+      caret([1, 1, 0], 1),
+      caret([1, 2], 1),
+    ]) {
+      runYjsUpdate(a.peer, (yjs) => yjs.sendSelection(point));
+      b.awareness.setRemoteState(1, getDefined(a.awareness.getLocalState()));
+      assert.deepEqual(getYjsRemoteCursors(b.peer)[0]?.selection, point);
+    }
+
+    a.peer.editor.update.text.insert('Y', { at: { path: [1, 2], offset: 0 } });
+    syncConnectedPeers([a.peer, b.peer]);
+
+    assert.equal(a.peer.editor.api.yjs.admissionStatus().state, 'ready');
+    assert.deepEqual(readPeerChildren(b.peer)[1], {
+      type: 'paragraph',
+      children: [
+        { text: '' },
+        { type: 'link', children: [{ text: 'LINK' }] },
+        { text: 'Ytail' },
+      ],
+    });
   });
 
   it('clears the local awareness selection without clearing cursor data', () => {

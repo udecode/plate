@@ -115,7 +115,8 @@ const createPeer = (
 
 const createContentRootPeer = (
   doc: Y.Doc,
-  _clientId: string
+  _clientId: string,
+  initialValue = [paragraph('Body')]
 ): {
   cleanup: () => void;
   doc: Y.Doc;
@@ -123,7 +124,7 @@ const createContentRootPeer = (
 } => {
   const editor = createEditor({
     plugins: [ContentRootSchema, history()],
-    initialValue: [paragraph('Body')],
+    initialValue,
   });
   const cleanup = editor.install(
     yjs({
@@ -530,6 +531,73 @@ describe('plitejs/yjs multi-root document contract', () => {
         ['ready', [paragraph('Body')], [[], []]],
         'a closed schema drops the orphaned shared root on both peers'
       );
+    }
+  });
+
+  it("keeps a peer's typing and delete in the second line of a paragraph split, in a schema with content roots", () => {
+    const edits = [
+      {
+        edit: (editor: AnyEditor) =>
+          editor.update.text.insert('X', { at: { offset: 3, path: [0, 0] } }),
+        second: 'rXd',
+      },
+      {
+        edit: (editor: AnyEditor) =>
+          editor.update.text.delete({
+            at: {
+              anchor: { offset: 2, path: [0, 0] },
+              focus: { offset: 4, path: [0, 0] },
+            },
+          }),
+        second: '',
+      },
+    ];
+
+    for (const { edit, second } of edits) {
+      for (const writerFirst of [true, false]) {
+        const writerDoc = new Y.Doc();
+        const peerDoc = new Y.Doc();
+
+        writerDoc.clientID = 1;
+        peerDoc.clientID = 2;
+        const writer = createContentRootPeer(writerDoc, 'writer', [
+          paragraph('word'),
+        ]);
+
+        sync(writer, { doc: peerDoc });
+        const peer = createContentRootPeer(peerDoc, 'peer');
+
+        writer.editor.update((tx) => {
+          const point = { offset: 2, path: [0, 0] };
+
+          tx.selection.set({ anchor: point, focus: point });
+          tx.break.insert();
+        });
+        edit(peer.editor);
+        if (writerFirst) {
+          sync(writer, peer);
+          sync(peer, writer);
+        } else {
+          sync(peer, writer);
+          sync(writer, peer);
+        }
+
+        const freshDoc = new Y.Doc();
+
+        sync(writer, { doc: freshDoc });
+        const fresh = createContentRootPeer(freshDoc, 'fresh');
+
+        for (const shown of [writer, peer, fresh]) {
+          assert.deepEqual(
+            shown.editor.read.children(),
+            [paragraph('wo'), paragraph(second)],
+            `second line ${second}, writer first: ${writerFirst}`
+          );
+        }
+        writer.cleanup();
+        peer.cleanup();
+        fresh.cleanup();
+      }
     }
   });
 

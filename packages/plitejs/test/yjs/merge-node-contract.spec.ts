@@ -791,8 +791,8 @@ describe('plitejs/yjs merge_node collaboration contract', () => {
     assert.equal(b.editor.read.history().undos.length, 0);
   });
 
-  it('undoes a merge whose split-off line a peer emptied', () => {
-    const peers = createPeers(
+  const mergeTwoLines = () =>
+    createPeers(
       ['a', 'b'],
       [
         {
@@ -806,22 +806,54 @@ describe('plitejs/yjs merge_node collaboration contract', () => {
         paragraph('f'),
       ]
     );
+  const breakAt = (peer: Peer, path: number[], offset: number) => {
+    peer.editor.update((tx) => {
+      tx.selection.set({ anchor: { path, offset }, focus: { path, offset } });
+      tx.break.insert();
+    });
+  };
+
+  for (const [name, path, offset, first, second] of [
+    ['a leaf edge', [0, 0], 1, [{ text: 'a' }], [{ text: 'bc', bold: true }]],
+    [
+      'a word',
+      [0, 1],
+      1,
+      [{ text: 'a' }, { text: 'b', bold: true }],
+      [{ text: 'c', bold: true }],
+    ],
+  ] as const) {
+    it(`undoes a merge whose split-off line a peer emptied, keeping an Enter in ${name}`, () => {
+      const peers = mergeTwoLines();
+      const [a, b] = peers;
+
+      mergeSecondParagraph(b);
+      a.editor.update.text.delete({
+        at: {
+          anchor: { path: [0, 1], offset: 2 },
+          focus: { path: [2, 0], offset: 1 },
+        },
+      });
+      breakAt(a, [...path], offset);
+      syncConnectedPeers(peers);
+      undoHistoryPeerAndSync(b, peers);
+
+      for (const peer of peers) {
+        assert.deepEqual(readPeerChildren(peer), [
+          { type: 'paragraph', children: first },
+          { type: 'paragraph', children: second },
+          paragraph(''),
+        ]);
+      }
+    });
+  }
+
+  it('undoes a merge whose first line a peer split in a word, keeping the Enter', () => {
+    const peers = mergeTwoLines();
     const [a, b] = peers;
 
     mergeSecondParagraph(b);
-    a.editor.update.text.delete({
-      at: {
-        anchor: { path: [0, 1], offset: 2 },
-        focus: { path: [2, 0], offset: 1 },
-      },
-    });
-    a.editor.update((tx) => {
-      tx.selection.set({
-        anchor: { path: [0, 0], offset: 1 },
-        focus: { path: [0, 0], offset: 1 },
-      });
-      tx.break.insert();
-    });
+    breakAt(a, [0, 1], 1);
     syncConnectedPeers(peers);
     undoHistoryPeerAndSync(b, peers);
 
@@ -829,10 +861,14 @@ describe('plitejs/yjs merge_node collaboration contract', () => {
       assert.deepEqual(readPeerChildren(peer), [
         {
           type: 'paragraph',
-          children: [{ text: 'a' }, { text: 'bc', bold: true }],
+          children: [{ text: 'a' }, { text: 'b', bold: true }],
         },
-        paragraph(''),
-        paragraph(''),
+        {
+          type: 'paragraph',
+          children: [{ text: 'd' }, { text: 'e', bold: true }],
+        },
+        { type: 'paragraph', children: [{ text: 'c', bold: true }] },
+        paragraph('f'),
       ]);
     }
   });

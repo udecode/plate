@@ -17,6 +17,7 @@ import { string as editorString } from '../../src/testing';
 import {
   clearYjsTrace,
   createSeededYjsPeers,
+  createYjsPeer,
   createYjsPeerWithEditor,
   getPeerTopLevelTexts,
   getVisibleYjsNodeAt,
@@ -326,6 +327,92 @@ describe('plitejs/yjs split and merge collaboration contract', () => {
     assertNoNestedElements(snapshotChildren);
     assert.deepEqual(readPeerPliteValue(peer), [paragraph('Hello world!')]);
   });
+
+  for (const [edit, write, beforeUndo] of [
+    [
+      'delete',
+      (peer: Peer) =>
+        peer.editor.update.text.delete({
+          at: {
+            anchor: { path: [0, 0], offset: 4 },
+            focus: { path: [0, 0], offset: 5 },
+          },
+        }),
+      'f',
+    ],
+    [
+      'typing',
+      (peer: Peer) =>
+        peer.editor.update.text.insert('X', {
+          at: { path: [0, 0], offset: 5 },
+        }),
+      'eXf',
+    ],
+  ] as const) {
+    for (const first of ['writer', 'peer'] as const) {
+      it(`undoes a peer's ${edit} after a split that crossed it, in a line an earlier split and join left, ${first} first`, () => {
+        const children = [paragraph('abcdef')];
+        const a = createYjsPeer({
+          children,
+          clientId: 'a',
+          numericClientId: 1,
+        });
+        const b = createYjsPeer({
+          children,
+          clientId: 'b',
+          numericClientId: 2,
+          seedUpdate: Y.encodeStateAsUpdate(a.doc),
+        });
+        const caret = (offset: number) => ({
+          kind: 'text' as const,
+          anchor: { path: [0, 0], offset },
+          focus: { path: [0, 0], offset },
+        });
+
+        a.editor.update((tx) => {
+          tx.selection.set(caret(2));
+          tx.break.insert();
+        });
+        syncConnectedPeers([a, b]);
+        a.editor.update.nodes.merge({ at: [1] });
+        syncConnectedPeers([a, b]);
+        a.editor.update((tx) => {
+          tx.text.delete({
+            at: {
+              anchor: { path: [0, 0], offset: 2 },
+              focus: { path: [0, 0], offset: 3 },
+            },
+          });
+          tx.selection.set(caret(3));
+          tx.break.insert();
+        });
+        write(b);
+        syncConnectedPeers(first === 'writer' ? [a, b] : [b, a]);
+
+        assert.deepEqual(readPeerChildren(b), [
+          paragraph('abd'),
+          paragraph(beforeUndo),
+        ]);
+
+        b.editor.api.history.undo();
+        syncConnectedPeers([b, a]);
+        syncConnectedPeers([a, b]);
+
+        const fresh = createYjsPeer({
+          children: [paragraph('seed')],
+          clientId: 'c',
+          numericClientId: 3,
+          seedUpdate: Y.encodeStateAsUpdate(a.doc),
+        });
+        const expected = [paragraph('abd'), paragraph('ef')];
+
+        assert.deepEqual(
+          [a, b, fresh].map((peer) => readPeerChildren(peer)),
+          [expected, expected, expected]
+        );
+      });
+    }
+  }
 
   for (const offset of [0, 2]) {
     it(`sends the right half's new color when one commit splits a block at offset ${offset} and colors that half`, () => {

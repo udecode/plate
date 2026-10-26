@@ -66,7 +66,10 @@ import {
   readPliteValueFromYjs,
   removeRedundantEmptyYjsTextNodes,
   replaceYjsChildren,
+  withYjsWrites,
   type YjsSetPropertyResolver,
+  type YjsTextAdmission,
+  type YjsWrite,
 } from './document';
 import {
   createYjsEditorAdapter,
@@ -204,6 +207,8 @@ export class YjsController<
   private readonly recordMaps = new Map<string, Y.Map<unknown>>();
   private readonly recordUnobservers = new Map<string, () => void>();
   private readonly isSetValued: YjsSetPropertyResolver;
+  private readonly admitsText: YjsTextAdmission = (type) =>
+    getEditorSchema(this.editor).getElementContent(type)?.allowsText ?? true;
   private readonly localOrigin = {};
   private readonly seedOrigin = {};
   private readonly observer: (
@@ -457,6 +462,7 @@ export class YjsController<
       Object.freeze([]),
       this.isSetValued,
       {
+        admitsText: this.admitsText,
         block: (node) => fitImportedBlock(this.editor, node, root),
         holds: (after, windows) =>
           holdsImportedRoot(getEditorSchema(this.editor), root, after, windows),
@@ -794,7 +800,7 @@ export class YjsController<
     const preparedSharedEffects = this.sharedEffectLog.prepare(sharedEffects);
 
     if (!documentChanged) {
-      this.doc.transact(() => {
+      this.transact(() => {
         this.lowerRecords(records);
         this.appendSharedEffects(preparedSharedEffects);
       }, this.localOrigin);
@@ -806,13 +812,12 @@ export class YjsController<
     }
 
     const removedBindings: string[] = [];
-    const reconciles = this.editor.read.schema.hasContentRoots();
     const fallbacks = new Set<string>([
       ...commit.changes.createRoots,
       ...commit.changes.deleteRoots,
     ]);
 
-    this.doc.transact(() => {
+    this.transact((writeOf) => {
       this.lowerRecords(records);
       for (const root of changedRoots) {
         if (commit.changes.deleteRoots.has(root)) {
@@ -836,11 +841,17 @@ export class YjsController<
           this.roots.set(root, yRoot);
           binding = this.createRootBinding(root, yRoot);
           this.bindings.set(root, binding);
-          replaceYjsChildren(binding.root, children, this.isSetValued, {
-            ancestors: [],
-            path: [],
-            root,
-          });
+          replaceYjsChildren(
+            writeOf(binding.root),
+            binding.root,
+            children,
+            this.isSetValued,
+            {
+              ancestors: [],
+              path: [],
+              root,
+            }
+          );
           binding.bridge.reset(expected);
           this.traceEntries.push({
             changedChildren: children.length,
@@ -867,27 +878,19 @@ export class YjsController<
           before: valueRootIndex(before, root),
         });
         let indexes: ReturnType<typeof readIndexes> | undefined;
-        if (reconciles) binding.bridge.fillBeforeReconcile();
-        const incremental = !reconciles
-          ? binding.bridge.lower(rootChange, expected, {
-              // Several of the bridge's detectors read them, and a root other
-              // than the main one builds them anew on each read.
-              indexes: () => (indexes ??= readIndexes()),
-              structureChanged,
-            })
-          : null;
+        const write = writeOf(binding.root);
+        const incremental = binding.bridge.lower(write, rootChange, expected, {
+          // Several of the bridge's detectors read them, and a root other
+          // than the main one builds them anew on each read.
+          indexes: () => (indexes ??= readIndexes()),
+          structureChanged,
+        });
         const result =
-          incremental?.kind === 'lowered'
+          incremental.kind === 'lowered'
             ? incremental
-            : incremental === null
-              ? reconcileYjsRoot(
-                  binding.root,
-                  this.readYjsRootValue(binding),
-                  expected.slice(),
-                  this.isSetValued,
-                  root === MAIN_ROOT_KEY ? null : root
-                )
-              : lowerDocumentChangeToYjs({
+            : binding.bridge.rewrite(write, () =>
+                lowerDocumentChangeToYjs({
+                  admitsText: this.admitsText,
                   base: childrenOf(before, root).slice(),
                   canonicalize: (children) =>
                     this.canonicalizeRootInDocument(root, children, before),
@@ -897,10 +900,11 @@ export class YjsController<
                   isSetValued: this.isSetValued,
                   knownYjsValue: binding.bridge.synchronized.slice(),
                   root,
-                  yRoot: binding.root,
-                });
+                  write,
+                })
+              );
 
-        if (incremental?.kind === 'fallback') {
+        if (incremental.kind === 'fallback') {
           countCoreWork('fallbacks');
           fallbacks.add(root);
         }
@@ -908,13 +912,13 @@ export class YjsController<
         this.traceEntries.push({
           canonicalStrategy: result.strategy,
           changedChildren: result.inserted + result.removed,
-          ...(incremental?.kind === 'lowered'
+          ...(incremental.kind === 'lowered'
             ? { changedRanges: incremental.changedRanges }
             : {}),
-          ...(incremental?.kind === 'lowered'
+          ...(incremental.kind === 'lowered'
             ? { tokenLengthNodes: incremental.tokenLengthNodes }
             : {}),
-          ...(incremental?.kind === 'fallback'
+          ...(incremental.kind === 'fallback'
             ? {
                 fallback:
                   incremental.fallback === 'remote-event-projected-content'
@@ -940,8 +944,6 @@ export class YjsController<
 
       if (fallbacks.has(root)) {
         binding.bridge.reset(childrenOf(after, root));
-      } else if (reconciles) {
-        binding.bridge.resync(childrenOf(after, root));
       }
     }
     this.awarenessAdapter?.publishMappedRoots(changedRoots, {
@@ -1219,10 +1221,11 @@ export class YjsController<
         })
       : [];
 
-    this.doc.transact(() => {
+    this.transact((writeOf) => {
       this.lowerRecords(records);
       for (const root of deleted) this.roots.delete(root);
       for (const { base, binding, change, children, root } of repaired) {
+        const write = writeOf(binding.root);
         const schemaRoot = root === MAIN_ROOT_KEY ? null : root;
         const readEmpty: EmptyTextRead = (ancestors) =>
           readEmptyText(
@@ -1233,9 +1236,9 @@ export class YjsController<
         const retraction = change && retractionOf(base, change, readEmpty);
         const retracted =
           !!retraction &&
-          binding.bridge.withRootIndex(() =>
+          binding.bridge.rewrite(write, () =>
             retractYjsRoot(
-              binding.root,
+              write,
               base,
               children,
               retraction,
@@ -1247,12 +1250,14 @@ export class YjsController<
           );
 
         if (!retracted) {
-          reconcileYjsRoot(
-            binding.root,
-            this.readYjsRootValue(binding),
-            children,
-            this.isSetValued,
-            schemaRoot
+          binding.bridge.rewrite(write, () =>
+            reconcileYjsRoot(
+              write,
+              this.readYjsRootValue(binding),
+              children,
+              this.isSetValued,
+              schemaRoot
+            )
           );
         }
         this.traceEntries.push({
@@ -1554,6 +1559,13 @@ export class YjsController<
     );
   }
 
+  private transact<T>(
+    run: (writeOf: (root: Y.XmlElement) => YjsWrite) => T,
+    origin: unknown
+  ): T {
+    return this.doc.transact(() => withYjsWrites(run), origin);
+  }
+
   private seedInitialValue(): void {
     this.seedValue(this.editorAdapter.readValue());
   }
@@ -1562,7 +1574,7 @@ export class YjsController<
     const snapshots = this.sharedEffectLog.prepare(
       this.captureSharedSnapshotEffects()
     );
-    this.doc.transact(() => {
+    this.transact((writeOf) => {
       const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
       const identity = this.localSchemaIdentity();
 
@@ -1573,6 +1585,7 @@ export class YjsController<
       }
 
       replaceYjsChildren(
+        writeOf(this.root),
         this.root,
         asDescendants(value.children),
         this.isSetValued,
@@ -1587,11 +1600,17 @@ export class YjsController<
         const yRoot = new Y.XmlElement();
 
         this.roots.set(root, yRoot);
-        replaceYjsChildren(yRoot, asDescendants(children), this.isSetValued, {
-          ancestors: [],
-          path: [],
-          root,
-        });
+        replaceYjsChildren(
+          writeOf(yRoot),
+          yRoot,
+          asDescendants(children),
+          this.isSetValued,
+          {
+            ancestors: [],
+            path: [],
+            root,
+          }
+        );
       }
 
       const records = getValueRecords(value);
@@ -1630,8 +1649,8 @@ export class YjsController<
       throw new Error(`Yjs root binding "${root}" is unavailable.`);
     }
 
-    this.doc.transact(() => {
-      removeRedundantEmptyYjsTextNodes(binding.root);
+    this.transact((writeOf) => {
+      removeRedundantEmptyYjsTextNodes(writeOf(binding.root));
     }, this.canonicalizeOrigin);
 
     const before = this.editorAdapter.readChildren(root);
@@ -1695,9 +1714,9 @@ export class YjsController<
       }
     }
 
-    this.doc.transact(() => {
+    this.transact((writeOf) => {
       if (changed?.main ?? true) {
-        removeRedundantEmptyYjsTextNodes(this.root);
+        removeRedundantEmptyYjsTextNodes(writeOf(this.root));
       }
       for (const root of namedRoots) {
         const yRoot = this.roots.get(root);
@@ -1706,7 +1725,7 @@ export class YjsController<
         if (!(yRoot instanceof Y.XmlElement)) {
           throw new Error('A Yjs named root must be a Y.XmlElement.');
         }
-        removeRedundantEmptyYjsTextNodes(yRoot);
+        removeRedundantEmptyYjsTextNodes(writeOf(yRoot));
       }
     }, this.canonicalizeOrigin);
 
@@ -1830,7 +1849,11 @@ export class YjsController<
   }
 
   private readYjsRootValue(binding: YjsRootBinding): readonly Descendant[] {
-    return readPliteValueFromYjs(binding.root, binding.emptyValue);
+    return readPliteValueFromYjs(
+      binding.root,
+      binding.emptyValue,
+      this.admitsText
+    );
   }
 
   private canonicalizeRootInDocument(
@@ -1911,8 +1934,8 @@ export class YjsController<
     if (!binding) {
       throw new Error(`Yjs root binding "${root}" is unavailable.`);
     }
-    const result = this.doc.transact(
-      () => binding.bridge.prepareRemote(events),
+    const result = this.transact(
+      (writeOf) => binding.bridge.prepareRemote(writeOf(binding.root), events),
       this.canonicalizeOrigin
     );
 

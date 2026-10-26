@@ -808,7 +808,7 @@ describe('authored review tree concurrency limits on two clients', () => {
       ],
     ],
     [
-      'presses Enter inside it in Editing, which leaves the new paragraph without the deletion',
+      "presses Enter inside it in Editing, which gives the new paragraph's text the deletion but not the paragraph",
       'edit',
       (tx: any) => {
         tx.selection.set({ anchor: point(1), focus: point(1) });
@@ -816,7 +816,7 @@ describe('authored review tree concurrency limits on two clients', () => {
       },
       [
         whole(paragraph(text('a')), deleted),
-        paragraph(text('b')),
+        paragraph({ authored: [deleted], text: 'b' }),
         paragraph(text('z')),
       ],
     ],
@@ -3615,56 +3615,33 @@ function reviewVerdictRaces(limits: boolean) {
     });
   }
 
-  for (const [removed, remove, expected] of [
-    [
-      'its text',
-      (tx: EditorUpdateTransaction) =>
-        tx.text.delete({
-          at: { anchor: point(0, [2, 0]), focus: point(2, [2, 0]) },
-        }),
-      ['a', 'old|held:alice:9', 'b', 'c', '|insert:alice:9'],
-    ],
-    [
-      'its block',
-      (tx: EditorUpdateTransaction) => tx.nodes.remove({ at: [2] }),
-      ['a', 'old|held:alice:9', 'b', 'c'],
-    ],
-  ] as const) {
-    it(`holds a rejected deletion again once ${removed}, which gave it back, goes`, () => {
-      const [decider, typer] = peersOf(
-        ['alice', 'bob'],
-        [
-          paragraph(
-            { text: 'a' },
-            { text: 'old', authored: [{ ...A, kind: 'delete' }] },
-            { text: 'b' }
-          ),
-          paragraph({ text: 'c' }, { text: 'new', authored: [A] }),
-        ]
-      );
-      const stages: Record<string, readonly string[]> = {};
+  it('keeps a rejected cross-block replacement held when the other client presses Enter inside its inserted text', () => {
+    const [decider, typer] = peersOf(
+      ['alice', 'bob'],
+      [
+        paragraph(
+          { text: 'a' },
+          { text: 'old', authored: [{ ...A, kind: 'delete' }] },
+          { text: 'b' }
+        ),
+        paragraph({ text: 'c' }, { text: 'new', authored: [A] }),
+      ]
+    );
 
-      decide('reject')(decider, 'replacement');
-      api(typer).setIntent('edit');
-      typer.editor.update((tx) => {
-        tx.selection.set({ anchor: point(1, [1, 1]), focus: point(1, [1, 1]) });
-        tx.break.insert();
-      });
-      deliver(typer, decider);
-      stages.given = leaves(decider);
-      api(decider).setIntent('edit');
-      decider.editor.update(remove);
-      stages.removed = leaves(decider);
-      record(
-        `a cross-block replacement given back, then ${removed} removed`,
-        stages
-      );
-      assert.deepEqual(stages, {
-        given: ['a', 'old|delete:alice:9', 'b', 'c', 'ew|insert:alice:9'],
-        removed: expected,
-      });
+    decide('reject')(decider, 'replacement');
+    api(typer).setIntent('edit');
+    typer.editor.update((tx) => {
+      tx.selection.set({ anchor: point(1, [1, 1]), focus: point(1, [1, 1]) });
+      tx.break.insert();
     });
-  }
+    exchange(decider, typer, true);
+    converged(decider, typer);
+    record(
+      'a cross-block replacement rejected while the other client splits its inserted text',
+      leaves(decider)
+    );
+    assert.deepEqual(leaves(decider), ['a', 'old|held:alice:9', 'b', 'c', '']);
+  });
 }
 
 describe('review verdicts on two clients', () => reviewVerdictRaces(false));

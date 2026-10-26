@@ -13,6 +13,7 @@ import {
   createSeededYjsPeers,
   createYjsTestEditor,
   paragraph,
+  readPeerSelection,
   syncConnectedPeers,
 } from './support/collaboration';
 
@@ -162,4 +163,40 @@ describe('plitejs/yjs editor adapter', () => {
     });
     assert.equal(editor.read.selection(), null);
   });
+
+  it('keeps the local caret after its letter when a peer types before it', () => {
+    const [local, remote] = createSeededYjsPeers({
+      children: [paragraph('word')],
+      clientIds: ['local', 'remote'],
+    });
+    assert.ok(local);
+    assert.ok(remote);
+
+    local.editor.update.selection.set(caret([0, 0], 2));
+    remote.editor.update.text.insert('X', { at: { path: [0, 0], offset: 0 } });
+    syncConnectedPeers([local, remote]);
+
+    assert.deepEqual(readPeerSelection(local), caret([0, 0], 3));
+  });
+
+  it('moves the local caret with its line when a peer joins that line into the one before', () => {
+    const [local, remote] = createSeededYjsPeers({
+      children: [paragraph('one'), paragraph('word')],
+      clientIds: ['local', 'remote'],
+    });
+    assert.ok(local);
+    assert.ok(remote);
+
+    local.editor.update.selection.set(caret([1, 0], 2));
+    remote.editor.update.nodes.merge({ at: [1] });
+    syncConnectedPeers([local, remote]);
+
+    assert.deepEqual(readPeerSelection(local), caret([0, 0], 5));
+  });
+});
+
+const caret = (path: number[], offset: number) => ({
+  anchor: { offset, path },
+  focus: { offset, path },
+  kind: 'text' as const,
 });

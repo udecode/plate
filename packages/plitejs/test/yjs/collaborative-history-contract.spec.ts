@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import * as Y from 'yjs';
+
 import { history } from '../../src/history';
 import {
   createEditor,
@@ -9,6 +11,7 @@ import {
   defineEffect,
   defineStateField,
   type Descendant,
+  NodeApi,
   type Path,
   property,
   schema,
@@ -16,8 +19,10 @@ import {
 } from '../../src/index';
 import {
   createSeededYjsHistoryPeers,
+  createYjsPeerWithEditor,
   getPeerTopLevelTexts,
   paragraph,
+  readPeerChildren,
   syncConnectedPeers,
 } from './support/collaboration';
 import {
@@ -1134,5 +1139,105 @@ describe('plitejs/yjs collaborative history contract', () => {
       undos: 0,
     });
     assert.equal(run.observations.at(-1)?.peers.a?.plugin, 2);
+  });
+
+  describe('a formatting undo across a peer’s Enter', () => {
+    const BoldSchema = defineEditorSchema('collaborative-history-split-bold', {
+      elements: { paragraph: { content: schema.content.text() } },
+      properties: [schema.textProperty('bold', property.boolean())],
+      root: schema.content.not(schema.content.text()),
+      unknown: 'reject',
+    });
+    const createBoldEditor = () =>
+      createEditor({
+        initialValue: [paragraph('word')],
+        plugins: [BoldSchema, history()],
+      });
+    const plain = [paragraph('wo'), paragraph('rd')];
+
+    /**
+     * `a` presses Enter after "wo" while `b` bolds `from..to` of "word", both
+     * delivered in `order`; then `b` undoes the bold and syncs.
+     */
+    const boldAcrossSplit = (
+      from: number,
+      to: number,
+      order: 'a-first' | 'b-first',
+      writerFirst: boolean
+    ) => {
+      const peers = createSeededYjsHistoryPeers({
+        children: [paragraph('word')],
+        clientIds: writerFirst ? ['a', 'b'] : ['b', 'a'],
+        createEditor: createBoldEditor,
+        numericClientIds: { a: writerFirst ? 1 : 2, b: writerFirst ? 2 : 1 },
+      });
+      const [a, b] = writerFirst ? peers : [peers[1], peers[0]];
+      try {
+        b.editor.update.nodes.set(
+          { bold: true },
+          {
+            at: {
+              anchor: { path: [0, 0], offset: from },
+              focus: { path: [0, 0], offset: to },
+            },
+            match: NodeApi.isText,
+            split: true,
+          }
+        );
+        a.editor.update((tx) => {
+          tx.selection.set({
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 2 },
+            focus: { path: [0, 0], offset: 2 },
+          });
+          tx.break.insert();
+        });
+        syncConnectedPeers(order === 'a-first' ? [a, b] : [b, a]);
+        const undosAfterSplit = b.editor.read.history().undos.length;
+        b.editor.api.history.undo();
+        syncConnectedPeers([b, a]);
+        const fresh = createYjsPeerWithEditor(createBoldEditor(), {
+          children: [paragraph('seed')],
+          clientId: 'c',
+          numericClientId: 3,
+          seedUpdate: Y.encodeStateAsUpdate(a.doc),
+        });
+        const result = {
+          a: readPeerChildren(a),
+          b: readPeerChildren(b),
+          fresh: readPeerChildren(fresh),
+          undosAfterSplit,
+        };
+        fresh.cleanup();
+        return result;
+      } finally {
+        a.cleanup();
+        b.cleanup();
+      }
+    };
+
+    for (const order of ['a-first', 'b-first'] as const) {
+      for (const writerFirst of [true, false]) {
+        const ids = writerFirst ? 'a lower' : 'b lower';
+
+        it(`leaves both lines plain after undoing a bold of the whole word, ${order}, ${ids}`, () => {
+          assert.deepEqual(boldAcrossSplit(0, 4, order, writerFirst), {
+            a: plain,
+            b: plain,
+            fresh: plain,
+            undosAfterSplit: 1,
+          });
+        });
+
+        it(`keeps and undoes a bold of the moved "r", ${order}, ${ids}`, () => {
+          assert.deepEqual(boldAcrossSplit(2, 3, order, writerFirst), {
+            a: plain,
+            b: plain,
+            fresh: plain,
+            undosAfterSplit: 1,
+          });
+        });
+      }
+    }
   });
 });

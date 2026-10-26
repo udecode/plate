@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
+import { isDeepStrictEqual } from 'node:util';
 
 import {
   createEditor,
@@ -434,6 +435,34 @@ describe('a join through the document change transform', () => {
       join({ from: 2, to: 4 }),
       [p(t(''), link(t('x')), t('cd'))]
     );
+  });
+
+  it('keeps a link inserted between two joined links out of the joined link', () => {
+    const children = [p(t(''), link(t('a')), t(''), link(t('b')), t(''))];
+    const between = DocumentIndex.fromValue([link(t('x')), t('')]);
+    const joined = rootChange(children, join({ from: 6, to: 12 }));
+    const inserted = rootChange(children, (document) =>
+      RootChange.create(document, {
+        from: 10,
+        insert: between.slice(0),
+        to: 10,
+      })
+    );
+    const transformed = DocumentChange.transform(joined, inserted, {
+      children,
+    });
+    const results = [
+      throughEditor(JoinSchema, children, joined, transformed.b),
+      throughEditor(JoinSchema, children, inserted, transformed.a),
+    ];
+
+    assert.deepEqual(
+      results.map(([block]) =>
+        block.children.some((child) => isDeepStrictEqual(child, link(t('x'))))
+      ),
+      [true, true]
+    );
+    assert.deepEqual(results[0], results[1]);
   });
 
   it('keeps the joined texts apart when a mark is undone where the lines meet', () => {

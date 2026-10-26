@@ -3,7 +3,15 @@ import { describe, it } from 'node:test';
 
 import * as Y from 'yjs';
 
-import type { Descendant } from '../../src/index';
+import { history } from '../../src/history';
+import {
+  createEditor,
+  defineEditorSchema,
+  type Descendant,
+  type Point,
+  property,
+  schema,
+} from '../../src/index';
 import { string as editorString } from '../../src/testing';
 import {
   assertCanonicalYjsTrace,
@@ -11,8 +19,10 @@ import {
   connectYjsPeerAndSync,
   createSeededYjsHistoryPeers,
   createYjsHistoryPeer,
+  createYjsPeerWithEditor,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
+  FakeAwareness,
   getPeerTopLevelTexts,
   getVisibleYjsNodeAt,
   getYjsNodeAt,
@@ -41,6 +51,24 @@ const createPeers = (
   clientIds: readonly string[],
   children: readonly Descendant[] = initialValue()
 ): Peer[] => createSeededYjsHistoryPeers({ children, clientIds });
+
+// The split's cut and a letter typed at the split point follow the same
+// letter, so Yjs orders them by client id. The typing peer's lower id keeps
+// the letter on the first line.
+const createOrderedPeers = (): Peer[] =>
+  createSeededYjsHistoryPeers({
+    children: initialValue(),
+    clientIds: ['a', 'b', 'c'],
+    numericClientIds: { a: 1, b: 2, c: 3 },
+  });
+
+/** Peers where `a` holds client id `aId` and `b` the other of 1 and 2. */
+const createHelloPeers = (aId: 1 | 2): Peer[] =>
+  createSeededYjsHistoryPeers({
+    children: helloValue(),
+    clientIds: ['a', 'b', 'c'],
+    numericClientIds: { a: aId, b: 3 - aId, c: 3 },
+  });
 
 const splitParagraph = (peer: Peer): void => {
   peer.editor.update.nodes.split({
@@ -95,7 +123,181 @@ const insertTextSplitAndInsertRightText = (peer: Peer): void => {
   peer.editor.update.text.insert('b');
 };
 
+const MarkSchema = defineEditorSchema('schema:yjs-split-leaf-edge', {
+  elements: { paragraph: { content: schema.content.text() } },
+  properties: [
+    schema.textProperty('bold', property.boolean()),
+    schema.textProperty('color', property.string()),
+  ],
+  root: schema.content.not(schema.content.text()),
+  unknown: 'reject',
+});
+
+const createMarkPeers = (
+  children: readonly Descendant[],
+  { awareness }: { awareness: boolean }
+) => {
+  const errors: unknown[] = [];
+  const create = (
+    numericClientId: number,
+    seedUpdate?: Uint8Array,
+    initial = children
+  ) =>
+    createYjsPeerWithEditor(
+      createEditor({
+        initialValue: initial,
+        lifecycleErrorSink: (error) => errors.push(error.cause),
+        plugins: [MarkSchema, history()],
+      }),
+      {
+        ...(awareness ? { awareness: new FakeAwareness(numericClientId) } : {}),
+        children: initial,
+        clientId: String(numericClientId),
+        numericClientId,
+        seedUpdate,
+      }
+    );
+  const writer = create(1);
+  const peer = create(2, Y.encodeStateAsUpdate(writer.doc));
+
+  return {
+    peer,
+    peers: [writer, peer],
+    /** Each editor's value, and what a peer joining from the writer's Y.Doc shows. */
+    read: () => ({
+      errors,
+      fresh: readPeerChildren(
+        create(3, Y.encodeStateAsUpdate(writer.doc), [paragraph('seed')])
+      ),
+      peer: readPeerChildren(peer),
+      writer: readPeerChildren(writer),
+    }),
+    writer,
+  };
+};
+
+const breakAt = (peer: Peer, point: Point): void => {
+  peer.editor.update((tx) => {
+    tx.selection.set({ kind: 'text', anchor: point, focus: point });
+    tx.break.insert();
+  });
+};
+
+const settled = (expected: readonly Descendant[]) => ({
+  errors: [],
+  fresh: expected,
+  peer: expected,
+  writer: expected,
+});
+
+const redTail = (): Descendant[] => [
+  {
+    children: [{ text: 'word' }, { color: 'red', text: ' tail' }],
+    type: 'paragraph',
+  },
+];
+
+const boldName = (): Descendant[] => [
+  {
+    children: [
+      { text: 'Ada and ' },
+      { bold: true, text: 'Lin' },
+      { text: ' edit.' },
+    ],
+    type: 'paragraph',
+  },
+];
+
+const leafEdgeBreaks = [
+  {
+    awareness: false,
+    children: redTail(),
+    expected: [
+      { children: [{ text: 'word' }], type: 'paragraph' },
+      { children: [{ color: 'red', text: ' tail' }], type: 'paragraph' },
+    ],
+    point: { path: [0, 0], offset: 'word'.length },
+    title: 'at the end of a leaf before a marked leaf',
+  },
+  {
+    awareness: false,
+    children: redTail(),
+    expected: [
+      { children: [{ text: 'word' }], type: 'paragraph' },
+      { children: [{ color: 'red', text: ' tail' }], type: 'paragraph' },
+    ],
+    point: { path: [0, 1], offset: 0 },
+    title: 'at the start of a marked leaf',
+  },
+  {
+    awareness: true,
+    children: boldName(),
+    expected: [
+      {
+        children: [{ text: 'Ada and ' }, { bold: true, text: 'Lin' }],
+        type: 'paragraph',
+      },
+      { children: [{ text: ' edit.' }], type: 'paragraph' },
+    ],
+    point: { path: [0, 1], offset: 'Lin'.length },
+    title: 'at the end of a bold word with awareness on (plate#5278)',
+  },
+  {
+    awareness: true,
+    children: boldName(),
+    expected: [
+      { children: [{ text: 'Ada and ' }], type: 'paragraph' },
+      {
+        children: [{ bold: true, text: 'Lin' }, { text: ' edit.' }],
+        type: 'paragraph',
+      },
+    ],
+    point: { path: [0, 1], offset: 0 },
+    title: 'at the start of a bold word with awareness on (plate#5278)',
+  },
+] as const;
+
 describe('plitejs/yjs split_node collaboration contract', () => {
+  for (const {
+    awareness,
+    children,
+    expected,
+    point,
+    title,
+  } of leafEdgeBreaks) {
+    it(`stores both lines of an Enter ${title}`, () => {
+      const { peers, read, writer } = createMarkPeers(children, { awareness });
+
+      breakAt(writer, point);
+      syncConnectedPeers(peers);
+
+      assert.deepEqual(read(), settled(expected));
+    });
+  }
+
+  for (const order of ['writer-first', 'peer-first'] as const) {
+    it(`keeps a peer's typing beside an Enter after a bold word, ${order} (plate#5278)`, () => {
+      const { peer, peers, read, writer } = createMarkPeers(boldName(), {
+        awareness: true,
+      });
+
+      breakAt(writer, { path: [0, 1], offset: 'Lin'.length });
+      peer.editor.update.text.insert('U', { at: { path: [0, 0], offset: 0 } });
+      syncConnectedPeers(order === 'writer-first' ? peers : [peer, writer]);
+
+      assert.deepEqual(
+        read(),
+        settled([
+          {
+            children: [{ text: 'UAda and ' }, { bold: true, text: 'Lin' }],
+            type: 'paragraph',
+          },
+          { children: [{ text: ' edit.' }], type: 'paragraph' },
+        ])
+      );
+    });
+  }
+
   it('applies a local offline public split as a canonical change', () => {
     const peer = createPeer('b');
     const leftText = getYjsNodeAt(peer, [0, 0]);
@@ -228,7 +430,7 @@ describe('plitejs/yjs split_node collaboration contract', () => {
   });
 
   it('preserves a concurrent remote insertion when an offline public split reconnects', () => {
-    const peers = createPeers(['a', 'b', 'c']);
+    const peers = createOrderedPeers();
     const [a, b] = peers;
 
     disconnectYjsPeer(b);
@@ -255,46 +457,48 @@ describe('plitejs/yjs split_node collaboration contract', () => {
     assertPeerTexts(peers, ['alph', 'abeta']);
   });
 
-  it('preserves a remote split when an offline local split was undone before reconnect', () => {
-    const peers = createPeers(['a', 'b', 'c'], helloValue());
-    const [a, b] = peers;
+  for (const aId of [1, 2] as const) {
+    it(`preserves a remote split when an offline local split was undone before reconnect, a holding client id ${aId}`, () => {
+      const peers = createHelloPeers(aId);
+      const [a, b] = peers;
 
-    disconnectYjsPeer(a);
-    splitHelloParagraph(a);
-    undoHistoryPeer(a);
-    assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
+      disconnectYjsPeer(a);
+      splitHelloParagraph(a);
+      undoHistoryPeer(a);
+      assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
 
-    splitHelloParagraph(b);
-    syncConnectedPeers(peers);
-    assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
-    assert.deepEqual(getPeerTopLevelTexts(b), ['Hello ', 'world!']);
+      splitHelloParagraph(b);
+      syncConnectedPeers(peers);
+      assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
+      assert.deepEqual(getPeerTopLevelTexts(b), ['Hello ', 'world!']);
 
-    connectYjsPeerAndSync(a, peers);
+      connectYjsPeerAndSync(a, peers);
 
-    assertPeerTexts(peers, ['Hello ', 'world!']);
-  });
+      assertPeerTexts(peers, ['Hello ', 'world!']);
+    });
 
-  it('replays an offline split redo onto the remote split boundary after reconnect', () => {
-    const peers = createPeers(['a', 'b', 'c'], helloValue());
-    const [a, b] = peers;
+    it(`replays an offline split redo onto the remote split boundary after reconnect, a holding client id ${aId}`, () => {
+      const peers = createHelloPeers(aId);
+      const [a, b] = peers;
 
-    disconnectYjsPeer(a);
-    splitHelloParagraph(a);
-    undoHistoryPeer(a);
-    assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
+      disconnectYjsPeer(a);
+      splitHelloParagraph(a);
+      undoHistoryPeer(a);
+      assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
 
-    appendExclamationToFirstParagraph(b);
-    syncConnectedPeers(peers);
-    splitHelloParagraph(b);
-    syncConnectedPeers(peers);
-    assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
-    assert.deepEqual(getPeerTopLevelTexts(b), ['Hello ', 'world!!']);
+      appendExclamationToFirstParagraph(b);
+      syncConnectedPeers(peers);
+      splitHelloParagraph(b);
+      syncConnectedPeers(peers);
+      assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
+      assert.deepEqual(getPeerTopLevelTexts(b), ['Hello ', 'world!!']);
 
-    connectYjsPeerAndSync(a, peers);
-    redoHistoryPeerAndSync(a, peers);
+      connectYjsPeerAndSync(a, peers);
+      redoHistoryPeerAndSync(a, peers);
 
-    assertPeerTexts(peers, ['Hello ', 'world!!']);
-  });
+      assertPeerTexts(peers, ['Hello ', 'world!!']);
+    });
+  }
 
   it('does not absorb a later unrelated paragraph that matches the offline undo suffix', () => {
     const peers = createPeers(['a', 'b', 'c'], helloValue());
@@ -318,7 +522,7 @@ describe('plitejs/yjs split_node collaboration contract', () => {
   });
 
   it('undoes and redoes only the local split after reconnect', () => {
-    const peers = createPeers(['a', 'b', 'c']);
+    const peers = createOrderedPeers();
     const [a, b] = peers;
 
     disconnectYjsPeer(b);
@@ -408,13 +612,13 @@ describe('plitejs/yjs split_node collaboration contract', () => {
     syncConnectedPeers(peers);
 
     connectYjsPeerAndSync(b, peers);
-    assertPeerTexts(peers, ['alph!', 'abeta']);
+    assertPeerTexts(peers, ['alph', 'abeta!']);
 
     undoHistoryPeerAndSync(b, peers);
-    assertPeerTexts(peers, ['alph!abeta']);
+    assertPeerTexts(peers, ['alphabeta!']);
 
     redoHistoryPeerAndSync(b, peers);
-    assertPeerTexts(peers, ['alph!', 'abeta']);
+    assertPeerTexts(peers, ['alph', 'abeta!']);
   });
 
   it('keeps a retyped child type in the stored document after its parent splits', () => {

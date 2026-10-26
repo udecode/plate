@@ -17,10 +17,11 @@ import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import {
   createVirtualYjsMovePlaceholder,
   createYjsNodes,
-  getYjsTextContent,
   hideYjsNode,
   removeYjsChild,
+  withYjsWrite,
 } from '../../src/yjs/core/document';
+import { yjsTextContent } from '../../src/yjs/core/text-runs';
 import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
@@ -147,18 +148,22 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
     const [wrong] = createYjsNodes([{ text: 'wrong' }]);
     const [right] = createYjsNodes([{ text: 'right' }]);
 
-    hideYjsNode(wrong);
-    hideYjsNode(right);
+    withYjsWrite(root, (write) => {
+      hideYjsNode(write, wrong);
+      hideYjsNode(write, right);
+    });
     root.insert(0, [parent]);
     parent.insert(0, [wrong, right]);
 
-    removeYjsChild(root, parent, 0, { text: 'right' });
+    withYjsWrite(root, (write) =>
+      removeYjsChild(write, parent, 0, { text: 'right' })
+    );
 
     assert.deepEqual(
       parent
         .toArray()
         .filter((node): node is Y.XmlText => node instanceof Y.XmlText)
-        .map(getYjsTextContent),
+        .map(yjsTextContent),
       ['wrong']
     );
   });
@@ -172,12 +177,16 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
 
     wrong.insert(0, createYjsNodes([{ text: 'wrong' }]));
     right.insert(0, createYjsNodes([{ text: 'right' }]));
-    hideYjsNode(wrong);
-    hideYjsNode(right);
+    withYjsWrite(root, (write) => {
+      hideYjsNode(write, wrong);
+      hideYjsNode(write, right);
+    });
     root.insert(0, [parent]);
     parent.insert(0, [wrong, right]);
 
-    removeYjsChild(root, parent, 0, paragraph('right'));
+    withYjsWrite(root, (write) =>
+      removeYjsChild(write, parent, 0, paragraph('right'))
+    );
 
     assert.deepEqual(
       parent
@@ -187,7 +196,7 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
           node
             .toArray()
             .filter((child): child is Y.XmlText => child instanceof Y.XmlText)
-            .map(getYjsTextContent)
+            .map(yjsTextContent)
             .join('')
         ),
       ['wrong']
@@ -202,15 +211,18 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
     const wrong = yParagraph();
     const right = yParagraph();
 
-    root.insert(0, [parent]);
-    parent.insert(0, [movedText]);
     wrong.insert(0, createYjsNodes([{ text: 'wrong' }]));
-    right.insert(0, [createVirtualYjsMovePlaceholder(movedText)]);
-    hideYjsNode(wrong);
-    hideYjsNode(right);
-    parent.insert(1, [wrong, right]);
+    withYjsWrite(root, (write) => {
+      right.insert(0, [createVirtualYjsMovePlaceholder(write, movedText)]);
+      hideYjsNode(write, wrong);
+      hideYjsNode(write, right);
+    });
+    root.insert(0, [parent]);
+    parent.insert(0, [movedText, wrong, right]);
 
-    removeYjsChild(root, parent, 0, paragraph('right'));
+    withYjsWrite(root, (write) =>
+      removeYjsChild(write, parent, 0, paragraph('right'))
+    );
 
     assert.deepEqual(
       parent
@@ -220,7 +232,7 @@ describe('plitejs/yjs remove_node collaboration contract', () => {
           node
             .toArray()
             .filter((child): child is Y.XmlText => child instanceof Y.XmlText)
-            .map(getYjsTextContent)
+            .map(yjsTextContent)
             .join('')
         ),
       ['wrong']

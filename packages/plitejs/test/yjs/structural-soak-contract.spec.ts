@@ -685,7 +685,9 @@ describe('plitejs/yjs structural soak contracts', () => {
 
     setConnected(peers, 'a', true);
 
-    assertPeerTopLevelTexts(allPeers(peers), ['Hello world!', 'block 2']);
+    // Peer a's offline move and peer b's unwrap each give "Hello world!" a
+    // place in the root. The place that comes last in the document shows it.
+    assertPeerTopLevelTexts(allPeers(peers), ['block 2', 'Hello world!']);
   });
 
   it('exports selection after structural unwrap only when the Yjs target is text', () => {
@@ -794,9 +796,11 @@ describe('plitejs/yjs structural soak contracts', () => {
     connectAll(peers);
     runCommand(peers, 'a', reconcilePeer);
 
+    // A split keeps its letters, so peer b's offline delete of "Hello" also
+    // removes the "llo" that c split onto its own line.
     assertPeerTopLevelTexts(allPeers(peers), [
       'block 2',
-      'llo',
+      '',
       '  Ken',
       'world!',
     ]);
@@ -1024,13 +1028,9 @@ describe('plitejs/yjs structural soak contracts', () => {
 
     assertNoNestedParagraphs(allPeers(peers));
     assertDocumentHasTextBoundary(allPeers(peers));
-    assertPeerTopLevelTexts(allPeers(peers), [
-      ' world!',
-      'l',
-      'o ',
-      '',
-      'world!',
-    ]);
+    // A split keeps its letters, so peer a's offline delete of "Hello" also
+    // removes the "l" and "o" that c and d split onto their own lines.
+    assertPeerTopLevelTexts(allPeers(peers), [' world!', '', '', '', '']);
   });
 
   it('keeps remote wrap and unwrap from dropping split-merge text prefixes', () => {

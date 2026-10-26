@@ -31,9 +31,9 @@ import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import { lowerDocumentChangeToYjs } from '../../src/yjs/core/change-bridge';
 import {
   createYjsNode,
-  getYjsNode,
   insertYjsChild,
   readPliteValueFromYjs,
+  withYjsWrite,
 } from '../../src/yjs/core/document';
 import { YjsUpdatePolicy } from '../../src/yjs/core/editor-adapter';
 import { yjs } from '../../src/yjs/core/plugin';
@@ -49,6 +49,7 @@ import {
   createYjsTestEditor,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
+  getVisibleYjsNode,
   getYjsRoot,
   getYjsTrace,
   paragraph,
@@ -973,9 +974,9 @@ describe('plitejs/yjs remote import contract', () => {
     assert.ok(peer);
 
     const root = getYjsRoot(peer);
-    const element = getYjsNode(root, [0]);
-    const text = getYjsNode(root, [0, 0]);
-    const sibling = getYjsNode(root, [1]);
+    const element = getVisibleYjsNode(root, [0]);
+    const text = getVisibleYjsNode(root, [0, 0]);
+    const sibling = getVisibleYjsNode(root, [1]);
     const change = DocumentChange.between(
       { children: before },
       { children: after }
@@ -985,9 +986,9 @@ describe('plitejs/yjs remote import contract', () => {
       tx.changes.apply(change);
     });
 
-    assert.equal(getYjsNode(root, [0]), element);
-    assert.equal(getYjsNode(root, [0, 0]), text);
-    assert.equal(getYjsNode(root, [1]), sibling);
+    assert.equal(getVisibleYjsNode(root, [0]), element);
+    assert.equal(getVisibleYjsNode(root, [0, 0]), text);
+    assert.equal(getVisibleYjsNode(root, [1]), sibling);
     assert.deepEqual(readPliteValueFromYjs(root), after);
   });
 
@@ -1231,7 +1232,7 @@ describe('plitejs/yjs remote import contract', () => {
     Y.applyUpdate(sourceDoc, Y.encodeStateAsUpdate(targetDoc));
 
     const sourceRoot = sourceDoc.getXmlElement(rootName);
-    const sourceElement = getYjsNode(sourceRoot, [0]);
+    const sourceElement = getVisibleYjsNode(sourceRoot, [0]);
 
     assert.ok(sourceElement instanceof Y.XmlElement);
 
@@ -1294,21 +1295,25 @@ describe('plitejs/yjs remote import contract', () => {
     const remote = paragraph('remote');
     const local = paragraph('local');
 
-    insertYjsChild(root, root, 0, createYjsNode(remote));
+    withYjsWrite(root, (write) =>
+      insertYjsChild(write, root, 0, createYjsNode(remote))
+    );
     const change = DocumentChange.between(
       { children: [] },
       { children: [local] }
     );
 
     assert.throws(() =>
-      lowerDocumentChangeToYjs({
-        base: [],
-        change,
-        expected: [local],
-        knownYjsValue: [],
-        root: 'main',
-        yRoot: root,
-      })
+      withYjsWrite(root, (write) =>
+        lowerDocumentChangeToYjs({
+          base: [],
+          change,
+          expected: [local],
+          knownYjsValue: [],
+          root: 'main',
+          write,
+        })
+      )
     );
     assert.deepEqual(readPliteValueFromYjs(root), [remote]);
   });
@@ -1319,16 +1324,18 @@ describe('plitejs/yjs remote import contract', () => {
     const canonicalBase = [paragraph('alpha'), paragraph('')];
     const expected = [paragraph('alpha')];
 
-    insertYjsChild(
-      root,
-      root,
-      0,
-      createYjsNode({
-        children: [{ text: 'al' }, { text: 'pha' }],
-        type: 'paragraph',
-      })
-    );
-    insertYjsChild(root, root, 1, createYjsNode(paragraph('')));
+    withYjsWrite(root, (write) => {
+      insertYjsChild(
+        write,
+        root,
+        0,
+        createYjsNode({
+          children: [{ text: 'al' }, { text: 'pha' }],
+          type: 'paragraph',
+        })
+      );
+      insertYjsChild(write, root, 1, createYjsNode(paragraph('')));
+    });
 
     const change = DocumentChange.between(
       { children: canonicalBase },
@@ -1336,24 +1343,26 @@ describe('plitejs/yjs remote import contract', () => {
     );
 
     assert.doesNotThrow(() =>
-      lowerDocumentChangeToYjs({
-        base: canonicalBase,
-        canonicalize: (children) =>
-          children.map((node) =>
-            ElementApi.isElement(node) && node.type === 'paragraph'
-              ? paragraph(
-                  node.children
-                    .map((child) => ('text' in child ? child.text : ''))
-                    .join('')
-                )
-              : node
-          ),
-        change,
-        expected,
-        knownYjsValue: canonicalBase,
-        root: 'main',
-        yRoot: root,
-      })
+      withYjsWrite(root, (write) =>
+        lowerDocumentChangeToYjs({
+          base: canonicalBase,
+          canonicalize: (children) =>
+            children.map((node) =>
+              ElementApi.isElement(node) && node.type === 'paragraph'
+                ? paragraph(
+                    node.children
+                      .map((child) => ('text' in child ? child.text : ''))
+                      .join('')
+                  )
+                : node
+            ),
+          change,
+          expected,
+          knownYjsValue: canonicalBase,
+          root: 'main',
+          write,
+        })
+      )
     );
     assert.deepEqual(readPliteValueFromYjs(root), expected);
   });
@@ -1455,8 +1464,8 @@ describe('plitejs/yjs remote import contract', () => {
     assert.ok(innerTarget10);
 
     const root = getYjsRoot(source);
-    const sectionNode = getYjsNode(root, [0]);
-    const text = getYjsNode(root, [0, 0, 0]);
+    const sectionNode = getVisibleYjsNode(root, [0]);
+    const text = getVisibleYjsNode(root, [0, 0, 0]);
 
     assert.ok(sectionNode instanceof Y.XmlElement);
     assert.ok(text instanceof Y.XmlText);
@@ -1516,7 +1525,7 @@ describe('plitejs/yjs remote import contract', () => {
     assert.ok(peer);
 
     const root = getYjsRoot(peer);
-    const paragraphNode = getYjsNode(root, [96]);
+    const paragraphNode = getVisibleYjsNode(root, [96]);
 
     assert.ok(paragraphNode instanceof Y.XmlElement);
 
@@ -1547,7 +1556,7 @@ describe('plitejs/yjs remote import contract', () => {
     assert.ok(peer);
 
     const root = getYjsRoot(peer);
-    const paragraphNode = getYjsNode(root, [0]);
+    const paragraphNode = getVisibleYjsNode(root, [0]);
 
     assert.ok(paragraphNode instanceof Y.XmlElement);
 

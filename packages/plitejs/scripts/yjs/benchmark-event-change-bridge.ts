@@ -7,11 +7,12 @@ import { performance } from 'node:perf_hooks';
 import * as Y from 'yjs';
 
 import { failInvariant } from '../../src/internal/fail-invariant';
+import { yjsAddressesOf, yjsNodeOf } from '../../src/yjs/core/addresses';
 import { setYjsAttribute } from '../../src/yjs/core/attributes';
 import {
   createYjsNode,
-  getYjsNode,
   readPliteValueFromYjs,
+  withYjsWrite,
 } from '../../src/yjs/core/document';
 import {
   type CapturedYjsEventBatch,
@@ -358,10 +359,13 @@ const propertyContexts = [
       before.map((node) => createYjsNode(node))
     );
     const bridge = new YjsEventChangeBridge(root, 'main', before);
-    const affectedNode = getYjsNode(
-      root,
-      mode === 'text' ? [affected, 0] : [affected]
-    );
+    const addresses = yjsAddressesOf(root, before);
+    const block =
+      addresses.elementAt([affected]) ??
+      failInvariant('Expected the affected block');
+    const affectedNode =
+      mode === 'text' ? yjsNodeOf(addresses.childAt(block, 0)) : block;
+    assert.ok(affectedNode, 'Expected the affected node');
     if (mode === 'text') {
       assert.ok(affectedNode instanceof Y.XmlText);
       affectedNode.insert(0, '!');
@@ -369,6 +373,8 @@ const propertyContexts = [
       setYjsAttribute(affectedNode, 'rank', 2);
     }
     const batch = {
+      deletedCuts: [],
+      deletedIds: [],
       deletedTextTargets: [],
       events: [
         {
@@ -378,13 +384,17 @@ const propertyContexts = [
           keys: mode === 'text' ? [] : ['rank'],
         },
       ],
+      deletedChildren: new Map(),
+      visibilityBefore: new Map(),
     } satisfies CapturedYjsEventBatch;
     assert.ok(
       batch.events[0].target === affectedNode,
       'Property-context events must target the edited node'
     );
     unrelatedReads = 0;
-    const result = bridge.prepareRemote(batch);
+    const result = withYjsWrite(root, (write) =>
+      bridge.prepareRemote(write, batch)
+    );
     const observedReads = unrelatedReads;
     assert.equal(result.kind, 'change');
     if (result.kind !== 'change') {
@@ -407,7 +417,11 @@ const propertyContexts = [
     const samples: number[] = [];
     for (let sample = 0; sample <= sampleCount; sample++) {
       const started = performance.now();
-      assert.equal(timedBridge.prepareRemote(batch).kind, 'change');
+      assert.equal(
+        withYjsWrite(root, (write) => timedBridge.prepareRemote(write, batch))
+          .kind,
+        'change'
+      );
       const elapsed = performance.now() - started;
       if (sample > 0) samples.push(elapsed);
     }

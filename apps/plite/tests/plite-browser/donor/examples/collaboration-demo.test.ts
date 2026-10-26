@@ -16,7 +16,154 @@ const selectEditorPoint = (editor: Locator, offset: number) =>
     handle.selectRange({ anchor: point, focus: point });
   }, [offset, BROWSER_HANDLE_KEY] as const);
 
+const selectEditorRange = (editor: Locator, start: number, end: number) =>
+  editor.evaluate((element: HTMLElement, [from, to, key]) => {
+    const handle = (element as Record<string, any>)[key];
+
+    if (!handle?.selectRange) {
+      throw new Error("Missing Plite browser handle");
+    }
+
+    handle.selectRange({
+      anchor: { offset: from, path: [0, 0] },
+      focus: { offset: to, path: [0, 0] },
+    });
+  }, [start, end, BROWSER_HANDLE_KEY] as const);
+
+const readEditor = (editor: Locator) =>
+  editor.evaluate((element: HTMLElement, key) => {
+    const handle = (element as Record<string, any>)[key];
+
+    if (!handle?.getBlockTexts || !handle?.getValue) {
+      throw new Error("Missing Plite browser handle");
+    }
+
+    return {
+      blocks: handle.getBlockTexts() as string[],
+      children: handle.getValue().children as Array<{
+        children: Array<{ bold?: boolean; text?: string }>;
+      }>,
+    };
+  }, BROWSER_HANDLE_KEY);
+
 test.describe("Plate collaboration registry example", () => {
+  for (const [edge, arrow, first, second] of [
+    ["end", "ArrowRight", "Ada and Lin", " edit independent documents through a local Yjs room."],
+    ["start", "ArrowLeft", "Ada and ", "Lin edit independent documents through a local Yjs room."],
+  ] as const) {
+    test(`Enter at the ${edge} of a bold word splits the line in both peers [plate#5278]`, async ({
+      page,
+    }) => {
+      const runtimeErrors = recordBrowserRuntimeErrors(page);
+      const adaEditor = page.getByRole("textbox", {
+        name: "Ada collaborative editor",
+      });
+      const linEditor = page.getByRole("textbox", {
+        name: "Lin collaborative editor",
+      });
+      const readBoth = async () => {
+        const [ada, lin] = await Promise.all([
+          readEditor(adaEditor),
+          readEditor(linEditor),
+        ]);
+
+        return {
+          ada: ada.blocks,
+          lin: lin.blocks,
+          same: JSON.stringify(ada.children) === JSON.stringify(lin.children),
+        };
+      };
+
+      try {
+        await page.goto("/examples/plite/collaboration-demo");
+        await expect(page.locator('[contenteditable="true"]')).toHaveCount(2);
+
+        await selectEditorRange(adaEditor, 8, 11);
+        await adaEditor.press("ControlOrMeta+b");
+        await expect
+          .poll(async () => {
+            const [line] = (await readEditor(linEditor)).children;
+
+            return line.children.some(
+              (leaf) => leaf.text === "Lin" && leaf.bold === true
+            );
+          })
+          .toBe(true);
+
+        await adaEditor.press(arrow);
+        await adaEditor.press("Enter");
+
+        await expect
+          .poll(readBoth)
+          .toEqual({ ada: [first, second], lin: [first, second], same: true });
+
+        await selectEditorPoint(linEditor, 0);
+        await linEditor.type("U");
+
+        await expect
+          .poll(readBoth)
+          .toEqual({ ada: [`U${first}`, second], lin: [`U${first}`, second], same: true });
+        await expect(page.getByText("Collaboration import failed")).toHaveCount(0);
+
+        runtimeErrors.assertNone();
+      } finally {
+        runtimeErrors.stop();
+      }
+    });
+  }
+
+  test("Enter mid-word keeps a letter an offline peer typed after the split in the second line", async ({
+    page,
+  }) => {
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+    const adaEditor = page.getByRole("textbox", {
+      name: "Ada collaborative editor",
+    });
+    const linEditor = page.getByRole("textbox", {
+      name: "Lin collaborative editor",
+    });
+    const linCard = page.locator('[data-peer="lin"]');
+    const readBoth = async () => {
+      const [ada, lin] = await Promise.all([
+        readEditor(adaEditor),
+        readEditor(linEditor),
+      ]);
+
+      return { ada: ada.blocks, lin: lin.blocks };
+    };
+    const word = INITIAL_TEXT.indexOf("independent");
+
+    try {
+      await page.goto("/examples/plite/collaboration-demo");
+      await expect(page.locator('[contenteditable="true"]')).toHaveCount(2);
+
+      await linCard.getByRole("button", { name: "Disconnect" }).click();
+      await expect(linCard.locator("[data-peer-status]")).toHaveAttribute(
+        "data-peer-status",
+        "disconnected"
+      );
+
+      await selectEditorPoint(adaEditor, word + 5);
+      await adaEditor.press("Enter");
+      await selectEditorPoint(linEditor, word + 7);
+      await linEditor.type("X");
+
+      await linCard.getByRole("button", { name: "Reconnect" }).click();
+
+      const lines = [
+        INITIAL_TEXT.slice(0, word + 5),
+        `${INITIAL_TEXT.slice(word + 5, word + 7)}X${INITIAL_TEXT.slice(word + 7)}`,
+      ];
+
+      await expect.poll(readBoth).toEqual({ ada: lines, lin: lines });
+      await expect(page.getByText("Collaboration import failed")).toHaveCount(0);
+
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+
   test("proves independent peers, cursors, reconnect, history, schema, and teardown", async ({
     page,
   }) => {
