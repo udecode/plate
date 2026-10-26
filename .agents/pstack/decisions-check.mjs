@@ -408,7 +408,7 @@ if (args[0] === 'chips') {
       process.exit(2);
     }
     // The shell may have moved out of the session's folder, which the runtime process keeps.
-    const { archive, remove, report } = cleanupOf(tasks, sessions, here, [invokedFrom, runtimeFolder()]);
+    const { archive, remove, report, kept } = cleanupOf(tasks, sessions, here, [invokedFrom, runtimeFolder()]);
     if (!report.length) {
       console.info('Nothing to clean up: no landed task has an idle card session or a worktree left.');
       process.exit(0);
@@ -416,6 +416,7 @@ if (args[0] === 'chips') {
     const out = [];
     if (archive.length) out.push(`Archive (${archive.length}), with the session tool, each idle card session whose task landed, then save the session list again and rerun chips cleanup:`, ...archive.map((session) => `  ${session.sessionId}  ${session.title}`));
     if (remove.length) out.push(`Remove (${remove.length}) the worktrees of landed tasks whose sessions are archived:`, `  node .agents/skills/cleanup/scripts/scan.mjs --repo . --remove ${remove.join(' ')}`);
+    if (kept.length) out.push(`Keep (${kept.length}) each idle card session that holds a card nobody has started, because archiving it drops that card; a later cleanup archives it once the card is started or a week old:`, ...kept.map((line) => `  ${line}`));
     out.push(`Report (${report.length}):`, ...report.map((line) => `  ${line}`));
     console.info(out.join('\n'));
     process.exit(0);

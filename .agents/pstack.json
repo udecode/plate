@@ -103,7 +103,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "dd8ff4af40ac4da0d4f8f98ee177cebb97c9d063b7542fcab4f530a81e86a53b",
+    "block": "af99f775f2e6c717cc00a1c7efef5f7b457dcdf61a843f9105f52bf3ebb19d8f",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
@@ -116,19 +116,19 @@
       ".agents/pstack/reread.mjs": "398a9f0f0d300ee59e37618308f6ff9801f562167d18051d38edd15c6f866276",
       ".agents/pstack/seats.mjs": "4e121f4ae04aee6c5112264cb4663e598c97a1fd734f94e052a207be1c2baf87",
       ".agents/pstack/title.mjs": "2c530dd09c7f545393939aa7446f362c8fb7ffc9ea4a3f0f597d31c302bbdc84",
-      ".agents/pstack/decisions-check.mjs": "b57b04229a7566937b8e2f06f9a870dee4b4350e8d8e121ab287cdd8077c850d",
+      ".agents/pstack/decisions-check.mjs": "15778e9c49991debb9fdd3876f0d1b0a3fc562e0c36d4a0301677f19d5a30d2a",
       ".agents/pstack/levels.mjs": "4b36a62ce038b7448050956707364f250754252a6903cffc239959c5b9df8aab",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
       ".agents/pstack/page-stop.mjs": "8ebbb290e3e8f58d87d132b35136007fb840b60399df2616a3353c6721ac84e0",
       ".agents/pstack/plan-page.mjs": "e829e6dbb2880de7e8ed51e8e199909d75c5e3a803ad5af213bb43928aa724d0",
       ".agents/pstack/status.mjs": "3bd6d468ce14bb02267824c1b10d898923804e0c13ba2ef7fc3388d793b0164e",
-      ".agents/pstack/tasks.mjs": "09fb5eb2b7de01dd9165522305c9fe599cde636f6aaf1d2304081c1e3d771f58",
+      ".agents/pstack/tasks.mjs": "fdaaa23ebf8d6a4bd282aef10d07a6b9f4b9eb26c34818b0abb747a19d17891d",
       ".agents/pstack/guard.mjs": "1eb48cd18b9f8f790651b52b1a8fe2e4ad02cecc0dd261209b7e941c211ee6df",
       ".agents/pstack/land.mjs": "24b68abcd4972d604cf5fa19cff82ba3ea897febfce0b7f3bf96f32e41b99717",
       ".agents/pstack/review.mjs": "a82ef79dc43a6acadadee5f4e8b1938c897333ea46c43ef854b2d9c729168737",
       ".agents/pstack/setup.mjs": "094c2d955d1f546293beafbb8127af411b32395501a7ddb160712cfd019940ef",
       ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
-      ".agents/pstack/rules/chips.md": "2ed09007cade253a5a800b91914b042a6002a876f4b3d5d30dafba412216d772",
+      ".agents/pstack/rules/chips.md": "2c907faf6ca07e0e579d69ff1c1b48883619058d0140021b63418a6feaf2ce9a",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
       ".agents/pstack/rules/land.md": "626e8a703cf66a661d97b7b870e53b1b4baa358eacd69812b608704ecb23f8dd",
       ".agents/pstack/rules/linked.md": "414bb3823bc3719af5303941eb5a028092e815dacbe61ba83ce95697c99dae70",
@@ -140,7 +140,7 @@
       ".agents/pstack/rules/time.md": "ec77ed202071a8d9dbffd0598c83ed628b27e04cedf4ae0198b873e203ab6f8f",
       ".agents/pstack/rules/title.md": "0a64b90ec1d4440adefe17a32044b72f9f8ab57a4807ccf70d506e2e3c709bec"
     },
-    "source": "324736ded170c2e5a13f590a4aa82b5d73982dfe"
+    "source": "df9115113df380c0b511a02289ea12ce7ae14cdc"
   },
   "pageTopic": {
     "field": "review_scopes",

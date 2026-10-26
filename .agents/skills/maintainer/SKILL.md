@@ -213,7 +213,9 @@ Default is read, classify, route, patch local files when the execution owner
 allows, and hand off. A comment, label, close, reopen, review, release or other
 public write needs the active request's explicit authority and otherwise waits
 as a draft, as `AGENTS.md`'s Messages rule says; loading this skill creates no
-authority. Credentials, payment, 2FA, captcha and account signup stop for the
+authority. The one standing authority is the Triage playbook's Drafts, which
+posts a triage comment on the owner's word of 2026-10-26 and never a label,
+close or reopen. Credentials, payment, 2FA, captcha and account signup stop for the
 owner, as its Git and publication rules say, and security disclosure wording
 waits for maintainer approval.
 
