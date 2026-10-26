@@ -25,6 +25,7 @@ Rejected, and why:
 | Highlights behind the `lowlight` slot, with Lowlight as fallback | Lowlight is about a tenth of a key, so a free highlighter saves at most about 11%, under the 20% gate, and the kit would ship two engines. Reopen when Lowlight is over a fifth of a key on a quiet host. |
 | Resuming Lowlight from a saved line state | highlight.js 11's public `highlight()` takes no continuation. Reopen if highlight.js exposes resumable state. |
 | Merging equal adjacent styles | Saved 0% of ranges on the demo and 1.8% on platejs source, and Highlights merges colors, which needs the theme while tokenizing. Reopen if Plate themes with inline colors. |
+| Auto language detection, live or in a worker | Ran every registered grammar over the whole block on each edit, 11.6 to 17.1 s per 1,000-line pass with 192 grammars in Bun, and guessed CSS for TypeScript. A worker would leave the block uncolored until it answered. Cut on 2026-10-26 at the owner's word. Reopen as a guess-once feature that saves the language, if users ask for it. |
 
 ## Rules
 
@@ -59,12 +60,30 @@ export const CodeBlockKit = [
 ];
 ```
 
+The highlighter type the syntax plugin accepts has no detection method, so any object with `highlight`, `listLanguages` and `registered` fits.
+
+```ts
+// packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts
+export type CodeHighlightLowlight = {
+  highlight(
+    language: string,
+    value: string,
+    options?: Readonly<{ prefix?: string | null }> | null
+  ): HighlightResult;
+  listLanguages(): string[];
+  registered(aliasOrName: string): boolean;
+};
+```
+
 ## Main changes
 
 - Code insertion constructs the final schema node, and the syntax reader no longer mutates the supplied highlighter.
+- The syntax reader no longer calls Lowlight's `highlightAuto`. A block whose language is `auto`, set on the block or through `defaultLanguage`, takes the unregistered-language path, which keeps its text, paints no syntax and, in development, warns once per text change.
+- Both copied language pickers drop the Auto entry, so new blocks cannot choose it.
 
 ## Open work
 
 - No browser device, IME, assistive-technology, distribution or new performance comparison; backend separation stays deferred. owner: the next code review. stop: a measured backend split proposal.
 - Since cf15725603 the syntax reader reads the block, so Plite re-projects every syntax range on each key, about 30% of a key in the 10,000-line demo. owner: task t_31c0b52b. stop: its fix lands with a contract test.
-- Auto language detection runs all 192 registered grammars over the whole block on each read. owner: decide task t_b2f9d9c5. stop: the owner keeps or cuts it.
+- `templates/**` still lists Auto until the CI template sync runs, because templates are CI output. owner: the template sync. stop: the next "sync registry and templates" commit.
+- The reader's catch checks `listLanguages()`, which misses registered aliases such as the kit's `py`, so a highlight error on an alias reports a missing language, and nothing calls the type's `registered`. owner: the next code review. stop: the catch uses `registered(language)`.

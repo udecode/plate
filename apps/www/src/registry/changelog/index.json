@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-26-remove-code-block-auto-language",
+      "href": "/registry/changelog/2026-10-26-remove-code-block-auto-language.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Remove Auto from the code block language pickers",
+      "change": {
+        "type": "source",
+        "date": "2026-10-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["code-block", "code-block-static"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-24-mermaid-pele-1-9",
       "href": "/registry/changelog/2026-10-24-mermaid-pele-1-9.json",
       "status": "draft",

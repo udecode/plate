@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-26-remove-code-block-auto-language",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-26-remove-code-block-auto-language.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Remove Auto from the code block language pickers",
+  "targets": [
+    {
+      "name": "code-block",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-static",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-lowlight.ts",
+        "apps/www/src/registry/components/editor/code-block-static.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-26-code-block-remove-auto-from-language-cd3b5793",
+      "kind": "remove",
+      "summary": "Remove the Auto language. Plain Text is now the first option in the picker, and a block saved as Auto shows plain text until someone picks its language.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block", "code-block-static"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-26",
+          "entry": "2026-10-26-remove-code-block-auto-language",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -75,26 +75,16 @@ const state = {
   root: null,
 }
 
-const measureHighlight = (kind, value, run) => {
-  const startedAt = performance.now()
-  const result = run()
-  state.highlightCalls.push({
-    durationMs: performance.now() - startedAt,
-    kind,
-    textLength: value.length,
-  })
-  return result
-}
-
 const lowlight = {
-  highlight: (language, value, options) =>
-    measureHighlight('highlight', value, () =>
-      rawLowlight.highlight(language, value, options)
-    ),
-  highlightAuto: (value, options) =>
-    measureHighlight('highlightAuto', value, () =>
-      rawLowlight.highlightAuto(value, options)
-    ),
+  highlight: (language, value, options) => {
+    const startedAt = performance.now()
+    const result = rawLowlight.highlight(language, value, options)
+    state.highlightCalls.push({
+      durationMs: performance.now() - startedAt,
+      textLength: value.length,
+    })
+    return result
+  },
   listLanguages: () => rawLowlight.listLanguages(),
   register: (...args) => rawLowlight.register(...args),
   registerAlias: (...args) => rawLowlight.registerAlias(...args),

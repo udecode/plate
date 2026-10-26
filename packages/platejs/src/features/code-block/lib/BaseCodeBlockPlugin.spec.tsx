@@ -1762,7 +1762,6 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
 const mockLowlight = createLowlight();
 const mockHighlight = spyOn(mockLowlight, 'highlight');
-const mockHighlightAuto = spyOn(mockLowlight, 'highlightAuto');
 const mockListLanguages = spyOn(mockLowlight, 'listLanguages');
 const mockRegister = spyOn(mockLowlight, 'register');
 const mockRegisterAlias = spyOn(mockLowlight, 'registerAlias');
@@ -1816,9 +1815,7 @@ const getDecorations = (
 };
 
 beforeEach(() => {
-  // Reset mocks
   mockHighlight.mockReset();
-  mockHighlightAuto.mockReset();
   mockListLanguages.mockReset();
   mockRegister.mockReset();
   mockRegisterAlias.mockReset();
@@ -2104,7 +2101,6 @@ describe('codeBlockToDecorations', () => {
   });
 
   it('returns empty decorations for plaintext language', () => {
-    // Create a code block with plaintext
     const codeBlock: CodeBlockElement = {
       children: [{ text: 'const x = 1;' }],
       language: 'plaintext',
@@ -2116,13 +2112,10 @@ describe('codeBlockToDecorations', () => {
 
     expect(result).toEqual([]);
 
-    // Lowlight highlight should not be called
     expect(mockHighlight).not.toHaveBeenCalled();
-    expect(mockHighlightAuto).not.toHaveBeenCalled();
   });
 
   it('returns decorations for specified language', () => {
-    // Mock highlight result
     mockHighlight.mockReturnValue(
       highlightResult(
         highlightText('const', ['token', 'keyword']),
@@ -2132,7 +2125,6 @@ describe('codeBlockToDecorations', () => {
       )
     );
 
-    // Create a code block with JavaScript
     const codeBlock: CodeBlockElement = {
       children: [{ text: 'const x = 1;' }],
       language: 'javascript',
@@ -2144,7 +2136,6 @@ describe('codeBlockToDecorations', () => {
 
     expect(result).toHaveLength(2);
 
-    // Check first decoration (const)
     expect(result[0]).toMatchObject({
       attributes: { className: 'token keyword' },
       range: {
@@ -2153,7 +2144,6 @@ describe('codeBlockToDecorations', () => {
       },
     });
 
-    // Check second decoration (number)
     expect(result[1]).toMatchObject({
       attributes: { className: 'token number' },
       range: {
@@ -2162,9 +2152,7 @@ describe('codeBlockToDecorations', () => {
       },
     });
 
-    // Lowlight highlight should be called with correct params
     expect(mockHighlight).toHaveBeenCalledWith('javascript', 'const x = 1;');
-    expect(mockHighlightAuto).not.toHaveBeenCalled();
   });
 
   it('reads the supplied Python grammar without mutating its registry', () => {
@@ -2193,43 +2181,11 @@ describe('codeBlockToDecorations', () => {
     );
   });
 
-  it('use auto detection when language is "auto"', () => {
-    // Mock highlight auto result
-    mockHighlightAuto.mockReturnValue(
-      highlightResult(
-        highlightText('const', ['token', 'keyword']),
-        highlightText(' x = 1;')
-      )
-    );
-
-    // Create a code block with auto language
-    const codeBlock: CodeBlockElement = {
-      children: [{ text: 'const x = 1;' }],
-      language: 'auto',
-      type: 'codeBlock',
-    };
-
-    const blockPath = [0];
-    const result = getDecorations(editor, [codeBlock, blockPath]);
-
-    expect(result).toMatchObject([
-      {
-        attributes: { className: 'token keyword' },
-        range: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 5, path: [0, 0] },
-        },
-      },
-    ]);
-  });
-
   it('use default language when no language is specified', () => {
-    // Mock highlight result
     mockHighlight.mockReturnValue(
       highlightResult(highlightText('const x = 1;'))
     );
 
-    // Create a code block with no language
     const codeBlock: CodeBlockElement = {
       children: [{ text: 'const x = 1;' }],
       type: 'codeBlock',
@@ -2238,13 +2194,10 @@ describe('codeBlockToDecorations', () => {
     const blockPath = [0];
     getDecorations(editor, [codeBlock, blockPath]);
 
-    // Lowlight highlight should be called with default language
     expect(mockHighlight).toHaveBeenCalledWith('javascript', 'const x = 1;');
-    expect(mockHighlightAuto).not.toHaveBeenCalled();
   });
 
   it('handle multiline code blocks', () => {
-    // Mock highlight result for multiline code
     mockHighlight.mockReturnValue(
       highlightResult(
         highlightText('function', ['token', 'keyword']),
@@ -2254,7 +2207,6 @@ describe('codeBlockToDecorations', () => {
       )
     );
 
-    // Create a multiline code block
     const codeBlock: CodeBlockElement = {
       children: [{ text: 'function test() {\n  return true;\n}' }],
       language: 'javascript',

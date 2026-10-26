@@ -5,7 +5,6 @@ import * as React from 'react';
 import { createCodeBlockLowlight } from '@/registry/components/editor/code-block-lowlight';
 
 const codeBlockLanguages: Array<{ label: string; value: string }> = [
-  { label: 'Auto', value: 'auto' },
   { label: 'Plain Text', value: 'plaintext' },
   { label: 'ABAP', value: 'abap' },
   { label: 'Agda', value: 'agda' },
