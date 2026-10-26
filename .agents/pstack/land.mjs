@@ -31,12 +31,15 @@
 // PSTACK_LAND_WAIT_SCALE multiplies those waits. Once the checks pass, and
 // after each clean rebase onto a moved <branch>, land.mjs records the commit
 // it would push, so a rerun with the same tree, parent, message and checks
-// pushes without running the checks again. It never force-pushes.
+// pushes without running the checks again. The lint fix and the checks hold
+// half of this machine's cores from the pool proof.mjs keeps, and wait for
+// them while other sessions hold the pool. It never force-pushes.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { availableParallelism, tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { reserve } from './proof.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]...';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
@@ -226,6 +229,7 @@ if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
   console.log('land.mjs recorded this commit in an earlier run, so it pushes without running the checks again.');
 } else {
   const changed = must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD').split('\n').filter(Boolean);
+  const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs checks');
   if (lintFix && changed.length > 0) {
     const run = spawnSync(`${lintFix} ${changed.map(quote).join(' ')}`, { shell: true, stdio: 'inherit' });
     if (run.status !== 0) fail(`${lintFix} failed on the changed files; fix them and run land.mjs again`);
@@ -238,6 +242,7 @@ if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
     const run = spawnSync(check, { shell: true, stdio: 'inherit' });
     if (run.status !== 0) fail(`check failed: ${check}; the squashed commit stays local`);
   }
+  release();
   if (dirty()) {
     fail(`the checks changed files; review them and run land.mjs again, which folds them into the commit:\n${must('status', '--short')}`);
   }
