@@ -127,8 +127,8 @@ pnpm triage check [<register>]
 | `deslop`, then `no-comments` | run on the build and again on the panel round's fixes |
 | `unslop` on the plan and playbooks | run on the playbooks after the round, and on the plan at the close |
 | `check-playbooks.mjs` | passes on the final text |
-| Workflow smokes in Claude Code and Codex | three rounds of four prompts; in the last two, every fix route ran the claim before any read of the issues, except one Claude answer that chose `next`'s text, which lacks the claim until this lands |
-| `land.mjs --check 'pnpm check --affected'` | pending |
+| Workflow smokes in Claude Code and Codex | four rounds of four prompts; in the two before the land, every fix route ran the claim before any read of the issues, except one Claude answer that chose `next`'s text; after the land, all four Codex answers ran it first, and the Claude half failed on an expired login |
+| `land.mjs --check 'pnpm check --affected'` | the claim landed as d0404fa86b with all 11 steps passing, and the reflect record and these rows landed after it |
 | chips Close | skip: this run offered no task; it only set `effort: xhigh` on t_aeb32d57 |
 | Hand drive, playtest, `plate-docs` | skip: no browser or docs page changes |
 
