@@ -139,6 +139,23 @@ describe('Playwright runtime errors', () => {
     recorder.assertNone();
   });
 
+  test('ignores the loads WebKit blocks for access control', () => {
+    const { emit, page } = createPage();
+    const recorder = recordBrowserRuntimeErrors(page);
+
+    emit(
+      'pageerror',
+      Object.assign(
+        new Error(
+          '/player.vimeo.com/cdn-cgi/challenge-platform/h/b/precursor/d2d3316b729e/a50c70d0eb7caa7c due to access control checks.'
+        ),
+        { name: 'XMLHttpRequest cannot load https', stack: '' }
+      )
+    );
+
+    recorder.assertNone();
+  });
+
   test('keeps errors thrown by the page itself', () => {
     const { emit, page } = createPage();
     const recorder = recordBrowserRuntimeErrors(page);
@@ -158,7 +175,19 @@ describe('Playwright runtime errors', () => {
           '    at onMouseMoveCapture (http://127.0.0.1:3102/_next/static/chunks/2geglbgjevq3q.js:1:237084)',
       })
     );
+    emit(
+      'pageerror',
+      Object.assign(
+        new Error(
+          'Error: Could not load embed https://player.vimeo.com/video/26689853'
+        ),
+        { name: 'Unhandled Promise Rejection', stack: '' }
+      )
+    );
 
-    expect(recorder.errors).toHaveLength(2);
+    expect(recorder.errors).toHaveLength(3);
+    expect(recorder.errors[2]).toBe(
+      'Unhandled Promise Rejection: Error: Could not load embed https://player.vimeo.com/video/26689853'
+    );
   });
 });

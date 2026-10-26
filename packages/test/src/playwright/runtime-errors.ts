@@ -7,8 +7,12 @@ export const DEFAULT_RUNTIME_ERROR_PATTERNS: readonly string[] = [
   'Cannot resolve a DOM ',
 ];
 
-const NEXT_DATA_ACCESS_CONTROL_ERROR =
-  /Fetch API cannot load http:\/\/(?:localhost|127\.0\.0\.1):\d+\/_next\/data\//;
+// WebKit raises a load it blocked for access control as a page error, where
+// Chromium and Firefox log it to the console. Playwright splits a stackless
+// error's text at its first colon and drops the next character, which breaks a
+// URL there, so the pattern takes any text in the URL's place.
+const BLOCKED_LOAD_ERROR =
+  /^(?:Fetch API|XMLHttpRequest) cannot load .+ due to access control checks\./;
 const URL_PATTERN = /https?:\/\/[^\s)'"]+/g;
 
 /** Recorder returned by runtime-error capture helpers. */
@@ -49,10 +53,11 @@ const getConsoleText = (message: ConsoleMessage) => {
     : text;
 };
 
-const isIgnoredRuntimeError = (text: string, pageOrigin: string | null) =>
-  (NEXT_DATA_ACCESS_CONTROL_ERROR.test(text) &&
-    text.includes('due to access control checks.')) ||
-  isThirdPartyError(text, pageOrigin);
+const isIgnoredRuntimeError = (
+  text: string,
+  frames: string,
+  pageOrigin: string | null
+) => BLOCKED_LOAD_ERROR.test(text) || isThirdPartyError(frames, pageOrigin);
 
 /** Start recording browser runtime errors for a Playwright page. */
 export const recordBrowserRuntimeErrors = (
@@ -65,19 +70,22 @@ export const recordBrowserRuntimeErrors = (
 ): BrowserRuntimeErrorRecorder => {
   const patterns = options.patterns ?? DEFAULT_RUNTIME_ERROR_PATTERNS;
   const errors: string[] = [];
-  const isIgnored = (text: string) =>
-    !options.strict && isIgnoredRuntimeError(text, getOrigin(page.url()));
-  const onPageError = (error: Error) => {
-    const text = error.stack ?? error.message;
+  const isIgnored = (text: string, frames: string) =>
+    !options.strict &&
+    isIgnoredRuntimeError(text, frames, getOrigin(page.url()));
+  // Playwright sets an empty stack on a page error that has no stack trace,
+  // such as a WebKit promise rejection.
+  const onPageError = ({ message, name, stack = '' }: Error) => {
+    const text = stack || (name ? `${name}: ${message}` : message);
 
-    if (!isIgnored(text)) {
+    if (!isIgnored(text, stack)) {
       errors.push(text);
     }
   };
   const onConsole = (message: ConsoleMessage) => {
     const text = getConsoleText(message);
 
-    if (isIgnored(text)) {
+    if (isIgnored(text, text)) {
       return;
     }
 
