@@ -31,7 +31,7 @@ refuses() {
   fi
 }
 
-printf '%s\n' '[Beta]: Editor drag crashes the page' >"$test_dir/title.txt"
+printf '%s\n' 'Editor drag crashes the page' >"$test_dir/title.txt"
 printf '%s\n' '## Summary' '' 'Dragging a block crashes the page.' >"$test_dir/body.md"
 ffmpeg -hide_banner -loglevel error -y -f lavfi -i color=c=black:s=16x16:d=0.1 \
   -pix_fmt yuv420p "$test_dir/main.mp4"
@@ -39,7 +39,7 @@ ffmpeg -hide_banner -loglevel error -y -f lavfi -i color=c=white:s=16x16:d=0.1 \
   -frames:v 1 "$test_dir/next frame.png"
 
 dry_run=$(publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run)
-jq -e '.repo == "udecode/plate" and .title == "[Beta]: Editor drag crashes the page" and .command[0:3] == ["gh","issue","create"] and .command[(.command | index("--type")) + 1] == "Bug"' <<<"$dry_run" >/dev/null
+jq -e '.repo == "udecode/plate" and .title == "Editor drag crashes the page" and .command[0:3] == ["gh","issue","create"] and .command[(.command | index("--type")) + 1] == "Bug" and .command[(.command | index("--milestone")) + 1] == "v54"' <<<"$dry_run" >/dev/null
 
 printf '%s\n' '## Summary' '' 'The export call is at lines 50-56 of `exportHtmlToDocx.internal.ts`.' >"$test_dir/identifier-body.md"
 publish --title-file "$test_dir/title.txt" --body-file "$test_dir/identifier-body.md" --dry-run >/dev/null
@@ -51,7 +51,7 @@ two_file_dry_run=$(publish \
   --attach-role 'Slate — normal behavior (expected baseline)' \
   --attach "$test_dir/next frame.png" \
   --attach-role 'next — current Beta bug (actual behavior)' \
-  --labels 'target:beta' \
+  --labels 'plugin:dnd' \
   --dry-run)
 jq -e --arg main "$test_dir/main.mp4" --arg next "$test_dir/next frame.png" '
   ([.command | indices("--attach")[]] | length) == 2 and
@@ -76,12 +76,15 @@ jq -e --arg take "$test_dir/take#2.mp4" '
   .command[0:4] == ["gh","issue","comment","5224"] and
   (.command | index($take)) != null and
   (.command | index("--label")) == null and
-  (.command | index("--type")) == null
+  (.command | index("--type")) == null and
+  (.command | index("--milestone")) == null
 ' <<<"$comment_dry_run" >/dev/null
 
-printf '%s\n' 'Editor drag crashes the page' >"$test_dir/non-beta-title.txt"
 printf 'notes' >"$test_dir/notes.txt"
-refuses 'a non-Beta title' publish --title-file "$test_dir/non-beta-title.txt" --body-file "$test_dir/body.md" --dry-run
+for prefix in '[Beta]: ' '[Bug]: '; do
+  printf '%s\n' "${prefix}Editor drag crashes the page" >"$test_dir/prefixed-title.txt"
+  refuses "a $prefix title" publish --title-file "$test_dir/prefixed-title.txt" --body-file "$test_dir/body.md" --dry-run
+done
 refuses 'a non-Plate repository' bash "$script_dir/publish-issue.sh" --repo example/example \
   --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run
 refuses 'unresolved placeholders' publish --title-file "$skill_dir/assets/title.example.txt" \
@@ -95,7 +98,7 @@ refuses 'a role count that does not match the attachments' publish --title-file 
   --attach-role 'only one' --dry-run
 refuses 'a comment with a title' publish --comment-on 5224 --title-file "$test_dir/title.txt" \
   --body-file "$test_dir/body.md" --dry-run
-refuses 'a comment with labels' publish --comment-on 5224 --labels target:beta --body-file "$test_dir/body.md" --dry-run
+refuses 'a comment with labels' publish --comment-on 5224 --labels plugin:dnd --body-file "$test_dir/body.md" --dry-run
 refuses 'a comment on something other than an issue number' publish --comment-on '#5224' \
   --body-file "$test_dir/body.md" --dry-run
 
@@ -114,14 +117,18 @@ case "$*" in
   'issue view https://github.com/udecode/plate/issues/123 '*)
     case "${TEST_ISSUE_READBACK:-}" in
       ok)
-        jq -n '{title:"[Beta]: Editor drag crashes the page",
+        jq -n '{title:"Editor drag crashes the page",
           body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
-          issueType:{name:"Bug"}, labels:[{name:"target:beta"}]}' ;;
+          issueType:{name:"Bug"}, milestone:{title:"v54"}, labels:[{name:"plugin:dnd"}]}' ;;
       untyped)
-        jq -n '{title:"[Beta]: Editor drag crashes the page",
+        jq -n '{title:"Editor drag crashes the page",
           body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
-          issueType:null, labels:[{name:"target:beta"}]}' ;;
-      wrong-body) jq -n '{title:"[Beta]: Editor drag crashes the page", body:"Wrong body.", labels:[]}' ;;
+          issueType:null, milestone:{title:"v54"}, labels:[{name:"plugin:dnd"}]}' ;;
+      unmilestoned)
+        jq -n '{title:"Editor drag crashes the page",
+          body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
+          issueType:{name:"Bug"}, milestone:null, labels:[{name:"plugin:dnd"}]}' ;;
+      wrong-body) jq -n '{title:"Editor drag crashes the page", body:"Wrong body.", labels:[]}' ;;
       *) exit 1 ;;
     esac
     exit 0 ;;
@@ -133,7 +140,7 @@ create() {
   PATH="$fake_bin:$PATH" TEST_ISSUE_READBACK=$1 bash "$script_dir/publish-issue.sh" --repo udecode/plate \
     --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
     --attach "$test_dir/main.mp4" --attach "$test_dir/next frame.png" \
-    --labels 'target:beta' --confirm-create 2>&1
+    --labels 'plugin:dnd' --confirm-create 2>&1
 }
 
 created=$(create ok)
@@ -152,12 +159,17 @@ for case_name in failed-readback wrong-body; do
   grep -Fq 'Published but post-publish verification failed: https://github.com/udecode/plate/issues/123' <<<"$output"
 done
 grep -Fq '(body mismatch)' <<<"$output"
-set +e
-output=$(create untyped)
-status=$?
-set -e
-[[ "$status" == 7 ]] || { echo "Expected an untyped issue to exit 7, got $status" >&2; exit 1; }
-grep -Fq '(missing type: Bug)' <<<"$output"
+for case_name in untyped unmilestoned; do
+  set +e
+  output=$(create "$case_name")
+  status=$?
+  set -e
+  [[ "$status" == 7 ]] || { echo "Expected $case_name to exit 7, got $status" >&2; exit 1; }
+  case "$case_name" in
+    untyped) grep -Fq '(missing type: Bug)' <<<"$output" ;;
+    unmilestoned) grep -Fq '(missing milestone: v54)' <<<"$output" ;;
+  esac
+done
 
 for old_recorder_path in \
   "$skill_dir/assets/shot-plan.example.json" \

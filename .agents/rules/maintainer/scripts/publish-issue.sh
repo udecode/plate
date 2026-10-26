@@ -60,7 +60,7 @@ command -v jq >/dev/null || { echo "Missing command: jq" >&2; exit 3; }
 title=""
 if [[ -z "$comment_on" ]]; then
   title=$(tr '\n' ' ' <"$title_file" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')
-  [[ "$title" == "[Beta]: "?* ]] || { echo "Title must start with [Beta]: " >&2; exit 2; }
+  [[ -n "$title" && ! "$title" =~ ^\[[^]]*\]: ]] || { echo "Title takes no [Beta]: or other bracket prefix; the v54 milestone marks a Beta issue" >&2; exit 2; }
 fi
 if grep -Eq 'TODO|TBD' ${title_file:+"$title_file"} "$body_file" ||
   grep -Eiq '<one sentence|<setup>|<action>|<failure trigger>|<expected behavior|<observed behavior|<verified value|<timestamp note|<inference' ${title_file:+"$title_file"} "$body_file"; then
@@ -90,7 +90,7 @@ if [[ -n "$comment_on" ]]; then
   args=(issue comment "$comment_on" --repo "$repo" --body-file "$final_body")
   url_pattern="https://github\\.com/udecode/plate/issues/$comment_on#issuecomment-[0-9]+"
 else
-  args=(issue create --repo "$repo" --title "$title" --type Bug --body-file "$final_body")
+  args=(issue create --repo "$repo" --title "$title" --type Bug --milestone v54 --body-file "$final_body")
   url_pattern='https://github\.com/udecode/plate/issues/[0-9]+'
 fi
 for abs_path in ${abs_paths[@]+"${abs_paths[@]}"}; do
@@ -138,7 +138,7 @@ verified="$work_dir/verified.json"
 if [[ -n "$comment_on" ]]; then
   gh api "repos/$repo/issues/comments/${url##*-}" >"$verified" || failed "readback request failed"
 else
-  gh issue view "$url" --repo "$repo" --json title,body,labels,issueType >"$verified" || failed "readback request failed"
+  gh issue view "$url" --repo "$repo" --json title,body,labels,issueType,milestone >"$verified" || failed "readback request failed"
   jq -e --arg title "$title" '.title == $title' "$verified" >/dev/null || failed "title mismatch"
 fi
 first_line=$(grep -m1 -v '^[[:space:]]*$' "$body_file" || true)
@@ -151,6 +151,7 @@ uploaded=$(jq "$urls_filter | length" "$verified")
 ((uploaded >= attach_count)) || failed "expected $attach_count attachments, found $uploaded"
 if [[ -z "$comment_on" ]]; then
   jq -e '.issueType.name == "Bug"' "$verified" >/dev/null || failed "missing type: Bug"
+  jq -e '.milestone.title == "v54"' "$verified" >/dev/null || failed "missing milestone: v54"
 fi
 for label in ${clean_labels[@]+"${clean_labels[@]}"}; do
   jq -e --arg label "$label" 'any(.labels[]; .name == $label)' "$verified" >/dev/null || failed "missing label: $label"

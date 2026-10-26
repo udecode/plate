@@ -97,7 +97,7 @@ A duplicate close, a repro ask, a `not-bug` answer or a `spec` question for the 
 
 ## Sweep domains
 
-`verify`'s sweep runs this method on a domain's finds before any of them is filed, as its [Triage a domain](../rules/verify/references/sweep.md#triage-a-domain) says. Its finds marked bug and the domain's open `target:beta` issues group into kinds; a kind whose owner sits outside the domain joins the owner's domain. Each kind gets one issue drafted with `maintainer`'s issue-draft, each member find a numbered repro with its clip, and when an open issue already covers the kind, the draft adds the new members to it. The tester publishes each draft and closes the kind's other open issues as its duplicates; an agent publishes or closes only when the tester's request names that action. Each published issue then gets its record through `triage #<N>`.
+`verify`'s sweep runs this method on a domain's finds before any of them is filed, as its [Triage a domain](../rules/verify/references/sweep.md#triage-a-domain) says. Its finds marked bug and the domain's open issues on the `v54` milestone group into kinds; a kind whose owner sits outside the domain joins the owner's domain. Each kind gets one issue drafted with `maintainer`'s issue-draft, each member find a numbered repro with its clip, and when an open issue already covers the kind, the draft adds the new members to it. The tester publishes each draft and closes the kind's other open issues as its duplicates; an agent publishes or closes only when the tester's request names that action. Each published issue then gets its record through `triage #<N>`.
 
 ## Offer fix runs
 

@@ -17,8 +17,11 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 - Treat the testing lane as confirmed Beta context even when the exact `next`
   commit or Beta package version is unknown. Record unknown build details as
   `NOT_ENOUGH_INFO`; do not downgrade the report to a generic bug.
-- Start every issue title with `[Beta]: `. Never emit or publish `[Bug]` from
-  this mode, including when the repository bug form supplies that prefix.
+- Write the title with no `[Beta]: `, `[Bug]: ` or other bracket prefix,
+  including when the repository bug form supplies one. The publisher puts the
+  issue on the `v54` milestone, which marks it as Beta, and gives it the Bug
+  type. Issues published before 2026-10-26 keep their `[Beta]: ` titles,
+  because a title edit makes the issue's triage record stale.
 
 ## Hard boundaries
 
@@ -171,12 +174,9 @@ private information.
 ## Draft the issue
 
 Use the repository's current bug template when required, unless the user says
-not to. Otherwise use [assets/issue-body.md](../assets/issue-body.md). Override the
-bug form's default title prefix. Keep the title behavioral and searchable. Do
-not include implementation guesses as facts.
-
-The title follows the `[Beta]: ` rule above, even when the bug-report template
-supplies another prefix.
+not to. Otherwise use [assets/issue-body.md](../assets/issue-body.md). Drop the
+bug form's default title prefix, as the rule above says. Keep the title
+behavioral and searchable. Do not include implementation guesses as facts.
 
 The body must contain:
 
@@ -216,7 +216,6 @@ bash .agents/skills/maintainer/scripts/publish-issue.sh \
   --attach-role 'Slate — normal behavior (expected baseline)' \
   --attach /absolute/path/to/next.mp4 \
   --attach-role 'next — current Beta bug (actual behavior)' \
-  --labels 'target:beta' \
   --dry-run
 ```
 
@@ -231,7 +230,8 @@ a published body to add evidence.
 The publisher:
 
 1. refuses any repository other than `udecode/plate`, a new issue whose title
-   does not start with `[Beta]: `, an unresolved template placeholder, a file
+   starts with a bracket prefix such as `[Beta]: `, an unresolved template
+   placeholder, a file
    that is not an image or video gh attaches (png, jpg, jpeg, gif, webp, svg,
    mp4, mov or webm) and a role count that differs from the file count;
 2. puts each file under the body's `## Evidence` section, which it adds when
@@ -239,10 +239,10 @@ The publisher:
    reference alone in its paragraph, so gh embeds an image and leaves a
    video's bare URL, which GitHub plays;
 3. refuses a gh without `--attach`;
-4. creates the issue with the Bug issue type, or the comment, reads it back and
-   checks the title, the body's first line, the issue type and the labels, that
-   no local path remains, and that the body holds a
-   `github.com/user-attachments` URL for each file;
+4. creates the issue with the Bug issue type on the `v54` milestone, or the
+   comment, reads it back and checks the title, the body's first line, the
+   issue type, the milestone and the labels, that no local path remains, and
+   that the body holds a `github.com/user-attachments` URL for each file;
 5. prints the URL and every attachment URL.
 
 A failure after the issue or comment exists exits 7 and names its URL. Never
