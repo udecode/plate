@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: node .agents/pstack/review.mjs [--tier <tier>] [--net <session>] | --mark | --done <session>
+// Usage: node .agents/pstack/review.mjs [--tier <tier>] [--net <session>] | --mark | --done <session> | --revert <session> [--stage] [--check <command>]...
 // Lists the commits on origin/<branch>, the branch .agents/pstack.json names,
 // since refs/pstack/reviewed, oldest first and grouped by the session each
 // commit's `Session:` line names, with a DiffsHub link to each, the plan the
@@ -25,16 +25,27 @@
 // listed commit names --net <session>, which prints the diff of that
 // session's commits in the tier as if they had landed together, so a later
 // commit that undoes an earlier one cancels it.
+//
+// --revert <session> reverts, newest first, every first-parent commit on the
+// branch land.mjs lands on whose body has the line `Session: <session>`, and
+// lands the result through the land.mjs beside it with each --check, as one
+// `fix(revert)` commit with an `Introduced-by:` line per reverted commit. It
+// runs only in a clean worktree, never the main checkout, with no commit the
+// branch lacks, and fast-forwards a worktree that is behind. It refuses a
+// merge commit, and on a conflict it stops with the revert in progress. With
+// --stage it stops once the revert is staged and prints the land.mjs command.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const REF = 'refs/pstack/reviewed';
 const FIRST = 20;
 const TIERS = ['public', 'internal'];
-const USAGE = 'Usage: node .agents/pstack/review.mjs [--tier public|internal|all] [--net <session>] | --mark | --done <session>';
+const USAGE =
+  'Usage: node .agents/pstack/review.mjs [--tier public|internal|all] [--net <session>] | --mark | --done <session> | --revert <session> [--stage] [--check <command>]...';
 const GLOB = { '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' };
 
 const fail = (message, code = 1) => {
@@ -50,19 +61,23 @@ const must = (...args) => {
 
 const args = process.argv.slice(2);
 const flags = {};
+const checks = [];
 for (let at = 0; at < args.length; at += 1) {
   const flag = args[at].replace(/^--/u, '');
-  if (!['tier', 'net', 'done', 'mark'].includes(flag) || flag in flags) fail(USAGE, 2);
-  if (flag === 'mark') flags.mark = true;
+  if (flag === 'check' && args[at + 1] !== undefined) checks.push(args[++at]);
+  else if (!['tier', 'net', 'done', 'mark', 'revert', 'stage'].includes(flag) || flag in flags) fail(USAGE, 2);
+  else if (flag === 'mark' || flag === 'stage') flags[flag] = true;
   else if (args[at + 1] === undefined) fail(USAGE, 2);
   else flags[flag] = args[++at];
 }
-if ((flags.mark || flags.done !== undefined) && Object.keys(flags).length > 1) fail(USAGE, 2);
+if ((flags.mark || flags.done !== undefined || flags.revert !== undefined) && Object.keys(flags).filter((flag) => flag !== 'stage').length > 1) fail(USAGE, 2);
+if ((checks.length > 0 || flags.stage) && flags.revert === undefined) fail(USAGE, 2);
 process.chdir(must('rev-parse', '--show-toplevel'));
 const { branch, plans = 'docs/plans', reviewPaths } = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
 const tier = flags.tier ?? (reviewPaths ? 'public' : 'all');
 if (![...TIERS, 'all'].includes(tier)) fail(USAGE, 2);
 if (tier !== 'all' && !reviewPaths) fail(`--tier ${tier} needs reviewPaths in .agents/pstack.json`, 2);
+if (flags.revert !== undefined) revert(flags.revert);
 const upstream = `refs/remotes/origin/${branch}`;
 const fetched = git(['fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`]);
 if (fetched.status !== 0) console.error(`review.mjs: fetch failed, listing the last fetched origin/${branch}: ${fetched.stderr.trim()}`);
@@ -214,4 +229,76 @@ if (tier !== 'all') {
   const rest = TIERS.find((name) => name !== tier);
   if (other > 0) console.log(`\n${other} more commit(s) change ${rest} paths and no ${tier} ones; --tier ${rest} lists them, and --done marks a session's commits reviewed in every tier.`);
   if (hidden.length > other) console.log(`${hidden.length - other} commit(s) change only skipped paths or add tests, and need no review.`);
+}
+
+function revert(session) {
+  const [gitDir, commonDir] = must('rev-parse', '--git-dir', '--git-common-dir')
+    .split('\n')
+    .map((path) => resolve(path));
+  if (gitDir === commonDir) fail('--revert runs in a worktree cut from the branch, not in the main checkout');
+  const pr = git(['config', '--get', 'pstack.delivery']).stdout.trim() !== 'push';
+  const remote = pr && git(['remote', 'get-url', 'upstream']).status === 0 ? 'upstream' : 'origin';
+  const target = `${remote}/${branch}`;
+  must('fetch', '--quiet', remote, `+refs/heads/${branch}:refs/remotes/${target}`);
+  if (must('status', '--porcelain', '--untracked-files=all') !== '') fail('--revert needs a worktree without uncommitted changes, because land.mjs would carry them into the revert');
+  if (must('rev-list', '--count', `${target}..HEAD`) !== '0') fail(`HEAD has commits that ${target} lacks, which land.mjs would carry into the revert; run --revert from a worktree cut from ${target}`);
+  must('merge', '--quiet', '--ff-only', target);
+
+  const line = `Session: ${session}`;
+  const ours = must('log', '--first-parent', '--fixed-strings', `--grep=${line}`, '--format=%H%x1f%h%x1f%P%x1f%s%x1f%b%x1e', target)
+    .split('\x1e')
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((record) => {
+      const [sha, short, parents, subject, body = ''] = record.split('\x1f');
+      return { sha, short, merge: parents.includes(' '), subject, lines: body.split('\n') };
+    })
+    .filter((commit) => commit.lines.includes(line));
+  if (ours.length === 0) fail(`no commit on ${target} has the line ${line}`);
+  const merges = ours.filter((commit) => commit.merge).map((commit) => commit.short);
+  if (merges.length > 0) fail(`session ${session} landed the merge commit(s) ${merges.join(', ')}, which --revert does not undo; revert them by hand with \`git revert -m 1\``);
+
+  const file = join(mkdtempSync(join(tmpdir(), 'review-revert-')), 'message');
+  writeFileSync(
+    file,
+    [
+      `fix(revert): undo session ${session.replace(/^local_/u, '').slice(0, 8)}`,
+      '',
+      '## Why',
+      '',
+      `Reverts every commit session ${session} landed on ${branch}, newest first:`,
+      '',
+      ...ours.map((commit) => `${commit.short} ${commit.subject}`),
+      '',
+      '## Verification',
+      '',
+      checks.length > 0 ? `land.mjs ran ${checks.map((check) => `\`${check}\``).join(', ')} on the reverted tree before landing it.` : 'No check ran on the reverted tree, because review.mjs --revert got no --check.',
+      '',
+      'Beyond the ask: none',
+      '',
+      ...ours.map((commit) => `Introduced-by: ${commit.sha}`),
+      '',
+    ].join('\n')
+  );
+  const run = git(['revert', '--no-commit', ...ours.map((commit) => commit.sha)]);
+  if (run.status !== 0) {
+    const paths = must('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
+    if (paths.length === 0) {
+      git(['revert', '--abort']);
+      fail(`git revert failed: ${run.stderr.trim()}`);
+    }
+    fail(
+      `reverting session ${session} conflicts in:\n${paths.map((path) => `  ${path}`).join('\n')}\n` +
+        'The revert is still in progress and nothing was pushed. Resolve those paths, `git add` them and run `GIT_EDITOR=true git revert --continue`, which reverts the rest; ' +
+        `then run \`node .agents/pstack/land.mjs --message ${file}\` with the same --check values, which lands them as one commit. \`git revert --abort\` drops the whole revert.`
+    );
+  }
+  if (flags.stage) {
+    console.log(`Session ${session}'s ${ours.length} commit(s) are reverted and staged, and nothing was pushed. Review \`git diff --cached\`, then land it with \`node .agents/pstack/land.mjs --message ${file}${checks.map((check) => ` --check '${check.replaceAll("'", "'\\''")}'`).join('')}\`.`);
+    process.exit(0);
+  }
+  const land = spawnSync(process.execPath, [fileURLToPath(new URL('land.mjs', import.meta.url)), '--message', file, ...checks.flatMap((check) => ['--check', check])], {
+    stdio: 'inherit',
+  });
+  process.exit(land.status ?? 1);
 }

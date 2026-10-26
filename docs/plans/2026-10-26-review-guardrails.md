@@ -37,7 +37,8 @@ Each fix will name the commit it repairs. That one line gives a count of bugs th
 | Checks after a race with another landing | Rerun the lint fix and every check each time; about half of plate's code landings race, so they check twice (look) | Rerun only the check steps that both the landing and the incoming commits reach, which cuts the share that recheck typecheck and tests from 49% to 38% | shared steps | big |
 | Who gets credit for a serious finding | Every reviewer that raised it, at any severity, by model name | Only the reviewers that called it serious | critical only | small |
 | Where a session revert runs | From any worktree cut from next, through the normal checks | It makes its own worktree and installs dependencies | own worktree | small |
-| How a revert lands | As a fix that names each reverted commit, so reverts count as bugs that slipped through | A new revert commit type | revert type | small |
+| A session revert and the panel before a push that deletes behavior | The revert helper can stop once the revert is staged and print the land command, so that panel reads the staged diff first (look) | Exempt a session revert from that panel | exempt reverts | small |
+| How a revert lands | As one fix commit of the revert kind that names each reverted commit; the scorecard counts it in a reverts column of its own, not as a bug that slipped through | A new revert commit type | revert type | small |
 | Babysit and old code | A defect the pull request introduced is fixed wherever it sits; a finding on code it neither changes nor breaks goes to open work, as Build already does | Babysit fixes every finding | fix all | small |
 | Review of this plan | No panel on the plan; each tool change gets its one panel review (look) | A three-model panel on this plan first | panel | small |
 | A traced commit that never landed | Refused; it must already be on next | Any commit the clone knows | any commit | detail |
@@ -54,7 +55,7 @@ Each fix will name the commit it repairs. That one line gives a count of bugs th
 - **A raced landing checks again.** When a push is refused because `next` moved, `land.mjs` rebases, reruns the lint fix and every `--check`, and records the commit only once they pass. Today it records the rebased commit as checked and pushes it. When the recheck would end past 55 minutes into the run, it exits 75 with the commit local, and a rerun checks it. A check run first drops the old record, so a failed check is never skipped.
 - **Fix commits name their cause.** `land.mjs` refuses a `fix` commit without an `Introduced-by: <sha>` line for a commit already on the branch, or `Introduced-by: none`. `review.mjs` keeps that line out of the `Beyond the ask:` text it shows.
 - **Panel findings name their seats.** `decisions-check.mjs` refuses a new `critical` row that does not list, in brackets, the seats from its round's `seats` row that raised it. A new `scorecard.mjs` counts findings per seat and fixes per introducing commit.
-- **A session undoes in one command.** `review.mjs --revert <session>` reverts every commit a session landed and lands the revert through `land.mjs`.
+- **A session undoes in one command.** `review.mjs --revert <session>` reverts every first-parent commit a session landed, its plan and decision-log edits included, and lands the revert through `land.mjs`.
 - **A seat change can be replayed.** A new `replay.mjs` runs the panel seats on commits that later needed a fix and judges which seat named the bug.
 - **Babysit leaves old code alone.** Its code-quality review fixes a defect the pull request introduced wherever it sits, and sends a finding on code the pull request neither changes nor breaks to Open work, as the Build playbook does.
 
@@ -102,11 +103,11 @@ Replay cases come from `Introduced-by:` lines that name a commit, and from pairs
 
 ### Phase 2. Count the seats and undo a session
 
-- [ ] In `decisions-check.mjs`, a new panel `critical` row opens with `critical [<seat>, ...]:`, each seat a model name on its round's `seats` row or `lead`. Committed rows stay exempt. `rules/panel.md`'s critical-row sentence names the form and asks for every seat that raised the issue at any severity. Proof: the accepting case at `sync-pstack.test.mjs:2688–2693` (`critical The seat writes files`) flips to refused, a row naming roster models passes, a name off the roster is refused and `lead` passes. Corpus: `decisions-check.mjs --all` over every project's logs, before and after, finds no newly failing committed row.
-- [ ] Add `scorecard.mjs` to dotai's assets and to `HELPER_FILES` in `sync-pstack.mjs`. It reads every committed decision log and places each critical row's reporters through its round's `seats` row, by model name, by the aliases opus, astra and sol, or by letter or number in roster order. Per model it prints the rounds sat, the criticals raised, applied, dismissed, open and other, and the applied ones it alone raised. It also prints the rows it could not place. A second table reads `Introduced-by:` lines on the branch: fixes per week, the share that name a commit, the share of `none`, the median days from landing to fix, and how many introducing commits had panel rows in their plan's log. Proof: a fixture log covers letters, a fallback row such as "opus for gpt-6-astra", which counts as opus, and a severity-qualified row. On plate it places at least the 3,054 of 3,262 rows the explorer's simple parser placed, and a hand check of 20 random rows matches its attribution.
-- [ ] Add `review.mjs --revert <session> [--check <command>]...`. It refuses the main checkout and a worktree with commits ahead of `origin/<branch>`, finds every first-parent commit whose body holds that exact `Session:` line whatever its review state or tier, refuses a merge commit, and reverts newest first. On a conflict it stops with the paths. Otherwise it writes `fix(revert): undo session <first 8 characters>` with a body listing each commit, `Beyond the ask: none` and one `Introduced-by:` line per commit, then runs `land.mjs` with the `--check` values. Proof: in `trunk.test.mjs`, two interleaved sessions land, and reverting the first lands one commit that restores its files and keeps the second's. The message passes the new validator. A conflict stops mid-revert with nothing pushed, an unknown session and the main checkout are refused, and a failed check leaves the revert local.
-- [ ] Deliver phase 2 as in phase 1. Proof: each project's `verify` passes and plate's land log names the commit.
-- [ ] Phase 2 exit. Run `scorecard.mjs` on plate and write both tables in the Close. A seat whose solely raised and applied criticals are under 5% of the panel's goes to the owner as a models-sheet question, with its numbers. Proof: the tables in the Close.
+- [x] In `decisions-check.mjs`, a new panel `critical` row opens with `critical [<seat>, ...]:`, each seat a model name on its round's `seats` row or `lead`. Committed rows stay exempt. `rules/panel.md`'s critical-row sentence names the form and asks for every seat that raised the issue at any severity. Proof: the accepting case at `sync-pstack.test.mjs:2688–2693` (`critical The seat writes files`) flips to refused, a row naming roster models passes, a name off the roster is refused and `lead` passes. Corpus: `decisions-check.mjs --all` over every project's logs, before and after, finds no newly failing committed row.
+- [x] Add `scorecard.mjs` to dotai's assets and to `HELPER_FILES` in `sync-pstack.mjs`. It reads every decision log in the plans directory and places each critical row's reporters through its round's `seats` row, by model name, by the aliases opus, astra and sol, or by letter or number in roster order. Per model it prints the rounds sat, the criticals raised, applied, dismissed, open and other, and the applied ones it alone raised. It also prints the rows it could not place. A second table reads `Introduced-by:` lines on the branch, merged fixes included and `fix(revert)` commits in a column of their own: fixes per week, the share that name a commit, the share of `none`, the median days from landing to fix, and how many introducing commits had panel rows in their plan's log. Proof: a fixture log covers letters, a fallback row such as "opus for gpt-6-astra", which counts as opus, and a severity-qualified row. On plate it places at least the 3,054 of 3,262 rows the explorer's simple parser placed, and a hand check of 20 random rows matches its attribution.
+- [x] Add `review.mjs --revert <session> [--check <command>]...`. It refuses the main checkout and a worktree with commits ahead of `origin/<branch>`, finds every first-parent commit whose body holds that exact `Session:` line whatever its review state or tier, refuses a merge commit, and reverts newest first. On a conflict it stops with the paths. Otherwise it writes `fix(revert): undo session <first 8 characters>` with a body listing each commit, `Beyond the ask: none` and one `Introduced-by:` line per commit, then runs `land.mjs` with the `--check` values. With `--stage` it stops once the revert is staged and prints that `land.mjs` command instead. Proof: in `trunk.test.mjs`, two interleaved sessions land, and reverting the first lands one commit that restores its files and keeps the second's. The message passes the new validator. A conflict stops mid-revert with nothing pushed, an unknown session and the main checkout are refused, and a failed check leaves the revert local.
+- [x] Deliver phase 2 as in phase 1. Proof: each project's `verify` passes and plate's land log names the commit.
+- [x] Phase 2 exit. Run `scorecard.mjs` on plate and write both tables in the Close. A seat whose solely raised and applied criticals are under 5% of the panel's goes to the owner as a models-sheet question, with its numbers. Proof: the tables in the Close.
 
 ### Phase 3. Replay the reviewers on traced bugs
 
@@ -137,20 +138,56 @@ The decision log cites each control's log.
 
 | Gate | Phase | Evidence |
 | --- | --- | --- |
-| `deslop` and `no-comments` on the helper diff | 1, 2, 3 | phase 1: the writing rows of 15:47 and 16:47; 2, 3 pending |
-| `unslop` on rule and playbook prose | 1, 2, 3 | phase 1: the writing row of 16:47; 2, 3 pending |
-| dotai tests, `validate-skills` and `corpus` | 1, 2, 3 | phase 1: p1-trunk-final-a1.log, p1-sync-final-a1.log, corpus-p1.log and corpus-p1-apply.log; 2, 3 pending |
-| One panel round on the helper diff | 1, 2, 3 | phase 1: p1-panel round 1; 2, 3 pending |
-| Smoke of the changed rules in both runtimes | 1, 2, 3 | phase 1: Codex only, p1-smoke-new.log and p1-smoke-live-a1-a1.log; Claude Code is a gap while its CLI is logged out; 2, 3 pending |
-| dotai push, `apply` and `verify` | 1, 2, 3 | phase 1: dotai 518ec28, p1-verify.log; 2, 3 pending |
-| plate land through `land.mjs` | 1, 2, 3 | phase 1: lands with this tick; 2, 3 pending |
-| Phase exit | 1, 2, 3 | 1: waits for the escape table on 2026-11-09, in Open work; 2, 3 pending |
+| `deslop` and `no-comments` on the helper diff | 1, 2, 3 | phase 1: the writing rows of 15:47 and 16:47; phase 2: the writing rows of 17:00 and 17:58; 3 pending |
+| `unslop` on rule and playbook prose | 1, 2, 3 | phase 1: the writing row of 16:47; phase 2: the writing rows of 17:00 and 17:58; 3 pending |
+| dotai tests, `validate-skills` and `corpus` | 1, 2, 3 | phase 1: p1-trunk-final-a1.log, p1-sync-final-a1.log, corpus-p1.log and corpus-p1-apply.log; phase 2: p2-final-trunk-a1.log, p2-final-sync-a1.log, p2-corpus-a1.log and p2-all-pre-apply-a1.log; 3 pending |
+| One panel round on the helper diff | 1, 2, 3 | phase 1: p1-panel round 1; phase 2: p2-panel round 1; 3 pending |
+| Smoke of the changed rules in both runtimes | 1, 2, 3 | phase 1: Codex only, p1-smoke-new.log and p1-smoke-live-a1-a1.log; phase 2: Codex only, p2-smoke-new.log, p2-smoke-live.log and p2-resmoke-a1.log; Claude Code is a gap while its CLI is logged out; 3 pending |
+| dotai push, `apply` and `verify` | 1, 2, 3 | phase 1: dotai 518ec28, p1-verify.log; phase 2: dotai 1fcdb1c and 75c3325, p2-apply-a1.log, p2-verify-a1.log, p2-stage-apply-a1.log and p2-stage-verify-a1.log; 3 pending |
+| plate land through `land.mjs` | 1, 2, 3 | phase 1: 3f920c3bfe, p1-land-a1.log; phase 2: lands with this tick; 3 pending |
+| Phase exit | 1, 2, 3 | 1: waits for the escape table on 2026-11-09, in Open work; 2: the scorecard tables in the Close, no seat under 5%; 3 pending |
 | `pstack:thermos` per slice | all | skip: the Lesson mode's helper panel reviews each diff, which the Build playbook says replaces it |
 | `pstack:blast-radius`, `best-api repair`, Hand drive, playtest, `plate-docs`, benchmark | all | skip: no public Plate API, browser surface, docs page or measured path changes |
 | Fold into the subject file, page and chips Close | close | pending |
 | Decision-trail review | close | pending |
 
+## Close
+
+Phases 1 and 2 have landed on next, and phase 3 is building in this session.
+
+- Phase 1 landed as 3f920c3bfe from dotai 518ec28. Phase 2 lands with this tick from dotai 1fcdb1c and 75c3325, which adds `--stage` after the live smoke found that plate's push panel clashed with a revert that lands in one command.
+- Codex smoked every changed rule on plate exports before and after each change, and again on this worktree after each apply. Claude Code's smoke could not run, because the claude CLI on this machine is logged out.
+
+### Seats on plate, 2026-10-26
+
+| model | rounds sat | criticals | applied | dismissed | open | other | applied, raised alone |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| gpt-6-astra | 987 | 2371 | 2141 | 98 | 132 | 0 | 378 |
+| gpt-6.1-sol | 986 | 2253 | 2017 | 103 | 133 | 0 | 288 |
+| opus | 1013 | 1834 | 1674 | 42 | 102 | 16 | 403 |
+| fable | 3 | 3 | 3 | 0 | 0 | 0 | 0 |
+| sonnet | 3 | 2 | 2 | 0 | 0 | 0 | 0 |
+| lead | - | 9 | 6 | 0 | 3 | 0 | 2 |
+
+The scorecard places 3,345 of 3,362 critical rows. The 17 it leaves out cite a stand-in by the seat it replaced, or name no seat at all. A hand check of 20 random rows matched every placement. Of the 1,069 applied criticals that one seat raised alone, Opus raised 403, Astra 378 and Sol 288. Each seat holds more than a quarter, far above the 5% bar, so no seat goes to the owner as a models-sheet question. Fable and Sonnet sat three rounds each as stand-ins.
+
+### Escapes on next since 2026-09-07
+
+| week | fixes | naming a commit | none | no line | median days to fix | introducing commit's plan log had a panel round | reverts |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2026-W37 | 7 | 0 (0%) | 0 (0%) | 7 | - | 0 of 0 | 0 |
+| 2026-W38 | 17 | 0 (0%) | 0 (0%) | 17 | - | 0 of 0 | 0 |
+| 2026-W39 | 10 | 0 (0%) | 0 (0%) | 10 | - | 0 of 0 | 0 |
+| 2026-W40 | 2 | 0 (0%) | 0 (0%) | 2 | - | 0 of 0 | 0 |
+| 2026-W41 | 19 | 0 (0%) | 0 (0%) | 19 | - | 0 of 0 | 0 |
+| 2026-W42 | 51 | 0 (0%) | 0 (0%) | 51 | - | 0 of 0 | 0 |
+| 2026-W43 | 105 | 0 (0%) | 0 (0%) | 105 | - | 0 of 0 | 0 |
+| 2026-W44 | 8 | 0 (0%) | 0 (0%) | 8 | - | 0 of 0 | 0 |
+
+No fix names its cause yet, because the `Introduced-by:` refusal started with phase 1 today. The table also counts fix commits that reached next through a merge. The phase 1 exit reads this table again on 2026-11-09.
+
 ## Open work
 
 - Phase 1 exit. On 2026-11-09, two weeks after the sync, run `scorecard.mjs` on plate and read its escape table. Keep the `Introduced-by:` refusal while most fixes name a commit, and turn it into a warning, with the reason logged, when most say `none`. owner: zbeyens. stop: the escape table and the keep or warn decision written in this plan's Close.
 - `refs/pstack/reviewed` is unset in this clone, so `review.mjs` shows only the last 20 commits and records no post-landing review. owner: zbeyens. stop: the owner says whether that review happens elsewhere, or starts marking sessions with `--done`.
+- `review.mjs --revert` also reverts the session's own plan and decision-log edits, so the record of why the work existed leaves the tree, though history keeps it. owner: zbeyens. stop: the owner keeps that, or asks the revert to leave the plans directory alone.

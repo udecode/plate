@@ -92,8 +92,9 @@ const target = `${canonical}/${branch}`;
 const current = must('branch', '--show-current');
 if (guarded && current === guarded) fail(`this checkout is on ${guarded}; land from a worktree cut from ${target}`);
 
-const midway = ['rebase-merge', 'rebase-apply', 'MERGE_HEAD'].some((name) => existsSync(must('rev-parse', '--git-path', name)));
-if (midway) fail('a rebase or merge is in progress; resolve it, `git add` the paths, `git rebase --continue`, then run land.mjs again');
+// A clean --no-commit revert leaves REVERT_HEAD behind, so only the sequencer marks a revert with commits left to apply.
+const midway = ['rebase-merge', 'rebase-apply', 'MERGE_HEAD', 'sequencer'].some((name) => existsSync(must('rev-parse', '--git-path', name)));
+if (midway) fail('a rebase, merge or revert is in progress; resolve it, `git add` the paths, run `git rebase --continue` or `GIT_EDITOR=true git revert --continue`, then run land.mjs again');
 
 const conflicted = () => must('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
 const dirty = () => must('status', '--porcelain', '--untracked-files=all') !== '';

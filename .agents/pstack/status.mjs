@@ -3,8 +3,8 @@
 // cited proof is a path under <plans>/artifacts/.
 
 import { spawnSync } from 'node:child_process';
-import { closeSync, existsSync, openSync, readSync, realpathSync } from 'node:fs';
-import { relative, resolve } from 'node:path';
+import { closeSync, existsSync, lstatSync, openSync, readdirSync, readSync, realpathSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 
 const LANDED = ['done', 'complete', 'completed', 'shipped', 'executed', 'implemented', 'fixed', 'released', 'merged', 'verified', 'landed'];
 
@@ -32,6 +32,35 @@ export function stateOf(status) {
 }
 
 export const SEATS = /^seats\s/u;
+export const CRITICAL_SEATS = /^critical \[([^\]]*)\]:\s*\S/u;
+
+export const SEAT_MODEL = /(?<![\w.:-])(?:codex:)?(?:claude-[\w.-]*\w|gpt-[\w.-]*\w|opus|sonnet|haiku|fable)(?![\w-])/gu;
+export const seatName = (name) => name.trim().replace(/^codex:/u, '').replace(/\s+missing$/u, '').replace(/\s+@\w+$/u, '');
+export const seatKey = (name) => seatName(name.toLowerCase()).replace(/^claude-([a-z]+)-.*$/u, '$1');
+
+export function seatRoster(decision) {
+  const marked = new Set();
+  const slots = decision
+    .replace(/^seats\b(?:[^,]*?:\s)?/u, '')
+    .replace(/\([^)]*\)/gu, ' ')
+    .split(/[,;]/u)
+    .flatMap((entry) => {
+      const [named, ...after] = entry.split(/\bmissing\b/u);
+      const seat = named.match(SEAT_MODEL)?.[0];
+      if (after.length === 0) return seat ? [seatKey(seat)] : [];
+      if (seat) marked.add(seatKey(seat));
+      const ran = after.join(' ').match(SEAT_MODEL)?.[0];
+      return ran ? [seatKey(ran)] : seat ? [null] : [];
+    });
+  const models = [...new Set(slots.filter(Boolean))];
+  return { slots, models, missing: [...marked].filter((model) => !models.includes(model)) };
+}
+
+export const decisionLogs = (plans) =>
+  readdirSync(plans)
+    // In trunk delivery the ledger's former path is a link to the moved ledger, for helpers that predate the move.
+    .filter((name) => name.endsWith('.decisions.tsv') && lstatSync(join(plans, name)).isFile())
+    .map((name) => join(plans, name));
 
 export const isHandOffReview = (phase) => /^review/iu.test(phase ?? '');
 
