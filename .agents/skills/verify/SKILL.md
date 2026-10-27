@@ -169,7 +169,10 @@ its `exit N` line; after an interruption or resume, only those logs count.
   mode serves a different shell and root layout, so a spec green on a server
   without the flag, such as 3297, is not green for the runner.
   `GET /api/plite/ready` returns the server's `plite` and `devSource` flags,
-  and the runner's global setup refuses a server that lacks either one.
+  and the runner's global setup refuses a server that lacks either one. On a
+  server that just started, the first request to a docs page can compile for
+  over two minutes, past the specs' 45-second test timeout, so request each
+  route the selected specs open once with `curl` before the run.
 - Plite examples for interactive source proof:
   `pnpm --filter plite exec next dev --port 3298`.
 - Existing managed Plite browser proof:
