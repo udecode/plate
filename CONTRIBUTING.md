@@ -1,7 +1,5 @@
 # Contributing to Plate
 
-Welcome to the table.
-
 ## Quick Links
 
 - **GitHub:** https://github.com/udecode/plate
@@ -17,13 +15,18 @@ Welcome to the table.
 - **Felix Feng** - Core maintainer
   - GitHub: [@felixfeng33](https://github.com/felixfeng33)
 
+## How This Repository Works
+
+- Plate's shipped code, Plite included, lives here under the MIT license.
+- Tests, plans and research live in a private team repository. A clone of this repository has the code without its tests.
+- You contribute by filing an issue with a reproduction. The team writes every fix and closes pull requests from outside the team.
+
 ## How to Contribute
 
-1. **Bugs & small fixes** -> Open an issue with a real repro, or open a PR if you already have the fix.
-2. **New features / architecture** -> Start a [GitHub Discussion](https://github.com/udecode/plate/discussions) or ask in Discord first.
-3. **Refactor-only PRs** -> Don't open a PR. We are not accepting refactor-only changes unless a maintainer explicitly asks for them as part of a concrete fix or deliverable.
-4. **Test/CI-only PRs for known `main` failures** -> Don't open a PR. If `main` is already red for that exact thing, maintainers are already looking at it. PRs that only chase known red `main` noise will be closed unless they are required to validate a new fix.
-5. **Questions** -> Use [Discussions](https://github.com/udecode/plate/discussions) or [Discord](https://discord.gg/mAZRuBzGM3).
+1. **Bugs** -> Open a bug report with a real reproduction. The team fixes bugs with a public repro first.
+2. **Features** -> Open a feature request, or start a [GitHub Discussion](https://github.com/udecode/plate/discussions) first for a larger idea.
+3. **Questions** -> Use [Discussions](https://github.com/udecode/plate/discussions) or [Discord](https://discord.gg/mAZRuBzGM3).
+4. **Security** -> Report vulnerabilities privately through [a security advisory](https://github.com/udecode/plate/security/advisories/new).
 
 ## Bug Reports Are Agent Intake
 
@@ -56,61 +59,6 @@ If the same issue reproduces in plain Slate without Plate-specific code, open it
 
 Issues without enough grounded evidence may be marked `Needs reproduction` in the Triage field, deprioritized, or closed.
 
-## Before You PR
-
-- Test locally against your actual Plate setup or against the minimal repro.
-- Fill the PR template as durable state. Maintainers use the PR body as the local Codex handoff: intent, proof, risk, current blocker, and next action.
-- Keep the PR takeover-ready: exact next command, proof artifact, unresolved review state, and any missing maintainer decision should be visible in the PR body.
-- External PRs that change user-visible behavior must include real behavior proof from a real Plate setup or the minimal repro. Tests, mocks, lint, typechecks, and CI are useful support, but they do not prove the user-visible behavior by themselves.
-- Run the smallest relevant local lane first.
-  - Package work:
-    - `pnpm install`
-    - `pnpm turbo build --filter=./packages/<package>`
-    - `pnpm turbo typecheck --filter=./packages/<package>`
-    - `pnpm lint:fix`
-  - Broader confidence / PR gate:
-    - `pnpm check`
-- If you changed package exports or public file layout, run `pnpm brl`.
-- If you changed published packages under `packages/`, add a changeset.
-- If you changed only registry code under `apps/www/src/registry/**`, add a registry changelog entry under `apps/www/src/registry/changelog/entries/` instead of a package changeset.
-- If you changed browser-facing UI, include screenshots or a short recording.
-- If you have access to Codex, run `codex review --base origin/main` locally before opening or updating your PR. Treat that as the current highest standard of AI review, even if GitHub Codex review also runs.
-- Do not submit refactor-only PRs unless a maintainer explicitly requested that refactor for an active fix or deliverable.
-- Do not submit test-only or CI-only PRs that merely try to make known `main` failures pass.
-- Ensure CI checks pass.
-- Keep PRs focused. One thing per PR. Do not mix unrelated concerns.
-- Keep PRs takeover-ready. If you open from a fork, leave **Allow edits by maintainers** enabled unless there is a specific reason not to.
-- Describe what changed and why.
-- Reply to or resolve bot review conversations you addressed before asking for review again.
-- Use American English spelling and grammar in code, comments, docs, and UI strings.
-
-## Review Conversations Are Author-Owned
-
-If a review bot leaves review conversations on your PR, you are expected to handle the follow-through:
-
-- Resolve the conversation yourself once the code or explanation fully addresses the concern.
-- Reply and leave it open only when you need maintainer judgment.
-- Do not leave "fixed" bot review conversations for maintainers to clean up for you.
-- If Codex leaves comments, address every relevant one or resolve it with a short explanation when it is not applicable to your change.
-- If GitHub Codex review does not trigger for some reason, run `codex review --base origin/main` locally anyway and treat that output as required review work.
-
-This applies to both human-authored and AI-assisted PRs.
-
-## AI/Vibe-Coded PRs Welcome! 🤖
-
-Built with Codex, Claude, or other AI tools? Good. Just mark it.
-
-Please include in your PR:
-
-- [ ] Mark as AI-assisted in the PR title or description
-- [ ] Include real behavior proof when user-visible behavior changes; AI-generated tests, lint, typechecks, and CI output are supplemental
-- [ ] Include prompts or session logs if possible
-- [ ] Confirm you understand what the code does
-- [ ] If you have access to Codex, run `codex review --base origin/main` locally and address the findings before asking for review
-- [ ] Resolve or reply to bot review conversations after you address them
-
-AI PRs are first-class citizens here. We just want transparency and proof so reviewers know what to look for.
-
 ## Current Focus
 
 We are currently prioritizing:
@@ -120,4 +68,4 @@ We are currently prioritizing:
 - **Performance**: large-document editing, render churn, and expensive normalization paths
 - **Docs & examples**: keeping `platejs.org` and registry examples in sync with the actual latest state
 
-Check the [GitHub Issues](https://github.com/udecode/plate/issues) for active bugs and open work. If you want to grab something, leave a quick comment so effort does not collide.
+Check the [GitHub Issues](https://github.com/udecode/plate/issues) for active bugs. If an open issue matches yours, add your reproduction there instead of opening a new one.
