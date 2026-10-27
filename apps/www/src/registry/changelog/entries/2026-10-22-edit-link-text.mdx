@@ -3,7 +3,7 @@ id: 2026-10-22-edit-link-text
 date: 2026-10-22
 status: draft
 kind: fix
-summary: 'Fix Edit link, saving an edited link and Open link in the link toolbar'
+summary: 'Fix Edit link, saving an edited link, Open link and the link shortcut in the link toolbar'
 change: { 'type': 'source', 'date': '2026-10-22', 'commits': [] }
 release: { 'status': 'unresolved' }
 diagnostics: []
@@ -24,3 +24,7 @@ diagnostics: []
 <!-- entry: {"id":"2026-10-22-link-form-focus-out","kind":"fix","migrationNotes":[]} -->
 
 - **`link`**: Close Edit link and Insert link and drop the draft when focus moves from the form to another element, the editor takes focus or a click lands outside, and show the link toolbar again while the caret stays in the link
+
+<!-- entry: {"id":"2026-10-22-link-shortcut-selection","kind":"fix","migrationNotes":[]} -->
+
+- **`link`**: Keep Insert link and the formatting toolbar working after the link shortcut over a selection inside a link

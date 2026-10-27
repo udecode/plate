@@ -200,6 +200,9 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
         });
 
         if (!entry) return undefined;
+        // The edit form shows only for a caret, so an edit mode started here
+        // would have no form and would block Insert link.
+        if (!editor.read.selection.isCollapsed()) return true;
 
         const [link, path] = entry;
         const linkText = editor.read.text.string(path);

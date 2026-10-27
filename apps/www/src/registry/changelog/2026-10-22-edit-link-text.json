@@ -15,7 +15,7 @@
     "status": "unresolved"
   },
   "kind": "fix",
-  "summary": "Fix Edit link, saving an edited link and Open link in the link toolbar",
+  "summary": "Fix Edit link, saving an edited link, Open link and the link shortcut in the link toolbar",
   "targets": [
     {
       "name": "link",
@@ -86,6 +86,23 @@
       "source": {
         "line": 26,
         "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-22",
+          "entry": "2026-10-22-edit-link-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-22-link-shortcut-selection",
+      "kind": "fix",
+      "summary": "Keep Insert link and the formatting toolbar working after the link shortcut over a selection inside a link",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 30,
+        "row": 5,
         "legacyRelease": {
           "date": "2026-10-22",
           "entry": "2026-10-22-edit-link-text",

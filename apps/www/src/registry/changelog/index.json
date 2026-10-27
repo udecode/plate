@@ -60,7 +60,7 @@
       "href": "/registry/changelog/2026-10-22-edit-link-text.json",
       "status": "draft",
       "kind": "fix",
-      "summary": "Fix Edit link, saving an edited link and Open link in the link toolbar",
+      "summary": "Fix Edit link, saving an edited link, Open link and the link shortcut in the link toolbar",
       "change": {
         "type": "source",
         "date": "2026-10-22",
@@ -70,7 +70,7 @@
         "status": "unresolved"
       },
       "targets": ["link"],
-      "entries": 4,
+      "entries": 5,
       "diagnostics": []
     },
     {
