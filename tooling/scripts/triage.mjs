@@ -81,10 +81,11 @@ const PRIORITY_FIELD = 'Priority';
 const PRIORITY_ORDER = ['P0', 'P1', 'P2', 'P3'];
 const SCOPE_FIELD = 'Scope';
 const SCOPES = 'docs/research/review-scopes';
-const OUTCOME_LABELS = {
-  dup: 'duplicate',
-  'needs-repro': 'needs reproduction',
-};
+const SCOPES_KEPT_BESIDE_RECORD = ['accessibility', 'performance'];
+const TRIAGE_FIELD = 'Triage';
+const TRIAGED = 'Triaged';
+const NEEDS_REPRO = 'Needs reproduction';
+const NEEDS_RETEST = 'Needs retest';
 const OUTCOME_TYPES = { kind: 'Bug', spec: 'Feature' };
 const QUEUE_LIMIT = 5000;
 // A triage draft ends in a marker holding the hash of its own text, so posting it unchanged keeps its record current and editing it does not.
@@ -605,7 +606,7 @@ function reopenIds(repo, numbers) {
   return found;
 }
 
-// gh issue list cannot return issue fields, so the org's Priority and Scope fields and each issue's values come from GraphQL.
+// gh issue list cannot return issue fields, so the org's Priority, Scope and Triage fields and each issue's values come from GraphQL.
 function fieldValues(repo, numbers) {
   const [owner, name] = repo.split('/');
   const issues = new Map();
@@ -625,7 +626,7 @@ function fieldValues(repo, numbers) {
     const data = readJson(result.stdout)?.data;
     if (!data) {
       refuse(
-        `labels could not read the ${PRIORITY_FIELD} and ${SCOPE_FIELD} fields of ${repo} issues: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
+        `labels could not read the ${PRIORITY_FIELD}, ${SCOPE_FIELD} and ${TRIAGE_FIELD} fields of ${repo} issues: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
       );
     }
     fields ??= data.organization?.issueFields?.nodes ?? [];
@@ -661,6 +662,11 @@ function fieldValues(repo, numbers) {
   };
   const priority = fieldOf(PRIORITY_FIELD, 'Single', PRIORITY_ORDER);
   const scope = fieldOf(SCOPE_FIELD, 'Multi', []);
+  const triage = fieldOf(TRIAGE_FIELD, 'Single', [
+    TRIAGED,
+    NEEDS_REPRO,
+    NEEDS_RETEST,
+  ]);
   const values = new Map(
     [...issues].map(([number, node]) => {
       const valueOf = (field) =>
@@ -673,11 +679,12 @@ function fieldValues(repo, numbers) {
           issueId: node.id,
           priority: valueOf(priority)?.optionId ?? null,
           scopes: (valueOf(scope)?.options ?? []).map((option) => option.id),
+          triage: valueOf(triage)?.optionId ?? null,
         },
       ];
     })
   );
-  return { priority, scope, values };
+  return { priority, scope, triage, values };
 }
 
 function issueReader(repo) {
@@ -1462,26 +1469,28 @@ function labels() {
     issue,
     ...stateFor(String(issue.number), reads),
   }));
-  const kinds = open.filter(
-    ({ state, head }) => state === 'current' && head.outcome === 'kind'
+  if (open.length === 0) return;
+  const fields = fieldValues(
+    repo,
+    open.map(({ issue }) => issue.number)
   );
-  const fields =
-    kinds.length > 0
-      ? fieldValues(
-          repo,
-          kinds.map(({ issue }) => issue.number)
-        )
-      : null;
-  const quoted = (label) => (label.includes(' ') ? `'${label}'` : label);
-  const commands = [
-    `gh label create triaged --repo ${repo} --color 0e8a16 --description "Has a current record in ${REGISTER}" --force`,
-    `gh label create 'needs retest' --repo ${repo} --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
-  ];
+  const triagedId = fields.triage.optionIds.get(TRIAGED);
+  const keptScopeIds = new Set(
+    SCOPES_KEPT_BESIDE_RECORD.map((name) =>
+      fields.scope.optionIds.get(name)
+    ).filter(Boolean)
+  );
+  const commands = [];
   const sets = [];
   const unscoped = [];
   for (const { issue, state, head } of open) {
     const names = new Set((issue.labels ?? []).map((label) => label.name));
     const edits = [];
+    const { issueId, priority, scopes, triage } = fields.values.get(
+      issue.number
+    );
+    const changes = [];
+    const mutationId = [`#${issue.number}`];
     const closes =
       state === 'current' &&
       head.outcome === 'fixed' &&
@@ -1489,19 +1498,22 @@ function labels() {
       reads.landed.get(String(issue.number))?.has(head.id) === true &&
       deviceLaneOf(String(issue.number), reads).length === 0;
     if (state === 'current') {
-      if (!names.has('triaged')) edits.push('--add-label triaged');
-      for (const [label, wanted] of [
-        ...Object.entries(OUTCOME_LABELS).map(([outcome, name]) => [
-          name,
-          head.outcome === outcome,
-        ]),
-        ['needs retest', head.outcome === 'fixed' && !closes],
-      ]) {
-        if (wanted && !names.has(label)) {
-          edits.push(`--add-label ${quoted(label)}`);
-        } else if (!wanted && names.has(label)) {
-          edits.push(`--remove-label ${quoted(label)}`);
-        }
+      const triageId = fields.triage.optionIds.get(
+        head.outcome === 'needs-repro'
+          ? NEEDS_REPRO
+          : head.outcome === 'fixed' && !closes
+            ? NEEDS_RETEST
+            : TRIAGED
+      );
+      if (triage !== triageId) {
+        changes.push(
+          `{ fieldId: "${fields.triage.id}", singleSelectOptionId: "${triageId}" }`
+        );
+      }
+      if (head.outcome === 'dup' && !names.has('duplicate')) {
+        edits.push('--add-label duplicate');
+      } else if (head.outcome !== 'dup' && names.has('duplicate')) {
+        edits.push('--remove-label duplicate');
       }
       const type = OUTCOME_TYPES[head.outcome];
       if (type && issue.issueType?.name !== type) {
@@ -1513,29 +1525,38 @@ function labels() {
         const scope = detail.get('scope');
         const priorityId = fields.priority.optionIds.get(level);
         const scopeId = fields.scope.optionIds.get(scope);
-        const { issueId, priority, scopes } = fields.values.get(issue.number);
-        if (scopeId === undefined) unscoped.push(`#${issue.number} ${scope}`);
-        const changes = [
-          ...(priority === priorityId
-            ? []
-            : [
-                `{ fieldId: "${fields.priority.id}", singleSelectOptionId: "${priorityId}" }`,
-              ]),
-          ...(scopeId === undefined ||
-          (scopes.length === 1 && scopes[0] === scopeId)
-            ? []
-            : [
-                `{ fieldId: "${fields.scope.id}", multiSelectOptionIds: ["${scopeId}"] }`,
-              ]),
-        ];
-        if (changes.length > 0) {
-          sets.push(
-            `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#${issue.number} ${level} ${scope}", issueId: "${issueId}", issueFields: [${changes.join(', ')}] }) { clientMutationId } }'`
+        mutationId.push(level, scope);
+        if (priority !== priorityId) {
+          changes.push(
+            `{ fieldId: "${fields.priority.id}", singleSelectOptionId: "${priorityId}" }`
           );
         }
+        if (scopeId === undefined) {
+          unscoped.push(`#${issue.number} ${scope}`);
+        } else {
+          const wanted = [
+            ...new Set([
+              scopeId,
+              ...scopes.filter((id) => keptScopeIds.has(id)),
+            ]),
+          ];
+          if (
+            wanted.length !== scopes.length ||
+            wanted.some((id) => !scopes.includes(id))
+          ) {
+            changes.push(
+              `{ fieldId: "${fields.scope.id}", multiSelectOptionIds: [${wanted.map((id) => `"${id}"`).join(', ')}] }`
+            );
+          }
+        }
       }
-    } else if (state !== 'unchecked' && names.has('triaged')) {
-      edits.push('--remove-label triaged');
+    } else if (state !== 'unchecked' && triage === triagedId) {
+      changes.push(`{ fieldId: "${fields.triage.id}", delete: true }`);
+    }
+    if (changes.length > 0) {
+      sets.push(
+        `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "${mutationId.join(' ')}", issueId: "${issueId}", issueFields: [${changes.join(', ')}] }) { clientMutationId } }'`
+      );
     }
     if (edits.length > 0) {
       commands.push(

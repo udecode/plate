@@ -216,14 +216,18 @@ bash .agents/skills/maintainer/scripts/publish-issue.sh \
   --attach-role 'Slate — normal behavior (expected baseline)' \
   --attach /absolute/path/to/next.mp4 \
   --attach-role 'next — current Beta bug (actual behavior)' \
+  --platform 'Android, Chrome' \
   --dry-run
 ```
+
+Pass `--platform` with every browser and OS the repros ran on, from the
+report's environment, so Chrome on Android is `Android, Chrome`.
 
 When publication is authorized, replace `--dry-run` with `--confirm-create`
 without asking for a second confirmation.
 
 To add sweep members to an open issue, pass `--comment-on <issue number>`
-instead of `--title-file` and `--labels`. It posts one comment with the new
+instead of `--title-file`, `--labels` and `--platform`. It posts one comment with the new
 repros and their recordings through `gh issue comment --attach`. Never rewrite
 a published body to add evidence.
 
@@ -231,12 +235,13 @@ The publisher:
 
 1. refuses any repository other than `udecode/plate`, a new issue whose title
    starts with a bracket prefix such as `[Beta]: `, an unresolved template
-   placeholder, a label outside the facet set (`mobile`, `safari`, `firefox`,
-   `ime`, `a11y`, `regression`, `performance issue`), a file
+   placeholder, a label outside the facet set (`ime`, `regression`), a `--platform`
+   value that is not a Platform field option (`Chrome`, `Safari`, `Firefox`,
+   `Edge`, `Android`, `iOS`), a file
    that is not an image or video gh attaches (png, jpg, jpeg, gif, webp, svg,
    mp4, mov or webm) and a role count that differs from the file count. The
-   Scope issue field, which `pnpm triage labels` sets, names the domain, so no
-   label does;
+   Scope issue field, which `pnpm triage labels` sets, names the domain, and
+   the Platform field names each browser and OS, so no label does;
 2. puts each file under the body's `## Evidence` section, which it adds when
    the body has none. Each file gets a `#### <role>` line above an image
    reference alone in its paragraph, so gh embeds an image and leaves a
@@ -245,7 +250,9 @@ The publisher:
 4. creates the issue with the Bug issue type on the `v54` milestone, or the
    comment, reads it back and checks the title, the body's first line, the
    issue type, the milestone and the labels, that no local path remains, and
-   that the body holds a `github.com/user-attachments` URL for each file;
+   that the body holds a `github.com/user-attachments` URL for each file. Then
+   it sets the Platform field through GraphQL, because `gh issue create` cannot
+   set an issue field, and reads each value back;
 5. prints the URL and every attachment URL.
 
 A failure after the issue or comment exists exits 7 and names its URL. Never

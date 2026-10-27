@@ -102,6 +102,34 @@ function loadSnapshot(args) {
     warnings,
     'issues'
   );
+  // gh issue list cannot return issue fields, so each issue's Triage field value comes from GraphQL.
+  const [owner, name] = args.repo.split('/');
+  for (let at = 0; at < issues.length; at += 50) {
+    const part = issues.slice(at, at + 50);
+    const aliases = part.map(
+      (issue) =>
+        `i${issue.number}: issue(number: ${issue.number}) { issueFieldValues(first: 20) { nodes { ... on IssueFieldSingleSelectValue { name field { ... on IssueFieldSingleSelect { name } } } } } }`
+    );
+    const repository = safeRead(
+      () =>
+        ghJson([
+          'api',
+          'graphql',
+          '-f',
+          `query={ repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { ${aliases.join(' ')} } }`,
+          '--jq',
+          '.data.repository',
+        ]),
+      warnings,
+      'issue Triage field'
+    );
+    for (const issue of part) {
+      issue.triage =
+        repository[`i${issue.number}`]?.issueFieldValues.nodes.find(
+          (value) => value?.field?.name === 'Triage'
+        )?.name ?? null;
+    }
+  }
 
   const prs = safeRead(
     () =>
@@ -160,6 +188,7 @@ function labelsOf(item) {
 function scoreIssue(issue) {
   const labels = labelsOf(issue).map((label) => label.toLowerCase());
   const bug = issue.issueType?.name === 'Bug';
+  const needsRepro = issue.triage === 'Needs reproduction';
   let score = 30;
   const reasons = [];
 
@@ -175,7 +204,7 @@ function scoreIssue(issue) {
     score += 20;
     reasons.push('regression');
   }
-  if (labels.some((label) => label.includes('needs reproduction'))) {
+  if (needsRepro) {
     score -= 25;
     reasons.push('needs reproduction');
   }
@@ -190,16 +219,16 @@ function scoreIssue(issue) {
       : bug
         ? 'issue bug'
         : 'issue triage',
-    decision: labels.some((label) => label.includes('needs reproduction'))
+    decision: needsRepro
       ? 'brief-only'
       : 'candidate',
-    intake: labels.some((label) => label.includes('needs reproduction'))
+    intake: needsRepro
       ? 'needs-repro'
       : 'unknown until body read',
     owner: labels.some((label) => label.includes('security'))
       ? 'security-triage'
       : 'maintainer -> owner after body read',
-    proof: labels.some((label) => label.includes('needs reproduction'))
+    proof: needsRepro
       ? 'missing repro'
       : 'read issue body, linked repro, affected source, focused command',
     rankReason: reasons.join(', ') || 'open issue',

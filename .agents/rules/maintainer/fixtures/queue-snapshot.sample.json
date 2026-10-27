@@ -22,9 +22,10 @@
     {
       "assignees": [],
       "comments": 0,
-      "labels": [{ "name": "needs reproduction" }],
+      "labels": [],
       "number": 1002,
       "title": "Support question without repro",
+      "triage": "Needs reproduction",
       "updatedAt": "2026-06-14T00:00:00Z",
       "url": "https://github.com/udecode/plate/issues/1002"
     }

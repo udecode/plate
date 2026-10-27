@@ -54,7 +54,7 @@ Public repros beat screenshots every time.
 
 If the same issue reproduces in plain Slate without Plate-specific code, open it in [Slate](https://github.com/ianstormtaylor/slate/issues), not here.
 
-Issues without enough grounded evidence may be labeled `needs reproduction`, deprioritized, or closed.
+Issues without enough grounded evidence may be marked `Needs reproduction` in the Triage field, deprioritized, or closed.
 
 ## Before You PR
 

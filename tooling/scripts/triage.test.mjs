@@ -73,11 +73,11 @@ if (args[0] === 'issue' && args[1] === 'view') {
           comments: { pageInfo: { hasPreviousPage: Boolean(issue.moreComments) }, nodes: issue.comments.map((each, at) => ({ databaseId: 900 + at, author: { login: each.author.login, __typename: each.bot ? 'Bot' : 'User' }, createdAt: each.createdAt ?? '2026-01-01T00:00:00Z', body: each.body })) },
         }
       : fields
-      ? { id: 'I_' + number, issueFieldValues: { nodes: [{}, ...(issue.priority ? [{ optionId: 'OPT_' + issue.priority, field: { id: 'FIELD_PRIORITY' } }] : []), ...(issue.scopes ? [{ options: issue.scopes.map((each) => ({ id: 'OPT_' + each })), field: { id: 'FIELD_SCOPE' } }] : [])] } }
+      ? { id: 'I_' + number, issueFieldValues: { nodes: [{}, ...(issue.priority ? [{ optionId: 'OPT_' + issue.priority, field: { id: 'FIELD_PRIORITY' } }] : []), ...(issue.scopes ? [{ options: issue.scopes.map((each) => ({ id: 'OPT_' + each })), field: { id: 'FIELD_SCOPE' } }] : []), ...(issue.triage ? [{ optionId: 'OPT_' + issue.triage, field: { id: 'FIELD_TRIAGE' } }] : [])] } }
       : { timelineItems: { nodes: issue.reopened ? [{ id: issue.reopened }] : [] } };
   }
   const options = (names) => names.map((name) => ({ id: 'OPT_' + name, name }));
-  const organization = { issueFields: { nodes: fixture.issueFields ?? [{}, { __typename: 'IssueFieldSingleSelect', id: 'FIELD_PRIORITY', name: 'Priority', options: options(['P0', 'P1', 'P2', 'P3']) }, { __typename: 'IssueFieldMultiSelect', id: 'FIELD_SCOPE', name: 'Scope', options: options(['editing', 'paste']) }] } };
+  const organization = { issueFields: { nodes: fixture.issueFields ?? [{}, { __typename: 'IssueFieldSingleSelect', id: 'FIELD_PRIORITY', name: 'Priority', options: options(['P0', 'P1', 'P2', 'P3']) }, { __typename: 'IssueFieldMultiSelect', id: 'FIELD_SCOPE', name: 'Scope', options: options(['editing', 'paste', 'performance']) }, { __typename: 'IssueFieldSingleSelect', id: 'FIELD_TRIAGE', name: 'Triage', options: options(['Triaged', 'Needs reproduction', 'Needs retest']) }] } };
   console.log(JSON.stringify({ data: fields ? { organization, repository } : { repository } }));
 } else { console.error('gh stub: ' + args.join(' ')); process.exit(1); }
 `;
@@ -1462,60 +1462,68 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(await stateLine(box, 5250, { cwd: b }), '#5250 current');
   });
 
-  test('labels prints the gh commands that make the triaged and outcome labels and the issue type match a current record, and runs none', async () => {
+  test('labels prints the gh commands that make the Triage field, the duplicate label and the issue type match a current record, and runs none', async () => {
     const box = sandbox();
     setIssues(box, [
-      issue(5250, {
-        labels: [{ name: 'needs-triage' }, { name: 'needs reproduction' }],
-        priority: 'P0',
-        scopes: ['editing'],
+      issue(5250, { priority: 'P0', scopes: ['editing'] }),
+      issue(5251, { triage: 'Triaged' }),
+      issue(5252, {
+        labels: [{ name: 'duplicate' }],
+        triage: 'Needs reproduction',
       }),
-      issue(5251, {
-        labels: [{ name: 'triaged' }, { name: 'needs reproduction' }],
-      }),
-      issue(5252, { labels: [{ name: 'needs-triage' }] }),
-      issue(5253),
-      issue(5254, {
-        labels: [{ name: 'triaged' }],
-        issueType: { name: 'Bug' },
-      }),
+      issue(5253, { labels: [{ name: 'duplicate' }] }),
+      issue(5254, { issueType: { name: 'Bug' }, triage: 'Triaged' }),
       issue(5255, {
-        labels: [{ name: 'triaged' }],
         issueType: { name: 'Bug' },
         priority: 'P0',
         scopes: ['editing'],
+        triage: 'Triaged',
       }),
+      issue(5256),
     ]);
     await recordAll(box, [
       [5250],
       [5253, 'needs-repro', 'missing: the steps'],
       [5254, 'spec', 'question: should Tab indent a list item?'],
       [5255],
+      [5256, 'dup', 'of: 5255'],
     ]);
     const { status, stdout } = await triage(box, ['labels']);
     assert.equal(status, 0);
+    const set = (id, fields) =>
+      `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "${id}", issueId: "I_${id.slice(1, 5)}", issueFields: [${fields}] }) { clientMutationId } }'`;
     assert.deepEqual(stdout.trim().split('\n'), [
-      'gh label create triaged --repo udecode/plate --color 0e8a16 --description "Has a current record in docs/triage/issues.tsv" --force',
-      `gh label create 'needs retest' --repo udecode/plate --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
-      "gh issue edit 5250 --repo udecode/plate --add-label triaged --remove-label 'needs reproduction' --type Bug",
-      'gh issue edit 5251 --repo udecode/plate --remove-label triaged',
-      "gh issue edit 5253 --repo udecode/plate --add-label triaged --add-label 'needs reproduction'",
+      'gh issue edit 5250 --repo udecode/plate --type Bug',
+      'gh issue edit 5253 --repo udecode/plate --remove-label duplicate',
       'gh issue edit 5254 --repo udecode/plate --type Feature',
+      'gh issue edit 5256 --repo udecode/plate --add-label duplicate',
+      set(
+        '#5250 P0 editing',
+        '{ fieldId: "FIELD_TRIAGE", singleSelectOptionId: "OPT_Triaged" }'
+      ),
+      set('#5251', '{ fieldId: "FIELD_TRIAGE", delete: true }'),
+      set(
+        '#5253',
+        '{ fieldId: "FIELD_TRIAGE", singleSelectOptionId: "OPT_Needs reproduction" }'
+      ),
+      set(
+        '#5256',
+        '{ fieldId: "FIELD_TRIAGE", singleSelectOptionId: "OPT_Triaged" }'
+      ),
     ]);
   });
 
-  test('labels closes a fixed issue only when its proof replays the report, and labels every other fixed issue needs retest', async () => {
+  test('labels closes a fixed issue only when its proof replays the report, and marks every other fixed issue Needs retest', async () => {
     const box = sandbox();
     const commit = git(box, box.work, 'rev-parse', 'HEAD');
     const fixed = (retest) =>
       `commit: ${commit}; owner: packages/a/src/owner.ts; proof: the owner test${retest}`;
-    const waiting = [{ name: 'triaged' }, { name: 'needs retest' }];
     setIssues(box, [
-      issue(5250, { labels: [{ name: 'triaged' }] }),
+      issue(5250, { triage: 'Triaged' }),
       issue(5251),
-      issue(5252, { labels: waiting }),
+      issue(5252, { triage: 'Needs retest' }),
       issue(5253, {
-        labels: waiting,
+        triage: 'Needs retest',
         issueType: { name: 'Bug' },
         priority: 'P0',
         scopes: ['editing'],
@@ -1534,11 +1542,12 @@ describe('triage', { concurrency: 8 }, () => {
     );
     const { status, stdout } = await triage(box, ['labels']);
     assert.equal(status, 0);
-    assert.deepEqual(stdout.trim().split('\n').slice(1), [
-      `gh label create 'needs retest' --repo udecode/plate --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
+    const set = (id, option) =>
+      `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "${id}", issueId: "I_${id.slice(1, 5)}", issueFields: [{ fieldId: "FIELD_TRIAGE", singleSelectOptionId: "OPT_${option}" }] }) { clientMutationId } }'`;
+    assert.deepEqual(stdout.trim().split('\n'), [
       'gh issue close 5250 --repo udecode/plate --reason completed',
-      "gh issue edit 5251 --repo udecode/plate --add-label triaged --add-label 'needs retest'",
-      "gh issue edit 5253 --repo udecode/plate --remove-label 'needs retest'",
+      set('#5251', 'Needs retest'),
+      set('#5253 P0 editing', 'Triaged'),
     ]);
   });
 
@@ -1577,16 +1586,27 @@ describe('triage', { concurrency: 8 }, () => {
     );
   });
 
-  test('labels sets the Priority and Scope fields from a current kind record only where they differ, and names a scope the field has no option for', async () => {
+  test('labels sets the Priority and Scope fields from a current kind record only where they differ, keeps a quality scope, and names a scope the field has no option for', async () => {
     const box = sandbox();
+    const triaged = { triage: 'Triaged' };
     setIssues(box, [
-      issue(5250),
-      issue(5251, { priority: 'P3', scopes: ['editing'] }),
-      issue(5252, { priority: 'P0', scopes: ['editing'] }),
-      issue(5253, { priority: 'P3' }),
-      issue(5254, { priority: 'P0', scopes: ['editing', 'paste'] }),
-      issue(5255, { priority: 'P0', scopes: ['editing'] }),
-      issue(5256, { priority: 'P3' }),
+      issue(5250, triaged),
+      issue(5251, { ...triaged, priority: 'P3', scopes: ['editing'] }),
+      issue(5252, { ...triaged, priority: 'P0', scopes: ['editing'] }),
+      issue(5253, { triage: 'Needs reproduction', priority: 'P3' }),
+      issue(5254, { ...triaged, priority: 'P0', scopes: ['editing', 'paste'] }),
+      issue(5255, { ...triaged, priority: 'P0', scopes: ['editing'] }),
+      issue(5256, { ...triaged, priority: 'P3' }),
+      issue(5257, {
+        ...triaged,
+        priority: 'P0',
+        scopes: ['editing', 'performance'],
+      }),
+      issue(5258, {
+        ...triaged,
+        priority: 'P0',
+        scopes: ['paste', 'performance'],
+      }),
     ]);
     await recordAll(box, [
       [5250],
@@ -1596,6 +1616,8 @@ describe('triage', { concurrency: 8 }, () => {
       [5254],
       [5255, 'kind', kind('paste')],
       [5256, 'kind', kind('tables')],
+      [5257],
+      [5258],
     ]);
     const { status, stdout, stderr } = await triage(box, ['labels']);
     assert.equal(status, 0);
@@ -1624,6 +1646,10 @@ describe('triage', { concurrency: 8 }, () => {
         set(
           '#5256 P0 tables',
           '{ fieldId: "FIELD_PRIORITY", singleSelectOptionId: "OPT_P0" }'
+        ),
+        set(
+          '#5258 P0 editing',
+          '{ fieldId: "FIELD_SCOPE", multiSelectOptionIds: ["OPT_editing", "OPT_performance"] }'
         ),
       ]
     );
