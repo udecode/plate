@@ -356,14 +356,16 @@ export const classifyKeyboardIntent = ({
     return 'composition';
   }
 
+  const internalTarget = isInteractiveInternalTarget(editor, event.target);
+
   if (
     (Hotkeys.isUndo(nativeEvent) || Hotkeys.isRedo(nativeEvent)) &&
-    !isNativeTextControlTarget(event.target)
+    !(internalTarget && isNativeTextControlTarget(event.target))
   ) {
     return 'history';
   }
 
-  if (isInteractiveInternalTarget(editor, event.target)) {
+  if (internalTarget) {
     return 'internal-control';
   }
 
@@ -458,7 +460,9 @@ export const classifyBeforeInputIntent = ({
   event: InputEvent;
   internalTarget?: boolean;
 }): InputIntent | null => {
-  if (isNativeTextControlTarget(event.target)) return 'internal-control';
+  if (internalTarget && isNativeTextControlTarget(event.target)) {
+    return 'internal-control';
+  }
 
   const intent = DOMRootRuntime.classifyBeforeInputIntent({
     inputType: event.inputType,

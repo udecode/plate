@@ -192,20 +192,22 @@ const matchKey = (event: KeyboardEventLike, expectedKey: string) => {
   }
 
   if (event.code?.toLowerCase() === expectedLower) return true;
-  // Under Command, Option still turns a digit into a symbol, ASCII on some
-  // layouts, that is never typed.
-  if (SINGLE_DIGIT_RE.test(expectedKey)) {
-    return (
-      Boolean(event.altKey && event.metaKey) &&
-      !(typeof actualKey === 'string' && SINGLE_DIGIT_RE.test(actualKey)) &&
-      event.code === `Digit${expectedKey}`
-    );
-  }
   if (!isSingleLetter(expectedKey)) return false;
   if (typeof actualKey === 'string' && isAscii(actualKey)) return false;
 
   return event.code === `Key${expectedKey.toUpperCase()}`;
 };
+
+// With Command held nothing is typed, yet Option still turns the digit into a
+// symbol, such as '¡', or '[' on some layouts.
+const matchCommandOptionDigit = (
+  event: KeyboardEventLike,
+  expectedKey: string
+) =>
+  Boolean(event.altKey && event.metaKey) &&
+  SINGLE_DIGIT_RE.test(expectedKey) &&
+  !SINGLE_DIGIT_RE.test(event.key) &&
+  event.code === `Digit${expectedKey}`;
 
 const isAltGraphEvent = (event: KeyboardEventLike) =>
   typeof event.getModifierState === 'function' &&
@@ -233,7 +235,8 @@ const matchHotkey = (
     matchModifier(event, 'ctrlKey', compiled.ctrlKey) &&
     matchModifier(event, 'metaKey', compiled.metaKey) &&
     matchModifier(event, 'shiftKey', compiled.shiftKey) &&
-    matchKey(event, compiled.key)
+    (matchKey(event, compiled.key) ||
+      matchCommandOptionDigit(event, compiled.key))
   );
 };
 

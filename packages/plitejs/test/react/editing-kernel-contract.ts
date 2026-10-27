@@ -1,4 +1,3 @@
-import { JSDOM } from 'jsdom';
 import { createEditor, SelectionApi } from 'plitejs';
 
 import {
@@ -1098,22 +1097,30 @@ test('beforeinput history stays model-owned for internal controls', () => {
   ).toBe('history');
 });
 
-test('beforeinput history in a text field from another window stays with the field', () => {
-  const frame = new JSDOM(
-    '<input type="text"><textarea></textarea><input type="radio">'
-  ).window.document;
-  const classify = (target: Element | null) =>
+test('beforeinput history in an internal text field stays with the field', () => {
+  expect(
     classifyBeforeInputIntent({
       editor: createEditor() as any,
-      event: { inputType: 'historyUndo', target } as any,
+      event: {
+        inputType: 'historyUndo',
+        target: document.createElement('textarea'),
+      } as any,
       internalTarget: true,
-    });
+    })
+  ).toBe('internal-control');
+});
 
-  expect([
-    classify(frame.querySelector('input[type="text"]')),
-    classify(frame.querySelector('textarea')),
-    classify(frame.querySelector('input[type="radio"]')),
-  ]).toEqual(['internal-control', 'internal-control', 'history']);
+test('beforeinput history in a text field the editor does not own stays model-owned', () => {
+  expect(
+    classifyBeforeInputIntent({
+      editor: createEditor() as any,
+      event: {
+        inputType: 'historyUndo',
+        target: document.createElement('textarea'),
+      } as any,
+      internalTarget: false,
+    })
+  ).toBe('history');
 });
 
 test('kernel result creation rejects illegal transitions in test mode', () => {

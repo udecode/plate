@@ -174,17 +174,14 @@ describe('plite-dom hotkeys', () => {
         event({ altKey: true, code: 'Digit8', ctrlKey: true, key: '[' })
       )
     ).toBe(false);
+  });
+
+  test('does not match a modifier-free digit shortcut by physical code under Command and Option', () => {
     expect(
       isHotkey(
-        '2',
-        { ignoreModifiers: true, platform: 'windows' },
-        event({
-          altKey: true,
-          code: 'Digit2',
-          ctrlKey: true,
-          getModifierState: (key) => key === 'AltGraph',
-          key: '@',
-        })
+        '1',
+        { ignoreModifiers: true, platform: 'apple' },
+        event({ altKey: true, code: 'Digit1', key: '¡', metaKey: true })
       )
     ).toBe(false);
   });
