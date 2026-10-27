@@ -1,11 +1,13 @@
 import { readFile } from 'node:fs/promises';
 
 import {
-  type BrowserEditorHarness,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
+  type BrowserEditorHarness,
 } from '@platejs/test/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const ABOVE = 'Above the diagram';
 const SOURCE = 'graph TD\n  A-->B\n  B-->C';

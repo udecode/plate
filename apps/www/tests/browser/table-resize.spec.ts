@@ -1,8 +1,10 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const rootSelector = '[data-editor="true"][contenteditable="true"]';
 const widths = (table: Locator) =>

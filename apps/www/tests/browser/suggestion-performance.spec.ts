@@ -1,5 +1,8 @@
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
+import {
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
 
 import {
   SUGGESTION_PERFORMANCE_CASES,

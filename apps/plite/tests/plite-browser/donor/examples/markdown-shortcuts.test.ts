@@ -1,7 +1,8 @@
-import { expect, test } from '@playwright/test';
 import {
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 test.describe('On markdown-shortcuts example', () => {

@@ -1,8 +1,9 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
 
 test.use({ viewport: { width: 1280, height: 180 } });
 

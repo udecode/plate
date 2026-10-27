@@ -1,6 +1,11 @@
-import { expect, type Locator, test } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 
-import { BROWSER_HANDLE_KEY, openExample } from '@platejs/test/playwright';
+import {
+  BROWSER_HANDLE_KEY,
+  expect,
+  openExample,
+  test,
+} from '@platejs/test/playwright';
 
 const INITIAL_TEXT = 'This is some text here about. there';
 const INSERTED_TEXT = ' there';

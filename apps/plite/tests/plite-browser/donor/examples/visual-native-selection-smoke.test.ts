@@ -1,8 +1,9 @@
-import { expect, test } from '@playwright/test';
 import {
   assertBrowserSelectionContract,
   attachBrowserSelectionScreenshot,
+  expect,
   openExample,
+  test,
 } from '@platejs/test/playwright';
 
 const normalizeInlineSelectionText = (text: string) =>

@@ -1,5 +1,9 @@
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import {
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
+import type { Page } from '@playwright/test';
 
 const readNoteBlocks = async (page: Page) => {
   const value = JSON.parse(await page.getByTestId('model-a').innerText());

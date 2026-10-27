@@ -1,12 +1,14 @@
 import {
   BROWSER_HANDLE_KEY,
+  expect,
   measureTrustedTyping,
   openExample,
   recordBrowserRuntimeErrors,
   startBrowserNativeEventTrace,
   takeBrowserNativeEventTrace,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import type { PliteBrowserHandle } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 

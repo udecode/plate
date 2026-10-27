@@ -1,6 +1,6 @@
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
-import { openExample } from '@platejs/test/playwright';
+import { expect, openExample, test } from '@platejs/test/playwright';
 
 const dragTextRange = async (
   page: Page,

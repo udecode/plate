@@ -1,9 +1,11 @@
 import {
   BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const CASE_ID = 'media-caption:file-selection-to-toc-navigation';
 const EDITOR = '[data-editor="true"][contenteditable="true"]';

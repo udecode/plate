@@ -1,9 +1,10 @@
 import {
   createBrowserEditorHarness,
+  expect,
   measureTrustedTyping,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 const FRAME_BUDGET_MS = 16.67;

@@ -1,7 +1,9 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import {
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 type PaginationEditor = Awaited<ReturnType<typeof openExample>>;

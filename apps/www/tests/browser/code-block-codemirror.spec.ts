@@ -1,9 +1,11 @@
 import {
   BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 const EDITOR_ROOT = '.editor-editor[contenteditable="true"]';
 const HUGE_CODE_BLOCK_INDEX = 2;

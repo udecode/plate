@@ -1,7 +1,8 @@
-import { expect, test } from "@playwright/test";
 import {
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
   withExclusiveClipboardAccess,
 } from "@platejs/test/playwright";
 

@@ -3,9 +3,11 @@ import { randomUUID } from 'node:crypto';
 import net from 'node:net';
 import path from 'node:path';
 
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import {
+  expect,
   recordBrowserRuntimeErrors,
+  test,
   withExclusiveClipboardAccess,
 } from '@platejs/test/playwright';
 
@@ -225,7 +227,6 @@ test.describe('yjs hocuspocus example', () => {
     } finally {
       runtimeErrors.stop();
       peerBRuntimeErrors.stop();
-      await peerBPage.close().catch(() => undefined);
     }
   });
 
@@ -296,7 +297,6 @@ test.describe('yjs hocuspocus example', () => {
     } finally {
       runtimeErrors.stop();
       peerBRuntimeErrors.stop();
-      await peerBPage.close().catch(() => undefined);
     }
   });
 });

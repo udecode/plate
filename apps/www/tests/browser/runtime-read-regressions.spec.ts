@@ -1,8 +1,9 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 

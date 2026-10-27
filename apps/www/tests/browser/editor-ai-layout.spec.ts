@@ -1,5 +1,8 @@
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
+import {
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
 
 test('full editor keeps its toolbar outside the scrollport after resizing', async ({
   page,

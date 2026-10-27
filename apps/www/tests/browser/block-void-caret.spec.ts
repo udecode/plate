@@ -1,8 +1,10 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const CASE_ID = 'block-void:native-caret-not-painted-below-void';
 const EDITOR = '[data-editor="true"][contenteditable="true"]';

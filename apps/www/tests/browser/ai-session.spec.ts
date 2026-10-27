@@ -1,8 +1,9 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
 
 test('Copilot accepts formatted text before list indentation and supports dismissal', async ({
   page,

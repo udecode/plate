@@ -1,9 +1,10 @@
-import { expect, test } from '@playwright/test';
 
 import {
   attachBrowserSelectionScreenshot,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';

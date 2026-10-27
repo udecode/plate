@@ -1,5 +1,9 @@
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
-import { type ConsoleMessage, expect, test } from '@playwright/test';
+import {
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
+import type { ConsoleMessage } from '@playwright/test';
 
 test('docs-sidebar:collapsed-sections-use-compact-row-spacing', async ({
   page,

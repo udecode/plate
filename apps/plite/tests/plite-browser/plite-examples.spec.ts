@@ -1,10 +1,11 @@
 import {
-  BROWSER_HANDLE_KEY,
   attachPageScreenshot,
+  BROWSER_HANDLE_KEY,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
 
 const pliteExampleIds = [
   'plaintext',

@@ -1,16 +1,12 @@
 import {
-  type BrowserEditorHarness,
   createBrowserEditorHarness,
   DEFAULT_RUNTIME_ERROR_PATTERNS,
-  recordBrowserRuntimeErrors,
-} from '@platejs/test/playwright';
-import {
   expect,
-  type Locator,
-  type Page,
-  type TestInfo,
+  recordBrowserRuntimeErrors,
   test,
-} from '@playwright/test';
+  type BrowserEditorHarness,
+} from '@platejs/test/playwright';
+import type { Locator, Page, TestInfo } from '@playwright/test';
 
 const CASE_ID = 'pagination:plate-paged-editor-content';
 const TOP_LEVEL_BLOCKS = '[data-editor-path]:not([data-editor-path*=","])';

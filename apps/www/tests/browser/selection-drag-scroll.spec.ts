@@ -1,8 +1,10 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 const CASE_ID = 'keeps native selection drag scrolling outside the editor';
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';

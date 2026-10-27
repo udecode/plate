@@ -122,6 +122,7 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
         'cli-test',
         'core-audits',
         'plite-bridge',
+        'browser-test-imports',
         'hook-generics',
         'value-records',
         'entrypoint-graph',
@@ -138,6 +139,7 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
         'authored-order',
         'autoformat-rules',
         'cli-test',
+        'browser-test-imports',
         'review-ledger',
         'knowledge',
         'www',
@@ -155,10 +157,16 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
         'plite-test',
         'authored-order',
         'autoformat-rules',
+        'browser-test-imports',
         'review-ledger',
         'knowledge',
       ],
-      plite: ['autoformat-rules', 'review-ledger', 'knowledge'],
+      plite: [
+        'autoformat-rules',
+        'browser-test-imports',
+        'review-ledger',
+        'knowledge',
+      ],
       lockfile: ['review-ledger'],
     }
   );

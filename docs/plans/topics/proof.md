@@ -1,6 +1,6 @@
 # Editor proof
 
-Page: https://claude.ai/artifact/XqsY1CcceaevUNqabTFPbw
+Page: https://claude.ai/artifact/67Qh93t2kE15qfLRWrRHJ7
 
 How Plate proves editor behavior that unit and DOM tests miss, through real
 input and a model oracle that reads the page. Every plan for the `proof` scope
@@ -24,6 +24,14 @@ Native event traces record input and composition events.
 await startBrowserNativeEventTrace(locator, {
   events: ['beforeinput', 'input'],
 });
+```
+
+A browser spec takes `test` and `expect` from the package, and that `test`
+saves each editor's state when a test fails.
+
+```ts
+// apps/plite/tests/plite-browser/focus-blur.test.ts
+import { expect, test } from '@platejs/test/playwright';
 ```
 
 ## Main changes
@@ -74,6 +82,19 @@ await startBrowserNativeEventTrace(locator, {
   `apps/www/scripts/autoformat-input-rules-baseline.json`, which only shrinks.
   The `autoformat-input-rules` skill says how to read a failure, tell a real
   bug from a modeling error and move its coverage record forward.
+- When a browser test fails or times out unexpectedly, the package's `test`
+  reads every editor in the test's browser before its contexts close and
+  saves `editor-state.json` beside Playwright's screenshot. Each field says
+  whether it was read, cut to fit, or why it was not read, and the file keeps
+  the test's own errors apart from any capture error.
+- The `browser-test-imports` step of `pnpm check` keeps every www and Plite
+  browser spec, donor specs included, on the package's `test`. It refuses a
+  call that opens a context or browser apart from the test's, unless a marker
+  above it gives the reason.
+- verify's Drive section and the Bug fix playbook tell an agent to read a
+  failed spec's saved files, unread fields first, before it patches or drives
+  again. www keeps trace recording off, because keeping traces made four of
+  its specs about 30% slower.
 
 ## What other editors do
 
@@ -99,6 +120,7 @@ taps.
 | --- | --- | --- | --- |
 | Browser model oracle | proof tooling | `@platejs/test/playwright` | One harness serves desktop and emulated mobile. |
 | Browser page handle | Plite | `plitejs/react` `Editable`, on every mount | The oracle reads it on every page, production builds included. |
+| Editor state at a failed test | proof tooling | `@platejs/test/playwright` | Its `test` reads every editor handle in the test's browser when a test fails, so no spec has to. |
 
 ## Native behavior and proof
 
@@ -145,3 +167,12 @@ taps.
 - With an empty `PLATE_BASELINE_BASE`, as on `workflow_dispatch`, every baseline step falls back to `HEAD`. owner: Ziad. stop: CI passes a non-empty base to every baseline step. Carried from the [2026-10-06 knowledge plan](../2026-10-06-knowledge-reorg.md).
 - The 2026-10-06 knowledge plan's compile readers found 11 problems in Plite and Plate tests, such as an autoformat suite that cannot fail and an empty test body in the query contract. Each is an open `finding` row in that plan's decision log, and phase 4's side findings in the same area join them; a claim marked inferred or "not run" needs its probe before a fix. owner: Ziad. stop: each is fixed through `test-audit` or dropped, or 2026-12-07. Carried from the [2026-10-06 knowledge plan](../2026-10-06-knowledge-reorg.md).
 - The 2026-10-06 knowledge plan's compile readers found 10 problems in proof and release tooling, such as WebKit claims that no CI job runs and an Appium iOS transport marked release-capable that no driver proves. Each is an open `finding` row in that plan's decision log, and phase 4's side findings in the same area join them; a claim marked inferred or "not run" needs its probe before a fix. owner: Ziad. stop: each is fixed or its claim narrowed, or 2026-12-07. Carried from the [2026-10-06 knowledge plan](../2026-10-06-knowledge-reorg.md).
+- The S5 bench, the kit probe's extra browsers and the authored performance probe's arms close their own contexts inside the test, so they get no editor state. owner: zbeyens. stop: Playwright offers a public hook that runs before each context closes. Carried from the [browser failure evidence plan](../2026-10-27-browser-failure-evidence.md), like the next eight items.
+- The native IME lane drives a Chrome it connects to over CDP, so it gets no editor state. owner: zbeyens. stop: a public way to hand that browser to the capture.
+- The kit probe unmounts its editors as part of what it measures, so even a hook before its context closes would find none. owner: zbeyens. stop: a page-side call that saves state before the probe's own cleanup.
+- On an S5 bench run the capture adds the worker's idle browser and one context per cell, and the authored mounted performance contract and the kit lifetime probe now run beside one idle context, which nobody has measured. owner: zbeyens. stop: the next S5 bench run, which compares one cell with and without the capture, and the next run of each probe.
+- A failure in the setup of a `context` override gets no file, because the capture's fixture depends on that context. No spec in either folder overrides `context` today. owner: zbeyens. stop: the first spec that overrides `context`.
+- A failure that starts after the capture, in an `afterAll` hook or a fixture torn down after it, gets no file. owner: zbeyens. stop: a Playwright hook that runs after every teardown while the browser is still open.
+- Nothing committed fails when Playwright's fixture order or a handle getter's name changes. owner: zbeyens. stop: `platejs/testing` exports the handle's type, so the capture can type the getter names it reads.
+- No real failure has yet been worked out from `editor-state.json` alone. Each reverted fix tried had a cause a fresh agent named from the code alone, so the comparison between agents with and without the file never ran. owner: zbeyens. stop: a reverted fix whose code shows no suspect, or the owner drops the demo.
+- `autoformat:text-substitution-native-input` fails on www Chromium before and after this change. Typing ` ->` leaves ` -`, and the saved state shows no commit for `>`. owner: zbeyens. stop: the next run of the autoformat kit work.

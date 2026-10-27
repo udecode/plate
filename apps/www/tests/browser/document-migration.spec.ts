@@ -1,9 +1,10 @@
 import {
   BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
 
 test('saves migrated JSON and reopens it without rerunning history', async ({
   page,

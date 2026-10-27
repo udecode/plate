@@ -1,5 +1,9 @@
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import {
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
+import type { Locator, Page } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 const EQUATION_TRIGGER = 'button[aria-label="Edit equation"]';

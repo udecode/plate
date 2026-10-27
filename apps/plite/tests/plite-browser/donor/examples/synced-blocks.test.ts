@@ -1,8 +1,11 @@
-import { expect, type Locator, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY,
+import type { Locator } from '@playwright/test';
+import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
   type BrowserRawViewSelectionSnapshot,
 } from '@platejs/test/playwright';
 

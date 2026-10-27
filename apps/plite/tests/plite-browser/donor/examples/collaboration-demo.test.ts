@@ -1,5 +1,10 @@
-import { expect, type Locator, test } from "@playwright/test";
-import { BROWSER_HANDLE_KEY, recordBrowserRuntimeErrors } from "@platejs/test/playwright";
+import type { Locator } from "@playwright/test";
+import {
+  BROWSER_HANDLE_KEY,
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from "@platejs/test/playwright";
 
 const INITIAL_TEXT =
   "Ada and Lin edit independent documents through a local Yjs room.";

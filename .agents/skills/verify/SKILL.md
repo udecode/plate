@@ -247,6 +247,28 @@ through their package runner. Do not build a parallel Puppeteer, raw CDP or
 standalone Playwright driver for interactive QA. Browser emulation does not
 prove raw Android/iOS input.
 
+When a www or Plite browser spec fails, read what the failed run saved before
+you patch or drive again. Its results folder holds Playwright's
+`error-context.md` and failure screenshot, and the package's
+`editor-state.json`. That file holds every error Playwright recorded and, for
+each editor on every open page and frame, its value, model selection, mapped
+and native selection with the editor that owns each end, focus, rendered block
+text, input state and last commit. Check its unread and cut fields first,
+because a field the capture could not read is not an observed empty value.
+Then name the owner the evidence points at, and fix what the file already
+shows without waiting for another reproduction. Some failures save no editor
+state. The S5 bench and the native IME lane run their own browser, the kit
+lifetime and authored mounted performance probes close or unmount their
+editors before the test ends, and a failure that starts in an `afterAll` hook,
+in the setup of a `context` override or in a fixture torn down after the
+capture saves no file. A page that stays busy past the capture's four-second
+read is listed as not read, and Playwright's own page outline in
+`error-context.md` can be missing for it too. When the file cannot explain the
+timing, rerun the one failing test with a trace,
+`--trace retain-on-failure` in www or `PLITE_BROWSER_TRACE=1` in Plite. Reading
+saved files never replaces the hand drive a browser-visible change needs before
+it closes.
+
 The harness's `clipboard.pasteHtml` and `clipboard.pasteText` paste through
 the Playwright project's `use.clipboardTransport` and fail when that transport
 did not apply the paste or the page threw during it; they never retry another

@@ -1,11 +1,13 @@
 import {
-  type BrowserEditorHarness,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
   startBrowserNativeEventTrace,
   takeBrowserNativeEventTrace,
+  test,
+  type BrowserEditorHarness,
 } from '@platejs/test/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 // Phase 1 of docs/plans/2026-10-08-authored-review.md: native input on the
 // review tree, on the proof route. The phase's revert deletes this spec.

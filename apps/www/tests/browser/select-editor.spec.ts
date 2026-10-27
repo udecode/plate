@@ -1,9 +1,11 @@
 import {
-  type BrowserEditorHarness,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
+  type BrowserEditorHarness,
 } from '@platejs/test/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 const EDITOR_ROOT = '[data-editor="true"][contenteditable="true"]';
 

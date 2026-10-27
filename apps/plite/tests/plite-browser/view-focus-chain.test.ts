@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '@platejs/test/playwright';
 
 test("the document editor reaches a focused view in a same-origin iframe inside another view's editable", async ({
   page,

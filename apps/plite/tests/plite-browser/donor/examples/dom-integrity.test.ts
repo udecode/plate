@@ -1,7 +1,8 @@
-import { expect, test } from '@playwright/test';
 import {
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 test('external DOM corruption is repaired from the model without moving selection', async ({

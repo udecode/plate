@@ -1,14 +1,17 @@
 import { Buffer } from 'node:buffer';
 
-import { expect, type Locator, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY,
-  type BrowserRuntimeErrorRecorder,
+import type { Locator } from '@playwright/test';
+import {
   attachBrowserJsonArtifact,
+  BROWSER_HANDLE_KEY,
+  expect,
   installReactRenderProfiler,
   openExample,
   recordBrowserRuntimeErrors,
   resetReactRenderProfiler,
   takeBrowserRenderStateSnapshot,
+  test,
+  type BrowserRuntimeErrorRecorder,
   withExclusiveClipboardAccess,
 } from '@platejs/test/playwright';
 

@@ -1,8 +1,11 @@
-import { expect, type Page, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY,
+import type { Page } from '@playwright/test';
+import {
   attachBrowserJsonArtifact,
   attachBrowserSelectionScreenshot,
+  BROWSER_HANDLE_KEY,
+  expect,
   openExample,
+  test,
   type BrowserEditorHarness,
 } from '@platejs/test/playwright';
 
@@ -624,25 +627,20 @@ test.describe('huge document example', {
     }
 
     const freshPage = await page.context().newPage();
+    const freshEditor = await openSmallHugeDocument(freshPage, {
+      blocks: 1000,
+      seed,
+      rendering: 'complete',
+    });
 
-    try {
-      const freshEditor = await openSmallHugeDocument(freshPage, {
-        blocks: 1000,
-        seed,
-        rendering: 'complete',
-      });
-
-      await expect
-        .poll(
-          async () => (await getTextBlockText(freshEditor, blockIndex)) ?? '',
-          {
-            timeout: hugeDocumentReadyTimeout,
-          }
-        )
-        .toBe(grownText);
-    } finally {
-      await freshPage.close();
-    }
+    await expect
+      .poll(
+        async () => (await getTextBlockText(freshEditor, blockIndex)) ?? '',
+        {
+          timeout: hugeDocumentReadyTimeout,
+        }
+      )
+      .toBe(grownText);
   });
 
   test('exposes virtualized rendering controls and metrics', async ({

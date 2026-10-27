@@ -1,5 +1,8 @@
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
+import {
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
 
 test.describe('mobile input lab', () => {
   test('exports browser events with model, DOM, selection, and device state', async ({

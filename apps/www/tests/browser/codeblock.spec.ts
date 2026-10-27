@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '@platejs/test/playwright';
 
 test('codeblock:copy-button-covers-no-install-command-text-at-375px', async ({
   page,

@@ -1,5 +1,11 @@
-import { expect, type Locator, type Page, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY, createBrowserEditorHarness, recordBrowserRuntimeErrors } from '@platejs/test/playwright';
+import type { Locator, Page } from '@playwright/test';
+import {
+  BROWSER_HANDLE_KEY,
+  createBrowserEditorHarness,
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
 import type { createEditor, DocumentChange, JsonEditorValue, Path } from 'plitejs';
 
 const original = 'One canonical text.\nEdit either view.\nUndo is shared.';

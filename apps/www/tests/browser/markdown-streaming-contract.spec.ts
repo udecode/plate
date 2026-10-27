@@ -3,13 +3,16 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { cpus, loadavg } from 'node:os';
 import path from 'node:path';
 
-import { createBrowserEditorHarness } from '@platejs/test/playwright';
 import {
-  type Browser,
-  type CDPSession,
+  createBrowserEditorHarness,
   expect,
-  type Page,
   test,
+} from '@platejs/test/playwright';
+import type {
+  Browser,
+  BrowserContext,
+  CDPSession,
+  Page,
 } from '@playwright/test';
 
 // Markdown streaming contract in Chromium: the registry AI menu ("Continue
@@ -1003,6 +1006,7 @@ const runStream = async ({
   composition: Composition;
   source: string;
 }): Promise<StreamResult> => {
+  // browser-test-imports: the S5 bench runs each cell in a context of its own browser
   const context = await browser.newContext({
     baseURL,
     viewport: { height: 720, width: 1280 },
@@ -1140,6 +1144,7 @@ const runHeapProbe = async ({
   composition: Composition;
   source: string;
 }) => {
+  // browser-test-imports: the S5 bench measures the heap in a context of its own browser
   const context = await browser.newContext({
     baseURL,
     viewport: { height: 720, width: 1280 },
@@ -1191,101 +1196,76 @@ const runHeapProbe = async ({
   }
 };
 
-const runAICorrectness = async (
-  browser: Browser,
-  baseURL: string,
-  chunks: string[]
-) => {
-  const context = await browser.newContext({
-    baseURL,
-    viewport: { height: 720, width: 1280 },
+const runAICorrectness = async (page: Page, chunks: string[]) => {
+  await page.addInitScript(installInstrumentation, {
+    arrivalMs: ARRIVAL_MS,
+    chunks,
+    composition: 'ai' as const,
   });
+  await openAI(page);
+  await page.evaluate(observeOutput, OUTPUT.ai);
+  const buildId = await readBuildId(page);
+  await arm(page, true);
+  await startStream(page, 'ai');
+  await waitForFinish(page, 'ai', STREAM_CAP_MS);
+  const { batches } = await readRecord(page);
+  const previews = batches.slice(0, -1);
 
-  try {
-    const page = await context.newPage();
-    await page.addInitScript(installInstrumentation, {
-      arrivalMs: ARRIVAL_MS,
-      chunks,
-      composition: 'ai' as const,
-    });
-    await openAI(page);
-    await page.evaluate(observeOutput, OUTPUT.ai);
-    const buildId = await readBuildId(page);
-    await arm(page, true);
-    await startStream(page, 'ai');
-    await waitForFinish(page, 'ai', STREAM_CAP_MS);
-    const { batches } = await readRecord(page);
-    const previews = batches.slice(0, -1);
-
-    return {
-      buildId,
-      eligible: previews.reduce((sum, batch) => sum + batch.eligible, 0),
-      html: await outputHTMLWithListIdsByAppearance(page, 'ai'),
-      kept: previews.reduce((sum, batch) => sum + batch.kept, 0),
-      text: await outputText(page, 'ai'),
-      texts: batches.map((batch) => batch.text ?? ''),
-    };
-  } finally {
-    await context.close();
-  }
+  return {
+    buildId,
+    eligible: previews.reduce((sum, batch) => sum + batch.eligible, 0),
+    html: await outputHTMLWithListIdsByAppearance(page, 'ai'),
+    kept: previews.reduce((sum, batch) => sum + batch.kept, 0),
+    text: await outputText(page, 'ai'),
+    texts: batches.map((batch) => batch.text ?? ''),
+  };
 };
 
 const runDemoCorrectness = async (
-  browser: Browser,
-  baseURL: string,
+  page: Page,
   mode: 'editable' | 'static',
   source: string,
   chunkSize = CHUNK
 ) => {
-  const context = await browser.newContext({
-    baseURL,
-    viewport: { height: 720, width: 1280 },
+  await page.addInitScript(installInstrumentation, {
+    arrivalMs: ARRIVAL_MS,
+    chunks: null,
+    composition: mode,
   });
+  await openDemo(page, mode, source, chunkSize);
+  await page.evaluate(observeOutput, OUTPUT.demo);
+  const buildId = await readBuildId(page);
+  await arm(page);
+  await startStream(page, mode);
+  await waitForFinish(page, mode, STREAM_CAP_MS);
+  const streamed = {
+    html: await outputHTMLWithListIdsByAppearance(page, mode),
+    text: await outputText(page, mode),
+  };
 
-  try {
-    const page = await context.newPage();
-    await page.addInitScript(installInstrumentation, {
-      arrivalMs: ARRIVAL_MS,
-      chunks: null,
-      composition: mode,
-    });
-    await openDemo(page, mode, source, chunkSize);
-    await page.evaluate(observeOutput, OUTPUT.demo);
-    const buildId = await readBuildId(page);
-    await arm(page);
-    await startStream(page, mode);
-    await waitForFinish(page, mode, STREAM_CAP_MS);
-    const streamed = {
+  await page
+    .getByRole('button', { name: 'Reset streaming', exact: true })
+    .click();
+  await expect(page.locator('[data-stream-status]')).toHaveText('Ready');
+  await page
+    .getByRole('heading', { name: /^Chunks/ })
+    .locator('xpath=..')
+    .getByRole('button')
+    .last()
+    .click();
+  await expect(page.locator('[data-stream-status]')).toHaveText(
+    'Finished: strict parse'
+  );
+  await settle(page);
+
+  return {
+    buildId,
+    fresh: {
       html: await outputHTMLWithListIdsByAppearance(page, mode),
       text: await outputText(page, mode),
-    };
-
-    await page
-      .getByRole('button', { name: 'Reset streaming', exact: true })
-      .click();
-    await expect(page.locator('[data-stream-status]')).toHaveText('Ready');
-    await page
-      .getByRole('heading', { name: /^Chunks/ })
-      .locator('xpath=..')
-      .getByRole('button')
-      .last()
-      .click();
-    await expect(page.locator('[data-stream-status]')).toHaveText(
-      'Finished: strict parse'
-    );
-    await settle(page);
-
-    return {
-      buildId,
-      fresh: {
-        html: await outputHTMLWithListIdsByAppearance(page, mode),
-        text: await outputText(page, mode),
-      },
-      streamed,
-    };
-  } finally {
-    await context.close();
-  }
+    },
+    streamed,
+  };
 };
 
 const runPreflight = async ({
@@ -1311,10 +1291,29 @@ const runPreflight = async ({
     referenceTextSha256: reference === null ? null : sha256(reference),
     streamedTextSha256: streamed === null ? null : sha256(streamed),
   });
+  const inOwnContext = async <T>(
+    run: (context: BrowserContext) => Promise<T>
+  ) => {
+    // browser-test-imports: the S5 bench runs its preflight in a context of its own browser
+    const context = await browser.newContext({
+      baseURL,
+      viewport: { height: 720, width: 1280 },
+    });
+
+    try {
+      return await run(context);
+    } finally {
+      await context.close();
+    }
+  };
 
   if (isAI(composition)) {
-    const stream = await runAICorrectness(browser, baseURL, chunks);
-    const whole = await runAICorrectness(browser, baseURL, [source]);
+    const stream = await inOwnContext(async (context) =>
+      runAICorrectness(await context.newPage(), chunks)
+    );
+    const whole = await inOwnContext(async (context) =>
+      runAICorrectness(await context.newPage(), [source])
+    );
 
     return verdict(
       stream.buildId === whole.buildId ? stream.buildId : null,
@@ -1323,11 +1322,8 @@ const runPreflight = async ({
     );
   }
 
-  const { buildId, fresh, streamed } = await runDemoCorrectness(
-    browser,
-    baseURL,
-    composition,
-    source
+  const { buildId, fresh, streamed } = await inOwnContext(async (context) =>
+    runDemoCorrectness(await context.newPage(), composition, source)
   );
 
   return verdict(buildId, fresh.text, streamed.text);
@@ -1431,16 +1427,14 @@ test.describe('markdown streaming contract', () => {
   }
 
   test('AI insert preview matches a one-chunk response and keeps block hosts', async ({
-    browser,
-    baseURL,
+    context,
   }) => {
     const source = makeSource('rich', 6000);
     const streamed = await runAICorrectness(
-      browser,
-      baseURL!,
+      await context.newPage(),
       toChunks(source)
     );
-    const whole = await runAICorrectness(browser, baseURL!, [source]);
+    const whole = await runAICorrectness(await context.newPage(), [source]);
 
     expect(streamed.text).toBe(whole.text);
     // Reused blocks must render like fresh ones, decorations included.
@@ -1454,12 +1448,10 @@ test.describe('markdown streaming contract', () => {
   // blocks (list numbers, the table of contents, footnotes) must still match
   // a render of the whole document at once.
   test('static preview renders the final document like a fresh render', async ({
-    browser,
-    baseURL,
+    context,
   }) => {
     const { fresh, streamed } = await runDemoCorrectness(
-      browser,
-      baseURL!,
+      await context.newPage(),
       'static',
       REUSE_SOURCE,
       16
@@ -1470,29 +1462,27 @@ test.describe('markdown streaming contract', () => {
   });
 
   test('AI preview renders the final document like a one-chunk response', async ({
-    browser,
-    baseURL,
+    context,
   }) => {
     const streamed = await runAICorrectness(
-      browser,
-      baseURL!,
+      await context.newPage(),
       toChunks(REUSE_SOURCE, 16)
     );
-    const whole = await runAICorrectness(browser, baseURL!, [REUSE_SOURCE]);
+    const whole = await runAICorrectness(await context.newPage(), [
+      REUSE_SOURCE,
+    ]);
 
     expect(streamed.text).toBe(whole.text);
     expect(streamed.html).toBe(whole.html);
   });
 
   test('AI insert preview keeps registered tags hidden', async ({
-    browser,
-    baseURL,
+    context,
   }) => {
     const source =
       'paragraph\n\n<columnGroup>\n  <column width="50%">\n    1\n  </column>\n  <column width="50%">\n    2\n  </column>\n</columnGroup>\n\nparagraph';
     const result = await runAICorrectness(
-      browser,
-      baseURL!,
+      await context.newPage(),
       toChunks(source, 7)
     );
 
@@ -1552,6 +1542,7 @@ test.describe('S5 acceptance matrix', () => {
   let benchBrowser: Browser | undefined;
 
   test.beforeAll(async ({ playwright }) => {
+    // browser-test-imports: the S5 bench reads the precise heap, which needs a browser launched with its own flag
     benchBrowser = await playwright.chromium.launch({
       args: ['--enable-precise-memory-info'],
       ignoreDefaultArgs: ['--hide-scrollbars'],

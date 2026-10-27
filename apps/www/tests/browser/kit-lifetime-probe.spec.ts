@@ -2,7 +2,7 @@ import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '@platejs/test/playwright';
 
 import type {
   Cohort,
@@ -33,12 +33,14 @@ test('kit lifetime comparison', async ({
   const isolatedProcesses = process.env.KIT_PROCESS_PER_VARIANT === '1';
   const targets = [];
   for (const [realm, variant] of variants.entries()) {
+    // browser-test-imports: KIT_PROCESS_PER_VARIANT measures each later variant in a browser process of its own
     const targetBrowser =
       isolatedProcesses && realm > 0
         ? await browser
             .browserType()
             .launch({ ...launchOptions, channel, headless })
         : browser;
+    // browser-test-imports: the probe unmounts its editors as part of what it measures, in a context per variant
     const context = await targetBrowser.newContext({
       baseURL: testInfo.project.use.baseURL,
       viewport: { width: 1280, height: 720 },

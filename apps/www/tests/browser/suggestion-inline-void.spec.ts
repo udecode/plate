@@ -1,8 +1,9 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
 
 type Block = { children?: Block[]; text?: string; type?: string };
 

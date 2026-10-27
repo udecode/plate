@@ -1,8 +1,9 @@
-import { expect, test } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
+  expect,
   installReactRenderProfiler,
   openExample,
+  test,
 } from '@platejs/test/playwright';
 
 import {

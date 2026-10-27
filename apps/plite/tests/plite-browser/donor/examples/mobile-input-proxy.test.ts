@@ -1,7 +1,9 @@
-import { expect, type Locator, test } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 import {
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 const mobileProxyProjects = new Set(['mobile-webkit']);

@@ -159,6 +159,8 @@ export const testModuleEffects = {
     'reads only the lock file it writes',
   'packages/test/src/playwright/harness-scenario.ts':
     'writes the trace file that its caller names',
+  'packages/test/src/playwright/test.ts':
+    "writes editor-state.json in the failed test's output folder",
   'packages/test/test/node/device-witness.test.ts': {
     reads: ['packages/test/test/node/fixtures/*.json'],
   },

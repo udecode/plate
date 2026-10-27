@@ -1,10 +1,12 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
   startBrowserNativeEventTrace,
   takeBrowserNativeEventTrace,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Locator, test, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import type { EditorDocumentValue } from 'platejs';
 
 const ROUTE = '/blocks/list-demo';

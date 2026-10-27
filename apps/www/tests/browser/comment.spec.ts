@@ -1,11 +1,13 @@
 import {
   createBrowserEditorHarness,
+  expect,
   getReactRenderProfilerSnapshot,
   installReactRenderProfiler,
   recordBrowserRuntimeErrors,
   resetReactRenderProfiler,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const EDITOR = '[data-editor="true"]';
 

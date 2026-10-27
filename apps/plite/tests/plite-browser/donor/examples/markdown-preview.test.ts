@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
 
-import { openExample } from '@platejs/test/playwright';
+import { expect, openExample, test } from '@platejs/test/playwright';
 
 test.describe('markdown preview', () => {
   test('checks for markdown', async ({ page }) => {

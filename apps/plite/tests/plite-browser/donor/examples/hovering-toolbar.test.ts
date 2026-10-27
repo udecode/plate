@@ -1,11 +1,14 @@
-import { expect, type Page, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY,
+import type { Page } from '@playwright/test';
+import {
+  BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
+  expect,
   installReactRenderProfiler,
   openExample,
   recordBrowserRuntimeErrors,
   resetReactRenderProfiler,
   takeBrowserRenderStateSnapshot,
+  test,
 } from '@platejs/test/playwright';
 
 test.describe('hovering toolbar example', () => {

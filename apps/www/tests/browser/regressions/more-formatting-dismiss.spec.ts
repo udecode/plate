@@ -1,8 +1,10 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Locator, test } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 
 type EditorNode = {
   bold?: boolean;

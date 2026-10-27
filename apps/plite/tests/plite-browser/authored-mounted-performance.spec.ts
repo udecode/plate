@@ -5,11 +5,13 @@ import path from 'node:path';
 
 import {
   BROWSER_HANDLE_KEY,
+  expect,
   measureTrustedTyping,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import type { Browser, Page } from '@playwright/test';
 
 import type { PliteBrowserHandle } from '../../../../packages/plitejs/src/react/editable/browser-handle';
 
@@ -172,6 +174,7 @@ const readMountedDOM = (page: Page) =>
   });
 
 const runArm = async ({ arm, browser }: { arm: Arm; browser: Browser }) => {
+  // browser-test-imports: each arm measures in a fresh context it closes before the verdict
   const context = await browser.newContext({
     baseURL: process.env.PLAYWRIGHT_BASE_URL,
     viewport: { height: 720, width: 1280 },

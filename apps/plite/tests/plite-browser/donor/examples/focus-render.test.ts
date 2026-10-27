@@ -1,8 +1,9 @@
-import { expect, test } from '@playwright/test';
 
 import {
   createBrowserEditorHarness,
+  expect,
   openExample,
+  test,
 } from '@platejs/test/playwright';
 
 for (const label of ['Read-only editor', 'Editable editor']) {

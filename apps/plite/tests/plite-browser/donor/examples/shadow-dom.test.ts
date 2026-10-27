@@ -1,8 +1,10 @@
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
   createBrowserEditorHarness,
   createBrowserTextInsertionGauntlet,
+  expect,
+  test,
 } from '@platejs/test/playwright';
 
 const focusTextboxEnd = async (textbox: Locator) => {

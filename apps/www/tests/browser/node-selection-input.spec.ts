@@ -1,8 +1,10 @@
 import {
   BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
+  expect,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
 

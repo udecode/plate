@@ -3,11 +3,13 @@ import { writeFileSync } from 'node:fs';
 import {
   BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
   startBrowserNativeEventTrace,
   takeBrowserNativeEventTrace,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 test('keeps homepage paragraph composition beside inline links and the next input', async ({
   page,

@@ -1,7 +1,10 @@
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
-import { BROWSER_HANDLE_KEY,
+import {
+  BROWSER_HANDLE_KEY,
+  expect,
   openExample,
+  test,
   type SelectionSnapshot,
 } from '@platejs/test/playwright';
 

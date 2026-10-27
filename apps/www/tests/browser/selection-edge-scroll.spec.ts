@@ -1,7 +1,11 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import {
+  createBrowserEditorHarness,
+  expect,
+  test,
+} from '@platejs/test/playwright';
+import type { Locator, Page } from '@playwright/test';
 
 import type { PliteBrowserHandleElement } from '../../../../packages/plitejs/src/react/editable/browser-handle';
-import { createBrowserEditorHarness } from '../../../../packages/test/src/playwright';
 import { recordBrowserRuntimeErrors } from '../../../../packages/test/src/playwright/runtime-errors';
 
 const editorRoot = (page: Page) =>

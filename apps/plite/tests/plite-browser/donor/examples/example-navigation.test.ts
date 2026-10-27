@@ -1,5 +1,8 @@
-import { expect, test } from '@playwright/test';
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
+import {
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
 
 const newExampleSlugs = [
   'authored-changes',

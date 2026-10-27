@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import { expect, test } from '@playwright/test';
 import {
   assertBrowserFirstPartyParityContracts,
   BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
@@ -7,11 +6,13 @@ import {
 import {
   assertNoIllegalKernelTransitions,
   createBrowserInternalControlGauntlet,
-  type EditorSurfaceOptions,
+  expect,
   installReactRenderProfiler,
   openExample,
-  type BrowserScenarioStep,
   takeBrowserRenderStateSnapshot,
+  test,
+  type BrowserScenarioStep,
+  type EditorSurfaceOptions,
 } from '@platejs/test/playwright';
 
 import {

@@ -229,6 +229,16 @@ export const steps = [
     run: 'node tooling/scripts/check-selection-writes.mjs',
   },
   {
+    name: 'browser-test-imports',
+    run: 'node tooling/scripts/check-browser-test-imports.mjs',
+    fix: 'node tooling/scripts/check-browser-test-imports.mjs --fix',
+    affected: touches(
+      'apps/plite/tests/plite-browser/',
+      'apps/www/tests/browser/',
+      'tooling/scripts/check-browser-test-imports'
+    ),
+  },
+  {
     name: 'yjs-element-deletes',
     run: 'node tooling/scripts/check-yjs-element-deletes.mjs',
   },

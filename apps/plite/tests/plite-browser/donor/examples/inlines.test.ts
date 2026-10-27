@@ -1,10 +1,12 @@
 // Donor rows preserve the shared cross-browser fixture signature.
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import {
   assertNoIllegalKernelTransitions,
   createBrowserInlineCutTypingGauntlet,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 const getBrowserWordBackwardDeleteCandidates = async (page: Page) =>

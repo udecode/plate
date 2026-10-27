@@ -1,9 +1,11 @@
 import {
   createBrowserEditorHarness,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 type Json = { readonly [key: string]: unknown; readonly children?: Json[] };
 

@@ -1,8 +1,9 @@
-import { expect, test } from '@playwright/test';
 import {
   createBrowserEditorHarness,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 test('publishes schema-only behavior atomically across primary, named, and projected roots', async ({

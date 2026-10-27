@@ -1,8 +1,10 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Page, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 // `gh api markdown --mode gfm` of "First claim[^1] and second claim[^1].
 // [^1]: Shared note.", as a GitHub comment renders it.

@@ -1,10 +1,12 @@
 import {
   BROWSER_HANDLE_KEY,
-  type BrowserEditorHarness,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
+  type BrowserEditorHarness,
 } from '@platejs/test/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const PAGE = '/docs/suggestion';
 const MAIN = 'Suggestions document';
@@ -170,7 +172,6 @@ const plainReplay = async (
     await act(plain, editor, root, step.do);
     trees.push(plainLines(await children(editor)));
   }
-  await plain.close();
   return trees;
 };
 

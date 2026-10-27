@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '@platejs/test/playwright';
 
 import { getPublicEntrypointRuntimeRows } from '../../../../tooling/entrypoints/entrypoint-dag.mjs';
 

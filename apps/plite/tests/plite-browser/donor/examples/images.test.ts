@@ -1,12 +1,14 @@
 // Donor rows preserve the shared cross-browser fixture signature.
-import { expect, type Locator, test } from "@playwright/test";
+import type { Locator } from "@playwright/test";
 import {
   BROWSER_HANDLE_KEY,
+  expect,
   installReactRenderProfiler,
   openExample,
   recordBrowserRuntimeErrors,
   resetReactRenderProfiler,
   takeBrowserRenderStateSnapshot,
+  test,
 } from "@platejs/test/playwright";
 
 type BlockDropCursorEdge = "bottom" | "top";

@@ -1,5 +1,9 @@
-import { createBrowserEditorHarness } from '@platejs/test/playwright';
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import {
+  createBrowserEditorHarness,
+  expect,
+  test,
+} from '@platejs/test/playwright';
+import type { Locator, Page } from '@playwright/test';
 
 type ClipboardUploadProofWindow = Window & {
   __clipboardUploadProof?: {

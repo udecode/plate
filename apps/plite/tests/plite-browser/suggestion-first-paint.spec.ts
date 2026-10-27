@@ -1,9 +1,10 @@
 import {
   BROWSER_HANDLE_KEY,
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
 
 test('paints the first typed character after restoring suggestions', async ({
   page,

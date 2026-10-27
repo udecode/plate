@@ -1,5 +1,8 @@
-import { createBrowserEditorHarness } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
+import {
+  createBrowserEditorHarness,
+  expect,
+  test,
+} from '@platejs/test/playwright';
 
 for (const mode of ['native', 'event'] as const) {
   test(`HTML clipboard preserves heading, bold and link via ${mode}`, async ({

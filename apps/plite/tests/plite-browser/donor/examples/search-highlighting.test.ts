@@ -1,9 +1,10 @@
-import { expect, test } from '@playwright/test';
 import {
+  expect,
   installReactRenderProfiler,
   openExample,
   resetReactRenderProfiler,
   takeBrowserRenderStateSnapshot,
+  test,
 } from '@platejs/test/playwright';
 
 test.describe('search highlighting', () => {

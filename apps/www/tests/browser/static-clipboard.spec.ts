@@ -1,5 +1,9 @@
-import { createBrowserEditorHarness } from '@platejs/test/playwright';
-import { expect, type Locator, test } from '@playwright/test';
+import {
+  createBrowserEditorHarness,
+  expect,
+  test,
+} from '@platejs/test/playwright';
+import type { Locator } from '@playwright/test';
 
 const selectText = async (
   marker: Locator,

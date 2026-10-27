@@ -1,5 +1,8 @@
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
-import { expect, test } from '@playwright/test';
+import {
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
 
 test('saved revisions render a structural comparison of the document', async ({
   page,

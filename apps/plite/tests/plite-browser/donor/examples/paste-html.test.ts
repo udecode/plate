@@ -1,10 +1,13 @@
-import { expect, type Locator, type Page, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY,
+import type { Locator, Page } from '@playwright/test';
+import {
   assertNoIllegalKernelTransitions,
+  BROWSER_HANDLE_KEY,
   createBrowserClipboardPasteGauntlet,
   createBrowserDropDataGauntlet,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 const GOOGLE_DOCS_FONT_SIZE_HTML = `<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid"><p dir="ltr" style="line-height:1.56;margin-top:10pt;margin-bottom:0pt;"><span style="font-size:24pt;font-family:Lato,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;text-decoration:none;white-space:pre-wrap;">Random text at </span><span style="font-size:36pt;font-family:Lato,sans-serif;color:#000000;background-color:transparent;font-weight:400;font-style:normal;text-decoration:none;white-space:pre-wrap;">36 pt</span></p></b>`;

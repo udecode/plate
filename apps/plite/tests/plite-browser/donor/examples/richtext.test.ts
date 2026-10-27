@@ -1,8 +1,9 @@
 // Donor rows preserve the shared cross-browser fixture signature.
-import { expect, type Locator, type Page, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY,
-  assertNoIllegalKernelTransitions,
+import type { Locator, Page } from '@playwright/test';
+import {
   assertBrowserSelectionContract,
+  assertNoIllegalKernelTransitions,
+  BROWSER_HANDLE_KEY,
   createBrowserDestructiveEditingGauntlet,
   createBrowserMarkClickTypingGauntlet,
   createBrowserMarkTypingGauntlet,
@@ -11,13 +12,16 @@ import { BROWSER_HANDLE_KEY,
   createBrowserSemanticEditingConformanceGauntlet,
   createBrowserToolbarMarkClickTypingGauntlet,
   createBrowserWarmToolbarArrowGauntlet,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3101';
-const macChromeUserAgent =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36';
+const macChrome = {
+  userAgent:
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36',
+};
 const scrollableEditorCSS = `
   [data-editor][data-editor-root="main"] {
     display: block;
@@ -4105,22 +4109,18 @@ test.describe('On richtext example', () => {
     await expectVisualCaretAtEndOfFirstBlock(editor.root);
   });
 
-  test('deletes one character with Apple Control+D', async ({
-    browser,
-    browserName,
-  }, testInfo) => {
-    test.skip(
-      browserName !== 'chromium' || testInfo.project.name === 'mobile',
-      'Chromium desktop proof'
-    );
+  test.describe('with a Mac Chrome user agent', () => {
+    test.use(macChrome);
 
-    const context = await browser.newContext({
-      baseURL,
-      userAgent: macChromeUserAgent,
-    });
-    const page = await context.newPage();
+    test('deletes one character with Apple Control+D', async ({
+      browserName,
+      page,
+    }, testInfo) => {
+      test.skip(
+        browserName !== 'chromium' || testInfo.project.name === 'mobile',
+        'Chromium desktop proof'
+      );
 
-    try {
       const editor = await openExample(page, 'plite/richtext', {
         ready: {
           editor: 'visible',
@@ -4144,27 +4144,17 @@ test.describe('On richtext example', () => {
           anchor: { path: [0, 0], offset: 0 },
           focus: { path: [0, 0], offset: 0 },
         });
-    } finally {
-      await context.close();
-    }
-  });
-
-  test('deletes one character backward with Apple Control+H', async ({
-    browser,
-    browserName,
-  }, testInfo) => {
-    test.skip(
-      browserName !== 'chromium' || testInfo.project.name === 'mobile',
-      'Chromium desktop proof'
-    );
-
-    const context = await browser.newContext({
-      baseURL,
-      userAgent: macChromeUserAgent,
     });
-    const page = await context.newPage();
 
-    try {
+    test('deletes one character backward with Apple Control+H', async ({
+      browserName,
+      page,
+    }, testInfo) => {
+      test.skip(
+        browserName !== 'chromium' || testInfo.project.name === 'mobile',
+        'Chromium desktop proof'
+      );
+
       const editor = await openExample(page, 'plite/richtext', {
         ready: {
           editor: 'visible',
@@ -4189,27 +4179,17 @@ test.describe('On richtext example', () => {
           anchor: { path: [0, 0], offset: 2 },
           focus: { path: [0, 0], offset: 2 },
         });
-    } finally {
-      await context.close();
-    }
-  });
-
-  test('keeps model and DOM coherent after persistent native word-delete', async ({
-    browser,
-    browserName,
-  }, testInfo) => {
-    test.skip(
-      browserName !== 'chromium' || testInfo.project.name === 'mobile',
-      'Chromium desktop proof'
-    );
-
-    const context = await browser.newContext({
-      baseURL,
-      userAgent: macChromeUserAgent,
     });
-    const page = await context.newPage();
 
-    try {
+    test('keeps model and DOM coherent after persistent native word-delete', async ({
+      browserName,
+      page,
+    }, testInfo) => {
+      test.skip(
+        browserName !== 'chromium' || testInfo.project.name === 'mobile',
+        'Chromium desktop proof'
+      );
+
       const editor = await openExample(page, 'plite/richtext', {
         ready: {
           editor: 'visible',
@@ -4316,70 +4296,61 @@ test.describe('On richtext example', () => {
           repairTracesJoinDeleteEpochs: true,
           repairSelectionChangesStayModelOwned: true,
         });
-    } finally {
-      await context.close();
-    }
-  });
-
-  test('keeps rendered DOM shape after repeated leaf-boundary word-delete', async ({
-    browser,
-    browserName,
-  }, testInfo) => {
-    test.skip(
-      browserName !== 'chromium' || testInfo.project.name === 'mobile',
-      'Chromium desktop proof'
-    );
-
-    const context = await browser.newContext({
-      baseURL,
-      userAgent: macChromeUserAgent,
-      viewport: { height: 560, width: 383 },
     });
-    const page = await context.newPage();
 
-    try {
-      const editor = await openExample(page, 'plite/richtext', {
-        ready: {
-          editor: 'visible',
-        },
-      });
-      const unchangedTailBlocks = [
-        "Since it's rich text, you can do things like turn a selection of text bold, or add a semantically rendered block quote in the middle of the page, like this:",
-        'A wise quote.',
-        'Try it out for yourself!',
-      ];
+    test.describe('in a narrow viewport', () => {
+      test.use({ viewport: { height: 560, width: 383 } });
 
-      await editor.click();
-      await selectEndOfFirstBlockWithDOMSelection(editor.root);
-      await editor.assert.domCaret({ offset: 1, text: '!' });
+      test('keeps rendered DOM shape after repeated leaf-boundary word-delete', async ({
+        browserName,
+        page,
+      }, testInfo) => {
+        test.skip(
+          browserName !== 'chromium' || testInfo.project.name === 'mobile',
+          'Chromium desktop proof'
+        );
 
-      for (let i = 0; i < 4; i++) {
-        await page.keyboard.press('Alt+Backspace');
+        const editor = await openExample(page, 'plite/richtext', {
+          ready: {
+            editor: 'visible',
+          },
+        });
+        const unchangedTailBlocks = [
+          "Since it's rich text, you can do things like turn a selection of text bold, or add a semantically rendered block quote in the middle of the page, like this:",
+          'A wise quote.',
+          'Try it out for yourself!',
+        ];
 
+        await editor.click();
+        await selectEndOfFirstBlockWithDOMSelection(editor.root);
+        await editor.assert.domCaret({ offset: 1, text: '!' });
+
+        for (let i = 0; i < 4; i++) {
+          await page.keyboard.press('Alt+Backspace');
+
+          await expect
+            .poll(async () => (await editor.get.blockTexts()).slice(1))
+            .toEqual(unchangedTailBlocks);
+        }
+
+        const firstBlockModelText = (await editor.get.blockTexts())[0] ?? '';
+
+        await editor.assert.renderedDOMShape({
+          blockIndex: 0,
+          innerText: firstBlockModelText,
+          noUnexpectedZeroWidthBreaks: true,
+          textContent: firstBlockModelText,
+          zeroWidthBreakCount: 0,
+          zeroWidthCount: 0,
+        });
+
+        await expectCollapsedDOMSelectionInsideEditable(editor.root);
+        await page.keyboard.insertText('Z');
         await expect
-          .poll(async () => (await editor.get.blockTexts()).slice(1))
-          .toEqual(unchangedTailBlocks);
-      }
-
-      const firstBlockModelText = (await editor.get.blockTexts())[0] ?? '';
-
-      await editor.assert.renderedDOMShape({
-        blockIndex: 0,
-        innerText: firstBlockModelText,
-        noUnexpectedZeroWidthBreaks: true,
-        textContent: firstBlockModelText,
-        zeroWidthBreakCount: 0,
-        zeroWidthCount: 0,
+          .poll(async () => (await editor.get.blockTexts())[0])
+          .toContain('Z');
       });
-
-      await expectCollapsedDOMSelectionInsideEditable(editor.root);
-      await page.keyboard.insertText('Z');
-      await expect
-        .poll(async () => (await editor.get.blockTexts())[0])
-        .toContain('Z');
-    } finally {
-      await context.close();
-    }
+    });
   });
 
   test('keeps caret editable after browser Backspace deletes selected range', async ({
@@ -5080,22 +5051,18 @@ test.describe('On richtext example', () => {
     );
   });
 
-  test('opens a line with Mac Ctrl+O without moving past following text', async ({
-    browser,
-    browserName,
-  }, testInfo) => {
-    test.skip(
-      browserName !== 'chromium' || testInfo.project.name === 'mobile',
-      'Chromium desktop proof'
-    );
+  test.describe('with a Mac Chrome user agent', () => {
+    test.use(macChrome);
 
-    const context = await browser.newContext({
-      baseURL,
-      userAgent: macChromeUserAgent,
-    });
-    const page = await context.newPage();
+    test('opens a line with Mac Ctrl+O without moving past following text', async ({
+      browserName,
+      page,
+    }, testInfo) => {
+      test.skip(
+        browserName !== 'chromium' || testInfo.project.name === 'mobile',
+        'Chromium desktop proof'
+      );
 
-    try {
       const editor = await openExample(page, 'plite/richtext', {
         ready: {
           editor: 'visible',
@@ -5147,9 +5114,7 @@ test.describe('On richtext example', () => {
           }),
         ])
       );
-    } finally {
-      await context.close();
-    }
+    });
   });
 
   test('opens and rejoins a line before emoji text', async ({
@@ -7231,16 +7196,12 @@ test.describe('On richtext example', () => {
       );
   });
 
-  test('keeps selection synchronized after browser line extension', async ({
-    browser,
-  }) => {
-    const context = await browser.newContext({
-      baseURL,
-      userAgent: macChromeUserAgent,
-    });
-    const page = await context.newPage();
+  test.describe('with a Mac Chrome user agent', () => {
+    test.use(macChrome);
 
-    try {
+    test('keeps selection synchronized after browser line extension', async ({
+      page,
+    }) => {
       const editor = await openExample(page, 'plite/richtext', {
         ready: {
           editor: 'visible',
@@ -7297,9 +7258,7 @@ test.describe('On richtext example', () => {
             }),
           ])
         );
-    } finally {
-      await context.close();
-    }
+    });
   });
 
   test('selects the current block on browser triple click', async ({
@@ -7705,14 +7664,10 @@ test.describe('On richtext example', () => {
       .toBe(true);
   });
 
-  test('repairs DOM after Mac keyboard undo', async ({ browser }) => {
-    const context = await browser.newContext({
-      baseURL,
-      userAgent: macChromeUserAgent,
-    });
-    const page = await context.newPage();
+  test.describe('with a Mac Chrome user agent', () => {
+    test.use(macChrome);
 
-    try {
+    test('repairs DOM after Mac keyboard undo', async ({ page }) => {
       const editor = await openExample(page, 'plite/richtext', {
         ready: {
           editor: 'visible',
@@ -7732,9 +7687,7 @@ test.describe('On richtext example', () => {
 
       await expect.poll(() => editor.get.modelText()).not.toContain('Undo Me');
       await expect(editor.root).not.toContainText('Undo Me');
-    } finally {
-      await context.close();
-    }
+    });
   });
 
   test('undo restores deleted selected text', async ({ page }) => {

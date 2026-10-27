@@ -1,12 +1,15 @@
-import { expect, type Locator, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY,
+import type { Locator } from '@playwright/test';
+import {
   assertBrowserSelectionContract,
-  type BrowserTestOptions,
+  BROWSER_HANDLE_KEY,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
   startBrowserNativeEventTrace,
   stopBrowserNativeEventTrace,
   takeBrowserNativeEventTrace,
+  test,
+  type BrowserTestOptions,
 } from '@platejs/test/playwright';
 
 const getBrowserUndoHotkey = async (root: Locator) =>

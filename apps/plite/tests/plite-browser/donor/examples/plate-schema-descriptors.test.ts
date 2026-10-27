@@ -1,8 +1,9 @@
-import { expect, test } from "@playwright/test";
 import {
   createBrowserEditorHarness,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from "@platejs/test/playwright";
 
 test("compiles Plate element and mark descriptors into HTML parsing, rendering, and Markdown clipboard bindings", async ({

@@ -1,9 +1,12 @@
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import type { EditorUpdatePolicy } from 'platejs';
 
-import { BROWSER_HANDLE_KEY,
+import {
+  BROWSER_HANDLE_KEY,
+  expect,
   openExample,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
 
 type EditorHarness = Awaited<ReturnType<typeof openExample>>;

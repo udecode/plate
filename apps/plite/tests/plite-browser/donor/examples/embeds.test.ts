@@ -1,11 +1,12 @@
 // Donor rows preserve the shared cross-browser fixture signature.
-import { expect, test } from '@playwright/test';
 import {
+  expect,
   installReactRenderProfiler,
   openExample,
   recordBrowserRuntimeErrors,
   resetReactRenderProfiler,
   takeBrowserRenderStateSnapshot,
+  test,
 } from '@platejs/test/playwright';
 
 test.describe('embeds example', () => {

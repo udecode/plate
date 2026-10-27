@@ -1,8 +1,10 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const AI_CASE_ID = 'ai:floating-menu-single-shell';
 const LINK_DISCUSSION_CASE_ID = 'link:floating-toolbar-discussion-spacing';

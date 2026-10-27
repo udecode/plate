@@ -1,10 +1,11 @@
-import { expect, test } from '@playwright/test';
 import {
+  expect,
   installReactRenderProfiler,
   openExample,
   recordBrowserRuntimeErrors,
   resetReactRenderProfiler,
   takeBrowserRenderStateSnapshot,
+  test,
 } from '@platejs/test/playwright';
 
 const encodePliteFragment = (fragment: unknown) =>

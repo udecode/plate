@@ -1,5 +1,9 @@
-import { expect, test } from '@playwright/test';
-import { BROWSER_HANDLE_KEY, recordBrowserRuntimeErrors } from '@platejs/test/playwright';
+import {
+  BROWSER_HANDLE_KEY,
+  expect,
+  recordBrowserRuntimeErrors,
+  test,
+} from '@platejs/test/playwright';
 
 test.describe('iframe editor', () => {
   test.beforeEach(async ({ page }) => {

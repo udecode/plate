@@ -1,8 +1,9 @@
-import { expect, test } from '@playwright/test';
 import {
+  expect,
   openExample,
-  type BrowserEditorHarness,
   recordBrowserRuntimeErrors,
+  test,
+  type BrowserEditorHarness,
 } from '@platejs/test/playwright';
 
 type NativeCaretFixture = Readonly<{

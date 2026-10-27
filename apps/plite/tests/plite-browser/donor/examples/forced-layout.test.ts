@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '@platejs/test/playwright';
 
 test.describe('forced layout example', () => {
   const elements = [

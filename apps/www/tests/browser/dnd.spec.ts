@@ -1,8 +1,10 @@
 import {
   createBrowserEditorHarness,
+  expect,
   recordBrowserRuntimeErrors,
+  test,
 } from '@platejs/test/playwright';
-import { expect, type Locator, type Page, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 const CASE_ID = 'dnd:drag-handle-excluded-from-native-selection';
 const PREVIEW_CASE_ID = 'dnd:block-preview-origin';
