@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
+import {
+  recordBrowserRuntimeErrors,
+  withExclusiveClipboardAccess,
+} from '@platejs/test/playwright';
 
 test.describe('yjs collaboration example', () => {
   test('maps Plite history across offline and remote edits', async ({
@@ -144,6 +147,64 @@ test.describe('yjs collaboration example', () => {
       expect(await readDocuments()).toEqual(documentsBeforeRejections);
       expect(await readHistory()).toEqual(historyBeforeRejections);
 
+      runtimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+    }
+  });
+
+  test('copies a whole selected line and pastes over another in every peer [plate#5280]', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof');
+    test.skip(
+      testInfo.project.name === 'webkit',
+      'WebKit blocks privileged clipboard reads in Playwright'
+    );
+
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+    const peerIds = ['a', 'b', 'c', 'd'] as const;
+    const editor = page.locator(
+      '#yjs-peer-a-editor-surface [contenteditable="true"]'
+    );
+    const readLines = () =>
+      Promise.all(
+        peerIds.map((peerId) =>
+          page
+            .locator(
+              `#yjs-peer-${peerId}-editor-surface [contenteditable="true"] > [data-editor-node="element"]`
+            )
+            .allInnerTexts()
+        )
+      );
+
+    try {
+      await page.goto('/examples/plite/yjs-collaboration');
+      await expect(page.locator('[contenteditable="true"]')).toHaveCount(4);
+
+      await editor.getByText('Hello world!').click();
+      await page.keyboard.press('End');
+      await page.keyboard.press('Enter');
+      await page.keyboard.type('QA copy line');
+      await page.keyboard.press('Shift+Home');
+      await withExclusiveClipboardAccess(async () => {
+        await page.keyboard.press('ControlOrMeta+C');
+        await expect
+          .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+          .toBe('QA copy line');
+
+        await page.keyboard.press('End');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('QA paste line');
+        await page.keyboard.press('Shift+Home');
+        await page.keyboard.press('ControlOrMeta+V');
+      });
+
+      await expect
+        .poll(readLines)
+        .toEqual(
+          peerIds.map(() => ['Hello world!', 'QA copy line', 'QA copy line'])
+        );
       runtimeErrors.assertNone();
     } finally {
       runtimeErrors.stop();

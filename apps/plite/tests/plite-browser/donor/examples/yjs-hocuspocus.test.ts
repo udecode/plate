@@ -4,7 +4,10 @@ import net from 'node:net';
 import path from 'node:path';
 
 import { expect, test, type Page } from '@playwright/test';
-import { recordBrowserRuntimeErrors } from '@platejs/test/playwright';
+import {
+  recordBrowserRuntimeErrors,
+  withExclusiveClipboardAccess,
+} from '@platejs/test/playwright';
 
 const repoRoot = path.resolve(__dirname, '../../../../../..');
 const bunExecutable = path.join(
@@ -119,6 +122,8 @@ const expectConverged = async (
 };
 
 test.describe('yjs hocuspocus example', () => {
+  test.describe.configure({ mode: 'serial' });
+
   test('owns transport lifetime while the binding preserves admitted offline work', async ({
     context,
     page,
@@ -215,6 +220,77 @@ test.describe('yjs hocuspocus example', () => {
       );
       await expect(editor(peerBPage, 'a')).toHaveText('Hello world!');
 
+      runtimeErrors.assertNone();
+      peerBRuntimeErrors.assertNone();
+    } finally {
+      runtimeErrors.stop();
+      peerBRuntimeErrors.stop();
+      await peerBPage.close().catch(() => undefined);
+    }
+  });
+
+  test('copies a whole selected line and pastes over another in both peers [plate#5280]', async ({
+    context,
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop clipboard proof');
+    test.skip(
+      testInfo.project.name === 'webkit',
+      'WebKit blocks privileged clipboard reads in Playwright'
+    );
+
+    const runtimeErrors = recordBrowserRuntimeErrors(page);
+    const peerBPage = await context.newPage();
+    const peerBRuntimeErrors = recordBrowserRuntimeErrors(peerBPage);
+    const room = `plite-yjs-hocuspocus-${randomUUID()}`;
+    const peerAEditor = editor(page, 'a');
+    const peerBEditor = editor(peerBPage, 'b');
+    const readLines = (peerEditor: ReturnType<typeof editor>) =>
+      peerEditor
+        .locator(':scope > [data-editor-node="element"]')
+        .allInnerTexts();
+
+    try {
+      await Promise.all([
+        page.goto(peerUrl(room, 'a')),
+        peerBPage.goto(peerUrl(room, 'b')),
+      ]);
+      await Promise.all([
+        connect(page, 'a').click(),
+        connect(peerBPage, 'b').click(),
+      ]);
+      await expect(admission(page)).toHaveAttribute(
+        'data-admission-status',
+        'ready'
+      );
+      await expect(admission(peerBPage)).toHaveAttribute(
+        'data-admission-status',
+        'ready'
+      );
+
+      await peerAEditor.getByText('Hello world!').click();
+      await page.keyboard.press('End');
+      await page.keyboard.press('Enter');
+      await page.keyboard.type('QA copy line');
+      await page.keyboard.press('Shift+Home');
+      await withExclusiveClipboardAccess(async () => {
+        await page.keyboard.press('ControlOrMeta+C');
+        await expect
+          .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+          .toBe('QA copy line');
+
+        await page.keyboard.press('End');
+        await page.keyboard.press('Enter');
+        await page.keyboard.type('QA paste line');
+        await page.keyboard.press('Shift+Home');
+        await page.keyboard.press('ControlOrMeta+V');
+      });
+
+      for (const peerEditor of [peerAEditor, peerBEditor]) {
+        await expect
+          .poll(() => readLines(peerEditor))
+          .toEqual(['Hello world!', 'QA copy line', 'QA copy line']);
+      }
       runtimeErrors.assertNone();
       peerBRuntimeErrors.assertNone();
     } finally {
