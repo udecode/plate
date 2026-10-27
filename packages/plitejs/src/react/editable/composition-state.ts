@@ -18,6 +18,7 @@ import {
   isAndroidDOMHost,
   isWebKitDOMHost,
 } from '../../dom/internal';
+import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   ANDROID_COMPOSITION_END_DELAY,
@@ -1050,6 +1051,9 @@ export const applyEditableCompositionStart = ({
     return;
   }
   if (ReactEditor.hasSelectableTarget(editor, event.target)) {
+    // The browser owns the preedit caret, so no settling focus request may
+    // write the model selection over it.
+    supersedeEditableFocusRequests(editor);
     const pendingCompositionEnd = inputController?.state.pendingCompositionEnd;
 
     if (pendingCompositionEnd?.ownership === 'editor') {

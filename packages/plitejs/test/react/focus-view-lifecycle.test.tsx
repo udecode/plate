@@ -9,6 +9,11 @@ import {
   useEditorFocused,
 } from '../../src/react';
 
+const wait = (ms: number) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
 function FocusState() {
   return <output data-testid="focused">{String(useEditorFocused())}</output>;
 }
@@ -88,10 +93,6 @@ test('a caret key keeps the selection it moves from a focus request still settli
   const [hello, world] = [
     ...textbox.querySelectorAll('[data-editor-string]'),
   ].map((string) => string.firstChild!);
-  const wait = (ms: number) =>
-    new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
   // WebKit can report the key's selection move after the settle timeout.
   const holdSelectionChange = (event: Event) =>
     event.stopImmediatePropagation();
@@ -116,4 +117,32 @@ test('a caret key keeps the selection it moves from a focus request still settli
     anchor: { offset: 5, path: [1, 0] },
     focus: { offset: 5, path: [0, 0] },
   });
+});
+
+test('a composition keeps its preedit caret from a focus request still settling', async () => {
+  const editor = createEditor({
+    initialValue: [{ type: 'paragraph', children: [{ text: 'Hello' }] }],
+  });
+  const view = render(
+    <EditorRoot editor={editor}>
+      <Editable aria-label="editor" />
+    </EditorRoot>
+  );
+  const textbox = view.getByRole('textbox');
+  const hello = textbox.querySelector('[data-editor-string]')!.firstChild!;
+
+  await act(async () => {
+    textbox.focus();
+    editor.update((tx) => tx.selection.set({ path: [0, 0], offset: 5 }));
+  });
+  await act(async () => {
+    editor.api.dom.focus();
+    fireEvent.compositionStart(textbox);
+    document.getSelection()!.setBaseAndExtent(hello, 2, hello, 2);
+    await wait(FOCUS_SETTLE_TIMEOUT + 20);
+  });
+
+  const selection = document.getSelection()!;
+
+  expect([selection.focusNode, selection.focusOffset]).toEqual([hello, 2]);
 });
