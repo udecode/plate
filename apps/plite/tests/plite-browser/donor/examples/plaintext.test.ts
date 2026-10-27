@@ -69,6 +69,65 @@ test.describe('plaintext example', () => {
     await expect.poll(() => editor.get.text()).toContain(insertedText);
   });
 
+  test('leaves a tap past the end of the text to the browser caret [plate#5247]', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== 'mobile',
+      'Touch tap proof needs the touch project'
+    );
+
+    const text = 'This is editable plain text, just like a <textarea>!';
+    const editor = await openExample(page, 'plite/plaintext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+    const tapPoint = await editor.root.evaluate((root) => {
+      const textNode = root.querySelector('[data-editor-string]')?.firstChild;
+      const line = root.querySelector('[data-editor-node="element"]');
+
+      if (!textNode?.textContent || !line) {
+        throw new Error('Expected the plaintext paragraph');
+      }
+
+      const lastCharacter = document.createRange();
+
+      lastCharacter.setStart(textNode, textNode.textContent.length - 1);
+      lastCharacter.setEnd(textNode, textNode.textContent.length);
+      const lastRect = lastCharacter.getBoundingClientRect();
+      window.addEventListener(
+        'mousedown',
+        (event) => {
+          (window as Window & { tapCanceled?: boolean }).tapCanceled =
+            event.defaultPrevented;
+        },
+        { once: true }
+      );
+
+      return {
+        x: (lastRect.right + line.getBoundingClientRect().right) / 2,
+        y: (lastRect.top + lastRect.bottom) / 2,
+      };
+    });
+
+    await page.touchscreen.tap(tapPoint.x, tapPoint.y);
+
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => (window as Window & { tapCanceled?: boolean }).tapCanceled
+        )
+      )
+      .toBe(false);
+    await expect
+      .poll(() => editor.selection.get())
+      .toEqual({
+        anchor: { offset: text.length, path: [0, 0] },
+        focus: { offset: text.length, path: [0, 0] },
+      });
+  });
+
   test('captures native beforeinput trace while inserting text', async ({
     page,
   }, testInfo) => {

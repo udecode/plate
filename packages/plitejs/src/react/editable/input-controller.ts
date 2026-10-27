@@ -204,6 +204,23 @@ export const isInteractiveInternalTarget = (
   );
 };
 
+const TEXT_INPUT_TYPES = new Set([
+  'email',
+  'number',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'url',
+]);
+
+export const isNativeTextControlTarget = (target: EventTarget | null) =>
+  isDOMElement(target) &&
+  (target.localName === 'textarea' ||
+    (target.localName === 'input' &&
+      TEXT_INPUT_TYPES.has((target as HTMLInputElement).type))) &&
+  !getExternalTextHostOwner(target);
+
 export const isNativeDraggableTarget = (
   editor: ReactRuntimeEditor,
   target: EventTarget | null
@@ -339,11 +356,16 @@ export const classifyKeyboardIntent = ({
     return 'composition';
   }
 
-  if (Hotkeys.isUndo(nativeEvent) || Hotkeys.isRedo(nativeEvent)) {
+  const internalTarget = isInteractiveInternalTarget(editor, event.target);
+
+  if (
+    (Hotkeys.isUndo(nativeEvent) || Hotkeys.isRedo(nativeEvent)) &&
+    !(internalTarget && isNativeTextControlTarget(event.target))
+  ) {
     return 'history';
   }
 
-  if (isInteractiveInternalTarget(editor, event.target)) {
+  if (internalTarget) {
     return 'internal-control';
   }
 
@@ -438,6 +460,10 @@ export const classifyBeforeInputIntent = ({
   event: InputEvent;
   internalTarget?: boolean;
 }): InputIntent | null => {
+  if (internalTarget && isNativeTextControlTarget(event.target)) {
+    return 'internal-control';
+  }
+
   const intent = DOMRootRuntime.classifyBeforeInputIntent({
     inputType: event.inputType,
     internalTarget,

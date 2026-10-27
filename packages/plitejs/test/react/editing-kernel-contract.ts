@@ -1097,6 +1097,32 @@ test('beforeinput history stays model-owned for internal controls', () => {
   ).toBe('history');
 });
 
+test('beforeinput history in an internal text field stays with the field', () => {
+  expect(
+    classifyBeforeInputIntent({
+      editor: createEditor() as any,
+      event: {
+        inputType: 'historyUndo',
+        target: document.createElement('textarea'),
+      } as any,
+      internalTarget: true,
+    })
+  ).toBe('internal-control');
+});
+
+test('beforeinput history in a text field the editor does not own stays model-owned', () => {
+  expect(
+    classifyBeforeInputIntent({
+      editor: createEditor() as any,
+      event: {
+        inputType: 'historyUndo',
+        target: document.createElement('textarea'),
+      } as any,
+      internalTarget: false,
+    })
+  ).toBe('history');
+});
+
 test('kernel result creation rejects illegal transitions in test mode', () => {
   expect(() =>
     createEditableKernelResult({
