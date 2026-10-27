@@ -2828,6 +2828,7 @@
         "test:partition:standard-code-block-react",
         "test:partition:standard-indent",
         "test:partition:standard-link",
+        "test:partition:standard-link-react",
         "test:partition:standard-list",
         "test:partition:standard-list-react",
         "test:partition:static",
@@ -5813,6 +5814,57 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "test:partition:standard-link-react": {
+      "cache": true,
+      "dependsOn": [
+        "plitejs#typecheck:partition:core",
+        "plitejs#typecheck:partition:testing",
+        "typecheck:partition:core",
+        "typecheck:partition:react-core",
+        "typecheck:partition:standard-basic-nodes-react",
+        "typecheck:partition:standard-link",
+        "typecheck:partition:standard-link-react"
+      ],
+      "inputs": [
+        "src/react/features/link/**",
+        "test/react/features/link/**",
+        "test/react/features/link.*",
+        "test/react/features/link-*",
+        "$TURBO_ROOT$/config/plite-source-aliases.ts",
+        "$TURBO_ROOT$/config/plite-source-test-setup.ts",
+        "$TURBO_ROOT$/config/plite-test-jsx.js",
+        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
+        "$TURBO_ROOT$/packages/*/package.json",
+        "$TURBO_ROOT$/packages/platejs/tsconfig.json",
+        "$TURBO_ROOT$/packages/plitejs/tsconfig.json",
+        "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
+        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
+        "$TURBO_ROOT$/tsconfig.json",
+        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
+        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
+        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
+        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
+        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
+        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
+        "$TURBO_ROOT$/bunfig.toml",
+        "$TURBO_ROOT$/config/*",
+        "$TURBO_ROOT$/tooling/config/*",
+        "bunfig.toml",
+        "vitest.config.*"
+      ],
+      "env": [
+        "BENCH_MEASURE",
+        "CI",
+        "FAST_CHECK_SEED",
+        "PLATE_*",
+        "PLITE_*",
+        "TZ"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "test:partition:standard-list": {
       "cache": true,
       "dependsOn": [
@@ -6043,6 +6095,7 @@
         "plitejs#typecheck:partition:testing",
         "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:math",
         "typecheck:partition:react-core",
         "typecheck:partition:suggestion",
         "typecheck:partition:suggestion-react"

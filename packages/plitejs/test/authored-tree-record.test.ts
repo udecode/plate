@@ -7,15 +7,19 @@ import {
   createEditor,
   createEditorView,
   defineEditorSchema,
+  definePlugin,
   editorCommands,
   property,
   schema,
   target,
   transfer,
 } from 'plitejs';
+import { dom } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 
 import { createAuthoredPlugin } from '../src/authored/authored';
+import { evaluateCommand } from '../src/core/command-registry';
+import { withCompositionStamp } from '../src/core/composition-stamp';
 import {
   authoredTestApi,
   expandedChildren,
@@ -3385,5 +3389,718 @@ describe('authored review tree recording laws', () => {
       }),
       { ids: ['bob:1'], status: 'blocked', with: ['ann:1'] }
     );
+  });
+});
+
+describe('a composition commit inside crossed-out text', () => {
+  const Inline = defineEditorSchema('record-composition', {
+    elements: {
+      link: { content: schema.content.text(), inline: true },
+      paragraph: schema.element.textBlock(),
+    },
+    id: 'record-composition',
+    properties: [schema.textProperty('bold', property.boolean())],
+    root: schema.content.types(['paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    unknown: 'reject',
+    version: 1,
+  });
+  const gone = (text = 'gone', extra: Record<string, unknown> = {}) => ({
+    authored: [mark('delete', 'ann')],
+    text,
+    ...extra,
+  });
+  const link = (...children: Array<Record<string, unknown>>) => ({
+    type: 'link',
+    children,
+  });
+  const run = [paragraph({ text: 'a ' }, gone(), { text: ' b' })];
+  const splitRun = (intent: 'edit' | 'propose') => [
+    paragraph(
+      { text: 'a ' },
+      gone('go'),
+      intent === 'edit'
+        ? { text: 'すし' }
+        : { authored: [mark('insert', 'bob', 'bob:0')], text: 'すし' },
+      gone('ne'),
+      { text: ' b' }
+    ),
+  ];
+  type Plugins = readonly unknown[];
+  const open = (
+    value: Array<Record<string, unknown>>,
+    at: ReturnType<typeof point>,
+    intent: 'edit' | 'propose',
+    plugins: Plugins = []
+  ) => {
+    const editor = editorFor(value, intent, 'bob', [
+      Inline,
+      history({ newBatchDelay: 0 }),
+      ...plugins,
+    ]);
+
+    editor.update((tx) => tx.selection.set({ anchor: at, focus: at }));
+
+    return editor;
+  };
+  const leafOf = (node: Record<string, unknown>): string => {
+    const marks = (
+      (node.authored as Array<{ author: string; kind: string }> | undefined) ??
+      []
+    )
+      .map(({ author, kind }) => `${kind === 'delete' ? '-' : '+'}${author}`)
+      .join('');
+
+    if (Array.isArray(node.children)) {
+      const inner = (node.children as Array<Record<string, unknown>>)
+        .map(leafOf)
+        .join('');
+
+      return node.type === 'link' ? `<${inner}>${marks}` : `${marks}${inner}`;
+    }
+
+    return `[${node.text as string}${node.bold ? '*' : ''}${marks}]`;
+  };
+  /** The stored blocks and caret, such as `[a ][go-ann][すし][ne-ann][ b] @0.2:2`. */
+  const landing = (editor: ReturnType<typeof editorFor>) => {
+    const selection = editor.read.selection();
+    const at = (p: { offset: number; path: readonly number[] }) =>
+      `${p.path.join('.')}:${p.offset}`;
+    const caret =
+      selection && 'anchor' in selection
+        ? at(selection.anchor) === at(selection.focus)
+          ? at(selection.anchor)
+          : `${at(selection.anchor)}-${at(selection.focus)}`
+        : 'none';
+
+    return `${(editor.read.children() as Array<Record<string, unknown>>)
+      .map(leafOf)
+      .join(' / ')} @${caret}`;
+  };
+  const compose = (
+    editor: ReturnType<typeof editorFor>,
+    text: string,
+    place: ReturnType<typeof point>,
+    route: 'pinned' | 'unpinned' = 'unpinned'
+  ) =>
+    editor.update((tx) =>
+      withCompositionStamp(editor, { place }, () =>
+        tx.command(editorCommands.insertText, {
+          ...(route === 'pinned'
+            ? {
+                options: {
+                  at: { offset: place.offset, path: [...place.path] },
+                },
+              }
+            : {}),
+          text,
+        })
+      )
+    );
+  const type = (editor: ReturnType<typeof editorFor>, text: string) =>
+    editor.update((tx) => tx.command(editorCommands.insertText, { text }));
+  const both = (
+    check: (intent: 'edit' | 'propose', own: (text: string) => string) => void
+  ) => {
+    check('edit', (text) => `[${text}]`);
+    check('propose', (text) => `[${text}+bob]`);
+  };
+
+  it('splits the crossed-out text at the caret in its middle', () => {
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent);
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('すし')}[ne-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('lands before crossed-out text composed at its start', () => {
+    const edited = open(run, point(0, [0, 1]), 'edit');
+    const proposed = open(run, point(0, [0, 1]), 'propose');
+
+    compose(edited, 'すし', point(0, [0, 1]));
+    compose(proposed, 'すし', point(0, [0, 1]));
+
+    assert.deepEqual(
+      [landing(edited), landing(proposed)],
+      ['[a すし][gone-ann][ b] @0.0:4', '[a ][すし+bob][gone-ann][ b] @0.1:2']
+    );
+  });
+
+  it('lands after crossed-out text composed at its end', () => {
+    both((intent, own) => {
+      const editor = open(run, point(4, [0, 1]), intent);
+
+      compose(editor, 'すし', point(4, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        intent === 'edit'
+          ? '[a ][gone-ann][すし b] @0.2:2'
+          : `[a ][gone-ann]${own('すし')}[ b] @0.2:2`
+      );
+    });
+  });
+
+  it('takes the bold of the leaf the command wrote into beside crossed-out text', () => {
+    both((intent, own) => {
+      const editor = open(
+        [paragraph({ text: 'a ' }, gone(), { bold: true, text: ' b' })],
+        point(2, [0, 1]),
+        intent
+      );
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('すし*')}[ne-ann][ b*] @0.2:2`
+      );
+    });
+  });
+
+  it('stays plain inside crossed-out bold letters', () => {
+    both((intent, own) => {
+      const editor = open(
+        [
+          paragraph({ text: 'a ' }, gone('gone', { bold: true }), {
+            text: ' b',
+          }),
+        ],
+        point(2, [0, 1]),
+        intent
+      );
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go*-ann]${own('すし')}[ne*-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('splits crossed-out text at the end of a link inside the link', () => {
+    both((intent, own) => {
+      const editor = open(
+        [
+          paragraph({ text: 'a ' }, link({ text: 'B' }, gone()), {
+            text: ' b',
+          }),
+        ],
+        point(2, [0, 1, 1]),
+        intent
+      );
+
+      compose(editor, 'すし', point(2, [0, 1, 1]));
+
+      assert.equal(
+        landing(editor),
+        `[a ]<[B][go-ann]${own('すし')}[ne-ann]>[ b] @0.1.2:2`
+      );
+    });
+  });
+
+  it('splits crossed-out text right before a link outside the link', () => {
+    both((intent, own) => {
+      const editor = open(
+        [
+          paragraph({ text: 'a ' }, gone(), link({ text: 'B' }), {
+            text: ' b',
+          }),
+        ],
+        point(2, [0, 1]),
+        intent
+      );
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('すし')}[ne-ann]<[B]>[ b] @0.2:2`
+      );
+    });
+  });
+
+  it('splits crossed-out text right after a link outside the link', () => {
+    both((intent, own) => {
+      const editor = open(
+        [
+          paragraph({ text: 'a ' }, link({ text: 'B' }), gone(), {
+            text: ' b',
+          }),
+        ],
+        point(2, [0, 2]),
+        intent
+      );
+
+      compose(editor, 'すし', point(2, [0, 2]));
+
+      assert.equal(
+        landing(editor),
+        `[a ]<[B]>[go-ann]${own('すし')}[ne-ann][ b] @0.3:2`
+      );
+    });
+  });
+
+  it('splits crossed-out text between two links', () => {
+    both((intent, own) => {
+      const editor = open(
+        [
+          paragraph(
+            { text: 'a ' },
+            link({ text: 'B' }),
+            gone(),
+            link({ text: 'C' }),
+            { text: ' b' }
+          ),
+        ],
+        point(2, [0, 2]),
+        intent
+      );
+
+      compose(editor, 'すし', point(2, [0, 2]));
+
+      assert.equal(
+        landing(editor),
+        `[a ]<[B]>[go-ann]${own('すし')}[ne-ann]<[C]>[ b] @0.3:2`
+      );
+    });
+  });
+
+  it('writes a word composed in a crossed-out block on the line above that stays', () => {
+    const value = [
+      paragraph({ text: 'live' }),
+      whole(paragraph({ text: 'gone' }), mark('delete', 'ann')),
+    ];
+    const edited = open(value, point(2, [1, 0]), 'edit');
+    const proposed = open(value, point(2, [1, 0]), 'propose');
+
+    compose(edited, 'すし', point(2, [1, 0]));
+    compose(proposed, 'すし', point(2, [1, 0]));
+
+    assert.deepEqual(
+      [landing(edited), landing(proposed)],
+      [
+        '[liveすし] / -ann[gone-ann] @0.0:6',
+        '[live][すし+bob] / -ann[gone-ann] @0.1:2',
+      ]
+    );
+  });
+
+  it('keeps the split when a handler rewrites the word', () => {
+    const upper = definePlugin('composition.upper', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ input, next }) =>
+          next({ ...input, text: input.text.toUpperCase() })
+        ),
+      ],
+    });
+
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent, [upper]);
+
+      compose(editor, 'ab', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('AB')}[ne-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('leaves the deletion whole and the caret in place when a handler refuses the word', () => {
+    const refuse = definePlugin('composition.refuse', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, () => false),
+      ],
+    });
+
+    both((intent) => {
+      const editor = open(run, point(2, [0, 1]), intent, [refuse]);
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(landing(editor), '[a ][gone-ann][ b] @0.1:2');
+    });
+  });
+
+  it('writes the word where a handler redirects it', () => {
+    const redirect = definePlugin('composition.redirect', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ input, next }) =>
+          next({ ...input, options: { ...input.options, at: point(0) } })
+        ),
+      ],
+    });
+    const edited = open(run, point(2, [0, 1]), 'edit', [redirect]);
+    const proposed = open(run, point(2, [0, 1]), 'propose', [redirect]);
+
+    compose(edited, 'すし', point(2, [0, 1]));
+    compose(proposed, 'すし', point(2, [0, 1]));
+
+    assert.deepEqual(
+      [landing(edited), landing(proposed)],
+      ['[すしa ][gone-ann][ b] @0.0:4', '[すし+bob][a ][gone-ann][ b] @0.1:2']
+    );
+  });
+
+  it('writes the word where the command puts it when a handler passes the same place anew', () => {
+    const samePlace = definePlugin('composition.same-place', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ input, next }) => {
+          const at = input.options?.at as ReturnType<typeof point>;
+
+          return next({
+            ...input,
+            options: {
+              ...input.options,
+              at: { offset: at.offset, path: [...at.path] },
+            },
+          });
+        }),
+      ],
+    });
+
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent, [samePlace]);
+
+      compose(editor, 'すし', point(2, [0, 1]), 'pinned');
+
+      assert.equal(
+        landing(editor),
+        intent === 'edit'
+          ? '[a ][gone-ann][すし b] @0.2:2'
+          : `[a ][gone-ann]${own('すし')}[ b] @0.2:2`
+      );
+    });
+  });
+
+  it('writes the word at the caret a handler places', () => {
+    const place = definePlugin('composition.place', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ next, state }) =>
+          next.after(
+            state.transaction((tx) => {
+              tx.selection.set({ anchor: point(0), focus: point(0) });
+            })
+          )
+        ),
+      ],
+    });
+    const edited = open(run, point(2, [0, 1]), 'edit', [place]);
+    const proposed = open(run, point(2, [0, 1]), 'propose', [place]);
+
+    compose(edited, 'すし', point(2, [0, 1]));
+    compose(proposed, 'すし', point(2, [0, 1]));
+
+    assert.deepEqual(
+      [landing(edited), landing(proposed)],
+      ['[すしa ][gone-ann][ b] @0.0:2', '[すし+bob][a ][gone-ann][ b] @0.0:2']
+    );
+  });
+
+  it('lands each syllable of a chain after the previous one between the split halves', () => {
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent);
+
+      compose(editor, 'す', point(2, [0, 1]));
+      compose(editor, 'し', point(1, [0, 2]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('すし')}[ne-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('splits the crossed-out text again when a reconversion deletes the word first', () => {
+    both((intent, own) => {
+      const editor = open(splitRun(intent), point(0, [0, 2]), intent);
+
+      editor.update((tx) =>
+        tx.selection.set({ anchor: point(0, [0, 2]), focus: point(2, [0, 2]) })
+      );
+      compose(editor, '', point(0, [0, 2]));
+      compose(editor, '寿司', editor.read.selection()?.anchor as never);
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('寿司')}[ne-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('splits the crossed-out text again when a reconversion commits over the word', () => {
+    both((intent, own) => {
+      const editor = open(splitRun(intent), point(0, [0, 2]), intent);
+
+      editor.update((tx) =>
+        tx.selection.set({ anchor: point(0, [0, 2]), focus: point(2, [0, 2]) })
+      );
+      compose(editor, '寿司', point(0, [0, 2]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('寿司')}[ne-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('lands a later command in the same update as typed text', () => {
+    const value = [...run, paragraph({ text: 'c ' }, gone(), { text: ' d' })];
+
+    both((intent, own) => {
+      const editor = open(value, point(2, [0, 1]), intent);
+
+      editor.update((tx) =>
+        withCompositionStamp(editor, { place: point(2, [0, 1]) }, () => {
+          tx.command(editorCommands.insertText, { text: 'すし' });
+          tx.selection.set({
+            anchor: point(2, [1, 1]),
+            focus: point(2, [1, 1]),
+          });
+          tx.command(editorCommands.insertText, { text: 'X' });
+        })
+      );
+
+      assert.equal(
+        landing(editor),
+        intent === 'edit'
+          ? `[a ][go-ann]${own('すし')}[ne-ann][ b] / [c ][gone-ann][X d] @1.2:1`
+          : `[a ][go-ann]${own('すし')}[ne-ann][ b] / [c ][gone-ann]${own('X')}[ d] @1.2:1`
+      );
+    });
+  });
+
+  it('leaves no stamp behind after a speculative evaluation the update discards', () => {
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent);
+
+      editor.update((tx) => {
+        withCompositionStamp(editor, { place: point(2, [0, 1]) }, () => {
+          evaluateCommand(editor, editorCommands.insertText, { text: 'すし' });
+        });
+        tx.command(editorCommands.insertText, { text: 'X' });
+      });
+
+      assert.equal(
+        landing(editor),
+        intent === 'edit'
+          ? '[a ][gone-ann][X b] @0.2:1'
+          : `[a ][gone-ann]${own('X')}[ b] @0.2:1`
+      );
+    });
+  });
+
+  it('keeps the split when a handler places the caret in a draft it discards before delegating', () => {
+    const preview = definePlugin('composition.preview', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ next, state }) => {
+          state.transaction((tx) => {
+            tx.text.insert('zz');
+          });
+
+          return next();
+        }),
+      ],
+    });
+
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent, [preview]);
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('すし')}[ne-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('keeps the split when a handler inserts the word in a draft it discards before delegating', () => {
+    const declined = definePlugin('composition.declined-rule', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ input, next, state }) => {
+          state.transaction((tx) => {
+            tx.text.insert(input.text);
+          });
+
+          return next();
+        }),
+      ],
+    });
+
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent, [declined]);
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('すし')}[ne-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('writes the word as typed text when a handler places the same caret in a draft it keeps', () => {
+    const sameCaret = definePlugin('composition.same-caret', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ next, state }) => {
+          const caret = state.selection();
+
+          return next.after(
+            state.transaction((tx) => {
+              tx.selection.set(caret);
+            })
+          );
+        }),
+      ],
+    });
+
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent, [sameCaret]);
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        intent === 'edit'
+          ? '[a ][gone-ann][すし b] @0.2:2'
+          : `[a ][gone-ann]${own('すし')}[ b] @0.2:2`
+      );
+    });
+  });
+
+  it('writes the word where a handler that inserts it itself puts it', () => {
+    const own = definePlugin('composition.own-insert', {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ input, state }) =>
+          state.transaction((tx) => {
+            tx.text.insert(input.text);
+          })
+        ),
+      ],
+    });
+
+    both((intent, mine) => {
+      const editor = open(run, point(2, [0, 1]), intent, [own]);
+
+      compose(editor, 'すし', point(2, [0, 1]));
+
+      assert.equal(
+        landing(editor),
+        intent === 'edit'
+          ? '[a ][gone-ann][すし b] @0.2:2'
+          : `[a ][gone-ann]${mine('すし')}[ b] @0.2:2`
+      );
+    });
+  });
+
+  it('splits the crossed-out text on the pinned route', () => {
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent);
+
+      compose(editor, 'すし', point(2, [0, 1]), 'pinned');
+
+      assert.equal(
+        landing(editor),
+        `[a ][go-ann]${own('すし')}[ne-ann][ b] @0.2:2`
+      );
+    });
+  });
+
+  it('undoes and redoes the split word as one step', () => {
+    both((intent, own) => {
+      const editor = open(run, point(2, [0, 1]), intent);
+
+      compose(editor, 'すし', point(2, [0, 1]));
+      editor.api.history.undo();
+      const undone = landing(editor);
+
+      editor.api.history.redo();
+
+      assert.deepEqual(
+        [undone, landing(editor)],
+        [
+          '[a ][gone-ann][ b] @0.1:2',
+          `[a ][go-ann]${own('すし')}[ne-ann][ b] @0.2:2`,
+        ]
+      );
+    });
+  });
+
+  it('keeps where typed and pasted letters at the same caret land', () => {
+    const paste = (editor: ReturnType<typeof editorFor>) =>
+      editor.api.dom.clipboard.insertData({
+        getData: (format: string) => (format === 'text/plain' ? 'P' : ''),
+        types: ['text/plain'],
+      });
+
+    both((intent, own) => {
+      const typed = open(run, point(2, [0, 1]), intent);
+      const pasted = open(run, point(2, [0, 1]), intent, [dom(), transfer()]);
+
+      type(typed, 'X');
+      paste(pasted);
+
+      assert.deepEqual(
+        [landing(typed), landing(pasted)],
+        intent === 'edit'
+          ? ['[a ][gone-ann][X b] @0.2:1', '[a ][gone-ann][P b] @0.2:1']
+          : [
+              `[a ][gone-ann]${own('X')}[ b] @0.2:1`,
+              `[a ][gone-ann]${own('P')}[ b] @0.2:1`,
+            ]
+      );
+    });
+  });
+
+  it('lands a typed letter right before a link inside the link', () => {
+    both((intent, own) => {
+      const editor = open(
+        [
+          paragraph({ text: 'a ' }, gone(), link({ text: 'B' }), {
+            text: ' b',
+          }),
+        ],
+        point(2, [0, 1]),
+        intent
+      );
+
+      type(editor, 'X');
+
+      assert.equal(
+        landing(editor),
+        intent === 'edit'
+          ? '[a ][gone-ann]<[XB]>[ b] @0.2.0:1'
+          : `[a ][gone-ann]<${own('X')}[B]>[ b] @0.2.0:1`
+      );
+    });
+  });
+
+  it('leaves the caret of an ordinary deletion between crossed-out halves where it was', () => {
+    const deleted = (['edit', 'propose'] as const).map((intent) => {
+      const editor = open(splitRun(intent), point(0, [0, 2]), intent);
+
+      editor.update((tx) =>
+        tx.selection.set({ anchor: point(0, [0, 2]), focus: point(2, [0, 2]) })
+      );
+      editor.update((tx) => tx.command(editorCommands.deleteFragment, {}));
+
+      return landing(editor);
+    });
+
+    assert.deepEqual(deleted, [
+      '[a ][gone-ann][ b] @0.0:2',
+      '[a ][gone-ann][ b] @0.0:2',
+    ]);
   });
 });

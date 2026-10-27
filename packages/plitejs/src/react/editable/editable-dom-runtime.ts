@@ -55,6 +55,7 @@ import {
   type AndroidCompositionEndReason,
   finishAndroidComposition,
 } from './android-composition';
+import { CompositionLease } from './composition-lease';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import { ExternalTextRuntime } from './external-text-runtime';
@@ -64,6 +65,7 @@ import {
   setEditableComposingState,
 } from './input-controller';
 import {
+  cancelCompositionReceipt,
   captureEditableCompositionRuntimeMarks,
   clearEditableCompositionRuntimeState,
   type EditableInputController,
@@ -359,6 +361,8 @@ export class EditableDOMRuntime {
   ) => void = () => {};
 
   private selectionExportAfterDOMCommitHandler: () => void = () => {};
+  readonly compositionLease = new CompositionLease();
+
   private readonly deferredCompositionDOMWrites = new Map<
     globalThis.Node,
     () => void
@@ -468,6 +472,8 @@ export class EditableDOMRuntime {
           (manager.hasPendingChanges() || manager.isFlushing())
         );
       },
+      isCompositionLeasedMutation: (mutation) =>
+        this.compositionLease.protectsMutation(mutation),
       isCanonicalTextMutation: (mutation) => {
         const targetElement =
           mutation.target.nodeType === ELEMENT_NODE
@@ -829,6 +835,7 @@ export class EditableDOMRuntime {
   }
 
   isCompositionDOMNodeProtected(node: globalThis.Node) {
+    if (this.compositionLease.protects(node)) return true;
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
     const anchors = Array.isArray(epoch?.anchor)
       ? epoch.anchor
@@ -857,11 +864,13 @@ export class EditableDOMRuntime {
       (pendingCompositionEnd !== null &&
         pendingCompositionEnd.ownership !== 'settled') ||
       this.deferredCompositionDOMWrites.size > 0 ||
+      this.compositionLease.held ||
       !!this.androidInputManagerRef.current?.hasPendingAction()
     );
   }
 
   deferCompositionDOMWrite(node: globalThis.Node, write: () => void) {
+    if (this.compositionLease.queue(node, write)) return true;
     if (!this.isCompositionDOMNodeProtected(node)) return false;
 
     this.deferredCompositionDOMWrites.set(node, write);
@@ -964,6 +973,7 @@ export class EditableDOMRuntime {
   }
 
   completeReactCommit() {
+    this.compositionLease.completeRender();
     this.rootRuntime.completeHostCommit();
     IS_NODE_MAP_DIRTY.set(this.editorValue, false);
   }
@@ -1489,6 +1499,7 @@ export class EditableDOMRuntime {
         this.externalMouseGesture = false;
         this.cancelPressTask?.();
         this.deferredCompositionDOMWrites.clear();
+        this.compositionLease.release();
       },
       () => this.renderContract.beforeRootTeardown(),
       () => {
@@ -1508,6 +1519,7 @@ export class EditableDOMRuntime {
         }
       },
       () => this.inputController.state.pendingCompositionEnd?.cancel(),
+      () => cancelCompositionReceipt(this.inputController),
       () => {
         this.inputController.state.pendingCompositionEnd = null;
         this.inputController.state.compositionSession = null;

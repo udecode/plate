@@ -18,6 +18,7 @@ import {
   beginEditableCompositionSession,
   type PendingCompositionInput,
 } from '../../src/react/editable/input-state';
+import { applyModelOwnedBeforeInputMutation } from '../../src/react/editable/model-input-strategy';
 import {
   type captureCompositionModelInput,
   claimSettledCompositionInput,
@@ -85,6 +86,55 @@ test('beforeinput probes semantic text commands on the mounted owner at the DOM 
     nativeEquivalent: false,
   });
 });
+
+test.each([
+  ['a plain leaf', { text: 'ab' }],
+  ['a bold leaf', { bold: true, text: 'ab' }],
+])(
+  'a letter the native path inserts and a composed word reach the insert handler with one place in %s',
+  (_, leaf) => {
+    const places: unknown[] = [];
+    const editor = createEditor({
+      plugins: [
+        definePlugin('insert-place', {
+          commands: ({ handle }) => [
+            handle(editorCommands.insertText, ({ input }) => {
+              places.push(input.options?.at ?? null);
+              return false;
+            }),
+          ],
+        }),
+      ],
+      initialValue: [
+        { children: [leaf], type: 'paragraph' },
+      ] satisfies InitialValue,
+    });
+    const view = createEditorView(editor) as unknown as ReactRuntimeEditor;
+    const caret: TextSelection = {
+      kind: 'text',
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    };
+
+    view.update((tx) => tx.selection.set(caret));
+    probeBeforeInputInsertTextCommand({
+      editor: view,
+      selection: caret,
+      text: 'x',
+    });
+    applyModelOwnedBeforeInputMutation({
+      data: 'か',
+      editor: view,
+      inputType: 'insertFromComposition',
+      native: false,
+      selection: caret,
+      setComposing: () => {},
+    });
+
+    expect(places).toHaveLength(2);
+    expect(places[1]).toEqual(places[0]);
+  }
+);
 
 test('deferred native text input publishes its repair path before DOM input', () => {
   expect(

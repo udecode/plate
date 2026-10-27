@@ -1,6 +1,6 @@
 # Keep composed text where the input method put it
 
-Status: building: the Safari Return fix landed; the struck-text question goes on in 2026-10-26-native-ime-composition-commit.md
+Status: partial: waiting on your call on the plate#5242 reply; the Android pair, the engine specs and the real Safari repros wait
 Topic: native
 Playbook: bug-fix
 
@@ -48,9 +48,39 @@ Browsers mark a key the input method took with the key code 229. Plite now treat
 ## Steps
 
 - [x] 1. Keep the key that confirms a Safari composition with the input method. Proof: the richtext browser test "keeps a composed word in its line when Safari sends the confirming Return after compositionend" fails at base and with either half of the fix removed, and passes with the fix in WebKit and Chromium, five warm runs each; the Safari-order probe keeps the word in its line, the caret after it and one undo empties the line, and a passed-on Korean Return ends with the same blocks as at base in both engines.
-- [ ] 2. Decide how composed text reaches a stored point inside struck text, then send the desktop commit through the insert-text command and drop the bridge from the authority audit. Proof: `apps/www/tests/browser/authored-review.spec.ts` "IME composition inside struck text splits the deletion" in Chromium, Firefox and WebKit.
+- [x] 2. Decide how composed text reaches a stored point inside struck text, then send the desktop commit through the insert-text command and drop the bridge from the authority audit. Proof: `apps/www/tests/browser/authored-review.spec.ts` "IME composition inside struck text splits the deletion" in Chromium, Firefox and WebKit. Built in 2026-10-26-native-ime-composition-commit.md, where the case passes five warm runs per engine at 4e4605a28f.
 - [ ] 3. Reproduce plate#5244's composition over a selection and plate#5245's lost mark on the Android emulator, then fix them at their owner. Proof: the device lane in `apps/plite/playwright.device.config.ts`.
 - [ ] 4. Add the engine composition spec each kind's M4 miss calls for.
+
+## Open questions
+
+### Safari issue reply
+
+Post the drafted reply on the Safari pinyin issue?
+
+Why it needs you: It is a message to people outside the team.
+
+- It says Return no longer splits the line, checked only in WebKit.
+- It asks the reporter to retest all four steps in real Safari.
+
+- **Post it** (recommended): You post the draft as written. Cost: Real Safari may still differ.
+- **Hold it**: Nothing is posted until someone checks real Safari. Cost: The reporter waits without news.
+
+Why I pick it: The reporter can retest now, and the draft says what is unproven.
+
+Attention: look
+
+## Close
+
+What landed. In Safari, the key that confirms a composition, such as Return, stays with the input method, so the line no longer splits before a confirmed pinyin word (21799cc1c7). Step 2 landed through 2026-10-26-native-ime-composition-commit.md, which has its own Close.
+
+Proof and its limits, each from its decision-log row:
+
+- The richtext browser test "keeps a composed word in its line when Safari sends the confirming Return after compositionend" fails at base and with either half of the fix removed, and passes with the fix in WebKit and Chromium, five warm runs each.
+- The Safari-order probe replays Safari's events in WebKit. No real Safari ran, so plate#5242's page crash and its repros 2 to 4 stay open.
+- The struck-text case passes five warm runs per engine at 4e4605a28f, where Firefox and WebKit draw the preedit with the test helper, not a real input method.
+
+Counts. 4 steps, 2 done. Steps 3 and 4 wait for the Android emulator lane and the engine specs.
 
 ## Open work
 

@@ -2,6 +2,7 @@
 
 import { editorCommands, schema } from '../../core';
 import { probeCommandNativeEquivalent } from '../../facade';
+import { BaseBoldPlugin } from '../../features/basic-nodes';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 import {
@@ -379,6 +380,66 @@ describe('input rules', () => {
     expect(editor.api.history.undo()).toEqual({ status: 'applied' });
     expect(editorString(editor, [])).toBe('a');
     expect(editor.api.history.undo()).toEqual({ status: 'empty' });
+  });
+
+  it('continues after the draft’s edit when the typed text named the caret', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        definePlugin('textContinuation', {}).configure({
+          inputRules: [
+            defineInputRule({
+              apply: ({ next, tx }) => {
+                tx.text.insert('!');
+
+                return next('continued');
+              },
+              target: 'insertText',
+              trigger: '*',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    });
+    setEndSelection(editor);
+
+    insertText(editor, '*', { at: { offset: 1, path: [0, 0] } });
+
+    expect(editorString(editor, [])).toBe('a!continued');
+  });
+
+  it('keeps a mark the draft turns on when the typed text named the caret', () => {
+    const editor = createEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseBoldPlugin,
+        definePlugin('markContinuation', {}).configure({
+          inputRules: [
+            defineInputRule({
+              apply: ({ next, tx }) => {
+                tx.marks.add('bold', true);
+
+                return next('x');
+              },
+              target: 'insertText',
+              trigger: '*',
+            }),
+          ],
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'a' }], type: 'paragraph' }],
+    });
+    setEndSelection(editor);
+
+    insertText(editor, '*', { at: { offset: 1, path: [0, 0] } });
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ text: 'a' }, { bold: true, text: 'x' }],
+        type: 'paragraph',
+      },
+    ]);
   });
 
   it('composes insertBreak prefix and continuation into one history entry', async () => {

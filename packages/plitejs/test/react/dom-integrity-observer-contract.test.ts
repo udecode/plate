@@ -20,6 +20,7 @@ const createHarness = ({
   isCanonicalTextMutation = () => false,
   isAndroidMutationOwned = () => false,
   isComposing = () => false,
+  isCompositionLeasedMutation,
   isOwnedMutation = () => false,
   maxRepairPassesPerFrame,
   onRepair = () => {},
@@ -27,6 +28,7 @@ const createHarness = ({
   isCanonicalTextMutation?: (mutation: MutationRecord) => boolean;
   isAndroidMutationOwned?: () => boolean;
   isComposing?: () => boolean;
+  isCompositionLeasedMutation?: (mutation: MutationRecord) => boolean;
   isOwnedMutation?: (mutation: MutationRecord) => boolean;
   maxRepairPassesPerFrame?: number;
   onRepair?: ConstructorParameters<typeof DOMIntegrityObserver>[0]['onRepair'];
@@ -40,6 +42,7 @@ const createHarness = ({
     isAndroidMutationOwned,
     isCanonicalTextMutation,
     isComposing,
+    ...(isCompositionLeasedMutation ? { isCompositionLeasedMutation } : {}),
     ...(maxRepairPassesPerFrame === undefined
       ? {}
       : { maxRepairPassesPerFrame }),
@@ -438,6 +441,31 @@ test('adopts a queued DOM mutation when the model commit claims it before repair
     ignoredOwnedMutations: 1,
     repairedMutations: 0,
   });
+
+  harness.observer.destroy();
+});
+
+test('leaves a repair queued before a composition lease out of the leased text', async () => {
+  let leased = false;
+  const harness = createHarness({
+    isCompositionLeasedMutation: () => leased,
+    maxRepairPassesPerFrame: 1,
+  });
+  const text = document.createTextNode('model');
+
+  harness.observer.pauseForHostCommit();
+  harness.root.append(text);
+  harness.observer.resumeAfterHostCommit();
+  text.nodeValue = 'corrupt';
+  await waitForMutations();
+  harness.run('microtask');
+  text.nodeValue = 'preedit';
+  await waitForMutations();
+  leased = true;
+  harness.run('animation-frame');
+  harness.run('animation-frame');
+
+  expect(text.nodeValue).toBe('preedit');
 
   harness.observer.destroy();
 });

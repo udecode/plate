@@ -457,6 +457,60 @@ describe('model input strategy', () => {
     ).toBe(true);
   });
 
+  it('keeps a toggled mark when the target is the same caret at the next leaf’s edge', () => {
+    const editor = createEditor();
+
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'ab' }, { italic: true, text: 'cd' }],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+        marks: { bold: true },
+      },
+    });
+
+    applyModelOwnedBeforeInputMutation({
+      command: { inputType: 'insertText', kind: 'insert-text', text: 'X' },
+      data: 'X',
+      editor: editor as ReactEditor,
+      inputType: 'insertText',
+      native: false,
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1], offset: 0 },
+        focus: { path: [0, 1], offset: 0 },
+      },
+      setComposing: () => {},
+    });
+
+    expect({
+      children: editorGetChildren(editor),
+      selection: editorGetSelection(editor),
+    }).toEqual({
+      children: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: 'ab' },
+            { bold: true, text: 'X' },
+            { italic: true, text: 'cd' },
+          ],
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1], offset: 1 },
+        focus: { path: [0, 1], offset: 1 },
+      },
+    });
+  });
+
   it('replaces expanded beforeinput target ranges with typed text', () => {
     const editor = createEditor();
     const selection = {

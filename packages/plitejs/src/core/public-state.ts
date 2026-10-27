@@ -579,10 +579,16 @@ const RECORDS_JSON = new WeakMap<
   Readonly<{ json: EditorDocumentRecords; store: RecordStore }>
 >();
 const EDITOR_COMPOSING = new WeakMap<AnyPluginEditor, boolean>();
+const EDITOR_COMPOSITION_PENDING = new WeakMap<object, Set<object>>();
 const EDITOR_FOCUSED = new WeakMap<AnyPluginEditor, boolean>();
 const EDITOR_MAX_LENGTH = new WeakMap<AnyPluginEditor, number | undefined>();
 const EDITOR_READ_ONLY = new WeakMap<AnyPluginEditor, boolean>();
-type EditorViewStateChange = 'authored' | 'composing' | 'focused' | 'readOnly';
+type EditorViewStateChange =
+  | 'authored'
+  | 'composing'
+  | 'composition'
+  | 'focused'
+  | 'readOnly';
 const EDITOR_VIEW_STATE_LISTENERS = new WeakMap<
   object,
   Set<(change: EditorViewStateChange) => void>
@@ -998,7 +1004,63 @@ export const setDraftCaret = (editor: Editor, caret: CaretState) => {
   markTransactionChanged(editor);
 };
 
+const PLACEMENTS = new WeakMap<Editor, number>();
+const PLACING_SPECS = new WeakSet<TransactionSpec>();
+let countingEditors = 0;
+
+export const countingPlacements = <T>(editor: Editor, run: () => T): T => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  PLACEMENTS.set(owner, 0);
+  countingEditors += 1;
+  try {
+    return run();
+  } finally {
+    countingEditors -= 1;
+    PLACEMENTS.delete(owner);
+  }
+};
+
+export const getPlacementCount = (editor: Editor) =>
+  PLACEMENTS.get(getEditorRuntimeOwner(editor)) ?? 0;
+
+const countPlacement = (editor: Editor) => {
+  if (countingEditors === 0) return;
+
+  const owner = getEditorRuntimeOwner(editor);
+  const count = PLACEMENTS.get(owner);
+
+  if (count !== undefined) PLACEMENTS.set(owner, count + 1);
+};
+
+/**
+ * Builds a spec whose placements count only once it applies, so a spec draft
+ * that is never applied placed nothing.
+ */
+const countingSpecPlacements = <T extends false | TransactionSpec>(
+  editor: Editor,
+  build: () => T
+): T => {
+  if (countingEditors === 0) return build();
+
+  const owner = getEditorRuntimeOwner(editor);
+  const before = PLACEMENTS.get(owner);
+
+  if (before === undefined) return build();
+  try {
+    const spec = build();
+
+    if (spec && PLACEMENTS.get(owner) !== before) PLACING_SPECS.add(spec);
+
+    return spec;
+  } finally {
+    PLACEMENTS.set(owner, before);
+  }
+};
+
 export const placeSelection = <T>(editor: Editor, write: () => T): T => {
+  countPlacement(editor);
+
   const context = getTransactionSpecContext(editor);
 
   if (!context || PLACING.has(context)) return write();
@@ -9027,6 +9089,8 @@ const applyTransactionSpecContents = <V extends Value>(
     }
   });
 
+  if (PLACING_SPECS.has(spec)) countPlacement(editor);
+
   const context = getTransactionSpecContext(editor);
 
   if (context && spec.selection) context.selectionWritten = true;
@@ -9089,30 +9153,32 @@ const buildTransactionSpec = <
 ): TransactionSpec => {
   if (baseSpec) assertTransactionSpecBase(editor, baseSpec);
 
-  const context = profileCoreDuration('transaction-spec-context', () =>
-    createTransactionSpecContext(editor, options)
-  );
-
-  try {
-    if (baseSpec) applyTransactionSpecContents(editor, baseSpec);
-    profileCoreDuration('transaction-spec-callback', () => {
-      const author: (
-        transaction: EditorTransactionSpecBuilder<V, TPlugins>
-      ) => unknown = fn;
-
-      assertSynchronousTransactionAuthorResult(author(getUpdateView(editor)));
-    });
-
-    const spec = profileCoreDuration('transaction-spec-finalize', () =>
-      finalizeTransactionSpecContext(editor, context)
+  return countingSpecPlacements(editor, () => {
+    const context = profileCoreDuration('transaction-spec-context', () =>
+      createTransactionSpecContext(editor, options)
     );
 
-    if (baseSpec) TRANSACTION_SPEC_PARENT.set(spec, baseSpec);
+    try {
+      if (baseSpec) applyTransactionSpecContents(editor, baseSpec);
+      profileCoreDuration('transaction-spec-callback', () => {
+        const author: (
+          transaction: EditorTransactionSpecBuilder<V, TPlugins>
+        ) => unknown = fn;
 
-    return spec;
-  } finally {
-    disposeTransactionSpecContext(editor, context);
-  }
+        assertSynchronousTransactionAuthorResult(author(getUpdateView(editor)));
+      });
+
+      const spec = profileCoreDuration('transaction-spec-finalize', () =>
+        finalizeTransactionSpecContext(editor, context)
+      );
+
+      if (baseSpec) TRANSACTION_SPEC_PARENT.set(spec, baseSpec);
+
+      return spec;
+    } finally {
+      disposeTransactionSpecContext(editor, context);
+    }
+  });
 };
 
 /**
@@ -9165,21 +9231,24 @@ export const continueTransactionSpec = (
   run: () => false | TransactionSpec
 ): false | TransactionSpec => {
   assertTransactionSpecBase(editor, prefix);
-  const context = createTransactionSpecContext(editor);
 
-  try {
-    applyTransactionSpecContents(editor, prefix);
-    const result = run();
+  return countingSpecPlacements(editor, () => {
+    const context = createTransactionSpecContext(editor);
 
-    if (result === false) return false;
+    try {
+      applyTransactionSpecContents(editor, prefix);
+      const result = run();
 
-    assertTransactionSpecBase(editor, result);
-    applyTransactionSpecContents(editor, result);
+      if (result === false) return false;
 
-    return finalizeTransactionSpecContext(editor, context);
-  } finally {
-    disposeTransactionSpecContext(editor, context);
-  }
+      assertTransactionSpecBase(editor, result);
+      applyTransactionSpecContents(editor, result);
+
+      return finalizeTransactionSpecContext(editor, context);
+    } finally {
+      disposeTransactionSpecContext(editor, context);
+    }
+  });
 };
 
 /**
@@ -9781,6 +9850,24 @@ export const setEditorComposing = (
   composing: boolean
 ) => {
   setEditorViewStateFlag(editor, 'composing', composing, EDITOR_COMPOSING);
+};
+
+export const isEditorCompositionPending = (editor: AnyPluginEditor) =>
+  (EDITOR_COMPOSITION_PENDING.get(getEditorRuntime(editor))?.size ?? 0) > 0;
+
+export const setEditorCompositionPending = (
+  editor: AnyPluginEditor,
+  input: object,
+  pending: boolean
+) => {
+  const runtime = getEditorRuntime(editor);
+  const inputs = EDITOR_COMPOSITION_PENDING.get(runtime) ?? new Set();
+  const was = inputs.size > 0;
+
+  if (pending) inputs.add(input);
+  else inputs.delete(input);
+  EDITOR_COMPOSITION_PENDING.set(runtime, inputs);
+  if (was !== inputs.size > 0) notifyEditorViewState(editor, 'composition');
 };
 
 export const setEditorFocused = (editor: AnyPluginEditor, focused: boolean) => {

@@ -132,7 +132,7 @@ authored.api.setView({ preview: "proposed" });
 
 Preview 遇到普通编辑会抛出错误，但部分其他写入仍会修改存储文档，例如带决定的 update、撤销和重做，以及远程协作变更。
 
-在被划掉的文本中输入时，待处理删除会在新文本两侧拆开。`edit` view 按原样应用这段文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如表格内的修改，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
+在被划掉的文本中输入或粘贴时，新文本落在待处理删除之后。用输入法确认的词则会把待处理删除拆到它的两侧。`edit` view 按原样应用新文本，`propose` view 把它记录为插入。`propose` view 会拒绝无法记录为 proposal 的写入，例如表格内的修改，并将其回滚；`api.subscribeRefusals(listener)` 会报告每次拒绝。
 
 在只生成 text 属性的 schema 下，或者生成的属性都是具有精确键、值不是集合、target 不取决于元素位置、角色不是 `content` 的 element 属性时（例如 `ElementIdPlugin` 的 `id`），`propose` view 和两种 preview 都可以使用。`content` 是默认角色，因此请声明 `role: 'metadata'`。建议会在记录时生成之后构建所需的元素值。建议的 Enter 把新元素的 id 存放在该元素上。决定可能移除容器子元素（例如删除引用块中唯一的一行）或改变容器类型的建议，还会把该决定将在那里构建的 block 作为备用 block 存放在文档的审阅 mark 和 `records` 中。之后 preview、projection 和决定都显示这些已存储的值，不调用 element 属性的生成器。当已存储的 block（例如建议之后写入的 block）重复备用 block 所持的唯一值时，构建该备用 block 的决定会给它一个新值，与 preview 显示的值不同。在其他生成属性下，或在同时生成 element 属性和 text 属性的 schema 下，`setView` 保留当前 view，proposal 不写入任何内容，两者都报告拒绝代码 `generated-values`。
 

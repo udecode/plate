@@ -38,6 +38,8 @@ export type DecorationSlice = Readonly<{
   start: number;
 }>;
 
+export const DECORATION_REFRESH_DEADLINE_MS = 250;
+
 const DECORATION_SLICE_IDENTITIES = new WeakMap<DecorationSlice, string>();
 
 export const getDecorationSliceIdentity = (slice: DecorationSlice) =>
@@ -1631,7 +1633,11 @@ export const createPliteDecorationManager = <E>(
     };
     const deadline = globalThis.setTimeout(
       run,
-      Math.max(0, 250 - (performance.now() - pendingRefresh.startedAt))
+      Math.max(
+        0,
+        DECORATION_REFRESH_DEADLINE_MS -
+          (performance.now() - pendingRefresh.startedAt)
+      )
     );
 
     if (typeof globalThis.requestAnimationFrame === 'function') {

@@ -36,6 +36,12 @@ import {
   refusedIn,
   unplacedIn,
 } from './command-document';
+import {
+  type CompositionStamp,
+  runStampedFrame,
+  stampFrame,
+  takeCompositionStamp,
+} from './composition-stamp';
 import { isInRemovedContent, landTextWrite, nodeAt } from './content-landing';
 import {
   getEditorDocumentRecorder,
@@ -131,6 +137,27 @@ export const evaluateInEditorCommandFrame = <
   }
 
   return probed.value;
+};
+
+/** @internal */
+export const commandViewHides = (
+  editor: Editor,
+  root: string,
+  point: Point
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const document = getEditorCommandDocument(owner);
+
+  if (!document) return false;
+
+  const stored = (getTransactionSnapshot(owner)?.builder.value ??
+    getEditorDocumentValue(owner)) as EditorDocumentValue;
+  const projected = document.project(stored);
+
+  return (
+    !!projected &&
+    projected.map.hides(root, valueRootIndex(stored, root).positionAt(point))
+  );
 };
 
 /** @internal */
@@ -445,10 +472,16 @@ const createFramePlace = (
   projected: CommandProjection,
   stored: EditorDocumentValue,
   selectionRoot: string,
-  refuse: Refuse
+  refuse: Refuse,
+  stamp: CompositionStamp | null = null
 ) => {
   let heldRefusal: 'crosses' | 'unaligned' | null = null;
   let located = false;
+  const compositionRoot = stamp && (stamp.place.root ?? selectionRoot);
+  const compositionElement =
+    stamp && compositionRoot !== null
+      ? projected.map.nodePath(compositionRoot, stamp.place.path.slice(0, -1))
+      : null;
   // A node the projection shows away from its stored place maps by its open
   // token, which the change deletes there and inserts where it lands.
   const nodes = (selection: NodeSelection, fallbackRoot: string) => {
@@ -502,6 +535,30 @@ const createFramePlace = (
 
     return position === null ? null : pointIn(point, root, position, assoc);
   };
+  // Beside an inline, a point goes to the side that holds the composition's
+  // element, so a caret hidden in struck text right before a link stays
+  // outside the link.
+  const pointOnCompositionSide = (
+    after: DocumentIndex,
+    root: string,
+    position: number,
+    side: -1 | 1
+  ) => {
+    const placed = after.pointAt(position, side);
+
+    if (!compositionElement || root !== compositionRoot || !placed) {
+      return placed;
+    }
+
+    const inCompositionElement = (at: JsonPoint) =>
+      PathApi.equals(at.path.slice(0, -1), compositionElement);
+
+    if (inCompositionElement(placed)) return placed;
+
+    const other = after.pointAt(position, side < 0 ? 1 : -1);
+
+    return other && inCompositionElement(other) ? other : placed;
+  };
   const pointIn = (
     point: Point,
     root: string,
@@ -525,7 +582,7 @@ const createFramePlace = (
             !isElement(next, 'open')
           ? 1
           : assoc;
-    const placed = after.pointAt(position, side);
+    const placed = pointOnCompositionSide(after, root, position, side);
 
     return (
       placed && { ...point, offset: placed.offset, path: [...placed.path] }
@@ -867,6 +924,7 @@ export const runInEditorCommandFrame = (
   }
   runEditorDocumentRecorder(editor);
 
+  const stamp = takeCompositionStamp(editor);
   const stored = outer.snapshot.builder.value as EditorDocumentValue;
 
   if (
@@ -887,8 +945,10 @@ export const runInEditorCommandFrame = (
     outer.caret.root,
     (reason) => {
       throw refusedIn(editor, reason);
-    }
+    },
+    stamp
   );
+  const stamped = stamp && stampFrame(stamp, placed.place);
   const selection = placed.held(outer.caret.selection);
   const target = outer.snapshot.implicitTarget
     ? placed.held(outer.snapshot.implicitTarget)
@@ -933,7 +993,13 @@ export const runInEditorCommandFrame = (
         };
       }
 
-      if (!withTransactionSpecDraftRead(editor, run)) return false;
+      if (
+        !runStampedFrame(editor, stamped, () =>
+          withTransactionSpecDraftRead(editor, run)
+        )
+      ) {
+        return false;
+      }
       assertWritesPlaced(editor, snapshot);
       finalizeWithoutOrphanedRoots(editor);
       const wrote = snapshot.builder.change;
@@ -985,6 +1051,7 @@ export const runInEditorCommandFrame = (
           selectionBefore: outer.caret.selection,
           selectionBeforeRoot: outer.caret.root,
           selectionRoot: frame.caret.root,
+          composition: stamp,
           steps: snapshot.builder.draftSteps,
           tags: getActiveEditorUpdateTags(editor),
           update: outer.id,

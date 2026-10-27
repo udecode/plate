@@ -1,4 +1,5 @@
 import { getDefined } from '../../internal/get-defined';
+import type { CompositionStamp } from '../composition-stamp';
 import { countCoreWork } from '../work';
 import {
   classifyRootChange,
@@ -139,6 +140,8 @@ export type DraftStep = Readonly<{
   relocations?: readonly Relocation[];
   /** Values a canonical step dropped because their nodes carried them. */
   drops?: readonly CarriedDrop[];
+  /** The composition whose claimed text write applied this step. */
+  composition?: CompositionStamp;
 }>;
 
 export type PreparedDocumentChange = Readonly<{
@@ -167,6 +170,7 @@ export const PREPARED_DOCUMENT_CHANGES = new WeakMap<
 export class ChangeDraft {
   private accumulated: DocumentChange;
   private readonly appliedSteps: DraftStep[] = [];
+  private stepComposition: CompositionStamp | null = null;
   private stepMove: DraftStepMove | null = null;
   private stepOrigin: DraftStepOrigin | null = null;
   private stepSource: DraftStepSource = 'command';
@@ -343,6 +347,24 @@ export class ChangeDraft {
     }
   }
 
+  /** Tag the steps `run` applies as a composition's claimed write. @internal */
+  withComposition<T>(stamp: CompositionStamp, run: () => T): T {
+    const previous = this.stepComposition;
+
+    this.stepComposition = stamp;
+    try {
+      return run();
+    } finally {
+      this.stepComposition = previous;
+    }
+  }
+
+  private composed(step: DraftStep): DraftStep {
+    return this.stepComposition && !step.composition
+      ? { ...step, composition: this.stepComposition }
+      : step;
+  }
+
   /** @internal */
   withMove<T>(move: DraftStepMove, run: () => T): T {
     const previous = this.stepMove;
@@ -510,7 +532,9 @@ export class ChangeDraft {
     this.accumulated = accumulated;
     this.appliedSteps.push(
       ...payload.steps.map((step) =>
-        this.stepMove && !step.move ? { ...step, move: this.stepMove } : step
+        this.composed(
+          this.stepMove && !step.move ? { ...step, move: this.stepMove } : step
+        )
       )
     );
     if (accumulated === payload.change) {
@@ -676,16 +700,18 @@ export class ChangeDraft {
       if (!classifiedChange.empty) {
         const relocations = this.tracksPlaces ? options.relocations : undefined;
 
-        this.appliedSteps.push({
-          indexedAfter,
-          indexedBefore,
-          change: classifiedChange,
-          move: this.stepMove,
-          origin: this.originOf(options.origin),
-          source: this.stepSource,
-          ...(relocations?.length ? { relocations } : {}),
-          ...(options.drops?.length ? { drops: options.drops } : {}),
-        });
+        this.appliedSteps.push(
+          this.composed({
+            indexedAfter,
+            indexedBefore,
+            change: classifiedChange,
+            move: this.stepMove,
+            origin: this.originOf(options.origin),
+            source: this.stepSource,
+            ...(relocations?.length ? { relocations } : {}),
+            ...(options.drops?.length ? { drops: options.drops } : {}),
+          })
+        );
         countCoreWork('relocations', relocations?.length ?? 0);
       }
     }
@@ -941,14 +967,16 @@ export class ChangeDraft {
       ? canonicalChange
       : this.accumulated.compose(canonicalChange, this.source);
     if (!canonicalChange.empty) {
-      this.appliedSteps.push({
-        indexedAfter,
-        indexedBefore,
-        change: canonicalChange,
-        move: this.stepMove,
-        origin: this.originOf(options.origin),
-        source: this.stepSource,
-      });
+      this.appliedSteps.push(
+        this.composed({
+          indexedAfter,
+          indexedBefore,
+          change: canonicalChange,
+          move: this.stepMove,
+          origin: this.originOf(options.origin),
+          source: this.stepSource,
+        })
+      );
     }
     this.runtimeCandidatesByChange.set(
       canonicalChange,

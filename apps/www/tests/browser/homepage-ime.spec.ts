@@ -182,6 +182,97 @@ test('keeps homepage paragraph composition beside inline links and the next inpu
   }
 });
 
+const REACT_LINK_END = { offset: 'React'.length, path: [1, 1, 0] };
+
+const openAtLinkEnd = async (page: Page, bold: boolean) => {
+  await page.goto('/', { waitUntil: 'commit' });
+  const root = page.locator('[data-home-preview] [data-editor="true"]').first();
+  const editor = createBrowserEditorHarness(page, 'homepage:link-end', root);
+
+  await editor.ready({
+    editor: 'visible',
+    text: 'Welcome to the Plate Playground!',
+  });
+  await editor.ime.enableKeyEvents();
+  if (bold) {
+    await editor.selection.select({
+      anchor: { ...REACT_LINK_END, offset: 0 },
+      focus: REACT_LINK_END,
+    });
+    await editor.focus();
+    await page.keyboard.press('ControlOrMeta+b');
+  }
+  await editor.selection.collapse(REACT_LINK_END);
+  await editor.focus();
+
+  return editor;
+};
+
+const landing = async (
+  editor: ReturnType<typeof createBrowserEditorHarness>,
+  text: string
+) => {
+  const value = (await editor.get.modelValue()) as {
+    children: Array<{
+      children: Array<{ children?: Array<{ text: string }>; text?: string }>;
+    }>;
+  };
+  const [, link, after] = value.children[1].children;
+  const linkText = link.children!.map((leaf) => leaf.text).join('');
+
+  await expect
+    .poll(() =>
+      editor.root.evaluate(
+        (root) =>
+          root
+            .querySelector('[data-editor-node="element"][data-editor-path="1"]')
+            ?.textContent?.replace(/[\uFEFF\u00A0]/g, '') ?? null
+      )
+    )
+    .toBe(await editor.get.modelBlockText(1));
+
+  return linkText.endsWith(text)
+    ? 'in the link'
+    : after.text?.startsWith(text)
+      ? 'after the link'
+      : 'elsewhere';
+};
+
+for (const [kind, bold, expected] of [
+  ['plain', false, 'in the link'],
+  ['bold', true, 'after the link'],
+] as const) {
+  test(`a composed word lands where a typed letter does at a ${kind} link's end`, async ({
+    browserName,
+    page,
+  }) => {
+    const errors = recordBrowserRuntimeErrors(page);
+
+    try {
+      const typing = await openAtLinkEnd(page, bold);
+
+      await page.keyboard.type('x');
+      const typed = await landing(typing, 'x');
+      const composing = await openAtLinkEnd(page, bold);
+
+      await composing.ime.compose({
+        steps: ['か'],
+        text: 'か',
+        transport: browserName === 'chromium' ? 'native' : 'preedit',
+      });
+      await composing.assert.text(/か/);
+
+      expect({ composed: await landing(composing, 'か'), typed }).toEqual({
+        composed: expected,
+        typed: expected,
+      });
+      errors.assertNone();
+    } finally {
+      errors.stop();
+    }
+  });
+}
+
 const openEmptyParagraph = async (page: Page) => {
   await page.goto('/', { waitUntil: 'commit' });
   const root = page.locator('[data-home-preview] [data-editor="true"]').first();

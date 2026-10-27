@@ -66,6 +66,7 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getActiveEditorUpdateTags,
+  isEditorCompositionPending,
   notifyEditorViewState,
   subscribeEditorViewState,
   withEditorDocumentProjection,
@@ -1357,6 +1358,21 @@ export const createAuthoredPlugin = (
       }
     );
   };
+  const owesWord = (editor: Editor) =>
+    editor.read.view.isComposing() || isEditorCompositionPending(editor);
+  const applyView = (editor: Editor, view: AuthoredView) => {
+    const runtime = getEditorRuntime(editor);
+    const state = stateOf(editor);
+
+    state.pending.delete(runtime);
+    state.views.set(runtime, view);
+    notifyEditorViewState(editor, 'authored');
+  };
+  const settleWaitingView = (editor: Editor) => {
+    const waiting = stateOf(editor).pending.get(getEditorRuntime(editor));
+
+    if (waiting && !owesWord(editor)) applyView(editor, waiting);
+  };
   const previewModeOf = (editor: Editor) => {
     const view = viewOf(editor);
 
@@ -1566,11 +1582,6 @@ export const createAuthoredPlugin = (
       setView: (view: AuthoredView) => {
         const runtime = getEditorRuntime(editor);
         const state = stateOf(editor);
-        const apply = (next: AuthoredView) => {
-          state.pending.delete(runtime);
-          state.views.set(runtime, next);
-          notifyEditorViewState(editor, 'authored');
-        };
 
         if (
           ('preview' in view || view.intent === 'propose') &&
@@ -1579,8 +1590,8 @@ export const createAuthoredPlugin = (
           publishEditorRefusal(editor, GENERATED_VALUES_REFUSAL);
           return;
         }
-        if (!editor.read.view.isComposing()) {
-          apply(view);
+        if (!owesWord(editor)) {
+          applyView(editor, view);
           return;
         }
 
@@ -1593,9 +1604,9 @@ export const createAuthoredPlugin = (
         const stop = subscribeEditorViewState(editor, () => {
           const next = state.pending.get(runtime);
 
-          if (editor.read.view.isComposing()) return;
+          if (owesWord(editor)) return;
           stop();
-          if (next) apply(next);
+          if (next) applyView(editor, next);
         });
       },
       subscribeRefusals: (listener: (refusal: AuthoredRefusal) => void) =>
@@ -2095,7 +2106,10 @@ export const createAuthoredPlugin = (
           }
 
           const update = getActiveEditorUpdateId(editor);
-          const view = viewOf(getAuthoredUpdateView(editor));
+          const viewEditor = getAuthoredUpdateView(editor);
+
+          settleWaitingView(viewEditor);
+          const view = viewOf(viewEditor);
 
           return (
             (update !== null && state.forced.has(update)) ||
@@ -2136,7 +2150,10 @@ export const createAuthoredPlugin = (
 
           const update = getActiveEditorUpdateId(editor);
           const forced = update ? (state.forced.get(update) ?? null) : null;
-          const updateView = viewOf(getAuthoredUpdateView(editor));
+          const viewEditor = getAuthoredUpdateView(editor);
+
+          settleWaitingView(viewEditor);
+          const updateView = viewOf(viewEditor);
           const before = input.before as JsonEditorValue;
           const after = input.after as JsonEditorValue;
           const contentChange = contentChangeOf(input.change);
@@ -2240,14 +2257,21 @@ export const createAuthoredPlugin = (
             }
           }
 
+          const { composition } = input;
           const focusBefore =
-            input.selectionBefore?.kind === 'text' &&
-            PointApi.equals(
-              input.selectionBefore.anchor,
-              input.selectionBefore.focus
-            )
-              ? input.selectionBefore.focus
-              : null;
+            input.selectionBefore?.kind !== 'text'
+              ? null
+              : PointApi.equals(
+                    input.selectionBefore.anchor,
+                    input.selectionBefore.focus
+                  )
+                ? input.selectionBefore.focus
+                : composition
+                  ? RangeApi.start(input.selectionBefore)
+                  : null;
+          const compositionRoot = composition
+            ? (composition.place.root ?? input.selectionBeforeRoot)
+            : null;
           const selectionPosition = focusBefore
             ? positionOf(before, input.selectionBeforeRoot, focusBefore)
             : null;
@@ -2272,6 +2296,18 @@ export const createAuthoredPlugin = (
           const recorded = recordAuthoredSteps({
             before,
             changeId,
+            composition:
+              composition && compositionRoot !== null
+                ? {
+                    element: composition.place.path.slice(0, -1),
+                    position: positionOf(
+                      before,
+                      compositionRoot,
+                      composition.place
+                    ),
+                    root: compositionRoot,
+                  }
+                : null,
             createRoots,
             createTagId,
             deleteRoots: byName,

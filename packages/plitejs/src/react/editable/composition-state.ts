@@ -2,14 +2,13 @@ import { type CompositionEvent, useEffect } from 'react';
 
 import {
   type EditorMarks,
-  NodeApi,
-  type NodeKey,
   PointApi,
   type Range,
   RangeApi,
   type Text,
   TextApi,
 } from '../..';
+import { withCompositionStamp } from '../../core/composition-stamp';
 import { getSelection, isDOMElement, isDOMNode } from '../../dom';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
@@ -19,8 +18,6 @@ import {
   isAndroidDOMHost,
   isWebKitDOMHost,
 } from '../../dom/internal';
-import { createTypedText } from '../../transforms-text/insert-text';
-import { getTextHostOwnerKey } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   ANDROID_COMPOSITION_END_DELAY,
@@ -41,14 +38,19 @@ import type {
 } from './input-state';
 import {
   beginEditableCompositionSession,
+  cancelCompositionReceipt,
   captureEditableCompositionRuntimeMarks,
   clearEditableCompositionRuntimeState,
+  commitUnderCompositionReceipt,
   getEditableNativeGroupingInput,
+  hasCommittedCompositionReceipt,
   markEditableCompositionModelCommitted,
+  openCompositionReceipt,
   recordEditableCompositionText,
   restoreEditableCompositionRuntimeMarks,
   shouldMergeEditableCompositionHistory,
 } from './input-state';
+import { dispatchUserText, getUserTextLanding } from './mutation-controller';
 import { type Editor, editorCommands } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { writeRuntimeMarks } from './runtime-mutation-state';
@@ -64,6 +66,12 @@ type EditableCompositionHandler = (
 ) => boolean | void;
 
 type CompositionFinalInputType = 'insertFromComposition' | 'insertText';
+
+export type EditableCompositionLeaseBinding = Readonly<{
+  grant: (selection: Range | null) => void;
+  settleAndFlushRender: () => void;
+  settle: () => void;
+}>;
 
 type CompositionAttempt<T> =
   | Readonly<{ ok: false }>
@@ -92,6 +100,20 @@ const createCompositionFailureScope = () => {
       if (hasError) throw firstError;
     },
   };
+};
+
+export const endCompositionWithoutCommit = (
+  inputController: EditableInputController,
+  lease: EditableCompositionLeaseBinding | undefined
+) => {
+  if (inputController.state.pendingCompositionEnd) return;
+
+  const failures = createCompositionFailureScope();
+
+  failures.attempt(() => lease?.settle());
+  inputController.state.compositionSession = null;
+  cancelCompositionReceipt(inputController);
+  failures.throwIfAny();
 };
 
 const getCompositionEventText = (event: CompositionEvent<HTMLDivElement>) =>
@@ -175,12 +197,14 @@ const preventNoneditableComposition = ({
   editor,
   event,
   inputController,
+  lease,
   readOnly,
   setComposing,
 }: {
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController?: EditableInputController;
+  lease?: EditableCompositionLeaseBinding;
   readOnly: boolean;
   setComposing?: EditableCompositionStateSetter;
 }) => {
@@ -215,6 +239,7 @@ const preventNoneditableComposition = ({
   if (inputController) {
     inputController.state.pendingCompositionEnd = null;
     inputController.state.compositionSession = null;
+    failures.attempt(() => endCompositionWithoutCommit(inputController, lease));
   }
   if (wasComposing && setComposing) {
     failures.attempt(() => {
@@ -261,6 +286,23 @@ export const commitInsertFromComposition = ({
   }
 };
 
+const claimedSince = (inputController: EditableInputController) => {
+  const claimedBefore = hasCommittedCompositionReceipt(inputController);
+
+  return () =>
+    !claimedBefore && hasCommittedCompositionReceipt(inputController);
+};
+
+const bindReceiptCancel = (inputController: EditableInputController) => {
+  const receipt = inputController.state.compositionReceipt;
+
+  return () => {
+    if (inputController.state.compositionReceipt === receipt) {
+      cancelCompositionReceipt(inputController);
+    }
+  };
+};
+
 const schedulePendingCompositionEnd = ({
   commitFallback,
   discardFallback,
@@ -270,6 +312,7 @@ const schedulePendingCompositionEnd = ({
   resolveFallbackTarget,
   runOwnedDOMMutation,
   scheduleTask,
+  settleLease,
   settledData,
 }: {
   commitFallback: (
@@ -284,6 +327,7 @@ const schedulePendingCompositionEnd = ({
   resolveFallbackTarget: () => Range | null;
   runOwnedDOMMutation: (callback: () => void) => void;
   scheduleTask: NonNullable<EditableInputController['scheduleTask']>;
+  settleLease?: () => void;
   settledData: string;
 }) => {
   inputController.domInputRuntime.setCompositionPhase('final-input-ready');
@@ -329,6 +373,7 @@ const schedulePendingCompositionEnd = ({
   };
   const installSettledTombstone = () => {
     let cancelExpiry = () => {};
+    const cancelReceipt = bindReceiptCancel(inputController);
     const tombstone: PendingCompositionEnd = Object.freeze({
       cancel: () => {
         const failures = createCompositionFailureScope();
@@ -336,6 +381,7 @@ const schedulePendingCompositionEnd = ({
         if (inputController.state.pendingCompositionEnd === tombstone) {
           inputController.state.pendingCompositionEnd = null;
         }
+        cancelReceipt();
         failures.attempt(cancelExpiry);
         failures.throwIfAny();
       },
@@ -379,7 +425,9 @@ const schedulePendingCompositionEnd = ({
           enteredOwnedMutation = true;
           failures.attempt(() =>
             callback(() => {
+              if (settled) return;
               settled = true;
+              installSettledTombstone();
             })
           );
         });
@@ -393,8 +441,23 @@ const schedulePendingCompositionEnd = ({
         failures.attempt(discardFallback);
         if (publishCompletion) failures.attempt(finishComposing);
       }
+      if (settleLease) {
+        failures.attempt(() => runOwnedDOMMutation(settleLease));
+      }
       clear();
-      if (settled) failures.attempt(installSettledTombstone);
+      if (
+        !settled &&
+        inputController.state.compositionReceipt?.status === 'pending'
+      ) {
+        failures.attempt(() =>
+          scheduleTask(
+            'model',
+            'expire-composition-receipt',
+            bindReceiptCancel(inputController),
+            { timing: 'timeout' }
+          )
+        );
+      }
       failures.throwIfAny();
     };
 
@@ -447,6 +510,7 @@ const schedulePendingCompositionEnd = ({
           claimedInput = null;
           let committed = false;
           const failures = createCompositionFailureScope();
+          const claimed = claimedSince(inputController);
 
           if (inputController.state.compositionSession?.modelCommitted) {
             settle();
@@ -461,10 +525,13 @@ const schedulePendingCompositionEnd = ({
             );
 
             if (!commit.ok) {
-              if (inputController.state.compositionSession?.modelCommitted) {
+              if (
+                claimed() ||
+                inputController.state.compositionSession?.modelCommitted
+              ) {
                 settle();
               }
-            } else if (commit.value) {
+            } else if (commit.value || claimed()) {
               committed = true;
               settle();
               failures.attempt(() =>
@@ -478,10 +545,13 @@ const schedulePendingCompositionEnd = ({
               );
 
               if (!fallback.ok) {
-                if (inputController.state.compositionSession?.modelCommitted) {
+                if (
+                  claimed() ||
+                  inputController.state.compositionSession?.modelCommitted
+                ) {
                   settle();
                 }
-              } else if (fallback.value) {
+              } else if (fallback.value || claimed()) {
                 committed = true;
                 settle();
               }
@@ -539,6 +609,7 @@ const schedulePendingCompositionEnd = ({
   setupFailures.attempt(() => {
     schedule((settle) => {
       const failures = createCompositionFailureScope();
+      const claimed = claimedSince(inputController);
 
       if (
         ownership === 'editor' &&
@@ -556,14 +627,16 @@ const schedulePendingCompositionEnd = ({
             })
           );
 
-          if (!fallback.ok) {
-            if (inputController.state.compositionSession?.modelCommitted) {
-              settle();
-            }
-          } else if (fallback.value) {
+          if (
+            (fallback.ok && fallback.value) ||
+            claimed() ||
+            inputController.state.compositionSession?.modelCommitted
+          ) {
             settle();
           }
         }
+      } else {
+        cancelCompositionReceipt(inputController);
       }
 
       failures.attempt(discardFallback);
@@ -597,7 +670,7 @@ export const commitChromeCompositionEndFallback = ({
 }): boolean => {
   // COMPAT: Some browsers do not fire a usable `insertFromComposition`
   // beforeinput. If the composed text reached the DOM but not the model,
-  // commit it from compositionend and then remove unmanaged DOM text.
+  // commit it from compositionend.
   const rootRuntime = findEditorDOMRootRuntime(editor);
   const suppressFallback =
     (rootElement
@@ -629,154 +702,84 @@ export const commitChromeCompositionEndFallback = ({
   };
   const finishCleanup = () => {
     captureFailure(() => {
-      removeUnmanagedCompositionTextNodes({ editor, rootElement, text });
-    });
-    captureFailure(() => {
       clearEditableCompositionRuntimeState(editor);
     });
   };
 
-  if (!shouldCommit || !target) {
+  const end = () => {
     finishCleanup();
     if (firstFailure.hasError) throw firstFailure.error;
+  };
+
+  if (!shouldCommit || !target) {
+    end();
 
     return false;
   }
 
-  const childrenBefore = editor.read((state) => state.children());
+  return commitUnderCompositionReceipt(inputController, (claimed) => {
+    if (!claimed) {
+      end();
 
-  captureFailure(() => {
-    // Ensure we insert text with the marks the user was actually seeing.
-    if (placeholderMarks !== undefined) {
-      EDITOR_TO_USER_MARKS.set(
-        editor,
-        editor.read((state) => state.marks())
-      );
-      writeRuntimeMarks(editor, placeholderMarks);
+      return false;
     }
 
-    const insertCompositionText: Parameters<typeof updateNativeTextInput>[1] = (
-      tx
-    ) => {
-      if (
-        target &&
-        placeholderMarks &&
-        Object.keys(placeholderMarks).length > 0
-      ) {
-        tx.nodes.insert(
-          createTypedText(editor, text, placeholderMarks, target.anchor.path),
-          { at: target, select: true }
+    const childrenBefore = editor.read((state) => state.children());
+
+    captureFailure(() => {
+      // Ensure we insert text with the marks the user was actually seeing.
+      if (placeholderMarks !== undefined) {
+        EDITOR_TO_USER_MARKS.set(
+          editor,
+          editor.read((state) => state.marks())
         );
-        return;
+        writeRuntimeMarks(editor, placeholderMarks);
       }
 
-      tx.text.insert(text, target ? { at: target } : undefined);
-    };
-
-    const input = inputController
-      ? getEditableNativeGroupingInput(inputController, true)
-      : (() => {
-          const origin = createNativeGroupingId();
-
-          return {
-            origin,
-            ...(mergeHistory ? { composition: origin } : {}),
-          };
-        })();
-
-    withTypedTextIntent(
-      editor,
-      inputController,
-      { inputType: 'insertFromComposition', text },
-      () => updateNativeTextInput(editor, insertCompositionText, input)
-    );
-  });
-  finishCleanup();
-  const committed = editor.read((state) => state.children()) !== childrenBefore;
-
-  if (firstFailure.hasError) throw firstFailure.error;
-
-  return committed;
-};
-
-const removeUnmanagedCompositionTextNodes = ({
-  editor,
-  rootElement,
-  text,
-}: {
-  editor: Editor;
-  rootElement?: HTMLElement | null;
-  text: string;
-}) => {
-  if (!rootElement || text.length === 0) {
-    return;
-  }
-
-  rootElement
-    .querySelectorAll<HTMLElement>('[data-editor-node="text"]')
-    .forEach((textElement) => {
-      const textNodes: globalThis.Text[] = [];
-      const path = textElement
-        .getAttribute('data-editor-path')
-        ?.split(',')
-        .map((segment) => Number.parseInt(segment, 10));
-      const modelText = path?.every(Number.isInteger)
-        ? (() => {
-            try {
-              return NodeApi.leaf(editor, path).text;
-            } catch {
-              return null;
-            }
-          })()
-        : null;
-      const walker = textElement.ownerDocument.createTreeWalker(
-        textElement,
-        NodeFilter.SHOW_TEXT
-      );
-
-      for (
-        let current = walker.nextNode();
-        current;
-        current = walker.nextNode()
-      ) {
-        const textNode = current as globalThis.Text;
-        const textContent = textNode.textContent ?? '';
-        const pliteString = textNode.parentElement?.closest(
-          '[data-editor-string="true"]'
-        );
-
-        if (pliteString && modelText != null && textContent.includes(text)) {
-          if (
-            textContent !== modelText &&
-            textContent.endsWith(text) &&
-            textContent.slice(0, -text.length) === modelText
-          ) {
-            textNode.textContent = modelText;
-            continue;
-          }
-
-          if (
-            textContent !== modelText &&
-            textContent.startsWith(text) &&
-            textContent.slice(text.length) === modelText
-          ) {
-            textNode.textContent = modelText;
-            continue;
-          }
-        }
-
-        if (
-          textContent === text &&
-          (!pliteString || (modelText != null && textContent !== modelText))
-        ) {
-          textNodes.push(textNode);
-        }
-      }
-
-      textNodes.forEach((textNode) => {
-        textNode.remove();
+      const landing = getUserTextLanding(editor, {
+        composed: true,
+        inputType: 'insertFromComposition',
+        marks: placeholderMarks,
+        replayed: false,
+        target,
       });
+      const insertCompositionText: Parameters<
+        typeof updateNativeTextInput
+      >[1] = (tx) =>
+        dispatchUserText(editor, tx, {
+          composed: true,
+          landing,
+          marks: placeholderMarks,
+          target,
+          text,
+        });
+
+      const input = inputController
+        ? getEditableNativeGroupingInput(inputController, true)
+        : (() => {
+            const origin = createNativeGroupingId();
+
+            return {
+              origin,
+              ...(mergeHistory ? { composition: origin } : {}),
+            };
+          })();
+
+      withTypedTextIntent(
+        editor,
+        inputController,
+        { inputType: 'insertFromComposition', text },
+        () => updateNativeTextInput(editor, insertCompositionText, input)
+      );
     });
+    finishCleanup();
+    const committed =
+      editor.read((state) => state.children()) !== childrenBefore;
+
+    if (firstFailure.hasError) throw firstFailure.error;
+
+    return committed;
+  });
 };
 
 export const applyEditableCompositionEnd = ({
@@ -784,8 +787,8 @@ export const applyEditableCompositionEnd = ({
   event,
   inputController,
   onCompositionEnd,
+  lease,
   readOnly = false,
-  rebuildCancelledLine,
   requestModelSelectionExportAfterRender,
   runOwnedDOMMutation,
   scheduleTask,
@@ -794,9 +797,9 @@ export const applyEditableCompositionEnd = ({
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController: EditableInputController;
+  lease?: EditableCompositionLeaseBinding;
   onCompositionEnd?: EditableCompositionHandler;
   readOnly?: boolean;
-  rebuildCancelledLine?: (lineKey: NodeKey) => void;
   requestModelSelectionExportAfterRender: () => void;
   runOwnedDOMMutation: (callback: () => void) => void;
   scheduleTask: NonNullable<EditableInputController['scheduleTask']>;
@@ -817,6 +820,7 @@ export const applyEditableCompositionEnd = ({
       editor,
       event,
       inputController,
+      lease,
       readOnly,
       setComposing,
     })
@@ -827,8 +831,6 @@ export const applyEditableCompositionEnd = ({
   if (ReactEditor.hasSelectableTarget(editor, event.target)) {
     const wasComposing = ReactEditor.isComposing(editor);
     const runtimeOwnsComposing = inputController.state.isComposing;
-    const nativeAnchor =
-      inputController.domInputRuntime.compositionEpoch?.anchor;
     const compositionText =
       getCompositionEventText(event) ??
       inputController.state.compositionSession?.text;
@@ -837,19 +839,10 @@ export const applyEditableCompositionEnd = ({
       !inputController.state.compositionSession?.modelCommitted;
 
     // Chrome drops an empty line's text host when it cancels the preedit, and
-    // React cannot render into a host it no longer has, so the line rebuilds
+    // React cannot render into a host it no longer has, so the lease settles
     // before onCompositionEnd can commit a render.
-    if (
-      rebuildCancelledLine &&
-      wasComposing &&
-      isCancel &&
-      !isAndroidDOMHost(event) &&
-      isDOMElement(nativeAnchor) &&
-      !event.currentTarget.contains(nativeAnchor)
-    ) {
-      const lineKey = getTextHostOwnerKey(editor, nativeAnchor);
-
-      if (lineKey) rebuildCancelledLine(lineKey);
+    if (wasComposing && isCancel && !isAndroidDOMHost(event)) {
+      lease?.settle();
     }
 
     const compositionEndIsExternallyOwned =
@@ -878,8 +871,11 @@ export const applyEditableCompositionEnd = ({
       return;
     }
     if (isAndroidDOMHost(event) || !wasComposing) {
+      // Safari's direct route commits before compositionend.
+      lease?.settle();
       clearEditableCompositionRuntimeState(editor);
       inputController.state.compositionSession = null;
+      cancelCompositionReceipt(inputController);
       clearCompositionIntent();
       return;
     }
@@ -902,6 +898,7 @@ export const applyEditableCompositionEnd = ({
         resolveFallbackTarget: () => null,
         runOwnedDOMMutation,
         scheduleTask,
+        settleLease: lease?.settle,
         settledData: '',
       });
       return;
@@ -917,6 +914,7 @@ export const applyEditableCompositionEnd = ({
       failures.attempt(() => {
         clearEditableCompositionRuntimeState(editor);
       });
+      cancelCompositionReceipt(inputController);
       failures.attempt(finishComposing);
       failures.throwIfAny();
       return;
@@ -1009,6 +1007,7 @@ export const applyEditableCompositionEnd = ({
       resolveFallbackTarget: releaseTarget,
       runOwnedDOMMutation,
       scheduleTask,
+      settleLease: lease?.settle,
       settledData: compositionText ?? '',
     });
 
@@ -1022,6 +1021,7 @@ export const applyEditableCompositionStart = ({
   editor,
   event,
   inputController,
+  lease,
   onCompositionStart,
   readOnly = false,
   setComposing,
@@ -1029,6 +1029,7 @@ export const applyEditableCompositionStart = ({
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController?: EditableInputController;
+  lease?: EditableCompositionLeaseBinding;
   onCompositionStart?: EditableCompositionHandler;
   readOnly?: boolean;
   setComposing: EditableCompositionStateSetter;
@@ -1041,6 +1042,7 @@ export const applyEditableCompositionStart = ({
       editor,
       event,
       inputController,
+      lease,
       readOnly,
       setComposing,
     })
@@ -1069,15 +1071,19 @@ export const applyEditableCompositionStart = ({
       return;
     }
 
+    lease?.settleAndFlushRender();
     const marks = editor.read((state) => state.marks());
     const selection = readRuntimeSelectionRange(editor);
     const nativeAnchor = getNativeCompositionAnchor(editor, event, selection);
+
+    lease?.grant(selection);
 
     if (inputController) {
       beginEditableCompositionSession(inputController, {
         historyMergePending: editor.read.selection.isExpanded(),
         nativeAnchor,
       });
+      openCompositionReceipt(editor, inputController);
       inputController.state.activeIntent = 'composition';
     }
 
@@ -1089,7 +1095,11 @@ export const applyEditableCompositionStart = ({
         (tx) => {
           // Deletes the selection as typing over it does. deleteFragment would
           // drop a whole selected line and compose into a neighboring one.
-          tx.command(editorCommands.insertText, { text: '' });
+          withCompositionStamp(
+            editor,
+            { place: RangeApi.start(selection) },
+            () => tx.command(editorCommands.insertText, { text: '' })
+          );
         },
         inputController
           ? getEditableNativeGroupingInput(inputController, true)
@@ -1119,6 +1129,7 @@ export const applyEditableCompositionUpdate = ({
   editor,
   event,
   inputController,
+  lease,
   onCompositionUpdate,
   readOnly = false,
   setComposing,
@@ -1126,6 +1137,7 @@ export const applyEditableCompositionUpdate = ({
   editor: ReactRuntimeEditor;
   event: CompositionEvent<HTMLDivElement>;
   inputController?: EditableInputController;
+  lease?: EditableCompositionLeaseBinding;
   onCompositionUpdate?: EditableCompositionHandler;
   readOnly?: boolean;
   setComposing: EditableCompositionStateSetter;
@@ -1138,6 +1150,7 @@ export const applyEditableCompositionUpdate = ({
       editor,
       event,
       inputController,
+      lease,
       readOnly,
       setComposing,
     })
@@ -1161,7 +1174,10 @@ export const applyEditableCompositionUpdate = ({
           openAndroidComposition({ editor, inputController, setComposing });
         }
       } else if (!ReactEditor.isComposing(editor)) {
-        if (inputController) beginEditableCompositionSession(inputController);
+        if (inputController) {
+          beginEditableCompositionSession(inputController);
+          openCompositionReceipt(editor, inputController);
+        }
         setComposing(true);
       }
     }

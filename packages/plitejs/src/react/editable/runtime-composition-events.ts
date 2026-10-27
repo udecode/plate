@@ -1,11 +1,18 @@
-import { type CompositionEvent, useCallback } from 'react';
+import { type CompositionEvent, useCallback, useContext, useMemo } from 'react';
 
+import { DecorationContext } from '../decoration-context';
 import { useRebuildLine } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
+import {
+  grantCompositionLease,
+  settleCompositionLeaseAndFlushRender,
+  settleCompositionLease,
+} from './composition-lease';
 import {
   applyEditableCompositionEnd,
   applyEditableCompositionStart,
   applyEditableCompositionUpdate,
+  type EditableCompositionLeaseBinding,
 } from './composition-state';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableCompositionKernel } from './editing-kernel';
@@ -20,9 +27,53 @@ type CompositionHandler = (
   event: CompositionEvent<HTMLDivElement>
 ) => boolean | void;
 
+export const useEditableCompositionLease = ({
+  editor,
+  runtime,
+}: {
+  editor: ReactRuntimeEditor;
+  runtime: EditableDOMRuntime;
+}) => {
+  const decorations = useContext(DecorationContext);
+  const rebuildLine = useRebuildLine(editor);
+
+  return useMemo<EditableCompositionLeaseBinding>(() => {
+    const settleInput = () => ({
+      decorations,
+      editor,
+      lease: runtime.compositionLease,
+      rebuild: rebuildLine,
+      root: runtime.rootElement,
+    });
+
+    return {
+      grant: (selection) => {
+        const root = runtime.rootElement;
+
+        if (root) {
+          grantCompositionLease({
+            editor,
+            lease: runtime.compositionLease,
+            root,
+            selection,
+          });
+        }
+      },
+      settleAndFlushRender: () =>
+        settleCompositionLeaseAndFlushRender(settleInput()),
+      settle: () => {
+        runtime.runOwnedDOMMutation('composition', () => {
+          settleCompositionLease(settleInput());
+        });
+      },
+    };
+  }, [decorations, editor, rebuildLine, runtime]);
+};
+
 export const useRuntimeCompositionEvents = ({
   editor,
   inputController,
+  lease,
   onCompositionEnd,
   onCompositionStart,
   onCompositionUpdate,
@@ -34,6 +85,7 @@ export const useRuntimeCompositionEvents = ({
 }: {
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
+  lease: EditableCompositionLeaseBinding;
   onCompositionEnd?: CompositionHandler;
   onCompositionStart?: CompositionHandler;
   onCompositionUpdate?: CompositionHandler;
@@ -43,7 +95,6 @@ export const useRuntimeCompositionEvents = ({
   setComposing: EditableEventRuntime['composition']['setComposing'];
   trace: EditableEventRuntime['trace'];
 }) => {
-  const rebuildLine = useRebuildLine(editor);
   const handleCompositionEnd = useCallback(
     (event: CompositionEvent<HTMLDivElement>) => {
       const decision = prepareEditableCompositionKernel({
@@ -63,9 +114,9 @@ export const useRuntimeCompositionEvents = ({
           editor,
           event,
           inputController,
+          lease,
           onCompositionEnd,
           readOnly,
-          rebuildCancelledLine: rebuildLine,
           requestModelSelectionExportAfterRender,
           runOwnedDOMMutation: (callback) => {
             runtime.runOwnedDOMMutation('composition', callback);
@@ -78,7 +129,7 @@ export const useRuntimeCompositionEvents = ({
     [
       editor,
       inputController,
-      rebuildLine,
+      lease,
       onCompositionEnd,
       readOnly,
       requestModelSelectionExportAfterRender,
@@ -112,6 +163,7 @@ export const useRuntimeCompositionEvents = ({
           editor,
           event,
           inputController,
+          lease,
           onCompositionStart,
           readOnly,
           setComposing,
@@ -121,6 +173,7 @@ export const useRuntimeCompositionEvents = ({
     [
       editor,
       inputController,
+      lease,
       onCompositionStart,
       readOnly,
       runtime,
@@ -153,6 +206,7 @@ export const useRuntimeCompositionEvents = ({
           editor,
           event,
           inputController,
+          lease,
           onCompositionUpdate,
           readOnly,
           setComposing,
@@ -162,6 +216,7 @@ export const useRuntimeCompositionEvents = ({
     [
       editor,
       inputController,
+      lease,
       onCompositionUpdate,
       readOnly,
       runtime,

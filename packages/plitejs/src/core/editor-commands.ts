@@ -45,6 +45,10 @@ import { getDefined } from '../internal/get-defined';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { getActiveCommandEditor } from './command-registry';
+import {
+  recordLocatedDestination,
+  writeComposedText,
+} from './composition-stamp';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import { withoutUnheldDefaults } from './default-storage';
 import {
@@ -755,7 +759,13 @@ export const editorCommands: EditorCommands = Object.freeze({
       }),
   }),
   insertText: defineCommand<InsertTextCommand>('text.insert', {
-    locate: locateOptionsAt,
+    locate: (input, place) => {
+      const located = locateOptionsAt(input, place);
+
+      if (located) recordLocatedDestination(place, located.options?.at);
+
+      return located;
+    },
     build: ({ input, state }) => {
       const nodeSelection = getCurrentNodeSelection(state);
 
@@ -820,7 +830,12 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       return state.transaction((tx) => {
-        tx.text.insert(input.text, input.options);
+        writeComposedText(
+          getActiveCommandEditor(),
+          input.options?.at,
+          input.text,
+          () => tx.text.insert(input.text, input.options)
+        );
       });
     },
   }),

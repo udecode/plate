@@ -1,6 +1,6 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import { act, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 
 import type { ComboboxState } from '../../../features/combobox';
@@ -155,6 +155,26 @@ const type = async (editable: HTMLElement, text: string) => {
   }
 };
 
+// Happy DOM reports a WebKit host, so the word commits through WebKit's final
+// `insertFromComposition`.
+const compose = async (editable: HTMLElement, data: string) => {
+  await act(async () => {
+    editable.focus();
+    fireEvent.compositionStart(editable);
+    fireEvent.compositionUpdate(editable, { data });
+    editable.dispatchEvent(
+      new InputEvent('beforeinput', {
+        bubbles: true,
+        cancelable: true,
+        data,
+        inputType: 'insertFromComposition',
+        isComposing: true,
+      })
+    );
+    fireEvent.compositionEnd(editable, { data });
+  });
+};
+
 const text = (editor: ReturnType<typeof setup>['editor']) =>
   editor.read.text.string([0]);
 
@@ -211,6 +231,15 @@ describe('useCombobox', () => {
     await insert(editable, '@jo');
 
     await waitFor(() => expect(box?.match?.query).toBe('jo'));
+  });
+
+  it('opens on a trigger composed through WebKit’s final input', async () => {
+    const { editable, editor } = setup();
+
+    await compose(editable, '@jo');
+
+    await waitFor(() => expect(box?.match?.query).toBe('jo'));
+    expect(text(editor)).toBe('Hi @jo');
   });
 
   it('opens the most recently typed trigger when one insertion holds two', async () => {

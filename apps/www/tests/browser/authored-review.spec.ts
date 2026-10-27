@@ -16,6 +16,12 @@ type Leaf = {
   text: string;
 };
 type Block = { authored?: Array<{ kind: string }>; children: Leaf[] };
+type Inline = Omit<Leaf, 'text'> & {
+  bold?: boolean;
+  children?: Inline[];
+  text?: string;
+  type?: string;
+};
 type Contexts = Record<string, { base?: string; member: { author: string } }>;
 
 const MODES: Array<[Intent, string]> = [
@@ -56,8 +62,7 @@ const open = async (
   return editor;
 };
 
-/** One block's leaves as `text` or `text[kind:author,…]`. */
-const leaves = async (editor: BrowserEditorHarness, block: number) => {
+const readBlocks = async (editor: BrowserEditorHarness) => {
   const value = (await editor.get.modelValue()) as {
     children: Block[];
     records?: { 'authored-contexts'?: Contexts };
@@ -68,8 +73,7 @@ const leaves = async (editor: BrowserEditorHarness, block: number) => {
 
     return [...(base ? restsOn(base) : []), `insert:${member.author}`];
   };
-
-  return value.children[block].children.map((leaf) => {
+  const label = (leaf: Omit<Leaf, 'text'>, text: string) => {
     const authored = leaf.authored ?? [];
     const marks = [
       ...authored.flatMap((mark) => (mark.ctx ? restsOn(mark.ctx) : [])),
@@ -78,9 +82,50 @@ const leaves = async (editor: BrowserEditorHarness, block: number) => {
       ),
     ];
 
-    return marks.length ? `${leaf.text}[${marks.join(',')}]` : leaf.text;
-  });
+    return marks.length ? `${text}[${marks.join(',')}]` : text;
+  };
+
+  return { children: value.children, label };
 };
+
+const leaves = async (editor: BrowserEditorHarness, block: number) => {
+  const { children, label } = await readBlocks(editor);
+
+  return children[block].children.map((leaf) => label(leaf, leaf.text));
+};
+
+const inlines = async (editor: BrowserEditorHarness, block: number) => {
+  const { children, label } = await readBlocks(editor);
+  const show = (node: Inline): string =>
+    node.type === 'link'
+      ? `link(${(node.children ?? []).map(show).join('|')})`
+      : label(node, `${node.text}${node.bold ? '*' : ''}`);
+
+  return (children[block].children as Inline[]).map(show);
+};
+
+const loadLine = (page: Page, children: readonly unknown[]) =>
+  page.evaluate(
+    (line) =>
+      window.authoredProof?.load([{ type: 'paragraph', children: line }]),
+    children
+  );
+
+const bobDeletes = (text: string) => ({
+  authored: [{ at: 1, author: 'bob', change: 'bob:1', kind: 'delete' }],
+  text,
+});
+
+const composeWord = (
+  editor: BrowserEditorHarness,
+  browserName: string,
+  steps: readonly string[] = ['す', 'すし']
+) =>
+  editor.ime.compose({
+    steps: [...steps],
+    text: steps.at(-1)!,
+    transport: browserName === 'chromium' ? 'native' : 'preedit',
+  });
 
 const blocks = async (editor: BrowserEditorHarness) =>
   ((await editor.get.modelValue()) as { children: Block[] }).children.map(
@@ -97,6 +142,16 @@ const anomalies = async (editor: BrowserEditorHarness) => {
 
   return trace.anomalies;
 };
+
+/** A block's text as the DOM shows it, so a stale or doubled letter shows. */
+const renderedLine = (editor: BrowserEditorHarness, block: number) =>
+  editor.root.evaluate((root, index) => {
+    const elements = root.querySelectorAll(
+      ':scope > [data-editor-node="element"]'
+    );
+
+    return elements[index]?.textContent?.replace(/[\uFEFF\u00A0]/g, '') ?? null;
+  }, block);
 
 const compositionEnds = async (editor: BrowserEditorHarness) => {
   const trace = await takeBrowserNativeEventTrace(editor.root);
@@ -345,19 +400,27 @@ test.describe('authored review tree native input', () => {
     });
 
     test(`IME composition inside struck text splits the deletion (${mode})`, async ({
+      browserName,
       page,
     }) => {
       const errors = recordBrowserRuntimeErrors(page, { strict: true });
       const editor = await open(page, intent);
 
       await editor.dom.clickTextOffset({ offset: 2, path: [0, 1] });
-      await editor.ime.compose({ steps: ['す', 'すし'], text: 'すし' });
+      await editor.ime.compose({
+        steps: ['す', 'すし'],
+        text: 'すし',
+        transport: browserName === 'chromium' ? 'native' : 'preedit',
+      });
       expect(await compositionEnds(editor)).toEqual(['すし']);
       await editor.assert.collapsedModelDOMSelection({
         offset: 2,
         path: [0, 2],
         text: 'すし',
       });
+      await expect
+        .poll(() => renderedLine(editor, 0))
+        .toBe(await editor.get.modelBlockText(0));
       await editor.type('X');
 
       expect(await leaves(editor, 0)).toEqual([
@@ -371,6 +434,228 @@ test.describe('authored review tree native input', () => {
       ]);
       expect(await anomalies(editor)).toEqual([]);
       errors.assertNone();
+    });
+
+    for (const [edge, caret, expected] of [
+      [
+        'start',
+        { offset: 'Alpha '.length, path: [0, 0] },
+        intent === 'edit'
+          ? [
+              'Alpha すしX',
+              'gone[delete:bob]',
+              ' beta ',
+              'theirs[insert:bob]',
+              ' gamma',
+            ]
+          : [
+              'Alpha ',
+              typed(intent, 'すしX'),
+              'gone[delete:bob]',
+              ' beta ',
+              'theirs[insert:bob]',
+              ' gamma',
+            ],
+      ],
+      ['end', { offset: 4, path: [0, 1] }, afterStruck(intent, 'すしX')],
+    ] as const) {
+      test(`IME composition at the ${edge} of struck text leaves the deletion whole (${mode})`, async ({
+        browserName,
+        page,
+      }) => {
+        const errors = recordBrowserRuntimeErrors(page, { strict: true });
+        const editor = await open(page, intent);
+
+        await editor.dom.clickTextOffset({
+          offset: caret.offset,
+          path: [...caret.path],
+        });
+        await composeWord(editor, browserName);
+        await expect
+          .poll(() => renderedLine(editor, 0))
+          .toBe(await editor.get.modelBlockText(0));
+        await editor.type('X');
+
+        expect(await leaves(editor, 0)).toEqual(expected);
+        expect(await anomalies(editor)).toEqual([]);
+        errors.assertNone();
+      });
+    }
+
+    test(`IME composition inside struck text after toggling bold is bold (${mode})`, async ({
+      browserName,
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+
+      await editor.dom.clickTextOffset({ offset: 2, path: [0, 1] });
+      await editor.press('ControlOrMeta+b');
+      await composeWord(editor, browserName);
+      await expect
+        .poll(() => renderedLine(editor, 0))
+        .toBe(await editor.get.modelBlockText(0));
+
+      expect(await inlines(editor, 0)).toEqual([
+        'Alpha ',
+        'go[delete:bob]',
+        typed(intent, 'すし*'),
+        'ne[delete:bob]',
+        ' beta ',
+        'theirs[insert:bob]',
+        ' gamma',
+      ]);
+      expect(await anomalies(editor)).toEqual([]);
+      errors.assertNone();
+    });
+
+    test(`IME composition inside struck text before a bold leaf takes its bold (${mode})`, async ({
+      browserName,
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+
+      await loadLine(page, [
+        { text: 'Alpha ' },
+        bobDeletes('gone'),
+        { bold: true, text: ' bold' },
+        { text: ' end' },
+      ]);
+      await editor.dom.clickTextOffset({ offset: 2, path: [0, 1] });
+      await composeWord(editor, browserName);
+      await expect
+        .poll(() => renderedLine(editor, 0))
+        .toBe(await editor.get.modelBlockText(0));
+      await editor.type('X');
+
+      expect(await inlines(editor, 0)).toEqual([
+        'Alpha ',
+        'go[delete:bob]',
+        typed(intent, 'すしX*'),
+        'ne[delete:bob]',
+        ' bold*',
+        ' end',
+      ]);
+      expect(await anomalies(editor)).toEqual([]);
+      errors.assertNone();
+    });
+
+    test(`IME composition inside struck text at a link's end stays in the link (${mode})`, async ({
+      browserName,
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+
+      await loadLine(page, [
+        { text: 'Alpha ' },
+        {
+          children: [{ text: 'Link ' }, bobDeletes('here')],
+          type: 'link',
+          url: 'https://plate.test',
+        },
+        { text: ' end' },
+      ]);
+      await editor.dom.clickTextOffset({ offset: 2, path: [0, 1, 1] });
+      await composeWord(editor, browserName);
+      await expect
+        .poll(() => renderedLine(editor, 0))
+        .toBe(await editor.get.modelBlockText(0));
+
+      expect(await inlines(editor, 0)).toEqual([
+        'Alpha ',
+        `link(Link |he[delete:bob]|${typed(intent, 'すし')}|re[delete:bob])`,
+        ' end',
+      ]);
+      expect(await anomalies(editor)).toEqual([]);
+      errors.assertNone();
+    });
+
+    test(`one undo takes back an IME composition inside struck text, and redo splits it again (${mode})`, async ({
+      browserName,
+      page,
+    }) => {
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+      const shown = async () => {
+        await expect
+          .poll(() => renderedLine(editor, 0))
+          .toBe(await editor.get.modelBlockText(0));
+        return leaves(editor, 0);
+      };
+      const before = await leaves(editor, 0);
+
+      await editor.dom.clickTextOffset({ offset: 2, path: [0, 1] });
+      await composeWord(editor, browserName);
+      const composed = await shown();
+
+      await editor.press('ControlOrMeta+z');
+      const undone = await shown();
+
+      await editor.press('ControlOrMeta+Shift+z');
+
+      expect({ composed, redone: await shown(), undone }).toEqual({
+        composed: [
+          'Alpha ',
+          'go[delete:bob]',
+          typed(intent, 'すし'),
+          'ne[delete:bob]',
+          ' beta ',
+          'theirs[insert:bob]',
+          ' gamma',
+        ],
+        redone: composed,
+        undone: before,
+      });
+      expect(await anomalies(editor)).toEqual([]);
+      errors.assertNone();
+    });
+
+    test(`two IME compositions in a row inside struck text, the second starting before the first renders, land in order (${mode})`, async ({
+      browserName,
+      page,
+    }) => {
+      test.skip(browserName !== 'chromium', 'Chromium composition protocol');
+      const errors = recordBrowserRuntimeErrors(page, { strict: true });
+      const editor = await open(page, intent);
+      const client = await page.context().newCDPSession(page);
+
+      try {
+        await editor.dom.clickTextOffset({ offset: 2, path: [0, 1] });
+        await client.send('Input.imeSetComposition', {
+          selectionEnd: 1,
+          selectionStart: 1,
+          text: 'か',
+        });
+        await Promise.all([
+          client.send('Input.insertText', { text: 'か' }),
+          client.send('Input.imeSetComposition', {
+            selectionEnd: 1,
+            selectionStart: 1,
+            text: 'き',
+          }),
+        ]);
+        await client.send('Input.insertText', { text: 'き' });
+        await expect
+          .poll(() => renderedLine(editor, 0))
+          .toBe(await editor.get.modelBlockText(0));
+        await editor.type('X');
+
+        expect(await leaves(editor, 0)).toEqual([
+          'Alpha ',
+          'go[delete:bob]',
+          typed(intent, 'かきX'),
+          'ne[delete:bob]',
+          ' beta ',
+          'theirs[insert:bob]',
+          ' gamma',
+        ]);
+        expect(await anomalies(editor)).toEqual([]);
+        errors.assertNone();
+      } finally {
+        await client.detach();
+      }
     });
   }
 

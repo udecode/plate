@@ -1,10 +1,19 @@
-import type { Point, Value } from 'plitejs';
+import {
+  defineEffect,
+  definePlugin,
+  defineStateField,
+  editorCommands,
+  type Point,
+  type Value,
+} from 'plitejs';
 import { createAuthoredPlugin } from 'plitejs/authored';
 import { history } from 'plitejs/history';
 import { createEditor, type Editor } from 'plitejs/react';
 import type { CompositionEvent } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { isEditorCompositionPending } from '../../src/core/public-state';
+import { EditorRefusalError } from '../../src/core/refusal';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
@@ -21,10 +30,14 @@ import {
   setEditableComposingState,
 } from '../../src/react/editable/input-controller';
 import {
+  cancelCompositionReceipt,
+  commitUnderCompositionReceipt,
   createEditableInputController,
   createEditableInputControllerState,
   beginEditableCompositionSession,
+  openCompositionReceipt,
   markEditableCompositionModelCommitted,
+  runTrackedEditableCompositionMutation,
   shouldMergeEditableCompositionHistory,
   type EditableInputController,
   type PendingCompositionInput,
@@ -349,6 +362,368 @@ describe('composition state', () => {
       expect(readVisibleEditorState(editor)).toEqual(before);
       expect(await replayMountedHistory(editor, 'redo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(composed);
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  });
+
+  it('undoes a composition over a selection and its insert handler’s effect in one step', async () => {
+    const bump = defineEffect<number>({
+      invert: (value) => -value,
+      key: 'test.composition-bump',
+    });
+    const bumps = defineStateField<number>({
+      initial: () => 0,
+      key: 'test.composition-bumps',
+      reduce: (value, effect) =>
+        effect.type === bump ? value + effect.value : value,
+    });
+    const editor = createEditor({
+      plugins: [
+        history(),
+        definePlugin('composition-bump', {
+          commands: ({ around }) => [
+            around(editorCommands.insertText, ({ input, next, state }) =>
+              input.text
+                ? next.after(
+                    state.transaction((tx) => {
+                      tx.effects.emit(bump, 1);
+                    })
+                  )
+                : next()
+            ),
+          ],
+          effectTypes: [bump],
+          stateFields: [bumps],
+        }),
+      ],
+    });
+    const read = () => ({
+      bumps: editor.read.getField(bumps),
+      text: editorString(editor, []),
+    });
+
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 1 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+    });
+    const inputController = createInputController();
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    try {
+      applyEditableCompositionStart({
+        editor,
+        event: createCompositionEvent(),
+        inputController,
+        setComposing: vi.fn(),
+      });
+      applyModelOwnedBeforeInputMutation({
+        data: 'すし',
+        editor,
+        inputController,
+        inputType: 'insertFromComposition',
+        mergeHistory: shouldMergeEditableCompositionHistory(inputController),
+        native: false,
+        selection: readTextSelection(editor),
+        setComposing: vi.fn(),
+      });
+      const composed = read();
+
+      await replayMountedHistory(editor, 'undo');
+      const undone = read();
+
+      await replayMountedHistory(editor, 'redo');
+
+      expect({ composed, redone: read(), undone }).toEqual({
+        composed: { bumps: 1, text: 'aすしd' },
+        redone: { bumps: 1, text: 'aすしd' },
+        undone: { bumps: 0, text: 'abcd' },
+      });
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  });
+
+  it.each([
+    ['WebKit’s direct route', 'direct'],
+    ['Chrome’s fallback', 'fallback'],
+  ] as const)(
+    'undoes a composition over a selection whose insert handler only emits an effect in one step on %s',
+    async (_, route) => {
+      const bump = defineEffect<number>({
+        invert: (value) => -value,
+        key: 'test.composition-consumed-bump',
+      });
+      const bumps = defineStateField<number>({
+        initial: () => 0,
+        key: 'test.composition-consumed-bumps',
+        reduce: (value, effect) =>
+          effect.type === bump ? value + effect.value : value,
+      });
+      const editor = createEditor({
+        plugins: [
+          history(),
+          definePlugin('composition-consumed-bump', {
+            commands: ({ around }) => [
+              around(editorCommands.insertText, ({ input, next, state }) =>
+                input.text
+                  ? state.transaction((tx) => {
+                      tx.effects.emit(bump, 1);
+                    })
+                  : next()
+              ),
+            ],
+            effectTypes: [bump],
+            stateFields: [bumps],
+          }),
+        ],
+      });
+      const read = () => ({
+        bumps: editor.read.getField(bumps),
+        text: editorString(editor, []),
+      });
+
+      editorReplace(editor, {
+        children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 3 },
+        },
+      });
+      const inputController = createInputController();
+      const hasSelectableTarget = vi
+        .spyOn(ReactEditor, 'hasSelectableTarget')
+        .mockReturnValue(true);
+
+      try {
+        applyEditableCompositionStart({
+          editor,
+          event: createCompositionEvent(),
+          inputController,
+          setComposing: vi.fn(),
+        });
+        const target = readTextSelection(editor);
+
+        if (!target) throw new Error('expected composition selection');
+        if (route === 'direct') {
+          applyModelOwnedBeforeInputMutation({
+            data: 'すし',
+            editor,
+            inputController,
+            inputType: 'insertFromComposition',
+            mergeHistory:
+              shouldMergeEditableCompositionHistory(inputController),
+            native: false,
+            selection: target,
+            setComposing: vi.fn(),
+          });
+        } else {
+          commitChromeCompositionEndFallback({
+            editor,
+            inputController,
+            mergeHistory:
+              shouldMergeEditableCompositionHistory(inputController),
+            target,
+            text: 'すし',
+          });
+        }
+        const composed = read();
+
+        await replayMountedHistory(editor, 'undo');
+        const undone = read();
+
+        await replayMountedHistory(editor, 'redo');
+
+        expect({ composed, redone: read(), undone }).toEqual({
+          composed: { bumps: 1, text: 'ad' },
+          redone: { bumps: 1, text: 'ad' },
+          undone: { bumps: 0, text: 'abcd' },
+        });
+      } finally {
+        hasSelectableTarget.mockRestore();
+      }
+    }
+  );
+
+  it.each([
+    ['WebKit’s direct route', 'direct'],
+    ['Chrome’s fallback', 'fallback'],
+  ] as const)(
+    'undoes a composition in crossed-out text whose insert handler emits an effect on every insert in one step on %s',
+    async (_, route) => {
+      const bump = defineEffect<number>({
+        invert: (value) => -value,
+        key: 'test.composition-every-bump',
+      });
+      const bumps = defineStateField<number>({
+        initial: () => 0,
+        key: 'test.composition-every-bumps',
+        reduce: (value, effect) =>
+          effect.type === bump ? value + effect.value : value,
+      });
+      const editor = createEditor({
+        initialValue: [
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'a' },
+              {
+                authored: [
+                  { at: 1, author: 'bob', change: 'bob:1', kind: 'delete' },
+                ],
+                text: 'gone',
+              },
+              { text: 'b' },
+            ],
+          },
+        ],
+        plugins: [
+          history(),
+          createAuthoredPlugin({
+            authorId: 'dan',
+            createChangeId: () => 'dan:1',
+            intent: 'edit',
+            now: () => 1000,
+          }),
+          definePlugin('composition-every-bump', {
+            commands: ({ around }) => [
+              around(editorCommands.insertText, ({ next, state }) =>
+                next.after(
+                  state.transaction((tx) => {
+                    tx.effects.emit(bump, 1);
+                  })
+                )
+              ),
+            ],
+            effectTypes: [bump],
+            stateFields: [bumps],
+          }),
+        ],
+      });
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { path: [0, 1], offset: 1 },
+          focus: { path: [0, 1], offset: 3 },
+        });
+      });
+      const read = () => ({
+        bumps: editor.read.getField(bumps),
+        ...readVisibleEditorState(editor),
+      });
+      const before = read();
+      const inputController = createInputController();
+      const hasSelectableTarget = vi
+        .spyOn(ReactEditor, 'hasSelectableTarget')
+        .mockReturnValue(true);
+
+      try {
+        applyEditableCompositionStart({
+          editor,
+          event: createCompositionEvent(),
+          inputController,
+          setComposing: vi.fn(),
+        });
+        const target = readTextSelection(editor);
+
+        if (!target) throw new Error('expected composition selection');
+        if (route === 'direct') {
+          applyModelOwnedBeforeInputMutation({
+            data: 'か',
+            editor,
+            inputController,
+            inputType: 'insertFromComposition',
+            mergeHistory:
+              shouldMergeEditableCompositionHistory(inputController),
+            native: false,
+            selection: target,
+            setComposing: vi.fn(),
+          });
+        } else {
+          commitChromeCompositionEndFallback({
+            editor,
+            inputController,
+            mergeHistory:
+              shouldMergeEditableCompositionHistory(inputController),
+            target,
+            text: 'か',
+          });
+        }
+        const composed = read().bumps;
+
+        await replayMountedHistory(editor, 'undo');
+
+        expect({ composed, undone: read() }).toEqual({
+          composed: 2,
+          undone: before,
+        });
+      } finally {
+        hasSelectableTarget.mockRestore();
+      }
+    }
+  );
+
+  it('undoes Korean syllables composed on Safari’s direct route in the steps they took', async () => {
+    const editor = createEditor({ plugins: [history()] });
+
+    editorReplace(editor, {
+      children: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      },
+    });
+    const inputController = createInputController();
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    try {
+      for (const syllable of ['한', '국', '어']) {
+        applyEditableCompositionStart({
+          editor,
+          event: createCompositionEvent(),
+          inputController,
+          setComposing: vi.fn(),
+        });
+        applyModelOwnedBeforeInputMutation({
+          data: syllable,
+          editor,
+          inputController,
+          inputType: 'insertFromComposition',
+          mergeHistory: shouldMergeEditableCompositionHistory(inputController),
+          native: false,
+          selection: readTextSelection(editor),
+          setComposing: vi.fn(),
+        });
+        applyEditableCompositionEnd({
+          editor,
+          event: createCompositionEvent(syllable),
+          inputController,
+          runOwnedDOMMutation: (callback) => callback(),
+          scheduleTask: vi.fn(() => () => {}),
+          setComposing: vi.fn(),
+        });
+      }
+      const composed = editorString(editor, []);
+      const steps: string[] = [];
+
+      while (steps.length < 3 && editorString(editor, []) !== 'ab') {
+        await replayMountedHistory(editor, 'undo');
+        steps.push(editorString(editor, []));
+      }
+
+      expect({ composed, steps }).toEqual({
+        composed: 'ab한국어',
+        steps: ['ab'],
+      });
     } finally {
       hasSelectableTarget.mockRestore();
     }
@@ -745,16 +1120,10 @@ describe('composition state', () => {
     }
   });
 
-  it('settles a successful Chrome fallback before unmanaged-DOM cleanup throws', () => {
+  it('settles a successful Chrome fallback before the composition lease settle throws', () => {
     const editor = createTextEditor();
     const event = createCompositionEvent('文', 'a文d');
-    const cleanupFailure = new Error('unmanaged DOM cleanup failed');
-
-    const querySelectorAll = vi
-      .spyOn(event.currentTarget, 'querySelectorAll')
-      .mockImplementation(() => {
-        throw cleanupFailure;
-      });
+    const settleFailure = new Error('composition lease settle failed');
     const hasSelectableTarget = vi
       .spyOn(ReactEditor, 'hasSelectableTarget')
       .mockReturnValue(true);
@@ -782,6 +1151,13 @@ describe('composition state', () => {
         editor,
         event,
         inputController,
+        lease: {
+          grant: vi.fn(),
+          settleAndFlushRender: vi.fn(),
+          settle: () => {
+            throw settleFailure;
+          },
+        },
         runOwnedDOMMutation: (callback) => callback(),
         scheduleTask,
         setComposing,
@@ -794,7 +1170,7 @@ describe('composition state', () => {
         thrown = error;
       }
 
-      expect(thrown).toBe(cleanupFailure);
+      expect(thrown).toBe(settleFailure);
       expect(editorString(editor, [])).toBe('a文d');
       expect(inputController.state.pendingCompositionEnd).toMatchObject({
         data: '文',
@@ -804,7 +1180,6 @@ describe('composition state', () => {
     } finally {
       inputController.state.pendingCompositionEnd?.cancel();
       hasSelectableTarget.mockRestore();
-      querySelectorAll.mockRestore();
     }
   });
 
@@ -2382,5 +2757,382 @@ describe('composition over an expanded selection', () => {
     expect(editor.read.children()).toEqual([
       { type: 'paragraph', children: [{ text: 'に' }] },
     ]);
+  });
+});
+
+describe('a composition’s terminal receipt', () => {
+  const dansInsert = {
+    at: 1000,
+    author: 'dan',
+    change: 'dan:1',
+    kind: 'insert' as const,
+  };
+  const tick = () =>
+    new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+  const attempt = (callback: () => void) => {
+    try {
+      callback();
+      return 'ok';
+    } catch (error) {
+      return (error as Error).message;
+    }
+  };
+  const setup = (root?: HTMLElement) => {
+    const handler = {
+      calls: 0,
+      outcome: 'pass' as 'pass' | 'refuse' | 'throw',
+    };
+    const editor = createEditor({
+      initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }],
+      plugins: [
+        createAuthoredPlugin({
+          authorId: 'dan',
+          createChangeId: () => 'dan:1',
+          intent: 'edit',
+          now: () => 1000,
+        }),
+        definePlugin('composed-word', {
+          commands: ({ handle }) => [
+            handle(editorCommands.insertText, ({ input }) => {
+              if (input.text !== 'か' || handler.outcome === 'pass') {
+                return false;
+              }
+              handler.calls += 1;
+              if (handler.outcome === 'refuse') {
+                throw new EditorRefusalError(null, 'The word is refused.');
+              }
+              throw new Error('The insert handler failed.');
+            }),
+          ],
+        }),
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { path: [0, 0], offset: 2 },
+        focus: { path: [0, 0], offset: 2 },
+      });
+    });
+    const tasks: Array<{
+      callback: () => void;
+      cancelled: boolean;
+      label: string;
+    }> = [];
+    const scheduleTask: NonNullable<EditableInputController['scheduleTask']> = (
+      _phase,
+      label,
+      callback
+    ) => {
+      const task = { callback, cancelled: false, label };
+
+      tasks.push(task);
+      return () => {
+        task.cancelled = true;
+      };
+    };
+    const inputController = createInputController(scheduleTask);
+    const setComposing: EditableCompositionStateSetter = (nextValue) => {
+      setEditableComposingState({
+        editor,
+        inputController,
+        nextValue,
+        setIsComposing: () => {},
+      });
+    };
+    const event = (data = '') => createCompositionEvent(data, null, root);
+
+    return {
+      editor,
+      handler,
+      inputController,
+      end: (
+        data: string,
+        options: Partial<ApplyEditableCompositionEndOptions> = {}
+      ) =>
+        applyEditableCompositionEnd({
+          editor,
+          event: event(data),
+          inputController,
+          runOwnedDOMMutation: (callback) => callback(),
+          scheduleTask,
+          setComposing,
+          ...options,
+        }),
+      finalInput: (inputComposing = false) => {
+        if (
+          !inputComposing &&
+          claimSettledCompositionInput({
+            data: 'か',
+            inputController,
+            inputType: 'insertFromComposition',
+          })
+        ) {
+          return;
+        }
+        applyModelOwnedBeforeInputMutation({
+          data: 'か',
+          editor,
+          inputController,
+          inputType: 'insertFromComposition',
+          native: false,
+          selection: readTextSelection(editor),
+          setComposing,
+        });
+      },
+      elapse: () => {
+        for (const task of tasks.splice(0)) {
+          if (task.cancelled) continue;
+          task.cancelled = true;
+          task.callback();
+        }
+      },
+      run: (label: string) => {
+        const task = tasks.findLast(
+          (each) => !each.cancelled && each.label === label
+        );
+
+        if (!task) throw new Error(`No ${label} task is waiting.`);
+        task.cancelled = true;
+        task.callback();
+      },
+      update: (data: string) =>
+        applyEditableCompositionUpdate({
+          editor,
+          event: event(data),
+          inputController,
+          setComposing,
+        }),
+      start: () =>
+        applyEditableCompositionStart({
+          editor,
+          event: event(),
+          inputController,
+          setComposing,
+        }),
+      switchToSuggesting: () =>
+        editor.api.authored.setView({ intent: 'propose' }),
+      typeKey: () =>
+        editor.update((tx) => {
+          tx.command(editorCommands.insertText, { text: 'z' });
+        }),
+    };
+  };
+  const nextKeySuggested = (text: string) => [
+    {
+      type: 'paragraph',
+      children: [{ text }, { authored: [dansInsert], text: 'z' }],
+    },
+  ];
+  let hasSelectableTarget: { mockRestore: () => void } | undefined;
+
+  beforeEach(() => {
+    hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+  });
+  afterEach(() => {
+    hasSelectableTarget?.mockRestore();
+  });
+
+  it('applies an intent switch asked for during Safari’s direct route after the word lands', async () => {
+    const s = setup();
+
+    s.start();
+    s.switchToSuggesting();
+    await tick();
+    s.finalInput(true);
+    s.end('か');
+    await tick();
+    s.typeKey();
+
+    expect(s.editor.read.children()).toEqual(nextKeySuggested('abか'));
+  });
+
+  it('keeps the composition pending while another Editable on the editor still owes its word', () => {
+    const editor = createEditor();
+    const first = createInputController();
+    const second = createInputController();
+
+    openCompositionReceipt(editor, first);
+    openCompositionReceipt(editor, second);
+    commitUnderCompositionReceipt(first, () => {});
+    const afterFirst = isEditorCompositionPending(editor);
+
+    cancelCompositionReceipt(second);
+
+    expect([afterFirst, isEditorCompositionPending(editor)]).toEqual([
+      true,
+      false,
+    ]);
+  });
+
+  it.each([
+    ['refuses the word', 'refuse'],
+    ['throws', 'throw'],
+  ] as const)(
+    'ends the composition once when its insert handler %s',
+    (_, outcome) => {
+      const s = setup();
+
+      s.handler.outcome = outcome;
+      s.start();
+      s.end('か');
+      const fallback = attempt(() => s.run('finish-composition-end'));
+      const late = attempt(() => s.finalInput());
+
+      expect({
+        calls: s.handler.calls,
+        composing: s.editor.read.view.isComposing(),
+        fallback,
+        late,
+        pending: isEditorCompositionPending(s.editor),
+        text: editorString(s.editor, []),
+      }).toEqual({
+        calls: 1,
+        composing: false,
+        fallback: outcome === 'throw' ? 'The insert handler failed.' : 'ok',
+        late: 'ok',
+        pending: false,
+        text: 'ab',
+      });
+    }
+  );
+
+  it.each([
+    ['an Escape cancel', 'ab', (s: ReturnType<typeof setup>) => s.end('')],
+    [
+      'an externally owned end',
+      'ab',
+      (s: ReturnType<typeof setup>) => {
+        s.end('か', { onCompositionEnd: () => true });
+        s.run('finish-composition-end');
+      },
+    ],
+    [
+      'an expired late-input guard',
+      'abか',
+      (s: ReturnType<typeof setup>) => {
+        runTrackedEditableCompositionMutation({
+          callback: () =>
+            s.editor.update((tx) => {
+              tx.text.insert('か');
+            }),
+          editor: s.editor,
+          inputController: s.inputController,
+        });
+        s.end('か');
+        s.run('finish-composition-end');
+        s.run('clear-composition-end-tombstone');
+      },
+    ],
+  ] as const)(
+    'applies an intent switch waiting through %s, so the next key records under it',
+    async (_, text, finish) => {
+      const s = setup();
+
+      s.start();
+      s.switchToSuggesting();
+      await tick();
+      finish(s);
+      await tick();
+      s.typeKey();
+
+      expect(s.editor.read.children()).toEqual(nextKeySuggested(text));
+    }
+  );
+
+  const onWebKit = async (
+    callback: (s: ReturnType<typeof setup>) => Promise<void>
+  ) => {
+    const frame = document.createElement('iframe');
+
+    document.body.append(frame);
+    Object.defineProperty(frame.contentWindow!.navigator, 'userAgent', {
+      configurable: true,
+      value:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
+    });
+    const root = frame.contentDocument!.createElement('div');
+
+    frame.contentDocument!.body.append(root);
+    try {
+      await callback(setup(root));
+    } finally {
+      frame.remove();
+    }
+  };
+
+  it('leaves the final input to commit under the composition’s intent when a WebKit fallback returns early and the input lands before the expiry', () =>
+    onWebKit(async (s) => {
+      s.start();
+      s.switchToSuggesting();
+      await tick();
+      s.end('か');
+      s.run('finish-composition-end');
+      await tick();
+      s.finalInput();
+      s.elapse();
+      await tick();
+      s.typeKey();
+
+      expect(s.editor.read.children()).toEqual(nextKeySuggested('abか'));
+    }));
+
+  it('applies an intent switch once a WebKit composition’s late final input never comes', () =>
+    onWebKit(async (s) => {
+      s.start();
+      s.switchToSuggesting();
+      await tick();
+      s.end('か');
+      s.run('finish-composition-end');
+      s.elapse();
+      await tick();
+      s.typeKey();
+
+      expect(s.editor.read.children()).toEqual(nextKeySuggested('ab'));
+    }));
+
+  it('keeps an intent switch waiting through the next WebKit composition when the previous one’s expiry fires during it', () =>
+    onWebKit(async (s) => {
+      s.start();
+      s.end('か');
+      s.run('finish-composition-end');
+      s.start();
+      s.switchToSuggesting();
+      await tick();
+      s.run('expire-composition-receipt');
+      s.end('か');
+      s.run('finish-composition-end');
+      await tick();
+      s.finalInput();
+      await tick();
+      s.typeKey();
+
+      expect(s.editor.read.children()).toEqual(nextKeySuggested('abか'));
+    }));
+
+  it('commits a composition opened by compositionupdate while the previous one’s late-input guard expires', () => {
+    const s = setup();
+
+    s.start();
+    runTrackedEditableCompositionMutation({
+      callback: () =>
+        s.editor.update((tx) => {
+          tx.text.insert('か');
+        }),
+      editor: s.editor,
+      inputController: s.inputController,
+    });
+    s.end('か');
+    s.run('finish-composition-end');
+    s.update('き');
+    s.run('clear-composition-end-tombstone');
+    s.end('き');
+    s.run('finish-composition-end');
+
+    expect(editorString(s.editor, [])).toBe('abかき');
   });
 });

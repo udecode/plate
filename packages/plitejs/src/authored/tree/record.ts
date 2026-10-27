@@ -129,8 +129,20 @@ export type AuthoredRecordInput = Readonly<{
    * tag, because a value that names its element is no suggestion to reject.
    */
   unique?: ReadonlyMap<string, unknown>;
-  /** The collapsed caret's position in the before document, and its root. */
+  /**
+   * The caret's position in the before document, and its root: a collapsed
+   * caret, or the start of the selection a composition commit replaces.
+   */
   selectionBefore?: Readonly<{ position: number; root: string }> | null;
+  /**
+   * A composition commit's stored place in the before document: its
+   * position, its root and the path of the element that holds it.
+   */
+  composition?: Readonly<{
+    element: readonly number[];
+    position: number;
+    root: string;
+  }> | null;
   standing: Standing;
   steps: readonly DraftStep[];
   commitWriteId: () => string;
@@ -1211,6 +1223,56 @@ const lowerAcrossBreaks = (
   return result;
 };
 
+/**
+ * Where a composition commit's claimed write lands in the review draft: at
+ * the commit's stored place, in the props of the leaf the command wrote, when
+ * the command wrote into the element that holds that place. Hidden struck
+ * text gives the frame's write position several stored places, and only the
+ * stored one keeps the word where the person saw it.
+ */
+const compositionLanding = (
+  input: AuthoredRecordInput,
+  fold: RootFold,
+  root: string,
+  change: RootChange,
+  written: DocumentIndex | null
+) => {
+  const { composition, projection } = input;
+
+  if (composition?.root !== root || !projection || !written) return null;
+  const element = projection.map.nodePath(root, composition.element);
+  const stretch = changedStretch([change]);
+
+  if (!element || !stretch) return null;
+  const at = fold.frameChange
+    ? getDefined(
+        mapRootChangePositionBackward(fold.frameChange, stretch.from, -1)
+      )
+    : stretch.from;
+  const holder = getDefined(projection.indexes.get(root))
+    .openContextAt(at)
+    .findLast(
+      (entry) =>
+        entry.kind === 'element' &&
+        entry.contentFrom <= at &&
+        at <= entry.contentTo
+    );
+
+  if (!holder || !jsonEqual(holder.path, element)) return null;
+  const point = written.pointAt(getDefined(change.mapPos(stretch.from, -1)), 1);
+  const { [AUTHORED_MARKS_KEY]: _marks, ...leaf } = point
+    ? propsOf(written.node(point.path))
+    : {};
+
+  return {
+    at: stretch.from,
+    leaf: point ? leaf : null,
+    place: fold.composed
+      ? getDefined(fold.composed.mapPos(composition.position, 1))
+      : composition.position,
+  };
+};
+
 type RootFold = {
   breaks: readonly ProjectionBreak[];
   composed: RootChange | null;
@@ -1543,7 +1605,17 @@ export const recordAuthoredSteps = (
             exclusiveRootsIn(node, ownedRootsOf, doubledIn(root));
           }
         }
-        const plainToReview = fold.map;
+        const frameAfter = fold.frameIndex && sub.change.apply(fold.frameIndex);
+        const landing = step.composition
+          ? compositionLanding(input, fold, root, sub.change, frameAfter)
+          : null;
+        const mapped = fold.map;
+        const plainToReview: PosMap = landing
+          ? (position, assoc, caret) =>
+              position === landing.at
+                ? landing.place
+                : mapped(position, assoc, caret)
+          : mapped;
         const { afterMap, groups } = properties
           ? rebaseProperties(
               sub.change,
@@ -1565,6 +1637,7 @@ export const recordAuthoredSteps = (
             dependencies: input.dependencies,
             plainToReview,
             changeId,
+            composedLeaf: landing?.leaf ?? null,
             createTagId: input.createTagId,
             emptyTextKeeps: (key, value, parents) =>
               input.emptyTextKeeps(key, value, parents, root),
@@ -1598,8 +1671,8 @@ export const recordAuthoredSteps = (
           writtenPlain &&= result.writtenPlain;
         }
         fold.touched = true;
-        if (fold.frameIndex) {
-          fold.frameIndex = sub.change.apply(fold.frameIndex);
+        if (frameAfter) {
+          fold.frameIndex = frameAfter;
           fold.frameChange = composeFrame(fold, sub.change);
         }
         const composedBefore = fold.composed;
@@ -1770,6 +1843,8 @@ type RecorderOptions = Readonly<{
   dependencies: Dependencies;
   plainToReview: PosMap;
   changeId: string;
+  /** The props, without marks, a composition commit's word records with. */
+  composedLeaf: Props | null;
   createTagId: () => string;
   emptyTextKeeps: (
     key: string,
@@ -3788,7 +3863,19 @@ class RootRecorder {
           ? landed(leafProps)
           : leaf && insertedLeaves.has(leaf)
             ? leaf.props
-            : this.suggestedTextProps(leaf, at, ownElement());
+            : this.suggestedTextProps(
+                this.options.composedLeaf && leaf?.kind === 'text'
+                  ? {
+                      ...leaf,
+                      props: this.withMarks(
+                        this.options.composedLeaf,
+                        this.marks(leaf.props)
+                      ),
+                    }
+                  : leaf,
+                at,
+                ownElement()
+              );
 
         ensureLeaf(desired);
         for (let offset = 0; offset < token.text.length; offset += 1) {

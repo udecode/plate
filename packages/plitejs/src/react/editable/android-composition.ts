@@ -19,7 +19,9 @@ import { getSelection } from '../../dom';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   beginEditableCompositionSession,
+  cancelCompositionReceipt,
   type EditableInputController,
+  openCompositionReceipt,
 } from './input-state';
 import { applyModelOwnedTextInput } from './mutation-controller';
 import {
@@ -521,6 +523,7 @@ export const openAndroidComposition = ({
   beginEditableCompositionSession(inputController, {
     nativeAnchor: base.lines.map(({ element }) => element),
   });
+  openCompositionReceipt(editor, inputController);
   inputController.state.activeIntent = 'composition';
   setComposing(true);
 };
@@ -708,6 +711,7 @@ const writeDraft = (
     editor.read.view.isReadOnly() ||
     !getPathByNodeKey(editor, lineKey)
   ) {
+    cancelCompositionReceipt(inputController);
     return;
   }
 
@@ -782,6 +786,7 @@ const endOnLineEdit = (
   const registration = LINE_REBUILDS.get(inputController);
   if (!inputController.scheduleTask || !registration) {
     draft.replacement?.target.release();
+    cancelCompositionReceipt(inputController);
     return;
   }
   const complete = () => {

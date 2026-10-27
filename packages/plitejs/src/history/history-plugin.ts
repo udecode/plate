@@ -532,7 +532,9 @@ const prepareHistoryBatch = <V extends Value>(
   const native = readNativeHistoryGrouping(commit);
   const group: HistoryBatchGroup | null = baseGroup
     ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
-    : null;
+    : native?.composition === undefined
+      ? null
+      : Object.freeze({ kind: 'effects', native, root: undefined });
   const resolveSelectionRoot = (
     selection: Selection,
     fallback?: string
@@ -872,16 +874,10 @@ const createHistoryPlugin = <
             effectsCompatible
           )
         : nativeMerge &&
-          preparedBatch.effects.length === 0 &&
           (compositionMerge
-            ? shouldMergeCompositionBatch(
-                preparedBatch,
-                prepared.group,
-                lastEntry.batch,
-                lastEntry.group,
-                effectsCompatible
-              )
-            : shouldMergeBatch(
+            ? shouldMergeCompositionBatch(prepared.group, lastEntry.group)
+            : preparedBatch.effects.length === 0 &&
+              shouldMergeBatch(
                 preparedBatch,
                 prepared.group,
                 lastEntry.batch,

@@ -9,12 +9,12 @@ import {
   enableCompositionKeyEvents,
 } from '../../src/playwright/ime';
 
-const createPage = () =>
+const createPage = (name = 'chromium') =>
   ({
     context: () => ({
       browser: () => ({
         browserType: () => ({
-          name: () => 'chromium',
+          name: () => name,
         }),
       }),
       newCDPSession: async () => {
@@ -32,14 +32,36 @@ const createSurface = () =>
       callback(arg),
   }) as unknown as Frame;
 
+// happy-dom has no StaticRange, which the preedit mode's target ranges use.
+class TestStaticRange {
+  readonly endContainer: Node;
+  readonly endOffset: number;
+  readonly startContainer: Node;
+  readonly startOffset: number;
+
+  constructor({
+    endContainer,
+    endOffset,
+    startContainer,
+    startOffset,
+  }: StaticRangeInit) {
+    this.endContainer = endContainer;
+    this.endOffset = endOffset;
+    this.startContainer = startContainer;
+    this.startOffset = startOffset;
+  }
+}
+
 describe('playwright IME helpers', () => {
   beforeAll(() => {
     if (!GlobalRegistrator.isRegistered) {
       GlobalRegistrator.register();
     }
+    Reflect.set(globalThis, 'StaticRange', TestStaticRange);
   });
 
   afterAll(async () => {
+    Reflect.deleteProperty(globalThis, 'StaticRange');
     if (GlobalRegistrator.isRegistered) {
       await GlobalRegistrator.unregister();
     }
@@ -507,6 +529,95 @@ describe('playwright IME helpers', () => {
         value: originalMaxTouchPoints,
       });
     }
+  });
+
+  const tracePreedit = (active: HTMLElement) => {
+    const events: string[] = [];
+    const record = (event: Event) => {
+      events.push(
+        event instanceof InputEvent
+          ? `${event.type}:${event.inputType}:${event.data ?? ''}:${active.textContent}`
+          : `${event.type}:${active.textContent}`
+      );
+    };
+
+    for (const type of [
+      'beforeinput',
+      'compositionend',
+      'compositionstart',
+      'compositionupdate',
+      'input',
+    ]) {
+      active.addEventListener(type, record);
+    }
+    return events;
+  };
+
+  const focusCaret = (offset: number) => {
+    document.body.innerHTML = '<div contenteditable="true">gone</div>';
+
+    const active = document.querySelector('div')!;
+
+    active.focus();
+    window.getSelection()!.collapse(active.firstChild, offset);
+    return active;
+  };
+
+  test("draws the preedit in Firefox's order and commits it before compositionend", async () => {
+    const active = focusCaret(2);
+    const events = tracePreedit(active);
+
+    await composeText(
+      createPage('firefox'),
+      createSurface(),
+      ['す', 'すし'],
+      'すし',
+      { transport: 'preedit' }
+    );
+
+    expect(events).toEqual([
+      'compositionstart:gone',
+      'compositionupdate:gone',
+      'beforeinput:insertCompositionText:す:gone',
+      'input:insertCompositionText:す:goすne',
+      'compositionupdate:goすne',
+      'beforeinput:insertCompositionText:すし:goすne',
+      'input:insertCompositionText:すし:goすしne',
+      'beforeinput:insertCompositionText:すし:goすしne',
+      'compositionend:goすしne',
+      'input:insertCompositionText:すし:goすしne',
+    ]);
+  });
+
+  test("erases the preedit in WebKit's order and draws nothing for a cancelled final input", async () => {
+    const active = focusCaret(2);
+    const events = tracePreedit(active);
+
+    active.addEventListener('beforeinput', (event) => {
+      if (event.inputType === 'insertFromComposition') event.preventDefault();
+    });
+
+    await composeText(
+      createPage('webkit'),
+      createSurface(),
+      ['す', 'すし'],
+      'すし',
+      { transport: 'preedit' }
+    );
+
+    expect(events).toEqual([
+      'compositionstart:gone',
+      'compositionupdate:gone',
+      'beforeinput:insertCompositionText:す:gone',
+      'input:insertCompositionText:す:goすne',
+      'compositionupdate:goすne',
+      'beforeinput:insertCompositionText:すし:goすne',
+      'input:insertCompositionText:すし:goすしne',
+      'beforeinput:deleteCompositionText::goすしne',
+      'input:deleteCompositionText::gone',
+      'beforeinput:insertFromComposition:すし:gone',
+      'compositionend:gone',
+    ]);
   });
 
   test('installs composition key events once on the resolved editor surface', async () => {

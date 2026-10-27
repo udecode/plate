@@ -17,6 +17,7 @@ export {
   locateAt,
   NodeApi,
   PathApi,
+  PointApi,
   property,
   RangeApi,
   readEditorSelection,

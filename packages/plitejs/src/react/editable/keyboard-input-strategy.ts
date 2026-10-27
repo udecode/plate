@@ -41,6 +41,10 @@ import {
   getTextDirection,
 } from './caret-engine';
 import {
+  type EditableCompositionLeaseBinding,
+  endCompositionWithoutCommit,
+} from './composition-state';
+import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
   isContentRootKeyAnswered,
@@ -442,6 +446,7 @@ export const applyEditableKeyDown = ({
   event,
   forceRender,
   inputController,
+  lease,
   viewportRuntime,
   onKeyDown,
   preferredVerticalX,
@@ -460,6 +465,7 @@ export const applyEditableKeyDown = ({
   event: ReactKeyboardEvent<HTMLDivElement>;
   forceRender: () => void;
   inputController: EditableInputController;
+  lease?: EditableCompositionLeaseBinding;
   viewportRuntime: unknown;
   onKeyDown?: EditableKeyDownHandler;
   preferredVerticalX?: number;
@@ -692,6 +698,7 @@ export const applyEditableKeyDown = ({
           setComposing,
         });
       } else {
+        endCompositionWithoutCommit(inputController, lease);
         setComposing(false);
       }
     }

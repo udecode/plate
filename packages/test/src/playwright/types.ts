@@ -1450,7 +1450,7 @@ export type BrowserEditorHarness = {
       text: string;
       steps?: readonly string[];
       committedText?: string;
-      transport?: 'native' | 'synthetic';
+      transport?: 'native' | 'preedit' | 'synthetic';
     }) => Promise<void>;
     composeDirect: (options: { text: string }) => Promise<void>;
   };

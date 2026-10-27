@@ -3,6 +3,7 @@ import { TextApi, type Value } from 'plitejs';
 import * as Y from 'yjs';
 
 import { definePlugin, editorCommands } from '../../src';
+import { createAuthoredPlugin } from '../../src/authored';
 import { history } from '../../src/history';
 import {
   createEditor,
@@ -1360,6 +1361,103 @@ describe('Android composition commits through the editor', () => {
         model: blockText(mounted.editor, 0),
         seen,
       }).toEqual({ dom: '漢', model: '漢', seen: ['한'] });
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test('a word composed inside crossed-out text lands where the keyboard drew it', async () => {
+    const editor = createEditor({
+      initialValue: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              authored: [
+                { at: 1, author: 'carol', change: 'carol:1', kind: 'delete' },
+              ],
+              text: 'gone',
+            },
+            { text: ' b' },
+          ],
+        },
+        { type: 'paragraph', children: [{ text: 'second' }] },
+      ],
+      plugins: [
+        createAuthoredPlugin({
+          authorId: 'dan',
+          createChangeId: () => 'dan:1',
+          intent: 'propose',
+          now: () => 1000,
+        }),
+      ],
+    });
+    const mounted = mountEditor(editor);
+
+    try {
+      const text = firstTextNode(mounted.block(0), { visible: true })!;
+
+      await act(async () => {
+        mounted.root.focus();
+        document.getSelection()!.setBaseAndExtent(text, 2, text, 2);
+        document.dispatchEvent(new Event('selectionchange'));
+        await wait(100);
+      });
+      const ime = composeIn(mounted, 0);
+
+      await ime.start();
+      await ime.update('か');
+      await ime.end();
+
+      expect({
+        dom: mounted.block(0).textContent,
+        model: blockText(mounted.editor, 0),
+      }).toEqual({ dom: 'goかne b', model: 'goかne b' });
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test('an intent switch waiting through a composition that ends with no word applies, so the next key records under it', async () => {
+    const editor = createEditor({
+      initialValue: [
+        { type: 'paragraph', children: [{ text: 'ab' }] },
+        { type: 'paragraph', children: [{ text: 'second' }] },
+      ],
+      plugins: [
+        createAuthoredPlugin({
+          authorId: 'dan',
+          createChangeId: () => 'dan:1',
+          intent: 'edit',
+          now: () => 1000,
+        }),
+      ],
+    });
+    const mounted = mountEditor(editor);
+
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const ime = composeIn(mounted, 0);
+
+      await ime.start();
+      mounted.runtime.editor.api.authored.setView({ intent: 'propose' });
+      await ime.end();
+      mounted.runtime.editor.update((tx) => {
+        tx.command(editorCommands.insertText, { text: 'z' });
+      });
+
+      expect(editor.read.children()[0]).toEqual({
+        type: 'paragraph',
+        children: [
+          { text: 'ab' },
+          {
+            authored: [
+              { at: 1000, author: 'dan', change: 'dan:1', kind: 'insert' },
+            ],
+            text: 'z',
+          },
+        ],
+      });
     } finally {
       mounted.rendered.unmount();
     }
