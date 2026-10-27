@@ -15,7 +15,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { devNull, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -118,15 +118,17 @@ const lacksList = (root, commit) =>
 export const newPrivateFiles = (root) => {
   if (!existsSync(path.join(root, PRIVATE_LIST))) return [];
   // The private repository's own view skips what .gitignore and the user's
-  // global excludes skip, and lists every public file as untracked.
+  // global excludes skip, and lists every public file as untracked. It does
+  // not read the public .git/info/exclude, which check-ignore also matches,
+  // so a path the clone ignores there is dropped rather than called private.
   const args = ['ls-files', '-z', '--others', '--exclude-standard'];
   const untracked = isSplit(root) ? privateMust(root, args) : must(root, args);
   if (!untracked) return [];
-  return ignoredPaths(
-    root,
-    path.join(root, PRIVATE_LIST),
-    entries(untracked)
-  ).sort(byCodeUnit);
+  const candidates = entries(untracked);
+  const ignoredHere = new Set(ignoredPaths(root, devNull, candidates));
+  return ignoredPaths(root, path.join(root, PRIVATE_LIST), candidates)
+    .filter((file) => !ignoredHere.has(file))
+    .sort(byCodeUnit);
 };
 
 const listedPublic = (root) =>
