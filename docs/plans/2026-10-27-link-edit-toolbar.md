@@ -10,7 +10,7 @@ review_upstreams: []
 
 # Link toolbar: fill the edit form, come back after Enter, open the right link
 
-Status: building: the landing, then the triage records and comments
+Status: building: the triage comments and the close of udecode/plate#5238
 Topic: link
 Playbook: bug-fix
 
