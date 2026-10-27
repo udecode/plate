@@ -117,11 +117,12 @@ Older plans, ledger records and decision pages name retired commands such as `$t
 
 - Never auto-approve a payment or a credential use, such as a password, token, API key or OAuth grant prompt. It stops for the owner like the Autopilot rule's always-stop list, and neither a Defaults pick nor "go" approves it.
 - An authorized PR includes the entire current checkout, including modified and untracked files, unless the user narrows it. Write multiline `gh` bodies with `--body-file`, stdin or a heredoc, never a literal `\n`; keep the `auto-release` block that Changeset owns, and read the final body back with `gh pr view --json body`. Public issue and PR claims follow Maintainer's truth gates.
+- A commit message, and a PR title or body an agent writes into `next`, never closes an issue. Name an issue as `plate#<N>`. Never put a closing keyword, any form of close, fix or resolve, right before `#<N>`, `udecode/plate#<N>` or the issue's URL, even with a colon between them. So a message writes the command `triage fix #<N>` as `triage fix plate#<N>`. `next` is GitHub's default branch, so a closing keyword closes the issue when the commit lands or the PR merges, as `f512cc3bed`'s body closed plate#5228 before its reporter could retest. The Triage playbook's GitHub state says when an issue closes.
 - When the user explicitly says to merge a PR, merge it: do not wait for CI, do not ask again, and use an admin merge when needed. This replaces pstack's Shipping verification for that merge.
 
 ## Worktrees
 
-- **Pin `origin/HEAD` to `next`.** The desktop app cuts a new worktree from `origin/HEAD`, and GitHub's default branch stays `main` for v1 (`docs/plans/artifacts/2026-10-15-worktree-head/worktree-base-probes.md`). The pstack block's Git rule says how to keep `origin/HEAD` on `next`, and the Claude Code SessionStart hook runs `.agents/pstack/head.mjs` to do it.
+- **Pin `origin/HEAD` to `next`.** The desktop app cuts a new worktree from `origin/HEAD`. GitHub's default branch is `next` (`gh repo view udecode/plate --json defaultBranchRef`, 2026-10-27), and the pin still repairs a clone whose `origin/HEAD` names `main`. The pstack block's Git rule says how to keep `origin/HEAD` on `next`, and the Claude Code SessionStart hook runs `.agents/pstack/head.mjs` to do it.
 
 ## Proof and tooling
 

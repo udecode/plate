@@ -184,4 +184,33 @@ What landed:
 
 The React Compiler cached render-time reads in the copied toolbar, and `submit` hid the toolbar with nothing to show it again. 5b0d5fb2be, 98184323b5 and 0231a088c4 introduced these bugs. R1 failed on next and R5 on next and the PR, both in Chromium, before the fix. The design keeps the open and edit states (Lanes, item 1), and the thermo review's structural findings wait for a refactor. Copied registry code takes changelog entries, not a changeset. The reviews were the plan panel, three diff rounds up to the cap and the thermo review. Neither reporter has run the fix in their own browser, and the beta deploy of c66a382362 was still running when the comments went out.
 
-Counts: four owner asks. Babysit udecode/plate#5238 as `triage fix #5228` and claim plate#5314 are done. The workflow friction fixes land next. The fix comment on plate#5228 explains why it closed by mistake. Every gate of this plan closed: the plan panel, three diff rounds, the thermo review, the writing passes, the hand drive, the browser matrix, the last check and delivery. Two `pnpm triage labels` commands, which set both issues to Needs retest, wait for the owner, and dylans is still assigned on plate#5228.
+Counts: four owner asks. Babysit udecode/plate#5238 as `triage fix #5228` and claim plate#5314 are done. The workflow friction fixes land with this plan's Reflect section. The fix comment on plate#5228 explains why it closed by mistake. Every gate of this plan closed: the plan panel, three diff rounds, the thermo review, the writing passes, the hand drive, the browser matrix, the last check and delivery. Two `pnpm triage labels` commands, which set both issues to Needs retest, wait for the owner, and dylans is still assigned on plate#5228.
+
+## Reflect
+
+One Opus reviewer ran the judgment, tooling and divergent lenses over this session, and I sorted its findings with pstack's synthesizer prompt as the checklist.
+
+I applied no lesson in this reflect. No finding fixes a helper that crashes on or refuses a case its own rule allows, and none rewords a rule without adding words. The friction smoke changed two of this run's own rules before they landed. The closing-keyword rule now also names the issue's URL and a colon after the keyword, because GitHub closes on both. The redesign step's stand-in tests now follow the Tests rule's one test per failure mode.
+
+Accepted, then moved to Backlog. Each has owner: zbeyens and stop: the owner takes or drops it.
+
+- Nothing enforces the closing-keyword rule, so each agent landing still rests on its text (t_8dc2c155). The task now also covers the URL and colon forms, and the Git rule's reason for refusing `git remote set-head origin --auto`, which changed when `next` became GitHub's default branch.
+- The run found the toolbar's stale reads by compiling `link.tsx` with the React Compiler, and no rule makes a copied-UI browser proof run on the compiled build (t_c3c277b3).
+- `triage show` printed `claim: none` for the closed plate#5228, and the run learned of the close only when the owner relayed the reporter's complaint (t_3cee8d2a).
+- The intake of a one-file PR took about 6.5 hours, six panel rounds and nine compactions, which works against the owner's reason for taking contributor PRs. Four rules grew it (t_443360e3).
+- `.github/PULL_REQUEST_TEMPLATE.md` still suggests `Fixes #`, so a contributor PR merged into `next` as written closes its issue before the retest. `tooling/scripts/triage.mjs` reads that keyword in PR bodies to find each issue's fixing PRs, so dropping it from the template changes what triage finds.
+- A cold docs route on the www dev server can outlast the harness's 20-second ready wait, and swapping component files into a running server left stale server-rendered chunks. The verify skill's command recipes could say to restart and warm the routes after each swap.
+- In the toolbar's bun tests, happy-dom keeps the toolbar at `display: none`, a failing `waitFor` on a removed element serializes it for minutes, and focus inside a shadow root is not retargeted. The verify skill's testing reference could list these.
+- `proof.mjs --name foo-a1` writes `foo-a1-a1.log`. It could refuse a name that already ends in an attempt number.
+- An unquoted `=====` separator failed about ten times across compactions, though the owner's CLAUDE.md forbids it. A hook that refuses an unquoted word starting with `=` would end it, as a `/pstack:correct` class.
+
+Rejected.
+
+- The reviewer said `guard.mjs` refuses writes to the main checkout's run directory. It passes them, and `.agents/pstack/rules/land.md` already says the desktop app refuses such a write and to use the shell.
+- The reviewer said Dylan's landed `Fixes` lines closed plate#5209 and plate#5210 before a retest. Neither close event names a commit, and Dylan closed each by hand after checking beta.platejs.org in Chrome.
+- A recipe for rebase conflicts in the generated registry files is already in t_fddffd85.
+- `check-browser-test-imports.mjs` already refuses a browser spec that imports `test` or `expect` from anywhere but `@platejs/test/playwright`.
+- `decisions-check.mjs` already refuses short model names in panel rows.
+- AGENTS.md's Writing passes rule already says to run review fixes before an expensive runtime proof, so the three early starts of the final proof broke a rule that exists.
+- The verify skill's Doctor already asks a control to bind its served bytes, and Open work above says the WebKit probe did not.
+- The run kept the PR body check's two triggers after checking them, so a fork runs `next`'s copy and a same-repo PR runs its own.

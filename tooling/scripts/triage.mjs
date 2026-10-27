@@ -1762,7 +1762,7 @@ function liveSignals(repo, numbers) {
           `${repo}#${number} has more comments than one read returns in the last 30 days; read them with gh issue view ${number} --repo ${repo} --comments`
         );
       }
-      // GitHub links a closing PR only when it targets the default branch, so a PR into next shows up as a reference.
+      // GitHub links a closing PR only when it targets the default branch, next, so a PR into main shows up as a reference.
       const closes = new RegExp(
         `\\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\\s+(?:${literal(repo)})?#${number}\\b`,
         'iu'
