@@ -322,6 +322,7 @@ describe('selection runtime', () => {
     expect(
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: 'history',
+        domSelectionExpanded: false,
         modelSelectionPreferred: true,
         selectionChangeOrigin: 'repair-induced',
         selectionSource: 'model-owned',
@@ -330,6 +331,7 @@ describe('selection runtime', () => {
     expect(
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: 'text-insert',
+        domSelectionExpanded: false,
         modelSelectionPreferred: true,
         pendingNativeTextInputRepairPathKey: null,
         pendingNativeTextInputRepairSuppressedDOMSelection: false,
@@ -340,6 +342,7 @@ describe('selection runtime', () => {
     expect(
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: 'text-insert',
+        domSelectionExpanded: false,
         modelSelectionPreferred: true,
         pendingNativeTextInputRepairPathKey: null,
         pendingNativeTextInputRepairSuppressedDOMSelection: false,
@@ -350,6 +353,7 @@ describe('selection runtime', () => {
     expect(
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: 'text-insert',
+        domSelectionExpanded: false,
         modelSelectionPreferred: true,
         pendingNativeTextInputRepairPathKey: '0,0',
         pendingNativeTextInputRepairSuppressedDOMSelection: false,
@@ -360,6 +364,7 @@ describe('selection runtime', () => {
     expect(
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: 'text-insert',
+        domSelectionExpanded: false,
         modelSelectionPreferred: true,
         pendingNativeTextInputRepairPathKey: null,
         pendingNativeTextInputRepairSuppressedDOMSelection: true,
@@ -370,6 +375,7 @@ describe('selection runtime', () => {
     expect(
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: 'history',
+        domSelectionExpanded: false,
         modelSelectionPreferred: true,
         selectionChangeOrigin: 'native-user',
         selectionSource: 'model-owned',
@@ -378,6 +384,7 @@ describe('selection runtime', () => {
     expect(
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: 'history',
+        domSelectionExpanded: false,
         modelSelectionPreferred: false,
         selectionChangeOrigin: 'repair-induced',
         selectionSource: 'model-owned',

@@ -1,8 +1,14 @@
 import { act, fireEvent, render } from '@testing-library/react';
 import { TextApi, type Value } from 'plitejs';
+import { createDataTransfer } from 'plitejs/testing';
 import * as Y from 'yjs';
 
-import { definePlugin, editorCommands } from '../../src';
+import {
+  defineEditorSchema,
+  definePlugin,
+  editorCommands,
+  schema,
+} from '../../src';
 import { createAuthoredPlugin } from '../../src/authored';
 import { history } from '../../src/history';
 import {
@@ -17,6 +23,8 @@ import {
 import { findMountedEditableDOMRuntime } from '../../src/react/editable/editable-dom-runtime';
 import { getNodeKey } from '../../src/react/editable/runtime-editor-api';
 import { createPliteReactRenderCounter } from '../../src/react/render-profiler';
+import { VirtualizedEditable } from '../../src/react/virtualized';
+import { replace as editorReplace } from '../../src/testing';
 import {
   createYjsPeerWithEditor,
   paragraph,
@@ -56,10 +64,12 @@ const mountEditor = <TEditor extends EditorRootProps['editor']>(
     onDOMBeforeInput,
     placeholder,
     rendering = 'custom-leaf',
+    virtualized = false,
   }: {
     onDOMBeforeInput?: EditableDOMBeforeInputHandler;
     placeholder?: string;
     rendering?: Rendering;
+    virtualized?: boolean;
   } = {}
 ) => {
   let decorationVersion = 0;
@@ -90,18 +100,25 @@ const mountEditor = <TEditor extends EditorRootProps['editor']>(
   };
   const view = (showEditable: boolean) => (
     <EditorRoot decorations={[decorations]} editor={editor}>
-      {showEditable && (
-        <Editable
-          onDOMBeforeInput={onDOMBeforeInput}
-          placeholder={placeholder}
-          renderLeaf={
-            rendering === 'custom-leaf'
-              ? (props) => <span {...props.attributes}>{props.children}</span>
-              : undefined
-          }
-          scrollSelectionIntoView={() => {}}
-        />
-      )}
+      {showEditable &&
+        (virtualized ? (
+          <VirtualizedEditable
+            estimatedBlockSize={40}
+            overscan={0}
+            scrollSelectionIntoView={() => {}}
+          />
+        ) : (
+          <Editable
+            onDOMBeforeInput={onDOMBeforeInput}
+            placeholder={placeholder}
+            renderLeaf={
+              rendering === 'custom-leaf'
+                ? (props) => <span {...props.attributes}>{props.children}</span>
+                : undefined
+            }
+            scrollSelectionIntoView={() => {}}
+          />
+        ))}
     </EditorRoot>
   );
   const rendered = render(view(true));
@@ -567,12 +584,14 @@ const nativeInput = async (
     applyNative,
     cancelable,
     data = null,
+    dataTransfer = null,
     inputType,
     range,
   }: {
     applyNative?: () => void;
     cancelable: boolean;
     data?: string | null;
+    dataTransfer?: DataTransfer | null;
     inputType: string;
     range?: StaticRangeLike;
   }
@@ -584,6 +603,7 @@ const nativeInput = async (
     inputType,
   });
 
+  Object.defineProperty(event, 'dataTransfer', { value: dataTransfer });
   Object.defineProperty(event, 'getTargetRanges', {
     value: () =>
       range
@@ -619,6 +639,19 @@ const caretIn = (text: Text, offset: number): StaticRangeLike => ({
   startContainer: text,
   startOffset: offset,
 });
+
+const longPressSelect = async (text: Text, start: number, end: number) => {
+  const down = new MouseEvent('pointerdown', { bubbles: true });
+
+  Object.defineProperty(down, 'pointerType', { value: 'touch' });
+
+  await act(async () => {
+    text.parentElement!.dispatchEvent(down);
+    document.getSelection()!.setBaseAndExtent(text, start, text, end);
+    document.dispatchEvent(new Event('selectionchange'));
+    await wait(150);
+  });
+};
 
 const placeholderShown = (root: HTMLElement) => {
   const element = root.querySelector<HTMLElement>('[data-editor-placeholder]');
@@ -3051,6 +3084,198 @@ describe('Android Backspace on the last character of a paragraph', () => {
       const host = mounted.block(1).querySelector('[data-editor-node="text"]');
 
       expect(host?.isConnected).toBe(true);
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+});
+
+class DataTransfer {
+  data = new Map<string, string>();
+  files = [] as unknown as FileList;
+
+  get types() {
+    return [...this.data.keys()];
+  }
+
+  getData(type: string) {
+    return this.data.get(type) ?? '';
+  }
+
+  setData(type: string, value: string) {
+    this.data.set(type, value);
+  }
+}
+
+describe('Android clipboard', () => {
+  test('a paste from the long-press menu shows its text once [plate#5262] [plate#5243]', async () => {
+    const mounted = mount(['ab']);
+
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const text = firstTextNode(mounted.block(0), { visible: true })!;
+      const pasted = new DataTransfer();
+
+      pasted.setData('text/plain', 'XY');
+      pasted.setData('text/html', '<span>XY</span>');
+      await nativeInput(mounted.root, {
+        applyNative: () => {
+          const span = document.createElement('span');
+
+          span.textContent = 'XY';
+          mounted.block(0).append(span);
+        },
+        cancelable: true,
+        dataTransfer: pasted,
+        inputType: 'insertFromPaste',
+        range: caretIn(text, 2),
+      });
+      await act(() => wait(300));
+
+      const caret = document.getSelection()!;
+      const at = caret.anchorNode as Text;
+      const offset = caret.anchorOffset;
+
+      await nativeInput(mounted.root, {
+        applyNative: () => {
+          at.insertData(offset, 'z');
+          caret.setBaseAndExtent(at, offset + 1, at, offset + 1);
+        },
+        cancelable: true,
+        data: 'z',
+        inputType: 'insertText',
+        range: caretIn(at, offset),
+      });
+      await act(() => wait(300));
+
+      expect({
+        model: blockText(mounted.editor, 0),
+        page: mounted.block(0).textContent?.replace(/\uFEFF/g, ''),
+      }).toEqual({ model: 'abXYz', page: 'abXYz' });
+    } finally {
+      mounted.rendered.unmount();
+    }
+  });
+
+  test.each([
+    { readOnly: false, text: 'guXYard' },
+    { readOnly: true, text: 'guard' },
+  ])(
+    'a paste inside an inline element with readOnly $readOnly shows what the document holds [plate#5243]',
+    async ({ readOnly, text }) => {
+      const editor = createEditor();
+
+      editor.install(
+        defineEditorSchema(`schema:android-guard-${readOnly}`, {
+          elements: {
+            guard: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+              inline: true,
+              readOnly,
+            },
+          },
+          id: `android-guard-${readOnly}`,
+          root: schema.content.not(schema.content.text()),
+          unknown: 'preserve',
+          version: 1,
+        })
+      );
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'paragraph',
+            children: [
+              { text: 'before' },
+              { type: 'guard', children: [{ text: 'guard' }] },
+              { text: 'after' },
+            ],
+          },
+        ],
+      });
+
+      const mounted = mountEditor(editor);
+
+      try {
+        const guard = firstTextNode(
+          mounted.root.querySelector('[data-editor-path="0,1"]')!
+        )!;
+
+        await act(async () => {
+          mounted.root.focus();
+          document.getSelection()!.setBaseAndExtent(guard, 2, guard, 2);
+          document.dispatchEvent(new Event('selectionchange'));
+          await wait(100);
+        });
+
+        const pasted = new DataTransfer();
+
+        pasted.setData('text/plain', 'XY');
+        await nativeInput(mounted.root, {
+          applyNative: () => {
+            guard.insertData(2, 'XY');
+          },
+          cancelable: true,
+          dataTransfer: pasted,
+          inputType: 'insertFromPaste',
+          range: caretIn(guard, 2),
+        });
+        await act(() => wait(300));
+
+        expect({
+          document: editor.read((state) => state.value()).children,
+          page: mounted.block(0).textContent?.replace(/\uFEFF/g, ''),
+        }).toEqual({
+          document: [
+            {
+              type: 'paragraph',
+              children: [
+                { text: 'before' },
+                { type: 'guard', children: [{ text }] },
+                { text: 'after' },
+              ],
+            },
+          ],
+          page: `before${text}after`,
+        });
+      } finally {
+        mounted.rendered.unmount();
+      }
+    }
+  );
+
+  test('after typing, Copy writes the word a long press selects [plate#5263]', async () => {
+    const mounted = mountEditor(createParagraphs(['a cognatus']), {
+      virtualized: true,
+    });
+
+    try {
+      await placeCaretAtEnd(mounted, 0);
+      const text = firstTextNode(mounted.block(0), { visible: true })!;
+
+      await nativeInput(mounted.root, {
+        applyNative: () => {
+          text.insertData(10, '你好');
+          document.getSelection()!.setBaseAndExtent(text, 12, text, 12);
+        },
+        cancelable: true,
+        data: '你好',
+        inputType: 'insertText',
+        range: caretIn(text, 10),
+      });
+
+      await longPressSelect(
+        firstTextNode(mounted.block(0), { visible: true })!,
+        2,
+        10
+      );
+
+      const clipboard = createDataTransfer();
+
+      await act(async () => {
+        fireEvent.copy(mounted.root, { clipboardData: clipboard });
+      });
+
+      expect(clipboard.getData('text/plain')).toBe('cognatus');
     } finally {
       mounted.rendered.unmount();
     }
