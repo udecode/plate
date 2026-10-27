@@ -9949,10 +9949,11 @@ export const setCurrentSelection = (
   selection: Selection,
   root = getActiveUpdateRoot(editor) ?? getCurrentSelectionRoot(editor)
 ) => {
-  const snapshot = getTransactionSnapshot(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const snapshot = getTransactionSnapshot(owner);
 
   if (snapshot && selection) {
-    assertRootPlaced(editor, snapshot, SelectionApi.root(selection) ?? root);
+    assertRootPlaced(owner, snapshot, SelectionApi.root(selection) ?? root);
   }
   assertSelectionSupported(
     editor,
@@ -9960,10 +9961,10 @@ export const setCurrentSelection = (
     getEditorDocumentValue(editor),
     root
   );
-  setSelectionValue(editor, selection, root);
-  bumpMutationVersion(editor);
-  clearSnapshotCache(editor);
-  markTransactionChanged(editor);
+  setSelectionValue(owner, selection, root);
+  bumpMutationVersion(owner);
+  clearSnapshotCache(owner);
+  markTransactionChanged(owner);
 };
 
 /**

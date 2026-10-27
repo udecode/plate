@@ -18,6 +18,7 @@ import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
 } from '../../src/dom/internal';
+import { projectEditorView } from '../../src/editor-runtime-view';
 import {
   applyEditableCompositionEnd as applyEditableCompositionEndRuntime,
   applyEditableCompositionStart,
@@ -47,6 +48,7 @@ import {
   claimSettledCompositionInput,
   queuePendingCompositionModelInput,
 } from '../../src/react/editable/runtime-before-input-events';
+import { createReactRuntimeViewEditor } from '../../src/react/hooks/use-plite-runtime';
 import { ReactEditor } from '../../src/react/plugin/react-editor';
 import {
   getSelection as editorGetSelection,
@@ -322,6 +324,65 @@ describe('composition state', () => {
       expect(readVisibleEditorState(editor)).toEqual(before);
       expect(await replayMountedHistory(editor, 'redo')).toBe(true);
       expect(readVisibleEditorState(editor)).toEqual(composed);
+    } finally {
+      hasSelectableTarget.mockRestore();
+    }
+  });
+
+  it('keeps the marks where a selection starts when a mounted view composes over it on the direct route', () => {
+    const owner = createEditor();
+
+    editorReplace(owner, {
+      children: [
+        {
+          children: [
+            { text: 'This is editable ' },
+            { bold: true, text: 'rich' },
+            { text: ' text, done' },
+          ],
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { path: [0, 1], offset: 0 },
+        focus: { path: [0, 2], offset: ' text'.length },
+      },
+    });
+    const editor = createReactRuntimeViewEditor(projectEditorView(owner, {}));
+    const inputController = createInputController();
+    const hasSelectableTarget = vi
+      .spyOn(ReactEditor, 'hasSelectableTarget')
+      .mockReturnValue(true);
+
+    try {
+      applyEditableCompositionStart({
+        editor,
+        event: createCompositionEvent(),
+        inputController,
+        setComposing: vi.fn(),
+      });
+      applyModelOwnedBeforeInputMutation({
+        data: 'すし',
+        editor,
+        inputController,
+        inputType: 'insertFromComposition',
+        mergeHistory: shouldMergeEditableCompositionHistory(inputController),
+        native: false,
+        selection: readTextSelection(editor),
+        setComposing: vi.fn(),
+      });
+
+      expect(owner.read((state) => state.children())).toEqual([
+        {
+          children: [
+            { text: 'This is editable ' },
+            { bold: true, text: 'すし' },
+            { text: ', done' },
+          ],
+          type: 'paragraph',
+        },
+      ]);
     } finally {
       hasSelectableTarget.mockRestore();
     }
