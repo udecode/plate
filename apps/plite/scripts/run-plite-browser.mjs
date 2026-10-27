@@ -330,9 +330,8 @@ const startServer = async (projectRun) => {
   if (await canReachServer()) {
     console.error(
       `Refusing to reuse the unowned Plite proof server at ${baseURL}. ` +
-        'Stop it if you own it. Otherwise serve this checkout on a free port with ' +
-        '`node scripts/build-app-if-stale.mjs && PORT=<port> node scripts/serve.mjs` ' +
-        'and pass PLAYWRIGHT_BASE_URL=http://127.0.0.1:<port>.'
+        'Stop it if you own it. Otherwise set PLITE_BROWSER_PORT=<free port> ' +
+        'to build and serve this checkout there.'
     );
 
     return 1;

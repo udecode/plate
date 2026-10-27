@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
-const DEFAULT_PLITE_BROWSER_BASE_URL = 'http://127.0.0.1:3102';
-
-export const resolvePliteBrowserBaseURL = (explicitBaseURL) =>
-  explicitBaseURL ?? DEFAULT_PLITE_BROWSER_BASE_URL;
+export const resolvePliteBrowserBaseURL = (
+  explicitBaseURL,
+  port = process.env.PLITE_BROWSER_PORT ?? '3102'
+) => explicitBaseURL ?? `http://127.0.0.1:${port}`;
 
 export const formatIntegrityFailureDetails = (failure, root) => {
   if (!failure.path) return '';

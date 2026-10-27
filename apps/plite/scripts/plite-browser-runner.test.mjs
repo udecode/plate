@@ -66,6 +66,10 @@ const makeTests = (file, count, profile) =>
 test('defaults browser proof to numeric loopback and preserves an explicit target', () => {
   assert.equal(resolvePliteBrowserBaseURL(undefined), 'http://127.0.0.1:3102');
   assert.equal(
+    resolvePliteBrowserBaseURL(undefined, '3110'),
+    'http://127.0.0.1:3110'
+  );
+  assert.equal(
     resolvePliteBrowserBaseURL('https://plite-proof.example.test'),
     'https://plite-proof.example.test'
   );
