@@ -29,6 +29,23 @@
       "2026-10-20-pin-diagram-engines",
       "2026-10-16-code-block-diagrams"
     ],
+    "link": [
+      "2026-10-22-edit-link-text",
+      "2026-10-12-link-code-block-form",
+      "2026-10-12-link-draft-addresses",
+      "2026-10-12-link-shortcut-view",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-07-link-submission",
+      "2026-09-04-decouple-link-floating-ui",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-consolidate-platejs-dependencies",
+      "2026-08-27-self-contained-editor-utilities",
+      "2026-08-26-fix-link-popover-rows",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
     "docx-export": [
       "2026-10-21-docx-export-spacing",
       "2026-10-09-export-static-presentation",
@@ -772,22 +789,6 @@
       "2026-08-13-fix-registry-install-dependencies",
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
-    ],
-    "link": [
-      "2026-10-12-link-code-block-form",
-      "2026-10-12-link-draft-addresses",
-      "2026-10-12-link-shortcut-view",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-07-link-submission",
-      "2026-09-04-decouple-link-floating-ui",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-consolidate-platejs-dependencies",
-      "2026-08-27-self-contained-editor-utilities",
-      "2026-08-26-fix-link-popover-rows",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-colocate-editor-component-families",
-      "2026-08-17-flat-editor-registry"
     ],
     "emoji-picker": [
       "2026-10-12-neutral-stored-names",

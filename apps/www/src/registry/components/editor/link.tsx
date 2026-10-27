@@ -18,7 +18,6 @@ import {
   useComposedRef,
   useEditor,
   useEditorReadOnly,
-  useEditorSelection,
   useEditorSelector,
   usePluginStore,
   useSelectionGeometry,
@@ -99,6 +98,18 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
 
     return {
       api: () => ({
+        closeForm: () => {
+          const { isEditing, mode, openEditorId } = store.get();
+
+          if (!isEditing && mode !== 'insert') return false;
+          store.set(
+            isEditing
+              ? { ...transientState, mode: 'edit', openEditorId }
+              : { ...transientState }
+          );
+
+          return true;
+        },
         decodeUrl: (url: string) => {
           try {
             return decodeURI(url);
@@ -151,7 +162,7 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
           }
         }
 
-        api.hide();
+        api.closeForm();
         setTimeout(() => {
           editor.api.dom.focus();
         }, 0);
@@ -173,10 +184,11 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
         const [link, path] = entry;
         const linkText = editor.read.text.string(path);
 
-        api.show('edit', editor.id);
         store.set({
           isEditing: true,
+          mode: 'edit',
           newTab: link.target === '_blank',
+          openEditorId: editor.id,
           text: linkText === link.url ? '' : linkText,
           url: link.url,
         });
@@ -224,6 +236,11 @@ export const linkPlugin = LinkPlugin.extend({ initialState: transientState })
     }),
   })
   .extend(({ api, store }) => ({
+    on: {
+      focus: () => {
+        api.closeForm();
+      },
+    },
     shortcuts: {
       dismiss: {
         keys: 'escape',
@@ -247,6 +264,22 @@ function FloatingLinkUrlInput({
       defaultValue={api.decodeUrl(store.get().url)}
       onChange={(event) => {
         store.set({ url: event.target.value });
+      }}
+      {...props}
+    />
+  );
+}
+
+function FloatingLinkTextInput({
+  ...props
+}: React.ComponentPropsWithRef<'input'>) {
+  const { store } = useEditor().plugin(linkPlugin);
+
+  return (
+    <Input
+      defaultValue={store.get().text}
+      onChange={(event) => {
+        store.set({ text: event.target.value });
       }}
       {...props}
     />
@@ -281,10 +314,10 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
   const { api, store, update } = useEditor().plugin(linkPlugin);
   const geometry = useSelectionGeometry({ editableRef });
   const editOpen =
-    !readOnly && open && mode === 'edit' && editor.read.selection.isCollapsed();
+    !readOnly && open && mode === 'edit' && selectedLinkKey !== null;
   const editFloating = useFloatingRect(geometry?.boundingRect ?? null, {
     onOpenChange: (nextOpen) => {
-      if (!nextOpen) api.hide();
+      if (!nextOpen) api.closeForm();
     },
     open: editOpen,
     ...linkFloatingOptions,
@@ -315,7 +348,6 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
 
   const editDismiss = useDismiss(editFloating.context, {
     escapeKey: false,
-    outsidePress: () => store.get().isEditing,
   });
   const insertDismiss = useDismiss(insertFloating.context, {
     escapeKey: false,
@@ -328,20 +360,22 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
       : editFloating.elements.floating;
 
   React.useEffect(() => {
-    const view = floatingElement?.ownerDocument.defaultView;
+    const ownerDocument = floatingElement?.ownerDocument;
+    const view = ownerDocument?.defaultView;
 
-    if (!view || !open || (mode !== 'insert' && !isEditing)) return undefined;
+    if (!ownerDocument || !view) return undefined;
 
     let timeout: number | undefined;
     const onBlur = () => {
       view.clearTimeout(timeout);
       // Iframe focus does not dispatch an outside pointer event in this document.
       timeout = view.setTimeout(() => {
-        if (
-          floatingElement.ownerDocument.activeElement?.localName === 'iframe'
-        ) {
-          api.hide();
+        let active = ownerDocument.activeElement;
+
+        while (active?.shadowRoot?.activeElement) {
+          active = active.shadowRoot.activeElement;
         }
+        if (active?.localName === 'iframe') api.closeForm();
       }, 0);
     };
 
@@ -350,22 +384,25 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
       view.removeEventListener('blur', onBlur);
       view.clearTimeout(timeout);
     };
-  }, [api, floatingElement, isEditing, mode, open]);
+  }, [api, floatingElement]);
 
-  const { text } = store.get();
   const editButtonProps = { onClick: api.triggerEdit };
   const onFloatingKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'Escape' || event.nativeEvent.isComposing) return;
     event.preventDefault();
     event.stopPropagation();
-    if (mode === 'edit' && store.get().isEditing) {
-      api.show('edit', editor.id);
-    } else {
-      api.hide();
-    }
+    if (!api.closeForm()) api.hide();
     editor.api.dom.focus();
   };
+  const onFloatingBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    const focusLeftForm =
+      event.relatedTarget !== null &&
+      !event.currentTarget.contains(event.relatedTarget);
+
+    if (focusLeftForm) api.closeForm();
+  };
   const editProps = {
+    onBlur: onFloatingBlur,
     onKeyDown: onFloatingKeyDown,
     style: { ...editFloating.style, zIndex: 50 },
   };
@@ -381,6 +418,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     },
   };
   const insertProps = {
+    onBlur: onFloatingBlur,
     onKeyDown: onFloatingKeyDown,
     style: { ...insertFloating.style, zIndex: 50 },
   };
@@ -406,14 +444,6 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     }
   }, [shouldFocusUrlInput]);
 
-  const textInputProps = {
-    defaultValue: text,
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
-      store.set({ text: event.target.value });
-    },
-    onKeyDown: onInputKeyDown,
-  };
-
   if (readOnly || !open) return null;
 
   const input = (
@@ -436,11 +466,11 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
         <div className="flex items-center pr-1 pl-2 text-muted-foreground">
           <Text className="size-4" />
         </div>
-        <Input
+        <FloatingLinkTextInput
           className="h-7 border-none bg-transparent px-1.5 py-1 shadow-none focus-visible:ring-transparent"
           placeholder="Text to display"
           data-editor-keep-selection-visible
-          {...textInputProps}
+          onKeyDown={onInputKeyDown}
         />
       </div>
     </div>
@@ -491,10 +521,16 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
 
 function LinkOpenButton() {
   const editor = useEditor();
-  useEditorSelection();
-  const entry = editor.read.nodes.find({ type: linkPlugin });
-  const attributes = entry
-    ? editor.plugin(linkPlugin).api.getAttributes(entry[0])
+  const link = useEditorSelector(
+    (innerEditor) =>
+      innerEditor.read.nodes.find({ type: linkPlugin })?.[0] ?? null,
+    {
+      shouldUpdate: (change) =>
+        !change || change.selectionChanged || change.changed.hasAny('document'),
+    }
+  );
+  const attributes = link
+    ? editor.plugin(linkPlugin).api.getAttributes(link)
     : {};
 
   return (

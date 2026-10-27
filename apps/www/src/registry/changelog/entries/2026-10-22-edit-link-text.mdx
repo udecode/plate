@@ -1,0 +1,26 @@
+---
+id: 2026-10-22-edit-link-text
+date: 2026-10-22
+status: draft
+kind: fix
+summary: 'Fix Edit link, saving an edited link and Open link in the link toolbar'
+change: { 'type': 'source', 'date': '2026-10-22', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-10-22-link-fill-text-display-s-5bd3dafb","kind":"fix","migrationNotes":[]} -->
+
+- **`link`**: Fill Text to display with the link's text in Edit link
+
+<!-- entry: {"id":"2026-10-22-link-toolbar-after-enter","kind":"fix","migrationNotes":[]} -->
+
+- **`link`**: Show the link toolbar again after Enter saves an edited link
+
+<!-- entry: {"id":"2026-10-22-link-open-follows-caret","kind":"fix","migrationNotes":[]} -->
+
+- **`link`**: Point Open link at the link under the caret when the caret moves straight into another link
+
+<!-- entry: {"id":"2026-10-22-link-form-focus-out","kind":"fix","migrationNotes":[]} -->
+
+- **`link`**: Close Edit link and Insert link and drop the draft when focus moves from the form to another element, the editor takes focus or a click lands outside, and show the link toolbar again while the caret stays in the link
