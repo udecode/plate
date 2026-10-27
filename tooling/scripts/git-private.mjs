@@ -522,6 +522,13 @@ const installHooks = (root) => {
   return skipped;
 };
 
+// A session hook runs this in contributors' clones too, so a missing grant
+// must fail fast instead of prompting for credentials.
+const readable = (root, remote) =>
+  run(root, ['ls-remote', '--exit-code', remote, BRANCH], {
+    env: { GCM_INTERACTIVE: 'never', GIT_TERMINAL_PROMPT: '0' },
+  }).status === 0;
+
 /** Sets up a team clone's private half. */
 export const init = (root, { remote = REMOTE } = {}) => {
   if (mainCheckout(root) !== root) return attach(root);
@@ -529,7 +536,7 @@ export const init = (root, { remote = REMOTE } = {}) => {
     return `${PRIVATE_LIST} is missing, so this checkout is not split yet`;
   }
   if (!isSplit(root)) {
-    if (run(root, ['ls-remote', '--exit-code', remote, BRANCH]).status !== 0) {
+    if (!readable(root, remote)) {
       return `${remote} has no ${BRANCH} you can read`;
     }
     must(root, ['init', '--quiet', '--bare', PRIVATE_DIR]);
@@ -557,6 +564,25 @@ export const init = (root, { remote = REMOTE } = {}) => {
   return skipped.length > 0
     ? `left these hooks alone; call node ${HOOK_MARK} <name> "$@" from each: ${skipped.join(', ')}`
     : null;
+};
+
+/**
+ * The session hook's step: sets up the clone once it can read plate-private,
+ * then gives this worktree its private half. A contributor's clone stays as it
+ * is.
+ */
+export const start = (root, { remote = REMOTE } = {}) => {
+  if (!existsSync(path.join(root, PRIVATE_LIST))) return null;
+  const main = mainCheckout(root);
+  if (!isSplit(main)) {
+    if (!existsSync(path.join(main, PRIVATE_LIST))) {
+      return `${main} predates the split; fast-forward its ${BRANCH}, then start a session again`;
+    }
+    if (!readable(main, remote)) return null;
+    const note = init(main, { remote });
+    if (note) return note;
+  }
+  return main === root ? null : attach(root);
 };
 
 /** Gives a worktree its private half, a linked worktree of the clone's. */
@@ -901,7 +927,9 @@ const status = (root) => {
 const USAGE = `Usage: node tooling/scripts/git-private.mjs <command>
   init      set up this team clone's private half and its git hooks
             (--remote <url> reads another plate-private)
-  attach    give this worktree its private half
+  start     the session hook's step: init where plate-private is readable,
+            then attach this worktree (--remote as for init)
+  attach   give this worktree its private half
   detach    remove this worktree's private record; its commits stay
   migrate   move a worktree cut before the split onto both repositories
   sync      merge plate-private's ${BRANCH} into the private branch
@@ -926,6 +954,11 @@ const main = async (argv) => {
     case 'init': {
       return report(
         init(root, rest[0] === '--remote' ? { remote: rest[1] } : undefined)
+      );
+    }
+    case 'start': {
+      return report(
+        start(root, rest[0] === '--remote' ? { remote: rest[1] } : undefined)
       );
     }
     case 'attach': {
