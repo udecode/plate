@@ -160,9 +160,9 @@
       ".agents/pstack/rules/reflect.md": "02778c440a41de15f11fb2bb3c2d0b7ebfd43ea9264cab06b0191b48b37e7961",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "fc132ef7a8f0cbec135a00c882911f0c849d9b49bf84db599ee8a6b86d32d6ba",
-      ".agents/pstack/rules/title.md": "0a64b90ec1d4440adefe17a32044b72f9f8ab57a4807ccf70d506e2e3c709bec"
+      ".agents/pstack/rules/title.md": "0d9c60481b39315c64a190ed31d3a1beea8cdb01aaa5b6173bf9c1512709a4e2"
     },
-    "source": "378c1d177078fe6c485901b9ef8874aaa616d047"
+    "source": "f7c7bfbb81a3f07674215a133e6479f2696995a6"
   },
   "pageTopic": {
     "field": "review_scopes",
