@@ -12,8 +12,10 @@ const LAST_HUGE_LINE = 'const result10000 = transform(source[9999]);';
 test.setTimeout(90_000);
 
 test('code-block docs: native preview stays small while CodeMirror scrolls the full document', async ({
+  browserName,
   page,
 }, testInfo) => {
+  test.skip(browserName !== 'chromium', 'Chromium DevTools protocol');
   const runtimeErrors = recordBrowserRuntimeErrors(page);
   const cdp = await page.context().newCDPSession(page);
 
@@ -99,8 +101,10 @@ test('code-block docs: native preview stays small while CodeMirror scrolls the f
 });
 
 test('code-block demos: default keeps the small main-style value', async ({
+  browserName,
   page,
 }, testInfo) => {
+  test.skip(browserName !== 'chromium', 'Chromium clipboard permissions');
   expect(testInfo.retry).toBe(0);
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   const runtimeErrors = recordBrowserRuntimeErrors(page);
@@ -170,8 +174,10 @@ test('code-block demos: initial Python highlights after hydration', async ({
 });
 
 test('code-block demos: native Plate owns and edits the exact 10k-line value', async ({
+  browserName,
   page,
 }, testInfo) => {
+  test.skip(browserName !== 'chromium', 'Chromium clipboard permissions');
   expect(testInfo.retry).toBe(0);
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   const runtimeErrors = recordBrowserRuntimeErrors(page);

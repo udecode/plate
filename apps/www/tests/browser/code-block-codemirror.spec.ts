@@ -12,8 +12,10 @@ const ROUTE = '/blocks/code-block-codemirror-demo';
 test.setTimeout(90_000);
 
 test('code-block: keyboard selection follows focus after Chromium composition', async ({
+  browserName,
   page,
 }) => {
+  test.skip(browserName !== 'chromium', 'Chromium composition protocol');
   const runtimeErrors = recordBrowserRuntimeErrors(page);
   const client = await page.context().newCDPSession(page);
   try {
@@ -65,8 +67,10 @@ test('code-block: keyboard selection follows focus after Chromium composition', 
 });
 
 test('code-block: CodeMirror keeps a 10k-line block bounded and model-owned', async ({
+  browserName,
   page,
 }, testInfo) => {
+  test.skip(browserName !== 'chromium', 'Chromium clipboard permissions');
   expect(testInfo.retry).toBe(0);
   const runtimeErrors = recordBrowserRuntimeErrors(page);
 
@@ -194,8 +198,10 @@ test('code-block: CodeMirror keeps a 10k-line block bounded and model-owned', as
 });
 
 test('code-block: CodeMirror preserves code editing, IME, and remote updates', async ({
+  browserName,
   page,
 }, testInfo) => {
+  test.skip(browserName !== 'chromium', 'Chromium clipboard permissions');
   expect(testInfo.retry).toBe(0);
   const runtimeErrors = recordBrowserRuntimeErrors(page);
 
