@@ -1,1 +1,0 @@
-import './selection-controller-contract';
