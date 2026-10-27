@@ -760,9 +760,16 @@ test("restores another author's suggestion after canceling text typed inside it"
   await expect(charlie).toHaveText('overlapping ');
   expect(paragraphText).toContain('overlapping');
   const aliceCount = await alice.count();
-  // Review coordinates: Charlie's insertion is its own text node.
-  const charliePath = [3, 9];
-  const typedPath = [3, 10];
+  const { children: blocks } = (await editor.get.modelValue()) as {
+    children: Array<{ children: ReviewNode[] }>;
+  };
+  const charlieIndex = blocks[3].children.findIndex((child) =>
+    child.authored?.some(
+      (mark) => mark.author === 'charlie' && mark.kind === 'insert'
+    )
+  );
+  const charliePath = [3, charlieIndex];
+  const typedPath = [3, charlieIndex + 1];
   const offset = 'over'.length;
   await editor.selection.collapse({ path: charliePath, offset });
   await page.keyboard.type('xyz');
