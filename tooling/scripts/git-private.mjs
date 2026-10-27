@@ -484,7 +484,13 @@ const fetchPrivate = (root) =>
 export const sync = (root) => {
   if (!isSplit(root)) return 'no private repository here';
   fetchPrivate(root);
-  const merged = privateGit(root, ['merge', '--quiet', '--no-edit', UPSTREAM]);
+  const merged = privateGit(root, [
+    'merge',
+    '--ff',
+    '--quiet',
+    '--no-edit',
+    UPSTREAM,
+  ]);
   if (merged.status !== 0) {
     privateGit(root, ['merge', '--abort']);
     return `could not merge plate-private's ${BRANCH} into this private branch; the next landing rebases onto it, or run node tooling/scripts/git-private.mjs merge origin/${BRANCH}`;
