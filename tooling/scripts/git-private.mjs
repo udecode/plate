@@ -19,6 +19,11 @@ import { devNull, tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  hookPayload,
+  sessionCheckout,
+} from '../../.agents/pstack/checkout.mjs';
+
 export const PRIVATE_DIR = '.git-private';
 export const PRIVATE_LIST = '.gitprivate';
 const REMOTE = 'https://github.com/udecode/plate-private.git';
@@ -928,13 +933,15 @@ const USAGE = `Usage: node tooling/scripts/git-private.mjs <command>
   init      set up this team clone's private half and its git hooks
             (--remote <url> reads another plate-private)
   start     the session hook's step: init where plate-private is readable,
-            then attach this worktree (--remote as for init)
+            then attach this worktree (--remote as for init; --hook works
+            on the checkout the hook payload's cwd names)
   attach   give this worktree its private half
   detach    remove this worktree's private record; its commits stay
   migrate   move a worktree cut before the split onto both repositories
   sync      merge plate-private's ${BRANCH} into the private branch
   restore   put back private files missing from disk
   autosave  save unsaved private work to ${AUTOSAVE}<branch>
+            (--hook as for start)
   status    both repositories' changes and new private files
   check     what pnpm check refuses
   <git>     any other git command, run against ${PRIVATE_DIR}`;
@@ -946,6 +953,8 @@ const main = async (argv) => {
     return command ? 0 : 1;
   }
   const root = checkoutRoot();
+  const sessionRoot = () =>
+    rest.includes('--hook') ? sessionCheckout(hookPayload().cwd).root : root;
   const report = (note) => {
     if (note) console.info(`[git-private] ${note}`);
     return 0;
@@ -957,8 +966,9 @@ const main = async (argv) => {
       );
     }
     case 'start': {
+      const at = rest.indexOf('--remote');
       return report(
-        start(root, rest[0] === '--remote' ? { remote: rest[1] } : undefined)
+        start(sessionRoot(), at === -1 ? undefined : { remote: rest[at + 1] })
       );
     }
     case 'attach': {
@@ -979,7 +989,7 @@ const main = async (argv) => {
       return report(`restored ${restore(root)} files`);
     }
     case 'autosave': {
-      const saved = autosave(root);
+      const saved = autosave(sessionRoot());
       return report(
         saved && `saved ${saved.files.length} files to ${saved.ref}`
       );
