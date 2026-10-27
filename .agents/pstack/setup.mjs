@@ -10,7 +10,8 @@
 // --install once per worktree, again after a failed run; run by hand, a
 // failed install makes it exit 1. Then, in the main
 // checkout, it keeps the suggested-task ledger, which git ignores, in step
-// with refs/pstack/ledger on origin, and on the branch .agents/pstack.json
+// with refs/pstack/ledger on origin, the companion repository's origin when
+// the config's `companion.dir` exists, and on the branch .agents/pstack.json
 // names it fast-forwards only when no other local edit, staged, unstaged or
 // untracked, touches a path the incoming commits change. It prints one line
 // per action for the session.
@@ -107,7 +108,7 @@ const absorbFormer = (former, ledger) => {
 // the ref on origin keeps them durable and shared between clones. Both sides only gain rows: the
 // file gets the rows only the ref holds, and the ref gets the rows only the file holds, pushed as
 // a fast-forward.
-const syncLedger = (ledger, former) => {
+const syncLedger = (ledger, former, via) => {
   const lock = join(commonDir, 'pstack-ledger.lock');
   try {
     mkdirSync(lock);
@@ -119,10 +120,10 @@ const syncLedger = (ledger, former) => {
     absorbFormer(former, ledger);
     let pending = 0;
     for (let attempt = 0; attempt < 3; attempt += 1) {
-      const fetched = git(['fetch', '--quiet', 'origin', `+${LEDGER_REF}:${LEDGER_REF}`]).status === 0;
+      const fetched = git([...via, 'fetch', '--quiet', 'origin', `+${LEDGER_REF}:${LEDGER_REF}`]).status === 0;
       if (attempt > 0 && !fetched) break;
-      const tip = out('rev-parse', '--verify', '--quiet', `${LEDGER_REF}^{commit}`);
-      const shown = tip ? git(['show', `${tip}:${LEDGER}`]) : null;
+      const tip = out(...via, 'rev-parse', '--verify', '--quiet', `${LEDGER_REF}^{commit}`);
+      const shown = tip ? git([...via, 'show', `${tip}:${LEDGER}`]) : null;
       const theirs = shown?.status === 0 ? shown.stdout : '';
       const pulled = appendMissing(ledger, theirs);
       if (pulled) console.log(`setup.mjs: added ${pulled} ledger row(s) from ${LEDGER_REF} on origin`);
@@ -131,12 +132,12 @@ const syncLedger = (ledger, former) => {
       pending = added.length;
       if (pending === 0) return;
       const content = `${theirs}${theirs === '' || theirs.endsWith('\n') ? '' : '\n'}${added.join('\n')}\n`;
-      const blob = git(['hash-object', '-w', '--stdin'], { input: content }).stdout.trim();
-      const tree = git(['mktree'], { input: `100644 blob ${blob}\t${LEDGER}\n` }).stdout.trim();
-      const head = out('commit-tree', tree, ...(tip ? ['-p', tip] : []), '-m', `${pending} suggested-task ledger row(s)`);
+      const blob = git([...via, 'hash-object', '-w', '--stdin'], { input: content }).stdout.trim();
+      const tree = git([...via, 'mktree'], { input: `100644 blob ${blob}\t${LEDGER}\n` }).stdout.trim();
+      const head = out(...via, 'commit-tree', tree, ...(tip ? ['-p', tip] : []), '-m', `${pending} suggested-task ledger row(s)`);
       if (!head) break;
-      if (git(['push', '--quiet', 'origin', `${head}:${LEDGER_REF}`], { timeout: 60_000 }).status !== 0) continue;
-      git(['update-ref', LEDGER_REF, head]);
+      if (git([...via, 'push', '--quiet', 'origin', `${head}:${LEDGER_REF}`], { timeout: 60_000 }).status !== 0) continue;
+      git([...via, 'update-ref', LEDGER_REF, head]);
       console.log(`setup.mjs: pushed ${pending} ledger row(s) to ${LEDGER_REF} on origin`);
       return;
     }
@@ -148,7 +149,9 @@ const syncLedger = (ledger, former) => {
 
 const config = existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {};
 const { branch } = config;
-if (config.plans) syncLedger(ledgerPath(config.plans, 'trunk'), join(config.plans, LEDGER));
+// The ledger is the team's, so a checkout split into a public and a companion repository keeps it on the companion's origin.
+const via = config.companion?.dir && existsSync(config.companion.dir) ? ['--git-dir', config.companion.dir] : [];
+if (config.plans) syncLedger(ledgerPath(config.plans, 'trunk'), join(config.plans, LEDGER), via);
 if (!branch || out('branch', '--show-current') !== branch) process.exit();
 const upstream = `refs/remotes/origin/${branch}`;
 if (out('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`) === null) process.exit();

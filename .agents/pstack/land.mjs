@@ -19,6 +19,14 @@
 // auto-merge, so the PR merges once a reviewer approves its latest push.
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is.
+// When the config names a `companion` whose git directory `companion.dir` is
+// in the checkout, that repository tracks the files this checkout's git
+// ignores through `companion.list`, and the task's changes there land in push
+// mode as a second commit with the same message, rebased onto the companion's
+// origin/<branch> and checked with the first. It pushes after the first, with
+// a `Lands-With:` line naming the commit it landed with, and a rerun after a
+// refused companion push pushes it before anything else. A branch cut before
+// `companion.list` existed on <branch> stops with `companion.migrate`.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -82,7 +90,7 @@ const messageText = messageFile === null ? null : readFileSync(messageFile, 'utf
 
 process.chdir(must('rev-parse', '--show-toplevel'));
 const config = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
-const { branch, protected: guarded, lintFix, plans = 'docs/plans' } = config;
+const { branch, protected: guarded, lintFix, plans = 'docs/plans', companion } = config;
 if (!branch) fail('.agents/pstack.json names no branch');
 const mode = git('config', '--get', 'pstack.delivery').stdout.trim() === 'push' ? 'push' : 'pr';
 const forked = mode === 'pr' && git('remote', 'get-url', 'upstream').status === 0;
@@ -92,30 +100,83 @@ const target = `${canonical}/${branch}`;
 const current = must('branch', '--show-current');
 if (guarded && current === guarded) fail(`this checkout is on ${guarded}; land from a worktree cut from ${target}`);
 
-// A clean --no-commit revert leaves REVERT_HEAD behind, so only the sequencer marks a revert with commits left to apply.
-const midway = ['rebase-merge', 'rebase-apply', 'MERGE_HEAD', 'sequencer'].some((name) => existsSync(must('rev-parse', '--git-path', name)));
-if (midway) fail('a rebase, merge or revert is in progress; resolve it, `git add` the paths, run `git rebase --continue` or `GIT_EDITOR=true git revert --continue`, then run land.mjs again');
+const pair = companion?.dir && existsSync(companion.dir) ? companion : null;
+if (pair && mode !== 'push') fail(`${pair.dir} lands only in push mode; run \`git config pstack.delivery push\``);
+const side = pair ? [`--git-dir=${join(process.cwd(), pair.dir)}`, `--work-tree=${process.cwd()}`] : [];
+const cgit = (...args) => spawnSync('git', [...side, ...args], { encoding: 'utf8' });
+const cmust = (...args) => {
+  const run = cgit(...args);
+  if (run.status !== 0) fail(`git ${args.join(' ')} in ${pair.dir} failed: ${run.stderr.trim()}`);
+  return run.stdout.trim();
+};
+const cupstream = `refs/remotes/origin/${branch}`;
+const PAIRED = /^Lands-With: /mu;
 
-const conflicted = () => must('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
+// A clean --no-commit revert leaves REVERT_HEAD behind, so only the sequencer marks a revert with commits left to apply.
+const stopped = (run) => ['rebase-merge', 'rebase-apply', 'MERGE_HEAD', 'sequencer'].some((name) => existsSync(run('rev-parse', '--git-path', name).stdout.trim()));
+if (stopped(git)) fail('a rebase, merge or revert is in progress; resolve it, `git add` the paths, run `git rebase --continue` or `GIT_EDITOR=true git revert --continue`, then run land.mjs again');
+if (pair && stopped(cgit)) fail(`a rebase or merge is in progress in ${pair.dir}; resolve it with \`git --git-dir=${pair.dir} --work-tree=.\`, then run land.mjs again`);
+
 const dirty = () => must('status', '--porcelain', '--untracked-files=all') !== '';
+const sideDirty = () => pair !== null && cmust('status', '--porcelain', '--untracked-files=no') !== '';
 
 function fetch() {
   must('fetch', '--quiet', canonical, `+refs/heads/${branch}:${upstream}`);
+  if (pair) cmust('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${cupstream}`);
 }
 
-function rebase() {
-  if (git('merge-base', '--is-ancestor', upstream, 'HEAD').status === 0) return;
-  const run = git('rebase', '--quiet', upstream);
-  if (run.status === 0) return;
-  const paths = conflicted();
+function rebase(inCompanion = false) {
+  const run = inCompanion ? cgit : git;
+  const onto = inCompanion ? cupstream : upstream;
+  const where = inCompanion ? `${pair.dir}'s origin/${branch}` : target;
+  if (run('merge-base', '--is-ancestor', onto, 'HEAD').status === 0) return;
+  const rebased = run('rebase', '--quiet', onto);
+  if (rebased.status === 0) return;
+  const paths = run('diff', '--name-only', '--diff-filter=U').stdout.split('\n').filter(Boolean);
   if (paths.length === 0) {
-    git('rebase', '--abort');
-    fail(`git rebase ${target} failed: ${run.stderr.trim()}`);
+    run('rebase', '--abort');
+    fail(`git rebase ${where} failed: ${rebased.stderr.trim()}`);
   }
+  const prefix = inCompanion ? `git --git-dir=${pair.dir} --work-tree=. ` : 'git ';
   fail(
-    `rebasing onto ${target} conflicts in:\n${paths.map((path) => `  ${path}`).join('\n')}\n` +
-      'The rebase is still in progress. Resolve those paths, `git add` them, `git rebase --continue`, then run land.mjs again without --message.'
+    `rebasing onto ${where} conflicts in:\n${paths.map((path) => `  ${path}`).join('\n')}\n` +
+      `The rebase is still in progress. Resolve those paths, \`${prefix}add\` them, \`${prefix}rebase --continue\`, then run land.mjs again without --message.`
   );
+}
+
+// Stages the companion's edits and the new files it owns: those this checkout's git ignores through companion.list.
+function stageCompanion() {
+  cmust('add', '--update');
+  const others = cgit('ls-files', '-z', '--others', '--exclude-standard').stdout;
+  const listed = ['-c', `core.excludesFile=${join(process.cwd(), pair.list)}`, 'check-ignore', '-z', '--stdin'];
+  const owned = others ? spawnSync('git', listed, { encoding: 'utf8', input: others }).stdout : '';
+  if (!owned) return;
+  const run = spawnSync('git', [...side, 'add', '--force', '--pathspec-from-file=-', '--pathspec-file-nul'], { encoding: 'utf8', input: owned });
+  if (run.status !== 0) fail(`git add in ${pair.dir} failed: ${run.stderr.trim()}`);
+}
+
+function pushCompanion() {
+  const text = cmust('log', '-1', '--format=%B');
+  if (!PAIRED.test(text)) {
+    const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
+    writeFileSync(file, `${text}\nLands-With: ${must('rev-parse', 'HEAD')}\n`);
+    cmust('commit', '--quiet', '--amend', '--file', file);
+  }
+  for (let moves = 0; ; moves += 1) {
+    const run = cgit('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
+    if (run.status === 0) break;
+    if (moves < RETRIES && /\[rejected\]|fetch first|non-fast-forward/u.test(run.stderr)) {
+      console.log(`${pair.dir}'s origin/${branch} moved; rebasing and pushing again (retry ${moves + 1} of ${RETRIES})`);
+      fetch();
+      rebase(true);
+      continue;
+    }
+    fail(
+      `git push of the ${pair.dir} commit failed after the rest of the task landed. That commit stays local, so run land.mjs again with no --message; it pushes that commit first.\n${run.stderr.trim()}`,
+      EX_TEMPFAIL
+    );
+  }
+  console.log(`Landed ${cmust('rev-parse', '--short', 'HEAD')} on ${pair.dir}'s origin/${branch}`);
 }
 
 // The owner and name of a remote's repository, from its URL's last two path parts.
@@ -195,19 +256,34 @@ function prBody(plan, body) {
   return { file, attach: [] };
 }
 
+// Squashes the task into one commit in each repository that it changes; a companion-only task leaves HEAD at its base here.
 function squash({ subject, body }) {
   const head = must('rev-parse', 'HEAD');
   const base = must('merge-base', 'HEAD', upstream);
   must('add', '--all');
   must('reset', '--quiet', '--soft', base);
-  if (git('diff', '--cached', '--quiet').status === 0) {
+  const staged = (run) => run('diff', '--cached', '--name-only').stdout.split('\n').filter(Boolean);
+  const own = staged(git);
+  let sideHead = null;
+  let theirs = [];
+  if (pair) {
+    stageCompanion();
+    sideHead = cmust('rev-parse', 'HEAD');
+    cmust('reset', '--quiet', '--soft', cmust('merge-base', 'HEAD', cupstream));
+    theirs = staged(cgit);
+  }
+  const undo = () => {
     must('reset', '--quiet', '--soft', head);
+    if (pair) cmust('reset', '--quiet', '--soft', sideHead);
+  };
+  if (own.length === 0 && theirs.length === 0) {
+    undo();
     fail(`nothing to land: the task changes nothing against ${target}`);
   }
-  const plan = planOf(must('diff', '--cached', '--name-only').split('\n').filter(Boolean));
+  const plan = planOf([...own, ...theirs]);
   const missing = mode === 'pr' && !paged(plan) ? missingSections(body) : [];
   if (missing.length > 0) {
-    must('reset', '--quiet', '--soft', head);
+    undo();
     fail(
       `a PR whose body is the commit body needs ${missing.map((name) => `a \`## ${name}\` section`).join(' and ')} with text, as pstack's Opening a PR asks; ` +
         'add the missing text to the message and run land.mjs again with --message, or change exactly one dated plan so its page becomes the body'
@@ -215,38 +291,71 @@ function squash({ subject, body }) {
   }
   const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
   writeFileSync(file, `${subject}\n\n${trailers(body, plan)}\n`);
-  const run = spawnSync('git', ['commit', '--quiet', '--file', file], { stdio: 'inherit' });
-  if (run.status !== 0) {
-    must('reset', '--quiet', '--soft', head);
+  const commit = (prefix) => spawnSync('git', [...prefix, 'commit', '--quiet', '--file', file], { stdio: 'inherit' }).status === 0;
+  if ((own.length > 0 && !commit([])) || (theirs.length > 0 && !commit(side))) {
+    undo();
     fail('git commit failed; the task commits are back as they were');
   }
-  return plan;
+  return { plan, own: own.length > 0, theirs: theirs.length > 0 };
 }
 
 fetch();
 const ahead = Number(must('rev-list', '--count', `${upstream}..HEAD`));
-if (messageText === null && ahead === 0) fail(`HEAD has no task commit to take a message from; pass --message <file>\n${USAGE}`);
-const message = validate(messageText ?? must('log', '-1', '--format=%B'));
-const plan = squash(message);
+const sideAhead = pair ? Number(cmust('rev-list', '--count', `${cupstream}..HEAD`)) : 0;
+if (messageText === null && ahead === 0 && sideAhead > 0 && PAIRED.test(cmust('log', '-1', '--format=%B'))) {
+  pushCompanion();
+  process.exit(0);
+}
+if (messageText === null && ahead === 0 && sideAhead === 0) fail(`HEAD has no task commit to take a message from; pass --message <file>\n${USAGE}`);
+// A branch cut before the split still carries the config from before it, so the companion settings come from <branch>'s.
+const split = companion ?? JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}').companion;
+if (split?.list) {
+  const listed = (rev) => git('cat-file', '-e', `${rev}:${split.list}`).status === 0;
+  if (listed(upstream) && !listed(must('merge-base', 'HEAD', upstream))) {
+    fail(
+      `this branch was cut before ${split.list} existed on ${target}, so its commits still track files that ${split.dir} owns now. ` +
+        `${split.migrate ? `Run \`${split.migrate}\`, which saves a patch of the branch and moves its work onto both repositories, then run` : `Move its work onto a worktree cut from ${target}, then run`} land.mjs again.`
+    );
+  }
+}
+const message = validate(messageText ?? (ahead > 0 ? must('log', '-1', '--format=%B') : cmust('log', '-1', '--format=%B')));
+const landing = squash(message);
+const { plan } = landing;
 rebase();
+if (landing.theirs) rebase(true);
 
 const record = must('rev-parse', '--git-path', 'pstack-land-checked');
 const stamp = () =>
-  JSON.stringify({ tree: must('rev-parse', 'HEAD^{tree}'), parent: must('rev-parse', 'HEAD^'), message: must('log', '-1', '--format=%B'), lintFix: lintFix ?? null, checks });
+  JSON.stringify({
+    tree: must('rev-parse', 'HEAD^{tree}'),
+    parent: must('rev-parse', 'HEAD^'),
+    message: must('log', '-1', '--format=%B'),
+    ...(landing.theirs ? { companion: cmust('rev-parse', 'HEAD^{tree}') } : {}),
+    lintFix: lintFix ?? null,
+    checks,
+  });
 
 let checkTime = 0;
 
 function check(rebased = false) {
   const started = performance.now();
   rmSync(record, { force: true });
-  const changed = must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD').split('\n').filter(Boolean);
+  const names = (text) => text.split('\n').filter(Boolean);
+  const changed = [
+    ...names(must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD')),
+    ...(landing.theirs ? names(cmust('diff', '--name-only', '--diff-filter=d', cupstream, 'HEAD')) : []),
+  ];
   const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs checks');
   if (lintFix && changed.length > 0) {
     const run = spawnSync(`${lintFix} ${changed.map(quote).join(' ')}`, { shell: true, stdio: 'inherit' });
     if (run.status !== 0) fail(`${lintFix} failed on the changed files; fix them and run land.mjs again`);
-    if (dirty()) {
+    if (landing.own && dirty()) {
       must('add', '--all');
       must('commit', '--quiet', '--amend', '--no-edit');
+    }
+    if (landing.theirs && sideDirty()) {
+      cmust('add', '--update');
+      cmust('commit', '--quiet', '--amend', '--no-edit');
     }
   }
   for (const command of checks) {
@@ -254,8 +363,9 @@ function check(rebased = false) {
     if (run.status !== 0) fail(`check failed: ${command}; the squashed commit stays local${rebased ? `, rebased onto the commits origin/${branch} gained while its checks ran, which may cause the failure` : ''}`);
   }
   release();
-  if (dirty()) {
-    fail(`the checks changed files; review them and run land.mjs again, which folds them into the commit:\n${must('status', '--short')}`);
+  if (dirty() || sideDirty()) {
+    const status = [must('status', '--short'), pair ? cmust('status', '--short', '--untracked-files=no') : ''].filter(Boolean).join('\n');
+    fail(`the checks changed files; review them and run land.mjs again, which folds them into the commit:\n${status}`);
   }
   writeFileSync(record, stamp());
   checkTime = performance.now() - started;
@@ -270,7 +380,7 @@ if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
 if (mode === 'push') {
   let moves = 0;
   let declines = 0;
-  for (;;) {
+  while (landing.own) {
     const run = git('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
     if (run.status === 0) break;
     const moved = /\[rejected\]|fetch first|non-fast-forward/u.test(run.stderr);
@@ -287,6 +397,7 @@ if (mode === 'push') {
       console.log(`origin/${branch} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
       fetch();
       rebase();
+      if (landing.theirs) rebase(true);
       check(true);
     } else if (declined && wait !== undefined && performance.now() + wait * MINUTE <= DEADLINE) {
       declines += 1;
@@ -302,7 +413,8 @@ if (mode === 'push') {
       fail(`git push origin HEAD:${branch} failed: ${run.stderr.trim()}`);
     }
   }
-  console.log(`Landed ${must('rev-parse', '--short', 'HEAD')} on origin/${branch}: ${message.subject}`);
+  if (landing.own) console.log(`Landed ${must('rev-parse', '--short', 'HEAD')} on origin/${branch}: ${message.subject}`);
+  if (landing.theirs) pushCompanion();
 } else {
   const slug = message.subject.toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '').slice(0, 50);
   const topic = current && current !== branch ? current : `land/${slug}`;

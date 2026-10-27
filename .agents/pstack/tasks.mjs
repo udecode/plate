@@ -132,7 +132,10 @@ const memo = (read, keyOf = (key) => key) => {
 };
 const planOnOrigin = memo((plan) => {
   try {
-    return execFileSync('git', ['show', `origin/${branch()}:${plan}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    // A plan the companion repository tracks lives on its origin, not this one's.
+    const companion = projectConfig().companion?.dir;
+    const via = companion && existsSync(companion) ? ['--git-dir', companion] : [];
+    return execFileSync('git', [...via, 'show', `origin/${branch()}:${plan}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
   } catch {
     return null;
   }
