@@ -446,6 +446,16 @@ const runStep = (step, command, writing) => {
 
 const main = () => {
   const args = process.argv.slice(2);
+  const flags = ['--affected', '--build', '--list', '--write'];
+  const unknownFlags = args.filter(
+    (arg) => arg.startsWith('--') && !flags.includes(arg)
+  );
+  if (unknownFlags.length > 0) {
+    console.error(
+      `[check] unknown flag: ${unknownFlags.join(', ')}. Flags: ${flags.join(', ')}.`
+    );
+    return 1;
+  }
   const writing = args.includes('--write');
   const names = args.filter((arg) => !arg.startsWith('--'));
   if (args.includes('--list')) {

@@ -250,6 +250,17 @@ test('pnpm check refuses --write with --build instead of dropping the build', ()
   assert.match(result.stderr, /--build runs a step with no writer/u);
 });
 
+test('pnpm check refuses an unknown flag instead of ignoring it', () => {
+  const result = spawnSync(
+    process.execPath,
+    [fileURLToPath(new URL('check.mjs', import.meta.url)), '--list', '--help'],
+    { encoding: 'utf-8' }
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /unknown flag: --help/u);
+});
+
 test('every check script is a pnpm check step or says why it stays manual', async () => {
   const [packageJson, wwwPackageJson] = await Promise.all([
     readFile(packageJsonPath, 'utf-8').then(JSON.parse),
