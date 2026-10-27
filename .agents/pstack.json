@@ -73,6 +73,15 @@
   "skiller": true,
   "codexLanes": true,
   "regen": "pnpm run prepare",
+  "generated": [
+    {
+      "paths": [
+        "apps/www/src/__registry__/**",
+        "apps/www/public/r/**"
+      ],
+      "command": "pnpm --filter www build:registry"
+    }
+  ],
   "skip": [],
   "dropped": [
     "architecture",
@@ -132,13 +141,13 @@
       ".agents/pstack/tasks.mjs": "d0e90f9435599dc67d57fb51516827dd9defda9b2d46e8dbee742dbc1810ed0a",
       ".agents/pstack/scorecard.mjs": "e465d0d769214a47d5b3ab5941b5155ce2c60896ed165098906ffeb85059e449",
       ".agents/pstack/guard.mjs": "e579c4a4ae1cba09155c5bbb24a6032717fff4a6e901c164518599a43de6b810",
-      ".agents/pstack/land.mjs": "e10295439baca5d974a850c81cb9095b3b1926b8049834007cb32b228b3249c6",
+      ".agents/pstack/land.mjs": "65327bf2622dabe63544e34ef85d9535274db38fe092a7088e5cde256cf090c4",
       ".agents/pstack/review.mjs": "876dd6b089514690a9e3a8a1612befb63f67e9d98dcd43625f43e68ebb9f7944",
       ".agents/pstack/setup.mjs": "256697ae309df3dec1aa08e2b4a8e36537eeb717475b9b9c3184513bde7ed7a4",
       ".agents/pstack/rules/browser.md": "203448f902ae52896b555894d8a5686db05b3a226e655a40df0f5bfd7766a401",
       ".agents/pstack/rules/chips.md": "2c907faf6ca07e0e579d69ff1c1b48883619058d0140021b63418a6feaf2ce9a",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
-      ".agents/pstack/rules/land.md": "e21caec26ae3f439f293e68296a808ef48a612bb8444179d5e12fc202b59f47c",
+      ".agents/pstack/rules/land.md": "aae5d37b478cc30b1f70f470cbdd04474a4c69ccabf2d18c587b5d3512821657",
       ".agents/pstack/rules/linked.md": "414bb3823bc3719af5303941eb5a028092e815dacbe61ba83ce95697c99dae70",
       ".agents/pstack/rules/long-runs.md": "f815ce962a05f3ce655ca90bd14a78eb5d5a59a3c5e1f076e799f11f6fa23f7d",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
@@ -149,7 +158,7 @@
       ".agents/pstack/rules/time.md": "fc132ef7a8f0cbec135a00c882911f0c849d9b49bf84db599ee8a6b86d32d6ba",
       ".agents/pstack/rules/title.md": "0a64b90ec1d4440adefe17a32044b72f9f8ab57a4807ccf70d506e2e3c709bec"
     },
-    "source": "01ed8db0f73224173491011194997a035f33a2ff"
+    "source": "385c326020c9216a1a584723d4a2dd4843bc807d"
   },
   "pageTopic": {
     "field": "review_scopes",

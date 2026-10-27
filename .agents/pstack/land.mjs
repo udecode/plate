@@ -19,6 +19,12 @@
 // auto-merge, so the PR merges once a reviewer approves its latest push.
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is.
+// When every path a rebase of this checkout conflicts on matches the globs of
+// a `generated` entry in the config, it takes <branch>'s side of those paths,
+// runs each matching entry's command to rebuild them from the merged sources,
+// stages what the command wrote and continues the rebase. A failed command
+// puts the conflicts back, and a write outside the entry's globs, staged or
+// not, stops it with the rebase in progress, as any other conflict does.
 // When the config names a `companion` whose git directory `companion.dir` is
 // in the checkout, that repository tracks the files this checkout's git
 // ignores through `companion.list`, and the task's changes there land in push
@@ -29,7 +35,7 @@
 // `companion.list` existed on <branch> stops with `companion.migrate`.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { availableParallelism, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { reserve } from './proof.mjs';
@@ -91,7 +97,7 @@ const messageText = messageFile === null ? null : readFileSync(messageFile, 'utf
 
 process.chdir(must('rev-parse', '--show-toplevel'));
 const config = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
-const { branch, protected: guarded, lintFix, plans = 'docs/plans', companion } = config;
+const { branch, protected: guarded, lintFix, plans = 'docs/plans', companion, generated = [] } = config;
 if (!branch) fail('.agents/pstack.json names no branch');
 const mode = git('config', '--get', 'pstack.delivery').stdout.trim() === 'push' ? 'push' : 'pr';
 const forked = mode === 'pr' && git('remote', 'get-url', 'upstream').status === 0;
@@ -131,18 +137,76 @@ function rebase(inCompanion = false) {
   const onto = inCompanion ? cupstream : upstream;
   const where = inCompanion ? `${pair.dir}'s origin/${branch}` : target;
   if (run('merge-base', '--is-ancestor', onto, 'HEAD').status === 0) return;
-  const rebased = run('rebase', '--quiet', onto);
-  if (rebased.status === 0) return;
-  const paths = run('diff', '--name-only', '--diff-filter=U').stdout.split('\n').filter(Boolean);
-  if (paths.length === 0) {
-    run('rebase', '--abort');
-    fail(`git rebase ${where} failed: ${rebased.stderr.trim()}`);
+  let rebased = run('rebase', '--quiet', onto);
+  while (rebased.status !== 0) {
+    const paths = unmerged(run);
+    if (paths.length === 0) {
+      run('rebase', '--abort');
+      fail(`git rebase ${where} failed: ${rebased.stderr.trim()}`);
+    }
+    // A companion push retries after the checks ran, so only this checkout rebuilds, where every rebase is checked again.
+    const hits = inCompanion ? [] : generated.map((entry) => unmerged(git, entry.paths));
+    const owners = generated.filter((_, index) => hits[index]?.length > 0);
+    const covered = new Set(hits.flat());
+    if (paths.some((path) => !covered.has(path))) {
+      const prefix = inCompanion ? `git --git-dir=${pair.dir} --work-tree=. ` : 'git ';
+      const rebuilt = paths.filter((path) => covered.has(path));
+      fail(
+        `rebasing onto ${where} conflicts in:\n${paths.map((path) => `  ${path}`).join('\n')}\n` +
+          `The rebase is still in progress. Resolve those paths, \`${prefix}add\` them, \`${prefix}rebase --continue\`, then run land.mjs again without --message.` +
+          (rebuilt.length > 0
+            ? `\nOf those, ${rebuilt.join(', ')} ${rebuilt.length === 1 ? 'is' : 'are'} generated: once the others are resolved, take ${where}'s side with \`git checkout --ours -- <path>\`, or \`git rm <path>\` where that side deleted it, run ${owners.map((entry) => `\`${entry.command}\``).join(' and ')} and add the output.`
+            : '')
+      );
+    }
+    rebased = rebuild(paths, owners);
   }
-  const prefix = inCompanion ? `git --git-dir=${pair.dir} --work-tree=. ` : 'git ';
-  fail(
-    `rebasing onto ${where} conflicts in:\n${paths.map((path) => `  ${path}`).join('\n')}\n` +
-      `The rebase is still in progress. Resolve those paths, \`${prefix}add\` them, \`${prefix}rebase --continue\`, then run land.mjs again without --message.`
-  );
+}
+
+const nul = (text) => text.split('\0').filter(Boolean);
+const literal = (paths) => paths.map((path) => `:(literal)${path}`);
+const unmerged = (run, globs) => nul(run('diff', '-z', '--name-only', '--diff-filter=U', ...(globs ? ['--', ...globs.map((glob) => `:(glob)${glob}`)] : [])).stdout);
+let rebuildTime = 0;
+
+function worktreeTree() {
+  const index = join(mkdtempSync(join(tmpdir(), 'land-')), 'index');
+  copyFileSync(must('rev-parse', '--git-path', 'index'), index);
+  const env = { ...process.env, GIT_INDEX_FILE: index };
+  if (spawnSync('git', ['add', '--all'], { env }).status !== 0) fail('git add --all into a scratch index failed while rebuilding the generated paths');
+  const tree = spawnSync('git', ['write-tree'], { env, encoding: 'utf8' });
+  if (tree.status !== 0) fail(`git write-tree failed while rebuilding the generated paths: ${tree.stderr.trim()}`);
+  return tree.stdout.trim();
+}
+
+function rebuild(paths, owners) {
+  console.log(`rebasing onto ${target} conflicts only in generated paths, so land.mjs takes ${target}'s side of them and rebuilds them`);
+  const resume = '`git rebase --continue`, then run land.mjs again without --message.';
+  const kept = paths.filter((path) => git('cat-file', '-e', `HEAD:${path}`).status === 0);
+  const gone = paths.filter((path) => !kept.includes(path));
+  if (kept.length > 0) must('checkout', 'HEAD', '--', ...literal(kept));
+  if (gone.length > 0) must('rm', '--quiet', '--force', '--', ...literal(gone));
+  const started = performance.now();
+  const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs rebuild');
+  const written = [];
+  let before = worktreeTree();
+  for (const { command, paths: globs } of owners) {
+    console.log(`$ ${command}`);
+    if (spawnSync(command, { shell: true, stdio: 'inherit' }).status !== 0) {
+      git('checkout', '--merge', '--', ...literal(paths));
+      fail(`${command} failed, so land.mjs put the conflicts back. The rebase is still in progress. Fix the cause, resolve the conflicts, \`git add\` them, ${resume}`);
+    }
+    const after = worktreeTree();
+    const outside = nul(git('diff', '-z', '--name-only', before, after, '--', '.', ...globs.map((glob) => `:(exclude,glob)${glob}`)).stdout);
+    if (outside.length > 0) {
+      fail(`${command} also changed files outside its generated paths:\n${outside.map((path) => `  ${path}`).join('\n')}\nThe rebase is still in progress. Add or discard those files, ${resume}`);
+    }
+    written.push(...nul(git('diff', '-z', '--name-only', before, after).stdout));
+    before = after;
+  }
+  release();
+  rebuildTime = performance.now() - started;
+  if (written.length > 0) must('add', '--all', '--', ...literal(written));
+  return spawnSync('git', ['rebase', '--continue'], { encoding: 'utf8', env: { ...process.env, GIT_EDITOR: 'true' } });
 }
 
 // Stages the companion's edits and the new files it owns: those this checkout's git ignores through companion.list.
@@ -392,7 +456,7 @@ if (mode === 'push') {
     const moved = /\[rejected\]|fetch first|non-fast-forward/u.test(run.stderr);
     const declined = declinedWithoutReason(run.stderr);
     const wait = DECLINED_WAITS[declines];
-    if (moved && moves < RETRIES && performance.now() + checkTime > DEADLINE) {
+    if (moved && moves < RETRIES && performance.now() + checkTime + rebuildTime > DEADLINE) {
       fail(
         `origin/${branch} moved, and checking the rebased commit again would end past ${DEADLINE / MINUTE} minutes into the run. ` +
           'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
