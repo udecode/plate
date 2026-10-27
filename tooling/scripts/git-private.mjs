@@ -625,6 +625,42 @@ export const detach = (root) => {
  * private. A ref and patches under the main checkout's run directory keep
  * every change first.
  */
+// git apply records a blob it finds through the public objects without copying
+// it, so the private commit would name an object plate-private lacks.
+const copyBorrowedBlobs = (root, paths) => {
+  if (paths.length === 0) return;
+  const gitDir = `--git-dir=${path.join(root, PRIVATE_DIR)}`;
+  const staged = entries(
+    must(root, [
+      gitDir,
+      'ls-files',
+      '-z',
+      '--stage',
+      '--',
+      ...paths.map((file) => `:(literal)${file}`),
+    ])
+  ).map((entry) => entry.split(' ')[1]);
+  const borrowed = [...new Set(staged)].filter(
+    (sha) => privateGit(root, ['cat-file', '-e', sha]).status !== 0
+  );
+  if (borrowed.length === 0) return;
+  const pack = spawnSync('git', [gitDir, 'pack-objects', '--stdout'], {
+    cwd: root,
+    env: {
+      ...inherited,
+      GIT_ALTERNATE_OBJECT_DIRECTORIES: publicObjects(root),
+    },
+    input: `${borrowed.join('\n')}\n`,
+    maxBuffer: 1024 * 1024 * 256,
+  });
+  if (pack.status !== 0) {
+    throw new Error(
+      `git pack-objects failed: ${pack.stderr.toString().trim()}`
+    );
+  }
+  must(root, [gitDir, 'unpack-objects', '-q'], { input: pack.stdout });
+};
+
 export const migrate = (root) => {
   const main = mainCheckout(root);
   if (main === root) {
@@ -715,6 +751,7 @@ export const migrate = (root) => {
         failed.push(`${half}: ${applied.stderr.trim()}`);
       }
     }
+    copyBorrowedBlobs(root, [...hidden]);
     const kept = `every change is also in ${ref} and ${name}.patch`;
     return failed.length > 0
       ? `moved onto origin/${BRANCH} with conflicts to resolve; ${kept}\n${failed.join('\n')}`
@@ -890,7 +927,9 @@ const main = async (argv) => {
       return report(detach(root));
     }
     case 'migrate': {
-      return report(migrate(root));
+      const note = migrate(root);
+      report(note);
+      return note.includes('with conflicts to resolve') ? 1 : 0;
     }
     case 'sync': {
       return report(sync(root));

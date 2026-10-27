@@ -113,6 +113,7 @@ test('pnpm check --affected runs the steps each change reaches', async () => {
         'lint-baseline',
         'typecheck',
         'plite-app-typecheck',
+        'plite-device-typecheck',
         'type-tests',
         'test',
         'plite-test',

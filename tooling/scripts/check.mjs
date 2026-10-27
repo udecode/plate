@@ -126,6 +126,12 @@ export const steps = [
     affected: source,
   },
   {
+    name: 'plite-device-typecheck',
+    private: true,
+    run: 'pnpm --filter plite typecheck:device',
+    affected: source,
+  },
+  {
     name: 'type-tests',
     private: true,
     run: 'pnpm test:types',
@@ -201,7 +207,12 @@ export const steps = [
     private: true,
     run: 'pnpm plite:bench:targets:check',
   },
-  { name: 'public-types', run: 'pnpm plite:public-types', affected: source },
+  {
+    name: 'public-types',
+    private: true,
+    run: 'pnpm plite:public-types',
+    affected: source,
+  },
   {
     name: 'cli-test',
     private: true,
@@ -255,6 +266,7 @@ export const steps = [
   },
   {
     name: 'entrypoint-graph',
+    private: true,
     run: 'pnpm entrypoint:turbo:check',
     write: 'pnpm entrypoint:turbo:generate',
     affected: source,

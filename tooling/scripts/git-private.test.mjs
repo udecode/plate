@@ -199,10 +199,31 @@ test('migrate moves a branch cut before the split onto both repositories and kee
     git(team, 'show', 'refs/git-private/migrate/old:src/a.spec.ts'),
     'private work\n'
   );
+  const committed = cli(old, 'commit', '--quiet', '-m', 'private work');
+  assert.equal(committed.status, 0, committed.stderr);
   assert.equal(
     cli(old, 'clean', '-n').status,
     1,
     'clean through the private repository is refused'
+  );
+});
+
+test('migrate exits 1 when a change conflicts with next, and keeps the change', () => {
+  const { beforeSplit, dir, seed, team } = fixture();
+  write(path.join(seed, 'src/a.ts'), 'export const a = 3;\n');
+  git(seed, 'commit', '--quiet', '-am', 'next moves');
+  git(seed, 'push', '--quiet', path.join(dir, 'public.git'), 'next');
+  const old = path.join(dir, 'old');
+  git(team, 'worktree', 'add', '--quiet', '-b', 'old', old, beforeSplit);
+  write(path.join(old, 'src/a.ts'), 'export const a = 2;\n');
+  git(old, 'commit', '--quiet', '-am', 'public work');
+
+  const moved = cli(old, 'migrate');
+  assert.equal(moved.status, 1, moved.stdout);
+  assert.match(moved.stdout, /with conflicts to resolve/u);
+  assert.equal(
+    git(team, 'show', 'refs/git-private/migrate/old:src/a.ts'),
+    'export const a = 2;\n'
   );
 });
 

@@ -11,6 +11,7 @@ import {
   getPackageRuntimeTestFiles,
   repoRoot,
 } from '../entrypoints/entrypoint-turbo.mjs';
+import { hasPrivateHalf } from './git-private.mjs';
 import { usesMockModule } from './import-graph.mjs';
 import { runTraced } from './load-trace.mjs';
 
@@ -22,6 +23,17 @@ if (!definition || !(partitionName in definition.taskPartitions)) {
     'Usage: run-entrypoint-task.mjs <lint|test|typecheck|typecheck-contracts|typecheck-package-tests> <package> <partition>'
   );
   process.exit(1);
+}
+
+if (
+  (command === 'typecheck-contracts' ||
+    command === 'typecheck-package-tests') &&
+  !hasPrivateHalf(repoRoot)
+) {
+  console.info(
+    `[${packageName}] skip ${command}: it reads udecode/plate-private's files`
+  );
+  process.exit(0);
 }
 
 const packageRoot = path.join(repoRoot, definition.packageRoot);
