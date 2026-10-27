@@ -1,6 +1,6 @@
 # Keep composed text where the input method put it
 
-Status: partial: waiting on your call on the plate#5242 reply; the Android pair, the engine specs and the real Safari repros wait
+Status: partial: the Android pair, the engine specs and the real Safari repros wait
 Topic: native
 Playbook: bug-fix
 
@@ -51,24 +51,6 @@ Browsers mark a key the input method took with the key code 229. Plite now treat
 - [x] 2. Decide how composed text reaches a stored point inside struck text, then send the desktop commit through the insert-text command and drop the bridge from the authority audit. Proof: `apps/www/tests/browser/authored-review.spec.ts` "IME composition inside struck text splits the deletion" in Chromium, Firefox and WebKit. Built in 2026-10-26-native-ime-composition-commit.md, where the case passes five warm runs per engine at 4e4605a28f.
 - [ ] 3. Reproduce plate#5244's composition over a selection and plate#5245's lost mark on the Android emulator, then fix them at their owner. Proof: the device lane in `apps/plite/playwright.device.config.ts`.
 - [ ] 4. Add the engine composition spec each kind's M4 miss calls for.
-
-## Open questions
-
-### Safari issue reply
-
-Post the drafted reply on the Safari pinyin issue?
-
-Why it needs you: It is a message to people outside the team.
-
-- It says Return no longer splits the line, checked only in WebKit.
-- It asks the reporter to retest all four steps in real Safari.
-
-- **Post it** (recommended): You post the draft as written. Cost: Real Safari may still differ.
-- **Hold it**: Nothing is posted until someone checks real Safari. Cost: The reporter waits without news.
-
-Why I pick it: The reporter can retest now, and the draft says what is unproven.
-
-Attention: look
 
 ## Close
 
