@@ -86,6 +86,8 @@ const TRIAGE_FIELD = 'Triage';
 const TRIAGED = 'Triaged';
 const NEEDS_REPRO = 'Needs reproduction';
 const NEEDS_RETEST = 'Needs retest';
+const DUPLICATE = 'Duplicate';
+const IME_LABEL = 'ime';
 const OUTCOME_TYPES = { kind: 'Bug', spec: 'Feature' };
 const QUEUE_LIMIT = 5000;
 // A triage draft ends in a marker holding the hash of its own text, so posting it unchanged keeps its record current and editing it does not.
@@ -666,6 +668,7 @@ function fieldValues(repo, numbers) {
     TRIAGED,
     NEEDS_REPRO,
     NEEDS_RETEST,
+    DUPLICATE,
   ]);
   const values = new Map(
     [...issues].map(([number, node]) => {
@@ -1474,7 +1477,9 @@ function labels() {
     repo,
     open.map(({ issue }) => issue.number)
   );
-  const triagedId = fields.triage.optionIds.get(TRIAGED);
+  const clearedIds = new Set(
+    [TRIAGED, DUPLICATE].map((name) => fields.triage.optionIds.get(name))
+  );
   const keptScopeIds = new Set(
     SCOPES_KEPT_BESIDE_RECORD.map((name) =>
       fields.scope.optionIds.get(name)
@@ -1491,29 +1496,33 @@ function labels() {
     );
     const changes = [];
     const mutationId = [`#${issue.number}`];
+    const devices = deviceLaneOf(String(issue.number), reads);
     const closes =
       state === 'current' &&
       head.outcome === 'fixed' &&
       replaysReport(parseDetail(head.detail)) &&
       reads.landed.get(String(issue.number))?.has(head.id) === true &&
-      deviceLaneOf(String(issue.number), reads).length === 0;
+      devices.length === 0;
     if (state === 'current') {
       const triageId = fields.triage.optionIds.get(
         head.outcome === 'needs-repro'
           ? NEEDS_REPRO
-          : head.outcome === 'fixed' && !closes
-            ? NEEDS_RETEST
-            : TRIAGED
+          : head.outcome === 'dup'
+            ? DUPLICATE
+            : head.outcome === 'fixed' && !closes
+              ? NEEDS_RETEST
+              : TRIAGED
       );
       if (triage !== triageId) {
         changes.push(
           `{ fieldId: "${fields.triage.id}", singleSelectOptionId: "${triageId}" }`
         );
       }
-      if (head.outcome === 'dup' && !names.has('duplicate')) {
-        edits.push('--add-label duplicate');
-      } else if (head.outcome !== 'dup' && names.has('duplicate')) {
-        edits.push('--remove-label duplicate');
+      const ime = devices.includes(IME_LABEL);
+      if (ime && !names.has(IME_LABEL)) {
+        edits.push(`--add-label ${IME_LABEL}`);
+      } else if (!ime && names.has(IME_LABEL)) {
+        edits.push(`--remove-label ${IME_LABEL}`);
       }
       const type = OUTCOME_TYPES[head.outcome];
       if (type && issue.issueType?.name !== type) {
@@ -1550,7 +1559,7 @@ function labels() {
           }
         }
       }
-    } else if (state !== 'unchecked' && triage === triagedId) {
+    } else if (state !== 'unchecked' && clearedIds.has(triage)) {
       changes.push(`{ fieldId: "${fields.triage.id}", delete: true }`);
     }
     if (changes.length > 0) {

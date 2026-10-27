@@ -1,5 +1,5 @@
 ---
-description: Handle public Plate/Slate GitHub work, such as issue drafts, Slate issues, PRs, security and the queue snapshot, and hold the public truth gate. Triage of udecode/plate issues runs the Triage playbook.
+description: Handle public Plate/Slate GitHub work, such as issue drafts, Slate issues, PRs, security and the queue scan, and hold the public truth gate. Triage of udecode/plate issues runs the Triage playbook.
 argument-hint: '[queue | issues | prs | security | issue-draft | slate-issue] <url or text>'
 ---
 
@@ -45,29 +45,26 @@ repair and poteto-mode owns lifecycle. Execute public steps only with the active
 
 A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
 
-1. Refresh `docs/maintainer/queue.md` with:
+1. Read the live queues:
 
    ```bash
-   node .agents/rules/maintainer/scripts/queue-snapshot.mjs \
-     --repo udecode/plate \
-     --limit 20 \
-     --out docs/maintainer/queue.md \
-     --json .tmp/maintainer/queue-snapshot.json
+   gh api repos/udecode/plate/security-advisories --jq '.[] | select(.state == "triage" or .state == "draft") | {ghsa_id, state, severity}'
+   gh pr list --repo udecode/plate --state open --json number,title,author,baseRefName,isDraft,reviewDecision,mergeStateStatus,updatedAt
    ```
 
-   If `gh` auth or network is blocked, record the blocker and use the last
-   ledger only as stale context.
-2. Scan the smallest useful slice: security and advisories, PRs with review, CI
-   or merge attention, issues needing triage, stale user-visible bugs, then docs
-   or setup breakage.
+   If `gh` auth or network is blocked, record the blocker and stop. Advisory
+   details stay out of the reply and every versioned file.
+2. Scan the smallest useful slice: advisories, PRs with review, CI or merge
+   attention, issues needing triage, stale user-visible bugs, then docs or
+   setup breakage.
 3. Take udecode/plate issue picks from `pnpm triage queue`, which lists every
-   open issue that still needs a triage call from you; a Slate snapshot keeps its own
-   issue list. Build the candidate matrix for PRs, advisories and Slate items,
-   pick at most one safe item, verify its live state and authority, then route
-   it, run its safe local slice, or stop with a decision-ready brief.
-4. Treat `docs/maintainer/queue.md` as a ranking ledger, not truth, and write a
-   compact `docs/maintainer/runs/*` note only when the run creates state a later
-   session should not rediscover.
+   open issue that still needs a triage call from you; a Slate scan lists its
+   issues with `gh issue list --repo ianstormtaylor/slate`. Build the candidate
+   matrix for PRs, advisories and Slate items, pick at most one safe item,
+   verify its live state and authority, then route it, run its safe local
+   slice, or stop with a decision-ready brief.
+4. Write a compact `docs/maintainer/runs/*` note only when the run creates
+   state a later session should not rediscover.
 
 ### `issues`
 
@@ -89,8 +86,8 @@ Read [security hotfix mechanics](./references/security-hotfix.md) when the
 requested work includes an advisory fix or disclosure/read-back. The active
 request's publication authority governs those operations.
 
-Versioned maintainer docs, such as `docs/maintainer/queue.md`,
-`docs/maintainer/security.md` and `docs/maintainer/runs/*`, never hold private
+Versioned maintainer docs, such as `docs/maintainer/security.md` and
+`docs/maintainer/runs/*`, never hold private
 advisory details. Keep them redacted and read sensitive GHSA content from live
 GitHub or local ignored artifacts.
 

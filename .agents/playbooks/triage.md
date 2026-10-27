@@ -98,17 +98,17 @@ Triage keeps the GitHub state below and creates no other label, issue field, iss
 
 | State | Values | Set by |
 | --- | --- | --- |
-| Triage field | `Triaged`, `Needs reproduction`, `Needs retest` | `labels`: `Needs reproduction` for a current `needs-repro` record, `Needs retest` for a current `fixed` record it does not close, and `Triaged` for every other current record. It clears `Triaged` once the record is not current and leaves the other two values |
-| `duplicate` label | | `labels`, on a current `dup` record |
+| Triage field | `Triaged`, `Needs reproduction`, `Needs retest`, `Duplicate` | `labels`: `Needs reproduction` for a current `needs-repro` record, `Duplicate` for a current `dup` record, `Needs retest` for a current `fixed` record it does not close, and `Triaged` for every other current record. It clears `Triaged` and `Duplicate` once the record is not current and leaves the other two values |
 | Issue type | Bug, Feature | the issue forms, the publisher (Bug), and `labels` (Bug for `kind`, Feature for `spec`) |
 | Priority field | P0 to P3, described Urgent, High, Medium and Low | `labels`, from a current `kind` record's `priority:` |
 | Scope field | one option per file in `docs/research/review-scopes/` | `labels`, from a current `kind` record's `scope:`. It keeps an issue's `accessibility` and `performance` values beside that scope, because those name a quality of the bug, not the code that owns the fix. It names each issue whose scope the field has no option for and leaves that issue's Scope alone, so a new scope file needs its option added in the org's issue field settings |
 | Platform field | Chrome, Safari, Firefox, Edge, Android, iOS | a person, or the publisher's `--platform`. An issue takes every browser and OS it shows up on, so Chrome on Android is `Chrome` and `Android` |
 | `v54` milestone | | the publisher, on each Beta issue it creates; a person sets it on a Beta issue filed through a form |
-| Facet labels | `ime`, `regression` | a person, or the publisher's `--labels`, which refuses any other label |
+| `ime` label | | `labels`, on each issue whose current record's kind, or the kind its dup chain leads to, has `ime` in `device:`, and off every other issue with a current record. Before a record exists, a person or the publisher's `--labels` sets it |
+| `regression` label | | a person, or the publisher's `--labels`, which refuses any label but `ime` and `regression` |
 | Closed as completed | | `labels`, for a landed `fixed` record with `retest: none` whose kind needs no device |
 
-The `dependencies`, `javascript`, `security`, `skip-changeset`, `lgtm` and `size:*` labels belong to bots and PR tooling, not triage.
+The `skip-changeset` label belongs to the changeset check on PRs into `main`, not triage. Security reports go through private advisories, which `maintainer security` reads, so no label marks them.
 
 ## The global run
 

@@ -77,7 +77,7 @@ if (args[0] === 'issue' && args[1] === 'view') {
       : { timelineItems: { nodes: issue.reopened ? [{ id: issue.reopened }] : [] } };
   }
   const options = (names) => names.map((name) => ({ id: 'OPT_' + name, name }));
-  const organization = { issueFields: { nodes: fixture.issueFields ?? [{}, { __typename: 'IssueFieldSingleSelect', id: 'FIELD_PRIORITY', name: 'Priority', options: options(['P0', 'P1', 'P2', 'P3']) }, { __typename: 'IssueFieldMultiSelect', id: 'FIELD_SCOPE', name: 'Scope', options: options(['editing', 'paste', 'performance']) }, { __typename: 'IssueFieldSingleSelect', id: 'FIELD_TRIAGE', name: 'Triage', options: options(['Triaged', 'Needs reproduction', 'Needs retest']) }] } };
+  const organization = { issueFields: { nodes: fixture.issueFields ?? [{}, { __typename: 'IssueFieldSingleSelect', id: 'FIELD_PRIORITY', name: 'Priority', options: options(['P0', 'P1', 'P2', 'P3']) }, { __typename: 'IssueFieldMultiSelect', id: 'FIELD_SCOPE', name: 'Scope', options: options(['editing', 'paste', 'performance']) }, { __typename: 'IssueFieldSingleSelect', id: 'FIELD_TRIAGE', name: 'Triage', options: options(['Triaged', 'Needs reproduction', 'Needs retest', 'Duplicate']) }] } };
   console.log(JSON.stringify({ data: fields ? { organization, repository } : { repository } }));
 } else { console.error('gh stub: ' + args.join(' ')); process.exit(1); }
 `;
@@ -1462,16 +1462,16 @@ describe('triage', { concurrency: 8 }, () => {
     assert.equal(await stateLine(box, 5250, { cwd: b }), '#5250 current');
   });
 
-  test('labels prints the gh commands that make the Triage field, the duplicate label and the issue type match a current record, and runs none', async () => {
+  test('labels prints the gh commands that make the Triage field, the ime label and the issue type match a current record, and runs none', async () => {
     const box = sandbox();
     setIssues(box, [
       issue(5250, { priority: 'P0', scopes: ['editing'] }),
       issue(5251, { triage: 'Triaged' }),
       issue(5252, {
-        labels: [{ name: 'duplicate' }],
+        labels: [{ name: 'ime' }],
         triage: 'Needs reproduction',
       }),
-      issue(5253, { labels: [{ name: 'duplicate' }] }),
+      issue(5253, { labels: [{ name: 'ime' }] }),
       issue(5254, { issueType: { name: 'Bug' }, triage: 'Triaged' }),
       issue(5255, {
         issueType: { name: 'Bug' },
@@ -1480,12 +1480,13 @@ describe('triage', { concurrency: 8 }, () => {
         triage: 'Triaged',
       }),
       issue(5256),
+      issue(5257, { triage: 'Duplicate' }),
     ]);
     await recordAll(box, [
       [5250],
       [5253, 'needs-repro', 'missing: the steps'],
       [5254, 'spec', 'question: should Tab indent a list item?'],
-      [5255],
+      [5255, 'kind', kind('editing', '; device: ime')],
       [5256, 'dup', 'of: 5255'],
     ]);
     const { status, stdout } = await triage(box, ['labels']);
@@ -1494,9 +1495,10 @@ describe('triage', { concurrency: 8 }, () => {
       `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "${id}", issueId: "I_${id.slice(1, 5)}", issueFields: [${fields}] }) { clientMutationId } }'`;
     assert.deepEqual(stdout.trim().split('\n'), [
       'gh issue edit 5250 --repo udecode/plate --type Bug',
-      'gh issue edit 5253 --repo udecode/plate --remove-label duplicate',
+      'gh issue edit 5253 --repo udecode/plate --remove-label ime',
       'gh issue edit 5254 --repo udecode/plate --type Feature',
-      'gh issue edit 5256 --repo udecode/plate --add-label duplicate',
+      'gh issue edit 5255 --repo udecode/plate --add-label ime',
+      'gh issue edit 5256 --repo udecode/plate --add-label ime',
       set(
         '#5250 P0 editing',
         '{ fieldId: "FIELD_TRIAGE", singleSelectOptionId: "OPT_Triaged" }'
@@ -1508,8 +1510,9 @@ describe('triage', { concurrency: 8 }, () => {
       ),
       set(
         '#5256',
-        '{ fieldId: "FIELD_TRIAGE", singleSelectOptionId: "OPT_Triaged" }'
+        '{ fieldId: "FIELD_TRIAGE", singleSelectOptionId: "OPT_Duplicate" }'
       ),
+      set('#5257', '{ fieldId: "FIELD_TRIAGE", delete: true }'),
     ]);
   });
 

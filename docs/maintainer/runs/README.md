@@ -11,7 +11,7 @@ docs/maintainer/runs/YYYY-MM-DD-<mode-or-item>.md
 
 Each note should record:
 
-- queue snapshot path and freshness;
+- the queues read and when;
 - selected item and why it won;
 - rejected/skipped candidates;
 - owner route;
