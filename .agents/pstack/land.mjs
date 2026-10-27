@@ -33,18 +33,29 @@
 // a `Lands-With:` line naming the commit it landed with, and a rerun after a
 // refused companion push pushes it before anything else. A branch cut before
 // `companion.list` existed on <branch> stops with `companion.migrate`.
+// Each commit ends with a `Lead:` line naming the model and effort lead.mjs
+// reads for the agent session running this land, or `unknown`, replacing any
+// such line in the message. When <branch>'s config lists `sourceless` GitHub
+// logins, a commit lands only for them unless it names a source: an issue of
+// this repository or its companion, a card in the suggested-task ledger, or a
+// dated plan that exists.
 
 import { spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { availableParallelism, tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
+import { findLead, leadLabel } from './lead.mjs';
 import { reserve } from './proof.mjs';
+import { ledgerPath, readTasks } from './tasks.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]...';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
 const BEYOND = /^Beyond the ask: \S/mu;
 const SESSION = /^Session: \S/mu;
 const PLAN = /^Plan: \S/mu;
+const TRAILER = /^(?:Session|Plan|Lands-With): \S/u;
+const ISSUE = /(?<![\w#/.-])(?:([\w.-]+)\/)?([\w.-]+)#\d+\b|https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/issues\/\d+/gu;
+const CARD = /\bt_[0-9a-f]{8}\b/gu;
 const INTRODUCED = /^Introduced-by:(.*)$/gmu;
 const CLOSING = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?::\s*|\s+)(?:[\w.-]+\/([\w.-]+)#\d+|#\d+|GH-\d+|https?:\/\/github\.com\/[^/\s]+\/([^/\s]+)\/(?:issues|pull)\/\d+)(?!\w)/iu;
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
@@ -220,11 +231,13 @@ function stageCompanion() {
   if (run.status !== 0) fail(`git add in ${pair.dir} failed: ${run.stderr.trim()}`);
 }
 
-function pushCompanion() {
+function pushCompanion(lead) {
   const text = cmust('log', '-1', '--format=%B');
-  if (!PAIRED.test(text)) {
+  const [subject, ...rest] = text.split('\n');
+  const stamped = `${subject}\n\n${trailers(rest.join('\n').trim(), null, lead)}${PAIRED.test(text) ? '' : `\nLands-With: ${must('rev-parse', 'HEAD')}`}`;
+  if (stamped !== text) {
     const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
-    writeFileSync(file, `${text}\nLands-With: ${must('rev-parse', 'HEAD')}\n`);
+    writeFileSync(file, `${stamped}\n`);
     cmust('commit', '--quiet', '--amend', '--file', file);
   }
   for (let moves = 0; ; moves += 1) {
@@ -294,11 +307,61 @@ function planOf(staged) {
   return touched.length === 1 ? touched[0] : null;
 }
 
-function trailers(body, plan) {
+function leadOf() {
+  const { run, miss } = findLead();
+  if (run) return leadLabel(run);
+  console.error(`land.mjs: the commit says \`Lead: unknown\`, because ${miss}`);
+  return 'unknown';
+}
+
+// A rerun takes its message from the commit an earlier run wrote, so the new lines join that run's trailer block and an unchanged lead leaves the message as it was.
+function trailers(body, plan, lead) {
+  const kept = body.replace(/^Lead:.*$\n?/gmu, '').trimEnd();
   const lines = [];
-  if (session && !SESSION.test(body)) lines.push(`Session: ${session}`);
-  if (!PLAN.test(body) && plan) lines.push(`Plan: ${plan}`);
-  return lines.length > 0 ? `${body}\n\n${lines.join('\n')}` : body;
+  if (session && !SESSION.test(kept)) lines.push(`Session: ${session}`);
+  if (!PLAN.test(kept) && plan) lines.push(`Plan: ${plan}`);
+  lines.push(`Lead: ${lead}`);
+  const block = kept.split('\n\n').at(-1).split('\n').every((line) => TRAILER.test(line));
+  return `${kept}${block ? '\n' : '\n\n'}${lines.join('\n')}`;
+}
+
+// The owner and name of this repository and of its companion, from their remotes' URLs.
+function homes() {
+  return [git('remote', 'get-url', canonical), ...(pair ? [cgit('remote', 'get-url', 'origin')] : [])].flatMap((run) => {
+    const match = run.stdout.trim().toLowerCase().match(/([^/:]+)\/([^/]+?)(?:\.git)?\/?$/u);
+    return match ? [{ owner: match[1], name: match[2] }] : [];
+  });
+}
+
+function sourced(text, plan) {
+  if (plan || [...text.matchAll(/^Plan: (\S+)$/gmu)].some(([, path]) => existsSync(path))) return true;
+  const ours = homes();
+  const issue = ([, refOwner, refName, urlOwner, urlName]) => {
+    const owner = (refOwner ?? urlOwner)?.toLowerCase();
+    const name = (refName ?? urlName).toLowerCase();
+    return ours.some((home) => home.name === name && (owner === undefined || home.owner === owner));
+  };
+  if ([...text.matchAll(ISSUE)].some(issue)) return true;
+  const cards = text.match(CARD) ?? [];
+  if (cards.length === 0) return false;
+  const common = git('rev-parse', '--path-format=absolute', '--git-common-dir').stdout.trim();
+  const ledger = join(basename(common) === '.git' ? dirname(common) : process.cwd(), ledgerPath(plans, config.delivery));
+  if (!existsSync(ledger)) return false;
+  const tasks = readTasks(readFileSync(ledger, 'utf8').split('\n'));
+  return cards.some((id) => tasks.has(id));
+}
+
+function sourceRefusal(subject, body, plan) {
+  if (!sourceless || sourced(`${subject}\n${body}`, plan)) return null;
+  const login = spawnSync('gh', ['api', 'user', '--jq', '.login'], { encoding: 'utf8' });
+  const who = login.status === 0 ? login.stdout.trim() : '';
+  if (sourceless.includes(who)) return null;
+  const why = who ? `, not ${who}` : `; gh api user failed: ${login.error?.message ?? (login.stderr.trim() || 'it printed no login')}`;
+  return (
+    `the message names no source, and only ${sourceless.join(', ')} land without one${why}. ` +
+    `A source is an issue of ${homes().map((home) => home.name).join(' or ')} written as \`<repo>#<N>\` or its URL, the id of a card in the suggested-task ledger, or a \`Plan:\` line naming a plan that exists. ` +
+    'Add one to the message and run land.mjs again with --message'
+  );
 }
 
 const paged = (plan) => plan && existsSync(plan) && existsSync('.agents/pstack/plan-page.mjs');
@@ -327,40 +390,40 @@ function prBody(plan, body) {
 }
 
 // Squashes the task into one commit in each repository that it changes; a companion-only task leaves HEAD at its base here.
-function squash({ subject, body }) {
+function squash({ subject, body }, lead) {
   const head = must('rev-parse', 'HEAD');
   const base = must('merge-base', 'HEAD', upstream);
   must('add', '--all');
-  must('reset', '--quiet', '--soft', base);
-  const staged = (run) => run('diff', '--cached', '--name-only').stdout.split('\n').filter(Boolean);
-  const own = staged(git);
+  const staged = (run, from) => run('diff', '--cached', '--name-only', from).stdout.split('\n').filter(Boolean);
+  const own = staged(git, base);
   let sideHead = null;
+  let sideBase = null;
   let theirs = [];
   if (pair) {
     stageCompanion();
     sideHead = cmust('rev-parse', 'HEAD');
-    cmust('reset', '--quiet', '--soft', cmust('merge-base', 'HEAD', cupstream));
-    theirs = staged(cgit);
+    sideBase = cmust('merge-base', 'HEAD', cupstream);
+    theirs = staged(cgit, sideBase);
   }
-  const undo = () => {
-    must('reset', '--quiet', '--soft', head);
-    if (pair) cmust('reset', '--quiet', '--soft', sideHead);
-  };
-  if (own.length === 0 && theirs.length === 0) {
-    undo();
-    fail(`nothing to land: the task changes nothing against ${target}`);
-  }
+  if (own.length === 0 && theirs.length === 0) fail(`nothing to land: the task changes nothing against ${target}`);
   const plan = planOf([...own, ...theirs]);
   const missing = mode === 'pr' && !paged(plan) ? missingSections(body) : [];
   if (missing.length > 0) {
-    undo();
     fail(
       `a PR whose body is the commit body needs ${missing.map((name) => `a \`## ${name}\` section`).join(' and ')} with text, as pstack's Opening a PR asks; ` +
         'add the missing text to the message and run land.mjs again with --message, or change exactly one dated plan so its page becomes the body'
     );
   }
+  const loose = sourceRefusal(subject, body, plan);
+  if (loose) fail(loose);
+  must('reset', '--quiet', '--soft', base);
+  if (pair) cmust('reset', '--quiet', '--soft', sideBase);
+  const undo = () => {
+    must('reset', '--quiet', '--soft', head);
+    if (pair) cmust('reset', '--quiet', '--soft', sideHead);
+  };
   const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
-  writeFileSync(file, `${subject}\n\n${trailers(body, plan)}\n`);
+  writeFileSync(file, `${subject}\n\n${trailers(body, plan, lead)}\n`);
   const commit = (prefix) => spawnSync('git', [...prefix, 'commit', '--quiet', '--file', file], { stdio: 'inherit' }).status === 0;
   if ((own.length > 0 && !commit([])) || (theirs.length > 0 && !commit(side))) {
     undo();
@@ -370,15 +433,20 @@ function squash({ subject, body }) {
 }
 
 fetch();
+// <branch>'s config, because a task could loosen its own copy, and a branch cut before the split still carries the config from before it.
+const settled = JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}');
+const { sourceless } = settled;
 const ahead = Number(must('rev-list', '--count', `${upstream}..HEAD`));
 const sideAhead = pair ? Number(cmust('rev-list', '--count', `${cupstream}..HEAD`)) : 0;
 if (messageText === null && ahead === 0 && sideAhead > 0 && PAIRED.test(cmust('log', '-1', '--format=%B'))) {
-  pushCompanion();
+  const pending = validate(cmust('log', '-1', '--format=%B'));
+  const loose = sourceRefusal(pending.subject, pending.body, planOf(cmust('diff', '--name-only', cupstream, 'HEAD').split('\n')));
+  if (loose) fail(loose);
+  pushCompanion(leadOf());
   process.exit(0);
 }
 if (messageText === null && ahead === 0 && sideAhead === 0) fail(`HEAD has no task commit to take a message from; pass --message <file>\n${USAGE}`);
-// A branch cut before the split still carries the config from before it, so the companion settings come from <branch>'s.
-const split = companion ?? JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}').companion;
+const split = companion ?? settled.companion;
 if (split?.list) {
   const listed = (rev) => git('cat-file', '-e', `${rev}:${split.list}`).status === 0;
   if (listed(upstream) && !listed(must('merge-base', 'HEAD', upstream))) {
@@ -389,7 +457,9 @@ if (split?.list) {
   }
 }
 const message = validate(messageText ?? (ahead > 0 ? must('log', '-1', '--format=%B') : cmust('log', '-1', '--format=%B')));
-const landing = squash(message);
+// Read before squash, because findLead can throw and waits up to a minute.
+const lead = leadOf();
+const landing = squash(message, lead);
 const { plan } = landing;
 rebase();
 if (landing.theirs) rebase(true);
@@ -484,7 +554,7 @@ if (mode === 'push') {
     }
   }
   if (landing.own) console.log(`Landed ${must('rev-parse', '--short', 'HEAD')} on origin/${branch}: ${message.subject}`);
-  if (landing.theirs) pushCompanion();
+  if (landing.theirs) pushCompanion(lead);
 } else {
   const slug = message.subject.toLowerCase().replace(/[^a-z0-9]+/gu, '-').replace(/^-|-$/gu, '').slice(0, 50);
   const topic = current && current !== branch ? current : `land/${slug}`;
