@@ -40,6 +40,7 @@ const BEYOND = /^Beyond the ask: \S/mu;
 const SESSION = /^Session: \S/mu;
 const PLAN = /^Plan: \S/mu;
 const INTRODUCED = /^Introduced-by:(.*)$/gmu;
+const CLOSING = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?::\s*|\s+)(?:[\w.-]+\/([\w.-]+)#\d+|#\d+|GH-\d+|https?:\/\/github\.com\/[^/\s]+\/([^/\s]+)\/(?:issues|pull)\/\d+)(?!\w)/iu;
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
 const PR_SECTIONS = ['Why', 'Verification'];
 const RETRIES = 3;
@@ -193,6 +194,11 @@ function validate(text) {
   }
   if (rest.length > 0 && gap !== '') fail('a blank line must separate the subject from the body');
   if (!BEYOND.test(rest.join('\n'))) fail('the body has no `Beyond the ask:` line; name every change the request did not ask for, or write `Beyond the ask: none`');
+  const closing = text.match(CLOSING);
+  if (closing) {
+    const name = closing[1] ?? closing[2] ?? must('remote', 'get-url', canonical).match(/([^/:]+?)(?:\.git)?\/?$/u)[1];
+    fail(`${JSON.stringify(closing[0])} closes an issue once it reaches the default branch, because a form of close, fix or resolve comes right before its reference; write \`${name}#<N>\`, which links nothing`);
+  }
   if (SUBJECT.exec(subject)[1] === 'fix') introduced(rest.join('\n'));
   return { subject, body: rest.join('\n').trim() };
 }
