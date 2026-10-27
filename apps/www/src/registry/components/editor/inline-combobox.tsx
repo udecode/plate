@@ -51,6 +51,8 @@ const useInlineComboboxContext = () => {
   return context;
 };
 
+const useInlineComboboxOpen = () => useInlineComboboxContext().open;
+
 /** The text typed after the trigger, or `''` when no trigger is active. */
 const useInlineComboboxQuery = () =>
   useInlineComboboxContext().match?.query ?? '';
@@ -403,5 +405,6 @@ export {
   InlineComboboxGroup,
   InlineComboboxGroupLabel,
   InlineComboboxItem,
+  useInlineComboboxOpen,
   useInlineComboboxQuery,
 };

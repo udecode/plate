@@ -250,6 +250,13 @@ through their package runner. Do not build a parallel Puppeteer, raw CDP or
 standalone Playwright driver for interactive QA. Browser emulation does not
 prove raw Android/iOS input.
 
+Copied UI runs through the React Compiler only in www. Its dev and production
+servers both compile it unless `PLATE_WWW_WEBPACK` is set. Bun specs render it
+uncompiled, so they never show a value the compiler cached. Prove a copied-UI
+value that comes from the editor or a plugin, such as a toolbar, popover or
+dialog value, in the www browser without `PLATE_WWW_WEBPACK`. Render the
+component, change that state from outside it, and read the new value on screen.
+
 When a www or Plite browser spec fails, read what the failed run saved before
 you patch or drive again. Its results folder holds Playwright's
 `error-context.md` and failure screenshot, and the package's

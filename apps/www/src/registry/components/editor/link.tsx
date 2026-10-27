@@ -34,7 +34,27 @@ import {
 } from '@/registry/hooks/use-floating-rect';
 import { inlineSuggestionVariants } from '@/registry/lib/inline-suggestion';
 
+const sameAttributes = (left: object | null, right: object) => {
+  if (!left) return false;
+  const entries = Object.entries(left);
+
+  return (
+    entries.length === Object.keys(right).length &&
+    entries.every(
+      ([key, value]) =>
+        Object.hasOwn(right, key) && Reflect.get(right, key) === value
+    )
+  );
+};
+
 export function LinkElement(props: EditorElementProps<typeof LinkPlugin>) {
+  const { api } = props.editor.plugin(LinkPlugin);
+  const attributes = usePluginStore(
+    LinkPlugin,
+    () => api.getAttributes(props.element),
+    { equalityFn: sameAttributes }
+  );
+
   return (
     <EditorElement
       {...props}
@@ -45,7 +65,7 @@ export function LinkElement(props: EditorElementProps<typeof LinkPlugin>) {
       )}
       attributes={{
         ...props.attributes,
-        ...props.editor.plugin(LinkPlugin).api.getAttributes(props.element),
+        ...attributes,
         onMouseOver: (event: React.MouseEvent<HTMLAnchorElement>) => {
           event.stopPropagation();
         },
@@ -258,10 +278,11 @@ function FloatingLinkUrlInput({
   ...props
 }: React.ComponentPropsWithRef<'input'>) {
   const { api, store } = useEditor().plugin(linkPlugin);
+  const [defaultValue] = React.useState(() => api.decodeUrl(store.get().url));
 
   return (
     <Input
-      defaultValue={api.decodeUrl(store.get().url)}
+      defaultValue={defaultValue}
       onChange={(event) => {
         store.set({ url: event.target.value });
       }}
@@ -274,10 +295,11 @@ function FloatingLinkTextInput({
   ...props
 }: React.ComponentPropsWithRef<'input'>) {
   const { store } = useEditor().plugin(linkPlugin);
+  const [defaultValue] = React.useState(() => store.get().text);
 
   return (
     <Input
-      defaultValue={store.get().text}
+      defaultValue={defaultValue}
       onChange={(event) => {
         store.set({ text: event.target.value });
       }}
@@ -520,18 +542,18 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
 }
 
 function LinkOpenButton() {
-  const editor = useEditor();
-  const link = useEditorSelector(
-    (innerEditor) =>
-      innerEditor.read.nodes.find({ type: linkPlugin })?.[0] ?? null,
+  const attributes = useEditorSelector(
+    (innerEditor) => {
+      const link = innerEditor.read.nodes.find({ type: linkPlugin })?.[0];
+
+      return link ? innerEditor.plugin(linkPlugin).api.getAttributes(link) : {};
+    },
     {
+      equalityFn: sameAttributes,
       shouldUpdate: (change) =>
         !change || change.selectionChanged || change.changed.hasAny('document'),
     }
   );
-  const attributes = link
-    ? editor.plugin(linkPlugin).api.getAttributes(link)
-    : {};
 
   return (
     <a

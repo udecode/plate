@@ -248,6 +248,7 @@ const main = () => {
   ]);
   run('React Compiler source contract audit', 'node', [
     'tooling/scripts/check-react-compiler-contract.mjs',
+    '--check',
   ]);
   run('Plate docs code contract tests', 'node', [
     '--test',

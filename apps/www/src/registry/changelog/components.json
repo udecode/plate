@@ -1,6 +1,14 @@
 {
   "schemaVersion": 1,
   "components": {
+    "comment-toolbar-button": [
+      "2026-10-27-fix-all-comments-target-status",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-18-comment-discovery",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-13-fix-registry-install-dependencies"
+    ],
     "code-block": [
       "2026-10-26-remove-code-block-auto-language",
       "2026-10-16-code-block-diagrams",
@@ -848,13 +856,6 @@
       "2026-08-16-direct-react-component-families",
       "2026-08-12-table-toolbar-focus",
       "2025-11-20-biome-ultracite"
-    ],
-    "comment-toolbar-button": [
-      "2026-10-12-toolbar-button-names",
-      "2026-09-18-comment-discovery",
-      "2026-09-02-comments-ownership",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-13-fix-registry-install-dependencies"
     ],
     "emoji-toolbar-button": [
       "2026-10-12-toolbar-button-names",
