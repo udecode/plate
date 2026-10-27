@@ -1,6 +1,6 @@
 # A rejected Enter rejoins the same way in every click order, eighth iteration
 
-Status: partial: the editor fix waits for your pick between saved waits and deferring only the cut
+Status: partial: the editor fix waits for your pick among saved waits, deferring only the cut and one card
 Topic: cut-join
 Playbook: plan
 
@@ -50,7 +50,7 @@ Each proof below comes from the decision log's own scope. The gate passes with t
 
 ## Open work
 
-- Fix the click-order rejoin. Owner: zbeyens. Stop: the word "stored waits", which rebuilds iteration 7 from its saved patch plus amendment 32, or "cut only", which prototypes deferring only the cut part of an Enter's suggestion.
+- Fix the click-order rejoin. Owner: zbeyens. Stop: the word "stored waits", which rebuilds iteration 7 from its saved patch plus amendment 32, "cut only", which prototypes deferring only the cut part of an Enter's suggestion, or "one card", which prototypes deciding an Enter and its link's other suggestions together.
 - Two reviewers who decide the same suggestions differently while offline, then each reject the Enter, both land, and the synced link drops accepted values that deciding everything at once keeps. Iteration 7 reproduced it on next. Owner: zbeyens. Stop: a two-peer test where the synced link equals the at-once result.
 - When an edit moves one piece of a cut link into a card's own root, rejecting the Enter gives the dropped ref to both pieces, on next too. Owner: zbeyens. Stop: a test where only the left piece takes the ref.
 - An Enter in the text of a block that owns an exclusive content root, such as a card, gives the root two owners, which the schema refuses, so the Enter throws. It refused 5 of 1,422 random steps at iteration 7's base. Owner: zbeyens. Stop: a report of a refused Enter in such a block.
