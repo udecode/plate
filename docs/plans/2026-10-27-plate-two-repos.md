@@ -28,7 +28,7 @@ A contributor clones the public repo and gets the code without the tests. They f
 
 ```
 ~/git/plate-2/
-├─ .git            udecode/plate           code, .agents, AGENTS.md, VISION.md, public docs
+├─ .git            udecode/plate           code, .agents, AGENTS.md, the docs route map
 ├─ .git-private    udecode/plate-private   tests, plans, research
 ├─ .gitprivate     public                  the list of paths that belong to plate-private
 ├─ packages/plitejs/src/diff/lib/compare.ts        public
@@ -65,8 +65,8 @@ Each path below is a way git or a script can lose private work. Where a path say
 
 ## Outcome
 
-- `udecode/plate` tracks 4,700 files: shipped code, `.agents`, `.claude`, `.github`, `AGENTS.md`, `VISION.md` and the public docs. A fresh clone holds no test, plan or research file outside `.agents` and `.claude`.
-- `udecode/plate-private` tracks the other 6,931 files at the same paths. No file is in both.
+- `udecode/plate` tracks shipped code, `.agents`, `.claude`, `.github`, `AGENTS.md`, `CONTRIBUTING.md` and `docs/plite/reference/public-route-map.json`, the one docs file the docs site build reads. A fresh clone holds no test, plan or research file outside `.agents` and `.claude`.
+- `udecode/plate-private` tracks every other file at the same path. No file is in both.
 - Every file stays where it is today, and no import, config or test runner changes for that reason.
 - A team checkout and every session worktree hold both halves, and `pnpm check` runs over the whole folder as it does today.
 - `land.mjs` lands a public commit and its private commit together.
@@ -112,7 +112,9 @@ Lead decisions:
 - **The lint baseline splits by path at the cutover.** `tooling/oxlint/plate-baseline.json` keeps the 78 public files' entries, and `tooling/oxlint/plate-baseline.private.json`, which plate-private tracks, keeps the 31 private files' entries, because each entry holds the flagged line's text. Lint reads both, the check enforces each against its own files, and the base commit's two copies together bound growth.
 - **The private repository starts at the split.** Before the split commit, public history still holds every test, plan and research change.
 - **The task list and triage claims move.** `setup.mjs` keeps `refs/pstack/ledger`, and `triage.mjs` keeps `refs/triage/claims` and reads the ledger, on `udecode/plate-private` once the checkout is split.
-- **Nothing changes on GitHub's public side.** No export app, no new rulesets and no access changes, because the team keeps pushing `udecode/plate` as it does today. Every script that `plite-ci.yml` runs goes private, so that one workflow moves to `udecode/plate-private`, as the Plite CI default says. `land.mjs` runs every other check locally, as today.
+- **All CI stays on `udecode/plate`.** No export app, no new rulesets and no access changes, because the team keeps pushing `udecode/plate` as it does today. `udecode/plate-private` runs no Actions, so it stays on Free. `plite-ci.yml` ran the Plite browser lanes on every push from scripts that go private, so a landing before the split cuts it. The daily full check runs the Chromium lane through `pnpm check --browser`, and a release-ready claim runs every lane locally. `release.yml` keeps the package proof, and `land.mjs` runs every other check locally, as today.
+- **Docs go private except the route map.** `docs/` holds plans, research, vision and development notes for the team. `apps/www/next.config.ts` imports `docs/plite/reference/public-route-map.json`, so that one file stays public. `VISION.md` goes private too, and `CONTRIBUTING.md` gets a short public policy section.
+- **The release artifact check stays public.** `release.yml` runs `check-plite-release-artifacts.mjs`, so only its test goes private.
 
 ## Main changes
 
@@ -141,6 +143,7 @@ Exit: a rehearsal with two local bare repositories splits the tree, attaches a s
 - [x] Split the lint baseline at the cutover. Proof: the baseline check passes before the split with one file, public lint in a fresh public clone passes, and lint in the split checkout reports the same findings as before the split.
 - [x] Through dotai, teach `land.mjs`, `guard.mjs`, `setup.mjs` and `tasks.mjs` the companion git dir, `land.mjs` the paired push and the old-branch move, and `guard.mjs` its refusals, and sync it here. Proof: each script's test with a companion fixture, including a refused private push that the next run completes, and the sync commit.
 - [x] Teach the cleanup scan private changes. Proof: its test with a worktree whose only changes are private. The scan runs the companion's `detach` before it removes such a worktree, and its test passes (30 of 30).
+- [x] Cut `plite-ci.yml` and `check-plite-release-proof.mjs`, which only checked an artifact `plite-ci.yml` would have produced, and add a `plite-browser` step that only `pnpm check --browser` or its name runs. Proof: the tooling tests pass 70 of 70 (`cut-plite-ci-tests-a1.log`), and `--build` leaves the step out, so public CI does not start it.
 - [ ] Rehearse the split, a session worktree, a paired landing and each No loss path. Proof: the rehearsal logs, including an old branch with committed, unsaved and new private changes landing both halves, and a fresh public clone that installs, builds and lints.
 
 ### Phase 2. Cutover, after Phase 1 lands
@@ -148,16 +151,15 @@ Exit: a rehearsal with two local bare repositories splits the tree, attaches a s
 Exit: both repositories are live, this clone and every teammate's clone hold both halves, and the first paired landing reaches both.
 
 - [x] Wait for your word that your five sessions have landed, and for natamox, sin6626 and felixfeng33 to say theirs have too. skip: you said "no worries for the other sessions", and their branches move on their next `land.mjs` run.
-- [ ] Land Phase 1 on public `next` through `land.mjs`. Proof: the land log.
+- [x] Land Phase 1 on public `next` through `land.mjs`. Proof: `a18b01652f`, with all 31 check steps passing (`land-phase1-a4.log`).
 - [ ] Yours: create `udecode/plate-private` as a private repository with `next` as its default branch, and add the team. Proof: `gh repo view udecode/plate-private` shows it private.
 - [ ] Run the split: `cutover.sh prepare` in a fresh worktree at `origin/next`, `land.mjs` to land the public commit that stops tracking the private files, then `cutover.sh finish` to push the first `udecode/plate-private` commit that tracks them, and the task list and claims refs. Proof: `git ls-remote` on both, and a fresh clone of each.
-- [ ] Move `plite-ci.yml` to `udecode/plate-private` in the split. It runs only when dispatched, checks out `udecode/plate` at the commit its `Lands-With:` line names, and `check-plite-release-proof.mjs` reads its artifact there. The daily full check gains an opt-in Plite browser step. Before the split, that step would also run in public CI beside `plite-ci.yml`. Proof: a dispatched run whose release proof passes `pnpm plite:release:proof`.
 - [ ] Run `git-private.mjs init` once in `~/git/plate-2`, and each teammate runs it once in their clone, before or after their pull. Old branches and worktrees move on their next `land.mjs` run. Proof: both statuses clean and no private file missing in each clone.
 - [ ] Land this plan and its decision log on `udecode/plate-private`, then watch the first paired landing. Proof: the commit on each repository.
 
 ### Phase 3. After the move
 
-- [ ] `VISION.md` records your policy: shipped code stays MIT, tests, plans and research are team-only, and contributors file issues while the team writes every fix. Proof: the commit.
+- [ ] `CONTRIBUTING.md` gets a short public policy section: shipped code stays MIT, tests, plans and research are team-only, and contributors file issues while the team writes every fix. The private `VISION.md` records the same. Proof: the commit.
 - [ ] The contributor guide, the issue templates and `content/docs/plite/general/contributing.mdx` say to file an issue with a reproduction. Proof: the commit.
 - [ ] Delete or keep the old public task list, per the Old task list question. Proof: `git ls-remote udecode/plate refs/pstack/ledger`.
 
@@ -173,7 +175,9 @@ The POC ran on this branch's tree at `850875f612`, with local bare repositories 
 - In that worktree, the install took 29 seconds, and the package's diff partition ran 50 tests across 6 files with none failing. Turbo's lint hash changed when only the ignored spec changed, and the partition's lint caught a planted `debugger` in that spec.
 - `rg` lists all 71 specs in the package, and `git grep --untracked` lists none.
 - The loss-path POC (`risks-a1.log`) found the paths that No loss lists and what each guard keeps. A session's linked worktree took 4 seconds and 1 MB. The autosave took about 0.6 seconds once `comm` replaced `grep -f` (`autosave-time-a1.log`).
-- Not proven yet: `land.mjs` landing a pair, `pnpm check --affected` over a split tree, a fresh public clone's build and lint, the hooks, guards and autosave as built, and the pstack changes. Phase 1 proves each.
+- The a4 rehearsal of the built kit split the tree with both statuses clean and no file in both, gave a session worktree its private half in 5 seconds, and landed a paired fix through `land.mjs` with all 30 check steps passing. Public `next` got `compare.ts` and private `next` got `compare.spec.ts`, whose `Lands-With:` names the public commit (`rehearsal-a4a-a1.log`, `rehearsal-a4-resume-a1.log`).
+- Phase 1 landed on `next` as `a18b01652f` with all 31 check steps passing (`land-phase1-a4.log`).
+- Not proven yet: a spec-only change starting the package's tests in a split tree, the No loss paths and an old branch's move as built, and a fresh public clone's install, build and lint. The a5 rehearsal of the final kit runs each.
 
 ## Defaults
 
@@ -190,7 +194,7 @@ The POC ran on this branch's tree at `850875f612`, with local bare repositories 
 | Unsaved private work | Autosaved at the end of every agent turn (look) | Saved only when a session lands | land only | small |
 | Branches cut before the split | Land moves them onto both repos after saving a patch | Land refuses them, and the agent moves them | refuse old branches | small |
 | Team clone setup | One setup command per clone, after which git's hooks give every new worktree its private half | The session start hook runs that setup in every session | init on start | detail |
-| Plite CI | The Plite CI workflow moves to the private repo and runs only when dispatched, for the release proof, so it stays inside Free's 2,000 minutes. Its per-push browser run moves to the daily full check (look) | It stays public and checks out the private repo with a deploy key, so public logs and artifacts show test names and failures | public plite ci | small |
+| Plite CI | All CI stays public and the private repo runs no Actions. A landing before the split cuts plite-ci.yml. Its per-push Chromium lane moves to the daily full check, and a release-ready claim runs every lane locally, so no GitHub run attests it (look) | plite-ci.yml moves to the private repo and runs only when dispatched, within Free's 2,000 minutes | private plite ci | small |
 | A session's list of private paths | Uses the main checkout's copy, so a branch's edit to the list applies once it lands | Each session uses its own branch's copy | worktree gitprivate | detail |
 
 ## Open questions
@@ -220,12 +224,13 @@ Attention: look
 - `review.mjs` lists a landing's public commits only, so a review of a paired landing does not show its private commit. Owner: the lead. Stop: none.
 - `verify`'s base-control recipe applies the task's saved patch to a detached worktree, which holds only the public half, so a control misses the task's private changes. The recipe needs a step that saves and applies the private patch too. Owner: the lead. Stop: none.
 - `seed-repos.mjs` still lists files through public git. Owner: the lead. Stop: none.
+- `brl.sh`'s barrelsby exclude pattern matches the full path, so in a checkout under a folder named `spec`, `fixture`, `template` or `internal` it generates no barrels and deletes `static/components/index.ts`. The rehearsal hit it. Owner: the lead. Stop: none.
 - I could not read what the desktop app checks before it removes a session's worktree. Committed private work lives in the main checkout and the autosave keeps the rest, so a removal loses at most edits made after the session's last turn. Owner: the lead. Stop: the Phase 1 rehearsal archives a session and checks.
 
 ## Claims
 
 - The export plan kept the whole tree in the private repository and generated public `next`. Here each file lives in one repository, and nothing is copied.
-- The export plan said the private repository needs GitHub Team for its environments, rulesets and Actions minutes. This layout runs only the dispatched release proof there, so Free is enough while those runs stay inside its 2,000 minutes.
+- The export plan said the private repository needs GitHub Team for its environments, rulesets and Actions minutes. This layout runs no Actions there, so Free is enough.
 - The export plan let only admins and an export app write the public repository, under four new rulesets. Here the team keeps pushing `udecode/plate` as it does today.
 - The first draft of this plan said each teammate must set up `.git-private` before pulling the split, or lose private files. The POC shows git refuses that pull over unsaved private edits and removes only unmodified files, which the private repo restores, so the order does not matter.
 - The first draft gave each session a separate 33 MB clone. A linked worktree keeps its commits in the main checkout, where removing the folder cannot reach them.

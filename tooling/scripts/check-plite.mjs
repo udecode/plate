@@ -145,10 +145,6 @@ const affectedContractFiles = (inputs) => {
   for (const input of inputs) {
     if (input === 'tooling/scripts/check-plite.mjs') {
       files.add('tooling/scripts/check-plite.test.mjs');
-    } else if (input === '.github/workflows/plite-ci.yml') {
-      files.add('tooling/scripts/check-plite.test.mjs');
-      files.add('tooling/scripts/ci-workflow.test.mjs');
-      files.add('apps/plite/scripts/plite-browser-runner.test.mjs');
     } else if (
       input.endsWith('.test.mjs') &&
       fs.existsSync(path.join(repoRoot, input))
@@ -265,12 +261,6 @@ export const createAffectedPlan = (changedFiles) => {
       if (file === 'tooling/scripts/run-bounded-process.mjs') {
         browserSmoke = true;
       }
-      continue;
-    }
-
-    if (file === '.github/workflows/plite-ci.yml') {
-      contractInputs.add(file);
-      relevant = true;
       continue;
     }
 

@@ -465,155 +465,6 @@ test('shared config fails closed while unrelated docs are a no-op', () => {
   assert.deepEqual(createCheckSteps('dev', docs), []);
 });
 
-test('Plite CI watches the root Bun config used by affected proof', () => {
-  const workflow = fs.readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-  const plan = createAffectedPlan(['bunfig.toml']);
-
-  assert.equal(plan.contracts, true);
-  assert.equal(plan.relevant, true);
-  assert.equal(workflow.match(/^\s+- ['"]bunfig\.toml['"]$/gmu)?.length, 2);
-  assert.equal(workflow.match(/^\s+- ['"]config\/\*\*['"]$/gmu)?.length, 2);
-});
-
-test('Plite CI watches and typechecks the bounded www adopter surface', () => {
-  const workflow = fs.readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-  const config = JSON.parse(
-    fs.readFileSync(
-      path.join(repoRoot, 'apps/www/tsconfig.package-integration.json'),
-      'utf-8'
-    )
-  );
-
-  assert.equal(
-    workflow.match(
-      /^\s+- ['"]apps\/www\/src\/app\/dev\/editor-perf\/\*\*['"]$/gmu
-    )?.length,
-    2
-  );
-  assert.ok(config.include.includes('src/app/dev/editor-perf/**/*.ts'));
-  assert.ok(config.include.includes('src/app/dev/editor-perf/**/*.tsx'));
-  assert.ok(config.include.includes('src/types/**/*.d.ts'));
-  assert.ok(config.include.includes('../../packages/*/src/**/*.d.ts'));
-  assert.ok(
-    config.include.includes('src/__tests__/package-integration/**/*.ts')
-  );
-  for (const extension of ['ts', 'tsx']) {
-    const input = `apps/www/src/registry/components/editor/**/*.${extension}`;
-
-    assert.equal(
-      workflow.match(
-        new RegExp(
-          `^\\s+- ['"]${input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]$`,
-          'gmu'
-        )
-      )?.length,
-      2,
-      input
-    );
-    assert.ok(
-      config.include.includes(
-        `src/registry/components/editor/**/*.${extension}`
-      )
-    );
-  }
-});
-
-test('Plite CI cache action inputs do not duplicate their exact key', () => {
-  const workflow = fs.readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-  const restore = workflow.match(
-    /- name: Restore Chromium browser proof state(?<block>[\s\S]*?)(?=\n\s+- name:)/u
-  )?.groups?.block;
-
-  assert.ok(restore, 'missing Chromium proof-state restore step');
-  assert.equal(restore.match(/^\s+key:/gmu)?.length, 1);
-});
-
-test('Plite CI browser containers use a root-owned home', () => {
-  const workflow = fs.readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-
-  assert.match(workflow, /project: \[firefox, mobile\]/u);
-  assert.equal(workflow.match(/^\s+HOME: \/root$/gmu)?.length, 2);
-});
-
-test('Plite workflows route benchmark authorities to one package-check owner', () => {
-  const pliteWorkflow = fs.readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-
-  for (const input of [
-    'benchmarks/editor/benchmarks/plite-*',
-    'benchmarks/slate-v2/donor/core/current/**',
-    'benchmarks/slate-v2/donor/shared/**',
-    'packages/plitejs/**',
-    'tooling/entrypoints/**',
-    'tooling/scripts/entrypoint-turbo*.mjs',
-    'tooling/scripts/run-entrypoint-*.mjs',
-  ]) {
-    const escaped = input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-    assert.equal(
-      pliteWorkflow.match(new RegExp(`^\\s+- ['"]${escaped}['"]$`, 'gmu'))
-        ?.length,
-      2,
-      input
-    );
-  }
-
-  for (const input of [
-    'benchmarks/editor/benchmarks/benchmark-artifact.test.ts',
-    'benchmarks/editor/benchmarks/benchmark-artifact.ts',
-    'benchmarks/editor/research/benchmark-registry.json',
-    'benchmarks/editor/src/index.mjs',
-    'benchmarks/targets/slate-v2.json',
-    'tooling/scripts/bench-targets.mjs',
-    'tooling/scripts/bench-targets.test.mjs',
-    'tooling/scripts/check-plite-release-artifacts.mjs',
-    'tooling/scripts/check-plite-release-artifacts.test.mjs',
-    'tooling/scripts/generate-entrypoint-turbo.mjs',
-    'tooling/scripts/plite-source-aliases.test.mjs',
-    'tooling/scripts/run-bounded-process.mjs',
-    'tooling/scripts/run-bounded-process.test.mjs',
-    'tooling/scripts/test-suite.mjs',
-    'tooling/scripts/test-slowest.mjs',
-    'tooling/scripts/test-suite-routing.test.mjs',
-  ]) {
-    const escaped = input.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-    assert.equal(
-      pliteWorkflow.match(new RegExp(`^\\s+- ['"]${escaped}['"]$`, 'gmu'))
-        ?.length,
-      2,
-      input
-    );
-  }
-
-  for (const command of [
-    'pnpm plite:test',
-    'pnpm plite:bench:targets:check',
-    'pnpm plite:public-types',
-  ]) {
-    assert.ok(
-      checkSteps.some((step) => step.run === command),
-      `${command} must run in pnpm check`
-    );
-  }
-  assert.doesNotMatch(pliteWorkflow, /^ {2}packages:$/mu);
-  assert.doesNotMatch(pliteWorkflow, /plite:bench:targets:run/u);
-});
-
 test('local affected proof uses working changes unless CI supplies a base', () => {
   assert.equal(getComparisonBase({}), null);
   assert.equal(
@@ -731,10 +582,6 @@ test('root CI owns Plate and Plite package proof without workflow duplication', 
     path.join(repoRoot, '.github/workflows/ci.yml'),
     'utf-8'
   );
-  const pliteWorkflow = fs.readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
   assert.ok(
     checkSteps.some((step) => step.run === 'pnpm plite:test'),
     'pnpm check must own root package proof'
@@ -744,8 +591,6 @@ test('root CI owns Plate and Plite package proof without workflow duplication', 
       workflow.indexOf('run: pnpm check'),
     'root CI must install Chromium before the browser-backed package tests in pnpm check'
   );
-  assert.doesNotMatch(pliteWorkflow, /^ {2}packages:$/mu);
-  assert.doesNotMatch(pliteWorkflow, /pnpm plite:test/u);
 });
 
 test('every declared Plite-family dependency resolves to source during typecheck', () => {

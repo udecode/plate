@@ -85,23 +85,11 @@ tree-shake to the empty consumer baseline. The Plite Chromium lane exercises
 the generated client-entrypoint matrix in a real browser. Keep these strict
 artifact and browser checks out of the daily Plite loop.
 
-When `PLITE_RELEASE_CLAIM_PROFILE=release-ready`,
-`pnpm plite:release:proof` resolves
-the run named by `PLITE_RELEASE_PROOF_RUN_ID`, downloads its one unexpired
-`plite-release-proof` artifact by ID, verifies GitHub's archive digest, and
-checks the bundle against the exact release commit and live run attempt before
-publishing. The producer must be a successful manual
-`.github/workflows/plite-ci.yml` run from `udecode/plate` at the checkout commit.
-The release command rejects caller-local manifests plus tracked or untracked
-checkout changes, so direct beta/latest publication has the same boundary as
-the workflow. Those repository variables are one-release inputs: preflight the
-producer run from a clean checkout, set them only under explicit release
-authorization, and clear both after the target run. The `release-lanes` skill
-owns that lifecycle.
-
-Plite CI does not currently emit this bundle, so broad release-ready claims stay
-blocked. A producer job must assemble it from lane-owned outputs rather than
-accepting operator-authored results.
+Publication proves the packages only. No CI workflow runs the Plite browser
+lanes, so a broad release-ready claim needs every lane run locally from a clean
+checkout at the exact release commit, the browser matrix
+(`pnpm check:plite:browser-matrix`) included. The `release-lanes` skill owns
+that claim.
 
 From `plate-2`:
 

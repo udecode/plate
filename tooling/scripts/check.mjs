@@ -159,6 +159,12 @@ export const steps = [
       ],
   },
   {
+    name: 'plite-browser',
+    private: true,
+    run: 'pnpm --filter plite test:plite-browser:chromium',
+    optIn: '--browser',
+  },
+  {
     name: 'plite-test',
     private: true,
     run: 'pnpm plite:test',
@@ -312,7 +318,7 @@ export const steps = [
   {
     name: 'www-build',
     run: 'pnpm build:www:ci',
-    optIn: true,
+    optIn: '--build',
   },
 ];
 
@@ -323,12 +329,13 @@ export const manualOnly = {
     'Runs commands that the www-typecheck step already runs through www typecheck.',
   'check:plate-feature':
     'Validates the feature plan passed as its argument; the Build playbook runs it on that plan.',
-  'check:plite': 'Plans and runs Plite browser proof, which plite-ci.yml owns.',
+  'check:plite':
+    'Plans and runs Plite browser proof, which the plite-browser step covers.',
   'check:plite:browser-matrix':
-    'Runs the full browser matrix, which plite-ci.yml runs on workflow_dispatch.',
+    'Runs the full browser matrix across every engine; run it by hand before a release.',
   'check:plite:contracts':
     'Runs tooling contract tests that the test step already runs.',
-  'check:plite:dev': 'Plans Plite proof from changed paths for plite-ci.yml.',
+  'check:plite:dev': 'Plans Plite proof from changed paths, for local use.',
   'check:plite:packages':
     'Runs plite:typecheck, plite:test and check:plite:contracts, which other steps cover.',
   'deps:check': 'Lists available dependency updates; it gates nothing.',
@@ -353,9 +360,10 @@ export const manualOnly = {
     'Runs quarantined __deferred__ specs, which are kept out of every gate.',
   'test:mobile-device-proof': 'Needs a connected phone or emulator.',
   'test:mobile-device-proof:raw': 'Needs a connected phone or emulator.',
-  'test:plite:browser': 'Runs Plite browser proof, which plite-ci.yml owns.',
+  'test:plite:browser':
+    'Runs Plite browser proof, which the plite-browser step covers.',
   'test:plite:full':
-    'Runs plite:test and Plite browser proof, which the plite-test step and plite-ci.yml cover.',
+    'Runs plite:test and Plite browser proof, which the plite-test and plite-browser steps cover.',
   'test:profile':
     'Timing report; the owner keeps aggregate timing out of the gate.',
   'test:slowest':
@@ -375,12 +383,11 @@ export const manualOnly = {
 
 export const selectSteps = (args) => {
   const writing = args.includes('--write');
-  const building = args.includes('--build');
   const names = args.filter((arg) => !arg.startsWith('--'));
   return steps.filter(
     (step) =>
       ((names.length === 0 ? !step.optIn : names.includes(step.name)) ||
-        (building && step.optIn)) &&
+        args.includes(step.optIn)) &&
       (!writing || step.write)
   );
 };
@@ -450,7 +457,7 @@ const runStep = (step, command, writing) => {
 
 const main = () => {
   const args = process.argv.slice(2);
-  const flags = ['--affected', '--build', '--list', '--write'];
+  const flags = ['--affected', '--browser', '--build', '--list', '--write'];
   const unknownFlags = args.filter(
     (arg) => arg.startsWith('--') && !flags.includes(arg)
   );
@@ -465,7 +472,7 @@ const main = () => {
   if (args.includes('--list')) {
     for (const step of steps) {
       console.info(
-        `${step.name}\t${step.run}${step.optIn ? '\t(opt-in: --build or by name)' : ''}`
+        `${step.name}\t${step.run}${step.optIn ? `\t(opt-in: ${step.optIn} or by name)` : ''}`
       );
     }
     return 0;
@@ -479,16 +486,17 @@ const main = () => {
     );
     return 1;
   }
-  if (writing && args.includes('--build')) {
+  const optIns = args.filter((arg) => steps.some((step) => step.optIn === arg));
+  if (writing && optIns.length > 0) {
     console.error(
-      '[check] --build runs a step with no writer; run it without --write.'
+      `[check] ${optIns.join(' and ')} runs a step with no writer; run it without --write.`
     );
     return 1;
   }
   const affected = args.includes('--affected');
-  if (affected && (writing || args.includes('--build') || names.length > 0)) {
+  if (affected && (writing || optIns.length > 0 || names.length > 0)) {
     console.error(
-      '[check] --affected picks its own steps; run it without step names, --write or --build.'
+      '[check] --affected picks its own steps; run it without step names, --write, --build or --browser.'
     );
     return 1;
   }

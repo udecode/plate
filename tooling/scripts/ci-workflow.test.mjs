@@ -22,39 +22,6 @@ const wwwVercelConfigPath = new URL(
   import.meta.url
 );
 
-test('browser CI keeps coverage aggregation aligned with its affected build', async () => {
-  const workflow = await readFile(
-    new URL('../../.github/workflows/plite-ci.yml', import.meta.url),
-    'utf-8'
-  );
-  const job = (name) =>
-    workflow.split(`  ${name}:\n`)[1]?.split(/^ {2}[a-z][\w-]*:/m)[0];
-
-  assert.match(
-    job('proof-plan'),
-    /browser: \$\{\{ steps.plan.outputs.browser \}\}/
-  );
-  assert.match(
-    job('proof-plan'),
-    /github\.event_name != 'pull_request'[\s\S]*github\.event\.pull_request\.head\.repo\.full_name != github\.repository[\s\S]*!startsWith\(github\.event\.pull_request\.head\.ref, 'changeset-release\/'\)/
-  );
-  assert.match(job('proof-plan'), /--dry-run --github-output/);
-  assert.match(job('browser-build'), /needs: proof-plan/);
-  assert.match(
-    job('browser-build'),
-    /needs.proof-plan.outputs.browser == 'true'/
-  );
-  assert.match(
-    job('browser-chromium-merge'),
-    /needs.browser-chromium.result != 'skipped'/
-  );
-  assert.match(job('browser-chromium'), /needs: browser-build/);
-  assert.match(
-    job('browser-build'),
-    /run: node apps\/plite\/scripts\/build-app-if-stale.mjs/
-  );
-});
-
 const runCommands = (workflow) => {
   const commands = [];
   const lines = workflow.split('\n');
@@ -98,7 +65,7 @@ test('pnpm check is the only gate the CI job runs', async () => {
   assert.match(workflow, /restore-keys:/u);
 });
 
-test('pnpm check runs the production build only with --build or by name', async () => {
+test('pnpm check runs the production build and browser lanes only by flag or name', async () => {
   const { selectSteps } = await import('./check.mjs');
   const names = (args) => selectSteps(args).map((step) => step.name);
 
@@ -110,6 +77,8 @@ test('pnpm check runs the production build only with --build or by name', async 
     ['www', 'www-build'],
     '--build adds the production build to named steps'
   );
+  assert.equal(names(['--build']).includes('plite-browser'), false);
+  assert.equal(names(['--browser']).includes('plite-browser'), true);
 });
 
 test('pnpm check --affected runs the steps each change reaches', async () => {

@@ -128,22 +128,6 @@ test('typed lint owns Plate tests and resolves CLI dependencies without built de
   );
 });
 
-test('Plite CI runs the repository Bun version', () => {
-  const rootManifest = JSON.parse(
-    readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
-  );
-  const workflow = readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-  const versions = [...workflow.matchAll(/bun-version:\s*(\S+)/g)].map(
-    ([, version]) => version
-  );
-
-  assert.ok(versions.length > 0);
-  assert.deepEqual([...new Set(versions)], [rootManifest.devDependencies.bun]);
-});
-
 test('Core proof preserves generated partition dependencies', (t) => {
   const bin = mkdtempSync(path.join(tmpdir(), 'plate-check-core-'));
   t.after(() => rmSync(bin, { recursive: true, force: true }));
@@ -347,30 +331,6 @@ test('every Plite package typechecks against workspace source', () => {
         root
       );
     }
-  }
-});
-
-test('Playwright containers install Bun prerequisites before setup', () => {
-  const workflow = readFileSync(
-    path.join(repoRoot, '.github/workflows/plite-ci.yml'),
-    'utf-8'
-  );
-
-  for (const jobName of ['browser-chromium', 'browser-matrix-linux']) {
-    const job = workflow.match(
-      new RegExp(
-        `\\n  ${jobName}:(?<body>[\\s\\S]*?)(?=\\n  [a-z][a-z0-9-]*:|$)`,
-        'u'
-      )
-    )?.groups?.body;
-
-    assert.ok(job, `missing ${jobName} job`);
-    assert.match(job, /container: mcr\.microsoft\.com\/playwright/u);
-    assert.ok(
-      job.indexOf('apt-get install --yes --no-install-recommends unzip') <
-        job.indexOf('uses: oven-sh/setup-bun@v2'),
-      `${jobName} must install unzip before setup-bun`
-    );
   }
 });
 
