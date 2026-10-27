@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { showAt } from './git-private.mjs';
 import { generatedPrefixes, releaseNotePrefixes } from './teaching-sweep.mjs';
 
 const manifestPath = 'apps/www/src/generated/api-reference-manifest.json';
@@ -70,7 +71,7 @@ export const findRemovedApiTeaching = ({ base, cwd = process.cwd() }) => {
   if (!commit) throw new Error(`cannot resolve the base commit ${base}`);
 
   const readBase = (path) => {
-    const result = git(['show', `${commit}:${path}`]);
+    const result = showAt(root, commit, path);
     return result.status === 0 ? result.stdout : null;
   };
   const readHead = (path) => {

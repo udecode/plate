@@ -36,6 +36,7 @@ import {
   readTasks,
   SESSION,
 } from '../../.agents/pstack/tasks.mjs';
+import { existsAt, movedBetween, PRIVATE_DIR, showAt } from './git-private.mjs';
 import {
   CLAIM_COLUMNS,
   CLAIMS_FILE,
@@ -189,9 +190,20 @@ const gitOut = (...args) => {
   const result = run('git', args);
   return result.status === 0 ? result.stdout : null;
 };
+// Once split, the suggested-task ledger and the claims live on plate-private's
+// origin, the team's repository.
+const teamVia = existsSync(join(root, PRIVATE_DIR))
+  ? [`--git-dir=${join(root, PRIVATE_DIR)}`]
+  : [];
+const teamRemote = (remote) => (teamVia.length > 0 ? 'origin' : remote);
+const teamRun = (args, options) => run('git', [...teamVia, ...args], options);
+const teamOut = (...args) => {
+  const result = teamRun(args);
+  return result.status === 0 ? result.stdout : null;
+};
 const NETWORK_MS = 60_000;
-const fetchRef = (remote, refspec) => {
-  const result = run('git', ['fetch', '--quiet', remote, refspec], {
+const fetchRef = (remote, refspec, via = []) => {
+  const result = run('git', [...via, 'fetch', '--quiet', remote, refspec], {
     env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
     timeout: NETWORK_MS,
   });
@@ -456,7 +468,8 @@ function freshReads({ fallback, claims = false }) {
     into.get(row.issue).set(row.id, row);
   };
   if (tip) {
-    for (const row of parseRows(gitOut('show', `${tip}:${REGISTER}`) ?? '')) {
+    const register = showAt(root, tip, REGISTER);
+    for (const row of parseRows(register.status === 0 ? register.stdout : '')) {
       add(rows, row);
       add(landed, row);
     }
@@ -473,7 +486,7 @@ function freshReads({ fallback, claims = false }) {
     ? {
         message: `skipped, because the fetch of ${remote}/${branch} gave no answer`,
       }
-    : fetchRef(remote, `+${LEDGER_REF}:${LEDGER_COPY}`);
+    : fetchRef(teamRemote(remote), `+${LEDGER_REF}:${LEDGER_COPY}`, teamVia);
   const ledgerFetched = ledgerError === null;
   if (!ledgerFetched) {
     notes.push(
@@ -487,7 +500,7 @@ function freshReads({ fallback, claims = false }) {
       : [];
   const ledgerText =
     ledgerRefs
-      .map((ref) => gitOut('show', `${ref}:${LEDGER}`))
+      .map((ref) => teamOut('show', `${ref}:${LEDGER}`))
       .find((text) => text !== null) ?? null;
   if (!ledgerFetched && ledgerText !== null) cached.push(LEDGER_REF);
   const ledger =
@@ -505,7 +518,7 @@ function freshReads({ fallback, claims = false }) {
     }
     const text =
       read.error && fallback
-        ? (gitOut('show', `${CLAIMS_REF}:${CLAIMS_FILE}`) ?? '')
+        ? (teamOut('show', `${CLAIMS_REF}:${CLAIMS_FILE}`) ?? '')
         : (read.text ?? '');
     claimRows = parseClaims(text);
   }
@@ -807,17 +820,7 @@ function ownerPaths(row) {
 const stalingOwnerPaths = (head) =>
   head.outcome === 'fixed' ? [] : ownerPaths(head);
 
-const ownerMoved = (read, tip, owned) => {
-  const log = gitOut(
-    'log',
-    '--format=%H',
-    '-1',
-    `${read}..${tip}`,
-    '--',
-    ...owned
-  );
-  return log === null ? null : log.trim() !== '';
-};
+const ownerMoved = (read, tip, owned) => movedBetween(root, read, tip, owned);
 
 const dismissedAt = (ledger, id) =>
   Date.parse(ledger.times.get(id)?.dismissed ?? '') || -Infinity;
@@ -1587,13 +1590,17 @@ function labels() {
 }
 
 function fetchClaims(remote) {
-  const error = fetchRef(remote, `+${CLAIMS_REF}:${CLAIMS_REF}`);
+  const error = fetchRef(
+    teamRemote(remote),
+    `+${CLAIMS_REF}:${CLAIMS_REF}`,
+    teamVia
+  );
   if (error && !/couldn't find remote ref/u.test(error.message)) {
     return { error };
   }
   const tip = error
     ? null
-    : gitOut(
+    : teamOut(
         'rev-parse',
         '--verify',
         '--quiet',
@@ -1601,7 +1608,7 @@ function fetchClaims(remote) {
       )?.trim() || null;
   return {
     tip,
-    text: tip ? (gitOut('show', `${tip}:${CLAIMS_FILE}`) ?? '') : '',
+    text: tip ? (teamOut('show', `${tip}:${CLAIMS_FILE}`) ?? '') : '',
   };
 }
 
@@ -1618,29 +1625,28 @@ function pushClaims(remote, decideOn) {
     const { lines, result } = decideOn(text, attempt);
     if (lines.length === 0) return result;
     const base = text || `${CLAIM_COLUMNS.join('\t')}\n`;
-    const blob = run('git', ['hash-object', '-w', '--stdin'], {
+    const blob = teamRun(['hash-object', '-w', '--stdin'], {
       input: `${base}${base.endsWith('\n') ? '' : '\n'}${lines.join('\n')}\n`,
     }).stdout.trim();
-    const tree = run('git', ['mktree'], {
+    const tree = teamRun(['mktree'], {
       input: `100644 blob ${blob}\t${CLAIMS_FILE}\n`,
     }).stdout.trim();
-    const commit = run('git', [
+    const commit = teamRun([
       'commit-tree',
       tree,
       ...(tip ? ['-p', tip] : []),
       '-m',
       `${lines.length} triage claim move(s)`,
     ]).stdout.trim();
-    const pushed = run(
-      'git',
-      ['push', '--quiet', remote, `${commit}:${CLAIMS_REF}`],
+    const pushed = teamRun(
+      ['push', '--quiet', teamRemote(remote), `${commit}:${CLAIMS_REF}`],
       {
         env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
         timeout: NETWORK_MS,
       }
     );
     if (pushed.status === 0) {
-      run('git', ['update-ref', CLAIMS_REF, commit]);
+      teamRun(['update-ref', CLAIMS_REF, commit]);
       return result;
     }
     if (!/\[rejected\]/u.test(pushed.stderr)) {
@@ -2311,8 +2317,12 @@ const setupIn = (main) =>
   });
 
 function ledgerNow(reads) {
-  if (fetchRef(reads.remote, `+${LEDGER_REF}:${LEDGER_COPY}`)) return null;
-  const text = gitOut('show', `${LEDGER_COPY}:${LEDGER}`);
+  if (
+    fetchRef(teamRemote(reads.remote), `+${LEDGER_REF}:${LEDGER_COPY}`, teamVia)
+  ) {
+    return null;
+  }
+  const text = teamOut('show', `${LEDGER_COPY}:${LEDGER}`);
   return text === null ? null : ledgerOf(text, reads.policy.repo);
 }
 
@@ -2628,7 +2638,7 @@ function recordCommand(argv) {
     }
     const owned = ownerPaths({ outcome: entry.outcome, detail: entry.detail });
     for (const path of owned) {
-      if (run('git', ['cat-file', '-e', `${read}:${path}`]).status !== 0) {
+      if (!existsAt(root, read, path)) {
         refuse(
           `${where}: ${path} does not exist at ${read.slice(0, 10)}, the newest ${reads.branch} commit this checkout holds`
         );

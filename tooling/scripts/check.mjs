@@ -8,6 +8,7 @@ import {
   TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
+import { changedFiles, grepFiles, hasPrivateHalf } from './git-private.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -54,13 +55,14 @@ const toolingOnlyReach = (file) => {
     const names = level
       .map((path) => basename(path).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'))
       .join('|');
-    const { stdout } = spawnSync(
-      'git',
-      ['grep', '-l', '-P', `(?<![\\w.-])(?:${names})`, '--', ':!docs'],
-      { cwd: root, encoding: 'utf-8' }
-    );
+    const hits = grepFiles(root, [
+      '-P',
+      `(?<![\\w.-])(?:${names})`,
+      '--',
+      ':!docs',
+    ]);
     level = [];
-    for (const hit of stdout.split('\n').filter(Boolean)) {
+    for (const hit of hits) {
       if (TEST.test(hit)) {
         tests.add(hit);
       } else if (isToolingScript(hit)) {
@@ -123,9 +125,15 @@ export const steps = [
     run: 'pnpm --filter plite typecheck',
     affected: source,
   },
-  { name: 'type-tests', run: 'pnpm test:types', affected: source },
+  {
+    name: 'type-tests',
+    private: true,
+    run: 'pnpm test:types',
+    affected: source,
+  },
   {
     name: 'test',
+    private: true,
     run: 'pnpm test',
     // Bun ignores the www Playwright specs, so editing one cannot change this step.
     affected: (files) =>
@@ -152,6 +160,7 @@ export const steps = [
   },
   {
     name: 'plite-test',
+    private: true,
     run: 'pnpm plite:test',
     affected: touches(
       'packages/platejs/',
@@ -162,6 +171,7 @@ export const steps = [
   },
   {
     name: 'authored-order',
+    private: true,
     run: 'pnpm check:authored-order && pnpm check:authored-order --schema=generated-elements --family=quotes --blocks=1',
     affected: touches(
       'packages/plitejs/',
@@ -170,6 +180,7 @@ export const steps = [
   },
   {
     name: 'autoformat-rules',
+    private: true,
     run: 'pnpm check:autoformat-rules',
     affected: touches(
       'apps/www/scripts/autoformat-input-rules',
@@ -179,10 +190,15 @@ export const steps = [
       'tooling/scripts/finding-baseline.mjs'
     ),
   },
-  { name: 'bench-targets', run: 'pnpm plite:bench:targets:check' },
+  {
+    name: 'bench-targets',
+    private: true,
+    run: 'pnpm plite:bench:targets:check',
+  },
   { name: 'public-types', run: 'pnpm plite:public-types', affected: source },
   {
     name: 'cli-test',
+    private: true,
     run: `pnpm --filter @platejs/cli run test --timeout=${BUN_TEST_TIMEOUT_MS}`,
     // The CLI tests compile editors against platejs source, which builds on plitejs.
     affected: touches(
@@ -191,7 +207,12 @@ export const steps = [
       'packages/plitejs/'
     ),
   },
-  { name: 'core-audits', run: 'pnpm check:core', affected: source },
+  {
+    name: 'core-audits',
+    private: true,
+    run: 'pnpm check:core',
+    affected: source,
+  },
   {
     name: 'plite-bridge',
     run: 'node tooling/scripts/check-plite-bridge.mjs',
@@ -229,6 +250,7 @@ export const steps = [
   },
   {
     name: 'bench-report',
+    private: true,
     run: 'node tooling/scripts/bench-targets.mjs report --check',
     write: 'node tooling/scripts/bench-targets.mjs report',
   },
@@ -241,6 +263,7 @@ export const steps = [
     // It judges every plan, so another session's open plan can turn it red;
     // the daily full check runs it instead of each landing.
     name: 'review-ledger',
+    private: true,
     run: 'node tooling/scripts/review-ledger.mjs check',
     affected: never,
   },
@@ -250,6 +273,7 @@ export const steps = [
   },
   {
     name: 'knowledge',
+    private: true,
     run: 'node tooling/scripts/knowledge/kb.mjs check',
     fix: 'node tooling/scripts/knowledge/kb.mjs check --lower',
     affected: touches(
@@ -259,7 +283,12 @@ export const steps = [
       'tooling/scripts/knowledge/'
     ),
   },
-  { name: 'triage', run: 'node tooling/scripts/triage.mjs check' },
+  {
+    name: 'triage',
+    private: true,
+    run: 'node tooling/scripts/triage.mjs check',
+  },
+  { name: 'private', run: 'node tooling/scripts/git-private.mjs check' },
   { name: 'manifests', run: 'pnpm test:manifests' },
   {
     name: 'toolbar-variants',
@@ -403,31 +432,6 @@ export const planAffected = (files) => {
     });
 };
 
-const changedFiles = () => {
-  const { branch } = JSON.parse(
-    readFileSync(new URL('../../.agents/pstack.json', import.meta.url), 'utf-8')
-  );
-  const git = (...args) =>
-    spawnSync('git', args, {
-      cwd: root,
-      encoding: 'utf-8',
-      maxBuffer: 1024 * 1024 * 64,
-    });
-  const base = git('merge-base', `origin/${branch}`, 'HEAD');
-  if (base.status !== 0) {
-    throw new Error(
-      `[check] no merge base with origin/${branch}; run git fetch origin ${branch}.`
-    );
-  }
-  const lines = (result) => result.stdout.split('\n').filter(Boolean);
-  return [
-    ...new Set([
-      ...lines(git('diff', '--name-only', base.stdout.trim())),
-      ...lines(git('ls-files', '--others', '--exclude-standard')),
-    ]),
-  ];
-};
-
 const runStep = (step, command, writing) => {
   const started = Date.now();
   const watch = !writing && step.unchangedFiles;
@@ -491,7 +495,7 @@ const main = () => {
 
   let selected;
   if (affected) {
-    const files = changedFiles();
+    const files = changedFiles(root);
     const plan = planAffected(files);
     console.info(
       `[check] --affected: ${files.length} changed files since the merge base`
@@ -505,6 +509,14 @@ const main = () => {
       step,
       command: writing ? step.write : step.run,
     }));
+  }
+  if (!hasPrivateHalf(root)) {
+    for (const { step } of selected.filter((entry) => entry.step.private)) {
+      console.info(
+        `  skip ${step.name}: it reads udecode/plate-private's files`
+      );
+    }
+    selected = selected.filter(({ step }) => !step.private);
   }
   const group = Boolean(process.env.GITHUB_ACTIONS);
   const results = new Map();

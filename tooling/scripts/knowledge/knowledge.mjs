@@ -15,6 +15,15 @@ import {
   repoRoot,
 } from '../../entrypoints/entrypoint-turbo.mjs';
 import {
+  existsAt,
+  filesAt,
+  isSplit,
+  pairedCommit,
+  PRIVATE_DIR,
+  privateGit,
+  trackedFiles,
+} from '../git-private.mjs';
+import {
   lookupContext,
   lookupIn,
   owningScopes,
@@ -128,18 +137,7 @@ export function workTree(root) {
     repo: root,
     ref: null,
     list() {
-      if (!paths) {
-        const listed = git(root, [
-          'ls-files',
-          '--cached',
-          '--others',
-          '--exclude-standard',
-        ]);
-        if (listed.status !== 0) {
-          throw new Error(`git ls-files failed in ${root}: ${listed.stderr}`);
-        }
-        paths = listed.stdout.split('\n').filter(Boolean);
-      }
+      paths ??= trackedFiles(root, { untracked: true });
       return paths;
     },
     has: (path) => existsSync(join(root, path)),
@@ -148,38 +146,52 @@ export function workTree(root) {
   };
 }
 
-/** Commit `ref` of the repository at `repo`; every file `patterns` match is read in one batch. */
+/**
+ * Commit `ref` of the repository at `repo`, with the plate-private commit
+ * paired with it in a split checkout; every file `patterns` match is read in
+ * one batch per repository.
+ */
 export function commitTree(repo, ref, patterns) {
-  const listed = spawnSync('git', ['ls-tree', '-r', '-z', '--name-only', ref], {
-    cwd: repo,
-    encoding: 'utf-8',
-    maxBuffer: 1 << 30,
-  });
-  if (listed.status !== 0) {
-    throw new Error(`Cannot list ${ref}: ${listed.stderr}`);
-  }
-  const paths = listed.stdout.split('\0').filter(Boolean);
-  const wanted = paths.filter((path) =>
-    patterns.some((pattern) => matchesGlob(path, pattern))
-  );
-  const batch = spawnSync('git', ['cat-file', '--batch'], {
-    cwd: repo,
-    input: `${wanted.map((path) => `${ref}:${path}`).join('\n')}\n`,
-    maxBuffer: 1 << 30,
-  });
-  if (batch.status !== 0) {
-    throw new Error(`Cannot read ${ref}: ${String(batch.stderr)}`);
-  }
+  const paired = pairedCommit(repo, ref);
+  const halves = [
+    [[], ref],
+    ...(paired ? [[[`--git-dir=${join(repo, PRIVATE_DIR)}`], paired]] : []),
+  ];
+  const paths = [];
   const texts = new Map();
-  let at = 0;
-  for (const path of wanted) {
-    const end = batch.stdout.indexOf(10, at);
-    const [, type, size] = batch.stdout.toString('utf-8', at, end).split(' ');
-    at = end + 1;
-    if (type !== 'blob') continue;
-    texts.set(path, batch.stdout.toString('utf-8', at, at + Number(size)));
-    at += Number(size) + 1;
+  for (const [via, commit] of halves) {
+    const listed = spawnSync(
+      'git',
+      [...via, 'ls-tree', '-r', '-z', '--name-only', commit],
+      { cwd: repo, encoding: 'utf-8', maxBuffer: 1 << 30 }
+    );
+    if (listed.status !== 0) {
+      throw new Error(`Cannot list ${commit}: ${listed.stderr}`);
+    }
+    const listedPaths = listed.stdout.split('\0').filter(Boolean);
+    paths.push(...listedPaths);
+    const wanted = listedPaths.filter((path) =>
+      patterns.some((pattern) => matchesGlob(path, pattern))
+    );
+    const batch = spawnSync('git', [...via, 'cat-file', '--batch'], {
+      cwd: repo,
+      input: `${wanted.map((path) => `${commit}:${path}`).join('\n')}\n`,
+      maxBuffer: 1 << 30,
+    });
+    if (batch.status !== 0) {
+      throw new Error(`Cannot read ${commit}: ${String(batch.stderr)}`);
+    }
+    let at = 0;
+    for (const path of wanted) {
+      const end = batch.stdout.indexOf(10, at);
+      const [, type, size] = batch.stdout.toString('utf-8', at, end).split(' ');
+      at = end + 1;
+      if (type !== 'blob') continue;
+      texts.set(path, batch.stdout.toString('utf-8', at, at + Number(size)));
+      at += Number(size) + 1;
+    }
   }
+  paths.sort();
   return {
     repo,
     ref,
@@ -1668,13 +1680,7 @@ export function pathSet(paths) {
 
 /** The paths a fresh checkout of `ref` holds, or of the index when `ref` is omitted. */
 export function trackedPaths(root, ref) {
-  const listed = ref
-    ? git(root, ['ls-tree', '-r', '--name-only', ref])
-    : git(root, ['ls-files']);
-  if (listed.status !== 0) {
-    throw new Error(`Cannot list ${ref ?? 'the index'}: ${listed.stderr}`);
-  }
-  return pathSet(listed.stdout.split('\n').filter(Boolean));
+  return pathSet(ref ? filesAt(root, ref) : trackedFiles(root));
 }
 
 const ROOTS =
@@ -1809,17 +1815,31 @@ function localCommits(repo) {
     return cache.get(key);
   };
   return {
+    // A citation can name a plate-private commit once the checkout is split.
     reachable: (sha) =>
-      memo(`reach ${sha}`, () =>
-        ['origin/next', 'origin/main'].some(
-          (branch) =>
-            git(repo, ['merge-base', '--is-ancestor', sha, branch]).status === 0
-        )
+      memo(
+        `reach ${sha}`,
+        () =>
+          ['origin/next', 'origin/main'].some(
+            (branch) =>
+              git(repo, ['merge-base', '--is-ancestor', sha, branch]).status ===
+              0
+          ) ||
+          (isSplit(repo) &&
+            privateGit(repo, [
+              'merge-base',
+              '--is-ancestor',
+              sha,
+              'origin/next',
+            ]).status === 0)
       ),
     holds: (sha, path) =>
       memo(
         `holds ${sha}:${path}`,
-        () => git(repo, ['cat-file', '-e', `${sha}:${path}`]).status === 0
+        () =>
+          existsAt(repo, sha, path) ||
+          (isSplit(repo) &&
+            privateGit(repo, ['cat-file', '-e', `${sha}:${path}`]).status === 0)
       ),
   };
 }

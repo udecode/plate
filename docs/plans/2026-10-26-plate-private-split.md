@@ -1,6 +1,6 @@
 # Move tests, plans and research into a private repo
 
-Status: planning, waits for your pick of the repo layout
+Status: superseded by 2026-10-26-plate-public-export.md, after you picked the generated public copy
 Page: https://claude.ai/artifact/Fvy3AvCJwNugx2L7FeU8ZM
 Playbook: plan
 
@@ -23,25 +23,6 @@ Plate keeps each test next to the code it checks. A test finds its tools, such a
 The first design moved every test into one private folder at the top. From there a test looks upward and never reaches its package's tools or files. Each test runner needed its own patch to fake the old spot, and the reviewers found four runners and many file reads the patches miss.
 
 Two layouts keep tests where they are. In the first, the team works in one private repo, and a script copies everything except tests, plans and research to the public repo. In the second, a second git repo tracks the test files inside the same folder.
-
-## Open questions
-
-### Repo layout
-
-Which layout should hold the private tests?
-
-Why it needs you: It reopens your no-duplicates call and moves where production releases run.
-
-- All three reviewers found that moving tests out breaks about a dozen tools.
-- Tests find their packages from their own folder, so they must stay in place.
-
-- **Generated public copy** (recommended): The team works in one private repo, and a script publishes the public part. Cost: Public holds a generated copy nobody edits, and releases move to the private side.
-- **Second git repo**: Tests stay in place, and a second git repo tracks them in the same folder. Cost: Every git command, worktree and landing needs a wrapper for the second repo.
-- **Rebuild private folder**: I fix the folder design with package links, private CI and more loaders. Cost: Fourteen known breakages to fix, and a new test runner can break again.
-
-Why I pick it: Nothing in the team's tree moves, so every tool keeps working unchanged.
-
-Attention: look
 
 ## Outcome
 

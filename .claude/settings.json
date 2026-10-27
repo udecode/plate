@@ -12,6 +12,11 @@
             "type": "command",
             "command": "[ ! -d \"$CLAUDE_PROJECT_DIR\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/hand-drive.mjs\" --hook",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f tooling/scripts/git-private.mjs ] || node tooling/scripts/git-private.mjs autosave; } || true",
+            "timeout": 30
           }
         ]
       }

@@ -63,6 +63,12 @@
     "rev": 1
   },
   "plans": "docs/plans",
+  "companion": {
+    "dir": ".git-private",
+    "list": ".gitprivate",
+    "migrate": "node \"$(git rev-parse --path-format=absolute --git-common-dir)/../tooling/scripts/git-private.mjs\" migrate",
+    "detach": "node tooling/scripts/git-private.mjs detach"
+  },
   "proof": "verify",
   "skiller": true,
   "codexLanes": true,

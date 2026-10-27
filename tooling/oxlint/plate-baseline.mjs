@@ -8,7 +8,12 @@ import {
   lineIdentity,
   groupFindings,
 } from '../scripts/finding-baseline.mjs';
-import plugin, { baselineFile, reportAllEnv } from './plate-plugin.mjs';
+import { hasPrivateHalf, privatePaths } from '../scripts/git-private.mjs';
+import plugin, {
+  baselineFile,
+  privateBaselineFile,
+  reportAllEnv,
+} from './plate-plugin.mjs';
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 const rules = Object.entries(plugin.rules)
@@ -45,16 +50,37 @@ const found = {
   ...groupFindings(findings),
 };
 
-process.exitCode = enforceBaseline({
-  file: baselineFile,
-  found,
-  lowerCommand: 'pnpm lint:baseline',
-  mode: process.argv.includes('--check')
-    ? 'check'
-    : process.argv.includes('--init')
-      ? 'init'
-      : 'lower',
-  newFindingsHelp:
-    'New plate/* instances. Fix them, or put an exception on the line: `// oxlint-disable-next-line plate/<rule> -- <reason>; expires <YYYY-MM-DD>; approved <name>`. The baseline never grows.',
-  rules,
-});
+const hidden = privatePaths(repoRoot, [
+  ...new Set(findings.map(({ file }) => file)),
+]);
+const half = (keep) =>
+  Object.fromEntries(
+    Object.entries(found).map(([rule, files]) => [
+      rule,
+      Object.fromEntries(Object.entries(files).filter(([file]) => keep(file))),
+    ])
+  );
+// A clone without plate-private's files cannot see the findings its baseline lists.
+const halves = [
+  [baselineFile, (file) => !hidden.has(file)],
+  ...(hasPrivateHalf(repoRoot)
+    ? [[privateBaselineFile, (file) => hidden.has(file)]]
+    : []),
+];
+process.exitCode = 0;
+for (const [file, keep] of halves) {
+  process.exitCode ||= enforceBaseline({
+    boundFiles: [baselineFile, privateBaselineFile],
+    file,
+    found: half(keep),
+    lowerCommand: 'pnpm lint:baseline',
+    mode: process.argv.includes('--check')
+      ? 'check'
+      : process.argv.includes('--init')
+        ? 'init'
+        : 'lower',
+    newFindingsHelp:
+      'New plate/* instances. Fix them, or put an exception on the line: `// oxlint-disable-next-line plate/<rule> -- <reason>; expires <YYYY-MM-DD>; approved <name>`. The baseline never grows.',
+    rules,
+  });
+}

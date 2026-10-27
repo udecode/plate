@@ -7,6 +7,13 @@ import { fileURLToPath } from 'node:url';
 
 import { landed, stateOf } from '../../.agents/pstack/status.mjs';
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
+import {
+  changedSince,
+  existsAt,
+  inHistory,
+  newPrivateFiles,
+  trackedFiles,
+} from './git-private.mjs';
 
 export const scopesDir = 'docs/research/review-scopes';
 export const recordsDir = 'docs/research/review-records';
@@ -959,18 +966,14 @@ function commitFreshness(tree, record) {
     legacyGroups: 0,
     upstream: null,
   };
-  const moved = git(tree.root, [
-    'diff',
-    '--name-only',
-    '--no-renames',
-    record.commit,
-    '--',
-  ]);
+  const moved = changedSince(tree.root, record.commit)?.join('\n') ?? null;
   if (moved === null) {
     return { ...result, reason: `commit ${record.commit} is not reachable` };
   }
-  const untracked =
-    git(tree.root, ['ls-files', '--others', '--exclude-standard']) ?? '';
+  const untracked = [
+    git(tree.root, ['ls-files', '--others', '--exclude-standard']) ?? '',
+    ...newPrivateFiles(tree.root),
+  ].join('\n');
   const hit = new Set();
   for (const path of `${moved}\n${untracked}`.split('\n').filter(Boolean)) {
     if (isLaw(path)) {
@@ -1854,9 +1857,7 @@ function scopesOfReview(ledger, id) {
 
 const unignoredPaths = (root) => {
   const paths = new Set();
-  for (const file of (
-    git(root, ['ls-files', '-z', '-co', '--exclude-standard']) ?? ''
-  ).split('\0')) {
+  for (const file of trackedFiles(root, { untracked: true })) {
     for (let end = file.length; end > 0; end = file.lastIndexOf('/', end - 1)) {
       paths.add(file.slice(0, end));
     }
@@ -1865,8 +1866,7 @@ const unignoredPaths = (root) => {
 };
 
 const inTreeOrHistory = (root, unignored, path) =>
-  unignored.has(path.replace(/\/$/, '')) ||
-  Boolean(git(root, ['log', '--all', '-1', '--format=%H', '--', path])?.trim());
+  unignored.has(path.replace(/\/$/, '')) || inHistory(root, path);
 
 const absence = (root, path) =>
   existsSync(join(root, path))
@@ -2097,8 +2097,7 @@ function pageProblems(root, unignored, ledger, plans, plan, added) {
       ? plan.commit
       : null;
   const inReviewedTree = (path) =>
-    !reviewedTree ||
-    git(root, ['cat-file', '-e', `${reviewedTree}:${path}`]) !== null;
+    !reviewedTree || existsAt(root, reviewedTree, path);
   for (const id of plan.reviewBasis) {
     const reconciled = [
       id,
