@@ -10,7 +10,7 @@ review_upstreams: []
 
 # Link toolbar: fill the edit form, come back after Enter, open the right link
 
-Status: building: the triage comments and the close of udecode/plate#5238
+Status: executed: two triage field commands wait for you
 Topic: link
 Playbook: bug-fix
 
@@ -20,11 +20,11 @@ The babysit run for udecode/plate#5238, Dylan Schiemann's PR, taken as `triage f
 
 ### What will change?
 
-Edit link shows the link's text, the toolbar comes back after Enter, and Open link follows the caret. The toolbar comes back when a selection collapses after the link shortcut, and leaving the form closes it. Dylan fixed the first.
+Edit link fills in the link's text, the toolbar comes back after Enter, and Open link opens the link under the caret. Leaving the form closes it. It landed as c66a382362 on Dylan's commit. Both reporters still need to retest.
 
 ### What could go wrong?
 
-33 more stale reads in 18 other copied files stay unfixed. Leaving the form drops its draft. As on next, the link shortcut over a selection inside a link blocks Insert link and hides the formatting toolbar.
+33 more stale reads in 18 other copied files aren't fixed yet. Leaving the form throws away what you typed. As before, the link shortcut over a selection inside a link blocks Insert link and hides the formatting toolbar.
 
 ## Teach
 
@@ -146,7 +146,7 @@ Model: claude-opus-5-5 at xhigh effort, read from this session's transcript; the
 - [x] 4. Run the panel on this plan and settle its findings. Proof: each round's critical findings are applied with a test red on that round's tree and green after, the lead reverted its R15 fix after diff round 2, and R15 stays open as on next, and round 3's fixes get a diff round once built.
 - [x] 5. Run the writing passes and the diff rounds on round 3's, round 4's and round 5's fixes, regenerate the registry output and update the registry changelog entry.
 - [x] 6. Run R1 to R25 in Chromium, Firefox and WebKit, five warm runs of `edit-link.spec.ts` in each, and the hand drive. Proof: one log per engine and run, and the `hand-drive.mjs check` log.
-- [ ] 7. Land through `land.mjs` with a `Co-authored-by: Dylan Schiemann` line and no GitHub closing keyword in the message, record plate#5228 and plate#5314 as fixed, post their comments, run `pnpm triage labels` and close udecode/plate#5238 with the landed commit.
+- [x] 7. Land through `land.mjs` with a `Co-authored-by: Dylan Schiemann` line and no GitHub closing keyword in the message, record plate#5228 and plate#5314 as fixed, post their comments, run `pnpm triage labels` and close udecode/plate#5238 with the landed commit.
 
 ## Open work
 
@@ -165,3 +165,23 @@ Model: claude-opus-5-5 at xhigh effort, read from this session's transcript; the
 - Two other copied components read the document's focused element without looking inside shadow roots: `discussion.tsx` at line 1241 and `insert-toolbar-button.tsx` at lines 80, 290 and 326. Neither was driven in a shadow root here. owner: zbeyens. stop: a shadow-root report against either.
 - Plite takes happy-dom for WebKit, because `NON_BROWSER_DOM_USER_AGENT_RE` in `packages/plitejs/src/dom/utils/environment.ts` matches jsdom and not happy-dom, so the bun shadow-root cases stub `execCommand`. owner: zbeyens. stop: the next Plite test that needs the stub.
 - `LinkElement` and the static link read the plugin's allowed schemes while they render, so a runtime change of allowed schemes keeps a mounted link's old address, as the 2026-10-11 URL-policy review found. owner: zbeyens. stop: an app that changes allowed schemes at runtime.
+
+## Verification
+
+- `edit-link.spec.ts` passed five times warm with no retries in Chromium, Firefox and WebKit on the `link.tsx` that landed, with WebKit skipping R14, and once in each engine on the rebased commit. The other link browser specs passed in each engine, apart from the Firefox flake in the home page AI menu case that Open work names. The bun specs pass. All of it ran on the local Plite dev server, not on beta.platejs.org.
+- R25 ran only as a scratch bun probe in its own process, and R21 to R23 ran in a browser only on an uncommitted scratch Chromium page that mounts the toolbar in a shadow root.
+- A hand drive covered the 36 cells `hand-drive.mjs scope` lists. The pane was hidden, so it read focus, text and toolbar state, and the toolbar's position rests on the Playwright specs.
+
+## Close
+
+Reversals first. Diff round 2 found that round 2's shortcut change, which let the key through to the editor over a selection inside a link, made Plite delete that selection with the shortcut set to Control+K on macOS. The run went back to next's shortcut, and R15 stays open as on next. Round 3's capture `focusin` listener on the document missed focus inside a shadow root, so diff round 1 replaced it with the link plugin's `focus` handler and the form containers' own blur. Round 4's handler that stopped only the browser's default over a link reported the key unhandled, and the same Control+K delete turned `Example` into `Eple`, so the run removed it too. The first final matrix failed R14 in all five WebKit runs, because WebKit's Shift+Tab moves the caret out of the link, and the spec now skips R14 there. During the landing, two rebases onto `next` conflicted in the generated registry files, which the lead regenerated each time. `next`'s new browser import check also moved the spec's `test` and `expect` imports to `@platejs/test/playwright`, and the spec passed once in each engine on the rebased commit.
+
+What landed:
+
+- c66a382362 on `next`, with Dylan Schiemann as co-author. In `link.tsx`, the text field reads the store when the form opens, the toolbar shows while the link under a collapsed caret is set, Open link subscribes to that link, and every way out of a form goes through `closeForm()`, which `submit` ends with. `edit-link.spec.ts`, renamed from Dylan's `edit-link-text.spec.ts`, holds R1 to R8, R13, R14 and R17, and `link.lifecycle.spec.tsx` holds R5, R11, R16 and R18 to R24. The commit also carries both registry changelog entries and the regenerated registry output.
+- a44f259f6e, which records plate#5228 and plate#5314 as fixed, each with a retest in the reporter's browser on beta.platejs.org.
+- A fix comment on each issue, and udecode/plate#5238 closed with a link to c66a382362.
+
+The React Compiler cached render-time reads in the copied toolbar, and `submit` hid the toolbar with nothing to show it again. 5b0d5fb2be, 98184323b5 and 0231a088c4 introduced these bugs. R1 failed on next and R5 on next and the PR, both in Chromium, before the fix. The design keeps the open and edit states (Lanes, item 1), and the thermo review's structural findings wait for a refactor. Copied registry code takes changelog entries, not a changeset. The reviews were the plan panel, three diff rounds up to the cap and the thermo review. Neither reporter has run the fix in their own browser, and the beta deploy of c66a382362 was still running when the comments went out.
+
+Counts: four owner asks. Babysit udecode/plate#5238 as `triage fix #5228` and claim plate#5314 are done. The workflow friction fixes land next. The fix comment on plate#5228 explains why it closed by mistake. Every gate of this plan closed: the plan panel, three diff rounds, the thermo review, the writing passes, the hand drive, the browser matrix, the last check and delivery. Two `pnpm triage labels` commands, which set both issues to Needs retest, wait for the owner, and dylans is still assigned on plate#5228.
