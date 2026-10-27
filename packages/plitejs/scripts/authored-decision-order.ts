@@ -6,6 +6,7 @@ import {
   enforceBaseline,
   readBaseline,
 } from '../../../tooling/scripts/finding-baseline.mjs';
+import type { AuthoredResult } from '../src/authored';
 import { expandContexts } from '../src/authored/facts/compact';
 import {
   type LandedRecord,
@@ -16,10 +17,10 @@ import {
 } from '../src/authored/facts/records';
 import type { AuthoredMark, AuthoredMember } from '../src/authored/tree/marks';
 import type { JsonNode } from '../src/core/change/tokens';
+import { getDefined } from '../src/internal/get-defined';
 import { recordsOf, reviewRecords } from '../test/support/authored';
 import {
   admissionOf,
-  all,
   type Block2,
   decideIn,
   decisionAdmission,
@@ -32,11 +33,20 @@ import {
   ID_PLACES,
   type IdPlaces,
   LANDED,
+  type LiftKey,
+  type LiftOp,
+  type LiftPiece,
+  type LiftQuote,
   type LinkHalf,
+  liftStart,
+  pendingIn,
+  pendingRead,
   quotesEditor,
   quotesSchema,
   recordGiveback,
+  recordLift,
   resolveWithVerdicts,
+  all,
   settleAsAdmission,
   loadWithVerdicts,
   type Verdict,
@@ -56,7 +66,31 @@ const GIVEBACK_TOGETHER = 'giveback-decided-together';
 const GIVEBACK_OWNER = 'packages/plitejs/src/authored/tree/cuts.ts';
 const GATE = { blocks: 2, changes: 2, marks: 2 };
 const GIVEBACK_GATE = { changes: 2, edits: 0, ops: 3 };
-const FAMILIES = ['giveback', 'quotes'] as const;
+const LIFT_BOUND = {
+  bridge: 0,
+  changes: 2,
+  edits: 0,
+  enter: 'inline',
+  enters: 1,
+  inserts: 0,
+  interleave: 0,
+  key: 'url',
+  ops: 2,
+  outside: 0,
+  pair: 0,
+  place: 0,
+  quote: 0,
+  seed: 0,
+  writes: 0,
+};
+// `mixed` writes the ref a split drops or the metadata note, each per write.
+const LIFT_KEYS: ReadonlyArray<LiftKey | 'mixed'> = [
+  'mixed',
+  'note',
+  'ref',
+  'url',
+];
+const FAMILIES = ['giveback', 'lift', 'quotes'] as const;
 
 type Option =
   | 'align'
@@ -108,7 +142,7 @@ const stray = process.argv
   .slice(2)
   .filter(
     (arg) =>
-      !/^--(?:(?:blocks|changes|family|giveback-changes|giveback-edits|giveback-ops|giveback-script|jobs|marks|schema|together)=.*|init|lower)$/.test(
+      !/^--(?:(?:blocks|changes|family|giveback-changes|giveback-edits|giveback-ops|giveback-script|jobs|lift-bridge|lift-changes|lift-edits|lift-enter|lift-enters|lift-inserts|lift-interleave|lift-key|lift-ops|lift-outside|lift-pair|lift-place|lift-quote|lift-script|lift-seed|lift-shard|lift-writes|marks|schema|together)=.*|init|lower)$/.test(
         arg
       )
   );
@@ -139,6 +173,92 @@ const givebackBound = {
   edits: wholeFlag('giveback-edits', GIVEBACK_GATE.edits, 0),
   ops: wholeFlag('giveback-ops', GIVEBACK_GATE.ops, 0),
 };
+const liftBound = {
+  bridge: wholeFlag('lift-bridge', LIFT_BOUND.bridge, 0),
+  changes: wholeFlag('lift-changes', LIFT_BOUND.changes),
+  edits: wholeFlag('lift-edits', LIFT_BOUND.edits, 0),
+  enter: flag('lift-enter') ?? LIFT_BOUND.enter,
+  enters: wholeFlag('lift-enters', LIFT_BOUND.enters),
+  inserts: wholeFlag('lift-inserts', LIFT_BOUND.inserts, 0),
+  interleave: wholeFlag('lift-interleave', LIFT_BOUND.interleave, 0),
+  key: (flag('lift-key') ?? LIFT_BOUND.key) as LiftKey | 'mixed',
+  ops: wholeFlag('lift-ops', LIFT_BOUND.ops, 0),
+  outside: wholeFlag('lift-outside', LIFT_BOUND.outside, 0),
+  pair: wholeFlag('lift-pair', LIFT_BOUND.pair, 0),
+  place: wholeFlag('lift-place', LIFT_BOUND.place, 0),
+  quote: wholeFlag('lift-quote', LIFT_BOUND.quote, 0),
+  seed: wholeFlag('lift-seed', LIFT_BOUND.seed, 0),
+  writes: wholeFlag('lift-writes', LIFT_BOUND.writes, 0),
+};
+if (!LIFT_KEYS.includes(liftBound.key)) {
+  console.error(`--lift-key takes ${LIFT_KEYS.join(', ')}.`);
+  process.exit(2);
+}
+if (liftBound.seed > 1) {
+  console.error('--lift-seed takes 0 or 1.');
+  process.exit(2);
+}
+if (liftBound.enters > 2) {
+  console.error('--lift-enters takes 1 or 2.');
+  process.exit(2);
+}
+if (!['both', 'inline', 'paragraph'].includes(liftBound.enter)) {
+  console.error('--lift-enter takes inline, paragraph or both.');
+  process.exit(2);
+}
+if (liftBound.interleave > 1) {
+  console.error('--lift-interleave takes 0 or 1.');
+  process.exit(2);
+}
+if (liftBound.inserts > 1) {
+  console.error('--lift-inserts takes 0 or 1.');
+  process.exit(2);
+}
+if (liftBound.place > 1) {
+  console.error('--lift-place takes 0 or 1.');
+  process.exit(2);
+}
+if (liftBound.outside > 2) {
+  console.error('--lift-outside takes 0, 1 or 2.');
+  process.exit(2);
+}
+if (liftBound.edits > 1) {
+  console.error('--lift-edits takes 0 or 1.');
+  process.exit(2);
+}
+if (liftBound.pair > 3) {
+  console.error('--lift-pair takes 0, 1, 2 or 3.');
+  process.exit(2);
+}
+if (liftBound.quote > 1) {
+  console.error('--lift-quote takes 0 or 1.');
+  process.exit(2);
+}
+// The bridge's `q` and `r` follow the link's paragraph, where the other
+// starts find their own blocks.
+if (
+  liftBound.bridge > 1 ||
+  (liftBound.bridge === 1 &&
+    liftBound.pair + liftBound.outside + liftBound.quote > 0)
+) {
+  console.error(
+    '--lift-bridge takes 0 or 1, and --lift-bridge=1 takes neither --lift-pair, --lift-outside nor --lift-quote.'
+  );
+  process.exit(2);
+}
+// The pair's `q` sits between the links, where `--lift-outside` finds
+// another shape, and a quote holds the link's paragraph, where
+// `--lift-place` and `d` find another.
+if (
+  (liftBound.pair > 0 && liftBound.outside > 0) ||
+  (liftBound.quote === 1 &&
+    (liftBound.pair > 0 || liftBound.place > 0 || liftBound.outside === 2))
+) {
+  console.error(
+    '--lift-pair does not take --lift-outside, and --lift-quote=1 takes neither --lift-pair, --lift-place=1 nor --lift-outside=2.'
+  );
+  process.exit(2);
+}
 if (givebackBound.edits > 1) {
   console.error('--giveback-edits takes 0 or 1.');
   process.exit(2);
@@ -148,7 +268,10 @@ if (family !== undefined && !FAMILIES.includes(family as Family)) {
   console.error(`--family takes ${FAMILIES.join(' or ')}.`);
   process.exit(2);
 }
-const runs = (name: Family) => family === undefined || family === name;
+// The lift family still finds the rejected Enter's open decision-order
+// failures, so it runs only when named, outside the gate and its baseline.
+const runs = (name: Family) =>
+  family === name || (family === undefined && name !== 'lift');
 const SCHEMAS = [
   'plain',
   'generated',
@@ -170,6 +293,21 @@ const schemas: ReadonlyArray<IdPlaces | null> =
 // Takes a script's name as a failure prints it, to rerun that script alone
 // within the bound.
 const onlyScript = flag('giveback-script');
+const onlyLift = flag('lift-script');
+// `--lift-shard=2/3` runs every third lift script from the second on, so a
+// family past the time budget runs in parts that cover it together.
+const [liftPart, liftParts] = (flag('lift-shard') ?? '1/1')
+  .split('/')
+  .map(Number);
+if (
+  !Number.isInteger(liftPart) ||
+  !Number.isInteger(liftParts) ||
+  liftPart < 1 ||
+  liftPart > liftParts
+) {
+  console.error('--lift-shard takes <part>/<parts>, such as 2/3.');
+  process.exit(2);
+}
 const atGate =
   family === undefined &&
   schemaFlag === 'plain' &&
@@ -659,6 +797,12 @@ type Outcome<State> =
  * deciding at once must agree on.
  */
 type Walk<State> = Readonly<{
+  /**
+   * Decides each order the walk takes on one editor too, from the start, and
+   * compares what it reads after each step with `read` of the loaded state
+   * the same steps reach.
+   */
+  continued?: Continued<unknown>;
   failures?: readonly Failure[];
   name: string;
   pending: readonly string[];
@@ -677,10 +821,30 @@ type Walk<State> = Readonly<{
   ) => Outcome<State>;
 }>;
 
+/**
+ * An editor that decides one order's steps itself, so the cards and facts
+ * it carries from one decision to the next meet every step. `begun`
+ * is the editor a first step from the start decided on, which already is
+ * one.
+ */
+type Continued<Live> = Readonly<{
+  begun: (state: unknown) => Live | undefined;
+  open: () => Live;
+  read: (live: Live) => Readonly<{ seen: unknown; shown: string }>;
+  step: (
+    live: Live,
+    decided: ReadonlyMap<string, Verdict>,
+    deciding: ReadonlyMap<string, Verdict>
+  ) => Outcome<Live>;
+}>;
+
+type Trail = ReadonlyArray<ReadonlyMap<string, Verdict>>;
+
 type Reached<State> = Readonly<{
   decided: ReadonlyMap<string, Verdict>;
   order: readonly string[];
   state: State;
+  trail: Trail;
 }>;
 
 const keyOf = (decisions: ReadonlyMap<string, Verdict>) =>
@@ -708,13 +872,14 @@ const within = (
 
 const explore = <State>(walk: Walk<State>) => {
   const failures: Failure[] = [];
-  const { pending } = walk;
+  const { continued, pending } = walk;
   const atOnce = new Map<string, Outcome<State>>();
   // Each set of verdicts some calls reached, with each distinct state it
   // reached and the first order that reached it.
   const reached = new Map<string, Map<string, Reached<State>>>();
   const walked = new Map<string, boolean>();
   let compared = 0;
+  let followed = 0;
   const atOnceOf = (decisions: ReadonlyMap<string, Verdict>) => {
     const key = keyOf(decisions);
     const cached = atOnce.get(key);
@@ -726,25 +891,130 @@ const explore = <State>(walk: Walk<State>) => {
   const reach = (
     decided: ReadonlyMap<string, Verdict>,
     order: readonly string[],
+    trail: Trail,
     state: State
   ) => {
     const key = keyOf(decided);
     const states = reached.get(key) ?? new Map<string, Reached<State>>();
     reached.set(key, states);
     const same = walk.same?.(state) ?? JSON.stringify(state);
-    if (!states.has(same)) states.set(same, { decided, order, state });
+    if (!states.has(same)) states.set(same, { decided, order, state, trail });
   };
+  const toldOf = (outcome: Outcome<unknown>) =>
+    outcome.kind === 'settled'
+      ? getDefined(continued).read(outcome.state).shown
+      : outcome.kind === 'waits'
+        ? 'waits'
+        : `refuses, ${outcome.reason}`;
+  // An editor that decided `trail`'s calls one after another from the
+  // start. The walk followed them on another editor already, so each settles
+  // again unless deciding is not deterministic.
+  const replay = (trail: Trail, identity: string) => {
+    const one = getDefined(continued);
+    const live = one.open();
+    let decided = new Map<string, Verdict>();
+    for (const deciding of trail) {
+      const outcome = one.step(live, decided, deciding);
+      if (outcome.kind !== 'settled') {
+        failures.push({
+          detail: `  continued editor: ${toldOf(outcome)} at ${keyOf(deciding)} when replayed on a fresh editor`,
+          identity,
+        });
+        return undefined;
+      }
+      decided = new Map([...decided, ...deciding]);
+    }
+    return live;
+  };
+  // Whether the continued editor's step reads as the loaded editor's: the
+  // editor to go on with, or null after a failure.
+  const followsOn = (
+    identity: string,
+    outcome: Outcome<unknown>,
+    state: State
+  ): Readonly<{ live?: unknown }> | null => {
+    followed += 1;
+    const loaded = walk.read(state);
+    const actual =
+      outcome.kind === 'settled'
+        ? getDefined(continued).read(outcome.state)
+        : undefined;
+    if (actual && isDeepStrictEqual(actual.seen, loaded.seen)) {
+      return outcome.kind === 'settled' ? { live: outcome.state } : null;
+    }
+    failures.push({
+      detail: `  continued editor: ${actual?.shown ?? toldOf(outcome)}\n  loaded editor:    ${loaded.shown}`,
+      identity,
+    });
+    return null;
+  };
+  // Every later step from two states with one `same` key gives one outcome,
+  // so an order the walk dropped for reaching a known state reads the loaded
+  // outcomes the first order to reach it computed.
+  const loadedSteps = new Map<string, Outcome<State>>();
+  const loadedStep = (
+    at: string | undefined,
+    state: State,
+    decided: ReadonlyMap<string, Verdict>,
+    deciding: ReadonlyMap<string, Verdict>
+  ) => {
+    if (at === undefined) return walk.step(state, decided, deciding);
+    const key = `${at} then ${keyOf(deciding)}`;
+    const known = loadedSteps.get(key);
+    if (known) return known;
+    const outcome = walk.step(state, decided, deciding);
+    loadedSteps.set(key, outcome);
+    return outcome;
+  };
+  // Whether a state reads as deciding its verdicts at once does, as `agrees`
+  // judges it, without counting or reporting it again.
+  const readsAsAtOnce = (
+    decided: ReadonlyMap<string, Verdict>,
+    state: State
+  ) => {
+    const expected = atOnceOf(decided);
+    const { seen } = walk.read(state);
+    if (expected.kind === 'waits') {
+      const first = firstReads.get(keyOf(decided));
+      return first === undefined || isDeepStrictEqual(seen, first.seen);
+    }
+    return (
+      expected.kind === 'settled' &&
+      isDeepStrictEqual(seen, walk.read(expected.state).seen)
+    );
+  };
+  // What the first order to reach each set of verdicts read, for the sets
+  // whose at-once call waits.
+  const firstReads = new Map<
+    string,
+    Readonly<{ identity: string; seen: unknown; shown: string }>
+  >();
   // Whether a state that more than one call reached reads as deciding its
-  // verdicts at once does; a call that waits there leaves nothing to compare.
+  // verdicts at once does. Where that call waits, the state must read as the
+  // first order to reach the same verdicts read.
   const agrees = (
     decided: ReadonlyMap<string, Verdict>,
     identity: string,
     state: State
   ) => {
     const expected = atOnceOf(decided);
-    if (expected.kind === 'waits') return true;
-    compared += 1;
     const actual = walk.read(state);
+    if (expected.kind === 'waits') {
+      const key = keyOf(decided);
+      const first = firstReads.get(key);
+      if (!first) {
+        firstReads.set(key, { identity, ...actual });
+        return true;
+      }
+      compared += 1;
+      if (isDeepStrictEqual(actual.seen, first.seen)) return true;
+      failures.push({
+        detail: `  one at a time: ${actual.shown}\n  first order:   ${first.shown}, from ${first.identity}`,
+        identity,
+      });
+      return false;
+    }
+    compared += 1;
     const told = `  one at a time: ${actual.shown}`;
     if (expected.kind === 'refused') {
       failures.push({
@@ -761,47 +1031,128 @@ const explore = <State>(walk: Walk<State>) => {
     });
     return false;
   };
+  const sameAt = (decided: ReadonlyMap<string, Verdict>, state: State) =>
+    continued && walk.same
+      ? `${keyOf(decided)} ${walk.same(state)}`
+      : undefined;
+  // `follow` holds the continued editor at `trail` while the walk follows
+  // this order on one, with no editor when the next step must replay the
+  // trail, since an editor cannot fork and an earlier sibling took it.
+  // Two orders that reach the same verdicts and value carry different editor
+  // state, so an order the loaded walk drops through `same` goes on in
+  // `dropped` mode: only the continued editor decides, and each step is
+  // compared with the loaded outcome the first order computed.
   const descend = (
     decided: ReadonlyMap<string, Verdict>,
     order: readonly string[],
+    trail: Trail,
     state: State,
-    reporting: boolean
+    reporting: boolean,
+    follow: Readonly<{ live?: unknown }> | null,
+    at = sameAt(decided, state),
+    dropped = false
   ) => {
-    for (const change of pending) {
-      if (decided.has(change)) continue;
-      for (const verdict of ['accept', 'reject'] as const) {
-        const steps = [...order, `${verdict} ${change}`];
-        const identity = `${walk.name}: ${steps.join(', ')}`;
-        const now = new Map(decided).set(change, verdict);
-        const outcome = walk.step(state, decided, new Map([[change, verdict]]));
-        if (outcome.kind === 'waits') continue;
-        if (outcome.kind === 'refused') {
-          if (reporting) {
-            failures.push({
-              detail: `  the last step is ${outcome.reason}`,
-              identity,
-            });
-          }
-          continue;
-        }
-        reach(now, steps, outcome.state);
-        if (walk.same) {
-          const same = `${keyOf(now)} ${walk.same(outcome.state)}`;
-          if (walked.get(same) || (walked.has(same) && !reporting)) continue;
-          walked.set(same, reporting);
-        }
-        const decidesAlone = order.length === 0;
-        descend(
-          now,
-          steps,
-          outcome.state,
-          reporting && (decidesAlone || agrees(now, identity, outcome.state))
-        );
+    if (dropped && (follow === null || continued === undefined)) return;
+    const tries = pending.flatMap((change) =>
+      decided.has(change)
+        ? []
+        : (['accept', 'reject'] as const).map((verdict) => {
+            const deciding = new Map([[change, verdict]]);
+            const steps = [...order, `${verdict} ${change}`];
+            return {
+              deciding,
+              identity: `${walk.name}: ${steps.join(', ')}`,
+              now: new Map(decided).set(change, verdict),
+              outcome: loadedStep(at, state, decided, deciding),
+              steps,
+            };
+          })
+    );
+    let held = follow?.live;
+    let following = follow !== null && continued !== undefined;
+    // A step the loaded editor waits on must wait on the continued one too.
+    // A wait commits nothing, so the editor stays at `trail`. From the start
+    // both editors make the same calls.
+    for (const { deciding, identity, outcome } of tries) {
+      if (!following || trail.length === 0 || outcome.kind !== 'waits') {
+        continue;
       }
+      held ??= replay(trail, identity);
+      if (held === undefined) {
+        following = false;
+        break;
+      }
+      const probe = getDefined(continued).step(held, decided, deciding);
+      followed += 1;
+      if (probe.kind === 'waits') continue;
+      failures.push({
+        detail: `  continued editor: ${toldOf(probe)}\n  loaded editor:    waits`,
+        identity,
+      });
+      if (probe.kind === 'settled') held = undefined;
+    }
+    for (const { deciding, identity, now, outcome, steps } of tries) {
+      if (outcome.kind === 'waits') continue;
+      if (outcome.kind === 'refused') {
+        // The first order to reach this state reported the refusal already.
+        if (reporting && !dropped) {
+          failures.push({
+            detail: `  the last step is ${outcome.reason}`,
+            identity,
+          });
+        }
+        continue;
+      }
+      const next = [...trail, deciding];
+      const same = walk.same
+        ? `${keyOf(now)} ${walk.same(outcome.state)}`
+        : undefined;
+      let drops = dropped;
+      if (!dropped) {
+        reach(now, steps, next, outcome.state);
+        if (same !== undefined) {
+          drops = walked.get(same) || (walked.has(same) && !reporting);
+          if (!drops) walked.set(same, reporting);
+        }
+      }
+      if (drops && !(following && reporting)) continue;
+      const agreed = drops
+        ? readsAsAtOnce(now, outcome.state)
+        : reporting &&
+          (order.length === 0 || agrees(now, identity, outcome.state));
+      let after: Readonly<{ live?: unknown }> | null = null;
+      if (following && agreed) {
+        const one = getDefined(continued);
+        const begun = trail.length === 0 ? one.begun(outcome.state) : undefined;
+        const live =
+          begun ??
+          held ??
+          (trail.length === 0 ? one.open() : replay(trail, identity));
+        held = undefined;
+        if (live !== undefined) {
+          after = followsOn(
+            identity,
+            begun === undefined
+              ? one.step(live, decided, deciding)
+              : { kind: 'settled', state: begun },
+            outcome.state
+          );
+        }
+      }
+      descend(
+        now,
+        steps,
+        next,
+        outcome.state,
+        agreed,
+        after,
+        continued ? same : undefined,
+        drops
+      );
     }
   };
-  reach(new Map(), [], walk.start);
-  descend(new Map(), [], walk.start, true);
+  reach(new Map(), [], [], walk.start);
+  descend(new Map(), [], [], walk.start, true, {});
 
   // A set of verdicts no order of single steps reaches may settle when the
   // verdicts it adds to a reached set are decided in one call. That call is a
@@ -820,7 +1171,7 @@ const explore = <State>(walk: Walk<State>) => {
           decisions.size - decided.size >= 2 && within(decided, decisions)
       )
       .sort((a, b) => b.decided.size - a.decided.size);
-    for (const { decided, order, state } of from) {
+    for (const { decided, order, state, trail } of from) {
       const deciding = new Map(
         [...decisions].filter(([change]) => !decided.has(change))
       );
@@ -836,14 +1187,29 @@ const explore = <State>(walk: Walk<State>) => {
         walk.read(outcome.state).shown,
       ]);
       const steps = [...order, `(${keyOf(deciding)})`];
-      reach(decisions, steps, outcome.state);
-      descend(
-        decisions,
-        steps,
-        outcome.state,
-        decided.size === 0 ||
-          agrees(decisions, `${walk.name}: ${steps.join(', ')}`, outcome.state)
-      );
+      const identity = `${walk.name}: ${steps.join(', ')}`;
+      const next = [...trail, deciding];
+      reach(decisions, steps, next, outcome.state);
+      const agreed =
+        decided.size === 0 || agrees(decisions, identity, outcome.state);
+      let after: Readonly<{ live?: unknown }> | null = null;
+      if (continued && agreed) {
+        const begun =
+          decided.size === 0 ? continued.begun(outcome.state) : undefined;
+        const live =
+          begun ??
+          (decided.size === 0 ? continued.open() : replay(trail, identity));
+        if (live !== undefined) {
+          after = followsOn(
+            identity,
+            begun === undefined
+              ? continued.step(live, decided, deciding)
+              : { kind: 'settled', state: begun },
+            outcome.state
+          );
+        }
+      }
+      descend(decisions, steps, next, outcome.state, agreed, after);
       break;
     }
     if (reached.has(key)) continue;
@@ -858,6 +1224,7 @@ const explore = <State>(walk: Walk<State>) => {
   return {
     compared,
     failures: [...failures, ...(walk.failures ?? [])],
+    followed,
     idle: pending.length > 1 && compared === 0 ? [walk.name] : [],
     together,
   };
@@ -1377,9 +1744,399 @@ const opStory = (op: GivebackOp) => {
   return `${by} sets ${op.at} ${op.value}`;
 };
 
+// What a lift script leaves on one piece of the link: the kinds done to it,
+// whether a change typed into the empty text after it, the keys it holds, the
+// keys a change unset on it and who wrote it.
+type LiftPieceState = {
+  done: Set<'empty' | 'remove' | 'type' | 'unwrap'>;
+  held: Set<LiftKey>;
+  typedAfter: boolean;
+  unset: Set<LiftKey>;
+  writers: Set<string>;
+};
+
+const onSecond = (op: LiftOp) => 'second' in op && op.second === true;
+
+// The pieces `ops` leaves on the first link or, with `second`, on the second
+// link, in order. When a link is split twice, the new piece takes what the
+// piece it cuts holds and who wrote it, but not the ref a split drops.
+const piecesOf = (ops: readonly LiftOp[], second = false) => {
+  const seeded: LiftKey[] =
+    liftBound.seed === 1 && liftBound.key !== 'mixed' && liftBound.key !== 'ref'
+      ? [liftBound.key]
+      : [];
+  const piece = (held: readonly LiftKey[]): LiftPieceState => ({
+    done: new Set(),
+    held: new Set(held),
+    typedAfter: false,
+    unset: new Set(),
+    writers: new Set(),
+  });
+  const pieces: LiftPieceState[] = [];
+  for (const op of ops) {
+    if (
+      op.kind === 'between' ||
+      op.kind === 'bridge' ||
+      op.kind === 'join' ||
+      op.kind === 'outside' ||
+      op.kind === 'quote' ||
+      onSecond(op) !== second
+    ) {
+      continue;
+    }
+    if (op.kind === 'split') {
+      if (pieces.length === 0) {
+        pieces.push(piece([...seeded, 'ref']), piece(seeded));
+        continue;
+      }
+      const at =
+        (ops[0] as Extract<LiftOp, { kind: 'split' }>).at === 1 ? 1 : 0;
+      const cut = getDefined(pieces[at]);
+      pieces.splice(at + 1, 0, {
+        done: new Set(),
+        held: new Set([...cut.held].filter((key) => key !== 'ref')),
+        typedAfter: cut.typedAfter,
+        unset: new Set(cut.unset),
+        writers: new Set(cut.writers),
+      });
+      cut.typedAfter = false;
+      continue;
+    }
+    const target = getDefined(
+      pieces[op.of === 'left' ? 0 : op.of === 'middle' ? 1 : pieces.length - 1]
+    );
+    if (op.kind === 'type' && op.after) target.typedAfter = true;
+    else if (op.kind === 'set' || op.kind === 'unset') {
+      const key = op.key ?? (liftBound.key as LiftKey);
+      target.writers.add(op.by);
+      if (op.kind === 'set') target.held.add(key);
+      else {
+        target.held.delete(key);
+        target.unset.add(key);
+      }
+    } else target.done.add(op.kind);
+  }
+  return pieces;
+};
+
+// Every lift script splits the link `amb` once or twice, the second time by
+// `s0` or, with --lift-enters=2, by another change, and then unwraps,
+// empties or removes its pieces or, with --lift-writes, writes their key, by
+// a change or, with --lift-edits=1, by an Editing author. The key is the url
+// or, with --lift-key, a metadata note or the ref a split drops; with
+// --lift-seed=1 the link starts with it and a change may unset it on a piece
+// that holds it. Each piece takes each kind at most once, one write from each
+// author, one unset, and nothing after its removal. The second split comes
+// before any other operation or, with --lift-interleave=1, after any that
+// leave the piece it cuts with writes only. A split cuts the link alone or,
+// with --lift-enter=paragraph, is an Enter that cuts the paragraph too, and
+// with --lift-enter=both it is either. With --lift-inserts=1 a change types
+// one letter into a piece or into the empty text after a piece that another
+// piece follows, each place once; a later operation may still empty or remove
+// the piece that holds the letter. With --lift-place=1 the start document
+// has a paragraph `p` before the link's, and only scripts in which one change
+// joins the link's first paragraph into it run. With --lift-outside=1 the
+// start document has a paragraph `q` after the link's last paragraph, and a
+// change may remove `q`, type a letter into it and join it into the
+// paragraph before it, each at most once and nothing after its removal; only
+// scripts that do at least one of these run. Each counts as an operation.
+// With --lift-outside=2 a paragraph `d` precedes `q` instead, and right
+// after the first split a change removes `d` and then the Editing author
+// joins `q` into it, which recording keeps as an Editing join claim the
+// pending removal still resolves; only scripts with both run, neither counts
+// as an operation, and no other operation touches `d` or `q`.
+// With --lift-pair=1 the start document has the paragraph `q` after the
+// link's paragraph and a paragraph holding a second link `cd` after `q`, and
+// right after the first split, `s0` or another change splits `cd` after `c`
+// in each way --lift-enter allows; only scripts with that split run, it
+// counts as no operation, and the other operations may touch either link's
+// pieces. --lift-pair=2 puts a paragraph `w` after `q`, so two plain
+// paragraphs part the links, and with --lift-pair=3, right after the second
+// link's split, `s0` or another change types `z` into `q`, so a pending
+// suggestion joins the links; that too counts as no operation.
+// With --lift-bridge=1 the plain paragraph `q` and a paragraph `r` follow
+// the link's paragraph, and right after the first split `s0` or another
+// change joins `r` into `q`, or the start holds one paragraph `qr` that
+// such a change splits after `q` with an Enter. Then `s0` or another change
+// centers `r`. Only scripts with both run, neither counts as an operation,
+// and no other operation touches `q` or `r`.
+// With --lift-quote=1 the
+// first split names the quote the link's paragraph starts in, as its only,
+// first or second paragraph, and a change may wrap the first paragraph
+// holding the link in a quote, lift it out of its quote, unwrap the outer
+// quote, or join the quote's other paragraph and the link's, each at most
+// once. Each counts as an operation; nothing follows a lift, whose recording
+// moves the paragraph, and no join follows a wrap, after which the link's
+// paragraph is no longer the quote's. With --lift-outside=1, `q` follows
+// the quote, and no operation on `q` follows its join, which recording
+// writes as a move into the quote. Changes are labeled by first use, as in
+// `pickings`.
+function* liftScripts(): Generator<LiftOp[]> {
+  const enters: ReadonlyArray<Readonly<{ enter?: 'paragraph' }>> =
+    liftBound.enter === 'both'
+      ? [{}, { enter: 'paragraph' }]
+      : liftBound.enter === 'paragraph'
+        ? [{ enter: 'paragraph' }]
+        : [{}];
+  const ops: LiftOp[] = [];
+  function* extend(fresh: number): Generator<LiftOp[]> {
+    const joined = ops.some((op) => op.kind === 'join');
+    const outside = new Set(
+      ops.flatMap((op) => (op.kind === 'outside' ? [op.does] : []))
+    );
+    const quoted = new Set(
+      ops.flatMap((op) => (op.kind === 'quote' ? [op.does] : []))
+    );
+    const paired = ops.some((op) => op.kind === 'split' && onSecond(op));
+    const between = ops.some((op) => op.kind === 'between');
+    const bridged = new Set(
+      ops.flatMap((op) => (op.kind === 'bridge' ? [op.does] : []))
+    );
+    if (
+      (liftBound.bridge === 0 || bridged.has('center')) &&
+      (liftBound.place === 0 || joined) &&
+      (liftBound.outside === 0 ||
+        (liftBound.outside === 1 ? outside.size > 0 : outside.has('join'))) &&
+      (liftBound.pair === 0 || (paired && (liftBound.pair !== 3 || between)))
+    ) {
+      yield [...ops];
+    }
+    if (quoted.has('lift')) return;
+    const pieces = piecesOf(ops);
+    const twice = pieces.length === 3;
+    const touched = ops.filter(
+      (op) =>
+        op.kind !== 'split' &&
+        op.kind !== 'between' &&
+        op.kind !== 'bridge' &&
+        (op.kind !== 'outside' || liftBound.outside !== 2)
+    ).length;
+    const last = touched === liftBound.ops;
+    const authors = Array.from(
+      { length: Math.min(fresh + 1, liftBound.changes) },
+      (_, at) => `s${at + 1}`
+    );
+    function* run(op: LiftOp) {
+      ops.push(op);
+      yield* extend(op.by === `s${fresh + 1}` ? fresh + 1 : fresh);
+      ops.pop();
+    }
+    if (liftBound.pair > 0 && !paired) {
+      for (const by of ['s0', ...authors]) {
+        for (const enter of enters) {
+          yield* run({ at: 1, by, ...enter, kind: 'split', second: true });
+        }
+      }
+      return;
+    }
+    if (liftBound.pair === 3 && !between) {
+      for (const by of ['s0', ...authors]) yield* run({ by, kind: 'between' });
+      return;
+    }
+    if (liftBound.bridge === 1 && !bridged.has('center')) {
+      const does =
+        bridged.size === 0
+          ? (['join', 'enter'] as const)
+          : (['center'] as const);
+      for (const by of ['s0', ...authors]) {
+        for (const kind of does) yield* run({ by, does: kind, kind: 'bridge' });
+      }
+      return;
+    }
+    if (liftBound.outside === 2 && !outside.has('join')) {
+      if (outside.has('strike')) {
+        yield* run({ by: EDITING, does: 'join', kind: 'outside' });
+      } else {
+        for (const by of ['s0', ...authors]) {
+          yield* run({ by, does: 'strike', kind: 'outside' });
+        }
+      }
+      return;
+    }
+    if (last && liftBound.interleave === 0) return;
+    const first = ops[0] as Extract<LiftOp, { kind: 'split' }>;
+    if (
+      !twice &&
+      (touched === 0 ||
+        (liftBound.interleave === 1 &&
+          getDefined(pieces[first.at === 1 ? 1 : 0]).done.size === 0))
+    ) {
+      for (const by of ['s0', ...(liftBound.enters === 2 ? authors : [])]) {
+        for (const enter of enters) {
+          yield* run({
+            at: first.at === 1 ? 2 : 1,
+            by,
+            ...enter,
+            kind: 'split',
+          });
+        }
+      }
+    }
+    if (last) return;
+    const links = [
+      {
+        names: (twice
+          ? ['left', 'middle', 'right']
+          : ['left', 'right']) as readonly LiftPiece[],
+        on: {},
+        pieces,
+      },
+      ...(paired
+        ? [
+            {
+              names: ['left', 'right'] as readonly LiftPiece[],
+              on: { second: true } as const,
+              pieces: piecesOf(ops, true),
+            },
+          ]
+        : []),
+    ];
+    for (const by of authors) {
+      for (const { names, on, pieces: cut } of links) {
+        for (const [at, of] of names.entries()) {
+          const { done } = getDefined(cut[at]);
+          if (done.has('remove')) continue;
+          for (const kind of ['unwrap', 'empty', 'remove'] as const) {
+            if (!done.has(kind)) yield* run({ by, kind, of, ...on });
+          }
+        }
+      }
+    }
+    if (liftBound.inserts === 1) {
+      for (const by of authors) {
+        for (const { names, on, pieces: cut } of links) {
+          for (const [at, of] of names.entries()) {
+            const piece = getDefined(cut[at]);
+            if (!piece.done.has('remove') && !piece.done.has('type')) {
+              yield* run({ by, kind: 'type', of, ...on });
+            }
+            if (at < names.length - 1 && !piece.typedAfter) {
+              yield* run({ after: true, by, kind: 'type', of, ...on });
+            }
+          }
+        }
+      }
+    }
+    if (liftBound.quote === 1) {
+      for (const by of authors) {
+        for (const does of ['wrap', 'lift', 'unwrap', 'join'] as const) {
+          if (
+            !quoted.has(does) &&
+            (does !== 'join' || (first.in !== 'only' && !quoted.has('wrap')))
+          ) {
+            yield* run({ by, does, kind: 'quote' });
+          }
+        }
+      }
+    }
+    if (liftBound.place === 1 && !joined) {
+      for (const by of authors) yield* run({ by, kind: 'join' });
+    }
+    if (
+      liftBound.outside === 1 &&
+      !outside.has('remove') &&
+      (liftBound.quote === 0 || !outside.has('join'))
+    ) {
+      for (const by of authors) {
+        for (const does of ['remove', 'type', 'join'] as const) {
+          if (!outside.has(does)) yield* run({ by, does, kind: 'outside' });
+        }
+      }
+    }
+    const writes = ops.filter(
+      (op) => op.kind === 'set' || op.kind === 'unset'
+    ).length;
+    if (writes === liftBound.writes) return;
+    const keys: readonly LiftKey[] =
+      liftBound.key === 'mixed' ? ['ref', 'note'] : [liftBound.key];
+    for (const by of liftBound.edits === 1 ? [...authors, EDITING] : authors) {
+      for (const { names, on, pieces: cut } of links) {
+        for (const [at, of] of names.entries()) {
+          const piece = getDefined(cut[at]);
+          if (piece.done.has('remove') || piece.writers.has(by)) continue;
+          for (const key of keys) {
+            const keyed = liftBound.key === 'mixed' ? { key } : {};
+            yield* run({
+              by,
+              ...keyed,
+              kind: 'set',
+              of,
+              value: `v${writes + 1}`,
+              ...on,
+            });
+            if (
+              liftBound.seed === 1 &&
+              by !== EDITING &&
+              piece.held.has(key) &&
+              !piece.unset.has(key)
+            ) {
+              yield* run({ by, ...keyed, kind: 'unset', of, ...on });
+            }
+          }
+        }
+      }
+    }
+  }
+  const quotes: ReadonlyArray<Readonly<{ in?: LiftQuote }>> =
+    liftBound.quote === 1
+      ? [{ in: 'only' }, { in: 'first' }, { in: 'second' }]
+      : [{}];
+  for (const at of [1, 2] as const) {
+    for (const enter of enters) {
+      for (const quote of quotes) {
+        ops.push({ at, by: 's0', ...enter, ...quote, kind: 'split' });
+        yield* extend(0);
+        ops.pop();
+      }
+    }
+  }
+}
+
+const QUOTE_STORY = {
+  join: "joins the quote's paragraphs",
+  lift: "lifts the link's paragraph",
+  unwrap: 'unwraps the quote',
+  wrap: "wraps the link's paragraph",
+} as const;
+
+const liftStory = (op: LiftOp) => {
+  if (op.kind === 'split') {
+    const where = op.in ? ` in a quote's ${op.in} paragraph` : '';
+    return `${op.by} ${op.enter === 'paragraph' ? 'enters' : 'splits'} after ${(op.second ? 'cd' : 'amb')[op.at - 1]}${where}`;
+  }
+  if (op.kind === 'join') return `${op.by} joins the link's paragraph into p`;
+  if (op.kind === 'between') return `${op.by} types z into q`;
+  if (op.kind === 'bridge') {
+    return `${op.by} ${{ center: 'centers r', enter: 'enters after q', join: 'joins r into q' }[op.does]}`;
+  }
+  if (op.kind === 'quote') return `${op.by} ${QUOTE_STORY[op.does]}`;
+  if (op.kind === 'outside') {
+    if (op.does === 'strike') return `${op.by} removes d`;
+    if (op.by === EDITING) return 'editing joins q into d';
+    return op.does === 'join'
+      ? `${op.by} joins q into the paragraph before it`
+      : `${op.by} ${op.does === 'type' ? 'types z into' : 'removes'} q`;
+  }
+  const piece = op.second ? `second ${op.of}` : op.of;
+  if (op.kind === 'type') {
+    return `${op.by} types x ${op.after ? 'after' : 'into'} ${piece}`;
+  }
+  const key = op.kind !== 'set' && op.kind !== 'unset' ? '' : (op.key ?? '');
+  const of = key ? `${piece} ${key}` : piece;
+  if (op.kind === 'set') {
+    return `${op.by === EDITING ? 'editing' : op.by} sets ${of} ${op.value}`;
+  }
+  return `${op.by} ${op.kind === 'empty' ? 'empties' : `${op.kind}s`} ${of}`;
+};
+
+// A lift walk also reads the changes a reviewer still reads as pending, so
+// a step that leaves review in one order only fails, and follows each order
+// on one editor.
 const givebackWalk = (
-  script: readonly GivebackOp[],
-  start: unknown
+  script: ReadonlyArray<Readonly<{ by: string }>>,
+  start: unknown,
+  name = (script as readonly GivebackOp[]).map(opStory).join(', '),
+  lift = false
 ): Walk<unknown> => {
   const proposers = new Set(
     script.flatMap((op) => (op.by === EDITING ? [] : [op.by]))
@@ -1387,28 +2144,59 @@ const givebackWalk = (
   const pending = changesIn(start as Doc).filter((change) =>
     proposers.has(change)
   );
-  const outcomeOf = (
-    { result, value }: ReturnType<typeof decideIn>,
+  const outcomeOf = <State>(
+    result: AuthoredResult,
+    state: State,
     decided: ReadonlyMap<string, Verdict>
-  ): Outcome<unknown> => {
+  ): Outcome<State> => {
     const admission = decisionAdmission(result, decided, pending);
     return admission.kind === 'settles'
-      ? { kind: 'settled', state: value }
+      ? { kind: 'settled', state }
       : admission;
   };
+  const shownOf = (value: unknown, waiting?: readonly string[]) => {
+    const seen = givebackRead(value);
+    const shown = `${story(seen.children)} landed [${seen.landed}]`;
+    return waiting
+      ? {
+          seen: { pending: waiting, reader: seen },
+          shown: `${shown} pending [${waiting.join(', ')}]`,
+        }
+      : { seen, shown };
+  };
+  const reads = new WeakMap<object, ReturnType<typeof shownOf>>();
+  type Reviewer = ReturnType<typeof givebackEditor>;
+  const begun = new WeakMap<object, Reviewer>();
+  const continued: Continued<Reviewer> = {
+    begun: (state) => {
+      const live = begun.get(state as object);
+      begun.delete(state as object);
+      return live;
+    },
+    open: () => givebackEditor(start),
+    read: (live) => shownOf(live.read.value(), pendingIn(live)),
+    step: (live, decided, deciding) => {
+      const { result } = decideIn(live, deciding);
+      return outcomeOf(result, live, decided);
+    },
+  };
   return {
-    name: script.map(opStory).join(', '),
+    ...(lift ? { continued: continued as Continued<unknown> } : {}),
+    name,
     pending,
     read: (state) => {
-      const seen = givebackRead(state);
-      return { seen, shown: story(seen) };
+      const known = reads.get(state as object);
+      if (known) return known;
+      const made = shownOf(state, lift ? pendingRead(state) : undefined);
+      reads.set(state as object, made);
+      return made;
     },
     same: withoutTokens,
     start,
     step: (state, decided, deciding) => {
       const loaded = givebackEditor(state, givebackIds);
       const generatedBefore = idGeneratorCalls.count;
-      const decision = decideIn(loaded, deciding);
+      const { result, value } = decideIn(loaded, deciding);
       const made = idGeneratorCalls.count - generatedBefore;
       if (made > 0) {
         return {
@@ -1416,7 +2204,11 @@ const givebackWalk = (
           reason: `calls the id generator ${made} times`,
         };
       }
-      return outcomeOf(decision, decided);
+      const outcome = outcomeOf(result, value, decided);
+      if (lift && decided.size === 0 && outcome.kind === 'settled') {
+        begun.set(value, loaded);
+      }
+      return outcome;
     },
   };
 };
@@ -1426,10 +2218,23 @@ const prefixes = new Map<string, unknown>();
 
 // A script whose operation throws, or leaves the children and their marks as
 // they were, models a write recording never makes.
-const recorded = (script: readonly GivebackOp[]) => {
-  let value: unknown = givebackStart(givebackIds);
+const recorded = <Op>(
+  script: readonly Op[],
+  start: unknown = givebackStart(givebackIds),
+  record = ((value: unknown, op: GivebackOp, at: number) =>
+    recordGiveback(value, op, at, givebackIds)) as (
+    value: unknown,
+    op: Op,
+    at: number
+  ) => unknown,
+  tell = opStory as (op: Op) => string
+) => {
+  let value: unknown = start;
+  // A bridge script's start depends on a later operation, so the start is
+  // part of the key.
+  const from = JSON.stringify(start);
   for (const [at, op] of script.entries()) {
-    const prefix = JSON.stringify(script.slice(0, at + 1));
+    const prefix = `${from} ${JSON.stringify(script.slice(0, at + 1))}`;
     const known = prefixes.get(prefix);
     if (known !== undefined) {
       value = known;
@@ -1437,9 +2242,9 @@ const recorded = (script: readonly GivebackOp[]) => {
     }
     let next: unknown;
     try {
-      next = recordGiveback(value, op, at, givebackIds);
+      next = record(value, op, at);
     } catch (error) {
-      return `${opStory(op)} throws ${(error as Error).message}`;
+      return `${tell(op)} throws ${(error as Error).message}`;
     }
     if (
       isDeepStrictEqual(
@@ -1447,7 +2252,7 @@ const recorded = (script: readonly GivebackOp[]) => {
         (value as { children: unknown }).children
       )
     ) {
-      return `${opStory(op)} changes nothing`;
+      return `${tell(op)} changes nothing`;
     }
     prefixes.set(prefix, next);
     value = next;
@@ -1458,6 +2263,7 @@ const recorded = (script: readonly GivebackOp[]) => {
 const summed = (results: ReadonlyArray<ReturnType<typeof explore>>) => ({
   compared: results.reduce((sum, result) => sum + result.compared, 0),
   failures: results.flatMap((result) => result.failures),
+  followed: results.reduce((sum, result) => sum + result.followed, 0),
   idle: results.flatMap((result) => result.idle),
   together: results.flatMap((result) => result.together),
 });
@@ -1509,6 +2315,56 @@ if (shard === 'normalize') {
     return [explore(givebackWalk(script, outcome.value))];
   });
   console.log(JSON.stringify({ ...summed(results), unchecked }));
+} else if (shard === 'lift') {
+  const items: LiftOp[][] = JSON.parse(await Bun.stdin.text());
+  const unchecked: string[] = [];
+  const results = items.flatMap((script) => {
+    const outcome = recorded(
+      script,
+      liftStart({
+        after: liftBound.outside > 0,
+        apart: liftBound.pair === 2,
+        before: liftBound.place === 1,
+        ...(liftBound.bridge === 1
+          ? {
+              bridge: script.some(
+                (op) => op.kind === 'bridge' && op.does === 'enter'
+              )
+                ? 'enter'
+                : 'join',
+            }
+          : {}),
+        key: liftBound.key === 'mixed' ? 'ref' : liftBound.key,
+        pair: liftBound.pair > 0,
+        quote: (script[0] as Extract<LiftOp, { kind: 'split' }>).in,
+        seeded: liftBound.seed === 1,
+        struck: liftBound.outside === 2,
+      }),
+      (value, op: LiftOp, at) =>
+        recordLift(
+          value,
+          op,
+          at,
+          liftBound.key === 'mixed' ? 'ref' : liftBound.key
+        ),
+      liftStory
+    );
+    if (typeof outcome === 'string') {
+      unchecked.push(outcome);
+      return [];
+    }
+    return [
+      explore(
+        givebackWalk(
+          script,
+          outcome.value,
+          script.map(liftStory).join(', '),
+          true
+        )
+      ),
+    ];
+  });
+  console.log(JSON.stringify({ ...summed(results), unchecked }));
 } else {
   const jobs = wholeFlag('jobs', availableParallelism());
   const fanOut = async <T>(
@@ -1557,6 +2413,7 @@ if (shard === 'normalize') {
       failures: explored
         .flatMap((result) => result.failures)
         .sort((a, b) => a.identity.localeCompare(b.identity)),
+      followed: explored.reduce((sum, result) => sum + result.followed, 0),
       idle: explored.flatMap((result) => result.idle),
       settled,
       together: settled.map(([identity]) => identity),
@@ -1618,6 +2475,7 @@ if (shard === 'normalize') {
     found.set('quotes', {
       compared: runsOf.reduce((sum, result) => sum + result.compared, 0),
       failures: runsOf.flatMap((result) => result.failures),
+      followed: 0,
       idle: runsOf.flatMap((result) => result.idle),
       settled: runsOf.flatMap((result) => result.settled),
       together: runsOf.flatMap((result) => result.together),
@@ -1660,6 +2518,47 @@ if (shard === 'normalize') {
     if (result.unchecked.length > 0) {
       unchecked.push(
         `Of ${written.length} give-back scripts, ${result.unchecked.length} do not record, such as ${result.unchecked[0]}. The generator writes an operation recording never makes, which leaves the property unchecked on those scripts.`
+      );
+    }
+  }
+
+  if (runs('lift')) {
+    const started = performance.now();
+    const written = [...liftScripts()].filter(
+      (script, at) =>
+        (onlyLift === undefined ||
+          script.map(liftStory).join(', ') === onlyLift) &&
+        at % liftParts === liftPart - 1
+    );
+    if (process.env.LIFT_LIST) {
+      writeFileSync(
+        process.env.LIFT_LIST,
+        written.map((script) => script.map(liftStory).join(', ')).join('\n')
+      );
+      process.exit(0);
+    }
+    if (written.length === 0) {
+      console.error(`No lift script in the bound reads ${onlyLift}.`);
+      process.exit(2);
+    }
+    const result = gathered(await fanOut<Explored>('lift', written));
+    found.set('lift', result);
+    console.info(
+      JSON.stringify({
+        bound: liftBound,
+        compared: result.compared,
+        continued: result.followed,
+        documents: written.length - result.unchecked.length,
+        failures: result.failures.length,
+        family: 'lift',
+        idle: result.idle.length,
+        seconds: seconds(started),
+        together: result.together.length,
+      })
+    );
+    if (result.unchecked.length > 0) {
+      unchecked.push(
+        `Of ${written.length} lift scripts, ${result.unchecked.length} do not record, such as ${result.unchecked[0]}. The generator writes an operation recording never makes, which leaves the property unchecked on those scripts.`
       );
     }
   }
