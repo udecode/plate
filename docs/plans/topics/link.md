@@ -1,6 +1,6 @@
 # Links
 
-Page: https://claude.ai/artifact/MRPnTVGHE81xgsYTJYBhzU
+Page: https://claude.ai/artifact/5nHnMXT9CHZ4HkYsbmVxi8
 
 How should link detection, editing, paste and navigation share one document contract? A link element stores one `url` that must clear the navigation floor in its schema validator, so no `javascript:`, `data:` or `blob:` destination is ever stored. The link feature checks every destination it inserts, wraps, imports or renders against `allowedSchemes`, and a stored destination the app no longer allows stays stored, renders inactive and exports as stored. One hook, `parseUrl`, decides which typed or pasted text becomes a link. The link input rules decline a refused URL, so the space, Enter or paste goes on as usual. HTML and Markdown import keep a refused link's label and report the lost destination. The package keeps no floating store, and the copied `link.tsx` owns the show, edit and submit flow (`docs/plans/2026-09-04-decouple-link-floating-ui.md`), including the rule that turns a typed draft into an address (`docs/plans/2026-10-12-link-toolbar-draft.md`). Linking selected text removes old links only where the selection covers them, then wraps it through Plite's inline wrap, which links from the first to the last selected character and refuses where a link cannot go (`docs/plans/2026-10-12-link-upsert.md`, `docs/plans/2026-10-12-link-upsert-edges.md`).
 
