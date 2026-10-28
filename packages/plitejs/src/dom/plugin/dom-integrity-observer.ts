@@ -160,6 +160,7 @@ const EDITOR_DOM_ATTRIBUTES = new Set([
   'data-editor-path',
   'data-editor-placeholder',
   'data-editor-placeholder-anchor',
+  'data-editor-render-only',
   'data-editor-root',
   'data-editor-root-chrome',
   'data-editor-root-chrome-ignore',

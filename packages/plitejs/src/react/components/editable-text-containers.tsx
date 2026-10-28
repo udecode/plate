@@ -76,6 +76,7 @@ export const wrapDecorationContainers = (
         <span
           key={`container:${getDecorationSliceIdentity(container)}`}
           {...container.attributes}
+          data-editor-render-only="container"
         >
           {group}
         </span>

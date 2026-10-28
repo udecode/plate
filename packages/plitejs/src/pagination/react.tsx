@@ -54,6 +54,7 @@ import {
   createContainerDecorationSlice,
   type DecorationSlice,
 } from '../react/decoration-source';
+import { useEditableLayoutPass } from '../react/hooks/use-editable-layout-pass';
 import { useElementPath } from '../react/hooks/use-element-path';
 import { useHydrated } from '../react/hooks/use-hydrated';
 import {
@@ -654,8 +655,7 @@ const createPaginationBuckets = (
   editor: Editor,
   fragments: readonly PageLayoutFragment[],
   geometry: PageLayoutGeometry,
-  selectedPaths: readonly Path[],
-  runOrigins: ReadonlyMap<string, ProjectedRunOrigin>
+  selectedPaths: readonly Path[]
 ): ReadonlyMap<NodeKey, readonly DecorationSlice[]> => {
   const buckets = new Map<NodeKey, DecorationSlice[]>();
   const blockRects = new Map<string, PageRect[]>();
@@ -707,9 +707,6 @@ const createPaginationBuckets = (
             run.source.focus.offset
           );
           const rect = toCanvasRect(run.rect, fragment.pageIndex, geometry);
-          const origin = runOrigins.get(pathKey(run.source.anchor.path));
-          const originLeft = blockRect.left + (origin?.left ?? 0);
-          const originTop = blockRect.top + (origin?.top ?? 0);
           const slice = createContainerDecorationSlice({
             attributes: Object.freeze(
               nativeFlow
@@ -724,12 +721,12 @@ const createPaginationBuckets = (
                     style: Object.freeze({
                       display: 'inline-block',
                       height: rect.height,
-                      left: rect.left - originLeft,
+                      left: `calc(${rect.left - blockRect.left}px - var(${RUN_ORIGIN_LEFT}, 0px))`,
                       lineHeight: `${rect.height}px`,
                       minWidth: rect.width === 0 ? 1 : undefined,
                       pointerEvents: 'auto',
                       position: 'absolute',
-                      top: rect.top - originTop,
+                      top: `calc(${rect.top - blockRect.top}px - var(${RUN_ORIGIN_TOP}, 0px))`,
                       whiteSpace: 'pre',
                       width: rect.width,
                     }),
@@ -847,38 +844,47 @@ const createPagedCanvasStyles = (
   },
 });
 
-type ProjectedRunOrigin = Readonly<{ left: number; top: number }>;
+const RUN_ORIGIN_LEFT = '--editor-run-origin-left';
+const RUN_ORIGIN_TOP = '--editor-run-origin-top';
 
-/**
- * Reads, once per projected text node, where its runs' containing box sits
- * inside its block's placed box, in the box's own CSS pixels. A positioned
- * inline element, such as a link, is its runs' containing box, so origins are
- * kept per text node.
- */
-const readProjectedRunOrigins = (host: HTMLElement) => {
-  const origins = new Map<string, ProjectedRunOrigin>();
+// Firefox measures an unmoved containing box a few hundredths of a pixel away
+// after another block moves (15.01 px, then 15.02 px).
+const RUN_ORIGIN_TOLERANCE = 0.05;
+
+type RunOriginChange = readonly [
+  runParent: HTMLElement,
+  property: typeof RUN_ORIGIN_LEFT | typeof RUN_ORIGIN_TOP,
+  value: string,
+];
+
+const readRunOriginChanges = (root: HTMLElement) => {
+  const changes: RunOriginChange[] = [];
   const boxes = new Map<
     HTMLElement,
     { rect: DOMRect; scale: { x: number; y: number } }
   >();
   const parentRects = new Map<globalThis.Element, DOMRect>();
+  const runParents = new Set<HTMLElement>();
 
-  host
+  root
     .querySelectorAll<HTMLElement>('[data-pagination-line]')
     .forEach((run) => {
-      if (run.style.position !== 'absolute') return;
-      const path = run
-        .closest('[data-editor-node="text"]')
-        ?.getAttribute('data-editor-path');
-      const key = path && pathKey(path.split(',').map(Number));
+      const runParent = run.parentElement;
 
-      if (!key || origins.has(key)) return;
+      if (
+        run.style.position !== 'absolute' ||
+        !runParent ||
+        runParents.has(runParent)
+      ) {
+        return;
+      }
+      runParents.add(runParent);
+      const { offsetParent } = run;
       const block = run.closest<HTMLElement>(
         '[data-editor-node="element"]:not([data-editor-inline="true"])'
       );
-      const parent = run.offsetParent;
 
-      if (!block || !parent) return;
+      if (!offsetParent || !block) return;
       let box = boxes.get(block);
 
       if (!box) {
@@ -888,35 +894,52 @@ const readProjectedRunOrigins = (host: HTMLElement) => {
         box = { rect, scale: getElementTransformScale(placed, rect) };
         boxes.set(block, box);
       }
-      let parentRect = parentRects.get(parent);
+      let parentRect = parentRects.get(offsetParent);
 
       if (!parentRect) {
-        parentRect = parent.getBoundingClientRect();
-        parentRects.set(parent, parentRect);
+        parentRect = offsetParent.getBoundingClientRect();
+        parentRects.set(offsetParent, parentRect);
       }
+      const origin = {
+        [RUN_ORIGIN_LEFT]:
+          (parentRect.left - box.rect.left) / box.scale.x +
+          offsetParent.clientLeft,
+        [RUN_ORIGIN_TOP]:
+          (parentRect.top - box.rect.top) / box.scale.y +
+          offsetParent.clientTop,
+      };
 
-      origins.set(key, {
-        left:
-          (parentRect.left - box.rect.left) / box.scale.x + parent.clientLeft,
-        top: (parentRect.top - box.rect.top) / box.scale.y + parent.clientTop,
-      });
+      for (const property of [RUN_ORIGIN_LEFT, RUN_ORIGIN_TOP] as const) {
+        const current = Number.parseFloat(
+          runParent.style.getPropertyValue(property)
+        );
+
+        if (
+          Number.isNaN(current) ||
+          Math.abs(origin[property] - current) >= RUN_ORIGIN_TOLERANCE
+        ) {
+          changes.push([
+            runParent,
+            property,
+            `${Math.round(origin[property] * 100) / 100}px`,
+          ]);
+        }
+      }
     });
 
-  return origins;
+  return changes;
 };
 
-const EMPTY_RUN_ORIGINS: ReadonlyMap<string, ProjectedRunOrigin> = new Map();
+const readRunOriginWrite = (root: HTMLElement) => {
+  const changes = readRunOriginChanges(root);
 
-const sameRunOrigins = (
-  left: ReadonlyMap<string, ProjectedRunOrigin>,
-  right: ReadonlyMap<string, ProjectedRunOrigin>
-) =>
-  left.size === right.size &&
-  [...right].every(([key, origin]) => {
-    const previous = left.get(key);
-
-    return previous?.left === origin.left && previous.top === origin.top;
-  });
+  if (changes.length === 0) return null;
+  return () => {
+    changes.forEach(([runParent, property, value]) =>
+      runParent.style.setProperty(property, value)
+    );
+  };
+};
 
 const useReportEachNewMeasureFailure = (editor: Editor, error: unknown) => {
   const lastReportedFailure = useRef<unknown>(null);
@@ -938,30 +961,6 @@ const useReportEachNewMeasureFailure = (editor: Editor, error: unknown) => {
     });
   }, [editor, error]);
 };
-
-/**
- * Subscribes to the decoration store so it rerenders with every publish; its
- * layout effect then reads run origins from the runs that publish committed.
- */
-const RunOriginReader = React.memo(
-  ({
-    host,
-    onRead,
-    store,
-  }: {
-    host: HTMLElement | null;
-    onRead: (host: HTMLElement) => void;
-    store: SurfaceDecorationStore;
-  }) => {
-    useSyncExternalStore(store.subscribe, store.getVersion, store.getVersion);
-    useLayoutEffect(() => {
-      if (host) onRead(host);
-    });
-
-    return null;
-  }
-);
-RunOriginReader.displayName = 'RunOriginReader';
 
 const PagedEditableInner = <TElement extends Element = Element>({
   engine: suppliedEngine,
@@ -1139,20 +1138,6 @@ const PagedEditableInner = <TElement extends Element = Element>({
   );
   // Promoting a requested path changes which page content is mounted.
   const [promotedPath, setPromotedPath] = useState<Path | null>(null);
-  const [runOrigins, setRunOrigins] =
-    useState<ReadonlyMap<string, ProjectedRunOrigin>>(EMPTY_RUN_ORIGINS);
-  const readRunOrigins = useCallback((host: HTMLElement) => {
-    const read = readProjectedRunOrigins(host);
-
-    // Merging keeps the origins of blocks that left projection, such as a
-    // selected block in native flow, so their absence rebuilds nothing.
-    setRunOrigins((previous) => {
-      const next = new Map(previous);
-
-      read.forEach((origin, key) => next.set(key, origin));
-      return sameRunOrigins(previous, next) ? previous : next;
-    });
-  }, []);
   const windowedItems = useMemo(() => {
     const requiredItemIndexes = new Set(visibleItems.map((item) => item.index));
 
@@ -1226,11 +1211,18 @@ const PagedEditableInner = <TElement extends Element = Element>({
             editor,
             projectedFragments,
             geometry,
-            selectedPaths,
-            runOrigins
+            selectedPaths
           )
         : new Map<NodeKey, readonly DecorationSlice[]>(),
-    [editor, geometry, projectedFragments, runOrigins, selectedPaths]
+    [editor, geometry, projectedFragments, selectedPaths]
+  );
+  // An inset change publishes no new layout, so the origins follow every
+  // observed mutation instead of the measured geometry.
+  useEditableLayoutPass(
+    editor,
+    editableHost,
+    'Pagination run origins',
+    readRunOriginWrite
   );
   const fragmentContext = useMemo(
     () => ({ placementsByPath }),
@@ -1383,11 +1375,6 @@ const PagedEditableInner = <TElement extends Element = Element>({
                 totalSize={geometry?.height ?? 0}
               />
             </ImperativeTextFlowContext>
-            <RunOriginReader
-              host={editableHost}
-              onRead={readRunOrigins}
-              store={decorationStore}
-            />
           </div>
         </div>
       </div>

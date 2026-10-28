@@ -665,6 +665,18 @@ const stripRenderOnlyTrailingNewlines = (
   });
 };
 
+const replaceRenderOnlyContainers = (root: ParentNode) => {
+  root
+    .querySelectorAll('[data-editor-render-only="container"]')
+    .forEach((container) => {
+      const span = container.ownerDocument.createElement('span');
+
+      span.style.whiteSpace = 'pre-wrap';
+      span.append(...Array.from(container.childNodes));
+      container.replaceWith(span);
+    });
+};
+
 const stripEditorAttributes = (root: ParentNode) => {
   root.querySelectorAll('*').forEach((element) => {
     Array.from(element.attributes).forEach(({ name }) => {
@@ -764,6 +776,7 @@ export const writeDOMRangeData = <V extends Value>(
     endVoid ? DOMEditor.resolveDOMNode(editor, endVoid[0]) : null
   );
 
+  replaceRenderOnlyContainers(contents);
   stripRenderOnlyTrailingNewlines(contents, domRange);
 
   let attach = getDefaultFragmentAttach(contents);
@@ -799,8 +812,8 @@ export const writeDOMRangeData = <V extends Value>(
     // COMPAT: In Chrome and Safari, if we don't add the `white-space` style
     // then leading and trailing spaces will be ignored. (2017/09/21)
     span.style.whiteSpace = 'pre';
+    attach.replaceWith(span);
     span.appendChild(attach);
-    div.appendChild(span);
     attach = span;
   }
 
