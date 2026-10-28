@@ -3,8 +3,7 @@
 import { execFileSync } from 'node:child_process';
 
 const IGNORED = [
-  // next.config.ts imports this one file from docs/.
-  /^docs\/(?!plite\/reference\/public-route-map\.json$)/,
+  /^docs\//,
   /^\.(agents|changeset|claude|codex|github|vscode)\//,
   /^(apps\/plite|benchmarks|execution|skills|templates)\//,
   // Package builds read tooling/config, tooling/entrypoints and these scripts

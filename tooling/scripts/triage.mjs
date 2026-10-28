@@ -37,6 +37,12 @@ import {
   SESSION,
 } from '../../.agents/pstack/tasks.mjs';
 import {
+  existsAt,
+  movedBetween,
+  PRIVATE_DIR,
+  showAt,
+} from './private-files.mjs';
+import {
   CLAIM_COLUMNS,
   CLAIMS_FILE,
   CLAIMS_REF,
@@ -56,7 +62,17 @@ import {
   targetMembers,
 } from './triage-claims.mjs';
 
-const REGISTER = 'docs/triage/issues.tsv';
+// Each repository in triage.repos keeps its own register and claims ref, chosen before the command runs. The first
+// keeps the original names, and only its issues take a bare #N.
+const PRIMARY_REGISTER = 'docs/triage/issues.tsv';
+// Each row maps an issue number of the first repository to the <repo name>#<number> it was transferred to.
+const MOVED = 'docs/triage/moved.tsv';
+let repoName = null;
+let registerFile = PRIMARY_REGISTER;
+let claimsRef = CLAIMS_REF;
+const repoNameOf = (repo) => repo.split('/')[1];
+const registerOf = (repos, repo) =>
+  repo === repos[0] ? PRIMARY_REGISTER : `docs/triage/${repoNameOf(repo)}.tsv`;
 const CONFIG = '.agents/pstack.json';
 const COLUMNS = [
   'id',
@@ -81,10 +97,13 @@ const PRIORITY_FIELD = 'Priority';
 const PRIORITY_ORDER = ['P0', 'P1', 'P2', 'P3'];
 const SCOPE_FIELD = 'Scope';
 const SCOPES = 'docs/research/review-scopes';
-const OUTCOME_LABELS = {
-  dup: 'duplicate',
-  'needs-repro': 'needs reproduction',
-};
+const SCOPES_KEPT_BESIDE_RECORD = ['accessibility', 'performance'];
+const TRIAGE_FIELD = 'Triage';
+const TRIAGED = 'Triaged';
+const NEEDS_REPRO = 'Needs reproduction';
+const NEEDS_RETEST = 'Needs retest';
+const DUPLICATE = 'Duplicate';
+const IME_LABEL = 'ime';
 const OUTCOME_TYPES = { kind: 'Bug', spec: 'Feature' };
 const QUEUE_LIMIT = 5000;
 // A triage draft ends in a marker holding the hash of its own text, so posting it unchanged keeps its record current and editing it does not.
@@ -186,9 +205,20 @@ const gitOut = (...args) => {
   const result = run('git', args);
   return result.status === 0 ? result.stdout : null;
 };
+// Once split, the suggested-task ledger and the claims live on plate-private's
+// origin, the team's repository.
+const teamVia = existsSync(join(root, PRIVATE_DIR))
+  ? [`--git-dir=${join(root, PRIVATE_DIR)}`]
+  : [];
+const teamRemote = (remote) => (teamVia.length > 0 ? 'origin' : remote);
+const teamRun = (args, options) => run('git', [...teamVia, ...args], options);
+const teamOut = (...args) => {
+  const result = teamRun(args);
+  return result.status === 0 ? result.stdout : null;
+};
 const NETWORK_MS = 60_000;
-const fetchRef = (remote, refspec) => {
-  const result = run('git', ['fetch', '--quiet', remote, refspec], {
+const fetchRef = (remote, refspec, via = []) => {
+  const result = run('git', [...via, 'fetch', '--quiet', remote, refspec], {
     env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
     timeout: NETWORK_MS,
   });
@@ -238,11 +268,24 @@ const meets = (model, effort, floor, max = null) =>
 function policyProblems(config) {
   const policy = config?.triage;
   if (!policy) {
-    return [`${CONFIG} has no triage key with repo, floor, owners and rev`];
+    return [`${CONFIG} has no triage key with repos, floor, owners and rev`];
   }
   const found = [];
-  if (!/^[\w.-]+\/[\w.-]+$/u.test(policy.repo ?? '')) {
-    found.push(`${CONFIG}: triage.repo names the repository as owner/name`);
+  const repos = Array.isArray(policy.repos) ? policy.repos : [];
+  if (
+    repos.length === 0 ||
+    repos.some((repo) => !/^[\w.-]+\/[\w.-]+$/u.test(repo ?? ''))
+  ) {
+    found.push(
+      `${CONFIG}: triage.repos lists each repository as owner/name, the one whose issues take a bare #N first`
+    );
+  } else if (new Set(repos.map(repoNameOf)).size !== repos.length) {
+    found.push(`${CONFIG}: triage.repos names each repository once`);
+  } else if (
+    repoName !== null &&
+    !repos.some((repo) => repoNameOf(repo) === repoName)
+  ) {
+    found.push(`${CONFIG}: triage.repos has no ${repoName}`);
   }
   if (!Array.isArray(policy.floor) || policy.floor.length === 0) {
     found.push(
@@ -280,8 +323,16 @@ function policyProblems(config) {
   return found;
 }
 
+const repoOf = (repos) =>
+  repoName === null
+    ? repos[0]
+    : repos.find((repo) => repoNameOf(repo) === repoName);
+
 const policyOf = (config) => ({
-  repo: config.triage.repo,
+  repo: repoOf(config.triage.repos),
+  primary: repoOf(config.triage.repos) === config.triage.repos[0],
+  first: config.triage.repos[0],
+  moved: new Map(),
   floor: config.triage.floor.map(parseLabel),
   floorText: config.triage.floor.join(' or '),
   owners: config.triage.owners,
@@ -445,6 +496,19 @@ function freshReads({ fallback, claims = false }) {
     ? policyProblems(config)
     : [`${remote}/${branch} could not be read${failure}`];
   const policy = problems.length === 0 ? policyOf(config) : null;
+  if (policy) {
+    const shown =
+      tip && !existsSync(join(root, MOVED)) ? showAt(root, tip, MOVED) : null;
+    const moved = existsSync(join(root, MOVED))
+      ? readFileSync(join(root, MOVED), 'utf-8')
+      : shown?.status === 0
+        ? shown.stdout
+        : '';
+    for (const line of moved.split('\n').slice(1).filter(Boolean)) {
+      const [from, to] = line.split('\t');
+      policy.moved.set(from, to);
+    }
+  }
 
   const rows = new Map();
   const landed = new Map();
@@ -453,12 +517,13 @@ function freshReads({ fallback, claims = false }) {
     into.get(row.issue).set(row.id, row);
   };
   if (tip) {
-    for (const row of parseRows(gitOut('show', `${tip}:${REGISTER}`) ?? '')) {
+    const register = showAt(root, tip, registerFile);
+    for (const row of parseRows(register.status === 0 ? register.stdout : '')) {
       add(rows, row);
       add(landed, row);
     }
   }
-  const workTree = join(root, REGISTER);
+  const workTree = join(root, registerFile);
   if (existsSync(workTree)) {
     for (const row of parseRows(readFileSync(workTree, 'utf-8'))) {
       add(rows, row);
@@ -470,7 +535,7 @@ function freshReads({ fallback, claims = false }) {
     ? {
         message: `skipped, because the fetch of ${remote}/${branch} gave no answer`,
       }
-    : fetchRef(remote, `+${LEDGER_REF}:${LEDGER_COPY}`);
+    : fetchRef(teamRemote(remote), `+${LEDGER_REF}:${LEDGER_COPY}`, teamVia);
   const ledgerFetched = ledgerError === null;
   if (!ledgerFetched) {
     notes.push(
@@ -484,11 +549,11 @@ function freshReads({ fallback, claims = false }) {
       : [];
   const ledgerText =
     ledgerRefs
-      .map((ref) => gitOut('show', `${ref}:${LEDGER}`))
+      .map((ref) => teamOut('show', `${ref}:${LEDGER}`))
       .find((text) => text !== null) ?? null;
   if (!ledgerFetched && ledgerText !== null) cached.push(LEDGER_REF);
   const ledger =
-    ledgerText === null || !policy ? null : ledgerOf(ledgerText, policy.repo);
+    ledgerText === null || !policy ? null : ledgerOf(ledgerText, policy);
 
   let claimRows = null;
   if (claims) {
@@ -497,12 +562,12 @@ function freshReads({ fallback, claims = false }) {
       : fetchClaims(remote);
     if (read.error) {
       notes.push(
-        `could not fetch ${CLAIMS_REF} from ${remote} (${read.error.message})`
+        `could not fetch ${claimsRef} from ${remote} (${read.error.message})`
       );
     }
     const text =
       read.error && fallback
-        ? (gitOut('show', `${CLAIMS_REF}:${CLAIMS_FILE}`) ?? '')
+        ? (teamOut('show', `${claimsRef}:${CLAIMS_FILE}`) ?? '')
         : (read.text ?? '');
     claimRows = parseClaims(text);
   }
@@ -529,18 +594,35 @@ const taskIdOf = (cells) => cells[2].split(' ')[0];
 
 const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
-function ledgerOf(text, repo) {
+const referenceOf = (repo, bare) =>
+  new RegExp(
+    `(?:\\b${literal(repoNameOf(repo))}#|${bare ? '(?<![\\w/#])#|' : ''}github\\.com/${literal(repo)}/issues/)(\\d+)\\b`,
+    'gu'
+  );
+
+// A ledger row written before its issue moved out of the first repository names the old number, which moved.tsv maps
+// to the issue's new home, so the row links there and not to the first repository.
+function issuesIn(text, { repo, primary, first, moved }) {
+  const found = [];
+  for (const match of text.matchAll(referenceOf(repo, primary))) {
+    if (!primary || !moved.has(match[1])) found.push(match[1]);
+  }
+  if (!primary) {
+    for (const match of text.matchAll(referenceOf(first, true))) {
+      const [home, number] = (moved.get(match[1]) ?? '').split('#');
+      if (home === repoNameOf(repo)) found.push(number);
+    }
+  }
+  return found;
+}
+
+function ledgerOf(text, policy) {
   const lines = text
     .split('\n')
     .filter((line) => line.trim() && !line.startsWith('ts\t'));
   const chips = lines
     .map((line) => line.split('\t'))
     .filter((cells) => cells[1] === 'chip');
-  const name = literal(repo.split('/')[1]);
-  const reference = new RegExp(
-    `(?:\\b${name}#|(?<![\\w/#])#|github\\.com/${literal(repo)}/issues/)(\\d+)\\b`,
-    'gu'
-  );
   const times = new Map();
   for (const cells of chips) {
     const id = taskIdOf(cells);
@@ -554,11 +636,10 @@ function ledgerOf(text, repo) {
   return {
     chips,
     tasks: readTasks(lines),
-    reference,
     times,
     // Every row's repro: counts because a fold replaces it, and only repro: counts because a finding's prose names unrelated issues.
-    links: issueIndex(chips, reference, reproOf),
-    mentions: issueIndex(chips, reference, (cells) => cells[3] ?? ''),
+    links: issueIndex(chips, policy, reproOf),
+    mentions: issueIndex(chips, policy, (cells) => cells[3] ?? ''),
   };
 }
 
@@ -567,12 +648,12 @@ const reproOf = (cells) =>
     .split(/;\s+/u)
     .find((token) => token.startsWith('repro: ')) ?? '';
 
-function issueIndex(chips, reference, textOf) {
+function issueIndex(chips, policy, textOf) {
   const index = new Map();
   for (const cells of chips) {
-    for (const match of textOf(cells).matchAll(reference)) {
-      if (!index.has(match[1])) index.set(match[1], new Set());
-      index.get(match[1]).add(taskIdOf(cells));
+    for (const issue of issuesIn(textOf(cells), policy)) {
+      if (!index.has(issue)) index.set(issue, new Set());
+      index.get(issue).add(taskIdOf(cells));
     }
   }
   return index;
@@ -605,7 +686,7 @@ function reopenIds(repo, numbers) {
   return found;
 }
 
-// gh issue list cannot return issue fields, so the org's Priority and Scope fields and each issue's values come from GraphQL.
+// gh issue list cannot return issue fields, so the org's Priority, Scope and Triage fields and each issue's values come from GraphQL.
 function fieldValues(repo, numbers) {
   const [owner, name] = repo.split('/');
   const issues = new Map();
@@ -625,7 +706,7 @@ function fieldValues(repo, numbers) {
     const data = readJson(result.stdout)?.data;
     if (!data) {
       refuse(
-        `labels could not read the ${PRIORITY_FIELD} and ${SCOPE_FIELD} fields of ${repo} issues: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
+        `labels could not read the ${PRIORITY_FIELD}, ${SCOPE_FIELD} and ${TRIAGE_FIELD} fields of ${repo} issues: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
       );
     }
     fields ??= data.organization?.issueFields?.nodes ?? [];
@@ -661,6 +742,12 @@ function fieldValues(repo, numbers) {
   };
   const priority = fieldOf(PRIORITY_FIELD, 'Single', PRIORITY_ORDER);
   const scope = fieldOf(SCOPE_FIELD, 'Multi', []);
+  const triage = fieldOf(TRIAGE_FIELD, 'Single', [
+    TRIAGED,
+    NEEDS_REPRO,
+    NEEDS_RETEST,
+    DUPLICATE,
+  ]);
   const values = new Map(
     [...issues].map(([number, node]) => {
       const valueOf = (field) =>
@@ -673,11 +760,12 @@ function fieldValues(repo, numbers) {
           issueId: node.id,
           priority: valueOf(priority)?.optionId ?? null,
           scopes: (valueOf(scope)?.options ?? []).map((option) => option.id),
+          triage: valueOf(triage)?.optionId ?? null,
         },
       ];
     })
   );
-  return { priority, scope, values };
+  return { priority, scope, triage, values };
 }
 
 function issueReader(repo) {
@@ -797,17 +885,7 @@ function ownerPaths(row) {
 const stalingOwnerPaths = (head) =>
   head.outcome === 'fixed' ? [] : ownerPaths(head);
 
-const ownerMoved = (read, tip, owned) => {
-  const log = gitOut(
-    'log',
-    '--format=%H',
-    '-1',
-    `${read}..${tip}`,
-    '--',
-    ...owned
-  );
-  return log === null ? null : log.trim() !== '';
-};
+const ownerMoved = (read, tip, owned) => movedBetween(root, read, tip, owned);
 
 const dismissedAt = (ledger, id) =>
   Date.parse(ledger.times.get(id)?.dismissed ?? '') || -Infinity;
@@ -1462,46 +1540,57 @@ function labels() {
     issue,
     ...stateFor(String(issue.number), reads),
   }));
-  const kinds = open.filter(
-    ({ state, head }) => state === 'current' && head.outcome === 'kind'
+  if (open.length === 0) return;
+  const fields = fieldValues(
+    repo,
+    open.map(({ issue }) => issue.number)
   );
-  const fields =
-    kinds.length > 0
-      ? fieldValues(
-          repo,
-          kinds.map(({ issue }) => issue.number)
-        )
-      : null;
-  const quoted = (label) => (label.includes(' ') ? `'${label}'` : label);
-  const commands = [
-    `gh label create triaged --repo ${repo} --color 0e8a16 --description "Has a current record in ${REGISTER}" --force`,
-    `gh label create 'needs retest' --repo ${repo} --color fbca04 --description "A candidate fix landed on next; the reporter retests it on beta.platejs.org and closes it" --force`,
-  ];
+  const clearedIds = new Set(
+    [TRIAGED, DUPLICATE].map((name) => fields.triage.optionIds.get(name))
+  );
+  const keptScopeIds = new Set(
+    SCOPES_KEPT_BESIDE_RECORD.map((name) =>
+      fields.scope.optionIds.get(name)
+    ).filter(Boolean)
+  );
+  const commands = [];
   const sets = [];
   const unscoped = [];
   for (const { issue, state, head } of open) {
     const names = new Set((issue.labels ?? []).map((label) => label.name));
     const edits = [];
+    const { issueId, priority, scopes, triage } = fields.values.get(
+      issue.number
+    );
+    const changes = [];
+    const mutationId = [`#${issue.number}`];
+    const devices = deviceLaneOf(String(issue.number), reads);
     const closes =
       state === 'current' &&
       head.outcome === 'fixed' &&
       replaysReport(parseDetail(head.detail)) &&
       reads.landed.get(String(issue.number))?.has(head.id) === true &&
-      deviceLaneOf(String(issue.number), reads).length === 0;
+      devices.length === 0;
     if (state === 'current') {
-      if (!names.has('triaged')) edits.push('--add-label triaged');
-      for (const [label, wanted] of [
-        ...Object.entries(OUTCOME_LABELS).map(([outcome, name]) => [
-          name,
-          head.outcome === outcome,
-        ]),
-        ['needs retest', head.outcome === 'fixed' && !closes],
-      ]) {
-        if (wanted && !names.has(label)) {
-          edits.push(`--add-label ${quoted(label)}`);
-        } else if (!wanted && names.has(label)) {
-          edits.push(`--remove-label ${quoted(label)}`);
-        }
+      const triageId = fields.triage.optionIds.get(
+        head.outcome === 'needs-repro'
+          ? NEEDS_REPRO
+          : head.outcome === 'dup'
+            ? DUPLICATE
+            : head.outcome === 'fixed' && !closes
+              ? NEEDS_RETEST
+              : TRIAGED
+      );
+      if (triage !== triageId) {
+        changes.push(
+          `{ fieldId: "${fields.triage.id}", singleSelectOptionId: "${triageId}" }`
+        );
+      }
+      const ime = devices.includes(IME_LABEL);
+      if (ime && !names.has(IME_LABEL)) {
+        edits.push(`--add-label ${IME_LABEL}`);
+      } else if (!ime && names.has(IME_LABEL)) {
+        edits.push(`--remove-label ${IME_LABEL}`);
       }
       const type = OUTCOME_TYPES[head.outcome];
       if (type && issue.issueType?.name !== type) {
@@ -1513,29 +1602,38 @@ function labels() {
         const scope = detail.get('scope');
         const priorityId = fields.priority.optionIds.get(level);
         const scopeId = fields.scope.optionIds.get(scope);
-        const { issueId, priority, scopes } = fields.values.get(issue.number);
-        if (scopeId === undefined) unscoped.push(`#${issue.number} ${scope}`);
-        const changes = [
-          ...(priority === priorityId
-            ? []
-            : [
-                `{ fieldId: "${fields.priority.id}", singleSelectOptionId: "${priorityId}" }`,
-              ]),
-          ...(scopeId === undefined ||
-          (scopes.length === 1 && scopes[0] === scopeId)
-            ? []
-            : [
-                `{ fieldId: "${fields.scope.id}", multiSelectOptionIds: ["${scopeId}"] }`,
-              ]),
-        ];
-        if (changes.length > 0) {
-          sets.push(
-            `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "#${issue.number} ${level} ${scope}", issueId: "${issueId}", issueFields: [${changes.join(', ')}] }) { clientMutationId } }'`
+        mutationId.push(level, scope);
+        if (priority !== priorityId) {
+          changes.push(
+            `{ fieldId: "${fields.priority.id}", singleSelectOptionId: "${priorityId}" }`
           );
         }
+        if (scopeId === undefined) {
+          unscoped.push(`#${issue.number} ${scope}`);
+        } else {
+          const wanted = [
+            ...new Set([
+              scopeId,
+              ...scopes.filter((id) => keptScopeIds.has(id)),
+            ]),
+          ];
+          if (
+            wanted.length !== scopes.length ||
+            wanted.some((id) => !scopes.includes(id))
+          ) {
+            changes.push(
+              `{ fieldId: "${fields.scope.id}", multiSelectOptionIds: [${wanted.map((id) => `"${id}"`).join(', ')}] }`
+            );
+          }
+        }
       }
-    } else if (state !== 'unchecked' && names.has('triaged')) {
-      edits.push('--remove-label triaged');
+    } else if (state !== 'unchecked' && clearedIds.has(triage)) {
+      changes.push(`{ fieldId: "${fields.triage.id}", delete: true }`);
+    }
+    if (changes.length > 0) {
+      sets.push(
+        `gh api graphql -f query='mutation { setIssueFieldValue(input: { clientMutationId: "${mutationId.join(' ')}", issueId: "${issueId}", issueFields: [${changes.join(', ')}] }) { clientMutationId } }'`
+      );
     }
     if (edits.length > 0) {
       commands.push(
@@ -1557,21 +1655,25 @@ function labels() {
 }
 
 function fetchClaims(remote) {
-  const error = fetchRef(remote, `+${CLAIMS_REF}:${CLAIMS_REF}`);
+  const error = fetchRef(
+    teamRemote(remote),
+    `+${claimsRef}:${claimsRef}`,
+    teamVia
+  );
   if (error && !/couldn't find remote ref/u.test(error.message)) {
     return { error };
   }
   const tip = error
     ? null
-    : gitOut(
+    : teamOut(
         'rev-parse',
         '--verify',
         '--quiet',
-        `${CLAIMS_REF}^{commit}`
+        `${claimsRef}^{commit}`
       )?.trim() || null;
   return {
     tip,
-    text: tip ? (gitOut('show', `${tip}:${CLAIMS_FILE}`) ?? '') : '',
+    text: tip ? (teamOut('show', `${tip}:${CLAIMS_FILE}`) ?? '') : '',
   };
 }
 
@@ -1583,44 +1685,43 @@ function pushClaims(remote, decideOn) {
   for (let attempt = 0; attempt < PUSH_TRIES; attempt += 1) {
     const { error, tip, text } = fetchClaims(remote);
     if (error) {
-      refuse(`could not fetch ${CLAIMS_REF} from ${remote} (${error.message})`);
+      refuse(`could not fetch ${claimsRef} from ${remote} (${error.message})`);
     }
     const { lines, result } = decideOn(text, attempt);
     if (lines.length === 0) return result;
     const base = text || `${CLAIM_COLUMNS.join('\t')}\n`;
-    const blob = run('git', ['hash-object', '-w', '--stdin'], {
+    const blob = teamRun(['hash-object', '-w', '--stdin'], {
       input: `${base}${base.endsWith('\n') ? '' : '\n'}${lines.join('\n')}\n`,
     }).stdout.trim();
-    const tree = run('git', ['mktree'], {
+    const tree = teamRun(['mktree'], {
       input: `100644 blob ${blob}\t${CLAIMS_FILE}\n`,
     }).stdout.trim();
-    const commit = run('git', [
+    const commit = teamRun([
       'commit-tree',
       tree,
       ...(tip ? ['-p', tip] : []),
       '-m',
       `${lines.length} triage claim move(s)`,
     ]).stdout.trim();
-    const pushed = run(
-      'git',
-      ['push', '--quiet', remote, `${commit}:${CLAIMS_REF}`],
+    const pushed = teamRun(
+      ['push', '--quiet', teamRemote(remote), `${commit}:${claimsRef}`],
       {
         env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
         timeout: NETWORK_MS,
       }
     );
     if (pushed.status === 0) {
-      run('git', ['update-ref', CLAIMS_REF, commit]);
+      teamRun(['update-ref', claimsRef, commit]);
       return result;
     }
     if (!/\[rejected\]/u.test(pushed.stderr)) {
       refuse(
-        `could not push ${CLAIMS_REF} to ${remote}: ${pushed.stderr.trim().split('\n')[0] || `git push exited ${pushed.status}`}`
+        `could not push ${claimsRef} to ${remote}: ${pushed.stderr.trim().split('\n')[0] || `git push exited ${pushed.status}`}`
       );
     }
   }
   throw new RefusalError(
-    `${CLAIMS_REF} on ${remote} moved ${PUSH_TRIES} times while this claim decided; run it again`
+    `${claimsRef} on ${remote} moved ${PUSH_TRIES} times while this claim decided; run it again`
   );
 }
 
@@ -1726,7 +1827,7 @@ function liveSignals(repo, numbers) {
           `${repo}#${number} has more comments than one read returns in the last 30 days; read them with gh issue view ${number} --repo ${repo} --comments`
         );
       }
-      // GitHub links a closing PR only when it targets the default branch, so a PR into next shows up as a reference.
+      // GitHub links a closing PR only when it targets the default branch, next, so a PR into main shows up as a reference.
       const closes = new RegExp(
         `\\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\\s+(?:${literal(repo)})?#${number}\\b`,
         'iu'
@@ -2206,7 +2307,7 @@ function claimCommand(argv) {
       ? offerTask(recheck.offer, {
           id: request.offerId,
           world: fresh,
-          repo,
+          policy: reads.policy,
           actor,
           named,
           main,
@@ -2216,8 +2317,8 @@ function claimCommand(argv) {
   );
 }
 
-function offerTask(offer, { id, world, repo, actor, named, main, current }) {
-  const name = repo.split('/')[1];
+function offerTask(offer, { id, world, policy, actor, named, main, current }) {
+  const name = repoNameOf(policy.repo);
   const refs = offer.issues.map((issue) => `${name}#${issue}`);
   const names =
     refs.length > 1
@@ -2226,7 +2327,7 @@ function offerTask(offer, { id, world, repo, actor, named, main, current }) {
   const file = ledgerIn(main);
   // A start whose push failed leaves its rows only in this file, so the shared ledger the claim read cannot show them.
   const local = existsSync(file)
-    ? ledgerOf(readFileSync(file, 'utf-8'), repo)
+    ? ledgerOf(readFileSync(file, 'utf-8'), policy)
     : null;
   const waiting = local
     ? offer.issues
@@ -2281,9 +2382,13 @@ const setupIn = (main) =>
   });
 
 function ledgerNow(reads) {
-  if (fetchRef(reads.remote, `+${LEDGER_REF}:${LEDGER_COPY}`)) return null;
-  const text = gitOut('show', `${LEDGER_COPY}:${LEDGER}`);
-  return text === null ? null : ledgerOf(text, reads.policy.repo);
+  if (
+    fetchRef(teamRemote(reads.remote), `+${LEDGER_REF}:${LEDGER_COPY}`, teamVia)
+  ) {
+    return null;
+  }
+  const text = teamOut('show', `${LEDGER_COPY}:${LEDGER}`);
+  return text === null ? null : ledgerOf(text, reads.policy);
 }
 
 function startTask(task, actor, why, main, current) {
@@ -2526,10 +2631,10 @@ function recordCommand(argv) {
     );
   }
   const shown = shownLines(toolOutputs(identity.lead, identity.chain));
-  const workTree = join(root, REGISTER);
+  const workTree = join(root, registerFile);
   if (!existsSync(workTree)) {
     refuse(
-      `this checkout has no ${REGISTER}; rebase it onto ${reads.remote}/${reads.branch}`
+      `this checkout has no ${registerFile}; rebase it onto ${reads.remote}/${reads.branch}`
     );
   }
   const read = gitOut('merge-base', 'HEAD', reads.tip)?.trim();
@@ -2598,7 +2703,7 @@ function recordCommand(argv) {
     }
     const owned = ownerPaths({ outcome: entry.outcome, detail: entry.detail });
     for (const path of owned) {
-      if (run('git', ['cat-file', '-e', `${read}:${path}`]).status !== 0) {
+      if (!existsAt(root, read, path)) {
         refuse(
           `${where}: ${path} does not exist at ${read.slice(0, 10)}, the newest ${reads.branch} commit this checkout holds`
         );
@@ -2666,25 +2771,76 @@ function recordCommand(argv) {
     `${text === '' || text.endsWith('\n') ? '' : '\n'}${rows.join('\n')}\n`
   );
   console.log(
-    `recorded ${rows.length} row(s) in ${REGISTER} by ${author}; commit the file and land it`
+    `recorded ${rows.length} row(s) in ${registerFile} by ${author}; commit the file and land it`
   );
   for (const row of rows) console.log(row);
 }
 
 function check(argv) {
-  const [file = REGISTER] = argv;
-  const path = join(root, file);
-  const found = existsSync(path)
-    ? registerProblems(readFileSync(path, 'utf-8'), file)
-    : [`${file} does not exist`];
-  found.push(...policyProblems(localConfig()));
+  const config = localConfig();
+  const found = policyProblems(config);
+  const repos = config?.triage?.repos ?? [];
+  const files =
+    argv.length > 0
+      ? argv
+      : repoName === null && found.length === 0
+        ? repos
+            .map((repo) => registerOf(repos, repo))
+            .filter(
+              (file) =>
+                file === PRIMARY_REGISTER || existsSync(join(root, file))
+            )
+        : [registerFile];
+  const counts = [];
+  for (const file of files) {
+    const path = join(root, file);
+    if (!existsSync(path)) {
+      found.push(`${file} does not exist`);
+      continue;
+    }
+    const text = readFileSync(path, 'utf-8');
+    found.push(...registerProblems(text, file));
+    counts.push(`${file}: ${parseRows(text).length} row(s)`);
+  }
   if (found.length > 0) {
     for (const problem of found) console.error(problem);
     process.exit(1);
   }
-  console.log(
-    `${file}: ${parseRows(readFileSync(path, 'utf-8')).length} row(s), shape ok`
-  );
+  console.log(`${counts.join(', ')}, shape ok`);
+}
+
+// "--repo <name>" or an issue written <name>#N picks the repository from triage.repos that the command reads.
+function pickRepo(argv) {
+  const repos = localConfig()?.triage?.repos ?? [];
+  const names = Array.isArray(repos) ? repos.map(repoNameOf) : [];
+  const pick = (name) => {
+    if (repoName !== null && repoName !== name) {
+      usage(
+        `one command reads one repository, not both ${repoName} and ${name}`
+      );
+    }
+    repoName = name;
+  };
+  const kept = [];
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    const named = /^([\w.-]+)(#[1-9]\d*)$/u.exec(arg);
+    if (arg === '--repo') {
+      index += 1;
+      if (!names.includes(argv[index])) {
+        usage(`--repo names one of ${names.join(', ')}`);
+      }
+      pick(argv[index]);
+    } else if (named && names.includes(named[1])) {
+      pick(named[1]);
+      kept.push(named[2]);
+    } else kept.push(arg);
+  }
+  if (repoName !== null && repoName !== names[0]) {
+    registerFile = registerOf(repos, repos[names.indexOf(repoName)]);
+    claimsRef = `${CLAIMS_REF}-${repoName}`;
+  }
+  return kept;
 }
 
 const COMMANDS = {
@@ -2700,11 +2856,13 @@ const COMMANDS = {
 };
 const [command, ...rest] = process.argv.slice(2);
 if (!COMMANDS[command]) {
-  console.error(`usage: pnpm triage <${Object.keys(COMMANDS).join('|')}> ...`);
+  console.error(
+    `usage: pnpm triage <${Object.keys(COMMANDS).join('|')}> [--repo <name>] ...`
+  );
   process.exit(2);
 }
 try {
-  COMMANDS[command](rest);
+  COMMANDS[command](pickRepo(rest));
 } catch (error) {
   if (!(error instanceof RefusalError)) throw error;
   console.error(`triage ${command}: ${error.message}`);

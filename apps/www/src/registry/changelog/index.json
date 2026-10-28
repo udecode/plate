@@ -2,6 +2,114 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-28-pagination-demo-list-callout",
+      "href": "/registry/changelog/2026-10-28-pagination-demo-list-callout.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Install the list and callout kits in the pagination demo",
+      "change": {
+        "type": "source",
+        "date": "2026-10-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["pagination-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-28-pagination-demo-named-fonts",
+      "href": "/registry/changelog/2026-10-28-pagination-demo-named-fonts.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix pagination demo lines overlapping in Firefox",
+      "change": {
+        "type": "source",
+        "date": "2026-10-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["pagination-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-27-fix-all-comments-target-status",
+      "href": "/registry/changelog/2026-10-27-fix-all-comments-target-status.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix the All comments dialog showing a removed comment target as attached",
+      "change": {
+        "type": "source",
+        "date": "2026-10-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["comment-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-27-font-size-enter-returns-focus",
+      "href": "/registry/changelog/2026-10-27-font-size-enter-returns-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Return to the editor after Enter in the font size field",
+      "change": {
+        "type": "source",
+        "date": "2026-10-27",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["font-size-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-26-editor-frame-narrow-hosts",
+      "href": "/registry/changelog/2026-10-26-editor-frame-narrow-hosts.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the editor frame inside narrow layouts",
+      "change": {
+        "type": "source",
+        "date": "2026-10-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-26-floating-toolbar-safari-menus",
+      "href": "/registry/changelog/2026-10-26-floating-toolbar-safari-menus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Open floating toolbar menus in Safari",
+      "change": {
+        "type": "source",
+        "date": "2026-10-26",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-toolbar"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-26-remove-code-block-auto-language",
       "href": "/registry/changelog/2026-10-26-remove-code-block-auto-language.json",
       "status": "draft",
@@ -35,6 +143,24 @@
       },
       "targets": ["code-block-diagram-mermaid"],
       "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-22-edit-link-text",
+      "href": "/registry/changelog/2026-10-22-edit-link-text.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix Edit link, saving an edited link, Open link and the link shortcut in the link toolbar",
+      "change": {
+        "type": "source",
+        "date": "2026-10-22",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link"],
+      "entries": 5,
       "diagnostics": []
     },
     {

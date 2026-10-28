@@ -3,13 +3,22 @@ import { fileURLToPath } from 'node:url';
 
 import { FAST_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
 import { privatePackageNamePattern } from '../scripts/finalize-plate-declarations.mjs';
-import { lineIdentity, readBaseline } from '../scripts/finding-baseline.mjs';
+import {
+  lineIdentity,
+  mergeBaselines,
+  readBaseline,
+} from '../scripts/finding-baseline.mjs';
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export const baselineFile = 'tooling/oxlint/plate-baseline.json';
+// The findings in files udecode/plate-private tracks, so their lines stay private.
+export const privateBaselineFile = 'tooling/oxlint/plate-baseline.private.json';
 
-const baseline = readBaseline(baselineFile);
+const baseline = mergeBaselines([
+  readBaseline(baselineFile),
+  readBaseline(privateBaselineFile),
+]);
 
 /** The environment `plate-baseline.mjs` lints with to count every instance. */
 export const reportAllEnv = { PLATE_LINT_BASELINE: 'report-all' };

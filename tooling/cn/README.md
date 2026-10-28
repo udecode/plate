@@ -6,7 +6,6 @@ Plate
 <div align="center">
   <a href="https://www.npmjs.com/package/platejs"><img src="https://img.shields.io/npm/dm/platejs.svg" alt="总下载量"></a>
   <a target="_blank" href="https://github.com/udecode/plate/releases/latest"><img src="https://img.shields.io/github/v/release/udecode/plate" /></a>
-  <a target="_blank" href="tooling/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="欢迎PR"></a>
   <a target="_blank" href="https://discord.gg/mAZRuBzGM3"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" /></a>
   <a target="_blank" href="https://github.com/udecode/plate/blob/main/LICENSE"><img src="https://badgen.now.sh/badge/license/MIT" /></a>
 </div>
@@ -37,11 +36,11 @@ Plate
 
 ## 贡献
 
-要开始贡献，请查看我们的[贡献指南](./CONTRIBUTING.md)。
+发现错误或想要新功能？请提交一个附带复现的 issue。所有修复都由团队编写，详见[贡献指南](./CONTRIBUTING.md)。
 
 ### 贡献者
 
-我们希望您能加入我们！无论是给我们一个🌟星标，提交一个📥拉取请求，还是**分享您的插件**，您的帮助总是值得称赞的。
+我们希望您能加入我们！无论是给我们一个🌟星标，提交一个附带复现的🐛 issue，还是**分享您的插件**，您的帮助总是值得称赞的。
 
 [![Star历史图表](https://api.star-history.com/svg?repos=udecode/plate&type=Date)](https://star-history.com/#udecode/plate&Date)
 

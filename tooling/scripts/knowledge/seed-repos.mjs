@@ -8,6 +8,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 
+import { isSplit, privateGit, trackedFiles } from '../private-files.mjs';
 import { editorRepos } from './knowledge.mjs';
 
 const OUT = 'docs/research/repos.tsv';
@@ -133,35 +134,45 @@ function cloneIndex() {
   return byRepo;
 }
 
-// The date git first added each file under the given folders.
+// The date git first added each file under the given folders. plate-private's
+// history starts at the split, so the earlier of the two repositories' dates
+// wins.
 function addedDates(folders) {
   const out = new Map();
-  let date = '';
-  const log = git(root, [
+  const args = [
     'log',
     '--diff-filter=A',
     '--name-only',
     '--format=@%as',
     '--',
     ...folders,
-  ]);
-  for (const line of log.split('\n')) {
-    if (line.startsWith('@')) date = line.slice(1);
-    else if (line) out.set(line, date);
+  ];
+  for (const log of [
+    git(root, args),
+    ...(isSplit(root) ? [privateGit(root, args).stdout] : []),
+  ]) {
+    let date = '';
+    for (const line of log.split('\n')) {
+      if (line.startsWith('@')) {
+        date = line.slice(1);
+        continue;
+      }
+      const known = out.get(line);
+      if (line && (!known || date < known)) out.set(line, date);
+    }
   }
   return out;
 }
 
 const areaIds = new Set(tsvRows(read(AREAS)).map((row) => row.area));
 const clones = cloneIndex();
-const tracked = git(root, [
-  'ls-files',
-  SOURCES,
-  'docs/editor-test-harvester',
-  'docs/editor-issue-harvester',
-])
-  .split('\n')
-  .filter(Boolean);
+const tracked = trackedFiles(root, {
+  pathspecs: [
+    SOURCES,
+    'docs/editor-test-harvester',
+    'docs/editor-issue-harvester',
+  ],
+});
 const added = addedDates([
   SOURCES,
   'docs/editor-test-harvester',
@@ -225,10 +236,9 @@ for (const audit of JSON.parse(read(AUDITS)).audits) {
 }
 
 let dropped = 0;
-for (const path of git(root, [
-  'ls-files',
-  'docs/plite/research/*/repo-registry.tsv',
-]).split('\n')) {
+for (const path of trackedFiles(root, {
+  pathspecs: ['docs/plite/research/*/repo-registry.tsv'],
+})) {
   const run = path.split('/')[3];
   for (const row of tsvRows(read(path))) {
     const found = parseUrl(row.url);

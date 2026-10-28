@@ -18,6 +18,7 @@ import { history } from 'plitejs/history';
 import {
   createPretextPageLayoutEngine,
   type NodeFragmentationProvider,
+  type PageLayoutSnapshot,
   type PageLayoutTypography,
   pageSettingsCodec,
   type PageSettings,
@@ -109,6 +110,7 @@ const MAX_VIRTUALIZED_STRESS_PAGES = 2000;
 
 const paginationControlParsers = {
   debugFrames: parseAsBoolean.withDefault(false),
+  longBlockPages: parseAsBoundedInteger(0, 40).withDefault(0),
   margins: parseAsBoundedInteger(48, 240).withDefault(96),
   mediaHeight: parseAsBoundedInteger(120, MAX_MEDIA_HEIGHT).withDefault(
     DEFAULT_MEDIA_HEIGHT
@@ -133,6 +135,7 @@ const paginationControlParsers = {
 
 const paginationControlUrlKeys = {
   debugFrames: 'debug',
+  longBlockPages: 'long_block_pages',
   mediaHeight: 'media_height',
   pageLayoutMode: 'page_layout',
   renderingMode: 'rendering',
@@ -489,15 +492,25 @@ const createStressSection = (index: number): Value =>
   }));
 
 const createInitialValue = ({
+  longBlockPages,
   stressPages,
   tableRows,
 }: {
+  longBlockPages: number;
   stressPages: number;
   tableRows: number;
 }): Value => [
   ...Array.from({ length: 7 }, (_, section) =>
-    fixtureParagraphs.map((text) => ({
-      children: [{ text: `${text} Section ${section + 1}.` }],
+    fixtureParagraphs.map((text, index) => ({
+      children: [
+        {
+          text: `${text} Section ${section + 1}.${
+            section === 0 && index === 1
+              ? ` ${text}`.repeat(longBlockPages * 20)
+              : ''
+          }`,
+        },
+      ],
       type: 'paragraph',
     }))
   ).flat(),
@@ -758,6 +771,13 @@ const useElementSize = <T extends HTMLElement>(): [
   return [ref, size];
 };
 
+const usePaginationLayoutProbe = (layout: PageLayoutSnapshot | null) => {
+  useEffect(() => {
+    (globalThis as Record<string, unknown>).__PLITE_PAGINATION_LAYOUT__ =
+      layout;
+  }, [layout]);
+};
+
 const PaginationSurface = ({
   controls,
   setControls,
@@ -920,6 +940,8 @@ const PaginationSurface = ({
     ),
     [controls.debugFrames, usesVirtualizedLayout]
   );
+
+  usePaginationLayoutProbe(layout);
   const onKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) =>
       handlePaginationKeyDown(editor, event),
@@ -959,6 +981,7 @@ const PaginationSurface = ({
       </div>
       <div
         className="editor-pagination-viewport"
+        data-pagination-layout-version={layout?.version}
         data-testid="pagination-viewport"
         ref={viewportRef}
       >
@@ -1030,7 +1053,26 @@ const PaginationSurface = ({
                                   />
                                 ))
                               )
-                            : []
+                            : fragment.type === 'direct-children' &&
+                                fragment.pageIndex === currentPage.index
+                              ? fragment.children.map((child) => (
+                                  <div
+                                    data-path={child.path.join(',')}
+                                    data-testid="pagination-child-frame"
+                                    key={child.path.join(',')}
+                                    style={{
+                                      height: child.rect.height,
+                                      left: child.rect.left,
+                                      outline:
+                                        '1px dotted rgba(59, 130, 246, 0.7)',
+                                      pointerEvents: 'none',
+                                      position: 'absolute',
+                                      top: child.rect.top,
+                                      width: child.rect.width,
+                                    }}
+                                  />
+                                ))
+                              : []
                         )}
                       </>
                     )}
@@ -1062,6 +1104,7 @@ const PaginationEditor = ({
   const editor = useEditor({
     initialValue: {
       children: createInitialValue({
+        longBlockPages: controls.longBlockPages,
         stressPages: initialStressPages,
         tableRows: controls.tableRows,
       }),

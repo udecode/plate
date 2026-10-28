@@ -169,7 +169,10 @@ its `exit N` line; after an interruption or resume, only those logs count.
   mode serves a different shell and root layout, so a spec green on a server
   without the flag, such as 3297, is not green for the runner.
   `GET /api/plite/ready` returns the server's `plite` and `devSource` flags,
-  and the runner's global setup refuses a server that lacks either one.
+  and the runner's global setup refuses a server that lacks either one. On a
+  server that just started, the first request to a docs page can compile for
+  over two minutes, past the specs' 45-second test timeout, so request each
+  route the selected specs open once with `curl` before the run.
 - Plite examples for interactive source proof:
   `pnpm --filter plite exec next dev --port 3298`.
 - Existing managed Plite browser proof:
@@ -246,6 +249,35 @@ Existing repository Playwright specs are executable proof owners. Run them
 through their package runner. Do not build a parallel Puppeteer, raw CDP or
 standalone Playwright driver for interactive QA. Browser emulation does not
 prove raw Android/iOS input.
+
+Copied UI runs through the React Compiler only in www. Its dev and production
+servers both compile it unless `PLATE_WWW_WEBPACK` is set. Bun specs render it
+uncompiled, so they never show a value the compiler cached. Prove a copied-UI
+value that comes from the editor or a plugin, such as a toolbar, popover or
+dialog value, in the www browser without `PLATE_WWW_WEBPACK`. Render the
+component, change that state from outside it, and read the new value on screen.
+
+When a www or Plite browser spec fails, read what the failed run saved before
+you patch or drive again. Its results folder holds Playwright's
+`error-context.md` and failure screenshot, and the package's
+`editor-state.json`. That file holds every error Playwright recorded and, for
+each editor on every open page and frame, its value, model selection, mapped
+and native selection with the editor that owns each end, focus, rendered block
+text, input state and last commit. Check its unread and cut fields first,
+because a field the capture could not read is not an observed empty value.
+Then name the owner the evidence points at, and fix what the file already
+shows without waiting for another reproduction. Some failures save no editor
+state. The S5 bench and the native IME lane run their own browser, the kit
+lifetime and authored mounted performance probes close or unmount their
+editors before the test ends, and a failure that starts in an `afterAll` hook,
+in the setup of a `context` override or in a fixture torn down after the
+capture saves no file. A page that stays busy past the capture's four-second
+read is listed as not read, and Playwright's own page outline in
+`error-context.md` can be missing for it too. When the file cannot explain the
+timing, rerun the one failing test with a trace,
+`--trace retain-on-failure` in www or `PLITE_BROWSER_TRACE=1` in Plite. Reading
+saved files never replaces the hand drive a browser-visible change needs before
+it closes.
 
 The harness's `clipboard.pasteHtml` and `clipboard.pasteText` paste through
 the Playwright project's `use.clipboardTransport` and fail when that transport

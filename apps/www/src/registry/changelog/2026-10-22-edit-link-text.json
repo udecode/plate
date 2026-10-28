@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-22-edit-link-text",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-22-edit-link-text.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-22",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix Edit link, saving an edited link, Open link and the link shortcut in the link toolbar",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-22-link-fill-text-display-s-5bd3dafb",
+      "kind": "fix",
+      "summary": "Fill Text to display with the link's text in Edit link",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-22",
+          "entry": "2026-10-22-edit-link-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-22-link-toolbar-after-enter",
+      "kind": "fix",
+      "summary": "Show the link toolbar again after Enter saves an edited link",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-22",
+          "entry": "2026-10-22-edit-link-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-22-link-open-follows-caret",
+      "kind": "fix",
+      "summary": "Point Open link at the link under the caret when the caret moves straight into another link",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 22,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-22",
+          "entry": "2026-10-22-edit-link-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-22-link-form-focus-out",
+      "kind": "fix",
+      "summary": "Close Edit link and Insert link and drop the draft when focus moves from the form to another element, the editor takes focus or a click lands outside, and show the link toolbar again while the caret stays in the link",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 26,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-22",
+          "entry": "2026-10-22-edit-link-text",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-22-link-shortcut-selection",
+      "kind": "fix",
+      "summary": "Keep Insert link and the formatting toolbar working after the link shortcut over a selection inside a link",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 30,
+        "row": 5,
+        "legacyRelease": {
+          "date": "2026-10-22",
+          "entry": "2026-10-22-edit-link-text",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

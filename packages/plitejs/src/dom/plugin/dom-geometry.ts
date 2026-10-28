@@ -136,7 +136,8 @@ export const getPliteStringLength = (string: HTMLElement) => {
   return string.textContent?.length ?? 0;
 };
 
-const PLITE_STRING_SELECTOR = '[data-editor-string], [data-editor-zero-width]';
+export const PLITE_STRING_SELECTOR =
+  '[data-editor-string], [data-editor-zero-width]';
 
 export const getPliteTextHostStrings = (textHost: Element): HTMLElement[] => {
   if (

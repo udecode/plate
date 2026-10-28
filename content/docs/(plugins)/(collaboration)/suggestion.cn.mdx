@@ -260,7 +260,7 @@ for (let cursor: string | undefined; ; ) {
 const result = authored.update.decide({ action: 'accept', changes });
 ```
 
-一次调用会同时决定所有 change，因此不会返回 `blocked`。应用成功时，它得到的文档与按任意顺序逐个决定这些 change 相同，其中每个返回 `blocked` 的步骤都会加入其 `with` 列出的 change。一次撤销会恢复它决定的每个 change。请在同一个事件处理函数中读取并决定，因为两者之间的编辑可能使 change 变为 `stale`。当 schema 拒绝决定后的文档时，结果为 `invalid`，且不会有任何修改。复制的 `ModeToolbarButton` 在其菜单中以 **Accept all suggestions** 和 **Reject all suggestions** 提供此操作。
+一次调用会同时决定所有 change，因此不会返回 `blocked`。应用成功时，它得到的文档与按任意顺序逐个决定这些 change 相同，其中每个返回 `blocked` 的步骤都会加入其 `with` 列出的 change。有一种情况仍取决于顺序。当建议的 Enter 将链接切成多个片段，而其他建议删除或解除包裹某个片段或片段之间的节点时，拒绝该 Enter 后，逐个决定与一次调用决定可能以不同方式重新合并这些片段。一次撤销会恢复它决定的每个 change。请在同一个事件处理函数中读取并决定，因为两者之间的编辑可能使 change 变为 `stale`。当 schema 拒绝决定后的文档时，结果为 `invalid`，且不会有任何修改。复制的 `ModeToolbarButton` 在其菜单中以 **Accept all suggestions** 和 **Reject all suggestions** 提供此操作。
 
 ## 保存和重新加载
 

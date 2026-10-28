@@ -11,6 +11,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { showAt } from './private-files.mjs';
+
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export const readBaseline = (file) => {
@@ -20,6 +22,17 @@ export const readBaseline = (file) => {
     if (error.code === 'ENOENT') return {};
     throw error;
   }
+};
+
+/** One baseline holding every rule's files from each of `baselines`. */
+export const mergeBaselines = (baselines) => {
+  const merged = {};
+  for (const baseline of baselines) {
+    for (const [rule, files] of Object.entries(baseline)) {
+      merged[rule] = { ...merged[rule], ...files };
+    }
+  }
+  return merged;
 };
 
 /** The identity of a finding on `line` (1-based) of `text`. */
@@ -101,11 +114,14 @@ export const differences = (from, minus) =>
  * `check` fails on any difference. `lower` fails on a finding the baseline
  * does not list and otherwise drops the entries the tree no longer holds.
  * `init` seeds every rule the file lacks. `describe` turns a new finding's
- * baseline key into the line the caller prints for it.
+ * baseline key into the line the caller prints for it. The base commit's
+ * copies of `boundFiles`, `file` alone by default, together bound the
+ * baseline's growth.
  */
 export function enforceBaseline({
   describe = (key) => key,
   file,
+  boundFiles = [file],
   found,
   lowerCommand,
   mode,
@@ -125,12 +141,11 @@ export function enforceBaseline({
     );
     return 1;
   }
-  const atBase = spawnSync('git', ['show', `${base}:${file}`], {
-    cwd: repoRoot,
-    encoding: 'utf-8',
-  });
-  if (atBase.status === 0) {
-    const bound = JSON.parse(atBase.stdout);
+  const copies = boundFiles
+    .map((bounding) => showAt(repoRoot, base, bounding))
+    .filter((copy) => copy.status === 0);
+  if (copies.length > 0) {
+    const bound = mergeBaselines(copies.map((copy) => JSON.parse(copy.stdout)));
     const raised = differences(
       Object.fromEntries(
         Object.keys(bound).map((rule) => [rule, old[rule] ?? {}])

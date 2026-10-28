@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Help us evaluate this with concrete use cases, ownership, and tradeoffs.
-        One request per submission.
+        One request per submission. The team builds accepted features and closes pull requests from outside the team.
 
         If this is a support question, use Discussions or Discord instead.
   - type: textarea

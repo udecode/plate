@@ -218,8 +218,6 @@ export function createAndroidInputManager({
       }
     }
 
-    // Chrome has already edited the DOM, so the DOM selection is past the
-    // edit; the command targets the range the manager resolved before it.
     inputController.state.isReplayingAndroidCommand = true;
     try {
       action.run();
@@ -995,6 +993,9 @@ export function createAndroidInputManager({
         let preventedTextInput = false;
 
         if (isDataTransfer(data)) {
+          if (type === 'insertFromPaste' && event.cancelable) {
+            event.preventDefault();
+          }
           scheduleCommand(
             { data, kind: 'insert-data' },
             { at: innerTargetRange2, paste: type === 'insertFromPaste' }

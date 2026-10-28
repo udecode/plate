@@ -15,6 +15,16 @@ import {
   repoRoot,
 } from '../../entrypoints/entrypoint-turbo.mjs';
 import {
+  existingAt,
+  filesAt,
+  isSplit,
+  objectIds,
+  pairedCommit,
+  PRIVATE_DIR,
+  privateGit,
+  trackedFiles,
+} from '../private-files.mjs';
+import {
   lookupContext,
   lookupIn,
   owningScopes,
@@ -128,18 +138,7 @@ export function workTree(root) {
     repo: root,
     ref: null,
     list() {
-      if (!paths) {
-        const listed = git(root, [
-          'ls-files',
-          '--cached',
-          '--others',
-          '--exclude-standard',
-        ]);
-        if (listed.status !== 0) {
-          throw new Error(`git ls-files failed in ${root}: ${listed.stderr}`);
-        }
-        paths = listed.stdout.split('\n').filter(Boolean);
-      }
+      paths ??= trackedFiles(root, { untracked: true });
       return paths;
     },
     has: (path) => existsSync(join(root, path)),
@@ -148,38 +147,52 @@ export function workTree(root) {
   };
 }
 
-/** Commit `ref` of the repository at `repo`; every file `patterns` match is read in one batch. */
+/**
+ * Commit `ref` of the repository at `repo`, with the plate-private commit
+ * paired with it in a split checkout; every file `patterns` match is read in
+ * one batch per repository.
+ */
 export function commitTree(repo, ref, patterns) {
-  const listed = spawnSync('git', ['ls-tree', '-r', '-z', '--name-only', ref], {
-    cwd: repo,
-    encoding: 'utf-8',
-    maxBuffer: 1 << 30,
-  });
-  if (listed.status !== 0) {
-    throw new Error(`Cannot list ${ref}: ${listed.stderr}`);
-  }
-  const paths = listed.stdout.split('\0').filter(Boolean);
-  const wanted = paths.filter((path) =>
-    patterns.some((pattern) => matchesGlob(path, pattern))
-  );
-  const batch = spawnSync('git', ['cat-file', '--batch'], {
-    cwd: repo,
-    input: `${wanted.map((path) => `${ref}:${path}`).join('\n')}\n`,
-    maxBuffer: 1 << 30,
-  });
-  if (batch.status !== 0) {
-    throw new Error(`Cannot read ${ref}: ${String(batch.stderr)}`);
-  }
+  const paired = pairedCommit(repo, ref);
+  const halves = [
+    [[], ref],
+    ...(paired ? [[[`--git-dir=${join(repo, PRIVATE_DIR)}`], paired]] : []),
+  ];
+  const paths = [];
   const texts = new Map();
-  let at = 0;
-  for (const path of wanted) {
-    const end = batch.stdout.indexOf(10, at);
-    const [, type, size] = batch.stdout.toString('utf-8', at, end).split(' ');
-    at = end + 1;
-    if (type !== 'blob') continue;
-    texts.set(path, batch.stdout.toString('utf-8', at, at + Number(size)));
-    at += Number(size) + 1;
+  for (const [via, commit] of halves) {
+    const listed = spawnSync(
+      'git',
+      [...via, 'ls-tree', '-r', '-z', '--name-only', commit],
+      { cwd: repo, encoding: 'utf-8', maxBuffer: 1 << 30 }
+    );
+    if (listed.status !== 0) {
+      throw new Error(`Cannot list ${commit}: ${listed.stderr}`);
+    }
+    const listedPaths = listed.stdout.split('\0').filter(Boolean);
+    paths.push(...listedPaths);
+    const wanted = listedPaths.filter((path) =>
+      patterns.some((pattern) => matchesGlob(path, pattern))
+    );
+    const batch = spawnSync('git', [...via, 'cat-file', '--batch'], {
+      cwd: repo,
+      input: `${wanted.map((path) => `${commit}:${path}`).join('\n')}\n`,
+      maxBuffer: 1 << 30,
+    });
+    if (batch.status !== 0) {
+      throw new Error(`Cannot read ${commit}: ${String(batch.stderr)}`);
+    }
+    let at = 0;
+    for (const path of wanted) {
+      const end = batch.stdout.indexOf(10, at);
+      const [, type, size] = batch.stdout.toString('utf-8', at, end).split(' ');
+      at = end + 1;
+      if (type !== 'blob') continue;
+      texts.set(path, batch.stdout.toString('utf-8', at, at + Number(size)));
+      at += Number(size) + 1;
+    }
   }
+  paths.sort();
   return {
     repo,
     ref,
@@ -1668,13 +1681,7 @@ export function pathSet(paths) {
 
 /** The paths a fresh checkout of `ref` holds, or of the index when `ref` is omitted. */
 export function trackedPaths(root, ref) {
-  const listed = ref
-    ? git(root, ['ls-tree', '-r', '--name-only', ref])
-    : git(root, ['ls-files']);
-  if (listed.status !== 0) {
-    throw new Error(`Cannot list ${ref ?? 'the index'}: ${listed.stderr}`);
-  }
-  return pathSet(listed.stdout.split('\n').filter(Boolean));
+  return pathSet(ref ? filesAt(root, ref) : trackedFiles(root));
 }
 
 const ROOTS =
@@ -1688,7 +1695,7 @@ const ROOT_PATH = new RegExp(`^${ROOTS}`);
 // Research runs keep their notes in the ignored run directory since this
 // commit; `kb` still reads what these folders held there.
 const FREEZE_COMMIT = '2111c23ad713e25263f30eea80ed48cf11fc60ba';
-const FROZEN = [
+export const FROZEN = [
   'docs/plite/research/',
   'docs/research/probes/',
   'docs/research/raw/',
@@ -1752,7 +1759,7 @@ const trimToken = (token) => {
  */
 function citationProblem(raw, file, tracked, local, linked) {
   if (EVIDENCE_LAYER.test(raw)) return null;
-  const pinned = /^([0-9a-f]{7,40}):(.+)$/.exec(raw);
+  const pinned = PINNED.exec(raw);
   if (pinned) {
     const [, sha, path] = pinned;
     if (!local.reachable(sha)) {
@@ -1761,7 +1768,7 @@ function citationProblem(raw, file, tracked, local, linked) {
         message: `cites commit ${sha}, which no remote branch contains`,
       };
     }
-    return local.holds(sha, path.replace(/[#:].*$/, ''))
+    return local.holds(sha, path)
       ? null
       : {
           target: raw,
@@ -1802,25 +1809,42 @@ export function linkedPaths(text, file) {
     .map((raw) => repoPath(raw, file, true).replace(/\/$/, ''));
 }
 
-function localCommits(repo) {
-  const cache = new Map();
-  const memo = (key, run) => {
-    if (!cache.has(key)) cache.set(key, run());
-    return cache.get(key);
-  };
+const PINNED = /^([0-9a-f]{7,40}):(.+)$/;
+
+function pinnedCommits(repo, pins) {
+  const opened = (path) => path.replace(/[#:].*$/, '');
+  const split = isSplit(repo);
+  const shas = [...new Set(pins.map(([sha]) => sha))];
+  const reached = new Set();
+  for (const [side, branches] of [
+    [false, ['origin/next', 'origin/main']],
+    ...(split ? [[true, ['origin/next']]] : []),
+  ]) {
+    const args = ['rev-list', '--ignore-missing', ...branches];
+    const listed = side ? privateGit(repo, args) : git(repo, args);
+    const contained = new Set(listed.stdout.split('\n'));
+    const ids = objectIds(
+      repo,
+      shas.map((sha) => `${sha}^{commit}`),
+      { side }
+    );
+    for (const sha of shas) {
+      if (contained.has(ids.get(`${sha}^{commit}`))) reached.add(sha);
+    }
+  }
+  const wanted = pins.map(([sha, path]) => ({ rev: sha, file: opened(path) }));
+  const held = existingAt(repo, wanted);
+  if (split) {
+    const rest = wanted
+      .map(({ rev, file }) => `${rev}:${file}`)
+      .filter((key) => !held.has(key));
+    for (const key of objectIds(repo, rest, { side: true }).keys()) {
+      held.add(key);
+    }
+  }
   return {
-    reachable: (sha) =>
-      memo(`reach ${sha}`, () =>
-        ['origin/next', 'origin/main'].some(
-          (branch) =>
-            git(repo, ['merge-base', '--is-ancestor', sha, branch]).status === 0
-        )
-      ),
-    holds: (sha, path) =>
-      memo(
-        `holds ${sha}:${path}`,
-        () => git(repo, ['cat-file', '-e', `${sha}:${path}`]).status === 0
-      ),
+    reachable: (sha) => reached.has(sha),
+    holds: (sha, path) => held.has(`${sha}:${opened(path)}`),
   };
 }
 
@@ -1975,7 +1999,7 @@ export function findings(
     }
   }
 
-  const local = localCommits(tree.repo);
+  const citing = [];
   for (const file of files(tree, citationStores, citationRecords)) {
     if (!tracked.has(file)) continue;
     const lines = textOf(file).split('\n');
@@ -1998,27 +2022,39 @@ export function findings(
           )
           .map((match) => [trimToken(match[1]), false]),
       ];
-      const seen = new Set();
-      for (const [raw, linked] of cited) {
-        const problem = citationProblem(raw, file, tracked, local, linked);
-        if (
-          !problem ||
-          seen.has(problem.target) ||
-          (waitsOnRun &&
-            normalize(problem.target).startsWith('docs/plans/artifacts/'))
-        ) {
-          continue;
-        }
-        seen.add(problem.target);
-        at(
-          'K7',
-          file,
-          i + 1,
-          problem.message,
-          `${line.trim()} -> ${problem.target}`
-        );
-      }
+      if (cited.length > 0) citing.push({ file, i, line, waitsOnRun, cited });
     });
+  }
+  const local = pinnedCommits(
+    tree.repo,
+    citing.flatMap(({ cited }) =>
+      cited.flatMap(([raw]) => {
+        const pinned = PINNED.exec(raw);
+        return pinned ? [[pinned[1], pinned[2]]] : [];
+      })
+    )
+  );
+  for (const { file, i, line, waitsOnRun, cited } of citing) {
+    const seen = new Set();
+    for (const [raw, linked] of cited) {
+      const problem = citationProblem(raw, file, tracked, local, linked);
+      if (
+        !problem ||
+        seen.has(problem.target) ||
+        (waitsOnRun &&
+          normalize(problem.target).startsWith('docs/plans/artifacts/'))
+      ) {
+        continue;
+      }
+      seen.add(problem.target);
+      at(
+        'K7',
+        file,
+        i + 1,
+        problem.message,
+        `${line.trim()} -> ${problem.target}`
+      );
+    }
   }
 
   const inFrozen = tree

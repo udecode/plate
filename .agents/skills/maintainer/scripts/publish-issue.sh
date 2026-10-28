@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: publish-issue.sh --repo udecode/plate (--title-file FILE | --comment-on NUMBER) --body-file FILE [--attach FILE --attach-role ROLE]... [--labels a,b] (--dry-run | --confirm-create)"
+  echo "Usage: publish-issue.sh --repo udecode/plate-private (--title-file FILE | --comment-on NUMBER) --body-file FILE [--attach FILE --attach-role ROLE]... [--labels a,b] [--platform a,b] (--dry-run | --confirm-create)"
 }
 
 repo=""
@@ -12,6 +12,7 @@ body_file=""
 attach_paths=()
 attach_roles=()
 labels=""
+platform=""
 mode=""
 while (($#)); do
   case "$1" in
@@ -22,6 +23,7 @@ while (($#)); do
     --attach) attach_paths+=("${2:-}"); shift 2 ;;
     --attach-role) attach_roles+=("${2:-}"); shift 2 ;;
     --labels) labels=${2:-}; shift 2 ;;
+    --platform) platform=${2:-}; shift 2 ;;
     --dry-run) mode=dry-run; shift ;;
     --confirm-create) mode=create; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -29,10 +31,10 @@ while (($#)); do
   esac
 done
 
-[[ "$repo" == "udecode/plate" ]] || { echo "This skill only publishes Plate next/Beta issues to udecode/plate" >&2; exit 2; }
+[[ "$repo" == "udecode/plate-private" ]] || { echo "This skill only publishes Plate next/Beta issues to udecode/plate-private, where the team keeps them private" >&2; exit 2; }
 if [[ -n "$comment_on" ]]; then
   [[ "$comment_on" =~ ^[1-9][0-9]*$ ]] || { echo "--comment-on takes an issue number" >&2; exit 2; }
-  [[ -z "$title_file" && -z "$labels" ]] || { echo "A comment takes no --title-file or --labels" >&2; exit 2; }
+  [[ -z "$title_file" && -z "$labels" && -z "$platform" ]] || { echo "A comment takes no --title-file, --labels or --platform" >&2; exit 2; }
 else
   [[ -f "$title_file" && -s "$title_file" ]] || { echo "Missing non-empty --title-file" >&2; exit 2; }
 fi
@@ -55,7 +57,7 @@ done
 for role in ${attach_roles[@]+"${attach_roles[@]}"}; do
   [[ -n "$role" && "$role" != *$'\n'* && "$role" != *"["* && "$role" != *"]"* ]] || { echo "Attachment roles must be non-empty single lines without brackets" >&2; exit 2; }
 done
-facet_labels=(mobile safari firefox ime a11y regression 'performance issue')
+facet_labels=(ime regression)
 IFS=',' read -r -a label_items <<<"$labels"
 clean_labels=()
 for label in ${label_items[@]+"${label_items[@]}"}; do
@@ -63,10 +65,22 @@ for label in ${label_items[@]+"${label_items[@]}"}; do
   [[ -n "$label" ]] || continue
   facet=false
   for each in "${facet_labels[@]}"; do [[ "$label" == "$each" ]] && facet=true; done
-  [[ "$facet" == true ]] || { echo "Label '$label' is not a facet label (${facet_labels[*]}); the Scope issue field names the domain and the v54 milestone marks Beta" >&2; exit 2; }
+  [[ "$facet" == true ]] || { echo "Label '$label' is not a facet label (${facet_labels[*]}); the Scope issue field names the domain, the Platform field the browser or OS, and the v54 milestone marks Beta" >&2; exit 2; }
   clean_labels+=("$label")
 done
+platform_options=(Chrome Safari Firefox Edge Android iOS)
+IFS=',' read -r -a platform_items <<<"$platform"
+platforms=()
+for value in ${platform_items[@]+"${platform_items[@]}"}; do
+  value=$(sed -E 's/^[[:space:]]+|[[:space:]]+$//g' <<<"$value")
+  [[ -n "$value" ]] || continue
+  known=false
+  for each in "${platform_options[@]}"; do [[ "$value" == "$each" ]] && known=true; done
+  [[ "$known" == true ]] || { echo "Platform '$value' is not a Platform field option (${platform_options[*]})" >&2; exit 2; }
+  platforms+=("$value")
+done
 command -v jq >/dev/null || { echo "Missing command: jq" >&2; exit 3; }
+platform_json=$(jq -cn '$ARGS.positional' --args ${platforms[@]+"${platforms[@]}"})
 
 title=""
 if [[ -z "$comment_on" ]]; then
@@ -99,10 +113,10 @@ fi
 
 if [[ -n "$comment_on" ]]; then
   args=(issue comment "$comment_on" --repo "$repo" --body-file "$final_body")
-  url_pattern="https://github\\.com/udecode/plate/issues/$comment_on#issuecomment-[0-9]+"
+  url_pattern="https://github\\.com/udecode/plate-private/issues/$comment_on#issuecomment-[0-9]+"
 else
   args=(issue create --repo "$repo" --title "$title" --type Bug --milestone v54 --body-file "$final_body")
-  url_pattern='https://github\.com/udecode/plate/issues/[0-9]+'
+  url_pattern='https://github\.com/udecode/plate-private/issues/[0-9]+'
 fi
 for abs_path in ${abs_paths[@]+"${abs_paths[@]}"}; do
   args+=(--attach "$abs_path")
@@ -113,8 +127,8 @@ done
 
 if [[ "$mode" == dry-run ]]; then
   printf '%s\0' gh "${args[@]}" |
-    jq -Rs --arg repo "$repo" --arg title "$title" --arg issue "$comment_on" --rawfile body "$final_body" \
-      '{repo:$repo,body:$body,command:(split("\u0000")[:-1])} + (if $issue == "" then {title:$title} else {issue:($issue | tonumber)} end)'
+    jq -Rs --arg repo "$repo" --arg title "$title" --arg issue "$comment_on" --rawfile body "$final_body" --argjson platform "$platform_json" \
+      '{repo:$repo,body:$body,command:(split("\u0000")[:-1])} + (if $issue == "" then {title:$title,platform:$platform} else {issue:($issue | tonumber)} end)'
   exit 0
 fi
 
@@ -161,5 +175,19 @@ fi
 for label in ${clean_labels[@]+"${clean_labels[@]}"}; do
   jq -e --arg label "$label" 'any(.labels[]; .name == $label)' "$verified" >/dev/null || failed "missing label: $label"
 done
+# gh issue create cannot set an issue field, so the Platform field goes on through GraphQL after the issue exists.
+if ((${#platforms[@]} > 0)); then
+  number=${url##*/}
+  lookup=$(gh api graphql -f query="{ organization(login: \"udecode\") { issueFields(first: 50) { nodes { ... on IssueFieldMultiSelect { id name options { id name } } } } } repository(owner: \"udecode\", name: \"plate\") { issue(number: $number) { id } } }") || failed "Platform field request failed"
+  field_id=$(jq -r '[.data.organization.issueFields.nodes[] | select(.name? == "Platform")][0].id // empty' <<<"$lookup")
+  issue_id=$(jq -r '.data.repository.issue.id // empty' <<<"$lookup")
+  option_ids=$(jq -c --argjson wanted "$platform_json" '[.data.organization.issueFields.nodes[] | select(.name? == "Platform") | .options[] | select(.name as $name | $wanted | index($name)) | .id]' <<<"$lookup")
+  [[ -n "$field_id" && -n "$issue_id" && $(jq length <<<"$option_ids") == ${#platforms[@]} ]] || failed "no Platform field or option for ${platforms[*]}"
+  gh api graphql -f query="mutation { setIssueFieldValue(input: { issueId: \"$issue_id\", issueFields: [{ fieldId: \"$field_id\", multiSelectOptionIds: $option_ids }] }) { clientMutationId } }" >/dev/null || failed "Platform not set"
+  values=$(gh api graphql -f query="{ repository(owner: \"udecode\", name: \"plate\") { issue(number: $number) { issueFieldValues(first: 20) { nodes { ... on IssueFieldMultiSelectValue { field { ... on IssueFieldMultiSelect { name } } options { name } } } } } } }") || failed "Platform readback request failed"
+  for value in "${platforms[@]}"; do
+    jq -e --arg value "$value" 'any(.data.repository.issue.issueFieldValues.nodes[]; .field.name? == "Platform" and any(.options[]; .name == $value))' <<<"$values" >/dev/null || failed "missing platform: $value"
+  done
+fi
 
 jq --arg url "$url" "{url:\$url,verified:true,attachmentUrls:($urls_filter)}" "$verified"

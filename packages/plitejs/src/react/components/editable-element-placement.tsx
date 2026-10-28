@@ -4,8 +4,10 @@ import type { Path } from '../..';
 
 /** @internal */
 export type EditableElementLayout = Readonly<{
+  hasTextLines: boolean;
   height: number;
   left: number;
+  spillsPastBox: boolean;
   top: number;
   width: number;
 }>;
@@ -51,6 +53,9 @@ export const getElementPlacementBox = (element: HTMLElement) => {
 };
 
 const PLACED_ATTRIBUTE = 'data-editor-placed';
+const PLACED_ELEMENT_ATTRIBUTE = 'data-editor-placed-element';
+const PLACED_TEXT_ATTRIBUTE = 'data-editor-placed-text';
+const SPILL_ATTRIBUTE = 'data-editor-placed-spill';
 
 const PLACEMENT_VARIABLES = {
   height: '--editor-placed-height',
@@ -59,7 +64,8 @@ const PLACEMENT_VARIABLES = {
   width: '--editor-placed-width',
 } as const;
 
-// Registered without inheritance, so a new value restyles only the box.
+// Registered without inheritance, so a new value restyles only the elements
+// placement sets it on.
 const PLACEMENT_PROPERTIES = Object.values(PLACEMENT_VARIABLES)
   .map(
     (variable) =>
@@ -67,22 +73,42 @@ const PLACEMENT_PROPERTIES = Object.values(PLACEMENT_VARIABLES)
   )
   .join('');
 
+const BOX_POSITION_RULE = `[${PLACED_ATTRIBUTE}]{position:absolute!important;left:var(${PLACEMENT_VARIABLES.left})!important;top:var(${PLACEMENT_VARIABLES.top})!important;width:var(${PLACEMENT_VARIABLES.width})!important;height:var(${PLACEMENT_VARIABLES.height})!important}`;
+
+const BLOCK_MARGIN_RESET_RULE = `[${PLACED_ATTRIBUTE}],[${PLACED_ELEMENT_ATTRIBUTE}]{margin-block:0!important}`;
+
+const TEXT_LINES_RULE = `[${PLACED_TEXT_ATTRIBUTE}]{padding-block:0!important;min-height:var(${PLACEMENT_VARIABLES.height})!important}`;
+
+const SPILL_RULE = `[${SPILL_ATTRIBUTE}]{overflow:visible!important}`;
+
 // Applies a placement over the box's own styles, so a renderer keeps owning
 // them and they come back unchanged when the placement clears.
-const ELEMENT_PLACEMENT_RULE = `${PLACEMENT_PROPERTIES}[${PLACED_ATTRIBUTE}]{position:absolute!important;left:var(${PLACEMENT_VARIABLES.left})!important;top:var(${PLACEMENT_VARIABLES.top})!important;width:var(${PLACEMENT_VARIABLES.width})!important;height:var(${PLACEMENT_VARIABLES.height})!important}`;
+const ELEMENT_PLACEMENT_RULE = `${PLACEMENT_PROPERTIES}${BOX_POSITION_RULE}${BLOCK_MARGIN_RESET_RULE}${TEXT_LINES_RULE}${SPILL_RULE}`;
 
-const placeElement = (box: HTMLElement, layout: EditableElementLayout) => {
+const placeElement = (
+  box: HTMLElement,
+  element: HTMLElement,
+  layout: EditableElementLayout
+) => {
   for (const key of ['height', 'left', 'top', 'width'] as const) {
     box.style.setProperty(PLACEMENT_VARIABLES[key], `${layout[key]}px`);
   }
+  box.toggleAttribute(SPILL_ATTRIBUTE, layout.spillsPastBox);
   box.setAttribute(PLACED_ATTRIBUTE, '');
+  element.setAttribute(PLACED_ELEMENT_ATTRIBUTE, '');
+  element.toggleAttribute(PLACED_TEXT_ATTRIBUTE, layout.hasTextLines);
+  element.style.setProperty(PLACEMENT_VARIABLES.height, `${layout.height}px`);
 };
 
-const clearPlacement = (box: HTMLElement) => {
+const clearPlacement = (box: HTMLElement, element: HTMLElement) => {
   box.removeAttribute(PLACED_ATTRIBUTE);
+  box.removeAttribute(SPILL_ATTRIBUTE);
+  element.removeAttribute(PLACED_ELEMENT_ATTRIBUTE);
+  element.removeAttribute(PLACED_TEXT_ATTRIBUTE);
   for (const variable of Object.values(PLACEMENT_VARIABLES)) {
     box.style.removeProperty(variable);
   }
+  element.style.removeProperty(PLACEMENT_VARIABLES.height);
 };
 
 /**
@@ -121,18 +147,23 @@ export const useEditableElementPlacementRef = (
 ): React.RefCallback<HTMLElement> => {
   const layouts = React.useContext(EditableElementLayoutsContext);
   const layout = path ? layouts?.get(pathKey(path)) : undefined;
-  const placed = React.useRef<HTMLElement | null>(null);
+  const placed = React.useRef<{
+    box: HTMLElement;
+    element: HTMLElement;
+  } | null>(null);
 
   return React.useCallback(
     (element: HTMLElement | null) => {
       bindNodeRef(element);
-      if (placed.current) clearPlacement(placed.current);
+      if (placed.current) {
+        clearPlacement(placed.current.box, placed.current.element);
+      }
       placed.current = null;
       if (!element || !layout) return;
       const box = getElementPlacementBox(element);
 
-      placeElement(box, layout);
-      placed.current = box;
+      placeElement(box, element, layout);
+      placed.current = { box, element };
     },
     [bindNodeRef, layout]
   );

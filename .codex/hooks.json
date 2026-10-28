@@ -8,6 +8,11 @@
             "type": "command",
             "command": "f=\"$(git rev-parse --show-toplevel)/.agents/skills/contributor-setup/scripts/doctor.mjs\"; [ ! -f \"$f\" ] || node \"$f\" --hook",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "f=\"$(git rev-parse --show-toplevel)/tooling/scripts/git-private.mjs\"; [ ! -f \"$f\" ] || node \"$f\" start",
+            "timeout": 300
           }
         ]
       }
@@ -19,6 +24,11 @@
             "type": "command",
             "command": "node \"$(git rev-parse --show-toplevel)/tooling/scripts/hand-drive.mjs\" --hook",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "f=\"$(git rev-parse --show-toplevel)/tooling/scripts/git-private.mjs\"; [ ! -f \"$f\" ] || node \"$f\" autosave >/dev/null || true",
+            "timeout": 30
           }
         ]
       }

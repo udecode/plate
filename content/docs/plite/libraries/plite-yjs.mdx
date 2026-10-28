@@ -380,36 +380,18 @@ subscriptions apply the same lifecycle rules as the built-in binding.
 
 ## Proof
 
-Change, selection, awareness, provider, multi-root, and remote-cursor geometry
-contracts live under `packages/plitejs/test/yjs`. The `plitejs` partition runs
-them with the `useYjs` type contract. The Plate partitions run the `YjsPlugin`
-API contract in `packages/platejs/src/yjs` and the React integration contract in
-`packages/platejs/test/yjs`.
+The Plite tests cover the change, selection, awareness, provider, multi-root and
+remote-cursor geometry contracts, together with the `useYjs` type contract. The
+Plate tests cover the `YjsPlugin` API and its React integration.
 
-```sh
-pnpm --filter plitejs test:partition:yjs
-pnpm --filter platejs test:partition:yjs
-pnpm --filter platejs test:partition:yjs-react
-```
-
-Run the focused Chromium rows for editor convergence, the Plate collaboration
-example, and the app-owned Hocuspocus boundary:
-
-```sh
-pnpm --filter plite test:plite-browser:chromium \
-  tests/plite-browser/donor/examples/yjs-collaboration.test.ts \
-  tests/plite-browser/donor/examples/collaboration-demo.test.ts \
-  tests/plite-browser/donor/examples/yjs-hocuspocus.test.ts
-```
-
-The collaboration row covers Plite History undo/redo across offline and remote
-edits, and a claimed schema room that stays atomic across rejected peers and
-reconfiguration. The Plate collaboration example covers independent providers,
-remote cursors, reconnect, history, schema rejection and recovery, a 390px-wide
-viewport, and teardown. The viewport check covers layout, not mobile devices.
-The Hocuspocus row starts a local test server
-(`tooling/plite/donor/yjs/hocuspocus-server.ts`) and opens two peers in
-manual-connect mode. It checks that each editor stays read-only and discards
+Chromium tests cover editor convergence, the Plate collaboration example and an
+app-owned Hocuspocus boundary. The convergence test covers Plite History
+undo/redo across offline and remote edits, and a claimed schema room that stays
+atomic across rejected peers and reconfiguration. The Plate collaboration
+example covers independent providers, remote cursors, reconnect, history, schema
+rejection and recovery, a 390px-wide viewport, and teardown. The viewport check
+covers layout, not mobile devices. The Hocuspocus test starts a local test
+server and opens two peers in manual-connect mode. It checks that each editor stays read-only and discards
 typing until admission, that peers converge after connecting, that they converge
 again after one peer edits offline and reconnects, and that undo/redo converges. It does not test a
 production Hocuspocus server, authentication, persistence, or deployment

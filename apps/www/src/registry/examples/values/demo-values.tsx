@@ -67,6 +67,7 @@ const values = {
   column: columnValue,
   copilot: copilotValue,
   date: dateValue,
+  demo: playgroundValue,
   dnd: dndValue,
   docx: deserializeDocxValue,
   'editable-voids': editableVoidsValue,

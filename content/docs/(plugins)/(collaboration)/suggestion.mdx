@@ -260,7 +260,7 @@ for (let cursor: string | undefined; ; ) {
 const result = authored.update.decide({ action: 'accept', changes });
 ```
 
-One call decides every change together, so it never returns `blocked`. When it applies, it leaves the same document as deciding the changes one at a time in any order, where each `blocked` step adds the changes its `with` names. One undo restores every change it decided. Read and decide in the same event handler, because an edit between them can make a change `stale`. When the schema refuses the decided document, the result is `invalid` and nothing changes. The copied `ModeToolbarButton` offers this as **Accept all suggestions** and **Reject all suggestions** in its menu.
+One call decides every change together, so it never returns `blocked`. When it applies, it leaves the same document as deciding the changes one at a time in any order, where each `blocked` step adds the changes its `with` names. One case still depends on order. When a suggested Enter cut a link into pieces and other suggestions remove or unwrap a piece or a node between them, rejecting the Enter can rejoin the pieces differently one at a time than in one call. One undo restores every change it decided. Read and decide in the same event handler, because an edit between them can make a change `stale`. When the schema refuses the decided document, the result is `invalid` and nothing changes. The copied `ModeToolbarButton` offers this as **Accept all suggestions** and **Reject all suggestions** in its menu.
 
 ## Save and reload
 

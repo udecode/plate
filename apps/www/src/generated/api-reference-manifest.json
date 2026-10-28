@@ -5914,13 +5914,13 @@
         },
         "platejs:MarkComboRules": {
           "aliases": [],
-          "documentation": "Markdown rules that atomically apply combinations of independent marks.",
+          "documentation": "Markdown rules that atomically apply combinations of independent marks. By\ndefault they run before the single-mark rules whose delimiters begin each\ncombo's runs.",
           "entrypoint": "platejs",
           "kind": "const",
           "name": "MarkComboRules",
           "route": null,
           "runtime": true,
-          "signature": "MarkComboRules: {\n  markdown: ({ variant, ...options }: MarkdownMarkRuleOptions & {\n    variant: MarkComboVariant;\n  }) => InsertTextInputRule<MarkInputRuleMatch>;\n}",
+          "signature": "MarkComboRules: {\n  markdown: ({ variant, priority, ...options }: MarkdownMarkRuleOptions & {\n    variant: keyof typeof MARK_COMBOS;\n  }) => InsertTextInputRule<MarkInputRuleMatch>;\n}",
           "source": null,
           "typeParameters": []
         },

@@ -12,6 +12,11 @@
             "type": "command",
             "command": "[ ! -d \"$CLAUDE_PROJECT_DIR\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/hand-drive.mjs\" --hook",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f tooling/scripts/git-private.mjs ] || node tooling/scripts/git-private.mjs autosave --hook; } || true",
+            "timeout": 30
           }
         ]
       }
@@ -31,7 +36,7 @@
           },
           {
             "type": "command",
-            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/setup.mjs ] || node .agents/pstack/setup.mjs --hook --install 'pnpm install --offline'; }",
+            "command": "payload=$(cat); cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f .agents/pstack/setup.mjs ] || printf '%s' \"$payload\" | node .agents/pstack/setup.mjs --hook --install 'pnpm install --offline'; }; [ ! -f tooling/scripts/git-private.mjs ] || printf '%s' \"$payload\" | node tooling/scripts/git-private.mjs start --hook",
             "timeout": 600
           },
           {

@@ -10,6 +10,7 @@ import {
   groupFindings,
   readBaseline,
 } from '../finding-baseline.mjs';
+import { showAt } from '../private-files.mjs';
 import { homeFindings, readmeHomes } from './homes.mjs';
 import {
   card,
@@ -259,10 +260,7 @@ function printCard(result, query, detail) {
  * adds, even one on an old line whose target the change deleted.
  */
 function newRuleViolations(base, baseline) {
-  const atBase = spawnSync('git', ['show', `${base}:${BASELINE}`], {
-    cwd: root,
-    encoding: 'utf-8',
-  });
+  const atBase = showAt(root, base, BASELINE);
   const bound = atBase.status === 0 ? JSON.parse(atBase.stdout) : {};
   const fresh = RULES.filter((rule) => baseline[rule] && !bound[rule]);
   if (!fresh.length) return [];

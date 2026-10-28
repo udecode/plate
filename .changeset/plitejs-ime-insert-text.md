@@ -8,3 +8,4 @@
 - Split another author's pending deletion around a word composed on Android inside struck text, as desktop input methods do
 - Undo a word composed over a selection in one step, together with any change an insert handler adds to it
 - Fix confirming a word with an input method slowing down as a document grows; it now writes only the text it changed instead of re-rendering text across the whole editor
+- Keep the formatting where a selection starts when a word composed with an input method replaces it, so a selection that starts in bold composes bold text in Safari
