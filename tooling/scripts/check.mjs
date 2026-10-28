@@ -624,15 +624,19 @@ const needs = (files, retargeted) => {
   const everything = files.some((file) =>
     GLOBAL_PATHS.some((path) => matches(path, file))
   );
-  const called = new Set(
-    files.flatMap((file) =>
-      [...(toolingReach(file)?.scripts ?? [])].map((script) => basename(script))
-    )
-  );
-  const calls = (step) =>
-    expand(step.run)
+  let called;
+  const calls = (step) => {
+    called ??= new Set(
+      files.flatMap((file) =>
+        [...(toolingReach(file)?.scripts ?? [])].map((script) =>
+          basename(script)
+        )
+      )
+    );
+    return expand(step.run)
       .split(/[\s"'`;&|()]+/u)
       .some((token) => called.has(basename(token)));
+  };
   return (step) => {
     if (!step.affected) return true;
     if (files.length === 0 || step.affected === never) return null;
@@ -650,7 +654,10 @@ const commandFor = (step, need) =>
 /** The base that covers `step`, or else the narrowest need its bases leave. */
 const planStep = (step, bases) => {
   let need = true;
-  for (const base of bases) {
+  // Tracing a changed tooling script to its callers reads every source, so
+  // the base with the fewest changed files goes first and usually covers.
+  const fewest = bases.toSorted((a, b) => a.files.length - b.files.length);
+  for (const base of fewest) {
     if (base.kind === 'exact') return { cover: base };
     const needed = needs(base.files, base.retargeted)(step);
     if (needed === null) return { cover: base };
