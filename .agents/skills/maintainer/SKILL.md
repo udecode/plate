@@ -1,5 +1,5 @@
 ---
-description: Handle public Plate/Slate GitHub work, such as issue drafts, Slate issues, PRs, security and the queue scan, and hold the public truth gate. Triage of udecode/plate issues runs the Triage playbook.
+description: Handle public Plate/Slate GitHub work, such as issue drafts, Slate issues, PRs, security and the queue scan, and hold the public truth gate. Triage of udecode/plate and udecode/plate-private issues runs the Triage playbook.
 argument-hint: '[queue | issues | prs | security | issue-draft | slate-issue] <url or text>'
 name: maintainer
 metadata:
@@ -13,8 +13,9 @@ Handle $ARGUMENTS.
 
 Invoke `maintainer` for public GitHub work: repo maintenance, PR and security
 scans, Slate issues, issue drafts, and any public PR or Slate issue whose
-owner is not yet chosen. Triage of a udecode/plate issue, its record in
-`docs/triage/issues.tsv` and its fix run belong to the
+owner is not yet chosen. Triage of a udecode/plate or udecode/plate-private
+issue, its record in `docs/triage/issues.tsv` or `docs/triage/plate-private.tsv`
+and its fix run belong to the
 [Triage playbook](../../playbooks/triage.md). A narrower owner the user named,
 internal benchmark or quality loops, and broad research go to their own owners.
 Never hand public queue ownership to an internal quality run. It decides fit,
@@ -61,8 +62,9 @@ A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
 2. Scan the smallest useful slice: advisories, PRs with review, CI or merge
    attention, issues needing triage, stale user-visible bugs, then docs or
    setup breakage.
-3. Take udecode/plate issue picks from `pnpm triage queue`, which lists every
-   open issue that still needs a triage call from you; a Slate scan lists its
+3. Take issue picks from `pnpm triage queue` for udecode/plate and
+   `pnpm triage queue --repo plate-private` for udecode/plate-private, each of
+   which lists every open issue that still needs a triage call from you; a Slate scan lists its
    issues with `gh issue list --repo ianstormtaylor/slate`. Build the candidate
    matrix for PRs, advisories and Slate items, pick at most one safe item,
    verify its live state and authority, then route it, run its safe local
@@ -73,7 +75,7 @@ A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
 ### `issues`
 
 Run the [Triage playbook](../../playbooks/triage.md) over every open
-udecode/plate issue, as `triage` does, or over one issue when the request names
+udecode/plate and udecode/plate-private issue, as `triage` does, or over one issue when the request names
 it. Its duplicate rule, `gitcrawl` neighbor search and Fit Gate also govern a
 Slate issue, which [slate-issue](./references/slate-issue.md) triages without a
 register row.
@@ -110,7 +112,7 @@ For a PR, check `baseRefName` before routing. A PR based on `main` is worked in 
 | Item | Default owner |
 | --- | --- |
 | One public Slate substrate issue | `maintainer slate-issue` |
-| One public udecode/plate issue | the Triage playbook; `triage fix #<N>` continues into the Bug fix playbook |
+| One udecode/plate or udecode/plate-private issue | the Triage playbook; `triage fix #<N>` or `triage fix plate-private#<N>` continues into the Bug fix playbook, and a udecode/plate issue off the `v54` milestone reports `main`, which gets a record and no fix |
 | One public Plate/Plite performance regression | the Triage playbook, then the Perf issue playbook with `benchmark` |
 | One local Plate or Plite behavior bug or regression with no public mutation | pstack's Bug fix playbook |
 | Plite public call-shape fork | `best-api`, then the Plan playbook if adoption or runtime planning is needed |
@@ -177,8 +179,8 @@ A fix the run routes ends with the issue tag on its test title.
 ## Candidate Matrix
 
 For every PR, advisory or Slate item considered, record compact rows. A
-udecode/plate issue's row is its triage record, and `pnpm triage queue` lists
-them.
+udecode/plate or udecode/plate-private issue's row is its triage record, and
+`pnpm triage queue`, with `--repo plate-private` for the second, lists them.
 
 - number / URL;
 - title;

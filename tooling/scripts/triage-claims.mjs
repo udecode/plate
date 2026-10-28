@@ -288,6 +288,7 @@ export function targetMembers(target, world) {
 
 const skipOf = (issue, request, world) => {
   if (!world.open.has(issue)) return { verdict: 'closed' };
+  if (world.main(issue)) return { verdict: 'main' };
   if (world.head(issue)?.outcome === 'fixed') return { verdict: 'fixed' };
   const devices = laneOf(issue, world);
   if (devices.length === 0) {
@@ -311,7 +312,7 @@ const verdictOf = (issue, request, world) => {
 
 const HOLDS = new Set(['claim', 'take', 'mine']);
 
-const STOPS_ROOT = new Set(['device', 'desktop', 'closed', 'fixed']);
+const STOPS_ROOT = new Set(['device', 'desktop', 'closed', 'main', 'fixed']);
 
 export function decide(request, world) {
   const { members, units, roots, allowed } = targetMembers(

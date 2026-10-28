@@ -5,9 +5,9 @@
 // read time from fresh reads of the trunk branch, the suggested-task ledger and
 // GitHub.
 // Usage: pnpm triage claim <N>... [--take <hold>,... --why "<owner's words>"] [--drives <device>] [--session <id>]
-//        pnpm triage claim --domain <scope> [--task <id>] [same flags]
-//        pnpm triage claim --task <id> [same flags]
-//        pnpm triage claim --next [--drives <device>] [--session <id>]
+//        pnpm triage claim --domain <scope> [--task <id>] --repo <name> [same flags]
+//        pnpm triage claim --task <id> --repo <name> [same flags]
+//        pnpm triage claim --next --repo <name> [--drives <device>] [--session <id>]
 //        pnpm triage release <N>... --why "<reason>" [--session <id>]
 //        pnpm triage lane [<device>]
 //        pnpm triage show <N>... [--brief] [--json]
@@ -268,7 +268,9 @@ const meets = (model, effort, floor, max = null) =>
 function policyProblems(config) {
   const policy = config?.triage;
   if (!policy) {
-    return [`${CONFIG} has no triage key with repos, floor, owners and rev`];
+    return [
+      `${CONFIG} has no triage key with repos, milestone, floor, owners and rev`,
+    ];
   }
   const found = [];
   const repos = Array.isArray(policy.repos) ? policy.repos : [];
@@ -286,6 +288,11 @@ function policyProblems(config) {
     !repos.some((repo) => repoNameOf(repo) === repoName)
   ) {
     found.push(`${CONFIG}: triage.repos has no ${repoName}`);
+  }
+  if (typeof policy.milestone !== 'string' || !policy.milestone.trim()) {
+    found.push(
+      `${CONFIG}: triage.milestone names the milestone that marks an issue of the first repository as next work`
+    );
   }
   if (!Array.isArray(policy.floor) || policy.floor.length === 0) {
     found.push(
@@ -332,6 +339,7 @@ const policyOf = (config) => ({
   repo: repoOf(config.triage.repos),
   primary: repoOf(config.triage.repos) === config.triage.repos[0],
   first: config.triage.repos[0],
+  milestone: config.triage.milestone,
   moved: new Map(),
   floor: config.triage.floor.map(parseLabel),
   floorText: config.triage.floor.join(' or '),
@@ -1762,7 +1770,7 @@ function openList(repo) {
       '--limit',
       String(QUEUE_LIMIT),
       '--json',
-      'number,title,assignees',
+      'number,title,assignees,milestone',
     ],
     { encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024, timeout: NETWORK_MS }
   );
@@ -1783,6 +1791,7 @@ function openList(repo) {
       {
         title: issue.title,
         assignees: issue.assignees.map((assignee) => assignee.login),
+        milestone: issue.milestone?.title ?? null,
       },
     ])
   );
@@ -1979,6 +1988,10 @@ function claimWorld(reads, open, rows, live, actor, git) {
     now: Date.now(),
     owners: reads.policy.owners,
     open,
+    // The first repository is public, where an issue off the next milestone reports main.
+    main: (issue) =>
+      reads.policy.primary &&
+      open.get(issue)?.milestone !== reads.policy.milestone,
     head,
     tasks,
     linked: links,
@@ -2050,6 +2063,11 @@ function claimCommand(argv) {
     .filter(Boolean);
   if (take.length > 0 && !options.why?.trim()) {
     usage("--take needs --why with the owner's words, quoted");
+  }
+  if (issues.length === 0 && repoName === null) {
+    usage(
+      '--domain, --task and --next take --repo <name>, because each repository in triage.repos keeps its own queue'
+    );
   }
   if (take.length > 0 && options.next) {
     usage('--next takes no --take; name the issues or the domain to take over');
@@ -2193,6 +2211,11 @@ function claimCommand(argv) {
       console.log(`skipped ${at}: outside this target`);
     }
     if (result.verdict === 'closed') console.log(`skipped ${at}: closed`);
+    if (result.verdict === 'main') {
+      console.log(
+        `skipped ${at}: without the ${reads.policy.milestone} milestone it reports main, which gets no fixes yet`
+      );
+    }
     if (result.verdict === 'fixed') {
       console.log(
         `skipped ${at}: its record reads fixed, so it waits for its close or its reporter's retest; if it reopened or its reporter says it still fails, triage #${result.issue} records it again first`

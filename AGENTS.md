@@ -103,7 +103,7 @@ pstack's poteto-mode picks the playbook, and the Plate owner below supplies the 
 | Performance inventory, measurement, causal diagnosis and rerun | the Perf issue playbook with `benchmark`; Benchmark review supplies the lens |
 | Actual package, browser, native editor, CLI and artifact proof, test shape and runners | `verify` |
 | Pruning existing tests; searching for uncovered contracts | `test-audit` (from dotai), whose full mode also lists uncovered contracts |
-| Triage of a udecode/plate issue, its record in `docs/triage/issues.tsv` and its fix run: `triage`, `triage #<N>`, `triage fix #<N>`, `triage fix <domain>` or `triage fix next` | the Triage playbook (`.agents/playbooks/triage.md`) |
+| Triage of a udecode/plate or udecode/plate-private issue, its record in `docs/triage/issues.tsv` or `docs/triage/plate-private.tsv` and its fix run: `triage`, `triage #<N>`, `triage plate-private#<N>`, `triage fix #<N>`, `triage fix plate-private#<N>`, `triage fix <domain>` or `triage fix next` | the Triage playbook (`.agents/playbooks/triage.md`) |
 | Public GitHub PR or security queue, a Slate issue, or a Plate Beta issue drafted from video or text | `maintainer`; one Slate issue uses its slate-issue mode, and a Beta issue draft its issue-draft mode (`.agents/rules/maintainer/references/issue-draft.md`) |
 | A review comment on a Slate PR or a Plate `main` PR, backed by Plate v2's research, code and tests | `review-comment` |
 

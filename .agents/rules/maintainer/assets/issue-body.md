@@ -1,6 +1,6 @@
 ## Testing lane
 
-- Repository: `udecode/plate`
+- Repository: `udecode/plate-private`
 - Branch: `next`
 - Release channel: Beta
 - Exact commit/package version: <verified value or `NOT_ENOUGH_INFO`>

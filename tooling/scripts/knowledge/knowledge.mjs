@@ -1972,7 +1972,8 @@ export function findings(
     }
   }
 
-  // GitHub is the plate issue ledger, so a plate tag needs no indexed row.
+  // GitHub is the issue ledger of Plate's own repositories, so their tags need no indexed row.
+  const githubLedgers = new Set(['plate', 'plate-private']);
   const issueRefs = new Set(index.issues.map((issue) => issue.ref));
   const ledgered = new Set(index.issues.map((issue) => issue.editor));
   for (const test of index.tests) {
@@ -1982,10 +1983,10 @@ export function findings(
         if (!defined.has(tag)) {
           at('K4', test.file, test.line, `tag ${tag} names no rule`);
         }
+      } else if (githubLedgers.has(editor)) {
+        continue;
       } else if (!editorRepos[editor]) {
         at('K4', test.file, test.line, `tag ${tag} names no known editor`);
-      } else if (editor === 'plate') {
-        continue;
       } else if (!ledgered.has(editor)) {
         at(
           'K4',
