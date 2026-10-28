@@ -60,6 +60,13 @@ function fixture() {
     if (name === '.next-s5') writeFileSync(join(caches, name, 'BUILD_ID'), 'b\n');
     for (const path of [lock, join(caches, name, 'BUILD_ID'), dev, join(caches, name)]) if (existsSync(path)) age(path, days);
   }
+  const buildLock = join(caches, '.next', 'dev', 'lock');
+  writeFileSync(buildLock, '');
+  const manifest = join(caches, '.next-plite', 'dev', 'server', 'app-paths-manifest.json');
+  mkdirSync(dirname(manifest));
+  writeFileSync(manifest, '{}\n');
+  for (const path of [join(caches, '.next', 'cache'), join(caches, '.next', 'server'), join(caches, '.next-plite', 'cache')]) mkdirSync(path);
+  for (const path of [buildLock, join(caches, '.next', 'dev'), join(caches, '.next', 'cache'), dirname(manifest), join(caches, '.next-plite', 'dev'), join(caches, '.next-plite', 'cache')]) age(path, 5);
   const keptCache = join(open, 'apps', 'www', '.next-chip-z');
   mkdirSync(keptCache, { recursive: true });
   age(keptCache, 5);
@@ -70,7 +77,7 @@ function fixture() {
     { cwd: landed, isArchived: true, title: 'landed card' },
     { cwd: unlanded, isArchived: true, title: 'lost work' },
   ];
-  return { archived, caches, keptCache, landed, lock, main, open, orphan, root, sessions, unlanded };
+  return { archived, buildLock, caches, keptCache, landed, lock, main, open, orphan, root, sessions, unlanded };
 }
 
 const verdicts = (items) => Object.fromEntries(items.map((item) => [item.path, item.verdict]));
@@ -79,7 +86,7 @@ const landedOf = (path) => landed({ worktree: path })[0];
 
 test('only folders no open session, process or server uses are marked safe', async () => {
   const f = fixture();
-  const server = spawn('tail', ['-f', f.lock], { stdio: 'ignore' });
+  const server = spawn('tail', ['-f', f.lock, f.buildLock], { stdio: 'ignore' });
   await new Promise((done) => setTimeout(done, 300));
   try {
     const now = Date.now();
@@ -89,8 +96,10 @@ test('only folders no open session, process or server uses are marked safe', asy
     assert.equal(byPath[f.landed], 'safe', 'an archived session whose changes the checkout already holds');
     assert.equal(byPath[f.unlanded], 'safe', 'an archived session whose patch the checkout has since changed');
     assert.equal(byPath[f.orphan], 'safe', 'a session left open but idle does not keep its worktree');
-    assert.equal(byPath[join(f.caches, '.next')], 'keep', 'a build output');
-    assert.equal(byPath[join(f.caches, '.next-plite')], 'keep', 'the Plite build output');
+    assert.equal(byPath[join(f.caches, '.next', 'dev')], 'keep', "a build output's dev folder whose lock a running server holds");
+    assert.equal(byPath[join(f.caches, '.next', 'cache')], 'keep', 'the build cache beside a running dev server');
+    assert.equal(byPath[join(f.caches, '.next-plite', 'dev')], 'keep', 'a dev folder whose manifests changed today');
+    assert.equal(byPath[join(f.caches, '.next-plite', 'cache')], 'safe', 'a build cache no server holds and nothing used for a day');
     assert.equal(byPath[join(f.caches, '.next-s5')], 'keep', 'a production build used this week');
     assert.equal(byPath[join(f.caches, '.next-3000')], 'keep', 'a port cache used this week');
     assert.equal(byPath[join(f.caches, '.next-3001')], 'keep', 'a cache whose lock a running server holds');
@@ -233,6 +242,46 @@ test('run folders lose their installs and builds after a quiet day and go after 
   assert.ok(existsSync(join(runs, 'suggested-tasks.decisions.tsv')), 'the ledger stays');
 });
 
+test('scratch copies in an ignored .tmp go after a quiet week, saving uncommitted changes, unless a clone in them holds commits no remote has or git cannot read it', () => {
+  const f = fixture();
+  const tmp = join(f.main, '.tmp');
+  const commit = (repo, name) => {
+    writeFileSync(join(repo, name), `${name}\n`);
+    git(repo, 'add', name);
+    git(repo, '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '-q', '-m', name);
+  };
+  mkdirSync(join(tmp, 'copy', 'node_modules', 'dep'), { recursive: true });
+  writeFileSync(join(tmp, 'copy', 'result.json'), '{}\n');
+  git(tmp, 'clone', '-q', f.main, 'synced');
+  writeFileSync(join(tmp, 'synced', 'a.txt'), 'edited\n');
+  git(tmp, 'clone', '-q', f.main, 'ahead');
+  commit(join(tmp, 'ahead'), 'b.txt');
+  git(tmp, 'clone', '-q', f.main, 'stashed');
+  writeFileSync(join(tmp, 'stashed', 'a.txt'), 'shelved\n');
+  git(join(tmp, 'stashed'), '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'stash', '-q');
+  mkdirSync(join(tmp, 'scratch'));
+  git(join(tmp, 'scratch'), 'init', '-q');
+  commit(join(tmp, 'scratch'), 'c.txt');
+  mkdirSync(join(tmp, 'unborn'));
+  git(join(tmp, 'unborn'), 'init', '-q');
+  writeFileSync(join(tmp, 'unborn', 'd.txt'), 'draft\n');
+  git(f.main, 'worktree', 'add', '-q', '--detach', join(tmp, 'dropped'));
+  rmSync(readFileSync(join(tmp, 'dropped', '.git'), 'utf8').replace('gitdir: ', '').trim(), { recursive: true });
+  ageTree(tmp, 10);
+  const runs = () => Object.fromEntries(scan({ repo: f.main, sessions: f.sessions, sizes: false }).items.filter((item) => item.kind === 'run').map((item) => [item.path, `${item.verdict} ${item.action ?? ''}`.trim()]));
+  assert.deepEqual(runs(), {}, 'a .tmp git does not ignore is left alone');
+  writeFileSync(join(f.main, '.git', 'info', 'exclude'), '.tmp/\n');
+  assert.deepEqual(runs(), { [join(tmp, 'copy')]: 'safe expire', [join(tmp, 'synced')]: 'safe expire', [join(tmp, 'ahead')]: 'ask', [join(tmp, 'stashed')]: 'ask', [join(tmp, 'scratch')]: 'ask', [join(tmp, 'unborn')]: 'safe expire', [join(tmp, 'dropped')]: 'ask' });
+  const { removed } = deleteSafe({ repo: f.main, sessions: f.sessions });
+  assert.ok(!existsSync(join(tmp, 'copy')) && !existsSync(join(tmp, 'synced')), 'quiet copies go');
+  const [patch] = removed.find((item) => item.path === join(tmp, 'synced')).patches;
+  assert.match(readFileSync(patch, 'utf8'), /^\+edited$/mu, "the clone's uncommitted change is saved before it goes");
+  const [draft] = removed.find((item) => item.path === join(tmp, 'unborn')).patches;
+  assert.match(readFileSync(draft, 'utf8'), /^\+draft$/mu, 'a clone with no commit yet goes with its files saved');
+  assert.ok(existsSync(join(tmp, 'ahead', 'b.txt')) && existsSync(join(tmp, 'scratch', 'c.txt')), 'a clone with commits no remote has stays, a remoteless one included');
+  assert.ok(existsSync(join(tmp, 'dropped', 'a.txt')), 'a worktree copy whose repository dropped it stays');
+});
+
 test('--landed in a pstack project passes generated output and asks only about run artifacts the checkout lacks', () => {
   const f = pstackFixture();
   mkdirSync(join(f.archived, 'apps', 'www', '.source'), { recursive: true });
@@ -347,10 +396,10 @@ test('delete removes the safe set and leaves every other folder', () => {
   const { removed } = deleteSafe({ repo: f.main, sessions: f.sessions });
   assert.deepEqual(
     removed.map((item) => item.path).sort(),
-    [f.archived, f.landed, f.unlanded, f.orphan, f.keptCache, join(f.caches, '.next-3002'), join(f.caches, '.next-chip-a1')].sort()
+    [f.archived, f.landed, f.unlanded, f.orphan, f.keptCache, join(f.caches, '.next-3002'), join(f.caches, '.next-chip-a1'), join(f.caches, '.next', 'dev'), join(f.caches, '.next', 'cache'), join(f.caches, '.next-plite', 'cache')].sort()
   );
   assert.ok(removed.every((item) => item.bytes !== null), 'each removed folder was measured');
-  for (const kept of [f.open, join(f.caches, '.next'), join(f.caches, '.next-3000')]) assert.ok(existsSync(kept), `${kept} stays`);
+  for (const kept of [f.open, join(f.caches, '.next', 'server'), join(f.caches, '.next-plite', 'dev'), join(f.caches, '.next-3000')]) assert.ok(existsSync(kept), `${kept} stays`);
   const listed = execFileSync('git', ['worktree', 'list'], { cwd: f.main, encoding: 'utf8' });
   assert.ok(![f.archived, f.landed, f.unlanded].some((path) => listed.includes(path)), 'git no longer lists the removed worktrees');
   const patchOf = (path) => removed.find((item) => item.path === path).patch;
@@ -425,7 +474,7 @@ test('the session-start hint counts only folders with no writes for three days t
   const f = fixture();
   assert.equal(
     brief({ repo: f.main, now: Date.now() }),
-    'cleanup: 0 worktrees and 2 Next cache folders here show no git or cache writes for 3 days; /cleanup removes the ones nothing uses and lists the rest.'
+    'cleanup: 0 worktrees and 5 Next cache folders here show no git or cache writes for 3 days; /cleanup removes the ones nothing uses and lists the rest.'
   );
 });
 
