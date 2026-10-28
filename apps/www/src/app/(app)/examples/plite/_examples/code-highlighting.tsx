@@ -1,5 +1,6 @@
 import {
   type Descendant,
+  definePlugin,
   type Element,
   NodeApi,
   type NodeEntry,
@@ -7,7 +8,7 @@ import {
   type Point,
   type Range,
 } from 'plitejs';
-import { isHotkey } from 'plitejs/dom';
+import { domCommands, isHotkey } from 'plitejs/dom';
 import { history } from 'plitejs/history';
 import {
   Editable,
@@ -41,6 +42,22 @@ import { Prism } from './utils/prism-runtime';
 const ParagraphType = 'paragraph';
 const CodeBlockType = 'code-block';
 const CodeIndent = '  ';
+
+const CodeBlockTextPastePlugin = definePlugin('codeBlockTextPaste', {
+  commands: ({ around }) => [
+    around(domCommands.insertData, ({ input, next, state }) => {
+      const text = input.getData('text/plain');
+
+      if (!text || state.nodes.block()?.[0].type !== CodeBlockType) {
+        return next();
+      }
+
+      return state.transaction((tx) => {
+        tx.text.insert(text.replace(/\r\n?/g, '\n'));
+      });
+    }),
+  ],
+});
 
 const CodeHighlightingExample = () => {
   const initialValue: CustomValue = [
@@ -97,7 +114,10 @@ const editor = useEditor<CustomValue>({ initialValue })`),
       children: toChildren('There you have it!'),
     },
   ];
-  const editor = useEditor({ plugins: [history()], initialValue });
+  const editor = useEditor({
+    plugins: [history(), CodeBlockTextPastePlugin],
+    initialValue,
+  });
 
   return (
     <EditorRoot decorations={[codeHighlightingSource]} editor={editor}>
