@@ -4,7 +4,13 @@
 // import them, so the lifecycle CLI, git-private.mjs, stays out of their
 // cache keys.
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import {
+  constants,
+  copyFileSync,
+  existsSync,
+  statSync,
+  utimesSync,
+} from 'node:fs';
 import { devNull } from 'node:os';
 import path from 'node:path';
 
@@ -75,7 +81,7 @@ export const privateMust = (root, args, options) => {
   }
   return result.stdout;
 };
-const withList = (root) => [
+export const withList = (root) => [
   '-c',
   `core.excludesFile=${path.join(root, PRIVATE_LIST)}`,
 ];
@@ -99,10 +105,19 @@ export const newPrivateFiles = (root) => {
     split ? privateMust(root, args) : must(root, args)
   ).filter((file) => !tracked || !tracked.has(file));
   if (candidates.length === 0) return [];
-  const ignoredHere = new Set(ignoredPaths(root, devNull, candidates));
-  return ignoredPaths(root, path.join(root, PRIVATE_LIST), candidates)
-    .filter((file) => !ignoredHere.has(file))
-    .sort(byCodeUnit);
+  const listed = ignoredPaths(root, path.join(root, PRIVATE_LIST), candidates);
+  if (listed.length === 0) return [];
+  const ignoredHere = new Set(ignoredPaths(root, devNull, listed));
+  return listed.filter((file) => !ignoredHere.has(file)).sort(byCodeUnit);
+};
+
+export const copyIndex = (from, to) => {
+  // git rechecks the content of an entry no older than the index file. A copy
+  // with a newer mtime would trust the stat data of a same-size edit made in
+  // the second the index was written, and miss it.
+  const { atime, mtime } = statSync(from);
+  copyFileSync(from, to, constants.COPYFILE_FICLONE);
+  utimesSync(to, atime, mtime);
 };
 
 export const listedPublic = (root) =>
@@ -156,43 +171,6 @@ export const trackedFiles = (root, options) => {
   return [...files.public, ...files.private].sort(byCodeUnit);
 };
 
-/** Paths changed since each repository's merge base with origin/next. */
-export const changedFiles = (root) => {
-  const changed = (git) => {
-    const base = git(['merge-base', UPSTREAM, 'HEAD']);
-    if (base.status !== 0) return null;
-    return entries(
-      git(['diff', '-z', '--name-only', base.stdout.trim()]).stdout
-    );
-  };
-  const files = changed((args) => run(root, args));
-  if (files === null) {
-    throw new Error(
-      `no merge base with origin/${BRANCH}; run git fetch origin ${BRANCH}.`
-    );
-  }
-  files.push(
-    ...entries(must(root, ['ls-files', '-z', '--others', '--exclude-standard']))
-  );
-  if (isSplit(root)) {
-    files.push(
-      ...(changed((args) => privateGit(root, args)) ?? []),
-      ...newPrivateFiles(root)
-    );
-  }
-  return [...new Set(files)];
-};
-
-/** `git grep -l` over both repositories' tracked files. */
-export const grepFiles = (root, args) => {
-  const found = (result) => entries(result.stdout);
-  const files = found(run(root, ['grep', '-z', '-l', ...args]));
-  if (isSplit(root)) {
-    files.push(...found(privateGit(root, ['grep', '-z', '-l', ...args])));
-  }
-  return [...new Set(files)].sort(byCodeUnit);
-};
-
 /** Whether .gitprivate gives each path to plate-private. */
 export const privatePaths = (root, files) => {
   if (files.length === 0 || !existsSync(path.join(root, PRIVATE_LIST))) {
@@ -204,63 +182,122 @@ export const privatePaths = (root, files) => {
 };
 
 const PAIRED_DEPTH = 500;
-const pairs = new Map();
+const OBJECT_ID = /^[0-9a-f]{40,64}$/u;
+const knownPairs = new Map();
 
-const findPair = (root, sha) => {
-  const own = (args) => run(root, args).stdout.trim();
-  const side = (args) => privateGit(root, args).stdout.trim();
-  if (sha === own(['rev-parse', 'HEAD'])) return side(['rev-parse', 'HEAD']);
-  if (sha === own(['merge-base', 'HEAD', UPSTREAM])) {
-    return side(['merge-base', 'HEAD', UPSTREAM]);
+/** The id of each object name that resolves in one repository, read in one process. */
+export const objectIds = (root, names, { side = false } = {}) => {
+  const unique = [...new Set(names)];
+  const ids = new Map();
+  if (unique.length === 0) return ids;
+  const args = ['cat-file', '--batch-check=%(objectname)'];
+  const input = `${unique.join('\n')}\n`;
+  const result = side
+    ? privateGit(root, args, { input })
+    : run(root, args, { input });
+  if (result.status !== 0) {
+    throw new Error(
+      `git cat-file --batch-check failed: ${result.stderr.trim()}`
+    );
   }
-  if (sha === own(['rev-parse', UPSTREAM])) {
-    return side(['rev-parse', UPSTREAM]);
-  }
-  // Only landed history: a commit whose push failed, which an autosave ref
-  // keeps reachable, names a public commit it never landed with.
-  const landedRef = side(['rev-parse', '--verify', '--quiet', UPSTREAM])
-    ? UPSTREAM
-    : `refs/heads/${BRANCH}`;
-  const landed = new Map();
-  for (const line of side([
-    'log',
-    landedRef,
-    '--format=%H %(trailers:key=Lands-With,valueonly,separator=%x20)',
-  ]).split('\n')) {
-    const [commit, publicSha] = line.split(' ');
-    if (publicSha && !landed.has(publicSha)) landed.set(publicSha, commit);
-  }
-  const ancestors = own([
-    'rev-list',
-    '--first-parent',
-    `--max-count=${PAIRED_DEPTH}`,
-    sha,
-  ]).split('\n');
-  for (const ancestor of ancestors) {
-    if (landed.has(ancestor)) return landed.get(ancestor);
-  }
-  return null;
+  const lines = result.stdout.split('\n');
+  unique.forEach((name, i) => {
+    if (OBJECT_ID.test(lines[i])) ids.set(name, lines[i]);
+  });
+  return ids;
 };
 
-/**
- * The plate-private commit that matches a udecode/plate rev, or null: the
- * private counterpart when the rev is this checkout's HEAD, merge base or
- * origin/next, else the commit on plate-private's next whose Lands-With line
- * names the rev or its nearest first-parent ancestor.
- */
-export const pairedCommit = (root, rev) => {
-  if (!isSplit(root)) return null;
-  const sha = run(root, [
+const firstParents = (root, tips) => {
+  const parents = new Map();
+  for (const line of run(
+    root,
+    ['rev-list', '--first-parent', '--parents', '--stdin'],
+    { input: `${tips.join('\n')}\n` }
+  ).stdout.split('\n')) {
+    const [commit, parent] = line.split(' ');
+    if (commit) parents.set(commit, parent);
+  }
+  return parents;
+};
+
+const findPairs = (root, shas) => {
+  const found = new Map();
+  const pending = new Set(shas);
+  for (const args of [
+    ['rev-parse', 'HEAD'],
+    ['merge-base', 'HEAD', UPSTREAM],
+    ['rev-parse', UPSTREAM],
+  ]) {
+    if (pending.size === 0) return found;
+    const sha = run(root, args).stdout.trim();
+    if (pending.delete(sha)) {
+      found.set(sha, privateGit(root, args).stdout.trim());
+    }
+  }
+  if (pending.size === 0) return found;
+  // Only landed history: a commit whose push failed, which an autosave ref
+  // keeps reachable, names a public commit it never landed with.
+  const landedRef = privateGit(root, [
     'rev-parse',
     '--verify',
     '--quiet',
-    `${rev}^{commit}`,
-  ]).stdout.trim();
-  if (!sha) return null;
-  const key = `${root}\0${sha}`;
-  if (!pairs.has(key)) pairs.set(key, findPair(root, sha));
-  return pairs.get(key);
+    UPSTREAM,
+  ]).stdout.trim()
+    ? UPSTREAM
+    : `refs/heads/${BRANCH}`;
+  const landed = new Map();
+  for (const line of privateGit(root, [
+    'log',
+    landedRef,
+    '--format=%H %(trailers:key=Lands-With,valueonly,separator=%x20)',
+  ]).stdout.split('\n')) {
+    const [commit, publicSha] = line.split(' ');
+    if (publicSha && !landed.has(publicSha)) landed.set(publicSha, commit);
+  }
+  const firstParent = firstParents(root, [...pending]);
+  for (const sha of pending) {
+    let ancestor = sha;
+    for (let depth = 0; ancestor && depth < PAIRED_DEPTH; depth += 1) {
+      if (landed.has(ancestor)) {
+        found.set(sha, landed.get(ancestor));
+        break;
+      }
+      ancestor = firstParent.get(ancestor);
+    }
+  }
+  return found;
 };
+
+/**
+ * The plate-private commit that matches each udecode/plate rev: the private
+ * counterpart when the rev is this checkout's HEAD, merge base or
+ * origin/next, else the commit on plate-private's next whose Lands-With line
+ * names the rev or its nearest first-parent ancestor. A rev with no match is
+ * absent from the map.
+ */
+export const pairedCommits = (root, revs) => {
+  const paired = new Map();
+  if (!isSplit(root)) return paired;
+  const shas = objectIds(
+    root,
+    revs.map((rev) => `${rev}^{commit}`)
+  );
+  const key = (sha) => `${root}\0${sha}`;
+  const unknown = [...new Set(shas.values())].filter(
+    (sha) => !knownPairs.has(key(sha))
+  );
+  const found = findPairs(root, unknown);
+  for (const sha of unknown) knownPairs.set(key(sha), found.get(sha) ?? null);
+  for (const rev of new Set(revs)) {
+    const sha = shas.get(`${rev}^{commit}`);
+    const commit = sha && knownPairs.get(key(sha));
+    if (commit) paired.set(rev, commit);
+  }
+  return paired;
+};
+
+export const pairedCommit = (root, rev) =>
+  pairedCommits(root, [rev]).get(rev) ?? null;
 
 /** `git show <rev>:<file>` from whichever repository tracks the file. */
 export const showAt = (root, rev, file) => {
@@ -272,15 +309,41 @@ export const showAt = (root, rev, file) => {
   return privateGit(root, ['show', `${paired}:${file}`]);
 };
 
-export const existsAt = (root, rev, file) => {
-  if (!privatePaths(root, [file]).has(file)) {
-    return run(root, ['cat-file', '-e', `${rev}:${file}`]).status === 0;
+/**
+ * The `{ rev, file }` pairs whose file exists at rev, each read from
+ * whichever repository tracks the file, as `${rev}:${file}` keys.
+ */
+export const existingAt = (root, pairs) => {
+  const hidden = privatePaths(root, [
+    ...new Set(pairs.map(({ file }) => file)),
+  ]);
+  const paired = pairedCommits(
+    root,
+    pairs.filter(({ file }) => hidden.has(file)).map(({ rev }) => rev)
+  );
+  const own = [];
+  const side = [];
+  for (const { rev, file } of pairs) {
+    const commit = hidden.has(file) ? paired.get(rev) : null;
+    (commit ? side : own).push([`${rev}:${file}`, `${commit ?? rev}:${file}`]);
   }
-  const paired = pairedCommit(root, rev);
-  return paired
-    ? privateGit(root, ['cat-file', '-e', `${paired}:${file}`]).status === 0
-    : run(root, ['cat-file', '-e', `${rev}:${file}`]).status === 0;
+  const found = new Set();
+  for (const [queries, options] of [
+    [own, {}],
+    [side, { side: true }],
+  ]) {
+    const ids = objectIds(
+      root,
+      queries.map(([, name]) => name),
+      options
+    );
+    for (const [key, name] of queries) if (ids.has(name)) found.add(key);
+  }
+  return found;
 };
+
+export const existsAt = (root, rev, file) =>
+  existingAt(root, [{ rev, file }]).has(`${rev}:${file}`);
 
 export const publicObjects = (root) =>
   path.join(

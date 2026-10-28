@@ -120,6 +120,8 @@ Rules:
   - the Plite runner's `reused N passed … from a matching complete proof`: set
     `PLITE_BROWSER_FORCE_PROOF=1`;
   - turbo's `Cached: N cached, M total`: set `TURBO_FORCE=true`;
+  - `pnpm check`'s `skip <step>: passed …` and `pnpm lint:task`'s
+    `Lint passed …, so it did not run again`: set `TURBO_FORCE=true`;
   - a benchmark probe that prints no frozen lines and only a receipt: pass the
     frozen lines, as Benchmark's pre-acceptance step 4 requires;
 - an independent integration runner that resolves workspace `dist` must build

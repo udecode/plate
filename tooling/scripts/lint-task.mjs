@@ -6,6 +6,13 @@
 // because a docs-only commit has nothing to lint and must still land.
 import { spawnSync } from 'node:child_process';
 import { lstatSync } from 'node:fs';
+import { delimiter, join, relative, resolve } from 'node:path';
+
+import { freshRun, openCache } from './check-cache.mjs';
+import { isProse } from './check.mjs';
+
+const root = process.cwd();
+const BIN = join(root, 'node_modules', '.bin');
 
 const allowIgnored = process.argv.includes('--allow-ignored');
 const paths = process.argv.slice(2).filter((arg) => arg !== '--allow-ignored');
@@ -24,8 +31,35 @@ if (missing.length > 0) {
 // ignored path; a link into an ignored directory dangles in a worktree.
 const files = paths.filter((path) => !lstatSync(path).isSymbolicLink());
 
+// Type-aware rules read every file a linted file imports, so a pass covers
+// only this tree, or one that differs in prose outside these paths.
+const cache = openCache(root, { fresh: freshRun(process.env) });
+const scope = {
+  command: process.argv.slice(2).toSorted().join('\n'),
+  filesOnly: true,
+  key: ['date'],
+  name: 'lint-task',
+};
+const own = paths.map((path) => relative(root, resolve(path)));
+const outside = (file) =>
+  own.every(
+    (path) => path !== '' && path !== file && !file.startsWith(`${path}/`)
+  );
+const cover = cache
+  .bases(scope, { near: true })
+  .find((base) => base.files.every((file) => isProse(file) && outside(file)));
+if (cover) {
+  console.info(`Lint ${cover.label}, so it did not run again.`);
+  process.exit(0);
+}
+const started = Date.now();
+
 const run = (args) => {
-  const result = spawnSync('pnpm', ['exec', ...args], { encoding: 'utf-8' });
+  const result = spawnSync(args[0], args.slice(1), {
+    encoding: 'utf-8',
+    // ultracite starts oxlint and oxfmt by name, as under `pnpm exec`.
+    env: { ...process.env, PATH: `${BIN}${delimiter}${process.env.PATH}` },
+  });
   const output = `${result.stdout}${result.stderr}`
     .split('\n')
     .filter(
@@ -64,21 +98,22 @@ if (files.length > 0) {
   clean = check.status === 0 && typed.status === 0;
 }
 
-if (linted === 0 && allowIgnored) {
-  console.info(
-    `Lint ignores all ${paths.length} paths, so there is nothing to lint.`
-  );
-  process.exit(0);
-}
-if (linted === 0) {
+if (!clean) process.exit(1);
+if (linted === 0 && !allowIgnored) {
   console.error(
     `Lint ignores all ${paths.length} paths, so none of them is lint-clean.`
   );
   process.exit(2);
 }
-if (linted < paths.length) {
+if (linted === 0) {
+  console.info(
+    `Lint ignores all ${paths.length} paths, so there is nothing to lint.`
+  );
+} else if (linted < paths.length) {
   console.info(
     `Lint ignores ${paths.length - linted} of the ${paths.length} paths; a lint-clean claim covers only the other ${linted}.`
   );
 }
-process.exit(clean ? 0 : 1);
+cache.record(scope, Math.round((Date.now() - started) / 1000));
+cache.flush();
+process.exit(0);

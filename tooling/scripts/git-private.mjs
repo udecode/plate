@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process';
 import {
-  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -21,6 +20,7 @@ import {
 } from '../../.agents/pstack/checkout.mjs';
 import {
   BRANCH,
+  copyIndex,
   entries,
   ignoredPaths,
   inherited,
@@ -98,7 +98,7 @@ export const autosave = (root) => {
     const last = resolve(ref);
     const current = { GIT_INDEX_FILE: path.join(scratch, 'current') };
     const live = privateMust(root, ['rev-parse', '--git-path', 'index']).trim();
-    if (existsSync(live)) copyFileSync(live, current.GIT_INDEX_FILE);
+    if (existsSync(live)) copyIndex(live, current.GIT_INDEX_FILE);
     else privateMust(root, ['read-tree', 'HEAD'], { env: current });
     const changed = (command, ...rest) =>
       entries(

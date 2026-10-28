@@ -12,7 +12,9 @@ const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../..'
 );
-const ts = createRequire(import.meta.url)('@typescript/typescript6');
+let compiler;
+const loadTypeScript = () =>
+  (compiler ??= createRequire(import.meta.url)('@typescript/typescript6'));
 
 const testSidePattern =
   /\/__tests__\/|(?:\.(?:spec|test)|-contract)\.[cm]?[jt]sx?$/u;
@@ -305,39 +307,111 @@ export const moduleSpecifiers = (filename) => parseModule(filename).specifiers;
 // registry.
 export const moduleEffects = (filename) => parseModule(filename).effects;
 
+const commentRanges = new Map();
+
+const babelComments = (filename, text) => {
+  try {
+    return parse(text, {
+      errorRecovery: true,
+      plugins: /\.[cm]?tsx?$/u.test(filename)
+        ? ['typescript', ...(filename.endsWith('x') ? ['jsx'] : [])]
+        : ['jsx'],
+      sourceType: 'unambiguous',
+    }).comments.map(({ end, start }) => [start, end]);
+  } catch {
+    return [];
+  }
+};
+
+const wholeLineShellComments = (text) =>
+  [...text.matchAll(/^[\t ]*#.*$/gmu)].map((match) => [
+    match.index,
+    match.index + match[0].length,
+  ]);
+
+const commentsOf = (filename, text) => {
+  if (!commentRanges.has(filename)) {
+    let ranges = [];
+
+    if (/\.[cm]?[jt]sx?$/u.test(filename)) {
+      ranges = babelComments(filename, text);
+    } else if (filename.endsWith('.sh')) {
+      ranges = wholeLineShellComments(text);
+    }
+    commentRanges.set(filename, ranges);
+  }
+
+  return commentRanges.get(filename);
+};
+
+const certainlyCode = (text, index) => {
+  const line = text.lastIndexOf('\n', index) + 1;
+  if (text.slice(line, index).includes('//')) return false;
+  const open = text.lastIndexOf('/*', index);
+  if (open === -1) return true;
+  const close = text.indexOf('*/', open + 2);
+  return close !== -1 && close + 2 <= index;
+};
+
+/**
+ * Whether `pattern` matches `filename` outside its comments. JavaScript and
+ * TypeScript comments come from Babel and shell comments from whole `#`
+ * lines; every other file is all code, so a JSON config's mention counts.
+ */
+export const mentionsOutsideComments = (filename, pattern) => {
+  const text = fs.readFileSync(filename, 'utf-8');
+  const flags = pattern.flags.includes('g')
+    ? pattern.flags
+    : `${pattern.flags}g`;
+  const indexes = Array.from(
+    text.matchAll(new RegExp(pattern.source, flags)),
+    (match) => match.index
+  );
+  if (
+    /\.[cm]?[jt]sx?$/u.test(filename) &&
+    indexes.some((index) => certainlyCode(text, index))
+  ) {
+    return true;
+  }
+  const ranges = commentsOf(filename, text);
+
+  return indexes.some(
+    (index) => !ranges.some(([start, end]) => index >= start && index < end)
+  );
+};
+
 const testPreloadAliases = new Map(
   getWorkspaceSourceEntries(repoRoot).map(({ sourceEntry, specifier }) => [
     specifier,
     sourceEntry,
   ])
 );
-const configHost = { ...ts.sys, readDirectory: () => [] };
-const compilerOptionsByConfig = new Map([
-  [
-    undefined,
-    {
-      allowJs: true,
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-      resolveJsonModule: true,
-    },
-  ],
-]);
+const compilerOptionsByConfig = new Map();
 
 const compilerOptions = (directory) => {
+  const ts = loadTypeScript();
   const configPath = ts.findConfigFile(directory, ts.sys.fileExists);
 
   if (!compilerOptionsByConfig.has(configPath)) {
-    const { config } = ts.readConfigFile(configPath, ts.sys.readFile);
+    if (configPath === undefined) {
+      compilerOptionsByConfig.set(configPath, {
+        allowJs: true,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        resolveJsonModule: true,
+      });
+    } else {
+      const { config } = ts.readConfigFile(configPath, ts.sys.readFile);
 
-    compilerOptionsByConfig.set(
-      configPath,
-      ts.parseJsonConfigFileContent(
-        config,
-        configHost,
-        path.dirname(configPath)
-      ).options
-    );
+      compilerOptionsByConfig.set(
+        configPath,
+        ts.parseJsonConfigFileContent(
+          config,
+          { ...ts.sys, readDirectory: () => [] },
+          path.dirname(configPath)
+        ).options
+      );
+    }
   }
 
   return compilerOptionsByConfig.get(configPath);
@@ -346,6 +420,7 @@ const compilerOptions = (directory) => {
 // Bun and Vite compile each file with its nearest tsconfig.json and the files
 // that one extends.
 export const tsconfigChain = (filename) => {
+  const ts = loadTypeScript();
   const chain = [];
   const visitConfig = (configPath) => {
     if (!configPath || chain.includes(configPath)) return;
@@ -386,6 +461,7 @@ export const resolveImport = (fromFile, specifier) => {
   let resolved = testPreloadAliases.get(request);
 
   if (!resolved) {
+    const ts = loadTypeScript();
     const { resolvedModule } = ts.resolveModuleName(
       request,
       fromFile,
