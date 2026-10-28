@@ -23,7 +23,7 @@ export type {
 export { assertEditorOptions, readEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
-export { getEditorCommitSnapshot } from '../core/commit';
+export { getEditorCommitSnapshot, getEditorCommitValue } from '../core/commit';
 export { readingCovered } from '../core/property-validity';
 export {
   observeAnchorStateWork,
@@ -289,6 +289,7 @@ export {
   setCurrentMarks as setEditorMarks,
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
+  registerEditorTransactionGuard,
   subscribeEditorViewState,
   withEditorUpdateRootScope,
 } from '../core/public-state';

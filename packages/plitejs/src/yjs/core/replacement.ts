@@ -11,9 +11,11 @@ import {
   assertPublicYjsAttributeCanBeSet,
   createYjsPropertyContext,
   createYjsVisibleChildrenReader,
+  insertYjsChild,
   type YjsPropertyLocation,
   type YjsSetPropertyResolver,
   type YjsVisibleChildrenReader,
+  type YjsWrite,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
 import {
@@ -21,11 +23,15 @@ import {
   getYjsSetValueAttributeKeys,
 } from './set-valued-attributes';
 import {
+  alignYjsChildren,
   createYjsRunEncoder,
+  createYjsTextChain,
+  isBareTextRun,
+  isEmptyTextRun,
   rewriteTextRuns,
   segmentPliteChildren,
-  segmentYjsChildren,
   writeTextRuns,
+  type YjsSegment,
 } from './text-runs';
 
 const getElementAttributes = (node: Descendant): YjsAttributeRecord =>
@@ -35,7 +41,7 @@ const getElementAttributes = (node: Descendant): YjsAttributeRecord =>
 
 export const setYjsElementAttributes = (
   node: Y.XmlElement,
-  properties: YjsAttributeRecord,
+  previousProperties: YjsAttributeRecord,
   newProperties: YjsAttributeRecord,
   isSetValued: (key: string) => boolean = () => false
 ): void => {
@@ -63,6 +69,7 @@ export const setYjsElementAttributes = (
       if (!Array.isArray(value)) {
         throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
       }
+      if (areJsonLikeValuesEqual(previousProperties[key], value)) continue;
 
       const encoded = encodeYjsSetValueAttributes(key, value);
 
@@ -81,7 +88,10 @@ export const setYjsElementAttributes = (
 
     if (value === null || value === undefined) {
       removeSetEntries(key);
-      if (properties[key] === null || properties[key] === undefined) {
+      if (
+        previousProperties[key] === null ||
+        previousProperties[key] === undefined
+      ) {
         continue;
       }
 
@@ -89,7 +99,7 @@ export const setYjsElementAttributes = (
       continue;
     }
 
-    if (areJsonLikeValuesEqual(properties[key], value)) {
+    if (areJsonLikeValuesEqual(previousProperties[key], value)) {
       continue;
     }
 
@@ -98,8 +108,8 @@ export const setYjsElementAttributes = (
     setYjsAttribute(node, key, value);
   }
 
-  for (const key in properties) {
-    if (!Object.hasOwn(properties, key)) {
+  for (const key in previousProperties) {
+    if (!Object.hasOwn(previousProperties, key)) {
       continue;
     }
 
@@ -130,35 +140,72 @@ export const sameSkeleton = (
   );
 };
 
-const canReplace = (
+/**
+ * Whether the change removes the listed child at an index with its open
+ * token, so the element it inserts there is a new node.
+ */
+export type YjsReplacedElement = (index: number) => boolean;
+
+const notReplaced: YjsReplacedElement = () => false;
+
+// Children the change leaves as they are need no write, so a room that holds
+// fewer of them than the editor, such as a line every editor built from a
+// spare, still takes the change of their element's properties in place.
+const unchanged = (
+  before: readonly Descendant[],
+  after: readonly Descendant[]
+) => before === after || areJsonLikeValuesEqual(before, after);
+
+/**
+ * Pairs each Plite segment with the Yjs segment it writes to. Yjs stores no
+ * child for an empty Plite text, so such a run pairs with null. Inside an
+ * element, letters or props it gains get a new Yjs text at its place; among
+ * the listed children, whose parent is unknown, it must stay empty. A listed
+ * element pairs only when the change keeps it, because a peer's edit to the
+ * old node must not reach the new one.
+ */
+const alignReplacement = (
   read: YjsVisibleChildrenReader,
+  parent: Y.XmlElement | null,
   children: readonly YjsNode[],
   before: readonly Descendant[],
   after: readonly Descendant[],
-  start: number
-): boolean => {
-  if (!sameSkeleton(before, after)) return false;
-  const physical = segmentYjsChildren(children.slice(start));
-  const segments = segmentPliteChildren(before);
+  start: number,
+  replaced: YjsReplacedElement
+): Array<YjsSegment | null> | null => {
+  if (
+    start === 0 &&
+    unchanged(before, after) &&
+    !before.some((_, index) => replaced(index))
+  ) {
+    return [];
+  }
+  if (!sameSkeleton(before, after)) return null;
+  const aligned = alignYjsChildren(before, children.slice(start));
   const nextSegments = segmentPliteChildren(after);
-  return (
-    physical.length === segments.length &&
-    segments.every((segment, index) => {
-      const target = physical[index];
+  return aligned &&
+    aligned.segments.every((segment, index) => {
+      const target = aligned.targets[index];
       const next = nextSegments[index];
-      return segment.kind === 'text'
-        ? target.kind === 'text'
-        : target.kind === 'element' &&
-            next.kind === 'element' &&
-            canReplace(
-              read,
-              read(target.node),
-              segment.node.children,
-              next.node.children,
-              0
-            );
+      if (!target) return parent !== null || isEmptyTextRun(next);
+      return (
+        segment.kind === 'text' ||
+        (target.kind === 'element' &&
+          next.kind === 'element' &&
+          !replaced(segment.from) &&
+          alignReplacement(
+            read,
+            target.node,
+            read(target.node),
+            segment.node.children,
+            next.node.children,
+            0,
+            notReplaced
+          ) !== null)
+      );
     })
-  );
+    ? aligned.targets
+    : null;
 };
 
 export const canReplaceCompatibleYjsChildren = (
@@ -166,48 +213,76 @@ export const canReplaceCompatibleYjsChildren = (
   children: readonly YjsNode[],
   before: readonly Descendant[],
   after: readonly Descendant[],
-  start = 0
+  start = 0,
+  replaced: YjsReplacedElement = notReplaced
 ): boolean =>
-  canReplace(
+  alignReplacement(
     createYjsVisibleChildrenReader(root),
+    null,
     children,
     before,
     after,
-    start
-  );
+    start,
+    replaced
+  ) !== null;
 
-export const replaceCompatibleYjsChildren = (
-  root: Y.XmlElement,
+const writeReplacement = (
+  write: YjsWrite,
+  read: YjsVisibleChildrenReader,
+  parent: Y.XmlElement | null,
   children: readonly YjsNode[],
   before: readonly Descendant[],
   after: readonly Descendant[],
-  start = 0,
-  isSetValued: YjsSetPropertyResolver = () => false,
-  location: YjsPropertyLocation = { ancestors: [], path: [], root: null },
-  /** Whether `before` sits under an element whose type `after` changes. */
-  retyped = false
+  start: number,
+  isSetValued: YjsSetPropertyResolver,
+  location: YjsPropertyLocation,
+  retyped: boolean,
+  replaced: YjsReplacedElement
 ): boolean => {
-  const read = createYjsVisibleChildrenReader(root);
-  if (!canReplace(read, children, before, after, start)) return false;
-  const physical = segmentYjsChildren(children.slice(start));
+  const physical = alignReplacement(
+    read,
+    parent,
+    children,
+    before,
+    after,
+    start,
+    replaced
+  );
+  if (!physical) return false;
   const oldSegments = segmentPliteChildren(before);
   const newSegments = segmentPliteChildren(after);
   for (const [index, target] of physical.entries()) {
     const previous = oldSegments[index];
     const next = newSegments[index];
+    const encode = () =>
+      createYjsRunEncoder(isSetValued, {
+        ...location,
+        offset: (location.offset ?? start) + next.from,
+      });
+    if (!target) {
+      if (parent && next.kind === 'text' && !isBareTextRun(next)) {
+        const anchor = physical[index + 1];
+        const visible = read(parent);
+        insertYjsChild(
+          write,
+          parent,
+          anchor?.kind === 'element'
+            ? visible.indexOf(anchor.node)
+            : visible.length,
+          createYjsTextChain(next.leaves, encode())
+        );
+      }
+      continue;
+    }
     if (
       target.kind === 'text' &&
       previous.kind === 'text' &&
       next.kind === 'text'
     ) {
-      const encode = createYjsRunEncoder(isSetValued, {
-        ...location,
-        offset: (location.offset ?? start) + next.from,
-      });
       // Text under a retyped element was stored under the old type's rules, so
       // it is compared with what the chain stores rather than re-encoded.
-      if (retyped) rewriteTextRuns(target.chain, next.leaves, encode);
-      else writeTextRuns(target.chain, previous.leaves, next.leaves, encode);
+      if (retyped) rewriteTextRuns(target.chain, next.leaves, encode());
+      else writeTextRuns(target.chain, previous.leaves, next.leaves, encode());
     } else if (
       target.kind === 'element' &&
       previous.kind === 'element' &&
@@ -223,8 +298,10 @@ export const replaceCompatibleYjsChildren = (
         getElementAttributes(next.node),
         (key) => isSetValued(next.node, key, context)
       );
-      replaceCompatibleYjsChildren(
-        root,
+      writeReplacement(
+        write,
+        read,
+        target.node,
         read(target.node),
         previous.node.children,
         next.node.children,
@@ -235,9 +312,36 @@ export const replaceCompatibleYjsChildren = (
           path: context.path,
           root: context.root,
         },
-        retyped || previous.node.type !== next.node.type
+        retyped || previous.node.type !== next.node.type,
+        notReplaced
       );
     }
   }
   return true;
 };
+
+export const replaceCompatibleYjsChildren = (
+  write: YjsWrite,
+  children: readonly YjsNode[],
+  before: readonly Descendant[],
+  after: readonly Descendant[],
+  start = 0,
+  isSetValued: YjsSetPropertyResolver = () => false,
+  location: YjsPropertyLocation = { ancestors: [], path: [], root: null },
+  /** Whether `before` sits under an element whose type `after` changes. */
+  retyped = false,
+  replaced: YjsReplacedElement = notReplaced
+): boolean =>
+  writeReplacement(
+    write,
+    createYjsVisibleChildrenReader(write.root),
+    null,
+    children,
+    before,
+    after,
+    start,
+    isSetValued,
+    location,
+    retyped,
+    replaced
+  );

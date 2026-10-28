@@ -34,7 +34,10 @@ import {
 import { prepareCommandFrame } from '../core/command-frame';
 import { registerEditorContent } from '../core/content';
 import { elementSplitOutput } from '../core/default-storage';
-import { documentAdmissionPoint } from '../core/document-admission';
+import {
+  admitDocument,
+  documentAdmissionPoint,
+} from '../core/document-admission';
 import {
   registerEditorDocumentRecorder,
   registerEditorDraftGuard,
@@ -48,6 +51,7 @@ import {
   type InternalEditorRuntime,
 } from '../core/editor-runtime';
 import {
+  ElementGenerationMaskedError,
   type InternalEditorSchemaApi,
   withoutGeneration,
 } from '../core/editor-schema';
@@ -62,6 +66,7 @@ import {
   getCurrentSelection,
   getCurrentSelectionRoot,
   getActiveEditorUpdateTags,
+  isEditorCompositionPending,
   notifyEditorViewState,
   subscribeEditorViewState,
   withEditorDocumentProjection,
@@ -85,7 +90,7 @@ import {
   orphanedValueRoots,
   rootsDeletedByName,
 } from '../core/root-ownership';
-import { tracksPlaces } from '../core/schema-compiler';
+import { tracksPlaces, uniquePropertiesOf } from '../core/schema-compiler';
 import { EditorSchemaValidationError } from '../core/schema-validation';
 import {
   type TxDeclaredMethod,
@@ -93,6 +98,11 @@ import {
   type TxOnlyMethod,
   txStored,
 } from '../core/tx-only';
+import {
+  getPlacementGeneration,
+  nextMintedGeneration,
+  subscribeCommittedPlacement,
+} from '../core/view-carets';
 import { countCoreWork } from '../core/work';
 import type {
   AnyEditor as Editor,
@@ -144,19 +154,23 @@ import {
   type VerdictRecord,
   withStore,
 } from './facts/records';
-import { projectAuthoredDocumentUnder } from './format';
+import {
+  type AuthoredFormatProjection,
+  projectAuthoredBlocks,
+  projectAuthoredDocumentUnder,
+} from './format';
 import type { BookSink, BookView } from './ledger/book';
 import {
   createReviewLedger,
   getReviewLedger,
   type ViewPlaces,
 } from './ledger/ledger';
-import { rootOf } from './ledger/roots';
-import { blockFactsOf } from './ledger/runs';
+import { contentRootsOf, rootOf } from './ledger/roots';
+import { blockFactsOf, isBuilt } from './ledger/runs';
 import { countLedgerWork } from './ledger/work';
 import {
   type AuthoredRefusal,
-  constructsValues,
+  storesGeneratedValues,
   GENERATED_VALUES_REFUSAL,
   movedRefusal,
   proposalRefusal,
@@ -168,6 +182,7 @@ import {
   storedResolveSchemaOf,
 } from './resolve-schema';
 import { characterAlignedChange, decidedContentChange } from './tree/alignment';
+import { closeCommandValues, generatedOf } from './tree/command-values';
 import { relinkCuts } from './tree/cuts';
 import { coverStoredValues } from './tree/holds';
 import { acceptedValues, type FormatTag, type Standing } from './tree/layers';
@@ -180,7 +195,15 @@ import {
   readMembers,
 } from './tree/marks';
 import { recordAuthoredSteps } from './tree/record';
-import { completeProposed } from './tree/record-completion';
+import { completeProposed, framedChild } from './tree/record-completion';
+import {
+  changedSitesOf,
+  NO_SPARE_WRITES,
+  type SpareBlocks,
+  spareWritesChange,
+  sparesFor,
+  storesSpares,
+} from './tree/reserves';
 import {
   type AuthoredResolveSchema,
   claimsBreakBefore,
@@ -191,6 +214,7 @@ import {
   resolveAuthoredChildren,
   resolveAuthoredValue,
 } from './tree/resolve';
+import { spareBlock, spareRoot } from './tree/spare-lines';
 import type {
   AuthoredChange,
   AuthoredChangeDetails,
@@ -321,9 +345,12 @@ const elementOf = (props: Readonly<Record<string, unknown>>): Element => ({
   type: String(props.type),
 });
 
+// A build that finds no spare for the generated value it needs refuses as a
+// schema refusal does.
 const isRefusal = (error: unknown) =>
   error instanceof EditorSchemaValidationError ||
-  error instanceof AuthoredMarkError;
+  error instanceof AuthoredMarkError ||
+  error instanceof ElementGenerationMaskedError;
 
 const isReplay = (tags: readonly string[]) =>
   tags.includes('historic') || tags.includes('collaboration');
@@ -463,6 +490,54 @@ const framedLawCheck = () => {
   return env?.NODE_ENV === 'test' ? env.PLITE_LAW_CHECK : '0';
 };
 
+// Accepting drops lines completion built that end their list as the commands
+// left them, since nothing written needs them.
+const listAcceptsTo = (
+  accepted: readonly JsonNode[],
+  wrote: readonly JsonNode[]
+): boolean => {
+  let end = wrote.length;
+
+  while (end > accepted.length && isBuilt(getDefined(wrote[end - 1]))) {
+    end -= 1;
+  }
+
+  return (
+    end === accepted.length &&
+    accepted.every((node, index) => {
+      const other = getDefined(wrote[index]);
+
+      return (
+        jsonEqual(node, other) ||
+        (!!node.children &&
+          !!other.children &&
+          jsonEqual(nodePropsOf(node), nodePropsOf(other)) &&
+          listAcceptsTo(node.children, other.children))
+      );
+    })
+  );
+};
+
+const acceptsTo = (accepted: JsonEditorValue, wrote: JsonEditorValue) => {
+  const { children, records: _records, roots = {}, ...fields } = accepted;
+  const {
+    children: wroteChildren,
+    records: _wroteRecords,
+    roots: wroteRoots = {},
+    ...wroteFields
+  } = wrote;
+  const names = Object.keys(roots);
+
+  return (
+    jsonEqual(fields, wroteFields) &&
+    listAcceptsTo(children, wroteChildren) &&
+    jsonEqual(names.toSorted(), Object.keys(wroteRoots).toSorted()) &&
+    names.every((name) =>
+      listAcceptsTo(getDefined(roots[name]), getDefined(wroteRoots[name]))
+    )
+  );
+};
+
 const assertFramedLaw = (
   input: EditorFrameRecording,
   schema: AuthoredResolveSchema,
@@ -475,7 +550,7 @@ const assertFramedLaw = (
     projectAuthoredValue(stored.value, 'proposed', schema).value
   );
 
-  if (!jsonEqual(accepted, contentOf(frame.value))) {
+  if (!acceptsTo(accepted, contentOf(frame.value))) {
     throw new Error(
       `A framed recording does not accept to what its commands wrote: ${JSON.stringify(
         { accepted: accepted.children, wrote: frame.value.children }
@@ -1283,6 +1358,21 @@ export const createAuthoredPlugin = (
       }
     );
   };
+  const owesWord = (editor: Editor) =>
+    editor.read.view.isComposing() || isEditorCompositionPending(editor);
+  const applyView = (editor: Editor, view: AuthoredView) => {
+    const runtime = getEditorRuntime(editor);
+    const state = stateOf(editor);
+
+    state.pending.delete(runtime);
+    state.views.set(runtime, view);
+    notifyEditorViewState(editor, 'authored');
+  };
+  const settleWaitingView = (editor: Editor) => {
+    const waiting = stateOf(editor).pending.get(getEditorRuntime(editor));
+
+    if (waiting && !owesWord(editor)) applyView(editor, waiting);
+  };
   const previewModeOf = (editor: Editor) => {
     const view = viewOf(editor);
 
@@ -1466,29 +1556,42 @@ export const createAuthoredPlugin = (
               storedResolveSchemaOf(schema, document)
             )
           ),
+        projectDecided: (document, projection, schema) =>
+          projectAuthoredDocumentUnder(
+            document,
+            projection,
+            storedResolveSchemaOf(schema, document)
+          ),
+        projectBlocks: (document, projection, schema, root, paths) =>
+          withoutGeneration(() =>
+            projectAuthoredBlocks(
+              document,
+              projection,
+              storedResolveSchemaOf(schema, document),
+              root,
+              paths
+            )
+          ),
+        repair: (document, schema) =>
+          admitDocument(authoredAdmission, document, schema).document,
+        spareBlock,
+        spareRoot,
       }),
     ],
     api: ({ editor }) => ({
       setView: (view: AuthoredView) => {
         const runtime = getEditorRuntime(editor);
         const state = stateOf(editor);
-        const apply = (next: AuthoredView) => {
-          state.pending.delete(runtime);
-          state.views.set(runtime, next);
-          notifyEditorViewState(editor, 'authored');
-        };
 
-        // Suggesting, and previews that decide changes, would mint values a
-        // generating schema makes differently each time.
         if (
           ('preview' in view || view.intent === 'propose') &&
-          constructsValues(getCompiledEditorSchema(editor))
+          !storesGeneratedValues(getCompiledEditorSchema(editor))
         ) {
           publishEditorRefusal(editor, GENERATED_VALUES_REFUSAL);
           return;
         }
-        if (!editor.read.view.isComposing()) {
-          apply(view);
+        if (!owesWord(editor)) {
+          applyView(editor, view);
           return;
         }
 
@@ -1501,9 +1604,9 @@ export const createAuthoredPlugin = (
         const stop = subscribeEditorViewState(editor, () => {
           const next = state.pending.get(runtime);
 
-          if (editor.read.view.isComposing()) return;
+          if (owesWord(editor)) return;
           stop();
-          if (next) apply(next);
+          if (next) applyView(editor, next);
         });
       },
       subscribeRefusals: (listener: (refusal: AuthoredRefusal) => void) =>
@@ -1814,11 +1917,41 @@ export const createAuthoredPlugin = (
         () => authoredResolveSchemaOf(editor),
         state.marks
       );
+      const { holders } = ledger;
+      const spareBlocksOf = (value: JsonEditorValue): SpareBlocks => {
+        const schema = getCompiledEditorSchema(editor);
+        const generated = generatedOf(schema);
+        const indexes = contentRootsOf(value);
+
+        return {
+          indexes,
+          marked: (root) =>
+            holders
+              .at(
+                { contexts: factsOf(value), generated, schema },
+                root,
+                getDefined(indexes.get(root))
+              )
+              .marked(),
+        };
+      };
 
       onCleanup(
         getEditorRuntime(owner).subscribeCommit((commit) =>
           ledger.carry(commit)
         )
+      );
+
+      const builtPlacements = new Map<number, AuthoredFormatProjection>();
+      const leansFor = (preview: AuthoredFormatProjection) =>
+        builtPlacements.get(getPlacementGeneration(owner)) === preview;
+
+      onCleanup(
+        subscribeCommittedPlacement(owner, (generation) => {
+          for (const placed of builtPlacements.keys()) {
+            if (placed !== generation) builtPlacements.delete(placed);
+          }
+        })
       );
 
       onCleanup(
@@ -1861,7 +1994,8 @@ export const createAuthoredPlugin = (
                     withEditorDocumentProjection(owner, undefined, () =>
                       getCurrentSelection(owner)
                     ),
-                    root
+                    root,
+                    leansFor(preview)
                   ),
               }
             );
@@ -1872,15 +2006,25 @@ export const createAuthoredPlugin = (
           toStored: (view, root, target) => {
             const preview = previewModeOf(view);
 
-            return preview
-              ? ledger.lens(storedValue(owner), preview).fromView(target, root)
-              : { kind: 'stored', target };
+            if (!preview) return { kind: 'stored', target };
+
+            const lifted = ledger
+              .lens(storedValue(owner), preview)
+              .fromView(target, root);
+
+            if (lifted.kind === 'stored' && lifted.shownInBuilt) {
+              builtPlacements.set(nextMintedGeneration(owner), preview);
+            }
+
+            return lifted;
           },
           view: viewOf,
           viewCommit: (view, commit) => {
             const preview = previewModeOf(view);
 
-            return preview ? ledger.previewCommit(commit, preview) : commit;
+            return preview
+              ? ledger.previewCommit(commit, preview, leansFor(preview))
+              : commit;
           },
         })
       );
@@ -1894,10 +2038,26 @@ export const createAuthoredPlugin = (
       let framed = false;
 
       beforePublish(() => {
-        ({ framed } = ledger.prepare(editor.read.value()));
+        const value = editor.read.value();
+
+        ({ framed } = ledger.prepare(value));
+        if (storesSpares(getCompiledEditorSchema(editor))) {
+          const { indexes, marked } = spareBlocksOf(value);
+
+          for (const root of indexes.keys()) marked(root);
+        }
       });
       afterPublish(() => {
         if (framed) prepareCommandFrame(editor);
+
+        const schema = getCompiledEditorSchema(editor);
+
+        if (storesSpares(schema)) {
+          ledger.shown.load(
+            storedRead(editor, (stored) => stored.read.value()),
+            schema
+          );
+        }
       });
       onCleanup(
         registerEditorDraftGuard(editor, (value) => ledger.check(value))
@@ -1946,7 +2106,10 @@ export const createAuthoredPlugin = (
           }
 
           const update = getActiveEditorUpdateId(editor);
-          const view = viewOf(getAuthoredUpdateView(editor));
+          const viewEditor = getAuthoredUpdateView(editor);
+
+          settleWaitingView(viewEditor);
+          const view = viewOf(viewEditor);
 
           return (
             (update !== null && state.forced.has(update)) ||
@@ -1959,6 +2122,14 @@ export const createAuthoredPlugin = (
       onCleanup(
         registerEditorDocumentRecorder(editor, (input) => {
           if (isReplay(input.tags)) return null;
+          // A reconfiguration's own write applies as written, and recording
+          // it would rebuild the document from one the old schema validated.
+          if (
+            input.steps.length > 0 &&
+            input.steps.every((step) => step.origin === 'migration')
+          ) {
+            return null;
+          }
           // A decision records nothing, but a fragment it or its corrections
           // remove hands its cuts to its neighbours.
           if (passesThrough()) {
@@ -1966,7 +2137,7 @@ export const createAuthoredPlugin = (
               input.change,
               input.before,
               input.after,
-              (root) => DocumentIndex.fromValue(valueRoot(input.after, root))
+              (root) => rootOf(input.after, root)
             );
 
             return relink
@@ -1979,7 +2150,10 @@ export const createAuthoredPlugin = (
 
           const update = getActiveEditorUpdateId(editor);
           const forced = update ? (state.forced.get(update) ?? null) : null;
-          const updateView = viewOf(getAuthoredUpdateView(editor));
+          const viewEditor = getAuthoredUpdateView(editor);
+
+          settleWaitingView(viewEditor);
+          const updateView = viewOf(viewEditor);
           const before = input.before as JsonEditorValue;
           const after = input.after as JsonEditorValue;
           const contentChange = contentChangeOf(input.change);
@@ -2071,7 +2245,7 @@ export const createAuthoredPlugin = (
                 : getPluginContributions(editor, authoredVeto);
             const refusal =
               (update && state.refused.get(update)) ??
-              (constructsValues(getCompiledEditorSchema(editor))
+              (!storesGeneratedValues(getCompiledEditorSchema(editor))
                 ? GENERATED_VALUES_REFUSAL
                 : vetoes.length > 0
                   ? proposalRefusal(contentSteps, vetoes)
@@ -2083,14 +2257,21 @@ export const createAuthoredPlugin = (
             }
           }
 
+          const { composition } = input;
           const focusBefore =
-            input.selectionBefore?.kind === 'text' &&
-            PointApi.equals(
-              input.selectionBefore.anchor,
-              input.selectionBefore.focus
-            )
-              ? input.selectionBefore.focus
-              : null;
+            input.selectionBefore?.kind !== 'text'
+              ? null
+              : PointApi.equals(
+                    input.selectionBefore.anchor,
+                    input.selectionBefore.focus
+                  )
+                ? input.selectionBefore.focus
+                : composition
+                  ? RangeApi.start(input.selectionBefore)
+                  : null;
+          const compositionRoot = composition
+            ? (composition.place.root ?? input.selectionBeforeRoot)
+            : null;
           const selectionPosition = focusBefore
             ? positionOf(before, input.selectionBeforeRoot, focusBefore)
             : null;
@@ -2115,6 +2296,18 @@ export const createAuthoredPlugin = (
           const recorded = recordAuthoredSteps({
             before,
             changeId,
+            composition:
+              composition && compositionRoot !== null
+                ? {
+                    element: composition.place.path.slice(0, -1),
+                    position: positionOf(
+                      before,
+                      compositionRoot,
+                      composition.place
+                    ),
+                    root: compositionRoot,
+                  }
+                : null,
             createRoots,
             createTagId,
             deleteRoots: byName,
@@ -2174,6 +2367,7 @@ export const createAuthoredPlugin = (
                     root: input.selectionBeforeRoot,
                   },
             schema: tracksPlaces(compiled) ? compiled : null,
+            unique: uniquePropertiesOf(compiled),
             standing,
             steps,
             commitWriteId,
@@ -2250,7 +2444,8 @@ export const createAuthoredPlugin = (
               ? born.compose(
                   createInternalDocumentChange(new Map(), {
                     deleteRoots: deleted,
-                  })
+                  }),
+                  before
                 )
               : born;
           const written = valueOf(recorded.indexedAfter);
@@ -2263,12 +2458,18 @@ export const createAuthoredPlugin = (
               DocumentIndex.fromValue(valueRoot(written, root))
           );
           const change = relink
-            ? recordedChange.compose(relink.change)
+            ? recordedChange.compose(relink.change, before)
             : recordedChange;
           const indexes = relink
             ? new Map([...recorded.indexedAfter, ...relink.indexes])
             : recorded.indexedAfter;
           const writtenPlain = editing && recorded.writtenPlain;
+          const mark = {
+            at,
+            author: writer,
+            change: forced?.changeId ?? changeId,
+            ...(forced?.inc === undefined ? {} : { inc: forced.inc }),
+          };
           const filled = writtenPlain
             ? null
             : completeProposed({
@@ -2278,16 +2479,13 @@ export const createAuthoredPlugin = (
                 dependencies,
                 editor,
                 indexes,
-                mark: {
-                  at,
-                  author: writer,
-                  change: forced?.changeId ?? changeId,
-                  ...(forced?.inc === undefined ? {} : { inc: forced.inc }),
-                },
+                mark,
                 standing,
                 commitWriteId,
               });
-          const content = filled ? change.compose(filled.change) : change;
+          const content = filled
+            ? change.compose(filled.change, before)
+            : change;
           const writtenIndexes = filled?.indexes ?? indexes;
           const accepted =
             editing && !writtenPlain
@@ -2371,15 +2569,19 @@ export const createAuthoredPlugin = (
               : filledSelection;
           };
 
-          const later = owned ? content.compose(owned.change) : content;
-          const indexedAfter = owned?.indexes ?? writtenIndexes;
+          const recordedLater = owned
+            ? content.compose(owned.change, before)
+            : content;
+          const recordedIndexes = owned?.indexes ?? writtenIndexes;
           // The context records the writes rest on go with them, so no
           // node ever points at a record its document lacks. An Editing
           // format write over pending tags lands with its commit, so a tag
           // over it reads it after it leaves the key, until an undo takes
           // both back.
-          const records = [
-            putContexts(restedOn(dependencies.minted(), later, indexedAfter)),
+          const recordedRecords = [
+            putContexts(
+              restedOn(dependencies.minted(), recordedLater, recordedIndexes)
+            ),
             putLanded([
               ...(editing && commitWrite !== undefined
                 ? [landedOf({ at, change: changeId, id: commitWrite })]
@@ -2387,10 +2589,105 @@ export const createAuthoredPlugin = (
               ...(owned?.landed ?? []),
             ]),
           ].reduce(composeRecordOps, ownRecords);
+          // A fill deferred at its container's maximum stays deferred where
+          // accepting the writer's own claims keeps its container.
+          const deferred = (filled?.deferred ?? []).flatMap((build) => {
+            if (!owned || build.path.length === 0) return [build];
+
+            const { from } = getDefined(
+              writtenIndexes.get(build.root)
+            ).nodeRange(build.path);
+            const rootChange = getInternalDocumentRootChange(
+              owned.change,
+              build.root
+            );
+            const start = rootChange
+              ? rootChange.mapPos(from, 1, 'after')
+              : from;
+            const host =
+              start === null
+                ? null
+                : recordedIndexes.get(build.root)?.nodeStartingAt(start);
+
+            return host && host.from === start && host.kind === 'element'
+              ? [{ ...build, path: host.path }]
+              : [];
+          });
+          // Each container the write touched stores the spares its pending
+          // claims can need, and a fill its maximum deferred stores the
+          // frame's own element as its slot's spare.
+          const recordedValue = deriveValue(
+            valueOf(recordedIndexes),
+            {},
+            recordedRecords
+          );
+          const writes = storesSpares(compiled)
+            ? sparesFor(
+                recordedValue as EditorDocumentValue,
+                compiled,
+                changedSitesOf(recordedLater, recordedIndexes),
+                deferred.map(({ index, ...build }) => ({
+                  ...build,
+                  node:
+                    framedChild(
+                      valueRootIndex(after, build.root),
+                      build.path.length === 0
+                        ? null
+                        : getDefined(recordedIndexes.get(build.root)).nodeRange(
+                            build.path
+                          ).from,
+                      index,
+                      String(build.node.type),
+                      (position, assoc) =>
+                        mapPosition(build.root, position, assoc)
+                    ) ?? build.node,
+                  writer: owned ? null : mark,
+                })),
+                spareBlocksOf(recordedValue)
+              )
+            : NO_SPARE_WRITES;
+          const spares =
+            writes.containers.length > 0
+              ? spareWritesChange(writes, recordedIndexes)
+              : null;
+          const spared = spares
+            ? recordedLater.compose(spares.change, before)
+            : recordedLater;
+          const sparedIndexes = spares?.indexes ?? recordedIndexes;
+          const records = composeRecordOps(recordedRecords, writes.records);
+          // Accepting everything shows the generated values the command's
+          // frame shows.
+          const shown = storesSpares(compiled)
+            ? closeCommandValues({
+                before,
+                change: spared,
+                compiled,
+                editing,
+                frame: after,
+                framed: !!input.projection,
+                holders,
+                indexes: sparedIndexes,
+                peek: (values, read) => ledger.peek(values, read),
+                standing,
+                storedOf: (edited) => deriveValue(valueOf(edited), {}, records),
+                writer: {
+                  ...mark,
+                  commitWriteId,
+                  isOwn: (tag) => tag.change === mark.change,
+                },
+              })
+            : null;
+          const later = shown ? spared.compose(shown.change, before) : spared;
+          const indexedAfter = shown?.indexes ?? sparedIndexes;
 
           return {
             anchorChange: (plainAfter) =>
-              [filled?.change, owned?.change].reduce(
+              [
+                filled?.change,
+                owned?.change,
+                spares?.change,
+                shown?.change,
+              ].reduce(
                 (anchor: DocumentChange, next) =>
                   next ? anchor.compose(next) : anchor,
                 recorded.anchorChange(plainAfter)

@@ -153,21 +153,56 @@ export function invocationRun(identity, transcripts) {
   return { miss: results.length ? results.map((result) => result.miss).join('; ') : `no transcript of thread ${thread} exists` };
 }
 
+const NOTIFIED = /<task-notification>[\s\S]*?<tool-use-id>([^<]+)<\/tool-use-id>/gu;
+const OUTPUT_FILE = /Output is being written to: (\S+?)\.?(?:\s|$)/u;
+const EXIT_LINE = /(?:^|\n)\[(?:exited with code -?\d+|killed)\]\n?$/u;
+
+function noticesOf(record) {
+  if (record.type === 'attachment' && record.attachment?.commandMode === 'task-notification') return [record.attachment.prompt];
+  if (record.type === 'queue-operation') return [record.content];
+  if (record.type !== 'user') return [];
+  const content = record.message?.content;
+  return Array.isArray(content) ? content.map((block) => block.text) : [content];
+}
+
 // Claude Code appends a message's tool calls to the transcript once the whole
 // message is written, which can be seconds after the first of them starts, and
-// each call's result once that call ends.
+// each call's result once that call ends. A background call's result comes as
+// soon as it starts, and the task notification that names it comes when it ends,
+// as a user message, a queued-command attachment or a queue operation.
 function openClaudeCalls(transcripts) {
   return transcripts.flatMap(({ transcript, text }) => {
     const open = new Map();
     for (const record of text.split('\n').map(parse).filter(Boolean)) {
-      const blocks = Array.isArray(record.message?.content) ? record.message.content : [];
-      for (const block of blocks) {
-        if (record.type === 'assistant' && block.type === 'tool_use' && block.name === 'Bash') open.set(block.id, { record, command: block.input?.command });
-        if (record.type === 'user' && block.type === 'tool_result') open.delete(block.tool_use_id);
+      for (const notice of noticesOf(record).filter((part) => typeof part === 'string')) {
+        for (const [, id] of notice.matchAll(NOTIFIED)) open.delete(id);
+      }
+      const content = record.message?.content;
+      for (const block of Array.isArray(content) ? content : []) {
+        if (record.type === 'assistant' && block.type === 'tool_use' && block.name === 'Bash') open.set(block.id, { record, command: block.input?.command, background: block.input?.run_in_background === true, output: null });
+        if (record.type !== 'user' || block.type !== 'tool_result' || !open.has(block.tool_use_id)) continue;
+        const call = open.get(block.tool_use_id);
+        if (block.is_error || !call.background) open.delete(block.tool_use_id);
+        else call.output = OUTPUT_FILE.exec(typeof block.content === 'string' ? block.content : '')?.[1] ?? null;
       }
     }
-    return [...open.values()].map(({ record, command }) => ({ runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp, transcript, command }));
+    return [...open.values()].map(({ record, command, output }) => ({ runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp, transcript, command, output }));
   });
+}
+
+// TaskStop ends a background call with no notification, so the exit line
+// Claude Code appends to the call's output file ends it too.
+function outputEnded(path) {
+  if (!existsSync(path)) return true;
+  const fd = openSync(path, 'r');
+  try {
+    const { size } = fstatSync(fd);
+    const buffer = Buffer.alloc(Math.min(size, 64));
+    readSync(fd, buffer, 0, buffer.length, size - buffer.length);
+    return EXIT_LINE.test(buffer.toString('utf8'));
+  } finally {
+    closeSync(fd);
+  }
 }
 
 // macOS ps prints argv through vis(3) with VIS_TAB | VIS_NL | VIS_NOSLASH: a
@@ -186,7 +221,8 @@ const shownAs = (recorded) => {
   return shownForms.get(recorded);
 };
 
-const runningCalls = (calls, command) => (command === null ? calls : calls.filter((call) => typeof call.command === 'string' && shownAs(call.command).some((shown) => ranAs(shown, command))));
+const runningCalls = (calls, command) =>
+  calls.filter((call) => !(call.output && outputEnded(call.output)) && (command === null || (typeof call.command === 'string' && shownAs(call.command).some((shown) => ranAs(shown, command)))));
 
 function claudeVerdict(found, command) {
   if (found.length === 0) return { miss: command === null ? 'no Bash call is open in the session transcripts' : 'no open Bash call in the session transcripts runs this command' };

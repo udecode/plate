@@ -33,7 +33,6 @@ import {
 } from '@/registry/components/editor/floating-popover';
 
 const codeBlockLanguages: Array<{ label: string; value: string }> = [
-  { label: 'Auto', value: 'auto' },
   { label: 'Plain Text', value: 'plaintext' },
   { label: 'ABAP', value: 'abap' },
   { label: 'Agda', value: 'agda' },

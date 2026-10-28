@@ -8,6 +8,7 @@ import type { DraftStep } from './change/builder';
 import type { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import type { CommandProjection } from './command-document';
+import type { CompositionStamp } from './composition-stamp';
 import { getEditorRuntimeOwner } from './editor-runtime';
 
 /**
@@ -28,6 +29,8 @@ export type EditorDocumentRecorder = (
     bookmarks: ReadonlyArray<Readonly<{ root: string; selection: Selection }>>;
     /** From `before`, or in a command frame from the projected document. */
     change: DocumentChange;
+    /** The composition commit a command frame carries. */
+    composition?: CompositionStamp | null;
     /**
      * The projection of `before` a command frame's commands wrote the steps
      * on, which hides content they never saw.

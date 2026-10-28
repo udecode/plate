@@ -366,6 +366,8 @@ export type CompiledSchemaProperty = Readonly<{
     landing?: Exclude<SchemaPropertyLandingPolicy, 'preserve'>;
     split: 'drop' | 'preserve';
     typeChange: 'drop' | 'preserve-if-allowed';
+    /** Present only when declared, so a schema without it keeps its fingerprint. */
+    unique?: true;
   }>;
   merge: CompiledSchemaPropertyMergeStrategy;
   owner: string;
@@ -1190,6 +1192,7 @@ const collectSchemaKeyDiagnostics = (
                   'split',
                   'target',
                   'typeChange',
+                  'unique',
                   'value',
                 ],
             pluginName,
@@ -1860,7 +1863,7 @@ const prepareEditorSchemaRecords = (
             landing: 'preserve' as const,
             placement: 'element' as const,
             role: 'content' as const,
-            split: 'preserve' as const,
+            split: defaultSplitOf(preparedDescriptor),
             target: finalTarget,
             typeChange: 'drop' as const,
             value: preparedDescriptor,
@@ -3629,6 +3632,14 @@ const assertPropertyAgreesAcrossPlaces = (
           right.source.path
         );
       }
+      if (left.lifecycle.unique || right.lifecycle.unique) {
+        compileFailure(
+          'property-unique-declared-twice',
+          `Schema ${label} is unique, so it takes one declaration, but ${left.source.path} from "${left.owner}" and ${right.source.path} from "${right.owner}" both declare it.`,
+          [left.source, right.source],
+          right.source.path
+        );
+      }
       if (
         (left.exclusiveGroupIds.length > 0 ||
           right.exclusiveGroupIds.length > 0) &&
@@ -4396,9 +4407,13 @@ const compileEditorSchemaInternal = (
     key: SchemaPropertyKey,
     placement: 'element' | 'text',
     target: SchemaTarget | null,
-    lifecycle: Omit<CompiledSchemaProperty['lifecycle'], 'copy' | 'landing'> & {
+    lifecycle: Omit<
+      CompiledSchemaProperty['lifecycle'],
+      'copy' | 'landing' | 'unique'
+    > & {
       copy?: unknown;
       landing?: unknown;
+      unique?: unknown;
     },
     source: Source<SchemaProperty | PropertyValueDescriptor>,
     exclusiveGroupIds: readonly string[] = []
@@ -4459,6 +4474,30 @@ const compileEditorSchemaInternal = (
       );
     }
 
+    const { unique } = lifecycle;
+    const uniqueRefusal =
+      unique === undefined
+        ? null
+        : uniqueRefusalOf({
+            copy,
+            key: clonedKey,
+            landing: rawLanding,
+            role,
+            split: lifecycle.split,
+            typeChange: lifecycle.typeChange,
+            unique,
+            value: descriptor,
+          });
+
+    if (uniqueRefusal) {
+      compileFailure(
+        'invalid-property-unique',
+        `Schema property at ${source.path} ${uniqueRefusal}.`,
+        [source],
+        source.path
+      );
+    }
+
     mutableProperties.push({
       descriptor,
       exclusiveGroupIds: Object.freeze(
@@ -4475,6 +4514,7 @@ const compileEditorSchemaInternal = (
           : {}),
         split: lifecycle.split,
         typeChange: lifecycle.typeChange,
+        ...(unique === undefined ? {} : { unique: true as const }),
       }),
       merge: descriptor.kind === 'set' ? 'set' : 'replace',
       owner: source.pluginName,
@@ -4504,7 +4544,7 @@ const compileEditorSchemaInternal = (
         Object.freeze({
           copy: 'preserve',
           inclusive: null,
-          split: 'preserve',
+          split: defaultSplitOf(descriptor),
           typeChange: 'drop',
         }),
         source
@@ -4544,6 +4584,9 @@ const compileEditorSchemaInternal = (
             landing: property.landing,
             split: property.split,
             typeChange: property.typeChange,
+            ...(Object.hasOwn(property, 'unique')
+              ? { unique: property.unique }
+              : {}),
           }),
           source
         );
@@ -5158,6 +5201,21 @@ const compileEditorSchemaInternal = (
     wrapperPlans: freezeMap(wrapperPlans),
   });
 
+  for (const property of mutableProperties) {
+    const refusal = property.lifecycle.unique
+      ? retypeDropOf({ elements, unknown: unknownPolicy }, property)
+      : null;
+
+    if (refusal) {
+      compileFailure(
+        'invalid-property-unique',
+        `Schema property at ${property.source.path} unique needs ${refusal}.`,
+        [property.source],
+        property.source.path
+      );
+    }
+  }
+
   return Object.freeze({
     diagnostics: Object.freeze([]),
     elements,
@@ -5609,27 +5667,265 @@ export type EditorSchemaContract = Readonly<{
   revision: number;
   roots: readonly EditorSchemaContractRoot[];
   /**
-   * Present when a property leaves its default out of storage. Revision 1
-   * stores every written value, even one equal to its default, so a contract
-   * without it describes an editor that dropped such writes.
+   * Present when a property leaves its default out of storage, or a write
+   * stores the generated element values its pending changes can need.
+   * Revision 1 stores every written value, even one equal to its default, so
+   * a contract without it describes an editor that dropped such writes.
+   * Revision 2 also stores spare blocks, which an older editor would build
+   * with values of its own making.
    */
-  storageRevision?: typeof EDITOR_SCHEMA_STORAGE_REVISION;
+  storageRevision?: 1 | 2;
   unknown: EditorSchemaUnknownPolicy;
   vocabulary: CompiledSchemaVocabulary;
 }>;
 
-const EDITOR_SCHEMA_STORAGE_REVISION = 1;
+/**
+ * The split policy of an element property whose declaration names none, so a
+ * split never copies a generated value onto its second half.
+ */
+export const defaultSplitOf = (descriptor: PropertyValueDescriptor) =>
+  descriptor.generate ? ('drop' as const) : ('preserve' as const);
 
-const storageRevisionOf = (
-  properties: Iterable<StructuralCompiledSchemaProperty>
+/** Whether `target` holds wherever a node of its types stands. */
+export const isPlaceFreeTarget = (target: SchemaTarget | null): boolean => {
+  if (!target) return true;
+
+  switch (target.kind) {
+    case 'parent':
+    case 'root': {
+      return false;
+    }
+    case 'not': {
+      return isPlaceFreeTarget(target.target);
+    }
+    case 'and':
+    case 'or': {
+      return target.targets.every(isPlaceFreeTarget);
+    }
+    default: {
+      return true;
+    }
+  }
+};
+
+/**
+ * Whether a write can store the value `property` generates for the blocks a
+ * pending change can need: an element property with an exact key, a value
+ * other than a set, a target that reads neither its parent nor the root, and
+ * no content role, since a rejected split compares content values, which an
+ * `as` member would hide.
+ */
+export const isSupportedGeneratedElementProperty = (
+  property: CompiledSchemaProperty | StructuralCompiledSchemaProperty
+) =>
+  property.placement === 'element' &&
+  (('generated' in property.descriptor &&
+    property.descriptor.generated === true) ||
+    ('generate' in property.descriptor &&
+      typeof property.descriptor.generate === 'function')) &&
+  typeof property.key === 'string' &&
+  property.descriptor.kind !== 'set' &&
+  isPlaceFreeTarget(property.target) &&
+  property.role !== 'content';
+
+export const uniqueRefusalOf = (
+  declaration: Readonly<{
+    copy: unknown;
+    key: SchemaPropertyKey;
+    landing: unknown;
+    role: unknown;
+    split: unknown;
+    typeChange: unknown;
+    unique: unknown;
+    value: PropertyValueDescriptor;
+  }>
 ) => {
-  for (const property of properties) {
-    if (property.descriptor.omitDefault) {
-      return { storageRevision: EDITOR_SCHEMA_STORAGE_REVISION } as const;
+  if (declaration.unique !== true) return 'unique must be true';
+  if (typeof declaration.value.generate !== 'function') {
+    return 'unique needs a generator';
+  }
+  if (declaration.value.kind === 'set') return 'unique cannot hold a set';
+  if (typeof declaration.key !== 'string') return 'unique needs an exact key';
+  if (declaration.copy !== 'drop') return 'unique requires copy: drop';
+  if (declaration.split !== 'drop') return 'unique requires split: drop';
+  if (declaration.landing !== 'preserve') {
+    return 'unique requires landing: preserve';
+  }
+  if (declaration.typeChange !== 'preserve-if-allowed') {
+    return 'unique requires typeChange: preserve-if-allowed';
+  }
+  if (declaration.role !== 'metadata') return 'unique requires role: metadata';
+
+  return null;
+};
+
+const contentPlaceOf = (programId: string) => {
+  const [kind, type, slot] = programId.split(':');
+
+  if (kind === 'root') return type ? `root "${type}"` : 'the root';
+  if (kind === 'contentRoot') return `content root "${slot}" of "${type}"`;
+
+  return `element "${type}"`;
+};
+
+/**
+ * The requirement `property` misses, which lets a retype drop its value, or
+ * null when it meets them all: metadata under an exact key whose target holds
+ * wherever its types stand and on every type that can take a held type's
+ * place. A retype keeps a node's place, so each content, a root's included,
+ * that admits a held type admits only held types, counting an undeclared type
+ * wherever the schema preserves one, and an undeclared element admits every
+ * type.
+ */
+const retypeDropOf = (
+  schema: Pick<CompiledEditorSchema, 'elements' | 'unknown'>,
+  property: Pick<
+    CompiledSchemaProperty,
+    'key' | 'placement' | 'role' | 'target'
+  >
+) => {
+  if (
+    property.placement !== 'element' ||
+    property.role !== 'metadata' ||
+    typeof property.key !== 'string'
+  ) {
+    return 'element metadata under an exact key';
+  }
+  if (!isPlaceFreeTarget(property.target)) {
+    return 'a target that holds wherever its types stand';
+  }
+
+  const holds = (type: string) =>
+    matchesCompiledSchemaTarget(schema, property.target, { root: null, type });
+  const preserves = schema.unknown === 'preserve';
+  const places = [...schema.elements.contentPrograms].map(
+    ([programId, program]) =>
+      [
+        contentPlaceOf(programId),
+        [
+          ...program.allowedElementTypes,
+          ...(preserves && program.allowsUnknownElements ? [UNKNOWN_TYPE] : []),
+        ],
+      ] as const
+  );
+
+  if (places.some(([, types]) => types.includes(UNKNOWN_TYPE))) {
+    places.push([
+      'an undeclared element',
+      [...schema.elements.byType.keys(), UNKNOWN_TYPE],
+    ]);
+  }
+  for (const [place, types] of places) {
+    const held = types.find(holds);
+    const missed = types.find((type) => !holds(type));
+
+    if (held !== undefined && missed !== undefined) {
+      return `a target that holds on every type that can take a held type's place, but ${place} admits "${held}" and ${
+        missed === UNKNOWN_TYPE ? 'an undeclared type' : `"${missed}"`
+      }`;
     }
   }
 
-  return {};
+  return null;
+};
+
+const SPLIT_KEYS = new WeakMap<
+  CompiledEditorSchema,
+  Readonly<{ dropped: ReadonlySet<string>; handover: ReadonlySet<string> }>
+>();
+
+const splitKeysOf = (schema: CompiledEditorSchema) => {
+  let keys = SPLIT_KEYS.get(schema);
+
+  if (!keys) {
+    const declarations = new Map<string, CompiledSchemaProperty[]>();
+
+    for (const property of schema.properties.byId.values()) {
+      if (typeof property.key !== 'string') continue;
+      declarations.set(property.key, [
+        ...(declarations.get(property.key) ?? []),
+        property,
+      ]);
+    }
+
+    const dropped = [...declarations].filter(([, properties]) =>
+      properties.every(
+        (property) =>
+          property.placement === 'element' &&
+          property.lifecycle.split === 'drop'
+      )
+    );
+
+    keys = {
+      dropped: new Set(dropped.map(([key]) => key)),
+      handover: new Set(
+        dropped.flatMap(([key, properties]) =>
+          properties.every((property) => !retypeDropOf(schema, property))
+            ? [key]
+            : []
+        )
+      ),
+    };
+    SPLIT_KEYS.set(schema, keys);
+  }
+
+  return keys;
+};
+
+/**
+ * Element keys a split leaves off its second half, such as Plate's block id,
+ * which generates there instead: every declaration of the key drops it on
+ * split, content keys included. Two lines of a split always differ on them,
+ * so comparing an emptied line with a split line ignores every one.
+ */
+export const splitDroppedKeysOf = (schema: CompiledEditorSchema) =>
+  splitKeysOf(schema).dropped;
+
+/**
+ * Those of {@link splitDroppedKeysOf} no retype can drop, so a line can take
+ * their values from the line whose place it takes. Only element metadata
+ * passes, so no content value moves.
+ */
+export const handoverKeysOf = (schema: CompiledEditorSchema) =>
+  splitKeysOf(schema).handover;
+
+const UNIQUE_PROPERTIES = new WeakMap<
+  CompiledEditorSchema,
+  ReadonlyMap<string, CompiledSchemaProperty>
+>();
+
+export const uniquePropertiesOf = (schema: CompiledEditorSchema) => {
+  let byKey = UNIQUE_PROPERTIES.get(schema);
+
+  if (!byKey) {
+    byKey = new Map(
+      [...schema.properties.byId.values()].flatMap((property) =>
+        property.lifecycle.unique && typeof property.key === 'string'
+          ? [[property.key, property] as const]
+          : []
+      )
+    );
+    UNIQUE_PROPERTIES.set(schema, byKey);
+  }
+
+  return byKey;
+};
+
+const storageRevisionOf = (
+  properties: Iterable<
+    CompiledSchemaProperty | StructuralCompiledSchemaProperty
+  >
+) => {
+  let revision: 1 | 2 | undefined;
+
+  for (const property of properties) {
+    if (isSupportedGeneratedElementProperty(property)) {
+      return { storageRevision: 2 } as const;
+    }
+    if (property.descriptor.omitDefault) revision = 1;
+  }
+
+  return revision === undefined ? {} : { storageRevision: revision };
 };
 
 export type EditorSchemaContractChangeKind =
@@ -6075,6 +6371,9 @@ const isContractDescriptor = (
 const isContractLanding = (value: unknown) =>
   value === undefined || value === 'adopt' || value === 'rebase';
 
+const isContractUnique = (value: unknown) =>
+  value === undefined || value === true;
+
 const isContractProperty = (value: unknown) =>
   isRecord(value) &&
   isContractDescriptor(value.descriptor) &&
@@ -6092,6 +6391,7 @@ const isContractProperty = (value: unknown) =>
   (value.lifecycle.split === 'drop' || value.lifecycle.split === 'preserve') &&
   (value.lifecycle.typeChange === 'drop' ||
     value.lifecycle.typeChange === 'preserve-if-allowed') &&
+  isContractUnique(value.lifecycle.unique) &&
   (value.merge === 'replace' || value.merge === 'set') &&
   typeof value.owner === 'string' &&
   (value.placement === 'element' || value.placement === 'text') &&
@@ -6115,7 +6415,8 @@ const isContractLifecycle = (value: unknown) =>
   (value.inclusive === null || typeof value.inclusive === 'boolean') &&
   isContractLanding(value.landing) &&
   (value.split === 'drop' || value.split === 'preserve') &&
-  (value.typeChange === 'drop' || value.typeChange === 'preserve-if-allowed');
+  (value.typeChange === 'drop' || value.typeChange === 'preserve-if-allowed') &&
+  isContractUnique(value.unique);
 
 const isContractVocabulary = (value: unknown) =>
   isRecord(value) &&
@@ -6165,7 +6466,8 @@ const isEditorSchemaContractShape = (value: Record<string, unknown>) => {
     Array.isArray(value.roots) &&
     value.roots.every(isContractRoot) &&
     (value.storageRevision === undefined ||
-      value.storageRevision === EDITOR_SCHEMA_STORAGE_REVISION) &&
+      value.storageRevision === 1 ||
+      value.storageRevision === 2) &&
     isContractVocabulary(value.vocabulary)
   );
 };
@@ -6635,6 +6937,7 @@ export const diffEditorSchemaContracts = (
   if (previous.storageRevision !== next.storageRevision) {
     const leftNothingOut =
       previous.storageRevision === undefined &&
+      next.storageRevision === 1 &&
       !previous.properties.byId.some(
         ({ descriptor }) => descriptor.omitDefault
       );

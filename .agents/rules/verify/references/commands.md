@@ -120,6 +120,8 @@ Rules:
   - the Plite runner's `reused N passed … from a matching complete proof`: set
     `PLITE_BROWSER_FORCE_PROOF=1`;
   - turbo's `Cached: N cached, M total`: set `TURBO_FORCE=true`;
+  - `pnpm check`'s `skip <step>: passed …` and `pnpm lint:task`'s
+    `Lint passed …, so it did not run again`: set `TURBO_FORCE=true`;
   - a benchmark probe that prints no frozen lines and only a receipt: pass the
     frozen lines, as Benchmark's pre-acceptance step 4 requires;
 - an independent integration runner that resolves workspace `dist` must build
@@ -290,8 +292,14 @@ about twelve minutes:
 Run `node tooling/scripts/proof-worktree.mjs <path> <sha>`. It adds a detached
 worktree at the base, links this checkout's root and workspace `node_modules`
 and copies each package's untracked `.env` files, as `AGENTS.md`'s Git rule
-says. It exits 1 when the new worktree's status shows anything besides those
-links. Remove it with `git worktree remove --force <path>` when the run ends.
+says. In a split clone it also attaches the private half, the way a session's
+start hook does, at the private commit that pairs with the base, and prints it
+as `private:`. It exits 1 when either half's status shows anything besides
+those links. Remove it with `git worktree remove --force <path>` when the run
+ends. That removal leaves the worktree's private record behind. Before it,
+read the worktree's `.git-private` file, which names the record's folder under
+the main checkout's `.git-private/worktrees/`, and delete that folder after it.
+A run with `-- <command>` removes both.
 A package's own `node_modules` links its workspace siblings by relative path.
 Through that link, a sibling import outside the TypeScript path aliases
 resolves to this checkout's source, so a base proof that must run a sibling at
@@ -312,6 +320,23 @@ server from a second one with `--install --with <changed file>`. Run the case
 with `--repeat-each=3` on each server, alternating, for two rounds. A case
 that also fails on the fresh base is pre-existing, and it gets a suggested
 task, as the block's Suggested tasks rule says.
+
+A timing loop must measure the candidate's bytes, so it uses these commands
+instead of copying files by hand:
+
+- `--from <checkout>` copies that checkout's uncommitted changes in both halves
+  into the new worktree, including edited, deleted and new files and new
+  private test files. The helper prints `candidate:` and the worktree's `hash`. Make the
+  worktree at the source's `HEAD` so that only those changes differ.
+- `sync <path> --from <checkout>` refreshes a worktree after the source
+  changes. It copies each file the source changes and puts back each file the
+  worktree changed that the source no longer does, so a repeated sync leaves
+  the same bytes. It refuses a worktree on a branch, whose own work it would
+  revert.
+- `hash <path>` prints one content hash over both halves' tracked and new
+  files. `hash <path> --same-as <checkout>` exits 1 and names the differing
+  files unless both checkouts hold the same bytes; run it right before each
+  measurement. One call takes about a second on this clone.
 
 The helper has four modes for these cases:
 

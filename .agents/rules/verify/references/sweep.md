@@ -7,7 +7,7 @@ A sweep is a series of rounds over beta's pages. In each round agents test every
 The sweep has two roles, and the proof subject, `docs/plans/topics/proof.md`, names who holds each.
 
 - **The tester** runs the rounds: the page list, the sessions and retests, the rechecks, Triage a domain with its publishing, closing each issue once its recheck passes on a beta build that serves its fix, or its recheck left the hand list as Rechecks says, and `maintainer`'s proof gates hold, Preparing round N and the verification-skill pass After a round.
-- **The fixer** runs Fix a domain and babysits each fix run until it lands. The fixer also keeps the formal checks, through `/pstack:create-formal-verification-skill` and `/pstack:maintain-formal-verification-skill`, and runs the `/pstack:correct` passes this reference calls for.
+- **The fixer** runs Fix a domain and babysits each fix run until it lands. The fixer also keeps the formal checks, through `/pstack:create-formal-verification-skill` and `/pstack:maintain-formal-verification-skill`, and runs the `/pstack:correct` passes the Triage playbook's Why tests missed it calls for.
 
 The roles meet at one handoff. Triage a domain ends by offering the domain's fix run as one suggested task. `setup.mjs` syncs the ledger between clones through `refs/pstack/ledger`, and the fixer's `/chips all` takes the task over and cards it, as chips.md's Owner says.
 
@@ -19,7 +19,7 @@ The roles meet at one handoff. Triage a domain ends by offering the domain's fix
 - R2 is each Plate docs page with a live demo, each example page no docs page shows and the playground, beside the same page on platejs.org.
 - R3 is every other Plite example, hidden and experimental ones included. It has no reference page.
 - R4 is a Plate page only beta has.
-- R5 is the gaps against other editors, in the areas the round plan names. Its sessions produce proposals for `verdict`, not bugs.
+- R5 is the gaps against other editors, in the areas the round plan names. Its sessions produce proposals for `verdict`, not bugs. An R5 session loads `research` with the comparison the round plan names as its question, inside the session's time budget. It writes what it learns about one editor to that editor's area page and a comparison across editors to the matching `editor-architecture/` page, each as a `docs-packet`, as research's Promotion and `docs/research/sources/README.md` say, and leaves a question the sources do not settle as an open question on that page. Each gap between Plate and the other editor is a find, not a `decide` task or an Open work item, and Triage a domain sends it to `verdict`.
 - A page whose platejs.org twin the script cannot settle prints as unresolved and keeps the round open until the script's `STABLE_TWINS` names its twin or its `BETA_ONLY` lists it as a page only beta has.
 
 Without `--list`, the script opens every docs and example route on beta in Chromium, Firefox and WebKit and prints each page error, rendered Not Found, failed status and missing editor. Run it at the start of every round.
@@ -61,32 +61,13 @@ A find note is one line, `mm:ss browser: what differed`, written during the sess
 
 A domain is the review scope whose owners or members hold the page's demo, as the review ledger maps it, and the round plan names each page's domain. Triage a domain once every page of it has its session, or a session logged blocked with its reason, and every find of it its retest. A blocked session runs again in the next round. Nothing from a domain is filed before its triage, because two finds with one cause belong in one issue.
 
-1. Save the round record's export for the domain in the round's run folder. Gather the domain's finds marked bug and its open issues labeled `target:beta`. A find the retest sent as a spec question goes to `verdict`, like an R5 gap.
-2. Group them into failure kinds. A kind is one wrong result that one fix removes, as the Bug fix playbook's Redesign runs define it. Trace each kind to the code that owns it, with its `path:line`, and label the cause read or inferred. A kind whose owner sits outside the domain, such as Plite's input handling under a mark toggle, joins the owner's domain.
-3. Give each kind every miss class from the next section that applies, and the cheapest test layer that would have failed on it.
-4. Draft one issue per kind with `maintainer`'s issue-draft, each member find a numbered repro with its clip. When an open issue already covers the kind, the draft adds the new members to that issue instead. The tester publishes, and closes any other open issue of the kind as a duplicate of the kind's issue. An agent publishes or closes an issue only when the tester's request names that action, as `AGENTS.md`'s Messages rule says.
-5. Write the triage in the round plan, one row per kind: its issue, members, owner, miss classes, what each class adds, and its priority by chips.md's Priority.
-6. Once the tester has published the domain's issues, offer its fix run as one suggested task through the `chips` skill's Offer mode. The task's priority is its worst kind's, its `repro:` names the issues, whose numbered repros hold the exact steps, its `writes:` names the owner files from step 2, and its `session:` names the tester's session where the runtime's session tool gives one. When step 2 traced every kind to its owner, the task runs at `high`, and otherwise its title ends in `(xhigh)`, as chips.md's Title rule says. When an open task builds the check a kind needs, the domain task waits on it. A domain whose kinds are all P2 or P3 gets no task, and the round plan's Open work lists it with the fixer as its owner. The tester's session never cards the task, as `AGENTS.md`'s Sweep handoff says, and runs `node .agents/pstack/setup.mjs` from the main checkout after the offer, which pushes the ledger to `refs/pstack/ledger` at once. The fixer's `/chips all` takes the task over, because the tester's sessions never appear in the fixer's session list.
-
-## Why tests missed it
-
-The class decides what the domain's fix run adds besides the fix.
-
-| Class | What happened | What closes it |
-| --- | --- | --- |
-| M1 no test | Nothing at any layer runs the behavior | The fix's test at the lowest layer that sees the bug, and a row in the feature's scenario catalog, so the next agent pass drives it |
-| M2 wrong layer | A model or unit test passes, and the bug lives in DOM, event or browser handling | A Plite browser test, or a Plate browser test in `apps/www/tests/browser/regressions/` |
-| M3 wrong assertion | A test runs the path but checks something else, or expects the bug | The test fixed to assert what users see, and `test-audit` on the area when it holds more tests like it |
-| M4 engine gap | Only Firefox, Safari or iOS shows it, and no gated test runs there | A test gated in that engine; until a lane runs it, its recheck stays in that browser |
-| M5 wiring gap | The tested setup differs from what the shipped kit or demo installs | A check over the shipped kits or demos, through `/pstack:correct` |
-| M6 composition gap | Each feature is tested alone, and the bug needs two together | A generated check over the combinations. For a rule set or state machine whose bug shows without a browser, a formal check through `/pstack:create-formal-verification-skill`, as its own small skill |
-| M7 spec gap | No law says what should happen | A row in `docs/editor-behavior/markdown-editing-spec.md` first, then the test |
-
-When two kinds, in one round or across rounds, missed for the same reason, such as two tests marked expected to fail, the fixer runs `/pstack:correct` on that reason. It encodes the reason as architecture, a type, a lint or a test before any rule text.
+1. Save the round record's export for the domain in the round's run folder. Gather the domain's finds marked bug and its open issues on the `v54` milestone. A find the retest sent as a spec question goes to `verdict`, like an R5 gap.
+2. Triage them by the [Triage playbook](../../../playbooks/triage.md)'s Sweep domains: their failure kinds, each kind's owner with its `path:line`, its miss classes from that playbook's [Why tests missed it](../../../playbooks/triage.md#why-tests-missed-it) with the cheapest test layer that would have failed on it, its priority by chips.md's Priority, and one drafted issue per kind. The tester publishes the drafts, and each published issue gets its triage record.
+3. Once the tester has published the domain's issues, offer its fix run as one suggested task, as the Triage playbook's [Offer fix runs](../../../playbooks/triage.md#offer-fix-runs) says. The task's `session:` names the tester's session where the runtime's session tool gives one. A domain whose kinds are all P2 or P3 goes in the round plan's Open work with the fixer as its owner. The tester's session never cards the task, as `AGENTS.md`'s Sweep handoff says, and runs `node .agents/pstack/setup.mjs` from the main checkout after the offer, which pushes the ledger to `refs/pstack/ledger` at once. The fixer's `/chips all` takes the task over, because the tester's sessions never appear in the fixer's session list.
 
 ## Fix a domain
 
-A triaged domain gets one Bug fix run over all its kinds, never one issue at a time, so the run sees every kind its owner shares. Two or more kinds with one owner make it a redesign run, as that playbook's Redesign runs say, and the triage rows seed its expected-results table. Each test carries the `[plate#N]` tag of every issue it checks in full, or whose one numbered repro it checks in full, as the Bug fix playbook says. Before it closes, the run adds what each kind's miss classes call for. The exception is an M6 check the tree lacks, which the run builds before the fix, so it tests the fix against that check. When it changes code a formal check covers, it follows that check's own skill, such as `authored-decision-order`. The fixer takes domains by priority, P0 first, and between two domains of one priority, the one with a bug on the lower tier first. A domain's fix may start while other domains are still in sessions. R5 gaps go to `verdict` as proposals.
+The fixer runs each triaged domain's fix run, `triage fix <domain>`, as the Triage playbook's [Fix](../../../playbooks/triage.md#fix) says. The fixer takes domains by priority, P0 first, and between two domains of one priority, the one with a bug on the lower tier first. A domain's fix may start while other domains are still in sessions. R5 gaps go to `verdict` as proposals.
 
 ## Rechecks
 

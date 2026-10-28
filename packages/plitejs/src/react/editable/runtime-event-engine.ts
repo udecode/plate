@@ -11,13 +11,17 @@ import type {
   EditableDOMBeforeInputHandler,
   EditableKeyDownHandler,
 } from '../components/editable';
+import type { EditableCompositionLeaseBinding } from './composition-state';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import type { EditableRepairRequest } from './mutation-controller';
 import { useRuntimeBeforeInputEvents } from './runtime-before-input-events';
 import { useRuntimeBrowserHandle } from './runtime-browser-handle-events';
 import { useRuntimeClipboardEvents } from './runtime-clipboard-events';
-import { useRuntimeCompositionEvents } from './runtime-composition-events';
+import {
+  useEditableCompositionLease,
+  useRuntimeCompositionEvents,
+} from './runtime-composition-events';
 import { useRuntimeDragEvents } from './runtime-drag-events';
 import { useRuntimeFocusMouseEvents } from './runtime-focus-mouse-events';
 import { useRuntimeInputEvents } from './runtime-input-events';
@@ -77,6 +81,7 @@ export type EditableEventRuntimeCore = {
     managerRef: EditableDOMRuntime['androidInputManagerRef'];
   };
   composition: {
+    lease: EditableCompositionLeaseBinding;
     setComposing: (nextValue: boolean) => void;
   };
   repair: EditableRepairRuntime;
@@ -129,6 +134,7 @@ export const useEditableEventRuntime = ({
     rootRef,
     state,
   } = runtime;
+  const compositionLease = useEditableCompositionLease({ editor, runtime });
   const eventCore = useMemo(
     () =>
       ({
@@ -136,13 +142,21 @@ export const useEditableEventRuntime = ({
           managerRef: androidInputManagerRef,
         },
         composition: {
+          lease: compositionLease,
           setComposing: runtime.setComposing,
         },
         repair,
         selection,
         trace,
       }) satisfies EditableEventRuntimeCore,
-    [androidInputManagerRef, repair, runtime.setComposing, selection, trace]
+    [
+      androidInputManagerRef,
+      compositionLease,
+      repair,
+      runtime.setComposing,
+      selection,
+      trace,
+    ]
   );
   const cancelNativeSelectionImportRef = useRef<(() => void) | null>(null);
   const cancelNativeSelectionImport = useCallback(() => {
@@ -261,6 +275,7 @@ export const useEditableEventRuntime = ({
   const compositionHandlers = useRuntimeCompositionEvents({
     editor,
     inputController,
+    lease: eventCore.composition.lease,
     onCompositionEnd: callbacks.onCompositionEnd,
     onCompositionStart: callbacks.onCompositionStart,
     onCompositionUpdate: callbacks.onCompositionUpdate,

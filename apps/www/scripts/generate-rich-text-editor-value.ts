@@ -88,9 +88,8 @@ const threads = richTextEditorComments.threads.map((thread) =>
 
 const anchor = editor.anchor(
   {
-    anchor: { path: [3, 1, 0], offset: 0 },
-    // An empty text follows the inline link, so the added text is fourth.
-    focus: { path: [3, 3], offset: ' like this added text'.length },
+    anchor: { path: [3, 6, 0], offset: 0 },
+    focus: { path: [3, 7], offset: ' on many text segments'.length },
   },
   { association: 'inward', deletion: 'nearest' }
 );

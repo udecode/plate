@@ -85,6 +85,9 @@ type VerdictRead = 'accept' | 'reject' | null;
 
 const namedBy = (node: unknown, facts: ReviewFacts, named: Set<string>) => {
   for (const member of readMembers(node)) {
+    // A spare's change is pending through the claim the spare serves, and
+    // shown values belong to no change.
+    if (member.kind === 'reserve' || member.kind === 'as') continue;
     if (member.kind === 'in') {
       for (const inner of membersOf(facts, member.ctx)) {
         named.add(incarnationOf(inner));

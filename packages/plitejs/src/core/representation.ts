@@ -38,6 +38,7 @@ import {
   admitsEmptyText,
   canonicalizeContentChildren,
   canonicalizeInlineChildren,
+  type ConstructionTake,
   type ContentCompletion,
   type ContentCompletionSchema,
   completeContent,
@@ -142,15 +143,24 @@ export const carriedHook =
 
 /**
  * `site` is the completed element and its ancestors, nearest first, or empty
- * at a root.
+ * at a root. `take` gives a stored element for a build, which it then skips,
+ * and the slot's construction properties apply over it as over a built one.
  */
 const completionSchemaAt = (
   schema: RepresentationSchema,
   site: readonly Element[],
-  root: string
+  root: string,
+  take?: ConstructionTake
 ): ContentCompletionSchema => ({
-  create: (type, properties) =>
-    schema.createAt(type, properties, { ancestors: site, root }),
+  create: (type, properties, slot) => {
+    const taken = take?.(type, slot);
+
+    if (!taken) {
+      return schema.createAt(type, properties, { ancestors: site, root });
+    }
+
+    return properties ? { ...taken, ...properties } : taken;
+  },
   fitsPrefix: (child, slot) =>
     schema.canContainAt(site[0] ?? null, child, slot, root),
   isInline: schema.isInline,
@@ -188,6 +198,7 @@ const completeAt = (
     flattenInto?: Element;
     preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
     report?: RepresentationRepairSink;
+    take?: ConstructionTake;
   }>
 ) =>
   completeContent({
@@ -201,7 +212,7 @@ const completeAt = (
         : children,
     content,
     element: site.length > 0,
-    schema: completionSchemaAt(schema, site, root),
+    schema: completionSchemaAt(schema, site, root, options.take),
   });
 
 /**
@@ -221,7 +232,8 @@ export type ListPart = Readonly<{ head: boolean; min: number }>;
  * index of `children`, the node before the canonical pass, so a given child
  * the pass rewrote can still be traced. `site` is the element and its
  * ancestors, nearest first, or empty at a root; `vacated` names the prefix
- * slots whose occupant was displaced.
+ * slots whose occupant was displaced; `take` gives a stored element for a
+ * build of the children themselves, which the caller fits to its new place.
  *
  * @internal
  */
@@ -231,7 +243,8 @@ export const completeChildrenAt = (
   children: readonly Descendant[],
   root: string,
   vacated?: (slot: number, candidate: Descendant) => boolean,
-  part?: ListPart
+  part?: ListPart,
+  take?: ConstructionTake
 ): ContentCompletion & Readonly<{ sources: readonly Descendant[] }> => {
   const completion = completeDirectChildren(
     editor,
@@ -241,7 +254,8 @@ export const completeChildrenAt = (
     {},
     site.slice(1),
     vacated,
-    part
+    part,
+    take
   );
   // As the canonical pass does after completion, so an empty text it builds
   // takes the properties its site declares. The pass maps child for child.
@@ -292,7 +306,8 @@ const completeDirectChildren = (
   options: CanonicalizeOptions,
   ancestors: readonly Element[],
   vacated?: (slot: number, candidate: Descendant) => boolean,
-  part?: ListPart
+  part?: ListPart,
+  take?: ConstructionTake
 ): ContentCompletion => {
   const schema = options.schema ?? resolveRepresentationSchema(editor);
   const element = ElementApi.isElement(parent);
@@ -336,7 +351,11 @@ const completeDirectChildren = (
       element ? [parent, ...ancestors] : [],
       children,
       root,
-      { ...runOptions, ...(vacated ? { editing: { vacated } } : {}) }
+      {
+        ...runOptions,
+        ...(vacated ? { editing: { vacated } } : {}),
+        ...(take ? { take } : {}),
+      }
     );
   }
 
@@ -694,6 +713,10 @@ export const mapCanonicalRepresentationPoint = (
   const edgeWidth = options.countInlineEdges ? 1 : 0;
   const beforeChildren = beforeDocument.value as readonly Descendant[];
   const afterChildren = afterDocument.value as readonly Descendant[];
+  const node = getDescendant(beforeChildren, point.path);
+  const startsLetteredText =
+    point.offset === 0 && node && TextApi.isText(node) && node.text !== '';
+  const side = startsLetteredText ? 1 : association;
 
   for (let depth = point.path.length - 1; depth > 0; depth--) {
     const ancestorPath = point.path.slice(0, depth);
@@ -734,7 +757,7 @@ export const mapCanonicalRepresentationPoint = (
       afterChildren,
       mappedAncestor.path,
       textOffset,
-      association,
+      side,
       edgeWidth
     );
 
@@ -1561,7 +1584,7 @@ export const constructCanonicalDocumentChange = (
       : null;
     const move =
       beforeDocument && rootChange
-        ? rootChange.movedNode(beforeDocument)
+        ? rootChange.exactMove(beforeDocument)
         : null;
     const movedNode = move ? document.node(move.targetPath) : undefined;
     const moveParent = move?.path.slice(0, -1);

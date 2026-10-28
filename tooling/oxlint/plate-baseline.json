@@ -211,67 +211,8 @@
     ]
   },
   "plate/no-branded-value": {},
-  "plate/no-existence-only-test": {
-    "apps/www/tests/browser/markdown-streaming-contract.spec.ts": [
-      "test(cell, async ({ baseURL }) => {"
-    ],
-    "packages/plitejs/test/react/surface-contract.tsx": [
-      "test('Editable consumes raw element, leaf, text, and void render props', () => {"
-    ]
-  },
-  "plate/no-fixed-sleep": {
-    "apps/plite/tests/device/bypass.device.ts": ["setTimeout(resolve, 1000);"],
-    "apps/plite/tests/plite-browser/ime-cost.spec.ts": [
-      "await page.waitForTimeout(40);"
-    ],
-    "apps/www/tests/browser/code-block-diagram.spec.ts": [
-      "await page.waitForTimeout(500);"
-    ],
-    "apps/www/tests/browser/dnd.spec.ts": [
-      "await page.waitForTimeout(50);",
-      "await page.waitForTimeout(50);",
-      "await page.waitForTimeout(50);",
-      "await page.waitForTimeout(50);"
-    ],
-    "apps/www/tests/browser/docx.spec.ts": ["await page.waitForTimeout(500);"],
-    "apps/www/tests/browser/link-floating-toolbar.spec.ts": [
-      "await page.waitForTimeout(150);",
-      "await page.waitForTimeout(250);",
-      "await page.waitForTimeout(40);"
-    ],
-    "apps/www/tests/browser/markdown-streaming-contract.spec.ts": [
-      "await page.waitForTimeout(quarter);",
-      "await page.waitForTimeout(quietMs);"
-    ],
-    "apps/www/tests/browser/select-editor.spec.ts": [
-      "await page.waitForTimeout(300);"
-    ],
-    "apps/www/tests/browser/selection-drag-scroll.spec.ts": [
-      "await page.waitForTimeout(100);"
-    ],
-    "apps/www/tests/browser/selection-edge-scroll.spec.ts": [
-      "await page.waitForTimeout(100);",
-      "await page.waitForTimeout(100);",
-      "await page.waitForTimeout(200);",
-      "await page.waitForTimeout(200);",
-      "await page.waitForTimeout(250);",
-      "await page.waitForTimeout(30);",
-      "await page.waitForTimeout(300);"
-    ],
-    "apps/www/tests/browser/suggestion.spec.ts": [
-      "await page.waitForTimeout(100);"
-    ],
-    "apps/www/tests/browser/table-selection.spec.ts": [
-      "await page.waitForTimeout(40);",
-      "await page.waitForTimeout(40);",
-      "await page.waitForTimeout(40);",
-      "await page.waitForTimeout(50);"
-    ],
-    "apps/www/tests/native/homepage-ime.native.ts": [
-      "await page.waitForTimeout(150);",
-      "await page.waitForTimeout(80);"
-    ]
-  },
+  "plate/no-existence-only-test": {},
+  "plate/no-fixed-sleep": {},
   "plate/no-one-off-editor-type": {
     "packages/cli/src/generate.ts": ["type CompiledEditor = Readonly<{"],
     "packages/platejs/src/features/combobox/lib/combobox.ts": [
@@ -305,70 +246,8 @@
       "* Lower every resolved Plate plugin to exactly one native Plite plugin."
     ]
   },
-  "plate/no-raised-test-timeout": {
-    "apps/www/src/registry/components/editor/comment.spec.tsx": ["}, 20_000);"],
-    "packages/cli/test/generate.test.ts": [
-      "}, 45_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);"
-    ],
-    "packages/plitejs/src/diff/lib/comparison-work.spec.ts": [
-      "}, 60_000);",
-      "}, 60_000);"
-    ],
-    "packages/plitejs/test/document-change.test.ts": ["timeout: 20_000,"],
-    "packages/plitejs/test/dom/dom-coverage.ts": ["{ timeout: 30_000 },"],
-    "packages/plitejs/test/incremental-schema-validation.test.ts": [
-      "timeout: 20_000,"
-    ],
-    "packages/plitejs/test/react/dom-coverage-boundary-contract.tsx": [
-      "}, 15_000);"
-    ],
-    "packages/plitejs/test/react/rendered-dom-shape-contract.tsx": [
-      "}, 20_000);"
-    ],
-    "packages/plitejs/test/react/selection-dom-realm-contract.test.ts": [
-      "}, 15_000);"
-    ],
-    "packages/plitejs/test/slice-fit-contract.test.ts": [
-      "timeout: 20_000,",
-      "timeout: 20_000,"
-    ],
-    "packages/plitejs/test/snapshot-contract.ts": ["{ timeout: 15_000 },"],
-    "packages/plitejs/test/text-splice-projection.test.ts": [
-      "{ timeout: 15_000 },"
-    ]
-  },
-  "plate/no-relative-plite-source": {
-    "apps/www/src/app/dev/suggestion-performance/page.tsx": [
-      "import { DecorationContext } from '../../../../../../packages/plitejs/src/react/decoration-context';"
-    ],
-    "apps/www/src/registry/examples/markdown-streaming-demo.spec.tsx": [
-      "import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';"
-    ],
-    "apps/www/src/registry/examples/multiple-editors-demo.spec.tsx": [
-      "import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';"
-    ]
-  },
+  "plate/no-raised-test-timeout": {},
+  "plate/no-relative-plite-source": {},
   "plate/no-schema-placement-copy": {
     "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": [
       "(content.max !== null && children.length > content.max)",
@@ -451,21 +330,7 @@
     ]
   },
   "plate/no-snapshot": {},
-  "plate/no-source-text-test": {
-    "packages/plitejs/test/dom/public-surface-contract.ts": [
-      "const indexSource = readFileSync(",
-      "const source = readFileSync(sourcePath, 'utf-8');"
-    ],
-    "packages/plitejs/test/react/kernel-authority-audit-contract.ts": [
-      "const editableSource = readFileSync(",
-      "const editableSource = readFileSync("
-    ],
-    "packages/plitejs/test/react/surface-contract.tsx": [
-      "const indexSource = readFileSync(",
-      "const indexSource = readFileSync(",
-      "const indexSource = readFileSync("
-    ]
-  },
+  "plate/no-source-text-test": {},
   "plate/no-structural-mark-copy": {
     "packages/plitejs/src/authored/tree/proposed.ts": [
       "if (hasMark(child, 'unwrap')) {",
@@ -478,7 +343,5 @@
       "reshaping.push(...childMarks.filter((mark) => mark.kind === 'join'));"
     ]
   },
-  "plate/no-wall-clock-bound": {
-    "packages/plitejs/test/dom/dom-coverage.ts": ["expect("]
-  }
+  "plate/no-wall-clock-bound": {}
 }

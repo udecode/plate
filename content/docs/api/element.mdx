@@ -9,7 +9,9 @@ description: "Element node API for schema behavior, void rendering, and element 
 
 ```typescript
 interface Element {
-  children: Node[];
+  readonly type: string;
+  readonly children: readonly Descendant[];
+  readonly [key: string]: unknown;
 }
 ```
 

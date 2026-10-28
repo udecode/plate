@@ -439,6 +439,7 @@ export const useRuntimeKeyboardEvents = ({
             event,
             forceRender: runtime.repair.forceRender,
             inputController,
+            lease: runtime.composition.lease,
             viewportRuntime,
             getActiveContentRootOwner:
               pliteRuntimeContext?.getActiveContentRootOwner,
@@ -588,6 +589,7 @@ export const useRuntimeKeyboardEvents = ({
         event,
         forceRender: runtime.repair.forceRender,
         inputController,
+        lease: runtime.composition.lease,
         viewportRuntime,
         getActiveContentRootOwner:
           pliteRuntimeContext?.getActiveContentRootOwner,

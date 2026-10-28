@@ -12,7 +12,10 @@ import type { JsonNode } from '../../core/change/tokens';
 import type { PropertyModification } from '../../core/change/transform';
 import type { CommandProjection } from '../../core/command-document';
 import { carriesDefault } from '../../core/default-storage';
-import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import {
+  type CompiledEditorSchema,
+  uniquePropertiesOf,
+} from '../../core/schema-compiler';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
 import { heldProps } from './holds';
@@ -208,8 +211,9 @@ export const carriedJudge = (
     const existing = readAuthoredMarks(node).filter(
       (mark): mark is FormatTag => mark.kind === 'format'
     );
+    const unique = uniquePropertiesOf(schema);
     const tags = recordFormats({
-      keys: unset,
+      keys: unset.filter((key) => !unique.has(key)),
       next: Object.fromEntries(
         Object.entries(previous).filter(([key]) => !keys.has(key))
       ),

@@ -1,4 +1,3 @@
-import type { StoredTarget } from '../../core/authored-runtime';
 import type { DocumentIndex } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
 import { getRangeEndpointAssociations } from '../../core/change/range-association';
@@ -43,14 +42,22 @@ export type PreviewLens = Readonly<{
    * A target the preview shows, as the stored target that reads back where
    * it was shown, or the side core's selection mapping takes when none does.
    */
-  fromView: (target: EditorSelectionTarget, root: string) => StoredTarget;
+  fromView: (target: EditorSelectionTarget, root: string) => Lifted;
+  /**
+   * Where the preview showed `selection`, if it is the last selection the lens
+   * mapped, whichever way the preview leant then.
+   */
   lastView: (selection: Selection, root: string) => Selection | undefined;
   locations: (root: string) => AuthoredLocationMap;
-  toView: (selection: Selection, root: string) => Selection;
+  toView: (selection: Selection, root: string, leans?: boolean) => Selection;
 }>;
 
-type Lifted =
-  | Readonly<{ kind: 'stored'; target: NodeSelection | TextSelection }>
+export type Lifted =
+  | Readonly<{
+      kind: 'stored';
+      shownInBuilt?: true;
+      target: NodeSelection | TextSelection;
+    }>
   | Readonly<{ kind: 'unmapped' }>;
 
 const UNMAPPED: Lifted = Object.freeze({ kind: 'unmapped' });
@@ -64,6 +71,36 @@ const holds = (index: DocumentIndex, point: Point) => {
     point.offset >= 0 &&
     point.offset <= text.length
   );
+};
+
+/**
+ * Where a caret at `point` that leans forward shows: at the start of the last
+ * line in the run of lines `isBuilt` names right after the end of its text,
+ * or at `point` when none follows.
+ */
+const leanIntoBuilt = (
+  index: DocumentIndex,
+  point: Point,
+  isBuilt: (line: Path) => boolean
+): Point => {
+  let at = point;
+
+  for (;;) {
+    const text = rawNodeAt(index, at.path)?.text;
+
+    if (typeof text !== 'string' || at.offset !== text.length) return at;
+
+    const next = index.pointAt(index.positionAt(at) + 1, 1);
+
+    if (!next || next.offset !== 0) return at;
+
+    const line = next.path.slice(0, -1);
+
+    if (PathApi.equals(line, at.path.slice(0, -1)) || !isBuilt(line)) {
+      return at;
+    }
+    at = point.root === undefined ? next : { ...next, root: point.root };
+  }
 };
 
 const withAffinity = (
@@ -111,9 +148,14 @@ export const createPreviewLens = ({
   };
   const rootOf = (named: string | undefined, root: string) =>
     named === undefined ? root : toInternalRoot(named);
+  const unstored = (root: string) => (line: Path) =>
+    waysOf(root).toStored.path(line) === null;
+  const lean = (shown: Point, root: string) =>
+    leanIntoBuilt(shownIndex(root), shown, unstored(root));
   const contextOf = (
     root: string,
-    way: 'toPreview' | 'toStored'
+    way: 'toPreview' | 'toStored',
+    leans = false
   ): EditorSelectionMapContext => {
     const indexOf = way === 'toPreview' ? storedIndex : shownIndex;
     const mapPoint = (point: Point, assoc: -1 | 1) =>
@@ -124,8 +166,19 @@ export const createPreviewLens = ({
         way === 'toPreview'
           ? map.nodePath(root, path)
           : waysOf(root).toStored.path(path),
-      mapPoint: (point, options) =>
-        mapPoint(point, options?.association === 'backward' ? -1 : 1),
+      mapPoint: (point, options) => {
+        if (
+          way === 'toPreview' &&
+          leans &&
+          options?.association === 'forward'
+        ) {
+          const shown = mapPoint(point, 1);
+
+          return shown && lean(shown, rootOf(point.root, root));
+        }
+
+        return mapPoint(point, options?.association === 'backward' ? -1 : 1);
+      },
       mapRange: (range, options) => {
         const index = indexOf(rootOf(range.anchor.root, root));
         const anchorAt = index.positionAt(range.anchor);
@@ -146,14 +199,18 @@ export const createPreviewLens = ({
       root: toPublicRoot(root),
     };
   };
-  const mapToView = (selection: Selection, root: string): Selection => {
+  const mapToView = (
+    selection: Selection,
+    root: string,
+    leans = false
+  ): Selection => {
     if (!selection) return null;
 
     const at = rootOf(SelectionApi.root(selection), root);
 
     return settleSelectionMode(
       schema,
-      mapSelectionWithContext(selection, contextOf(at, 'toPreview')),
+      mapSelectionWithContext(selection, contextOf(at, 'toPreview', leans)),
       shownIndex(at)
     );
   };
@@ -201,6 +258,11 @@ export const createPreviewLens = ({
       ]),
     ];
     let first: TextSelection | undefined;
+    // A stored caret shows only in the last of several built lines, so a caret
+    // in another one lifts to a stored place that shows in a built line.
+    let leaning: TextSelection | undefined;
+    const inBuilt = (point: Point) => unstored(at)(point.path.slice(0, -1));
+    const shownInBuilt = inBuilt(shown.focus);
 
     for (const anchor of anchors) {
       for (const focus of foci) {
@@ -209,7 +271,7 @@ export const createPreviewLens = ({
             { ...shown, anchor: anchor ?? focus, focus },
             affinity
           );
-          const view = mapToView(candidate, at);
+          const view = mapToView(candidate, at, true);
 
           first ??= candidate;
           if (
@@ -217,13 +279,30 @@ export const createPreviewLens = ({
             samePoint(view.anchor, shown.anchor, at) &&
             samePoint(view.focus, shown.focus, at)
           ) {
-            return { kind: 'stored', target: candidate };
+            return shownInBuilt
+              ? { kind: 'stored', shownInBuilt, target: candidate }
+              : { kind: 'stored', target: candidate };
+          }
+          if (
+            shownInBuilt &&
+            !leaning &&
+            SelectionApi.isText(view) &&
+            (collapsed || samePoint(view.anchor, shown.anchor, at)) &&
+            inBuilt(view.focus)
+          ) {
+            leaning = candidate;
           }
         }
       }
     }
 
-    return first ? { kind: 'stored', target: first } : UNMAPPED;
+    const target = leaning ?? first;
+
+    if (!target) return UNMAPPED;
+
+    return leaning
+      ? { kind: 'stored', shownInBuilt: true, target }
+      : { kind: 'stored', target };
   };
   // A shown node maps to the stored node that shows whole at its path, and to
   // the stored siblings after it whose content a pending join shows inside it.
@@ -326,7 +405,7 @@ export const createPreviewLens = ({
 
     return SelectionApi.text(target);
   };
-  let last: Shown | undefined;
+  let last: (Shown & Readonly<{ leans: boolean }>) | undefined;
   const keyOf = (selection: Selection, root: string) =>
     rootOf(SelectionApi.root(selection), root);
   const lastView = (selection: Selection, root: string) =>
@@ -334,16 +413,20 @@ export const createPreviewLens = ({
     jsonEqual(last.selection, selection)
       ? last.view
       : undefined;
-  const toView = (selection: Selection, root: string): Selection => {
+  const toView = (
+    selection: Selection,
+    root: string,
+    leans = false
+  ): Selection => {
     if (!selection) return null;
 
-    const known = lastView(selection, root);
+    const known = last?.leans === leans ? lastView(selection, root) : undefined;
 
     if (known !== undefined) return known;
 
-    const view = mapToView(selection, root);
+    const view = mapToView(selection, root, leans);
 
-    last = { root: keyOf(selection, root), selection, view };
+    last = { leans, root: keyOf(selection, root), selection, view };
 
     return view;
   };

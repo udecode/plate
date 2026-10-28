@@ -257,7 +257,7 @@ function DiagramStatus({
 function useLiveSource(element: CodeBlockElementProps['element']) {
   const editor = useEditor();
   const path = usePath();
-  const nodeKey = editor.read((state) => state.key(path));
+  const nodeKey = editor.key(element);
 
   return useEditorSelector(
     (current) => NodeApi.string(current.read.nodes.get(path)?.[0] ?? element),

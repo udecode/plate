@@ -24,7 +24,10 @@
 // every other ignored file is build output or a copy of the checkout's, and
 // one there counts as held once the checkout has that path, because the
 // landing merge never overwrites the checkout's copy. It also skips commits
-// only HEAD's reflog reaches, which land.mjs's squash leaves behind.
+// only HEAD's reflog reaches, which land.mjs's squash leaves behind. When its
+// config names a `companion` and a worktree holds `companion.dir`, removing
+// that worktree first runs `companion.detach` in it, which saves the
+// companion repository's uncommitted work there; a failed detach keeps it.
 // --brief prints one line, or nothing, counting the unlocked agent worktrees and
 // the checkout caches cleanup could remove that show no git or cache writes for
 // three days. --landed exits 0 only when every change and ignored file of one
@@ -39,7 +42,7 @@
 // in, one holding another worktree, the one it runs in, one whose commits git
 // cannot list, one whose processes lsof cannot list and one git refuses to
 // remove, and exits 1 when it keeps any.
-import { execFileSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, readlinkSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, dirname, isAbsolute, join, resolve, sep } from 'node:path';
@@ -274,6 +277,14 @@ function runRoot(main) {
   }
 }
 
+function companionOf(main) {
+  try {
+    return JSON.parse(readFileSync(join(main, '.agents', 'pstack.json'), 'utf8')).companion ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function ignoredWork(main, path, listings, root = null) {
   const unique = [];
   let seen = 0;
@@ -500,6 +511,8 @@ function savePatch(main, path) {
 function removeFolder(main, item) {
   if (item.kind === 'worktree' && existsSync(item.path)) item.patch = compareWithCheckout(main, item.path, new Map()).unlanded > 0 ? savePatch(main, item.path) : null;
   if (item.kind === 'worktree') {
+    const companion = companionOf(main);
+    if (companion?.dir && companion.detach && existsSync(join(item.path, companion.dir))) execSync(companion.detach, { cwd: item.path, stdio: ['ignore', 'pipe', 'pipe'] });
     try {
       git(main, ['worktree', 'remove', '--force', item.path]);
     } catch (error) {

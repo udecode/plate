@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { stateOf } from '../../.agents/pstack/status.mjs';
+import { existsAt, grepFiles, showAt } from './private-files.mjs';
 import { planLabels } from './review-ledger.mjs';
 
 export const generatedPrefixes = [
@@ -49,34 +50,28 @@ export const sweep = ({ cwd = process.cwd(), rev, terms }) => {
       maxBuffer: 64 * 1024 * 1024,
     });
   const root = git(['rev-parse', '--show-toplevel']).stdout.trim();
-  const result = git([
-    'grep',
-    '-z',
-    '-n',
-    '--no-column',
-    '--no-color',
-    '-I',
-    '-i',
-    '-E',
-    '--full-name',
-    ...(rev ? [] : ['--untracked']),
-    ...patterns,
-    ...(rev ? [rev] : []),
-    '--',
-    wholeRepository,
-  ]);
-  if (result.error) throw result.error;
-  if (result.status !== 0 && result.status !== 1) {
-    throw new Error(result.stderr.trim() || `git grep exited ${result.status}`);
-  }
+  const found = grepFiles(
+    root,
+    [
+      '-z',
+      '-n',
+      '--no-column',
+      '--no-color',
+      '-I',
+      '-i',
+      '-E',
+      '--full-name',
+      ...patterns,
+    ],
+    [wholeRepository],
+    { rev }
+  );
 
   const exists = (path) =>
-    rev
-      ? git(['cat-file', '-e', `${rev}:${path}`]).status === 0
-      : existsSync(join(root, path));
+    rev ? existsAt(root, rev, path) : existsSync(join(root, path));
   const read = (path) =>
     rev
-      ? git(['show', `${rev}:${path}`]).stdout
+      ? showAt(root, rev, path).stdout
       : readFileSync(join(root, path), 'utf-8');
   const closedPlans = new Map();
   const isClosedPlan = (path) => {
@@ -113,18 +108,16 @@ export const sweep = ({ cwd = process.cwd(), rev, terms }) => {
   /** @type {Record<string, string[]>} */
   const groups = { live: [], generated: [], 'release notes': [], history: [] };
   const livePaths = new Set();
-  const revPrefix = rev ? `${rev}:` : '';
   let parsed = 0;
-  for (const [record, name, number, text] of result.stdout.matchAll(
+  for (const [record, path, number, text] of found.matchAll(
     /([^\0]*)\0(\d+)\0([^\n]*)\n/g
   )) {
     parsed += record.length;
-    const path = name.slice(revPrefix.length);
     const group = classify(path);
     if (group === 'live') livePaths.add(path);
     groups[group].push(`${path}:${number}: ${text.trim().slice(0, 160)}`);
   }
-  if (parsed !== result.stdout.length) {
+  if (parsed !== found.length) {
     throw new Error('git grep printed records this sweep cannot parse');
   }
   const twins = [...livePaths]

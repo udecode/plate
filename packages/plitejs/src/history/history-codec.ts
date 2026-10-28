@@ -7,6 +7,7 @@ import {
   SelectionApi,
   type Value,
 } from '..';
+import { documentChangeWritesOnlyElementProperties } from '../core/change/document-change';
 import { getPluginRegistry as getInternalPluginRegistry } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
@@ -54,6 +55,7 @@ const encodeBatch = (editor: AnyEditor, batch: Batch): HistoryBatchJSON => ({
   ...(batch.selectionBeforeRoot
     ? { selectionBeforeRoot: batch.selectionBeforeRoot }
     : {}),
+  ...(batch.unsettle ? { unsettle: batch.unsettle.toJSON() } : {}),
 });
 
 const isHistoryJSON = (value: unknown): value is HistoryJSON =>
@@ -123,6 +125,14 @@ const validateBatchSelections = <V extends Value>(
       value,
       selectionAtBaseRoot ?? 'main'
     );
+    if (batch.unsettle) {
+      if (!documentChangeWritesOnlyElementProperties(batch.unsettle, value)) {
+        throw new Error(
+          'A history step can take back only element properties its settle stage wrote.'
+        );
+      }
+      editor.read.schema.assertDocument(batch.unsettle.apply(value));
+    }
     value = batch.change.apply(value);
     editor.read.schema.assertDocument(value);
     assertSelectionSupported(
@@ -152,10 +162,12 @@ type HistoryValidationOptions = Readonly<{
 const decodeBatch = <V extends Value>(
   editor: Editor<V>,
   input: unknown,
-  effectTypes: ReadonlyMap<string, { type: EditorEffectType }>
+  effectTypes: ReadonlyMap<string, { type: EditorEffectType }>,
+  direction: 'redo' | 'undo'
 ): Batch<V> => {
   if (
     !isObject(input) ||
+    (input.unsettle !== undefined && direction === 'redo') ||
     !Array.isArray(input.effects) ||
     !Object.hasOwn(input, 'change') ||
     !Object.hasOwn(input, 'selectionAfter') ||
@@ -220,6 +232,13 @@ const decodeBatch = <V extends Value>(
     ...(input.selectionBeforeRoot
       ? { selectionBeforeRoot: input.selectionBeforeRoot }
       : {}),
+    ...(input.unsettle === undefined
+      ? {}
+      : {
+          unsettle: DocumentChange.fromJSON(
+            input.unsettle as ReturnType<DocumentChange['toJSON']>
+          ),
+        }),
   };
 };
 
@@ -242,14 +261,14 @@ export const decodeHistoryValue = <V extends Value>(
   const history = Object.freeze({
     redos: Object.freeze(
       json.redos.map((batch) =>
-        freezeHistoryBatch(decodeBatch(editor, batch, effectTypes))
+        freezeHistoryBatch(decodeBatch(editor, batch, effectTypes, 'redo'))
       )
     ),
     revision: 0,
     schema,
     undos: Object.freeze(
       json.undos.map((batch) =>
-        freezeHistoryBatch(decodeBatch(editor, batch, effectTypes))
+        freezeHistoryBatch(decodeBatch(editor, batch, effectTypes, 'undo'))
       )
     ),
   });

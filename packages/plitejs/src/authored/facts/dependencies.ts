@@ -26,7 +26,10 @@ export type Dependencies = ContextLookup &
     marks: (node: unknown) => readonly AuthoredMark[];
     /** The context records `props` and `throughout` added. */
     minted: () => readonly ContextRecord[];
-    /** `fresh` drops the held deletions `props` carries, for new content. */
+    /**
+     * Replaces the claims and context of `props`, keeping its held deletions
+     * and spare blocks unless `fresh` drops them, for new content.
+     */
     props: (
       props: Readonly<JsonRecord>,
       marks: readonly AuthoredMark[],
@@ -86,7 +89,12 @@ export const createDependencies = (
 
     const held: AuthoredMember[] = fresh
       ? []
-      : readMembers(target).filter((member) => member.kind === 'held');
+      : readMembers(target).filter(
+          (member) =>
+            member.kind === 'held' ||
+            member.kind === 'reserve' ||
+            member.kind === 'as'
+        );
 
     return withMembers(target, [
       ...unique.filter((mark) => !isContextInsertion(mark)),

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-26-floating-toolbar-safari-menus",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-26-floating-toolbar-safari-menus.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Open floating toolbar menus in Safari",
+  "targets": [
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/components/editor/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-26-floating-toolbar-open-menus-safari-5145dda9",
+      "kind": "fix",
+      "summary": "The first click on More formatting or Turn into in the floating toolbar now opens its menu in Safari. Safari cleared the text selection when the menu took focus, which hid the toolbar and the menu with it.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-toolbar"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-26",
+          "entry": "2026-10-26-floating-toolbar-safari-menus",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

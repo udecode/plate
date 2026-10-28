@@ -1,8 +1,0 @@
-url	title	kind	state	updated_at	read_scope
-https://github.com/facebook/lexical/pull/9331	[lexical-react] Bug Fix: Ignore stale asynchronous auto-embed results	pull-request-body	closed	2026-10-07T05:02:31Z	complete body, comments not read
-https://github.com/facebook/lexical/pull/9332	[lexical-react] Bug Fix: Ignore stale asynchronous typeahead close completions	pull-request-body	closed	2026-10-07T02:31:50Z	complete body, comments not read
-https://github.com/toeverything/blocksuite/issues/3760	Unstable E2E tests	issue-body	closed	2026-09-07T16:04:59Z	complete body, comments not read
-https://github.com/toeverything/blocksuite/issues/2684	Support holding Shift+Down to select next line	issue-body	closed	2026-09-07T16:04:53Z	complete body, comments not read
-https://github.com/TypeCellOS/BlockNote/issues/3175	CollaborationExtension registered at runtime installs no sync plugin, so edits never reach the Y.Doc	issue-body	open	2026-10-08T21:45:53Z	complete body, comments not read
-https://github.com/TypeCellOS/BlockNote/issues/3135	"Collaboration: accepting/rejecting AI changes throws ""reading 'nodeSize'"" when another client has a cursor (ForkYDoc merge)"	issue-body	open	2026-09-28T11:58:25Z	complete body, comments not read
-https://github.com/superdoc/docx-editor/pull/3488	fix(presentation): keep virtualized pages in sync with host scroll	pull-request-body	closed	2026-06-06T00:03:23Z	complete body, comments not read

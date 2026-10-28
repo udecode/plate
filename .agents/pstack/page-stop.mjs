@@ -1,19 +1,23 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: node .agents/pstack/page-stop.mjs stage|stop <plan.md> [--base <file>] [--new] [--session <id>]
+//        node .agents/pstack/page-stop.mjs --hook
 // Prints the Artifact publish that adds or updates this run's part of its
 // subject page, and the files to read in full before sending it. --base names
 // the page as the Artifact tool last returned it, such as the source a refused
 // publish saved; without it the helper starts from this checkout's last
 // publish. --new makes a new page for a subject whose page no longer opens.
+// --hook reads a Claude Code PostToolUseFailure payload and, when a plan
+// page's publish failed because the page no longer opens, tells the lead to
+// rerun with --new.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CODE_VERSION, contextOf, pageFile, pageUrlOf, parsePageFile, runBody, runHeader, slugOf, viewerCode } from './plan-page.mjs';
+import { CODE_VERSION, contextOf, gonePagesFile, pageFile, pageUrlOf, parsePageFile, runBody, runHeader, slugOf, viewerCode } from './plan-page.mjs';
 import { stageOfRow } from './status.mjs';
 
-const USAGE = 'Usage: node .agents/pstack/page-stop.mjs stage|stop <plan.md> [--base <file>] [--new] [--session <id>]';
+const USAGE = 'Usage: node .agents/pstack/page-stop.mjs stage|stop <plan.md> [--base <file>] [--new] [--session <id>], or --hook';
 const CODEX = 'Nothing to send: outside Claude Code, such as in Codex, a run publishes nothing; render the page locally';
 const DUE = ['occurrence', 'state', 'status', 'title', 'asks', 'picks'];
 
@@ -50,7 +54,10 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
   const { root, plansDir, subject, subjectPath, doc } = contextOf(planPath);
   const name = subject ?? slugOf(planPath);
   const out = join(plansDir, 'artifacts', 'pages', name);
-  const url = fresh ? null : pageUrlOf(root, subjectPath ?? planPath).url;
+  const bound = pageUrlOf(root, subjectPath ?? planPath).url;
+  const url = fresh ? null : bound;
+  const store = fresh && bound ? gonePagesFile(root) : null;
+  if (store) appendFileSync(store, `${bound}\n`);
   const base = baseOf(fresh ? null : baseFile ? resolve(baseFile) : join(out, 'index.html'));
   const now = new Date().toISOString();
   const header = runHeader(planPath, { session, at: now });
@@ -98,10 +105,32 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
     ...(base.note ? [base.note] : []),
     `Read in full, and view each picture, before you send: ${['index.html', ...files].map((path) => join(out, path)).join(' ')}`,
     `Artifact ${JSON.stringify(call)}`,
-    url ? null : `This publish makes the page: write its URL as \`Page: <url>\` under the title of ${target}`,
-    `If the tool refuses the publish because the page changed, run this command again with --base <the source path the refusal saved> and send what it prints`,
+    url
+      ? null
+      : bound
+        ? `This publish makes a new page: replace \`Page: ${bound}\` in ${target} with its URL, and give the plan the reply links a Defaults row that names the old and new links, as the plan-page skill says`
+        : `This publish makes the page: write its URL as \`Page: <url>\` ${subjectPath ? 'under the title' : 'under the `Status:` line'} of ${target}`,
+    url ? `If the tool refuses the publish because the page changed, run this command again with --base <the source path the refusal saved> and send what it prints` : null,
+    url ? `If the tool says the page was deleted or is not found, as it also says after a switch to another claude.ai account, run this command again with --new and send what it prints, without asking` : null,
     command === 'stop' ? `Once the publish goes through, reply with 📄 ${url ?? '<url>'}#run-${header.slug}` : null,
   ].filter(Boolean);
+}
+
+// The Artifact tool reports a page that no longer opens as an error that carries an <artifact-deleted> tag.
+export function hook(input) {
+  const root = input.tool_input?.root ?? (input.tool_input?.file_path ? dirname(input.tool_input.file_path) : null);
+  if (input.tool_name !== 'Artifact' || !String(input.error ?? '').includes('<artifact-deleted') || !root || !input.session_id || !existsSync(join(root, 'runs'))) return null;
+  const run = readdirSync(join(root, 'runs'))
+    .filter((name) => name.endsWith(`.${input.session_id}.json`))
+    .map((name) => JSON.parse(readFileSync(join(root, 'runs', name), 'utf8')))
+    .sort((a, b) => b.at.localeCompare(a.at))[0];
+  if (!run) return null;
+  return {
+    hookSpecificOutput: {
+      hookEventName: 'PostToolUseFailure',
+      additionalContext: `This publish went to the plan page of ${run.plan}. That page no longer opens, because it was deleted or another claude.ai account owns it. Do not ask the user. Run the page-stop command that printed this publish again with --new, which is \`node .agents/pstack/page-stop.mjs stop ${run.plan} --new\` at a hand-back and \`stage\` otherwise. Send what it prints, and say in the hand-back that the old link stopped working.`,
+    },
+  };
 }
 
 export function cli(args, env) {
@@ -119,13 +148,18 @@ export function cli(args, env) {
 }
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try {
-    const { code, error, lines } = cli(process.argv.slice(2), process.env);
-    if (error) console.error(error);
-    if (lines) console.info(lines.join('\n'));
-    process.exit(code);
-  } catch (error) {
-    console.error(error.message);
-    process.exit(1);
+  if (process.argv[2] === '--hook') {
+    const output = hook(JSON.parse(readFileSync(0, 'utf8')));
+    if (output) console.info(JSON.stringify(output));
+  } else {
+    try {
+      const { code, error, lines } = cli(process.argv.slice(2), process.env);
+      if (error) console.error(error);
+      if (lines) console.info(lines.join('\n'));
+      process.exit(code);
+    } catch (error) {
+      console.error(error.message);
+      process.exit(1);
+    }
   }
 }

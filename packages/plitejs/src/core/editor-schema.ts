@@ -157,33 +157,82 @@ const refuseMissingProperty = <T>(build: () => T): T | null => {
   }
 };
 
-let generates = true;
+/**
+ * A build under a mask that needs a generated element value the mask
+ * covers, which a resolver tells apart from every other build failure.
+ *
+ * @internal
+ */
+export class ElementGenerationMaskedError extends Error {
+  override name = 'ElementGenerationMaskedError';
 
-/** @internal */
-export const withoutGeneration = <T>(read: () => T): T => {
-  const outer = generates;
+  constructor() {
+    super('A build under masked element generation needs a generated value.');
+  }
+}
 
-  generates = false;
+/**
+ * The generators a build may not run: every one, the ones of the properties
+ * a set names, or none.
+ */
+let masked: 'every' | ReadonlySet<object> | null = null;
+
+const withMask = <T>(mask: 'every' | ReadonlySet<object>, read: () => T): T => {
+  const outer = masked;
+
+  masked =
+    outer === 'every' || mask === 'every'
+      ? 'every'
+      : outer
+        ? new Set([...outer, ...mask])
+        : mask;
   try {
     return read();
   } finally {
-    generates = outer;
+    masked = outer;
   }
 };
+
+/**
+ * Builds under `read` run no generator: one that needs a generated element
+ * value throws `ElementGenerationMaskedError`, and one that needs a text
+ * value throws a schema refusal.
+ *
+ * @internal
+ */
+export const withoutGeneration = <T>(read: () => T): T =>
+  withMask('every', read);
+
+/**
+ * Builds under `read` run every generator but those of `properties`, and
+ * throw `ElementGenerationMaskedError` where they need one of theirs.
+ *
+ * @internal
+ */
+export const withoutGenerationOf = <T>(
+  properties: ReadonlySet<object>,
+  read: () => T
+): T => (properties.size === 0 ? read() : withMask(properties, read));
 
 /**
  * A `MissingPropertyError` from a generator's own schema build, such as
  * `schema.create`, fails the outer build instead of refusing it.
  */
-const generatePropertyValue = (descriptor: PropertyValueDescriptor) => {
-  if (!generates) {
+const generatePropertyValue = (
+  property: Readonly<{ descriptor: PropertyValueDescriptor }>,
+  placement: 'element' | 'text'
+) => {
+  if (masked === 'every' ? placement === 'element' : masked?.has(property)) {
+    throw new ElementGenerationMaskedError();
+  }
+  if (masked === 'every') {
     throw new EditorSchemaValidationError(
       'An export cannot generate a property value.'
     );
   }
 
   try {
-    return descriptor.generate?.();
+    return property.descriptor.generate?.();
   } catch (error) {
     throw error instanceof MissingPropertyError
       ? new EditorSchemaValidationError(error.diagnostics, { cause: error })
@@ -326,6 +375,16 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       root: RootKey,
       ancestors?: readonly Element[]
     ) => readonly Descendant[];
+    /**
+     * Throws an `EditorSchemaValidationError` unless `children`, placed
+     * under `ancestors`, nearest first, in `root`, are valid with every
+     * descendant: types, properties with their validators, and content.
+     */
+    validateChildrenAt: (
+      children: readonly Descendant[],
+      root: RootKey,
+      ancestors: readonly Element[]
+    ) => void;
     copyNodeAt: (node: Descendant, path: Path, root?: RootKey) => Descendant;
     placeElementAt: (
       source: Element,
@@ -638,6 +697,57 @@ export const getCompiledEmptyTextDrops = (
   };
 };
 
+const fillDefaultedProperties = (
+  schema: CompiledEditorSchema,
+  placement: 'element' | 'text',
+  context: CompiledSchemaTargetContext,
+  output: Record<string, unknown>,
+  valueOf: (property: CompiledSchemaProperty, key: string) => unknown
+) => {
+  const allowedIds =
+    placement === 'element'
+      ? schema.properties.elementAllowedByType.get(context.type)
+      : schema.properties.textAllowedByParentType.get(context.type);
+
+  for (const id of allowedIds ?? []) {
+    const property = schema.properties.byId.get(id);
+
+    if (
+      !property ||
+      typeof property.key !== 'string' ||
+      Object.hasOwn(output, property.key) ||
+      !matchesCompiledSchemaTarget(schema, property.target, context) ||
+      (!Object.hasOwn(property.descriptor, 'default') &&
+        !property.descriptor.generate) ||
+      property.descriptor.omitDefault
+    ) {
+      continue;
+    }
+    output[property.key] = valueOf(property, property.key);
+  }
+};
+
+/** @internal */
+export const readEmptyText = (
+  schema: CompiledEditorSchema,
+  ancestors: ReadonlyArray<Readonly<Record<string, unknown>>>,
+  root?: string
+): Readonly<Record<string, unknown>> | null => {
+  const context = toCompiledNodeContext({ text: '' }, ancestors, root);
+  const output: Record<string, unknown> = { text: '' };
+  let generated = false;
+
+  fillDefaultedProperties(schema, 'text', context, output, (property) => {
+    generated ||= !!property.descriptor.generate;
+
+    return property.descriptor.default;
+  });
+
+  return generated
+    ? null
+    : canonicalizeCompiledExclusiveTextProperties(schema, output, context);
+};
+
 export const canonicalizeCompiledTextProperties = <
   T extends Readonly<Record<string, unknown>>,
 >(
@@ -744,6 +854,21 @@ const canonicalizePropertyValue = (
   return canonical;
 };
 
+/**
+ * A fresh generated value for an element property, as building an element
+ * would store it. Under a generation mask it throws as that build would.
+ *
+ * @internal
+ */
+export const generateElementPropertyValue = (
+  property: Readonly<{ descriptor: PropertyValueDescriptor; key: unknown }>
+): EditorJsonValue =>
+  canonicalizePropertyValue(
+    `Editor element property "${String(property.key)}"`,
+    property.descriptor,
+    generatePropertyValue(property, 'element')
+  );
+
 const validatePropertyValue = (
   owner: string,
   descriptor: PropertyValueDescriptor,
@@ -789,7 +914,9 @@ export const acceptsPropertyValue = (
     validatePropertyValue('Editor property', descriptor, value);
 
     return true;
-  } catch {
+  } catch (error) {
+    if (error instanceof ElementGenerationMaskedError) throw error;
+
     return false;
   }
 };
@@ -1842,7 +1969,7 @@ export const createEditorSchema = <V extends Value = Value>(
         ? canonicalizePropertyValue(
             `Editor element property "${property.key}"`,
             property.descriptor,
-            generatePropertyValue(property.descriptor)
+            generatePropertyValue(property, 'element')
           )
         : property.descriptor.default;
     }
@@ -2547,47 +2674,41 @@ export const createEditorSchema = <V extends Value = Value>(
       }
     }
 
+    fillDefaultedProperties(
+      schema,
+      placement,
+      context,
+      output,
+      (property, key) => {
+        if (validationLocation) {
+          throw createEditorSchemaValidationError(
+            'missing-property',
+            `Editor ${placement} requires canonical property "${key}".`,
+            validationLocation,
+            {
+              property: {
+                candidates: [property],
+                key,
+                placement,
+              },
+            }
+          );
+        }
+
+        return property.descriptor.generate
+          ? canonicalizeProperty(
+              key,
+              property,
+              generatePropertyValue(property, placement)
+            )
+          : property.descriptor.default;
+      }
+    );
+
     const allowedIds =
       placement === 'element'
         ? schema.properties.elementAllowedByType.get(context.type)
         : schema.properties.textAllowedByParentType.get(context.type);
-
-    for (const id of allowedIds ?? []) {
-      const property = schema.properties.byId.get(id);
-
-      if (
-        !property ||
-        typeof property.key !== 'string' ||
-        Object.hasOwn(output, property.key) ||
-        !matchesCompiledSchemaTarget(schema, property.target, context) ||
-        (!Object.hasOwn(property.descriptor, 'default') &&
-          !property.descriptor.generate) ||
-        property.descriptor.omitDefault
-      ) {
-        continue;
-      }
-      if (validationLocation) {
-        throw createEditorSchemaValidationError(
-          'missing-property',
-          `Editor ${placement} requires canonical property "${property.key}".`,
-          validationLocation,
-          {
-            property: {
-              candidates: [property],
-              key: property.key,
-              placement,
-            },
-          }
-        );
-      }
-      output[property.key] = property.descriptor.generate
-        ? canonicalizeProperty(
-            property.key,
-            property,
-            generatePropertyValue(property.descriptor)
-          )
-        : property.descriptor.default;
-    }
 
     for (const id of allowedIds ?? []) {
       const property = schema.properties.byId.get(id);
@@ -3289,7 +3410,9 @@ export const createEditorSchema = <V extends Value = Value>(
                 value
               ),
             };
-          } catch {
+          } catch (error) {
+            if (error instanceof ElementGenerationMaskedError) throw error;
+
             return null;
           }
         }
@@ -3806,7 +3929,11 @@ export const createEditorSchema = <V extends Value = Value>(
                     value
                   );
                   return true;
-                } catch {
+                } catch (error) {
+                  if (error instanceof ElementGenerationMaskedError) {
+                    throw error;
+                  }
+
                   return false;
                 }
               })
@@ -3862,7 +3989,9 @@ export const createEditorSchema = <V extends Value = Value>(
                   value
                 );
                 return true;
-              } catch {
+              } catch (error) {
+                if (error instanceof ElementGenerationMaskedError) throw error;
+
                 return false;
               }
             })
@@ -4970,6 +5099,13 @@ export const createEditorSchema = <V extends Value = Value>(
     canonicalizeChildren,
     copyChildren,
     copyNodeAt,
+    validateChildrenAt: (children, root, ancestors) => {
+      const declarative = getDeclarativeSchema();
+
+      if (declarative) {
+        validateDeclarativeChildren(children, declarative, root, ancestors, []);
+      }
+    },
     elementPropertiesForResetAt,
     placeElementAt: placeDerivedElement,
     elementPropertiesForSplitAt,

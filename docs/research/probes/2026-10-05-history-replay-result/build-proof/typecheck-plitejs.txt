@@ -1,2 +1,0 @@
-# pnpm --filter plitejs typecheck
-# exit: 0

@@ -12,6 +12,7 @@ import {
   type Text,
 } from '../../index';
 import { getDefined } from '../../internal/get-defined';
+import { yjsAddressesOf } from './addresses';
 import {
   getYjsAttributes,
   setYjsAttribute,
@@ -22,16 +23,26 @@ import {
   assertPublicYjsAttributeCanBeSet,
   assignFreshYjsNodeId,
   createYjsPropertyContext,
+  ensureYjsNodeId,
   getYjsVisibleChildren,
   getYjsVisiblePath,
   insertYjsChild,
+  isEmptyAttributeFreeShownYjsText,
+  isEmptyAttributeFreeYjsText,
+  noteYjsCutView,
+  readYjsChildren,
+  removeYjsChild,
   type YjsPropertyLocation,
   type YjsSetPropertyResolver,
+  type YjsWrite,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
 import {
   isReservedYjsKey,
   isYjsMarkRecordKey,
+  YJS_CUT_AT_KEY,
+  YJS_CUT_KEY,
+  YJS_CUT_SOURCE_KEY,
   YJS_MARK_KEY_PREFIX,
 } from './keys';
 import {
@@ -99,8 +110,20 @@ export const segmentPliteChildren = (
   return segments;
 };
 
-const isEmptyTextRun = (segment: PliteSegment) =>
+export const isEmptyTextRun = (segment: PliteSegment) =>
   segment.kind === 'text' && segment.leaves.every((leaf) => leaf.text === '');
+
+/**
+ * An empty text run with no props. It needs no Yjs text, and an import
+ * deletes one it finds.
+ */
+export const isBareTextRun = (segment: PliteSegment) =>
+  segment.kind === 'text' &&
+  segment.leaves.every((leaf) =>
+    Object.entries(leaf).every(([key, value]) =>
+      key === 'text' ? value === '' : value === undefined
+    )
+  );
 
 export const alignSegments = (
   plite: readonly PliteSegment[],
@@ -122,6 +145,122 @@ export const alignSegments = (
 
   return at === yjs.length ? aligned : null;
 };
+
+/**
+ * A parent's Plite children paired with the Yjs children that show them, as
+ * the importer pairs them: an empty text with no Yjs text of its own pairs
+ * with null, so a Yjs index past it is not its Plite index.
+ */
+export const alignYjsChildren = (
+  plite: readonly Descendant[],
+  yjs: readonly YjsNode[]
+) => {
+  const segments = segmentPliteChildren(plite);
+  const targets = alignSegments(segments, segmentYjsChildren(yjs));
+  return targets && { segments, targets };
+};
+
+/**
+ * Stores an empty text wherever the editor holds an empty run that storage
+ * lacks, in `stored` and its inline elements, so stored and editor children
+ * pair one to one. It deletes no text: two peers that fill one place at once
+ * leave two empty texts, which read as one run.
+ */
+export const fillYjsTextGaps = (
+  write: YjsWrite,
+  stored: Y.XmlElement,
+  node: Element
+): void => {
+  if (
+    !node.children.some((child) => !NodeApi.isText(child) || child.text === '')
+  ) {
+    return;
+  }
+  const visible = getYjsVisibleChildren(write.root, stored);
+  const storedElements = visible.filter(
+    (child): child is Y.XmlElement => child instanceof Y.XmlElement
+  );
+  const elements = node.children.filter((child) => NodeApi.isElement(child));
+  if (storedElements.length === elements.length) {
+    elements.forEach((child, index) =>
+      fillYjsTextGaps(write, storedElements[index], child)
+    );
+  }
+  const aligned = alignYjsChildren(node.children, visible);
+  if (!aligned?.segments.some(isEmptyTextRun)) return;
+  let next = visible.length;
+  for (let index = aligned.targets.length - 1; index >= 0; index -= 1) {
+    const slot = aligned.targets[index];
+    if (slot) {
+      next = slot.from;
+      continue;
+    }
+    insertYjsChild(
+      write,
+      stored,
+      next,
+      createYjsTextChain([{ text: '' }], () => ({}))
+    );
+  }
+};
+
+const keptByGapDrop = <T extends YjsNode>(run: readonly T[]) =>
+  run.find((node) => !isEmptyAttributeFreeShownYjsText(node)) ??
+  run.find((node) => !isEmptyAttributeFreeYjsText(node)) ??
+  run[0];
+
+const storedByThisWrite = (write: YjsWrite, node: YjsNode) => {
+  const transaction = getDefined(write.root.doc?._transaction);
+  const { id } = getDefined(node._item);
+  return id.clock >= (transaction.beforeState.get(id.client) ?? 0);
+};
+
+/**
+ * An empty text that once held letters stays, so an undo puts them back in it.
+ * An empty text an earlier write stored stays too, because Yjs deletes every
+ * letter a teammate typed into it concurrently once this delete reaches them.
+ */
+const dropTextGapsIn = (
+  write: YjsWrite,
+  stored: Y.XmlElement,
+  dropEarlierStored: boolean,
+  visited: Set<Y.XmlElement>
+) => {
+  if (visited.has(stored)) return;
+  visited.add(stored);
+  const visible = getYjsVisibleChildren(write.root, stored);
+  const dropped: number[] = [];
+  for (const child of visible) {
+    if (child instanceof Y.XmlElement) {
+      dropTextGapsIn(write, child, dropEarlierStored, visited);
+    }
+  }
+  let from = 0;
+  while (from < visible.length) {
+    let to = from;
+    while (visible[to] instanceof Y.XmlText) to += 1;
+    const run = visible.slice(from, to);
+    const kept = keptByGapDrop(run);
+    for (const [offset, node] of run.entries()) {
+      if (
+        node !== kept &&
+        node._start === null &&
+        isEmptyAttributeFreeShownYjsText(node) &&
+        (dropEarlierStored || storedByThisWrite(write, node))
+      ) {
+        dropped.push(from + offset);
+      }
+    }
+    from = Math.max(to, from + 1);
+  }
+  for (const index of dropped.reverse()) removeYjsChild(write, stored, index);
+};
+
+export const dropYjsTextGaps = (
+  write: YjsWrite,
+  stored: Y.XmlElement,
+  { dropEarlierStored }: Readonly<{ dropEarlierStored: boolean }>
+) => dropTextGapsIn(write, stored, dropEarlierStored, new Set());
 
 const textRuns = (nodes: readonly Descendant[]) => {
   const runs: Text[] = [];
@@ -151,7 +290,8 @@ const yjsCursor = (
     const node = children[index];
 
     return (
-      skipped.has(index) || (node instanceof Y.XmlText && node.length === 0)
+      skipped.has(index) ||
+      (node instanceof Y.XmlText && yjsTextLength(node) === 0)
     );
   };
   const settle = () => {
@@ -178,6 +318,16 @@ const yjsCursor = (
     },
     position: () => ({ at, offset }),
     text(length: number) {
+      // An empty text claims the stored empty text in its place, so an
+      // element inserted after it lands after that text, not before it.
+      if (
+        length === 0 &&
+        offset === 0 &&
+        children[at] instanceof Y.XmlText &&
+        children[at].length === 0
+      ) {
+        at += 1;
+      }
       for (let rest = length; rest > 0;) {
         if (offset === 0) settle();
 
@@ -185,11 +335,12 @@ const yjsCursor = (
 
         if (!(node instanceof Y.XmlText)) return false;
 
-        const taken = Math.min(rest, node.length - offset);
+        const shown = yjsTextLength(node);
+        const taken = Math.min(rest, shown - offset);
 
         rest -= taken;
         offset += taken;
-        if (offset === node.length) {
+        if (offset === shown) {
           at += 1;
           offset = 0;
         }
@@ -361,7 +512,11 @@ type Mark = Readonly<{
 type Letter = {
   id: LetterId;
   char: string;
+  /** Whether this is a cut embed, which shows no letter. */
+  cut: boolean;
   live: boolean;
+  /** The Yjs index of a live letter, or -1. */
+  at: number;
   slot: number;
   marks: Map<string, Mark>;
   attributes: YjsAttributeRecord;
@@ -371,6 +526,8 @@ type MarkIndex = {
   items: WeakMap<Y.Item, readonly Letter[]>;
   order: Letter[];
   live: Letter[];
+  /** The Yjs indexes of the live cut embeds, in order. */
+  cuts: number[];
   records: Map<string, Mark>;
   pending: Map<string, Mark>;
   maxPriority: number;
@@ -510,9 +667,16 @@ const removeMark = (index: MarkIndex, mark: Mark) => {
   }
 };
 
+const isCutContent = (content: Y.Item['content']) =>
+  content instanceof Y.ContentEmbed &&
+  typeof content.embed === 'object' &&
+  content.embed !== null &&
+  (content.embed as Record<string, unknown>)[YJS_CUT_KEY] === 1;
+
 const refreshLetters = (text: Y.XmlText, index: MarkIndex) => {
   const order: Letter[] = [];
   const live: Letter[] = [];
+  const cuts: number[] = [];
   for (let item = text._start; item; item = item.right) {
     if (item.content instanceof Y.ContentFormat) {
       if (!item.deleted) {
@@ -521,6 +685,13 @@ const refreshLetters = (text: Y.XmlText, index: MarkIndex) => {
         );
       }
       continue;
+    }
+    if (
+      !item.deleted &&
+      !(item.content instanceof Y.ContentString) &&
+      !isCutContent(item.content)
+    ) {
+      throw new Error('Yjs text embeds are not supported.');
     }
     // An item keeps its letters until Yjs splits or merges it, so a keystroke
     // only looks up the letters of the items it changed.
@@ -537,7 +708,9 @@ const refreshLetters = (text: Y.XmlText, index: MarkIndex) => {
           letter = {
             id,
             char: '',
+            cut: isCutContent(item.content),
             live: false,
+            at: -1,
             slot: -1,
             marks: new Map(inherited),
             attributes: {},
@@ -561,12 +734,16 @@ const refreshLetters = (text: Y.XmlText, index: MarkIndex) => {
     for (const letter of letters) {
       letter.live = isLive;
       letter.slot = order.length;
+      letter.at = isLive ? live.length : -1;
       order.push(letter);
-      if (isLive) live.push(letter);
+      if (!isLive) continue;
+      if (letter.cut) cuts.push(live.length);
+      live.push(letter);
     }
   }
   index.order = order;
   index.live = live;
+  index.cuts = cuts;
   for (const mark of index.pending.values()) addMark(index, mark);
 };
 
@@ -578,6 +755,7 @@ const markIndexOf = (text: Y.XmlText): MarkIndex => {
     items: new WeakMap(),
     order: [],
     live: [],
+    cuts: [],
     records: new Map(),
     pending: new Map(),
     maxPriority: 0,
@@ -606,13 +784,18 @@ const writeMarkRecord = (
   from: number,
   length: number,
   k: string,
-  v: unknown
+  v: unknown,
+  anchor = true
 ) => {
   const index = markIndexOf(text);
   const { doc } = text;
   if (!doc) throw new Error('Mark records require an integrated Yjs text.');
-  const start = index.live[from];
-  if (!start || length === 0) return;
+  if (length === 0) return;
+  // A record that starts a piece starts at its cut, so a letter a peer types
+  // at the piece's start, which lands right after the cut, takes it too.
+  const first = anchor && index.live[from - 1]?.cut ? from - 1 : from;
+  const start = index.live[first];
+  if (!start) return;
   const end = index.live[from + length];
   const record: MarkRecord = {
     k,
@@ -653,6 +836,438 @@ const writeMarkRecord = (
   }
 };
 
+/**
+ * The letters a Yjs text shows: Yjs indexes `[from, to)` of `source`. A plain
+ * text shows itself up to its first cut. A view, an empty text whose
+ * `yjs:cut-at` names a live cut, shows the source's letters from that cut to
+ * the next one. A view whose cut is gone shows its own, empty, letters.
+ */
+export type YjsTextPiece = Readonly<{
+  from: number;
+  node: Y.XmlText;
+  source: Y.XmlText;
+  to: number;
+}>;
+
+const cutViews = new WeakMap<Y.XmlText, Map<string, Y.XmlText>>();
+
+/** The text that holds a cut embed, and the embed's letter key there. */
+export type YjsCut = Readonly<{ key: string; source: Y.XmlText }>;
+
+export type YjsViewCut = YjsCut & Readonly<{ view: Y.XmlText }>;
+
+const cutRecordOf = (item: Y.Item): YjsCut | null =>
+  item.parent instanceof Y.XmlText
+    ? { key: letterKey([item.id.client, item.id.clock]), source: item.parent }
+    : null;
+
+/** The live cut a view starts after. */
+export const cutOf = (node: Y.XmlText): YjsCut | null => {
+  const { doc } = node;
+  if (!doc) return null;
+  const at: unknown = node.getAttribute(YJS_CUT_AT_KEY);
+  if (!isLetterId(at) || Y.getState(doc.store, at[0]) <= at[1]) return null;
+  const item = Y.getItem(doc.store, Y.createID(at[0], at[1]));
+  return item instanceof Y.Item && !item.deleted && isCutContent(item.content)
+    ? cutRecordOf(item)
+    : null;
+};
+
+const pieceEnd = (index: MarkIndex, from: number) =>
+  index.cuts.find((cut) => cut >= from) ?? index.live.length;
+
+export const textPieceOf = (node: Y.XmlText): YjsTextPiece => {
+  const cut = cutOf(node);
+  if (cut) {
+    const { key, source } = cut;
+    const index = markIndexOf(source);
+    const from = getDefined(index.byId.get(key)).at + 1;
+    if (node.length > 0) {
+      throw new Error('A Yjs cut view cannot hold letters of its own.');
+    }
+    let views = cutViews.get(source);
+    if (!views) {
+      views = new Map();
+      cutViews.set(source, views);
+    }
+    views.set(key, node);
+    return { from, node, source, to: pieceEnd(index, from) };
+  }
+  if (!node.doc || node.length === 0) {
+    return { from: 0, node, source: node, to: 0 };
+  }
+  return { from: 0, node, source: node, to: pieceEnd(markIndexOf(node), 0) };
+};
+
+/** How many letters a Yjs text shows. */
+export const yjsTextLength = (node: Y.XmlText): number => {
+  const { from, to } = textPieceOf(node);
+  return to - from;
+};
+
+/** Whether a Yjs text is a cut view or the source of a cut. */
+export const hasYjsCut = (node: Y.XmlText): boolean => {
+  const { source, to } = textPieceOf(node);
+  return source !== node || (node.doc !== null && to !== node.length);
+};
+
+/** The letters a Yjs text shows. */
+export const yjsTextContent = (node: Y.XmlText): string => {
+  const { from, source, to } = textPieceOf(node);
+  if (from === to) return '';
+  return markIndexOf(source)
+    .live.slice(from, to)
+    .map((letter) => letter.char)
+    .join('');
+};
+
+/**
+ * Whether a batch deleted one of `source`'s cuts. Its delta cannot say: a
+ * deletion counts only the letters the batch deleted, while the tombstones
+ * between two live letters include every cut an earlier join healed there.
+ */
+const deletesCutOf = (source: Y.XmlText, deletedCuts: readonly Y.Item[]) =>
+  deletedCuts.some((cut) => cut.parent === source);
+
+/** The live view of each cut of `source` that `keys` names and has one. */
+const findCutViews = (
+  root: Y.XmlElement,
+  source: Y.XmlText,
+  keys: readonly string[]
+): Map<string, Y.XmlText> => {
+  const found = new Map<string, Y.XmlText>();
+  const unread = new Set<string>();
+  const held = cutViews.get(source);
+  for (const key of keys) {
+    const view = held?.get(key);
+    // A cut has one view, written with it, so once the view this peer read
+    // is gone the cut has none. Only a cut whose view this peer never read
+    // walks the tree.
+    if (!view) unread.add(key);
+    else if (cutOf(view)?.source === source) found.set(key, view);
+  }
+  const stack: unknown[] = unread.size > 0 ? [root] : [];
+  for (let node = stack.pop(); node; node = stack.pop()) {
+    if (node instanceof Y.XmlElement) {
+      stack.push(...readYjsChildren(node));
+      continue;
+    }
+    if (!(node instanceof Y.XmlText)) continue;
+    const cut = cutOf(node);
+    if (cut?.source !== source || !unread.delete(cut.key)) continue;
+    textPieceOf(node);
+    found.set(cut.key, node);
+    if (unread.size === 0) break;
+  }
+  return found;
+};
+
+/**
+ * The texts that show what a text delta changed in `source`, as `source`
+ * left it: `source` for its head and, from `views`, the view of each piece
+ * after a cut. A letter belongs to the piece it lands in, so one inserted
+ * right after a cut starts the piece after it and one inserted right before
+ * a cut ends the piece before it. Null when the delta inserts a cut or the
+ * batch deleted one of `source`'s, either of which moves letters from one
+ * piece to another.
+ */
+export const textsChangedBy = (
+  source: Y.XmlText,
+  delta: ReadonlyArray<
+    Readonly<{ delete?: number; insert?: unknown; retain?: number }>
+  >,
+  views: readonly Y.XmlText[],
+  deletedCuts: readonly Y.Item[]
+): Y.XmlText[] | null => {
+  if (deletesCutOf(source, deletedCuts)) return null;
+  const { cuts, live } = markIndexOf(source);
+  const pieceAt = (at: number) => {
+    let piece = 0;
+    while (piece < cuts.length && cuts[piece] < at) piece += 1;
+    return piece;
+  };
+  const pieces = new Set<number>();
+  let at = 0;
+  for (const part of delta) {
+    if (part.retain !== undefined) {
+      at += part.retain;
+    } else if (part.insert !== undefined) {
+      if (typeof part.insert !== 'string') return null;
+      pieces.add(pieceAt(at));
+      at += part.insert.length;
+    } else if (part.delete !== undefined) {
+      pieces.add(pieceAt(at));
+    }
+  }
+  if (pieces.size === 0) return null;
+  const viewOfCut = new Map<string, Y.XmlText>();
+  for (const view of views) {
+    const cut = cutOf(view);
+    if (cut?.source === source) viewOfCut.set(cut.key, view);
+  }
+  return [...pieces].flatMap((piece) => {
+    if (piece === 0) return [source];
+    const view = viewOfCut.get(letterKey(live[cuts[piece - 1]].id));
+    return view ? [view] : [];
+  });
+};
+
+/** The live views of the cuts in `source`. */
+export const cutViewsOf = (source: Y.XmlText): Y.XmlText[] => {
+  let cut = false;
+  for (let item = source._start; item && !cut; item = item.right) {
+    cut = !item.deleted && isCutContent(item.content);
+  }
+  if (!cut) return [];
+  let root: unknown = source.parent;
+  while (root instanceof Y.XmlElement && root.parent instanceof Y.XmlElement) {
+    root = root.parent;
+  }
+  if (!(root instanceof Y.XmlElement)) return [];
+  const { cuts, live } = markIndexOf(source);
+  const keys = cuts.map((at) => letterKey(live[at].id));
+  const views = findCutViews(root, source, keys);
+  return keys.flatMap((key) => {
+    const view = views.get(key);
+    return view && !view._item?.deleted ? [view] : [];
+  });
+};
+
+/**
+ * Whether `view` shows the letters of `text`'s source right after the ones
+ * `text` shows, through one live cut.
+ */
+export const continuesYjsText = (text: Y.XmlText, view: Y.XmlText): boolean => {
+  const cut = cutOf(view);
+  if (!cut) return false;
+  const left = textPieceOf(text);
+  return left.source === cut.source && left.to === textPieceOf(view).from - 1;
+};
+
+/**
+ * Where a batch's `delta` to a source inserted the cut `view` starts after:
+ * the text whose letters held that point before the batch, and the offset
+ * there. Null when `view` shows no live cut, the delta did not insert it, or
+ * the batch deleted a cut of the source, which moves letters between pieces.
+ */
+export const insertedCutOf = (
+  view: Y.XmlText,
+  delta: ReadonlyArray<
+    Readonly<{ delete?: number; insert?: unknown; retain?: number }>
+  >,
+  deletedCuts: readonly Y.Item[]
+): Readonly<{ offset: number; text: Y.XmlText }> | null => {
+  const cut = cutOf(view);
+  if (!cut || deletesCutOf(cut.source, deletedCuts)) return null;
+  const { source } = cut;
+  const { byId, cuts, live } = markIndexOf(source);
+  const target = getDefined(byId.get(cut.key)).at;
+  // The Yjs index each live item had before the batch, or -1 if it inserted it.
+  const before = new Array<number>(live.length).fill(-1);
+  let at = 0;
+  let was = 0;
+  for (const part of delta) {
+    if (part.retain !== undefined) {
+      for (const end = at + part.retain; at < end; at += 1) {
+        before[at] = was;
+        was += 1;
+      }
+    } else if (part.insert !== undefined) {
+      at += typeof part.insert === 'string' ? part.insert.length : 1;
+    } else if (part.delete !== undefined) {
+      was += part.delete;
+    }
+  }
+  for (; at < live.length; at += 1) {
+    before[at] = was;
+    was += 1;
+  }
+  if (before[target] !== -1) return null;
+  let point = 0;
+  for (let index = target - 1; index >= 0 && point === 0; index--) {
+    if (before[index] !== -1) point = before[index] + 1;
+  }
+  const older = cuts.findLast(
+    (index) => index < target && before[index] !== -1
+  );
+  if (older === undefined) return { offset: point, text: source };
+  const key = letterKey(live[older].id);
+  const text = cutViewsOf(source).find((node) => cutOf(node)?.key === key);
+  return text ? { offset: point - before[older] - 1, text } : null;
+};
+
+export const isYjsCutItem = (item: Y.Item): boolean =>
+  item.parent instanceof Y.XmlText && isCutContent(item.content);
+
+/** The view of a deleted cut, as this peer last read it. */
+export const deletedCutViewOf = (item: Y.Item): Y.XmlText | null => {
+  const cut = cutRecordOf(item);
+  return (cut && cutViews.get(cut.source)?.get(cut.key)) ?? null;
+};
+
+/** Delete `cut` while it is live, so its letters show in the piece before. */
+export const healYjsCutOf = ({ key, source }: YjsCut): void => {
+  const index = markIndexOf(source);
+  const embed = index.byId.get(key);
+  if (!embed?.live) return;
+  source.delete(embed.at, 1);
+  refreshLetters(source, index);
+};
+
+/** Delete the cut `view` starts after, so its letters show in the piece before. */
+export const healYjsCut = (view: Y.XmlText): void => {
+  const cut = cutOf(view);
+  if (cut) healYjsCutOf(cut);
+};
+
+type ShowingTextByPiece = Map<number, Y.XmlText | undefined>;
+
+/**
+ * Delete the letters of each piece that `texts` held, or that starts after one
+ * of `cuts`, while the text that shows the piece fails `shows`. A source held
+ * every piece of its letters and shows the first, and a view held its own
+ * piece. Each piece after a cut shows in the cut's view, which for one of
+ * `cuts` is the view given with it.
+ */
+export const deleteUnshownYjsLetters = (
+  root: Y.XmlElement,
+  texts: Iterable<Y.XmlText>,
+  cuts: Iterable<YjsViewCut>,
+  shows: (node: Y.XmlText) => boolean
+): void => {
+  const held = new Map<Y.XmlText, ShowingTextByPiece>();
+  const hold = (source: Y.XmlText, piece: number, node?: Y.XmlText) => {
+    let pieces = held.get(source);
+    if (!pieces) {
+      pieces = new Map();
+      held.set(source, pieces);
+    }
+    if (node || !pieces.has(piece)) pieces.set(piece, node);
+  };
+  for (const text of texts) {
+    if (!text.doc || text._item?.deleted) continue;
+    const { from, source } = textPieceOf(text);
+    if (source !== text) {
+      hold(source, markIndexOf(source).cuts.indexOf(from - 1) + 1, text);
+      continue;
+    }
+    hold(source, 0, source);
+    for (let piece = 1; piece <= markIndexOf(source).cuts.length; piece++) {
+      hold(source, piece);
+    }
+  }
+  for (const { key, source, view } of cuts) {
+    if (!source.doc || source._item?.deleted) continue;
+    const index = markIndexOf(source);
+    const embed = index.byId.get(key);
+    if (embed?.live) hold(source, index.cuts.indexOf(embed.at) + 1, view);
+  }
+  for (const [source, pieces] of held) {
+    const index = markIndexOf(source);
+    const keyOf = (piece: number) =>
+      letterKey(index.live[index.cuts[piece - 1]].id);
+    const views = findCutViews(
+      root,
+      source,
+      [...pieces]
+        .filter(([piece, node]) => piece > 0 && !node)
+        .map(([piece]) => keyOf(piece))
+    );
+    const unshown = [...pieces]
+      .flatMap(([piece, node]) => {
+        const from = piece === 0 ? 0 : index.cuts[piece - 1] + 1;
+        const to = index.cuts[piece] ?? index.live.length;
+        const shownBy = node ?? views.get(keyOf(piece));
+        return from < to && !(shownBy && shows(shownBy)) ? [{ from, to }] : [];
+      })
+      .sort((left, right) => right.from - left.from);
+    for (const { from, to } of unshown) {
+      source.delete(from, to - from);
+    }
+    if (unshown.length > 0) refreshLetters(source, index);
+  }
+};
+
+/**
+ * Where Yjs index `index` of `source` shows: the text whose piece holds it and
+ * the offset there. An index at a cut ends the piece before the cut.
+ */
+const showingTextAt = (
+  root: Y.XmlElement,
+  source: Y.XmlText,
+  index: number
+): Readonly<{ node: Y.XmlText; offset: number }> | null => {
+  const { cuts, live } = markIndexOf(source);
+  let cut = -1;
+  for (const at of cuts) {
+    if (at >= index) break;
+    cut = at;
+  }
+  if (cut === -1) return { node: source, offset: index };
+  const key = letterKey(live[cut].id);
+  const view = findCutViews(root, source, [key]).get(key);
+  return view ? { node: view, offset: index - cut - 1 } : null;
+};
+
+export type YjsTextCut = Readonly<{
+  /** The index in the chain of the first text the cut's right side holds. */
+  at: number;
+  /** The view a cut inside a piece makes, which the right side starts with. */
+  view: Y.XmlText | null;
+}>;
+
+/**
+ * Cut a text chain `offset` letters in. Inside a piece, this inserts a cut
+ * embed in the piece's source and returns a new view of the letters after it,
+ * so both sides keep their letters' Yjs identity. At a piece's edge, it writes
+ * nothing.
+ */
+export const cutTextAt = (
+  write: YjsWrite,
+  chain: YjsTextChain,
+  offset: number
+): YjsTextCut => {
+  let rest = offset;
+  for (const [at, node] of chain.entries()) {
+    const piece = textPieceOf(node);
+    const length = piece.to - piece.from;
+    if (rest === 0) return { at, view: null };
+    if (rest < length) {
+      const { source } = piece;
+      const position = piece.from + rest;
+      const index = markIndexOf(source);
+      const next = { ...index.live[position].attributes };
+      source.insertEmbed(position, { [YJS_CUT_KEY]: 1 });
+      refreshLetters(source, index);
+      const embed = index.live[position];
+      // The embed takes its left neighbour's marks, as a letter does, and a
+      // letter typed right after it takes the embed's, so the embed gets the
+      // marks of the letter it now starts.
+      for (const key of new Set([
+        ...Object.keys(embed.attributes),
+        ...Object.keys(next),
+      ])) {
+        if (!areJsonLikeValuesEqual(embed.attributes[key], next[key])) {
+          writeMarkRecord(source, position, 1, key, next[key] ?? null, false);
+        }
+      }
+      const view = new Y.XmlText();
+      assignFreshYjsNodeId(view);
+      const sourceId = ensureYjsNodeId(write, source);
+      setYjsAttribute(view, YJS_CUT_SOURCE_KEY, sourceId);
+      setYjsAttribute(view, YJS_CUT_AT_KEY, [...embed.id]);
+      noteYjsCutView(write, sourceId, {
+        key: letterKey(embed.id),
+        source,
+        view,
+      });
+      return { at: at + 1, view };
+    }
+    rest -= length;
+  }
+  return { at: chain.length, view: null };
+};
+
 const readEncodedRuns = (text: Y.XmlText) => {
   const pending = pendingRuns.get(text);
   const encoded = pendingAttributes.get(text);
@@ -662,11 +1277,17 @@ const readEncodedRuns = (text: Y.XmlText) => {
       attributes: encoded[index],
     }));
   }
-  if (text.length === 0) {
-    return [{ text: '', attributes: getYjsAttributes(text) }];
+  const { from, source, to } = textPieceOf(text);
+  if (from === to) {
+    const {
+      [YJS_CUT_AT_KEY]: _at,
+      [YJS_CUT_SOURCE_KEY]: _source,
+      ...attributes
+    } = getYjsAttributes(text);
+    return [{ text: '', attributes }];
   }
   const runs: Array<{ text: string; attributes: YjsAttributeRecord }> = [];
-  for (const letter of markIndexOf(text).live) {
+  for (const letter of markIndexOf(source).live.slice(from, to)) {
     const previous = runs.at(-1);
     if (
       previous &&
@@ -681,9 +1302,12 @@ const readEncodedRuns = (text: Y.XmlText) => {
 };
 
 export const readTextRuns = (chain: YjsTextChain): Text[] => {
+  const pending = chain.length === 1 && pendingRuns.get(chain[0]);
+  if (pending) return pending.map((leaf) => ({ ...leaf }));
   for (const text of chain) {
-    if (!text._hasFormatting) continue;
-    for (const part of text.toDelta()) {
+    const { source } = textPieceOf(text);
+    if (!source._hasFormatting) continue;
+    for (const part of source.toDelta()) {
       if (Object.keys(part.attributes ?? {}).length > 0) {
         throw new Error(
           'Yjs text formatting is not supported; use mark records.'
@@ -691,14 +1315,12 @@ export const readTextRuns = (chain: YjsTextChain): Text[] => {
       }
     }
   }
-  const pending = chain.length === 1 && pendingRuns.get(chain[0]);
-  if (pending) return pending.map((leaf) => ({ ...leaf }));
-  if (chain.every((text) => text.length === 0)) {
+  if (chain.every((text) => yjsTextLength(text) === 0)) {
     return [{ ...decodeRunAttributes(getYjsAttributes(chain[0])), text: '' }];
   }
   const leaves: Text[] = [];
   for (const text of chain) {
-    if (text.length === 0) continue;
+    if (yjsTextLength(text) === 0) continue;
     for (const run of readEncodedRuns(text)) {
       const properties = decodeRunAttributes(run.attributes);
       const previous = leaves.at(-1);
@@ -763,55 +1385,56 @@ export const createYjsTextChain = (
   return text;
 };
 
-export const cloneYjsText = (
-  source: Y.XmlText,
-  attributes: YjsAttributeRecord
-): Y.XmlText => {
-  const runs = readEncodedRuns(source);
-  const clone = createYjsTextChain(
-    runs.map((run) => ({
-      ...decodeRunAttributes(run.attributes),
-      text: run.text,
-    })),
-    (_leaf, index) => runs[index].attributes
-  );
-  for (const [key, value] of Object.entries(attributes)) {
-    setYjsAttribute(clone, key, value);
-  }
-  return clone;
-};
-
-export const locateChainOffset = (
+const locateChainOffset = (
   chain: YjsTextChain,
   offset: number,
   bias: 'left' | 'right' = 'left'
 ) => {
+  if (chain.every((text) => yjsTextLength(text) === 0)) {
+    const text = keptByGapDrop(chain);
+    const piece = textPieceOf(text);
+    return {
+      at: piece.from,
+      index: 0,
+      segment: chain.indexOf(text),
+      source: piece.source,
+      text,
+    };
+  }
   let remaining = Math.max(0, offset);
   for (let i = 0; i < chain.length; i++) {
     const text = chain[i];
+    const piece = textPieceOf(text);
+    const length = piece.to - piece.from;
     if (
-      remaining < text.length ||
-      (remaining === text.length && bias === 'left' && text.length > 0) ||
+      remaining < length ||
+      (remaining === length && bias === 'left' && length > 0) ||
       i === chain.length - 1
     ) {
-      return { index: Math.min(remaining, text.length), segment: i, text };
+      const index = Math.min(remaining, length);
+      return {
+        at: piece.from + index,
+        index,
+        segment: i,
+        source: piece.source,
+        text,
+      };
     }
-    remaining -= text.length;
+    remaining -= length;
   }
-  return { index: 0, segment: 0, text: chain[0] };
+  throw new Error('A text chain needs a text.');
 };
 
-export const chainOffsetOf = (
+const chainOffsetOf = (
   chain: YjsTextChain,
   text: Y.XmlText,
   index: number
 ): number => {
   let offset = 0;
   for (const part of chain) {
-    if (part === text) {
-      return offset + Math.max(0, Math.min(index, text.length));
-    }
-    offset += part.length;
+    const length = yjsTextLength(part);
+    if (part === text) return offset + Math.max(0, Math.min(index, length));
+    offset += length;
   }
   throw new Error('Text does not belong to the chain.');
 };
@@ -943,11 +1566,11 @@ export const writeTextRuns = (
         const position = locateChainOffset(chain, fromAfter, 'right');
         const length = Math.min(
           remaining,
-          position.text.length - position.index
+          yjsTextLength(position.text) - position.index
         );
         if (length === 0) throw new Error('Cannot delete beyond a text chain.');
-        position.text.delete(position.index, length);
-        refreshLetters(position.text, markIndexOf(position.text));
+        position.source.delete(position.at, length);
+        refreshLetters(position.source, markIndexOf(position.source));
         remaining -= length;
       }
       fromBefore += value.length;
@@ -965,20 +1588,17 @@ export const writeTextRuns = (
       const attributes = encode(target.leaf, target.index);
       if (operation === DiffOp.Insert) {
         const position = locateChainOffset(chain, fromAfter);
-        const index = markIndexOf(position.text);
-        position.text.insert(
-          position.index,
+        const index = markIndexOf(position.source);
+        position.source.insert(
+          position.at,
           next.slice(fromAfter, fromAfter + length)
         );
-        refreshLetters(position.text, index);
-        for (
-          let inserted = position.index;
-          inserted < position.index + length;
-        ) {
+        refreshLetters(position.source, index);
+        for (let inserted = position.at; inserted < position.at + length;) {
           const inherited = index.live[inserted].attributes;
           let end = inserted + 1;
           while (
-            end < position.index + length &&
+            end < position.at + length &&
             areJsonLikeValuesEqual(inherited, index.live[end].attributes)
           ) {
             end += 1;
@@ -989,7 +1609,7 @@ export const writeTextRuns = (
               ...Object.keys(attributes),
             ])) {
               writeMarkRecord(
-                position.text,
+                position.source,
                 inserted,
                 end - inserted,
                 key,
@@ -1027,10 +1647,17 @@ export const writeTextRuns = (
             if (text === undefined) {
               throw new Error('Cannot format beyond a text chain.');
             }
-            const count = Math.min(rest, text.length - at);
+            const piece = textPieceOf(text);
+            const count = Math.min(rest, piece.to - piece.from - at);
             if (count > 0) {
               for (const [key, markValue] of Object.entries(patch)) {
-                writeMarkRecord(text, at, count, key, markValue);
+                writeMarkRecord(
+                  piece.source,
+                  piece.from + at,
+                  count,
+                  key,
+                  markValue
+                );
               }
             }
             rest -= count;
@@ -1057,7 +1684,7 @@ export const rewriteTextRuns = (
 ): void => {
   const runs: Array<{ text: string; attributes: YjsAttributeRecord }> = [];
   for (const text of chain) {
-    if (text.length === 0) continue;
+    if (yjsTextLength(text) === 0) continue;
     for (const run of readEncodedRuns(text)) {
       const last = runs.at(-1);
       if (last && areJsonLikeValuesEqual(last.attributes, run.attributes)) {
@@ -1083,88 +1710,70 @@ export const retainTextChainRange = (
 ): void => {
   let offset = 0;
   for (const text of chain) {
-    const end = offset + text.length;
-    const startInText = Math.max(0, Math.min(text.length, from - offset));
-    const endInText = Math.max(
-      startInText,
-      Math.min(text.length, from + length - offset)
-    );
-    if (endInText < text.length) {
-      text.delete(endInText, text.length - endInText);
-    }
-    if (startInText > 0) text.delete(0, startInText);
-    refreshLetters(text, markIndexOf(text));
-    offset = end;
+    const piece = textPieceOf(text);
+    const shown = piece.to - piece.from;
+    const start = Math.max(0, Math.min(shown, from - offset));
+    const end = Math.max(start, Math.min(shown, from + length - offset));
+    if (end < shown) piece.source.delete(piece.from + end, shown - end);
+    if (start > 0) piece.source.delete(piece.from, start);
+    refreshLetters(piece.source, markIndexOf(piece.source));
+    offset += shown;
   }
 };
 
-export const cutTextChain = (
+const alignedChildrenOf = (
   root: Y.XmlElement,
   parent: Y.XmlElement,
-  chain: YjsTextChain,
-  offset: number
-): number => {
-  const position = locateChainOffset(chain, offset);
-  const visible = getYjsVisibleChildren(root, parent);
-  const index = visible.indexOf(position.text);
-  if (position.index === 0) return index;
-  if (position.index === position.text.length) return index + 1;
-  const suffix: Array<{ text: string; attributes: YjsAttributeRecord }> = [];
-  let skipped = 0;
-  for (const leaf of readEncodedRuns(position.text)) {
-    const end = skipped + leaf.text.length;
-    if (end > position.index) {
-      suffix.push({
-        ...leaf,
-        text: leaf.text.slice(Math.max(0, position.index - skipped)),
-      });
-    }
-    skipped = end;
-  }
-  const right = createYjsTextChain(
-    suffix.map((run) => ({
-      ...decodeRunAttributes(run.attributes),
-      text: run.text,
-    })),
-    (_leaf, runIndex) => suffix[runIndex].attributes
-  );
-  position.text.delete(position.index, position.text.length - position.index);
-  refreshLetters(position.text, markIndexOf(position.text));
-  insertYjsChild(root, parent, index + 1, right);
-  return index + 1;
-};
+  children: readonly Descendant[]
+) => alignYjsChildren(children, getYjsVisibleChildren(root, parent));
 
+/**
+ * The Yjs position of a Plite text point. An empty text with no Yjs text
+ * sits beside an element, so its point anchors on that element: at its start
+ * for the text before it, at its end for the text after it.
+ */
 export const pliteToYjsTextPosition = (
   root: Y.XmlElement,
   children: NodeList<Descendant>,
   point: Point
-) => {
-  let parent = root;
-  let projected = children;
-  for (const index of point.path.slice(0, -1)) {
-    const segments = segmentPliteChildren(projected.slice());
-    const at = segments.findIndex(
-      (segment) => segment.from === index && segment.kind === 'element'
-    );
-    const physical = segmentYjsChildren(getYjsVisibleChildren(root, parent))[
-      at
-    ];
-    const node = projected.at(index);
-    if (physical?.kind !== 'element' || !NodeApi.isElement(node)) return null;
-    parent = physical.node;
+): Readonly<{
+  assoc: -1 | 0;
+  index: number;
+  type: Y.XmlElement | Y.XmlText;
+}> | null => {
+  const elementPath = point.path.slice(0, -1);
+  const parent = yjsAddressesOf(root, children).elementAt(elementPath);
+  if (!parent) return null;
+  let projected: readonly Descendant[] =
+    elementPath.length === 0 ? children.slice() : [];
+  for (const [depth, index] of elementPath.entries()) {
+    const node = depth === 0 ? children.at(index) : projected[index];
+    if (!node || !NodeApi.isElement(node)) return null;
     projected = node.children;
   }
-  const segments = segmentPliteChildren(projected.slice());
+  const line = alignedChildrenOf(root, parent, projected);
+  if (!line) return null;
   const leafIndex = point.path.at(-1) ?? -1;
-  const at = segments.findIndex(
+  const at = line.segments.findIndex(
     (segment) =>
       segment.kind === 'text' &&
       segment.from <= leafIndex &&
       leafIndex < segment.from + segment.leaves.length
   );
-  const segment = segments[at];
-  const physical = segmentYjsChildren(getYjsVisibleChildren(root, parent))[at];
-  if (segment?.kind !== 'text' || physical?.kind !== 'text') return null;
+  const segment = line.segments[at];
+  const physical = line.targets[at];
+  if (segment?.kind !== 'text') return null;
+  if (physical === null) {
+    const next = line.targets[at + 1];
+    if (next?.kind === 'element') {
+      return { assoc: -1, index: 0, type: next.node };
+    }
+    const previous = line.targets[at - 1];
+    return previous?.kind === 'element'
+      ? { assoc: 0, index: previous.node.length, type: previous.node }
+      : null;
+  }
+  if (physical?.kind !== 'text') return null;
   const leaf = segment.leaves[leafIndex - segment.from];
   const offset =
     segment.leaves
@@ -1173,45 +1782,64 @@ export const pliteToYjsTextPosition = (
     Math.max(0, Math.min(point.offset, leaf.text.length));
   const position = locateChainOffset(physical.chain, offset);
   return {
-    ...position,
+    index: position.at,
+    type: position.source,
     assoc:
       point.offset > 0 ||
       offset === segment.leaves.reduce((sum, item) => sum + item.text.length, 0)
-        ? (-1 as const)
-        : (0 as const),
+        ? -1
+        : 0,
   };
+};
+
+/**
+ * The Plite children of the element that shows `node`, paired with its Yjs
+ * children, and that element's Plite path.
+ */
+const alignedParentOf = (
+  root: Y.XmlElement,
+  children: NodeList<Descendant>,
+  node: YjsNode
+) => {
+  const physicalPath = getYjsVisiblePath(root, node);
+  if (!physicalPath) return null;
+  let parent = root;
+  let projected: readonly Descendant[] = children.slice();
+  const path: number[] = [];
+  for (const physicalIndex of physicalPath.slice(0, -1)) {
+    const line = alignedChildrenOf(root, parent, projected);
+    if (!line) return null;
+    const at = line.targets.findIndex(
+      (segment) => segment?.kind === 'element' && segment.from === physicalIndex
+    );
+    const physical = line.targets[at];
+    const shown = line.segments[at];
+    if (physical?.kind !== 'element' || shown?.kind !== 'element') return null;
+    path.push(shown.from);
+    parent = physical.node;
+    projected = shown.node.children;
+  }
+  const line = alignedChildrenOf(root, parent, projected);
+  return line && { line, path };
 };
 
 export const yjsToPliteTextPoint = (
   root: Y.XmlElement,
   children: NodeList<Descendant>,
-  text: Y.XmlText,
-  index: number,
+  source: Y.XmlText,
+  sourceIndex: number,
   assoc = -1
 ): Point | null => {
-  const physicalPath = getYjsVisiblePath(root, text);
-  if (!physicalPath) return null;
-  let parent = root;
-  let projected = children;
-  const path: number[] = [];
-  for (const physicalIndex of physicalPath.slice(0, -1)) {
-    const segments = segmentYjsChildren(getYjsVisibleChildren(root, parent));
-    const at = segments.findIndex(
-      (segment) => segment.from === physicalIndex && segment.kind === 'element'
-    );
-    const segment = segments[at];
-    const shown = segmentPliteChildren(projected.slice())[at];
-    if (segment?.kind !== 'element' || shown?.kind !== 'element') return null;
-    path.push(shown.from);
-    parent = segment.node;
-    projected = shown.node.children;
-  }
-  const segments = segmentYjsChildren(getYjsVisibleChildren(root, parent));
-  const at = segments.findIndex(
-    (segment) => segment.kind === 'text' && segment.chain.includes(text)
+  const showing = showingTextAt(root, source, sourceIndex);
+  if (!showing) return null;
+  const { node: text, offset: index } = showing;
+  const found = alignedParentOf(root, children, text);
+  if (!found) return null;
+  const at = found.line.targets.findIndex(
+    (segment) => segment?.kind === 'text' && segment.chain.includes(text)
   );
-  const physical = segments[at];
-  const shown = segmentPliteChildren(projected.slice())[at];
+  const physical = found.line.targets[at];
+  const shown = found.line.segments[at];
   if (physical?.kind !== 'text' || shown?.kind !== 'text') return null;
   let offset = chainOffsetOf(physical.chain, text, index);
   for (const [leafIndex, leaf] of shown.leaves.entries()) {
@@ -1221,11 +1849,37 @@ export const yjsToPliteTextPoint = (
       leafIndex === shown.leaves.length - 1
     ) {
       return {
-        path: [...path, shown.from + leafIndex],
+        path: [...found.path, shown.from + leafIndex],
         offset: Math.min(offset, leaf.text.length),
       };
     }
     offset -= leaf.text.length;
   }
   return null;
+};
+
+/**
+ * The Plite point a position anchored on an element stands for: the end of
+ * the text before it when `assoc` is negative, else the start of the text
+ * after it.
+ */
+export const yjsToPliteSpacerPoint = (
+  root: Y.XmlElement,
+  children: NodeList<Descendant>,
+  element: Y.XmlElement,
+  assoc: number
+): Point | null => {
+  const found = alignedParentOf(root, children, element);
+  if (!found) return null;
+  const at = found.line.targets.findIndex(
+    (segment) => segment?.kind === 'element' && segment.node === element
+  );
+  if (at === -1) return null;
+  const shown = found.line.segments[assoc < 0 ? at - 1 : at + 1];
+  if (shown?.kind !== 'text') return null;
+  const leafIndex = assoc < 0 ? shown.leaves.length - 1 : 0;
+  return {
+    path: [...found.path, shown.from + leafIndex],
+    offset: assoc < 0 ? shown.leaves[leafIndex].text.length : 0,
+  };
 };

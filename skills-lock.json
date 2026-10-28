@@ -5,19 +5,19 @@
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/chips/SKILL.md",
-      "computedHash": "2d96ac179a1abf24b7133afc977d45100f061d3f74606be7859f8787297e2bc3"
+      "computedHash": "8afdd375f47e2ca93b95c88931776e480dc36c4faeb98c17e2edf10c815b2851"
     },
     "cleanup": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/cleanup/SKILL.md",
-      "computedHash": "1c0629ca84974792a262e281fbd2f8e9cc88265c2f885ddfdaa701f7eb142731"
+      "computedHash": "845f94eb5d68306984aedc7eef4281dc1a00806095c369df3ee2a9634b50227b"
     },
     "plan-page": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/plan-page/SKILL.md",
-      "computedHash": "2f4f160846b6ea4d46c9512052247be23fb5571ece3a3b90e4d603dda403f049"
+      "computedHash": "7e40b10085b30c6c4f1802df637a934e1efc50bd0102665312e5c14eaadf5694"
     },
     "redo": {
       "source": "udecode/dotai",

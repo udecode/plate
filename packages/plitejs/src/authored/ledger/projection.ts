@@ -1,21 +1,23 @@
-import type { DocumentIndex } from '../../core/change/document-index';
+import { DocumentIndex } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
 import { RootChange } from '../../core/change/root-change';
 import type { JsonNode } from '../../core/change/tokens';
 import { canonicalJsonKey } from '../../core/change/transform';
 import type { ChangedRange } from '../../core/measured-sequence';
+import { getDefined } from '../../internal/get-defined';
 import type { AuthoredFormatProjection } from '../format';
 import { movedRefusal } from '../refusal';
 import type { AuthoredResolveSchema } from '../tree/resolve';
 import {
   compose,
+  isLevelRun,
   keepsOwn,
   Level,
   type ResolvedWindow,
   settles,
   type WrittenList,
 } from './level';
-import type { RunContext } from './runs';
+import { isBuilt, type RunContext, readsRootSpares } from './runs';
 import { countLedgerWork, nodesIn } from './work';
 
 // Each block's own fields, and its text when it holds no block, so the same
@@ -42,10 +44,20 @@ const blocksOf = (nodes: readonly JsonNode[]): string[] =>
  * roots hold that container with the same fields.
  */
 const assertShowsWritten = (
-  written: DocumentIndex,
+  whole: DocumentIndex,
   shown: DocumentIndex,
   windows: readonly ResolvedWindow[]
 ) => {
+  let kept = whole.size;
+
+  while (kept > shown.size && isBuilt(getDefined(whole.child(kept - 1)))) {
+    kept -= 1;
+  }
+
+  const written =
+    kept === whole.size
+      ? whole
+      : DocumentIndex.fromIndexedNodes(whole.nodes.slice(0, kept));
   const compare = ([fromA, toA, fromB, toB]: ChangedRange) => {
     const wroteNodes = written.nodes.slice(fromA, toA);
     const shownNodes = shown.nodes.slice(fromB, toB);
@@ -143,14 +155,37 @@ export class RootProjection extends Level {
     this.projected = index;
   }
 
-  /**
-   * Move to `stored`, resolving again the runs a verdict changed at
-   * `touched`, in `stored`'s ranks, and every run when the schema changed.
-   * Given `written`, what a frame's commands wrote in this root, a lone
-   * pending window takes its slice of that root instead of resolving.
-   * Returns the change from the previous index, or null when the content
-   * did not move.
-   */
+  unpendedSpareReaders(stored: DocumentIndex, context: RunContext): number[] {
+    const { size } = this.slots;
+
+    if (size === 0) return [];
+
+    const ranges = this.stored.changedChildren(stored);
+    const readers: number[] = [];
+
+    for (const first of new Set([0, this.headRank(size - 1)])) {
+      const { run } = this.slots.at(first);
+
+      if (!run || isLevelRun(run) || !readsRootSpares(run.part, context)) {
+        continue;
+      }
+
+      let shift = 0;
+      let reached = false;
+
+      for (const range of ranges) {
+        const [fromA, toA, fromB, toB] = range;
+
+        reached = this.pendReaches(range, first);
+        if (reached || fromA > first) break;
+        shift += toB - fromB - (toA - fromA);
+      }
+      if (!reached) readers.push(first + shift);
+    }
+
+    return readers;
+  }
+
   sync(
     stored: DocumentIndex,
     context: RunContext,
@@ -197,11 +232,13 @@ export class RootProjection extends Level {
     const from = this.projected;
 
     if (sharesNothing(ranges, this.stored, stored)) {
+      const builtBefore = this.builds;
+
       this.build(stored, context);
 
       // The rebuild resolves the root as one window.
       if (written) {
-        let settled = true;
+        let settled = !builtBefore;
 
         this.slots.forEach(0, this.slots.size, (slot) => {
           settled &&= settles(slot.facts, context);

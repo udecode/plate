@@ -266,6 +266,58 @@ type OwnerDeclaration = Readonly<{
   pathOrigin: string;
 }>;
 
+const declaredContentRoots = (
+  schema: CompiledEditorSchema,
+  element: { type?: unknown }
+) => {
+  const ownerType = getElementType(element);
+  const contentRoots = ownerType
+    ? schema.elements.byType.get(ownerType)?.contentRoots
+    : null;
+
+  return ownerType && contentRoots && contentRoots.size > 0
+    ? { contentRoots, ownerType }
+    : null;
+};
+
+const NO_OWNED_ROOTS: readonly string[] = Object.freeze([]);
+
+/**
+ * The content roots `element` owns: for each slot its type declares, the root
+ * its `childRoots` names there, when that names a root other than main.
+ *
+ * @internal
+ */
+export const ownedRootsOf = (
+  schema: CompiledEditorSchema,
+  element: Readonly<Record<string, unknown>>
+): readonly string[] => {
+  const declared = declaredContentRoots(schema, element);
+  const { childRoots } = element;
+
+  if (!declared || typeof childRoots !== 'object' || childRoots === null) {
+    return NO_OWNED_ROOTS;
+  }
+
+  const owned: string[] = [];
+
+  for (const slot of declared.contentRoots.keys()) {
+    const childRoot = Object.hasOwn(childRoots, slot)
+      ? (childRoots as Record<string, unknown>)[slot]
+      : undefined;
+
+    if (
+      typeof childRoot === 'string' &&
+      childRoot.length > 0 &&
+      childRoot !== 'main'
+    ) {
+      owned.push(childRoot);
+    }
+  }
+
+  return owned;
+};
+
 const readOwnerDeclaration = (
   schema: CompiledEditorSchema,
   ownerRoot: RootKey,
@@ -273,12 +325,11 @@ const readOwnerDeclaration = (
   path: readonly number[],
   pathOrigin: string
 ): OwnerDeclaration | null => {
-  const ownerType = getElementType(owner);
-  const contentRoots = ownerType
-    ? schema.elements.byType.get(ownerType)?.contentRoots
-    : null;
+  const declared = declaredContentRoots(schema, owner);
 
-  if (!ownerType || !contentRoots || contentRoots.size === 0) return null;
+  if (!declared) return null;
+
+  const { contentRoots, ownerType } = declared;
 
   return profileCoreDuration('schema-root-ownership-index-owner-visit', () => {
     const id = getOwnerId(owner);

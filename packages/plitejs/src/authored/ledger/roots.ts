@@ -12,7 +12,7 @@ export const rootOf = (value: JsonEditorValue, root: string) =>
   root === 'main'
     ? rootIndexOf(value, 'children')
     : rootIndexOf(
-        value.roots as Readonly<Record<string, readonly never[]>>,
+        (value.roots ?? {}) as Readonly<Record<string, readonly never[]>>,
         root
       );
 

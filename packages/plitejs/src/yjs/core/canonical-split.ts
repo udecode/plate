@@ -1,366 +1,288 @@
 import * as Y from 'yjs';
 
-import {
-  type Descendant,
-  type Element,
-  NodeApi,
-  type Path,
-  type Text,
-} from '../../index';
-import {
-  getYjsElementType,
-  type YjsAttributeRecord,
-  type YjsNode,
-} from './attributes';
+import type { DocumentIndex, NodeList } from '../../core/change/document-index';
+import { type Descendant, type Element, NodeApi } from '../../index';
+import { getDefined } from '../../internal/get-defined';
+import { yjsAddressesOf } from './addresses';
+import type { YjsNode } from './attributes';
+import type { Boundary } from './boundaries';
 import {
   createYjsNode,
+  createYjsNodes,
   createYjsPropertyContext,
-  getYjsNode,
-  getYjsParent,
+  createYjsPropertyLocationAt,
   getYjsVisibleChildren,
   insertYjsChild,
-  splitVisibleYjsChildren,
-  type YjsPropertyContext,
-  type YjsPropertyLocation,
+  moveVisibleYjsChildren,
   type YjsSetPropertyResolver,
+  type YjsWrite,
 } from './document';
-import { areJsonLikeValuesEqual } from './json-equality';
-import { nextPath } from './path';
+import { parentPath } from './path';
 import {
-  createYjsRunEncoder,
-  createYjsTextChain,
-  cutTextChain,
-  rewriteTextRuns,
+  alignYjsChildren,
+  cutTextAt,
+  isBareTextRun,
   segmentPliteChildren,
-  segmentYjsChildren,
+  yjsTextLength,
 } from './text-runs';
 
-type CanonicalSplit = Readonly<{
-  elementPath: Path;
-  elementProperties: YjsAttributeRecord;
-  rightLeaves: readonly Text[] | null;
-  textPath: Path;
-  textGroup: number;
-  textOffset: number;
-}>;
-
-const isElement = (node: Descendant | null): node is Element =>
-  node !== null && NodeApi.isElement(node);
-
-const isText = (node: Descendant | null): node is Text =>
-  node !== null && NodeApi.isText(node);
-
-const nodeProperties = (
-  node: Element | Text,
-  contentKey: 'children' | 'text'
-): YjsAttributeRecord => {
-  const properties: YjsAttributeRecord = {};
-  const record = node as Readonly<Record<string, unknown>>;
-
-  for (const key of Object.keys(node)) {
-    if (key !== contentKey) properties[key] = record[key];
-  }
-
-  return properties;
-};
-
-const nodePropertiesEqual = (
-  left: Element | Text,
-  right: Element | Text,
-  contentKey: 'children' | 'text'
-) =>
-  areJsonLikeValuesEqual(
-    nodeProperties(left, contentKey),
-    nodeProperties(right, contentKey)
+const letterCount = (leaves: readonly Descendant[]) =>
+  leaves.reduce(
+    (sum, leaf) => sum + (NodeApi.isText(leaf) ? leaf.text.length : 0),
+    0
   );
 
-const findSplitText = (
-  before: Element,
-  left: Element,
-  right: Element,
-  elementPath: Path
-): CanonicalSplit | null => {
-  for (let index = 0; index < before.children.length; index++) {
-    const originalText = before.children[index] ?? null;
-    const leftText = left.children[index] ?? null;
-    const rightText = right.children[0] ?? null;
-
+/** How many empty texts a split's tokens end its first line with. */
+const endingTexts = (tokens: Boundary['tokens']) => {
+  let count = 0;
+  for (const [index, token] of tokens.entries()) {
+    if (token.kind === 'close' && token.nodeKind === 'element') break;
     if (
-      !isText(originalText) ||
-      !isText(leftText) ||
-      !isText(rightText) ||
-      originalText.text !== leftText.text + rightText.text ||
-      !nodePropertiesEqual(originalText, leftText, 'text') ||
-      !areJsonLikeValuesEqual(
-        before.children.slice(0, index),
-        left.children.slice(0, index)
-      ) ||
-      left.children.length !== index + 1 ||
-      !areJsonLikeValuesEqual(
-        before.children.slice(index + 1),
-        right.children.slice(1)
-      )
+      token.kind === 'open' &&
+      token.nodeKind === 'text' &&
+      tokens[index + 1]?.kind === 'close'
     ) {
-      continue;
+      count += 1;
     }
+  }
+  return count;
+};
 
-    const segments = segmentPliteChildren(before.children);
-    const textGroup = segments.findIndex(
-      (segment) =>
-        segment.kind === 'text' &&
-        segment.from <= index &&
-        index < segment.from + segment.leaves.length
+const secondLineStart = (
+  chain: readonly Y.XmlText[],
+  at: number,
+  tokens: Boundary['tokens']
+) => {
+  let kept = at;
+  let ending = endingTexts(tokens);
+  while (
+    ending > 0 &&
+    kept < chain.length &&
+    yjsTextLength(chain[kept]) === 0
+  ) {
+    kept += 1;
+    ending -= 1;
+  }
+  return kept;
+};
+
+/**
+ * Write one split to Yjs as the shape that keeps every letter and child: a
+ * cut inside a text becomes a cut embed in its source and a view of the
+ * letters after it, and each child after the cut moves to the new node by
+ * placeholder. `before` is the document the split applies to and `after` the
+ * document with it applied. Returns the two lines it wrote, or null, before
+ * any write, when the Yjs children do not line up with `before`.
+ */
+export const writeSplit = (
+  write: YjsWrite,
+  before: DocumentIndex,
+  after: DocumentIndex,
+  boundary: Boundary,
+  isSetValued: YjsSetPropertyResolver,
+  schemaRoot: string | null
+): readonly [Y.XmlElement, Y.XmlElement] | null => {
+  const { root } = write;
+  const { at, levels, text } = boundary;
+  const afterNodes = after.nodes as NodeList<Descendant>;
+  const open = before
+    .openContextAt(at)
+    .filter((range) => range.contentFrom <= at && at <= range.contentTo);
+  const split = open.filter((range) => range.kind === 'element').slice(-levels);
+  const inner = split.at(-1);
+  if (!inner || split.length !== levels) return null;
+  // Each copy the split opens, outer to inner, by the position of its open
+  // token, since a copy below the outer one need not follow its original.
+  const rights = boundary.tokens.flatMap((token, index) => {
+    if (token.kind !== 'open' || token.nodeKind !== 'element') return [];
+    const position = at + index + 1;
+    const copy = after
+      .openContextAt(position)
+      .findLast(
+        (range) =>
+          range.kind === 'element' &&
+          range.contentFrom <= position &&
+          position <= range.contentTo
+      );
+    return copy ? [copy.path] : [];
+  });
+  if (rights.length !== levels) return null;
+  const innerRight = getDefined(rights.at(-1));
+
+  const addresses = yjsAddressesOf(root, before.nodes as NodeList<Descendant>);
+  const nodes: Y.XmlElement[] = [];
+  for (let depth = 1; depth <= inner.path.length; depth++) {
+    const node = addresses.elementAt(inner.path.slice(0, depth));
+    if (!node) return null;
+    nodes.push(node);
+  }
+  const projected = (before.node(inner.path) as Element).children;
+
+  const element = nodes[inner.path.length - 1];
+  const visible = getYjsVisibleChildren(root, element);
+  const aligned = alignYjsChildren(projected, visible);
+  if (!aligned) return null;
+  const { segments, targets } = aligned;
+
+  const textRange = text ? open.at(-1) : undefined;
+  let child = projected.length;
+  for (let index = 0; index < projected.length; index++) {
+    if (before.childPosition(inner.path, index) >= at) {
+      child = index;
+      break;
+    }
+  }
+  if (textRange) child = getDefined(textRange.path.at(-1));
+  const left = after.node(inner.path) as Element;
+  // A split that leaves the line above with no content keeps the line's
+  // element with its content and inserts the empty line above, as a peer
+  // reads it back.
+  if (
+    levels === 1 &&
+    left.children.every((node) => NodeApi.isText(node) && node.text === '')
+  ) {
+    const parent = inner.path.length === 1 ? root : getDefined(nodes.at(-2));
+    const above = createYjsNode(
+      left,
+      isSetValued,
+      createYjsPropertyContext(left, {
+        ...createYjsPropertyLocationAt(
+          afterNodes,
+          parentPath(inner.path),
+          schemaRoot
+        ),
+        path: inner.path,
+      })
+    ) as Y.XmlElement;
+    insertYjsChild(
+      write,
+      parent,
+      parent === root
+        ? inner.path[0]
+        : getYjsVisibleChildren(root, parent).indexOf(element),
+      above
     );
-    const group = segments[textGroup];
-    if (group?.kind !== 'text') return null;
-    const [rightGroup] = segmentPliteChildren(right.children);
-    return {
-      elementPath,
-      elementProperties: nodeProperties(right, 'children'),
-      rightLeaves:
-        nodePropertiesEqual(originalText, rightText, 'text') ||
-        rightGroup?.kind !== 'text'
-          ? null
-          : rightGroup.leaves,
-      textPath: [...elementPath, index],
-      textGroup,
-      textOffset:
-        group.leaves
-          .slice(0, index - group.from)
-          .reduce((sum, leaf) => sum + leaf.text.length, 0) +
-        leftText.text.length,
-    };
+    return [above, element];
   }
-
-  return null;
-};
-
-const findCanonicalSplitAtLevel = (
-  before: readonly Descendant[],
-  after: readonly Descendant[],
-  parentPath: Path
-): CanonicalSplit | null => {
-  let from = 0;
-
-  while (
-    from < before.length &&
-    from < after.length &&
-    areJsonLikeValuesEqual(before[from], after[from])
+  const inside = segments.findIndex(
+    (segment) =>
+      segment.kind === 'text' &&
+      segment.from <= child &&
+      child < segment.from + segment.leaves.length &&
+      (textRange !== undefined || segment.from < child)
+  );
+  let moveFrom = visible.length;
+  const moved: YjsNode[] = [];
+  const target = targets[inside];
+  if (target?.kind === 'text') {
+    const leaves = projected.slice(segments[inside].from, child);
+    const cut = cutTextAt(
+      write,
+      target.chain,
+      letterCount(leaves) + (textRange ? at - textRange.contentFrom : 0)
+    );
+    moveFrom =
+      target.from +
+      (cut.view
+        ? cut.at
+        : secondLineStart(target.chain, cut.at, boundary.tokens));
+    if (cut.view) moved.push(cut.view);
+  } else {
+    for (const [index, segment] of segments.entries()) {
+      const shown = targets[index];
+      if (segment.from >= child && shown) {
+        moveFrom =
+          shown.from +
+          (shown.kind === 'text'
+            ? secondLineStart(shown.chain, 0, boundary.tokens)
+            : 0);
+        break;
+      }
+    }
+  }
+  // An empty text that starts the new line before an inline element gets a
+  // Yjs text only to hold its props. A peer's import deletes a bare one, and
+  // with it the letters typed into it before that delete arrives.
+  const [first] = segmentPliteChildren(
+    (after.node(innerRight) as Element).children
+  );
+  if (
+    moved.length === 0 &&
+    moveFrom < visible.length &&
+    !(visible[moveFrom] instanceof Y.XmlText) &&
+    first?.kind === 'text' &&
+    !isBareTextRun(first)
   ) {
-    from += 1;
+    moved.push(
+      ...createYjsNodes(
+        first.leaves,
+        isSetValued,
+        createYjsPropertyLocationAt(afterNodes, innerRight, schemaRoot)
+      )
+    );
+  }
+  moved.push(...moveVisibleYjsChildren(write, element, moveFrom));
+  if (getYjsVisibleChildren(root, element).length === 0) {
+    insertYjsChild(
+      write,
+      element,
+      0,
+      createYjsNodes(
+        (after.node(inner.path) as Element).children,
+        isSetValued,
+        createYjsPropertyLocationAt(afterNodes, inner.path, schemaRoot)
+      )[0]
+    );
   }
 
-  let suffixCount = 0;
-
-  while (
-    suffixCount < before.length - from &&
-    suffixCount < after.length - from &&
-    areJsonLikeValuesEqual(
-      before.at(-1 - suffixCount),
-      after.at(-1 - suffixCount)
-    )
-  ) {
-    suffixCount += 1;
-  }
-
-  const beforeChanged = before.slice(from, before.length - suffixCount);
-  const afterChanged = after.slice(from, after.length - suffixCount);
-
-  if (beforeChanged.length === 1 && afterChanged.length === 2) {
-    const original = beforeChanged[0] ?? null;
-    const left = afterChanged[0] ?? null;
-    const right = afterChanged[1] ?? null;
-
-    if (
-      isElement(original) &&
-      isElement(left) &&
-      isElement(right) &&
-      nodePropertiesEqual(original, left, 'children')
-    ) {
-      const split = findSplitText(original, left, right, [...parentPath, from]);
-
-      if (split !== null) return split;
-    }
-  }
-
-  if (before.length !== after.length) return null;
-
-  let nested: CanonicalSplit | null = null;
-
-  for (let index = 0; index < before.length; index++) {
-    const oldNode = before[index] ?? null;
-    const newNode = after[index] ?? null;
-
-    if (areJsonLikeValuesEqual(oldNode, newNode)) continue;
-    if (
-      nested !== null ||
-      !isElement(oldNode) ||
-      !isElement(newNode) ||
-      !nodePropertiesEqual(oldNode, newNode, 'children')
-    ) {
-      return null;
-    }
-
-    nested = findCanonicalSplitAtLevel(oldNode.children, newNode.children, [
-      ...parentPath,
-      index,
-    ]);
-
-    if (nested === null) return null;
-  }
-
-  return nested;
-};
-
-export const findCanonicalSplit = (
-  before: readonly Descendant[],
-  after: readonly Descendant[]
-): CanonicalSplit | null => findCanonicalSplitAtLevel(before, after, []);
-
-const copyYjsNodes = (nodes: readonly YjsNode[]): YjsNode[] => {
-  const copy = new Array<YjsNode>(nodes.length);
-
-  for (let index = 0; index < nodes.length; index++) {
-    const node = nodes[index];
-
-    if (node === undefined) {
-      throw new Error('Cannot split a sparse Yjs child array.');
-    }
-    copy[index] = node;
-  }
-
-  return copy;
-};
-
-const createSplitYjsElement = (
-  original: Y.XmlElement,
-  properties: YjsAttributeRecord,
-  children: readonly YjsNode[],
-  isSetValued: YjsSetPropertyResolver,
-  context: YjsPropertyContext
-): Y.XmlElement => {
-  const elementType =
-    typeof properties.type === 'string'
-      ? properties.type
-      : getYjsElementType(original);
-  const element = createYjsNode(
-    { ...properties, children: [], type: elementType },
-    isSetValued,
-    context
-  );
-
-  if (!(element instanceof Y.XmlElement)) {
-    throw new Error('Cannot split a Yjs element into text.');
-  }
-  if (children.length > 0) element.insert(0, copyYjsNodes(children));
-
-  return element;
-};
-
-const createYjsPropertyLocationFromPath = (
-  root: Y.XmlElement,
-  parent: Path,
-  schemaRoot: string | null
-): YjsPropertyLocation => {
-  const ancestors: string[] = [];
-  const current: number[] = [];
-
-  for (const index of parent) {
-    current.push(index);
-
-    const node = getYjsNode(root, current);
-
-    if (!(node instanceof Y.XmlElement)) {
-      throw new Error(
-        `Cannot resolve Yjs property parent context at ${parent.join('.')}.`
-      );
-    }
-    ancestors.unshift(getYjsElementType(node));
-  }
-
-  return { ancestors, path: parent, root: schemaRoot };
-};
-
-export const applyCanonicalSplitToYjs = (
-  root: Y.XmlElement,
-  split: CanonicalSplit,
-  isSetValued: YjsSetPropertyResolver,
-  schemaRoot: string | null
-): Y.XmlElement => {
-  const target = getYjsNode(root, split.elementPath);
-
-  if (!(target instanceof Y.XmlElement)) {
-    throw new Error('Cannot lower split because the element boundary is gone.');
-  }
-  const group = segmentYjsChildren(getYjsVisibleChildren(root, target))[
-    split.textGroup
-  ];
-  if (group?.kind !== 'text') {
-    throw new Error('Cannot lower split because the text boundary is gone.');
-  }
-  const physicalElementPosition = cutTextChain(
-    root,
-    target,
-    group.chain,
-    split.textOffset
-  );
-
-  const { index, parent } = getYjsParent(root, split.elementPath);
-  const rightChildren = splitVisibleYjsChildren(
-    root,
-    target,
-    physicalElementPosition
-  );
-  const rightNode = {
-    ...split.elementProperties,
-    children: [],
-    type:
-      typeof split.elementProperties.type === 'string'
-        ? split.elementProperties.type
-        : getYjsElementType(target),
-  } as Descendant;
-  const right = createSplitYjsElement(
-    target,
-    split.elementProperties,
-    rightChildren,
-    isSetValued,
-    createYjsPropertyContext(rightNode, {
-      ...createYjsPropertyLocationFromPath(
-        root,
-        split.elementPath.slice(0, -1),
+  let made: Y.XmlElement | null = null;
+  for (let level = split.length - 1; level >= 0; level--) {
+    const { path } = split[level];
+    const original = nodes[path.length - 1];
+    const children: YjsNode[] = made
+      ? [
+          made,
+          ...moveVisibleYjsChildren(
+            write,
+            original,
+            getYjsVisibleChildren(root, original).indexOf(nodes[path.length]) +
+              1
+          ),
+        ]
+      : moved;
+    const rightPath = rights[level];
+    const right = after.node(rightPath) as Element;
+    const context = createYjsPropertyContext(right, {
+      ...createYjsPropertyLocationAt(
+        afterNodes,
+        parentPath(rightPath),
         schemaRoot
       ),
-      path: nextPath(split.elementPath),
-    })
-  );
-
-  insertYjsChild(root, parent, index + 1, right);
-
-  // Patching the moved runs in place, instead of refusing the split, keeps a
-  // peer's concurrent typing in the block it split.
-  if (split.rightLeaves) {
-    const encode = createYjsRunEncoder(isSetValued, {
-      ...createYjsPropertyLocationFromPath(
-        root,
-        nextPath(split.elementPath),
-        schemaRoot
-      ),
-      offset: 0,
+      path: rightPath,
     });
-    const rightGroup = segmentYjsChildren(
-      getYjsVisibleChildren(root, right)
-    )[0];
-    if (rightGroup?.kind === 'text') {
-      rewriteTextRuns(rightGroup.chain, split.rightLeaves, encode);
-    } else {
-      insertYjsChild(
-        root,
-        right,
-        0,
-        createYjsTextChain(split.rightLeaves, encode)
-      );
-    }
+    const created = createYjsNode(
+      children.length > 0 ? { ...right, children: [] } : right,
+      isSetValued,
+      context
+    ) as Y.XmlElement;
+    if (children.length > 0) created.insert(0, children);
+    made = created;
   }
 
-  return right;
+  const outer = split[0];
+  const spine = getDefined(made);
+  if (outer.path.length === 1) {
+    insertYjsChild(write, root, outer.path[0] + 1, spine);
+  } else {
+    const parent = nodes[outer.path.length - 2];
+    insertYjsChild(
+      write,
+      parent,
+      getYjsVisibleChildren(root, parent).indexOf(
+        nodes[outer.path.length - 1]
+      ) + 1,
+      spine
+    );
+  }
+  return [nodes[outer.path.length - 1], spine];
 };

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-28-pagination-demo-list-callout",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-28-pagination-demo-list-callout.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Install the list and callout kits in the pagination demo",
+  "targets": [
+    {
+      "name": "pagination-demo",
+      "files": ["apps/www/src/registry/examples/pagination-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-28-pagination-install-list-callout-kits-48051be3",
+      "kind": "wiring",
+      "summary": "Install the list and callout kits, so lists, todos and callouts render on pages",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["pagination-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-28",
+          "entry": "2026-10-28-pagination-demo-list-callout",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

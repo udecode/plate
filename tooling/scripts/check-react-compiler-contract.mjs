@@ -7,8 +7,18 @@ import { pathToFileURL } from 'node:url';
 
 import { parse } from '@babel/parser';
 
+import {
+  enforceBaseline,
+  groupFindings,
+  lineIdentity,
+  readBaseline,
+} from './finding-baseline.mjs';
+
 const repoRoot = resolve(import.meta.dirname, '../..');
+const BASELINE = 'tooling/scripts/check-react-compiler-contract-baseline.json';
+const RENDER_STATE_READ = 'render-state-read';
 const registryRoot = 'apps/www/src/registry/';
+const copiedUiRoot = 'apps/www/src/registry/components/editor/';
 const skippedManifestRoots = [
   'apps/www/public/',
   'docs/transplant/',
@@ -17,7 +27,12 @@ const skippedManifestRoots = [
 const exactReactVersion = '19.2.8';
 
 const getMemberName = (node) => {
-  if (node?.type !== 'MemberExpression') return undefined;
+  if (
+    node?.type !== 'MemberExpression' &&
+    node?.type !== 'OptionalMemberExpression'
+  ) {
+    return undefined;
+  }
   if (!node.computed && node.property.type === 'Identifier') {
     return node.property.name;
   }
@@ -77,6 +92,252 @@ const parseReactSource = (source, file) =>
     sourceFilename: file,
     sourceType: 'unambiguous',
   });
+
+const functionTypes = new Set([
+  'ArrowFunctionExpression',
+  'ClassMethod',
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ObjectMethod',
+]);
+const callTypes = new Set(['CallExpression', 'OptionalCallExpression']);
+const memberTypes = new Set(['MemberExpression', 'OptionalMemberExpression']);
+const skippedKeys = new Set(['comments', 'errors', 'extra', 'loc', 'tokens']);
+
+const isRenderFunctionName = (name) =>
+  /^[A-Z]/.test(name) || /^use[A-Z]/.test(name);
+
+const renderCallbackCalls = new Set([
+  'every',
+  'filter',
+  'find',
+  'findIndex',
+  'flatMap',
+  'forEach',
+  'map',
+  'reduce',
+  'some',
+  'toSorted',
+  'useMemo',
+]);
+const handleCalls = new Set(['plugin', 'useEditor', 'useEditorRef']);
+const isStoreHook = (name) => /^use\w*Store$/.test(name ?? '');
+
+const chainOf = (expression) => {
+  const called = [];
+  const names = [];
+  let current = unwrapExpression(expression);
+
+  while (current) {
+    if (memberTypes.has(current.type)) {
+      names.unshift(getMemberName(current));
+      current = unwrapExpression(current.object);
+    } else if (callTypes.has(current.type)) {
+      current = unwrapExpression(current.callee);
+      called.push(
+        current.type === 'Identifier' ? current.name : getMemberName(current)
+      );
+    } else {
+      if (current.type === 'Identifier') names.unshift(current.name);
+      break;
+    }
+  }
+
+  return { called, names };
+};
+
+const createHandleExpander = (ast) => {
+  const chains = new Map();
+  const declarations = [];
+  const expand = (names) => [
+    ...(chains.get(names[0]) ?? names.slice(0, 1)),
+    ...names.slice(1),
+  ];
+
+  walk(ast, (node) => {
+    if (
+      node.type === 'VariableDeclarator' &&
+      node.init &&
+      !functionTypes.has(unwrapExpression(node.init).type)
+    ) {
+      declarations.push(node);
+    }
+  });
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const { id, init } of declarations) {
+      const { called, names } = chainOf(init);
+      const call = unwrapExpression(init);
+      const storeHandle =
+        callTypes.has(call.type) &&
+        call.arguments.length === 0 &&
+        isStoreHook(called[0]);
+      if (
+        names.length === 0 ||
+        !(storeHandle || called.every((name) => handleCalls.has(name)))
+      ) {
+        continue;
+      }
+
+      const base = expand(names);
+      const bindings =
+        id.type === 'Identifier'
+          ? [[id.name, base]]
+          : id.type === 'ObjectPattern'
+            ? id.properties
+                .filter(
+                  (property) =>
+                    property.type === 'ObjectProperty' &&
+                    !property.computed &&
+                    property.value.type === 'Identifier'
+                )
+                .map((property) => [
+                  property.value.name,
+                  [...base, property.key.name ?? property.key.value],
+                ])
+            : [];
+
+      for (const [name, chain] of bindings) {
+        if (!chains.has(name)) {
+          chains.set(name, chain);
+          changed = true;
+        }
+      }
+    }
+  }
+
+  return expand;
+};
+
+const isStateRead = (call, expand) => {
+  const chain = chainOf(call.callee);
+  const names = expand(chain.names);
+  const last = names.at(-1);
+  const pluginIndex = names.indexOf('plugin');
+
+  const opensPlugin = last === 'plugin';
+  const usesAnotherCallResult = chain.called.some(
+    (name) => !handleCalls.has(name) && !isStoreHook(name)
+  );
+  if (opensPlugin || usesAnotherCallResult) return false;
+
+  return (
+    names.includes('read') ||
+    (pluginIndex !== -1 && names.includes('api', pluginIndex)) ||
+    (isStoreHook(names[0]) && /^get[A-Z]/.test(last)) ||
+    (['get', 'getSnapshot'].includes(last) &&
+      names.length > 1 &&
+      call.arguments.length === 0)
+  );
+};
+
+const visitRender = (node, onCall) => {
+  if (!node || typeof node !== 'object') return;
+  if (Array.isArray(node)) {
+    for (const child of node) visitRender(child, onCall);
+    return;
+  }
+  if (typeof node.type !== 'string' || functionTypes.has(node.type)) return;
+  if (callTypes.has(node.type)) {
+    onCall(node);
+    if (renderCallbackCalls.has(chainOf(node.callee).names.at(-1))) {
+      for (const callback of node.arguments) {
+        if (functionTypes.has(callback.type)) {
+          visitRender(callback.body, onCall);
+        }
+      }
+    }
+  }
+  for (const [key, value] of Object.entries(node)) {
+    if (!skippedKeys.has(key)) visitRender(value, onCall);
+  }
+};
+
+const topLevelFunctions = (ast) =>
+  ast.program.body.flatMap((statement) => {
+    const declaration =
+      statement.type === 'ExportNamedDeclaration' ||
+      statement.type === 'ExportDefaultDeclaration'
+        ? statement.declaration
+        : statement;
+
+    if (declaration?.type === 'FunctionDeclaration' && declaration.id) {
+      return [[declaration.id.name, declaration]];
+    }
+    if (declaration?.type !== 'VariableDeclaration') return [];
+
+    return declaration.declarations.flatMap((declarator) => {
+      const init = unwrapExpression(declarator.init);
+
+      return declarator.id.type === 'Identifier' &&
+        functionTypes.has(init?.type)
+        ? [[declarator.id.name, init]]
+        : [];
+    });
+  });
+
+const isStaticRenderer = (file) => file.endsWith('-static.tsx');
+
+const auditRenderStateReads = (ast, source, file) => {
+  if (isStaticRenderer(file)) return [];
+
+  const expand = createHandleExpander(ast);
+  const functions = topLevelFunctions(ast);
+  const readingHelpers = new Map();
+  const readOf = (call) => {
+    if (isStateRead(call, expand)) return call;
+    const callee = unwrapExpression(call.callee);
+
+    return callee.type === 'Identifier'
+      ? readingHelpers.get(callee.name)
+      : undefined;
+  };
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [name, fn] of functions) {
+      if (isRenderFunctionName(name) || readingHelpers.has(name)) continue;
+      visitRender(fn.body, (call) => {
+        const read = readOf(call);
+        if (read && !readingHelpers.has(name)) {
+          readingHelpers.set(name, read);
+          changed = true;
+        }
+      });
+    }
+  }
+
+  const issues = [];
+  for (const [name, fn] of functions) {
+    if (!isRenderFunctionName(name)) continue;
+    visitRender(fn.body, (call) => {
+      const read = readOf(call);
+      if (!read) return;
+
+      const text = source.slice(read.start, read.end).replace(/\s+/g, ' ');
+      const shown = text.length > 80 ? `${text.slice(0, 77)}...` : text;
+      const via =
+        read === call
+          ? ''
+          : ` through ${source.slice(call.callee.start, call.callee.end)}()`;
+
+      issues.push({
+        ...createIssue(
+          file,
+          call,
+          `${name} calls ${shown}${via} while rendering, and the React Compiler caches that read of editor or plugin state on its receiver and arguments; subscribe with useEditorSelector or usePluginStore, read it in a handler or effect, or take a mount-time snapshot with useState(() => ...)`
+        ),
+        identity: lineIdentity(source, call.loc.start.line),
+        rule: RENDER_STATE_READ,
+      });
+    });
+  }
+
+  return issues;
+};
 
 export function auditRegistryReactSource(source, file = 'fixture.tsx') {
   if (!file.startsWith(registryRoot)) return [];
@@ -174,6 +435,10 @@ export function auditRegistryReactSource(source, file = 'fixture.tsx') {
       );
     }
   });
+
+  if (file.startsWith(copiedUiRoot)) {
+    issues.push(...auditRenderStateReads(ast, source, file));
+  }
 
   return issues;
 }
@@ -389,20 +654,41 @@ export function auditReactCompilerContract() {
   };
 }
 
+const formatIssue = (issue) =>
+  `- ${issue.file}:${issue.line}:${issue.column}: ${issue.reason}`;
+
 function runAudit() {
   const { fileCount, issues } = auditReactCompilerContract();
+  const reads = issues.filter((issue) => issue.rule === RENDER_STATE_READ);
+  const failures = issues.filter((issue) => issue.rule !== RENDER_STATE_READ);
 
-  if (issues.length > 0) {
+  if (failures.length > 0) {
     console.error('React Compiler contract audit failed:');
-    for (const issue of issues) {
-      console.error(
-        `- ${issue.file}:${issue.line}:${issue.column}: ${issue.reason}`
-      );
-    }
+    console.error(failures.map(formatIssue).join('\n'));
     process.exit(1);
   }
 
-  console.log(`React Compiler contract audit passed (${fileCount} files).`);
+  const known = readBaseline(BASELINE)[RENDER_STATE_READ] ?? {};
+  process.exitCode = enforceBaseline({
+    file: BASELINE,
+    found: { [RENDER_STATE_READ]: {}, ...groupFindings(reads) },
+    lowerCommand: 'node tooling/scripts/check-react-compiler-contract.mjs',
+    mode: process.argv.includes('--check')
+      ? 'check'
+      : process.argv.includes('--init')
+        ? 'init'
+        : 'lower',
+    newFindingsHelp: [
+      'New render-time reads of editor or plugin state in copied UI:',
+      ...reads
+        .filter((issue) => !known[issue.file]?.includes(issue.identity))
+        .map(formatIssue),
+    ].join('\n'),
+    rules: [RENDER_STATE_READ],
+  });
+  if (process.exitCode === 0) {
+    console.log(`React Compiler contract audit passed (${fileCount} files).`);
+  }
 }
 
 if (

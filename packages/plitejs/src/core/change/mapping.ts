@@ -31,7 +31,7 @@ export const getExactDocumentChangeRelocation = (
   root: string,
   before: DocumentIndex
 ): DocumentChangeRelocation | null => {
-  const exact = getInternalDocumentRootChange(change, root)?.movedNode(before);
+  const exact = getInternalDocumentRootChange(change, root)?.exactMove(before);
 
   return exact
     ? Object.freeze({
@@ -255,14 +255,14 @@ export const deriveRootRelocations = (
   before: DocumentIndex,
   after: DocumentIndex = change.apply(before)
 ): readonly DocumentChangeRelocation[] => {
-  const exactMove = change.movedNode(before);
+  const moved = change.movedNode(before);
 
-  if (exactMove) {
+  if (moved) {
     return Object.freeze([
       Object.freeze({
-        path: exactMove.path,
+        path: moved.path,
         root: root === 'main' ? null : root,
-        targetPath: exactMove.targetPath,
+        targetPath: moved.targetPath,
       }),
     ]);
   }

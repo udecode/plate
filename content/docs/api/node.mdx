@@ -210,5 +210,5 @@ They are generics meaning that sometimes they will return a subset of `Node` typ
 
 
 ```typescript
-type NodeEntry<T extends Node = Node> = [T, Path];
+type NodeEntry<T = Node> = readonly [T, Path];
 ```
