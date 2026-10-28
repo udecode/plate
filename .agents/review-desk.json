@@ -47,5 +47,13 @@
   "signals": {
     "core": { "label": "Plite core", "paths": ["packages/plitejs/src/**"] },
     "api": { "label": "API manifest", "paths": ["apps/www/src/generated/api-reference-manifest.json"] }
-  }
+  },
+  "triage": {
+    "registers": {
+      "udecode/plate": "docs/triage/issues.tsv",
+      "udecode/plate-private": "docs/triage/plate-private.tsv"
+    },
+    "moved": "docs/triage/moved.tsv"
+  },
+  "baselines": ["packages/plitejs/scripts/authored-decision-order-baseline.json", "apps/www/scripts/autoformat-input-rules-baseline.json"]
 }
