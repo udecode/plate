@@ -1,0 +1,35 @@
+name: Team Notify
+
+on:
+  push:
+    branches: [next]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Post Team lines to Discord
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.repository == 'udecode/plate'
+    env:
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+    steps:
+      - name: Skip without a bot token
+        if: env.DISCORD_BOT_TOKEN == ''
+        run: echo "::notice::DISCORD_BOT_TOKEN is not set, so this push posted no team message."
+
+      - name: Checkout
+        if: env.DISCORD_BOT_TOKEN != ''
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            tooling/scripts/notify.mjs
+            .agents/pstack.json
+          sparse-checkout-cone-mode: false
+
+      - name: Post Team lines
+        if: env.DISCORD_BOT_TOKEN != ''
+        run: node tooling/scripts/notify.mjs landed "$GITHUB_EVENT_PATH"

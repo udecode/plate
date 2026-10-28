@@ -80,6 +80,7 @@
     "lint:baseline": "node tooling/oxlint/plate-baseline.mjs",
     "lint:task": "node tooling/scripts/lint-task.mjs",
     "lint:type-aware": "oxlint --type-aware --threads=2 --report-unused-disable-directives-severity=error .",
+    "notify": "node tooling/scripts/notify.mjs",
     "nuke:node_modules": "rimraf '**/node_modules'",
     "p:brl": "sh tooling/scripts/brl.sh",
     "p:build": "cd ${INIT_CWD:-.} && pnpm p:tsdown",

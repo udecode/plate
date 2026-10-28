@@ -120,6 +120,12 @@ Older plans, ledger records and decision pages name retired commands such as `$t
 - A commit message, and a PR title or body an agent writes into `next`, never closes an issue. Name an issue as `plate#<N>`. Never put a closing keyword, any form of close, fix or resolve, right before `#<N>`, `udecode/plate#<N>` or the issue's URL, even with a colon between them. So a message writes the command `triage fix #<N>` as `triage fix plate#<N>`, and land.mjs refuses a message that does not. `next` is GitHub's default branch, so a closing keyword closes the issue when the commit lands or the PR merges, as `f512cc3bed`'s body closed plate#5228 before its reporter could retest. The Triage playbook's GitHub state says when an issue closes.
 - When the user explicitly says to merge a PR, merge it: do not wait for CI, do not ask again, and use an admin merge when needed. This replaces pstack's Shipping verification for that merge.
 
+## Team notifications
+
+- Plate-bot posts to the team's #plate-next Discord channel, which only the `dev` role can read. `pnpm notify` mentions only the `dev` role or a login that `notify.people` in `.agents/pstack.json` lists, so its messages proceed without asking, as the Messages rule says for a message only team members can read.
+- A land message gets a `Team:` line when a teammate will notice the change or must act on it, such as a command they type, a setup step, something to install, a contribution policy or a result they see. Use `Team-Action:` instead when every teammate must act, which pings @dev. A change only agents act on, such as a skill's internal steps, a refactor or a test, gets neither line. The `Team notify` workflow posts each line once the commit reaches `next`.
+- When a session finds a teammate's setup or workflow off, such as a missing private half, a PR opened by hand, an issue filed outside the draft flow or a land refused for a missing source, it sends that teammate what is off and how to fix it with `pnpm notify send --to <github-login> "<text>"`. The command skips a message when the same machine sent that person the same text in the last 24 hours.
+
 ## Worktrees
 
 - **Pin `origin/HEAD` to `next`.** The desktop app cuts a new worktree from `origin/HEAD`. GitHub's default branch is `next` (`gh repo view udecode/plate --json defaultBranchRef`, 2026-10-27), and the pin still repairs a clone whose `origin/HEAD` names `main`. The pstack block's Git rule says how to keep `origin/HEAD` on `next`, and the Claude Code SessionStart hook runs `.agents/pstack/head.mjs` to do it.
