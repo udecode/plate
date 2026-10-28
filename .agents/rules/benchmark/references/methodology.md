@@ -46,7 +46,10 @@ Record before measuring:
 - the host's core count, and its load average beside each measured run;
 - target-specific materiality and noise rule. Reuse an existing budget when it
   is honest; otherwise predeclare both an absolute and relative delta against
-  observed baseline variability before reading the candidate result.
+  observed baseline variability before reading the candidate result. A paired
+  wall-clock line with both parts gives them to `scripts/paired-timing.mjs` as
+  `budgetLaw`, so each run works out its ratio from its own base; a ratio
+  worked out from another run's base is not that budget.
 
 Host load never gates a timing line, and no run waits for a quiet host. A
 timing verdict compares arms interleaved in one run, as

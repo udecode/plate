@@ -467,3 +467,59 @@ test('reverses the arm order every odd packet, saves every run with its config, 
   assert.equal(second.status, 2);
   assert.match(second.stderr, /exists; write each attempt to a new file/);
 });
+
+const lawConfig = (ratio) => ({ ...baseConfig, budget: undefined, budgetLaw: { ratio: 1.25, ms: 16 }, planted: { planted: { small: ratio } } });
+
+test('sets a budget law cohort to 1 plus its ms over the run base median when that passes a candidate the ratio alone fails', (t) => {
+  const config = lawConfig(3);
+  const values = { base: flat(10), candidate: flat(20), planted: flat(30), copy: flat(20.1) };
+  const run = analyze(t, config, measurementsFrom(config, { small: values }));
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /small budget 2\.6000 from a base median of 10\.00 ms/);
+  const ratioOnly = { ...baseConfig, budget: 1.25, planted: { planted: { small: 3 } } };
+  assert.equal(analyze(t, ratioOnly, measurementsFrom(ratioOnly, { small: values })).status, 1);
+});
+
+test('fails under the budget law a candidate from 20 to 45 ms that a ratio fixed from another run passes', (t) => {
+  const config = lawConfig(3.5);
+  const values = { base: flat(20), candidate: flat(45), planted: flat(70), copy: flat(45.1) };
+  const run = analyze(t, config, measurementsFrom(config, { small: values }));
+  assert.equal(run.status, 1, run.stderr);
+  assert.match(run.stdout, /small budget 1\.8000 from a base median of 20\.00 ms/);
+  const stale = { ...baseConfig, budget: 2.7877, planted: { planted: { small: 3.5 } } };
+  assert.equal(analyze(t, stale, measurementsFrom(stale, { small: values })).status, 0);
+});
+
+test('reads a budget law cohort as inconclusive when the base moved so far that its planted ratio no longer crosses the budget', (t) => {
+  const config = lawConfig(1.5);
+  const run = analyze(t, config, measurementsFrom(config, { small: { base: flat(10), candidate: flat(11), planted: flat(15), copy: flat(10.1) } }));
+  assert.equal(run.status, 3, run.stderr);
+  assert.match(run.stderr, /planted planted scored 1\.500, not past the budget 2\.6 by more than the noise/);
+});
+
+test('takes the budget law base median as the mean of the two middle base values, not the upper one', (t) => {
+  const config = lawConfig(3);
+  const base = [10, 12, 10, 12, 10, 12];
+  const run = analyze(t, config, measurementsFrom(config, { small: { base, candidate: flat(26.3), planted: flat(32.9), copy: flat(26.4) } }));
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /small budget 2\.4545 from a base median of 11\.00 ms/);
+});
+
+test('keeps the budget law ratio as a floor when 1 plus its ms over the base median falls below it', (t) => {
+  const config = lawConfig(3);
+  const run = analyze(t, config, measurementsFrom(config, { small: { base: flat(80), candidate: flat(98), planted: flat(240), copy: flat(98.1) } }));
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /small budget 1\.2500 from a base median of 80\.00 ms/);
+});
+
+for (const [shape, config, message] of [
+  ['a planted ratio at the law ratio', lawConfig(1.25), /config\.planted\.planted\.small must be a ratio past the budget 1\.25/],
+  ['both budget and budgetLaw', { ...lawConfig(3), budget: 1.25 }, /config\.budget and config\.budgetLaw exclude each other/],
+  ['a law with no ms', { ...lawConfig(3), budgetLaw: { ratio: 1.25 } }, /config\.budgetLaw needs a positive ratio and a positive ms/],
+]) {
+  test(`refuses a budget law config with ${shape}`, (t) => {
+    const run = analyze(t, config, measurementsFrom(config, { small: { base: flat(10), candidate: flat(10), planted: flat(30), copy: flat(10) } }));
+    assert.equal(run.status, 2, run.stderr);
+    assert.match(run.stderr, message);
+  });
+}
