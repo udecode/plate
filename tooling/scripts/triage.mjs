@@ -2739,9 +2739,8 @@ function recordCommand(argv) {
     }
     if (entry.outcome === 'kind') {
       const scope = fields.get('scope');
-      const file = readJson(
-        gitOut('show', `${read}:${SCOPES}/${scope}.json`) ?? ''
-      );
+      const scopeRead = showAt(root, read, `${SCOPES}/${scope}.json`);
+      const file = readJson(scopeRead.status === 0 ? scopeRead.stdout : '');
       if (!file) {
         refuse(
           `${where}: scope: ${scope} has no ${SCOPES}/${scope}.json at ${read.slice(0, 10)}; name the review scope that owns the cause`
