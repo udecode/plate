@@ -10,6 +10,7 @@ import {
   type DocumentSetPropertyResolver,
   RootChange,
   type RootChangeSection,
+  type SectionData,
 } from '../../core/change/root-change';
 import {
   type JsonEditorValue,
@@ -19,23 +20,31 @@ import {
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
 } from '../../core/change/tokens';
+import {
+  normalizeSetValues,
+  type PropertyModification,
+} from '../../core/change/transform';
 import { deriveValue } from '../../core/record-store';
 import { survivalUnder } from '../../core/survival';
 import { marksOf, type ReviewFacts } from '../facts/facts';
+import { countLedgerWork } from '../ledger/work';
 import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
   isAuthoredSetValued,
   readAuthoredMarks,
+  readMembers,
 } from './marks';
 import { proposedSurvival } from './proposed';
 import {
   acceptedOwnShape,
+  failInTests,
   hasJoinMark,
   isTextBlock,
   mergesUp,
   removes,
 } from './resolve';
+import { sparesIn } from './spares';
 
 export type AlignmentOptions = Readonly<{
   isSetValued?: DocumentSetPropertyResolver;
@@ -98,16 +107,193 @@ export const tokenLength = (node: JsonNode): number => {
   return value;
 };
 
+/**
+ * A settled tree and the elements in it that no stored node becomes, which
+ * completion built. The map adds those instead of pairing them.
+ */
+export type Settled = Readonly<{
+  children: readonly JsonNode[];
+  unstored: ReadonlySet<JsonNode>;
+}>;
+
+export const NOTHING_UNSTORED: ReadonlySet<JsonNode> = Object.freeze(
+  new Set<JsonNode>()
+);
+
+const setAside = (
+  children: readonly JsonNode[],
+  unstored: ReadonlySet<JsonNode>
+) => {
+  let found = 0;
+  let position = 0;
+  let read = 0;
+  let removed = 0;
+  const spans: Array<{ at: number; nodes: JsonNode[]; to: number }> = [];
+  const count = (node: JsonNode) => {
+    read += 1;
+    if (unstored.has(node)) found += 1;
+    node.children?.forEach(count);
+  };
+  const strip = (nodes: readonly JsonNode[]): readonly JsonNode[] => {
+    let out: JsonNode[] | null = null;
+
+    for (let index = 0; index < nodes.length; index += 1) {
+      const node = nodes[index];
+      const length = tokenLength(node);
+
+      if (unstored.has(node)) {
+        count(node);
+
+        const last = spans.at(-1);
+
+        if (last && last.to === position) {
+          last.nodes.push(node);
+          last.to += length;
+        } else {
+          spans.push({
+            at: position - removed,
+            nodes: [node],
+            to: position + length,
+          });
+        }
+        position += length;
+        removed += length;
+        out ??= nodes.slice(0, index);
+        continue;
+      }
+
+      let kept = node;
+
+      read += 1;
+      if (typeof node.text === 'string') {
+        position += length;
+      } else {
+        position += 1;
+
+        const inner = strip(node.children ?? []);
+
+        position += 1;
+        if (inner !== node.children) kept = { ...node, children: inner };
+      }
+      if (kept !== node) out ??= nodes.slice(0, index);
+      out?.push(kept);
+    }
+
+    return out ?? nodes;
+  };
+  const reduced = strip(children);
+
+  countLedgerWork('setAsideNodes', read);
+
+  const restore = (): RootChange | null => {
+    if (spans.length === 0) return null;
+
+    const sections: number[] = [];
+    const data: Array<PreparedTokenSlice | null> = [];
+    let at = 0;
+
+    for (const span of spans) {
+      if (span.at > at) {
+        sections.push(span.at - at, -1);
+        data.push(null);
+      }
+
+      const insert = DocumentIndex.fromValue(span.nodes).slice(0);
+
+      sections.push(0, insert.length);
+      data.push(insert);
+      ({ at } = span);
+    }
+
+    const length = position - removed;
+
+    if (length > at) {
+      sections.push(length - at, -1);
+      data.push(null);
+    }
+
+    return RootChange.fromSections(sections, data);
+  };
+
+  return { found, reduced, restore };
+};
+
+type Align = (
+  stored: JsonEditorValue,
+  settled: JsonEditorValue
+) => DocumentChange | null;
+
+export const settledChange = (
+  stored: JsonEditorValue,
+  { children, unstored }: Settled,
+  align: Align
+) => {
+  if (unstored.size === 0) return align(stored, { children });
+
+  const aside = setAside(children, unstored);
+  const change = align(stored, { children: aside.reduced });
+  const restore = aside.restore();
+
+  if (aside.found !== unstored.size) {
+    failInTests(
+      `The settled tree holds ${aside.found} of the ${unstored.size} elements completion built.`
+    );
+  }
+
+  return change && restore
+    ? change.compose(createInternalDocumentChange(new Map([['main', restore]])))
+    : change;
+};
+
+// The node of `nodes` whose open token sits at each of `offsets`, ascending,
+// or null when one sits on another token.
+const nodesOpeningAt = (
+  nodes: readonly JsonNode[],
+  offsets: readonly number[]
+): readonly JsonNode[] | null => {
+  const found: JsonNode[] = [];
+  const visit = (list: readonly JsonNode[], start: number): boolean => {
+    let at = start;
+
+    for (const node of list) {
+      const end = at + tokenLength(node);
+      const offset = offsets[found.length];
+
+      if (offset === undefined) return true;
+      if (offset < end) {
+        if (offset === at) found.push(node);
+        if (
+          typeof node.text !== 'string' &&
+          !visit(node.children ?? [], at + 1)
+        ) {
+          return false;
+        }
+        if ((offsets[found.length] ?? end) < end) return false;
+      }
+      at = end;
+    }
+
+    return true;
+  };
+
+  return visit(nodes, 0) && found.length === offsets.length ? found : null;
+};
+
 // The accept-all change of kept top-level blocks, built in one token walk:
 // struck nodes and the boundary each join removes leave, equal neighboring
-// leaves merge, and marks unset. Null when the result is not the resolver's,
-// such as a join whose emptied first line gives way to the second.
+// leaves merge, and marks unset. A kept element storing spares takes those
+// the decided element it aligns with keeps, because the resolver owns which
+// spares a decision keeps. Null when the result is not the resolver's, such
+// as a join whose emptied first line gives way to the second.
 const structuralChange = (
   blocks: readonly JsonNode[],
   accepted: readonly JsonNode[]
 ): RootChange | null => {
-  // 0 keeps a token, 1 drops it, 2 keeps it and unsets its marks.
+  // 0 keeps a token, 1 drops it, 2 keeps it and changes its members: it
+  // unsets them unless `members` names its write.
   const ops: number[] = [];
+  const members = new Map<number, readonly PropertyModification[]>();
+  const spareHolders: Array<Readonly<{ at: number; node: JsonNode }>> = [];
   type Leaf = { close: number; node: JsonNode } | null;
   // The last kept leaf a following leaf can merge with, and the last leaf of
   // the previous kept block, which a joined block's first leaf meets.
@@ -147,6 +333,9 @@ const structuralChange = (
     } else if (unwraps) {
       ops.push(1);
     } else {
+      if (sparesIn(node).length > 0) {
+        spareHolders.push({ at: ops.length, node });
+      }
       ops.push(marked ? 2 : 0);
       leaf = null;
     }
@@ -166,15 +355,46 @@ const structuralChange = (
 
   for (const block of blocks) if (!visit(block, true)) return null;
 
+  if (spareHolders.length > 0) {
+    const offsets: number[] = [];
+    let kept = 0;
+
+    for (let index = 0; offsets.length < spareHolders.length; index += 1) {
+      if (index === spareHolders[offsets.length].at) offsets.push(kept);
+      if (ops[index] !== 1) kept += 1;
+    }
+
+    const decided = nodesOpeningAt(accepted, offsets);
+
+    if (!decided) return null;
+    for (const [rank, { at, node }] of spareHolders.entries()) {
+      const stored = readMembers(node);
+      const modeled = normalizeSetValues([
+        ...(ops[at] === 2
+          ? []
+          : stored.filter((member) => member.kind !== 'reserve')),
+        ...sparesIn(decided[rank]),
+      ]);
+
+      if (ops[at] === 0 && jsonEqual(modeled, stored)) continue;
+      ops[at] = 2;
+      if (modeled.length > 0) {
+        members.set(at, [
+          { key: AUTHORED_MARKS_KEY, type: 'set', value: modeled },
+        ]);
+      }
+    }
+  }
+
   const sections: number[] = [];
-  const data: Array<PreparedTokenSlice | null | typeof UNSET_MARKS> = [];
+  const data: SectionData[] = [];
 
   for (let index = 0; index < ops.length;) {
     const op = ops[index];
 
     if (op === 2) {
       sections.push(1, -2);
-      data.push(UNSET_MARKS);
+      data.push(members.get(index) ?? UNSET_MARKS);
       index += 1;
       continue;
     }
@@ -619,20 +839,3 @@ export const diffedAcceptedChange = (
     DocumentChange.between(unstruck, accepted, options)
   );
 };
-
-/**
- * The change from a stored document to its accepted form: structural when the walk
- * reproduces the resolver, else aligned by characters, else two diffs, struck
- * nodes first, so a kept leaf stays aligned.
- */
-export const acceptedChange = (
-  stored: JsonEditorValue,
-  accepted: JsonEditorValue,
-  options: AlignmentOptions
-): DocumentChange =>
-  rootByRoot(
-    stored,
-    accepted,
-    (from, to) =>
-      acceptedAlignment(from, to) ?? diffedAcceptedChange(from, to, options)
-  );

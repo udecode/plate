@@ -55,6 +55,7 @@ export {
   type ReactRenderProfilerSnapshot,
 } from './render-profiler';
 export { takeBrowserRenderStateSnapshot } from './render-state';
+export { expect, test } from './test';
 export {
   DEFAULT_RUNTIME_ERROR_PATTERNS,
   recordBrowserRuntimeErrors,

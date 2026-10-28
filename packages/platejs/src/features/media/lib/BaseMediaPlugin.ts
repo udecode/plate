@@ -1,3 +1,6 @@
+import isUndefined from 'lodash/isUndefined.js';
+import omitBy from 'lodash/omitBy.js';
+
 import {
   isUrl as defaultIsUrl,
   type BasePluginContext,
@@ -358,7 +361,7 @@ export function defineMediaPlugin(
           if (!normalized) return false;
           const { caption, ...properties } = { ...input, ...normalized };
           const element = {
-            ...properties,
+            ...omitBy(properties, isUndefined),
             children:
               typeof caption === 'string'
                 ? [{ text: caption }]
@@ -373,9 +376,9 @@ export function defineMediaPlugin(
               tx.blocks.insert(element, insertOptions) !== undefined,
             matches: (block) =>
               block.type === type &&
-              block.url === element.url &&
-              block.provider === element.provider &&
-              block.sourceUrl === element.sourceUrl,
+              block.url === properties.url &&
+              block.provider === properties.provider &&
+              block.sourceUrl === properties.sourceUrl,
             mode,
             options,
             tx,

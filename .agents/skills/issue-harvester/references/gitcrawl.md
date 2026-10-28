@@ -1,7 +1,7 @@
 # Gitcrawl
 
 The one home for gitcrawl install and archive commands. `issue-harvester`'s
-ledgers and `maintainer`'s `issues` mode use it.
+ledgers and the Triage playbook's neighbor search use it.
 
 ## Install And CLI Baseline
 

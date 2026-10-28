@@ -16,11 +16,12 @@ import {
 } from '../../core/commit';
 import { mapSelectionThroughChange } from '../../core/selection-protocol';
 import { getSelection } from '../../dom';
-import { EDITOR_TO_PLACEHOLDER_ELEMENT } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   beginEditableCompositionSession,
+  cancelCompositionReceipt,
   type EditableInputController,
+  openCompositionReceipt,
 } from './input-state';
 import { applyModelOwnedTextInput } from './mutation-controller';
 import {
@@ -464,22 +465,6 @@ const listenForLeave = (
   };
 };
 
-// The model stays empty while the keyboard drafts into an empty editor, so
-// the placeholder would show over the draft.
-const hidePlaceholder = (editor: ReactRuntimeEditor) => {
-  const placeholder = EDITOR_TO_PLACEHOLDER_ELEMENT.get(editor);
-
-  if (!placeholder) return () => {};
-
-  const { display } = placeholder.style;
-
-  placeholder.style.display = 'none';
-
-  return () => {
-    placeholder.style.display = display === 'none' ? '' : display;
-  };
-};
-
 export const hasAndroidComposition = (
   inputController: EditableInputController
 ) => RUNS.has(inputController);
@@ -522,7 +507,6 @@ export const openAndroidComposition = ({
     }
   });
   const releaseLeave = listenForLeave(editor, base.lines, end);
-  const showPlaceholder = hidePlaceholder(editor);
   const run: AndroidCompositionRun = {
     base,
     cancelEnd: null,
@@ -530,7 +514,6 @@ export const openAndroidComposition = ({
     release: () => {
       releaseCommits();
       releaseLeave();
-      showPlaceholder();
       base.target.release();
     },
     setComposing,
@@ -540,6 +523,7 @@ export const openAndroidComposition = ({
   beginEditableCompositionSession(inputController, {
     nativeAnchor: base.lines.map(({ element }) => element),
   });
+  openCompositionReceipt(editor, inputController);
   inputController.state.activeIntent = 'composition';
   setComposing(true);
 };
@@ -727,6 +711,7 @@ const writeDraft = (
     editor.read.view.isReadOnly() ||
     !getPathByNodeKey(editor, lineKey)
   ) {
+    cancelCompositionReceipt(inputController);
     return;
   }
 
@@ -801,6 +786,7 @@ const endOnLineEdit = (
   const registration = LINE_REBUILDS.get(inputController);
   if (!inputController.scheduleTask || !registration) {
     draft.replacement?.target.release();
+    cancelCompositionReceipt(inputController);
     return;
   }
   const complete = () => {

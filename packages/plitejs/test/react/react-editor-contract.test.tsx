@@ -1,1 +1,0 @@
-import './react-editor-contract';

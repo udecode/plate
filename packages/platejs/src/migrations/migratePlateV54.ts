@@ -1,4 +1,3 @@
-import { projectAuthoredDocument } from '../authored';
 import {
   DocumentChange,
   type EditorDocumentValue,
@@ -117,23 +116,23 @@ export const migrateV54: PlateV54Migration = (context) => {
   }
 
   // Asserts the target installs the authored plugin, whose schema keeps marks.
-  getDocumentMigrationAuthoredCapability(context.target);
-  const document = context.target.schema.fitDocument(
-    shapeDocument(context, legacy.review).document
+  const authored = getDocumentMigrationAuthoredCapability(context.target);
+  const document = authored.repair(
+    context.target.schema.fitDocument(
+      shapeDocument(context, legacy.review).document
+    )
   );
 
-  if (
-    projectAuthoredDocument(document, { projection: 'proposed' }).pending !==
-    legacy.changes
-  ) {
+  if (authored.pending(document) !== legacy.changes) {
     throw new Error(
       'Plate v54 migration cannot convert legacy suggestions whose nodes the target schema reshapes.'
     );
   }
   try {
-    context.target.schema.fitDocument(
-      projectAuthoredDocument(document, { projection: 'accepted' }).document
-    );
+    const rejected = authored.projectDecided(document, 'accepted');
+
+    if (!rejected.ok) throw new Error(rejected.diagnostics[0].message);
+    context.target.schema.fitDocument(rejected.document);
   } catch (error) {
     throw new Error(
       'Plate v54 migration cannot convert legacy suggestions that the target schema could not reject.',

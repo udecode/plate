@@ -38,6 +38,7 @@ import {
   type EditorSchemaContract,
   type RuntimePluginReference,
   type EditorLifecycleErrorSink,
+  EditorSchemaValidationError,
   type PersistedDocumentInput,
   type SnapshotInput,
   type EditorTransactionSpecBuilder,
@@ -1251,7 +1252,13 @@ const projectFormatDocument = (
     return unchanged;
   }
 
-  return authored.project(document, projection, schema);
+  const projected = authored.project(document, projection, schema);
+
+  if (!projected.ok) {
+    throw new EditorSchemaValidationError(projected.diagnostics[0].message);
+  }
+
+  return projected;
 };
 
 /** @internal */
@@ -1287,6 +1294,7 @@ export const withPlateFormatCompilation = <T>(
   >,
   run: (
     context: Readonly<{
+      authored: NativeAuthoredDocumentCapability | undefined;
       editor: Editor;
       readState: <R>(read: (state: EditorCoreStateView) => R) => R;
       readDocument: <R>(
@@ -1311,6 +1319,7 @@ export const withPlateFormatCompilation = <T>(
 
     return run(
       Object.freeze({
+        authored,
         editor,
         readState: (read) =>
           editor.read((state) =>

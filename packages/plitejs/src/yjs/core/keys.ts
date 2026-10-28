@@ -6,6 +6,9 @@ export const YJS_VIRTUAL_CHILD_ID_KEY = 'yjs:virtual-child-id';
 export const YJS_VIRTUAL_PLACEHOLDER_KEY = 'yjs:virtual-placeholder';
 export const YJS_SET_VALUE_KEY_PREFIX = 'yjs:set:';
 export const YJS_MARK_KEY_PREFIX = 'yjs:mark:';
+export const YJS_CUT_KEY = 'yjs:cut';
+export const YJS_CUT_SOURCE_KEY = 'yjs:cut-source';
+export const YJS_CUT_AT_KEY = 'yjs:cut-at';
 
 export const isYjsMarkRecordKey = (key: string): boolean =>
   key.startsWith(YJS_MARK_KEY_PREFIX);

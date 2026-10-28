@@ -1,5 +1,5 @@
 {
-  "generation": "6722468a2f79448f6bc88c639953df805ff4e950394347b829255514b2fc88ae",
+  "generation": "f7c81e38663b332e94a007f74511a21267dbed6f6f354433c25d95d6e591e865",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -5894,10 +5894,12 @@
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/basic-marks",
+            "@plate/callout",
             "@plate/comment",
             "@plate/discussion",
             "@plate/dnd",
             "@plate/link",
+            "@plate/list",
             "@plate/table"
           ],
           "title": "Pagination",
@@ -12764,10 +12766,12 @@
           "registryDependencies": [
             "@plate/basic-blocks",
             "@plate/basic-marks",
+            "@plate/callout",
             "@plate/comment",
             "@plate/discussion",
             "@plate/dnd",
             "@plate/link",
+            "@plate/list",
             "@plate/table"
           ],
           "title": "Pagination",

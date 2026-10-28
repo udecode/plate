@@ -7,7 +7,7 @@ import {
 import type { EditorSchemaIdentity } from '../../index';
 import { isRecord } from './record';
 
-const SCHEMA_METADATA_FORMAT = 4;
+const SCHEMA_METADATA_FORMAT = 5;
 const SCHEMA_METADATA_KEY = 'current';
 const SCHEMA_METADATA_SUFFIX = ':schema';
 

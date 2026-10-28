@@ -1,6 +1,7 @@
 import type {
   Editor,
   EditorDocumentValue,
+  EditorUpdateTag,
   PluginPoint,
 } from '../interfaces/editor';
 import { DocumentChange } from './change/document-change';
@@ -17,6 +18,7 @@ import {
 } from './record-store';
 import { changedRootsOf, orphanedValueRoots } from './root-ownership';
 import type { CompiledEditorSchema } from './schema-compiler';
+import { repairLoadedUniqueValues } from './unique-values';
 
 /**
  * A plugin's rule for the documents an editor loads and commits. A loaded
@@ -36,13 +38,44 @@ export type DocumentAdmission = Readonly<{
       change: DocumentChange;
       editor: Editor;
       indexOf: (root: string) => DocumentIndex;
+      /**
+       * Whether the commit replaced the document outside a collaboration
+       * update, which loads it, so a load's repairs apply too.
+       */
+      loads: boolean;
     }>
   ) => DocumentChange | null;
   load: (
     document: EditorDocumentValue,
     schema: CompiledEditorSchema
   ) => Readonly<{ change: DocumentChange; value: EditorDocumentValue }> | null;
+  /**
+   * A change from `value`, which every other repair admitted, that settles
+   * what the document leaves ready to settle, or `null`. A commit runs it once
+   * after its other repairs, and a load runs it last, with no `commit`.
+   */
+  settle?: (
+    value: EditorDocumentValue,
+    schema: CompiledEditorSchema,
+    commit: DocumentSettleCommit | null
+  ) => DocumentChange | null;
 }>;
+
+export type DocumentSettleCommit = Readonly<{
+  /** The stored document the commit started from. */
+  before: EditorDocumentValue;
+  /** The change from `before` to `value`. */
+  change: DocumentChange;
+  editor: Editor;
+  indexOf: (root: string) => DocumentIndex;
+}>;
+
+/**
+ * The tag of a commit whose settle stage changed the document.
+ *
+ * @internal
+ */
+export const DOCUMENT_SETTLED_TAG: EditorUpdateTag = 'document-settled';
 
 declare const admitted: unique symbol;
 
@@ -104,9 +137,22 @@ export const repairLoadedDocument = (
   document: EditorDocumentValue,
   schema: CompiledEditorSchema
 ) => {
-  const repaired = admission?.load(document, schema) ?? null;
+  const loaded = admission?.load(document, schema) ?? null;
+  const unique = repairLoadedUniqueValues(loaded?.value ?? document, schema);
+  const repaired =
+    loaded && unique
+      ? { change: loaded.change.compose(unique.change), value: unique.value }
+      : (unique ?? loaded);
+  const kept = repaired && withoutRepairOrphans(schema, document, repaired);
+  const value = kept?.value ?? document;
+  const settled = admission?.settle?.(value, schema, null) ?? null;
 
-  return repaired && withoutRepairOrphans(schema, document, repaired);
+  if (!settled) return kept;
+
+  return {
+    change: kept ? kept.change.compose(settled) : settled,
+    value: settled.apply(value),
+  };
 };
 
 /** @internal */

@@ -73,12 +73,12 @@ type CommitInput<V extends Value> = Omit<
   | 'selectionBeforeRoot'
   | 'version'
 > & {
-  admissionRepair?: DocumentChange;
   afterValue: EditorDocumentValue<V>;
   beforeIndexAt?: (root: RootKey) => SnapshotIndex | undefined;
   beforeValue: EditorDocumentValue<V>;
   editor: Editor<V>;
   replace?: boolean;
+  settlement?: EditorCommitSettlement;
   selectionAfterRoot: RootKey;
   selectionBeforeRoot: RootKey;
 };
@@ -94,9 +94,15 @@ const EDITOR_COMMIT_SNAPSHOT_SOURCES = new WeakMap<
   EditorCommitSnapshotSource
 >();
 const EDITOR_COMMIT_STARTED_AT = new WeakMap<EditorCommit, number>();
-const EDITOR_COMMIT_ADMISSION_REPAIRS = new WeakMap<
+
+export type EditorCommitSettlement = Readonly<{
+  admitted: EditorDocumentValue;
+  change: DocumentChange;
+}>;
+
+const EDITOR_COMMIT_UNSETTLES = new WeakMap<
   EditorCommit,
-  DocumentChange
+  () => DocumentChange
 >();
 const EDITOR_COMMIT_ROOT_SNAPSHOTS = new WeakMap<
   EditorCommit,
@@ -182,9 +188,9 @@ export const getEditorCommitValue = (
 };
 
 /** @internal */
-export const getEditorCommitAdmissionRepair = (
+export const getEditorCommitUnsettle = (
   commit: EditorCommit
-): DocumentChange | null => EDITOR_COMMIT_ADMISSION_REPAIRS.get(commit) ?? null;
+): DocumentChange | null => EDITOR_COMMIT_UNSETTLES.get(commit)?.() ?? null;
 
 /** @internal */
 export const getEditorCommitStartedAt = (commit: EditorCommit): number =>
@@ -1084,12 +1090,12 @@ export const createEditorCommit = <V extends Value>(
   }
 ): EditorCommit<V> => {
   const {
-    admissionRepair,
     afterValue,
     beforeIndexAt,
     beforeValue,
     editor,
     replace = false,
+    settlement,
     ...body
   } = input;
   const commit = {
@@ -1148,8 +1154,13 @@ export const createEditorCommit = <V extends Value>(
     commit,
     versions.startedAt ?? globalThis.performance?.now?.() ?? Date.now()
   );
-  if (admissionRepair) {
-    EDITOR_COMMIT_ADMISSION_REPAIRS.set(commit, admissionRepair);
+  if (settlement) {
+    let unsettle: DocumentChange | undefined;
+
+    EDITOR_COMMIT_UNSETTLES.set(
+      commit,
+      () => (unsettle ??= settlement.change.invert(settlement.admitted))
+    );
   }
 
   return Object.freeze(commit);

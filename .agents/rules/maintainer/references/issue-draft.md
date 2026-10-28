@@ -1,7 +1,7 @@
 # Issue draft
 
 Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
-`udecode/plate` GitHub issue. A user request to publish the issue authorizes
+`udecode/plate-private` GitHub issue. A user request to publish the issue authorizes
 analysis, necessary evidence uploads, creation and read-back in one run.
 
 `draft only`, `analyze only` and `do not publish` keep the result local.
@@ -9,7 +9,7 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 ## Beta-only scope
 
 - Use this mode only for Plate `next` branch and Beta release testing.
-- Target `udecode/plate`. Stop and route to another issue workflow when the
+- Target `udecode/plate-private`. Stop and route to another issue workflow when the
   report targets `main`, a stable release, or another repository.
 - In a two-video Beta report, the baseline recording comes from `main`, the
   Slate site, the stable Plate site or another editor; the reported bug still
@@ -17,14 +17,16 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 - Treat the testing lane as confirmed Beta context even when the exact `next`
   commit or Beta package version is unknown. Record unknown build details as
   `NOT_ENOUGH_INFO`; do not downgrade the report to a generic bug.
-- Start every issue title with `[Beta]: `. Never emit or publish `[Bug]` from
-  this mode, including when the repository bug form supplies that prefix.
+- Write the title with no `[Beta]: `, `[Bug]: ` or other bracket prefix,
+  including when the repository bug form supplies one. The publisher puts the
+  issue on the `v54` milestone, which marks it as Beta, and gives it the Bug
+  type.
 
 ## Hard boundaries
 
 - Never upload evidence or create an issue when the user explicitly says
   `draft only`, `analyze only`, or `do not publish`.
-- Never publish to a repository other than `udecode/plate` from this mode.
+- Never publish to a repository other than `udecode/plate-private` from this mode.
 - Never expose tokens, cookies, passwords, private URLs, or sensitive typed
   text in video, logs, transcripts, commands, or issue bodies.
 - Never call GitHub's upload endpoints yourself. Media goes through
@@ -90,8 +92,8 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 
 ### Text-only description
 
-1. Inspect the `udecode/plate` route, exact `next` commit or Beta package
-   version, issue templates, and nearby duplicate issues when available.
+1. Inspect the route, exact `next` commit or Beta package version, issue
+   templates, and nearby duplicate issues in `udecode/plate-private` when available.
 2. Do not record when text plus deterministic console/test/source evidence gives
    an unambiguous minimal repro.
 3. Record when motion or visual timing is the evidence: drag-and-drop, focus,
@@ -120,7 +122,7 @@ clips, find notes and retest marks.
 
 Keep observed facts separate from inference. Record:
 
-- target repository (`udecode/plate`) and route
+- target repository (`udecode/plate-private`) and route
 - testing lane (`next`/Beta), plus exact commit, package version, browser, and
   OS only when known
 - shortest setup and repro steps
@@ -171,12 +173,9 @@ private information.
 ## Draft the issue
 
 Use the repository's current bug template when required, unless the user says
-not to. Otherwise use [assets/issue-body.md](../assets/issue-body.md). Override the
-bug form's default title prefix. Keep the title behavioral and searchable. Do
-not include implementation guesses as facts.
-
-The title follows the `[Beta]: ` rule above, even when a `bug` label or the
-bug-report template supplies another prefix.
+not to. Otherwise use [assets/issue-body.md](../assets/issue-body.md). Drop the
+bug form's default title prefix, as the rule above says. Keep the title
+behavioral and searchable. Do not include implementation guesses as facts.
 
 The body must contain:
 
@@ -209,39 +208,50 @@ Preview the exact command and body without any upload or GitHub mutation:
 
 ```bash
 bash .agents/skills/maintainer/scripts/publish-issue.sh \
-  --repo udecode/plate \
+  --repo udecode/plate-private \
   --title-file /absolute/path/to/title.txt \
   --body-file /absolute/path/to/body.md \
   --attach /absolute/path/to/slate.mp4 \
   --attach-role 'Slate — normal behavior (expected baseline)' \
   --attach /absolute/path/to/next.mp4 \
   --attach-role 'next — current Beta bug (actual behavior)' \
-  --labels 'target:beta' \
+  --platform 'Android, Chrome' \
   --dry-run
 ```
+
+Pass `--platform` with every browser and OS the repros ran on, from the
+report's environment, so Chrome on Android is `Android, Chrome`.
 
 When publication is authorized, replace `--dry-run` with `--confirm-create`
 without asking for a second confirmation.
 
 To add sweep members to an open issue, pass `--comment-on <issue number>`
-instead of `--title-file` and `--labels`. It posts one comment with the new
+instead of `--title-file`, `--labels` and `--platform`. It posts one comment with the new
 repros and their recordings through `gh issue comment --attach`. Never rewrite
 a published body to add evidence.
 
 The publisher:
 
-1. refuses any repository other than `udecode/plate`, a new issue whose title
-   does not start with `[Beta]: `, an unresolved template placeholder, a file
+1. refuses any repository other than `udecode/plate-private`, a new issue whose title
+   starts with a bracket prefix such as `[Beta]: `, an unresolved template
+   placeholder, a label outside the facet set (`ime`, `regression`), a `--platform`
+   value that is not a Platform field option (`Chrome`, `Safari`, `Firefox`,
+   `Edge`, `Android`, `iOS`), a file
    that is not an image or video gh attaches (png, jpg, jpeg, gif, webp, svg,
-   mp4, mov or webm) and a role count that differs from the file count;
+   mp4, mov or webm) and a role count that differs from the file count. The
+   Scope issue field, which `pnpm triage labels` sets, names the domain, and
+   the Platform field names each browser and OS, so no label does;
 2. puts each file under the body's `## Evidence` section, which it adds when
    the body has none. Each file gets a `#### <role>` line above an image
    reference alone in its paragraph, so gh embeds an image and leaves a
    video's bare URL, which GitHub plays;
 3. refuses a gh without `--attach`;
-4. creates the issue or comment, reads it back and checks the title, the
-   body's first line and the labels, that no local path remains, and that the
-   body holds a `github.com/user-attachments` URL for each file;
+4. creates the issue with the Bug issue type on the `v54` milestone, or the
+   comment, reads it back and checks the title, the body's first line, the
+   issue type, the milestone and the labels, that no local path remains, and
+   that the body holds a `github.com/user-attachments` URL for each file. Then
+   it sets the Platform field through GraphQL, because `gh issue create` cannot
+   set an issue field, and reads each value back;
 5. prints the URL and every attachment URL.
 
 A failure after the issue or comment exists exits 7 and names its URL. Never

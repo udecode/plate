@@ -31,6 +31,9 @@ const closestWith = (node: Element, name: string, value: string) => {
   return null;
 };
 
+export const isEditorRoot = (element: Element) =>
+  element.getAttribute('data-editor') === 'true';
+
 export const getTextRoot = (node: Element) =>
   closestWith(node, 'data-editor', 'true');
 

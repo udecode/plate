@@ -1,3 +1,0 @@
-{
-  "extends": "../../../tooling/config/tsconfig.test.json"
-}

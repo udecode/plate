@@ -1,0 +1,5 @@
+# Messages and shared resources
+
+This file says which messages wait for the owner's word and which proceed. The pstack block in `AGENTS.md` points here. The `sync-pstack` skill renders this file from its shared source in `udecode/dotai`, so change it there.
+
+- **Messages and shared resources.** Who can read a message decides its stop, not its channel. A message that anyone outside the team can read, such as a send to customers, an email to a client, or a comment, review, label or close on a public repository's issue or PR, needs explicit authorization from the active request. A PR, its title and its body opened under the Delivery rule are not such a message. A message only team members can read, and shared quota, proceed without asking, as pstack's Autonomy says; a private repository or tracker grants nothing by itself. A message that waits for authorization, or that the runtime's own instructions refuse, goes as a draft under the page's Needs you, or in the reply when there is no page. The owner sends it, and the run keeps going. An access grant is approved per target and runs as its own command; never widen an approved grant to a new target.

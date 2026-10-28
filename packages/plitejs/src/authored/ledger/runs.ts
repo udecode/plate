@@ -26,6 +26,9 @@ import {
   acceptedAlignment,
   decidedAlignment,
   diffedAcceptedChange,
+  NOTHING_UNSTORED,
+  type Settled,
+  settledChange,
   tokenLength,
 } from '../tree/alignment';
 import {
@@ -251,6 +254,11 @@ export const primeFacts = (node: JsonNode, facts: BlockFacts) => {
   FACTS.set(node, facts);
 };
 
+const BUILT = new WeakSet<JsonNode>();
+
+/** Whether completion built `node`, an element no stored node becomes. @internal */
+export const isBuilt = (node: JsonNode) => BUILT.has(node);
+
 const UNMARKED: BlockFacts = Object.freeze({
   unmarked: true,
   deletes: [],
@@ -295,6 +303,8 @@ export type Run = Readonly<{
   alignment: RootChange | null;
   /** False when no alignment paired the output's content and it was diffed. */
   aligned: boolean;
+  /** Whether the run's resolve built an element no stored node becomes. */
+  builds: boolean;
   /**
    * The change from the stored content to the output: each moved subtree
    * deleted and inserted where it lands, then `alignment`. Built on its first
@@ -317,6 +327,7 @@ export type Run = Readonly<{
   output: readonly JsonNode[];
   outputLength: number;
   part: ListPart;
+  spares: RecordSetVersion;
   storedLength: number;
   verdicts: RecordSetVersion;
 }>;
@@ -387,36 +398,46 @@ export type RunContext = Readonly<{
   schema: AuthoredResolveSchema | null;
   /** The containers the run's list sits in, nearest first; none at a root. */
   site?: readonly JsonNode[];
+  spares: RecordSetVersion;
   /** The verdict set's version `facts` reads. */
   verdicts: RecordSetVersion;
 }>;
 
+export const readsRootSpares = (part: ListPart, context: RunContext) =>
+  !context.site && (part.head || part.min > 0);
+
 const localChange = (
   kept: readonly JsonNode[],
-  output: readonly JsonNode[],
+  decided: Settled,
   context: RunContext
 ) => {
   const stored = { children: kept } as JsonEditorValue;
-  const decided = { children: output } as JsonEditorValue;
-  const aligned =
-    context.mode === 'proposed'
-      ? acceptedAlignment(stored, decided)
-      : decidedAlignment(stored, decided, {
-          facts: context.facts,
-          outcomes: 'reject',
-        });
-  const change =
-    aligned ??
-    (context.mode === 'proposed'
-      ? diffedAcceptedChange(stored, decided, {
-          isSetValued: context.isSetValued,
-        })
-      : DocumentChange.between(stored, decided, {
-          isSetValued: isAuthoredSetValued,
-        }));
+  let aligned = true;
+  const change = getDefined(
+    settledChange(stored, decided, (from, to) => {
+      const alignment =
+        context.mode === 'proposed'
+          ? acceptedAlignment(from, to)
+          : decidedAlignment(from, to, {
+              facts: context.facts,
+              outcomes: 'reject',
+            });
+
+      if (alignment) return alignment;
+      aligned = false;
+
+      return context.mode === 'proposed'
+        ? diffedAcceptedChange(from, to, {
+            isSetValued: context.isSetValued,
+          })
+        : DocumentChange.between(from, to, {
+            isSetValued: isAuthoredSetValued,
+          });
+    })
+  );
 
   return {
-    aligned: !!aligned,
+    aligned,
     change: change.empty
       ? null
       : (getInternalDocumentRootChange(change, 'main') ?? null),
@@ -431,6 +452,7 @@ export const removedRun = (node: JsonNode, context: RunContext): Run => {
   return {
     alignment: change,
     aligned: true,
+    builds: false,
     change,
     changed: true,
     hidden: [{ at: [0], owner: null }],
@@ -439,6 +461,7 @@ export const removedRun = (node: JsonNode, context: RunContext): Run => {
     output: [],
     outputLength: 0,
     part: { head: false, min: 0 },
+    spares: context.spares,
     storedLength,
     verdicts: context.verdicts,
   };
@@ -621,6 +644,7 @@ export const resolveRun = (
   if (
     cached &&
     cached.verdicts === context.verdicts &&
+    (!readsRootSpares(part, context) || cached.spares === context.spares) &&
     samePart(cached.part, part) &&
     cached.nodes.length === nodes.length &&
     cached.nodes.every((node, index) => node === nodes[index])
@@ -657,8 +681,15 @@ export const resolveRun = (
         );
   const output = resolution?.children ?? [];
   const order = resolution ? orderOf(nodes, resolution.placements) : null;
+
+  for (const node of resolution?.unstored ?? NOTHING_UNSTORED) BUILT.add(node);
+
   const aligning = order ? inputOf(order.nodes, context, part) : input;
-  const { aligned, change: alignment } = changeOf(aligning, output, context);
+  const { aligned, change: alignment } = changeOf(
+    aligning,
+    resolution ?? { children: output, unstored: NOTHING_UNSTORED },
+    context
+  );
   const outputLength = lengthOf(output);
   let change: RootChange | null = order ? null : alignment;
 
@@ -675,6 +706,7 @@ export const resolveRun = (
   const run: Run = {
     alignment,
     aligned,
+    builds: (resolution?.unstored.size ?? 0) > 0,
     get change() {
       if (order) {
         change ??= alignment
@@ -691,6 +723,7 @@ export const resolveRun = (
     output,
     outputLength,
     part,
+    spares: context.spares,
     storedLength: input.storedLength,
     verdicts: context.verdicts,
   };
@@ -724,7 +757,11 @@ export const writtenRun = (
   let aligned = true;
   const built = () => {
     if (changed && !change) {
-      const local = changeOf(input, output, context);
+      const local = changeOf(
+        input,
+        { children: output, unstored: NOTHING_UNSTORED },
+        context
+      );
 
       ({ aligned } = local);
       change = local.change ?? RootChange.empty(input.storedLength);
@@ -748,6 +785,7 @@ export const writtenRun = (
 
       return aligned;
     },
+    builds: false,
     get change() {
       return built();
     },
@@ -757,6 +795,7 @@ export const writtenRun = (
     output,
     outputLength,
     part,
+    spares: context.spares,
     storedLength: input.storedLength,
     verdicts: context.verdicts,
   };
@@ -798,12 +837,12 @@ const inputOf = (
 
 const changeOf = (
   { kept, ranges, storedLength }: ReturnType<typeof inputOf>,
-  output: readonly JsonNode[],
+  settled: Settled,
   context: RunContext
 ) => {
   const local =
     kept.length > 0
-      ? localChange(kept, output, context)
+      ? localChange(kept, settled, context)
       : { aligned: true, change: null };
 
   if (ranges.length === 0) return local;

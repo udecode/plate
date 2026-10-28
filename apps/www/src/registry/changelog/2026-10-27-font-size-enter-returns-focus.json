@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-27-font-size-enter-returns-focus",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-27-font-size-enter-returns-focus.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Return to the editor after Enter in the font size field",
+  "targets": [
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-27-font-size-toolbar-return-editor-after-enter-e8c7ef83",
+      "kind": "fix",
+      "summary": "Enter in the font size field now applies the size and returns focus to the editor, so the next keystrokes edit the text at the new size. Before, focus stayed in the field and the typed text went into it.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["font-size-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-27",
+          "entry": "2026-10-27-font-size-enter-returns-focus",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

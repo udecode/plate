@@ -85,6 +85,7 @@ const MODIFIER_TOKEN_NAMES: Record<string, ModifierKey | 'mod'> = {
 };
 
 const SINGLE_LETTER_RE = /^[a-z]$/i;
+const SINGLE_DIGIT_RE = /^\d$/;
 
 const isApplePlatform = (platform: HotkeyPlatform | undefined) =>
   platform === 'apple';
@@ -197,6 +198,17 @@ const matchKey = (event: KeyboardEventLike, expectedKey: string) => {
   return event.code === `Key${expectedKey.toUpperCase()}`;
 };
 
+// With Command held nothing is typed, yet Option still turns the digit into a
+// symbol, such as '¡', or '[' on some layouts.
+const matchCommandOptionDigit = (
+  event: KeyboardEventLike,
+  expectedKey: string
+) =>
+  Boolean(event.altKey && event.metaKey) &&
+  SINGLE_DIGIT_RE.test(expectedKey) &&
+  !SINGLE_DIGIT_RE.test(event.key) &&
+  event.code === `Digit${expectedKey}`;
+
 const isAltGraphEvent = (event: KeyboardEventLike) =>
   typeof event.getModifierState === 'function' &&
   event.getModifierState('AltGraph');
@@ -223,7 +235,8 @@ const matchHotkey = (
     matchModifier(event, 'ctrlKey', compiled.ctrlKey) &&
     matchModifier(event, 'metaKey', compiled.metaKey) &&
     matchModifier(event, 'shiftKey', compiled.shiftKey) &&
-    matchKey(event, compiled.key)
+    (matchKey(event, compiled.key) ||
+      matchCommandOptionDigit(event, compiled.key))
   );
 };
 

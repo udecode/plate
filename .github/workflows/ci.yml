@@ -116,14 +116,6 @@ jobs:
           git commit -m "chore: sync barrels [skip ci] [skip release]"
           git push origin HEAD:${{ github.ref_name }}
 
-      # - name: 📥 Install Playwright dependencies
-      #   run: |
-      #     pnpm exec playwright install-deps
-      #     pnpm exec playwright install
-
-      # - name: 🎭 Run Playwright tests
-      #   run: pnpm e2e
-
   # notify-failure:
   #   name: Discord Notification
   #   runs-on: ubuntu-latest

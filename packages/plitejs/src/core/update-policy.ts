@@ -3,6 +3,7 @@ import type {
   EditorUpdateTag,
   EditorUpdateTagInput,
 } from '../interfaces/editor';
+import type { AdmittedRepair } from './public-state';
 import type { ViewPresentation } from './view-presentation';
 
 const HISTORY_TAGS = [
@@ -27,6 +28,7 @@ export type CompiledEditorUpdatePolicy = Readonly<{
 }>;
 
 export type InternalEditorUpdateOptions = {
+  onAdmission?: (admission: AdmittedRepair | null) => void;
   placement?: ViewPresentation;
   skipCorrections?: boolean;
   tags?: readonly EditorUpdateTag[];

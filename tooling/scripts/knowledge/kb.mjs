@@ -1,23 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { randomBytes } from 'node:crypto';
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  realpathSync,
-  renameSync,
-  writeFileSync,
-} from 'node:fs';
-import {
-  basename,
-  dirname,
-  join,
-  relative,
-  resolve as resolvePath,
-} from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
@@ -26,26 +10,17 @@ import {
   groupFindings,
   readBaseline,
 } from '../finding-baseline.mjs';
-import {
-  blobOf,
-  FOLDED_FILE,
-  foldFindings,
-  foldSource,
-  homeFindings,
-  homesFor,
-  pins,
-  quote,
-  readmeHomes,
-  resolve,
-  write,
-} from './compile.mjs';
+import { showAt } from '../private-files.mjs';
+import { homeFindings, readmeHomes } from './homes.mjs';
 import {
   card,
   commitTree,
+  discover,
   findings,
   gaps,
   indexPatterns,
   loadIndex,
+  REPOS,
   trackedPaths,
   workTree,
   writeBack,
@@ -56,7 +31,7 @@ const root = fileURLToPath(new URL('../../..', import.meta.url)).replace(
   ''
 );
 const BASELINE = 'tooling/scripts/knowledge/baseline.json';
-const RULES = ['K0', 'K1', 'K4', 'K7', 'K12', 'K15'];
+const RULES = ['K0', 'K1', 'K4', 'K7', 'K12', 'K16', 'K17'];
 
 const clip = (text = '', limit = 120) => {
   const flat = String(text).replace(/\s+/g, ' ').trim();
@@ -134,7 +109,52 @@ function scopeLines(scope, detail) {
   ].map((line, i) => (i ? `    ${line}` : line));
 }
 
+const sinceText = (since) => {
+  if (!since) return '';
+  return since.missing
+    ? `  HEAD lacks ${since.missing} of its commits; fetch and check out a newer commit`
+    : `  ${since.after} commits since`;
+};
+
+const marked = (mark) =>
+  `${mark.lane.padEnd(8)} ${mark.commit?.slice(0, 9) ?? 'no commit recorded'}${mark.cited ? ` (newest of ${mark.cited} cited)` : ''}${sinceText(mark.since)}${mark.source ? `  (${mark.source})` : ''}`;
+
 const sections = [
+  {
+    key: 'areas',
+    label: 'AREAS',
+    line: (area) =>
+      `${area.area}  ${area.title}  scopes ${area.scopes.join(',') || 'none'}  aliases ${area.aliases.join(',') || 'none'}  (${area.file}:${area.line})`,
+  },
+  {
+    key: 'repoCards',
+    label: 'REPO',
+    line: (repo) => [
+      `${repo.repo}  ${repo.status} ${repo.kind}  areas ${repo.areas.join(',') || 'none'}  added ${repo.added || '?'}  (${repo.file}:${repo.line})`,
+      `  ${repo.url}`,
+      `  clone ${repo.clone ? `${repo.clone}${repo.cloned ? `  HEAD ${repo.head}` : ', not on disk'}` : 'none'}`,
+      ...(repo.homes.length ? [`  homes ${repo.homes.join(', ')}`] : []),
+      ...repo.marks.map((mark) => `  ${marked(mark)}`),
+      ...(repo.marks.length ? [] : ['  no lane has read it']),
+      ...(repo.note ? [`  note ${clip(repo.note, 160)}`] : []),
+    ],
+  },
+  {
+    key: 'areaPages',
+    label: 'AREA PAGES',
+    line: (page) => `${clip(page.title, 100)}  (${page.file})`,
+  },
+  {
+    key: 'areaRepos',
+    label: 'AREA REPOS',
+    line: (repo) =>
+      `${repo.repo}  ${repo.status} ${repo.kind}${repo.clone ? `  ${repo.clone}` : ''}  ${clip(repo.note, 90)}`,
+  },
+  {
+    key: 'sweeps',
+    label: 'SWEEP ROWS',
+    line: (row) => `${clip(row.cells.join(' | '))}  (${row.file}:${row.line})`,
+  },
   {
     key: 'law',
     label: 'LAW',
@@ -168,12 +188,11 @@ const sections = [
     key: 'research',
     label: 'RESEARCH RUNS',
     line: (row) =>
-      `${clip(
-        Object.values(row.row ?? {})
-          .filter(Boolean)
-          .slice(0, 4)
-          .join(' · ')
-      )}  (${row.path}:${row.line})`,
+      `${
+        row.row
+          ? clip(Object.values(row.row).filter(Boolean).slice(0, 4).join(' · '))
+          : `malformed row: ${clip(row.text)}`
+      }  (${row.path}:${row.line})`,
   },
   {
     key: 'lessons',
@@ -208,7 +227,9 @@ function printCard(result, query, detail) {
   for (const { key, label, line } of sections) {
     if (!result[key]?.length) continue;
     console.info(`\n${label}${more(key) || ''}`);
-    for (const item of result[key]) console.info(`  ${line(item)}`);
+    for (const item of result[key]) {
+      for (const text of [line(item)].flat()) console.info(`  ${text}`);
+    }
   }
   if (result.scopes.length) {
     console.info(
@@ -219,6 +240,11 @@ function printCard(result, query, detail) {
     }
   }
   if (result.scopeNote) console.info(`\nSCOPES  ${result.scopeNote}`);
+  if (result.areaMode) {
+    console.info(
+      '\nTESTS  not searched for an area; add a word, a rule ID or a path to search them'
+    );
+  }
   console.info(
     '\nNOT SEARCHED  plans outside a scope (docs/plans), docs/editor-behavior/current-evidence.md (partial proofs and law-versus-test conflicts per rule), benchmark results, review records and the ../raw evidence layer'
   );
@@ -234,10 +260,7 @@ function printCard(result, query, detail) {
  * adds, even one on an old line whose target the change deleted.
  */
 function newRuleViolations(base, baseline) {
-  const atBase = spawnSync('git', ['show', `${base}:${BASELINE}`], {
-    cwd: root,
-    encoding: 'utf-8',
-  });
+  const atBase = showAt(root, base, BASELINE);
   const bound = atBase.status === 0 ? JSON.parse(atBase.stdout) : {};
   const fresh = RULES.filter((rule) => baseline[rule] && !bound[rule]);
   if (!fresh.length) return [];
@@ -264,16 +287,7 @@ function check(mode) {
     );
     return 1;
   }
-  const folded = spawnSync('git', ['show', `${base}:${FOLDED_FILE}`], {
-    cwd: root,
-    encoding: 'utf-8',
-  });
-  const found = [
-    ...findings(loadIndex(workTree(root))),
-    ...foldFindings(workTree(root), {
-      base: folded.status === 0 ? folded.stdout : '',
-    }),
-  ];
+  const found = findings(loadIndex(workTree(root)));
   if (mode === 'check') {
     const violations = newRuleViolations(base, readBaseline(BASELINE));
     if (violations.length) {
@@ -284,30 +298,24 @@ function check(mode) {
       return 1;
     }
   }
-  const status = enforceBaseline({
+  const described = new Map();
+  for (const item of found) {
+    const key = `${item.rule} ${item.file}: ${JSON.stringify(item.identity)}`;
+    described.set(key, [
+      ...(described.get(key) ?? []),
+      `${item.rule} ${item.file}:${item.line} ${item.message}`,
+    ]);
+  }
+  return enforceBaseline({
+    describe: (key) => described.get(key)?.join('\n') ?? key,
     file: BASELINE,
     found: groupFindings(found),
     lowerCommand: 'pnpm kb check --lower',
     mode,
     newFindingsHelp:
-      "Fix each new knowledge finding. K0: a store or test file parsed to fewer records than it holds. K1: a rule ID is malformed or defined twice. K4: a test tag names no rule, editor or issue row. K7: a citation into this repository that a fresh checkout cannot open; commit the cited file, cite a tracked path or a <commit>:<path> on origin/next, or narrow the claim. Cite another editor's file as <owner>/<repo>@<commit>:<path> or under ../raw, which K7 leaves to K6. K12: a rule status outside locked, proposed, audit and deviation. K15: a folded file changed, a folded directory gained a file, or folded.tsv lost or changed a row; write new knowledge to the file's home.",
+      "Fix each new knowledge finding. K0: a store or test file parsed to fewer records than it holds. K1: a rule ID is malformed or defined twice. K4: a test tag names no rule, editor or issue row. K7: a citation into this repository that a fresh checkout cannot open; commit the cited file, cite a tracked path or a <commit>:<path> on origin/next, or narrow the claim. Cite another editor's file as <owner>/<repo>@<commit>:<path> or under ../raw, which K7 leaves to K6. K12: a rule status outside locked, proposed, audit and deviation. K16: docs/research/repos.tsv lists a repo twice or gives it a kind outside editor, library and app, a status outside saved and skipped or an area docs/research/areas.tsv lacks; an area names a scope with no review-scope file; or a home README's Repos line names a repo the list lacks. K17: a file added under docs/plite/research, docs/research/probes or docs/research/raw, which are frozen; keep run notes in the ignored docs/plans/artifacts/<slug>/ and findings on the area page.",
     rules: RULES,
   });
-  if (status !== 0) {
-    const unlisted = new Set(
-      differences(groupFindings(found), readBaseline(BASELINE))
-    );
-    for (const item of found) {
-      if (
-        unlisted.has(
-          `${item.rule} ${item.file}: ${JSON.stringify(item.identity)}`
-        )
-      ) {
-        console.error(`${item.rule} ${item.file}:${item.line} ${item.message}`);
-      }
-    }
-  }
-  return status;
 }
 
 const args = process.argv.slice(2);
@@ -316,7 +324,7 @@ const words = args.filter((arg) => !arg.startsWith('--'));
 
 if (!words.length) {
   console.error(
-    'Usage: pnpm kb <query> [--detail] [--json] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>] | pnpm kb batch <batch dir> <batch> <source...> | pnpm kb write <change.json> --log <file> --resolved <batches dir> | pnpm kb resolve <batch dir> [--seed <seed>] [--sample <n>] | pnpm kb fold <resolved.json> <path...> | pnpm kb quote <batches dir> --plan <plan> | pnpm kb pins <home>'
+    'Usage: pnpm kb <area | scope | repo | query> [--detail] [--json] | pnpm kb discover <area> [--seed <phrase>]... [--minutes <n>] [--record] | pnpm kb gaps [EDIT- prefix] [--json] | pnpm kb check [--lower | --init] | pnpm kb homes [--manifest <file>]'
   );
   process.exit(2);
 }
@@ -333,307 +341,113 @@ const need = (ok, usage) => {
   }
 };
 
-if (words[0] === 'batch') {
-  const [, dir, batch, ...paths] = words;
-  need(dir && batch && paths.length, 'batch <batch dir> <batch> <source...>');
-  const homesOf = homesFor(workTree(root));
-  const sources = paths.map((path) => ({
-    path,
-    homes: homesOf(path),
-    blob: blobOf(readFileSync(join(root, path))),
-  }));
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, 'batch.json'),
-    `${JSON.stringify({ batch, sources }, null, 2)}\n`
+const searchGitHub = (seed, timeout) => {
+  const run = spawnSync(
+    'gh',
+    [
+      'search',
+      'repos',
+      ...seed.split(/\s+/),
+      '--sort',
+      'stars',
+      '--order',
+      'desc',
+      '--archived=false',
+      '--limit',
+      '10',
+      '--json',
+      'fullName,url,stargazersCount,pushedAt,description',
+    ],
+    { encoding: 'utf-8', timeout }
   );
-  console.info(
-    `batch ${batch}: ${sources.length} sources recorded at their current blobs`
-  );
-  process.exit(0);
-}
-
-if (words[0] === 'fold') {
-  const [, resolvedFile, ...paths] = words;
-  need(
-    resolvedFile && existsSync(resolvedFile) && paths.length,
-    'fold <resolved.json> <path...>'
-  );
-  const resolved = JSON.parse(readFileSync(resolvedFile, 'utf-8'));
-  const table = join(root, FOLDED_FILE);
-  const rows = new Map(
-    (existsSync(table) ? readFileSync(table, 'utf-8') : '')
-      .split('\n')
-      .slice(1)
-      .filter(Boolean)
-      .map((line) => [line.split('\t')[0], line])
-  );
-  const folds = [];
-  for (const path of paths) {
-    const sources = resolved.sources.filter((source) =>
-      path.endsWith('/') ? source.path.startsWith(path) : source.path === path
-    );
-    if (!sources.length) {
-      console.error(`[kb] ${resolvedFile} records no source at ${path}`);
-      process.exit(1);
-    }
-    for (const source of sources) {
-      const file = join(root, source.path);
-      const text = readFileSync(file);
-      let next;
-      try {
-        next = foldSource(source.path, text, source.blob, source.homes);
-      } catch (error) {
-        console.error(`[kb] ${source.path}: ${error.message}`);
-        process.exit(1);
-      }
-      folds.push([file, text, next]);
-      rows.set(source.path, `${source.path}\t${blobOf(next)}`);
-    }
-    if (path.endsWith('/')) rows.set(path, `${path}\t-`);
+  if (run.error?.code === 'ETIMEDOUT') return { error: 'limit' };
+  if (run.status !== 0) {
+    return {
+      error: (
+        run.stderr ||
+        run.error?.message ||
+        `gh exited ${run.status}`
+      ).trim(),
+    };
   }
-  for (const [file, text, next] of folds) {
-    if (next !== text) writeFileSync(file, next);
-  }
-  writeFileSync(table, `path\tblob\n${[...rows.values()].join('\n')}\n`);
-  process.exit(0);
-}
-
-// A batch is named by its resolved file's path under `dir`, not by the
-// file's own `batch` field, so two batches never share a name.
-const resolvedFiles = (dir) =>
-  readdirSync(dir, { recursive: true })
-    .map(String)
-    .filter((name) => name.endsWith('.resolved.json'))
-    .map((name) => ({
-      ...JSON.parse(readFileSync(join(dir, name), 'utf-8')),
-      batch: name.slice(0, -'.resolved.json'.length),
-    }));
-
-const realRoot = realpathSync.native(root);
-
-// realpathSync.native returns the filesystem's own spelling, case included,
-// which realpathSync does not, so a case or `./` variant of an existing file
-// names the same file.
-const canonical = (path) => {
-  let probe = resolvePath(root, path);
-  const rest = [];
-  while (!existsSync(probe)) {
-    rest.unshift(basename(probe));
-    probe = dirname(probe);
-  }
-  return relative(realRoot, join(realpathSync.native(probe), ...rest));
+  return {
+    items: JSON.parse(run.stdout).map((item) => ({
+      repo: item.fullName,
+      url: item.url,
+      stars: item.stargazersCount,
+      pushed: item.pushedAt.slice(0, 10),
+      description: (item.description ?? '').replace(/\s+/g, ' ').trim(),
+    })),
+  };
 };
 
-if (words[0] === 'write') {
-  need(
-    words[1] && existsSync(words[1]),
-    'write <change.json> --log <file> --resolved <batches dir>'
-  );
-  const change = JSON.parse(readFileSync(words[1], 'utf-8'));
-  const log = option('--log');
-  if (!log) {
-    console.error(
-      '[kb] kb write needs --log <file>, the run log each write is recorded in'
-    );
-    process.exit(2);
-  }
-  const runDir = option('--resolved');
-  if (!runDir) {
-    console.error(
-      '[kb] kb write needs --resolved <batches dir>, whose resolved batches name the spans it keeps'
-    );
-    process.exit(2);
-  }
-  const batches = existsSync(runDir) ? resolvedFiles(runDir) : [];
-  if (!batches.length) {
-    console.error(
-      `[kb] ${runDir} holds no resolved batch; pass the folder kb quote reads`
-    );
-    process.exit(2);
-  }
-  for (const named of [change.path, change.to?.home].filter(Boolean)) {
-    const own = canonical(named);
-    const problem = /^(\.\.|\/)/.test(own)
-      ? `${named} is outside the repository`
-      : own !== named && `name ${own}, the file's own spelling, not ${named}`;
-    if (problem) {
-      console.error(`[kb] ${problem}`);
-      process.exit(1);
-    }
-  }
-  const again = join(runDir, 'resolutions.json');
-  const resolutions = existsSync(again)
-    ? JSON.parse(readFileSync(again, 'utf-8'))
-    : [];
-  // A target in a resolved file or resolutions.json keeps its reader's
-  // spelling, so it is compared by the file it names.
-  const here = (target) => Boolean(target) && canonical(target) === change.path;
-  const kept = [
-    ...batches.flatMap(({ batch, units }) =>
-      units
-        .filter(
-          (unit) =>
-            here(unit.target) &&
-            unit.verdict === 'accepted' &&
-            ['covered', 'added'].includes(unit.disposition)
-        )
-        .map((unit) => ({ key: `${batch}#${unit.key}`, span: unit.span }))
+const recordSkipped = (repos, area) => {
+  const path = join(root, REPOS);
+  const [head, ...rows] = readFileSync(path, 'utf-8').trimEnd().split('\n');
+  const added = new Date().toISOString().slice(0, 10);
+  const kind = (repo) =>
+    /editor/i.test(`${repo.repo} ${repo.description}`) ? 'editor' : 'library';
+  const lines = [
+    ...rows,
+    ...repos.map((repo) =>
+      [
+        repo.repo,
+        repo.url,
+        '',
+        kind(repo),
+        'skipped',
+        area,
+        added,
+        clip(`discovery-only: ${repo.description}`, 160),
+      ].join('\t')
     ),
-    ...resolutions
-      .filter((item) => item.verdict === 'covered' && here(item.target))
-      .map((item) => ({ key: item.unit, span: item.span })),
-  ];
-  if (change.verdict) {
-    const recorded = resolutions.findLast((item) => item.unit === change.unit);
-    const matches =
-      change.verdict === 'move'
-        ? recorded?.verdict === 'covered' &&
-          canonical(recorded.target) === change.to?.home &&
-          recorded.span === change.to?.span
-        : recorded?.verdict === change.verdict && Boolean(recorded.reason);
-    if (!matches) {
-      console.error(
-        `[kb] ${change.unit} has no ${change.verdict} resolution in ${again} that this write carries out`
-      );
-      process.exit(1);
-    }
-  }
-  const file = join(root, change.path);
-  const text = existsSync(file) ? readFileSync(file, 'utf-8') : undefined;
-  const stands = (to) => {
-    const home = to && join(root, to.home);
-    return Boolean(
-      home && existsSync(home) && readFileSync(home, 'utf-8').includes(to.span)
-    );
-  };
-  let next;
-  try {
-    next = write(change.path, text, change, { kept, stands });
-  } catch (error) {
-    console.error(`[kb] ${error.message}`);
-    process.exit(1);
-  }
-  mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(`${file}.kb-write`, next);
-  renameSync(`${file}.kb-write`, file);
-  if (text === undefined) {
-    // Intent-to-add puts the new page in the index, which is the tracked set
-    // K7 scans and accepts as a citation target.
-    spawnSync('git', ['add', '-N', '--', change.path], { cwd: root });
-  }
-  if (!existsSync(log)) {
-    writeFileSync(log, 'time\tkind\tstep\tbatch\tsession\tunit\tfile\n');
-  }
-  appendFileSync(
-    log,
-    `${[new Date().toISOString(), change.op, change.step, change.batch, change.session, change.unit ?? '-', change.path].join('\t')}\n`
-  );
-  process.exit(0);
-}
+  ].sort((a, b) => a.split('\t')[0].localeCompare(b.split('\t')[0]));
+  writeFileSync(path, `${[head, ...lines].join('\n')}\n`);
+};
 
-if (words[0] === 'resolve') {
-  const dir = words[1];
+if (words[0] === 'discover') {
+  const [, token] = args;
+  const minutes = Number(option('--minutes') ?? 10);
   need(
-    dir && existsSync(join(dir, 'batch.json')),
-    'resolve <batch dir> [--seed <seed>] [--sample <n>]'
+    token && !token.startsWith('--') && minutes > 0,
+    "discover <area> [--seed '<phrase>']... [--minutes <n>] [--record]"
   );
-  const { batch, sources } = JSON.parse(
-    readFileSync(join(dir, 'batch.json'), 'utf-8')
-  );
-  const seed = option('--seed') ?? randomBytes(4).toString('hex');
-  const tree = workTree(root);
-  let resolved;
-  try {
-    resolved = resolve({
-      batch,
-      sources: sources.map((source) => {
-        const bytes = readFileSync(join(root, source.path));
-        return {
-          ...source,
-          text: bytes.toString('utf-8'),
-          current: blobOf(bytes),
-        };
-      }),
-      units: JSON.parse(readFileSync(join(dir, 'units.json'), 'utf-8')),
-      verdicts: readFileSync(join(dir, 'verdicts.tsv'), 'utf-8')
-        .split('\n')
-        .slice(1)
-        .filter(Boolean)
-        .map((line) => {
-          const [key, verdict, note] = line.split('\t');
-          return { key, verdict, note };
-        }),
-      seed,
-      sample: Number(option('--sample') ?? 5),
-      has: (path) => tree.has(path),
-    });
-  } catch (error) {
-    console.error(`[kb] ${error.message}`);
-    process.exit(1);
-  }
-  writeFileSync(
-    join(dir, `${batch}.resolved.json`),
-    `${JSON.stringify(resolved, null, 2)}\n`
-  );
-  console.info(
-    `resolved ${batch}: ${resolved.units.length} units; recall sample (seed ${seed}): ${resolved.sample.join(', ') || 'none'}`
-  );
-  process.exit(0);
-}
-
-if (words[0] === 'quote') {
-  const dir = words[1];
-  need(dir && existsSync(dir), 'quote <batches dir> --plan <plan>');
-  const plan = option('--plan');
-  const again = join(dir, 'resolutions.json');
-  const read = (path) =>
-    existsSync(join(root, path))
-      ? readFileSync(join(root, path), 'utf-8')
-      : undefined;
-  const { counts, lost } = quote({
-    resolved: resolvedFiles(dir),
-    read,
-    resolutions: existsSync(again)
-      ? JSON.parse(readFileSync(again, 'utf-8'))
-      : [],
-    openWork: plan
-      ? (readFileSync(plan, 'utf-8').split(/^## Open work$/m)[1] ?? '').split(
-          /^## /m
-        )[0]
-      : '',
+  const index = loadIndex(workTree(root));
+  const result = discover(index, token, {
+    limitMs: minutes * 60_000,
+    search: searchGitHub,
+    seeds: args.flatMap((arg, at) => (arg === '--seed' ? [args[at + 1]] : [])),
   });
+  if (!result.area) {
+    console.error(
+      result.candidates.length
+        ? `${token} names the areas ${result.candidates.join(', ')}; pass one of them.`
+        : `No area is named ${token}. Areas: ${index.areas.map((area) => area.area).join(', ')}.`
+    );
+    process.exit(2);
+  }
   console.info(
-    Object.entries(counts)
-      .map(([word, n]) => `${n} ${word}`)
-      .join(', ') || 'no resolved units'
+    `${result.area}: searched ${result.searched} of ${result.seeds.length} seeds, ${result.repos.length} repos ${REPOS} lacks`
   );
-  for (const item of lost) {
-    console.info(`lost ${item.batch} ${item.key}: ${item.why}`);
+  for (const repo of result.repos) {
+    console.info(
+      `  ${repo.repo}  ${repo.stars} stars  pushed ${repo.pushed}  ${clip(repo.description, 100)}  (${repo.seed})`
+    );
   }
-  process.exit(lost.length ? 1 : 0);
-}
-
-if (words[0] === 'pins') {
-  need(words[1], 'pins <home>');
-  const folder = `docs/research/sources/${words[1]}/`;
-  const tree = workTree(root);
-  const cited = new Map();
-  for (const path of tree
-    .list()
-    .filter((item) => item.startsWith(folder) && item.endsWith('.md'))) {
-    for (const pin of pins(tree.read(path))) {
-      const key = `${pin.repo}@${pin.commit}`;
-      cited.set(key, (cited.get(key) ?? new Set()).add(path));
-    }
+  if (result.stopped === 'limit') {
+    console.info(
+      `Stopped at the ${minutes}-minute limit; ${result.seeds.length - result.searched} seeds not searched.`
+    );
+  } else if (result.stopped) {
+    console.error(`Stopped: ${result.stopped}`);
   }
-  for (const [key, pages] of [...cited].sort(([a], [b]) =>
-    a.localeCompare(b)
-  )) {
-    console.info(`${key}\t${pages.size} pages`);
+  if (flags.has('--record') && result.repos.length) {
+    recordSkipped(result.repos, result.area);
+    console.info(
+      `Recorded ${result.repos.length} repos as skipped in ${REPOS}; change each one you read to saved.`
+    );
   }
-  console.info(`${cited.size} revisions cited under ${folder}`);
-  process.exit(0);
+  process.exit(result.stopped && result.stopped !== 'limit' ? 1 : 0);
 }
 
 if (words[0] === 'homes') {

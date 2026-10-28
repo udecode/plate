@@ -32,6 +32,12 @@ export interface Batch<_V extends Value = Value> {
   readonly selectionBefore: Selection;
   /** Additional named root owning `selectionBefore`; omit for the primary root. */
   readonly selectionBeforeRoot?: string;
+  /**
+   * On an undo step whose commit settled shown values: the change from the
+   * step's base that takes back what the commit's settle stage wrote. A redo
+   * step never has it.
+   */
+  readonly unsettle?: DocumentChange;
 }
 
 /** Undo and redo stacks of inverse document changes. */
@@ -60,6 +66,8 @@ export type HistoryBatchJSON = Readonly<{
   selectionBefore: ReturnType<typeof encodeEditorSelection>;
   /** Additional named root; omitted for the primary root. */
   selectionBeforeRoot?: string;
+  /** Only on an undo step whose commit settled shown values. */
+  unsettle?: ReturnType<DocumentChange['toJSON']>;
 }>;
 
 const hasFunctions = (
@@ -95,7 +103,9 @@ const isBatch = (value: unknown): value is Batch =>
   isSelection(value.selectionAfter) &&
   isSelection(value.selectionBefore) &&
   isAdditionalRoot(value.selectionAfterRoot) &&
-  isAdditionalRoot(value.selectionBeforeRoot);
+  isAdditionalRoot(value.selectionBeforeRoot) &&
+  (value.unsettle === undefined ||
+    DocumentChange.isDocumentChange(value.unsettle));
 
 export const History = {
   /** Check whether a value is an in-memory history object. */

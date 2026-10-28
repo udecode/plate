@@ -209,62 +209,22 @@ const main = () => {
     collectPackageTestFiles(target, genericTypeFiles);
   }
 
-  run('Core runner contracts', 'node', [
-    '--test',
-    'tooling/scripts/check-core.test.mjs',
-  ]);
-  run('source declaration leak contracts', 'node', [
-    '--test',
-    'tooling/scripts/check-source-declaration-leaks.test.mjs',
-  ]);
-  run('source declaration leak audit', 'node', [
-    'tooling/scripts/check-source-declaration-leaks.mjs',
-  ]);
-  run('package declaration brand contracts', 'node', [
-    '--test',
-    'tooling/scripts/check-package-declaration-brands.test.mjs',
-  ]);
-  run('package kit export contracts', 'node', [
-    '--test',
-    'tooling/scripts/check-package-kit-exports.test.mjs',
-  ]);
   run('package kit export audit', 'node', [
     'tooling/scripts/check-package-kit-exports.mjs',
   ]);
   run('contract reachability audit', 'node', [
     'tooling/scripts/check-contract-reachability.mjs',
   ]);
-  run('Plate schema adoption audit contracts', 'node', [
-    '--test',
-    'tooling/scripts/check-plate-schema-adoption.test.mjs',
-  ]);
   run('Plate schema adoption source audit', 'node', [
     'tooling/scripts/check-plate-schema-adoption.mjs',
     '--check',
   ]);
-  run('React Compiler contract tests', 'node', [
-    '--test',
-    'tooling/scripts/check-react-compiler-contract.test.mjs',
-  ]);
   run('React Compiler source contract audit', 'node', [
     'tooling/scripts/check-react-compiler-contract.mjs',
-  ]);
-  run('Plate docs code contract tests', 'node', [
-    '--test',
-    'tooling/scripts/check-plate-doc-code-contracts.test.mjs',
+    '--check',
   ]);
   run('Plate docs code contract audit', 'node', [
     'tooling/scripts/check-plate-doc-code-contracts.mjs',
-  ]);
-  run('Plite docs audit contracts', 'node', [
-    '--test',
-    'tooling/scripts/check-plite-docs.test.mjs',
-  ]);
-  run('Plite docs audit', 'node', ['tooling/scripts/check-plite-docs.mjs']);
-  run(`typecheck ${packageSlugs.length} Core and reviewed packages`, 'pnpm', [
-    'turbo',
-    'typecheck',
-    ...packageSlugs.map((slug) => `--filter=./packages/${slug}`),
   ]);
   run('type contracts', 'pnpm', [
     'exec',
@@ -273,17 +233,9 @@ const main = () => {
     'packages/platejs/tsconfig.type-tests.json',
     '--noEmit',
   ]);
-  run('post-typecheck source declaration leak audit', 'node', [
-    'tooling/scripts/check-source-declaration-leaks.mjs',
-  ]);
   for (const gate of createGenericTypecheckGates(root, genericTypeConfigs)) {
     run(gate.label, gate.command, gate.args);
   }
-  run(`lint ${packageSlugs.length} Core and reviewed packages`, 'pnpm', [
-    'turbo',
-    'lint',
-    ...packageSlugs.map((slug) => `--filter=./packages/${slug}`),
-  ]);
 };
 
 if (

@@ -45,7 +45,10 @@ export function EditorFrame({
 }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('relative flex h-full min-h-0 w-full flex-col', className)}
+      className={cn(
+        'relative flex h-full min-h-0 w-full min-w-0 flex-col',
+        className
+      )}
       data-slot="editor-frame"
       {...props}
     />

@@ -31,8 +31,15 @@ import {
   mergeAnchorHistoryRecovery,
   stageAnchorHistoryRecovery,
 } from '../core/anchor-state';
-import { filterDocumentChangeRecordSets } from '../core/change/document-change';
-import { getEditorCommitStartedAt } from '../core/commit';
+import {
+  collapseDocumentElementPropertyWrites,
+  filterDocumentChangeRecordSets,
+} from '../core/change/document-change';
+import {
+  getEditorCommitStartedAt,
+  getEditorCommitUnsettle,
+} from '../core/commit';
+import { DOCUMENT_SETTLED_TAG } from '../core/document-admission';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
@@ -67,6 +74,7 @@ import {
   shouldMergeCompositionBatch,
   shouldMergeExplicitBatch,
 } from './history-merge-policy';
+import { historyReplaySchemaOf } from './history-replay';
 import {
   cloneSelection,
   restoreHistoricSelection,
@@ -524,7 +532,9 @@ const prepareHistoryBatch = <V extends Value>(
   const native = readNativeHistoryGrouping(commit);
   const group: HistoryBatchGroup | null = baseGroup
     ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
-    : null;
+    : native?.composition === undefined
+      ? null
+      : Object.freeze({ kind: 'effects', native, root: undefined });
   const resolveSelectionRoot = (
     selection: Selection,
     fallback?: string
@@ -578,6 +588,18 @@ const prepareHistoryBatch = <V extends Value>(
     group,
   });
 };
+
+const redoWithoutSettlement = (
+  editor: Editor,
+  inverse: DocumentChange,
+  unsettle: DocumentChange,
+  undone: EditorDocumentValue
+) =>
+  collapseDocumentElementPropertyWrites(
+    inverse.compose(unsettle, undone),
+    undone,
+    historyReplaySchemaOf(editor).isSetValued
+  );
 
 const shouldSaveCommit = (
   commit: EditorCommit,
@@ -734,16 +756,28 @@ const createHistoryPlugin = <
         throw new Error(`Missing history batch for ${action}.`);
       }
 
+      const { unsettle: taken, ...moved } = batch;
+      const redoUnsettle =
+        action === 'redo' ? getEditorCommitUnsettle(commit) : null;
+      const unsettled =
+        action === 'undo' && taken
+          ? { after: taken.apply(before), change: taken }
+          : undefined;
+
       completeHistoryAction(
         editor,
         source,
         destination,
         {
-          ...batch,
-          change: inverse,
+          ...moved,
+          change: unsettled
+            ? redoWithoutSettlement(editor, inverse, unsettled.change, after)
+            : inverse,
           effects: effects.toReversed().map(invertEffect),
+          ...(redoUnsettle ? { unsettle: redoUnsettle } : {}),
         },
-        after
+        after,
+        unsettled
       );
       if (!replayRequest) {
         throw new Error('History replay requires its owning service request.');
@@ -785,7 +819,10 @@ const createHistoryPlugin = <
     if (!prepared) return undefined;
 
     const pendingReplayEdited = markPendingHistoryReplayEdited(editor);
-    const preparedBatch = prepared.batch;
+    const unsettle = getEditorCommitUnsettle(commit);
+    const preparedBatch = unsettle
+      ? { ...prepared.batch, unsettle }
+      : prepared.batch;
     const lastEntry = peekHistoryEntry(editor, 'undos');
     const lastEntryHasSessionEffect = lastEntry?.batch.effects.some(
       (effect) => typeof effect.type.history === 'object'
@@ -795,7 +832,10 @@ const createHistoryPlugin = <
     const previousAutomaticGroupTime =
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
     const explicitMerge = commit.tags.includes('history-merge');
-    const explicitPush = commit.tags.includes('history-push');
+    // A settling commit stands alone, so redo works its settlement out again
+    // from the change that settled and from nothing merged with it.
+    const settles = commit.tags.includes(DOCUMENT_SETTLED_TAG);
+    const explicitPush = commit.tags.includes('history-push') || settles;
     const textInput =
       commit.tags.includes('native-text-input') ||
       commit.tags.includes('dom-text-input');
@@ -819,6 +859,8 @@ const createHistoryPlugin = <
     const merge =
       !pendingReplayEdited &&
       lastEntry != null &&
+      !lastEntry.group?.closed &&
+      !lastEntry.batch.unsettle &&
       !lastEntryHasSessionEffect &&
       sessionEffects.length === 0 &&
       !explicitPush &&
@@ -832,16 +874,10 @@ const createHistoryPlugin = <
             effectsCompatible
           )
         : nativeMerge &&
-          preparedBatch.effects.length === 0 &&
           (compositionMerge
-            ? shouldMergeCompositionBatch(
-                preparedBatch,
-                prepared.group,
-                lastEntry.batch,
-                lastEntry.group,
-                effectsCompatible
-              )
-            : shouldMergeBatch(
+            ? shouldMergeCompositionBatch(prepared.group, lastEntry.group)
+            : preparedBatch.effects.length === 0 &&
+              shouldMergeBatch(
                 preparedBatch,
                 prepared.group,
                 lastEntry.batch,
@@ -920,7 +956,10 @@ const createHistoryPlugin = <
         anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
         carets,
         clearRedos: true,
-        group: prepared.group,
+        group:
+          settles && prepared.group
+            ? Object.freeze({ ...prepared.group, closed: true })
+            : prepared.group,
         recovery: anchorCapture?.recovery ?? null,
       });
     }

@@ -174,7 +174,9 @@ update rolls back whole and publishes one refusal.
 
 Run one atomic update with the default policy. The callback receives `tx`, which
 owns reads and writes for the active transaction. The update returns the
-callback's value, or `undefined` when the editor refuses the update.
+callback's value, or `undefined` when the editor refuses the update. Inside the
+callback, `editor.read` still reads the committed state; read the draft through
+`tx`.
 
 ```javascript
 editor.update((tx) => {
@@ -202,7 +204,7 @@ type EditorUpdatePolicy = Readonly<{
 }>;
 ```
 
-Plate installs History by default. Tags are applied in input order before `history`; only the last history mode remains.
+A `history` policy throws unless the History plugin is installed. Plate installs History by default. Tags are applied in input order before `history`; only the last history mode remains.
 
 Inside the callback, `tx.tags.add(tag)` updates the final tag set and
 `tx.tags.has(tag)` inspects it. History adds `tx.history.skip()`,

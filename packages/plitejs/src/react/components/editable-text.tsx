@@ -23,6 +23,7 @@ import {
   useClaimEditableDOMCommit,
   useEditableDOMRuntime,
 } from '../hooks/use-claim-editable-dom-commit';
+import { useEditorComposing } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import {
@@ -224,6 +225,51 @@ const RenderCallback = <TProps,>({
   render: (props: TProps) => ReactNode;
 }) => render(props);
 
+const PlaceholderHiddenWhileComposing = ({
+  as,
+  children,
+  dir,
+  ref,
+  renderPlaceholder,
+  style,
+}: {
+  as?: PlaceholderIntrinsicTag;
+  children: ReactNode;
+  dir?: 'rtl';
+  ref?: React.RefCallback<HTMLElement>;
+  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
+  style?: CSSProperties;
+}) => {
+  const composing = useEditorComposing();
+  const shownStyle = composing
+    ? { ...style, visibility: 'hidden' as const }
+    : style;
+
+  if (!renderPlaceholder) {
+    return (
+      <EditorPlaceholder as={as} dir={dir} ref={ref} style={shownStyle}>
+        {children}
+      </EditorPlaceholder>
+    );
+  }
+
+  const attributes = {
+    'aria-hidden': true as const,
+    'data-editor-placeholder': true as const,
+    contentEditable: false as const,
+    dir,
+    ref: ref ?? (() => {}),
+    style: getPlitePlaceholderStyle(shownStyle),
+  };
+
+  return (
+    <RenderCallback
+      props={{ attributes, children }}
+      render={renderPlaceholder}
+    />
+  );
+};
+
 const splitTextByDecorations = (
   text: string,
   decorations: readonly DecorationSlice[],
@@ -383,15 +429,6 @@ const RenderEditableText = ({
     'data-editor-node-key': nodeKeyDOMValue,
     ref: textRef,
   };
-  const placeholderAttributes = {
-    'aria-hidden': true as const,
-    'data-editor-placeholder': true as const,
-    contentEditable: false as const,
-    dir: placeholderDir,
-    ref: placeholderRef ?? (() => {}),
-    style: getPlitePlaceholderStyle(placeholderStyle),
-  };
-
   const {
     containers,
     parts: segmentParts,
@@ -486,24 +523,15 @@ const RenderEditableText = ({
       )
     : (() => {
         const placeholderNode = placeholder ? (
-          renderPlaceholder ? (
-            <RenderCallback
-              props={{
-                attributes: placeholderAttributes,
-                children: placeholder,
-              }}
-              render={renderPlaceholder}
-            />
-          ) : (
-            <EditorPlaceholder
-              as={placeholderAs}
-              dir={placeholderDir}
-              ref={placeholderRef}
-              style={placeholderStyle}
-            >
-              {placeholder}
-            </EditorPlaceholder>
-          )
+          <PlaceholderHiddenWhileComposing
+            as={placeholderAs}
+            dir={placeholderDir}
+            ref={placeholderRef}
+            renderPlaceholder={renderPlaceholder}
+            style={placeholderStyle}
+          >
+            {placeholder}
+          </PlaceholderHiddenWhileComposing>
         ) : null;
         const zeroWidthString = (
           <ZeroWidthString

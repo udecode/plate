@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-26-editor-frame-narrow-hosts",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-26-editor-frame-narrow-hosts.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the editor frame inside narrow layouts",
+  "targets": [
+    {
+      "name": "editor",
+      "files": ["apps/www/src/registry/components/editor/editor.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-26-editor-keep-frame-inside-narrow-c6926a85",
+      "kind": "fix",
+      "summary": "`EditorFrame` now shrinks to fit a grid or flex layout narrower than its toolbar, and the fixed toolbar scrolls inside it. Before, the toolbar widened the frame and pushed the fields beside it past their container's edge.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-26",
+          "entry": "2026-10-26-editor-frame-narrow-hosts",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

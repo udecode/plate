@@ -549,9 +549,14 @@ const entry = id ? elementId.read.entry(id) : undefined;
 ```
 
 The default generator is full-length `nanoid()`. Loads and moves preserve valid
-IDs. Copies, splits, duplicates, and pasted copies receive fresh IDs. Explicit
-duplicates are rejected. Exact schema-derived elements expose `element.id`;
-use the plugin read at erased or optionally installed package boundaries.
+IDs. Copies, splits, duplicates, and pasted copies receive fresh IDs. No two
+elements store one ID. An insert or update that stores an ID another element
+holds lands with a fresh one, so read the ID back from the landed element. A
+collaboration peer's concurrent edit can change it again the same way. Exact
+schema-derived elements expose `element.id`; use the plugin read at erased or
+optionally installed package boundaries. A suggested Enter stores the new
+element's ID when it records, so
+[previews and decisions](/docs/authored-changes#configure-a-view) show that ID.
 
 The compiled schema property target decides which elements receive IDs. Narrow
 the target in the application schema when only blocks need persisted identity:
@@ -572,7 +577,9 @@ const editor = useCreateEditor({
 ```
 
 Current-document admission generates IDs only for matching elements and removes
-the plugin-owned `id` from excluded elements.
+the plugin-owned `id` from excluded elements. The block target works while no
+element's content admits both a block and an inline element, because the ID is
+[unique](#unique-properties) and a type change must not drop it.
 
 Include `ElementIdPlugin` in `EditorMigrations`. Raw documents that already use
 the current schema can enter through the same detached conversion boundary:
@@ -591,10 +598,62 @@ const editor = createEditor({
 });
 ```
 
-Current admission keeps valid string IDs, fills missing IDs, and rejects
-duplicates. Convert numeric IDs and legacy property names in the migration step
-for their historical schema version, where the application can define an
-explicit collision policy.
+Current admission keeps valid string IDs and fills missing IDs. An editor load
+gives every later copy of a repeated ID a fresh one and keeps the ID on the
+first element in document order. `migrateDocument` refuses a document that
+holds one ID twice. Convert numeric IDs, legacy property names and repeated IDs
+in the migration step for their historical schema version, where the
+application can define an explicit collision policy.
+
+#### Unique properties
+
+`ElementIdPlugin` declares its `id` with `unique: true`. Declare an
+application's own generated element metadata the same way when two equal
+values would mean one copied identity:
+
+```ts
+import { definePlugin, property, schema, target } from "platejs";
+
+const AnchorPlugin = definePlugin("anchor", {
+  schema: {
+    properties: {
+      anchorId: schema.elementProperty(
+        property.string({ generate: () => crypto.randomUUID() }),
+        {
+          role: "metadata",
+          target: target.group("element"),
+          typeChange: "preserve-if-allowed",
+          unique: true,
+        }
+      ),
+    },
+  },
+});
+```
+
+A generated element property that declares no `split` rule drops its value on
+a split, so the second half generates a fresh one. Declare `split: "preserve"`
+to copy the value instead.
+
+`unique` sets `copy` and `split` to `"drop"`. It requires a generator, the
+`metadata` role, an exact key, a value that is not a set, a target that does
+not depend on place, `landing: "preserve"`, and
+`typeChange: "preserve-if-allowed"`. A type change keeps an element where it
+is. So when an element's or root's content admits a type the target matches,
+every type that content admits must match too, including an undeclared type
+under `unknown: "preserve"`. The schema rejects any other declaration and names
+the content that breaks the rule. A unique key takes one element declaration,
+so the schema also rejects a second declaration of that key from any plugin.
+A generator that keeps returning held values throws an error that names the
+property. Suggesting mode writes a unique value directly, without a suggestion.
+When a stored block repeats a value that a stored spare block holds, the
+decision that builds that spare block gives it a fresh value.
+Adding or removing `unique` changes the schema fingerprint, so editors that
+disagree on it never share a collaboration room, and saved documents need a
+migration step. A generated element property that Suggesting supports, such as
+`ElementIdPlugin`'s `id`, sets the schema contract's storage revision to 2,
+because suggestions store spare blocks that hold its values. The revision
+changes the fingerprint the same way.
 
 ### Navigation feedback
 

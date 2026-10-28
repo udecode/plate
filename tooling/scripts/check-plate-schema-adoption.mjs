@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -15,6 +14,7 @@ import {
   groupFindings,
 } from './finding-baseline.mjs';
 import { internalPliteContractTypeSymbols } from './plite-internal-symbols.mjs';
+import { trackedFiles } from './private-files.mjs';
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -293,7 +293,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts',
-    [[['corrections', 'on', 'prepareDocument', 'read']]],
+    [[['activate', 'on', 'read']]],
   ],
   [
     'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts',
@@ -6807,20 +6807,8 @@ export function auditNamedSchemaLineageDocument(
 }
 
 const collectSourceFiles = () =>
-  execFileSync(
-    'git',
-    [
-      'ls-files',
-      '--cached',
-      '--others',
-      '--exclude-standard',
-      '--',
-      ...sourceRoots,
-    ],
-    { cwd: repoRoot, encoding: 'utf-8' }
-  )
-    .split('\n')
-    .filter(Boolean)
+  trackedFiles(repoRoot, { untracked: true })
+    .filter((file) => sourceRoots.some((root) => file.startsWith(`${root}/`)))
     .filter(isPlateSchemaAdoptionSourcePath)
     .map((file) => join(repoRoot, file))
     .filter(existsSync);

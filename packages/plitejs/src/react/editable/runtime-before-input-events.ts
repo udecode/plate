@@ -53,6 +53,7 @@ import {
   applyModelOwnedNativeHistoryEvent,
   type DeferredMutation,
 } from './model-input-strategy';
+import { getUserTextLanding } from './mutation-controller';
 import { getNativeBeforeInputDecision } from './native-input-strategy';
 import {
   editorCommands,
@@ -120,7 +121,15 @@ export const probeBeforeInputInsertTextCommand = ({
   text: string;
 }) =>
   probeCommandNativeEquivalent(editor, editorCommands.insertText, {
-    ...(selection ? { options: { at: selection } } : {}),
+    ...(selection &&
+    getUserTextLanding(editor, {
+      composed: false,
+      inputType: 'insertText',
+      replayed: false,
+      target: selection,
+    }) === 'pinned'
+      ? { options: { at: selection } }
+      : {}),
     text,
   });
 
@@ -263,6 +272,7 @@ export const queuePendingCompositionModelInput = ({
           callback: () => {
             request = applyModelOwnedBeforeInputMutation({
               command: capturedInput.command,
+              commitsComposition: true,
               data: capturedInput.data,
               editor,
               inputController,
@@ -476,6 +486,7 @@ export const useRuntimeBeforeInputEvents = ({
           })
         );
         if (
+          decision.intent === 'history' &&
           profilePliteReactDuration('beforeinput-native-history', () =>
             applyModelOwnedNativeHistoryEvent({
               editor,
@@ -543,6 +554,19 @@ export const useRuntimeBeforeInputEvents = ({
           SelectionApi.isNode(modelSelection)
         ) {
           profilePliteReactDuration('beforeinput-on-user-input', onUserInput);
+
+          if (
+            claimSettledCompositionInput({
+              data: event.data,
+              inputController,
+              inputType: event.inputType,
+            })
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            handledDOMBeforeInputRef.current = true;
+            return;
+          }
 
           if (modelSelectionCommand?.kind === 'insert-text') {
             event.preventDefault();

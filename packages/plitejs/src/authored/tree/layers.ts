@@ -153,6 +153,36 @@ export const splitHistoryOf = (
   return history;
 };
 
+/** A format tag's identity: a write id is unique only per node and key. */
+export const copyKeyOf = ({ id, key }: Readonly<{ id: string; key: string }>) =>
+  `${key}\u0000${id}`;
+
+export const splitCopiesOf = (
+  marks: readonly AuthoredMark[],
+  change: string
+): ReadonlySet<string> => {
+  const formats = marks.filter(
+    (mark): mark is FormatTag => mark.kind === 'format'
+  );
+  const byKey = new Map(formats.map((tag) => [copyKeyOf(tag), tag]));
+  const keys = new Set<string>();
+  const open = formats.filter((tag) => tag.split === change);
+
+  for (let tag = open.pop(); tag; tag = open.pop()) {
+    if (keys.has(copyKeyOf(tag))) continue;
+    keys.add(copyKeyOf(tag));
+    for (const { id } of linksOf(tag)) {
+      const below = byKey.get(copyKeyOf({ id, key: tag.key }));
+
+      if (below && (below.split === undefined || below.split === change)) {
+        open.push(below);
+      }
+    }
+  }
+
+  return keys;
+};
+
 const valueBelow = (
   tag: FormatTag,
   byId: ReadonlyMap<string, FormatTag>,

@@ -103,6 +103,7 @@ const sharedLintInputs = () => [
       'tooling/oxlint/plate-plugin.mjs'
     ),
     '$TURBO_ROOT$/tooling/oxlint/plate-baseline.json',
+    '$TURBO_ROOT$/tooling/oxlint/plate-baseline.private.json',
     ...runnerInputs('tooling/scripts/run-entrypoint-task.mjs'),
   ]),
 ];

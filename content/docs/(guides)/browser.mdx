@@ -71,8 +71,7 @@ export default defineConfig<BrowserTestOptions>({
 ## First test
 
 ```ts
-import { expect, test } from "@playwright/test";
-import { openExample } from "@platejs/test/playwright";
+import { expect, openExample, test } from "@platejs/test/playwright";
 
 test("types through the Browser path", async ({ page }) => {
   const editor = await openExample(page, "plaintext", {
@@ -96,6 +95,41 @@ behavior.
 Do not use `locator.fill()` for contenteditable behavior. It can bypass the
 editor path you are trying to prove. Use keyboard input, clipboard helpers, or
 the Browser harness action that matches the claim.
+
+## Failed tests
+
+Import `test` and `expect` from `@platejs/test/playwright`. When a test fails
+or times out unexpectedly, that `test` reads every editor in the test's browser
+before its contexts close and saves `editor-state.json` in the test's results
+folder, beside Playwright's screenshot and `error-context.md`. A test that
+passes, is skipped or fails as `test.fail()` expects saves nothing.
+
+For each editor on every open page and frame, the file holds:
+
+- the document value and the model selection
+- the browser selection, with the editor that owns each end, and the selection
+  mapped to the model when both ends belong to that editor
+- focus, the text each top-level block shows without the editor's placeholder
+  and line-end characters, and input state
+- the last commit and the last 20 kernel trace entries
+
+Each field says whether it was read, cut to fit, or why it was not read. A
+field the capture could not read is not an empty value. The file also keeps
+every error Playwright recorded, in order. A document too large for the file
+keeps only the blocks near each selection end. The capture stops reading after
+four seconds and
+never changes the test's result.
+
+Some failures save no editor state:
+
+- An editor in a browser or context the spec opens and closes itself. Open
+  pages in the test's `context` and set options with `test.use` instead.
+- An editor on a page that a fixture closes in its own teardown. Leave pages
+  to the context's own close.
+- A failure that starts in an `afterAll` hook, in the setup of a `context`
+  override, or in a fixture torn down after the capture. Add fixtures with
+  `test.extend` on this `test`, or list it first in `mergeTests`, so a fixture
+  the context does not depend on tears down before the capture runs.
 
 ## Proof contracts
 

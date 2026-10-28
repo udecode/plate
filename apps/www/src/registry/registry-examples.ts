@@ -962,10 +962,12 @@ export const demoExamples: Registry['items'] = (
       registryDependencies: [
         '@plate/basic-blocks',
         '@plate/basic-marks',
+        '@plate/callout',
         '@plate/comment',
         '@plate/discussion',
         '@plate/dnd',
         '@plate/link',
+        '@plate/list',
         '@plate/table',
       ],
       title: 'Pagination',

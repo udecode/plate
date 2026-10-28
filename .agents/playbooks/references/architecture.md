@@ -27,6 +27,7 @@ Verdicts are `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer` o
 Both layers:
 
 - A high-risk change (public API, model, operations, normalization, selection, IME, DOM, React subscription, history, collaboration, browser or generated contracts) records three realistic failures, its blast radius from `pstack:blast-radius`, its rollback or hard-cut answer and focused proof.
+- A cache, skip or selection rule that decides whether a check runs can let a broken change land, so before the plan accepts it, a probe replays the rule on a past change it must not skip and on an edit it must notice, and the probe stays as its test.
 - Issue or PR provenance belongs only in issue-backed work or a changed public claim.
 - Browser and device claims follow `verify`'s claim classes; unavailable hardware never blocks a source or API handoff.
 - A blast-radius probe that disproves a fact shipped code relies on confirms a violation. Run the Bug fix playbook's Pokayoke audit over every reader of that fact, and send the shipped defect to the Bug fix playbook beside the plan instead of only listing it as open work.

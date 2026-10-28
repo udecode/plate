@@ -77,6 +77,8 @@ export type LedgerWork = {
   resolvedNodes: number;
   resolvedRuns: number;
   rebuilds: number;
+  /** Nodes read to set the elements completion built aside before a map pairs the rest. */
+  setAsideNodes: number;
   /** Nodes the settle pass read. */
   settledNodes: number;
   /** Slots a level read to map a projected range to its stored ranges. */
@@ -138,6 +140,7 @@ const work: LedgerWork = {
   rebuilds: 0,
   resolvedNodes: 0,
   resolvedRuns: 0,
+  setAsideNodes: 0,
   settledNodes: 0,
   spanSlots: 0,
   strandedBlocks: 0,

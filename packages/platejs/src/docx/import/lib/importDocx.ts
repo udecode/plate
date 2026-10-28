@@ -162,9 +162,10 @@ type DocxImportTarget<V extends Value> = Readonly<{
     onLoss: (loss: HtmlMappingLoss) => void
   ) => readonly Descendant[] | null;
   /**
-   * Whether the structural proposed projection of `review`, fitted to the
-   * schema, equals `proposed`. Fitting each document makes its own generated
-   * values, so the comparison leaves them out.
+   * Whether the proposed projection of `review`, built through the schema as
+   * a decision builds it and fitted to it, equals `proposed`. Fitting each
+   * document makes its own generated values, so the comparison leaves them
+   * out.
    */
   decidesTo: (
     review: EditorDocumentValue,
@@ -178,6 +179,8 @@ type DocxImportTarget<V extends Value> = Readonly<{
   }>;
   hasElement: (type: string) => boolean;
   markerNonce: string;
+  /** `document` with the spares its pending changes need, as a load stores them. */
+  repairDocument: <D extends EditorDocumentValue>(document: D) => D;
   schemaIdentity: EditorSchemaIdentity;
   toHtml: typeof mammoth.convertToHtml;
 }>;
@@ -306,7 +309,7 @@ const compileDocxImportTarget = <V extends Value>(
       plugins: [HtmlPlugin, ...capturedPlugins],
       ...(schema ? { schema } : {}),
     },
-    ({ editor, readState, schema: compiled }) =>
+    ({ authored, editor, readState, schema: compiled }) =>
       readState((state) => {
         const editorSchema: EditorStateSchemaApi = state.schema;
         const decodeHtml = compileHtmlElementDecoder(editor, state);
@@ -316,16 +319,19 @@ const compileDocxImportTarget = <V extends Value>(
 
         return Object.freeze({
           assertDocument: (document) => editorSchema.assertDocument(document),
-          decidesTo: (review, proposed) =>
-            dequal(
-              comparable(
-                editorSchema.fitDocument(
-                  projectAuthoredDocument(review, { projection: 'proposed' })
-                    .document
-                )
-              ),
-              comparable(proposed)
-            ),
+          decidesTo: (review, proposed) => {
+            const projected = authored
+              ? authored.projectDecided(review, 'proposed', compiled)
+              : projectAuthoredDocument(review, { projection: 'proposed' });
+
+            return (
+              projected.ok &&
+              dequal(
+                comparable(editorSchema.fitDocument(projected.document)),
+                comparable(proposed)
+              )
+            );
+          },
           decodeHtml: (element, onLoss) => decodeHtml(element, { onLoss }),
           dom,
           fitDocument: (document) =>
@@ -347,6 +353,9 @@ const compileDocxImportTarget = <V extends Value>(
           },
           hasElement: (type) => editorSchema.element(type) !== null,
           markerNonce: createMarkerNonce(),
+          repairDocument: (document) =>
+            (authored?.repair(document, compiled) ??
+              document) as typeof document,
           schemaIdentity: editorSchema.identity(),
           toHtml,
         });
@@ -1866,12 +1875,14 @@ const importBoundedDocx = async <V extends Value>(
       const native = target.fitReportedDocument({
         children: rootValue(reviewed.nodes),
       });
+      const nativeDocument = target.repairDocument(native.document);
 
       // A schema without review marks would keep deleted runs as live text.
-      if (!target.decidesTo(native.document, proposed)) {
+      if (!target.decidesTo(nativeDocument, proposed)) {
         throw new Error('Tracked revisions do not decide to the document.');
       }
-      ({ document: resultDocument, repairs } = native);
+      resultDocument = nativeDocument;
+      ({ repairs } = native);
       stripped = reviewed;
       if (
         review &&
@@ -1886,7 +1897,8 @@ const importBoundedDocx = async <V extends Value>(
           ...(review.records === undefined ? {} : { records: review.records }),
         });
 
-        ({ document: resultDocument, repairs } = fitted);
+        resultDocument = target.repairDocument(fitted.document);
+        ({ repairs } = fitted);
         stripped = restored;
       }
     } catch {

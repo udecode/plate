@@ -1,7 +1,11 @@
-import type * as Y from 'yjs';
+import * as Y from 'yjs';
 
 import type { YjsNode } from './attributes';
-import { YJS_NODE_ID_KEY, YJS_VIRTUAL_CHILD_ID_KEY } from './keys';
+import {
+  YJS_CUT_SOURCE_KEY,
+  YJS_NODE_ID_KEY,
+  YJS_VIRTUAL_CHILD_ID_KEY,
+} from './keys';
 
 type RootSlot = {
   /** Whether the slot crosses, as `nextCrossing` defines it. */
@@ -31,10 +35,13 @@ export type RootSlotEntry = Readonly<{
 
 export type RootVisibleSlot = Readonly<{ node: YjsNode; rawIndex: number }>;
 
-/** A root tree's nodes by `yjs:id`, and each element that shows an id. */
+/**
+ * A root tree's nodes by `yjs:id`, and each node that shows an id: an element
+ * that shows it as a virtual child, or a cut view that shows letters of it.
+ */
 export type YjsTreeRefs = Readonly<{
   ids: ReadonlyMap<string, YjsNode>;
-  referrers: ReadonlyArray<readonly [id: string, referrer: Y.XmlElement]>;
+  referrers: ReadonlyArray<readonly [id: string, referrer: YjsNode]>;
 }>;
 
 let prioritySeed = 0x25_45_f4_91;
@@ -155,7 +162,16 @@ export class RootProjectionIndex {
   private projected = 0;
   private readonly raws = new Map<YjsNode, RootSlot>();
   /** The elements noted as showing each id, live or not. */
-  private readonly referrers = new Map<string, Set<Y.XmlElement>>();
+  private readonly referrers = new Map<string, Set<YjsNode>>();
+  /**
+   * The ids more than one element was noted as showing, each with the
+   * elements that showed it when `takeContestChanges` last read it.
+   */
+  private readonly contested = new Map<string, ReadonlySet<YjsNode>>();
+  /** The contested ids each element was noted as showing. */
+  private readonly contestsOf = new Map<YjsNode, Set<string>>();
+  /** The contested ids whose elements may have changed since the last read. */
+  private readonly dirty = new Set<string>();
   /** How many root placeholders refer to each id. */
   private readonly refs = new Map<string, number>();
   private root: RootSlot | null = null;
@@ -314,6 +330,11 @@ export class RootProjectionIndex {
     return node !== undefined && isLive(id, node) ? node : null;
   }
 
+  /** The node `id` named, even one deleted since, while the index holds it. */
+  held(id: string): YjsNode | null {
+    return this.ids.get(id) ?? null;
+  }
+
   noteId(id: string, node: YjsNode): void {
     this.ids.set(id, node);
     if (this.ids.size <= this.sweepAt) return;
@@ -325,21 +346,126 @@ export class RootProjectionIndex {
     this.sweepAt = 2 * this.ids.size;
   }
 
-  noteReferrer(id: string, referrer: Y.XmlElement): void {
+  noteReferrer(id: string, referrer: YjsNode): void {
     const known = this.referrers.get(id);
 
     if (known) known.add(referrer);
     else this.referrers.set(id, new Set([referrer]));
+    if (!(referrer instanceof Y.XmlElement)) return;
+    if (!this.contested.has(id)) {
+      const rival = [...(known ?? [])].some(
+        (node) => node !== referrer && node instanceof Y.XmlElement
+      );
+
+      if (!rival) return;
+      this.contested.set(id, new Set());
+    }
+
+    this.dirty.add(id);
+    for (const node of this.referrers.get(id) ?? []) {
+      if (!(node instanceof Y.XmlElement)) continue;
+
+      const ids = this.contestsOf.get(node);
+
+      if (ids) ids.add(id);
+      else this.contestsOf.set(node, new Set([id]));
+    }
   }
 
-  /** The live elements that still show the node with `id`. */
-  referrersOf(id: string): Y.XmlElement[] {
+  /**
+   * Notes that a batch deleted `node` or changed what it refers to or whether
+   * it shows, so each contest of an element at or under it is read again.
+   */
+  noteChanged(node: YjsNode): void {
+    if (this.contestsOf.size === 0) return;
+
+    const stack: YjsNode[] = [node];
+
+    for (let current = stack.pop(); current; current = stack.pop()) {
+      for (const id of this.contestsOf.get(current) ?? []) this.dirty.add(id);
+      if (!(current instanceof Y.XmlElement)) continue;
+      // A deleted element's children are deleted too, and Yjs's child readers
+      // skip deleted items, so walk the raw item list.
+      for (let item = current._start; item !== null; item = item.right) {
+        const { content } = item;
+
+        if (
+          content instanceof Y.ContentType &&
+          (content.type instanceof Y.XmlElement ||
+            content.type instanceof Y.XmlText)
+        ) {
+          stack.push(content.type);
+        }
+      }
+    }
+  }
+
+  /**
+   * The elements that show each id several elements refer to, for each such
+   * id whose elements changed since the last call. Only one of them shows the
+   * node, so a change to any of them can move it to another block.
+   */
+  takeContestChanges(): YjsNode[][] {
+    const changed: YjsNode[][] = [];
+
+    for (const id of this.dirty) {
+      const before = this.contested.get(id);
+
+      if (before === undefined) continue;
+
+      const elements = this.referrersOf(id).filter(
+        (node) => node instanceof Y.XmlElement
+      );
+
+      if (
+        elements.length !== before.size ||
+        elements.some((node) => !before.has(node))
+      ) {
+        changed.push(elements);
+      }
+      const now = new Set<YjsNode>(elements);
+
+      for (const node of before) {
+        if (!now.has(node)) this.forgetContest(node, id);
+      }
+      if (elements.length > 1) {
+        this.contested.set(id, now);
+      } else {
+        this.contested.delete(id);
+        for (const node of elements) this.forgetContest(node, id);
+      }
+    }
+    this.dirty.clear();
+
+    return changed;
+  }
+
+  private forgetContest(node: YjsNode, id: string): void {
+    const ids = this.contestsOf.get(node);
+
+    ids?.delete(id);
+    if (ids?.size === 0) this.contestsOf.delete(node);
+  }
+
+  /** The ids more than one element was noted as showing, live or not. */
+  contestedIds(): IterableIterator<string> {
+    return this.contested.keys();
+  }
+
+  /** The live nodes that still show the node with `id`. */
+  referrersOf(id: string): YjsNode[] {
     const known = this.referrers.get(id);
-    const live: Y.XmlElement[] = [];
+    const live: YjsNode[] = [];
 
     for (const referrer of known ?? []) {
+      // A node a lowering has not inserted yet reads no attributes.
+      if (referrer.doc === null) continue;
       if (
-        referrer.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) === id &&
+        referrer.getAttribute(
+          referrer instanceof Y.XmlText
+            ? YJS_CUT_SOURCE_KEY
+            : YJS_VIRTUAL_CHILD_ID_KEY
+        ) === id &&
         !isDeleted(referrer)
       ) {
         live.push(referrer);
@@ -365,12 +491,16 @@ export class RootProjectionIndex {
     this.projected = 0;
     this.ids.clear();
     this.referrers.clear();
+    this.contested.clear();
+    this.contestsOf.clear();
+    this.dirty.clear();
     for (const [id, node] of tree.ids) this.ids.set(id, node);
     this.sweepAt = 2 * this.ids.size;
     for (const [id, referrer] of tree.referrers) {
       this.noteReferrer(id, referrer);
     }
     this.root = this.build(entries);
+    this.takeContestChanges();
   }
 
   /**

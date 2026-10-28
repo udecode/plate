@@ -1,5 +1,3 @@
-import type * as Y from 'yjs';
-
 import { countCoreWork } from '../../core/work';
 import {
   type Descendant,
@@ -15,6 +13,8 @@ import {
   readPliteValueFromYjs,
   removeYjsChild,
   type YjsSetPropertyResolver,
+  type YjsTextAdmission,
+  type YjsWrite,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
 import { replaceCompatibleYjsChildren } from './replacement';
@@ -117,7 +117,7 @@ export type YjsCanonicalChangeResult = {
 };
 
 export const reconcileYjsRoot = (
-  root: Y.XmlElement,
+  write: YjsWrite,
   before: readonly Descendant[],
   after: readonly Descendant[],
   isSetValued: YjsSetPropertyResolver = () => false,
@@ -125,11 +125,12 @@ export const reconcileYjsRoot = (
 ): YjsCanonicalChangeResult => {
   countCoreWork('reconciles');
 
+  const { root } = write;
   const visibleChildren = getYjsVisibleChildren(root, root);
 
   if (
     replaceCompatibleYjsChildren(
-      root,
+      write,
       visibleChildren,
       before,
       after,
@@ -152,7 +153,7 @@ export const reconcileYjsRoot = (
     removedVisible < removed &&
     getYjsVisibleChildren(root, root).length > start
   ) {
-    removeYjsChild(root, root, start);
+    removeYjsChild(write, root, start);
     removedVisible += 1;
   }
 
@@ -164,7 +165,7 @@ export const reconcileYjsRoot = (
     }
 
     insertYjsChild(
-      root,
+      write,
       root,
       start + index,
       createYjsNode(
@@ -183,6 +184,7 @@ export const reconcileYjsRoot = (
 };
 
 export const lowerDocumentChangeToYjs = ({
+  admitsText,
   base,
   canonicalize = (children) => children,
   change,
@@ -191,8 +193,9 @@ export const lowerDocumentChangeToYjs = ({
   knownYjsValue,
   isSetValued = () => false,
   root,
-  yRoot,
+  write,
 }: {
+  admitsText?: YjsTextAdmission;
   base: readonly Descendant[];
   canonicalize?: (children: readonly Descendant[]) => readonly Descendant[];
   change: DocumentChange;
@@ -201,9 +204,9 @@ export const lowerDocumentChangeToYjs = ({
   knownYjsValue: readonly Descendant[];
   isSetValued?: YjsSetPropertyResolver;
   root: string;
-  yRoot: Y.XmlElement;
+  write: YjsWrite;
 }): YjsCanonicalChangeResult => {
-  const yjsBefore = readPliteValueFromYjs(yRoot, emptyValue);
+  const yjsBefore = readPliteValueFromYjs(write.root, emptyValue, admitsText);
   const before = canonicalize(yjsBefore);
 
   if (areJsonLikeValuesEqual(before, expected)) {
@@ -213,7 +216,7 @@ export const lowerDocumentChangeToYjs = ({
   if (!areJsonLikeValuesEqual(before, base)) {
     if (areJsonLikeValuesEqual(before, knownYjsValue)) {
       return reconcileYjsRoot(
-        yRoot,
+        write,
         yjsBefore,
         expected,
         isSetValued,
@@ -235,7 +238,7 @@ export const lowerDocumentChangeToYjs = ({
   }
 
   return reconcileYjsRoot(
-    yRoot,
+    write,
     yjsBefore,
     after,
     isSetValued,

@@ -1,13 +1,19 @@
-import { createInternalDocumentChange } from '../../core/change/document-change';
 import {
-  type DocumentIndex,
+  createInternalDocumentChange,
+  type DocumentChange,
+} from '../../core/change/document-change';
+import {
+  DocumentIndex,
   type NodeList,
   rootNodesOf,
 } from '../../core/change/document-index';
 import { jsonEqual } from '../../core/change/json';
+import { retractionOf } from '../../core/change/retraction';
 import {
+  propertyDeltaFromModifications,
   RootChange,
   type RootChangeSection,
+  semanticPropertyModifications,
 } from '../../core/change/root-change';
 import {
   type JsonEditorValue,
@@ -18,12 +24,23 @@ import {
   elementSplitOutput,
   isLeftOutDefault,
 } from '../../core/default-storage';
-import { canonicalizeCompiledTextProperties } from '../../core/editor-schema';
-import { composeRecordOps, deriveValue } from '../../core/record-store';
+import {
+  canonicalizeCompiledTextProperties,
+  readEmptyText,
+} from '../../core/editor-schema';
+import {
+  composeRecordOps,
+  deriveValue,
+  NO_RECORD_OPS,
+  type RecordOps,
+} from '../../core/record-store';
 import type { CompiledEditorSchema } from '../../core/schema-compiler';
+import { survivalUnder } from '../../core/survival';
+import type { Path } from '../../interfaces/path';
+import { getDefined } from '../../internal/get-defined';
 import { rootOf } from '../ledger/roots';
 import { countLedgerWork } from '../ledger/work';
-import { heldProps, textContextAt } from '../tree/holds';
+import { heldNode, heldProps, textContextAt } from '../tree/holds';
 import {
   decideKey,
   type FormatTag,
@@ -37,20 +54,45 @@ import {
   type AuthoredMember,
   deletionOf,
   heldOf,
+  isAuthoredSetValued,
   isClaim,
+  isPlaceChange,
+  isStructureChange,
   readAuthoredMarks,
   readMembers,
   withMembers,
 } from '../tree/marks';
+import { buildClaimsIn } from '../tree/reserves';
+import {
+  type AuthoredResolveSchema,
+  slotDecidingInsertions,
+  startOccupants,
+  vacatesSlot,
+} from '../tree/resolve';
+import {
+  putRootSpares,
+  type Spare,
+  sparesIn,
+  slotKeyOf,
+  takeSpare,
+  withBuiltSpares,
+} from '../tree/spares';
 import { createDependencies, type Dependencies } from './dependencies';
 import { isEditingChange } from './editing';
-import { claimsOf, isAccepted, outcomeOf, type ReviewFacts } from './facts';
+import {
+  claimsOf,
+  isAccepted,
+  outcomeOf,
+  type ReviewFacts,
+  standingClaimsOf,
+} from './facts';
 import {
   incarnationOf,
   type LandedRecord,
   landedOf,
   putContexts,
   putLanded,
+  RESERVES,
 } from './records';
 
 type Node = Readonly<Record<string, unknown>> & {
@@ -62,22 +104,153 @@ const isText = (node: Node) => typeof node.text === 'string';
 
 export type SettleScope = 'document' | ReadonlyMap<string, ReadonlySet<number>>;
 
+type RootEdits = Readonly<{
+  change: () => RootChange | null;
+  donate: (path: Path, read: Node, built: Node) => void;
+  drop: (path: Path) => void;
+  props: (path: Path, was: Node, now: Node) => void;
+  refill: (path: Path) => void;
+}>;
+
 type Pass = Readonly<{
   /** Writes what a node's insertions rest on once some of them are accepted. */
   dependencies: Dependencies;
+  edits: Map<string, RootEdits>;
   facts: ReviewFacts;
+  gone: WeakSet<Node>;
+  indexOf: (root: string) => DocumentIndex;
   landed: Map<string, LandedRecord>;
   loading: boolean;
   reopenedRejections: Set<string>;
+  reserveWrites: Map<string, string | null>;
+  resolveSchema: () => AuthoredResolveSchema;
   returnsHeld: boolean;
   schema: CompiledEditorSchema;
+  stillBuilds: (container: Node | null, children: readonly Node[]) => boolean;
 }>;
 
 type Site = Readonly<{
   outer: Site | null;
   parent: Node | null;
+  parentPath: Path;
   root: string;
 }>;
+
+type Level = Readonly<{ nodes: readonly Node[]; readIndex: readonly number[] }>;
+
+type Replacements = Readonly<{
+  into: ReadonlyMap<number, readonly Node[]>;
+  taken: ReadonlySet<string>;
+}>;
+
+type LeftLevel = Readonly<{
+  nodes: NodeList<Node> | readonly Node[];
+  taken: ReadonlySet<string>;
+  waits: boolean;
+}>;
+
+const NOTHING_TAKEN: ReadonlySet<string> = new Set();
+
+const propsOf = ({ children: _children, text: _text, ...props }: Node) => props;
+
+const propertySection = (
+  index: () => DocumentIndex,
+  path: Path,
+  was: Node,
+  now: Node
+): RootChangeSection | null => {
+  const modifications = semanticPropertyModifications(
+    propsOf(was),
+    propsOf(now),
+    (key) => isAuthoredSetValued(null, key)
+  );
+
+  if (modifications.length === 0) return null;
+
+  const { from } = index().nodeRange(path);
+
+  return {
+    from,
+    properties: propertyDeltaFromModifications(modifications),
+    to: from + 1,
+  };
+};
+
+const donation = (
+  index: DocumentIndex,
+  path: Path,
+  read: Node,
+  built: Node
+): RootChangeSection[] => {
+  const props = propertySection(() => index, path, read, built);
+  const content = {
+    from: index.childPosition(path, 0),
+    insert: PreparedTokenSlice.fromNodes(
+      (built.children ?? []) as readonly JsonNode[]
+    ),
+    to: index.childPosition(path, read.children?.length ?? 0),
+  };
+
+  return props ? [props, content] : [content];
+};
+
+const createRootEdits = (indexOf: () => DocumentIndex): RootEdits => {
+  let index: DocumentIndex | undefined;
+  let sections: RootChangeSection[] = [];
+  const read = () => (index ??= indexOf());
+  const supersede = (
+    from: number,
+    to: number,
+    added: readonly RootChangeSection[]
+  ) => {
+    sections = sections.filter(
+      (section) => section.from < from || section.from >= to
+    );
+    sections.push(...added);
+  };
+
+  return {
+    change: () =>
+      sections.length === 0 ? null : RootChange.create(read(), sections),
+    donate: (path, was, built) => {
+      const { from, to } = read().nodeRange(path);
+
+      supersede(from, to, donation(read(), path, was, built));
+    },
+    drop: (path) => {
+      const { from, to } = read().nodeRange(path);
+
+      supersede(from, to, [{ from, to }]);
+    },
+    props: (path, was, now) => {
+      const section = propertySection(read, path, was, now);
+
+      if (section) sections.push(section);
+    },
+    refill: (path) => {
+      const from = read().childPosition(path, 0);
+      const to = read().childPosition(
+        path,
+        read().node(path).children?.length ?? 0
+      );
+
+      supersede(from, to, [
+        { from, insert: PreparedTokenSlice.fromNodes([{ text: '' }]), to },
+      ]);
+    },
+  };
+};
+
+const editsOf = (pass: Pass, root: string) => {
+  let edits = pass.edits.get(root);
+
+  if (!edits) {
+    edits = createRootEdits(() => pass.indexOf(root));
+    pass.edits.set(root, edits);
+  }
+
+  return edits;
+};
 
 const typeOf = (node: Node | null) =>
   typeof node?.type === 'string' ? node.type : null;
@@ -224,7 +397,7 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
 
   for (const member of members) {
     if (member.kind === 'format' && dropped.has(member)) continue;
-    if (follows(member)) {
+    if (follows(member) || member.kind === 'reserve' || member.kind === 'as') {
       kept.push(member);
       continue;
     }
@@ -267,103 +440,492 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
     : withMembers(next, kept);
 };
 
-/**
- * As the resolver's survival rule does, an inline element whose own deletion
- * is accepted goes once none of its settled children is content.
- */
 const goesWhenSettled = (
   element: Node,
   children: readonly Node[],
-  facts: ReviewFacts
+  pass: Pass
 ) =>
   readAuthoredMarks(element).some(
-    (mark) => mark.kind === 'delete' && outcomeOf(facts, mark) === 'accept'
-  ) && children.every((child) => isText(child) && child.text === '');
+    (mark) => mark.kind === 'delete' && outcomeOf(pass.facts, mark) === 'accept'
+  ) &&
+  children.every(
+    (child) => pass.gone.has(child) || (isText(child) && child.text === '')
+  );
 
-const settleNodes = <L extends NodeList<Node>>(
-  nodes: L,
+const dropDeletionWhenContentStays = (
+  element: Node,
+  children: readonly Node[],
+  pass: Pass
+) => {
+  const members = readMembers(element);
+  const live = members.filter(
+    (member) =>
+      member.kind !== 'delete' || outcomeOf(pass.facts, member) !== 'accept'
+  );
+
+  if (live.length === members.length) return element;
+
+  const { liveContent } = survivalUnder<Node>(
+    (node) =>
+      pass.gone.has(node) ||
+      pendingOn(
+        node,
+        pass.facts,
+        (mark) => mark.kind === 'insert' || mark.kind === 'delete'
+      )
+  );
+
+  return children.some(liveContent) ? withMembers(element, live) : element;
+};
+
+const chainOf = (site: Site) => {
+  const chain: Node[] = [];
+
+  for (let at: Site | null = site; at?.parent; at = at.outer) {
+    chain.push(at.parent);
+  }
+
+  return chain;
+};
+
+const pendingOn = (
+  node: Node,
+  facts: ReviewFacts,
+  test: (mark: ReturnType<typeof claimsOf>[number]) => boolean
+) =>
+  claimsOf(node, facts).some(
+    (mark) => outcomeOf(facts, mark) === 'pending' && test(mark)
+  );
+
+const buildWaits = (
+  chain: readonly Node[],
+  left: readonly Node[],
+  facts: ReviewFacts
+) =>
+  chain.some((node, at) =>
+    pendingOn(
+      node,
+      facts,
+      (mark) =>
+        mark.kind === 'insert' ||
+        isStructureChange(mark) ||
+        (at === 0 && (isPlaceChange(mark) || mark.kind === 'delete'))
+    )
+  ) || left.some((node) => pendingOn(node, facts, isStructureChange));
+
+const donationRetracts = (read: Node, built: Node, site: Site, pass: Pass) => {
+  if (isText(read) || isText(built)) return false;
+
+  const index = DocumentIndex.fromValue([read as JsonNode]);
+  const outer = chainOf(site);
+
+  return (
+    retractionOf(
+      index,
+      RootChange.create(index, donation(index, [0], read, built)),
+      (ancestors) =>
+        readEmptyText(pass.schema, [...ancestors, ...outer], site.root)
+    ) !== null
+  );
+};
+
+const replacementsOf = (
+  size: number,
+  removed: readonly number[],
+  childAt: (at: number) => Node,
+  readAt: (at: number) => Node,
+  site: Site,
+  pass: Pass
+): Replacements | null => {
+  const chain = chainOf(site);
+  const schema = pass.resolveSchema();
+  const content = schema.content(typeOf(chain[0] ?? null), site.root);
+
+  if (
+    content &&
+    getDefined(removed[0]) >= content.prefix &&
+    size - removed.length >= content.min
+  ) {
+    return {
+      into: new Map(removed.map((at) => [at, []])),
+      taken: NOTHING_TAKEN,
+    };
+  }
+
+  const { complete } = schema;
+
+  if (!complete) return null;
+
+  const gone = new Set(removed);
+  const level = Array.from({ length: size }, (_, at) => childAt(at));
+  const left = level.filter((_, at) => !gone.has(at));
+  const origins = new Map(level.map((node, at) => [node, readAt(at)]));
+  const origin = (node: unknown) => origins.get(node as Node) ?? (node as Node);
+  const inserted = (node: unknown) =>
+    standingClaimsOf(origin(node), pass.facts, pass.facts).some(
+      (mark) => mark.kind === 'insert'
+    );
+  const start = startOccupants(level.map(origin), inserted);
+  const [parentType = null, ...outer] = chain.map(typeOf);
+  const spares: readonly Spare[] = !schema.storesSpares
+    ? []
+    : chain[0]
+      ? sparesIn(chain[0])
+      : pass.facts
+          .reserves(site.root)
+          .map((record) => ({ ...record, type: null }));
+  const completeHere = (nodes: readonly Node[]) => {
+    const used = new Set<string>();
+    const takenAt = new Map<string, string>();
+    const completion = complete(
+      nodes as readonly JsonNode[],
+      chain,
+      site.root,
+      (slot, candidate) =>
+        vacatesSlot(start, slot, origin(candidate), inserted),
+      undefined,
+      spares.length === 0
+        ? undefined
+        : (nodeType, slot) => {
+            const spare = takeSpare(spares, parentType, nodeType, slot, used);
+
+            if (!spare) return null;
+            takenAt.set(slotKeyOf(slot), spare.key);
+
+            return heldNode(schema.ownership, spare.node, {
+              outerTypes: outer.flatMap((type) => type ?? []),
+              parentType,
+              root: site.root,
+            });
+          }
+    );
+    const taken: ReadonlySet<string> = new Set(
+      completion.built.flatMap(({ slot }) => {
+        const key = takenAt.get(slotKeyOf(slot));
+
+        return key ? [key] : [];
+      })
+    );
+
+    return { ...completion, taken };
+  };
+  const completion = completeHere(left);
+  const slots = content?.prefix ?? 0;
+
+  if (
+    (completion.built.length > 0 && buildWaits(chain, left, pass.facts)) ||
+    (slots > 0 &&
+      slotDecidingInsertions(
+        left as readonly JsonNode[],
+        completion,
+        completeHere,
+        slots,
+        (node) => start.includes(origin(node)),
+        inserted
+      ).some((node) =>
+        pendingOn(origin(node), pass.facts, (mark) => mark.kind === 'insert')
+      ))
+  ) {
+    return null;
+  }
+
+  const children = completion.children as readonly Node[];
+  const into = new Map<number, Node[]>(removed.map((at) => [at, []]));
+  let gap: number[] = [];
+  let filled = 0;
+  let next = 0;
+  const place = (node: Node | undefined) => {
+    const at = gap[filled];
+
+    if (!node || at === undefined) return false;
+    getDefined(into.get(at)).push(node);
+    filled += 1;
+    next += 1;
+
+    return true;
+  };
+
+  for (const [at, node] of level.entries()) {
+    if (gone.has(at)) {
+      gap.push(at);
+      continue;
+    }
+    while (children[next] !== node) {
+      if (!place(children[next])) return null;
+    }
+    next += 1;
+    gap = [];
+    filled = 0;
+  }
+  while (next < children.length) {
+    if (!place(children[next])) return null;
+  }
+
+  return [...into].every(
+    ([at, [built]]) => !built || donationRetracts(readAt(at), built, site, pass)
+  )
+    ? { into, taken: completion.taken }
+    : null;
+};
+
+const withSettledSpares = (
+  stored: Node,
+  container: Node,
+  taken: ReadonlySet<string>,
+  pass: Pass
+) => {
+  const members = readMembers(container);
+
+  if (!members.some((member) => member.kind === 'reserve')) return container;
+  if (!pass.stillBuilds(stored, stored.children ?? [])) {
+    return withMembers(
+      container,
+      members.filter((member) => member.kind !== 'reserve')
+    );
+  }
+
+  return taken.size > 0
+    ? withMembers(container, withBuiltSpares(members, taken))
+    : container;
+};
+
+const settleRootSpares = (
+  pass: Pass,
+  root: string,
+  stored: () => readonly Node[],
+  taken: ReadonlySet<string>
+) => {
+  const records = pass.facts.reserves(root);
+
+  if (records.length > 0) {
+    putRootSpares(
+      records,
+      pass.stillBuilds(null, stored()),
+      taken,
+      pass.reserveWrites
+    );
+  }
+};
+
+const leaveLevel = (
+  level: Level,
+  stored: NodeList<Node>,
+  site: Site,
+  pass: Pass
+): LeftLevel => {
+  const { nodes, readIndex } = level;
+  const removed = nodes.flatMap((node, at) =>
+    pass.gone.has(node) ? [at] : []
+  );
+
+  if (removed.length === 0) {
+    return { nodes, taken: NOTHING_TAKEN, waits: false };
+  }
+
+  const readAt = (at: number) =>
+    getDefined(stored.at(getDefined(readIndex[at])));
+  const replacements = replacementsOf(
+    nodes.length,
+    removed,
+    (at) => getDefined(nodes[at]),
+    readAt,
+    site,
+    pass
+  );
+
+  if (replacements === null) {
+    return {
+      nodes:
+        nodes.length === stored.length &&
+        nodes.every((node, at) => node === stored.at(at))
+          ? stored
+          : nodes,
+      taken: NOTHING_TAKEN,
+      waits: true,
+    };
+  }
+
+  const { into, taken } = replacements;
+  const edits = editsOf(pass, site.root);
+
+  for (const [at, [built]] of into) {
+    const path = [...site.parentPath, getDefined(readIndex[at])];
+
+    if (built) edits.donate(path, readAt(at), built);
+    else edits.drop(path);
+  }
+
+  return {
+    nodes: nodes.flatMap((node, at) => into.get(at) ?? [node]),
+    taken,
+    waits: false,
+  };
+};
+
+const settleChild = (
+  node: Node,
+  at: number,
+  pass: Pass,
+  site: Site,
+  inline: boolean
+): Node | null => {
+  const path = [...site.parentPath, at];
+  const edits = editsOf(pass, site.root);
+  const settled = settleNode(node, pass, site);
+
+  if (!settled) {
+    edits.drop(path);
+
+    return null;
+  }
+  if (!settled.children) {
+    if (settled !== node) edits.props(path, node, settled);
+
+    return settled;
+  }
+
+  const inner: Site = {
+    outer: site,
+    parent: settled,
+    parentPath: path,
+    root: site.root,
+  };
+  const level = settleNodes(
+    settled.children,
+    pass,
+    inner,
+    settled.children.some(isText)
+  );
+
+  if (goesWhenSettled(settled, level?.nodes ?? settled.children, pass)) {
+    if (inline) {
+      edits.drop(path);
+
+      return null;
+    }
+    if (settled !== node) edits.props(path, node, settled);
+
+    const shell = level ? { ...settled, children: level.nodes } : settled;
+
+    pass.gone.add(shell);
+
+    return shell;
+  }
+
+  const kept = dropDeletionWhenContentStays(
+    settled,
+    level?.nodes ?? settled.children,
+    pass
+  );
+
+  const left = level ? leaveLevel(level, settled.children, inner, pass) : null;
+  const settles = left ? !left.waits : kept !== node;
+  const marked = settles
+    ? withSettledSpares(node, kept, left?.taken ?? NOTHING_TAKEN, pass)
+    : kept;
+
+  if (marked !== node) edits.props(path, node, marked);
+
+  return !left || left.nodes === settled.children
+    ? marked
+    : { ...marked, children: left.nodes as readonly Node[] };
+};
+
+const settleChanges = (node: Node, settled: Node | null, pass: Pass) =>
+  settled !== node || (settled !== null && pass.gone.has(settled));
+
+const settleNodes = (
+  nodes: NodeList<Node>,
   pass: Pass,
   site: Site,
   inline = false
-): L | Node[] => {
+): Level | null => {
   let changed = false;
-  let holdsText = false;
+  let firstText = -1;
+  const readIndex: number[] = [];
   const next: Node[] = [];
 
-  nodes.forEach((node) => {
-    holdsText ||= isText(node);
+  nodes.forEach((node, at) => {
+    if (firstText === -1 && isText(node)) firstText = at;
 
-    const settled = settleNode(node, pass, site);
+    const settled = settleChild(node, at, pass, site, inline);
 
-    if (!settled) {
-      changed = true;
-
-      return;
-    }
-
-    const children =
-      settled.children &&
-      settleNodes(
-        settled.children,
-        pass,
-        { outer: site, parent: settled, root: site.root },
-        settled.children.some(isText)
-      );
-
-    if (inline && children && goesWhenSettled(settled, children, pass.facts)) {
-      changed = true;
-
-      return;
-    }
-
-    const result =
-      children && children !== settled.children
-        ? { ...settled, children }
-        : settled;
-
-    if (result !== node) changed = true;
-    next.push(result);
+    if (settleChanges(node, settled, pass)) changed = true;
+    if (!settled) return;
+    readIndex.push(at);
+    next.push(settled);
   });
 
-  if (!changed) return nodes;
-  if (next.length === 0 && holdsText) return [{ text: '' }];
+  if (!changed) return null;
+  if (next.length === 0 && firstText !== -1) {
+    editsOf(pass, site.root).refill(site.parentPath);
 
-  return next;
+    return { nodes: [{ text: '' }], readIndex: [firstText] };
+  }
+
+  return { nodes: next, readIndex };
 };
 
-/**
- * The blocks of `index` at `blocks` that settle to another node, as one change
- * of the root, so a settled block costs its own range and not the root.
- */
 const settleBlocks = (
   index: DocumentIndex,
   pass: Pass,
   blocks: ReadonlySet<number>,
   root: string
 ) => {
-  const sections: RootChangeSection[] = [];
+  const site: Site = { outer: null, parent: null, parentPath: [], root };
+  const settled = new Map<number, Node>();
 
   for (const at of [...blocks].sort((left, right) => left - right)) {
     const block = index.child(at) as Node | undefined;
 
-    if (!block) continue;
-
-    const settled = settleNodes([block], pass, {
-      outer: null,
-      parent: null,
-      root,
-    })[0];
-
-    if (settled !== block) {
-      sections.push({
-        from: index.childPosition([], at),
-        insert: PreparedTokenSlice.fromNodes([settled as JsonNode]),
-        to: index.childPosition([], at + 1),
-      });
+    if (block) {
+      settled.set(at, getDefined(settleChild(block, at, pass, site, false)));
     }
   }
 
-  return sections.length === 0 ? null : RootChange.create(index, sections);
+  const removed = [...settled].flatMap(([at, node]) =>
+    pass.gone.has(node) ? [at] : []
+  );
+  const readAt = (at: number) => index.child(at) as Node;
+  const replacements =
+    removed.length === 0
+      ? null
+      : replacementsOf(
+          index.size,
+          removed,
+          (at) => settled.get(at) ?? readAt(at),
+          readAt,
+          site,
+          pass
+        );
+
+  for (const [at, [built]] of replacements?.into ?? []) {
+    if (built) editsOf(pass, root).donate([at], readAt(at), built);
+    else editsOf(pass, root).drop([at]);
+  }
+  const changed = [...settled].some(([at, node]) =>
+    settleChanges(readAt(at), node, pass)
+  );
+
+  if (changed && (removed.length === 0 || replacements)) {
+    settleRootSpares(
+      pass,
+      root,
+      () => (index.nodes as NodeList<Node>).slice(),
+      replacements?.taken ?? NOTHING_TAKEN
+    );
+  }
+};
+
+const settleRoot = (nodes: NodeList<Node>, pass: Pass, root: string) => {
+  const site: Site = { outer: null, parent: null, parentPath: [], root };
+  const level = settleNodes(nodes, pass, site);
+
+  const left = level && leaveLevel(level, nodes, site, pass);
+
+  if (left && !left.waits) {
+    settleRootSpares(pass, root, () => nodes.slice(), left.taken);
+  }
 };
 
 const formatTagsOf = (node: Node) =>
@@ -432,91 +994,92 @@ export const settleValue = <V extends JsonEditorValue>(
   {
     returnsHeld = scope === 'document',
     restoreMissingFormats = scope === 'document',
+    resolveSchema,
     schema,
   }: Readonly<{
     returnsHeld?: boolean;
     restoreMissingFormats?: boolean;
+    resolveSchema: () => AuthoredResolveSchema;
     schema: CompiledEditorSchema;
   }>
-): Readonly<{ reopenedRejections: ReadonlySet<string>; value: V | null }> => {
+): Readonly<{
+  change: DocumentChange | null;
+  reopenedRejections: ReadonlySet<string>;
+  value: V | null;
+}> => {
+  let resolve: AuthoredResolveSchema | undefined;
+  const dependencies = createDependencies(facts);
+  const buildClaims = buildClaimsIn<Node>(facts, dependencies, (visit) => {
+    rootNodesOf<Node, 'children'>(value, 'children').forEach(visit);
+    for (const nodes of Object.values(value.roots ?? {})) nodes.forEach(visit);
+  });
   const pass: Pass = {
-    dependencies: createDependencies(facts),
+    dependencies,
+    edits: new Map(),
     facts,
+    gone: new WeakSet(),
+    indexOf: (root) => rootOf(value, root),
     landed: new Map(),
     loading: scope === 'document',
     reopenedRejections: new Set(),
+    reserveWrites: new Map(),
+    resolveSchema: () => (resolve ??= resolveSchema()),
     returnsHeld,
     schema,
+    stillBuilds: (container, children) =>
+      buildClaims(container, children).length > 0,
   };
 
   if (!facts.hasVerdicts && !restoreMissingFormats) {
-    return { reopenedRejections: pass.reopenedRejections, value: null };
+    return {
+      change: null,
+      reopenedRejections: pass.reopenedRejections,
+      value: null,
+    };
   }
 
-  const settled =
-    scope === 'document'
-      ? settleRoots(value, pass)
-      : settleScope(value, pass, scope);
+  if (scope === 'document') {
+    settleRoot(rootNodesOf(value, 'children'), pass, 'main');
+    for (const [root, nodes] of Object.entries(value.roots ?? {})) {
+      settleRoot(nodes, pass, root);
+    }
+  } else {
+    for (const [root, blocks] of scope) {
+      settleBlocks(rootOf(value, root), pass, blocks, root);
+    }
+  }
+
+  const changes = new Map(
+    [...pass.edits].flatMap(([root, edits]) => {
+      const change = edits.change();
+
+      return change ? [[root, change] as const] : [];
+    })
+  );
+  const change =
+    changes.size === 0 ? null : createInternalDocumentChange(changes);
   const minted = pass.dependencies.minted();
+  const reserves: RecordOps =
+    pass.reserveWrites.size === 0
+      ? NO_RECORD_OPS
+      : new Map([[RESERVES, pass.reserveWrites]]);
 
   return {
+    change,
     reopenedRejections: pass.reopenedRejections,
     value:
-      settled === value && minted.length === 0
+      !change && minted.length === 0 && pass.reserveWrites.size === 0
         ? null
         : deriveValue(
-            settled,
+            change ? change.apply(value) : value,
             {},
             composeRecordOps(
-              putContexts(minted),
-              putLanded(pass.landed.values())
+              composeRecordOps(
+                putContexts(minted),
+                putLanded(pass.landed.values())
+              ),
+              reserves
             )
           ),
   };
-};
-
-const settleScope = <V extends JsonEditorValue>(
-  value: V,
-  pass: Pass,
-  scope: ReadonlyMap<string, ReadonlySet<number>>
-): V => {
-  const changes = new Map<string, RootChange>();
-
-  for (const [root, blocks] of scope) {
-    const change = settleBlocks(rootOf(value, root), pass, blocks, root);
-
-    if (change) changes.set(root, change);
-  }
-
-  return changes.size === 0
-    ? value
-    : createInternalDocumentChange(changes).apply(value);
-};
-
-const settleRoots = <V extends JsonEditorValue>(value: V, pass: Pass): V => {
-  const settleIn = (root: string, nodes: NodeList<Node>) =>
-    settleNodes(nodes, pass, { outer: null, parent: null, root });
-  const main = rootNodesOf(
-    value as Readonly<{ children: readonly Node[] }>,
-    'children'
-  );
-  const children = settleIn('main', main);
-  const roots = Object.entries(value.roots ?? {}).map(
-    ([root, nodes]) =>
-      [root, nodes, settleIn(root, nodes as readonly Node[])] as const
-  );
-  const rootsChanged = roots.some(([, nodes, settled]) => settled !== nodes);
-
-  return children === main && !rootsChanged
-    ? value
-    : deriveValue(value, {
-        ...(children === main ? {} : { children }),
-        ...(rootsChanged
-          ? {
-              roots: Object.fromEntries(
-                roots.map(([root, , settled]) => [root, settled])
-              ),
-            }
-          : {}),
-      } as Partial<V>);
 };

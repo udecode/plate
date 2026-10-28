@@ -204,6 +204,23 @@ export const isInteractiveInternalTarget = (
   );
 };
 
+const TEXT_INPUT_TYPES = new Set([
+  'email',
+  'number',
+  'password',
+  'search',
+  'tel',
+  'text',
+  'url',
+]);
+
+export const isNativeTextControlTarget = (target: EventTarget | null) =>
+  isDOMElement(target) &&
+  (target.localName === 'textarea' ||
+    (target.localName === 'input' &&
+      TEXT_INPUT_TYPES.has((target as HTMLInputElement).type))) &&
+  !getExternalTextHostOwner(target);
+
 export const isNativeDraggableTarget = (
   editor: ReactRuntimeEditor,
   target: EventTarget | null
@@ -273,6 +290,15 @@ const MODIFIER_ONLY_KEYS = new Set([
 const isModifierOnlyKeyboardIntent = (event: KeyboardEvent) =>
   MODIFIER_ONLY_KEYS.has(event.key);
 
+// Safari sends the key that confirms a composition after compositionend, under
+// its own name with keyCode 229. Android and Windows name such keys
+// Unidentified or Process, and those keep their existing key path.
+export const isNamedInputMethodKey = (event: KeyboardEvent) =>
+  // oxlint-disable-next-line typescript/no-deprecated -- keyCode 229 is the only mark of a key the input method took.
+  event.keyCode === 229 &&
+  event.key !== 'Unidentified' &&
+  event.key !== 'Process';
+
 const isClipboardKeyboardIntent = (event: KeyboardEvent) =>
   !event.altKey &&
   (event.ctrlKey || event.metaKey) &&
@@ -322,15 +348,24 @@ export const classifyKeyboardIntent = ({
 }): InputIntent | null => {
   const { nativeEvent } = event;
 
-  if (isComposing || nativeEvent.isComposing) {
+  if (
+    isComposing ||
+    nativeEvent.isComposing ||
+    isNamedInputMethodKey(nativeEvent)
+  ) {
     return 'composition';
   }
 
-  if (Hotkeys.isUndo(nativeEvent) || Hotkeys.isRedo(nativeEvent)) {
+  const internalTarget = isInteractiveInternalTarget(editor, event.target);
+
+  if (
+    (Hotkeys.isUndo(nativeEvent) || Hotkeys.isRedo(nativeEvent)) &&
+    !(internalTarget && isNativeTextControlTarget(event.target))
+  ) {
     return 'history';
   }
 
-  if (isInteractiveInternalTarget(editor, event.target)) {
+  if (internalTarget) {
     return 'internal-control';
   }
 
@@ -425,6 +460,10 @@ export const classifyBeforeInputIntent = ({
   event: InputEvent;
   internalTarget?: boolean;
 }): InputIntent | null => {
+  if (internalTarget && isNativeTextControlTarget(event.target)) {
+    return 'internal-control';
+  }
+
   const intent = DOMRootRuntime.classifyBeforeInputIntent({
     inputType: event.inputType,
     internalTarget,

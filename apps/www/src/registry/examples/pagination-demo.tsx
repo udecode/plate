@@ -19,15 +19,19 @@ import * as React from 'react';
 
 import { BasicBlocksKit } from '@/registry/components/editor/basic-blocks';
 import { BasicMarksKit } from '@/registry/components/editor/basic-marks';
+import { CalloutKit } from '@/registry/components/editor/callout';
 import { createCommentValue } from '@/registry/components/editor/comment';
 import { DiscussionKit } from '@/registry/components/editor/discussion';
 import { DndKit } from '@/registry/components/editor/dnd';
 import { LinkKit } from '@/registry/components/editor/link';
+import { ListKit } from '@/registry/components/editor/list';
 import { TableKit } from '@/registry/components/editor/table';
 
 const plugins = [
   ...BasicBlocksKit,
   ...BasicMarksKit,
+  ...ListKit,
+  ...CalloutKit,
   ...TableKit,
   ...DndKit,
   ...LinkKit,
@@ -135,6 +139,10 @@ const initialComments: CommentsJSON = {
 };
 anchor.release();
 
+// Named fonts only: on macOS, Firefox resolves -apple-system in the
+// OffscreenCanvas that Pretext measures with to a different face than it paints.
+const PAGE_TEXT_FONT = '"Helvetica Neue", Helvetica, Arial, sans-serif';
+const PAGE_CODE_FONT = 'SFMono-Regular, Menlo, monospace';
 const fontWeights: Record<number, number> = { 1: 700, 2: 600, 3: 600 };
 const fontSizes: Record<number, [size: number, lineHeight: number]> = {
   1: [36, 40],
@@ -156,22 +164,11 @@ export default function PaginationDemo() {
     initialValue: value,
     userId: 'ada',
   });
-  const surfaceRef = React.useRef<HTMLDivElement>(null);
   const editableRef = React.useRef<HTMLDivElement>(null);
   const layout = usePageLayout(editableRef);
   const [spread, setSpread] = React.useState(false);
   const [showLines, setShowLines] = React.useState(false);
-  const [fontFamily, setFontFamily] = React.useState('sans-serif');
   const engine = React.useMemo(() => createPretextPageLayoutEngine(), []);
-
-  React.useLayoutEffect(() => {
-    const family = surfaceRef.current
-      ? getComputedStyle(surfaceRef.current).fontFamily
-      : '';
-
-    if (family) setFontFamily(family);
-  }, []);
-
   const headingType = editor.plugin(BaseHeadingPlugin).schema.type;
   const tableType = editor.plugin(BaseTablePlugin).schema.type;
   const typography = React.useMemo<PageLayoutTypography>(
@@ -199,12 +196,12 @@ export default function PaginationDemo() {
 
         return {
           font: `${leaf.italic ? 'italic ' : ''}${weight} ${size}px ${
-            leaf.code ? 'ui-monospace, monospace' : fontFamily
+            leaf.code || leaf.kbd ? PAGE_CODE_FONT : PAGE_TEXT_FONT
           }`,
         };
       },
     }),
-    [fontFamily, headingType]
+    [headingType]
   );
   const fragmentation = React.useMemo<NodeFragmentationProvider>(
     () =>
@@ -274,20 +271,23 @@ export default function PaginationDemo() {
           {layout?.pages.length ?? 0} pages
         </output>
       </div>
-      <div
-        className="flex min-h-0 flex-1 justify-center overflow-auto py-6"
-        ref={surfaceRef}
-      >
+      <div className="flex min-h-0 flex-1 justify-center overflow-auto py-6">
         <EditorRoot editor={editor}>
           <PagedEditorContent
             aria-label="Paged document"
-            className="px-16 pt-4 pb-72 text-base outline-none [&_strong]:font-bold"
+            className="px-16 pt-4 pb-72 text-base outline-none [&_*]:[font-family:inherit] [&_code]:[font-family:var(--page-code-font)] [&_kbd]:[font-family:var(--page-code-font)] [&_strong]:font-bold"
             engine={engine}
             fragmentation={fragmentation}
             page={{ margins: 72, preset: 'letter' }}
             pageView={{ gap: 24, mode: spread ? 'spread' : 'single' }}
             ref={editableRef}
             renderPage={renderPage}
+            style={
+              {
+                '--page-code-font': PAGE_CODE_FONT,
+                fontFamily: PAGE_TEXT_FONT,
+              } as React.CSSProperties
+            }
             typography={typography}
           />
         </EditorRoot>

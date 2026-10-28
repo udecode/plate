@@ -43,10 +43,29 @@ import {
   InlineComboboxEmpty,
   InlineComboboxGroup,
   InlineComboboxItem,
+  useInlineComboboxOpen,
   useInlineComboboxQuery,
 } from '@/registry/components/editor/inline-combobox';
 
 const NUMERIC_FOOTNOTE_QUERY = /^\d+$/;
+
+type FootnotePreview = Readonly<{ isResolved: boolean; previewText?: string }>;
+type FootnoteOptions = Readonly<{
+  footnotes: ReadonlyArray<Readonly<{ ref: string; text?: string }>>;
+  nextRef: string;
+}>;
+
+const CLOSED_PREVIEW: FootnotePreview = { isResolved: false };
+const CLOSED_OPTIONS: FootnoteOptions = { footnotes: [], nextRef: '1' };
+
+const sameOptions = (left: FootnoteOptions | null, right: FootnoteOptions) =>
+  left?.nextRef === right.nextRef &&
+  left.footnotes.length === right.footnotes.length &&
+  left.footnotes.every(
+    (footnote, index) =>
+      footnote.ref === right.footnotes[index].ref &&
+      footnote.text === right.footnotes[index].text
+  );
 
 const focusFootnoteControl = (editor: Editor, path?: Path) => {
   const key = path && editor.key(path);
@@ -104,20 +123,20 @@ export function FootnoteReferenceElement(
   const ref = element.ref ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
-  const fallbackResolved =
-    ref && footnoteApi ? footnoteApi.isResolved({ ref }) : false;
-  const fallbackPreviewText =
-    ref && footnoteApi ? footnoteApi.definitionText({ ref }) : undefined;
-  const livePreview = useEditorSelector(() => {
-    if (!hoverOpen || !ref) return null;
-
-    return {
-      isResolved: footnoteApi.isResolved({ ref }),
-      previewText: footnoteApi.definitionText({ ref }),
-    };
-  });
-  const isResolved = livePreview?.isResolved ?? fallbackResolved;
-  const previewText = livePreview?.previewText ?? fallbackPreviewText;
+  const { isResolved, previewText } = useEditorSelector<FootnotePreview>(
+    () =>
+      hoverOpen && ref
+        ? {
+            isResolved: footnoteApi.isResolved({ ref }),
+            previewText: footnoteApi.definitionText({ ref }),
+          }
+        : CLOSED_PREVIEW,
+    {
+      equalityFn: (left, right) =>
+        left?.isResolved === right.isResolved &&
+        left.previewText === right.previewText,
+    }
+  );
   const selected = useElementSelected({ mode: 'text' });
   const isSelectionInsideAtom = useEditorSelector((currentEditor) => {
     const selection = currentEditor.read.selection();
@@ -158,7 +177,7 @@ export function FootnoteReferenceElement(
               event.stopPropagation();
               if (
                 readOnly &&
-                isResolved &&
+                footnoteApi.isResolved({ ref }) &&
                 footnoteNavigation.focusDefinition({ ref })
               ) {
                 focusFootnoteControl(
@@ -173,7 +192,7 @@ export function FootnoteReferenceElement(
               if (event.metaKey || event.ctrlKey) {
                 event.preventDefault();
                 event.stopPropagation();
-                if (isResolved) {
+                if (footnoteApi.isResolved({ ref })) {
                   footnoteNavigation.focusDefinition({ ref });
 
                   return;
@@ -422,26 +441,33 @@ export function FootnoteCombobox({ editableRef }: EditableSiblingProps) {
 
 function FootnoteComboboxContent() {
   const { read: footnoteApi } = useEditor().plugin(FootnotePlugin);
+  const open = useInlineComboboxOpen();
   const query = useInlineComboboxQuery().trim();
-  const refs = footnoteApi.refs?.() ?? [];
-  const nextRef = footnoteApi.nextRef?.() ?? '1';
+  const { footnotes, nextRef } = useEditorSelector<FootnoteOptions>(
+    () =>
+      open
+        ? {
+            footnotes: (footnoteApi.refs?.() ?? []).map((ref) => ({
+              ref,
+              text: footnoteApi.definitionText?.({ ref }),
+            })),
+            nextRef: footnoteApi.nextRef?.() ?? '1',
+          }
+        : CLOSED_OPTIONS,
+    { equalityFn: sameOptions }
+  );
   const numericQuery = NUMERIC_FOOTNOTE_QUERY.test(query) ? query : '';
   const proposedRef = numericQuery || nextRef;
-  const showCreateOption = !refs.includes(proposedRef);
-
-  const filteredRefs = refs.filter((ref: string) => {
-    if (!query) return true;
-
-    const preview = footnoteApi.definitionText?.({ ref }) ?? '';
-
-    return (
-      ref.includes(query) || preview.toLowerCase().includes(query.toLowerCase())
-    );
-  });
+  const showCreateOption = !footnotes.some(({ ref }) => ref === proposedRef);
+  const lowerQuery = query.toLowerCase();
+  const filteredFootnotes = footnotes.filter(
+    ({ ref, text = '' }) =>
+      !query || ref.includes(query) || text.toLowerCase().includes(lowerQuery)
+  );
 
   return (
     <InlineComboboxContent className="my-1.5 w-72">
-      {showCreateOption || filteredRefs.length > 0 ? null : (
+      {showCreateOption || filteredFootnotes.length > 0 ? null : (
         <InlineComboboxEmpty>No footnotes</InlineComboboxEmpty>
       )}
 
@@ -473,7 +499,7 @@ function FootnoteComboboxContent() {
           </InlineComboboxItem>
         ) : null}
 
-        {filteredRefs.map((ref: string) => (
+        {filteredFootnotes.map(({ ref, text }) => (
           <InlineComboboxItem
             key={ref}
             value={`footnote-${ref}`}
@@ -484,8 +510,7 @@ function FootnoteComboboxContent() {
             <span className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
               <span className="font-mono text-muted-foreground">[^{ref}]</span>
               <span className="truncate">
-                :{' '}
-                {getFootnotePreviewLabel(footnoteApi.definitionText?.({ ref }))}
+                : {getFootnotePreviewLabel(text)}
               </span>
             </span>
           </InlineComboboxItem>

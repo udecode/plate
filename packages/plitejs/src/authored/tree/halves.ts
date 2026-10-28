@@ -47,8 +47,7 @@ export type Halves = Readonly<{
 export type Around = Readonly<{
   /** The nodes between the halves: siblings, or blocks for unmet halves. */
   between: readonly Node[];
-  /** False when the halves stand in different blocks in this run. */
-  met: boolean;
+  unmet?: 'apart' | 'gone';
   /** The elements whose structure or type decides where the halves stand. */
   place: readonly Node[];
 }>;
@@ -257,9 +256,10 @@ export const verdictOf = (
       : { waits: touching };
   }
 
+  if (around.unmet) return { verdict: around.unmet };
+
   return {
     verdict:
-      !around.met ||
       around.between.some((node) => !isText(node) && run.survives(node)) ||
       halvesDiffer(schema, halves)
         ? 'apart'
