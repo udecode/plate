@@ -1,7 +1,7 @@
 # Issue draft
 
 Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
-`udecode/plate` GitHub issue. A user request to publish the issue authorizes
+`udecode/plate-private` GitHub issue. A user request to publish the issue authorizes
 analysis, necessary evidence uploads, creation and read-back in one run.
 
 `draft only`, `analyze only` and `do not publish` keep the result local.
@@ -9,7 +9,7 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 ## Beta-only scope
 
 - Use this mode only for Plate `next` branch and Beta release testing.
-- Target `udecode/plate`. Stop and route to another issue workflow when the
+- Target `udecode/plate-private`. Stop and route to another issue workflow when the
   report targets `main`, a stable release, or another repository.
 - In a two-video Beta report, the baseline recording comes from `main`, the
   Slate site, the stable Plate site or another editor; the reported bug still
@@ -20,14 +20,13 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 - Write the title with no `[Beta]: `, `[Bug]: ` or other bracket prefix,
   including when the repository bug form supplies one. The publisher puts the
   issue on the `v54` milestone, which marks it as Beta, and gives it the Bug
-  type. Issues published before 2026-10-26 keep their `[Beta]: ` titles,
-  because a title edit makes the issue's triage record stale.
+  type.
 
 ## Hard boundaries
 
 - Never upload evidence or create an issue when the user explicitly says
   `draft only`, `analyze only`, or `do not publish`.
-- Never publish to a repository other than `udecode/plate` from this mode.
+- Never publish to a repository other than `udecode/plate-private` from this mode.
 - Never expose tokens, cookies, passwords, private URLs, or sensitive typed
   text in video, logs, transcripts, commands, or issue bodies.
 - Never call GitHub's upload endpoints yourself. Media goes through
@@ -93,8 +92,8 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 
 ### Text-only description
 
-1. Inspect the `udecode/plate` route, exact `next` commit or Beta package
-   version, issue templates, and nearby duplicate issues when available.
+1. Inspect the route, exact `next` commit or Beta package version, issue
+   templates, and nearby duplicate issues in `udecode/plate-private` when available.
 2. Do not record when text plus deterministic console/test/source evidence gives
    an unambiguous minimal repro.
 3. Record when motion or visual timing is the evidence: drag-and-drop, focus,
@@ -123,7 +122,7 @@ clips, find notes and retest marks.
 
 Keep observed facts separate from inference. Record:
 
-- target repository (`udecode/plate`) and route
+- target repository (`udecode/plate-private`) and route
 - testing lane (`next`/Beta), plus exact commit, package version, browser, and
   OS only when known
 - shortest setup and repro steps
@@ -209,7 +208,7 @@ Preview the exact command and body without any upload or GitHub mutation:
 
 ```bash
 bash .agents/skills/maintainer/scripts/publish-issue.sh \
-  --repo udecode/plate \
+  --repo udecode/plate-private \
   --title-file /absolute/path/to/title.txt \
   --body-file /absolute/path/to/body.md \
   --attach /absolute/path/to/slate.mp4 \
@@ -233,7 +232,7 @@ a published body to add evidence.
 
 The publisher:
 
-1. refuses any repository other than `udecode/plate`, a new issue whose title
+1. refuses any repository other than `udecode/plate-private`, a new issue whose title
    starts with a bracket prefix such as `[Beta]: `, an unresolved template
    placeholder, a label outside the facet set (`ime`, `regression`), a `--platform`
    value that is not a Platform field option (`Chrome`, `Safari`, `Firefox`,

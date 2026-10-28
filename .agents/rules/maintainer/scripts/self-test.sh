@@ -21,7 +21,7 @@ node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(process.argv
 
 test_dir=$(cd "$(mktemp -d "${TMPDIR:-/tmp}/plate-issue-publish-test.XXXXXX")" && pwd -P)
 trap 'rm -rf "$test_dir"' EXIT
-publish() { bash "$script_dir/publish-issue.sh" --repo udecode/plate "$@"; }
+publish() { bash "$script_dir/publish-issue.sh" --repo udecode/plate-private "$@"; }
 refuses() {
   local reason=$1
   shift
@@ -39,7 +39,7 @@ ffmpeg -hide_banner -loglevel error -y -f lavfi -i color=c=white:s=16x16:d=0.1 \
   -frames:v 1 "$test_dir/next frame.png"
 
 dry_run=$(publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run)
-jq -e '.repo == "udecode/plate" and .title == "Editor drag crashes the page" and .command[0:3] == ["gh","issue","create"] and .command[(.command | index("--type")) + 1] == "Bug" and .command[(.command | index("--milestone")) + 1] == "v54"' <<<"$dry_run" >/dev/null
+jq -e '.repo == "udecode/plate-private" and .title == "Editor drag crashes the page" and .command[0:3] == ["gh","issue","create"] and .command[(.command | index("--type")) + 1] == "Bug" and .command[(.command | index("--milestone")) + 1] == "v54"' <<<"$dry_run" >/dev/null
 
 printf '%s\n' '## Summary' '' 'The export call is at lines 50-56 of `exportHtmlToDocx.internal.ts`.' >"$test_dir/identifier-body.md"
 publish --title-file "$test_dir/title.txt" --body-file "$test_dir/identifier-body.md" --dry-run >/dev/null
@@ -120,8 +120,8 @@ cat >"$fake_bin/gh" <<'FAKE_GH'
 case "$*" in
   'auth status') exit 0 ;;
   'issue create --help'|'issue comment --help') echo '      --attach file   Attach an image or video file'; exit 0 ;;
-  'issue create '*) echo 'https://github.com/udecode/plate/issues/123'; exit 0 ;;
-  'issue comment 5224 '*) echo 'https://github.com/udecode/plate/issues/5224#issuecomment-987'; exit 0 ;;
+  'issue create '*) echo 'https://github.com/udecode/plate-private/issues/123'; exit 0 ;;
+  'issue comment 5224 '*) echo 'https://github.com/udecode/plate-private/issues/5224#issuecomment-987'; exit 0 ;;
   'api graphql -f query={ organization'*)
     jq -n '{data:{organization:{issueFields:{nodes:[{}, {id:"FIELD_PLATFORM", name:"Platform", options:[{id:"OPT_Android", name:"Android"}, {id:"OPT_iOS", name:"iOS"}]}]}}, repository:{issue:{id:"I_123"}}}}'
     exit 0 ;;
@@ -130,10 +130,10 @@ case "$*" in
   'api graphql -f query={ repository'*)
     jq -n --arg platform "${TEST_PLATFORM_READBACK:-Android}" '{data:{repository:{issue:{issueFieldValues:{nodes:[{}, {field:{name:"Platform"}, options:[{name:$platform}]}]}}}}}'
     exit 0 ;;
-  'api repos/udecode/plate/issues/comments/987')
+  'api repos/udecode/plate-private/issues/comments/987')
     jq -n '{body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n"}'
     exit 0 ;;
-  'issue view https://github.com/udecode/plate/issues/123 '*)
+  'issue view https://github.com/udecode/plate-private/issues/123 '*)
     case "${TEST_ISSUE_READBACK:-}" in
       ok)
         jq -n '{title:"Editor drag crashes the page",
@@ -156,17 +156,17 @@ exit 2
 FAKE_GH
 chmod +x "$fake_bin/gh"
 create() {
-  PATH="$fake_bin:$PATH" TEST_ISSUE_READBACK=$1 bash "$script_dir/publish-issue.sh" --repo udecode/plate \
+  PATH="$fake_bin:$PATH" TEST_ISSUE_READBACK=$1 bash "$script_dir/publish-issue.sh" --repo udecode/plate-private \
     --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
     --attach "$test_dir/main.mp4" --attach "$test_dir/next frame.png" \
     --labels 'ime' --platform Android --confirm-create 2>&1
 }
 
 created=$(create ok)
-jq -e '.url == "https://github.com/udecode/plate/issues/123" and .verified and (.attachmentUrls | length) == 2' <<<"$created" >/dev/null
-commented=$(PATH="$fake_bin:$PATH" bash "$script_dir/publish-issue.sh" --repo udecode/plate --comment-on 5224 \
+jq -e '.url == "https://github.com/udecode/plate-private/issues/123" and .verified and (.attachmentUrls | length) == 2' <<<"$created" >/dev/null
+commented=$(PATH="$fake_bin:$PATH" bash "$script_dir/publish-issue.sh" --repo udecode/plate-private --comment-on 5224 \
   --body-file "$test_dir/body.md" --attach "$test_dir/main.mp4" --confirm-create)
-jq -e '.url == "https://github.com/udecode/plate/issues/5224#issuecomment-987" and .verified and (.attachmentUrls | length) == 1' \
+jq -e '.url == "https://github.com/udecode/plate-private/issues/5224#issuecomment-987" and .verified and (.attachmentUrls | length) == 1' \
   <<<"$commented" >/dev/null
 
 for case_name in failed-readback wrong-body; do
@@ -175,7 +175,7 @@ for case_name in failed-readback wrong-body; do
   status=$?
   set -e
   [[ "$status" == 7 ]] || { echo "Expected $case_name to exit 7, got $status" >&2; exit 1; }
-  grep -Fq 'Published but post-publish verification failed: https://github.com/udecode/plate/issues/123' <<<"$output"
+  grep -Fq 'Published but post-publish verification failed: https://github.com/udecode/plate-private/issues/123' <<<"$output"
 done
 grep -Fq '(body mismatch)' <<<"$output"
 for case_name in untyped unmilestoned; do

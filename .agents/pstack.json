@@ -60,7 +60,7 @@
     ]
   },
   "triage": {
-    "repo": "udecode/plate",
+    "repos": ["udecode/plate", "udecode/plate-private"],
     "floor": [
       "claude-opus-5 @xhigh",
       "gpt-6.1-sol @xhigh"

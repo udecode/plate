@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: publish-issue.sh --repo udecode/plate (--title-file FILE | --comment-on NUMBER) --body-file FILE [--attach FILE --attach-role ROLE]... [--labels a,b] [--platform a,b] (--dry-run | --confirm-create)"
+  echo "Usage: publish-issue.sh --repo udecode/plate-private (--title-file FILE | --comment-on NUMBER) --body-file FILE [--attach FILE --attach-role ROLE]... [--labels a,b] [--platform a,b] (--dry-run | --confirm-create)"
 }
 
 repo=""
@@ -31,7 +31,7 @@ while (($#)); do
   esac
 done
 
-[[ "$repo" == "udecode/plate" ]] || { echo "This skill only publishes Plate next/Beta issues to udecode/plate" >&2; exit 2; }
+[[ "$repo" == "udecode/plate-private" ]] || { echo "This skill only publishes Plate next/Beta issues to udecode/plate-private, where the team keeps them private" >&2; exit 2; }
 if [[ -n "$comment_on" ]]; then
   [[ "$comment_on" =~ ^[1-9][0-9]*$ ]] || { echo "--comment-on takes an issue number" >&2; exit 2; }
   [[ -z "$title_file" && -z "$labels" && -z "$platform" ]] || { echo "A comment takes no --title-file, --labels or --platform" >&2; exit 2; }
@@ -113,10 +113,10 @@ fi
 
 if [[ -n "$comment_on" ]]; then
   args=(issue comment "$comment_on" --repo "$repo" --body-file "$final_body")
-  url_pattern="https://github\\.com/udecode/plate/issues/$comment_on#issuecomment-[0-9]+"
+  url_pattern="https://github\\.com/udecode/plate-private/issues/$comment_on#issuecomment-[0-9]+"
 else
   args=(issue create --repo "$repo" --title "$title" --type Bug --milestone v54 --body-file "$final_body")
-  url_pattern='https://github\.com/udecode/plate/issues/[0-9]+'
+  url_pattern='https://github\.com/udecode/plate-private/issues/[0-9]+'
 fi
 for abs_path in ${abs_paths[@]+"${abs_paths[@]}"}; do
   args+=(--attach "$abs_path")

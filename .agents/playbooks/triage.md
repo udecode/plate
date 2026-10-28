@@ -1,19 +1,19 @@
 ---
 extends: investigation
-when: Use it for `triage`, `triage label:<label>`, `triage #<N>`, `triage fix #<N>`, `triage fix <domain>` or `triage fix next`, for `maintainer issues`, and for a udecode/plate issue URL. A Slate issue stays with `maintainer slate-issue`, and a security-shaped report with `maintainer security`.
+when: Use it for `triage`, `triage label:<label>`, `triage #<N>`, `triage plate-private#<N>`, `triage fix #<N>`, `triage fix <domain>` or `triage fix next`, for `maintainer issues`, and for a udecode/plate or udecode/plate-private issue URL. A Slate issue stays with `maintainer slate-issue`, and a security-shaped report with `maintainer security`.
 ---
 
 # Triage
 
-Triage turns an open udecode/plate issue into a call: what it is, whether it repeats another issue, which code owns it and what happens next. Each call is a row in `docs/triage/issues.tsv`, which only `pnpm triage` (`tooling/scripts/triage.mjs`) writes. The helper owns the row shape, the states, the stale reasons and who may record; this playbook owns the method. `maintainer` keeps GitHub I/O: issue drafts, Slate issues, PRs, security, the queue snapshot, the truth gate and the body-number rule.
+Triage turns an open udecode/plate or udecode/plate-private issue into a call: what it is, whether it repeats another issue, which code owns it and what happens next. Each call is a row in its repository's register, `docs/triage/issues.tsv` for udecode/plate and `docs/triage/plate-private.tsv` for udecode/plate-private, which only `pnpm triage` (`tooling/scripts/triage.mjs`) writes. Each `pnpm triage` command reads one repository, udecode/plate unless `--repo plate-private` or an issue written `plate-private#<N>` names the other, and only a udecode/plate issue takes a bare `#<N>`, so every step below runs once per repository. The helper owns the row shape, the states, the stale reasons and who may record; this playbook owns the method. `maintainer` keeps GitHub I/O: issue drafts, Slate issues, PRs, security, the queue snapshot, the truth gate and the body-number rule.
 
 ## Entry points
 
 | Request | Scope | Ends with |
 | --- | --- | --- |
-| `triage`, or `maintainer issues` | every open issue `pnpm triage queue` lists | records landed, comments posted, a fix run offered for each domain with a P0 or P1 kind |
+| `triage`, or `maintainer issues` | every open issue `pnpm triage queue` and `pnpm triage queue --repo plate-private` list | records landed, comments posted, a fix run offered for each domain with a P0 or P1 kind |
 | `triage label:<label>` | `pnpm triage queue --label <label>` | the same |
-| `triage #<N>`, or a udecode/plate issue URL | issue N and its neighbors | N's record and its domain's fix run; a current one is printed and the run stops |
+| `triage #<N>`, `triage plate-private#<N>`, or an issue URL of either repository | issue N and its neighbors | N's record and its domain's fix run; a current one is printed and the run stops |
 | `triage fix #<N>` | issue N's group | the claim, records, then the Bug fix playbook over what the claim holds |
 | `triage fix <domain>` | the domain's group | the claim, records, then one Bug fix run over every kind the claim holds |
 | `triage fix next` | the group of the domain the claim picks | the same as `triage fix <domain>` for that domain |

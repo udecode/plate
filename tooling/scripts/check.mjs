@@ -455,7 +455,7 @@ export const steps = [
     name: 'triage',
     private: true,
     run: 'node tooling/scripts/triage.mjs check',
-    affected: touches('.agents/pstack.json', 'docs/triage/issues.tsv'),
+    affected: touches('.agents/pstack.json', 'docs/triage/'),
     key: [],
   },
   {

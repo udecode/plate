@@ -1,1 +1,1 @@
-docs/triage/issues.tsv merge=union
+docs/triage/*.tsv merge=union
