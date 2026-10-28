@@ -81,11 +81,16 @@ Before the architecture owner may lock that target:
    `node .agents/rules/benchmark/scripts/paired-timing.mjs`. The runner refuses
    a config unless every frozen cohort has a planted arm, which names the
    ratio its slowdown plants, and a same-code arm. It judges each cohort
-   apart. A cohort is inconclusive while a planted arm exceeds the budget by
-   no more than the same-code noise, while it reads further from the ratio
-   it plants than that ratio's distance to the budget plus the noise, or
-   while that noise reaches the candidate's distance to the budget. A
-   conclusive miss on any cohort fails the run. Only a measured run that
+   apart. A cohort's noise is the larger of its same-code gap and the
+   furthest any pair of the candidate or a same-code arm reads from that
+   arm's median, because a same-code arm divides by the same base runs as
+   the candidate and cannot see base's own noise. A cohort is inconclusive
+   while a planted arm exceeds the budget by no more than that noise, while
+   it reads further from the ratio it plants than that ratio's distance to
+   the budget plus the noise, or while the noise reaches the candidate's
+   distance to the budget. A conclusive cohort therefore has every
+   candidate pair on one side of the budget. A conclusive miss on any
+   cohort fails the run. Only a measured run that
    passes every line rewrites a tracked receipt. It also runs once on a
    known-bad input, which must fail with the probe's own
    assertion text, as Harness Repair asks of a gate. Each cohort reads its
