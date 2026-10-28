@@ -813,7 +813,9 @@ const main = () => {
     console.info(
       group ? `::group::${step.name}` : `\n[check] ${step.name}: ${command}`
     );
-    cache.watch();
+    // Stamping every file costs over a second, and only a keyed step records
+    // a pass, so a run of keyless steps alone never stamps.
+    if (scope.key) cache.watch();
     const result = runStep(step, command, { fresh, writing });
     results.set(step.name, result);
     if (result.status === 0) cache.record(scope, result.seconds);
