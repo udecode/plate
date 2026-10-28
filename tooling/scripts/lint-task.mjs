@@ -98,7 +98,7 @@ if (files.length > 0) {
   clean = check.status === 0 && typed.status === 0;
 }
 
-if (!clean) process.exit(1);
+if (linted > 0 && !clean) process.exit(1);
 if (linted === 0 && !allowIgnored) {
   console.error(
     `Lint ignores all ${paths.length} paths, so none of them is lint-clean.`
