@@ -37,10 +37,13 @@ import {
   SESSION,
 } from '../../.agents/pstack/tasks.mjs';
 import {
+  BRANCH,
   existsAt,
   movedBetween,
   PRIVATE_DIR,
+  privatePaths,
   showAt,
+  UPSTREAM,
 } from './private-files.mjs';
 import {
   CLAIM_COLUMNS,
@@ -471,6 +474,32 @@ const canonicalRemote = () => {
     : 'origin';
 };
 
+function fetchPrivateNext({ fallback, publicRef, publicTimedOut, remote }) {
+  const ref = `plate-private/${BRANCH}`;
+  const error = publicTimedOut
+    ? { message: `skipped, because the fetch of ${publicRef} gave no answer` }
+    : fetchRef(
+        teamRemote(remote),
+        `+refs/heads/${BRANCH}:${UPSTREAM}`,
+        teamVia
+      );
+  const failure = error ? ` (${error.message})` : '';
+  const tip =
+    !error || fallback
+      ? teamOut(
+          'rev-parse',
+          '--verify',
+          '--quiet',
+          `${UPSTREAM}^{commit}`
+        )?.trim() || null
+      : null;
+  const notes = error ? [`could not fetch ${ref}${failure}`] : [];
+  if (error && tip) {
+    notes.push(`read ${ref} as fetched last, at ${tip.slice(0, 10)}`);
+  }
+  return { cached: error && tip ? [ref] : [], failure, notes, ref, tip };
+}
+
 // With fallback, a failed fetch reads the refs fetched last, so a read-only seat still sees the records, all unchecked.
 function freshReads({ fallback, claims = false }) {
   const branch = localConfig()?.branch ?? 'main';
@@ -497,21 +526,41 @@ function freshReads({ fallback, claims = false }) {
     );
     cached.push(`${remote}/${branch}`);
   }
+  const privateNext =
+    teamVia.length > 0
+      ? fetchPrivateNext({
+          fallback,
+          publicRef: `${remote}/${branch}`,
+          publicTimedOut: fetchError?.timedOut,
+          remote,
+        })
+      : null;
+  if (privateNext) {
+    notes.push(...privateNext.notes);
+    cached.push(...privateNext.cached);
+  }
+  const textOnNext = (file) => {
+    if (!privateNext || !privatePaths(root, [file]).has(file)) {
+      return gitOut('show', `${tip}:${file}`);
+    }
+    return privateNext.tip
+      ? teamOut('show', `${privateNext.tip}:${file}`)
+      : null;
+  };
   const config = tip
     ? readJson(gitOut('show', `${tip}:${CONFIG}`) ?? '')
     : null;
   const problems = tip
     ? policyProblems(config)
     : [`${remote}/${branch} could not be read${failure}`];
+  if (privateNext && !privateNext.tip) {
+    problems.push(`${privateNext.ref} could not be read${privateNext.failure}`);
+  }
   const policy = problems.length === 0 ? policyOf(config) : null;
   if (policy) {
-    const shown =
-      tip && !existsSync(join(root, MOVED)) ? showAt(root, tip, MOVED) : null;
     const moved = existsSync(join(root, MOVED))
       ? readFileSync(join(root, MOVED), 'utf-8')
-      : shown?.status === 0
-        ? shown.stdout
-        : '';
+      : (textOnNext(MOVED) ?? '');
     for (const line of moved.split('\n').slice(1).filter(Boolean)) {
       const [from, to] = line.split('\t');
       policy.moved.set(from, to);
@@ -525,8 +574,7 @@ function freshReads({ fallback, claims = false }) {
     into.get(row.issue).set(row.id, row);
   };
   if (tip) {
-    const register = showAt(root, tip, registerFile);
-    for (const row of parseRows(register.status === 0 ? register.stdout : '')) {
+    for (const row of parseRows(textOnNext(registerFile) ?? '')) {
       add(rows, row);
       add(landed, row);
     }
