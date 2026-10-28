@@ -100,7 +100,7 @@
       "source": {
         "source": "github",
         "repo": "michael-denyer/pstack-claude",
-        "ref": "v0.9.101"
+        "ref": "v0.9.110"
       }
     }
   }
