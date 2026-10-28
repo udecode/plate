@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-28-touch-menus",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-28-touch-menus.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep touch selection in block menu editors and open toolbar menus on tap",
+  "targets": [
+    {
+      "name": "block-menu",
+      "files": ["apps/www/src/registry/components/editor/block-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx",
+        "apps/www/src/registry/components/editor/menu-close-focus.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar-overlay",
+      "files": ["apps/www/src/registry/components/editor/toolbar-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-28-block-menu-keep-touch-selection-editors-ed1b993a",
+      "kind": "fix",
+      "summary": "On a touch screen, a long press or a double tap in an editor with the block menu now keeps the browser's own word selection and its Copy menu. Before, a long press turned the paragraph into a block selection, and Paste then replaced the whole paragraph.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["block-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-28",
+          "entry": "2026-10-28-touch-menus",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-28-editor-dropdown-menu-open-on-tap",
+      "kind": "fix",
+      "summary": "On a touch screen, a dropdown menu now opens on a tap, so a swipe that scrolls the toolbar no longer opens the menu of the button it starts on. A mouse press still opens the menu on press.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-dropdown-menu"],
+      "source": {
+        "line": 16,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-10-28",
+          "entry": "2026-10-28-touch-menus",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-28-toolbar-touch-swipe-closes",
+      "kind": "fix",
+      "summary": "On a touch screen, a swipe that starts on a floating toolbar menu button no longer keeps the floating toolbar open after the editor loses its selection.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["toolbar", "toolbar-overlay"],
+      "source": {
+        "line": 18,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-10-28",
+          "entry": "2026-10-28-touch-menus",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-10-28-toolbar-overlay-trigger-handlers",
+      "kind": "behavior",
+      "summary": "`useToolbarOverlayTrigger` now returns `{ opening, cancelled }` instead of one function. Call `opening()` where you called that function, and call `cancelled()` from the trigger's `onPointerCancel`.",
+      "details": [],
+      "migrationNotes": [
+        "Call `opening()` where you called the function `useToolbarOverlayTrigger` returned, and call `cancelled()` from the trigger's `onPointerCancel`."
+      ],
+      "targets": ["toolbar-overlay"],
+      "source": {
+        "line": 20,
+        "row": 4,
+        "legacyRelease": {
+          "date": "2026-10-28",
+          "entry": "2026-10-28-touch-menus",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

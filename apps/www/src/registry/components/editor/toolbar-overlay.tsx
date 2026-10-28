@@ -35,8 +35,13 @@ export function useToolbarOverlayTrigger(
     [overlayId, reportOverlayOpen]
   );
 
-  return () => {
-    if (ownsOverlay) reportOverlayOpen(overlayId, true);
+  return {
+    cancelled: () => {
+      if (ownsOverlay && !open) reportOverlayOpen(overlayId, false);
+    },
+    opening: () => {
+      if (ownsOverlay) reportOverlayOpen(overlayId, true);
+    },
   };
 }
 

@@ -38,6 +38,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-28-touch-menus",
+      "href": "/registry/changelog/2026-10-28-touch-menus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep touch selection in block menu editors and open toolbar menus on tap",
+      "change": {
+        "type": "source",
+        "date": "2026-10-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "block-menu",
+        "editor-dropdown-menu",
+        "toolbar",
+        "toolbar-overlay"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-27-fix-all-comments-target-status",
       "href": "/registry/changelog/2026-10-27-fix-all-comments-target-status.json",
       "status": "draft",

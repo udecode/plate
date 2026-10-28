@@ -67,7 +67,7 @@ export function FontSizeToolbarButton() {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const { installed } = editor.plugin(FontSizePlugin);
-  const beginInteraction = useToolbarOverlayTrigger({
+  const { opening: beginInteraction } = useToolbarOverlayTrigger({
     'aria-haspopup': 'dialog',
     'aria-expanded': isFocused,
   });

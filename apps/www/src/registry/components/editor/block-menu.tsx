@@ -158,6 +158,8 @@ export function BlockContextMenu({ children }: WrapContentProps) {
     <ContextMenu disabled={isTouch || readOnly} modal={false}>
       <ContextMenuTrigger
         onContextMenu={(event) => {
+          if (isTouch) return;
+
           const { dataset } = event.target as HTMLElement;
           const disabled =
             dataset?.editor === 'true' ||

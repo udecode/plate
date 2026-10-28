@@ -36,25 +36,43 @@ export {
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 
+const SetOpenContext = React.createContext<((open: boolean) => void) | null>(
+  null
+);
+
 export function DropdownMenu({
   modal = true,
+  onOpenChange,
   ...props
-}: React.ComponentProps<typeof ShadcnDropdownMenu>) {
+}: Omit<React.ComponentProps<typeof ShadcnDropdownMenu>, 'onOpenChange'> & {
+  onOpenChange?: (open: boolean) => void;
+}) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
     props.defaultOpen ?? false
   );
-  const root = useMenuRoot(modal, props.open ?? uncontrolledOpen);
+  const controlled = props.open !== undefined;
+  const open = props.open ?? uncontrolledOpen;
+  const root = useMenuRoot(modal, open);
+  const setOpen = React.useCallback(
+    (next: boolean) => {
+      if (next === open) return;
+      if (!controlled) setUncontrolledOpen(next);
+
+      onOpenChange?.(next);
+    },
+    [controlled, onOpenChange, open]
+  );
 
   return (
     <MenuRootContext.Provider value={root}>
-      <ShadcnDropdownMenu
-        {...props}
-        modal={modal}
-        onOpenChange={(open) => {
-          setUncontrolledOpen(open);
-          props.onOpenChange?.(open);
-        }}
-      />
+      <SetOpenContext.Provider value={setOpen}>
+        <ShadcnDropdownMenu
+          {...props}
+          modal={modal}
+          open={open}
+          onOpenChange={setOpen}
+        />
+      </SetOpenContext.Provider>
     </MenuRootContext.Provider>
   );
 }
@@ -193,16 +211,63 @@ export function DropdownMenuContent({
 
 export function DropdownMenuTrigger({
   children,
+  disabled,
+  onClick,
+  onKeyDown,
+  onPointerCancel,
+  onPointerDown,
   ref,
   ...props
 }: Omit<React.ComponentProps<'button'>, 'children'> & {
   children: React.ReactElement;
 }) {
   const root = React.useContext(MenuRootContext);
+  const setOpen = React.useContext(SetOpenContext);
   const triggerRef = useComposedRef(ref, root?.triggerRef);
+  const pendingTapOpenRef = React.useRef<boolean | null>(null);
 
   return (
-    <ShadcnDropdownMenuTrigger {...props} ref={triggerRef} asChild>
+    <ShadcnDropdownMenuTrigger
+      {...props}
+      ref={triggerRef}
+      disabled={disabled}
+      onClick={(event) => {
+        const pendingTapOpen = pendingTapOpenRef.current;
+        pendingTapOpenRef.current = null;
+        onClick?.(event);
+
+        if (pendingTapOpen !== null && !event.defaultPrevented) {
+          setOpen?.(pendingTapOpen);
+        }
+      }}
+      onKeyDown={(event) => {
+        pendingTapOpenRef.current = null;
+        onKeyDown?.(event);
+      }}
+      onPointerCancel={(event) => {
+        pendingTapOpenRef.current = null;
+        onPointerCancel?.(event);
+      }}
+      onPointerDown={(event) => {
+        pendingTapOpenRef.current = null;
+        onPointerDown?.(event);
+
+        if (!root || !setOpen || event.pointerType === 'mouse') return;
+        if (
+          !event.defaultPrevented &&
+          !disabled &&
+          event.button === 0 &&
+          !event.ctrlKey
+        ) {
+          pendingTapOpenRef.current = !root.open;
+        }
+
+        // Radix opens on pointerdown, so a swipe that starts on the button would
+        // open its menu.
+        event.preventDefault();
+      }}
+      asChild
+    >
       {children}
     </ShadcnDropdownMenuTrigger>
   );

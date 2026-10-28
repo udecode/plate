@@ -5,6 +5,51 @@
       "2026-10-28-pagination-demo-list-callout",
       "2026-10-28-pagination-demo-named-fonts"
     ],
+    "block-menu": [
+      "2026-10-28-touch-menus",
+      "2026-10-15-quote-on-details-title",
+      "2026-10-14-block-void-selection",
+      "2026-10-13-details-heading-titles",
+      "2026-10-10-selection-context-menu",
+      "2026-10-08-registry-install-dependencies",
+      "2026-10-02-schema-block-handles",
+      "2026-10-01-block-move-actions",
+      "2026-09-18-ui-commands-and-installation",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-block-action-owners",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-single-selection-authority",
+      "2026-08-17-colocate-editor-component-families",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "editor-dropdown-menu": [
+      "2026-10-28-touch-menus",
+      "2026-10-21-floating-toolbar-menu-press",
+      "2026-10-20-preserve-more-formatting-toolbar",
+      "2026-09-24-export-menu-projection",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-25-base-first-registry"
+    ],
+    "toolbar": [
+      "2026-10-28-touch-menus",
+      "2026-10-21-floating-toolbar-menu-press",
+      "2026-10-16-code-on-sparse-block-selection",
+      "2026-10-12-toolbar-button-names",
+      "2026-09-08-multi-editor-toolbar",
+      "2026-09-07-provider-lifetimes",
+      "2026-08-31-inline-component-props",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-preserve-toolbar-focus",
+      "2026-08-20-improve-editor-control-accessibility",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-07-24-configurable-color-controls",
+      "2025-11-20-biome-ultracite"
+    ],
+    "toolbar-overlay": [
+      "2026-10-28-touch-menus",
+      "2026-10-21-floating-toolbar-menu-press"
+    ],
     "comment-toolbar-button": [
       "2026-10-27-fix-all-comments-target-status",
       "2026-10-12-toolbar-button-names",
@@ -121,29 +166,6 @@
       "2026-09-02-comments-ownership",
       "2026-09-01-plugin-render-contract",
       "2026-08-17-flat-editor-registry"
-    ],
-    "editor-dropdown-menu": [
-      "2026-10-21-floating-toolbar-menu-press",
-      "2026-10-20-preserve-more-formatting-toolbar",
-      "2026-09-24-export-menu-projection",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-25-base-first-registry"
-    ],
-    "toolbar-overlay": ["2026-10-21-floating-toolbar-menu-press"],
-    "toolbar": [
-      "2026-10-21-floating-toolbar-menu-press",
-      "2026-10-16-code-on-sparse-block-selection",
-      "2026-10-12-toolbar-button-names",
-      "2026-09-08-multi-editor-toolbar",
-      "2026-09-07-provider-lifetimes",
-      "2026-08-31-inline-component-props",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-preserve-toolbar-focus",
-      "2026-08-20-improve-editor-control-accessibility",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-07-24-configurable-color-controls",
-      "2025-11-20-biome-ultracite"
     ],
     "date": [
       "2026-10-20-date-copied-labels",
@@ -542,22 +564,6 @@
       "2026-09-19-files-sdk-upload-kit",
       "2026-09-18-ui-commands-and-installation",
       "2026-09-09-ai-code-drawing-context",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "block-menu": [
-      "2026-10-15-quote-on-details-title",
-      "2026-10-14-block-void-selection",
-      "2026-10-13-details-heading-titles",
-      "2026-10-10-selection-context-menu",
-      "2026-10-08-registry-install-dependencies",
-      "2026-10-02-schema-block-handles",
-      "2026-10-01-block-move-actions",
-      "2026-09-18-ui-commands-and-installation",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-block-action-owners",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-single-selection-authority",
-      "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
     ],
     "upload": [

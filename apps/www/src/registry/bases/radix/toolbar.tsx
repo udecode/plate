@@ -77,6 +77,7 @@ export function ToolbarButton({
   isDropdown,
   onKeyDown,
   onMouseDown,
+  onPointerCancel,
   onPointerDown,
   pressed,
   size = 'sm',
@@ -107,7 +108,7 @@ export function ToolbarButton({
   'asChild'
 > &
   VariantProps<typeof toolbarButtonVariants>) {
-  const reportOverlayOpening = useToolbarOverlayTrigger(props);
+  const overlayTrigger = useToolbarOverlayTrigger(props);
 
   const button = (
     <ToolbarPrimitive.Button
@@ -129,14 +130,18 @@ export function ToolbarButton({
           !props.disabled &&
           ['Enter', ' ', 'ArrowDown'].includes(event.key)
         ) {
-          reportOverlayOpening();
+          overlayTrigger.opening();
         }
 
         onKeyDown?.(event);
       }}
+      onPointerCancel={(event) => {
+        overlayTrigger.cancelled();
+        onPointerCancel?.(event);
+      }}
       onPointerDown={(event) => {
         if (!props.disabled && event.button === 0 && !event.ctrlKey) {
-          reportOverlayOpening();
+          overlayTrigger.opening();
         }
 
         onPointerDown?.(event);
@@ -199,6 +204,7 @@ export function ToolbarSplitButtonPrimary({
   className,
   onKeyDown,
   onMouseDown,
+  onPointerCancel,
   onPointerDown,
   size = 'sm',
   variant,
@@ -208,7 +214,7 @@ export function ToolbarSplitButtonPrimary({
   'size'
 > &
   VariantProps<typeof toolbarButtonVariants>) {
-  const reportOverlayOpening = useToolbarOverlayTrigger(props);
+  const overlayTrigger = useToolbarOverlayTrigger(props);
 
   return (
     <ToolbarPrimitive.Button
@@ -232,14 +238,18 @@ export function ToolbarSplitButtonPrimary({
           !props.disabled &&
           ['Enter', ' ', 'ArrowDown'].includes(event.key)
         ) {
-          reportOverlayOpening();
+          overlayTrigger.opening();
         }
 
         onKeyDown?.(event);
       }}
+      onPointerCancel={(event) => {
+        overlayTrigger.cancelled();
+        onPointerCancel?.(event);
+      }}
       onPointerDown={(event) => {
         if (!props.disabled && event.button === 0 && !event.ctrlKey) {
-          reportOverlayOpening();
+          overlayTrigger.opening();
         }
 
         onPointerDown?.(event);
@@ -254,13 +264,14 @@ export function ToolbarSplitButtonSecondary({
   className,
   onKeyDown,
   onMouseDown,
+  onPointerCancel,
   onPointerDown,
   size,
   variant,
   ...props
 }: React.ComponentPropsWithoutRef<typeof ToolbarPrimitive.Button> &
   VariantProps<typeof dropdownArrowVariants>) {
-  const reportOverlayOpening = useToolbarOverlayTrigger(props);
+  const overlayTrigger = useToolbarOverlayTrigger(props);
 
   return (
     <ToolbarPrimitive.Button
@@ -283,14 +294,18 @@ export function ToolbarSplitButtonSecondary({
           !props.disabled &&
           ['Enter', ' ', 'ArrowDown'].includes(event.key)
         ) {
-          reportOverlayOpening();
+          overlayTrigger.opening();
         }
 
         onKeyDown?.(event);
       }}
+      onPointerCancel={(event) => {
+        overlayTrigger.cancelled();
+        onPointerCancel?.(event);
+      }}
       onPointerDown={(event) => {
         if (!props.disabled && event.button === 0 && !event.ctrlKey) {
-          reportOverlayOpening();
+          overlayTrigger.opening();
         }
 
         onPointerDown?.(event);
