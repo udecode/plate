@@ -130,11 +130,19 @@ const nextConfig = (_phase: string) => {
     outputFileTracingIncludes: {
       '/*': ['./src/registry/**/*', './public/r/**/*'],
       '/api/search': ['../../content/docs/**/*'],
-      // Keys are picomatch globs, so the catch-all brackets are escaped.
+      // Keys are globs matched against the route, so route brackets are escaped.
       // This matches both /docs/[[...slug]] and /cn/docs/[[...slug]].
       '/docs/\\[\\[...slug\\]\\]': ['../../content/docs/**/*'],
-      '/r/[style]/[name]': [
+      '/r/\\[style\\]/\\[name\\]': [
         './public/r/*.json',
+        './src/__registry__/generation.json',
+        './src/__registry__/registry-metadata.json',
+        './src/__registry__/overlays/**/*.json',
+      ],
+      '/rd/\\[style\\]/\\[name\\]': [
+        './public/rd/*.json',
+        './src/__registry__/generation.json',
+        './src/__registry__/registry-metadata.json',
         './src/__registry__/overlays/**/*.json',
       ],
       '/cn/docs/examples/html-export': ['./public/tailwind.css'],
