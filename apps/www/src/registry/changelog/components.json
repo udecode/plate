@@ -1,6 +1,10 @@
 {
   "schemaVersion": 1,
   "components": {
+    "pagination-demo": [
+      "2026-10-28-pagination-demo-list-callout",
+      "2026-10-28-pagination-demo-named-fonts"
+    ],
     "comment-toolbar-button": [
       "2026-10-27-fix-all-comments-target-status",
       "2026-10-12-toolbar-button-names",

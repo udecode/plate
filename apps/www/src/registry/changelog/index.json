@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-28-pagination-demo-list-callout",
+      "href": "/registry/changelog/2026-10-28-pagination-demo-list-callout.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Install the list and callout kits in the pagination demo",
+      "change": {
+        "type": "source",
+        "date": "2026-10-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["pagination-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-10-28-pagination-demo-named-fonts",
+      "href": "/registry/changelog/2026-10-28-pagination-demo-named-fonts.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix pagination demo lines overlapping in Firefox",
+      "change": {
+        "type": "source",
+        "date": "2026-10-28",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["pagination-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-27-fix-all-comments-target-status",
       "href": "/registry/changelog/2026-10-27-fix-all-comments-target-status.json",
       "status": "draft",
