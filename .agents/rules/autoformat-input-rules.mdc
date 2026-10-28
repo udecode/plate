@@ -60,12 +60,11 @@ Tell a real bug from a modeling error before you change code:
 
 ## Findings
 
-The gate finds 172: 86 `autoformat-declared`, 86 `autoformat-blocks` and no `autoformat-undo`. `--length=4` finds the same 86 `autoformat-declared`, no `autoformat-undo` and 1,976 `autoformat-blocks`, each a one-character delimiter closing around one or two keys. Each class is one cause:
+The gate finds 160: 74 `autoformat-declared`, 86 `autoformat-blocks` and no `autoformat-undo`. `--length=4` finds the same 74 `autoformat-declared`, no `autoformat-undo` and 1,976 `autoformat-blocks`, each a one-character delimiter closing around one or two keys. Each class is one cause:
 
 - `==a==` gives `≡a≡`, so neither highlight variant ever applies, because `equalityRule` turns `==` into `≡` first and its insert fires no rule (plate#5201, t_167ab658). Spec rule `EDIT-PROFILE-AUTOFMT-MARK-005` says highlight wins. 24 entries.
 - `!>=`, `!<=` and `!~=` give `≯=`, `≮=` and `!≈`, because the shorter `!>`, `!<` and `~=` fire on the key before (plate#5202). 9 entries.
 - `<=` gives `⇐`, never `≤`, because `arrowsRule` declares `<=` and runs before `comparisonsRule`, and `arrowsRule`'s own `≤=`, typed `<==`, gives `⇐=` (t_dceb960e). 6 entries.
-- `***a***` stays literal (plate#5203), and `__*a*__`, `__**a**__` and `___***a***___` do not give their combined marks, because each `MarkComboRules` variant's start and end are not the mirrored runs the spec names. 12 entries.
 - `__a__` gives bold, never underline, because `BoldRules _` and `UnderlineRules` both match `__` and bold comes first. 3 entries.
 - `~0~` and `^0^` give `₀~` and `⁰^`, because the digit substitution fires inside the span (plate#5204). `~+~`, `~=~` and `^o^` fail the same way, 20 entries in all, and `~~0~~`, `~~+~~` and `~~=~~` give a subscript and a stray `~` instead of strikethrough, 9 more.
 - Inside a word, `w~a~`, `w~!~` and `w^a^` stay literal, against `EDIT-PROFILE-AUTOFMT-MARK-002`'s `H~2~O`. 3 entries.

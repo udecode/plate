@@ -155,6 +155,7 @@ export function FontSizeToolbarButton() {
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   handleInputChange();
+                  editor.api.dom.focus();
                 }
               }}
               data-editor-keep-selection-visible="true"
