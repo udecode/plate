@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, renameSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -108,6 +108,32 @@ test('only folders no open session, process or server uses are marked safe', asy
   }
 });
 
+test('a gc that rewrites every reflog today does not reset a worktree idle for days', () => {
+  const f = fixture();
+  const admin = git(f.orphan, 'rev-parse', '--absolute-git-dir').trim();
+  const log = join(admin, 'logs', 'HEAD');
+  const old = Math.floor((Date.now() - 3 * DAY) / 1000);
+  writeFileSync(log, readFileSync(log, 'utf8').replace(/> \d+ /gu, `> ${old} `));
+  for (const file of ['index', 'HEAD']) age(join(admin, file), 3);
+  const unclaimed = f.sessions.filter((session) => session.cwd !== f.orphan);
+  assert.equal(verdictOf({ ...f, sessions: unclaimed }, f.orphan), 'safe');
+});
+
+test('--repos judges each checkout in a folder that has linked worktrees', () => {
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'cleanup-repos-')));
+  for (const name of ['with', 'without']) {
+    mkdirSync(join(root, name));
+    git(join(root, name), 'init', '-q', '-b', 'next');
+    git(join(root, name), '-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '-q', '--allow-empty', '-m', 'base');
+  }
+  git(join(root, 'with'), 'worktree', 'add', '-q', '-b', 'w', join(root, 'with-w'));
+  mkdirSync(join(root, 'plain'));
+  const out = execFileSync('node', [SCAN, '--repos', root, '--no-sizes'], { cwd: root, encoding: 'utf8' });
+  assert.ok(out.includes(`## ${join(root, 'with')}\n`), out);
+  assert.ok(out.includes(join(root, 'with-w')), out);
+  assert.ok(!out.includes(join(root, 'without')), out);
+});
+
 test('a worktree outside the folders agents use is asked about even when an archived session owned it', () => {
   const facts = { agentMade: false, heldCaches: 0, hoursIdle: 48, invoking: false, locked: null, missing: false, nested: null, processes: 0, repos: 0, scratchHoursQuiet: null, session: { state: null, title: 'done' }, unreached: 0 };
   assert.equal(classifyWorktree(facts)[0], 'ask');
@@ -168,6 +194,44 @@ function pstackFixture() {
   writeFileSync(join(f.main, '.git', 'info', 'exclude'), '.source/\ndocs/plans/artifacts/\n');
   return f;
 }
+
+function ageTree(path, days) {
+  if (statSync(path).isDirectory()) for (const name of readdirSync(path)) ageTree(join(path, name), days);
+  age(path, days);
+}
+
+test('run folders lose their installs and builds after a quiet day and go after a quiet week unless the ledger or a decision log changed this week names them', () => {
+  const f = pstackFixture();
+  const runs = join(f.main, 'docs', 'plans', 'artifacts');
+  const run = (name, days) => {
+    mkdirSync(join(runs, name, 'export', 'node_modules', 'dep'), { recursive: true });
+    mkdirSync(join(runs, name, 'export', '.next', 'cache'), { recursive: true });
+    writeFileSync(join(runs, name, 'proof.log'), 'exit 0\n');
+    writeFileSync(join(runs, name, 'export', 'node_modules', 'dep', 'index.js'), '\n');
+    ageTree(join(runs, name), days);
+    return join(runs, name);
+  };
+  const old = run('old', 10);
+  const cited = run('cited', 10);
+  const active = run('active', 10);
+  const stale = run('stale', 10);
+  const quiet = run('quiet', 3);
+  const fresh = run('fresh', 0);
+  writeFileSync(join(runs, 'suggested-tasks.decisions.tsv'), 'chip\tt1\tproof: docs/plans/artifacts/cited/proof.log\t\toffered\n');
+  writeFileSync(join(f.main, 'docs', 'plans', 'active.decisions.tsv'), 'build\tx\ty\tproof: docs/plans/artifacts/active/proof.log\tpartial\n');
+  writeFileSync(join(f.main, 'docs', 'plans', 'stale.decisions.tsv'), 'build\tx\ty\tproof: docs/plans/artifacts/stale/proof.log\tpartial\n');
+  age(join(f.main, 'docs', 'plans', 'stale.decisions.tsv'), 10);
+  const byPath = Object.fromEntries(scan({ repo: f.main, sessions: f.sessions, sizes: false }).items.filter((item) => item.kind === 'run').map((item) => [item.path, `${item.verdict} ${item.action ?? ''}`.trim()]));
+  assert.deepEqual(byPath, { [old]: 'safe expire', [stale]: 'safe expire', [cited]: 'safe strip', [active]: 'safe strip', [quiet]: 'safe strip', [fresh]: 'keep' });
+  deleteSafe({ repo: f.main, sessions: f.sessions });
+  assert.ok(!existsSync(old), 'a run folder quiet for a week goes');
+  for (const kept of [cited, active, quiet]) {
+    assert.ok(existsSync(join(kept, 'proof.log')), 'a stripped run folder keeps its logs');
+    assert.ok(!existsSync(join(kept, 'export', 'node_modules')) && !existsSync(join(kept, 'export', '.next')), 'a stripped run folder loses its installs and builds');
+  }
+  assert.ok(existsSync(join(fresh, 'export', 'node_modules')), 'a run folder written today keeps everything');
+  assert.ok(existsSync(join(runs, 'suggested-tasks.decisions.tsv')), 'the ledger stays');
+});
 
 test('--landed in a pstack project passes generated output and asks only about run artifacts the checkout lacks', () => {
   const f = pstackFixture();
@@ -327,6 +391,34 @@ test('a worktree whose folder is gone loses only its record', () => {
   deleteSafe({ repo: f.main, sessions: f.sessions });
   assert.ok(!execFileSync('git', ['worktree', 'list'], { cwd: f.main, encoding: 'utf8' }).includes(`${f.archived} `), 'git no longer lists it');
   assert.ok(existsSync(`${f.archived}-moved`), 'the moved folder stays');
+});
+
+test('a worktree that lost its .git link goes when it holds no files and is asked about otherwise', () => {
+  const f = fixture();
+  rmSync(f.archived, { recursive: true });
+  mkdirSync(join(f.archived, 'packages', 'p'), { recursive: true });
+  symlinkSync(f.main, join(f.archived, 'node_modules'));
+  rmSync(join(f.orphan, '.git'));
+  assert.equal(verdictOf(f, f.archived), 'safe');
+  assert.equal(verdictOf(f, f.orphan), 'ask');
+  deleteSafe({ repo: f.main, sessions: f.sessions });
+  assert.ok(!git(f.main, 'worktree', 'list').includes(`${f.archived} `), 'git no longer lists the empty one');
+  assert.ok(!existsSync(f.archived), 'its empty folder is gone');
+  assert.ok(existsSync(join(f.main, 'a.txt')), 'the symlink target stays');
+  assert.ok(existsSync(join(f.orphan, 'a.txt')), 'the one holding files stays');
+});
+
+test('--remove keeps a worktree that lost its .git link while it holds files', () => {
+  const f = fixture();
+  rmSync(f.archived, { recursive: true });
+  mkdirSync(f.archived);
+  rmSync(join(f.orphan, '.git'));
+  const [kept, removed] = removeLanded({ repo: f.main, worktrees: [f.orphan, f.archived] });
+  assert.equal(kept.removed, false);
+  assert.match(kept.reason, /lost its link/u);
+  assert.equal(removed.removed, true, removed.reason);
+  assert.ok(!existsSync(f.archived), 'the empty folder is gone');
+  assert.ok(!git(f.main, 'worktree', 'list').includes(`${f.archived} `), 'git no longer lists it');
 });
 
 test('the session-start hint counts only folders with no writes for three days that cleanup could remove', () => {
