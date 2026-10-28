@@ -1,6 +1,15 @@
 {
   "schemaVersion": 1,
   "components": {
+    "editor-dropdown-menu": [
+      "2026-10-28-fix-editor-dropdown-menu-width",
+      "2026-10-28-touch-menus",
+      "2026-10-21-floating-toolbar-menu-press",
+      "2026-10-20-preserve-more-formatting-toolbar",
+      "2026-09-24-export-menu-projection",
+      "2026-09-18-item-focus-block-upsert",
+      "2026-08-25-base-first-registry"
+    ],
     "pagination-demo": [
       "2026-10-28-pagination-demo-list-callout",
       "2026-10-28-pagination-demo-named-fonts"
@@ -21,14 +30,6 @@
       "2026-08-24-single-selection-authority",
       "2026-08-17-colocate-editor-component-families",
       "2026-08-17-flat-editor-registry"
-    ],
-    "editor-dropdown-menu": [
-      "2026-10-28-touch-menus",
-      "2026-10-21-floating-toolbar-menu-press",
-      "2026-10-20-preserve-more-formatting-toolbar",
-      "2026-09-24-export-menu-projection",
-      "2026-09-18-item-focus-block-upsert",
-      "2026-08-25-base-first-registry"
     ],
     "toolbar": [
       "2026-10-28-touch-menus",

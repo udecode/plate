@@ -169,7 +169,8 @@ export function DropdownMenuContent({
       <ShadcnDropdownMenuContent
         {...props}
         ref={ref}
-        className={cn('data-[state=closed]:!animate-none', className)}
+        // shadcn styles size the menu to its trigger and clip the rest; editor menus size to their items.
+        className={cn('w-auto data-[state=closed]:!animate-none', className)}
         onEscapeKeyDown={() => {
           finalFocusRef.current = undefined;
         }}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-28-fix-editor-dropdown-menu-width",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-28-fix-editor-dropdown-menu-width.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix editor menus cut off by current shadcn styles",
+  "targets": [
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx",
+        "apps/www/src/registry/components/editor/menu-close-focus.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-28-editor-dropdown-menu-fix-menus-cut-off-91045244",
+      "kind": "fix",
+      "summary": "Size editor menus to their items, so the color palette, Insert, Turn into and Line height menus are no longer cut off in shadcn styles that size menus to their trigger.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-dropdown-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-28",
+          "entry": "2026-10-28-fix-editor-dropdown-menu-width",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

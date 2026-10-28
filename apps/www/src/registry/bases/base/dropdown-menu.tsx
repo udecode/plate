@@ -288,7 +288,8 @@ export function DropdownMenuContent({
       <BaseDropdownMenuContent
         {...props}
         ref={ref}
-        className={cn('data-closed:!animate-none', className)}
+        // shadcn styles size the menu to its trigger and clip the rest; editor menus size to their items.
+        className={cn('w-auto data-closed:!animate-none', className)}
         onBlurCapture={(event) => {
           focusInside.current = false;
           onBlurCapture?.(event);
