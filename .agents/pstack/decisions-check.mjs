@@ -20,7 +20,9 @@
 //        blocked or inconclusive row without proof: <existing file under <plans>/artifacts/>
 //        or proof: none, and an accepted row unless its proof: names files an earlier row
 //        left not passed and its word: is a Word option in the plan's Defaults. Review-phase
-//        rows are exempt.
+//        rows are exempt. In trunk delivery, once the log records a landed step, both
+//        refuse a new step's "built: step <n>" row while another step is built and has
+//        no delivery row "step <n> landed", published or dropped.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
 //        (exits 1 when the log is at the cap of panel rounds before a build)
 //        node .agents/pstack/decisions-check.mjs chips [--fetch] [--session <id>] [<ledger>]
@@ -76,6 +78,32 @@ const restartsRoundCount = (line) => {
   return phase === 'owner' && /^another round:\s*\S/u.test(decision);
 };
 const roundsSince = (lines) => lines.slice(lines.findLastIndex(restartsRoundCount) + 1).filter(opens).length;
+const STEP_BUILT = /^built:\s*step\s+(\d+[a-z]?)(?![a-z0-9])/iu;
+const STEP_LANDED = /(?:^|\bstep\s+)(\d+[a-z]?)(?![a-z0-9])[^\t]*?\b(?:landed|published|dropped)\b/iu;
+const stepOf = (line, phase, pattern) => {
+  const cells = line.split('\t');
+  return cells[1] === phase ? (cells[2]?.match(pattern)?.[1].toLowerCase() ?? null) : null;
+};
+// A trunk plan whose steps land one by one builds one step at a time, as long-runs.md says. A log that has recorded
+// no landing yet may be building steps that land together, so only a landing turns the refusal on.
+const trackStep = (steps, line) => {
+  const built = stepOf(line, 'build', STEP_BUILT);
+  if (built && !steps.built.has(built)) {
+    steps.built.add(built);
+    steps.unlanded.add(built);
+  }
+  const landed = stepOf(line, 'delivery', STEP_LANDED);
+  if (landed) {
+    steps.unlanded.delete(landed);
+    steps.landing = true;
+  }
+};
+function stepInFlightProblems(steps, row, where) {
+  const step = stepOf(row, 'build', STEP_BUILT);
+  if (!step || !steps.landing || steps.built.has(step) || steps.unlanded.size === 0) return [];
+  const waiting = [...steps.unlanded].map((other) => `step ${other}`).join(', ');
+  return [`${where}: this starts step ${step} while ${waiting} ${steps.unlanded.size > 1 ? 'are' : 'is'} built and not landed. A trunk plan whose steps land one by one builds one step at a time, as the Long runs rule says: land each built step and log its delivery row "step <n> landed as <sha>", or "step <n> dropped" for one that will not land, before this row`];
+}
 
 const git = gitMerges({ branch: projectConfig().branch });
 let shipped;
@@ -285,6 +313,8 @@ function append(path, batch, run, miss = null) {
   const isWriting = (line) => line.split('\t')[1] === 'writing';
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
   let rounds = roundsSince(existing);
+  const steps = trunk() ? { built: new Set(), unlanded: new Set(), landing: false } : null;
+  if (steps) for (const line of existing.slice(1)) trackStep(steps, line);
   const chips = readTasks(existing.slice(1));
   const ledger = resolve(path) === resolve(ledgerFile());
   const writer = run ? { session: null, transcript: transcriptOf(run) } : null;
@@ -310,6 +340,10 @@ function append(path, batch, run, miss = null) {
     }
     if (opens(row) && rounds >= MAX_ROUNDS) {
       found.push(`${where}: this would be panel round ${rounds + 1} since the last restart, past the cap of ${MAX_ROUNDS}. Stop reviewing: settle each open finding as applied, dismissed on its proof, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, pivoting the run for a critical the lead must apply, then build a plan or move a diff to its next gate. A build row whose decision starts with "built:" and names the files a plan's build changed, with a result that starts applied, fixed, partial, proven, recorded or verified, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again`);
+    }
+    if (steps) {
+      found.push(...stepInFlightProblems(steps, row, where));
+      trackStep(steps, row);
     }
     if (restartsRoundCount(row)) rounds = 0;
     if (opens(row)) {
