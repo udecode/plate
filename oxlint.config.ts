@@ -213,10 +213,15 @@ export default defineConfig({
         'apps/www/src/app/(app)/examples/plite/**',
         // The Plite proof app installs the raw Plite browser handle.
         'apps/plite/src/app/providers.tsx',
+        // This route proves which raw Plite view the document's editor reaches.
+        'apps/plite/src/app/dev/view-focus-chain/page.tsx',
         // These routes measure raw Plite against Plate on the same fixture.
         'apps/www/src/app/dev/combobox-typing/page.tsx',
         'benchmarks/editor/benchmarks/plate-authored-construction-benchmark.ts',
         'apps/www/src/app/dev/editor-perf/page.tsx',
+        // This spec proves Plate's kit compiles to a schema that tracks no
+        // places, so moves in Plate record nothing new.
+        'apps/www/src/__tests__/package-integration/editor-kit-carried-moves.spec.tsx',
         // Phase 1 proof surfaces of the authored review tree, which installs
         // a raw Plite plugin; the phase's revert removes them.
         'apps/www/src/app/dev/authored-review/page.tsx',
@@ -349,6 +354,17 @@ export default defineConfig({
       ],
       rules: {
         'plate/no-strict-dom-lookup': 'error',
+      },
+    },
+    {
+      files: ['packages/plitejs/src/react/editable/**/*.{ts,tsx}'],
+      excludeFiles: [
+        'packages/plitejs/src/react/editable/**/*.spec.*',
+        'packages/plitejs/src/react/editable/**/*.test.*',
+        'packages/plitejs/src/react/editable/**/__tests__/**',
+      ],
+      rules: {
+        'plate/editable-own-dom-tree': 'error',
       },
     },
     {

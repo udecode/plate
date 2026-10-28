@@ -8,6 +8,7 @@ import type { DraftStep } from './change/builder';
 import type { DocumentChange } from './change/document-change';
 import type { DocumentIndex } from './change/document-index';
 import type { CommandProjection } from './command-document';
+import type { CompositionStamp } from './composition-stamp';
 import { getEditorRuntimeOwner } from './editor-runtime';
 
 /**
@@ -28,6 +29,8 @@ export type EditorDocumentRecorder = (
     bookmarks: ReadonlyArray<Readonly<{ root: string; selection: Selection }>>;
     /** From `before`, or in a command frame from the projected document. */
     change: DocumentChange;
+    /** The composition commit a command frame carries. */
+    composition?: CompositionStamp | null;
     /**
      * The projection of `before` a command frame's commands wrote the steps
      * on, which hides content they never saw.
@@ -86,7 +89,9 @@ type DraftGuard = (
 const DOCUMENT_RECORDERS = new WeakMap<object, EditorDocumentRecorder>();
 const DRAFT_GUARDS = new WeakMap<
   object,
-  Record<EditorDraftGuardPhase, Set<DraftGuard>>
+  Record<EditorDraftGuardPhase, Set<DraftGuard>> & {
+    transaction: Set<() => void>;
+  }
 >();
 
 /** @internal */
@@ -112,6 +117,32 @@ export const registerEditorDocumentRecorder = (
 export const getEditorDocumentRecorder = (editor: Editor) =>
   DOCUMENT_RECORDERS.get(getEditorRuntimeOwner(editor));
 
+const DRAFT_VIEWS = new WeakMap<object, () => boolean>();
+
+/**
+ * Register whether the active update's plain draft is a view the recorder
+ * judges, such as a proposal, which is never stored, so its canonical pass
+ * drops what its places cannot hold instead of refusing it.
+ *
+ * @internal
+ */
+export const registerEditorDraftView = (
+  editor: Editor,
+  isView: () => boolean
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  DRAFT_VIEWS.set(owner, isView);
+
+  return () => {
+    if (DRAFT_VIEWS.get(owner) === isView) DRAFT_VIEWS.delete(owner);
+  };
+};
+
+/** @internal */
+export const isEditorDraftView = (editor: Editor) =>
+  DRAFT_VIEWS.get(getEditorRuntimeOwner(editor))?.() ?? false;
+
 /**
  * Register an internal guard over a transaction's draft. A `recorded` guard,
  * the default, sees the draft the transaction commits, in the projection the
@@ -123,19 +154,18 @@ export const getEditorDocumentRecorder = (editor: Editor) =>
 export const registerEditorDraftGuard = (
   editor: Editor,
   guard: DraftGuard,
-  phase: EditorDraftGuardPhase = 'recorded'
+  phase: EditorDraftGuardPhase = 'recorded',
+  lifetime: 'release' | 'transaction' = 'release'
 ) => {
   const owner = getEditorRuntimeOwner(editor);
   const guards = DRAFT_GUARDS.get(owner) ?? {
     plain: new Set<DraftGuard>(),
     recorded: new Set<DraftGuard>(),
+    transaction: new Set<() => void>(),
   };
-
-  guards[phase].add(guard);
-  DRAFT_GUARDS.set(owner, guards);
-
-  return () => {
+  const release = () => {
     guards[phase].delete(guard);
+    guards.transaction.delete(release);
     if (
       guards.plain.size === 0 &&
       guards.recorded.size === 0 &&
@@ -144,6 +174,21 @@ export const registerEditorDraftGuard = (
       DRAFT_GUARDS.delete(owner);
     }
   };
+
+  guards[phase].add(guard);
+  if (lifetime === 'transaction') guards.transaction.add(release);
+  DRAFT_GUARDS.set(owner, guards);
+
+  return release;
+};
+
+/** @internal */
+export const endEditorTransactionDraftGuards = (editor: Editor) => {
+  for (const release of [
+    ...(DRAFT_GUARDS.get(getEditorRuntimeOwner(editor))?.transaction ?? []),
+  ]) {
+    release();
+  }
 };
 
 /** @internal */

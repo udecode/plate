@@ -42,6 +42,8 @@ type TextHistoryGroup = Readonly<{
 }>;
 
 export type HistoryBatchGroup = Readonly<{
+  /** No later commit merges into the entry. */
+  closed?: true;
   native?: NativeHistoryGrouping;
   scope?: object;
 }> &
@@ -385,26 +387,17 @@ export const shouldMergeBatch = (
 };
 
 export const shouldMergeCompositionBatch = (
-  currentBatch: Batch,
   current: HistoryBatchGroup | null,
-  previousBatch: Batch,
-  previous: HistoryBatchGroup | null,
-  effectsCompatible = false
-): boolean => {
-  if (
-    !effectsCompatible &&
-    (currentBatch.effects.length > 0 || previousBatch.effects.length > 0)
-  ) {
-    return false;
-  }
-
-  return Boolean(
+  previous: HistoryBatchGroup | null
+): boolean =>
+  Boolean(
     current &&
     previous &&
-    current.root === previous.root &&
+    (current.kind === 'effects' ||
+      previous.kind === 'effects' ||
+      current.root === previous.root) &&
     current.scope === previous.scope
   );
-};
 
 export const shouldMergeExplicitBatch = (
   currentBatch: Batch,
@@ -449,10 +442,12 @@ export const mergeHistoryBatchGroups = (
   previous: HistoryBatchGroup | null,
   current: HistoryBatchGroup | null
 ): HistoryBatchGroup | null =>
-  current?.kind === 'text' && previous?.kind === 'text'
-    ? Object.freeze({
-        ...current,
-        replacedSelection:
-          previous.replacedSelection || current.replacedSelection,
-      })
-    : current;
+  current?.kind === 'effects' && previous
+    ? previous
+    : current?.kind === 'text' && previous?.kind === 'text'
+      ? Object.freeze({
+          ...current,
+          replacedSelection:
+            previous.replacedSelection || current.replacedSelection,
+        })
+      : current;

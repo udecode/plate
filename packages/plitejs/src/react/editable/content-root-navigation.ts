@@ -12,7 +12,6 @@ import {
   type RootKey,
 } from '../..';
 import { setShownSelectionAsView } from '../../core/view-carets';
-import { resolveLastEditorWindow } from '../../dom/internal';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { EditorSelectionTarget } from '../../interfaces/editor';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
@@ -77,7 +76,10 @@ import {
   isPointOnVisualBoundaryLine,
   resolveVerticalNavigationPoint,
 } from './content-root-vertical-geometry';
-import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
+import {
+  findMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntime,
+} from './editable-dom-runtime';
 import { getLineBoundaryPoint } from './line-boundary';
 import {
   after as editorAfter,
@@ -89,6 +91,7 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
+import { claimPageSelection } from './unread-press';
 
 export {
   type ContentRootOwner,
@@ -119,10 +122,22 @@ type ContentRootNavigationTarget = {
   root: RootKey;
 };
 
-export type ContentRootNavigationResult = {
-  handled: boolean;
-  target?: ContentRootNavigationTarget;
-};
+export type ContentRootNavigationResult =
+  | { handled: false }
+  | {
+      handled: true;
+      overtaken?: boolean;
+    };
+
+const ANSWERED_KEYS = new WeakSet<Event>();
+
+/**
+ * Whether a nested Editable already answered this key with a selection across
+ * content roots. The event bubbles on; answering again would re-place the
+ * anchor over a newer placement and repair focus away from it.
+ */
+export const isContentRootKeyAnswered = (event: { nativeEvent: Event }) =>
+  ANSWERED_KEYS.has(event.nativeEvent);
 
 const isPointInPath = (point: Point, path: Path) =>
   PathApi.equals(point.path, path) || PathApi.isDescendant(point.path, path);
@@ -162,27 +177,24 @@ const toViewBoundaryPoint = ({
 
 const collapseNativeSelectionForProjectedSelection = (
   editor: ReactRuntimeEditor,
-  selection: Range | null
+  selection: Range | null,
+  element: HTMLElement | null
 ) => {
-  if (!selection) {
-    return;
-  }
-
-  const tree = resolveLastEditorWindow(editor)?.document;
-
-  if (!tree) {
+  if (!selection || !element) {
     return;
   }
 
   const clear = () => {
+    if (!element.isConnected) return;
     const current = readPliteViewSelection(editor);
     if (!current || isPliteViewSelectionCollapsed(current)) return;
-    writeDOMSelection(tree, null);
+    if (!claimPageSelection()) return;
+    writeDOMSelection(element.getRootNode() as Document | ShadowRoot, null);
   };
 
   clear();
   const domPhaseScheduler =
-    getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
+    findMountedEditableDOMRuntime(element)?.domPhaseScheduler;
 
   if (!domPhaseScheduler) return;
 
@@ -218,6 +230,25 @@ const collapseModelSelectionForProjectedSelection = (
   }
 
   selectContentRoot(editor, range);
+};
+
+const showProjectedSelection = (
+  editor: ReactRuntimeEditor,
+  projectedSelection: PliteViewSelection,
+  selection: Range | null,
+  element: HTMLElement | null
+) => {
+  const placesNothing = !selection || RangeApi.isCollapsed(selection);
+  const shown =
+    (placesNothing && readPliteViewSelection(editor) === projectedSelection) ||
+    writePliteViewSelection(editor, projectedSelection, {
+      place: () =>
+        collapseModelSelectionForProjectedSelection(editor, selection),
+    });
+
+  collapseNativeSelectionForProjectedSelection(editor, selection, element);
+
+  return shown;
 };
 
 const getRootViewEditor = ({
@@ -878,6 +909,40 @@ const getRootLocalVerticalSelectionTarget = ({
   };
 };
 
+const getViewGraphTarget = ({
+  candidate,
+  getActiveContentRootOwner,
+  graph,
+  owners,
+}: {
+  candidate: ContentRootNavigationTarget | null;
+  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  graph: PliteViewBoundaryGraphModel;
+  owners: readonly ContentRootOwner[];
+}): ContentRootNavigationTarget | null => {
+  const holds = (target: ContentRootNavigationTarget) =>
+    !!PliteViewBoundaryGraph.resolvePointNode(
+      graph,
+      toViewBoundaryPoint({
+        owner: target.owner,
+        point: target.point,
+        root: target.root,
+      })
+    );
+
+  if (!candidate || holds(candidate)) return candidate;
+  if (candidate.owner) return null;
+
+  const owner = getOwnerForRoot({
+    currentRoot: candidate.root,
+    getActiveContentRootOwner,
+    owners,
+  });
+  const owned = owner && { ...candidate, owner };
+
+  return owned && holds(owned) ? owned : null;
+};
+
 const getProjectedGraphVerticalSelectionTarget = ({
   direction,
   editor,
@@ -1178,7 +1243,6 @@ export const getContentRootNavigationTarget = ({
 
   if (action.kind === 'document-boundary') {
     return getDocumentBoundaryNavigationTarget({
-      currentRoot,
       direction: action.direction,
       editor,
       getActiveContentRootOwner: getCurrentRootOwner,
@@ -1260,6 +1324,7 @@ export const shouldModelOwnContentRootVerticalSelection = ({
 
 const applyContentRootViewSelectionAction = ({
   editor,
+  element,
   action,
   extend = true,
   getActiveContentRootOwner,
@@ -1270,6 +1335,7 @@ const applyContentRootViewSelectionAction = ({
   selection,
 }: {
   editor: ReactRuntimeEditor;
+  element: HTMLElement | null;
   action: ContentRootViewSelectionAction | null;
   extend?: boolean;
   getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
@@ -1322,12 +1388,16 @@ const applyContentRootViewSelectionAction = ({
     root === currentRoot && isKnownContentRootOwner(owners, currentOwner)
       ? currentOwner
       : (getActiveContentRootOwner?.(root) ?? null);
-
-  const graph = createContentRootViewBoundaryGraph(editor, owners);
-  let target =
+  const graph = createContentRootViewBoundaryGraph(
+    editor,
+    owners,
+    getCurrentRootOwner
+  );
+  const inView = (candidate: ContentRootNavigationTarget | null) =>
+    getViewGraphTarget({ candidate, getActiveContentRootOwner, graph, owners });
+  let target = inView(
     action.kind === 'document-boundary'
       ? getDocumentBoundaryNavigationTarget({
-          currentRoot,
           direction: action.direction,
           editor,
           getActiveContentRootOwner: getCurrentRootOwner,
@@ -1346,7 +1416,8 @@ const applyContentRootViewSelectionAction = ({
           owners,
           point,
           preferredX,
-        });
+        })
+  );
 
   if (
     !target &&
@@ -1405,21 +1476,28 @@ const applyContentRootViewSelectionAction = ({
       );
 
       if (hasProjectedPart) {
-        writePliteViewSelection(editor, projectedSelection);
-        collapseModelSelectionForProjectedSelection(editor, selection);
-        collapseNativeSelectionForProjectedSelection(editor, selection);
+        const shown = showProjectedSelection(
+          editor,
+          projectedSelection,
+          selection,
+          element
+        );
         preventDefault?.();
 
-        return { handled: true };
+        return { handled: true, overtaken: !shown };
       }
     }
 
     if (viewSelection) {
-      collapseModelSelectionForProjectedSelection(editor, selection);
-      collapseNativeSelectionForProjectedSelection(editor, selection);
+      const shown = showProjectedSelection(
+        editor,
+        viewSelection,
+        selection,
+        element
+      );
       preventDefault?.();
 
-      return { handled: true };
+      return { handled: true, overtaken: !shown };
     }
 
     return { handled: false };
@@ -1443,43 +1521,52 @@ const applyContentRootViewSelectionAction = ({
     }),
   });
 
-  if (action.kind === 'move') {
-    target = advanceVerticalBoundarySelectionTarget({
-      action,
-      anchorSelection: projectedSelection,
-      currentOwner,
-      currentRoot,
-      editor,
-      getContentRootOwnerViewEditor,
-      getMountedViewEditor,
-      owners,
-      target,
-    });
+  const advanced =
+    action.kind === 'move' &&
+    inView(
+      advanceVerticalBoundarySelectionTarget({
+        action,
+        anchorSelection: projectedSelection,
+        currentOwner,
+        currentRoot,
+        editor,
+        getContentRootOwnerViewEditor,
+        getMountedViewEditor,
+        owners,
+        target,
+      })
+    );
+
+  if (advanced) {
     projectedSelection = createPliteViewSelection(graph, {
       anchor,
       focus: toViewBoundaryPoint({
-        owner: target.owner,
-        point: target.point,
-        root: target.root,
+        owner: advanced.owner,
+        point: advanced.point,
+        root: advanced.root,
       }),
     });
   }
 
-  writePliteViewSelection(editor, projectedSelection);
-  collapseModelSelectionForProjectedSelection(editor, selection);
-  collapseNativeSelectionForProjectedSelection(editor, selection);
+  const shown = showProjectedSelection(
+    editor,
+    projectedSelection,
+    selection,
+    element
+  );
 
   preventDefault?.();
 
   return {
     handled: true,
-    target,
+    overtaken: !shown,
   };
 };
 
 export const applyContentRootSelectionMoveCommand = ({
   command,
   editor,
+  element,
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
@@ -1488,6 +1575,7 @@ export const applyContentRootSelectionMoveCommand = ({
 }: {
   command: ContentRootSelectionMoveCommand;
   editor: ReactRuntimeEditor<any>;
+  element: HTMLElement | null;
   getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
   getContentRootOwnerViewEditor?: (
     owner: ContentRootOwner
@@ -1503,6 +1591,7 @@ export const applyContentRootSelectionMoveCommand = ({
     }),
     extend: Boolean(command.extend),
     editor,
+    element,
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
@@ -1538,10 +1627,11 @@ export const applyContentRootViewSelection = ({
       event.key === 'End')
       ? getContentRootNavigationAction({ event, isRTL })
       : null;
-  return applyContentRootViewSelectionAction({
+  const result = applyContentRootViewSelectionAction({
     action: plugin ?? (navigation?.kind === 'enter' ? null : navigation),
     extend: Boolean(plugin),
     editor,
+    element: event.currentTarget,
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
@@ -1551,6 +1641,10 @@ export const applyContentRootViewSelection = ({
     },
     selection,
   });
+
+  if (result.handled) ANSWERED_KEYS.add(event.nativeEvent);
+
+  return result;
 };
 
 export const applyContentRootNavigation = ({
@@ -1608,25 +1702,20 @@ export const applyContentRootNavigation = ({
       getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
     const { version } = editor.read.runtime.snapshot();
     const viewSelection = readPliteViewSelection(editor);
+    const nothingSelectedSince = () =>
+      editor.read.runtime.snapshot().version === version &&
+      readPliteViewSelection(editor) === viewSelection &&
+      claimPageSelection();
 
     domPhaseScheduler?.schedule(
       'dom-write',
       'focus-content-root-editor',
       () => {
-        // A settled native event must not reclaim focus from a later selection.
-        if (
-          editor.read.runtime.snapshot().version === version &&
-          readPliteViewSelection(editor) === viewSelection
-        ) {
-          focusEditor?.(targetEditor);
-        }
+        if (nothingSelectedSince()) focusEditor?.(targetEditor);
       },
       { timing: 'animation-frame' }
     );
   }
 
-  return {
-    handled: true,
-    target,
-  };
+  return { handled: true };
 };

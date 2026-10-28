@@ -222,14 +222,20 @@ export const proposedChildren = (
       reachable.push({ joinedIntoHost: false, path: next.path });
     }
   };
-  const last = hostPath.at(-1);
-  const host =
-    last === undefined
-      ? undefined
-      : childrenAt(children, hostPath.slice(0, -1)).at(last);
+  const nodeAt = (depth: number) =>
+    childrenAt(children, hostPath.slice(0, depth)).at(
+      getDefined(hostPath[depth])
+    );
+  const isLine =
+    hostPath.length > 0 &&
+    hostPath.every((_, depth) =>
+      depth === hostPath.length - 1
+        ? isTextBlock(nodeAt(depth))
+        : !isTextBlock(nodeAt(depth))
+    );
 
   read(childrenAt(children, hostPath), hostPath);
-  if (host && isTextBlock(host)) readJoinedIntoHost();
+  if (isLine) readJoinedIntoHost();
 
   return out;
 };

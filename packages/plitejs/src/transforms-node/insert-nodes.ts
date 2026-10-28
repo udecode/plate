@@ -1,7 +1,7 @@
 import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
-  getPathByNodeKey,
+  findLiveNodeKeys,
   isBuildingTransactionSpec,
   runEditorTransaction,
 } from '../core/public-state';
@@ -11,6 +11,7 @@ import {
   type Location,
   LocationApi,
   type Node,
+  type NodeKey,
   NodeApi,
   type NodeTypeSelector,
   PathApi,
@@ -37,11 +38,105 @@ import { removeText } from '../transforms-text/delete-text';
 import { getDefaultInsertLocation } from '../utils';
 import {
   getNodeKeyForNode,
-  seedNodeKeys,
-  seedPreparedNodeKeys,
+  mintNodeKeys,
+  setNodeKey,
+  settleDeferredNodeKeys,
 } from '../utils/node-keys';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { splitNodes } from './split-nodes';
+
+type InsertedNode = {
+  children: readonly InsertedNode[];
+  kind: 'copy' | 'fresh' | 'move';
+  source: Descendant;
+};
+
+const planInsertedNodes = (
+  editor: AnyEditor,
+  nodes: readonly Descendant[]
+): readonly InsertedNode[] => {
+  const owner = getEditorRuntimeOwner(editor);
+  const nodeKeys = new Map<Descendant, NodeKey | null>();
+  const collectKeys = (node: Descendant) => {
+    nodeKeys.set(node, getNodeKeyForNode(node, owner));
+    if (NodeApi.isElement(node)) node.children.forEach(collectKeys);
+  };
+
+  nodes.forEach(collectKeys);
+  if (
+    [...nodeKeys.values()].includes(null) &&
+    settleDeferredNodeKeys(owner) > 0
+  ) {
+    nodes.forEach(collectKeys);
+  }
+  const live = findLiveNodeKeys(
+    owner,
+    [...nodeKeys.values()].filter((nodeKey) => nodeKey !== null)
+  );
+  const placed = new Set<Descendant | NodeKey>();
+  const plan = (source: Descendant): InsertedNode => {
+    const nodeKey = nodeKeys.get(source) ?? null;
+    const identity = nodeKey ?? source;
+    const placedBefore = placed.has(identity);
+    const heldElsewhere = nodeKey !== null && live.has(nodeKey);
+
+    placed.add(identity);
+
+    return {
+      children: NodeApi.isElement(source) ? source.children.map(plan) : [],
+      kind: placedBefore || heldElsewhere ? 'copy' : nodeKey ? 'move' : 'fresh',
+      source,
+    };
+  };
+
+  return nodes.map(plan);
+};
+
+const keyInsertedNodes = (
+  editor: AnyEditor,
+  plans: readonly InsertedNode[]
+): readonly Descendant[] => {
+  const owner = getEditorRuntimeOwner(editor);
+  const fresh: Descendant[] = [];
+  const collect = (inserted: InsertedNode) => {
+    if (inserted.kind === 'fresh') fresh.push(inserted.source);
+    inserted.children.forEach(collect);
+  };
+
+  plans.forEach(collect);
+  mintNodeKeys(
+    fresh,
+    owner,
+    isBuildingTransactionSpec(editor) ? 'prepared' : 'live'
+  );
+
+  const toPlaced = (inserted: InsertedNode): Descendant => {
+    const { source } = inserted;
+    const children = inserted.children.map(toPlaced);
+    const keeps = inserted.kind !== 'copy';
+
+    if (
+      keeps &&
+      children.every(
+        (child, index) => child === inserted.children[index].source
+      )
+    ) {
+      return source;
+    }
+
+    const standIn: Descendant = NodeApi.isElement(source)
+      ? { ...source, children }
+      : { ...source };
+
+    if (keeps) {
+      setNodeKey(standIn, owner, getDefined(getNodeKeyForNode(source, owner)));
+    }
+
+    return standIn;
+  };
+
+  return plans.map(toPlaced);
+};
 
 const insertNodesRuntime = (
   editor: AnyEditor,
@@ -160,29 +255,21 @@ const insertNodesRuntime = (
       return;
     }
 
-    const owner = getEditorRuntimeOwner(editor);
-    const nodeKeyTransfers = nextNodes.flatMap((child, offset) => {
-      const path = parentPath.concat(index + offset);
-      const nodeKey = getNodeKeyForNode(child, owner);
-      const inheritIdentity =
-        nodeKey === null || getPathByNodeKey(editor, nodeKey) === null;
-
-      if (inheritIdentity) {
-        if (isBuildingTransactionSpec(editor)) {
-          seedPreparedNodeKeys([child], owner);
-        } else {
-          seedNodeKeys([child], owner);
-        }
-      }
-
-      return inheritIdentity ? [{ path, source: child }] : [];
-    });
+    const inserted = keyInsertedNodes(
+      editor,
+      planInsertedNodes(editor, nextNodes)
+    );
 
     applyBuiltDocumentChange(
       editor,
       (builder, root) =>
-        builder.replaceChildren(root, parentPath, index, 0, nextNodes),
-      { nodeKeyTransfers }
+        builder.replaceChildren(root, parentPath, index, 0, inserted),
+      {
+        nodeKeyTransfers: inserted.map((source, offset) => ({
+          path: parentPath.concat(index + offset),
+          source,
+        })),
+      }
     );
     index += nextNodes.length;
     at = parentPath.concat(index - 1);

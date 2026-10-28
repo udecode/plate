@@ -440,7 +440,7 @@ export const EditableDOMRoot = (
     onKeyDownCapture: (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (CARET_KEYS.has(event.key)) {
         activateViewCaret(editor);
-        runtime.selectionClaims?.openKeyGesture();
+        runtime.beginCaretKey();
       }
       editableEventBindings.onKeyDownCapture?.(event);
     },

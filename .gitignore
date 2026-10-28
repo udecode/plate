@@ -3,7 +3,6 @@
 **/test-results
 
 # Allow claude to read these files
-apps/www/src/app/api/ai
 apps/www/public/rd
 **/*.tsbuildinfo
 templates/my-app
@@ -19,17 +18,10 @@ templates/my-app
 
 # Generated files
 /docs/plans/artifacts/**
-!/docs/plans/artifacts/document-structure/
-!/docs/plans/artifacts/document-structure/verification.json
-!/docs/plans/artifacts/document-structure/architecture-benchmark.json
-!/docs/plans/artifacts/document-structure/construction-benchmark.json
-!/docs/plans/artifacts/document-structure-prefix-probe.ts
-!/docs/plans/artifacts/document-structure-prefix-probe.json
-!/docs/plans/artifacts/2026-09-22-code-implementation-outcome.json
-!/docs/plans/artifacts/2026-09-22-code-implementation-proof.md
-!/docs/plans/artifacts/2026-09-22-code-demo-final-proof.md
-!/docs/plans/artifacts/2026-09-22-code-demo-final-outcome.json
 /.audit/
+# udecode/plate-private's git directory, a folder in a clone and a file in a
+# worktree; .gitprivate lists the files it tracks.
+/.git-private
 .history
 apps/www/next-env.d.ts
 **/out/

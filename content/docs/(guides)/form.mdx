@@ -183,8 +183,8 @@ editor.update((tx) => {
 
 Use this only for an explicit external snapshot. `formStateValue` holds only
 `children`, `roots`, `meta` and `selection`. A replacement uses the
-supplied selection or clears it when selection is omitted, records one history
-change, removes omitted roots, and resets omitted persisted meta. Mirroring
+supplied selection or clears it when selection is omitted, resets local
+history, removes omitted roots, and resets omitted persisted meta. Mirroring
 every `onValueChange` back through this API creates a replacement loop and
 full-document rendering work.
 
@@ -435,6 +435,6 @@ export function EditorForm() {
 ## Best practices
 
 1. **Use an Uncontrolled Editor**: Let Plate manage its own state, updating the form only when necessary.
-2. **Minimize Replacements**: Each `tx.value.replace(...)` fits the complete document, records one history change, and clears selection when none is supplied.
+2. **Minimize Replacements**: Each `tx.value.replace(...)` fits the complete document, resets local history, and clears selection when none is supplied.
 3. **Validate at the Right Time**: Decide if you need instant validation (typing) or upon blur/submit.
 4. **Reset Both**: If you reset the form, replace the editor value from the reset form state.

@@ -476,7 +476,7 @@ export type EditorEffectHistoryReplayResult<TValue = unknown> =
   | Readonly<{ status: 'applied'; value: TValue }>
   | Readonly<{ reason: string; status: 'blocked' }>;
 
-/** Final outcome of a replay that waited on its effect owner. */
+/** Final outcome of a replay that waited on its effect owner or failed. */
 export type HistorySettlement =
   | Readonly<{ status: 'applied' }>
   | Readonly<{ reason: string; status: 'blocked' }>
@@ -489,9 +489,9 @@ export type HistoryOutcome =
   | Readonly<{ conflicts: readonly string[]; status: 'blocked' }>;
 
 /**
- * Result of one undo or redo call. A document batch has already applied when
- * the call returns; only a batch whose effect owner is still working returns
- * `pending`.
+ * Result of one undo or redo call. A document batch has already applied or
+ * failed when the call returns; only a batch whose effect owner is still
+ * working returns `pending`.
  */
 export type HistoryResult =
   | HistoryOutcome

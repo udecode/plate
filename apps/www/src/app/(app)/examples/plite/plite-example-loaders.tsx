@@ -56,6 +56,9 @@ export const pliteExampleComponents = {
     loading: () => null,
     ssr: true,
   }),
+  'focus-render': createPliteExampleLoader(
+    () => import('./_examples/focus-render')
+  ),
   'forced-layout': createPliteExampleLoader(
     () => import('./_examples/forced-layout')
   ),

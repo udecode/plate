@@ -32,26 +32,12 @@ publish beta.
 ## Plite Release Claims
 
 Package publication runs `pnpm plite:release:packages` and does not imply broad
-Plite behavior readiness. A `release-ready` claim needs the authoritative
-producer run that `tooling/scripts/check-plite-release-proof.mjs` verifies;
-missing, stale, incomplete, failed, tampered, dirty, or non-canonical evidence
-blocks that explicit claim. Do not infer broad readiness from source tests,
-historical artifacts, or package proof, and do not select the profile without
-that authoritative producer run.
-
-The current Plite CI workflow does not emit `plite-release-proof`, so the broad
-profile is unavailable. A future producer job must build the manifest from
-lane-owned outputs after those jobs pass; accepting an operator-supplied
-manifest would recreate the fake authority this gate rejects.
-
-The profile and run ID are repository-wide release inputs. Change them only
-when the user explicitly authorizes a broad release-ready claim. Preflight the
-producer from a clean checkout at the exact release SHA before setting them.
-The verifier reads and downloads from live `udecode/plate` Actions data and
-requires an Actions-read token even outside the release workflow.
-
-After the target release finishes or fails, clear both inputs and read them
-back. Do not leave a broad claim armed for the next push.
+Plite behavior readiness. No CI workflow runs the Plite browser lanes, so a
+`release-ready` claim needs each lane run locally from a clean checkout at the
+exact release commit, the browser matrix (`pnpm check:plite:browser-matrix`)
+included, with each lane's log cited. Make that claim only when the user
+explicitly asks for it. Do not infer broad readiness from source tests,
+historical artifacts, or package proof.
 
 ## Modes
 

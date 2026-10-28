@@ -18,6 +18,7 @@ import {
   type Value,
 } from '../../../core';
 import {
+  type CompiledEditorSchema,
   type InternalEditorSchemaApi,
   normalizeSetValues,
   type RuntimePluginReference,
@@ -160,6 +161,16 @@ type DocxImportTarget<V extends Value> = Readonly<{
     element: HTMLElement,
     onLoss: (loss: HtmlMappingLoss) => void
   ) => readonly Descendant[] | null;
+  /**
+   * Whether the proposed projection of `review`, built through the schema as
+   * a decision builds it and fitted to it, equals `proposed`. Fitting each
+   * document makes its own generated values, so the comparison leaves them
+   * out.
+   */
+  decidesTo: (
+    review: EditorDocumentValue,
+    proposed: EditorDocumentValue
+  ) => boolean;
   dom: DocxDomRealm;
   fitDocument: (document: EditorDocumentValue) => EditorDocumentValue<V>;
   fitReportedDocument: (document: EditorDocumentValue) => Readonly<{
@@ -168,6 +179,8 @@ type DocxImportTarget<V extends Value> = Readonly<{
   }>;
   hasElement: (type: string) => boolean;
   markerNonce: string;
+  /** `document` with the spares its pending changes need, as a load stores them. */
+  repairDocument: <D extends EditorDocumentValue>(document: D) => D;
   schemaIdentity: EditorSchemaIdentity;
   toHtml: typeof mammoth.convertToHtml;
 }>;
@@ -250,6 +263,39 @@ const createMarkerNonce = () => {
   );
 };
 
+const generatedKeysOf = (schema: CompiledEditorSchema) => {
+  const keys = { element: new Set<string>(), text: new Set<string>() };
+
+  for (const {
+    descriptor,
+    key,
+    placement,
+  } of schema.properties.byId.values()) {
+    if (typeof descriptor.generate === 'function' && typeof key === 'string') {
+      keys[placement].add(key);
+    }
+  }
+
+  return keys;
+};
+
+const withoutKeys = (
+  nodes: readonly Descendant[],
+  keys: ReturnType<typeof generatedKeysOf>
+): Descendant[] =>
+  nodes.map((node) => {
+    const own = TextApi.isText(node) ? keys.text : keys.element;
+    const kept = Object.fromEntries(
+      Object.entries(node).filter(([key]) => !own.has(key))
+    );
+
+    return (
+      ElementApi.isElement(node)
+        ? { ...kept, children: withoutKeys(node.children, keys) }
+        : kept
+    ) as Descendant;
+  });
+
 const compileDocxImportTarget = <V extends Value>(
   plugins: readonly RuntimePluginReference[],
   schema: EditorApplicationSchema | undefined,
@@ -263,13 +309,29 @@ const compileDocxImportTarget = <V extends Value>(
       plugins: [HtmlPlugin, ...capturedPlugins],
       ...(schema ? { schema } : {}),
     },
-    ({ editor, readState }) =>
+    ({ authored, editor, readState, schema: compiled }) =>
       readState((state) => {
         const editorSchema: EditorStateSchemaApi = state.schema;
         const decodeHtml = compileHtmlElementDecoder(editor, state);
+        const generated = generatedKeysOf(compiled);
+        const comparable = (document: EditorDocumentValue) =>
+          coalesceAdjacentText(withoutKeys(document.children, generated));
 
         return Object.freeze({
           assertDocument: (document) => editorSchema.assertDocument(document),
+          decidesTo: (review, proposed) => {
+            const projected = authored
+              ? authored.projectDecided(review, 'proposed', compiled)
+              : projectAuthoredDocument(review, { projection: 'proposed' });
+
+            return (
+              projected.ok &&
+              dequal(
+                comparable(editorSchema.fitDocument(projected.document)),
+                comparable(proposed)
+              )
+            );
+          },
           decodeHtml: (element, onLoss) => decodeHtml(element, { onLoss }),
           dom,
           fitDocument: (document) =>
@@ -291,6 +353,9 @@ const compileDocxImportTarget = <V extends Value>(
           },
           hasElement: (type) => editorSchema.element(type) !== null,
           markerNonce: createMarkerNonce(),
+          repairDocument: (document) =>
+            (authored?.repair(document, compiled) ??
+              document) as typeof document,
           schemaIdentity: editorSchema.identity(),
           toHtml,
         });
@@ -1810,20 +1875,14 @@ const importBoundedDocx = async <V extends Value>(
       const native = target.fitReportedDocument({
         children: rootValue(reviewed.nodes),
       });
-      const decided = projectAuthoredDocument(native.document, {
-        projection: 'proposed',
-      }).document;
+      const nativeDocument = target.repairDocument(native.document);
 
       // A schema without review marks would keep deleted runs as live text.
-      if (
-        !dequal(
-          coalesceAdjacentText(decided.children),
-          coalesceAdjacentText(proposed.children)
-        )
-      ) {
+      if (!target.decidesTo(nativeDocument, proposed)) {
         throw new Error('Tracked revisions do not decide to the document.');
       }
-      ({ document: resultDocument, repairs } = native);
+      resultDocument = nativeDocument;
+      ({ repairs } = native);
       stripped = reviewed;
       if (
         review &&
@@ -1838,7 +1897,8 @@ const importBoundedDocx = async <V extends Value>(
           ...(review.records === undefined ? {} : { records: review.records }),
         });
 
-        ({ document: resultDocument, repairs } = fitted);
+        resultDocument = target.repairDocument(fitted.document);
+        ({ repairs } = fitted);
         stripped = restored;
       }
     } catch {

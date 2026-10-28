@@ -30,11 +30,13 @@ import {
 import { deepFreeze, isRecord, jsonEqual } from './json';
 import { lazyRootOf, setLazyRoot } from './lazy-root';
 import {
+  collapseElementPropertyWrites,
   RootChange,
   type RootChangeJson,
   type DocumentSetPropertyResolver,
   type SectionData,
   type TrackMode,
+  writesOnlyElementProperties,
 } from './root-change';
 import type { JsonEditorValue, JsonNode, JsonPoint } from './tokens';
 
@@ -827,6 +829,48 @@ export const filterDocumentChangeRoots = (
     }
   );
 
+/** @internal */
+export const documentChangeWritesOnlyElementProperties = (
+  change: DocumentChange,
+  value: JsonEditorValue
+) =>
+  change.createRoots.size === 0 &&
+  change.deleteRoots.size === 0 &&
+  [...getInternalDocumentChangeRecords(change).values()].every(
+    (set) => set.size === 0
+  ) &&
+  [...getInternalDocumentChangeEntries(change)].every(([root, rootChange]) =>
+    writesOnlyElementProperties(rootChange, valueRootIndex(value, root))
+  );
+
+/** @internal */
+export const collapseDocumentElementPropertyWrites = (
+  change: DocumentChange,
+  value: JsonEditorValue,
+  isSetValued: DocumentSetPropertyResolver
+) =>
+  createInternalDocumentChange(
+    new Map(
+      [...getInternalDocumentChangeEntries(change)].map(
+        ([root, rootChange]) =>
+          [
+            root,
+            collapseElementPropertyWrites(
+              rootChange,
+              valueRootIndex(value, root),
+              isSetValued,
+              root === 'main' ? null : root
+            ),
+          ] as const
+      )
+    ),
+    {
+      createRoots: change.createRoots,
+      deleteRoots: change.deleteRoots,
+      records: getInternalDocumentChangeRecords(change),
+    }
+  );
+
 /**
  * Carry target-document runtime identities inside inserted node slices.
  *
@@ -844,7 +888,7 @@ export const bindDocumentChangeNodeKeys = (
           [
             root,
             rootChange.withInsertedNodeKeys(
-              DocumentIndex.fromValue(valueRoot(target, root)),
+              valueRootIndex(target, root),
               (path) => nodeKeyAt(root, path)
             ),
           ] as const
@@ -1325,7 +1369,7 @@ export class DocumentChange {
       const bChange = getInternalDocumentRootChange(b, root);
 
       if (aChange && bChange) {
-        const document = DocumentIndex.fromValue(valueRoot(value, root));
+        const document = valueRootIndex(value, root);
         const transformed = RootChange.transformInDocument(
           aChange,
           bChange,
@@ -1580,7 +1624,7 @@ export class DocumentChange {
 
     const changes = new Map(
       [...getInternalDocumentChangeEntries(this)].map(([root, change]) => {
-        const document = DocumentIndex.fromValue(valueRoot(value, root));
+        const document = valueRootIndex(value, root);
 
         return [root, change.invert(document)] as const;
       })

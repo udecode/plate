@@ -14,7 +14,7 @@ import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { type NodeSelection, SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
-import { bindNodeKeyOnce } from '../utils/node-keys';
+import { bindNodeKeyOnce, deferNodeKeys } from '../utils/node-keys';
 import { enterAnchorScope } from './anchor-state';
 import {
   DocumentChange,
@@ -22,11 +22,13 @@ import {
   getInternalDocumentRootChange,
   valueRoot,
   valueRootIndex,
+  valueRootNodes,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import { DocumentIndex, type NodeList } from './change/document-index';
 import { copyRoot } from './change/lazy-root';
 import { mapRootChangePositionBackward } from './change/root-change';
 import type { JsonPoint, JsonToken } from './change/tokens';
+import { cloneValue } from './clone';
 import {
   type CommandProjection,
   type EditorDocumentState,
@@ -34,13 +36,19 @@ import {
   refusedIn,
   unplacedIn,
 } from './command-document';
+import {
+  type CompositionStamp,
+  runStampedFrame,
+  stampFrame,
+  takeCompositionStamp,
+} from './composition-stamp';
 import { isInRemovedContent, landTextWrite, nodeAt } from './content-landing';
 import {
   getEditorDocumentRecorder,
   type PositionMap,
   runEditorDraftGuards,
 } from './document-recorder';
-import { getEditorSchema } from './editor-runtime';
+import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
 import { MAIN_ROOT_KEY } from './public-root';
 import {
   advanceSnapshotIndex,
@@ -132,6 +140,27 @@ export const evaluateInEditorCommandFrame = <
 };
 
 /** @internal */
+export const commandViewHides = (
+  editor: Editor,
+  root: string,
+  point: Point
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const document = getEditorCommandDocument(owner);
+
+  if (!document) return false;
+
+  const stored = (getTransactionSnapshot(owner)?.builder.value ??
+    getEditorDocumentValue(owner)) as EditorDocumentValue;
+  const projected = document.project(stored);
+
+  return (
+    !!projected &&
+    projected.map.hides(root, valueRootIndex(stored, root).positionAt(point))
+  );
+};
+
+/** @internal */
 export const probeInEditorCommandFrame = <T>(
   editor: Editor,
   body: EditorFrameBody<T>
@@ -156,7 +185,7 @@ export const probeInEditorCommandFrame = <T>(
   const root = storedSelection
     ? (SelectionApi.root(storedSelection) ?? selectionRoot)
     : selectionRoot;
-  const index = DocumentIndex.fromValue(valueRoot(stored, root));
+  const index = valueRootIndex(stored, root);
   // A point strictly inside content the projection removes has no place in
   // the frame, so a write there lands elsewhere.
   const insideRemoved = (point: Point) =>
@@ -368,16 +397,28 @@ const enterFrameDraft = (
   snapshot.baseSnapshots = {};
   for (const root of projected.map.roots) {
     let mapped: SnapshotIndex | undefined;
-    snapshot.baseRuntimeIndexes[root] = () =>
+    const settle = () =>
       (mapped ??= frameIndexOf(editor, stored, projected, root, () =>
         storedIndex(root)
       ));
+
+    snapshot.baseRuntimeIndexes[root] = settle;
+    deferNodeKeys(getEditorRuntimeOwner(editor), frame.id, root, settle);
   }
   // The accept-all projection of a valid review tree is valid, so the frame
   // adopts it as its validated baseline.
-  getEditorSchema(editor).adoptDocumentBaseline(projected.value);
+  getEditorSchema(editor).adoptDocumentBaseline(
+    projected.value,
+    projected.carried
+  );
   countCoreWork('baselines');
-  snapshot.builder = createEditorDocumentChangeBuilder(editor, projected.value);
+  snapshot.builder = createEditorDocumentChangeBuilder(
+    editor,
+    projected.value,
+    {
+      view: true,
+    }
+  );
   countCoreWork('builders');
   snapshot.activeChange = { change: snapshot.builder.change };
   const { book } = frame.caret;
@@ -431,10 +472,16 @@ const createFramePlace = (
   projected: CommandProjection,
   stored: EditorDocumentValue,
   selectionRoot: string,
-  refuse: Refuse
+  refuse: Refuse,
+  stamp: CompositionStamp | null = null
 ) => {
   let heldRefusal: 'crosses' | 'unaligned' | null = null;
   let located = false;
+  const compositionRoot = stamp && (stamp.place.root ?? selectionRoot);
+  const compositionElement =
+    stamp && compositionRoot !== null
+      ? projected.map.nodePath(compositionRoot, stamp.place.path.slice(0, -1))
+      : null;
   // A node the projection shows away from its stored place maps by its open
   // token, which the change deletes there and inserts where it lands.
   const nodes = (selection: NodeSelection, fallbackRoot: string) => {
@@ -482,11 +529,35 @@ const createFramePlace = (
   ) => {
     const position = projected.map.toProjected(
       root,
-      DocumentIndex.fromValue(valueRoot(stored, root)).positionAt(point),
+      valueRootIndex(stored, root).positionAt(point),
       mapAssoc < 0 ? 'backward' : 'forward'
     );
 
     return position === null ? null : pointIn(point, root, position, assoc);
+  };
+  // Beside an inline, a point goes to the side that holds the composition's
+  // element, so a caret hidden in struck text right before a link stays
+  // outside the link.
+  const pointOnCompositionSide = (
+    after: DocumentIndex,
+    root: string,
+    position: number,
+    side: -1 | 1
+  ) => {
+    const placed = after.pointAt(position, side);
+
+    if (!compositionElement || root !== compositionRoot || !placed) {
+      return placed;
+    }
+
+    const inCompositionElement = (at: JsonPoint) =>
+      PathApi.equals(at.path.slice(0, -1), compositionElement);
+
+    if (inCompositionElement(placed)) return placed;
+
+    const other = after.pointAt(position, side < 0 ? 1 : -1);
+
+    return other && inCompositionElement(other) ? other : placed;
   };
   const pointIn = (
     point: Point,
@@ -511,7 +582,7 @@ const createFramePlace = (
             !isElement(next, 'open')
           ? 1
           : assoc;
-    const placed = after.pointAt(position, side);
+    const placed = pointOnCompositionSide(after, root, position, side);
 
     return (
       placed && { ...point, offset: placed.offset, path: [...placed.path] }
@@ -558,11 +629,11 @@ const createFramePlace = (
   // gives that container.
   const caret = (point: Point, fallbackRoot: string, onRefuse: Refuse) => {
     const root = point.root ?? fallbackRoot;
-    const document = valueRoot(stored, root);
+    const document = valueRootNodes(stored, root) as NodeList<Descendant>;
     const landed = landTextWrite(editor, point, document);
 
     if (projected.map.reorders(root)) {
-      const at = DocumentIndex.fromValue(document).positionAt(landed);
+      const at = valueRootIndex(stored, root).positionAt(landed);
       const placement = projected.map.projectRange(root, at, at);
 
       if (placement?.kind === 'refused') onRefuse(placement.reason);
@@ -583,7 +654,7 @@ const createFramePlace = (
     root: string,
     onRefuse: Refuse
   ) => {
-    const index = DocumentIndex.fromValue(valueRoot(stored, root));
+    const index = valueRootIndex(stored, root);
     const placement = projected.map.projectRange(
       root,
       index.positionAt(start),
@@ -853,6 +924,7 @@ export const runInEditorCommandFrame = (
   }
   runEditorDocumentRecorder(editor);
 
+  const stamp = takeCompositionStamp(editor);
   const stored = outer.snapshot.builder.value as EditorDocumentValue;
 
   if (
@@ -873,8 +945,10 @@ export const runInEditorCommandFrame = (
     outer.caret.root,
     (reason) => {
       throw refusedIn(editor, reason);
-    }
+    },
+    stamp
   );
+  const stamped = stamp && stampFrame(stamp, placed.place);
   const selection = placed.held(outer.caret.selection);
   const target = outer.snapshot.implicitTarget
     ? placed.held(outer.snapshot.implicitTarget)
@@ -919,7 +993,13 @@ export const runInEditorCommandFrame = (
         };
       }
 
-      if (!withTransactionSpecDraftRead(editor, run)) return false;
+      if (
+        !runStampedFrame(editor, stamped, () =>
+          withTransactionSpecDraftRead(editor, run)
+        )
+      ) {
+        return false;
+      }
       assertWritesPlaced(editor, snapshot);
       finalizeWithoutOrphanedRoots(editor);
       const wrote = snapshot.builder.change;
@@ -971,6 +1051,7 @@ export const runInEditorCommandFrame = (
           selectionBefore: outer.caret.selection,
           selectionBeforeRoot: outer.caret.root,
           selectionRoot: frame.caret.root,
+          composition: stamp,
           steps: snapshot.builder.draftSteps,
           tags: getActiveEditorUpdateTags(editor),
           update: outer.id,
@@ -1023,7 +1104,20 @@ export const runInEditorCommandFrame = (
       }
       outer.snapshot.afterCommitHandlers.push(...snapshot.afterCommitHandlers);
       for (const [key, entry] of snapshot.annotations) {
-        outer.snapshot.annotations.set(key, entry);
+        const previous = outer.snapshot.annotations.get(key);
+
+        outer.snapshot.annotations.set(
+          key,
+          previous
+            ? {
+                type: entry.type,
+                value: cloneValue(
+                  entry.type.combine(previous.value, entry.value)
+                ),
+              }
+            : entry
+        );
+        outer.changed = true;
       }
       for (const tag of snapshot.tags) outer.snapshot.tags.add(tag);
     } finally {

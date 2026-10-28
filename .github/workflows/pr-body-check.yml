@@ -1,9 +1,5 @@
 name: PR Body Check
 
-# pull_request_target loads this file from the default branch, main. So a PR
-# from this repository runs it through pull_request, which loads it from the
-# PR's merge commit with next. A fork PR runs it through pull_request_target,
-# which needs this file on main. Neither path checks out or runs the PR's code.
 on:
   pull_request:
     branches: [next]
@@ -16,7 +12,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: pr-body-check-${{ github.event.pull_request.number }}
+  group: pr-body-check-${{ github.event_name }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:

@@ -166,6 +166,10 @@ const COMMIT_CARETS = new WeakMap<
 >();
 const WATCHED = new WeakMap<Editor, Map<ViewPresentation, () => void>>();
 const CARET_OWNER_LISTENERS = new WeakMap<Editor, Set<() => void>>();
+const PLACEMENT_LISTENERS = new WeakMap<
+  Editor,
+  Set<(generation: number) => void>
+>();
 const HIGHEST_MINTED = new WeakMap<Editor, number>();
 const SCOPED_PLACEMENTS = new WeakMap<
   Editor,
@@ -180,11 +184,73 @@ const samePair = (left: CaretPair | null, right: CaretPair | null) =>
     left.root === right.root);
 
 const setCommittedCarets = (owner: Editor, carets: Carets) => {
-  const before = getCommittedCarets(owner).owner;
+  const before = getCommittedCarets(owner);
 
   COMMITTED.set(owner, carets);
-  if (samePair(before, carets.owner)) return;
+  if (before.generation !== carets.generation) {
+    for (const listener of [...(PLACEMENT_LISTENERS.get(owner) ?? [])]) {
+      listener(carets.generation);
+    }
+  }
+  if (samePair(before.owner, carets.owner)) return;
   for (const listener of CARET_OWNER_LISTENERS.get(owner) ?? []) listener();
+};
+
+/**
+ * Calls `listener` with each placement generation the editor commits, from
+ * any presentation, including an update whose only change is a placement.
+ */
+export const subscribeCommittedPlacement = (
+  editor: EditorRuntimeCarrier,
+  listener: (generation: number) => void
+) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const listeners = PLACEMENT_LISTENERS.get(owner) ?? new Set();
+
+  listeners.add(listener);
+  PLACEMENT_LISTENERS.set(owner, listeners);
+
+  return () => {
+    listeners.delete(listener);
+  };
+};
+
+/**
+ * Watches from now for the first placement the editor commits. The returned
+ * stop returns its generation, or `since` when nothing placed, so a
+ * listener's newer placement in between never passes for the first.
+ */
+export const watchFirstPlacement = (
+  editor: EditorRuntimeCarrier,
+  since = getPlacementGeneration(editor)
+) => {
+  let first: number | undefined;
+  const stop = subscribeCommittedPlacement(editor, (generation) => {
+    first ??= generation;
+  });
+
+  return () => {
+    stop();
+
+    return first ?? since;
+  };
+};
+
+export const capturePlacement = (
+  editor: EditorRuntimeCarrier,
+  fn: () => void,
+  since?: number
+) => {
+  const stop = watchFirstPlacement(editor, since);
+  let placedAt: number;
+
+  try {
+    fn();
+  } finally {
+    placedAt = stop();
+  }
+
+  return placedAt;
 };
 
 export const subscribeCaretOwner = (editor: Editor, listener: () => void) => {

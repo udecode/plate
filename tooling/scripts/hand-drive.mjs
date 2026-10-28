@@ -292,6 +292,17 @@ function judge(cells, { lastWrite, visits }) {
         ? { ...cell, detail: current.errors[0], state: 'error' }
         : { ...cell, state: 'covered' };
     }
+    const missed = visits.findLast(
+      (visit) =>
+        !visit.frame && !visit.webdriver && onPage(visit) && counts(visit)
+    );
+    if (missed) {
+      return {
+        ...cell,
+        detail: `the latest fresh visit showed the page ${missed.width} px wide in ${missed.theme}; reload it in light at least ${DESKTOP_MIN_WIDTH} px wide, such as a 1280x900 tab`,
+        state: 'open',
+      };
+    }
     if (handDriven.length > 0) {
       const gap = Math.round(handDriven.at(-1).rendered - edited);
       return {

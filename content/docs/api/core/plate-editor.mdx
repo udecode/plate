@@ -282,11 +282,10 @@ Some core behavior is exposed by routing browser/editor events into the Plate tr
 ## Type helpers
 
 Use `ReturnType<typeof createBasicEditor>` when another module needs the exact
-type returned by your editor factory. The installed plugin schema supplies the
-value type.
+type returned by your editor factory. Its plugin APIs come from the installed
+plugin tuple, and its document type is `Value`.
 
 ```ts title="Typed editor helper"
-import type { ValueOf } from "platejs";
 import { BoldPlugin, createEditor } from "platejs/react";
 
 const BasicKit = [BoldPlugin] as const;
@@ -294,14 +293,13 @@ const BasicKit = [BoldPlugin] as const;
 export const createBasicEditor = () => createEditor({ plugins: BasicKit });
 
 type BasicEditor = ReturnType<typeof createBasicEditor>;
-type BasicValue = ValueOf<BasicEditor>;
 ```
 
 | Type                        | Purpose                                                         |
 | --------------------------- | --------------------------------------------------------------- |
 | `Editor`               | Broad editor type for framework boundaries.                     |
 | `ReturnType<typeof createBasicEditor>` | Exact editor type inferred from the factory's plugin tuple. |
-| `ValueOf<EditorType>`       | Document value derived from that editor's compiled schema.       |
+| `Value`                     | Document type of every Plate editor.                            |
 
 ## Related APIs
 

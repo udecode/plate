@@ -153,29 +153,22 @@ export type InternalReactEditorWithInstalledPlugins<
 
 /** Editor selected by value, runtime plugins, Plate plugins, and schema. */
 export type Editor<
-  V extends Value = never,
+  V extends Value = Value,
   TRuntimePlugins extends readonly unknown[] = never,
   TPlugins = never,
   TSchema = undefined,
 > = [TPlugins] extends [never]
-  ? [V] extends [never]
-    ? InternalReactEditorWithInstalledPlugins<
-        any,
-        AnyBasePluginDefinition,
-        AnyBasePluginDefinition,
-        readonly RuntimePluginReference[]
-      >
-    : InternalReactEditorWithInstalledPlugins<
-        V,
-        AnyBasePluginDefinition,
-        AnyBasePluginDefinition,
-        [TRuntimePlugins] extends [never]
-          ? readonly RuntimePluginReference[]
-          : TRuntimePlugins
-      >
+  ? InternalReactEditorWithInstalledPlugins<
+      V,
+      AnyBasePluginDefinition,
+      AnyBasePluginDefinition,
+      [TRuntimePlugins] extends [never]
+        ? readonly RuntimePluginReference[]
+        : TRuntimePlugins
+    >
   : InferEditorPlugins<TPlugins> extends infer D
     ? InternalReactEditorWithInstalledPlugins<
-        [V] extends [never] ? Value : V,
+        V,
         D,
         InternalReactEditorMutationProvider<TPlugins, D, TSchema>,
         [TRuntimePlugins] extends [never] ? readonly [] : TRuntimePlugins

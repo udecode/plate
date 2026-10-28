@@ -30,6 +30,8 @@ import {
 } from '../../interfaces/editor';
 import { failInvariant } from '../../internal/fail-invariant';
 import {
+  type DOMNode,
+  type DOMRange,
   getPlainText,
   readClipboardFragmentPayload,
   isDOMElement,
@@ -44,7 +46,9 @@ import {
 } from './data-transfer-format';
 import type { DOMCoverageBoundary, DOMCoverageSession } from './dom-coverage';
 import { DOMEditor } from './dom-editor';
+import { PLITE_STRING_SELECTOR } from './dom-geometry';
 import { findEditorDOMRootRuntime } from './dom-root-runtime';
+import { isEditorRoot, isFlowHost, TEXT_HOST } from './dom-text-freshness';
 
 const PLITE_FRAGMENT_ATTRIBUTE_RE = /\bdata-editor-fragment\s*=/i;
 const OPENING_HTML_TAG_RE = /<[A-Za-z][^<>]*?>/;
@@ -77,7 +81,7 @@ export type ClipboardSliceWrite<V extends Value = Value> = Readonly<{
   slice: ContentSliceValue<V>;
 }>;
 
-const stripRenderOnlyLeafWrappers = (root: ParentNode) => {
+const stripRenderOnlyLeafWrappers = (root: ParentNode, ui: Set<DOMNode>) => {
   const candidates = Array.from(
     root.querySelectorAll(
       '[data-editor-leaf] span:not([data-editor-string]):not([data-editor-zero-width])'
@@ -86,7 +90,10 @@ const stripRenderOnlyLeafWrappers = (root: ParentNode) => {
 
   candidates.forEach((candidate) => {
     if (candidate.closest('[data-editor-leaf]')) {
-      candidate.replaceWith(...Array.from(candidate.childNodes));
+      const children = Array.from(candidate.childNodes);
+
+      if (ui.has(candidate)) children.forEach((child) => ui.add(child));
+      candidate.replaceWith(...children);
     }
   });
 };
@@ -171,8 +178,15 @@ const preserveFragmentMetadataInTransferHtml = (
   );
 };
 
+const getFragmentLines = (nodes: readonly Descendant[]): string[] =>
+  nodes.some((node) => PliteNode.isText(node))
+    ? [nodes.map((node) => PliteNode.string(node)).join('')]
+    : nodes.flatMap((node) =>
+        PliteNode.isElement(node) ? getFragmentLines(node.children) : []
+      );
+
 const getFragmentText = <V extends Value>(slice: ContentSliceValue<V>) =>
-  slice.content.map((node) => PliteNode.string(node)).join('\n');
+  getFragmentLines(slice.content).join('\n');
 
 const joinSliceContent = (
   left: readonly Descendant[],
@@ -476,11 +490,186 @@ const writeModelBackedRangeData = <V extends Value>(
 ) => {
   writeDOMDataTransferFragment(editor, data, {
     clipboardFormatKey,
-    html: ({ clipboardFormatKey: innerClipboardFormatKey, encoded, text }) =>
-      `<span data-editor-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(
+    html: ({ clipboardFormatKey: innerClipboardFormatKey, encoded, text }) => {
+      const attributes = `data-editor-fragment="${encoded}" ${PLITE_FRAGMENT_FORMAT_ATTRIBUTE}="${escapeHtmlAttribute(
         innerClipboardFormatKey
-      )}">${escapeHtmlText(text)}</span>`,
+      )}"`;
+      const lines = text.split('\n');
+
+      return lines.length === 1
+        ? `<span ${attributes}>${escapeHtmlText(text)}</span>`
+        : `<div ${attributes}>${lines
+            .map((line) => `<div>${line ? escapeHtmlText(line) : '<br>'}</div>`)
+            .join('')}</div>`;
+    },
     slice,
+  });
+};
+
+const LINE_BREAK_ZERO_WIDTH = 'n';
+
+type CopyScope = 'structure' | 'text';
+
+type CopyStep =
+  | Readonly<{ kind: 'drop' | 'keep' }>
+  | Readonly<{ host: boolean; kind: 'enter'; scope: CopyScope }>;
+
+const DROP: CopyStep = { kind: 'drop' };
+const KEEP: CopyStep = { kind: 'keep' };
+const ENTER_ELEMENT_HOST: CopyStep = {
+  host: true,
+  kind: 'enter',
+  scope: 'structure',
+};
+const ENTER_STRUCTURE: CopyStep = {
+  host: false,
+  kind: 'enter',
+  scope: 'structure',
+};
+const ENTER_TEXT_HOST: CopyStep = { host: true, kind: 'enter', scope: 'text' };
+const ENTER_TEXT: CopyStep = { host: false, kind: 'enter', scope: 'text' };
+
+const stepInto = (element: Element, scope: CopyScope): CopyStep => {
+  if (isEditorRoot(element)) return DROP;
+  if (scope === 'text') {
+    return element.matches(PLITE_STRING_SELECTOR) ? KEEP : ENTER_TEXT;
+  }
+  if (element.getAttribute('data-editor-node') === 'element') {
+    return element.hasAttribute('data-editor-void') ? KEEP : ENTER_ELEMENT_HOST;
+  }
+  if (element.matches(TEXT_HOST)) {
+    return isFlowHost(element) ? KEEP : ENTER_TEXT_HOST;
+  }
+
+  return element.hasAttribute('data-editor-external-text')
+    ? KEEP
+    : ENTER_STRUCTURE;
+};
+
+const readCopyScope = (node: DOMNode): CopyScope | null => {
+  const chain: Element[] = [];
+
+  for (
+    let element = isDOMElement(node) ? node : node.parentElement;
+    element;
+    element = element.parentElement
+  ) {
+    if (isEditorRoot(element)) {
+      let scope: CopyScope = 'structure';
+
+      for (let index = chain.length - 1; index >= 0; index--) {
+        const step = stepInto(chain[index], scope);
+
+        if (step.kind !== 'enter') return null;
+        ({ scope } = step);
+      }
+
+      return scope;
+    }
+    chain.push(element);
+  }
+
+  return null;
+};
+
+const holdsContent = (
+  element: Element,
+  scope: CopyScope,
+  ui: Set<DOMNode>
+): boolean => {
+  const step = stepInto(element, scope);
+
+  if (step.kind !== 'enter') return step.kind === 'keep';
+
+  return markChildUI(element, step.scope, step.host, ui);
+};
+
+const markChildUI = (
+  parent: ParentNode,
+  scope: CopyScope,
+  isHost: boolean,
+  ui: Set<DOMNode>
+) => {
+  const drops: ChildNode[] = [];
+  let holds = false;
+
+  Array.from(parent.childNodes).forEach((child) => {
+    if (isDOMElement(child) && holdsContent(child, scope, ui)) {
+      holds = true;
+    } else {
+      drops.push(child);
+    }
+  });
+
+  if (!holds && !isHost) return false;
+
+  drops.forEach((child) => ui.add(child));
+  return true;
+};
+
+const cloneWithWholeVoidEdges = (
+  domRange: DOMRange,
+  startVoid: DOMNode | null,
+  endVoid: DOMNode | null
+) => {
+  const range = domRange.cloneRange();
+
+  if (startVoid) range.setStartBefore(startVoid);
+  if (endVoid) range.setEndAfter(endVoid);
+
+  return {
+    contents: range.cloneContents(),
+    scope: readCopyScope(range.commonAncestorContainer),
+  };
+};
+
+const markUI = (root: Element, scope: CopyScope | null) => {
+  const ui = new Set<DOMNode>();
+
+  if (scope) markChildUI(root, scope, true, ui);
+
+  return ui;
+};
+
+const replaceZeroWidthSentinels = (root: ParentNode) => {
+  root.querySelectorAll('[data-editor-zero-width]').forEach((zw) => {
+    zw.textContent = '';
+
+    if (zw.getAttribute('data-editor-zero-width') === LINE_BREAK_ZERO_WIDTH) {
+      zw.append(zw.ownerDocument.createElement('br'));
+    }
+  });
+};
+
+const TRAILING_STRING = '[data-editor-string][data-editor-length]';
+
+const stripRenderOnlyTrailingNewlines = (
+  root: ParentNode,
+  domRange: DOMRange
+) => {
+  const strings = Array.from(root.querySelectorAll(TRAILING_STRING));
+  const { endContainer } = domRange;
+
+  if (
+    isDOMText(endContainer) &&
+    endContainer.parentElement?.closest(TRAILING_STRING)
+  ) {
+    strings.pop();
+  }
+  strings.forEach((string) => {
+    const text = string.lastChild;
+
+    if (isDOMText(text) && text.nodeValue?.endsWith('\n')) {
+      text.nodeValue = text.nodeValue.slice(0, -1);
+    }
+  });
+};
+
+const stripEditorAttributes = (root: ParentNode) => {
+  root.querySelectorAll('*').forEach((element) => {
+    Array.from(element.attributes).forEach(({ name }) => {
+      if (name.startsWith('data-editor-')) element.removeAttribute(name);
+    });
   });
 };
 
@@ -560,10 +749,6 @@ export const writeDOMRangeData = <V extends Value>(
   const domRange = DOMEditor.resolveDOMRange(editor, range);
 
   if (!domRange) {
-    if (hasPolicyBoundaries) {
-      return undefined;
-    }
-
     writeModelBackedRangeData(
       editor,
       data,
@@ -573,32 +758,16 @@ export const writeDOMRangeData = <V extends Value>(
     );
     return undefined;
   }
-  let contents = domRange.cloneContents();
+  const { contents, scope } = cloneWithWholeVoidEdges(
+    domRange,
+    startVoid ? DOMEditor.resolveDOMNode(editor, startVoid[0]) : null,
+    endVoid ? DOMEditor.resolveDOMNode(editor, endVoid[0]) : null
+  );
+
+  stripRenderOnlyTrailingNewlines(contents, domRange);
+
   let attach = getDefaultFragmentAttach(contents);
 
-  // COMPAT: Void selections can be anchored in their hidden spacer DOM. Clone
-  // the full void element so external HTML payloads include visible content.
-  const startVoidDOM = startVoid
-    ? DOMEditor.resolveDOMNode(editor, startVoid[0])
-    : null;
-  const endVoidDOM = endVoid
-    ? DOMEditor.resolveDOMNode(editor, endVoid[0])
-    : null;
-
-  if (startVoidDOM || endVoidDOM) {
-    const r = domRange.cloneRange();
-
-    if (startVoidDOM) r.setStartBefore(startVoidDOM);
-    if (endVoidDOM) r.setEndAfter(endVoidDOM);
-
-    contents = r.cloneContents();
-    attach = getDefaultFragmentAttach(contents);
-  }
-
-  // COMPAT: If the start node is a void node, we need to attach the encoded
-  // fragment to the void node's content node instead of the spacer, because
-  // attaching it to empty `<div>/<span>` nodes will end up having it erased by
-  // most browsers. (2018/04/27)
   if (startVoid) {
     attach =
       contents.querySelector('[data-editor-spacer]') ??
@@ -608,16 +777,19 @@ export const writeDOMRangeData = <V extends Value>(
       attach;
   }
 
-  // Remove any zero-width space spans from the cloned DOM so that they don't
-  // show up elsewhere when pasted.
-  Array.from(contents.querySelectorAll('[data-editor-zero-width]')).forEach(
-    (zw) => {
-      const isNewline = zw.getAttribute('data-editor-zero-width') === 'n';
-      zw.textContent = isNewline ? '\n' : '';
-    }
-  );
+  replaceZeroWidthSentinels(contents);
 
-  stripRenderOnlyLeafWrappers(contents);
+  const div = contents.ownerDocument.createElement('div');
+
+  div.appendChild(contents);
+  div.setAttribute('hidden', 'true');
+  div.ownerDocument.body.appendChild(div);
+
+  const ui = markUI(div, scope);
+
+  stripRenderOnlyLeafWrappers(div, ui);
+
+  const text = getPlainText(div, ui);
 
   // Set a `data-editor-fragment` attribute on a non-empty node, so it shows up
   // in the HTML, and can be used for intra-Plite pasting. If it's a text
@@ -628,7 +800,7 @@ export const writeDOMRangeData = <V extends Value>(
     // then leading and trailing spaces will be ignored. (2017/09/21)
     span.style.whiteSpace = 'pre';
     span.appendChild(attach);
-    contents.appendChild(span);
+    div.appendChild(span);
     attach = span;
   }
 
@@ -637,40 +809,31 @@ export const writeDOMRangeData = <V extends Value>(
   if (isDOMElement(attach)) {
     attachElement = attach;
   } else {
-    const span = contents.ownerDocument.createElement('span');
+    const span = div.ownerDocument.createElement('span');
 
     if (attach) {
       span.appendChild(attach);
     }
 
-    contents.appendChild(span);
+    div.appendChild(span);
     attachElement = span;
   }
 
-  // Add the content to a <div> so that we can get its inner HTML.
-  const div = contents.ownerDocument.createElement('div');
-  div.appendChild(contents);
-  div.setAttribute('hidden', 'true');
-  contents.ownerDocument.body.appendChild(div);
+  stripEditorAttributes(div);
+  writeDOMDataTransferFragment(editor, data, {
+    clipboardFormatKey,
+    html: ({ encoded }) => {
+      attachElement.setAttribute('data-editor-fragment', encoded);
+      attachElement.setAttribute(
+        PLITE_FRAGMENT_FORMAT_ATTRIBUTE,
+        clipboardFormatKey
+      );
 
-  if (!hasPolicyBoundaries) {
-    const slice = options.slice ?? editor.read.slice.export({ at: range });
-
-    writeDOMDataTransferFragment(editor, data, {
-      clipboardFormatKey,
-      html: ({ encoded }) => {
-        attachElement.setAttribute('data-editor-fragment', encoded);
-        attachElement.setAttribute(
-          PLITE_FRAGMENT_FORMAT_ATTRIBUTE,
-          clipboardFormatKey
-        );
-
-        return div.innerHTML;
-      },
-      text: getPlainText(div),
-      slice,
-    });
-  }
+      return div.innerHTML;
+    },
+    text,
+    slice: options.slice ?? editor.read.slice.export({ at: range }),
+  });
   div.remove();
   return data;
 };

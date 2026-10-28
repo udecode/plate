@@ -23,8 +23,13 @@ type Path = readonly number[];
 /**
  * Sibling lines that one change's joins make one line: the first line, each
  * line joined into it in order, and the lines removed whole between them.
+ * A join of two lines can also join an inline element at the first line's
+ * end with one at the second line's start, and so on inward, as the undo of
+ * an Enter inside a link does: `inline` holds each level's two elements,
+ * outermost first.
  */
 export type JoinRun = Readonly<{
+  inline: ReadonlyArray<readonly [Path, Path]>;
   lines: readonly Path[];
   range: Range;
   removed: readonly Path[];
@@ -33,12 +38,101 @@ export type JoinRun = Readonly<{
 const pathAt = (document: DocumentIndex, position: number): Path =>
   getDefined(document.nodeStartingAt(position)).path;
 
-/** The change's joins, a chain of joins through shared lines as one run. */
+/**
+ * The joins that cross inline levels: a deleted run from inside a text of an
+ * inline element at a line's end to inside a text of one at a later sibling
+ * line's start, with only text typed in it. Core's `joinsOf`, which history
+ * also reads, reads only a join at one level.
+ */
+const inlineJoinsOf = (change: RootChange, document: DocumentIndex) => {
+  const joins: JoinRun[] = [];
+  let position = 0;
+
+  for (let index = 0; index < change.sections.length;) {
+    if (change.sections[index + 1] < 0) {
+      position += change.sections[index];
+      index += 2;
+      continue;
+    }
+
+    const from = position;
+    let typesText = true;
+
+    for (
+      ;
+      index < change.sections.length && change.sections[index + 1] >= 0;
+      index += 2
+    ) {
+      position += change.sections[index];
+      typesText &&= (
+        (change.data[index / 2] as PreparedTokenSlice | null)?.tokens ?? []
+      ).every((token) => token.kind === 'text');
+    }
+
+    const left = typesText && document.textAt(from);
+    const right = left && document.textAt(position);
+
+    if (!left || !right) continue;
+
+    const first = left.path.slice(0, -1);
+    const second = right.path.slice(0, -1);
+    const depth = first.findIndex((at, level) => second[level] !== at);
+
+    if (
+      first.length !== second.length ||
+      depth === -1 ||
+      depth >= first.length - 1 ||
+      second[depth] <= first[depth]
+    ) {
+      continue;
+    }
+
+    const lineOf = (path: Path) => path.slice(0, depth + 1);
+    const inline: Array<readonly [Path, Path]> = [];
+
+    for (let level = depth + 2; level <= first.length; level++) {
+      inline.push([first.slice(0, level), second.slice(0, level)]);
+    }
+
+    const isInline = (path: Path) =>
+      document.node(path.slice(0, -1)).children?.some(isTextNode) === true;
+
+    if (!inline.every(([a, b]) => isInline(a) && isInline(b))) continue;
+
+    const removed: Path[] = [];
+
+    for (let at = first[depth] + 1; at < second[depth]; at++) {
+      removed.push([...first.slice(0, depth), at]);
+    }
+    joins.push({
+      inline,
+      lines: [lineOf(first), lineOf(second)],
+      range: {
+        from: document.nodeRange(lineOf(first)).from,
+        to: document.nodeRange(lineOf(second)).to,
+      },
+      removed,
+    });
+  }
+
+  return joins;
+};
+
+/**
+ * The change's joins, a chain of one-level joins through shared lines as one
+ * run, and each join across inline levels as a run of its own. Null when a
+ * join across inline levels shares a line with another run.
+ */
 export const joinRunsOf = (
   change: RootChange,
   document: DocumentIndex
-): JoinRun[] => {
-  const runs: Array<{ lines: Path[]; range: Range; removed: Path[] }> = [];
+): JoinRun[] | null => {
+  const runs: Array<{
+    inline: ReadonlyArray<readonly [Path, Path]>;
+    lines: Path[];
+    range: Range;
+    removed: Path[];
+  }> = [];
 
   for (const join of joinsOf(change, document)) {
     const first = pathAt(document, join.first.from);
@@ -62,6 +156,7 @@ export const joinRunsOf = (
       last.range = { from: last.range.from, to: join.second.to };
     } else {
       runs.push({
+        inline: [],
         lines: [first, second],
         range: { from: join.first.from, to: join.second.to },
         removed,
@@ -69,7 +164,15 @@ export const joinRunsOf = (
     }
   }
 
-  return runs;
+  const sorted = [...runs, ...inlineJoinsOf(change, document)].sort(
+    (left, right) => left.range.from - right.range.from
+  );
+
+  return sorted.some(
+    (run, index) => index > 0 && run.range.from < sorted[index - 1].range.to
+  )
+    ? null
+    : sorted;
 };
 
 /**
@@ -188,6 +291,43 @@ export const letterEditsIn = (
   return diff;
 };
 
+/**
+ * The letters a change inserts at positions `from` to `to` of the document,
+ * both included, such as at the edges of an element it removes whole, where
+ * `letterEditsIn` credits them to no text. Returns null when it inserts an
+ * element there.
+ */
+export const lettersInsertedAt = (
+  change: RootChange,
+  from: number,
+  to: number
+): string | null => {
+  let letters = '';
+  let position = 0;
+
+  for (
+    let index = 0;
+    index < change.sections.length && position <= to;
+    index += 2
+  ) {
+    if (change.sections[index + 1] > 0 && from <= position) {
+      const { tokens } = change.data[index / 2] as PreparedTokenSlice;
+
+      if (
+        tokens.some(
+          (token) => token.kind !== 'text' && token.nodeKind !== 'text'
+        )
+      ) {
+        return null;
+      }
+      letters += lettersOf(tokens);
+    }
+    position += change.sections[index];
+  }
+
+  return letters;
+};
+
 /** Whether a change leaves `[from, to)` alone, removes it whole, or edits it. */
 export const editOf = (change: RootChange, from: number, to: number) => {
   let position = 0;
@@ -220,14 +360,50 @@ export const editOf = (change: RootChange, from: number, to: number) => {
 };
 
 /**
+ * For each range, sorted and disjoint, whether one replacement in `change`
+ * covers it whole: a node the change removes, or with `output`, a range of
+ * the output, a node it inserts.
+ */
+export const replacedWhole = (
+  change: RootChange,
+  ranges: ReadonlyArray<Readonly<{ from: number; to: number }>>,
+  output: boolean
+): boolean[] => {
+  const { sections } = change;
+  const spanOf = (index: number) => {
+    const inserted = sections[index + 1];
+
+    return output && inserted >= 0 ? inserted : sections[index];
+  };
+  let index = 0;
+  let start = 0;
+
+  return ranges.map(({ from, to }) => {
+    while (index < sections.length && start + spanOf(index) <= from) {
+      start += spanOf(index);
+      index += 2;
+    }
+
+    return (
+      index < sections.length &&
+      sections[index + 1] >= 0 &&
+      start <= from &&
+      to <= start + spanOf(index)
+    );
+  });
+};
+
+/**
  * A join an import found: the joined lines, first first, as paths in the
  * document before the batch, and each line's letter edits, one list per text
  * of the line in order. `after` is the index, among the after nodes, of the
- * top-level node that holds the joined line.
+ * top-level node that holds the joined line. A join of two lines also joins
+ * the `inline` elements, as `JoinRun` holds them.
  */
 export type FoundJoin = Readonly<{
   after: number | null;
   edits: ReadonlyArray<ReadonlyArray<readonly Diff[]>>;
+  inline: ReadonlyArray<readonly [Path, Path]>;
   lines: readonly Path[];
   removedElements: ReadonlyArray<readonly number[]>;
 }>;
@@ -383,8 +559,10 @@ export const joinedChange = (
   const shifts = new Map<string, number>();
 
   if (
-    !joins.every(({ lines }) =>
-      lines.every((line) => elementWithChildrenAt(before, line))
+    !joins.every(({ inline, lines }) =>
+      [...lines, ...inline.flat()].every((path) =>
+        elementWithChildrenAt(before, path)
+      )
     )
   ) {
     return null;
@@ -443,7 +621,22 @@ export const joinedChange = (
         getDefined(join.lines[0].at(-1))
     );
 
-    for (let index = 0; index + 1 < join.lines.length; index++) {
+    const innermost = join.inline.at(-1);
+
+    if (innermost) {
+      const first = getDefined(elementWithChildrenAt(before, innermost[0]));
+
+      const betweenInnermostTexts = {
+        from:
+          before.nodeRange([...innermost[0], first.children.length - 1]).to - 1,
+        to: before.nodeRange([...innermost[1], 0]).from + 1,
+      };
+
+      edits.push(betweenInnermostTexts);
+    }
+    const lineJoins = innermost ? 0 : join.lines.length - 1;
+
+    for (let index = 0; index < lineJoins; index++) {
       const first = join.lines[index];
       const second = join.lines[index + 1];
       const firstRange = before.nodeRange(first);
@@ -527,21 +720,35 @@ export const joinedChange = (
   return change && readsAsExactly(change, before, joins) ? change : null;
 };
 
-const pairKey = (first: Path, second: Path) => `${first}>${second}`;
+const pairKey = (
+  first: Path,
+  second: Path,
+  inline: ReadonlyArray<readonly [Path, Path]>
+) => [[first, second], ...inline].map(([a, b]) => `${a}>${b}`).join(';');
+
+const pairKeysOf = (
+  runs: ReadonlyArray<
+    Readonly<{
+      inline: ReadonlyArray<readonly [Path, Path]>;
+      lines: readonly Path[];
+    }>
+  >
+) =>
+  runs.flatMap(({ inline, lines }) =>
+    lines.slice(1).map((line, index) => pairKey(lines[index], line, inline))
+  );
 
 const readsAsExactly = (
   change: RootChange,
   before: DocumentIndex,
   joins: readonly FoundJoin[]
 ) => {
-  const read = new Set(
-    joinsOf(change, before).map((join) =>
-      pairKey(pathAt(before, join.first.from), pathAt(before, join.second.from))
-    )
-  );
-  const found = joins.flatMap(({ lines }) =>
-    lines.slice(1).map((line, index) => pairKey(lines[index], line))
-  );
+  const runs = joinRunsOf(change, before);
+
+  if (!runs) return false;
+
+  const read = new Set(pairKeysOf(runs));
+  const found = pairKeysOf(joins);
 
   return read.size === found.length && found.every((key) => read.has(key));
 };
@@ -658,18 +865,21 @@ export const composeTextDeltas = (
   return diff;
 };
 
-const tokenLength = (token: JsonToken) =>
-  token.kind === 'text' ? token.text.length : 1;
-
-const sameToken = (left: JsonToken | undefined, right: JsonToken | undefined) =>
+const sameStructure = (
+  left: JsonToken | undefined,
+  right: JsonToken | undefined
+) =>
   left !== undefined &&
   right !== undefined &&
+  left.kind !== 'text' &&
   JSON.stringify(left) === JSON.stringify(right);
 
 /**
- * The same change with each replacement's equal tokens at either edge kept
- * instead, as a commit that replaces a join's close with an equal close
- * writes.
+ * The same change with each replacement's equal open and close tokens at
+ * either edge kept instead, as a commit that replaces a join's close with an
+ * equal close writes. Letters stay replaced even where they equal the old
+ * ones, so a peer's concurrent delete of an old letter cannot take the new
+ * one.
  */
 export const withoutEqualEdges = (
   change: RootChange,
@@ -694,29 +904,25 @@ export const withoutEqualEdges = (
     const removed = document.slice(position, position + length).tokens;
     const { tokens } = value as PreparedTokenSlice;
     let head = 0;
-    let headLength = 0;
 
     while (
       head < removed.length &&
       head < tokens.length &&
-      sameToken(removed[head], tokens[head])
+      sameStructure(removed[head], tokens[head])
     ) {
-      headLength += tokenLength(removed[head]);
       head += 1;
     }
 
     let tail = 0;
-    let tailLength = 0;
 
     while (
       tail < removed.length - head &&
       tail < tokens.length - head &&
-      sameToken(
+      sameStructure(
         removed[removed.length - 1 - tail],
         tokens[tokens.length - 1 - tail]
       )
     ) {
-      tailLength += tokenLength(removed[removed.length - 1 - tail]);
       tail += 1;
     }
 
@@ -728,17 +934,11 @@ export const withoutEqualEdges = (
       );
 
       trimmed = true;
-      addSection(sections, data, headLength, -1, null);
-      if (length - headLength - tailLength > 0 || kept.length > 0) {
-        addSection(
-          sections,
-          data,
-          length - headLength - tailLength,
-          kept.length,
-          kept
-        );
+      addSection(sections, data, head, -1, null);
+      if (length - head - tail > 0 || kept.length > 0) {
+        addSection(sections, data, length - head - tail, kept.length, kept);
       }
-      addSection(sections, data, tailLength, -1, null);
+      addSection(sections, data, tail, -1, null);
     }
     position += length;
   }

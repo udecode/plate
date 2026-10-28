@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-24-mermaid-pele-1-9",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-24-mermaid-pele-1-9.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Draw copied Mermaid diagrams with Pele 1.9.0",
+  "targets": [
+    {
+      "name": "code-block-diagram-mermaid",
+      "files": [
+        "apps/www/src/registry/components/editor/code-block-diagram-mermaid.ts"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-24-code-block-diagram-mermaid-draw-copied-diagrams-pele-d46732c3",
+      "kind": "fix",
+      "summary": "Install Pele 1.9.0, which crosses fewer edges around subgraphs, styles `sub`, `sup`, `code` and `kbd` in labels, and fills Sankey links with gradients",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-block-diagram-mermaid"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-24",
+          "entry": "2026-10-24-mermaid-pele-1-9",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

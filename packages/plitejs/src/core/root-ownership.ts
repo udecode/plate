@@ -1,11 +1,12 @@
 import type { NamedRootKey, RootKey } from '../interfaces';
 import { failInvariant } from '../internal/fail-invariant';
+import { lawCheckEnabled } from '../internal/law-check';
 import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
   getInternalDocumentRootChange,
 } from './change/document-change';
-import { DocumentIndex } from './change/document-index';
+import { DocumentIndex, rootIndexOf } from './change/document-index';
 import { RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import {
@@ -199,7 +200,7 @@ export const judgeProjectedRoots = (
 ): ReadonlySet<NamedRootKey> => {
   const judged = updateProjectedRoots(input);
 
-  if (ownershipLawCheck()) {
+  if (lawCheckEnabled()) {
     const work = readCoreWork();
     const swept = input.full();
 
@@ -409,14 +410,6 @@ const sweepOrphanedRoots = ({
   return dropped;
 };
 
-const ownershipLawCheck = () => {
-  const env = (
-    globalThis as { process?: { env?: Record<string, string | undefined> } }
-  ).process?.env;
-
-  return env?.NODE_ENV === 'test' && env.PLITE_LAW_CHECK !== '0';
-};
-
 const HAS_CONTENT_ROOTS = new WeakMap<CompiledEditorSchema, boolean>();
 
 /** @internal */
@@ -525,7 +518,7 @@ export const orphanedRoots = (
     tracked,
   });
 
-  if (ownershipLawCheck()) {
+  if (lawCheckEnabled()) {
     const work = readCoreWork();
     const indexes = (
       roots: readonly RootKey[],
@@ -571,9 +564,11 @@ export const orphanedValueRoots = (
 ) => {
   const side = (value: RootsOf) => ({
     read: (root: RootKey) => {
-      const children = root === 'main' ? value.children : value.roots?.[root];
+      if (root === 'main') return rootIndexOf(value, 'children');
 
-      return children ? DocumentIndex.fromValue(children) : null;
+      const roots = value.roots ?? {};
+
+      return Object.hasOwn(roots, root) ? rootIndexOf(roots, root) : null;
     },
     roots: () => ['main', ...Object.keys(value.roots ?? {})],
   });

@@ -66,10 +66,17 @@ const runtimeTestHarnessInputs = () => [
 ];
 // Strict env mode hides any variable a task does not declare, so a replay
 // seed, a run count or the plitejs law switch would never reach the test.
-const runtimeTestEnv = {
-  platejs: ['PLATE_*', 'PLITE_*', 'TZ'],
-  plitejs: ['FILL_LAW_*', 'PLITE_*'],
-};
+const partitionTestEnv = (packageName) => [
+  'BENCH_MEASURE',
+  'CI',
+  'FAST_CHECK_SEED',
+  ...({
+    platejs: ['PLATE_*', 'PLITE_*', 'TZ'],
+    plitejs: ['FILL_LAW_*', 'PLITE_*'],
+  }[packageName] ?? []),
+];
+const packagesWithTypecheckedTests = new Set(['platejs', 'plitejs']);
+
 const typecheckedExternalTestFiles = {
   plitejs: [
     'test/authored-tree-recording-laws.spec.ts',
@@ -96,6 +103,7 @@ const sharedLintInputs = () => [
       'tooling/oxlint/plate-plugin.mjs'
     ),
     '$TURBO_ROOT$/tooling/oxlint/plate-baseline.json',
+    '$TURBO_ROOT$/tooling/oxlint/plate-baseline.private.json',
     ...runnerInputs('tooling/scripts/run-entrypoint-task.mjs'),
   ]),
 ];
@@ -430,7 +438,7 @@ export const createManagedPackageScripts = (packageName) => {
     ),
   };
 
-  if (packageName === 'plitejs') {
+  if (packagesWithTypecheckedTests.has(packageName)) {
     scripts['typecheck:tests'] = partitionScript(
       'typecheck-package-tests',
       packageName,
@@ -605,7 +613,7 @@ const createPackageTestsTsconfig = (packageName) => {
     extends:
       packageName === 'platejs' ? '../tsconfig.test.json' : '../tsconfig.json',
     files: testFiles,
-    include: [],
+    include: ['../src/**/*.d.ts'],
     references: projectReferences(packageName, taskDependencies),
   };
 };
@@ -779,12 +787,7 @@ export const createPackageTurboConfig = (packageName) => {
           ...testGraph.inputs,
           ...runtimeTestHarnessInputs(),
         ],
-        env: [
-          'BENCH_MEASURE',
-          'CI',
-          'FAST_CHECK_SEED',
-          ...(runtimeTestEnv[packageName] ?? []),
-        ],
+        env: partitionTestEnv(packageName),
         outputLogs: 'errors-only',
         outputs: [],
       };
@@ -835,7 +838,7 @@ export const createPackageTurboConfig = (packageName) => {
     outputLogs: 'errors-only',
     outputs: [],
   };
-  if (packageName === 'plitejs') {
+  if (packagesWithTypecheckedTests.has(packageName)) {
     const packageTestFiles = [
       ...getPackageSourceFiles(packageName, { tests: true }),
       ...getTypecheckedExternalTestFiles(packageName),
@@ -854,7 +857,9 @@ export const createPackageTurboConfig = (packageName) => {
         'src/**/*.test.*',
         'src/**/*-contract.*',
         'src/**/__tests__/**',
-        'test/**',
+        ...(packageName === 'platejs'
+          ? ['test/testing/**', 'tsconfig.test.json']
+          : ['test/**']),
         ...sharedTypecheckInputs(),
         'tsconfig.entrypoints/tests.json',
       ],
@@ -875,13 +880,16 @@ export const createPackageTurboConfig = (packageName) => {
     inputs: aggregateTaskInputs(),
     outputLogs: 'errors-only',
     outputs: [],
+    passThroughEnv: partitionTestEnv(packageName),
   };
   tasks.typecheck = {
     cache: true,
     dependsOn: [
       ...typecheckTasks,
       'typecheck:contracts',
-      ...(packageName === 'plitejs' ? ['typecheck:tests'] : []),
+      ...(packagesWithTypecheckedTests.has(packageName)
+        ? ['typecheck:tests']
+        : []),
     ],
     inputs: aggregateTaskInputs(),
     outputLogs: 'errors-only',
@@ -907,7 +915,7 @@ export const createPackageTurboConfig = (packageName) => {
           partitionTaskDependencies.get(partitionName)
         ),
       ]),
-      ...(packageName === 'plitejs'
+      ...(packagesWithTypecheckedTests.has(packageName)
         ? [
             [
               path.join(

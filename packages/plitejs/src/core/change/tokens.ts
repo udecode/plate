@@ -6,6 +6,7 @@ import {
   type PreparedNodeKeyRange,
   reservePreparedNodeKeyRange,
 } from '../../utils/node-keys';
+import { isImmutable } from '../clone';
 import {
   createTreeIndex,
   ResolvedTokenCursor,
@@ -874,12 +875,13 @@ export const encodeNodes = (nodes: readonly JsonNode[]) => {
   const tokens: JsonToken[] = [];
   let position = 0;
 
-  const encode = (node: JsonNode) => {
+  const encode = (node: JsonNode): boolean => {
     assertJsonNode(node);
 
     const from = position;
     const kind: NodeKind = isTextNode(node) ? 'text' : 'element';
     const openIndex = tokens.length;
+    let immutable = isImmutable(node);
 
     tokens.push(openToken(kind, nodeProps(node)));
     position += 1;
@@ -890,7 +892,8 @@ export const encodeNodes = (nodes: readonly JsonNode[]) => {
         position += node.text.length;
       }
     } else if (isElementNode(node)) {
-      node.children.forEach(encode);
+      immutable &&= isImmutable(node.children);
+      for (const child of node.children) immutable = encode(child) && immutable;
     } else {
       throw new Error('A JSON node must contain either text or children.');
     }
@@ -898,11 +901,15 @@ export const encodeNodes = (nodes: readonly JsonNode[]) => {
     tokens.push(closeToken(kind));
     position += 1;
 
-    tokens[openIndex] = openToken(kind, nodeProps(node), {
-      length: position - from,
-      node,
-      tokenCount: tokens.length - openIndex,
-    });
+    if (immutable) {
+      tokens[openIndex] = openToken(kind, nodeProps(node), {
+        length: position - from,
+        node,
+        tokenCount: tokens.length - openIndex,
+      });
+    }
+
+    return immutable;
   };
 
   nodes.forEach(encode);

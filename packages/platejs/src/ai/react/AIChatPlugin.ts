@@ -2,11 +2,7 @@ import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
 import cloneDeep from 'lodash/cloneDeep.js';
 import isEqual from 'lodash/isEqual.js';
 
-import {
-  type AuthoredResult,
-  AuthoredPlugin,
-  projectAuthoredDocument,
-} from '../../authored';
+import { type AuthoredResult, AuthoredPlugin } from '../../authored';
 import {
   BaseParagraphPlugin,
   ContentSlice,
@@ -38,6 +34,8 @@ import {
 } from '../../core';
 import {
   canPlaceBlocksAtPath,
+  getCompiledEditorSchema,
+  getEditorAuthoredDocumentCapability,
   placeElementAt,
   projectEditorView,
 } from '../../facade';
@@ -446,18 +444,30 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       ? { children: [...blocks], records }
       : { children: [...blocks] };
   };
-  // Blocks as the proposed document shows them, without review marks.
-  const proposedBlocks = (blocks: readonly Element[]) => {
-    const projected = projectAuthoredDocument(withReviewRecords(blocks), {
-      editor,
-      projection: 'proposed',
-    });
+  // Blocks as the whole document's proposed projection shows them, without
+  // review marks, since the containers around them hold the spares a build
+  // there takes. A projected view's entries are already its projection's
+  // blocks, and a stored view's paths name stored blocks.
+  const proposedBlocks = (
+    view: Editor,
+    root: string,
+    entries: readonly NodeEntry[]
+  ) => {
+    const projected =
+      'preview' in view.plugin(AuthoredPlugin).read.view()
+        ? null
+        : getEditorAuthoredDocumentCapability(editor)?.projectBlocks(
+            editor.read.value(),
+            'proposed',
+            getCompiledEditorSchema(editor),
+            root,
+            entries.map(([, path]) => path)
+          );
 
-    // A schema that generates values builds no projection of pending
-    // changes, so the blocks read as stored.
-    return (projected.ok ? projected.document.children : blocks).filter(
-      (node) => ElementApi.isElement(node)
-    );
+    // A build that finds no spare reads the blocks as stored.
+    return (
+      projected?.ok ? projected.blocks : entries.map(([node]) => node)
+    ).filter((node) => ElementApi.isElement(node));
   };
   const resetOptions = () => {
     cancel();
@@ -508,6 +518,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     context.store.set({ open: false });
   };
   const serializeMarkdown = (
+    view: Editor,
     state: AIChatPluginReadState,
     { type }: { type: MarkdownType }
   ) => {
@@ -518,6 +529,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         editor.api.markdown.serialize({
           document: {
             children: document.children,
+            ...(document.records ? { records: document.records } : {}),
             ...(document.roots ? { roots: document.roots } : {}),
           },
           projection: 'proposed',
@@ -525,13 +537,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       );
     }
     if (type === 'block') {
-      const blocks = state.nodes.blocks().map(([node]) => node);
+      const root =
+        state.view.root() ?? SelectionApi.root(state.selection()) ?? 'main';
+      const blocks = proposedBlocks(view, root, state.nodes.blocks());
+
+      if (blocks.length === 0) return '';
 
       return requireMarkdownData(
-        editor.api.markdown.serialize({
-          document: withReviewRecords(blocks),
-          projection: 'proposed',
-        })
+        editor.api.markdown.serialize({ document: { children: blocks } })
       );
     }
     if (type === 'nodeSelection') {
@@ -1159,11 +1172,12 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
       if (!range) return false;
       if (coversWholeBlocks) {
-        const source = proposedBlocks(ordered.map(([node]) => node));
-        const serialized = editor.api.markdown.serialize({
-          document: { children: source },
-        });
-        const reparsed = serialized.ok
+        const source = proposedBlocks(actionEditor, root ?? 'main', ordered);
+        const serialized =
+          source.length > 0
+            ? editor.api.markdown.serialize({ document: { children: source } })
+            : null;
+        const reparsed = serialized?.ok
           ? editor.api.markdown.parseSlice(serialized.data)
           : undefined;
 
@@ -1957,7 +1971,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         return { anchor: first.anchor, focus: last.focus };
       },
       insertStart: getInsertStart.bind(null, state),
-      markdown: serializeMarkdown.bind(null, state),
+      markdown: serializeMarkdown.bind(null, commandEditor, state),
       node: (
         options: Omit<EditorNodesOptions<Node>, 'type'> & {
           streaming?: boolean;
@@ -1989,7 +2003,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           if (result.includes(placeholder)) {
             result = result
               .split(placeholder)
-              .join(serializeMarkdown(state, { type }));
+              .join(serializeMarkdown(commandEditor, state, { type }));
           }
         });
 

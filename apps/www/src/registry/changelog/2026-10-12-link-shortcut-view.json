@@ -28,7 +28,7 @@
     {
       "id": "2026-10-12-link-open-form-cmd-k-957f4cda",
       "kind": "fix",
-      "summary": "Fix Cmd+K, which did not open the link form. `api.trigger()` reads the editor's focus when `focused` is omitted, and returns `false` when the form stays closed.",
+      "summary": "Fix Cmd+K, which did not open the link form. `api.trigger()` reads the editor's focus when `focused` is omitted, and returns `false` when the form stays closed, except over a selection inside a link, where it returns `true` without opening one.",
       "details": [],
       "migrationNotes": [],
       "targets": ["link"],

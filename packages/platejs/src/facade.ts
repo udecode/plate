@@ -17,6 +17,7 @@ export {
   locateAt,
   NodeApi,
   PathApi,
+  PointApi,
   property,
   RangeApi,
   readEditorSelection,
@@ -185,7 +186,7 @@ export type {
 } from 'plitejs/internal';
 
 export type { AnyEditor as RuntimeAnyEditor } from 'plitejs/internal';
-export { normalizeSetValues } from 'plitejs/internal';
+export { getTextSearchScope, normalizeSetValues } from 'plitejs/internal';
 export type {
   EditorDirectUpdate,
   EditorGenericMethod,
@@ -213,8 +214,11 @@ export {
   createEditorOwner,
   type EditorOwner,
   getPluginContributions,
+  getCompiledEditorSchema,
   getCompiledEditorSchemaFromApi,
+  getEditorAuthoredDocumentCapability,
   getEditorCommitSnapshot,
+  getEditorCommitValue,
   getInstalledPlugin,
   getSchemaElementSourceReference,
   getSelectionDOMRange,
@@ -223,10 +227,12 @@ export {
   mapSemanticUpdateMethodArguments,
   preserveCompiledSchemaPropertyIdentity,
   repairEditorValue,
+  registerEditorTransactionGuard,
   reportEditorLifecycleError,
   setEditorMaxLength,
   setEditorStateViewTransform,
   setEditorTransactionViewTransform,
+  withEditorUpdateRootScope,
   withTransactionSpecDraftRead,
   dispatchCommand,
   evaluateCommand,

@@ -10,7 +10,10 @@ import {
   type NodeKey,
   type Selection as EditorSelection,
 } from '../..';
-import { setShownSelectionAsView } from '../../core/view-carets';
+import {
+  getPlacementGeneration,
+  setShownSelectionAsView,
+} from '../../core/view-carets';
 import { getSelection } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { BROWSER_HANDLE_KEY } from '../../internal/browser-protocol';
@@ -306,7 +309,11 @@ export const attachPliteBrowserHandle = ({
       targetOwner: 'editor',
     });
 
-    applyEditableCommand({ command, editor });
+    applyEditableCommand({
+      command,
+      editor,
+      element: getCurrentHandleElement(),
+    });
     const selectionAfter = readRuntimeSelection(editor);
     const viewportBackedSelection = isViewportBackedSelection(
       getSelectionDOMRange(editor, selectionAfter)
@@ -899,7 +906,8 @@ export const attachPliteBrowserHandle = ({
                 focus: selection.focus,
               }
             )
-          : null
+          : null,
+        { placedAt: getPlacementGeneration(editor) }
       );
     },
     undo: () => {

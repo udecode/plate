@@ -1,4 +1,155 @@
 {
+  "plate/editable-own-dom-tree": {
+    "packages/plitejs/src/react/editable/android-composition.ts": [
+      "const root = ReactEditor.editable(editor);",
+      "const root = ReactEditor.editable(editor);"
+    ],
+    "packages/plitejs/src/react/editable/browser-handle.ts": [
+      "(editor.api.dom.resolveDOMNode(",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/caret-engine.ts": [
+      "editor.api.dom?.root();",
+      "getMountedEditableDOMRuntime(editor)",
+      "getMountedEditableDOMRuntime(editor)?.clearModelSelectionDOMPreference();"
+    ],
+    "packages/plitejs/src/react/editable/clipboard-input-strategy.ts": [
+      "clearDragSession(ReactEditor.getWindow(editor).document, editor);",
+      "const { document } = ReactEditor.getWindow(editor);",
+      "const root = editor.api.dom.root();",
+      "document: ReactEditor.getWindow(editor).document,",
+      "ReactEditor.getWindow(editor).document,",
+      "ReactEditor.getWindow(editor).document,",
+      "setDragScrollRepaint(ReactEditor.getWindow(editor).document, editor, () => {"
+    ],
+    "packages/plitejs/src/react/editable/composition-state.ts": [
+      "const domPhaseScheduler = getMountedEditableDOMRuntime(",
+      "const rootRuntime = findEditorDOMRootRuntime(editor);"
+    ],
+    "packages/plitejs/src/react/editable/content-root-coordinate-navigation.ts": [
+      "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);"
+    ],
+    "packages/plitejs/src/react/editable/content-root-navigation.ts": [
+      "const sourceElement = sourceEditor.api.dom.resolveDOMNode(sourceEditor);",
+      "getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;",
+      "getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??",
+      "sourceEditor?.api.dom?.resolveDOMNode?.(sourceEditor) ?? null;"
+    ],
+    "packages/plitejs/src/react/editable/content-root-vertical-geometry.ts": [
+      "const root = editor.api.dom.root();",
+      "const targetElement = targetEditor.api.dom.resolveDOMNode(targetEditor);",
+      "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "targetRuntime = getMountedEditableDOMRuntime(targetEditor),"
+    ],
+    "packages/plitejs/src/react/editable/dom-coverage-vertical-selection.ts": [
+      "const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);"
+    ],
+    "packages/plitejs/src/react/editable/dom-repair-queue.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "ReactEditor.resolveDocumentOrShadowRoot(editor)",
+      "ReactEditor.resolveDOMNode(editor, editor)"
+    ],
+    "packages/plitejs/src/react/editable/editable-dom-runtime.ts": [
+      ": findEditorDOMRootRuntime(editor);"
+    ],
+    "packages/plitejs/src/react/editable/input-controller.ts": [
+      "const node = ReactEditor.editable(editor);"
+    ],
+    "packages/plitejs/src/react/editable/input-router.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/keyboard-input-strategy.ts": [
+      "const editorElement = ReactEditor.editable(editor);",
+      "const editorElement = ReactEditor.editable(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(nestedEditor);",
+      "const runtime = getMountedEditableDOMRuntime(editor);",
+      "getMountedEditableDOMRuntime(targetEditor)?.domPhaseScheduler ??",
+      "getMountedEditableDOMRuntime(targetEditor)?.inputController,"
+    ],
+    "packages/plitejs/src/react/editable/model-input-strategy.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/model-selection-dom-preference.ts": [
+      ": getMountedEditableDOMRuntime(editor);",
+      "getMountedEditableDOMRuntime(editor)"
+    ],
+    "packages/plitejs/src/react/editable/mutation-controller.ts": [
+      "const editorElement = ReactEditor.editable(editor);"
+    ],
+    "packages/plitejs/src/react/editable/mutation-history.ts": [
+      "runtime = getMountedEditableDOMRuntime(editor),"
+    ],
+    "packages/plitejs/src/react/editable/native-input-strategy.ts": [
+      "const window = ReactEditor.getWindow(editor);"
+    ],
+    "packages/plitejs/src/react/editable/root-interaction-controller.ts": [
+      "const mountedElement = editor.api.dom.resolveDOMNode(editor);",
+      "focusEditor.api.dom.editable()?.focus({ preventScroll: true });",
+      "getMountedEditableDOMRuntime(editor);",
+      "getMountedEditableDOMRuntime(focusEditor);",
+      "getMountedEditableDOMRuntime(mountedEditor) ??"
+    ],
+    "packages/plitejs/src/react/editable/runtime-before-input-events.ts": [
+      "if (native || findEditorDOMRootRuntime(editor)?.isWebKitHost) return 'none';",
+      "ReactEditor.editable(editor)"
+    ],
+    "packages/plitejs/src/react/editable/runtime-focus-mouse-events.ts": [
+      "const editorElement = ReactEditor.editable(editor);"
+    ],
+    "packages/plitejs/src/react/editable/runtime-keyboard-events.ts": [
+      "const editorElement = editor.api.dom.resolveDOMNode(editor);",
+      "const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);",
+      "const root = editor.api.dom.root() ?? editor.api.dom.resolveDOMNode(editor);"
+    ],
+    "packages/plitejs/src/react/editable/runtime-root-lifecycle.ts": [
+      "ReactEditor.getWindow(editor);"
+    ],
+    "packages/plitejs/src/react/editable/runtime-selection-engine.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "findEditorDOMRootRuntime(editor)?.rootRef.current !== rootRef.current"
+    ],
+    "packages/plitejs/src/react/editable/selection-controller.ts": [
+      "(getMountedEditableDOMRuntime(editor)?.domCoverage.getBoundariesForRange(",
+      "const editorElement = explicitEditorElement ?? ReactEditor.editable(editor);",
+      "const editorElement = ReactEditor.editable(editor);",
+      "const editorElement = ReactEditor.editable(editor);",
+      "const editorElement = ReactEditor.editable(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/selection-projected-dom.ts": [
+      "const runtime = getMountedEditableDOMRuntime(editor);"
+    ],
+    "packages/plitejs/src/react/editable/selection-reconciler.ts": [
+      "const el = ReactEditor.editable(editor);",
+      "const el = ReactEditor.editable(editor);",
+      "const el = ReactEditor.editable(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
+      "findEditorDOMRootRuntime(editor)?.adapter !== runtime"
+    ],
+    "packages/plitejs/src/react/editable/selection-triple-click.ts": [
+      "const editorElement = EDITOR_TO_ELEMENT.get(editor);"
+    ],
+    "packages/plitejs/src/react/editable/selection-void-target.ts": [
+      "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);"
+    ],
+    "packages/plitejs/src/react/editable/view-caret-restore.ts": [
+      "const runtime = getMountedEditableDOMRuntime(view);"
+    ]
+  },
   "plate/mock-spreads-module": {},
   "plate/no-as-never": {
     "packages/platejs/src/docx/import/lib/importDocx.ts": [
@@ -60,67 +211,8 @@
     ]
   },
   "plate/no-branded-value": {},
-  "plate/no-existence-only-test": {
-    "apps/www/tests/browser/markdown-streaming-contract.spec.ts": [
-      "test(cell, async ({ baseURL }) => {"
-    ],
-    "packages/plitejs/test/react/surface-contract.tsx": [
-      "test('Editable consumes raw element, leaf, text, and void render props', () => {"
-    ]
-  },
-  "plate/no-fixed-sleep": {
-    "apps/plite/tests/device/bypass.device.ts": ["setTimeout(resolve, 1000);"],
-    "apps/plite/tests/plite-browser/ime-cost.spec.ts": [
-      "await page.waitForTimeout(40);"
-    ],
-    "apps/www/tests/browser/code-block-diagram.spec.ts": [
-      "await page.waitForTimeout(500);"
-    ],
-    "apps/www/tests/browser/dnd.spec.ts": [
-      "await page.waitForTimeout(50);",
-      "await page.waitForTimeout(50);",
-      "await page.waitForTimeout(50);",
-      "await page.waitForTimeout(50);"
-    ],
-    "apps/www/tests/browser/docx.spec.ts": ["await page.waitForTimeout(500);"],
-    "apps/www/tests/browser/link-floating-toolbar.spec.ts": [
-      "await page.waitForTimeout(150);",
-      "await page.waitForTimeout(250);",
-      "await page.waitForTimeout(40);"
-    ],
-    "apps/www/tests/browser/markdown-streaming-contract.spec.ts": [
-      "await page.waitForTimeout(quarter);",
-      "await page.waitForTimeout(quietMs);"
-    ],
-    "apps/www/tests/browser/select-editor.spec.ts": [
-      "await page.waitForTimeout(300);"
-    ],
-    "apps/www/tests/browser/selection-drag-scroll.spec.ts": [
-      "await page.waitForTimeout(100);"
-    ],
-    "apps/www/tests/browser/selection-edge-scroll.spec.ts": [
-      "await page.waitForTimeout(100);",
-      "await page.waitForTimeout(100);",
-      "await page.waitForTimeout(200);",
-      "await page.waitForTimeout(200);",
-      "await page.waitForTimeout(250);",
-      "await page.waitForTimeout(30);",
-      "await page.waitForTimeout(300);"
-    ],
-    "apps/www/tests/browser/suggestion.spec.ts": [
-      "await page.waitForTimeout(100);"
-    ],
-    "apps/www/tests/browser/table-selection.spec.ts": [
-      "await page.waitForTimeout(40);",
-      "await page.waitForTimeout(40);",
-      "await page.waitForTimeout(40);",
-      "await page.waitForTimeout(50);"
-    ],
-    "apps/www/tests/native/homepage-ime.native.ts": [
-      "await page.waitForTimeout(150);",
-      "await page.waitForTimeout(80);"
-    ]
-  },
+  "plate/no-existence-only-test": {},
+  "plate/no-fixed-sleep": {},
   "plate/no-one-off-editor-type": {
     "packages/cli/src/generate.ts": ["type CompiledEditor = Readonly<{"],
     "packages/platejs/src/features/combobox/lib/combobox.ts": [
@@ -154,70 +246,8 @@
       "* Lower every resolved Plate plugin to exactly one native Plite plugin."
     ]
   },
-  "plate/no-raised-test-timeout": {
-    "apps/www/src/registry/components/editor/comment.spec.tsx": ["}, 20_000);"],
-    "packages/cli/test/generate.test.ts": [
-      "}, 45_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);",
-      "}, 60_000);"
-    ],
-    "packages/plitejs/src/diff/lib/comparison-work.spec.ts": [
-      "}, 60_000);",
-      "}, 60_000);"
-    ],
-    "packages/plitejs/test/document-change.test.ts": ["timeout: 20_000,"],
-    "packages/plitejs/test/dom/dom-coverage.ts": ["{ timeout: 30_000 },"],
-    "packages/plitejs/test/incremental-schema-validation.test.ts": [
-      "timeout: 20_000,"
-    ],
-    "packages/plitejs/test/react/dom-coverage-boundary-contract.tsx": [
-      "}, 15_000);"
-    ],
-    "packages/plitejs/test/react/rendered-dom-shape-contract.tsx": [
-      "}, 20_000);"
-    ],
-    "packages/plitejs/test/react/selection-dom-realm-contract.test.ts": [
-      "}, 15_000);"
-    ],
-    "packages/plitejs/test/slice-fit-contract.test.ts": [
-      "timeout: 20_000,",
-      "timeout: 20_000,"
-    ],
-    "packages/plitejs/test/snapshot-contract.ts": ["{ timeout: 15_000 },"],
-    "packages/plitejs/test/text-splice-projection.test.ts": [
-      "{ timeout: 15_000 },"
-    ]
-  },
-  "plate/no-relative-plite-source": {
-    "apps/www/src/app/dev/suggestion-performance/page.tsx": [
-      "import { DecorationContext } from '../../../../../../packages/plitejs/src/react/decoration-context';"
-    ],
-    "apps/www/src/registry/examples/markdown-streaming-demo.spec.tsx": [
-      "import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';"
-    ],
-    "apps/www/src/registry/examples/multiple-editors-demo.spec.tsx": [
-      "import { findDOMRootRuntime } from '../../../../../packages/plitejs/src/dom/internal';"
-    ]
-  },
+  "plate/no-raised-test-timeout": {},
+  "plate/no-relative-plite-source": {},
   "plate/no-schema-placement-copy": {
     "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": [
       "(content.max !== null && children.length > content.max)",
@@ -300,21 +330,7 @@
     ]
   },
   "plate/no-snapshot": {},
-  "plate/no-source-text-test": {
-    "packages/plitejs/test/dom/public-surface-contract.ts": [
-      "const indexSource = readFileSync(",
-      "const source = readFileSync(sourcePath, 'utf-8');"
-    ],
-    "packages/plitejs/test/react/kernel-authority-audit-contract.ts": [
-      "const editableSource = readFileSync(",
-      "const editableSource = readFileSync("
-    ],
-    "packages/plitejs/test/react/surface-contract.tsx": [
-      "const indexSource = readFileSync(",
-      "const indexSource = readFileSync(",
-      "const indexSource = readFileSync("
-    ]
-  },
+  "plate/no-source-text-test": {},
   "plate/no-structural-mark-copy": {
     "packages/plitejs/src/authored/tree/proposed.ts": [
       "if (hasMark(child, 'unwrap')) {",
@@ -327,7 +343,5 @@
       "reshaping.push(...childMarks.filter((mark) => mark.kind === 'join'));"
     ]
   },
-  "plate/no-wall-clock-bound": {
-    "packages/plitejs/test/dom/dom-coverage.ts": ["expect("]
-  }
+  "plate/no-wall-clock-bound": {}
 }

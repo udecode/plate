@@ -42,7 +42,8 @@ export type AuthoredChange = Readonly<{
    * reordering, replacing or retyping the blocks before it keeps the
    * revision, although the block a decision merges its line into can change.
    * No other revision covers where the change sits, so an edit before it
-   * keeps it.
+   * keeps it. Each top-level block the change marks adds its own part, so
+   * swapping two of those blocks keeps the revision too.
    */
   revision: number;
 }>;

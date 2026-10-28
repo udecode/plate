@@ -84,7 +84,7 @@ const annotations = comments.map((comment) => ({
 }));
 
 function CommentsView() {
-  const view = useEditorContext();
+  const view = useEditor();
   const annotationStore = useAnnotationStore(view, annotations);
 
   return <CommentsSidebar store={annotationStore} />;

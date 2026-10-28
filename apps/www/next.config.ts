@@ -6,7 +6,7 @@ import type { NextConfig } from 'next';
 import { PHASE_DEVELOPMENT_SERVER } from 'next/constants';
 
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
-import docsRedirects from '../../docs/plite/reference/public-route-map.json';
+import docsRedirects from './docs-redirects.json';
 
 const APP_ROOT = import.meta.dirname;
 const REPO_ROOT = path.resolve(APP_ROOT, '../..');

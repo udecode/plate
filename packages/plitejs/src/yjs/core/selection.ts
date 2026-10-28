@@ -3,7 +3,11 @@ import * as Y from 'yjs';
 import type { NodeList } from '../../core/change/document-index';
 import type { Descendant, Point, Range } from '../../index';
 import { readPliteValueFromYjs } from './document';
-import { pliteToYjsTextPosition, yjsToPliteTextPoint } from './text-runs';
+import {
+  pliteToYjsTextPosition,
+  yjsToPliteSpacerPoint,
+  yjsToPliteTextPoint,
+} from './text-runs';
 
 export type YjsRelativeRange = {
   readonly anchor: Y.RelativePosition;
@@ -18,7 +22,7 @@ export const pointToYjsRelativePosition = (
   const position = pliteToYjsTextPosition(root, children, point);
   if (!position) throw new Error('Editor point does not target a text group.');
   return Y.createRelativePositionFromTypeIndex(
-    position.text,
+    position.type,
     position.index,
     position.assoc
   );
@@ -38,9 +42,11 @@ export const yjsRelativePositionToPoint = (
     root.doc
   );
 
-  if (absolute === null || !(absolute.type instanceof Y.XmlText)) {
-    return null;
+  if (absolute === null) return null;
+  if (absolute.type instanceof Y.XmlElement) {
+    return yjsToPliteSpacerPoint(root, children, absolute.type, absolute.assoc);
   }
+  if (!(absolute.type instanceof Y.XmlText)) return null;
 
   return yjsToPliteTextPoint(
     root,

@@ -3699,7 +3699,6 @@ const repairAction = (
 ): 'dropped' | 'replaced' | 'unwrapped' => {
   switch (code) {
     case 'drop-unplaceable-text':
-    case 'omit-default-property':
     case 'omit-empty-text-property':
     case 'remove-empty-text':
     case 'remove-noncanonical-child': {

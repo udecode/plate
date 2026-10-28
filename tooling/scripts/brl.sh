@@ -54,20 +54,36 @@ common_excludes='.*__tests__.*|(.*(fixture|template|spec|internal).*)|(.*\.test\
 
 src_excludes="$common_excludes|(^.*\/(migrations|react|static)\/.*$)"
 
+# barrelsby rewrites every barrel, even one whose bytes stay the same, and a
+# rewrite makes pnpm check's cache refuse the pass. So it runs on a copy of
+# src, and only the barrels whose bytes changed come back.
+work=$(mktemp -d "${TMPDIR:-/tmp}/brl.XXXXXX") || exit 1
+trap 'rm -rf "$work"' EXIT
+cp -R "$INIT_CWD/src" "$work/src" || exit 1
+failed=0
+
 # Run barrelsby on the src directory if index.tsx doesn't exist
-run_barrelsby "$INIT_CWD/src" -D -l all -q -e "$src_excludes"
+run_barrelsby "$work/src" -D -l all -q -e "$src_excludes" || failed=1
 
 # Check if the src/react directory exists and run barrelsby if it does and if index.tsx doesn't exist
-if [ -d "$INIT_CWD/src/react" ]; then
-    run_barrelsby "$INIT_CWD/src/react" -D -l all -q -e "$common_excludes"
+if [ -d "$work/src/react" ]; then
+    run_barrelsby "$work/src/react" -D -l all -q -e "$common_excludes" || failed=1
 fi
 
 # Check if the src/static directory exists and run barrelsby if it does and if index.tsx doesn't exist
-if [ -d "$INIT_CWD/src/static" ]; then
-    run_barrelsby "$INIT_CWD/src/static" -D -l all -q -e "$common_excludes"
+if [ -d "$work/src/static" ]; then
+    run_barrelsby "$work/src/static" -D -l all -q -e "$common_excludes" || failed=1
 fi
 
 # Keep versioned migrations in their opt-in package subpath.
-if [ -d "$INIT_CWD/src/migrations" ]; then
-    run_barrelsby "$INIT_CWD/src/migrations" -D -l all -q -e "$common_excludes"
+if [ -d "$work/src/migrations" ]; then
+    run_barrelsby "$work/src/migrations" -D -l all -q -e "$common_excludes" || failed=1
 fi
+
+[ "$failed" -eq 0 ] || exit 1
+(cd "$work/src" && find . -name index.ts) | while read -r file; do
+    cmp -s "$work/src/$file" "$INIT_CWD/src/$file" || cp "$work/src/$file" "$INIT_CWD/src/$file"
+done
+(cd "$INIT_CWD/src" && find . -name index.ts) | while read -r file; do
+    [ -f "$work/src/$file" ] || rm "$INIT_CWD/src/$file"
+done

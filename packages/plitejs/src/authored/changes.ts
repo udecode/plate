@@ -1,3 +1,4 @@
+import { jsonEqual } from '../core/change/json';
 import type { JsonEditorValue } from '../core/change/tokens';
 import type { ContentSlice } from '../interfaces/editor';
 import type { Path } from '../interfaces/path';
@@ -122,6 +123,13 @@ export const touches = (left: Occurrence, right: Occurrence) => {
 const isContent = (mark: AuthoredMark) =>
   mark.kind === 'insert' || mark.kind === 'delete';
 
+// A proposed Enter under a slotted container tags its tail's type even when
+// the type stays, so rejecting reads it back. Readers show no such write.
+const keepsValue = (mark: AuthoredMark) =>
+  mark.kind === 'format' &&
+  mark.write.kind === 'set' &&
+  jsonEqual(mark.write.value, mark.before);
+
 /** @internal */
 export const continues = (end: Occurrence, first: Occurrence) =>
   touches(end, first) ||
@@ -221,16 +229,22 @@ export const sameShape = (left: Node, right: Node) =>
 export const isStructureMark = (mark: AuthoredMark) =>
   KINDS[mark.kind] === 'structure';
 
-const revisionOf = (list: readonly Occurrence[]) => {
-  let value = FNV_OFFSET;
+/**
+ * One top-level block's part of a change's revision, from the change's
+ * occurrences in it, each with its path inside the block.
+ *
+ * @internal
+ */
+export const blockRevisionOf = (
+  root: string,
+  list: ReadonlyArray<Pick<Occurrence, 'mark' | 'node' | 'path'>>
+) => {
+  let value = mix(FNV_OFFSET, hash(root));
 
-  for (const { mark, node, path, root } of list) {
-    value = mix(value, hash(root));
+  for (const { mark, node, path } of list) {
     if (isLineBreak(mark)) {
-      value = mix(value, path.length - 1);
-      for (let depth = 1; depth < path.length; depth++) {
-        value = mix(value, path[depth]);
-      }
+      value = mix(value, path.length);
+      for (const index of path) value = mix(value, index);
     }
     value = mix(value, markHash(mark));
     value = mix(
@@ -242,6 +256,35 @@ const revisionOf = (list: readonly Occurrence[]) => {
   return value;
 };
 
+// Blocks add their parts, so a key in one block of a change that spans many
+// moves the revision by that block's part alone.
+const revisionOf = (list: readonly Occurrence[]) => {
+  let revision = 0;
+  let start = 0;
+
+  for (let at = 1; at <= list.length; at++) {
+    const first = list[start];
+    const next = list[at];
+
+    if (next && next.root === first.root && next.path[0] === first.path[0]) {
+      continue;
+    }
+    revision =
+      (revision +
+        blockRevisionOf(
+          first.root,
+          list.slice(start, at).map((occurrence) => ({
+            ...occurrence,
+            path: occurrence.path.slice(1),
+          }))
+        )) >>>
+      0;
+    start = at;
+  }
+
+  return revision;
+};
+
 /**
  * The change one id's occurrences make; `list` holds them in document order.
  *
@@ -251,7 +294,9 @@ export const changeOf = (
   id: string,
   list: readonly Occurrence[]
 ): AuthoredChange => {
-  const kinds = new Set(list.map(({ mark }) => KINDS[mark.kind]));
+  const kinds = new Set(
+    list.flatMap(({ mark }) => (keepsValue(mark) ? [] : [KINDS[mark.kind]]))
+  );
   const ranges: Range[] = [];
   const covered = covering(list);
 
@@ -480,6 +525,7 @@ export const readAuthoredDetails = (
   for (const occurrence of covering(index.occurrences.get(id) ?? [])) {
     const { mark, node, path } = occurrence;
 
+    if (keepsValue(mark)) continue;
     if (mark.kind === 'insert' || mark.kind === 'delete') {
       const range = rangeOf(occurrence);
 

@@ -16,9 +16,13 @@ docs:
 
 - Opens with `Mod+F` and seeds the query from an expanded editor selection.
 - Highlights every match without writing marks into the document or history.
-- Searches through adjacent text leaves and inline descendants.
+- Finds a match that runs across text leaves and inline elements within one
+  block. Find searches text placed directly beside a block on its own.
 - Moves between results with `Enter`, `Shift+Enter`, or the arrow buttons.
-- Rescans after document commits and keeps one active result visible.
+- Updates the results after each document change. Typing or formatting inside a
+  block searches only that block again, and only text whose highlights changed
+  repaints.
+- Keeps the active result on its match through edits.
 - Opens independently in each mounted editor view, with `useFind` for custom controls.
 
 </PackageInfo>
@@ -77,17 +81,40 @@ find.update.select();
 
 `api.search(query)` applies a case-insensitive literal query. An empty query
 clears the results. `api.move(1 | -1)` wraps through the current results without
-rescanning. Document commits refresh the query automatically, including when
-no view is mounted. `update.select()` selects the current range in the main
-document and returns whether it did. It returns `false` when no result exists
-or when a named root's view calls it, because matches are main-document ranges.
+searching again. Every commit that changes the main document updates the
+results, including when no view is mounted. It searches again only the smallest
+part of the document that holds its changes, such as the paragraph the user
+types in. Adding or removing a top-level block, or changing two top-level blocks in
+one update, searches the whole document. A commit that leaves the main document
+unchanged, such as a selection change or an edit in a named root, searches only
+when the results went stale: after a schema change, after the app writes
+`matches` to the store, or after a search inside an update that threw. The
+query changes only through `api.search`; a `query` written to the store starts
+no search. `api.search` searches the main document, even inside the `update` of
+a named root's view. `update.select()` selects the current range in the main
+document and returns whether it did. It returns `false` when no result exists or
+when a named root's view calls it, because matches are main-document ranges.
 View focus remains the caller's responsibility.
+
+The active result follows its match through edits. It stays on that match while
+the search still finds the same text there. When an edit breaks the match, the
+active result moves to the first match that ends after where the old one
+started, or wraps to the first match. A new query starts on its first match.
+Writing `activeIndex` to the store picks the active result as `api.move` does,
+and the pick follows its match through later edits. An active result picked or
+searched for inside `editor.update` jumps to a new match typed right before it
+in a later commit. Inside an `editor.update` that has already changed the
+document, a write that picks another result applies its index to the results
+Find publishes when that update commits. A store write that leaves the active
+result as it was, such as one that sets only `error`, keeps it on its match.
 
 `FindPluginState` contains `query`, immutable `matches`, `activeIndex` and
 `error`. The `count` and `activeMatch` store selectors derive current results.
-Each `FindMatch` contains an ID and range. Match data is transient and never
-stored as document marks. Custom renderers can style `data-find-match` and
-`data-find-active` attributes.
+Each `FindMatch` contains a range and an opaque ID that stays the same when a
+block moves above the match. A commit that leaves every match, the active result
+and `error` as they were notifies no store subscriber and keeps the same
+`matches` array. Match data is transient and never stored as document marks.
+Custom renderers can style `data-find-match` and `data-find-active` attributes.
 
 ## Custom controls
 

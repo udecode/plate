@@ -1,9 +1,11 @@
 import { createAnchor } from '../core/anchor';
+import { jsonEqual } from '../core/change/json';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   getActiveUpdateRoot,
   getChildList,
   getCurrentSelection,
+  getEditorUpdateRoot,
   profileCoreDuration,
   runEditorTransaction,
   withEditorUpdateRoot,
@@ -41,7 +43,10 @@ import {
 } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
 import { getDefined } from '../internal/get-defined';
-import { getConsistentRangeTextMarks } from '../internal/range-text-marks';
+import {
+  getConsistentRangeTextMarks,
+  withoutUnheldDefaultsBeside,
+} from '../internal/range-text-marks';
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
 import { mergeNodes, removeNodes } from '../transforms-node';
 import {
@@ -206,15 +211,7 @@ const shouldClearDeletedMarksAtMarkedSuffix = (
   return (
     TextApi.isText(node) &&
     node.text.length > 0 &&
-    [...keys].every((key) =>
-      getEditorSchema(editor).isTextPropertyEqualAt(
-        key,
-        node[key],
-        deletedMarks[key],
-        anchor.path,
-        anchor.root ?? 'main'
-      )
-    )
+    [...keys].every((key) => jsonEqual(node[key], deletedMarks[key]))
   );
 };
 
@@ -1436,14 +1433,21 @@ const applyAt = (
     getConsistentRangeTextMarks(editor, target.effectiveRange)
   );
   const setDeletedMarks = () => {
-    if (!writesSelection || !deletedMarks || !getCurrentSelection(editor)) {
-      return;
-    }
+    const caret = getCurrentSelection(editor);
+
+    if (!writesSelection || !deletedMarks || !caret) return;
 
     tx.setMarks(
       shouldClearDeletedMarksAtMarkedSuffix(editor, deletedMarks)
         ? {}
-        : deletedMarks
+        : RangeApi.isRange(caret)
+          ? withoutUnheldDefaultsBeside(
+              editor,
+              deletedMarks,
+              caret.focus.path,
+              caret.focus.root ?? getEditorUpdateRoot(editor)
+            )
+          : deletedMarks
     );
   };
   const withRoot = (point: Point) =>

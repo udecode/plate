@@ -28,10 +28,10 @@
 - Exact `next` commit/Beta package version: <verified value or `NOT_ENOUGH_INFO`>
 - Browser/OS: <verified value or omit>
 
-## Evidence
-
-- [Reproduction video](<public-url>) — <timestamp note>
-
 ## Caveat
 
 <inference or missing fact; omit when none>
+
+## Evidence
+
+<timestamp note for each recording the publisher attaches below>

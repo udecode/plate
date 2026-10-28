@@ -188,42 +188,41 @@ export const UnderlineRules = {
     }),
 };
 
-type MarkComboVariant =
-  | 'boldItalic'
-  | 'boldUnderline'
-  | 'boldItalicUnderline'
-  | 'italicUnderline';
+const MARK_COMBOS = {
+  boldItalic: { marks: ['bold', 'italic'], start: '***' },
+  boldItalicUnderline: {
+    marks: ['underline', 'bold', 'italic'],
+    start: '___***',
+  },
+  boldUnderline: { marks: ['underline', 'bold'], start: '__**' },
+  italicUnderline: { marks: ['underline', 'italic'], start: '__*' },
+} as const;
 
-/** Markdown rules that atomically apply combinations of independent marks. */
+/**
+ * Markdown rules that atomically apply combinations of independent marks. By
+ * default they run before the single-mark rules whose delimiters begin each
+ * combo's runs.
+ */
 export const MarkComboRules = {
   markdown: ({
     variant,
+    priority = 1,
     ...options
   }: MarkdownMarkRuleOptions & {
-    variant: MarkComboVariant;
-  }) =>
-    createMarkInputRule({
+    variant: keyof typeof MARK_COMBOS;
+  }) => {
+    const { marks, start } = MARK_COMBOS[variant];
+    const close = start.split('').toReversed().join('');
+
+    return createMarkInputRule({
       ...options,
-      end: {
-        boldItalic: '*',
-        boldItalicUnderline: '**',
-        boldUnderline: '*',
-        italicUnderline: '*',
-      }[variant],
-      marks: {
-        boldItalic: ['bold', 'italic'],
-        boldItalicUnderline: ['underline', 'bold', 'italic'],
-        boldUnderline: ['underline', 'bold'],
-        italicUnderline: ['underline', 'italic'],
-      }[variant],
-      start: {
-        boldItalic: '**',
-        boldItalicUnderline: '___',
-        boldUnderline: '__',
-        italicUnderline: '__',
-      }[variant],
-      trigger: '*',
-    }),
+      end: close.slice(0, -1),
+      marks,
+      priority,
+      start,
+      trigger: close.slice(-1),
+    });
+  },
 };
 
 /** Enables support for bold formatting. */

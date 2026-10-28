@@ -24,7 +24,7 @@ import {
   factsOf,
   insertionsOf,
   membersOf,
-  type NodesPerIncarnation,
+  type IncarnationCounts,
 } from './facts';
 import {
   CONTEXTS,
@@ -97,7 +97,7 @@ const memberHash = (member: MarkBase) =>
 export type Carried = (insertion: MarkBase) => number;
 
 export const carriedIn = (value: Value): Carried => {
-  let counts: NodesPerIncarnation | undefined;
+  let counts: IncarnationCounts | undefined;
 
   return (insertion) =>
     (counts ??= insertionsOf(value).counts).get(incarnationOf(insertion)) ?? 0;

@@ -1,7 +1,15 @@
-import { valueRootNodes } from '../../core/change/document-change';
+import {
+  hasInternalDocumentChangeRoot,
+  mapInternalDocumentChangePosition,
+  valueRoot,
+  valueRootNodes,
+} from '../../core/change/document-change';
+import { DocumentIndex } from '../../core/change/document-index';
 import type { NodeList } from '../../core/change/document-index';
+import { withoutRepairOrphans } from '../../core/document-admission';
+import { getCompiledEditorSchema } from '../../core/plugin-registry';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
-import { runTrustedUpdate } from '../../core/public-state';
+import { type AdmittedRepair, runTrustedUpdate } from '../../core/public-state';
 import { withoutPlacement } from '../../core/view-carets';
 import type {
   Descendant,
@@ -18,15 +26,22 @@ import { NodeApi, RangeApi, SelectionApi } from '../../index';
 import type { YjsEditor } from './editor-types';
 import type { PendingYjsEffect } from './shared-effect-log';
 
+type YjsRemoteImport = Readonly<{
+  replacement?: EditorDocumentValue;
+  change?: DocumentChange;
+  effects: readonly PendingYjsEffect[];
+  /** Record writes applied before the content change, in the same commit. */
+  records?: DocumentChange | null;
+  selection?: Range | Selection;
+}>;
+
+export type YjsImportOutcome = Readonly<{
+  admission: AdmittedRepair | null;
+  deletedRoots: readonly string[];
+}>;
+
 export type YjsEditorAdapter = {
-  readonly applyRemote: (input: {
-    readonly replacement?: EditorDocumentValue;
-    readonly change?: DocumentChange;
-    readonly effects: readonly PendingYjsEffect[];
-    /** Record writes applied before the content change, in the same commit. */
-    readonly records?: DocumentChange | null;
-    readonly selection?: Range | Selection;
-  }) => void;
+  readonly applyRemote: (input: YjsRemoteImport) => YjsImportOutcome;
   readonly canonicalize: (
     root: string,
     children: readonly Descendant[]
@@ -90,6 +105,48 @@ const sanitizeImportSelection = (
     : null;
 };
 
+/**
+ * Map a text range through an import's change. Null when the change deletes
+ * the content around a point, as a value diff that replaces its block does.
+ */
+const mapImportRange = (
+  change: DocumentChange,
+  before: EditorDocumentValue,
+  after: EditorDocumentValue,
+  root: string,
+  range: Range
+): Range | null => {
+  if (!hasInternalDocumentChangeRoot(change, root)) return range;
+
+  const nodes = valueRootNodes(before, root) as NodeList<Descendant>;
+
+  if (
+    !isValidImportSelectionPoint(nodes, range.anchor) ||
+    !isValidImportSelectionPoint(nodes, range.focus)
+  ) {
+    return null;
+  }
+
+  const source = DocumentIndex.fromValue(valueRoot(before, root));
+  const target = DocumentIndex.fromValue(valueRoot(after, root));
+  const map = (point: Range['anchor']) => {
+    const position = mapInternalDocumentChangePosition(
+      change,
+      root,
+      source.positionAt(point),
+      -1,
+      'around'
+    );
+    const mapped = position === null ? null : target.pointAt(position, -1);
+
+    return mapped && { ...point, offset: mapped.offset, path: mapped.path };
+  };
+  const anchor = map(range.anchor);
+  const focus = map(range.focus);
+
+  return anchor && focus ? { ...range, anchor, focus } : null;
+};
+
 const isValidImportSelectionPoint = (
   children: NodeList<Descendant>,
   point: Range['anchor']
@@ -103,6 +160,8 @@ const isValidImportSelectionPoint = (
     point.offset <= node.text.length
   );
 };
+
+const NO_ROOTS: readonly string[] = Object.freeze([]);
 
 export const createYjsEditorAdapter = (
   editor: YjsEditor,
@@ -124,32 +183,62 @@ export const createYjsEditorAdapter = (
     selection,
   }) => {
     let nextSelection: EditorSelection | null = null;
+    // Two peers can each remove one owner of a shared root, so neither update
+    // deletes it; the merge orphans it, and a closed schema refuses that
+    // change unless the import drops the root with it.
+    const imported =
+      change && !change.empty && editor.read.schema.hasContentRoots()
+        ? withoutRepairOrphans(getCompiledEditorSchema(editor), readValue(), {
+            change,
+            value: change.apply(readValue()),
+          })
+        : null;
+    const publishable = imported?.change ?? change;
 
     if (selection !== undefined && selection !== null) {
-      const currentValue = editor.read.value();
+      const currentValue = readValue();
       const nextValue =
-        replacement ?? (change ? change.apply(currentValue) : currentValue);
+        replacement ??
+        imported?.value ??
+        (change ? change.apply(currentValue) : currentValue);
       const editorRoot =
         !SelectionApi.isNode(selection) && !RangeApi.isRange(selection)
           ? normalizeRootKey(editor.read.view.root())
           : normalizeRootKey(SelectionApi.root(selection));
 
+      // A text selection maps through the change, so a caret after a
+      // remote split moves into the line that now holds its letters.
+      const mapped =
+        replacement === undefined &&
+        publishable &&
+        !publishable.empty &&
+        !SelectionApi.isNode(selection) &&
+        !('kind' in selection && selection.kind !== 'text')
+          ? (mapImportRange(
+              publishable,
+              currentValue,
+              nextValue,
+              editorRoot,
+              selection
+            ) ?? selection)
+          : selection;
+
       nextSelection = sanitizeImportSelection(
         valueRootNodes(nextValue, editorRoot) as NodeList<Descendant>,
-        selection
+        mapped
       );
     }
 
     importing = true;
 
     try {
-      runTrustedUpdate(
+      const { admission } = runTrustedUpdate(
         editor,
         (tx) => {
           if (records) tx.changes.apply(records);
           if (replacement) tx.value.replace(replacement);
-          if (change && !change.empty) {
-            tx.changes.apply(change);
+          if (publishable && !publishable.empty) {
+            tx.changes.apply(publishable);
           }
           if (selection !== undefined) {
             withoutPlacement(editor, () => tx.selection.set(nextSelection));
@@ -162,6 +251,11 @@ export const createYjsEditorAdapter = (
         },
         { tags: YjsUpdatePolicy.remote.tags }
       );
+
+      return Object.freeze({
+        admission,
+        deletedRoots: imported ? [...imported.change.deleteRoots] : NO_ROOTS,
+      });
     } finally {
       importing = false;
     }

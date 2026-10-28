@@ -33,7 +33,7 @@ const LAUNCH_OPTIONS = {
     },
   },
 };
-const PRIORITIES = ['P1', 'P2', 'P3', 'P4', 'unresolved'];
+const TIERS = ['R1', 'R2', 'R3', 'R4', 'unresolved'];
 
 const FRAMED_SITE_DEMOS = new Set(['potion-iframe-demo', 'pro-iframe-demo']);
 const EDITORLESS_ROUTES = new Set([
@@ -142,24 +142,24 @@ export async function sessionPages(
     if (betaOnly.has(page)) {
       const status = await stableStatus(page);
       return status === 404
-        ? { page, priority: 'P4' }
+        ? { page, tier: 'R4' }
         : {
             note: `platejs.org answered ${status} for this beta-only page`,
             page,
-            priority: 'unresolved',
+            tier: 'unresolved',
           };
     }
     const twin = twins.get(page) ?? page;
     const status = await stableStatus(twin);
     if (status === 200) {
-      return { page, priority: 'P2', reference: `${STABLE}${twin}` };
+      return { page, tier: 'R2', reference: `${STABLE}${twin}` };
     }
     return {
       note: twins.has(page)
         ? `platejs.org answered ${status} for its twin ${twin}`
         : `platejs.org answered ${status}; name its twin in STABLE_TWINS or list it in BETA_ONLY`,
       page,
-      priority: 'unresolved',
+      tier: 'unresolved',
     };
   };
 
@@ -168,7 +168,7 @@ export async function sessionPages(
       .filter((name) => !hidden.has(name))
       .map((name) => ({
         page: `/examples/plite/${name}`,
-        priority: 'P1',
+        tier: 'R1',
         reference: `https://www.slatejs.org/examples/${name}`,
       })),
     ...(await Promise.all(
@@ -176,10 +176,10 @@ export async function sessionPages(
     )),
     ...registry.EXAMPLE_NAMES_AND_PATHS.filter(
       ([, name]) => !upstream.has(name)
-    ).map(([, name]) => ({ page: `/examples/plite/${name}`, priority: 'P3' })),
+    ).map(([, name]) => ({ page: `/examples/plite/${name}`, tier: 'R3' })),
   ].sort(
     (a, b) =>
-      PRIORITIES.indexOf(a.priority) - PRIORITIES.indexOf(b.priority) ||
+      TIERS.indexOf(a.tier) - TIERS.indexOf(b.tier) ||
       a.page.localeCompare(b.page)
   );
 }
@@ -326,15 +326,14 @@ async function printList({ base, root }) {
   const pages = await sessionPages(root, {
     stableStatus: fetchStableStatus,
   });
-  for (const { note, page, priority, reference } of pages) {
+  for (const { note, page, reference, tier } of pages) {
     console.log(
-      [priority, `${base}${page}`, reference ?? note].filter(Boolean).join('\t')
+      [tier, `${base}${page}`, reference ?? note].filter(Boolean).join('\t')
     );
   }
   console.log(
-    PRIORITIES.map(
-      (priority) =>
-        `${priority} ${pages.filter((each) => each.priority === priority).length}`
+    TIERS.map(
+      (tier) => `${tier} ${pages.filter((each) => each.tier === tier).length}`
     ).join(' · ')
   );
 }

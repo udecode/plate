@@ -31,8 +31,15 @@ import {
   mergeAnchorHistoryRecovery,
   stageAnchorHistoryRecovery,
 } from '../core/anchor-state';
-import { filterDocumentChangeRecordSets } from '../core/change/document-change';
-import { getEditorCommitStartedAt } from '../core/commit';
+import {
+  collapseDocumentElementPropertyWrites,
+  filterDocumentChangeRecordSets,
+} from '../core/change/document-change';
+import {
+  getEditorCommitStartedAt,
+  getEditorCommitUnsettle,
+} from '../core/commit';
+import { DOCUMENT_SETTLED_TAG } from '../core/document-admission';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
@@ -47,6 +54,7 @@ import {
   registerEditorHistoryRuntime,
   registerEditorTransactionGuard,
 } from '../core/public-state';
+import { EditorNoncanonicalChangeError } from '../core/schema-validation';
 import { createEditorEffect } from '../core/transaction-values';
 import { consumeCommitCarets, restoreHistoryCarets } from '../core/view-carets';
 import { type Batch, History, type HistoryJSON } from './history';
@@ -66,6 +74,7 @@ import {
   shouldMergeCompositionBatch,
   shouldMergeExplicitBatch,
 } from './history-merge-policy';
+import { historyReplaySchemaOf } from './history-replay';
 import {
   cloneSelection,
   restoreHistoricSelection,
@@ -78,11 +87,14 @@ import {
   clearHistoryState,
   completeHistoryAction,
   configureHistoryState,
+  dropHistoryHead,
   dropPendingHistoryReplayEntry,
   getHistory,
   getWorkingHistory,
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
+  peekHistoryReplayEntry,
+  takeDroppedHistoryCauses,
   queuePendingHistoryReplayMapping,
   queueHistoryMapping,
   readPendingHistoryReplay,
@@ -201,6 +213,40 @@ const historyAction = defineUpdateAnnotation<HistoryAction>({
   combine: (_previous, next) => next,
   key: 'history.action',
 });
+
+const historyReplayDrop = defineUpdateAnnotation<HistoryAction>({
+  combine: (_previous, next) => next,
+  key: 'history.replay-drop',
+});
+
+const reportFailedHistoryReplay = <V extends Value>(
+  editor: Editor<V>,
+  direction: HistoryAction,
+  cause: unknown
+) => {
+  reportEditorLifecycleError({
+    cause,
+    direction,
+    editor,
+    phase: 'replay',
+    source: 'history',
+  });
+};
+
+const dropFailedHistoryHead = <V extends Value>(
+  editor: Editor<V>,
+  direction: HistoryAction,
+  cause: unknown
+) => {
+  try {
+    editor.update((tx) => {
+      tx.tags.add('history-skip');
+      tx.annotations.set(historyReplayDrop, direction);
+    });
+  } finally {
+    reportFailedHistoryReplay(editor, direction, cause);
+  }
+};
 
 const historyReplayRequest = defineUpdateAnnotation<number>({
   combine: (_previous, next) => next,
@@ -335,9 +381,10 @@ const applyHistoryAction = <V extends Value>(
   tx: HistoryTransaction<V>,
   direction: HistoryAction,
   root: string,
-  request: number
+  request: number,
+  canonical: boolean
 ) => {
-  const entry = peekHistoryEntry(
+  const entry = (canonical ? peekHistoryReplayEntry : peekHistoryEntry)(
     editor,
     direction === 'undo' ? 'undos' : 'redos'
   );
@@ -485,7 +532,9 @@ const prepareHistoryBatch = <V extends Value>(
   const native = readNativeHistoryGrouping(commit);
   const group: HistoryBatchGroup | null = baseGroup
     ? Object.freeze({ ...baseGroup, ...(native ? { native } : {}) })
-    : null;
+    : native?.composition === undefined
+      ? null
+      : Object.freeze({ kind: 'effects', native, root: undefined });
   const resolveSelectionRoot = (
     selection: Selection,
     fallback?: string
@@ -539,6 +588,18 @@ const prepareHistoryBatch = <V extends Value>(
     group,
   });
 };
+
+const redoWithoutSettlement = (
+  editor: Editor,
+  inverse: DocumentChange,
+  unsettle: DocumentChange,
+  undone: EditorDocumentValue
+) =>
+  collapseDocumentElementPropertyWrites(
+    inverse.compose(unsettle, undone),
+    undone,
+    historyReplaySchemaOf(editor).isSetValued
+  );
 
 const shouldSaveCommit = (
   commit: EditorCommit,
@@ -597,6 +658,9 @@ const createHistoryPlugin = <
     const action = commit.annotations[historyAction.key] as
       | HistoryAction
       | undefined;
+    const dropped = commit.annotations[historyReplayDrop.key] as
+      | HistoryAction
+      | undefined;
     const replayRequest = commit.annotations[historyReplayRequest.key] as
       | number
       | undefined;
@@ -651,7 +715,7 @@ const createHistoryPlugin = <
       replaceHistoryState(
         editor,
         decodeHistoryValue(editor, restoredHistoryJSON, {
-          validateDocument: false,
+          validateAgainst: after,
         }),
         after
       );
@@ -675,6 +739,12 @@ const createHistoryPlugin = <
       return undefined;
     }
 
+    if (dropped) {
+      LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      dropHistoryHead(editor, dropped === 'undo' ? 'undos' : 'redos', after);
+      return undefined;
+    }
+
     if (action) {
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
       const source = action === 'undo' ? 'undos' : 'redos';
@@ -686,16 +756,28 @@ const createHistoryPlugin = <
         throw new Error(`Missing history batch for ${action}.`);
       }
 
+      const { unsettle: taken, ...moved } = batch;
+      const redoUnsettle =
+        action === 'redo' ? getEditorCommitUnsettle(commit) : null;
+      const unsettled =
+        action === 'undo' && taken
+          ? { after: taken.apply(before), change: taken }
+          : undefined;
+
       completeHistoryAction(
         editor,
         source,
         destination,
         {
-          ...batch,
-          change: inverse,
+          ...moved,
+          change: unsettled
+            ? redoWithoutSettlement(editor, inverse, unsettled.change, after)
+            : inverse,
           effects: effects.toReversed().map(invertEffect),
+          ...(redoUnsettle ? { unsettle: redoUnsettle } : {}),
         },
-        after
+        after,
+        unsettled
       );
       if (!replayRequest) {
         throw new Error('History replay requires its owning service request.');
@@ -737,7 +819,10 @@ const createHistoryPlugin = <
     if (!prepared) return undefined;
 
     const pendingReplayEdited = markPendingHistoryReplayEdited(editor);
-    const preparedBatch = prepared.batch;
+    const unsettle = getEditorCommitUnsettle(commit);
+    const preparedBatch = unsettle
+      ? { ...prepared.batch, unsettle }
+      : prepared.batch;
     const lastEntry = peekHistoryEntry(editor, 'undos');
     const lastEntryHasSessionEffect = lastEntry?.batch.effects.some(
       (effect) => typeof effect.type.history === 'object'
@@ -747,7 +832,10 @@ const createHistoryPlugin = <
     const previousAutomaticGroupTime =
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.get(editor);
     const explicitMerge = commit.tags.includes('history-merge');
-    const explicitPush = commit.tags.includes('history-push');
+    // A settling commit stands alone, so redo works its settlement out again
+    // from the change that settled and from nothing merged with it.
+    const settles = commit.tags.includes(DOCUMENT_SETTLED_TAG);
+    const explicitPush = commit.tags.includes('history-push') || settles;
     const textInput =
       commit.tags.includes('native-text-input') ||
       commit.tags.includes('dom-text-input');
@@ -771,6 +859,8 @@ const createHistoryPlugin = <
     const merge =
       !pendingReplayEdited &&
       lastEntry != null &&
+      !lastEntry.group?.closed &&
+      !lastEntry.batch.unsettle &&
       !lastEntryHasSessionEffect &&
       sessionEffects.length === 0 &&
       !explicitPush &&
@@ -784,16 +874,10 @@ const createHistoryPlugin = <
             effectsCompatible
           )
         : nativeMerge &&
-          preparedBatch.effects.length === 0 &&
           (compositionMerge
-            ? shouldMergeCompositionBatch(
-                preparedBatch,
-                prepared.group,
-                lastEntry.batch,
-                lastEntry.group,
-                effectsCompatible
-              )
-            : shouldMergeBatch(
+            ? shouldMergeCompositionBatch(prepared.group, lastEntry.group)
+            : preparedBatch.effects.length === 0 &&
+              shouldMergeBatch(
                 preparedBatch,
                 prepared.group,
                 lastEntry.batch,
@@ -872,7 +956,10 @@ const createHistoryPlugin = <
         anchorCeiling: anchorCapture?.anchorCeiling ?? 0,
         carets,
         clearRedos: true,
-        group: prepared.group,
+        group:
+          settles && prepared.group
+            ? Object.freeze({ ...prepared.group, closed: true })
+            : prepared.group,
         recovery: anchorCapture?.recovery ?? null,
       });
     }
@@ -890,20 +977,49 @@ const createHistoryPlugin = <
         const request = nextHistoryReplayRequest;
         nextHistoryReplayRequest += 1;
         let hasEntry = false;
+        let failedAt: 'commit' | 'replay' | null = null;
+        const attempt = (canonical: boolean) => {
+          failedAt = null;
+          editor.update((tx) => {
+            try {
+              hasEntry = applyHistoryAction(
+                editor,
+                tx,
+                direction,
+                getEditorUpdateRoot(editor),
+                request,
+                canonical
+              );
+            } catch (error) {
+              failedAt = 'replay';
+              throw error;
+            }
+            failedAt = 'commit';
+          });
+        };
 
         try {
-          editor.update((tx) => {
-            hasEntry = applyHistoryAction(
-              editor,
-              tx,
-              direction,
-              getEditorUpdateRoot(editor),
-              request
-            );
-          });
+          try {
+            attempt(false);
+          } catch (error) {
+            if (
+              !failedAt ||
+              !(error instanceof EditorNoncanonicalChangeError)
+            ) {
+              throw error;
+            }
+            PREPARED_HISTORY_REPLAYS.delete(request);
+            attempt(true);
+          }
         } catch (error) {
           PREPARED_HISTORY_REPLAYS.delete(request);
-          throw error;
+          if (!failedAt) throw error;
+          if (failedAt === 'replay') {
+            dropFailedHistoryHead(editor, direction, error);
+          } else {
+            reportFailedHistoryReplay(editor, direction, error);
+          }
+          return FAILED_HISTORY_RESULT;
         }
 
         if (!hasEntry) return EMPTY_HISTORY_RESULT;
@@ -1050,7 +1166,7 @@ const createHistoryPlugin = <
           status: 'pending',
         });
       };
-      const replay = (direction: HistoryAction): HistoryResult => {
+      const replayHead = (direction: HistoryAction): HistoryResult => {
         const owner = getEditorRuntimeOwner(editor);
 
         if (isInTransaction(owner) || isBuildingTransactionSpec(owner)) {
@@ -1060,10 +1176,17 @@ const createHistoryPlugin = <
         }
         if (readPendingHistoryReplay(editor)) return BUSY_HISTORY_RESULT;
 
-        const entry = peekHistoryEntry(
-          editor,
-          direction === 'undo' ? 'undos' : 'redos'
-        );
+        let entry: ReturnType<typeof peekHistoryEntry>;
+
+        try {
+          entry = peekHistoryEntry(
+            editor,
+            direction === 'undo' ? 'undos' : 'redos'
+          );
+        } catch (error) {
+          dropFailedHistoryHead(editor, direction, error);
+          return FAILED_HISTORY_RESULT;
+        }
 
         if (!entry) return EMPTY_HISTORY_RESULT;
 
@@ -1074,6 +1197,15 @@ const createHistoryPlugin = <
         return sessionEffect
           ? replaySession(direction, entry, sessionEffect)
           : applyReplay(direction);
+      };
+      const replay = (direction: HistoryAction): HistoryResult => {
+        try {
+          return replayHead(direction);
+        } finally {
+          for (const cause of takeDroppedHistoryCauses(editor)) {
+            reportFailedHistoryReplay(editor, direction, cause);
+          }
+        }
       };
 
       return {
@@ -1112,7 +1244,10 @@ const createHistoryPlugin = <
 
           tx.tags.add('history-skip');
           tx.tags.add('history-restore');
-          tx.annotations.set(historyRestore, encodeHistoryValue(editor, value));
+          tx.annotations.set(
+            historyRestore,
+            encodeHistoryValue(editor, value, { validateAgainst: false })
+          );
         }),
         skip: createHistoryControl(tx, 'skip'),
       } satisfies HistoryTxApi;

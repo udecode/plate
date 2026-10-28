@@ -23,12 +23,22 @@ import {
 } from './change/document-change';
 import { DocumentIndex, type NodeList } from './change/document-index';
 import { jsonEqual } from './change/json';
-import { RootChange, reconcileChildrenStep } from './change/root-change';
+import {
+  type CarriedDrop,
+  formerPlace,
+  type LineageStep,
+} from './change/lineage';
+import {
+  keptRunsOf,
+  RootChange,
+  reconcileChildrenStep,
+} from './change/root-change';
 import type { JsonEditorValue, PreparedTokenSlice } from './change/tokens';
 import {
   admitsEmptyText,
   canonicalizeContentChildren,
   canonicalizeInlineChildren,
+  type ConstructionTake,
   type ContentCompletion,
   type ContentCompletionSchema,
   completeContent,
@@ -40,9 +50,13 @@ import {
   ContentSlice as ContentSliceValue,
   getContentSliceCanonicalAuthority,
 } from './content-slice';
+import { carriesDefault } from './default-storage';
 import { getEditorSchema } from './editor-runtime';
 import { profileCoreDuration } from './profiling';
-import type { CompiledSchemaContentProgram } from './schema-compiler';
+import type {
+  CompiledEditorSchema,
+  CompiledSchemaContentProgram,
+} from './schema-compiler';
 import { EditorSchemaValidationError } from './schema-validation';
 import type { RepresentationRepairSink } from './slice-fit/fit-report';
 import { textPropertiesEqual } from './value-codec';
@@ -70,39 +84,87 @@ type CanonicalizeOptions = Readonly<{
   preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
   report?: RepresentationRepairSink;
   schema?: RepresentationSchema;
+  carried?: CarriedWindowHook;
 }>;
 
 /**
+ * Asked for a value whose new place cannot hold it, in one root's window
+ * pass: `at` is the node's open token in the pass's input, or null for a
+ * node the pass made.
+ *
+ * @internal
+ */
+export type CarriedWindowHook = (
+  at: number | null,
+  node: Readonly<Record<string, unknown>>,
+  key: string
+) => boolean;
+
+/**
+ * Drops a value its new place cannot hold when the node carried it, as the
+ * left-out default, from where it stood when the recording span began, or
+ * any such value in a `view`, and records the drop in `drops`.
+ *
+ * @internal
+ */
+export const carriedHook =
+  (
+    schema: CompiledEditorSchema,
+    {
+      drops,
+      steps,
+      view,
+    }: Readonly<{
+      drops: CarriedDrop[];
+      steps: readonly LineageStep[];
+      view: boolean;
+    }>
+  ) =>
+  (root: string): CarriedWindowHook => {
+    const dropped = new Set<string>();
+
+    return (at, node, key) => {
+      if (at === null) return false;
+
+      const place = formerPlace(steps, root, at);
+
+      if (!view && !carriesDefault(schema, place, node, key)) return false;
+
+      const id = `${at}\u0000${key}`;
+
+      if (!dropped.has(id)) {
+        dropped.add(id);
+        drops.push({ at, key, place, root, value: node[key] });
+      }
+
+      return true;
+    };
+  };
+
+/**
  * `site` is the completed element and its ancestors, nearest first, or empty
- * at a root.
+ * at a root. `take` gives a stored element for a build, which it then skips,
+ * and the slot's construction properties apply over it as over a built one.
  */
 const completionSchemaAt = (
   schema: RepresentationSchema,
   site: readonly Element[],
-  root: string
+  root: string,
+  take?: ConstructionTake
 ): ContentCompletionSchema => ({
-  create: (type, properties) =>
-    schema.createAt(type, properties, { ancestors: site, root }),
+  create: (type, properties, slot) => {
+    const taken = take?.(type, slot);
+
+    if (!taken) {
+      return schema.createAt(type, properties, { ancestors: site, root });
+    }
+
+    return properties ? { ...taken, ...properties } : taken;
+  },
   fitsPrefix: (child, slot) =>
     schema.canContainAt(site[0] ?? null, child, slot, root),
   isInline: schema.isInline,
 });
-
-export const emptyTextDrops = (
-  schema: RepresentationSchema,
-  at: Readonly<{
-    ancestors: readonly Element[];
-    parent: Element | undefined;
-    root: string;
-  }>
-) => {
-  const { parent } = at;
-
-  if (!parent || schema.isVoid(parent)) return undefined;
-
-  return (key: string, value: unknown) =>
-    !schema.emptyTextKeeps(key, value, { ...at, parent });
-};
 
 const inlineContentWithoutProgram = (
   editor: Editor,
@@ -136,6 +198,7 @@ const completeAt = (
     flattenInto?: Element;
     preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
     report?: RepresentationRepairSink;
+    take?: ConstructionTake;
   }>
 ) =>
   completeContent({
@@ -149,7 +212,7 @@ const completeAt = (
         : children,
     content,
     element: site.length > 0,
-    schema: completionSchemaAt(schema, site, root),
+    schema: completionSchemaAt(schema, site, root, options.take),
   });
 
 /**
@@ -169,7 +232,8 @@ export type ListPart = Readonly<{ head: boolean; min: number }>;
  * index of `children`, the node before the canonical pass, so a given child
  * the pass rewrote can still be traced. `site` is the element and its
  * ancestors, nearest first, or empty at a root; `vacated` names the prefix
- * slots whose occupant was displaced.
+ * slots whose occupant was displaced; `take` gives a stored element for a
+ * build of the children themselves, which the caller fits to its new place.
  *
  * @internal
  */
@@ -179,7 +243,8 @@ export const completeChildrenAt = (
   children: readonly Descendant[],
   root: string,
   vacated?: (slot: number, candidate: Descendant) => boolean,
-  part?: ListPart
+  part?: ListPart,
+  take?: ConstructionTake
 ): ContentCompletion & Readonly<{ sources: readonly Descendant[] }> => {
   const completion = completeDirectChildren(
     editor,
@@ -189,7 +254,8 @@ export const completeChildrenAt = (
     {},
     site.slice(1),
     vacated,
-    part
+    part,
+    take
   );
   // As the canonical pass does after completion, so an empty text it builds
   // takes the properties its site declares. The pass maps child for child.
@@ -240,7 +306,8 @@ const completeDirectChildren = (
   options: CanonicalizeOptions,
   ancestors: readonly Element[],
   vacated?: (slot: number, candidate: Descendant) => boolean,
-  part?: ListPart
+  part?: ListPart,
+  take?: ConstructionTake
 ): ContentCompletion => {
   const schema = options.schema ?? resolveRepresentationSchema(editor);
   const element = ElementApi.isElement(parent);
@@ -265,7 +332,7 @@ const completeDirectChildren = (
           return false;
         });
   const runOptions = {
-    dropsFromEmptyText: emptyTextDrops(schema, {
+    dropsFromEmptyText: schema.emptyTextDrops({
       ancestors,
       parent: element ? parent : undefined,
       root,
@@ -284,7 +351,11 @@ const completeDirectChildren = (
       element ? [parent, ...ancestors] : [],
       children,
       root,
-      { ...runOptions, ...(vacated ? { editing: { vacated } } : {}) }
+      {
+        ...runOptions,
+        ...(vacated ? { editing: { vacated } } : {}),
+        ...(take ? { take } : {}),
+      }
     );
   }
 
@@ -642,6 +713,10 @@ export const mapCanonicalRepresentationPoint = (
   const edgeWidth = options.countInlineEdges ? 1 : 0;
   const beforeChildren = beforeDocument.value as readonly Descendant[];
   const afterChildren = afterDocument.value as readonly Descendant[];
+  const node = getDescendant(beforeChildren, point.path);
+  const startsLetteredText =
+    point.offset === 0 && node && TextApi.isText(node) && node.text !== '';
+  const side = startsLetteredText ? 1 : association;
 
   for (let depth = point.path.length - 1; depth > 0; depth--) {
     const ancestorPath = point.path.slice(0, depth);
@@ -682,7 +757,7 @@ export const mapCanonicalRepresentationPoint = (
       afterChildren,
       mappedAncestor.path,
       textOffset,
-      association,
+      side,
       edgeWidth
     );
 
@@ -725,8 +800,62 @@ type ChildWindow = {
 };
 
 type CanonicalRootDraft = {
-  change: RootChange;
+  /** The change from the pass's input to the document before `pending`. */
+  composed: RootChange;
   document: DocumentIndex;
+  /** The window steps since `composed`, in order. */
+  pending: RootChange[];
+};
+
+const addDraftStep = (
+  draft: CanonicalRootDraft,
+  step: Readonly<{ after: DocumentIndex; change: RootChange }>
+) => {
+  draft.pending.push(step.change);
+  draft.document = step.after;
+};
+
+// Composing each window's step onto the whole change so far would cost the
+// change's size per window, so the steps compose pairwise once, when read.
+const draftChange = (draft: CanonicalRootDraft) => {
+  let level = draft.pending;
+
+  while (level.length > 1) {
+    const next: RootChange[] = [];
+
+    for (let index = 0; index < level.length; index += 2) {
+      const right = level[index + 1];
+
+      next.push(right ? level[index].compose(right) : level[index]);
+    }
+    level = next;
+  }
+  if (level[0]) {
+    draft.composed = draft.composed.empty
+      ? level[0]
+      : draft.composed.compose(level[0]);
+  }
+  draft.pending = [];
+
+  return draft.composed;
+};
+
+/** Where a token of the draft's document stood in the pass's input, or null for a token the pass made. */
+const draftInputAt = (draft: CanonicalRootDraft, position: number) => {
+  let at = position;
+
+  for (let index = draft.pending.length - 1; index >= -1; index -= 1) {
+    const change = index < 0 ? draft.composed : draft.pending[index];
+
+    if (change.empty) continue;
+
+    const [kept] = keptRunsOf(change, at, at + 1);
+
+    if (!kept) return null;
+    ({ at } = kept);
+  }
+
+  return at;
 };
 
 declare const CANONICAL_FIT_PREPARATION: unique symbol;
@@ -1007,13 +1136,47 @@ const replaceCanonicalChildWindow = (
 
     if (ancestor && ElementApi.isElement(ancestor)) ancestors.push(ancestor);
   }
-  const dropsFromEmptyText = emptyTextDrops(schema, {
+  const dropsFromEmptyText = schema.emptyTextDrops({
     ancestors: ancestors.slice(1),
     parent: ancestors[0],
     root,
   });
   const baselineAt = (from: number) =>
     beforeDocument ? { document: beforeDocument, from, path } : undefined;
+  const { carried } = options;
+  // Texts below this window's children that drop a carried value, by their
+  // parent's path: only a window over that parent merges them with a text
+  // the drop made equal.
+  const droppedBelow = new Map<
+    string,
+    { path: readonly number[]; window: ChildWindow }
+  >();
+  const carriedFrom = (first: number) =>
+    carried &&
+    ((
+      relative: readonly number[],
+      child: Readonly<Record<string, unknown>>,
+      key: string
+    ) => {
+      const at = [
+        ...path,
+        first + getDefined(relative[0]),
+        ...relative.slice(1),
+      ];
+      const drops = carried(
+        draftInputAt(draft, draft.document.nodeRange(at).from),
+        child,
+        key
+      );
+
+      if (drops && relative.length > 1 && typeof child.text === 'string') {
+        const index = getDefined(at.at(-1));
+
+        addChildWindow(droppedBelow, at.slice(0, -1), index, index + 1);
+      }
+
+      return drops;
+    });
   const propertyNodes = new Map<number, Descendant>();
   const propertyNodeAt = (index: number) => {
     const cached = propertyNodes.get(index);
@@ -1024,7 +1187,8 @@ const replaceCanonicalChildWindow = (
       root,
       ancestors,
       false,
-      baselineAt(index)
+      baselineAt(index),
+      carriedFrom(index)
     )[0];
 
     propertyNodes.set(index, canonical);
@@ -1094,8 +1258,43 @@ const replaceCanonicalChildWindow = (
     root,
     ancestors,
     false,
-    baselineAt(from)
+    baselineAt(from),
+    carriedFrom(from)
   );
+
+  if (droppedBelow.size > 0) {
+    // Those windows change only their parents' children, so this window's
+    // range still holds when it runs again over their result.
+    for (const below of [...droppedBelow.values()].sort((left, right) =>
+      comparePathsDeepestFirst(left.path, right.path)
+    )) {
+      replaceCanonicalChildWindow(
+        draft,
+        editor,
+        schema,
+        root,
+        rootContent,
+        below.path,
+        below.window,
+        beforeDocument,
+        options
+      );
+    }
+    replaceCanonicalChildWindow(
+      draft,
+      editor,
+      schema,
+      root,
+      rootContent,
+      path,
+      window,
+      beforeDocument,
+      options
+    );
+
+    return;
+  }
+
   const preserveInlineSpacersAdjacentTo = carryProtectedInlineNodes(
     selected,
     propertyCanonical,
@@ -1156,10 +1355,7 @@ const replaceCanonicalChildWindow = (
       canonical
     );
 
-    draft.change = draft.change.empty
-      ? step.change
-      : draft.change.compose(step.change);
-    draft.document = step.after;
+    addDraftStep(draft, step);
   }
 
   if (!contentSpec) return;
@@ -1217,10 +1413,7 @@ const replaceCanonicalChildWindow = (
     completed
   );
 
-  draft.change = draft.change.empty
-    ? step.change
-    : draft.change.compose(step.change);
-  draft.document = step.after;
+  addDraftStep(draft, step);
 };
 
 const fitRootChildren = (
@@ -1310,10 +1503,20 @@ export const constructCanonicalDocumentChange = (
     ) => ReadonlySet<Descendant> | undefined;
     schema?: RepresentationSchema;
     displacement?: CanonicalizeOptions['displacement'];
+    carried?: (root: string) => CarriedWindowHook;
   }> = {}
 ): DocumentChange => {
   const schema = options.schema ?? resolveRepresentationSchema(editor);
   const changes = new Map<string, RootChange>();
+  const carriedHooks = new Map<string, CarriedWindowHook>();
+  const carriedFor = (root: string) => {
+    if (!options.carried) return undefined;
+    const hook = carriedHooks.get(root) ?? options.carried(root);
+
+    carriedHooks.set(root, hook);
+
+    return hook;
+  };
   const fitPreparation = options.fitPreparation
     ? CANONICAL_FIT_PREPARATIONS.get(options.fitPreparation)
     : undefined;
@@ -1370,8 +1573,9 @@ export const constructCanonicalDocumentChange = (
     const document =
       options.indexedAfter?.get(root) ?? valueRootIndex(after, root);
     const draft: CanonicalRootDraft = {
-      change: RootChange.empty(document.length),
+      composed: RootChange.empty(document.length),
       document,
+      pending: [],
     };
     const rootChange = getInternalDocumentRootChange(change, root);
     const beforeDocument = options.before
@@ -1380,7 +1584,7 @@ export const constructCanonicalDocumentChange = (
       : null;
     const move =
       beforeDocument && rootChange
-        ? rootChange.movedNode(beforeDocument)
+        ? rootChange.exactMove(beforeDocument)
         : null;
     const movedNode = move ? document.node(move.targetPath) : undefined;
     const moveParent = move?.path.slice(0, -1);
@@ -1441,11 +1645,12 @@ export const constructCanonicalDocumentChange = (
           canonical
         );
 
-        draft.change = step.change;
-        draft.document = step.after;
+        addDraftStep(draft, step);
       }
 
-      if (!draft.change.empty) changes.set(root, draft.change);
+      const fitted = draftChange(draft);
+
+      if (!fitted.empty) changes.set(root, fitted);
       continue;
     }
 
@@ -1533,6 +1738,7 @@ export const constructCanonicalDocumentChange = (
           window,
           beforeDocument,
           {
+            carried: carriedFor(root),
             displacement: options.displacement,
             document: after as EditorDocumentValue,
             preserveInlineSpacersAdjacentTo: protectedInlineSpacersFor(root),
@@ -1541,7 +1747,9 @@ export const constructCanonicalDocumentChange = (
       }
     });
 
-    if (!draft.change.empty) changes.set(root, draft.change);
+    const canonical = draftChange(draft);
+
+    if (!canonical.empty) changes.set(root, canonical);
   }
 
   return createInternalDocumentChange(changes);

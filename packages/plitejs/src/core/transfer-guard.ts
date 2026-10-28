@@ -4,6 +4,7 @@ import { NodeApi, type Descendant } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
+import type { DraftStep } from './change/builder';
 import type { DocumentIndex } from './change/document-index';
 import {
   type DraftGuardFrame,
@@ -38,14 +39,59 @@ export const nodeAt = (children: readonly Descendant[], path: Path) =>
     : (childrenAt(children, path.slice(0, -1))?.[path.at(-1) as number] ??
       null);
 
+/** The keys the canonical pass dropped from a node a move carried them on. */
+export type DroppedKeys = (source: object) => ReadonlySet<string>;
+
+const NO_KEYS: ReadonlySet<string> = new Set();
+
+export const noDroppedKeys: DroppedKeys = () => NO_KEYS;
+
+/** The drops `steps` recorded, by the node each value was carried from. */
+export const droppedKeysOf = (steps: readonly DraftStep[]): DroppedKeys => {
+  const keys = new Map<object, Set<string>>();
+
+  for (const step of steps) {
+    for (const { key, place } of step.drops ?? []) {
+      const entry = place?.document.nodeStartingAt(place.at);
+
+      if (!place || entry?.from !== place.at) continue;
+      const node = place.document.node(entry.path);
+      const found = keys.get(node) ?? new Set<string>();
+
+      found.add(key);
+      keys.set(node, found);
+    }
+  }
+
+  return keys.size === 0
+    ? noDroppedKeys
+    : (source) => keys.get(source) ?? NO_KEYS;
+};
+
+const withoutDropped = <T extends object>(
+  expected: T,
+  landed: object,
+  dropped: ReadonlySet<string>
+): T =>
+  dropped.size === 0
+    ? expected
+    : (Object.fromEntries(
+        Object.entries(expected).filter(
+          ([key]) => !dropped.has(key) || Object.hasOwn(landed, key)
+        )
+      ) as T);
+
 export const sameContent = (
   a: Descendant,
   aRoots: JsonValue['roots'],
   b: Descendant,
-  bRoots: JsonValue['roots']
+  bRoots: JsonValue['roots'],
+  dropped: DroppedKeys = noDroppedKeys
 ): boolean => {
   if (NodeApi.isText(a) || NodeApi.isText(b)) {
-    return JSON.stringify(a) === JSON.stringify(b);
+    return (
+      JSON.stringify(withoutDropped(a, b, dropped(a))) === JSON.stringify(b)
+    );
   }
 
   const {
@@ -59,7 +105,9 @@ export const sameContent = (
     ...bProps
   } = b as Element & { childRoots?: Record<string, string> };
 
-  if (stable(aProps) !== stable(bProps)) return false;
+  if (stable(withoutDropped(aProps, bProps, dropped(a))) !== stable(bProps)) {
+    return false;
+  }
   if (aChildren.length !== bChildren.length) return false;
 
   const aRootNames = Object.keys(aChildRoots ?? {}).sort();
@@ -73,14 +121,16 @@ export const sameContent = (
 
     if (
       aRoot.length !== bRoot.length ||
-      aRoot.some((node, i) => !sameContent(node, aRoots, bRoot[i], bRoots))
+      aRoot.some(
+        (node, i) => !sameContent(node, aRoots, bRoot[i], bRoots, dropped)
+      )
     ) {
       return false;
     }
   }
 
   return aChildren.every((child, i) =>
-    sameContent(child, aRoots, bChildren[i], bRoots)
+    sameContent(child, aRoots, bChildren[i], bRoots, dropped)
   );
 };
 
@@ -138,8 +188,11 @@ type FollowsDrop = (
 ) => (key: string) => boolean;
 
 type PayloadItem =
-  | string
-  | Readonly<{ ancestors: readonly Element[]; element: Element }>;
+  | '</>'
+  | Readonly<{ ancestors: readonly Element[]; element: Element }>
+  | Readonly<{ text: Descendant }>;
+
+export type SourceByPayloadNode = ReadonlyMap<object, object>;
 
 export type MovedPayload = Readonly<{
   carried: number;
@@ -148,6 +201,7 @@ export type MovedPayload = Readonly<{
   items: readonly PayloadItem[];
   kind: LandedKind;
   replaced: Element | null;
+  sources: SourceByPayloadNode;
 }>;
 
 const headChain = (nodes: readonly Descendant[], kind: LandedKind) => {
@@ -189,7 +243,7 @@ const payloadItems = (
   ) => {
     for (const node of list) {
       if (NodeApi.isText(node)) {
-        if (node.text !== '') items.push(stable(node));
+        if (node.text !== '') items.push({ text: node });
         continue;
       }
 
@@ -219,12 +273,14 @@ export const carryMove = ({
   kind,
   moved,
   replaced,
+  sources = new Map(),
   written,
 }: Readonly<{
   followsDrop: FollowsDrop;
   kind: LandedKind;
   moved: ContentSlice;
   replaced: Element | null;
+  sources?: SourceByPayloadNode;
   written: ContentSlice;
 }>): MovedPayload | null => {
   const movedChain = headChain(moved.content, kind);
@@ -243,12 +299,14 @@ export const carryMove = ({
     items: payloadItems(moved.content, new Set(movedChain.slice(0, uncarried))),
     kind,
     replaced,
+    sources,
   };
 };
 
 export const landsMoved = (
   landed: readonly Descendant[],
-  { carried, followsDrop, head, items, kind, replaced }: MovedPayload
+  { carried, followsDrop, head, items, kind, replaced, sources }: MovedPayload,
+  dropped: DroppedKeys = noDroppedKeys
 ) => {
   const landedChain = headChain(landed, kind);
   const atDrop = landedChain.length - carried;
@@ -257,6 +315,11 @@ export const landsMoved = (
 
   const landedHead = landedChain[atDrop] ?? null;
   const found = payloadItems(landed, new Set(landedChain.slice(0, atDrop)));
+  const droppedFrom = (node: object) => {
+    const source = sources.get(node);
+
+    return source ? dropped(source) : NO_KEYS;
+  };
 
   return (
     found.length === items.length &&
@@ -265,6 +328,15 @@ export const landsMoved = (
 
       if (typeof item === 'string' || typeof expected === 'string') {
         return item === expected;
+      }
+      if ('text' in item || 'text' in expected) {
+        if (!('text' in item) || !('text' in expected)) return false;
+
+        return (
+          stable(
+            withoutDropped(expected.text, item.text, droppedFrom(expected.text))
+          ) === stable(item.text)
+        );
       }
 
       const skip = followsDrop(item.element, item.ancestors);
@@ -275,9 +347,16 @@ export const landsMoved = (
         !(key in head) &&
         stable(item.element[key]) === stable(replaced[key]);
 
+      const dropsHere = droppedFrom(expected.element);
+
       return (
         shellOf(item.element, (key) => skip(key) || fromReplacedBlock(key)) ===
-        shellOf(expected.element, skip)
+        shellOf(
+          expected.element,
+          (key) =>
+            skip(key) ||
+            (dropsHere.has(key) && !Object.hasOwn(item.element, key))
+        )
       );
     })
   );
@@ -345,5 +424,6 @@ export const guardLanding = (
         message: 'Some dragged content does not fit here.',
       });
     },
-    'plain'
+    'plain',
+    'transaction'
   );

@@ -230,36 +230,76 @@ export const getEditableChild = (
   return child;
 };
 
-/**
- * Get a plaintext representation of the content of a node, accounting for block
- * elements which get a newline appended.
- *
- * The domNode must be attached to the DOM.
- */
-
-export const getPlainText = (domNode: DOMNode) => {
-  let text = '';
-
-  if (isDOMText(domNode) && domNode.nodeValue) {
-    return domNode.nodeValue;
+const isBlockDOMElement = (element: DOMElement) => {
+  if (element.getAttribute('data-editor-node') === 'element') {
+    return !element.hasAttribute('data-editor-inline');
   }
 
-  if (isDOMElement(domNode)) {
-    for (const childNode of Array.from(domNode.childNodes)) {
-      text += getPlainText(childNode);
+  const display =
+    getDefaultView(element)
+      ?.getComputedStyle(element)
+      .getPropertyValue('display') ?? '';
+
+  return (
+    display !== '' &&
+    display !== 'none' &&
+    display !== 'contents' &&
+    !display.startsWith('inline')
+  );
+};
+
+export const getPlainText = (domNode: DOMNode, skip?: ReadonlySet<DOMNode>) => {
+  const lines: string[] = [];
+  let line: string | undefined;
+
+  const endLine = () => {
+    if (line === undefined) return;
+
+    lines.push(line);
+    line = undefined;
+  };
+  const visit = (node: DOMNode) => {
+    if (skip?.has(node)) return;
+    if (isDOMText(node)) {
+      line = (line ?? '') + (node.nodeValue ?? '');
+      return;
+    }
+    if (
+      !isDOMElement(node) ||
+      node.hasAttribute('data-editor-zero-width') ||
+      node.hasAttribute('data-editor-spacer')
+    ) {
+      return;
+    }
+    if (node.tagName === 'BR') {
+      line = `${line ?? ''}\n`;
+      return;
     }
 
-    const display =
-      getDefaultView(domNode)
-        ?.getComputedStyle(domNode)
-        .getPropertyValue('display') ?? '';
+    const block = isBlockDOMElement(node);
 
-    if (display === 'block' || display === 'list' || domNode.tagName === 'BR') {
-      text += '\n';
+    if (block) endLine();
+
+    const lineCount = lines.length;
+
+    if (node.getAttribute('data-editor-node') === 'text') line ??= '';
+
+    node.childNodes.forEach(visit);
+
+    if (block) endLine();
+    if (
+      block &&
+      node.hasAttribute('data-editor-void') &&
+      lines.length === lineCount
+    ) {
+      lines.push('');
     }
-  }
+  };
 
-  return text;
+  visit(domNode);
+  endLine();
+
+  return lines.join('\n');
 };
 
 const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-editor-fragment';

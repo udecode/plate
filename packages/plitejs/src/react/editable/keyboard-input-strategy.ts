@@ -41,8 +41,13 @@ import {
   getTextDirection,
 } from './caret-engine';
 import {
+  type EditableCompositionLeaseBinding,
+  endCompositionWithoutCommit,
+} from './composition-state';
+import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
+  isContentRootKeyAnswered,
   readContentRootAwareSelection,
 } from './content-root-navigation';
 import { shouldModelOwnPlainVerticalLargeDocumentPlugin } from './dom-coverage-vertical-selection';
@@ -62,6 +67,8 @@ import {
   type EditableInputController,
   type EditableRepairRequest,
   isInteractiveInternalTarget,
+  isNamedInputMethodKey,
+  isNativeTextControlTarget,
   isNestedEditableDOMTarget,
   setEditableModelSelectionPreference,
 } from './input-controller';
@@ -95,6 +102,11 @@ const keyDownHandled = (
   repair,
 });
 const keyDownUnhandled = (): EditableKeyDownResult => ({ handled: false });
+
+const isImeKeyDown = (nativeEvent: KeyboardEvent) =>
+  nativeEvent.isComposing ||
+  // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] WebKit sends the keydown that ends a composition, such as a Backspace that empties it, after compositionend, so only keyCode 229 marks it as consumed by the IME.
+  nativeEvent.keyCode === 229;
 
 const getSelectionFocusEditor = ({
   editor,
@@ -435,6 +447,7 @@ export const applyEditableKeyDown = ({
   event,
   forceRender,
   inputController,
+  lease,
   viewportRuntime,
   onKeyDown,
   preferredVerticalX,
@@ -453,6 +466,7 @@ export const applyEditableKeyDown = ({
   event: ReactKeyboardEvent<HTMLDivElement>;
   forceRender: () => void;
   inputController: EditableInputController;
+  lease?: EditableCompositionLeaseBinding;
   viewportRuntime: unknown;
   onKeyDown?: EditableKeyDownHandler;
   preferredVerticalX?: number;
@@ -490,6 +504,12 @@ export const applyEditableKeyDown = ({
 
   if (isInteractiveInternalTarget(editor, event.target)) {
     const { nativeEvent } = event;
+
+    if (isImeKeyDown(nativeEvent)) {
+      event.stopPropagation();
+      return keyDownHandled();
+    }
+
     const nestedEditableTarget =
       !!editorElement && isNestedEditableDOMTarget(editorElement, event.target);
     const nestedSelectionContext = nestedEditableTarget
@@ -517,6 +537,8 @@ export const applyEditableKeyDown = ({
       nestedEditableTarget || selectionRoot !== viewRoot;
 
     if (shouldHandleProjectedSelection) {
+      if (isContentRootKeyAnswered(event)) return keyDownHandled();
+
       const focusEditor = nestedSelectionContext?.editor ?? editor;
       const focusSelection = nestedSelectionContext?.rawSelection ?? selection;
       const focusRange = getRangeSelection(focusSelection);
@@ -539,6 +561,7 @@ export const applyEditableKeyDown = ({
       });
 
       if (contentRootViewSelectionResult.handled) {
+        if (contentRootViewSelectionResult.overtaken) return keyDownHandled();
         return keyDownHandled({
           focus: true,
           forceRender: true,
@@ -597,14 +620,16 @@ export const applyEditableKeyDown = ({
       );
     }
 
-    if (!readOnly && Hotkeys.isRedo(nativeEvent)) {
+    const ownsHistory = !readOnly && !isNativeTextControlTarget(event.target);
+
+    if (ownsHistory && Hotkeys.isRedo(nativeEvent)) {
       if (!replay('redo')) return keyDownUnhandled();
       event.preventDefault();
       event.stopPropagation();
       return keyDownHandled();
     }
 
-    if (!readOnly && Hotkeys.isUndo(nativeEvent)) {
+    if (ownsHistory && Hotkeys.isUndo(nativeEvent)) {
       if (!replay('undo')) return keyDownUnhandled();
       event.preventDefault();
       event.stopPropagation();
@@ -644,6 +669,7 @@ export const applyEditableKeyDown = ({
       selection,
     });
     if (result.handled) {
+      if (result.overtaken) return keyDownHandled();
       return keyDownHandled({
         focus: true,
         kind: 'sync-selection',
@@ -675,6 +701,7 @@ export const applyEditableKeyDown = ({
           setComposing,
         });
       } else {
+        endCompositionWithoutCommit(inputController, lease);
         setComposing(false);
       }
     }
@@ -690,6 +717,13 @@ export const applyEditableKeyDown = ({
     });
     if (userKeyDownResult.handled) {
       return userKeyDownResult;
+    }
+    if (isNamedInputMethodKey(nativeEvent)) {
+      return keyDownUnhandled();
+    }
+
+    if (isImeKeyDown(nativeEvent)) {
+      return keyDownUnhandled();
     }
 
     const projectedSelection = readPliteViewSelection(editor);
@@ -968,6 +1002,7 @@ export const applyEditableKeyDown = ({
     });
 
     if (contentRootViewSelectionResult.handled) {
+      if (contentRootViewSelectionResult.overtaken) return keyDownHandled();
       return keyDownHandled({
         focus: true,
         kind: 'sync-selection',

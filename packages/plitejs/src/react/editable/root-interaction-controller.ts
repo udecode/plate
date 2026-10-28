@@ -101,6 +101,21 @@ type PliteFocusableEditor = Parameters<typeof focusPliteEditable>[0];
 const NATIVE_EDITABLE_TEXT_TARGET =
   '[data-editor-string], [data-editor-zero-width], [data-editor-leaf], [data-editor-node="text"]';
 
+// Chromium shows its touch handles only beside a caret the tap placed itself,
+// and marks the mouse events it synthesizes from that tap.
+const isTapOnTextBlock = (event: MouseEvent<HTMLElement>, target: Element) =>
+  (
+    event.nativeEvent as globalThis.MouseEvent & {
+      sourceCapabilities?: { firesTouchEvents: boolean } | null;
+    }
+  ).sourceCapabilities?.firesTouchEvents === true &&
+  target instanceof HTMLElement &&
+  target.isContentEditable &&
+  !target.matches('[data-editor-void="true"]') &&
+  target
+    .querySelector('[data-editor-node="text"]')
+    ?.closest('[data-editor-node="element"]') === target;
+
 export type RootInteractionEditor = ReactRuntimeEditor &
   PliteFocusableEditor & {
     api: ReactRuntimeEditor['api'] &
@@ -379,6 +394,30 @@ const findOwnerContainingPoint = (
       ) ?? null)
     : null;
 
+// A content root owner renders no model text, so the native hit test on its
+// chrome returns an engine-dependent point, which can sit in another block.
+const findOwnerAtChromeTarget = (
+  owners: readonly ContentRootOwner[],
+  root: RootKey,
+  target: EventTarget | null
+) => {
+  if (root !== MAIN_ROOT_KEY || getEditableRootFromTarget(target) !== root) {
+    return null;
+  }
+
+  const element = mouseEventTargetToElement(target)?.closest(
+    '[data-editor-node="element"][data-editor-path]'
+  );
+  const path = element ? getPliteNodePathFromDOMElement(element) : null;
+
+  return path
+    ? (owners.find(
+        (owner) =>
+          owner.ownerRoot === root && PathApi.equals(owner.ownerPath, path)
+      ) ?? null)
+    : null;
+};
+
 const resolveContentRootOwnerChromeEdge = ({
   event,
   owner,
@@ -418,7 +457,9 @@ const resolveContentRootOwnerChromeEndpoint = ({
   point: Point;
   root: RootKey;
 }): RootInteractionDragEndpoint | null => {
-  const owner = findOwnerContainingPoint(owners, root, point);
+  const owner =
+    findOwnerAtChromeTarget(owners, root, event.target) ??
+    findOwnerContainingPoint(owners, root, point);
 
   if (!owner) {
     return null;
@@ -594,9 +635,12 @@ const applyProjectedDragSelection = ({
           point: focus.point,
         },
       }
-    )
+    ),
+    {
+      place: () =>
+        collapseModelSelectionToProjectedDragAnchor({ anchor, editor }),
+    }
   );
-  collapseModelSelectionToProjectedDragAnchor({ anchor, editor });
 
   return true;
 };
@@ -1028,11 +1072,16 @@ const applyModelDragSelection = ({
             focus: { point: rootedRange.focus },
           }
         )
-      : null
+      : null,
+    {
+      place: () =>
+        editor.update({ tags: 'skip-scroll-into-view' }, () => {
+          dispatchCommand(editor, editorCommands.select, {
+            target: rootedRange,
+          });
+        }),
+    }
   );
-  editor.update({ tags: 'skip-scroll-into-view' }, () => {
-    dispatchCommand(editor, editorCommands.select, { target: rootedRange });
-  });
   selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true });
 };
 
@@ -1288,6 +1337,7 @@ export const useRootInteractionController = ({
       activateViewCaret(getMountedViewEditor(root) ?? editor, {
         fallback: fallbackSelection === 'end' ? 'end' : undefined,
         focus: true,
+        press: true,
         receipt,
         target: selectionPreference === 'end' ? 'end' : undefined,
       });
@@ -1356,14 +1406,20 @@ export const useRootInteractionController = ({
                   focus: { point: range.focus },
                 }
               )
-            : null
+            : null,
+          {
+            place: () => {
+              writeCollapsedModelSelectionDOMPreference(
+                focusEditor,
+                range,
+                options.placementDOMPoint ?? null
+              );
+              dispatchCommand(focusEditor, editorCommands.select, {
+                target: range,
+              });
+            },
+          }
         );
-        writeCollapsedModelSelectionDOMPreference(
-          focusEditor,
-          range,
-          options.placementDOMPoint ?? null
-        );
-        dispatchCommand(focusEditor, editorCommands.select, { target: range });
         focusPliteEditableAfterEventFrame(focusEditor, {
           receipt: getPlacementGeneration(focusEditor),
         });
@@ -1415,14 +1471,16 @@ export const useRootInteractionController = ({
             : undefined,
           target,
         });
-        const nativeEditableTextTarget =
+        const nativeEditableTextHit =
           target.kind === 'native-editable' &&
-          Boolean(
-            target.target.closest(NATIVE_EDITABLE_TEXT_TARGET) ??
+          (isTapOnTextBlock(event, target.target) ||
+            target.target.closest(NATIVE_EDITABLE_TEXT_TARGET) !== null);
+        const nativeEditableTextTarget =
+          nativeEditableTextHit ||
+          (target.kind === 'native-editable' &&
             target.target.closest(
               '[data-editor-inline="true"][data-editor-node="element"]'
-            )
-          );
+            ) !== null);
         const nativeEditableMultiClick =
           nativeEditableTextTarget && event.detail > 1;
         const nativeEditableSelectedTextTarget =
@@ -1482,8 +1540,7 @@ export const useRootInteractionController = ({
         const placeRootChromeFromCoordinates =
           rootChromeCoordinatePlacement !== null;
         const nativeEditableChromeTarget =
-          target.kind === 'native-editable' &&
-          !target.target.closest(NATIVE_EDITABLE_TEXT_TARGET);
+          target.kind === 'native-editable' && !nativeEditableTextHit;
         const focusedNativeEditableCoordinateTarget =
           !nativeEditableMultiClick &&
           !nativeEditableModifiedClick &&

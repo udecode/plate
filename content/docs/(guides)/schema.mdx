@@ -57,6 +57,7 @@ Structural children use the same content grammar. Set `blockContent: false` on i
 | `schema.content.type(type, ...)` | A persisted type selected at a dynamic boundary |
 | `schema.content.types(types, ...)` | Any listed persisted type |
 | `schema.content.group(group, ...)` | Members of a compiled group |
+| `schema.content.open(...)` | Text and every installed element type, plus undeclared types when the schema's `unknown` policy is `'preserve'` |
 | `schema.content.any(rules, ...)` | At least one nested rule |
 | `schema.content.all(rules, ...)` | Every nested rule |
 | `schema.content.not(rule, ...)` | Content outside the nested rule |
@@ -96,7 +97,7 @@ The descriptor gives `properties` its inferred keys and values. A raw persisted 
 
 ## Properties
 
-Property descriptors define JSON value laws: `property.boolean`, `string`, `number`, `enum`, `json`, and `set`. Use a validator for a custom JSON value. Defaults and structural equality are part of the descriptor's contract; `{ default, omitDefault: true }` can omit the default value from stored nodes.
+Property descriptors define JSON value laws: `property.boolean`, `string`, `number`, `enum`, `json`, and `set`. Use a validator for a custom JSON value. Defaults and structural equality are part of the descriptor's contract. `{ default, omitDefault: true }` leaves the default out of a node until a transaction writes the property. Plate stores a written value even when it equals the default.
 
 A validator pairs with a positive-integer `validationVersion`; increment it whenever the validator's accepted value set changes, because the descriptor and `validationVersion` enter schema identity and the validator function's identity does not.
 

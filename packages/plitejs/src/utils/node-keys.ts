@@ -33,6 +33,27 @@ const allocateNodeKey = (editor: Editor): NodeKey => {
   return `${getLiveNodeKeyPrefix(editor)}${next}` as NodeKey;
 };
 
+export const getNodeKeyMark = (editor: Editor) =>
+  NEXT_NODE_KEY.get(editor) ?? 0;
+
+const liveNodeKeyOrdinal = (editor: Editor, nodeKey: NodeKey) => {
+  const prefix = getLiveNodeKeyPrefix(editor);
+
+  return nodeKey.startsWith(prefix)
+    ? Number.parseInt(nodeKey.slice(prefix.length), 10)
+    : null;
+};
+
+export const wasNodeKeyMintedSince = (
+  editor: Editor,
+  nodeKey: NodeKey,
+  mark: number
+) => {
+  const ordinal = liveNodeKeyOrdinal(editor, nodeKey);
+
+  return ordinal !== null && ordinal >= mark;
+};
+
 /**
  * Return the deterministic editor-local token rendered during SSR.
  *
@@ -123,14 +144,11 @@ export const preparedNodeKeyOffset = (
 };
 
 const advanceNextNodeKey = (editor: Editor, nodeKey: NodeKey) => {
-  const prefix = getLiveNodeKeyPrefix(editor);
-
-  if (!nodeKey.startsWith(prefix)) return;
-  const numericPart = Number.parseInt(nodeKey.slice(prefix.length), 10);
+  const ordinal = liveNodeKeyOrdinal(editor, nodeKey);
   const next = NEXT_NODE_KEY.get(editor) ?? 0;
 
-  if (Number.isFinite(numericPart) && numericPart >= next) {
-    NEXT_NODE_KEY.set(editor, numericPart + 1);
+  if (ordinal !== null && ordinal >= next) {
+    NEXT_NODE_KEY.set(editor, ordinal + 1);
   }
 };
 
@@ -244,36 +262,73 @@ export const seedNodeKeys = (
   }
 };
 
-/** Attach non-live prepared identities to one detached forest. */
-export const seedPreparedNodeKeys = (
-  children: readonly Descendant[],
-  editor: Editor
+const DEFERRED_NODE_KEYS = new WeakMap<
+  Editor,
+  Map<object, Map<string, { settle: () => unknown; steps: number }>>
+>();
+
+export const MAX_DEFERRED_NODE_KEY_STEPS = 32;
+
+export const deferNodeKeys = (
+  editor: Editor,
+  draft: object,
+  root: string,
+  settle: () => unknown
 ) => {
-  let count = 0;
-  const visit = (nodes: readonly Descendant[]) => {
-    for (const node of nodes) {
-      count += 1;
-      if ('children' in node && Array.isArray(node.children)) {
-        visit(node.children);
-      }
-    }
-  };
+  let drafts = DEFERRED_NODE_KEYS.get(editor);
 
-  visit(children);
-  const range = reservePreparedNodeKeyRange(count);
-  let offset = 0;
-  const assign = (nodes: readonly Descendant[]) => {
-    for (const node of nodes) {
-      const nodeKey = preparedNodeKeyAt(range, offset);
+  if (!drafts) {
+    drafts = new Map();
+    DEFERRED_NODE_KEYS.set(editor, drafts);
+  }
 
-      offset += 1;
-      if (!nodeKey) throw new Error('Missing prepared node key.');
-      setNodeKey(node, editor, nodeKey);
-      if ('children' in node && Array.isArray(node.children)) {
-        assign(node.children);
-      }
-    }
-  };
+  let roots = drafts.get(draft);
 
-  assign(children);
+  if (!roots) {
+    roots = new Map();
+    drafts.set(draft, roots);
+  }
+
+  const steps = (roots.get(root)?.steps ?? 0) + 1;
+
+  if (steps < MAX_DEFERRED_NODE_KEY_STEPS) {
+    roots.set(root, { settle, steps });
+    return;
+  }
+  roots.delete(root);
+  settle();
+};
+
+export const dropDeferredNodeKeys = (editor: Editor, draft: object) => {
+  DEFERRED_NODE_KEYS.get(editor)?.delete(draft);
+};
+
+export const settleDeferredNodeKeys = (editor: Editor) => {
+  const drafts = DEFERRED_NODE_KEYS.get(editor);
+  const pending = [...(drafts?.values() ?? [])].flatMap((roots) => [
+    ...roots.values(),
+  ]);
+
+  drafts?.clear();
+  for (const { settle } of pending) settle();
+
+  return pending.length;
+};
+
+export const mintNodeKeys = (
+  nodes: readonly object[],
+  editor: Editor,
+  kind: 'live' | 'prepared'
+) => {
+  const range =
+    kind === 'prepared' ? reservePreparedNodeKeyRange(nodes.length) : null;
+
+  nodes.forEach((node, offset) => {
+    const nodeKey = range
+      ? preparedNodeKeyAt(range, offset)
+      : allocateNodeKey(editor);
+
+    if (!nodeKey) throw new Error('Missing prepared node key.');
+    setNodeKey(node, editor, nodeKey);
+  });
 };

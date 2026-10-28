@@ -2427,7 +2427,25 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
           'Editor schema reconfiguration requires an explicit migration when the current document is not canonical under the candidate schema.'
         );
       }
-      documentChange = fitted.change;
+
+      // A new schema can make the document's pending changes need what a
+      // load repairs, such as spare blocks, even when its bytes still fit.
+      const repair = repairLoadedDocument(
+        onlyDocumentAdmission(
+          getRegistryContributions(mergedCandidate, documentAdmissionPoint)
+        ),
+        fitted.document,
+        mergedCandidate.schemaContributions.compiled
+      );
+
+      documentChange = repair
+        ? classifyCandidatePublicationDocument(
+            editor,
+            schema,
+            currentDocument,
+            repair.value
+          ).change
+        : fitted.change;
     }
   }
 

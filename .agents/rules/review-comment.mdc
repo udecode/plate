@@ -15,7 +15,7 @@ It covers a PR in `ianstormtaylor/slate` or a `udecode/plate` PR whose `baseRefN
 
 1. **Read the PR.** Run `gh pr view <n> --repo <repo> --json title,author,body,baseRefName,headRefOid,files,comments,reviews,closingIssuesReferences`, save `gh pr diff` to the run directory, run `gh pr checks`, and read each linked issue with `gh issue view`. Read every changed source file in full. The body's claims, its stated limits included, are claims to test. Done when you can name in one line the job the PR changes, such as "replace the document from outside the editor", and you hold the head SHA.
 
-2. **Gather the Plate v2 evidence.** Search with `git grep --untracked`, as `AGENTS.md`'s Source authority says. For each lane, record what v2 decided, what it rejected and why, with the path:
+2. **Gather the Plate v2 evidence.** Search with `rg --hidden`, as `AGENTS.md`'s Source authority says. For each lane, record what v2 decided, what it rejected and why, with the path:
    - Mentions: the PR and each linked issue, written as `<repo>#<n>` or `<owner>/<repo>/(issues|pull)/<n>`, anywhere in the repository; the bare number in `docs/editor-issue-harvester/slate/` for a Slate issue; and `pnpm kb slate#<n>` or `pnpm kb plate#<n>` for the tests tagged with the issue.
    - Doctrine: `VISION.md`, then `docs/vision/plite.md` for a Slate PR or `docs/vision/plate.md` for a Plate PR.
    - Decisions and subjects: the job's words in `docs/plans/topics/` and `docs/editor-behavior/markdown-editing-spec.md`. Read each match's verdict paragraph and its alternatives table.

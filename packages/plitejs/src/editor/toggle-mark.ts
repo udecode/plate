@@ -1,3 +1,4 @@
+import { jsonEqual } from '../core/change/json';
 import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
@@ -22,6 +23,7 @@ export const applyToggleMark = (
   value?: unknown
 ) => {
   const nextValue = value === undefined ? true : value;
+  const isActive = (stored: unknown) => jsonEqual(stored, nextValue);
 
   runEditorTransaction(editor, (tx) => {
     const selection = tx.resolveTarget();
@@ -48,19 +50,10 @@ export const applyToggleMark = (
           (!schema.isVoid(parentNode) || schema.isMarkableVoid(parentNode))
         );
       });
-      const isActive =
+      if (
         entries.length > 0 &&
-        entries.every(([node, path]) =>
-          schema.isTextPropertyEqualAt(
-            key,
-            node[key as keyof typeof node],
-            nextValue,
-            path,
-            root
-          )
-        );
-
-      if (isActive) {
+        entries.every(([node]) => isActive(node[key as keyof typeof node]))
+      ) {
         applyRemoveMark(editor, key);
         return;
       }
@@ -90,18 +83,8 @@ export const applyToggleMark = (
     if (!RangeApi.isRange(selection)) return;
 
     const marks = tx.marks ?? tx.getSelectionMarks();
-    const currentValue = marks?.[key];
-    const isActive =
-      currentValue !== undefined &&
-      getEditorSchema(editor).isTextPropertyEqualAt(
-        key,
-        currentValue,
-        nextValue,
-        selection.focus.path,
-        selection.focus.root ?? selection.anchor.root ?? 'main'
-      );
 
-    if (isActive) {
+    if (isActive(marks?.[key])) {
       applyRemoveMark(editor, key);
     } else {
       const canonical = getEditorSchema(editor).canonicalizeTextPropertiesAt(

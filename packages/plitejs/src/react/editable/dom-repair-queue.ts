@@ -52,6 +52,7 @@ import {
 } from './selection-controller';
 import { shouldSkipSelectionScroll } from './selection-side-effect-policy';
 import { withTypedTextIntent } from './typed-text';
+import { claimPageSelection } from './unread-press';
 
 export type DOMInputRepair = {
   data: string | null;
@@ -1019,6 +1020,11 @@ export const createDOMRepairQueue = ({
       let repairCompleted = false;
       const attemptRepair = () => {
         if (repairCompleted) {
+          return true;
+        }
+        if (!claimPageSelection()) {
+          repairCompleted = true;
+
           return true;
         }
 

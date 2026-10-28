@@ -285,6 +285,15 @@ Use this for root-specific toolbar or sidebar commands. Pass `{ readOnly:
 true }` when the editor should only read state.
 Omit `root` for the primary document.
 
+Its `editor.api.dom` calls run in its own `EditorRoot`'s view of `root`, so it
+can focus the view it edits:
+
+```tsx
+const note = useRootEditor("note");
+
+return <button onClick={() => note.api.dom.focus()}>Edit note</button>;
+```
+
 #### `useRootChrome(root?, options?): RootChromeController`
 
 Create root chrome props for mouse interaction outside the editable content,
@@ -376,7 +385,7 @@ and external review markers.
 
 Create an annotation store for durable anchored ranges such as comments,
 diagnostics, or external review markers. Call it under `EditorRoot` with the
-exact mounted editor from `useEditorContext()`.
+mounted view's editor from `useEditor()`.
 
 Pass the current annotation array directly. A new array identity refreshes the
 store automatically. Use `revision` only for an external mutable source that
@@ -389,7 +398,7 @@ const annotations = comments.map((comment) => ({
   id: comment.id,
 }));
 
-const view = useEditorContext();
+const view = useEditor();
 const annotationStore = useAnnotationStore(view, annotations);
 
 const externalStore = useAnnotationStore(view, mutableAnnotations, {

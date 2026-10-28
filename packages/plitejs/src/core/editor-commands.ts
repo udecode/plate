@@ -45,8 +45,16 @@ import { getDefined } from '../internal/get-defined';
 import type { TextUnit } from '../types/types';
 import { defineCommand } from './command-definition';
 import { getActiveCommandEditor } from './command-registry';
+import {
+  recordLocatedDestination,
+  writeComposedText,
+} from './composition-stamp';
 import { ContentSlice as ContentSliceValue } from './content-slice';
-import { getInternalEditorSchemaFromApi } from './editor-schema';
+import { withoutUnheldDefaults } from './default-storage';
+import {
+  getCompiledEditorSchemaFromApi,
+  getInternalEditorSchemaFromApi,
+} from './editor-schema';
 import { limitTextInsert } from './insert-limit';
 import {
   asBlockEntries,
@@ -55,6 +63,7 @@ import {
   replaceSelectedBlocks,
 } from './node-selection';
 import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
+import { toCompiledNodeContext } from './schema-compiler';
 import { planPaste, writePaste } from './slice-landing';
 import { areEditorJsonValuesEqual } from './value-codec';
 
@@ -323,9 +332,9 @@ const getConsistentBlockTextMarks = (
   return expected ?? null;
 };
 
-const fillDefaultChild = (
+const blockReplacing = (
   state: CommandStateView,
-  at: Path,
+  [block, at]: NodeEntry<Descendant>,
   root: string,
   text: string,
   marks: Record<string, unknown> | null
@@ -337,26 +346,52 @@ const fillDefaultChild = (
   });
   // New text drops the properties the schema drops on copy, such as review
   // marks of the text it replaces.
-  const textNode = marks
+  const copied = marks
     ? state.schema.copy({ ...marks, text }, { at, root: publicRoot })
     : { text };
 
-  if (!defaultChild) return null;
-  if (NodeApi.isText(defaultChild)) return textNode;
+  const landed = (parents: readonly Element[]) =>
+    withoutUnheldDefaults(
+      getCompiledEditorSchemaFromApi(state.schema),
+      copied,
+      () =>
+        toCompiledNodeContext(
+          copied,
+          [
+            ...parents,
+            ...Array.from(
+              state.nodes.levels({
+                at: state.key(block),
+                reverse: true,
+                voids: true,
+              }),
+              ([node]) => node
+            )
+              .filter(NodeApi.isElement)
+              .slice(1),
+          ],
+          root
+        )
+    );
 
-  const wrapping = state.schema.findWrapping(defaultChild, textNode);
+  if (!defaultChild) return null;
+  if (NodeApi.isText(defaultChild)) return landed([]);
+
+  const wrapping = state.schema.findWrapping(defaultChild, copied);
 
   if (!wrapping) return null;
 
-  const child = wrapping.reduceRight<Descendant>(
-    (nested, type) => ({
-      ...state.schema.create(type),
-      children: [nested],
-    }),
-    textNode
-  );
+  const wrappers = wrapping.map((type) => state.schema.create(type));
 
-  return { ...defaultChild, children: [child] };
+  return {
+    ...defaultChild,
+    children: [
+      wrappers.reduceRight<Descendant>(
+        (nested, wrapper) => ({ ...wrapper, children: [nested] }),
+        landed([...wrappers].reverse().concat(defaultChild))
+      ),
+    ],
+  };
 };
 
 const LINE_BREAK_PATTERN = /\r|\n/;
@@ -386,9 +421,9 @@ const getFullBlockTextReplacement = (
   }
 
   const root = range.anchor.root ?? range.focus.root ?? MAIN_ROOT_KEY;
-  const replacement = fillDefaultChild(
+  const replacement = blockReplacing(
     state,
-    firstPath,
+    getDefined(blocks[0]),
     root,
     text,
     state.marks() ??
@@ -627,9 +662,9 @@ export const editorCommands: EditorCommands = Object.freeze({
         const publicRoot = toPublicRoot(root);
         const defaultChild = survivingPoint
           ? null
-          : fillDefaultChild(
+          : blockReplacing(
               state,
-              firstPath,
+              getDefined(fullBlocks[0]),
               root,
               '',
               state.marks() ??
@@ -724,7 +759,13 @@ export const editorCommands: EditorCommands = Object.freeze({
       }),
   }),
   insertText: defineCommand<InsertTextCommand>('text.insert', {
-    locate: locateOptionsAt,
+    locate: (input, place) => {
+      const located = locateOptionsAt(input, place);
+
+      if (located) recordLocatedDestination(place, located.options?.at);
+
+      return located;
+    },
     build: ({ input, state }) => {
       const nodeSelection = getCurrentNodeSelection(state);
 
@@ -737,11 +778,10 @@ export const editorCommands: EditorCommands = Object.freeze({
         if (!nodeBlocks || LINE_BREAK_PATTERN.test(nodeReplacementText)) {
           return false;
         }
-        const [, firstPath] = getDefined(nodeBlocks[0]);
         const root = SelectionApi.root(state.selection()) ?? MAIN_ROOT_KEY;
-        const replacement = fillDefaultChild(
+        const replacement = blockReplacing(
           state,
-          firstPath,
+          getDefined(nodeBlocks[0]),
           root,
           nodeReplacementText,
           state.marks() ??
@@ -790,7 +830,12 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       return state.transaction((tx) => {
-        tx.text.insert(input.text, input.options);
+        writeComposedText(
+          getActiveCommandEditor(),
+          input.options?.at,
+          input.text,
+          () => tx.text.insert(input.text, input.options)
+        );
       });
     },
   }),

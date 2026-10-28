@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-27-fix-all-comments-target-status",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-27-fix-all-comments-target-status.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-27",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix the All comments dialog showing a removed comment target as attached",
+  "targets": [
+    {
+      "name": "comment-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/comment-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-27-comment-toolbar-fix-all-comments-dialog-5a173455",
+      "kind": "fix",
+      "summary": "Fix the All comments dialog so a row whose text was deleted says its target is unavailable and disables Show in document, instead of still saying it is attached.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["comment-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-27",
+          "entry": "2026-10-27-fix-all-comments-target-status",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

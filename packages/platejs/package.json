@@ -459,6 +459,7 @@
     "test:partition:standard-code-block-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-code-block-react",
     "test:partition:standard-indent": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-indent",
     "test:partition:standard-link": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-link",
+    "test:partition:standard-link-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-link-react",
     "test:partition:standard-list": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-list",
     "test:partition:standard-list-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs standard-list-react",
     "test:partition:static": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs static",
@@ -546,7 +547,8 @@
     "typecheck:partition:upload": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs upload",
     "typecheck:partition:upload-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs upload-react",
     "typecheck:partition:yjs": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs",
-    "typecheck:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs-react"
+    "typecheck:partition:yjs-react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck platejs yjs-react",
+    "typecheck:tests": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-package-tests platejs core"
   },
   "dependencies": {
     "@types/is-hotkey": "0.1.10",

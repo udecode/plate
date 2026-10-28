@@ -1,6 +1,7 @@
 import type { RefObject } from 'react';
 
 import { type Path, type Range, RangeApi } from '../..';
+import { setEditorCompositionPending } from '../../core/public-state';
 import type { DOMElement } from '../../dom';
 import {
   DOMRootRuntime,
@@ -106,8 +107,14 @@ export type PendingCompositionEnd =
       phase: 'settled';
     }>;
 
+export type CompositionReceipt = Readonly<{
+  editor: AnyEditor;
+  status: 'cancelled' | 'committed' | 'pending';
+}>;
+
 export type EditableInputControllerState = {
   activeIntent: InputIntent | null;
+  compositionReceipt: CompositionReceipt | null;
   compositionSession: {
     modelCommitted: boolean;
     text: string | null;
@@ -288,6 +295,7 @@ export const createEditableInputControllerState = (
   bindEditableInputRuntimeState(
     {
       activeIntent: null,
+      compositionReceipt: null,
       compositionSession: null,
       draggedBlock: false,
       draggedRange: null,
@@ -341,6 +349,67 @@ export const beginEditableCompositionSession = (
     phase: nativeOwned ? 'native-composing' : 'model-composing',
   });
 };
+
+const resolveCompositionReceipt = (
+  inputController: EditableInputController,
+  status: 'cancelled' | 'committed'
+) => {
+  const receipt = inputController.state.compositionReceipt;
+
+  if (receipt?.status !== 'pending') return false;
+  inputController.state.compositionReceipt = { editor: receipt.editor, status };
+  if (status === 'cancelled') {
+    setEditorCompositionPending(receipt.editor, inputController, false);
+  }
+  return true;
+};
+
+export const openCompositionReceipt = (
+  editor: AnyEditor,
+  inputController: EditableInputController
+) => {
+  const previous = inputController.state.compositionReceipt;
+
+  inputController.state.compositionReceipt = { editor, status: 'pending' };
+  if (previous?.status === 'pending' && previous.editor !== editor) {
+    setEditorCompositionPending(previous.editor, inputController, false);
+  }
+  setEditorCompositionPending(editor, inputController, true);
+};
+
+const claimCompositionReceipt = (
+  inputController: EditableInputController | undefined
+) => {
+  if (!inputController?.state.compositionReceipt) return true;
+
+  return resolveCompositionReceipt(inputController, 'committed');
+};
+
+export const commitUnderCompositionReceipt = <T>(
+  inputController: EditableInputController | undefined,
+  commit: (claimed: boolean) => T
+): T => {
+  const receipt = inputController?.state.compositionReceipt;
+  const claimed = claimCompositionReceipt(inputController);
+
+  try {
+    return commit(claimed);
+  } finally {
+    if (claimed && inputController && receipt) {
+      setEditorCompositionPending(receipt.editor, inputController, false);
+    }
+  }
+};
+
+export const cancelCompositionReceipt = (
+  inputController: EditableInputController
+) => {
+  resolveCompositionReceipt(inputController, 'cancelled');
+};
+
+export const hasCommittedCompositionReceipt = (
+  inputController: EditableInputController
+) => inputController.state.compositionReceipt?.status === 'committed';
 
 export const shouldMergeEditableCompositionHistory = (
   inputController: EditableInputController

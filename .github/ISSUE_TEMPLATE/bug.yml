@@ -1,13 +1,13 @@
 name: Bug report
 description: Report defects, including regressions, crashes, and behavior bugs.
-title: '[Bug]: '
-labels:
-  - bug
+type: Bug
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for filing this report. Keep every answer concise, reproducible, and grounded in observed evidence.
+        Thanks for filing this report. The team writes every fix and closes pull requests from outside the team, so your reproduction is how this bug gets fixed.
+
+        Keep every answer concise, reproducible, and grounded in observed evidence.
         Do not speculate or infer beyond the evidence. If a narrative section cannot be answered from the available evidence, respond with exactly `NOT_ENOUGH_INFO`.
 
         If the same issue reproduces in upstream Slate 0.x without Plate or Plite code, include that upstream link as comparison evidence.

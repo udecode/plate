@@ -16,6 +16,7 @@ import { removeNodes } from '../transforms-node';
 import { deleteText, resolveDeletedRange } from '../transforms-text';
 import type { Anchor } from './anchor';
 import { readAuthoredView } from './authored-runtime';
+import type { DocumentIndex } from './change/document-index';
 import { ContentSlice as ContentSliceValue } from './content-slice';
 import { isDocumentView } from './document-view-read';
 import { readDraftTrack, trackDraftSpans } from './draft-track';
@@ -57,10 +58,16 @@ import {
 import { executeEditorRead } from './read-registry';
 import { EditorSchemaValidationError } from './schema-validation';
 import { screenReaderAnnouncementEffect } from './screen-reader-announcement';
+import {
+  type LandingSource,
+  payloadKeyOf,
+  withLandingSources,
+} from './slice-fit/provenance';
 import { planPaste, writePaste } from './slice-landing';
 import {
   type DraftLanding,
   carryMove,
+  droppedKeysOf,
   guardLanding,
   trackedPaths,
   trackedRange,
@@ -69,6 +76,7 @@ import {
   nodeAt,
   rootChildren,
   sameContent,
+  type SourceByPayloadNode,
   selectionRange,
   textTokens,
 } from './transfer-guard';
@@ -85,6 +93,7 @@ import type {
   TransferRelation,
   TransferSide,
 } from './transfer-types';
+import { countCoreWork } from './work';
 
 export { transferVeto };
 
@@ -256,6 +265,80 @@ const payloadOf = (
           path.length > 1 ? from.key(path.slice(0, -1)) : null
         ),
       };
+
+type PayloadSources = Readonly<{
+  landing: readonly LandingSource[];
+  nodes: SourceByPayloadNode;
+}>;
+
+/**
+ * Where each node of a moved range's payload came from, so its landing can
+ * judge a value the node carried. An open edge block merges into the
+ * landing's block instead of landing as itself, so it gets no source. A move's
+ * slice keeps the range fragment's shape, so a node's slice path names its
+ * source once each index along the start edge is offset by the range start.
+ */
+const payloadSourcesOf = (
+  index: DocumentIndex,
+  range: Range,
+  slice: ContentSlice,
+  inline: (element: Element) => boolean
+): PayloadSources => {
+  const open = new Set<Descendant>();
+  const edges = [
+    [slice.openStart, (list: readonly Descendant[]) => list[0]],
+    [slice.openEnd, (list: readonly Descendant[]) => list.at(-1)],
+  ] as const;
+
+  for (const [depth, edge] of edges) {
+    let list = slice.content;
+
+    for (let level = 0; level < depth; level += 1) {
+      const node = edge(list);
+
+      if (!node || !ElementApi.isElement(node)) break;
+      if (!inline(node)) open.add(node);
+      list = node.children;
+    }
+  }
+
+  const [start] = RangeApi.edges(range);
+  const landing: LandingSource[] = [];
+  const nodes = new Map<object, object>();
+  const trace = (node: Descendant, path: Path) => {
+    countCoreWork('landingSources');
+    landing.push({
+      at: index.nodeRange(path).from,
+      document: index,
+      kind: NodeApi.isText(node) ? 'text' : 'element',
+      payload: payloadKeyOf(node),
+    });
+    nodes.set(node, index.node(path));
+  };
+  const visit = (
+    list: readonly Descendant[],
+    parent: Path,
+    onStartEdge: boolean
+  ) => {
+    list.forEach((node, at) => {
+      const path = [
+        ...parent,
+        onStartEdge ? start.path[parent.length] + at : at,
+      ];
+
+      if (NodeApi.isText(node)) {
+        if (node.text !== '') trace(node, path);
+        return;
+      }
+      if (!open.has(node)) trace(node, path);
+      visit(node.children, path, onStartEdge && at === 0);
+    });
+  };
+
+  visit(slice.content, [], true);
+
+  return { landing, nodes };
+};
 
 const checkTextLanding = (
   editor: AnyEditor,
@@ -601,6 +684,7 @@ const runTransfer = (
 
       if (!builder || !spans) return false;
       const index = builder.getIndex(targetRoot);
+      const dropped = droppedKeysOf(builder.draftSteps);
 
       if (drafted.kind === 'range') {
         const [span] = spans;
@@ -615,7 +699,7 @@ const runTransfer = (
 
         const { content, moved } = expected;
 
-        if (moved) return landsMoved(fragment, moved);
+        if (moved) return landsMoved(fragment, moved, dropped);
 
         return (
           textTokens(
@@ -637,7 +721,8 @@ const runTransfer = (
               expected.content[i],
               expectedRoots,
               normalize(node, path as Path),
-              after.roots
+              after.roots,
+              dropped
             )
           );
         })
@@ -812,7 +897,11 @@ const runTransfer = (
 
         return behavior.void ? 'void' : behavior.inline ? 'inline' : 'block';
       };
-      const landAsPaste = (at: Point, copied: ContentSlice) => {
+      const landAsPaste = (
+        at: Point,
+        copied: ContentSlice,
+        sources: PayloadSources | null = null
+      ) => {
         const plan = planPaste(
           editor,
           getEditorStateView(editor),
@@ -824,7 +913,9 @@ const runTransfer = (
         if (!plan) return null;
         if (!copy && (plan.inputCut || plan.landingCut)) refuse('lossy');
 
-        const written = writePaste(editor, plan, { landing: true });
+        const written = withLandingSources(sources?.landing ?? null, () =>
+          writePaste(editor, plan, { landing: true })
+        );
 
         if (!written) return null;
         if (written.lossy) {
@@ -847,6 +938,7 @@ const runTransfer = (
                     written.written === plan.emptyBlockReplacement
                       ? (plan.site.target.block?.[0] ?? null)
                       : null,
+                  sources: sources?.nodes,
                   written: written.written,
                 }) ?? refuse('lossy'),
             };
@@ -859,6 +951,20 @@ const runTransfer = (
           association: 'backward',
           deletion: 'nearest',
         });
+        const { builder: moving } = getDefined(getTransactionSnapshot(runtime));
+        const sources =
+          moving.tracksPlaces &&
+          !copy &&
+          slice &&
+          source.kind === 'text' &&
+          source.root === targetRoot
+            ? payloadSourcesOf(
+                moving.getIndex(targetRoot),
+                source.deleted ?? source.range,
+                slice,
+                (element) => schema.getElementBehavior(element).inline
+              )
+            : null;
 
         removeSource();
         // Canonicalize the source's leftovers as their own step. When one
@@ -870,7 +976,7 @@ const runTransfer = (
         const point = drop.resolve();
         const spec =
           point && slice
-            ? asMove('landing', () => landAsPaste(point, slice))
+            ? asMove('landing', () => landAsPaste(point, slice, sources))
             : null;
         const track = (spec && getAppliedSpecLanding(spec)) ?? refuse('schema');
         const { builder } = getDefined(getTransactionSnapshot(runtime));

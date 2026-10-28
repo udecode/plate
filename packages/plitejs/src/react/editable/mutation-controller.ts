@@ -1,18 +1,22 @@
 import {
   type EditorMarks,
+  type EditorUpdateTransaction,
   type Point,
   type Range,
   RangeApi,
   type Selection,
   SelectionApi,
   type TransactionSpec,
+  type Value,
 } from '../..';
+import { withCompositionStamp } from '../../core/composition-stamp';
 import { getRootTransaction } from '../../core/plugin-dispatch';
 import {
   getActiveEditorTransaction,
+  syncImplicitTargetToCurrentSelection,
   withUpdateTagContext,
 } from '../../core/public-state';
-import { holdsCaretAt } from '../../core/view-carets';
+import { capturePlacement, holdsCaretAt } from '../../core/view-carets';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { domCommands } from '../../dom/internal';
 import { getViewPresentation } from '../../editor-runtime-view';
@@ -40,6 +44,7 @@ import {
 } from './editing-kernel';
 import { type NativeGroupingInput, nativeGroupingInput } from './input-history';
 import {
+  commitUnderCompositionReceipt,
   type EditableInputController,
   type EditableSelectionSourceTransition,
   getEditableNativeGroupingInput,
@@ -49,7 +54,10 @@ import {
   applyParagraphBreakAfterSelectedBlockVoid,
   createDefaultParagraph,
 } from './mutation-block-editing';
-import { canUseCachedCollapsedTextInsert } from './mutation-full-block-editing';
+import {
+  readUserTextLanding,
+  type UserTextLanding,
+} from './mutation-full-block-editing';
 import { applyModelOwnedHistoryIntent } from './mutation-history';
 import {
   type ProjectedSelectionTarget,
@@ -567,9 +575,11 @@ const applyRootLocalSelectionMoveCommand = ({
 export const applyEditableCommand = ({
   command,
   editor,
+  element = null,
 }: {
   command: EditableCommand;
   editor: RuntimeEditor;
+  element?: HTMLElement | null;
 }) => {
   switch (command.kind) {
     case 'delete': {
@@ -726,8 +736,10 @@ export const applyEditableCommand = ({
 
       if (!nextSelection) return true;
 
-      dispatchCommand(editor, editorCommands.select, {
-        target: nextSelection,
+      const placedAt = capturePlacement(editor, () => {
+        dispatchCommand(editor, editorCommands.select, {
+          target: nextSelection,
+        });
       });
       const appliedSelection = readRuntimeSelection(editor);
       writePliteViewSelection(
@@ -743,7 +755,8 @@ export const applyEditableCommand = ({
               appliedSelection,
               toInternalRoot(editor.read((state) => state.view.root()))
             )
-          : null
+          : null,
+        { placedAt }
       );
       return true;
     }
@@ -753,6 +766,7 @@ export const applyEditableCommand = ({
         applyContentRootSelectionMoveCommand({
           command,
           editor: editor as ReactRuntimeEditor,
+          element,
           selection: readRuntimeSelectionRange(editor),
         }).handled
       ) {
@@ -834,7 +848,86 @@ export const focusEditableRepairTarget = (editor: ReactRuntimeEditor) => {
   }
 };
 
+export type UserText = Readonly<{
+  composed: boolean;
+  landing: UserTextLanding;
+  marks?: EditorMarks | null;
+  target: Range;
+  text: string;
+}>;
+
+export const getUserTextLanding = (
+  editor: Editor,
+  {
+    composed,
+    inputType,
+    marks,
+    replayed,
+    target,
+  }: Readonly<{
+    composed: boolean;
+    inputType: string;
+    marks?: EditorMarks | null;
+    replayed: boolean;
+    target: Range;
+  }>
+): UserTextLanding => {
+  if (
+    RangeApi.isExpanded(target) ||
+    (inputType !== 'insertText' && inputType !== 'insertFromComposition')
+  ) {
+    return 'pinned';
+  }
+
+  return replayed
+    ? 'selection'
+    : readUserTextLanding({ composed, editor, marks, target });
+};
+
+export const dispatchUserText = (
+  editor: Editor,
+  tx: EditorUpdateTransaction<Value, any>,
+  { composed, landing, marks, target, text }: UserText
+) => {
+  if (RangeApi.isCollapsed(target)) {
+    const held = holdsCaretAt(editor, target);
+    const current = readRuntimeSelection(editor);
+    const pending =
+      marks !== undefined
+        ? marks
+        : !held && SelectionApi.isText(current)
+          ? current.marks
+          : undefined;
+
+    if (!held) {
+      tx.selection.set(target);
+    } else if (landing === 'selection') {
+      syncImplicitTargetToCurrentSelection(getEditorRuntimeOwner(editor));
+    }
+    if (pending !== undefined) tx.marks.set(pending);
+  }
+
+  const at =
+    landing === 'stored'
+      ? RangeApi.start(target)
+      : landing === 'pinned'
+        ? target
+        : undefined;
+  const insert = () =>
+    tx.command(editorCommands.insertText, {
+      ...(at ? { options: { at } } : {}),
+      text,
+    });
+
+  if (composed) {
+    withCompositionStamp(editor, { place: RangeApi.start(target) }, insert);
+  } else {
+    insert();
+  }
+};
+
 export const applyModelOwnedTextInput = ({
+  commitsComposition,
   data,
   editor,
   inputController,
@@ -843,6 +936,7 @@ export const applyModelOwnedTextInput = ({
   mergeHistory = false,
   selection,
 }: {
+  commitsComposition?: boolean;
   data: string;
   editor: Editor;
   inputController?: EditableInputController;
@@ -850,27 +944,147 @@ export const applyModelOwnedTextInput = ({
   marks?: EditorMarks | null;
   mergeHistory?: boolean;
   selection?: Range | Selection;
-}): EditableRepairRequest =>
-  withTypedTextIntent(editor, inputController, { inputType, text: data }, () =>
-    withUpdateTagContext(
-      getEditorRuntimeOwner(editor),
-      ['dom-text-input'],
-      () => {
-        const nativeInput = inputController
-          ? getEditableNativeGroupingInput(inputController, mergeHistory)
-          : undefined;
+}): EditableRepairRequest => {
+  const composition =
+    commitsComposition ?? inputType === 'insertFromComposition';
+  const applyInput = (): EditableRepairRequest =>
+    withTypedTextIntent(
+      editor,
+      inputController,
+      { inputType, text: data },
+      () =>
+        withUpdateTagContext(
+          getEditorRuntimeOwner(editor),
+          ['dom-text-input'],
+          () => {
+            const nativeInput = inputController
+              ? getEditableNativeGroupingInput(inputController, mergeHistory)
+              : undefined;
+            if (SelectionApi.isNode(selection)) {
+              editor.update(
+                mergeHistory ? { tags: ['composition'] } : {},
+                (tx) => {
+                  if (nativeInput) {
+                    tx.annotations.set(nativeGroupingInput, nativeInput);
+                  }
+                  tx.selection.set(selection);
+                  tx.command(editorCommands.insertText, { text: data });
+                }
+              );
 
-        if (SelectionApi.isNode(selection)) {
-          editor.update(mergeHistory ? { tags: ['composition'] } : {}, (tx) => {
-            if (nativeInput) {
-              tx.annotations.set(nativeGroupingInput, nativeInput);
+              return inputType === 'insertText'
+                ? {
+                    forceRender: ReactEditor.isComposing(
+                      editor as ReactRuntimeEditor
+                    ),
+                    kind: 'repair-caret-after-text-insert',
+                    selectionSourceTransition: {
+                      preferModelSelection: true,
+                      reason: 'model-command',
+                      selectionSource: 'model-owned',
+                    },
+                  }
+                : { kind: 'none' };
             }
-            tx.selection.set(selection);
-            tx.command(editorCommands.insertText, { text: data });
-          });
 
-          return inputType === 'insertText'
-            ? {
+            const landingOf = (target: Range) =>
+              getUserTextLanding(editor, {
+                composed: composition,
+                inputType,
+                marks,
+                replayed:
+                  inputType === 'insertFromComposition' &&
+                  !!inputController?.state.isReplayingAndroidCommand,
+                target,
+              });
+            const dispatch = (target: Range, landing: UserTextLanding) => {
+              editor.update(
+                mergeHistory ? { tags: ['composition'] } : {},
+                (tx) => {
+                  if (nativeInput) {
+                    tx.annotations.set(nativeGroupingInput, nativeInput);
+                  }
+                  dispatchUserText(editor, tx, {
+                    composed: composition,
+                    landing,
+                    marks,
+                    target,
+                    text: data,
+                  });
+                }
+              );
+            };
+            const hasExplicitTargetSelection =
+              !!selection &&
+              (RangeApi.isExpanded(selection) || inputType !== 'insertText');
+
+            if (
+              !hasExplicitTargetSelection &&
+              applyProjectedViewSelectionTextCommand({
+                editor,
+                nativeInput,
+                text: data,
+              })
+            ) {
+              if (inputType === 'insertText') {
+                return {
+                  forceRender: ReactEditor.isComposing(
+                    editor as ReactRuntimeEditor
+                  ),
+                  kind: 'repair-caret-after-text-insert',
+                  selectionSourceTransition: {
+                    preferModelSelection: true,
+                    reason: 'model-command',
+                    selectionSource: 'model-owned',
+                  },
+                };
+              }
+
+              return { kind: 'none' };
+            }
+
+            if (hasExplicitTargetSelection) {
+              writePliteViewSelection(editor, null);
+              const landing = landingOf(selection);
+
+              profilePliteReactDuration(
+                'model-text-input-insert-at-target-selection',
+                () => dispatch(selection, landing)
+              );
+            } else if (selection) {
+              const landing = landingOf(selection);
+
+              profilePliteReactDuration(
+                landing === 'selection'
+                  ? 'model-text-input-apply-command'
+                  : 'model-text-input-insert-at-selection',
+                () => dispatch(selection, landing)
+              );
+            } else {
+              profilePliteReactDuration(
+                'model-text-input-apply-command',
+                () => {
+                  if (!nativeInput) {
+                    applyEditableCommand({
+                      command: { inputType, kind: 'insert-text', text: data },
+                      editor,
+                    });
+                    return;
+                  }
+
+                  editor.update(
+                    mergeHistory ? { tags: ['composition'] } : {},
+                    (tx) => {
+                      tx.annotations.set(nativeGroupingInput, nativeInput);
+                      tx.command(editorCommands.insertText, { text: data });
+                    }
+                  );
+                }
+              );
+            }
+
+            if (inputType === 'insertText') {
+              return {
                 forceRender: ReactEditor.isComposing(
                   editor as ReactRuntimeEditor
                 ),
@@ -880,146 +1094,18 @@ export const applyModelOwnedTextInput = ({
                   reason: 'model-command',
                   selectionSource: 'model-owned',
                 },
-              }
-            : { kind: 'none' };
-        }
-
-        const insertAtSelection = (target: Range) => {
-          if (
-            nativeInput ||
-            marks !== undefined ||
-            RangeApi.isCollapsed(target)
-          ) {
-            // Writing the caret the view already holds would count as a
-            // placement on every keystroke.
-            const held = holdsCaretAt(editor, target);
-
-            editor.update(
-              mergeHistory ? { tags: ['composition'] } : {},
-              (tx) => {
-                if (nativeInput) {
-                  tx.annotations.set(nativeGroupingInput, nativeInput);
-                }
-                const collapsed = RangeApi.isCollapsed(target);
-                if (collapsed) {
-                  if (!held) tx.selection.set(target);
-                  if (marks !== undefined) tx.marks.set(marks);
-                  // A composition writes where the browser composed it. The
-                  // insert-text command would move it where a typed letter
-                  // goes, after struck text. An Android commit still runs
-                  // the command so insert handlers see the finished word.
-                  if (
-                    inputType === 'insertFromComposition' &&
-                    !inputController?.state.isReplayingAndroidCommand
-                  ) {
-                    tx.text.insert(
-                      data,
-                      marks !== undefined ? {} : { at: target }
-                    );
-                    return;
-                  }
-                }
-                tx.command(editorCommands.insertText, {
-                  ...(collapsed && marks !== undefined
-                    ? {}
-                    : { options: { at: target } }),
-                  text: data,
-                });
-              }
-            );
-            return;
-          }
-
-          dispatchCommand(editor, editorCommands.insertText, {
-            options: { at: target },
-            text: data,
-          });
-        };
-        const hasExplicitTargetSelection =
-          !!selection &&
-          (RangeApi.isExpanded(selection) || inputType !== 'insertText');
-
-        if (
-          !hasExplicitTargetSelection &&
-          applyProjectedViewSelectionTextCommand({
-            editor,
-            nativeInput,
-            text: data,
-          })
-        ) {
-          if (inputType === 'insertText') {
-            return {
-              forceRender: ReactEditor.isComposing(
-                editor as ReactRuntimeEditor
-              ),
-              kind: 'repair-caret-after-text-insert',
-              selectionSourceTransition: {
-                preferModelSelection: true,
-                reason: 'model-command',
-                selectionSource: 'model-owned',
-              },
-            };
-          }
-
-          return { kind: 'none' };
-        }
-
-        const canUseSyncedCollapsedTarget =
-          inputType === 'insertText' &&
-          selection &&
-          RangeApi.isCollapsed(selection) &&
-          canUseCachedCollapsedTextInsert({ editor, selection });
-
-        if (canUseSyncedCollapsedTarget) {
-          profilePliteReactDuration(
-            'model-text-input-insert-at-selection',
-            () => insertAtSelection(selection)
-          );
-        } else if (
-          selection &&
-          (RangeApi.isExpanded(selection) || inputType !== 'insertText')
-        ) {
-          writePliteViewSelection(editor, null);
-          profilePliteReactDuration(
-            'model-text-input-insert-at-target-selection',
-            () => insertAtSelection(selection)
-          );
-        } else {
-          profilePliteReactDuration('model-text-input-apply-command', () => {
-            if (!nativeInput) {
-              applyEditableCommand({
-                command: { inputType, kind: 'insert-text', text: data },
-                editor,
-              });
-              return;
+              };
             }
 
-            editor.update(
-              mergeHistory ? { tags: ['composition'] } : {},
-              (tx) => {
-                tx.annotations.set(nativeGroupingInput, nativeInput);
-                tx.command(editorCommands.insertText, { text: data });
-              }
-            );
-          });
-        }
+            return { kind: 'none' };
+          }
+        )
+    );
 
-        if (inputType === 'insertText') {
-          return {
-            forceRender: ReactEditor.isComposing(editor as ReactRuntimeEditor),
-            kind: 'repair-caret-after-text-insert',
-            selectionSourceTransition: {
-              preferModelSelection: true,
-              reason: 'model-command',
-              selectionSource: 'model-owned',
-            },
-          };
-        }
-
-        return { kind: 'none' };
-      }
-    )
-  );
+  return composition
+    ? commitUnderCompositionReceipt(inputController, applyInput)
+    : applyInput();
+};
 
 export const applyEditableRepairRequest = ({
   domPhaseScheduler,

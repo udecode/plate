@@ -102,7 +102,10 @@ return (
 
 Use `useRootState(root, selector)` for UI that reads one root without
 subscribing to every editor change. Use `useRootEditor(root)` for commands
-that must run against a specific root.
+that must run against a specific root. Its `editor.api.dom` calls run in its
+own `EditorRoot`'s view of that root; the editor `createEditor` returns picks a
+view as
+[Views](/docs/api/dom#views) describes.
 
 ## Content roots
 

@@ -6,6 +6,7 @@ import {
   hasEditorRuntime,
 } from '../core/editor-runtime';
 import { getDefined } from '../internal/get-defined';
+import { isTextRun } from '../internal/text-run';
 import { formatDebugValue } from '../utils/format-debug-value';
 import type { AnyEditor as EditorType, Value } from './editor';
 import {
@@ -837,23 +838,6 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
         ? isEditorContent(editor, node)
         : (view?.nodes.isContent(node) ?? true));
 
-    const collectTextRun = (
-      node: Descendant,
-      path: Path,
-      entries: Array<NodeEntry<Text>>
-    ): boolean => {
-      if (NodeApi.isText(node)) {
-        if (isContent(node)) entries.push([node, path]);
-
-        return true;
-      }
-      if (!schema?.isInline(node)) return false;
-
-      return getAncestorChildren(node).every((child, index) =>
-        collectTextRun(child, path.concat(index), entries)
-      );
-    };
-
     const visit = (node: Node | NodeTextRangeRoot, path: Path) => {
       if (NodeApi.isText(node as Node)) {
         if (!isContent(node as Text)) return;
@@ -873,12 +857,7 @@ export const NodeApi: Readonly<NodeInterface> = Object.freeze({
       );
       const inlineEntries: Array<NodeEntry<Text>> = [];
 
-      if (
-        children.length > 0 &&
-        children.every((child, index) =>
-          collectTextRun(child, path.concat(index), inlineEntries)
-        )
-      ) {
+      if (isTextRun(schema, children, path, inlineEntries, isContent)) {
         ranges.push(
           ...getTextEntryRanges(inlineEntries, [node, path], query, options)
         );

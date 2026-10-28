@@ -1,2 +1,0 @@
-# pnpm --filter www typecheck
-# exit: 0

@@ -282,6 +282,7 @@ export const applyEditableInput = ({
 
 export const applyModelOwnedBeforeInputMutation = ({
   command: preparedCommand,
+  commitsComposition,
   data,
   editor,
   inputController,
@@ -293,6 +294,7 @@ export const applyModelOwnedBeforeInputMutation = ({
   setComposing,
 }: {
   command?: EditableCommand | null;
+  commitsComposition?: boolean;
   data: unknown;
   editor: ReactRuntimeEditor;
   inputController?: import('./input-state').EditableInputController;
@@ -423,6 +425,7 @@ export const applyModelOwnedBeforeInputMutation = ({
           return null;
         }
         return applyModelOwnedTextInput({
+          commitsComposition,
           data: textCommand.text,
           editor,
           inputController,

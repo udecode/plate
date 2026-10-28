@@ -45,6 +45,7 @@ export type DOMIntegrityObserverOptions = {
   isAndroidMutationOwned: () => boolean;
   isCanonicalTextMutation: (mutation: MutationRecord) => boolean;
   isComposing: () => boolean;
+  isCompositionLeasedMutation?: (mutation: MutationRecord) => boolean;
   maxRepairPassesPerFrame?: number;
   onDOMChange?: () => void;
   onRepair: (evidence: DOMIntegrityRepairEvidence) => void;
@@ -500,12 +501,23 @@ export class DOMIntegrityObserver {
       return;
     }
 
+    const { isCompositionLeasedMutation } = this.options;
+    const unleased = isCompositionLeasedMutation
+      ? unauthorized.filter(
+          (mutation) => !isCompositionLeasedMutation(mutation)
+        )
+      : unauthorized;
+
+    this.diagnosticsValue.ignoredCompositionMutations +=
+      unauthorized.length - unleased.length;
+    if (unleased.length === 0) return;
+
     if (androidOwnsMutations) {
-      this.diagnosticsValue.ignoredAndroidMutations += unauthorized.length;
+      this.diagnosticsValue.ignoredAndroidMutations += unleased.length;
       return;
     }
 
-    const external = unauthorized.filter((mutation) => {
+    const external = unleased.filter((mutation) => {
       if (
         mutation.type === 'characterData' &&
         this.options.isCanonicalTextMutation(mutation)
@@ -547,6 +559,10 @@ export class DOMIntegrityObserver {
     const mutations = this.pendingMutations.splice(0).filter((mutation) => {
       if (this.options.consumeOwnedMutation(mutation)) {
         this.diagnosticsValue.ignoredOwnedMutations += 1;
+        return false;
+      }
+      if (this.options.isCompositionLeasedMutation?.(mutation)) {
+        this.diagnosticsValue.ignoredCompositionMutations += 1;
         return false;
       }
 

@@ -7,7 +7,6 @@ import {
   matchDelimitedInline,
   type NodeInsertOptions,
   type PluginReference,
-  RangeApi,
   type SelectionInputRuleContext,
   PLUGINS,
   property,
@@ -160,18 +159,6 @@ export const MathRules = (() => {
       priority,
       enabled: (context) => isEnabled(context, enabled),
       resolve: (context) => {
-        const target = context.options?.at;
-        const selection = context.editor.read.selection();
-
-        if (
-          target &&
-          (!selection ||
-            !RangeApi.isRange(target) ||
-            !RangeApi.equals(target, selection))
-        ) {
-          return undefined;
-        }
-
         const match = matchDelimitedInline(context, {
           boundaryRe: INLINE_EQUATION_BOUNDARY_RE,
           followRe: INLINE_EQUATION_FOLLOW_RE,

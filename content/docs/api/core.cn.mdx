@@ -443,12 +443,17 @@ const entry = id ? elementId.read.entry(id) : undefined;
 ```
 
 通过 `initialState.generateId` 替换默认的完整长度 `nanoid()` 生成器。把
-`ElementIdPlugin` 加入传给 `defineDocumentMigrations` 的 target。当前文档进入系统时，
-会在编辑器创建前补齐缺失 ID 并拒绝重复 ID。旧数字 ID 或旧属性名应由历史迁移步骤
-转换，并由应用明确规定冲突处理策略。
+`ElementIdPlugin` 加入传给 `defineDocumentMigrations` 的 target。该插件用
+`unique: true` 声明它的 `id`，因此任何提交或加载都不会留下两个持有同一 ID 的元素。
+当前文档进入系统时，会在编辑器创建前补齐缺失 ID。两个元素持有同一个 ID 时，文档
+顺序中的第一个保留它，之后的每个元素得到新 ID。插入或更新时写入已被占用的 ID，落地
+的元素会得到新 ID。迁移边界会拒绝同一 ID 出现两次的文档，因此旧数字 ID、旧属性名
+或重复 ID 应由历史迁移步骤转换，并由应用明确规定冲突处理策略。
 
 应用 schema 可以收窄该插件拥有的 `id` target。当前文档进入系统时，只为匹配编译后
-target 的元素生成并保留 ID。
+target 的元素生成并保留 ID。收窄后的 target 必须匹配每一种能取代已匹配类型位置的
+类型，因此只要没有元素的内容同时允许 block 和 inline 元素，`target.group("block")`
+就可用。
 
 ```ts
 const editor = createEditor({

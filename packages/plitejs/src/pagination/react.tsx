@@ -555,47 +555,58 @@ const createPlacementsByPath = (
   return placements;
 };
 
+const boxRect = (rects: readonly PageRect[]) => {
+  const [first] = rects;
+  const sharesLeftEdge = rects.every((rect) => rect.left === first.left);
+
+  return {
+    rect: sharesLeftEdge ? bounds(rects) : first,
+    spillsPastBox: !sharesLeftEdge,
+  };
+};
+
 const createElementLayouts = (
   fragments: readonly PageLayoutFragment[],
   placementsByPath: ReadonlyMap<string, readonly MountedFragment[]>,
   previous: ReadonlyMap<string, EditableElementLayout>
 ) => {
   const paths = new Map<string, Path>();
+  const textPaths = new Set<string>();
 
   fragments.forEach((fragment) => {
     paths.set(pathKey(fragment.path), fragment.path);
+    if (fragment.type === 'text') textPaths.add(pathKey(fragment.path));
     if (fragment.type === 'direct-children') {
       fragment.children.forEach((child) =>
         paths.set(pathKey(child.path), child.path)
       );
     }
   });
-  const canvasBounds = new Map<string, PageRect>();
+  const boxes = new Map<string, ReturnType<typeof boxRect>>();
 
   placementsByPath.forEach((placements, key) => {
-    canvasBounds.set(
-      key,
-      bounds(placements.map((placement) => placement.rect))
-    );
+    boxes.set(key, boxRect(placements.map((placement) => placement.rect)));
   });
   const layouts = new Map<string, EditableElementLayout>();
 
   paths.forEach((path, key) => {
-    const rect = canvasBounds.get(key);
+    const box = boxes.get(key);
 
-    if (!rect) return;
+    if (!box) return;
     let parent = path.slice(0, -1);
     let parentRect: PageRect | undefined;
 
     while (parent.length > 0 && !parentRect) {
-      parentRect = canvasBounds.get(pathKey(parent));
+      parentRect = boxes.get(pathKey(parent))?.rect;
       parent = parent.slice(0, -1);
     }
     const layout = {
-      height: rect.height,
-      left: rect.left - (parentRect?.left ?? 0),
-      top: rect.top - (parentRect?.top ?? 0),
-      width: rect.width,
+      hasTextLines: textPaths.has(key),
+      height: box.rect.height,
+      left: box.rect.left - (parentRect?.left ?? 0),
+      spillsPastBox: box.spillsPastBox,
+      top: box.rect.top - (parentRect?.top ?? 0),
+      width: box.rect.width,
     };
     const kept = previous.get(key);
 
@@ -603,8 +614,10 @@ const createElementLayouts = (
     layouts.set(
       key,
       kept &&
+        kept.hasTextLines === layout.hasTextLines &&
         kept.height === layout.height &&
         kept.left === layout.left &&
+        kept.spillsPastBox === layout.spillsPastBox &&
         kept.top === layout.top &&
         kept.width === layout.width
         ? kept
@@ -645,24 +658,19 @@ const createPaginationBuckets = (
   runOrigins: ReadonlyMap<string, ProjectedRunOrigin>
 ): ReadonlyMap<NodeKey, readonly DecorationSlice[]> => {
   const buckets = new Map<NodeKey, DecorationSlice[]>();
-  const textFragmentsByPath = new Map<string, number>();
-
-  fragments.forEach((fragment) => {
-    if (fragment.type === 'text') {
-      const key = pathKey(fragment.path);
-      textFragmentsByPath.set(key, (textFragmentsByPath.get(key) ?? 0) + 1);
-    }
-  });
-  const blockBounds = new Map<string, PageRect>();
+  const blockRects = new Map<string, PageRect[]>();
 
   fragments.forEach((fragment) => {
     if (fragment.type !== 'text') return;
     const key = pathKey(fragment.path);
-    const rect = toCanvasRect(fragment.rect, fragment.pageIndex, geometry);
-    const previous = blockBounds.get(key);
+    const rects = blockRects.get(key) ?? [];
 
-    blockBounds.set(key, previous ? bounds([previous, rect]) : rect);
+    rects.push(toCanvasRect(fragment.rect, fragment.pageIndex, geometry));
+    blockRects.set(key, rects);
   });
+  const blockBoxes = new Map<string, PageRect>();
+
+  blockRects.forEach((rects, key) => blockBoxes.set(key, boxRect(rects).rect));
 
   editor.read((state) => {
     const { index } = state.runtime.snapshot();
@@ -671,10 +679,10 @@ const createPaginationBuckets = (
       if (fragment.type !== 'text') return;
       const blockKey = pathKey(fragment.path);
       const nativeFlow =
-        textFragmentsByPath.get(blockKey) === 1 &&
+        blockRects.get(blockKey)?.length === 1 &&
         selectedPaths.some((path) => PathApi.isCommon(fragment.path, path));
       const blockRect =
-        blockBounds.get(blockKey) ??
+        blockBoxes.get(blockKey) ??
         toCanvasRect(fragment.rect, fragment.pageIndex, geometry);
 
       fragment.lines.forEach((line, lineIndex) => {

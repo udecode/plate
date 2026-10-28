@@ -13,6 +13,7 @@ import {
 } from '../entrypoints/entrypoint-turbo.mjs';
 import { usesMockModule } from './import-graph.mjs';
 import { runTraced } from './load-trace.mjs';
+import { hasPrivateHalf } from './private-files.mjs';
 
 const [command, packageName, partitionName] = process.argv.slice(2);
 const definition = entrypointDags[packageName];
@@ -22,6 +23,17 @@ if (!definition || !(partitionName in definition.taskPartitions)) {
     'Usage: run-entrypoint-task.mjs <lint|test|typecheck|typecheck-contracts|typecheck-package-tests> <package> <partition>'
   );
   process.exit(1);
+}
+
+if (
+  (command === 'typecheck-contracts' ||
+    command === 'typecheck-package-tests') &&
+  !hasPrivateHalf(repoRoot)
+) {
+  console.info(
+    `[${packageName}] skip ${command}: it reads udecode/plate-private's files`
+  );
+  process.exit(0);
 }
 
 const packageRoot = path.join(repoRoot, definition.packageRoot);
@@ -93,6 +105,17 @@ const runTests = (runtimeTestFiles, traceEnv) => {
 
   if (files.length === 0) return 0;
 
+  const junitDir = process.env.PLATE_TEST_JUNIT_DIR;
+  let batches = 0;
+  const reporterArgs = () => {
+    if (!junitDir) return [];
+    batches += 1;
+    return [
+      '--reporter=junit',
+      `--reporter-outfile=${path.join(junitDir, `batch-${batches}.xml`)}`,
+    ];
+  };
+
   const runBunTestBatch = (testFiles) => {
     if (packageName === 'platejs') {
       return runTest(
@@ -103,6 +126,7 @@ const runTests = (runtimeTestFiles, traceEnv) => {
           `--cwd=${repoRoot}`,
           'test',
           `--timeout=${BUN_TEST_TIMEOUT_MS}`,
+          ...reporterArgs(),
           // Without `./`, bun treats each path as a substring filter and scans the whole repository for matching test files.
           ...testFiles.map(
             (filename) => `./${path.join(definition.packageRoot, filename)}`
@@ -116,6 +140,7 @@ const runTests = (runtimeTestFiles, traceEnv) => {
     return runTest(path.join(packageRoot, 'bunfig.toml'), 'bun', [
       'test',
       `--timeout=${BUN_TEST_TIMEOUT_MS}`,
+      ...reporterArgs(),
       `--preload=${path.join(repoRoot, 'config/plite-source-test-setup.ts')}`,
       ...testFiles.map((filename) => `./${filename}`),
     ]);

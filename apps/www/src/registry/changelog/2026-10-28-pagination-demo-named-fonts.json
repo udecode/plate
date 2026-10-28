@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-28-pagination-demo-named-fonts",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-28-pagination-demo-named-fonts.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-28",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix pagination demo lines overlapping in Firefox",
+  "targets": [
+    {
+      "name": "pagination-demo",
+      "files": ["apps/www/src/registry/examples/pagination-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-28-pagination-fix-demo-lines-overlapping-235ac1c2",
+      "kind": "fix",
+      "summary": "Measure and paint paged text with named fonts, so lines in Firefox no longer wrap past their measured positions and overlap. In every browser, paged text, code and keyboard marks use named font stacks instead of the system and theme fonts, and headings use the page font instead of the heading font",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["pagination-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-28",
+          "entry": "2026-10-28-pagination-demo-named-fonts",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

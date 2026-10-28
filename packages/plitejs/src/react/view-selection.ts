@@ -1,6 +1,13 @@
 import { PathApi, type Range, RangeApi, type RootKey } from '..';
-import { hasEditorRuntime } from '../core/editor-runtime';
+import {
+  type EditorRuntimeCarrier,
+  hasEditorRuntime,
+} from '../core/editor-runtime';
 import { readEditorHistoryHeadIdentity } from '../core/public-state';
+import {
+  getPlacementGeneration,
+  subscribeCommittedPlacement,
+} from '../core/view-carets';
 import { getViewPresentation } from '../editor-runtime-view';
 import type { AnyEditor } from '../interfaces/editor';
 import { failInvariant } from './editable/runtime-editor-api';
@@ -29,7 +36,17 @@ export type PliteViewSelectionCollapseEdge =
   | 'focus'
   | 'start';
 
-const EDITOR_TO_VIEW_SELECTION = new WeakMap<object, PliteViewSelection>();
+type ViewSelectionEntry = {
+  readonly selection: PliteViewSelection;
+  /**
+   * The placement generation the selection shows at: the first placement its
+   * writer's `place` committed, or the current one. `null` while `place` runs.
+   */
+  shownAt: number | null;
+};
+
+const EDITOR_TO_VIEW_SELECTION = new WeakMap<object, ViewSelectionEntry>();
+const VIEW_SELECTION_PLACEMENTS = new WeakMap<object, () => void>();
 const VIEW_SELECTION_MOUNTS = new WeakMap<object, number>();
 type PliteViewSelectionNotification = Readonly<{
   forceInvalidate?: boolean;
@@ -178,10 +195,60 @@ export const collapsePliteViewSelection = (
   return failInvariant('Unexpected view selection collapse edge');
 };
 
+const isCurrent = (editor: object, entry: ViewSelectionEntry) =>
+  entry.shownAt === null ||
+  !hasEditorRuntime(editor) ||
+  getPlacementGeneration(editor) === entry.shownAt;
+
+const forget = (key: object) => {
+  EDITOR_TO_VIEW_SELECTION.delete(key);
+  VIEW_SELECTION_PLACEMENTS.get(key)?.();
+  VIEW_SELECTION_PLACEMENTS.delete(key);
+};
+
+const PENDING_NOTIFICATIONS = new WeakSet<object>();
+
+/** A listener that edits must see the placement's publish finished. */
+const notifyAfterPublish = (key: object) => {
+  if (PENDING_NOTIFICATIONS.has(key)) return;
+
+  PENDING_NOTIFICATIONS.add(key);
+  queueMicrotask(() => {
+    PENDING_NOTIFICATIONS.delete(key);
+    notifyViewSelectionListeners(key);
+  });
+};
+
+/** A newer placement anywhere ends the selection, so paint follows the reader. */
+const watchPlacements = (key: object, editor: EditorRuntimeCarrier) => {
+  if (VIEW_SELECTION_PLACEMENTS.has(key)) return;
+
+  VIEW_SELECTION_PLACEMENTS.set(
+    key,
+    subscribeCommittedPlacement(editor, (generation) => {
+      const entry = EDITOR_TO_VIEW_SELECTION.get(key);
+
+      if (!entry) {
+        forget(key);
+        return;
+      }
+      if (entry.shownAt === null) entry.shownAt = generation;
+      else if (entry.shownAt !== generation) {
+        forget(key);
+        notifyAfterPublish(key);
+      }
+    })
+  );
+};
+
+/** Pure, so render-time snapshots may call it. */
 export const readPliteViewSelection = (
   editor: object
-): PliteViewSelection | null =>
-  EDITOR_TO_VIEW_SELECTION.get(getViewSelectionStoreKey(editor)) ?? null;
+): PliteViewSelection | null => {
+  const entry = EDITOR_TO_VIEW_SELECTION.get(getViewSelectionStoreKey(editor));
+
+  return entry && isCurrent(editor, entry) ? entry.selection : null;
+};
 
 export const mountPliteViewSelection = (editor: object) => {
   const key = getViewSelectionStoreKey(editor);
@@ -202,28 +269,97 @@ export const refreshPliteViewSelection = (editor: object) => {
   });
 };
 
-export const writePliteViewSelection = (
+export type PliteViewSelectionWrite = Readonly<{
+  notify?: boolean;
+}>;
+
+export type PliteViewSelectionShow = PliteViewSelectionWrite &
+  (
+    | Readonly<{
+        /** Places the anchor caret, or the range when it stays in one root. */
+        place: () => void;
+        placedAt?: never;
+      }>
+    | Readonly<{
+        place?: never;
+        placedAt: number;
+      }>
+  );
+
+type WritePliteViewSelection = {
+  (editor: object, selection: null, options?: PliteViewSelectionWrite): boolean;
+  (
+    editor: object,
+    selection: PliteViewSelection | null,
+    options: PliteViewSelectionShow
+  ): boolean;
+};
+
+export const writePliteViewSelection: WritePliteViewSelection = (
   editor: object,
   selection: PliteViewSelection | null,
-  options: { notify?: boolean } = {}
+  options: Readonly<{
+    notify?: boolean;
+    place?: () => void;
+    placedAt?: number;
+  }> = {}
 ) => {
   const key = getViewSelectionStoreKey(editor);
-  const previous = EDITOR_TO_VIEW_SELECTION.get(key) ?? null;
+  const previous = EDITOR_TO_VIEW_SELECTION.get(key);
+  const wasShown = !!previous && isCurrent(editor, previous);
   const shouldNotify = options.notify !== false;
-  if (previous === selection) return;
+  const end = () => {
+    forget(key);
+    if (wasShown && shouldNotify) notifyViewSelectionListeners(key);
+  };
 
+  if (
+    options.placedAt !== undefined &&
+    hasEditorRuntime(editor) &&
+    options.placedAt !== getPlacementGeneration(editor)
+  ) {
+    return false;
+  }
   if (!selection) {
-    EDITOR_TO_VIEW_SELECTION.delete(key);
-    if (previous && shouldNotify) {
-      notifyViewSelectionListeners(key);
-    }
-    return;
+    end();
+    options.place?.();
+    return false;
+  }
+  if (
+    wasShown &&
+    previous.selection === selection &&
+    options.placedAt === previous.shownAt
+  ) {
+    return true;
   }
 
-  EDITOR_TO_VIEW_SELECTION.set(key, selection);
-  if (previous !== selection && shouldNotify) {
-    notifyViewSelectionListeners(key);
+  const entry: ViewSelectionEntry = {
+    selection,
+    shownAt: options.placedAt ?? null,
+  };
+
+  EDITOR_TO_VIEW_SELECTION.set(key, entry);
+  if (!hasEditorRuntime(editor)) {
+    options.place?.();
+    if (shouldNotify) notifyViewSelectionListeners(key);
+    return EDITOR_TO_VIEW_SELECTION.get(key) === entry;
   }
+  watchPlacements(key, editor);
+  try {
+    options.place?.();
+  } catch (error) {
+    if (EDITOR_TO_VIEW_SELECTION.get(key) === entry) end();
+    throw error;
+  }
+  if (EDITOR_TO_VIEW_SELECTION.get(key) !== entry) return false;
+
+  entry.shownAt ??= getPlacementGeneration(editor);
+  if (getPlacementGeneration(editor) !== entry.shownAt) {
+    end();
+    return false;
+  }
+  if (shouldNotify) notifyViewSelectionListeners(key);
+  return EDITOR_TO_VIEW_SELECTION.get(key) === entry;
 };
 
 export const subscribePliteViewSelection = (

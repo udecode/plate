@@ -6,7 +6,10 @@ import {
 } from '../core/change/document-change';
 import { DocumentIndex } from '../core/change/document-index';
 import { joinsOf } from '../core/change/join';
-import { getDocumentChangeRelocations } from '../core/change/mapping';
+import {
+  type DocumentChangeRelocation,
+  getDocumentChangeRelocations,
+} from '../core/change/mapping';
 import { RootChange } from '../core/change/root-change';
 import {
   isTextNode,
@@ -179,6 +182,7 @@ export const createCharacterCorrespondence = (
   const source = valueRootIndex(before, root);
   const target = valueRootIndex(after, root);
   let joinedLines: ReadonlySet<number> | undefined;
+  let relocations: readonly DocumentChangeRelocation[] | undefined;
   let retained: readonly Retained[] | undefined;
   const joinedChange = (line: Readonly<{ from: number }>) => {
     const rootChange = getInternalDocumentRootChange(change, root);
@@ -196,7 +200,7 @@ export const createCharacterCorrespondence = (
   };
   const parents = new Map<
     string,
-    Projection | Readonly<{ joined: RootChange }> | null
+    Projection | Readonly<{ retained: RootChange }> | null
   >();
   const parentPair = (path: readonly number[]) => {
     const parentPath = path.slice(0, -1);
@@ -205,8 +209,8 @@ export const createCharacterCorrespondence = (
     const range = source.nodeRange(parentPath);
     const joined = joinedChange(range);
     if (joined) {
-      parents.set(key, { joined });
-      return { joined };
+      parents.set(key, { retained: joined });
+      return { retained: joined };
     }
     const mapped = mapInternalDocumentChangePosition(
       change,
@@ -217,13 +221,30 @@ export const createCharacterCorrespondence = (
     );
     let nextPath =
       mapped === null ? undefined : target.nodeStartingAt(mapped)?.path;
+    const rootChange = getInternalDocumentRootChange(change, root);
+    if (nextPath && rootChange) {
+      const close = mapInternalDocumentChangePosition(
+        change,
+        root,
+        range.to - 1,
+        1,
+        'after'
+      );
+      // A split keeps the parent's open in its first line and its close in
+      // the last, so its letters reach more than one target parent.
+      if (close !== null && close !== target.nodeRange(nextPath).to - 1) {
+        parents.set(key, { retained: rootChange });
+        return { retained: rootChange };
+      }
+    }
     if (!nextPath) {
-      const relocation = getDocumentChangeRelocations(
+      relocations ??= getDocumentChangeRelocations(
         change,
         root,
         source,
         target
-      ).find(
+      );
+      const relocation = relocations.find(
         (move) =>
           move.path.length <= parentPath.length &&
           move.path.every((part, at) => part === parentPath[at])
@@ -234,6 +255,11 @@ export const createCharacterCorrespondence = (
           ...parentPath.slice(relocation.path.length),
         ];
       }
+    }
+    const deletesOpenKeepsLetters = !nextPath && rootChange !== undefined;
+    if (deletesOpenKeepsLetters) {
+      parents.set(key, { retained: rootChange });
+      return { retained: rootChange };
     }
     const previous = source.node(parentPath);
     const next = nextPath ? target.node(nextPath) : null;
@@ -296,10 +322,10 @@ export const createCharacterCorrespondence = (
     }
     return getDefined(hosts[getDefined(path.at(-1))]);
   };
-  const joinedFragments = (span: CharacterSpan, joined: RootChange) => {
+  const retainedFragments = (span: CharacterSpan, rootChange: RootChange) => {
     const host = textHostAt(source, span.path);
     const fragments: Fragment[] = [];
-    retained ??= retainedSections(joined);
+    retained ??= retainedSections(rootChange);
     const sections = retained;
     let base = 0;
     host.leaves.forEach((leaf, at) => {
@@ -340,7 +366,7 @@ export const createCharacterCorrespondence = (
     fragments(span: CharacterSpan) {
       const pair = parentPair(span.path);
       if (!pair) return [];
-      if ('joined' in pair) return joinedFragments(span, pair.joined);
+      if ('retained' in pair) return retainedFragments(span, pair.retained);
       const start = sourcePosition(span, pair);
       if (pair.change.empty) {
         const entry = pair.after.textAt(start);
@@ -398,7 +424,7 @@ export const createCharacterCorrespondence = (
     },
     point(point: JsonPoint, association: -1 | 1): JsonPoint | null {
       const pair = parentPair(point.path);
-      if (!pair || 'joined' in pair) return null;
+      if (!pair || 'retained' in pair) return null;
       const host = textHostAt(source, point.path);
       let { offset } = point;
       for (

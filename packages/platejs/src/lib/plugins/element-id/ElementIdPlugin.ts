@@ -13,12 +13,14 @@ import {
   schema,
   target,
   getEditorCommitSnapshot,
+  getEditorCommitValue,
   MAIN_ROOT_KEY,
+  registerEditorTransactionGuard,
 } from '../../../facade';
 import { failInvariant } from '../../../internal/failInvariant';
 import { definePlugin } from '../../plugin/definePlugin';
 import {
-  assertElementIds,
+  assertElementId,
   elementIdDocumentRoots,
   elementIdRootChildren,
 } from './elementIdAdmission.internal';
@@ -62,16 +64,16 @@ export const ElementIdPlugin = definePlugin('elementId', {
       id: schema.elementProperty(
         property.string({ generate: initialState.generateId }),
         {
-          copy: 'drop',
           role: 'metadata',
-          split: 'drop',
           target: target.group('element'),
           typeChange: 'preserve-if-allowed',
+          unique: true,
         }
       ),
     },
   }),
 }).extend((context) => {
+  const { editor } = context;
   const idProperty = context.schema.properties.id;
   let runtimeIndex: Map<
     string,
@@ -100,6 +102,8 @@ export const ElementIdPlugin = definePlugin('elementId', {
     [...roots].every(
       ([root, children]) => runtimeIndexRoots?.get(root) === children
     );
+  const indexBuiltFrom = (value: EditorDocumentValue) =>
+    hasCurrentRuntimeRoots(collectRuntimeRoots(value));
   const indexRuntimeChildren = (
     state: Pick<EditorStateView, 'key' | 'schema'>,
     root: RootKey,
@@ -115,14 +119,9 @@ export const ElementIdPlugin = definePlugin('elementId', {
         const nodeKey = state.key(node);
         const id = state.schema.getProperty(node, idProperty);
 
-        if (typeof id === 'string') {
-          const existing = ids.get(id);
-
-          if (existing) {
-            throw new Error(
-              `Duplicate element ID "${id}" at ${existing.root}:[${existing.path}] and ${root}:[${path}].`
-            );
-          }
+        // Inside an update a draft can hold an id twice until admission
+        // renames one, so the first holder answers until then.
+        if (typeof id === 'string' && !ids.has(id)) {
           ids.set(id, { path, root, nodeKey });
           reverse.set(nodeKey, id);
         }
@@ -133,25 +132,38 @@ export const ElementIdPlugin = definePlugin('elementId', {
     visit(children, []);
   };
   return {
-    corrections: [
-      {
-        correct: ({ tx }) => {
-          assertElementIds(tx.value());
-        },
-        event: 'children',
-        query: 'root',
-      },
-      {
-        correct: ({ tx }) => {
-          assertElementIds(tx.value());
-        },
-        event: 'properties',
-        query: 'root',
-      },
-    ],
+    activate({ onCleanup }) {
+      onCleanup(
+        registerEditorTransactionGuard(editor, ({ after, commit }) => {
+          for (const root of elementIdDocumentRoots(after)) {
+            const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
+            const snapshot = getEditorCommitSnapshot(commit, root);
+
+            for (const nodeKey of new Set([
+              ...commit.changed.nodeKeys('node', publicRoot),
+              ...commit.changed.nodeKeys('presence', publicRoot),
+            ])) {
+              const path = snapshot.index.pathOf(nodeKey);
+              const node = path && getDescendantAt(snapshot.children, path);
+
+              if (ElementApi.isElement(node) && node.id !== undefined) {
+                assertElementId(node.id, `Element ID at ${root}:[${path}]`);
+              }
+            }
+          }
+        })
+      );
+    },
     on: {
-      commit({ commit, editor }) {
+      commit({ commit }) {
         if (!runtimeIndex) return;
+        if (!indexBuiltFrom(getEditorCommitValue(commit, 'before'))) {
+          runtimeIndex = null;
+          runtimeIndexRoots = null;
+          nodeKeys.clear();
+
+          return;
+        }
         const changedNodeKeys = new Set([
           ...commit.changed.nodeKeysAll('node'),
           ...commit.changed.nodeKeysAll('path'),
@@ -182,13 +194,6 @@ export const ElementIdPlugin = definePlugin('elementId', {
               const id = state.schema.getProperty(node, idProperty);
 
               if (typeof id !== 'string') continue;
-              const existing = (
-                runtimeIndex ?? failInvariant('Expected value to be defined')
-              ).get(id);
-
-              if (existing && existing.nodeKey !== nodeKey) {
-                throw new Error(`Duplicate element ID "${id}".`);
-              }
               (
                 runtimeIndex ?? failInvariant('Expected value to be defined')
               ).set(id, { path, root, nodeKey });

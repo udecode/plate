@@ -71,6 +71,7 @@ const assertDependencyCache = () => {
       cwd: repoRoot,
       encoding: 'utf-8',
       env: process.env,
+      maxBuffer: 64 * 1024 * 1024,
     }
   );
 

@@ -1921,6 +1921,10 @@ export const EditableTextFlow = ({
     };
   }, [addEventListener, decorationManager, nodeKeys, reconcile]);
   useIsomorphicLayoutEffect(
+    () => () => editableRuntime?.importUnreadPressBeforeUnmount(null),
+    [editableRuntime]
+  );
+  useIsomorphicLayoutEffect(
     () => () => {
       const { binding } = stateRef.current;
 

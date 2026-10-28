@@ -84,7 +84,7 @@ export function Caption({
 }) {
   const editor = useEditor();
   const path = usePath();
-  const nodeKey = editor.read((state) => state.key(path));
+  const nodeKey = editor.key(element);
   const width = 'width' in element ? element.width : undefined;
   const empty = useEditorSelector(
     (current) =>
