@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // TypeScript 7 exposes its parser only under `typescript/unstable/*`, so this
 // check uses the stable TypeScript 6 API.
-import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+import { trackedFiles } from './private-files.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('@typescript/typescript6');
@@ -434,21 +435,10 @@ export const checkBrowserTestImports = ({ files, fix = false, root }) => {
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const fix = process.argv.includes('--fix');
   const root = path.resolve(import.meta.dirname, '../..');
-  const files = execFileSync(
-    'git',
-    [
-      'ls-files',
-      '-z',
-      '--cached',
-      '--others',
-      '--exclude-standard',
-      '--',
-      ...FOLDERS,
-    ],
-    { cwd: root, encoding: 'utf-8' }
-  )
-    .split('\0')
-    .filter((file) => SOURCE_FILE.test(file));
+  const files = trackedFiles(root, {
+    pathspecs: FOLDERS,
+    untracked: true,
+  }).filter((file) => SOURCE_FILE.test(file));
   const { moved, problems } = checkBrowserTestImports({ files, fix, root });
 
   if (moved > 0) {

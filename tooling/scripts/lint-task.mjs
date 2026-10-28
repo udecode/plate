@@ -52,6 +52,7 @@ if (cover) {
   console.info(`Lint ${cover.label}, so it did not run again.`);
   process.exit(0);
 }
+cache.watch();
 const started = Date.now();
 
 const run = (args) => {

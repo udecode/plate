@@ -49,6 +49,7 @@ const canRetargetImports = (files, retargeted) =>
   )(files) ||
   files.some((file) => RESOLVER_CONFIG.test(file));
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
+const PACKAGE_MANIFEST = /^packages\/[^/]+\/package\.json$/u;
 const BUILD_CONFIG = /(?:^|\/)(?:package|turbo|tsconfig[\w.-]*)\.json$/u;
 const inTestSuite = (file) =>
   TEST_FILE_PATTERNS.some((pattern) => matchesGlob(file, pattern)) &&
@@ -378,7 +379,11 @@ export const steps = [
     private: true,
     run: 'pnpm entrypoint:turbo:check',
     write: 'pnpm entrypoint:turbo:generate',
-    affected: source,
+    // migrate-platejs-entrypoint-imports.mjs scans every code file under
+    // tooling/, product or not, for root imports of moved symbols.
+    affected: (files) =>
+      source(files) ||
+      files.some((file) => file.startsWith('tooling/') && CODE.test(file)),
     key: [],
   },
   {
@@ -431,11 +436,15 @@ export const steps = [
     run: 'node tooling/scripts/knowledge/kb.mjs check',
     fix: 'node tooling/scripts/knowledge/kb.mjs check --lower',
     // A deleted file can break a citation in any page, and a file added to a
-    // frozen folder fails K17.
+    // frozen folder fails K17. kb.mjs maps tests to their runners through the
+    // entrypoint DAG, which reads each package manifest.
     affected: (files) =>
       files.some(
         (file) =>
           file.startsWith('tooling/scripts/knowledge/') ||
+          file.startsWith('tooling/entrypoints/') ||
+          file === 'tooling/scripts/import-graph.mjs' ||
+          PACKAGE_MANIFEST.test(file) ||
           FROZEN.some((dir) => file.startsWith(dir)) ||
           indexPatterns.some((pattern) => matchesGlob(file, pattern)) ||
           !existsSync(join(root, file))
@@ -460,6 +469,9 @@ export const steps = [
       canRetargetImports(files, retargeted) ||
       files.filter((file) => CODE.test(file)),
     key: [],
+    // Resolving an import probes the generated folder, and no file in it can
+    // be private.
+    ignoredReads: ['apps/www/.source/'],
   },
   {
     name: 'manifests',
@@ -484,15 +496,25 @@ export const steps = [
   {
     name: 'www',
     run: 'pnpm turbo run build --filter=@platejs/cli && pnpm --filter www typecheck',
-    // next.config.ts imports docs/plite/reference/public-route-map.json.
+    // next.config.ts imports docs/plite/reference/public-route-map.json, and
+    // scripts/build-registry.mts imports the entrypoint DAG.
     affected: touches(
       'apps/www/',
       'content/',
       'docs/plite/reference/',
-      'packages/'
+      'packages/',
+      'tooling/entrypoints/'
     ),
     key: [],
     filesOnly: true,
+    // Its own commands build these from packages/ and content/ before its
+    // scripts read them.
+    ignoredReads: [
+      'apps/www/.source/',
+      'packages/cli/dist/',
+      'packages/platejs/dist/',
+      'packages/plitejs/dist/',
+    ],
     write:
       'pnpm turbo run build --filter=@platejs/cli && pnpm --filter www editor:generate && pnpm --filter www api-reference && pnpm --filter www build:registry',
   },
@@ -500,6 +522,13 @@ export const steps = [
     name: 'www-build',
     run: 'pnpm build:www:ci',
     optIn: '--build',
+  },
+  {
+    // It reruns the Node scripts of every keyed step, about two minutes, and
+    // traces www fully only once the www step has built packages/cli/dist.
+    name: 'step-reads',
+    run: 'node tooling/scripts/check-step-reads.mjs',
+    optIn: '--reads',
   },
 ];
 
@@ -673,7 +702,14 @@ const runStep = (step, command, { fresh, writing }) => {
 
 const main = () => {
   const args = process.argv.slice(2);
-  const flags = ['--affected', '--browser', '--build', '--list', '--write'];
+  const flags = [
+    '--affected',
+    '--browser',
+    '--build',
+    '--list',
+    '--reads',
+    '--write',
+  ];
   const unknownFlags = args.filter(
     (arg) => arg.startsWith('--') && !flags.includes(arg)
   );
@@ -712,7 +748,7 @@ const main = () => {
   const affected = args.includes('--affected');
   if (affected && (writing || optIns.length > 0 || names.length > 0)) {
     console.error(
-      '[check] --affected picks its own steps; run it without step names, --write, --build or --browser.'
+      '[check] --affected picks its own steps; run it without step names, --write, --build, --browser or --reads.'
     );
     return 1;
   }
@@ -777,6 +813,7 @@ const main = () => {
     console.info(
       group ? `::group::${step.name}` : `\n[check] ${step.name}: ${command}`
     );
+    cache.watch();
     const result = runStep(step, command, { fresh, writing });
     results.set(step.name, result);
     if (result.status === 0) cache.record(scope, result.seconds);

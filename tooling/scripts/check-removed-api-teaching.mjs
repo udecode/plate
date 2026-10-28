@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { showAt } from './private-files.mjs';
+import { byCodeUnit, grepFiles, showAt } from './private-files.mjs';
 import { generatedPrefixes, releaseNotePrefixes } from './teaching-sweep.mjs';
 
 const manifestPath = 'apps/www/src/generated/api-reference-manifest.json';
@@ -147,25 +147,21 @@ export const findRemovedApiTeaching = ({ base, cwd = process.cwd() }) => {
     .filter((specifier) => !headEntrypoints.has(specifier))
     .sort((left, right) => left.localeCompare(right));
 
-  const grep = (flags, patterns, specs) => {
-    if (patterns.length === 0) return [];
-    const result = git([
-      'grep',
-      '--untracked',
-      '-I',
-      '--no-color',
-      ...flags,
-      ...patterns.flatMap((pattern) => ['-e', pattern]),
-      '--',
-      ...specs,
-    ]);
-    if (result.status !== 0 && result.status !== 1) {
-      throw new Error(
-        result.stderr.trim() || `git grep exited ${result.status}`
-      );
-    }
-    return result.stdout.split('\n').filter(Boolean);
-  };
+  const grep = (flags, patterns, specs) =>
+    patterns.length === 0
+      ? []
+      : grepFiles(
+          root,
+          [
+            '-I',
+            '--no-color',
+            ...flags,
+            ...patterns.flatMap((pattern) => ['-e', pattern]),
+          ],
+          specs
+        )
+          .split('\n')
+          .filter(Boolean);
   const lines = ['-n', '--full-name'];
   const exports = [...baseNames.exports].filter(
     (name) => !headNames.exports.has(name)
@@ -194,7 +190,7 @@ export const findRemovedApiTeaching = ({ base, cwd = process.cwd() }) => {
       pathspecs
     ),
   ];
-  return { hits: [...new Set(hits)].sort(), names, specifiers };
+  return { hits: [...new Set(hits)].sort(byCodeUnit), names, specifiers };
 };
 
 if (

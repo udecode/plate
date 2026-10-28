@@ -4,13 +4,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { stateOf } from '../../.agents/pstack/status.mjs';
-import {
-  existsAt,
-  isSplit,
-  pairedCommit,
-  privateGit,
-  showAt,
-} from './private-files.mjs';
+import { existsAt, grepFiles, showAt } from './private-files.mjs';
 import { planLabels } from './review-ledger.mjs';
 
 export const generatedPrefixes = [
@@ -56,39 +50,22 @@ export const sweep = ({ cwd = process.cwd(), rev, terms }) => {
       maxBuffer: 64 * 1024 * 1024,
     });
   const root = git(['rev-parse', '--show-toplevel']).stdout.trim();
-  const grep = (untracked, at) => [
-    'grep',
-    '-z',
-    '-n',
-    '--no-column',
-    '--no-color',
-    '-I',
-    '-i',
-    '-E',
-    '--full-name',
-    ...(untracked ? ['--untracked'] : []),
-    ...patterns,
-    ...(at ? [at] : []),
-    '--',
-    wholeRepository,
-  ];
-  // plate-private's own --untracked would list every public file, so it
-  // searches only the files it tracks.
-  const paired = rev ? pairedCommit(root, rev) : null;
-  const searches = [
-    [git(grep(!rev, rev)), rev],
-    ...(isSplit(root) && (!rev || paired)
-      ? [[privateGit(root, grep(false, paired)), paired]]
-      : []),
-  ];
-  for (const [result] of searches) {
-    if (result.error) throw result.error;
-    if (result.status !== 0 && result.status !== 1) {
-      throw new Error(
-        result.stderr.trim() || `git grep exited ${result.status}`
-      );
-    }
-  }
+  const found = grepFiles(
+    root,
+    [
+      '-z',
+      '-n',
+      '--no-column',
+      '--no-color',
+      '-I',
+      '-i',
+      '-E',
+      '--full-name',
+      ...patterns,
+    ],
+    [wholeRepository],
+    { rev }
+  );
 
   const exists = (path) =>
     rev ? existsAt(root, rev, path) : existsSync(join(root, path));
@@ -131,21 +108,17 @@ export const sweep = ({ cwd = process.cwd(), rev, terms }) => {
   /** @type {Record<string, string[]>} */
   const groups = { live: [], generated: [], 'release notes': [], history: [] };
   const livePaths = new Set();
-  for (const [result, at] of searches) {
-    const revPrefix = at ? `${at}:` : '';
-    let parsed = 0;
-    for (const [record, name, number, text] of result.stdout.matchAll(
-      /([^\0]*)\0(\d+)\0([^\n]*)\n/g
-    )) {
-      parsed += record.length;
-      const path = name.slice(revPrefix.length);
-      const group = classify(path);
-      if (group === 'live') livePaths.add(path);
-      groups[group].push(`${path}:${number}: ${text.trim().slice(0, 160)}`);
-    }
-    if (parsed !== result.stdout.length) {
-      throw new Error('git grep printed records this sweep cannot parse');
-    }
+  let parsed = 0;
+  for (const [record, path, number, text] of found.matchAll(
+    /([^\0]*)\0(\d+)\0([^\n]*)\n/g
+  )) {
+    parsed += record.length;
+    const group = classify(path);
+    if (group === 'live') livePaths.add(path);
+    groups[group].push(`${path}:${number}: ${text.trim().slice(0, 160)}`);
+  }
+  if (parsed !== found.length) {
+    throw new Error('git grep printed records this sweep cannot parse');
   }
   const twins = [...livePaths]
     .flatMap((path) => {

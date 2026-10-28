@@ -10,9 +10,11 @@ import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries
 import {
   changedSince,
   existsAt,
+  filesAt,
+  grepFiles,
   inHistory,
-  newPrivateFiles,
   trackedFiles,
+  untrackedFiles,
 } from './private-files.mjs';
 
 export const scopesDir = 'docs/research/review-scopes';
@@ -122,12 +124,7 @@ export function observe(root) {
   let listed;
   const digests = new Map();
   const files = () => {
-    listed ??= execFileSync(
-      'git',
-      ['-C', root, 'ls-files', '-z', '-co', '--exclude-standard'],
-      { encoding: 'utf-8', maxBuffer: 1 << 28 }
-    )
-      .split('\0')
+    listed ??= trackedFiles(root, { untracked: true })
       .filter(
         (path) =>
           path &&
@@ -426,16 +423,10 @@ export function loadLedger(root) {
     records.set(raw.id, { ...normalize(raw), sha256 });
   }
   const pages = new Map();
-  for (const path of (
-    git(root, [
-      'grep',
-      '-l',
-      '--untracked',
-      '-E',
-      '^verdict:',
-      '--',
-      'docs/plans/*.md',
-    ]) ?? ''
+  for (const path of grepFiles(
+    root,
+    ['-l', '-E', '^verdict:'],
+    ['docs/plans/*.md']
   )
     .split('\n')
     .filter(Boolean)) {
@@ -723,28 +714,13 @@ export function associationOf(root, ledger, path) {
 
 const literalPaths = ['-c', 'core.quotePath=false'];
 
-function gitGrep(root, args) {
-  try {
-    return execFileSync('git', ['-C', root, ...literalPaths, 'grep', ...args], {
-      encoding: 'utf-8',
-      maxBuffer: 1 << 28,
-    });
-  } catch (error) {
-    if (error.status !== 1) throw error;
-    return '';
-  }
-}
-
 /** Plans that declare review metadata, plus classified historical plans. */
 export function plansOf(root, ledger) {
-  const declared = gitGrep(root, [
-    '-l',
-    '--untracked',
-    '-E',
-    '^review_scopes:',
-    '--',
-    'docs/plans/*.md',
-  ])
+  const declared = grepFiles(
+    root,
+    ['-l', '-E', '^review_scopes:'],
+    ['docs/plans/*.md']
+  )
     .split('\n')
     .filter(Boolean);
   const paths = new Set([
@@ -837,19 +813,11 @@ function importEdges(ledger, commit = null) {
   if (!edgeCache.has(ledger)) edgeCache.set(ledger, new Map());
   const cache = edgeCache.get(ledger);
   if (cache.has(commit)) return cache.get(commit);
-  const listed = execFileSync(
-    'git',
-    [
-      '-C',
-      root,
-      ...literalPaths,
-      ...(commit
-        ? ['ls-tree', '-r', '--name-only', commit, '--', ...importRoots]
-        : ['ls-files', '-co', '--exclude-standard', '--', ...importRoots]),
-    ],
-    { encoding: 'utf-8', maxBuffer: 1 << 28 }
+  const files = new Set(
+    commit
+      ? filesAt(root, commit, importRoots)
+      : trackedFiles(root, { pathspecs: importRoots, untracked: true })
   );
-  const files = new Set(listed.split('\n').filter(Boolean));
   const specifiers = new Map(
     getWorkspaceSourceEntries(root).map(({ sourceEntry, specifier }) => [
       specifier,
@@ -862,22 +830,14 @@ function importEdges(ledger, commit = null) {
           .map((extension) => `${join(dirname(file), specifier)}${extension}`)
           .find((path) => files.has(path))
       : specifiers.get(specifier);
-  const found = gitGrep(root, [
-    ...(commit ? [] : ['--untracked']),
-    '-I',
-    '-o',
-    '-E',
-    importGrep,
-    ...(commit ? [commit] : []),
-    '--',
-    ...importRoots,
-  ]);
+  const found = grepFiles(root, ['-I', '-o', '-E', importGrep], importRoots, {
+    rev: commit,
+  });
   const edges = [];
   for (const line of found.split('\n')) {
-    const rest = commit ? line.slice(commit.length + 1) : line;
-    const split = rest.indexOf(':');
-    const file = rest.slice(0, split);
-    const specifier = rest.slice(split + 1).match(importSpecifier)?.[1];
+    const split = line.indexOf(':');
+    const file = line.slice(0, split);
+    const specifier = line.slice(split + 1).match(importSpecifier)?.[1];
     if (
       !specifier ||
       file.startsWith('packages/plitejs/') ||
@@ -966,16 +926,12 @@ function commitFreshness(tree, record) {
     legacyGroups: 0,
     upstream: null,
   };
-  const moved = changedSince(tree.root, record.commit)?.join('\n') ?? null;
+  const moved = changedSince(tree.root, record.commit);
   if (moved === null) {
     return { ...result, reason: `commit ${record.commit} is not reachable` };
   }
-  const untracked = [
-    git(tree.root, ['ls-files', '--others', '--exclude-standard']) ?? '',
-    ...newPrivateFiles(tree.root),
-  ].join('\n');
   const hit = new Set();
-  for (const path of `${moved}\n${untracked}`.split('\n').filter(Boolean)) {
+  for (const path of [...moved, ...untrackedFiles(tree.root)]) {
     if (isLaw(path)) {
       result.law.changed.push(path);
       continue;
@@ -1718,17 +1674,10 @@ export function check(root, { base = 'HEAD' } = {}) {
     }
     if (problems.length) errors.push(`${plan.path}: ${problems.join(', ')}`);
   }
-  for (const path of (
-    git(root, [
-      'grep',
-      '-l',
-      '--untracked',
-      '-i',
-      '-E',
-      '^(review|verdict|work.?kind)',
-      '--',
-      'docs/plans/*.md',
-    ]) ?? ''
+  for (const path of grepFiles(
+    root,
+    ['-l', '-i', '-E', '^(review|verdict|work.?kind)'],
+    ['docs/plans/*.md']
   )
     .split('\n')
     .filter(Boolean)) {
@@ -1801,16 +1750,7 @@ function planContext(root, ledger, plans, base, errors) {
     );
   }
   const atBase = baseCommit
-    ? new Set(
-        git(root, [
-          'ls-tree',
-          '-r',
-          '--name-only',
-          baseCommit,
-          '--',
-          'docs/plans',
-        ])?.split('\n')
-      )
+    ? new Set(filesAt(root, baseCommit, ['docs/plans']))
     : null;
   return {
     root,

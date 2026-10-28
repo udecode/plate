@@ -42,7 +42,7 @@
 // this repository or its companion, a card in the suggested-task ledger, or a
 // dated plan in the plans directory that exists.
 
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { availableParallelism, devNull, tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
@@ -110,7 +110,11 @@ const messageText = messageFile === null ? null : readFileSync(messageFile, 'utf
 
 process.chdir(must('rev-parse', '--show-toplevel'));
 const config = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
-const { branch, protected: guarded, lintFix, plans = 'docs/plans', companion, generated = [] } = config;
+const { branch, protected: guarded, lintFix, plans = 'docs/plans', companion, generated = [], freshEnv = [] } = config;
+const fresh = freshEnv.find((assignment) => {
+  const at = assignment.indexOf('=');
+  return process.env[assignment.slice(0, at)] === assignment.slice(at + 1);
+});
 if (!branch) fail('.agents/pstack.json names no branch');
 const pair = companion?.dir && existsSync(companion.dir) ? companion : null;
 const delivery = git('config', '--get', 'pstack.delivery').stdout.trim();
@@ -144,9 +148,21 @@ if (pair && stopped(cgit)) fail(`a rebase or merge is in progress in ${pair.dir}
 const dirty = () => must('status', '--porcelain', '--untracked-files=all') !== '';
 const sideDirty = () => pair !== null && cmust('status', '--porcelain', '--untracked-files=no') !== '';
 
-function fetch() {
-  must('fetch', '--quiet', canonical, `+refs/heads/${branch}:${upstream}`);
-  if (pair) cmust('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${cupstream}`);
+const gitAsync = (args) =>
+  new Promise((resolve) => {
+    const child = spawn('git', args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    let stderr = '';
+    child.stderr.setEncoding('utf8').on('data', (chunk) => (stderr += chunk));
+    child.on('close', (status) => resolve({ status, stderr }));
+  });
+
+// Each half's fetch is a network round trip of a second or two, so both run at once.
+async function fetch() {
+  const own = ['fetch', '--quiet', canonical, `+refs/heads/${branch}:${upstream}`];
+  const theirs = ['fetch', '--quiet', 'origin', `+refs/heads/${branch}:${cupstream}`];
+  const [run, crun] = await Promise.all([gitAsync(own), pair ? gitAsync([...side, ...theirs]) : null]);
+  if (run.status !== 0) fail(`git ${own.join(' ')} failed: ${run.stderr.trim()}`);
+  if (crun && crun.status !== 0) fail(`git ${theirs.join(' ')} in ${pair.dir} failed: ${crun.stderr.trim()}`);
 }
 
 function rebase(inCompanion = false) {
@@ -440,7 +456,7 @@ function squash({ subject, body }) {
   return { plan, lead, own: own.length > 0, theirs: theirs.length > 0 };
 }
 
-fetch();
+await fetch();
 // <branch>'s config, because a task could loosen its own copy, and a branch cut before the split still carries the config from before it.
 const settled = JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}');
 const { sourceless } = settled;
@@ -510,7 +526,10 @@ function check(rebased = false) {
   checkTime = performance.now() - started;
 }
 
-if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
+if (fresh) {
+  console.log(`${fresh} is set, so land.mjs runs the checks again whatever it recorded.`);
+  check();
+} else if (existsSync(record) && readFileSync(record, 'utf8') === stamp()) {
   console.log('land.mjs recorded this commit in an earlier run, so it pushes without running the checks again.');
 } else {
   check();
@@ -534,7 +553,7 @@ if (mode === 'push') {
     } else if (moved && moves < RETRIES) {
       moves += 1;
       console.log(`origin/${branch} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
-      fetch();
+      await fetch();
       rebase();
       if (pair) rebase(true);
       check(true);

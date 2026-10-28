@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -21,6 +22,7 @@ import {
   newPrivateFiles,
   objectIds,
   privateGit,
+  trackedFiles,
   withList,
 } from './private-files.mjs';
 
@@ -198,6 +200,26 @@ const snapshot = (root) => {
   ].sort(byCodeUnit);
   return { head, index, work };
 };
+
+const statLine = (root, file) => {
+  const stat = lstatSync(path.join(root, file), {
+    bigint: true,
+    throwIfNoEntry: false,
+  });
+  return stat
+    ? `${stat.ino} ${stat.size} ${stat.mtimeNs} ${stat.ctimeNs}`
+    : 'missing';
+};
+
+// A write moves a file's ctime even when it puts the same bytes back, which
+// the trees cannot show.
+const stamp = (root) =>
+  new Map(
+    trackedFiles(root, { untracked: true }).map((file) => [
+      file,
+      statLine(root, file),
+    ])
+  );
 
 const stateId = ({ head, index, work }, filesOnly) =>
   sha256(
@@ -400,6 +422,10 @@ const sweep = (store) => {
  */
 export function openCache(root, { fresh = false } = {}) {
   let state;
+  let marked;
+  // Whether every file held the snapshot's bytes at the last mark.
+  let faithful = true;
+  const skipped = [];
   let store;
   let global;
   let date;
@@ -413,6 +439,44 @@ export function openCache(root, { fresh = false } = {}) {
   const current = () => {
     state ??= snapshot(root);
     return state;
+  };
+  const sameWork = () => {
+    const { work } = snapshot(root);
+    return (
+      work.public === current().work.public &&
+      work.private === current().work.private
+    );
+  };
+  // A run whose checks all have recorded passes never stamps. The snapshot
+  // after the stamp tells whether a write before it changed the files.
+  const watch = () => {
+    if (fresh || marked) return;
+    current();
+    marked = stamp(root);
+    faithful = sameWork();
+  };
+  // Closes the span since the last mark, which holds the check that just
+  // passed and any failed check before it, and says why that pass cannot
+  // stand on the state the cache opened on, or null when it can.
+  const markStep = (name) => {
+    if (!marked) {
+      return `the cache was not watching the files while ${name} ran`;
+    }
+    const startedFaithful = faithful;
+    const now = new Map();
+    let written;
+    for (const [file, line] of marked) {
+      now.set(file, statLine(root, file));
+      if (written === undefined && now.get(file) !== line) written = file;
+    }
+    marked = now;
+    if (written !== undefined) {
+      faithful = sameWork();
+      return `${written} was written while ${name} ran`;
+    }
+    return startedFaithful
+      ? null
+      : `${name} ran on files that changed after the cache opened`;
   };
   const storeDir = () => {
     store ??= path.join(
@@ -491,7 +555,14 @@ export function openCache(root, { fresh = false } = {}) {
     };
   };
   const flush = () => {
-    if (dropped || queue.length === 0) return { dropped, written: 0 };
+    const notRecorded = () =>
+      skipped.length === 0
+        ? null
+        : `${skipped.join('; ')}, so ${
+            skipped.length === 1 ? 'that pass is' : 'those passes are'
+          } not recorded`;
+    if (dropped) return { dropped, written: 0 };
+    if (queue.length === 0) return { dropped: notRecorded(), written: 0 };
     const passes = queue;
     queue = [];
     queued = 0;
@@ -508,7 +579,7 @@ export function openCache(root, { fresh = false } = {}) {
       );
     }
     sweep(storeDir());
-    return { dropped: null, written: passes.length };
+    return { dropped: notRecorded(), written: passes.length };
   };
 
   return {
@@ -541,7 +612,9 @@ export function openCache(root, { fresh = false } = {}) {
               files: [],
               kind: 'exact',
               retargeted: [],
-              label: `passed at this tree (${exact.worktree}, ${ago(exact.at)})`,
+              label: `passed at this tree (${exact.worktree}, ${ago(
+                exact.at
+              )})`,
             },
           ];
         }
@@ -586,13 +659,26 @@ export function openCache(root, { fresh = false } = {}) {
       return found;
     },
     /**
-     * Queues `scope` as passed on the state the cache opened on; flushes once
-     * FLUSH_SECONDS of passes wait.
+     * Stamps every file of both halves, once, so `record` can tell which
+     * check wrote one. Call it just before the first check runs.
+     */
+    watch,
+    /**
+     * Queues `scope` as passed on the state the cache opened on, unless a file
+     * of either half was written while it ran, even back to the same bytes, or
+     * held other bytes when it started; flushes once FLUSH_SECONDS of passes
+     * wait. Call it right after each check that passed.
      * @param {Scope} scope the check that passed
      * @param {number} seconds how long it ran
      */
     record(scope, seconds) {
-      if (fresh || !scope.key || dropped) return;
+      if (fresh || dropped) return;
+      const reason = markStep(scope.name);
+      if (!scope.key) return;
+      if (reason) {
+        skipped.push(reason);
+        return;
+      }
       queue.push({
         at: stateId(current(), scope.filesOnly),
         key: keyOf(scope),
@@ -613,7 +699,7 @@ export function openCache(root, { fresh = false } = {}) {
      * Publishes the queued passes if the checkout still has the state the
      * cache opened on, and sweeps old records once a day. Once the checkout
      * changed, it records nothing more and keeps returning why.
-     * @returns {{ written: number, dropped: string | null }}
+     * @returns {{ written: number, dropped: string | null }} dropped says why passes went unrecorded
      */
     flush,
   };

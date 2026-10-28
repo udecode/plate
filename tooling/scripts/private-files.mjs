@@ -91,16 +91,25 @@ export const lacksList = (root, commit) =>
   run(root, ['cat-file', '-e', `${commit}:${PRIVATE_LIST}`]).status !== 0;
 
 /** Private files on disk that neither repository tracks yet. */
-export const newPrivateFiles = (root) => {
+export const newPrivateFiles = (root, pathspecs = []) => {
   if (!existsSync(path.join(root, PRIVATE_LIST))) return [];
   // The private repository's own view skips what .gitignore and the user's
   // global excludes skip, and lists every public file as untracked, so those
   // go first. It does not read the public .git/info/exclude, which
   // check-ignore also matches, so a path the clone ignores there is dropped
   // rather than called private.
-  const args = ['ls-files', '-z', '--others', '--exclude-standard'];
+  const args = [
+    'ls-files',
+    '-z',
+    '--others',
+    '--exclude-standard',
+    '--',
+    ...pathspecs,
+  ];
   const split = isSplit(root);
-  const tracked = split && new Set(entries(must(root, ['ls-files', '-z'])));
+  const tracked =
+    split &&
+    new Set(entries(must(root, ['ls-files', '-z', '--', ...pathspecs])));
   const candidates = entries(
     split ? privateMust(root, args) : must(root, args)
   ).filter((file) => !tracked || !tracked.has(file));
@@ -120,7 +129,7 @@ export const copyIndex = (from, to) => {
   utimesSync(to, atime, mtime);
 };
 
-export const listedPublic = (root) =>
+export const listedPublic = (root, pathspecs = []) =>
   entries(
     must(root, [
       ...withList(root),
@@ -129,28 +138,44 @@ export const listedPublic = (root) =>
       '--cached',
       '--ignored',
       '--exclude-standard',
+      '--',
+      ...pathspecs,
     ])
   );
 
-/** The files each repository tracks, or would track once split. */
-export const repoFiles = (root, { untracked = false } = {}) => {
-  const listed = entries(must(root, ['ls-files', '-z']));
-  const newPublic = untracked
-    ? entries(
-        must(root, [
-          ...withList(root),
-          'ls-files',
-          '-z',
-          '--others',
-          '--exclude-standard',
-        ])
-      )
-    : [];
-  const newPrivate = untracked ? newPrivateFiles(root) : [];
+const newPublicFiles = (root, pathspecs = []) =>
+  entries(
+    must(root, [
+      ...withList(root),
+      'ls-files',
+      '-z',
+      '--others',
+      '--exclude-standard',
+      '--',
+      ...pathspecs,
+    ])
+  );
+
+/** The files on disk that `pathspecs` match and neither repository tracks or ignores. */
+export const untrackedFiles = (root, pathspecs = []) => [
+  ...newPublicFiles(root, pathspecs),
+  ...newPrivateFiles(root, pathspecs),
+];
+
+/**
+ * The files each repository tracks, or would track once split, that
+ * `pathspecs` match; with `untracked`, also the files on disk that neither
+ * tracks yet and neither ignores.
+ */
+export const repoFiles = (root, { pathspecs = [], untracked = false } = {}) => {
+  const scope = ['--', ...pathspecs];
+  const listed = entries(must(root, ['ls-files', '-z', ...scope]));
+  const newPublic = untracked ? newPublicFiles(root, pathspecs) : [];
+  const newPrivate = untracked ? newPrivateFiles(root, pathspecs) : [];
   if (isSplit(root)) {
     return {
       private: [
-        ...entries(privateMust(root, ['ls-files', '-z'])),
+        ...entries(privateMust(root, ['ls-files', '-z', ...scope])),
         ...newPrivate,
       ],
       public: [...listed, ...newPublic],
@@ -159,7 +184,7 @@ export const repoFiles = (root, { untracked = false } = {}) => {
   if (!existsSync(path.join(root, PRIVATE_LIST))) {
     return { private: newPrivate, public: [...listed, ...newPublic] };
   }
-  const hidden = new Set(listedPublic(root));
+  const hidden = new Set(listedPublic(root, pathspecs));
   return {
     private: [...hidden, ...newPrivate],
     public: [...listed.filter((file) => !hidden.has(file)), ...newPublic],
@@ -407,8 +432,7 @@ export const movedBetween = (root, from, to, files) => {
   ]);
 };
 
-/** Whether either repository's history holds a path. */
-export const inHistory = (root, file) =>
+const logged = (root, file) =>
   Boolean(
     run(root, ['log', '--all', '-1', '--format=%H', '--', file]).stdout.trim()
   ) ||
@@ -423,6 +447,46 @@ export const inHistory = (root, file) =>
         file,
       ]).stdout.trim()
     ));
+
+const histories = new Map();
+
+// One walk per repository lists every path its history touched, where a walk
+// per missing path costs as much each.
+const historyOf = (root) => {
+  if (!histories.has(root)) {
+    const paths = new Set();
+    const log = [
+      'log',
+      '--all',
+      '--format=',
+      '--name-only',
+      '--no-renames',
+      '-z',
+    ];
+    for (const result of [
+      run(root, log),
+      ...(isSplit(root) ? [privateGit(root, log)] : []),
+    ]) {
+      for (const file of entries(result.stdout)) {
+        for (
+          let end = file.length;
+          end > 0;
+          end = file.lastIndexOf('/', end - 1)
+        ) {
+          paths.add(file.slice(0, end));
+        }
+      }
+    }
+    histories.set(root, paths);
+  }
+  return histories.get(root);
+};
+
+/** Whether either repository's history holds a path. */
+export const inHistory = (root, file) =>
+  /[*?[]/u.test(file)
+    ? logged(root, file)
+    : historyOf(root).has(file.replace(/\/+$/u, ''));
 
 /** The files both repositories track at a udecode/plate rev, sorted. */
 export const filesAt = (root, rev, pathspecs = []) => {
@@ -447,6 +511,67 @@ export const filesAt = (root, rev, pathspecs = []) => {
     );
   }
   return [...new Set(files)].sort(byCodeUnit);
+};
+
+/**
+ * `git grep` with `args`, its options and patterns, over the files both
+ * repositories hold that `pathspecs` match: at a udecode/plate rev and its
+ * paired plate-private commit, or else in the working tree, untracked files
+ * included. Each output line loses its `<rev>:` prefix, so both halves print
+ * alike. No match prints nothing.
+ */
+export const grepFiles = (root, args, pathspecs = [], { rev } = {}) => {
+  const grep = (git, options, at, specs) => {
+    const result = git([
+      '-c',
+      'core.quotePath=false',
+      'grep',
+      ...options,
+      ...args,
+      ...(at ? [at] : []),
+      '--',
+      ...specs,
+    ]);
+    if (result.error) throw result.error;
+    if (result.status !== 0 && result.status !== 1) {
+      throw new Error(
+        result.stderr.trim() || `git grep exited ${result.status}`
+      );
+    }
+    if (!at) return result.stdout;
+    const prefix = `${at}:`;
+    return result.stdout
+      .split('\n')
+      .map((line) =>
+        line.startsWith(prefix) ? line.slice(prefix.length) : line
+      )
+      .join('\n');
+  };
+  const own = (gitArgs) => run(root, gitArgs);
+  const side = (gitArgs) => privateGit(root, gitArgs);
+  if (rev) {
+    const paired = pairedCommit(root, rev);
+    return [
+      grep(own, [], rev, pathspecs),
+      paired ? grep(side, [], paired, pathspecs) : '',
+    ].join('');
+  }
+  if (!isSplit(root)) return grep(own, ['--untracked'], null, pathspecs);
+  // plate-private's own --untracked would search every public file too, so it
+  // searches its new files by name.
+  const added = newPrivateFiles(root, pathspecs);
+  return [
+    grep(own, ['--untracked'], null, pathspecs),
+    grep(side, [], null, pathspecs),
+    added.length > 0
+      ? grep(
+          side,
+          ['--untracked'],
+          null,
+          added.map((file) => `:(literal)${file}`)
+        )
+      : '',
+  ].join('');
 };
 
 /** Whether the private files are on disk, so `pnpm check` can run every step. */

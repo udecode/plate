@@ -516,14 +516,30 @@ const UNIT_TEST_RUNNER =
   /^(?:bun:test|node:test|vitest(?:\/.*)?|@vitest\/.+)$/u;
 const AGENT_TOOLING = /^\.(?:agents|claude)\//u;
 
-/** Public code files, all or those in `only`, that import a private file or a test runner. */
+/**
+ * Public code files, all or those in `only`, that import a private file or a
+ * test runner. A scan of all of them keeps what it learned in the clone's git
+ * directory, so the next one parses and resolves only what changed.
+ */
 export const crossingImports = async (root, only) => {
   if (!existsSync(path.join(root, PRIVATE_LIST))) return [];
-  const { moduleSpecifiers, resolveImport } =
-    await import('./import-graph.mjs');
+  const graph = await import('./import-graph.mjs');
   const files = repoFiles(root, { untracked: true });
   const hidden = new Set(files.private);
   const real = realpathSync(root);
+  const { moduleSpecifiers, resolveImport, save } = only
+    ? { ...graph, save: () => {} }
+    : graph.storedGraph(
+        path.join(
+          must(root, [
+            'rev-parse',
+            '--path-format=absolute',
+            '--git-common-dir',
+          ]).trim(),
+          'plate-imports'
+        ),
+        real
+      );
   const crossings = [];
   for (const file of files.public) {
     if (only && !only.has(file)) continue;
@@ -541,6 +557,7 @@ export const crossingImports = async (root, only) => {
       }
     }
   }
+  save();
   return crossings;
 };
 
