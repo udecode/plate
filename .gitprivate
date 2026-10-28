@@ -44,15 +44,6 @@
 !/turbo.json
 !/vercel.json
 
-# Docs are private apart from the route map the docs site build reads.
-!/docs/
-/docs/*
-!/docs/plite/
-/docs/plite/*
-!/docs/plite/reference/
-/docs/plite/reference/*
-!/docs/plite/reference/public-route-map.json
-
 # Tests, the same globs as reviewPaths.tests in .agents/pstack.json.
 *.slow.*
 *.spec.*
