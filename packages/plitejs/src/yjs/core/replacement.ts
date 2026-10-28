@@ -19,6 +19,11 @@ import {
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
 import {
+  holdsNewLetters,
+  runLettersAt,
+  type YjsLettersAt,
+} from './new-letters';
+import {
   encodeYjsSetValueAttributes,
   getYjsSetValueAttributeKeys,
 } from './set-valued-attributes';
@@ -162,7 +167,9 @@ const unchanged = (
  * element, letters or props it gains get a new Yjs text at its place; among
  * the listed children, whose parent is unknown, it must stay empty. A listed
  * element pairs only when the change keeps it, because a peer's edit to the
- * old node must not reach the new one.
+ * old node must not reach the new one. Children that hold new letters are
+ * written even when their value is unchanged, so those letters replace the
+ * old ones.
  */
 const alignReplacement = (
   read: YjsVisibleChildrenReader,
@@ -171,10 +178,12 @@ const alignReplacement = (
   before: readonly Descendant[],
   after: readonly Descendant[],
   start: number,
-  replaced: YjsReplacedElement
+  replaced: YjsReplacedElement,
+  hasNewLetters = false
 ): Array<YjsSegment | null> | null => {
   if (
     start === 0 &&
+    !hasNewLetters &&
     unchanged(before, after) &&
     !before.some((_, index) => replaced(index))
   ) {
@@ -237,8 +246,10 @@ const writeReplacement = (
   isSetValued: YjsSetPropertyResolver,
   location: YjsPropertyLocation,
   retyped: boolean,
-  replaced: YjsReplacedElement
+  replaced: YjsReplacedElement,
+  letters: YjsLettersAt | undefined
 ): boolean => {
+  const base = location.offset ?? start;
   const physical = alignReplacement(
     read,
     parent,
@@ -246,7 +257,9 @@ const writeReplacement = (
     before,
     after,
     start,
-    replaced
+    replaced,
+    !!letters?.place &&
+      holdsNewLetters(letters.letters, location.path, base, base + after.length)
   );
   if (!physical) return false;
   const oldSegments = segmentPliteChildren(before);
@@ -257,7 +270,7 @@ const writeReplacement = (
     const encode = () =>
       createYjsRunEncoder(isSetValued, {
         ...location,
-        offset: (location.offset ?? start) + next.from,
+        offset: base + next.from,
       });
     if (!target) {
       if (parent && next.kind === 'text' && !isBareTextRun(next)) {
@@ -279,10 +292,25 @@ const writeReplacement = (
       previous.kind === 'text' &&
       next.kind === 'text'
     ) {
+      const runLetters = runLettersAt(
+        letters,
+        location.path,
+        base + next.from,
+        next.leaves,
+        previous.from,
+        previous.leaves
+      );
       // Text under a retyped element was stored under the old type's rules, so
       // it is compared with what the chain stores rather than re-encoded.
-      if (retyped) rewriteTextRuns(target.chain, next.leaves, encode());
-      else writeTextRuns(target.chain, previous.leaves, next.leaves, encode());
+      if (retyped) {
+        rewriteTextRuns(target.chain, next.leaves, encode(), {
+          letters: runLetters,
+        });
+      } else {
+        writeTextRuns(target.chain, previous.leaves, next.leaves, encode(), {
+          letters: runLetters,
+        });
+      }
     } else if (
       target.kind === 'element' &&
       previous.kind === 'element' &&
@@ -290,7 +318,7 @@ const writeReplacement = (
     ) {
       const context = createYjsPropertyContext(next.node, {
         ...location,
-        path: [...location.path, (location.offset ?? start) + next.from],
+        path: [...location.path, base + next.from],
       });
       setYjsElementAttributes(
         target.node,
@@ -313,7 +341,14 @@ const writeReplacement = (
           root: context.root,
         },
         retyped || previous.node.type !== next.node.type,
-        notReplaced
+        notReplaced,
+        letters && {
+          letters: letters.letters,
+          place: letters.place && {
+            offset: 0,
+            path: [...letters.place.path, letters.place.offset + previous.from],
+          },
+        }
       );
     }
   }
@@ -330,7 +365,8 @@ export const replaceCompatibleYjsChildren = (
   location: YjsPropertyLocation = { ancestors: [], path: [], root: null },
   /** Whether `before` sits under an element whose type `after` changes. */
   retyped = false,
-  replaced: YjsReplacedElement = notReplaced
+  replaced: YjsReplacedElement = notReplaced,
+  letters?: YjsLettersAt
 ): boolean =>
   writeReplacement(
     write,
@@ -343,5 +379,6 @@ export const replaceCompatibleYjsChildren = (
     isSetValued,
     location,
     retyped,
-    replaced
+    replaced,
+    letters
   );

@@ -17,6 +17,7 @@ import {
   type YjsWrite,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
+import type { YjsLetters } from './new-letters';
 import { replaceCompatibleYjsChildren } from './replacement';
 
 const valueForRoot = (
@@ -121,12 +122,26 @@ export const reconcileYjsRoot = (
   before: readonly Descendant[],
   after: readonly Descendant[],
   isSetValued: YjsSetPropertyResolver = () => false,
-  schemaRootName: string | null = null
+  schemaRootName: string | null = null,
+  letters?: YjsLetters
 ): YjsCanonicalChangeResult => {
   countCoreWork('reconciles');
 
   const { root } = write;
   const visibleChildren = getYjsVisibleChildren(root, root);
+  const location = { ancestors: [], path: [], root: schemaRootName };
+  // The Yjs texts show the commit's before letters only in the children that
+  // read as the commit's before children at the same place.
+  const lettersFrom = (from: number, to: number, at: number) =>
+    letters && {
+      letters,
+      place: areJsonLikeValuesEqual(
+        before.slice(from, to),
+        letters.before.nodes.slice(at, at + to - from)
+      )
+        ? { offset: at, path: [] }
+        : null,
+    };
 
   if (
     replaceCompatibleYjsChildren(
@@ -136,7 +151,12 @@ export const reconcileYjsRoot = (
       after,
       0,
       isSetValued,
-      { ancestors: [], path: [], root: schemaRootName }
+      location,
+      false,
+      undefined,
+      before.length === letters?.before.nodes.length
+        ? lettersFrom(0, before.length, 0)
+        : undefined
     )
   ) {
     return { inserted: 0, removed: 0, start: 0, strategy: 'compatible' };
@@ -146,6 +166,35 @@ export const reconcileYjsRoot = (
   const suffix = findUnchangedSuffix(before, after, start);
   const removed = before.length - start - suffix;
   const inserted = after.length - start - suffix;
+
+  // The equal blocks at either edge keep their Yjs nodes, so the new letters
+  // they hold are written into them in place.
+  if (letters) {
+    const { length } = letters.before.nodes;
+
+    for (const [from, to, offset, at] of [
+      [0, start, 0, 0],
+      [
+        before.length - suffix,
+        before.length,
+        after.length - suffix,
+        length - suffix,
+      ],
+    ] as const) {
+      replaceCompatibleYjsChildren(
+        write,
+        visibleChildren.slice(from, to),
+        before.slice(from, to),
+        after.slice(offset, offset + to - from),
+        0,
+        isSetValued,
+        { ...location, offset },
+        false,
+        undefined,
+        lettersFrom(from, to, at)
+      );
+    }
+  }
 
   let removedVisible = 0;
 
@@ -192,6 +241,7 @@ export const lowerDocumentChangeToYjs = ({
   expected,
   knownYjsValue,
   isSetValued = () => false,
+  letters,
   root,
   write,
 }: {
@@ -203,6 +253,8 @@ export const lowerDocumentChangeToYjs = ({
   expected: readonly Descendant[];
   knownYjsValue: readonly Descendant[];
   isSetValued?: YjsSetPropertyResolver;
+  /** The commit's letters in this root, from `base`'s document to `expected`'s. */
+  letters?: YjsLetters;
   root: string;
   write: YjsWrite;
 }): YjsCanonicalChangeResult => {
@@ -210,7 +262,18 @@ export const lowerDocumentChangeToYjs = ({
   const before = canonicalize(yjsBefore);
 
   if (areJsonLikeValuesEqual(before, expected)) {
-    return { inserted: 0, removed: 0, start: 0, strategy: 'compatible' };
+    // A room that already reads as the commit can still hold old letters where
+    // the commit wrote new ones.
+    return letters && areJsonLikeValuesEqual(yjsBefore, base)
+      ? reconcileYjsRoot(
+          write,
+          yjsBefore,
+          expected,
+          isSetValued,
+          schemaRoot(root),
+          letters
+        )
+      : { inserted: 0, removed: 0, start: 0, strategy: 'compatible' };
   }
 
   if (!areJsonLikeValuesEqual(before, base)) {
@@ -220,7 +283,8 @@ export const lowerDocumentChangeToYjs = ({
         yjsBefore,
         expected,
         isSetValued,
-        schemaRoot(root)
+        schemaRoot(root),
+        letters
       );
     }
 
@@ -242,6 +306,7 @@ export const lowerDocumentChangeToYjs = ({
     yjsBefore,
     after,
     isSetValued,
-    schemaRoot(root)
+    schemaRoot(root),
+    letters
   );
 };

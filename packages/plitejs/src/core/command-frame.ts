@@ -26,6 +26,7 @@ import {
 } from './change/document-change';
 import { DocumentIndex, type NodeList } from './change/document-index';
 import { copyRoot } from './change/lazy-root';
+import type { NewLetters } from './change/new-letters';
 import { mapRootChangePositionBackward } from './change/root-change';
 import type { JsonPoint, JsonToken } from './change/tokens';
 import { cloneValue } from './clone';
@@ -969,6 +970,7 @@ export const runInEditorCommandFrame = (
       frame: EditorDocumentState;
     } | null = null;
     let storedToWritten: PositionMap | undefined;
+    let letters: NewLetters | undefined;
 
     COMMAND_FRAMES.add(editor);
     try {
@@ -1059,6 +1061,7 @@ export const runInEditorCommandFrame = (
         if (!recorded) {
           throw new Error('A command frame needs a recorder that records it.');
         }
+        letters = snapshot.builder.newLetters;
 
         const converted = recordedCarets(framed, recorded);
 
@@ -1127,6 +1130,7 @@ export const runInEditorCommandFrame = (
     if (!recorded) return true;
     commitRecordedDraft(editor, outer, recorded, frame.caret.root, {
       carried,
+      letters,
       storedToWritten,
     });
     outer.changed = true;

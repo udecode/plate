@@ -243,8 +243,9 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
       applyBuiltDocumentChange(
         editor,
-        (builder) =>
-          builder.replaceChildren(
+        (builder) => {
+          const since = builder.draftSteps.length;
+          const step = builder.replaceChildren(
             root,
             [],
             0,
@@ -254,7 +255,13 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
               text,
               replacementMarks
             ) as Value
-          ),
+          );
+
+          if (builder.marksLetters) {
+            builder.markLetters(since, root, 0, builder.getIndex(root).length);
+          }
+          return step;
+        },
         { selection: { root, value: newSelection } }
       );
       if (options.at == null) {

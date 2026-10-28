@@ -63,6 +63,7 @@ import {
   replaceSelectedBlocks,
 } from './node-selection';
 import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
+import { getActiveDocumentChangeBuilder } from './public-state';
 import { toCompiledNodeContext } from './schema-compiler';
 import { planPaste, writePaste } from './slice-landing';
 import { areEditorJsonValuesEqual } from './value-codec';
@@ -939,8 +940,12 @@ export const editorCommands: EditorCommands = Object.freeze({
         path: [...start.path],
       };
 
+      const editor = getActiveCommandEditor();
+
       return state.transaction((tx) => {
-        tx.text.insert(swapped, { at: { anchor: start, focus: end } });
+        getActiveDocumentChangeBuilder(editor).withKeptLetters(() =>
+          tx.text.insert(swapped, { at: { anchor: start, focus: end } })
+        );
         tx.selection.set({ anchor: caret, focus: caret });
       });
     },

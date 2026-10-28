@@ -619,6 +619,32 @@ export class DocumentIndex {
       : this.entry(parentPath).contentTo;
   }
 
+  contentStarts(parentPath: readonly number[], count: number) {
+    const starts: number[] = [];
+    let children = this.tree;
+    let contentFrom = 0;
+
+    for (const index of parentPath) {
+      const parent = children.at(index);
+
+      if (!parent?.children) {
+        throw new Error(`Node at [${parentPath}] is not an element.`);
+      }
+
+      contentFrom += children.startOf(index) + 1;
+      ({ children } = parent);
+    }
+    if (count > 0) {
+      children.forEach(0, (_child, index, start) => {
+        starts.push(contentFrom + start + 1);
+
+        return index + 1 < count;
+      });
+    }
+
+    return starts;
+  }
+
   childBoundaryAt(position: number) {
     return this.cursor().childBoundaryAt(position);
   }

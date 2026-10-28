@@ -8,6 +8,7 @@ import {
 } from '../../core/change/document-change';
 import { DocumentIndex, type NodeList } from '../../core/change/document-index';
 import { deepFreeze } from '../../core/change/json';
+import type { LetterOrigin } from '../../core/change/lineage';
 import type { DocumentChangeRelocation } from '../../core/change/mapping';
 import {
   getDocumentChangeRelocations,
@@ -104,6 +105,19 @@ import {
   YJS_VIRTUAL_CHILD_ID_KEY,
   YJS_VIRTUAL_PLACEHOLDER_KEY,
 } from './keys';
+import {
+  holdsNewLetters,
+  type LetterPlace,
+  lettersAfter,
+  lettersBefore,
+  placeOfLeaves,
+  runLettersOf,
+  slicePlace,
+  textStartsOf,
+  type YjsLetters,
+  type YjsLettersAt,
+  yjsLettersOf,
+} from './new-letters';
 import { parentPath } from './path';
 import {
   canReplaceCompatibleYjsChildren,
@@ -615,6 +629,15 @@ const findNestedChildSplice = (
 };
 
 const relocationPathKey = (path: readonly number[]): string => path.join('.');
+
+const nodeAtPath = (
+  children: NodeList<Descendant>,
+  [top, ...rest]: readonly number[]
+): Descendant =>
+  rest.reduce<Descendant>(
+    (node, index) => getDefined((node as Element).children[index]),
+    getDefined(children.at(getDefined(top)))
+  );
 
 const createYjsNodeWithRelocations = (
   write: YjsWrite,
@@ -1830,6 +1853,13 @@ export class YjsEventChangeBridge {
   private readonly lengths: TokenLengthIndex;
   private readonly maskedBlocks = new Set<YjsNode>();
   private readonly writtenMaskedBlocks = new Set<YjsNode>();
+  /**
+   * The lowering commit's letters, by the children of each document it
+   * writes: the committed one, and those it writes on the way there. Each
+   * names its kept letters in the document the mirror shows while it is
+   * written.
+   */
+  private letters: Map<NodeList<Descendant>, YjsLetters> | null = null;
   /** Stored blocks the fill already checked against their mirror block. */
   private checkedBlocks = new WeakSet<YjsNode>();
   private ready = false;
@@ -1870,6 +1900,87 @@ export class YjsEventChangeBridge {
     expected: NodeList<Descendant>,
     options: Readonly<{
       /** The commit's indexes of this root, which relocation reads. */
+      indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>;
+      letters?: readonly LetterOrigin[];
+      structureChanged: boolean;
+    }>
+  ): YjsEventLowerResult {
+    this.letters = options.letters
+      ? new Map([
+          [
+            expected,
+            yjsLettersOf(
+              options.letters,
+              options.indexes().after,
+              options.indexes().before
+            ),
+          ],
+        ])
+      : null;
+    try {
+      return this.lowerCommit(write, change, expected, options);
+    } finally {
+      this.letters = null;
+    }
+  }
+
+  private lettersOf(children: NodeList<Descendant>): YjsLetters | undefined {
+    return this.letters?.get(children);
+  }
+
+  private lettersAt(
+    children: NodeList<Descendant>,
+    place: Readonly<{ offset: number; path: readonly number[] }>
+  ): YjsLettersAt | undefined {
+    const letters = this.lettersOf(children);
+
+    return (
+      letters && {
+        letters,
+        place: { offset: place.offset, path: [...place.path] },
+      }
+    );
+  }
+
+  /**
+   * Record the letters of `document`, a document written on the way to the
+   * one `letters` belongs to, which `change` turns into it, so writers of
+   * `document`'s children find them.
+   */
+  private recordLettersBefore(
+    document: DocumentIndex,
+    change: RootChange,
+    letters: YjsLetters
+  ): YjsLetters {
+    const found = lettersBefore(letters, change, document);
+
+    this.letters?.set(document.nodes as NodeList<Descendant>, found);
+    return found;
+  }
+
+  /**
+   * Name the kept letters of `children` in `document`, which `changes` wrote
+   * from the document they named, because the mirror shows it from now on.
+   */
+  private advanceLetters(
+    children: NodeList<Descendant>,
+    changes: readonly RootChange[],
+    document: DocumentIndex
+  ) {
+    let letters = this.lettersOf(children);
+
+    if (!letters) return;
+    for (const change of changes) {
+      letters = lettersAfter(letters, change, document);
+    }
+    this.letters?.set(children, letters);
+  }
+
+  private lowerCommit(
+    write: YjsWrite,
+    change: DocumentChange,
+    expected: NodeList<Descendant>,
+    options: Readonly<{
       indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>;
       structureChanged: boolean;
     }>
@@ -2016,6 +2127,7 @@ export class YjsEventChangeBridge {
     const middleNodes = middle.nodes as NodeList<Descendant>;
 
     this.setMirror(middleNodes);
+    this.advanceLetters(expected, [split.inner], middle);
 
     const rest = this.lowerJoinsAndStructure(
       write,
@@ -2229,10 +2341,19 @@ export class YjsEventChangeBridge {
     expected: NodeList<Descendant>,
     indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
   ): MirrorLowering {
-    const joined = this.lowerJoins(write, change, indexes().before);
+    const joined = this.lowerJoins(
+      write,
+      change,
+      indexes().before,
+      this.lettersOf(expected)
+    );
     const afterJoins = joined
       ? joined.rest && { change: joined.rest, before: joined.middle }
       : { change, before: indexes().before };
+
+    if (joined?.rest) {
+      this.advanceLetters(expected, [joined.inner], joined.middle);
+    }
 
     const inlineJoinedLines = joined?.inlineJoinedLines ?? [];
     const writtenLines = [...(joined?.writtenLines ?? [])];
@@ -2249,6 +2370,10 @@ export class YjsEventChangeBridge {
     const rest = split
       ? split.rest && { change: split.rest, before: split.middle }
       : afterJoins;
+
+    if (split?.rest) {
+      this.advanceLetters(expected, split.changes, split.middle);
+    }
     const lowered = [joined?.lowered, split?.lowered].filter(
       (result) => result !== undefined
     );
@@ -2289,6 +2414,8 @@ export class YjsEventChangeBridge {
     change: DocumentChange,
     before: DocumentIndex
   ): Readonly<{
+    /** The changes that turn `before` into `middle`. */
+    changes: readonly RootChange[];
     lowered: YjsEventLowerResult;
     middle: DocumentIndex;
     rest: DocumentChange | null;
@@ -2375,6 +2502,7 @@ export class YjsEventChangeBridge {
     this.ready = this.rootIndex.length === this.mirror.length;
 
     return {
+      changes: steps.slice(0, written).map((step) => step.change),
       lowered: this.ready
         ? {
             changedRanges: written,
@@ -2407,9 +2535,12 @@ export class YjsEventChangeBridge {
   private lowerJoins(
     write: YjsWrite,
     change: DocumentChange,
-    before: DocumentIndex
+    before: DocumentIndex,
+    letters: YjsLetters | undefined
   ): Readonly<{
     inlineJoinedLines: readonly Y.XmlElement[];
+    /** The change that turns `before` into `middle`. */
+    inner: RootChange;
     lowered: YjsEventLowerResult;
     middle: DocumentIndex;
     rest: DocumentChange | null;
@@ -2440,9 +2571,18 @@ export class YjsEventChangeBridge {
     }
 
     const planned: JoinWrite[] = [];
+    const middleLetters =
+      letters && this.recordLettersBefore(middle, split.outer, letters);
 
     for (const run of runs) {
-      const join = this.planJoin(write, run, before, middle, split.inner);
+      const join = this.planJoin(
+        write,
+        run,
+        before,
+        middle,
+        split.inner,
+        middleLetters
+      );
 
       if (!join) return null;
       planned.push(join);
@@ -2514,6 +2654,7 @@ export class YjsEventChangeBridge {
       inlineJoinedLines: planned
         .filter((_, index) => runs[index].inline.length > 0)
         .map(({ joinedLine }) => joinedLine),
+      inner: split.inner,
       lowered,
       middle,
       rest:
@@ -2534,7 +2675,8 @@ export class YjsEventChangeBridge {
     run: JoinRun,
     before: DocumentIndex,
     middle: DocumentIndex,
-    inner: RootChange
+    inner: RootChange,
+    letters: YjsLetters | undefined
   ): JoinWrite | null {
     const addresses = yjsAddressesOf(
       this.root,
@@ -2590,6 +2732,7 @@ export class YjsEventChangeBridge {
         before,
         level.paths.map((at, index) => [at, yjsLines[index]] as const),
         joined,
+        path,
         (offset) =>
           createYjsPropertyLocationAt(
             middle.nodes as NodeList<Descendant>,
@@ -2597,6 +2740,7 @@ export class YjsEventChangeBridge {
             this.schemaRoot,
             offset
           ),
+        letters,
         inward && [getDefined(inward[0].at(-1)), getDefined(inward[1].at(-1))]
       );
 
@@ -2707,16 +2851,25 @@ export class YjsEventChangeBridge {
     before: DocumentIndex,
     lines: ReadonlyArray<readonly [readonly number[], Y.XmlElement]>,
     joined: Element,
+    joinedPath: readonly number[],
     location: (offset: number) => YjsPropertyLocation,
+    /** Letters of the document `joined` belongs to, at `joinedPath`. */
+    newLetters: YjsLetters | undefined,
     inward?: readonly [number, number]
   ) {
     const { children } = joined;
+    const starts =
+      newLetters && textStartsOf(newLetters.after, joinedPath, children);
     let at = 0;
     let used = 0;
+    let taken: LetterPlace = { letterEnds: [], start: 0 };
     const take = (count: number): Text[] | null => {
       const leaves: Text[] = [];
+      const letterEnds: number[] = [];
       const leaf = children[at];
       let letters = count;
+
+      taken = { letterEnds, start: (starts?.[at] ?? 0) + used };
 
       if (letters === 0) {
         if (used === 0 && NodeApi.isText(leaf) && leaf.text === '') {
@@ -2733,11 +2886,12 @@ export class YjsEventChangeBridge {
 
         if (!NodeApi.isText(text) || text.text.length === used) return null;
 
-        const taken = Math.min(letters, text.text.length - used);
+        const length = Math.min(letters, text.text.length - used);
 
-        leaves.push({ ...text, text: text.text.slice(used, used + taken) });
-        used += taken;
-        letters -= taken;
+        leaves.push({ ...text, text: text.text.slice(used, used + length) });
+        letterEnds.push(count - letters + length);
+        used += length;
+        letters -= length;
         if (used === text.text.length) {
           at += 1;
           used = 0;
@@ -2825,12 +2979,28 @@ export class YjsEventChangeBridge {
             this.isSetValued,
             location(offset)
           );
+          const beforePlace =
+            newLetters &&
+            placeOfLeaves(
+              newLetters.before,
+              path,
+              segment.from,
+              segment.leaves
+            );
+          const runLetters =
+            newLetters && starts && beforePlace
+              ? runLettersOf(newLetters, taken, beforePlace)
+              : undefined;
 
           edits.push(() =>
             retyped
-              ? rewriteTextRuns(target.chain, after, encode, { diff })
+              ? rewriteTextRuns(target.chain, after, encode, {
+                  diff,
+                  letters: runLetters,
+                })
               : writeTextRuns(target.chain, segment.leaves, after, encode, {
                   diff,
+                  letters: runLetters,
                 })
           );
           continue;
@@ -2893,7 +3063,12 @@ export class YjsEventChangeBridge {
             0,
             this.isSetValued,
             inlineLocation,
-            retyped
+            retyped,
+            undefined,
+            newLetters && {
+              letters: newLetters,
+              place: { offset: segment.from, path },
+            }
           )
         );
       }
@@ -3151,10 +3326,30 @@ export class YjsEventChangeBridge {
     let start = Number.POSITIVE_INFINITY;
     let strategy: 'compatible' | 'range' = 'compatible';
     let tokenLengthNodes = 0;
+    let letters = this.lettersOf(expected);
+
+    // Each part writes the document before the parts after it, so it finds
+    // its letters through them, last part first.
+    for (let index = parts.length - 1; letters && index > 0; index -= 1) {
+      letters = this.recordLettersBefore(
+        parts[index - 1].after,
+        parts[index].change,
+        letters
+      );
+    }
 
     for (const [index, part] of parts.entries()) {
       const last = index === parts.length - 1;
       const next = last ? expected : (part.after.nodes as NodeList<Descendant>);
+
+      if (index > 0) {
+        this.advanceLetters(
+          next,
+          parts.slice(0, index).map((earlier) => earlier.change),
+          part.before
+        );
+      }
+
       const result = this.lowerStructure(
         write,
         createInternalDocumentChange(new Map([[this.rootKey, part.change]])),
@@ -3349,7 +3544,8 @@ export class YjsEventChangeBridge {
           root: this.schemaRoot,
         },
         false,
-        replacedIn(region.beforeFrom)
+        replacedIn(region.beforeFrom),
+        this.lettersAt(expected, { offset: region.beforeFrom, path: [] })
       );
 
       if (!compatible) {
@@ -3488,6 +3684,24 @@ export class YjsEventChangeBridge {
       [...cut.parentPath],
       this.schemaRoot
     );
+    const letters = this.lettersOf(expected);
+    const cutPlace =
+      letters &&
+      placeOfLeaves(
+        letters.before,
+        cut.parentPath,
+        segmentPliteChildren(cut.siblings)[cut.group].from,
+        cut.cutLeaves
+      );
+    const keptPlace =
+      letters &&
+      placeOfLeaves(
+        letters.after,
+        cut.parentPath,
+        cut.from + cut.kept,
+        cut.leaves
+      );
+
     writeTextRuns(
       group.chain,
       before.length ? before : [{ text: '' }],
@@ -3495,7 +3709,17 @@ export class YjsEventChangeBridge {
       createYjsRunEncoder(this.isSetValued, {
         ...location,
         offset: cut.from + cut.kept,
-      })
+      }),
+      {
+        letters:
+          letters && cutPlace && keptPlace
+            ? runLettersOf(
+                letters,
+                keptPlace,
+                slicePlace(cutPlace, cut.offset, keptLength)
+              )
+            : undefined,
+      }
     );
     const prefix = createYjsNodes(
       cut.after.slice(0, cut.kept),
@@ -3517,6 +3741,15 @@ export class YjsEventChangeBridge {
     );
     prefix.forEach((node, index) =>
       insertYjsChild(write, parent, group.from + index, node)
+    );
+    this.rewriteKeptLetters(
+      write,
+      expected,
+      window,
+      cut.parentPath,
+      cut.from,
+      cut.from + cut.after.length,
+      cut.from + cut.cutLeaves.length
     );
     const topIndex = cut.parentPath[0];
     const topNode = expected.at(topIndex);
@@ -3551,6 +3784,41 @@ export class YjsEventChangeBridge {
 
     if (splice === null) return null;
 
+    const lowered = this.writeNestedChildSplice(
+      write,
+      change,
+      expected,
+      splice,
+      indexes
+    );
+
+    if (lowered === null) return null;
+
+    const { result, written } = lowered;
+
+    this.rewriteKeptLetters(
+      write,
+      expected,
+      window,
+      written.parentPath,
+      written.from,
+      written.from + written.after.length,
+      written.from + written.before.length
+    );
+
+    return result;
+  }
+
+  private writeNestedChildSplice(
+    write: YjsWrite,
+    change: DocumentChange,
+    expected: NodeList<Descendant>,
+    splice: NestedChildSplice,
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+  ): Readonly<{
+    result: Extract<YjsEventLowerResult, { kind: 'lowered' }>;
+    written: NestedChildSplice;
+  }> | null {
     const parent = yjsAddressesOf(this.root, this.mirror).elementAt(
       splice.parentPath
     );
@@ -3591,10 +3859,26 @@ export class YjsEventChangeBridge {
           [...splice.parentPath],
           this.schemaRoot,
           splice.from
-        )
+        ),
+        false,
+        undefined,
+        this.lettersAt(expected, {
+          offset: splice.from,
+          path: splice.parentPath,
+        })
       )
     ) {
-      return this.loweredSplice(change, expected, splice, 0, 0, 'compatible');
+      return {
+        result: this.loweredSplice(
+          change,
+          expected,
+          splice,
+          0,
+          0,
+          'compatible'
+        ),
+        written: splice,
+      };
     }
 
     const letters = this.lowerLetterSplice(
@@ -3606,25 +3890,38 @@ export class YjsEventChangeBridge {
       indexes
     );
 
-    if (letters !== null) return letters;
+    if (letters !== null) {
+      const wholeLine: NestedChildSplice = {
+        after: (nodeAtPath(expected, splice.parentPath) as Element).children,
+        before: beforeSiblings.slice(),
+        from: 0,
+        parentPath: splice.parentPath,
+      };
+
+      return { result: letters, written: wholeLine };
+    }
 
     const edits = this.elementSpliceEdits(
       change,
       splice,
       beforeSiblings,
       visible,
-      indexes
+      indexes,
+      this.lettersOf(expected)
     );
 
     if (edits !== null) {
-      return this.lowerElementSplice(
-        write,
-        change,
-        expected,
-        splice,
-        parent,
-        edits
-      );
+      return {
+        result: this.lowerElementSplice(
+          write,
+          change,
+          expected,
+          splice,
+          parent,
+          edits
+        ),
+        written: splice,
+      };
     }
     if (!corresponds) return null;
 
@@ -3662,14 +3959,136 @@ export class YjsEventChangeBridge {
       insertYjsChild(write, parent, splice.from + index, node);
     });
 
-    return this.loweredSplice(
-      change,
-      expected,
-      splice,
-      insertedNodes.length,
-      splice.before.length,
-      'range'
-    );
+    return {
+      result: this.loweredSplice(
+        change,
+        expected,
+        splice,
+        insertedNodes.length,
+        splice.before.length,
+        'range'
+      ),
+      written: splice,
+    };
+  }
+
+  /**
+   * A detector writes only the children `[from, to)` of the element at
+   * `under`, which stood at `[from, beforeTo)` in the mirror, and keeps every
+   * other node of the window because its value did not change, so the new
+   * letters such a node holds, such as a word typed over the same word, are
+   * written into it in place.
+   */
+  private rewriteKeptLetters(
+    write: YjsWrite,
+    expected: NodeList<Descendant>,
+    window: RootWindow,
+    under: readonly number[],
+    from: number,
+    to: number,
+    beforeTo: number
+  ) {
+    const letters = this.lettersOf(expected);
+
+    if (!letters) return;
+
+    const addresses = yjsAddressesOf(this.root, expected);
+    const writes: Array<() => void> = [];
+    const mirrorIndex = (depth: number, index: number) =>
+      depth === under.length
+        ? index >= to
+          ? index - to + beforeTo
+          : index
+        : depth === 0 && index > under[0]
+          ? index + window.before.length - window.after.length
+          : index;
+
+    for (let depth = 0; depth <= under.length; depth += 1) {
+      const path = under.slice(0, depth);
+      const element = addresses.elementAt(path);
+
+      if (element === null) break;
+
+      const location = createYjsPropertyLocationAt(
+        expected,
+        path,
+        this.schemaRoot
+      );
+      const [start, end] =
+        depth === 0
+          ? [window.from, window.from + window.after.length]
+          : [0, (nodeAtPath(expected, path) as Element).children.length];
+      const written = new Set<PliteSegment>();
+
+      for (let index = start; index < end; index += 1) {
+        if (
+          depth < under.length
+            ? index === under[depth]
+            : index >= from && index < to
+        ) {
+          continue;
+        }
+        if (!holdsNewLetters(letters, path, index, index + 1)) continue;
+
+        const address = addresses.childAt(element, index);
+        const { segment, target } = address ?? {};
+
+        if (segment?.kind === 'element' && target?.kind === 'element') {
+          writes.push(() =>
+            replaceCompatibleYjsChildren(
+              write,
+              [target.node],
+              [segment.node],
+              [segment.node],
+              0,
+              this.isSetValued,
+              { ...location, offset: index },
+              false,
+              undefined,
+              {
+                letters,
+                place: { offset: mirrorIndex(depth, index), path },
+              }
+            )
+          );
+        } else if (
+          segment?.kind === 'text' &&
+          target?.kind === 'text' &&
+          !written.has(segment)
+        ) {
+          written.add(segment);
+
+          const afterPlace = placeOfLeaves(
+            letters.after,
+            path,
+            segment.from,
+            segment.leaves
+          );
+          const beforePlace = placeOfLeaves(
+            letters.before,
+            path,
+            mirrorIndex(depth, segment.from),
+            segment.leaves
+          );
+
+          if (afterPlace && beforePlace) {
+            writes.push(() =>
+              writeTextRuns(
+                target.chain,
+                segment.leaves,
+                segment.leaves,
+                createYjsRunEncoder(this.isSetValued, {
+                  ...location,
+                  offset: segment.from,
+                }),
+                { letters: runLettersOf(letters, afterPlace, beforePlace) }
+              )
+            );
+          }
+        }
+      }
+    }
+    for (const run of writes) run();
   }
 
   /**
@@ -3684,14 +4103,31 @@ export class YjsEventChangeBridge {
     splice: NestedChildSplice,
     siblings: NodeList<Descendant>,
     children: readonly YjsNode[],
-    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>
+    indexes: () => Readonly<{ after: DocumentIndex; before: DocumentIndex }>,
+    letters: YjsLetters | undefined
   ) {
     const whole = this.wholeChildren(change, indexes, splice);
     const edits =
       whole &&
       elementOnlySpliceEdits(siblings.slice(), splice, children, whole);
 
-    return edits?.updated.every((edit) =>
+    if (!edits) return null;
+
+    // An element whose value did not change keeps its Yjs node untouched,
+    // unless it holds new letters, which are written into it in place.
+    const updated = edits.updated.filter(
+      (edit) =>
+        !areJsonLikeValuesEqual(edit.before, edit.after) ||
+        (letters !== undefined &&
+          holdsNewLetters(
+            letters,
+            splice.parentPath,
+            edit.index,
+            edit.index + 1
+          ))
+    );
+
+    return updated.every((edit) =>
       canReplaceCompatibleYjsChildren(
         this.root,
         [edit.node],
@@ -3699,7 +4135,7 @@ export class YjsEventChangeBridge {
         [edit.after]
       )
     )
-      ? edits
+      ? { ...edits, updated }
       : null;
   }
 
@@ -3734,8 +4170,10 @@ export class YjsEventChangeBridge {
       before,
       [[path, parent]],
       next,
+      path,
       (offset) =>
-        createYjsPropertyLocationAt(expected, path, this.schemaRoot, offset)
+        createYjsPropertyLocationAt(expected, path, this.schemaRoot, offset),
+      this.lettersOf(expected)
     );
 
     if (!plan || plan.gone.length === 0) return null;
@@ -3840,6 +4278,7 @@ export class YjsEventChangeBridge {
     const pairs = kept.map((at, order) => ({
       after: getDefined(window.after[places[order]]),
       before: getDefined(window.before[at]),
+      beforeIndex: window.from + at,
       index: window.from + places[order],
       node: getDefined(touched[at]),
     }));
@@ -3868,7 +4307,10 @@ export class YjsEventChangeBridge {
         [pair.after],
         0,
         this.isSetValued,
-        { ancestors: [], offset: pair.index, path: [], root: this.schemaRoot }
+        { ancestors: [], offset: pair.index, path: [], root: this.schemaRoot },
+        false,
+        undefined,
+        this.lettersAt(expected, { offset: pair.beforeIndex, path: [] })
       );
     }
 
@@ -3960,7 +4402,13 @@ export class YjsEventChangeBridge {
         [edit.after],
         0,
         this.isSetValued,
-        { ...location, offset: edit.index }
+        { ...location, offset: edit.index },
+        false,
+        undefined,
+        this.lettersAt(expected, {
+          offset: edit.beforeIndex,
+          path: splice.parentPath,
+        })
       );
     }
     const writes = [
@@ -4049,8 +4497,12 @@ export class YjsEventChangeBridge {
 
     const from = relocation.path[0];
     const to = relocation.targetPath[0];
+    const moved = getYjsVisibleChild(write.root, write.root, from);
 
     if (!applyExactYjsRelocation(write, from, to)) return null;
+    this.rewriteMovedLetters(write, expected, [
+      { before: [from], node: moved, path: [to] },
+    ]);
 
     let changedRanges = 0;
 
@@ -4072,6 +4524,47 @@ export class YjsEventChangeBridge {
     };
   }
 
+  /**
+   * A move keeps its Yjs node because the node's value did not change, so
+   * the new letters it holds, such as a word typed over the same word, are
+   * written into that node in place.
+   */
+  private rewriteMovedLetters(
+    write: YjsWrite,
+    expected: NodeList<Descendant>,
+    moves: ReadonlyArray<
+      Readonly<{
+        before: readonly number[];
+        node: YjsNode | undefined;
+        path: readonly number[];
+      }>
+    >
+  ) {
+    for (const { before, node, path } of moves) {
+      if (!node) continue;
+      replaceCompatibleYjsChildren(
+        write,
+        [node],
+        [nodeAtPath(this.mirror, before)],
+        [nodeAtPath(expected, path)],
+        0,
+        this.isSetValued,
+        createYjsPropertyLocationAt(
+          expected,
+          parentPath(path),
+          this.schemaRoot,
+          path.at(-1)
+        ),
+        false,
+        undefined,
+        this.lettersAt(expected, {
+          offset: getDefined(before.at(-1)),
+          path: parentPath(before),
+        })
+      );
+    }
+  }
+
   private lowerCompositeRelocations(
     write: YjsWrite,
     expected: NodeList<Descendant>,
@@ -4079,6 +4572,11 @@ export class YjsEventChangeBridge {
     relocations: readonly DocumentChangeRelocation[]
   ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
     const relocationTargets = new Map<string, YjsNode>();
+    const moved: Array<{
+      before: readonly number[];
+      node: YjsNode;
+      path: readonly number[];
+    }> = [];
     const addresses = yjsAddressesOf(this.root, this.mirror);
     const propertyContexts = indexYjsPropertyContexts(
       expected,
@@ -4119,6 +4617,11 @@ export class YjsEventChangeBridge {
       if (!target) return null;
 
       relocationTargets.set(relocationPathKey(relocation.targetPath), target);
+      moved.push({
+        before: relocation.path,
+        node: target,
+        path: relocation.targetPath,
+      });
     }
 
     if (relocationTargets.size === 0) return null;
@@ -4175,7 +4678,13 @@ export class YjsEventChangeBridge {
           offset: entry.region.afterFrom,
           path: [],
           root: this.schemaRoot,
-        }
+        },
+        false,
+        undefined,
+        this.lettersAt(expected, {
+          offset: entry.region.beforeFrom,
+          path: [],
+        })
       );
     }
 
@@ -4229,6 +4738,7 @@ export class YjsEventChangeBridge {
         inserted += 1;
       });
     }
+    this.rewriteMovedLetters(write, expected, moved);
 
     let tokenLengthNodes = 0;
 

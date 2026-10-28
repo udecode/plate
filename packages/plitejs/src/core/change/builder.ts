@@ -22,6 +22,13 @@ import { DocumentIndex, rootNodesOf } from './document-index';
 import type { JsonRecord } from './json';
 import type { CarriedDrop, Relocation } from './lineage';
 import {
+  landMarks,
+  type LetterSpan,
+  mergeSpans,
+  type NewLetters,
+  textSpansIn,
+} from './new-letters';
+import {
   RootChange,
   type DocumentSetPropertyResolver,
   insertNodeChange,
@@ -142,6 +149,8 @@ export type DraftStep = Readonly<{
   drops?: readonly CarriedDrop[];
   /** The composition whose claimed text write applied this step. */
   composition?: CompositionStamp;
+  /** Letters this step's author wrote, in its after document. */
+  letters?: NewLetters;
 }>;
 
 export type PreparedDocumentChange = Readonly<{
@@ -172,6 +181,8 @@ export class ChangeDraft {
   private readonly appliedSteps: DraftStep[] = [];
   private stepComposition: CompositionStamp | null = null;
   private stepMove: DraftStepMove | null = null;
+  private keepsLetters = false;
+  private marks: NewLetters = new Map();
   private stepOrigin: DraftStepOrigin | null = null;
   private stepSource: DraftStepSource = 'command';
   private readonly assertCanonical?: (
@@ -199,6 +210,8 @@ export class ChangeDraft {
   private readonly preparationAuthority: object;
   private readonly trackChanges: boolean;
   readonly tracksPlaces: boolean;
+  /** Whether a collaboration binding reads which letters are new or moved. */
+  readonly tracksLetters: boolean;
   private readonly view?: () => boolean;
   /** The first step after the last finalize, where a recording span starts. */
   private spanStart = 0;
@@ -245,6 +258,7 @@ export class ChangeDraft {
       preparationRevision?: () => object;
       trackChanges?: boolean;
       tracksPlaces?: boolean;
+      tracksLetters?: boolean;
       /** Whether the draft is a view a recorder judges; see `carried`. */
       view?: () => boolean;
       validate?: (value: JsonEditorValue, change: DocumentChange) => void;
@@ -274,6 +288,7 @@ export class ChangeDraft {
     this.preparationRevision = options.preparationRevision;
     this.trackChanges = options.trackChanges ?? true;
     this.tracksPlaces = options.tracksPlaces ?? false;
+    this.tracksLetters = options.tracksLetters ?? false;
     this.view = options.view;
     this.validate = options.validate;
     this.validateConstructed = options.validateConstructed;
@@ -295,6 +310,21 @@ export class ChangeDraft {
     return this.appliedSteps;
   }
 
+  /** @internal */
+  get recordsRelocations() {
+    return this.tracksPlaces || this.tracksLetters;
+  }
+
+  /** @internal */
+  get marksLetters() {
+    return this.tracksLetters && !this.keepsLetters;
+  }
+
+  /** The letters a user wrote, in the draft's current document. @internal */
+  get newLetters(): NewLetters {
+    return this.marks;
+  }
+
   /**
    * Keep the steps of a draft this one replaces, such as a schema rebind that
    * replays the accumulated change, so each original step stays recordable.
@@ -304,6 +334,7 @@ export class ChangeDraft {
   keepSteps(from: ChangeDraft) {
     this.appliedSteps.length = 0;
     this.appliedSteps.push(...from.appliedSteps);
+    this.marks = from.marks;
     this.spanStart = from.spanStart;
   }
 
@@ -365,6 +396,63 @@ export class ChangeDraft {
       : step;
   }
 
+  private land(step: DraftStep) {
+    this.appliedSteps.push(step);
+    if (this.marks.size === 0 && !step.letters) return;
+
+    const marks = landMarks(this.marks, step);
+
+    for (const [root, spans] of step.letters ?? []) {
+      marks.set(root, mergeSpans([...(marks.get(root) ?? []), ...spans]));
+    }
+    this.marks = marks;
+  }
+
+  /**
+   * Leave the letters `run` writes unmarked, because it read them from the
+   * document, so they keep their identity in a binding.
+   *
+   * @internal
+   */
+  withKeptLetters<T>(run: () => T): T {
+    const previous = this.keepsLetters;
+
+    this.keepsLetters = true;
+    try {
+      return run();
+    } finally {
+      this.keepsLetters = previous;
+    }
+  }
+
+  /**
+   * Mark the text between the positions `from` and `to` as written by the
+   * last step, when that step came after the draft's first `since` steps.
+   *
+   * @internal
+   */
+  markLetters(since: number, root: string, from: number, to: number) {
+    const last = this.appliedSteps.length - 1;
+    const step = this.appliedSteps[last];
+
+    if (!this.marksLetters || last < since) return;
+    const spans = textSpansIn(this.getIndex(root), from, to);
+
+    if (spans.length === 0) return;
+
+    const marks = new Map(this.marks);
+
+    marks.set(root, mergeSpans([...(marks.get(root) ?? []), ...spans]));
+    this.marks = marks;
+    this.appliedSteps[last] = {
+      ...step,
+      letters: new Map(step.letters).set(
+        root,
+        mergeSpans([...(step.letters?.get(root) ?? []), ...spans])
+      ),
+    };
+  }
+
   /** @internal */
   withMove<T>(move: DraftStepMove, run: () => T): T {
     const previous = this.stepMove;
@@ -415,6 +503,7 @@ export class ChangeDraft {
       preparationRevision: this.preparationRevision,
       trackChanges: this.trackChanges,
       tracksPlaces: this.tracksPlaces,
+      tracksLetters: this.tracksLetters,
       view: this.view,
       checkConstructed: this.checkConstructed,
       ...(options.validation === 'defer-to-parent'
@@ -530,13 +619,22 @@ export class ChangeDraft {
     }
 
     this.accumulated = accumulated;
-    this.appliedSteps.push(
-      ...payload.steps.map((step) =>
-        this.composed(
-          this.stepMove && !step.move ? { ...step, move: this.stepMove } : step
-        )
-      )
-    );
+    for (const step of payload.steps) {
+      if (!this.stepMove || step.move) {
+        this.land(this.composed(step));
+        continue;
+      }
+      const { letters, ...rest } = step;
+      const moved = { ...rest, move: this.stepMove };
+      // A move fits its landing in a prepared fork, whose paste path marks
+      // the landed letters as new. A move carries only letters read from the
+      // document, so its landing keeps no marks.
+      const landing = this.stepMove.role === 'landing';
+
+      this.land(
+        this.composed(letters && !landing ? { ...moved, letters } : moved)
+      );
+    }
     if (accumulated === payload.change) {
       this.runtimeCandidatesByChange.set(
         accumulated,
@@ -603,6 +701,7 @@ export class ChangeDraft {
       classify?: boolean;
       drops?: readonly CarriedDrop[];
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+      letters?: NewLetters;
       origin?: DraftStepOrigin;
       relocations?: readonly Relocation[];
     }> = {}
@@ -698,9 +797,11 @@ export class ChangeDraft {
         ? classifiedChange
         : this.accumulated.compose(classifiedChange, this.source);
       if (!classifiedChange.empty) {
-        const relocations = this.tracksPlaces ? options.relocations : undefined;
+        const relocations = this.recordsRelocations
+          ? options.relocations
+          : undefined;
 
-        this.appliedSteps.push(
+        this.land(
           this.composed({
             indexedAfter,
             indexedBefore,
@@ -710,6 +811,7 @@ export class ChangeDraft {
             source: this.stepSource,
             ...(relocations?.length ? { relocations } : {}),
             ...(options.drops?.length ? { drops: options.drops } : {}),
+            ...(options.letters ? { letters: options.letters } : {}),
           })
         );
         countCoreWork('relocations', relocations?.length ?? 0);
@@ -967,7 +1069,7 @@ export class ChangeDraft {
       ? canonicalChange
       : this.accumulated.compose(canonicalChange, this.source);
     if (!canonicalChange.empty) {
-      this.appliedSteps.push(
+      this.land(
         this.composed({
           indexedAfter,
           indexedBefore,
@@ -1178,12 +1280,17 @@ export class ChangeDraft {
     text: string
   ) {
     const document = this.getIndex(root);
+    const from = this.marksLetters
+      ? document.positionAt({ path, offset })
+      : null;
 
     return this.applyRoot(
       root,
       'text',
       insertTextChange(document, path, offset, text),
-      document.withText(path, offset, offset, text)
+      document.withText(path, offset, offset, text),
+      undefined,
+      from === null ? undefined : [[from, from + text.length]]
     );
   }
 
@@ -1209,7 +1316,7 @@ export class ChangeDraft {
       'move',
       change,
       undefined,
-      this.tracksPlaces
+      this.recordsRelocations
         ? this.movedRun(root, document, path, change)
         : undefined
     );
@@ -1271,7 +1378,7 @@ export class ChangeDraft {
       'replace',
       replaceChildrenChange(document, path, index, removeCount, children),
       after,
-      this.tracksPlaces
+      this.recordsRelocations
         ? this.reusedRuns(
             root,
             document,
@@ -1511,7 +1618,8 @@ export class ChangeDraft {
     origin: DraftStepOrigin,
     change: RootChange,
     indexedAfter?: DocumentIndex,
-    relocations?: readonly Relocation[]
+    relocations?: readonly Relocation[],
+    letters?: readonly LetterSpan[]
   ) {
     return this.apply(
       createInternalDocumentChange(
@@ -1521,6 +1629,10 @@ export class ChangeDraft {
         indexedAfter: indexedAfter
           ? new Map([[root, indexedAfter]])
           : undefined,
+        letters:
+          letters?.length && this.marksLetters
+            ? new Map([[root, letters]])
+            : undefined,
         origin,
         relocations,
       }

@@ -378,7 +378,7 @@ export const elementOnlySpliceEdits = (
 
   const read = yjsCursor(children, new Set());
   const removed: Array<{ at: number; node: Element }> = [];
-  const kept: Array<{ at: number; node: Element }> = [];
+  const kept: Array<{ at: number; index: number; node: Element }> = [];
   const walk = (nodes: readonly Descendant[], own: boolean) =>
     nodes.every((node, index) => {
       if (NodeApi.isText(node)) return read.text(node.text.length);
@@ -386,7 +386,8 @@ export const elementOnlySpliceEdits = (
       const found = read.element();
 
       if (found !== null && own) {
-        (whole.removed[index] ? removed : kept).push({ at: found.at, node });
+        if (whole.removed[index]) removed.push({ at: found.at, node });
+        else kept.push({ at: found.at, index, node });
       }
 
       return found !== null;
@@ -413,6 +414,7 @@ export const elementOnlySpliceEdits = (
   const updated: Array<{
     after: Element;
     before: Element;
+    beforeIndex: number;
     index: number;
     node: Y.XmlElement;
   }> = [];
@@ -438,14 +440,13 @@ export const elementOnlySpliceEdits = (
     if (stay === undefined || found === null || found.at !== stay.at) {
       return null;
     }
-    if (!areJsonLikeValuesEqual(stay.node, node)) {
-      updated.push({
-        after: node,
-        before: stay.node,
-        index: splice.from + index,
-        node: found.node,
-      });
-    }
+    updated.push({
+      after: node,
+      before: stay.node,
+      beforeIndex: splice.from + stay.index,
+      index: splice.from + index,
+      node: found.node,
+    });
   }
 
   return next === kept.length ? { inserted, removed, updated } : null;
@@ -1487,6 +1488,364 @@ const diffText = (before: string, after: string): Diff[] => {
   ];
 };
 
+/** A letter of a run's new text that a user typed or pasted. */
+export const NEW_LETTER = -1;
+/** A letter of a run's new text that code made. */
+export const VALUE_LETTER = -2;
+/** A letter of a run's new text that keeps an old letter outside its old text. */
+export const OTHER_LETTER = -3;
+
+/**
+ * Letters `[from, to)` of a run's new text. `origin` is the offset in the
+ * run's old text of the old letter its first letter keeps, or `NEW_LETTER`,
+ * `VALUE_LETTER` or `OTHER_LETTER`.
+ */
+export type RunStretch = Readonly<{ from: number; origin: number; to: number }>;
+
+type LetterRun = [after: number, before: number, length: number];
+
+const appendJoinedRun = (
+  runs: LetterRun[],
+  after: number,
+  before: number,
+  length: number
+) => {
+  const top = runs.at(-1);
+
+  if (top && top[0] + top[2] === after && top[1] + top[2] === before) {
+    top[2] += length;
+  } else runs.push([after, before, length]);
+};
+
+const skipStretchesEndingBy = (
+  letters: readonly RunStretch[],
+  at: number,
+  from: number
+) => {
+  let index = at;
+
+  while (index < letters.length && letters[index].to <= from) index += 1;
+
+  return index;
+};
+
+const keepsShifted = ({ from, origin }: RunStretch, shift: number) =>
+  origin >= 0 && origin - from === shift;
+
+/**
+ * Whether `diff` gives no typed letter an old letter's place and, in a run
+ * without letters code made, keeps each kept letter only as its own old letter.
+ */
+const agreesWithLetters = (
+  diff: readonly Diff[],
+  letters: readonly RunStretch[]
+) => {
+  const madeByCode = letters.some(({ origin }) => origin === VALUE_LETTER);
+  let at = 0;
+  let fromBefore = 0;
+  let fromAfter = 0;
+
+  for (const [operation, { length }] of diff) {
+    if (operation === DiffOp.Equal && length > 0) {
+      at = skipStretchesEndingBy(letters, at, fromAfter);
+      for (
+        let index = at;
+        index < letters.length && letters[index].from < fromAfter + length;
+        index += 1
+      ) {
+        const stretch = letters[index];
+
+        if (
+          stretch.origin === NEW_LETTER ||
+          (!madeByCode && !keepsShifted(stretch, fromBefore - fromAfter))
+        ) {
+          return false;
+        }
+      }
+    }
+    if (operation !== DiffOp.Insert) fromBefore += length;
+    if (operation !== DiffOp.Delete) fromAfter += length;
+  }
+
+  return true;
+};
+
+const anchorsOf = (diff: readonly Diff[], letters: readonly RunStretch[]) => {
+  const anchors: LetterRun[] = [];
+  let at = 0;
+  let fromBefore = 0;
+  let fromAfter = 0;
+
+  for (const [operation, { length }] of diff) {
+    if (operation === DiffOp.Equal && length > 0) {
+      const end = fromAfter + length;
+      const shift = fromBefore - fromAfter;
+
+      at = skipStretchesEndingBy(letters, at, fromAfter);
+      for (
+        let index = at;
+        index < letters.length && letters[index].from < end;
+        index += 1
+      ) {
+        const stretch = letters[index];
+
+        if (keepsShifted(stretch, shift)) {
+          const start = Math.max(stretch.from, fromAfter);
+
+          appendJoinedRun(
+            anchors,
+            start,
+            start + shift,
+            Math.min(stretch.to, end) - start
+          );
+        }
+      }
+    }
+    if (operation !== DiffOp.Insert) fromBefore += length;
+    if (operation !== DiffOp.Delete) fromAfter += length;
+  }
+
+  return anchors;
+};
+
+/**
+ * The kept letters of `[afterFrom, afterTo)` whose old letters stand in
+ * `[beforeFrom, beforeTo)` and read the same, as runs whose letters and old
+ * letters both rise by one. `at` is the first stretch ending after
+ * `afterFrom`.
+ */
+const fitsIn = (
+  previous: string,
+  next: string,
+  letters: readonly RunStretch[],
+  at: number,
+  [afterFrom, afterTo]: readonly [number, number],
+  [beforeFrom, beforeTo]: readonly [number, number]
+) => {
+  const fits: LetterRun[] = [];
+
+  for (
+    let index = at;
+    index < letters.length && letters[index].from < afterTo;
+    index += 1
+  ) {
+    const { from, origin, to } = letters[index];
+
+    if (origin < 0) continue;
+
+    const shift = origin - from;
+    const start = Math.max(from, afterFrom, beforeFrom - shift);
+    const end = Math.min(to, afterTo, beforeTo - shift);
+
+    if (start >= end) continue;
+    if (next.slice(start, end) === previous.slice(start + shift, end + shift)) {
+      appendJoinedRun(fits, start, start + shift, end - start);
+      continue;
+    }
+    // A label that names an old letter of another text, as in a rewrite of
+    // the chain's own text, keeps only the letters that still read the same.
+    for (let letter = start; letter < end; letter += 1) {
+      if (next[letter] === previous[letter + shift]) {
+        appendJoinedRun(fits, letter, letter + shift, 1);
+      }
+    }
+  }
+
+  return fits;
+};
+
+/**
+ * The chain a letter-by-letter patience sort picks from `fits`. A fit's
+ * letters land on consecutive piles from the pile its first letter lands on,
+ * so each fit costs one search and one fill.
+ */
+const longestRisingChain = (fits: readonly LetterRun[]): LetterRun[] => {
+  let total = 0;
+
+  for (const fit of fits) total += fit[2];
+
+  const piles = new Int32Array(total);
+  const firstPile = new Int32Array(fits.length);
+  const previousFit = new Int32Array(fits.length);
+  const previousLength = new Int32Array(fits.length);
+  let count = 0;
+  const oldAt = (pile: number) => {
+    const fit = piles[pile];
+
+    return fits[fit][1] + pile - firstPile[fit];
+  };
+
+  for (const [index, [, old, length]] of fits.entries()) {
+    let low = 0;
+    let high = count;
+
+    while (low < high) {
+      const middle = (low + high) >> 1;
+
+      if (oldAt(middle) < old) low = middle + 1;
+      else high = middle;
+    }
+    firstPile[index] = low;
+    previousFit[index] = low > 0 ? piles[low - 1] : -1;
+    previousLength[index] = low > 0 ? low - firstPile[piles[low - 1]] : 0;
+    piles.fill(index, low, low + length);
+    count = Math.max(count, low + length);
+  }
+
+  const chain: LetterRun[] = [];
+  let fit = count > 0 ? piles[count - 1] : -1;
+  let length = count > 0 ? count - firstPile[fit] : 0;
+
+  while (fit !== -1) {
+    chain.push([fits[fit][0], fits[fit][1], length]);
+    length = previousLength[fit];
+    fit = previousFit[fit];
+  }
+
+  const runs: LetterRun[] = [];
+
+  for (const [after, before, size] of chain.reverse()) {
+    appendJoinedRun(runs, after, before, size);
+  }
+
+  return runs;
+};
+
+const longestRisingFitRuns = (fits: LetterRun[]): LetterRun[] => {
+  for (let index = 1; index < fits.length; index += 1) {
+    const [, old] = fits[index];
+    const [, last, length] = fits[index - 1];
+
+    if (old < last + length) return longestRisingChain(fits);
+  }
+
+  return fits;
+};
+
+const isOneLetter = (text: string) =>
+  text.length <= 1 ||
+  (text.length === 2 && (text.codePointAt(0) ?? 0) > 0xff_ff);
+
+/**
+ * The write of a run whose base diff disagrees with its letters. The kept
+ * letters that diff pairs with their own old letters anchor it, and between
+ * two anchors the longest chain of other kept letters whose old letters still
+ * rise there joins them.
+ */
+const writeFromLetters = (
+  previous: string,
+  next: string,
+  diff: readonly Diff[],
+  letters: readonly RunStretch[]
+): Diff[] => {
+  const anchors = anchorsOf(diff, letters);
+  const end: LetterRun = [next.length, previous.length, 0];
+  const kept: LetterRun[] = [];
+  let at = 0;
+  let afterFrom = 0;
+  let beforeFrom = 0;
+
+  for (const anchor of [...anchors, end]) {
+    at = skipStretchesEndingBy(letters, at, afterFrom);
+    for (const run of longestRisingFitRuns(
+      fitsIn(
+        previous,
+        next,
+        letters,
+        at,
+        [afterFrom, anchor[0]],
+        [beforeFrom, anchor[1]]
+      )
+    )) {
+      appendJoinedRun(kept, ...run);
+    }
+    if (anchor !== end) appendJoinedRun(kept, ...anchor);
+    afterFrom = anchor[0] + anchor[2];
+    beforeFrom = anchor[1] + anchor[2];
+  }
+
+  const ops: Diff[] = [];
+  const push = (operation: DiffOp, value: string) => {
+    if (value.length === 0) return;
+    const top = ops.at(-1);
+
+    if (top?.[0] === operation) {
+      ops[ops.length - 1] = [operation, top[1] + value];
+    } else ops.push([operation, value]);
+  };
+  // Several new letters over several old ones go in after the first old
+  // letter. After the last one they would share their origin with a
+  // teammate's insert at the gap's right edge, and Yjs would order the two by
+  // client id.
+  const replace = (deleted: string, inserted: string) => {
+    if (isOneLetter(deleted) || isOneLetter(inserted)) {
+      push(DiffOp.Delete, deleted);
+      push(DiffOp.Insert, inserted);
+      return;
+    }
+
+    const first = (deleted.codePointAt(0) ?? 0) > 0xff_ff ? 2 : 1;
+
+    push(DiffOp.Delete, deleted.slice(0, first));
+    push(DiffOp.Insert, inserted);
+    push(DiffOp.Delete, deleted.slice(first));
+  };
+  const holdsValue = (from: number, to: number) => {
+    at = skipStretchesEndingBy(letters, at, from);
+    for (
+      let index = at;
+      index < letters.length && letters[index].from < to;
+      index += 1
+    ) {
+      if (letters[index].origin === VALUE_LETTER) return true;
+    }
+
+    return false;
+  };
+  const writeGap = (old: string, from: number, to: number) => {
+    const text = next.slice(from, to);
+
+    if (from < to && holdsValue(from, to)) {
+      for (const [operation, value] of diffText(old, text)) {
+        push(operation, value);
+      }
+    } else replace(old, text);
+  };
+
+  at = 0;
+  afterFrom = 0;
+  beforeFrom = 0;
+  for (const [after, before, length] of [...kept, end]) {
+    writeGap(previous.slice(beforeFrom, before), afterFrom, after);
+    push(DiffOp.Equal, previous.slice(before, before + length));
+    afterFrom = after + length;
+    beforeFrom = before + length;
+  }
+
+  return ops;
+};
+
+const coversRun = (letters: readonly RunStretch[], length: number) => {
+  let at = 0;
+
+  for (const { from, to } of letters) {
+    if (from !== at || to <= from) return false;
+    at = to;
+  }
+
+  return at === length;
+};
+
+export const planLetterWrite = (
+  previous: string,
+  next: string,
+  diff: readonly Diff[],
+  letters: readonly RunStretch[]
+): readonly Diff[] =>
+  !coversRun(letters, next.length) || agreesWithLetters(diff, letters)
+    ? diff
+    : writeFromLetters(previous, next, diff, letters);
+
 const leafCursor = (leaves: readonly Text[]) => {
   let index = 0;
   let from = 0;
@@ -1537,7 +1896,8 @@ const withoutKeptValues = (
 /**
  * Write `after` over the chain that shows `before`. Without `diff`, the
  * letters to keep come from a diff of the two texts, which cannot tell which
- * of two equal letters an edit removed. `encodeBefore` reads the attributes
+ * of two equal letters an edit removed; `letters` names them, and the write
+ * follows them where that diff does not. `encodeBefore` reads the attributes
  * `before` shows, which default to what `encode` writes for them.
  */
 export const writeTextRuns = (
@@ -1548,7 +1908,12 @@ export const writeTextRuns = (
   {
     diff,
     encodeBefore = encode,
-  }: Readonly<{ diff?: readonly Diff[]; encodeBefore?: YjsRunEncoder }> = {}
+    letters,
+  }: Readonly<{
+    diff?: readonly Diff[];
+    encodeBefore?: YjsRunEncoder;
+    letters?: readonly RunStretch[];
+  }> = {}
 ): void => {
   const previous = before.map((leaf) => leaf.text).join('');
   const next = after.map((leaf) => leaf.text).join('');
@@ -1559,7 +1924,10 @@ export const writeTextRuns = (
   let fromAfter = 0;
   const targetAt = leafCursor(after);
   const sourceAt = leafCursor(before);
-  for (const [operation, value] of diff ?? diffText(previous, next)) {
+  const planned = diff ?? diffText(previous, next);
+  for (const [operation, value] of letters
+    ? planLetterWrite(previous, next, planned, letters)
+    : planned) {
     if (operation === DiffOp.Delete) {
       let remaining = value.length;
       while (remaining > 0) {
@@ -1680,7 +2048,10 @@ export const rewriteTextRuns = (
   chain: YjsTextChain,
   after: readonly Text[],
   encode: YjsRunEncoder,
-  { diff }: Readonly<{ diff?: readonly Diff[] }> = {}
+  {
+    diff,
+    letters,
+  }: Readonly<{ diff?: readonly Diff[]; letters?: readonly RunStretch[] }> = {}
 ): void => {
   const runs: Array<{ text: string; attributes: YjsAttributeRecord }> = [];
   for (const text of chain) {
@@ -1699,7 +2070,7 @@ export const rewriteTextRuns = (
     runs.map((run) => ({ text: run.text })),
     after,
     encode,
-    { diff, encodeBefore: (_leaf, index) => runs[index].attributes }
+    { diff, encodeBefore: (_leaf, index) => runs[index].attributes, letters }
   );
 };
 

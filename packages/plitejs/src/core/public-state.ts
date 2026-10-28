@@ -205,6 +205,13 @@ import {
   lazyRootOf,
   setLazyRoot,
 } from './change/lazy-root';
+import {
+  type LetterSpan,
+  markLetterOrigins,
+  mapNewLetters,
+  mergeSpans,
+  type NewLetters,
+} from './change/new-letters';
 import type { RootChange } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
 import {
@@ -927,6 +934,7 @@ type EditorTransactionGuard = (context: {
 }) => void | (() => void);
 
 const TRANSACTION_GUARDS = new WeakMap<Editor, Set<EditorTransactionGuard>>();
+const LETTER_TRACKERS = new WeakMap<Editor, number>();
 const PREPARING_COMMIT = new WeakSet<Editor>();
 
 export type EditorHistoryReplayReceipt = Readonly<{
@@ -1419,6 +1427,30 @@ export const registerEditorTransactionGuard = (
   };
 };
 
+/**
+ * Make the editor's drafts track which letters each step keeps, moves or a
+ * user writes, until the returned release runs. A draft already open keeps
+ * its setting.
+ *
+ * @internal
+ */
+export const trackEditorLetters = (editor: Editor) => {
+  const owner = getEditorRuntimeOwner(editor);
+  let active = true;
+
+  LETTER_TRACKERS.set(owner, (LETTER_TRACKERS.get(owner) ?? 0) + 1);
+
+  return () => {
+    if (!active) return;
+
+    active = false;
+    const count = (LETTER_TRACKERS.get(owner) ?? 1) - 1;
+
+    if (count > 0) LETTER_TRACKERS.set(owner, count);
+    else LETTER_TRACKERS.delete(owner);
+  };
+};
+
 // A view's transaction runs on its runtime owner.
 const getDraftSnapshot = (editor: Editor) =>
   getTransactionSnapshot(editor) ??
@@ -1575,11 +1607,14 @@ export const commitRecordedDraft = (
   selectionRoot: string,
   {
     carried,
+    letters,
     plain,
     storedToWritten,
   }: Readonly<{
     /** The draft's placements, with its bookmarks in recorded coordinates. */
     carried?: CarriedCarets | null;
+    /** A frame draft's new letters, in its written document. */
+    letters?: NewLetters;
     plain?: PlainDraft;
     storedToWritten?: PositionMap;
   }> = {}
@@ -1591,6 +1626,28 @@ export const commitRecordedDraft = (
   const change = frontier
     ? frontier.change.compose(recorded.change)
     : recorded.change;
+  const plainToRecorded: PositionMap | null = mapPosition
+    ? (root, position, assoc) => {
+        const written = storedToWritten
+          ? storedToWritten(root, position, assoc)
+          : position;
+
+        return written === null ? null : mapPosition(root, written, assoc);
+      }
+    : null;
+  const recordedLetters = new Map<string, LetterSpan[]>();
+
+  if (mapPosition && plainToRecorded) {
+    for (const [root, spans] of [
+      ...mapNewLetters(plainBuilder.newLetters, plainToRecorded),
+      ...(letters ? mapNewLetters(letters, mapPosition) : []),
+    ]) {
+      recordedLetters.set(
+        root,
+        mergeSpans([...(recordedLetters.get(root) ?? []), ...spans])
+      );
+    }
+  }
 
   if (plain) carryDraftNodeKeys(editor, snapshot, recorded, plain);
 
@@ -1638,28 +1695,17 @@ export const commitRecordedDraft = (
   if (!change.empty) {
     applyTransactionSpecDocumentChangeStep(
       editor,
-      snapshot.builder.apply(
-        change,
-        recorded.indexedAfter ? { indexedAfter: recorded.indexedAfter } : {}
-      ),
+      snapshot.builder.apply(change, {
+        ...(recorded.indexedAfter
+          ? { indexedAfter: recorded.indexedAfter }
+          : {}),
+        ...(recordedLetters.size > 0 ? { letters: recordedLetters } : {}),
+      }),
       { notifyTransactionListeners: false }
     );
   }
   snapshot.builder.beginSpan();
-  moveDraftTracks(
-    snapshot,
-    plainBuilder,
-    snapshot.builder,
-    mapPosition
-      ? (root, position, assoc) => {
-          const written = storedToWritten
-            ? storedToWritten(root, position, assoc)
-            : position;
-
-          return written === null ? null : mapPosition(root, written, assoc);
-        }
-      : null
-  );
+  moveDraftTracks(snapshot, plainBuilder, snapshot.builder, plainToRecorded);
   context.caret = {
     ...context.caret,
     root: selectionRoot,
@@ -4661,8 +4707,11 @@ const writeSliceAtRange = <V extends Value>(
   const replacedEntries = emptyBlock ? [emptyBlock] : [];
 
   const landings: DraftTrack[] = [];
-  const fit = () =>
-    getEditorSchema(editor).fit(slice, {
+  const fit = () => {
+    const builder = getActiveDocumentChangeBuilder(editor);
+    const since = builder.draftSteps.length;
+
+    return getEditorSchema(editor).fit(slice, {
       apply: (step, selection, landing) => {
         discardReplacedNodeKeys(editor, replacedEntries);
         applyDocumentChangeStep(
@@ -4677,17 +4726,32 @@ const writeSliceAtRange = <V extends Value>(
               }
             : {}
         );
-        if (landing) landings.push(trackLandedRange(editor, landing));
+        if (!landing) return;
+        if (builder.marksLetters) {
+          const root = landing.anchor.root ?? MAIN_ROOT_KEY;
+          const index = builder.getIndex(root);
+
+          builder.markLetters(
+            since,
+            root,
+            index.positionAt(landing.anchor),
+            index.positionAt(landing.focus)
+          );
+        }
+        if (options.landed) landings.push(trackLandedRange(editor, landing));
       },
-      builder: getActiveDocumentChangeBuilder(editor),
+      builder,
       target: {
         at: range,
         ...(bounds ? { contentBounds: bounds, exactBounds: bounds } : {}),
         kind: 'range',
         ...(emptyBlock ? { replaceEmptyBlock: true } : {}),
-        ...(options.landed ? { reportLanding: true } : {}),
+        ...(options.landed || builder.marksLetters
+          ? { reportLanding: true }
+          : {}),
       },
     });
+  };
 
   if (
     !options.rootsPrepared &&
@@ -10611,6 +10675,7 @@ export const createEditorDocumentChangeBuilder = (
   const compiled = getCompiledEditorSchema(editor);
 
   return new ChangeDraft(value, {
+    tracksLetters: LETTER_TRACKERS.has(getEditorRuntimeOwner(editor)),
     tracksPlaces: tracksPlaces(compiled),
     view: options.view ? () => true : () => isEditorDraftView(editor),
     adoptCanonicalBaseline: (candidate) => {
@@ -11858,6 +11923,14 @@ export const runEditorTransaction = <R>(
               getChangeValue(draftRoots, getValueRecords(draftValue))
             ) as EditorDocumentValue;
             const canonicalChanges = snapshot.activeChange.change;
+            if (
+              snapshot.builder.tracksLetters &&
+              canonicalChanges === snapshot.builder.change
+            ) {
+              markLetterOrigins(canonicalChanges, [
+                ...snapshot.builder.draftSteps,
+              ]);
+            }
             const canonicalIndexes =
               snapshot.builder.indexedAfter(canonicalChanges);
 

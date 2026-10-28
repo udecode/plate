@@ -13,6 +13,7 @@ import {
   withInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import type { NodeList } from '../../core/change/document-index';
+import { letterOriginsOfChange } from '../../core/change/new-letters';
 import { type EmptyTextRead, retractionOf } from '../../core/change/retraction';
 import { getEditorCommitValue } from '../../core/commit';
 import { getEditorSchema } from '../../core/editor-runtime';
@@ -30,6 +31,7 @@ import {
   getEditorDocumentRecords,
   registerEditorTransactionGuard,
   scheduleAfterCommitNotification,
+  trackEditorLetters,
 } from '../../core/public-state';
 import {
   deriveValue,
@@ -91,6 +93,7 @@ import {
   type YjsJoinRecovery,
 } from './event-change-bridge';
 import { DEFAULT_YJS_ROOT_NAME } from './keys';
+import { yjsLettersOf } from './new-letters';
 import { isRecord } from './record';
 import { retractYjsRoot } from './retraction';
 import {
@@ -290,6 +293,7 @@ export class YjsController<
   private readonly storageTypes = new Set<unknown>();
   private storageWrites = 0;
   private unregisterTransactionGuard: (() => void) | undefined;
+  private untrackLetters: (() => void) | undefined;
 
   constructor(
     editor: YjsEditor,
@@ -684,6 +688,7 @@ export class YjsController<
         this.editor,
         ({ change, effects }) => this.assertTransactionAllowed(change, effects)
       );
+      this.untrackLetters = trackEditorLetters(this.editor);
       this.initialized = true;
 
       if (this.readInitialReady()) this.assertRoomSchemaForImport();
@@ -691,6 +696,8 @@ export class YjsController<
       this.initialized = false;
       this.unregisterTransactionGuard?.();
       this.unregisterTransactionGuard = undefined;
+      this.untrackLetters?.();
+      this.untrackLetters = undefined;
       this.unbindExternalEvents();
       this.schemaMetadata.unobserve(this.schemaObserver);
       this.root.unobserveDeep(this.observer);
@@ -718,6 +725,8 @@ export class YjsController<
 
     run(() => this.unregisterTransactionGuard?.());
     this.unregisterTransactionGuard = undefined;
+    run(() => this.untrackLetters?.());
+    this.untrackLetters = undefined;
     run(() => this.sharedEffectLog.destroy());
     if (this.initialized) {
       this.initialized = false;
@@ -879,6 +888,7 @@ export class YjsController<
     }
 
     const removedBindings: string[] = [];
+    const origins = letterOriginsOfChange(commit.changes);
     const fallbacks = new Set<string>([
       ...commit.changes.createRoots,
       ...commit.changes.deleteRoots,
@@ -952,10 +962,12 @@ export class YjsController<
 
         if (editorOnly) binding.bridge.writeMissingRoot(write);
 
+        const letters = origins?.get(root);
         const incremental = binding.bridge.lower(write, rootChange, expected, {
           // Several of the bridge's detectors read them, and a root other
           // than the main one builds them anew on each read.
           indexes: () => (indexes ??= readIndexes()),
+          letters,
           structureChanged,
         });
         const result =
@@ -977,6 +989,13 @@ export class YjsController<
                   expected: expected.slice(),
                   isSetValued: this.isSetValued,
                   knownYjsValue: binding.bridge.synchronized.slice(),
+                  letters:
+                    letters &&
+                    yjsLettersOf(
+                      letters,
+                      (indexes ??= readIndexes()).after,
+                      indexes.before
+                    ),
                   root,
                   write,
                 })

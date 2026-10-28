@@ -79,6 +79,8 @@ export type CoreWork = {
   relocations: number;
   /** Nodes a mapping bound as they landed. */
   landedNodeBinds: number;
+  /** Spans of typed letters a draft carried through one of its steps. */
+  letterMarks: number;
   /** Root snapshots built from a root's current children. */
   rootSnapshots: number;
   /** Elements and root records a room's read examined for unbuilt spares. */
@@ -161,6 +163,7 @@ export const coreWork: CoreWork = {
   reconciles: 0,
   relocations: 0,
   landedNodeBinds: 0,
+  letterMarks: 0,
   rootSnapshots: 0,
   spareReads: 0,
   spareIdChecks: 0,

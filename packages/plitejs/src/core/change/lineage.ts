@@ -1,9 +1,11 @@
+import { getDefined } from '../../internal/get-defined';
 import { countCoreWork } from '../work';
 import {
   type DocumentChange,
   getInternalDocumentRootChange,
 } from './document-change';
 import type { DocumentIndex } from './document-index';
+import type { NewLetters } from './new-letters';
 
 /**
  * Tokens a step landed that stood, one to one, somewhere else: `length`
@@ -54,20 +56,24 @@ export type LineageStep = Readonly<{
   indexedAfter: ReadonlyMap<string, DocumentIndex>;
   indexedBefore: ReadonlyMap<string, DocumentIndex>;
   relocations?: readonly Relocation[];
+  letters?: NewLetters;
 }>;
 
 // A treap of final-document runs keyed by where each run stands at the step
-// the sweep has reached, with a lazy shift and a lazy moved mark, so one step
-// costs its own sections times a logarithm, whatever the document's size.
+// the sweep has reached, with a lazy shift and lazy moved and marked flags, so
+// one step costs its own sections times a logarithm, whatever the document's
+// size.
 type Piece = {
   final: number;
   image: number;
   left: Piece | null;
   length: number;
+  marked: boolean;
   moved: boolean;
   priority: number;
   right: Piece | null;
   shift: number;
+  tagMarked: boolean;
   tagMoved: boolean;
 };
 
@@ -81,12 +87,19 @@ const piece = (
   image,
   left: null,
   length,
+  marked: false,
   moved,
   priority: Math.random(),
   right: null,
   shift: 0,
+  tagMarked: false,
   tagMoved: false,
 });
+
+const markPiece = (node: Piece) => {
+  node.marked = true;
+  node.tagMarked = true;
+};
 
 const shiftPiece = (node: Piece, shift: number, moved: boolean) => {
   node.image += shift;
@@ -98,11 +111,14 @@ const shiftPiece = (node: Piece, shift: number, moved: boolean) => {
 };
 
 const push = (node: Piece) => {
-  if (node.shift === 0 && !node.tagMoved) return;
+  if (node.shift === 0 && !node.tagMoved && !node.tagMarked) return;
   for (const child of [node.left, node.right]) {
-    if (child) shiftPiece(child, node.shift, node.tagMoved);
+    if (!child) continue;
+    shiftPiece(child, node.shift, node.tagMoved);
+    if (node.tagMarked) markPiece(child);
   }
   node.shift = 0;
+  node.tagMarked = false;
   node.tagMoved = false;
 };
 
@@ -132,6 +148,8 @@ const split = (
     const cut = key - node.image;
     const tail = piece(node.final + cut, key, node.length - cut, node.moved);
     const { left, right } = node;
+
+    tail.marked = node.marked;
 
     node.length = cut;
     node.left = null;
@@ -248,6 +266,8 @@ type Lineage = Readonly<{
   landed: ReadonlyMap<number, Found>;
   /** Every piece, by its final position. */
   pieces: readonly Found[];
+  made: readonly Piece[];
+  size: number;
 }>;
 
 const lineages = new WeakMap<readonly LineageStep[], Map<string, Lineage>>();
@@ -300,6 +320,9 @@ const lineageOf = (
   let final: DocumentIndex | null = null;
   let base: DocumentIndex | null = null;
   const settled: Found[] = [];
+  const made: Piece[] = [];
+  let anyMarks = false;
+  let size = 0;
 
   for (let index = steps.length - 1; index >= 0; index -= 1) {
     countCoreWork('formerPlaceVisits');
@@ -309,10 +332,22 @@ const lineageOf = (
     if (!change) continue;
     if (!final) {
       final = step.indexedAfter.get(root) ?? null;
+      size = change.newLength;
       trees =
         change.newLength > 0 ? [piece(0, 0, change.newLength, false)] : [];
     }
     base = step.indexedBefore.get(root) ?? null;
+    anyMarks ||= step.letters?.has(root) === true;
+    for (const [from, to] of step.letters?.get(root) ?? []) {
+      trees = trees.map((tree) => {
+        const [head, rest] = split(tree, from);
+        const [middle, tail] = split(rest, to);
+
+        if (middle) markPiece(middle);
+
+        return getDefined(merge(merge(head, middle), tail));
+      });
+    }
 
     const chunks: Array<Readonly<{ end: number; start: number; tree: Piece }>> =
       [];
@@ -325,6 +360,7 @@ const lineageOf = (
         const [chunk, after] = split(rest, segment.to);
 
         rest = after;
+        if (chunk && anyMarks && segment.shift === null) collect(chunk, made);
         if (!chunk || segment.shift === null) continue;
         shiftPiece(chunk, segment.shift, segment.relocated);
         if (segment.source) {
@@ -376,7 +412,14 @@ const lineageOf = (
     if (found.piece.moved) indexLanded(final, found, landed);
   }
 
-  const lineage = { base, landed, pieces, steps: steps.length };
+  const lineage = {
+    base,
+    landed,
+    made,
+    pieces,
+    size,
+    steps: steps.length,
+  };
 
   byRoot.set(root, lineage);
 
@@ -429,4 +472,121 @@ export const formerPlace = (
   }
 
   return null;
+};
+
+/**
+ * Where one stretch of a final document came from: `kept` from position `at`
+ * of the span's first document, `new` where a user wrote it, or `value` where
+ * code made it.
+ *
+ * @internal
+ */
+export type LetterOrigin = Readonly<
+  | { from: number; to: number; kind: 'kept'; at: number; moved: boolean }
+  | { from: number; to: number; kind: 'new' | 'value' }
+>;
+
+/**
+ * Keep each first-document position with the stretch that comes first in the
+ * final document, so a before letter that a reused parent and its copied
+ * child both carry stays with one of them, and the other becomes `value`.
+ */
+const claimOnce = (origins: LetterOrigin[]): LetterOrigin[] => {
+  const kept = origins.flatMap((origin) =>
+    origin.kind === 'kept' ? [origin] : []
+  );
+  let reach = -1;
+  let shared = false;
+
+  for (const origin of [...kept].sort((left, right) => left.at - right.at)) {
+    if (origin.at < reach) shared = true;
+    reach = Math.max(reach, origin.at + origin.to - origin.from);
+  }
+  if (!shared) return origins;
+
+  const claimed: Array<[number, number]> = [];
+
+  return origins.flatMap((origin): LetterOrigin[] => {
+    if (origin.kind !== 'kept') return [origin];
+
+    const end = origin.at + origin.to - origin.from;
+    const parts: LetterOrigin[] = [];
+    let { at } = origin;
+
+    const add = (to: number, kind: 'kept' | 'value') => {
+      if (to <= at) return;
+      const from = origin.from + at - origin.at;
+
+      parts.push(
+        kind === 'kept'
+          ? { ...origin, at, from, to: from + to - at }
+          : { from, kind, to: from + to - at }
+      );
+      at = to;
+    };
+
+    for (const [from, to] of claimed) {
+      if (to <= at) continue;
+      if (from >= end) break;
+      add(Math.min(from, end), 'kept');
+      add(Math.min(to, end), 'value');
+    }
+    add(end, 'kept');
+    claimed.push([origin.at, end]);
+    claimed.sort((left, right) => left[0] - right[0]);
+
+    return parts;
+  });
+};
+
+/**
+ * Every stretch of the final document for `root`, in order. A stretch that a
+ * step's `letters` cover is `new`, whether it traces to a first-document
+ * letter or to a step that made it, because a typed word can share letters
+ * with the word it replaces. Null when no step changed `root`.
+ *
+ * @internal
+ */
+export const letterOriginsOf = (
+  steps: readonly LineageStep[],
+  root: string
+): readonly LetterOrigin[] | null => {
+  const lineage = lineageOf(steps, root);
+
+  if (!lineage) return null;
+
+  const origins: LetterOrigin[] = [];
+
+  for (const { document, piece: found } of lineage.pieces) {
+    const { final, image, length, marked, moved } = found;
+    const to = final + length;
+
+    origins.push(
+      marked
+        ? { from: final, kind: 'new', to }
+        : document
+          ? { from: final, kind: 'value', to }
+          : { at: image, from: final, kind: 'kept', moved, to }
+    );
+  }
+  for (const { final, length, marked } of lineage.made) {
+    if (marked) origins.push({ from: final, kind: 'new', to: final + length });
+  }
+  origins.sort((left, right) => left.from - right.from);
+
+  const stretches: LetterOrigin[] = [];
+  let reach = 0;
+
+  for (const origin of origins) {
+    if (origin.from > reach) {
+      stretches.push({ from: reach, kind: 'value', to: origin.from });
+    }
+    stretches.push(origin);
+    reach = origin.to;
+  }
+  if (reach < lineage.size) {
+    stretches.push({ from: reach, kind: 'value', to: lineage.size });
+  }
+
+  return claimOnce(stretches);
 };
