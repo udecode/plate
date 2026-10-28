@@ -36,7 +36,12 @@ import {
   readTasks,
   SESSION,
 } from '../../.agents/pstack/tasks.mjs';
-import { existsAt, movedBetween, PRIVATE_DIR, showAt } from './git-private.mjs';
+import {
+  existsAt,
+  movedBetween,
+  PRIVATE_DIR,
+  showAt,
+} from './private-files.mjs';
 import {
   CLAIM_COLUMNS,
   CLAIMS_FILE,

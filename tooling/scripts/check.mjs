@@ -8,7 +8,7 @@ import {
   TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
-import { changedFiles, grepFiles, hasPrivateHalf } from './git-private.mjs';
+import { changedFiles, grepFiles, hasPrivateHalf } from './private-files.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -34,6 +34,7 @@ const isProse = (file) =>
 const FORMATTER_ONLY = new Set(['skills-lock.json']);
 const formatted = (files) => files.some((file) => !isProse(file));
 const CODE = /\.(?:[cm]?[jt]sx?|sh)$/u;
+const RESOLVER_CONFIG = /(?:^|\/)(?:tsconfig[^/]*|package)\.json$/u;
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
 const BUILD_CONFIG = /(?:^|\/)(?:package|turbo|tsconfig[\w.-]*)\.json$/u;
 const inTestSuite = (file) =>
@@ -317,6 +318,20 @@ export const steps = [
     run: 'node tooling/scripts/triage.mjs check',
   },
   { name: 'private', run: 'node tooling/scripts/git-private.mjs check' },
+  {
+    name: 'private-imports',
+    run: 'node tooling/scripts/git-private.mjs imports',
+    // Only a changed code file can add an import, and only a .gitprivate,
+    // classifier or resolver config change can make an unchanged one cross.
+    affected: (files) =>
+      touches(
+        '.gitprivate',
+        'tooling/scripts/import-graph.mjs',
+        'tooling/scripts/private-files.mjs'
+      )(files) ||
+      files.some((file) => RESOLVER_CONFIG.test(file)) ||
+      files.filter((file) => CODE.test(file)),
+  },
   { name: 'manifests', run: 'pnpm test:manifests' },
   {
     name: 'toolbar-variants',
@@ -541,6 +556,19 @@ const main = () => {
     }));
   }
   if (!hasPrivateHalf(root)) {
+    const asked = selected
+      .map(({ step }) => step)
+      .filter(
+        (step) =>
+          step.private &&
+          (names.includes(step.name) || args.includes(step.optIn))
+      );
+    if (asked.length > 0) {
+      console.error(
+        `[check] ${asked.map((step) => step.name).join(', ')} reads udecode/plate-private's files, which this checkout does not have; in a team clone, node tooling/scripts/git-private.mjs start puts them on disk.`
+      );
+      return 1;
+    }
     for (const { step } of selected.filter((entry) => entry.step.private)) {
       console.info(
         `  skip ${step.name}: it reads udecode/plate-private's files`

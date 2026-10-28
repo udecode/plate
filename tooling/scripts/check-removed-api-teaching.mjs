@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { showAt } from './git-private.mjs';
+import { showAt } from './private-files.mjs';
 import { generatedPrefixes, releaseNotePrefixes } from './teaching-sweep.mjs';
 
 const manifestPath = 'apps/www/src/generated/api-reference-manifest.json';

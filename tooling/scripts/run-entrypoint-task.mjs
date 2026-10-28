@@ -11,9 +11,9 @@ import {
   getPackageRuntimeTestFiles,
   repoRoot,
 } from '../entrypoints/entrypoint-turbo.mjs';
-import { hasPrivateHalf } from './git-private.mjs';
 import { usesMockModule } from './import-graph.mjs';
 import { runTraced } from './load-trace.mjs';
+import { hasPrivateHalf } from './private-files.mjs';
 
 const [command, packageName, partitionName] = process.argv.slice(2);
 const definition = entrypointDags[packageName];

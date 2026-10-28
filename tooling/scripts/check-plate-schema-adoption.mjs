@@ -13,8 +13,8 @@ import {
   readBaseline,
   groupFindings,
 } from './finding-baseline.mjs';
-import { trackedFiles } from './git-private.mjs';
 import { internalPliteContractTypeSymbols } from './plite-internal-symbols.mjs';
+import { trackedFiles } from './private-files.mjs';
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;

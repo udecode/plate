@@ -28,21 +28,23 @@
 // When the config names a `companion` whose git directory `companion.dir` is
 // in the checkout, that repository tracks the files this checkout's git
 // ignores through `companion.list`, and the task's changes there land in push
-// mode as a second commit with the same message, rebased onto the companion's
-// origin/<branch> and checked with the first. It pushes after the first, with
-// a `Lands-With:` line naming the commit it landed with, and a rerun after a
-// refused companion push pushes it before anything else. A branch cut before
+// mode, the default there, as a second commit with the same message. Every
+// land rebases the companion onto its origin/<branch> and checks both halves
+// together. The companion commit pushes after the first, with a `Lands-With:`
+// line naming the commit it landed with; a refused companion push exits 75,
+// and the rerun rebases, checks and pushes it. A checkout whose config names a
+// companion it lacks refuses to land in push mode. A branch cut before
 // `companion.list` existed on <branch> stops with `companion.migrate`.
 // Each commit ends with a `Lead:` line naming the model and effort lead.mjs
 // reads for the agent session running this land, or `unknown`, replacing any
 // such line in the message. When <branch>'s config lists `sourceless` GitHub
 // logins, a commit lands only for them unless it names a source: an issue of
 // this repository or its companion, a card in the suggested-task ledger, or a
-// dated plan that exists.
+// dated plan in the plans directory that exists.
 
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { availableParallelism, tmpdir } from 'node:os';
+import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { availableParallelism, devNull, tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { findLead, leadLabel } from './lead.mjs';
 import { reserve } from './proof.mjs';
@@ -110,7 +112,9 @@ process.chdir(must('rev-parse', '--show-toplevel'));
 const config = JSON.parse(readFileSync('.agents/pstack.json', 'utf8'));
 const { branch, protected: guarded, lintFix, plans = 'docs/plans', companion, generated = [] } = config;
 if (!branch) fail('.agents/pstack.json names no branch');
-const mode = git('config', '--get', 'pstack.delivery').stdout.trim() === 'push' ? 'push' : 'pr';
+const pair = companion?.dir && existsSync(companion.dir) ? companion : null;
+const delivery = git('config', '--get', 'pstack.delivery').stdout.trim();
+const mode = delivery === 'push' || (pair && delivery === '') ? 'push' : 'pr';
 const forked = mode === 'pr' && git('remote', 'get-url', 'upstream').status === 0;
 const canonical = forked ? 'upstream' : 'origin';
 const upstream = `refs/remotes/${canonical}/${branch}`;
@@ -118,8 +122,10 @@ const target = `${canonical}/${branch}`;
 const current = must('branch', '--show-current');
 if (guarded && current === guarded) fail(`this checkout is on ${guarded}; land from a worktree cut from ${target}`);
 
-const pair = companion?.dir && existsSync(companion.dir) ? companion : null;
 if (pair && mode !== 'push') fail(`${pair.dir} lands only in push mode; run \`git config pstack.delivery push\``);
+if (companion?.dir && !pair && mode === 'push') {
+  fail(`this checkout has no ${companion.dir}, so landing would push ${branch} without its companion half or that half's checks; attach the companion repository first, then run land.mjs again`);
+}
 const side = pair ? [`--git-dir=${join(process.cwd(), pair.dir)}`, `--work-tree=${process.cwd()}`] : [];
 const cgit = (...args) => spawnSync('git', [...side, ...args], { encoding: 'utf8' });
 const cmust = (...args) => {
@@ -155,7 +161,6 @@ function rebase(inCompanion = false) {
       run('rebase', '--abort');
       fail(`git rebase ${where} failed: ${rebased.stderr.trim()}`);
     }
-    // A companion push retries after the checks ran, so only this checkout rebuilds, where every rebase is checked again.
     const hits = inCompanion ? [] : generated.map((entry) => unmerged(git, entry.paths));
     const owners = generated.filter((_, index) => hits[index]?.length > 0);
     const covered = new Set(hits.flat());
@@ -220,14 +225,17 @@ function rebuild(paths, owners) {
   return spawnSync('git', ['rebase', '--continue'], { encoding: 'utf8', env: { ...process.env, GIT_EDITOR: 'true' } });
 }
 
-// Stages the companion's edits and the new files it owns: those this checkout's git ignores through companion.list.
+// The companion's git never reads this clone's .git/info/exclude, so a path only that file ignores is local, not companion work.
 function stageCompanion() {
   cmust('add', '--update');
-  const others = cgit('ls-files', '-z', '--others', '--exclude-standard').stdout;
-  const listed = ['-c', `core.excludesFile=${join(process.cwd(), pair.list)}`, 'check-ignore', '-z', '--stdin'];
-  const owned = others ? spawnSync('git', listed, { encoding: 'utf8', input: others }).stdout : '';
-  if (!owned) return;
-  const run = spawnSync('git', [...side, 'add', '--force', '--pathspec-from-file=-', '--pathspec-file-nul'], { encoding: 'utf8', input: owned });
+  const tracked = new Set(nul(git('ls-files', '-z').stdout));
+  const others = nul(cgit('ls-files', '-z', '--others', '--exclude-standard').stdout).filter((path) => !tracked.has(path));
+  if (others.length === 0) return;
+  const ignored = (list) => nul(spawnSync('git', ['-c', `core.excludesFile=${list}`, 'check-ignore', '-z', '--stdin'], { encoding: 'utf8', input: others.join('\0') }).stdout);
+  const here = new Set(ignored(devNull));
+  const owned = ignored(join(process.cwd(), pair.list)).filter((path) => !here.has(path));
+  if (owned.length === 0) return;
+  const run = spawnSync('git', [...side, 'add', '--force', '--pathspec-from-file=-', '--pathspec-file-nul'], { encoding: 'utf8', input: owned.join('\0') });
   if (run.status !== 0) fail(`git add in ${pair.dir} failed: ${run.stderr.trim()}`);
 }
 
@@ -238,19 +246,12 @@ function pushCompanion(lead) {
   if (stamped !== text) {
     const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
     writeFileSync(file, `${stamped}\n`);
-    cmust('commit', '--quiet', '--amend', '--file', file);
+    cmust('commit', '--quiet', '--amend', '--only', '--file', file);
   }
-  for (let moves = 0; ; moves += 1) {
-    const run = cgit('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
-    if (run.status === 0) break;
-    if (moves < RETRIES && /\[rejected\]|fetch first|non-fast-forward/u.test(run.stderr)) {
-      console.log(`${pair.dir}'s origin/${branch} moved; rebasing and pushing again (retry ${moves + 1} of ${RETRIES})`);
-      fetch();
-      rebase(true);
-      continue;
-    }
+  const run = cgit('push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`);
+  if (run.status !== 0) {
     fail(
-      `git push of the ${pair.dir} commit failed after the rest of the task landed. That commit stays local, so run land.mjs again with no --message; it pushes that commit first.\n${run.stderr.trim()}`,
+      `git push of the ${pair.dir} commit failed after the rest of the task landed. That commit stays local, so run land.mjs again with no --message; it rebases and checks that commit, then pushes it.\n${run.stderr.trim()}`,
       EX_TEMPFAIL
     );
   }
@@ -295,15 +296,21 @@ function introduced(body) {
   for (const value of values) {
     if (value === '') fail(`an \`Introduced-by:\` line has no value; name a commit on ${target} or write \`none\`. ${trace}`);
     if (!/^[0-9a-f]{7,40}$/u.test(value)) fail(`Introduced-by: ${value} is not a lowercase sha of 7 to 40 characters; write the commit's sha alone. ${trace}`);
-    const sha = git('rev-parse', '--verify', '--quiet', `${value}^{commit}`).stdout.trim();
-    if (!sha) fail(`Introduced-by: ${value} names no commit this clone knows; name it by its sha. ${trace}`);
-    if (git('merge-base', '--is-ancestor', sha, upstream).status !== 0) fail(`Introduced-by: ${value} names a commit ${target} does not contain; name the landed commit that introduced the bug. ${trace}`);
+    const landed = [[git, upstream], ...(pair ? [[cgit, cupstream]] : [])].map(([run, onto]) => {
+      const sha = run('rev-parse', '--verify', '--quiet', `${value}^{commit}`).stdout.trim();
+      return sha ? run('merge-base', '--is-ancestor', sha, onto).status === 0 : null;
+    });
+    if (landed.every((known) => known === null)) fail(`Introduced-by: ${value} names no commit this clone knows; name it by its sha. ${trace}`);
+    if (!landed.includes(true)) {
+      fail(`Introduced-by: ${value} names a commit ${target}${pair ? ` or ${pair.dir}'s origin/${branch}` : ''} does not contain; name the landed commit that introduced the bug. ${trace}`);
+    }
   }
 }
 
-// The one dated plan the task changes, or null when it changes none or several.
+const isPlan = (path) => path.startsWith(`${plans}/`) && DATED.test(path.slice(plans.length + 1)) && statSync(path, { throwIfNoEntry: false })?.isFile() === true;
+
 function planOf(staged) {
-  const touched = staged.filter((path) => path.startsWith(`${plans}/`) && DATED.test(path.slice(plans.length + 1)));
+  const touched = staged.filter(isPlan);
   return touched.length === 1 ? touched[0] : null;
 }
 
@@ -334,7 +341,7 @@ function homes() {
 }
 
 function sourced(text, plan) {
-  if (plan || [...text.matchAll(/^Plan: (\S+)$/gmu)].some(([, path]) => existsSync(path))) return true;
+  if (plan || [...text.matchAll(/^Plan: (\S+)$/gmu)].some(([, path]) => isPlan(path))) return true;
   const ours = homes();
   const issue = ([, refOwner, refName, urlOwner, urlName]) => {
     const owner = (refOwner ?? urlOwner)?.toLowerCase();
@@ -359,7 +366,7 @@ function sourceRefusal(subject, body, plan) {
   const why = who ? `, not ${who}` : `; gh api user failed: ${login.error?.message ?? (login.stderr.trim() || 'it printed no login')}`;
   return (
     `the message names no source, and only ${sourceless.join(', ')} land without one${why}. ` +
-    `A source is an issue of ${homes().map((home) => home.name).join(' or ')} written as \`<repo>#<N>\` or its URL, the id of a card in the suggested-task ledger, or a \`Plan:\` line naming a plan that exists. ` +
+    `A source is an issue of ${homes().map((home) => home.name).join(' or ')} written as \`<repo>#<N>\` or its URL, the id of a card in the suggested-task ledger, or a \`Plan:\` line naming a dated plan in ${plans}/ that exists. ` +
     'Add one to the message and run land.mjs again with --message'
   );
 }
@@ -390,7 +397,7 @@ function prBody(plan, body) {
 }
 
 // Squashes the task into one commit in each repository that it changes; a companion-only task leaves HEAD at its base here.
-function squash({ subject, body }, lead) {
+function squash({ subject, body }) {
   const head = must('rev-parse', 'HEAD');
   const base = must('merge-base', 'HEAD', upstream);
   must('add', '--all');
@@ -416,6 +423,7 @@ function squash({ subject, body }, lead) {
   }
   const loose = sourceRefusal(subject, body, plan);
   if (loose) fail(loose);
+  const lead = leadOf();
   must('reset', '--quiet', '--soft', base);
   if (pair) cmust('reset', '--quiet', '--soft', sideBase);
   const undo = () => {
@@ -429,7 +437,7 @@ function squash({ subject, body }, lead) {
     undo();
     fail('git commit failed; the task commits are back as they were');
   }
-  return { plan, own: own.length > 0, theirs: theirs.length > 0 };
+  return { plan, lead, own: own.length > 0, theirs: theirs.length > 0 };
 }
 
 fetch();
@@ -438,13 +446,6 @@ const settled = JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout
 const { sourceless } = settled;
 const ahead = Number(must('rev-list', '--count', `${upstream}..HEAD`));
 const sideAhead = pair ? Number(cmust('rev-list', '--count', `${cupstream}..HEAD`)) : 0;
-if (messageText === null && ahead === 0 && sideAhead > 0 && PAIRED.test(cmust('log', '-1', '--format=%B'))) {
-  const pending = validate(cmust('log', '-1', '--format=%B'));
-  const loose = sourceRefusal(pending.subject, pending.body, planOf(cmust('diff', '--name-only', cupstream, 'HEAD').split('\n')));
-  if (loose) fail(loose);
-  pushCompanion(leadOf());
-  process.exit(0);
-}
 if (messageText === null && ahead === 0 && sideAhead === 0) fail(`HEAD has no task commit to take a message from; pass --message <file>\n${USAGE}`);
 const split = companion ?? settled.companion;
 if (split?.list) {
@@ -457,12 +458,10 @@ if (split?.list) {
   }
 }
 const message = validate(messageText ?? (ahead > 0 ? must('log', '-1', '--format=%B') : cmust('log', '-1', '--format=%B')));
-// Read before squash, because findLead can throw and waits up to a minute.
-const lead = leadOf();
-const landing = squash(message, lead);
-const { plan } = landing;
+const landing = squash(message);
+const { plan, lead } = landing;
 rebase();
-if (landing.theirs) rebase(true);
+if (pair) rebase(true);
 
 const record = must('rev-parse', '--git-path', 'pstack-land-checked');
 const stamp = () =>
@@ -470,7 +469,7 @@ const stamp = () =>
     tree: must('rev-parse', 'HEAD^{tree}'),
     parent: must('rev-parse', 'HEAD^'),
     message: must('log', '-1', '--format=%B'),
-    ...(landing.theirs ? { companion: cmust('rev-parse', 'HEAD^{tree}') } : {}),
+    ...(pair ? { companion: cmust('rev-parse', 'HEAD^{tree}') } : {}),
     lintFix: lintFix ?? null,
     checks,
   });
@@ -537,7 +536,7 @@ if (mode === 'push') {
       console.log(`origin/${branch} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
       fetch();
       rebase();
-      if (landing.theirs) rebase(true);
+      if (pair) rebase(true);
       check(true);
     } else if (declined && wait !== undefined && performance.now() + wait * MINUTE <= DEADLINE) {
       declines += 1;

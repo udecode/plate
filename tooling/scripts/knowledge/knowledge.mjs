@@ -22,7 +22,7 @@ import {
   PRIVATE_DIR,
   privateGit,
   trackedFiles,
-} from '../git-private.mjs';
+} from '../private-files.mjs';
 import {
   lookupContext,
   lookupIn,

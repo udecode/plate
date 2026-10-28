@@ -10,7 +10,7 @@ import {
   pairedCommit,
   privateGit,
   showAt,
-} from './git-private.mjs';
+} from './private-files.mjs';
 import { planLabels } from './review-ledger.mjs';
 
 export const generatedPrefixes = [

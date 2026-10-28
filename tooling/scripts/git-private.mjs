@@ -1,7 +1,3 @@
-// udecode/plate-private tracks the tests, plans and research that
-// .gitprivate lists, in the same folder as udecode/plate, through the git
-// directory .git-private: a folder in a team clone, and a file pointing at a
-// linked worktree of the clone's folder in each worktree.
 import { spawnSync } from 'node:child_process';
 import {
   copyFileSync,
@@ -15,7 +11,7 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { devNull, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,60 +19,38 @@ import {
   hookPayload,
   sessionCheckout,
 } from '../../.agents/pstack/checkout.mjs';
+import {
+  BRANCH,
+  entries,
+  ignoredPaths,
+  inherited,
+  isSplit,
+  lacksList,
+  listedPublic,
+  must,
+  newPrivateFiles,
+  NULL_COMMIT,
+  pairedCommit,
+  PRIVATE_DIR,
+  PRIVATE_LIST,
+  privateGit,
+  privateMust,
+  publicObjects,
+  repoFiles,
+  run,
+  UPSTREAM,
+} from './private-files.mjs';
 
-export const PRIVATE_DIR = '.git-private';
-export const PRIVATE_LIST = '.gitprivate';
 const REMOTE = 'https://github.com/udecode/plate-private.git';
-const BRANCH = 'next';
-const UPSTREAM = `refs/remotes/origin/${BRANCH}`;
 const AUTOSAVE = 'refs/git-private/autosave/';
 const HOOKS = ['post-checkout', 'post-merge', 'post-rewrite'];
 const HOOK_MARK = 'tooling/scripts/git-private.mjs hook';
-const NULL_COMMIT = /^0+$/u;
+const PROBED = 'git-private.unreadable';
+const DAY = 24 * 60 * 60 * 1000;
 
-// check-ignore refuses literal pathspecs, so the calls that take paths say
-// --literal-pathspecs themselves.
-const { GIT_LITERAL_PATHSPECS: _literal, ...inherited } = process.env;
-const run = (cwd, args, { env, input } = {}) =>
-  spawnSync('git', args, {
-    cwd,
-    encoding: 'utf-8',
-    env: { ...inherited, ...env },
-    input,
-    maxBuffer: 1024 * 1024 * 256,
-  });
-const must = (cwd, args, options) => {
-  const result = run(cwd, args, options);
-  if (result.status !== 0) {
-    throw new Error(`git ${args.join(' ')} failed: ${result.stderr.trim()}`);
-  }
-  return result.stdout;
-};
-const entries = (text) => text.split('\0').filter(Boolean);
-const byCodeUnit = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
-/** The paths in `files` that the exclude file `list` matches. */
-const ignoredPaths = (cwd, list, files, { index = true } = {}) => {
-  const result = run(
-    cwd,
-    [
-      '-c',
-      `core.excludesFile=${list}`,
-      'check-ignore',
-      '-z',
-      ...(index ? [] : ['--no-index']),
-      '--stdin',
-    ],
-    { input: files.join('\0') }
-  );
-  if (result.status > 1) {
-    throw new Error(`git check-ignore failed: ${result.stderr.trim()}`);
-  }
-  return entries(result.stdout);
-};
-
-export const checkoutRoot = (cwd = process.cwd()) =>
+const checkoutRoot = (cwd = process.cwd()) =>
   must(cwd, ['rev-parse', '--show-toplevel']).trim();
-export const mainCheckout = (root) =>
+const mainCheckout = (root) =>
   path.dirname(
     must(root, [
       'rev-parse',
@@ -84,325 +58,12 @@ export const mainCheckout = (root) =>
       '--git-common-dir',
     ]).trim()
   );
-export const isSplit = (root) => existsSync(path.join(root, PRIVATE_DIR));
-export const privateGit = (root, args, options) =>
-  run(
-    root,
-    [
-      `--git-dir=${path.join(root, PRIVATE_DIR)}`,
-      `--work-tree=${root}`,
-      ...args,
-    ],
-    options
-  );
-const privateMust = (root, args, options) => {
-  const result = privateGit(root, args, options);
-  if (result.status !== 0) {
-    throw new Error(
-      `private git ${args.join(' ')} failed: ${result.stderr.trim()}`
-    );
-  }
-  return result.stdout;
-};
 // init points core.excludesFile at .gitprivate only once .git-private exists,
 // so the setting marks a team clone.
-export const isTeamClone = (root) =>
+const isTeamClone = (root) =>
   run(root, ['config', '--get', 'core.excludesFile'])
     .stdout.trim()
     .endsWith(`/${PRIVATE_LIST}`);
-const withList = (root) => [
-  '-c',
-  `core.excludesFile=${path.join(root, PRIVATE_LIST)}`,
-];
-const lacksList = (root, commit) =>
-  Boolean(commit) &&
-  !NULL_COMMIT.test(commit) &&
-  run(root, ['cat-file', '-e', `${commit}:${PRIVATE_LIST}`]).status !== 0;
-
-/** Private files on disk that neither repository tracks yet. */
-export const newPrivateFiles = (root) => {
-  if (!existsSync(path.join(root, PRIVATE_LIST))) return [];
-  // The private repository's own view skips what .gitignore and the user's
-  // global excludes skip, and lists every public file as untracked. It does
-  // not read the public .git/info/exclude, which check-ignore also matches,
-  // so a path the clone ignores there is dropped rather than called private.
-  const args = ['ls-files', '-z', '--others', '--exclude-standard'];
-  const untracked = isSplit(root) ? privateMust(root, args) : must(root, args);
-  if (!untracked) return [];
-  const candidates = entries(untracked);
-  const ignoredHere = new Set(ignoredPaths(root, devNull, candidates));
-  return ignoredPaths(root, path.join(root, PRIVATE_LIST), candidates)
-    .filter((file) => !ignoredHere.has(file))
-    .sort(byCodeUnit);
-};
-
-const listedPublic = (root) =>
-  entries(
-    must(root, [
-      ...withList(root),
-      'ls-files',
-      '-z',
-      '--cached',
-      '--ignored',
-      '--exclude-standard',
-    ])
-  );
-
-/** The files each repository tracks, or would track once split. */
-export const repoFiles = (root, { untracked = false } = {}) => {
-  const listed = entries(must(root, ['ls-files', '-z']));
-  const newPublic = untracked
-    ? entries(
-        must(root, [
-          ...withList(root),
-          'ls-files',
-          '-z',
-          '--others',
-          '--exclude-standard',
-        ])
-      )
-    : [];
-  const newPrivate = untracked ? newPrivateFiles(root) : [];
-  if (isSplit(root)) {
-    return {
-      private: [
-        ...entries(privateMust(root, ['ls-files', '-z'])),
-        ...newPrivate,
-      ],
-      public: [...listed, ...newPublic],
-    };
-  }
-  if (!existsSync(path.join(root, PRIVATE_LIST))) {
-    return { private: newPrivate, public: [...listed, ...newPublic] };
-  }
-  const hidden = new Set(listedPublic(root));
-  return {
-    private: [...hidden, ...newPrivate],
-    public: [...listed.filter((file) => !hidden.has(file)), ...newPublic],
-  };
-};
-
-export const trackedFiles = (root, options) => {
-  const files = repoFiles(root, options);
-  return [...files.public, ...files.private].sort(byCodeUnit);
-};
-
-/** Paths changed since each repository's merge base with origin/next. */
-export const changedFiles = (root) => {
-  const changed = (git) => {
-    const base = git(['merge-base', UPSTREAM, 'HEAD']);
-    if (base.status !== 0) return null;
-    return entries(
-      git(['diff', '-z', '--name-only', base.stdout.trim()]).stdout
-    );
-  };
-  const files = changed((args) => run(root, args));
-  if (files === null) {
-    throw new Error(
-      `no merge base with origin/${BRANCH}; run git fetch origin ${BRANCH}.`
-    );
-  }
-  files.push(
-    ...entries(must(root, ['ls-files', '-z', '--others', '--exclude-standard']))
-  );
-  if (isSplit(root)) {
-    files.push(
-      ...(changed((args) => privateGit(root, args)) ?? []),
-      ...newPrivateFiles(root)
-    );
-  }
-  return [...new Set(files)];
-};
-
-/** `git grep -l` over both repositories' tracked files. */
-export const grepFiles = (root, args) => {
-  const found = (result) => entries(result.stdout);
-  const files = found(run(root, ['grep', '-z', '-l', ...args]));
-  if (isSplit(root)) {
-    files.push(...found(privateGit(root, ['grep', '-z', '-l', ...args])));
-  }
-  return [...new Set(files)].sort(byCodeUnit);
-};
-
-/** Whether .gitprivate gives each path to plate-private. */
-export const privatePaths = (root, files) => {
-  if (files.length === 0 || !existsSync(path.join(root, PRIVATE_LIST))) {
-    return new Set();
-  }
-  return new Set(
-    ignoredPaths(root, path.join(root, PRIVATE_LIST), files, { index: false })
-  );
-};
-
-const PAIRED_DEPTH = 500;
-
-/**
- * The plate-private commit that matches a udecode/plate rev: the private
- * HEAD or merge base for this checkout's own, else the commit whose
- * Lands-With line names the rev or its nearest first-parent ancestor.
- */
-export const pairedCommit = (root, rev) => {
-  if (!isSplit(root)) return null;
-  const sha = run(root, [
-    'rev-parse',
-    '--verify',
-    '--quiet',
-    `${rev}^{commit}`,
-  ]).stdout.trim();
-  if (!sha) return null;
-  const own = (args) => run(root, args).stdout.trim();
-  const side = (args) => privateGit(root, args).stdout.trim();
-  if (sha === own(['rev-parse', 'HEAD'])) return side(['rev-parse', 'HEAD']);
-  if (sha === own(['merge-base', 'HEAD', UPSTREAM])) {
-    return side(['merge-base', 'HEAD', UPSTREAM]);
-  }
-  if (sha === own(['rev-parse', UPSTREAM])) {
-    return side(['rev-parse', UPSTREAM]);
-  }
-  const landed = new Map();
-  for (const line of side([
-    'log',
-    '--all',
-    '--format=%H %(trailers:key=Lands-With,valueonly,separator=%x20)',
-  ]).split('\n')) {
-    const [commit, publicSha] = line.split(' ');
-    if (publicSha && !landed.has(publicSha)) landed.set(publicSha, commit);
-  }
-  const ancestors = own([
-    'rev-list',
-    '--first-parent',
-    `--max-count=${PAIRED_DEPTH}`,
-    sha,
-  ]).split('\n');
-  for (const ancestor of ancestors) {
-    if (landed.has(ancestor)) return landed.get(ancestor);
-  }
-  return null;
-};
-
-/** `git show <rev>:<file>` from whichever repository tracks the file. */
-export const showAt = (root, rev, file) => {
-  if (!privatePaths(root, [file]).has(file)) {
-    return run(root, ['show', `${rev}:${file}`]);
-  }
-  const paired = pairedCommit(root, rev);
-  if (!paired) return run(root, ['show', `${rev}:${file}`]);
-  return privateGit(root, ['show', `${paired}:${file}`]);
-};
-
-export const existsAt = (root, rev, file) => {
-  if (!privatePaths(root, [file]).has(file)) {
-    return run(root, ['cat-file', '-e', `${rev}:${file}`]).status === 0;
-  }
-  const paired = pairedCommit(root, rev);
-  return paired
-    ? privateGit(root, ['cat-file', '-e', `${paired}:${file}`]).status === 0
-    : run(root, ['cat-file', '-e', `${rev}:${file}`]).status === 0;
-};
-
-const publicObjects = (root) =>
-  path.join(
-    must(root, [
-      'rev-parse',
-      '--path-format=absolute',
-      '--git-common-dir',
-    ]).trim(),
-    'objects'
-  );
-
-/**
- * Paths whose content differs between a udecode/plate rev and this checkout,
- * in both repositories. A rev from before the split still tracks the private
- * files, so plate-private compares them against its tree through this
- * repository's objects.
- */
-export const changedSince = (root, rev) => {
-  const diff = ['diff', '--name-only', '--no-renames', rev, '--'];
-  const listed = run(root, diff);
-  if (listed.status !== 0) return null;
-  let files = listed.stdout.split('\n').filter(Boolean);
-  if (!isSplit(root)) return files;
-  const presplit = lacksList(root, rev);
-  if (presplit) {
-    const hidden = privatePaths(root, files);
-    files = files.filter((file) => !hidden.has(file));
-  }
-  const paired = presplit ? rev : pairedCommit(root, rev);
-  if (!paired) return files;
-  const side = privateGit(root, [...diff.slice(0, -2), paired, '--'], {
-    env: presplit
-      ? { GIT_ALTERNATE_OBJECT_DIRECTORIES: publicObjects(root) }
-      : undefined,
-  });
-  const changed = side.stdout.split('\n').filter(Boolean);
-  const own = presplit ? privatePaths(root, changed) : null;
-  return [
-    ...new Set([...files, ...changed.filter((file) => !own || own.has(file))]),
-  ];
-};
-
-/** Whether a commit after `from` up to `to`, two udecode/plate revs, changed any of the files, or null when git cannot tell. */
-export const movedBetween = (root, from, to, files) => {
-  const hidden = isSplit(root) ? privatePaths(root, files) : new Set();
-  const changed = (git, range, paths) => {
-    if (paths.length === 0) return false;
-    const log = git(['log', '--format=%H', '-1', range, '--', ...paths]);
-    return log.status === 0 ? log.stdout.trim() !== '' : null;
-  };
-  const shown = changed(
-    (args) => run(root, args),
-    `${from}..${to}`,
-    files.filter((file) => !hidden.has(file))
-  );
-  if (shown !== false || hidden.size === 0) return shown;
-  const [start, end] = [pairedCommit(root, from), pairedCommit(root, to)];
-  if (!start || !end) return null;
-  return changed((args) => privateGit(root, args), `${start}..${end}`, [
-    ...hidden,
-  ]);
-};
-
-/** Whether either repository's history holds a path. */
-export const inHistory = (root, file) =>
-  Boolean(
-    run(root, ['log', '--all', '-1', '--format=%H', '--', file]).stdout.trim()
-  ) ||
-  (isSplit(root) &&
-    Boolean(
-      privateGit(root, [
-        'log',
-        '--all',
-        '-1',
-        '--format=%H',
-        '--',
-        file,
-      ]).stdout.trim()
-    ));
-
-/** The files both repositories track at a udecode/plate rev, sorted. */
-export const filesAt = (root, rev, pathspecs = []) => {
-  const list = (result) => entries(result.stdout);
-  const files = list(
-    run(root, ['ls-tree', '-r', '-z', '--name-only', rev, '--', ...pathspecs])
-  );
-  const paired = pairedCommit(root, rev);
-  if (paired) {
-    files.push(
-      ...list(
-        privateGit(root, [
-          'ls-tree',
-          '-r',
-          '-z',
-          '--name-only',
-          paired,
-          '--',
-          ...pathspecs,
-        ])
-      )
-    );
-  }
-  return [...new Set(files)].sort(byCodeUnit);
-};
 
 export const restore = (root) => {
   if (!isSplit(root)) return 0;
@@ -439,12 +100,22 @@ export const autosave = (root) => {
     const live = privateMust(root, ['rev-parse', '--git-path', 'index']).trim();
     if (existsSync(live)) copyFileSync(live, current.GIT_INDEX_FILE);
     else privateMust(root, ['read-tree', 'HEAD'], { env: current });
-    const edited = privateMust(
-      root,
-      ['diff-files', '-z', '--name-only', '--diff-filter=d'],
-      { env: current }
-    );
-    const files = [...entries(edited), ...newPrivateFiles(root)];
+    const changed = (command, ...rest) =>
+      entries(
+        privateMust(
+          root,
+          [command, '-z', '--name-only', '--diff-filter=d', ...rest],
+          { env: current }
+        )
+      );
+    const staged = head ? changed('diff-index', '--cached', head) : [];
+    const files = [
+      ...new Set([
+        ...changed('diff-files'),
+        ...staged.filter((file) => existsSync(path.join(root, file))),
+        ...newPrivateFiles(root),
+      ]),
+    ];
     if (files.length === 0) return null;
     let env = current;
     if (last && resolve(`${last}^1`) === head) {
@@ -545,23 +216,30 @@ export const init = (root, { remote = REMOTE } = {}) => {
       return `${remote} has no ${BRANCH} you can read`;
     }
     must(root, ['init', '--quiet', '--bare', PRIVATE_DIR]);
-    for (const [key, value] of [
-      ['core.bare', 'false'],
-      ['status.showUntrackedFiles', 'no'],
-    ]) {
-      privateMust(root, ['config', key, value]);
+    // isSplit means set up, so a failed setup leaves no folder and the next
+    // start retries it.
+    try {
+      for (const [key, value] of [
+        ['core.bare', 'false'],
+        ['status.showUntrackedFiles', 'no'],
+      ]) {
+        privateMust(root, ['config', key, value]);
+      }
+      privateMust(root, ['remote', 'add', 'origin', remote]);
+      privateMust(root, ['fetch', '--quiet', 'origin']);
+      privateMust(root, ['update-ref', `refs/heads/${BRANCH}`, UPSTREAM]);
+      privateMust(root, ['symbolic-ref', 'HEAD', `refs/heads/${BRANCH}`]);
+      privateMust(root, [
+        'branch',
+        '--quiet',
+        `--set-upstream-to=origin/${BRANCH}`,
+      ]);
+      // Index only: a teammate's clone can hold unsaved edits to these files.
+      privateMust(root, ['reset', '--quiet', '--mixed']);
+    } catch (error) {
+      rmSync(path.join(root, PRIVATE_DIR), { force: true, recursive: true });
+      throw error;
     }
-    privateMust(root, ['remote', 'add', 'origin', remote]);
-    privateMust(root, ['fetch', '--quiet', 'origin']);
-    privateMust(root, ['update-ref', `refs/heads/${BRANCH}`, UPSTREAM]);
-    privateMust(root, ['symbolic-ref', 'HEAD', `refs/heads/${BRANCH}`]);
-    privateMust(root, [
-      'branch',
-      '--quiet',
-      `--set-upstream-to=origin/${BRANCH}`,
-    ]);
-    // Index only: a teammate's clone can hold unsaved edits to these files.
-    privateMust(root, ['reset', '--quiet', '--mixed']);
   }
   must(root, ['config', 'core.excludesFile', path.join(root, PRIVATE_LIST)]);
   const skipped = installHooks(root);
@@ -583,7 +261,15 @@ export const start = (root, { remote = REMOTE } = {}) => {
     if (!existsSync(path.join(main, PRIVATE_LIST))) {
       return `${main} predates the split; fast-forward its ${BRANCH}, then start a session again`;
     }
-    if (!readable(main, remote)) return null;
+    // A contributor's clone never reads plate-private, so it probes once a day.
+    const probed = Date.parse(
+      run(main, ['config', '--get', PROBED]).stdout.trim()
+    );
+    if (Date.now() - probed < DAY) return null;
+    if (!readable(main, remote)) {
+      must(main, ['config', PROBED, new Date().toISOString()]);
+      return null;
+    }
     const note = init(main, { remote });
     if (note) return note;
   }
@@ -592,10 +278,8 @@ export const start = (root, { remote = REMOTE } = {}) => {
 
 /** Gives a worktree its private half, a linked worktree of the clone's. */
 export const attach = (root) => {
-  if (isSplit(root)) {
-    restore(root);
-    return null;
-  }
+  // A file missing from an attached worktree can be a deletion still to land.
+  if (isSplit(root)) return null;
   const main = mainCheckout(root);
   const folder = path.join(main, PRIVATE_DIR);
   if (main === root || !existsSync(folder)) {
@@ -605,9 +289,10 @@ export const attach = (root) => {
     run(main, [`--git-dir=${folder}`, ...args], options);
   shared(['fetch', '--quiet', 'origin']);
   const base =
-    shared(['rev-parse', '--verify', '--quiet', UPSTREAM]).status === 0
+    pairedCommit(main, must(root, ['rev-parse', 'HEAD']).trim()) ??
+    (shared(['rev-parse', '--verify', '--quiet', UPSTREAM]).status === 0
       ? UPSTREAM
-      : BRANCH;
+      : BRANCH);
   const branch = must(root, ['branch', '--show-current']).trim();
   const scratch = mkdtempSync(path.join(tmpdir(), 'git-private-'));
   try {
@@ -616,9 +301,20 @@ export const attach = (root) => {
       branch &&
       shared(['rev-parse', '--verify', '--quiet', `refs/heads/${branch}`])
         .status === 0;
+    // Public git keeps one worktree per branch, so a linked private record that
+    // holds the branch is stale: its worktree went without detach. The main
+    // checkout's private branch does not follow its public one, so it still
+    // refuses.
+    const mainBranch = shared([
+      'symbolic-ref',
+      '--quiet',
+      '--short',
+      'HEAD',
+    ]).stdout.trim();
     const added = shared([
       'worktree',
       'add',
+      ...(branch === mainBranch ? [] : ['--force']),
       '--quiet',
       '--no-checkout',
       ...(!branch
@@ -820,8 +516,9 @@ const UNIT_TEST_RUNNER =
   /^(?:bun:test|node:test|vitest(?:\/.*)?|@vitest\/.+)$/u;
 const AGENT_TOOLING = /^\.(?:agents|claude)\//u;
 
-/** Public code files that import a private file or a test runner. */
-export const crossingImports = async (root) => {
+/** Public code files, all or those in `only`, that import a private file or a test runner. */
+export const crossingImports = async (root, only) => {
+  if (!existsSync(path.join(root, PRIVATE_LIST))) return [];
   const { moduleSpecifiers, resolveImport } =
     await import('./import-graph.mjs');
   const files = repoFiles(root, { untracked: true });
@@ -829,6 +526,7 @@ export const crossingImports = async (root) => {
   const real = realpathSync(root);
   const crossings = [];
   for (const file of files.public) {
+    if (only && !only.has(file)) continue;
     if (!CODE.test(file) || !existsSync(path.join(real, file))) continue;
     const absolute = path.join(real, file);
     for (const specifier of moduleSpecifiers(absolute)) {
@@ -846,8 +544,8 @@ export const crossingImports = async (root) => {
   return crossings;
 };
 
-/** What `pnpm check`'s private step refuses. */
-export const problems = async (root) => {
+/** What `pnpm check`'s private step refuses; its private-imports step runs crossingImports. */
+export const problems = (root) => {
   if (!existsSync(path.join(root, PRIVATE_LIST))) return [];
   const found = [];
   if (isSplit(root)) {
@@ -868,15 +566,8 @@ export const problems = async (root) => {
       `this team checkout has no ${PRIVATE_DIR}, so its tests are not on disk; run node tooling/scripts/git-private.mjs attach`
     );
   }
-  found.push(...(await crossingImports(root)));
   return found;
 };
-
-/** Whether the private files are on disk, so `pnpm check` can run every step. */
-export const hasPrivateHalf = (root) =>
-  isSplit(root) ||
-  !existsSync(path.join(root, PRIVATE_LIST)) ||
-  listedPublic(root).length > 0;
 
 const hook = (root, name, args) => {
   if (name === 'post-checkout') {
@@ -943,7 +634,9 @@ const USAGE = `Usage: node tooling/scripts/git-private.mjs <command>
   autosave  save unsaved private work to ${AUTOSAVE}<branch>
             (--hook as for start)
   status    both repositories' changes and new private files
-  check     what pnpm check refuses
+  check     what pnpm check refuses, apart from imports
+  imports   public code files that import a private file or a test runner
+            (names files to scan only those)
   <git>     any other git command, run against ${PRIVATE_DIR}`;
 
 const main = async (argv) => {
@@ -1006,8 +699,15 @@ const main = async (argv) => {
         return report(error.message);
       }
     }
-    case 'check': {
-      const found = await problems(root);
+    case 'check':
+    case 'imports': {
+      const found =
+        command === 'check'
+          ? problems(root)
+          : await crossingImports(
+              root,
+              rest.length > 0 ? new Set(rest) : undefined
+            );
       for (const line of found) console.error(line);
       return found.length > 0 ? 1 : 0;
     }

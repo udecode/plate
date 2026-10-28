@@ -10,7 +10,7 @@ import {
   groupFindings,
   readBaseline,
 } from '../finding-baseline.mjs';
-import { showAt } from '../git-private.mjs';
+import { showAt } from '../private-files.mjs';
 import { homeFindings, readmeHomes } from './homes.mjs';
 import {
   card,

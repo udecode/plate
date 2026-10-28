@@ -8,7 +8,7 @@ import {
   lineIdentity,
   groupFindings,
 } from '../scripts/finding-baseline.mjs';
-import { hasPrivateHalf, privatePaths } from '../scripts/git-private.mjs';
+import { hasPrivateHalf, privatePaths } from '../scripts/private-files.mjs';
 import plugin, {
   baselineFile,
   privateBaselineFile,

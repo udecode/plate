@@ -23,17 +23,17 @@
 // as a PR stacked on someone's head branch, passes. In a checkout that holds
 // the config's `companion.dir`, it denies what would delete or overwrite the
 // files that companion repository tracks there: `git clean -x` or `-X`, any
-// `git clean` through its git directory, a checkout, switch, reset, merge or
-// rebase to a commit without `companion.list`, and a `git worktree remove` of
-// a worktree that still holds `companion.dir`, naming `companion.detach`. It
-// also denies the app's base-branch sync, which refuses the branch whenever it
-// changes .claude files, and names the rebase to run instead. On Edit,
-// MultiEdit, Write and NotebookEdit it denies a file inside the main checkout,
-// its .git folder included, while that checkout is on the branch or the
-// protected branch, except the plans artifacts directory, which holds the
-// suggested-task ledger and the run directories; a linked worktree, even one
-// nested in the main checkout's folder, is its own checkout and passes. It refuses the edit when git or the guard
-// itself fails, because a hook that exits with an error lets the edit through.
+// `git clean` through its git directory, and a checkout, switch, reset, merge
+// or rebase to a commit without `companion.list`. It also denies the app's
+// base-branch sync, which refuses the branch whenever it changes .claude
+// files, and names the rebase to run instead. On Edit, MultiEdit, Write and
+// NotebookEdit it denies a file inside the main checkout, its .git folder
+// included, while that checkout is on the branch or the protected branch,
+// except the plans artifacts directory, which holds the suggested-task ledger
+// and the run directories; a linked worktree, even one nested in the main
+// checkout's folder, is its own checkout and passes. It refuses the edit when
+// git or the guard itself fails, because a hook that exits with an error lets
+// the edit through.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, readFileSync, readlinkSync, realpathSync, statSync } from 'node:fs';
@@ -224,11 +224,7 @@ function companionDenial(words, cwd, companion) {
   const call = gitCommand(words, cwd);
   if (!call || !companion?.dir) return null;
   const { sub, args, dir, gitDir } = call;
-  if (sub === 'worktree' && args[0] === 'remove') {
-    const path = args.slice(1).find((word) => !word.startsWith('-'));
-    if (!path || !existsSync(join(resolve(dir, path), companion.dir))) return null;
-    return `${path} holds ${companion.dir}, and removing it deletes the private work not committed there. ${companion.detach ? `Run \`${companion.detach}\` inside ${path} first, which saves that work and unlinks it` : `Commit that work in ${companion.dir} first`}, then remove the worktree.`;
-  }
+  if (sub !== 'clean' && !MOVES.has(sub)) return null;
   const top = git(dir, 'rev-parse', '--show-toplevel');
   if (top === null || !existsSync(join(top, companion.dir))) return null;
   const flags = args.filter((word) => /^-[A-Za-z]+$/u.test(word)).join('');

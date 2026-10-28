@@ -10,11 +10,12 @@
 // --install once per worktree, again after a failed run; run by hand, a
 // failed install makes it exit 1. Then, in the main
 // checkout, it keeps the suggested-task ledger, which git ignores, in step
-// with refs/pstack/ledger on origin, the companion repository's origin when
-// the config's `companion.dir` exists, and on the branch .agents/pstack.json
-// names it fast-forwards only when no other local edit, staged, unstaged or
-// untracked, touches a path the incoming commits change. It prints one line
-// per action for the session.
+// with refs/pstack/ledger on origin, or on the companion repository's origin
+// through the main checkout's `companion.dir` when the config names a
+// `companion`, skipping it while that is missing. On the branch
+// .agents/pstack.json names it fast-forwards only when no other local edit,
+// staged, unstaged or untracked, touches a path the incoming commits change.
+// It prints one line per action for the session.
 
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -149,9 +150,9 @@ const syncLedger = (ledger, former, via) => {
 
 const config = existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {};
 const { branch } = config;
-// The ledger is the team's, so a checkout split into a public and a companion repository keeps it on the companion's origin.
-const via = config.companion?.dir && existsSync(config.companion.dir) ? ['--git-dir', config.companion.dir] : [];
-if (config.plans) syncLedger(ledgerPath(config.plans, 'trunk'), join(config.plans, LEDGER), via);
+const mainCompanion = config.companion?.dir ? join(dirname(commonDir), config.companion.dir) : null;
+if (config.plans && mainCompanion && !existsSync(mainCompanion)) console.log(`setup.mjs: skipped the ledger sync, because this clone has no ${config.companion.dir} yet`);
+else if (config.plans) syncLedger(ledgerPath(config.plans, 'trunk'), join(config.plans, LEDGER), mainCompanion ? ['--git-dir', mainCompanion] : []);
 if (!branch || out('branch', '--show-current') !== branch) process.exit();
 const upstream = `refs/remotes/origin/${branch}`;
 if (out('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${upstream}`) === null) process.exit();

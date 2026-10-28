@@ -13,7 +13,7 @@ import {
   inHistory,
   newPrivateFiles,
   trackedFiles,
-} from './git-private.mjs';
+} from './private-files.mjs';
 
 export const scopesDir = 'docs/research/review-scopes';
 export const recordsDir = 'docs/research/review-records';
