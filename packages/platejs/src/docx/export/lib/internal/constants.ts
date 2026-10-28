@@ -93,7 +93,6 @@ export type DocumentOptions = {
   title: string;
 };
 
-const applicationName = 'html-to-docx';
 const defaultOrientation: Orientation = 'portrait';
 const landscapeWidth = 15_840;
 const landscapeHeight = 12_240;
@@ -122,7 +121,7 @@ const defaultDocumentOptions: DocumentOptions = {
   allowRemoteImages: false,
   complexScriptFontSize: defaultFontSize,
   createdAt: new Date(),
-  creator: applicationName,
+  creator: '',
   decodeUnicode: false,
   defaultLang,
   description: '',
@@ -132,8 +131,8 @@ const defaultDocumentOptions: DocumentOptions = {
   footerType: 'default',
   header: false,
   headerType: 'default',
-  keywords: [applicationName],
-  lastModifiedBy: applicationName,
+  keywords: [],
+  lastModifiedBy: '',
   lineNumber: false,
   lineNumberOptions: {
     countBy: 1,
@@ -201,7 +200,6 @@ const colorlessColors: string[] = ['transparent', 'auto'];
 const verticalAlignValues: VerticalAlign[] = ['top', 'middle', 'bottom'];
 
 export {
-  applicationName,
   colorlessColors,
   defaultDocumentOptions,
   defaultFont,

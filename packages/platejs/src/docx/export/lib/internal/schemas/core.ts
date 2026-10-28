@@ -1,13 +1,13 @@
-import { applicationName } from '../constants';
+import { escapeXml } from '../escape-xml';
 import namespaces from '../namespaces';
 
 const generateCoreXML = (
   title: string = '',
   subject: string = '',
-  creator: string = applicationName,
-  keywords: string[] = [applicationName],
+  creator: string = '',
+  keywords: string[] = [],
   description: string = '',
-  lastModifiedBy: string = applicationName,
+  lastModifiedBy: string = '',
   revision: number = 1,
   createdAt: Date = new Date(),
   modifiedAt: Date = new Date()
@@ -21,16 +21,16 @@ const generateCoreXML = (
           xmlns:dcmitype="${namespaces.dcmitype}"
           xmlns:xsi="${namespaces.xsi}"
           >
-            <dc:title>${title}</dc:title>
-            <dc:subject>${subject}</dc:subject>
-            <dc:creator>${creator}</dc:creator>
+            <dc:title>${escapeXml(title)}</dc:title>
+            <dc:subject>${escapeXml(subject)}</dc:subject>
+            <dc:creator>${escapeXml(creator)}</dc:creator>
             ${
               keywords && Array.isArray(keywords)
-                ? `<cp:keywords>${keywords.join(', ')}</cp:keywords>`
+                ? `<cp:keywords>${escapeXml(keywords.join(', '))}</cp:keywords>`
                 : ''
             }
-            <dc:description>${description}</dc:description>
-            <cp:lastModifiedBy>${lastModifiedBy}</cp:lastModifiedBy>
+            <dc:description>${escapeXml(description)}</dc:description>
+            <cp:lastModifiedBy>${escapeXml(lastModifiedBy)}</cp:lastModifiedBy>
             <cp:revision>${revision}</cp:revision>
             <dcterms:created xsi:type="dcterms:W3CDTF">${
               createdAt instanceof Date

@@ -5,7 +5,6 @@ import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
 import { failInvariant } from '../../../../internal/failInvariant';
 import {
-  applicationName,
   defaultDocumentOptions,
   defaultFont,
   defaultFontSize,
@@ -528,10 +527,10 @@ class DocxDocument {
       this.width - this.margins.left - this.margins.right;
     this.title = properties.title || '';
     this.subject = properties.subject || '';
-    this.creator = properties.creator || applicationName;
-    this.keywords = properties.keywords || [applicationName];
+    this.creator = properties.creator || '';
+    this.keywords = properties.keywords || [];
     this.description = properties.description || '';
-    this.lastModifiedBy = properties.lastModifiedBy || applicationName;
+    this.lastModifiedBy = properties.lastModifiedBy || '';
     this.revision = properties.revision || 1;
     this.createdAt = properties.createdAt || new Date();
     this.modifiedAt = properties.modifiedAt || new Date();

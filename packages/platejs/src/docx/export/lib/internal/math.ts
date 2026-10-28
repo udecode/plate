@@ -5,6 +5,7 @@ import {
   WORD_MATH_ACCENTS,
   WORD_MATH_VARIANTS,
 } from '../../../internal/wordMathVocabulary';
+import { escapeXml } from './escape-xml';
 import namespaces from './namespaces';
 
 type MathNode = {
@@ -64,13 +65,6 @@ const textOf = (node: MathNode): string =>
   node.tagName === undefined
     ? (node.text ?? '')
     : (node.children ?? []).map((child) => textOf(child)).join('');
-
-const escapeXml = (text: string) =>
-  text
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
 
 const run = (text: string, properties = '') =>
   `<m:r>${properties ? `<m:rPr>${properties}</m:rPr>` : ''}<m:t xml:space="preserve">${escapeXml(text)}</m:t></m:r>`;
