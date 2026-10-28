@@ -26,7 +26,10 @@ import {
   ELEMENT_TO_EDITOR,
 } from '../../dom/utils/weak-maps';
 import { EditorContext } from '../context';
-import { findMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
+import {
+  EditableDOMRuntime,
+  findMountedEditableDOMRuntime,
+} from '../editable/editable-dom-runtime';
 import {
   type Editor,
   getNodeKey as editorGetNodeKey,
@@ -344,17 +347,6 @@ export const useRebuildLine = (editor: Editor) => {
   );
 };
 
-export const getTextHostOwnerKey = (editor: Editor, textHost: Element) => {
-  const textKey = textHost.getAttribute(
-    'data-editor-node-key'
-  ) as NodeKey | null;
-  const path = textKey ? editorGetPathByNodeKey(editor, textKey) : null;
-
-  return path && path.length > 1
-    ? editorGetNodeKey(editor, path.slice(0, -1))
-    : null;
-};
-
 const parseDOMPath = (value: string | null): Path | null => {
   if (!value) {
     return null;
@@ -574,6 +566,18 @@ export const syncChangedTextToDOM = <V extends Value>(
     let requiresRemount = false;
     for (const element of elements) {
       const runtime = findDOMRootRuntime(element);
+
+      // A leased host's own render queues its write on the lease, so its
+      // commit invalidates only that leaf instead of forcing a full render.
+      if (
+        runtime?.adapter instanceof EditableDOMRuntime &&
+        runtime.adapter.compositionLease.protects(element)
+      ) {
+        recordDOMTextSyncProfile('skip-composition');
+        requiresRemount = true;
+        didSyncEveryElement = false;
+        continue;
+      }
       if (runtime ? runtime.isComposing() : IS_COMPOSING.get(editor)) {
         recordDOMTextSyncProfile('skip-composition');
         requiresGlobalRender = true;
@@ -901,9 +905,10 @@ const usePliteNodeRefBinding = (
       }
 
       nodeRef.current = nextNode;
+      if (!nextNode) editableRuntime?.importUnreadPressBeforeUnmount(null);
       bindNode(nextNode);
     },
-    [bindNode]
+    [bindNode, editableRuntime]
   );
 };
 

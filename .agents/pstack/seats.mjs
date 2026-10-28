@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { ask } from './cross.mjs';
 
 const SEAT = /^([\w-]+)=(claude|codex):([^@\s]+)(?:@(\w+))?$/u;
-const usage = 'Usage: node .agents/pstack/seats.mjs --dir <answer dir> (--prompt-file <path> | --prompt <prompt>) [--timeout <seconds>] [--read-dir <dir>]... <name>=<claude|codex>:<model>[@<effort>]...';
+const usage = 'Usage: node .agents/pstack/seats.mjs --dir <answer dir> (--prompt-file <path> | --prompt <prompt>) [--timeout <seconds>] [--read-dir <dir>]... [--offline] [--effort-root <dir>] <name>=<claude|codex>:<model>[@<effort>]...';
 
 function mainCheckout() {
   try {
@@ -24,6 +24,8 @@ export async function main(argv) {
   let dir;
   let prompt;
   let timeout = 1800;
+  let offline = false;
+  let effortRoot;
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--dir') dir = argv[++index];
@@ -35,6 +37,15 @@ export async function main(argv) {
       }
       prompt = arg === '--prompt' ? value : readFileSync(value, 'utf8');
     } else if (arg === '--timeout') timeout = Number(argv[++index]);
+    else if (arg === '--offline') offline = true;
+    else if (arg === '--effort-root') {
+      const value = argv[++index];
+      if (value === undefined) {
+        console.error(usage);
+        return 2;
+      }
+      effortRoot = resolve(value);
+    }
     else if (arg === '--read-dir') {
       const value = argv[++index];
       if (value === undefined) {
@@ -61,7 +72,7 @@ export async function main(argv) {
   const claudeDirs = [...new Set([mainCheckout(), ...readDirs].filter(Boolean))];
   const answers = await Promise.all(
     seats.map(async (seat) => {
-      const answer = await ask(seat.runtime, prompt, { timeout, model: seat.model, effort: seat.effort, reach: seat.runtime === 'codex', readDirs: seat.runtime === 'claude' ? claudeDirs : [] }).catch((error) => ({ ok: false, text: error.message }));
+      const answer = await ask(seat.runtime, prompt, { timeout, model: seat.model, effort: seat.effort, effortRoot, reach: seat.runtime === 'codex' && !offline, offline, readDirs: seat.runtime === 'claude' ? claudeDirs : [] }).catch((error) => ({ ok: false, text: error.message }));
       try {
         writeFileSync(join(dir, `${seat.name}.err`), `${answer.ok ? '' : `${answer.text}\n`}${answer.seat ? `seat: ${answer.seat}\n` : ''}`);
         writeFileSync(join(dir, `${seat.name}.md`), answer.ok ? `${answer.text}\n` : '');

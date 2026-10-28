@@ -86,10 +86,12 @@ export function useEditorChat(
 ) {
   const editor = useEditor();
   const comments = editor.plugin(CommentsPlugin);
-  usePluginStore(AIChatTransportPlugin, 'chatOptions');
+  const { api: transportApi } = editor.plugin(AIChatTransportPlugin);
+  const transport = usePluginStore(AIChatTransportPlugin, () =>
+    transportApi.transport()
+  );
   const chat = usePluginStore(AIChatPlugin, 'chat');
   const toolName = usePluginStore(AIChatPlugin, 'toolName');
-  const transport = editor.plugin(AIChatTransportPlugin).api.transport();
   const markdownApi = editor.plugin(MarkdownPlugin).api;
 
   React.useEffect(() => {

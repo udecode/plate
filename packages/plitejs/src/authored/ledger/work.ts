@@ -54,6 +54,8 @@ export type LedgerWork = {
   insertionCounts: number;
   /** Text blocks read to find where a join's first block stands. */
   joinScans: number;
+  /** Letters of a plain text mapped to find the review texts that hold them. */
+  lettersMapped: number;
   /** Levels built for a container's children where none was carried. */
   levelBuilds: number;
   /** Slots the levels inside containers resolved or adopted. */
@@ -75,6 +77,8 @@ export type LedgerWork = {
   resolvedNodes: number;
   resolvedRuns: number;
   rebuilds: number;
+  /** Nodes read to set the elements completion built aside before a map pairs the rest. */
+  setAsideNodes: number;
   /** Nodes the settle pass read. */
   settledNodes: number;
   /** Slots a level read to map a projected range to its stored ranges. */
@@ -123,6 +127,7 @@ const work: LedgerWork = {
   holderReads: 0,
   insertionCounts: 0,
   joinScans: 0,
+  lettersMapped: 0,
   levelBuilds: 0,
   levelSlots: 0,
   narrowedChildren: 0,
@@ -135,6 +140,7 @@ const work: LedgerWork = {
   rebuilds: 0,
   resolvedNodes: 0,
   resolvedRuns: 0,
+  setAsideNodes: 0,
   settledNodes: 0,
   spanSlots: 0,
   strandedBlocks: 0,

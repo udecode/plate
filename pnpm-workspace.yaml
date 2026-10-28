@@ -9,9 +9,8 @@ allowBuilds:
   puppeteer: true
   sharp: true
 
-minimumReleaseAge: 10080
+minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
-  - 'pele@1.6.0'
   - 'tsdown@0.22.13'
   - 'typescript@7.0.2'
   - '@typescript/typescript-aix-ppc64@7.0.2'

@@ -10,7 +10,8 @@ export const mermaidRenderer: DiagramRenderer = {
   render: async (source) => {
     const { renderAsync } = await import('pele/lazy');
 
-    const { svg } = await renderAsync(source);
+    // Pele fills Sankey links with gradients only when idPrefix is set.
+    const { svg } = await renderAsync(source, { idPrefix: 'pele' });
 
     return svg;
   },

@@ -1,6 +1,121 @@
 import type { Descendant, Path, Point } from '../../interfaces';
 import { ElementApi, NodeApi } from '../../interfaces';
 import type { DocumentIndex } from '../change/document-index';
+import type { Relocation } from '../change/lineage';
+import type { RootChange } from '../change/root-change';
+
+/**
+ * Where a moved payload's node came from: `payload` is the node as the
+ * payload holds it, without its children, and `at` its source node's open
+ * token in `document`, the document the move started from.
+ */
+export type LandingSource = Readonly<{
+  at: number;
+  document: DocumentIndex;
+  kind: 'element' | 'text';
+  payload: string;
+}>;
+
+export const payloadKeyOf = (node: object) =>
+  JSON.stringify(
+    Object.fromEntries(
+      Object.entries(node)
+        .filter(([key]) => key !== 'children')
+        .sort(([left], [right]) => left.localeCompare(right))
+    )
+  );
+
+let landingSources: readonly LandingSource[] | null = null;
+
+/** Whether the slice being fitted lands a move that named its sources. */
+export const isLandingMove = () => !!landingSources?.length;
+
+/** Fit `run`'s slices as the landing of a move whose texts came from `sources`. */
+export const withLandingSources = <T>(
+  sources: readonly LandingSource[] | null,
+  run: () => T
+): T => {
+  const previous = landingSources;
+
+  landingSources = sources;
+  try {
+    return run();
+  } finally {
+    landingSources = previous;
+  }
+};
+
+/**
+ * The relocations a fitted move's raw landing carries: each node the change
+ * inserted, in order, that is the next payload node of its kind as the
+ * payload holds it continues that node's source. Texts and elements match
+ * apart, so an element the fit reshaped leaves the texts traced. A node the
+ * fit made, such as a split tail or a wrapper, matches none and has no former
+ * place.
+ */
+export const landedRelocations = (
+  root: string,
+  after: DocumentIndex,
+  change: RootChange
+): readonly Relocation[] => {
+  const sources = landingSources;
+
+  if (!sources?.length) return [];
+
+  const queues = {
+    element: sources.filter(({ kind }) => kind === 'element'),
+    text: sources.filter(({ kind }) => kind === 'text'),
+  };
+  const next = { element: 0, text: 0 };
+  const pending = () =>
+    next.element < queues.element.length || next.text < queues.text.length;
+  const relocations: Relocation[] = [];
+  let at = 0;
+
+  for (let pair = 0; pair < change.sections.length && pending(); pair += 2) {
+    const length = change.sections[pair];
+    const inserted = change.sections[pair + 1];
+
+    if (inserted < 0) {
+      at += length;
+      continue;
+    }
+
+    const end = at + inserted;
+    let position = at;
+
+    while (position < end && pending()) {
+      const entry = after.nodeStartingAt(position);
+
+      if (entry?.from !== position) {
+        const inside = after.openContextAt(position).at(-1);
+
+        position =
+          inside?.kind === 'text'
+            ? Math.max(position + 1, inside.to)
+            : position + 1;
+        continue;
+      }
+
+      const kind = entry.kind === 'text' ? 'text' : 'element';
+      const source = queues[kind][next[kind]];
+
+      if (source && payloadKeyOf(after.node(entry.path)) === source.payload) {
+        relocations.push({
+          at: position,
+          length: 1,
+          root,
+          source: { at: source.at, document: source.document },
+        });
+        next[kind] += 1;
+      }
+      position = kind === 'text' ? entry.to : position + 1;
+    }
+    at = end;
+  }
+
+  return relocations;
+};
 
 export type ClosedFitOriginTracker = Readonly<{
   originOf: (node: Descendant) => Descendant | null;

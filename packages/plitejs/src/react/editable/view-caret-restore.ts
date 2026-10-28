@@ -1,5 +1,6 @@
 import {
   type Range,
+  type RootKey,
   type Selection,
   SelectionApi,
   type TextSelection,
@@ -26,7 +27,13 @@ import { liftCaretOutOfCollapsedSection } from '../../dom/plugin/dom-view-caret'
 import type { AnyEditor } from '../../interfaces/editor';
 import { focusPliteEditableAfterEventFrame } from '../hooks/focus-plite-editable';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
-import { writePliteViewSelection } from '../view-selection';
+import { getPliteViewBoundaryPointRoot } from '../view-boundary-graph';
+import {
+  type PliteViewSelection,
+  readPliteViewSelection,
+  writePliteViewSelection,
+} from '../view-selection';
+import { findContentRootOwners } from './content-root-owners';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 
 type CaretView = ReactRuntimeEditor & AnyEditor;
@@ -34,6 +41,50 @@ type CaretView = ReactRuntimeEditor & AnyEditor;
 const inViewRoot = (view: CaretView, selection: Range | Selection) =>
   toInternalRoot(SelectionApi.root(selection)) ===
   toInternalRoot(view.read.view.root());
+
+/**
+ * Whether `selection` reaches `view`'s root: the root holds part of it, or
+ * nests the copy of a root that does. A root shown in more than one place
+ * names its host only through the selection's own owners.
+ */
+const coversRoot = (view: CaretView, selection: PliteViewSelection) => {
+  const root = toInternalRoot(view.read.view.root());
+  const owners = findContentRootOwners(view);
+  const onlyHost = (child: RootKey) => {
+    const hosts = owners.filter((owner) => owner.childRoot === child);
+
+    return hosts.length === 1 ? hosts[0].ownerRoot : undefined;
+  };
+  const starts: Array<{ host?: RootKey; root: RootKey }> = [
+    {
+      host: selection.anchor.owner?.ownerRoot,
+      root: getPliteViewBoundaryPointRoot(selection.anchor),
+    },
+    {
+      host: selection.focus.owner?.ownerRoot,
+      root: getPliteViewBoundaryPointRoot(selection.focus),
+    },
+    ...selection.segments.parts.map((part) => ({
+      host: part.owner?.ownerRoot,
+      root: part.root,
+    })),
+  ];
+  const reached = new Set<RootKey>();
+
+  for (const start of starts) {
+    if (start.root === root) return true;
+
+    let at = start.host ?? onlyHost(start.root);
+
+    while (at && !reached.has(at)) {
+      if (at === root) return true;
+      reached.add(at);
+      at = onlyHost(at);
+    }
+  }
+
+  return false;
+};
 
 const visibleTarget = <T extends Range | Selection>(
   view: CaretView,
@@ -84,18 +135,25 @@ export const clampCaretAtRegistration = (
 
 export type ViewCaretActivation = Readonly<{
   /**
-   * With no bookmark and no live caret, place the caret at the document end.
+   * With no bookmark and no live caret in the view's root, place the caret at
+   * the end of the view's root.
    * Without it the view's next write takes the caret where the user puts it.
    */
   fallback?: 'end';
   focus?: boolean;
+  /**
+   * A press on the root's chrome: the root takes its own caret and ends a
+   * selection across content roots, even one that covers it. Without it, a
+   * current selection that covers the root stays.
+   */
+  press?: boolean;
   /** The placement generation the request saw; a newer placement cancels it. */
   receipt?: number;
-  /** Place the caret at the document end instead of the view's own caret. */
+  /** Place the caret at the end of the view's root instead of its own caret. */
   target?: 'end';
 }>;
 
-const documentEnd = (view: CaretView): Selection => {
+const rootEnd = (view: CaretView): Selection => {
   const end = view.read((state) => state.points.end([]));
 
   return end ? SelectionApi.text({ anchor: end, focus: end }) : null;
@@ -111,16 +169,16 @@ const activationTarget = (
 
   const live = resolveLiveCaret(view);
 
-  if (!live) return fallback === 'end' ? documentEnd(view) : null;
+  if (live && inViewRoot(view, live)) return live;
 
-  return inViewRoot(view, live) ? live : null;
+  return fallback === 'end' ? rootEnd(view) : null;
 };
 
 export const activateViewCaret = (
   view: CaretView,
   activation: ViewCaretActivation = {}
 ): boolean => {
-  const { fallback, focus = false, target: at } = activation;
+  const { fallback, focus = false, press = false, target: at } = activation;
 
   if (getActiveEditorTransaction(view)) {
     const receipt = activation.receipt ?? getPlacementGeneration(view);
@@ -139,21 +197,28 @@ export const activateViewCaret = (
   }
 
   const generation = getPlacementGeneration(view);
+  const shown = readPliteViewSelection(view);
+  const keeps = !!shown && !press && at !== 'end' && coversRoot(view, shown);
   let receipt = generation;
   let wrote: boolean;
 
+  if (shown && !keeps) {
+    writePliteViewSelection(view, null);
+    if (placedSince(view, generation)) return false;
+  }
   if (at !== 'end' && holdsCaret(view)) {
     wrote = clampHeldCaret(view);
+  } else if (keeps) {
+    wrote = false;
   } else {
     const target =
-      at === 'end' ? documentEnd(view) : activationTarget(view, fallback);
+      at === 'end' ? rootEnd(view) : activationTarget(view, fallback);
 
     wrote = !!target;
     if (target) {
       // A commit listener may place again inside this write; focus only for
       // this placement.
       receipt = nextMintedGeneration(view);
-      writePliteViewSelection(view, null);
       setSelectionAsView(view, visibleTarget(view, target));
     }
   }

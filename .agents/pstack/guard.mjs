@@ -11,21 +11,29 @@
 // except a dry run and a push prefixed with PSTACK_RELEASE=1, which only a
 // project's release skill writes. A push with no refspec, or one whose
 // destination is HEAD, targets the current branch, and one with --tags and no
-// refspec targets no branch. It reads every command in
-// the line, including `bash -c` payloads and `$(...)` bodies, skips heredoc
+// refspec targets no branch. A matching `:` refspec and a wildcard refspec
+// target each branch they match. The guard reads no git config, so a push with
+// no refspec that `remote.<name>.push` or `push.default` sends to the branch
+// passes. It reads every command in the line, including `$(...)` bodies and a
+// shell's `-c` payload wherever `-c` sits among its options, skips heredoc
 // bodies, passes every other command, and prints the command for the owner to
 // run in their own terminal. The owner's terminal never runs this hook. It
 // denies an agent's `gh pr create` or `gh pr new` into the branch or with no
 // --base, because land.mjs opens those PRs; one that names another base, such
-// as a PR stacked on someone's head branch, passes. It
-// also denies the app's base-branch sync, which refuses the branch whenever it
-// changes .claude files, and names the rebase to run instead. On Edit,
-// MultiEdit, Write and NotebookEdit it denies a file inside the main checkout,
-// its .git folder included, while that checkout is on the branch or the
-// protected branch, except the plans artifacts directory, which holds the
-// suggested-task ledger and the run directories; a linked worktree, even one
-// nested in the main checkout's folder, is its own checkout and passes. It refuses the edit when git or the guard
-// itself fails, because a hook that exits with an error lets the edit through.
+// as a PR stacked on someone's head branch, passes. In a checkout that holds
+// the config's `companion.dir`, it denies what would delete or overwrite the
+// files that companion repository tracks there: `git clean -x` or `-X`, any
+// `git clean` through its git directory, and a checkout, switch, reset, merge
+// or rebase to a commit without `companion.list`. It also denies the app's
+// base-branch sync, which refuses the branch whenever it changes .claude
+// files, and names the rebase to run instead. On Edit, MultiEdit, Write and
+// NotebookEdit it denies a file inside the main checkout, its .git folder
+// included, while that checkout is on the branch or the protected branch,
+// except the plans artifacts directory, which holds the suggested-task ledger
+// and the run directories; a linked worktree, even one nested in the main
+// checkout's folder, is its own checkout and passes. It refuses the edit when
+// git or the guard itself fails, because a hook that exits with an error lets
+// the edit through.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, readFileSync, readlinkSync, realpathSync, statSync } from 'node:fs';
@@ -117,8 +125,9 @@ function eachCommand(command, visit, depth = 0) {
     visit(words.slice(start), words.slice(0, start));
     if (depth >= 4) continue;
     for (const [index, word] of words.entries()) {
-      if (SHELLS.has(word.split('/').at(-1)) && /^-[A-Za-z]*c[A-Za-z]*$/u.test(words[index + 1] ?? '') && words[index + 2]) {
-        eachCommand(words[index + 2], visit, depth + 1);
+      const rest = words.slice(index + 1);
+      if (SHELLS.has(word.split('/').at(-1)) && rest.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/u.test(arg))) {
+        for (const arg of rest) if (!arg.startsWith('-')) eachCommand(arg, visit, depth + 1);
       }
       for (let at = word.indexOf('$('); at !== -1; at = word.indexOf('$(', at + 2)) {
         eachCommand(word.slice(at + 2, closingParen(word, at + 2)), visit, depth + 1);
@@ -127,27 +136,38 @@ function eachCommand(command, visit, depth = 0) {
   }
 }
 
-// Returns the branches a `git push` updates, whether it forces or deletes them
-// and whether it is a dry run, or null for any other command.
-function pushes(words, cwd) {
+// The subcommand of a `git` command, its arguments, the directory it runs in
+// and its --git-dir, or null for any other command.
+function gitCommand(words, cwd) {
   if (words[0]?.split('/').at(-1) !== 'git') return null;
   let index = 1;
   let dir = cwd;
+  let gitDir = null;
   while (words[index]?.startsWith('-')) {
     if (words[index] === '-C') dir = resolve(dir, words[index + 1] ?? '.');
+    if (words[index] === '--git-dir') gitDir = words[index + 1] ?? '';
+    if (words[index].startsWith('--git-dir=')) gitDir = words[index].slice('--git-dir='.length);
     index += GIT_VALUE_OPTIONS.has(words[index]) ? 2 : 1;
   }
-  if (words[index] !== 'push') return null;
+  return { sub: words[index], args: words.slice(index + 1), dir, gitDir };
+}
+
+// Returns the branches a `git push` updates, whether it forces or deletes them
+// and whether it is a dry run, or null for any other command.
+function pushes(words, cwd) {
+  const call = gitCommand(words, cwd);
+  if (call?.sub !== 'push') return null;
+  const { args, dir } = call;
   let forced = false;
   let every = false;
   let deleting = false;
   let dry = false;
   let tags = false;
   const positional = [];
-  for (let at = index + 1; at < words.length; at += 1) {
-    const word = words[at];
+  for (let at = 0; at < args.length; at += 1) {
+    const word = args[at];
     if (word === '--') {
-      positional.push(...words.slice(at + 1));
+      positional.push(...args.slice(at + 1));
       break;
     }
     if (PUSH_VALUE_OPTIONS.has(word)) at += 1;
@@ -169,6 +189,10 @@ function pushes(words, cwd) {
   for (const spec of refspecs) {
     const plain = spec.replace(/^\+/u, '');
     if (spec.startsWith('+')) forced = true;
+    if (plain === ':') {
+      targets.push('*');
+      continue;
+    }
     if (plain.startsWith(':')) deleting = true;
     const dst = plain.includes(':') ? plain.slice(plain.lastIndexOf(':') + 1) : plain;
     targets.push(dst === 'HEAD' || dst === '@' ? current() : dst.replace(/^refs\/heads\//u, ''));
@@ -191,6 +215,36 @@ function opensPr(words, branch) {
   }
   return base === null || base.replace(/^refs\/heads\//u, '') === branch;
 }
+
+const MOVES = new Set(['checkout', 'switch', 'reset', 'merge', 'rebase']);
+
+// Why a command would delete or overwrite files that the config's companion
+// repository tracks in a checkout holding its git directory, or null.
+function companionDenial(words, cwd, companion) {
+  const call = gitCommand(words, cwd);
+  if (!call || !companion?.dir) return null;
+  const { sub, args, dir, gitDir } = call;
+  if (sub !== 'clean' && !MOVES.has(sub)) return null;
+  const top = git(dir, 'rev-parse', '--show-toplevel');
+  if (top === null || !existsSync(join(top, companion.dir))) return null;
+  const flags = args.filter((word) => /^-[A-Za-z]+$/u.test(word)).join('');
+  if (sub === 'clean' && !flags.includes('n') && !args.includes('--dry-run')) {
+    if (gitDir !== null && existsSync(resolve(dir, gitDir)) && sameDir(resolve(dir, gitDir), join(top, companion.dir))) return `git clean through ${companion.dir} deletes every public file, which that repository does not track. Clean through this checkout's own git instead.`;
+    if (/[xX]/u.test(flags)) return `git clean -x or -X deletes the files ${companion.dir} tracks, which this checkout's git ignores. Run it without -x or -X, or with -n to list what it would delete.`;
+  }
+  if (!MOVES.has(sub) || gitDir !== null) return null;
+  const paths = args.indexOf('--');
+  if (paths !== -1 && paths < args.length - 1 && ['checkout', 'reset'].includes(sub)) return null;
+  for (const rev of (paths === -1 ? args : args.slice(0, paths)).filter((word) => !word.startsWith('-'))) {
+    if (git(dir, 'rev-parse', '--verify', '--quiet', `${rev}^{commit}`) === null) continue;
+    if (git(dir, 'cat-file', '-e', `${rev}:${companion.list}`) !== null) continue;
+    return `${rev} has no ${companion.list}, so moving this checkout there overwrites the files ${companion.dir} tracks with their old copies. Read an old file with \`git show ${rev}:<path>\`, or look around in a detached worktree from \`git worktree add --detach <path> ${rev}\`.`;
+  }
+  return null;
+}
+
+const globMatches = (pattern, name) =>
+  new RegExp(`^${pattern.split('*').map((part) => part.replace(/[.+?^${}()|[\]\\]/gu, '\\$&')).join('.*')}$`, 'u').test(name);
 
 const git = (dir, ...args) => {
   const run = spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8', timeout: 1000, killSignal: 'SIGKILL' });
@@ -306,10 +360,12 @@ const kept = new Set([config.branch, config.protected].filter(Boolean));
 const hits = new Set();
 let direct = false;
 let pr = false;
+let lost = null;
 eachCommand(command, (words, prefix) => {
+  lost ??= companionDenial(words, input.cwd ?? process.cwd(), config.companion);
   const push = pushes(words, input.cwd ?? process.cwd());
   for (const target of push?.targets ?? []) {
-    for (const name of target === '*' ? kept : [target]) {
+    for (const name of target.includes('*') ? [...kept].filter((branch) => globMatches(target, branch)) : [target]) {
       if (push.rewriting) {
         if (kept.has(name)) hits.add(name);
       } else if (name === config.branch && !push.dry && !prefix.includes('PSTACK_RELEASE=1')) direct = true;
@@ -324,6 +380,7 @@ if (direct) {
     `agents push ${config.branch} only through \`node .agents/pstack/land.mjs\` from their worktree, which squashes the task, runs its checks and adds the Session: line review.mjs reads. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`
   );
 }
+if (lost) reasons.push(lost);
 if (pr) {
   reasons.push(
     `agents open a PR into ${config.branch} only through \`node .agents/pstack/land.mjs\`, which renders the plan page as its body. A PR stacked on another branch names that branch with --base.`

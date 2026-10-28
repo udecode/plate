@@ -72,6 +72,7 @@ import {
   readEditor,
   repairEditorValue,
   saveEditorSchemaDocument,
+  seedUniqueIndex,
   snapshotInitialDocumentState,
   subscribe,
   subscribeCommit,
@@ -339,6 +340,7 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
     throw error;
   }
   publication.afterPublish();
+  seedUniqueIndex(editor);
 
   if (getPluginRegistry(editor).schemaContributions.records.size > 0) {
     disarmSchemaBootstrap(editor);

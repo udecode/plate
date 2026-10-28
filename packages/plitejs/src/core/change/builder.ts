@@ -1,4 +1,6 @@
 import { getDefined } from '../../internal/get-defined';
+import type { CompositionStamp } from '../composition-stamp';
+import { countCoreWork } from '../work';
 import {
   classifyRootChange,
   classifyRootChangeWithRuntimeCandidates,
@@ -18,6 +20,7 @@ import {
 } from './document-change';
 import { DocumentIndex, rootNodesOf } from './document-index';
 import type { JsonRecord } from './json';
+import type { CarriedDrop, Relocation } from './lineage';
 import {
   RootChange,
   type DocumentSetPropertyResolver,
@@ -67,6 +70,18 @@ export type DocumentChangeConstructionPolicy = (
     change: DocumentChange;
     indexedAfter: ReadonlyMap<string, DocumentIndex>;
     indexedBefore: ReadonlyMap<string, DocumentIndex>;
+    /**
+     * Present when the schema tracks places: the steps since the last
+     * finalize, and where the pass records each value it drops because the
+     * node carried it from a place that left it out. In a `view`, a draft a
+     * recorder judges where it stores the content, the pass drops and records
+     * every value its place cannot hold instead.
+     */
+    carried?: Readonly<{
+      drops: CarriedDrop[];
+      steps: readonly DraftStep[];
+      view: boolean;
+    }>;
   }>,
   preparation?: object
 ) => DocumentChange;
@@ -121,6 +136,12 @@ export type DraftStep = Readonly<{
   move: DraftStepMove | null;
   origin: DraftStepOrigin;
   source: DraftStepSource;
+  /** Runs this step landed from another place, when the schema tracks places. */
+  relocations?: readonly Relocation[];
+  /** Values a canonical step dropped because their nodes carried them. */
+  drops?: readonly CarriedDrop[];
+  /** The composition whose claimed text write applied this step. */
+  composition?: CompositionStamp;
 }>;
 
 export type PreparedDocumentChange = Readonly<{
@@ -149,6 +170,7 @@ export const PREPARED_DOCUMENT_CHANGES = new WeakMap<
 export class ChangeDraft {
   private accumulated: DocumentChange;
   private readonly appliedSteps: DraftStep[] = [];
+  private stepComposition: CompositionStamp | null = null;
   private stepMove: DraftStepMove | null = null;
   private stepOrigin: DraftStepOrigin | null = null;
   private stepSource: DraftStepSource = 'command';
@@ -176,6 +198,10 @@ export class ChangeDraft {
   private readonly sourceIndexes = new Map<string, DocumentIndex>();
   private readonly preparationAuthority: object;
   private readonly trackChanges: boolean;
+  readonly tracksPlaces: boolean;
+  private readonly view?: () => boolean;
+  /** The first step after the last finalize, where a recording span starts. */
+  private spanStart = 0;
   private readonly runtimeCandidatesByChange = new WeakMap<
     DocumentChange,
     ReadonlyMap<string, readonly DocumentChangeRuntimeCandidate[]>
@@ -218,6 +244,9 @@ export class ChangeDraft {
       preparationAuthority?: object;
       preparationRevision?: () => object;
       trackChanges?: boolean;
+      tracksPlaces?: boolean;
+      /** Whether the draft is a view a recorder judges; see `carried`. */
+      view?: () => boolean;
       validate?: (value: JsonEditorValue, change: DocumentChange) => void;
       validateConstructed?: (
         input: Readonly<{
@@ -244,6 +273,8 @@ export class ChangeDraft {
       options.preparationAuthority ?? Object.freeze({});
     this.preparationRevision = options.preparationRevision;
     this.trackChanges = options.trackChanges ?? true;
+    this.tracksPlaces = options.tracksPlaces ?? false;
+    this.view = options.view;
     this.validate = options.validate;
     this.validateConstructed = options.validateConstructed;
     this.checkConstructed = options.checkConstructed;
@@ -270,9 +301,20 @@ export class ChangeDraft {
    *
    * @internal
    */
-  keepSteps(steps: readonly DraftStep[]) {
+  keepSteps(from: ChangeDraft) {
     this.appliedSteps.length = 0;
-    this.appliedSteps.push(...steps);
+    this.appliedSteps.push(...from.appliedSteps);
+    this.spanStart = from.spanStart;
+  }
+
+  /**
+   * Start a recording span after the steps applied so far, such as a recorded
+   * change, which already decided every value it carried.
+   *
+   * @internal
+   */
+  beginSpan() {
+    this.spanStart = this.appliedSteps.length;
   }
 
   private originOf(origin: DraftStepOrigin | undefined): DraftStepOrigin {
@@ -303,6 +345,24 @@ export class ChangeDraft {
     } finally {
       this.stepSource = previous;
     }
+  }
+
+  /** Tag the steps `run` applies as a composition's claimed write. @internal */
+  withComposition<T>(stamp: CompositionStamp, run: () => T): T {
+    const previous = this.stepComposition;
+
+    this.stepComposition = stamp;
+    try {
+      return run();
+    } finally {
+      this.stepComposition = previous;
+    }
+  }
+
+  private composed(step: DraftStep): DraftStep {
+    return this.stepComposition && !step.composition
+      ? { ...step, composition: this.stepComposition }
+      : step;
   }
 
   /** @internal */
@@ -354,6 +414,8 @@ export class ChangeDraft {
       preparationAuthority: this.preparationAuthority,
       preparationRevision: this.preparationRevision,
       trackChanges: this.trackChanges,
+      tracksPlaces: this.tracksPlaces,
+      view: this.view,
       checkConstructed: this.checkConstructed,
       ...(options.validation === 'defer-to-parent'
         ? {}
@@ -470,7 +532,9 @@ export class ChangeDraft {
     this.accumulated = accumulated;
     this.appliedSteps.push(
       ...payload.steps.map((step) =>
-        this.stepMove && !step.move ? { ...step, move: this.stepMove } : step
+        this.composed(
+          this.stepMove && !step.move ? { ...step, move: this.stepMove } : step
+        )
       )
     );
     if (accumulated === payload.change) {
@@ -537,8 +601,10 @@ export class ChangeDraft {
     change: DocumentChange,
     options: Readonly<{
       classify?: boolean;
+      drops?: readonly CarriedDrop[];
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
       origin?: DraftStepOrigin;
+      relocations?: readonly Relocation[];
     }> = {}
   ): DocumentChangeStep {
     const before = this.current;
@@ -632,14 +698,21 @@ export class ChangeDraft {
         ? classifiedChange
         : this.accumulated.compose(classifiedChange, this.source);
       if (!classifiedChange.empty) {
-        this.appliedSteps.push({
-          indexedAfter,
-          indexedBefore,
-          change: classifiedChange,
-          move: this.stepMove,
-          origin: this.originOf(options.origin),
-          source: this.stepSource,
-        });
+        const relocations = this.tracksPlaces ? options.relocations : undefined;
+
+        this.appliedSteps.push(
+          this.composed({
+            indexedAfter,
+            indexedBefore,
+            change: classifiedChange,
+            move: this.stepMove,
+            origin: this.originOf(options.origin),
+            source: this.stepSource,
+            ...(relocations?.length ? { relocations } : {}),
+            ...(options.drops?.length ? { drops: options.drops } : {}),
+          })
+        );
+        countCoreWork('relocations', relocations?.length ?? 0);
       }
     }
     this.canonical = false;
@@ -894,14 +967,16 @@ export class ChangeDraft {
       ? canonicalChange
       : this.accumulated.compose(canonicalChange, this.source);
     if (!canonicalChange.empty) {
-      this.appliedSteps.push({
-        indexedAfter,
-        indexedBefore,
-        change: canonicalChange,
-        move: this.stepMove,
-        origin: this.originOf(options.origin),
-        source: this.stepSource,
-      });
+      this.appliedSteps.push(
+        this.composed({
+          indexedAfter,
+          indexedBefore,
+          change: canonicalChange,
+          move: this.stepMove,
+          origin: this.originOf(options.origin),
+          source: this.stepSource,
+        })
+      );
     }
     this.runtimeCandidatesByChange.set(
       canonicalChange,
@@ -936,18 +1011,36 @@ export class ChangeDraft {
     if (this.canonical && !this.validationPending) return null;
 
     let constructionChange: DocumentChange | undefined;
+    const drops: CarriedDrop[] = [];
 
     if (!this.canonical && this.construct) {
-      constructionChange = this.construct(this.validationInput(), preparation);
+      const steps = this.appliedSteps.slice(this.spanStart);
+
+      constructionChange = this.construct(
+        this.tracksPlaces
+          ? {
+              ...this.validationInput(),
+              carried: {
+                drops,
+                steps,
+                view: steps.length > 0 && (this.view?.() ?? false),
+              },
+            }
+          : this.validationInput(),
+        preparation
+      );
     }
     const classified = isClassified(this.accumulated);
     const step =
       constructionChange && !constructionChange.empty
         ? this.apply(constructionChange, {
             ...options,
+            drops,
             origin: options.origin ?? 'canonical',
           })
         : null;
+
+    this.spanStart = this.appliedSteps.length;
 
     // Composing the correction drops the classification of each root both
     // changes write, because their paths read in two documents, and a commit
@@ -1110,10 +1203,15 @@ export class ChangeDraft {
   ) {
     const document = this.getIndex(root);
     const wasCanonical = this.canonical;
+    const change = moveNodeChange(document, path, newPath);
     const step = this.applyRoot(
       root,
       'move',
-      moveNodeChange(document, path, newPath)
+      change,
+      undefined,
+      this.tracksPlaces
+        ? this.movedRun(root, document, path, change)
+        : undefined
     );
 
     if (wasCanonical && options.preservesRepresentation) {
@@ -1166,12 +1264,24 @@ export class ChangeDraft {
     children: readonly JsonNode[]
   ) {
     const document = this.getIndex(root);
+    const after = document.withSplicedNodes(path, index, removeCount, children);
 
     return this.applyRoot(
       root,
       'replace',
       replaceChildrenChange(document, path, index, removeCount, children),
-      document.withSplicedNodes(path, index, removeCount, children)
+      after,
+      this.tracksPlaces
+        ? this.reusedRuns(
+            root,
+            document,
+            after,
+            path,
+            index,
+            removeCount,
+            children
+          )
+        : undefined
     );
   }
 
@@ -1271,25 +1381,149 @@ export class ChangeDraft {
     position: number,
     properties: JsonRecord
   ) {
+    const document = this.getIndex(root);
+
     return this.applyRoot(
       root,
       'split',
-      splitNodeChange(this.getIndex(root), path, position, properties)
+      splitNodeChange(document, path, position, properties),
+      undefined,
+      this.tracksPlaces
+        ? this.splitRun(root, document, path, position)
+        : undefined
     );
+  }
+
+  /** The moved subtree lands as one run whose source is its old range. */
+  private movedRun(
+    root: string,
+    document: DocumentIndex,
+    path: readonly number[],
+    change: RootChange
+  ): readonly Relocation[] {
+    const { from, to } = document.nodeRange(path);
+    const length = to - from;
+    let after = 0;
+
+    for (let pair = 0; pair < change.sections.length; pair += 2) {
+      const removed = change.sections[pair];
+      const inserted = change.sections[pair + 1];
+
+      if (removed === 0 && inserted === length) {
+        return [{ at: after, length, root, source: from }];
+      }
+      after += inserted < 0 ? removed : inserted;
+    }
+
+    return [];
+  }
+
+  /**
+   * One run per inserted node that is, by reference, one removed child or a
+   * child of one, and appears once. It looks one level deep on each side, so
+   * a wrap or an unwrap matches.
+   */
+  private reusedRuns(
+    root: string,
+    document: DocumentIndex,
+    after: DocumentIndex,
+    path: readonly number[],
+    index: number,
+    removeCount: number,
+    children: readonly JsonNode[]
+  ): readonly Relocation[] {
+    const siblings =
+      path.length === 0
+        ? document.nodes.slice(index, index + removeCount)
+        : (document.node(path).children ?? []).slice(
+            index,
+            index + removeCount
+          );
+    const removed = new Map<object, readonly number[]>();
+    const seen = new Map<object, number>();
+    const matches: Array<Readonly<{ node: object; to: readonly number[] }>> =
+      [];
+    const match = (node: object, to: readonly number[]) => {
+      matches.push({ node, to });
+      seen.set(node, (seen.get(node) ?? 0) + 1);
+    };
+
+    siblings.forEach((node, offset) => {
+      const at = [...path, index + offset];
+
+      removed.set(node, at);
+      node.children?.forEach((child, childIndex) => {
+        removed.set(child, [...at, childIndex]);
+      });
+    });
+    children.forEach((node, offset) => {
+      const at = [...path, index + offset];
+
+      if (removed.has(node)) {
+        match(node, at);
+        return;
+      }
+      node.children?.forEach((child, childIndex) => {
+        if (removed.has(child)) match(child, [...at, childIndex]);
+      });
+    });
+
+    return matches.flatMap(({ node, to }) => {
+      if (seen.get(node) !== 1) return [];
+      const source = document.nodeRange(getDefined(removed.get(node)));
+      const landed = after.nodeRange(to);
+
+      return [
+        {
+          at: landed.from,
+          length: landed.to - landed.from,
+          root,
+          source: source.from,
+        },
+      ];
+    });
+  }
+
+  /** The new node's open token continues the split node's. */
+  private splitRun(
+    root: string,
+    document: DocumentIndex,
+    path: readonly number[],
+    position: number
+  ): readonly Relocation[] {
+    const node = document.node(path);
+    const boundary = isTextNode(node)
+      ? document.positionAt({ offset: position, path: [...path] })
+      : document.childPosition(path, position);
+
+    return [
+      {
+        at: boundary + 1,
+        length: 1,
+        root,
+        source: document.nodeRange(path).from,
+      },
+    ];
   }
 
   private applyRoot(
     root: string,
     origin: DraftStepOrigin,
     change: RootChange,
-    indexedAfter?: DocumentIndex
+    indexedAfter?: DocumentIndex,
+    relocations?: readonly Relocation[]
   ) {
-    return this.applyConstructed(
+    return this.apply(
       createInternalDocumentChange(
         change.empty ? new Map() : new Map([[root, change]])
       ),
-      origin,
-      indexedAfter ? new Map([[root, indexedAfter]]) : undefined
+      {
+        indexedAfter: indexedAfter
+          ? new Map([[root, indexedAfter]])
+          : undefined,
+        origin,
+        relocations,
+      }
     );
   }
 

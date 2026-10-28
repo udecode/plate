@@ -7,7 +7,6 @@ import {
   type Descendant,
   type Editor,
   type EditorUpdateTransaction,
-  NodeApi,
   type Path,
   type Range,
   RangeApi,
@@ -78,8 +77,6 @@ type PeerCommandTx =
     ? EditorUpdateTransaction<V, TExtensions>
     : never;
 type PeerCommand = (tx: PeerCommandTx) => void;
-
-type KeyboardInputType = 'delete' | 'enter' | 'text';
 
 type TextEntry = {
   path: Path;
@@ -545,18 +542,6 @@ const syncSelectionAfterHistory = (
   editor.api.dom.focus({ retries: 1 });
 };
 
-const documentText = (editor: YjsEditor) =>
-  readEditorValue(editor)
-    .map((node) => NodeApi.string(node))
-    .join('\n');
-
-const selectedText = (editor: YjsEditor) =>
-  editor.api.dom
-    .getWindow()
-    .getSelection()
-    ?.toString()
-    .replaceAll('\uFEFF', '');
-
 const syncSelectionFromDom = (editor: YjsEditor) => {
   const selection = editor.api.dom.getWindow().getSelection();
 
@@ -678,142 +663,6 @@ const replaceDocument = (peer: PeerDefinition, tx: PeerCommandTx) => {
 
   tx.nodes.replaceChildren([paragraph(peer.replacementText)], { at: [] });
   tx.selection.set(selection);
-};
-
-const replaceWithEmptyParagraph = (tx: PeerCommandTx) => {
-  tx.nodes.replaceChildren([paragraph('')], { at: [] });
-  tx.selection.set({
-    anchor: { path: [0, 0], offset: 0 },
-    focus: { path: [0, 0], offset: 0 },
-  });
-};
-
-const replaceBlockTextWithEmpty = (blockIndex: number, tx: PeerCommandTx) => {
-  const value = tx.value().children;
-  const block = value[blockIndex];
-
-  if (!block || !('children' in block)) {
-    return;
-  }
-
-  tx.nodes.replaceChildren([{ text: '' }], { at: [blockIndex] });
-  tx.selection.set({
-    anchor: { path: [blockIndex, 0], offset: 0 },
-    focus: { path: [blockIndex, 0], offset: 0 },
-  });
-};
-
-const removeBlock = (blockIndex: number, tx: PeerCommandTx) => {
-  const value = tx.value().children;
-  const node = value[blockIndex];
-
-  if (!node) {
-    return;
-  }
-
-  if (value.length === 1) {
-    replaceWithEmptyParagraph(tx);
-    return;
-  }
-
-  tx.nodes.remove({ at: [blockIndex] });
-};
-
-const shouldReplaceWholeDocumentSelection = (
-  event: KeyboardEvent<HTMLDivElement>,
-  editor: YjsEditor
-) => {
-  if (event.key !== 'Backspace' && event.key !== 'Delete') {
-    return false;
-  }
-
-  const text = selectedText(editor);
-
-  return !!text && text === documentText(editor);
-};
-
-const selectedParagraphNodeIndex = (
-  event: KeyboardEvent<HTMLDivElement>,
-  editor: YjsEditor
-) => {
-  const datasetIndex = event.currentTarget.dataset.yjsSelectedParagraphNode;
-
-  if (datasetIndex) {
-    delete event.currentTarget.dataset.yjsSelectedParagraphNode;
-
-    return Number(datasetIndex);
-  }
-
-  const selection = editor.api.dom.getWindow().getSelection();
-
-  if (!selection || selection.rangeCount === 0) {
-    return -1;
-  }
-
-  const range = selection.getRangeAt(0);
-
-  if (
-    range.startContainer !== event.currentTarget ||
-    range.endContainer !== event.currentTarget ||
-    range.endOffset - range.startOffset !== 1
-  ) {
-    return -1;
-  }
-
-  const selectedNode = event.currentTarget.childNodes[range.startOffset];
-
-  return [...event.currentTarget.querySelectorAll('p')].indexOf(
-    selectedNode as HTMLParagraphElement
-  );
-};
-
-const selectedBlockTextIndex = (editor: YjsEditor) => {
-  const text = selectedText(editor);
-
-  if (!text) {
-    return -1;
-  }
-
-  return readEditorValue(editor).findIndex(
-    (node) => NodeApi.string(node) === text
-  );
-};
-
-const handleDeleteKeyDown = (
-  event: KeyboardEvent<HTMLDivElement>,
-  peer: PeerDefinition,
-  editor: YjsEditor
-) => {
-  if (!shouldReplaceWholeDocumentSelection(event, editor)) {
-    const nodeIndex = selectedParagraphNodeIndex(event, editor);
-
-    if (nodeIndex !== -1) {
-      event.preventDefault();
-      runPeerCommand(peer, editor, (tx) => {
-        removeBlock(nodeIndex, tx);
-      });
-
-      return true;
-    }
-
-    const blockIndex = selectedBlockTextIndex(editor);
-
-    if (blockIndex === -1) {
-      return false;
-    }
-
-    event.preventDefault();
-    runPeerCommand(peer, editor, (tx) => {
-      replaceBlockTextWithEmpty(blockIndex, tx);
-    });
-
-    return true;
-  }
-
-  event.preventDefault();
-  runPeerCommand(peer, editor, replaceWithEmptyParagraph);
-
-  return true;
 };
 
 const splitFirstText = (bumpRender: () => void, tx: PeerCommandTx) => {
@@ -1012,38 +861,6 @@ const handleHistoryKeyDown = (
   }
 
   return true;
-};
-
-const getKeyboardInputType = (
-  event: KeyboardEvent<HTMLDivElement>
-): KeyboardInputType | null => {
-  if (event.metaKey || event.ctrlKey || event.altKey) {
-    return null;
-  }
-
-  if (event.key === 'Enter') {
-    return 'enter';
-  }
-
-  if (event.key === 'Backspace' || event.key === 'Delete') {
-    return 'delete';
-  }
-
-  return event.key.length === 1 ? 'text' : null;
-};
-
-const handleEditableKeyDown = (
-  event: KeyboardEvent<HTMLDivElement>,
-  peer: PeerDefinition,
-  editor: YjsEditor
-) => {
-  getKeyboardInputType(event);
-
-  if (handleDeleteKeyDown(event, peer, editor)) {
-    return;
-  }
-
-  handleHistoryKeyDown(event, peer, editor);
 };
 
 const handleCommandClick = (
@@ -1499,11 +1316,6 @@ const ProviderBackedPeerContent = ({
           autoFocus={peer.id === 'a'}
           className="min-h-28 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 outline-none focus:border-slate-400 focus:bg-white"
           key={renderEpoch}
-          onKeyDown={(event) => {
-            if (ready) {
-              handleEditableKeyDown(event, peer, editor);
-            }
-          }}
           onSelect={() => {
             if (ready) {
               editor.api.yjs.syncSelection();

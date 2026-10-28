@@ -351,6 +351,17 @@ test('--remove stops the processes in a landed worktree, saves its uncommitted c
   assert.match(readFileSync(result.patch, 'utf8'), /^\+four$/mu, 'the uncommitted change is saved first');
 });
 
+test("--remove runs the companion's detach in a worktree that holds its git directory before removing it", () => {
+  const f = fixture();
+  const saved = join(dirname(f.main), 'detached');
+  mkdirSync(join(f.main, '.agents'), { recursive: true });
+  writeFileSync(join(f.main, '.agents/pstack.json'), JSON.stringify({ companion: { dir: '.git-private', detach: `cp .git-private ${saved}` } }));
+  writeFileSync(join(f.open, '.git-private'), 'gitdir: shared\n');
+  const [result] = removeLanded({ repo: f.main, worktrees: [f.open] });
+  assert.equal(result.removed, true, result.reason);
+  assert.equal(readFileSync(saved, 'utf8'), 'gitdir: shared\n', 'detach ran inside the worktree before it went');
+});
+
 test('--remove keeps the checkout, a locked worktree and one outside the agent folders', () => {
   const f = fixture();
   git(f.main, 'worktree', 'lock', '--reason', 'owner keeps it', f.archived);

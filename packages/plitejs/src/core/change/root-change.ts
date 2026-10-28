@@ -861,6 +861,99 @@ export const getDocumentPropertyContext = (
   });
 };
 
+/** @internal */
+export const writesOnlyElementProperties = (
+  change: RootChange,
+  document: DocumentIndex
+) => {
+  let position = 0;
+
+  for (let at = 0; at < change.sections.length; at += 2) {
+    const inserted = getDefined(change.sections[at + 1]);
+
+    if (inserted >= 0) return false;
+    if (
+      inserted === -2 &&
+      document.nodeStartingAt(position)?.kind !== 'element'
+    ) {
+      return false;
+    }
+    position += getDefined(change.sections[at]);
+  }
+
+  return true;
+};
+
+/** @internal */
+export const collapseElementPropertyWrites = (
+  change: RootChange,
+  document: DocumentIndex,
+  isSetValued: DocumentSetPropertyResolver,
+  root: string | null
+) => {
+  const sections: number[] = [];
+  const data: SectionData[] = [];
+  let applied: DocumentIndex | undefined;
+  let position = 0;
+  let appliedPosition = 0;
+  let collapsed = false;
+  const appliedAt = (at: number) => {
+    applied ??= change.apply(document);
+    const { path } = getDefined(applied.nodeStartingAt(at));
+
+    return [
+      applied.node(path),
+      getDocumentPropertyContext(applied, path, root),
+    ] as const;
+  };
+
+  for (let at = 0; at < change.sections.length; at += 2) {
+    const length = getDefined(change.sections[at]);
+    const inserted = getDefined(change.sections[at + 1]);
+    const value = change.data[at / 2] ?? null;
+    const entry =
+      inserted === -2 ? document.nodeStartingAt(position) : undefined;
+
+    if (entry?.kind === 'element') {
+      const node = document.node(entry.path);
+      const modifications = value as readonly PropertyModification[];
+      const keys = new Set(modifications.map(({ key }) => key));
+      const written = Object.fromEntries(
+        Object.entries(nodeProps(node)).filter(([key]) => keys.has(key))
+      );
+      const context = getDocumentPropertyContext(document, entry.path, root);
+      const start = appliedPosition;
+      let after: ReturnType<typeof appliedAt> | undefined;
+      const kept = semanticPropertyModifications(
+        written,
+        applyPropertyModifications(written, modifications),
+        (key) => {
+          if (!isSetValued(node, key, context)) return false;
+
+          after ??= appliedAt(start);
+
+          return isSetValued(after[0], key, after[1]);
+        }
+      );
+
+      addSection(
+        sections,
+        data,
+        length,
+        kept.length > 0 ? -2 : -1,
+        kept.length > 0 ? kept : null
+      );
+      collapsed = true;
+    } else {
+      addSection(sections, data, length, inserted, value);
+    }
+    position += length;
+    appliedPosition += inserted < 0 ? length : inserted;
+  }
+
+  return collapsed ? RootChange.fromSections(sections, data) : change;
+};
+
 export const TREE_DIFF_MATRIX_LIMIT = 4096;
 export const TREE_DIFF_TEXT_BOUNDARY = 128;
 
@@ -910,7 +1003,7 @@ export const createStructurallyAlignedChanges = (
   const changes: RootChangeSection[] = [];
   const boundaries = new WeakMap<JsonNode, NodeTextBoundary>();
   const properties = new WeakMap<JsonNode, Readonly<JsonRecord>>();
-  let displaced = false;
+  let flatDiffRekeys = false;
 
   const getProperties = (node: JsonNode) => {
     let result = properties.get(node);
@@ -1086,6 +1179,16 @@ export const createStructurallyAlignedChanges = (
     }
     if (!isElementNode(source) || !isElementNode(target)) return false;
 
+    // A flat diff replaces an element whose properties and children both
+    // change, though it keeps its type.
+    if (
+      getProperties(source).type === getProperties(target).type &&
+      !jsonEqual(getProperties(source), getProperties(target)) &&
+      !jsonEqual(source.children, target.children)
+    ) {
+      flatDiffRekeys = true;
+    }
+
     return diffChildren(source.children, target.children, path);
   };
   const diffChildren = (
@@ -1123,7 +1226,7 @@ export const createStructurallyAlignedChanges = (
       sourceCount !== targetCount &&
       (sourceCount === 0 || targetCount === 0)
     ) {
-      displaced = true;
+      flatDiffRekeys = true;
     }
 
     if (sourceCount > 0 && targetCount > 0 && sourceCount !== targetCount) {
@@ -1198,7 +1301,7 @@ export const createStructurallyAlignedChanges = (
         }
         for (; next < targetCount; next += 1) splitAt(next);
 
-        displaced = true;
+        flatDiffRekeys = true;
         return true;
       }
     }
@@ -1296,7 +1399,7 @@ export const createStructurallyAlignedChanges = (
         score === columnBest &&
         column.filter((candidate) => candidate === columnBest).length === 1
       ) {
-        displaced = true;
+        flatDiffRekeys = true;
       }
 
       if (
@@ -1317,7 +1420,7 @@ export const createStructurallyAlignedChanges = (
     return true;
   };
 
-  return diffChildren(before.value, after.value, []) && displaced
+  return diffChildren(before.value, after.value, []) && flatDiffRekeys
     ? changes
     : null;
 };
@@ -2134,10 +2237,26 @@ export class RootChange {
     const [bReplacement] = bReplacements;
     const hasSingleReplacement =
       aReplacements.length === 1 && bReplacements.length === 1;
-    const isNodeDeletion = (replacement: Replacement | undefined): boolean => {
+    const deletesWholeSiblings = (
+      replacement: Replacement | undefined
+    ): boolean => {
       if (!replacement || replacement.insert.length > 0) return false;
 
-      return document.nodeStartingAt(replacement.from)?.to === replacement.to;
+      const first = document.nodeStartingAt(replacement.from);
+
+      if (!first) return false;
+
+      const parent = pathKey(first.path.slice(0, -1));
+      let { to } = first;
+
+      while (to < replacement.to) {
+        const next = document.nodeStartingAt(to);
+
+        if (!next || pathKey(next.path.slice(0, -1)) !== parent) return false;
+        ({ to } = next);
+      }
+
+      return to === replacement.to;
     };
     const contains = (
       outer: Replacement | undefined,
@@ -2423,34 +2542,76 @@ export class RootChange {
       };
     }
 
-    if (
+    const keepOutsideDeletion = (
+      deletion: Replacement,
+      afterDeletion: DocumentIndex,
+      propertyChanges: readonly PropertyChange[]
+    ) => {
+      const sections: number[] = [];
+      const data: SectionData[] = [];
+      let position = 0;
+
+      for (const { from, modifications, to } of propertyChanges) {
+        if (to > deletion.from && from < deletion.to) continue;
+        const start =
+          from < deletion.from ? from : from - (deletion.to - deletion.from);
+
+        if (start > position) {
+          addSection(sections, data, start - position, -1, null);
+        }
+        addSection(sections, data, to - from, -2, modifications);
+        position = start + to - from;
+      }
+      if (position < afterDeletion.length) {
+        addSection(sections, data, afterDeletion.length - position, -1, null);
+      }
+
+      return RootChange.fromSections(sections, data).apply(afterDeletion);
+    };
+    const deletion =
       hasSingleReplacement &&
-      isNodeDeletion(bReplacement) &&
+      deletesWholeSiblings(bReplacement) &&
       contains(bReplacement, aReplacement)
-    ) {
-      const deletedPath = getDefined(
-        document.nodeStartingAt(bReplacement.from)
-      ).path;
+        ? {
+            edit: a,
+            kept: aPropertyChanges,
+            replacement: bReplacement,
+            side: 'b' as const,
+          }
+        : hasSingleReplacement &&
+            deletesWholeSiblings(aReplacement) &&
+            contains(aReplacement, bReplacement)
+          ? {
+              edit: b,
+              kept: bPropertyChanges,
+              replacement: aReplacement,
+              side: 'a' as const,
+            }
+          : null;
 
-      return {
-        a: RootChange.empty(afterB.length),
-        b: removeNodeChange(afterA, deletedPath),
-      };
-    }
+    if (deletion) {
+      const [afterEdit, afterDeletion] =
+        deletion.side === 'b' ? [afterA, afterB] : [afterB, afterA];
+      const merged = keepOutsideDeletion(
+        deletion.replacement,
+        afterDeletion,
+        deletion.kept
+      );
+      const deletionAfterEdit = RootChange.create(afterEdit, {
+        from: deletion.replacement.from,
+        to:
+          deletion.replacement.to +
+          deletion.edit.newLength -
+          deletion.edit.length,
+      });
+      const deleted = deletionAfterEdit.compose(
+        RootChange.between(deletionAfterEdit.apply(afterEdit), merged)
+      );
+      const edited = RootChange.between(afterDeletion, merged);
 
-    if (
-      hasSingleReplacement &&
-      isNodeDeletion(aReplacement) &&
-      contains(aReplacement, bReplacement)
-    ) {
-      const deletedPath = getDefined(
-        document.nodeStartingAt(aReplacement.from)
-      ).path;
-
-      return {
-        a: removeNodeChange(afterB, deletedPath),
-        b: RootChange.empty(afterA.length),
-      };
+      return deletion.side === 'b'
+        ? { a: edited, b: deleted }
+        : { a: deleted, b: edited };
     }
 
     return {
@@ -3006,6 +3167,12 @@ export class RootChange {
     }
 
     return changes;
+  }
+
+  exactMove(document: DocumentIndex) {
+    return this.propertyChanges().length === 0
+      ? this.movedNode(document)
+      : null;
   }
 
   movedNode(document: DocumentIndex): Readonly<{

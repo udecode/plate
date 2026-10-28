@@ -1635,8 +1635,7 @@ export const createPlateRuntimePlugins = (
         : {}),
       ...(plugin.validate
         ? {
-            validate:
-              plugin.validate as RuntimePluginDefinitionInput<Editor>['validate'],
+            validate: plugin.validate,
           }
         : {}),
       ...(options.includeSchemaContributions !== false &&

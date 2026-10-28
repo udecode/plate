@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'node:crypto';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -12,7 +13,9 @@ const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../..'
 );
-const ts = createRequire(import.meta.url)('@typescript/typescript6');
+let compiler;
+const loadTypeScript = () =>
+  (compiler ??= createRequire(import.meta.url)('@typescript/typescript6'));
 
 const testSidePattern =
   /\/__tests__\/|(?:\.(?:spec|test)|-contract)\.[cm]?[jt]sx?$/u;
@@ -196,15 +199,16 @@ const bunUse = (node, ancestors) => {
   return 'uses the Bun global';
 };
 
-const parseModule = (filename) => {
-  if (moduleCache.has(filename)) return moduleCache.get(filename);
+const parsesAsModule = (filename) =>
+  /\.[cm]?[jt]sx?$/u.test(filename) && !filename.endsWith('.d.ts');
 
+const parseSource = (filename, text) => {
   const specifiers = [];
   const valueSpecifiers = [];
   const effects = new Set();
 
-  if (/\.[cm]?[jt]sx?$/u.test(filename) && !filename.endsWith('.d.ts')) {
-    const sourceFile = parse(fs.readFileSync(filename, 'utf-8'), {
+  if (parsesAsModule(filename)) {
+    const sourceFile = parse(text(), {
       plugins: ['jsx', 'typescript'],
       sourceFilename: filename,
       sourceType: 'unambiguous',
@@ -287,15 +291,22 @@ const parseModule = (filename) => {
     visit(sourceFile);
   }
 
-  const result = {
+  return {
     effects: [...effects].sort((a, b) => a.localeCompare(b)),
     specifiers,
     valueSpecifiers,
   };
+};
 
-  moduleCache.set(filename, result);
+const parseModule = (filename) => {
+  if (!moduleCache.has(filename)) {
+    moduleCache.set(
+      filename,
+      parseSource(filename, () => fs.readFileSync(filename, 'utf-8'))
+    );
+  }
 
-  return result;
+  return moduleCache.get(filename);
 };
 
 export const moduleSpecifiers = (filename) => parseModule(filename).specifiers;
@@ -305,38 +316,109 @@ export const moduleSpecifiers = (filename) => parseModule(filename).specifiers;
 // registry.
 export const moduleEffects = (filename) => parseModule(filename).effects;
 
+const commentRanges = new Map();
+
+const babelComments = (filename, text) => {
+  try {
+    return parse(text, {
+      errorRecovery: true,
+      plugins: /\.[cm]?tsx?$/u.test(filename)
+        ? ['typescript', ...(filename.endsWith('x') ? ['jsx'] : [])]
+        : ['jsx'],
+      sourceType: 'unambiguous',
+    }).comments.map(({ end, start }) => [start, end]);
+  } catch {
+    return [];
+  }
+};
+
+const wholeLineShellComments = (text) =>
+  [...text.matchAll(/^[\t ]*#.*$/gmu)].map((match) => [
+    match.index,
+    match.index + match[0].length,
+  ]);
+
+const commentsOf = (filename, text) => {
+  if (!commentRanges.has(filename)) {
+    let ranges = [];
+
+    if (/\.[cm]?[jt]sx?$/u.test(filename)) {
+      ranges = babelComments(filename, text);
+    } else if (filename.endsWith('.sh')) {
+      ranges = wholeLineShellComments(text);
+    }
+    commentRanges.set(filename, ranges);
+  }
+
+  return commentRanges.get(filename);
+};
+
+const certainlyCode = (text, index) => {
+  const line = text.lastIndexOf('\n', index) + 1;
+  if (text.slice(line, index).includes('//')) return false;
+  const open = text.lastIndexOf('/*', index);
+  if (open === -1) return true;
+  const close = text.indexOf('*/', open + 2);
+  return close !== -1 && close + 2 <= index;
+};
+
+/**
+ * Whether `pattern` matches `filename` outside its comments. JavaScript and
+ * TypeScript comments come from Babel and shell comments from whole `#`
+ * lines; every other file is all code, so a JSON config's mention counts.
+ */
+export const mentionsOutsideComments = (filename, pattern) => {
+  const text = fs.readFileSync(filename, 'utf-8');
+  const flags = pattern.flags.includes('g')
+    ? pattern.flags
+    : `${pattern.flags}g`;
+  const indexes = Array.from(
+    text.matchAll(new RegExp(pattern.source, flags)),
+    (match) => match.index
+  );
+  if (
+    /\.[cm]?[jt]sx?$/u.test(filename) &&
+    indexes.some((index) => certainlyCode(text, index))
+  ) {
+    return true;
+  }
+  const ranges = commentsOf(filename, text);
+
+  return indexes.some(
+    (index) => !ranges.some(([start, end]) => index >= start && index < end)
+  );
+};
+
 const testPreloadAliases = new Map(
   getWorkspaceSourceEntries(repoRoot).map(({ sourceEntry, specifier }) => [
     specifier,
     sourceEntry,
   ])
 );
-const configHost = { ...ts.sys, readDirectory: () => [] };
-const compilerOptionsByConfig = new Map([
-  [
-    undefined,
-    {
-      allowJs: true,
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-      resolveJsonModule: true,
-    },
-  ],
-]);
+const readCompilerOptions = (ts, configPath, host) =>
+  configPath === undefined
+    ? {
+        allowJs: true,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        resolveJsonModule: true,
+      }
+    : ts.parseJsonConfigFileContent(
+        ts.readConfigFile(configPath, host.readFile).config,
+        { ...host, readDirectory: () => [] },
+        path.dirname(configPath)
+      ).options;
+
+const compilerOptionsByConfig = new Map();
 
 const compilerOptions = (directory) => {
+  const ts = loadTypeScript();
   const configPath = ts.findConfigFile(directory, ts.sys.fileExists);
 
   if (!compilerOptionsByConfig.has(configPath)) {
-    const { config } = ts.readConfigFile(configPath, ts.sys.readFile);
-
     compilerOptionsByConfig.set(
       configPath,
-      ts.parseJsonConfigFileContent(
-        config,
-        configHost,
-        path.dirname(configPath)
-      ).options
+      readCompilerOptions(ts, configPath, ts.sys)
     );
   }
 
@@ -346,6 +428,7 @@ const compilerOptions = (directory) => {
 // Bun and Vite compile each file with its nearest tsconfig.json and the files
 // that one extends.
 export const tsconfigChain = (filename) => {
+  const ts = loadTypeScript();
   const chain = [];
   const visitConfig = (configPath) => {
     if (!configPath || chain.includes(configPath)) return;
@@ -374,23 +457,20 @@ export const tsconfigChain = (filename) => {
   return chain;
 };
 
-const resolutionCache = new Map();
-
-export const resolveImport = (fromFile, specifier) => {
+// `io` answers every file system question resolution asks: `host` is the
+// TypeScript module resolution host, and the rest are this module's own reads.
+const resolveWith = (io, fromFile, specifier) => {
   const directory = path.dirname(fromFile);
-  const key = `${directory}\0${specifier}`;
-
-  if (resolutionCache.has(key)) return resolutionCache.get(key);
-
   const request = specifier.split('?')[0];
   let resolved = testPreloadAliases.get(request);
 
   if (!resolved) {
+    const ts = loadTypeScript();
     const { resolvedModule } = ts.resolveModuleName(
       request,
       fromFile,
-      compilerOptions(directory),
-      ts.sys
+      io.options(directory),
+      io.host
     );
 
     if (resolvedModule && !resolvedModule.isExternalLibraryImport) {
@@ -403,25 +483,391 @@ export const resolveImport = (fromFile, specifier) => {
         (_, kind) => `.${kind}js`
       );
 
-      if (runtimeFile !== resolved && fs.existsSync(runtimeFile)) {
+      if (runtimeFile !== resolved && io.exists(runtimeFile)) {
         resolved = runtimeFile;
       }
     } else if (request.startsWith('.')) {
       const candidate = path.resolve(directory, request);
 
-      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
-        resolved = candidate;
-      }
+      if (io.isFile(candidate)) resolved = candidate;
     }
   }
-  if (resolved) resolved = fs.realpathSync(resolved);
+  if (resolved) resolved = io.realpath(resolved);
 
-  const result =
-    resolved && !resolved.includes('/node_modules/') ? resolved : null;
+  return resolved && !resolved.includes('/node_modules/') ? resolved : null;
+};
 
-  resolutionCache.set(key, result);
+const isFile = (file) => fs.existsSync(file) && fs.statSync(file).isFile();
 
-  return result;
+const systemIo = {
+  exists: fs.existsSync,
+  get host() {
+    return loadTypeScript().sys;
+  },
+  isFile,
+  options: compilerOptions,
+  realpath: fs.realpathSync,
+};
+
+const resolutionCache = new Map();
+
+export const resolveImport = (fromFile, specifier) => {
+  const key = `${path.dirname(fromFile)}\0${specifier}`;
+
+  if (!resolutionCache.has(key)) {
+    resolutionCache.set(key, resolveWith(systemIo, fromFile, specifier));
+  }
+
+  return resolutionCache.get(key);
+};
+
+const sha1 = (data) => createHash('sha1').update(data).digest('hex');
+
+const writeAtomically = (file, text) => {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const temp = `${file}.${process.pid}.${randomBytes(6).toString('hex')}`;
+  fs.writeFileSync(temp, text);
+  fs.renameSync(temp, file);
+};
+
+const STORE_DAYS = 14;
+
+const sweepStore = (directory, keep) => {
+  const cutoff = Date.now() - STORE_DAYS * 24 * 60 * 60 * 1000;
+  for (const name of fs.readdirSync(directory)) {
+    const entry = path.join(directory, name);
+    if (keep.has(entry) || fs.statSync(entry).mtimeMs > cutoff) continue;
+    fs.rmSync(entry, { force: true, recursive: true });
+  }
+};
+
+// The specifier store keeps at most this many entries per file a scan reads,
+// so other checkouts' files stay without the store growing for ever.
+const STORED_SPECIFIERS_PER_FILE = 3;
+
+const isStringArray = (value) =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string');
+// A missing or corrupt store file reads as empty, so the scan works it out again.
+const readRecord = (file) => {
+  try {
+    const value = JSON.parse(fs.readFileSync(file, 'utf-8'));
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? value
+      : {};
+  } catch {
+    return {};
+  }
+};
+
+// TypeScript's system host reads a file this way.
+const decodeText = (bytes) => {
+  if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
+    const swapped = Buffer.from(bytes.subarray(0, bytes.length & ~1));
+    swapped.swap16();
+    return swapped.toString('utf16le', 2);
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
+    return bytes.toString('utf16le', 2);
+  }
+  if (
+    bytes.length >= 3 &&
+    bytes[0] === 0xef &&
+    bytes[1] === 0xbb &&
+    bytes[2] === 0xbf
+  ) {
+    return bytes.toString('utf-8', 3);
+  }
+  return bytes.toString('utf-8');
+};
+
+const statOf = (file) => {
+  try {
+    return fs.statSync(file, { throwIfNoEntry: false });
+  } catch {
+    return undefined;
+  }
+};
+
+const nativeRealpath = (file) => {
+  try {
+    return process.platform === 'win32' && file.length >= 260
+      ? fs.realpathSync(file)
+      : fs.realpathSync.native(file);
+  } catch {
+    return file;
+  }
+};
+
+const storeSalt = () => {
+  const require = createRequire(import.meta.url);
+  return sha1(
+    JSON.stringify([
+      fs.readFileSync(fileURLToPath(import.meta.url), 'utf-8'),
+      fs.realpathSync(require.resolve('@babel/parser')),
+      fs.realpathSync(require.resolve('@typescript/typescript6')),
+      [...testPreloadAliases],
+      process.cwd(),
+    ])
+  );
+};
+
+// A stamp taken this soon after a file changed can miss a second change made
+// within the same timestamp tick, so such a file is read again next time.
+const SETTLE_NS = 2_000_000_000n;
+
+const stampOf = (stat) =>
+  `${stat.dev}:${stat.ino}:${stat.size}:${stat.mtimeNs}:${stat.ctimeNs}`;
+
+/**
+ * `moduleSpecifiers` and `resolveImport` for a scan of the whole checkout at
+ * `root` that remembers, under `directory`, what it learned. Each file's
+ * specifiers are kept by the file's content, for every checkout of the clone.
+ * Each resolution is kept for this checkout with the answer to every file
+ * system question it asked, and is reused only while each question gets the
+ * same answer, so a repeat scan parses and resolves only what changed. `save`
+ * writes what this scan learned and drops what it did not use.
+ */
+export const storedGraph = (directory, root) => {
+  const store = path.join(directory, storeSalt());
+  const specifiersFile = path.join(store, 'specifiers.json');
+  const checkoutFile = path.join(store, `checkout-${sha1(root)}.json`);
+  const settled = BigInt(Date.now()) * 1_000_000n - SETTLE_NS;
+
+  const storedSpecifiers = readRecord(specifiersFile);
+  const checkout = readRecord(checkoutFile);
+  const storedFiles =
+    checkout.files && typeof checkout.files === 'object' ? checkout.files : {};
+  const usedSpecifiers = new Map();
+  const files = new Map();
+  let parsed = false;
+  let restamped = false;
+
+  const knownSpecifiers = (key) => {
+    const specifiers =
+      usedSpecifiers.get(key) ??
+      (Object.hasOwn(storedSpecifiers, key) ? storedSpecifiers[key] : null);
+    return isStringArray(specifiers) ? specifiers : undefined;
+  };
+  const specifiersOf = (filename) => {
+    if (!parsesAsModule(filename)) return [];
+    const stat = fs.statSync(filename, { bigint: true });
+    const stamp = stampOf(stat);
+    const kept = Object.hasOwn(storedFiles, filename)
+      ? storedFiles[filename]
+      : null;
+    let key = Array.isArray(kept) && kept[0] === stamp ? kept[1] : undefined;
+    let specifiers = typeof key === 'string' && knownSpecifiers(key);
+    if (!specifiers) {
+      const bytes = fs.readFileSync(filename);
+      key = sha1(bytes);
+      specifiers = knownSpecifiers(key);
+      if (!specifiers) {
+        ({ specifiers } = parseSource(filename, () => bytes.toString('utf-8')));
+        parsed = true;
+      }
+      restamped = true;
+    }
+    usedSpecifiers.set(key, specifiers);
+    if (stat.ctimeNs < settled && stat.mtimeNs < settled) {
+      files.set(filename, [stamp, key]);
+    }
+    return specifiers;
+  };
+
+  const texts = new Map();
+  const realDirectories = new Map();
+  // fs.realpathSync, sharing each directory's real path across files.
+  const realpath = (file) => {
+    const parent = path.dirname(file);
+    if (parent === file || fs.lstatSync(file).isSymbolicLink()) {
+      return fs.realpathSync(file);
+    }
+    if (!realDirectories.has(parent)) {
+      realDirectories.set(parent, realpath(parent));
+    }
+    return path.join(realDirectories.get(parent), path.basename(file));
+  };
+  // Each file system question resolution asks, answered as TypeScript's
+  // system host or this module's own read answers it.
+  const questions = {
+    directory: (file) => statOf(file)?.isDirectory() ?? false,
+    exists: (file) => fs.existsSync(file),
+    file: (file) => statOf(file)?.isFile() ?? false,
+    isFile,
+    nativeRealpath,
+    read: (file) => {
+      let bytes;
+      try {
+        bytes = fs.readFileSync(file);
+      } catch {
+        return null;
+      }
+      texts.set(file, decodeText(bytes));
+      return sha1(bytes);
+    },
+    realpath,
+  };
+  const answers = new Map();
+  let asked;
+  const ask = (key, kind, file) => {
+    asked?.add(key);
+    if (!answers.has(key)) answers.set(key, questions[kind](file));
+    return answers.get(key);
+  };
+  const askNew = (kind, file) => ask(JSON.stringify([kind, file]), kind, file);
+
+  let host;
+  const recordingHost = () => {
+    const { sys } = loadTypeScript();
+    host ??= {
+      directoryExists: (file) => askNew('directory', file),
+      fileExists: (file) => askNew('file', file),
+      getCurrentDirectory: sys.getCurrentDirectory,
+      readFile: (file) =>
+        askNew('read', file) === null ? undefined : texts.get(file),
+      realpath: (file) => askNew('nativeRealpath', file),
+      useCaseSensitiveFileNames: sys.useCaseSensitiveFileNames,
+    };
+    return host;
+  };
+  // A directory's options come from questions that its first resolution asks,
+  // so every later resolution from it asks them again.
+  const configs = new Map();
+  const io = {
+    exists: (file) => askNew('exists', file),
+    get host() {
+      return recordingHost();
+    },
+    isFile: (file) => askNew('isFile', file),
+    options: (fromDirectory) => {
+      if (!configs.has(fromDirectory)) {
+        const outer = asked;
+        asked = new Set();
+        const ts = loadTypeScript();
+        const configPath = ts.findConfigFile(
+          fromDirectory,
+          recordingHost().fileExists
+        );
+        const options = readCompilerOptions(ts, configPath, recordingHost());
+        configs.set(fromDirectory, { asked, options });
+        asked = outer;
+      }
+      const config = configs.get(fromDirectory);
+      for (const key of config.asked) asked.add(key);
+      return config.options;
+    },
+    realpath: (file) => askNew('realpath', file),
+  };
+
+  const storedQuestions = Array.isArray(checkout.questions)
+    ? checkout.questions
+    : [];
+  // Each stored question's key while its answer still holds, else null.
+  const holding = [];
+  const holds = (index) => {
+    if (!Number.isInteger(index)) return null;
+    if (holding[index] === undefined) {
+      holding[index] = null;
+      const question = storedQuestions[index];
+      if (Array.isArray(question) && Object.hasOwn(questions, question[0])) {
+        const [kind, file, answer] = question;
+        const key = JSON.stringify([kind, file]);
+        try {
+          if (typeof file === 'string' && ask(key, kind, file) === answer) {
+            holding[index] = key;
+          }
+        } catch {
+          // A question that now throws has a different answer.
+        }
+      }
+    }
+    return holding[index];
+  };
+  const storedResolutions = new Map(
+    Array.isArray(checkout.resolutions)
+      ? checkout.resolutions
+          .filter(
+            (entry) =>
+              Array.isArray(entry) &&
+              typeof entry[0] === 'string' &&
+              (entry[1] === null || typeof entry[1] === 'string')
+          )
+          .map(([key, result, ...indexes]) => [key, { indexes, result }])
+      : []
+  );
+  const resolutions = new Map();
+  let resolved = false;
+
+  const resolve = (fromFile, specifier) => {
+    const key = `${path.dirname(fromFile)}\0${specifier}`;
+    if (resolutions.has(key)) return resolutions.get(key).result;
+    const kept = storedResolutions.get(key);
+    const keys = kept?.indexes.map(holds);
+    // Every resolution asks at least for its file's real path.
+    if (keys?.length > 0 && keys.every(Boolean)) {
+      resolutions.set(key, { asked: keys, result: kept.result });
+      return kept.result;
+    }
+    asked = new Set();
+    const result = resolveWith(io, fromFile, specifier);
+    resolutions.set(key, { asked: [...asked], result });
+    asked = undefined;
+    resolved = true;
+    return result;
+  };
+
+  const save = () => {
+    try {
+      if (parsed) {
+        const entries = [
+          ...Object.entries(readRecord(specifiersFile)).filter(
+            ([key]) => !usedSpecifiers.has(key)
+          ),
+          ...usedSpecifiers,
+        ];
+        writeAtomically(
+          specifiersFile,
+          JSON.stringify(
+            Object.fromEntries(
+              entries.slice(
+                -STORED_SPECIFIERS_PER_FILE * Math.max(usedSpecifiers.size, 1)
+              )
+            )
+          )
+        );
+      }
+      if (parsed || resolved || restamped) {
+        const indexOf = new Map();
+        const written = [...resolutions].map(
+          ([key, { asked: questionKeys, result }]) => [
+            key,
+            result,
+            ...questionKeys.map((question) => {
+              if (!indexOf.has(question)) indexOf.set(question, indexOf.size);
+              return indexOf.get(question);
+            }),
+          ]
+        );
+        writeAtomically(
+          checkoutFile,
+          JSON.stringify({
+            files: Object.fromEntries(files),
+            questions: [...indexOf.keys()].map((question) => [
+              ...JSON.parse(question),
+              answers.get(question),
+            ]),
+            resolutions: written,
+          })
+        );
+        sweepStore(directory, new Set([store]));
+        sweepStore(store, new Set([specifiersFile, checkoutFile]));
+      }
+    } catch {
+      // The store only saves time; a scan that cannot write it is still right.
+    }
+  };
+
+  return { moduleSpecifiers: specifiersOf, resolveImport: resolve, save };
 };
 
 export const importClosure = (

@@ -320,7 +320,7 @@ editor.plugin(ImagePlugin).update.insert({
 </APIOptions>
 </API>
 
-`UploadPlugin` 处理粘贴的图片文件；`ImagePlugin` 处理图片 URL。
+`UploadPlugin` 处理粘贴的图片文件。没有更早的粘贴规则接管时，`ImagePlugin` 会把粘贴的图片 URL 插入为图片。在 `EditorKit` 中，链接 kit 的 `LinkRules.autolink({ variant: 'paste' })` 规则先运行，会把任何有效 URL（包括图片 URL）作为链接插入。
 
 ### `VideoPlugin`
 

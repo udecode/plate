@@ -112,9 +112,12 @@ renderer context.
 `createPretextPageLayoutEngine()` measures rich inline text with browser font
 metrics. The app owns `typography`: return the fonts, line heights, and block
 spacing your element styles render, or the measured lines will not match the
-painted text. Call `measurePages` with an explicit engine for headless
-snapshots. Use `createEstimatedPageLayoutEngine()` where browser text
-measurement is unavailable.
+painted text. Return named font families, such as `Helvetica`. The engine
+measures on an `OffscreenCanvas`, and in Firefox on macOS `-apple-system`
+resolves there to a different face than the page paints. Call `measurePages`
+with an explicit engine for headless snapshots. Use
+`createEstimatedPageLayoutEngine()` where browser text measurement is
+unavailable.
 
 Keep `fragmentation` and `typography` stable across renders, for example with
 `useMemo`. A new function or object remeasures the document.
@@ -122,11 +125,22 @@ Keep `fragmentation` and `typography` stable across renders, for example with
 A server cannot measure text, so a server-rendered page shows the editor
 without pages, and pages appear once the browser measures after hydration.
 
-Each measured line renders at its measured position inside its block. Element
-padding and margins do not move that text, so put the vertical space they add
-into `typography` block spacing instead. Horizontal space has no typography
+Each measured line renders at its measured position inside its block's box. In
+a single-page view the box covers every rendered fragment of the block, which
+with `virtualize` means only the fragments on mounted pages. On facing pages it
+covers the block's first rendered fragment, and the block draws its later lines
+outside the box. The box and its element have no top or bottom margins, and a
+text block in it has no top or bottom padding and is at least the box's height.
+In a single-page view a block's background therefore covers all its rendered
+lines and the gaps between its pages. The element's top and bottom padding and
+margins do not move the text, so put the vertical space they add into
+`typography` block spacing instead. Horizontal space has no typography
 equivalent, so an indented block, such as a list item, paints its text at the
-content edge, under its list marker.
+content edge, under its list marker. A selected block that fits on one page
+keeps native flow, so while it is selected its side padding, its borders and
+the padding of a wrapper inside it move its text. Chrome at the element's start, such as a drag handle or a list
+number, stays level with the block's first rendered line in both page views
+without extra code.
 
 `measurePages(editor, options)` reads one coherent editor snapshot and returns an immutable `PageLayoutSnapshot`. It neither subscribes nor publishes. A custom `PageLayoutEngine` receives detached immutable input and must conserve source ranges, fragment order, paths, and declared non-text sizes.
 

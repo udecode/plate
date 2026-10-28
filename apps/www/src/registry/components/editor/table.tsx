@@ -26,6 +26,7 @@ import {
   useFocusedLast,
   useElementSelector,
   usePath,
+  usePluginStore,
 } from 'platejs/react';
 import {
   TableCellPlugin,
@@ -153,7 +154,15 @@ export function TableElement(props: EditorElementProps<typeof TablePlugin>) {
     [setRowHeightOverrides]
   );
   const marginLeft = props.element.marginLeft ?? 0;
-  const baseColSizes = api.columnWidths(props.element);
+  const baseColSizes = usePluginStore(
+    TablePlugin,
+    () => api.columnWidths(props.element),
+    {
+      equalityFn: (left, right) =>
+        left.length === right.length &&
+        left.every((width, index) => width === right[index]),
+    }
+  );
   const columnWidths = baseColSizes.map(
     (width, index) => colSizeOverrides.get(index) ?? width
   );

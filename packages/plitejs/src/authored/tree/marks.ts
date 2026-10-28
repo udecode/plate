@@ -1,7 +1,9 @@
 import type { SparseNodes } from '../../core/change/document-index';
 import { normalizeSetValues } from '../../core/change/transform';
+import type { ConstructionSlot } from '../../core/content-completion';
 import { property, schema, target } from '../../core/schema-definition';
 import { isEditorJsonValue } from '../../core/value-codec';
+import type { Element } from '../../interfaces/element';
 import type { EditorJsonValue } from '../../interfaces/json';
 import type { Path } from '../../interfaces/path';
 import { isEditingChange } from '../facts/editing';
@@ -38,7 +40,39 @@ export type RestsOn = Readonly<{ ctx: string; kind: 'in' }>;
 
 export type HeldDeletion = MarkBase & Readonly<{ kind: 'held' }>;
 
-export type AuthoredMember = AuthoredMark | HeldDeletion | RestsOn;
+/**
+ * A spare block: the subtree completion builds at `slot` of a `type`
+ * container, values included, stored when `change` was written so a read or a
+ * decision that needs it builds no value of its own. It never claims, holds or
+ * waits on anything. `built` marks the spare a decision built the slot from.
+ */
+export type ReserveMember = MarkBase &
+  Readonly<{
+    built?: true;
+    kind: 'reserve';
+    node: Element;
+    slot: ConstructionSlot;
+    type: string;
+  }>;
+
+/**
+ * The values an inserted element shows under the proposed view in place of
+ * its stored ones: values its command gave it that another stored element
+ * holds, as its stored value or as its own `as` value, so the element stores
+ * fresh ones. A decision writes each onto the element once no other holder of
+ * it is pending. It claims nothing and belongs to no change.
+ */
+export type AsMember = Readonly<{
+  kind: 'as';
+  values: Readonly<Record<string, EditorJsonValue>>;
+}>;
+
+export type AuthoredMember =
+  | AsMember
+  | AuthoredMark
+  | HeldDeletion
+  | ReserveMember
+  | RestsOn;
 
 /**
  * One half of a pending split of an inline element: `end` on the left half,
@@ -81,6 +115,30 @@ export type AuthoredMark =
 /** @internal */
 export const isContextInsertion = (mark: AuthoredMark) =>
   mark.kind === 'insert' && mark.follows === undefined;
+
+export const isStructureChange = (mark: AuthoredMark) =>
+  mark.kind === 'join' ||
+  mark.kind === 'split' ||
+  mark.kind === 'unwrap' ||
+  mark.kind === 'wrap';
+
+export const isUnwrap = (mark: AuthoredMark) => mark.kind === 'unwrap';
+
+export const isEnclosureChange = (mark: AuthoredMark) =>
+  isUnwrap(mark) || mark.kind === 'wrap';
+
+export const isPlaceChange = (mark: AuthoredMark) =>
+  isStructureChange(mark) || (mark.kind === 'format' && mark.key === 'type');
+
+/**
+ * Whether a mark on content between the halves of a cut can decide whether
+ * they meet.
+ */
+export const isBetweenChange = (mark: AuthoredMark) =>
+  mark.kind === 'insert' ||
+  mark.kind === 'delete' ||
+  mark.kind === 'split' ||
+  mark.kind === 'join';
 
 const TEXT_KINDS: ReadonlySet<AuthoredMarkKind> = new Set([
   'delete',
@@ -125,6 +183,7 @@ const FORMAT_FIELDS: ReadonlySet<string> = new Set([
   'key',
   'kind',
   'over',
+  'split',
   'write',
 ]);
 
@@ -158,7 +217,66 @@ const isRestsOn = (value: unknown): value is RestsOn =>
   isRecord(value) && value.kind === 'in';
 
 export const isClaim = (member: AuthoredMember): member is AuthoredMark =>
-  member.kind !== 'in' && member.kind !== 'held';
+  member.kind !== 'in' &&
+  member.kind !== 'held' &&
+  member.kind !== 'reserve' &&
+  member.kind !== 'as';
+
+const isAsMember = (value: Readonly<Record<string, unknown>>) =>
+  isRecord(value.values) &&
+  Object.keys(value.values).length > 0 &&
+  Object.keys(value.values).every(
+    (key) => key !== AUTHORED_MARKS_KEY && key !== 'children' && key !== 'text'
+  ) &&
+  isEditorJsonValue(value.values) &&
+  Object.keys(value).length === 2;
+
+export const isReserveSlot = (value: unknown): value is ConstructionSlot => {
+  if (!isRecord(value)) return false;
+
+  const [key, ...rest] = Object.keys(value);
+  const ordinal = key === undefined ? undefined : value[key];
+
+  return (
+    rest.length === 0 &&
+    (key === 'prefix' || key === 'min') &&
+    Number.isSafeInteger(ordinal) &&
+    (ordinal as number) >= 0
+  );
+};
+
+const holdsNoMembers = (node: unknown): boolean =>
+  !isRecord(node) ||
+  (!Object.hasOwn(node, AUTHORED_MARKS_KEY) &&
+    (!Array.isArray(node.children) || node.children.every(holdsNoMembers)));
+
+/** A spare's node: an element of JSON values whose subtree holds no review members. */
+export const isReserveNode = (value: unknown): value is Element =>
+  isRecord(value) &&
+  typeof value.text !== 'string' &&
+  Array.isArray(value.children) &&
+  isEditorJsonValue(value) &&
+  holdsNoMembers(value);
+
+const RESERVE_FIELDS: ReadonlySet<string> = new Set([
+  'at',
+  'author',
+  'built',
+  'change',
+  'inc',
+  'kind',
+  'node',
+  'slot',
+  'type',
+]);
+
+const isReserveMember = (value: Readonly<Record<string, unknown>>) =>
+  (value.built === undefined || value.built === true) &&
+  isReserveNode(value.node) &&
+  isReserveSlot(value.slot) &&
+  typeof value.type === 'string' &&
+  value.type.length > 0 &&
+  Object.keys(value).every((field) => RESERVE_FIELDS.has(field));
 
 const isCutTag = (value: Readonly<Record<string, unknown>>) =>
   typeof value.cut === 'string' &&
@@ -186,7 +304,7 @@ const isFormatLink = (value: unknown) =>
   Object.keys(value).every((field) => LINK_FIELDS.has(field));
 
 const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
-  const { base, id, key, over, write } = value;
+  const { base, id, key, over, split, write } = value;
 
   return (
     typeof id === 'string' &&
@@ -195,6 +313,7 @@ const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
     key.length > 0 &&
     key !== AUTHORED_MARKS_KEY &&
     isFormatWrite(write) &&
+    (split === undefined || (typeof split === 'string' && split.length > 0)) &&
     (over === undefined
       ? base === undefined
       : Array.isArray(over) &&
@@ -210,6 +329,9 @@ const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
 
 const parseMember = (value: unknown): AuthoredMember | null => {
   if (!isRecord(value)) return null;
+  if (value.kind === 'as') {
+    return isAsMember(value) ? (value as AsMember) : null;
+  }
   if (isRestsOn(value)) {
     return typeof value.ctx === 'string' &&
       value.ctx.length > 0 &&
@@ -229,9 +351,14 @@ const parseMember = (value: unknown): AuthoredMember | null => {
     !Number.isFinite(at) ||
     (inc !== undefined && (typeof inc !== 'string' || inc.length === 0)) ||
     typeof kind !== 'string' ||
-    (kind !== 'held' && !ELEMENT_KINDS.has(kind as AuthoredMarkKind))
+    (kind !== 'held' &&
+      kind !== 'reserve' &&
+      !ELEMENT_KINDS.has(kind as AuthoredMarkKind))
   ) {
     return null;
+  }
+  if (kind === 'reserve') {
+    return isReserveMember(value) ? (value as ReserveMember) : null;
   }
   if (kind === 'format') {
     return isFormatTag(value) ? (value as AuthoredMark) : null;
@@ -343,6 +470,12 @@ const visitMarks = (
           restsOn(member.ctx, at);
           continue;
         }
+        if (member.kind === 'as') {
+          if (isText) {
+            throw new AuthoredMarkError('Only an element shows as values.', at);
+          }
+          continue;
+        }
         const follows =
           member.kind === 'insert' && member.follows !== undefined;
         const stacked = member.kind === 'format' && member.over !== undefined;
@@ -361,9 +494,15 @@ const visitMarks = (
         if (follows && isText) {
           throw new AuthoredMarkError('Only a block follows a join.', at);
         }
-        const kind = member.kind === 'held' ? 'delete' : member.kind;
-
-        if (!(isText ? TEXT_KINDS : ELEMENT_KINDS).has(kind)) {
+        if (member.kind === 'reserve') {
+          if (isText) {
+            throw new AuthoredMarkError('A spare block cannot mark text.', at);
+          }
+        } else if (
+          !(isText ? TEXT_KINDS : ELEMENT_KINDS).has(
+            member.kind === 'held' ? 'delete' : member.kind
+          )
+        ) {
           throw new AuthoredMarkError(
             `A ${member.kind} mark cannot mark ${isText ? 'text' : 'an element'}.`,
             at

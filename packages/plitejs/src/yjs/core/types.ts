@@ -100,7 +100,11 @@ export type YjsCompactionApi = Readonly<{
 }>;
 
 /** Package-private diagnostics used by native tests and the benchmark. */
-export type YjsTraceMode = 'canonical-change' | 'remote-reconcile' | 'seed';
+export type YjsTraceMode =
+  | 'admission-repair'
+  | 'canonical-change'
+  | 'remote-reconcile'
+  | 'seed';
 
 export type YjsTraceFallback =
   | 'canonical-change-mirror-mismatch'
@@ -122,5 +126,6 @@ export type YjsTraceEntry = Readonly<{
   mode: YjsTraceMode;
   readTopLevelNodes?: number;
   root?: string;
+  strategy?: 'retraction' | 'rewrite';
   tokenLengthNodes?: number;
 }>;

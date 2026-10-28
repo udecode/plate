@@ -49,7 +49,6 @@ export function getReleasePlan(channel) {
   if (channel === 'beta') {
     return {
       build: ['pnpm', ['build']],
-      claimProof: ['pnpm', ['plite:release:proof']],
       hidePreStateForPublish: true,
       packageProof: ['pnpm', ['plite:release:packages']],
       publish: ['pnpm', ['changeset', 'publish', '--tag', 'beta']],
@@ -74,7 +73,6 @@ function runBetaRelease() {
 
   runCommand('pnpm', ['build']);
   runCommand('pnpm', ['plite:release:packages']);
-  runCommand('pnpm', ['plite:release:proof']);
 
   // Changesets rejects --tag in pre mode, but without it only-pre packages
   // can publish prereleases to latest. Hide pre state only for publish.

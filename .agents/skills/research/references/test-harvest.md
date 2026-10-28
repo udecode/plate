@@ -123,7 +123,7 @@ Infer an unknown lane only when the harvest's owner labels make it obvious; othe
 
 ## Discovery workflow
 
-1. Resolve the target repo: inspect the local checkout at `..`, or clone a missing `owner/repo` to `../repo-name`, as `AGENTS.md`'s Packages section says.
+1. Resolve the target repo: inspect the local checkout at `..`, or clone a missing `owner/repo` to `../repo-name`, as `AGENTS.md`'s Source authority section says.
 2. Classify the license mode before creating artifacts:
 
    ```bash

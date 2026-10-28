@@ -6,13 +6,14 @@
 //        (prints this session's "<model> @<effort>", or exits 1 when no
 //        runtime identity can be verified against its transcript)
 
-import { existsSync, readdirSync, readFileSync, readlinkSync, realpathSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import { closeSync, existsSync, fstatSync, openSync, readdirSync, readFileSync, readlinkSync, readSync, realpathSync, statSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const TAIL_BYTES = 512 * 1024;
+const TAIL_CHARS = 512 * 1024;
+const MAX_UTF8_BYTES_PER_CODE_UNIT = 3;
 
 const claudeHome = () => join(process.env.HOME ?? homedir(), '.claude');
 const codexHome = () => process.env.CODEX_HOME ?? join(process.env.HOME ?? homedir(), '.codex');
@@ -27,8 +28,16 @@ function filesUnder(dir, depth) {
 }
 
 function tailLines(path) {
-  const text = readFileSync(path, 'utf8');
-  return text.slice(Math.max(0, text.length - TAIL_BYTES)).split('\n').filter(Boolean);
+  const fd = openSync(path, 'r');
+  try {
+    const { size } = fstatSync(fd);
+    const buffer = Buffer.alloc(Math.min(size, MAX_UTF8_BYTES_PER_CODE_UNIT * TAIL_CHARS));
+    readSync(fd, buffer, 0, buffer.length, size - buffer.length);
+    const text = buffer.toString('utf8');
+    return text.slice(Math.max(0, text.length - TAIL_CHARS)).split('\n').filter(Boolean);
+  } finally {
+    closeSync(fd);
+  }
 }
 
 const parse = (line) => {
@@ -61,6 +70,7 @@ const ID = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/u;
 
 function nearestRuntime() {
   let pid = process.ppid;
+  let shell = null;
   const seen = new Set();
   while (pid > 1 && !seen.has(pid)) {
     seen.add(pid);
@@ -68,10 +78,43 @@ function nearestRuntime() {
     const match = result.match(/^(\d+)\s+(.+)$/u);
     if (!match) return null;
     const name = basename(match[2]);
-    if (name === 'claude' || name === 'codex') return { name, pid };
+    if (name === 'claude' || name === 'codex') return { name, pid, shell };
+    shell = pid;
     pid = Number(match[1]);
   }
   return null;
+}
+
+const EVAL = " && eval '";
+
+export function bashCommandOf(shellArgv) {
+  const start = shellArgv.indexOf(EVAL);
+  if (start === -1) return null;
+  let command = '';
+  for (let index = start + EVAL.length; index < shellArgv.length; ) {
+    if (shellArgv.startsWith(`'"'"'`, index)) {
+      command += "'";
+      index += 5;
+    } else if (shellArgv[index] === "'") {
+      return command;
+    } else {
+      command += shellArgv[index];
+      index += 1;
+    }
+  }
+  return null;
+}
+
+// A PreToolUse hook may rewrite a command before it runs, as rtk puts `rtk`
+// before a tool it knows, while the transcript keeps the model's text.
+export function ranAs(recorded, executed) {
+  if (recorded === executed) return true;
+  const words = recorded.split(/\s+/u).filter(Boolean);
+  const run = executed.split(/\s+/u).filter(Boolean);
+  if (run.length - words.length > Math.ceil(words.length / 2)) return false;
+  let matched = 0;
+  for (const word of run) if (word === words[matched]) matched += 1;
+  return matched === words.length;
 }
 
 export function runtimeFolder() {
@@ -110,56 +153,126 @@ export function invocationRun(identity, transcripts) {
   return { miss: results.length ? results.map((result) => result.miss).join('; ') : `no transcript of thread ${thread} exists` };
 }
 
-// Claude Code appends a Bash call to the transcript shortly after the command
-// starts and its result after it ends, so the one call still open across a
-// session's transcript and its subagents' is the command running now, and its
-// record carries the model and effort of whoever made it.
+const NOTIFIED = /<task-notification>[\s\S]*?<tool-use-id>([^<]+)<\/tool-use-id>/gu;
+const OUTPUT_FILE = /Output is being written to: (\S+?)\.?(?:\s|$)/u;
+const EXIT_LINE = /(?:^|\n)\[(?:exited with code -?\d+|killed)\]\n?$/u;
+
+function noticesOf(record) {
+  if (record.type === 'attachment' && record.attachment?.commandMode === 'task-notification') return [record.attachment.prompt];
+  if (record.type === 'queue-operation') return [record.content];
+  if (record.type !== 'user') return [];
+  const content = record.message?.content;
+  return Array.isArray(content) ? content.map((block) => block.text) : [content];
+}
+
+// Claude Code appends a message's tool calls to the transcript once the whole
+// message is written, which can be seconds after the first of them starts, and
+// each call's result once that call ends. A background call's result comes as
+// soon as it starts, and the task notification that names it comes when it ends,
+// as a user message, a queued-command attachment or a queue operation.
 function openClaudeCalls(transcripts) {
   return transcripts.flatMap(({ transcript, text }) => {
     const open = new Map();
     for (const record of text.split('\n').map(parse).filter(Boolean)) {
-      const blocks = Array.isArray(record.message?.content) ? record.message.content : [];
-      for (const block of blocks) {
-        if (record.type === 'assistant' && block.type === 'tool_use' && block.name === 'Bash') open.set(block.id, record);
-        if (record.type === 'user' && block.type === 'tool_result') open.delete(block.tool_use_id);
+      for (const notice of noticesOf(record).filter((part) => typeof part === 'string')) {
+        for (const [, id] of notice.matchAll(NOTIFIED)) open.delete(id);
+      }
+      const content = record.message?.content;
+      for (const block of Array.isArray(content) ? content : []) {
+        if (record.type === 'assistant' && block.type === 'tool_use' && block.name === 'Bash') open.set(block.id, { record, command: block.input?.command, background: block.input?.run_in_background === true, output: null });
+        if (record.type !== 'user' || block.type !== 'tool_result' || !open.has(block.tool_use_id)) continue;
+        const call = open.get(block.tool_use_id);
+        if (block.is_error || !call.background) open.delete(block.tool_use_id);
+        else call.output = OUTPUT_FILE.exec(typeof block.content === 'string' ? block.content : '')?.[1] ?? null;
       }
     }
-    return [...open.values()].map((record) => ({ runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp, transcript }));
+    return [...open.values()].map(({ record, command, output }) => ({ runtime: 'claude', model: record.message.model, effort: record.effort, at: record.timestamp, transcript, command, output }));
   });
 }
 
-function claudeVerdict(found) {
-  if (found.length === 0) return { miss: 'no Bash call is open in the session transcripts' };
-  if (found.length > 1) return { miss: `${found.length} Bash calls are open, in ${[...new Set(found.map((call) => basename(call.transcript)))].join(', ')}, not one` };
-  if (!found[0].model || !found[0].effort) return { miss: `the open Bash call in ${found[0].transcript} names no model or effort` };
-  return { run: found[0] };
+// TaskStop ends a background call with no notification, so the exit line
+// Claude Code appends to the call's output file ends it too.
+function outputEnded(path) {
+  if (!existsSync(path)) return true;
+  const fd = openSync(path, 'r');
+  try {
+    const { size } = fstatSync(fd);
+    const buffer = Buffer.alloc(Math.min(size, 64));
+    readSync(fd, buffer, 0, buffer.length, size - buffer.length);
+    return EXIT_LINE.test(buffer.toString('utf8'));
+  } finally {
+    closeSync(fd);
+  }
 }
 
-export const claudeInvocationRun = (transcripts) => claudeVerdict(openClaudeCalls(transcripts));
+// macOS ps prints argv through vis(3) with VIS_TAB | VIS_NL | VIS_NOSLASH: a
+// tab or newline as \011 or \012, another control character in caret form,
+// such as ^M or ^?, and a backslash as itself.
+export const asDarwinPsPrints = (text) => text.replace(/[\u0001-\u001f\u007f]/gu, (char) => (char === '\t' || char === '\n' ? `\\0${char.charCodeAt(0).toString(8)}` : `^${char === '\u007f' ? '?' : String.fromCharCode(char.charCodeAt(0) + 64)}`));
+const psPrints = process.platform === 'darwin' ? asDarwinPsPrints : (text) => text;
 
-// The running call can reach the transcript more than a tenth of a second
-// after the command starts, after this helper's first read.
-const FLUSH_WAIT_MS = 1000;
+// rtk's hook runs the rewrite `rtk rewrite` prints, which can replace words, as
+// `head -1 f` becomes `rtk read f --head-lines 1`.
+const hookRewrite = (command) => spawnSync('rtk', ['rewrite', command], { encoding: 'utf8', timeout: 2000 }).stdout?.trim() || null;
 
-function claudeLead(sessionId) {
+const shownForms = new Map();
+const shownAs = (recorded) => {
+  if (!shownForms.has(recorded)) shownForms.set(recorded, [recorded, hookRewrite(recorded)].filter(Boolean).map(psPrints));
+  return shownForms.get(recorded);
+};
+
+const runningCalls = (calls, command) =>
+  calls.filter((call) => !(call.output && outputEnded(call.output)) && (command === null || (typeof call.command === 'string' && shownAs(call.command).some((shown) => ranAs(shown, command)))));
+
+function claudeVerdict(found, command) {
+  if (found.length === 0) return { miss: command === null ? 'no Bash call is open in the session transcripts' : 'no open Bash call in the session transcripts runs this command' };
+  const [first] = found;
+  if (found.some((call) => call.transcript !== first.transcript || call.model !== first.model || call.effort !== first.effort)) {
+    return { miss: `${found.length} Bash calls are open, in ${[...new Set(found.map((call) => basename(call.transcript)))].join(', ')}, with more than one transcript, model or effort` };
+  }
+  if (!first.model || !first.effort) return { miss: `the open Bash call in ${first.transcript} names no model or effort` };
+  const { runtime, model, effort, at, transcript } = first;
+  return { run: { runtime, model, effort, at, transcript } };
+}
+
+export const claudeInvocationRun = (transcripts, command = null) => claudeVerdict(runningCalls(openClaudeCalls(transcripts), command), command);
+
+// Stays under the Bash tool's default two-minute timeout, so a command whose
+// record never lands still runs.
+const OWN_CALL_WAIT_MS = 60_000;
+const ANY_CALL_WAIT_MS = 1000;
+
+function claudeLead(sessionId, command) {
   if (!ID.test(sessionId ?? '')) return { miss: 'CLAUDE_CODE_SESSION_ID holds no session id' };
   const path = filesUnder(join(claudeHome(), 'projects'), 1).find((file) => file.endsWith(`/${sessionId}.jsonl`));
   if (!path) return { miss: `no ${sessionId}.jsonl transcript is under ${join(claudeHome(), 'projects')}` };
   const files = [path, ...filesUnder(join(path.slice(0, -'.jsonl'.length), 'subagents'), 0)];
-  const read = () => openClaudeCalls(files.map((transcript) => ({ transcript, text: tailLines(transcript).join('\n') })));
-  const deadline = Date.now() + FLUSH_WAIT_MS;
+  const parsed = new Map();
+  const read = () =>
+    runningCalls(
+      files.flatMap((transcript) => {
+        const { size } = statSync(transcript);
+        if (parsed.get(transcript)?.size !== size) parsed.set(transcript, { size, calls: openClaudeCalls([{ transcript, text: tailLines(transcript).join('\n') }]) });
+        return parsed.get(transcript).calls;
+      }),
+      command
+    );
+  const deadline = performance.now() + (command === null ? ANY_CALL_WAIT_MS : OWN_CALL_WAIT_MS);
   let found = read();
-  while (found.length === 0 && Date.now() < deadline) {
+  while (found.length === 0 && performance.now() < deadline) {
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 50);
     found = read();
   }
-  return claudeVerdict(found);
+  return claudeVerdict(found, command);
 }
+
+const commandOf = (pid) => bashCommandOf(execFileSync('ps', ['-ww', '-o', 'command=', '-p', String(pid)], { encoding: 'utf8' }));
 
 export function findLead() {
   try {
-    const runtime = nearestRuntime()?.name;
-    if (runtime === 'claude') return claudeLead(process.env.CLAUDE_CODE_SESSION_ID);
+    const nearest = nearestRuntime();
+    const runtime = nearest?.name;
+    if (runtime === 'claude') return claudeLead(process.env.CLAUDE_CODE_SESSION_ID, nearest.shell === null ? null : commandOf(nearest.shell));
     if (runtime !== 'codex') return { miss: 'no claude or codex process is an ancestor of this command' };
     const claudeKey = ['CLAUDECODE', 'CLAUDE_SESSION_ID', 'CLAUDE_CODE_SESSION_ID', 'CLAUDE_PID', 'CLAUDE_CODE_ENTRYPOINT'].find((key) => process.env[key]);
     if (claudeKey) return { miss: `codex runs this command, but ${claudeKey} is set` };

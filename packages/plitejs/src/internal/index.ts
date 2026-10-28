@@ -23,12 +23,15 @@ export type {
 export { assertEditorOptions, readEditorOptions } from './editor-options';
 export { failInvariant } from './fail-invariant';
 
-export { getEditorCommitSnapshot } from '../core/commit';
+export { getEditorCommitSnapshot, getEditorCommitValue } from '../core/commit';
+export { readingCovered } from '../core/property-validity';
 export {
   observeAnchorStateWork,
   type AnchorStateWork,
 } from '../core/anchor-state';
+export { readCoreWork, type CoreWork } from '../core/work';
 export { getNodeKeyDOMValue } from '../utils/node-keys';
+export { getTextSearchScope } from './text-run';
 export {
   getAnnotationStoreMetrics,
   type AnnotationStoreMetrics,
@@ -174,6 +177,7 @@ export {
   matchesCompiledSchemaTarget,
   preserveCompiledSchemaPropertyIdentity,
   resolveCompiledSchemaProperty,
+  tracksPlaces,
   type CompiledEditorSchema,
   type CompiledSchemaConstructionPlan,
   type CompiledSchemaContentProgram,
@@ -285,6 +289,7 @@ export {
   setCurrentMarks as setEditorMarks,
   setCurrentSelection as setEditorSelection,
   setTargetRuntime as setEditorTargetRuntime,
+  registerEditorTransactionGuard,
   subscribeEditorViewState,
   withEditorUpdateRootScope,
 } from '../core/public-state';

@@ -3,6 +3,9 @@ import {
   type EditorStateView,
   editorCommands,
   getPluginContributions,
+  type NodeSelection,
+  type NodeTarget,
+  PointApi,
   RangeApi,
 } from '../../../facade';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
@@ -27,11 +30,16 @@ import type {
 } from './types';
 
 const insertsAtCaret = (
-  at: unknown,
+  at: NodeSelection | NodeTarget | undefined,
   selection: ReturnType<EditorStateView['selection']>
 ) =>
   !at ||
-  (!!selection && RangeApi.isRange(at) && RangeApi.equals(at, selection));
+  (!!selection &&
+    (RangeApi.isRange(at)
+      ? RangeApi.equals(at, selection)
+      : PointApi.isPoint(at) &&
+        RangeApi.isCollapsed(selection) &&
+        PointApi.equals(at, selection.anchor)));
 
 const invalidApplyResult = () =>
   new Error(
@@ -484,9 +492,17 @@ export const InputRulesPlugin = definePlugin('inputRules', {
           InsertTextInputRuleContext['next']
         >;
 
-        return continuation.input === undefined
-          ? next.after(prefix)
-          : next.after(prefix, { ...input, ...continuation.input });
+        if (continuation.input === undefined) return next.after(prefix);
+
+        const { options, text } = continuation.input;
+        const keepsOptions =
+          !options && prefix.changes.empty && !prefix.selection;
+
+        return next.after(prefix, {
+          ...input,
+          options: keepsOptions ? input.options : options,
+          text,
+        });
       }),
     ],
   };

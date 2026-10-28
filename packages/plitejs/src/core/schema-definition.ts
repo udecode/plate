@@ -1,6 +1,7 @@
 import type { EditorNodeTypeProvider } from '../interfaces/editor';
 import type { EditorJsonValue } from '../interfaces/json';
 import type {
+  PropertyOptionsOf,
   EditorSchemaDeclaration,
   EditorSchemaDerivedDefinition,
   EditorSchemaDefinition,
@@ -43,7 +44,11 @@ import type {
 import { getDefined } from '../internal/get-defined';
 import { normalizeSetValues } from './change/transform';
 import { cloneFrozen } from './clone';
-import { getCompiledSchemaPropertyId } from './schema-compiler';
+import {
+  defaultSplitOf,
+  getCompiledSchemaPropertyId,
+  uniqueRefusalOf,
+} from './schema-compiler';
 import type { EditorSchemaSource } from './schema-source.internal';
 
 const RESERVED_PRIMARY_ROOT = 'main';
@@ -99,9 +104,9 @@ const cloneFrozenJson = <TValue>(
     return value;
   }
   if (typeof value === 'number') {
-    if (Number.isFinite(value)) return value;
+    if (Number.isFinite(value) && !Object.is(value, -0)) return value;
 
-    throw new Error(`${owner} must contain only finite JSON numbers.`);
+    throw new Error(`${owner} must contain only finite JSON numbers, not -0.`);
   }
   if (typeof value !== 'object') {
     throw new Error(`${owner} must be JSON data.`);
@@ -974,6 +979,31 @@ type PropertyCopyOptions<TDescriptor extends PropertyValueDescriptor> =
     ? Readonly<{ copy?: 'preserve' }>
     : unknown;
 
+type PropertyUniqueOptions<TDescriptor extends PropertyValueDescriptor> =
+  TDescriptor extends { readonly kind: 'set' }
+    ? Readonly<{ unique?: never }>
+    : PropertyOptionsOf<TDescriptor> extends {
+          generate: (...args: never[]) => unknown;
+        }
+      ?
+          | Readonly<{
+              copy?: 'drop';
+              landing?: 'preserve';
+              role: 'metadata';
+              split?: 'drop';
+              target: Exclude<
+                SchemaTarget,
+                Readonly<{ kind: 'parent' | 'root' | 'type' }>
+              >;
+              typeChange: 'preserve-if-allowed';
+              unique: true;
+            }>
+          | Readonly<{ unique?: never }>
+      : Readonly<{ unique?: never }>;
+
+type PropertyKeyUniqueOptions<TKey extends SchemaPropertyKey> =
+  TKey extends SchemaKeyPrefix ? Readonly<{ unique?: never }> : unknown;
+
 const assertPropertyCopyPolicy = (
   value: PropertyValueDescriptor,
   copy: SchemaTextPropertyOptions['copy'],
@@ -1046,7 +1076,9 @@ function elementProperty<
   const TOptions extends SchemaElementPropertyOptions,
 >(
   value: TDescriptor,
-  options: TOptions & PropertyCopyOptions<TDescriptor>
+  options: TOptions &
+    PropertyCopyOptions<TDescriptor> &
+    PropertyUniqueOptions<TDescriptor>
 ): SchemaElementPropertyDefinition<TDescriptor, TOptions['target']>;
 function elementProperty<
   const TKey extends SchemaPropertyKey,
@@ -1055,7 +1087,10 @@ function elementProperty<
 >(
   key: TKey,
   value: TDescriptor,
-  options: TOptions & PropertyCopyOptions<TDescriptor>
+  options: TOptions &
+    PropertyCopyOptions<TDescriptor> &
+    PropertyUniqueOptions<TDescriptor> &
+    PropertyKeyUniqueOptions<TKey>
 ): SchemaElementProperty<TKey, TDescriptor, TOptions['target']>;
 function elementProperty(
   keyOrValue: SchemaPropertyKey | PropertyValueDescriptor,
@@ -1076,25 +1111,32 @@ function elementProperty(
   if (key) assertPropertyKey(key);
   assertOnlyKeys(
     options,
-    ['copy', 'landing', 'role', 'split', 'target', 'typeChange'],
+    ['copy', 'landing', 'role', 'split', 'target', 'typeChange', 'unique'],
     'schema.elementProperty options'
   );
   assertPropertyCopyPolicy(value, options.copy, 'schema.elementProperty');
 
-  return cloneFrozenDeclaration(
-    {
-      copy: options.copy ?? 'preserve',
-      ...(key ? { key } : {}),
-      landing: options.landing ?? 'preserve',
-      placement: 'element' as const,
-      role: options.role ?? 'content',
-      split: options.split ?? 'preserve',
-      target: options.target,
-      typeChange: options.typeChange ?? 'drop',
-      value,
-    },
-    'schema.elementProperty'
-  );
+  const { unique } = options;
+  const declaration = {
+    copy: options.copy ?? (unique ? 'drop' : 'preserve'),
+    ...(key ? { key } : {}),
+    landing: options.landing ?? 'preserve',
+    placement: 'element' as const,
+    role: options.role ?? 'content',
+    split: options.split ?? (unique ? 'drop' : defaultSplitOf(value)),
+    target: options.target,
+    typeChange: options.typeChange ?? 'drop',
+    ...(unique === undefined ? {} : { unique }),
+    value,
+  };
+  const refusal =
+    unique === undefined
+      ? null
+      : uniqueRefusalOf({ ...declaration, key: key ?? '', unique });
+
+  if (refusal) throw new Error(`schema.elementProperty ${refusal}.`);
+
+  return cloneFrozenDeclaration(declaration, 'schema.elementProperty');
 }
 
 const keyPrefix = <const TPrefix extends string>(

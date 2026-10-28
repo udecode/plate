@@ -1,9 +1,12 @@
 import { type FocusEvent, type MouseEvent, useCallback, useRef } from 'react';
 
 import { SelectionApi } from '../..';
+import { holdsCaret } from '../../core/view-carets';
 import { isDOMNode } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { readPliteViewSelection } from '../view-selection';
+import { findMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { prepareEditableFocusMouseKernel } from './editing-kernel';
 import {
   getNestedEditableDOMSelectionRoot,
@@ -205,6 +208,11 @@ export const useRuntimeFocusMouseEvents = ({
         getNestedEditableDOMSelectionRoot(editorElement)
       ) {
         nativeInternalFocusRef.current = false;
+        // While this editor holds the caret, the nested editor's DOM
+        // selection no longer marks where typing goes.
+        if (holdsCaret(editor) && !readPliteViewSelection(editor)) {
+          syncDOMSelectionToEditor();
+        }
         publishFocusState();
         return;
       }
@@ -416,6 +424,9 @@ export const useRuntimeFocusMouseEvents = ({
       if (!handled) {
         selection.syncDOMSelectionFromRuntime();
       }
+      findMountedEditableDOMRuntime(
+        event.currentTarget
+      )?.unreadPress.released();
     },
     [domPhaseScheduler, editor, onMouseUp, selection, syncDOMSelectionToEditor]
   );

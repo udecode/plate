@@ -427,7 +427,7 @@ export const registryFeatures: Registry['items'] = [
     },
   },
   {
-    dependencies: ['pele@1.6.0'],
+    dependencies: ['pele@1.9.0'],
     files: [
       {
         path: 'components/editor/code-block-diagram-mermaid.ts',

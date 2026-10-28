@@ -515,14 +515,20 @@ const entry = id ? elementId.read.entry(id) : undefined;
 
 Configure `initialState.generateId` to replace the default full-length
 `nanoid()` generator. Include `ElementIdPlugin` in the target passed to
-`defineDocumentMigrations`. Current-document admission fills missing IDs and
-rejects duplicate IDs before the editor is created. A historical migration
-step must convert numeric IDs or legacy property names and define the
-application's collision policy.
+`defineDocumentMigrations`. The plugin declares its `id` with `unique: true`,
+so no commit or load leaves two elements with one ID. Current-document
+admission fills missing IDs before the editor is created. When two elements
+hold one ID, the first in document order keeps it and every later one gets a
+fresh ID. An insert or update that stores a held ID lands with a fresh one. The
+migration boundary refuses a document that holds one ID twice, so a historical
+migration step must convert numeric IDs, legacy property names or repeated IDs
+and define the application's collision policy.
 
 The application schema can narrow the plugin-owned `id` target. Current
 document admission generates and retains IDs only for elements that match the
-compiled target.
+compiled target. A narrowed target must match every type that can take a
+matched type's place, so `target.group("block")` works while no element's
+content admits both a block and an inline element.
 
 ```ts
 const editor = createEditor({

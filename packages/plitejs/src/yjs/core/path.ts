@@ -1,11 +1,5 @@
 import type { Path } from '../../index';
 
-export const lastPathIndex = (path: Path): number | undefined => {
-  const index = path.length - 1;
-
-  return index < 0 ? undefined : path[index];
-};
-
 export const copyPath = (path: Path): Path => {
   const copy = new Array<number>(path.length);
 
@@ -70,24 +64,4 @@ export const nextPath = (path: Path): Path => {
   next[lastIndex] = index + 1;
 
   return next;
-};
-
-export const pathsEqual = (
-  left: readonly number[],
-  right: readonly number[]
-): boolean => {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  let index = 0;
-
-  while (index < left.length) {
-    if (left[index] !== right[index]) {
-      return false;
-    }
-    index += 1;
-  }
-
-  return true;
 };

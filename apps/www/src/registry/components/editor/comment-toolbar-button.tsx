@@ -152,34 +152,36 @@ function AllCommentsDialog({
 }) {
   const editor = useEditor();
   const { api: comments } = editor.plugin(CommentsPlugin);
-  const [, updateThreadVersion] = React.useReducer(
-    (value: number) => value + 1,
-    0
-  );
-  React.useEffect(
-    () => comments.subscribeThreads(updateThreadVersion),
-    [comments]
-  );
-  const snapshot = comments.getSnapshot();
   const [filter, setFilter] = React.useState<CommentFilter>('all');
   const [page, setPage] = React.useState(0);
   const blockedIdsRef = React.useRef<ReadonlySet<string>>(new Set());
   const [blockedIds, setBlockedIds] = React.useState<ReadonlySet<string>>(
     () => new Set()
   );
-  const eligibleIds = snapshot.threadIds.toReversed().filter((id) => {
-    const thread = comments.getThread(id);
-    if (!thread || thread.status !== 'published') return false;
-    if (filter === 'open') return thread.resolution === null;
-    if (filter === 'resolved') return thread.resolution !== null;
-    return true;
-  });
+  // Joined into one string so an unchanged list keeps its snapshot.
+  const readEligibleIds = () =>
+    comments
+      .getSnapshot()
+      .threadIds.toReversed()
+      .filter((id) => {
+        const thread = comments.getThread(id);
+        if (!thread || thread.status !== 'published') return false;
+        if (filter === 'open') return thread.resolution === null;
+        if (filter === 'resolved') return thread.resolution !== null;
+        return true;
+      })
+      .join('\n');
+  const eligible = React.useSyncExternalStore(
+    comments.subscribeThreads,
+    readEligibleIds,
+    readEligibleIds
+  );
+  const eligibleIds = eligible ? eligible.split('\n') : [];
   const pageCount = Math.max(1, Math.ceil(eligibleIds.length / PAGE_SIZE));
   const currentPage = Math.min(page, pageCount - 1);
-  const pageIds = React.useMemo(
-    () =>
-      eligibleIds.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE),
-    [currentPage, eligibleIds]
+  const pageIds = eligibleIds.slice(
+    currentPage * PAGE_SIZE,
+    (currentPage + 1) * PAGE_SIZE
   );
   const [heldIds, setHeldIds] = React.useState<readonly string[]>([]);
   const blocked = blockedIds.size > 0;
@@ -322,18 +324,15 @@ function AllCommentsRow({
     },
     [comments, editor]
   );
-  const getSnapshot = React.useCallback(() => {
-    const target = readCommentTarget(editor, id);
-    return target.status === 'attached'
-      ? JSON.stringify(target.range)
-      : 'unavailable';
-  }, [editor, id]);
-  const targetSnapshot = React.useSyncExternalStore(
+  const getSnapshot = React.useCallback(
+    () => readCommentTarget(editor, id).status,
+    [editor, id]
+  );
+  const targetStatus = React.useSyncExternalStore(
     subscribe,
     getSnapshot,
     getSnapshot
   );
-  const target = readCommentTarget(editor, id);
 
   if (!thread) return null;
 
@@ -344,22 +343,20 @@ function AllCommentsRow({
         blocked && 'has-[[aria-busy=true]]:ring-1'
       )}
       data-all-comments-row={id}
-      data-target={
-        targetSnapshot === 'unavailable' ? 'unavailable' : 'attached'
-      }
+      data-target={targetStatus}
     >
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{thread.resolution ? 'Resolved' : 'Open'}</span>
           <span aria-hidden="true">·</span>
           <span>
-            {target.status === 'attached'
+            {targetStatus === 'attached'
               ? 'Attached to document'
               : 'Target unavailable in this view'}
           </span>
         </div>
         <Button
-          disabled={blocked || target.status === 'unavailable'}
+          disabled={blocked || targetStatus === 'unavailable'}
           onClick={onNavigate}
           size="sm"
           variant="outline"

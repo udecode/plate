@@ -3858,10 +3858,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:5aa63bdf88aac8f8",
+  "fingerprint": "fnv1a64:3e2999c45df78b21",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:5aa63bdf88aac8f8",
+    "fingerprint": "fnv1a64:3e2999c45df78b21",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -8006,6 +8006,7 @@
     ]
   },
   "revision": 1,
+  "storageRevision": 1,
   "roots": [],
   "unknown": "reject",
   "vocabulary": {

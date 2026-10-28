@@ -4,10 +4,11 @@
 // Points this clone's origin/HEAD at origin/<branch>, the working branch that
 // .agents/pstack.json names, when the config also names a protected branch.
 // The desktop app cuts every new worktree from origin/HEAD, and
-// `git remote set-head origin --auto` copies the remote's default branch, which
-// is the protected one. It writes nothing when the config names no protected
-// branch, when origin has no such branch, or when origin/HEAD already points
-// there, and prints one line when it moves origin/HEAD.
+// `git remote set-head origin --auto` copies whatever branch the remote calls
+// its default, which can be the protected one and can change on the remote.
+// It writes nothing when the config names no protected branch, when origin
+// has no such branch, or when origin/HEAD already points there, and prints one
+// line when it moves origin/HEAD.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';

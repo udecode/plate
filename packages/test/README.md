@@ -54,6 +54,7 @@ Runtime labels describe where the exported module executes. Node-hosted tools re
   - zero-width placeholder inspection: `inspectZeroWidthPlaceholder`
 - `@platejs/test/playwright`
   - start here for browser proof work
+  - `test` and `expect`: Playwright's, plus `editor-state.json` saved in a failed test's results folder
   - editor-first Playwright harness
   - Chromium CDP IME helpers
   - real clipboard write + browser paste helpers
@@ -106,8 +107,7 @@ Every receipt records real device, OS, browser, the exact expected source commit
 ## First Playwright Test
 
 ```ts
-import { expect, test } from '@playwright/test';
-import { openExample } from '@platejs/test/playwright';
+import { expect, openExample, test } from '@platejs/test/playwright';
 
 test('types through the browser editor', async ({ page }) => {
   const editor = await openExample(page, 'plaintext', {

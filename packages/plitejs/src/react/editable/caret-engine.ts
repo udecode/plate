@@ -14,6 +14,7 @@ import {
   type Selection,
   SelectionApi,
 } from '../..';
+import { capturePlacement } from '../../core/view-carets';
 import { Hotkeys } from '../../dom';
 import {
   type DOMCoverageSession,
@@ -65,6 +66,7 @@ import {
   getSelectableOwnerAncestorNodeSelection,
   getSelectableOwnerNodeSelection,
 } from './selection-void-target';
+import { claimPageSelection } from './unread-press';
 
 export type EditableCaretMovementResult = {
   handled: boolean;
@@ -190,7 +192,8 @@ const writeMainRootViewSelection = (
   editor: ReactRuntimeEditor,
   selection: Range | null,
   rootElement: HTMLElement | undefined,
-  domPhaseScheduler: DOMPhaseScheduler
+  domPhaseScheduler: DOMPhaseScheduler,
+  placedAt: number
 ) => {
   const viewSelection = profilePliteReactDuration(
     'caret.main-root-view-selection.create',
@@ -203,13 +206,17 @@ const writeMainRootViewSelection = (
         : null
   );
 
-  profilePliteReactDuration('caret.main-root-view-selection.write', () => {
-    writePliteViewSelection(editor, viewSelection);
-  });
+  const shown = profilePliteReactDuration(
+    'caret.main-root-view-selection.write',
+    () => writePliteViewSelection(editor, viewSelection, { placedAt })
+  );
+
+  if (!shown || !viewSelection) return;
   profilePliteReactDuration(
     'caret.main-root-view-selection.clear-native',
     () => {
       clearNativeSelectionForViewSelection(
+        editor,
         viewSelection,
         rootElement,
         domPhaseScheduler
@@ -219,29 +226,32 @@ const writeMainRootViewSelection = (
 };
 
 const clearNativeSelectionForViewSelection = (
-  viewSelection: PliteViewSelection | null,
+  editor: ReactRuntimeEditor,
+  viewSelection: PliteViewSelection,
   rootElement: HTMLElement | undefined,
   domPhaseScheduler: DOMPhaseScheduler
 ) => {
-  if (!viewSelection || !rootElement) {
+  if (!rootElement) {
     return;
   }
 
-  const clear = () => {
+  const clearWhileShown = () => {
+    if (readPliteViewSelection(editor) !== viewSelection) return;
+    if (!claimPageSelection()) return;
     writeDOMSelection(rootElement.getRootNode() as Document | ShadowRoot, null);
   };
 
-  clear();
+  clearWhileShown();
   domPhaseScheduler.schedule(
     'selection-repair',
     'clear-caret-view-selection-microtask',
-    clear,
+    clearWhileShown,
     { timing: 'microtask' }
   );
   domPhaseScheduler.schedule(
     'selection-repair',
     'clear-caret-view-selection-frame',
-    clear,
+    clearWhileShown,
     { timing: 'animation-frame' }
   );
 };
@@ -407,29 +417,37 @@ const moveSelectionAndRespectBoundaries = ({
   viewSelectionRootElement?: HTMLElement;
 }) => {
   writePliteViewSelection(editor, null);
-  if (updatePolicy) {
-    editor.update(updatePolicy, () => {
-      move();
-    });
-  } else {
-    editor.update(() => {
-      move();
-    });
-  }
-  restoreSelectionIfMovementEnteredBoundary({
-    coverage,
-    boundarySkipUnit,
-    editor,
-    preserveAnchorOnBoundarySkip,
-    previousSelection: selection,
-    reverse,
+  const moved = capturePlacement(editor, () => {
+    if (updatePolicy) {
+      editor.update(updatePolicy, () => {
+        move();
+      });
+    } else {
+      editor.update(() => {
+        move();
+      });
+    }
   });
+  const placedAt = capturePlacement(
+    editor,
+    () =>
+      restoreSelectionIfMovementEnteredBoundary({
+        coverage,
+        boundarySkipUnit,
+        editor,
+        preserveAnchorOnBoundarySkip,
+        previousSelection: selection,
+        reverse,
+      }),
+    moved
+  );
   if (writeViewSelection) {
     writeMainRootViewSelection(
       editor,
       getSelectionDOMRange(editor, getEditorSelection(editor)),
       viewSelectionRootElement,
-      domPhaseScheduler
+      domPhaseScheduler,
+      placedAt
     );
   }
 };
@@ -1015,17 +1033,22 @@ export const applyEditableCaretMovement = ({
         plainVerticalLargeDocumentPlugin.target,
       focus: plainVerticalLargeDocumentPlugin.target,
     };
-    profilePliteReactDuration('caret.large-document-select', () => {
-      editor
-        .update(largeDocumentVerticalSelectionUpdatePolicy)
-        .selection.set(nextSelection);
-    });
+    const placedAt = profilePliteReactDuration(
+      'caret.large-document-select',
+      () =>
+        capturePlacement(editor, () => {
+          editor
+            .update(largeDocumentVerticalSelectionUpdatePolicy)
+            .selection.set(nextSelection);
+        })
+    );
     profilePliteReactDuration('caret.large-document-view-selection', () => {
       writeMainRootViewSelection(
         editor,
         nextSelection,
         event.currentTarget,
-        domPhaseScheduler
+        domPhaseScheduler,
+        placedAt
       );
     });
 

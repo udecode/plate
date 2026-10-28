@@ -21,8 +21,9 @@ Handle the requested page, feature or documentation audit. An audit reports
 source-backed gaps; edits stay within the requested scope. General prose in
 plans, reports, READMEs and PR descriptions goes directly to `pstack:technical-writing`.
 For a tiny copy edit, read the text and resolve changed links without loading
-unrelated docs mechanics; an English page edit still rebuilds the docs
-registry where the verify table's registry row applies.
+unrelated docs mechanics; it still runs the verify table's docs audits, and an
+English page edit still rebuilds the docs registry where its registry row
+applies.
 
 Read the target page, its nearest useful sibling, and the source that owns each
 changed claim. Start from the current source and public exports. Docs describe
@@ -117,6 +118,7 @@ only when adding, moving, merging or deleting routes or changing navigation.
 | Prose or link only | Read the edited text and resolve changed links; preserve code and metadata |
 | MDX structure or examples | `pnpm --filter www build:source`; verify symbols, imports and fence content against source |
 | Docs source parity or generated docs | `pnpm --filter www check:docs` |
+| Any `content/docs` edit | `node tooling/scripts/check-plite-docs.mjs` and `node tooling/scripts/check-plate-doc-code-contracts.mjs`, the docs audits that `pnpm check` runs in its plite-docs and core-audits steps, which otherwise first run at landing |
 | An edit to an English `content/docs` page or the root `meta.json`, where the branch's registry-generation rule allows a local build | `pnpm --filter www build:registry` once after the final prose pass, then `pnpm --filter www build:registry --check`; when an earlier link of `check:docs` or the www typecheck chain is red at `HEAD`, run each later link on its own |
 | New/moved route or navigation | Parse changed metadata and request the exact route; inspect pager/sidebar when they changed |
 | Preview or visible component behavior | Resolve the real demo and use [`verify`](../verify/SKILL.md) on that exact route/state |

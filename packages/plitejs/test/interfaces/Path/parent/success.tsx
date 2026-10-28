@@ -1,8 +1,0 @@
-/** @jsxRuntime classic */
-/** @jsx jsx */
-
-import { PathApi } from 'plitejs';
-
-export const input = [0, 1];
-export const test = (path) => PathApi.parent(path);
-export const output = [0];

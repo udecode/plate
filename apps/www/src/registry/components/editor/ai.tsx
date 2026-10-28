@@ -4,6 +4,7 @@ import { BaseParagraphPlugin } from 'platejs';
 import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
 import {
   EditorText,
+  useEditorSelector,
   usePluginStore,
   type EditorTextProps,
   type RenderNodeWrapperProps,
@@ -33,12 +34,13 @@ export function AILeaf(props: EditorTextProps<typeof AIPlugin>) {
 
 function AIInlinePreview({
   children,
-  editor,
   element,
 }: RenderNodeWrapperProps<typeof AIChatTransportPlugin>) {
-  const replacesEmptyParagraph =
-    element.type === editor.plugin(BaseParagraphPlugin).schema.type &&
-    editor.read.nodes.isEmpty(element);
+  const replacesEmptyParagraph = useEditorSelector(
+    (editor) =>
+      element.type === editor.plugin(BaseParagraphPlugin).schema.type &&
+      editor.read.nodes.isEmpty(element)
+  );
   return (
     <div data-editor-ai-preview-wrapper="">
       <div hidden={replacesEmptyParagraph}>{children}</div>

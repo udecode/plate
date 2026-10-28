@@ -169,8 +169,16 @@ lifecycle behavior.
 Property descriptors define JSON value laws. Use `property.boolean()`,
 `property.string()`, `property.number()`, `property.enum(values)`,
 `property.json()`, or
-`property.set(item)`. All values use structural equality; defaults can be
-omitted canonically with `{ default, omitDefault: true }`.
+`property.set(item)`. All values use structural equality. A number in a
+default or any other schema value must be finite and not `-0`, because saved
+JSON cannot tell `-0` from `0`.
+`{ default, omitDefault: true }` leaves the default out of a node until a
+transaction writes the property. The editor stores a written value even when it
+equals the default, so a stored key always means someone wrote it.
+
+A property key's `split` rule must be the same in every declaration that covers
+that key, prefix keys included. The compiler refuses a schema whose split rule
+for one key differs by place.
 
 Element-owned fields live in the element declaration's `properties` map.
 Cross-cut element fields use `schema.elementProperty(...)` with an explicit
@@ -222,8 +230,12 @@ const properties = [
 ];
 ```
 
-Toggling one member removes active conflicting members. Schema validation and
-collaboration projection enforce the same invariant.
+Toggling one member removes active conflicting members. A member that holds a
+default its declaration leaves out is not active; a member that holds a default
+its place fills is. Schema validation and collaboration projection enforce the
+same invariant. Every declaration that covers a member's key, prefix keys
+included, must leave out the same default or leave out none, or the schema
+fails to compile.
 
 Targets are frozen syntax, not callbacks. Compose `target.type`,
 `target.types`, `target.group`, `target.root`, `target.parent`, `target.and`,

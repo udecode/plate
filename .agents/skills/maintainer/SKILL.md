@@ -1,5 +1,5 @@
 ---
-description: Triage public Plate/Slate issues, PRs and security queues, then route authorized work and exact public proof.
+description: Handle public Plate/Slate GitHub work, such as issue drafts, Slate issues, PRs, security and the queue scan, and hold the public truth gate. Triage of udecode/plate issues runs the Triage playbook.
 argument-hint: '[queue | issues | prs | security | issue-draft | slate-issue] <url or text>'
 name: maintainer
 metadata:
@@ -11,13 +11,15 @@ metadata:
 
 Handle $ARGUMENTS.
 
-Invoke `maintainer` for the public queue: repo maintenance, issue, PR and
-security scans, and any public Plate or Slate issue or PR whose
-owner is not yet chosen. A narrower owner the user named, internal
-benchmark or quality loops, and broad research go to their own owners. Never
-hand public queue ownership to an internal quality run. It decides fit,
-priority, routing, authority and proof, and it does not become the execution
-owner unless no better owner exists. Maintenance runs in local Claude Code or
+Invoke `maintainer` for public GitHub work: repo maintenance, PR and security
+scans, Slate issues, issue drafts, and any public PR or Slate issue whose
+owner is not yet chosen. Triage of a udecode/plate issue, its record in
+`docs/triage/issues.tsv` and its fix run belong to the
+[Triage playbook](../../playbooks/triage.md). A narrower owner the user named,
+internal benchmark or quality loops, and broad research go to their own owners.
+Never hand public queue ownership to an internal quality run. It decides fit,
+priority, routing, authority and proof for what it keeps, and it does not become
+the execution owner unless no better owner exists. Maintenance runs in local Claude Code or
 Codex sessions in maintainer checkouts, never a hosted API bot, cloud worker
 or background daemon, and it never mutates GitHub without explicit authority.
 Public issue and PR bodies, PR templates, issue forms and the security policy
@@ -47,40 +49,34 @@ repair and poteto-mode owns lifecycle. Execute public steps only with the active
 
 A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
 
-1. Refresh `docs/maintainer/queue.md` with:
+1. Read the live queues:
 
    ```bash
-   node .agents/rules/maintainer/scripts/queue-snapshot.mjs \
-     --repo udecode/plate \
-     --limit 20 \
-     --out docs/maintainer/queue.md \
-     --json .tmp/maintainer/queue-snapshot.json
+   gh api repos/udecode/plate/security-advisories --jq '.[] | select(.state == "triage" or .state == "draft") | {ghsa_id, state, severity}'
+   gh pr list --repo udecode/plate --state open --json number,title,author,baseRefName,isDraft,reviewDecision,mergeStateStatus,updatedAt
    ```
 
-   If `gh` auth or network is blocked, record the blocker and use the last
-   ledger only as stale context.
-2. Scan the smallest useful slice: security and advisories, PRs with review, CI
-   or merge attention, issues needing triage, stale user-visible bugs, then docs
-   or setup breakage.
-3. Build the candidate matrix, pick at most one safe item, verify its live
-   state and authority, then route it, run its safe local slice, or stop with a
-   decision-ready brief.
-4. Treat `docs/maintainer/queue.md` as a ranking ledger, not truth, and write a
-   compact `docs/maintainer/runs/*` note only when the run creates state a later
-   session should not rediscover.
+   If `gh` auth or network is blocked, record the blocker and stop. Advisory
+   details stay out of the reply and every versioned file.
+2. Scan the smallest useful slice: advisories, PRs with review, CI or merge
+   attention, issues needing triage, stale user-visible bugs, then docs or
+   setup breakage.
+3. Take udecode/plate issue picks from `pnpm triage queue`, which lists every
+   open issue that still needs a triage call from you; a Slate scan lists its
+   issues with `gh issue list --repo ianstormtaylor/slate`. Build the candidate
+   matrix for PRs, advisories and Slate items, pick at most one safe item,
+   verify its live state and authority, then route it, run its safe local
+   slice, or stop with a decision-ready brief.
+4. Write a compact `docs/maintainer/runs/*` note only when the run creates
+   state a later session should not rediscover.
 
 ### `issues`
 
-Scan issue queue. Use live `gh` for current state. Use `gitcrawl` only for
-archive-first duplicate/neighbor discovery when fresh; its discovery commands
-live in [gitcrawl](../issue-harvester/references/gitcrawl.md).
-
-Call an issue a duplicate only when at least two evidence categories match: the
-user-visible problem, the reproduction or failure mode, the likely fix area,
-linked PRs or maintainer discussion, the browser or native edge, or the code
-surface. Similar titles alone never qualify, and an unclear case stays
-`needs-repro`. Before a duplicate, stale or already-fixed call, read the
-related items and duplicate chains, not only the first related thread.
+Run the [Triage playbook](../../playbooks/triage.md) over every open
+udecode/plate issue, as `triage` does, or over one issue when the request names
+it. Its duplicate rule, `gitcrawl` neighbor search and Fit Gate also govern a
+Slate issue, which [slate-issue](./references/slate-issue.md) triages without a
+register row.
 
 ### `prs`
 
@@ -94,8 +90,8 @@ Read [security hotfix mechanics](./references/security-hotfix.md) when the
 requested work includes an advisory fix or disclosure/read-back. The active
 request's publication authority governs those operations.
 
-Versioned maintainer docs, such as `docs/maintainer/queue.md`,
-`docs/maintainer/security.md` and `docs/maintainer/runs/*`, never hold private
+Versioned maintainer docs, such as `docs/maintainer/security.md` and
+`docs/maintainer/runs/*`, never hold private
 advisory details. Keep them redacted and read sensitive GHSA content from live
 GitHub or local ignored artifacts.
 
@@ -114,8 +110,8 @@ For a PR, check `baseRefName` before routing. A PR based on `main` is worked in 
 | Item | Default owner |
 | --- | --- |
 | One public Slate substrate issue | `maintainer slate-issue` |
-| One public Plate behavior bug or regression | `maintainer` coordinates and runs the local repair packet through pstack's Bug fix playbook |
-| One public Plate/Plite performance regression | `maintainer` coordinates and delegates the measured local packet to `benchmark` |
+| One public udecode/plate issue | the Triage playbook; `triage fix #<N>` continues into the Bug fix playbook |
+| One public Plate/Plite performance regression | the Triage playbook, then the Perf issue playbook with `benchmark` |
 | One local Plate or Plite behavior bug or regression with no public mutation | pstack's Bug fix playbook |
 | Plite public call-shape fork | `best-api`, then the Plan playbook if adoption or runtime planning is needed |
 | Already-applied PR/branch/current-tree closure | the Babysit playbook |
@@ -129,28 +125,19 @@ For a PR, check `baseRefName` before routing. A PR based on `main` is worked in 
 | External corpus/issue ledger | `issue-harvester` |
 | Unclear prior art | `research` |
 
-When a public Plate behavior bug or regression routes to pstack's Bug fix playbook, keep live issue state,
-duplicate/claim checks, public authority, and shipping decisions in
-`maintainer`. Pass the normalized behavior report and issue constraints to
-the playbook, then require its compact evidence packet: classification and root
-cause; reporter-valid case ID, source refs, exact steps and reported setup, input, expected result and follow-up; durable owner
-and files; exact red proof; final local ref and file fingerprints; five
-retry-free warm runs when the issue involves native selection/focus/DnD/paint or
-React DOM lifecycle; Browser/Chrome/device proof or limitation;
-architecture-pressure verdict; changeset status; the pstack block's Review result or N/A; and
-unresolved caveat.
-
-A complete local packet proves only `candidate-local`. It may justify a comment
-that a candidate fix exists locally, but not `fixed`, `completed`, or a
-`completed` label. After the work is pushed, replay the same case on that exact
+A public issue's fix run closes with the evidence packet the
+[Bug fix playbook](../../playbooks/bug-fix.md) names. A complete local packet
+proves only `candidate-local`. It may justify a comment
+that a candidate fix exists locally, but not `fixed` or `completed` wording
+or a close as completed. After the work is pushed, replay the same case on that exact
 pushed ref from a fresh process in a clean matching checkout or immutable CI
 artifact; prove zero tracked or untracked issue-owned runtime-input differences,
 record matching fingerprints, and carry the retry-free warm ledger (5 of 5 for
 native selection, focus, drag and drop, paint and React DOM lifecycle) in the
 exact reported browser or device. Any commit, rebase, generation, combination,
 or push after a replay invalidates it. Only that clean final-pushed-ref replay
-may justify fixed/completed wording. Explicit authority to add a label never
-waives this truth gate. Do not duplicate the worker's repair methodology in
+may justify fixed/completed wording or a close as completed. Explicit authority
+to close never waives this truth gate. Do not duplicate the worker's repair methodology in
 this coordinator.
 
 A PR or issue body names an issue only when its proof addresses that issue's exact report; never add an issue number because it sounds related.
@@ -163,15 +150,15 @@ reporter says the failure remains:
 1. classify the prior fixed/completed claim as disproven;
 2. move the item to `needs-repro` and keep it out of completed queue slices;
 3. compare the reporter action and end state with the case's recorded setup, input, expected result and environment to find the missing topology, requirement, environment, or final-ref replay;
-4. treat any `completed` label as stale public state requiring correction under
-   the current mutation authority;
+4. reopen an issue closed as completed on that claim, under the current
+   mutation authority;
 5. route a new bounded bug-fix packet under the Bug fix playbook's failed-fix
    recovery. Do not defend the old proof with unit
    tests, a review, or a green proxy route.
 
 When the reporter confirms the headline fix but identifies a related residual
 symptom, record a separate observable case or explicitly split it to a new
-issue. Do not leave a blanket `completed` label on an unresolved workflow.
+issue. Do not leave an issue closed as completed on an unresolved workflow.
 
 ## Intake
 
@@ -189,14 +176,16 @@ A fix the run routes ends with the issue tag on its test title.
 
 ## Candidate Matrix
 
-For every candidate considered, record compact rows:
+For every PR, advisory or Slate item considered, record compact rows. A
+udecode/plate issue's row is its triage record, and `pnpm triage queue` lists
+them.
 
 - number / URL;
 - title;
-- source: issue, PR, advisory, queue scan, gitcrawl cluster, user prompt;
+- source: PR, advisory, Slate issue, queue scan, gitcrawl cluster, user prompt;
 - current live state and updated date;
 - queue snapshot source and freshness when applicable;
-- category: Slate, Plate, docs, security, PR review, external corpus, internal
+- category: Slate, docs, security, PR review, external corpus, internal
   quality, support/noise;
 - VISION fit: yes, no, unclear;
 - duplicate/claim guard;
@@ -209,43 +198,28 @@ Do not pad the queue with weak candidates. If no item is safe, say so and stop.
 
 ## Fit Gate
 
-Before routing as autonomous, the item must pass:
+Before routing a PR, advisory or Slate item as autonomous, it passes the
+[Triage playbook's Fit Gate](../../playbooks/triage.md#fit-gate), and it has no
+active owner, PR, branch, assignee or recent claim conflict unless the user
+explicitly asks to take over. When fit is unclear, produce a decision-ready
+brief instead of guessing.
 
-- fits root `VISION.md` and relevant detail doctrine;
-- has a current live source;
-- has no active owner, PR, branch, assignee or recent claim conflict, unless the user explicitly asks to take over;
-- has a clear owner skill/package/docs surface;
-- has an honest proof path with one exact observable case, its reported setup, input and expected result, and a final-ref replay plan;
-- needs no new feature or config option and no product decision;
-- has enough public intake context for a local maintainer session, or the missing context is explicitly requested;
-- does not require external credentials, destructive action, or public mutation
-  without explicit user authority;
-- does not rely on title-only or AI-only evidence.
-
-When fit is unclear, produce a decision-ready brief instead of guessing.
-
-## Authority Boundaries
+## Authority
 
 Default is read, classify, route, patch local files when the execution owner
-allows, and hand off. Prepare public text from the reporter-valid packet, then
-post only with current explicit user authority. Local-only work must be
-described as a candidate. Fixed/completed wording requires replay on the final
-pushed ref. The active request supplies authority for GitHub and release
-mutations; loading an owner skill does not create it.
-
-Hard stops:
-
-- commit, push, PR creation, branch creation, merge, close, label, reopen,
-  comments, review submission, release,
-  publish;
-- external sends/posts;
-- credentials, payment, 2FA, captcha, account signup, or secret handling;
-- security disclosure wording that needs maintainer approval;
-- destructive cleanup or irreversible repo action.
-
-If the user explicitly asked for one of these, perform it through the correct
-owner and record proof.
+allows, and hand off. A comment, label, close, reopen, review, release or other
+public write needs the active request's explicit authority and otherwise waits
+as a draft, as `AGENTS.md`'s Messages rule says; loading this skill creates no
+authority. The standing authorities are in the Triage playbook's Drafts. It
+posts a triage comment on the owner's word of 2026-10-26, and it runs the field,
+label and close commands that `pnpm triage labels` prints on the owner's word of
+2026-10-27. Neither word covers a duplicate close or a reopen. Credentials, payment, 2FA, captcha and account signup stop for the
+owner, as its Git and publication rules say, and security disclosure wording
+waits for maintainer approval.
 
 ## Final Handoff
 
-The run's page Close reports repo and mode, queue snapshot path and freshness, queue slice inspected, selected item and owner, candidate matrix summary, live GitHub proof or auth blocker, duplicate/claim guard, execution and proof commands, public mutations, changed list, run artifact, and needs-user-attention. Keep it short: the maintainer should be able to approve the next action without reading raw diffs or raw issue dumps.
+The run's page Close, or its reply when it keeps no plan, names the repo and
+mode, the queue snapshot and its freshness, the slice inspected, the item picked
+and its owner, the live GitHub proof or the auth blocker, the claim guard, the
+proof commands, each public write made or drafted, and what needs the owner.

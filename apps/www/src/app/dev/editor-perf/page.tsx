@@ -2449,7 +2449,7 @@ function FanoutSurface({
 
   return (
     <div className="h-full overflow-auto p-4">
-      <EditorRoot editor={editor as any}>
+      <EditorRoot editor={editor}>
         <BenchmarkPlateContent
           className="min-h-[70vh] outline-none"
           config={config}
@@ -2523,7 +2523,7 @@ function BenchmarkEditableMount({
 }) {
   const editor = useEditor();
   const pathMap = React.useMemo(
-    () => buildElementPathMap((editor.read.children() ?? []) as Value),
+    () => buildElementPathMap(editor.read.children() ?? []),
     [editor]
   );
   const paragraphPlugin = React.useMemo(
@@ -3511,10 +3511,7 @@ function BenchmarkEditableMount({
       return undefined;
     }
 
-    const renderParagraph = pluginRenderElement(
-      editor as any,
-      paragraphPlugin as any
-    );
+    const renderParagraph = pluginRenderElement(editor, paragraphPlugin as any);
 
     return (props: RenderElementProps) => {
       const { element } = props;

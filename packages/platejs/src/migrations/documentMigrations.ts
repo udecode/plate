@@ -33,7 +33,10 @@ import {
 } from '../lib/editor/withPlite';
 import { assertElementIds } from '../lib/plugins/element-id/elementIdAdmission.internal';
 import { ElementIdPlugin } from '../lib/plugins/element-id/ElementIdPlugin';
-import { registerDocumentMigrationAuthoredCapability } from './documentMigrationAuthored.internal';
+import {
+  findDocumentMigrationAuthoredCapability,
+  registerDocumentMigrationAuthoredCapability,
+} from './documentMigrationAuthored.internal';
 import {
   getMigrationBinding,
   registerMigrationBindings,
@@ -445,10 +448,13 @@ const completeDocument = (
     authority.schema.assertDocument(value);
     if (authority.ownsElementIds) assertElementIds(value);
   };
-  const completed = completePersistedDocumentFields(
-    fitted.document,
-    authority.fields
-  );
+  // A migrated document loads, so its pending changes get the spares a load
+  // stores.
+  const repaired =
+    findDocumentMigrationAuthoredCapability(authority.target)?.repair(
+      fitted.document
+    ) ?? fitted.document;
+  const completed = completePersistedDocumentFields(repaired, authority.fields);
   const resolved = resolveSelection(fitted.selection, completed);
 
   assertTarget(completed);
@@ -545,7 +551,11 @@ export const defineDocumentMigrations = <
   }) satisfies DocumentMigrationTarget;
   registerMigrationBindings(target, compiled.modelBindings);
   if (compiled.authored) {
-    registerDocumentMigrationAuthoredCapability(target, compiled.authored);
+    registerDocumentMigrationAuthoredCapability(
+      target,
+      compiled.authored,
+      compiled.schema
+    );
   }
   const definition = Object.freeze({
     id: current.id,
@@ -616,15 +626,23 @@ const readEnvelopeSource = (
   return source;
 };
 
-/** An envelope carries its own source; raw input, envelope-shaped or not, needs one. */
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+type IsEnvelopeInput<TInput> =
+  TInput extends Readonly<{ document: unknown }>
+    ? 'children' extends keyof TInput
+      ? false
+      : true
+    : false;
+
 type MigrationOptions<TInput> = Readonly<{
   migrations: DocumentMigrations;
 }> &
-  (TInput extends PersistedDocumentInput
-    ? TInput extends Readonly<{ children: unknown }>
-      ? Readonly<{ source: number | 'current' }>
-      : Readonly<{ source?: never }>
-    : Readonly<{ source: number | 'current' }>);
+  (IsAny<TInput> extends true
+    ? Readonly<{ source?: number | 'current' }>
+    : IsEnvelopeInput<TInput> extends true
+      ? Readonly<{ source?: never }>
+      : Readonly<{ source: number | 'current' }>);
 
 /** Convert one external document into the definition's exact current envelope. */
 export const migrateDocument = <const TInput>(

@@ -52,6 +52,13 @@ renderers and event handlers. `renderPage` receives page attributes and page
 geometry. It renders page chrome without document children; the paged surface
 places editable content on the shared canvas.
 
+The paged surface places each block in an absolutely positioned box and each
+measured line at its measured position. It overrides a placed element's top and
+bottom margins, and a placed text element's top and bottom padding, so a
+renderer's vertical spacing cannot move measured lines. Put that spacing into
+`typography` block spacing. A selected block that fits on one page keeps native
+flow, so while it is selected its side padding and borders move its text.
+
 `pageView.mode` accepts `"single"` and `"spread"`. Page settings can be a
 `PageSettings` value or an `EditorStateField<PageSettings>`, so applications can
 keep shared page settings in editor state without storing derived geometry.
@@ -125,8 +132,11 @@ custom `PageLayoutEngine` receives detached immutable input and must conserve
 source ranges, fragment order, paths, and declared non-text sizes.
 
 Use `typography.block` and `typography.text` to match the rendered line height,
-spacing, font, and letter spacing. Font loading invalidates the built-in
-Pretext measurement cache for mounted paged surfaces.
+spacing, font, and letter spacing. Return named font families, such as
+`Helvetica`. Pretext measures on an `OffscreenCanvas`, and in Firefox on macOS
+`-apple-system` resolves there to a different face than the page paints. Font
+loading invalidates the built-in Pretext measurement cache for mounted paged
+surfaces.
 
 ## Roots and page settings
 

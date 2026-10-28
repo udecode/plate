@@ -1,14 +1,12 @@
 name: Feature request
 description: Propose a new Plate or Plite capability.
-title: '[Feature]: '
-labels:
-  - enhancement
+type: Feature
 body:
   - type: markdown
     attributes:
       value: |
         Help us evaluate this with concrete use cases, ownership, and tradeoffs.
-        One request per submission.
+        One request per submission. The team builds accepted features and closes pull requests from outside the team.
 
         If this is a support question, use Discussions or Discord instead.
   - type: textarea

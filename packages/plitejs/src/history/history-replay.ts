@@ -19,6 +19,7 @@ import {
 } from '../core/change/tokens';
 import { normalizeSetValues } from '../core/change/transform';
 import { getEditorSchema } from '../core/editor-runtime';
+import { constructCanonicalDocumentChange } from '../core/representation';
 import { mapSelectionThroughChange } from '../core/selection-protocol';
 import type { AnyEditor, EditorDocumentValue } from '../interfaces/editor';
 import { SelectionApi, type Selection } from '../interfaces/selection';
@@ -58,6 +59,15 @@ export const historyReplaySchemaOf = (editor: AnyEditor) => {
     canonicalize: schema.canonicalizeTextPropertiesAt,
     allows: schema.isTextPropertyAllowedAt,
     isSetValued: schema.isSetValuedProperty,
+    repairCanonical: (
+      before: JsonEditorValue,
+      change: DocumentChange,
+      after: JsonEditorValue
+    ) =>
+      constructCanonicalDocumentChange(editor, after, change, {
+        before,
+        displacement: 'none',
+      }),
   };
 };
 
@@ -425,6 +435,9 @@ const applyFormatIntent = <T extends JsonEditorValue>(
   });
 };
 
+const composeRepair = (change: DocumentChange, repair: DocumentChange) =>
+  repair.empty ? change : change.compose(repair);
+
 export const mapHistoryReplay = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,
   replay: HistoryReplay<T>,
@@ -449,17 +462,24 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
   const mappedMiddle = transformed.b.apply(mapping.after);
   if (recorded.format.size === 0) {
     const mappedAfter = transformed.a.apply(recorded.after);
+    const repair = schema.repairCanonical(
+      mapping.after,
+      transformed.b,
+      mappedAfter
+    );
+    const change = composeRepair(transformed.b, repair);
+    const after = repair.empty ? mappedAfter : repair.apply(mappedAfter);
     return {
       replay: {
-        change: transformed.b,
+        change,
         direction: replay.direction,
         record: () => ({
-          structure: transformed.b,
+          structure: change,
           format: recorded.format,
-          after: mappedAfter,
+          after,
         }),
       },
-      rest: transformed.a,
+      rest: composeRepair(transformed.a, repair),
     };
   }
   const format = new Map<string, TextFormatSpan[]>();
@@ -479,19 +499,26 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
       )
     );
   }
-  const after = applyFormatIntent(
+  const formatted = applyFormatIntent(
     schema,
     mappedMiddle,
     format,
     replay.direction
   );
-  const change = format.size
+  const formattedChange = format.size
     ? transformed.b.compose(
-        DocumentChange.between(mappedMiddle, after, {
+        DocumentChange.between(mappedMiddle, formatted, {
           isSetValued: schema.isSetValued,
         })
       )
     : transformed.b;
+  const repair = schema.repairCanonical(
+    mapping.after,
+    formattedChange,
+    formatted
+  );
+  const change = composeRepair(formattedChange, repair);
+  const after = repair.empty ? formatted : repair.apply(formatted);
   const formatChange = DocumentChange.between(middle, recorded.after, {
     isSetValued: schema.isSetValued,
   });
@@ -501,10 +528,13 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
     middle
   ).a;
   const intermediate = mapped.apply(recorded.after);
-  const rest = mapped.compose(
-    DocumentChange.between(intermediate, after, {
-      isSetValued: schema.isSetValued,
-    })
+  const rest = composeRepair(
+    mapped.compose(
+      DocumentChange.between(intermediate, formatted, {
+        isSetValued: schema.isSetValued,
+      })
+    ),
+    repair
   );
   return {
     replay: {

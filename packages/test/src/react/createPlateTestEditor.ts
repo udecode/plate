@@ -54,11 +54,10 @@ export type EditorTestActions = {
 export type EditorTestRenderResult = RenderResult;
 
 export type ReactTestEditor<
-  V extends Value = Value,
   TPlugins extends readonly SharedPluginReference[] = readonly [],
   TSchema extends EditorApplicationSchema | undefined = undefined,
 > = Editor<
-  V,
+  Value,
   RuntimePluginsFromTuple<TPlugins>,
   PlatePluginsFromTuple<TPlugins>,
   TSchema
@@ -121,22 +120,20 @@ const fireBeforeInput = (element: HTMLElement, init: InputEventInit): void => {
 };
 
 export const createTestEditor = async <
-  V extends Value = Value,
   const TPlugins extends readonly SharedPluginReference[] = readonly [],
   const TSchema extends EditorApplicationSchema | undefined = undefined,
 >(
-  options: CreateEditorOptions<V, TPlugins, TSchema>,
+  options: CreateEditorOptions<TPlugins, TSchema>,
   harnessOptions: EditorTestHarnessOptions = {}
 ): Promise<
   [
-    ReactTestEditor<V, TPlugins, TSchema>,
+    ReactTestEditor<TPlugins, TSchema>,
     EditorTestActions,
     EditorTestRenderResult,
   ]
 > => {
   const { componentProps = {}, debug = false } = harnessOptions;
   const editor = createEditor(options as any) as unknown as ReactTestEditor<
-    V,
     TPlugins,
     TSchema
   >;
@@ -292,7 +289,7 @@ export const createTestEditor = async <
     },
     rendered,
   ] as [
-    ReactTestEditor<V, TPlugins, TSchema>,
+    ReactTestEditor<TPlugins, TSchema>,
     EditorTestActions,
     EditorTestRenderResult,
   ];

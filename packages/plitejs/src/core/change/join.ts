@@ -25,8 +25,9 @@ type Range = Readonly<{ from: number; to: number }>;
 
 /**
  * A deletion that joins a line into an earlier sibling line. It removes the
- * first line's close, every line between them and the second line's open,
- * with text, whole texts or inline elements at either line's edge.
+ * first line's close, every line between them, or the one empty text between
+ * two inline lines, and the second line's open, with text, whole texts or
+ * inline elements at either line's edge.
  *
  * @internal
  */
@@ -104,11 +105,16 @@ const joinIn = (
 
   const firstNode = document.node(left.path);
   const secondNode = document.node(right.path);
+  const next = document.node([...parent, firstIndex + 1]);
+  // Neighbouring inline lines have an empty text between them, which the
+  // join removes with them.
+  const spacer =
+    secondIndex === firstIndex + 2 && isTextNode(next) && next.text === '';
 
   if (
     !isElementNode(firstNode) ||
     !isElementNode(secondNode) ||
-    !isElementNode(document.node([...parent, firstIndex + 1])) ||
+    !(isElementNode(next) || spacer) ||
     (secondNode.children.length === 1 &&
       isTextNode(secondNode.children[0]) &&
       secondNode.children[0].text === '')
@@ -398,7 +404,7 @@ const rewrite = (
   moot: (join: Join) => boolean,
   others: readonly Join[],
   other: RootChange
-): Rewrite => {
+): Rewrite | null => {
   const byFrom = new Map(joins.map((join) => [join.from, join]));
   const sections: number[] = [];
   const data: SectionData[] = [];
@@ -523,6 +529,17 @@ const rewrite = (
       );
       const split = join && splitAtJoin(document, join, position, slice);
 
+      // Only whole lines can move out from between two lines, so an insert
+      // into the empty text between two inline lines takes no rebase by
+      // position.
+      if (
+        join &&
+        !split &&
+        join.first.to <= position &&
+        position <= join.second.from
+      ) {
+        return null;
+      }
       if (join && split) {
         const at = getDefined(apart.mapPos(position, -1));
 
@@ -948,6 +965,9 @@ export const rebaseOverJoins = (
 
   const aRewrite = rewrite(a, document, aJoins, aMoot.removes, bJoins, b);
   const bRewrite = rewrite(b, document, bJoins, bMoot.removes, aJoins, a);
+
+  if (!aRewrite || !bRewrite) return null;
+
   const { a: aOverB, b: bOverA } = RootChange.transform(
     aRewrite.change,
     bRewrite.change

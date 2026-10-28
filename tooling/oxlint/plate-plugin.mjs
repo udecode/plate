@@ -3,13 +3,22 @@ import { fileURLToPath } from 'node:url';
 
 import { FAST_TEST_TIMEOUT_MS } from '../config/test-suites.mjs';
 import { privatePackageNamePattern } from '../scripts/finalize-plate-declarations.mjs';
-import { lineIdentity, readBaseline } from '../scripts/finding-baseline.mjs';
+import {
+  lineIdentity,
+  mergeBaselines,
+  readBaseline,
+} from '../scripts/finding-baseline.mjs';
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export const baselineFile = 'tooling/oxlint/plate-baseline.json';
+// The findings in files udecode/plate-private tracks, so their lines stay private.
+export const privateBaselineFile = 'tooling/oxlint/plate-baseline.private.json';
 
-const baseline = readBaseline(baselineFile);
+const baseline = mergeBaselines([
+  readBaseline(baselineFile),
+  readBaseline(privateBaselineFile),
+]);
 
 /** The environment `plate-baseline.mjs` lints with to count every instance. */
 export const reportAllEnv = { PLATE_LINT_BASELINE: 'report-all' };
@@ -66,21 +75,26 @@ export const withBaseline = (ruleName, rule, entries = baseline) => ({
   ...rule,
   baselined: true,
   create(context) {
-    if (process.env.PLATE_LINT_BASELINE === reportAllEnv.PLATE_LINT_BASELINE) {
-      return rule.create(context);
-    }
-
     const listed =
       entries[`plate/${ruleName}`]?.[relativeFilename(context)] ?? [];
+    const counted = (descriptor) => ({
+      ...descriptor,
+      data: { ...descriptor.data, baselined: String(listed.length) },
+    });
+    const reportAll =
+      process.env.PLATE_LINT_BASELINE === reportAllEnv.PLATE_LINT_BASELINE;
     const found = [];
     const descriptors = Object.getOwnPropertyDescriptors(context);
     descriptors.report = {
       ...descriptors.report,
-      value: (descriptor) => found.push(descriptor),
+      value: reportAll
+        ? (descriptor) => context.report(counted(descriptor))
+        : (descriptor) => found.push(descriptor),
     };
     const visitors = rule.create(
       Object.create(Object.getPrototypeOf(context), descriptors)
     );
+    if (reportAll) return visitors;
     const exit = visitors['Program:exit'];
 
     return {
@@ -99,10 +113,7 @@ export const withBaseline = (ruleName, rule, entries = baseline) => ({
             unlisted.splice(index, 1);
             continue;
           }
-          context.report({
-            ...descriptor,
-            data: { ...descriptor.data, baselined: String(listed.length) },
-          });
+          context.report(counted(descriptor));
         }
       },
     };
@@ -198,22 +209,37 @@ const noAnnotatedInferredCallback = {
   },
 };
 
+const valuesOf = (context, node) =>
+  node.type === 'Identifier' ? writtenValues(context, node) : [node];
+
+const largestNumber = (context, node) =>
+  Math.max(
+    ...valuesOf(context, node).map((value) => numericValue(value) ?? -1)
+  );
+
 // Bun takes the timeout as a trailing number or options object; node:test
 // takes the options object before the callback.
-const timeoutOf = (node) => {
+const timeoutOf = (context, node) => {
   for (const argument of node.arguments) {
-    if (argument.type !== 'ObjectExpression') continue;
-    const property = argument.properties.find(
-      (entry) =>
-        entry.type === 'Property' &&
-        !entry.computed &&
-        (entry.key.name ?? entry.key.value) === 'timeout'
-    );
-    if (property) return { ms: numericValue(property.value), node: property };
+    for (const value of valuesOf(context, argument)) {
+      if (value.type !== 'ObjectExpression') continue;
+      const property = value.properties.find(
+        (entry) =>
+          entry.type === 'Property' &&
+          !entry.computed &&
+          (entry.key.name ?? entry.key.value) === 'timeout'
+      );
+      if (property) {
+        return {
+          ms: largestNumber(context, property.value),
+          node: value === argument ? property : argument,
+        };
+      }
+    }
   }
   const last = node.arguments.at(-1);
   return node.arguments.length > 1 && last
-    ? { ms: numericValue(last), node: last }
+    ? { ms: largestNumber(context, last), node: last }
     : null;
 };
 
@@ -230,13 +256,15 @@ const noRaisedTestTimeout = {
             : name === 'setDefaultTimeout';
 
         if (TEST_CALLEES.has(name)) {
-          timeout = timeoutOf(node);
-        } else if (setsDefault) {
-          const ms = numericValue(node.arguments[0]);
-          timeout = ms === null ? null : { ms, node: node.arguments[0] };
+          timeout = timeoutOf(context, node);
+        } else if (setsDefault && node.arguments[0]) {
+          timeout = {
+            ms: largestNumber(context, node.arguments[0]),
+            node: node.arguments[0],
+          };
         }
 
-        if (!timeout || timeout.ms === null) return;
+        if (!timeout) return;
         if (timeout.ms <= FAST_TEST_TIMEOUT_MS) return;
 
         context.report({

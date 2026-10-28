@@ -1,3 +1,0 @@
-cand-1=sol
-cand-2=astra
-cand-3=opus

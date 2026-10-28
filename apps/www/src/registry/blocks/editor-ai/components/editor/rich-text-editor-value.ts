@@ -86,9 +86,6 @@ export const richTextEditorValue: EditorDocumentValue = {
           ],
         },
         {
-          text: '',
-        },
-        {
           authored: [
             {
               at: 1_791_864_172_518,
@@ -1056,11 +1053,11 @@ export const richTextEditorComments: CommentsJSON = {
           deletion: 'nearest',
           range: {
             anchor: {
-              path: [3, 7, 0],
+              path: [3, 6, 0],
               offset: 0,
             },
             focus: {
-              path: [3, 8],
+              path: [3, 7],
               offset: 22,
             },
           },

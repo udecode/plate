@@ -134,14 +134,16 @@ function TextFloatingToolbar({
     null
   );
   const [ownedOverlayOpen, setOwnedOverlayOpen] = React.useState(false);
+  // WebKit clears the DOM selection when an owned overlay takes focus, so the overlay alone holds the toolbar.
   const open =
-    selectionRange !== null &&
-    (editorFocused || ownedOverlayOpen) &&
     !isFloatingLinkOpen &&
     !isAIChatOpen &&
     !readOnly &&
     mouseDownOpen !== false &&
-    (ownedOverlayOpen || dismissedSelection !== selectionRange);
+    (ownedOverlayOpen ||
+      (selectionRange !== null &&
+        editorFocused &&
+        dismissedSelection !== selectionRange));
   const openStateRef = React.useRef(open);
 
   React.useEffect(() => {

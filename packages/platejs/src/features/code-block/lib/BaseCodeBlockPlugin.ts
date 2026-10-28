@@ -63,13 +63,6 @@ export type CodeHighlightLowlight = {
     value: string,
     options?: Readonly<{ prefix?: string | null }> | null
   ): HighlightResult;
-  highlightAuto(
-    value: string,
-    options?: Readonly<{
-      prefix?: string | null;
-      subset?: readonly string[] | null;
-    }> | null
-  ): HighlightResult;
   listLanguages(): string[];
   registered(aliasOrName: string): boolean;
 };
@@ -1060,8 +1053,6 @@ export const BaseCodeHighlightPlugin = definePlugin(PLUGINS.codeSyntax, {
         try {
           if (!language || language === 'plaintext') {
             highlighted = { children: [], type: 'root' };
-          } else if (language === 'auto') {
-            highlighted = lowlight.highlightAuto(text);
           } else highlighted = lowlight.highlight(language, text);
         } catch (error) {
           const languageName = language ?? 'unknown';

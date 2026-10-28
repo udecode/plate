@@ -18,6 +18,7 @@ import {
   readEditorHistoryReplayReceipt,
   withUpdateTagContext,
 } from '../../core/public-state';
+import { watchFirstPlacement } from '../../core/view-carets';
 import type { DataTransferDiagnostic, DOMRange } from '../../dom';
 import {
   DOMRootRuntime,
@@ -38,6 +39,7 @@ import {
 import { isDOMNode } from '../../dom/utils/dom';
 import type { EditableViewportRuntime } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
+import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
 import {
   getPliteNodePathFromDOMElement,
   isPliteNodeFlowRootBound,
@@ -53,6 +55,7 @@ import {
   type AndroidCompositionEndReason,
   finishAndroidComposition,
 } from './android-composition';
+import { CompositionLease } from './composition-lease';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import { ExternalTextRuntime } from './external-text-runtime';
@@ -62,6 +65,7 @@ import {
   setEditableComposingState,
 } from './input-controller';
 import {
+  cancelCompositionReceipt,
   captureEditableCompositionRuntimeMarks,
   clearEditableCompositionRuntimeState,
   type EditableInputController,
@@ -75,9 +79,11 @@ import {
   setEditorComposing,
 } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
+import { importUnreadPressCaret } from './runtime-selection-engine';
 import { attachEditableSelectionChangeListener } from './selection-change-listener';
 import { SelectionClaims } from './selection-claim';
 import { setEditableModelSelectionPreference } from './selection-controller';
+import { UnreadPress } from './unread-press';
 import {
   activateViewCaret,
   clampCaretAtRegistration,
@@ -348,11 +354,15 @@ export class EditableDOMRuntime {
 
   private readonly editorValue: ReactRuntimeEditor;
 
+  readonly unreadPress: UnreadPress;
+
   private integrityRepairHandler: (
     evidence: DOMIntegrityRepairEvidence
   ) => void = () => {};
 
   private selectionExportAfterDOMCommitHandler: () => void = () => {};
+  readonly compositionLease = new CompositionLease();
+
   private readonly deferredCompositionDOMWrites = new Map<
     globalThis.Node,
     () => void
@@ -462,6 +472,8 @@ export class EditableDOMRuntime {
           (manager.hasPendingChanges() || manager.isFlushing())
         );
       },
+      isCompositionLeasedMutation: (mutation) =>
+        this.compositionLease.protectsMutation(mutation),
       isCanonicalTextMutation: (mutation) => {
         const targetElement =
           mutation.target.nodeType === ELEMENT_NODE
@@ -532,6 +544,7 @@ export class EditableDOMRuntime {
           () => {
             this.disconnectVerticalGoalOwner();
           },
+          () => this.unreadPress.markRead(),
         ]);
       },
       onRepair: (evidence) => {
@@ -568,6 +581,11 @@ export class EditableDOMRuntime {
     this.rootRef = this.rootRuntime.rootRef;
     this.domInputRuntime = this.rootRuntime.domInputRuntime;
     this.domPhaseScheduler = this.rootRuntime.domPhaseScheduler;
+    this.unreadPress = new UnreadPress(
+      editor,
+      () => this.rootRef.current,
+      this.domPhaseScheduler.schedule
+    );
     this.inputController = createEditableInputController({
       domInputRuntime: this.domInputRuntime,
       preferModelSelectionForInputRef: { current: false },
@@ -817,6 +835,7 @@ export class EditableDOMRuntime {
   }
 
   isCompositionDOMNodeProtected(node: globalThis.Node) {
+    if (this.compositionLease.protects(node)) return true;
     const epoch = this.inputController.domInputRuntime.compositionEpoch;
     const anchors = Array.isArray(epoch?.anchor)
       ? epoch.anchor
@@ -845,11 +864,13 @@ export class EditableDOMRuntime {
       (pendingCompositionEnd !== null &&
         pendingCompositionEnd.ownership !== 'settled') ||
       this.deferredCompositionDOMWrites.size > 0 ||
+      this.compositionLease.held ||
       !!this.androidInputManagerRef.current?.hasPendingAction()
     );
   }
 
   deferCompositionDOMWrite(node: globalThis.Node, write: () => void) {
+    if (this.compositionLease.queue(node, write)) return true;
     if (!this.isCompositionDOMNodeProtected(node)) return false;
 
     this.deferredCompositionDOMWrites.set(node, write);
@@ -933,10 +954,26 @@ export class EditableDOMRuntime {
   }
 
   prepareReactCommit() {
+    this.importUnreadPressCaret();
     this.rootRuntime.prepareHostCommit();
   }
 
+  readonly importUnreadPressBeforeUnmount = (node: Node | null) => {
+    if (!node && this.importUnreadPressCaret()) {
+      this.requestSelectionExportAfterDOMCommit();
+    }
+  };
+
+  private importUnreadPressCaret() {
+    return importUnreadPressCaret({
+      editor: this.editorValue,
+      inputController: this.inputController,
+      unreadPress: this.unreadPress,
+    });
+  }
+
   completeReactCommit() {
+    this.compositionLease.completeRender();
     this.rootRuntime.completeHostCommit();
     IS_NODE_MAP_DIRTY.set(this.editorValue, false);
   }
@@ -966,6 +1003,7 @@ export class EditableDOMRuntime {
    * mousedown, so the press window closes at the next zero-delay timeout.
    */
   beginMousePress() {
+    supersedeEditableFocusRequests(this.editorValue);
     this.cancelPressTask?.();
 
     const cancel = this.domPhaseScheduler.schedule(
@@ -981,6 +1019,11 @@ export class EditableDOMRuntime {
       cancel();
       this.cancelPressTask = null;
     };
+  }
+
+  beginCaretKey() {
+    supersedeEditableFocusRequests(this.editorValue);
+    this.selectionClaimsValue?.openKeyGesture();
   }
 
   duringEditableMouseUp(handler: () => void) {
@@ -1026,7 +1069,12 @@ export class EditableDOMRuntime {
     owner: DOMIntegrityMutationOwner,
     callback: () => T
   ): T {
-    return this.rootRuntime.runOwnedDOMMutation(owner, callback);
+    const imported = this.importUnreadPressCaret();
+    const result = this.rootRuntime.runOwnedDOMMutation(owner, callback);
+
+    if (imported) this.requestSelectionExportAfterDOMCommit();
+
+    return result;
   }
 
   runUnobservedDOMMutation<T>(callback: () => T): T {
@@ -1137,6 +1185,9 @@ export class EditableDOMRuntime {
     const version =
       this.editorValue.read((state) => state.lastCommit()?.version) ?? 0;
     const run = () => history[direction]();
+    // The replay places first; a placement made while it settles is newer.
+    const stopPlacements = watchFirstPlacement(this.editorValue);
+    let placedAt: number;
 
     targetDocument.addEventListener('focusin', invalidatePresentation, true);
     targetDocument.addEventListener(
@@ -1162,6 +1213,7 @@ export class EditableDOMRuntime {
         ? replayed.settled
         : Promise.resolve(replayed));
     } finally {
+      placedAt = stopPlacements();
       targetDocument.removeEventListener(
         'focusin',
         invalidatePresentation,
@@ -1193,7 +1245,8 @@ export class EditableDOMRuntime {
     this.observeHistoryReplay(direction, () =>
       writePliteViewSelection(
         this.editorValue,
-        readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null
+        readPliteViewSelectionHistoryGroup(receipt.group, direction) ?? null,
+        { placedAt }
       )
     );
     this.observeHistoryReplay(direction, () =>
@@ -1323,10 +1376,11 @@ export class EditableDOMRuntime {
     if (!this.connected || !node || this.nativeInputListenersCleanup) return;
 
     const handleBeforeInput = (event: InputEvent) => {
-      if (getEditableInteractionOwner(node, event.target) === 'external-text') {
-        return;
-      }
+      const owner = getEditableInteractionOwner(node, event.target);
+
+      if (owner === 'external-text') return;
       if (
+        owner !== 'nested-editor' &&
         !this.webKitProbeActive.current &&
         activateViewCaret(this.editorValue)
       ) {
@@ -1349,7 +1403,14 @@ export class EditableDOMRuntime {
     // A page's document-capture pointerdown can focus the Editable and prevent
     // the mousedown, so the press opens here, before any document listener.
     const notePointerPress = (event: PointerEvent) => {
-      if (event.composedPath().includes(node)) this.beginMousePress();
+      const inRoot = event.composedPath().includes(node);
+
+      this.unreadPress.pointerDown(
+        inRoot &&
+          this.readOnlyValue &&
+          getEditableInteractionOwner(node, event.target) === 'editor'
+      );
+      if (inRoot) this.beginMousePress();
     };
     const ownerWindow = node.ownerDocument.defaultView;
     const claims = new SelectionClaims(
@@ -1438,6 +1499,7 @@ export class EditableDOMRuntime {
         this.externalMouseGesture = false;
         this.cancelPressTask?.();
         this.deferredCompositionDOMWrites.clear();
+        this.compositionLease.release();
       },
       () => this.renderContract.beforeRootTeardown(),
       () => {
@@ -1457,6 +1519,7 @@ export class EditableDOMRuntime {
         }
       },
       () => this.inputController.state.pendingCompositionEnd?.cancel(),
+      () => cancelCompositionReceipt(this.inputController),
       () => {
         this.inputController.state.pendingCompositionEnd = null;
         this.inputController.state.compositionSession = null;

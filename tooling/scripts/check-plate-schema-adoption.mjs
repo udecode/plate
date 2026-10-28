@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -15,6 +14,7 @@ import {
   groupFindings,
 } from './finding-baseline.mjs';
 import { internalPliteContractTypeSymbols } from './plite-internal-symbols.mjs';
+import { trackedFiles } from './private-files.mjs';
 
 const compareStrings = (left, right) => {
   if (left < right) return -1;
@@ -237,6 +237,9 @@ const pliteRootModulePattern = /^plitejs$/;
 const privatePliteModulePattern = /^plitejs\/internal(?:\/|$)/;
 const internalPliteBridgeConsumerPattern =
   /^packages\/(?:platejs|plitejs)\/(?:src|test|type-tests)(?:\/|$)/;
+const internalPliteBridgeConsumerFiles = new Set([
+  'apps/www/src/__tests__/package-integration/editor-kit-carried-moves.spec.tsx',
+]);
 const publicCoreModulePattern =
   /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;
 const plateModulePattern = /^(?:platejs|@platejs\/)/;
@@ -290,7 +293,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/lib/plugins/element-id/ElementIdPlugin.ts',
-    [[['corrections', 'on', 'prepareDocument', 'read']]],
+    [[['activate', 'on', 'read']]],
   ],
   [
     'packages/platejs/src/features/code-block/lib/BaseCodeBlockPlugin.ts',
@@ -339,7 +342,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/find/lib/BaseFindPlugin.ts',
-    [[['api', 'decorate', 'on', 'selectors', 'update']]],
+    [[['activate', 'api', 'decorate', 'on', 'selectors', 'update']]],
   ],
   [
     'packages/platejs/src/features/upload/lib/BaseUploadPlugin.ts',
@@ -432,6 +435,7 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/platejs/src/migrations/migratePlateV54Urls.internal.ts', 1],
   ['packages/platejs/type-tests/plugin-schema-contracts.ts', 8],
   ['packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx', 2],
+  ['packages/plitejs/test/carried-moves.test.ts', 1],
   ['packages/plitejs/test/editor-foundation-contract.ts', 2],
   ['packages/plitejs/test/schema-contract.ts', 10],
   ['packages/plitejs/test/schema-inference-contract.ts', 2],
@@ -5300,7 +5304,8 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     if (
       node.type === 'ImportDeclaration' &&
       privatePliteModulePattern.test(node.source.value) &&
-      !internalPliteBridgeConsumerPattern.test(file)
+      !internalPliteBridgeConsumerPattern.test(file) &&
+      !internalPliteBridgeConsumerFiles.has(file)
     ) {
       report(node, 'plitejs/internal is not a public package entrypoint');
     }
@@ -6802,20 +6807,8 @@ export function auditNamedSchemaLineageDocument(
 }
 
 const collectSourceFiles = () =>
-  execFileSync(
-    'git',
-    [
-      'ls-files',
-      '--cached',
-      '--others',
-      '--exclude-standard',
-      '--',
-      ...sourceRoots,
-    ],
-    { cwd: repoRoot, encoding: 'utf-8' }
-  )
-    .split('\n')
-    .filter(Boolean)
+  trackedFiles(repoRoot, { untracked: true })
+    .filter((file) => sourceRoots.some((root) => file.startsWith(`${root}/`)))
     .filter(isPlateSchemaAdoptionSourcePath)
     .map((file) => join(repoRoot, file))
     .filter(existsSync);

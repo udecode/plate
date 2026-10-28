@@ -1,6 +1,5 @@
 'use client';
 
-import type { Element } from 'platejs';
 import { CopilotPlugin } from 'platejs/ai/react';
 import { useEditor, useElement, usePluginStore } from 'platejs/react';
 import * as React from 'react';
@@ -68,7 +67,7 @@ export const CopilotKit = [
         if (!contextEntry) return '';
 
         const result = editor.api.markdown.serialize({
-          document: { children: [contextEntry[0] as Element] },
+          document: { children: [contextEntry[0]] },
         });
 
         if (!result.ok) throw new Error(result.diagnostics[0].message);

@@ -1,3 +1,4 @@
+import { jsonEqual } from '../core/change/json';
 import { getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
@@ -36,6 +37,7 @@ import type {
 import {
   getConsistentRangeTextMarks,
   type TextMarks,
+  withoutUnheldDefaultsBeside,
 } from '../internal/range-text-marks';
 import { getLocationRoot } from '../internal/root-location';
 import { insertNodes } from '../transforms-node/insert-nodes';
@@ -58,7 +60,7 @@ export const createTypedText = (
 ) =>
   marks
     ? (getEditorSchema(editor).copyNodeAt(
-        { text, ...marks },
+        { text, ...withoutUnheldDefaultsBeside(editor, marks, path, root) },
         path,
         root
       ) as Text)
@@ -123,27 +125,13 @@ const createFullDocumentTextReplacement = (
 const normalizeTextMarks = (marks: TextMarks | null): TextMarks | null =>
   marks && Object.keys(marks).length > 0 ? marks : null;
 
-const textNodeHasMarks = (
-  editor: Editor,
-  node: Text,
-  marks: TextMarks | null,
-  path: Path,
-  root: string
-) => {
+const textNodeHasMarks = (node: Text, marks: TextMarks | null) => {
   const expected = marks ?? {};
   const keys = new Set([...Object.keys(node), ...Object.keys(expected)]);
 
   keys.delete('text');
 
-  return [...keys].every((key) =>
-    getEditorSchema(editor).isTextPropertyEqualAt(
-      key,
-      node[key],
-      expected[key],
-      path,
-      root
-    )
-  );
+  return [...keys].every((key) => jsonEqual(node[key], expected[key]));
 };
 
 const getPointTextInsertionPoint = (
@@ -156,13 +144,12 @@ const getPointTextInsertionPoint = (
   }
 
   const node = NodeApi.get(editor, at.path);
-  const root = at.root ?? getEditorUpdateRoot(editor);
 
   if (!TextApi.isText(node)) {
     return null;
   }
 
-  if (textNodeHasMarks(editor, node, marks, at.path, root)) {
+  if (textNodeHasMarks(node, marks)) {
     return at;
   }
 
@@ -172,10 +159,7 @@ const getPointTextInsertionPoint = (
       ? NodeApi.get(editor, nextPath)
       : null;
 
-    if (
-      TextApi.isText(next) &&
-      textNodeHasMarks(editor, next, marks, nextPath, root)
-    ) {
+    if (TextApi.isText(next) && textNodeHasMarks(next, marks)) {
       return { ...at, offset: 0, path: nextPath };
     }
   }
@@ -186,10 +170,7 @@ const getPointTextInsertionPoint = (
       ? NodeApi.get(editor, previousPath)
       : null;
 
-    if (
-      TextApi.isText(previous) &&
-      textNodeHasMarks(editor, previous, marks, previousPath, root)
-    ) {
+    if (TextApi.isText(previous) && textNodeHasMarks(previous, marks)) {
       return {
         ...at,
         offset: previous.text.length,

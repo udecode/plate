@@ -29,6 +29,7 @@ import {
   setEditableModelSelectionPreference,
   syncEditorSelectionFromDOM,
 } from './selection-controller';
+import type { UnreadPress } from './unread-press';
 
 export type RuntimeSelectionChangeHandler = (() => void) & {
   cancel: () => void;
@@ -77,6 +78,7 @@ export const shouldRepairPendingNativeTextInputDuringSelectionChange = ({
 
 export const shouldSkipModelOwnedRepairSelectionChange = ({
   activeIntent,
+  domSelectionExpanded,
   modelSelectionPreferred,
   pendingNativeTextInputRepairPathKey,
   pendingNativeTextInputRepairSuppressedDOMSelection,
@@ -84,6 +86,7 @@ export const shouldSkipModelOwnedRepairSelectionChange = ({
   selectionSource,
 }: {
   activeIntent: EditableInputController['state']['activeIntent'];
+  domSelectionExpanded: boolean;
   modelSelectionPreferred: boolean;
   pendingNativeTextInputRepairPathKey?: string | null;
   pendingNativeTextInputRepairSuppressedDOMSelection?: boolean;
@@ -96,6 +99,7 @@ export const shouldSkipModelOwnedRepairSelectionChange = ({
 
   if (
     activeIntent === 'text-insert' &&
+    !domSelectionExpanded &&
     !pendingNativeTextInputRepairPathKey &&
     !pendingNativeTextInputRepairSuppressedDOMSelection
   ) {
@@ -184,10 +188,14 @@ export const createRuntimeSelectionChangeHandler = ({
       inputController.state.selectionChangeOrigin ?? 'native-user';
     const modelSelectionPreferred =
       isEditableModelSelectionPreferred(inputController);
+    const domSelection = getSelection(
+      rootRef.current.getRootNode() as Document | ShadowRoot
+    );
 
     if (
       shouldSkipModelOwnedRepairSelectionChange({
         activeIntent: inputController.state.activeIntent,
+        domSelectionExpanded: domSelection?.isCollapsed === false,
         modelSelectionPreferred,
         pendingNativeTextInputRepairPathKey:
           inputController.state.pendingNativeTextInputRepairPathKey,
@@ -314,6 +322,26 @@ export const shouldFlushSelectionChangeAfterKeyDownPolicy = ({
 }) =>
   decision.selectionPolicy.kind !== 'preserve-model' ||
   !isEditableModelSelectionPreferred(inputController);
+
+export const importUnreadPressCaret = ({
+  editor,
+  inputController,
+  unreadPress,
+}: {
+  editor: ReactRuntimeEditor;
+  inputController: EditableInputController;
+  unreadPress: Pick<UnreadPress, 'claimPage'>;
+}) => {
+  if (unreadPress.claimPage()) return false;
+
+  syncEditorSelectionFromDOM({
+    editor,
+    ignoreModelSelectionPreference: true,
+    inputController,
+  });
+
+  return unreadPress.claimPage();
+};
 
 export const createRuntimeSelectionImportController = ({
   editor,

@@ -75,6 +75,13 @@ Rules:
 - use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
+- the managed Plite runner passes `-g` to Playwright as `--grep`, a regular
+  expression, so escape `+` and `(` in a test title, or pass a plain part of
+  it. It refuses every other Playwright flag, such as `--output` or
+  `--workers`; `node scripts/run-plite-browser.mjs direct` from `apps/plite`
+  takes them for diagnostics. A file stops at its first failing batch and
+  resumes its passing batches on the next run, so a case after a known
+  failure runs only once its file runs without that failure;
 - do not run multiple managed Playwright commands in parallel,
   including through `multi_tool_use.parallel`. The managed route builds and
   serves the Next example app, and concurrent runs can trip the Next build lock
@@ -113,6 +120,8 @@ Rules:
   - the Plite runner's `reused N passed … from a matching complete proof`: set
     `PLITE_BROWSER_FORCE_PROOF=1`;
   - turbo's `Cached: N cached, M total`: set `TURBO_FORCE=true`;
+  - `pnpm check`'s `skip <step>: passed …` and `pnpm lint:task`'s
+    `Lint passed …, so it did not run again`: set `TURBO_FORCE=true`;
   - a benchmark probe that prints no frozen lines and only a receipt: pass the
     frozen lines, as Benchmark's pre-acceptance step 4 requires;
 - an independent integration runner that resolves workspace `dist` must build
@@ -201,7 +210,7 @@ Rules:
 
 A type probe compiles through `node tooling/scripts/type-probe.mjs [--tree <checkout or worktree>] [--package <name>] [--tsc <compiler>] <probe.ts>...`. It extends that package's tsconfig in the tree, prints each probe's errors and exits 1 when a probe has one. It exits 2 when it has no result to give: a bad argument, a missing file, or a compiler that did not run or did not read every probe. A runner that compiles many cases, such as a call-shape matrix or a mutation sweep, calls it instead of spawning `tsc` itself, so a compiler that never ran cannot pass as a probe with no errors.
 
-A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it from the package directory and pass each preload its `bunfig.toml` lists under `[test]`, such as `bun --preload ../../config/plite-source-aliases.ts <abs path>` from `packages/platejs`. Bun applies `[test]` preloads only to `bun test`, so a plain `bun run` resolves dependency packages such as `plitejs` from `dist`. Import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/` that the import added, dependency packages included. A probe launched from a base or candidate worktree is the exception. There an absolute path into this checkout runs this checkout's code, so a base-versus-candidate comparison compares the checkout with itself. It imports packages by bare name, which the worktree's own source-alias preload resolves into that worktree, or takes the tree root as an argument and imports from it, and its printed keys must name that tree. A scratch file outside the repository cannot resolve bare package names, so it imports by path. A probe with JSX lives in the run directory, because Bun resolves the JSX runtime it injects from the probe's own folder, which no import path can redirect. A probe that needs a DOM and runs without a preload that registers one, such as `tooling/config/bunTestSetup.ts`, calls `GlobalRegistrator.register()` from `@happy-dom/global-registrator` first and then loads React DOM and the code under test with `await import(...)`. Static imports run before any statement, so a probe that loads Plite before the DOM exists runs its layout effects as passive effects and proves nothing about them.
+A throwaway probe that claims source behavior prints which package files it loaded, so a run that loaded `dist` cannot pass as source proof. Run it from the package directory and pass the source-alias preload its `bunfig.toml` lists under `[test]`, such as `bun --preload ../../config/plite-source-aliases.ts <abs path>` from `packages/platejs`. Bun applies `[test]` preloads only to `bun test`, so a plain `bun run` resolves dependency packages such as `plitejs` from `dist`. Leave out `tooling/config/bunTestSetup.ts` and any preload that imports it, such as `config/plite-source-test-setup.ts`, because that file calls `afterEach`, which throws outside `bun test`. Import by absolute path as `AGENTS.md` says, and print the `require.cache` keys under `/packages/` that the import added, dependency packages included. A probe launched from a base or candidate worktree is the exception. There an absolute path into this checkout runs this checkout's code, so a base-versus-candidate comparison compares the checkout with itself. It imports packages by bare name, which the worktree's own source-alias preload resolves into that worktree, or takes the tree root as an argument and imports from it, and its printed keys must name that tree. A scratch file outside the repository cannot resolve bare package names, so it imports by path. A probe with JSX lives in the run directory, because Bun resolves the JSX runtime it injects from the probe's own folder, which no import path can redirect. A probe that needs a DOM and runs without a preload that registers one, such as `tooling/config/bunTestSetup.ts`, calls `GlobalRegistrator.register()` from `@happy-dom/global-registrator` first and then loads React DOM and the code under test with `await import(...)`. Static imports run before any statement, so a probe that loads Plite before the DOM exists runs its layout effects as passive effects and proves nothing about them.
 
 A `plitejs` React probe runs under Vitest instead, from a config in the run directory that merges `packages/plitejs/vitest.config.mjs`. The config imports `vitest/config` by the absolute path that `readlink -f packages/plitejs/node_modules/vitest` prints, followed by `/dist/config.js`. It sets `test.dir` to its own directory and `include` to the probe files. Run it from `packages/plitejs` as `pnpm exec vitest run --config <config> --reporter=verbose --silent=false`. The jsdom variant reuses `test/react/vitest-setup.ts`. A claim about DOM behavior that jsdom does not implement, such as visibility, `inert`, `showModal()`, slot assignment, layout or scrolling, needs the Chromium variant. That variant adds `test.browser` with a headless `chromium` instance and `provider: playwright()`, imported from the `@vitest/browser-playwright` that `packages/test` resolves. It also sets `server.fs.allow` to the repository and `resolve.dedupe` to `react`, `react-dom` and `@testing-library/react`, and uses its own setup file, which calls `installBrowserHandle()` and runs `cleanup()` in a global `afterEach`.
 
@@ -283,8 +292,14 @@ about twelve minutes:
 Run `node tooling/scripts/proof-worktree.mjs <path> <sha>`. It adds a detached
 worktree at the base, links this checkout's root and workspace `node_modules`
 and copies each package's untracked `.env` files, as `AGENTS.md`'s Git rule
-says. It exits 1 when the new worktree's status shows anything besides those
-links. Remove it with `git worktree remove --force <path>` when the run ends.
+says. In a split clone it also attaches the private half, the way a session's
+start hook does, at the private commit that pairs with the base, and prints it
+as `private:`. It exits 1 when either half's status shows anything besides
+those links. Remove it with `git worktree remove --force <path>` when the run
+ends. That removal leaves the worktree's private record behind. Before it,
+read the worktree's `.git-private` file, which names the record's folder under
+the main checkout's `.git-private/worktrees/`, and delete that folder after it.
+A run with `-- <command>` removes both.
 A package's own `node_modules` links its workspace siblings by relative path.
 Through that link, a sibling import outside the TypeScript path aliases
 resolves to this checkout's source, so a base proof that must run a sibling at
@@ -306,6 +321,23 @@ with `--repeat-each=3` on each server, alternating, for two rounds. A case
 that also fails on the fresh base is pre-existing, and it gets a suggested
 task, as the block's Suggested tasks rule says.
 
+A timing loop must measure the candidate's bytes, so it uses these commands
+instead of copying files by hand:
+
+- `--from <checkout>` copies that checkout's uncommitted changes in both halves
+  into the new worktree, including edited, deleted and new files and new
+  private test files. The helper prints `candidate:` and the worktree's `hash`. Make the
+  worktree at the source's `HEAD` so that only those changes differ.
+- `sync <path> --from <checkout>` refreshes a worktree after the source
+  changes. It copies each file the source changes and puts back each file the
+  worktree changed that the source no longer does, so a repeated sync leaves
+  the same bytes. It refuses a worktree on a branch, whose own work it would
+  revert.
+- `hash <path>` prints one content hash over both halves' tracked and new
+  files. `hash <path> --same-as <checkout>` exits 1 and names the differing
+  files unless both checkouts hold the same bytes; run it right before each
+  measurement. One call takes about a second on this clone.
+
 The helper has four modes for these cases:
 
 - `--with <file>` copies a candidate file from this checkout into the new
@@ -314,7 +346,8 @@ The helper has four modes for these cases:
   anything, the helper refuses a `--with` that names no file inside this
   checkout or reaches it through a symlink.
 - `--install` runs `pnpm install --offline --frozen-lockfile --ignore-scripts`
-  instead of linking `node_modules`. A www server needs it, because Turbopack
+  instead of linking `node_modules`. A www server and the managed Plite
+  runner's app build need it, because Turbopack
   refuses `node_modules` linked from outside the worktree root. Then run
   `PLATE_WWW_DYNAMIC_DOCS=1 pnpm build:source:dev` in `apps/www` before
   `next dev`.
@@ -339,11 +372,13 @@ The helper has four modes for these cases:
   `x <rule>:` without it, with the file on a later line. A `<rule>` reads like
   `entrypoint-dag(no-forbidden-imports)`, and an oxlint warning never counts.
   Pass each case's failure line, such as bun's `(fail) <describe> > <title>`.
-  For a lint failure, pass the rule and the start of its message. A matcher
-  line such as bun's `error: expect(received).toEqual(expected)` is not a
-  failing line. A failure line also matches a longer title that starts the
-  same way, and a match does not show which case printed it, so read the log
-  to tie the failure to its defect. A
+  For a lint failure, pass the rule and the start of its message. bun prints a
+  case's errors above its result line, so a line that starts with `error: `
+  also counts when the next case result below it is `(fail)`. From such a line,
+  pass the thrown or asserted message, never a generic matcher line such as
+  `error: expect(received).toEqual(expected)`. A failure line also matches a
+  longer title that starts the same way, and a match does not show which case
+  printed it, so read the log to tie the failure to its defect. A
   case designed to pass at the base, such as a must-pass control or a case
   whose defect only a mutation shows, goes to a mutation run instead. The
   helper exits 0 when the command fails with every text, and 1 when the command

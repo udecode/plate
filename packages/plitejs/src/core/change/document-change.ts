@@ -30,11 +30,13 @@ import {
 import { deepFreeze, isRecord, jsonEqual } from './json';
 import { lazyRootOf, setLazyRoot } from './lazy-root';
 import {
+  collapseElementPropertyWrites,
   RootChange,
   type RootChangeJson,
   type DocumentSetPropertyResolver,
   type SectionData,
   type TrackMode,
+  writesOnlyElementProperties,
 } from './root-change';
 import type { JsonEditorValue, JsonNode, JsonPoint } from './tokens';
 
@@ -823,6 +825,48 @@ export const filterDocumentChangeRoots = (
       ),
       createRoots: [...change.createRoots].filter(keep),
       deleteRoots: [...change.deleteRoots].filter(keep),
+      records: getInternalDocumentChangeRecords(change),
+    }
+  );
+
+/** @internal */
+export const documentChangeWritesOnlyElementProperties = (
+  change: DocumentChange,
+  value: JsonEditorValue
+) =>
+  change.createRoots.size === 0 &&
+  change.deleteRoots.size === 0 &&
+  [...getInternalDocumentChangeRecords(change).values()].every(
+    (set) => set.size === 0
+  ) &&
+  [...getInternalDocumentChangeEntries(change)].every(([root, rootChange]) =>
+    writesOnlyElementProperties(rootChange, valueRootIndex(value, root))
+  );
+
+/** @internal */
+export const collapseDocumentElementPropertyWrites = (
+  change: DocumentChange,
+  value: JsonEditorValue,
+  isSetValued: DocumentSetPropertyResolver
+) =>
+  createInternalDocumentChange(
+    new Map(
+      [...getInternalDocumentChangeEntries(change)].map(
+        ([root, rootChange]) =>
+          [
+            root,
+            collapseElementPropertyWrites(
+              rootChange,
+              valueRootIndex(value, root),
+              isSetValued,
+              root === 'main' ? null : root
+            ),
+          ] as const
+      )
+    ),
+    {
+      createRoots: change.createRoots,
+      deleteRoots: change.deleteRoots,
       records: getInternalDocumentChangeRecords(change),
     }
   );

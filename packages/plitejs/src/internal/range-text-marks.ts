@@ -1,7 +1,37 @@
-import { type Descendant, NodeApi, type Range, type Text } from '../interfaces';
+import { withoutUnheldDefaults } from '../core/default-storage';
+import { getEditorSchema } from '../core/editor-runtime';
+import { getCompiledEditorSchemaFromApi } from '../core/editor-schema';
+import { toCompiledNodeContext } from '../core/schema-compiler';
+import {
+  type Descendant,
+  NodeApi,
+  type Path,
+  type Range,
+  type Text,
+} from '../interfaces';
 import type { AnyEditor as EditorType } from '../interfaces/editor';
 
 export type TextMarks = Record<string, unknown>;
+
+export const withoutUnheldDefaultsBeside = <P extends TextMarks>(
+  editor: EditorType,
+  marks: P,
+  path: Path,
+  root: string
+): P =>
+  withoutUnheldDefaults(
+    getCompiledEditorSchemaFromApi(getEditorSchema(editor)),
+    marks,
+    () =>
+      toCompiledNodeContext(
+        { text: '' },
+        Array.from(
+          NodeApi.ancestors(editor, path, { reverse: true }),
+          ([ancestor]) => ancestor
+        ).filter(NodeApi.isElement),
+        root
+      )
+  );
 
 const getTextMarks = (node: Text): TextMarks => {
   const { text: _text, ...marks } = node;

@@ -19,186 +19,184 @@ else
 fi
 node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); const kinds=new Set(p.cases?.map(x=>x.kind)); for(const k of ["two-videos","one-video","text-only"]) if(!kinds.has(k)) process.exit(1); const c=p.cases.find(x=>x.kind==="two-videos"); if(c.inputs?.join(",")!=="main.mp4,next.mp4"||!/main normal baseline/.test(c.expected)||!/current next\/Beta bug/.test(c.expected)||!/normal-versus-regression behavioral delta/.test(c.expected)||!/ask the user only when that evidence is ambiguous/.test(c.expected)||!/never infer roles from input order or visual presentation/i.test(c.expected)) process.exit(1)' "$skill_dir/assets/intake-cases.json"
 
-test_dir=$(mktemp -d "${TMPDIR:-/tmp}/github-issue-reporter-test.XXXXXX")
-cleanup() { rm -rf "$test_dir"; }
-trap cleanup EXIT INT TERM
-printf '%s\n' '[Beta]: Editor drag crashes the page' >"$test_dir/title.txt"
-printf '%s\n' '## Summary' '' 'Dragging a block crashes the page.' >"$test_dir/body.md"
-dry_run=$(bash "$script_dir/publish-issue.sh" \
-  --repo udecode/plate \
-  --title-file "$test_dir/title.txt" \
-  --body-file "$test_dir/body.md" \
-  --dry-run)
-jq -e '.repo == "udecode/plate" and .issuePayload.title == "[Beta]: Editor drag crashes the page"' <<<"$dry_run" >/dev/null
+test_dir=$(cd "$(mktemp -d "${TMPDIR:-/tmp}/plate-issue-publish-test.XXXXXX")" && pwd -P)
+trap 'rm -rf "$test_dir"' EXIT
+publish() { bash "$script_dir/publish-issue.sh" --repo udecode/plate-private "$@"; }
+refuses() {
+  local reason=$1
+  shift
+  if "$@" >/dev/null 2>&1; then
+    echo "Publisher accepted $reason" >&2
+    exit 1
+  fi
+}
 
+printf '%s\n' 'Editor drag crashes the page' >"$test_dir/title.txt"
+printf '%s\n' '## Summary' '' 'Dragging a block crashes the page.' >"$test_dir/body.md"
 ffmpeg -hide_banner -loglevel error -y -f lavfi -i color=c=black:s=16x16:d=0.1 \
   -pix_fmt yuv420p "$test_dir/main.mp4"
 ffmpeg -hide_banner -loglevel error -y -f lavfi -i color=c=white:s=16x16:d=0.1 \
-  -pix_fmt yuv420p "$test_dir/next.mp4"
-two_video_dry_run=$(ISSUE_VIDEO_REMOTE='r2:issue-evidence' \
-  ISSUE_VIDEO_PUBLIC_BASE_URL='https://media.example.com/issue-evidence' \
-  bash "$script_dir/publish-issue.sh" \
-    --repo udecode/plate \
-    --title-file "$test_dir/title.txt" \
-    --body-file "$test_dir/body.md" \
-    --video "$test_dir/main.mp4" \
-    --video-role 'main — normal behavior (expected baseline)' \
-    --video "$test_dir/next.mp4" \
-    --video-role 'next — current Beta bug (actual behavior)' \
-    --dry-run)
-jq -e '
-  (.uploads | length) == 2 and
-  .uploads[0].uploadTarget != .uploads[1].uploadTarget and
-  (.issuePayload.body | contains("main — normal behavior (expected baseline)")) and
-  (.issuePayload.body | contains("next — current Beta bug (actual behavior)"))
-' <<<"$two_video_dry_run" >/dev/null
+  -frames:v 1 "$test_dir/next frame.png"
+
+dry_run=$(publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run)
+jq -e '.repo == "udecode/plate-private" and .title == "Editor drag crashes the page" and .command[0:3] == ["gh","issue","create"] and .command[(.command | index("--type")) + 1] == "Bug" and .command[(.command | index("--milestone")) + 1] == "v54"' <<<"$dry_run" >/dev/null
+
+printf '%s\n' '## Summary' '' 'The export call is at lines 50-56 of `exportHtmlToDocx.internal.ts`.' >"$test_dir/identifier-body.md"
+publish --title-file "$test_dir/title.txt" --body-file "$test_dir/identifier-body.md" --dry-run >/dev/null
+
+two_file_dry_run=$(publish \
+  --title-file "$test_dir/title.txt" \
+  --body-file "$test_dir/body.md" \
+  --attach "$test_dir/main.mp4" \
+  --attach-role 'Slate — normal behavior (expected baseline)' \
+  --attach "$test_dir/next frame.png" \
+  --attach-role 'next — current Beta bug (actual behavior)' \
+  --labels 'ime, regression' \
+  --platform 'Android, Chrome' \
+  --dry-run)
+jq -e --arg main "$test_dir/main.mp4" --arg next "$test_dir/next frame.png" '
+  ([.command | indices("--attach")[]] | length) == 2 and
+  (.command | index($main)) != null and
+  (.command | index($next)) != null and
+  ([.command | indices("--label")[]] | length) == 2 and
+  (.command | index("regression")) != null and
+  .platform == ["Android","Chrome"] and
+  (.command | index("Android")) == null and
+  (.body | contains("#### Slate — normal behavior (expected baseline)\n\n![Slate — normal behavior (expected baseline)](<" + $main + ">)")) and
+  (.body | contains("#### next — current Beta bug (actual behavior)\n\n![next — current Beta bug (actual behavior)](<" + $next + ">)"))
+' <<<"$two_file_dry_run" >/dev/null
+
+printf '%s\n' '## Summary' '' 'Dragging a block crashes the page.' '' '## Evidence' '' 'The crash starts at 0:04.' >"$test_dir/evidence-body.md"
+evidence_dry_run=$(publish --title-file "$test_dir/title.txt" --body-file "$test_dir/evidence-body.md" \
+  --attach "$test_dir/main.mp4" --dry-run)
+jq -e '([.body | scan("(?m)^## Evidence$")] | length) == 1 and (.body | contains("The crash starts at 0:04.\n\n#### Evidence 1\n"))' \
+  <<<"$evidence_dry_run" >/dev/null
+
+cp "$test_dir/main.mp4" "$test_dir/take#2.mp4"
+comment_dry_run=$(publish --comment-on 5224 --body-file "$test_dir/body.md" \
+  --attach "$test_dir/take#2.mp4" --attach-role 'Repro 2 — Firefox' --dry-run)
+jq -e --arg take "$test_dir/take#2.mp4" '
+  .issue == 5224 and (has("title") | not) and
+  .command[0:4] == ["gh","issue","comment","5224"] and
+  (.command | index($take)) != null and
+  (.command | index("--label")) == null and
+  (.command | index("--type")) == null and
+  (.command | index("--milestone")) == null
+' <<<"$comment_dry_run" >/dev/null
+
+printf 'notes' >"$test_dir/notes.txt"
+for prefix in '[Beta]: ' '[Bug]: '; do
+  printf '%s\n' "${prefix}Editor drag crashes the page" >"$test_dir/prefixed-title.txt"
+  refuses "a $prefix title" publish --title-file "$test_dir/prefixed-title.txt" --body-file "$test_dir/body.md" --dry-run
+done
+refuses 'a non-Plate repository' bash "$script_dir/publish-issue.sh" --repo example/example \
+  --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run
+refuses 'unresolved placeholders' publish --title-file "$skill_dir/assets/title.example.txt" \
+  --body-file "$skill_dir/assets/issue-body.md" --dry-run
+printf '%s\n' '## Summary' '' 'TODO: add the repro.' >"$test_dir/todo-body.md"
+refuses 'a TODO in the body' publish --title-file "$test_dir/title.txt" --body-file "$test_dir/todo-body.md" --dry-run
+refuses 'a file gh cannot attach' publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
+  --attach "$test_dir/notes.txt" --dry-run
+refuses 'a role count that does not match the attachments' publish --title-file "$test_dir/title.txt" \
+  --body-file "$test_dir/body.md" --attach "$test_dir/main.mp4" --attach "$test_dir/next frame.png" \
+  --attach-role 'only one' --dry-run
+refuses 'a comment with a title' publish --comment-on 5224 --title-file "$test_dir/title.txt" \
+  --body-file "$test_dir/body.md" --dry-run
+refuses 'a comment with labels' publish --comment-on 5224 --labels ime --body-file "$test_dir/body.md" --dry-run
+refuses 'a comment with a platform' publish --comment-on 5224 --platform iOS --body-file "$test_dir/body.md" --dry-run
+for label in mobile safari a11y 'plugin:dnd'; do
+  refuses "the $label label" publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
+    --labels "ime,$label" --dry-run
+done
+refuses 'a platform that is not a Platform option' publish --title-file "$test_dir/title.txt" \
+  --body-file "$test_dir/body.md" --platform 'Android,Mobile' --dry-run
+refuses 'a comment on something other than an issue number' publish --comment-on '#5224' \
+  --body-file "$test_dir/body.md" --dry-run
 
 fake_bin="$test_dir/fake-bin"
 mkdir -p "$fake_bin"
 cat >"$fake_bin/gh" <<'FAKE_GH'
 #!/usr/bin/env bash
-if [[ "$*" == "auth status" ]]; then
-  exit 0
-fi
-if [[ "$*" == "api repos/udecode/plate" ]]; then
-  printf '%s\n' '{"private":false}'
-  exit 0
-fi
-if [[ "$*" == "api --method POST repos/udecode/plate/issues --input "* ]]; then
-  printf '%s\n' '{"number":123,"html_url":"https://github.com/udecode/plate/issues/123"}'
-  exit 0
-fi
-if [[ "$*" == "api repos/udecode/plate/issues/123" ]]; then
-  if [[ "${TEST_ISSUE_READBACK:-}" == wrong-body ]]; then
-    printf '%s\n' '{"number":123,"title":"[Beta]: Editor drag crashes the page","body":"Wrong body; reproduction was lost.","labels":[]}'
-    exit 0
-  fi
-  exit 1
-fi
+case "$*" in
+  'auth status') exit 0 ;;
+  'issue create --help'|'issue comment --help') echo '      --attach file   Attach an image or video file'; exit 0 ;;
+  'issue create '*) echo 'https://github.com/udecode/plate-private/issues/123'; exit 0 ;;
+  'issue comment 5224 '*) echo 'https://github.com/udecode/plate-private/issues/5224#issuecomment-987'; exit 0 ;;
+  'api graphql -f query={ organization'*)
+    jq -n '{data:{organization:{issueFields:{nodes:[{}, {id:"FIELD_PLATFORM", name:"Platform", options:[{id:"OPT_Android", name:"Android"}, {id:"OPT_iOS", name:"iOS"}]}]}}, repository:{issue:{id:"I_123"}}}}'
+    exit 0 ;;
+  'api graphql -f query=mutation { setIssueFieldValue(input: { issueId: "I_123", issueFields: [{ fieldId: "FIELD_PLATFORM", multiSelectOptionIds: ["OPT_Android"] }] }) { clientMutationId } }')
+    echo '{}'; exit 0 ;;
+  'api graphql -f query={ repository'*)
+    jq -n --arg platform "${TEST_PLATFORM_READBACK:-Android}" '{data:{repository:{issue:{issueFieldValues:{nodes:[{}, {field:{name:"Platform"}, options:[{name:$platform}]}]}}}}}'
+    exit 0 ;;
+  'api repos/udecode/plate-private/issues/comments/987')
+    jq -n '{body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n"}'
+    exit 0 ;;
+  'issue view https://github.com/udecode/plate-private/issues/123 '*)
+    case "${TEST_ISSUE_READBACK:-}" in
+      ok)
+        jq -n '{title:"Editor drag crashes the page",
+          body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
+          issueType:{name:"Bug"}, milestone:{title:"v54"}, labels:[{name:"ime"}]}' ;;
+      untyped)
+        jq -n '{title:"Editor drag crashes the page",
+          body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
+          issueType:null, milestone:{title:"v54"}, labels:[{name:"ime"}]}' ;;
+      unmilestoned)
+        jq -n '{title:"Editor drag crashes the page",
+          body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
+          issueType:{name:"Bug"}, milestone:null, labels:[{name:"ime"}]}' ;;
+      wrong-body) jq -n '{title:"Editor drag crashes the page", body:"Wrong body.", labels:[]}' ;;
+      *) exit 1 ;;
+    esac
+    exit 0 ;;
+esac
 exit 2
 FAKE_GH
 chmod +x "$fake_bin/gh"
-cat >"$fake_bin/rclone" <<'FAKE_RCLONE'
-#!/usr/bin/env bash
-set -euo pipefail
-case "${1:-}" in
-  copyto)
-    count=0
-    [[ ! -f "$TEST_RCLONE_STATE" ]] || count=$(<"$TEST_RCLONE_STATE")
-    count=$((count + 1))
-    printf '%s' "$count" >"$TEST_RCLONE_STATE"
-    if ((count == 2)); then
-      exit 5
-    fi
-    wc -c <"$2" | tr -d ' ' >"$TEST_RCLONE_SIZE"
-    ;;
-  size)
-    printf '{"bytes":%s}\n' "$(<"$TEST_RCLONE_SIZE")"
-    ;;
-  *)
-    exit 2
-    ;;
-esac
-FAKE_RCLONE
-cat >"$fake_bin/curl" <<'FAKE_CURL'
-#!/usr/bin/env bash
-set -euo pipefail
-output=""
-while (($#)); do
-  if [[ "$1" == -o ]]; then
-    output=${2:-}
-    shift 2
-    continue
-  fi
-  shift
+create() {
+  PATH="$fake_bin:$PATH" TEST_ISSUE_READBACK=$1 bash "$script_dir/publish-issue.sh" --repo udecode/plate-private \
+    --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
+    --attach "$test_dir/main.mp4" --attach "$test_dir/next frame.png" \
+    --labels 'ime' --platform Android --confirm-create 2>&1
+}
+
+created=$(create ok)
+jq -e '.url == "https://github.com/udecode/plate-private/issues/123" and .verified and (.attachmentUrls | length) == 2' <<<"$created" >/dev/null
+commented=$(PATH="$fake_bin:$PATH" bash "$script_dir/publish-issue.sh" --repo udecode/plate-private --comment-on 5224 \
+  --body-file "$test_dir/body.md" --attach "$test_dir/main.mp4" --confirm-create)
+jq -e '.url == "https://github.com/udecode/plate-private/issues/5224#issuecomment-987" and .verified and (.attachmentUrls | length) == 1' \
+  <<<"$commented" >/dev/null
+
+for case_name in failed-readback wrong-body; do
+  set +e
+  output=$(create "$case_name")
+  status=$?
+  set -e
+  [[ "$status" == 7 ]] || { echo "Expected $case_name to exit 7, got $status" >&2; exit 1; }
+  grep -Fq 'Published but post-publish verification failed: https://github.com/udecode/plate-private/issues/123' <<<"$output"
 done
-[[ -n "$output" ]]
-cp "$TEST_PUBLIC_SOURCE" "$output"
-printf 'video/mp4'
-FAKE_CURL
-chmod +x "$fake_bin/rclone" "$fake_bin/curl"
+grep -Fq '(body mismatch)' <<<"$output"
+for case_name in untyped unmilestoned; do
+  set +e
+  output=$(create "$case_name")
+  status=$?
+  set -e
+  [[ "$status" == 7 ]] || { echo "Expected $case_name to exit 7, got $status" >&2; exit 1; }
+  case "$case_name" in
+    untyped) grep -Fq '(missing type: Bug)' <<<"$output" ;;
+    unmilestoned) grep -Fq '(missing milestone: v54)' <<<"$output" ;;
+  esac
+done
 
 set +e
-orphan_output=$(PATH="$fake_bin:$PATH" \
-  TEST_PUBLIC_SOURCE="$test_dir/main.mp4" \
-  TEST_RCLONE_SIZE="$test_dir/rclone-size" \
-  TEST_RCLONE_STATE="$test_dir/rclone-state" \
-  ISSUE_VIDEO_REMOTE='mock:issue-evidence' \
-  ISSUE_VIDEO_PUBLIC_BASE_URL='https://media.example.com/issue-evidence' \
-  bash "$script_dir/publish-issue.sh" \
-    --repo udecode/plate \
-    --title-file "$test_dir/title.txt" \
-    --body-file "$test_dir/body.md" \
-    --video "$test_dir/main.mp4" \
-    --video "$test_dir/next.mp4" \
-    --confirm-create 2>&1)
-orphan_status=$?
+output=$(TEST_PLATFORM_READBACK=iOS create ok)
+status=$?
 set -e
-[[ "$orphan_status" == 5 ]] || {
-  echo "Expected partial upload exit 5, got $orphan_status" >&2
-  exit 1
-}
-[[ $(grep -Fc 'Issue was not created; public upload may be orphaned:' <<<"$orphan_output") == 2 ]]
-grep -Eq 'public upload may be orphaned: .*-[0-9a-f]{32}-1-main\.mp4' <<<"$orphan_output"
-grep -Eq 'public upload may be orphaned: .*-[0-9a-f]{32}-2-next\.mp4' <<<"$orphan_output"
+[[ "$status" == 7 ]] || { echo "Expected a wrong Platform readback to exit 7, got $status" >&2; exit 1; }
+grep -Fq '(missing platform: Android)' <<<"$output"
 
-set +e
-post_create_output=$(PATH="$fake_bin:$PATH" bash "$script_dir/publish-issue.sh" \
-  --repo udecode/plate \
-  --title-file "$test_dir/title.txt" \
-  --body-file "$test_dir/body.md" \
-  --confirm-create 2>&1)
-post_create_status=$?
-set -e
-[[ "$post_create_status" == 7 ]] || {
-  echo "Expected post-create verification exit 7, got $post_create_status" >&2
-  exit 1
-}
-grep -Fq 'Issue created but post-create verification failed: https://github.com/udecode/plate/issues/123' \
-  <<<"$post_create_output"
-
-set +e
-body_mismatch_output=$(PATH="$fake_bin:$PATH" TEST_ISSUE_READBACK=wrong-body \
-  bash "$script_dir/publish-issue.sh" \
-    --repo udecode/plate \
-    --title-file "$test_dir/title.txt" \
-    --body-file "$test_dir/body.md" \
-    --confirm-create 2>&1)
-body_mismatch_status=$?
-set -e
-[[ "$body_mismatch_status" == 7 ]] || {
-  echo "Expected mismatched body to fail verification with exit 7, got $body_mismatch_status" >&2
-  exit 1
-}
-grep -Fq '(body mismatch)' <<<"$body_mismatch_output"
-printf '%s\n' 'Editor drag crashes the page' >"$test_dir/non-beta-title.txt"
-if bash "$script_dir/publish-issue.sh" \
-  --repo udecode/plate \
-  --title-file "$test_dir/non-beta-title.txt" \
-  --body-file "$test_dir/body.md" \
-  --dry-run >/dev/null 2>&1; then
-  echo 'Publisher accepted a non-Beta title' >&2
-  exit 1
-fi
-if bash "$script_dir/publish-issue.sh" \
-  --repo example/example \
-  --title-file "$test_dir/title.txt" \
-  --body-file "$test_dir/body.md" \
-  --dry-run >/dev/null 2>&1; then
-  echo 'Publisher accepted a non-Plate repository' >&2
-  exit 1
-fi
-if bash "$script_dir/publish-issue.sh" \
-  --repo udecode/plate \
-  --title-file "$skill_dir/assets/title.example.txt" \
-  --body-file "$skill_dir/assets/issue-body.md" \
-  --dry-run >/dev/null 2>&1; then
-  echo 'Publisher accepted unresolved placeholders' >&2
-  exit 1
-fi
-
-# Publisher behavior is checked above. General skill discovery/source checks
-# belong to the project skill validator, not literal prose assertions here.
 for old_recorder_path in \
   "$skill_dir/assets/shot-plan.example.json" \
   "$skill_dir/references/shot-plan.md" \
@@ -210,7 +208,7 @@ for old_recorder_path in \
     exit 1
   fi
 done
-rg -q 'gh api --method POST' "$script_dir/publish-issue.sh"
+rg -q -- '--attach' "$script_dir/publish-issue.sh"
 private_upload_pattern='upload/policies/'"assets|upload/"'assets'
 if rg -n "$private_upload_pattern" \
   "$script_dir/publish-issue.sh" \

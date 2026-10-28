@@ -582,6 +582,9 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       isAndroidMutationOwned: options.isAndroidMutationOwned,
       isCanonicalTextMutation: options.isCanonicalTextMutation,
       isComposing: options.isComposing,
+      ...(options.isCompositionLeasedMutation
+        ? { isCompositionLeasedMutation: options.isCompositionLeasedMutation }
+        : {}),
       ...(options.maxRepairPassesPerFrame === undefined
         ? {}
         : { maxRepairPassesPerFrame: options.maxRepairPassesPerFrame }),

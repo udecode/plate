@@ -1,7 +1,7 @@
 # Issue draft
 
 Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
-`udecode/plate` GitHub issue. A user request to publish the issue authorizes
+`udecode/plate-private` GitHub issue. A user request to publish the issue authorizes
 analysis, necessary evidence uploads, creation and read-back in one run.
 
 `draft only`, `analyze only` and `do not publish` keep the result local.
@@ -9,7 +9,7 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 ## Beta-only scope
 
 - Use this mode only for Plate `next` branch and Beta release testing.
-- Target `udecode/plate`. Stop and route to another issue workflow when the
+- Target `udecode/plate-private`. Stop and route to another issue workflow when the
   report targets `main`, a stable release, or another repository.
 - In a two-video Beta report, the baseline recording comes from `main`, the
   Slate site, the stable Plate site or another editor; the reported bug still
@@ -17,27 +17,25 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 - Treat the testing lane as confirmed Beta context even when the exact `next`
   commit or Beta package version is unknown. Record unknown build details as
   `NOT_ENOUGH_INFO`; do not downgrade the report to a generic bug.
-- Start every issue title with `[Beta]: `. Never emit or publish `[Bug]` from
-  this mode, including when the repository bug form supplies that prefix.
+- Write the title with no `[Beta]: `, `[Bug]: ` or other bracket prefix,
+  including when the repository bug form supplies one. The publisher puts the
+  issue on the `v54` milestone, which marks it as Beta, and gives it the Bug
+  type.
 
 ## Hard boundaries
 
 - Never upload evidence or create an issue when the user explicitly says
   `draft only`, `analyze only`, or `do not publish`.
-- Never publish to a repository other than `udecode/plate` from this mode.
+- Never publish to a repository other than `udecode/plate-private` from this mode.
 - Never expose tokens, cookies, passwords, private URLs, or sensitive typed
   text in video, logs, transcripts, commands, or issue bodies.
-- Never publish private-repository evidence to a public object store without a
-  separate explicit `--allow-public-video` decision.
-- Never use GitHub's undocumented web upload endpoints. The public Issues REST
-  API does not expose native attachment upload; see the official references in
-  [GitHub API references](#github-api-references) before publishing media.
-- Never put a native `github.com/user-attachments` URL inside inline code or a
-  fenced code block. GitHub renders it as code instead of issue media.
-- Never move, rewrite, duplicate, or remove a freshly saved native attachment
-  URL through the Issues REST API. Keep the Chrome-inserted Markdown at its
-  final body location; an API body rewrite can break the attachment binding.
-- Never create a GitHub Release merely to host issue evidence.
+- Never call GitHub's upload endpoints yourself. Media goes through
+  `gh issue create --attach` or `gh issue comment --attach`, as
+  [Publish](#publish) says.
+- Never put a `github.com/user-attachments` URL inside inline code or a fenced
+  code block. GitHub renders it as code instead of issue media.
+- Never rewrite a published body to add, move or remove evidence; add it in a
+  comment.
 - Use the current project Browser/Chrome control policy for live proof.
   Prefer a dedicated task tab for evidence and protect unrelated user state.
   Motion recording requires an actually available recording capability; do not
@@ -94,8 +92,8 @@ analysis, necessary evidence uploads, creation and read-back in one run.
 
 ### Text-only description
 
-1. Inspect the `udecode/plate` route, exact `next` commit or Beta package
-   version, issue templates, and nearby duplicate issues when available.
+1. Inspect the route, exact `next` commit or Beta package version, issue
+   templates, and nearby duplicate issues in `udecode/plate-private` when available.
 2. Do not record when text plus deterministic console/test/source evidence gives
    an unambiguous minimal repro.
 3. Record when motion or visual timing is the evidence: drag-and-drop, focus,
@@ -103,19 +101,36 @@ analysis, necessary evidence uploads, creation and read-back in one run.
    or a difference that prose cannot establish cleanly.
 4. If recording would add no material signal, say so and continue without it.
 
+### Sweep finds
+
+A sweep domain's triage drafts one issue per failure kind, as `verify`'s
+[sweep](../../verify/references/sweep.md) says. Its finds already carry their
+clips, find notes and retest marks.
+
+1. Read each member find's note, clip and retest mark from the round's export,
+   and run `scripts/prepare-video-evidence.sh` on each clip you cite.
+2. Write the kind's summary, expected and actual results once. Under
+   Reproduction, give each member a `### Repro <n>: <route>, <browser>`
+   heading with its own steps, and name its recording's role
+   `Repro <n> — <browser>, <route>`.
+3. When an open issue already covers the kind, draft a comment that adds the
+   new repros instead of a new issue, numbering them after the issue's own.
+4. List in the draft every other open issue of the kind. After publishing, the
+   tester closes each as a duplicate of the kind's issue.
+
 ## Build the evidence packet
 
 Keep observed facts separate from inference. Record:
 
-- target repository (`udecode/plate`) and route
+- target repository (`udecode/plate-private`) and route
 - testing lane (`next`/Beta), plus exact commit, package version, browser, and
   OS only when known
 - shortest setup and repro steps
 - expected behavior and its authority
 - actual behavior and visible error text
 - reproducibility: always, intermittent, or unknown
-- video timestamps, verified baseline source and `next` role, and public
-  evidence URLs
+- video timestamps, the verified baseline source and `next` role, and the
+  evidence files
 - caveats and missing facts
 
 Search open and closed issues for a duplicate before publishing. A similar
@@ -158,12 +173,9 @@ private information.
 ## Draft the issue
 
 Use the repository's current bug template when required, unless the user says
-not to. Otherwise use [assets/issue-body.md](../assets/issue-body.md). Override the
-bug form's default title prefix. Keep the title behavioral and searchable. Do
-not include implementation guesses as facts.
-
-The title follows the `[Beta]: ` rule above, even when a `bug` label or the
-bug-report template supplies another prefix.
+not to. Otherwise use [assets/issue-body.md](../assets/issue-body.md). Drop the
+bug form's default title prefix, as the rule above says. Keep the title
+behavioral and searchable. Do not include implementation guesses as facts.
 
 The body must contain:
 
@@ -173,155 +185,79 @@ The body must contain:
 - expected behavior with authority
 - actual behavior
 - environment only when verified
-- evidence links with timestamp notes
 - caveat when any classification is inferred
+- timestamp notes in the closing Evidence section, below which the publisher
+  attaches the recordings
 
-Write the title and body to local files before mutation. When the user has authorized publication, continue through upload, issue
-creation and verification without asking for that authority again. Otherwise
+Write the title and body to local files before mutation. When the user has
+authorized publication, continue through upload, issue creation and
+verification without asking for that authority again. Otherwise
 return the completed local draft. Resolve any material hard boundary before
 publishing.
 
-## Native Chrome attachment flow
+## Publish
 
-Use this flow only when an API-backed object store is unavailable or the user
-requires a native `github.com/user-attachments` URL.
+`scripts/publish-issue.sh` publishes through `gh issue create --attach`, which
+gh 2.102 added. gh uploads each image or video to GitHub's own attachment
+storage and swaps the file's local path in the body for the uploaded URL, so the
+publisher needs no other storage or browser upload. Check `gh --version` first and
+upgrade an older gh. gh refuses a video over 100 MB; trim a longer recording to
+the failure with `ffmpeg`.
 
-1. Read the current raw body and rendered HTML before mutation. Treat an
-   attachment inside `<pre>` or `<code>` as not published, even when its URL
-   temporarily returns HTTP 200.
-2. Compose the final body structure before uploading. GitHub Issue Forms may
-   wrap fields such as logs in fenced code blocks; choose a standalone Markdown
-   line outside every fence for the attachment.
-3. Open the issue or issue form in authenticated Chrome, place the caret at the
-   final attachment location, and upload through GitHub's documented file
-   picker. Keep the generated attachment Markdown exactly where Chrome inserts
-   it and save through the web UI.
-4. Do not clean up, reposition, or normalize the saved attachment with
-   `gh api`, the Issues REST API, or another body rewrite. Read-only API checks
-   remain allowed. If any later body edit occurs, discard all earlier media
-   verification and run the full final verification again.
-5. Verify only after the final save:
-   - the raw API body contains exactly the intended number of final attachment
-     URLs and no obsolete URL;
-   - rendered issue HTML does not place any final URL inside `<pre>` or
-     `<code>`;
-   - a fresh Chrome reload visibly renders the intended number of attachment
-     links or players;
-   - an unauthenticated fetch for every attachment returns HTTP 200 with its
-     expected media MIME type and byte size;
-   - a second public fetch of every attachment after the Chrome reload and API
-     readback still returns the same status, MIME type, and byte size.
-
-To repair broken existing native attachments, edit the issue body in Chrome,
-remove obsolete URLs before uploading, upload every source file at its final
-outside-fence labeled location, and save once. Do not create a replacement
-issue and do not mutate the body through REST after the upload.
-
-### Chrome local-file fallback
-
-Chrome automation can open GitHub's file chooser but fail at
-`fileChooser.setFiles` with `Not allowed` when the ChatGPT browser extension
-does not have **Allow access to file URLs** enabled. Treat that error as a local
-browser-permission limitation, not as a bad video or failed GitHub upload.
-
-1. Tell the user the standard fix: open `chrome://extensions`, open **Details**
-   for the ChatGPT browser extension, and enable **Allow access to file URLs**.
-   Do not change that extension permission without the user's approval.
-2. When the user has authorized publication of the supplied evidence to the
-   target public issue, continue under that authority. Prefer the existing native chooser as a non-permission
-   fallback without asking for another confirmation:
-   - use Computer Use to click the issue body's **Paste, drop, or click to add
-     files** control;
-   - in the macOS picker, press `Command+Shift+G`, enter the exact absolute
-     source path, confirm the filename and preview metadata, then click
-     **Open**;
-   - wait until GitHub replaces the `Uploading "<filename>"...` placeholder
-     with one `https://github.com/user-attachments/...` URL;
-   - save only after the placeholder is gone and the final body contains
-     exactly the intended attachment URL count.
-3. If neither extension access nor the native picker is available, cancel the
-   unsaved edit so the server body remains unchanged, keep the existing issue,
-   and report the blocker. Never create a replacement issue or publish a
-   rewritten body without the required evidence.
-4. After either upload path succeeds, run the full final verification above.
-   The fallback changes only how the local file reaches Chrome; it does not
-   weaken raw-body, rendered-player, reload, MIME, size, or second-fetch gates.
-
-## Upload and create through APIs
-
-Configure an API-backed public object store:
-
-```bash
-export ISSUE_VIDEO_REMOTE='r2:public-bucket/issue-evidence'
-export ISSUE_VIDEO_PUBLIC_BASE_URL='https://media.example.com/issue-evidence'
-```
-
-Or use a single-use presigned object-storage PUT URL without `rclone`:
-
-```bash
-export ISSUE_VIDEO_PRESIGNED_PUT_URL='<secret presigned HTTPS PUT URL>'
-export ISSUE_VIDEO_PUBLIC_URL='https://media.example.com/issue-evidence/repro.mp4'
-```
-
-Treat the presigned PUT URL as a secret. The publisher never prints it.
-Single-use presigned upload supports one video. Use the `rclone` backend for
-the standard two-video comparison so both source recordings remain separate.
-
-Preview the exact payload without upload or GitHub mutation:
+Preview the exact command and body without any upload or GitHub mutation:
 
 ```bash
 bash .agents/skills/maintainer/scripts/publish-issue.sh \
-  --repo udecode/plate \
+  --repo udecode/plate-private \
   --title-file /absolute/path/to/title.txt \
   --body-file /absolute/path/to/body.md \
-  --video /absolute/path/to/main.mp4 \
-  --video-role 'main — normal behavior (expected baseline)' \
-  --video /absolute/path/to/next.mp4 \
-  --video-role 'next — current Beta bug (actual behavior)' \
+  --attach /absolute/path/to/slate.mp4 \
+  --attach-role 'Slate — normal behavior (expected baseline)' \
+  --attach /absolute/path/to/next.mp4 \
+  --attach-role 'next — current Beta bug (actual behavior)' \
+  --platform 'Android, Chrome' \
   --dry-run
 ```
 
-When publication is authorized, pass the publisher's mechanical confirmation
-flag without asking for a second confirmation:
+Pass `--platform` with every browser and OS the repros ran on, from the
+report's environment, so Chrome on Android is `Android, Chrome`.
 
-```bash
-bash .agents/skills/maintainer/scripts/publish-issue.sh \
-  --repo udecode/plate \
-  --title-file /absolute/path/to/title.txt \
-  --body-file /absolute/path/to/body.md \
-  --video /absolute/path/to/main.mp4 \
-  --video-role 'main — normal behavior (expected baseline)' \
-  --video /absolute/path/to/next.mp4 \
-  --video-role 'next — current Beta bug (actual behavior)' \
-  --confirm-create
-```
+When publication is authorized, replace `--dry-run` with `--confirm-create`
+without asking for a second confirmation.
 
-For a private repository, add `--allow-public-video` only when the user has
-explicitly approved making that evidence public. Otherwise use an access-
-controlled storage URL or the native Chrome attachment flow.
+To add sweep members to an open issue, pass `--comment-on <issue number>`
+instead of `--title-file`, `--labels` and `--platform`. It posts one comment with the new
+repros and their recordings through `gh issue comment --attach`. Never rewrite
+a published body to add evidence.
 
-The publisher must:
+The publisher:
 
-1. reject any repository other than `udecode/plate` and any title not starting
-   with `[Beta]: ` before upload or issue creation;
-2. validate `gh`, the selected `rclone` or presigned-PUT backend,
-   authentication, video metadata, completed issue fields, repository
-   visibility, and repository access;
-3. upload every supplied video through the configured storage API before issue
-   creation, using collision-resistant object keys;
-4. follow redirects and verify every public response's MIME type and byte size;
-5. append every labeled evidence link to the body;
-6. create the issue with `gh api repos/{owner}/{repo}/issues`;
-7. read the issue back through the API and verify title, body, and every video
-   URL;
-8. return the issue URL and all upload URLs.
+1. refuses any repository other than `udecode/plate-private`, a new issue whose title
+   starts with a bracket prefix such as `[Beta]: `, an unresolved template
+   placeholder, a label outside the facet set (`ime`, `regression`), a `--platform`
+   value that is not a Platform field option (`Chrome`, `Safari`, `Firefox`,
+   `Edge`, `Android`, `iOS`), a file
+   that is not an image or video gh attaches (png, jpg, jpeg, gif, webp, svg,
+   mp4, mov or webm) and a role count that differs from the file count. The
+   Scope issue field, which `pnpm triage labels` sets, names the domain, and
+   the Platform field names each browser and OS, so no label does;
+2. puts each file under the body's `## Evidence` section, which it adds when
+   the body has none. Each file gets a `#### <role>` line above an image
+   reference alone in its paragraph, so gh embeds an image and leaves a
+   video's bare URL, which GitHub plays;
+3. refuses a gh without `--attach`;
+4. creates the issue with the Bug issue type on the `v54` milestone, or the
+   comment, reads it back and checks the title, the body's first line, the
+   issue type, the milestone and the labels, that no local path remains, and
+   that the body holds a `github.com/user-attachments` URL for each file. Then
+   it sets the Platform field through GraphQL, because `gh issue create` cannot
+   set an issue field, and reads each value back;
+5. prints the URL and every attachment URL.
 
-If any upload, public verification, or issue-creation step fails before the
-issue exists, report every attempted public object URL that may be orphaned.
-Do not silently delete remote objects.
+A failure after the issue or comment exists exits 7 and names its URL. Never
+rerun the publisher then, because a second run publishes a second copy.
 
-## GitHub API references
+## GitHub references
 
-- Issues REST API: https://docs.github.com/en/rest/issues/issues
 - Attaching files: https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/attaching-files
-- Release assets REST API: https://docs.github.com/en/rest/releases/assets
+- `gh issue create`: https://cli.github.com/manual/gh_issue_create

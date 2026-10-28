@@ -1,4 +1,14 @@
-import { type Node, NodeApi, PathApi, type Range, SelectionApi } from '../..';
+import {
+  type EditorMarks,
+  type Node,
+  NodeApi,
+  PathApi,
+  type Point,
+  type Range,
+  SelectionApi,
+} from '../..';
+import { commandViewHides } from '../../core/command-frame';
+import { toInternalRoot } from '../../core/public-root';
 import { profilePliteReactDuration } from '../render-profiler';
 import {
   failInvariant,
@@ -12,27 +22,11 @@ const hasActiveMarks = (marks: Record<string, unknown> | null) =>
 const isUnmarkedTextNode = (node: Node) =>
   NodeApi.isText(node) && Object.keys(node).length === 1;
 
-const isPlainTextLeafStart = ({
-  editor,
-  selection,
-}: {
-  editor: RuntimeEditor;
-  selection: Range;
-}) =>
+const followsPlainText = (editor: RuntimeEditor, point: Point) =>
   editor.read((state) => {
-    const { path } = selection.anchor;
+    const { path } = point;
 
-    if (path.length < 2 || selection.anchor.offset !== 0) {
-      return false;
-    }
-
-    const [node] =
-      state.nodes.get(path) ??
-      failInvariant(
-        `Expected collapsed replacement node at ${JSON.stringify(path)}`
-      );
-
-    if (!isUnmarkedTextNode(node)) {
+    if (path.length < 2) {
       return false;
     }
 
@@ -58,80 +52,74 @@ const isPlainTextLeafStart = ({
     return false;
   });
 
-const canUseExplicitCollapsedTextInsert = ({
+export type UserTextLanding = 'pinned' | 'selection' | 'stored';
+
+export const decideUserTextLanding = ({
+  activeMarks,
+  composed,
+  hidden,
+  plainLeaf,
+}: Readonly<{
+  activeMarks: boolean;
+  composed: boolean;
+  hidden: boolean;
+  plainLeaf: boolean;
+}>): UserTextLanding =>
+  activeMarks
+    ? 'selection'
+    : composed && hidden
+      ? 'stored'
+      : plainLeaf
+        ? 'pinned'
+        : 'selection';
+
+export const readUserTextLanding = ({
+  composed,
   editor,
   marks,
-  selection,
+  target,
 }: {
+  composed: boolean;
   editor: RuntimeEditor;
-  marks: Record<string, unknown> | null;
-  selection: Range;
-}) => {
-  if (hasActiveMarks(marks)) {
-    return false;
-  }
-  if (marks == null) {
-    return true;
-  }
-
-  return editor.read((state) => {
-    const [node] =
-      state.nodes.get(selection.anchor.path) ??
-      failInvariant(
-        `Expected replacement anchor at ${JSON.stringify(
-          selection.anchor.path
-        )}`
-      );
-
-    return isUnmarkedTextNode(node);
-  });
-};
-
-export const canUseCachedCollapsedTextInsert = ({
-  editor,
-  selection,
-}: {
-  editor: RuntimeEditor;
-  selection: Range;
-}) => {
+  marks?: EditorMarks | null;
+  target: Range;
+}): UserTextLanding => {
   const currentSelection = readRuntimeSelection(editor);
-  const marks = SelectionApi.isText(currentSelection)
-    ? (currentSelection.marks ?? null)
-    : null;
-
-  if (hasActiveMarks(marks)) {
-    return false;
-  }
-
-  const unmarkedTextNode = editor.read((state) => {
+  const pending =
+    marks !== undefined
+      ? marks
+      : SelectionApi.isText(currentSelection)
+        ? (currentSelection.marks ?? null)
+        : null;
+  const point = target.anchor;
+  const hidden =
+    composed &&
+    commandViewHides(
+      editor,
+      toInternalRoot(SelectionApi.root(target) ?? editor.read.view.root()),
+      point
+    );
+  const plainLeaf = editor.read((state) => {
     const [node] =
-      state.nodes.get(selection.anchor.path) ??
+      state.nodes.get(point.path) ??
       failInvariant(
-        `Expected cached insertion anchor at ${JSON.stringify(
-          selection.anchor.path
-        )}`
+        `Expected text insertion anchor at ${JSON.stringify(point.path)}`
       );
 
     return isUnmarkedTextNode(node);
   });
+  const inheritsMarks =
+    plainLeaf &&
+    pending === null &&
+    point.offset === 0 &&
+    !followsPlainText(editor, point);
+  const activeMarks = inheritsMarks
+    ? hasActiveMarks(
+        profilePliteReactDuration('model-text-input-read-marks', () =>
+          editor.read((state) => state.marks())
+        )
+      )
+    : hasActiveMarks(pending);
 
-  if (!unmarkedTextNode) {
-    return false;
-  }
-
-  if (marks !== null || selection.anchor.offset > 0) {
-    return true;
-  }
-
-  if (isPlainTextLeafStart({ editor, selection })) {
-    return true;
-  }
-
-  return canUseExplicitCollapsedTextInsert({
-    editor,
-    marks: profilePliteReactDuration('model-text-input-read-marks', () =>
-      editor.read((state) => state.marks())
-    ),
-    selection,
-  });
+  return decideUserTextLanding({ activeMarks, composed, hidden, plainLeaf });
 };
