@@ -451,10 +451,6 @@ export function EditorRuntimeProvider({
 
         if (activeViewEditors.get(root) === editor) {
           activeViewEditors.delete(root);
-
-          const nextEditor = findMountedViewEditor(root, presentation);
-
-          if (nextEditor) activeViewEditors.set(root, nextEditor);
         }
         if (viewEditors.size === 0) {
           mountedViewEditorsRef.current.delete(root);
@@ -473,7 +469,7 @@ export function EditorRuntimeProvider({
         }
       };
     },
-    [findMountedViewEditor, runtime]
+    [runtime]
   );
   const setActiveViewEditor = useCallback(
     (editor: typeof reactEditor, root: RootKey) => {
@@ -554,15 +550,13 @@ export function EditorRuntimeProvider({
         return activeOwner;
       }
 
-      const activeViewEditor = activeViewEditorsRef.current
-        .get(presentation)
-        ?.get(root);
+      const activeViewEditor = findMountedViewEditor(root, presentation);
 
       return activeViewEditor
         ? (contentRootOwnersRef.current.get(activeViewEditor) ?? null)
         : null;
     },
-    []
+    [findMountedViewEditor]
   );
   useIsomorphicLayoutEffect(() => {
     const maybeBatchUpdates =

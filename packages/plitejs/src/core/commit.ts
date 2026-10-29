@@ -18,6 +18,7 @@ import { type Path, PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { failInvariant } from '../internal/fail-invariant';
+import type { CompletedTextDeletion } from './change/builder';
 import { getDocumentChangeAfterPaths } from './change/classification';
 import {
   bindDocumentChangeNodeKeys,
@@ -76,6 +77,7 @@ type CommitInput<V extends Value> = Omit<
   afterValue: EditorDocumentValue<V>;
   beforeIndexAt?: (root: RootKey) => SnapshotIndex | undefined;
   beforeValue: EditorDocumentValue<V>;
+  completedTextDeletion?: CompletedTextDeletion | null;
   editor: Editor<V>;
   replace?: boolean;
   settlement?: EditorCommitSettlement;
@@ -94,6 +96,10 @@ const EDITOR_COMMIT_SNAPSHOT_SOURCES = new WeakMap<
   EditorCommitSnapshotSource
 >();
 const EDITOR_COMMIT_STARTED_AT = new WeakMap<EditorCommit, number>();
+const EDITOR_COMMIT_COMPLETED_TEXT_DELETIONS = new WeakMap<
+  EditorCommit,
+  CompletedTextDeletion
+>();
 
 export type EditorCommitSettlement = Readonly<{
   admitted: EditorDocumentValue;
@@ -191,6 +197,12 @@ export const getEditorCommitValue = (
 export const getEditorCommitUnsettle = (
   commit: EditorCommit
 ): DocumentChange | null => EDITOR_COMMIT_UNSETTLES.get(commit)?.() ?? null;
+
+/** @internal */
+export const getEditorCommitCompletedTextDeletion = (
+  commit: EditorCommit
+): CompletedTextDeletion | null =>
+  EDITOR_COMMIT_COMPLETED_TEXT_DELETIONS.get(commit) ?? null;
 
 /** @internal */
 export const getEditorCommitStartedAt = (commit: EditorCommit): number =>
@@ -1093,6 +1105,7 @@ export const createEditorCommit = <V extends Value>(
     afterValue,
     beforeIndexAt,
     beforeValue,
+    completedTextDeletion,
     editor,
     replace = false,
     settlement,
@@ -1154,6 +1167,9 @@ export const createEditorCommit = <V extends Value>(
     commit,
     versions.startedAt ?? globalThis.performance?.now?.() ?? Date.now()
   );
+  if (completedTextDeletion) {
+    EDITOR_COMMIT_COMPLETED_TEXT_DELETIONS.set(commit, completedTextDeletion);
+  }
   if (settlement) {
     let unsettle: DocumentChange | undefined;
 

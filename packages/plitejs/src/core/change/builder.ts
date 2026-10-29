@@ -16,6 +16,8 @@ import {
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRecords,
+  getInternalDocumentChangeRootKeys,
+  getInternalDocumentRootChange,
   valueRootIndex,
 } from './document-change';
 import { DocumentIndex, rootNodesOf } from './document-index';
@@ -151,6 +153,14 @@ export type DraftStep = Readonly<{
   composition?: CompositionStamp;
   /** Letters this step's author wrote, in its after document. */
   letters?: NewLetters;
+}>;
+
+/** @internal */
+export type CompletedTextDeletion = Readonly<{
+  fromBefore: number;
+  pathBefore: readonly number[];
+  root: string;
+  toBefore: number;
 }>;
 
 export type PreparedDocumentChange = Readonly<{
@@ -308,6 +318,66 @@ export class ChangeDraft {
   /** @internal */
   get draftSteps(): readonly DraftStep[] {
     return this.appliedSteps;
+  }
+
+  /** @internal */
+  completedTextDeletion(): CompletedTextDeletion | null {
+    const split = this.appliedSteps.findIndex(
+      (step) => step.origin === 'canonical'
+    );
+
+    if (split <= 0) return null;
+
+    const own = this.appliedSteps.slice(0, split);
+    const completion = this.appliedSteps.slice(split);
+
+    if (
+      completion.some((step) => step.origin !== 'canonical') ||
+      own.some(
+        ({ change }) =>
+          change.createRoots.size > 0 || change.deleteRoots.size > 0
+      )
+    ) {
+      return null;
+    }
+
+    const change = own.reduce<DocumentChange>(
+      (composed, step) => composed.compose(step.change),
+      DocumentChange.empty
+    );
+    const [root, ...otherRoots] = getInternalDocumentChangeRootKeys(change);
+
+    if (!root || otherRoots.length > 0) return null;
+
+    const before = own
+      .find((step) => step.indexedBefore.has(root))
+      ?.indexedBefore.get(root);
+
+    if (!before) return null;
+
+    const range = getInternalDocumentRootChange(change, root)?.pureDeletionOn(
+      before
+    );
+
+    if (!range) return null;
+
+    const leaf = before
+      .nodeRangesTouching(range[0], range[1])
+      .find(
+        (node) =>
+          node.kind === 'text' &&
+          node.contentFrom === range[0] &&
+          node.contentTo === range[1]
+      );
+
+    return leaf
+      ? Object.freeze({
+          fromBefore: range[0],
+          pathBefore: leaf.path,
+          root,
+          toBefore: range[1],
+        })
+      : null;
   }
 
   /** @internal */

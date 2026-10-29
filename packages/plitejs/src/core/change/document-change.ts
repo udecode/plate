@@ -629,6 +629,18 @@ export const hasInternalDocumentChangeRoot = (
   root: string
 ) => getInternalDocumentRootChange(change, root) !== undefined;
 
+/** @internal */
+export const isInternalDocumentChangeNoop = (
+  change: DocumentChange,
+  value: JsonEditorValue
+) =>
+  change.createRoots.size === 0 &&
+  change.deleteRoots.size === 0 &&
+  getInternalDocumentChangeRecords(change).size === 0 &&
+  [...getInternalDocumentChangeEntries(change)].every(([root, rootChange]) =>
+    rootChange.isNoopOn(valueRootIndex(value, root))
+  );
+
 /**
  * List changed roots without exposing their compact changes.
  *

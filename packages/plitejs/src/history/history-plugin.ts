@@ -34,6 +34,7 @@ import {
 import {
   collapseDocumentElementPropertyWrites,
   filterDocumentChangeRecordSets,
+  isInternalDocumentChangeNoop,
 } from '../core/change/document-change';
 import {
   getEditorCommitStartedAt,
@@ -46,6 +47,7 @@ import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
   documentReplacement,
+  getCurrentSelectionRoot,
   getEditorUpdateRoot,
   isBuildingTransactionSpec,
   isInTransaction,
@@ -57,6 +59,7 @@ import {
 import { EditorNoncanonicalChangeError } from '../core/schema-validation';
 import { createEditorEffect } from '../core/transaction-values';
 import { consumeCommitCarets, restoreHistoryCarets } from '../core/view-carets';
+import { getSelection } from '../interfaces/editor';
 import { type Batch, History, type HistoryJSON } from './history';
 import {
   historyCaretViews,
@@ -351,28 +354,23 @@ const toChangeValue = <V extends Value>(
 });
 
 const consumeHistoryBatch = <V extends Value>(
+  editor: Editor<V>,
   tx: HistoryTransaction<V>,
   batch: Batch<V>,
   direction: 'redo' | 'undo',
   root: string
 ) => {
+  const target = direction === 'undo' ? 'before' : 'after';
+  const caretRoot = getSelection(getEditorRuntimeOwner(editor))
+    ? getCurrentSelectionRoot(editor)
+    : undefined;
+
   tx.changes.apply(batch.change);
   for (const effect of batch.effects) {
     tx.effects.emit(effect.type, effect.value);
   }
-  if (
-    shouldRestoreHistoricSelection(
-      root,
-      batch,
-      direction === 'undo' ? 'before' : 'after'
-    )
-  ) {
-    restoreHistoricSelection(
-      tx,
-      batch,
-      root,
-      direction === 'undo' ? 'before' : 'after'
-    );
+  if (shouldRestoreHistoricSelection(root, caretRoot, batch, target)) {
+    restoreHistoricSelection(editor, tx, batch, root, target);
   }
 };
 
@@ -398,7 +396,7 @@ const applyHistoryAction = <V extends Value>(
   );
 
   runHistoricUpdate(root, tx, entry.batch, () => {
-    consumeHistoryBatch(tx, entry.batch, direction, root);
+    consumeHistoryBatch(editor, tx, entry.batch, direction, root);
     if (entry.carets) {
       restoreHistoryCarets(
         editor,
@@ -798,6 +796,14 @@ const createHistoryPlugin = <
         queuePendingHistoryReplayMapping(editor, changes, after);
         queueHistoryMapping(editor, changes, after);
       }
+      return undefined;
+    }
+
+    if (
+      effects.length === 0 &&
+      !anchorCapture?.recovery &&
+      isInternalDocumentChangeNoop(changes, before)
+    ) {
       return undefined;
     }
 

@@ -6,7 +6,10 @@ import {
   type Value,
 } from '..';
 import { getInternalDocumentChangeRootKeys } from '../core/change/document-change';
+import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
+import { getUpdateView, withEditorUpdateRootScope } from '../core/public-state';
+import type { AnyEditor } from '../interfaces/editor';
 import type { Batch } from './history';
 
 export const clonePoint = (point: Point, root?: string): Point => {
@@ -84,16 +87,37 @@ export const shouldPreserveHistoricDOMSelection = <V extends Value>(
   batch: Batch<V>
 ) => !batch.change.empty && !batchHasRoot(batch, root);
 
+const replayDeletesCaretRootAndKeepsHistoricRoot = <V extends Value>(
+  batch: Batch<V>,
+  caretRoot: string | undefined,
+  historicRoot: string | undefined
+) =>
+  historicRoot !== undefined &&
+  caretRoot !== undefined &&
+  batch.change.deleteRoots.has(caretRoot) &&
+  !batch.change.deleteRoots.has(historicRoot);
+
 export const shouldRestoreHistoricSelection = <V extends Value>(
   root: string,
+  caretRoot: string | undefined,
   batch: Batch<V>,
   target: 'after' | 'before'
-) =>
-  !batch.change.empty &&
-  getHistoricSelectionRoot(batch, target) === root &&
-  batchHasRoot(batch, root);
+) => {
+  if (batch.change.empty) return false;
+
+  const historicRoot = getHistoricSelectionRoot(batch, target);
+
+  if (historicRoot === root && batchHasRoot(batch, root)) return true;
+
+  return replayDeletesCaretRootAndKeepsHistoricRoot(
+    batch,
+    caretRoot,
+    historicRoot
+  );
+};
 
 export const restoreHistoricSelection = <V extends Value>(
+  editor: AnyEditor,
   tx: Pick<EditorUpdateTransaction<V>, 'selection'>,
   batch: Batch<V>,
   viewRoot: string,
@@ -109,5 +133,12 @@ export const restoreHistoricSelection = <V extends Value>(
 
   if (root === viewRoot) {
     tx.selection.set(restoredSelection);
+    return;
   }
+
+  const owner = getEditorRuntimeOwner(editor);
+
+  withEditorUpdateRootScope(owner, root, () => {
+    getUpdateView(owner).selection.set(restoredSelection);
+  });
 };

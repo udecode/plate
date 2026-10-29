@@ -2627,6 +2627,98 @@ export class RootChange {
     );
   }
 
+  isNoopOn(document: DocumentIndex) {
+    let position = 0;
+
+    for (let index = 0; index < this.sections.length;) {
+      if (this.sections[index + 1] === -1) {
+        position += this.sections[index];
+        index += 2;
+        continue;
+      }
+
+      const from = position;
+      const first = index;
+      let insertedLength = 0;
+
+      while (index < this.sections.length && this.sections[index + 1] !== -1) {
+        if (this.sections[index + 1] === -2) return false;
+
+        position += this.sections[index];
+        insertedLength += this.sections[index + 1];
+        index += 2;
+      }
+
+      if (insertedLength !== position - from) return false;
+
+      const replacement = PreparedTokenSlice.concat(
+        this.data
+          .slice(first >> 1, index >> 1)
+          .map(
+            (slice) =>
+              (slice as PreparedTokenSlice | null) ?? PreparedTokenSlice.empty
+          )
+      );
+
+      if (
+        !jsonEqual(
+          replacement.toJSON(),
+          document.slice(from, position).toJSON()
+        )
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  pureDeletionOn(document: DocumentIndex): readonly [number, number] | null {
+    const replacements = this.replacements();
+    const last = replacements.at(-1);
+
+    if (
+      !last ||
+      this.propertyChanges().length > 0 ||
+      replacements.some(
+        (replacement, index) =>
+          index > 0 && replacement.from !== replacements[index - 1].to
+      )
+    ) {
+      return null;
+    }
+
+    const { from } = replacements[0];
+    const { to } = last;
+    const written = PreparedTokenSlice.concat(
+      replacements.map((replacement) => replacement.insert)
+    );
+
+    if (written.length >= to - from) return null;
+
+    const removed = document.slice(from, to);
+
+    const writesBack = (removedAt: number, writtenAt: number) =>
+      jsonEqual(
+        removed.slice(removedAt, removedAt + 1).toJSON(),
+        written.slice(writtenAt, writtenAt + 1).toJSON()
+      );
+    let head = 0;
+
+    while (head < written.length && writesBack(head, head)) head += 1;
+
+    let tail = 0;
+
+    while (
+      head + tail < written.length &&
+      writesBack(removed.length - 1 - tail, written.length - 1 - tail)
+    ) {
+      tail += 1;
+    }
+
+    return head + tail === written.length ? [from + head, to - tail] : null;
+  }
+
   /** @internal */
   alignOpens(
     document: DocumentIndex,

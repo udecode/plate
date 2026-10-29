@@ -1,4 +1,4 @@
-import { type Path, type RootKey, SelectionApi } from '../..';
+import type { Path, RootKey } from '../..';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { MAIN_ROOT_KEY } from '../root-key';
 import {
@@ -8,6 +8,8 @@ import {
 import type { EditableRepairRequest } from './mutation-controller';
 import { shouldForceRenderAfterModelOwnedHistory } from './mutation-history';
 import {
+  getEditorRuntimeOwner,
+  getEditorSelectionRoot,
   getInternalDocumentChangeRootKeys,
   toInternalRoot,
 } from './runtime-editor-api';
@@ -110,9 +112,8 @@ export const getModelOwnedHistoryFocusRepair = ({
   repair?: EditableRepairRequest;
 } => {
   const shouldForceRender = shouldForceRenderAfterModelOwnedHistory(editor);
-  const selection = readRuntimeSelection(editor);
-  const selectionRoot = selection
-    ? (SelectionApi.root(selection) ?? MAIN_ROOT_KEY)
+  const selectionRoot = readRuntimeSelection(getEditorRuntimeOwner(editor))
+    ? getEditorSelectionRoot(editor)
     : null;
   const currentRoot = toInternalRoot(editor.read((state) => state.view.root()));
   const focusEditor = resolveHistoryFocusEditor({

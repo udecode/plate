@@ -2,7 +2,12 @@ import { type EditorCommit, RangeApi, type RootKey, type Selection } from '..';
 import {
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRootKeys,
+  mapInternalDocumentChangePosition,
 } from '../core/change/document-change';
+import {
+  getEditorCommitCompletedTextDeletion,
+  getEditorCommitSnapshot,
+} from '../core/commit';
 import { MAIN_ROOT_KEY, toPublicRoot } from '../core/public-root';
 import type { Batch } from './history';
 
@@ -307,6 +312,37 @@ export const createHistoryBatchGroup = (
       kind: 'properties',
       root,
       target: propertyTarget,
+    });
+  }
+
+  const deletion = getEditorCommitCompletedTextDeletion(commit);
+
+  if (deletion?.root === root) {
+    const fromAfter =
+      mapInternalDocumentChangePosition(
+        commit.changes,
+        root,
+        deletion.fromBefore
+      ) ?? failInvariant('Expected the deleted text to map into the commit');
+    const nodeKey = getEditorCommitSnapshot(commit, root, 'before').index.keyAt(
+      deletion.pathBefore
+    );
+
+    return Object.freeze({
+      afterPoint,
+      beforePoint,
+      fromAfter,
+      fromBefore: deletion.fromBefore,
+      kind: 'text',
+      mode: 'delete',
+      replacedSelection,
+      root,
+      target: Object.freeze({
+        path: pathKey(deletion.pathBefore),
+        ...(nodeKey ? { nodeKey } : {}),
+      }),
+      toAfter: fromAfter,
+      toBefore: deletion.toBefore,
     });
   }
 

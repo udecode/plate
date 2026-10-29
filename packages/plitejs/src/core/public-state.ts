@@ -9620,7 +9620,13 @@ const enterEditorRootChildren = (
   const context = getTransactionSpecContext(editor);
 
   if (context) {
-    if (context.currentChildrenRoot === targetRoot) return undefined;
+    if (
+      context.currentChildrenRoot === targetRoot &&
+      (context.activeChildrenRoot === undefined ||
+        context.activeChildrenRoot === targetRoot)
+    ) {
+      return undefined;
+    }
 
     const previousRoot = context.currentChildrenRoot;
     const previousActiveRoot = context.activeChildrenRoot;
@@ -11934,6 +11940,10 @@ export const runEditorTransaction = <R>(
                 ...snapshot.builder.draftSteps,
               ]);
             }
+            const completedTextDeletion =
+              canonicalChanges === snapshot.builder.change
+                ? snapshot.builder.completedTextDeletion()
+                : null;
             const canonicalIndexes =
               snapshot.builder.indexedAfter(canonicalChanges);
 
@@ -11990,6 +12000,7 @@ export const runEditorTransaction = <R>(
                   beforeIndexAt,
                   beforeValue,
                   changes: canonicalChanges,
+                  completedTextDeletion,
                   dirtyStateKeys: [...snapshot.dirtyStateKeys],
                   effects: [...snapshot.effects],
                   editor,
