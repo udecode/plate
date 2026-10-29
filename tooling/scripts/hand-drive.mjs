@@ -158,6 +158,10 @@ function filePages(file, sources, routes, currentBlob) {
     };
   }
 
+  if (file.startsWith(`${REGISTRY_DIR}changelog/`)) {
+    return { kind: 'pages', own: ['/docs/releases'], reach: [] };
+  }
+
   let own = [];
   let reach = [];
 
