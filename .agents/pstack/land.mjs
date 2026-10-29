@@ -12,11 +12,10 @@
 // is a fork rebases onto upstream and opens the PR there from the fork. The PR
 // body is the page `plan-page.mjs <plan> --pr` renders, with each frame it
 // prints attached, when the task changes exactly one dated plan, and the
-// commit body otherwise; a refused render stops before the push. A commit
-// body that becomes a PR body needs a `## Why` and a `## Verification`
-// section, each with text, as pstack's Opening a PR asks. When <branch>'s
-// rules require an approval that a later push dismisses, it then arms GitHub
-// auto-merge, so the PR merges once a reviewer approves its latest push.
+// commit body otherwise; a refused render stops before the push. When
+// <branch>'s rules require an approval that a later push dismisses, it then
+// arms GitHub auto-merge, so the PR merges once a reviewer approves its latest
+// push.
 // Without --message it keeps the message of the task's last commit, so a run
 // stopped by a conflict or a failed check reruns as is.
 // When every path a rebase of this checkout conflicts on matches the globs of
@@ -472,7 +471,7 @@ function squash({ subject, body }) {
   const missing = mode === 'pr' && !paged(plan) ? missingSections(body) : [];
   if (missing.length > 0) {
     fail(
-      `a PR whose body is the commit body needs ${missing.map((name) => `a \`## ${name}\` section`).join(' and ')} with text, as pstack's Opening a PR asks; ` +
+      `a PR whose body is the commit body needs ${missing.map((name) => `a \`## ${name}\` section`).join(' and ')} with text; ` +
         'add the missing text to the message and run land.mjs again with --message, or change exactly one dated plan so its page becomes the body'
     );
   }
