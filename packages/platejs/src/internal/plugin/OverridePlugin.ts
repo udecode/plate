@@ -361,7 +361,7 @@ export const OverridePlugin = definePlugin('override', {}).extend(
       readMiddleware: ({ around }) => [
         around(
           editorReads.nodes.shouldMergeNodesRemovePrevNode,
-          ({ input: { current, previous }, next }) => {
+          ({ input: { current, previous }, next, state }) => {
             const [previousNode, previousPath] = previous;
             const [, currentPath] = current;
 
@@ -376,6 +376,10 @@ export const OverridePlugin = definePlugin('override', {}).extend(
             if (
               ElementApi.isElement(previousNode) &&
               NodeApi.string(previousNode).length === 0 &&
+              !Array.from(NodeApi.elements(previousNode)).some(
+                ([element]) =>
+                  state.schema.isInline(element) && state.schema.isVoid(element)
+              ) &&
               PathApi.isSibling(previousPath, currentPath)
             ) {
               return shouldRemoveEmptyMergeTarget(previousNode, previousPath);

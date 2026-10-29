@@ -178,6 +178,9 @@ const shouldRemoveEmptyForwardStartBlock = (
     NodeApi.isElement(startBlock) &&
     editorIsBlock(editor, startBlock) &&
     NodeApi.string(startBlock) === '' &&
+    !Array.from(NodeApi.elements(startBlock)).some(([element]) =>
+      isInlineVoid(editor, element)
+    ) &&
     PointApi.equals(
       plan.start,
       editorPoint(editor, plan.effectiveStartBlockPath, { edge: 'end' })
@@ -678,6 +681,17 @@ const resolveDeletePoint = (
   const startPoint = removal.startAnchor.release();
   const endPoint = removal.endAnchor.release();
   const startBlockDropped = removal.startBlockAnchor?.release() === null;
+  // A forward join merges away the empty text after a trailing inline void,
+  // so the start anchor falls back into the void.
+  const forwardStartInInlineVoid =
+    !plan.reverse &&
+    plan.isCollapsed &&
+    plan.isAcrossBlocks &&
+    startPoint != null &&
+    isInlineVoid(
+      editor,
+      getCurrentNode(editor, PathApi.parent(startPoint.path))
+    );
   const reverseMergePoint =
     plan.reverse &&
     plan.isCollapsed &&
@@ -688,7 +702,9 @@ const resolveDeletePoint = (
       ? keptIncompatibleBlockBoundary
         ? startPoint
         : endPoint
-      : (startPoint ?? endPoint);
+      : forwardStartInInlineVoid
+        ? (endPoint ?? startPoint)
+        : (startPoint ?? endPoint);
   const collapseTarget = startBlockDropped
     ? (endPoint ?? startPoint)
     : !plan.isCollapsed && editorHasPath(editor, plan.start.path)
