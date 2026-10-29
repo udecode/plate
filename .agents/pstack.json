@@ -103,6 +103,11 @@
         "apps/www/public/r/**"
       ],
       "command": "pnpm --filter www build:registry"
+    },
+    {
+      "paths": ["apps/www/src/registry/changelog/*.json"],
+      "command": "node tooling/scripts/generate-ui-changelog-entries.mjs --write",
+      "always": true
     }
   ],
   "skip": [],
