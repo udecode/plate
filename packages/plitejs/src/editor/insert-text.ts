@@ -27,7 +27,7 @@ import { void as editorVoid } from '../interfaces/editor';
 import type { TextInsertTextOptions } from '../interfaces/transforms/text';
 import { applyInsertText } from '../transforms-text/insert-text';
 import { getDefaultInsertLocation } from '../utils';
-import { elementReadOnly } from './element-read-only';
+import { refusesReadOnlyWrite } from './element-read-only';
 
 const shouldIgnoreTarget = (
   editor: Parameters<EditorStaticApi['insertText']>[0],
@@ -43,9 +43,10 @@ const shouldIgnoreTarget = (
   })();
 
   return (
-    target != null &&
-    ((!voids && editorVoid(editor, { at: target })) ||
-      elementReadOnly(editor, { at: target }))
+    (target != null && !voids && editorVoid(editor, { at: target })) ||
+    (!!at &&
+      (LocationApi.isPoint(at) || LocationApi.isRange(at)) &&
+      refusesReadOnlyWrite(editor, at))
   );
 };
 

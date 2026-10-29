@@ -289,7 +289,8 @@ export const createDOMRepairQueue = ({
       !selection ||
       !RangeApi.isCollapsed(selection) ||
       !PathApi.equals(selection.anchor.path, target.path) ||
-      selection.anchor.offset !== insert.offset
+      selection.anchor.offset !== insert.offset ||
+      editor.read.nodes.elementReadOnly({ at: selection })
     ) {
       return false;
     }
@@ -576,6 +577,14 @@ export const createDOMRepairQueue = ({
         });
 
         if (insert.text.length === 0) {
+          return;
+        }
+        if (
+          editor.read.nodes.elementReadOnly({
+            at: { path, offset: insert.offset },
+          })
+        ) {
+          giveBackRefusedTextInsert({ insert, path, textHost });
           return;
         }
         const nextOffset = insert.offset + insert.text.length;

@@ -1,10 +1,13 @@
-import { defineEditorSchema, schema } from 'plitejs';
+import { defineEditorSchema, NodeApi, schema } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
   EditorRoot,
   useEditor,
+  useEditorComposing,
+  useElementSelected,
+  useNodeSelector,
 } from 'plitejs/react';
 
 import type {
@@ -63,19 +66,30 @@ const ForcedLayoutExample = () => {
   });
   return (
     <EditorRoot editor={editor}>
-      <Editable
-        autoFocus
-        placeholder="Enter a title…"
-        renderElement={renderElement}
-        spellCheck
-      />
+      <Editable autoFocus renderElement={renderElement} spellCheck />
     </EditorRoot>
   );
 };
 
-const Title = ({ attributes, children }: RenderElementProps<TitleElement>) => (
-  <h2 {...attributes}>{children}</h2>
-);
+const Title = ({ attributes, children }: RenderElementProps<TitleElement>) => {
+  const composing = useEditorComposing();
+  const selected = useElementSelected();
+  const empty = useNodeSelector(
+    ({ node }) => !!node && NodeApi.string(node) === ''
+  );
+
+  return (
+    <h2
+      {...attributes}
+      className="relative before:pointer-events-none before:absolute before:text-muted-foreground data-[placeholder]:before:content-[attr(data-placeholder)]"
+      data-placeholder={
+        empty && !(composing && selected) ? 'Enter a title…' : undefined
+      }
+    >
+      {children}
+    </h2>
+  );
+};
 
 const Paragraph = ({
   attributes,

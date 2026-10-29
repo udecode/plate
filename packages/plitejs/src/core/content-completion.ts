@@ -514,12 +514,14 @@ const canonicalizeRuns = (
   return sameChildren(canonical, children) ? children : canonical;
 };
 
+export type PrefixOccupantFate = 'displaced' | 'joined' | 'kept';
+
 type CompletionInput = Readonly<{
   children: NodeList<Descendant>;
   content: CompiledSchemaContentProgram;
   dropsFromEmptyText?: (key: string, value: unknown) => boolean;
   editing?: Readonly<{
-    vacated: (slot: number, candidate: Descendant) => boolean;
+    occupant: (slot: number, candidate: Descendant) => PrefixOccupantFate;
   }>;
   editor?: Editor;
   /** False for a root, which takes no empty text and no inline runs. */
@@ -545,15 +547,18 @@ const startCompletion = ({
 
   for (const [slot, prefix] of (content.prefix ?? []).entries()) {
     const candidate = children.at(consumed);
-    const displaced =
-      candidate !== undefined && editing?.vacated(slot, candidate) === true;
+    const fate = candidate && editing?.occupant(slot, candidate);
 
-    if (candidate && !displaced && schema.fitsPrefix(candidate, slot)) {
+    if (
+      candidate &&
+      fate !== 'displaced' &&
+      schema.fitsPrefix(candidate, slot)
+    ) {
       required.push(candidate);
       consumed += 1;
       continue;
     }
-    if (candidate && !displaced && editing) return null;
+    if (fate === 'kept') return null;
 
     const node = schema.create(prefix.type, prefix.properties, {
       prefix: slot,
@@ -589,14 +594,6 @@ const startCompletion = ({
 export const holdsContent = (input: CompletionInput) =>
   startCompletion(input) === null;
 
-/**
- * Required prefix slots come first; a slot the caller's change
- * vacated takes a fresh element and its candidate moves past it. After the
- * prefix, an empty stretch that admits a text holds one empty text, which
- * counts toward the minimum, so a default element is built only past it.
- * Defaults are added one canonical unit at a time until the minimum holds.
- * Children that are already complete come back as the same array.
- */
 export const completeContent = (
   input: CompletionInput & Readonly<{ children: readonly Descendant[] }>
 ): ContentCompletion => {

@@ -4431,8 +4431,8 @@ const placeSliceFitRange = (
   }
   if (
     !insertionBoundary &&
-    !options?.voids &&
-    getEditorRuntime(editor).void({ at: range })
+    ((!options?.voids && getEditorRuntime(editor).void({ at: range })) ||
+      getEditorRuntime(editor).elementReadOnly({ at: range }))
   ) {
     return false;
   }

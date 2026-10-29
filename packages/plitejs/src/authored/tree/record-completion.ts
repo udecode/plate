@@ -415,8 +415,6 @@ export const completeProposed = (
         vacated?: (slot: number, candidate: Descendant) => boolean
       ) => completeChildrenAt(input.editor, site, children, root, vacated);
       const beforeNodes = before as readonly Descendant[];
-      // As Editing's local pass, a prefix candidate the change moved up from
-      // a later child takes a fresh slot.
       const vacated = (slot: number, candidate: Descendant) =>
         beforeNodes[slot] !== candidate &&
         beforeNodes.includes(candidate, slot + 1);

@@ -11,7 +11,10 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
-import { elementReadOnly } from '../editor/element-read-only';
+import {
+  elementReadOnly,
+  refusesReadOnlyWrite,
+} from '../editor/element-read-only';
 import {
   LocationApi,
   NodeApi,
@@ -218,9 +221,10 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
     })();
 
     if (
-      LocationApi.isPoint(preflightAt) &&
-      ((!voids && editorVoid(editor, { at: preflightAt })) ||
-        elementReadOnly(editor, { at: preflightAt }))
+      (LocationApi.isPoint(preflightAt) &&
+        !voids &&
+        editorVoid(editor, { at: preflightAt })) ||
+      refusesReadOnlyWrite(editor, preflightAt)
     ) {
       return;
     }

@@ -45,6 +45,7 @@ import {
   contentKindOf,
   holdsContent,
   mixedContentWindow,
+  type PrefixOccupantFate,
 } from './content-completion';
 import {
   ContentSlice as ContentSliceValue,
@@ -74,12 +75,7 @@ const isInline = (
 ) => ElementApi.isElement(node) && schema.isInline(node);
 
 type CanonicalizeOptions = Readonly<{
-  /**
-   * `identity` vacates a prefix slot whose occupant the change displaced, by
-   * node identity against the change's before, as Editing's own pass does.
-   * `none` reads the document alone, for a check of an external change.
-   */
-  displacement?: 'identity' | 'none';
+  displacement?: 'change' | 'none';
   document?: import('../interfaces/editor').EditorDocumentValue;
   preserveInlineSpacersAdjacentTo?: ReadonlySet<Descendant>;
   report?: RepresentationRepairSink;
@@ -192,7 +188,7 @@ const completeAt = (
   options: Readonly<{
     dropsFromEmptyText?: (key: string, value: unknown) => boolean;
     editing?: Readonly<{
-      vacated: (slot: number, candidate: Descendant) => boolean;
+      occupant: (slot: number, candidate: Descendant) => PrefixOccupantFate;
     }>;
     editor?: Editor;
     flattenInto?: Element;
@@ -353,7 +349,14 @@ const completeDirectChildren = (
       root,
       {
         ...runOptions,
-        ...(vacated ? { editing: { vacated } } : {}),
+        ...(vacated
+          ? {
+              editing: {
+                occupant: (slot: number, candidate: Descendant) =>
+                  vacated(slot, candidate) ? 'displaced' : 'kept',
+              },
+            }
+          : {}),
         ...(take ? { take } : {}),
       }
     );
@@ -1101,6 +1104,42 @@ const holdsAfter = (
   return false;
 };
 
+const joinedAway = (
+  before: DocumentIndex,
+  change: RootChange,
+  path: readonly number[]
+) => {
+  const { from, to } = before.nodeRange(path);
+
+  return (
+    change.mapPos(from, 1, 'after') === null &&
+    change.mapPos(to - 1, 1, 'after') !== null
+  );
+};
+
+const positionsAfterJoins = (
+  previous: NodeList<Descendant>,
+  path: readonly number[],
+  before: DocumentIndex,
+  change: RootChange
+) => {
+  const positions = new Map<Descendant, number>();
+  let index = 0;
+  let joined = 0;
+
+  return (child: Descendant) => {
+    while (!positions.has(child) && index < previous.length) {
+      positions.set(getDefined(previous.at(index)), index - joined);
+
+      if (joinedAway(before, change, [...path, index])) joined += 1;
+
+      index += 1;
+    }
+
+    return positions.get(child) ?? previous.length;
+  };
+};
+
 const replaceCanonicalChildWindow = (
   draft: CanonicalRootDraft,
   editor: Editor,
@@ -1110,6 +1149,7 @@ const replaceCanonicalChildWindow = (
   path: readonly number[],
   window: ChildWindow,
   beforeDocument: DocumentIndex | null,
+  rootChange: RootChange | undefined,
   options: CanonicalizeOptions = {}
 ) => {
   const rootChildren = draft.document.nodes as NodeList<Descendant>;
@@ -1277,6 +1317,7 @@ const replaceCanonicalChildWindow = (
         below.path,
         below.window,
         beforeDocument,
+        rootChange,
         options
       );
     }
@@ -1289,6 +1330,7 @@ const replaceCanonicalChildWindow = (
       path,
       window,
       beforeDocument,
+      rootChange,
       options
     );
 
@@ -1376,6 +1418,7 @@ const replaceCanonicalChildWindow = (
           ? previousParent.children
           : null
       : null;
+  let positionAfterJoins: ((child: Descendant) => number) | undefined;
   const completion = {
     content: contentSpec,
     dropsFromEmptyText,
@@ -1386,10 +1429,25 @@ const replaceCanonicalChildWindow = (
     ...(previousChildren
       ? {
           editing: {
-            vacated: (slot: number, child: Descendant) =>
-              nodes.length < previousChildren.length &&
-              previousChildren.at(slot) !== child &&
-              holdsAfter(previousChildren, child, slot + 1),
+            occupant: (slot: number, child: Descendant): PrefixOccupantFate => {
+              if (
+                nodes.length >= previousChildren.length ||
+                previousChildren.at(slot) === child ||
+                !holdsAfter(previousChildren, child, slot + 1)
+              ) {
+                return 'kept';
+              }
+              if (!beforeDocument || !rootChange) return 'displaced';
+
+              positionAfterJoins ??= positionsAfterJoins(
+                previousChildren,
+                path,
+                beforeDocument,
+                rootChange
+              );
+
+              return positionAfterJoins(child) <= slot ? 'joined' : 'displaced';
+            },
           },
         }
       : {}),
@@ -1737,6 +1795,7 @@ export const constructCanonicalDocumentChange = (
           path,
           window,
           beforeDocument,
+          rootChange,
           {
             carried: carriedFor(root),
             displacement: options.displacement,
