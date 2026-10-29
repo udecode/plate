@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-29-context-menu-right-click-release",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-29-context-menu-right-click-release.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep a right-click from running the context menu item under the pointer",
+  "targets": [
+    {
+      "name": "editor-context-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/context-menu.tsx",
+        "apps/www/src/registry/bases/radix/context-menu.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-29-editor-context-menu-keep-right-click-from-ff5dd78c",
+      "kind": "fix",
+      "summary": "In the Radix version, a right-click no longer runs the menu item that appears under the pointer as the menu opens. This happened most often near the bottom of the view, where the menu moves up to fit. Pressing the right button, moving onto an item and releasing still runs that item.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["editor-context-menu"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-29",
+          "entry": "2026-10-29-context-menu-right-click-release",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

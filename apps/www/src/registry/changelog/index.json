@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-29-context-menu-right-click-release",
+      "href": "/registry/changelog/2026-10-29-context-menu-right-click-release.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep a right-click from running the context menu item under the pointer",
+      "change": {
+        "type": "source",
+        "date": "2026-10-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor-context-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-29-export-toast-names-losses",
       "href": "/registry/changelog/2026-10-29-export-toast-names-losses.json",
       "status": "draft",
