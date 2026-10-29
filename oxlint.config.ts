@@ -581,6 +581,7 @@ export default defineConfig({
         'plate/no-as-never': 'error',
         'plate/no-one-off-editor-type': 'error',
         'plate/no-second-name': 'error',
+        'plate/no-ts-suppression': 'error',
       },
     },
     {

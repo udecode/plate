@@ -710,6 +710,67 @@ const noAsNever = {
   },
 };
 
+// TypeScript's scanner tests a line comment whole and a block comment from the
+// start of its last line. It reads `@ts-nocheck` only as a `//` pragma before
+// the file's first token, in any case.
+const SUPPRESSION_LINE = /^\/\/\/?\s*@(ts-expect-error|ts-ignore)/u;
+const SUPPRESSION_BLOCK = /^(?:\/|\*)*\s*@(ts-expect-error|ts-ignore)/u;
+const NOCHECK_PRAGMA = /^\/\/\/?\s*@(ts-nocheck)(?:[^\S\r\n]|:|$)/iu;
+const LAST_LINE = /[^\n\r\u2028\u2029]*$/u;
+
+const directiveAt = (pattern, text, start) => {
+  const trimmed = text.trimStart();
+  const match = pattern.exec(trimmed);
+  if (!match) return null;
+  const at = start + text.length - trimmed.length + trimmed.indexOf('@');
+  return { directive: match[1], range: [at, at + 1 + match[1].length] };
+};
+
+const suppressionIn = (comment, leading) => {
+  const [start] = comment.range;
+  if (comment.type === 'Line') {
+    const text = `//${comment.value}`;
+    return (
+      directiveAt(SUPPRESSION_LINE, text, start) ??
+      (leading ? directiveAt(NOCHECK_PRAGMA, text, start) : null)
+    );
+  }
+  if (comment.type !== 'Block') return null;
+  const text = `/*${comment.value}*/`;
+  const lastLine = text.search(LAST_LINE);
+  return directiveAt(SUPPRESSION_BLOCK, text.slice(lastLine), start + lastLine);
+};
+
+const noTsSuppression = {
+  create(context) {
+    return {
+      Program(node) {
+        const firstToken = node.body[0]?.range[0] ?? Number.POSITIVE_INFINITY;
+        for (const comment of context.sourceCode.getAllComments()) {
+          const found = suppressionIn(comment, comment.range[1] <= firstToken);
+          if (!found) continue;
+          context.report({
+            data: { directive: found.directive },
+            messageId: 'suppressed',
+            node: { range: found.range },
+          });
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'Source declares the types it is missing instead of suppressing the type error.',
+    },
+    messages: {
+      suppressed:
+        "`@{{directive}}` hides a type error instead of fixing it (baselined in this file: {{baselined}}). Declare the missing types, such as a `declare module` in a local `.d.ts` or the dependency's own types, or repair the owning API type.",
+    },
+    type: 'problem',
+  },
+};
+
 const isStructuralEditorShape = (annotation) => {
   if (!annotation) return false;
   if (annotation.type === 'TSTypeLiteral') return true;
@@ -1853,6 +1914,7 @@ export default {
       'no-structural-mark-copy',
       noStructuralMarkCopy
     ),
+    'no-ts-suppression': withBaseline('no-ts-suppression', noTsSuppression),
     'no-wall-clock-bound': withBaseline(
       'no-wall-clock-bound',
       noWallClockBound

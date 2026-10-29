@@ -343,5 +343,31 @@
       "reshaping.push(...childMarks.filter((mark) => mark.kind === 'join'));"
     ]
   },
+  "plate/no-ts-suppression": {
+    "packages/platejs/src/docx/export/lib/internal/docx-document.ts": [
+      "// @ts-expect-error - Node is actually an Element here"
+    ],
+    "packages/platejs/src/docx/export/lib/internal/html-to-docx.ts": [
+      "// @ts-expect-error - complex type mismatch between normalized options and DocxDocumentProperties",
+      "// @ts-expect-error - DocxDocument implements DocxDocumentInstance with slight variations",
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available"
+    ],
+    "packages/platejs/src/docx/export/lib/internal/render-document-file.ts": [
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available"
+    ],
+    "packages/platejs/src/docx/export/lib/internal/xml-builder.ts": [
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available",
+      "// @ts-expect-error - no types available"
+    ]
+  },
   "plate/no-wall-clock-bound": {}
 }
