@@ -176,7 +176,10 @@ export function FontSizeToolbarButton() {
               className={cn('h-8 w-full data-[highlighted=true]:bg-accent')}
               onClick={() => {
                 setFontSize(Number(size));
-                setIsFocused(false);
+                editor.api.dom.focus();
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
               }}
               data-highlighted={size === displayValue}
               size="sm"

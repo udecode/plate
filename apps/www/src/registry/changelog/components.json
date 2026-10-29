@@ -20,6 +20,24 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
     ],
+    "font-size-toolbar-button": [
+      "2026-10-29-font-size-list-applies-size",
+      "2026-10-27-font-size-enter-returns-focus",
+      "2026-10-19-font-size-saved-units",
+      "2026-10-13-details-heading-titles",
+      "2026-09-08-multi-editor-toolbar",
+      "2026-09-08-toolbar-control-values",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-25-fix-font-size-selection-overlay",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-12-fix-font-size-selection-highlight",
+      "2026-08-03-use-schema-handles",
+      "2026-07-24-feature-toolbar-plugin-portals",
+      "2025-11-20-biome-ultracite"
+    ],
     "suggestion": [
       "2026-10-29-paged-suggestion-lines",
       "2026-10-18-discussion-preview-block-reads",
@@ -109,23 +127,6 @@
       "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry",
       "2026-08-13-fix-registry-install-dependencies"
-    ],
-    "font-size-toolbar-button": [
-      "2026-10-27-font-size-enter-returns-focus",
-      "2026-10-19-font-size-saved-units",
-      "2026-10-13-details-heading-titles",
-      "2026-09-08-multi-editor-toolbar",
-      "2026-09-08-toolbar-control-values",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-25-fix-font-size-selection-overlay",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-12-fix-font-size-selection-highlight",
-      "2026-08-03-use-schema-handles",
-      "2026-07-24-feature-toolbar-plugin-portals",
-      "2025-11-20-biome-ultracite"
     ],
     "editor": [
       "2026-10-26-editor-frame-narrow-hosts",
