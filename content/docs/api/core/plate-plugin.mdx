@@ -346,7 +346,7 @@ Action when Backspace is pressed and the block is empty. See [Plugin Rules](/doc
 
 </APISubListItem>
 <APISubListItem parent="rules" name="merge.removeEmpty" type="RuleDecision<boolean>" optional>
-Whether to remove the node when it's empty during merge operations. See [Plugin Rules](/docs/plugin-rules).
+Whether to remove the node when it's empty during merge operations. A merge into an empty node in a required `schema.content.prefix` slot, such as a title, keeps that node whatever this rule returns, when the next sibling's content fits that slot as it stands, no required block has to be built in its place and the update has not moved, replaced or edited that node. The next sibling may hold only text and inlines and may own no content root, neither node may be a void, an atom or read-only, and an empty next sibling must carry that node's text properties. That node keeps its slot and takes the content. Backspace still reads this rule before that merge. With `false` it merges at once, and with `true` the next block's delete rules, such as a heading's reset, run first. In an editor with `AuthoredPlugin`, the rule decides as usual. See [Plugin Rules](/docs/plugin-rules).
 
 - **Default:** `false`
 

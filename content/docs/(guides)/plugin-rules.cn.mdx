@@ -439,6 +439,8 @@ const plugins = [
 </h1>
 ```
 
+必需的 `schema.content.prefix` 位置中的空块（例如标题）是例外。当下一个同级块的内容可以原样放入该位置、无需在其位置新建必需的块，且本次更新没有移动、替换或编辑该空块时，无论 `removeEmpty` 返回什么，合并都会保留该空块并移入内容。下一个同级块只能包含文本和行内元素，且不能拥有内容根，两个块都不能是 void、atom 或只读块；若下一个同级块为空，它的文本属性必须与该空块相同。在安装了 [`AuthoredPlugin`](/docs/authored-changes) 的编辑器中，`removeEmpty` 照常生效。因此，在必需标题的开头按 Enter 再按 `Backspace` 会恢复标题。`Backspace` 在合并之前仍会读取 `removeEmpty`。为 `false` 时会立即合并，为 `true` 时则先运行下一个块的删除规则。因此在默认的 heading 规则下，若标题是 heading 元素，需要再按一次 `Backspace`，因为第一次会把拆分出的 heading 重置为段落。
+
 **禁用移除的 Callout：**
 
 ```tsx

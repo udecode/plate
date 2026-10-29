@@ -618,7 +618,19 @@ export type BreakRules<
 export type MergeRules<
   C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = {
-  /** Whether to remove the node when it's empty. */
+  /**
+   * Whether to remove the node when it's empty. A join into an empty node in a
+   * required prefix slot, such as a title, keeps that node and moves the next
+   * sibling's content into it whatever this returns, when that content fits
+   * the slot as it stands, no required block is left to build and the update
+   * has not moved, replaced or edited the node. That exception also needs the
+   * sibling to hold only text and inlines and own no content root, neither
+   * node to be a void, an atom or read-only, and an empty sibling to carry the
+   * node's text properties. Backspace still reads
+   * this rule before that merge. With `false` it merges at once, and with
+   * `true` the sibling's delete rules run first. `AuthoredPlugin` turns this
+   * exception off.
+   */
   removeEmpty?: RuleDecision<boolean, C>;
 };
 

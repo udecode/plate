@@ -1018,6 +1018,16 @@ export function createAndroidInputManager({
           text = text.slice(0, -1);
         }
 
+        const spansLeaves = !PathApi.equals(
+          innerTargetRange2.anchor.path,
+          innerTargetRange2.focus.path
+        );
+
+        if (spansLeaves && event.cancelable) {
+          event.preventDefault();
+          preventedTextInput = true;
+        }
+
         // If the text includes a newline, split it at newlines and paste each component
         // string, with soft breaks in between each.
         if (text.includes('\n')) {
@@ -1040,15 +1050,13 @@ export function createAndroidInputManager({
               at: innerTargetRange2,
             }
           );
+          if (preventedTextInput) {
+            flush();
+          }
           return;
         }
 
-        if (
-          PathApi.equals(
-            innerTargetRange2.anchor.path,
-            innerTargetRange2.focus.path
-          )
-        ) {
+        if (!spansLeaves) {
           canStoreDiff &&= canStoreDOMTextDiffAtRange(innerTargetRange2);
           if (!canStoreDiff && event.cancelable) {
             event.preventDefault();

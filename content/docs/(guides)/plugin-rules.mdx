@@ -438,6 +438,21 @@ After (empty paragraph removed):
 </h1>
 ```
 
+An empty block in a required `schema.content.prefix` slot, such as a title, is
+the exception. When the next sibling's content fits that slot as it stands, no
+required block has to be built in its place and the update has not moved,
+replaced or edited the empty block, the merge keeps the empty block and moves
+the content in, whatever `removeEmpty` returns. The next sibling may hold only
+text and inlines and may own no content root, neither block may be a void, an
+atom or read-only, and an empty next sibling must carry the empty block's text
+properties. In an editor
+with [`AuthoredPlugin`](/docs/authored-changes), `removeEmpty` decides as usual.
+So Enter at the start of a required title, then `Backspace`, gives the title
+back. `Backspace` still reads `removeEmpty` before that merge. With `false` it
+merges at once, and with `true` the next block's delete rules run first. So
+with the default heading rules, a heading title takes a second `Backspace`,
+because the first resets the split-off heading to a paragraph.
+
 **Callout with removal disabled:**
 
 ```tsx

@@ -1,4 +1,5 @@
 import { getEditorSchema } from '../core/editor-runtime';
+import { joinKeepsPrefixOccupant } from '../core/prefix-occupant-join';
 import {
   NodeApi,
   type Path,
@@ -71,7 +72,7 @@ export const getPreviousEmptyBlockPathAtBlockStart = (
     return null;
   }
 
-  const [, currentBlockPath] = currentBlock;
+  const [currentBlockNode, currentBlockPath] = currentBlock;
 
   if (
     !PointApi.equals(
@@ -96,7 +97,12 @@ export const getPreviousEmptyBlockPathAtBlockStart = (
     editorIsBlock(editor, previousBlock) &&
     !getEditorSchema(editor).isVoid(previousBlock) &&
     !getEditorSchema(editor).isReadOnly(previousBlock) &&
-    editorIsEmpty(editor, previousBlock)
+    editorIsEmpty(editor, previousBlock) &&
+    !joinKeepsPrefixOccupant(
+      editor,
+      [previousBlock, previousBlockPath],
+      [currentBlockNode, currentBlockPath]
+    )
     ? previousBlockPath
     : null;
 };

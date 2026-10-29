@@ -1153,6 +1153,9 @@ const withContextsBelow = <T>(
 export const getTransactionSnapshot = (editor: Editor) =>
   getTransactionSpecContext(editor)?.snapshot;
 
+export const getUpdateStartSnapshot = (editor: Editor) =>
+  TRANSACTION_SPEC_CONTEXTS.get(editor)?.at(0)?.snapshot;
+
 /**
  * Final semantic tags visible to the active command layer.
  *

@@ -322,7 +322,7 @@ update method。
 
 </APISubListItem>
 <APISubListItem parent="rules" name="merge.removeEmpty" type="RuleDecision<boolean>" optional>
-在合并操作期间是否移除空节点。参见 [插件规则](/docs/plugin-rules)。
+在合并操作期间是否移除空节点。对于合并到必需的 `schema.content.prefix` 位置中空节点（例如标题）的操作，当下一个同级节点的内容可以原样放入该位置、无需在其位置新建必需的块，且本次更新没有移动、替换或编辑该节点时，无论此规则返回什么，合并都会保留该节点。下一个同级节点只能包含文本和行内元素，且不能拥有内容根，两个节点都不能是 void、atom 或只读节点；若下一个同级节点为空，它的文本属性必须与该节点相同。该节点保留其位置并接收这些内容。Backspace 在合并之前仍会读取此规则。为 `false` 时会立即合并，为 `true` 时则先运行下一个块的删除规则，例如 heading 的重置。在安装了 `AuthoredPlugin` 的编辑器中，此规则照常生效。参见 [插件规则](/docs/plugin-rules)。
 
 - **默认值:** `false`
 

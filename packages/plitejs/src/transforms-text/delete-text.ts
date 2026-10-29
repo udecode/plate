@@ -1,6 +1,7 @@
 import { createAnchor } from '../core/anchor';
 import { jsonEqual } from '../core/change/json';
 import { getEditorSchema } from '../core/editor-runtime';
+import { joinKeepsPrefixOccupant } from '../core/prefix-occupant-join';
 import {
   getActiveUpdateRoot,
   getChildList,
@@ -171,6 +172,7 @@ const shouldRemoveEmptyForwardStartBlock = (
   }
 
   const startBlock = getCurrentNode(editor, plan.effectiveStartBlockPath);
+  const joinedPath = PathApi.next(plan.effectiveStartBlockPath);
 
   return (
     NodeApi.isElement(startBlock) &&
@@ -179,6 +181,11 @@ const shouldRemoveEmptyForwardStartBlock = (
     PointApi.equals(
       plan.start,
       editorPoint(editor, plan.effectiveStartBlockPath, { edge: 'end' })
+    ) &&
+    !joinKeepsPrefixOccupant(
+      editor,
+      [startBlock, plan.effectiveStartBlockPath],
+      [getCurrentNode(editor, joinedPath), joinedPath]
     )
   );
 };

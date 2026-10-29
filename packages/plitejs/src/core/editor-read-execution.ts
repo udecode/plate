@@ -12,6 +12,7 @@ import { ContentSlice } from './content-slice';
 import { editorReads } from './editor-reads';
 import { getEditorRuntimeOwner, getEditorSchema } from './editor-runtime';
 import { getPluginContributions } from './plugin-registry';
+import { joinKeepsPrefixOccupant } from './prefix-occupant-join';
 import { executeEditorRead } from './read-registry';
 
 const holdsPendingBreak = (
@@ -35,6 +36,7 @@ export const resolveShouldMergeNodesRemovePrevNode = (
   applyDefault: () => boolean
 ) =>
   !holdsPendingBreak(editor, previous, current) &&
+  !joinKeepsPrefixOccupant(editor, previous, current) &&
   executeEditorRead(
     editor,
     editorReads.nodes.shouldMergeNodesRemovePrevNode,

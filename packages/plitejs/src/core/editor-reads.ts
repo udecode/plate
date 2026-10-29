@@ -23,6 +23,17 @@ export const editorReads = Object.freeze({
       Readonly<{ element: Node; nodeKey: NodeKey | null }>,
       boolean
     >('nodes.is-selectable'),
+    /**
+     * Whether a merge removes `previous`, such as an empty block, instead of
+     * joining `current` into it. Not run when `previous` is an empty block in
+     * a required prefix slot, the update has not moved, replaced or edited it,
+     * and `current`, its next sibling, fits that slot as it stands without
+     * leaving a required block to build, so that join keeps `previous`. That
+     * exception also needs `current` to hold only text and inlines and own no
+     * content root, neither block to be a void, an atom or read-only, and an
+     * empty `current` to carry `previous`'s text properties. An
+     * authored-document capability turns it off.
+     */
     shouldMergeNodesRemovePrevNode: defineRead<
       Readonly<{
         current: NodeEntry;

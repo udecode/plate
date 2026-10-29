@@ -168,15 +168,27 @@ Merge behavior decides whether two nodes can join and whether empty nodes at the
 
 `tx.nodes.merge(...)` evaluates Plate's internal
 `editorReads.nodes.shouldMergeNodesRemovePrevNode` descriptor before it applies
-the merge. Plate's merge-rule middleware adds three important guards:
+the merge. It skips the descriptor when the previous block is empty and fills a
+required `schema.content.prefix` slot, such as a title. The next sibling's
+content must also fit that slot as it stands, with no required block left to
+build, and the update must not have moved, replaced or edited the empty block.
+The next sibling may hold only text and inlines and may own no content root,
+neither block may be a void, an atom or read-only, and an empty next sibling must
+carry the empty block's text properties. The empty block then keeps its slot and takes the content. An editor
+with
+[`AuthoredPlugin`](/docs/authored-changes) still evaluates the descriptor.
+Plate's merge-rule middleware adds three important guards:
 
 | Case | Behavior |
 | --- | --- |
 | Empty text node before the merge point | Remove it when it is not the first child. |
-| Empty previous sibling | Remove it only when the owning plugin has `rules.merge.removeEmpty: true`. |
+| Empty previous sibling | Remove it only when the owning plugin has `rules.merge.removeEmpty: true`. An empty required prefix block that takes the content stays. |
 | Target node is void | Do not delete the void target by default; remove the current empty node instead when possible. |
 
 Use `removeEmpty: true` for text-like blocks such as paragraphs and headings.
+A heading in a required title slot keeps that slot. After Enter at the start of
+the title, the first `Backspace` resets the split-off heading to a paragraph,
+and the second joins it back into the title.
 
 ```tsx title="plugins.tsx" showLineNumbers
 import { HeadingPlugin } from 'platejs/react';
@@ -258,7 +270,7 @@ kind into Plate's schema before selection and transaction logic runs.
 | Callout keeps Enter inside the block. | `rules.break.default: 'lineBreak'` |
 | Empty callout becomes a paragraph. | `rules.break.empty: 'reset'` or `rules.delete.start: 'reset'` |
 | Nested item outdents on Backspace. | `rules.delete.start: 'lift'` |
-| Empty text block disappears during merge. | `rules.merge.removeEmpty: true` |
+| Empty text block disappears during merge, unless it fills a required prefix slot that takes the next block's content as it stands. | `rules.merge.removeEmpty: true` |
 | Structural wrapper survives merge. | `rules.merge.removeEmpty: false` |
 | Empty inline element disappears. | `rules.normalize.removeEmpty: true` |
 | Link boundary follows cursor direction. | `rules.selection.affinity: 'directional'` |
