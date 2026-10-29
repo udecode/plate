@@ -42,6 +42,12 @@ import {
   TWIPToEMU,
 } from './unit-conversion';
 import { vNodeHasChildren } from './vnode';
+import {
+  STYLE_RUN_KEYS,
+  type StyleRun,
+  type StyleRunKey,
+  type WordStyles,
+} from './word-styles';
 
 type XMLBuilderType = XMLBuilder;
 
@@ -324,6 +330,7 @@ type DocxDocumentInstance = {
   ) => { readonly numberingId: number; next: number };
   relationshipFilename: string;
   tableRowCantSplit: boolean;
+  wordStyles?: WordStyles;
   zip: {
     folder: (name: string) => {
       file: (
@@ -787,6 +794,7 @@ interface TableBorder extends TableCellBorder {
 }
 
 type RunAttributes = {
+  authorStrong?: boolean;
   backgroundColor?: string;
   code?: boolean;
   color?: string;
@@ -802,6 +810,7 @@ type RunAttributes = {
   reviewRunId?: string;
   strike?: boolean;
   strong?: boolean | string;
+  lookKeys?: ReadonlySet<StyleRunKey>;
   sub?: boolean;
   sup?: boolean;
   u?: boolean;
@@ -812,7 +821,6 @@ type RunAttributes = {
 interface ParagraphAttributes extends RunAttributes {
   afterSpacing?: number;
   beforeSpacing?: number;
-  blockquoteBorder?: boolean;
   bookmarkId?: string | null;
   colSpan?: number;
   description?: string;
@@ -1282,9 +1290,23 @@ const modifiedStyleAttributesBuilder = (
     const style =
       (vn.properties ?? failInvariant('Expected value to be defined')).style ??
       failInvariant('Expected value to be defined');
+    const own = new Set(
+      (vn.properties?.attributes?.['data-docx-own-style'] ?? '')
+        .split(';')
+        .map((declaration) => declaration.split(':')[0].trim().toLowerCase())
+    );
+    const lookKeys = new Set(modifiedAttributes.lookKeys);
+    const from = (key: StyleRunKey, property: string) => {
+      if (own.has(property)) {
+        lookKeys.delete(key);
+      } else {
+        lookKeys.add(key);
+      }
+    };
 
     if (style.color && !colorlessColors.includes(style.color)) {
       modifiedAttributes.color = fixupColorCode(style.color);
+      from('color', 'color');
     }
 
     // A background parseColorCode cannot read is dropped, not painted black.
@@ -1294,7 +1316,10 @@ const modifiedStyleAttributesBuilder = (
         ? parseColorCode(style['background-color'])
         : undefined;
 
-    if (backgroundColor) modifiedAttributes.backgroundColor = backgroundColor;
+    if (backgroundColor) {
+      modifiedAttributes.backgroundColor = backgroundColor;
+      from('backgroundColor', 'background-color');
+    }
 
     if (
       style['vertical-align'] &&
@@ -1314,14 +1339,18 @@ const modifiedStyleAttributesBuilder = (
     // FIXME: remove bold check when other font weights are handled.
     if (style['font-weight'] && style['font-weight'] === 'bold') {
       modifiedAttributes.strong = style['font-weight'];
+      if (own.has('font-weight')) modifiedAttributes.authorStrong = true;
+      from('strong', 'font-weight');
     }
     if (style['font-family'] && docxDocumentInstance) {
       modifiedAttributes.font = docxDocumentInstance.createFont(
         style['font-family']
       );
+      from('font', 'font-family');
     }
     if (style['font-size']) {
       modifiedAttributes.fontSize = fixupFontSize(style['font-size']);
+      from('fontSize', 'font-size');
     }
     if (style['line-height']) {
       modifiedAttributes.lineHeight = fixupLineHeight(style['line-height']);
@@ -1351,18 +1380,15 @@ const modifiedStyleAttributesBuilder = (
     if (style.width) {
       modifiedAttributes.width = style.width;
     }
+    modifiedAttributes.lookKeys = lookKeys;
   }
 
   // paragraph only
   if (options?.isParagraph) {
     if (isVNode(vNode) && (vNode as VNodeType).tagName === 'blockquote') {
-      // A numbered quote takes its indent from its list level.
-      if (!modifiedAttributes.numbering) {
-        modifiedAttributes.indentation = { left: 284 };
-      }
-      modifiedAttributes.blockquoteBorder = true;
+      modifiedAttributes.paragraphStyle = 'Quote';
     } else if (isVNode(vNode) && (vNode as VNodeType).tagName === 'code') {
-      modifiedAttributes.highlightColor = 'lightGray';
+      modifiedAttributes.code = true;
     } else if (isVNode(vNode) && (vNode as VNodeType).tagName === 'pre') {
       modifiedAttributes.font = 'Courier';
     }
@@ -1394,6 +1420,64 @@ const modifiedStyleAttributesBuilder = (
   }
 
   return modifiedAttributes;
+};
+
+const styleRunOf = ({
+  backgroundColor,
+  color,
+  font,
+  fontSize,
+  strong,
+}: ParagraphAttributes): StyleRun => ({
+  ...(backgroundColor ? { backgroundColor } : {}),
+  ...(color ? { color } : {}),
+  ...(font ? { font } : {}),
+  ...(fontSize ? { fontSize } : {}),
+  ...(strong ? { strong: true } : {}),
+});
+
+export const defineNamedStyles = (
+  docxDocumentInstance: DocxDocumentInstance,
+  wordStyles: WordStyles,
+  {
+    blockquote,
+    code,
+    kbd,
+  }: Readonly<Record<'blockquote' | 'code' | 'kbd', VNodeType | undefined>>
+) => {
+  const quote = modifiedStyleAttributesBuilder(
+    docxDocumentInstance,
+    blockquote ?? null,
+    {},
+    { isParagraph: true }
+  );
+
+  wordStyles.define({
+    code: styleRunOf(
+      modifiedStyleAttributesBuilder(docxDocumentInstance, code ?? null, {})
+    ),
+    keyboard: styleRunOf(
+      modifiedStyleAttributesBuilder(docxDocumentInstance, kbd ?? null, {})
+    ),
+    quote: {
+      afterSpacing: quote.afterSpacing,
+      beforeSpacing: quote.beforeSpacing,
+      run: styleRunOf(quote),
+    },
+  });
+};
+
+export const quoteScope = (
+  docxDocumentInstance: DocxDocumentInstance,
+  vNode: VNodeType,
+  scope: BlockScope
+): BlockScope => {
+  const { backgroundColor: _backgroundColor, ...quote } =
+    modifiedStyleAttributesBuilder(docxDocumentInstance, vNode, scope, {
+      isParagraph: true,
+    });
+
+  return quote;
 };
 
 // html tag to formatting function
@@ -1433,10 +1517,6 @@ const buildFormatting = (
     case 'mark': {
       return buildHighlight();
     }
-    case 'code':
-    case 'kbd': {
-      return buildHighlight('lightGray');
-    }
     case 'highlightColor': {
       return buildHighlight(options?.color ? options.color : 'lightGray');
     }
@@ -1456,28 +1536,59 @@ const buildFormatting = (
       // does this need a unit of measure?
       return buildFontSize(options?.fontSize ? options.fontSize : 10);
     }
-    case 'hyperlink': {
-      return buildRunStyleFragment('Hyperlink');
-    }
   }
 
   return null;
 };
 
 const buildRunProperties = (
-  attributes: RunAttributes | undefined
+  attributes: ParagraphAttributes | undefined,
+  wordStyles?: WordStyles
 ): XMLBuilderType => {
   const runPropertiesFragment = fragment({
     namespaceAlias: { w: namespaces.w },
   }).ele('@w', 'rPr');
   if (attributes && attributes.constructor === Object) {
+    const look: { -readonly [Key in StyleRunKey]?: StyleRun[Key] } = {};
+
+    for (const key of wordStyles ? STYLE_RUN_KEYS : []) {
+      if (
+        attributes.lookKeys?.has(key) &&
+        attributes[key] !== undefined &&
+        !(key === 'strong' && attributes.authorStrong)
+      ) {
+        Object.assign(look, {
+          [key]: key === 'strong' ? true : attributes[key],
+        });
+      }
+    }
+    const styleId = wordStyles
+      ? wordStyles.runStyle({
+          hyperlink: attributes.hyperlink === true,
+          look,
+          paragraphStyle: attributes.paragraphStyle,
+          semantic: attributes.code
+            ? attributes.kbd
+              ? 'codeKeyboard'
+              : 'code'
+            : attributes.kbd
+              ? 'keyboard'
+              : undefined,
+        })
+      : attributes.hyperlink
+        ? 'Hyperlink'
+        : undefined;
+
+    if (styleId) {
+      runPropertiesFragment.import(buildRunStyleFragment(styleId));
+    }
     Object.keys(attributes).forEach((key) => {
       const value = (attributes as Record<string, unknown>)[key];
 
       // Skip undefined values to prevent default 'black' being applied
       if (value === undefined) return;
 
-      if (key === 'reviewRunId') return;
+      if (key === 'reviewRunId' || key in look) return;
 
       const options: FormattingOptions = {};
       if (
@@ -1568,7 +1679,8 @@ const buildRun = async (
     '@w',
     'r'
   );
-  const runPropertiesFragment = buildRunProperties(cloneDeep(attributes));
+  const runAttributes = attributes;
+  const tagFormatting: XMLBuilderType[] = [];
 
   // case where we have recursive spans representing font changes
   if (isVNode(vNode) && (vNode as VNodeType).tagName === 'span') {
@@ -1610,10 +1722,10 @@ const buildRun = async (
         vNodes.shift() ?? failInvariant('Expected value to be defined');
       if (isVText(tempVNode)) {
         const textFragment = buildTextElement((tempVNode as VTextType).text);
-        const tempRunPropertiesFragment = buildRunProperties({
-          ...attributes,
-          ...tempAttributes,
-        });
+        const tempRunPropertiesFragment = buildRunProperties(
+          { ...attributes, ...tempAttributes },
+          docxDocumentInstance?.wordStyles
+        );
         tempRunFragment.import(tempRunPropertiesFragment);
         tempRunFragment.import(textFragment);
         runFragmentsArray.push(tempRunFragment);
@@ -1627,10 +1739,11 @@ const buildRun = async (
       } else if (isVNode(tempVNode)) {
         const tempVn = tempVNode as VNodeType;
         if (nestedRunTagSet.has(tempVn.tagName || '')) {
-          tempAttributes = {};
+          tempAttributes = { ...tempAttributes };
           switch (tempVn.tagName) {
             case 'strong':
             case 'b': {
+              tempAttributes.authorStrong = true;
               tempAttributes.strong = true;
               break;
             }
@@ -1680,9 +1793,7 @@ const buildRun = async (
           }
           const formattingFragment = buildFormatting(tempVn.tagName || '');
 
-          if (formattingFragment) {
-            runPropertiesFragment.import(formattingFragment);
-          }
+          if (formattingFragment) tagFormatting.push(formattingFragment);
           // go a layer deeper if there is a span somewhere in the children
         } else if (tempVn.tagName === 'span') {
           const spanFragment = await buildRunOrRuns(
@@ -1719,6 +1830,14 @@ const buildRun = async (
     }
   }
 
+  const runPropertiesFragment = buildRunProperties(
+    cloneDeep(runAttributes),
+    docxDocumentInstance?.wordStyles
+  );
+
+  for (const formatting of tagFormatting) {
+    runPropertiesFragment.import(formatting);
+  }
   runFragment.import(runPropertiesFragment);
   if (isVText(vNode)) {
     const textFragment = buildTextElement((vNode as VTextType).text);
@@ -1998,6 +2117,11 @@ const buildParagraphProperties = (
     namespaceAlias: { w: namespaces.w },
   }).ele('@w', 'pPr');
   if (attributes && attributes.constructor === Object) {
+    if (attributes.paragraphStyle) {
+      paragraphPropertiesFragment.import(
+        buildPStyle(attributes.paragraphStyle)
+      );
+    }
     Object.keys(attributes).forEach((key) => {
       switch (key) {
         case 'structureRevision': {
@@ -2053,12 +2177,6 @@ const buildParagraphProperties = (
           }
           break;
         }
-        case 'paragraphStyle': {
-          const pStyleFragment = buildPStyle(attributes.paragraphStyle);
-          paragraphPropertiesFragment.import(pStyleFragment);
-          attributes.paragraphStyle = undefined;
-          break;
-        }
         case 'indentation': {
           const indentationFragment = buildIndentation(
             attributes[key] ?? failInvariant('Expected value to be defined')
@@ -2066,25 +2184,6 @@ const buildParagraphProperties = (
           paragraphPropertiesFragment.import(indentationFragment);
 
           attributes.indentation = undefined;
-          break;
-        }
-        case 'blockquoteBorder': {
-          // Add left border for blockquote styling
-          const borderFragment = fragment({
-            namespaceAlias: { w: namespaces.w },
-          })
-            .ele('@w', 'pBdr')
-            .ele('@w', 'left')
-            .att('@w', 'val', 'single')
-            // 2.25pt border width
-            .att('@w', 'sz', '18')
-            .att('@w', 'space', '4')
-            .att('@w', 'color', 'CCCCCC')
-            .up()
-            .up();
-          paragraphPropertiesFragment.import(borderFragment);
-
-          attributes.blockquoteBorder = undefined;
           break;
         }
       }
@@ -2269,7 +2368,11 @@ const buildParagraph = async (
         paragraphFragment.import(runOrHyperlinkFragments);
       }
     } else if (vn.tagName === 'blockquote') {
-      const runFragmentOrFragments = await buildRun(vNode, attributes);
+      const runFragmentOrFragments = await buildRun(
+        vNode,
+        attributes,
+        docxDocumentInstance
+      );
       if (Array.isArray(runFragmentOrFragments)) {
         for (const runFragment of runFragmentOrFragments) {
           paragraphFragment.import(runFragment);

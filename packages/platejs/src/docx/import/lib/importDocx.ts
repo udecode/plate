@@ -451,11 +451,14 @@ const mappingLossDiagnostics = (
   return diagnostics;
 };
 
-const localAttribute = (element: Element, name: string) =>
+const localAttributeNode = (element: Element, name: string) =>
   Array.from(element.attributes).find(
     (attribute) =>
       attribute.localName === name || attribute.name.split(':').at(-1) === name
-  )?.value ?? null;
+  );
+
+const localAttribute = (element: Element, name: string) =>
+  localAttributeNode(element, name)?.value ?? null;
 
 const documentElements = (document: Document | Element) =>
   Array.from(document.getElementsByTagName('*'));
@@ -1544,6 +1547,49 @@ const stripNoteMarkers = (
   }
 };
 
+const DOCX_STYLE_MAP = [
+  'comment-reference => sup',
+  "p[style-name='Quote'] => blockquote > p:fresh",
+  "r[style-name='HTML Code Keyboard'] => kbd > code",
+  "r[style-name='HTML Code'] => code",
+  "r[style-name='HTML Keyboard'] => kbd",
+  "r[style-name='Plate Look'] =>",
+];
+
+const RUN_STYLE_FAMILIES = new Map(
+  ['HTML Code', 'HTML Code Keyboard', 'HTML Keyboard', 'Plate Look'].map(
+    (name) => [name.toUpperCase(), name]
+  )
+);
+
+// Mammoth compares style names without case.
+const canonicalizeRunStyles = (styles: Document) => {
+  let renamed = false;
+
+  for (const style of documentElements(styles)) {
+    if (
+      style.localName !== 'style' ||
+      wordAttribute(style, 'type') !== 'character'
+    ) {
+      continue;
+    }
+    const name = Array.from(style.children).find(
+      (child) => child.localName === 'name'
+    );
+    const value = name ? localAttributeNode(name, 'val') : undefined;
+    const family = value
+      ? RUN_STYLE_FAMILIES.get(value.value.toUpperCase().replace(/ \d+$/u, ''))
+      : undefined;
+
+    if (value && family && family !== value.value) {
+      value.value = family;
+      renamed = true;
+    }
+  }
+
+  return renamed;
+};
+
 const importProjection = async (
   target: DocxImportTarget<Value>,
   arrayBuffer: ArrayBuffer,
@@ -1555,7 +1601,7 @@ const importProjection = async (
   throwIfDocxAborted(signal, target.dom.abortError);
   const mammothResult = await target.toHtml(
     { arrayBuffer, buffer: arrayBuffer as never },
-    { styleMap: ['comment-reference => sup'] }
+    { styleMap: DOCX_STYLE_MAP }
   );
 
   throwIfDocxAborted(signal, target.dom.abortError);
@@ -2020,6 +2066,9 @@ const importBoundedDocx = async <V extends Value>(
   instrumentComments(document, codec);
   throwIfDocxAborted(signal, target.dom.abortError);
   rewritten.set('word/document.xml', target.dom.serializeXml(document));
+  if (parts.styles && canonicalizeRunStyles(parts.styles)) {
+    rewritten.set('word/styles.xml', target.dom.serializeXml(parts.styles));
+  }
   const normalized = await pkg.toArrayBuffer(rewritten);
   throwIfDocxAborted(signal, target.dom.abortError);
   let projection: Awaited<ReturnType<typeof importProjection>>;

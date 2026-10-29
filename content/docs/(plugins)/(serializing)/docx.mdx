@@ -251,11 +251,13 @@ const result = await exportDocx(editor, {
 
 Named roots, document metadata, removed link destinations, and other properties DOCX cannot represent are warnings under both policies. An `accepted` export omits a comment whose annotated content that projection excludes, and reports a warning, as Word does when the annotated suggestion is rejected.
 
+A heading, list, table or other block inside a blockquote exports in its place but outside the quote. A blockquote inside a blockquote merges into the outer quote. Two blockquotes in a row come back from Word as one quote when the first ends and the second starts with a paragraph that is not a list item. Each case reports a `quote-structure` warning under both policies.
+
 ### Lists
 
 Each Plate list becomes one Word list. Its `listLevels` give the list's level starts, `lvlRestart` rules and level text. An item with `listRestart`, or one whose number Word would not reach, gets a numbering instance of its own that overrides that level's start, as Word's Restart Numbering writes it. The items after it count on from it in the list's own instance. Word and a re-import then show the numbers the editor shows, and the restart stays on that item. Word draws one marker style per list level, so an item whose `listStyle` differs from the first item at its level keeps that first style and reports a `list-marker` warning under both policies. A Word list level is numbered or unordered, as its first item is, and the exporter writes one set of level rules per list. Bullets and to-dos share unordered levels, and every to-do takes the document's shared to-do numbering. A numbered item at an unordered level, or the reverse, is therefore not part of its list in Word, and an item whose `listLevels` differ from its list's first item takes that item's rules. A kind split reports a `list-structure` warning, and so does a numbered or task item whose `listLevels` differ from its list's first numbered or task item; `lossPolicy: 'reject'` fails the export. A bullet without `listId`, as Markdown and AI output write it, stays out of the kind check, because a Markdown bullet list never shares a list with a numbered one. Word has no start that applies only when an item opens its level, and it takes each level's start from the list's first item, 1 by default. A numbered or task item whose `listStart` differs from the start its list's first numbered or task item gives that level exports its shown number and reports a `list-start` warning under both policies. Bullets take no part in the level-rule and start checks, so a bullet that leads its list gives Word its level rules and starts without a warning.
 
-A heading or blockquote that is a list item keeps its heading style and bookmark or its quote border, and takes its number and indent from its list level. A table cell exports its blocks as the body does, and a nested table and its images fit the cell that holds them.
+A heading or blockquote that is a list item keeps its heading style and bookmark or its `Quote` style, and takes its number and indent from its list level. A numbered blockquote exports as one numbered paragraph that joins the text of the blocks it holds. Export warns when it holds more than one paragraph or any other block. A table cell exports its blocks as the body does, and a nested table and its images fit the cell that holds them.
 
 ### Links and images
 
@@ -312,6 +314,28 @@ The top and bottom margin, in `pt` or `px`, of a paragraph, heading or other
 block drawn as one Word paragraph sets its Word space before and after. A margin
 on a list, list item or table does not reach the file. Without a margin, the
 Word paragraph and heading styles set that spacing.
+
+What the `stylesheet` adds to a run, such as a heading's size or a header
+cell's bold, exports as a Word character style named `Plate Look`. Runs that
+need a different look get `Plate Look 2`, `Plate Look 3` and so on. Each style
+leaves out what the paragraph's Word style already sets, because Word turns
+bold off when two style levels both turn it on. Direct run formatting in the
+file holds only a node's own marks and style. When a custom `component` puts a
+span inside `strong` or `b`, the content after that element in the same parent
+also exports as direct bold. Paragraph alignment, spacing and line height
+export as direct paragraph formatting.
+
+Each paragraph of a blockquote takes Word's `Quote` paragraph style. Inline
+code and keyboard text take the `HTML Code`, `HTML Keyboard` and
+`HTML Code Keyboard` character styles. These styles carry the stylesheet's
+`blockquote`, `code` and `kbd` rules. A code or keyboard run gets a numbered
+copy of its style, such as `HTML Code 2`, when it also sits in a link, when
+the stylesheet gives it a look its style lacks, or when both its style and its
+paragraph style are bold. Import reads these styles and their numbered copies
+back as a blockquote and as code and kbd marks. A numbered copy whose name
+element also declares a namespace prefix named `val` imports as plain text
+with a warning. A `Plate Look` style adds no mark, so a heading or header cell
+comes back without a bold mark.
 
 The app may pass a custom root `component` when it needs a different wrapper.
 `DOCX_EXPORT_STYLES` is the registry's copied presentation preset.

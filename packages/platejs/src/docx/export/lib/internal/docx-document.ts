@@ -39,6 +39,7 @@ import settingsXMLString from './schemas/settings';
 import generateStylesXML from './schemas/styles';
 import generateThemeXML from './schemas/theme';
 import webSettingsXMLString from './schemas/web-settings';
+import { WordStyles } from './word-styles';
 
 const QUOTED_FONT_PATTERN = /(["'])(.*?)\1/;
 
@@ -311,6 +312,7 @@ export interface DocxDocumentProperties {
   lineNumberOptions?: LineNumberOptions;
   margins?: Margins | null;
   modifiedAt?: Date;
+  namedStyleHtml?: string;
   numbering?: ListStyleDefaults;
   orientation?: string;
   pageNumber?: boolean;
@@ -479,6 +481,7 @@ class DocxDocument {
   margins: DocumentMargins;
   mediaFiles: MediaFileInfo[];
   modifiedAt: Date;
+  namedStyleHtml: string;
   numberingObjects: NumberingObject[];
   fontTableObjects: FontTableObject[];
   orientation: string;
@@ -493,11 +496,13 @@ class DocxDocument {
   tableRowCantSplit: boolean;
   title: string;
   width: number;
+  readonly wordStyles = new WordStyles();
   zip: JSZip;
 
   constructor(properties: DocxDocumentProperties) {
     this.zip = properties.zip;
     this.htmlString = properties.htmlString;
+    this.namedStyleHtml = properties.namedStyleHtml ?? '';
     this.allowRemoteImages = properties.allowRemoteImages === true;
     this.orientation = properties.orientation || defaultOrientation;
     this.pageSize = properties.pageSize || defaultDocumentOptions.pageSize;
@@ -775,7 +780,8 @@ class DocxDocument {
         this.font,
         this.fontSize,
         this.complexScriptFontSize,
-        this.lang
+        this.lang,
+        this.wordStyles.toXml()
       )
     );
   }

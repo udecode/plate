@@ -13,13 +13,16 @@ import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
 import namespaces from './namespaces';
 import { vNodeHasChildren } from './vnode';
+import type { WordStyles } from './word-styles';
 import {
   type BlockScope,
   buildImage,
   buildList,
   buildParagraph,
   buildTable,
+  defineNamedStyles,
   itemNumberingId,
+  quoteScope,
   type RenderBlocks,
   withItemRestart,
 } from './xml-builder';
@@ -80,8 +83,10 @@ type DocxDocumentInstance = {
   ) => { readonly numberingId: number; next: number };
   registerBookmark: (htmlId: string) => void;
   htmlString: string;
+  namedStyleHtml: string;
   relationshipFilename: string;
   tableRowCantSplit: boolean;
+  wordStyles: WordStyles;
   zip: {
     folder: (name: string) => {
       file: (
@@ -245,11 +250,10 @@ async function findXMLEquivalent(
   scope: BlockScope
 ): Promise<void> {
   const childIndentedAncestor = isIndented(vNode) ? vNode : indentedAncestor;
-  // A block's own keys come first, so its w:pStyle leads w:pPr, and still win.
   const paragraph = (
     node: VNodeType | VTextType | null,
     own: BlockScope = {}
-  ) => buildParagraph(node, { ...own, ...scope, ...own }, docxDocumentInstance);
+  ) => buildParagraph(node, { ...scope, ...own }, docxDocumentInstance);
   const maximumWidth = scope.maximumWidth ?? null;
 
   if (
@@ -460,8 +464,21 @@ async function findXMLEquivalent(
       xmlFragment.import(paragraphFragment);
       return;
     }
+    case 'blockquote': {
+      if (scope.numbering) {
+        xmlFragment.import(await paragraph(vNode));
+        return;
+      }
+      await renderQuote(
+        docxDocumentInstance,
+        vNode,
+        xmlFragment,
+        childIndentedAncestor,
+        scope
+      );
+      return;
+    }
     case 'a':
-    case 'blockquote':
     case 'code':
     case 'pre': {
       const paragraphFragment = await paragraph(vNode);
@@ -619,6 +636,56 @@ async function findXMLEquivalent(
   }
 }
 
+const isBlank = (nodes: ReadonlyArray<VNodeType | VTextType>) =>
+  nodes.every((node) => isVText(node) && !(node as VTextType).text.trim());
+
+async function renderQuote(
+  docxDocumentInstance: DocxDocumentInstance,
+  vNode: VNodeType,
+  xmlFragment: XMLBuilderType,
+  indentedAncestor: VNodeType | undefined,
+  scope: BlockScope
+) {
+  const quote = quoteScope(docxDocumentInstance, vNode, scope);
+  let inline: Array<VNodeType | VTextType> = [];
+  const emit = async (node: VNodeType) => {
+    xmlFragment.import(await buildParagraph(node, quote, docxDocumentInstance));
+  };
+  const flush = async () => {
+    if (!isBlank(inline)) await emit(new VNode('p', null, inline));
+    inline = [];
+  };
+
+  for (const child of vNode.children ?? []) {
+    if (isInlineElement(child)) {
+      inline.push(child);
+      continue;
+    }
+    await flush();
+
+    const block = child as VNodeType;
+
+    if (
+      ['div', 'p'].includes(block.tagName ?? '') &&
+      (block.children ?? []).every(
+        (grandchild) =>
+          isInlineElement(grandchild) && !containsSpecialElements(grandchild)
+      )
+    ) {
+      await emit(new VNode('p', block.properties, block.children));
+    } else {
+      await convertVTreeToXML(
+        docxDocumentInstance,
+        block,
+        xmlFragment,
+        indentedAncestor,
+        scope
+      );
+    }
+  }
+  await flush();
+}
+
 export async function convertVTreeToXML(
   docxDocumentInstance: DocxDocumentInstance,
   vTree: VTree | null,
@@ -675,6 +742,33 @@ async function renderDocumentFile(
   };
 
   registerBookmarks(vTree);
+
+  const named: Partial<Record<'blockquote' | 'code' | 'kbd', VNodeType>> = {};
+  const findNamed = (tree: VTree) => {
+    if (Array.isArray(tree)) {
+      for (const child of tree) findNamed(child);
+    } else if (isVNode(tree)) {
+      const node = tree as VNodeType;
+
+      if (
+        node.tagName === 'blockquote' ||
+        node.tagName === 'code' ||
+        node.tagName === 'kbd'
+      ) {
+        named[node.tagName] ??= node;
+      }
+      for (const child of node.children ?? []) findNamed(child);
+    }
+  };
+
+  if (docxDocumentInstance.namedStyleHtml) {
+    findNamed(convertHTML(docxDocumentInstance.namedStyleHtml));
+  }
+  defineNamedStyles(docxDocumentInstance, docxDocumentInstance.wordStyles, {
+    blockquote: named.blockquote,
+    code: named.code,
+    kbd: named.kbd,
+  });
 
   const xmlFragment = fragment({ namespaceAlias: { w: namespaces.w } });
 

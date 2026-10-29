@@ -60,6 +60,7 @@ export type DocumentOptions = {
   lineNumberOptions?: LineNumberOptions;
   margins?: Margins | null;
   modifiedAt?: Date;
+  namedStyleHtml?: string;
   numbering?: NumberingOptions;
   orientation?: 'landscape' | 'portrait';
   pageNumber?: boolean;

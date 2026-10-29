@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-29-export-toast-names-losses",
+      "href": "/registry/changelog/2026-10-29-export-toast-names-losses.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Name each feature an export loses in its warning toast",
+      "change": {
+        "type": "source",
+        "date": "2026-10-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["export-toolbar-button"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-29-word-import-keeps-the-rest",
       "href": "/registry/changelog/2026-10-29-word-import-keeps-the-rest.json",
       "status": "draft",

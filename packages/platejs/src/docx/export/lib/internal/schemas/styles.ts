@@ -1,10 +1,35 @@
 import namespaces from '../namespaces';
+import type { StyleRun } from '../word-styles';
+
+export const HEADING_RUNS: ReadonlyMap<string, StyleRun> = new Map(
+  (
+    [
+      ['1', 48],
+      ['2', 36],
+      ['3', 28],
+      ['4', 24],
+      ['5', undefined],
+      ['6', 20],
+    ] as const
+  ).map(([level, fontSize]) => [level, { fontSize, strong: true }])
+);
+
+export const HYPERLINK_RUN: StyleRun = { color: '0000FF' };
+
+const headingRunXml = (level: number) => {
+  const fontSize = HEADING_RUNS.get(String(level))?.fontSize;
+
+  return `<w:rPr><w:b />${
+    fontSize ? `<w:sz w:val="${fontSize}" /><w:szCs w:val="${fontSize}" />` : ''
+  }</w:rPr>`;
+};
 
 const generateStylesXML = (
   font: string,
   fontSize: number,
   complexScriptFontSize: number,
-  lang: string
+  lang: string,
+  extraStyles = ''
 ): string => `
   <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
@@ -27,7 +52,7 @@ const generateStylesXML = (
 	<w:style w:type="character" w:styleId="Hyperlink">
 	  <w:name w:val="Hyperlink" />
 	  <w:rPr>
-		<w:color w:val="0000FF" />
+		<w:color w:val="${HYPERLINK_RUN.color}" />
 		<w:u w:val="single" />
 	  </w:rPr>
 	</w:style>
@@ -43,11 +68,7 @@ const generateStylesXML = (
 		<w:spacing w:before="480" />
 		<w:outlineLvl w:val="0" />
 	  </w:pPr>
-	  <w:rPr>
-		<w:b />
-		<w:sz w:val="48" />
-		<w:szCs w:val="48" />
-	  </w:rPr>
+	  ${headingRunXml(1)}
 	</w:style>
 	<w:style w:type="paragraph" w:styleId="Heading2">
 	  <w:name w:val="heading 2" />
@@ -62,11 +83,7 @@ const generateStylesXML = (
 		<w:spacing w:before="360" w:after="80" />
 		<w:outlineLvl w:val="1" />
 	  </w:pPr>
-	  <w:rPr>
-		<w:b />
-		<w:sz w:val="36" />
-		<w:szCs w:val="36" />
-	  </w:rPr>
+	  ${headingRunXml(2)}
 	</w:style>
 	<w:style w:type="paragraph" w:styleId="Heading3">
 	  <w:name w:val="heading 3" />
@@ -82,11 +99,7 @@ const generateStylesXML = (
 		<w:spacing w:before="280" w:after="80" />
 		<w:outlineLvl w:val="2" />
 	  </w:pPr>
-	  <w:rPr>
-		<w:b />
-		<w:sz w:val="28" />
-		<w:szCs w:val="28" />
-	  </w:rPr>
+	  ${headingRunXml(3)}
 	</w:style>
 	<w:style w:type="paragraph" w:styleId="Heading4">
 	  <w:name w:val="heading 4" />
@@ -102,11 +115,7 @@ const generateStylesXML = (
 		<w:spacing w:before="240" w:after="40" />
 		<w:outlineLvl w:val="3" />
 	  </w:pPr>
-	  <w:rPr>
-		<w:b />
-		<w:sz w:val="24" />
-		<w:szCs w:val="24" />
-	  </w:rPr>
+	  ${headingRunXml(4)}
 	</w:style>
 	<w:style w:type="paragraph" w:styleId="Heading5">
 	  <w:name w:val="heading 5" />
@@ -122,9 +131,7 @@ const generateStylesXML = (
 		<w:spacing w:before="220" w:after="40" />
 		<w:outlineLvl w:val="4" />
 	  </w:pPr>
-	  <w:rPr>
-		<w:b />
-	  </w:rPr>
+	  ${headingRunXml(5)}
 	</w:style>
 	<w:style w:type="paragraph" w:styleId="Heading6">
 	  <w:name w:val="heading 6" />
@@ -140,12 +147,9 @@ const generateStylesXML = (
 		<w:spacing w:before="200" w:after="40" />
 		<w:outlineLvl w:val="5" />
 	  </w:pPr>
-	  <w:rPr>
-		<w:b />
-		<w:sz w:val="20" />
-		<w:szCs w:val="20" />
-	  </w:rPr>
+	  ${headingRunXml(6)}
 	</w:style>
+  ${extraStyles}
   </w:styles>
   `;
 

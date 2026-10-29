@@ -66,6 +66,7 @@ interface NormalizedDocumentOptions {
   lineNumberOptions?: LineNumberOptions;
   margins?: NormalizedMargins | null;
   modifiedAt?: Date;
+  namedStyleHtml?: string;
   numbering?: NumberingOptions;
   orientation?: 'landscape' | 'portrait';
   pageNumber?: boolean;
@@ -235,6 +236,9 @@ const normalizeDocumentOptions = (
   }
   if (documentOptions.modifiedAt !== undefined) {
     result.modifiedAt = documentOptions.modifiedAt;
+  }
+  if (documentOptions.namedStyleHtml !== undefined) {
+    result.namedStyleHtml = documentOptions.namedStyleHtml;
   }
   if (documentOptions.numbering !== undefined) {
     result.numbering = documentOptions.numbering;

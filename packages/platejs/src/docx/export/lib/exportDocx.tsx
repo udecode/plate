@@ -3,6 +3,7 @@ import { dequal } from 'dequal';
 import type { AuthoredProjectionDiagnostic } from '../../../authored';
 import { AuthoredPlugin, projectAuthoredRange } from '../../../authored';
 import {
+  BaseParagraphPlugin,
   type BasePluginInput,
   type Descendant,
   type Element,
@@ -13,6 +14,7 @@ import {
   type Path,
   type Range,
 } from '../../../core';
+import { BaseBlockquotePlugin } from '../../../features/basic-nodes';
 import { projectPlateFormatDocument } from '../../../lib/editor/withPlite';
 import type { EditorStaticProps } from '../../../static/components/PlateStatic';
 import { renderStaticHtmlWithOverrides } from '../../../static/internal/renderStaticHtmlWithOverrides';
@@ -365,6 +367,109 @@ const listDiagnostics = (
   return diagnostics;
 };
 
+const quoteDiagnostics = (
+  editor: Editor,
+  children: readonly Descendant[],
+  commentId?: string
+): readonly DocxDiagnostic[] => {
+  const quote = editor.plugin(BaseBlockquotePlugin);
+
+  if (!quote.installed) return [];
+
+  const paragraphType = editor.plugin(BaseParagraphPlugin).schema.type;
+  const diagnostics: DocxDiagnostic[] = [];
+  const place = (path: Path) =>
+    commentId === undefined
+      ? path.join('.')
+      : `${path.join('.')} in comment ${commentId}`;
+  const warn = (path: Path, message: string) => {
+    diagnostics.push({
+      code: 'lossy-content',
+      feature: 'quote-structure',
+      message,
+      path,
+      severity: 'warning',
+      ...(commentId === undefined ? {} : { sourceId: commentId }),
+    });
+  };
+  const mergesIntoQuote = (child: Descendant) =>
+    ElementApi.isElement(child) &&
+    child.type === quote.schema.type &&
+    child.listType === undefined;
+  const leavesQuote = (child: Descendant) =>
+    ElementApi.isElement(child) &&
+    !mergesIntoQuote(child) &&
+    (child.type !== paragraphType || child.listType !== undefined);
+  const writesQuoteParagraphAt = (node: Descendant, end: -1 | 0): boolean => {
+    const child = ElementApi.isElement(node)
+      ? node.children.at(end)
+      : undefined;
+
+    return (
+      child !== undefined &&
+      !leavesQuote(child) &&
+      (!mergesIntoQuote(child) || writesQuoteParagraphAt(child, end))
+    );
+  };
+  const visit = (nodes: readonly Descendant[], parentPath: Path) => {
+    nodes.forEach((node, index) => {
+      if (!ElementApi.isElement(node)) return;
+
+      const path = [...parentPath, index];
+
+      if (node.type === quote.schema.type) {
+        const previous = nodes[index - 1];
+
+        if (
+          ElementApi.isElement(previous) &&
+          previous.type === quote.schema.type &&
+          writesQuoteParagraphAt(previous, -1) &&
+          writesQuoteParagraphAt(node, 0)
+        ) {
+          warn(
+            path,
+            `The quote at ${place(path)} joins the quote before it in Word.`
+          );
+        }
+        if (node.listType !== undefined) {
+          if (
+            node.children.length > 1 ||
+            node.children.some(
+              (child) => mergesIntoQuote(child) || leavesQuote(child)
+            )
+          ) {
+            warn(
+              path,
+              `The numbered quote at ${place(path)} exports as one paragraph in Word.`
+            );
+          }
+          return;
+        }
+        node.children.forEach((child, childIndex) => {
+          const childPath = [...path, childIndex];
+
+          if (mergesIntoQuote(child)) {
+            warn(
+              childPath,
+              `The quote at ${place(childPath)} merges into the quote around it in Word.`
+            );
+          } else if (leavesQuote(child)) {
+            warn(
+              childPath,
+              `The block at ${place(childPath)} exports outside its quote.`
+            );
+          }
+        });
+      }
+      visit(node.children, path);
+    });
+  };
+
+  visit(children, []);
+
+  return diagnostics;
+};
+
 const renderDocxHtml = async (
   editor: Editor,
   document: EditorDocumentValue,
@@ -520,7 +625,8 @@ const isContentLoss = (diagnostic: DocxDiagnostic) =>
     diagnostic.feature !== 'document-metadata' &&
     diagnostic.feature !== 'list-marker' &&
     diagnostic.feature !== 'list-start' &&
-    diagnostic.feature !== 'named-root');
+    diagnostic.feature !== 'named-root' &&
+    diagnostic.feature !== 'quote-structure');
 
 const generateDocx = async (html: string, options: DocxExportOptions) => {
   try {
@@ -586,6 +692,10 @@ export async function exportDocx(
     ...sourceResolution.diagnostics,
     ...nativeOnly,
     ...listDiagnostics(capture.document),
+    ...quoteDiagnostics(editor, capture.document.children),
+    ...capture.comments.flatMap(({ body, id, target }) =>
+      target ? quoteDiagnostics(editor, body, id) : []
+    ),
     ...snapshot.diagnostics,
     ...capture.diagnostics,
   ];

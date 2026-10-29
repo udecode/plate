@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-29-export-toast-names-losses",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-29-export-toast-names-losses.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Name each feature an export loses in its warning toast",
+  "targets": [
+    {
+      "name": "export-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/export-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-29-export-toolbar-name-each-feature-an-b81c5ca9",
+      "kind": "fix",
+      "summary": "Name each feature an export loses in its warning toast",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["export-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-29",
+          "entry": "2026-10-29-export-toast-names-losses",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -65,18 +65,43 @@ const readAppStyles = () =>
     }
   }).join('\n');
 
-const toastWarnings = (
-  diagnostics: ReadonlyArray<Readonly<{ severity: 'error' | 'warning' }>>
-) => {
-  const warningCount = diagnostics.filter(
-    ({ severity }) => severity === 'warning'
-  ).length;
+const plural = (count: number, noun: string) =>
+  `${count} ${noun}${count === 1 ? '' : 's'}`;
 
-  if (warningCount > 0) {
-    toast.warning(
-      `Exported with ${warningCount} warning${warningCount === 1 ? '' : 's'}.`
+const toastWarnings = (
+  diagnostics: ReadonlyArray<
+    Readonly<{
+      feature?: string;
+      impact?: string;
+      severity: 'error' | 'warning';
+    }>
+  >
+) => {
+  const lost = new Set<string>();
+  let other = 0;
+
+  for (const { feature, impact, severity } of diagnostics) {
+    if (severity !== 'warning' || impact === 'lossless') continue;
+    if (feature) {
+      lost.add(feature.replaceAll('-', ' '));
+    } else {
+      other += 1;
+    }
+  }
+
+  const messages: string[] = [];
+
+  if (lost.size > 0) {
+    messages.push(`Lost on export: ${[...lost].join(', ')}.`);
+  }
+  if (other > 0) {
+    messages.push(
+      messages.length > 0
+        ? `${plural(other, 'other warning')}.`
+        : `Exported with ${plural(other, 'warning')}.`
     );
   }
+  if (messages.length > 0) toast.warning(messages.join(' '));
 };
 
 export function ExportToolbarButton() {
