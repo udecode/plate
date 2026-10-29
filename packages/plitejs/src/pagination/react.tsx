@@ -629,10 +629,95 @@ const createElementLayouts = (
   return layouts;
 };
 
-type TextLine = Extract<PageLayoutFragment, { type: 'text' }>['lines'][number];
+type TextFragment = Extract<PageLayoutFragment, { type: 'text' }>;
+type TextLine = TextFragment['lines'][number];
+
+type PaginationAdmission = Readonly<{
+  parked: readonly TextFragment[];
+  projected: readonly PageLayoutFragment[];
+}>;
+
+const EMPTY_ADMISSION: PaginationAdmission = { parked: [], projected: [] };
+
+const admitFragments = (
+  fragments: readonly PageLayoutFragment[],
+  mountedPageIndexes: ReadonlySet<number>,
+  mountedTopLevelIndexes: ReadonlySet<number>
+): PaginationAdmission => {
+  const projected: PageLayoutFragment[] = [];
+  const parked: TextFragment[] = [];
+
+  fragments.forEach((fragment) => {
+    if (mountedPageIndexes.has(fragment.pageIndex)) {
+      projected.push(fragment);
+    } else if (
+      fragment.type === 'text' &&
+      mountedTopLevelIndexes.has(fragment.path[0])
+    ) {
+      parked.push(fragment);
+    }
+  });
+
+  return { parked, projected };
+};
+
+const sameItems = <T,>(left: readonly T[], right: readonly T[]) =>
+  left.length === right.length &&
+  left.every((item, index) => item === right[index]);
+
+const reuseUnchangedAdmission = (
+  previous: PaginationAdmission,
+  next: PaginationAdmission
+): PaginationAdmission => {
+  const sameProjected = sameItems(previous.projected, next.projected);
+  const sameParked = sameItems(previous.parked, next.parked);
+
+  if (sameProjected && sameParked) return previous;
+  return {
+    parked: sameParked ? previous.parked : next.parked,
+    projected: sameProjected ? previous.projected : next.projected,
+  };
+};
+
+type ParkInterval = Readonly<{ end: number; path: Path; start: number }>;
+
+const PARK_INTERVALS = new WeakMap<TextFragment, readonly ParkInterval[]>();
+
+const readParkIntervals = (fragment: TextFragment) => {
+  const cached = PARK_INTERVALS.get(fragment);
+
+  if (cached) return cached;
+  const intervals = new Map<string, ParkInterval>();
+
+  fragment.lines.forEach((line) =>
+    line.runs.forEach(({ source }) => {
+      const key = pathKey(source.anchor.path);
+      const start = Math.min(source.anchor.offset, source.focus.offset);
+      const end = Math.max(source.anchor.offset, source.focus.offset);
+      const current = intervals.get(key);
+
+      intervals.set(key, {
+        end: Math.max(end, current?.end ?? end),
+        path: source.anchor.path,
+        start: Math.min(start, current?.start ?? start),
+      });
+    })
+  );
+  const result = [...intervals.values()];
+
+  PARK_INTERVALS.set(fragment, result);
+  return result;
+};
 
 const NATIVE_FLOW_BREAK_RULE =
   "[data-pagination-native-flow-break='true']::after{content:'\\A';white-space:pre}";
+
+// Find matches a phrase only within one text flow, so parked text stays in it.
+// At full size a click on a drawn line resolves into the parked text under it
+// despite pointer-events: none.
+const PARK_RULE =
+  '[data-pagination-unmounted-page]{opacity:0;pointer-events:none}' +
+  '[data-pagination-unmounted-page],[data-pagination-unmounted-page] *{font-size:0!important;line-height:0!important;margin:0!important;padding:0!important;border-width:0!important}';
 
 /**
  * A line whose text ends at a hard `\n` already breaks under the run's
@@ -653,12 +738,18 @@ const nativeFlowBreakRunIndex = (
 
 const createPaginationBuckets = (
   editor: Editor,
-  fragments: readonly PageLayoutFragment[],
+  { parked, projected: fragments }: PaginationAdmission,
   geometry: PageLayoutGeometry,
   selectedPaths: readonly Path[]
 ): ReadonlyMap<NodeKey, readonly DecorationSlice[]> => {
   const buckets = new Map<NodeKey, DecorationSlice[]>();
   const blockRects = new Map<string, PageRect[]>();
+  const push = (nodeKey: NodeKey, slice: DecorationSlice) => {
+    const current = buckets.get(nodeKey) ?? [];
+
+    current.push(slice);
+    buckets.set(nodeKey, current);
+  };
 
   fragments.forEach((fragment) => {
     if (fragment.type !== 'text') return;
@@ -736,27 +827,37 @@ const createPaginationBuckets = (
             key: `pagination:${fragment.pageIndex}:${blockKey}:${lineIndex}:${runIndex}`,
             start: rangeStart,
           });
-          const current = buckets.get(nodeKey) ?? [];
 
-          current.push(slice);
-          buckets.set(nodeKey, current);
+          push(nodeKey, slice);
         });
+      });
+    });
+
+    parked.forEach((fragment) => {
+      const blockKey = pathKey(fragment.path);
+
+      if (!blockBoxes.has(blockKey)) return;
+
+      readParkIntervals(fragment).forEach(({ end, path, start }) => {
+        const nodeKey = index.keyAt(path);
+
+        if (!nodeKey) return;
+        push(
+          nodeKey,
+          createContainerDecorationSlice({
+            attributes: Object.freeze({
+              'data-pagination-unmounted-page': fragment.pageIndex,
+            }),
+            end,
+            key: `pagination-park:${fragment.pageIndex}:${blockKey}:${pathKey(path)}`,
+            start,
+          })
+        );
       });
     });
   });
 
   return buckets;
-};
-
-const fragmentContainsPath = (fragment: PageLayoutFragment, path: Path) => {
-  if (PathApi.equals(fragment.path, path)) return true;
-  if (fragment.type === 'direct-children') {
-    return fragment.children.some((child) =>
-      PathApi.isCommon(child.path, path)
-    );
-  }
-
-  return PathApi.isCommon(fragment.path, path);
 };
 
 export type PagedEditablePageAttributes = Readonly<{
@@ -1161,28 +1262,38 @@ const PagedEditableInner = <TElement extends Element = Element>({
     () => new Set(windowedItems.flatMap((item) => item.pageIndexes)),
     [windowedItems]
   );
-  const previousProjectedFragments = useRef<readonly PageLayoutFragment[]>([]);
-  const projectedFragments = useMemo(() => {
-    const next = virtualize
-      ? (snapshot?.fragments ?? []).filter(
-          (fragment) =>
-            visiblePageIndexes.has(fragment.pageIndex) ||
-            selectedPaths.some((path) => fragmentContainsPath(fragment, path))
-        )
-      : (snapshot?.fragments ?? []);
-    const previous = previousProjectedFragments.current;
+  const previousMountedTopLevelIndexes = useRef<readonly number[]>([]);
+  const mountedTopLevelIndexes = useMemo(() => {
+    const next = [
+      ...new Set(windowedItems.flatMap((item) => item.topLevelIndexes)),
+    ].sort((left, right) => left - right);
+    const previous = previousMountedTopLevelIndexes.current;
 
-    // A caret move filters to the same fragments; keeping the array keeps
-    // every placement and element layout.
-    if (
-      next.length === previous.length &&
-      next.every((fragment, index) => fragment === previous[index])
-    ) {
-      return previous;
-    }
-    previousProjectedFragments.current = next;
+    if (sameItems(previous, next)) return previous;
+    previousMountedTopLevelIndexes.current = next;
     return next;
-  }, [selectedPaths, snapshot?.fragments, virtualize, visiblePageIndexes]);
+  }, [windowedItems]);
+  const previousAdmission = useRef(EMPTY_ADMISSION);
+  const admission = useMemo(() => {
+    const fragments = snapshot?.fragments ?? [];
+    const next = virtualize
+      ? admitFragments(
+          fragments,
+          visiblePageIndexes,
+          new Set(mountedTopLevelIndexes)
+        )
+      : { parked: EMPTY_ADMISSION.parked, projected: fragments };
+    const kept = reuseUnchangedAdmission(previousAdmission.current, next);
+
+    previousAdmission.current = kept;
+    return kept;
+  }, [
+    mountedTopLevelIndexes,
+    snapshot?.fragments,
+    virtualize,
+    visiblePageIndexes,
+  ]);
+  const projectedFragments = admission.projected;
   const placementsByPath = useMemo(
     () =>
       geometry
@@ -1207,14 +1318,9 @@ const PagedEditableInner = <TElement extends Element = Element>({
   const localBuckets = useMemo(
     () =>
       geometry
-        ? createPaginationBuckets(
-            editor,
-            projectedFragments,
-            geometry,
-            selectedPaths
-          )
+        ? createPaginationBuckets(editor, admission, geometry, selectedPaths)
         : new Map<NodeKey, readonly DecorationSlice[]>(),
-    [editor, geometry, projectedFragments, selectedPaths]
+    [admission, editor, geometry, selectedPaths]
   );
   // An inset change publishes no new layout, so the origins follow every
   // observed mutation instead of the measured geometry.
@@ -1283,9 +1389,6 @@ const PagedEditableInner = <TElement extends Element = Element>({
     [pageMountPlan]
   );
 
-  const mountedTopLevelIndexes = [
-    ...new Set(windowedItems.flatMap((item) => item.topLevelIndexes)),
-  ].sort((left, right) => left - right);
   const { pageArrayIndex, pageByIndex } = useMemo(() => {
     const pages = snapshot?.pages ?? [];
 
@@ -1310,6 +1413,9 @@ const PagedEditableInner = <TElement extends Element = Element>({
       >
         <style href="editor-pagination-native-flow-break" precedence="editor">
           {NATIVE_FLOW_BREAK_RULE}
+        </style>
+        <style href="editor-pagination-park" precedence="editor">
+          {PARK_RULE}
         </style>
         {geometry &&
           (virtualize ? windowedItems : pageMountPlan.items).flatMap((item) =>
