@@ -276,10 +276,18 @@ export const start = (root, { remote = REMOTE } = {}) => {
   return main === root ? null : attach(root);
 };
 
+const missingFilesNote = (root) => {
+  const missing = entries(privateMust(root, ['ls-files', '-z', '--deleted']));
+  return missing.length > 0
+    ? `${missing.length} private files are missing from disk, such as ${missing[0]}; run node tooling/scripts/git-private.mjs restore, or stage each deletion the task makes with node tooling/scripts/git-private.mjs rm --cached -- <path>`
+    : null;
+};
+
 /** Gives a worktree its private half, a linked worktree of the clone's. */
 export const attach = (root) => {
-  // A file missing from an attached worktree can be a deletion still to land.
-  if (isSplit(root)) return null;
+  // A missing file can be a deletion the task made or a work tree that lost
+  // its files, and only the session knows which, so it is named, not restored.
+  if (isSplit(root)) return missingFilesNote(root);
   const main = mainCheckout(root);
   const folder = path.join(main, PRIVATE_DIR);
   if (main === root || !existsSync(folder)) {
@@ -572,12 +580,8 @@ export const problems = (root) => {
           `${file} is tracked by udecode/plate, but ${PRIVATE_LIST} makes it private; run git rm --cached on it`
       )
     );
-    const missing = entries(privateMust(root, ['ls-files', '-z', '--deleted']));
-    if (missing.length > 0) {
-      found.push(
-        `${missing.length} private files are missing from disk, such as ${missing[0]}; run node tooling/scripts/git-private.mjs restore`
-      );
-    }
+    const note = missingFilesNote(root);
+    if (note) found.push(note);
   } else if (isTeamClone(root)) {
     found.push(
       `this team checkout has no ${PRIVATE_DIR}, so its tests are not on disk; run node tooling/scripts/git-private.mjs attach`

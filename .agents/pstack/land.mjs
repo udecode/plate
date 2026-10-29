@@ -33,7 +33,9 @@
 // ignores through `companion.list`, and the task's changes there land in push
 // mode, the default there, as a second commit with the same message. Every
 // land rebases the companion onto its origin/<branch> and checks both halves
-// together. The companion commit pushes after the first, with a `Lands-With:`
+// together. A companion file missing from disk stops the land until it is put
+// back, with `companion.restore` when the config names it, or its deletion is
+// staged. The companion commit pushes after the first, with a `Lands-With:`
 // line naming the commit it landed with; a refused companion push exits 75,
 // and the rerun rebases, checks and pushes it. A checkout whose config names a
 // companion it lacks refuses to land in push mode. A branch cut before
@@ -272,6 +274,14 @@ function regenerate(owners, failed, outsideHint) {
 
 // The companion's git never reads this clone's .git/info/exclude, so a path only that file ignores is local, not companion work.
 function stageCompanion() {
+  const missing = nul(cgit('ls-files', '-z', '--deleted').stdout);
+  if (missing.length > 0) {
+    const one = missing.length === 1;
+    fail(
+      `${missing.length} ${one ? 'file' : 'files'} that ${pair.dir} tracks ${one ? 'is' : 'are'} missing from disk, such as ${missing[0]}, and land.mjs never lands a missing file as a deletion. ` +
+        `Put ${one ? 'it' : 'them'} back with \`${pair.restore ?? `git --git-dir=${pair.dir} --work-tree=. checkout -- <path>`}\`, or stage each deletion the task makes with \`git --git-dir=${pair.dir} --work-tree=. rm --cached -- <path>\`, then run land.mjs again.`
+    );
+  }
   cmust('add', '--update');
   const tracked = new Set(nul(git('ls-files', '-z').stdout));
   const others = nul(cgit('ls-files', '-z', '--others', '--exclude-standard').stdout).filter((path) => !tracked.has(path));

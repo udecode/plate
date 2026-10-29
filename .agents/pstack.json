@@ -89,7 +89,8 @@
     "dir": ".git-private",
     "list": ".gitprivate",
     "migrate": "node \"$(git rev-parse --path-format=absolute --git-common-dir)/../tooling/scripts/git-private.mjs\" migrate",
-    "detach": "node tooling/scripts/git-private.mjs detach"
+    "detach": "node tooling/scripts/git-private.mjs detach",
+    "restore": "node tooling/scripts/git-private.mjs restore"
   },
   "proof": "verify",
   "skiller": true,
