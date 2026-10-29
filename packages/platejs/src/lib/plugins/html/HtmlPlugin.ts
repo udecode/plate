@@ -980,9 +980,28 @@ const compileMatcherIndex = (
   });
 };
 
+const tagClaim = (tag: string) => `tag:${tag}`;
+const styleClaim = (style: string) => `style:${style}`;
+
+const formattingClaimsOf = (rule: CompiledHtmlRule, element: HTMLElement) => {
+  let claims: string[] | undefined;
+
+  for (const matcher of rule.declaration.match) {
+    if (!matches(element, matcher)) continue;
+    claims ??= [];
+    if (matcher.tag) claims.push(tagClaim(element.tagName.toLowerCase()));
+    for (const style of Object.keys(matcher.style ?? {})) {
+      claims.push(styleClaim(normalizeStyleName(style)));
+    }
+  }
+
+  return claims;
+};
+
 const getMatchedRules = (
   index: CompiledHtmlMatcherIndex,
-  element: HTMLElement
+  element: HTMLElement,
+  formattingClaims?: Map<CompiledHtmlRule, readonly string[]>
 ): readonly CompiledHtmlRule[] => {
   const candidates = new Set<CompiledHtmlRule>();
   const add = (rules: readonly CompiledHtmlRule[] | undefined) => {
@@ -1002,9 +1021,19 @@ const getMatchedRules = (
     add(index.styles.get(normalizeStyleName(style)));
   }
 
-  return [...candidates]
-    .sort(compareRules)
-    .filter((rule) => ruleMatches(rule, element));
+  const sorted = [...candidates].sort(compareRules);
+
+  if (!formattingClaims) {
+    return sorted.filter((rule) => ruleMatches(rule, element));
+  }
+
+  return sorted.filter((rule) => {
+    const claims = formattingClaimsOf(rule, element);
+
+    if (claims) formattingClaims.set(rule, claims);
+
+    return claims !== undefined;
+  });
 };
 
 const matcherConstraintsOverlap = (left: unknown, right: unknown): boolean => {
@@ -1819,9 +1848,16 @@ export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
   'data-text-indent',
 ]);
 
+type HtmlFormattingAudit = Readonly<{
+  onUnclaimed: (name: string) => void;
+  styles: ReadonlySet<string>;
+  tags: ReadonlySet<string>;
+}>;
+
 type HtmlDecodeOperation = Readonly<{
   checkboxContent?: boolean;
   fitSchema?: boolean;
+  formatting?: HtmlFormattingAudit;
   onLoss?: (loss: HtmlMappingLoss) => void;
   operationKey: object;
   reportMappingErrors?: boolean;
@@ -1845,6 +1881,17 @@ const decodeCompiledHtml = (
     for (const attribute of attributes) claimed.add(attribute);
     claimedAttributes.set(element, claimed);
   };
+  const claimFormatting = (
+    rule: CompiledHtmlRule,
+    matchedFormatting:
+      | ReadonlyMap<CompiledHtmlRule, readonly string[]>
+      | undefined,
+    claims: Set<string>
+  ) => {
+    for (const formatting of matchedFormatting?.get(rule) ?? []) {
+      claims.add(formatting);
+    }
+  };
   // A lost element reports once; its attributes are lost with it.
   const lostElements = new Set<Element>();
   const lossAt = (element: Element) =>
@@ -1861,6 +1908,9 @@ const decodeCompiledHtml = (
   const decodeElementProperties = (
     element: HTMLElement,
     matched: readonly CompiledHtmlRule[],
+    matchedFormatting:
+      | ReadonlyMap<CompiledHtmlRule, readonly string[]>
+      | undefined,
     targetType: string,
     source: () => HtmlSourceLocation,
     initial: Readonly<Record<string, unknown>>,
@@ -1912,6 +1962,7 @@ const decodeCompiledHtml = (
       }
       if (applied) {
         for (const attribute of ruleClaims) claims.add(attribute);
+        claimFormatting(rule, matchedFormatting, claims);
       }
     }
 
@@ -1951,7 +2002,14 @@ const decodeCompiledHtml = (
 
     if (breakLine) return [{ text: breakLine }];
 
-    const matched = getMatchedRules(artifact.matcherIndex, element);
+    const matchedFormatting = operation.formatting
+      ? new Map<CompiledHtmlRule, readonly string[]>()
+      : undefined;
+    const matched = getMatchedRules(
+      artifact.matcherIndex,
+      element,
+      matchedFormatting
+    );
     let location: HtmlSourceLocation | undefined;
     // A tree path costs a sibling scan, so only a reported element pays it.
     const source = () => (location ??= htmlTreeLocation(root, element));
@@ -1996,6 +2054,7 @@ const decodeCompiledHtml = (
       );
 
       if (result === undefined) continue;
+      claimFormatting(rule, matchedFormatting, claims);
       structural = Object.freeze({ claims, result, rule });
       break;
     }
@@ -2065,7 +2124,10 @@ const decodeCompiledHtml = (
           applied = true;
         }
       }
-      if (applied) claim(element, ruleClaims);
+      if (applied) {
+        claimFormatting(rule, matchedFormatting, ruleClaims);
+        claim(element, ruleClaims);
+      }
     }
     const markedChildren =
       markValues.size > 0
@@ -2092,6 +2154,7 @@ const decodeCompiledHtml = (
       ? decodeElementProperties(
           element,
           matched,
+          matchedFormatting,
           createdType,
           source,
           initialProperties,
@@ -2186,6 +2249,7 @@ const decodeCompiledHtml = (
         const blockProperties = decodeElementProperties(
           element,
           matched,
+          matchedFormatting,
           block.type,
           source,
           Object.fromEntries(
@@ -2294,6 +2358,14 @@ const decodeCompiledHtml = (
     lostElements,
     operation.onLoss
   );
+  if (operation.formatting) {
+    reportUnclaimedFormatting(
+      root,
+      claimedAttributes,
+      lostElements,
+      operation.formatting
+    );
+  }
 
   const marked = dropOmittedTextDefaults(decoded, state);
 
@@ -2391,6 +2463,42 @@ const reportUnclaimedAttributes = (
   };
 
   visit(root, new Set());
+};
+
+const DRAWN_ON_WHITESPACE = new Set(['background-color', 'mark', 's', 'u']);
+
+const reportUnclaimedFormatting = (
+  root: HTMLElement,
+  claimed: ReadonlyMap<Element, ReadonlySet<string>>,
+  lostElements: ReadonlySet<Element>,
+  { onUnclaimed, styles, tags }: HtmlFormattingAudit
+) => {
+  const carriers = ['[style]', ...tags].join(',');
+  const elements = Array.from(root.querySelectorAll<HTMLElement>(carriers));
+
+  if (root.matches(carriers)) elements.unshift(root);
+  for (const element of elements) {
+    if (lostElements.has(element)) continue;
+    const own = claimed.get(element);
+    const tag = element.tagName.toLowerCase();
+    const unclaimed = tags.has(tag) && !own?.has(tagClaim(tag)) ? [tag] : [];
+
+    for (const name of Array.from(element.style)) {
+      const style = normalizeStyleName(name);
+
+      if (styles.has(style) && !own?.has(styleClaim(style))) {
+        unclaimed.push(style);
+      }
+    }
+    const text = element.textContent ?? '';
+
+    if (unclaimed.length === 0 || text === '') continue;
+    const visible = text.trim() !== '';
+
+    for (const name of unclaimed) {
+      if (visible || DRAWN_ON_WHITESPACE.has(name)) onUnclaimed(name);
+    }
+  }
 };
 
 const normalizeAttributeName = (name: string) => name.toLowerCase();
@@ -3606,9 +3714,11 @@ export const compileHtmlElementDecoder = (
     element: HTMLElement,
     {
       collapseWhitespace: shouldCollapseWhiteSpace = true,
+      formatting,
       onLoss,
     }: Readonly<{
       collapseWhitespace?: boolean;
+      formatting?: HtmlFormattingAudit;
       onLoss: (loss: HtmlMappingLoss) => void;
     }>
   ): Descendant[] => {
@@ -3636,6 +3746,7 @@ export const compileHtmlElementDecoder = (
       // document is content, not a form control.
       checkboxContent: true,
       fitSchema: false,
+      formatting,
       onLoss,
       operationKey,
       reportMappingErrors: false,

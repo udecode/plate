@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-29-name-lost-word-formatting",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-29-name-lost-word-formatting.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Name each format a Word import loses in the import toast",
+  "targets": [
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-29-import-toolbar-name-each-format-word-21bae61f",
+      "kind": "fix",
+      "summary": "Name each format a Word import loses, such as font size or font family, in the import toast instead of counting lost properties",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["import-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-29",
+          "entry": "2026-10-29-name-lost-word-formatting",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -154,7 +154,7 @@ const MAIN_DOCUMENT_DISPOSITIONS = new Map<string, DocxXmlDisposition>([
 const MARKUP_COMPATIBILITY_NAMESPACE =
   'http://schemas.openxmlformats.org/markup-compatibility/2006';
 const VML_NAMESPACE = 'urn:schemas-microsoft-com:vml';
-const MAMMOTH_VML_ELEMENTS = new Set([
+export const MAMMOTH_VML_ELEMENTS = new Set([
   'group',
   'rect',
   'roundrect',
@@ -163,7 +163,7 @@ const MAMMOTH_VML_ELEMENTS = new Set([
 ]);
 // The import unwraps tracked insertions, deletions and moves before Mammoth
 // reads the body.
-const MAMMOTH_WORD_CONTAINERS = new Set([
+export const MAMMOTH_WORD_CONTAINERS = new Set([
   ...CONTENT_REVISIONS,
   'body',
   'document',

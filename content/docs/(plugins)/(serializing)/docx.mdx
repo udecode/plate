@@ -128,11 +128,20 @@ for (const diagnostic of result.diagnostics) {
 }
 ```
 
+Import keeps a run's direct underline, yellow highlight, text color and background color, and a paragraph's direct center, right, end or justified alignment. Each needs its plugin installed: underline, highlight, font color, font background color or text align. Word's other named highlight colors import as a background color in the color Word draws. When a run has a highlight and shading, the highlight wins and the shading counts as dropped. A color or shading of `auto` reads as unset. A run with no text color imports with none, even on a dark background of its own. A theme color or patterned shading counts as dropped. When a paragraph's only text is Word symbols (`w:sym`), its alignment and the colors of those runs each count as dropped.
+
+A background that is not the run's own does not import. A paragraph's own shading, a cell, row or table fill, a fill from the table style the table names, a filled text box and a page background each count as a dropped `background-color`. A page background counts even when Word's settings hide it. Every fill a table style sets counts, even for a part of the table that the table's look settings turn off. A run color whose contrast ratio against white is below 1.5:1 imports only when the run carries its own background or yellow highlight. Otherwise it counts as a dropped `text-color`, whether or not import finds a fill behind it, so white text on a dark fill that is not the run's own never comes back as white on white. Without the font background color or highlight plugin, a light color on the run's own background still imports while that background counts as dropped, so such text can show white on white.
+
+When any part of the file, a picture included, holds a character reference that is not a decimal or hex number up to U+10FFFF, such as `&#example;`, import keeps no text or background color from that file. Each color it drops counts as a dropped `text-color` or `background-color`. Import ignores one with four characters or fewer between `#` and `;`, such as `&#abcd;`.
+
+Direct font size, font, caps, small caps, double strike, character spacing, line spacing, and an indent that is not zero on a paragraph outside a numbered list each return one `property-dropped` warning per feature, with a count. So does a mark or style that import carries when no installed plugin reads it, such as underline without the underline plugin. A Word `Quote` paragraph imported without the blockquote plugin keeps its paragraphs and returns a lossy `unsupported-content` diagnostic with `action: "unwrapped"`, which follows the loss policy. Import ignores a style map stored in the file at `mammoth/style-map`, which Word never writes. When that map holds a rule, import returns one `property-dropped` warning with `feature: "style-map"`. A rule is any line that is not blank and does not start with `#`. Mammoth 1.11 copies an `includeEmbeddedStyleMap` key on `Object.prototype` over Plate's option, and a crafted file imported earlier can set that key. While it is set, import refuses a file whose stored map holds a rule, with a `decode-failed` error for `mammoth/style-map`.
+
 Every `unsupported-content` diagnostic declares `impact`. A `lossless` one never fails the import. It reports markup that import removed or unwrapped while keeping what a reader sees, such as a smart tag, a content control, a link destination that could run script, or a `<style>` element that a mapping added. One `lossless` report still loses content. Import leaves out the text inside a custom XML element.
 
 Import neither keeps nor reports:
 
-- formatting the converter does not read, whether direct or from a Word style, such as underline, text and background color, highlight, alignment, font size, font, and line height;
+- formatting that a Word style sets, such as a style's color, highlight, font size or alignment;
+- direct formatting other than what this section names, such as shadow or emboss;
 - hidden text, which imports as ordinary text;
 - a header or footer part whose name does not start with `word/header` or `word/footer`;
 - headings, links, and tables imported without their plugins, which become plain text.

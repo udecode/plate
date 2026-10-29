@@ -34,6 +34,7 @@ import {
 import { cleanWordHtml } from '../../html/cleanWordHtml.internal';
 import { throwIfDocxAborted } from '../../internal/abort';
 import { captureDocxDomParsers } from '../../internal/domParser';
+import { MARKER_END, MARKER_START } from '../../internal/markerCharacters';
 import {
   type DocxListItem,
   readDocxNumbering,
@@ -69,6 +70,11 @@ import {
   resolveDocxImportLimits,
   type BoundedDocxPackage,
 } from './docxPackage';
+import {
+  createWordFormatting,
+  DOCX_CARRIED_STYLES,
+  DOCX_CARRIED_TAGS,
+} from './wordFormatting';
 import { instrumentWordMath, materializeEquations } from './wordMath';
 
 export { DocxSource } from '../../internal/source';
@@ -161,7 +167,8 @@ type DocxImportTarget<V extends Value> = Readonly<{
   assertDocument: (document: EditorDocumentValue) => void;
   decodeHtml: (
     element: HTMLElement,
-    onLoss: (loss: HtmlMappingLoss) => void
+    onLoss: (loss: HtmlMappingLoss) => void,
+    onUnclaimed: (name: string) => void
   ) => readonly Descendant[] | null;
   /**
    * Whether the proposed projection of `review`, built through the schema as
@@ -198,6 +205,7 @@ type CommentMetadata = Omit<DocxComment, 'body' | 'target'>;
 type Marker = Readonly<{
   id: string;
   kind:
+    | 'align'
     | 'binding-end'
     | 'binding-start'
     | 'comment-end'
@@ -334,7 +342,15 @@ const compileDocxImportTarget = <V extends Value>(
               )
             );
           },
-          decodeHtml: (element, onLoss) => decodeHtml(element, { onLoss }),
+          decodeHtml: (element, onLoss, onUnclaimed) =>
+            decodeHtml(element, {
+              formatting: {
+                onUnclaimed,
+                styles: DOCX_CARRIED_STYLES,
+                tags: DOCX_CARRIED_TAGS,
+              },
+              onLoss,
+            }),
           dom,
           fitDocument: (document) =>
             editorSchema.fitDocument(document) as EditorDocumentValue<V>,
@@ -532,9 +548,9 @@ const collectDocxRevisions = (
 const createMarkerCodec = (documentXml: string, markerNonce: string) => {
   let nonce = markerNonce;
 
-  while (documentXml.includes(`\uE000PDX_${nonce}_`)) nonce += 'x';
-  const prefix = `\uE000PDX_${nonce}_`;
-  const suffix = '\uE001';
+  while (documentXml.includes(`${MARKER_START}PDX_${nonce}_`)) nonce += 'x';
+  const prefix = `${MARKER_START}PDX_${nonce}_`;
+  const suffix = MARKER_END;
   const marker = (
     kind: Marker['kind'],
     id: string,
@@ -555,6 +571,10 @@ const createMarkerCodec = (documentXml: string, markerNonce: string) => {
     `${prefix}list-item_none_[^${suffix}]+${suffix}`,
     'g'
   );
+  const alignPattern = new RegExp(
+    `${prefix}align_none_([^${suffix}]+)${suffix}`,
+    'g'
+  );
 
   return {
     equation: Object.freeze({
@@ -562,6 +582,12 @@ const createMarkerCodec = (documentXml: string, markerNonce: string) => {
       end: `${prefix}equation-end${suffix}`,
       inline: `${prefix}equation-inline${suffix}`,
     }),
+    alignMarkers: (text: string) =>
+      Array.from(text.matchAll(alignPattern), (match) => ({
+        token: match[0],
+        value: decodeURIComponent(match[1]),
+      })),
+    hasMarker: (text: string) => text.includes(prefix),
     listMarkers: (text: string) => text.match(listPattern) ?? [],
     marker,
     parse(
@@ -650,8 +676,19 @@ type DocxParts = Readonly<{
   styles?: Document;
 }>;
 
-// Mammoth drops a paragraph's list identity, so each numbered paragraph
-// carries a marker run to the item Mammoth renders for it.
+// Mammoth drops a paragraph's list identity and alignment, so each numbered
+// or aligned paragraph carries a marker run to the element Mammoth renders
+// for it.
+const insertParagraphMarker = (paragraph: Element, token: string) => {
+  const properties = Array.from(paragraph.children).find(
+    (child) => child.localName === 'pPr'
+  );
+  const run = markerRun(paragraph.ownerDocument, token);
+
+  if (properties) properties.after(run);
+  else paragraph.prepend(run);
+};
+
 const instrumentNumbering = (
   document: Document,
   codec: ReturnType<typeof createMarkerCodec>,
@@ -661,20 +698,15 @@ const instrumentNumbering = (
 
   for (const [paragraph, item] of readDocxNumbering(document, parts)) {
     const { token } = codec.marker('list-item', String(items.size));
-    const properties = Array.from(paragraph.children).find(
-      (child) => child.localName === 'pPr'
-    );
-    const run = markerRun(document, token);
 
-    if (properties) properties.after(run);
-    else paragraph.prepend(run);
+    insertParagraphMarker(paragraph, token);
     items.set(token, item);
   }
 
   return items;
 };
 
-const applyListMarkers = (
+const applyParagraphMarkers = (
   node: Node,
   codec: ReturnType<typeof createMarkerCodec>,
   items: ReadonlyMap<string, DocxListItem>,
@@ -682,16 +714,19 @@ const applyListMarkers = (
 ) => {
   if (node.nodeType !== dom.textNodeType) {
     for (const child of Array.from(node.childNodes)) {
-      applyListMarkers(child, codec, items, dom);
+      applyParagraphMarkers(child, codec, items, dom);
     }
 
     return;
   }
 
   const text = node.textContent ?? '';
-  const tokens = codec.listMarkers(text);
 
-  if (tokens.length === 0) return;
+  if (!codec.hasMarker(text)) return;
+  const tokens = codec.listMarkers(text);
+  const alignments = codec.alignMarkers(text);
+
+  if (tokens.length === 0 && alignments.length === 0) return;
 
   const element =
     node.parentElement?.closest('li') ??
@@ -714,10 +749,13 @@ const applyListMarkers = (
     }
     if (item.listStyle) style.listStyleType = item.listStyle;
   }
-  node.textContent = tokens.reduce(
-    (remaining, token) => remaining.replace(token, ''),
-    text
-  );
+  if (dom.isHtmlElement(element)) {
+    for (const { value } of alignments) element.style.textAlign = value;
+  }
+  node.textContent = [
+    ...tokens,
+    ...alignments.map(({ token }) => token),
+  ].reduce((remaining, token) => remaining.replace(token, ''), text);
 };
 
 const instrumentPropertyRevisions = (
@@ -1549,6 +1587,8 @@ const stripNoteMarkers = (
 
 const DOCX_STYLE_MAP = [
   'comment-reference => sup',
+  'u => u',
+  "highlight[color='yellow'] => mark",
   "p[style-name='Quote'] => blockquote > p:fresh",
   "r[style-name='HTML Code Keyboard'] => kbd > code",
   "r[style-name='HTML Code'] => code",
@@ -1595,13 +1635,20 @@ const importProjection = async (
   arrayBuffer: ArrayBuffer,
   codec: ReturnType<typeof createMarkerCodec>,
   lists: ReadonlyMap<string, DocxListItem>,
+  formatting: ReturnType<typeof createWordFormatting>,
   diagnostics: DocxDiagnostic[],
+  storesStyleMapRule: boolean,
   signal?: AbortSignal
 ) => {
   throwIfDocxAborted(signal, target.dom.abortError);
+  // Mammoth 1.11's readOptions copies inherited keys over the caller's, so a
+  // polluted Object.prototype turns includeEmbeddedStyleMap back on.
+  if (storesStyleMapRule && 'includeEmbeddedStyleMap' in Object.prototype) {
+    return null;
+  }
   const mammothResult = await target.toHtml(
     { arrayBuffer, buffer: arrayBuffer as never },
-    { styleMap: DOCX_STYLE_MAP }
+    { includeEmbeddedStyleMap: false, styleMap: DOCX_STYLE_MAP }
   );
 
   throwIfDocxAborted(signal, target.dom.abortError);
@@ -1613,10 +1660,12 @@ const importProjection = async (
       severity: 'warning',
     });
   }
-  const mammothDocument = target.dom.parseHtml(mammothResult.value);
+  const mammothDocument = target.dom.parseHtml(
+    formatting.restoreHtml(mammothResult.value)
+  );
   const bodyById = new Map<string, Value>();
 
-  applyListMarkers(mammothDocument.body, codec, lists, target.dom);
+  applyParagraphMarkers(mammothDocument.body, codec, lists, target.dom);
   // Mammoth wraps a list that skips a level in an item no paragraph stands
   // behind; the nested items carry their own levels.
   for (const item of lists.size > 0
@@ -1681,7 +1730,12 @@ const importProjection = async (
 
       wrapper.innerHTML = clone.innerHTML;
       let losses: HtmlMappingLoss[] = [];
-      let nodes = target.decodeHtml(wrapper, (loss) => losses.push(loss));
+      let unclaimed: string[] = [];
+      let nodes = target.decodeHtml(
+        wrapper,
+        (loss) => losses.push(loss),
+        (name) => unclaimed.push(name)
+      );
 
       if (!nodes?.every((node) => ElementApi.isElement(node))) {
         const paragraph = clone.ownerDocument.createElement('p');
@@ -1689,7 +1743,12 @@ const importProjection = async (
         paragraph.innerHTML = clone.innerHTML;
         wrapper.replaceChildren(paragraph);
         losses = [];
-        nodes = target.decodeHtml(wrapper, (loss) => losses.push(loss));
+        unclaimed = [];
+        nodes = target.decodeHtml(
+          wrapper,
+          (loss) => losses.push(loss),
+          (name) => unclaimed.push(name)
+        );
       }
       if (nodes?.every((node) => ElementApi.isElement(node))) {
         bodyById.set(
@@ -1702,6 +1761,9 @@ const importProjection = async (
           )
         );
         commentLosses.push(...losses);
+        for (const name of unclaimed) {
+          formatting.unclaimed(name, 'word/comments.xml');
+        }
       }
     }
     dl.remove();
@@ -1724,10 +1786,17 @@ const importProjection = async (
   );
   const element = target.dom.parseHtml(cleanedHtml).body;
   const losses: HtmlMappingLoss[] = [];
-  const nodes = target.decodeHtml(element, (loss) => losses.push(loss));
+  const nodes = target.decodeHtml(
+    element,
+    (loss) => losses.push(loss),
+    (name) => formatting.unclaimed(name, 'word/document.xml')
+  );
 
   if (!nodes) throw new Error('DOCX HTML could not be decoded.');
-  diagnostics.push(...mappingLossDiagnostics(losses, 'word/document.xml'));
+  diagnostics.push(
+    ...mappingLossDiagnostics(losses, 'word/document.xml'),
+    ...formatting.diagnostics()
+  );
 
   return {
     bodyById,
@@ -1996,6 +2065,8 @@ const decodeFailure = (): DocxErrorDiagnostic =>
     severity: 'error',
   });
 
+const STYLE_MAP_PART = 'mammoth/style-map';
+
 const importBoundedDocx = async <V extends Value>(
   target: DocxImportTarget<V>,
   pkg: BoundedDocxPackage,
@@ -2024,6 +2095,31 @@ const importBoundedDocx = async <V extends Value>(
     ...unsupportedPackageDiagnostics(pkg, target.dom, parts),
   ];
   const rewritten = new Map<string, string>();
+  const styleMap = pkg.entries.get(STYLE_MAP_PART);
+  const storesStyleMapRule =
+    styleMap !== undefined &&
+    target.dom
+      .decodeUtf8(styleMap)
+      .split('\n')
+      .some((line) => {
+        const rule = line.trim();
+
+        return rule !== '' && !rule.startsWith('#');
+      });
+
+  if (storesStyleMapRule) {
+    diagnostics.push(
+      Object.freeze({
+        code: 'property-dropped',
+        count: 1,
+        feature: 'style-map',
+        impact: 'lossy',
+        message: 'DOCX import ignored the style map stored in the file.',
+        part: STYLE_MAP_PART,
+        severity: 'warning',
+      })
+    );
+  }
   const commentsSource = pkg.entries.get('word/comments.xml');
   const review = instrumentReviewBindings(
     target.dom,
@@ -2040,29 +2136,49 @@ const importBoundedDocx = async <V extends Value>(
     diagnostics,
     'word/document.xml'
   );
-  if (commentsSource) {
-    const commentsDocument = target.dom.parseXml(
-      target.dom.decodeUtf8(commentsSource),
-      'word/comments.xml'
-    );
+  const commentsXml = commentsSource && target.dom.decodeUtf8(commentsSource);
+  const commentsDocument =
+    commentsXml === undefined
+      ? undefined
+      : target.dom.parseXml(commentsXml, 'word/comments.xml');
 
+  if (commentsDocument) {
     instrumentWordMath(
       commentsDocument,
       codec.equation,
       diagnostics,
       'word/comments.xml'
     );
+  }
+  const revisions = collectDocxRevisions(document, limits, diagnostics);
+  const comments = commentMetadata(target.dom, pkg.entries, limits);
+  const lists = instrumentNumbering(document, codec, parts);
+  const formatting = createWordFormatting({
+    entries: pkg.entries,
+    styles: parts.styles,
+  });
+  const formattingOptions = {
+    align: (paragraph: Element, value: string) =>
+      insertParagraphMarker(paragraph, codec.marker('align', value).token),
+    isNumbered: (paragraph: Element) =>
+      codec.listMarkers(paragraph.textContent ?? '').length > 0,
+  };
+
+  instrumentPropertyRevisions(document, codec, diagnostics);
+  instrumentContentRevisions(document, codec, diagnostics);
+  // After the revisions pass, deleted text is the w:t Mammoth draws.
+  formatting.instrument(document, 'word/document.xml', formattingOptions);
+  if (commentsDocument) {
+    formatting.instrument(
+      commentsDocument,
+      'word/comments.xml',
+      formattingOptions
+    );
     rewritten.set(
       'word/comments.xml',
       target.dom.serializeXml(commentsDocument)
     );
   }
-  const revisions = collectDocxRevisions(document, limits, diagnostics);
-  const comments = commentMetadata(target.dom, pkg.entries, limits);
-  const lists = instrumentNumbering(document, codec, parts);
-
-  instrumentPropertyRevisions(document, codec, diagnostics);
-  instrumentContentRevisions(document, codec, diagnostics);
   instrumentComments(document, codec);
   throwIfDocxAborted(signal, target.dom.abortError);
   rewritten.set('word/document.xml', target.dom.serializeXml(document));
@@ -2079,13 +2195,27 @@ const importBoundedDocx = async <V extends Value>(
       normalized,
       codec,
       lists,
+      formatting,
       diagnostics,
+      storesStyleMapRule,
       signal
     );
   } catch {
     throwIfDocxAborted(signal, target.dom.abortError);
 
     return failed(decodeFailure(), diagnostics);
+  }
+  if (!projection) {
+    return failed(
+      Object.freeze({
+        code: 'decode-failed',
+        message:
+          'DOCX import refused the file, because a change to Object.prototype would make Mammoth apply the style map stored in it.',
+        part: STYLE_MAP_PART,
+        severity: 'error',
+      }),
+      diagnostics
+    );
   }
   const revisionIds = new Set(revisions.map(({ id }) => id));
   const proposedWithMarkers = projectNodes(

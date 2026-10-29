@@ -42,6 +42,22 @@
       "2026-07-24-feature-toolbar-plugin-portals",
       "2025-11-20-biome-ultracite"
     ],
+    "import-toolbar-button": [
+      "2026-10-29-name-lost-word-formatting",
+      "2026-10-29-word-import-keeps-the-rest",
+      "2026-10-12-fix-list-import-export",
+      "2026-10-12-neutral-stored-names",
+      "2026-10-12-toolbar-button-names",
+      "2026-10-07-editor-user",
+      "2026-09-29-word-export-loss-and-source-reuse",
+      "2026-09-27-document-conversion-contracts",
+      "2026-09-24-export-menu-projection",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
     "suggestion": [
       "2026-10-29-paged-suggestion-lines",
       "2026-10-18-discussion-preview-block-reads",
@@ -58,21 +74,6 @@
       "2026-08-30-fix-annotation-hover-scroll",
       "2026-08-17-flat-editor-registry",
       "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
-    "import-toolbar-button": [
-      "2026-10-29-word-import-keeps-the-rest",
-      "2026-10-12-fix-list-import-export",
-      "2026-10-12-neutral-stored-names",
-      "2026-10-12-toolbar-button-names",
-      "2026-10-07-editor-user",
-      "2026-09-29-word-export-loss-and-source-reuse",
-      "2026-09-27-document-conversion-contracts",
-      "2026-09-24-export-menu-projection",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
     ],
     "editor-dropdown-menu": [
       "2026-10-28-fix-editor-dropdown-menu-width",

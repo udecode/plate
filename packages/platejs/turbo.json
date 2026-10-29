@@ -4210,7 +4210,9 @@
         "typecheck:partition:math",
         "typecheck:partition:media",
         "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-basic-styles",
         "typecheck:partition:standard-indent",
+        "typecheck:partition:standard-link",
         "typecheck:partition:standard-list",
         "typecheck:partition:table",
         "typecheck:partition:testing"

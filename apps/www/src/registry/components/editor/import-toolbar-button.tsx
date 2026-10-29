@@ -54,7 +54,6 @@ const toastDocxLosses = (
   diagnostics: ReadonlyArray<
     Readonly<{
       code: string;
-      count?: number;
       feature?: string;
       impact?: string;
       severity: string;
@@ -62,18 +61,17 @@ const toastDocxLosses = (
   >
 ) => {
   const dropped = new Set<string>();
-  let properties = 0;
+  const formats = new Set<string>();
   let other = 0;
 
-  for (const { code, count, feature, impact, severity } of diagnostics) {
+  for (const { code, feature, impact, severity } of diagnostics) {
     if (severity !== 'warning' || impact === 'lossless') continue;
-    if (feature && COUNTED_BY_COMMENT_TOASTS.has(feature)) continue;
-    if (code === 'property-dropped') {
-      properties += count ?? 1;
-    } else if (feature) {
-      dropped.add(feature.replaceAll('-', ' '));
-    } else {
+    if (!feature) {
       other += 1;
+    } else if (!COUNTED_BY_COMMENT_TOASTS.has(feature)) {
+      (code === 'property-dropped' ? formats : dropped).add(
+        feature.replaceAll('-', ' ')
+      );
     }
   }
 
@@ -82,10 +80,8 @@ const toastDocxLosses = (
   if (dropped.size > 0) {
     messages.push(`Not imported: ${[...dropped].join(', ')}.`);
   }
-  if (properties > 0) {
-    messages.push(
-      `${properties} lost ${properties === 1 ? 'property' : 'properties'}.`
-    );
+  if (formats.size > 0) {
+    messages.push(`Lost formatting: ${[...formats].join(', ')}.`);
   }
   if (other > 0) {
     messages.push(
