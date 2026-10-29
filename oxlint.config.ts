@@ -358,6 +358,12 @@ export default defineConfig({
       },
     },
     {
+      files: ['apps/www/src/app/(app)/examples/plite/_examples/**/*.{ts,tsx}'],
+      rules: {
+        'plate/plite-example-history': 'error',
+      },
+    },
+    {
       files: ['packages/plitejs/src/react/editable/**/*.{ts,tsx}'],
       excludeFiles: [
         'packages/plitejs/src/react/editable/**/*.spec.*',

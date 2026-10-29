@@ -1,3 +1,4 @@
+import { history } from 'plitejs/history';
 import { Editable, EditorRoot, useEditor } from 'plitejs/react';
 import { useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -39,6 +40,7 @@ const ShadowDOM = () => {
 
 const ShadowEditor = () => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',

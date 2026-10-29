@@ -1,6 +1,7 @@
 'use client';
 
 import type { Element as ElementNode } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorElement,
@@ -59,6 +60,7 @@ const paragraph = (text: string): ElementNode => ({
 
 const RenderContractExample = () => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: [paragraph('Intro')],
   });
   const insertAndSelect = (type: 'late-portal' | 'shell', text: string) => {

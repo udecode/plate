@@ -6,6 +6,7 @@ import {
   ElementApi,
   schema,
 } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
@@ -195,7 +196,7 @@ const SchemaControls = () => {
 
 const SchemaReconfigurationExample = () => {
   const editor = useEditor({
-    plugins: [schemaSlot.of(createSchema('block'))] as const,
+    plugins: [history(), schemaSlot.of(createSchema('block'))] as const,
     initialValue: {
       children: [
         emptyProbe(),

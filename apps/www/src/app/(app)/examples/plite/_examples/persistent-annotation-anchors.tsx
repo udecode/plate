@@ -1,5 +1,6 @@
 import type { Anchor, createEditor, Path, Point, Range, Value } from 'plitejs';
 import type { AnnotationStore } from 'plitejs/annotations';
+import { history } from 'plitejs/history';
 import {
   EditorRoot,
   useAnnotationStore,
@@ -488,7 +489,10 @@ const MountedPersistentAnnotationAnchors = ({
 };
 
 const PersistentAnnotationAnchorsExample = () => {
-  const editor = useEditor({ initialValue: createChildren() });
+  const editor = useEditor({
+    plugins: [history()],
+    initialValue: createChildren(),
+  });
   const [annotation, setAnnotation] = useState<Anchor<Range> | null>(null);
   const annotationRef = useRef<Anchor<Range> | null>(null);
   const addAnnotation = useCallback((next: Anchor<Range>) => {

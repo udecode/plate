@@ -5,6 +5,7 @@ import {
   PointApi,
   RangeApi,
 } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
@@ -191,7 +192,7 @@ const TablesEditor = () => {
 
 const TablesExample = () => {
   const editor = useEditor({
-    plugins: [table()],
+    plugins: [history(), table()],
     initialValue,
   });
 

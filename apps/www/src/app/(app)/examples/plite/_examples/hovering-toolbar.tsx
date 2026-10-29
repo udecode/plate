@@ -1,4 +1,5 @@
 import { RangeApi } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderLeafProps,
@@ -42,6 +43,7 @@ const HoveringMenuExample = () => {
     },
   ];
   const editor = useEditor({
+    plugins: [history()],
     initialValue,
   });
 

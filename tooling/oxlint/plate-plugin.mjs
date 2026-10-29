@@ -1275,6 +1275,141 @@ const noInlineHydrationFlag = {
   },
 };
 
+const PLITE_REACT_EDITOR_FACTORIES = new Set([
+  'createReactEditor',
+  'useEditor',
+]);
+
+const HISTORY_NAMES = new Set(['history']);
+
+const withoutTypeAssertion = (node) =>
+  node?.type === 'TSAsExpression' || node?.type === 'TSSatisfiesExpression'
+    ? withoutTypeAssertion(node.expression)
+    : node;
+
+const isReadOnlyAttribute = (attribute) =>
+  attribute.type === 'JSXAttribute' &&
+  attribute.name.name === 'readOnly' &&
+  (!attribute.value ||
+    (attribute.value.type === 'JSXExpressionContainer' &&
+      attribute.value.expression.type === 'Literal' &&
+      attribute.value.expression.value === true));
+
+const pliteExampleHistory = {
+  create(context) {
+    const factories = new Set();
+    const reactNamespaces = new Set();
+    const historyNamespaces = new Set();
+    const editables = new Set();
+    const created = [];
+    let historyName;
+    let editable = false;
+    let readOnlyOnly = false;
+
+    const isNamespaceMember = (callee, namespaces, names) =>
+      callee.type === 'MemberExpression' &&
+      !callee.computed &&
+      callee.object.type === 'Identifier' &&
+      namespaces.has(callee.object.name) &&
+      names.has(callee.property.name);
+    const isHistoryCall = (node) =>
+      node?.type === 'CallExpression' &&
+      ((node.callee.type === 'Identifier' &&
+        node.callee.name === historyName) ||
+        isNamespaceMember(node.callee, historyNamespaces, HISTORY_NAMES));
+    const isHistory = (node) => {
+      if (node?.type !== 'Identifier') return isHistoryCall(node);
+      const values = writtenValues(context, node);
+
+      return values.length === 1 && isHistoryCall(values[0]);
+    };
+    const installsHistory = (options) => {
+      const object = withoutTypeAssertion(options);
+      if (object?.type !== 'ObjectExpression') return false;
+      const plugins = object.properties.find(
+        (property) =>
+          property.type === 'Property' &&
+          !property.computed &&
+          property.key.name === 'plugins'
+      );
+      const list = withoutTypeAssertion(plugins?.value);
+
+      return list?.type === 'ArrayExpression' && list.elements.some(isHistory);
+    };
+
+    return {
+      CallExpression(node) {
+        const { callee } = node;
+        if (
+          node.arguments.length > 0 &&
+          ((callee.type === 'Identifier' && factories.has(callee.name)) ||
+            isNamespaceMember(
+              callee,
+              reactNamespaces,
+              PLITE_REACT_EDITOR_FACTORIES
+            ))
+        ) {
+          created.push(node);
+        }
+      },
+      ImportDeclaration(node) {
+        for (const specifier of node.specifiers) {
+          if (specifier.type === 'ImportNamespaceSpecifier') {
+            if (node.source.value === 'plitejs/react') {
+              reactNamespaces.add(specifier.local.name);
+            }
+            if (node.source.value === 'plitejs/history') {
+              historyNamespaces.add(specifier.local.name);
+            }
+          }
+          if (specifier.type !== 'ImportSpecifier') continue;
+          const imported = specifier.imported.name;
+          if (
+            node.source.value === 'plitejs/history' &&
+            imported === 'history'
+          ) {
+            historyName = specifier.local.name;
+          }
+          if (node.source.value !== 'plitejs/react') continue;
+          if (PLITE_REACT_EDITOR_FACTORIES.has(imported)) {
+            factories.add(specifier.local.name);
+          }
+          if (imported === 'Editable') editables.add(specifier.local.name);
+        }
+      },
+      JSXOpeningElement(node) {
+        if (
+          node.name.type !== 'JSXIdentifier' ||
+          !editables.has(node.name.name)
+        ) {
+          return;
+        }
+        if (node.attributes.some(isReadOnlyAttribute)) readOnlyOnly = true;
+        else editable = true;
+      },
+      'Program:exit'() {
+        if (readOnlyOnly && !editable) return;
+        for (const node of created) {
+          if (!installsHistory(node.arguments[0])) {
+            context.report({ messageId: 'missing', node });
+          }
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'A Plite example installs history on each editor someone can edit.',
+    },
+    messages: {
+      missing:
+        'This example editor installs no history, so Cmd+Z does nothing. List `history()` from `plitejs/history`, or a const set to it, in the `plugins` array written here.',
+    },
+    type: 'problem',
+  },
+};
+
 const PLITE_TOKENS = new Set(['plite', 'plitejs']);
 
 const COMPONENT_NAME = /^[A-Z][A-Za-z0-9]*[a-z][A-Za-z0-9]*$/u;
@@ -1722,5 +1857,6 @@ export default {
       'no-wall-clock-bound',
       noWallClockBound
     ),
+    'plite-example-history': pliteExampleHistory,
   },
 };

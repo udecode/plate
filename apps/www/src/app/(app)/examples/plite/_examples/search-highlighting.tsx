@@ -1,6 +1,7 @@
 import { SearchIcon } from 'lucide-react';
 import { parseAsString, useQueryState } from 'nuqs';
 import { NodeApi } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type EditableProps,
@@ -22,32 +23,35 @@ import { Toolbar } from './components';
 import type { CustomText, CustomValue } from './custom-types.d';
 import { replaceQueryOptions } from './query-controls';
 
+const initialValue: CustomValue = [
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'This is editable text that you can search. As you search, it looks for matching strings of text, and adds ',
+      },
+      { text: 'decorations', bold: true },
+      { text: ' to them in realtime.' },
+    ],
+  },
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text: 'Try it out for yourself by typing in the search box above!',
+      },
+    ],
+  },
+];
+
 const SearchHighlightingExample = () => {
   const [search, setSearch] = useQueryState(
     'q',
     parseAsString.withDefault('').withOptions(replaceQueryOptions)
   );
-  const editor = useEditor<CustomValue>({
-    initialValue: [
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'This is editable text that you can search. As you search, it looks for matching strings of text, and adds ',
-          },
-          { text: 'decorations', bold: true },
-          { text: ' to them in realtime.' },
-        ],
-      },
-      {
-        type: 'paragraph',
-        children: [
-          {
-            text: 'Try it out for yourself by typing in the search box above!',
-          },
-        ],
-      },
-    ],
+  const editor = useEditor({
+    plugins: [history()],
+    initialValue,
   });
   const searchSource = useMemo<DecorationSource<Editor<CustomValue>>>(
     () => ({

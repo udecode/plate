@@ -1,4 +1,5 @@
 import { definePlugin } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
@@ -19,7 +20,7 @@ import type {
 
 const EmbedsExample = () => {
   const editor = useEditor({
-    plugins: [embed()],
+    plugins: [history(), embed()],
     initialValue: [
       {
         type: 'paragraph',

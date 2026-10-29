@@ -9,6 +9,7 @@ import type {
   DOMCoverageCopyPolicy,
   DOMCoverageSelectionPolicy,
 } from 'plitejs/dom';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorElement,
@@ -389,7 +390,7 @@ const HiddenContentBlocksContent = () => {
 
 const HiddenContentBlocksExample = () => {
   const editor = useEditor({
-    plugins: [hiddenContentBlocks()],
+    plugins: [history(), hiddenContentBlocks()],
     initialValue: [
       {
         type: 'paragraph',

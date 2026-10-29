@@ -1,5 +1,6 @@
 import { cva } from 'class-variance-authority';
 import { NodeApi, type Path } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
@@ -50,6 +51,7 @@ const markdownSegmentVariants = cva('editor-markdown-preview-segment', {
 
 const MarkdownPreviewExample = () => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',

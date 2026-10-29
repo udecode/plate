@@ -1,5 +1,6 @@
 import { parseAsBoolean, useQueryStates } from 'nuqs';
 import { NodeApi, type Element as ElementNode } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorElement,
@@ -41,6 +42,7 @@ const hiddenBoundaryUrlKeys = {
 
 const DomCoverageBoundariesExample = () => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: [
       {
         type: 'header',

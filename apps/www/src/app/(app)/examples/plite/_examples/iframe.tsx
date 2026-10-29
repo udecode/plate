@@ -1,4 +1,5 @@
 import { isHotkey } from 'plitejs/dom';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
@@ -67,6 +68,7 @@ const IFrameExample = () => {
     },
   ];
   const editor = useEditor({
+    plugins: [history()],
     initialValue,
   });
 

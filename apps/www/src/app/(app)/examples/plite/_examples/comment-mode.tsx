@@ -7,6 +7,7 @@ import {
   type Value,
 } from 'plitejs';
 import type { AnnotationStore } from 'plitejs/annotations';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
@@ -645,6 +646,7 @@ const WriterView = ({
 
 const CommentModeExample = () => {
   const editor = useEditor({
+    plugins: [history()],
     initialSelection: {
       kind: 'text',
       anchor: { path: [0, 0], offset: 0 },

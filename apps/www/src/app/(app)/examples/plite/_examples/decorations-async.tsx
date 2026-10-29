@@ -5,6 +5,7 @@ import {
   type Path,
   type Range,
 } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
@@ -61,6 +62,7 @@ const collectAsyncHighlightDecorations = (
 
 const AsyncDecorationsExample = () => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',

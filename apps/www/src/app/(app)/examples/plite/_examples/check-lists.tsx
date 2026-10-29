@@ -7,6 +7,7 @@ import {
   RangeApi,
   type Element as EditorElement,
 } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
@@ -114,7 +115,7 @@ const CheckListsEditor = ({
   exampleCase: ChecklistExampleCase;
 }) => {
   const editor = useEditor({
-    plugins: [checklist()],
+    plugins: [history(), checklist()],
     initialValue: createInitialValue(exampleCase),
   });
 

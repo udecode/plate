@@ -1,5 +1,6 @@
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import type { Value } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderLeafProps,
@@ -264,6 +265,7 @@ const TestCase = ({
   value: Value;
 }) => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: value,
   });
 

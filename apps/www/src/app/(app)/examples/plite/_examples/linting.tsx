@@ -6,6 +6,7 @@ import {
   type Path,
   type Range,
 } from 'plitejs';
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
@@ -278,6 +279,7 @@ const LintingPanel = ({
 
 const LintingExample = () => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',

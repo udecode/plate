@@ -3,6 +3,7 @@ import isUrl from 'is-url';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import { definePlugin, txLocate } from 'plitejs';
 import { domCommands } from 'plitejs/dom';
+import { history } from 'plitejs/history';
 import {
   Editable,
   type RenderElementProps,
@@ -134,7 +135,7 @@ const ImagesExample = () => {
 
 const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
   const editor = useEditor({
-    plugins: [image()],
+    plugins: [history(), image()],
     initialValue: createInitialValue(exampleCase),
   });
 

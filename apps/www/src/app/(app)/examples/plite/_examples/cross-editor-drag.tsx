@@ -1,9 +1,11 @@
 'use client';
 
+import { history } from 'plitejs/history';
 import { Editable, EditorRoot, useEditor } from 'plitejs/react';
 
 const DragEditor = ({ label, text }: { label: string; text: string }) => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',

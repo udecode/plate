@@ -1,3 +1,4 @@
+import { history } from 'plitejs/history';
 import {
   Editable,
   EditorRoot,
@@ -13,6 +14,7 @@ const FocusRingEditor = ({
   readOnly?: boolean;
 }) => {
   const editor = useEditor({
+    plugins: [history()],
     initialValue: [
       {
         type: 'paragraph',
