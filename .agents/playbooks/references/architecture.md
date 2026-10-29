@@ -126,7 +126,7 @@ The report gives each finding one row:
 
 ## Priority
 
-Every Plate review, audit and research finding uses this one scale; review findings in a panel use interrogate's critical, warning and nit instead.
+Every Plate review, audit and research finding uses this one scale; review findings in a panel use the critical, warning and nit that `.agents/pstack/rules/panel.md` defines instead.
 
 Assign priority independently of the score: `P0` for confirmed corruption, security failure, serialized-data break, hard native or model-law violation, or an unusable primary public contract; `P1` for a wrong canonical owner or lifetime, competing writable truth, or a common scale law with material ecosystem harm; `P2` for bounded reachability, API, composition, adoption or proof debt with a safe current path; `P3` for local naming, teaching or cleanup debt with no architectural harm. `P0` also covers a wrong public ontology or a foundational public shape that would spread costly damage as more code adopts it. `P1` also covers high-frequency DX, inference, discoverability or composition debt. A low score is not automatically P0, and a high score can still hide one P0 defect.
 
