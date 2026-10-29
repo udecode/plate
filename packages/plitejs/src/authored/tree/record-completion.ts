@@ -16,15 +16,23 @@ import {
   type JsonEditorValue,
   type JsonNode,
 } from '../../core/change/tokens';
-import type { ConstructionSlot } from '../../core/content-completion';
+import type {
+  ConstructionSlot,
+  PrefixOccupantFate,
+} from '../../core/content-completion';
+import { editorReads } from '../../core/editor-reads';
 import { getEditorSchema } from '../../core/editor-runtime';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
-import { completeChildrenAt } from '../../core/representation';
+import { executeEditorRead } from '../../core/read-registry';
+import { completeChildrenAt, joinedAway } from '../../core/representation';
 import { uniquePropertiesOf } from '../../core/schema-compiler';
-import type { AnyEditor as Editor } from '../../interfaces/editor';
+import {
+  type AnyEditor as Editor,
+  isEmpty as editorIsEmpty,
+} from '../../interfaces/editor';
 import { type Element, ElementApi } from '../../interfaces/element';
 import type { Descendant } from '../../interfaces/node';
-import { PathApi } from '../../interfaces/path';
+import { type Path, PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
@@ -37,8 +45,14 @@ import {
   readMembers,
   withMembers,
 } from './marks';
-import { type ProposedChild, proposedChildren, proposedHost } from './proposed';
+import {
+  type ProposedChild,
+  proposedChildren,
+  proposedHost,
+  proposedSurvival,
+} from './proposed';
 import { type SpareSite, storesSpares } from './reserves';
+import { slotFate } from './resolve';
 
 type Mark = Readonly<{
   at: number;
@@ -275,6 +289,20 @@ export const completeProposed = (
 ): RecordCompletion | null => {
   const schema = getEditorSchema(input.editor);
   const compiled = getCompiledEditorSchema(input.editor);
+  const removesTarget = (target: JsonNode, path: Path, joined: JsonNode) =>
+    executeEditorRead(
+      input.editor,
+      editorReads.nodes.shouldMergeNodesRemovePrevNode,
+      {
+        current: [
+          joined as Descendant,
+          [...path.slice(0, -1), getDefined(path.at(-1)) + 1],
+        ],
+        previous: [target as Descendant, path],
+      },
+      ({ previous: [node] }) =>
+        ElementApi.isElement(node) && editorIsEmpty(input.editor, node)
+    );
   const changes = new Map<string, RootChange>();
   const indexes = new Map(input.indexes);
   const insertMark: AuthoredMark = { ...input.mark, kind: 'insert' };
@@ -333,8 +361,13 @@ export const completeProposed = (
         content.allowsText || content.allowsUnknownElements
           ? Number.POSITIVE_INFINITY
           : Math.max(content.min, content.prefix?.length ?? 0) + 1;
-      const after = proposedChildren(afterChildren, hostPath, limit);
-      const beforeEntries = proposedChildren(
+      const { children: after, keptJoins } = proposedChildren(
+        afterChildren,
+        hostPath,
+        limit,
+        removesTarget
+      );
+      const { children: beforeEntries } = proposedChildren(
         beforeChildren,
         beforeHostPath,
         limit
@@ -412,13 +445,36 @@ export const completeProposed = (
       });
       const complete = (
         children: readonly Descendant[],
-        vacated?: (slot: number, candidate: Descendant) => boolean
-      ) => completeChildrenAt(input.editor, site, children, root, vacated);
+        occupant?: (slot: number, candidate: Descendant) => PrefixOccupantFate
+      ) => completeChildrenAt(input.editor, site, children, root, occupant);
       const beforeNodes = before as readonly Descendant[];
-      const vacated = (slot: number, candidate: Descendant) =>
-        beforeNodes[slot] !== candidate &&
-        beforeNodes.includes(candidate, slot + 1);
-      const completion = complete(inputs, vacated);
+      // A start child joins an earlier one when a pending join folds it into
+      // live text or the change joins it away outright, as recording a
+      // Backspace that withdraws the writer's own split does.
+      const foldedStart = new Set(
+        before.filter((_, at) => {
+          const item = moved[at];
+
+          return item
+            ? keptJoins.has(item.node)
+            : item === null &&
+                joinedAway(
+                  beforeIndex,
+                  rootChange,
+                  getDefined(beforeEntries[at]).path
+                );
+        })
+      );
+      // Editing keeps a candidate that is no later start child as its own.
+      const occupant = (slot: number, candidate: Descendant) =>
+        slotFate(
+          beforeNodes,
+          slot,
+          candidate,
+          (node) => !beforeNodes.includes(node as Descendant, slot + 1),
+          (node) => foldedStart.has(node as JsonNode)
+        );
+      const completion = complete(inputs, occupant);
 
       if (completion.built.length === 0) continue;
 
@@ -452,7 +508,7 @@ export const completeProposed = (
         return nodes;
       };
       const holdsJoinedLine = (shell: Placed) =>
-        proposedChildren(afterChildren, shell.path).some(
+        proposedChildren(afterChildren, shell.path).children.some(
           ({ path }) => !PathApi.isAncestor(shell.path, path)
         );
       const keeps = (shell: Placed, node: Descendant) =>
@@ -526,7 +582,7 @@ export const completeProposed = (
             entryOf,
             hostPath,
             hostChildren.length,
-            prefix
+            prefix && ((path) => pastFolds(afterChildren, keptJoins, path))
           ),
         });
       }
@@ -661,9 +717,9 @@ export const framedChild = (
 };
 
 /**
- * Where a built element goes in the review tree: a prefix fill right after
- * the proposed child completion puts before it, any other fill right before
- * the proposed child completion puts after it.
+ * Where a built element goes in the review tree: a prefix fill where `after`
+ * places it past the proposed child completion puts before it, any other fill
+ * right before the proposed child completion puts after it.
  */
 const insertionPath = (
   completed: readonly Descendant[],
@@ -671,18 +727,16 @@ const insertionPath = (
   entryOf: ReadonlyMap<Descendant, ProposedChild>,
   hostPath: readonly number[],
   hostLength: number,
-  prefix: boolean
+  after: false | ((path: readonly number[]) => readonly number[])
 ): readonly number[] => {
-  if (prefix) {
+  if (after) {
     const previous = completed
       .slice(0, at)
       .reverse()
       .map((node) => entryOf.get(node))
       .find((entry) => entry !== undefined);
 
-    return previous
-      ? [...previous.path.slice(0, -1), (previous.path.at(-1) ?? -1) + 1]
-      : [...hostPath, 0];
+    return previous ? after(previous.path) : [...hostPath, 0];
   }
 
   const next = completed
@@ -691,6 +745,31 @@ const insertionPath = (
     .find((entry) => entry !== undefined);
 
   return next ? next.path : [...hostPath, hostLength];
+};
+
+/**
+ * The path right after the review child at `path` and the blocks a pending
+ * join folds into it, past struck siblings between them, so a fill placed
+ * there never becomes the target of their join.
+ */
+const pastFolds = (
+  children: NodeList,
+  folded: ReadonlySet<JsonNode>,
+  path: readonly number[]
+) => {
+  const parent = path.slice(0, -1);
+  const siblings =
+    parent.length === 0 ? children : (nodeAt(children, parent)?.children ?? []);
+  let end = getDefined(path.at(-1)) + 1;
+
+  for (let at = end; at < siblings.length; at += 1) {
+    const sibling = getDefined(siblings.at(at));
+
+    if (folded.has(sibling)) end = at + 1;
+    else if (proposedSurvival.survives(sibling)) break;
+  }
+
+  return [...parent, end];
 };
 
 /** How many text nodes `nodes` hold once neighbouring texts merge. */

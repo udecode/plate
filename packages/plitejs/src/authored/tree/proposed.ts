@@ -78,10 +78,26 @@ const childrenAt = (children: NodeList, path: readonly number[]) =>
 export const proposedChildren = (
   children: NodeList,
   hostPath: readonly number[],
-  limit = Number.POSITIVE_INFINITY
-): ProposedChild[] => {
-  const { survives } = proposedSurvival;
+  limit = Number.POSITIVE_INFINITY,
+  removesTarget: (target: Node, path: Path, joined: Node) => boolean = (
+    target
+  ) =>
+    !isText(target) &&
+    (target.children ?? []).every((child) => isText(child) && !child.text)
+): Readonly<{ children: ProposedChild[]; keptJoins: ReadonlySet<Node> }> => {
+  const { liveContent, survives } = proposedSurvival;
   const out: ProposedChild[] = [];
+  const keptJoins = new Set<Node>();
+  const landings = new Map<string, Readonly<{ node: Node; path: Path }>>();
+  const accepted = (node: Node): Node =>
+    isText(node)
+      ? liveContent(node)
+        ? node
+        : { ...node, text: '' }
+      : {
+          ...node,
+          children: (node.children ?? []).filter(survives).map(accepted),
+        };
   const reachableBlocks: ReachableBlock[] = [];
   const passage = joinPassage(children, readAuthoredMarks, survives);
   const joinKeys = (node: Node) => joinKeysOf(readAuthoredMarks(node));
@@ -125,10 +141,10 @@ export const proposedChildren = (
           ? lastTextBlockIn(block.container, block.path)
           : null;
       }
-      if (block) return true;
+      if (block) return block;
     }
 
-    return false;
+    return null;
   };
   const read = (level: NodeList, base: readonly number[]) => {
     for (let index = 0; index < level.length; index += 1) {
@@ -149,8 +165,38 @@ export const proposedChildren = (
       }
 
       const keys = joinKeys(child);
+      const reached = keys.size > 0 ? reaches(keys) : null;
 
-      if (keys.size > 0 && reaches(keys)) {
+      if (reached) {
+        const at = reached.path.join(',');
+        const target = getDefined(
+          childrenAt(children, reached.path.slice(0, -1)).at(
+            getDefined(reached.path.at(-1))
+          )
+        );
+
+        const landing = landings.get(at) ?? {
+          node: accepted(target),
+          path: reached.path,
+        };
+        const joined = accepted(child);
+        const merged: Node = isText(landing.node)
+          ? landing.node
+          : {
+              ...landing.node,
+              children: [
+                ...(landing.node.children ?? []),
+                ...(joined.children ?? []),
+              ],
+            };
+
+        if (!removesTarget(landing.node, landing.path, joined)) {
+          keptJoins.add(child);
+          landings.set(childPath.join(','), {
+            node: merged,
+            path: landing.path,
+          });
+        }
         reachableBlocks.push({ path: childPath });
         continue;
       }
@@ -237,5 +283,5 @@ export const proposedChildren = (
   read(childrenAt(children, hostPath), hostPath);
   if (isLine) readJoinedIntoHost();
 
-  return out;
+  return { children: out, keptJoins };
 };

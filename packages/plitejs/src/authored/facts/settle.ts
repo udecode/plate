@@ -67,7 +67,7 @@ import {
   type AuthoredResolveSchema,
   slotDecidingInsertions,
   startOccupants,
-  vacatesSlot,
+  slotFate,
 } from '../tree/resolve';
 import {
   putRootSpares,
@@ -581,8 +581,7 @@ const replacementsOf = (
       nodes as readonly JsonNode[],
       chain,
       site.root,
-      (slot, candidate) =>
-        vacatesSlot(start, slot, origin(candidate), inserted),
+      (slot, candidate) => slotFate(start, slot, origin(candidate), inserted),
       undefined,
       spares.length === 0
         ? undefined

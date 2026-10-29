@@ -38,14 +38,14 @@ const resolveSchemaOver = (
 ): AuthoredResolveSchema => ({
   canonicalizeTextProperties: (props, types, root, key) =>
     schema.canonicalizeTextPropertiesIn(props, types, root, key),
-  complete: (children, site, root, vacated, part, take) => {
+  complete: (children, site, root, occupant, part, take) => {
     const build = () =>
       completeChildrenAt(
         editor,
         site as readonly Element[],
         children as readonly Descendant[],
         root,
-        vacated,
+        occupant,
         part,
         take as ConstructionTake | undefined
       );

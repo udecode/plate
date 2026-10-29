@@ -3,7 +3,10 @@ import type { NodeList } from '../../core/change/document-index';
 import type { JsonRecord } from '../../core/change/json';
 import { jsonEqual } from '../../core/change/json';
 import type { JsonEditorValue, JsonNode } from '../../core/change/tokens';
-import type { ConstructionSlot } from '../../core/content-completion';
+import type {
+  ConstructionSlot,
+  PrefixOccupantFate,
+} from '../../core/content-completion';
 import { elementSplitOutput } from '../../core/default-storage';
 import { readingCovered } from '../../core/property-validity';
 import {
@@ -117,14 +120,15 @@ export type AuthoredResolveSchema = Readonly<{
   /**
    * Canonical children at their site, the element and its ancestors nearest
    * first or none at the root, as Editing's completion gives them, and each
-   * element it built; `vacated` names the prefix slots a decision emptied,
-   * and `take` gives the spare a build of the children takes.
+   * element it built; `occupant` gives the fate of each prefix slot's
+   * starting occupant, and `take` gives the spare a build of the children
+   * takes.
    */
   complete?: (
     children: readonly JsonNode[],
     site: readonly JsonRecord[],
     root: string,
-    vacated: (slot: number, candidate: JsonNode) => boolean,
+    occupant: (slot: number, candidate: JsonNode) => PrefixOccupantFate,
     part?: ListPart,
     take?: (type: string, slot: ConstructionSlot) => JsonNode | null
   ) => Completion<JsonNode>;
@@ -287,17 +291,63 @@ export const startOccupants = <N>(
 ) => level.filter((node) => !isInserted(node));
 
 /**
- * Whether a decision vacates prefix slot `slot` when `original`, as the
- * review tree holds it, is the slot's candidate: neither the slot's start
- * occupant nor an inserted node, so the decision builds a fresh element there
- * as Editing does and never promotes a later sibling.
+ * The fate of prefix slot `slot`'s start occupant when `original`, as the
+ * review tree holds it, is the slot's candidate: kept when it is that occupant
+ * or an inserted node, joined when `contracted` start occupants before
+ * `original` leave it in the slot, as Editing reads a join's tokens, and
+ * otherwise displaced, so the decision builds a fresh element there and never
+ * promotes a later sibling.
  */
-export const vacatesSlot = (
+export const slotFate = (
   start: readonly unknown[],
   slot: number,
   original: unknown,
-  isInserted: (node: unknown) => boolean
-) => original !== start[slot] && !isInserted(original);
+  isInserted: (node: unknown) => boolean,
+  contracted: (node: unknown) => boolean = () => false
+): PrefixOccupantFate => {
+  if (original === start[slot] || isInserted(original)) return 'kept';
+
+  const at = start.indexOf(original, slot + 1);
+
+  return at !== -1 && at - start.slice(0, at).filter(contracted).length <= slot
+    ? 'joined'
+    : 'displaced';
+};
+
+/**
+ * The start occupants that leave no slot behind them, in Editing's order of
+ * events: one a join merged into an earlier block, at `joinedAt`, and one
+ * removed at `removedAt` from past the `slots` prefix slots, judged where it
+ * stood then, after the contractions before it. A removal from a prefix slot
+ * keeps its slot, which Editing fills afresh.
+ */
+const contractedStart = <N>(
+  start: readonly N[],
+  slots: number,
+  joinedAt: (node: N) => number | null,
+  removedAt: (node: N) => number | null
+): ReadonlySet<N> => {
+  const contracted = new Set<N>();
+  const times: number[] = [];
+
+  for (const [index, node] of start.entries()) {
+    const joined = joinedAt(node);
+    const removed = joined === null ? removedAt(node) : null;
+
+    if (joined !== null) {
+      contracted.add(node);
+      times.push(joined);
+    } else if (
+      removed !== null &&
+      index - times.filter((time) => time < removed).length >= slots
+    ) {
+      contracted.add(node);
+      times.push(removed);
+    }
+  }
+
+  return contracted;
+};
 
 export const slotDecidingInsertions = <N>(
   level: readonly N[],
@@ -318,19 +368,23 @@ export const slotDecidingInsertions = <N>(
   const without = completeHere(
     level.filter((node) => !front.has(node) || !isInserted(node))
   );
-  const head = ({ built, children: nodes }: Completion<N>) =>
-    nodes
-      .slice(0, slots)
-      .map(
-        (node) =>
-          `${built.some((item) => item.node === node) ? '+' : ''}${typeOf(
-            node as Node
-          )}`
-      )
-      .join(',');
 
-  return head(completed) === head(without) ? [] : inserted;
+  return prefixHead(completed, slots) === prefixHead(without, slots)
+    ? []
+    : inserted;
 };
+
+/** The types completion puts in the first `slots` places, each it built marked. */
+const prefixHead = <N>({ built, children }: Completion<N>, slots: number) =>
+  children
+    .slice(0, slots)
+    .map(
+      (node) =>
+        `${built.some((item) => item.node === node) ? '+' : ''}${typeOf(
+          node as Node
+        )}`
+    )
+    .join(',');
 
 /** An element holding texts; one with no children holds no blocks, so it counts. */
 export const isTextBlock = (node: unknown) => {
@@ -1034,7 +1088,7 @@ const resolveIn = (
     nodes: readonly Node[],
     at: readonly Node[],
     startLevel: readonly Node[],
-    vacated: (slot: number, candidate: Node) => boolean,
+    occupant: (slot: number, candidate: Node) => PrefixOccupantFate,
     listPart: ListPart | undefined,
     pool: Pool,
     commit: boolean
@@ -1056,7 +1110,7 @@ const resolveIn = (
       nodes as readonly JsonNode[],
       at,
       root,
-      vacated,
+      occupant,
       listPart,
       pool.spares.length === 0
         ? undefined
@@ -1523,7 +1577,7 @@ const resolveIn = (
             [],
             [{ ...props, children: [] }, ...outer],
             host.children ?? [],
-            () => false,
+            () => 'kept',
             undefined,
             poolOf(host),
             false
@@ -2758,17 +2812,62 @@ const resolveIn = (
       spares: pool.spares,
       used: new Set(pool.used),
     };
-    const completeHere = (items: readonly Node[], commit = false) =>
+    const slots = contentOf(at[0] ? typeOf(at[0]) : null)?.prefix ?? 0;
+    const present = new Set(nodes.map((node) => origins.get(node) ?? node));
+    const marksDecided = (
+      node: Node,
+      kind: string,
+      decision: 'accept' | 'reject'
+    ) =>
+      pending(node).filter(
+        (mark) => mark.kind === kind && decisionOf(mark) === decision
+      );
+    // A rejected split never happened, so its block contracts before any
+    // removal.
+    const contractedWith = (
+      undone: ReadonlySet<Node>,
+      removing: ReadonlyMap<Node, number> = new Map()
+    ) =>
+      contractedStart(
+        start,
+        slots,
+        (node) =>
+          undone.has(node) || marksDecided(node, 'split', 'reject').length > 0
+            ? Number.NEGATIVE_INFINITY
+            : mergedInto.has(node)
+              ? Math.min(
+                  ...marksDecided(node, 'join', 'accept').map((mark) => mark.at)
+                )
+              : null,
+        (node) => {
+          const marks = marksDecided(node, 'delete', 'accept');
+
+          return (
+            removing.get(node) ??
+            (present.has(node) || marks.length === 0
+              ? null
+              : Math.min(...marks.map((mark) => mark.at)))
+          );
+        }
+      );
+    // Read only when a candidate moves up from a later start slot.
+    let contracted: ReadonlySet<Node> | undefined;
+    const completeHere = (
+      items: readonly Node[],
+      commit = false,
+      among = () => (contracted ??= contractedWith(new Set()))
+    ) =>
       complete(
         items,
         at,
         startLevel,
         (slot, candidate) =>
-          vacatesSlot(
+          slotFate(
             start,
             slot,
             origins.get(candidate) ?? candidate,
-            isInserted
+            isInserted,
+            (node) => among().has(node as Node)
           ),
         listPart,
         commit ? pool : untaken,
@@ -2786,7 +2885,6 @@ const resolveIn = (
     }
 
     const completion = underInsertions(completed, at);
-    const slots = contentOf(at[0] ? typeOf(at[0]) : null)?.prefix ?? 0;
 
     if (completion.built.length > 0) {
       for (const item of completion.built) addUnstored(item.node);
@@ -2794,6 +2892,70 @@ const resolveIn = (
     }
     if (slots > 0) {
       waitOnPrefix(nodes, completion, start, completeHere, slots);
+      // A rejected split merges its block back, so a slot that an earlier
+      // removal empties goes to the block after it instead. The decision
+      // waits on a pending split in the prefix when the two orders build
+      // differently.
+      const isSplit = (node: Node) =>
+        pending(node).some(
+          (mark) => mark.kind === 'split' && decisionOf(mark) === 'keep'
+        );
+
+      wait(
+        slotDecidingInsertions(
+          nodes,
+          completion,
+          (items) =>
+            completeHere(items, false, () =>
+              contractedWith(
+                new Set(
+                  nodes
+                    .filter((node) => !items.includes(node))
+                    .map((node) => (origins.get(node) ?? node) as Node)
+                )
+              )
+            ),
+          slots,
+          (node) => start.includes((origins.get(node) ?? node) as Node),
+          isSplit
+        ).flatMap((node) =>
+          pending(node).filter((mark) => mark.kind === 'split')
+        )
+      );
+
+      // A pending deletion of a block that holds a prefix slot, decided later,
+      // keeps that slot for a fresh element even when Editing removed the
+      // block from past the prefix before a join moved it in, so the decision
+      // waits on the deletion when the two orders build differently.
+      const deletions = (node: Node) =>
+        pending(node).filter(
+          (mark) => mark.kind === 'delete' && decisionOf(mark) === 'keep'
+        );
+      const struck = nodes
+        .slice(0, slots)
+        .filter((node) => deletions(node).length > 0);
+
+      if (struck.length > 0) {
+        const rest = nodes.filter((node) => !struck.includes(node));
+        const removing = new Map(
+          struck.map((node) => [
+            (origins.get(node) ?? node) as Node,
+            Math.min(...deletions(node).map((mark) => mark.at)),
+          ])
+        );
+
+        if (
+          prefixHead(completeHere(rest), slots) !==
+          prefixHead(
+            completeHere(rest, false, () =>
+              contractedWith(new Set(), removing)
+            ),
+            slots
+          )
+        ) {
+          wait(struck.flatMap(deletions));
+        }
+      }
     }
 
     return mergeTextsWithEqualProps(completion.children);

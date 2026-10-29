@@ -227,9 +227,10 @@ export type ListPart = Readonly<{ head: boolean; min: number }>;
  * give them, and each element completion built. `sources` holds, at each
  * index of `children`, the node before the canonical pass, so a given child
  * the pass rewrote can still be traced. `site` is the element and its
- * ancestors, nearest first, or empty at a root; `vacated` names the prefix
- * slots whose occupant was displaced; `take` gives a stored element for a
- * build of the children themselves, which the caller fits to its new place.
+ * ancestors, nearest first, or empty at a root; `occupant` gives the fate of
+ * a prefix slot's starting occupant when `candidate` is the slot's
+ * candidate; `take` gives a stored element for a build of the children
+ * themselves, which the caller fits to its new place.
  *
  * @internal
  */
@@ -238,7 +239,7 @@ export const completeChildrenAt = (
   site: readonly Element[],
   children: readonly Descendant[],
   root: string,
-  vacated?: (slot: number, candidate: Descendant) => boolean,
+  occupant?: (slot: number, candidate: Descendant) => PrefixOccupantFate,
   part?: ListPart,
   take?: ConstructionTake
 ): ContentCompletion & Readonly<{ sources: readonly Descendant[] }> => {
@@ -249,7 +250,7 @@ export const completeChildrenAt = (
     root,
     {},
     site.slice(1),
-    vacated,
+    occupant,
     part,
     take
   );
@@ -301,7 +302,7 @@ const completeDirectChildren = (
   root: string,
   options: CanonicalizeOptions,
   ancestors: readonly Element[],
-  vacated?: (slot: number, candidate: Descendant) => boolean,
+  occupant?: (slot: number, candidate: Descendant) => PrefixOccupantFate,
   part?: ListPart,
   take?: ConstructionTake
 ): ContentCompletion => {
@@ -349,14 +350,7 @@ const completeDirectChildren = (
       root,
       {
         ...runOptions,
-        ...(vacated
-          ? {
-              editing: {
-                occupant: (slot: number, candidate: Descendant) =>
-                  vacated(slot, candidate) ? 'displaced' : 'kept',
-              },
-            }
-          : {}),
+        ...(occupant ? { editing: { occupant } } : {}),
         ...(take ? { take } : {}),
       }
     );
@@ -1104,7 +1098,13 @@ const holdsAfter = (
   return false;
 };
 
-const joinedAway = (
+/**
+ * Whether `change` joined the node at `path` of `before` into the node
+ * before it: its open token goes and its close token stays, closing that node.
+ *
+ * @internal
+ */
+export const joinedAway = (
   before: DocumentIndex,
   change: RootChange,
   path: readonly number[]
