@@ -1820,6 +1820,7 @@ export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
 ]);
 
 type HtmlDecodeOperation = Readonly<{
+  checkboxContent?: boolean;
   fitSchema?: boolean;
   onLoss?: (loss: HtmlMappingLoss) => void;
   operationKey: object;
@@ -1852,6 +1853,11 @@ const decodeCompiledHtml = (
       if (loss.kind === 'element') lostElements.add(element);
       operation.onLoss?.(loss);
     });
+  const isEmbeddedContent = (element: Element, tag: string) =>
+    EMBEDDED_HTML_CONTENT.has(tag) ||
+    (operation.checkboxContent === true &&
+      tag === 'input' &&
+      element.getAttribute('type')?.toLowerCase() === 'checkbox');
   const decodeElementProperties = (
     element: HTMLElement,
     matched: readonly CompiledHtmlRule[],
@@ -2096,7 +2102,7 @@ const decodeCompiledHtml = (
     if (!structural) {
       const tag = element.tagName.toLowerCase();
 
-      if (elementRules.length === 0 && EMBEDDED_HTML_CONTENT.has(tag)) {
+      if (elementRules.length === 0 && isEmbeddedContent(element, tag)) {
         lossAt(element)?.(
           Object.freeze({
             action:
@@ -2759,6 +2765,7 @@ export type HtmlMappingLoss = Readonly<{
   message: string;
   model?: HtmlModelLocation;
   owner: string;
+  removal?: HtmlUnsafeRemoval;
   source?: HtmlSourceLocation;
 }>;
 
@@ -3358,10 +3365,16 @@ const htmlMappingDiagnostics = (
 
 // A link keeps its label when it loses a destination (`unwrapped`), so that
 // loss warns under every policy; other lossy removals follow `lossPolicy`.
+export const followsLossPolicy = ({
+  action,
+  impact,
+}: Readonly<{ action: string; impact: string }>) =>
+  impact === 'lossy' && action === 'removed';
+
 const isRejectedRemoval = (
-  { action, impact }: Readonly<{ action: string; impact: string }>,
+  removal: Readonly<{ action: string; impact: string }>,
   lossPolicy: 'allow' | 'reject'
-) => lossPolicy === 'reject' && impact === 'lossy' && action === 'removed';
+) => lossPolicy === 'reject' && followsLossPolicy(removal);
 
 const unsafeContentDiagnostic = (
   removal: HtmlUnsafeRemoval,
@@ -3382,22 +3395,20 @@ const unsafeContentDiagnostic = (
       : ('warning' as const),
   });
 
-// DOCX applies its loss policy to mapping losses by action: unwrapped content
-// survives, so a lossless removal or a lost destination stays a warning and a
-// lossy removal follows it.
 const unsafeMappingLoss = (
   root: Element,
   element: Element,
-  { action, impact, kind, message }: HtmlUnsafeRemoval
+  removal: HtmlUnsafeRemoval
 ): HtmlMappingLoss =>
   Object.freeze({
     action:
-      impact === 'lossless' || action === 'unwrapped'
+      removal.action === 'unwrapped'
         ? ('unwrapped' as const)
         : ('dropped' as const),
-    kind: kind === 'url' ? ('attribute' as const) : kind,
-    message,
+    kind: removal.kind === 'url' ? ('attribute' as const) : removal.kind,
+    message: removal.message,
     owner: 'core:html',
+    removal,
     source: htmlTreeLocation(root, element),
   });
 
@@ -3621,6 +3632,9 @@ export const compileHtmlElementDecoder = (
       : element;
 
     return decodeCompiledHtml(editor, normalized, artifact, state, {
+      // Mammoth writes a Word checkbox as an input element, which in a
+      // document is content, not a form control.
+      checkboxContent: true,
       fitSchema: false,
       onLoss,
       operationKey,

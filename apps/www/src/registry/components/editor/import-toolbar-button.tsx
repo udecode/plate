@@ -45,6 +45,58 @@ const toastWarnings = (
   }
 };
 
+const plural = (count: number, noun: string) =>
+  `${count} ${noun}${count === 1 ? '' : 's'}`;
+
+const COUNTED_BY_COMMENT_TOASTS = new Set(['comment-range']);
+
+const toastDocxLosses = (
+  diagnostics: ReadonlyArray<
+    Readonly<{
+      code: string;
+      count?: number;
+      feature?: string;
+      impact?: string;
+      severity: string;
+    }>
+  >
+) => {
+  const dropped = new Set<string>();
+  let properties = 0;
+  let other = 0;
+
+  for (const { code, count, feature, impact, severity } of diagnostics) {
+    if (severity !== 'warning' || impact === 'lossless') continue;
+    if (feature && COUNTED_BY_COMMENT_TOASTS.has(feature)) continue;
+    if (code === 'property-dropped') {
+      properties += count ?? 1;
+    } else if (feature) {
+      dropped.add(feature.replaceAll('-', ' '));
+    } else {
+      other += 1;
+    }
+  }
+
+  const messages: string[] = [];
+
+  if (dropped.size > 0) {
+    messages.push(`Not imported: ${[...dropped].join(', ')}.`);
+  }
+  if (properties > 0) {
+    messages.push(
+      `${properties} lost ${properties === 1 ? 'property' : 'properties'}.`
+    );
+  }
+  if (other > 0) {
+    messages.push(
+      messages.length > 0
+        ? `${plural(other, 'other warning')}.`
+        : `Imported with ${plural(other, 'warning')}.`
+    );
+  }
+  if (messages.length > 0) toast.warning(messages.join(' '));
+};
+
 const docxCommentText = (comment: DocxComment) =>
   comment.body
     .map((node) => NodeApi.string(node))
@@ -253,6 +305,7 @@ export function ImportToolbarButton({
         plainFiles[0].arrayBuffer(),
       ]);
       const result = await importDocx(arrayBuffer, {
+        lossPolicy: 'allow',
         plugins,
         retainSource: docxSource !== null,
       });
@@ -296,7 +349,7 @@ export function ImportToolbarButton({
         docxSource.replaceSource(result.source);
       }
 
-      toastWarnings(result.diagnostics);
+      toastDocxLosses(result.diagnostics);
       const imported = adopted?.imported ?? 0;
       const skipped = commentsInstalled
         ? (adopted?.skipped ?? result.comments.length)

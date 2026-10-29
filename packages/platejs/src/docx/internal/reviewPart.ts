@@ -94,7 +94,7 @@ const revisionKey = (element: Element) => {
   return `${element.localName} ${wordAttribute(element, 'author') ?? ''} ${date}`;
 };
 
-const CONTENT_REVISIONS = ['del', 'ins', 'moveFrom', 'moveTo'];
+export const CONTENT_REVISIONS = ['del', 'ins', 'moveFrom', 'moveTo'];
 
 const childOf = (element: Element | null | undefined, name: string) =>
   element

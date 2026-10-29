@@ -431,6 +431,7 @@ export const instrumentWordMath = (
         action: 'replaced',
         code: 'unsupported-content',
         feature: 'tracked-revision',
+        impact: 'lossy',
         message: 'A tracked revision inside an equation was flattened.',
         part,
         severity: 'warning',

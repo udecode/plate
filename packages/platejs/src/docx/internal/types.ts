@@ -106,6 +106,16 @@ export type DocxDiagnostic =
       message: string;
       severity: 'warning';
     }>
+  | Readonly<{
+      code: 'property-dropped';
+      /** How many runs, paragraphs or cells lost the property. */
+      count: number;
+      feature: string;
+      impact: 'lossy';
+      message: string;
+      part?: string;
+      severity: 'warning';
+    }>
   | DocxPolicyDiagnostic<{
       code: 'missing-static-presentation';
       message: string;
@@ -137,6 +147,7 @@ export type DocxDiagnostic =
       action: 'dropped' | 'replaced' | 'unwrapped';
       code: 'unsupported-content';
       feature?: string;
+      impact: 'lossless' | 'lossy';
       message: string;
       part?: string;
       path?: Path;

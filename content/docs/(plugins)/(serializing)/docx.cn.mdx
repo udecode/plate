@@ -105,6 +105,40 @@ export async function importFile(file: File) {
 
 文件、包、限制或解码的预期失败返回 `{ ok: false, diagnostics }`，且不包含文档。中止操作以 signal 的 reason 拒绝。无效选项和内部不变量错误会抛出异常。
 
+### 有损文件
+
+`importDocx` 默认拒绝内容损失。导入会省略图片、脚注、尾注、含有内容的页眉和页脚，以及没有已安装 HTML mapping 解码的复选框的方框。文本框只有在文件同时以转换器能读取的 VML 绘制它时才保留文字，且两种情况都会报告。上述每种损失都会使导入失败并返回错误 diagnostic，结果为 `ok: false`。HTML 清理器连同读者可见内容一起移除的标记、没有完整范围的批注，以及已安装插件无法保留的修订也是如此。设置 `lossPolicy: "allow"` 可以导入文件的其余内容，并以警告形式接收相同的损失：
+
+```tsx
+const result = await importDocx(file, {
+  lossPolicy: "allow",
+  plugins: BaseEditorKit,
+});
+```
+
+HTML mapping 丢失的属性或样式在两种策略下都只返回警告，不会使导入失败。它返回一个 `property-dropped` 警告，其 `feature` 指出丢失了什么，例如 `data-list-type`，`count` 是丢失它的 run、段落或单元格数量。mapping 未指明属性的损失按消息计数，因此目标地址不同的被拒链接各自发出一个警告。清理器拒绝链接的目标地址时，链接会保留文字。除非该地址可能运行脚本，否则链接会以同样方式发出警告。例如，未安装列表插件时导入的 Word 编号列表会以段落保留文字，并以这种方式报告其列表属性。如果两个已安装的 mark 不能用于同一段文字，schema 适配会保留其中一个，并改为返回有损的 `schema-repair` diagnostic，它遵循损失策略。
+
+```tsx
+for (const diagnostic of result.diagnostics) {
+  if (diagnostic.code === "property-dropped") {
+    console.warn(diagnostic.feature, diagnostic.count);
+  }
+}
+```
+
+每个 `unsupported-content` diagnostic 都声明 `impact`。`lossless` 的 diagnostic 不会使导入失败。它报告导入移除或展开、但保留了读者可见内容的标记，例如智能标记、内容控件、可能运行脚本的链接目标地址，或 mapping 添加的 `<style>` 元素。有一种 `lossless` 报告仍会丢失内容。导入会省略自定义 XML 元素中的文字。
+
+导入既不保留也不报告以下内容：
+
+- 转换器不读取的格式，无论是直接格式还是来自 Word 样式，例如下划线、文字颜色和背景色、突出显示、对齐方式、字号、字体和行高；
+- 隐藏文字，会作为普通文字导入；
+- 名称不以 `word/header` 或 `word/footer` 开头的页眉或页脚部件；
+- 未安装对应插件时导入的标题、链接和表格，会变成纯文字。
+
+带有自定义标记的脚注或尾注引用，例如 `*`，会把该标记留在文字中。导入只对它报告的注释种类从文字中省略注释。它只根据名为 `word/footnotes.xml` 或 `word/endnotes.xml` 的部件报告该种类。其他名称部件中的注释会连同标记留在文字中，且不会报告。如果文件中还有同一种类、含有注释的默认名称部件，导入也会省略重命名部件中的注释，并归入默认名称部件的报告。对于名称以 `word/header` 或 `word/footer` 开头但不是 XML 的文件条目，例如图片，导入会将其报告为丢失的页眉或页脚。空的页眉或页脚段落只要设置了边框、底纹或编号，就算作内容。该设置可以来自段落本身、其样式或文档默认值，即使它不绘制任何内容也算，例如值为 `none` 的边框。复选框还会丢失 Word 存放在与方框同一个 `w:t` 元素中的标签文字，归入同一条报告。
+
+转换器自身的消息，例如关于无法转换的符号的消息，以 `converter-message` 警告返回，不会使导入失败。
+
 ### 保留源文件用于后续导出
 
 同一个编辑器需要导入、编辑并导出 Word 文件时，请设置 `retainSource: true`。导入成功后会返回 `source`：精确导出可以原样返回该包时为 `DocxSource`，否则为 `null`，同时返回 `source-unavailable` 警告，指出第一个无法接纳的部件。应用负责保存 source，将它传给 `exportDocx`，并在文档关闭或被其他文件替换时调用 `dispose()`。
@@ -300,8 +334,8 @@ live editor 的组件是编辑 UI。把应用的 static kit 作为 `presentation
 | 主文档批注                                    | 存在时保留富文本正文、范围、作者/日期、durable ID、回复和 resolved 状态    |
 | 导入中的嵌入图片                              | 省略资源并返回 `resource-omitted` diagnostic                               |
 | 导出中的链接和图片                            | 写入绝对且满足导航下限的链接，以及 PNG、JPEG、GIF 或 BMP 图片；报告被移除的目标和被省略的图片 |
-| 单节文档的页眉和页脚                          | 使用 source 导出时保留安全且闭合的子图，但不映射到编辑器文档                |
-| 多节页眉和页脚、脚注和尾注                    | 检查并限制对应包部件；编辑 source 后省略并返回 diagnostic。导入时报告为丢失的内容，只含 Word 分隔线注释的脚注或尾注部件除外 |
+| 单节文档的页眉和页脚                          | 使用 source 导出时保留安全且闭合的子图，但不映射到编辑器文档。导入时把含有内容的页眉或页脚报告为丢失的内容 |
+| 多节页眉和页脚、脚注和尾注                    | 检查并限制对应包部件；编辑 source 后省略并返回 diagnostic。导入时报告为丢失的内容，不绘制任何内容的部件除外，例如只含 Word 分隔线注释或只含一个空的带样式段落的部件 |
 | 字段、文本框、形状、图表、SmartArt 和嵌入对象 | 转换可访问时保留纯文本，否则报告不支持或省略的内容                         |
 | Plate 命名根和元数据                          | Word 输出会省略并返回 `lossy-content` 警告；保存在 authored JSON 中 |
 | 公式                                          | 导出为 Word 公式；转换器不支持该写法时，把 TeX 放进 Word 公式。导入时把 Word 公式读成 `equation` 和 `inlineEquation` 节点，TeX 由公式结构重建；未安装这两个插件时读成 TeX 文本。与批注、修订或文字同处一段，或位于列表项、缩进段落中的行间公式读成行内公式 |

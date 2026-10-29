@@ -170,6 +170,7 @@ const missingHost = (
     action: 'replaced',
     code: 'unsupported-content',
     feature,
+    impact: 'lossy',
     message,
     path: path ? path.split(',').map(Number) : [],
     root,

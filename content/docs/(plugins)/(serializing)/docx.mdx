@@ -107,6 +107,40 @@ export async function importFile(file: File) {
 
 An expected file, package, limit, or decode failure returns `{ ok: false, diagnostics }` and no document. An aborted import rejects with the signal reason. Invalid options and internal invariant failures throw.
 
+### Lossy files
+
+`importDocx` rejects content loss by default. Import leaves out images, footnotes, endnotes, headers and footers that hold content, and the box of a checkbox that no installed HTML mapping decodes. A text box keeps its text when the file also draws it in VML that the converter reads, and is reported either way. Each of these losses fails the import with an error diagnostic, and the result is `ok: false`. So does markup that the HTML sanitizer removes along with content a reader would see, a comment without a complete range, or a tracked revision that the installed plugins cannot keep. Set `lossPolicy: "allow"` to import the rest of the file and receive the same losses as warnings:
+
+```tsx
+const result = await importDocx(file, {
+  lossPolicy: "allow",
+  plugins: BaseEditorKit,
+});
+```
+
+An attribute or style that an HTML mapping loses warns under both policies and never fails the import. It returns a `property-dropped` warning whose `feature` names what was lost, such as `data-list-type`, and whose `count` is the number of runs, paragraphs, or cells that lost it. A loss whose mapping names no attribute is counted by its message, so links refused for different destinations warn once each. A link keeps its label when the sanitizer refuses its destination. Unless that destination could run script, the link warns the same way. For example, a numbered Word list imported without the list plugin keeps its text as paragraphs and reports its list attributes this way. When two installed marks cannot share the same text, schema fitting keeps one and returns a lossy `schema-repair` diagnostic instead, which follows the loss policy.
+
+```tsx
+for (const diagnostic of result.diagnostics) {
+  if (diagnostic.code === "property-dropped") {
+    console.warn(diagnostic.feature, diagnostic.count);
+  }
+}
+```
+
+Every `unsupported-content` diagnostic declares `impact`. A `lossless` one never fails the import. It reports markup that import removed or unwrapped while keeping what a reader sees, such as a smart tag, a content control, a link destination that could run script, or a `<style>` element that a mapping added. One `lossless` report still loses content. Import leaves out the text inside a custom XML element.
+
+Import neither keeps nor reports:
+
+- formatting the converter does not read, whether direct or from a Word style, such as underline, text and background color, highlight, alignment, font size, font, and line height;
+- hidden text, which imports as ordinary text;
+- a header or footer part whose name does not start with `word/header` or `word/footer`;
+- headings, links, and tables imported without their plugins, which become plain text.
+
+A footnote or endnote reference with its own mark, such as `*`, leaves that mark in the text. Import leaves notes out of the text only for a note kind it reports. It reports a kind only from a part named `word/footnotes.xml` or `word/endnotes.xml`. Notes in a part under another name stay in the text with their markers and without a report. When the file also holds a default-named part of that kind with notes in it, import leaves the renamed part's notes out too, under the default-named part's report. Import reports a file entry whose name starts with `word/header` or `word/footer` but is not XML, such as a picture, as a lost header or footer. An empty header or footer paragraph counts as content when it sets a border, shading, or numbering. The setting can come from the paragraph, its style, or the document defaults, and it counts even when it draws nothing, such as a border of `none`. A checkbox also loses any label text that Word stores in the same `w:t` element as its box, under the same report.
+
+The converter's own messages, such as one about a symbol it cannot convert, return as `converter-message` warnings and never fail the import.
+
 ### Retain the source for later export
 
 Set `retainSource: true` when the same editor imports, edits, and exports a Word file. A successful import then includes `source`. It is a `DocxSource` when exact export can return the package unchanged. Otherwise it is `null`, with a `source-unavailable` warning that names the first part exact export cannot admit. Keep the source in application state, pass it to `exportDocx`, and dispose it when the document closes or another file replaces it.
@@ -306,8 +340,8 @@ diagnostic, which counts as lost content under `lossPolicy`.
 | Main-body comments                                                 | Preserve rich bodies, ranges, author/date metadata, durable IDs, replies, and resolved state when present   |
 | Embedded images during import                                      | Omit the resource and return a `resource-omitted` diagnostic                                                |
 | Links and images during export                                     | Write absolute navigation-safe links and PNG, JPEG, GIF, or BMP images; report removed destinations and omitted images |
-| Single-section headers and footers                                | Keep safe closed source subgraphs during source-aware export; do not map them into the editor document      |
-| Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics. Import reports them as dropped content, except a footnote or endnote part that holds only Word's separator notes |
+| Single-section headers and footers                                | Keep safe closed source subgraphs during source-aware export; do not map them into the editor document. Import reports one that holds content as dropped |
+| Multiple-section headers and footers, footnotes, and endnotes     | Inspect and bound their package parts; omit them from edited source-aware output with diagnostics. Import reports them as dropped content, except a part that draws nothing, such as one that holds only Word's separator notes or an empty styled paragraph |
 | Fields, text boxes, shapes, charts, SmartArt, and embedded objects | Keep reachable plain text when conversion exposes it; report unsupported or omitted content                 |
 | Plate named roots and metadata                                     | Omit from Word output with a `lossy-content` warning; keep them in authored JSON                            |
 | Equations                                                          | Export as Word math, or as TeX inside a Word equation when the converter does not cover the notation. Import reads Word math into `equation` and `inlineEquation` nodes, with TeX rebuilt from the equation's structure, or into TeX text when those plugins are not installed. A display equation that shares its paragraph with a comment, tracked change or text, or sits in a list item or an indented paragraph, imports inline |

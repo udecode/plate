@@ -27,6 +27,7 @@ import { withPlateFormatCompilation } from '../../../lib/editor/withPlite';
 import {
   coalesceAdjacentText,
   compileHtmlElementDecoder,
+  followsLossPolicy,
   HtmlPlugin,
   type HtmlMappingLoss,
 } from '../../../lib/plugins/html/HtmlPlugin';
@@ -38,6 +39,7 @@ import {
   readDocxNumbering,
 } from '../../internal/readDocxNumbering';
 import {
+  CONTENT_REVISIONS,
   isCustomXmlItem,
   parseReviewPart,
   REVIEW_PART_NAMESPACE,
@@ -82,7 +84,7 @@ export type {
 const WORD_NAMESPACE =
   'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
-const CONTENT_REVISION_ELEMENTS = new Set(['del', 'ins', 'moveFrom', 'moveTo']);
+const CONTENT_REVISION_ELEMENTS = new Set(CONTENT_REVISIONS);
 const PROPERTY_REVISION_ELEMENTS = new Set(['pPrChange', 'rPrChange']);
 const TRACKED_REVISION_ELEMENTS = new Set([
   ...CONTENT_REVISION_ELEMENTS,
@@ -390,17 +392,64 @@ const repairDiagnostic = (
     severity: 'warning' as const,
   });
 
-const mappingLossDiagnostic = (
-  loss: HtmlMappingLoss,
-  feature: string
-): DocxDiagnostic =>
-  Object.freeze({
-    action: loss.action,
-    code: 'unsupported-content' as const,
-    feature,
-    message: loss.message,
-    severity: 'warning' as const,
-  });
+const mappingLossDiagnostics = (
+  losses: readonly HtmlMappingLoss[],
+  part: 'word/comments.xml' | 'word/document.xml'
+): DocxDiagnostic[] => {
+  const diagnostics: DocxDiagnostic[] = [];
+  const properties = new Map<
+    string,
+    { count: number; feature: string; message: string }
+  >();
+
+  for (const loss of losses) {
+    const warns = loss.removal
+      ? loss.removal.impact === 'lossy' && !followsLossPolicy(loss.removal)
+      : loss.kind !== 'element';
+
+    if (!warns) {
+      diagnostics.push(
+        Object.freeze({
+          action: loss.action,
+          code: 'unsupported-content',
+          ...(loss.source?.kind === 'tree' && loss.source.tag === 'input'
+            ? { feature: 'checkbox' }
+            : {}),
+          impact: loss.removal?.impact ?? 'lossy',
+          message: loss.message,
+          part,
+          severity: 'warning',
+        })
+      );
+      continue;
+    }
+    const attribute =
+      loss.source?.kind === 'tree' ? loss.source.attribute : undefined;
+    const key = attribute ?? `${loss.kind}\u0000${loss.message}`;
+    const counted = properties.get(key);
+
+    properties.set(key, {
+      count: (counted?.count ?? 0) + 1,
+      feature: attribute ?? loss.kind,
+      message: counted?.message ?? loss.message,
+    });
+  }
+  for (const { count, feature, message } of properties.values()) {
+    diagnostics.push(
+      Object.freeze({
+        code: 'property-dropped',
+        count,
+        feature,
+        impact: 'lossy',
+        message,
+        part,
+        severity: 'warning',
+      })
+    );
+  }
+
+  return diagnostics;
+};
 
 const localAttribute = (element: Element, name: string) =>
   Array.from(element.attributes).find(
@@ -435,6 +484,7 @@ const collectDocxRevisions = (
         action: 'replaced',
         code: 'unsupported-content',
         feature: 'tracked-revision',
+        impact: 'lossy',
         message: `A ${element.localName} revision without an ID was flattened.`,
         part: 'word/document.xml',
         severity: 'warning',
@@ -592,20 +642,21 @@ const parsedPart = (
   }
 };
 
+type DocxParts = Readonly<{
+  numbering?: Document;
+  styles?: Document;
+}>;
+
 // Mammoth drops a paragraph's list identity, so each numbered paragraph
 // carries a marker run to the item Mammoth renders for it.
 const instrumentNumbering = (
-  dom: DocxDomRealm,
-  entries: BoundedDocxPackage['entries'],
   document: Document,
-  codec: ReturnType<typeof createMarkerCodec>
+  codec: ReturnType<typeof createMarkerCodec>,
+  parts: DocxParts
 ) => {
   const items = new Map<string, DocxListItem>();
 
-  for (const [paragraph, item] of readDocxNumbering(document, {
-    numbering: parsedPart(dom, entries, 'word/numbering.xml'),
-    styles: parsedPart(dom, entries, 'word/styles.xml'),
-  })) {
+  for (const [paragraph, item] of readDocxNumbering(document, parts)) {
     const { token } = codec.marker('list-item', String(items.size));
     const properties = Array.from(paragraph.children).find(
       (child) => child.localName === 'pPr'
@@ -694,6 +745,7 @@ const instrumentPropertyRevisions = (
         action: 'replaced',
         code: 'unsupported-content',
         feature: 'paragraph-property-revision',
+        impact: 'lossy',
         message: 'A malformed paragraph property revision was flattened.',
         part: 'word/document.xml',
         severity: 'warning',
@@ -744,6 +796,7 @@ const instrumentPropertyRevisions = (
         action: 'replaced',
         code: 'unsupported-content',
         feature: 'run-property-revision',
+        impact: 'lossy',
         message: 'A malformed run property revision was flattened.',
         part: 'word/document.xml',
         severity: 'warning',
@@ -837,6 +890,7 @@ const instrumentContentRevisions = (
       action: 'replaced',
       code: 'unsupported-content',
       feature: 'tracked-revision',
+      impact: 'lossy',
       message: `Tracked construct ${name} was flattened.`,
       part: 'word/document.xml',
       severity: 'warning',
@@ -1124,6 +1178,7 @@ const instrumentReviewBindings = (
   entries: BoundedDocxPackage['entries'],
   document: Document,
   codec: ReturnType<typeof createMarkerCodec>,
+  parts: DocxParts,
   diagnostics: DocxDiagnostic[]
 ): ReviewBindings | null => {
   const part = readReviewPart(dom, entries);
@@ -1145,9 +1200,8 @@ const instrumentReviewBindings = (
     reviewPackageKeys(
       document,
       {
-        numbering: parsedPart(dom, entries, 'word/numbering.xml'),
+        ...parts,
         relationships: parsedPart(dom, entries, 'word/_rels/document.xml.rels'),
-        styles: parsedPart(dom, entries, 'word/styles.xml'),
       },
       (path) => entries.get(path)
     )
@@ -1471,6 +1525,25 @@ const commentMetadata = (
   return result;
 };
 
+const stripNoteMarkers = (
+  document: Document,
+  kinds: ReadonlyArray<'endnote' | 'footnote'>
+) => {
+  if (kinds.length === 0) return;
+  for (const note of Array.from(
+    document.querySelectorAll(
+      kinds
+        .flatMap((kind) => [`a[id^="${kind}-ref-"]`, `li[id^="${kind}-"]`])
+        .join(', ')
+    )
+  )) {
+    const list = note.localName === 'li' ? note.parentElement : null;
+
+    (note.closest('sup') ?? note).remove();
+    if (list && list.children.length === 0) list.remove();
+  }
+};
+
 const importProjection = async (
   target: DocxImportTarget<Value>,
   arrayBuffer: ArrayBuffer,
@@ -1515,6 +1588,25 @@ const importProjection = async (
       item.replaceWith(...Array.from(item.childNodes));
     }
   }
+
+  for (const image of Array.from(mammothDocument.querySelectorAll('img'))) {
+    image.remove();
+    diagnostics.push({
+      code: 'resource-omitted',
+      feature: 'image',
+      message: 'An embedded image was omitted during DOCX import.',
+      severity: 'warning',
+    });
+  }
+  const reportedNotes = (['endnote', 'footnote'] as const).filter((kind) =>
+    diagnostics.some(
+      (diagnostic) =>
+        diagnostic.code === 'unsupported-content' && diagnostic.feature === kind
+    )
+  );
+
+  stripNoteMarkers(mammothDocument, reportedNotes);
+  const commentLosses: HtmlMappingLoss[] = [];
 
   for (const dl of Array.from(mammothDocument.querySelectorAll('dl'))) {
     const definitions = Array.from(dl.querySelectorAll('dt[id^="comment-"]'));
@@ -1563,13 +1655,14 @@ const importProjection = async (
             })
           )
         );
-        diagnostics.push(
-          ...losses.map((loss) => mappingLossDiagnostic(loss, 'comment'))
-        );
+        commentLosses.push(...losses);
       }
     }
     dl.remove();
   }
+  diagnostics.push(
+    ...mappingLossDiagnostics(commentLosses, 'word/comments.xml')
+  );
   for (const reference of Array.from(
     mammothDocument.querySelectorAll('a[id^="comment-ref-"]')
   )) {
@@ -1578,26 +1671,17 @@ const importProjection = async (
     if (parent) parent.remove();
     else reference.remove();
   }
-  for (const image of Array.from(mammothDocument.querySelectorAll('img'))) {
-    image.remove();
-    diagnostics.push({
-      code: 'resource-omitted',
-      feature: 'image',
-      message: 'An embedded image was omitted during DOCX import.',
-      severity: 'warning',
-    });
-  }
   const cleanedHtml = cleanWordHtml(
     mammothDocument.body.innerHTML,
     '',
     target.dom.parseHtml
   );
   const element = target.dom.parseHtml(cleanedHtml).body;
-  const nodes = target.decodeHtml(element, (loss) =>
-    diagnostics.push(mappingLossDiagnostic(loss, 'content'))
-  );
+  const losses: HtmlMappingLoss[] = [];
+  const nodes = target.decodeHtml(element, (loss) => losses.push(loss));
 
   if (!nodes) throw new Error('DOCX HTML could not be decoded.');
+  diagnostics.push(...mappingLossDiagnostics(losses, 'word/document.xml'));
 
   return {
     bodyById,
@@ -1611,50 +1695,156 @@ const importProjection = async (
 // Word writes its separator lines, and the continuation notice it leaves empty
 // by default, as notes that hold nothing a reader sees.
 const NOTE_SEPARATORS = new Set(['continuationSeparator', 'separator']);
-// A paragraph style can draw a border, shading or a number of its own.
-const VISIBLE_PARAGRAPH_PROPERTIES = new Set([
-  'numPr',
-  'pBdr',
-  'pStyle',
-  'shd',
+const VISIBLE_PARAGRAPH_PROPERTIES = new Set(['numPr', 'pBdr', 'shd']);
+const INVISIBLE_PARAGRAPH_MARKERS = new Set([
+  'bookmarkEnd',
+  'bookmarkStart',
+  'proofErr',
 ]);
 
-const isEmptyNote = (note: Element) =>
-  Array.from(note.children).every(
-    (paragraph) =>
-      paragraph.localName === 'p' &&
-      Array.from(paragraph.children).every(
-        (properties) =>
-          properties.localName === 'pPr' &&
-          Array.from(properties.children).every(
-            (property) => !VISIBLE_PARAGRAPH_PROPERTIES.has(property.localName)
-          )
-      )
+const ON_VALUES = new Set(['1', 'on', 'true']);
+
+type ParagraphStyleDrawing = (id: string | undefined) => boolean;
+
+const drawsProperties = (properties: Element | undefined) =>
+  Array.from(properties?.children ?? []).some((property) =>
+    VISIBLE_PARAGRAPH_PROPERTIES.has(property.localName)
   );
 
-const holdsNotes = (dom: DocxDomRealm, source: Uint8Array, part: string) =>
-  documentElements(dom.parseXml(dom.decodeUtf8(source), part)).some(
-    (element) => {
-      if (element.localName !== 'footnote' && element.localName !== 'endnote') {
-        return false;
-      }
-      const type = wordAttribute(element, 'type');
+const drawsParagraph = (
+  properties: Element | undefined,
+  mayDraw: ParagraphStyleDrawing
+) => {
+  const style = Array.from(properties?.children ?? []).find(
+    (property) => property.localName === 'pStyle'
+  );
 
-      if (type && NOTE_SEPARATORS.has(type)) return false;
+  return (
+    mayDraw(style ? (wordAttribute(style, 'val') ?? '') : undefined) ||
+    drawsProperties(properties)
+  );
+};
 
-      return type !== 'continuationNotice' || !isEmptyNote(element);
+const paragraphStyleDrawing = (
+  source: Document | undefined
+): ParagraphStyleDrawing => {
+  const styles = new Map<string, Element>();
+  let defaultId: string | undefined;
+
+  for (const element of source ? documentElements(source) : []) {
+    if (
+      element.localName === 'pPr' &&
+      element.parentElement?.localName === 'pPrDefault' &&
+      drawsProperties(element)
+    ) {
+      return () => true;
     }
+    const id =
+      element.localName === 'style' && wordAttribute(element, 'styleId');
+
+    if (!id) continue;
+    styles.set(id, element);
+    if (
+      wordAttribute(element, 'type') === 'paragraph' &&
+      ON_VALUES.has(wordAttribute(element, 'default') ?? '')
+    ) {
+      defaultId = id;
+    }
+  }
+  const drawn = new Map<string, boolean>();
+  // A basedOn chain can be as long as the styles part, so it is walked in a
+  // loop.
+  const mayDraw = (id: string) => {
+    const chain = new Set<string>();
+    let current: string | undefined = id;
+    let draws = false;
+
+    while (current !== undefined && !chain.has(current)) {
+      const known = drawn.get(current);
+
+      if (known !== undefined) {
+        draws = known;
+        break;
+      }
+      const style = styles.get(current);
+
+      if (!style) {
+        draws = true;
+        break;
+      }
+      chain.add(current);
+      const children = Array.from(style.children);
+
+      if (
+        drawsProperties(children.find((child) => child.localName === 'pPr'))
+      ) {
+        draws = true;
+        break;
+      }
+      const basedOn = children.find((child) => child.localName === 'basedOn');
+
+      current = basedOn ? (wordAttribute(basedOn, 'val') ?? '') : undefined;
+    }
+    for (const link of chain) drawn.set(link, draws);
+
+    return draws;
+  };
+
+  return (id) =>
+    id === undefined
+      ? defaultId !== undefined && mayDraw(defaultId)
+      : mayDraw(id);
+};
+
+const isEmptyRun = (run: Element) =>
+  Array.from(run.children).every(
+    (child) =>
+      child.localName === 'rPr' ||
+      (child.localName === 't' && child.textContent === '')
   );
+
+const isEmptyStory = (story: Element, mayDraw: ParagraphStyleDrawing) =>
+  Array.from(story.children).every((paragraph) => {
+    if (paragraph.localName !== 'p') return false;
+    const children = Array.from(paragraph.children);
+
+    return (
+      !drawsParagraph(
+        children.find((child) => child.localName === 'pPr'),
+        mayDraw
+      ) &&
+      children.every(
+        (child) =>
+          child.localName === 'pPr' ||
+          INVISIBLE_PARAGRAPH_MARKERS.has(child.localName) ||
+          (child.localName === 'r' && isEmptyRun(child))
+      )
+    );
+  });
+
+const holdsNotes = (part: Document, mayDraw: ParagraphStyleDrawing) =>
+  documentElements(part).some((element) => {
+    if (element.localName !== 'footnote' && element.localName !== 'endnote') {
+      return false;
+    }
+    const type = wordAttribute(element, 'type');
+
+    if (type && NOTE_SEPARATORS.has(type)) return false;
+
+    return type !== 'continuationNotice' || !isEmptyStory(element, mayDraw);
+  });
 
 const unsupportedPackageDiagnostics = (
   pkg: BoundedDocxPackage,
-  dom: DocxDomRealm
+  dom: DocxDomRealm,
+  parts: DocxParts
 ): readonly DocxDiagnostic[] => {
   const diagnostics: DocxDiagnostic[] = pkg.xmlInventory.map(
-    ({ action, feature, location }) => ({
+    ({ action, feature, location, lossy }) => ({
       action,
       code: 'unsupported-content' as const,
       feature,
+      impact: lossy ? 'lossy' : 'lossless',
       message: `DOCX ${feature} content was ${action}.`,
       part: location.part,
       severity: 'warning' as const,
@@ -1667,26 +1857,28 @@ const unsupportedPackageDiagnostics = (
     ['word/footnotes.xml', 'footnote'],
     ['word/endnotes.xml', 'endnote'],
   ] as const;
+  const mayDraw = paragraphStyleDrawing(parts.styles);
 
   for (const [prefix, feature] of families) {
-    const part = [...pkg.entries.keys()].find((name) =>
-      name.startsWith(prefix)
-    );
+    const notes = feature === 'footnote' || feature === 'endnote';
+    const part = [...pkg.entries.keys()].find((name) => {
+      if (!name.startsWith(prefix)) return false;
+      if (!pkg.xmlRoots.has(name)) return true;
+      const story = parsedPart(dom, pkg.entries, name);
+
+      if (!story) return true;
+
+      return notes
+        ? holdsNotes(story, mayDraw)
+        : !isEmptyStory(story.documentElement, mayDraw);
+    });
 
     if (!part) continue;
-    const source = pkg.entries.get(part);
-
-    if (
-      (feature === 'footnote' || feature === 'endnote') &&
-      source &&
-      !holdsNotes(dom, source, part)
-    ) {
-      continue;
-    }
     diagnostics.push({
       action: 'dropped',
       code: 'unsupported-content',
       feature,
+      impact: 'lossy',
       message: `DOCX ${feature} content is not mapped into the main document.`,
       part,
       severity: 'warning',
@@ -1714,8 +1906,7 @@ const isVisibleLoss = (diagnostic: DocxDiagnostic) =>
   diagnostic.code === 'lossy-content' ||
   (diagnostic.code === 'schema-repair' && diagnostic.impact === 'lossy') ||
   diagnostic.code === 'resource-omitted' ||
-  (diagnostic.code === 'unsupported-content' &&
-    diagnostic.action !== 'unwrapped');
+  (diagnostic.code === 'unsupported-content' && diagnostic.impact === 'lossy');
 
 const applyLossPolicy = (
   diagnostics: readonly DocxDiagnostic[],
@@ -1776,12 +1967,16 @@ const importBoundedDocx = async <V extends Value>(
       severity: 'error',
     });
   }
-  const diagnostics: DocxDiagnostic[] = [
-    ...unsupportedPackageDiagnostics(pkg, target.dom),
-  ];
   const documentXml = target.dom.decodeUtf8(source);
   const codec = createMarkerCodec(documentXml, target.markerNonce);
   const document = target.dom.parseXml(documentXml, 'word/document.xml');
+  const parts: DocxParts = {
+    numbering: parsedPart(target.dom, pkg.entries, 'word/numbering.xml'),
+    styles: parsedPart(target.dom, pkg.entries, 'word/styles.xml'),
+  };
+  const diagnostics: DocxDiagnostic[] = [
+    ...unsupportedPackageDiagnostics(pkg, target.dom, parts),
+  ];
   const rewritten = new Map<string, string>();
   const commentsSource = pkg.entries.get('word/comments.xml');
   const review = instrumentReviewBindings(
@@ -1789,6 +1984,7 @@ const importBoundedDocx = async <V extends Value>(
     pkg.entries,
     document,
     codec,
+    parts,
     diagnostics
   );
 
@@ -1817,7 +2013,7 @@ const importBoundedDocx = async <V extends Value>(
   }
   const revisions = collectDocxRevisions(document, limits, diagnostics);
   const comments = commentMetadata(target.dom, pkg.entries, limits);
-  const lists = instrumentNumbering(target.dom, pkg.entries, document, codec);
+  const lists = instrumentNumbering(document, codec, parts);
 
   instrumentPropertyRevisions(document, codec, diagnostics);
   instrumentContentRevisions(document, codec, diagnostics);

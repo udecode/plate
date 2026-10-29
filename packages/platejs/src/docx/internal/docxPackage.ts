@@ -8,6 +8,7 @@ import JSZip from 'jszip';
 import { SaxesParser } from 'saxes';
 
 import { throwIfDocxAborted } from './abort';
+import { CONTENT_REVISIONS } from './reviewPart';
 import {
   createDocxMarkupInspector,
   type DocxSourceViolation,
@@ -149,11 +150,120 @@ const MAIN_DOCUMENT_DISPOSITIONS = new Map<string, DocxXmlDisposition>([
     'smartTag',
     Object.freeze({ action: 'unwrapped', feature: 'smart-tag', lossy: false }),
   ],
-  [
-    'txbxContent',
-    Object.freeze({ action: 'dropped', feature: 'text-box', lossy: true }),
-  ],
 ]);
+const MARKUP_COMPATIBILITY_NAMESPACE =
+  'http://schemas.openxmlformats.org/markup-compatibility/2006';
+const VML_NAMESPACE = 'urn:schemas-microsoft-com:vml';
+const MAMMOTH_VML_ELEMENTS = new Set([
+  'group',
+  'rect',
+  'roundrect',
+  'shape',
+  'textbox',
+]);
+// The import unwraps tracked insertions, deletions and moves before Mammoth
+// reads the body.
+const MAMMOTH_WORD_CONTAINERS = new Set([
+  ...CONTENT_REVISIONS,
+  'body',
+  'document',
+  'hyperlink',
+  'object',
+  'p',
+  'pict',
+  'r',
+  'sdt',
+  'sdtContent',
+  'smartTag',
+  'tbl',
+  'tc',
+  'tr',
+  'txbxContent',
+]);
+const TEXT_BOX_KEPT: DocxXmlDisposition = Object.freeze({
+  action: 'unwrapped',
+  feature: 'text-box',
+  lossy: true,
+});
+const TEXT_BOX_DROPPED: DocxXmlDisposition = Object.freeze({
+  action: 'dropped',
+  feature: 'text-box',
+  lossy: true,
+});
+
+type DocxXmlFrame = Readonly<{
+  alternate?: { fallbackBox: boolean; pending: DocxXmlInventoryEntry[] };
+  disposition?: DocxXmlDisposition;
+  local: string;
+  qName: string;
+  root: boolean;
+  startCodeUnit: number;
+  uri: string;
+}>;
+
+const isFrame = (
+  frame: DocxXmlFrame | undefined,
+  uri: string,
+  local: string
+): frame is DocxXmlFrame => frame?.uri === uri && frame.local === local;
+
+const isMammothVml = (frame: DocxXmlFrame) =>
+  frame.uri === VML_NAMESPACE && MAMMOTH_VML_ELEMENTS.has(frame.local);
+
+// Mammoth reads a text box only through VML elements it handles, up to a
+// w:pict or w:object. It skips the whole subtree of an element it does not
+// read, such as w:customXml or mc:Choice, reads mc:Fallback instead of
+// mc:Choice, and reads only images under DrawingML wp:anchor and wp:inline.
+const textBoxDisposition = (frames: readonly DocxXmlFrame[]) => {
+  const host = frames.findLastIndex(
+    (frame) =>
+      isFrame(frame, WORD_NAMESPACE, 'pict') ||
+      isFrame(frame, WORD_NAMESPACE, 'object')
+  );
+
+  return host !== -1 &&
+    host < frames.length - 1 &&
+    frames.every((frame, index) =>
+      index > host
+        ? isMammothVml(frame)
+        : isMammothVml(frame) ||
+          (frame.uri === WORD_NAMESPACE &&
+            MAMMOTH_WORD_CONTAINERS.has(frame.local)) ||
+          isFrame(frame, MARKUP_COMPATIBILITY_NAMESPACE, 'AlternateContent') ||
+          isFrame(frame, MARKUP_COMPATIBILITY_NAMESPACE, 'Fallback')
+    )
+    ? TEXT_BOX_KEPT
+    : TEXT_BOX_DROPPED;
+};
+
+// mc:Choice and mc:Fallback are alternatives for the same content, so a Word
+// text box and its VML fallback are one box.
+const recordTextBox = (
+  frames: readonly DocxXmlFrame[],
+  entry: DocxXmlInventoryEntry,
+  inventory: DocxXmlInventoryEntry[]
+) => {
+  const choice = frames.findIndex((frame) =>
+    isFrame(frame, MARKUP_COMPATIBILITY_NAMESPACE, 'Choice')
+  );
+
+  const pending =
+    choice > 0 ? frames[choice - 1]?.alternate?.pending : undefined;
+
+  if (pending) {
+    pending.push(entry);
+
+    return;
+  }
+  inventory.push(entry);
+  frames.forEach((frame, index) => {
+    if (isFrame(frame, MARKUP_COMPATIBILITY_NAMESPACE, 'Fallback')) {
+      const alternate = frames[index - 1]?.alternate;
+
+      if (alternate) alternate.fallbackBox = true;
+    }
+  });
+};
 
 const inspectXml = (
   source: Uint8Array,
@@ -176,14 +286,7 @@ const inspectXml = (
   let parseError: Error | undefined;
   const parser = new SaxesParser({ xmlns: true });
   const markup = createDocxMarkupInspector(name);
-  const frames: Array<
-    Readonly<{
-      disposition?: DocxXmlDisposition;
-      qName: string;
-      root: boolean;
-      startCodeUnit: number;
-    }>
-  > = [];
+  const frames: DocxXmlFrame[] = [];
 
   parser.on('doctype', () => {
     parseError = invalidPackage(
@@ -205,17 +308,27 @@ const inspectXml = (
       0,
       text.lastIndexOf('<', Math.max(0, parser.position - 1))
     );
+    const mainDocument = name === 'word/document.xml';
     const disposition =
-      name === 'word/document.xml' && tag.uri === WORD_NAMESPACE
-        ? MAIN_DOCUMENT_DISPOSITIONS.get(tag.local)
+      mainDocument && tag.uri === WORD_NAMESPACE
+        ? tag.local === 'txbxContent'
+          ? textBoxDisposition(frames)
+          : MAIN_DOCUMENT_DISPOSITIONS.get(tag.local)
         : undefined;
 
     frames.push(
       Object.freeze({
+        ...(mainDocument &&
+        tag.uri === MARKUP_COMPATIBILITY_NAMESPACE &&
+        tag.local === 'AlternateContent'
+          ? { alternate: { fallbackBox: false, pending: [] } }
+          : {}),
         ...(disposition ? { disposition } : {}),
+        local: tag.local,
         qName,
         root: depth === 1,
         startCodeUnit,
+        uri: tag.uri,
       })
     );
 
@@ -255,7 +368,16 @@ const inspectXml = (
 
       if (frame.root) roots.set(name, location);
       if (frame.disposition) {
-        inventory.push(Object.freeze({ ...frame.disposition, location }));
+        const entry = Object.freeze({ ...frame.disposition, location });
+
+        if (frame.disposition.feature === 'text-box') {
+          recordTextBox(frames, entry, inventory);
+        } else {
+          inventory.push(entry);
+        }
+      }
+      if (frame.alternate && !frame.alternate.fallbackBox) {
+        inventory.push(...frame.alternate.pending);
       }
     }
     depth -= 1;

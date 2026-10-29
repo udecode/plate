@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-29-word-import-keeps-the-rest",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-29-word-import-keeps-the-rest.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Import the rest of a Word file that holds images, notes, headers or text boxes, and name what was not imported",
+  "targets": [
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-29-import-toolbar-rest-word-file-that-6f65a1b0",
+      "kind": "fix",
+      "summary": "Import the rest of a Word file that holds images, notes, headers or text boxes, and name what was not imported",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["import-toolbar-button"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-29",
+          "entry": "2026-10-29-word-import-keeps-the-rest",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

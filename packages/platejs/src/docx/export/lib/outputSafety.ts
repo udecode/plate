@@ -134,6 +134,7 @@ export const prepareDocxOutput = async (
         action: 'unwrapped',
         code: 'unsupported-content',
         feature: 'link',
+        impact: 'lossy',
         message: decideUrl('navigation', href).ok
           ? 'A relative link has no document base in DOCX, so its text was kept without the destination.'
           : 'An unsafe link destination was removed and its text was kept.',

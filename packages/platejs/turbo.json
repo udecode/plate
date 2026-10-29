@@ -4208,6 +4208,7 @@
         "typecheck:partition:docx-import",
         "typecheck:partition:docx-internal",
         "typecheck:partition:math",
+        "typecheck:partition:media",
         "typecheck:partition:standard-basic-nodes",
         "typecheck:partition:standard-indent",
         "typecheck:partition:standard-list",
