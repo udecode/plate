@@ -414,7 +414,11 @@ component 或 slot。
 <APISubListItem parent="render" name="mark" type="object" optional>
 控制 schema mark 的主 `component` 渲染位置。`placement: 'leaf'` 包裹每个 active leaf，
 也是默认值。`placement: 'text'` 只包裹一次 text node，并允许使用 `leafComponent`
-作为第二个 active-leaf renderer。`leafAttributes` 和 `textAttributes` 为对应 host
+作为第二个 active-leaf renderer。在分页编辑器中，`placement: 'text'` 为 text 的每个
+piece 各包裹一次。piece 是已绘制页面上该 text 的一段测量 run、尚未绘制页面上的全部行，或没有
+layout 测量的整个 text；一行可以包含同一 text 的多段 run。其 props 带有 `piece: { index }`，即该 piece 在 text 所有
+piece 中的位置；其 attributes 不含 `data-editor-node`、path、key 或 `ref`。每个 text 只应出现一次的额外内容，请在 element component 中渲染，或在
+text 最后一个 leaf（`leafPosition` 缺失或带有 `isLast` 的 leaf）的 `leafComponent` 中渲染。`leafAttributes` 和 `textAttributes` 为对应 host
 添加可信 attribute。
 </APISubListItem>
 </APISubList>

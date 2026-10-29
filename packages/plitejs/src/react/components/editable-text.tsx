@@ -3,15 +3,13 @@ import React, {
   type ReactNode,
   type Ref,
   useCallback,
+  useContext,
   useRef,
 } from 'react';
 
 import type { Path, NodeKey, Text as TextNode } from '../..';
 import { usePliteDecorationEntries } from '../decoration-context';
-import {
-  getDecorationSliceIdentity,
-  type DecorationSlice,
-} from '../decoration-source';
+import type { DecorationSlice } from '../decoration-source';
 import {
   type DOMTextSyncOptOutReason,
   getDOMTextSyncCapability,
@@ -23,7 +21,6 @@ import {
   useClaimEditableDOMCommit,
   useEditableDOMRuntime,
 } from '../hooks/use-claim-editable-dom-commit';
-import { useEditorComposing } from '../hooks/use-editor-composing';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import {
@@ -39,27 +36,25 @@ import {
 import {
   type EditableTextPart,
   partitionTextContainers,
-  wrapDecorationContainers,
 } from './editable-text-containers';
 import { compileTextFlowSegments } from './editable-text-flow';
-import { EditorLeaf } from './plite-leaf';
 import {
-  getPlitePlaceholderStyle,
-  type PlaceholderIntrinsicTag,
-  EditorPlaceholder,
-} from './plite-placeholder';
+  groupTextPieces,
+  RenderCallback,
+  renderEmptyTextLeaf,
+  renderTextLeaf,
+  sameMarks,
+  samePath,
+  sameZeroWidth,
+  TextPiece,
+  TextRenderScopeContext,
+  toTextLeaves,
+  type ZeroWidthOptions,
+} from './editable-text-pieces';
+import type { PlaceholderIntrinsicTag } from './plite-placeholder';
 import { EditorText } from './plite-text';
-import { DecoratedTextString, TextString } from './text-string';
-import { ZeroWidthString } from './zero-width-string';
 
 const EMPTY_MARKS: Omit<TextNode, 'text'> = {};
-const PLACEHOLDER_ANCHOR_STYLE: CSSProperties = {
-  display: 'inline-block',
-  maxWidth: '100%',
-  position: 'relative',
-  verticalAlign: 'top',
-  width: '100%',
-};
 const EMPTY_BOUND_TEXT = Object.freeze({
   marks: EMPTY_MARKS,
   path: null,
@@ -75,31 +70,6 @@ const EMPTY_BOUND_TEXT = Object.freeze({
   renderRevision: number;
   text: string;
 };
-
-const sameMarks = (
-  left: Omit<TextNode, 'text'>,
-  right: Omit<TextNode, 'text'>
-) => {
-  const leftKeys = Object.keys(left);
-  const rightKeys = Object.keys(right);
-
-  return (
-    leftKeys.length === rightKeys.length &&
-    leftKeys.every((key) =>
-      Object.is(
-        (left as Record<string, unknown>)[key],
-        (right as Record<string, unknown>)[key]
-      )
-    )
-  );
-};
-
-const samePath = (left: Path | null, right: Path | null) =>
-  left === right ||
-  (left != null &&
-    right != null &&
-    left.length === right.length &&
-    left.every((part, index) => part === right[index]));
 
 const samePathOrRuntimeStable = ({
   leftPath,
@@ -121,25 +91,6 @@ const samePathOrRuntimeStable = ({
     leftNodeKey === rightNodeKey &&
     leftEditorNode != null &&
     leftEditorNode === rightEditorNode);
-
-type ZeroWidthOptions = {
-  includeSentinel?: boolean;
-  isLineBreak?: boolean;
-  isMarkPlaceholder?: boolean;
-  length?: number;
-};
-
-const sameZeroWidth = (
-  left: ZeroWidthOptions | undefined,
-  right: ZeroWidthOptions | undefined
-) =>
-  left === right ||
-  (left != null &&
-    right != null &&
-    left.includeSentinel === right.includeSentinel &&
-    left.isLineBreak === right.isLineBreak &&
-    left.isMarkPlaceholder === right.isMarkPlaceholder &&
-    left.length === right.length);
 
 const sameBoundText = (
   left: {
@@ -192,7 +143,15 @@ export type RenderLeafProps = {
   text: Omit<TextNode, 'text'>;
 };
 
-export type RenderTextProps = {
+/**
+ * Props of a `renderText` call. Outside a paged view each text gets one call
+ * with its host attributes. In a paged view each piece of a text gets its own
+ * call with `piece`, and the editor renders the text host around them.
+ */
+export type RenderTextProps = RenderTextHostProps | RenderTextPieceProps;
+
+/** One `renderText` call for a whole text, which owns the text's identity. */
+export type RenderTextHostProps = {
   attributes: {
     'data-editor-dom-sync'?: true;
     'data-editor-node': 'text';
@@ -202,6 +161,27 @@ export type RenderTextProps = {
     ref?: Ref<HTMLSpanElement>;
   };
   children: ReactNode;
+  piece?: undefined;
+  text: TextNode;
+};
+
+/**
+ * One `renderText` call for one piece of a paged text: a measured run of the
+ * text on a drawn page, the lines of a page not drawn yet, or a whole text
+ * that no layout measures. One line can hold several runs of a text. Its
+ * children hold only that piece's leaves, and its attributes carry no text
+ * identity. `piece.index` is the piece's position among the text's pieces.
+ */
+export type RenderTextPieceProps = {
+  attributes: Readonly<{
+    'data-editor-node'?: never;
+    'data-editor-node-key'?: never;
+    'data-editor-path'?: never;
+    'data-editor-text-piece': true;
+    ref?: never;
+  }>;
+  children: ReactNode;
+  piece: Readonly<{ index: number }>;
   text: TextNode;
 };
 
@@ -215,59 +195,6 @@ export type RenderPlaceholderProps = {
     style: CSSProperties;
   };
   children: ReactNode;
-};
-
-const RenderCallback = <TProps,>({
-  props,
-  render,
-}: {
-  props: TProps;
-  render: (props: TProps) => ReactNode;
-}) => render(props);
-
-const PlaceholderHiddenWhileComposing = ({
-  as,
-  children,
-  dir,
-  ref,
-  renderPlaceholder,
-  style,
-}: {
-  as?: PlaceholderIntrinsicTag;
-  children: ReactNode;
-  dir?: 'rtl';
-  ref?: React.RefCallback<HTMLElement>;
-  renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
-  style?: CSSProperties;
-}) => {
-  const composing = useEditorComposing();
-  const shownStyle = composing
-    ? { ...style, visibility: 'hidden' as const }
-    : style;
-
-  if (!renderPlaceholder) {
-    return (
-      <EditorPlaceholder as={as} dir={dir} ref={ref} style={shownStyle}>
-        {children}
-      </EditorPlaceholder>
-    );
-  }
-
-  const attributes = {
-    'aria-hidden': true as const,
-    'data-editor-placeholder': true as const,
-    contentEditable: false as const,
-    dir,
-    ref: ref ?? (() => {}),
-    style: getPlitePlaceholderStyle(shownStyle),
-  };
-
-  return (
-    <RenderCallback
-      props={{ attributes, children }}
-      render={renderPlaceholder}
-    />
-  );
 };
 
 const splitTextByDecorations = (
@@ -302,12 +229,6 @@ const assignRef = (
     ref.current = node;
   }
 };
-
-const getLeafAttributes = (leafPosition?: RenderLeafProps['leafPosition']) => ({
-  'data-editor-leaf': true as const,
-  'data-editor-leaf-end': leafPosition?.end,
-  'data-editor-leaf-start': leafPosition?.start,
-});
 
 // oxlint-disable-next-line react/prefer-function-component -- shouldComponentUpdate preserves native-owned DOM without reading refs during render.
 class EditableTextContent extends React.Component<{
@@ -399,183 +320,110 @@ const RenderEditableText = ({
 }) => {
   useClaimEditableDOMCommit();
   const runtime = useEditableDOMRuntime();
+  const scope = useContext(TextRenderScopeContext);
   const contentRef = useRef<EditableTextContent>(null);
   useIsomorphicLayoutEffect(() => {
     contentRef.current?.defer();
   });
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey ?? null);
-  const hasText = resolvedText.length > 0;
   const domTextSync = getDOMTextSyncCapability({
-    hasText,
+    hasText: resolvedText.length > 0,
     marks: resolvedMarks,
     decorations,
     renderLeaf,
     renderText,
   });
-  const parts = (
-    hasText
+  const segments =
+    resolvedText.length > 0
       ? splitTextByDecorations(resolvedText, decorations, resolvedMarks)
-      : []
-  ).map((segment) => ({ kind: 'text' as const, segment }));
-  const textNode = {
-    text: resolvedText,
-    ...resolvedMarks,
+      : [];
+  const readRef = runtime?.importUnreadPressBeforeUnmount;
+  const empty = {
+    placeholder,
+    placeholderAs,
+    placeholderDir,
+    placeholderRef,
+    placeholderStyle,
+    zeroWidth,
   };
-  const textAttributes = {
-    'data-editor-dom-sync': domTextSync.enabled ? (true as const) : undefined,
-    'data-editor-dom-sync-reason': domTextSync.reason ?? undefined,
-    'data-editor-node': 'text' as const,
-    'data-editor-path': path ? path.join(',') : undefined,
-    'data-editor-node-key': nodeKeyDOMValue,
-    ref: textRef,
-  };
-  const {
-    containers,
-    parts: segmentParts,
-    textContainer,
-  } = partitionTextContainers(parts, decorations);
-  const content = parts.length
-    ? wrapDecorationContainers(
-        segmentParts.map((part, index) => {
-          const { segment } = part;
-          const innermostDecoration = segment.decorations.at(-1);
-          const isTrailing =
-            isLast && index === parts.length - 1 && segment.text.endsWith('\n');
-          const baseContent =
-            segment.text.length === 0 ? (
-              <ZeroWidthString isMarkPlaceholder />
-            ) : innermostDecoration ? (
-              <DecoratedTextString
-                attributes={innermostDecoration.attributes}
-                isTrailing={isTrailing}
-                ref={runtime?.importUnreadPressBeforeUnmount}
-                text={segment.text}
-              />
-            ) : (
-              <TextString
-                isTrailing={isTrailing}
-                ref={runtime?.importUnreadPressBeforeUnmount}
-                text={segment.text}
-              />
-            );
-          let decoratedSegmentContent: ReactNode = baseContent;
-          const wrapperCount =
-            segment.decorations.length - (innermostDecoration ? 1 : 0);
 
-          for (
-            let decorationIndex = wrapperCount - 1;
-            decorationIndex >= 0;
-            decorationIndex--
-          ) {
-            const decoration = segment.decorations[decorationIndex];
+  if (scope === 'paged') {
+    const { containers, parts, textContainer } = partitionTextContainers(
+      segments,
+      decorations
+    );
+    const pieces = groupTextPieces(
+      toTextLeaves(parts, isLast),
+      containers,
+      textContainer
+    );
 
-            decoratedSegmentContent = (
+    return (
+      <EditableTextContent ref={contentRef} runtime={runtime} textRef={textRef}>
+        {(bindTextRef) => (
+          <EditorText
+            domSync={domTextSync.enabled}
+            domSyncReason={domTextSync.reason}
+            nodeKey={nodeKey}
+            path={path}
+            ref={bindTextRef}
+          >
+            {pieces.map((piece, index) => (
               <span
-                key={getDecorationSliceIdentity(decoration)}
-                {...decoration.attributes}
-              >
-                {decoratedSegmentContent}
-              </span>
-            );
-          }
-          const leafNode = segment.marks;
-          const leafPosition =
-            parts.length > 1
-              ? {
-                  end: segment.end,
-                  isFirst: index === 0 ? (true as const) : undefined,
-                  isLast:
-                    index === parts.length - 1 ? (true as const) : undefined,
-                  start: segment.start,
+                // oxlint-disable-next-line react-doctor/no-array-index-as-key -- A slice's key holds its page and block path, so the index keeps a line's span mounted when either moves.
+                key={index}
+                {...piece.container?.attributes}
+                data-editor-render-only={
+                  piece.container ? 'container' : undefined
                 }
-              : undefined;
-          const leafAttributes = getLeafAttributes(leafPosition);
-
-          const segmentKey = JSON.stringify([
-            nodeKey,
-            renderRevision,
-            segment.identity,
-          ]);
-
-          return (
-            <React.Fragment key={segmentKey}>
-              {renderLeaf ? (
-                <RenderCallback
-                  props={{
-                    attributes: leafAttributes,
-                    children: decoratedSegmentContent,
-                    leaf: leafNode,
-                    leafPosition,
-                    path,
-                    text: resolvedMarks,
-                  }}
-                  render={renderLeaf}
+              >
+                <TextPiece
+                  empty={empty}
+                  index={index}
+                  leaves={piece.leaves}
+                  marks={resolvedMarks}
+                  path={path}
+                  readRef={readRef}
+                  renderLeaf={renderLeaf}
+                  renderPlaceholder={renderPlaceholder}
+                  renderRevision={renderRevision}
+                  renderText={renderText}
+                  text={resolvedText}
                 />
-              ) : (
-                <EditorLeaf attributes={leafAttributes}>
-                  {decoratedSegmentContent}
-                </EditorLeaf>
-              )}
-            </React.Fragment>
-          );
-        }),
-        containers
-      )
-    : (() => {
-        const placeholderNode = placeholder ? (
-          <PlaceholderHiddenWhileComposing
-            as={placeholderAs}
-            dir={placeholderDir}
-            ref={placeholderRef}
-            renderPlaceholder={renderPlaceholder}
-            style={placeholderStyle}
-          >
-            {placeholder}
-          </PlaceholderHiddenWhileComposing>
-        ) : null;
-        const zeroWidthString = (
-          <ZeroWidthString
-            includeSentinel={zeroWidth?.includeSentinel}
-            isLineBreak={zeroWidth?.isLineBreak}
-            isMarkPlaceholder={zeroWidth?.isMarkPlaceholder}
-            length={zeroWidth?.length}
-          />
-        );
-        const innerContent = placeholderNode ? (
-          <span
-            data-editor-placeholder-anchor="true"
-            style={PLACEHOLDER_ANCHOR_STYLE}
-          >
-            {zeroWidthString}
-            {placeholderNode}
-          </span>
-        ) : (
-          zeroWidthString
-        );
-        const leafNode = resolvedMarks;
-        const leafAttributes = getLeafAttributes();
+              </span>
+            ))}
+          </EditorText>
+        )}
+      </EditableTextContent>
+    );
+  }
 
-        return wrapDecorationContainers(
-          [
-            renderLeaf ? (
-              <RenderCallback
-                key="empty"
-                props={{
-                  attributes: leafAttributes,
-                  children: innerContent,
-                  leaf: leafNode,
-                  path,
-                  text: resolvedMarks,
-                }}
-                render={renderLeaf}
-              />
-            ) : (
-              <EditorLeaf key="empty">{innerContent}</EditorLeaf>
-            ),
-          ],
-          [textContainer]
-        );
-      })();
+  const content =
+    segments.length > 0
+      ? toTextLeaves(segments, isLast).map((leaf) => (
+          <React.Fragment
+            key={JSON.stringify([
+              nodeKey,
+              renderRevision,
+              leaf.segment.identity,
+            ])}
+          >
+            {renderTextLeaf({
+              leaf,
+              path,
+              readRef,
+              renderLeaf,
+              text: resolvedMarks,
+            })}
+          </React.Fragment>
+        ))
+      : renderEmptyTextLeaf({
+          empty,
+          path,
+          renderLeaf,
+          renderPlaceholder,
+          text: resolvedMarks,
+        });
 
   return (
     <EditableTextContent ref={contentRef} runtime={runtime} textRef={textRef}>
@@ -583,9 +431,18 @@ const RenderEditableText = ({
         renderText ? (
           <RenderCallback
             props={{
-              attributes: { ...textAttributes, ref: bindTextRef },
+              attributes: {
+                'data-editor-dom-sync': domTextSync.enabled
+                  ? (true as const)
+                  : undefined,
+                'data-editor-dom-sync-reason': domTextSync.reason ?? undefined,
+                'data-editor-node': 'text' as const,
+                'data-editor-path': path ? path.join(',') : undefined,
+                'data-editor-node-key': nodeKeyDOMValue,
+                ref: bindTextRef,
+              },
               children: content,
-              text: textNode,
+              text: { text: resolvedText, ...resolvedMarks },
             }}
             render={renderText}
           />

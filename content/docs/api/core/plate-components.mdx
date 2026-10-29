@@ -269,7 +269,7 @@ export function FigureElement({
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `EditorElement`      | Adds `data-editor-node="element"`, preserves Plate's `data-editor-node-key`, exposes typed element-owned content-root slots, and adds directional-affinity spacers when needed. |
 | `EditorLeaf`         | Renders persisted marks around a text segment and adds hard-affinity spacers when needed.                                                                                                                                      |
-| `EditorText`         | Renders one text-node wrapper around all mark and Decoration segments.                                                                                                                                                          |
+| `EditorText`         | Renders one text-node wrapper around all mark and Decoration segments. In a paged editor it wraps each piece of the text: a measured run of the text on a drawn page, the lines of a page not drawn yet, or the whole text when no layout measures it. One line can hold more than one run of the same text.                                                                                                 |
 
 ## Node selection
 

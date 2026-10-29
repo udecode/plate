@@ -1,8 +1,5 @@
-import React, { type ReactNode } from 'react';
-
 import type { Text as TextNode } from '../..';
 import {
-  getDecorationSliceIdentity,
   isContainerDecorationSlice,
   type DecorationSlice,
 } from '../decoration-source';
@@ -16,11 +13,6 @@ export type EditableTextPart = {
   text: string;
 };
 
-export type EditableTextRenderPart = {
-  kind: 'text';
-  segment: EditableTextPart;
-};
-
 /**
  * Takes container slices out of each part's decorations and picks the
  * container each part renders in. An empty gap joins the open container, or
@@ -29,13 +21,13 @@ export type EditableTextRenderPart = {
  * container.
  */
 export const partitionTextContainers = (
-  parts: readonly EditableTextRenderPart[],
+  parts: readonly EditableTextPart[],
   decorations: readonly DecorationSlice[]
 ) => {
   const own = parts.map((part) =>
-    part.segment.text.length === 0
+    part.text.length === 0
       ? undefined
-      : (part.segment.decorations.find(isContainerDecorationSlice) ?? null)
+      : (part.decorations.find(isContainerDecorationSlice) ?? null)
   );
   const textContainer = decorations.find(isContainerDecorationSlice) ?? null;
   const first = own.find((container) => container !== undefined);
@@ -48,55 +40,14 @@ export const partitionTextContainers = (
       return open;
     }),
     parts: parts.map((part) =>
-      part.segment.decorations.some(isContainerDecorationSlice)
+      part.decorations.some(isContainerDecorationSlice)
         ? {
             ...part,
-            segment: {
-              ...part.segment,
-              decorations: part.segment.decorations.filter(
-                (decoration) => !isContainerDecorationSlice(decoration)
-              ),
-            },
+            decorations: part.decorations.filter(
+              (decoration) => !isContainerDecorationSlice(decoration)
+            ),
           }
         : part
     ),
   };
-};
-
-export const wrapDecorationContainers = (
-  nodes: readonly ReactNode[],
-  containers: ReadonlyArray<DecorationSlice | null>
-) => {
-  const content: ReactNode[] = [];
-  let group: ReactNode[] = [];
-  let container: DecorationSlice | null = null;
-  const flush = () => {
-    if (container) {
-      content.push(
-        <span
-          key={`container:${getDecorationSliceIdentity(container)}`}
-          {...container.attributes}
-          data-editor-render-only="container"
-        >
-          {group}
-        </span>
-      );
-    } else {
-      content.push(...group);
-    }
-    group = [];
-  };
-
-  nodes.forEach((node, index) => {
-    const next = containers[index] ?? null;
-
-    if (next !== container) {
-      flush();
-      container = next;
-    }
-    group.push(node);
-  });
-  flush();
-
-  return content;
 };

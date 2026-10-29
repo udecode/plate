@@ -445,7 +445,15 @@ text ranges and components or slots for structure.
 <APISubListItem parent="render" name="mark" type="object" optional>
 Controls where a schema mark's primary `component` renders. `placement: 'leaf'`
 wraps every active leaf and is the default. `placement: 'text'` wraps the text
-node once and permits `leafComponent` as a secondary active-leaf renderer.
+node once and permits `leafComponent` as a secondary active-leaf renderer. In a
+paged editor, `placement: 'text'` wraps each piece of the text once. A piece is
+a measured run of the text on a drawn page, the lines of a page not drawn yet,
+or a whole text that no layout measures. One line can hold more than one run of
+the same text. Its props carry `piece: { index }`, the piece's
+position among the text's pieces, and attributes with no `data-editor-node`,
+path, key or `ref`. Render an extra that must appear once per
+text from the element component, or from `leafComponent` on the text's last
+leaf, the one whose `leafPosition` is missing or has `isLast`.
 `leafAttributes` and `textAttributes` add trusted attributes to their matching
 hosts.
 </APISubListItem>

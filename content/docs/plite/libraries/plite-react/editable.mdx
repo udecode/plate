@@ -243,6 +243,18 @@ const renderText = ({ attributes, children, text }) => {
 };
 ```
 
+In a [`PagedEditable`](../plite-pagination), `renderText` runs once per piece
+of a text: each measured run of the text on a drawn page, the lines of a page
+not drawn yet together, or a whole text that no layout measures. One line can
+hold more than one run of the same text. Those props carry
+`piece: { index }`, the piece's position among the text's pieces, and
+`attributes` without the text's identity or `ref`. Plite renders the one text
+host around them. `RenderTextProps` is the
+union of `RenderTextHostProps` and `RenderTextPieceProps`, so narrow on `piece`
+before you read a host-only attribute. Render a once-per-text extra from the
+element renderer, or from `renderLeaf` on the leaf whose `leafPosition` is
+missing or has `isLast`.
+
 ## Decorations
 
 `Editable` renders decorations from the nearest `EditorRoot` provider. Each

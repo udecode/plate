@@ -8,7 +8,7 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { createTextInjectionMatcher } from '../../internal/plugin/pluginInjectNodeProps';
-import type { AnyBasePlugin, EditableProps } from '../../lib';
+import type { AnyBasePlugin, EditableProps, RenderTextProps } from '../../lib';
 import { getPluginNodeClass } from '../../lib';
 import { EditorText } from '../components/plate-nodes';
 import type { Editor } from '../editor/Editor';
@@ -131,10 +131,9 @@ export const pipeRenderText = (
   }: {
     nodeProps: Parameters<NonNullable<EditableProps['renderText']>>[0];
   }) => {
-    const { attributes: initialAttributes, ...props } = nodeProps;
+    const { attributes: _attributes, ...props } = nodeProps;
     const { editor, wrap } = usePlateRenderContext(modelEditor);
     useRedrawWithBlock();
-    let attributes = initialAttributes;
     let { children } = props;
     const readOnly = editor.read.view.isReadOnly();
     const text = props.text as Record<string, unknown>;
@@ -177,8 +176,11 @@ export const pipeRenderText = (
       }
     }
 
-    textAttributeEntries.forEach(({ plugin, textKey }) => {
-      if (isTextMarkActive(props.text, textKey)) {
+    const withTextAttributes = <P extends RenderTextProps>(textProps: P): P => {
+      let { attributes } = textProps;
+
+      textAttributeEntries.forEach(({ plugin, textKey }) => {
+        if (!isTextMarkActive(props.text, textKey)) return;
         const textAttributes = plugin.render.mark?.textAttributes;
         const pluginTextProps =
           typeof textAttributes === 'function'
@@ -192,20 +194,23 @@ export const pipeRenderText = (
             className: clsx(attributes.className, pluginTextProps.className),
           }),
         };
-      }
-    });
+      });
+
+      return { ...textProps, attributes, children };
+    };
+    const renderProps = withTextAttributes(nodeProps);
 
     if (canUsePlainOuterText) {
-      return wrap(<span {...attributes}>{children}</span>);
+      return wrap(<span {...renderProps.attributes}>{children}</span>);
     }
 
     if (renderTextProp) {
-      return wrap(renderTextProp({ attributes, ...props, children }));
+      return wrap(renderTextProp(renderProps));
     }
 
     const ctxProps = getRenderNodeProps({
       editor,
-      props: { attributes, ...props, children } as any,
+      props: renderProps as any,
       readOnly,
     });
 

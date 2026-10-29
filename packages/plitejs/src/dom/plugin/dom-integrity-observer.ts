@@ -168,6 +168,7 @@ const EDITOR_DOM_ATTRIBUTES = new Set([
   'data-editor-string',
   'data-editor-text-flow',
   'data-editor-text-flow-host',
+  'data-editor-text-piece',
   'data-editor-view-selection',
   'data-editor-viewport-boundary',
   'data-editor-viewport-selection',

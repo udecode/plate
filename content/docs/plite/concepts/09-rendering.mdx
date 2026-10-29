@@ -130,11 +130,30 @@ const TextNode = ({ attributes, children, text }) => {
   content. Use `leafPosition` only when mark presentation depends on segment
   position.
 
-- **`renderText`**: Use this when you need to render something exactly once for a given text node, regardless of how many leaves it's split into. It's ideal for wrapping the entire text node's content or adding elements associated with the text node as a whole without worrying about duplication caused by decorations.
+- **`renderText`**: Use this when you need to render something exactly once for a given text node, regardless of how many leaves it's split into. It's ideal for wrapping the entire text node's content or adding elements associated with the text node as a whole without worrying about duplication caused by decorations. In a paged view it runs once per piece of the text instead, as [Texts in a paged view](#texts-in-a-paged-view) says.
 
 You can use `renderText` and `renderLeaf` together. `renderLeaf` renders marks,
 Decoration spans wrap transient ranges inside its children, and `renderText`
 renders the container around every segment.
+
+### Texts in a paged view
+
+In a [paged view](../libraries/plite-pagination), one text node can span
+several measured lines and pages. Plite renders the text's one host and calls
+`renderText` once per piece of the text, so it can run more than once for a
+text. Each measured run of the text on a drawn page is one piece, and one line
+can hold more than one run of the same text. The lines of a page not drawn yet
+form one piece, and a text that no layout measures is one piece.
+
+For a piece, `props.piece.index` is its position among the text's pieces, so
+it changes when a page is drawn. Its `attributes` hold no `data-editor-node`,
+path, key or `ref`. Spread `attributes` as usual, and narrow on `piece` before
+you read a host-only attribute. The `TextNode` above needs no change, because
+it only spreads `attributes`.
+
+Render something that must appear once per text from the element renderer, or
+from `renderLeaf` on the text's last leaf, the one whose `leafPosition` is
+missing or has `isLast`.
 
 ## Decorations
 

@@ -605,6 +605,8 @@
             "RenderStaticNodeWrapperFunction",
             "RenderStaticNodeWrapperProps",
             "RenderTextFn",
+            "RenderTextHostProps",
+            "RenderTextPieceProps",
             "RenderTextProps",
             "ReplaceSliceCommand",
             "ResolvedInputRule",

@@ -20,6 +20,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-29-paged-suggestion-lines",
+      "href": "/registry/changelog/2026-10-29-paged-suggestion-lines.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep suggestion styles on the lines of a paged editor",
+      "change": {
+        "type": "source",
+        "date": "2026-10-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["suggestion"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-29-word-import-keeps-the-rest",
       "href": "/registry/changelog/2026-10-29-word-import-keeps-the-rest.json",
       "status": "draft",

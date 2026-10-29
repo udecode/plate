@@ -44,6 +44,7 @@ import {
   pathKey,
 } from '../react/components/editable-element-placement';
 import { ImperativeTextFlowContext } from '../react/components/editable-text-flow';
+import { TextRenderScopeContext } from '../react/components/editable-text-pieces';
 import { SurfaceRoot } from '../react/components/plite';
 import { WindowedEditable } from '../react/components/windowed-editable.internal';
 import {
@@ -1464,22 +1465,24 @@ const PagedEditableInner = <TElement extends Element = Element>({
         <div data-editor-paged-editable-editor-overlay style={canvas?.overlay}>
           <div data-editor-paged-editable-editor style={canvas?.editor}>
             <ImperativeTextFlowContext value={false}>
-              <WindowedEditable
-                {...editableProps}
-                decorationStore={decorationStore}
-                elementLayouts={elementLayouts}
-                enabled={Boolean(canvas) && virtualize}
-                ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-                mountedTopLevelIndexes={mountedTopLevelIndexes}
-                onRequestMount={(index, path) =>
-                  setPromotedPath(path ?? [index])
-                }
-                ref={editableRef}
-                scrollSelectionIntoView={scrollSelectionIntoView}
-                scrollToPath={scrollToPath}
-                style={canvas ? canvas.host : style}
-                totalSize={geometry?.height ?? 0}
-              />
+              <TextRenderScopeContext value="paged">
+                <WindowedEditable
+                  {...editableProps}
+                  decorationStore={decorationStore}
+                  elementLayouts={elementLayouts}
+                  enabled={Boolean(canvas) && virtualize}
+                  ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+                  mountedTopLevelIndexes={mountedTopLevelIndexes}
+                  onRequestMount={(index, path) =>
+                    setPromotedPath(path ?? [index])
+                  }
+                  ref={editableRef}
+                  scrollSelectionIntoView={scrollSelectionIntoView}
+                  scrollToPath={scrollToPath}
+                  style={canvas ? canvas.host : style}
+                  totalSize={geometry?.height ?? 0}
+                />
+              </TextRenderScopeContext>
             </ImperativeTextFlowContext>
           </div>
         </div>

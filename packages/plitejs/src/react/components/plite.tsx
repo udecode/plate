@@ -95,6 +95,7 @@ import {
   usePliteViewSelectionPresence,
 } from '../view-selection-decoration';
 import { ImperativeTextFlowContext } from './editable-text-flow';
+import { TextRenderScopeContext } from './editable-text-pieces';
 
 const isRootValueChanged = (root: RootKey, commit: EditorCommit) =>
   commit.changed.has('document', toPublicRootOption(root));
@@ -398,9 +399,11 @@ export const EditorRuntimeView = <
                   <ImperativeTextFlowContext
                     value={parentEditor ? true : inheritedTextFlow}
                   >
-                    <SurfaceRuntimeScope presentation={viewPresentation}>
-                      {children}
-                    </SurfaceRuntimeScope>
+                    <TextRenderScopeContext value="flat">
+                      <SurfaceRuntimeScope presentation={viewPresentation}>
+                        {children}
+                      </SurfaceRuntimeScope>
+                    </TextRenderScopeContext>
                   </ImperativeTextFlowContext>
                 </FocusedContext>
               </ReadOnlyContext>

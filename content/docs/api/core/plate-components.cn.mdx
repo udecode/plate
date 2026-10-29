@@ -256,7 +256,7 @@ export function FigureElement({
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `EditorElement`      | 添加 `data-editor-node="element"`，保留 Plate 的 `data-editor-node-key`，提供类型化的元素自有 content-root slot，并在需要时添加 directional-affinity spacer。 |
 | `EditorLeaf`         | 在文本片段外渲染持久 mark，并在需要时添加 hard-affinity spacer。                                                                                                                              |
-| `EditorText`         | 在所有 mark 和 Decoration 片段外渲染单个文本节点 wrapper。                                                                                                                                   |
+| `EditorText`         | 在所有 mark 和 Decoration 片段外渲染单个文本节点 wrapper。在分页编辑器中，它包裹该文本的每个 piece：已绘制页面上该文本的一段测量 run、尚未绘制页面上的全部行，或没有 layout 测量时的整个文本。一行可以包含同一文本的多段 run。                                                                                         |
 
 ## API 参考
 

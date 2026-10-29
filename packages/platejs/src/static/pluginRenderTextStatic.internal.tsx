@@ -13,13 +13,13 @@ import type {
   AnyBasePluginPortal,
   AnyPluginBase,
 } from '../lib/plugin/BasePlugin';
-import type { RenderTextProps } from '../lib/types/RenderTextProps';
+import type { RenderTextHostProps } from '../lib/types/RenderTextProps';
 import { EditorText } from './components';
 import { getStaticMarkComponent } from './internal/staticPresentation';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps.internal';
 
 export type PliteRenderText = (
-  props: RenderTextProps
+  props: RenderTextHostProps
 ) => React.ReactNode | undefined;
 
 export const pluginRenderTextStatic = (

@@ -8563,15 +8563,43 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:RenderTextHostProps": {
+          "aliases": [],
+          "documentation": "One call for a whole text, which owns the text's identity.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "RenderTextHostProps",
+          "route": null,
+          "runtime": false,
+          "signature": "type RenderTextHostProps<N extends Text$1 = Text$1> = {\n  /** The text node being rendered. */\n  text: N;\n  /** Pre-computed path for static rendering. */\n  path?: Path;\n  /** The children (leaves) rendered within this text node. */\n  children: any;\n  /**\n   * HTML attributes to be spread onto the rendered container element. Includes\n   * `data-editor-node=\"text\"` and `ref`.\n   */\n  attributes: {\n    [key: string]: unknown;\n    'data-editor-node': 'text';\n    ref?: ((element: HTMLSpanElement | null) => void) | {\n      current: HTMLSpanElement | null;\n    } | null;\n    className?: string;\n    style?: any;\n  };\n  piece?: undefined;\n};",
+          "source": null,
+          "typeParameters": [
+            "N extends Text$1 = Text$1"
+          ]
+        },
+        "platejs:RenderTextPieceProps": {
+          "aliases": [],
+          "documentation": "One call for one piece of a paged text: a measured run of the text on a\ndrawn page, the lines of a page not drawn yet, or a whole text that no layout\nmeasures. One line can hold several runs of a text.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "RenderTextPieceProps",
+          "route": null,
+          "runtime": false,
+          "signature": "type RenderTextPieceProps<N extends Text$1 = Text$1> = {\n  /** The whole text node the piece belongs to. */\n  text: N;\n  /** The leaves of this piece alone. */\n  children: any;\n  /**\n   * HTML attributes to be spread onto the rendered element. Includes\n   * `data-editor-text-piece` and the attributes plugins add, never the text's\n   * identity or `ref`.\n   */\n  attributes: {\n    [key: string]: unknown;\n    'data-editor-node'?: never;\n    'data-editor-node-key'?: never;\n    'data-editor-path'?: never;\n    'data-editor-text-piece': true;\n    className?: string;\n    ref?: never;\n    style?: any;\n  };\n  path?: never;\n  /** The piece's position among the text's pieces. */\n  piece: Readonly<{\n    index: number;\n  }>;\n};",
+          "source": null,
+          "typeParameters": [
+            "N extends Text$1 = Text$1"
+          ]
+        },
         "platejs:RenderTextProps": {
           "aliases": [],
-          "documentation": "",
+          "documentation": "Props of a text renderer. Outside a paged view each text gets one call with\nits host attributes. In a paged view each piece of a text gets its own call\nwith `piece`, so narrow on `piece` before reading `ref` or the text's\nidentity.",
           "entrypoint": "platejs",
           "kind": "type",
           "name": "RenderTextProps",
           "route": null,
           "runtime": false,
-          "signature": "type RenderTextProps<N extends Text$1 = Text$1> = {\n  /** The text node being rendered. */\n  text: N;\n  /** Pre-computed path for static rendering. */\n  path?: Path;\n  /** The children (leaves) rendered within this text node. */\n  children: any;\n  /**\n   * HTML attributes to be spread onto the rendered container element. Includes\n   * `data-editor-node=\"text\"` and `ref`.\n   */\n  attributes: {\n    [key: string]: unknown;\n    'data-editor-node': 'text';\n    ref?: any;\n    className?: string;\n    style?: any;\n  };\n};",
+          "signature": "type RenderTextProps<N extends Text$1 = Text$1> = RenderTextHostProps<N> | RenderTextPieceProps<N>;",
           "source": null,
           "typeParameters": [
             "N extends Text$1 = Text$1"

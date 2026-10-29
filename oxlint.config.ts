@@ -206,6 +206,7 @@ export default defineConfig({
         ...platePliteBridgePatterns,
         // Plite contract tests consume the published entrypoints they verify.
         'packages/plitejs/test/**',
+        'packages/plitejs/type-tests/**',
         'packages/platejs/test/public-package-import-smoke.spec.ts',
         // Shared JSX fixtures are part of the raw Plite package test harness.
         'config/plite-test-jsx.js',

@@ -1,15 +1,18 @@
-import React, { type ReactNode, type Ref } from 'react';
+import React, { type ReactNode, type Ref, useContext } from 'react';
 
 import type { Path, NodeKey } from '../..';
 import { usePliteNodeKeyDOMValue } from '../hooks/use-plite-node-ref';
 import { recordPliteReactRender } from '../render-profiler';
 import { getPliteTextShellAttributes } from '../shell-runtime';
+import { TextRenderScopeContext } from './editable-text-pieces';
 
 /**
  * Render a Plite text DOM shell bound to a text runtime.
  *
  * The shell carries path/runtime metadata and native DOM-sync attributes used
- * by selection and mutation handling.
+ * by selection and mutation handling. Inside a `renderText` call for one line
+ * of a paged text it renders a plain span, because the editor already renders
+ * that text's shell around the line.
  */
 export const EditorText = ({
   domSync = false,
@@ -27,6 +30,11 @@ export const EditorText = ({
   nodeKey?: NodeKey | null;
 }) => {
   const nodeKeyDOMValue = usePliteNodeKeyDOMValue(nodeKey ?? null);
+  const scope = useContext(TextRenderScopeContext);
+
+  if (scope === 'piece') {
+    return <span>{children}</span>;
+  }
 
   recordPliteReactRender({ kind: 'text' });
 

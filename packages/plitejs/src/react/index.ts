@@ -32,6 +32,8 @@ export { installBrowserHandle } from './editable/install-browser-handle';
 export type {
   RenderLeafProps,
   RenderPlaceholderProps,
+  RenderTextHostProps,
+  RenderTextPieceProps,
   RenderTextProps,
 } from './components/editable-text';
 export type {
