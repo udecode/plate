@@ -1,8 +1,9 @@
 # Issue draft
 
 Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
-`udecode/plate-private` GitHub issue. A user request to publish the issue authorizes
-analysis, necessary evidence uploads, creation and read-back in one run.
+`udecode/plate-private` GitHub issue. A user request to publish the issue, or a
+Triage run that moves a repro's kind to a new issue, authorizes analysis, necessary
+evidence uploads, creation and read-back in one run.
 
 `draft only`, `analyze only` and `do not publish` keep the result local.
 
