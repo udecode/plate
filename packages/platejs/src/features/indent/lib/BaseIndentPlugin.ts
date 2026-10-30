@@ -192,12 +192,17 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
       },
     }),
 }).extend(({ plugin }) => ({
+  // Each shortcut reads the blocks its command changes, so a caret in a Details
+  // title reaches the Details and a range reaches every block it spans.
   shortcuts: {
     tab: {
       handler: ({ editor }) => {
-        const entry = editor.read.nodes.block();
+        const entries = editor.read.nodes.blocks({
+          match: getInjectMatch(editor, plugin),
+          mode: 'lowest',
+        });
 
-        if (!entry || !getInjectMatch(editor, plugin)(...entry)) return false;
+        if (entries.length === 0) return false;
 
         editor.plugin(plugin).update.increase();
 
@@ -207,23 +212,27 @@ export const BaseIndentPlugin = definePlugin(PLUGINS.indent, {
     },
     untab: {
       handler: ({ editor }) => {
-        const entry = editor.read.nodes.block();
+        const entries = editor.read.nodes.blocks({
+          match: getInjectMatch(editor, plugin),
+          mode: 'lowest',
+        });
 
-        if (!entry || !getInjectMatch(editor, plugin)(...entry)) return false;
+        if (entries.length === 0) return false;
 
-        const [element, path] = entry;
-
-        if (!element.indent) {
+        if (entries.every(([element]) => !element.indent)) {
           const quote = editor.plugin(BaseBlockquotePlugin);
           const inQuote =
             quote.installed &&
-            !!editor.read.nodes.above({
-              at: path,
-              match: (node, nodePath) =>
-                nodePath.length < path.length &&
-                ElementApi.isElement(node) &&
-                node.type === quote.schema.type,
-            });
+            entries.some(
+              ([, path]) =>
+                !!editor.read.nodes.above({
+                  at: path,
+                  match: (node, nodePath) =>
+                    nodePath.length < path.length &&
+                    ElementApi.isElement(node) &&
+                    node.type === quote.schema.type,
+                })
+            );
 
           return !inQuote;
         }
