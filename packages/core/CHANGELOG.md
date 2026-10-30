@@ -1,5 +1,12 @@
 # @platejs/core
 
+## 53.5.2
+
+### Patch Changes
+
+- [#5325](https://github.com/udecode/plate/pull/5325) by [@dylans](https://github.com/dylans) –
+  - Fix `useElement` and `usePath` re-rendering every descendant element when an ancestor element changes, such as every cell of a table on each keystroke in one cell. They now re-render only when their own element or path changes.
+
 ## 53.3.18
 
 ### Patch Changes
