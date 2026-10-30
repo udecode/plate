@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-30-emoji-pick-focus",
+      "href": "/registry/changelog/2026-10-30-emoji-pick-focus.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Return focus to the trigger after an emoji pick when the editor has no caret",
+      "change": {
+        "type": "source",
+        "date": "2026-10-30",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["emoji-picker"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-30-excalidraw-pointer-after-page-scroll",
       "href": "/registry/changelog/2026-10-30-excalidraw-pointer-after-page-scroll.json",
       "status": "draft",

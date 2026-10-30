@@ -1,6 +1,17 @@
 {
   "schemaVersion": 1,
   "components": {
+    "emoji-picker": [
+      "2026-10-30-emoji-pick-focus",
+      "2026-10-12-neutral-stored-names",
+      "2026-10-08-emoji-frimousse",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-08-31-inline-component-props",
+      "2026-08-25-base-first-registry",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-18-inline-registry-hooks",
+      "2026-08-17-colocate-editor-component-families"
+    ],
     "excalidraw": [
       "2026-10-30-excalidraw-pointer-after-page-scroll",
       "2026-10-14-block-void-selection",
@@ -831,16 +842,6 @@
       "2026-09-03-huge-code-block-demo",
       "2026-08-17-finalize-v54-ast-profile",
       "2026-08-17-flat-editor-registry"
-    ],
-    "emoji-picker": [
-      "2026-10-12-neutral-stored-names",
-      "2026-10-08-emoji-frimousse",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-08-31-inline-component-props",
-      "2026-08-25-base-first-registry",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-18-inline-registry-hooks",
-      "2026-08-17-colocate-editor-component-families"
     ],
     "emoji-data": [
       "2026-10-12-neutral-stored-names",

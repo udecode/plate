@@ -69,7 +69,8 @@ function recordFrequentEmoji({ emoji, label }: EmojiPick) {
 
 /**
  * Opens an emoji picker from its child trigger and hands the picked emoji to
- * `onEmojiSelect`, then closes. After a pick, focus returns to the editor.
+ * `onEmojiSelect`, then closes. After a pick, focus returns to the editor's
+ * caret, or to the trigger when the editor has no caret.
  */
 export function EmojiPicker({
   children,
@@ -106,7 +107,7 @@ export function EmojiPicker({
           if (isImeKey(event)) event.preventDefault();
         }}
         onFinalFocus={(event) => {
-          if (!picked.current) return;
+          if (!picked.current || !editor.read.selection()) return;
 
           event.preventDefault();
           editor.api.dom.focus();
