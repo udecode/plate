@@ -38,6 +38,24 @@
       "diagnostics": []
     },
     {
+      "id": "2026-10-29-fix-date-calendar-close",
+      "href": "/registry/changelog/2026-10-29-fix-date-calendar-close.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Close the Date calendar on the first Escape or click outside",
+      "change": {
+        "type": "source",
+        "date": "2026-10-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["date-node"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-29-font-size-list-applies-size",
       "href": "/registry/changelog/2026-10-29-font-size-list-applies-size.json",
       "status": "draft",

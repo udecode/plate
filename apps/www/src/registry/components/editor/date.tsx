@@ -41,10 +41,6 @@ const getDateLabel = (value: string) => {
 export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
   const { editor, element } = props;
   const readOnly = useEditorReadOnly();
-  // Radix Slot needs one stable child ref, and focus can open before the same
-  // trigger click tries to close. Keep both facts stable across that gesture.
-  const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const ignoreCloseFromOpeningGestureRef = React.useRef(false);
   const openRef = React.useRef(false);
   const openAtPointerDownRef = React.useRef(false);
   const [open, setOpen] = React.useState(false);
@@ -68,17 +64,11 @@ export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
         if (readOnly || beganOpen) return;
 
         event.preventDefault();
-        ignoreCloseFromOpeningGestureRef.current = true;
         setOpenState(true);
       }}
-      onKeyDown={() => {
-        ignoreCloseFromOpeningGestureRef.current = false;
-      }}
       onPointerDown={() => {
-        ignoreCloseFromOpeningGestureRef.current = false;
         openAtPointerDownRef.current = openRef.current;
       }}
-      ref={buttonRef}
       type="button"
     >
       {getDateLabel(element.value)}
@@ -97,18 +87,7 @@ export function DateElement(props: EditorElementProps<typeof DatePlugin>) {
       {readOnly ? (
         trigger
       ) : (
-        <Popover
-          open={open}
-          onOpenChange={(nextOpen) => {
-            if (!nextOpen && ignoreCloseFromOpeningGestureRef.current) {
-              ignoreCloseFromOpeningGestureRef.current = false;
-
-              return;
-            }
-            ignoreCloseFromOpeningGestureRef.current = false;
-            setOpenState(nextOpen);
-          }}
-        >
+        <Popover open={open} onOpenChange={setOpenState}>
           <PopoverTrigger asChild>{trigger}</PopoverTrigger>
           <PopoverContent className="w-auto p-0">
             <Calendar

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-29-fix-date-calendar-close",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-29-fix-date-calendar-close.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-29",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Close the Date calendar on the first Escape or click outside",
+  "targets": [
+    {
+      "name": "date-node",
+      "files": [],
+      "definitionFiles": [],
+      "diagnostics": [
+        {
+          "severity": "warning",
+          "code": "registry-file-missing",
+          "message": "No exact registry source file found for date-node."
+        }
+      ]
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-29-date-close-calendar-first-escape-5b3507a3",
+      "kind": "fix",
+      "summary": "Close the Date calendar on the first Escape or click outside.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["date-node"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-29",
+          "entry": "2026-10-29-fix-date-calendar-close",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

@@ -159,7 +159,7 @@
       "style": "radix-rhea"
     }
   ],
-  "generation": "332a61e65c9df6d1276f255108965b5203eef6c6bc209df6cce3ff14351bdb09",
+  "generation": "b30607bd44b26dc80052fc72fb112e86ca396a7b6948861d1c4afd8201d78e21",
   "itemCount": 322,
   "payloads": {
     "overlays/base-luma/floating-popover.json": "970d8e66abcc67a92801140819b2a1d80d66d6e03d75e9270d5a53b6219e3bcc",
@@ -335,7 +335,7 @@
     "r/copilot.json": "1ee3f1f84224dc828d051d749fc9fb92cf397717dc08a2cfb69944383421425e",
     "r/date-docs.json": "0ed487edf5d719461a7efe9f6ddaf9c224801da65e70f4c63074d46f6620bef9",
     "r/date-static.json": "776e1cb5a91303d0957e0ac8bf9328b6091beaeb4bfafd89ec8296d34c791d8a",
-    "r/date.json": "a9d640c30500df51706c101dcb36630e8f81a20335d73045d3c7c4351d79f93c",
+    "r/date.json": "a53572599f054a0d5937f06d4eb633c70d4b85a4e1cc2243b8e8a56b21a85b2d",
     "r/debugging-docs.json": "2dd45d066273a723c6f86a01a55aaa064577f0a8621ad72a3b577bb9bc38dc20",
     "r/decorations-docs.json": "83f81e17f681dbaba9491319896dd6906bd7c82b57798614b0431ddbf43115c4",
     "r/details-docs.json": "3043769a8deb1e7d41d6bc6d228a9f68d360897923090c08f8c52d8938321683",
@@ -658,7 +658,7 @@
     "rd/copilot.json": "1ee3f1f84224dc828d051d749fc9fb92cf397717dc08a2cfb69944383421425e",
     "rd/date-docs.json": "0ed487edf5d719461a7efe9f6ddaf9c224801da65e70f4c63074d46f6620bef9",
     "rd/date-static.json": "776e1cb5a91303d0957e0ac8bf9328b6091beaeb4bfafd89ec8296d34c791d8a",
-    "rd/date.json": "151c1116536ee9c8de53d31d6d2cf4188e1d49b8ce0a79aeffe218a8947b9b00",
+    "rd/date.json": "f44a118697fd5b69ccb7f6538c64f70e79a54235ada481b7bbf4bf79e4377819",
     "rd/debugging-docs.json": "2dd45d066273a723c6f86a01a55aaa064577f0a8621ad72a3b577bb9bc38dc20",
     "rd/decorations-docs.json": "83f81e17f681dbaba9491319896dd6906bd7c82b57798614b0431ddbf43115c4",
     "rd/details-docs.json": "3043769a8deb1e7d41d6bc6d228a9f68d360897923090c08f8c52d8938321683",

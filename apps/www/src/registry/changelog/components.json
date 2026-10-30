@@ -24,6 +24,16 @@
       "2026-01-20-add-docx-file-import-word-export-support",
       "2025-10-17-fix-react-decouple"
     ],
+    "date-node": [
+      "2026-10-29-fix-date-calendar-close",
+      "2026-08-31-fix-date-first-click-reopen",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-04-infer-node-props-from-plugins",
+      "2026-07-15-fix-date-picker-trigger",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-10-17-fix-react-decouple"
+    ],
     "font-size-toolbar-button": [
       "2026-10-29-font-size-list-applies-size",
       "2026-10-27-font-size-enter-returns-focus",
@@ -1212,15 +1222,6 @@
       "2026-09-01-plugin-decoration-highlights",
       "2026-08-13-fix-registry-install-dependencies",
       "2025-11-20-biome-ultracite"
-    ],
-    "date-node": [
-      "2026-08-31-fix-date-first-click-reopen",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-04-infer-node-props-from-plugins",
-      "2026-07-15-fix-date-picker-trigger",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-10-17-fix-react-decouple"
     ],
     "context-menu": ["2026-08-31-inline-component-props"],
     "dropdown-menu": ["2026-08-31-inline-component-props"],
