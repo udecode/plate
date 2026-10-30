@@ -21,6 +21,11 @@ import {
 import { watchFirstPlacement } from '../../core/view-carets';
 import type { DataTransferDiagnostic, DOMRange } from '../../dom';
 import {
+  clearAfterInsertCaret,
+  isSoftLineTextStale,
+  noteAfterInsertCaret,
+} from '../../dom/dom-soft-line-end';
+import {
   DOMRootRuntime,
   type DOMRootRuntimeOptions,
   type DOMPhaseScheduler,
@@ -68,6 +73,7 @@ import {
   cancelCompositionReceipt,
   captureEditableCompositionRuntimeMarks,
   clearEditableCompositionRuntimeState,
+  endSelectionImport,
   type EditableInputController,
   restoreEditableCompositionRuntimeMarks,
 } from './input-state';
@@ -747,7 +753,10 @@ export class EditableDOMRuntime {
       !preference.anchor.node.isConnected ||
       !editorElement.contains(preference.anchor.node) ||
       !preference.focus.node.isConnected ||
-      !editorElement.contains(preference.focus.node)
+      !editorElement.contains(preference.focus.node) ||
+      [selection.anchor, selection.focus].some((point) =>
+        isSoftLineTextStale(this.editorValue, point, editorElement)
+      )
     ) {
       this.clearModelSelectionDOMPreference();
       return null;
@@ -1370,7 +1379,7 @@ export class EditableDOMRuntime {
   cancelSelectionChangeHandlers() {
     this.onDOMSelectionChange?.cancel();
     this.scheduleOnDOMSelectionChange?.cancel();
-    this.inputController.state.pendingDOMSelectionImport = false;
+    endSelectionImport(this.inputController);
   }
 
   private attachNativeInputListeners() {
@@ -1438,10 +1447,18 @@ export class EditableDOMRuntime {
         state: this.inputController.state,
       }
     );
+    const clearCaret = () => clearAfterInsertCaret(this.editorValue);
+    const releaseCommits = this.editorValue.subscribeCommit((commit) =>
+      noteAfterInsertCaret(this.editorValue, commit)
+    );
+
     node.addEventListener('beforeinput', handleBeforeInput);
     node.addEventListener('input', handleInput);
+    node.addEventListener('pointerdown', clearCaret, true);
     ownerWindow?.addEventListener('pointerdown', notePointerPress, true);
     this.nativeInputListenersCleanup = () => {
+      releaseCommits();
+      node.removeEventListener('pointerdown', clearCaret, true);
       claims.destroy();
       this.selectionClaimsValue = null;
       detachSelectionChangeListener();

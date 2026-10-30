@@ -68,7 +68,10 @@ import type {
   SelectionChangeOrigin,
   SelectionSource,
 } from './input-state';
-import { isEditableOutsideFocusBoundarySettling } from './input-state';
+import {
+  isEditableOutsideFocusBoundarySettling,
+  isSelectionHeldForNativeMove,
+} from './input-state';
 import { getExternalTextHostOwner } from './interaction-owner';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
@@ -319,6 +322,12 @@ export const shouldUseModelBackedSelectAllSelection = ({
 };
 
 export type EditableDOMSelectionSyncOptions = {
+  /**
+   * The export writes a model-owned composition's caret, where the composition
+   * started, while the browser's composed text that follows it is not yet in
+   * the model.
+   */
+  compositionCaret?: boolean;
   forceModelExport?: boolean;
   preserveScroll?: boolean;
 };
@@ -1582,6 +1591,15 @@ export const syncEditableDOMSelectionToEditor = ({
   if (runtime.shouldDeferCompositionSelectionExport()) return;
   if (runtime.androidInputManagerRef.current?.hasPendingAction()) return;
   if (
+    isSelectionHeldForNativeMove(
+      runtime.inputController,
+      editor,
+      explicitEditorElement ?? runtime.rootElement
+    )
+  ) {
+    return;
+  }
+  if (
     runtime.inputController.state.isNativeSelectionDragActive &&
     !runtime.inputController.state.isProjectingSelection
   ) {
@@ -1656,7 +1674,8 @@ export const syncEditableDOMSelectionToEditor = ({
       const range = resolveNativeViewSelectionDOMRange(
         editor,
         viewSelection,
-        editorElement
+        editorElement,
+        { rejectStaleText: true }
       );
       if (!range) return;
       const points = getDOMRangeSelectionPoints(
@@ -1685,7 +1704,12 @@ export const syncEditableDOMSelectionToEditor = ({
       return;
     }
     if (collapsedViewSelection) {
-      const point = resolveViewBoundaryDOMPoint(editor, viewSelection.focus);
+      const point = resolveViewBoundaryDOMPoint(
+        editor,
+        viewSelection.focus,
+        undefined,
+        { rejectStaleText: true }
+      );
       if (!point) return;
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
@@ -1764,7 +1788,11 @@ export const syncEditableDOMSelectionToEditor = ({
         editor,
         editorElement,
         selection: projectedSelection,
-      }) ?? resolveDOMRangeInRoot(editor, projectedSelection, editorElement);
+      }) ??
+      resolveDOMRangeInRoot(editor, projectedSelection, editorElement, {
+        exportingSelection: true,
+        rejectStaleText: !options?.compositionCaret,
+      });
 
     if (!domRange) {
       return;

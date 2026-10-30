@@ -798,9 +798,12 @@
       "dependsOn": [
         "typecheck:partition:authored",
         "typecheck:partition:core",
+        "typecheck:partition:dom",
+        "typecheck:partition:history",
         "typecheck:partition:pagination",
         "typecheck:partition:react",
-        "typecheck:partition:testing"
+        "typecheck:partition:testing",
+        "typecheck:partition:yjs"
       ],
       "inputs": [
         "src/pagination/**",
@@ -822,6 +825,8 @@
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",
         "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
         "$TURBO_ROOT$/tsconfig.json",
+        "test/yjs/support/collaboration.ts",
+        "test/yjs/support/provider.ts",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/config/test-suites.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",

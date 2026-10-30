@@ -2,7 +2,10 @@ import { type Value, RangeApi } from '../..';
 import { placedSince } from '../../core/view-carets';
 import { getSelection } from '../../dom';
 import { IS_FOCUSED } from '../../dom/internal';
-import { supersedeFocusRequest } from '../../dom/plugin/dom-editor';
+import {
+  resolveWrittenDOMRange,
+  supersedeFocusRequest,
+} from '../../dom/plugin/dom-editor';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import {
   getDOMRangeSelectionPoints,
@@ -15,7 +18,7 @@ import {
   getSelectionDOMRange,
   setEditorFocused,
 } from '../editable/runtime-editor-api';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
@@ -84,7 +87,7 @@ const syncPreferredModelSelectionToDOM = <
         editor,
         editorElement: element,
         selection: projectedSelection,
-      }) ?? ReactEditor.resolveDOMRange(editor, projectedSelection);
+      }) ?? resolveWrittenDOMRange(editor, projectedSelection);
 
     if (!domRange) {
       return false;

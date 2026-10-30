@@ -34,14 +34,24 @@ export const useEditableRootSelectionImport = ({
     [onDOMSelectionChange]
   );
 
-  useIsomorphicLayoutEffect(
-    () =>
-      runtime.installDisposable('selection-import', () => {
-        scheduleOnDOMSelectionChange.cancel();
-        onDOMSelectionChange.cancel();
-      }),
-    [onDOMSelectionChange, runtime, scheduleOnDOMSelectionChange]
-  );
+  useIsomorphicLayoutEffect(() => {
+    const dispose = runtime.installDisposable('selection-import', () => {
+      scheduleOnDOMSelectionChange.cancel();
+      onDOMSelectionChange.cancel();
+    });
+
+    // An import the previous handlers left pending still owns the browser's
+    // move, so it runs on these handlers and ends the flag and the hold itself.
+    if (inputController.state.pendingDOMSelectionImport) {
+      scheduleOnDOMSelectionChange();
+    }
+    return dispose;
+  }, [
+    inputController,
+    onDOMSelectionChange,
+    runtime,
+    scheduleOnDOMSelectionChange,
+  ]);
 
   const selectionImportController = useMemo(
     () =>

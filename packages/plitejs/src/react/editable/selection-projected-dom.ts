@@ -40,7 +40,8 @@ type ProjectedDOMSelectionEndpoint = {
 export const resolveViewBoundaryDOMPoint = (
   editor: ReactRuntimeEditor<any>,
   boundary: PliteViewBoundaryPoint,
-  editorElement?: HTMLElement
+  editorElement?: HTMLElement,
+  { rejectStaleText = false }: { rejectStaleText?: boolean } = {}
 ) => {
   if (
     (boundary.point.root ?? MAIN_ROOT_KEY) !==
@@ -52,7 +53,8 @@ export const resolveViewBoundaryDOMPoint = (
     editor,
     boundary.point,
     editorElement,
-    boundary.affinity
+    boundary.affinity,
+    { rejectStaleText }
   );
 };
 
@@ -79,19 +81,22 @@ export const canUseNativeViewSelection = (
 export const resolveNativeViewSelectionDOMRange = (
   editor: ReactRuntimeEditor<any>,
   selection: PliteViewSelection,
-  editorElement: HTMLElement
+  editorElement: HTMLElement,
+  options: { rejectStaleText?: boolean } = {}
 ) => {
   if (!canUseNativeViewSelection(editor, selection)) return null;
 
   const anchor = resolveViewBoundaryDOMPoint(
     editor,
     selection.anchor,
-    editorElement
+    editorElement,
+    options
   );
   const focus = resolveViewBoundaryDOMPoint(
     editor,
     selection.focus,
-    editorElement
+    editorElement,
+    options
   );
   if (!anchor || !focus) return null;
   if (

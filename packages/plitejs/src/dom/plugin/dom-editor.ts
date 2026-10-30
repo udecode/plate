@@ -50,6 +50,14 @@ import {
 } from '../../interfaces/editor';
 import { failInvariant } from '../../internal/fail-invariant';
 import { formatDebugValue } from '../../utils/format-debug-value';
+import {
+  isSoftLineEndBetween,
+  isSoftLineEndTarget,
+  isSoftLineTextStale,
+  readAfterInsertCaret,
+  readLiveSoftLineSide,
+  resolveSoftLineEndDOMPoint,
+} from '../dom-soft-line-end';
 import type { TextDiff } from '../utils/diff-text';
 import {
   closestShadowAware,
@@ -73,6 +81,7 @@ import { isAndroidDOMHost, isGeckoDOMHost } from '../utils/environment';
 import { Key } from '../utils/key';
 import {
   getDOMRangeSelectionPoints,
+  readDOMSelectionPoints,
   readDOMSelectionRange,
   writeDOMSelection,
 } from '../utils/selection-writes';
@@ -1155,7 +1164,20 @@ export const resolveDOMPointInRoot = (
   point: Point,
   root?: HTMLElement | null,
   affinity?: 'backward' | 'forward',
-  { checkPageText = false }: { checkPageText?: boolean } = {}
+  {
+    checkPageText = false,
+    liveSide = () => true,
+    rejectStaleText = false,
+  }: {
+    checkPageText?: boolean;
+    /** Whether a soft line end inside one text may take the live selection's side. */
+    liveSide?: () => boolean;
+    /**
+     * Resolve nothing while the point's text holds a soft line end and its
+     * page still shows old strings, so a selection writer waits for the render.
+     */
+    rejectStaleText?: boolean;
+  } = {}
 ): DOMPoint | null => {
   if (root?.isConnected === false) return null;
   const found = findDOMPointElementInRoot(editor, point, root, affinity);
@@ -1174,6 +1196,9 @@ export const resolveDOMPointInRoot = (
     nodeKey !== undefined &&
     !isDOMTextPainted(editor, el, nodeKey, node)
   ) {
+    return null;
+  }
+  if (rejectStaleText && isSoftLineTextStale(editor, resolvedPoint, el)) {
     return null;
   }
 
@@ -1227,6 +1252,32 @@ export const resolveDOMPointInRoot = (
         nextText.textContent?.startsWith('\uFEFF') ? 1 : 0,
       ];
       break;
+    }
+
+    if (resolvedPoint.offset === end && nextText) {
+      const lowerText = nextText.childNodes[0];
+      const softLineEnd = resolveSoftLineEndDOMPoint([
+        domNode,
+        Math.min(length, trueLength),
+      ]);
+
+      if (
+        softLineEnd?.side === 'upper' &&
+        softLineEnd.lower?.[0] === lowerText &&
+        softLineEnd.upper &&
+        liveSide()
+      ) {
+        const caret = readAfterInsertCaret(editor);
+        const live =
+          caret && PointApi.equals(caret, point)
+            ? null
+            : readLiveSoftLineSide(softLineEnd.upper, softLineEnd.lower);
+
+        if (live) {
+          domPoint = live;
+          break;
+        }
+      }
     }
 
     if (
@@ -1309,22 +1360,86 @@ const throwUnresolved = (at: Point | Range): never => {
   );
 };
 
+type LiveRange = Readonly<{ anchor: Point; collapsed: boolean; focus: Point }>;
+
+const readLiveRange = (
+  editor: DOMEditor<any>,
+  root?: HTMLElement | null
+): LiveRange | null => {
+  const element = root ?? DOMEditor.resolveDOMNode(editor, editor);
+  const selection =
+    element && getSelection(element.getRootNode() as Document | ShadowRoot);
+  const live = selection ? readDOMSelectionPoints(selection) : null;
+
+  if (!live) return null;
+  const anchor = DOMEditor.resolvePoint(editor, live.anchor, {
+    exactMatch: false,
+  });
+  const focus = DOMEditor.resolvePoint(editor, live.focus, {
+    exactMatch: false,
+  });
+
+  return anchor && focus
+    ? {
+        anchor,
+        collapsed:
+          live.anchor[0] === live.focus[0] && live.anchor[1] === live.focus[1],
+        focus,
+      }
+    : null;
+};
+
 /** Resolve native coordinates within an exact mounted DOM root. @internal */
 export const resolveDOMRangeInRoot = (
   editor: DOMEditor<any>,
   range: Range,
   root?: HTMLElement | null,
-  { checkPageText = false }: { checkPageText?: boolean } = {}
+  {
+    checkPageText = false,
+    exportingSelection = false,
+    rejectStaleText = false,
+  }: {
+    checkPageText?: boolean;
+    exportingSelection?: boolean;
+    rejectStaleText?: boolean;
+  } = {}
 ): DOMRange | null => {
   const { anchor, focus } = range;
   const isBackward = RangeApi.isBackward(range);
   const collapsed = RangeApi.isCollapsed(range);
+  let live: LiveRange | null | undefined;
+  const readLive = () =>
+    live === undefined ? (live = readLiveRange(editor, root)) : live;
+  const liveIsThisRange = () => {
+    const current = readLive();
+
+    return (
+      !!current &&
+      PointApi.equals(current.anchor, anchor) &&
+      PointApi.equals(current.focus, focus)
+    );
+  };
+  const exportExtendsLiveCaret = () => {
+    const current = readLive();
+
+    return (
+      exportingSelection &&
+      !!current?.collapsed &&
+      PointApi.equals(current.anchor, anchor)
+    );
+  };
   const domAnchor = resolveDOMPointInRoot(
     editor,
     anchor,
     root,
     collapsed ? undefined : isBackward ? 'backward' : 'forward',
-    { checkPageText }
+    {
+      checkPageText,
+      liveSide: collapsed
+        ? () => true
+        : () => liveIsThisRange() || exportExtendsLiveCaret(),
+      rejectStaleText,
+    }
   );
 
   if (!domAnchor) {
@@ -1338,7 +1453,7 @@ export const resolveDOMRangeInRoot = (
         focus,
         root,
         isBackward ? 'forward' : 'backward',
-        { checkPageText }
+        { checkPageText, liveSide: liveIsThisRange, rejectStaleText }
       );
 
   if (!domFocus) {
@@ -1681,7 +1796,13 @@ const DOMEditorImpl: DOMEditorInterface = {
           writeDOMSelection(root, null);
           return;
         }
-        const domRange = DOMEditor.resolveDOMRange(editor, projectedSelection);
+        const view = reachAt(editor, projectedSelection);
+        const domRange =
+          view &&
+          resolveDOMRangeInRoot(view, projectedSelection, undefined, {
+            exportingSelection: true,
+            rejectStaleText: true,
+          });
 
         if (domRange) {
           writeDOMSelection(
@@ -1912,7 +2033,8 @@ const DOMEditorImpl: DOMEditorInterface = {
 
   hasSelectableTarget: (editor, target) =>
     DOMEditor.hasEditableTarget(editor, target) ||
-    DOMEditor.isTargetInsideNonReadonlyVoid(editor, target),
+    DOMEditor.isTargetInsideNonReadonlyVoid(editor, target) ||
+    (DOMEditor.hasTarget(editor, target) && isSoftLineEndTarget(target)),
 
   hasTarget: (editor, target): target is DOMNode =>
     isDOMNode(target) && DOMEditor.hasDOMNode(editor, target),
@@ -2283,9 +2405,12 @@ const DOMEditorImpl: DOMEditorInterface = {
       return boundaryPlitePoint;
     }
 
-    const [nearestNode, nearestOffset] = exactMatch
-      ? domPoint
-      : normalizeDOMPoint(domPoint);
+    const softLineEnd = resolveSoftLineEndDOMPoint(domPoint);
+    const [nearestNode, nearestOffset] = softLineEnd
+      ? softLineEnd.point
+      : exactMatch
+        ? domPoint
+        : normalizeDOMPoint(domPoint);
     const textFlowEntry = resolveDOMTextFlowEntry(nearestNode, nearestOffset);
 
     if (textFlowEntry) {
@@ -2825,6 +2950,26 @@ const reachAt = (
   });
 };
 
+/** @internal */
+export const resolveWrittenDOMRange = <
+  V extends Value,
+  TPlugins extends readonly unknown[],
+>(
+  editor: DOMEditor<V, TPlugins>,
+  range: Range,
+  { checkPageText = false }: { checkPageText?: boolean } = {}
+) => {
+  const view = reachAt(editor, range);
+
+  return (
+    view &&
+    resolveDOMRangeInRoot(view, range, undefined, {
+      checkPageText,
+      rejectStaleText: true,
+    })
+  );
+};
+
 const otherRoot = (editor: EditorType, view: EditorType) =>
   view === editor || getEditorRuntimeRoot(view) === getEditorRuntimeRoot(editor)
     ? undefined
@@ -3052,6 +3197,11 @@ export const createDOMEditorCapability = <
           }
         : null;
 
+    const block = view.read((state) =>
+      state.nodes.block({ at: point, mode: 'lowest' })
+    )?.[0];
+    const blockElement = block ? DOMEditor.resolveDOMNode(view, block) : null;
+
     try {
       selection.collapse(domPoint[0], domPoint[1]);
       Reflect.apply(modify, selection, [
@@ -3065,6 +3215,15 @@ export const createDOMEditorCapability = <
         selection.focusNode,
         selection.focusOffset,
       ];
+
+      // WebKit's move across a soft line end can leave the block.
+      if (
+        blockElement &&
+        !blockElement.contains(nextDOMPoint[0]) &&
+        isSoftLineEndBetween(domPoint, nextDOMPoint, blockElement)
+      ) {
+        return null;
+      }
       const next = DOMEditor.resolvePoint(editor, nextDOMPoint, {
         exactMatch: false,
       });

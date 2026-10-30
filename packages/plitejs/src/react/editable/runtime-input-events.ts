@@ -26,7 +26,10 @@ import {
 } from './model-input-strategy';
 import type { EditableEventRuntime } from './runtime-event-engine';
 import { readRuntimeSelection } from './runtime-selection-state';
-import { armModelOwnedTextInputGuard } from './selection-controller';
+import {
+  armModelOwnedTextInputGuard,
+  type EditableDOMSelectionSyncOptions,
+} from './selection-controller';
 
 type InputHandler = (event: ReactInputEvent<HTMLDivElement>) => boolean | void;
 
@@ -35,10 +38,10 @@ const syncModelOwnedTextInputSelectionToDOM = ({
   syncDOMSelectionToEditor,
 }: {
   domPhaseScheduler: DOMPhaseScheduler;
-  syncDOMSelectionToEditor: () => void;
+  syncDOMSelectionToEditor: (options?: EditableDOMSelectionSyncOptions) => void;
 }) => {
   const sync = () => {
-    syncDOMSelectionToEditor();
+    syncDOMSelectionToEditor({ compositionCaret: true });
   };
 
   sync();
@@ -82,7 +85,7 @@ export const useRuntimeInputEvents = ({
   repair: EditableEventRuntime['repair'];
   rootRef: RefObject<HTMLDivElement | null>;
   runtime: EditableDOMRuntime;
-  syncDOMSelectionToEditor: () => void;
+  syncDOMSelectionToEditor: (options?: EditableDOMSelectionSyncOptions) => void;
   trace: EditableEventRuntime['trace'];
 }) => {
   const { domPhaseScheduler } = runtime;

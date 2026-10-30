@@ -1,4 +1,5 @@
 import { NodeApi, RangeApi, type Range as ModelRange } from '../..';
+import { isSoftLineTextStale } from '../../dom/dom-soft-line-end';
 import type { DOMCoverageSession } from '../../dom/internal';
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import {
@@ -164,6 +165,15 @@ export const applyDOMCoverageSelectionPolicy = ({
         ),
       });
     }
+  }
+
+  if (
+    editorElement &&
+    [selection.anchor, selection.focus].some((point) =>
+      isSoftLineTextStale(editor, point, editorElement)
+    )
+  ) {
+    return true;
   }
 
   const projection = getDOMRangeProjection(editor, selection, editorElement);

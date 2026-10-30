@@ -52,6 +52,7 @@ export const useRuntimeRepairEngine = ({
         domPhaseScheduler,
         editor,
         inputController,
+        rootRef: runtime.rootRef,
         scrollSelectionIntoView,
         syncDOMSelectionToEditor,
       }),
@@ -59,6 +60,7 @@ export const useRuntimeRepairEngine = ({
       domPhaseScheduler,
       editor,
       inputController,
+      runtime.rootRef,
       scrollSelectionIntoView,
       syncDOMSelectionToEditor,
     ]

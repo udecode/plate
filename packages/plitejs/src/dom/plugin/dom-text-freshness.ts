@@ -73,6 +73,9 @@ const drawsUnownedText = (host: Element, strings: ReadonlySet<Element>) => {
   return false;
 };
 
+export const drawsUnownedHostText = (host: Element) =>
+  drawsUnownedText(host, new Set(getPliteTextHostStrings(host)));
+
 const readPlainHostText = (host: Element) => {
   const strings = getPliteTextHostStrings(host);
   let text = '';

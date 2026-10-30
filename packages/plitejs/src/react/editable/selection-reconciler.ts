@@ -21,6 +21,10 @@ import {
   TRIPLE_CLICK,
 } from '../../dom';
 import {
+  readAfterInsertCaret,
+  readLowerSoftLineEnd,
+} from '../../dom/dom-soft-line-end';
+import {
   type DOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
   EDITOR_TO_USER_SELECTION,
@@ -1223,7 +1227,18 @@ export const useEditableSelectionReconciler = ({
           pliteRange &&
           projectedSelection &&
           RangeApi.equals(pliteRange, projectedSelection) &&
-          !isCollapsedElementSelection
+          !isCollapsedElementSelection &&
+          !(
+            (readLowerSoftLineEnd(
+              domSelection.anchorNode,
+              domSelection.anchorOffset
+            ) ||
+              readLowerSoftLineEnd(
+                domSelection.focusNode,
+                domSelection.focusOffset
+              )) &&
+            readAfterInsertCaret(editor)
+          )
         ) {
           recordPliteReactRender({
             id: 'selection-export-skip-equal',
@@ -1307,7 +1322,10 @@ export const useEditableSelectionReconciler = ({
             editorElement,
             selection: projectedSelection,
           }) ??
-          resolveDOMRangeInRoot(editor, projectedSelection, editorElement))
+          resolveDOMRangeInRoot(editor, projectedSelection, editorElement, {
+            exportingSelection: true,
+            rejectStaleText: true,
+          }))
         : null;
 
       if (newDomRange) {

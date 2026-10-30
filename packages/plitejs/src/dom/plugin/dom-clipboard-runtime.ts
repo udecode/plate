@@ -29,6 +29,7 @@ import {
   void as editorVoid,
 } from '../../interfaces/editor';
 import { failInvariant } from '../../internal/fail-invariant';
+import { SOFT_LINE_END_SELECTOR } from '../dom-soft-line-end';
 import {
   type DOMNode,
   type DOMRange,
@@ -776,6 +777,9 @@ export const writeDOMRangeData = <V extends Value>(
     endVoid ? DOMEditor.resolveDOMNode(editor, endVoid[0]) : null
   );
 
+  contents
+    .querySelectorAll(SOFT_LINE_END_SELECTOR)
+    .forEach((softLineEnd) => softLineEnd.remove());
   replaceRenderOnlyContainers(contents);
   stripRenderOnlyTrailingNewlines(contents, domRange);
 

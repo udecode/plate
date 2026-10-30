@@ -4,6 +4,7 @@ import {
   getEditorRuntimeOwner,
 } from '../../core/editor-runtime';
 import {
+  type AnyEditor,
   getPathByNodeKey as editorGetPathByNodeKey,
   getNodeKey as editorGetNodeKey,
   hasPath as editorHasPath,
@@ -66,8 +67,8 @@ export const resolveMountedDOMPath = <V extends Value>(
   return null;
 };
 
-export const findMountedDOMNodeByPath = <V extends Value>(
-  editor: DOMEditor<V>,
+export const findMountedDOMNodeByPath = (
+  editor: AnyEditor,
   path: Path,
   root?: HTMLElement | null,
   point?: Readonly<{ affinity?: 'backward' | 'forward'; offset: number }>

@@ -43,6 +43,10 @@ import {
   getElementPlacementBox,
   pathKey,
 } from '../react/components/editable-element-placement';
+import {
+  SOFT_LINE_END_SELECTOR,
+  SOFT_LINE_FLAG,
+} from '../react/components/editable-text';
 import { ImperativeTextFlowContext } from '../react/components/editable-text-flow';
 import { TextRenderScopeContext } from '../react/components/editable-text-pieces';
 import { SurfaceRoot } from '../react/components/plite';
@@ -710,8 +714,12 @@ const readParkIntervals = (fragment: TextFragment) => {
   return result;
 };
 
-const NATIVE_FLOW_BREAK_RULE =
-  "[data-pagination-native-flow-break='true']::after{content:'\\A';white-space:pre}";
+// A read-only view keeps the browser's own arrow motion, which the generated
+// break serves. An editable view's shells drop the flag and break at their
+// soft line end instead, which gives the next line's start a DOM point.
+const NATIVE_FLOW_BREAK_RULE = `[${SOFT_LINE_FLAG}='true']::after{content:'\\A';white-space:pre}`;
+
+const SOFT_LINE_END_RULE = `${SOFT_LINE_END_SELECTOR}::after{content:'\\A';white-space:pre}`;
 
 // Find matches a phrase only within one text flow, so parked text stays in it.
 // At full size a click on a drawn line resolves into the parked text under it
@@ -804,8 +812,7 @@ const createPaginationBuckets = (
               nativeFlow
                 ? {
                     'data-pagination-line': true,
-                    'data-pagination-native-flow-break':
-                      runIndex === breakRunIndex || undefined,
+                    [SOFT_LINE_FLAG]: runIndex === breakRunIndex || undefined,
                     style: Object.freeze({ whiteSpace: 'pre' }),
                   }
                 : {
@@ -1417,6 +1424,9 @@ const PagedEditableInner = <TElement extends Element = Element>({
         </style>
         <style href="editor-pagination-park" precedence="editor">
           {PARK_RULE}
+        </style>
+        <style href="editor-pagination-soft-line-end" precedence="editor">
+          {SOFT_LINE_END_RULE}
         </style>
         {geometry &&
           (virtualize ? windowedItems : pageMountPlan.items).flatMap((item) =>

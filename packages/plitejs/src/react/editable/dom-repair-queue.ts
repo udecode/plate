@@ -5,6 +5,7 @@ import {
   isDOMElement,
   isDOMText,
 } from '../../dom';
+import { isSoftLineTextStale } from '../../dom/dom-soft-line-end';
 import {
   type DOMPhaseScheduler,
   resolveDOMTextFlowEntry,
@@ -40,6 +41,7 @@ import {
   clearEditablePendingNativeTextInputRepair,
   type EditableInputController,
   getEditableNativeGroupingInput,
+  isSelectionHeldForNativeMove,
 } from './input-state';
 import { readRuntimeText } from './runtime-live-state';
 import {
@@ -153,11 +155,13 @@ export const createDOMRepairQueue = ({
   domPhaseScheduler,
   editor,
   inputController,
+  rootRef,
   scrollSelectionIntoView,
 }: {
   domPhaseScheduler: DOMPhaseScheduler;
   editor: ReactRuntimeEditor;
   inputController: EditableInputController;
+  rootRef: { readonly current: HTMLElement | null };
   scrollSelectionIntoView: (
     editor: ReactRuntimeEditor,
     domRange: DOMRange
@@ -866,7 +870,9 @@ export const createDOMRepairQueue = ({
             resolveDOMPointInRoot(
               editor,
               { path, offset: pliteOffset },
-              ReactEditor.resolveDOMNode(editor, editor)
+              rootRef.current ?? undefined,
+              undefined,
+              { rejectStaleText: true }
             )
           );
           const targetElement = domPoint
@@ -882,6 +888,14 @@ export const createDOMRepairQueue = ({
 
           if (!domPoint || !textHost) {
             if (kind === 'repair-caret-after-text-insert') {
+              return false;
+            }
+            const root = rootRef.current;
+
+            if (
+              root &&
+              isSoftLineTextStale(editor, { path, offset: pliteOffset }, root)
+            ) {
               return false;
             }
 
@@ -1035,6 +1049,11 @@ export const createDOMRepairQueue = ({
           repairCompleted = true;
 
           return true;
+        }
+        if (
+          isSelectionHeldForNativeMove(inputController, editor, rootRef.current)
+        ) {
+          return false;
         }
 
         const repaired = repairCollapsedSelectionByPath();

@@ -316,7 +316,11 @@ export type EditorLeafProps<TPlugin extends NodePropsDescriptor> =
     : never;
 
 const NonBreakingSpace = () => (
-  <span style={{ fontSize: 0, lineHeight: 0 }} contentEditable={false}>
+  <span
+    style={{ fontSize: 0, lineHeight: 0 }}
+    contentEditable={false}
+    data-editor-inset
+  >
     {String.fromCodePoint(160)}
   </span>
 );

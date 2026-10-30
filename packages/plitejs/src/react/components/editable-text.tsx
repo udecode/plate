@@ -7,7 +7,17 @@ import React, {
   useRef,
 } from 'react';
 
-import type { Path, NodeKey, Text as TextNode } from '../..';
+import type {
+  DecorationAttributes,
+  Path,
+  NodeKey,
+  Text as TextNode,
+} from '../..';
+import {
+  recordSoftLineEnd,
+  SOFT_LINE_END,
+  SOFT_LINE_FLAG,
+} from '../../dom/dom-soft-line-end';
 import { usePliteDecorationEntries } from '../decoration-context';
 import type { DecorationSlice } from '../decoration-source';
 import {
@@ -22,6 +32,7 @@ import {
   useEditableDOMRuntime,
 } from '../hooks/use-claim-editable-dom-commit';
 import { useEditorContext } from '../hooks/use-editor-context';
+import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import {
   type EditorTextSelectorContext,
@@ -53,6 +64,11 @@ import {
 } from './editable-text-pieces';
 import type { PlaceholderIntrinsicTag } from './plite-placeholder';
 import { EditorText } from './plite-text';
+
+export {
+  SOFT_LINE_END_SELECTOR,
+  SOFT_LINE_FLAG,
+} from '../../dom/dom-soft-line-end';
 
 const EMPTY_MARKS: Omit<TextNode, 'text'> = {};
 const EMPTY_BOUND_TEXT = Object.freeze({
@@ -281,6 +297,16 @@ class EditableTextContent extends React.Component<{
   }
 }
 
+const withoutSoftLineFlag = (
+  attributes: DecorationAttributes | undefined,
+  readOnly: boolean
+) => {
+  if (readOnly || !attributes) return attributes;
+  const { [SOFT_LINE_FLAG]: _flag, ...rest } = attributes;
+
+  return rest;
+};
+
 const RenderEditableText = ({
   decorations,
   isLast = false,
@@ -321,6 +347,7 @@ const RenderEditableText = ({
   useClaimEditableDOMCommit();
   const runtime = useEditableDOMRuntime();
   const scope = useContext(TextRenderScopeContext);
+  const readOnly = useEditorReadOnly();
   const contentRef = useRef<EditableTextContent>(null);
   useIsomorphicLayoutEffect(() => {
     contentRef.current?.defer();
@@ -369,28 +396,40 @@ const RenderEditableText = ({
             ref={bindTextRef}
           >
             {pieces.map((piece, index) => (
-              <span
-                // oxlint-disable-next-line react-doctor/no-array-index-as-key -- A slice's key holds its page and block path, so the index keeps a line's span mounted when either moves.
-                key={index}
-                {...piece.container?.attributes}
-                data-editor-render-only={
-                  piece.container ? 'container' : undefined
-                }
-              >
-                <TextPiece
-                  empty={empty}
-                  index={index}
-                  leaves={piece.leaves}
-                  marks={resolvedMarks}
-                  path={path}
-                  readRef={readRef}
-                  renderLeaf={renderLeaf}
-                  renderPlaceholder={renderPlaceholder}
-                  renderRevision={renderRevision}
-                  renderText={renderText}
-                  text={resolvedText}
-                />
-              </span>
+              // oxlint-disable-next-line react-doctor/no-array-index-as-key -- A slice's key holds its page and block path, so the index keeps a line's span and its soft line end mounted when either moves.
+              <React.Fragment key={index}>
+                <span
+                  {...withoutSoftLineFlag(
+                    piece.container?.attributes,
+                    readOnly
+                  )}
+                  data-editor-render-only={
+                    piece.container ? 'container' : undefined
+                  }
+                >
+                  <TextPiece
+                    empty={empty}
+                    index={index}
+                    leaves={piece.leaves}
+                    marks={resolvedMarks}
+                    path={path}
+                    readRef={readRef}
+                    renderLeaf={renderLeaf}
+                    renderPlaceholder={renderPlaceholder}
+                    renderRevision={renderRevision}
+                    renderText={renderText}
+                    text={resolvedText}
+                  />
+                </span>
+                {!readOnly &&
+                  piece.container?.attributes[SOFT_LINE_FLAG] === true && (
+                    <span
+                      contentEditable={false}
+                      data-editor-render-only={SOFT_LINE_END}
+                      ref={recordSoftLineEnd}
+                    />
+                  )}
+              </React.Fragment>
             ))}
           </EditorText>
         )}

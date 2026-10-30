@@ -53,8 +53,7 @@
       "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
       "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
       "const root = ReactEditor.resolveDocumentOrShadowRoot(editor);",
-      "ReactEditor.resolveDocumentOrShadowRoot(editor)",
-      "ReactEditor.resolveDOMNode(editor, editor)"
+      "ReactEditor.resolveDocumentOrShadowRoot(editor)"
     ],
     "packages/plitejs/src/react/editable/editable-dom-runtime.ts": [
       ": findEditorDOMRootRuntime(editor);"

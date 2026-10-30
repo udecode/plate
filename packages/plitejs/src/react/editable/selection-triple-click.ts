@@ -1,11 +1,12 @@
 import { type Range, RangeApi } from '../..';
 import { getSelection } from '../../dom';
 import { type DOMPhaseScheduler, EDITOR_TO_ELEMENT } from '../../dom/internal';
+import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
 import {
   getDOMRangeSelectionPoints,
   writeDOMSelection,
 } from '../../dom/utils/selection-writes';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
 
 export const exportTripleClickSelectionToDOM = ({
@@ -25,7 +26,7 @@ export const exportTripleClickSelectionToDOM = ({
     return;
   }
 
-  const domRange = ReactEditor.resolveDOMRange(editor, range);
+  const domRange = resolveWrittenDOMRange(editor, range);
 
   if (!domRange) {
     return;

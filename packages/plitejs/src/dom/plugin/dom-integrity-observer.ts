@@ -1,3 +1,4 @@
+import { isSoftLineEnd } from '../dom-soft-line-end';
 import { writeDOMSelection } from '../utils/selection-writes';
 import {
   markDOMTextFlowMutation,
@@ -79,6 +80,16 @@ const isElement = (node: Node): node is Element =>
 const closestElement = (node: Node) =>
   isElement(node) ? node : node.parentElement;
 
+const nonEditableOwnerOf = (mutation: MutationRecord) => {
+  const owner = closestElement(mutation.target)?.closest(
+    '[contenteditable="false"]'
+  );
+
+  return owner && isSoftLineEnd(owner)
+    ? owner.parentElement?.closest('[contenteditable="false"]')
+    : owner;
+};
+
 const isInsideOwnedRoot = (
   root: HTMLElement,
   mutation: MutationRecord,
@@ -88,7 +99,7 @@ const isInsideOwnedRoot = (
   if (seen.has(mutation)) return false;
   seen.add(mutation);
   const targetElement = closestElement(mutation.target);
-  const nonEditableOwner = targetElement?.closest('[contenteditable="false"]');
+  const nonEditableOwner = nonEditableOwnerOf(mutation);
 
   if (nonEditableOwner && nonEditableOwner !== root) return false;
 

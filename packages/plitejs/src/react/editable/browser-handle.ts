@@ -16,6 +16,7 @@ import {
 } from '../../core/view-carets';
 import { getSelection } from '../../dom';
 import type { DOMPhaseScheduler } from '../../dom/internal';
+import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
 import { BROWSER_HANDLE_KEY } from '../../internal/browser-protocol';
 import type { EditableViewportScrollAlign } from '../components/editable';
 import {
@@ -837,7 +838,9 @@ export const attachPliteBrowserHandle = ({
       );
     },
     setNativeDOMSelection: (selection) => {
-      const domRange = editor.api.dom.resolveDOMRange(selection);
+      const domRange = resolveWrittenDOMRange(editor, selection, {
+        checkPageText: true,
+      });
 
       if (!domRange) {
         return false;

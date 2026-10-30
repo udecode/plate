@@ -1549,6 +1549,7 @@ export const useRootInteractionController = ({
           target.kind === 'native-editable' && !nativeEditableTextHit;
         const focusedNativeEditableCoordinateTarget =
           !nativeEditableMultiClick &&
+          !nativeEditableSelectedTextTarget &&
           !nativeEditableModifiedClick &&
           ignoreBlankEditableRootClicks &&
           action.type === 'ignore' &&

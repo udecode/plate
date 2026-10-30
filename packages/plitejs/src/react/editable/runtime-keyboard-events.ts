@@ -402,6 +402,7 @@ export const useRuntimeKeyboardEvents = ({
         isVerticalArrowKey
       ) {
         flushPendingNativeTextInput?.();
+        runtime.selection.holdExportForNativeMove();
         return;
       }
 
@@ -493,6 +494,7 @@ export const useRuntimeKeyboardEvents = ({
         decision.intent === 'native-selection-move'
       ) {
         scheduleNativeSelectionImport();
+        if (isVerticalArrowKey) runtime.selection.holdExportForNativeMove();
       }
       profilePliteReactDuration('keydown.trace-record', () => {
         runtime.trace.recordKeyDownTrace({

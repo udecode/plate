@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 
 import { type Path, type Range, RangeApi } from '../..';
 import { setEditorCompositionPending } from '../../core/public-state';
-import type { DOMElement } from '../../dom';
+import { containsShadowAware, type DOMElement, getSelection } from '../../dom';
 import {
   DOMRootRuntime,
   type DOMPhaseScheduler,
@@ -112,6 +112,9 @@ export type CompositionReceipt = Readonly<{
   status: 'cancelled' | 'committed' | 'pending';
 }>;
 
+/** A vertical press the browser moves, with the model selection it started from. */
+export type NativeMoveHold = Readonly<{ selection: Range | null }>;
+
 export type EditableInputControllerState = {
   activeIntent: InputIntent | null;
   compositionReceipt: CompositionReceipt | null;
@@ -130,6 +133,7 @@ export type EditableInputControllerState = {
   latestElement: DOMElement | null;
   modelSelectionPreference?: ModelSelectionPreference | null;
   modelOwnedTextInputGuard?: number;
+  nativeMoveHold: NativeMoveHold | null;
   outsideFocusBoundarySettleUntil: number;
   pendingDOMSelectionImport: boolean;
   pendingCompositionEnd: PendingCompositionEnd | null;
@@ -308,6 +312,7 @@ export const createEditableInputControllerState = (
       latestElement: null,
       modelSelectionPreference: null,
       modelOwnedTextInputGuard: 0,
+      nativeMoveHold: null,
       outsideFocusBoundarySettleUntil: 0,
       pendingDOMSelectionImport: false,
       pendingCompositionEnd: null,
@@ -550,11 +555,57 @@ export const clearEditablePendingRootDOMInput = (
   inputController.state.pendingRootDOMInput = null;
 };
 
+/**
+ * While a vertical press the browser moves waits for its selection import, no
+ * writer may put the old model selection over the browser's move.
+ */
+export const isSelectionHeldForNativeMove = (
+  inputController: EditableInputController,
+  editor: AnyEditor,
+  editorElement: HTMLElement | null | undefined
+) => {
+  const hold = inputController.state.nativeMoveHold;
+
+  if (!hold || !editorElement) return false;
+  const selection = editor.read((state) => state.selection());
+  const modelSelectionMovedSincePress =
+    selection && hold.selection
+      ? !RangeApi.equals(selection, hold.selection)
+      : selection !== hold.selection;
+
+  if (modelSelectionMovedSincePress) {
+    inputController.state.nativeMoveHold = null;
+    return false;
+  }
+  const domSelection = getSelection(
+    editorElement.getRootNode() as Document | ShadowRoot
+  );
+
+  return (
+    !!domSelection &&
+    containsShadowAware(editorElement, domSelection.anchorNode) &&
+    containsShadowAware(editorElement, domSelection.focusNode)
+  );
+};
+
+/** Ends the native-move hold and leaves any pending selection import. */
+export const endNativeMoveHold = (inputController: EditableInputController) => {
+  inputController.state.nativeMoveHold = null;
+};
+
+/** Ends a pending selection import and the native-move hold it carries. */
+export const endSelectionImport = (
+  inputController: EditableInputController
+) => {
+  inputController.state.pendingDOMSelectionImport = false;
+  inputController.state.nativeMoveHold = null;
+};
+
 export const prepareEditableModelSelection = (
   inputController: EditableInputController,
   { projecting }: { projecting: boolean }
 ) => {
-  inputController.state.pendingDOMSelectionImport = false;
+  endSelectionImport(inputController);
   inputController.state.isProjectingSelection = projecting;
   inputController.state.selectionChangeOrigin = 'programmatic-export';
 };
@@ -562,7 +613,7 @@ export const prepareEditableModelSelection = (
 export const finishEditableModelSelectionProjection = (
   inputController: EditableInputController
 ) => {
-  inputController.state.pendingDOMSelectionImport = false;
+  endSelectionImport(inputController);
   inputController.state.isProjectingSelection = false;
 };
 

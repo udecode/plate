@@ -51,6 +51,7 @@ import {
 import {
   type DOMInputRepairTarget,
   type EditableInputController,
+  endNativeMoveHold,
   shouldMergeEditableCompositionHistory,
 } from '../../editable/input-state';
 import {
@@ -365,6 +366,7 @@ export function createAndroidInputManager({
         EDITOR_TO_PENDING_SELECTION.delete(editor);
         scheduleOnDOMSelectionChange.cancel();
         onDOMSelectionChange.cancel();
+        endNativeMoveHold(inputController);
         selectionAnchor?.release();
         restoreSelection = false;
       }
@@ -628,6 +630,7 @@ export function createAndroidInputManager({
     EDITOR_TO_PENDING_SELECTION.delete(editor);
     scheduleOnDOMSelectionChange.cancel();
     onDOMSelectionChange.cancel();
+    endNativeMoveHold(inputController);
 
     if (hasPendingAction()) {
       flush();

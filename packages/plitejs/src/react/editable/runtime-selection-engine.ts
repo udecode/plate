@@ -2,8 +2,13 @@ import debounce from 'lodash/debounce.js';
 import throttle from 'lodash/throttle.js';
 import type { RefObject } from 'react';
 
-import { RangeApi } from '../..';
+import { PointApi, RangeApi } from '../..';
 import { getSelection } from '../../dom';
+import {
+  clearAfterInsertCaret,
+  readAfterInsertCaret,
+  readLowerSoftLineEnd,
+} from '../../dom/dom-soft-line-end';
 import { findEditorDOMRootRuntime } from '../../dom/internal';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -17,6 +22,7 @@ import {
 } from './editing-kernel';
 import {
   beginEditableNativeSelectionImport,
+  endSelectionImport,
   type EditableInputController,
 } from './input-state';
 import { getSelection as editorGetSelection } from './runtime-editor-api';
@@ -47,7 +53,7 @@ export const cancelRuntimeSelectionChangeFlush = ({
 }) => {
   scheduleOnDOMSelectionChange.cancel();
   onDOMSelectionChange.cancel();
-  inputController.state.pendingDOMSelectionImport = false;
+  endSelectionImport(inputController);
 };
 
 export const shouldPreserveDOMRepairQueueDuringSelectionChange = ({
@@ -157,6 +163,23 @@ const shouldCancelStaleCompositionSelectionChangeFlush = ({
   );
 };
 
+const clearAfterInsertCaretOnLowerSide = (
+  editor: ReactRuntimeEditor,
+  domSelection: Selection
+) => {
+  const { focusNode, focusOffset } = domSelection;
+
+  if (!focusNode || !readLowerSoftLineEnd(focusNode, focusOffset)) return;
+  const caret = readAfterInsertCaret(editor);
+
+  if (!caret) return;
+  const point = ReactEditor.resolvePoint(editor, [focusNode, focusOffset], {
+    exactMatch: false,
+  });
+
+  if (point && PointApi.equals(point, caret)) clearAfterInsertCaret(editor);
+};
+
 export const createRuntimeSelectionChangeHandler = ({
   androidInputManagerRef,
   domRepairQueueRef,
@@ -181,7 +204,7 @@ export const createRuntimeSelectionChangeHandler = ({
       !rootRef.current ||
       findEditorDOMRootRuntime(editor)?.rootRef.current !== rootRef.current
     ) {
-      inputController.state.pendingDOMSelectionImport = false;
+      endSelectionImport(inputController);
       return;
     }
     const selectionChangeOrigin =
@@ -191,6 +214,15 @@ export const createRuntimeSelectionChangeHandler = ({
     const domSelection = getSelection(
       rootRef.current.getRootNode() as Document | ShadowRoot
     );
+
+    if (
+      domSelection &&
+      !ReactEditor.isComposing(editor) &&
+      !androidInputManagerRef.current?.hasPendingAction() &&
+      ReactEditor.isFocused(editor)
+    ) {
+      clearAfterInsertCaretOnLowerSide(editor, domSelection);
+    }
 
     if (
       shouldSkipModelOwnedRepairSelectionChange({
@@ -206,7 +238,7 @@ export const createRuntimeSelectionChangeHandler = ({
         selectionSource: inputController.state.selectionSource,
       })
     ) {
-      inputController.state.pendingDOMSelectionImport = false;
+      endSelectionImport(inputController);
       return;
     }
 
@@ -302,7 +334,7 @@ export const createRuntimeSelectionChangeHandler = ({
         selectionChangeOrigin,
       });
     } finally {
-      inputController.state.pendingDOMSelectionImport = false;
+      endSelectionImport(inputController);
     }
   }, 100);
 
@@ -436,6 +468,14 @@ export const createRuntimeSelectionImportController = ({
 
     scheduleOnDOMSelectionChange.flush();
     onDOMSelectionChange.flush();
+  },
+
+  holdExportForNativeMove() {
+    inputController.state.pendingDOMSelectionImport = true;
+    inputController.state.nativeMoveHold = {
+      selection: editor.read((state) => state.selection()),
+    };
+    scheduleOnDOMSelectionChange();
   },
 
   syncDOMSelectionFromRuntime() {

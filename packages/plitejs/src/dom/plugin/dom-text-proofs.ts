@@ -80,10 +80,12 @@ class DOMTextProofs {
     this.observer = new MutationObserver((records) => this.apply(records));
     this.observer.observe(root, {
       attributeFilter: [
+        'contenteditable',
         'data-editor',
         'data-editor-length',
         'data-editor-node',
         'data-editor-node-key',
+        'data-editor-placeholder',
         'data-editor-string',
         'data-editor-text-flow-host',
         'data-editor-zero-width',
