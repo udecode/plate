@@ -273,7 +273,9 @@ export const start = (root, { remote = REMOTE } = {}) => {
     const note = init(main, { remote });
     if (note) return note;
   }
-  return main === root ? null : attach(root);
+  if (main === root) return null;
+  if (isSplit(root)) followBranch(root);
+  return attach(root);
 };
 
 const missingFilesNote = (root) => {
@@ -281,6 +283,46 @@ const missingFilesNote = (root) => {
   return missing.length > 0
     ? `${missing.length} private files are missing from disk, such as ${missing[0]}; run node tooling/scripts/git-private.mjs restore, or stage each deletion the task makes with node tooling/scripts/git-private.mjs rm --cached -- <path>`
     : null;
+};
+
+// The desktop app adds a worktree ahead of time on a branch of its own, which
+// attach gives the private half too, then moves the worktree onto the
+// session's branch at a newer next and leaves the private half behind.
+const followBranch = (root) => {
+  const branch = must(root, ['branch', '--show-current']).trim();
+  const held = privateGit(root, [
+    'symbolic-ref',
+    '--quiet',
+    '--short',
+    'HEAD',
+  ]).stdout.trim();
+  if (!branch || !held || branch === held) return;
+  privateGit(root, ['fetch', '--quiet', 'origin']);
+  const ownCommit = privateGit(root, [
+    'rev-list',
+    '--max-count=1',
+    'HEAD',
+    `^${UPSTREAM}`,
+  ]).stdout.trim();
+  const unchanged = (...args) =>
+    privateGit(root, ['diff', '--quiet', ...args]).status === 0;
+  if (ownCommit || !unchanged('--cached') || !unchanged('--diff-filter=d')) {
+    return;
+  }
+  const base =
+    pairedCommit(
+      mainCheckout(root),
+      must(root, ['rev-parse', 'HEAD']).trim()
+    ) ?? UPSTREAM;
+  privateMust(root, [
+    'checkout',
+    '--quiet',
+    '--force',
+    '--ignore-other-worktrees',
+    '-B',
+    branch,
+    base,
+  ]);
 };
 
 /** Gives a worktree its private half, a linked worktree of the clone's. */
