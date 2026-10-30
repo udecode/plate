@@ -90,6 +90,7 @@ import {
   shouldUseModelBackedSelectAllSelection,
 } from './selection-controller';
 import { shouldSkipSelectionFocus } from './selection-side-effect-policy';
+import { readTripleClickedBlock } from './selection-triple-click';
 import { withTypedTextIntent } from './typed-text';
 
 export {
@@ -644,7 +645,7 @@ export const applyEditableCommand = ({
           ...(selection &&
           RangeApi.isRange(selection) &&
           RangeApi.isExpanded(selection)
-            ? { at: selection }
+            ? { at: readTripleClickedBlock(editor, selection) ?? selection }
             : {}),
           direction: command.direction ?? 'forward',
         });

@@ -7,6 +7,7 @@ import {
 } from 'react';
 
 import { NodeApi, PathApi, type Range, RangeApi, SelectionApi } from '../..';
+import { getFullySelectedSiblingBlocks } from '../../core/editor-commands';
 import { setShownSelectionAsView } from '../../core/view-carets';
 import {
   containsShadowAware,
@@ -94,7 +95,10 @@ import {
   shouldSkipSelectionFocus,
   shouldSkipSelectionScroll,
 } from './selection-side-effect-policy';
-import { exportTripleClickSelectionToDOM } from './selection-triple-click';
+import {
+  exportTripleClickSelectionToDOM,
+  tripleClickedBlock,
+} from './selection-triple-click';
 import {
   preferModelSelectionForSelectableOwnerTarget,
   preferModelSelectionForVoidTarget,
@@ -388,6 +392,13 @@ export const applyEditableClick = ({
       }
 
       const range = editorRange(editor, blockPath);
+      const block = editor.read((state) => {
+        const blocks = getFullySelectedSiblingBlocks(state, range);
+
+        return blocks?.length === 1 && blocks[0]
+          ? state.key(blocks[0][0])
+          : null;
+      });
       writePliteViewSelection(editor, null);
       setEditableModelSelectionPreference({
         inputController,
@@ -396,6 +407,7 @@ export const applyEditableClick = ({
       });
       editor.update((tx) => {
         tx.selection.set(range);
+        if (block) tx.annotations.set(tripleClickedBlock, block);
       });
       exportTripleClickSelectionToDOM({
         domPhaseScheduler,

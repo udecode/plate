@@ -239,7 +239,7 @@ const getLeadingInlineVoidBoundaryDeleteSpec = (state: CommandStateView) => {
   });
 };
 
-const getFullySelectedSiblingBlocks = (
+export const getFullySelectedSiblingBlocks = (
   state: CommandStateView,
   range: Range
 ): ReadonlyArray<NodeEntry<Element>> | null => {
@@ -625,9 +625,27 @@ export const editorCommands: EditorCommands = Object.freeze({
     build: ({ input, state }) => {
       const range =
         input.at === undefined ? null : resolveCommandRange(state, input.at);
-      const fullBlocks = range
+      const selectedBlocks = range
         ? getFullySelectedSiblingBlocks(state, range)
         : null;
+      const onlyBlock =
+        selectedBlocks?.length === 1 ? getDefined(selectedBlocks[0]) : null;
+      const root = range?.anchor.root ?? range?.focus.root ?? MAIN_ROOT_KEY;
+      const publicRoot = toPublicRoot(root);
+      const rootHasOtherBlock =
+        onlyBlock !== null &&
+        (PathApi.hasPrevious(onlyBlock[1]) ||
+          state.nodes.get({
+            offset: 0,
+            path: PathApi.next(onlyBlock[1]),
+            ...(publicRoot ? { root: publicRoot } : {}),
+          }) !== undefined);
+      const keepsBlock =
+        onlyBlock !== null &&
+        rootHasOtherBlock &&
+        RangeApi.isRange(input.at) &&
+        PathApi.isAncestor(onlyBlock[1], RangeApi.end(input.at).path);
+      const fullBlocks = keepsBlock ? null : selectedBlocks;
 
       if (fullBlocks) {
         const [firstBlock, firstPath] = getDefined(fullBlocks[0]);
@@ -659,8 +677,6 @@ export const editorCommands: EditorCommands = Object.freeze({
             }
           : undefined;
         const survivingPoint = previousPoint ?? mappedNextPoint;
-        const root = range?.anchor.root ?? range?.focus.root ?? MAIN_ROOT_KEY;
-        const publicRoot = toPublicRoot(root);
         const defaultChild = survivingPoint
           ? null
           : blockReplacing(
@@ -679,7 +695,7 @@ export const editorCommands: EditorCommands = Object.freeze({
           return state.transaction((tx) => {
             tx.fragment.delete({
               direction: input.direction,
-              ...(input.at === undefined ? {} : { at: input.at }),
+              ...(input.at === undefined ? {} : { at: range ?? input.at }),
             });
           });
         }

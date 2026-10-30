@@ -1,4 +1,9 @@
-import { type Range, RangeApi } from '../..';
+import {
+  defineUpdateAnnotation,
+  type NodeKey,
+  type Range,
+  RangeApi,
+} from '../..';
 import { getSelection } from '../../dom';
 import { type DOMPhaseScheduler, EDITOR_TO_ELEMENT } from '../../dom/internal';
 import { resolveWrittenDOMRange } from '../../dom/plugin/dom-editor';
@@ -8,6 +13,24 @@ import {
 } from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import type { EditableInputController } from './input-controller';
+import type { AnyEditor } from './runtime-editor-api';
+
+export const tripleClickedBlock = defineUpdateAnnotation<NodeKey>({
+  key: 'selection.triple-clicked-block',
+});
+
+export const readTripleClickedBlock = (editor: AnyEditor, selection: Range) => {
+  const commit = editor.read.lastCommit();
+  const block = commit?.annotations[tripleClickedBlock.key] as
+    | NodeKey
+    | undefined;
+
+  return block &&
+    RangeApi.isRange(commit?.selectionAfter) &&
+    RangeApi.equals(commit.selectionAfter, selection)
+    ? block
+    : null;
+};
 
 export const exportTripleClickSelectionToDOM = ({
   domPhaseScheduler,
