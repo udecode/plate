@@ -11,11 +11,8 @@ import {
   type Path,
 } from '../../../facade';
 import { BaseIndentPlugin } from '../../indent';
-import { listItemDepth, isListItem } from './listIndex.internal';
-
-/** A block's list depth: an omitted indent reads as 1 on a list item and 0 elsewhere. */
-export const listDepth = (node: Element) =>
-  isListItem(node) ? listItemDepth(node) : Number(node.indent ?? 0);
+import { planMovedListStyles } from './listIdentity.internal';
+import { isListItem, listDepth } from './listIndex.internal';
 
 // Per sibling array and depth, the index of the last sibling deeper than the
 // depth in the unbroken run starting at each asked sibling, or -1 when that
@@ -161,17 +158,26 @@ export const moveListFamilies = (
   { offset }: Readonly<{ offset: 1 | -1 }>
 ) => {
   const { indentMax } = editor.plugin(BaseIndentPlugin).store.get();
+  const moved = getListFamilies(tx, entries)
+    .filter(
+      (family) =>
+        offset < 0 ||
+        typeof indentMax !== 'number' ||
+        family.every(({ node }) => listDepth(node) + 1 <= indentMax)
+    )
+    .flat();
+  const styles = planMovedListStyles(tx, moved, offset);
 
-  for (const family of getListFamilies(tx, entries)) {
-    if (
-      offset > 0 &&
-      typeof indentMax === 'number' &&
-      family.some(({ node }) => listDepth(node) + 1 > indentMax)
-    ) {
-      continue;
-    }
-    for (const member of family) {
-      shiftListFamilyMember(tx, member, offset);
+  for (const member of moved) {
+    shiftListFamilyMember(tx, member, offset);
+
+    const level = styles.get(member.node);
+
+    if (!level) continue;
+    if (level.style === undefined) {
+      tx.nodes.unset('listStyle', { at: member.key });
+    } else {
+      tx.nodes.set({ listStyle: level.style }, { at: member.key });
     }
   }
 };

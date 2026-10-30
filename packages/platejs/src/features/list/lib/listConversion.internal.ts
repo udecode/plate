@@ -12,7 +12,7 @@ import {
   type BlockRelease,
 } from '../../../internal/plugin/blockRelease';
 import { BaseIndentPlugin } from '../../indent';
-import { listDepth } from './listFamily.internal';
+import { listDepth } from './listIndex.internal';
 
 export const planListConversion = (
   editor: Editor,

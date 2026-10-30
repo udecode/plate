@@ -100,6 +100,9 @@ export const isListItem = (node: Element) => isListType(node.listType);
 export const listItemDepth = (node: Element) =>
   typeof node.indent === 'number' ? node.indent : 1;
 
+export const listDepth = (node: Element) =>
+  isListItem(node) ? listItemDepth(node) : Number(node.indent ?? 0);
+
 export const normalizeListStyle = (
   type: ListType,
   style: ListStyle | (string & {}) | undefined

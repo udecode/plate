@@ -15,6 +15,7 @@ import {
 import type { ListType } from './BaseListPlugin';
 import {
   getElementListStyle,
+  listDepth,
   listItemDepth,
   isListItem,
   isListLevels,
@@ -23,7 +24,7 @@ import {
 } from './listIndex.internal';
 
 export type NodeReader = {
-  nodes: Pick<EditorCoreStateView['nodes'], 'get'>;
+  nodes: Pick<EditorCoreStateView['nodes'], 'children' | 'get'>;
 };
 
 const SIBLING_WALK_LIMIT = 64;
@@ -35,8 +36,11 @@ export type ListIdentity = Readonly<{
   listLevels: ListLevels | undefined;
 }>;
 
+const listIdOf = (node: Element) =>
+  typeof node.listId === 'string' ? node.listId : undefined;
+
 const identityOf = (element: Element): ListIdentity => ({
-  listId: typeof element.listId === 'string' ? element.listId : undefined,
+  listId: listIdOf(element),
   listLevels: isListLevels(element.listLevels) ? element.listLevels : undefined,
 });
 
@@ -54,28 +58,25 @@ const compatible = (
   (!matchStyle || getElementListStyle(candidate) === style) &&
   (headingType !== undefined && candidate.type === headingType) === heading;
 
+export const siblingWalkMetrics = { visited: 0 };
+
 const walkSiblings = (
   state: NodeReader,
   path: Path,
   direction: 'next' | 'previous',
   visit: (sibling: Element) => 'skip' | 'stop' | Element
 ): Element | undefined => {
-  let siblingPath = path;
+  const siblings = state.nodes.children(PathApi.parent(path));
+  const step = direction === 'next' ? 1 : -1;
+  let index = path.at(-1) ?? 0;
 
   for (let visited = 0; visited < SIBLING_WALK_LIMIT; visited += 1) {
-    if (direction === 'previous' && !PathApi.hasPrevious(siblingPath)) {
-      return undefined;
-    }
-    siblingPath =
-      direction === 'next'
-        ? PathApi.next(siblingPath)
-        : PathApi.previous(siblingPath);
+    index += step;
+    siblingWalkMetrics.visited += 1;
 
-    const sibling = state.nodes.get(siblingPath, {
-      match: ElementApi.isElement,
-    })?.[0];
+    const sibling = siblings[index];
 
-    if (!sibling) return undefined;
+    if (!sibling || !ElementApi.isElement(sibling)) return undefined;
 
     const result = visit(sibling);
 
@@ -164,6 +165,78 @@ export const joinInsertedListItem = (
       { at: path }
     );
   }
+};
+
+type LevelStyle = Readonly<{ style: string | undefined }>;
+
+/**
+ * The marker style each moved list item takes at its new depth, keyed by the
+ * item as read before the move, for the items whose style changes. A level's
+ * style is the style of the nearest item of the same list and list type at
+ * that depth within the sibling walk, preferring one with no shallower item of
+ * its list between them, then one before over one after. Failing that, the
+ * item keeps its style. A moved item passes on the level style it found, never
+ * its own old style.
+ */
+export const planMovedListStyles = (
+  state: NodeReader,
+  moved: ReadonlyArray<Readonly<{ node: Element; path: Path }>>,
+  offset: 1 | -1
+) => {
+  const moving = new Set(moved.map(({ node }) => node));
+  const planned = new Map<Element, LevelStyle | null>();
+  const changes = new Map<Element, LevelStyle>();
+  const depthOf = (node: Element) =>
+    listDepth(node) + (moving.has(node) ? offset : 0);
+
+  for (const { node, path } of moved) {
+    const depth = depthOf(node);
+
+    if (!isListItem(node) || node.listType === 'task' || depth < 1) continue;
+
+    const listId = listIdOf(node);
+    const find = (direction: 'next' | 'previous') => {
+      let unbroken = true;
+      const source = walkSiblings(state, path, direction, (sibling) => {
+        if (!isListItem(sibling) || listIdOf(sibling) !== listId) {
+          return 'skip';
+        }
+
+        const siblingDepth = depthOf(sibling);
+
+        if (siblingDepth < 1 || siblingDepth > depth) return 'skip';
+        if (siblingDepth < depth) {
+          unbroken = false;
+
+          return 'skip';
+        }
+
+        return sibling.listType === node.listType &&
+          (!moving.has(sibling) || planned.has(sibling))
+          ? sibling
+          : 'skip';
+      });
+
+      return source && { unbroken, source };
+    };
+    const before = find('previous');
+    const after = before?.unbroken ? undefined : find('next');
+    const found =
+      [before, after].find((side) => side?.unbroken) ?? before ?? after;
+    const level = found
+      ? moving.has(found.source)
+        ? (planned.get(found.source) ?? null)
+        : { style: getElementListStyle(found.source) }
+      : null;
+
+    planned.set(node, level);
+
+    if (level && level.style !== getElementListStyle(node)) {
+      changes.set(node, level);
+    }
+  }
+
+  return changes;
 };
 
 export type ListLanding =
