@@ -241,8 +241,7 @@ const MentionExample = () => {
             const beforeText = beforeRange && state.text.string(beforeRange);
             const beforeMatch = beforeText?.match(MENTION_BEFORE_PATTERN);
             const after = state.points.after(start);
-            const afterRange =
-              after && state.ranges.get({ anchor: start, focus: after });
+            const afterRange = state.ranges.get(start, after);
             const afterText = afterRange && state.text.string(afterRange);
             const afterMatch = afterText?.match(MENTION_AFTER_PATTERN);
 

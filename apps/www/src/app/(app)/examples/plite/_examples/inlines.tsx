@@ -480,16 +480,6 @@ const EditableButtonComponent = ({
     {...attributes}
     // Margin is necessary to clearly show the cursor adjacent to the button
     className="editor-inlines-editable-button"
-    onClick={(ev) => {
-      ev.preventDefault();
-    }}
-    onKeyDown={(event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-      }
-    }}
-    role="button"
-    tabIndex={0}
   >
     <InlineChromiumBugfix />
     {children}
