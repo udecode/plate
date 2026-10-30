@@ -10,7 +10,7 @@
     "diff-match-patch-ts@^0.6.0",
     "jszip@^3.10.1",
     "lucide-react",
-    "mammoth@^1.9.0",
+    "mammoth@^1.13.0",
     "remark-parse@^11.0.0",
     "remark-stringify@^11.0.0",
     "unified@^11.0.5",

@@ -166,6 +166,7 @@ export const MAMMOTH_VML_ELEMENTS = new Set([
 export const MAMMOTH_WORD_CONTAINERS = new Set([
   ...CONTENT_REVISIONS,
   'body',
+  'customXml',
   'document',
   'hyperlink',
   'object',
@@ -212,7 +213,7 @@ const isMammothVml = (frame: DocxXmlFrame) =>
 
 // Mammoth reads a text box only through VML elements it handles, up to a
 // w:pict or w:object. It skips the whole subtree of an element it does not
-// read, such as w:customXml or mc:Choice, reads mc:Fallback instead of
+// read, such as w:fldSimple or mc:Choice, reads mc:Fallback instead of
 // mc:Choice, and reads only images under DrawingML wp:anchor and wp:inline.
 const textBoxDisposition = (frames: readonly DocxXmlFrame[]) => {
   const host = frames.findLastIndex(

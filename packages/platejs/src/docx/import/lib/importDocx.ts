@@ -1641,7 +1641,7 @@ const importProjection = async (
   signal?: AbortSignal
 ) => {
   throwIfDocxAborted(signal, target.dom.abortError);
-  // Mammoth 1.11's readOptions copies inherited keys over the caller's, so a
+  // Mammoth's readOptions copies inherited keys over the caller's, so a
   // polluted Object.prototype turns includeEmbeddedStyleMap back on.
   if (storesStyleMapRule && 'includeEmbeddedStyleMap' in Object.prototype) {
     return null;
