@@ -10,4 +10,6 @@ In a `PagedEditable`, `renderText` runs once per piece of a text, with `piece: {
 
 An editable `PagedEditable` renders an empty, non-editable `span` with `data-editor-render-only="soft-line-end"` after each measured line that wraps, outside `renderText`, so Shift+Down and Shift+Up inside a paragraph move one measured line per press. Copied content leaves it out.
 
+In a `PagedEditable`, the paragraph you edit keeps the lines the layout measured, in browsers that support `text-wrap-mode`. Text that your styles paint wider than the `typography` option's font and letter spacing runs past the line's right edge instead of wrapping over the next block. An inline void whose text is empty, such as a mention, takes no width in the measure, so a line that holds one can run past the right edge by the void's painted width. An editor nested in a paged block keeps its own wrapping when its root sets `white-space`, as `Editable` does unless `disableDefaultStyles` is set. So in a `PagedEditable` nested in another's paged block, an inline element with its own wrapping style, such as inline code, can still wrap.
+
 Keep the headless root install independent from React. Install `@chenglou/pretext` when importing `plitejs/pagination` or `plitejs/pagination/react`.

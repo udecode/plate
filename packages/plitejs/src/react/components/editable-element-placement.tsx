@@ -77,19 +77,27 @@ const BOX_POSITION_RULE = `[${PLACED_ATTRIBUTE}]{position:absolute!important;lef
 
 const BLOCK_MARGIN_RESET_RULE = `[${PLACED_ATTRIBUTE}],[${PLACED_ELEMENT_ATTRIBUTE}]{margin-block:0!important}`;
 
+const NESTED_EDITOR = `[${PLACED_TEXT_ATTRIBUTE}] [data-editor-node="value"]`;
+const OUTSIDE_NESTED_EDITOR = `:not(${NESTED_EDITOR},${NESTED_EDITOR} *)`;
+
 const TEXT_LINES_RULE = `[${PLACED_TEXT_ATTRIBUTE}]{padding-block:0!important;min-height:var(${PLACEMENT_VARIABLES.height})!important}`;
+
+const MEASURED_LINES_NEVER_REWRAP_RULE = `[${PLACED_TEXT_ATTRIBUTE}],[${PLACED_TEXT_ATTRIBUTE}] *${OUTSIDE_NESTED_EDITOR}{text-wrap-mode:nowrap!important}`;
 
 const SPILL_RULE = `[${SPILL_ATTRIBUTE}]{overflow:visible!important}`;
 
 // Applies a placement over the box's own styles, so a renderer keeps owning
 // them and they come back unchanged when the placement clears.
-const ELEMENT_PLACEMENT_RULE = `${PLACEMENT_PROPERTIES}${BOX_POSITION_RULE}${BLOCK_MARGIN_RESET_RULE}${TEXT_LINES_RULE}${SPILL_RULE}`;
+const ELEMENT_PLACEMENT_RULE = `${PLACEMENT_PROPERTIES}${BOX_POSITION_RULE}${BLOCK_MARGIN_RESET_RULE}${TEXT_LINES_RULE}${MEASURED_LINES_NEVER_REWRAP_RULE}${SPILL_RULE}`;
 
-const placeElement = (
-  box: HTMLElement,
-  element: HTMLElement,
-  layout: EditableElementLayout
-) => {
+type Placement = Readonly<{ box: HTMLElement; element: HTMLElement }>;
+
+const boxOwners = new WeakMap<HTMLElement, Placement>();
+
+const placeElement = (placement: Placement, layout: EditableElementLayout) => {
+  const { box, element } = placement;
+
+  boxOwners.set(box, placement);
   for (const key of ['height', 'left', 'top', 'width'] as const) {
     box.style.setProperty(PLACEMENT_VARIABLES[key], `${layout[key]}px`);
   }
@@ -100,15 +108,25 @@ const placeElement = (
   element.style.setProperty(PLACEMENT_VARIABLES.height, `${layout.height}px`);
 };
 
-const clearPlacement = (box: HTMLElement, element: HTMLElement) => {
+const releaseOwnedBox = (placement: Placement) => {
+  const { box } = placement;
+
+  if (boxOwners.get(box) !== placement) return;
+  boxOwners.delete(box);
   box.removeAttribute(PLACED_ATTRIBUTE);
   box.removeAttribute(SPILL_ATTRIBUTE);
-  element.removeAttribute(PLACED_ELEMENT_ATTRIBUTE);
-  element.removeAttribute(PLACED_TEXT_ATTRIBUTE);
   for (const variable of Object.values(PLACEMENT_VARIABLES)) {
     box.style.removeProperty(variable);
   }
+};
+
+const clearPlacement = (placement: Placement) => {
+  const { element } = placement;
+
+  element.removeAttribute(PLACED_ELEMENT_ATTRIBUTE);
+  element.removeAttribute(PLACED_TEXT_ATTRIBUTE);
   element.style.removeProperty(PLACEMENT_VARIABLES.height);
+  releaseOwnedBox(placement);
 };
 
 /**
@@ -134,12 +152,12 @@ export const EditableElementLayoutsProvider = ({
 );
 
 /**
- * The ref changes with the node binding and the layout, so an edit or a reflow
- * calls it again and rebinds the element before the renderer's own layout
- * effects. Each call clears the box the previous call placed, so a detach,
- * which React and a ref merge that forwards it deliver as a call with null,
- * releases the box. A renderer whose ref merge keeps one identity never sees a
- * new layout.
+ * The layout is part of the ref's identity, because React calls a new ref with
+ * its element before the renderer's own layout effects. React first calls the
+ * old ref with null, so a null call clears in a microtask, after the new ref
+ * has kept the box's attributes. Removing `data-editor-placed-text` and adding
+ * it back in one commit makes Chrome restyle every element the never-rewrap
+ * rule matches.
  */
 export const useEditableElementPlacementRef = (
   bindNodeRef: (node: Node | null) => void,
@@ -147,23 +165,34 @@ export const useEditableElementPlacementRef = (
 ): React.RefCallback<HTMLElement> => {
   const layouts = React.useContext(EditableElementLayoutsContext);
   const layout = path ? layouts?.get(pathKey(path)) : undefined;
-  const placed = React.useRef<{
-    box: HTMLElement;
-    element: HTMLElement;
-  } | null>(null);
+  const placed = React.useRef<Placement | null>(null);
 
   return React.useCallback(
     (element: HTMLElement | null) => {
       bindNodeRef(element);
-      if (placed.current) {
-        clearPlacement(placed.current.box, placed.current.element);
+      const previous = placed.current;
+
+      if (!element) {
+        if (previous) {
+          queueMicrotask(() => {
+            if (placed.current !== previous) return;
+            clearPlacement(previous);
+            placed.current = null;
+          });
+        }
+        return;
+      }
+      const box = layout ? getElementPlacementBox(element) : null;
+
+      if (previous && (previous.box !== box || previous.element !== element)) {
+        clearPlacement(previous);
       }
       placed.current = null;
-      if (!element || !layout) return;
-      const box = getElementPlacementBox(element);
+      if (!box || !layout) return;
+      const placement = { box, element };
 
-      placeElement(box, element, layout);
-      placed.current = { box, element };
+      placeElement(placement, layout);
+      placed.current = placement;
     },
     [bindNodeRef, layout]
   );

@@ -19,6 +19,7 @@ import {
   type Editor,
   type Element,
   type Node,
+  NodeApi,
   type NodeKey,
   type Path,
   PathApi,
@@ -729,19 +730,38 @@ const PARK_RULE =
   '[data-pagination-unmounted-page],[data-pagination-unmounted-page] *{font-size:0!important;line-height:0!important;margin:0!important;padding:0!important;border-width:0!important}';
 
 /**
- * A line whose text ends at a hard `\n` already breaks under the run's
- * `white-space: pre`, so no run carries the native-flow break.
+ * A line whose last character is a hard `\n` already breaks under the run's
+ * `white-space: pre`, so no run carries the native-flow break. A line that
+ * ends at an inline void's empty text breaks after the run before the void,
+ * because the void's renderer can wrap its text in an `inline-block`, as the
+ * registry mention does, and a forced break inside an inline-block ends that
+ * box's line, not the paragraph's.
  */
 const nativeFlowBreakRunIndex = (
   line: TextLine,
-  readNode: (path: Path) => Node | undefined
+  readNode: (path: Path) => Node | undefined,
+  isVoid: (node: Node | undefined) => boolean
 ) => {
   const end = RangeApi.end(line.source);
-  const node = readNode(end.path);
-
-  if (TextApi.isText(node) && node.text[end.offset - 1] === '\n') return -1;
-  return line.runs.findIndex((run) =>
+  const endIndex = line.runs.findIndex((run) =>
     PointApi.equals(RangeApi.end(run.source), end)
+  );
+  const lastCharacter = line.runs.findLast(
+    (run, index) => index <= endIndex && RangeApi.isExpanded(run.source)
+  );
+
+  if (lastCharacter) {
+    const { offset, path } = RangeApi.end(lastCharacter.source);
+    const node = readNode(path);
+
+    if (TextApi.isText(node) && node.text[offset - 1] === '\n') return -1;
+  }
+
+  return line.runs.findLastIndex(
+    (run, index) =>
+      index <= endIndex &&
+      (RangeApi.isExpanded(run.source) ||
+        !isVoid(readNode(PathApi.parent(run.source.anchor.path))))
   );
 };
 
@@ -790,7 +810,9 @@ const createPaginationBuckets = (
           nativeFlow && lineIndex < fragment.lines.length - 1
             ? nativeFlowBreakRunIndex(
                 line,
-                (path) => state.nodes.get(path)?.[0]
+                (path) => state.nodes.get(path)?.[0],
+                (node) =>
+                  NodeApi.isElement(node) && editor.read.schema.isVoid(node)
               )
             : -1;
 

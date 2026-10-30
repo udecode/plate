@@ -1551,11 +1551,9 @@ export const createPretextPageLayoutEngine = ({
         left += run.width;
         cursor = Math.max(cursor, run.blockEnd);
       });
-      if (cursor < assignedEnd || completeRuns.length === 0) {
-        createMeasuredRuns(block, cursor, assignedEnd, () => 0).forEach((gap) =>
-          completeRuns.push({ ...gap, left })
-        );
-      }
+      createMeasuredRuns(block, cursor, assignedEnd, () => 0).forEach((gap) =>
+        completeRuns.push({ ...gap, left })
+      );
       const measuredLine: MeasuredLine = {
         end: assignedEnd,
         height: block.lineHeight,
