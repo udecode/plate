@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-10-30-excalidraw-pointer-after-page-scroll",
+      "href": "/registry/changelog/2026-10-30-excalidraw-pointer-after-page-scroll.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix Excalidraw shapes starting away from the pointer after the page scrolls",
+      "change": {
+        "type": "source",
+        "date": "2026-10-30",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["excalidraw"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-29-context-menu-right-click-release",
       "href": "/registry/changelog/2026-10-29-context-menu-right-click-release.json",
       "status": "draft",

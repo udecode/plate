@@ -1,6 +1,13 @@
 {
   "schemaVersion": 1,
   "components": {
+    "excalidraw": [
+      "2026-10-30-excalidraw-pointer-after-page-scroll",
+      "2026-10-14-block-void-selection",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-08-excalidraw-sync",
+      "2026-08-17-flat-editor-registry"
+    ],
     "editor-context-menu": [
       "2026-10-29-context-menu-right-click-release",
       "2026-08-25-base-first-registry"
@@ -614,12 +621,6 @@
       "2026-09-05-code-control-paths",
       "2026-08-25-base-first-registry",
       "2026-08-18-complete-v54-ast-contracts",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "excalidraw": [
-      "2026-10-14-block-void-selection",
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-08-excalidraw-sync",
       "2026-08-17-flat-editor-registry"
     ],
     "horizontal-rule": [

@@ -14,6 +14,7 @@ import {
   useElementSelected,
 } from 'platejs/react';
 import * as React from 'react';
+import { flushSync } from 'react-dom';
 
 import { cn } from '@/lib/utils';
 
@@ -30,7 +31,35 @@ export function ExcalidrawElement(
   const readOnly = useEditorReadOnly();
   const selected = useElementSelected({ mode: 'text' });
   const Excalidraw = excalidraw?.Excalidraw;
+  const containerRef = React.useRef<HTMLDivElement>(null);
   useExcalidrawSync({ api, excalidraw });
+
+  // Excalidraw caches its screen offset and rereads it only on resize and,
+  // debounced, on scroll of the one container it found scrollable at mount, so
+  // any other scroll misplaces pointer input. A capture listener refreshes the
+  // offset in flushSync, because React may defer a plain update past
+  // Excalidraw's own handler in the same event, such as in a shadow root.
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (!api || !container) return undefined;
+    const onInput = () => {
+      const rect = container
+        .querySelector('.excalidraw')
+        ?.getBoundingClientRect();
+      const { offsetLeft, offsetTop } = api.getAppState();
+      if (rect && (rect.left !== offsetLeft || rect.top !== offsetTop)) {
+        flushSync(api.refresh);
+      }
+    };
+    const listeners = new AbortController();
+    for (const type of ['pointerdown', 'pointermove', 'wheel', 'drop']) {
+      container.addEventListener(type, onInput, {
+        capture: true,
+        signal: listeners.signal,
+      });
+    }
+    return () => listeners.abort();
+  }, [api]);
 
   React.useEffect(() => {
     let active = true;
@@ -63,6 +92,7 @@ export function ExcalidrawElement(
     <EditorElement {...props}>
       <div contentEditable={false} data-editor-root-chrome-ignore="true">
         <div
+          ref={containerRef}
           className={cn(
             'mx-auto aspect-video h-[600px] w-[min(100%,600px)] overflow-hidden rounded-sm border data-[selected=true]:ring-2 data-[selected=true]:ring-ring'
           )}

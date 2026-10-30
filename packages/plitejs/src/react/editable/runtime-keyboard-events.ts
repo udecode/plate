@@ -34,6 +34,7 @@ import {
   type EditableInputController,
   recordEditableInputIntent,
 } from './input-state';
+import { getExternalTextHostOwner } from './interaction-owner';
 import { applyEditableKeyDown } from './keyboard-input-strategy';
 import {
   getSnapshot as editorGetSnapshot,
@@ -537,22 +538,19 @@ export const useRuntimeKeyboardEvents = ({
         viewportRuntime,
       });
 
+      const isNestedEditableTarget = () => {
+        const editorElement = editor.api.dom.resolveDOMNode(editor);
+
+        return (
+          editorElement instanceof HTMLElement &&
+          isNestedEditableDOMTarget(editorElement, event.target)
+        );
+      };
       const shouldCaptureProjectedSelection =
         decision.targetOwner === 'internal-control' &&
         isProjectedSelectionCaptureKey(event) &&
         (() => {
-          try {
-            const editorElement = editor.api.dom.resolveDOMNode(editor);
-
-            if (
-              editorElement instanceof HTMLElement &&
-              isNestedEditableDOMTarget(editorElement, event.target)
-            ) {
-              return true;
-            }
-          } catch {
-            // Unmounted unit fixtures fall back to the model selection below.
-          }
+          if (isNestedEditableTarget()) return true;
 
           const { selection } = editorGetSnapshot(editor);
 
@@ -569,9 +567,12 @@ export const useRuntimeKeyboardEvents = ({
         decision.targetOwner === 'internal-control' &&
         isProjectedEditingCaptureKey(event) &&
         readPliteViewSelection(editor) !== null;
+      const shouldCaptureTextHistory =
+        decision.intent === 'history' &&
+        (!!getExternalTextHostOwner(event.target) || isNestedEditableTarget());
       const shouldCapture =
         decision.targetOwner === 'internal-control' &&
-        (decision.intent === 'history' ||
+        (shouldCaptureTextHistory ||
           shouldCaptureProjectedSelection ||
           shouldCaptureProjectedEditing);
 

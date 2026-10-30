@@ -620,7 +620,11 @@ export const applyEditableKeyDown = ({
       );
     }
 
-    const ownsHistory = !readOnly && !isNativeTextControlTarget(event.target);
+    const ownsHistory =
+      !readOnly &&
+      !event.isDefaultPrevented() &&
+      !nativeEvent.defaultPrevented &&
+      !isNativeTextControlTarget(event.target);
 
     if (ownsHistory && Hotkeys.isRedo(nativeEvent)) {
       if (!replay('redo')) return keyDownUnhandled();

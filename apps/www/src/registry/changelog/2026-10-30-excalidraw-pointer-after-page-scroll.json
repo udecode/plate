@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-10-30-excalidraw-pointer-after-page-scroll",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-10-30-excalidraw-pointer-after-page-scroll.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-10-30",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix Excalidraw shapes starting away from the pointer after the page scrolls",
+  "targets": [
+    {
+      "name": "excalidraw",
+      "files": ["apps/www/src/registry/components/editor/excalidraw.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-10-30-excalidraw-fix-shapes-starting-away-7cd7a846",
+      "kind": "fix",
+      "summary": "Fix shapes starting away from the pointer when drawn after the page scrolls.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["excalidraw"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-10-30",
+          "entry": "2026-10-30-excalidraw-pointer-after-page-scroll",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
