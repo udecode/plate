@@ -23,8 +23,11 @@ export type ElementStoreState = {
 };
 
 type ElementContextValue = Nullable<ElementStoreState> & {
-  parent: ElementContextValue | null;
   scope?: string;
+};
+
+type RenderElementContextValue = ElementContextValue & {
+  parent: RenderElementContextValue | null;
 };
 
 type ElementStoreContextValue = {
@@ -39,7 +42,8 @@ type ElementRuntimeState = Nullable<ElementStoreState>;
 type ElementRuntimeStore = {
   getJotaiStore: () => ReturnType<typeof createStore>;
   getState: () => ElementRuntimeState;
-  setState: (nextState: ElementRuntimeState) => void;
+  publish: () => void;
+  stage: (nextState: ElementRuntimeState) => void;
   subscribe: (listener: () => void) => () => void;
 };
 
@@ -56,10 +60,9 @@ const { elementStore, useElementStore: useElementStoreAtom } = createAtomStore(
 
 export { elementStore };
 
-const ElementContext = React.createContext<ElementContextValue | null>(null);
 const ElementStoreContext =
   React.createContext<ElementStoreContextValue | null>(null);
-let currentElementContext: ElementContextValue | null = null;
+let currentElementContext: RenderElementContextValue | null = null;
 
 const syncElementStore = (
   store: ReturnType<typeof createStore>,
@@ -91,6 +94,7 @@ const createElementRuntimeStore = (
   let jotaiStore: ReturnType<typeof createStore> | null = null;
   const listeners = new Set<() => void>();
   let state = initialState;
+  let publishedState = initialState;
 
   return {
     getJotaiStore: () => {
@@ -101,7 +105,19 @@ const createElementRuntimeStore = (
       return jotaiStore;
     },
     getState: () => state,
-    setState: (nextState) => {
+    publish: () => {
+      const prevState = publishedState;
+      publishedState = state;
+
+      if (jotaiStore) {
+        syncElementStore(jotaiStore, state, prevState);
+      }
+
+      listeners.forEach((listener) => {
+        listener();
+      });
+    },
+    stage: (nextState) => {
       if (
         Object.is(state.element, nextState.element) &&
         Object.is(state.entry, nextState.entry) &&
@@ -110,16 +126,7 @@ const createElementRuntimeStore = (
         return;
       }
 
-      const prevState = state;
       state = nextState;
-
-      if (jotaiStore) {
-        syncElementStore(jotaiStore, nextState, prevState);
-      }
-
-      listeners.forEach((listener) => {
-        listener();
-      });
     },
     subscribe: (listener) => {
       listeners.add(listener);
@@ -131,31 +138,13 @@ const createElementRuntimeStore = (
   };
 };
 
-const findElementContext = (
-  context: ElementContextValue | null,
-  scope?: string
-) => {
-  if (!context) return null;
-  if (!scope) return context;
-
-  let current: ElementContextValue | null = context;
-
-  while (current) {
-    if (current.scope === scope) return current;
-
-    current = current.parent;
-  }
-
-  return context;
-};
-
 const findMatchingElementContext = (
-  context: ElementContextValue | null,
+  context: RenderElementContextValue | null,
   scope?: string
 ) => {
   if (!context || !scope) return context;
 
-  let current: ElementContextValue | null = context;
+  let current: RenderElementContextValue | null = context;
 
   while (current) {
     if (current.scope === scope) return current;
@@ -166,12 +155,33 @@ const findMatchingElementContext = (
   return null;
 };
 
+const findMatchingElementStoreContext = (
+  context: ElementStoreContextValue | null,
+  scope?: string
+) => {
+  if (!context || !scope) return context;
+
+  let current: ElementStoreContextValue | null = context;
+
+  while (current) {
+    if (current.scope === scope) return current;
+
+    current = current.parent;
+  }
+
+  return null;
+};
+
+const getEmptyElementRuntimeState = () => initialState;
+
+const subscribeToEmptyElementRuntime = () => () => {};
+
 export const withElementContext = <T,>(
-  context: Omit<ElementContextValue, 'parent'>,
+  context: ElementContextValue,
   callback: () => T
 ): T => {
   const previousContext = currentElementContext;
-  const nextContext = {} as ElementContextValue;
+  const nextContext = {} as RenderElementContextValue;
 
   Object.defineProperties(
     nextContext,
@@ -187,22 +197,32 @@ export const withElementContext = <T,>(
   }
 };
 
-export const useElementContext = (scope?: string) => {
-  const context = React.useContext(ElementContext);
+export const useElementContext = (
+  scope?: string
+): ElementContextValue | null => {
+  const nearestStoreContext = React.useContext(ElementStoreContext);
   const renderContext = findMatchingElementContext(
     currentElementContext,
     scope
   );
+  const matchingStoreContext = findMatchingElementStoreContext(
+    nearestStoreContext,
+    scope
+  );
+  const storeContext =
+    matchingStoreContext ??
+    (currentElementContext ? null : nearestStoreContext);
+  const runtime = renderContext ? null : storeContext?.runtime;
+  const state = React.useSyncExternalStore(
+    runtime?.subscribe ?? subscribeToEmptyElementRuntime,
+    runtime?.getState ?? getEmptyElementRuntimeState,
+    runtime?.getState ?? getEmptyElementRuntimeState
+  );
 
   if (renderContext) return renderContext;
+  if (!storeContext) return currentElementContext;
 
-  const providerContext = findMatchingElementContext(context, scope);
-
-  if (providerContext) return providerContext;
-
-  if (currentElementContext) return currentElementContext;
-
-  return findElementContext(context, scope);
+  return { ...state, scope: storeContext.scope };
 };
 
 export const useElementStoreContext = (scope?: string) => {
@@ -255,18 +275,13 @@ export function ElementProvider({
     })
   );
 
-  const parent = React.useContext(ElementContext);
+  runtime.stage({
+    element,
+    entry,
+    path: elementPath,
+  });
+
   const parentStore = React.useContext(ElementStoreContext);
-  const contextValue = React.useMemo<ElementContextValue>(
-    () => ({
-      element,
-      entry,
-      parent,
-      path: elementPath,
-      scope,
-    }),
-    [element, elementPath, entry, parent, scope]
-  );
   const storeContextValue = React.useMemo<ElementStoreContextValue>(
     () =>
       ({
@@ -281,20 +296,14 @@ export function ElementProvider({
   );
 
   React.useLayoutEffect(() => {
-    runtime.setState({
-      element,
-      entry,
-      path: elementPath,
-    });
+    runtime.publish();
   }, [element, elementPath, entry, runtime]);
 
   return (
     <ElementStoreContext.Provider value={storeContextValue}>
-      <ElementContext.Provider value={contextValue}>
-        {path && PathApi.equals(path, [0]) ? <FirstBlockEffect /> : null}
+      {path && PathApi.equals(path, [0]) ? <FirstBlockEffect /> : null}
 
-        {children}
-      </ElementContext.Provider>
+      {children}
     </ElementStoreContext.Provider>
   );
 }
