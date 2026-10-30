@@ -54,6 +54,7 @@ import {
 } from './content-root-owner-target';
 import {
   findMountedEditableDOMRuntime,
+  focusPressedView,
   getMountedEditableDOMRuntime,
   type EditableDOMRuntime,
 } from './editable-dom-runtime';
@@ -1334,7 +1335,10 @@ export const useRootInteractionController = ({
       receipt?: number;
       selection?: RootInteractionFocusSelection;
     } = {}) => {
-      activateViewCaret(getMountedViewEditor(root) ?? editor, {
+      const view = getMountedViewEditor(root) ?? editor;
+
+      focusPressedView(rootRuntime?.rootElement);
+      activateViewCaret(view, {
         fallback: fallbackSelection === 'end' ? 'end' : undefined,
         focus: true,
         press: true,
@@ -1342,7 +1346,7 @@ export const useRootInteractionController = ({
         target: selectionPreference === 'end' ? 'end' : undefined,
       });
     },
-    [editor, getMountedViewEditor, root, selection]
+    [editor, getMountedViewEditor, root, rootRuntime, selection]
   );
 
   const applyInteractionAction = useCallback(
@@ -1378,6 +1382,7 @@ export const useRootInteractionController = ({
         }
 
         selectionBridge?.beforeModelSelection();
+        focusPressedView(rootRuntime?.rootElement);
         focusEditor.api.dom.editable()?.focus({ preventScroll: true });
         writePliteViewSelection(
           focusEditor,
@@ -1441,6 +1446,7 @@ export const useRootInteractionController = ({
       focusRoot,
       getMountedViewEditor,
       root,
+      rootRuntime,
       scheduleInteractionFrame,
       selectionBridge,
     ]

@@ -206,6 +206,13 @@ export const findMountedEditableDOMRuntime = (
   return adapter instanceof EditableDOMRuntime ? adapter : null;
 };
 
+export const focusPressedView = (target: EventTarget | null | undefined) => {
+  const runtime = isDOMNode(target) ? findDOMRootRuntime(target) : null;
+  const root = runtime?.rootRef.current;
+
+  if (root && !runtime.holdsFocus()) root.focus({ preventScroll: true });
+};
+
 export const isDOMTargetInAnotherSelectionView = (
   editor: ReactRuntimeEditor,
   element: HTMLElement,
@@ -233,7 +240,6 @@ export const getMountedEditableDOMRuntimes = <
       []),
   ].filter((runtime) => runtime.connected && runtime.rootRef.current !== null);
 
-/** Resolve one connected runtime for a mounted React editor view. */
 export const getMountedEditableDOMRuntime = <
   V extends Value,
   TPlugins extends readonly unknown[],
@@ -260,14 +266,7 @@ export const getMountedEditableDOMRuntime = <
 
   if (reached.length <= 1) return reached[0] ?? null;
 
-  const focused = reached.filter((runtime) => {
-    const element = runtime.rootRef.current;
-    const activeElement = element?.ownerDocument.activeElement;
-
-    return !!element && !!activeElement && element.contains(activeElement);
-  });
-
-  return focused.length === 1 ? (focused[0] ?? null) : null;
+  return reached.find((runtime) => runtime.lastActive) ?? null;
 };
 
 export const hasMountedEditableCompositionOwner = (
@@ -608,6 +607,10 @@ export class EditableDOMRuntime {
 
   get connected() {
     return this.rootRuntime.connected;
+  }
+
+  get lastActive() {
+    return this.rootRuntime.lastActive;
   }
 
   get editor() {

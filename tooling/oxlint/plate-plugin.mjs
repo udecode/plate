@@ -1741,6 +1741,7 @@ const TEST_PATH = /\.(?:spec|test)\.|\/__tests__\//u;
 
 const EDITOR_WIDE_CALLS = new Set([
   'findEditorDOMRootRuntime',
+  'findEditorDOMRootRuntimeOrLastActive',
   'resolveLastEditorWindow',
 ]);
 

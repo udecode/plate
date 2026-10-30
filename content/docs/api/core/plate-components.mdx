@@ -299,8 +299,9 @@ export function Editor(props: EditorContentProps) {
 `NodeSelectionHighlight` portals a highlight into each block of a block
 selection. An object selection, such as a clicked image, gets no highlight; the
 object's component paints its own selected state.
-`NodeSelectionDrag` renders the active drag rectangle in the editable document’s
-body and
+`NodeSelectionDrag` renders the active drag rectangle where you place it,
+beside `EditorContent`, so a stacking context around the editor also contains
+the rectangle. It clips the rectangle to the editor's visible area and
 writes intersecting blocks through the editor's selection API. Selection
 candidates must pass `editor.read.schema.isBlockContent(element)` and
 `editor.read.nodes.isSelectable(element)`.

@@ -83,7 +83,10 @@ type MountedViews = {
 
 const DOM_ROOT_RUNTIME_BY_ROOT = new WeakMap<HTMLElement, DOMRootRuntime>();
 const DOM_ROOT_RUNTIMES_BY_EDITOR = new WeakMap<object, Set<DOMRootRuntime>>();
-const ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR = new WeakMap<object, DOMRootRuntime>();
+const LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR = new WeakMap<
+  object,
+  DOMRootRuntime
+>();
 const MOUNTED_VIEWS_BY_DOCUMENT = new WeakMap<object, MountedViews>();
 // A closed shadow root is reachable only from inside it, so registration
 // records each shadow root above a view.
@@ -423,11 +426,10 @@ export const resolveDOMTargetView = (
     : null;
 };
 
-/** Resolve the focused private root runtime for an editor. */
 export const findEditorDOMRootRuntime = (
   editor: object
 ): DOMRootRuntime | null => {
-  const activeRuntime = ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(editor);
+  const activeRuntime = LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(editor);
 
   if (
     activeRuntime?.connected &&
@@ -437,7 +439,6 @@ export const findEditorDOMRootRuntime = (
     return activeRuntime;
   }
 
-  ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.delete(editor);
   const runtimes = DOM_ROOT_RUNTIMES_BY_EDITOR.get(editor);
 
   if (runtimes?.size !== 1) return null;
@@ -447,9 +448,23 @@ export const findEditorDOMRootRuntime = (
   return runtime?.connected && runtime.rootRef.current ? runtime : null;
 };
 
+export const findEditorDOMRootRuntimeOrLastActive = (
+  editor: object
+): DOMRootRuntime | null => {
+  const runtime = findEditorDOMRootRuntime(editor);
+
+  if (runtime) return runtime;
+
+  const lastRuntime = LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(editor);
+
+  return lastRuntime?.connected && lastRuntime.rootRef.current
+    ? lastRuntime
+    : null;
+};
+
 /** Resolve the mounted DOM root that currently represents an editor. */
 export const getEditorDOMRoot = (editor: object): HTMLElement | null =>
-  findEditorDOMRootRuntime(editor)?.rootRef.current ?? null;
+  findEditorDOMRootRuntimeOrLastActive(editor)?.rootRef.current ?? null;
 
 /** Undefined permits direct DOM setup; null means mounted roots are ambiguous. */
 export const resolveMountedEditorDOMRoot = (
@@ -757,6 +772,29 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
     return this.facts?.quirks.has(quirk) ?? false;
   }
 
+  holdsFocus() {
+    const top = this.registeredTopDocument;
+
+    for (
+      let element = top && focusedElementOf(top);
+      element;
+      element = outerElementOf(element)
+    ) {
+      if (DOM_ROOT_RUNTIME_BY_ROOT.has(element as HTMLElement)) {
+        return element === this.rootRef.current;
+      }
+    }
+
+    return false;
+  }
+
+  get lastActive(): boolean {
+    return Object.is(
+      LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(this.editor),
+      this
+    );
+  }
+
   readonly subscribeHostFacts = (listener: () => void) => {
     this.factListeners.add(listener);
 
@@ -976,7 +1014,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       this.registeredTopDocument = top;
       DETACHED_DOM_INPUT_RUNTIME_BY_EDITOR.delete(this.editor);
       const markInputRuntimeActive = () => {
-        ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, runtime);
+        LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, runtime);
         notifyEditorDOMScopeListeners(this.editor);
       };
       const publishRootFocus = () => notifyEditorDOMScopeListeners(this.editor);
@@ -1021,12 +1059,12 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
     editorRuntimes?.delete(runtime);
     const wasActive =
-      ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(this.editor) === runtime;
+      LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.get(this.editor) === runtime;
     if (wasActive) {
       if (otherFocusedView) {
-        ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, focusedRuntime);
+        LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.set(this.editor, focusedRuntime);
       } else {
-        ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.delete(this.editor);
+        LAST_ACTIVE_DOM_ROOT_RUNTIME_BY_EDITOR.delete(this.editor);
       }
     }
     const documentEditor = documentOf(this.editor);

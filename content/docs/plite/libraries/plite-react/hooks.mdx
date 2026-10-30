@@ -36,7 +36,8 @@ Get whether the editor is currently handling a composition session.
 #### `useEditorFocused(): boolean`
 
 Get whether the editor is focused. Use this for toolbar UI, not for
-every rendered node in a large document.
+every rendered node in a large document. A read-only `Editable` renders as
+static text and never takes focus, so this is `false` for it.
 
 #### `useEditorReadOnly(): boolean`
 

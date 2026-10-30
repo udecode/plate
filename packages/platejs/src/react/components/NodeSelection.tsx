@@ -414,6 +414,7 @@ export type NodeSelectionDragProps = Omit<
 
 /**
  * Renders a drag rectangle and updates node selection during pointer drags.
+ * Place it beside `EditorContent`, since the rectangle renders in place.
  *
  * A renderer can mark a descendant wrapper with `data-node-selection-target`
  * to limit its hit area. The wrapper must belong to that editor element,
@@ -450,6 +451,7 @@ export function NodeSelectionDrag({
           lastAnchorPath?: Path;
           lastFocusPath?: Path;
           lastPaths: readonly Path[] | null;
+          painted: ClientPoint;
           pointer: { x: number; y: number };
           pointerId: number;
           start: MarqueeStart;
@@ -518,9 +520,16 @@ export function NodeSelectionDrag({
 
       if (selectionElement) {
         const paint = clipRect(hitRect, editor.api.dom.visibleRect(editable));
+        const placed = selectionElement.getBoundingClientRect();
 
+        // A transformed or filtered ancestor, not the viewport, can be the
+        // containing block of this fixed element.
+        gesture.painted = {
+          x: paint.left - (placed.left - gesture.painted.x),
+          y: paint.top - (placed.top - gesture.painted.y),
+        };
         selectionElement.style.height = `${paint.height}px`;
-        selectionElement.style.transform = `translate3d(${paint.left}px, ${paint.top}px, 0)`;
+        selectionElement.style.transform = `translate3d(${gesture.painted.x}px, ${gesture.painted.y}px, 0)`;
         selectionElement.style.width = `${paint.width}px`;
       }
       if (entries.length === 0) {
@@ -609,6 +618,7 @@ export function NodeSelectionDrag({
         candidates,
         invalid: 'none',
         lastPaths: null,
+        painted: { x: nextRect.left, y: nextRect.top },
         pointer: point,
         pointerId,
         start: captureStart(point, candidates, contentOrigin(editableRect)),
@@ -908,7 +918,7 @@ export function NodeSelectionDrag({
 
   if (!selectionRect || !editable || readOnly) return null;
 
-  return ReactDOM.createPortal(
+  return (
     <div
       {...props}
       ref={selectionElementRef}
@@ -925,7 +935,6 @@ export function NodeSelectionDrag({
         transform: `translate3d(${selectionRect.left}px, ${selectionRect.top}px, 0)`,
         width: selectionRect.width,
       }}
-    />,
-    editable.ownerDocument.body
+    />
   );
 }

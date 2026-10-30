@@ -5,6 +5,7 @@ import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
+import { focusPressedView } from './editable-dom-runtime';
 import type { EditableInputController } from './input-controller';
 import {
   dispatchCommand,
@@ -307,13 +308,15 @@ export const selectEditableSelectableOwnerTarget = ({
     ? resolveEditableSelectableOwnerClickTarget(editor, target)
     : null;
 
-  return selectableTarget
-    ? selectEditableSelectableOwnerPath({
-        editor,
-        inputController,
-        path: selectableTarget.path,
-      })
-    : null;
+  if (!selectableTarget) return null;
+
+  focusPressedView(target);
+
+  return selectEditableSelectableOwnerPath({
+    editor,
+    inputController,
+    path: selectableTarget.path,
+  });
 };
 
 export const selectEditableVoidTarget = ({
@@ -330,6 +333,8 @@ export const selectEditableVoidTarget = ({
     : null;
 
   if (voidTarget) {
+    focusPressedView(target);
+
     return selectEditableVoidPath({
       editor,
       inputController,

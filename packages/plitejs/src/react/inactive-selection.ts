@@ -100,7 +100,12 @@ const getPliteDocumentFocusCoordinator = (
         (target as Element).hasAttribute('contenteditable')
     );
 
-    if (editable?.getAttribute('contenteditable') === 'false') return;
+    if (
+      editable?.getAttribute('contenteditable') === 'false' &&
+      !editable.hasAttribute('data-editor')
+    ) {
+      return;
+    }
     if (!editable && path.some(keepsPliteSelectionVisible)) return;
 
     clear();

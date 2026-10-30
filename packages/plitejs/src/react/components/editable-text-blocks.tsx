@@ -448,7 +448,7 @@ function EditableContentRootView({
     placeholder,
     spellCheck,
     style,
-    tabIndex = 0,
+    tabIndex,
   } = options;
   const {
     renderElement,
@@ -552,7 +552,7 @@ function EditableContentRootView({
         renderVoid={renderVoid}
         spellCheck={spellCheck}
         style={style}
-        tabIndex={tabIndex}
+        tabIndex={tabIndex ?? (readOnly ? undefined : 0)}
       />
     </div>
   );

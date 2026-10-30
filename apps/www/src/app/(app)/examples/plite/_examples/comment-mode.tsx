@@ -341,9 +341,31 @@ const CommentModePane = ({
   store: AnnotationStore<CommentData>;
 }) => {
   const nextCommentId = useRef(1);
+  const paneRef = useRef<HTMLDivElement>(null);
+  const [ownsSelection, setOwnsSelection] = useState(false);
   const modelSelection = useEditorSelection();
-  const selection = useEditorFocused() ? modelSelection : null;
+  const selection = ownsSelection ? modelSelection : null;
   const annotationSnapshot = useAnnotations(store);
+
+  useEffect(() => {
+    const document = paneRef.current?.ownerDocument;
+
+    if (!document) return undefined;
+    const onSelectionChange = () => {
+      const anchor = document.getSelection()?.anchorNode;
+
+      setOwnsSelection(
+        !!anchor &&
+          !!paneRef.current?.querySelector('[data-editor]')?.contains(anchor)
+      );
+    };
+
+    document.addEventListener('selectionchange', onSelectionChange);
+
+    return () => {
+      document.removeEventListener('selectionchange', onSelectionChange);
+    };
+  }, []);
 
   const createComment = (range: Range) => {
     const id = `comment-${nextCommentId.current}`;
@@ -454,7 +476,10 @@ const CommentModePane = ({
   };
 
   return (
-    <div className="editor-comment-mode-pane editor-comment-mode-comment-pane">
+    <div
+      className="editor-comment-mode-pane editor-comment-mode-comment-pane"
+      ref={paneRef}
+    >
       <div className="editor-comment-mode-pane-header">
         <span className="editor-comment-mode-title">Comment mode</span>
         <span className="editor-comment-mode-muted">

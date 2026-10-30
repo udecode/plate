@@ -527,8 +527,7 @@ export const EditableDOMRoot = (
                   ? guardedAttributes.autoCorrect
                   : 'false'
               }
-              // explicitly set this
-              contentEditable
+              contentEditable={!readOnly}
               data-editor-viewport-selection={
                 viewportBackedSelection ? 'viewport-backed' : undefined
               }
@@ -548,14 +547,8 @@ export const EditableDOMRoot = (
                 ...(disableDefaultStyles
                   ? {}
                   : {
-                      // Keep read-only editors selectable without showing an
-                      // insertion caret.
-                      caretColor: readOnly ? 'transparent' : undefined,
-                      // Allow positioning relative to the editable element.
                       position: 'relative',
-                      // Preserve adjacent whitespace and new lines.
                       whiteSpace: 'pre-wrap',
-                      // Allow words to break if they are too long.
                       overflowWrap: 'break-word',
                       // Keep the public editable root visible and hittable.
                       zIndex: 0,
