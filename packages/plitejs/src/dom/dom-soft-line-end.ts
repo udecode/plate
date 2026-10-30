@@ -285,8 +285,9 @@ export const isSoftLineEndTarget = (node: Node) => {
 };
 
 /**
- * Whether a soft line end lies between two DOM points, in either order.
- * `within` limits the soft line ends counted to one element's.
+ * Whether a soft line end the runtime recorded lies between two DOM points,
+ * in either order. `within` limits the soft line ends counted to one
+ * element's.
  */
 export const isSoftLineEndBetween = (
   from: DOMPoint,
@@ -313,8 +314,8 @@ export const isSoftLineEndBetween = (
 
   return (
     !!scope &&
-    [...scope.querySelectorAll(SOFT_LINE_END_SELECTOR)].some((marker) =>
-      range.intersectsNode(marker)
+    [...scope.querySelectorAll(SOFT_LINE_END_SELECTOR)].some(
+      (marker) => isSoftLineEnd(marker) && range.intersectsNode(marker)
     )
   );
 };

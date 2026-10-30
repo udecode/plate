@@ -1,7 +1,7 @@
 import { type Value, RangeApi } from '../..';
 import { placedSince } from '../../core/view-carets';
 import { getSelection } from '../../dom';
-import { IS_FOCUSED } from '../../dom/internal';
+import { findDOMRootRuntime, IS_FOCUSED } from '../../dom/internal';
 import {
   resolveWrittenDOMRange,
   supersedeFocusRequest,
@@ -61,6 +61,12 @@ const syncPreferredModelSelectionToDOM = <
   element: HTMLElement
 ) => {
   try {
+    if (findDOMRootRuntime(element)?.isSelectionHeld()) {
+      IS_FOCUSED.set(editor as unknown as Editor, true);
+      setEditorFocused(editor as unknown as Editor, true);
+      element.focus({ preventScroll: true });
+      return true;
+    }
     const selection = resolveNextKeyCaret(editor as unknown as Editor, element);
 
     if (!selection) {

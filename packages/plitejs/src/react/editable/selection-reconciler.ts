@@ -40,6 +40,8 @@ import {
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import {
+  type DOMSelectionPoints,
+  readDOMSelectionPoints,
   readDOMSelectionRange,
   writeDOMSelection,
 } from '../../dom/utils/selection-writes';
@@ -99,6 +101,7 @@ import {
   resolveEditableClickTarget,
   resolveEditableVoidClickTarget,
 } from './selection-void-target';
+import { decideSoftLineEndDelete } from './soft-line-end-delete';
 
 export {
   selectEditableSelectableOwnerPath,
@@ -522,6 +525,7 @@ export const syncSelectionForBeforeInput = ({
   forceModelOwnedTextInput = false,
   inputType: type,
   isCompositionChange,
+  liveSelection = null,
   native,
   pendingNativeTextInputRepairOffset = null,
   pendingNativeTextInputRepairPathKey = null,
@@ -539,6 +543,11 @@ export const syncSelectionForBeforeInput = ({
   forceModelOwnedTextInput?: boolean;
   inputType: string;
   isCompositionChange: boolean;
+  /**
+   * The root's DOM selection when the event arrived, for the five character
+   * and word deletes.
+   */
+  liveSelection?: DOMSelectionPoints | null;
   native: boolean;
   pendingNativeTextInputRepairOffset?: number | null;
   pendingNativeTextInputRepairPathKey?: string | null;
@@ -548,6 +557,12 @@ export const syncSelectionForBeforeInput = ({
   selection: Range | null;
   textInputOwnership?: EditableInputController['state']['textInputOwnership'];
 }): {
+  /**
+   * Set when the delete removes nothing; `replacing` is the page's selection
+   * when the model selection collapsed, or null when it did not collapse or
+   * the page has no selection.
+   */
+  deletesNothing?: Readonly<{ replacing: DOMSelectionPoints | null }>;
   native: boolean;
   nativeBlocker?: string;
   selection: Range | null;
@@ -680,20 +695,68 @@ export const syncSelectionForBeforeInput = ({
           editorElement.contains(targetRange.endContainer)
         : ReactEditor.hasSelectableTarget(editor, targetRange.startContainer) &&
           ReactEditor.hasSelectableTarget(editor, targetRange.endContainer));
+    let resolvedTarget: Range | null | undefined;
+    const resolveTarget = () => {
+      if (resolvedTarget === undefined) {
+        resolvedTarget =
+          textHostRange ??
+          (nodeMapDirty || !targetRange
+            ? null
+            : ReactEditor.resolveRange(editor, targetRange, {
+                exactMatch: false,
+              }));
+      }
+      return resolvedTarget;
+    };
+
+    const softLineEndDelete =
+      targetRange && targetRangeBelongsToEditor
+        ? decideSoftLineEndDelete({
+            editor,
+            editorElement,
+            inputType: type,
+            liveSelection,
+            resolveTarget,
+            target: targetRange,
+          })
+        : null;
+
+    if (softLineEndDelete) {
+      const point =
+        softLineEndDelete.kind === 'caret'
+          ? softLineEndDelete.at
+          : softLineEndDelete.collapse;
+      const replacing =
+        softLineEndDelete.kind === 'nothing' && point && domSelection
+          ? readDOMSelectionPoints(domSelection)
+          : null;
+
+      if (point) {
+        const caret = { anchor: point, focus: point };
+
+        writePliteViewSelection(editor, null);
+        editor.update((tx) => {
+          tx.selection.set(caret);
+        });
+        nextSelection = caret;
+      }
+
+      return {
+        ...(softLineEndDelete.kind === 'nothing'
+          ? { deletesNothing: { replacing } }
+          : {}),
+        native: false,
+        nativeBlocker: 'soft-line-end-delete',
+        selection: nextSelection,
+      };
+    }
 
     if (
       targetRange &&
       domSelectionBelongsToEditor &&
       targetRangeBelongsToEditor
     ) {
-      const resolvedRange =
-        textHostRange ??
-        (nodeMapDirty
-          ? null
-          : ReactEditor.resolveRange(editor, targetRange, {
-              exactMatch: false,
-            }));
-      const range = resolvedRange;
+      const range = resolveTarget();
       const staleBackwardInsertTextTargetRange =
         type === 'insertText' &&
         range &&

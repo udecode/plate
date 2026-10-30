@@ -14,7 +14,10 @@ import type {
 import type { EditableCompositionLeaseBinding } from './composition-state';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
-import type { EditableRepairRequest } from './mutation-controller';
+import type {
+  EditableRepairOptions,
+  EditableRepairRequest,
+} from './mutation-controller';
 import { useRuntimeBeforeInputEvents } from './runtime-before-input-events';
 import { useRuntimeBrowserHandle } from './runtime-browser-handle-events';
 import { useRuntimeClipboardEvents } from './runtime-clipboard-events';
@@ -67,7 +70,7 @@ type EditableRepairRuntime = {
   forceRender: () => void;
   requestEditableRepair: (
     request: EditableRepairRequest,
-    options?: { focusEditor?: EditableDOMRuntime['editor'] }
+    options?: EditableRepairOptions<EditableDOMRuntime['editor']>
   ) => void;
   requestModelSelectionExportAfterRender: () => void;
 };

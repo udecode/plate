@@ -62,6 +62,11 @@ export type DOMRootRuntimeOptions<TRoot extends HTMLElement> = Omit<
   DOMRootRuntimeLifecycle<TRoot> & {
     adapter: object;
     editor: AnyEditor;
+    /**
+     * Whether the page's selection belongs to a native move the model has not
+     * read yet, so a focus call must not write over it.
+     */
+    isSelectionHeld?: () => boolean;
     onRegisterBoundary?: (boundary: DOMCoverageBoundary) => void;
     testRootFacts?: DOMRootFactOverrides;
   };
@@ -536,6 +541,8 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   readonly isComposing: () => boolean;
 
+  readonly isSelectionHeld: () => boolean;
+
   generation = 0;
 
   private facts: ResolvedDOMRootFacts | null = null;
@@ -564,6 +571,7 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
 
   constructor(options: DOMRootRuntimeOptions<TRoot>) {
     this.isComposing = options.isComposing;
+    this.isSelectionHeld = options.isSelectionHeld ?? (() => false);
     this.adapter = options.adapter;
     this.editor = options.editor;
     this.domCoverage = createDOMCoverageSession(

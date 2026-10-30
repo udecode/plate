@@ -19,6 +19,7 @@ import {
 import { capturePlacement, holdsCaretAt } from '../../core/view-carets';
 import type { DOMPhaseScheduler } from '../../dom/internal';
 import { domCommands } from '../../dom/internal';
+import type { DOMSelectionPoints } from '../../dom/utils/selection-writes';
 import { getViewPresentation } from '../../editor-runtime-view';
 import { getDefined } from '../../internal/get-defined';
 import {
@@ -792,6 +793,11 @@ export const applyModelOwnedDataTransferInput = ({
     editor,
   });
 
+export type EditableRepairOptions<TEditor> = Readonly<{
+  focusEditor?: TEditor;
+  replacing?: DOMSelectionPoints;
+}>;
+
 export type EditableRepairRequest =
   | {
       focus?: boolean;
@@ -1114,6 +1120,7 @@ export const applyEditableRepairRequest = ({
   focusEditor,
   forceRender,
   inputController,
+  replacing,
   request,
   requestFocusAfterRender,
   syncDOMSelectionToEditor,
@@ -1124,6 +1131,7 @@ export const applyEditableRepairRequest = ({
   focusEditor?: ReactRuntimeEditor;
   forceRender: () => void;
   inputController: EditableInputController;
+  replacing?: DOMSelectionPoints;
   request: EditableRepairRequest;
   requestFocusAfterRender?: (editor: ReactRuntimeEditor) => void;
   syncDOMSelectionToEditor: () => void;
@@ -1289,7 +1297,7 @@ export const applyEditableRepairRequest = ({
 
       if (request.kind === 'repair-caret') {
         profilePliteReactDuration('repair.dom-repair-queue', () => {
-          domRepairQueue.repair(repairPolicy);
+          domRepairQueue.repair(repairPolicy, { replacing });
         });
         return;
       }

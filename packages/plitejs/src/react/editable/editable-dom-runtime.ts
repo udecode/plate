@@ -75,6 +75,7 @@ import {
   clearEditableCompositionRuntimeState,
   endSelectionImport,
   type EditableInputController,
+  isSelectionHeldForNativeMove,
   restoreEditableCompositionRuntimeMarks,
 } from './input-state';
 import { getEditableInteractionOwner } from './interaction-owner';
@@ -528,6 +529,12 @@ export class EditableDOMRuntime {
         );
       },
       isComposing: () => this.state.isComposing,
+      isSelectionHeld: () =>
+        isSelectionHeldForNativeMove(
+          this.inputController,
+          this.editorValue,
+          this.rootRef.current
+        ),
       onRegisterBoundary: (boundary) =>
         clampCaretAtRegistration(this.editorValue, boundary),
       onDestroy: () => {

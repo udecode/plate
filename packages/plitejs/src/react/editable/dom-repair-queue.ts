@@ -16,7 +16,10 @@ import {
   getPliteTextHostStrings,
 } from '../../dom/plugin/dom-geometry';
 import {
+  type DOMSelectionPoints,
+  readDOMSelectionPoints,
   readDOMSelectionRange,
+  sameDOMSelectionPoints,
   writeDOMSelection,
 } from '../../dom/utils/selection-writes';
 import {
@@ -79,12 +82,26 @@ export type DOMRepairQueue = {
     rootElement: HTMLElement,
     frameId?: number | null
   ) => void;
-  repair: (repairPolicy: EditableRepairPolicy) => void;
+  repair: (
+    repairPolicy: EditableRepairPolicy,
+    options?: DOMCaretRepairOptions
+  ) => void;
   repairCaretAfterModelIntent: (
-    kind?: 'repair-caret' | 'repair-caret-after-text-insert'
+    kind?: 'repair-caret' | 'repair-caret-after-text-insert',
+    options?: DOMCaretRepairOptions
   ) => void;
   repairCaretAfterModelTextInsert: () => void;
 };
+
+export type DOMCaretRepairOptions = Readonly<{
+  /**
+   * The page's selection when the model selection collapsed. The caret then
+   * takes its point's default side, not the side the live focus shows across
+   * a soft line end, and the repair writes nothing once the page no longer
+   * holds that selection.
+   */
+  replacing?: DOMSelectionPoints;
+}>;
 
 const REPAIR_INDUCED_SELECTION_ORIGIN_GUARD_MS = 150;
 const TEXT_INPUT_REPAIR_ECHO_GUARD_MS = 120;
@@ -741,18 +758,20 @@ export const createDOMRepairQueue = ({
       }
     },
 
-    repair(repairPolicy) {
+    repair(repairPolicy, options) {
       if (repairPolicy.kind === 'repair-caret') {
         this.repairCaretAfterModelIntent(
           repairPolicy.reason === 'repair-caret-after-text-insert'
             ? 'repair-caret-after-text-insert'
-            : 'repair-caret'
+            : 'repair-caret',
+          options
         );
       }
     },
 
     repairCaretAfterModelIntent(
-      kind: 'repair-caret' | 'repair-caret-after-text-insert' = 'repair-caret'
+      kind: 'repair-caret' | 'repair-caret-after-text-insert' = 'repair-caret',
+      { replacing }: DOMCaretRepairOptions = {}
     ) {
       const currentFrameId = profileDOMRepairDuration(
         'read-current-frame',
@@ -872,7 +891,7 @@ export const createDOMRepairQueue = ({
               { path, offset: pliteOffset },
               rootRef.current ?? undefined,
               undefined,
-              { rejectStaleText: true }
+              { liveSide: () => !replacing, rejectStaleText: true }
             )
           );
           const targetElement = domPoint
@@ -1040,9 +1059,26 @@ export const createDOMRepairQueue = ({
           return repairDOMPoint(domPoint[0], domPoint[1]);
         });
 
+      const readPageSelection = () => {
+        const tree = rootRef.current?.getRootNode() as
+          | Document
+          | ShadowRoot
+          | undefined;
+        const selection = tree ? getSelection(tree) : null;
+
+        return selection ? readDOMSelectionPoints(selection) : null;
+      };
       let repairCompleted = false;
       const attemptRepair = () => {
         if (repairCompleted) {
+          return true;
+        }
+        if (
+          replacing &&
+          !sameDOMSelectionPoints(replacing, readPageSelection())
+        ) {
+          repairCompleted = true;
+
           return true;
         }
         if (!claimPageSelection()) {

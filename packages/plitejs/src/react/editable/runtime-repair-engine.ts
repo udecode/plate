@@ -9,6 +9,7 @@ import { createDOMRepairQueue } from './dom-repair-queue';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
   applyEditableRepairRequest,
+  type EditableRepairOptions,
   type EditableRepairRequest,
   focusEditableRepairTarget,
 } from './mutation-controller';
@@ -137,7 +138,7 @@ export const useRuntimeRepairEngine = ({
   const requestEditableRepair = useCallback(
     (
       request: EditableRepairRequest,
-      options?: { focusEditor?: ReactRuntimeEditor }
+      options?: EditableRepairOptions<ReactRuntimeEditor>
     ) => {
       applyEditableRepairRequest({
         domPhaseScheduler,
@@ -146,6 +147,7 @@ export const useRuntimeRepairEngine = ({
         focusEditor: options?.focusEditor,
         forceRender,
         inputController,
+        replacing: options?.replacing,
         request,
         requestFocusAfterRender: (focusEditor) => {
           pendingFocusEditorAfterRenderRef.current = focusEditor;

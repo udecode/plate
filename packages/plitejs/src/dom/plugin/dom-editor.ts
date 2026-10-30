@@ -1787,6 +1787,7 @@ const DOMEditorImpl: DOMEditorInterface = {
     }
 
     const syncDomSelection = () => {
+      if (findDOMRootRuntime(el)?.isSelectionHeld()) return;
       const innerSelection = resolveNextKeyCaret(editor, el);
 
       if (innerSelection) {

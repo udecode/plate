@@ -45,6 +45,7 @@ import {
 import {
   clearExpiredTextInputRepairEcho,
   type EditableInputController,
+  endNativeMoveHold,
   runTrackedEditableCompositionMutation,
   shouldMergeEditableCompositionHistory,
 } from './input-state';
@@ -70,6 +71,7 @@ import {
   restoreUserSelectionAfterBeforeInput,
   syncSelectionForBeforeInput,
 } from './selection-reconciler';
+import { captureSoftLineEndDeleteSelection } from './soft-line-end-delete';
 
 type ReactBeforeInputHandler = (
   event: FormEvent<HTMLDivElement>
@@ -447,6 +449,10 @@ export const useRuntimeBeforeInputEvents = ({
   const handleDOMBeforeInput = useCallback(
     (event: InputEvent) => {
       profilePliteReactDuration('beforeinput-total', () => {
+        const liveSelection = captureSoftLineEndDeleteSelection(
+          event.inputType,
+          runtime.rootRef.current
+        );
         const compositionTarget = runtime.isAndroidHost
           ? settleAndroidCompositionBeforeInput({
               editor,
@@ -920,6 +926,7 @@ export const useRuntimeBeforeInputEvents = ({
                 forceModelOwnedTextInput,
                 inputType: type,
                 isCompositionChange,
+                liveSelection,
                 native,
                 pendingNativeTextInputRepairPathKey:
                   inputController.state.pendingNativeTextInputRepairPathKey,
@@ -1104,6 +1111,19 @@ export const useRuntimeBeforeInputEvents = ({
             profilePliteReactDuration('beforeinput-prevent-default', () =>
               event.preventDefault()
             );
+          }
+
+          if (beforeInputSelection.deletesNothing) {
+            const { replacing } = beforeInputSelection.deletesNothing;
+
+            if (replacing) {
+              endNativeMoveHold(inputController);
+              repair.requestEditableRepair(
+                { focus: false, kind: 'repair-caret' },
+                { replacing }
+              );
+            }
+            return;
           }
 
           const queuedPendingNativeTextRepair =
