@@ -1739,11 +1739,8 @@ const EDITABLE_DIR = 'packages/plitejs/src/react/editable/';
 
 const TEST_PATH = /\.(?:spec|test)\.|\/__tests__\//u;
 
-const EDITOR_WIDE_CALLS = new Set([
-  'findEditorDOMRootRuntime',
-  'findEditorDOMRootRuntimeOrLastActive',
-  'resolveLastEditorWindow',
-]);
+const EDITOR_WIDE_LOOKUP_NAME =
+  /^(?:find|get|resolve)(?:Mounted)?EditorDOMRoot|^resolveLastEditorWindow$/u;
 
 const EDITOR_WIDE_MAPS = new Set([
   'EDITOR_TO_DOM_EDITABLE',
@@ -1805,7 +1802,7 @@ const editableOwnDOMTree = {
         const { callee } = node;
         if (callee.type === 'Identifier') {
           const [, element] = node.arguments;
-          if (EDITOR_WIDE_CALLS.has(callee.name)) {
+          if (EDITOR_WIDE_LOOKUP_NAME.test(callee.name)) {
             report(callee, callee.name);
           } else if (
             callee.name === 'getMountedEditableDOMRuntime' &&
