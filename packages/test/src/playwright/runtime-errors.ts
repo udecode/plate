@@ -7,12 +7,13 @@ export const DEFAULT_RUNTIME_ERROR_PATTERNS: readonly string[] = [
   'Cannot resolve a DOM ',
 ];
 
-// WebKit raises a load it blocked for access control as a page error, where
-// Chromium and Firefox log it to the console. Playwright splits a stackless
-// error's text at its first colon and drops the next character, which breaks a
-// URL there, so the pattern takes any text in the URL's place.
-const BLOCKED_LOAD_ERROR =
-  /^(?:Fetch API|XMLHttpRequest) cannot load .+ due to access control checks\./;
+// WebKit raises a load it blocked for access control, and a response header it
+// rejects on a load, as a page error, where Chromium and Firefox log them to
+// the console. Playwright splits a stackless error's text at its first colon
+// and drops the next character, which breaks a URL there, so the pattern takes
+// any text in the URL's place.
+const BROWSER_LOAD_ERROR =
+  /^(?:(?:Fetch API|XMLHttpRequest) cannot load .+ due to access control checks\.|Invalid '[\w-]+' header encountered when loading )/;
 const URL_PATTERN = /https?:\/\/[^\s)'"]+/g;
 
 /** Recorder returned by runtime-error capture helpers. */
@@ -57,7 +58,7 @@ const isIgnoredRuntimeError = (
   text: string,
   frames: string,
   pageOrigin: string | null
-) => BLOCKED_LOAD_ERROR.test(text) || isThirdPartyError(frames, pageOrigin);
+) => BROWSER_LOAD_ERROR.test(text) || isThirdPartyError(frames, pageOrigin);
 
 /** Start recording browser runtime errors for a Playwright page. */
 export const recordBrowserRuntimeErrors = (
