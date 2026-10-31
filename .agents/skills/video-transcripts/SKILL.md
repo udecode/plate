@@ -85,19 +85,29 @@ permission to post.
 5. If the video is in the issue or PR body, use a top-level tracker comment.
 6. If the video is in a Linear comment, post the transcript cache as a reply to that specific comment.
 7. If the video is in a GitHub issue or PR comment, use one dedicated top-level cache comment for that source comment's video set. GitHub has no replies, so keep cache comments separated by source container instead of merging unrelated comment videos together.
-8. Cache comment or reply body should start with a transcript source link, then
-   the timestamp lines:
+8. On GitHub, fold each cache comment into one collapsed block, so the thread
+   shows one summary line until a reader opens it. The summary names the
+   source container and how many clips the block holds. Inside the block, put
+   a transcript source link, then the timestamp lines:
 
 ````md
+<details><summary>Transcripts of the 2 clips in the issue body</summary>
+
 [[Transcript](link to video or comment if not available)]
 [00:00] (...)
+
+</details>
 ````
 
+   A Linear reply holds the same link and timestamp lines without the block.
+   Keep each source link on the line directly above its first timestamp line,
+   because a check that reads the cache looks for that pair.
 9. When caching helper XML, strip the `<video-transcripts>` and
    `<video-transcript ...>` wrapper lines and paste only timestamp lines after
    the source link.
 10. If there are multiple videos in the same source container, repeat the
-   `[[Transcript](...)]` source link plus timestamp lines for each video.
+   `[[Transcript](...)]` source link plus timestamp lines for each video,
+   inside the one block, with a blank line between videos.
 11. Build every cached line from the helper's output as corrected against the frames, never from memory or the issue's own text.
 12. Link `[[Transcript](...)]` to the video URL when available. If the video URL is not available or is unstable, link to the source comment that contains the video.
 13. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so a new signature does not invalidate an otherwise valid cache entry. For Screencastify, cache against the stable `https://app.screencastify.com/watch/<id>` URL, not the signed `dash-assets` HLS URLs.
