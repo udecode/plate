@@ -117,7 +117,7 @@ export type SelectionRectSnapshot = {
 /**
  * How a Playwright project delivers `editor.clipboard.pasteText` and `pasteHtml`: `'native'` writes the system
  * clipboard and presses the paste shortcut, `'event'` dispatches a synthetic paste event, and `'handle'` inserts through
- * the page handle as a stand-in. Every paste fails when its transport did not apply it.
+ * the page handle as a stand-in.
  */
 export type BrowserClipboardTransport = 'event' | 'handle' | 'native';
 
@@ -1427,9 +1427,11 @@ export type BrowserEditorHarness = {
     }) => Promise<void>;
     pasteNativeText: (text: string) => Promise<void>;
     /**
-     * Paste through the project's `clipboardTransport`, failing when the paste
-     * does not apply. Clears the kernel trace first, so the trace afterwards
-     * holds only this paste.
+     * Paste through the project's `clipboardTransport`, failing when no paste
+     * commit that changes the document follows or the page throws during it,
+     * so a paste the editor refuses fails; send that one through
+     * `pasteEventPayload`. Clears the kernel trace first, so the trace
+     * afterwards holds only this paste.
      */
     pasteText: (text: string) => Promise<void>;
     /** Paste HTML like `pasteText`, with `plainText` as the text flavor. */

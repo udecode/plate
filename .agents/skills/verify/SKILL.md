@@ -280,9 +280,12 @@ saved files never replaces the hand drive a browser-visible change needs before
 it closes.
 
 The harness's `clipboard.pasteHtml` and `clipboard.pasteText` paste through
-the Playwright project's `use.clipboardTransport` and fail when that transport
-did not apply the paste or the page threw during it; they never retry another
-way. Chromium and Firefox use `'native'`, WebKit and emulated mobile use the
+the Playwright project's `use.clipboardTransport` and fail when no paste
+commit that changes the document follows or the page threw during it; they
+never retry another way. A paste the editor refuses commits nothing, so it
+fails them too, and a test of a refusal pastes through
+`clipboard.pasteEventPayload`. Chromium and Firefox use `'native'`, WebKit and
+emulated mobile use the
 `'event'` stand-in, and each run's `clipboard-transport` annotation names the
 transport. Only a `'native'` run is native clipboard proof; it still must
 confirm the rendered result.
