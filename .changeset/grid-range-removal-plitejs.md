@@ -12,4 +12,6 @@
 - Keep an empty cell, and the empty blocks of any cell beside it, when a delete removes a cell's text across several text runs
 - Join the blocks a delete inside one cell crosses when its ends sit at different depths, as the same delete outside a grid does
 - Fix a merge over a range across blocks, which joined the next block's text in front of the merged block
+- Keep a grid cell whose content is `schema.content.text()` whole. Enter, a split and a block insert that would land in it change nothing, and a paste of several lines or of copied cells into it refuses. Copied cells then fall back to their plain text, which lands only when it is one line, as a spreadsheet row's text is. A line break at the end of that text, as Excel adds to a copied cell, does not start a second line. Plite writes each copied cell on its own line, so cells copied in Plite change nothing there, except two cells whose second is empty, which land as the first one's text. A paste over cells selected as nodes changes nothing when it would add cells. A one-line paste still lands in the cell. Before, each of them added cells to the row
+- Paste several lines over a range that removes a whole grid as paragraphs. Before, they made a new grid
 - Compare grids row by row and cell by cell in `plitejs/diff`

@@ -1564,6 +1564,54 @@ export const removeText = (
     return prepared && applyAt(editor, tx, site, prepared);
   });
 
+/**
+ * Reads each path where a write at `at` lands once its range is removed,
+ * before anything changes: the caret, a grid removal's landing, the landing
+ * of whole top-level blocks, or an ordinary range's edges. An emptied root
+ * has no landing path yet, and `null` means nothing can take the write. A
+ * slice write removes only a grid before it fits, so with `slice` any other
+ * range lands at its start.
+ */
+export const readRemovalLanding = <T>(
+  editor: Editor,
+  at: Point | Range,
+  read: (path: Path) => T,
+  { slice = false }: { slice?: boolean } = {}
+): readonly T[] | null => {
+  const root = getLocationRoot(at);
+
+  return inRoot(editor, root, () => {
+    const local = root ? stripLocationRoots(at) : at;
+
+    if (LocationApi.isPoint(local)) return [read(local.path)];
+    if (RangeApi.isCollapsed(local)) return [read(local.anchor.path)];
+
+    const prepared = prepareAt(editor, { at: local }, local, true);
+
+    if (!prepared) return null;
+    if (prepared.kind === 'ordinary') {
+      if (slice) return [read(RangeApi.start(local).path)];
+
+      const wholeBlocks =
+        prepared.target.kind === 'range'
+          ? getWholeTopLevelBlockRange(editor, prepared.target)
+          : null;
+
+      return wholeBlocks
+        ? [read(wholeBlocks.landing.path)]
+        : RangeApi.edges(local).map((edge) => read(edge.path));
+    }
+    if (prepared.wholeBlocks) return [read(prepared.wholeBlocks.landing.path)];
+
+    const { landing } = prepared.plan;
+
+    if (landing?.kind === 'point') return [read(landing.at.path)];
+    if (landing?.kind === 'cell') return [read(landing.at)];
+
+    return [];
+  });
+};
+
 export const resolveDeletedRange = (
   editor: Editor,
   range: Range

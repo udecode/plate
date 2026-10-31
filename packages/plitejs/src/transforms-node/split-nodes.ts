@@ -47,9 +47,49 @@ import type {
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
 import { select } from '../transforms-selection/select';
-import { removeText } from '../transforms-text/delete-text';
+import { readRemovalLanding, removeText } from '../transforms-text/delete-text';
+import {
+  isInTextCell,
+  readGridCell,
+} from '../transforms-text/delete-text-grid';
 import { normalizeNodeMatch } from '../utils/node-match';
 import { insertNodes } from './insert-nodes';
+
+const isTextCellPath = (editor: Editor, path: Path) => {
+  const cell = readGridCell(editor, path);
+
+  return !!cell && PathApi.equals(cell, path) && isInTextCell(editor, path);
+};
+
+/**
+ * A grid cell that holds its text directly never divides. A split at a point
+ * or range lands where its removal lands, a split above the lowest block
+ * divides any grid it lands in, and a split by path divides the path's
+ * parent, or the node itself at a position.
+ */
+export const dividesTextCell = (
+  editor: Editor,
+  at: Location,
+  {
+    mode = 'lowest',
+    position,
+  }: Pick<NodeSplitNodesOptions, 'mode' | 'position'> = {}
+) => {
+  if (LocationApi.isPath(at)) {
+    return (
+      at.length > 0 &&
+      isTextCellPath(editor, position == null ? PathApi.parent(at) : at)
+    );
+  }
+
+  const landed = readRemovalLanding(editor, at, (path) =>
+    mode === 'lowest'
+      ? isInTextCell(editor, path)
+      : readGridCell(editor, path) !== null
+  );
+
+  return !landed || landed.includes(true);
+};
 
 const deleteRange = (editor: Editor, range: Range): Point | null => {
   if (RangeApi.isCollapsed(range)) {
@@ -227,6 +267,7 @@ const runSplitNodes = (
 
         if (object) return;
       }
+      if (!hasExplicitSelector && dividesTextCell(editor, at, options)) return;
 
       if (match == null) {
         match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);

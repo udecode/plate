@@ -13,6 +13,7 @@ import {
 import type { CompiledEditorSchema } from '../core/schema-compiler';
 import {
   canReplaceChildrenWithText,
+  isTextCell,
   holdsWritableText,
   isEditablePath,
   isWritablePoint,
@@ -135,11 +136,7 @@ export const isInTextCell = (editor: Editor, path: Path) => {
   const cell = readGridCell(editor, path);
 
   return (
-    !!cell &&
-    canReplaceChildrenWithText(
-      getEditorSchema(editor),
-      getCurrentNode(editor, cell)
-    )
+    !!cell && isTextCell(getEditorSchema(editor), getCurrentNode(editor, cell))
   );
 };
 

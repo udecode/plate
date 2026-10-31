@@ -16,7 +16,7 @@ import {
 import { NodeApi } from '../interfaces/node';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
-import { splitNodes } from '../transforms-node/split-nodes';
+import { dividesTextCell, splitNodes } from '../transforms-node/split-nodes';
 import { deleteText } from '../transforms-text/delete-text';
 import { breakAtSelectedBlockVoid } from './block-void-break';
 import { refusesReadOnlyWrite } from './element-read-only';
@@ -57,7 +57,12 @@ export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
   const landed =
     selection && landTextWrite(editor, selection, getChildList(editor));
 
-  if (landed && refusesReadOnlyWrite(editor, landed)) return;
+  if (
+    landed &&
+    (refusesReadOnlyWrite(editor, landed) || dividesTextCell(editor, landed))
+  ) {
+    return;
+  }
 
   if (landed && landed !== selection) {
     runEditorTransaction(editor, (tx) => {

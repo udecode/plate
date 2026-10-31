@@ -14,8 +14,12 @@ import {
   type TextSelection,
 } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
-import { canPlaceBlocksAtPath } from './editor-schema';
+import {
+  canPlaceBlocksAtPath,
+  getInternalEditorSchemaFromApi,
+} from './editor-schema';
 import { toPublicRoot } from './public-root';
+import { isTextCell } from './writable-text';
 
 export type SelectedBlocksReplacement = Readonly<{
   index: number;
@@ -81,6 +85,13 @@ export const getNodeSelectionReplacement = (
     : undefined;
 
   if (!textEntry) return null;
+
+  const schema = getInternalEditorSchemaFromApi(state.schema);
+  const dividesTextCell =
+    replacements.length > blocks.length &&
+    blocks.some(([block]) => isTextCell(schema, block));
+
+  if (dividesTextCell) return null;
 
   const parentPath = PathApi.parent(firstPath);
   const index = getDefined(firstPath.at(-1));

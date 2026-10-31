@@ -22,6 +22,7 @@ import { domCommands } from '../../dom/internal';
 import type { DOMSelectionPoints } from '../../dom/utils/selection-writes';
 import { getViewPresentation } from '../../editor-runtime-view';
 import { getDefined } from '../../internal/get-defined';
+import { dividesTextCell } from '../../transforms-node/split-nodes';
 import {
   ReactEditor,
   type ReactRuntimeEditor,
@@ -163,7 +164,7 @@ export const applyModelOwnedLineBreak = ({
         )
       : undefined;
 
-  if (!blockEntry) {
+  if (!selection || !blockEntry) {
     editor.update((tx) => {
       tx.command(editorCommands.insertBreak);
     });
@@ -174,6 +175,8 @@ export const applyModelOwnedLineBreak = ({
   const insertionPoint = { path: blockPath.concat(0), offset: 0 };
 
   editor.update((tx) => {
+    if (dividesTextCell(editor, selection.anchor)) return;
+
     tx.command(editorCommands.insertNodes, {
       nodes: createDefaultParagraph(),
       options: { at: blockPath },
@@ -425,6 +428,16 @@ const applyProjectedViewSelectionLineBreakCommand = ({
   let applied = false;
 
   editor.update(() => {
+    if (
+      kind !== 'soft' &&
+      dividesTextCell(
+        getEditorRuntimeOwner(editor),
+        target.ranges[0] ?? target.start
+      )
+    ) {
+      return;
+    }
+
     const tx = getDefined(getActiveEditorTransaction(editor));
     deleteProjectedRanges(target.ranges, deleteFragmentIn(editor));
 

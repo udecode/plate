@@ -246,21 +246,6 @@ const table = () =>
 
         return false;
       }),
-      handle(editorCommands.insertBreak, ({ state }) => {
-        const selection = state.selection();
-
-        if (selection && RangeApi.isCollapsed(selection)) {
-          const cell = state.nodes.find({
-            match: (n) => NodeApi.isElement(n) && n.type === 'table-cell',
-          });
-
-          if (cell) {
-            return state.transaction(() => {});
-          }
-        }
-
-        return false;
-      }),
     ],
   });
 

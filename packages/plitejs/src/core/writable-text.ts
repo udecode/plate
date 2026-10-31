@@ -47,6 +47,23 @@ export const canReplaceChildrenWithText = (
   );
 };
 
+export const isTextCell = (
+  schema: InternalEditorSchemaApi,
+  node: unknown
+): node is Element => {
+  if (!NodeApi.isElement(node)) return false;
+
+  const structure = getCompiledEditorSchemaFromApi(schema)?.elements.byType.get(
+    node.type
+  )?.structure;
+
+  return (
+    structure?.kind === 'grid' &&
+    structure.role === 'cell' &&
+    canReplaceChildrenWithText(schema, node)
+  );
+};
+
 const hasText = (node: Descendant): boolean =>
   NodeApi.isText(node) || node.children.some(hasText);
 

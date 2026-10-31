@@ -28,16 +28,13 @@ import {
   unhangRange as editorUnhangRange,
   void as editorVoid,
 } from '../interfaces/editor';
-import type { Point } from '../interfaces/point';
-import type { Range } from '../interfaces/range';
 import type {
   NodeInsertNodesOptions,
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
 import { select as selectSelection } from '../transforms-selection/select';
-import { prepareRemoval, removeText } from '../transforms-text/delete-text';
-import { isInTextCell } from '../transforms-text/delete-text-grid';
+import { removeText } from '../transforms-text/delete-text';
 import { getDefaultInsertLocation } from '../utils';
 import {
   getNodeKeyForNode,
@@ -46,7 +43,7 @@ import {
   settleDeferredNodeKeys,
 } from '../utils/node-keys';
 import { normalizeNodeMatch } from '../utils/node-match';
-import { splitNodes } from './split-nodes';
+import { dividesTextCell, splitNodes } from './split-nodes';
 
 type InsertedNode = {
   children: readonly InsertedNode[];
@@ -141,23 +138,6 @@ const keyInsertedNodes = (
   return plans.map(toPlaced);
 };
 
-const landsInTextCell = (editor: AnyEditor, at: Point | Range) => {
-  if (LocationApi.isPoint(at)) return isInTextCell(editor, at.path);
-  if (RangeApi.isCollapsed(at)) return isInTextCell(editor, at.anchor.path);
-
-  const removal = prepareRemoval(editor, { at, writes: true });
-
-  if (removal?.kind !== 'grid') {
-    return RangeApi.edges(at).some((edge) => isInTextCell(editor, edge.path));
-  }
-
-  const { landing } = removal.plan;
-
-  if (landing?.kind === 'point') return isInTextCell(editor, landing.at.path);
-
-  return landing?.kind === 'cell' && isInTextCell(editor, landing.at);
-};
-
 const insertNodesRuntime = (
   editor: AnyEditor,
   nodes: Descendant | readonly Descendant[],
@@ -209,7 +189,7 @@ const insertNodesRuntime = (
       NodeApi.isElement(node) &&
       !getEditorSchema(editor).isInline(node) &&
       !LocationApi.isPath(at) &&
-      landsInTextCell(editor, at)
+      dividesTextCell(editor, at, { mode })
     ) {
       return;
     }

@@ -9,6 +9,7 @@ import {
   type NamedRootKey,
   type NodeEntry,
   type NodeSelection,
+  type Range,
   type SchemaProperty,
   type TransactionSpec,
   type Value,
@@ -53,13 +54,30 @@ import {
   type CompiledSchemaProperty,
 } from '../../core/schema-compiler';
 import { EditorSchemaValidationError } from '../../core/schema-validation';
-import { getSelection as getEditorSelection } from '../../interfaces/editor';
+import { isTextCell } from '../../core/writable-text';
+import { nodes as getNodes } from '../../editor/nodes';
+import {
+  isBlock as editorIsBlock,
+  getSelection as getEditorSelection,
+} from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
+import { readRemovalLanding } from '../../transforms-text/delete-text';
 
 const DATA_TRANSFER_FORMATS = definePluginPoint<
   DataTransferFormatRegistration<any>
 >('editor-dom:data-transfer-format');
 const NEWLINE_SPLIT_RE = /\r\n|\r|\n/;
+
+const splitLines = (
+  data: string,
+  { dropEndBreak }: Readonly<{ dropEndBreak: boolean }>
+) => {
+  const lines = data.split(NEWLINE_SPLIT_RE);
+
+  if (dropEndBreak && lines.length > 1 && lines.at(-1) === '') lines.pop();
+
+  return lines;
+};
 
 export type DataTransferFormatPhase = 'accept' | 'decode' | 'encode';
 
@@ -326,6 +344,42 @@ const createPlainTextLineBlocks = <V extends Value>(
   );
 };
 
+// Lines over a range take the type of the block its removal lands in,
+// because a grid removal can take the start block with it.
+const readLandingBlock = <V extends Value>(
+  editor: Editor<V, any>,
+  state: EditorCoreStateView<V>,
+  range: Range
+): NodeEntry<Element> | null => {
+  const landed = readRemovalLanding(
+    editor,
+    range,
+    (path) => {
+      const [entry] = getNodes(editor, {
+        at: path,
+        match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
+        mode: 'lowest',
+      });
+
+      return entry ?? null;
+    },
+    { slice: true }
+  );
+
+  if (landed?.length === 0) {
+    const root = toPublicRoot(RangeApi.start(range).root ?? MAIN_ROOT_KEY);
+    const child = state.schema.createDefaultChild({ at: [0], root });
+
+    return NodeApi.isElement(child) ? [child, [0]] : null;
+  }
+
+  const [entry] = landed ?? [];
+
+  return entry && NodeApi.isElement(entry[0])
+    ? (entry as NodeEntry<Element>)
+    : null;
+};
+
 const createPlainTextInlineSlice = <V extends Value>(
   state: EditorCoreStateView<V>,
   start: ReturnType<typeof RangeApi.start>,
@@ -378,13 +432,13 @@ const createPlainTextInlineSlice = <V extends Value>(
 const createPlainTextSliceOverPick = <V extends Value>(
   state: EditorCoreStateView<V>,
   { paths: [first], root }: NodeSelection,
-  data: string
+  lines: readonly string[]
 ): ContentSlice<V> | null => {
   const parentPath = PathApi.parent(first);
   const index = getDefined(first.at(-1));
   const content = createPlainTextBlocks(
     state,
-    data.split(NEWLINE_SPLIT_RE),
+    lines,
     (line) => {
       const block = state.schema.createDefaultChild({
         at: [...parentPath, index + line],
@@ -414,16 +468,23 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
     decode: ({ data, state }) => {
       const selection = state.selection();
       const semanticSelection = editor ? getEditorSelection(editor) : null;
+      const picked = state.selection.nodes();
 
       if (
         SelectionApi.isNode(semanticSelection) &&
-        state.selection
-          .nodes()
-          .every(
-            ([node]) => NodeApi.isElement(node) && state.schema.isBlock(node)
-          )
+        picked.every(
+          ([node]) => NodeApi.isElement(node) && state.schema.isBlock(node)
+        )
       ) {
-        return createPlainTextSliceOverPick(state, semanticSelection, data);
+        return createPlainTextSliceOverPick(
+          state,
+          semanticSelection,
+          splitLines(data, {
+            dropEndBreak: picked.some(([node]) =>
+              isTextCell(getInternalEditorSchemaFromApi(state.schema), node)
+            ),
+          })
+        );
       }
 
       const at = selection ?? state.points.end([]);
@@ -439,7 +500,10 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
         return null;
       }
 
-      const blockMatch = state.nodes.block({ at: start });
+      const blockMatch =
+        (editor && RangeApi.isRange(at) && !RangeApi.isCollapsed(at)
+          ? readLandingBlock(editor, state, at)
+          : null) ?? state.nodes.block({ at: start });
 
       if (!blockMatch) return null;
 
@@ -464,7 +528,13 @@ const createDefaultPlainTextDataTransferFormat = <V extends Value>(
           ? (NodeApi.extractProps(target) as EditorMarks)
           : null;
       })();
-      const lines = data.split(NEWLINE_SPLIT_RE);
+      const lines = splitLines(data, {
+        dropEndBreak: isTextCell(
+          getInternalEditorSchemaFromApi(state.schema),
+          block
+        ),
+      });
+
       const inlineSlice =
         lines.length === 1 && !!selection && state.selection.isCollapsed()
           ? createPlainTextInlineSlice(

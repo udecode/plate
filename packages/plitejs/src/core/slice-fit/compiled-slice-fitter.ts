@@ -3353,6 +3353,26 @@ export const compileSliceFitter = <V extends Value>(
       document
         .openContextAt(position)
         .filter((entry) => entry.from < position && position < entry.to);
+    // A grid cell that holds its text directly never closes to fit more
+    // blocks, so a candidate that replaces past the innermost one, or whose
+    // tokens close it, is refused.
+    const textCell = (() => {
+      const context = getStructuralContext(exactFrom);
+
+      for (let level = context.length - 1; level >= 0; level -= 1) {
+        const node = getDescendant(rootChildren, context[level].path);
+
+        if (
+          ElementApi.isElement(node) &&
+          isGridCell(node) &&
+          getCompiledElement(node)?.content?.allowsText
+        ) {
+          return { depth: level + 1, ...context[level] };
+        }
+      }
+
+      return null;
+    })();
     const getChildCountsThrough = (
       context: ReturnType<typeof getStructuralContext>,
       position: number
@@ -3361,6 +3381,12 @@ export const compileSliceFitter = <V extends Value>(
       document.childBoundaryAt(position)?.index ?? 0,
     ];
     const isStructurallyApplicable = (candidate: SliceFitCandidate) => {
+      if (
+        textCell &&
+        (candidate.from <= textCell.from || candidate.to >= textCell.to)
+      ) {
+        return false;
+      }
       if ('preparedOpenBlock' in candidate) {
         const from = document.childBoundaryAt(candidate.from);
         const to = document.childBoundaryAt(candidate.to);
@@ -3462,6 +3488,7 @@ export const compileSliceFitter = <V extends Value>(
           if (stack.at(-1) !== 'text') return false;
           continue;
         }
+        if (stack.length === textCell?.depth) return false;
         if (stack.pop() !== token.nodeKind) return false;
         if (exceedsBlockMax(programs.pop(), getDefined(counts.pop()))) {
           return false;
@@ -3679,6 +3706,7 @@ export const compileSliceFitter = <V extends Value>(
     const selectedPrefixCandidate = ((): SliceFitCandidate | null => {
       if (
         options.target.kind !== 'range' ||
+        textCell ||
         exactBounds ||
         !sameTextPath ||
         collapsed ||
