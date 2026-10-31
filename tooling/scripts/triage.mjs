@@ -1363,9 +1363,16 @@ function parseArgs(argv, flags) {
 }
 
 const issueNumber = (value) => {
-  const number = String(value ?? '').replace(/^#/u, '');
-  if (!ISSUE.test(number)) {
-    refuse(`${JSON.stringify(value)} is not an issue number`);
+  const [, name, number] =
+    /^(?:([\w.-]+)#|#)?([1-9]\d*)$/u.exec(String(value ?? '')) ?? [];
+  if (!number) refuse(`${JSON.stringify(value)} is not an issue number`);
+  if (name) {
+    const reading = repoName ?? repoNameOf(localConfig().triage.repos[0]);
+    if (name !== reading) {
+      refuse(
+        `${JSON.stringify(value)} names ${name}, but this command reads ${reading}; pass --repo ${name}`
+      );
+    }
   }
   return number;
 };
