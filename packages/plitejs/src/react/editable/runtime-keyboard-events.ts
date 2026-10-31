@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useCallback } from 'react';
+import { type KeyboardEvent, useCallback, useContext } from 'react';
 
 import { type NodeKey, type Point, type Selection, SelectionApi } from '../..';
 import {
@@ -43,6 +43,7 @@ import {
 } from './runtime-editor-api';
 import type { EditableEventRuntimeCore } from './runtime-event-engine';
 import { resolveViewBoundaryDOMPoint } from './selection-projected-dom';
+import { moveByViewLines, ViewLinesContext } from './view-lines';
 
 const WHITESPACE_KEY_RE = /\s/;
 const MODIFIER_ONLY_KEYS = new Set([
@@ -280,6 +281,7 @@ export const useRuntimeKeyboardEvents = ({
   viewportBackedSelection: boolean;
 }) => {
   const pliteRuntimeContext = useOptionalPliteRuntimeContext();
+  const viewLines = useContext(ViewLinesContext);
   const runKeyDownEvent = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
       if (
@@ -403,6 +405,17 @@ export const useRuntimeKeyboardEvents = ({
         isVerticalArrowKey
       ) {
         flushPendingNativeTextInput?.();
+        const repair = moveByViewLines({
+          editor,
+          event,
+          inputController,
+          viewLines,
+        });
+
+        if (repair) {
+          runtime.repair.requestEditableRepair(repair);
+          return;
+        }
         runtime.selection.holdExportForNativeMove();
         return;
       }
@@ -455,6 +468,7 @@ export const useRuntimeKeyboardEvents = ({
               verticalNavigation.dispatchHistory.bind(verticalNavigation),
             setExplicitViewportBackedSelection,
             setComposing: runtime.composition.setComposing,
+            viewLines,
             viewportBackedSelection,
           })
       );
@@ -518,6 +532,7 @@ export const useRuntimeKeyboardEvents = ({
       verticalNavigation,
       pliteRuntimeContext,
       setExplicitViewportBackedSelection,
+      viewLines,
       viewportBackedSelection,
     ]
   );

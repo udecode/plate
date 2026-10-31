@@ -66,6 +66,7 @@ import {
   type EditableCompositionStateSetter,
   type EditableInputController,
   type EditableRepairRequest,
+  isImeKeyDown,
   isInteractiveInternalTarget,
   isNamedInputMethodKey,
   isNativeTextControlTarget,
@@ -86,6 +87,7 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
+import { moveByViewLines, type ViewLines } from './view-lines';
 
 export type EditableKeyDownResult = {
   focusEditor?: ReactRuntimeEditor;
@@ -102,11 +104,6 @@ const keyDownHandled = (
   repair,
 });
 const keyDownUnhandled = (): EditableKeyDownResult => ({ handled: false });
-
-const isImeKeyDown = (nativeEvent: KeyboardEvent) =>
-  nativeEvent.isComposing ||
-  // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] WebKit sends the keydown that ends a composition, such as a Backspace that empties it, after compositionend, so only keyCode 229 marks it as consumed by the IME.
-  nativeEvent.keyCode === 229;
 
 const getSelectionFocusEditor = ({
   editor,
@@ -458,6 +455,7 @@ export const applyEditableKeyDown = ({
   getMountedViewEditor,
   setExplicitViewportBackedSelection,
   setComposing,
+  viewLines,
   viewportBackedSelection,
 }: {
   androidInputManagerRef: RefObject<AndroidInputManager | null | undefined>;
@@ -485,6 +483,7 @@ export const applyEditableKeyDown = ({
   getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   setExplicitViewportBackedSelection: (nextValue: boolean) => void;
   setComposing: EditableCompositionStateSetter;
+  viewLines?: ViewLines | null;
   viewportBackedSelection: boolean;
 }): EditableKeyDownResult => {
   const replay = (direction: 'redo' | 'undo') => {
@@ -1033,6 +1032,12 @@ export const applyEditableKeyDown = ({
     if (contentRootNavigationResult.handled) {
       return keyDownHandled();
     }
+
+    const viewLinesRepair = verticalOwnerTarget
+      ? null
+      : moveByViewLines({ editor, event, inputController, viewLines });
+
+    if (viewLinesRepair) return keyDownHandled(viewLinesRepair);
 
     const caretMovementResult = applyEditableCaretMovement({
       domPhaseScheduler,

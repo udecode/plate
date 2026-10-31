@@ -143,7 +143,7 @@ export const getTextDirection = (value: string): TextDirection => {
   return 'neutral';
 };
 
-const selectionSyncRepair = ({
+export const selectionSyncRepair = ({
   forceRender = true,
   syncDOMSelection = true,
 }: {

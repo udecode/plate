@@ -771,9 +771,12 @@ export class EditableDOMRuntime {
 
     try {
       const domRange = editorElement.ownerDocument.createRange();
+      const [start, end] = RangeApi.isBackward(selection)
+        ? [preference.focus, preference.anchor]
+        : [preference.anchor, preference.focus];
 
-      domRange.setStart(preference.anchor.node, preference.anchor.offset);
-      domRange.setEnd(preference.focus.node, preference.focus.offset);
+      domRange.setStart(start.node, start.offset);
+      domRange.setEnd(end.node, end.offset);
       this.scheduleModelSelectionDOMPreferenceDelete(preference, 0);
 
       return domRange;
@@ -787,14 +790,25 @@ export class EditableDOMRuntime {
     selection: Range,
     point: ModelSelectionDOMPoint | null
   ) {
+    if (!point || !RangeApi.isCollapsed(selection)) {
+      this.clearModelSelectionDOMPreference();
+      return;
+    }
+    this.writeModelSelectionDOMPreference(selection, point, point);
+  }
+
+  writeModelSelectionDOMPreference(
+    selection: Range,
+    anchor: ModelSelectionDOMPoint,
+    focus: ModelSelectionDOMPoint
+  ) {
     this.clearModelSelectionDOMPreference();
-    if (!point || !RangeApi.isCollapsed(selection)) return;
 
     const preference: ModelSelectionDOMPreference = {
-      anchor: point,
+      anchor,
       cancelDelete: null,
       expiresAt: getTimestamp() + MODEL_SELECTION_DOM_PREFERENCE_TTL_MS,
-      focus: point,
+      focus,
       selection,
     };
 

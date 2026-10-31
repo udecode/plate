@@ -23,6 +23,7 @@ import {
   type NodeKey,
   type Path,
   PathApi,
+  type Point,
   PointApi,
   type Range,
   RangeApi,
@@ -60,9 +61,18 @@ import {
   createContainerDecorationSlice,
   type DecorationSlice,
 } from '../react/decoration-source';
+import {
+  landInViewBlock,
+  landOnViewLine,
+  type ViewLines,
+} from '../react/editable/view-lines';
 import { useEditableLayoutPass } from '../react/hooks/use-editable-layout-pass';
 import { useElementPath } from '../react/hooks/use-element-path';
 import { useHydrated } from '../react/hooks/use-hydrated';
+import {
+  type ReactRuntimeEditor,
+  toReactRuntimeEditor,
+} from '../react/plugin/react-editor';
 import {
   createPretextPageLayoutEngine,
   measurePages,
@@ -87,8 +97,90 @@ import {
   getPagedEditableVisiblePageMountItems,
   type PagedEditablePageMountPlan,
 } from './page-mount-plan';
+import { isNativeFlowBlock, pagedLineTarget } from './paged-view-lines';
 
 export * from './index';
+
+type PagedViewLayout = Readonly<{
+  measuredVersion: number;
+  mountedPageIndexes: ReadonlySet<number> | 'all';
+  root: HTMLElement | null;
+  selectedPaths: readonly Path[];
+  snapshot: PageLayoutSnapshot;
+}>;
+
+const lineStartAfterTrailingBreak = (
+  editor: ReactRuntimeEditor,
+  point: Point
+) =>
+  editor.read((state) => {
+    const node = state.nodes.get(point.path)?.[0];
+
+    return TextApi.isText(node) &&
+      point.offset === node.text.length &&
+      node.text.endsWith('\n')
+      ? (state.points.after(point, { unit: 'offset' }) ?? point)
+      : point;
+  });
+
+const createPagedViewLines = ({
+  editor,
+  readLayout,
+  readVersion,
+}: Readonly<{
+  editor: ReactRuntimeEditor;
+  readLayout: () => PagedViewLayout | null;
+  readVersion: () => number;
+}>): ViewLines => ({
+  lineAfter: ({ direction, from, readX }) => {
+    const layout = readLayout();
+
+    if (!layout || layout.measuredVersion !== readVersion()) return null;
+    const upper = from.side === 'upper';
+    const target = pagedLineTarget({
+      direction,
+      from: {
+        point: upper
+          ? from.point
+          : lineStartAfterTrailingBreak(editor, from.point),
+        upper,
+      },
+      isSelectable: (path) =>
+        editor.read((state) => {
+          const start = state.points.start(path);
+
+          return (
+            !!start &&
+            !state.nodes.above({
+              at: start,
+              match: (node) =>
+                NodeApi.isElement(node) && !state.nodes.isSelectable(node),
+              mode: 'highest',
+              voids: true,
+            })
+          );
+        }),
+      mountedPageIndexes: layout.mountedPageIndexes,
+      selectedPaths: layout.selectedPaths,
+      snapshot: layout.snapshot,
+    });
+
+    if (!target) return null;
+    const root = target.drawn ? layout.root : null;
+    const { path } = target;
+
+    return target.kind === 'line'
+      ? landOnViewLine({
+          editor,
+          end: target.end,
+          path,
+          readX,
+          root,
+          start: target.start,
+        })
+      : landInViewBlock({ direction, editor, path, readX, root });
+  },
+});
 
 type PublishedLayoutStore = Readonly<{
   getSnapshot: () => PageLayoutSnapshot | null;
@@ -798,9 +890,11 @@ const createPaginationBuckets = (
     fragments.forEach((fragment) => {
       if (fragment.type !== 'text') return;
       const blockKey = pathKey(fragment.path);
-      const nativeFlow =
-        blockRects.get(blockKey)?.length === 1 &&
-        selectedPaths.some((path) => PathApi.isCommon(fragment.path, path));
+      const nativeFlow = isNativeFlowBlock(
+        fragment.path,
+        blockRects.get(blockKey)?.length ?? 0,
+        selectedPaths
+      );
       const blockRect =
         blockBoxes.get(blockKey) ??
         toCanvasRect(fragment.rect, fragment.pageIndex, geometry);
@@ -1135,14 +1229,17 @@ const PagedEditableInner = <TElement extends Element = Element>({
   const [documentVersion, setDocumentVersion] = useState(() =>
     readEditorVersion(editor)
   );
+  const invalidationVersion = useRef(documentVersion);
 
   useLayoutEffect(() => {
-    setDocumentVersion(readEditorVersion(editor));
+    invalidationVersion.current = readEditorVersion(editor);
+    setDocumentVersion(invalidationVersion.current);
     return editor.subscribeCommit((change) => {
       if (
         change.changed.hasAny('document') ||
         (pageFieldKey !== null && change.dirtyStateKeys.includes(pageFieldKey))
       ) {
+        invalidationVersion.current = change.version;
         setDocumentVersion(change.version);
       }
     });
@@ -1215,6 +1312,16 @@ const PagedEditableInner = <TElement extends Element = Element>({
   useLayoutEffect(() => {
     publishedStore.setSnapshot(snapshot);
   }, [publishedStore, snapshot]);
+  const viewLayout = useRef<PagedViewLayout | null>(null);
+  const viewLines = useMemo(
+    () =>
+      createPagedViewLines({
+        editor: toReactRuntimeEditor(editor),
+        readLayout: () => viewLayout.current,
+        readVersion: () => invalidationVersion.current,
+      }),
+    [editor]
+  );
   useEffect(() => {
     const fonts = editableHost?.ownerDocument.fonts;
 
@@ -1345,6 +1452,24 @@ const PagedEditableInner = <TElement extends Element = Element>({
     previousElementLayouts.current = layouts;
     return layouts;
   }, [geometry, placementsByPath, snapshot?.fragments]);
+  useLayoutEffect(() => {
+    viewLayout.current = snapshot
+      ? {
+          measuredVersion: documentVersion,
+          mountedPageIndexes: virtualize ? visiblePageIndexes : 'all',
+          root: editableHost,
+          selectedPaths,
+          snapshot,
+        }
+      : null;
+  }, [
+    documentVersion,
+    editableHost,
+    selectedPaths,
+    snapshot,
+    virtualize,
+    visiblePageIndexes,
+  ]);
   const localBuckets = useMemo(
     () =>
       geometry
@@ -1513,6 +1638,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
                   scrollToPath={scrollToPath}
                   style={canvas ? canvas.host : style}
                   totalSize={geometry?.height ?? 0}
+                  viewLines={viewLines}
                 />
               </TextRenderScopeContext>
             </ImperativeTextFlowContext>

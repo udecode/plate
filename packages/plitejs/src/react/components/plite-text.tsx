@@ -10,9 +10,9 @@ import { TextRenderScopeContext } from './editable-text-pieces';
  * Render a Plite text DOM shell bound to a text runtime.
  *
  * The shell carries path/runtime metadata and native DOM-sync attributes used
- * by selection and mutation handling. Inside a `renderText` call for one line
+ * by selection and mutation handling. Inside a `renderText` call for one piece
  * of a paged text it renders a plain span, because the editor already renders
- * that text's shell around the line.
+ * that text's shell around its pieces.
  */
 export const EditorText = ({
   domSync = false,

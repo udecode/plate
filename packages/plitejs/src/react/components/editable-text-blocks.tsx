@@ -62,6 +62,7 @@ import {
 } from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
 import { resolveViewBoundaryDOMPoint } from '../editable/selection-projected-dom';
+import { type ViewLines, ViewLinesContext } from '../editable/view-lines';
 import type { ExternalTextOptions } from '../external-text';
 import {
   useEditableDOMRuntime,
@@ -1156,10 +1157,12 @@ const EditableInner = <TElement extends ElementNode>({
   spellCheck,
   style,
   elementLayouts,
+  viewLines = null,
   viewportPlan = null,
   ...attributes
 }: EditableProps<TElement> & {
   elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
+  viewLines?: ViewLines | null;
   viewportPlan?: EditableViewportPlan | null;
 }) => {
   const editor = useEditorContext();
@@ -1405,53 +1408,56 @@ const EditableInner = <TElement extends ElementNode>({
   return (
     <EditableElementLayoutsProvider layouts={elementLayouts ?? null}>
       <PliteEditableRootContext value={editableRoot}>
-        <EditableDOMRoot
-          autoFocus={autoFocus}
-          {...attributes}
-          className={className}
-          deferNativeTextInputRepair={viewportPlan != null}
-          disableDefaultStyles={disableDefaultStyles}
-          viewportRuntime={
-            viewportPlan
-              ? {
-                  mountedTopLevelNodeKeys: viewportPlan.mountedTopLevelNodeKeys,
-                  mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
-                  scrollToPath: scrollViewportPathIntoView,
-                  type: 'virtualized',
-                }
-              : null
-          }
-          id={id}
-          ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
-          onBeforeInput={onBeforeInput}
-          onBlurCapture={handleBlurCapture}
-          onDOMBeforeInput={onDOMBeforeInput}
-          onFocusCapture={handleFocusCapture}
-          onHistoryReplay={onHistoryReplay}
-          onKeyDown={onKeyDown}
-          onPaste={onPaste}
-          onDropResult={onDropResult}
-          onPasteResult={onPasteResult}
-          readOnly={effectiveReadOnly}
-          ref={editableRootRef}
-          scrollSelectionIntoView={scrollSelectionIntoView}
-          spellCheck={spellCheck}
-          style={rootStyle}
-        >
-          {viewportPlan && (
-            <EditableCoverageMaterializer
-              materialize={materializeViewportBoundary}
+        <ViewLinesContext value={viewLines}>
+          <EditableDOMRoot
+            autoFocus={autoFocus}
+            {...attributes}
+            className={className}
+            deferNativeTextInputRepair={viewportPlan != null}
+            disableDefaultStyles={disableDefaultStyles}
+            viewportRuntime={
+              viewportPlan
+                ? {
+                    mountedTopLevelNodeKeys:
+                      viewportPlan.mountedTopLevelNodeKeys,
+                    mountedTopLevelRanges: viewportPlan.mountedTopLevelRanges,
+                    scrollToPath: scrollViewportPathIntoView,
+                    type: 'virtualized',
+                  }
+                : null
+            }
+            id={id}
+            ignoreBlankEditableRootClicks={ignoreBlankEditableRootClicks}
+            onBeforeInput={onBeforeInput}
+            onBlurCapture={handleBlurCapture}
+            onDOMBeforeInput={onDOMBeforeInput}
+            onFocusCapture={handleFocusCapture}
+            onHistoryReplay={onHistoryReplay}
+            onKeyDown={onKeyDown}
+            onPaste={onPaste}
+            onDropResult={onDropResult}
+            onPasteResult={onPasteResult}
+            readOnly={effectiveReadOnly}
+            ref={editableRootRef}
+            scrollSelectionIntoView={scrollSelectionIntoView}
+            spellCheck={spellCheck}
+            style={rootStyle}
+          >
+            {viewportPlan && (
+              <EditableCoverageMaterializer
+                materialize={materializeViewportBoundary}
+              />
+            )}
+            {renderedNodes}
+            <InactiveSelectionCaret
+              editableRef={inactiveSelectionEditableRef}
+              store={inactiveSelectionStore}
             />
-          )}
-          {renderedNodes}
-          <InactiveSelectionCaret
-            editableRef={inactiveSelectionEditableRef}
-            store={inactiveSelectionStore}
-          />
-          {!effectiveReadOnly && (
-            <ViewSelectionCaret editableRef={inactiveSelectionEditableRef} />
-          )}
-        </EditableDOMRoot>
+            {!effectiveReadOnly && (
+              <ViewSelectionCaret editableRef={inactiveSelectionEditableRef} />
+            )}
+          </EditableDOMRoot>
+        </ViewLinesContext>
       </PliteEditableRootContext>
     </EditableElementLayoutsProvider>
   );
@@ -1467,6 +1473,7 @@ export const EditableViewportSurface = <
 }: EditableProps<TElement> & {
   decorationStore?: PliteDecorationStore | null;
   elementLayouts?: ReadonlyMap<string, EditableElementLayout>;
+  viewLines?: ViewLines | null;
   viewportPlan: EditableViewportPlan | null;
 }) => {
   const inheritedDecorationStore = React.useContext(DecorationContext);

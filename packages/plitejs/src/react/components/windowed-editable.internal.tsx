@@ -5,6 +5,7 @@ import React from 'react';
 import type { Element, Path, RootKey } from '../..';
 import type { PliteDecorationStore } from '../decoration-context';
 import { useRootNodeKeys } from '../editable/root-selector-sources';
+import type { ViewLines } from '../editable/view-lines';
 import { useEditorContext } from '../hooks/use-editor-context';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
 import { createEditableViewportPlan } from '../viewport-plan';
@@ -29,6 +30,7 @@ export type WindowedEditableProps<
     align?: 'auto' | 'center' | 'end' | 'start'
   ) => boolean;
   totalSize: number;
+  viewLines?: ViewLines | null;
 };
 
 const WindowedEditableInner = <TElement extends Element>({

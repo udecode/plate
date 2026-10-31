@@ -1360,7 +1360,7 @@ const throwUnresolved = (at: Point | Range): never => {
   );
 };
 
-type LiveRange = Readonly<{ anchor: Point; collapsed: boolean; focus: Point }>;
+type LiveRange = Readonly<{ anchor: Point; focus: Point }>;
 
 const readLiveRange = (
   editor: DOMEditor<any>,
@@ -1379,14 +1379,7 @@ const readLiveRange = (
     exactMatch: false,
   });
 
-  return anchor && focus
-    ? {
-        anchor,
-        collapsed:
-          live.anchor[0] === live.focus[0] && live.anchor[1] === live.focus[1],
-        focus,
-      }
-    : null;
+  return anchor && focus ? { anchor, focus } : null;
 };
 
 /** Resolve native coordinates within an exact mounted DOM root. @internal */
@@ -1419,13 +1412,11 @@ export const resolveDOMRangeInRoot = (
       PointApi.equals(current.focus, focus)
     );
   };
-  const exportExtendsLiveCaret = () => {
+  const exportKeepsLiveAnchor = () => {
     const current = readLive();
 
     return (
-      exportingSelection &&
-      !!current?.collapsed &&
-      PointApi.equals(current.anchor, anchor)
+      exportingSelection && !!current && PointApi.equals(current.anchor, anchor)
     );
   };
   const domAnchor = resolveDOMPointInRoot(
@@ -1437,7 +1428,7 @@ export const resolveDOMRangeInRoot = (
       checkPageText,
       liveSide: collapsed
         ? () => true
-        : () => liveIsThisRange() || exportExtendsLiveCaret(),
+        : () => liveIsThisRange() || exportKeepsLiveAnchor(),
       rejectStaleText,
     }
   );

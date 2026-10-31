@@ -4,6 +4,7 @@ type DOMRootPlatform = 'android' | 'apple' | 'other';
 export type DOMRootQuirk =
   | 'android-beforeinput-delete-is-uncancelable'
   | 'compositionend-precedes-final-input'
+  | 'line-motion-skips-out-of-flow-lines'
   | 'shadow-selection-needs-composed-range'
   | 'webkit-contextmenu-focus';
 
@@ -122,6 +123,11 @@ const resolveRealmDOMRootFacts = (
       !MAC_WECHAT_USER_AGENT_RE.test(userAgent))
   ) {
     quirks.add('compositionend-precedes-final-input');
+  }
+  // Firefox moves a vertical arrow press to the next line in normal flow, so
+  // it skips a line that an absolutely placed box draws.
+  if (engine === 'gecko') {
+    quirks.add('line-motion-skips-out-of-flow-lines');
   }
   if (engine === 'webkit') {
     quirks.add('shadow-selection-needs-composed-range');

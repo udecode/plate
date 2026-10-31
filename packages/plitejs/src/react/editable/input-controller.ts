@@ -290,6 +290,11 @@ const MODIFIER_ONLY_KEYS = new Set([
 const isModifierOnlyKeyboardIntent = (event: KeyboardEvent) =>
   MODIFIER_ONLY_KEYS.has(event.key);
 
+export const isImeKeyDown = (nativeEvent: KeyboardEvent) =>
+  nativeEvent.isComposing ||
+  // oxlint-disable-next-line typescript/no-deprecated -- [P1 local-invariant] WebKit sends the keydown that ends a composition, such as a Backspace that empties it, after compositionend, so only keyCode 229 marks it as consumed by the IME.
+  nativeEvent.keyCode === 229;
+
 // Safari sends the key that confirms a composition after compositionend, under
 // its own name with keyCode 229. Android and Windows name such keys
 // Unidentified or Process, and those keep their existing key path.
