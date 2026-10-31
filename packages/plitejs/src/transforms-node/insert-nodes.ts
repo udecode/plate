@@ -28,13 +28,16 @@ import {
   unhangRange as editorUnhangRange,
   void as editorVoid,
 } from '../interfaces/editor';
+import type { Point } from '../interfaces/point';
+import type { Range } from '../interfaces/range';
 import type {
   NodeInsertNodesOptions,
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
 import { select as selectSelection } from '../transforms-selection/select';
-import { removeText } from '../transforms-text/delete-text';
+import { prepareRemoval, removeText } from '../transforms-text/delete-text';
+import { isInTextCell } from '../transforms-text/delete-text-grid';
 import { getDefaultInsertLocation } from '../utils';
 import {
   getNodeKeyForNode,
@@ -138,6 +141,23 @@ const keyInsertedNodes = (
   return plans.map(toPlaced);
 };
 
+const landsInTextCell = (editor: AnyEditor, at: Point | Range) => {
+  if (LocationApi.isPoint(at)) return isInTextCell(editor, at.path);
+  if (RangeApi.isCollapsed(at)) return isInTextCell(editor, at.anchor.path);
+
+  const removal = prepareRemoval(editor, { at, writes: true });
+
+  if (removal?.kind !== 'grid') {
+    return RangeApi.edges(at).some((edge) => isInTextCell(editor, edge.path));
+  }
+
+  const { landing } = removal.plan;
+
+  if (landing?.kind === 'point') return isInTextCell(editor, landing.at.path);
+
+  return landing?.kind === 'cell' && isInTextCell(editor, landing.at);
+};
+
 const insertNodesRuntime = (
   editor: AnyEditor,
   nodes: Descendant | readonly Descendant[],
@@ -180,11 +200,21 @@ const insertNodesRuntime = (
       select = false;
     }
 
-    if (LocationApi.isRange(at)) {
-      if (!hanging) {
-        at = editorUnhangRange(editor, at, { voids });
-      }
+    if (LocationApi.isRange(at) && !hanging) {
+      at = editorUnhangRange(editor, at, { voids });
+    }
 
+    if (
+      match == null &&
+      NodeApi.isElement(node) &&
+      !getEditorSchema(editor).isInline(node) &&
+      !LocationApi.isPath(at) &&
+      landsInTextCell(editor, at)
+    ) {
+      return;
+    }
+
+    if (LocationApi.isRange(at)) {
       if (RangeApi.isCollapsed(at)) {
         at = at.anchor;
       } else {

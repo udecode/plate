@@ -4,6 +4,7 @@ import {
   NodeApi,
   PointApi,
   RangeApi,
+  schema,
 } from 'plitejs';
 import { history } from 'plitejs/history';
 import {
@@ -205,6 +206,22 @@ const TablesExample = () => {
 
 const table = () =>
   definePlugin('table', {
+    schema: {
+      elements: {
+        table: {
+          content: schema.content.type('table-row', { min: 1 }),
+          structure: { kind: 'grid', role: 'grid' },
+        },
+        'table-row': {
+          content: schema.content.type('table-cell', { min: 1 }),
+          structure: { kind: 'grid', role: 'row' },
+        },
+        'table-cell': {
+          content: schema.content.text(),
+          structure: { kind: 'grid', role: 'cell' },
+        },
+      },
+    },
     commands: ({ handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();

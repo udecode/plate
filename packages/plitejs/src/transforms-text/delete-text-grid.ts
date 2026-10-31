@@ -1,7 +1,10 @@
 import { type Anchor, createAnchor } from '../core/anchor';
 import type { ChildRun } from '../core/change/root-change';
 import { getEditorSchema } from '../core/editor-runtime';
-import { getCompiledEditorSchemaFromApi } from '../core/editor-schema';
+import {
+  getCompiledEditorSchemaFromApi,
+  type InternalEditorSchemaApi,
+} from '../core/editor-schema';
 import { toPublicRoot } from '../core/public-root';
 import {
   applyBuiltDocumentChange,
@@ -128,6 +131,18 @@ export const readGridCell = (editor: Editor, path: Path): Path | null => {
     : null;
 };
 
+export const isInTextCell = (editor: Editor, path: Path) => {
+  const cell = readGridCell(editor, path);
+
+  return (
+    !!cell &&
+    canReplaceChildrenWithText(
+      getEditorSchema(editor),
+      getCurrentNode(editor, cell)
+    )
+  );
+};
+
 export const shareGridCellOrNone = (
   editor: Editor,
   left: Path,
@@ -200,13 +215,26 @@ export const readSharedGridCell = (
 const getUpdateRoot = (editor: Editor) =>
   toPublicRoot(getActiveUpdateRoot(editor) ?? 'main');
 
+const readTextHolder = (schema: InternalEditorSchemaApi, cell: unknown) => {
+  if (!NodeApi.isElement(cell)) return null;
+
+  const [first] = cell.children;
+
+  if (canReplaceChildrenWithText(schema, first)) {
+    return { at: [0], node: first, trailing: cell.children.length - 1 };
+  }
+
+  return NodeApi.isText(first) && canReplaceChildrenWithText(schema, cell)
+    ? { at: [], node: cell, trailing: 0 }
+    : null;
+};
+
 const readClearedCell = (editor: Editor, path: Path) => {
   const schema = getEditorSchema(editor);
-  const cell = getCurrentNode(editor, path);
-  const first = NodeApi.isElement(cell) ? cell.children[0] : undefined;
+  const holder = readTextHolder(schema, getCurrentNode(editor, path));
 
-  return canReplaceChildrenWithText(schema, first)
-    ? ({ first, kind: 'emptied' } as const)
+  return holder
+    ? ({ holder, kind: 'emptied' } as const)
     : ({
         child: schema.createDefaultChild({
           at: [...path, 0],
@@ -316,15 +344,15 @@ export const planGridSteps = (
   const roleAt = (path: Path) =>
     getGridRole(schema, getCurrentNode(editor, path));
   const isEmptyCell = (cell: Descendant) => {
-    const [block] = NodeApi.isElement(cell) ? cell.children : [];
+    const holder = readTextHolder(editorSchema, cell);
+    const [text] = holder?.node.children ?? [];
 
     return (
-      NodeApi.isElement(cell) &&
-      cell.children.length === 1 &&
-      canReplaceChildrenWithText(editorSchema, block) &&
-      block.children.length === 1 &&
-      NodeApi.isText(block.children[0]) &&
-      block.children[0].text === ''
+      !!holder &&
+      holder.trailing === 0 &&
+      holder.node.children.length === 1 &&
+      NodeApi.isText(text) &&
+      text.text === ''
     );
   };
   const [rangeStart, rangeEnd] = RangeApi.edges(stripLocationRoots(range));
@@ -539,24 +567,17 @@ const clearCells = (editor: Editor, paths: readonly Path[]) => {
       ];
     }
 
-    const { first } = cleared;
+    const { at, node, trailing } = cleared.holder;
 
     return [
       {
-        children: [{ ...first.children.find(NodeApi.isText), text: '' }],
+        children: [{ ...node.children.find(NodeApi.isText), text: '' }],
         index: 0,
-        path: [...path, 0],
-        removeCount: first.children.length,
+        path: [...path, ...at],
+        removeCount: node.children.length,
       },
-      ...(cell.children.length > 1
-        ? [
-            {
-              children: [],
-              index: 1,
-              path,
-              removeCount: cell.children.length - 1,
-            },
-          ]
+      ...(trailing > 0
+        ? [{ children: [], index: 1, path, removeCount: trailing }]
         : []),
     ];
   });

@@ -390,6 +390,11 @@ export const compileSliceFitter = <V extends Value>(
     validateSliceVocabulary,
   } = input;
   const getDeclarativeSchema = () => schema;
+  const isGridCell = (element: Element) => {
+    const structure = getCompiledElement(element)?.structure;
+
+    return structure?.kind === 'grid' && structure.role === 'cell';
+  };
   const reportRepair = (
     options: RuntimeTargetOptions,
     repair: Readonly<{
@@ -1638,7 +1643,7 @@ export const compileSliceFitter = <V extends Value>(
       const node = getDescendant(rootChildren, path);
 
       if (!node || !ElementApi.isElement(node)) continue;
-      if (getElementBehavior(node).isolating) break;
+      if (getElementBehavior(node).isolating || isGridCell(node)) break;
 
       const range = document.nodeRange(path);
       const startEdge = getTextEdge(node, path, 'start');
@@ -1673,7 +1678,7 @@ export const compileSliceFitter = <V extends Value>(
         const node = getDescendant(rootChildren, path);
 
         if (!node || !ElementApi.isElement(node)) continue;
-        if (getElementBehavior(node).isolating) break;
+        if (getElementBehavior(node).isolating || isGridCell(node)) break;
 
         const range = document.nodeRange(path);
         const endEdge = getTextEdge(node, path, 'end');
@@ -2439,7 +2444,8 @@ export const compileSliceFitter = <V extends Value>(
         if (
           behavior.isolating ||
           behavior.void ||
-          getElementSlicePolicy(parent).preserveContext
+          getElementSlicePolicy(parent).preserveContext ||
+          isGridCell(parent)
         ) {
           break;
         }
@@ -2646,7 +2652,8 @@ export const compileSliceFitter = <V extends Value>(
           return (
             behavior.isolating ||
             behavior.void ||
-            getElementSlicePolicy(node).preserveContext
+            getElementSlicePolicy(node).preserveContext ||
+            isGridCell(node)
           );
         }) + 1;
       const protectedDepth = getProtectedDepth(localStartContext);
