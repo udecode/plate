@@ -92,6 +92,9 @@ type EditableRootEventBindings = Pick<
   | 'onMouseDownCapture'
   | 'onMouseUp'
   | 'onPaste'
+  | 'onPointerCancelCapture'
+  | 'onPointerDownCapture'
+  | 'onPointerUpCapture'
   | 'ref'
 >;
 
@@ -371,6 +374,9 @@ export const useEditableRootRuntime = ({
         onMouseDownCapture: eventHandlers.onMouseDownCapture,
         onMouseUp: eventHandlers.onMouseUp,
         onPaste: eventHandlers.onPaste,
+        onPointerCancelCapture: eventHandlers.onPointerCancelCapture,
+        onPointerDownCapture: eventHandlers.onPointerDownCapture,
+        onPointerUpCapture: eventHandlers.onPointerUpCapture,
         ref: callbackRef,
       }) satisfies EditableRootEventBindings,
     [callbackRef, eventHandlers]
