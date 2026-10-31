@@ -142,6 +142,7 @@ const KEY_VALUES = {
   commit: /^[0-9a-f]{7,40}$/u,
   proof: /\S/u,
   retest: /\S/u,
+  clips: /^unavailable \S/u,
   missing: /\S/u,
   law: PATH_REF,
   into: (value) =>
@@ -154,7 +155,10 @@ const OUTCOMES = {
     optional: ['miss', 'moved', 'device'],
   },
   dup: { required: ['of'], optional: [] },
-  fixed: { required: ['commit', 'owner', 'proof'], optional: ['retest'] },
+  fixed: {
+    required: ['commit', 'owner', 'proof'],
+    optional: ['retest', 'clips'],
+  },
   'needs-repro': { required: ['missing'], optional: [] },
   'not-bug': { required: ['law'], optional: [] },
   split: { required: ['into'], optional: [] },
@@ -893,6 +897,24 @@ const issueSource = (issue) =>
       ]),
     ].join('\n')
   ).toWellFormed();
+// GitHub plays an uploaded video only when its URL is alone in its paragraph, and an uploaded image's URL sits inside image markup.
+const CLIP =
+  /^https:\/\/(?:github\.com\/(?:user-attachments|[\w.-]+\/[\w.-]+)\/assets\/\S+|\S+\.(?:mp4|mov|webm))$/iu;
+const clipsOf = (issue) => {
+  const lines = issueSource(issue)
+    .split('\n')
+    .map((line) => line.trim());
+  const transcribed = (url) =>
+    lines.some(
+      (line, at) =>
+        line === `[[Transcript](${url})]` &&
+        /^\[\d{2}:\d{2}\]/u.test(lines[at + 1] ?? '')
+    );
+  return [...new Set(lines.filter((line) => CLIP.test(line)))].map((url) => ({
+    url,
+    transcribed: transcribed(url),
+  }));
+};
 const pieces = (line) => {
   const points = Array.from(line);
   return points.length <= LINE_LIMIT
@@ -1445,6 +1467,7 @@ function show(argv) {
     ...summary(number, reads),
     claim: claimOf(number),
     mentions: reads.ledger ? mentionedTasks(number, reads.ledger) : null,
+    clips: reads.issues.get(number) ? clipsOf(reads.issues.get(number)) : null,
     text: options.brief || options.json ? null : reads.issues.get(number),
   }));
   // JSON carries the state only: record reads the issue's text back from a plain show, line by line.
@@ -1481,6 +1504,12 @@ function show(argv) {
     console.log(
       `mentions: ${result.mentions ? taskText(result.mentions) : 'unread'}`
     );
+    console.log(`clips: ${result.clips ? result.clips.length : 'unread'}`);
+    for (const clip of result.clips ?? []) {
+      console.log(
+        `clip: ${clip.url} ${clip.transcribed ? 'transcribed' : 'no transcript'}`
+      );
+    }
     if (!result.text) continue;
     console.log(issueText(result.text));
     console.log(`seen: ${fingerprint(result.text)}`);
@@ -2862,6 +2891,14 @@ function recordCommand(argv) {
         `[${repoNameOf(reads.policy.repo)}#${issue}]`
       );
       if (miss) refuse(`${where}: ${miss}`);
+      const untranscribed = clipsOf(current).filter(
+        (clip) => !clip.transcribed
+      );
+      if (!fields.has('clips') && untranscribed.length > 0) {
+        refuse(
+          `${where}: ${untranscribed.length} clip(s) on the issue have no transcript cache, such as ${untranscribed[0].url}; run video-transcripts on each, check its lines against the frames, post the cache as that skill says and run pnpm triage show ${issue} again, or record clips: unavailable <reason>`
+        );
+      }
     }
     const owned = ownerPaths({ outcome: entry.outcome, detail: entry.detail });
     for (const path of owned) {

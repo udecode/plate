@@ -1,6 +1,6 @@
 ---
 name: video-transcripts
-description: "Transcribe a supplied local or linked video with Gemini Files API when its contents are needed as evidence."
+description: "Transcribe a supplied local or linked video with Gemini and check the transcript against one frame per second, when a recording's contents are needed as evidence, such as a bug recording on an issue, PR or comment, or a question about what a video shows."
 ---
 
 # Video Transcripts
@@ -41,6 +41,10 @@ bash <skill>/scripts/generate_video_transcript.sh \
 
 For auth-gated Linear uploads, the helper automatically retries with cookies from the local Linear desktop app on macOS. For private GitHub asset URLs, it retries with `GITHUB_TOKEN`, `GH_TOKEN`, or `gh auth token` when available.
 
+The helper also cuts the video into one frame per second and prints `Frames: <dir>` on stderr. `<dir>/frames/tSSSS.png` is the frame at second SSSS, so `[01:12]` is `t0072.png`, and each `<dir>/sheet-SSSS-SSSS.png` shows the nine seconds its name spans in one image. Pass `--frames <dir>` to choose the directory. For a local video without Gemini, run `bash <skill>/scripts/video_frames.sh <video> --output <dir>`.
+
+The transcript is a draft until Workflow step 3 checks it against the frames.
+
 ## Use This When
 
 - A GitHub or Linear issue, PR, or comment includes a screen recording.
@@ -68,11 +72,20 @@ permission to post.
 
 1. Run the helper once for each relevant video.
 2. Give each run a short, bug-focused `--title`.
-3. For tracked work, the canonical shared cache should live in the tracker next to the evidence it describes.
-4. If the video is in the issue or PR body, use a top-level tracker comment.
-5. If the video is in a Linear comment, post the transcript cache as a reply to that specific comment.
-6. If the video is in a GitHub issue or PR comment, use one dedicated top-level cache comment for that source comment's video set. GitHub has no replies, so keep cache comments separated by source container instead of merging unrelated comment videos together.
-7. Cache comment or reply body should start with a transcript source link, then
+3. Check the transcript against the frames before using it. Gemini misreads
+   formatting, mixes up windows and invents repeated steps, and it states a
+   wrong line as firmly as a right one. Open every sheet of a clip under a
+   minute; for a longer clip, open the sheet that holds each line a
+   conclusion rests on and the sheets on either side. Open the full frame
+   wherever a sheet is too small to read, such as bold or italic text. Where
+   a frame and a line disagree, rewrite the line from the frame, and delete a
+   line the frames contradict. Mark a line the frames can neither show nor
+   contradict, such as speech, `(unverified)`.
+4. For tracked work, the canonical shared cache should live in the tracker next to the evidence it describes.
+5. If the video is in the issue or PR body, use a top-level tracker comment.
+6. If the video is in a Linear comment, post the transcript cache as a reply to that specific comment.
+7. If the video is in a GitHub issue or PR comment, use one dedicated top-level cache comment for that source comment's video set. GitHub has no replies, so keep cache comments separated by source container instead of merging unrelated comment videos together.
+8. Cache comment or reply body should start with a transcript source link, then
    the timestamp lines:
 
 ````md
@@ -80,22 +93,22 @@ permission to post.
 [00:00] (...)
 ````
 
-8. When caching helper XML, strip the `<video-transcripts>` and
+9. When caching helper XML, strip the `<video-transcripts>` and
    `<video-transcript ...>` wrapper lines and paste only timestamp lines after
    the source link.
-9. If there are multiple videos in the same source container, repeat the
+10. If there are multiple videos in the same source container, repeat the
    `[[Transcript](...)]` source link plus timestamp lines for each video.
-10. Do not hand-write or paraphrase video behavior when the helper can run. Use the actual transcript output.
-11. Link `[[Transcript](...)]` to the video URL when available. If the video URL is not available or is unstable, link to the source comment that contains the video.
-12. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so a new signature does not invalidate an otherwise valid cache entry. For Screencastify, cache against the stable `https://app.screencastify.com/watch/<id>` URL, not the signed `dash-assets` HLS URLs.
-13. Do not add decorative metadata like `title` to cached transcript entries unless a later workflow truly needs it.
-14. Before re-transcribing for tracked work, match cache entries by source container first:
+11. Build every cached line from the helper's output as corrected against the frames, never from memory or the issue's own text.
+12. Link `[[Transcript](...)]` to the video URL when available. If the video URL is not available or is unstable, link to the source comment that contains the video.
+13. For signed tracker-hosted URLs like `uploads.linear.app`, strip the query string so a new signature does not invalidate an otherwise valid cache entry. For Screencastify, cache against the stable `https://app.screencastify.com/watch/<id>` URL, not the signed `dash-assets` HLS URLs.
+14. Do not add decorative metadata like `title` to cached transcript entries unless a later workflow truly needs it.
+15. Before re-transcribing for tracked work, match cache entries by source container first:
     - one cache comment for issue or PR body videos
     - one Linear reply per comment containing video(s)
     - one dedicated GitHub cache comment per issue or PR comment containing video(s)
-15. If the matching cache already covers the current normalized video keys for that source container, reuse it. Only transcribe missing or new video evidence.
-16. Do not use `docs/` for raw tracker transcript cache. That is durable repo knowledge space, not raw issue evidence.
-17. If you invoke this through `codex exec`, prefer `-o <file>` so the final XML is captured without CLI progress chatter.
+16. If the matching cache already covers the current normalized video keys for that source container, reuse it. Only transcribe missing or new video evidence.
+17. Do not use `docs/` for raw tracker transcript cache. That is durable repo knowledge space, not raw issue evidence.
+18. If you invoke this through `codex exec`, prefer `-o <file>` so the final XML is captured without CLI progress chatter.
 
 ## Output Contract
 
@@ -108,23 +121,33 @@ permission to post.
 
 ## Model Strategy
 
-The helper defaults to `gemini-3.1-flash-lite-preview` for cost efficiency.
+The helper defaults to `gemini-3.8-flash`. When that call fails, stops early,
+or returns output that is malformed, too thin or repetitive, the helper
+retries with `gemini-3.1-pro-preview`. On five editor
+bug clips, 3.8-flash got the most right and made up the fewest steps;
+`gemini-3.1-flash-lite-preview` and `gemini-3-flash-preview` made up whole
+steps.
 
-If that output is malformed, too thin, or obviously noisy, it retries with `gemini-3-flash-preview`.
+Gemini 3 models run with `low` thinking at their default temperature, because
+Google warns that they loop below 1.0. Every model reads frames at high
+media resolution, about 280 tokens per frame instead of 70, because screen
+recordings are full of small text.
 
-For Gemini 3 models, the helper forces minimal thinking so output budget goes to the transcript instead of hidden reasoning.
+No model reads text formatting reliably. Asked to say how each typed word
+renders, 3.8-flash got it wrong in six runs out of six; left alone, it mostly
+leaves formatting out. Read formatting from the frames.
 
 Override with:
 
 ```bash
-VIDEO_TRANSCRIPTS_MODEL=gemini-3-flash-preview bash <skill>/scripts/generate_video_transcript.sh ...
+VIDEO_TRANSCRIPTS_MODEL=gemini-3.1-pro-preview bash <skill>/scripts/generate_video_transcript.sh ...
 ```
 
 Or:
 
 ```bash
 bash <skill>/scripts/generate_video_transcript.sh ... \
-  --model gemini-2.5-flash
+  --model gemini-2.5-pro
 ```
 
 ## Notes
@@ -133,8 +156,8 @@ bash <skill>/scripts/generate_video_transcript.sh ... \
 - For `uploads.linear.app` URLs, it first tries `LINEAR_COOKIE_HEADER`, then `LINEAR_COOKIES_DB`, then falls back to the local Linear desktop cookie store at `~/Library/Application Support/Linear/Cookies`.
 - For GitHub asset URLs, it first tries `GITHUB_TOKEN`, then `GH_TOKEN`, then `gh auth token`, then falls back to an unauthenticated download.
 - For Screencastify watch URLs, it calls `https://umbrella.svc.screencastify.com/api/umbrellaService/watch/<id>`, resolves the signed HLS manifest, rewrites child playlists so segments keep the signature, and remuxes the recording with `ffmpeg`.
-- Screencastify URL support requires `ffmpeg`.
+- The helper requires `ffmpeg` and `ffprobe`, which cut the frames and remux Screencastify recordings.
 - It looks for `GEMINI_API_KEY`, then `GOOGLE_API_KEY`.
 - If neither is set, it tries `~/.bash_profile` before failing.
 - Use `--debug-dir <dir>` when you want request and response artifacts saved.
-- Quality gate rejects obvious low-signal transcripts such as repeated partial typing runs and falls back automatically.
+- The quality gate retries with the fallback model when a transcript is too thin or repeats itself. Too thin means fewer lines than one per five seconds of video, capped at five. Repeating means one line appears five or more times, ignoring case, digits, punctuation and quoted text, and repeats make up half the lines.

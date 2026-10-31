@@ -5,7 +5,10 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  generate_video_transcript.sh <video-path-or-url> [--title TITLE] [--model MODEL] [--fallback-model MODEL] [--debug-dir DIR]
+  generate_video_transcript.sh <video-path-or-url> [--title TITLE] [--frames DIR] [--model MODEL] [--fallback-model MODEL] [--debug-dir DIR]
+
+Writes the video's frames to --frames DIR (default: a new temporary
+directory), named by second, and prints that directory on stderr.
 
 Examples:
   generate_video_transcript.sh "/tmp/bug.mov" --title "Preview link leaves workflow"
@@ -24,14 +27,19 @@ INPUT="$1"
 shift
 
 TITLE=""
-MODEL="${VIDEO_TRANSCRIPTS_MODEL:-gemini-3.1-flash-lite-preview}"
-FALLBACK_MODEL="${VIDEO_TRANSCRIPTS_FALLBACK_MODEL:-gemini-3-flash-preview}"
+FRAMES_DIR=""
+MODEL="${VIDEO_TRANSCRIPTS_MODEL:-gemini-3.8-flash}"
+FALLBACK_MODEL="${VIDEO_TRANSCRIPTS_FALLBACK_MODEL:-gemini-3.1-pro-preview}"
 DEBUG_DIR=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --title)
       TITLE="${2:-}"
+      shift 2
+      ;;
+    --frames)
+      FRAMES_DIR="${2:-}"
       shift 2
       ;;
     --model)
@@ -53,17 +61,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-if [[ -z "${GEMINI_API_KEY:-}" && -z "${GOOGLE_API_KEY:-}" && -f "$HOME/.bash_profile" ]]; then
-  # shellcheck disable=SC1090
-  source "$HOME/.bash_profile"
-fi
-
-API_KEY="${GEMINI_API_KEY:-${GOOGLE_API_KEY:-}}"
-if [[ -z "$API_KEY" ]]; then
-  echo "Missing GEMINI_API_KEY or GOOGLE_API_KEY." >&2
-  exit 1
-fi
 
 WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/video-transcripts.XXXXXX")"
 cleanup() {
@@ -426,24 +423,12 @@ count_timestamps() {
 generation_config_json() {
   local model_name="$1"
 
-  if [[ "$model_name" == gemini-3* ]]; then
-    cat <<'EOF'
-{
-  "temperature": 0,
-  "maxOutputTokens": 2400,
-  "thinkingConfig": {
-    "thinkingLevel": "minimal"
-  }
-}
-EOF
-    return 0
-  fi
-
   if [[ "$model_name" == gemini-2.5-flash* ]]; then
     cat <<'EOF'
 {
   "temperature": 0,
-  "maxOutputTokens": 2400,
+  "maxOutputTokens": 8192,
+  "mediaResolution": "MEDIA_RESOLUTION_HIGH",
   "thinkingConfig": {
     "thinkingBudget": 0
   }
@@ -452,69 +437,50 @@ EOF
     return 0
   fi
 
-  cat <<'EOF'
+  if [[ "$model_name" == gemini-2* ]]; then
+    cat <<'EOF'
 {
   "temperature": 0,
-  "maxOutputTokens": 2400
+  "maxOutputTokens": 8192,
+  "mediaResolution": "MEDIA_RESOLUTION_HIGH"
+}
+EOF
+    return 0
+  fi
+
+  # Google warns that Gemini 3 below its default temperature of 1.0 can loop,
+  # and Gemini 3.1 Pro and 3.8 Flash reject the "minimal" thinking level.
+  cat <<'EOF'
+{
+  "maxOutputTokens": 8192,
+  "mediaResolution": "MEDIA_RESOLUTION_HIGH",
+  "thinkingConfig": {
+    "thinkingLevel": "low"
+  }
 }
 EOF
 }
 
-has_noisy_runs() {
-  local text="$1"
+has_repeated_lines() {
   awk '
-    function classify(line) {
-      lower = tolower(line)
-      if (lower ~ /broadcast title field|broadcast title input field/) {
-        return "broadcast_title"
-      }
-      if (lower ~ /message text area|message field| into the message| to the message/) {
-        return "message"
-      }
-      if (lower ~ /scrolls|scrolling/) {
-        return "scroll"
-      }
-      return ""
-    }
-
-    function noisy(line) {
-      lower = tolower(line)
-      return lower ~ /types|typing|continues typing|finishes typing|adds|enters|scrolls|scrolling/
-    }
-
     /^\[[0-9][0-9]:[0-9][0-9]\]/ {
-      target = classify($0)
-      is_noisy = noisy($0)
-
-      if (target != "" && is_noisy && target == prev_target && prev_noisy == 1) {
-        run_len++
-      } else if (target != "" && is_noisy) {
-        run_len = 1
-      } else {
-        run_len = 0
-      }
-
-      limit = 0
-      if (target == "broadcast_title") {
-        limit = 2
-      } else if (target == "message") {
-        limit = 3
-      } else if (target == "scroll") {
-        limit = 2
-      }
-
-      if (limit > 0 && run_len > limit) {
-        noisy_found = 1
-      }
-
-      prev_target = target
-      prev_noisy = is_noisy
+      without_quoted_text = tolower(substr($0, 8))
+      gsub(/"[^"]*"/, "\"\"", without_quoted_text)
+      gsub(/[^a-z"]+/, " ", without_quoted_text)
+      count[without_quoted_text]++
+      total++
     }
 
     END {
-      exit noisy_found ? 0 : 1
+      for (line in count) {
+        if (count[line] > most) {
+          most = count[line]
+        }
+        repeats += count[line] - 1
+      }
+      exit (most >= 5 && repeats * 2 >= total) ? 0 : 1
     }
-  ' <<<"$text"
+  ' <<<"$1"
 }
 
 call_model() {
@@ -638,6 +604,27 @@ if [[ ! -f "$VIDEO_PATH" ]]; then
   exit 1
 fi
 
+if [[ -z "$FRAMES_DIR" ]]; then
+  FRAMES_DIR="$(mktemp -d "${TMPDIR:-/tmp}/video-frames.XXXXXX")"
+fi
+bash "$(dirname "${BASH_SOURCE[0]}")/video_frames.sh" "$VIDEO_PATH" --output "$FRAMES_DIR" >/dev/null
+echo "Frames: $FRAMES_DIR (frames/t0012.png is 00:12; sheet-SSSS-SSSS.png shows nine seconds)" >&2
+
+seconds="$(find "$FRAMES_DIR/frames" -name 't*.png' | wc -l | tr -d ' ')"
+one_line_per_five_seconds=$(( (seconds + 4) / 5 ))
+MIN_LINES=$(( one_line_per_five_seconds < 5 ? one_line_per_five_seconds : 5 ))
+
+if [[ -z "${GEMINI_API_KEY:-}" && -z "${GOOGLE_API_KEY:-}" && -f "$HOME/.bash_profile" ]]; then
+  # shellcheck disable=SC1090
+  source "$HOME/.bash_profile"
+fi
+
+API_KEY="${GEMINI_API_KEY:-${GOOGLE_API_KEY:-}}"
+if [[ -z "$API_KEY" ]]; then
+  echo "Missing GEMINI_API_KEY or GOOGLE_API_KEY." >&2
+  exit 1
+fi
+
 if [[ -z "$TITLE" ]]; then
   TITLE="$(basename "$VIDEO_PATH")"
   TITLE="${TITLE%.*}"
@@ -655,12 +642,12 @@ run_and_validate() {
   fi
   normalized="$(normalize_output "$raw")" || return 1
   timestamp_count="$(count_timestamps "$normalized")"
-  if (( timestamp_count < 5 )); then
+  if (( timestamp_count < MIN_LINES )); then
     echo "Transcript from $model_name looked too thin ($timestamp_count timestamp lines)." >&2
     return 1
   fi
-  if has_noisy_runs "$normalized"; then
-    echo "Transcript from $model_name looked noisy and repetitive." >&2
+  if has_repeated_lines "$normalized"; then
+    echo "Transcript from $model_name repeats the same line." >&2
     return 1
   fi
   printf '%s\n' "$normalized"

@@ -8,7 +8,6 @@ skill_entry="$skill_dir/SKILL.md"
 [[ -f "$skill_entry" ]] || { echo "Missing source or generated skill entry" >&2; exit 1; }
 recorder_skill_dir=${CODEX_BROWSER_REPRO_RECORDER_SKILL_DIR:-"$HOME/.codex/skills/recording-browser-repros"}
 
-bash -n "$script_dir/prepare-video-evidence.sh"
 bash -n "$script_dir/publish-issue.sh"
 recorder_status=unavailable
 if [[ -f "$recorder_skill_dir/scripts/self-test.sh" ]]; then
@@ -219,8 +218,7 @@ fi
 if rg -n 'TODO|TBD|\[TODO' \
   "$skill_entry" \
   "$skill_dir/assets" \
-  "$skill_dir/references" \
-  "$script_dir/prepare-video-evidence.sh"; then
+  "$skill_dir/references"; then
   echo 'Placeholder found' >&2
   exit 1
 fi

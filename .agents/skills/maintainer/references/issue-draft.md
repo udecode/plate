@@ -53,22 +53,22 @@ evidence uploads, creation and read-back in one run.
 
 ### Two videos
 
-1. Run `scripts/prepare-video-evidence.sh` for each video.
-2. If `video-transcripts` is available, load it and generate one normalized
-   transcript per video. Otherwise inspect the generated metadata, contact
-   sheets, and relevant frames; state that audio/timeline transcription was
-   unavailable.
-3. Treat exactly two supplied recordings as the standard Beta comparison: one
+1. Load `video-transcripts` and run its helper on each video. It writes one
+   normalized transcript and one frame per second; check the transcript
+   against the frames as that skill says. Without a Gemini key, run its
+   `scripts/video_frames.sh` alone, read the contact sheets and frames, and
+   state that the transcript was unavailable.
+2. Treat exactly two supplied recordings as the standard Beta comparison: one
    records normal behavior on the baseline, which is `main`, the Slate site,
    the stable Plate site or another editor; the other records the current bug
    on `next`. The baseline keeps its source as its label.
-4. Establish the file-to-source mapping with a simple evidence pass. First use
+3. Establish the file-to-source mapping with a simple evidence pass. First use
    explicit user labels, verified branch/build metadata or a site address the
    recording shows. When those are absent, compare the behavior: the recording
    that works normally is the likely baseline, and the recording showing the
    reported regression is the likely current `next` build. Record this as an
    inference rather than a verified build fact.
-5. If the behavior is ambiguous, both recordings appear normal/broken, or the
+4. If the behavior is ambiguous, both recordings appear normal/broken, or the
    evidence otherwise cannot distinguish them reliably, ask exactly one
    focused question: which file is the baseline, and which source does it
    show (`main`, Slate, stable Plate or the other editor's name), and which file
@@ -109,7 +109,7 @@ A sweep domain's triage drafts one issue per failure kind, as `verify`'s
 clips, find notes and retest marks.
 
 1. Read each member find's note, clip and retest mark from the round's export,
-   and run `scripts/prepare-video-evidence.sh` on each clip you cite.
+   and run `video-transcripts` on each clip you cite.
 2. Write the kind's summary, expected and actual results once. Under
    Reproduction, give each member a `### Repro <n>: <route>, <browser>`
    heading with its own steps, and name its recording's role
@@ -142,7 +142,7 @@ title is not enough; compare trigger, affected surface, and actual behavior.
 Use an installed recording skill only when its source and recorder capability
 are actually available.
 
-For supplied videos, use `video-transcripts` and this skill's frame helper.
+For supplied videos, use `video-transcripts`, which also cuts each video into frames.
 For a static state, capture through the current project Browser/Chrome tools;
 `walkthrough` may annotate existing final frames with originals retained. These
 paths do not prove motion or timing. When a fresh motion recording is necessary
@@ -162,7 +162,7 @@ For Plate issue evidence, prefer 10–30 seconds:
 After recording:
 
 ```bash
-bash .agents/skills/maintainer/scripts/prepare-video-evidence.sh \
+bash .agents/skills/video-transcripts/scripts/video_frames.sh \
   /absolute/path/to/repro.mp4 \
   --output /absolute/path/to/evidence
 ```
