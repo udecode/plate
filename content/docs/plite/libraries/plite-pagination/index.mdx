@@ -138,6 +138,11 @@ spacing, font, and letter spacing. Return named font families, such as
 loading invalidates the built-in Pretext measurement cache for mounted paged
 surfaces.
 
+A built-in engine keeps the layout of its last measurement. The next
+`measurePages` call with that engine lays out again only the blocks whose text,
+style, size or position changed. Give each paged surface its own engine and
+keep it across renders, since an engine keeps only one last measurement.
+
 ## Roots and page settings
 
 Pass a named `root` to `PagedEditable` or `measurePages` to measure and render

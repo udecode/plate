@@ -24,24 +24,27 @@ export const createPageLayoutGeometry = ({
   mode?: PageLayoutMode;
   pages: readonly PageLayoutPage[];
 }): PageLayoutGeometry => {
+  const extents = new Map<number, { bottom: number; right: number }>();
+
+  for (const { pageIndex, rect } of fragments) {
+    const extent = extents.get(pageIndex);
+    const bottom = rect.top + rect.height;
+    const right = rect.left + rect.width;
+
+    if (extent) {
+      extent.bottom = Math.max(extent.bottom, bottom);
+      extent.right = Math.max(extent.right, right);
+    } else {
+      extents.set(pageIndex, { bottom, right });
+    }
+  }
+
   const occupiedSizes = pages.map((page) => {
-    const pageFragments = fragments.filter(
-      (fragment) => fragment.pageIndex === page.index
-    );
+    const extent = extents.get(page.index);
 
     return {
-      height: Math.max(
-        page.height,
-        ...pageFragments.map(
-          (fragment) => fragment.rect.top + fragment.rect.height
-        )
-      ),
-      width: Math.max(
-        page.width,
-        ...pageFragments.map(
-          (fragment) => fragment.rect.left + fragment.rect.width
-        )
-      ),
+      height: Math.max(page.height, extent?.bottom ?? page.height),
+      width: Math.max(page.width, extent?.right ?? page.width),
     };
   });
 

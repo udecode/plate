@@ -20,6 +20,7 @@ import {
   type NamedRootKey,
   NodeApi,
   type Path,
+  PointApi,
   type Range,
   type RootKey,
   type TextOf,
@@ -27,6 +28,15 @@ import {
 } from '..';
 import { toInternalRoot } from '../core/public-root';
 import type { AnyEditor } from '../interfaces/editor';
+import {
+  createFragmentRect,
+  createPage,
+  createPageComposer,
+  freezeOwnedRange,
+  type MeasuredLine,
+  type MeasuredRun,
+  type PageComposer,
+} from './page-composition.internal';
 import { registerPageLayoutEngineInvalidator } from './page-layout-engine-invalidation.internal';
 
 const MAIN_ROOT_KEY: RootKey = 'main';
@@ -229,11 +239,6 @@ export type MeasurePagesOptions<TElement extends Element = Element> =
       root?: NamedRootKey;
     }>;
 
-const PAGE_PRESETS: Record<PagePreset, PageLayoutSize> = {
-  a4: { height: 1123, width: 794 },
-  letter: { height: 1056, width: 816 },
-};
-
 const DEFAULT_TEXT_STYLE: PageLayoutTextStyle = {
   font: '400 16px Arial, sans-serif',
   letterSpacing: 0,
@@ -288,28 +293,6 @@ export const pageSettingsCodec = Object.freeze({
   encode: (value: PageSettings) =>
     decodePageSettings(value) as PageSettingsJson,
 });
-
-const normalizeMargins = (margins: PageMargins) =>
-  typeof margins === 'number'
-    ? { bottom: margins, left: margins, right: margins, top: margins }
-    : margins;
-
-const createPage = (settings: PageSettings, index = 0): PageLayoutPage => {
-  const size = PAGE_PRESETS[settings.preset];
-  const margins = normalizeMargins(settings.margins);
-
-  return {
-    content: {
-      height: Math.max(0, size.height - margins.top - margins.bottom),
-      left: margins.left,
-      top: margins.top,
-      width: Math.max(0, size.width - margins.left - margins.right),
-    },
-    height: size.height,
-    index,
-    width: size.width,
-  };
-};
 
 const isFiniteSize = (size: PageLayoutSize) =>
   Number.isFinite(size.height) &&
@@ -410,133 +393,174 @@ const extractTextRuns = <TElement extends Element>(
       ];
 };
 
-const extractBlocks = <TElement extends Element>(
-  editor: AnyEditor,
-  children: readonly Descendant[],
-  root: NamedRootKey | undefined,
-  page: PageLayoutPage,
-  fragmentation: NodeFragmentationProvider<TElement> | undefined,
-  typography: PageLayoutTypography<TElement> | undefined
-): readonly PageLayoutBlock[] =>
-  children.flatMap<PageLayoutBlock>((node, index) => {
-    if (!NodeApi.isElement(node)) return [];
+type BlockExtractionContext<TElement extends Element> = Readonly<{
+  editor: AnyEditor;
+  fragmentation: NodeFragmentationProvider<TElement> | undefined;
+  page: PageLayoutPage;
+  root: NamedRootKey | undefined;
+  typography: PageLayoutTypography<TElement> | undefined;
+}>;
 
-    const element = node as TElement;
-    const path = [index];
-    const style = getBlockStyle(typography, element, path);
-    const plan = fragmentation?.({
-      content: {
-        height: page.content.height,
-        width: page.content.width,
-      },
-      element,
+const extractBlock = <TElement extends Element>(
+  {
+    editor,
+    fragmentation,
+    page,
+    root,
+    typography,
+  }: BlockExtractionContext<TElement>,
+  element: TElement,
+  index: number
+): PageLayoutBlock => {
+  const path = [index];
+  const style = getBlockStyle(typography, element, path);
+  const plan = fragmentation?.({
+    content: {
+      height: page.content.height,
+      width: page.content.width,
+    },
+    element,
+    path,
+  });
+  const supportedInlineFlow = isSupportedInlineFlow(editor, element);
+  const resolved =
+    plan ?? (supportedInlineFlow ? ({ type: 'text' } as const) : undefined);
+
+  if (!resolved) {
+    throw new Error(
+      `Pagination requires an explicit fragmentation plan for ${String(element.type ?? 'this element')} at [${path.join(',')}].`
+    );
+  }
+
+  const spacingAfter = style.blockSpacing ?? 0;
+
+  if (resolved.type === 'text') {
+    if (!supportedInlineFlow) {
+      throw new Error(
+        `Pagination text fragmentation requires one supported inline flow at [${path.join(',')}].`
+      );
+    }
+
+    return {
+      keepTogether: resolved.keepTogether ?? false,
+      lineHeight: style.lineHeight,
       path,
-    });
-    const supportedInlineFlow = isSupportedInlineFlow(editor, element);
-    const resolved =
-      plan ?? (supportedInlineFlow ? ({ type: 'text' } as const) : undefined);
+      runs: extractTextRuns(element, path, root, typography),
+      spacingAfter,
+      type: 'text',
+    };
+  }
 
-    if (!resolved) {
+  if (resolved.type === 'atomic') {
+    if (!isFiniteSize(resolved.size)) {
       throw new Error(
-        `Pagination requires an explicit fragmentation plan for ${String(element.type ?? 'this element')} at [${path.join(',')}].`
+        `Pagination atomic size must be finite and nonnegative at [${path.join(',')}].`
       );
     }
 
-    const spacingAfter = style.blockSpacing ?? 0;
+    return {
+      path,
+      size: { ...resolved.size },
+      spacingAfter,
+      type: 'atomic',
+    };
+  }
 
-    if (resolved.type === 'text') {
-      if (!supportedInlineFlow) {
-        throw new Error(
-          `Pagination text fragmentation requires one supported inline flow at [${path.join(',')}].`
-        );
-      }
+  if (
+    element.children.length === 0 ||
+    element.children.some((child) => !NodeApi.isElement(child)) ||
+    resolved.sizes.length !== element.children.length
+  ) {
+    throw new Error(
+      `Pagination direct-children fragmentation requires one size for every element child at [${path.join(',')}].`
+    );
+  }
+  if (resolved.sizes.some((size) => !isFiniteSize(size))) {
+    throw new Error(
+      `Pagination direct-child sizes must be finite and nonnegative at [${path.join(',')}].`
+    );
+  }
 
-      return [
-        {
-          keepTogether: resolved.keepTogether ?? false,
-          lineHeight: style.lineHeight,
-          path,
-          runs: extractTextRuns(element, path, root, typography),
-          spacingAfter,
-          type: 'text' as const,
-        },
-      ];
-    }
+  return {
+    children: resolved.sizes.map((size, childIndex) => ({
+      path: [...path, childIndex],
+      size: { ...size },
+    })),
+    path,
+    spacingAfter,
+    type: 'direct-children',
+  };
+};
 
-    if (resolved.type === 'atomic') {
-      if (!isFiniteSize(resolved.size)) {
-        throw new Error(
-          `Pagination atomic size must be finite and nonnegative at [${path.join(',')}].`
-        );
-      }
+const sameSize = (left: PageLayoutSize, right: PageLayoutSize) =>
+  left.height === right.height && left.width === right.width;
 
-      return [
-        {
-          path,
-          size: { ...resolved.size },
-          spacingAfter,
-          type: 'atomic' as const,
-        },
-      ];
-    }
+const sameTextStyle = (
+  left: PageLayoutTextStyle,
+  right: PageLayoutTextStyle
+) => {
+  const keys = Object.keys(left) as Array<keyof PageLayoutTextStyle>;
 
-    if (
-      element.children.length === 0 ||
-      element.children.some((child) => !NodeApi.isElement(child)) ||
-      resolved.sizes.length !== element.children.length
-    ) {
-      throw new Error(
-        `Pagination direct-children fragmentation requires one size for every element child at [${path.join(',')}].`
-      );
-    }
-    if (resolved.sizes.some((size) => !isFiniteSize(size))) {
-      throw new Error(
-        `Pagination direct-child sizes must be finite and nonnegative at [${path.join(',')}].`
-      );
-    }
+  return (
+    keys.length === Object.keys(right).length &&
+    keys.every((key) => Object.hasOwn(right, key) && left[key] === right[key])
+  );
+};
 
-    return [
-      {
-        children: resolved.sizes.map((size, childIndex) => ({
-          path: [...path, childIndex],
-          size: { ...size },
-        })),
-        path,
-        spacingAfter,
-        type: 'direct-children' as const,
-      },
-    ];
+const sameRun = (left: PageLayoutRun, right: PageLayoutRun) =>
+  left.text === right.text &&
+  PointApi.equals(left.source.anchor, right.source.anchor) &&
+  PointApi.equals(left.source.focus, right.source.focus) &&
+  sameTextStyle(left.textStyle, right.textStyle);
+
+const sameBlock = (left: PageLayoutBlock, right: PageLayoutBlock): boolean => {
+  if (left.spacingAfter !== right.spacingAfter) return false;
+  if (left.type === 'text') {
+    return (
+      right.type === 'text' &&
+      left.keepTogether === right.keepTogether &&
+      left.lineHeight === right.lineHeight &&
+      left.runs.length === right.runs.length &&
+      left.runs.every((run, index) => sameRun(run, right.runs[index]))
+    );
+  }
+  if (left.type === 'atomic') {
+    return right.type === 'atomic' && sameSize(left.size, right.size);
+  }
+
+  return (
+    right.type === 'direct-children' &&
+    left.children.length === right.children.length &&
+    left.children.every((child, index) =>
+      sameSize(child.size, right.children[index].size)
+    )
+  );
+};
+
+type BlockAt = ReadonlyArray<PageLayoutBlock | undefined>;
+
+const lastBlocks = new WeakMap<PageLayoutEngine, BlockAt>();
+
+const extractPageBlocks = <TElement extends Element>(
+  previous: BlockAt | undefined,
+  children: readonly Descendant[],
+  context: BlockExtractionContext<TElement>,
+  frozen: boolean
+): BlockAt =>
+  children.map((node, index) => {
+    if (!NodeApi.isElement(node)) return undefined;
+
+    const block = extractBlock(context, node as TElement, index);
+    const earlier = previous?.[index];
+
+    if (earlier && sameBlock(earlier, block)) return earlier;
+    return frozen ? freezeBlock(block) : block;
   });
 
 type FlatRun = PageLayoutRun & {
   blockEnd: number;
   blockStart: number;
 };
-
-type MeasuredRun = Readonly<{
-  blockEnd: number;
-  blockStart: number;
-  left: number;
-  source: Range;
-  width: number;
-}>;
-
-type MeasuredLine = Readonly<{
-  end: number;
-  height: number;
-  runs: readonly MeasuredRun[];
-  source: Range;
-  start: number;
-  width: number;
-}>;
-
-type MeasuredTextBlock = Extract<PageLayoutBlock, { type: 'text' }> & {
-  lines: readonly MeasuredLine[];
-};
-
-type MeasuredBlock =
-  | MeasuredTextBlock
-  | Exclude<PageLayoutBlock, { type: 'text' }>;
 
 const flattenRuns = (
   block: Extract<PageLayoutBlock, { type: 'text' }>
@@ -726,192 +750,6 @@ const createEstimatedLines = (
   return lines.length > 0
     ? lines
     : [createMeasuredLine(block, 0, 0, 0, () => 0, flatRuns)];
-};
-
-const createFragmentRect = (rects: readonly PageRect[]): PageRect => {
-  if (rects.length === 0) return { height: 0, left: 0, top: 0, width: 0 };
-
-  const left = Math.min(...rects.map((rect) => rect.left));
-  const top = Math.min(...rects.map((rect) => rect.top));
-  const right = Math.max(...rects.map((rect) => rect.left + rect.width));
-  const bottom = Math.max(...rects.map((rect) => rect.top + rect.height));
-
-  return { height: bottom - top, left, top, width: right - left };
-};
-
-const paginateMeasuredBlocks = ({
-  measuredBlocks,
-  page,
-  settings,
-}: {
-  measuredBlocks: readonly MeasuredBlock[];
-  page: PageLayoutPage;
-  settings: PageSettings;
-}): PageLayoutEngineOutput => {
-  const pages: PageLayoutPage[] = [page];
-  const fragments: PageLayoutFragment[] = [];
-  let pageIndex = 0;
-  let cursorTop = page.content.top;
-
-  const advancePage = () => {
-    pageIndex += 1;
-    pages[pageIndex] = createPage(settings, pageIndex);
-    cursorTop = pages[pageIndex].content.top;
-  };
-  const ensureFits = (height: number) => {
-    const current = pages[pageIndex];
-    const remaining = current.content.top + current.content.height - cursorTop;
-
-    if (cursorTop !== current.content.top && height > remaining) advancePage();
-  };
-
-  for (const block of measuredBlocks) {
-    if (block.type === 'atomic') {
-      ensureFits(block.size.height);
-      const current = pages[pageIndex];
-      const rect = {
-        height: block.size.height,
-        left: current.content.left,
-        top: cursorTop,
-        width: block.size.width,
-      };
-
-      fragments.push({
-        pageIndex,
-        path: [...block.path],
-        rect,
-        type: 'atomic',
-      });
-      cursorTop += block.size.height + block.spacingAfter;
-      continue;
-    }
-
-    if (block.type === 'direct-children') {
-      let consumed = 0;
-
-      while (consumed < block.children.length) {
-        const fragmentChildren: Array<{ path: Path; rect: PageRect }> = [];
-
-        while (consumed < block.children.length) {
-          const child = block.children[consumed];
-          const current = pages[pageIndex];
-          const remaining =
-            current.content.top + current.content.height - cursorTop;
-          const pageIsEmpty = cursorTop === current.content.top;
-
-          if (child.size.height > remaining && !pageIsEmpty) break;
-
-          fragmentChildren.push({
-            path: [...child.path],
-            rect: {
-              height: child.size.height,
-              left: current.content.left,
-              top: cursorTop,
-              width: child.size.width,
-            },
-          });
-          cursorTop += child.size.height;
-          consumed += 1;
-
-          if (child.size.height > remaining && pageIsEmpty) break;
-        }
-
-        if (fragmentChildren.length === 0) {
-          advancePage();
-          continue;
-        }
-
-        fragments.push({
-          children: fragmentChildren,
-          pageIndex,
-          path: [...block.path],
-          rect: createFragmentRect(fragmentChildren.map((child) => child.rect)),
-          type: 'direct-children',
-        });
-
-        if (consumed < block.children.length) advancePage();
-      }
-
-      cursorTop += block.spacingAfter;
-      continue;
-    }
-
-    const totalHeight =
-      block.lines.reduce((sum, line) => sum + line.height, 0) +
-      block.spacingAfter;
-
-    if (block.keepTogether && totalHeight <= page.content.height) {
-      ensureFits(totalHeight);
-    }
-
-    let consumed = 0;
-
-    while (consumed < block.lines.length) {
-      const fragmentLines: Array<{
-        rect: PageRect;
-        runs: Array<{ rect: PageRect; source: Range }>;
-        source: Range;
-      }> = [];
-
-      while (consumed < block.lines.length) {
-        const line = block.lines[consumed];
-        const current = pages[pageIndex];
-        const remaining =
-          current.content.top + current.content.height - cursorTop;
-        const pageIsEmpty = cursorTop === current.content.top;
-
-        if (line.height > remaining && !pageIsEmpty) break;
-
-        const measuredWidth = Math.max(
-          line.width,
-          ...line.runs.map((run) => run.left + run.width)
-        );
-        const lineRect = {
-          height: line.height,
-          left: current.content.left,
-          top: cursorTop,
-          width: measuredWidth,
-        };
-
-        fragmentLines.push({
-          rect: lineRect,
-          runs: line.runs.map((run) => ({
-            rect: {
-              height: line.height,
-              left: current.content.left + run.left,
-              top: cursorTop,
-              width: run.width,
-            },
-            source: run.source,
-          })),
-          source: line.source,
-        });
-        cursorTop += line.height;
-        consumed += 1;
-
-        if (line.height > remaining && pageIsEmpty) break;
-      }
-
-      if (fragmentLines.length === 0) {
-        advancePage();
-        continue;
-      }
-
-      fragments.push({
-        lines: fragmentLines,
-        pageIndex,
-        path: [...block.path],
-        rect: createFragmentRect(fragmentLines.map((line) => line.rect)),
-        type: 'text',
-      });
-
-      if (consumed < block.lines.length) advancePage();
-    }
-
-    cursorTop += block.spacingAfter;
-  }
-
-  return { fragments, pages };
 };
 
 const validateRect = (rect: PageRect) => {
@@ -1187,16 +1025,6 @@ const freezeSettings = (settings: PageSettings): PageSettings =>
         : Object.freeze({ ...settings.margins }),
   });
 
-const freezeOwnedRange = (range: Range): Range => {
-  if (Object.isFrozen(range)) return range;
-
-  if (!Object.isFrozen(range.anchor.path)) Object.freeze(range.anchor.path);
-  if (!Object.isFrozen(range.anchor)) Object.freeze(range.anchor);
-  if (!Object.isFrozen(range.focus.path)) Object.freeze(range.focus.path);
-  if (!Object.isFrozen(range.focus)) Object.freeze(range.focus);
-  return Object.freeze(range);
-};
-
 const freezeBlock = (block: PageLayoutBlock): PageLayoutBlock => {
   Object.freeze(block.path);
 
@@ -1270,70 +1098,21 @@ const freezeFragment = (fragment: PageLayoutFragment): PageLayoutFragment => {
   });
 };
 
-const ownedEngineOutputs = new WeakSet<PageLayoutEngineOutput>();
-const ownedPageLayoutEngines = new WeakSet<PageLayoutEngine>();
-
-const freezeOwnedRect = (rect: PageRect): PageRect =>
-  Object.isFrozen(rect) ? rect : Object.freeze(rect);
-
-const freezeOwnedPage = (page: PageLayoutPage): PageLayoutPage => {
-  if (Object.isFrozen(page)) return page;
-
-  freezeOwnedRect(page.content);
-  return Object.freeze(page);
-};
-
-const freezeOwnedFragment = (
-  fragment: PageLayoutFragment
-): PageLayoutFragment => {
-  if (Object.isFrozen(fragment)) return fragment;
-
-  Object.freeze(fragment.path);
-  freezeOwnedRect(fragment.rect);
-  if (fragment.type === 'direct-children') {
-    fragment.children.forEach((child) => {
-      Object.freeze(child.path);
-      freezeOwnedRect(child.rect);
-      Object.freeze(child);
-    });
-    Object.freeze(fragment.children);
-  } else if (fragment.type === 'text') {
-    fragment.lines.forEach((line) => {
-      freezeOwnedRect(line.rect);
-      line.runs.forEach((run) => {
-        freezeOwnedRect(run.rect);
-        freezeOwnedRange(run.source);
-        Object.freeze(run);
-      });
-      Object.freeze(line.runs);
-      freezeOwnedRange(line.source);
-      Object.freeze(line);
-    });
-    Object.freeze(fragment.lines);
-  }
-  return Object.freeze(fragment);
-};
+const ownedComposers = new WeakMap<
+  PageLayoutEngine,
+  PageComposer['composeReusing']
+>();
 
 export const createEstimatedPageLayoutEngine = (): PageLayoutEngine => {
-  const engine: PageLayoutEngine = {
-    compose(input) {
-      const output = paginateMeasuredBlocks({
-        measuredBlocks: input.blocks.map((block) =>
-          block.type === 'text'
-            ? { ...block, lines: createEstimatedLines(block, input.page) }
-            : block
-        ),
-        page: input.page,
-        settings: input.settings,
-      });
+  const composer = createPageComposer({
+    lines: (block, _mode, page) => createEstimatedLines(block, page),
+    mode: () => 'estimated',
+  });
+  const engine: PageLayoutEngine = Object.freeze({
+    compose: composer.compose,
+  });
 
-      ownedEngineOutputs.add(output);
-      return output;
-    },
-  };
-
-  Object.freeze(engine);
-  ownedPageLayoutEngines.add(engine);
+  ownedComposers.set(engine, composer.composeReusing);
   return engine;
 };
 
@@ -1377,10 +1156,6 @@ export const createPretextPageLayoutEngine = ({
     ReturnType<typeof prepareWithSegments>
   >();
   const measuredCache = new Map<string, readonly MeasuredLine[]>();
-  const clearLocal = () => {
-    preparedCache.clear();
-    measuredCache.clear();
-  };
   const getPrepared = (text: string, style: PageLayoutTextStyle) => {
     const key = stableKey([
       text,
@@ -1618,44 +1393,54 @@ export const createPretextPageLayoutEngine = ({
 
     return lines;
   };
-  const engine: PageLayoutEngine = {
-    compose(input) {
-      const output = paginateMeasuredBlocks({
-        measuredBlocks: input.blocks.map((block, blockIndex) => {
-          if (block.type !== 'text') return block;
-          if (
-            estimateBlock?.({
-              block,
-              blockIndex,
-              page: input.page,
-              settings: input.settings,
-            })
-          ) {
-            return { ...block, lines: createEstimatedLines(block, input.page) };
-          }
-
-          return { ...block, lines: measureBlock(block, input.page) };
-        }),
+  const composer = createPageComposer({
+    lines: (block, mode, page) =>
+      mode === 'estimated'
+        ? createEstimatedLines(block, page)
+        : measureBlock(block, page),
+    mode: (block, blockIndex, input) =>
+      estimateBlock?.({
+        block,
+        blockIndex,
         page: input.page,
         settings: input.settings,
-      });
-
-      ownedEngineOutputs.add(output);
-      return output;
-    },
+      })
+        ? 'estimated'
+        : 'measured',
+  });
+  const clearLocal = () => {
+    preparedCache.clear();
+    measuredCache.clear();
+    composer.reset();
+  };
+  const engine: PageLayoutEngine = Object.freeze({
+    compose: composer.compose,
     invalidate() {
       clearLocal();
       clearPretextCache();
     },
-  };
-  Object.freeze(engine);
-  ownedPageLayoutEngines.add(engine);
+  });
+
+  ownedComposers.set(engine, composer.composeReusing);
   registerPageLayoutEngineInvalidator(engine, {
     local: clearLocal,
     shared: clearPretextCache,
   });
 
   return engine;
+};
+
+const composeCustom = (
+  engine: PageLayoutEngine,
+  input: PageLayoutEngineInput
+): PageLayoutEngineOutput => {
+  const output = engine.compose(input);
+
+  validateEngineOutput(input.blocks, output, input.settings);
+  return {
+    fragments: Object.freeze(output.fragments.map(freezeFragment)),
+    pages: Object.freeze(output.pages.map(freezePage)),
+  };
 };
 
 export const measurePages = <
@@ -1687,41 +1472,33 @@ export const measurePages = <
   });
   const settings = freezeSettings(source.settings);
   const page = freezePage(createPage(settings));
-  const extractedBlocks = extractBlocks(
-    editor,
+  const composeOwned = ownedComposers.get(options.engine);
+  const blockAt = extractPageBlocks(
+    lastBlocks.get(options.engine),
     source.children,
-    source.publicRoot,
-    page,
-    options.fragmentation,
-    options.typography
+    {
+      editor,
+      fragmentation: options.fragmentation,
+      page,
+      root: source.publicRoot,
+      typography: options.typography,
+    },
+    !composeOwned
   );
-  const blocks = ownedPageLayoutEngines.has(options.engine)
-    ? extractedBlocks
-    : Object.freeze(extractedBlocks.map(freezeBlock));
-  const output = options.engine.compose({
-    blocks,
+  const input: PageLayoutEngineInput = {
+    blocks: Object.freeze(blockAt.flatMap((block) => (block ? [block] : []))),
     page,
     settings,
     version: source.version,
-  });
-  const ownedOutput =
-    ownedPageLayoutEngines.has(options.engine) &&
-    ownedEngineOutputs.has(output);
+  };
+  const { fragments, pages } = composeOwned
+    ? composeOwned(input)
+    : composeCustom(options.engine, input);
 
-  if (!ownedOutput) validateEngineOutput(blocks, output, settings);
-  const fragments = ownedOutput
-    ? output.fragments
-    : output.fragments.map(freezeFragment);
-  const pages = ownedOutput ? output.pages : output.pages.map(freezePage);
-
-  if (ownedOutput) {
-    fragments.forEach(freezeOwnedFragment);
-    pages.forEach(freezeOwnedPage);
-  }
-
+  lastBlocks.set(options.engine, blockAt);
   return Object.freeze({
-    fragments: Object.freeze(fragments),
-    pages: Object.freeze(pages),
+    fragments,
+    pages,
     ...(source.publicRoot === undefined ? {} : { root: source.publicRoot }),
     settings,
     version: source.version,
