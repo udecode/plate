@@ -106,7 +106,9 @@
       "command": "pnpm --filter www build:registry"
     },
     {
-      "paths": ["apps/www/src/registry/changelog/*.json"],
+      "paths": [
+        "apps/www/src/registry/changelog/*.json"
+      ],
       "command": "node tooling/scripts/generate-ui-changelog-entries.mjs --write",
       "always": true
     }
@@ -164,7 +166,7 @@
       ".agents/pstack/decisions-check.mjs": "43d20efa5b735a9411981f1899808fca943c4e45370aca5e0f528b80d06259a1",
       ".agents/pstack/levels.mjs": "4b36a62ce038b7448050956707364f250754252a6903cffc239959c5b9df8aab",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
-      ".agents/pstack/page-stop.mjs": "8ebbb290e3e8f58d87d132b35136007fb840b60399df2616a3353c6721ac84e0",
+      ".agents/pstack/page-stop.mjs": "1fd1323cd605c109f5595a3459be31f56a5ffd267547e972fde0b8c3ec0827cf",
       ".agents/pstack/plan-page.mjs": "e829e6dbb2880de7e8ed51e8e199909d75c5e3a803ad5af213bb43928aa724d0",
       ".agents/pstack/status.mjs": "c4bb85de0312a683c3346d86d4affafb19584af1cc23af524dc2c790aae7a406",
       ".agents/pstack/tasks.mjs": "d0e90f9435599dc67d57fb51516827dd9defda9b2d46e8dbee742dbc1810ed0a",
@@ -187,7 +189,7 @@
       ".agents/pstack/rules/time.md": "fc132ef7a8f0cbec135a00c882911f0c849d9b49bf84db599ee8a6b86d32d6ba",
       ".agents/pstack/rules/title.md": "a0dac949d37293ab77e089a0f439623ab014605e49297c4c980c41a6be52a1c4"
     },
-    "source": "7e71c409f9db3dc4190c75c53c43aae36cc6a8c7"
+    "source": "fb7c4d10738fb767c50f0cae4591066e0d5ec483"
   },
   "pageTopic": {
     "field": "review_scopes",

@@ -71,6 +71,7 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
   const highest = Math.max(0, ...base.runs.map((entry) => (Number.isInteger(entry.handback) ? entry.handback : 0)));
   header.handback = command === 'stop' ? highest + 1 : (listed?.handback ?? null);
   if (command === 'stage' && shown && same(header, shown, DUE)) return ['Nothing to send: the page already shows this stage'];
+  const body = command === 'stop' || !shown || !same(header, shown, ['asks', 'picks']) ? runBody(planPath, { key: header.key }) : null;
 
   const entry = { key: header.key, session, plan: header.plan, slug: header.slug, title: header.title, added: listed?.added ?? now, at: now, handback: header.handback, done: header.state === 'done' };
   const stages = Object.fromEntries(base.list.map((item) => [item.slug, item.stage]));
@@ -83,11 +84,10 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
   };
   write('index.html', pageFile({ title: doc.title || name, subject: name, runs, stages }));
   write(files[0], `${JSON.stringify(header, null, 2)}\n`);
-  if (command === 'stop' || !shown || !same(header, shown, ['asks', 'picks'])) {
-    const { html, shots } = runBody(planPath, { key: header.key });
-    write(`runs/${header.key}.html`, html);
+  if (body) {
+    write(`runs/${header.key}.html`, body.html);
     files.push(`runs/${header.key}.html`);
-    for (const shot of shots) {
+    for (const shot of body.shots) {
       mkdirSync(dirname(join(out, shot.path)), { recursive: true });
       copyFileSync(shot.source, join(out, shot.path));
       files.push(shot.path);
