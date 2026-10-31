@@ -191,10 +191,7 @@
       "cloneFrozenDeclaration(",
       "return combineContent('any', references, {"
     ],
-    "packages/plitejs/src/core/transfer.ts": [
-      "{ children } as never,",
-      "slice as never,"
-    ],
+    "packages/plitejs/src/core/transfer.ts": ["slice as never,"],
     "packages/plitejs/src/create-editor.ts": [
       "readEditor(editor, (state) => state.key(target as never))"
     ],

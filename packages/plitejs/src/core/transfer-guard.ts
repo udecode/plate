@@ -10,7 +10,11 @@ import {
   type DraftGuardFrame,
   registerEditorDraftGuard,
 } from './document-recorder';
-import type { DraftSpan, DraftTrack } from './draft-track';
+import {
+  type DraftSpan,
+  type DraftTrack,
+  readDraftTrackAt,
+} from './draft-track';
 import { type JsonValue, TransferRefusalError } from './landing';
 import type { TransferDiagnostic } from './transfer-types';
 
@@ -38,6 +42,49 @@ export const nodeAt = (children: readonly Descendant[], path: Path) =>
     ? null
     : (childrenAt(children, path.slice(0, -1))?.[path.at(-1) as number] ??
       null);
+
+/** The elements above `path` in `children`, nearest first. */
+export const ancestorsAt = (children: readonly Descendant[], path: Path) => {
+  const ancestors: Element[] = [];
+  let current = children;
+
+  for (const index of path.slice(0, -1)) {
+    const node = current[index];
+
+    if (!node || !ElementApi.isElement(node)) break;
+    ancestors.unshift(node);
+    ({ children: current } = node);
+  }
+
+  return ancestors;
+};
+
+/**
+ * Visits each node of `nodes`, the fragment of a range that starts at `start`,
+ * with its path in the children the range was read from.
+ */
+export const eachFragmentNode = (
+  nodes: readonly Descendant[],
+  start: Path,
+  visit: (node: Descendant, path: Path) => void
+) => {
+  const walk = (
+    list: readonly Descendant[],
+    parent: Path,
+    onStartEdge: boolean
+  ) => {
+    list.forEach((node, at) => {
+      const path = [...parent, onStartEdge ? start[parent.length] + at : at];
+
+      visit(node, path);
+      if (ElementApi.isElement(node)) {
+        walk(node.children, path, onStartEdge && at === 0);
+      }
+    });
+  };
+
+  walk(nodes, [], true);
+};
 
 /** The keys the canonical pass dropped from a node a move carried them on. */
 export type DroppedKeys = (source: object) => ReadonlySet<string>;
@@ -198,9 +245,13 @@ export type MovedPayload = Readonly<{
   carried: number;
   followsDrop: FollowsDrop;
   head: Element | null;
+  /**
+   * The properties of the empty block the landing replaced that `head` lacks,
+   * which the landed head may carry.
+   */
+  inherited: Readonly<Record<string, unknown>> | null;
   items: readonly PayloadItem[];
   kind: LandedKind;
-  replaced: Element | null;
   sources: SourceByPayloadNode;
 }>;
 
@@ -260,6 +311,22 @@ const payloadItems = (
   return items;
 };
 
+const belowCarried = (
+  nodes: readonly Descendant[],
+  kind: LandedKind,
+  carried: number
+) => {
+  const chain = headChain(nodes, kind);
+  const atDrop = chain.length - carried;
+
+  return atDrop < 0
+    ? null
+    : {
+        head: chain[atDrop] ?? null,
+        items: payloadItems(nodes, new Set(chain.slice(0, atDrop))),
+      };
+};
+
 const shellOf = (element: Element, skip: (key: string) => boolean) => {
   const { children: _children, ...props } = element;
 
@@ -292,38 +359,47 @@ export const carryMove = ({
 
   if (addsShell || losesShell) return null;
 
+  const head = movedChain[uncarried] ?? null;
+
   return {
     carried: movedChain.length - uncarried,
     followsDrop,
-    head: movedChain[uncarried] ?? null,
+    head,
+    inherited:
+      head && replaced
+        ? Object.fromEntries(
+            Object.entries(replaced).filter(([key]) => !(key in head))
+          )
+        : null,
     items: payloadItems(moved.content, new Set(movedChain.slice(0, uncarried))),
     kind,
-    replaced,
     sources,
   };
 };
 
 export const landsMoved = (
   landed: readonly Descendant[],
-  { carried, followsDrop, head, items, kind, replaced, sources }: MovedPayload,
+  { carried, followsDrop, head, inherited, items, kind, sources }: MovedPayload,
   dropped: DroppedKeys = noDroppedKeys
 ) => {
-  const landedChain = headChain(landed, kind);
-  const atDrop = landedChain.length - carried;
+  const below = belowCarried(landed, kind, carried);
 
-  if (atDrop < 0) return false;
+  if (!below) return false;
 
-  const landedHead = landedChain[atDrop] ?? null;
-  const found = payloadItems(landed, new Set(landedChain.slice(0, atDrop)));
   const droppedFrom = (node: object) => {
     const source = sources.get(node);
 
     return source ? dropped(source) : NO_KEYS;
   };
+  const inheritedBy = (element: Element, isHead: boolean) => (key: string) =>
+    isHead &&
+    !!inherited &&
+    Object.hasOwn(inherited, key) &&
+    stable(element[key]) === stable(inherited[key]);
 
   return (
-    found.length === items.length &&
-    found.every((item, index) => {
+    below.items.length === items.length &&
+    below.items.every((item, index) => {
       const expected = items[index];
 
       if (typeof item === 'string' || typeof expected === 'string') {
@@ -340,21 +416,23 @@ export const landsMoved = (
       }
 
       const skip = followsDrop(item.element, item.ancestors);
-      const fromReplacedBlock = (key: string) =>
-        item.element === landedHead &&
-        !!replaced &&
-        !!head &&
-        !(key in head) &&
-        stable(item.element[key]) === stable(replaced[key]);
-
+      const landedInherits = inheritedBy(
+        item.element,
+        item.element === below.head
+      );
+      const expectedInherits = inheritedBy(
+        expected.element,
+        expected.element === head
+      );
       const dropsHere = droppedFrom(expected.element);
 
       return (
-        shellOf(item.element, (key) => skip(key) || fromReplacedBlock(key)) ===
+        shellOf(item.element, (key) => skip(key) || landedInherits(key)) ===
         shellOf(
           expected.element,
           (key) =>
             skip(key) ||
+            expectedInherits(key) ||
             (dropsHere.has(key) && !Object.hasOwn(item.element, key))
         )
       );
@@ -382,9 +460,42 @@ export const trackedRange = (
     : null;
 };
 
+/** What a transfer's landing must still hold once commands and corrections wrote it. */
+export type LandingExpectation =
+  | Readonly<{
+      content: readonly Descendant[];
+      kind: 'nodes';
+      roots: JsonValue['roots'];
+    }>
+  | Readonly<{ content: readonly Descendant[]; kind: 'range-copy' }>
+  | Readonly<{ kind: 'range-move'; moved: MovedPayload }>;
+
 export type DraftLanding = Readonly<{
-  kind: 'nodes' | 'range';
+  expected: LandingExpectation;
   track: DraftTrack;
+}>;
+
+/** How a copy normalizes what it lands, so both sides compare as copied. */
+export type CopyNormalizer = Readonly<{
+  children: (nodes: readonly Descendant[]) => readonly Descendant[];
+  node: (
+    node: Descendant,
+    children: readonly Descendant[],
+    path: Path
+  ) => Descendant;
+}>;
+
+const fragmentOf = (children: readonly Descendant[], range: Range) =>
+  NodeApi.fragment({ children, type: '' }, range);
+
+/** A landing as one draft holds it. */
+export type LandingSample = Readonly<{
+  children: readonly Descendant[];
+  /** The drops the draft's canonical pass recorded. */
+  dropped: DroppedKeys;
+  index: DocumentIndex;
+  roots: JsonValue['roots'];
+  spans: readonly DraftSpan[];
 }>;
 
 export const trackedPaths = (
@@ -396,6 +507,111 @@ export const trackedPaths = (
 
     return entry && entry.to === to ? [...entry.path] : null;
   });
+
+export const landingHolds = (
+  expected: LandingExpectation,
+  { children, dropped, index, roots, spans }: LandingSample,
+  copy: CopyNormalizer | null
+) => {
+  if (expected.kind === 'nodes') {
+    const paths = trackedPaths(index, spans);
+
+    return (
+      paths.length === expected.content.length &&
+      paths.every((path, i) => {
+        const node = path ? nodeAt(children, path) : null;
+
+        return (
+          !!path &&
+          !!node &&
+          sameContent(
+            expected.content[i],
+            expected.roots,
+            copy ? copy.node(node, children, path) : node,
+            roots,
+            dropped
+          )
+        );
+      })
+    );
+  }
+
+  const [span] = spans;
+  const range = span && trackedRange(index, span);
+
+  if (!range) return false;
+
+  const landed = fragmentOf(children, range);
+
+  return expected.kind === 'range-move'
+    ? landsMoved(landed, expected.moved, dropped)
+    : textTokens(copy ? copy.children(landed) : landed) ===
+        textTokens(expected.content);
+};
+
+/**
+ * What a command frame's draft must hold: the landing as the projection the
+ * frame started from shows it, or `null` when the projection cannot place the
+ * landing.
+ */
+export const rebaseLanding = (
+  { expected, track }: DraftLanding,
+  frame: DraftGuardFrame,
+  root: RootKey,
+  copy: CopyNormalizer | null
+): LandingExpectation | null => {
+  const start = readDraftTrackAt(track, frame);
+
+  if (!start) return null;
+
+  const { value } = frame.start;
+  const children = rootChildren(value, root);
+
+  if (expected.kind === 'nodes') {
+    const content: Descendant[] = [];
+
+    for (const path of trackedPaths(start.index, start.spans)) {
+      const node = path && nodeAt(children, path);
+
+      if (!path || !node) return null;
+      content.push(copy ? copy.node(node, children, path) : node);
+    }
+
+    return { content, kind: 'nodes', roots: value.roots };
+  }
+
+  const [span] = start.spans;
+  const range = span && trackedRange(start.index, span);
+
+  if (!range) return null;
+
+  const started = fragmentOf(children, range);
+
+  if (expected.kind === 'range-copy') {
+    return {
+      content: copy ? copy.children(started) : started,
+      kind: 'range-copy',
+    };
+  }
+
+  const { moved } = expected;
+  const below = belowCarried(started, moved.kind, moved.carried);
+
+  if (!below) return null;
+
+  const sources = new Map<object, object>();
+
+  eachFragmentNode(started, range.anchor.path, (node, path) => {
+    const source = nodeAt(children, path);
+
+    if (source) sources.set(node, source);
+  });
+
+  return {
+    kind: 'range-move',
+    moved: { ...moved, ...below, sources },
+  };
+};
 
 export const guardLanding = (
   editor: AnyEditor,

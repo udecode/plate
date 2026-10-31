@@ -1018,12 +1018,14 @@ export const runInEditorCommandFrame = (
               ...(root === MAIN_ROOT_KEY ? {} : { root }),
             });
       };
-      runEditorDraftGuards(
-        editor,
-        'plain',
-        snapshot.builder.value as EditorDocumentValue,
-        { mapPosition: storedToWritten, stored }
-      );
+      if (!wrote.empty) {
+        runEditorDraftGuards(
+          editor,
+          'plain',
+          snapshot.builder.value as EditorDocumentValue,
+          { mapPosition: storedToWritten, start: projected, stored }
+        );
+      }
 
       if (!wrote.empty || frame.selectionWritten) {
         // A root the projection dropped is one the frame cannot write, so its

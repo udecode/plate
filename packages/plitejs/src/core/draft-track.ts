@@ -1,5 +1,6 @@
 import { MAIN_ROOT_KEY } from '../internal/root-location';
 import type { ChangeDraft } from './change/builder';
+import { valueRootIndex } from './change/document-change';
 import type { DraftGuardFrame, PositionMap } from './document-recorder';
 
 export type DraftSpan = Readonly<{ from: number; to: number }>;
@@ -90,6 +91,34 @@ export const readDraftTrack = (
   return frame
     ? mapSpans(track.root, track.spans, frame.mapPosition)
     : track.spans;
+};
+
+/**
+ * The track in the projection a command frame started from, or `null` when
+ * that projection cannot place it.
+ */
+export const readDraftTrackAt = (track: DraftTrack, frame: DraftGuardFrame) => {
+  advance(track);
+
+  const { builder, root } = track;
+
+  if (builder?.value !== frame.stored) return null;
+
+  const { indexes, map, value } = frame.start;
+  const spans = mapSpans(root, track.spans, (at, position, assoc) =>
+    map.toProjected(at, position, assoc === 1 ? 'forward' : 'backward')
+  );
+
+  return (
+    spans && {
+      index:
+        indexes.get(root) ??
+        (map.roots.includes(root)
+          ? valueRootIndex(value, root)
+          : builder.getIndex(root)),
+      spans,
+    }
+  );
 };
 
 export const moveDraftTracks = (

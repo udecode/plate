@@ -74,10 +74,12 @@ export type PositionMap = (
 
 /**
  * A command frame's draft: `mapPosition` maps a position of `stored` to what
- * the frame wrote.
+ * the frame wrote, and `start` is the projection of `stored` its commands
+ * started from.
  */
 export type DraftGuardFrame = Readonly<{
   mapPosition: PositionMap;
+  start: CommandProjection;
   stored: EditorDocumentValue;
 }>;
 

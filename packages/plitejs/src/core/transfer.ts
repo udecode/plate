@@ -65,20 +65,20 @@ import {
 } from './slice-fit/provenance';
 import { planPaste, writePaste } from './slice-landing';
 import {
-  type DraftLanding,
+  ancestorsAt,
   carryMove,
+  type CopyNormalizer,
+  type DraftLanding,
   droppedKeysOf,
+  eachFragmentNode,
   guardLanding,
-  trackedPaths,
-  trackedRange,
-  landsMoved,
-  type MovedPayload,
-  nodeAt,
+  type LandingExpectation,
+  landingHolds,
+  rebaseLanding,
   rootChildren,
-  sameContent,
   type SourceByPayloadNode,
   selectionRange,
-  textTokens,
+  trackedRange,
 } from './transfer-guard';
 import type {
   TransferCheck,
@@ -274,9 +274,7 @@ type PayloadSources = Readonly<{
 /**
  * Where each node of a moved range's payload came from, so its landing can
  * judge a value the node carried. An open edge block merges into the
- * landing's block instead of landing as itself, so it gets no source. A move's
- * slice keeps the range fragment's shape, so a node's slice path names its
- * source once each index along the start edge is offset by the range start.
+ * landing's block instead of landing as itself, so it gets no source.
  */
 const payloadSourcesOf = (
   index: DocumentIndex,
@@ -305,7 +303,9 @@ const payloadSourcesOf = (
   const [start] = RangeApi.edges(range);
   const landing: LandingSource[] = [];
   const nodes = new Map<object, object>();
-  const trace = (node: Descendant, path: Path) => {
+
+  eachFragmentNode(slice.content, start.path, (node, path) => {
+    if (NodeApi.isText(node) ? node.text === '' : open.has(node)) return;
     countCoreWork('landingSources');
     landing.push({
       at: index.nodeRange(path).from,
@@ -314,28 +314,7 @@ const payloadSourcesOf = (
       payload: payloadKeyOf(node),
     });
     nodes.set(node, index.node(path));
-  };
-  const visit = (
-    list: readonly Descendant[],
-    parent: Path,
-    onStartEdge: boolean
-  ) => {
-    list.forEach((node, at) => {
-      const path = [
-        ...parent,
-        onStartEdge ? start.path[parent.length] + at : at,
-      ];
-
-      if (NodeApi.isText(node)) {
-        if (node.text !== '') trace(node, path);
-        return;
-      }
-      if (!open.has(node)) trace(node, path);
-      visit(node.children, path, onStartEdge && at === 0);
-    });
-  };
-
-  visit(slice.content, [], true);
+  });
 
   return { landing, nodes };
 };
@@ -631,25 +610,27 @@ const runTransfer = (
     landing.kind === 'wrap' && landing.wrap.replaced
       ? [landing.wrap.replaced]
       : [];
-  let expected: Readonly<{
-    content: readonly Descendant[];
-    moved: MovedPayload | null;
-  }> = {
-    content: slice
-      ? slice.content
-      : source.kind === 'nodes'
-        ? [
-            ...(relocatedAdoption?.payload.nodes ??
-              source.entries.map(([node]) => node)),
-            ...carried.map(({ node }) => node),
-          ]
-        : [],
-    moved: null,
-  };
-  const expectedRoots = slice ? slice.roots : before.roots;
+  const content = slice
+    ? slice.content
+    : source.kind === 'nodes'
+      ? [
+          ...(relocatedAdoption?.payload.nodes ??
+            source.entries.map(([node]) => node)),
+          ...carried.map(({ node }) => node),
+        ]
+      : [];
   const schema = getEditorSchema(editor);
-  const normalize = (node: Descendant, path: Path) =>
-    copy ? schema.copyNodeAt(node, path, targetRoot) : node;
+  const normalize: CopyNormalizer | null = copy
+    ? {
+        children: (nodes) => schema.copyChildren(nodes, targetRoot),
+        node: (node, children, path) =>
+          schema.copyChildren(
+            [node],
+            targetRoot,
+            ancestorsAt(children, path)
+          )[0],
+      }
+    : null;
   const draft: { current: DraftLanding | null } = { current: null };
   const runtime = getEditorRuntimeOwner(editor);
   const trackNodes = (paths: readonly Path[]): DraftLanding => {
@@ -657,7 +638,11 @@ const runTransfer = (
     const index = snapshot.builder.getIndex(targetRoot);
 
     return {
-      kind: 'nodes',
+      expected: {
+        content,
+        kind: 'nodes',
+        roots: slice ? slice.roots : before.roots,
+      },
       track: trackDraftSpans(
         snapshot,
         snapshot.builder,
@@ -675,7 +660,6 @@ const runTransfer = (
     copy,
     draft,
     (drafted, after, frame) => {
-      const children = rootChildren(after, targetRoot);
       const builder = getTransactionSnapshot(runtime)?.builder;
       const spans =
         builder?.value === after
@@ -683,49 +667,24 @@ const runTransfer = (
           : null;
 
       if (!builder || !spans) return false;
-      const index = builder.getIndex(targetRoot);
-      const dropped = droppedKeysOf(builder.draftSteps);
 
-      if (drafted.kind === 'range') {
-        const [span] = spans;
-        const range = span && trackedRange(index, span);
-
-        if (!range) return false;
-
-        const fragment = NodeApi.fragment(
-          { children } as never,
-          range
-        ) as Descendant[];
-
-        const { content, moved } = expected;
-
-        if (moved) return landsMoved(fragment, moved, dropped);
-
-        return (
-          textTokens(
-            copy ? schema.copyChildren(fragment, targetRoot) : fragment
-          ) === textTokens(content)
-        );
-      }
-
-      const paths = trackedPaths(index, spans);
+      const expected = frame
+        ? rebaseLanding(drafted, frame, targetRoot, normalize)
+        : drafted.expected;
 
       return (
-        paths.length === expected.content.length &&
-        paths.every((path, i) => {
-          const node = path ? nodeAt(children, path) : null;
-
-          return (
-            !!node &&
-            sameContent(
-              expected.content[i],
-              expectedRoots,
-              normalize(node, path as Path),
-              after.roots,
-              dropped
-            )
-          );
-        })
+        !!expected &&
+        landingHolds(
+          expected,
+          {
+            children: rootChildren(after, targetRoot),
+            dropped: droppedKeysOf(builder.draftSteps),
+            index: builder.getIndex(targetRoot),
+            roots: after.roots,
+            spans,
+          },
+          normalize
+        )
       );
     },
     diagnostics
@@ -925,10 +884,11 @@ const runTransfer = (
           });
         }
         applyTransactionSpec(getEditorRuntimeOwner(editor), written.spec);
-        expected = copy
-          ? { content: written.written.content, moved: null }
+
+        const expected: LandingExpectation = copy
+          ? { content: written.written.content, kind: 'range-copy' }
           : {
-              ...expected,
+              kind: 'range-move',
               moved:
                 carryMove({
                   followsDrop,
@@ -943,7 +903,7 @@ const runTransfer = (
                 }) ?? refuse('lossy'),
             };
 
-        return written.spec;
+        return { expected, spec: written.spec };
       };
 
       if (landing.kind === 'point') {
@@ -974,18 +934,19 @@ const runTransfer = (
         finalizeTransactionRepresentation(getEditorRuntimeOwner(editor));
 
         const point = drop.resolve();
-        const spec =
-          point && slice
-            ? asMove('landing', () => landAsPaste(point, slice, sources))
-            : null;
-        const track = (spec && getAppliedSpecLanding(spec)) ?? refuse('schema');
+        const pasted =
+          (point &&
+            slice &&
+            asMove('landing', () => landAsPaste(point, slice, sources))) ||
+          refuse('schema');
+        const track = getAppliedSpecLanding(pasted.spec) ?? refuse('schema');
         const { builder } = getDefined(getTransactionSnapshot(runtime));
         const [span] = readDraftTrack(track, builder.value) ?? [];
 
         landed =
           (span && trackedRange(builder.getIndex(targetRoot), span)) ??
           refuse('schema');
-        draft.current = { kind: 'range', track };
+        draft.current = { expected: pasted.expected, track };
         hold(landed);
         if (select) tx.selection.set(landed);
 
@@ -1015,7 +976,7 @@ const runTransfer = (
       }
 
       const first = boundary.at(-1) as number;
-      const paths: Path[] = expected.content.map((_, i) => [
+      const paths: Path[] = content.map((_, i) => [
         ...boundary.slice(0, -1),
         first + i,
       ]);
