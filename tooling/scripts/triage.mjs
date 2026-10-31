@@ -2636,11 +2636,19 @@ function releaseCommand(argv) {
     }
     const { who } = claims.get(issue).actor;
     console.log(`#${issue} released`);
-    if (open.get(issue)?.assignees.includes(who)) {
-      console.log(
-        `  GitHub still assigns ${who}; gh issue edit ${issue} --repo ${repo} --remove-assignee ${who} unassigns them`
-      );
-    }
+    if (!open.get(issue)?.assignees.includes(who)) continue;
+    const unassigned =
+      who === actor.who &&
+      run(
+        'gh',
+        ['issue', 'edit', issue, '--repo', repo, '--remove-assignee', '@me'],
+        { timeout: NETWORK_MS }
+      ).status === 0;
+    console.log(
+      unassigned
+        ? `  unassigned ${who}`
+        : `  GitHub still assigns ${who}; gh issue edit ${issue} --repo ${repo} --remove-assignee ${who} unassigns them`
+    );
   }
 }
 
