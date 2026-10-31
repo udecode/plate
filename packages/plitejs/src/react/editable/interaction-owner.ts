@@ -3,7 +3,14 @@ import { isDOMNode } from '../../dom';
 type ExternalHostOwner = Readonly<{
   root: () => HTMLElement | null;
   focus: () => void;
-  blur: () => void;
+  blur: (relatedTarget: EventTarget | null) => void;
+  keyDown: (event: ExternalHostKeyDown) => void;
+}>;
+
+type ExternalHostKeyDown = Readonly<{
+  defaultPrevented: boolean;
+  key: string;
+  shiftKey: boolean;
 }>;
 
 const EXTERNAL_HOSTS = new WeakMap<HTMLElement, ExternalHostOwner>();
@@ -88,8 +95,13 @@ export const guardExternalTextEvents = <T extends object>(
               if (name === 'onFocusCapture') {
                 activate();
                 external.owner.focus();
-              } else if (name === 'onBlurCapture') external.owner.blur();
-              else if (name === 'onMouseDownCapture') activate();
+              } else if (name === 'onBlurCapture') {
+                external.owner.blur(
+                  (event as unknown as FocusEvent).relatedTarget
+                );
+              } else if (name === 'onKeyDown') {
+                external.owner.keyDown(event as unknown as ExternalHostKeyDown);
+              } else if (name === 'onMouseDownCapture') activate();
             }
             return undefined;
           }
