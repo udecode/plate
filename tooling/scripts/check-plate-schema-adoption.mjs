@@ -313,7 +313,7 @@ const intentionalProductionExtendStageChains = new Map([
   ],
   [
     'packages/platejs/src/features/indent/lib/BaseIndentPlugin.ts',
-    [[['corrections', 'shortcuts']]],
+    [[['commands', 'corrections', 'shortcuts']]],
   ],
   [
     'packages/platejs/src/features/lint/lib/BaseLintPlugin.ts',
