@@ -1956,6 +1956,75 @@ function headOf(issue, reads) {
 
 const replaysReport = (fields) => fields.get('retest') === 'none';
 
+const REPORT_ROUTE = /https?:\/\/beta\.platejs\.org(\/[^\s)<>,`'"]*)/gu;
+const REPORT_SHORTCUT =
+  /(?:\b(?:Command|Cmd|Ctrl|Control|Meta)\s*\+\s*|⌘\s*)(Shift\s*\+\s*)?(?:(?:Alt|Option)\s*\+\s*)?([A-Za-z0-9])\b/giu;
+const SPEC_SHORTCUT = /['"`]((?:[A-Za-z]+\+)+)([A-Za-z0-9])['"`]/gu;
+const shortcutOf = (shift, key) =>
+  `${shift ? 'Shift+' : ''}${key.toLowerCase()}`;
+
+const taggedSpecs = (tag) => {
+  const apps = join(root, 'apps');
+  if (!existsSync(apps)) return [];
+  return readdirSync(apps)
+    .map((app) => join('apps', app, 'tests'))
+    .filter((tests) => existsSync(join(root, tests)))
+    .flatMap((tests) =>
+      readdirSync(join(root, tests), { recursive: true })
+        .filter((file) => file.endsWith('.spec.ts'))
+        .map((file) => join(tests, file))
+    )
+    .map((path) => ({ path, text: readFileSync(join(root, path), 'utf-8') }))
+    .filter(({ text }) => text.includes(tag));
+};
+
+const reporterGestureMiss = (body, tag) => {
+  const routes = [
+    ...new Set(
+      [...body.matchAll(REPORT_ROUTE)].map(
+        ([, path]) => path.replace(/[.,;:]+$/u, '').replace(/\/$/u, '') || '/'
+      )
+    ),
+  ];
+  const keys = new Set(
+    [...body.matchAll(REPORT_SHORTCUT)].map(([, shift, key]) =>
+      shortcutOf(shift, key)
+    )
+  );
+  if (routes.length === 0 && keys.size === 0) return null;
+  const opens = (text) =>
+    routes.length === 0 ||
+    routes.some((path) =>
+      new RegExp(
+        `['"\`]${path.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}[?#/'"\`]`,
+        'u'
+      ).test(text)
+    );
+  const presses = (text) =>
+    keys.size === 0 ||
+    [...text.matchAll(SPEC_SHORTCUT)].some(
+      ([, mods, key]) =>
+        /(?:Meta|Control)\+/iu.test(mods) &&
+        keys.has(shortcutOf(/Shift\+/iu.test(mods), key))
+    );
+  const specs = taggedSpecs(tag);
+  if (
+    specs.length === 0 ||
+    specs.some(({ text }) => opens(text) && presses(text))
+  ) {
+    return null;
+  }
+  const gesture = [
+    routes.length > 0 ? `opens ${routes.join(' or ')}` : null,
+    keys.size > 0
+      ? `presses ${[...keys].join(' or ')} with Meta or Control`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(' and ');
+  return `${specs.map(({ path }) => path).join(', ')} ${specs.length > 1 ? 'carry' : 'carries'} ${tag}, but none ${gesture} as the issue's text does; tag a spec that replays the reporter's own route and keys, beside any commenter's repro`;
+};
+
 const laneHeadOf = (issue, reads) => {
   const [newest] = [...(reads.rows.get(issue)?.values() ?? [])]
     .filter((row) => row.outcome === 'kind' || row.outcome === 'dup')
@@ -2778,6 +2847,13 @@ function recordCommand(argv) {
           `${where}: its kind needs ${devices.join(', ')}, so only a retest on that device proves the fix; record what the reporter retests as retest: instead of none`
         );
       }
+    }
+    if (entry.outcome === 'fixed') {
+      const miss = reporterGestureMiss(
+        current.body ?? '',
+        `[${repoNameOf(reads.policy.repo)}#${issue}]`
+      );
+      if (miss) refuse(`${where}: ${miss}`);
     }
     const owned = ownerPaths({ outcome: entry.outcome, detail: entry.detail });
     for (const path of owned) {
