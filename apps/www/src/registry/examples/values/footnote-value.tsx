@@ -11,7 +11,7 @@ export const footnoteValue = (
     <hp>
       Footnote references stay inline like this
       <hfootnoteReference ref="1">
-        <htext>1</htext>
+        <htext />
       </hfootnoteReference>
       .
     </hp>
@@ -23,21 +23,21 @@ export const footnoteValue = (
     <hp>
       Unresolved references can still exist during editing like
       <hfootnoteReference ref="2">
-        <htext>2</htext>
+        <htext />
       </hfootnoteReference>
       .
     </hp>
     <hp>
       Multiple references can point to the same definition
       <hfootnoteReference ref="1">
-        <htext>1</htext>
+        <htext />
       </hfootnoteReference>
       .
     </hp>
     <hp>
       Duplicate refs are detectable too
       <hfootnoteReference ref="3">
-        <htext>3</htext>
+        <htext />
       </hfootnoteReference>
       .
     </hp>
