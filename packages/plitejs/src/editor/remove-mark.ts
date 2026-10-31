@@ -76,7 +76,7 @@ export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
         voids: true,
       });
     } else {
-      const marks = { ...tx.marks };
+      const marks = { ...tx.getSelectionMarks() };
       delete marks[key as keyof Node];
       tx.setMarks(marks);
     }

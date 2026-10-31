@@ -8,16 +8,31 @@ import {
 } from '../../dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { getInputEventData } from './dom-input-event';
+import { isUnmarkedTextNode } from './mutation-full-block-editing';
 import {
   string as editorString,
   above as editorAbove,
+  getEditorCurrentMarks,
   isBlock as editorIsBlock,
 } from './runtime-editor-api';
 
 const NATIVE_CHAR_RE = /^[ -~]$/;
 
-const hasNativeBlockingMarks = (marks: Record<string, unknown> | null) =>
-  marks != null && Object.keys(marks).length > 0;
+const canTypeIntoCaretText = (editor: ReactRuntimeEditor, selection: Range) => {
+  const nextMarks = editor.read((state) => state.marks());
+
+  if (nextMarks && Object.keys(nextMarks).length > 0) return false;
+
+  const marksTurnedOff = getEditorCurrentMarks(editor) !== null;
+
+  if (!marksTurnedOff) return true;
+
+  return editor.read((state) => {
+    const node = state.nodes.get(selection.anchor.path)?.[0];
+
+    return !!node && isUnmarkedTextNode(node);
+  });
+};
 
 const canUseNativeTextHost = (textHost: Element | null | undefined) =>
   textHost?.getAttribute('data-editor-dom-sync') === 'true' &&
@@ -53,9 +68,7 @@ export const getNativeSingleCharacterInputDecision = ({
   // right after it (the start of the next node).
   if (selection.anchor.offset === 0) return blocked('text-start');
 
-  // Skip native if there are marks, as
-  // `insertText` will insert a node, not just text.
-  if (hasNativeBlockingMarks(editor.read((state) => state.marks()))) {
+  if (!canTypeIntoCaretText(editor, selection)) {
     return blocked('active-marks');
   }
 

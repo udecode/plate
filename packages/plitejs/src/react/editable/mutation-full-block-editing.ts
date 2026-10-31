@@ -19,7 +19,7 @@ import { readRuntimeSelection } from './runtime-selection-state';
 const hasActiveMarks = (marks: Record<string, unknown> | null) =>
   !!marks && Object.keys(marks).length > 0;
 
-const isUnmarkedTextNode = (node: Node) =>
+export const isUnmarkedTextNode = (node: Node) =>
   NodeApi.isText(node) && Object.keys(node).length === 1;
 
 const followsPlainText = (editor: RuntimeEditor, point: Point) =>
