@@ -8,6 +8,7 @@ import {
 } from 'react';
 
 import {
+  type NodeKey,
   PathApi,
   type Point,
   PointApi,
@@ -19,13 +20,17 @@ import {
   TextApi,
 } from '../..';
 import { getPlacementGeneration } from '../../core/view-carets';
-import { isDOMNode, usesAppleDOMHotkeys } from '../../dom';
+import { isDOMNode } from '../../dom';
 import type {
   DOMPhase,
   DOMPhaseScheduler,
   DOMPhaseTiming,
 } from '../../dom/internal';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
+import {
+  isGeckoDOMHost,
+  usesAppleDOMHotkeys,
+} from '../../dom/utils/environment';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import {
   type focusPliteEditable,
@@ -67,6 +72,17 @@ import {
 import type { EditableDOMSelectionSyncOptions } from './input-controller';
 import { writeCollapsedModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
+  classifyPlacedPress,
+  getPlacedUnit,
+  getShiftSpanFrom,
+  isTapOnTextBlock,
+  type PlacedPress,
+  type PlacedPressKind,
+  type PlacedUnit,
+  placedSelectionWord,
+  spanPlacedUnits,
+} from './placed-drag';
+import {
   getEditableRootPliteStringCoordinatePlacement,
   getPliteStringDocumentOffset,
   getPliteStringEdgeOffset,
@@ -100,6 +116,10 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { canUseNativeViewSelection } from './selection-projected-dom';
+import {
+  readSelectionAnnotation,
+  tripleClickedBlock,
+} from './selection-triple-click';
 import { activateViewCaret } from './view-caret-restore';
 import type { ViewLines } from './view-lines';
 
@@ -108,21 +128,6 @@ export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selectio
 type PliteFocusableEditor = Parameters<typeof focusPliteEditable>[0];
 const NATIVE_EDITABLE_TEXT_TARGET =
   '[data-editor-string], [data-editor-zero-width], [data-editor-leaf], [data-editor-node="text"]';
-
-// Chromium shows its touch handles only beside a caret the tap placed itself,
-// and marks the mouse events it synthesizes from that tap.
-const isTapOnTextBlock = (event: MouseEvent<HTMLElement>, target: Element) =>
-  (
-    event.nativeEvent as globalThis.MouseEvent & {
-      sourceCapabilities?: { firesTouchEvents: boolean } | null;
-    }
-  ).sourceCapabilities?.firesTouchEvents === true &&
-  target instanceof HTMLElement &&
-  target.isContentEditable &&
-  !target.matches('[data-editor-void="true"]') &&
-  target
-    .querySelector('[data-editor-node="text"]')
-    ?.closest('[data-editor-node="element"]') === target;
 
 export type RootInteractionEditor = ReactRuntimeEditor &
   PliteFocusableEditor & {
@@ -238,12 +243,15 @@ type PlacedDrag = {
   currentRange: Range;
   detach: () => void;
   editor: RootInteractionEditor;
+  kind: PlacedPressKind;
   moved: boolean;
   placementDOMPoint: PliteStringPlacementDOMPoint | null;
   pressInRoot: Readonly<{ x: number; y: number }>;
+  pressSelection: Range;
   rootElement: HTMLElement;
-  startRange: Range;
+  spanFrom: PlacedUnit;
   viewLines: ViewLines;
+  word: Range | null;
 };
 
 type PlacedPointer = Pick<
@@ -331,6 +339,11 @@ const attachPlacedDragListeners = (
   };
 };
 
+const getKeptTripleClickedBlock = (drag: PlacedDrag, range: Range) =>
+  drag.spanFrom.block && RangeApi.equals(range, drag.spanFrom.range)
+    ? drag.spanFrom.block
+    : null;
+
 const PLACED_DRAG_DEAD_ZONE_PX = 4;
 
 const hasPlacedPointerMoved = (drag: PlacedDrag, pointer: PlacedPointer) => {
@@ -343,26 +356,6 @@ const hasPlacedPointerMoved = (drag: PlacedDrag, pointer: PlacedPointer) => {
       PLACED_DRAG_DEAD_ZONE_PX
   );
 };
-
-const getPlacedDragTarget = (
-  event: MouseEvent<HTMLElement>,
-  target: ReturnType<typeof resolveRootInteractionTarget>
-) =>
-  event.button === 0 &&
-  event.detail <= 1 &&
-  // Ctrl-press is the context-menu press on macOS.
-  !(event.ctrlKey && usesAppleDOMHotkeys(event.nativeEvent)) &&
-  !event.shiftKey &&
-  (target.kind === 'editable-root' || target.kind === 'native-editable') &&
-  !target.target.closest('[data-editor-void="true"]') &&
-  !isTapOnTextBlock(event, target.target) &&
-  !isPointInsideDOMSelection({
-    clientX: event.clientX,
-    clientY: event.clientY,
-    target: event.currentTarget,
-  })
-    ? target.target
-    : null;
 
 const withInteractionRangeRoot = (range: Range, root: RootKey): Range => {
   if (root === MAIN_ROOT_KEY) {
@@ -1140,15 +1133,19 @@ const applyProjectedDragSelectionFromEvent = ({
 };
 
 const applyModelDragSelection = ({
+  block = null,
   editor,
   range,
   root,
   selectionBridge,
+  word = null,
 }: {
+  block?: NodeKey | null;
   editor: RootInteractionEditor;
   range: Range;
   root: RootKey;
   selectionBridge?: RootInteractionControllerOptions['selectionBridge'];
+  word?: Range | null;
 }) => {
   const rootedRange = withInteractionRangeRoot(range, root);
   const useViewSelection =
@@ -1186,10 +1183,12 @@ const applyModelDragSelection = ({
       : null,
     {
       place: () =>
-        editor.update({ tags: 'skip-scroll-into-view' }, () => {
+        editor.update({ tags: 'skip-scroll-into-view' }, (tx) => {
           dispatchCommand(editor, editorCommands.select, {
             target: rootedRange,
           });
+          if (block) tx.annotations.set(tripleClickedBlock, block);
+          if (word) tx.annotations.set(placedSelectionWord, word);
         }),
     }
   );
@@ -1476,8 +1475,11 @@ export const useRootInteractionController = ({
     (
       action: RootInteractionMouseUpAction,
       options: {
+        block?: NodeKey | null;
+        keepScroll?: boolean;
         placementDOMPoint?: PliteStringPlacementDOMPoint | null;
         receipt?: number;
+        word?: Range | null;
       } = {}
     ) => {
       if (action.type === 'ignore') {
@@ -1542,18 +1544,33 @@ export const useRootInteractionController = ({
                 range,
                 options.placementDOMPoint ?? null
               );
-              dispatchCommand(focusEditor, editorCommands.select, {
-                target: range,
-              });
+              const { block, keepScroll, word } = options;
+              const select = () =>
+                dispatchCommand(focusEditor, editorCommands.select, {
+                  target: range,
+                });
+
+              if (block || keepScroll || word) {
+                focusEditor.update((tx) => {
+                  select();
+                  if (keepScroll) tx.tags.add('skip-scroll-into-view');
+                  if (block) tx.annotations.set(tripleClickedBlock, block);
+                  if (word) tx.annotations.set(placedSelectionWord, word);
+                });
+              } else {
+                select();
+              }
             },
           }
         );
         focusPliteEditableAfterEventFrame(focusEditor, {
           receipt: getPlacementGeneration(focusEditor),
         });
-        selectionBridge?.syncDOMSelectionToEditor();
+        const syncOptions = { preserveScroll: options.keepScroll };
+
+        selectionBridge?.syncDOMSelectionToEditor(syncOptions);
         scheduleInteractionFrame('root-interaction-selection-sync', () => {
-          selectionBridge?.syncDOMSelectionToEditor();
+          selectionBridge?.syncDOMSelectionToEditor(syncOptions);
         });
         return;
       }
@@ -1583,15 +1600,21 @@ export const useRootInteractionController = ({
         x,
         y,
       });
-      const range = placement
+      const point = placement
         ? resolvePliteStringPlacementRange({ editor: drag.editor, placement })
+            ?.focus
         : null;
 
-      return range
-        ? createDragSelectionRange({
-            endRange: range,
-            startRange: drag.startRange,
-          })
+      return placement && point
+        ? spanPlacedUnits(
+            drag.spanFrom.range,
+            getPlacedUnit({
+              editor: drag.editor,
+              kind: drag.kind,
+              overLetterBefore: placement.overLetterBefore,
+              point,
+            }).range
+          )
         : null;
     },
     []
@@ -1602,10 +1625,12 @@ export const useRootInteractionController = ({
 
       if (!range || RangeApi.equals(range, drag.currentRange)) return;
       applyModelDragSelection({
+        block: getKeptTripleClickedBlock(drag, range),
         editor: drag.editor,
         range,
         root,
         selectionBridge,
+        word: drag.word,
       });
       drag.currentRange = range;
     },
@@ -1644,7 +1669,7 @@ export const useRootInteractionController = ({
           root,
           rootElement: drag.rootElement,
           selectionBridge,
-          startRange: drag.startRange,
+          startRange: drag.spanFrom.range,
         },
         phaseScheduler
       );
@@ -1654,6 +1679,8 @@ export const useRootInteractionController = ({
   const releasePlacedDrag = useCallback(
     (drag: PlacedDrag, pointer: PlacedPointer) => {
       const moved = drag.moved || hasPlacedPointerMoved(drag, pointer);
+
+      endPlacedDrag();
       const range = moved
         ? (resolvePlacedRange(
             drag,
@@ -1661,12 +1688,16 @@ export const useRootInteractionController = ({
             pointer.clientY,
             mouseEventTargetToElement(pointer.target)
           ) ?? drag.currentRange)
-        : drag.startRange;
+        : drag.pressSelection;
 
-      endPlacedDrag();
       applyInteractionAction(
         { range, type: 'set-selection' },
-        { placementDOMPoint: moved ? null : drag.placementDOMPoint }
+        {
+          block: getKeptTripleClickedBlock(drag, range),
+          keepScroll: true,
+          placementDOMPoint: moved ? null : drag.placementDOMPoint,
+          word: drag.word,
+        }
       );
     },
     [applyInteractionAction, endPlacedDrag, resolvePlacedRange]
@@ -1675,8 +1706,16 @@ export const useRootInteractionController = ({
     (
       event: MouseEvent<HTMLElement>,
       lines: ViewLines,
-      startRange: Range,
-      placementDOMPoint: PliteStringPlacementDOMPoint | null
+      {
+        kind,
+        placementDOMPoint,
+        pressSelection,
+        spanFrom,
+        word,
+      }: Pick<
+        PlacedDrag,
+        'kind' | 'placementDOMPoint' | 'pressSelection' | 'spanFrom' | 'word'
+      >
     ) => {
       event.preventDefault();
       pendingProjectedDrag?.releaseCleanup();
@@ -1687,18 +1726,21 @@ export const useRootInteractionController = ({
       const rootElement = event.currentTarget;
       const rootRect = rootElement.getBoundingClientRect();
       const drag: PlacedDrag = {
-        currentRange: startRange,
+        currentRange: pressSelection,
         detach: () => {},
         editor: getMountedViewEditor(root) ?? editor,
+        kind,
         moved: false,
         placementDOMPoint,
         pressInRoot: {
           x: event.clientX - rootRect.left,
           y: event.clientY - rootRect.top,
         },
+        pressSelection,
         rootElement,
-        startRange,
+        spanFrom,
         viewLines: lines,
+        word,
       };
 
       drag.detach = attachPlacedDragListeners(rootElement, {
@@ -1712,8 +1754,8 @@ export const useRootInteractionController = ({
       });
       placedDragRef.current = drag;
       applyInteractionAction(
-        { range: startRange, type: 'set-selection' },
-        { placementDOMPoint }
+        { range: pressSelection, type: 'set-selection' },
+        { block: spanFrom.block, keepScroll: true, placementDOMPoint, word }
       );
     },
     [
@@ -1728,27 +1770,58 @@ export const useRootInteractionController = ({
     ]
   );
   const startPlacedDrag = useCallback(
-    (event: MouseEvent<HTMLElement>, lines: ViewLines, target: Element) => {
+    (event: MouseEvent<HTMLElement>, lines: ViewLines, press: PlacedPress) => {
+      const view = getMountedViewEditor(root) ?? editor;
+      const held =
+        press.kind === 'shift' ? view.read((state) => state.selection()) : null;
+      const shiftFrom =
+        RangeApi.isRange(held) && isRootLocalRange(held, root) ? held : null;
+
+      if (press.kind === 'shift' && !shiftFrom) return false;
       const placement = lines.placementAt({
-        reach: 'press',
-        target,
+        reach: press.kind === 'shift' ? 'drag' : 'press',
+        target: press.target,
         x: event.clientX,
         y: event.clientY,
       });
-      const startRange = placement
-        ? resolvePliteStringPlacementRange({
-            editor: getMountedViewEditor(root) ?? editor,
-            placement,
-          })
+      const point = placement
+        ? resolvePliteStringPlacementRange({ editor: view, placement })?.focus
         : null;
 
-      if (!placement || !startRange) return false;
-      beginPlacedDrag(
-        event,
-        lines,
-        startRange,
-        getPliteStringPlacementDOMPoint(placement)
-      );
+      if (!placement || !point) return false;
+      const gecko = isGeckoDOMHost(event.nativeEvent);
+      const word = shiftFrom
+        ? readSelectionAnnotation(view, placedSelectionWord, shiftFrom)
+        : null;
+      // Chromium and WebKit extend a double-click's selection by words,
+      // Firefox by characters.
+      const kind = word && !gecko ? 'word' : press.kind;
+      const spanFrom = shiftFrom
+        ? getShiftSpanFrom({
+            editor: view,
+            keepsFarEnd: usesAppleDOMHotkeys(event.nativeEvent) && !gecko,
+            point,
+            selection: shiftFrom,
+            word,
+          })
+        : null;
+      const unit = getPlacedUnit({
+        editor: view,
+        kind,
+        overLetterBefore: placement.overLetterBefore,
+        point,
+      });
+
+      beginPlacedDrag(event, lines, {
+        kind,
+        placementDOMPoint:
+          kind === 'plain' ? getPliteStringPlacementDOMPoint(placement) : null,
+        pressSelection: spanFrom
+          ? spanPlacedUnits(spanFrom, unit.range)
+          : unit.range,
+        spanFrom: spanFrom ? { block: null, range: spanFrom } : unit,
+        word: word ?? (kind === 'word' ? unit.range : null),
+      });
       return true;
     },
     [beginPlacedDrag, editor, getMountedViewEditor, root]
@@ -1770,14 +1843,14 @@ export const useRootInteractionController = ({
           target: event.target,
         });
 
-        const placedTarget = viewLines
-          ? getPlacedDragTarget(event, target)
+        const placedPress = viewLines
+          ? classifyPlacedPress(event, target)
           : null;
 
         if (
           viewLines &&
-          placedTarget &&
-          startPlacedDrag(event, viewLines, placedTarget)
+          placedPress &&
+          startPlacedDrag(event, viewLines, placedPress)
         ) {
           return;
         }
@@ -1967,12 +2040,31 @@ export const useRootInteractionController = ({
         }
         const placedDragTakesCoordinateDrag =
           viewLines &&
-          placedTarget &&
+          placedPress &&
+          placedPress.kind !== 'shift' &&
+          (placedPress.kind === 'plain' || !ownerChromeClickEndpoint) &&
           coordinateDragRootChromePlacement &&
           clickRange;
 
         if (placedDragTakesCoordinateDrag) {
-          beginPlacedDrag(event, viewLines, clickRange, placementDOMPoint);
+          const { kind } = placedPress;
+          const spanFrom =
+            kind === 'plain'
+              ? { block: null, range: clickRange }
+              : getPlacedUnit({
+                  editor: focusEditor,
+                  kind,
+                  overLetterBefore: false,
+                  point: clickRange.focus,
+                });
+
+          beginPlacedDrag(event, viewLines, {
+            kind,
+            placementDOMPoint: kind === 'plain' ? placementDOMPoint : null,
+            pressSelection: spanFrom.range,
+            spanFrom,
+            word: kind === 'word' ? spanFrom.range : null,
+          });
           return;
         }
 
@@ -2283,6 +2375,9 @@ export const useRootInteractionController = ({
       if (placedDrag) {
         if (event.currentTarget.contains(event.target as Node)) {
           event.preventDefault();
+          if (placedDrag.kind === 'word' || placedDrag.kind === 'block') {
+            rootRuntime?.markNextClickSelected();
+          }
           releasePlacedDrag(placedDrag, event.nativeEvent);
         }
         return;

@@ -281,6 +281,46 @@ const mapLogicalOffsetToPoint = (
   };
 };
 
+export const getTextRunBetweenAtomics = (editor: Editor, path: Path) => {
+  const groupPath = getTextBlockPath(editor, path);
+  const block = [
+    ...getPositionSegments(editor, editorRange(editor, groupPath), {
+      reverse: false,
+      voids: false,
+    }),
+  ].filter((segment) => PathApi.equals(segment.groupPath, groupPath));
+  const at = block.findIndex(
+    (segment) => !segment.atomic && PathApi.equals(segment.path, path)
+  );
+
+  if (at === -1) return null;
+
+  const before = block.findLastIndex(
+    (segment, index) => index < at && segment.atomic
+  );
+  const after = block.findIndex(
+    (segment, index) => index > at && segment.atomic
+  );
+  const segments = block.slice(before + 1, after === -1 ? undefined : after);
+
+  return {
+    offsetOf: (point: Point) => {
+      let consumed = 0;
+
+      for (const segment of segments) {
+        if (PathApi.equals(segment.path, point.path)) {
+          return consumed + Math.max(0, point.offset - segment.start);
+        }
+        consumed += segment.text.length;
+      }
+      return null;
+    },
+    pointAt: (offset: number, boundary: 'backward' | 'forward') =>
+      mapLogicalOffsetToPoint(segments, offset, boundary),
+    text: segments.map((segment) => segment.text).join(''),
+  };
+};
+
 // A reverse walk delivers each run backward, and every position collector
 // reads document order before applying `reverse` itself, so runs flip back.
 function* groupPositionSegments(

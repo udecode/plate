@@ -14,7 +14,7 @@ import {
   getPliteStringPlacementAtX,
   getUsableRangeRects,
   PLITE_STRING_PRESS_REACH_PX,
-  type PliteStringCoordinatePlacement,
+  type PliteStringLetterPlacement,
   type PliteStringRectHit,
 } from '../../dom/plugin/dom-geometry';
 import { findMountedDOMNodeByPath } from '../../dom/plugin/dom-node-path';
@@ -55,7 +55,7 @@ export type ViewLines = Readonly<{
       x: number;
       y: number;
     }>
-  ) => PliteStringCoordinatePlacement;
+  ) => PliteStringLetterPlacement | null;
 }>;
 
 export const ViewLinesContext = createContext<ViewLines | null>(null);

@@ -79,7 +79,7 @@ export const getCharacterDistance = (str: string, isRTL = false): number => {
 
 type WordSegmentKind = 'emoji' | 'separator' | 'word';
 
-type WordSegment = {
+export type WordSegment = {
   kind: WordSegmentKind;
   length: number;
 };
@@ -236,7 +236,10 @@ const consumeContinuations = (text: string, offset: number) => {
   return cursor;
 };
 
-const getWordSegments = (text: string, isRTL: boolean): WordSegment[] => {
+export const getWordSegments = (
+  text: string,
+  isRTL: boolean
+): WordSegment[] => {
   const segments: WordSegment[] = [];
 
   for (let offset = 0; offset < text.length;) {

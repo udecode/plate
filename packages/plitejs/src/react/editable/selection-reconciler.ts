@@ -7,7 +7,6 @@ import {
 } from 'react';
 
 import { NodeApi, PathApi, type Range, RangeApi, SelectionApi } from '../..';
-import { getFullySelectedSiblingBlocks } from '../../core/editor-commands';
 import { setShownSelectionAsView } from '../../core/view-carets';
 import {
   containsShadowAware,
@@ -78,7 +77,6 @@ import { readModelSelectionDOMPreference } from './model-selection-dom-preferenc
 import {
   failInvariant,
   isVoid as editorIsVoid,
-  isBlock as editorIsBlock,
   above as editorAbove,
   range as editorRange,
   isInline as editorIsInline,
@@ -102,6 +100,7 @@ import {
 } from './selection-side-effect-policy';
 import {
   exportTripleClickSelectionToDOM,
+  getTripleClickBlock,
   tripleClickedBlock,
 } from './selection-triple-click';
 import {
@@ -386,24 +385,8 @@ export const applyEditableClick = ({
     const { node, path } = target;
 
     if (event.detail === TRIPLE_CLICK && path.length >= 1) {
-      let blockPath = path;
-      if (!(NodeApi.isElement(node) && editorIsBlock(editor, node))) {
-        const block = editorAbove(editor, {
-          match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
-          at: path,
-        });
+      const { block, range } = getTripleClickBlock(editor, [node, path]);
 
-        blockPath = block?.[1] ?? path.slice(0, 1);
-      }
-
-      const range = editorRange(editor, blockPath);
-      const block = editor.read((state) => {
-        const blocks = getFullySelectedSiblingBlocks(state, range);
-
-        return blocks?.length === 1 && blocks[0]
-          ? state.key(blocks[0][0])
-          : null;
-      });
       writePliteViewSelection(editor, null);
       setEditableModelSelectionPreference({
         inputController,

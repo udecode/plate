@@ -385,6 +385,7 @@ export class EditableDOMRuntime {
   private dropResultHandler: (result: EditableDropResult) => void = () => {};
 
   private externalMouseGesture = false;
+  private nextClickSelected = false;
   private cancelPressTask: (() => void) | null = null;
   private inEditableMouseUp = false;
 
@@ -1021,6 +1022,21 @@ export class EditableDOMRuntime {
 
   setExternalMouseGesture(active: boolean) {
     this.externalMouseGesture = active;
+  }
+
+  markNextClickSelected() {
+    this.nextClickSelected = true;
+  }
+
+  clearNextClickSelected() {
+    this.nextClickSelected = false;
+  }
+
+  takeNextClickSelected() {
+    const selected = this.nextClickSelected;
+
+    this.nextClickSelected = false;
+    return selected;
   }
 
   /**

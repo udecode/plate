@@ -22,6 +22,10 @@ export type DOMGeometryRect = {
 
 export const PLITE_STRING_PRESS_REACH_PX = 16;
 
+export type PliteStringLetterPlacement =
+  NonNullable<PliteStringCoordinatePlacement> &
+    Readonly<{ overLetterBefore: boolean }>;
+
 export type PliteStringCoordinatePlacement = {
   edge: 'end' | 'start';
   offset?: number;
@@ -538,7 +542,7 @@ export const getPliteStringLineEdgeTextOffset = ({
   return best?.offset ?? (edge === 'start' ? 0 : textLength);
 };
 
-export const getPliteStringLineOffsetAtX = ({
+export const getPliteStringLineHitAtX = ({
   event,
   rect,
   string,
@@ -546,7 +550,7 @@ export const getPliteStringLineOffsetAtX = ({
   event: Pick<MouseEvent, 'clientX' | 'clientY'>;
   rect: DOMRect;
   string: HTMLElement;
-}) => {
+}): Readonly<{ offset: number; overLetterBefore: boolean }> | null => {
   const textNode = Array.from(string.childNodes).find(
     (node) => node.nodeType === 3
   );
@@ -558,7 +562,7 @@ export const getPliteStringLineOffsetAtX = ({
   const text = textNode.textContent ?? '';
 
   if (text.length === 0) {
-    return 0;
+    return { offset: 0, overLetterBefore: false };
   }
 
   const direction = getPliteStringDirection(string);
@@ -567,6 +571,7 @@ export const getPliteStringLineOffsetAtX = ({
   let best: {
     horizontalDistance: number;
     offset: number;
+    overLetterBefore: boolean;
     verticalCenterDistance: number;
     verticalDistance: number;
   } | null = null;
@@ -610,6 +615,7 @@ export const getPliteStringLineOffsetAtX = ({
       const candidate = {
         horizontalDistance,
         offset,
+        overLetterBefore: offset !== start,
         verticalCenterDistance: getRectVerticalCenterDistance(
           characterRect,
           event.clientY
@@ -633,7 +639,7 @@ export const getPliteStringLineOffsetAtX = ({
 
   return best?.verticalDistance != null &&
     best.verticalDistance <= Math.max(rect.height, 16)
-    ? best.offset
+    ? { offset: best.offset, overLetterBefore: best.overLetterBefore }
     : null;
 };
 
@@ -703,11 +709,11 @@ export const getPliteStringCoordinatePlacement = ({
   }
 
   if (includeInsideString) {
-    const offset = getPliteStringLineOffsetAtX({
+    const offset = getPliteStringLineHitAtX({
       event,
       rect: nearestString.rect,
       string: nearestString.string,
-    });
+    })?.offset;
 
     if (offset != null) {
       return {
@@ -758,7 +764,7 @@ export const getPliteStringDirectPlacement = ({
   target: Element | null;
   x: number;
   y: number;
-}): PliteStringCoordinatePlacement => {
+}): PliteStringLetterPlacement | null => {
   const string = target?.closest<HTMLElement>(PLITE_TEXT_SELECTOR);
 
   if (!string || !isOwnedPliteText(root, string)) return null;
@@ -774,14 +780,38 @@ export const getPliteStringDirectPlacement = ({
   const point = getNativeDOMPointAtCoordinates(string.ownerDocument, x, y);
 
   if (!point || point[0] !== getStringTextNode(string)) return null;
+  const [, offset] = point;
 
   return {
     edge: 'start',
-    offset: point[1],
+    offset,
+    overLetterBefore: isOverLetterBefore(string.ownerDocument, point, x, y),
     rect,
     source: 'string-offset',
     string,
   };
+};
+
+// A collapsed caret's own rect can sit on either line at a soft wrap, so the
+// side comes from the letter before the caret.
+const isOverLetterBefore = (
+  document: Document,
+  [textNode, offset]: DOMGeometryPoint,
+  x: number,
+  y: number
+) => {
+  if (offset === 0) return false;
+  const letter = document.createRange();
+
+  letter.setStart(textNode, offset - 1);
+  letter.setEnd(textNode, offset);
+  return getUsableRangeRects(letter).some(
+    (candidate) =>
+      x >= candidate.left &&
+      x < candidate.right &&
+      y >= candidate.top &&
+      y <= candidate.bottom
+  );
 };
 
 export const getNearestPliteStringRect = ({
@@ -823,22 +853,22 @@ export const getPliteStringPlacementAtX = ({
   rect: DOMRect;
   string: HTMLElement;
   x: number;
-}): PliteStringCoordinatePlacement => {
-  const offset = getPliteStringLineOffsetAtX({
+}): PliteStringLetterPlacement | null => {
+  const hit = getPliteStringLineHitAtX({
     event: { clientX: x, clientY: rect.top + rect.height / 2 },
     rect,
     string,
   });
 
-  return offset == null
-    ? null
-    : {
-        edge: 'start',
-        offset,
-        rect,
-        source: 'string-offset',
-        string,
-      };
+  return (
+    hit && {
+      edge: 'start',
+      ...hit,
+      rect,
+      source: 'string-offset',
+      string,
+    }
+  );
 };
 
 const getDOMPointElement = (point: DOMGeometryPoint) => {

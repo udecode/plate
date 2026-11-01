@@ -267,7 +267,13 @@ export const useRuntimeFocusMouseEvents = ({
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
-      if (externalMouseGestureRef.current) {
+      if (
+        externalMouseGestureRef.current ||
+        (event.detail > 0 &&
+          findMountedEditableDOMRuntime(
+            event.currentTarget
+          )?.takeNextClickSelected())
+      ) {
         externalMouseGestureRef.current = false;
         onClick?.(event);
         return;
