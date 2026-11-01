@@ -16,8 +16,7 @@ const LEADING_NEWLINE_REGEX = /^\n/;
 // dropped. A soft break after any other node stays in the text.
 const isBr = (node?: MdRootContent) =>
   (node?.type === 'html' && BR_HTML_REGEX.test(node.value)) ||
-  ((node?.type === 'mdxJsxTextElement' ||
-    node?.type === 'mdxJsxFlowElement') &&
+  ((node?.type === 'mdxJsxTextElement' || node?.type === 'mdxJsxFlowElement') &&
     node.name === 'br');
 
 const dropNewlineAfterBr = (
