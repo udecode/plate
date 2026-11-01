@@ -1,4 +1,4 @@
-import React, { useCallback, useSyncExternalStore } from 'react';
+import React, { useCallback, useContext, useSyncExternalStore } from 'react';
 
 import { NodeApi, type Path, type Range, RangeApi, type NodeKey } from '../..';
 import { type DOMRange, isDOMNode } from '../../dom';
@@ -26,6 +26,7 @@ import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { resolveEditableSelectableOwnerClickTarget } from '../editable/selection-void-target';
 import { activateViewCaret } from '../editable/view-caret-restore';
+import { ViewLinesContext } from '../editable/view-lines';
 import {
   EditableDOMRuntimeContext,
   useEditableDOMHostFact,
@@ -380,6 +381,7 @@ export const EditableDOMRoot = (
     runtime,
     selection: 'restore',
     selectionBridge: rootInteractionSelectionBridge,
+    viewLines: useContext(ViewLinesContext),
   });
   const {
     onMouseDownCapture: onRootMouseDownCapture,

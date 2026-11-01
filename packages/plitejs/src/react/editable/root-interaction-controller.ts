@@ -19,6 +19,7 @@ import {
   TextApi,
 } from '../..';
 import { getPlacementGeneration } from '../../core/view-carets';
+import { isDOMNode, usesAppleDOMHotkeys } from '../../dom';
 import type {
   DOMPhase,
   DOMPhaseScheduler,
@@ -100,6 +101,7 @@ import {
 } from './runtime-editor-api';
 import { canUseNativeViewSelection } from './selection-projected-dom';
 import { activateViewCaret } from './view-caret-restore';
+import type { ViewLines } from './view-lines';
 
 export { shouldReplayMouseUpDOMSelection } from './root-interaction-dom-selection-replay';
 
@@ -150,6 +152,7 @@ export type RootInteractionControllerOptions = {
       options?: EditableDOMSelectionSyncOptions
     ) => void;
   };
+  viewLines?: ViewLines | null;
 };
 
 export type RootInteractionController = {
@@ -219,6 +222,7 @@ type PendingDragAutoScroll = {
   clientY: number;
   currentRange: Range;
   editor: RootInteractionEditor;
+  follow?: (clientX: number, clientY: number) => void;
   releaseCleanup: (() => void) | null;
   root: RootKey;
   rootElement: HTMLElement;
@@ -229,6 +233,23 @@ type PendingDragAutoScroll = {
 type PendingDragAutoScrollRef = {
   current: PendingDragAutoScroll | null;
 };
+
+type PlacedDrag = {
+  currentRange: Range;
+  detach: () => void;
+  editor: RootInteractionEditor;
+  moved: boolean;
+  placementDOMPoint: PliteStringPlacementDOMPoint | null;
+  pressInRoot: Readonly<{ x: number; y: number }>;
+  rootElement: HTMLElement;
+  startRange: Range;
+  viewLines: ViewLines;
+};
+
+type PlacedPointer = Pick<
+  globalThis.MouseEvent,
+  'buttons' | 'clientX' | 'clientY' | 'target'
+>;
 
 let pendingProjectedDrag: PendingProjectedDrag | null = null;
 
@@ -272,6 +293,76 @@ const attachProjectedDragReleaseListeners = (
     window?.removeEventListener('blur', releaseOnBlur);
   };
 };
+
+const attachPlacedDragListeners = (
+  rootElement: HTMLElement,
+  {
+    onBlur,
+    onMove,
+    onUp,
+  }: {
+    onBlur: () => void;
+    onMove: (pointer: globalThis.MouseEvent) => void;
+    onUp: (pointer: globalThis.MouseEvent) => void;
+  }
+) => {
+  const document = rootElement.ownerDocument;
+  const window = document.defaultView;
+  const outside =
+    (handle: (pointer: globalThis.MouseEvent) => void) =>
+    (pointer: globalThis.MouseEvent) => {
+      if (
+        !(isDOMNode(pointer.target) && rootElement.contains(pointer.target))
+      ) {
+        handle(pointer);
+      }
+    };
+  const move = outside(onMove);
+  const up = outside(onUp);
+
+  document.addEventListener('mousemove', move, true);
+  document.addEventListener('mouseup', up, true);
+  window?.addEventListener('blur', onBlur);
+
+  return () => {
+    document.removeEventListener('mousemove', move, true);
+    document.removeEventListener('mouseup', up, true);
+    window?.removeEventListener('blur', onBlur);
+  };
+};
+
+const PLACED_DRAG_DEAD_ZONE_PX = 4;
+
+const hasPlacedPointerMoved = (drag: PlacedDrag, pointer: PlacedPointer) => {
+  const root = drag.rootElement.getBoundingClientRect();
+
+  return (
+    Math.abs(pointer.clientX - root.left - drag.pressInRoot.x) >
+      PLACED_DRAG_DEAD_ZONE_PX ||
+    Math.abs(pointer.clientY - root.top - drag.pressInRoot.y) >
+      PLACED_DRAG_DEAD_ZONE_PX
+  );
+};
+
+const getPlacedDragTarget = (
+  event: MouseEvent<HTMLElement>,
+  target: ReturnType<typeof resolveRootInteractionTarget>
+) =>
+  event.button === 0 &&
+  event.detail <= 1 &&
+  // Ctrl-press is the context-menu press on macOS.
+  !(event.ctrlKey && usesAppleDOMHotkeys(event.nativeEvent)) &&
+  !event.shiftKey &&
+  (target.kind === 'editable-root' || target.kind === 'native-editable') &&
+  !target.target.closest('[data-editor-void="true"]') &&
+  !isTapOnTextBlock(event, target.target) &&
+  !isPointInsideDOMSelection({
+    clientX: event.clientX,
+    clientY: event.clientY,
+    target: event.currentTarget,
+  })
+    ? target.target
+    : null;
 
 const withInteractionRangeRoot = (range: Range, root: RootKey): Range => {
   if (root === MAIN_ROOT_KEY) {
@@ -1179,6 +1270,10 @@ const extendDragAutoScrollSelection = (
     delta,
   }: { clientX: number; clientY: number; delta: number }
 ) => {
+  if (state.follow) {
+    state.follow(clientX, clientY);
+    return;
+  }
   const eventRange = resolveDragAutoScrollEventRange({
     clientX,
     clientY,
@@ -1305,17 +1400,26 @@ export const useRootInteractionController = ({
   runtime: rootRuntime,
   selection,
   selectionBridge,
+  viewLines = null,
 }: RootInteractionControllerOptions): RootInteractionController => {
   const [pendingInteractionRef] = useState(() => ({
     current: ignoreInteraction(),
   }));
   const interactionEpochRef = useRef(0);
   const pendingDragAutoScrollRef = useRef<PendingDragAutoScroll | null>(null);
+  const placedDragRef = useRef<PlacedDrag | null>(null);
+  const endPlacedDrag = useCallback(() => {
+    const drag = placedDragRef.current;
+
+    placedDragRef.current = null;
+    drag?.detach();
+    stopDragAutoScroll(pendingDragAutoScrollRef);
+  }, []);
   useEffect(
     () => () => {
-      stopDragAutoScroll(pendingDragAutoScrollRef);
+      endPlacedDrag();
     },
-    []
+    [endPlacedDrag]
   );
   const scheduleInteractionFrame = useCallback(
     (
@@ -1471,6 +1575,185 @@ export const useRootInteractionController = ({
     ]
   );
 
+  const resolvePlacedRange = useCallback(
+    (drag: PlacedDrag, x: number, y: number, target: Element | null) => {
+      const placement = drag.viewLines.placementAt({
+        reach: 'drag',
+        target,
+        x,
+        y,
+      });
+      const range = placement
+        ? resolvePliteStringPlacementRange({ editor: drag.editor, placement })
+        : null;
+
+      return range
+        ? createDragSelectionRange({
+            endRange: range,
+            startRange: drag.startRange,
+          })
+        : null;
+    },
+    []
+  );
+  const followPlacedDrag = useCallback(
+    (drag: PlacedDrag, x: number, y: number, target: Element | null) => {
+      const range = resolvePlacedRange(drag, x, y, target);
+
+      if (!range || RangeApi.equals(range, drag.currentRange)) return;
+      applyModelDragSelection({
+        editor: drag.editor,
+        range,
+        root,
+        selectionBridge,
+      });
+      drag.currentRange = range;
+    },
+    [resolvePlacedRange, root, selectionBridge]
+  );
+  const movePlacedDrag = useCallback(
+    (drag: PlacedDrag, pointer: PlacedPointer) => {
+      if (pointer.buttons === 0) {
+        endPlacedDrag();
+        return;
+      }
+      if (!drag.moved && !hasPlacedPointerMoved(drag, pointer)) return;
+      drag.moved = true;
+      followPlacedDrag(
+        drag,
+        pointer.clientX,
+        pointer.clientY,
+        mouseEventTargetToElement(pointer.target)
+      );
+      const phaseScheduler =
+        rootRuntime?.domPhaseScheduler ??
+        findMountedEditableDOMRuntime(drag.rootElement)?.domPhaseScheduler;
+
+      if (!phaseScheduler) {
+        stopDragAutoScroll(pendingDragAutoScrollRef);
+        return;
+      }
+      updateDragAutoScroll(
+        pendingDragAutoScrollRef,
+        {
+          clientX: pointer.clientX,
+          clientY: pointer.clientY,
+          currentRange: drag.currentRange,
+          editor: drag.editor,
+          follow: (x, y) => followPlacedDrag(drag, x, y, null),
+          root,
+          rootElement: drag.rootElement,
+          selectionBridge,
+          startRange: drag.startRange,
+        },
+        phaseScheduler
+      );
+    },
+    [endPlacedDrag, followPlacedDrag, root, rootRuntime, selectionBridge]
+  );
+  const releasePlacedDrag = useCallback(
+    (drag: PlacedDrag, pointer: PlacedPointer) => {
+      const moved = drag.moved || hasPlacedPointerMoved(drag, pointer);
+      const range = moved
+        ? (resolvePlacedRange(
+            drag,
+            pointer.clientX,
+            pointer.clientY,
+            mouseEventTargetToElement(pointer.target)
+          ) ?? drag.currentRange)
+        : drag.startRange;
+
+      endPlacedDrag();
+      applyInteractionAction(
+        { range, type: 'set-selection' },
+        { placementDOMPoint: moved ? null : drag.placementDOMPoint }
+      );
+    },
+    [applyInteractionAction, endPlacedDrag, resolvePlacedRange]
+  );
+  const beginPlacedDrag = useCallback(
+    (
+      event: MouseEvent<HTMLElement>,
+      lines: ViewLines,
+      startRange: Range,
+      placementDOMPoint: PliteStringPlacementDOMPoint | null
+    ) => {
+      event.preventDefault();
+      pendingProjectedDrag?.releaseCleanup();
+      pendingProjectedDrag?.finish();
+      pendingProjectedDrag = null;
+      pendingInteractionRef.current = ignoreInteraction();
+
+      const rootElement = event.currentTarget;
+      const rootRect = rootElement.getBoundingClientRect();
+      const drag: PlacedDrag = {
+        currentRange: startRange,
+        detach: () => {},
+        editor: getMountedViewEditor(root) ?? editor,
+        moved: false,
+        placementDOMPoint,
+        pressInRoot: {
+          x: event.clientX - rootRect.left,
+          y: event.clientY - rootRect.top,
+        },
+        rootElement,
+        startRange,
+        viewLines: lines,
+      };
+
+      drag.detach = attachPlacedDragListeners(rootElement, {
+        onBlur: endPlacedDrag,
+        onMove: (pointer) => {
+          if (placedDragRef.current === drag) movePlacedDrag(drag, pointer);
+        },
+        onUp: (pointer) => {
+          if (placedDragRef.current === drag) releasePlacedDrag(drag, pointer);
+        },
+      });
+      placedDragRef.current = drag;
+      applyInteractionAction(
+        { range: startRange, type: 'set-selection' },
+        { placementDOMPoint }
+      );
+    },
+    [
+      applyInteractionAction,
+      editor,
+      endPlacedDrag,
+      getMountedViewEditor,
+      movePlacedDrag,
+      pendingInteractionRef,
+      releasePlacedDrag,
+      root,
+    ]
+  );
+  const startPlacedDrag = useCallback(
+    (event: MouseEvent<HTMLElement>, lines: ViewLines, target: Element) => {
+      const placement = lines.placementAt({
+        reach: 'press',
+        target,
+        x: event.clientX,
+        y: event.clientY,
+      });
+      const startRange = placement
+        ? resolvePliteStringPlacementRange({
+            editor: getMountedViewEditor(root) ?? editor,
+            placement,
+          })
+        : null;
+
+      if (!placement || !startRange) return false;
+      beginPlacedDrag(
+        event,
+        lines,
+        startRange,
+        getPliteStringPlacementDOMPoint(placement)
+      );
+      return true;
+    },
+    [beginPlacedDrag, editor, getMountedViewEditor, root]
+  );
+
   const onMouseDownCapture = useCallback<MouseEventHandler<HTMLElement>>(
     (event) => {
       profilePliteReactDuration('root-mousedown.capture', () => {
@@ -1480,12 +1763,24 @@ export const useRootInteractionController = ({
 
         interactionEpochRef.current += 1;
 
-        stopDragAutoScroll(pendingDragAutoScrollRef);
+        endPlacedDrag();
 
         const target = resolveRootInteractionTarget({
           currentTarget: event.currentTarget,
           target: event.target,
         });
+
+        const placedTarget = viewLines
+          ? getPlacedDragTarget(event, target)
+          : null;
+
+        if (
+          viewLines &&
+          placedTarget &&
+          startPlacedDrag(event, viewLines, placedTarget)
+        ) {
+          return;
+        }
         const editableRoot =
           target.kind === 'editable-root' || target.kind === 'native-editable'
             ? target.editableRoot
@@ -1670,6 +1965,16 @@ export const useRootInteractionController = ({
         if (ignoreBlankEditableRootClick && !startRange) {
           action = { type: 'ignore' };
         }
+        const placedDragTakesCoordinateDrag =
+          viewLines &&
+          placedTarget &&
+          coordinateDragRootChromePlacement &&
+          clickRange;
+
+        if (placedDragTakesCoordinateDrag) {
+          beginPlacedDrag(event, viewLines, clickRange, placementDOMPoint);
+          return;
+        }
 
         const existingSelectionProjectedDragEndpoint = nativeEditableTextTarget
           ? profilePliteReactDuration(
@@ -1829,8 +2134,10 @@ export const useRootInteractionController = ({
     },
     [
       applyInteractionAction,
+      beginPlacedDrag,
       disabled,
       editor,
+      endPlacedDrag,
       getMountedViewEditor,
       ignoreBlankEditableRootClicks,
       pendingInteractionRef,
@@ -1839,11 +2146,24 @@ export const useRootInteractionController = ({
       scheduleInteractionFrame,
       selection,
       selectionBridge,
+      startPlacedDrag,
+      viewLines,
     ]
   );
 
   const onMouseMoveCapture = useCallback<MouseEventHandler<HTMLElement>>(
     (event) => {
+      const placedDrag = placedDragRef.current;
+
+      if (placedDrag) {
+        // A portal's events reach these handlers too; the document listener
+        // owns every event outside the root.
+        if (event.currentTarget.contains(event.target as Node)) {
+          event.preventDefault();
+          movePlacedDrag(placedDrag, event.nativeEvent);
+        }
+        return;
+      }
       const pendingInteraction = pendingInteractionRef.current;
       const projectedDrag = pendingProjectedDrag;
 
@@ -1948,6 +2268,7 @@ export const useRootInteractionController = ({
       disabled,
       editor,
       getMountedViewEditor,
+      movePlacedDrag,
       pendingInteractionRef,
       root,
       rootRuntime,
@@ -1957,6 +2278,15 @@ export const useRootInteractionController = ({
 
   const onMouseUpCapture = useCallback<MouseEventHandler<HTMLElement>>(
     (event) => {
+      const placedDrag = placedDragRef.current;
+
+      if (placedDrag) {
+        if (event.currentTarget.contains(event.target as Node)) {
+          event.preventDefault();
+          releasePlacedDrag(placedDrag, event.nativeEvent);
+        }
+        return;
+      }
       const pendingInteraction = pendingInteractionRef.current;
       pendingInteractionRef.current = ignoreInteraction();
       stopDragAutoScroll(pendingDragAutoScrollRef);
@@ -2212,6 +2542,7 @@ export const useRootInteractionController = ({
       editor,
       getMountedViewEditor,
       pendingInteractionRef,
+      releasePlacedDrag,
       root,
       rootRuntime,
       scheduleInteractionFrame,

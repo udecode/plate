@@ -62,8 +62,11 @@ import {
   type DecorationSlice,
 } from '../react/decoration-source';
 import {
+  getPliteStringDirectPlacement,
   landInViewBlock,
   landOnViewLine,
+  nearestViewText,
+  placeOnViewText,
   type ViewLines,
 } from '../react/editable/view-lines';
 import { useEditableLayoutPass } from '../react/hooks/use-editable-layout-pass';
@@ -97,11 +100,17 @@ import {
   getPagedEditableVisiblePageMountItems,
   type PagedEditablePageMountPlan,
 } from './page-mount-plan';
-import { isNativeFlowBlock, pagedLineTarget } from './paged-view-lines';
+import {
+  isNativeFlowBlock,
+  pagedLineTarget,
+  placedTextAt,
+} from './paged-view-lines';
 
 export * from './index';
 
 type PagedViewLayout = Readonly<{
+  canvas: HTMLElement | null;
+  geometry: PageLayoutGeometry | null;
   measuredVersion: number;
   mountedPageIndexes: ReadonlySet<number> | 'all';
   root: HTMLElement | null;
@@ -123,14 +132,18 @@ const lineStartAfterTrailingBreak = (
       : point;
   });
 
+const RUN_ATTRIBUTE = 'data-pagination-run';
+
 const createPagedViewLines = ({
   editor,
   readLayout,
   readVersion,
+  readViewport,
 }: Readonly<{
   editor: ReactRuntimeEditor;
   readLayout: () => PagedViewLayout | null;
   readVersion: () => number;
+  readViewport: () => Viewport | null;
 }>): ViewLines => ({
   lineAfter: ({ direction, from, readX }) => {
     const layout = readLayout();
@@ -179,6 +192,72 @@ const createPagedViewLines = ({
           start: target.start,
         })
       : landInViewBlock({ direction, editor, path, readX, root });
+  },
+  placementAt: ({ reach, target, x, y }) => {
+    const layout = readLayout();
+
+    if (
+      !layout?.root ||
+      !layout.canvas ||
+      !layout.geometry ||
+      layout.measuredVersion !== readVersion()
+    ) {
+      return null;
+    }
+    const { canvas, geometry, root } = layout;
+    const direct = getPliteStringDirectPlacement({ root, target, x, y });
+
+    if (direct) return direct;
+    const canvasRect = canvas.getBoundingClientRect();
+    const scale =
+      geometry.height > 0 && canvasRect.height > 0
+        ? canvasRect.height / geometry.height
+        : 1;
+    const viewport = readViewport();
+    const canvasY = (y - canvasRect.top) / scale;
+    const visibleY = viewport
+      ? Math.min(Math.max(canvasY, viewport.top), viewport.bottom)
+      : canvasY;
+    const point = { x, y: canvasRect.top + visibleY * scale };
+    const placed = placedTextAt({
+      measureBlock: ({ path }) => {
+        const hit = nearestViewText({
+          editor,
+          root,
+          scopes: [{ path }],
+          target,
+          ...point,
+        });
+
+        return hit
+          ? {
+              distance: [hit.vertical / scale, hit.horizontal / scale],
+              text: hit,
+            }
+          : null;
+      },
+      mountedPageIndexes: layout.mountedPageIndexes,
+      occupiedSizes: geometry.occupiedSizes,
+      pagePlacements: geometry.pagePlacements,
+      snapshot: layout.snapshot,
+      x: (x - canvasRect.left) / scale,
+      y: visibleY,
+    });
+    const hit =
+      placed?.kind === 'line'
+        ? nearestViewText({
+            editor,
+            root,
+            scopes: placed.box.line.runs.map((run, runIndex) => ({
+              path: run.source.anchor.path,
+              selector: `[${RUN_ATTRIBUTE}="${placed.box.fragment.pageIndex}:${placed.box.lineIndex}:${runIndex}"]`,
+            })),
+            target: null,
+            ...point,
+          })
+        : (placed?.text ?? null);
+
+    return hit ? placeOnViewText(hit, { reach, x }) : null;
   },
 });
 
@@ -515,6 +594,11 @@ const createViewportStore = () => {
   let cleanup = () => {};
   let lastScrollAt = Number.NEGATIVE_INFINITY;
   let snapshot = INACTIVE_VIEWPORT;
+  let measured: Readonly<{
+    scale: number;
+    scrollRoot: globalThis.Element;
+    scrollTop: number;
+  }> | null = null;
 
   const publish = (next: ViewportSnapshot, sync = false) => {
     const commit = () => {
@@ -545,6 +629,7 @@ const createViewportStore = () => {
           : 1;
       const top = Math.max(0, (scrollRect.top - rootRect.top + offset) / scale);
 
+      measured = { scale, scrollRoot, scrollTop: scrollRoot.scrollTop };
       publish(
         {
           canTrackContentViewport: true,
@@ -582,6 +667,18 @@ const createViewportStore = () => {
     };
   };
   const getSnapshot = () => snapshot;
+  // Scroll events wait for the next rendering step, so drag autoscroll reads
+  // this before the snapshot sees its own scroll.
+  const readViewport = (): Viewport | null => {
+    const { canTrackContentViewport, viewport } = snapshot;
+
+    if (!canTrackContentViewport || !viewport) return null;
+    const shift = measured
+      ? (measured.scrollRoot.scrollTop - measured.scrollTop) / measured.scale
+      : 0;
+
+    return { bottom: viewport.bottom + shift, top: viewport.top + shift };
+  };
   const subscribe = (listener: () => void) => {
     listeners.add(listener);
     if (listeners.size === 1) restart();
@@ -602,6 +699,7 @@ const createViewportStore = () => {
     },
     getLastScrollAt: () => lastScrollAt,
     getSnapshot,
+    readViewport,
     subscribe,
   };
 };
@@ -923,16 +1021,19 @@ const createPaginationBuckets = (
             run.source.focus.offset
           );
           const rect = toCanvasRect(run.rect, fragment.pageIndex, geometry);
+          const runKey = `${fragment.pageIndex}:${lineIndex}:${runIndex}`;
           const slice = createContainerDecorationSlice({
             attributes: Object.freeze(
               nativeFlow
                 ? {
                     'data-pagination-line': true,
+                    [RUN_ATTRIBUTE]: runKey,
                     [SOFT_LINE_FLAG]: runIndex === breakRunIndex || undefined,
                     style: Object.freeze({ whiteSpace: 'pre' }),
                   }
                 : {
                     'data-pagination-line': true,
+                    [RUN_ATTRIBUTE]: runKey,
                     style: Object.freeze({
                       display: 'inline-block',
                       height: rect.height,
@@ -1319,8 +1420,9 @@ const PagedEditableInner = <TElement extends Element = Element>({
         editor: toReactRuntimeEditor(editor),
         readLayout: () => viewLayout.current,
         readVersion: () => invalidationVersion.current,
+        readViewport: viewportStore.readViewport,
       }),
-    [editor]
+    [editor, viewportStore]
   );
   useEffect(() => {
     const fonts = editableHost?.ownerDocument.fonts;
@@ -1455,6 +1557,8 @@ const PagedEditableInner = <TElement extends Element = Element>({
   useLayoutEffect(() => {
     viewLayout.current = snapshot
       ? {
+          canvas: rootRef.current,
+          geometry,
           measuredVersion: documentVersion,
           mountedPageIndexes: virtualize ? visiblePageIndexes : 'all',
           root: editableHost,
@@ -1465,6 +1569,7 @@ const PagedEditableInner = <TElement extends Element = Element>({
   }, [
     documentVersion,
     editableHost,
+    geometry,
     selectedPaths,
     snapshot,
     virtualize,

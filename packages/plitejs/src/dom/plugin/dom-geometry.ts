@@ -20,6 +20,8 @@ export type DOMGeometryRect = {
   width: number;
 };
 
+export const PLITE_STRING_PRESS_REACH_PX = 16;
+
 export type PliteStringCoordinatePlacement = {
   edge: 'end' | 'start';
   offset?: number;
@@ -675,7 +677,10 @@ export const getPliteStringCoordinatePlacement = ({
     );
   })[0];
 
-  if (!nearestString || nearestString.verticalDistance > 16) {
+  if (
+    !nearestString ||
+    nearestString.verticalDistance > PLITE_STRING_PRESS_REACH_PX
+  ) {
     return null;
   }
 
@@ -716,6 +721,124 @@ export const getPliteStringCoordinatePlacement = ({
   }
 
   return null;
+};
+
+export type PliteStringRectHit = Readonly<{
+  horizontal: number;
+  rect: DOMRect;
+  string: HTMLElement;
+  vertical: number;
+}>;
+
+const PLITE_TEXT_SELECTOR = '[data-editor-string], [data-editor-zero-width]';
+
+export const isOwnedPliteText = (root: HTMLElement, string: Element) =>
+  string.closest('[data-editor="true"]') === root &&
+  !string.closest('[data-editor-void="true"]');
+
+export const getOwnedPliteTextStrings = (
+  root: HTMLElement,
+  scope: Element
+): HTMLElement[] =>
+  [
+    ...(scope.matches(PLITE_TEXT_SELECTOR) ? [scope as HTMLElement] : []),
+    ...scope.querySelectorAll<HTMLElement>(PLITE_TEXT_SELECTOR),
+  ].filter((string) => isOwnedPliteText(root, string));
+
+const getStringTextNode = (string: HTMLElement) =>
+  Array.from(string.childNodes).find((node) => node.nodeType === 3) ?? null;
+
+export const getPliteStringDirectPlacement = ({
+  root,
+  target,
+  x,
+  y,
+}: {
+  root: HTMLElement;
+  target: Element | null;
+  x: number;
+  y: number;
+}): PliteStringCoordinatePlacement => {
+  const string = target?.closest<HTMLElement>(PLITE_TEXT_SELECTOR);
+
+  if (!string || !isOwnedPliteText(root, string)) return null;
+  const rect = Array.from(string.getClientRects()).find(
+    (candidate) =>
+      x >= candidate.left &&
+      x <= candidate.right &&
+      y >= candidate.top &&
+      y <= candidate.bottom
+  );
+
+  if (!rect) return null;
+  const point = getNativeDOMPointAtCoordinates(string.ownerDocument, x, y);
+
+  if (!point || point[0] !== getStringTextNode(string)) return null;
+
+  return {
+    edge: 'start',
+    offset: point[1],
+    rect,
+    source: 'string-offset',
+    string,
+  };
+};
+
+export const getNearestPliteStringRect = ({
+  strings,
+  x,
+  y,
+}: {
+  strings: readonly HTMLElement[];
+  x: number;
+  y: number;
+}): PliteStringRectHit | null => {
+  let best: PliteStringRectHit | null = null;
+
+  for (const string of strings) {
+    for (const rect of string.getClientRects()) {
+      if (!hasUsableDOMRect(rect)) continue;
+      const vertical = getRectVerticalDistance(rect, y);
+      const horizontal = getRectHorizontalDistance(rect, x);
+
+      if (
+        !best ||
+        vertical < best.vertical ||
+        (vertical === best.vertical && horizontal < best.horizontal)
+      ) {
+        best = { horizontal, rect, string, vertical };
+        if (vertical === 0 && horizontal === 0) return best;
+      }
+    }
+  }
+
+  return best;
+};
+
+export const getPliteStringPlacementAtX = ({
+  rect,
+  string,
+  x,
+}: {
+  rect: DOMRect;
+  string: HTMLElement;
+  x: number;
+}): PliteStringCoordinatePlacement => {
+  const offset = getPliteStringLineOffsetAtX({
+    event: { clientX: x, clientY: rect.top + rect.height / 2 },
+    rect,
+    string,
+  });
+
+  return offset == null
+    ? null
+    : {
+        edge: 'start',
+        offset,
+        rect,
+        source: 'string-offset',
+        string,
+      };
 };
 
 const getDOMPointElement = (point: DOMGeometryPoint) => {

@@ -8,7 +8,15 @@ import {
 } from '../../dom/dom-soft-line-end';
 import { createDOMGeometryKernel, hasDOMHostQuirk } from '../../dom/internal';
 import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
-import { getUsableRangeRects } from '../../dom/plugin/dom-geometry';
+import {
+  getNearestPliteStringRect,
+  getOwnedPliteTextStrings,
+  getPliteStringPlacementAtX,
+  getUsableRangeRects,
+  PLITE_STRING_PRESS_REACH_PX,
+  type PliteStringCoordinatePlacement,
+  type PliteStringRectHit,
+} from '../../dom/plugin/dom-geometry';
 import { findMountedDOMNodeByPath } from '../../dom/plugin/dom-node-path';
 import type { DOMPoint } from '../../dom/utils/dom';
 import { readDOMSelectionPoints } from '../../dom/utils/selection-writes';
@@ -30,6 +38,8 @@ export type ViewCaret = Readonly<{ point: Point; side: SoftLineSide | null }>;
 
 export type ViewLineLanding = Readonly<{ dom: DOMPoint | null; point: Point }>;
 
+export type PlacementReach = 'drag' | 'press';
+
 export type ViewLines = Readonly<{
   lineAfter: (
     query: Readonly<{
@@ -38,9 +48,71 @@ export type ViewLines = Readonly<{
       readX: () => number | null;
     }>
   ) => ViewLineLanding | null;
+  placementAt: (
+    query: Readonly<{
+      reach: PlacementReach;
+      target: Element | null;
+      x: number;
+      y: number;
+    }>
+  ) => PliteStringCoordinatePlacement;
 }>;
 
 export const ViewLinesContext = createContext<ViewLines | null>(null);
+
+export { getPliteStringDirectPlacement } from '../../dom/plugin/dom-geometry';
+
+export const nearestViewText = ({
+  editor,
+  root,
+  scopes,
+  target,
+  x,
+  y,
+}: Readonly<{
+  editor: ReactRuntimeEditor;
+  root: HTMLElement;
+  scopes: ReadonlyArray<Readonly<{ path: Path; selector?: string }>>;
+  target: Element | null;
+  x: number;
+  y: number;
+}>): PliteStringRectHit | null => {
+  const strings: HTMLElement[] = [];
+
+  for (const { path, selector } of scopes) {
+    const host = findMountedDOMNodeByPath(editor, path, root);
+    const element = selector ? host?.querySelector(selector) : host;
+
+    if (!element) continue;
+    const pointerElement =
+      target && element.contains(target)
+        ? target.closest('[data-editor-node="element"]')
+        : null;
+    const pointerStrings =
+      pointerElement &&
+      pointerElement !== element &&
+      element.contains(pointerElement)
+        ? getOwnedPliteTextStrings(root, pointerElement)
+        : [];
+
+    if (pointerStrings.length > 0) {
+      const hit = getNearestPliteStringRect({ strings: pointerStrings, x, y });
+
+      return hit && { ...hit, horizontal: 0, vertical: 0 };
+    }
+    strings.push(...getOwnedPliteTextStrings(root, element));
+  }
+
+  return getNearestPliteStringRect({ strings, x, y });
+};
+
+export const placeOnViewText = (
+  hit: PliteStringRectHit,
+  { reach, x }: Readonly<{ reach: PlacementReach; x: number }>
+) =>
+  reach === 'press' && hit.vertical > PLITE_STRING_PRESS_REACH_PX
+    ? null
+    : getPliteStringPlacementAtX({ rect: hit.rect, string: hit.string, x });
 
 const unionRect = (rects: readonly DOMRect[]) => {
   const left = Math.min(...rects.map((rect) => rect.left));
