@@ -128,7 +128,7 @@ const STATE_ORDER = [
 
 const PATH_REF = /^[^\s:,;]+(?::\d+(?:-\d+)?)?$/u;
 const ISSUE = /^[1-9]\d*$/u;
-const LOGIN = /^[A-Za-z\d](?:[A-Za-z\d-]{0,38})$/u;
+const LOGIN = /^[A-Za-z\d](?:[A-Za-z\d-]{0,38})(?:\[bot\])?$/u;
 const paths = (value) => value.split(/,\s*/u);
 const KEY_VALUES = {
   scope: /^[a-z][a-z0-9-]*$/u,
@@ -331,6 +331,16 @@ function policyProblems(config) {
       );
     }
   }
+  if (policy.gated !== undefined && !Array.isArray(policy.gated)) {
+    found.push(`${CONFIG}: triage.gated lists GitHub logins`);
+  }
+  for (const entry of Array.isArray(policy.gated) ? policy.gated : []) {
+    if (typeof entry !== 'string' || !LOGIN.test(entry)) {
+      found.push(
+        `${CONFIG}: triage.gated entry ${JSON.stringify(entry)} is not a GitHub login`
+      );
+    }
+  }
   if (!Number.isInteger(policy.rev) || policy.rev < 1) {
     found.push(`${CONFIG}: triage.rev is a positive integer`);
   }
@@ -352,6 +362,7 @@ const policyOf = (config) => ({
   floorText: config.triage.floor.join(' or '),
   owners: config.triage.owners,
   ownersText: config.triage.owners.join(' or '),
+  confirmed: [...config.triage.owners, ...(config.triage.gated ?? [])],
   rev: config.triage.rev,
   max: config.maxEffort ?? null,
 });
@@ -1105,7 +1116,7 @@ function computeState(issue, reads, visiting) {
   }
   if (stale.length > 0) return { state: 'stale', reasons: stale, head };
   if (unknown.length > 0) return { state: 'unchecked', reasons: unknown, head };
-  if (!reads.policy.owners.includes(head.who)) {
+  if (!reads.policy.confirmed.includes(head.who)) {
     return { state: 'unconfirmed', reasons: [`by ${head.who}`], head };
   }
   return { state: 'current', reasons: [], head };
@@ -1279,11 +1290,20 @@ function toolOutputs(lead, chain) {
   );
 }
 
+// REST's /user refuses a GitHub App's installation token, and GraphQL's viewer names the app's bot.
 const ghLogin = () => {
-  const result = spawnSync('gh', ['api', 'user', '--jq', '.login'], {
-    encoding: 'utf-8',
-    timeout: NETWORK_MS,
-  });
+  const result = spawnSync(
+    'gh',
+    [
+      'api',
+      'graphql',
+      '-f',
+      'query={viewer{login}}',
+      '--jq',
+      '.data.viewer.login',
+    ],
+    { encoding: 'utf-8', timeout: NETWORK_MS }
+  );
   const login = result.status === 0 ? result.stdout.trim() : '';
   return LOGIN.test(login) ? login : null;
 };
@@ -1461,7 +1481,7 @@ function show(argv) {
     };
   };
   const session = identity.by
-    ? `${identity.who} on ${identity.by} can record${reads.policy.owners.includes(identity.who) ? '' : `; its records read unconfirmed until ${reads.policy.ownersText} records the issue again`}`
+    ? `${identity.who} on ${identity.by} can record${reads.policy.confirmed.includes(identity.who) ? '' : `; its records read unconfirmed until ${reads.policy.ownersText} records the issue again`}`
     : `cannot record: ${identity.refusal}`;
   const results = numbers.map((number) => ({
     ...summary(number, reads),
@@ -2955,7 +2975,7 @@ function recordCommand(argv) {
     ].join('\t');
   });
 
-  const author = `${identity.who} on ${identity.by}${reads.policy.owners.includes(identity.who) ? '' : `; they read unconfirmed until ${reads.policy.ownersText} records them again`}`;
+  const author = `${identity.who} on ${identity.by}${reads.policy.confirmed.includes(identity.who) ? '' : `; they read unconfirmed until ${reads.policy.ownersText} records them again`}`;
   if (options['dry-run']) {
     console.log(
       `dry run, nothing written: ${rows.length} row(s) would be recorded by ${author}`

@@ -73,6 +73,9 @@
       "zbeyens",
       "natamox"
     ],
+    "gated": [
+      "zbeyens-bot[bot]"
+    ],
     "rev": 1
   },
   "notify": {
