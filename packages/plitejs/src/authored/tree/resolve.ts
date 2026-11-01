@@ -2071,9 +2071,11 @@ const resolveIn = (
     const left = cut && rejoinOf(cut, node, own, into, intoClaims, ancestors);
 
     // A rejected split waits only on what its verdict reads. An accepted join
-    // lands with the block's own pending marks, which decide with it.
-    if (!cut) waited.push(...own);
-    else if (!left) {
+    // lands with the block's own pending marks, which decide with it, except
+    // the format tags an Editing join drops with the block.
+    if (!cut) {
+      waited.push(...(editingJoin ? own.filter(shapesMergedLine) : own));
+    } else if (!left) {
       land();
       return;
     }
@@ -3453,6 +3455,8 @@ const CONTENT_AND_ENCLOSURE_KINDS: ReadonlySet<AuthoredMark['kind']> = new Set([
   'unwrap',
   'wrap',
 ]);
+
+const shapesMergedLine = (mark: AuthoredMark) => mark.kind !== 'format';
 
 /**
  * Each key's format tags decided by `decideKey`, or null for a node with no
