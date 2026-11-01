@@ -293,7 +293,7 @@ export const defaultRules: MdRules = {
   },
   code_block: {
     deserialize: (mdastNode, _deco, options) => ({
-      children: (mdastNode.value || '').split('\n').map((line) => ({
+      children: (mdastNode.value || '').split(/\r\n|\r|\n/).map((line) => ({
         children: [{ text: line } as TText],
         type: getPluginType(options.editor!, KEYS.codeLine),
       })),
