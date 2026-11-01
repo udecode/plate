@@ -53,6 +53,7 @@ import { basename, dirname, join } from 'node:path';
 import { findLead, leadLabel } from './lead.mjs';
 import { reserve } from './proof.mjs';
 import { ledgerPath, readTasks } from './tasks.mjs';
+import { findings } from './writing-check.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]...';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
@@ -60,6 +61,7 @@ const BEYOND = /^Beyond the ask: \S/mu;
 const SESSION = /^Session: \S/mu;
 const PLAN = /^Plan: \S/mu;
 const TRAILER = /^(?:Session|Plan|Lands-With): \S/u;
+const STAMP_LINES = /^(?:Session|Plan|Lead|Lands-With): .*$/gmu;
 const ISSUE = /(?<![\w#/.-])(?:([\w.-]+)\/)?([\w.-]+)#\d+\b|https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/issues\/\d+/gu;
 const CARD = /\bt_[0-9a-f]{8}\b/gu;
 const INTRODUCED = /^Introduced-by:(.*)$/gmu;
@@ -326,6 +328,10 @@ function validate(text) {
   }
   if (rest.length > 0 && gap !== '') fail('a blank line must separate the subject from the body');
   if (!BEYOND.test(rest.join('\n'))) fail('the body has no `Beyond the ask:` line; name every change the request did not ask for, or write `Beyond the ask: none`');
+  const broken = findings(text.replace(STAMP_LINES, ''));
+  if (broken.length > 0) {
+    fail(`the message breaks the Writing rule, as writing-check.mjs reads it:\n${broken.map(({ line, rule, match, text: shown }) => `  line ${line}, ${rule} "${match}": ${shown}`).join('\n')}\nReword each line, or put literal text in backticks, then run land.mjs again with --message.`);
+  }
   const closing = text.match(CLOSING);
   if (closing) {
     const name = closing[1] ?? closing[2] ?? must('remote', 'get-url', canonical).match(/([^/:]+?)(?:\.git)?\/?$/u)[1];

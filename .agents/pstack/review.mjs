@@ -49,6 +49,8 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { verbatim } from './writing-check.mjs';
+
 const REF = 'refs/pstack/reviewed';
 const FIRST = 20;
 const TIERS = ['public', 'internal'];
@@ -327,7 +329,7 @@ function revert(session) {
       '',
       `Reverts every commit session ${session} landed on ${branch}, newest first:`,
       '',
-      ...ours.map((commit) => `${commit.repo.name ? `${commit.repo.name} ` : ''}${commit.short} ${commit.subject}`),
+      ...verbatim(ours.map((commit) => `${commit.repo.name ? `${commit.repo.name} ` : ''}${commit.short} ${commit.subject}`)),
       '',
       '## Verification',
       '',

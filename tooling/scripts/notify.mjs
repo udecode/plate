@@ -5,6 +5,8 @@ import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 
+import { findings } from '../../.agents/pstack/writing-check.mjs';
+
 const USAGE =
   'usage: notify send --to <login|dev> <text...> | notify landed <push-event.json>';
 const DAY = 24 * 60 * 60 * 1000;
@@ -104,6 +106,19 @@ const send = async (args) => {
   const { to } = parsed.values;
   const text = parsed.positionals.join(' ').trim();
   if (!to || !text) fail(2, USAGE);
+  const broken = findings(text);
+  if (broken.length > 0) {
+    fail(
+      1,
+      `the text breaks the Writing rule in .agents/pstack/rules/writing.md:\n${broken
+        .map(
+          ({ line, rule, text: shown }) => `  line ${line}, ${rule}: ${shown}`
+        )
+        .join(
+          '\n'
+        )}\nReword each line, or put literal text in backticks, then send again.`
+    );
+  }
 
   const config = readConfig();
   const team = recipients(config);
