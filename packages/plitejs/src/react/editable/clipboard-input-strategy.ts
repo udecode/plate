@@ -451,9 +451,17 @@ export const applyEditableCut = ({
           association: 'forward',
           deletion: 'nearest',
         });
+        const version = editor.read((state) => state.lastCommit()?.version);
         applyEditableCommand({ command, editor });
         writePliteViewSelection(editor, null);
         const collapsePoint = collapsePointAnchor.release();
+        const deleteRefused =
+          editor.read((state) => state.lastCommit()?.version) === version;
+
+        if (deleteRefused) {
+          return clipboardResult({ command });
+        }
+
         const shouldRemoveEmptyInline =
           inlinePath &&
           (() => {

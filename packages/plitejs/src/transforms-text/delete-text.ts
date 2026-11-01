@@ -13,6 +13,7 @@ import {
   withEditorUpdateRootChildren,
 } from '../core/public-state';
 import { isWritablePoint } from '../core/writable-text';
+import { hasEdgeInReadOnlyInline } from '../editor/element-read-only';
 import {
   type Element as EditorElement,
   type Location,
@@ -1637,5 +1638,17 @@ export const deleteText: TextMutationMethods['delete'] = (
   editor,
   options = {}
 ) => {
-  removeText(editor, options);
+  inRemovalRoot(editor, options.at, (tx, site) => {
+    if (
+      !options.voids &&
+      !LocationApi.isPath(site.at) &&
+      hasEdgeInReadOnlyInline(editor, site.at)
+    ) {
+      return null;
+    }
+
+    const prepared = prepareAt(editor, options, site.at, false);
+
+    return prepared && applyAt(editor, tx, site, prepared);
+  });
 };

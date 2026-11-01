@@ -39,6 +39,7 @@ import {
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
 } from '../../../dom/internal';
+import { hasEdgeInReadOnlyInline } from '../../../editor/element-read-only';
 import { hasAndroidComposition } from '../../editable/android-composition';
 import {
   getInputEventData,
@@ -202,6 +203,7 @@ export function createAndroidInputManager({
       actionPath && actionPath.length > 1
         ? editorGetNodeKey(editor, actionPath.slice(0, -1))
         : null;
+    const selection = readRuntimeSelectionRange(editor);
 
     if (action.at) {
       const target = LocationApi.isPoint(action.at)
@@ -213,17 +215,47 @@ export function createAndroidInputManager({
       }
 
       const innerTargetRange = editorRange(editor, target);
-      const selection = readRuntimeSelectionRange(editor);
       if (!selection || !RangeApi.equals(selection, innerTargetRange)) {
         setShownSelectionAsView(editor, target);
       }
     }
+
+    const version = editor.read((state) => state.lastCommit()?.version);
 
     inputController.state.isReplayingAndroidCommand = true;
     try {
       action.run();
     } finally {
       inputController.state.isReplayingAndroidCommand = false;
+    }
+
+    const at = action.at ?? selection;
+
+    if (
+      action.deletes &&
+      at &&
+      hasEdgeInReadOnlyInline(editor, at) &&
+      editor.read((state) => state.lastCommit()?.version) === version
+    ) {
+      EDITOR_TO_PENDING_SELECTION.delete(editor);
+      scheduleOnDOMSelectionChange.cancel();
+      onDOMSelectionChange.cancel();
+
+      if (selection) setShownSelectionAsView(editor, selection);
+
+      // Chrome has already deleted what it chose, which can reach past a
+      // collapsed target to the start of its block.
+      const [start, end] = LocationApi.isPoint(at)
+        ? [at, at]
+        : RangeApi.edges(at);
+
+      for (let index = start.path[0]; index <= end.path[0]; index++) {
+        const blockKey = editorGetNodeKey(editor, [index]);
+
+        if (blockKey) rebuildLine?.(blockKey);
+      }
+
+      return;
     }
 
     // Chrome removes the text host together with the last character it
@@ -337,6 +369,8 @@ export function createAndroidInputManager({
         setShownSelectionAsView(editor, range);
       }
 
+      const version = editor.read((state) => state.lastCommit()?.version);
+
       if (diff.diff.text) {
         applyAndroidTextInput(diff.diff.text, diff.inputType ?? 'insertText');
       } else {
@@ -355,7 +389,29 @@ export function createAndroidInputManager({
         ) ?? []
       );
 
-      if (!verifyDiffState(editor, diff)) {
+      const deleteRefused =
+        !diff.diff.text &&
+        editor.read((state) => state.lastCommit()?.version) === version;
+
+      if (deleteRefused) {
+        const pendingSelection = EDITOR_TO_PENDING_SELECTION.get(editor);
+        const keepsPendingCaret =
+          !!pendingSelection &&
+          !RangeApi.edges(pendingSelection).some((point) =>
+            PathApi.equals(point.path, diff.path)
+          );
+
+        if (!keepsPendingCaret) {
+          scheduleSelectionChange = false;
+          EDITOR_TO_PENDING_SELECTION.delete(editor);
+          scheduleOnDOMSelectionChange.cancel();
+          onDOMSelectionChange.cancel();
+        }
+
+        const lineKey = editorGetNodeKey(editor, diff.path.slice(0, -1));
+
+        if (lineKey) rebuildLine?.(lineKey);
+      } else if (!verifyDiffState(editor, diff)) {
         scheduleSelectionChange = false;
         EDITOR_TO_PENDING_ACTION.delete(editor);
         EDITOR_TO_USER_MARKS.delete(editor);
@@ -620,8 +676,13 @@ export function createAndroidInputManager({
     run: () => void,
     {
       at,
+      deletes,
       preserveInsertPositionHint = false,
-    }: { at?: Point | Range; preserveInsertPositionHint?: boolean } = {}
+    }: {
+      at?: Point | Range;
+      deletes?: boolean;
+      preserveInsertPositionHint?: boolean;
+    } = {}
   ): void => {
     if (!preserveInsertPositionHint) {
       insertPositionHint = false;
@@ -636,7 +697,7 @@ export function createAndroidInputManager({
       flush();
     }
 
-    EDITOR_TO_PENDING_ACTION.set(editor, { at, run });
+    EDITOR_TO_PENDING_ACTION.set(editor, { at, deletes, run });
 
     // COMPAT: When deleting before a non-contenteditable element chrome only fires a beforeinput,
     // (no input) and doesn't perform any dom mutations. Without a flush timeout we would never flush
@@ -663,7 +724,7 @@ export function createAndroidInputManager({
           : paste
             ? runPaste(() => applyEditableCommand({ command, editor }))
             : applyEditableCommand({ command, editor }),
-      { at }
+      { at, deletes: command.kind.startsWith('delete') }
     );
   };
 

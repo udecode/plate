@@ -14,7 +14,11 @@ import type { Key } from './key';
 
 type AnyPluginEditor = Editor<any, any>;
 
-export type Action = { at?: Point | Range; run: () => void };
+export type Action = {
+  at?: Point | Range;
+  deletes?: boolean;
+  run: () => void;
+};
 
 /**
  * Two weak maps that allow us rebuild a path given a node. They are populated

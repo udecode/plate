@@ -49,9 +49,11 @@ import {
   readDOMSelectionRange,
   writeDOMSelection,
 } from '../../dom/utils/selection-writes';
+import { readOnlyInlineAt } from '../../editor/element-read-only';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
+import { getPointRoot } from '../root-key';
 import {
   readPliteViewSelection,
   writePliteViewSelection,
@@ -778,9 +780,23 @@ export const syncSelectionForBeforeInput = ({
         RangeApi.isCollapsed(nextSelection) &&
         PathApi.equals(range.anchor.path, nextSelection.anchor.path) &&
         range.anchor.offset < nextSelection.anchor.offset;
+      const heldStart =
+        type.startsWith('delete') && nextSelection
+          ? RangeApi.start(nextSelection)
+          : null;
+      const heldInline = heldStart && readOnlyInlineAt(editor, heldStart);
       const shouldUseTargetRange =
         range &&
         !staleBackwardInsertTextTargetRange &&
+        !(
+          heldStart &&
+          heldInline &&
+          RangeApi.edges(range).some(
+            (edge) =>
+              getPointRoot(edge) === getPointRoot(heldStart) &&
+              PathApi.isAncestor(heldInline[1], edge.path)
+          )
+        ) &&
         !(
           shouldPreferModelSelectionForInput &&
           type === 'insertText' &&
