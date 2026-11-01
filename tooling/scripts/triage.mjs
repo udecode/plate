@@ -115,7 +115,13 @@ const TEAM = new Set(['OWNER', 'MEMBER', 'COLLABORATOR']);
 // A reader that cuts long lines, as Claude Code's Read once did at 2,000 characters, would hide part of a line from record.
 const LINE_LIMIT = 400;
 // gh prints a bot comment's author without its [bot] suffix.
-const BOTS = new Set(['dosubot', 'github-actions', 'copilot', 'claude']);
+const BOTS = new Set([
+  'dosubot',
+  'github-actions',
+  'copilot',
+  'claude',
+  'zbeyens-bot',
+]);
 const RUNTIMES = new Set(['claude', 'codex']);
 const STATE_ORDER = [
   'conflict',
