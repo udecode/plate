@@ -9,15 +9,32 @@ import { customMdxDeserialize } from './utils';
 import { shouldDeserializeNode } from './internal/shouldDeserializeNode';
 import { getDeserializerByKey } from './utils/getDeserializerByKey';
 
+const BR_HTML_REGEX = /^<br\s*\/?>$/i;
+const LEADING_NEWLINE_REGEX = /^\n/;
+
+// `<br>` is already the line break, so the source newline right after it is
+// dropped. A soft break after any other node stays in the text.
+const dropNewlineAfterBr = (
+  node: MdRootContent,
+  previous?: MdRootContent
+): MdRootContent =>
+  node.type === 'text' &&
+  previous?.type === 'html' &&
+  BR_HTML_REGEX.test(previous.value)
+    ? { ...node, value: node.value.replace(LEADING_NEWLINE_REGEX, '') }
+    : node;
+
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
   deco: MdDecoration,
   options: DeserializeMdOptions
 ): Descendant[] => {
-  return nodes.reduce<Descendant[]>((acc, node) => {
+  return nodes.reduce<Descendant[]>((acc, node, index) => {
     // Only process nodes that pass the filtering
     if (shouldDeserializeNode(node, options)) {
-      acc.push(...buildSlateNode(node, deco, options));
+      const current = dropNewlineAfterBr(node, nodes[index - 1]);
+
+      acc.push(...buildSlateNode(current, deco, options));
     }
     return acc;
   }, []);
