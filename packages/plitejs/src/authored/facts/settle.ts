@@ -53,6 +53,7 @@ import {
 import {
   type AuthoredMember,
   deletionOf,
+  followsOf,
   heldOf,
   isAuthoredSetValued,
   isClaim,
@@ -65,6 +66,8 @@ import {
 import { buildClaimsIn } from '../tree/reserves';
 import {
   type AuthoredResolveSchema,
+  decidedJoinLeavesInPlace,
+  placementLinksIn,
   slotDecidingInsertions,
   startOccupants,
   slotFate,
@@ -81,12 +84,14 @@ import { createDependencies, type Dependencies } from './dependencies';
 import { isEditingChange } from './editing';
 import {
   claimsOf,
+  isJoinAside,
   isAccepted,
   outcomeOf,
   type ReviewFacts,
   standingClaimsOf,
 } from './facts';
 import {
+  changeOfLink,
   incarnationOf,
   type LandedRecord,
   landedOf,
@@ -120,13 +125,18 @@ type Pass = Readonly<{
   gone: WeakSet<Node>;
   indexOf: (root: string) => DocumentIndex;
   landed: Map<string, LandedRecord>;
+  liveLinkByRootWalk: (node: Node, root: string, link: string) => boolean;
   loading: boolean;
   reopenedRejections: Set<string>;
   reserveWrites: Map<string, string | null>;
   resolveSchema: () => AuthoredResolveSchema;
   returnsHeld: boolean;
   schema: CompiledEditorSchema;
-  stillBuilds: (container: Node | null, children: readonly Node[]) => boolean;
+  stillBuilds: (
+    container: Node | null,
+    children: readonly Node[],
+    root: string
+  ) => boolean;
 }>;
 
 type Site = Readonly<{
@@ -379,12 +389,14 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
   }
   let changed = dropped.size > 0 || rewritten;
   const kept: AuthoredMember[] = [];
-  // Editing's claim that its block goes with a pending join stays until the
-  // resolver lands that join.
+  const editingJoinLanded = (link: string) =>
+    isEditingChange(changeOfLink(link)) &&
+    !pass.liveLinkByRootWalk(node, site.root, link);
   const follows = (member: AuthoredMember) =>
     member.kind === 'insert' &&
     isEditingChange(member.change) &&
-    member.follows !== undefined;
+    member.follows !== undefined &&
+    !editingJoinLanded(member.follows);
   // An accepted insertion leaves the node, whether it is a claim or a member
   // of the context the node rests on.
   const inserts = claimsOf(node, facts).filter(
@@ -413,6 +425,11 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
     const claim = member.kind === 'held' ? deletionOf(member) : member;
     const outcome = outcomeOf(facts, claim);
 
+    if (isJoinAside(facts, claim)) {
+      kept.push(claim);
+      continue;
+    }
+
     if (claim.kind === 'delete') {
       if (outcome === 'accept' && isText(node)) return null;
       if (outcome === 'reject') {
@@ -425,6 +442,29 @@ const settleNode = (node: Node, pass: Pass, site: Site): Node | null => {
       }
       if (member.kind === 'held') changed = true;
       kept.push(claim);
+      continue;
+    }
+    if (
+      decidedJoinLeavesInPlace(
+        claim,
+        () => outcome === 'reject',
+        () => outcome === 'accept'
+      )
+    ) {
+      changed = true;
+      continue;
+    }
+
+    const link = followsOf(claim);
+
+    if (
+      outcome === 'accept' &&
+      link !== undefined &&
+      (isEditingChange(claim.change)
+        ? editingJoinLanded(link)
+        : !pass.liveLinkByRootWalk(node, site.root, link))
+    ) {
+      changed = true;
       continue;
     }
     kept.push(claim);
@@ -671,12 +711,13 @@ const withSettledSpares = (
   stored: Node,
   container: Node,
   taken: ReadonlySet<string>,
-  pass: Pass
+  pass: Pass,
+  root: string
 ) => {
   const members = readMembers(container);
 
   if (!members.some((member) => member.kind === 'reserve')) return container;
-  if (!pass.stillBuilds(stored, stored.children ?? [])) {
+  if (!pass.stillBuilds(stored, stored.children ?? [], root)) {
     return withMembers(
       container,
       members.filter((member) => member.kind !== 'reserve')
@@ -699,7 +740,7 @@ const settleRootSpares = (
   if (records.length > 0) {
     putRootSpares(
       records,
-      pass.stillBuilds(null, stored()),
+      pass.stillBuilds(null, stored(), root),
       taken,
       pass.reserveWrites
     );
@@ -820,7 +861,13 @@ const settleChild = (
   const left = level ? leaveLevel(level, settled.children, inner, pass) : null;
   const settles = left ? !left.waits : kept !== node;
   const marked = settles
-    ? withSettledSpares(node, kept, left?.taken ?? NOTHING_TAKEN, pass)
+    ? withSettledSpares(
+        node,
+        kept,
+        left?.taken ?? NOTHING_TAKEN,
+        pass,
+        site.root
+      )
     : kept;
 
   if (marked !== node) edits.props(path, node, marked);
@@ -927,6 +974,17 @@ const settleRoot = (nodes: NodeList<Node>, pass: Pass, root: string) => {
   }
 };
 
+const liveLinksIn = (nodes: NodeList<Node>, facts: ReviewFacts) => {
+  const sourceOf = placementLinksIn<Node>(
+    (visit) => nodes.forEach((node) => visit(node)),
+    readAuthoredMarks,
+    (mark) =>
+      outcomeOf(facts, mark) === 'pending' || isEditingChange(mark.change)
+  );
+
+  return (node: Node, link: string) => sourceOf(link, node) !== null;
+};
+
 const formatTagsOf = (node: Node) =>
   readAuthoredMarks(node).filter(
     (mark): mark is FormatTag => mark.kind === 'format'
@@ -1008,10 +1066,10 @@ export const settleValue = <V extends JsonEditorValue>(
 }> => {
   let resolve: AuthoredResolveSchema | undefined;
   const dependencies = createDependencies(facts);
-  const buildClaims = buildClaimsIn<Node>(facts, dependencies, (visit) => {
-    rootNodesOf<Node, 'children'>(value, 'children').forEach(visit);
-    for (const nodes of Object.values(value.roots ?? {})) nodes.forEach(visit);
-  });
+  const liveLinks = new Map<string, ReturnType<typeof liveLinksIn>>();
+  const buildClaims = buildClaimsIn<Node>(facts, dependencies, (root, visit) =>
+    (rootOf(value, root).nodes as NodeList<Node>).forEach((node) => visit(node))
+  );
   const pass: Pass = {
     dependencies,
     edits: new Map(),
@@ -1019,14 +1077,24 @@ export const settleValue = <V extends JsonEditorValue>(
     gone: new WeakSet(),
     indexOf: (root) => rootOf(value, root),
     landed: new Map(),
+    liveLinkByRootWalk: (node, root, link) => {
+      let live = liveLinks.get(root);
+
+      if (!live) {
+        live = liveLinksIn(rootOf(value, root).nodes, facts);
+        liveLinks.set(root, live);
+      }
+
+      return live(node, link);
+    },
     loading: scope === 'document',
     reopenedRejections: new Set(),
     reserveWrites: new Map(),
     resolveSchema: () => (resolve ??= resolveSchema()),
     returnsHeld,
     schema,
-    stillBuilds: (container, children) =>
-      buildClaims(container, children).length > 0,
+    stillBuilds: (container, children, root) =>
+      buildClaims(container, children, root).length > 0,
   };
 
   if (!facts.hasVerdicts && !restoreMissingFormats) {

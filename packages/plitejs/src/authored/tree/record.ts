@@ -45,7 +45,8 @@ import type { CompiledEditorSchema } from '../../core/schema-compiler';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
-import { incarnationOf } from '../facts/records';
+import { factsOf, isJoinAside } from '../facts/facts';
+import { incarnationOf, incarnationOfLink, linkOf } from '../facts/records';
 import { countLedgerWork } from '../ledger/work';
 import { movedRefusal, unrepresentable } from '../refusal';
 import { carriedJudge, type MovedCopy } from './carried';
@@ -55,10 +56,13 @@ import {
   AUTHORED_MARKS_KEY,
   type AuthoredMark,
   type AuthoredMember,
+  followsOf,
+  joinedOf,
+  readAuthoredMarks,
   readMembers,
   withMembers,
 } from './marks';
-import { followsOf, isTextBlock } from './resolve';
+import { isTextBlock } from './resolve';
 
 export type AuthoredRecordInput = Readonly<{
   before: JsonEditorValue;
@@ -194,7 +198,12 @@ type Context = Readonly<{
 }>;
 
 type Op =
-  | Readonly<{ at: number; kind: 'insert'; tokens: readonly JsonToken[] }>
+  | Readonly<{
+      at: number;
+      kind: 'insert';
+      moved?: true;
+      tokens: readonly JsonToken[];
+    }>
   | Readonly<{ at: number; kind: 'props'; props: Props }>
   | Readonly<{ from: number; kind: 'remove'; to: number }>;
 
@@ -260,6 +269,61 @@ type Piece =
       leftward: boolean;
     }>;
 
+type KeyedJoin = Extract<AuthoredMark, { kind: 'join' | 'joined' }> & {
+  key: string;
+};
+type Follower = Extract<
+  AuthoredMark,
+  { cut?: undefined; kind: 'insert' | 'split' }
+>;
+/** Each copied join's original link, to its copies' links in token order. */
+type CopiedLinks = ReadonlyMap<
+  string,
+  ReadonlyArray<Readonly<{ at: number; link: string }>>
+>;
+
+const NO_COPIES: CopiedLinks = new Map();
+
+const closeIndexOf = (tokens: readonly JsonToken[], at: number) => {
+  let depth = 0;
+
+  for (let index = at; index < tokens.length; index += 1) {
+    const { kind } = getDefined(tokens[index]);
+
+    if (kind === 'open') depth += 1;
+    if (kind === 'close') depth -= 1;
+    if (depth === 0) return index;
+  }
+
+  return tokens.length;
+};
+
+const isKeyedJoin = (mark: AuthoredMark): mark is KeyedJoin =>
+  (mark.kind === 'join' || mark.kind === 'joined') && mark.key !== undefined;
+
+const isFollower = (mark: AuthoredMark): mark is Follower =>
+  (mark.kind === 'insert' || mark.kind === 'split') && mark.cut === undefined;
+
+const withoutLinkOutsideCopy = (
+  mark: AuthoredMark,
+  copied: ReadonlySet<string>
+): AuthoredMark => {
+  if (
+    !isFollower(mark) ||
+    mark.follows === undefined ||
+    copied.has(mark.follows)
+  ) {
+    return mark;
+  }
+
+  const { follows: _, ...rest } = mark;
+
+  return rest;
+};
+
+const isEditingMoveCopy = (op: Readonly<{ moved?: true }>, change: string) =>
+  op.moved === true && isEditingChange(change);
+
 const propsOf = (node: unknown): Props => {
   if (typeof node !== 'object' || node === null) return {};
   const { children: _children, text: _text, ...props } = node as JsonRecord;
@@ -300,6 +364,7 @@ const withoutSpares = (props: Props) => {
 // outcome.
 const BOUNDARY_KINDS: ReadonlySet<AuthoredMember['kind']> = new Set([
   'join',
+  'joined',
   'split',
   'unwrap',
   'wrap',
@@ -1296,6 +1361,7 @@ type RootFold = {
 export const recordAuthoredSteps = (
   input: AuthoredRecordInput
 ): AuthoredRecordResult => {
+  const facts = factsOf(input.before);
   const changeId = input.forcedChangeId ?? input.changeId;
   const inc = input.inc ?? undefined;
   const own = incarnationOf({ at: input.now, change: changeId, inc });
@@ -1634,6 +1700,7 @@ export const recordAuthoredSteps = (
           recorded = groupsChange(groups);
         } else {
           const result = new RootRecorder(fold.index, {
+            joinAside: (mark) => isJoinAside(facts, mark),
             dependencies: input.dependencies,
             plainToReview,
             changeId,
@@ -1840,6 +1907,7 @@ const strikeRetyped = (
 };
 
 type RecorderOptions = Readonly<{
+  joinAside: (mark: AuthoredMark) => boolean;
   dependencies: Dependencies;
   plainToReview: PosMap;
   changeId: string;
@@ -1883,6 +1951,12 @@ class RootRecorder {
   > = [];
   private readonly ops: Op[] = [];
   private readonly pieces: Piece[] = [];
+  private readonly freshened = new WeakSet<Op>();
+  private readonly splitHalves = new WeakSet<JsonToken>();
+  private joinIndex: Readonly<{
+    followed: ReadonlySet<string>;
+    holders: ReadonlyMap<string, number>;
+  }> | null = null;
   private readonly framedStrikes: Array<
     Span & Readonly<{ contexts: readonly Context[] }>
   > = [];
@@ -1897,6 +1971,9 @@ class RootRecorder {
   private marks(props: unknown) {
     return this.options.dependencies.marks(props);
   }
+
+  private readonly isLiveJoin = (mark: AuthoredMark) =>
+    mark.kind === 'join' && !this.options.joinAside(mark);
 
   private droppedOnSplit(
     continued: Context,
@@ -1990,6 +2067,7 @@ class RootRecorder {
     }
 
     this.strikeEmptiedWrappers();
+    this.freshCopyKeys();
     const recorded = RootChange.create(this.index, this.sections());
 
     return {
@@ -2414,6 +2492,7 @@ class RootRecorder {
     this.ops.push({
       at: before,
       kind: 'insert',
+      moved: true,
       tokens: this.recordCopy(right.contentFrom, right.contentTo, before),
     });
     this.strike(right.from, right.to, this.contextAt(right.from), 'move');
@@ -2496,6 +2575,7 @@ class RootRecorder {
     this.ops.push({
       at: entry.to,
       kind: 'insert',
+      moved: true,
       tokens: [
         openToken(
           'element',
@@ -2566,6 +2646,7 @@ class RootRecorder {
         this.ops.push({
           at: landing.before,
           kind: 'insert',
+          moved: true,
           tokens: this.recordCopy(copyFrom, copyTo, landing.before),
         });
         this.followJoin(landing, this.ops.length - 1);
@@ -2592,59 +2673,74 @@ class RootRecorder {
    * The pending join a block written at `at`, which is `frameAt` in the
    * frame, goes with: the one the block before it carries or goes with, when
    * the frame's block before it ends there too or, outside a frame, when the
-   * block after it goes with that join too; or else the one the line after it
-   * carries, past only the ends of elements, which would otherwise merge into
-   * it.
+   * block after it goes with a join of that suggestion too; or else the one
+   * the line after it carries, past only the ends of elements, which would
+   * otherwise merge into it. `previous` is the block an insert wrote just
+   * before this one, which then stands before it.
    */
-  private followedAt(at: number, frameAt: number): string | null {
+  private followedAt(
+    at: number,
+    frameAt: number,
+    previous?: Props
+  ): string | null {
     const boundary = this.index.childBoundaryAt(at);
 
     if (!boundary) return null;
 
-    const childrenAt = (path: readonly number[]) =>
-      path.length === 0
-        ? this.index.value
-        : (this.index.node(path).children ?? []);
     let { index, parentPath } = boundary;
-    let siblings = childrenAt(parentPath);
-    const before = index > 0 ? siblings[index - 1] : undefined;
-    const carried = before && this.followedBy(propsOf(before));
+    let siblings = this.childrenAt(parentPath);
+    const before =
+      previous ??
+      (index > 0 ? propsOf(getDefined(siblings[index - 1])) : undefined);
+    const carried = before && this.followedBy(before);
     const after = siblings[index];
 
-    // In a frame, where the frame shows the block after the end of an element
-    // that the join's landing closes at `at`, the frame's block before it ends
-    // later. Outside one, only a block after it that goes with the same join
-    // says which side of that end it is on.
     if (
       carried &&
       (this.options.frameIndex
-        ? frameAt > 0 &&
-          this.options.plainToReview(frameAt - 1, -1, false) === at - 1
+        ? previous !== undefined ||
+          (frameAt > 0 &&
+            this.options.plainToReview(frameAt - 1, -1, false) === at - 1)
         : after !== undefined &&
-          this.marks(propsOf(after)).some(
-            (mark) => followsOf(mark) === carried
-          ))
+          this.marks(propsOf(after)).some((mark) => {
+            const link = followsOf(mark);
+
+            return (
+              link !== undefined &&
+              incarnationOfLink(link) === incarnationOfLink(carried)
+            );
+          }))
     ) {
       return carried;
     }
     while (index === siblings.length && parentPath.length > 0) {
       index = getDefined(parentPath.at(-1)) + 1;
       parentPath = parentPath.slice(0, -1);
-      siblings = childrenAt(parentPath);
+      siblings = this.childrenAt(parentPath);
     }
 
     const next = siblings[index];
     const join =
       next && isTextBlock(next)
-        ? this.marks(propsOf(next)).find((mark) => mark.kind === 'join')
+        ? this.marks(propsOf(next)).find(this.isLiveJoin)
         : undefined;
 
-    return join ? incarnationOf(join) : null;
+    return join ? linkOf(join) : null;
+  }
+
+  private childrenAt(path: readonly number[]) {
+    return path.length === 0
+      ? this.index.value
+      : (this.index.node(path).children ?? []);
   }
 
   /**
    * Has the blocks a group inserts go with the pending join they are written
-   * after or before, so the join lands where the frame shows them.
+   * after or before, so the join lands where the frame shows them. Each block
+   * is linked as if it were inserted alone, after the blocks before it, whose
+   * copied joins already hold fresh keys. A block and its children cannot be
+   * inserted apart, so a link to a join the insert copies inside the block
+   * moves to the first such copy, which the original's removal cannot strand.
    */
   private followJoin(
     group: Extract<Group, { kind: 'replace' }>,
@@ -2652,11 +2748,9 @@ class RootRecorder {
   ) {
     if (group.removed > 0) return;
 
-    const key = this.followedAt(group.before, group.plainFrom);
-
-    if (!key) return;
-
-    const own = incarnationOf(this.options.markOf('insert'));
+    const mark = this.options.markOf('insert');
+    const own = incarnationOf(mark);
+    let previous: Props | undefined;
 
     for (let index = start; index < this.ops.length; index += 1) {
       const op = getDefined(this.ops[index]);
@@ -2664,31 +2758,48 @@ class RootRecorder {
       if (op.kind !== 'insert' || op.at !== group.before) continue;
 
       let depth = 0;
+      const copied = isEditingMoveCopy(op, mark.change)
+        ? { links: NO_COPIES, tokens: op.tokens }
+        : this.withCopyMarks(op.tokens);
+      const tokens = copied.tokens.map((token, at) => {
+        if (token.kind === 'text') return token;
+        if (token.kind === 'close') {
+          depth -= 1;
+          return token;
+        }
+        depth += 1;
+        if (depth !== 1 || token.nodeKind !== 'element') return token;
 
-      this.ops[index] = {
-        ...op,
-        tokens: op.tokens.map((token) => {
-          if (token.kind === 'text') return token;
-          if (token.kind === 'close') {
-            depth -= 1;
-            return token;
-          }
-          depth += 1;
-          if (depth !== 1 || token.nodeKind !== 'element') return token;
+        const linkedTo = (link: string | null) =>
+          link === null
+            ? token.props
+            : this.withMarks(
+                token.props,
+                this.marks(token.props).map((each) =>
+                  each.kind === 'insert' && incarnationOf(each) === own
+                    ? { ...each, follows: link }
+                    : each
+                )
+              );
+        const alone = this.followedAt(group.before, group.plainFrom, previous);
+        const end = closeIndexOf(copied.tokens, at);
+        const moved =
+          alone === null
+            ? undefined
+            : copied.links
+                .get(alone)
+                ?.find((copy) => copy.at > at && copy.at < end)?.link;
+        const props = linkedTo(moved ?? alone);
 
-          return openToken(
-            'element',
-            this.withMarks(
-              token.props,
-              this.marks(token.props).map((mark) =>
-                mark.kind === 'insert' && incarnationOf(mark) === own
-                  ? { ...mark, follows: key }
-                  : mark
-              )
-            )
-          );
-        }),
-      };
+        // The next block links as if this one kept its own link.
+        previous = moved === undefined ? props : linkedTo(alone);
+
+        return props === token.props ? token : openToken('element', props);
+      });
+      const linked = { ...op, tokens };
+
+      this.ops[index] = linked;
+      this.freshened.add(linked);
     }
   }
 
@@ -2758,22 +2869,38 @@ class RootRecorder {
    */
   private recordCopy(from: number, to: number, at: number, offset = 0) {
     const mark = this.options.markOf('insert');
+    const { tokens } = this.index.slice(from, to);
+    const copied = new Set(
+      tokens.flatMap((token) =>
+        token.kind === 'open'
+          ? this.marks(token.props).flatMap((each) =>
+              each.kind === 'join' || each.kind === 'joined'
+                ? [linkOf(each)]
+                : []
+            )
+          : []
+      )
+    );
 
     this.copies.push({ at, from, offset, to });
 
-    return this.index
-      .slice(from, to)
-      .tokens.map((token) =>
-        token.kind === 'open'
-          ? openToken(
-              token.nodeKind,
-              this.withMarks(withoutSpares(token.props), [
-                ...this.withoutCuts(token.props),
-                mark,
-              ])
-            )
-          : token
-      );
+    const editingCopyKeepsLinks = isEditingChange(mark.change);
+
+    return tokens.map((token) =>
+      token.kind === 'open'
+        ? openToken(
+            token.nodeKind,
+            this.withMarks(withoutSpares(token.props), [
+              ...this.withoutCuts(token.props).map((each) =>
+                editingCopyKeepsLinks
+                  ? each
+                  : withoutLinkOutsideCopy(each, copied)
+              ),
+              mark,
+            ])
+          )
+        : token
+    );
   }
 
   private pushRemoved(after: number, from: number, to: number) {
@@ -2806,6 +2933,30 @@ class RootRecorder {
         path: entry.path,
         props: propsOf(this.index.node(entry.path)),
       }));
+  }
+
+  private frameJoins() {
+    if (this.joinIndex) return this.joinIndex;
+
+    const followed = new Set<string>();
+    const holders = new Map<string, number>();
+    const visit = (node: JsonNode) => {
+      if (typeof node.text === 'string') return;
+      for (const mark of readAuthoredMarks(node)) {
+        const link = followsOf(mark);
+
+        if (link !== undefined) followed.add(link);
+        if (isKeyedJoin(mark)) {
+          holders.set(mark.key, (holders.get(mark.key) ?? 0) + 1);
+        }
+      }
+      if (!isTextBlock(node)) node.children?.forEach(visit);
+    };
+
+    this.index.nodes.forEach(visit);
+    this.joinIndex = { followed, holders };
+
+    return this.joinIndex;
   }
 
   private propsStartingAt(position: number): Props {
@@ -3339,14 +3490,26 @@ class RootRecorder {
         else return back;
       }
     };
-    const boundaryMark = (previous: JsonToken | undefined) =>
-      markOf(
-        this.options.origin !== 'unwrap' &&
-          previous?.kind === 'close' &&
-          previous.nodeKind === 'element'
-          ? 'join'
-          : 'unwrap'
-      );
+    const boundaryMark = (previous: JsonToken | undefined): AuthoredMark => {
+      if (
+        this.options.origin === 'unwrap' ||
+        previous?.kind !== 'close' ||
+        previous.nodeKind !== 'element'
+      ) {
+        return markOf('unwrap');
+      }
+
+      const { at, author, change, inc } = markOf('join');
+
+      return {
+        at,
+        author,
+        change,
+        ...(inc === undefined ? {} : { inc }),
+        key: this.options.createTagId(),
+        kind: 'join',
+      };
+    };
 
     for (let index = 0; index < local.length; index += 1) {
       const token = local[index];
@@ -3538,17 +3701,22 @@ class RootRecorder {
         }
 
         const boundary = boundaryMark(previous);
+        const joins =
+          boundary.kind === 'join' ? marks.filter(this.isLiveJoin) : [];
 
-        // A boundary a pending join already removes is gone from the frame's
-        // document, so the fold never joins it a second time.
-        if (
-          boundary.kind !== 'join' ||
-          !marks.some((mark) => mark.kind === 'join')
-        ) {
+        // A boundary a live pending join already removes is gone from the
+        // frame's document, so the fold joins it again only when an Editing
+        // write merges across it and turns that join into a `joined` claim.
+        if (joins.length === 0 || this.editingMergesAcross(changeId, joins)) {
           this.ops.push({
             at: position,
             kind: 'props',
-            props: this.withMarks(props, [...marks, boundary]),
+            props: this.withMarks(props, [
+              ...marks.map((mark) =>
+                joins.includes(mark) ? joinedOf(mark) : mark
+              ),
+              boundary,
+            ]),
           });
         }
         openLeaf = null;
@@ -4017,26 +4185,27 @@ class RootRecorder {
             ]
           : inherited;
 
-        emit(
-          openToken(
-            'element',
-            this.withMarks(token.props, [
-              ...this.marks(token.props),
-              ...carried.filter(
-                (mark) => mark.kind !== 'format' || !splitKeys.has(mark.key)
-              ),
-              ...splitTags,
-              ...(rightCuts ?? []),
-              ...(suggested && !rightCuts
-                ? [
-                    closedElement
-                      ? this.splitOf(continued, claim)
-                      : this.options.markOf('wrap'),
-                  ]
-                : []),
-            ])
-          )
+        const half = openToken(
+          'element',
+          this.withMarks(token.props, [
+            ...this.marks(token.props),
+            ...carried.filter(
+              (mark) => mark.kind !== 'format' || !splitKeys.has(mark.key)
+            ),
+            ...splitTags,
+            ...(rightCuts ?? []),
+            ...(suggested && !rightCuts
+              ? [
+                  closedElement
+                    ? this.splitOf(continued, claim)
+                    : this.options.markOf('wrap'),
+                ]
+              : []),
+          ])
         );
+
+        this.splitHalves.add(half);
+        emit(half);
         continue;
       }
 
@@ -4270,12 +4439,26 @@ class RootRecorder {
     return left.filter((mark) => keys.has(incarnationOf(mark)));
   }
 
+  private editingMergesAcross(change: string, joins: readonly AuthoredMark[]) {
+    return (
+      isEditingChange(change) &&
+      joins.every(
+        (join) =>
+          !isEditingChange(join.change) &&
+          !this.frameJoins().followed.has(linkOf(join)) &&
+          join.kind === 'join' &&
+          join.key !== undefined &&
+          this.frameJoins().holders.get(join.key) === 1
+      )
+    );
+  }
+
   /** The pending join a block with these marks carries or goes with. */
   private followedBy(props: Props) {
     const marks = this.marks(props);
-    const join = marks.find((mark) => mark.kind === 'join');
+    const join = marks.find(this.isLiveJoin);
 
-    return join ? incarnationOf(join) : marks.map(followsOf).find(Boolean);
+    return join ? linkOf(join) : marks.map(followsOf).find(Boolean);
   }
 
   private splitOf(
@@ -4483,9 +4666,7 @@ class RootRecorder {
       : null;
   }
 
-  private sections(): RootChangeSection[] {
-    // Several rules can rewrite one token's properties, each against the
-    // review draft before the step, so their changes compose.
+  private composedProps() {
     const propsAt = new Map<number, Props>();
 
     for (const op of this.ops) {
@@ -4501,6 +4682,117 @@ class RootRecorder {
         )
       );
     }
+
+    return propsAt;
+  }
+
+  private freshCopyKeys() {
+    const { change } = this.options.markOf('insert');
+
+    this.ops.forEach((op, index) => {
+      if (
+        op.kind !== 'insert' ||
+        this.freshened.has(op) ||
+        isEditingMoveCopy(op, change)
+      ) {
+        return;
+      }
+
+      const { tokens } = this.withCopyMarks(op.tokens);
+
+      if (tokens !== op.tokens) this.ops[index] = { ...op, tokens };
+    });
+  }
+
+  /**
+   * Gives each keyed join and `joined` claim in a copy a fresh key, and points
+   * each follower in it at the nearest copied join of its link before it, or
+   * else the first one after it. A half a split writes keeps its links, and a
+   * join set aside becomes a plain break. Also returns where each join's
+   * copies sit.
+   */
+  private withCopyMarks(tokens: readonly JsonToken[]): {
+    links: CopiedLinks;
+    tokens: readonly JsonToken[];
+  } {
+    const joins = new Map<number, Map<AuthoredMark, KeyedJoin>>();
+    const links = new Map<string, Array<{ at: number; link: string }>>();
+    let dropsAside = false;
+
+    for (const [at, token] of tokens.entries()) {
+      if (token.kind !== 'open') continue;
+
+      for (const mark of this.marks(token.props)) {
+        if (!isKeyedJoin(mark)) continue;
+        if (this.options.joinAside(mark)) {
+          dropsAside = true;
+          continue;
+        }
+
+        const copy = { ...mark, key: this.options.createTagId() };
+        const copied = joins.get(at) ?? new Map<AuthoredMark, KeyedJoin>();
+        const original = linkOf(mark);
+
+        copied.set(mark, copy);
+        joins.set(at, copied);
+        links.set(original, [
+          ...(links.get(original) ?? []),
+          { at, link: linkOf(copy) },
+        ]);
+      }
+    }
+    if (joins.size === 0 && !dropsAside) return { links, tokens };
+
+    const copied = tokens.map((token, at) => {
+      if (token.kind !== 'open') return token;
+
+      const marks = this.marks(token.props);
+      const half = this.splitHalves.has(token);
+
+      if (
+        !marks.some(
+          (mark) =>
+            this.options.joinAside(mark) ||
+            joins.get(at)?.has(mark) ||
+            (!half &&
+              isFollower(mark) &&
+              mark.follows !== undefined &&
+              links.has(mark.follows))
+        )
+      ) {
+        return token;
+      }
+
+      return openToken(
+        token.nodeKind,
+        this.withMarks(
+          token.props,
+          marks.flatMap((mark): AuthoredMark[] => {
+            if (this.options.joinAside(mark)) return [];
+
+            const join = joins.get(at)?.get(mark);
+
+            if (join) return [join];
+            if (!half && isFollower(mark) && mark.follows !== undefined) {
+              const candidates = links.get(mark.follows);
+              const follows = (
+                candidates?.findLast((copy) => copy.at < at) ?? candidates?.[0]
+              )?.link;
+
+              if (follows) return [{ ...mark, follows }];
+            }
+
+            return [mark];
+          })
+        )
+      );
+    });
+
+    return { links, tokens: copied };
+  }
+
+  private sections(): RootChangeSection[] {
+    const propsAt = this.composedProps();
 
     const ordered = [...this.ops].sort(
       (left, right) =>

@@ -20,7 +20,7 @@ import type { ListPart } from '../../core/representation';
 import { survivalUnder } from '../../core/survival';
 import { getDefined } from '../../internal/get-defined';
 import type { ReviewFacts } from '../facts/facts';
-import { incarnationOf } from '../facts/records';
+import { incarnationOf, incarnationOfLink } from '../facts/records';
 import type { AuthoredFormatProjection } from '../format';
 import {
   acceptedAlignment,
@@ -33,6 +33,7 @@ import {
 } from '../tree/alignment';
 import {
   type AuthoredMark,
+  followsOf,
   isAuthoredSetValued,
   readAuthoredMarks,
   readMembers,
@@ -42,7 +43,6 @@ import {
   type AuthoredHiddenBlock,
   type AuthoredPlacement,
   type AuthoredResolveSchema,
-  followsOf,
   hasBoundaryMark,
   isTextBlock,
   resolveAuthoredChildren,
@@ -53,7 +53,7 @@ export type BlockFacts = Readonly<{
   unmarked: boolean;
   /**
    * The pending joins blocks inside follow, and the joins blocks inside hold,
-   * by incarnation: a follower lands after its join's line wherever the join
+   * by suggestion: a follower lands after its join's line wherever the join
    * sits, so both resolve together.
    */
   follows: readonly string[];
@@ -121,7 +121,15 @@ const deleteKey = (mark: AuthoredMark) =>
   mark.kind === 'delete' ? incarnationOf(mark) : undefined;
 
 const joinKey = (mark: AuthoredMark) =>
-  mark.kind === 'join' ? incarnationOf(mark) : undefined;
+  mark.kind === 'join' || mark.kind === 'joined'
+    ? incarnationOf(mark)
+    : undefined;
+
+const followKey = (mark: AuthoredMark) => {
+  const link = followsOf(mark);
+
+  return link === undefined ? undefined : incarnationOfLink(link);
+};
 
 const SURVIVAL = {
   accepted: survivalUnder<JsonNode>((node) =>
@@ -213,7 +221,7 @@ export const combineFacts = (
 
     return [...keys];
   };
-  const follows = fold(followsOf, children.follows);
+  const follows = fold(followKey, children.follows);
 
   return {
     unmarked: false,
@@ -417,7 +425,7 @@ const localChange = (
     settledChange(stored, decided, (from, to) => {
       const alignment =
         context.mode === 'proposed'
-          ? acceptedAlignment(from, to)
+          ? acceptedAlignment(from, to, context.facts)
           : decidedAlignment(from, to, {
               facts: context.facts,
               outcomes: 'reject',

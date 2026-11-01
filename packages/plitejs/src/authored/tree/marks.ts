@@ -22,7 +22,8 @@ export type AuthoredMarkKind =
   | BoundaryMarkKind
   | ContentMarkKind
   | EnclosureMarkKind
-  | 'format';
+  | 'format'
+  | 'joined';
 
 export type MarkBase = Readonly<{
   author: string;
@@ -92,21 +93,40 @@ export type AuthoredMark =
       Readonly<{
         cut?: undefined;
         follows?: undefined;
-        kind: Exclude<AuthoredMarkKind, 'format' | 'insert' | 'split'>;
+        /**
+         * The join's identity within its incarnation, minted once when the
+         * recorder writes the join. A `joined` claim keeps it. Absent only on a
+         * join stored before keys.
+         */
+        key?: string;
+        kind: 'join' | 'joined';
+      }>)
+  | (MarkBase &
+      Readonly<{
+        cut?: undefined;
+        follows?: undefined;
+        key?: undefined;
+        kind: Exclude<
+          AuthoredMarkKind,
+          'format' | 'insert' | 'join' | 'joined' | 'split'
+        >;
       }>)
   | (MarkBase &
       Readonly<{
         cut?: undefined;
         /**
-         * The incarnation of a pending join this block goes with: for a split,
-         * the one the source line carried, or followed, when the split cut it;
-         * for an inserted block, the one the block before it carries or goes
-         * with, or else the one whose target and line it was written between.
-         * Where that join takes its line, such as into a quote, the block lands
-         * right after it, in document order among the join's other followers,
-         * and the join never merges into it.
+         * The link of the pending join this block goes with, `linkOf` of that
+         * join: for a split, the one the source line carried, or followed, when
+         * the split cut it; for an inserted block, the one the block before it
+         * carries or goes with, or else the one whose target and line it was
+         * written between. Where that join takes its line, such as into a
+         * quote, the block lands right after it, in document order among the
+         * join's other followers, and the join never merges into it. A keyed
+         * link that names a `joined` claim or no block does nothing, and so
+         * does a keyless one whose nearest keyless holder is a `joined` claim.
          */
         follows?: string;
+        key?: undefined;
         kind: 'insert' | 'split';
       }>)
   | CutTag
@@ -123,6 +143,27 @@ export const isStructureChange = (mark: AuthoredMark) =>
   mark.kind === 'wrap';
 
 export const isUnwrap = (mark: AuthoredMark) => mark.kind === 'unwrap';
+
+export const followsOf = (mark: AuthoredMark) =>
+  (mark.kind === 'split' && mark.cut === undefined) || mark.kind === 'insert'
+    ? mark.follows
+    : undefined;
+
+/**
+ * An Editing claim that follows a join only moves its block, which its
+ * accepted write already keeps.
+ */
+export const onlyPlacesItsBlock = (mark: AuthoredMark) =>
+  isEditingChange(mark.change) && followsOf(mark) !== undefined;
+
+export const pinsHeldValues = (mark: AuthoredMark) =>
+  mark.kind !== 'format' &&
+  mark.kind !== 'join' &&
+  mark.kind !== 'joined' &&
+  !onlyPlacesItsBlock(mark);
+
+export const joinMarksOf = (marks: readonly AuthoredMark[]) =>
+  marks.filter((mark) => mark.kind === 'join');
 
 export const isEnclosureChange = (mark: AuthoredMark) =>
   isUnwrap(mark) || mark.kind === 'wrap';
@@ -150,6 +191,7 @@ const ELEMENT_KINDS: ReadonlySet<AuthoredMarkKind> = new Set([
   'format',
   'insert',
   'join',
+  'joined',
   'split',
   'unwrap',
   'wrap',
@@ -212,6 +254,21 @@ export const deletionOf = ({
   inc === undefined
     ? { at, author, change, kind: 'delete' }
     : { at, author, change, inc, kind: 'delete' };
+
+export const joinedOf = ({
+  at,
+  author,
+  change,
+  inc,
+  key,
+}: MarkBase & Readonly<{ key?: string }>): AuthoredMark => ({
+  at,
+  author,
+  change,
+  ...(inc === undefined ? {} : { inc }),
+  ...(key === undefined ? {} : { key }),
+  kind: 'joined',
+});
 
 const isRestsOn = (value: unknown): value is RestsOn =>
   isRecord(value) && value.kind === 'in';
@@ -327,6 +384,31 @@ const isFormatTag = (value: Readonly<Record<string, unknown>>) => {
   );
 };
 
+const isLinkText = (follows: string) => {
+  let link: unknown;
+
+  try {
+    link = JSON.parse(follows);
+  } catch {
+    return false;
+  }
+
+  if (!Array.isArray(link) || (link.length !== 2 && link.length !== 3)) {
+    return false;
+  }
+
+  const [change, at, key] = link as unknown[];
+
+  return (
+    typeof change === 'string' &&
+    change.length > 0 &&
+    ((typeof at === 'number' && Number.isFinite(at)) ||
+      (typeof at === 'string' && at.length > 0)) &&
+    (link.length === 2 || (typeof key === 'string' && key.length > 0)) &&
+    JSON.stringify(link) === follows
+  );
+};
+
 const parseMember = (value: unknown): AuthoredMember | null => {
   if (!isRecord(value)) return null;
   if (value.kind === 'as') {
@@ -369,16 +451,21 @@ const parseMember = (value: unknown): AuthoredMember | null => {
 
   const follows =
     kind === 'split' || kind === 'insert' ? value.follows : undefined;
+  const key = kind === 'join' || kind === 'joined' ? value.key : undefined;
 
   if (
-    follows !== undefined &&
-    (typeof follows !== 'string' || follows.length === 0)
+    (follows !== undefined &&
+      (typeof follows !== 'string' || follows.length === 0)) ||
+    (key !== undefined && (typeof key !== 'string' || key.length === 0))
   ) {
     return null;
   }
 
   return Object.keys(value).length ===
-    4 + (inc === undefined ? 0 : 1) + (follows === undefined ? 0 : 1)
+    4 +
+      (inc === undefined ? 0 : 1) +
+      (follows === undefined ? 0 : 1) +
+      (key === undefined ? 0 : 1)
     ? (value as AuthoredMark | HeldDeletion)
     : null;
 };
@@ -476,6 +563,18 @@ const visitMarks = (
           }
           continue;
         }
+        if (
+          (member.kind === 'insert' ||
+            (member.kind === 'split' && member.cut === undefined)) &&
+          member.follows !== undefined &&
+          !isLinkText(member.follows)
+        ) {
+          throw new AuthoredMarkError(
+            'A link a block follows must be the JSON text of [change, time or incarnation] or [change, time or incarnation, key].',
+            at
+          );
+        }
+
         const follows =
           member.kind === 'insert' && member.follows !== undefined;
         const stacked = member.kind === 'format' && member.over !== undefined;

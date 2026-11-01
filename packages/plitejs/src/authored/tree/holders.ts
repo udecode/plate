@@ -18,14 +18,16 @@ import {
   type ContextLookup,
   contextInsertsOf,
   decidedIn,
+  keepsPending,
   type ReviewFacts,
-  undecided,
 } from '../facts/facts';
 import { rootOf } from '../ledger/roots';
 import { tagValues } from './holds';
 import type { FormatTag } from './layers';
 import {
   type AuthoredMark,
+  joinMarksOf,
+  pinsHeldValues,
   readAuthoredMarks,
   readMembers,
   readRestsOn,
@@ -37,10 +39,10 @@ import { sparesIn } from './spares';
  * from its own top-level block. `stuck`: a stored claim on it or an ancestor,
  * retained ones included, can still remove, move or rebuild it, or it sits in
  * an unbuilt spare, which a pending claim can still build; no verdict changes
- * that. `waitsOn`: every mark whose being undecided keeps it pending, the
- * insertions of the contexts it or an ancestor rests on, the type tags above
- * it and its own tags on the key and on its type. Editing's marks are always
- * accepted, so none is listed.
+ * that. `waitsOn`: every mark it stays pending on while that mark waits, the
+ * insertions of the contexts it or an ancestor rests on, the joins on it or an
+ * ancestor, the type tags above it and its own tags on the key and on its
+ * type.
  */
 export type Standing = Readonly<{
   stuck: boolean;
@@ -166,34 +168,31 @@ export const shownOf = (
   return shown;
 };
 
-/** What a document leaves undecided, read only by mark. */
+/** What a document leaves waiting, read only by mark. */
 export type Pending = Readonly<{
-  undecided: (mark: AuthoredMark) => boolean;
+  waits: (mark: AuthoredMark) => boolean;
 }>;
 
 export const pendingIn = (facts: ReviewFacts): Pending => ({
-  undecided: (mark) => undecided(facts, mark),
+  waits: (mark) => keepsPending(facts, mark),
 });
 
 /** Whether `holder` holds its value while `pending` holds. */
 export const holdsNow = (holder: Holder, pending: Pending) =>
-  holder.holds !== 'restores' || pending.undecided(holder.tag);
+  holder.holds !== 'restores' || pending.waits(holder.tag);
 
 export const stillHolds = (holders: Iterable<Holder>, pending: Pending) =>
   [...holders].filter((holder) => holdsNow(holder, pending));
 
 /** Whether a decision still to come can change what `standing` stands for. */
 const isPending = (standing: Standing, pending: Pending) =>
-  standing.stuck || standing.waitsOn.some(pending.undecided);
+  standing.stuck || standing.waitsOn.some(pending.waits);
 
 /** Whether a decision still to come can change what `holder` holds. */
 export const isPendingHolder = (holder: Holder, pending: Pending) =>
   holder.holds === 'restores'
-    ? pending.undecided(holder.tag)
+    ? pending.waits(holder.tag)
     : isPending(holder.standing, pending);
-
-const claims = (node: JsonNode) =>
-  readAuthoredMarks(node).some((mark) => mark.kind !== 'format');
 
 const decidable = (mark: AuthoredMark) => !isEditingChange(mark.change);
 
@@ -307,7 +306,7 @@ export class ElementReads {
 
     const reading = getDefined(this.reading);
     const marks = readAuthoredMarks(node);
-    const claimed = above.claimed || claims(node);
+    const claimed = above.claimed || marks.some(pinsHeldValues);
     const rests = readRestsOn(node);
     const contexts = rests.flatMap(({ ctx }) =>
       contextInsertsOf(reading.contexts, ctx).filter(decidable)
@@ -316,10 +315,13 @@ export class ElementReads {
       (mark): mark is FormatTag => mark.kind === 'format' && decidable(mark)
     );
     const types = formats.filter((tag) => tag.key === 'type');
+    const joins = joinMarksOf(marks);
     const values = shownOf(node);
     const stuck = above.spare || claimed;
     const base =
-      contexts.length === 0 ? above.waitsOn : [...above.waitsOn, ...contexts];
+      contexts.length === 0 && joins.length === 0
+        ? above.waitsOn
+        : [...above.waitsOn, ...contexts, ...joins];
     const plain: Standing = {
       stuck,
       waitsOn: types.length === 0 ? base : [...base, ...types],
@@ -357,7 +359,7 @@ export class ElementReads {
       }
     }
 
-    const below = this.below(above, node, claimed, contexts, types);
+    const below = this.below(above, node, claimed, contexts, joins, types);
     let marked = readMembers(node).length > 0;
     const children: ElementRead[] = [];
 
@@ -411,11 +413,13 @@ export class ElementReads {
     node: JsonNode,
     claimed: boolean,
     contexts: readonly AuthoredMark[],
+    joins: readonly AuthoredMark[],
     types: readonly FormatTag[]
   ): Above {
     if (
       claimed === above.claimed &&
       contexts.length === 0 &&
+      joins.length === 0 &&
       types.length === 0
     ) {
       return above;
@@ -424,6 +428,7 @@ export class ElementReads {
     const adds = JSON.stringify([
       claimed,
       readRestsOn(node).map(({ ctx }) => ctx),
+      joins.map(canonicalJsonKey),
       types.map(canonicalJsonKey),
     ]);
     let found = above.below.get(adds);
@@ -432,6 +437,7 @@ export class ElementReads {
       found = aboveOf(claimed, above.spare, [
         ...above.waitsOn,
         ...contexts,
+        ...joins,
         ...types,
       ]);
       above.below.set(adds, found);

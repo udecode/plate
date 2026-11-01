@@ -39,7 +39,7 @@ import { proposedSurvival } from './proposed';
 import {
   acceptedOwnShape,
   failInTests,
-  hasJoinMark,
+  hasLiveJoinMark,
   isTextBlock,
   mergesUp,
   removes,
@@ -487,11 +487,8 @@ export type SettledBy = Readonly<{
   removes: (node: unknown) => boolean;
 }>;
 
-const acceptingAll: SettledBy = {
-  joins: hasJoinMark,
-  removes: (node) =>
-    readAuthoredMarks(node).some((mark) => mark.kind === 'delete'),
-};
+const acceptingRemoves = (node: unknown) =>
+  readAuthoredMarks(node).some((mark) => mark.kind === 'delete');
 
 /**
  * The change of the main root to its settled form aligned by characters: the
@@ -504,12 +501,12 @@ const acceptingAll: SettledBy = {
 export const characterAlignedChange = (
   stored: JsonEditorValue,
   accepted: JsonEditorValue,
-  settledBy: SettledBy = acceptingAll
+  settledBy: SettledBy
 ): DocumentChange | null => {
   if (stored.roots || accepted.roots) return null;
 
   const settled =
-    settledBy === acceptingAll
+    settledBy.removes === acceptingRemoves
       ? proposedSurvival
       : survivalUnder<JsonNode>(settledBy.removes);
   const before = DocumentIndex.fromValue(stored.children);
@@ -816,13 +813,20 @@ export const decidedContentChange = (
       DocumentChange.between(from, to, { isSetValued: isAuthoredSetValued })
   );
 
-/** The accept-all change when it aligns: structural, else by characters. */
+/**
+ * The accept-all change when it aligns: structural, else by characters. A
+ * dormant join lands nowhere, so its block keeps its open.
+ */
 export const acceptedAlignment = (
   stored: JsonEditorValue,
-  accepted: JsonEditorValue
+  accepted: JsonEditorValue,
+  facts: ReviewFacts
 ): DocumentChange | null =>
   structuralAcceptedChange(stored, accepted) ??
-  characterAlignedChange(stored, accepted);
+  characterAlignedChange(stored, accepted, {
+    joins: (node) => hasLiveJoinMark(node, facts),
+    removes: acceptingRemoves,
+  });
 
 /**
  * The accept-all change as two diffs, struck nodes first, so a kept leaf

@@ -60,6 +60,7 @@ import {
   AuthoredMarkError,
   createAuthoredMarksValidator,
   isAuthoredSetValued,
+  readAuthoredMarks,
 } from '../tree/marks';
 import { ShownBook } from '../tree/readiness';
 import {
@@ -81,8 +82,71 @@ import {
   factsOf,
   insertionsOf,
 } from './facts';
-import { CONTEXTS, reserveDropsOf } from './records';
+import {
+  CONTEXTS,
+  incarnationOf,
+  parseVerdict,
+  putVerdicts,
+  reserveDropsOf,
+  VERDICTS,
+} from './records';
 import { keyReadingOf, repairKeys, settleValue } from './settle';
+
+type ReviewLedger = NonNullable<ReturnType<typeof getReviewLedger>>;
+
+const completableJoinedKeysOf = (
+  value: JsonEditorValue,
+  ledger: ReviewLedger,
+  incarnation: string
+) => {
+  const joined = new Set<string>();
+  const waiting = new Set<string>();
+  const visit = (node: JsonNode | undefined) => {
+    if (!node || typeof node.text === 'string') return;
+    for (const mark of readAuthoredMarks(node)) {
+      if (
+        (mark.kind === 'joined' || mark.kind === 'join') &&
+        mark.key !== undefined &&
+        incarnationOf(mark) === incarnation
+      ) {
+        (mark.kind === 'join' ? waiting : joined).add(mark.key);
+      }
+    }
+    node.children?.forEach(visit);
+  };
+
+  for (const [root, ranks] of ledger.ranksNaming(value, [incarnation])) {
+    const index = rootOf(value, root);
+
+    for (const rank of ranks) visit(index.child(rank));
+  }
+
+  return [...joined].filter((key) => !waiting.has(key));
+};
+
+const acceptsCompletingCoveredJoins = (
+  value: JsonEditorValue,
+  records: ReturnType<typeof getInternalDocumentChangeRecords>,
+  ledger: ReviewLedger
+) => {
+  const widened = [...(records.get(VERDICTS) ?? [])].flatMap(([id, json]) => {
+    const record = json === null ? null : parseVerdict(id, json);
+
+    if (record?.verdict !== 'accept') return [];
+    const completed = new Set(record.completed);
+    const joined = completableJoinedKeysOf(
+      value,
+      ledger,
+      incarnationOf(record.member)
+    ).filter((key) => !completed.has(key));
+
+    return joined.length === 0
+      ? []
+      : [{ ...record, completed: [...completed, ...joined] }];
+  });
+
+  return widened.length === 0 ? null : putVerdicts(widened);
+};
 
 /**
  * The children of `after` that admission settles: each replaced child and
@@ -468,8 +532,10 @@ export const authoredAdmission: DocumentAdmission = {
     }
 
     const repairs = new Map<string, RootChange>();
+    const replaysLocalHistory =
+      getActiveEditorUpdateTags(editor).includes('historic');
 
-    if (getActiveEditorUpdateTags(editor).includes('historic')) {
+    if (replaysLocalHistory) {
       const reading = keyReadingOf(facts, getCompiledEditorSchema(editor));
 
       for (const root of scope.keys()) {
@@ -491,7 +557,17 @@ export const authoredAdmission: DocumentAdmission = {
     const replay =
       repairs.size === 0 ? null : createInternalDocumentChange(repairs);
     const replayed = replay ? replay.apply(after) : after;
-    const compacted = compactClaims(replayed, scope);
+    const shrunk = compactClaims(replayed, scope);
+    const widenedAccepts = replaysLocalHistory
+      ? acceptsCompletingCoveredJoins(
+          shrunk,
+          records,
+          getDefined(getReviewLedger(getEditorRuntimeOwner(editor)))
+        )
+      : null;
+    const compacted = widenedAccepts
+      ? deriveValue(shrunk, {}, widenedAccepts)
+      : shrunk;
     const compactedFacts = factsOf(compacted);
     const settled = new Map(
       [...scope].map(([root, at]) => [root, new Set(at)])
@@ -563,9 +639,9 @@ export const authoredAdmission: DocumentAdmission = {
           spared,
           [
             replay,
-            compacted === replayed
+            shrunk === replayed
               ? null
-              : propertiesChange(replayed, compacted, scope),
+              : propertiesChange(replayed, shrunk, scope),
             settlement.change,
             spared === admitted ? null : propertiesChange(admitted, spared),
           ],

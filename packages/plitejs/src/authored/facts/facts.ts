@@ -15,6 +15,7 @@ import {
   getRecordCount,
   getRecordEntries,
   getRecordSetVersion,
+  getRecordsWithPrefix,
   getValueRecords,
   hasRecordWithPrefix,
   type RecordOps,
@@ -40,6 +41,8 @@ import {
   contextIdOf,
   contextRecordOf,
   incarnationOf,
+  incarnationOfLink,
+  linkOf,
   LANDED,
   parseContext,
   parseLanded,
@@ -54,6 +57,7 @@ import {
 } from './records';
 
 export type ReviewFacts = Readonly<{
+  completedJoin: (link: string) => boolean;
   contexts: ContextLookup['contexts'];
   /** Whether a verdict names any incarnation of `change`. */
   decides: (change: string) => boolean;
@@ -279,6 +283,7 @@ type RecordFacts = Omit<ReviewFacts, 'insertedIncarnations'>;
 const RECORD_FACTS = new WeakMap<object, RecordFacts>();
 
 const NO_RECORD_FACTS: RecordFacts = Object.freeze({
+  completedJoin: () => false,
   contexts: Object.freeze({ get: () => undefined, has: () => false }),
   decides: () => {
     countLedgerWork('verdictLookups');
@@ -318,8 +323,37 @@ const recordFactsOf = (store: RecordStore): RecordFacts => {
       );
     };
     let reserves: Map<string, ReserveRecord[]> | null = null;
+    const completed = new Map<string, boolean>();
 
     facts = Object.freeze({
+      // Reads only the accepts of the link's incarnation, so a keystroke's
+      // work does not grow with the decided history.
+      completedJoin: (link: string) => {
+        let found = completed.get(link);
+
+        if (found === undefined) {
+          found = false;
+          for (const [id, json] of getRecordsWithPrefix(
+            store,
+            VERDICTS,
+            verdictProbeOf(incarnationOfLink(link), 'accept')
+          )) {
+            const record = parseVerdict(id, json);
+
+            if (
+              record?.completed?.some(
+                (key) => linkOf({ ...record.member, key }) === link
+              )
+            ) {
+              found = true;
+              break;
+            }
+          }
+          completed.set(link, found);
+        }
+
+        return found;
+      },
       contexts: Object.freeze({
         get: (ctx: string) => readContext(store, ctx),
         has: (ctx: string) => getRecord(store, CONTEXTS, ctx) !== undefined,
@@ -786,6 +820,10 @@ const SETTLED_BY_REJECT: ReadonlySet<AuthoredMark['kind']> = new Set([
   'delete',
   'format',
 ]);
+const REJECTION_OUTRANKS_ACCEPT: ReadonlySet<AuthoredMark['kind']> = new Set([
+  'join',
+  'joined',
+]);
 
 export const outcomeOf = (
   facts: ReviewFacts,
@@ -796,6 +834,12 @@ export const outcomeOf = (
   const key = incarnationOf(mark);
 
   if (!facts.hasVerdict(key)) return 'pending';
+  if (
+    REJECTION_OUTRANKS_ACCEPT.has(mark.kind) &&
+    facts.hasVerdict(key, 'reject')
+  ) {
+    return 'reject';
+  }
   if (facts.hasVerdict(key, 'accept')) return 'accept';
 
   const replacementPending = facts.insertedIncarnations().has(key);
@@ -920,9 +964,16 @@ export const standingClaimsOf = (
   const history = splitHistoryOf(claims);
 
   return claims.filter(
-    (mark) => history.has(mark) || outcomeOf(facts, mark) !== 'reject'
+    (mark) =>
+      !isCompletedJoin(facts, mark) &&
+      (history.has(mark) || outcomeOf(facts, mark) !== 'reject')
   );
 };
+
+export const isCompletedJoin = (facts: ReviewFacts, mark: AuthoredMark) =>
+  mark.kind === 'join' &&
+  mark.key !== undefined &&
+  facts.completedJoin(linkOf(mark));
 
 export const isAccepted = (
   facts: ReviewFacts,
@@ -934,8 +985,21 @@ export const isAccepted = (
 export const isRejected = (facts: ReviewFacts, mark: AuthoredMark) =>
   facts.hasVerdicts && outcomeOf(facts, mark) === 'reject';
 
+/**
+ * Whether `mark` is a join set aside, which lands nowhere and waits on
+ * nothing: one an accept completed, or one an undo or a late update brought
+ * back while its change's rejection stands. A storing resolve and settle keep
+ * it where it sits, so once its verdict goes it is pending again.
+ */
+export const isJoinAside = (facts: ReviewFacts, mark: AuthoredMark) =>
+  isCompletedJoin(facts, mark) ||
+  (mark.kind === 'join' && isRejected(facts, mark));
+
 export const undecided = (facts: ReviewFacts, mark: AuthoredMark) =>
   !isAccepted(facts, mark) && !isRejected(facts, mark);
+
+export const keepsPending = (facts: ReviewFacts, mark: AuthoredMark) =>
+  mark.kind === 'join' ? !isJoinAside(facts, mark) : undecided(facts, mark);
 
 export const isSettledDeletion = (node: unknown, facts: ReviewFacts) =>
   readAuthoredMarks(node).some(

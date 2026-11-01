@@ -47,6 +47,7 @@ const KINDS: Readonly<Record<AuthoredMark['kind'], AuthoredChangeKind>> = {
   format: 'format',
   insert: 'insert',
   join: 'structure',
+  joined: 'structure',
   split: 'structure',
   unwrap: 'structure',
   wrap: 'structure',
@@ -98,7 +99,9 @@ const isInside = (ancestor: Path, path: Path) =>
   ancestor.every((index, depth) => path[depth] === index);
 
 const isLineBreak = (mark: AuthoredMark) =>
-  mark.kind === 'join' || (mark.kind === 'split' && !isCut(mark));
+  mark.kind === 'join' ||
+  mark.kind === 'joined' ||
+  (mark.kind === 'split' && !isCut(mark));
 
 // Content also touches across an inline edge, such as text that runs out of a
 // link, when one end's text sits in the other's parent.
@@ -553,9 +556,13 @@ export const readAuthoredDetails = (
         nodeKind: isText(node) ? 'text' : 'element',
         path,
       });
-    } else if (mark.kind === 'join' || mark.kind === 'split') {
+    } else if (
+      mark.kind === 'join' ||
+      mark.kind === 'joined' ||
+      mark.kind === 'split'
+    ) {
       parts.push({
-        action: mark.kind,
+        action: mark.kind === 'joined' ? 'join' : mark.kind,
         at: rangeOf(occurrence).anchor,
         kind: 'boundary',
       });

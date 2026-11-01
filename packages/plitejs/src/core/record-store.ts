@@ -118,6 +118,20 @@ export const hasRecordWithPrefix = (
   return found !== undefined && found[0].startsWith(prefix);
 };
 
+export function* getRecordsWithPrefix(
+  store: RecordStore,
+  set: string,
+  prefix: string
+): Generator<readonly [string, string]> {
+  const tree = treeOf(store, set);
+  let found = persistentMapCeiling(tree, prefix);
+
+  while (found !== undefined && found[0].startsWith(prefix)) {
+    yield found;
+    found = persistentMapCeiling(tree, `${found[0]}\u0000`);
+  }
+}
+
 export const getRecordCount = (store: RecordStore, set: string) =>
   persistentMapSize(treeOf(store, set));
 

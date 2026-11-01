@@ -78,12 +78,17 @@ const childrenAt = (children: NodeList, path: readonly number[]) =>
 export const proposedChildren = (
   children: NodeList,
   hostPath: readonly number[],
-  limit = Number.POSITIVE_INFINITY,
-  removesTarget: (target: Node, path: Path, joined: Node) => boolean = (
-    target
-  ) =>
-    !isText(target) &&
-    (target.children ?? []).every((child) => isText(child) && !child.text)
+  {
+    joinAside,
+    limit = Number.POSITIVE_INFINITY,
+    removesTarget = (target) =>
+      !isText(target) &&
+      (target.children ?? []).every((child) => isText(child) && !child.text),
+  }: Readonly<{
+    joinAside: (mark: AuthoredMark) => boolean;
+    limit?: number;
+    removesTarget?: (target: Node, path: Path, joined: Node) => boolean;
+  }>
 ): Readonly<{ children: ProposedChild[]; keptJoins: ReadonlySet<Node> }> => {
   const { liveContent, survives } = proposedSurvival;
   const out: ProposedChild[] = [];
@@ -99,8 +104,10 @@ export const proposedChildren = (
           children: (node.children ?? []).filter(survives).map(accepted),
         };
   const reachableBlocks: ReachableBlock[] = [];
-  const passage = joinPassage(children, readAuthoredMarks, survives);
-  const joinKeys = (node: Node) => joinKeysOf(readAuthoredMarks(node));
+  const claimsOf = (node: unknown) =>
+    readAuthoredMarks(node).filter((mark) => !joinAside(mark));
+  const passage = joinPassage(children, claimsOf, survives);
+  const joinKeys = (node: Node) => joinKeysOf(claimsOf(node));
   // A join after a container merges into the container's last text block,
   // which stays inside it.
   const lastTextBlockIn = (

@@ -31,6 +31,22 @@ export const incarnationOf = ({
 }: Pick<MarkBase, 'at' | 'change' | 'inc'>) =>
   JSON.stringify(inc === undefined ? [change, at] : [change, inc]);
 
+export const linkOf = (
+  join: Pick<MarkBase, 'at' | 'change' | 'inc'> & Readonly<{ key?: string }>
+) =>
+  join.key === undefined
+    ? incarnationOf(join)
+    : JSON.stringify(
+        join.inc === undefined
+          ? [join.change, join.at, join.key]
+          : [join.change, join.inc, join.key]
+      );
+
+export const incarnationOfLink = (link: string) =>
+  JSON.stringify((JSON.parse(link) as unknown[]).slice(0, 2));
+
+export const changeOfLink = (link: string) => (JSON.parse(link) as [string])[0];
+
 /** Immutable: rests on the members of `base`, then on `member`. */
 export type ContextRecord = Readonly<{
   base: string | null;
@@ -41,6 +57,8 @@ export type ContextRecord = Readonly<{
 export type Verdict = 'accept' | 'reject';
 
 export type VerdictRecord = Readonly<{
+  /** Join keys completed by this decision; history can restore them dormant. */
+  completed?: readonly string[];
   /** A token minted per decision, so two peers' decisions get two keys. */
   decision: string;
   member: Pick<MarkBase, 'at' | 'change' | 'inc'>;
@@ -190,7 +208,7 @@ export const parseVerdict = (
 
   if (!isRecordNode(node)) return null;
 
-  const { at, change, decision, inc, verdict } = node;
+  const { at, change, completed, decision, inc, verdict } = node;
 
   if (
     typeof at !== 'number' ||
@@ -198,12 +216,19 @@ export const parseVerdict = (
     !isText(change) ||
     !isText(decision) ||
     (inc !== undefined && !isText(inc)) ||
-    (verdict !== 'accept' && verdict !== 'reject')
+    (verdict !== 'accept' && verdict !== 'reject') ||
+    (completed !== undefined &&
+      (!Array.isArray(completed) ||
+        !completed.every(isText) ||
+        verdict !== 'accept'))
   ) {
     return null;
   }
 
   const record: VerdictRecord = Object.freeze({
+    ...(Array.isArray(completed)
+      ? { completed: Object.freeze(completed) }
+      : {}),
     decision,
     member: Object.freeze({
       at,
@@ -377,11 +402,16 @@ export const putVerdicts = (records: Iterable<VerdictRecord>): RecordOps => {
   const writes = new Map<string, string>();
 
   for (const record of records) {
-    const { decision, member, verdict } = record;
+    const { completed, decision, member, verdict } = record;
 
     writes.set(
       verdictIdOf(record),
-      canonicalRecordJson({ ...member, decision, verdict })
+      canonicalRecordJson({
+        ...member,
+        decision,
+        verdict,
+        ...(completed?.length ? { completed } : {}),
+      })
     );
   }
 

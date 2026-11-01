@@ -146,6 +146,7 @@ import {
   authoredRecords,
   type ContextRecord,
   incarnationOf,
+  incarnationOfLink,
   type LandedRecord,
   landedOf,
   putContexts,
@@ -190,6 +191,7 @@ import {
   type AuthoredMark,
   AuthoredMarkError,
   authoredMarksSchema,
+  followsOf,
   isAuthoredSetValued,
   readAuthoredMarks,
   readMembers,
@@ -207,7 +209,7 @@ import {
 import {
   type AuthoredResolveSchema,
   claimsBreakBefore,
-  followsOf,
+  completedJoinKeys,
   projectAuthoredValue,
   isTextBlock,
   pastFollowers,
@@ -749,7 +751,7 @@ const decidedChange = (
   actions: ReadonlyMap<string, Outcome>
 ) =>
   withDocumentChangeRecords(
-    decidedContentChange(contentOf(value), contentOf(decided), {
+    decidedContentChange(value, decided, {
       facts: factsOf(value),
       outcomes: actions,
     }),
@@ -811,7 +813,7 @@ const ownFollowed = (node: JsonNode, facts: ReviewFacts): string[] => [
   ...claimsOf(node, facts).flatMap((mark) => {
     const key = isEditingChange(mark.change) ? followsOf(mark) : undefined;
 
-    return key ? [key] : [];
+    return key ? [incarnationOfLink(key)] : [];
   }),
   ...(node.children ?? []).flatMap((child) => ownFollowed(child, facts)),
 ];
@@ -1441,6 +1443,7 @@ export const createAuthoredPlugin = (
     const ids = [...actions.keys()];
 
     if (conflicting) return { result: { ids, status: 'invalid' } };
+    if (ids.length === 0) return { result: { ids, status: 'unchanged' } };
 
     let resolution: ReturnType<typeof resolveAuthoredValue>;
 
@@ -1481,7 +1484,23 @@ export const createAuthoredPlugin = (
           })
         )
       );
-    const decidedValue = withVerdicts(resolution.value, verdicts);
+    const completed = completedJoinKeys(
+      [...actions].flatMap(([id, action]) =>
+        action === 'accept' ? book.occurrences(id) : []
+      ),
+      resolution.resolvedOf
+    );
+    const decidedValue = withVerdicts(
+      resolution.value,
+      verdicts.map((record) =>
+        record.verdict === 'accept'
+          ? {
+              ...record,
+              completed: completed.get(incarnationOf(record.member)) ?? [],
+            }
+          : record
+      )
+    );
     // A change whose inserted text the decision removes, such as text typed
     // inside a rejected insertion, goes only when it is decided too. An empty
     // block completion built holds nothing to lose.

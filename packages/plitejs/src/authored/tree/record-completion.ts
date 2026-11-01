@@ -36,6 +36,7 @@ import { type Path, PathApi } from '../../interfaces/path';
 import { getDefined } from '../../internal/get-defined';
 import type { Dependencies } from '../facts/dependencies';
 import { isEditingChange } from '../facts/editing';
+import { factsOf, isJoinAside } from '../facts/facts';
 import { heldNode, type Place } from './holds';
 import { type FormatTag, recordFormats, type Standing } from './layers';
 import {
@@ -303,6 +304,8 @@ export const completeProposed = (
       ({ previous: [node] }) =>
         ElementApi.isElement(node) && editorIsEmpty(input.editor, node)
     );
+  const facts = factsOf(input.before);
+  const joinAside = (mark: AuthoredMark) => isJoinAside(facts, mark);
   const changes = new Map<string, RootChange>();
   const indexes = new Map(input.indexes);
   const insertMark: AuthoredMark = { ...input.mark, kind: 'insert' };
@@ -364,13 +367,12 @@ export const completeProposed = (
       const { children: after, keptJoins } = proposedChildren(
         afterChildren,
         hostPath,
-        limit,
-        removesTarget
+        { joinAside, limit, removesTarget }
       );
       const { children: beforeEntries } = proposedChildren(
         beforeChildren,
         beforeHostPath,
-        limit
+        { joinAside, limit }
       );
       const before = beforeEntries.map(({ node }) => node);
       // Where each proposed element now starts, or null once the change
@@ -508,9 +510,9 @@ export const completeProposed = (
         return nodes;
       };
       const holdsJoinedLine = (shell: Placed) =>
-        proposedChildren(afterChildren, shell.path).children.some(
-          ({ path }) => !PathApi.isAncestor(shell.path, path)
-        );
+        proposedChildren(afterChildren, shell.path, {
+          joinAside,
+        }).children.some(({ path }) => !PathApi.isAncestor(shell.path, path));
       const keeps = (shell: Placed, node: Descendant) =>
         !holdsJoinedLine(shell) &&
         shapeOf(

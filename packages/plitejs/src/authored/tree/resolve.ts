@@ -38,11 +38,15 @@ import {
   NO_FACTS,
   type ReviewFacts,
   standingClaimsOf,
+  isJoinAside,
 } from '../facts/facts';
 import {
+  changeOfLink,
   incarnationOf,
+  incarnationOfLink,
   type LandedRecord,
   landedOf,
+  linkOf,
   putContexts,
   putLanded,
   RESERVES,
@@ -79,6 +83,7 @@ import {
   type AuthoredMember,
   AUTHORED_MARKS_KEY,
   type CutTag,
+  followsOf,
   heldOf,
   isClaim,
   isPlaceChange,
@@ -249,6 +254,7 @@ export const acceptedOwnShape = (
       (mark) =>
         mark.kind !== 'insert' &&
         mark.kind !== 'format' &&
+        mark.kind !== 'joined' &&
         mark.kind !== 'unwrap' &&
         mark.kind !== 'wrap' &&
         !(mark.kind === 'split' && mark.cut === undefined) &&
@@ -262,9 +268,187 @@ export const acceptedOwnShape = (
   return unwraps ? 'liftChildren' : 'keep';
 };
 
-/** @internal */
-export const hasJoinMark = (node: unknown) =>
-  readAuthoredMarks(node).some((mark) => mark.kind === 'join');
+export type JoinBlock<N> = Readonly<{
+  index: number;
+  mark: AuthoredMark;
+  node: N;
+}>;
+
+export type Links<N> = Readonly<{
+  sourceOf: (links: Iterable<string>, order: number) => JoinBlock<N> | null;
+  holderOf: (link: string, order: number) => JoinBlock<N> | null;
+  suggestionJoinsOf: (link: string) => ReadonlyArray<JoinBlock<N>>;
+}>;
+
+const nearest = <N>(
+  blocks: ReadonlyArray<JoinBlock<N>>,
+  order: number
+): JoinBlock<N> | undefined => {
+  const sorted = blocks.toSorted((left, right) => left.index - right.index);
+
+  return sorted.findLast(({ index }) => index < order) ?? sorted[0];
+};
+
+const isKeyedLink = (link: string) =>
+  (JSON.parse(link) as unknown[]).length > 2;
+
+// A keyless link has no holder of its own unless a block keeps a keyless join
+// of its suggestion, so only a nearest `joined` one makes it inert.
+const isLive = (link: string, holder: AuthoredMark['kind'] | undefined) =>
+  isKeyedLink(link) ? holder === 'join' : holder !== 'joined';
+
+/**
+ * A keyed link is live while the nearest block holding its exact key, before
+ * the line or else the first after it, holds a join `isPending` accepts; a
+ * live link places its line with the nearest such join of its suggestion
+ * before the line, or else the first after it.
+ */
+export const linksIn = <N>(
+  visit: (each: (node: N, index: number) => void) => void,
+  claimsOf: (node: N) => readonly AuthoredMark[],
+  isPending: (mark: AuthoredMark) => boolean
+): Links<N> => {
+  let holders:
+    | Readonly<{
+        byLink: Map<string, Array<JoinBlock<N>>>;
+        bySuggestion: Map<string, Array<JoinBlock<N>>>;
+      }>
+    | undefined;
+  const holdersIn = () => {
+    if (!holders) {
+      const byLink = new Map<string, Array<JoinBlock<N>>>();
+      const bySuggestion = new Map<string, Array<JoinBlock<N>>>();
+
+      visit((node, index) => {
+        for (const mark of claimsOf(node)) {
+          if (
+            mark.kind !== 'joined' &&
+            !(mark.kind === 'join' && isPending(mark))
+          ) {
+            continue;
+          }
+
+          const block = { index, mark, node };
+          const key = linkOf(mark);
+
+          byLink.set(key, [...(byLink.get(key) ?? []), block]);
+          if (mark.kind === 'join') {
+            const suggestion = incarnationOf(mark);
+
+            bySuggestion.set(suggestion, [
+              ...(bySuggestion.get(suggestion) ?? []),
+              block,
+            ]);
+          }
+        }
+      });
+      holders = { byLink, bySuggestion };
+    }
+
+    return holders;
+  };
+  const holderOf = (link: string, order: number) =>
+    nearest(holdersIn().byLink.get(link) ?? [], order);
+  const suggestionJoinsOf = (link: string) =>
+    holdersIn().bySuggestion.get(incarnationOfLink(link)) ?? [];
+  const placementOf = (link: string, order: number) =>
+    isLive(link, holderOf(link, order)?.mark.kind)
+      ? nearest(suggestionJoinsOf(link), order)
+      : undefined;
+
+  return {
+    holderOf: (link, order) => holderOf(link, order) ?? null,
+    suggestionJoinsOf,
+    sourceOf: (links, order) =>
+      nearest(
+        [...links].flatMap((link) => placementOf(link, order) ?? []),
+        order
+      ) ?? null,
+  };
+};
+
+export const placementLinksIn = <
+  N extends Readonly<{ children?: readonly N[] }>,
+>(
+  eachBlock: (visit: (node: N) => void) => void,
+  claimsOf: (node: N) => readonly AuthoredMark[],
+  isPending: (mark: AuthoredMark) => boolean
+) => {
+  const blocks: N[] = [];
+  const orders = new Map<N, number>();
+  const visit = (node: N) => {
+    orders.set(node, blocks.length);
+    if (isTextBlock(node)) blocks.push(node);
+    else node.children?.forEach(visit);
+  };
+
+  eachBlock(visit);
+
+  const links = linksIn<N>((each) => blocks.forEach(each), claimsOf, isPending);
+
+  return (link: string, node: N) =>
+    links.sourceOf([link], getDefined(orders.get(node)));
+};
+
+export const decidedJoinLeavesInPlace = <M extends AuthoredMark>(
+  mark: M,
+  rejected: (mark: M) => boolean,
+  decided: (mark: M) => boolean
+) =>
+  (mark.kind === 'join' || mark.kind === 'joined') &&
+  (rejected(mark) || (mark.kind === 'joined' && decided(mark)));
+
+/**
+ * The keys, by incarnation, of the keyed joins and `joined` claims among an
+ * accept's `occurrences` that its resolution leaves no block holding. Such a
+ * join is complete, so an undo that brings its mark back leaves it dormant.
+ * Two blocks can hold one key, and one that still waits keeps it live.
+ */
+export const completedJoinKeys = (
+  occurrences: Iterable<Readonly<{ mark: AuthoredMark; node: unknown }>>,
+  resolvedOf: (original: unknown) => unknown
+) => {
+  const held = new Map<
+    string,
+    { incarnation: string; key: string; stays: boolean }
+  >();
+
+  for (const { mark, node } of occurrences) {
+    if ((mark.kind !== 'join' && mark.kind !== 'joined') || !mark.key) continue;
+    const link = linkOf(mark);
+    const output = resolvedOf(node);
+    const entry = held.get(link) ?? {
+      incarnation: incarnationOf(mark),
+      key: mark.key,
+      stays: false,
+    };
+
+    entry.stays ||=
+      !!output &&
+      readAuthoredMarks(output).some(
+        (member) =>
+          (member.kind === 'join' || member.kind === 'joined') &&
+          linkOf(member) === link
+      );
+    held.set(link, entry);
+  }
+
+  const completed = new Map<string, string[]>();
+
+  for (const { incarnation, key, stays } of held.values()) {
+    if (!stays) {
+      completed.set(incarnation, [...(completed.get(incarnation) ?? []), key]);
+    }
+  }
+
+  return completed;
+};
+
+/** Whether `node` holds a join not set aside, so lands when accepted. */
+export const hasLiveJoinMark = (node: unknown, facts: ReviewFacts) =>
+  readAuthoredMarks(node).some(
+    (mark) => mark.kind === 'join' && !isJoinAside(facts, mark)
+  );
 
 /** @internal */
 export const claimsBreakBefore = (node: unknown) =>
@@ -485,18 +669,6 @@ export const buildsElement = (mark: AuthoredMark) =>
   removes(mark, 'reject') || mergesUp(mark, 'reject') || mark.kind === 'wrap';
 
 /**
- * The joins among `marks`, by the incarnation a follower's `follows` names.
- *
- * @internal
- */
-export const joinsByIncarnation = (marks: readonly AuthoredMark[]) =>
-  new Map(
-    marks.flatMap((mark) =>
-      mark.kind === 'join' ? [[incarnationOf(mark), mark] as const] : []
-    )
-  );
-
-/**
  * Whether some verdict on `mark` can change what completing a container
  * builds: on the container, a type or structure change, which picks the
  * content a build waits on; on a child, a removal `removes` decides, a merge
@@ -514,12 +686,6 @@ export const changesBuild = (mark: AuthoredMark, on: 'child' | 'container') =>
       mergesUp(mark, 'reject') ||
       isStructureChange(mark);
 
-/** The pending join a block's claim says the block goes with. */
-export const followsOf = (mark: AuthoredMark) =>
-  (mark.kind === 'split' && mark.cut === undefined) || mark.kind === 'insert'
-    ? mark.follows
-    : undefined;
-
 /**
  * The claims that can change what completing a container builds: the
  * container's own and each child's that `changesBuild` names, among those
@@ -527,7 +693,7 @@ export const followsOf = (mark: AuthoredMark) =>
  * the child out of the container when it lands. `claimsOf` reads a node's
  * standing claims, decided ones included, since a follower's own claim can
  * be decided while its join stays pending; `joinOf` gives the pending join
- * an incarnation names, or null.
+ * a child's link names, as placement reads it, or null.
  *
  * @internal
  */
@@ -536,7 +702,7 @@ export const buildClaimsOf = <N>(
   children: readonly N[],
   claimsOf: (node: N) => readonly AuthoredMark[],
   isPending: (mark: AuthoredMark) => boolean,
-  joinOf: (incarnation: string) => AuthoredMark | null
+  joinOf: (link: string, child: N) => AuthoredMark | null
 ): AuthoredMark[] => [
   ...(container === null
     ? []
@@ -546,7 +712,7 @@ export const buildClaimsOf = <N>(
   ...children.flatMap((child) =>
     claimsOf(child).flatMap((mark) => {
       const follows = followsOf(mark);
-      const join = follows === undefined ? null : joinOf(follows);
+      const join = follows === undefined ? null : joinOf(follows, child);
 
       return [
         ...(isPending(mark) && changesBuild(mark, 'child') ? [mark] : []),
@@ -558,7 +724,7 @@ export const buildClaimsOf = <N>(
 
 export const joinKeysOf = (marks: readonly AuthoredMark[]) =>
   new Set(
-    marks.flatMap((mark) => (mark.kind === 'join' ? [incarnationOf(mark)] : []))
+    marks.flatMap((mark) => (mark.kind === 'join' ? [linkOf(mark)] : []))
   );
 
 const followerPassage = (
@@ -566,21 +732,35 @@ const followerPassage = (
   claimsOf: (node: Node) => readonly AuthoredMark[]
 ) => {
   const blocks = textBlocksIn(children, []);
+  const firstHolders = new Map<
+    string,
+    Readonly<{ kind: 'join' | 'joined'; path: Path }>
+  >();
   const firstJoins = new Map<string, Path>();
-  // Scans only as far as the join's first block, so a key beside a join near
-  // the top of a long level reads no block past it.
-  const firstJoinOf = (key: string) => {
-    while (!firstJoins.has(key)) {
+  // Scans only as far as the first block it asks for, so a key beside a join
+  // near the top of a long level reads no block past it.
+  const firstIn = <T>(found: Map<string, T>, key: string) => {
+    while (!found.has(key)) {
       const next = blocks.next();
 
       if (next.done) break;
       countLedgerWork('joinScans');
-      for (const join of joinKeysOf(claimsOf(next.value.node))) {
-        if (!firstJoins.has(join)) firstJoins.set(join, next.value.path);
+      for (const mark of claimsOf(next.value.node)) {
+        if (mark.kind !== 'join' && mark.kind !== 'joined') continue;
+
+        const link = linkOf(mark);
+        const suggestion = incarnationOf(mark);
+
+        if (!firstHolders.has(link)) {
+          firstHolders.set(link, { kind: mark.kind, path: next.value.path });
+        }
+        if (mark.kind === 'join' && !firstJoins.has(suggestion)) {
+          firstJoins.set(suggestion, next.value.path);
+        }
       }
     }
 
-    return firstJoins.get(key);
+    return found.get(key);
   };
   const followsAt = (path: Path) => {
     const keys = new Set<string>();
@@ -603,18 +783,29 @@ const followerPassage = (
   return {
     /** Whether the block at `path` or an element above it goes with a join. */
     goesWithJoin: (path: Path) => followsAt(path).size > 0,
-    /**
-     * Whether the join with incarnations `keys` passes over the text block at
-     * `path`: that block or an element above it goes with one of those joins,
-     * and it comes before that join's first block.
-     */
-    passesOver: (path: Path, keys: ReadonlySet<string>) =>
-      keys.size > 0 &&
-      [...followsAt(path)].some((key) => {
-        const first = keys.has(key) ? firstJoinOf(key) : undefined;
+    passesOver: (path: Path, keys: ReadonlySet<string>) => {
+      if (keys.size === 0) return false;
 
-        return !!first && PathApi.isBefore(path, first);
-      }),
+      const follows = followsAt(path);
+
+      if (follows.size === 0) return false;
+
+      const suggestions = new Set([...keys].map(incarnationOfLink));
+
+      // The line goes with the suggestion's first join while its link is
+      // live: before that join, the nearest holder of its key is the first.
+      return [...follows].some((key) => {
+        const suggestion = incarnationOfLink(key);
+
+        if (!suggestions.has(suggestion)) return false;
+
+        const first = firstIn(firstJoins, suggestion);
+
+        if (!first || !PathApi.isBefore(path, first)) return false;
+
+        return isLive(key, firstIn(firstHolders, key)?.kind);
+      });
+    },
   };
 };
 
@@ -994,7 +1185,9 @@ const resolveIn = (
   const children = removed ? given.filter((node) => !removed.has(node)) : given;
   const outcomeOf = typeof outcome === 'string' ? () => outcome : outcome;
   const pending = (node: unknown) =>
-    standingClaimsOf(node, facts, dependencies);
+    standingClaimsOf(node, facts, dependencies).filter(
+      (mark) => mark.kind !== 'joined'
+    );
   const isInserted = (node: unknown) =>
     pending(node).some((mark) => mark.kind === 'insert');
   const keepsRejectedDeletion = (mark: AuthoredMark) =>
@@ -1024,7 +1217,20 @@ const resolveIn = (
         return resting.length > 0 && contextIntact ? [member] : [];
       }
 
-      const settledByVerdict = !pendingSet.has(member);
+      if (isJoinAside(facts, member)) return stores ? [member] : [];
+
+      if (
+        decidedJoinLeavesInPlace(
+          member,
+          (mark) => isRejected(facts, mark),
+          (mark) => resultOf(mark) !== 'keep'
+        )
+      ) {
+        return [];
+      }
+
+      const settledByVerdict =
+        member.kind !== 'joined' && !pendingSet.has(member);
 
       if (settledByVerdict || keeps(member)) {
         return [member];
@@ -1187,9 +1393,23 @@ const resolveIn = (
   // An Editing join, or a claim of a block that goes with a join, whose
   // landing waits on a pending change keeps its claim, to land once that
   // change is decided. A proposed one holds the decision instead, since only a
-  // verdict would remember its acceptance.
+  // verdict would remember its acceptance. An accepted Editing claim that
+  // `editingClaimOutlivesItsJoin` keeps stays as well.
   const retainedJoins = new Set<Node>();
-  const retainedFollowers = new Set<Node>();
+  const retainedFollowers = new Map<Node, Set<string>>();
+  const followerKeyOf = (mark: AuthoredMark) =>
+    JSON.stringify([mark.kind, incarnationOf(mark), followsOf(mark)]);
+  const retainFollowers = (node: Node, marks: readonly AuthoredMark[]) => {
+    if (marks.length === 0) return;
+
+    retainedFollowers.set(
+      node,
+      new Set([
+        ...(retainedFollowers.get(node) ?? []),
+        ...marks.map(followerKeyOf),
+      ])
+    );
+  };
   const track = <T extends Node>(node: T, original: object | undefined) => {
     if (original) origins.set(node, original);
 
@@ -1408,13 +1628,17 @@ const resolveIn = (
     ...(node.children ?? []).flatMap(contentMarksIn),
   ];
   const structureOf = (node: Node) => {
+    let editingJoin = false;
     let join = false;
     let unwrap = false;
 
     for (const mark of pending(node)) {
       const result = resultOf(mark);
 
-      if (mergesUp(mark, result)) join = true;
+      if (mergesUp(mark, result)) {
+        join = true;
+        if (isEditingChange(mark.change)) editingJoin = true;
+      }
       if (
         (mark.kind === 'unwrap' && result === 'accept') ||
         (mark.kind === 'wrap' && result === 'reject')
@@ -1423,7 +1647,7 @@ const resolveIn = (
       }
     }
 
-    return { join, unwrap };
+    return { editingJoin, join, unwrap };
   };
 
   const blocks = textBlocksOf(children);
@@ -1655,25 +1879,15 @@ const resolveIn = (
       reads: [...removal, ...emptying, ...refilling],
     };
   };
-  type JoinBlock = Readonly<{ index: number; mark: AuthoredMark; node: Node }>;
-  let joinBlocks: Map<string, JoinBlock[]> | undefined;
-  const joinBlocksOf = (incarnation: string) => {
-    if (!joinBlocks) {
-      const found = new Map<string, JoinBlock[]>();
-
-      blocks.forEach(({ node }, index) => {
-        for (const mark of pending(node)) {
-          if (mark.kind !== 'join') continue;
-          const key = incarnationOf(mark);
-
-          found.set(key, [...(found.get(key) ?? []), { index, mark, node }]);
-        }
-      });
-      joinBlocks = found;
-    }
-
-    return joinBlocks.get(incarnation) ?? [];
-  };
+  const holderClaims = (node: Node) => [
+    ...pending(node),
+    ...readAuthoredMarks(node).filter(({ kind }) => kind === 'joined'),
+  ];
+  const links = linksIn<Node>(
+    (each) => blocks.forEach(({ node }, index) => each(node, index)),
+    holderClaims,
+    () => true
+  );
   // Blocks that go with a pending join, in document order, each with the
   // number of lines before it, which orders it among the join's blocks.
   const followers: Array<
@@ -1683,6 +1897,7 @@ const resolveIn = (
       order: number;
     }>
   > = [];
+  const followerOrders = new Map<Node, number>();
   let lines = 0;
   const collectFollowers = (nodes: readonly Node[]) => {
     for (const node of nodes) {
@@ -1696,7 +1911,10 @@ const resolveIn = (
         })
       );
 
-      if (follows.size > 0) followers.push({ follows, node, order: lines });
+      if (follows.size > 0) {
+        followers.push({ follows, node, order: lines });
+        followerOrders.set(node, lines);
+      }
       if (isTextBlock(node)) lines += 1;
       else collectFollowers(node.children ?? []);
     }
@@ -1704,18 +1922,21 @@ const resolveIn = (
 
   collectFollowers(children);
 
-  const passage = joinPassage(children, pending, survives);
+  const passage = joinPassage(children, holderClaims, survives);
   const precedesJoin = ({ path }: TextBlock, keys: ReadonlySet<string>) =>
     followers.length > 0 && passage.passesOver(path, keys);
 
   blocks.forEach(({ ancestors, node }, index) => {
-    if (!structureOf(node).join) return;
+    const { editingJoin, join } = structureOf(node);
+
+    if (!join) return;
     // A join on a block the decision removes has nothing to merge, so the
     // block's pending content decides with the join, unless content that
     // stays whatever is pending keeps the block.
-    const waited = (node.children ?? []).some(keptContent)
-      ? []
-      : contentMarksIn(node);
+    const waited =
+      editingJoin || (node.children ?? []).some(keptContent)
+        ? []
+        : contentMarksIn(node);
     const land = (effect?: () => void) => {
       if (
         waited.some((mark) => decisionOf(mark) === 'keep') &&
@@ -1769,7 +1990,7 @@ const resolveIn = (
 
     const keys = new Set(
       pending(node).flatMap((mark) =>
-        mark.kind === 'join' ? [incarnationOf(mark)] : []
+        mark.kind === 'join' ? [linkOf(mark)] : []
       )
     );
 
@@ -1873,6 +2094,30 @@ const resolveIn = (
   // line, wherever the join takes it.
   const placedAfter = new Map<Node, Node[]>();
   const placed = new Set<Node>();
+  const editingClaimOutlivesItsJoin = (mark: AuthoredMark, order: number) => {
+    const link = getDefined(followsOf(mark));
+    const change = changeOfLink(link);
+
+    if (
+      !isEditingChange(mark.change) ||
+      resultOf(mark) !== 'accept' ||
+      isEditingChange(change)
+    ) {
+      return false;
+    }
+    if (!isLive(link, links.holderOf(link, order)?.mark.kind)) return true;
+
+    const keyedJoinCanReturn =
+      isKeyedLink(link) &&
+      !links
+        .suggestionJoinsOf(link)
+        .some(
+          (holder) => holder.mark.kind === 'join' && survives(holder.node)
+        ) &&
+      outcomeOf(change) === 'keep';
+
+    return keyedJoinCanReturn;
+  };
 
   for (const { follows, node, order } of followers) {
     const claims = pending(node).filter((mark) => followsOf(mark));
@@ -1886,15 +2131,19 @@ const resolveIn = (
       continue;
     }
 
-    // The join's block it follows, or the first one after it when it was
-    // written between the join's target and line.
-    const joins = [...follows]
-      .flatMap(joinBlocksOf)
-      .toSorted((left, right) => left.index - right.index);
-    const source =
-      joins.findLast((joinBlock) => joinBlock.index < order) ?? joins[0];
+    const source = links.sourceOf(follows, order);
 
+    if (
+      stores &&
+      (!source || !survives(source.node) || decisionOf(source.mark) === 'keep')
+    ) {
+      retainFollowers(
+        node,
+        claims.filter((mark) => editingClaimOutlivesItsJoin(mark, order))
+      );
+    }
     if (!source || !survives(source.node)) continue;
+
     const anchor = mergedInto.has(source.node)
       ? standingOf(finalOf(source.node))
       : standsIn.has(source.node)
@@ -1907,14 +2156,28 @@ const resolveIn = (
       continue;
     }
     if (emptiedTargets.has(node)) continue;
-    if (!claims.some((mark) => resultOf(mark) === 'accept')) continue;
-    if (claims.some((mark) => isEditingChange(mark.change))) {
-      if (decisionOf(source.mark) === 'keep') retainedFollowers.add(node);
+
+    const waiting = claims.filter(
+      (mark) =>
+        resultOf(mark) === 'accept' &&
+        links.sourceOf([getDefined(followsOf(mark))], order) !== null
+    );
+
+    if (waiting.length === 0) continue;
+    if (waiting.some((mark) => isEditingChange(mark.change))) {
+      if (decisionOf(source.mark) === 'keep') retainFollowers(node, waiting);
     } else {
       wait([source.mark]);
     }
   }
 
+  const joinedCarriedTo = (node: Node): AuthoredMark[] =>
+    (mergedBlocks.get(node) ?? []).flatMap((block) => [
+      ...readAuthoredMarks(block).filter(
+        (mark) => mark.kind === 'joined' && decisionOf(mark) === 'keep'
+      ),
+      ...joinedCarriedTo(block),
+    ]);
   const movedWith = (node: Node): Node[] => {
     if (!emptiedTargets.has(node)) {
       return [node, ...(mergedBlocks.get(node) ?? [])];
@@ -1935,7 +2198,7 @@ const resolveIn = (
     if (joins.length === 0 || !survives(node)) return;
 
     const container = ancestors.at(-1);
-    const keys = new Set(joins.map(incarnationOf));
+    const keys = new Set(joins.map(linkOf));
     let before = index - 1;
 
     while (before >= 0 && precedesJoin(getDefined(blocks[before]), keys)) {
@@ -2457,9 +2720,11 @@ const resolveIn = (
             return mark.kind === 'format'
               ? (formats?.kept.has(mark) ?? false)
               : result === 'keep' ||
-                  (mark.kind === 'join' && retainedJoins.has(node)) ||
-                  ((mark.kind === 'split' || followsOf(mark) !== undefined) &&
-                    retainedFollowers.has(node));
+                  (mark.kind === 'join' &&
+                    result === 'accept' &&
+                    retainedJoins.has(node)) ||
+                  (retainedFollowers.get(node)?.has(followerKeyOf(mark)) ??
+                    false);
           },
           stores &&
             sparesIn(shell).length > 0 &&
@@ -2489,8 +2754,12 @@ const resolveIn = (
             .map((mark) => [incarnationOf(mark), mark])
         ).values(),
       ];
+      const carried = joinedCarriedTo(node);
       const formatted = {
-        kept: outlived.length > 0 ? [...kept, ...outlived] : kept,
+        kept:
+          outlived.length > 0 || carried.length > 0
+            ? [...kept, ...outlived, ...carried]
+            : kept,
         props: placedProps,
       };
       // Completion reads which children are inserted, never their spares, so
@@ -2629,10 +2898,13 @@ const resolveIn = (
   // reads it, so the container keeps them.
   const stillBuilds = (container: Node | null, inside: readonly Node[]) => {
     const keeps = (mark: AuthoredMark) => decisionOf(mark) === 'keep';
-    // A child whose enclosure the decision lifts leaves its children here.
     const standing = (level: readonly Node[]): readonly Node[] =>
       level.flatMap((child) =>
-        structureOf(child).unwrap ? standing(child.children ?? []) : [child]
+        ownMarkRemoves(child) && !survives(child)
+          ? []
+          : structureOf(child).unwrap
+            ? standing(child.children ?? [])
+            : [child]
       );
 
     return (
@@ -2641,9 +2913,14 @@ const resolveIn = (
         standing(inside),
         pending,
         keeps,
-        (incarnation) =>
-          joinBlocksOf(incarnation).find(({ mark }) => keeps(mark))?.mark ??
-          null
+        (link, child) => {
+          const join = links.sourceOf(
+            [link],
+            getDefined(followerOrders.get(child))
+          )?.mark;
+
+          return join && keeps(join) ? join : null;
+        }
       ).length > 0
     );
   };

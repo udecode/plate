@@ -53,10 +53,11 @@ import {
   type AuthoredMember,
   type MarkBase,
   type ReserveMember,
+  readAuthoredMarks,
   readMembers,
   withMembers,
 } from './marks';
-import { buildClaimsOf, joinsByIncarnation } from './resolve';
+import { buildClaimsOf, type JoinBlock, placementLinksIn } from './resolve';
 import { type Spare, slotKeyOf, spareFits, sparesIn } from './spares';
 
 /**
@@ -326,32 +327,36 @@ const typesOfTag = (mark: AuthoredMark) => {
 export const buildClaimsIn = <N extends Readonly<{ children?: readonly N[] }>>(
   facts: ReviewFacts,
   lookup: ContextLookup,
-  eachBlock: (visit: (node: N) => void) => void
+  eachBlock: (root: string, visit: (node: N) => void) => void
 ) => {
   const claimsOf = (node: N) => standingClaimsOf(node, facts, lookup);
   const isPending = (mark: AuthoredMark) => undecided(facts, mark);
-  let joins: Map<string, AuthoredMark> | null = null;
-  const joinOf = (incarnation: string) => {
-    if (!joins) {
-      const found = new Map<string, AuthoredMark>();
-      const visit = (node: N) => {
-        for (const [key, mark] of joinsByIncarnation(
-          claimsOf(node).filter(isPending)
-        )) {
-          found.set(key, mark);
-        }
-        node.children?.forEach(visit);
-      };
+  const sources = new Map<
+    string,
+    (link: string, node: N) => JoinBlock<N> | null
+  >();
+  const joinOf = (root: string) => (link: string, child: N) => {
+    let sourceOf = sources.get(root);
 
-      eachBlock(visit);
-      joins = found;
+    if (!sourceOf) {
+      sourceOf = placementLinksIn<N>(
+        (visit) => eachBlock(root, visit),
+        (node) => [
+          ...claimsOf(node).filter(({ kind }) => kind !== 'joined'),
+          ...readAuthoredMarks(node).filter(({ kind }) => kind === 'joined'),
+        ],
+        () => true
+      );
+      sources.set(root, sourceOf);
     }
 
-    return joins.get(incarnation) ?? null;
+    const join = sourceOf(link, child)?.mark;
+
+    return join && isPending(join) ? join : null;
   };
 
-  return (container: N | null, children: readonly N[]) =>
-    buildClaimsOf(container, children, claimsOf, isPending, joinOf);
+  return (container: N | null, children: readonly N[], root: string) =>
+    buildClaimsOf(container, children, claimsOf, isPending, joinOf(root));
 };
 
 /**
@@ -385,16 +390,13 @@ export const sparesFor = (
   const buildClaims = buildClaimsIn<Node>(
     facts,
     createDependencies(facts),
-    (visit) => {
+    (root, visit) => {
       if (blocks) {
-        for (const root of blocks.indexes.keys()) {
+        if (blocks.indexes.has(root)) {
           for (const node of blocks.marked(root)) visit(node);
         }
       } else {
-        value.children.forEach(visit);
-        for (const children of Object.values(value.roots ?? {})) {
-          children.forEach(visit);
-        }
+        rootChildren(value, root)?.forEach(visit);
       }
     }
   );
@@ -422,7 +424,7 @@ export const sparesFor = (
     if (!found) continue;
 
     const { ancestors, children: level, node: container } = found;
-    const claims = buildClaims(container, level);
+    const claims = buildClaims(container, level, site.root);
     const writer = firstOf(claims);
     const filling = fillsAt.get(siteKey) ?? [];
 

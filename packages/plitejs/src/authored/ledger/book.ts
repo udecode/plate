@@ -18,6 +18,7 @@ import {
 import { factsOf, marksOf, membersOf, type ReviewFacts } from '../facts/facts';
 import {
   incarnationOf,
+  incarnationOfLink,
   VERDICTS,
   verdictIncarnationsOf,
 } from '../facts/records';
@@ -96,7 +97,7 @@ const namedBy = (node: unknown, facts: ReviewFacts, named: Set<string>) => {
     }
     named.add(incarnationOf(member));
     if ('follows' in member && typeof member.follows === 'string') {
-      named.add(member.follows);
+      named.add(incarnationOfLink(member.follows));
     }
   }
 };

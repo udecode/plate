@@ -111,7 +111,10 @@ export const createReviewProjection = (
         return plain;
       }
       const structure = marks.find(
-        (mark) => mark.kind !== 'insert' && mark.kind !== 'delete'
+        (mark) =>
+          mark.kind !== 'insert' &&
+          mark.kind !== 'delete' &&
+          mark.kind !== 'joined'
       );
 
       if (structure) {
