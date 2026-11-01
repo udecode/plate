@@ -765,6 +765,8 @@ export default defineConfig({
         'typescript/unbound-method': 'off',
         // [P1 test-semantics] Sparse-array contract tests intentionally preserve deleted indexes; splice would change the subject under test.
         'typescript/no-array-delete': 'off',
+        // [P1 test-semantics] Test peers define their own join() methods, which the rule cannot tell from Array#join; its fix adds a separator argument that changes the call.
+        'unicorn/require-array-join-separator': 'off',
         // [P1 test-semantics] Type-contract tests spell default generic arguments to assert public inference and specialization.
         'typescript/no-unnecessary-type-arguments': 'off',
         // [P0 test-type-boundary] Bun's resolves and rejects matcher declarations report void even though the runtime matcher returns a Promise.
