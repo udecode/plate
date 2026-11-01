@@ -14,7 +14,10 @@ import {
   getDocumentChangeRelocations,
   getExactDocumentChangeRelocation,
 } from '../../core/change/mapping';
-import { RootChange } from '../../core/change/root-change';
+import {
+  type DocumentPropertyContext,
+  RootChange,
+} from '../../core/change/root-change';
 import {
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
@@ -1647,6 +1650,130 @@ const sparseLowerRegions = (
   return regions;
 };
 
+type ChildIdentity = Readonly<{
+  after: (parent: Y.XmlElement) => readonly YjsNode[];
+  before: (parent: Y.XmlElement) => readonly YjsNode[] | null;
+  moved: (node: YjsNode) => boolean;
+}>;
+type ImportWindow = {
+  after: readonly Descendant[];
+  ancestors: readonly string[];
+  before: readonly Descendant[];
+  from: number;
+  blockPath: readonly number[];
+  start: number;
+};
+
+const isElementValue = (
+  node: Descendant
+): node is Descendant & {
+  children: Descendant[];
+} => 'children' in node;
+
+const sameShell = (left: Descendant, right: Descendant) =>
+  areJsonLikeValuesEqual({ ...left, children: [] }, { ...right, children: [] });
+
+const splitKeptBlock = (
+  node: Y.XmlElement,
+  before: Descendant,
+  after: Descendant,
+  identity: ChildIdentity,
+  createIndex: () => DocumentIndex,
+  offset: number
+): ImportWindow[] | null => {
+  const windows: ImportWindow[] = [];
+  let index: DocumentIndex | undefined;
+  const at = (path: readonly number[], child: number) =>
+    offset + (index ??= createIndex()).childPosition(path, child);
+  const descend = (
+    yjs: Y.XmlElement,
+    left: Descendant,
+    right: Descendant,
+    path: readonly number[],
+    above: readonly string[]
+  ): boolean => {
+    if (areJsonLikeValuesEqual(left, right)) return true;
+    if (
+      !isElementValue(left) ||
+      !isElementValue(right) ||
+      !sameShell(left, right) ||
+      !left.children.every(isElementValue) ||
+      !right.children.every(isElementValue)
+    ) {
+      return false;
+    }
+
+    const yjsBefore = identity.before(yjs);
+    const yjsAfter = identity.after(yjs);
+
+    if (
+      !yjsBefore ||
+      yjsBefore.length !== left.children.length ||
+      yjsAfter.length !== right.children.length ||
+      [...yjsBefore, ...yjsAfter].some(
+        (child) => !(child instanceof Y.XmlElement) || identity.moved(child)
+      )
+    ) {
+      return false;
+    }
+
+    const afterIndex = new Map(
+      yjsAfter.map((child, position) => [child, position])
+    );
+    const ancestors = [
+      typeof left.type === 'string' ? left.type : 'element',
+      ...above,
+    ];
+    const push = (
+      beforeFrom: number,
+      beforeTo: number,
+      afterFrom: number,
+      afterTo: number
+    ) => {
+      if (beforeFrom === beforeTo && afterFrom === afterTo) return;
+      windows.push({
+        after: right.children.slice(afterFrom, afterTo),
+        ancestors,
+        before: left.children.slice(beforeFrom, beforeTo),
+        from: at(path, beforeFrom),
+        blockPath: path,
+        start: beforeFrom,
+      });
+    };
+    let beforeFrom = 0;
+    let afterFrom = 0;
+
+    for (const [child, yjsChild] of yjsBefore.entries()) {
+      const kept = afterIndex.get(yjsChild);
+
+      if (kept === undefined) continue;
+      if (kept < afterFrom) return false;
+      push(beforeFrom, child, afterFrom, kept);
+      const pushed = windows.length;
+
+      if (
+        !descend(
+          yjsChild as Y.XmlElement,
+          left.children[child],
+          right.children[kept],
+          [...path, child],
+          ancestors
+        )
+      ) {
+        windows.length = pushed;
+        push(child, child + 1, kept, kept + 1);
+      }
+      beforeFrom = child + 1;
+      afterFrom = kept + 1;
+    }
+    push(beforeFrom, yjsBefore.length, afterFrom, yjsAfter.length);
+
+    return true;
+  };
+
+  return descend(node, before, after, [0], []) ? windows : null;
+};
+
 const createEventDocumentChange = (
   root: string,
   before: NodeList<Descendant>,
@@ -1656,7 +1783,11 @@ const createEventDocumentChange = (
   isSetValued: YjsSetPropertyResolver,
   joins: readonly FoundJoin[] = [],
   splits: readonly FoundSplit[] = [],
-  unsplits: readonly FoundUnsplit[] = []
+  unsplits: readonly FoundUnsplit[] = [],
+  refine: Readonly<{
+    keptBlockByRegion: ReadonlyArray<Y.XmlElement | null>;
+    identity: ChildIdentity;
+  }> | null = null
 ): {
   change: DocumentChange;
   changedChildren: number;
@@ -1676,7 +1807,7 @@ const createEventDocumentChange = (
 
     return context ? isSetValued(node, key, context) : false;
   };
-  const sectionInputs = regions.map((region) => {
+  const sectionInputs = regions.flatMap((region, regionIndex) => {
     const regionAfter = Object.freeze(after(region.afterFrom, region.afterTo));
     const regionBefore = Object.freeze(
       before.slice(region.beforeFrom, region.beforeTo)
@@ -1734,20 +1865,85 @@ const createEventDocumentChange = (
             between
           );
 
-    return Object.freeze({
-      after: regionAfter,
-      before: regionBefore,
-      from: lengths.prefix(region.beforeFrom),
-      ...(local ? { local } : {}),
-    });
+    const from = lengths.prefix(region.beforeFrom);
+    const block = refine?.keptBlockByRegion[regionIndex];
+
+    if (
+      !local &&
+      refine &&
+      block &&
+      regionBefore.length === 1 &&
+      regionAfter.length === 1
+    ) {
+      const windows = splitKeptBlock(
+        block,
+        regionBefore[0],
+        regionAfter[0],
+        refine.identity,
+        () => DocumentIndex.fromValue(regionBefore),
+        from
+      );
+
+      if (windows) {
+        return windows.map((window) => {
+          const { ancestors, blockPath, start } = window;
+          const path = [region.beforeFrom, ...blockPath.slice(1)];
+          // A window's nodes are copies the bridge's contexts do not hold, so
+          // schema lookups get the window's place in the block instead.
+          const lift = (
+            node: JsonNode,
+            key: string,
+            context: DocumentPropertyContext
+          ) =>
+            resolve(node, key) ||
+            (!contexts?.get(node) &&
+              isSetValued(node, key, {
+                ...context,
+                ancestors: [...context.ancestors, ...ancestors],
+                parent: context.parent ?? ancestors[0] ?? null,
+                path: [
+                  ...path,
+                  ...context.path.map((part, depth) =>
+                    depth === 0 ? start + part : part
+                  ),
+                ],
+              }));
+
+          return Object.freeze({
+            after: window.after,
+            before: window.before,
+            from: window.from,
+            local: RootChange.between(
+              DocumentIndex.fromValue(window.before),
+              DocumentIndex.fromValue(window.after),
+              { isSetValued: lift, root: root === 'main' ? null : root }
+            ),
+            region: regionIndex,
+          });
+        });
+      }
+    }
+
+    return [
+      Object.freeze({
+        after: regionAfter,
+        before: regionBefore,
+        from,
+        region: regionIndex,
+        ...(local ? { local } : {}),
+      }),
+    ];
   });
+
   const result = createDocumentChangeFromRootSections(
     root,
     lengths.total(),
     sectionInputs,
     resolve
   );
-  const changedSections = new Set(result.changedSections);
+  const changedSections = new Set(
+    result.changedSections.map((index) => sectionInputs[index].region)
+  );
   let changedChildren = 0;
 
   regions.forEach((region, index) => {
@@ -4784,6 +4980,21 @@ export class YjsEventChangeBridge {
       this.noteRemoteIds(batch);
 
       const read = this.ready ? this.readBatch(batch) : null;
+
+      // Normalization writes to the room, so the child lists a kept block is
+      // paired against are read before it.
+      if (read) {
+        for (const { target } of batch.events) {
+          for (
+            let node: unknown =
+              target instanceof Y.XmlText ? target.parent : target;
+            node instanceof Y.XmlElement && node !== this.root;
+            node = node.parent
+          ) {
+            read.childrenBefore(node);
+          }
+        }
+      }
       const joins = read ? this.findJoins(read) : [];
       const found = read
         ? boundariesInBatch(read)
@@ -4792,7 +5003,8 @@ export class YjsEventChangeBridge {
         batch,
         this.normalize(write, batch),
         joins,
-        found
+        found,
+        read
       );
 
       if (result.kind !== 'fallback') return result;
@@ -5892,7 +6104,8 @@ export class YjsEventChangeBridge {
     batch: CapturedYjsEventBatch,
     normalization: YjsEventNormalization,
     found: ReadonlyArray<FoundJoin & { top: YjsNode }>,
-    boundaries: BatchBoundaries
+    boundaries: BatchBoundaries,
+    read: BatchReader | null = null
   ): YjsEventImportResult {
     if (!this.ready) {
       return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
@@ -6080,6 +6293,9 @@ export class YjsEventChangeBridge {
       }
     }
 
+    // A block masked before or after this batch shows a projection, not its
+    // room children, so its children cannot pair.
+    const maskedBefore = new Set(this.maskedBlocks);
     const readValues = new Map<YjsNode, Descendant>();
 
     try {
@@ -6227,7 +6443,27 @@ export class YjsEventChangeBridge {
       this.isSetValued,
       joins,
       splits,
-      unsplits
+      unsplits,
+      read && {
+        keptBlockByRegion: mergedRegions.map((region) => {
+          const node = this.rootIndex.at(region.beforeFrom);
+
+          return region.beforeTo - region.beforeFrom === 1 &&
+            region.afterTo - region.afterFrom === 1 &&
+            node instanceof Y.XmlElement &&
+            getNextTopIndex(node) === region.afterFrom &&
+            !maskedBefore.has(node) &&
+            !this.maskedBlocks.has(node) &&
+            !hasProjectionAttributes(node)
+            ? node
+            : null;
+        }),
+        identity: {
+          after: (parent) => getYjsVisibleChildren(this.root, parent),
+          before: (parent) => read.childrenBefore(parent),
+          moved: (node) => read.moved(node),
+        },
+      }
     );
     const ticket = this.generation;
 

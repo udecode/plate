@@ -2103,6 +2103,52 @@ export class RootChange {
   }
 
   /**
+   * Split this change into its edits inside `from..to` and its edits outside,
+   * each over the same document. An insertion at `from` is outside and one at
+   * `to` is inside. Null when an edit crosses either boundary.
+   */
+  partition(
+    from: number,
+    to: number
+  ): { inside: RootChange; outside: RootChange } | null {
+    const inside: number[] = [];
+    const insideData: SectionData[] = [];
+    const outside: number[] = [];
+    const outsideData: SectionData[] = [];
+    let at = 0;
+
+    for (
+      let index = 0, dataIndex = 0;
+      index < this.sections.length;
+      index += 2, dataIndex++
+    ) {
+      const length = this.sections[index];
+      const inserted = this.sections[index + 1];
+      const value = this.data[dataIndex];
+      const end = at + length;
+
+      if (inserted === -1) {
+        addSection(inside, insideData, length, -1, null);
+        addSection(outside, outsideData, length, -1, null);
+      } else if (length > 0 ? at >= from && end <= to : at > from && at <= to) {
+        addSection(inside, insideData, length, inserted, value);
+        addSection(outside, outsideData, length, -1, null);
+      } else if (end <= from || at >= to) {
+        addSection(inside, insideData, length, -1, null);
+        addSection(outside, outsideData, length, inserted, value);
+      } else {
+        return null;
+      }
+      at = end;
+    }
+
+    return {
+      inside: new RootChange(inside, insideData),
+      outside: new RootChange(outside, outsideData),
+    };
+  }
+
+  /**
    * This change's part inside `from` to `to` of its document, as a change to
    * that window, the inverse of `embed`. Null when a section that changes
    * content does not lie inside the window; an insertion at either end lies
@@ -2235,8 +2281,6 @@ export class RootChange {
     const bPropertyChanges = b.propertyChanges();
     const [aReplacement] = aReplacements;
     const [bReplacement] = bReplacements;
-    const hasSingleReplacement =
-      aReplacements.length === 1 && bReplacements.length === 1;
     const deletesWholeSiblings = (
       replacement: Replacement | undefined
     ): boolean => {
@@ -2267,6 +2311,9 @@ export class RootChange {
       (inner.from === inner.to
         ? outer.from < inner.from && inner.to < outer.to
         : outer.from <= inner.from && inner.to <= outer.to);
+    const containsAll = (outer: Replacement, inner: readonly Replacement[]) =>
+      inner.length > 0 &&
+      inner.every((replacement) => contains(outer, replacement));
     const getMove = (replacements: readonly Replacement[]) => {
       if (replacements.length !== 2) return null;
 
@@ -2313,6 +2360,10 @@ export class RootChange {
 
       return {
         from: source.from,
+        fromAfterMove:
+          insertion.from >= deletion.to
+            ? insertion.from - (deletion.to - deletion.from)
+            : insertion.from,
         path: source.path,
         to: source.to,
         targetPath: [...target.parentPath, targetIndex],
@@ -2320,59 +2371,6 @@ export class RootChange {
     };
     const aMove = getMove(aReplacements);
     const bMove = getMove(bReplacements);
-    const createMappedPropertyChange = (
-      source: readonly PropertyChange[],
-      move: NonNullable<ReturnType<typeof getMove>>,
-      afterMove: DocumentIndex
-    ) => {
-      const mapped = source.map((propertyChange) => {
-        const entry = document.nodeStartingAt(propertyChange.from);
-
-        if (
-          !entry ||
-          entry.path.length < move.path.length ||
-          !move.path.every((part, index) => entry.path[index] === part)
-        ) {
-          return null;
-        }
-
-        const path = [
-          ...move.targetPath,
-          ...entry.path.slice(move.path.length),
-        ];
-
-        return {
-          from: afterMove.nodeRange(path).from,
-          modifications: propertyChange.modifications,
-        };
-      });
-
-      if (mapped.some((change) => change === null)) return null;
-
-      const sections: number[] = [];
-      const data: SectionData[] = [];
-      let position = 0;
-
-      for (const change of (
-        mapped as Array<{
-          from: number;
-          modifications: readonly PropertyModification[];
-        }>
-      ).sort((left, right) => left.from - right.from)) {
-        if (change.from > position) {
-          addSection(sections, data, change.from - position, -1, null);
-        }
-        addSection(sections, data, 1, -2, change.modifications);
-        position = change.from + 1;
-      }
-
-      if (position < afterMove.length) {
-        addSection(sections, data, afterMove.length - position, -1, null);
-      }
-
-      return RootChange.fromSections(sections, data);
-    };
-
     if (
       aMove &&
       bMove &&
@@ -2385,38 +2383,70 @@ export class RootChange {
       };
     }
 
-    if (bMove && aReplacements.length === 0 && aPropertyChanges.length > 0) {
-      const afterA = a.apply(document);
-      const afterB = b.apply(document);
-      const mapped = createMappedPropertyChange(
-        aPropertyChanges,
-        bMove,
-        afterB
-      );
+    // Edits of a node the other side moves, its own properties included, go
+    // where the node goes, found by the move's own ranges, so an equal twin
+    // cannot take them. Edits outside the node rebase over the move by
+    // position.
+    const carryThroughMove = (
+      edit: RootChange,
+      moveChange: RootChange,
+      move: NonNullable<ReturnType<typeof getMove>>
+    ) => {
+      if (
+        pathKey(move.path) === pathKey(move.targetPath) ||
+        !isElementNode(document.node(move.path))
+      ) {
+        return null;
+      }
 
-      if (mapped) {
+      const parts = edit.partition(move.from, move.to - 1);
+
+      if (!parts || parts.inside.empty) return null;
+
+      let touchesNode = false;
+
+      parts.outside.iterChangedRanges((from, to) => {
+        if (to > move.from && from < move.to) touchesNode = true;
+      });
+
+      if (touchesNode) return null;
+
+      const afterMove = moveChange.apply(document);
+      const afterEdit = edit.apply(document);
+      const carried = getDefined(
+        parts.inside.within(move.from, move.to - 1)
+      ).embed(afterMove.length, move.fromAfterMove);
+
+      if (parts.outside.empty && moveChange.propertyChanges().length === 0) {
         return {
-          a: mapped,
-          b: moveNodeChange(afterA, bMove.path, bMove.targetPath),
+          edit: carried,
+          move: moveNodeChange(afterEdit, move.path, move.targetPath),
         };
       }
+
+      const editAfterMove = carried.compose(
+        RootChange.transform(
+          RootChange.transform(parts.outside, moveChange).a,
+          carried
+        ).a
+      );
+
+      return {
+        edit: editAfterMove,
+        move: RootChange.between(afterEdit, editAfterMove.apply(afterMove)),
+      };
+    };
+
+    if (bMove && !aMove) {
+      const carried = carryThroughMove(a, b, bMove);
+
+      if (carried) return { a: carried.edit, b: carried.move };
     }
 
-    if (aMove && bReplacements.length === 0 && bPropertyChanges.length > 0) {
-      const afterA = a.apply(document);
-      const afterB = b.apply(document);
-      const mapped = createMappedPropertyChange(
-        bPropertyChanges,
-        aMove,
-        afterA
-      );
+    if (aMove && !bMove) {
+      const carried = carryThroughMove(b, a, aMove);
 
-      if (mapped) {
-        return {
-          a: moveNodeChange(afterB, aMove.path, aMove.targetPath),
-          b: mapped,
-        };
-      }
+      if (carried) return { a: carried.move, b: carried.edit };
     }
 
     const transformed = RootChange.transform(a, b);
@@ -2569,18 +2599,18 @@ export class RootChange {
       return RootChange.fromSections(sections, data).apply(afterDeletion);
     };
     const deletion =
-      hasSingleReplacement &&
+      bReplacements.length === 1 &&
       deletesWholeSiblings(bReplacement) &&
-      contains(bReplacement, aReplacement)
+      containsAll(bReplacement, aReplacements)
         ? {
             edit: a,
             kept: aPropertyChanges,
             replacement: bReplacement,
             side: 'b' as const,
           }
-        : hasSingleReplacement &&
+        : aReplacements.length === 1 &&
             deletesWholeSiblings(aReplacement) &&
-            contains(aReplacement, bReplacement)
+            containsAll(aReplacement, bReplacements)
           ? {
               edit: b,
               kept: bPropertyChanges,
