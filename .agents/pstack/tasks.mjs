@@ -102,15 +102,25 @@ export function writeKey(path) {
   return resolve(realpathSync.native(base), ...rest).toLowerCase();
 }
 
-const isCommit = (sha) => {
-  if (!/^[0-9a-f]{7,40}$/u.test(sha)) return false;
-  try {
-    execFileSync('git', ['cat-file', '-e', `${sha}^{commit}`], { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
+const companionGitDir = () => {
+  const dir = projectConfig().companion?.dir;
+  return dir && existsSync(dir) ? ['--git-dir', dir] : null;
 };
+
+const commitHome = (sha) => {
+  if (!/^[0-9a-f]{7,40}$/u.test(sha)) return null;
+  const home = [[], companionGitDir()].filter(Boolean).find((via) => {
+    try {
+      execFileSync('git', [...via, 'cat-file', '-e', `${sha}^{commit}`], { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  });
+  return home ?? null;
+};
+
+const isCommit = (sha) => commitHome(sha) !== null;
 
 const contains = (outer, inner) => inner.startsWith(outer.endsWith('/') ? outer : `${outer}/`);
 export const overlaps = (a, b) => a.some((x) => b.some((y) => x === y || contains(x, y) || contains(y, x)));
@@ -133,9 +143,7 @@ const memo = (read, keyOf = (key) => key) => {
 const planOnOrigin = memo((plan) => {
   try {
     // A plan the companion repository tracks lives on its origin, not this one's.
-    const companion = projectConfig().companion?.dir;
-    const via = companion && existsSync(companion) ? ['--git-dir', companion] : [];
-    return execFileSync('git', [...via, 'show', `origin/${branch()}:${plan}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    return execFileSync('git', [...(companionGitDir() ?? []), 'show', `origin/${branch()}:${plan}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
   } catch {
     return null;
   }
@@ -1107,17 +1115,26 @@ function checkoutRef() {
 // says nothing.
 function commitLink() {
   const git = (...args) => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-  let repo = null;
-  try {
-    [, repo] = git('remote', 'get-url', 'origin').match(/github\.com[:/](.+?)(?:\.git)?$/u) ?? [];
-  } catch {}
-  if (!repo) return (sha) => sha;
+  const origin = memo(
+    (via) => {
+      try {
+        return git(...via, 'remote', 'get-url', 'origin').match(/github\.com[:/](.+?)(?:\.git)?$/u)?.[1] ?? null;
+      } catch {
+        return null;
+      }
+    },
+    (via) => via.join(' ')
+  );
   return (sha) => {
+    const via = commitHome(sha) ?? [];
+    const repo = origin(via);
+    if (!repo) return sha;
     let subject = sha;
     try {
-      subject = git('log', '-1', '--format=%s', sha).replace(/[[\]]/gu, '\\$&');
+      subject = git(...via, 'log', '-1', '--format=%s', sha).replace(/[[\]]/gu, '\\$&');
     } catch {}
-    return `📦 [${subject}](https://diffshub.com/${repo}/commit/${sha})`;
+    const name = via.length ? `${repo.split('/').at(-1)}: ` : '';
+    return `📦 [${name}${subject}](https://diffshub.com/${repo}/commit/${sha})`;
   };
 }
 
