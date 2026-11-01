@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-01-huge-document-demo-phone-width",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-01-huge-document-demo-phone-width.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-01",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fit the huge document demo on narrow phone screens",
+  "targets": [
+    {
+      "name": "huge-document-demo",
+      "files": [
+        "apps/www/src/registry/examples/huge-document-demo.tsx",
+        "apps/www/src/registry/examples/values/huge-document-value.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-01-huge-document-fit-demo-narrow-phone-c1ab2b9f",
+      "kind": "fix",
+      "summary": "Let the editor panels shrink below 360 px, so the demo no longer scrolls sideways on screens narrower than 384 px",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["huge-document-demo"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-01",
+          "entry": "2026-11-01-huge-document-demo-phone-width",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

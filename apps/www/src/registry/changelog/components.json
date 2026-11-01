@@ -1,6 +1,13 @@
 {
   "schemaVersion": 1,
   "components": {
+    "huge-document-demo": [
+      "2026-11-01-huge-document-demo-phone-width",
+      "2026-09-06-editor-subscriptions",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-06-02-improve-large-document-editing"
+    ],
     "emoji-picker": [
       "2026-10-30-emoji-pick-focus",
       "2026-10-12-neutral-stored-names",
@@ -1195,12 +1202,6 @@
     ],
     "media-upload": ["2026-09-07-media-upload-lifetime"],
     "code-block-huge-demo": ["2026-09-06-code-block-docs-preview"],
-    "huge-document-demo": [
-      "2026-09-06-editor-subscriptions",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-06-02-improve-large-document-editing"
-    ],
     "controlled-demo": [
       "2026-09-06-registry-lifetime-repairs",
       "2025-11-20-biome-ultracite"

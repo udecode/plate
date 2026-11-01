@@ -989,7 +989,8 @@ export default function HugeDocumentDemo() {
         style={{
           display: 'grid',
           gap: 24,
-          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          gridTemplateColumns:
+            'repeat(auto-fit, minmax(min(360px, 100%), 1fr))',
         }}
       >
         {getMountedEngines(config).map((engine) => (

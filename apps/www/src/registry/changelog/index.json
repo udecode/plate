@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-01-huge-document-demo-phone-width",
+      "href": "/registry/changelog/2026-11-01-huge-document-demo-phone-width.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fit the huge document demo on narrow phone screens",
+      "change": {
+        "type": "source",
+        "date": "2026-11-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["huge-document-demo"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-10-30-emoji-pick-focus",
       "href": "/registry/changelog/2026-10-30-emoji-pick-focus.json",
       "status": "draft",
