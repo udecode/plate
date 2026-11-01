@@ -1,0 +1,14 @@
+---
+id: 2026-11-01-fix-highlight-after-equality-substitution
+date: 2026-11-01
+status: draft
+kind: fix
+summary: 'Fix typed ==word== next to the equality substitution'
+change: { 'type': 'source', 'date': '2026-11-01', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-01-autoformat-fix-typed-word-next-38d4d179","kind":"fix","migrationNotes":[]} -->
+
+- **`autoformat`**, **`basic-marks`**: Fix typed `==word==`, which became `≡word≡` instead of a highlight. `autoformat` no longer turns `==` into `≡`, and `basic-marks` keeps only the `==` highlight shorthand.

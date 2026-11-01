@@ -1,5 +1,6 @@
 import type { Point } from '../../../facade';
 import { defineInputRule } from './defineInputRule';
+import { NON_WHITESPACE, resolveMarkSpan } from './markInputRule.internal';
 import type {
   BlockFenceInputRuleConfig,
   BlockFenceInputRuleMatch,
@@ -18,8 +19,6 @@ import type {
   TextSubstitutionPattern,
 } from './types';
 
-const NON_WHITESPACE = /\S+/;
-
 export const createMarkInputRule = (
   config: MarkInputRuleConfig
 ): InsertTextInputRule<MarkInputRuleMatch> =>
@@ -28,72 +27,10 @@ export const createMarkInputRule = (
     priority: config.priority,
     target: 'insertText',
     trigger: config.trigger,
-    resolve: ({ editor, text }) => {
-      const selection = editor.read.selection();
-
-      if (
-        text !== config.trigger ||
-        !selection ||
-        !editor.read.selection.isCollapsed()
-      ) {
-        return undefined;
-      }
-
-      let beforeEndMatchPoint: Point | undefined = selection.anchor;
-
-      if (config.end) {
-        beforeEndMatchPoint = editor.read.points.before(selection, {
-          matchString: config.end,
-        });
-      }
-
-      if (!beforeEndMatchPoint) return undefined;
-
-      const afterStartMatchPoint = editor.read.points.before(
-        beforeEndMatchPoint,
-        {
-          afterMatch: true,
-          matchString: config.start,
-          skipInvalid: true,
-        }
-      );
-      const beforeStartMatchPoint = editor.read.points.before(
-        beforeEndMatchPoint,
-        {
-          matchString: config.start,
-          skipInvalid: true,
-        }
-      );
-
-      if (!afterStartMatchPoint || !beforeStartMatchPoint) return undefined;
-
-      const pointBeforeStart = editor.read.points.before(beforeStartMatchPoint);
-      const previousText = pointBeforeStart
-        ? editor.read.text.string({
-            anchor: pointBeforeStart,
-            focus: beforeStartMatchPoint,
-          })
-        : '';
-
-      if (previousText && NON_WHITESPACE.test(previousText)) return undefined;
-
-      const range = {
-        anchor: afterStartMatchPoint,
-        focus: beforeEndMatchPoint,
-      };
-      const matchText = editor.read.text.string(range);
-
-      if (config.trim !== 'allow' && matchText.trim() !== matchText) {
-        return undefined;
-      }
-
-      return {
-        afterStartMatchPoint,
-        beforeEndMatchPoint,
-        beforeStartMatchPoint,
-        end: config.end,
-      };
-    },
+    resolve: (context) =>
+      context.text === config.trigger
+        ? resolveMarkSpan(context, config)
+        : undefined,
     apply: ({ editor, plugin, tx }, match) => {
       const marks = config.marks ? [...config.marks] : [config.mark ?? plugin];
       const markKeys: string[] = [];
@@ -456,6 +393,12 @@ export const createTextSubstitutionInputRule = ({
         }
       }
     }
+  }
+
+  for (const candidates of patternsByTrigger.values()) {
+    candidates.sort(
+      (a, b) => b.start.length + b.end.length - (a.start.length + a.end.length)
+    );
   }
 
   const triggers = Array.from(patternsByTrigger.keys());

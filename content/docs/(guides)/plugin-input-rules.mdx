@@ -274,15 +274,20 @@ export const AdditionalMarkInputRulesKit = [
   HighlightPlugin.configure({
     inputRules: [
       HighlightRules.markdown({ variant: '==' }),
-      HighlightRules.markdown({ variant: '≡' }),
     ],
   }),
 ] as const;
 ```
 
-Inline code uses `` `x` ``. Strikethrough uses `~~x~~`. Subscript is `~x~`.
-Superscript is `^x^`. Highlight accepts `==x==` or `≡x≡` — pick either, both,
-or pass a different variant.
+Inline code uses `` `x` ``. Strikethrough uses `~~x~~`. Subscript is `~x~` and
+superscript is `^x^`, and the text between needs a letter or a digit, so `^_^`
+stays text. Unlike the other mark rules, these two also open inside a word, as
+in `H~2~O` and `X^2^`. There the opener must follow an ASCII letter, a digit or
+`)`, and the text between must be ASCII letters or digits with an optional sign
+at either end. While `CodePlugin` is installed, they never apply inside inline
+code or after an unclosed backtick outside inline code that the `` `x` ``
+shorthand could close, whether or not that shorthand is enabled. Highlight uses
+`==x==`, or `≡x≡` with `variant: '≡'`.
 
 ### Code blocks
 
@@ -429,7 +434,7 @@ export const ArrowsShortcutsPlugin = definePlugin('arrowsShortcuts', {
 
 A few details worth knowing:
 
-- `match` can be a string or an array of strings — all entries are checked before formatting.
+- `match` can be a string or an array of strings. When several patterns of one rule match the text before the caret, the longest one wins, so `!~=` beats `~=` whatever order you declare them in.
 - `format` can be a single string or a `[open, close]` tuple. A tuple wraps the typed text as `open + content + close`, useful for smart quotes and brackets.
 - `trigger` defaults to the last character of each match, which is almost always what you want. Override it only if you need a distinct commit char.
 - `enabled` gates the whole rule, so you don't have to guard each pattern individually.
@@ -438,7 +443,7 @@ A few details worth knowing:
 
 The `autoformat.tsx` file in Plate's registry wires up a full set of
 substitutions — arrows, comparisons, equalities, fractions, legal symbols, smart
-quotes, sub/superscript numerals. None of them runs inside a code block, since
+quotes and the degree sign. None of them runs inside a code block, since
 no input rule runs there. Copy it into your app and edit the patterns.
 
 ```tsx showLineNumbers title="autoformat.tsx"
@@ -965,7 +970,7 @@ Every family below is a single export from its package. Each `.markdown()` (or `
 | `UnderlineRules` | `platejs` | `__x__` mark rule |
 | `CodeRules` | `platejs` | `` `x` `` inline code mark rule |
 | `StrikethroughRules` | `platejs` | `~~x~~` mark rule |
-| `ScriptRules` | `platejs` | `~x~` for `'sub'`, `^x^` for `'sup'` |
+| `ScriptRules` | `platejs` | `~x~` for `'sub'`, `^x^` for `'sup'`, also inside a word as in `H~2~O` |
 | `HighlightRules` | `platejs` | `==x==` / `≡x≡` mark rule |
 | `MarkComboRules` | `platejs` | Multi-mark combo rules (bold/italic/underline) |
 | `CodeBlockRules` | `platejs` | Triple-backtick block fence rule, requires `on` |

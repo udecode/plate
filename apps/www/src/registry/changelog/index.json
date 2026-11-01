@@ -2,6 +2,60 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-01-fix-highlight-after-equality-substitution",
+      "href": "/registry/changelog/2026-11-01-fix-highlight-after-equality-substitution.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix typed ==word== next to the equality substitution",
+      "change": {
+        "type": "source",
+        "date": "2026-11-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["autoformat", "basic-marks"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-11-01-fix-negated-comparison-shortcuts",
+      "href": "/registry/changelog/2026-11-01-fix-negated-comparison-shortcuts.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix negated comparison shortcuts",
+      "change": {
+        "type": "source",
+        "date": "2026-11-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["autoformat"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-11-01-fix-script-shorthand-after-digit-substitution",
+      "href": "/registry/changelog/2026-11-01-fix-script-shorthand-after-digit-substitution.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix typed ~2~ and ^2^ next to the digit substitutions",
+      "change": {
+        "type": "source",
+        "date": "2026-11-01",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["autoformat"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-01-huge-document-demo-phone-width",
       "href": "/registry/changelog/2026-11-01-huge-document-demo-phone-width.json",
       "status": "draft",

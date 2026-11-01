@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-01-fix-highlight-after-equality-substitution",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-01-fix-highlight-after-equality-substitution.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-01",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix typed ==word== next to the equality substitution",
+  "targets": [
+    {
+      "name": "autoformat",
+      "files": ["apps/www/src/registry/components/editor/autoformat.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "basic-marks",
+      "files": ["apps/www/src/registry/components/editor/basic-marks.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-01-autoformat-fix-typed-word-next-38d4d179",
+      "kind": "fix",
+      "summary": "Fix typed `==word==`, which became `≡word≡` instead of a highlight. `autoformat` no longer turns `==` into `≡`, and `basic-marks` keeps only the `==` highlight shorthand.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["autoformat", "basic-marks"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-01",
+          "entry": "2026-11-01-fix-highlight-after-equality-substitution",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

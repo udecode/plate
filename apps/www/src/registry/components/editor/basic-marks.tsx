@@ -76,10 +76,7 @@ export const BasicMarksKit = [
   }),
   HighlightPlugin.configure({
     component: HighlightLeaf,
-    inputRules: [
-      HighlightRules.markdown({ variant: '==' }),
-      HighlightRules.markdown({ variant: '≡' }),
-    ],
+    inputRules: [HighlightRules.markdown({ variant: '==' })],
     shortcuts: { toggle: { keys: 'mod+shift+h' } },
   }),
   KbdPlugin.configure({ component: KbdLeaf }),

@@ -1,6 +1,16 @@
 {
   "schemaVersion": 1,
   "components": {
+    "autoformat": [
+      "2026-11-01-fix-highlight-after-equality-substitution",
+      "2026-11-01-fix-negated-comparison-shortcuts",
+      "2026-11-01-fix-script-shorthand-after-digit-substitution",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "basic-marks": [
+      "2026-11-01-fix-highlight-after-equality-substitution",
+      "2026-08-17-flat-editor-registry"
+    ],
     "huge-document-demo": [
       "2026-11-01-huge-document-demo-phone-width",
       "2026-09-06-editor-subscriptions",
@@ -1348,8 +1358,6 @@
     "line-height-static": ["2026-08-17-flat-editor-registry"],
     "media-static": ["2026-08-17-flat-editor-registry"],
     "toggle-static": ["2026-08-17-flat-editor-registry"],
-    "autoformat": ["2026-08-17-flat-editor-registry"],
-    "basic-marks": ["2026-08-17-flat-editor-registry"],
     "basic-nodes": ["2026-08-17-flat-editor-registry"],
     "exit-break": ["2026-08-17-flat-editor-registry"],
     "media-uploadthing": ["2026-08-17-flat-editor-registry"],

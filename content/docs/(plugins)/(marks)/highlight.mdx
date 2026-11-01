@@ -35,7 +35,7 @@ Highlight applies the `highlight` leaf mark to selected text. It is the authorin
 
 ### Add basic marks
 
-`BasicMarksKit` includes `HighlightPlugin`, `HighlightLeaf`, `==` and `≡` input rules, and a `mod+shift+h` shortcut.
+`BasicMarksKit` includes `HighlightPlugin`, `HighlightLeaf`, the `==` input rule, and a `mod+shift+h` shortcut.
 
 <ComponentSource name="basic-marks" />
 
@@ -101,7 +101,6 @@ export const highlightPlugin = HighlightPlugin.configure({
   component: HighlightLeaf,
   inputRules: [
     HighlightRules.markdown({ variant: '==' }),
-    HighlightRules.markdown({ variant: '≡' }),
   ],
   shortcuts: { toggle: { keys: 'mod+shift+h' } },
 });
@@ -116,7 +115,7 @@ export const highlightPlugin = HighlightPlugin.configure({
 | `HighlightRules.markdown` | `platejs` | Optional mark input rule factory. |
 | `HighlightLeaf` | Registry UI | Styled client highlight leaf using `EditorLeaf`. |
 | `HighlightLeafStatic` | Registry UI | Static rendering version using `EditorLeaf`. |
-| `BasicMarksKit` | Registry | Adds `HighlightPlugin`, `HighlightLeaf`, two input-rule variants, and `mod+shift+h`. |
+| `BasicMarksKit` | Registry | Adds `HighlightPlugin`, `HighlightLeaf`, the `==` input rule, and `mod+shift+h`. |
 | `MarkToolbarButton` | Registry UI | Reads active mark state and calls the mark toggle hook. |
 
 The package owns the mark. The registry owns highlight color and toolbar placement.
@@ -131,7 +130,7 @@ The package owns the mark. The registry owns highlight color and toolbar placeme
 | Selection affinity | `directional` |
 | HTML tags | `mark` |
 | Render output | `mark` |
-| Kit input rules | `==` and `≡` variants |
+| Kit input rules | `==` variant |
 | Kit shortcut | `mod+shift+h` |
 
 ## API Reference

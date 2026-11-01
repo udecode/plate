@@ -11,7 +11,7 @@ metadata:
 
 Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--length=4` and compares its failures with Findings. `lower` runs `--lower` after a fix removes a known finding. `typed <keys>` runs `--typed=<keys>` to show one sequence's results. `update` brings the verification in line with changed code, as Coverage record says.
 
-**The property.** Typed key by key into a paragraph between two others, every shorthand the kits declare gives its declared result whole: the substituted symbol, or the content with exactly its marks and no delimiter left. Inside a word, a mark shorthand stays literal, except subscript and superscript. No typed sequence changes the paragraphs above or below. When a keystroke fires a rule, one undo gives back the document from before that keystroke.
+**The property.** Typed key by key into a paragraph between two others, every shorthand the kits declare gives its declared result whole: the substituted symbol, or the content with exactly its marks and no delimiter left. Inside a word, a mark shorthand stays literal, except subscript and superscript around a script token. No typed sequence changes the paragraphs above or below. When a keystroke fires a rule, one undo gives back the document from before that keystroke.
 
 **The harm.** A user who types `==yellow==`, `***both***`, `H~2~O` or `!>=` from the docs gets symbols or stray delimiters instead of what the kit promises, and closing an inline-code backtick pulled the next paragraph into the current one until plate-private#13's fix. Each case is one string a test can check, but rules that share keys collide in sequences nobody wrote down, as five Beta bugs on the Autoformat demo showed.
 
@@ -21,8 +21,8 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--
 
 1. It reads the declarations with the Babel parser, because the repository's TypeScript has no compiler API. From `autoformat.tsx` it takes every `createTextSubstitutionInputRule` constant in an `inputRules` list, with each pattern's `format` and `match`. From `basic-marks.tsx` it takes every `<Mark>Rules.markdown()` call in an `inputRules` list, with its `variant` or `value`. A value that is not a string literal, an `inputRules` value that is not a list literal, a rule of another shape or a file with no `inputRules` list exits 2. Each worker also counts the text input rules an editor of the two kits runs, through `getPlateRuntime`. The script exits 2 when that count differs from the number of rules it read, because a rule that reaches the editor another way would go untyped.
 2. A mark rule's syntax comes from the script's `EXPECTED_MARK_SYNTAX` table, not from the factories in `BaseMarkPlugins.ts`, so a factory whose delimiters drift from the table fails. The table copies the Inline Mark Autoformat rules of `docs/editor-behavior/markdown-editing-spec.md` where they name a syntax: `**`, `*`, `` ` ``, `~~`, `==`, `~`, `^` and `***`. The spec names only the opening runs `__*`, `__**` and `___***` of `EDIT-PROFILE-AUTOFMT-MARK-003`, so each combo's closing run mirrors its opening run, `___***a***___` for `boldItalicUnderline`. The spec names no syntax for the `_` variants of bold and italic, the `≡` highlight variant or underline, so their rows hold CommonMark's `__` and `_` and what their factories type, `≡a≡` and `__a__`. A factory or variant the table lacks exits 2.
-3. A declared character that no key types, such as `≤` in `≤=` or the `≡` highlight variant, is typed as the source of the rule that writes it, `<=` and `==`, as a user would reach it.
-4. Declared shorthands. Each substitution source is typed at a paragraph start, after the word `w ` and after a bold `w `, and must give the context followed by its symbol; a smart quote is typed around `a`. Each mark rule is typed around `a` and around one character for each substitution rule whose source that character completes with the rule's opening or closing delimiter, such as `~0~` for `subscriptNumbersRule` and `~=~` for `equalityRule`. It must give the content with the rule's marks, plus bold in the bold context. Typed right after `w`, a mark rule must leave no leaf with its marks, as `EDIT-PROFILE-AUTOFMT-MARK-004` says, except subscript and superscript, which must apply there, as `EDIT-PROFILE-AUTOFMT-MARK-002`'s `H~2~O` says. These are the `autoformat-declared` findings, owned by the kit file that declares the shorthand. The check judges the caret paragraph on its own. When a typed sequence joins `y` into it, the script drops that `y` before comparing, because the blocks rule already reports the join.
+3. A declared character that no key types, such as `≤` in `≤=` or `≯` in `≯=`, is typed as the source of the rule that writes it, `<=` and `!>`, as a user would reach it.
+4. Declared shorthands. Each substitution source is typed at a paragraph start, after the word `w ` and after a bold `w `, and must give the context followed by its symbol; a smart quote is typed around `a`. Each mark rule is typed around `a` and around one character for each substitution rule whose source that character completes with the rule's opening or closing delimiter, such as `~=~` for `equalityRule` and `^o^` for `superscriptSymbolsRule`. It must give the content with the rule's marks, plus bold in the bold context. Subscript and superscript need a letter or a digit between their delimiters, as `EDIT-PROFILE-AUTOFMT-MARK-002` says, so around other content, such as `~=~`, they must leave no leaf with their marks. Typed right after `w`, a mark rule must leave no leaf with its marks, as `EDIT-PROFILE-AUTOFMT-MARK-004` says, except subscript and superscript around a script token, ASCII letters or digits with an optional sign at either end, which must apply there, as `EDIT-PROFILE-AUTOFMT-MARK-002` says. Around any other content, such as `w~!~`, they stay literal too. These are the `autoformat-declared` findings, owned by the kit file that declares the shorthand. The check judges the caret paragraph on its own. When a typed sequence joins `y` into it, the script drops that `y` before comparing, because the blocks rule already reports the join.
 5. Sequences. Every sequence of up to three keys over `a` and the characters of the mark syntaxes and of the substitution sources that hold no letter or digit is typed at a paragraph start. That is 15 characters and 3,615 sequences. A run whose result holds other than three paragraphs, or changes `x` or `y`, is an `autoformat-blocks` finding, owned by `createInputRules.ts`.
 6. Undo, on every run. The last keystroke fired a rule when the caret paragraph is no longer its old text plus the key, or its old characters changed marks, or the other paragraphs changed. Then one `editor.api.history.undo()` must give back the children from before that keystroke. Each shorter sequence is a run of its own, so every keystroke of every sequence is checked. These are the `autoformat-undo` findings, owned by `InputRulesPlugin.ts`.
 7. It sorts the findings and compares them with `apps/www/scripts/autoformat-input-rules-baseline.json` through `tooling/scripts/finding-baseline.mjs`, the shrink-only baseline the decision-order and lint checks use. A finding's identity names the rule or sequence, the typed keys and the context, never the result.
@@ -31,8 +31,8 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--
 
 Run every command from the repository root.
 
-- `pnpm check:autoformat-rules` checks the gate bound, three keys. It makes 3,910 runs and 352 declared checks in about 6 s on an 18-core M5 Max at a load average near 7, slower while other sessions load the machine. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check autoformat-rules` runs the same step through the check runner, and `pnpm check --affected` runs it for a change to the script or its baseline, `apps/www/src/registry/components/editor/`, `packages/platejs/src/`, `packages/plitejs/src/` or `tooling/scripts/finding-baseline.mjs`.
-- `--length=4` types every sequence of up to four keys: 54,535 runs in about 80 s on the same machine with 8 workers at a load average near 7. A bound other than the gate's skips the baseline and exits 1 on any finding, because the known findings repeat there in more sequences. Compare its counts with Findings. Run it after a change to how rules match or apply.
+- `pnpm check:autoformat-rules` checks the gate bound, three keys. It makes 3,821 runs and 241 declared checks in about 21 s on an 18-core M5 Max while other sessions load the machine. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check autoformat-rules` runs the same step through the check runner, and `pnpm check --affected` runs it for a change to the script or its baseline, `apps/www/src/registry/components/editor/`, `packages/platejs/src/`, `packages/plitejs/src/` or `tooling/scripts/finding-baseline.mjs`.
+- `--length=4` types every sequence of up to four keys: 54,446 runs in about 325 s on the same machine with 8 workers while other sessions load it. A bound other than the gate's skips the baseline and exits 1 on any finding, because the known findings repeat there in more sequences. Compare its counts with Findings. Run it after a change to how rules match or apply.
 - `--typed='<keys>'` runs one typed sequence in each context the gate types it in, or at a start, after a word, after a bold word and inside a word when the gate has no such run, and prints every finding without reading the baseline.
 - `--jobs=<n>` sets the number of worker processes. It defaults to the machine's cores, at most 8, because each worker holds its own editor runtime. Any other argument exits 2, and so does `--init` or `--lower` with `--length` or `--typed`.
 - After a fix removes a known finding, the gate fails until you run `pnpm check:autoformat-rules --lower`, which drops the entries the tree no longer holds. The baseline never grows. `--lower` refuses a new entry, and `finding-baseline.mjs` refuses an entry its copy at the base commit lacks. `--init` seeds only a rule the baseline lacks.
@@ -42,9 +42,9 @@ Run every command from the repository root.
 A finding prints its rule and identity, then what each paragraph holds. A leaf is its text in quotes, followed by its marks, and `|` separates paragraphs:
 
 ```text
-autoformat-declared comparisonsRule "!>=" at start
-  expected "x" | "≱" | "y"
-  got      "x" | "≯=" | "y"
+autoformat-declared comparisonsRule "<=" at start
+  expected "x" | "≤" | "y"
+  got      "x" | "⇐" | "y"
 
 autoformat-blocks "`a`" at start
   "x" | "`a" | "y"  then "`"  gives "x" | "a"⟨code⟩ "y"
@@ -54,7 +54,7 @@ autoformat-undo "->" at start
   one undo gives "x" | "" | "y" (applied)
 ```
 
-The first is `!>` firing as `≯` before `!>=` can complete. The second is the closing backtick joining `y` into the caret paragraph, as it did before plate-private#13's fix. The third is a planted history bug from What a pass proves, where one undo also takes back the `-` typed before the rule.
+The first is `arrowsRule`'s `<=` firing as `⇐` before `comparisonsRule` sees the key. The second is the closing backtick joining `y` into the caret paragraph, as it did before plate-private#13's fix. The third is a planted history bug from What a pass proves, where one undo also takes back the `-` typed before the rule.
 
 Tell a real bug from a modeling error before you change code:
 
@@ -64,14 +64,12 @@ Tell a real bug from a modeling error before you change code:
 
 ## Findings
 
-The gate finds 74, all `autoformat-declared`, with no `autoformat-blocks` or `autoformat-undo`. `--length=4` finds the same 74 and nothing else. Each class is one cause:
+The gate finds 25, all `autoformat-declared`, with no `autoformat-blocks` or `autoformat-undo`. `--length=4` finds the same 25 and nothing else. Each class is one cause:
 
-- `==a==` gives `≡a≡`, so neither highlight variant ever applies, because `equalityRule` turns `==` into `≡` first and its insert fires no rule (plate#5201, t_167ab658). Spec rule `EDIT-PROFILE-AUTOFMT-MARK-005` says highlight wins. 24 entries.
-- `!>=`, `!<=` and `!~=` give `≯=`, `≮=` and `!≈`, because the shorter `!>`, `!<` and `~=` fire on the key before (plate#5202). 9 entries.
 - `<=` gives `⇐`, never `≤`, because `arrowsRule` declares `<=` and runs before `comparisonsRule`, and `arrowsRule`'s own `≤=`, typed `<==`, gives `⇐=` (t_dceb960e). 6 entries.
+- `==!==`, `==<==` and `==>==` give `==≢` and the like, because a substitution inside the span takes the first key of the closing `==` (t_c4407e94). 9 entries.
 - `__a__` gives bold, never underline, because `BoldRules _` and `UnderlineRules` both match `__` and bold comes first. 3 entries.
-- `~0~` and `^0^` give `₀~` and `⁰^`, because the digit substitution fires inside the span (plate#5204). `~+~`, `~=~` and `^o^` fail the same way, 20 entries in all, and `~~0~~`, `~~+~~` and `~~=~~` give a subscript and a stray `~` instead of strikethrough, 9 more.
-- Inside a word, `w~a~`, `w~!~` and `w^a^` stay literal, against `EDIT-PROFILE-AUTOFMT-MARK-002`'s `H~2~O`. 3 entries.
+- `^o^` gives `°^` and `~~=~~` gives `~≈~~`, because `^o` and `~=` fire inside the span. 7 entries.
 
 No run needs more than one undo. The undo check covers every keystroke of every sequence at a paragraph start up to the bound, and the last keystroke of each declared shorthand in its other contexts.
 
@@ -89,7 +87,7 @@ The code before plate-private#13's fix failed `autoformat-blocks` on its own, an
 
 ## Coverage record
 
-Synced at the commit that adds this check, `test(www): check every short typed sequence against the autoformat kits`. The verification describes these files as they stand there:
+Synced at `fix(autoformat): stop short substitutions eating longer shorthands`. The verification describes these files as they stand there:
 
 | File | What the check exercises |
 | --- | --- |
@@ -97,13 +95,14 @@ Synced at the commit that adds this check, `test(www): check every short typed s
 | `apps/www/src/registry/components/editor/basic-marks.tsx` | which mark rules the kit declares, read through `EXPECTED_MARK_SYNTAX` |
 | `packages/platejs/src/features/basic-nodes/lib/BaseMarkPlugins.ts` | the `<Mark>Rules.markdown()` factories, judged against `EXPECTED_MARK_SYNTAX` |
 | `packages/platejs/src/lib/plugins/input-rules/createInputRules.ts` | `createMarkInputRule` and `createTextSubstitutionInputRule`, their match and apply |
+| `packages/platejs/src/lib/plugins/input-rules/markInputRule.internal.ts` | the mark span resolver that `createMarkInputRule` and `ScriptRules` share |
 | `packages/platejs/src/lib/plugins/input-rules/InputRulesPlugin.ts` | the `insertText` rule transaction, one per accepted rule |
 | `packages/platejs/src/internal/plugin/resolvePlugins.ts` | the order rules run in |
 | `packages/platejs/src/internal/plugin/compilePlateModel.ts` | `getPlateRuntime`, which gives the count of text input rules the editor runs |
 | `packages/plitejs/src/history/history-merge-policy.ts` | whether a rule's step merges with the typing before it |
 | `docs/editor-behavior/markdown-editing-spec.md` | the Inline Mark Autoformat rules that `EXPECTED_MARK_SYNTAX` copies where they name a syntax; not run |
 
-To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep 'check every short typed sequence against the autoformat kits'`, then run `git log --oneline <that commit>..HEAD --` with the table's files and `apps/www/scripts/autoformat-input-rules.ts`. For each commit it lists, read the diff and confirm three things. The script still builds its editors from the kits the way `EditorKit` orders them. `EXPECTED_MARK_SYNTAX` still matches the spec's mark rules where they name a syntax. A new rule shape in either kit file still reaches the script, or exits 2. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:autoformat-rules`.
+To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep 'stop short substitutions eating longer shorthands'`, then run `git log --oneline <that commit>..HEAD --` with the table's files and `apps/www/scripts/autoformat-input-rules.ts`. For each commit it lists, read the diff and confirm three things. The script still builds its editors from the kits the way `EditorKit` orders them. `EXPECTED_MARK_SYNTAX` still matches the spec's mark rules where they name a syntax. A new rule shape in either kit file still reaches the script, or exits 2. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:autoformat-rules`.
 
 ## What it does not cover
 
@@ -112,7 +111,7 @@ To see whether the verification needs another look, find the sync commit with `g
 - Where the caret lands after a rule and which marks carry to the next key, except as later keys in a sequence show them.
 - Redo, undo past the last keystroke and the undo-on-delete of `EDIT-PROFILE-AUTOFMT-TEXT-004`.
 - Content longer than one character, text after the caret, marks other than bold around the caret, and substitutions or smart quotes inside a word.
-- Sequences of more than three keys at the gate, and keys outside the 15-character alphabet, so `(tm)`, `1/2` and `&copy;` are typed only as declared shorthands. A mark rule gets one content per colliding rule and side, such as `~0~` without `~1~` to `~9~`.
+- Sequences of more than three keys at the gate, and keys outside the 15-character alphabet, so `(tm)`, `1/2` and `&copy;` are typed only as declared shorthands. A mark rule gets one content per colliding rule and side, so a rule whose several sources complete with the same delimiter is typed with only one of them.
 - A known finding whose result changes. An identity names the keys and the context, not the result, so a known failure that gets worse stays green.
 - Which of two rules on the same keys should win. The check reports the declaration that never applies; the spec decides.
 

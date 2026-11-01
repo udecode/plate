@@ -1,11 +1,19 @@
 import {
   definePlugin,
   createMarkInputRule,
+  defineInputRule,
+  type InsertTextInputRule,
   type MarkInputRuleConfig,
+  type MarkInputRuleMatch,
+  NodeApi,
   property,
   PLUGINS,
 } from '../../../core';
 import { someHtmlElement } from '../../../lib/plugins/html/htmlDom';
+import {
+  type MarkSpanAcceptor,
+  resolveMarkSpan,
+} from '../../../lib/plugins/input-rules/markInputRule.internal';
 
 const findHtmlParentElement = (
   element: HTMLElement | null,
@@ -153,19 +161,76 @@ export const ItalicRules = {
     }),
 };
 
+const acceptScriptSpan: MarkSpanAcceptor = ({
+  content,
+  context,
+  previousChar,
+  start,
+}) => {
+  if (!/[\p{L}\p{N}]/u.test(content)) return false;
+  if (
+    previousChar.trim() &&
+    (!/^[\d)A-Za-z]$/.test(previousChar) ||
+      !/^[+-]?[\dA-Za-z]+[+-]?$/.test(content))
+  ) {
+    return false;
+  }
+
+  const code = context.editor.plugin(BaseCodePlugin);
+
+  if (!code.installed) return true;
+  if (code.read.isActive()) return false;
+
+  const caret = context.editor.read.selection()?.anchor;
+  const blockEntry = context.getBlockEntry();
+
+  if (!caret || !blockEntry) return false;
+
+  const [block, blockPath] = blockEntry;
+
+  for (const [leaf] of NodeApi.texts(block, {
+    from: start.path.slice(blockPath.length),
+    to: caret.path.slice(blockPath.length),
+  })) {
+    if (leaf[code.schema.key]) return false;
+  }
+
+  if (!context.getBlockTextBeforeSelection().includes('`')) return true;
+
+  const codeSpan = resolveMarkSpan(context, { start: '`' });
+
+  if (!codeSpan) return true;
+
+  return Boolean(
+    NodeApi.leaf(
+      block,
+      codeSpan.beforeStartMatchPoint.path.slice(blockPath.length)
+    )[code.schema.key]
+  );
+};
+
 export const ScriptRules = {
   markdown: ({
     value,
     ...options
   }: MarkdownMarkRuleOptions & {
     value: ScriptValue;
-  }) =>
-    createMarkInputRule({
+  }): InsertTextInputRule<MarkInputRuleMatch> => {
+    const config = {
       ...options,
       start: value === 'sub' ? '~' : '^',
       trigger: value === 'sub' ? '~' : '^',
       value,
-    }),
+    };
+
+    return defineInputRule({
+      ...createMarkInputRule(config),
+      resolve: (context) =>
+        context.text === config.trigger
+          ? resolveMarkSpan(context, config, acceptScriptSpan)
+          : undefined,
+    });
+  },
 };
 
 export const StrikethroughRules = {

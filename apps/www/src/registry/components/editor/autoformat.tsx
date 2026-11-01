@@ -17,15 +17,14 @@ const comparisonsRule = createTextSubstitutionInputRule({
     { format: '≮', match: '!<' },
     { format: '≥', match: '>=' },
     { format: '≤', match: '<=' },
-    { format: '≱', match: '!>=' },
-    { format: '≰', match: '!<=' },
+    { format: '≱', match: ['!>=', '≯='] },
+    { format: '≰', match: ['!<=', '≮='] },
   ],
 });
 
 const equalityRule = createTextSubstitutionInputRule({
   patterns: [
     { format: '≠', match: '!=' },
-    { format: '≡', match: '==' },
     { format: '≢', match: ['!==', '≠='] },
     { format: '≈', match: '~=' },
     { format: '≉', match: '!~=' },
@@ -94,49 +93,8 @@ const smartQuotesRule = createTextSubstitutionInputRule({
   ],
 });
 
-const subscriptNumbersRule = createTextSubstitutionInputRule({
-  patterns: [
-    { format: '₀', match: '~0' },
-    { format: '₁', match: '~1' },
-    { format: '₂', match: '~2' },
-    { format: '₃', match: '~3' },
-    { format: '₄', match: '~4' },
-    { format: '₅', match: '~5' },
-    { format: '₆', match: '~6' },
-    { format: '₇', match: '~7' },
-    { format: '₈', match: '~8' },
-    { format: '₉', match: '~9' },
-  ],
-});
-
-const subscriptSymbolsRule = createTextSubstitutionInputRule({
-  patterns: [
-    { format: '₊', match: '~+' },
-    { format: '₋', match: '~-' },
-  ],
-});
-
-const superscriptNumbersRule = createTextSubstitutionInputRule({
-  patterns: [
-    { format: '⁰', match: '^0' },
-    { format: '¹', match: '^1' },
-    { format: '²', match: '^2' },
-    { format: '³', match: '^3' },
-    { format: '⁴', match: '^4' },
-    { format: '⁵', match: '^5' },
-    { format: '⁶', match: '^6' },
-    { format: '⁷', match: '^7' },
-    { format: '⁸', match: '^8' },
-    { format: '⁹', match: '^9' },
-  ],
-});
-
 const superscriptSymbolsRule = createTextSubstitutionInputRule({
-  patterns: [
-    { format: '°', match: '^o' },
-    { format: '⁺', match: '^+' },
-    { format: '⁻', match: '^-' },
-  ],
+  patterns: [{ format: '°', match: '^o' }],
 });
 
 const AutoformatShortcutsPlugin = definePlugin('autoformatShortcuts', {
@@ -150,9 +108,6 @@ const AutoformatShortcutsPlugin = definePlugin('autoformatShortcuts', {
     operatorsRule,
     punctuationRule,
     smartQuotesRule,
-    subscriptNumbersRule,
-    subscriptSymbolsRule,
-    superscriptNumbersRule,
     superscriptSymbolsRule,
   ],
 });
