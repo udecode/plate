@@ -18,7 +18,16 @@ import { getTripleClickBlock } from './selection-triple-click';
 
 export type PlacedPressKind = 'block' | 'plain' | 'shift' | 'word';
 
-export type PlacedPress = Readonly<{ kind: PlacedPressKind; target: Element }>;
+export type PlacedPress = Readonly<{
+  kind: PlacedPressKind;
+  target: Element;
+  takes: 'press' | 'selection-drag';
+}>;
+
+export type PlacedPointer = Pick<
+  globalThis.MouseEvent,
+  'buttons' | 'clientX' | 'clientY' | 'target'
+>;
 
 export type PlacedUnit = Readonly<{ block: NodeKey | null; range: Range }>;
 
@@ -57,20 +66,76 @@ export const classifyPlacedPress = (
   if (event.detail >= 2) {
     return {
       kind: event.detail === 2 ? 'word' : 'block',
+      takes: 'press',
       target: target.target,
     };
   }
-  if (event.shiftKey) return { kind: 'shift', target: target.target };
+  if (event.shiftKey) {
+    return { kind: 'shift', takes: 'press', target: target.target };
+  }
 
   // The browser keeps a single press inside the selection, which may start a
   // drag of the selected text.
-  return isPointInsideDOMSelection({
-    clientX: event.clientX,
-    clientY: event.clientY,
-    target: event.currentTarget,
-  })
-    ? null
-    : { kind: 'plain', target: target.target };
+  return {
+    kind: 'plain',
+    takes: isPointInsideDOMSelection({
+      clientX: event.clientX,
+      clientY: event.clientY,
+      target: event.currentTarget,
+    })
+      ? 'selection-drag'
+      : 'press',
+    target: target.target,
+  };
+};
+
+export const watchSelectionDrag = (
+  rootElement: HTMLElement,
+  {
+    onEnd,
+    onSelectionDrag,
+  }: Readonly<{
+    onEnd: () => void;
+    onSelectionDrag: (pointer: PlacedPointer) => boolean;
+  }>
+) => {
+  const document = rootElement.ownerDocument;
+  const window = document.defaultView;
+  let adopted = false;
+  let last: PlacedPointer | null = null;
+  const endBeforeAdoption = () => {
+    if (!adopted) onEnd();
+  };
+  const move = (event: globalThis.MouseEvent) => {
+    last = event;
+    if (event.buttons === 0) endBeforeAdoption();
+  };
+  const selectStart = (event: Event) => {
+    if (!adopted) {
+      if (!event.isTrusted || last?.buttons !== 1) return;
+      adopted = onSelectionDrag(last);
+    }
+    if (adopted) event.preventDefault();
+  };
+  const hide = () => {
+    if (document.hidden) onEnd();
+  };
+
+  document.addEventListener('mousemove', move, true);
+  document.addEventListener('selectstart', selectStart, true);
+  document.addEventListener('dragstart', endBeforeAdoption, true);
+  document.addEventListener('mouseup', endBeforeAdoption, true);
+  document.addEventListener('visibilitychange', hide);
+  window?.addEventListener('blur', onEnd);
+
+  return () => {
+    document.removeEventListener('mousemove', move, true);
+    document.removeEventListener('selectstart', selectStart, true);
+    document.removeEventListener('dragstart', endBeforeAdoption, true);
+    document.removeEventListener('mouseup', endBeforeAdoption, true);
+    document.removeEventListener('visibilitychange', hide);
+    window?.removeEventListener('blur', onEnd);
+  };
 };
 
 export const placedSelectionWord = defineUpdateAnnotation<Range>({

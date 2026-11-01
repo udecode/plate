@@ -76,11 +76,13 @@ import {
   getPlacedUnit,
   getShiftSpanFrom,
   isTapOnTextBlock,
+  type PlacedPointer,
   type PlacedPress,
   type PlacedPressKind,
   type PlacedUnit,
   placedSelectionWord,
   spanPlacedUnits,
+  watchSelectionDrag,
 } from './placed-drag';
 import {
   getEditableRootPliteStringCoordinatePlacement,
@@ -248,16 +250,20 @@ type PlacedDrag = {
   placementDOMPoint: PliteStringPlacementDOMPoint | null;
   pressInRoot: Readonly<{ x: number; y: number }>;
   pressSelection: Range;
+  projecting: boolean;
   rootElement: HTMLElement;
   spanFrom: PlacedUnit;
   viewLines: ViewLines;
   word: Range | null;
 };
 
-type PlacedPointer = Pick<
-  globalThis.MouseEvent,
-  'buttons' | 'clientX' | 'clientY' | 'target'
->;
+type ArmedPress = Readonly<{
+  detach: () => void;
+  lines: ViewLines;
+  pressInRoot: Readonly<{ x: number; y: number }>;
+  rootElement: HTMLElement;
+  target: Element;
+}>;
 
 let pendingProjectedDrag: PendingProjectedDrag | null = null;
 
@@ -1135,6 +1141,7 @@ const applyProjectedDragSelectionFromEvent = ({
 const applyModelDragSelection = ({
   block = null,
   editor,
+  projecting = false,
   range,
   root,
   selectionBridge,
@@ -1142,6 +1149,7 @@ const applyModelDragSelection = ({
 }: {
   block?: NodeKey | null;
   editor: RootInteractionEditor;
+  projecting?: boolean;
   range: Range;
   root: RootKey;
   selectionBridge?: RootInteractionControllerOptions['selectionBridge'];
@@ -1166,7 +1174,8 @@ const applyModelDragSelection = ({
       },
     });
 
-  selectionBridge?.beforeModelSelection();
+  if (projecting) selectionBridge?.beginProjectedDrag();
+  else selectionBridge?.beforeModelSelection();
   writePliteViewSelection(
     editor,
     useViewSelection
@@ -1407,10 +1416,14 @@ export const useRootInteractionController = ({
   const interactionEpochRef = useRef(0);
   const pendingDragAutoScrollRef = useRef<PendingDragAutoScroll | null>(null);
   const placedDragRef = useRef<PlacedDrag | null>(null);
+  const armedPressRef = useRef<ArmedPress | null>(null);
   const endPlacedDrag = useCallback(() => {
+    const armed = armedPressRef.current;
     const drag = placedDragRef.current;
 
+    armedPressRef.current = null;
     placedDragRef.current = null;
+    armed?.detach();
     drag?.detach();
     stopDragAutoScroll(pendingDragAutoScrollRef);
   }, []);
@@ -1627,6 +1640,7 @@ export const useRootInteractionController = ({
       applyModelDragSelection({
         block: getKeptTripleClickedBlock(drag, range),
         editor: drag.editor,
+        projecting: drag.projecting,
         range,
         root,
         selectionBridge,
@@ -1702,17 +1716,62 @@ export const useRootInteractionController = ({
     },
     [applyInteractionAction, endPlacedDrag, resolvePlacedRange]
   );
+  const createPlacedDrag = useCallback(
+    (
+      rootElement: HTMLElement,
+      lines: ViewLines,
+      fields: Pick<
+        PlacedDrag,
+        | 'kind'
+        | 'placementDOMPoint'
+        | 'pressInRoot'
+        | 'pressSelection'
+        | 'projecting'
+        | 'spanFrom'
+        | 'word'
+      >,
+      release = () => {}
+    ) => {
+      const drag: PlacedDrag = {
+        ...fields,
+        currentRange: fields.pressSelection,
+        detach: () => {},
+        editor: getMountedViewEditor(root) ?? editor,
+        moved: false,
+        rootElement,
+        viewLines: lines,
+      };
+      const detachListeners = attachPlacedDragListeners(rootElement, {
+        onBlur: endPlacedDrag,
+        onMove: (pointer) => {
+          if (placedDragRef.current === drag) movePlacedDrag(drag, pointer);
+        },
+        onUp: (pointer) => {
+          if (placedDragRef.current === drag) releasePlacedDrag(drag, pointer);
+        },
+      });
+
+      drag.detach = () => {
+        detachListeners();
+        release();
+      };
+      placedDragRef.current = drag;
+      return drag;
+    },
+    [
+      editor,
+      endPlacedDrag,
+      getMountedViewEditor,
+      movePlacedDrag,
+      releasePlacedDrag,
+      root,
+    ]
+  );
   const beginPlacedDrag = useCallback(
     (
       event: MouseEvent<HTMLElement>,
       lines: ViewLines,
-      {
-        kind,
-        placementDOMPoint,
-        pressSelection,
-        spanFrom,
-        word,
-      }: Pick<
+      fields: Pick<
         PlacedDrag,
         'kind' | 'placementDOMPoint' | 'pressSelection' | 'spanFrom' | 'word'
       >
@@ -1725,49 +1784,138 @@ export const useRootInteractionController = ({
 
       const rootElement = event.currentTarget;
       const rootRect = rootElement.getBoundingClientRect();
-      const drag: PlacedDrag = {
-        currentRange: pressSelection,
-        detach: () => {},
-        editor: getMountedViewEditor(root) ?? editor,
-        kind,
-        moved: false,
-        placementDOMPoint,
+
+      createPlacedDrag(rootElement, lines, {
+        ...fields,
         pressInRoot: {
           x: event.clientX - rootRect.left,
           y: event.clientY - rootRect.top,
         },
-        pressSelection,
-        rootElement,
-        spanFrom,
-        viewLines: lines,
-        word,
-      };
-
-      drag.detach = attachPlacedDragListeners(rootElement, {
-        onBlur: endPlacedDrag,
-        onMove: (pointer) => {
-          if (placedDragRef.current === drag) movePlacedDrag(drag, pointer);
-        },
-        onUp: (pointer) => {
-          if (placedDragRef.current === drag) releasePlacedDrag(drag, pointer);
-        },
+        projecting: false,
       });
-      placedDragRef.current = drag;
       applyInteractionAction(
-        { range: pressSelection, type: 'set-selection' },
-        { block: spanFrom.block, keepScroll: true, placementDOMPoint, word }
+        { range: fields.pressSelection, type: 'set-selection' },
+        {
+          block: fields.spanFrom.block,
+          keepScroll: true,
+          placementDOMPoint: fields.placementDOMPoint,
+          word: fields.word,
+        }
       );
     },
+    [applyInteractionAction, createPlacedDrag, pendingInteractionRef]
+  );
+  // Chromium keeps extending its own selection drag after the cancelled
+  // `selectstart`.
+  const holdAdoptedSelection = useCallback(
+    (drag: PlacedDrag) => {
+      let cancel: (() => void) | undefined;
+      const hold = () => {
+        if (placedDragRef.current !== drag) return;
+        profilePliteReactDuration('placed-drag.hold-selection', () =>
+          selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true })
+        );
+        cancel = scheduleInteractionFrame('placed-drag-hold-selection', hold, {
+          target: drag.rootElement,
+        });
+      };
+
+      cancel = scheduleInteractionFrame('placed-drag-hold-selection', hold, {
+        target: drag.rootElement,
+      });
+      return () => cancel?.();
+    },
+    [scheduleInteractionFrame, selectionBridge]
+  );
+  const adoptSelectionDrag = useCallback(
+    (armed: ArmedPress, pointer: PlacedPointer) => {
+      if (armedPressRef.current !== armed) return false;
+      const view = getMountedViewEditor(root) ?? editor;
+      const rootRect = armed.rootElement.getBoundingClientRect();
+      const placement = armed.lines.placementAt({
+        reach: 'press',
+        target: armed.target,
+        x: rootRect.left + armed.pressInRoot.x,
+        y: rootRect.top + armed.pressInRoot.y,
+      });
+      const point = placement
+        ? resolvePliteStringPlacementRange({ editor: view, placement })?.focus
+        : null;
+
+      if (!point) return false;
+      armedPressRef.current = null;
+      pendingInteractionRef.current = ignoreInteraction();
+      if (pendingProjectedDrag) {
+        finishPendingProjectedDrag(pendingProjectedDrag);
+      }
+      setNativeSelectionDragActive(rootRuntime, false);
+
+      const pressSelection = { anchor: point, focus: point };
+      let releaseHold = () => {};
+      const drag = createPlacedDrag(
+        armed.rootElement,
+        armed.lines,
+        {
+          kind: 'plain',
+          placementDOMPoint: null,
+          pressInRoot: armed.pressInRoot,
+          pressSelection,
+          projecting: true,
+          spanFrom: { block: null, range: pressSelection },
+          word: null,
+        },
+        () => {
+          armed.detach();
+          releaseHold();
+          selectionBridge?.finishProjectedDrag();
+        }
+      );
+
+      applyModelDragSelection({
+        editor: drag.editor,
+        projecting: true,
+        range: pressSelection,
+        root,
+        selectionBridge,
+      });
+      releaseHold = holdAdoptedSelection(drag);
+      drag.moved = true;
+      movePlacedDrag(drag, pointer);
+      return true;
+    },
     [
-      applyInteractionAction,
+      createPlacedDrag,
       editor,
-      endPlacedDrag,
       getMountedViewEditor,
+      holdAdoptedSelection,
       movePlacedDrag,
       pendingInteractionRef,
-      releasePlacedDrag,
       root,
+      rootRuntime,
+      selectionBridge,
     ]
+  );
+  const armSelectedPress = useCallback(
+    (event: MouseEvent<HTMLElement>, lines: ViewLines, target: Element) => {
+      const rootElement = event.currentTarget;
+      const rootRect = rootElement.getBoundingClientRect();
+      const armed: ArmedPress = {
+        detach: watchSelectionDrag(rootElement, {
+          onEnd: endPlacedDrag,
+          onSelectionDrag: (pointer) => adoptSelectionDrag(armed, pointer),
+        }),
+        lines,
+        pressInRoot: {
+          x: event.clientX - rootRect.left,
+          y: event.clientY - rootRect.top,
+        },
+        rootElement,
+        target,
+      };
+
+      armedPressRef.current = armed;
+    },
+    [adoptSelectionDrag, endPlacedDrag]
   );
   const startPlacedDrag = useCallback(
     (event: MouseEvent<HTMLElement>, lines: ViewLines, press: PlacedPress) => {
@@ -1843,9 +1991,10 @@ export const useRootInteractionController = ({
           target: event.target,
         });
 
-        const placedPress = viewLines
+        const classified = viewLines
           ? classifyPlacedPress(event, target)
           : null;
+        const placedPress = classified?.takes === 'press' ? classified : null;
 
         if (
           viewLines &&
@@ -1853,6 +2002,9 @@ export const useRootInteractionController = ({
           startPlacedDrag(event, viewLines, placedPress)
         ) {
           return;
+        }
+        if (viewLines && classified?.takes === 'selection-drag') {
+          armSelectedPress(event, viewLines, classified.target);
         }
         const editableRoot =
           target.kind === 'editable-root' || target.kind === 'native-editable'
@@ -2226,6 +2378,7 @@ export const useRootInteractionController = ({
     },
     [
       applyInteractionAction,
+      armSelectedPress,
       beginPlacedDrag,
       disabled,
       editor,
