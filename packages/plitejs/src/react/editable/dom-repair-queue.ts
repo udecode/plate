@@ -10,7 +10,10 @@ import {
   type DOMPhaseScheduler,
   resolveDOMTextFlowEntry,
 } from '../../dom/internal';
-import { resolveDOMPointInRoot } from '../../dom/plugin/dom-editor';
+import {
+  isSelectableDOMSelection,
+  resolveDOMPointInRoot,
+} from '../../dom/plugin/dom-editor';
 import {
   getPliteTextHostBounds,
   getPliteTextHostStrings,
@@ -832,15 +835,8 @@ export const createDOMRepairQueue = ({
 
             if (!root) return false;
             const domSelection = getSelection(root);
-            const anchorNode = domSelection?.anchorNode ?? null;
-            const focusNode = domSelection?.focusNode ?? null;
 
-            if (
-              !domSelection ||
-              domSelection.rangeCount === 0 ||
-              !ReactEditor.hasSelectableTarget(editor, anchorNode) ||
-              !ReactEditor.hasSelectableTarget(editor, focusNode)
-            ) {
+            if (!isSelectableDOMSelection(editor, domSelection)) {
               return false;
             }
 

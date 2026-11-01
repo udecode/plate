@@ -3,7 +3,14 @@ import { isDOMNode } from '../../dom';
 type ExternalHostOwner = Readonly<{
   root: () => HTMLElement | null;
   focus: () => void;
-  blur: () => void;
+  blur: (relatedTarget: EventTarget | null) => void;
+  keyDown: (
+    event: Readonly<{
+      defaultPrevented: boolean;
+      key?: string;
+      shiftKey?: boolean;
+    }>
+  ) => void;
 }>;
 
 const EXTERNAL_HOSTS = new WeakMap<HTMLElement, ExternalHostOwner>();
@@ -73,7 +80,14 @@ export const guardExternalTextEvents = <T extends object>(
       }
       return [
         name,
-        (event: { target: EventTarget | null; currentTarget: HTMLElement }) => {
+        (event: {
+          currentTarget: HTMLElement;
+          defaultPrevented: boolean;
+          key?: string;
+          relatedTarget?: EventTarget | null;
+          shiftKey?: boolean;
+          target: EventTarget | null;
+        }) => {
           // React bubbles a portal's events through its React parents, so a
           // popover an element renders reaches here from outside the editor.
           if (
@@ -88,8 +102,11 @@ export const guardExternalTextEvents = <T extends object>(
               if (name === 'onFocusCapture') {
                 activate();
                 external.owner.focus();
-              } else if (name === 'onBlurCapture') external.owner.blur();
-              else if (name === 'onMouseDownCapture') activate();
+              } else if (name === 'onBlurCapture') {
+                external.owner.blur(event.relatedTarget ?? null);
+              } else if (name === 'onKeyDown') {
+                external.owner.keyDown(event);
+              } else if (name === 'onMouseDownCapture') activate();
             }
             return undefined;
           }

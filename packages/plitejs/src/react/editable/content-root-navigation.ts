@@ -30,6 +30,7 @@ import {
   samePliteRootPoint,
 } from '../view-boundary-graph';
 import {
+  collapsePliteViewSelection,
   createPliteViewSelection,
   isPliteViewSelectionCollapsed,
   readPliteViewSelection,
@@ -50,6 +51,7 @@ import {
   resolveUsableRangeRect,
 } from './content-root-coordinate-navigation';
 import {
+  type ContentRootNavigationAction,
   type ContentRootNavigationAxis,
   type ContentRootNavigationDirection,
   type ContentRootSelectionMoveCommand,
@@ -120,6 +122,14 @@ type ContentRootNavigationTarget = {
   owner?: ContentRootOwner;
   point: Point;
   root: RootKey;
+};
+
+type ContentRootViewEditorLookup = {
+  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
+  getContentRootOwnerViewEditor?: (
+    owner: ContentRootOwner
+  ) => ReactRuntimeEditor | null;
+  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
 };
 
 export type ContentRootNavigationResult =
@@ -304,16 +314,11 @@ const getVerticalNavigationTarget = ({
   currentRoot: RootKey;
   direction: ContentRootNavigationDirection;
   editor: ContentRootNavigationEditor;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
-  ) => ReactRuntimeEditor | null;
-  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   owners: ContentRootOwner[];
   point: Point;
   askExternalViews?: boolean;
   preferredX?: number;
-}): ContentRootNavigationTarget | null => {
+} & ContentRootViewEditorLookup): ContentRootNavigationTarget | null => {
   const activeOwner = getActiveContentRootOwner?.(currentRoot);
   const ownerForCurrentRoot = isKnownContentRootOwner(owners, activeOwner)
     ? activeOwner
@@ -1064,16 +1069,11 @@ const getContentRootMovementTarget = ({
   currentOwner?: ContentRootOwner | null;
   currentRoot: RootKey;
   editor: ContentRootNavigationEditor;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
-  ) => ReactRuntimeEditor | null;
-  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   owners: ContentRootOwner[];
   point: Point;
   askExternalViews?: boolean;
   preferredX?: number;
-}): ContentRootNavigationTarget | null => {
+} & ContentRootViewEditorLookup): ContentRootNavigationTarget | null => {
   const getCurrentRootOwner = (root: RootKey) =>
     root === currentRoot && isKnownContentRootOwner(owners, currentOwner)
       ? currentOwner
@@ -1170,31 +1170,25 @@ const getContentRootMovementTarget = ({
     : rootLocalTarget;
 };
 
-export const getContentRootNavigationTarget = ({
+type ContentRootActionTargetInput = ContentRootViewEditorLookup & {
+  askExternalViews?: boolean;
+  editor: ContentRootNavigationEditor;
+  preferredX?: number;
+  selection: Range | null;
+};
+
+const getContentRootActionTarget = ({
+  action,
   editor,
-  event,
   getActiveContentRootOwner,
   getContentRootOwnerViewEditor,
   getMountedViewEditor,
-  isRTL,
   askExternalViews,
   preferredX,
   selection,
-}: {
-  editor: ContentRootNavigationEditor;
-  event: ReactKeyboardEvent<HTMLDivElement>;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
-  ) => ReactRuntimeEditor | null;
-  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
-  isRTL: boolean;
-  askExternalViews?: boolean;
-  preferredX?: number;
-  selection: Range | null;
+}: ContentRootActionTargetInput & {
+  action: ContentRootNavigationAction | null;
 }): ContentRootNavigationTarget | null => {
-  const action = getContentRootNavigationAction({ event, isRTL });
-
   if (!action || !hasContentRootOwner(editor)) {
     return null;
   }
@@ -1250,10 +1244,19 @@ export const getContentRootNavigationTarget = ({
     });
   }
 
+  const rootCrossingMove =
+    action.kind === 'delete'
+      ? ({
+          axis: 'horizontal',
+          direction: action.direction,
+          kind: 'move',
+        } as const)
+      : action;
+
   return getContentRootMovementTarget({
-    action,
+    action: rootCrossingMove,
     allowRootLocalMovement: false,
-    advanceBoundaryTarget: action.axis === 'word',
+    advanceBoundaryTarget: rootCrossingMove.axis === 'word',
     currentOwner: currentViewOwner,
     currentRoot,
     editor,
@@ -1266,6 +1269,17 @@ export const getContentRootNavigationTarget = ({
     askExternalViews,
   });
 };
+
+export const getContentRootVerticalMoveTarget = ({
+  direction,
+  ...input
+}: ContentRootActionTargetInput & {
+  direction: ContentRootNavigationDirection;
+}) =>
+  getContentRootActionTarget({
+    ...input,
+    action: { axis: 'vertical', direction, kind: 'move' },
+  });
 
 export const shouldModelOwnContentRootVerticalSelection = ({
   editor,
@@ -1338,15 +1352,10 @@ const applyContentRootViewSelectionAction = ({
   element: HTMLElement | null;
   action: ContentRootViewSelectionAction | null;
   extend?: boolean;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
-  ) => ReactRuntimeEditor | null;
-  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   preventDefault?: () => void;
   preferredX?: number;
   selection: Range | null;
-}): ContentRootNavigationResult => {
+} & ContentRootViewEditorLookup): ContentRootNavigationResult => {
   if (!action) {
     return { handled: false };
   }
@@ -1576,14 +1585,9 @@ export const applyContentRootSelectionMoveCommand = ({
   command: ContentRootSelectionMoveCommand;
   editor: ReactRuntimeEditor<any>;
   element: HTMLElement | null;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
-  ) => ReactRuntimeEditor | null;
-  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   isRTL?: boolean;
   selection: Range | null;
-}): ContentRootNavigationResult =>
+} & ContentRootViewEditorLookup): ContentRootNavigationResult =>
   applyContentRootViewSelectionAction({
     action: getProjectedSelectionActionFromMoveCommand({
       command: { ...command, extend: true },
@@ -1610,26 +1614,12 @@ export const applyContentRootViewSelection = ({
 }: {
   editor: ReactRuntimeEditor;
   event: ReactKeyboardEvent<HTMLDivElement>;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
-  ) => ReactRuntimeEditor | null;
-  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   isRTL: boolean;
   preferredX?: number;
   selection: Range | null;
-}): ContentRootNavigationResult => {
-  const plugin = getProjectedSelectionAction({ event, isRTL });
-  const navigation =
-    !plugin &&
-    (event.key.startsWith('Arrow') ||
-      event.key === 'Home' ||
-      event.key === 'End')
-      ? getContentRootNavigationAction({ event, isRTL })
-      : null;
+} & ContentRootViewEditorLookup): ContentRootNavigationResult => {
   const result = applyContentRootViewSelectionAction({
-    action: plugin ?? (navigation?.kind === 'enter' ? null : navigation),
-    extend: Boolean(plugin),
+    action: getProjectedSelectionAction({ event, isRTL }),
     editor,
     element: event.currentTarget,
     getActiveContentRootOwner,
@@ -1661,22 +1651,24 @@ export const applyContentRootNavigation = ({
   editor: ReactRuntimeEditor;
   event: ReactKeyboardEvent<HTMLDivElement>;
   focusEditor?: (editor: ReactRuntimeEditor) => void;
-  getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null;
-  getContentRootOwnerViewEditor?: (
-    owner: ContentRootOwner
-  ) => ReactRuntimeEditor | null;
-  getMountedViewEditor?: (root: RootKey) => ReactRuntimeEditor | null;
   isRTL: boolean;
   preferredX?: number;
   selection: Range | null;
-}): ContentRootNavigationResult => {
-  const target = getContentRootNavigationTarget({
+} & ContentRootViewEditorLookup): ContentRootNavigationResult => {
+  const action = getContentRootNavigationAction({ event, isRTL });
+
+  // While a projected selection shows, a delete removes that selection instead
+  // of moving the model caret into the neighboring content root.
+  if (action?.kind === 'delete' && readProjectedSelection(editor)) {
+    return { handled: false };
+  }
+
+  const target = getContentRootActionTarget({
+    action,
     editor,
-    event,
     getActiveContentRootOwner,
     getContentRootOwnerViewEditor,
     getMountedViewEditor,
-    isRTL,
     preferredX,
     selection,
   });
@@ -1685,6 +1677,80 @@ export const applyContentRootNavigation = ({
     return { handled: false };
   }
 
+  return selectContentRootTarget({
+    editor,
+    event,
+    focusEditor,
+    getContentRootOwnerViewEditor,
+    getMountedViewEditor,
+    target,
+  });
+};
+
+/**
+ * A plain Left or Right arrow over a projected selection collapses it to the
+ * edge in its direction. It must run before the other Left and Right
+ * handlers, because while the selection crosses roots the model caret they
+ * read is only its anchor.
+ */
+export const collapseProjectedSelection = ({
+  editor,
+  event,
+  focusEditor,
+  getContentRootOwnerViewEditor,
+  getMountedViewEditor,
+  isRTL,
+}: {
+  editor: ReactRuntimeEditor;
+  event: ReactKeyboardEvent<HTMLDivElement>;
+  focusEditor?: (editor: ReactRuntimeEditor) => void;
+  isRTL: boolean;
+} & ContentRootViewEditorLookup): ContentRootNavigationResult => {
+  const action = getContentRootNavigationAction({ event, isRTL });
+  const projected = readProjectedSelection(editor);
+
+  if (!projected || action?.kind !== 'move' || action.axis !== 'horizontal') {
+    return { handled: false };
+  }
+
+  const edge = collapsePliteViewSelection(
+    projected,
+    action.direction === 'backward' ? 'start' : 'end'
+  );
+
+  return selectContentRootTarget({
+    editor,
+    event,
+    focusEditor,
+    getContentRootOwnerViewEditor,
+    getMountedViewEditor,
+    target: {
+      ...(edge.owner ? { owner: edge.owner } : {}),
+      point: edge.point,
+      root: getPliteViewBoundaryPointRoot(edge),
+    },
+  });
+};
+
+const readProjectedSelection = (editor: ReactRuntimeEditor) => {
+  const shown = readPliteViewSelection(editor);
+
+  return shown && !isPliteViewSelectionCollapsed(shown) ? shown : null;
+};
+
+const selectContentRootTarget = ({
+  editor,
+  event,
+  focusEditor,
+  getContentRootOwnerViewEditor,
+  getMountedViewEditor,
+  target,
+}: {
+  editor: ReactRuntimeEditor;
+  event: ReactKeyboardEvent<HTMLDivElement>;
+  focusEditor?: (editor: ReactRuntimeEditor) => void;
+  target: ContentRootNavigationTarget;
+} & ContentRootViewEditorLookup): ContentRootNavigationResult => {
   const targetEditor =
     (target.owner ? getContentRootOwnerViewEditor?.(target.owner) : null) ??
     getMountedViewEditor?.(target.root) ??

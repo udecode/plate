@@ -68,6 +68,7 @@ import {
   type DOMRange,
   type DOMSelection,
   type DOMStaticRange,
+  getFlatTreeParentElement,
   getSelection,
   isAfter,
   isBefore,
@@ -75,6 +76,7 @@ import {
   isDOMNode,
   isDOMSelection,
   isDOMText,
+  isPointBefore,
   normalizeDOMPoint,
 } from '../utils/dom';
 import { isAndroidDOMHost, isGeckoDOMHost } from '../utils/environment';
@@ -2848,18 +2850,27 @@ const DOMEditorImpl: DOMEditorInterface = {
       focusOffset -= 1;
     }
 
+    const focusBeforeAnchor = isPointBefore(
+      [focusNode, focusOffset],
+      [anchorNode, anchorOffset]
+    );
+    // An end inside non-editable markup maps to the nearest text toward the
+    // other end, so a range that starts in an inline's leading spacer starts
+    // in the inline's text, not in the text before the inline.
     const anchor = DOMEditorImpl.resolvePoint(
       editor,
       [anchorNode, anchorOffset],
-      { exactMatch }
+      isCollapsed
+        ? { exactMatch }
+        : {
+            exactMatch,
+            searchDirection: focusBeforeAnchor ? 'backward' : 'forward',
+          }
     );
     if (!anchor) {
       return null;
     }
 
-    const focusBeforeAnchor =
-      isBefore(anchorNode, focusNode) ||
-      (anchorNode === focusNode && focusOffset < anchorOffset);
     const focus = isCollapsed
       ? anchor
       : DOMEditorImpl.resolvePoint(editor, [focusNode, focusOffset], {
@@ -2871,6 +2882,17 @@ const DOMEditorImpl: DOMEditorInterface = {
     }
 
     let range: Range = { anchor, focus };
+
+    // Ends inside non-editable markup map toward each other. With no text
+    // between them they pass each other, and the selection holds nothing this
+    // editor can select.
+    if (
+      RangeApi.isExpanded(range) &&
+      RangeApi.isBackward(range) !== focusBeforeAnchor
+    ) {
+      return null;
+    }
+
     // if the selection is a hanging range that ends in a void
     // and the DOM focus is an Element
     // (meaning that the selection ends before the element)
@@ -2959,6 +2981,63 @@ export const resolveWrittenDOMRange = <
       checkPageText,
       rejectStaleText: true,
     })
+  );
+};
+
+const outermostNonEditableMarkup = (
+  editor: DOMEditor<any>,
+  root: DOMElement | null,
+  node: DOMNode
+) => {
+  let markup: DOMElement | null = null;
+
+  for (
+    let element = isDOMElement(node) ? node : node.parentElement;
+    element && element !== root;
+    element = getFlatTreeParentElement(element)
+  ) {
+    if (!DOMEditor.hasEditableTarget(editor, element)) {
+      markup = element;
+    }
+  }
+
+  return markup;
+};
+
+/**
+ * Whether the DOM selection is one this editor imports. Both ends must be in
+ * this editor. An end may sit in non-editable markup inside the editor, where
+ * Firefox ends a double-clicked word, because `resolveRange` maps it to text
+ * toward the other end in the markup's nearest element, block or inline, or in
+ * that element's sibling on that side, and resolves no range when it finds no
+ * text there or the two ends cross. A selection with both ends in one piece of
+ * that markup stays the markup's own.
+ */
+export const isSelectableDOMSelection = (
+  editor: DOMEditor<any>,
+  selection: DOMSelection | null
+): selection is DOMSelection => {
+  const anchorNode = selection?.anchorNode ?? null;
+  const focusNode = selection?.focusNode ?? null;
+
+  if (
+    DOMEditor.hasSelectableTarget(editor, anchorNode) &&
+    DOMEditor.hasSelectableTarget(editor, focusNode)
+  ) {
+    return true;
+  }
+  if (
+    !DOMEditor.hasTarget(editor, anchorNode) ||
+    !DOMEditor.hasTarget(editor, focusNode)
+  ) {
+    return false;
+  }
+
+  const root = DOMEditor.editable(editor);
+  const markup = outermostNonEditableMarkup(editor, root, anchorNode);
+
+  return (
+    !markup || markup !== outermostNonEditableMarkup(editor, root, focusNode)
   );
 };
 

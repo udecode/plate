@@ -423,6 +423,30 @@ export const isBefore = (node: DOMNode, otherNode: DOMNode): boolean =>
 export const isAfter = (node: DOMNode, otherNode: DOMNode): boolean =>
   Boolean(node.compareDocumentPosition(otherNode) & getPositionFollowing(node));
 
+/**
+ * @returns `true` if `point` is before `otherPoint` in the document, offsets
+ * included; otherwise, `false`. `isBefore` compares nodes alone, so it orders
+ * an element before its own text.
+ */
+export const isPointBefore = (
+  [node, offset]: DOMPoint,
+  [otherNode, otherOffset]: DOMPoint
+): boolean => {
+  const range = node.ownerDocument?.createRange();
+
+  if (range) {
+    try {
+      range.setStart(node, offset);
+
+      return range.comparePoint(otherNode, otherOffset) > 0;
+    } catch {
+      // A stale offset or a point in another tree compares by node order.
+    }
+  }
+
+  return isAfter(node, otherNode);
+};
+
 const getPositionPreceding = (node: DOMNode) =>
   getDefaultView(node)
     ? DOCUMENT_POSITION_PRECEDING

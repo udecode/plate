@@ -28,7 +28,10 @@ import {
   isAndroidDOMHost,
   isWebKitDOMHost,
 } from '../../dom/internal';
-import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
+import {
+  isSelectableDOMSelection,
+  resolveDOMRangeInRoot,
+} from '../../dom/plugin/dom-editor';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import { getFlatTreeParentElement } from '../../dom/utils/dom';
 import {
@@ -583,11 +586,9 @@ export const syncEditorSelectionFromDOM = ({
 
   decision.write(() => {
     importDOMSelection({
-      anchorNode,
       domSelection,
       editor,
       editorElement,
-      focusNode,
       inputController,
       root,
     });
@@ -595,19 +596,15 @@ export const syncEditorSelectionFromDOM = ({
 };
 
 const importDOMSelection = ({
-  anchorNode,
   domSelection,
   editor,
   editorElement,
-  focusNode,
   inputController,
   root,
 }: {
-  anchorNode: Node | null;
   domSelection: globalThis.Selection;
   editor: ReactRuntimeEditor;
   editorElement: HTMLElement;
-  focusNode: Node | null;
   inputController: EditableInputController;
   root: Document | ShadowRoot;
 }) => {
@@ -623,16 +620,7 @@ const importDOMSelection = ({
     return;
   }
 
-  const anchorNodeSelectable = ReactEditor.hasSelectableTarget(
-    editor,
-    anchorNode
-  );
-  const focusNodeSelectable = ReactEditor.hasSelectableTarget(
-    editor,
-    focusNode
-  );
-
-  if (!anchorNodeSelectable || !focusNodeSelectable) {
+  if (!isSelectableDOMSelection(editor, domSelection)) {
     return;
   }
 
@@ -1064,21 +1052,7 @@ export const resolveEditableImplicitTarget = ({
 
   const domSelection = getSelection(root);
 
-  if (!domSelection || domSelection.rangeCount === 0) {
-    return request.fallback;
-  }
-
-  const { anchorNode, focusNode } = domSelection;
-  const anchorNodeSelectable = ReactEditor.hasSelectableTarget(
-    editor,
-    anchorNode
-  );
-  const focusNodeSelectable = ReactEditor.hasSelectableTarget(
-    editor,
-    focusNode
-  );
-
-  if (!anchorNodeSelectable || !focusNodeSelectable) {
+  if (!isSelectableDOMSelection(editor, domSelection)) {
     return request.fallback;
   }
 
@@ -1328,17 +1302,10 @@ const importDOMSelectionChange = ({
     return;
   }
 
-  const anchorNodeSelectable = ReactEditor.hasSelectableTarget(
+  const domSelectionBelongsToEditor = isSelectableDOMSelection(
     editor,
-    anchorNode
+    domSelection
   );
-
-  const focusNodeSelectable = ReactEditor.hasSelectableTarget(
-    editor,
-    focusNode
-  );
-  const domSelectionBelongsToEditor =
-    anchorNodeSelectable && focusNodeSelectable;
   const range = domSelectionBelongsToEditor
     ? ReactEditor.resolveRange(editor, domSelection, {
         exactMatch: false,
@@ -1546,7 +1513,7 @@ const importDOMSelectionChange = ({
   // Deselect the editor if the DOM selection is not selectable in read-only mode.
   if (
     readOnly &&
-    (!anchorNodeSelectable || !focusNodeSelectable) &&
+    !domSelectionBelongsToEditor &&
     !isDOMTargetInAnotherSelectionView(editor, editorElement, activeElement) &&
     !isDOMTargetInAnotherSelectionView(editor, editorElement, anchorNode) &&
     !isDOMTargetInAnotherSelectionView(editor, editorElement, focusNode)

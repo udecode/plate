@@ -38,7 +38,10 @@ import {
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
 } from '../../dom/internal';
-import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
+import {
+  isSelectableDOMSelection,
+  resolveDOMRangeInRoot,
+} from '../../dom/plugin/dom-editor';
 import { resolveNextKeyCaret } from '../../dom/plugin/dom-view-caret';
 import {
   type DOMSelectionPoints,
@@ -584,7 +587,6 @@ export const syncSelectionForBeforeInput = ({
   let nextSelection = selection;
   const domSelection = getSelection(root);
   const domSelectionAnchorNode = domSelection?.anchorNode ?? null;
-  const domSelectionFocusNode = domSelection?.focusNode ?? null;
   const domSelectionAnchorElement = isDOMText(domSelectionAnchorNode)
     ? domSelectionAnchorNode.parentElement
     : isDOMElement(domSelectionAnchorNode)
@@ -621,8 +623,7 @@ export const syncSelectionForBeforeInput = ({
   const domSelectionBelongsToEditor =
     !domSelection ||
     domSelection.rangeCount === 0 ||
-    (ReactEditor.hasSelectableTarget(editor, domSelectionAnchorNode) &&
-      ReactEditor.hasSelectableTarget(editor, domSelectionFocusNode));
+    isSelectableDOMSelection(editor, domSelection);
   const pendingNativeTextInputRepairPath =
     pendingNativeTextInputRepairPathKey?.split(',').map(Number) ?? null;
   const pendingNativeTextInputRepairTextHostPath =

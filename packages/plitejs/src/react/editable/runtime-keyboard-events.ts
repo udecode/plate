@@ -15,7 +15,7 @@ import { readPliteViewSelection } from '../view-selection';
 import type { MountedTopLevelRange } from '../viewport-commands';
 import { getSelectableOwnerVerticalNavigationTarget } from './caret-engine';
 import {
-  getContentRootNavigationTarget,
+  getContentRootVerticalMoveTarget,
   readContentRootAwareSelection,
   shouldModelOwnContentRootVerticalSelection,
 } from './content-root-navigation';
@@ -357,23 +357,24 @@ export const useRuntimeKeyboardEvents = ({
             selection: snapshotRange,
           })
       );
+      // Shift is included: the browser cannot extend a native selection out of
+      // its editing host, so a caret whose line move leaves its root needs the
+      // model to start a projected selection.
       const modelOwnsContentRootVerticalMove = profilePliteReactDuration(
         'keydown.model-owns-content-root-vertical-move',
         () =>
-          isVerticalArrowKey &&
-          !event.shiftKey &&
+          isPhysicalVerticalMove &&
           Boolean(
-            getContentRootNavigationTarget({
+            getContentRootVerticalMoveTarget({
+              askExternalViews: false,
+              direction: event.key === 'ArrowUp' ? 'backward' : 'forward',
               editor,
-              event,
               getActiveContentRootOwner:
                 pliteRuntimeContext?.getActiveContentRootOwner,
               getContentRootOwnerViewEditor:
                 pliteRuntimeContext?.getContentRootOwnerViewEditor,
               getMountedViewEditor: pliteRuntimeContext?.getMountedViewEditor,
-              isRTL: false,
               preferredX: preferredVerticalX,
-              askExternalViews: false,
               selection: snapshotRange,
             })
           )

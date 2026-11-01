@@ -20,6 +20,7 @@ import {
   supportsDOMBeforeInput,
   usesAppleDOMHotkeys,
 } from '../../dom/internal';
+import { isSelectableDOMSelection } from '../../dom/plugin/dom-editor';
 import type { EditableKeyDownHandler } from '../components/editable';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { focusPliteEditable } from '../hooks/focus-plite-editable';
@@ -47,6 +48,7 @@ import {
 import {
   applyContentRootNavigation,
   applyContentRootViewSelection,
+  collapseProjectedSelection,
   isContentRootKeyAnswered,
   readContentRootAwareSelection,
 } from './content-root-navigation';
@@ -248,14 +250,7 @@ const readNestedEditableDOMSelection = (
   if (!root) return null;
   const domSelection = getSelection(root);
 
-  if (!domSelection || domSelection.rangeCount === 0) {
-    return null;
-  }
-
-  if (
-    !ReactEditor.hasSelectableTarget(nestedEditor, domSelection.anchorNode) ||
-    !ReactEditor.hasSelectableTarget(nestedEditor, domSelection.focusNode)
-  ) {
+  if (!isSelectableDOMSelection(nestedEditor, domSelection)) {
     return null;
   }
 
@@ -961,6 +956,19 @@ export const applyEditableKeyDown = ({
       if (caretMovementResult.handled) {
         return keyDownHandled(caretMovementResult.repair);
       }
+    }
+
+    const projectedCollapseResult = collapseProjectedSelection({
+      editor,
+      event,
+      focusEditor: focusPliteEditable,
+      getContentRootOwnerViewEditor,
+      getMountedViewEditor,
+      isRTL,
+    });
+
+    if (projectedCollapseResult.handled) {
+      return keyDownHandled();
     }
 
     const horizontalOwnerTarget = getSelectableOwnerHorizontalNavigationTarget({

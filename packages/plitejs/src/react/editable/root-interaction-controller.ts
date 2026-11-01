@@ -34,7 +34,12 @@ import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import { MAIN_ROOT_KEY, readRootChildren } from '../root-key';
-import { getPliteRootBoundaryPoint } from '../view-boundary-graph';
+import {
+  getPliteRootBoundaryPoint,
+  PliteViewBoundaryGraph,
+  type PliteViewBoundaryGraphModel,
+  type PliteViewBoundaryPoint,
+} from '../view-boundary-graph';
 import {
   createPliteViewSelection,
   readPliteViewSelection,
@@ -596,6 +601,30 @@ const resolveKnownOwner = (
   owner: ContentRootOwner | null | undefined
 ) => (owner ? owners.find((candidate) => isSameOwner(candidate, owner)) : null);
 
+const toDragBoundaryPoint = (
+  graph: PliteViewBoundaryGraphModel,
+  owners: readonly ContentRootOwner[],
+  endpoint: RootInteractionDragEndpoint
+): PliteViewBoundaryPoint | null => {
+  const owner = resolveKnownOwner(owners, endpoint.owner);
+
+  if (endpoint.owner && !owner) {
+    return null;
+  }
+
+  const point = {
+    ...(endpoint.affinity ? { affinity: endpoint.affinity } : {}),
+    ...(owner ? { owner } : {}),
+    point: endpoint.point,
+  };
+
+  // The graph holds the view the drag started in: its root and the content
+  // roots it owns. A sibling root under the pointer, such as another root of a
+  // multi-root document, is outside that view, so the drag stays with the
+  // browser and the selection stays in the root where it started.
+  return PliteViewBoundaryGraph.resolvePointNode(graph, point) ? point : null;
+};
+
 const applyProjectedDragSelection = ({
   anchor,
   editor,
@@ -612,31 +641,21 @@ const applyProjectedDragSelection = ({
   }
 
   const owners = findContentRootOwners(editor);
-  const anchorOwner = resolveKnownOwner(owners, anchor.owner);
-  const focusOwner = resolveKnownOwner(owners, focus.owner);
+  const graph = createContentRootViewBoundaryGraph(editor, owners);
+  const anchorPoint = toDragBoundaryPoint(graph, owners, anchor);
+  const focusPoint = toDragBoundaryPoint(graph, owners, focus);
 
-  if ((anchor.owner && !anchorOwner) || (focus.owner && !focusOwner)) {
+  if (!anchorPoint || !focusPoint) {
     return false;
   }
 
   selectionBridge?.beginProjectedDrag();
   writePliteViewSelection(
     editor,
-    createPliteViewSelection(
-      createContentRootViewBoundaryGraph(editor, owners),
-      {
-        anchor: {
-          ...(anchor.affinity ? { affinity: anchor.affinity } : {}),
-          ...(anchorOwner ? { owner: anchorOwner } : {}),
-          point: anchor.point,
-        },
-        focus: {
-          ...(focus.affinity ? { affinity: focus.affinity } : {}),
-          ...(focusOwner ? { owner: focusOwner } : {}),
-          point: focus.point,
-        },
-      }
-    ),
+    createPliteViewSelection(graph, {
+      anchor: anchorPoint,
+      focus: focusPoint,
+    }),
     {
       place: () =>
         collapseModelSelectionToProjectedDragAnchor({ anchor, editor }),

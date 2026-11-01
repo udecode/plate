@@ -16,6 +16,10 @@ export type ContentRootNavigationAction =
       kind: 'document-boundary';
     }
   | {
+      direction: ContentRootNavigationDirection;
+      kind: 'delete';
+    }
+  | {
       kind: 'enter';
     }
   | {
@@ -40,13 +44,13 @@ export type ContentRootSelectionMoveCommand = Extract<
   { kind: 'move-selection' }
 >;
 
-const getDocumentDirection = ({
+const getCaretAction = ({
   event,
   isRTL,
 }: {
   event: ReactKeyboardEvent<HTMLDivElement>;
   isRTL: boolean;
-}): ContentRootNavigationDirection | null => {
+}): ContentRootNavigationAction | null => {
   const { nativeEvent } = event;
 
   if (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) {
@@ -54,19 +58,27 @@ const getDocumentDirection = ({
   }
 
   if (Hotkeys.isMoveBackward(nativeEvent)) {
-    return isRTL ? 'forward' : 'backward';
+    return {
+      axis: 'horizontal',
+      direction: isRTL ? 'forward' : 'backward',
+      kind: 'move',
+    };
   }
 
   if (Hotkeys.isMoveForward(nativeEvent)) {
-    return isRTL ? 'backward' : 'forward';
+    return {
+      axis: 'horizontal',
+      direction: isRTL ? 'backward' : 'forward',
+      kind: 'move',
+    };
   }
 
   if (Hotkeys.isDeleteBackward(nativeEvent)) {
-    return 'backward';
+    return { direction: 'backward', kind: 'delete' };
   }
 
   if (Hotkeys.isDeleteForward(nativeEvent)) {
-    return 'forward';
+    return { direction: 'forward', kind: 'delete' };
   }
 
   return null;
@@ -147,10 +159,10 @@ export const getContentRootNavigationAction = ({
     return { axis: 'word', direction: wordDirection, kind: 'move' };
   }
 
-  const direction = getDocumentDirection({ event, isRTL });
+  const caretAction = getCaretAction({ event, isRTL });
 
-  if (direction) {
-    return { axis: 'horizontal', direction, kind: 'move' };
+  if (caretAction) {
+    return caretAction;
   }
 
   if (!isPlainContentRootEvent(event)) {

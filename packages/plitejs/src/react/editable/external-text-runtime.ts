@@ -186,6 +186,7 @@ export class ExternalTextRuntime {
   } | null = null;
   private decorations: PliteDecorationStore | null = null;
   private focused: Entry | null = null;
+  private tabbingBackward: Entry | null = null;
   private readonly counters = {
     validationVisits: 0,
     callbackFailures: 0,
@@ -306,7 +307,28 @@ export class ExternalTextRuntime {
     entry.disposeHost = registerExternalTextHost(host, {
       root: () => this.runtime.rootElement,
       focus: () => this.focusChanged(entry, true),
-      blur: () => this.focusChanged(entry, false),
+      blur: (relatedTarget) => {
+        if (
+          this.tabbingBackward === entry &&
+          relatedTarget === this.runtime.rootElement
+        ) {
+          const current = readExternalTextBinding(
+            this.runtime.editor,
+            entry.elementKey
+          );
+          if (current) {
+            this.placeOutside(entry, current, { direction: 'backward' });
+          }
+        }
+        this.tabbingBackward = null;
+        this.focusChanged(entry, false);
+      },
+      keyDown: (event) => {
+        this.tabbingBackward =
+          event.key === 'Tab' && event.shiftKey && !event.defaultPrevented
+            ? entry
+            : null;
+      },
     });
     this.registerCoverage(entry, binding);
     this.call(entry, 'mount', () => {
@@ -565,6 +587,47 @@ export class ExternalTextRuntime {
       source: 'external-text',
       phase: 'offsetAt',
     });
+  }
+
+  private placeOutside(
+    entry: Entry,
+    binding: Binding,
+    {
+      direction,
+      extend,
+      x,
+    }: Readonly<{
+      direction: 'backward' | 'forward';
+      extend?: boolean;
+      x?: number;
+    }>
+  ) {
+    const edge = this.runtime.editor.read((state) =>
+      direction === 'backward'
+        ? state.points.before(binding.path)
+        : state.points.after(binding.path)
+    );
+    if (!edge) return false;
+    const point =
+      x === undefined
+        ? edge
+        : (resolveVerticalNavigationPoint({
+            direction,
+            fallbackPoint: edge,
+            preferredX: x,
+            targetEditor: this.runtime.editor,
+            targetRoot: toInternalRoot(this.runtime.editor.read.view.root()),
+            targetRuntime: this.runtime,
+          }) ?? edge);
+    const previous = this.runtime.editor.read.selection();
+    setShownSelectionAsView(this.runtime.editor, {
+      anchor: extend && previous ? previous.anchor : point,
+      focus: point,
+    });
+    if (x === undefined) this.runtime.clearVerticalGoal();
+    else this.runtime.setVerticalGoalX(x, point);
+    this.endComposition(entry);
+    return true;
   }
 
   private focusModelSelection() {
@@ -1007,34 +1070,9 @@ export class ExternalTextRuntime {
           entry.elementKey
         );
         if (!binding) return this.stale(entry);
-        const edge = this.runtime.editor.read((state) =>
-          direction === 'backward'
-            ? state.points.before(binding.path)
-            : state.points.after(binding.path)
-        );
-        if (!edge) return APPLIED;
-        const point =
-          x === undefined
-            ? edge
-            : (resolveVerticalNavigationPoint({
-                direction,
-                fallbackPoint: edge,
-                preferredX: x,
-                targetEditor: this.runtime.editor,
-                targetRoot: toInternalRoot(
-                  this.runtime.editor.read.view.root()
-                ),
-                targetRuntime: this.runtime,
-              }) ?? edge);
-        const previous = this.runtime.editor.read.selection();
-        setShownSelectionAsView(this.runtime.editor, {
-          anchor: extend && previous ? previous.anchor : point,
-          focus: point,
-        });
-        if (x === undefined) this.runtime.clearVerticalGoal();
-        else this.runtime.setVerticalGoalX(x, point);
-        this.endComposition(entry);
-        this.focusModelSelection();
+        if (this.placeOutside(entry, binding, { direction, extend, x })) {
+          this.focusModelSelection();
+        }
         return APPLIED;
       },
       deleteOut: ({ baseVersion, direction }) => {
