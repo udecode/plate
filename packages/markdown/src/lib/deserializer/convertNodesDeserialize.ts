@@ -14,13 +14,17 @@ const LEADING_NEWLINE_REGEX = /^\n/;
 
 // `<br>` is already the line break, so the source newline right after it is
 // dropped. A soft break after any other node stays in the text.
+const isBr = (node?: MdRootContent) =>
+  (node?.type === 'html' && BR_HTML_REGEX.test(node.value)) ||
+  ((node?.type === 'mdxJsxTextElement' ||
+    node?.type === 'mdxJsxFlowElement') &&
+    node.name === 'br');
+
 const dropNewlineAfterBr = (
   node: MdRootContent,
   previous?: MdRootContent
 ): MdRootContent =>
-  node.type === 'text' &&
-  previous?.type === 'html' &&
-  BR_HTML_REGEX.test(previous.value)
+  node.type === 'text' && isBr(previous)
     ? { ...node, value: node.value.replace(LEADING_NEWLINE_REGEX, '') }
     : node;
 
