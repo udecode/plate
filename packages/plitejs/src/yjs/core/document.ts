@@ -8,6 +8,7 @@ import {
   type JsonNode,
   type Path,
 } from '../../index';
+import { getDefined } from '../../internal/get-defined';
 import {
   getYjsAttributes,
   getYjsElementType,
@@ -17,11 +18,18 @@ import {
   type YjsNode,
 } from './attributes';
 import {
+  getJoinedYjsLines,
+  hasJoinedYjsLines,
+  noteJoinedYjsLine,
+} from './joined-lines';
+import {
   isReservedYjsKey,
   isYjsMarkRecordKey,
   YJS_CUT_SOURCE_KEY,
   YJS_ELEMENT_NODE_NAME,
   YJS_HIDDEN_KEY,
+  YJS_JOINED_AFTER_KEY,
+  YJS_JOINED_BEFORE_KEY,
   YJS_NODE_ID_KEY,
   YJS_VIRTUAL_CHILD_ID_KEY,
   YJS_VIRTUAL_PLACEHOLDER_KEY,
@@ -46,12 +54,16 @@ import {
   readTextRuns,
   segmentPliteChildren,
   segmentYjsChildren,
+  textPieceOf,
+  yjsCutsBefore,
   yjsTextContent,
+  yjsTextEndCutOf,
   yjsTextLength,
   type YjsViewCut,
 } from './text-runs';
 
 const VIRTUAL_YJS_CHILD_RAW_INDEX = -1;
+const JOINED_LINE_POSITION = Number.MAX_SAFE_INTEGER;
 
 export type YjsPropertyContext = Readonly<{
   /** Immediate element parent first. */
@@ -501,7 +513,8 @@ const settleYjsScope = (scope: YjsScope): void => {
  * Whether `root` shows `node`, by the reader's rule read upward: a node shows
  * where its parent shows it, unless it is hidden, and a hidden node, `node`
  * included, shows only where the referrer `shownYjsReferrerAmong` picks
- * shows it. A placeholder shows its target, never its own children.
+ * shows it, or, for a joined line no referrer shows, where its anchor shows.
+ * A placeholder shows its target, never its own children.
  */
 const showsInYjsRoot = (
   root: Y.XmlElement,
@@ -520,8 +533,14 @@ const showsInYjsRoot = (
           ? shownYjsReferrerAmong(lookup.referrers(id), lookup, new Set(), id)
           : null;
 
-      if (shownBy === null) return false;
-      current = shownBy;
+      const next =
+        shownBy ??
+        (current instanceof Y.XmlElement
+          ? strandAnchorOf(current, lookup, new Set())
+          : null);
+
+      if (next === null) return false;
+      current = next;
       continue;
     }
 
@@ -777,7 +796,8 @@ const isUnder = (node: YjsNode, ancestors: ReadonlySet<YjsNode>): boolean => {
 /**
  * Whether `node` shows inside one of `part`: whether `part` holds it or the
  * element it shows in. A hidden node shows in the element that shows it
- * through a virtual reference, not in its parent.
+ * through a virtual reference, not in its parent, and a joined line's
+ * children show where its anchor shows.
  */
 const showsUnder = (
   node: YjsNode,
@@ -793,10 +813,16 @@ const showsUnder = (
     hops.add(current);
 
     const id = current.getAttribute(YJS_NODE_ID_KEY);
+    const shownBy =
+      typeof id === 'string'
+        ? shownYjsReferrerAmong(lookup.referrers(id), lookup, new Set(), id)
+        : null;
 
-    return typeof id === 'string'
-      ? shownYjsReferrerAmong(lookup.referrers(id), lookup, new Set(), id)
-      : null;
+    if (shownBy !== null || !(current instanceof Y.XmlElement)) return shownBy;
+
+    const anchor = strandAnchorOf(current, lookup, new Set());
+
+    return anchor && shownIn(anchor);
   };
 
   for (let current: YjsNode | null = node; current !== null;) {
@@ -1091,8 +1117,13 @@ const copyRecordAttributes = (
   }
 };
 
+/**
+ * A child an element shows and its raw index. A strand's raw index is in
+ * `owner`, the joined line that holds it.
+ */
 type YjsVisibleChildSlot = {
   readonly node: YjsNode;
+  readonly owner?: Y.XmlElement;
   readonly rawIndex: number;
 };
 
@@ -1131,8 +1162,10 @@ const rawIndexIn = (parent: Y.XmlElement, child: YjsNode): number => {
 /**
  * Where `node` shows in the document: the child index at each level from the
  * root down, where a hidden node takes the place of the element that shows
- * it, and -1 stands for an element's virtual first child. Null when it shows
- * nowhere.
+ * it, and -1 stands for an element's virtual first child. A joined line no
+ * element shows takes the place of its anchor, followed by the largest index,
+ * so its children sort after the anchor and all it holds, and before the
+ * anchor's next sibling. Null when it shows nowhere.
  */
 const documentPositionOf = (
   node: YjsNode,
@@ -1140,28 +1173,124 @@ const documentPositionOf = (
   resolving: Set<string>
 ): number[] | null => {
   const position: number[] = [];
+  const hosts = new Set<Y.XmlElement>();
 
   for (let current: YjsNode = node; ;) {
     const { parent } = current;
 
     if (isDeletedYjsNode(current)) return null;
     if (!(parent instanceof Y.XmlElement)) return position.reverse();
-    if (current !== node && isHiddenYjsNode(current)) {
+    if (isHiddenYjsNode(current)) {
       const id = current.getAttribute(YJS_NODE_ID_KEY);
       const shownBy =
         typeof id === 'string'
           ? shownYjsReferrerAmong(lookup.referrers(id), lookup, resolving, id)
           : null;
 
-      if (shownBy === null) return null;
-      if (!isVirtualYjsPlaceholder(shownBy)) position.push(-1);
-      current = shownBy;
+      if (shownBy !== null) {
+        if (!isVirtualYjsPlaceholder(shownBy)) position.push(-1);
+        current = shownBy;
+        continue;
+      }
+
+      if (!(current instanceof Y.XmlElement) || hosts.has(current)) return null;
+
+      const anchor = strandAnchorOf(current, lookup, resolving);
+
+      if (anchor === null) return null;
+      hosts.add(current);
+      position.push(JOINED_LINE_POSITION);
+      current = anchor;
       continue;
     }
 
     position.push(rawIndexIn(parent, current));
     current = parent;
   }
+};
+
+/**
+ * The node `line`'s children show after, when `line` is a joined line:
+ * hidden, carrying `yjs:joined-after`, and shown by no element. A text
+ * anchor names its source, and `yjs:joined-before` the cut its letters ended
+ * at, or none for the source's end. The anchor is the piece that now holds
+ * the letters right before that point, so a later cut inside them moves the
+ * line's children after the later piece. Null for any other line, or when no
+ * node carries the anchor's id.
+ */
+const strandAnchorOf = (
+  line: Y.XmlElement,
+  lookup: YjsTreeLookup,
+  resolving: Set<string>
+): YjsNode | null => {
+  const anchorId = line.getAttribute(YJS_JOINED_AFTER_KEY);
+  const lineId = line.getAttribute(YJS_NODE_ID_KEY);
+
+  if (
+    typeof anchorId !== 'string' ||
+    !isHiddenYjsNode(line) ||
+    (typeof lineId === 'string' &&
+      shownYjsReferrerAmong(
+        lookup.referrers(lineId),
+        lookup,
+        resolving,
+        lineId
+      ) !== null)
+  ) {
+    return null;
+  }
+
+  const anchor = lookup.resolve(anchorId);
+
+  if (!(anchor instanceof Y.XmlText) || anchor.length === 0) return anchor;
+
+  const end = line.getAttribute(YJS_JOINED_BEFORE_KEY);
+  const cuts = yjsCutsBefore(anchor, typeof end === 'string' ? end : null);
+
+  if (cuts.length === 0) return anchor;
+
+  const views = new Map<string, Y.XmlText>();
+
+  for (const view of lookup.referrers(anchorId)) {
+    if (!(view instanceof Y.XmlText)) continue;
+
+    const cut = cutOf(view);
+
+    if (cut?.source === anchor) views.set(cut.key, view);
+  }
+
+  for (const key of cuts.toReversed()) {
+    const view = views.get(key);
+
+    if (view) return view;
+  }
+
+  return anchor;
+};
+
+/** The joined lines whose children show right after `shown`, by Yjs item id. */
+const strandHostsAfter = (
+  shown: YjsNode,
+  lookup: YjsTreeLookup,
+  expanding: ReadonlySet<Y.XmlElement>
+): Y.XmlElement[] => {
+  const id = shown.getAttribute(YJS_NODE_ID_KEY);
+  const source =
+    shown instanceof Y.XmlText ? shown.getAttribute(YJS_CUT_SOURCE_KEY) : null;
+  const candidates = [
+    ...(typeof id === 'string' ? getJoinedYjsLines(shown.doc, id) : []),
+    ...(typeof source === 'string' ? getJoinedYjsLines(shown.doc, source) : []),
+  ];
+
+  if (candidates.length === 0) return candidates;
+
+  return candidates
+    .filter(
+      (host) =>
+        !expanding.has(host) &&
+        strandAnchorOf(host, lookup, new Set()) === shown
+    )
+    .sort(compareYjsItemIds);
 };
 
 const compareDocumentPositions = (
@@ -1238,6 +1367,18 @@ const shownYjsReferrerAmong = (
 };
 
 /**
+ * The node a joined line's children show after, or null when `line` is not a
+ * joined line or no node carries its anchor's id.
+ *
+ * @internal
+ */
+export const getYjsStrandAnchor = (
+  root: Y.XmlElement,
+  line: Y.XmlElement
+): YjsNode | null =>
+  strandAnchorOf(line, createLazyYjsTreeLookup(root), new Set());
+
+/**
  * The element that shows the node with `id` through a virtual reference, or
  * null when none does.
  *
@@ -1297,72 +1438,104 @@ const getVirtualYjsChild = (
   return null;
 };
 
-const getYjsVisibleChildSlots = (
+/**
+ * Visits the children `node` shows, in order, until `visit` returns true, and
+ * returns whether it did. A hidden child shows only through the placeholder
+ * that shows it, and the children of a joined line show right after its
+ * anchor, as strands.
+ */
+const walkYjsVisibleChildren = (
   root: Y.XmlElement,
   node: Y.XmlElement,
-  lookup?: YjsTreeLookup,
-  rawChildren = getRawYjsChildren(node)
-): YjsVisibleChildSlot[] => {
-  const rawSlots = new Array<YjsVisibleChildSlot>(rawChildren.length + 1);
-  const visibleNodes = new Set<YjsNode>();
-  let writeIndex = 0;
+  lookup: YjsTreeLookup,
+  rawChildren: readonly unknown[],
+  visit: (slot: YjsVisibleChildSlot) => boolean,
+  visibleNodes = new Set<YjsNode>(),
+  expanding = new Set<Y.XmlElement>()
+): boolean => {
+  const joined = hasJoinedYjsLines(node.doc);
+  const emit = (slot: YjsVisibleChildSlot): boolean => {
+    visibleNodes.add(slot.node);
+    if (visit(slot)) return true;
+    if (!joined) return false;
+
+    for (const host of strandHostsAfter(slot.node, lookup, expanding)) {
+      expanding.add(host);
+
+      const stopped = walkYjsVisibleChildren(
+        root,
+        host,
+        lookup,
+        getRawYjsChildren(host),
+        (strand) => visit(strand.owner ? strand : { ...strand, owner: host }),
+        visibleNodes,
+        expanding
+      );
+
+      expanding.delete(host);
+      if (stopped) return true;
+    }
+
+    return false;
+  };
 
   if (!isVirtualYjsPlaceholder(node)) {
     const virtualChild = getVirtualYjsChild(root, node, undefined, lookup);
 
-    if (virtualChild !== null) {
-      rawSlots[writeIndex] = {
-        node: virtualChild,
-        rawIndex: VIRTUAL_YJS_CHILD_RAW_INDEX,
-      };
-      visibleNodes.add(virtualChild);
-      writeIndex += 1;
+    if (
+      virtualChild !== null &&
+      emit({ node: virtualChild, rawIndex: VIRTUAL_YJS_CHILD_RAW_INDEX })
+    ) {
+      return true;
     }
   }
 
-  let rawIndex = 0;
-
-  while (rawIndex < rawChildren.length) {
+  for (let rawIndex = 0; rawIndex < rawChildren.length; rawIndex += 1) {
     const child = rawChildren[rawIndex];
 
-    if (child === undefined) {
-      rawIndex += 1;
-      continue;
-    }
-
-    if (isHiddenYjsNode(child)) {
-      rawIndex += 1;
-      continue;
-    }
+    if (!isYjsContentNode(child) || isHiddenYjsNode(child)) continue;
 
     if (child instanceof Y.XmlElement && isVirtualYjsPlaceholder(child)) {
       const virtualChild = getVirtualYjsChild(root, child, undefined, lookup);
 
-      if (virtualChild !== null && !visibleNodes.has(virtualChild)) {
-        rawSlots[writeIndex] = { node: virtualChild, rawIndex };
-        visibleNodes.add(virtualChild);
-        writeIndex += 1;
+      if (
+        virtualChild !== null &&
+        !visibleNodes.has(virtualChild) &&
+        emit({ node: virtualChild, rawIndex })
+      ) {
+        return true;
       }
 
-      rawIndex += 1;
       continue;
     }
 
-    rawSlots[writeIndex] = { node: child, rawIndex };
-    visibleNodes.add(child);
-    writeIndex += 1;
-    rawIndex += 1;
+    if (emit({ node: child, rawIndex })) return true;
   }
 
-  rawSlots.length = writeIndex;
+  return false;
+};
 
-  return rawSlots;
+const getYjsVisibleChildSlots = (
+  root: Y.XmlElement,
+  node: Y.XmlElement,
+  lookup = createLazyYjsTreeLookup(root),
+  rawChildren = getRawYjsChildren(node)
+): YjsVisibleChildSlot[] => {
+  const slots: YjsVisibleChildSlot[] = [];
+
+  walkYjsVisibleChildren(root, node, lookup, rawChildren, (slot) => {
+    slots.push(slot);
+
+    return false;
+  });
+
+  return slots;
 };
 
 const getYjsVisibleChildNodes = (
   root: Y.XmlElement,
   node: Y.XmlElement,
-  lookup?: YjsTreeLookup
+  lookup = createLazyYjsTreeLookup(root)
 ): YjsNode[] => {
   const index = lentIndexOf(node);
 
@@ -1372,56 +1545,19 @@ const getYjsVisibleChildNodes = (
     return index.slice(0);
   }
 
-  const rawChildren = getRawYjsChildren(node);
-  const children = new Array<YjsNode>(rawChildren.length + 1);
-  const visibleNodes = new Set<YjsNode>();
-  let writeIndex = 0;
+  const children: YjsNode[] = [];
 
-  if (!isVirtualYjsPlaceholder(node)) {
-    const virtualChild = getVirtualYjsChild(root, node, undefined, lookup);
+  walkYjsVisibleChildren(
+    root,
+    node,
+    lookup,
+    getRawYjsChildren(node),
+    (slot) => {
+      children.push(slot.node);
 
-    if (virtualChild !== null) {
-      children[writeIndex] = virtualChild;
-      visibleNodes.add(virtualChild);
-      writeIndex += 1;
+      return false;
     }
-  }
-
-  let rawIndex = 0;
-
-  while (rawIndex < rawChildren.length) {
-    const child = rawChildren[rawIndex];
-
-    if (child === undefined) {
-      rawIndex += 1;
-      continue;
-    }
-
-    if (isHiddenYjsNode(child)) {
-      rawIndex += 1;
-      continue;
-    }
-
-    if (child instanceof Y.XmlElement && isVirtualYjsPlaceholder(child)) {
-      const virtualChild = getVirtualYjsChild(root, child, undefined, lookup);
-
-      if (virtualChild !== null && !visibleNodes.has(virtualChild)) {
-        children[writeIndex] = virtualChild;
-        visibleNodes.add(virtualChild);
-        writeIndex += 1;
-      }
-
-      rawIndex += 1;
-      continue;
-    }
-
-    children[writeIndex] = child;
-    visibleNodes.add(child);
-    writeIndex += 1;
-    rawIndex += 1;
-  }
-
-  children.length = writeIndex;
+  );
 
   return children;
 };
@@ -1430,76 +1566,27 @@ const getYjsVisibleChildSlotAt = (
   root: Y.XmlElement,
   node: Y.XmlElement,
   index: number,
-  lookup: YjsTreeLookup,
-  rawChildren?: readonly unknown[]
+  lookup: YjsTreeLookup
 ): YjsVisibleChildSlot | undefined => {
   if (typeof index !== 'number' || index < 0) {
     return undefined;
   }
-  if (rawChildren === undefined) {
-    const rootIndex = lentIndexOf(node);
 
-    if (rootIndex !== null) return rootIndex.slotAt(index);
-  }
+  const rootIndex = lentIndexOf(node);
 
-  const children = rawChildren ?? readYjsChildren(node);
+  if (rootIndex !== null) return rootIndex.slotAt(index);
 
-  const visibleNodes = new Set<YjsNode>();
+  let found: YjsVisibleChildSlot | undefined;
   let visibleIndex = 0;
 
-  if (!isVirtualYjsPlaceholder(node)) {
-    const virtualChild = getVirtualYjsChild(root, node, undefined, lookup);
-
-    if (virtualChild !== null) {
-      if (visibleIndex === index) {
-        return {
-          node: virtualChild,
-          rawIndex: VIRTUAL_YJS_CHILD_RAW_INDEX,
-        };
-      }
-
-      visibleNodes.add(virtualChild);
-      visibleIndex += 1;
-    }
-  }
-
-  let rawIndex = 0;
-
-  while (rawIndex < children.length) {
-    const child = children[rawIndex];
-
-    if (!isYjsContentNode(child) || isHiddenYjsNode(child)) {
-      rawIndex += 1;
-      continue;
-    }
-
-    if (child instanceof Y.XmlElement && isVirtualYjsPlaceholder(child)) {
-      const virtualChild = getVirtualYjsChild(root, child, undefined, lookup);
-
-      if (virtualChild !== null && !visibleNodes.has(virtualChild)) {
-        if (visibleIndex === index) {
-          return { node: virtualChild, rawIndex };
-        }
-
-        visibleNodes.add(virtualChild);
-        visibleIndex += 1;
-      }
-
-      rawIndex += 1;
-      continue;
-    }
-
-    visibleNodes.add(child);
-
-    if (visibleIndex === index) {
-      return { node: child, rawIndex };
-    }
-
+  walkYjsVisibleChildren(root, node, lookup, readYjsChildren(node), (slot) => {
+    if (visibleIndex === index) found = slot;
     visibleIndex += 1;
-    rawIndex += 1;
-  }
 
-  return undefined;
+    return found !== undefined;
+  });
+
+  return found;
 };
 
 const getYjsVisibleChildAt = (
@@ -2001,13 +2088,8 @@ export const moveVisibleYjsChildren = (
   parent: Y.XmlElement,
   position: number
 ): YjsNode[] => {
-  const rawChildren = getRawYjsChildren(parent);
-  const visibleSlots = getYjsVisibleChildSlots(
-    write.root,
-    parent,
-    createLazyYjsTreeLookup(write.root),
-    rawChildren
-  ).slice(position);
+  const { rawChildren, slots } = materializeYjsStrands(write, parent);
+  const visibleSlots = slots.slice(position);
   const moved = visibleSlots.map((slot) => {
     if (!hasRawYjsChildSlot(slot)) {
       writeYjsVisibility(write, parent, YJS_VIRTUAL_CHILD_ID_KEY, null);
@@ -2032,6 +2114,224 @@ export const moveVisibleYjsChildren = (
   }
 
   return moved;
+};
+
+/**
+ * The children `parent` shows, after each strand among them becomes a
+ * placeholder in `parent` right after the child it follows, so a write to
+ * `parent`'s raw children carries it. The new placeholder comes later in the
+ * document than the strand did, so it shows the node.
+ */
+const materializeYjsStrands = (
+  write: YjsWrite,
+  parent: Y.XmlElement
+): Readonly<{ rawChildren: YjsNode[]; slots: YjsVisibleChildSlot[] }> => {
+  const rawChildren = getRawYjsChildren(parent);
+  const slots = getYjsVisibleChildSlots(
+    write.root,
+    parent,
+    createLazyYjsTreeLookup(write.root),
+    rawChildren
+  );
+
+  if (!slots.some((slot) => slot.owner)) return { rawChildren, slots };
+
+  const ownerChildren = new Map<Y.XmlElement, YjsNode[]>();
+  const rawOf = ({ owner, rawIndex }: YjsVisibleChildSlot) => {
+    if (!owner) return rawChildren[rawIndex];
+    if (!ownerChildren.has(owner)) {
+      ownerChildren.set(owner, getRawYjsChildren(owner));
+    }
+
+    return ownerChildren.get(owner)?.[rawIndex];
+  };
+  const raws = slots.map(rawOf);
+  let after: YjsNode | null = null;
+
+  for (const [index, slot] of slots.entries()) {
+    const raw = raws[index];
+
+    if (!slot.owner) {
+      after = hasRawYjsChildSlot(slot) ? (raw ?? null) : null;
+      continue;
+    }
+
+    const placeholder = createVirtualYjsMovePlaceholder(write, slot.node);
+
+    insertRawYjsChildren(
+      write,
+      parent,
+      after === null ? 0 : rawIndexIn(parent, after) + 1,
+      [placeholder]
+    );
+    after = placeholder;
+    if (
+      raw instanceof Y.XmlElement &&
+      isVirtualYjsPlaceholder(raw) &&
+      !isDeletedYjsNode(raw)
+    ) {
+      deleteYjsChildren(write, slot.owner, rawIndexIn(slot.owner, raw), 1);
+    }
+  }
+
+  const fresh = getRawYjsChildren(parent);
+
+  return {
+    rawChildren: fresh,
+    slots: getYjsVisibleChildSlots(
+      write.root,
+      parent,
+      createLazyYjsTreeLookup(write.root),
+      fresh
+    ),
+  };
+};
+
+/**
+ * Removes `line`, the `index`th child `parent` shows, for a join, and keeps
+ * it as a joined line: a peer may still append to it, and Yjs drops an insert
+ * into a deleted element.
+ */
+export const removeJoinedYjsLine = (
+  write: YjsWrite,
+  parent: Y.XmlElement,
+  index: number,
+  line: Y.XmlElement,
+  anchors: ReadonlyMap<YjsNode, YjsNode>
+): void => {
+  if (!removeYjsVirtualPlaceholderChild(write, parent, index, line)) {
+    const slot = getYjsVisibleChildSlotAt(
+      write.root,
+      parent,
+      index,
+      createLazyYjsTreeLookup(write.root)
+    );
+
+    if (slot?.node !== line) {
+      throw new Error('No joined Yjs line at the requested visible index.');
+    }
+    if (hasRawYjsChildSlot(slot)) hideShownYjsElement(write, line);
+    else writeYjsVisibility(write, parent, YJS_VIRTUAL_CHILD_ID_KEY, null);
+  }
+
+  markJoinedYjsLine(write, line, anchors);
+};
+
+/**
+ * Keeps `line`, which a join hid, as a joined line: a peer's concurrent
+ * appends to it show right after its anchor in `anchors`, the last child the
+ * line it joined into shows once the join placed `line`'s children. It first
+ * deletes each child `line` still shows, hides one that holds what the join
+ * moved, and marks one the join joined one level in the same way. Then it
+ * deletes the other joined lines that show nothing and whose children would
+ * show at the same place, so Enter and join cycles at one place keep one.
+ */
+const markJoinedYjsLine = (
+  write: YjsWrite,
+  line: Y.XmlElement,
+  anchors: ReadonlyMap<YjsNode, YjsNode>
+): void => {
+  const lookup = createLazyYjsTreeLookup(write.root);
+
+  for (const child of getRawYjsChildren(line).toReversed()) {
+    if (isDeletedYjsNode(child)) continue;
+
+    const target =
+      child instanceof Y.XmlElement && isVirtualYjsPlaceholder(child)
+        ? getVirtualYjsChild(write.root, child, undefined, lookup)
+        : null;
+
+    if (target instanceof Y.XmlElement && anchors.has(target)) {
+      deleteYjsChildren(write, line, rawIndexIn(line, child), 1);
+      markJoinedYjsLine(write, target, anchors);
+      continue;
+    }
+    if (isHiddenYjsNode(child)) continue;
+    if (child instanceof Y.XmlElement && anchors.has(child)) {
+      hideShownYjsElement(write, child);
+      markJoinedYjsLine(write, child, anchors);
+      continue;
+    }
+    if (
+      child instanceof Y.XmlElement &&
+      !isVirtualYjsPlaceholder(child) &&
+      hasHiddenYjsDescendant(child)
+    ) {
+      hideShownYjsElement(write, child);
+      continue;
+    }
+
+    deleteYjsChildren(write, line, rawIndexIn(line, child), 1);
+  }
+
+  const anchor = getDefined(anchors.get(line));
+  const text = anchor instanceof Y.XmlText ? anchor : null;
+  const anchorId = ensureYjsNodeId(
+    write,
+    text ? textPieceOf(text).source : anchor
+  );
+  const end = text && yjsTextEndCutOf(text);
+
+  writeYjsVisibility(write, line, YJS_JOINED_AFTER_KEY, anchorId);
+  if (end) writeYjsVisibility(write, line, YJS_JOINED_BEFORE_KEY, end);
+  noteJoinedYjsLine(line, anchorId);
+
+  const marked = createLazyYjsTreeLookup(write.root);
+  const place = strandAnchorOf(line, marked, new Set());
+
+  for (const host of getJoinedYjsLines(line.doc, anchorId)) {
+    const { parent } = host;
+
+    if (
+      host !== line &&
+      parent instanceof Y.XmlElement &&
+      !isDeletedYjsNode(parent) &&
+      isInertJoinedYjsLine(host, lookup) &&
+      strandAnchorOf(host, marked, new Set()) === place
+    ) {
+      deleteYjsChildren(write, parent, rawIndexIn(parent, host), 1);
+    }
+  }
+};
+
+/**
+ * Whether `node` is a joined line that shows nothing now and can show
+ * nothing later but what a peer appends to it: every child it holds is such
+ * a line.
+ */
+const isInertJoinedYjsLine = (
+  node: YjsNode,
+  lookup: YjsTreeLookup
+): boolean => {
+  if (
+    !(node instanceof Y.XmlElement) ||
+    !isHiddenYjsNode(node) ||
+    typeof node.getAttribute(YJS_JOINED_AFTER_KEY) !== 'string'
+  ) {
+    return false;
+  }
+
+  const id = node.getAttribute(YJS_NODE_ID_KEY);
+
+  return (
+    (typeof id !== 'string' ||
+      shownYjsReferrerAmong(lookup.referrers(id), lookup, new Set(), id) ===
+        null) &&
+    getRawYjsChildren(node).every((child) =>
+      isInertJoinedYjsLine(child, lookup)
+    )
+  );
+};
+
+/**
+ * Hides `element`, which its parent shows, keeping each node several
+ * elements show where it shows now.
+ */
+const hideShownYjsElement = (write: YjsWrite, element: Y.XmlElement): void => {
+  const losers = contestLosers(write, new Set([element]), true);
+
+  hideYjsNode(write, element);
+  for (const loser of losers) dropYjsReferrer(write, loser);
 };
 
 export const setVirtualYjsMove = (
@@ -2117,14 +2417,9 @@ export const insertYjsChild = (
     return;
   }
 
-  const { root } = write;
-  const lookup = createLazyYjsTreeLookup(root);
-  const rawChildren = getRawYjsChildren(parent);
-  const visibleSlots = getYjsVisibleChildSlots(
-    root,
-    parent,
-    lookup,
-    rawChildren
+  const { rawChildren, slots: visibleSlots } = materializeYjsStrands(
+    write,
+    parent
   );
   const visibleSlot = visibleSlots[index];
 
@@ -2155,15 +2450,13 @@ export const removeYjsVirtualPlaceholderChild = (
   target: YjsNode
 ): boolean => {
   const rootIndex = lentIndexOf(parent);
-  const rawChildren =
-    rootIndex === null ? getRawYjsChildren(parent) : undefined;
-  const visibleSlot = getYjsVisibleChildSlotAt(
-    write.root,
-    parent,
-    index,
-    createLazyYjsTreeLookup(write.root),
-    rawChildren
-  );
+  const read = rootIndex === null ? materializeYjsStrands(write, parent) : null;
+  const visibleSlot =
+    read === null
+      ? rootIndex?.slotAt(index)
+      : index >= 0
+        ? read.slots[index]
+        : undefined;
 
   if (
     !visibleSlot ||
@@ -2175,7 +2468,7 @@ export const removeYjsVirtualPlaceholderChild = (
 
   const rawChild =
     rootIndex?.rawAt(visibleSlot.rawIndex) ??
-    rawChildren?.[visibleSlot.rawIndex];
+    read?.rawChildren[visibleSlot.rawIndex];
 
   if (
     !(rawChild instanceof Y.XmlElement) ||
@@ -2197,15 +2490,15 @@ export const removeYjsChild = (
 ): YjsChildRemovalMode => {
   const { root } = write;
   const lookup = createLazyYjsTreeLookup(root);
-  const rawChildren =
-    lentIndexOf(parent) === null ? getRawYjsChildren(parent) : undefined;
-  const visibleSlot = getYjsVisibleChildSlotAt(
-    root,
-    parent,
-    index,
-    lookup,
-    rawChildren
-  );
+  const rootIndex = lentIndexOf(parent);
+  const read = rootIndex === null ? materializeYjsStrands(write, parent) : null;
+  const rawChildren = read?.rawChildren;
+  const visibleSlot =
+    read === null
+      ? getYjsVisibleChildSlotAt(root, parent, index, lookup)
+      : index >= 0
+        ? read.slots[index]
+        : undefined;
   let hiddenIndex: number | null = null;
   const getHiddenIndex = (): number => {
     hiddenIndex ??= findHiddenYjsChildIndex(
@@ -2246,10 +2539,7 @@ export const removeYjsChild = (
       visibleSlot.node instanceof Y.XmlElement &&
       hasHiddenYjsDescendant(visibleSlot.node)
     ) {
-      const losers = contestLosers(write, new Set([visibleSlot.node]), true);
-
-      hideYjsNode(write, visibleSlot.node);
-      for (const loser of losers) dropYjsReferrer(write, loser);
+      hideShownYjsElement(write, visibleSlot.node);
 
       return 'hidden-parent';
     }

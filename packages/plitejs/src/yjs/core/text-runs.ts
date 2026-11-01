@@ -1035,6 +1035,38 @@ export const cutViewsOf = (source: Y.XmlText): Y.XmlText[] => {
 };
 
 /**
+ * The key of the cut that ends the letters `node` shows, or null when they
+ * run to the end of its source or the source is in no document.
+ */
+export const yjsTextEndCutOf = (node: Y.XmlText): string | null => {
+  const { source, to } = textPieceOf(node);
+  if (!source.doc) return null;
+  const end = markIndexOf(source).live[to];
+  return end ? letterKey(end.id) : null;
+};
+
+/**
+ * The keys of `source`'s live cuts before `end`, in letter order, where `end`
+ * is the key of a cut of `source`, live or deleted, or null for its end. The
+ * letters right before `end` show in the view of the last of them, or in
+ * `source` when there is none.
+ */
+export const yjsCutsBefore = (
+  source: Y.XmlText,
+  end: string | null
+): string[] => {
+  const index = markIndexOf(source);
+  const limit =
+    end === null
+      ? index.order.length
+      : (index.byId.get(end)?.slot ?? index.order.length);
+  return index.cuts
+    .map((at) => index.live[at])
+    .filter((cut) => cut.slot < limit)
+    .map((cut) => letterKey(cut.id));
+};
+
+/**
  * Whether `view` shows the letters of `text`'s source right after the ones
  * `text` shows, through one live cut.
  */

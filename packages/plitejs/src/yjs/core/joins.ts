@@ -13,9 +13,11 @@ import {
   type JsonNode,
   type JsonToken,
   PreparedTokenSlice,
+  PreparedTokenSliceStructureError,
 } from '../../core/change/tokens';
 import { textPropertiesEqual } from '../../core/value-codec';
 import { getDefined } from '../../internal/get-defined';
+import { areJsonLikeValuesEqual } from './json-equality';
 
 type Range = Readonly<{ from: number; to: number }>;
 type Path = readonly number[];
@@ -23,10 +25,10 @@ type Path = readonly number[];
 /**
  * Sibling lines that one change's joins make one line: the first line, each
  * line joined into it in order, and the lines removed whole between them.
- * A join of two lines can also join an inline element at the first line's
- * end with one at the second line's start, and so on inward, as the undo of
- * an Enter inside a link does: `inline` holds each level's two elements,
- * outermost first.
+ * A join of two lines can also join an element at the first line's end with
+ * one at the second line's start, and so on inward, as the undo of an Enter
+ * inside a link or a delete across two quotes does: `inline` holds each
+ * level's two elements, outermost first.
  */
 export type JoinRun = Readonly<{
   inline: ReadonlyArray<readonly [Path, Path]>;
@@ -39,10 +41,11 @@ const pathAt = (document: DocumentIndex, position: number): Path =>
   getDefined(document.nodeStartingAt(position)).path;
 
 /**
- * The joins that cross inline levels: a deleted run from inside a text of an
- * inline element at a line's end to inside a text of one at a later sibling
- * line's start, with only text typed in it. Core's `joinsOf`, which history
- * also reads, reads only a join at one level.
+ * The joins that cross levels: a deleted run from inside a text of an element
+ * at a line's end to inside a text of one at a later sibling line's start,
+ * with only text typed in it, such as an inline element or a quote's
+ * paragraph. Core's `joinsOf`, which history also reads, reads only a join at
+ * one level.
  */
 const inlineJoinsOf = (change: RootChange, document: DocumentIndex) => {
   const joins: JoinRun[] = [];
@@ -93,11 +96,6 @@ const inlineJoinsOf = (change: RootChange, document: DocumentIndex) => {
     for (let level = depth + 2; level <= first.length; level++) {
       inline.push([first.slice(0, level), second.slice(0, level)]);
     }
-
-    const isInline = (path: Path) =>
-      document.node(path.slice(0, -1)).children?.some(isTextNode) === true;
-
-    if (!inline.every(([a, b]) => isInline(a) && isInline(b))) continue;
 
     const removed: Path[] = [];
 
@@ -173,6 +171,114 @@ export const joinRunsOf = (
   )
     ? null
     : sorted;
+};
+
+/**
+ * The same edit as one deletion, when `change` writes a join as a copy: it
+ * writes at one place the letters a later node's first text ends with, and
+ * deletes that node whole, as an Editing delete across two quotes does.
+ * The deletion runs from that place to those letters, which `joinRunsOf`
+ * reads as a join, so the letters keep their Yjs text. Null when `change` has
+ * another shape or the deletion leaves another document.
+ */
+export const joinWrittenAsCopy = (
+  change: RootChange,
+  document: DocumentIndex
+): RootChange | null => {
+  const groups: Array<{
+    from: number;
+    inserted: number;
+    letters: string;
+    to: number;
+  }> = [];
+  let position = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
+
+    if (inserted === -1) {
+      position += length;
+      continue;
+    }
+    if (inserted < 0) return null;
+
+    const tokens =
+      (change.data[index / 2] as PreparedTokenSlice | null)?.tokens ?? [];
+
+    if (
+      !tokens.every((token) => token.kind === 'text' || token.kind === 'close')
+    ) {
+      return null;
+    }
+
+    const letters = tokens
+      .map((token) => (token.kind === 'text' ? token.text : ''))
+      .join('');
+    const last = groups.at(-1);
+
+    if (last?.to === position) {
+      last.inserted += inserted;
+      last.letters += letters;
+      last.to += length;
+    } else {
+      groups.push({ from: position, inserted, letters, to: position + length });
+    }
+    position += length;
+  }
+
+  if (groups.length !== 2) return null;
+
+  const [copy, removed] = groups;
+  const sibling = document.nodeStartingAt(removed.from);
+
+  if (
+    removed.inserted > 0 ||
+    !sibling ||
+    document.nodeRange(sibling.path).to !== removed.to
+  ) {
+    return null;
+  }
+
+  const path = [...sibling.path];
+  let node = document.node(path);
+
+  while (isElementNode(node) && node.children.length > 0) {
+    path.push(0);
+    node = node.children[0];
+  }
+  if (!isTextNode(node) || !node.text.endsWith(copy.letters)) return null;
+
+  const joined = RootChange.create(document, {
+    from: copy.from,
+    to: document.positionAt({
+      offset: node.text.length - copy.letters.length,
+      path,
+    }),
+  });
+  let read: DocumentIndex;
+
+  try {
+    read = joined.apply(document);
+  } catch (error) {
+    if (error instanceof PreparedTokenSliceStructureError) return null;
+    throw error;
+  }
+
+  const after = change.apply(document);
+  const same = after
+    .changedChildren(read)
+    .every(
+      ([from, to, readFrom, readTo]) =>
+        to - from === readTo - readFrom &&
+        after.nodes
+          .slice(from, to)
+          .every((child, index) =>
+            areJsonLikeValuesEqual(child, read.child(readFrom + index))
+          )
+    );
+
+  return same && after.nodes.length === read.nodes.length ? joined : null;
 };
 
 /**

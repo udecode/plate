@@ -59,6 +59,7 @@ import {
   createYjsPropertyContext,
   createYjsPropertyLocationAt,
   getShownYjsReferrer,
+  getYjsStrandAnchor,
   getYjsVisibleChild,
   getYjsVisibleChildren,
   indexYjsPropertyContexts,
@@ -68,6 +69,7 @@ import {
   readPliteNodeFromYjs,
   readYjsChildren,
   readYjsRootIndex,
+  removeJoinedYjsLine,
   readYjsRootSlot,
   readYjsTreeRefs,
   removeRedundantEmptyYjsTextNodesAt,
@@ -92,6 +94,7 @@ import {
   joinedChange,
   type JoinRun,
   joinRunsOf,
+  joinWrittenAsCopy,
   letterEditsIn,
   lettersInsertedAt,
   pushDiff,
@@ -104,6 +107,8 @@ import {
   YJS_CHILD_VISIBILITY_KEYS,
   YJS_CUT_SOURCE_KEY,
   YJS_HIDDEN_KEY,
+  YJS_JOINED_AFTER_KEY,
+  YJS_JOINED_BEFORE_KEY,
   YJS_NODE_ID_KEY,
   YJS_VIRTUAL_CHILD_ID_KEY,
   YJS_VIRTUAL_PLACEHOLDER_KEY,
@@ -1350,13 +1355,20 @@ const parseRootDelta = (
   return regions;
 };
 
-const parseProjectedRootInsertDelta = (
+/**
+ * The regions a root delta changes when some root children show another node
+ * or nothing. It reads inserts, and deletes of children that show nothing and
+ * held nothing before the batch, such as the joined line a join deletes once a
+ * later join at the same place keeps another. It refuses a deleted child that
+ * held children, because a placeholder or a strand elsewhere may have shown
+ * one of them.
+ */
+const parseProjectedRootDelta = (
   root: Y.XmlElement,
   before: RootProjectionIndex,
-  delta: readonly CapturedYjsDeltaPart[]
+  delta: readonly CapturedYjsDeltaPart[],
+  deletedChildren: CapturedYjsEventBatch['deletedChildren']
 ): RootStructuralRegion[] | null => {
-  if (delta.some((part) => part.delete !== undefined)) return null;
-
   const regions: RootStructuralRegion[] = [];
   let visibleAfter: ReadonlySet<YjsNode> | undefined;
   const showsAfter = (node: YjsNode) =>
@@ -1404,6 +1416,29 @@ const parseProjectedRootInsertDelta = (
           return null;
         }
         rawIndex += 1;
+      }
+    }
+    if (part.delete !== undefined) {
+      if (
+        !isDeltaLength(part.delete) ||
+        rawIndex + part.delete > before.rawLength
+      ) {
+        return null;
+      }
+
+      for (const end = rawIndex + part.delete; rawIndex < end; rawIndex += 1) {
+        const deleted = before.rawAt(rawIndex);
+
+        if (
+          deleted === undefined ||
+          before.has(deleted) ||
+          before.visibleBefore(rawIndex + 1) !==
+            before.visibleBefore(rawIndex) ||
+          (deleted instanceof Y.XmlElement &&
+            (deletedChildren.get(deleted)?.length ?? 0) > 0)
+        ) {
+          return null;
+        }
       }
     }
     if (part.insert !== undefined) {
@@ -2002,6 +2037,8 @@ const eventNormalizationTargets = (batch: CapturedYjsEventBatch) => {
 };
 
 type JoinWrite = Readonly<{
+  /** The node each joined line's concurrent appends follow, once placed. */
+  anchors: ReadonlyMap<YjsNode, YjsNode>;
   edit: () => void;
   joined: readonly number[];
   joinedLine: Y.XmlElement;
@@ -2746,8 +2783,12 @@ export class YjsEventChangeBridge {
 
     if (!committed) return null;
 
-    const rootChange = withoutEqualEdges(committed, before);
-    const runs = joinRunsOf(rootChange, before);
+    const edges = withoutEqualEdges(committed, before);
+    const found = joinRunsOf(edges, before);
+    const copied =
+      found?.length === 0 ? joinWrittenAsCopy(edges, before) : null;
+    const rootChange = copied ?? edges;
+    const runs = copied ? joinRunsOf(copied, before) : found;
 
     if (!runs || runs.length === 0) return null;
 
@@ -2792,6 +2833,8 @@ export class YjsEventChangeBridge {
     for (const { parent, removed } of planned) {
       removals.set(parent, [...(removals.get(parent) ?? []), ...removed]);
     }
+    const anchors = new Map(planned.flatMap((join) => [...join.anchors]));
+
     for (const [parent, nodes] of removals) {
       const visible = this.visibleChildrenOf(parent);
       const indexes = nodes
@@ -2799,8 +2842,10 @@ export class YjsEventChangeBridge {
         .sort(([a], [b]) => b - a);
 
       for (const [index, node] of indexes) {
-        if (
-          index !== -1 &&
+        if (index === -1) continue;
+        if (anchors.has(node) && node instanceof Y.XmlElement) {
+          removeJoinedYjsLine(write, parent, index, node, anchors);
+        } else if (
           !removeYjsVirtualPlaceholderChild(write, parent, index, node)
         ) {
           removeYjsChild(write, parent, index);
@@ -2971,6 +3016,7 @@ export class YjsEventChangeBridge {
     }
 
     const [yjsLines] = yjsLevels;
+    const anchors = new Map<YjsNode, YjsNode>();
     const append = (line: Y.XmlElement, children: readonly YjsNode[]) => {
       let end = getYjsVisibleChildren(this.root, line).length;
 
@@ -2986,6 +3032,7 @@ export class YjsEventChangeBridge {
     };
 
     return {
+      anchors,
       edit: () => {
         for (const edit of edits) edit();
         this.removeLineChildren(write, gone);
@@ -3028,6 +3075,13 @@ export class YjsEventChangeBridge {
           if (heals) healYjsCut(head);
           append(innermost[0], moved);
           last = moved.at(-1) ?? last;
+          if (last) anchors.set(line, last);
+        }
+
+        for (const [first, second] of yjsLevels.slice(0, -1)) {
+          const anchor = getYjsVisibleChildren(this.root, first).at(-1);
+
+          if (anchor) anchors.set(second, anchor);
         }
       },
       removed: [...yjsLines.slice(1), ...removed],
@@ -5257,6 +5311,17 @@ export class YjsEventChangeBridge {
           }
           shown = this.addShownBlocks(referrer, blocks, visited) || shown;
         }
+
+        const anchor =
+          shownBy === null &&
+          current instanceof Y.XmlElement &&
+          typeof current.getAttribute(YJS_JOINED_AFTER_KEY) === 'string'
+            ? getYjsStrandAnchor(this.root, current)
+            : null;
+
+        if (anchor) {
+          shown = this.addShownBlocks(anchor, blocks, visited) || shown;
+        }
       }
       // A root placeholder's slot shows its target, wherever the target sits.
       if (this.rootIndex.has(current)) {
@@ -5302,7 +5367,7 @@ export class YjsEventChangeBridge {
 
   /**
    * Whether `event` hides a root child that showed itself, which leaves the
-   * root as a removal.
+   * root as a removal. A join that keeps the line also names its anchor.
    */
   private hidesRootChild(event: CapturedYjsEvent): boolean {
     const { target } = event;
@@ -5316,7 +5381,11 @@ export class YjsEventChangeBridge {
       this.rootIndex.rawAt(slot.rawIndex) === target &&
       target.getAttribute(YJS_HIDDEN_KEY) === true &&
       event.keys.every(
-        (key) => key === YJS_HIDDEN_KEY || !YJS_CHILD_VISIBILITY_KEYS.has(key)
+        (key) =>
+          key === YJS_HIDDEN_KEY ||
+          key === YJS_JOINED_AFTER_KEY ||
+          key === YJS_JOINED_BEFORE_KEY ||
+          !YJS_CHILD_VISIBILITY_KEYS.has(key)
       )
     );
   }
@@ -5672,6 +5741,10 @@ export class YjsEventChangeBridge {
 
     if (candidates.length === 0) return found;
 
+    const removedByJoin = (node: YjsNode) =>
+      isDeletedYjsNode(node) ||
+      (hidden.has(node) &&
+        typeof getYjsAttributes(node)[YJS_JOINED_AFTER_KEY] === 'string');
     const editsOf = (line: Element, children: readonly YjsNode[]) => {
       const aligned = alignYjsChildren(line.children, children);
       const edits: Diff[][] = [];
@@ -5683,7 +5756,7 @@ export class YjsEventChangeBridge {
         const target = aligned.targets[order];
 
         if (segment.kind === 'element') {
-          if (target?.kind === 'element' && isDeletedYjsNode(target.node)) {
+          if (target?.kind === 'element' && removedByJoin(target.node)) {
             removed.push(segment.from);
           }
           continue;
@@ -5818,8 +5891,7 @@ export class YjsEventChangeBridge {
 
         const yl = elementBefore(a, nodes[0], at);
         const yr = elementBefore(b, nodes[1], head);
-        const live =
-          yr && childrenBefore(yr)?.filter((c) => !isDeletedYjsNode(c));
+        const live = yr && childrenBefore(yr)?.filter((c) => !removedByJoin(c));
         const moved = yl && placedAtEnd(yl);
 
         if (
@@ -5828,7 +5900,7 @@ export class YjsEventChangeBridge {
           !live ||
           !moved ||
           gone(yl) ||
-          !isDeletedYjsNode(yr) ||
+          !removedByJoin(yr) ||
           live.length !== moved.length ||
           live.some((child, index) => moved[index] !== child)
         ) {
@@ -5909,8 +5981,8 @@ export class YjsEventChangeBridge {
 
       const isTarget = new Set(targets);
       const keptByJoin = (child: YjsNode) =>
-        !isDeletedYjsNode(child) &&
-        (isTarget.has(child) || !isEmptyAttributeFreeShownYjsText(child));
+        isTarget.has(child) ||
+        !(removedByJoin(child) || isEmptyAttributeFreeShownYjsText(child));
 
       const lines = [start];
       let read = 0;
@@ -6225,10 +6297,11 @@ export class YjsEventChangeBridge {
         ? []
         : this.rootIndex.simple
           ? parseRootDelta(this.rootIndex, rootEvent.delta)
-          : parseProjectedRootInsertDelta(
+          : parseProjectedRootDelta(
               this.root,
               this.rootIndex,
-              rootEvent.delta
+              rootEvent.delta,
+              batch.deletedChildren
             );
 
     // A root delta beside a visibility change, such as an undone move that
