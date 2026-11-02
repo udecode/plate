@@ -125,14 +125,14 @@ A domain is the review scope a `kind` record names in `scope`. An issue whose `c
 
 ## Triage chips
 
-`triage chips` cards the fix-run tasks of triaged issues ahead of every other chip (owner's word, 2026-11-02). It reads no `chips` board, because a board's card pass also lists tasks that no triage record names, and cards the way the `chips` skill's Close does:
+`triage chips` cards the fix-run tasks of triaged issues ahead of every other chip (owner's word, 2026-11-02). It skips the `chips` board, because a board's card pass also lists tasks that no triage record names. It cards the way the `chips` skill's Close does:
 
 1. Run `pnpm triage kinds`. It lists the open `kind` records of every repository, worst priority first, and its fifth column says what takes each one: the holder, the open tasks that name it, `lane` for a device kind, `main` for a main report, or `free`.
 2. When a domain has a `free` P0 or P1 kind, offer its fix run first, as [Offer fix runs](#offer-fix-runs) says, and run `pnpm triage kinds` again.
 3. Take each task id the fifth column names, once each, in the order listed, and run `chips brief <id>` for each. Keep only the tasks whose `State:` line says Ready.
 4. Look up each kept task's owner session with the session tool, such as Claude Code desktop's `get_session`. A task whose owner session is archived or not found becomes this session's through an `updated` row with `session: <this session's id>`, as chips.md's Owner says. A task whose owner session still runs stays with that session.
 5. For each task this session takes whose Findings name no `pnpm triage claim` step, log a `folded` row with `effort: xhigh`. The row's why tells the run to claim first with `pnpm triage claim --domain <scope> --task <id> --repo <name>` and then run `triage fix <scope>` over what the claim holds, the way a task from [Offer fix runs](#offer-fix-runs) starts. Then run `chips brief <id>` again.
-6. Judge each remaining task's dependencies and effort as chips.md's Cards says, and offer its card within the card limit, all in one turn. A card's title starts with the task's priority in brackets, then the number of each issue the task fixes as `#<N>` with no repository name, smallest first, then a few words that name the problem, then the effort in parentheses, such as `[P1] #22 #23 Pagination layout (xhigh)`. Only the words that name the problem shorten to fit the title limit (owner's word, 2026-11-02). Log every `carded` row in one `append --from` batch.
+6. Judge each remaining task's dependencies and effort as chips.md's Cards says, and offer its card within the card limit, all in one turn. A card's title starts with the task's priority in brackets, then the number of each issue the task fixes as `#<N>` with no repository name, smallest first, then a few words that name the problem, then the effort in parentheses, such as `[P1] #22 #23 Pagination layout (xhigh)`. `pnpm triage kinds --titles` prints that start for each open task. Only the words that name the problem shorten to fit the title limit (owner's word, 2026-11-02). Log every `carded` row in one `append --from` batch.
 7. The reply names each card, each Ready task the limit left uncarded with `start <id>`, each task a live session owns with that session, and how many kinds wait in the device lane or as main reports.
 
 ## Device lane

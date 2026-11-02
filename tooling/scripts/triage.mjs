@@ -10,7 +10,7 @@
 //        pnpm triage claim --next --repo <name> [--drives <device>] [--session <id>]
 //        pnpm triage release <N>... --why "<reason>" [--session <id>]
 //        pnpm triage lane [<device>]
-//        pnpm triage kinds [--json]   (every repository unless --repo names one)
+//        pnpm triage kinds [--json | --titles]   (every repository unless --repo names one)
 //        pnpm triage show <N>... [--brief] [--json]
 //        pnpm triage queue [--label <label>] [--json]
 //        pnpm triage record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]
@@ -2794,6 +2794,7 @@ function kindsIn(reads) {
           scope: head.fields.get('scope'),
           devices,
           route,
+          tasks,
           title,
         },
       ];
@@ -2801,8 +2802,9 @@ function kindsIn(reads) {
 }
 
 function kinds(argv) {
-  const options = parseArgs(argv, { boolean: ['json'] });
+  const options = parseArgs(argv, { boolean: ['json', 'titles'] });
   if (options.positional.length > 0) usage('kinds takes no issue numbers');
+  if (options.json && options.titles) usage('kinds takes --json or --titles');
   let notes;
   let entries;
   if (repoName === null) {
@@ -2850,6 +2852,21 @@ function kinds(argv) {
     return;
   }
   for (const note of notes) console.log(`note: ${note}`);
+  if (options.titles) {
+    const titles = new Map();
+    for (const { issue, priority, tasks } of entries) {
+      for (const id of tasks) {
+        const title = titles.get(id) ?? { priority, numbers: [] };
+        title.numbers.push(Number(issue.split('#')[1]));
+        titles.set(id, title);
+      }
+    }
+    for (const [id, { priority, numbers }] of titles) {
+      const refs = numbers.sort((a, b) => a - b).map((n) => `#${n}`);
+      console.log(`${id}\t[${priority}] ${refs.join(' ')}`);
+    }
+    return;
+  }
   if (entries.length === 0) console.log('no open kind');
   for (const entry of entries) {
     console.log(
