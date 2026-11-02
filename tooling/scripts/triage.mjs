@@ -774,7 +774,7 @@ function reopenIds(repo, numbers) {
   return found;
 }
 
-// gh issue list cannot return issue fields, so the org's Priority, Scope and Triage fields and each issue's values come from GraphQL.
+// gh issue list cannot return issue fields, so the Priority, Scope and Triage fields the repository inherits from the org and each issue's values come from GraphQL.
 function fieldValues(repo, numbers) {
   const [owner, name] = repo.split('/');
   const issues = new Map();
@@ -785,7 +785,7 @@ function fieldValues(repo, numbers) {
       (number) =>
         `i${number}: issue(number: ${number}) { id issueFieldValues(first: 20) { nodes { ... on IssueFieldSingleSelectValue { optionId field { ... on IssueFieldSingleSelect { id } } } ... on IssueFieldMultiSelectValue { options { id } field { ... on IssueFieldMultiSelect { id } } } } } }`
     );
-    const query = `query { organization(login: ${JSON.stringify(owner)}) { issueFields(first: 50) { nodes { __typename ... on IssueFieldSingleSelect { id name options { id name } } ... on IssueFieldMultiSelect { id name options { id name } } } } } repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { ${aliases.join(' ')} } }`;
+    const query = `query { repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { issueFields(first: 50) { nodes { __typename ... on IssueFieldSingleSelect { id name options { id name } } ... on IssueFieldMultiSelect { id name options { id name } } } } ${aliases.join(' ')} } }`;
     const result = spawnSync('gh', ['api', 'graphql', '-f', `query=${query}`], {
       encoding: 'utf-8',
       maxBuffer: 64 * 1024 * 1024,
@@ -797,7 +797,12 @@ function fieldValues(repo, numbers) {
         `labels could not read the ${PRIORITY_FIELD}, ${SCOPE_FIELD} and ${TRIAGE_FIELD} fields of ${repo} issues: ${result.error?.code === 'ETIMEDOUT' ? `no answer in ${NETWORK_MS / 1000} s` : result.stderr?.trim() || 'gh returned no data'}`
       );
     }
-    fields ??= data.organization?.issueFields?.nodes ?? [];
+    fields ??= data.repository?.issueFields?.nodes ?? [];
+    if (fields.length === 0) {
+      refuse(
+        `labels read no issue fields from ${repo}: the gh account cannot see them, or the repository has none`
+      );
+    }
     for (const number of part) {
       const node = data.repository?.[`i${number}`];
       if (!node?.id) {
@@ -814,7 +819,7 @@ function fieldValues(repo, numbers) {
     );
     if (!field) {
       refuse(
-        `the ${owner} organization has no ${kind.toLowerCase()}-select issue field named ${fieldName}`
+        `${repo} has no ${kind.toLowerCase()}-select issue field named ${fieldName}`
       );
     }
     const optionIds = new Map(
@@ -823,7 +828,7 @@ function fieldValues(repo, numbers) {
     const missing = wanted.filter((option) => !optionIds.has(option));
     if (missing.length > 0) {
       refuse(
-        `the ${owner} ${fieldName} field has no option named ${missing.join(', ')}`
+        `the ${repo} ${fieldName} field has no option named ${missing.join(', ')}`
       );
     }
     return { id: field.id, optionIds };

@@ -178,10 +178,10 @@ done
 # gh issue create cannot set an issue field, so the Platform field goes on through GraphQL after the issue exists.
 if ((${#platforms[@]} > 0)); then
   number=${url##*/}
-  lookup=$(gh api graphql -f query="{ organization(login: \"udecode\") { issueFields(first: 50) { nodes { ... on IssueFieldMultiSelect { id name options { id name } } } } } repository(owner: \"udecode\", name: \"${repo#*/}\") { issue(number: $number) { id } } }") || failed "Platform field request failed"
-  field_id=$(jq -r '[.data.organization.issueFields.nodes[] | select(.name? == "Platform")][0].id // empty' <<<"$lookup")
+  lookup=$(gh api graphql -f query="{ repository(owner: \"udecode\", name: \"${repo#*/}\") { issueFields(first: 50) { nodes { ... on IssueFieldMultiSelect { id name options { id name } } } } issue(number: $number) { id } } }") || failed "Platform field request failed"
+  field_id=$(jq -r '[.data.repository.issueFields.nodes[] | select(.name? == "Platform")][0].id // empty' <<<"$lookup")
   issue_id=$(jq -r '.data.repository.issue.id // empty' <<<"$lookup")
-  option_ids=$(jq -c --argjson wanted "$platform_json" '[.data.organization.issueFields.nodes[] | select(.name? == "Platform") | .options[] | select(.name as $name | $wanted | index($name)) | .id]' <<<"$lookup")
+  option_ids=$(jq -c --argjson wanted "$platform_json" '[.data.repository.issueFields.nodes[] | select(.name? == "Platform") | .options[] | select(.name as $name | $wanted | index($name)) | .id]' <<<"$lookup")
   [[ -n "$field_id" && -n "$issue_id" && $(jq length <<<"$option_ids") == ${#platforms[@]} ]] || failed "no Platform field or option for ${platforms[*]}"
   gh api graphql -f query="mutation { setIssueFieldValue(input: { issueId: \"$issue_id\", issueFields: [{ fieldId: \"$field_id\", multiSelectOptionIds: $option_ids }] }) { clientMutationId } }" >/dev/null || failed "Platform not set"
   values=$(gh api graphql -f query="{ repository(owner: \"udecode\", name: \"${repo#*/}\") { issue(number: $number) { issueFieldValues(first: 20) { nodes { ... on IssueFieldMultiSelectValue { field { ... on IssueFieldMultiSelect { name } } options { name } } } } } } }") || failed "Platform readback request failed"

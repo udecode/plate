@@ -121,8 +121,8 @@ case "$*" in
   'issue create --help'|'issue comment --help') echo '      --attach file   Attach an image or video file'; exit 0 ;;
   'issue create '*) echo 'https://github.com/udecode/plate-private/issues/123'; exit 0 ;;
   'issue comment 5224 '*) echo 'https://github.com/udecode/plate-private/issues/5224#issuecomment-987'; exit 0 ;;
-  'api graphql -f query={ organization'*'repository(owner: "udecode", name: "plate-private")'*)
-    jq -n '{data:{organization:{issueFields:{nodes:[{}, {id:"FIELD_PLATFORM", name:"Platform", options:[{id:"OPT_Android", name:"Android"}, {id:"OPT_iOS", name:"iOS"}]}]}}, repository:{issue:{id:"I_123"}}}}'
+  'api graphql -f query={ repository(owner: "udecode", name: "plate-private") { issueFields'*)
+    jq -n '{data:{repository:{issueFields:{nodes:[{}, {id:"FIELD_PLATFORM", name:"Platform", options:[{id:"OPT_Android", name:"Android"}, {id:"OPT_iOS", name:"iOS"}]}]}, issue:{id:"I_123"}}}}'
     exit 0 ;;
   'api graphql -f query=mutation { setIssueFieldValue(input: { issueId: "I_123", issueFields: [{ fieldId: "FIELD_PLATFORM", multiSelectOptionIds: ["OPT_Android"] }] }) { clientMutationId } }')
     echo '{}'; exit 0 ;;
