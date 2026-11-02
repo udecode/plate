@@ -29,6 +29,11 @@
             "type": "command",
             "command": "f=\"$(git rev-parse --show-toplevel)/tooling/scripts/git-private.mjs\"; [ ! -f \"$f\" ] || node \"$f\" autosave >/dev/null || true",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "f=\"$(git rev-parse --show-toplevel)/tooling/scripts/formal-intake-due.mjs\"; [ ! -f \"$f\" ] || node \"$f\" --codex",
+            "timeout": 30
           }
         ]
       }

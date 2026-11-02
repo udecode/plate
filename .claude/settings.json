@@ -17,6 +17,11 @@
             "type": "command",
             "command": "cd \"$CLAUDE_PROJECT_DIR\" && { [ ! -f tooling/scripts/git-private.mjs ] || node tooling/scripts/git-private.mjs autosave --hook; } || true",
             "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/tooling/scripts/formal-intake-due.mjs\" ] || node \"$CLAUDE_PROJECT_DIR/tooling/scripts/formal-intake-due.mjs\"",
+            "timeout": 30
           }
         ]
       }

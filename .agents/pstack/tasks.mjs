@@ -60,7 +60,7 @@ const LIST_KEYS = ['writes', 'waits', 'owns', 'commit'];
 const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'shown', 'session', 'transcript', 'codex', 'via', ...EVIDENCE];
 const KINDS = ['fix', 'decide', 'review'];
 const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
-const ROUTES = ['verdict', 'babysit', 'time'];
+const ROUTES = ['verdict', 'babysit', 'time', 'hook'];
 const CARD_LIMIT = 10;
 
 const CHIP = /^([\w-]+) (?:(?:Now|After): )?\S/u;
@@ -349,7 +349,7 @@ const tokenProblems = (given, where) => {
   if (given.transcript !== undefined && !SESSION.test(given.transcript)) found.push(`${where}: transcript: names the session's transcript id as one token${ranOn(given.transcript)}`);
   if (given.codex !== undefined && given.codex !== 'always') found.push(`${where}: codex: is always, which forces the card session's Codex handoff`);
   if (given.priority !== undefined && !PRIORITIES.includes(given.priority)) found.push(`${where}: priority: is P0, P1, P2 or P3, as chips.md's Priority says`);
-  if (given.via !== undefined && !ROUTES.includes(given.via)) found.push(`${where}: via: is verdict, babysit or time, the route that lets a run offer a P2 or P3 task, as chips.md's Offer says`);
+  if (given.via !== undefined && !ROUTES.includes(given.via)) found.push(`${where}: via: is verdict, babysit, time or hook, the route that lets a run offer a P2 or P3 task, as chips.md's Offer says`);
   if (given.shown !== undefined && !PRIORITIES.includes(given.shown)) found.push(`${where}: shown: is the priority the card's title shows, P0, P1, P2 or P3`);
   if (given.repro === '') found.push(`${where}: repro: names a failing test or the exact steps that show the bug`);
   if (given.regressed !== undefined && !/^[0-9a-f]{7,40}$/u.test(given.regressed)) found.push(`${where}: regressed: names the commit the regression came in by its hash`);
@@ -452,7 +452,7 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
     if (untaggedTitle(decision, id) !== decision.slice(id.length + 1)) found.push(`${where}: a new title is a plain imperative phrase, with (xhigh) only for a design question or a bug whose cause nobody has located; chips works out when a task can start, so no title says Now: or After:, chips brief adds its priority as [P1], and fast: yes adds (fast) for it`);
     if (!given.topic) found.push(`${where}: a new offer names its owner question as "topic: <word>"; run chips to see the open topics and reuse one when the finding answers its question`);
     if (!given.priority && !given.owns?.length) found.push(`${where}: a new offer names its priority as "priority: P0", P1, P2 or P3, as chips.md's Priority says; a task that owns a check failing on the base branch is P0 without one`);
-    if (['P2', 'P3'].includes(given.priority) && !given.via) found.push(`${where}: a run offers a task only for a new P0 or P1 finding, as chips.md's Offer says, so list this ${given.priority} finding in the plan's Open work, or in the reply when the run keeps no plan; a verdict or babysit run, or a measurement the Time budget rule sends to a task, names its route as via: verdict, via: babysit or via: time`);
+    if (['P2', 'P3'].includes(given.priority) && !given.via) found.push(`${where}: a run offers a task only for a new P0 or P1 finding, as chips.md's Offer says, so list this ${given.priority} finding in the plan's Open work, or in the reply when the run keeps no plan; a verdict or babysit run, a measurement the Time budget rule sends to a task, or a project hook that finds recurring work due names its route as via: verdict, via: babysit, via: time or via: hook`);
   }
   const claimed = ['P0', 'P1'].includes(given.priority) ? afterRow(before, cells).get(id) : null;
   if (claimed && !claimed.owns.length && !claimed.repro) {

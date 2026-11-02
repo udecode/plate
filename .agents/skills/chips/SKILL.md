@@ -48,7 +48,7 @@ pstack calls these modes too. Where a pstack step files a tracked issue, a follo
 
 ## Offer
 
-Offer only a new P0 or P1 finding, unless the run is a verdict or babysit run or the finding is a measurement the Time budget rule sends here, as chips.md's Offer says. List any other finding in the plan's Open work, or in the reply when the run keeps no plan.
+Offer only a new P0 or P1 finding, unless the run is a verdict or babysit run or the finding is a measurement the Time budget rule sends here, as chips.md's Offer says. List any other finding in the plan's Open work, or in the reply when the run keeps no plan. A project hook that finds recurring work due offers its own P2 or P3 task with `via: hook` without this mode, and the session it stops runs [Close](#close) on that task.
 
 1. Run `chips --session <id>` first, and read the brief of each open task whose topic or title touches the finding with `chips brief <id>`.
 2. Pick the row as chips.md's Offer says:

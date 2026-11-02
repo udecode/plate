@@ -478,7 +478,6 @@ export function decideNext(request, world) {
   );
 }
 
-// chips.md lets only a verdict, babysit or time run offer a P2 or P3 task.
 const OFFERED = new Set(['P0', 'P1']);
 
 function offerOf(loose, world) {
