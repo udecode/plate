@@ -761,6 +761,33 @@ const regionOf = (
   return { editedFrom, editedTo, from, leading, to, trailing };
 };
 
+/**
+ * `region` grown in `edited` through `editedTo`, over what the edit inserts
+ * at its end, such as the close of a wrapper the projection steps out of.
+ */
+const regionThrough = (region: Region, editedTo: number): Region => {
+  if (editedTo <= region.editedTo) return region;
+
+  const count = region.trailing.findIndex((section) => section.at >= editedTo);
+  const taken =
+    count === -1 ? region.trailing : region.trailing.slice(0, count);
+  const last = taken.at(-1);
+
+  if (
+    taken.some((section) => section.length > 0 || section.inserted <= 0) ||
+    !last ||
+    last.at + outputOf(last) !== editedTo
+  ) {
+    refuse('The projection reaches past what the edit inserted at its end.');
+  }
+
+  return {
+    ...region,
+    editedTo,
+    trailing: region.trailing.slice(taken.length),
+  };
+};
+
 /** Map a step that carries a run through `edit` by the letters it kept. */
 export const projectCarriedStep = (
   input: CarriedProjectionInput
@@ -789,7 +816,7 @@ export const projectCarriedStep = (
     changedTo = Math.max(changedTo, section.from + section.length);
   }
 
-  const region = regionOf(
+  const drawn = regionOf(
     editMap,
     Math.min(lines.from, changedFrom),
     Math.max(lines.to, changedTo, shape.landingBefore),
@@ -797,9 +824,9 @@ export const projectCarriedStep = (
     (position) => lineAt(before, schema, position)?.line ?? null
   );
   const grown = step.newLength - step.length;
-  const read = new Tokens(edited, region.editedFrom, region.editedTo);
-  const readBefore = new Tokens(before, region.from, region.to);
-  const readAfter = new Tokens(after, region.from, region.to + grown);
+  const read = new Tokens(edited, drawn.editedFrom, drawn.editedTo);
+  const readBefore = new Tokens(before, drawn.from, drawn.to);
+  const readAfter = new Tokens(after, drawn.from, drawn.to + grown);
   const sideOf = (position: number): Side => {
     if (shape.source <= position && position < shape.end) return 'run';
     if (shape.forward || stepMap.target(position) !== null) return 'head';
@@ -843,6 +870,7 @@ export const projectCarriedStep = (
   const built = shape.forward
     ? forwardParts(context, sourceLine)
     : backwardParts(context, getLine(landingLine));
+  const region = regionThrough(drawn, built.to);
   const parts: readonly Part[] = [
     { from: region.editedFrom, kept: true, kind: 'copy', to: built.from },
     ...built.parts,
@@ -1156,6 +1184,33 @@ const enteredOf = (
     start = to + 1;
   };
 
+  const holders = new Set(
+    landed.ancestors.flatMap((entry) => {
+      const held = heldAt(entry);
+
+      return held.kind === 'held' ? [held.at] : [];
+    })
+  );
+  const leaveWrapped = () => {
+    if (cursor === null) return;
+
+    const around = insideOf(edited, cursor).filter(
+      (entry) => entry.kind === 'element'
+    );
+    const [wrapper] = around.slice(
+      around.findLastIndex((entry) => holders.has(entry.from)) + 1
+    );
+
+    if (!wrapper) return;
+    if (
+      edited
+        .slice(cursor, wrapper.to)
+        .tokens.some((token) => token.kind !== 'close')
+    ) {
+      refuse('The edit wrapped the elements the restored line leaves.');
+    }
+    copy(wrapper.to);
+  };
   const closing = new Map(
     cutLine.ancestors.map((entry) => [entry.to - 1, entry])
   );
@@ -1189,6 +1244,7 @@ const enteredOf = (
 
       const held = heldAt(entry);
 
+      if (held.kind === 'brought') leaveWrapped();
       nodes(position);
       if (held.kind === 'brought') {
         parts.push(made(opensOf(after, [entry]), [entry.from]));
@@ -1205,23 +1261,7 @@ const enteredOf = (
   if (depth !== 0) {
     refuse('The step restores nodes between its lines at another depth.');
   }
-  if (cursor !== null) {
-    const holders = new Set(
-      landed.ancestors.flatMap((entry) => {
-        const held = heldAt(entry);
-
-        return held.kind === 'held' ? [held.at] : [];
-      })
-    );
-    const around = insideOf(edited, cursor).filter(
-      (entry) => entry.kind === 'element'
-    );
-    const deepest = around.findLastIndex((entry) => holders.has(entry.from));
-
-    if (around.slice(deepest + 1).some((entry) => !holders.has(entry.from))) {
-      refuse('The edit wrapped the elements the restored line leaves.');
-    }
-  }
+  leaveWrapped();
   nodes(landed.line.from);
   if (span && cursor !== null && cursor < span.land) copy(span.land);
 
