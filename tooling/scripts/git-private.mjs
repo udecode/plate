@@ -60,10 +60,19 @@ const mainCheckout = (root) =>
   );
 // init points core.excludesFile at .gitprivate only once .git-private exists,
 // so the setting marks a team clone.
-const isTeamClone = (root) =>
-  run(root, ['config', '--get', 'core.excludesFile'])
-    .stdout.trim()
-    .endsWith(`/${PRIVATE_LIST}`);
+const isTeamClone = (root) => {
+  const list = run(root, [
+    'config',
+    '--get',
+    'core.excludesFile',
+  ]).stdout.trim();
+  return list === PRIVATE_LIST || list.endsWith(`/${PRIVATE_LIST}`);
+};
+
+// Git reads a relative path from each worktree's root, so a branch that adds a
+// private entry ignores its file before the entry reaches the main checkout.
+const pointAtOwnList = (root) =>
+  must(root, ['config', 'core.excludesFile', PRIVATE_LIST]);
 
 export const restore = (root) => {
   if (!isSplit(root)) return 0;
@@ -241,7 +250,7 @@ export const init = (root, { remote = REMOTE } = {}) => {
       throw error;
     }
   }
-  must(root, ['config', 'core.excludesFile', path.join(root, PRIVATE_LIST)]);
+  pointAtOwnList(root);
   const skipped = installHooks(root);
   restore(root);
   return skipped.length > 0
@@ -272,6 +281,8 @@ export const start = (root, { remote = REMOTE } = {}) => {
     }
     const note = init(main, { remote });
     if (note) return note;
+  } else if (isTeamClone(main)) {
+    pointAtOwnList(main);
   }
   if (main === root) return null;
   if (isSplit(root)) followBranch(root);
