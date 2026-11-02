@@ -14,26 +14,38 @@
 // refspec targets no branch. A matching `:` refspec and a wildcard refspec
 // target each branch they match. The guard reads no git config, so a push with
 // no refspec that `remote.<name>.push` or `push.default` sends to the branch
-// passes. It reads every command in the line, including `$(...)` bodies and a
-// shell's `-c` payload wherever `-c` sits among its options, skips heredoc
-// bodies, passes every other command, and prints the command for the owner to
-// run in their own terminal. The owner's terminal never runs this hook. It
-// denies an agent's `gh pr create` or `gh pr new` into the branch or with no
-// --base, because land.mjs opens those PRs; one that names another base, such
-// as a PR stacked on someone's head branch, passes. In a checkout that holds
-// the config's `companion.dir`, it denies what would delete or overwrite the
-// files that companion repository tracks there: `git clean -x` or `-X`, any
-// `git clean` through its git directory, and a checkout, switch, reset, merge
-// or rebase to a commit without `companion.list`. It also denies the app's
-// base-branch sync, which refuses the branch whenever it changes .claude
-// files, and names the rebase to run instead. On Edit, MultiEdit, Write and
-// NotebookEdit it denies a file inside the main checkout, its .git folder
-// included, while that checkout is on the branch or the protected branch,
-// except the plans artifacts directory, which holds the suggested-task ledger
-// and the run directories; a linked worktree, even one nested in the main
-// checkout's folder, is its own checkout and passes. It refuses the edit when
-// git or the guard itself fails, because a hook that exits with an error lets
-// the edit through.
+// passes. It reads every command in the line, including one after a shell
+// keyword such as `then`, the bodies of `$(...)` and backticks outside single
+// quotes and of `<(...)` and `>(...)` outside any quotes, `eval`'s arguments
+// and a shell's `-c` payload wherever `-c` sits among its options, skips
+// heredoc bodies, passes every other command, and prints the command for the
+// owner to run in their own terminal. It judges each command in every directory
+// the shell may run it in: after `cd <dir> &&` in `<dir>`, after `cd <dir> ||`
+// in the earlier directory, and after `cd <dir>;` or a newline in both, because
+// the `cd` may fail. A `cd` before a `|`, inside `( )` or in a list that `&`
+// sends to the background moves nothing after it, one that ends a pipeline
+// counts both ways, because zsh runs it in the current shell and bash does not,
+// and one whose target the guard cannot resolve, such as a variable, keeps the
+// earlier directory, as does a `git -C` value holding `$` or a backtick. A bare
+// name also counts in the earlier directory, because CDPATH could send it
+// elsewhere, and `cd <old> <new>` counts where zsh swaps the operands, in
+// `<old>`, where bash 3.2 moves, and in the earlier directory. The owner's
+// terminal never runs this hook. It denies an agent's `gh pr create` or `gh pr
+// new` into the branch or with no --base, because land.mjs opens those PRs; one
+// that names another base, such as a PR stacked on someone's head branch,
+// passes. In a checkout that holds the config's `companion.dir`, it denies what
+// would delete or overwrite the files that companion repository tracks there:
+// `git clean -x` or `-X`, any `git clean` through its git directory, and a
+// checkout, switch, reset, merge or rebase to a commit without
+// `companion.list`. It also denies the app's base-branch sync, which refuses
+// the branch whenever it changes .claude files, and names the rebase to run
+// instead. On Edit, MultiEdit, Write and NotebookEdit it denies a file inside
+// the main checkout, its .git folder included, while that checkout is on the
+// branch or the protected branch, except the plans artifacts directory, which
+// holds the suggested-task ledger and the run directories; a linked worktree,
+// even one nested in the main checkout's folder, is its own checkout and
+// passes. It refuses the edit when git or the guard itself fails, because a
+// hook that exits with an error lets the edit through.
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, lstatSync, readFileSync, readlinkSync, realpathSync, statSync } from 'node:fs';
@@ -48,8 +60,10 @@ const GIT_VALUE_OPTIONS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--na
 const PUSH_VALUE_OPTIONS = new Set(['-o', '--push-option', '--repo', '--receive-pack', '--exec']);
 const PREFIXES = new Set(['sudo', 'env', 'command', 'builtin', 'exec', 'nohup', 'time', 'timeout']);
 const SHELLS = new Set(['bash', 'sh', 'zsh']);
-const OPERATOR = /;|&&?|\|\|?|\n|[(){}]/uy;
-const BARE = /(?:\\.|[^\s;&|(){}"'\\])+/uy;
+const KEYWORDS = new Set(['!', 'if', 'then', 'elif', 'else', 'while', 'until', 'do']);
+const OPERATOR = /;|&&|\|[|&]?|&(?!>)|\n|[(){}]/uy;
+const BARE = /(?:\\.|[<>]&|&>|[$<>](?!\()|[^\s;&|(){}"'`\\$<>])+/uy;
+const SUBSTITUTION = /[$<>]\(/uy;
 
 function stripHeredocs(text) {
   const kept = [];
@@ -80,27 +94,56 @@ function closingParen(text, at) {
   return text.length;
 }
 
-// Splits a command line into simple commands, each a list of words with
-// quotes removed; a word made of adjacent quoted and bare parts stays one word.
+function closingTick(text, at) {
+  while (at < text.length && text[at] !== '`') at += text[at] === '\\' ? 2 : 1;
+  return Math.min(at, text.length);
+}
+
+function substitutionsIn(text) {
+  const bodies = [];
+  for (let at = 0; at < text.length; at += 1) {
+    if (text[at] === '\\') at += 1;
+    else if (text.startsWith('$(', at)) {
+      const end = closingParen(text, at + 2);
+      bodies.push(text.slice(at + 2, end));
+      at = end;
+    } else if (text[at] === '`') {
+      const end = closingTick(text, at + 1);
+      bodies.push(text.slice(at + 1, end));
+      at = end;
+    }
+  }
+  return bodies;
+}
+
 function segments(source) {
   const text = stripHeredocs(source.replaceAll('\\\n', ' '));
-  const result = [[]];
+  const result = [{ words: [], operator: null, substitutions: [] }];
   let joining = false;
   const add = (word) => {
-    if (joining && result.at(-1).length > 0) result.at(-1)[result.at(-1).length - 1] += word;
-    else result.at(-1).push(word);
+    const { words } = result.at(-1);
+    if (joining && words.length > 0) words[words.length - 1] += word;
+    else words.push(word);
     joining = true;
   };
   let at = 0;
   while (at < text.length) {
     OPERATOR.lastIndex = at;
     BARE.lastIndex = at;
+    SUBSTITUTION.lastIndex = at;
     if (text[at] === '"' || text[at] === "'") {
       const end = closingQuote(text, at + 1, text[at]);
+      if (text[at] === '"') result.at(-1).substitutions.push(...substitutionsIn(text.slice(at + 1, end)));
       add(text.slice(at + 1, end));
       at = end + 1;
+    } else if (SUBSTITUTION.test(text) || text[at] === '`') {
+      const end = text[at] === '`' ? closingTick(text, at + 1) : closingParen(text, at + 2);
+      result.at(-1).substitutions.push(text.slice(at + (text[at] === '`' ? 1 : 2), end));
+      add(text.slice(at, end + 1));
+      at = end + 1;
     } else if (OPERATOR.test(text)) {
-      result.push([]);
+      result.at(-1).operator = text.slice(at, OPERATOR.lastIndex);
+      result.push({ words: [], operator: null, substitutions: [] });
       joining = false;
       at = OPERATOR.lastIndex;
     } else if (BARE.test(text)) {
@@ -111,27 +154,83 @@ function segments(source) {
       at += 1;
     }
   }
-  return result.filter((words) => words.length > 0);
+  return result;
 }
 
-function eachCommand(command, visit, depth = 0) {
-  for (const words of segments(command)) {
-    let start = 0;
-    let wrapped = false;
-    for (; start < words.length; start += 1) {
-      if (PREFIXES.has(words[start])) wrapped = true;
-      else if (!(wrapped && /^[-\d]/u.test(words[start])) && !/^[A-Za-z_]\w*=/u.test(words[start])) break;
+function shellPath(word, dir) {
+  if (/[$`*?[]/u.test(word)) return null;
+  return word === '~' || word.startsWith('~/') ? join(homedir(), word.slice(2)) : resolve(dir, word);
+}
+
+function cdTargets(args, dir) {
+  const targets = args.filter((arg) => arg !== '--' && !/^-[LPeqs@]+$/u.test(arg));
+  if (targets.length === 0) return [homedir()];
+  if (targets.length === 2) {
+    const swapped = dir.replace(targets[0], targets[1]);
+    return [...(swapped !== dir && existsSync(swapped) ? [swapped] : []), ...cdTargets(targets.slice(0, 1), dir), dir];
+  }
+  const path = targets.length === 1 && targets[0] !== '-' ? shellPath(targets[0], dir) : null;
+  if (!path || !existsSync(path)) return [dir];
+  return /^(?:\/|~(?:\/|$)|\.\.?(?:\/|$))/u.test(targets[0]) ? [path] : [path, dir];
+}
+
+const GROUPS = new Set(['(', ')', '{', '}']);
+const STAYS = new Set([...KEYWORDS, 'builtin', 'command', 'time']);
+const union = (...sets) => new Set(sets.flatMap((set) => [...set]));
+const level = (dirs, group = null) => ({ group, start: dirs, dirs, ifOk: null, ifFailed: null, join: null, pipeline: null, closedGroup: null });
+
+function eachCommand(command, visit, cwds, depth = 0) {
+  const levels = [level(cwds)];
+  for (const { words, operator, substitutions } of segments(command)) {
+    const here = levels.at(-1);
+    const entry = here.pipeline ?? here.closedGroup?.start ?? (here.join === '&&' ? here.ifOk : here.join === '||' ? here.ifFailed : here.dirs);
+    let ifOk = here.closedGroup?.after ?? entry;
+    let ifFailed = ifOk;
+    if (words.length > 0) {
+      let start = 0;
+      let wrapped = false;
+      for (; start < words.length; start += 1) {
+        if (PREFIXES.has(words[start])) wrapped = true;
+        else if (!KEYWORDS.has(words[start]) && !(wrapped && /^[-\d]/u.test(words[start])) && !/^[A-Za-z_]\w*=/u.test(words[start])) break;
+      }
+      const prefix = words.slice(0, start);
+      if (start < words.length) for (const dir of entry) visit(words.slice(start), prefix, dir);
+      if (words[start] === 'cd' && prefix.every((word) => STAYS.has(word) || /^[A-Za-z_]\w*=/u.test(word))) {
+        ifOk = new Set([...entry].flatMap((dir) => cdTargets(words.slice(start + 1), dir)));
+        if (prefix.includes('!')) ifOk = ifFailed = union(ifOk, ifFailed);
+      }
+      if (depth < 4) {
+        for (const [index, word] of words.entries()) {
+          const rest = words.slice(index + 1);
+          if (SHELLS.has(word.split('/').at(-1)) && rest.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/u.test(arg))) {
+            for (const arg of rest) if (!arg.startsWith('-')) eachCommand(arg, visit, entry, depth + 1);
+          }
+        }
+        for (const body of substitutions) eachCommand(body, visit, entry, depth + 1);
+        if (words[start] === 'eval') eachCommand(words.slice(start + 1).join(' '), visit, entry, depth + 1);
+      }
+    } else if (!here.closedGroup && !GROUPS.has(operator)) continue;
+    if (operator === '(' || operator === '{') {
+      levels.push(level(entry, operator));
+      continue;
     }
-    visit(words.slice(start), words.slice(0, start));
-    if (depth >= 4) continue;
-    for (const [index, word] of words.entries()) {
-      const rest = words.slice(index + 1);
-      if (SHELLS.has(word.split('/').at(-1)) && rest.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/u.test(arg))) {
-        for (const arg of rest) if (!arg.startsWith('-')) eachCommand(arg, visit, depth + 1);
-      }
-      for (let at = word.indexOf('$('); at !== -1; at = word.indexOf('$(', at + 2)) {
-        eachCommand(word.slice(at + 2, closingParen(word, at + 2)), visit, depth + 1);
-      }
+    here.closedGroup = null;
+    if (operator === '|' || operator === '|&') {
+      here.pipeline = entry;
+      continue;
+    }
+    // zsh runs a pipeline's last command in the current shell, and bash runs it in a subshell.
+    if (here.pipeline) [ifOk, ifFailed] = [union(entry, ifOk), union(entry, ifFailed)];
+    here.pipeline = null;
+    if (here.join === '&&') [here.ifOk, here.ifFailed] = [ifOk, union(here.ifFailed, ifFailed)];
+    else if (here.join === '||') [here.ifOk, here.ifFailed] = [union(here.ifOk, ifOk), ifFailed];
+    else [here.ifOk, here.ifFailed] = [ifOk, ifFailed];
+    here.join = operator === '&&' || operator === '||' ? operator : null;
+    if (here.join) continue;
+    if (operator !== '&') here.dirs = union(here.ifOk, here.ifFailed);
+    if ((operator === ')' || operator === '}') && levels.length > 1) {
+      levels.pop();
+      levels.at(-1).closedGroup = { start: here.start, after: here.group === '{' ? here.dirs : here.start };
     }
   }
 }
@@ -144,7 +243,7 @@ function gitCommand(words, cwd) {
   let dir = cwd;
   let gitDir = null;
   while (words[index]?.startsWith('-')) {
-    if (words[index] === '-C') dir = resolve(dir, words[index + 1] ?? '.');
+    if (words[index] === '-C') dir = shellPath(words[index + 1] ?? '.', dir) ?? dir;
     if (words[index] === '--git-dir') gitDir = words[index + 1] ?? '';
     if (words[index].startsWith('--git-dir=')) gitDir = words[index].slice('--git-dir='.length);
     index += GIT_VALUE_OPTIONS.has(words[index]) ? 2 : 1;
@@ -361,9 +460,9 @@ const hits = new Set();
 let direct = false;
 let pr = false;
 let lost = null;
-eachCommand(command, (words, prefix) => {
-  lost ??= companionDenial(words, input.cwd ?? process.cwd(), config.companion);
-  const push = pushes(words, input.cwd ?? process.cwd());
+eachCommand(command, (words, prefix, dir) => {
+  lost ??= companionDenial(words, dir, config.companion);
+  const push = pushes(words, dir);
   for (const target of push?.targets ?? []) {
     for (const name of target.includes('*') ? [...kept].filter((branch) => globMatches(target, branch)) : [target]) {
       if (push.rewriting) {
@@ -372,7 +471,7 @@ eachCommand(command, (words, prefix) => {
     }
   }
   pr ||= opensPr(words, config.branch);
-});
+}, new Set([input.cwd ?? process.cwd()]));
 const reasons = [];
 if (hits.size > 0) reasons.push(`agents never force-push or delete ${[...hits].join(' and ')}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`);
 if (direct) {

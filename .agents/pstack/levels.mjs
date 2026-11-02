@@ -5,7 +5,8 @@
 // a lower effort. The configured seats come from the runtime's models sheet;
 // a `<seat> @<effort>` that a project rule outside the pstack block names
 // replaces that seat's effort, the highest one when it names several. The
-// `maxEffort` in `.agents/pstack.json` caps every target.
+// `maxEffort` in `.agents/pstack.json` caps every target, and is the target of
+// a seat that names no effort.
 // Installed by sync-pstack.
 // Usage: node .agents/pstack/levels.mjs [--lead '<model> @<effort>'] [--seats '<seat list>'] <decision log>...
 //        (--lead judges against that level instead of this session's;
@@ -67,9 +68,9 @@ function targets(sheet, agents, defaultEffort, override, max) {
   };
   const capped = (seat) => ({ ...seat, effort: capEffort(seat.effort, max) });
   return (role) => {
-    if (override) return seatList(override).map((seat) => capped({ ...seat, effort: seat.effort ?? defaultEffort }));
+    if (override) return seatList(override).map((seat) => capped({ ...seat, effort: seat.effort ?? max ?? defaultEffort }));
     const line = sheet?.match(new RegExp(`^${role}:\\s*(.+)$`, 'mu'))?.[1];
-    return line ? seatList(line).map((seat) => capped(raised({ ...seat, effort: seat.effort ?? defaultEffort }))) : null;
+    return line ? seatList(line).map((seat) => capped(raised({ ...seat, effort: seat.effort ?? max ?? defaultEffort }))) : null;
   };
 }
 

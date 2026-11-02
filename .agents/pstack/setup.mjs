@@ -15,7 +15,8 @@
 // `companion`, skipping it while that is missing. On the branch
 // .agents/pstack.json names it fast-forwards only when no other local edit,
 // staged, unstaged or untracked, touches a path the incoming commits change.
-// It prints one line per action for the session.
+// It prints one line per action for the session. In a session cross.mjs starts
+// read-only, which sets PSTACK_READ_ONLY, it does nothing.
 
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -45,6 +46,10 @@ for (let i = 0; i < args.length; i += 1) {
   }
 }
 if (names.length === 0) names.push('.env', '.env.local');
+if (process.env.PSTACK_READ_ONLY) {
+  console.log('setup.mjs: skipped, because this session is read-only');
+  process.exit();
+}
 
 const checkout = sessionCheckout(hook ? hookPayload().cwd : undefined);
 if (!checkout) process.exit(0);

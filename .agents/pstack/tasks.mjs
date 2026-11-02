@@ -1103,6 +1103,7 @@ function brief(task, ledger, max, tasks, codex, state) {
 }
 
 export const newId = () => `t_${randomBytes(4).toString('hex')}`;
+export const TASK_ID = /\bt_[0-9a-f]{8}\b/gu;
 
 const realOrSelf = (path) => (existsSync(path) ? realpathSync.native(path) : resolve(path));
 

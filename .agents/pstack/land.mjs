@@ -55,7 +55,7 @@ import { basename, dirname, join } from 'node:path';
 import { findLead, leadLabel } from './lead.mjs';
 import { defaultsRefusal } from './plan-page.mjs';
 import { reserve } from './proof.mjs';
-import { ledgerPath, readTasks } from './tasks.mjs';
+import { ledgerPath, readTasks, TASK_ID } from './tasks.mjs';
 import { findings } from './writing-check.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]';
@@ -66,7 +66,6 @@ const PLAN = /^Plan: \S/mu;
 const TRAILER = /^(?:Session|Plan|Lands-With): \S/u;
 const STAMP_LINES = /^(?:Session|Plan|Lead|Lands-With): .*$/gmu;
 const ISSUE = /(?<![\w#/.-])(?:([\w.-]+)\/)?([\w.-]+)#\d+\b|https:\/\/github\.com\/([^/\s]+)\/([^/\s]+)\/issues\/\d+/gu;
-const CARD = /\bt_[0-9a-f]{8}\b/gu;
 const INTRODUCED = /^Introduced-by:(.*)$/gmu;
 const CLOSING = /\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?::\s*|\s+)(?:[\w.-]+\/([\w.-]+)#\d+|#\d+|GH-\d+|https?:\/\/github\.com\/[^/\s]+\/([^/\s]+)\/(?:issues|pull)\/\d+)(?!\w)/iu;
 const DATED = /^\d{4}-\d\d-\d\d-[^/]+\.md$/u;
@@ -418,7 +417,7 @@ function sourced(text, plan) {
     return ours.some((home) => home.name === name && (owner === undefined || home.owner === owner));
   };
   if ([...text.matchAll(ISSUE)].some(issue)) return true;
-  const cards = text.match(CARD) ?? [];
+  const cards = text.match(TASK_ID) ?? [];
   if (cards.length === 0) return false;
   const common = git('rev-parse', '--path-format=absolute', '--git-common-dir').stdout.trim();
   const ledger = join(basename(common) === '.git' ? dirname(common) : process.cwd(), ledgerPath(plans, config.delivery));

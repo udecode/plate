@@ -71,7 +71,8 @@ export const onStop = (cleanup) => {
 // as more prompt, so stdin is closed and the answer comes only from that file.
 // A child that ignores SIGTERM, or leaves a descendant holding its pipes, is
 // killed and abandoned at the deadline.
-// A project hook, such as a Stop hook that stages files, would still write from a read-only run.
+// Every run but --bypass sets PSTACK_READ_ONLY=1, so setup.mjs skips its writes there; another
+// project hook, such as a Stop hook that stages files, would still write from a read-only run.
 export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = cwd, timeout = 900, model = MODELS[runtime], effort, hooks = false, userConfig = false, readDirs = [], computerUse, bypass = false, reach = false, offline = false } = {}) {
   const max = maxEffort(effortRoot);
   effort = capEffort(effort ?? max, max);
@@ -111,7 +112,8 @@ export async function ask(runtime, prompt, { cwd = process.cwd(), effortRoot = c
           ],
         ];
   // A Codex Desktop parent exports its permission profile, which outranks --sandbox in a run that loads the user's config.
-  const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, ...env } = process.env;
+  const { CLAUDECODE: _, CODEX_PERMISSION_PROFILE: __, PSTACK_READ_ONLY: ___, ...env } = process.env;
+  if (!bypass) env.PSTACK_READ_ONLY = '1';
   return new Promise((resolve) => {
     let settled = false;
     let late = false;
