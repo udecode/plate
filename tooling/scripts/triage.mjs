@@ -1668,14 +1668,8 @@ function openIssues(reads, label = null) {
   return open;
 }
 
-function queue(options) {
-  const reads = freshReads({ fallback: true });
-  if (!reads.policy) {
-    refuse(
-      `the queue needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
-    );
-  }
-  const results = openIssues(reads, options.label).map((issue) =>
+function queued(reads, label = null) {
+  const results = openIssues(reads, label).map((issue) =>
     summary(String(issue.number), reads)
   );
   results.sort(
@@ -1684,6 +1678,34 @@ function queue(options) {
       (a.scope ?? '~').localeCompare(b.scope ?? '~') ||
       a.issue - b.issue
   );
+  // An unconfirmed issue waits for a maintainer's record, so anyone else's queue would list it forever.
+  const login = ghLogin();
+  const maintainer = login !== null && reads.policy.maintainers.includes(login);
+  const waiting = results.filter(
+    (entry) =>
+      entry.state !== 'current' && (maintainer || entry.state !== 'unconfirmed')
+  );
+  return { results, maintainer, waiting };
+}
+
+const queueLine = (result, prefix = '#') =>
+  [
+    `${prefix}${result.issue}`,
+    result.state,
+    result.reasons.join('; ') || '-',
+    result.scope ?? '-',
+    taskText(result.tasks),
+    result.title,
+  ].join('\t');
+
+function queue(options) {
+  const reads = freshReads({ fallback: true });
+  if (!reads.policy) {
+    refuse(
+      `the queue needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  const { results, maintainer, waiting } = queued(reads, options.label);
   if (options.json) {
     console.log(
       JSON.stringify({ notes: reads.notes, issues: results }, null, 2)
@@ -1691,9 +1713,6 @@ function queue(options) {
     return;
   }
   for (const note of reads.notes) console.log(`note: ${note}`);
-  // An unconfirmed issue waits for a maintainer's record, so anyone else's queue would list it forever.
-  const login = ghLogin();
-  const maintainer = login !== null && reads.policy.maintainers.includes(login);
   const counts = STATE_ORDER.map(
     (state) =>
       `${results.filter((result) => result.state === state).length} ${state}`
@@ -1709,21 +1728,7 @@ function queue(options) {
       `note: ${hidden} unconfirmed issue(s) wait for ${reads.policy.maintainersText} to triage them again`
     );
   }
-  for (const result of results.filter(
-    (entry) =>
-      entry.state !== 'current' && (maintainer || entry.state !== 'unconfirmed')
-  )) {
-    console.log(
-      [
-        `#${result.issue}`,
-        result.state,
-        result.reasons.join('; ') || '-',
-        result.scope ?? '-',
-        taskText(result.tasks),
-        result.title,
-      ].join('\t')
-    );
-  }
+  for (const result of waiting) console.log(queueLine(result));
 }
 
 function labels() {
@@ -3088,12 +3093,28 @@ function lane(options) {
   for (const entry of entries) console.log(entry.line);
 }
 
+const issuePrefix = (reads) =>
+  reads.policy.primary ? '#' : `${repoNameOf(reads.policy.repo)}#`;
+
+function openSummaryIn(reads) {
+  const { results, waiting } = queued(reads);
+  const counts = new Map();
+  for (const { head, state } of results) {
+    const outcome = head?.outcome ?? state;
+    counts.set(outcome, (counts.get(outcome) ?? 0) + 1);
+  }
+  return {
+    repo: repoNameOf(reads.policy.repo),
+    count: results.length,
+    counts: [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])),
+    waiting: waiting.map((result) => queueLine(result, issuePrefix(reads))),
+  };
+}
+
 function kindsIn(reads) {
   const open = openList(reads);
   const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
-  const prefix = reads.policy.primary
-    ? '#'
-    : `${repoNameOf(reads.policy.repo)}#`;
+  const prefix = issuePrefix(reads);
   return [...open]
     .sort(([a], [b]) => Number(a) - Number(b))
     .flatMap(([issue, { title, assignees, milestone }]) => {
@@ -3132,10 +3153,12 @@ function kinds(options) {
   if (options.json && options.titles) usage('kinds takes --json or --titles');
   let notes;
   let entries;
+  let open;
   if (repoName === null) {
     // One process reads one repository, so the list of every repository runs this command once per repository.
     notes = [];
     entries = [];
+    open = [];
     for (const repo of localConfig().triage.repos) {
       const read = spawnSync(
         process.execPath,
@@ -3157,6 +3180,7 @@ function kinds(options) {
       const listed = JSON.parse(read.stdout);
       notes.push(...listed.notes.map((note) => `${repoNameOf(repo)}: ${note}`));
       entries.push(...listed.kinds);
+      open.push(...listed.open);
     }
   } else {
     const reads = freshReads({ fallback: true, claims: true });
@@ -3167,13 +3191,14 @@ function kinds(options) {
     }
     ({ notes } = reads);
     entries = kindsIn(reads);
+    open = [openSummaryIn(reads)];
   }
   entries.sort(
     (a, b) =>
       PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority)
   );
   if (options.json) {
-    console.log(JSON.stringify({ notes, kinds: entries }, null, 2));
+    console.log(JSON.stringify({ notes, kinds: entries, open }, null, 2));
     return;
   }
   for (const note of notes) console.log(`note: ${note}`);
@@ -3192,6 +3217,13 @@ function kinds(options) {
     }
     return;
   }
+  const waiting = open.flatMap((repo) => repo.waiting);
+  if (waiting.length > 0) {
+    console.log(
+      `triage first, ${waiting.length} open issue(s) whose record is not current:`
+    );
+    for (const line of waiting) console.log(`  ${line}`);
+  }
   if (entries.length === 0) console.log('no open kind');
   for (const entry of entries) {
     console.log(
@@ -3203,6 +3235,14 @@ function kinds(options) {
         entry.route,
         entry.title,
       ].join('\t')
+    );
+  }
+  for (const { repo, count, counts } of open) {
+    console.log(
+      [
+        `${repo}: ${count} open issues`,
+        ...counts.map(([outcome, n]) => `${n} ${outcome}`),
+      ].join(', ')
     );
   }
 }

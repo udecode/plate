@@ -1,5 +1,5 @@
 ---
-description: Triage udecode/plate and udecode/plate-private issues and run their fixes from one entry. With no argument it records every new or changed issue in both repositories, then cards the fix runs of triaged issues. An argument triages one issue or a label, cards the triage chips, fixes an issue, a domain or the next domain, or records a teammate's beta retest.
+description: Triage udecode/plate and udecode/plate-private issues and run their fixes from one entry. With no argument it records every new or changed issue in both repositories, then cards the fix runs of triaged issues. An argument triages one issue or a label, records each stale or new issue and then cards the triage chips, fixes an issue, a domain or the next domain, or records a teammate's beta retest.
 argument-hint: '[[plate-private]#<N> | label:<label> | chips | fix [[plate-private]#<N> | <domain> | next] | retest [plate-private]#<N>]'
 name: triage
 metadata:
