@@ -67,6 +67,7 @@ import {
 } from './projected-selection-target';
 import {
   applyTransactionSpec,
+  continueTransactionSpecOrDiscardPrefix,
   dispatchCommand,
   evaluateCommandWithState,
   type Editor,
@@ -75,7 +76,6 @@ import {
   move as editorMove,
   failInvariant,
   getEditorRuntimeOwner,
-  rebaseTransactionSpecWithoutChanges,
   type Editor as RuntimeEditor,
   toInternalRoot,
   withEditorUpdateRootScope,
@@ -339,7 +339,7 @@ const applyProjectedViewSelectionDataCommand = ({
 
   const { target } = resolution;
 
-  const { combined, insertion, prefix } = editor.read((state) => {
+  const pasted = editor.read((state) => {
     const deletion = state.transaction(() => {
       deleteProjectedRangesToStart(editor, target, (range) => {
         applyInProjectedRoot(
@@ -358,40 +358,35 @@ const applyProjectedViewSelectionDataCommand = ({
         );
       });
     });
-    const evaluation: { result?: false | TransactionSpec } = {};
-    const pasted = state.transaction.extend(deletion, () => {
-      evaluation.result = applyInProjectedRoot(
-        editor,
-        target.start.root,
-        (tx) =>
-          evaluateCommandWithState(editor, domCommands.insertData, tx, data)
-            .result
-      );
-    });
 
-    return { combined: pasted, insertion: evaluation.result, prefix: deletion };
-  });
-  if (!insertion) return true;
+    return continueTransactionSpecOrDiscardPrefix(
+      runtimeEditor,
+      deletion,
+      () => {
+        const evaluation: { result?: false | TransactionSpec } = {};
+        const insertion = state.transaction(() => {
+          evaluation.result = applyInProjectedRoot(
+            editor,
+            target.start.root,
+            (tx) =>
+              evaluateCommandWithState(editor, domCommands.insertData, tx, data)
+                .result
+          );
+        });
 
-  if (insertion.changes.empty) {
-    const rebased = editor.read(() =>
-      rebaseTransactionSpecWithoutChanges(runtimeEditor, prefix, insertion)
+        return evaluation.result ? insertion : false;
+      }
     );
-
-    return editor.update({ tags: 'paste' }, () => {
-      applyTransactionSpec(runtimeEditor, rebased);
-
-      return true;
-    });
-  }
+  });
+  if (!pasted) return true;
 
   const landed = editor.update({ tags: 'paste' }, () => {
-    applyTransactionSpec(runtimeEditor, combined);
+    applyTransactionSpec(runtimeEditor, pasted);
 
     return true;
   });
 
-  if (!landed) return landed;
+  if (!landed || pasted.changes.empty) return landed;
   savePliteViewSelectionHistoryEntry(editor, {
     redo: null,
     undo: viewSelection,

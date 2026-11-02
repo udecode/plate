@@ -9373,35 +9373,6 @@ export const continueTransactionSpecOrDiscardPrefix = (
     : spec;
 };
 
-/**
- * Rebase a non-document result from a discarded transaction prefix.
- *
- * @internal
- */
-export const rebaseTransactionSpecWithoutChanges = (
-  editor: Editor,
-  prefix: TransactionSpec,
-  result: TransactionSpec
-): TransactionSpec => {
-  assertTransactionSpecBase(editor, prefix);
-  const resultBase = TRANSACTION_SPEC_BASE.get(result);
-
-  if (!resultBase || resultBase.editor !== editor) {
-    throw new Error(
-      'Cannot rebase a transaction spec from a different editor.'
-    );
-  }
-  if (resultBase.revision !== getMutationVersion(editor)) {
-    throw new Error('Cannot rebase a stale transaction spec.');
-  }
-
-  if (!result.changes.empty) {
-    throw new Error('Cannot discard a prefix from a document-changing spec.');
-  }
-
-  return discardTransactionSpecPrefix(editor, prefix, result);
-};
-
 /** Apply one transaction spec inside the dispatcher's active transaction. */
 export const applyTransactionSpec = <V extends Value>(
   editor: Editor<V>,
