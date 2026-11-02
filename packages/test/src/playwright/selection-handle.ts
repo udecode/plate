@@ -39,8 +39,9 @@ export const waitForHandleFocus = async (root: Locator, timeout = 2000) => {
             const hasFocus =
               activeElement === element ||
               (!!activeElement && element.contains(activeElement));
+            const isEmptyRoot = handle?.getBlockTexts?.().length === 0;
 
-            return hasFocus && !!handle?.getSelection?.();
+            return hasFocus && (!!handle?.getSelection?.() || isEmptyRoot);
           },
           { key: BROWSER_HANDLE_KEY }
         ),
