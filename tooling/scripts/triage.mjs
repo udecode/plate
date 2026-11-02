@@ -1648,7 +1648,7 @@ function openIssues(reads, label = null) {
       '--limit',
       String(QUEUE_LIMIT),
       '--json',
-      GH_FIELDS,
+      `${GH_FIELDS},assignees,milestone`,
       ...(label ? ['--label', label] : []),
     ],
     { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024, timeout: NETWORK_MS }
@@ -1668,10 +1668,8 @@ function openIssues(reads, label = null) {
   return open;
 }
 
-function queued(reads, label = null) {
-  const results = openIssues(reads, label).map((issue) =>
-    summary(String(issue.number), reads)
-  );
+function queued(reads, open) {
+  const results = open.map((issue) => summary(String(issue.number), reads));
   results.sort(
     (a, b) =>
       STATE_ORDER.indexOf(a.state) - STATE_ORDER.indexOf(b.state) ||
@@ -1705,7 +1703,10 @@ function queue(options) {
       `the queue needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
     );
   }
-  const { results, maintainer, waiting } = queued(reads, options.label);
+  const { results, maintainer, waiting } = queued(
+    reads,
+    openIssues(reads, options.label)
+  );
   if (options.json) {
     console.log(
       JSON.stringify({ notes: reads.notes, issues: results }, null, 2)
@@ -2231,6 +2232,10 @@ function openList(reads) {
     );
   }
   reads.issues.list(open);
+  return openMap(open);
+}
+
+function openMap(open) {
   return new Map(
     open.map((issue) => [
       String(issue.number),
@@ -3096,8 +3101,8 @@ function lane(options) {
 const issuePrefix = (reads) =>
   reads.policy.primary ? '#' : `${repoNameOf(reads.policy.repo)}#`;
 
-function openSummaryIn(reads) {
-  const { results, waiting } = queued(reads);
+function openSummaryIn(reads, open) {
+  const { results, waiting } = queued(reads, open);
   const counts = new Map();
   for (const { head, state } of results) {
     const outcome = head?.outcome ?? state;
@@ -3111,8 +3116,7 @@ function openSummaryIn(reads) {
   };
 }
 
-function kindsIn(reads) {
-  const open = openList(reads);
+function kindsIn(reads, open) {
   const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
   const prefix = issuePrefix(reads);
   return [...open]
@@ -3190,8 +3194,9 @@ function kinds(options) {
       );
     }
     ({ notes } = reads);
-    entries = kindsIn(reads);
-    open = [openSummaryIn(reads)];
+    const listed = openIssues(reads);
+    entries = kindsIn(reads, openMap(listed));
+    open = [openSummaryIn(reads, listed)];
   }
   entries.sort(
     (a, b) =>
