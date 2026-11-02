@@ -55,6 +55,7 @@ import {
 } from './document-shape';
 import {
   ensureElementOwnedRootIndex,
+  findElementOwnedRootOwnerPath,
   getDirtyElementOwnedRootIssues,
   getElementOwnedRootGrammarBindings,
   getElementOwnedRootIssues,
@@ -4158,13 +4159,14 @@ export const createEditorSchema = <V extends Value = Value>(
       input.ownerRoot === 'main'
         ? value.children
         : (value.roots?.[input.ownerRoot] ?? []);
-    const path = resolveElementOwnedRootPath(index, input);
-    const owner = path ? getDescendant(children, path) : undefined;
-    const matches = owner
-      ? matchesElementOwnedRootDeclaration(input, owner)
-      : false;
+    const resolved = resolveElementOwnedRootPath(index, input);
+    const owner = resolved ? getDescendant(children, resolved) : undefined;
+    const path =
+      owner && matchesElementOwnedRootDeclaration(input, owner)
+        ? resolved
+        : findElementOwnedRootOwnerPath(children, input);
 
-    if (!path || !matches) {
+    if (!path) {
       throw new EditorSchemaValidationError(
         `Element-owned root index provenance for "${input.ownerType}.${
           input.slot ?? 'contentRoots'

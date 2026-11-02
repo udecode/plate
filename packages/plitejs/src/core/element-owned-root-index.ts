@@ -1,4 +1,4 @@
-import type { Element, RootKey } from '../interfaces';
+import type { Descendant, Element, RootKey } from '../interfaces';
 import { ElementApi } from '../interfaces';
 import type { SchemaContentRootOwnership } from '../interfaces/schema';
 import { getDefined } from '../internal/get-defined';
@@ -969,6 +969,44 @@ export const resolveElementOwnedRootPath = (
           matchesElementOwnedRootDeclaration(input, after)
       )
     : Object.freeze([...input.path]);
+};
+
+/**
+ * Path history can compose a move of an owner and an edit inside it into one
+ * step, which finds moved nodes only by unchanged content and so loses the
+ * owner. A change that rebuilds a relocated subtree can drop owner ids too, so
+ * any element matching the same declaration stands in: it is a true location
+ * for the error, and finding none means the owner is gone.
+ *
+ * @internal
+ */
+export const findElementOwnedRootOwnerPath = (
+  children: readonly Descendant[],
+  input: ElementOwnedRootBinding | ElementOwnedRootIssue
+) => {
+  const id = ownerIds.get(input.owner);
+  let declared: readonly number[] | null = null;
+  const visit = (
+    nodes: readonly Descendant[],
+    path: readonly number[]
+  ): readonly number[] | null => {
+    for (const [position, node] of nodes.entries()) {
+      if (!ElementApi.isElement(node)) continue;
+      const nodePath = [...path, position];
+
+      if (matchesElementOwnedRootDeclaration(input, node)) {
+        if (id && ownerIds.get(node) === id) return Object.freeze(nodePath);
+        declared ??= Object.freeze(nodePath);
+      }
+      const found = visit(node.children, nodePath);
+
+      if (found) return found;
+    }
+
+    return null;
+  };
+
+  return visit(children, []) ?? declared;
 };
 
 /**
