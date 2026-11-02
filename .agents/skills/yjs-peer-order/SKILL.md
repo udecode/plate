@@ -1,0 +1,116 @@
+---
+description: Check that two Yjs peers, each running a short command on a small closed-schema document, end with the same schema-valid document for every order of their commands and every point where one hears from the other, in Plain and Suggesting intent, and that each peer's editor matches its own Yjs document after every step. Use before and after changing packages/plitejs/src/yjs or another file in its coverage record, when the yjs-peer-order step of pnpm check fails, or when fixing a bug where two collaborators end with different documents.
+argument-hint: '[check | deep | lower | case <identity> | update]'
+name: yjs-peer-order
+metadata:
+  skiller:
+    source: .agents/rules/yjs-peer-order.mdc
+---
+
+# Yjs peer order
+
+Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--all-docs`, which adds the `pp`, `hp` and `ppp` documents, and compares its failures with Findings. `lower` runs `--lower` after a fix removes a known finding. `case <identity>` runs `--case=<identity>` to show one interleaving. `update` brings the verification in line with changed code, as Coverage record says.
+
+**The property.** Two peers, alice and bob, share a Yjs document that starts as a small closed-schema document. Each runs a short command, such as typing, Enter, Backspace, a block type change, a tag, a move, an insert or a remove. For every order of their commands and every point where one hears from the other, after each step and each sync round, each peer's editor reads what its own Yjs document holds. Each peer accepts every update. After a full sync both peers read the same document, a third peer that joins from the result reads it too, and the schema accepts it.
+
+**The harm.** A collaborator whose editor stops matching its Y.Doc sends edits built on a document nobody else has, and a peer that refuses an update stays different until a reload. Two fixes, 9545f7976b and 15ce336b9d, were for peers that ended with different documents, and nothing found either before a user could. The Yjs specs in `packages/plitejs/test/yjs` check named scenarios one at a time, and no beta tester runs a second peer.
+
+## What it checks
+
+`packages/plitejs/scripts/yjs-peer-order.ts` runs the real binding, `yjs()` on `createEditor`, exhaustively up to a bound. It checks the TypeScript code itself, not a model of it, because no verifier runs on this code.
+
+1. **Worlds.** `blocks` is a closed schema of paragraphs and headings, where a paragraph may hold a set-valued `tags` property and its text a set-valued `commentIds` mark. Its gate document `sets` is a tagged paragraph `ab` and a paragraph whose text `cd` holds a comment. `caption` is a closed schema where two `media` blocks share one `caption` content root. Its gate document `shared` is two media blocks, `A` and `B`, sharing `caption:1`, then a paragraph `Body`. `--all-docs` adds the blocks documents `pp`, two paragraphs, `hp`, a heading and a paragraph, and `ppp`, three paragraphs.
+2. **Intents.** `plain` runs the schema alone. `suggesting` adds `createAuthoredPlugin` with `intent: 'propose'`, a fixed clock and fixed change ids.
+3. **Commands.** Each peer's commands come from the document it sees at that moment: type `x`, Enter, and Backspace or forward Delete at a block's start, middle and end; `retype` to the other block type, `retype-unset`, which also drops `tags` and `commentIds`, and `tag` on a paragraph or heading; `remove`, `insert` and `move` of a top-level block; and typing in each content root. A command counts only when a solo editor with the same plugins and no Yjs runs it without throwing and changes the document.
+4. **Schedules.** A step is `{ peer, sees }`: the peer first imports the other's state from after that peer's `sees`-th command, then runs its own. With one command each there are three schedules: both at once, bob after alice, and alice after bob. The two orders are not mirror images, because alice seeds the document and the peers have different client ids and authors. A shard replays each case from scratch for every later command choice. After the steps, each sync round sends alice's state to bob, then bob's to alice; a run with the reverse order gave the same gate findings.
+5. **Rules.** A leaf records its first failure, in the order the steps happen:
+   - `yjs-peer-mirror`: after a step, an import or a sync round, a peer's `editor.read.value()`, its children and every content root, differs from what its controller's `debugValue()` reads from its own Yjs roots.
+   - `yjs-peer-admission`: a peer throws on a command a solo editor accepts or on an import, its admission state is not `ready`, four sync rounds leave the two Yjs documents with different content, or the schema refuses a final document.
+   - `yjs-peer-converge`: after the full sync, alice and bob read different documents, or `carol`, joining from alice's state, reads another.
+6. It compares the findings with `packages/plitejs/scripts/yjs-peer-order-baseline.json` through `tooling/scripts/finding-baseline.mjs`, the shrink-only baseline the decision-order and autoformat checks use. The script files every finding under `packages/plitejs/src/yjs`, the binding that owns the promise. A finding's identity names the intent, world, document and each step, `<peer> <command> [after <n>]`, never the result.
+
+## Run it
+
+Run every command from the repository root.
+
+- `pnpm check:yjs-peer-order` checks the gate bound: both intents, the `sets` and `shared` documents, one command each. It plays 11,480 leaves from 360 cases in 37 to 53 s with 12 workers while other sessions load the machine, with load averages from 12 to 48. A worker peaks near 650 MB. On one worker the whole run takes about 155 s, about 11 ms a leaf in Plain and 16 ms in Suggesting, most of it spent building editors and applying updates. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check yjs-peer-order` runs the same step through the check runner, and `pnpm check --affected` runs it for a change to the script or its baseline, `packages/plitejs/src/` or `tooling/scripts/finding-baseline.mjs`.
+- `--all-docs` adds the blocks documents `pp`, `hp` and `ppp`. It plays 35,822 leaves in 100 to 115 s while other sessions load the machine and finds 194, the gate's 90 and 104 more `yjs-peer-mirror` findings, all in the first and last classes of Findings. `--commands=2` gives each peer two commands, but each case then grows to about 20,000 leaves: `--world=blocks --intent=plain` alone ran past 500,000 leaves in 20 minutes, an estimated nine hours for the whole bound, which no run may take. Any flag that changes what runs, `--commands`, `--world`, `--intent`, `--all-docs` or `--case`, skips the baseline and exits 1 on any finding.
+- `--case='<identity or part of one>'` prints the detail of each leaf whose identity contains it, passing or failing. It still plays the whole bound, so add `--world` and `--intent` to make it quick, such as `--world=blocks --intent=plain --case='plain blocks/sets | alice enter 1 end | bob retype 2 after 1'`.
+- `--jobs=<n>` sets the number of worker processes, the machine's cores up to 12 by default.
+- Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag or a broken run, such as a shard that crashed or a replay that took a different path, so a broken harness never reads as a finding. At the gate the run also fails when it plays other than 11,480 leaves, the `GATE_LEAVES` constant, so a core change that stops commands from applying cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
+- After a fix removes a known finding, the gate fails until you run `pnpm check:yjs-peer-order --lower`, which drops the entries the tree no longer holds. The baseline never grows. `--lower` refuses a new entry, and `finding-baseline.mjs` refuses an entry its copy at the base commit lacks. `--init` seeds only a rule the baseline lacks. Both refuse a flag that changes what runs.
+
+## Read a failure
+
+A finding prints its rule and identity, the stage that failed, and each side's document. Blocks print as their text, with the type before a colon when it is not a paragraph and each content root after the top-level blocks. When the short form reads the same on both sides, both print as JSON:
+
+```text
+yjs-peer-admission plain blocks/sets | alice enter 1 end | bob retype 2 after 1
+  sync round 1: alice admission is error
+  alice  ab / cd /
+  bob    ab / cd / heading:
+
+yjs-peer-mirror plain blocks/sets | alice backspace 1 start | bob retype 0 after 1
+  after bob retype 0 after 1: bob's editor differs from its own Yjs roots
+  editor {"children":[{"type":"heading","children":[{"text":"abcd"}]}],"roots":{}}
+  yjs    {"children":[{"tags":["t"],"type":"heading","children":[{"text":"abcd"}]}],"roots":{}}
+```
+
+The first is a known finding: alice presses Enter at the end of `cd`, bob imports it and makes the new empty line a heading, and alice then refuses bob's update. The second comes from a hand revert of 15ce336b9d, where bob's retype leaves the paragraph's `tags` in his Y.Doc while his editor drops them.
+
+Tell a real bug from a modeling error before you change code:
+
+- **Real bug.** The commands are ones a user can make, a solo editor accepts each one, and a peer still fails a rule. Fix the binding, then run `--lower`. A mirror failure is the earliest sign, because the peer's next update carries the Y.Doc's version to everyone.
+- **Modeling error.** The difference is one no user sees and the binding does not promise, such as an empty text the editor adds beside an inline element, or the script's command builds a step the editor would not. Fix the script with the reason. The mirror read already follows the schema's text rule. Without it, every empty element read back with an empty text.
+- **Intended change.** A change to what a command does changes what the solo editor accepts too, so the gate follows it. Never weaken a rule or add a baseline entry to get green.
+
+## Findings
+
+The gate finds 90: 26 `yjs-peer-admission`, 64 `yjs-peer-mirror` and no `yjs-peer-converge`. Each class is one cause:
+
+- **A retype beside another edit of the same block.** One peer retypes a block while the other tags it, types in it or deletes into it, and a peer's editor drops the property or edit that its Y.Doc keeps. 40 `yjs-peer-mirror` entries, 20 in each intent.
+- **Enter, then a retype of the new line.** One peer presses Enter at the end of `cd`, the other imports it and retypes or retype-unsets the new empty line, and the first peer refuses that update. 8 `yjs-peer-admission` entries, both intents.
+- **A move of a caption owner beside an edit that joins them.** One peer moves a media block while the other deletes forward from `A` or backspaces at the start of `B`, which joins the two owners of `caption:1`. In 10 entries the peer that imported the move throws on its own Delete or Backspace, `Element-owned root index provenance for "media.caption" is stale`. In 4 the peers agree and the final schema check throws that error. In 4 a peer refuses the other's update in a sync round. 18 `yjs-peer-admission` entries, 16 of them in Plain.
+- **Enter after Enter, in Suggesting.** One peer presses Enter at a block's start or end, the other imports it and presses Enter at a start or end beside it, and that peer's editor keeps an insert mark on the new empty text, which its Y.Doc cannot store. 24 `yjs-peer-mirror` entries.
+
+## What a pass proves
+
+The gate catches a peer that keeps a property its editor dropped and a merge a peer refuses. A proof worktree at `bde686f7c3`, with this check copied in, gave:
+
+- A hand revert of 15ce336b9d, where set entries are cleared only for a key the current type calls set-valued and a retyped line's runs are written without a rewrite, gives 408 `yjs-peer-mirror` findings against 64. One is the second failure in Read a failure.
+- A hand revert of 9545f7976b's import half, which no longer drops a shared root the merge orphaned, gives 32 `yjs-peer-admission` findings against 26. The six new ones are pairs of peers that between them remove both owners of `caption:1`.
+- The prototype the script grew from failed at each fix's parent commit on the kind that fix removed, and passed it at the fix.
+- t_78e51eb0's mutants y4 and y5 in `packages/plitejs/src/authored/facts/facts.ts` and y7 in `packages/plitejs/src/core/record-store.ts` leave every finding unchanged and only slow the run. Each returns the same value as the code it replaces, so no convergence rule can see it.
+
+## Coverage record
+
+Synced at `test(plitejs): check two Yjs peers converge on every short interleaving`. The verification describes these files as they stand there:
+
+| File | What the check exercises |
+| --- | --- |
+| `packages/plitejs/src/yjs/core/plugin.ts` | `yjs()`, how each peer installs the binding, seeded or joined |
+| `packages/plitejs/src/yjs/core/controller.ts` | `debugProcessAvailableInput`, `debugRoot` and the admission state each step reads |
+| `packages/plitejs/src/yjs/core/editor-adapter.ts` | how an import becomes an editor change, including a root the merge orphaned |
+| `packages/plitejs/src/yjs/core/event-change-bridge.ts` | how a local change is written to the Y.Doc and a remote event read back |
+| `packages/plitejs/src/yjs/core/replacement.ts` | element attributes and set-valued properties across a retype |
+| `packages/plitejs/src/yjs/core/text-runs.ts` | text runs and their marks |
+| `packages/plitejs/src/yjs/core/document.ts` | `readPliteValueFromYjs`, the mirror read |
+| `packages/plitejs/src/core/editor-commands.ts` | the commands each peer runs |
+| `packages/plitejs/src/authored/authored.ts` | `createAuthoredPlugin` in Suggesting intent |
+
+To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep 'check two Yjs peers converge on every short interleaving'`, then run `git log --oneline <that commit>..HEAD --` with the table's files and `packages/plitejs/scripts/yjs-peer-order.ts`. For each commit it lists, read the diff and confirm three things. The script still installs the binding and syncs peers the way the binding's users do. The mirror read still reads the root the way the controller does. A new command or property shape that the two worlds should reach is in their schemas and in `commandsOf`. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:yjs-peer-order`.
+
+## What it does not cover
+
+- More than one command each at the gate, more than two peers acting, and documents larger than the gate's two.
+- Marks other than `commentIds`, inline elements, nested blocks, lists and tables, which neither world's schema holds.
+- Undo and redo, awareness, remote carets and selection after an import.
+- Offline peers whose updates arrive in pieces or out of order. Each import here is the other peer's whole state at one point.
+- Decisions on suggestions. Suggesting intent records proposals but never accepts or rejects one.
+- The browser, `beforeinput`, IME and the providers that carry updates, such as Hocuspocus.
+- Letters both peers lose the same way. The rules compare peers with each other and with their own Y.Doc, never with what the commands should keep. With e127a636e5 reverted, two peers that each merge a line into its upper neighbour at once, `plain blocks/ppp | alice backspace 1 start | bob backspace 2 start`, both read `abcd` instead of `abcdef`, and every rule passes.
+- A cost change. Output-equivalent mutants such as y4, y5 and y7 pass, and a benchmark owns them.
+- A known finding whose result changes. An identity names the steps, not the result, so a known failure that gets worse stays green.
+- The shared harness's `syncConnectedPeers` in `packages/plitejs/test/yjs/support/collaboration.ts` still compares no peer with its own root. With the schema's text rule, 16 runs of 4 split-identity specs differ only by the empty texts the editor adds beside inline elements.
+
+`/pstack:maintain-formal-verification-skill` brings this verification back in line after changes that did not recheck it.

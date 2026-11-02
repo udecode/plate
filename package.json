@@ -42,6 +42,7 @@
     "kb": "node tooling/scripts/knowledge/kb.mjs",
     "check:authored-order": "bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/authored-decision-order.ts",
     "check:autoformat-rules": "bun --preload ./config/plite-source-aliases.ts apps/www/scripts/autoformat-input-rules.ts",
+    "check:yjs-peer-order": "bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/yjs-peer-order.ts",
     "check:core": "node tooling/scripts/check-core.mjs",
     "check:plate-feature": "node tooling/scripts/check-plate-feature.mjs",
     "check:plite": "node tooling/scripts/check-plite.mjs strict",

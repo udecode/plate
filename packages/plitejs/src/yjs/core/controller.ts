@@ -1633,6 +1633,20 @@ export class YjsController<
     return this.root;
   }
 
+  debugValue(): Readonly<{
+    children: readonly Descendant[];
+    roots: Readonly<Record<string, readonly Descendant[]>>;
+  }> {
+    const { [MAIN_ROOT_KEY]: children = [], ...roots } = Object.fromEntries(
+      [...this.bindings].map(([root, binding]) => [
+        root,
+        this.readYjsRootValue(binding),
+      ])
+    );
+
+    return { children, roots };
+  }
+
   debugTrace(): readonly YjsTraceEntry[] {
     return copyTraceEntries(this.traceEntries);
   }

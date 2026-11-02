@@ -285,6 +285,17 @@ export const steps = [
     key: [],
   },
   {
+    name: 'yjs-peer-order',
+    private: true,
+    run: 'pnpm check:yjs-peer-order',
+    affected: touches(
+      'packages/plitejs/scripts/yjs-peer-order',
+      'packages/plitejs/src/',
+      'tooling/scripts/finding-baseline.mjs'
+    ),
+    key: [],
+  },
+  {
     name: 'bench-targets',
     private: true,
     run: 'pnpm plite:bench:targets:check',
