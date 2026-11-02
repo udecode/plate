@@ -28,6 +28,7 @@ jobs:
           sparse-checkout: |
             tooling/scripts/notify.mjs
             .agents/pstack.json
+            .agents/pstack/*.mjs
           sparse-checkout-cone-mode: false
 
       - name: Post Team lines
