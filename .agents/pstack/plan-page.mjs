@@ -530,6 +530,17 @@ function assertDefaults(plan, where) {
   }
 }
 
+export function defaultsRefusal(path) {
+  const plan = parsePlan(readFileSync(path, 'utf-8'));
+  if (finished(plan.meta.status ?? '')) return null;
+  try {
+    assertDefaults(plan, path);
+    return null;
+  } catch (error) {
+    return error.message;
+  }
+}
+
 const BRIEF = ['What will change?', 'What could go wrong?'];
 const BRIEF_WORDS = 40;
 const BRIEF_LABELS = ['Changes', 'Risks'];

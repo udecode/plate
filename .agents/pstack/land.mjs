@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
-// Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]...
+// Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]
 // Lands this worktree's task on <branch>, the branch .agents/pstack.json
 // names, as one commit. It commits every change in the worktree, squashes the
 // task's commits into one with the message file's text, rebases it onto the
@@ -17,7 +17,9 @@
 // arms GitHub auto-merge, so the PR merges once a reviewer approves its latest
 // push.
 // Without --message it keeps the message of the task's last commit, so a run
-// stopped by a conflict or a failed check reruns as is.
+// stopped by a conflict or a failed check reruns as is. With --dry it checks
+// the message, its source and the Defaults table of each open dated plan the
+// task changes, then exits without committing.
 // When every path a rebase of this checkout conflicts on matches the globs of
 // a `generated` entry in the config, it takes <branch>'s side of those paths,
 // runs each matching entry's command to rebuild them from the merged sources,
@@ -51,11 +53,12 @@ import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync, 
 import { availableParallelism, devNull, tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { findLead, leadLabel } from './lead.mjs';
+import { defaultsRefusal } from './plan-page.mjs';
 import { reserve } from './proof.mjs';
 import { ledgerPath, readTasks } from './tasks.mjs';
 import { findings } from './writing-check.mjs';
 
-const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]...';
+const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
 const BEYOND = /^Beyond the ask: \S/mu;
 const SESSION = /^Session: \S/mu;
@@ -105,9 +108,11 @@ function declinedWithoutReason(stderr) {
 
 const args = process.argv.slice(2);
 let messageFile = null;
+let dry = false;
 const checks = [];
 for (let i = 0; i < args.length; i += 1) {
   if (args[i] === '--message' && args[i + 1]) messageFile = args[++i];
+  else if (args[i] === '--dry') dry = true;
   else if (args[i] === '--check' && args[i + 1]) checks.push(args[++i]);
   else fail(USAGE, 2);
 }
@@ -274,6 +279,15 @@ function regenerate(owners, failed, outsideHint) {
 }
 
 // The companion's git never reads this clone's .git/info/exclude, so a path only that file ignores is local, not companion work.
+function companionOwnedUntracked() {
+  const tracked = new Set(nul(git('ls-files', '-z').stdout));
+  const others = nul(cgit('ls-files', '-z', '--others', '--exclude-standard').stdout).filter((path) => !tracked.has(path));
+  if (others.length === 0) return [];
+  const ignored = (list) => nul(spawnSync('git', ['-c', `core.excludesFile=${list}`, 'check-ignore', '-z', '--stdin'], { encoding: 'utf8', input: others.join('\0') }).stdout);
+  const here = new Set(ignored(devNull));
+  return ignored(join(process.cwd(), pair.list)).filter((path) => !here.has(path));
+}
+
 function stageCompanion() {
   const missing = nul(cgit('ls-files', '-z', '--deleted').stdout);
   if (missing.length > 0) {
@@ -284,12 +298,7 @@ function stageCompanion() {
     );
   }
   cmust('add', '--update');
-  const tracked = new Set(nul(git('ls-files', '-z').stdout));
-  const others = nul(cgit('ls-files', '-z', '--others', '--exclude-standard').stdout).filter((path) => !tracked.has(path));
-  if (others.length === 0) return;
-  const ignored = (list) => nul(spawnSync('git', ['-c', `core.excludesFile=${list}`, 'check-ignore', '-z', '--stdin'], { encoding: 'utf8', input: others.join('\0') }).stdout);
-  const here = new Set(ignored(devNull));
-  const owned = ignored(join(process.cwd(), pair.list)).filter((path) => !here.has(path));
+  const owned = companionOwnedUntracked();
   if (owned.length === 0) return;
   const run = spawnSync('git', [...side, 'add', '--force', '--pathspec-from-file=-', '--pathspec-file-nul'], { encoding: 'utf8', input: owned.join('\0') });
   if (run.status !== 0) fail(`git add in ${pair.dir} failed: ${run.stderr.trim()}`);
@@ -456,12 +465,30 @@ function prBody(plan, body) {
   return { file, attach: [] };
 }
 
+function refuseEarly({ subject, body }, paths, plan) {
+  const missing = mode === 'pr' && !paged(plan) ? missingSections(body) : [];
+  if (missing.length > 0) {
+    fail(
+      `a PR whose body is the commit body needs ${missing.map((name) => `a \`## ${name}\` section`).join(' and ')} with text; ` +
+        'add the missing text to the message and run land.mjs again with --message, or change exactly one dated plan so its page becomes the body'
+    );
+  }
+  const loose = sourceRefusal(subject, body, plan);
+  if (loose) fail(loose);
+  refuseDefaults(paths);
+}
+
+function refuseDefaults(paths) {
+  const defaults = paths.filter(isPlan).map(defaultsRefusal).filter(Boolean);
+  if (defaults.length > 0) fail(`${defaults.join('\n')}\nFix each plan's Defaults table, then run land.mjs again.`);
+}
+
 // Squashes the task into one commit in each repository that it changes; a companion-only task leaves HEAD at its base here.
 function squash({ subject, body }) {
   const head = must('rev-parse', 'HEAD');
   const base = must('merge-base', 'HEAD', upstream);
   must('add', '--all');
-  const staged = (run, from) => run('diff', '--cached', '--name-only', from).stdout.split('\n').filter(Boolean);
+  const staged = (run, from) => nul(run('diff', '-z', '--cached', '--name-only', from).stdout);
   const own = staged(git, base);
   let sideHead = null;
   let sideBase = null;
@@ -474,15 +501,7 @@ function squash({ subject, body }) {
   }
   if (own.length === 0 && theirs.length === 0) fail(`nothing to land: the task changes nothing against ${target}`);
   const plan = planOf([...own, ...theirs]);
-  const missing = mode === 'pr' && !paged(plan) ? missingSections(body) : [];
-  if (missing.length > 0) {
-    fail(
-      `a PR whose body is the commit body needs ${missing.map((name) => `a \`## ${name}\` section`).join(' and ')} with text; ` +
-        'add the missing text to the message and run land.mjs again with --message, or change exactly one dated plan so its page becomes the body'
-    );
-  }
-  const loose = sourceRefusal(subject, body, plan);
-  if (loose) fail(loose);
+  refuseEarly({ subject, body }, [...own, ...theirs], plan);
   const lead = leadOf();
   must('reset', '--quiet', '--soft', base);
   if (pair) cmust('reset', '--quiet', '--soft', sideBase);
@@ -518,6 +537,19 @@ if (split?.list) {
   }
 }
 const message = validate(messageText ?? (ahead > 0 ? must('log', '-1', '--format=%B') : cmust('log', '-1', '--format=%B')));
+if (dry) {
+  const paths = [
+    ...new Set([
+      ...nul(must('diff', '-z', '--name-only', must('merge-base', 'HEAD', upstream))),
+      ...nul(must('ls-files', '-z', '--others', '--exclude-standard')),
+      ...(pair ? [...nul(cmust('diff', '-z', '--name-only', cmust('merge-base', 'HEAD', cupstream))), ...companionOwnedUntracked()] : []),
+    ]),
+  ];
+  if (paths.length === 0) fail(`nothing to land: the task changes nothing against ${target}`);
+  refuseEarly(message, paths, planOf(paths));
+  console.log('land.mjs --dry: the message, its source and the Defaults of each open plan it changes pass; nothing was committed.');
+  process.exit(0);
+}
 const landing = squash(message);
 const { plan, lead } = landing;
 rebase();
@@ -540,11 +572,11 @@ let checkTime = 0;
 function check(rebased = false) {
   const started = performance.now();
   rmSync(record, { force: true });
-  const names = (text) => text.split('\n').filter(Boolean);
   const changed = [
-    ...names(must('diff', '--name-only', '--diff-filter=d', upstream, 'HEAD')),
-    ...(landing.theirs ? names(cmust('diff', '--name-only', '--diff-filter=d', cupstream, 'HEAD')) : []),
+    ...nul(must('diff', '-z', '--name-only', '--diff-filter=d', upstream, 'HEAD')),
+    ...(landing.theirs ? nul(cmust('diff', '-z', '--name-only', '--diff-filter=d', cupstream, 'HEAD')) : []),
   ];
+  refuseDefaults(changed);
   const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs checks');
   if (lintFix && changed.length > 0) {
     const run = spawnSync(`${lintFix} ${changed.map(quote).join(' ')}`, { shell: true, stdio: 'inherit' });

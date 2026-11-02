@@ -21,7 +21,7 @@
 
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { CRITICAL_SEATS, decisionLogs, seatKey, seatRoster, SEATS } from './status.mjs';
+import { bracketSeats, CRITICAL_SEATS, decisionLogs, seatKey, seatRoster, SEATS } from './status.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/scorecard.mjs [--since <YYYY-MM-DD>] [--rows]';
 const DAY = 24 * 60 * 60 * 1000;
@@ -73,7 +73,12 @@ const isAttribution = (word) => {
 
 function reporters(decision, roster) {
   const bracketed = decision.match(CRITICAL_SEATS)?.[1];
-  if (bracketed !== undefined) return groupReporters(bracketed, roster);
+  if (bracketed !== undefined) {
+    const models = roster?.models ?? [];
+    const listed = bracketSeats(decision, models);
+    if (listed.every((name) => name === 'lead' || models.includes(name))) return listed;
+    return groupReporters(bracketed, roster);
+  }
   const body = decision.replace(/^critical\s+/u, '');
   const groups = [];
   const masked = body.replace(/[([][^()[\]]*[)\]]/gu, (group) => `\0${groups.push(group) - 1}\0`);

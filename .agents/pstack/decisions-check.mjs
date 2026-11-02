@@ -61,7 +61,7 @@ import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
-import { acceptedWord, committedLines, CRITICAL_SEATS, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatKey, seatRoster, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
+import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -177,7 +177,7 @@ function missingPaths(evidence, where) {
 
 function unnamedSeats(decision, seatsRow, where) {
   const { models } = seatRoster(seatsRow);
-  const names = decision.match(CRITICAL_SEATS)?.[1].split(',').map(seatKey);
+  const names = bracketSeats(decision, models);
   if (names?.includes('lead') && names.length > 1) return [`${where}: lead stands only for a critical finding no seat raised; name just the seats that raised it`];
   if (names?.every((name) => name === 'lead' || models.includes(name))) return [];
   return [`${where}: a critical panel finding opens "critical [<seat>, ...]: <finding>" and names each seat that raised it at any severity, from its round's seats row: ${models.length ? `${models.join(', ')} or lead` : 'lead'}`];

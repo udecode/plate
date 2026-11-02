@@ -38,6 +38,16 @@ export const SEAT_MODEL = /(?<![\w.:-])(?:codex:)?(?:claude-[\w.-]*\w|gpt-[\w.-]
 export const seatName = (name) => name.trim().replace(/^codex:/u, '').replace(/\s+missing$/u, '').replace(/\s+@\w+$/u, '');
 export const seatKey = (name) => seatName(name.toLowerCase()).replace(/^claude-([a-z]+)-.*$/u, '$1');
 
+function modelForSeatWord(key, models) {
+  if (key === 'lead' || models.includes(key) || !/^[a-z]+$/u.test(key)) return key;
+  const matches = models.filter((model) => model.split('-').at(-1) === key);
+  return matches.length === 1 ? matches[0] : key;
+}
+
+export function bracketSeats(decision, models) {
+  return decision.match(CRITICAL_SEATS)?.[1].split(',').map((name) => modelForSeatWord(seatKey(name), models));
+}
+
 export function seatRoster(decision) {
   const marked = new Set();
   const slots = decision
