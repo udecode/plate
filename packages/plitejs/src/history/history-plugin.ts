@@ -1,7 +1,7 @@
 import {
   definePlugin,
   defineUpdateAnnotation,
-  type DocumentChange,
+  DocumentChange,
   type Editor,
   type EditorCommit,
   type EditorDocumentValue,
@@ -32,11 +32,21 @@ import {
   stageAnchorHistoryRecovery,
 } from '../core/anchor-state';
 import {
+  type CarriedRun,
+  carriesRun,
+  invertCarriedRun,
+} from '../core/change/carried-run';
+import {
   collapseDocumentElementPropertyWrites,
   filterDocumentChangeRecordSets,
+  getInternalDocumentRootChange,
   isInternalDocumentChangeNoop,
+  valueRootIndex,
 } from '../core/change/document-change';
 import {
+  getEditorCommitAdmission,
+  getEditorCommitCarriedRuns,
+  getEditorCommitRest,
   getEditorCommitStartedAt,
   getEditorCommitUnsettle,
 } from '../core/commit';
@@ -59,6 +69,7 @@ import {
 import { EditorNoncanonicalChangeError } from '../core/schema-validation';
 import { createEditorEffect } from '../core/transaction-values';
 import { consumeCommitCarets, restoreHistoryCarets } from '../core/view-carets';
+import { countCoreWork } from '../core/work';
 import { getSelection } from '../interfaces/editor';
 import { type Batch, History, type HistoryJSON } from './history';
 import {
@@ -77,7 +88,7 @@ import {
   shouldMergeCompositionBatch,
   shouldMergeExplicitBatch,
 } from './history-merge-policy';
-import { historyReplaySchemaOf } from './history-replay';
+import { historyReplaySchemaOf, mapHistorySelection } from './history-replay';
 import {
   cloneSelection,
   restoreHistoricSelection,
@@ -97,6 +108,7 @@ import {
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
   peekHistoryReplayEntry,
+  peekSurvivingHistoryEntry,
   takeDroppedHistoryCauses,
   queuePendingHistoryReplayMapping,
   queueHistoryMapping,
@@ -241,6 +253,7 @@ const dropFailedHistoryHead = <V extends Value>(
   direction: HistoryAction,
   cause: unknown
 ) => {
+  countCoreWork('carriedFallbacks');
   try {
     editor.update((tx) => {
       tx.tags.add('history-skip');
@@ -587,6 +600,57 @@ const prepareHistoryBatch = <V extends Value>(
   });
 };
 
+/**
+ * What the commit settled, as an undo step keeps it: its take-back, and its
+ * rest when the commit settled a decision's text, so the step's change is the
+ * take-back then the rest.
+ */
+const settledParts = (
+  commit: EditorCommit,
+  kept: (change: DocumentChange) => DocumentChange
+) => {
+  const unsettle = getEditorCommitUnsettle(commit);
+
+  if (!unsettle) return null;
+
+  const rest = getEditorCommitRest(commit);
+
+  return rest
+    ? {
+        change: kept(unsettle).compose(kept(rest)),
+        rest: kept(rest),
+        unsettle: kept(unsettle),
+      }
+    : { unsettle };
+};
+
+const carriedBack = (
+  runs: readonly CarriedRun[],
+  takeBack: DocumentChange,
+  after: EditorDocumentValue
+) => {
+  const carried = runs.flatMap((run) => {
+    const inverse = invertCarriedRun(run);
+    const change = getInternalDocumentRootChange(takeBack, run.root);
+    const base = valueRootIndex(after, run.root);
+
+    return change && carriesRun(change, base, change.apply(base), inverse)
+      ? [inverse]
+      : [];
+  });
+
+  return carried.length > 0 ? { carried } : null;
+};
+
+/** The change from the commit's document that takes back its admission. */
+const admissionTakeBack = (commit: EditorCommit) => {
+  const admitted = getEditorCommitAdmission(commit);
+
+  return admitted
+    ? admitted.repair.invert(admitted.base)
+    : DocumentChange.empty;
+};
+
 const redoWithoutSettlement = (
   editor: Editor,
   inverse: DocumentChange,
@@ -754,13 +818,44 @@ const createHistoryPlugin = <
         throw new Error(`Missing history batch for ${action}.`);
       }
 
-      const { unsettle: taken, ...moved } = batch;
-      const redoUnsettle =
-        action === 'redo' ? getEditorCommitUnsettle(commit) : null;
+      const { carried, rest: replayed, unsettle: taken, ...moved } = batch;
+      const redoParts = action === 'redo' ? settledParts(commit, kept) : null;
       const unsettled =
         action === 'undo' && taken
           ? { after: taken.apply(before), change: taken }
           : undefined;
+      // The redo of a two-part step takes back what the undo's admission
+      // wrote, then replays the inverse of the rest, so its admission settles
+      // the decision again against the document it then finds. Its caret
+      // follows the letters the take-back keeps.
+      const redone =
+        unsettled && replayed
+          ? {
+              change: collapseDocumentElementPropertyWrites(
+                admissionTakeBack(commit).compose(
+                  replayed.invert(unsettled.after),
+                  after
+                ),
+                after,
+                historyReplaySchemaOf(editor).isSetValued
+              ),
+              selectionAfter: mapHistorySelection(
+                editor,
+                moved.selectionAfter,
+                unsettled.change,
+                before,
+                unsettled.after,
+                moved.selectionAfterRoot ?? MAIN_ROOT_KEY,
+                true
+              ),
+            }
+          : null;
+
+      const change =
+        redone?.change ??
+        (unsettled
+          ? redoWithoutSettlement(editor, inverse, unsettled.change, after)
+          : inverse);
 
       completeHistoryAction(
         editor,
@@ -768,11 +863,11 @@ const createHistoryPlugin = <
         destination,
         {
           ...moved,
-          change: unsettled
-            ? redoWithoutSettlement(editor, inverse, unsettled.change, after)
-            : inverse,
+          ...redone,
+          change,
           effects: effects.toReversed().map(invertEffect),
-          ...(redoUnsettle ? { unsettle: redoUnsettle } : {}),
+          ...redoParts,
+          ...(carried && carriedBack(carried, change, after)),
         },
         after,
         unsettled
@@ -825,11 +920,23 @@ const createHistoryPlugin = <
     if (!prepared) return undefined;
 
     const pendingReplayEdited = markPendingHistoryReplayEdited(editor);
-    const unsettle = getEditorCommitUnsettle(commit);
-    const preparedBatch = unsettle
-      ? { ...prepared.batch, unsettle }
+    const parts = settledParts(commit, kept);
+    const partedBatch = parts
+      ? { ...prepared.batch, ...parts }
       : prepared.batch;
-    const lastEntry = peekHistoryEntry(editor, 'undos');
+    const carried = carriedBack(
+      getEditorCommitCarriedRuns(commit),
+      partedBatch.change,
+      after
+    );
+    const preparedBatch = carried
+      ? { ...partedBatch, ...carried }
+      : partedBatch;
+    const lastEntry = peekSurvivingHistoryEntry(editor, 'undos');
+
+    for (const cause of takeDroppedHistoryCauses(editor)) {
+      reportFailedHistoryReplay(editor, 'undo', cause);
+    }
     const lastEntryHasSessionEffect = lastEntry?.batch.effects.some(
       (effect) => typeof effect.type.history === 'object'
     );
@@ -840,8 +947,13 @@ const createHistoryPlugin = <
     const explicitMerge = commit.tags.includes('history-merge');
     // A settling commit stands alone, so redo works its settlement out again
     // from the change that settled and from nothing merged with it.
-    const settles = commit.tags.includes(DOCUMENT_SETTLED_TAG);
-    const explicitPush = commit.tags.includes('history-push') || settles;
+    const settles =
+      commit.tags.includes(DOCUMENT_SETTLED_TAG) ||
+      getEditorCommitRest(commit) !== null;
+    // A step that carries a run stands alone too, so the runs stay in the
+    // coordinates of the one change they describe.
+    const explicitPush =
+      commit.tags.includes('history-push') || settles || carried !== null;
     const textInput =
       commit.tags.includes('native-text-input') ||
       commit.tags.includes('dom-text-input');
@@ -867,6 +979,7 @@ const createHistoryPlugin = <
       lastEntry != null &&
       !lastEntry.group?.closed &&
       !lastEntry.batch.unsettle &&
+      !lastEntry.batch.carried &&
       !lastEntryHasSessionEffect &&
       sessionEffects.length === 0 &&
       !explicitPush &&

@@ -13,6 +13,7 @@ import {
   type AnchorHistoryRecovery,
   mapAnchorHistoryRecovery,
 } from '../core/anchor-state';
+import { landCarriedRuns } from '../core/change/carried-run';
 import {
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeRootKeys,
@@ -20,6 +21,7 @@ import {
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import { areEditorSchemaIdentitiesEqual } from '../core/schema-compiler';
+import { countCoreWork } from '../core/work';
 import type { AnyEditor } from '../interfaces/editor';
 import type { Batch, History } from './history';
 import { type HistoryCarets, mapHistoryCarets } from './history-carets';
@@ -55,6 +57,11 @@ type HistoryBranch<V extends Value> = Readonly<{
   base: EditorDocumentValue<V>;
   batch: Batch<V>;
   carets: HistoryCarets | null;
+  /**
+   * A step on this branch carries a run, so each outside update maps on its
+   * own and a read of history never changes where its letters go.
+   */
+  carries: boolean;
   depth: number;
   group: HistoryBatchGroup | null;
   identity: object;
@@ -282,6 +289,13 @@ export const freezeHistoryBatch = <V extends Value>(
 
   return Object.freeze({
     ...value,
+    ...(batch.carried
+      ? {
+          carried: Object.freeze(
+            batch.carried.map((run) => Object.freeze({ ...run }))
+          ),
+        }
+      : {}),
     effects: Object.freeze(
       batch.effects.map((effect) => Object.freeze({ ...effect }))
     ),
@@ -295,6 +309,18 @@ export const freezeHistoryBatch = <V extends Value>(
 };
 
 const freezeBatch = freezeHistoryBatch;
+
+/**
+ * What a step's replay keeps beside its change: its carried runs, and the
+ * take-back and rest a two-part step replays apart.
+ */
+const replayedOf = <V extends Value>(batch: Batch<V>) => ({
+  carried: batch.carried,
+  parts:
+    batch.rest && batch.unsettle
+      ? { rest: batch.rest, unsettle: batch.unsettle }
+      : undefined,
+});
 
 const branch = <V extends Value>(
   batch: Batch<V>,
@@ -313,6 +339,7 @@ const branch = <V extends Value>(
     base,
     batch: freezeBatch({ ...batch, change: replay.change }),
     carets,
+    carries: replay.carried !== undefined || (next?.carries ?? false),
     replay,
     depth: (next?.depth ?? 0) + 1,
     group,
@@ -389,7 +416,7 @@ const addMapping = <V extends Value>(
 
   const previous = value.mappings;
   const mappings =
-    previous?.entry.textOnly && entry.textOnly
+    !value.carries && previous?.entry.textOnly && entry.textOnly
       ? Object.freeze({
           entry: Object.freeze({
             after: entry.after,
@@ -501,14 +528,25 @@ const resolveHead = <V extends Value>(
           : { after: nextSide, before: batchSide }
       );
     }
-    const { unsettle: _unmapped, ...mappedBatch } = batchValue;
+    const {
+      carried: _carried,
+      rest: _rest,
+      unsettle: _unmapped,
+      ...mappedBatch
+    } = batchValue;
+    const parts = replay.parts && {
+      rest: replay.parts.rest.change,
+      unsettle: replay.parts.unsettle.change,
+    };
     const unsettle =
-      batchValue.unsettle &&
-      yieldTo(batchValue.unsettle, mapping.change, batchBase);
+      parts?.unsettle ??
+      (batchValue.unsettle &&
+        yieldTo(batchValue.unsettle, mapping.change, batchBase));
 
     batchValue = freezeBatch<V>({
       ...mappedBatch,
-      ...(unsettle && !unsettle.empty ? { unsettle } : {}),
+      ...(parts ?? (unsettle && !unsettle.empty ? { unsettle } : {})),
+      ...(replay.carried ? { carried: replay.carried } : {}),
       change: replay.change,
       effects: batchValue.effects.flatMap((effect) => {
         const mappedEffect = mapEffect(effect, mapping.change);
@@ -585,6 +623,10 @@ const resolveCanonicalTop = <V extends Value>(
 
   const repaired = repair.apply(target);
   const change = head.replay.change.compose(repair);
+  const rest = head.batch.rest?.compose(repair);
+  const { carried: _carried, ...repairedBatch } = head.batch;
+  const carried =
+    head.batch.carried && landCarriedRuns(head.batch.carried, repair);
   const undo = head.replay.direction === 'undo';
   const unmoved = {
     after: head.base,
@@ -606,16 +648,19 @@ const resolveCanonicalTop = <V extends Value>(
     freezeBatch<V>(
       undo
         ? {
-            ...head.batch,
+            ...repairedBatch,
             change,
+            ...(rest ? { rest } : {}),
+            ...(carried ? { carried } : {}),
             selectionBefore: restored(
               head.batch.selectionBefore,
               head.batch.selectionBeforeRoot
             ),
           }
         : {
-            ...head.batch,
+            ...repairedBatch,
             change,
+            ...(carried ? { carried } : {}),
             selectionAfter: restored(
               head.batch.selectionAfter,
               head.batch.selectionAfterRoot
@@ -623,7 +668,13 @@ const resolveCanonicalTop = <V extends Value>(
           }
     ),
     head.base,
-    recordHistoryReplay(schema, head.base, change, head.replay.direction),
+    recordHistoryReplay(schema, head.base, change, head.replay.direction, {
+      carried,
+      parts:
+        rest && head.batch.unsettle
+          ? { rest, unsettle: head.batch.unsettle }
+          : undefined,
+    }),
     addMapping<V>(head.next, {
       after: repaired,
       change: repair,
@@ -951,7 +1002,12 @@ export const settlePendingHistoryReplay = <V extends Value>(
     }
   }
 
-  const { unsettle: _unsettle, ...claimedBatch } = claimed.batch;
+  const {
+    carried: _carried,
+    rest: _rest,
+    unsettle: _unsettle,
+    ...claimedBatch
+  } = claimed.batch;
   const replayed = Object.freeze({
     ...claimed,
     base: replayBase,
@@ -1016,7 +1072,8 @@ const fromBatches = <V extends Value>(
         historyReplaySchemaOf(editor),
         entry.base,
         entry.batch.change,
-        direction
+        direction,
+        replayedOf(entry.batch)
       ),
       value
     );
@@ -1119,6 +1176,15 @@ export const peekHistoryEntry = <V extends Value>(
   stack: HistoryStack
 ) => peekResolvedEntry(editor, stack, resolveTop);
 
+/**
+ * The top entry, past every step history can no longer map, which it drops
+ * and leaves for `takeDroppedHistoryCauses`, so the read never throws.
+ */
+export const peekSurvivingHistoryEntry = <V extends Value>(
+  editor: Editor<V>,
+  stack: HistoryStack
+) => peekResolvedEntry(editor, stack, resolveSurvivingTop);
+
 export const peekHistoryReplayEntry = <V extends Value>(
   editor: Editor<V>,
   stack: HistoryStack
@@ -1153,7 +1219,8 @@ export const writeHistory = <V extends Value>(
         historyReplaySchemaOf(editor),
         current,
         batchValue.change,
-        stack === 'undos' ? 'undo' : 'redo'
+        stack === 'undos' ? 'undo' : 'redo',
+        replayedOf(batchValue)
       ),
       store.maxDepth,
       options.group ?? null,
@@ -1192,7 +1259,8 @@ export const replaceHistoryHead = <V extends Value>(
         historyReplaySchemaOf(editor),
         current,
         batchValue.change,
-        stack === 'undos' ? 'undo' : 'redo'
+        stack === 'undos' ? 'undo' : 'redo',
+        replayedOf(batchValue)
       ),
       resolved.next,
       null,
@@ -1228,6 +1296,7 @@ const resolveSurvivingTop = <V extends Value>(
 
       causes.push(error);
       DROPPED_HISTORY_CAUSES.set(editor, causes);
+      countCoreWork('carriedFallbacks');
     }
   }
 
@@ -1305,7 +1374,8 @@ export const completeHistoryAction = <V extends Value>(
               historyReplaySchemaOf(editor),
               current,
               batchValue.change,
-              destination === 'undos' ? 'undo' : 'redo'
+              destination === 'undos' ? 'undo' : 'redo',
+              replayedOf(batchValue)
             ),
             store.maxDepth,
             resolved.group,

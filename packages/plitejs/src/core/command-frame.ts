@@ -55,6 +55,8 @@ import {
   advanceSnapshotIndex,
   assertRootPlaced,
   commitRecordedDraft,
+  type DraftRun,
+  draftRunsOf,
   createEditorDocumentChangeBuilder,
   createTransactionSpecContext,
   disposeTransactionSpecContext,
@@ -971,6 +973,7 @@ export const runInEditorCommandFrame = (
     } | null = null;
     let storedToWritten: PositionMap | undefined;
     let letters: NewLetters | undefined;
+    let runs: readonly DraftRun[] = [];
 
     COMMAND_FRAMES.add(editor);
     try {
@@ -1027,6 +1030,7 @@ export const runInEditorCommandFrame = (
         );
       }
 
+      runs = draftRunsOf(snapshot.builder.draftSteps, projected.map.toStored);
       if (!wrote.empty || frame.selectionWritten) {
         // A root the projection dropped is one the frame cannot write, so its
         // bookmarks keep their stored places.
@@ -1133,6 +1137,7 @@ export const runInEditorCommandFrame = (
     commitRecordedDraft(editor, outer, recorded, frame.caret.root, {
       carried,
       letters,
+      runs,
       storedToWritten,
     });
     outer.changed = true;

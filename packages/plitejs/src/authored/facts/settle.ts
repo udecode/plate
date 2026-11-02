@@ -1044,6 +1044,13 @@ export const repairKeys = (
  * answers by walking the whole document unless an index backs it, so a block
  * scope returns held deletions only with `returnsHeld`.
  */
+export type SettleOptions = Readonly<{
+  returnsHeld?: boolean;
+  restoreMissingFormats?: boolean;
+  resolveSchema: () => AuthoredResolveSchema;
+  schema: CompiledEditorSchema;
+}>;
+
 export const settleValue = <V extends JsonEditorValue>(
   value: V,
   facts: ReviewFacts,
@@ -1053,12 +1060,7 @@ export const settleValue = <V extends JsonEditorValue>(
     restoreMissingFormats = scope === 'document',
     resolveSchema,
     schema,
-  }: Readonly<{
-    returnsHeld?: boolean;
-    restoreMissingFormats?: boolean;
-    resolveSchema: () => AuthoredResolveSchema;
-    schema: CompiledEditorSchema;
-  }>
+  }: SettleOptions
 ): Readonly<{
   change: DocumentChange | null;
   reopenedRejections: ReadonlySet<string>;

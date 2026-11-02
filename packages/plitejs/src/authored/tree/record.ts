@@ -1962,6 +1962,7 @@ class RootRecorder {
   > = [];
   private readonly index: DocumentIndex;
   private readonly options: RecorderOptions;
+  private withdrawsWrap = false;
 
   constructor(index: DocumentIndex, options: RecorderOptions) {
     this.index = index;
@@ -2297,6 +2298,13 @@ class RootRecorder {
 
   private recordGroup(group: Extract<Group, { kind: 'replace' }>) {
     const { after, before, removed, slice } = group;
+    const edge = this.enclosureEdgeOf(group);
+
+    if (edge) {
+      this.recordEnclosureEdge(group, edge);
+      return;
+    }
+
     const enclosure = this.enclosureOf(group);
 
     if (enclosure) {
@@ -2322,30 +2330,83 @@ class RootRecorder {
     this.recordReplacement(before, before + removed, slice, after);
   }
 
-  /**
-   * A wrap or an unwrap: the wrapped content stays where it is, and only the
-   * enclosing boundaries are recorded. A wrap or unwrap origin names it even
-   * when the content differs between the drafts.
-   */
-  private enclosureOf(group: Extract<Group, { kind: 'replace' }>) {
+  private enclosureEdgeOf(group: Extract<Group, { kind: 'replace' }>) {
     const { origin } = this.options;
-    const { removed, slice } = group;
+    const { before, removed, slice } = group;
 
-    if (origin === 'wrap' || origin === 'unwrap') {
-      const wraps = origin === 'wrap';
-      const depth = wraps
-        ? (slice.length - group.plainRemoved) / 2
-        : (group.plainRemoved - slice.length) / 2;
-      const outer = wraps
+    if (origin !== 'wrap' && origin !== 'unwrap') return null;
+
+    const wraps = origin === 'wrap';
+    const tokens = wraps
+      ? group.plainRemoved === 0
         ? slice.tokens
-        : this.index.slice(group.before, group.before + removed).tokens;
+        : []
+      : slice.length === 0
+        ? this.index.slice(before, before + removed).tokens
+        : [];
+    const all = (kind: 'close' | 'open') =>
+      tokens.length > 0 &&
+      tokens.every(
+        (token) => token.kind === kind && token.nodeKind === 'element'
+      );
 
-      return depth >= 1 &&
-        Number.isInteger(depth) &&
-        hasEnclosingEdges(outer, depth)
-        ? { depth, wraps }
-        : null;
+    if (all('open')) return { lead: true, wraps };
+    if (all('close')) return { lead: false, wraps };
+
+    return null;
+  }
+
+  private recordEnclosureEdge(
+    group: Extract<Group, { kind: 'replace' }>,
+    { lead, wraps }: Readonly<{ lead: boolean; wraps: boolean }>
+  ) {
+    const { after, before, removed, slice } = group;
+
+    // Hidden content the review keeps at the edge stays inside the wrap.
+    if (wraps) {
+      const at = lead ? before : before + removed;
+
+      this.recordReplacement(
+        at,
+        at,
+        slice,
+        after,
+        lead ? {} : { closesWrap: true }
+      );
+      return;
     }
+    if (lead) {
+      const { isOwn } = this.options;
+
+      this.withdrawsWrap = this.index
+        .slice(before, before + removed)
+        .tokens.every((token) => {
+          const marks = token.kind === 'open' ? this.marks(token.props) : [];
+
+          return (
+            marks.length > 0 &&
+            marks.every((mark) => mark.kind === 'wrap' && isOwn(mark))
+          );
+        });
+    }
+    // Unwrapping the writer's own pending wrap withdraws it, so the review
+    // document never holds an enclosure that every decision dissolves.
+    if (this.withdrawsWrap) {
+      this.ops.push({ from: before, kind: 'remove', to: before + removed });
+      this.pushRemoved(after, before, before + removed);
+      return;
+    }
+
+    this.recordReplacement(
+      before,
+      before + removed,
+      PreparedTokenSlice.empty,
+      after
+    );
+  }
+
+  private enclosureOf(group: Extract<Group, { kind: 'replace' }>) {
+    const { removed, slice } = group;
 
     if (removed === 0 || slice.length === 0) return null;
 

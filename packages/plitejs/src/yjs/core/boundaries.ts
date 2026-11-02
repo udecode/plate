@@ -23,6 +23,7 @@ import type { Element } from '../../index';
 import { getDefined } from '../../internal/get-defined';
 import type { YjsNode } from './attributes';
 import { readYjsChildren } from './document';
+import type { LinesByLetters } from './joins';
 import { areJsonLikeValuesEqual } from './json-equality';
 import {
   alignYjsChildren,
@@ -627,7 +628,8 @@ export const boundariesInBatch = (view: YjsBatchView): BatchBoundaries => ({
 const linewiseBetween = (
   document: DocumentIndex,
   after: readonly JsonNode[],
-  between: (before: DocumentIndex, after: DocumentIndex) => RootChange
+  between: (before: DocumentIndex, after: DocumentIndex) => RootChange,
+  byLetters?: LinesByLetters
 ) => {
   const nodes = document.value;
   if (nodes.length !== after.length) {
@@ -637,10 +639,12 @@ const linewiseBetween = (
   const data: SectionData[] = [];
   let position = 0;
   for (const [index, node] of nodes.entries()) {
-    const local = between(
-      DocumentIndex.fromValue([node]),
-      DocumentIndex.fromValue([after[index]])
-    );
+    const local =
+      byLetters?.([node], [after[index]], index, false) ??
+      between(
+        DocumentIndex.fromValue([node]),
+        DocumentIndex.fromValue([after[index]])
+      );
     if (local.empty) continue;
     const from = document.childPosition([], index);
     addSection(sections, data, from - position, -1, null);
@@ -700,7 +704,8 @@ export const splitChangeTo = (
   after: readonly JsonNode[],
   splits: readonly FoundSplit[],
   between: (before: DocumentIndex, after: DocumentIndex) => RootChange,
-  unsplits: readonly FoundUnsplit[] = []
+  unsplits: readonly FoundUnsplit[] = [],
+  byLetters?: LinesByLetters
 ): RootChange | null => {
   const edits = splits
     .map(({ levels, line, point }) => {
@@ -748,7 +753,9 @@ export const splitChangeTo = (
   addSection(sections, data, before.length - position, -1, null);
   try {
     const split = RootChange.fromSections(sections, data);
-    return split.compose(linewiseBetween(split.apply(before), after, between));
+    return split.compose(
+      linewiseBetween(split.apply(before), after, between, byLetters)
+    );
   } catch (error) {
     if (error instanceof PreparedTokenSliceStructureError) return null;
     throw error;

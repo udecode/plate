@@ -29,8 +29,6 @@ import { getDefined } from '../internal/get-defined';
 import { deselect } from '../transforms-selection';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
-import { moveNodes } from './move-nodes';
-import { removeNodes } from './remove-nodes';
 
 const getChildren = (editor: Editor, node: Ancestor) =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
@@ -74,46 +72,22 @@ export const liftNodes = ((
       return;
     }
 
-    if (childCount === 1) {
-      moveNodes(editor, {
-        at: path,
-        to: destination,
-      });
-      removeNodes(editor, { at: parentPath });
-      return;
-    }
+    // The lifted node keeps its tokens: the parent splits around it and the
+    // piece that holds only it is unwrapped.
+    const props = NodeApi.extractProps(parent);
+    const split = (at: number) =>
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.splitNode(root, parentPath, at, props)
+      );
 
-    if (index === 0) {
-      moveNodes(editor, {
-        at: path,
-        to: destination,
-      });
-      return;
-    }
-
-    if (index === childCount - 1) {
-      moveNodes(editor, {
-        at: path,
-        to: destination,
-      });
-      return;
-    }
-
+    if (index < childCount - 1) split(index + 1);
+    if (index > 0) split(index);
     applyBuiltDocumentChange(editor, (builder, root) =>
-      builder.splitNode(
+      builder.unwrapNode(
         root,
-        parentPath,
-        index + 1,
-        PathApi.equals(parentPath, []) || NodeApi.isEditor(parent)
-          ? {}
-          : NodeApi.extractProps(parent)
+        index > 0 ? PathApi.next(parentPath) : parentPath
       )
     );
-
-    moveNodes(editor, {
-      at: path,
-      to: destination,
-    });
   };
 
   runEditorTransaction(editor, (tx) => {

@@ -324,14 +324,18 @@ export class RootBook {
     slot: BookSlot,
     block: JsonNode,
     changes: BlockChanges,
-    rechecked: Map<BookSlot, RootBook>
+    rechecked: Map<BookSlot, RootBook>,
+    touched: Set<string>
   ) {
     const old = slot.changes;
 
     this.name(slot, false);
     for (const id of old.occurrences.keys()) {
       if (changes.occurrences.has(id)) this.dropPart(id, slot);
-      else this.dropHolder(id, slot);
+      else {
+        touched.add(id);
+        this.dropHolder(id, slot);
+      }
     }
     slot.block = block;
     slot.changes = changes;
@@ -340,7 +344,10 @@ export class RootBook {
     this.name(slot, true);
     for (const [id, list] of changes.occurrences) {
       if (old.occurrences.has(id)) this.addPart(id, slot, list);
-      else this.addHolder(id, slot, list);
+      else {
+        touched.add(id);
+        this.addHolder(id, slot, list);
+      }
     }
     if (slot.leaf) this.slots.update(slot);
     rechecked.set(slot, this);
@@ -397,7 +404,7 @@ export class RootBook {
           for (const id of slot.changes.occurrences.keys()) touched.add(id);
           for (const id of changes.occurrences.keys()) touched.add(id);
         }
-        this.replace(slot, block, changes, rechecked);
+        this.replace(slot, block, changes, rechecked, touched);
       }
 
       const removed = old.slice(paired);

@@ -8,6 +8,7 @@ import {
   SelectionApi,
   type Value,
 } from '..';
+import type { CarriedRun } from '../core/change/carried-run';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import type { encodeEditorSelection } from '../core/selection-protocol';
 import type { encodeEditorEffect } from '../core/value-codec';
@@ -18,6 +19,8 @@ import {
   isHistorySchemaIdentity,
 } from './history-codec';
 import { getHistory } from './history-state';
+
+export type { CarriedRun } from '../core/change/carried-run';
 
 export interface Batch<_V extends Value = Value> {
   /** Canonical change to apply when this batch is consumed. */
@@ -33,11 +36,25 @@ export interface Batch<_V extends Value = Value> {
   /** Additional named root owning `selectionBefore`; omit for the primary root. */
   readonly selectionBeforeRoot?: string;
   /**
-   * On an undo step whose commit settled shown values: the change from the
-   * step's base that takes back what the commit's settle stage wrote. A redo
-   * step never has it.
+   * On an undo step whose commit settled shown values or a decision's text:
+   * the change from the step's base that takes back what the commit settled.
+   * A redo step never has it.
    */
   readonly unsettle?: DocumentChange;
+  /**
+   * Beside `unsettle` on a step whose commit settled a decision's text: the
+   * undo of everything else the commit did, from the document `unsettle`
+   * gives. `change` is `unsettle` then `rest`, and the step's redo is the
+   * inverse of `rest`.
+   */
+  readonly rest?: DocumentChange;
+  /**
+   * On an undo step whose commit merged a line into a nested line, and on
+   * each step an undo or redo of it pushes: the runs of tokens the step
+   * deletes at `source` in its base and inserts, the same tokens, at `at` in
+   * the document it gives. An outside edit inside a run moves with the run.
+   */
+  readonly carried?: readonly CarriedRun[];
 }
 
 /** Undo and redo stacks of inverse document changes. */
@@ -54,7 +71,8 @@ export type HistoryJSON = Readonly<{
   redos: readonly HistoryBatchJSON[];
   schema: EditorSchemaIdentity;
   undos: readonly HistoryBatchJSON[];
-  version: 4;
+  /** 5 when a step keeps `rest` or `carried`, else 4. */
+  version: 4 | 5;
 }>;
 
 export type HistoryBatchJSON = Readonly<{
@@ -66,8 +84,12 @@ export type HistoryBatchJSON = Readonly<{
   selectionBefore: ReturnType<typeof encodeEditorSelection>;
   /** Additional named root; omitted for the primary root. */
   selectionBeforeRoot?: string;
-  /** Only on an undo step whose commit settled shown values. */
+  /** Only on an undo step whose commit settled shown values or a decision's text. */
   unsettle?: ReturnType<DocumentChange['toJSON']>;
+  /** Only beside `unsettle` on a step whose commit settled a decision's text. */
+  rest?: ReturnType<DocumentChange['toJSON']>;
+  /** Only on a step that merges a line into a nested line or takes it back. */
+  carried?: readonly CarriedRun[];
 }>;
 
 const hasFunctions = (
@@ -105,7 +127,10 @@ const isBatch = (value: unknown): value is Batch =>
   isAdditionalRoot(value.selectionAfterRoot) &&
   isAdditionalRoot(value.selectionBeforeRoot) &&
   (value.unsettle === undefined ||
-    DocumentChange.isDocumentChange(value.unsettle));
+    DocumentChange.isDocumentChange(value.unsettle)) &&
+  (value.rest === undefined ||
+    (DocumentChange.isDocumentChange(value.rest) &&
+      value.unsettle !== undefined));
 
 export const History = {
   /** Check whether a value is an in-memory history object. */

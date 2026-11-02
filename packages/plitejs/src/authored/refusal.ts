@@ -9,7 +9,10 @@ import type {
   DocumentIndex,
   IndexedNodeRange,
 } from '../core/change/document-index';
-import { applyPropertyModifications } from '../core/change/root-change';
+import {
+  applyPropertyModifications,
+  type RootChange,
+} from '../core/change/root-change';
 import {
   isElementNode,
   nodeProps,
@@ -65,6 +68,26 @@ export type AuthoredRefusal = Readonly<{
 const holds = (entry: IndexedNodeRange, at: number) =>
   entry.kind === 'element' && entry.from < at && at < entry.to;
 
+const enclosedSpanOf = (change: RootChange) => {
+  let from = 0;
+  let to = 0;
+  let first = true;
+  let position = 0;
+
+  for (let section = 0; section < change.sections.length; section += 2) {
+    const length = change.sections[section];
+
+    if (change.sections[section + 1] >= 0) {
+      if (first) from = position + length;
+      first = false;
+      to = position;
+    }
+    position += length;
+  }
+
+  return { from, to };
+};
+
 export const proposalRefusal = (
   steps: readonly DraftStep[],
   vetoes: readonly AuthoredVeto[]
@@ -110,6 +133,21 @@ export const proposalRefusal = (
       };
       let position = 0;
 
+      // A wrap or an unwrap keeps the elements it encloses, but suggesting
+      // it moves them as a deletion does, so they read as deleted.
+      if (step.origin === 'wrap' || step.origin === 'unwrap') {
+        const span = enclosedSpanOf(change);
+
+        for (const entry of before.nodeRangesTouching(span.from, span.to)) {
+          if (
+            entry.kind === 'element' &&
+            span.from <= entry.from &&
+            entry.to <= span.to
+          ) {
+            collect(entry).touch = 'element';
+          }
+        }
+      }
       for (let section = 0; section < change.sections.length; section += 2) {
         const length = change.sections[section];
         const inserted = change.sections[section + 1];

@@ -62,6 +62,15 @@ interface Batch {
   readonly selectionBefore: Selection;
   readonly selectionBeforeRoot?: string;
   readonly unsettle?: DocumentChange;
+  readonly rest?: DocumentChange;
+  readonly carried?: readonly CarriedRun[];
+}
+
+interface CarriedRun {
+  readonly at: number;
+  readonly length: number;
+  readonly root: string;
+  readonly source: number;
 }
 ```
 
@@ -69,6 +78,19 @@ interface Batch {
 pending suggestion had kept an element from storing, such as a unique ID. It
 takes that write back, so undoing the step and redoing it decides the value
 again.
+
+`unsettle` also appears, with `rest`, on an undo step whose commit accepted a
+suggested deletion of text. The step's `change` is `unsettle` then `rest`.
+`unsettle` puts back the text the accept removed, and `rest` undoes everything
+else the commit did. Redoing the step replays only the inverse of `rest`, so
+the accept settles again against the document the redo finds.
+
+`carried` appears on an undo step whose commit moved content to the end of
+an element it directly followed, such as a line merged into the last line of
+a quote before it, and on each step an undo or redo of it pushes. Each run
+names `length` tokens the step deletes at `source` in the document before it
+and inserts at `at` in the document after it, so a teammate's edit inside a
+run moves with the run.
 
 ## Static methods
 
@@ -79,10 +101,11 @@ type guard.
 
 #### `History.toJSON(editor): HistoryJSON`
 
-Encode the installed undo and redo stacks as validated version 4 JSON. The
-envelope records the editor's schema identity, and each batch stores its
-canonical `DocumentChange`, registered effects, selection envelopes, and
-`unsettle` when it has one.
+Encode the installed undo and redo stacks as validated JSON, at version 5 when
+a batch keeps `rest` or `carried` and at version 4 otherwise. The envelope
+records the editor's schema identity, and each batch stores its canonical
+`DocumentChange`, registered effects, selection envelopes, and `unsettle`,
+`rest` and `carried` when it has them.
 
 Compatible typing and same-node property updates coalesce from canonical
 change classifications and changed ranges. Grouping fingerprints are
@@ -117,9 +140,9 @@ editor.update((tx) => {
 ```
 
 Schema identity is always derived or named; `null` is invalid in memory and in
-version 4 JSON. Schema identity, codec versions, effect keys, built-in selection
-payloads, and JSON values are validated during decoding. Failed decoding leaves
-editor state untouched.
+history JSON. Decoding reads versions 4 and 5. Schema identity, codec versions,
+effect keys, built-in selection payloads, and JSON values are validated during
+decoding. Failed decoding leaves editor state untouched.
 
 ## Editor API
 

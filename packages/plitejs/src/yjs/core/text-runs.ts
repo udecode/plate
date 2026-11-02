@@ -1565,8 +1565,9 @@ const keepsShifted = ({ from, origin }: RunStretch, shift: number) =>
   origin >= 0 && origin - from === shift;
 
 /**
- * Whether `diff` gives no typed letter an old letter's place and, in a run
- * without letters code made, keeps each kept letter only as its own old letter.
+ * Whether `diff` gives no typed letter an old letter's place, inserts no kept
+ * letter as a new one and, in a run without letters code made, keeps each
+ * kept letter only as its own old letter.
  */
 const agreesWithLetters = (
   diff: readonly Diff[],
@@ -1578,7 +1579,7 @@ const agreesWithLetters = (
   let fromAfter = 0;
 
   for (const [operation, { length }] of diff) {
-    if (operation === DiffOp.Equal && length > 0) {
+    if (operation !== DiffOp.Delete && length > 0) {
       at = skipStretchesEndingBy(letters, at, fromAfter);
       for (
         let index = at;
@@ -1588,8 +1589,10 @@ const agreesWithLetters = (
         const stretch = letters[index];
 
         if (
-          stretch.origin === NEW_LETTER ||
-          (!madeByCode && !keepsShifted(stretch, fromBefore - fromAfter))
+          operation === DiffOp.Insert
+            ? stretch.origin >= 0
+            : stretch.origin === NEW_LETTER ||
+              (!madeByCode && !keepsShifted(stretch, fromBefore - fromAfter))
         ) {
           return false;
         }

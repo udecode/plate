@@ -12,6 +12,7 @@ import {
   getInternalDocumentChangeEntries,
   getInternalDocumentChangeRanges,
   getInternalDocumentChangeRecords,
+  getInternalDocumentChangeRootKeys,
   getInternalDocumentRootChange,
   valueRoot,
   valueRootIndex,
@@ -62,6 +63,7 @@ import {
 } from '../core/plugin-registry';
 import { readingCovered } from '../core/property-validity';
 import {
+  applyDocumentChange,
   getActiveEditorUpdateId,
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -120,6 +122,7 @@ import { type Point, PointApi } from '../interfaces/point';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { getDefined } from '../internal/get-defined';
+import { MAIN_ROOT_KEY } from '../internal/root-location';
 import {
   blockOccurrencesOf,
   indexAuthoredChanges,
@@ -769,6 +772,62 @@ const contentOf = (value: JsonEditorValue): JsonEditorValue => {
 const contentChangeOf = (change: DocumentChange) =>
   withDocumentChangeRecords(change, NO_RECORD_OPS);
 
+/** Whether `change` only removes tokens, in roots it neither creates nor deletes. */
+const onlyRemovesTokens = (change: DocumentChange) =>
+  change.createRoots.size === 0 &&
+  change.deleteRoots.size === 0 &&
+  getInternalDocumentChangeRootKeys(change).every((root) =>
+    getDefined(getInternalDocumentRootChange(change, root)).sections.every(
+      (value, index) => index % 2 === 0 || value === 0 || value === -1
+    )
+  );
+
+/**
+ * Whether a decision settles by removing text alone, so its undo can take
+ * the settlement back apart from everything else it wrote: every change it
+ * decides is an accepted deletion of text leaves that each keep an inline
+ * sibling, it withdraws nothing, and its text change only removes tokens.
+ * Without a withdrawal, the decision's verdicts name every occurrence of
+ * every change it acts on.
+ */
+const settlesTextAlone = (
+  value: JsonEditorValue,
+  change: DocumentChange,
+  decided: readonly string[],
+  actions: ReadonlyMap<string, Outcome>,
+  occurrencesOf: (id: string) => readonly Occurrence[],
+  withdraws: boolean
+) => {
+  if (withdraws) return false;
+
+  const removed = new Map<readonly JsonNode[], number>();
+
+  for (const id of decided) {
+    if (actions.get(id) !== 'accept') return false;
+    for (const { mark, node, path, root } of occurrencesOf(id)) {
+      if (mark.kind !== 'delete' || typeof node.text !== 'string') {
+        return false;
+      }
+
+      let children: readonly JsonNode[] | undefined =
+        root === MAIN_ROOT_KEY ? value.children : value.roots?.[root];
+
+      for (const index of path.slice(0, -1)) {
+        children = children?.[index]?.children;
+      }
+
+      if (!children) return false;
+
+      const count = (removed.get(children) ?? 0) + 1;
+
+      if (count >= children.length) return false;
+      removed.set(children, count);
+    }
+  }
+
+  return onlyRemovesTokens(contentChangeOf(change));
+};
+
 type OwnRun = Readonly<{ from: number; path: readonly number[]; to: number }>;
 
 const nodePropsOf = ({
@@ -1404,6 +1463,8 @@ export const createAuthoredPlugin = (
     | Readonly<{
         change: DocumentChange;
         result: AuthoredResult;
+        /** Whether the change's text settles the decision, apart from its records. */
+        settles: boolean;
       }> => {
     const book = changesOf(editor, value);
     const actions = new Map<string, 'accept' | 'reject'>();
@@ -1543,20 +1604,24 @@ export const createAuthoredPlugin = (
 
     const change = decidedChange(value, decidedValue, actions);
 
-    return change.empty
-      ? { result: { ids: [], status: 'unchanged' } }
-      : {
-          change,
-          result: {
-            ids: [
-              ...new Set([
-                ...resolution.decided,
-                ...ids.filter((id) => !remains(id)),
-              ]),
-            ],
-            status: 'applied',
-          },
-        };
+    if (change.empty) return { result: { ids: [], status: 'unchanged' } };
+
+    const decidedIds = [
+      ...new Set([...resolution.decided, ...ids.filter((id) => !remains(id))]),
+    ];
+
+    return {
+      change,
+      result: { ids: decidedIds, status: 'applied' },
+      settles: settlesTextAlone(
+        value,
+        change,
+        [...new Set([...ids, ...decidedIds])],
+        actions,
+        (id) => book.occurrences(id),
+        withdraws
+      ),
+    };
   };
 
   return definePlugin('authored', {
@@ -1833,7 +1898,15 @@ export const createAuthoredPlugin = (
 
         if (update) stateOf(editor).passThrough.add(update);
         try {
-          tx.changes.apply(decided.change);
+          // One atomic step, so a refusal writes nothing and a read later in
+          // the update sees the decided document.
+          if (decided.settles) {
+            applyDocumentChange(getEditorRuntimeOwner(editor), decided.change, {
+              settles: 'content',
+            });
+          } else {
+            tx.changes.apply(decided.change);
+          }
         } catch (error) {
           if (isRefusal(error)) {
             return { ids: decided.result.ids, status: 'invalid' };

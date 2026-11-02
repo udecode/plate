@@ -769,7 +769,8 @@ const applyIfNested = (change: RootChange, document: DocumentIndex) => {
   }
 };
 
-const convergedResult = (
+/** @internal */
+export const convergedResult = (
   document: DocumentIndex,
   a: RootChange,
   b: RootChange,

@@ -18,6 +18,17 @@ export type CoreWork = {
   builders: number;
   /** Nodes the canonical pass opened past its check that a node is unchanged. */
   canonicalNodes: number;
+  /**
+   * Undo or redo steps history mapped by position because the carried
+   * projection refused them, or dropped because no map worked.
+   */
+  carriedFallbacks: number;
+  /** Lines a carried projection rebuilt. */
+  carriedLines: number;
+  /** Change sections a carried projection read. */
+  carriedSections: number;
+  /** Tokens a carried projection read, a letter each. */
+  carriedTokens: number;
   clampWrites: number;
   collapsedBoundaryVisits: number;
   composedProjectionSections: number;
@@ -105,8 +116,12 @@ export type CoreWork = {
   yjsChildrenRead: number;
   /** Lines the Yjs import's join search read beside a line the batch hid. */
   yjsJoinSiblingsRead: number;
+  /** Changed lines a Yjs import built from the letters each text kept. */
+  yjsLetterLines: number;
   /** Mark records a collaboration binding visits. */
   yjsMarkRecordsVisited: number;
+  /** Changed lines a Yjs import diffed by value, since the letters could not place them. */
+  yjsValueDiffLines: number;
   /** Changed nodes a commit read to move the index of unique values. */
   uniqueHolderReads: number;
   /** Elements the index of unique values was built from. */
@@ -130,6 +145,10 @@ export const coreWork: CoreWork = {
   bookCopies: 0,
   builders: 0,
   canonicalNodes: 0,
+  carriedFallbacks: 0,
+  carriedLines: 0,
+  carriedSections: 0,
+  carriedTokens: 0,
   clampWrites: 0,
   collapsedBoundaryVisits: 0,
   composedProjectionSections: 0,
@@ -176,7 +195,9 @@ export const coreWork: CoreWork = {
   rootOwnerChecks: 0,
   yjsChildrenRead: 0,
   yjsJoinSiblingsRead: 0,
+  yjsLetterLines: 0,
   yjsMarkRecordsVisited: 0,
+  yjsValueDiffLines: 0,
   uniqueHolderReads: 0,
   uniqueIndexedNodes: 0,
   valueGroupReads: 0,

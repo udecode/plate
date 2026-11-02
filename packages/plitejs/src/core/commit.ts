@@ -19,6 +19,7 @@ import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { failInvariant } from '../internal/fail-invariant';
 import type { CompletedTextDeletion } from './change/builder';
+import type { CarriedRun } from './change/carried-run';
 import { getDocumentChangeAfterPaths } from './change/classification';
 import {
   bindDocumentChangeNodeKeys,
@@ -30,7 +31,7 @@ import {
   valueRootIndex,
   valueRootNodes,
 } from './change/document-change';
-import { DocumentIndex, type NodeList } from './change/document-index';
+import type { DocumentIndex, NodeList } from './change/document-index';
 import type { JsonEditorValue } from './change/tokens';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { toInternalRoot, toPublicRoot } from './public-root';
@@ -78,9 +79,12 @@ type CommitInput<V extends Value> = Omit<
   beforeIndexAt?: (root: RootKey) => SnapshotIndex | undefined;
   beforeValue: EditorDocumentValue<V>;
   completedTextDeletion?: CompletedTextDeletion | null;
+  carried?: readonly CarriedRun[];
   editor: Editor<V>;
   replace?: boolean;
+  admission?: EditorCommitAdmission | null;
   settlement?: EditorCommitSettlement;
+  split?: EditorCommitSplit | null;
   selectionAfterRoot: RootKey;
   selectionBeforeRoot: RootKey;
 };
@@ -106,9 +110,33 @@ export type EditorCommitSettlement = Readonly<{
   change: DocumentChange;
 }>;
 
+/**
+ * A commit that settled a decision's text, split into what takes the
+ * settlement back and what undoes the rest.
+ */
+export type EditorCommitSplit = Readonly<{
+  rest: DocumentChange;
+  takeBack: DocumentChange;
+}>;
+
+/** What the commit's document admission repaired, from the value it saw. */
+export type EditorCommitAdmission = Readonly<{
+  base: EditorDocumentValue;
+  repair: DocumentChange;
+}>;
+
 const EDITOR_COMMIT_UNSETTLES = new WeakMap<
   EditorCommit,
   () => DocumentChange
+>();
+const EDITOR_COMMIT_RESTS = new WeakMap<EditorCommit, DocumentChange>();
+const EDITOR_COMMIT_CARRIED = new WeakMap<
+  EditorCommit,
+  readonly CarriedRun[]
+>();
+const EDITOR_COMMIT_ADMISSIONS = new WeakMap<
+  EditorCommit,
+  EditorCommitAdmission
 >();
 const EDITOR_COMMIT_ROOT_SNAPSHOTS = new WeakMap<
   EditorCommit,
@@ -198,6 +226,31 @@ export const getEditorCommitUnsettle = (
   commit: EditorCommit
 ): DocumentChange | null => EDITOR_COMMIT_UNSETTLES.get(commit)?.() ?? null;
 
+/**
+ * The undo of everything but the settlement, from the document the commit's
+ * unsettle gives, on a commit that settled a decision's text.
+ *
+ * @internal
+ */
+export const getEditorCommitRest = (
+  commit: EditorCommit
+): DocumentChange | null => EDITOR_COMMIT_RESTS.get(commit) ?? null;
+
+/**
+ * The runs the commit's change carried into an earlier sibling across closing
+ * tokens, each from its source in the commit's base to where it landed.
+ *
+ * @internal
+ */
+export const getEditorCommitCarriedRuns = (
+  commit: EditorCommit
+): readonly CarriedRun[] => EDITOR_COMMIT_CARRIED.get(commit) ?? [];
+
+/** @internal */
+export const getEditorCommitAdmission = (
+  commit: EditorCommit
+): EditorCommitAdmission | null => EDITOR_COMMIT_ADMISSIONS.get(commit) ?? null;
+
 /** @internal */
 export const getEditorCommitCompletedTextDeletion = (
   commit: EditorCommit
@@ -209,6 +262,24 @@ export const getEditorCommitStartedAt = (commit: EditorCommit): number =>
   EDITOR_COMMIT_STARTED_AT.get(commit) ??
   globalThis.performance?.now?.() ??
   Date.now();
+
+/**
+ * The top-level index of the node a changed range starts in, `side` 1, or
+ * ends in, `side` -1.
+ */
+const topLevelIndexAt = (
+  document: DocumentIndex,
+  position: number,
+  side: -1 | 1
+) => {
+  const [outer] = document.openContextAt(position);
+
+  if (outer) return outer.path[0];
+
+  const index = document.childBoundaryAt(position)?.index ?? 0;
+
+  return side === 1 ? index : index - 1;
+};
 
 const valueRoot = (value: JsonEditorValue, root: RootKey) =>
   root === 'main' ? value.children : (value.roots?.[root] ?? []);
@@ -684,11 +755,30 @@ const createCommitChanged = ({
       return details;
     }
 
-    const beforeRoot = valueRoot(before, root) as readonly Descendant[];
-    const afterRoot = valueRoot(after, root) as readonly Descendant[];
-    const beforeDocument = DocumentIndex.fromValue(beforeRoot);
-    const afterDocument = DocumentIndex.fromValue(afterRoot);
+    // The indexed roots, so a change reads only the top-level nodes it spans.
+    const beforeDocument = valueRootIndex(before, root);
+    const afterDocument = valueRootIndex(after, root);
+    const beforeRoot = beforeDocument.nodes as NodeList<Descendant>;
+    const afterRoot = afterDocument.nodes as NodeList<Descendant>;
     const change = getInternalDocumentRootChange(changes, root);
+    const changedTopLevel = () => {
+      let from = afterRoot.length;
+      let to = -1;
+
+      change?.iterChangedRanges(
+        (_fromBefore, _toBefore, fromAfter, toAfter) => {
+          from = Math.min(from, topLevelIndexAt(afterDocument, fromAfter, 1));
+          to = Math.max(to, topLevelIndexAt(afterDocument, toAfter, -1));
+        }
+      );
+      // A change of the top-level count moves every node after it.
+      if (beforeRoot.length !== afterRoot.length) to = afterRoot.length - 1;
+
+      return {
+        from: Math.max(0, from),
+        to: Math.min(to, afterRoot.length - 1),
+      };
+    };
     const touchedChangedNodeKeys = new Set<NodeKey>();
     const presenceNodeKeys = getPresenceNodeKeys(root);
     let pathNodeKeys: Set<NodeKey> | undefined;
@@ -723,11 +813,16 @@ const createCommitChanged = ({
           });
         }
       };
-      afterRoot.forEach((node, index) => {
-        if (beforeRoot[index] !== node) {
-          collectChangedPaths(beforeRoot[index], node, [index]);
+      const { from, to } = changedTopLevel();
+
+      for (let index = from; index <= to; index++) {
+        const node = afterRoot.at(index) as Descendant;
+        const beforeNode = beforeRoot.at(index);
+
+        if (beforeNode !== node) {
+          collectChangedPaths(beforeNode, node, [index]);
         }
-      });
+      }
       pathNodeKeys = keys;
 
       return keys;
@@ -816,13 +911,25 @@ const createCommitChanged = ({
       textNodeKeys,
       touchedNodeKeys: touchedChangedNodeKeys,
       get topLevelOrderChanged() {
-        return (topLevelOrderChanged ??=
-          beforeRoot.length !== afterRoot.length ||
-          afterRoot.some(
-            (node, index) =>
-              beforeRoot[index] !== node &&
-              innerBeforeIndex.keyAt([index]) !== innerAfterIndex.keyAt([index])
-          ));
+        if (topLevelOrderChanged !== undefined) return topLevelOrderChanged;
+        if (beforeRoot.length !== afterRoot.length) {
+          return (topLevelOrderChanged = true);
+        }
+
+        const { from, to } = changedTopLevel();
+
+        topLevelOrderChanged = false;
+        for (let index = from; index <= to; index++) {
+          if (
+            beforeRoot.at(index) !== afterRoot.at(index) &&
+            innerBeforeIndex.keyAt([index]) !== innerAfterIndex.keyAt([index])
+          ) {
+            topLevelOrderChanged = true;
+            break;
+          }
+        }
+
+        return topLevelOrderChanged;
       },
     });
 
@@ -949,10 +1056,8 @@ const createCommitChanged = ({
           }
           for (const [key] of afterPresenceIndex.entries()) afterKeys.add(key);
         } else if (change) {
-          const beforeDocument = DocumentIndex.fromValue(
-            valueRoot(before, root)
-          );
-          const afterDocument = DocumentIndex.fromValue(valueRoot(after, root));
+          const beforeDocument = valueRootIndex(before, root);
+          const afterDocument = valueRootIndex(after, root);
 
           change.iterChangedRanges(
             (fromBefore, toBefore, fromAfter, toAfter) => {
@@ -1102,13 +1207,16 @@ export const createEditorCommit = <V extends Value>(
   }
 ): EditorCommit<V> => {
   const {
+    admission,
     afterValue,
     beforeIndexAt,
     beforeValue,
+    carried,
     completedTextDeletion,
     editor,
     replace = false,
     settlement,
+    split,
     ...body
   } = input;
   const commit = {
@@ -1170,7 +1278,12 @@ export const createEditorCommit = <V extends Value>(
   if (completedTextDeletion) {
     EDITOR_COMMIT_COMPLETED_TEXT_DELETIONS.set(commit, completedTextDeletion);
   }
-  if (settlement) {
+  if (admission) EDITOR_COMMIT_ADMISSIONS.set(commit, admission);
+  if (carried?.length) EDITOR_COMMIT_CARRIED.set(commit, carried);
+  if (split) {
+    EDITOR_COMMIT_UNSETTLES.set(commit, () => split.takeBack);
+    EDITOR_COMMIT_RESTS.set(commit, split.rest);
+  } else if (settlement) {
     let unsettle: DocumentChange | undefined;
 
     EDITOR_COMMIT_UNSETTLES.set(

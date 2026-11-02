@@ -7,7 +7,12 @@ import {
   SelectionApi,
   type Value,
 } from '..';
-import { documentChangeWritesOnlyElementProperties } from '../core/change/document-change';
+import { carriesRun, type CarriedRun } from '../core/change/carried-run';
+import {
+  documentChangeWritesOnlyElementProperties,
+  getInternalDocumentRootChange,
+  valueRootIndex,
+} from '../core/change/document-change';
 import { getPluginRegistry as getInternalPluginRegistry } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import {
@@ -56,11 +61,38 @@ const encodeBatch = (editor: AnyEditor, batch: Batch): HistoryBatchJSON => ({
     ? { selectionBeforeRoot: batch.selectionBeforeRoot }
     : {}),
   ...(batch.unsettle ? { unsettle: batch.unsettle.toJSON() } : {}),
+  ...(batch.rest ? { rest: batch.rest.toJSON() } : {}),
+  ...(batch.carried ? { carried: batch.carried } : {}),
 });
+
+const isPosition = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
+
+const decodeCarriedRuns = (value: unknown): readonly CarriedRun[] | null =>
+  Array.isArray(value) &&
+  value.length > 0 &&
+  value.every(
+    (run) =>
+      isObject(run) &&
+      Object.keys(run).length === 4 &&
+      isPosition(run.at) &&
+      isPosition(run.length) &&
+      run.length > 0 &&
+      isPosition(run.source) &&
+      typeof run.root === 'string' &&
+      run.root.length > 0
+  )
+    ? value.map(({ at, length, root, source }) => ({
+        at,
+        length,
+        root,
+        source,
+      }))
+    : null;
 
 const isHistoryJSON = (value: unknown): value is HistoryJSON =>
   isObject(value) &&
-  value.version === 4 &&
+  (value.version === 4 || value.version === 5) &&
   isHistorySchemaIdentity(value.schema) &&
   Array.isArray(value.redos) &&
   Array.isArray(value.undos);
@@ -126,14 +158,34 @@ const validateBatchSelections = <V extends Value>(
       selectionAtBaseRoot ?? 'main'
     );
     if (batch.unsettle) {
-      if (!documentChangeWritesOnlyElementProperties(batch.unsettle, value)) {
+      if (
+        !batch.rest &&
+        !documentChangeWritesOnlyElementProperties(batch.unsettle, value)
+      ) {
         throw new Error(
           'A history step can take back only element properties its settle stage wrote.'
         );
       }
       editor.read.schema.assertDocument(batch.unsettle.apply(value));
     }
+    const base = value;
+
     value = batch.change.apply(value);
+    for (const run of batch.carried ?? []) {
+      const change = getInternalDocumentRootChange(batch.change, run.root);
+
+      if (
+        !change ||
+        !carriesRun(
+          change,
+          valueRootIndex(base, run.root),
+          valueRootIndex(value, run.root),
+          run
+        )
+      ) {
+        throw new Error('A history step carries a run its change does not.');
+      }
+    }
     editor.read.schema.assertDocument(value);
     assertSelectionSupported(
       editor,
@@ -163,11 +215,15 @@ const decodeBatch = <V extends Value>(
   editor: Editor<V>,
   input: unknown,
   effectTypes: ReadonlyMap<string, { type: EditorEffectType }>,
-  direction: 'redo' | 'undo'
+  direction: 'redo' | 'undo',
+  version: 4 | 5
 ): Batch<V> => {
   if (
     !isObject(input) ||
     (input.unsettle !== undefined && direction === 'redo') ||
+    (input.rest !== undefined &&
+      (version < 5 || input.unsettle === undefined)) ||
+    (input.carried !== undefined && version < 5) ||
     !Array.isArray(input.effects) ||
     !Object.hasOwn(input, 'change') ||
     !Object.hasOwn(input, 'selectionAfter') ||
@@ -183,6 +239,11 @@ const decodeBatch = <V extends Value>(
   ) {
     throw new Error('Invalid history batch JSON.');
   }
+
+  const carried =
+    input.carried === undefined ? undefined : decodeCarriedRuns(input.carried);
+
+  if (carried === null) throw new Error('Invalid history batch JSON.');
 
   const effects = input.effects.map((effect) => {
     if (!isObject(effect) || typeof effect.key !== 'string') {
@@ -239,6 +300,14 @@ const decodeBatch = <V extends Value>(
             input.unsettle as ReturnType<DocumentChange['toJSON']>
           ),
         }),
+    ...(input.rest === undefined
+      ? {}
+      : {
+          rest: DocumentChange.fromJSON(
+            input.rest as ReturnType<DocumentChange['toJSON']>
+          ),
+        }),
+    ...(carried ? { carried } : {}),
   };
 };
 
@@ -249,7 +318,7 @@ export const decodeHistoryValue = <V extends Value>(
 ): History<V> => {
   if (!isHistoryJSON(json)) {
     throw new Error(
-      'Invalid history JSON or unsupported history version; expected version 4.'
+      'Invalid history JSON or unsupported history version; expected version 4 or 5.'
     );
   }
 
@@ -261,14 +330,18 @@ export const decodeHistoryValue = <V extends Value>(
   const history = Object.freeze({
     redos: Object.freeze(
       json.redos.map((batch) =>
-        freezeHistoryBatch(decodeBatch(editor, batch, effectTypes, 'redo'))
+        freezeHistoryBatch(
+          decodeBatch(editor, batch, effectTypes, 'redo', json.version)
+        )
       )
     ),
     revision: 0,
     schema,
     undos: Object.freeze(
       json.undos.map((batch) =>
-        freezeHistoryBatch(decodeBatch(editor, batch, effectTypes, 'undo'))
+        freezeHistoryBatch(
+          decodeBatch(editor, batch, effectTypes, 'undo', json.version)
+        )
       )
     ),
   });
@@ -293,10 +366,15 @@ export const encodeHistoryValue = <V extends Value>(
       batch.effects.every((effect) => typeof effect.type.history !== 'object')
     );
 
+  const redos = persistent(history.redos);
+  const undos = persistent(history.undos);
+
   return {
-    redos: persistent(history.redos).map((batch) => encodeBatch(editor, batch)),
+    redos: redos.map((batch) => encodeBatch(editor, batch)),
     schema,
-    undos: persistent(history.undos).map((batch) => encodeBatch(editor, batch)),
-    version: 4,
+    undos: undos.map((batch) => encodeBatch(editor, batch)),
+    version: [...redos, ...undos].some((batch) => batch.rest || batch.carried)
+      ? 5
+      : 4,
   };
 };

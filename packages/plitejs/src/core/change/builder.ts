@@ -2,6 +2,12 @@ import { getDefined } from '../../internal/get-defined';
 import type { CompositionStamp } from '../composition-stamp';
 import { countCoreWork } from '../work';
 import {
+  type CarriedRun,
+  carriedRunOfMove,
+  carriesRun,
+  mapCarriedRunThrough,
+} from './carried-run';
+import {
   classifyRootChange,
   classifyRootChangeWithRuntimeCandidates,
   type DocumentChangeRootClassification,
@@ -21,6 +27,11 @@ import {
   valueRootIndex,
 } from './document-change';
 import { DocumentIndex, rootNodesOf } from './document-index';
+import {
+  type EnclosureShell,
+  unwrapNodeChange,
+  wrapChildrenChange,
+} from './enclosure';
 import type { JsonRecord } from './json';
 import type { CarriedDrop, Relocation } from './lineage';
 import {
@@ -31,6 +42,7 @@ import {
   textSpansIn,
 } from './new-letters';
 import {
+  keptRunsOf,
   RootChange,
   type DocumentSetPropertyResolver,
   insertNodeChange,
@@ -147,6 +159,8 @@ export type DraftStep = Readonly<{
   source: DraftStepSource;
   /** Runs this step landed from another place, when the schema tracks places. */
   relocations?: readonly Relocation[];
+  /** Runs this step carried into an earlier sibling across closing tokens. */
+  carried?: readonly CarriedRun[];
   /** Values a canonical step dropped because their nodes carried them. */
   drops?: readonly CarriedDrop[];
   /** The composition whose claimed text write applied this step. */
@@ -318,6 +332,15 @@ export class ChangeDraft {
   /** @internal */
   get draftSteps(): readonly DraftStep[] {
     return this.appliedSteps;
+  }
+
+  /**
+   * The runs the draft's steps carried, as the draft's change carries them.
+   *
+   * @internal
+   */
+  carriedRuns(): readonly CarriedRun[] {
+    return carriedRunsOf(this.appliedSteps);
   }
 
   /** @internal */
@@ -768,6 +791,7 @@ export class ChangeDraft {
   apply(
     change: DocumentChange,
     options: Readonly<{
+      carried?: readonly CarriedRun[];
       classify?: boolean;
       drops?: readonly CarriedDrop[];
       indexedAfter?: ReadonlyMap<string, DocumentIndex>;
@@ -862,6 +886,22 @@ export class ChangeDraft {
       this.indexes.delete(root);
     }
 
+    const carried = options.carried?.filter((run) => {
+      const rootChange = getInternalDocumentRootChange(
+        classifiedChange,
+        run.root
+      );
+      const beforeRoot = indexedBefore.get(run.root);
+      const afterRoot = indexedAfter.get(run.root);
+
+      return (
+        !!rootChange &&
+        !!beforeRoot &&
+        !!afterRoot &&
+        carriesRun(rootChange, beforeRoot, afterRoot, run)
+      );
+    });
+
     if (this.trackChanges) {
       this.accumulated = this.accumulated.empty
         ? classifiedChange
@@ -880,6 +920,7 @@ export class ChangeDraft {
             origin: this.originOf(options.origin),
             source: this.stepSource,
             ...(relocations?.length ? { relocations } : {}),
+            ...(carried?.length ? { carried } : {}),
             ...(options.drops?.length ? { drops: options.drops } : {}),
             ...(options.letters ? { letters: options.letters } : {}),
           })
@@ -1388,7 +1429,9 @@ export class ChangeDraft {
       undefined,
       this.recordsRelocations
         ? this.movedRun(root, document, path, change)
-        : undefined
+        : undefined,
+      undefined,
+      carriedRunOfMove(root, document, document.nodeRange(path), change)
     );
 
     if (wasCanonical && options.preservesRepresentation) {
@@ -1459,6 +1502,45 @@ export class ChangeDraft {
             children
           )
         : undefined
+    );
+  }
+
+  /** Enclose children of `path` in `wrapper`, keeping their tokens. */
+  wrapChildren(
+    root: string,
+    path: readonly number[],
+    index: number,
+    count: number,
+    wrapper: EnclosureShell
+  ) {
+    const document = this.getIndex(root);
+    const children =
+      path.length === 0
+        ? document.nodes.slice(index, index + count)
+        : (document.node(path).children ?? []).slice(index, index + count);
+
+    return this.applyRoot(
+      root,
+      'wrap',
+      wrapChildrenChange(document, path, index, count, wrapper),
+      document.withSplicedNodes(path, index, count, [{ ...wrapper, children }])
+    );
+  }
+
+  /** Remove the element at `path`, keeping its children's tokens in place. */
+  unwrapNode(root: string, path: readonly number[]) {
+    const document = this.getIndex(root);
+
+    return this.applyRoot(
+      root,
+      'unwrap',
+      unwrapNodeChange(document, path),
+      document.withSplicedNodes(
+        path.slice(0, -1),
+        getDefined(path.at(-1)),
+        1,
+        document.node(path).children ?? []
+      )
     );
   }
 
@@ -1689,13 +1771,15 @@ export class ChangeDraft {
     change: RootChange,
     indexedAfter?: DocumentIndex,
     relocations?: readonly Relocation[],
-    letters?: readonly LetterSpan[]
+    letters?: readonly LetterSpan[],
+    carried?: readonly CarriedRun[]
   ) {
     return this.apply(
       createInternalDocumentChange(
         change.empty ? new Map() : new Map([[root, change]])
       ),
       {
+        carried,
         indexedAfter: indexedAfter
           ? new Map([[root, indexedAfter]])
           : undefined,
@@ -1780,6 +1864,57 @@ export class ChangeDraft {
     return document;
   }
 }
+
+/**
+ * The runs `steps` carried, as their composed change carries them: each
+ * run's source in the first step's input and its landing in the last step's
+ * output. A later step that edits inside a run ends it.
+ *
+ * @internal
+ */
+export const carriedRunsOf = (
+  steps: readonly DraftStep[]
+): readonly CarriedRun[] => {
+  if (!steps.some((step) => step.carried)) return [];
+
+  const rootChange = (step: DraftStep, root: string) =>
+    getInternalDocumentRootChange(step.change, root) ?? null;
+  // Each run keeps its source in the input of the step that carried it,
+  // because an earlier step may have deleted tokens around it.
+  let runs: Array<Readonly<{ run: CarriedRun; step: number }>> = [];
+
+  for (const [index, step] of steps.entries()) {
+    runs = runs.flatMap(({ run, step: carriedAt }) => {
+      const change = rootChange(step, run.root);
+      const mapped = change ? mapCarriedRunThrough(run, change) : run;
+
+      return mapped ? [{ run: mapped, step: carriedAt }] : [];
+    });
+    for (const run of step.carried ?? []) runs.push({ run, step: index });
+  }
+
+  return runs.flatMap(({ run, step }) => {
+    const end = run.source + run.length;
+    const draft = steps
+      .slice(0, step)
+      .reduce<RootChange | null>((composed, earlier) => {
+        const change = rootChange(earlier, run.root);
+
+        return composed && change
+          ? composed.compose(change)
+          : (composed ?? change);
+      }, null);
+    const kept = draft
+      ? keptRunsOf(draft, run.source, end)
+      : [{ at: run.source, from: run.source, to: end }];
+
+    return kept.length === 1 &&
+      kept[0].from === run.source &&
+      kept[0].to === end
+      ? [{ ...run, source: kept[0].at }]
+      : [];
+  });
+};
 
 export const classifyDocumentChange = (
   before: JsonEditorValue,

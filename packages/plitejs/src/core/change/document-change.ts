@@ -27,7 +27,7 @@ import {
   rootIndexOf,
   rootNodesOf,
 } from './document-index';
-import { deepFreeze, isRecord, jsonEqual } from './json';
+import { deepFreeze, isRecord, jsonEqual, type JsonRecord } from './json';
 import { lazyRootOf, setLazyRoot } from './lazy-root';
 import {
   collapseElementPropertyWrites,
@@ -859,7 +859,8 @@ export const documentChangeWritesOnlyElementProperties = (
 export const collapseDocumentElementPropertyWrites = (
   change: DocumentChange,
   value: JsonEditorValue,
-  isSetValued: DocumentSetPropertyResolver
+  isSetValued: DocumentSetPropertyResolver,
+  { textLeaves = false }: Readonly<{ textLeaves?: boolean }> = {}
 ) =>
   createInternalDocumentChange(
     new Map(
@@ -871,7 +872,8 @@ export const collapseDocumentElementPropertyWrites = (
               rootChange,
               valueRootIndex(value, root),
               isSetValued,
-              root === 'main' ? null : root
+              root === 'main' ? null : root,
+              textLeaves
             ),
           ] as const
       )
@@ -1369,71 +1371,7 @@ export class DocumentChange {
     b: DocumentChange,
     value: JsonEditorValue
   ) {
-    const roots = new Set([
-      ...[...getInternalDocumentChangeEntries(a)].map(([root]) => root),
-      ...[...getInternalDocumentChangeEntries(b)].map(([root]) => root),
-    ]);
-    const aChanges = new Map<string, RootChange>();
-    const bChanges = new Map<string, RootChange>();
-
-    for (const root of roots) {
-      const aChange = getInternalDocumentRootChange(a, root);
-      const bChange = getInternalDocumentRootChange(b, root);
-
-      if (aChange && bChange) {
-        const document = valueRootIndex(value, root);
-        const transformed = RootChange.transformInDocument(
-          aChange,
-          bChange,
-          document
-        );
-
-        if (!transformed.a.empty) aChanges.set(root, transformed.a);
-        if (!transformed.b.empty) bChanges.set(root, transformed.b);
-      } else if (aChange) {
-        aChanges.set(root, aChange);
-      } else if (bChange) {
-        bChanges.set(root, bChange);
-      }
-    }
-
-    const lifecycleRoots = new Set([
-      ...a.createRoots,
-      ...a.deleteRoots,
-      ...b.createRoots,
-      ...b.deleteRoots,
-    ]);
-
-    for (const root of lifecycleRoots) {
-      const aTouches =
-        a.createRoots.has(root) ||
-        a.deleteRoots.has(root) ||
-        !!getInternalDocumentRootChange(a, root);
-      const bTouches =
-        b.createRoots.has(root) ||
-        b.deleteRoots.has(root) ||
-        !!getInternalDocumentRootChange(b, root);
-
-      if (aTouches && bTouches) {
-        throw new Error(
-          `Cannot transform concurrent root lifecycle changes for ${root}.`
-        );
-      }
-    }
-
-    // Record ids name their content, so puts and drops commute.
-    return {
-      a: createInternalDocumentChange(aChanges, {
-        createRoots: a.createRoots,
-        deleteRoots: a.deleteRoots,
-        records: getInternalDocumentChangeRecords(a),
-      }),
-      b: createInternalDocumentChange(bChanges, {
-        createRoots: b.createRoots,
-        deleteRoots: b.deleteRoots,
-        records: getInternalDocumentChangeRecords(b),
-      }),
-    };
+    return transformInternalDocumentChange(a, b, value);
   }
 
   /**
@@ -1696,6 +1634,107 @@ export class DocumentChange {
     };
   }
 }
+
+/**
+ * `DocumentChange.transform`, with `keepEqualEdits` for one author's
+ * take-back and later edit, which are never copies of each other even where
+ * they match, and `replay` for a recorded step `b` replayed over `a`, whose
+ * `pieceProps` gives the properties of a next piece of a split element.
+ *
+ * @internal
+ */
+export const transformInternalDocumentChange = (
+  a: DocumentChange,
+  b: DocumentChange,
+  value: JsonEditorValue,
+  {
+    keepEqualEdits = false,
+    replay,
+  }: Readonly<{
+    keepEqualEdits?: boolean;
+    replay?: Readonly<{
+      pieceProps: (
+        element: JsonNode,
+        parent: readonly number[],
+        root: string,
+        nodes: NodeList
+      ) => JsonRecord;
+    }>;
+  }> = {}
+) => {
+  const roots = new Set([
+    ...[...getInternalDocumentChangeEntries(a)].map(([root]) => root),
+    ...[...getInternalDocumentChangeEntries(b)].map(([root]) => root),
+  ]);
+  const aChanges = new Map<string, RootChange>();
+  const bChanges = new Map<string, RootChange>();
+
+  for (const root of roots) {
+    const aChange = getInternalDocumentRootChange(a, root);
+    const bChange = getInternalDocumentRootChange(b, root);
+
+    if (aChange && bChange) {
+      const document = valueRootIndex(value, root);
+      const transformed = RootChange.transformInDocument(
+        aChange,
+        bChange,
+        document,
+        {
+          keepEqualEdits,
+          replay: replay && {
+            pieceProps: (element, parent, nodes) =>
+              replay.pieceProps(element, parent, root, nodes),
+          },
+        }
+      );
+
+      if (!transformed.a.empty) aChanges.set(root, transformed.a);
+      if (!transformed.b.empty) bChanges.set(root, transformed.b);
+    } else if (aChange) {
+      aChanges.set(root, aChange);
+    } else if (bChange) {
+      bChanges.set(root, bChange);
+    }
+  }
+
+  const lifecycleRoots = new Set([
+    ...a.createRoots,
+    ...a.deleteRoots,
+    ...b.createRoots,
+    ...b.deleteRoots,
+  ]);
+
+  for (const root of lifecycleRoots) {
+    const aTouches =
+      a.createRoots.has(root) ||
+      a.deleteRoots.has(root) ||
+      !!getInternalDocumentRootChange(a, root);
+    const bTouches =
+      b.createRoots.has(root) ||
+      b.deleteRoots.has(root) ||
+      !!getInternalDocumentRootChange(b, root);
+
+    if (aTouches && bTouches) {
+      throw new Error(
+        `Cannot transform concurrent root lifecycle changes for ${root}.`
+      );
+    }
+  }
+
+  // Record ids name their content, so puts and drops commute.
+  return {
+    a: createInternalDocumentChange(aChanges, {
+      createRoots: a.createRoots,
+      deleteRoots: a.deleteRoots,
+      records: getInternalDocumentChangeRecords(a),
+    }),
+    b: createInternalDocumentChange(bChanges, {
+      createRoots: b.createRoots,
+      deleteRoots: b.deleteRoots,
+      records: getInternalDocumentChangeRecords(b),
+    }),
+  };
+};
 
 export const applyDocumentChangeValue = <T extends JsonEditorValue>(
   change: DocumentChange,

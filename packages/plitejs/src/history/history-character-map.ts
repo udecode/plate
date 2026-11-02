@@ -173,11 +173,17 @@ const retainedRanges = (
   return ranges;
 };
 
+/**
+ * Pair the letters of `before` with the letters `change` keeps in `after`.
+ * With `exact`, letters pair only through the tokens `change` retains and
+ * the parents it moves whole, never by comparing letter values.
+ */
 export const createCharacterCorrespondence = (
   before: JsonEditorValue,
   after: JsonEditorValue,
   change: DocumentChange,
-  root: string
+  root: string,
+  exact = false
 ) => {
   const source = valueRootIndex(before, root);
   const target = valueRootIndex(after, root);
@@ -202,10 +208,55 @@ export const createCharacterCorrespondence = (
     string,
     Projection | Readonly<{ retained: RootChange }> | null
   >();
+  const exactParent = (parentPath: readonly number[]) => {
+    const rootChange = getInternalDocumentRootChange(change, root);
+
+    if (!rootChange) return null;
+    relocations ??= getDocumentChangeRelocations(change, root, source, target);
+    const relocation = relocations.find(
+      (move) =>
+        move.path.length <= parentPath.length &&
+        move.path.every((part, at) => part === parentPath[at])
+    );
+    if (relocation) {
+      const nextPath = [
+        ...relocation.targetPath,
+        ...parentPath.slice(relocation.path.length),
+      ];
+      const previous = source.node(parentPath);
+      const next = target.node(nextPath);
+
+      if (!isTextNode(previous) && next && !isTextNode(next)) {
+        const from = DocumentIndex.fromValue(project(previous.children));
+        const to = DocumentIndex.fromValue(project(next.children));
+        const kept = RootChange.between(from, to);
+
+        if (kept.empty) {
+          return {
+            path: nextPath,
+            children: next.children,
+            before: from,
+            after: to,
+            change: kept,
+          };
+        }
+      }
+    }
+
+    return { retained: rootChange };
+  };
   const parentPair = (path: readonly number[]) => {
     const parentPath = path.slice(0, -1);
     const key = parentPath.join('.');
     if (parents.has(key)) return parents.get(key) ?? null;
+    if (exact) {
+      const moved = exactParent(parentPath);
+
+      if (moved) {
+        parents.set(key, moved);
+        return moved;
+      }
+    }
     const range = source.nodeRange(parentPath);
     const joined = joinedChange(range);
     if (joined) {

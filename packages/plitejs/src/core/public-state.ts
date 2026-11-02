@@ -170,11 +170,13 @@ import { withAuthoredViewRead } from './authored-runtime';
 import { notifyEditorChangeListeners } from './change-events';
 import {
   ChangeDraft,
+  carriedRunsOf,
   type DocumentChangeStep,
   type DraftStep,
   type DraftStepMove,
   type DraftStepSource,
 } from './change/builder';
+import type { CarriedRun } from './change/carried-run';
 import {
   classifyDocumentChangeRoot,
   classifyRootChangeWithRuntimeCandidates,
@@ -187,11 +189,14 @@ import {
   documentChangeWritesOnlyElementProperties,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRecords,
   getInternalDocumentRootChange,
   DocumentChange,
+  transformInternalDocumentChange,
   valueRoot,
   valueRootIndex,
   valueRootNodes,
+  withDocumentChangeRecords,
 } from './change/document-change';
 import {
   DocumentIndex,
@@ -212,7 +217,7 @@ import {
   mergeSpans,
   type NewLetters,
 } from './change/new-letters';
-import type { RootChange } from './change/root-change';
+import { keptRunsOf, type RootChange } from './change/root-change';
 import type { JsonEditorValue } from './change/tokens';
 import {
   cloneFrozen,
@@ -345,6 +350,7 @@ import {
   deriveValue,
   EMPTY_RECORD_STORE,
   getValueRecords,
+  NO_RECORD_OPS,
   recordDrop,
   recordOpsBetween,
   recordPut,
@@ -479,6 +485,26 @@ type AnyPluginEditor = Editor;
 
 export type TransactionAuthority = 'explicit' | 'replace' | 'update';
 
+/**
+ * What an update settled kept apart from everything else it did, once a step
+ * settles: so its undo takes back the settlement first, and its redo replays
+ * only the rest and leaves the settling to admission. A draft step that skips
+ * the split's bookkeeping drops it, and the update undoes as one change.
+ */
+type SettlementSplit =
+  | Readonly<{
+      kind: 'carried';
+      /** The draft's change after the last step the split saw. */
+      at: DocumentChange;
+      /** From the draft to `unsettled`. */
+      takeBack: DocumentChange;
+      /** From `unsettled` to the transaction's base. */
+      rest: DocumentChange;
+      /** The draft without what the update settled. */
+      unsettled: JsonEditorValue;
+    }>
+  | Readonly<{ kind: 'dropped' }>;
+
 type TransactionSnapshot = {
   activeChange: {
     change: DocumentChange;
@@ -486,6 +512,7 @@ type TransactionSnapshot = {
   admissionBase?: EditorDocumentValue;
   admissionRepair?: DocumentChange;
   settlement?: EditorCommitSettlement;
+  settlementSplit?: SettlementSplit;
   baseRuntimeIndexes: Record<string, () => SnapshotIndex>;
   baseSnapshots: Record<string, EditorSnapshot>;
   builder: ChangeDraft;
@@ -1603,6 +1630,77 @@ const settleBeforeRecordingFrontier = (
   dropOrphanedRoots(editor, { notifyTransactionListeners: false });
 };
 
+/**
+ * A run a plain draft carried: its source in the document the recorder
+ * started from and its landing in the document commands wrote. The two can
+ * differ in length when the recorder's document holds content the commands
+ * did not see.
+ */
+export type DraftRun = Readonly<{
+  at: number;
+  end: number;
+  root: string;
+  source: number;
+  sourceEnd: number;
+}>;
+
+/** The runs `steps` carried, as spans of the documents they ran between. */
+export const draftRunsOf = (
+  steps: readonly DraftStep[],
+  toBefore?: PositionMap
+): readonly DraftRun[] =>
+  carriedRunsOf(steps).flatMap((run) => {
+    const source = toBefore ? toBefore(run.root, run.source, 1) : run.source;
+    const sourceEnd = toBefore
+      ? toBefore(run.root, run.source + run.length, -1)
+      : run.source + run.length;
+
+    return source === null || sourceEnd === null
+      ? []
+      : [
+          {
+            at: run.at,
+            end: run.at + run.length,
+            root: run.root,
+            source,
+            sourceEnd,
+          },
+        ];
+  });
+
+/**
+ * The runs the recorded change carries, from the runs the plain draft
+ * carried: each landing follows the recorder's map, and each source maps back
+ * through the drafts recorded before. A run whose two spans differ in length
+ * is not one the recorded change carries.
+ */
+const recordedRunsOf = (
+  runs: readonly DraftRun[],
+  toRecorded: PositionMap,
+  frontier: DocumentChange | null
+): readonly CarriedRun[] =>
+  runs.flatMap((run) => {
+    const at = toRecorded(run.root, run.at, 1);
+    const end = toRecorded(run.root, run.end, -1);
+    const length = run.sourceEnd - run.source;
+    const before = frontier
+      ? getInternalDocumentRootChange(frontier, run.root)
+      : undefined;
+    const kept = before
+      ? keptRunsOf(before, run.source, run.sourceEnd)
+      : [{ at: run.source, from: run.source, to: run.sourceEnd }];
+
+    return at === null ||
+      end === null ||
+      end - at !== length ||
+      length <= 0 ||
+      kept.length !== 1 ||
+      kept[0].from !== run.source ||
+      kept[0].to !== run.sourceEnd
+      ? []
+      : [{ at, length, root: run.root, source: kept[0].at }];
+  });
+
 export const commitRecordedDraft = (
   editor: Editor,
   context: TransactionSpecContext,
@@ -1612,6 +1710,7 @@ export const commitRecordedDraft = (
     carried,
     letters,
     plain,
+    runs,
     storedToWritten,
   }: Readonly<{
     /** The draft's placements, with its bookmarks in recorded coordinates. */
@@ -1619,6 +1718,8 @@ export const commitRecordedDraft = (
     /** A frame draft's new letters, in its written document. */
     letters?: NewLetters;
     plain?: PlainDraft;
+    /** The runs the plain draft carried. */
+    runs?: readonly DraftRun[];
     storedToWritten?: PositionMap;
   }> = {}
 ) => {
@@ -1639,6 +1740,10 @@ export const commitRecordedDraft = (
       }
     : null;
   const recordedLetters = new Map<string, LetterSpan[]>();
+  const recordedRuns =
+    mapPosition && runs?.length
+      ? recordedRunsOf(runs, mapPosition, frontier?.change ?? null)
+      : [];
 
   if (mapPosition && plainToRecorded) {
     for (const [root, spans] of [
@@ -1703,6 +1808,7 @@ export const commitRecordedDraft = (
           ? { indexedAfter: recorded.indexedAfter }
           : {}),
         ...(recordedLetters.size > 0 ? { letters: recordedLetters } : {}),
+        ...(recordedRuns.length > 0 ? { carried: recordedRuns } : {}),
       }),
       { notifyTransactionListeners: false }
     );
@@ -1800,6 +1906,7 @@ export const runEditorDocumentRecorder = (editor: Editor) => {
   commitRecordedDraft(editor, context, recorded, selectionRoot, {
     carried: recordedCarets(carried, recorded),
     plain,
+    runs: draftRunsOf(steps),
   });
 };
 
@@ -1942,7 +2049,8 @@ const admitTransactionDraft = (editor: Editor) => {
   const loads = replaces && !collaboration;
   const applyRepair = (
     after: EditorDocumentValue,
-    repaired: DocumentChange
+    repaired: DocumentChange,
+    settles?: 'all'
   ) => {
     const repair = withoutRepairOrphans(schema, after, {
       change: repaired,
@@ -1952,15 +2060,22 @@ const admitTransactionDraft = (editor: Editor) => {
     applyTransactionSpecDocumentChangeStep(
       editor,
       snapshot.builder.apply(repair),
-      { notifyTransactionListeners: false, selectionMapping: 'representation' }
+      {
+        notifyTransactionListeners: false,
+        selectionMapping: 'representation',
+        settles,
+      }
     );
 
+    // A settling repair's canonical merge settles too, so the take-back
+    // never lands inside the text the merge joined.
     const constructed = snapshot.builder.finalize();
 
     if (constructed) {
       applyTransactionSpecDocumentChangeStep(editor, constructed, {
         notifyTransactionListeners: false,
         selectionMapping: 'representation',
+        settles,
       });
     }
     const change = constructed ? repair.compose(constructed.change) : repair;
@@ -1992,7 +2107,17 @@ const admitTransactionDraft = (editor: Editor) => {
       if (pass === 2) {
         throw new Error('Document admission repaired its own repair twice.');
       }
-      change = applyRepair(after, repaired);
+      change = DocumentChange.isDocumentChange(repaired)
+        ? applyRepair(after, repaired)
+        : (repaired.reduce<DocumentChange | null>((applied, part) => {
+            const next = applyRepair(
+              snapshot.builder.value as EditorDocumentValue,
+              part.change,
+              part.settles ? 'all' : undefined
+            );
+
+            return applied ? applied.compose(next) : next;
+          }, null) ?? DocumentChange.empty);
       repairs = repairs ? repairs.compose(change) : change;
       before = after;
     }
@@ -2039,7 +2164,13 @@ const admitTransactionDraft = (editor: Editor) => {
   if (!settled) return;
   applyEditorUpdateTag(snapshot.tags, DOCUMENT_SETTLED_TAG);
 
-  const settlement = applyRepair(admitted, settled);
+  // With a decision's settlement already split off, the shown values this
+  // stage settles join its take-back.
+  const settlement = applyRepair(
+    admitted,
+    settled,
+    snapshot.settlementSplit?.kind === 'carried' ? 'all' : undefined
+  );
   const closing = admit(admitted, settlement);
   const change = closing ? settlement.compose(closing) : settlement;
 
@@ -11048,6 +11179,11 @@ type ApplyDocumentChangeOptions = Readonly<{
   selection?: Readonly<{ root: RootKey; value: Selection }>;
   selectionAssociation?: 'backward' | 'forward' | 'inward' | 'outward';
   selectionMapping?: 'representation';
+  /**
+   * The part of the step the update settles: all of it, or its content while
+   * its record writes stay ordinary edits.
+   */
+  settles?: 'all' | 'content';
 }>;
 
 const getDocumentRootChildren = (
@@ -11177,6 +11313,196 @@ const inheritDocumentChangeStepNodeKeys = (
   return indexes;
 };
 
+const DROPPED_SPLIT: SettlementSplit = Object.freeze({ kind: 'dropped' });
+
+const touchesRootLifecycle = (change: DocumentChange, edit: DocumentChange) =>
+  [...edit.createRoots, ...edit.deleteRoots].some(
+    (root) =>
+      change.createRoots.has(root) ||
+      change.deleteRoots.has(root) ||
+      !!getInternalDocumentRootChange(change, root)
+  );
+
+type ChangeReach = Readonly<{
+  covered: ReadonlyArray<readonly [number, number]>;
+  points: readonly number[];
+}>;
+
+/**
+ * Where a root change acts in its input: the token ranges it removes or
+ * writes, a write covering the whole node it writes, and the points it
+ * inserts at.
+ */
+const reachOf = (change: RootChange, document: DocumentIndex): ChangeReach => {
+  const covered: Array<readonly [number, number]> = [];
+  const points: number[] = [];
+  let position = 0;
+
+  for (let section = 0; section < change.sections.length; section += 2) {
+    const length = change.sections[section];
+    const inserted = change.sections[section + 1];
+
+    if (inserted === -2) {
+      covered.push([
+        position,
+        document.nodeStartingAt(position)?.to ?? position + length,
+      ]);
+    } else if (inserted >= 0) {
+      if (length > 0) covered.push([position, position + length]);
+      if (inserted > 0) points.push(position);
+    }
+    position += length;
+  }
+
+  return { covered, points };
+};
+
+const reachesInto = (from: ChangeReach, into: ChangeReach) =>
+  from.covered.some(([start, end]) =>
+    into.covered.some(
+      ([intoStart, intoEnd]) => start < intoEnd && intoStart < end
+    )
+  ) ||
+  from.points.some((point) =>
+    into.covered.some(([start, end]) => start < point && point < end)
+  );
+
+/**
+ * Whether `edit` and the take-back act on the same content: a token both
+ * remove or write, or a point one inserts at inside what the other removes
+ * or writes. The transform settles such a pair by values, so the update
+ * undoes as one change instead.
+ */
+const reachesTakeBack = (
+  takeBack: DocumentChange,
+  edit: DocumentChange,
+  value: JsonEditorValue
+) =>
+  [...getInternalDocumentChangeEntries(edit)].some(([root, change]) => {
+    const taken = getInternalDocumentRootChange(takeBack, root);
+
+    if (!taken) return false;
+
+    const document = valueRootIndex(value, root);
+    const takeBackReach = reachOf(taken, document);
+    const editReach = reachOf(change, document);
+
+    return (
+      reachesInto(takeBackReach, editReach) ||
+      reachesInto(editReach, takeBackReach)
+    );
+  });
+
+/**
+ * Move the update's settlement split past `step`: an ordinary step moves the
+ * take-back and joins the rest, and a settling step joins the take-back.
+ */
+const advanceSettlementSplit = (
+  snapshot: TransactionSnapshot,
+  step: DocumentChangeStep,
+  settles: ApplyDocumentChangeOptions['settles']
+): SettlementSplit | undefined => {
+  const split = snapshot.settlementSplit;
+
+  if (split?.kind === 'dropped') return split;
+  if (!split && !settles) return undefined;
+  if (split && snapshot.activeChange.change !== split.at) return DROPPED_SPLIT;
+
+  const { before } = step;
+  let carried = split ?? {
+    rest: snapshot.activeChange.change.invert(
+      getChangeValue(snapshot.roots, snapshot.records)
+    ),
+    takeBack: DocumentChange.empty,
+    unsettled: before,
+  };
+  const ordinary = (edit: DocumentChange) => {
+    if (
+      touchesRootLifecycle(carried.takeBack, edit) ||
+      reachesTakeBack(carried.takeBack, edit, before)
+    ) {
+      return false;
+    }
+
+    // The take-back and the edit are two edits even where they match, so a
+    // re-inserted struck leaf never takes over a leaf the update inserted.
+    const { a, b } = transformInternalDocumentChange(
+      carried.takeBack,
+      edit,
+      before,
+      { keepEqualEdits: true }
+    );
+
+    carried = {
+      rest: b.invert(carried.unsettled).compose(carried.rest),
+      takeBack: a,
+      unsettled: b.apply(carried.unsettled),
+    };
+    return true;
+  };
+
+  if (!settles) {
+    if (!ordinary(step.change)) return DROPPED_SPLIT;
+  } else {
+    const records = getInternalDocumentChangeRecords(step.change);
+    const settled =
+      settles === 'content'
+        ? withDocumentChangeRecords(step.change, NO_RECORD_OPS)
+        : step.change;
+
+    if (
+      settles === 'content' &&
+      records.size > 0 &&
+      !ordinary(
+        withDocumentChangeRecords(
+          createInternalDocumentChange(new Map()),
+          records
+        )
+      )
+    ) {
+      return DROPPED_SPLIT;
+    }
+    carried = {
+      ...carried,
+      takeBack: settled.invert(before).compose(carried.takeBack),
+    };
+  }
+
+  return { ...carried, at: snapshot.builder.change, kind: 'carried' };
+};
+
+/**
+ * The update's settlement split as its commit keeps it, or `null` when the
+ * draft's change left the split behind or taking the settlement back would
+ * need a canonical repair, so the commit undoes as one change.
+ */
+const committedSettlementSplit = (
+  editor: Editor,
+  snapshot: TransactionSnapshot,
+  after: EditorDocumentValue
+) => {
+  const split = snapshot.settlementSplit;
+
+  if (split?.kind !== 'carried') return null;
+  if (split.at !== snapshot.activeChange.change) return null;
+
+  const { rest, takeBack } = split;
+  const unsettled = takeBack.apply(after);
+
+  if (
+    !constructCanonicalDocumentChange(editor, unsettled, takeBack, {
+      before: after,
+      displacement: 'none',
+      preserveInlineSpacersAdjacentTo: (root) =>
+        getProtectedInlineSpacerNodes(editor, unsettled, root),
+    }).empty
+  ) {
+    return null;
+  }
+
+  return { rest, takeBack };
+};
+
 const applyTransactionSpecDocumentChangeStep = (
   editor: Editor,
   step: DocumentChangeStep,
@@ -11189,6 +11515,12 @@ const applyTransactionSpecDocumentChangeStep = (
   if (!snapshot || !specContext) {
     throw new Error('Missing transaction-spec builder state.');
   }
+
+  snapshot.settlementSplit = advanceSettlementSplit(
+    snapshot,
+    step,
+    options.settles
+  );
 
   const before = step.before as EditorDocumentValue;
   const after = step.after as EditorDocumentValue;
@@ -11991,7 +12323,9 @@ export const runEditorTransaction = <R>(
             const change = profileCoreDuration('build-change', () =>
               createEditorCommit(
                 {
+                  admission: admitted,
                   settlement: snapshot.settlement,
+                  split: committedSettlementSplit(editor, snapshot, afterValue),
                   after: afterSnapshot,
                   afterValue,
                   annotations: Object.fromEntries(
@@ -12003,6 +12337,10 @@ export const runEditorTransaction = <R>(
                   before: beforeSnapshot,
                   beforeIndexAt,
                   beforeValue,
+                  carried:
+                    canonicalChanges === snapshot.builder.change
+                      ? snapshot.builder.carriedRuns()
+                      : [],
                   changes: canonicalChanges,
                   completedTextDeletion,
                   dirtyStateKeys: [...snapshot.dirtyStateKeys],

@@ -81,6 +81,7 @@ import {
   decidedIn,
   factsOf,
   insertionsOf,
+  type ReviewFacts,
 } from './facts';
 import {
   CONTEXTS,
@@ -90,7 +91,12 @@ import {
   reserveDropsOf,
   VERDICTS,
 } from './records';
-import { keyReadingOf, repairKeys, settleValue } from './settle';
+import {
+  keyReadingOf,
+  repairKeys,
+  type SettleOptions,
+  settleValue,
+} from './settle';
 
 type ReviewLedger = NonNullable<ReturnType<typeof getReviewLedger>>;
 
@@ -498,6 +504,59 @@ const settledLoad = (
   return { change, value: change.apply(document) };
 };
 
+/**
+ * Settle the blocks a replay's verdicts name, then every other block in
+ * `settled`, or `null` when the verdicts settle nothing or change how many
+ * blocks a root holds, so the two passes would not name the same blocks.
+ */
+const settleDecidedApart = <V extends JsonEditorValue>(
+  value: V,
+  facts: ReviewFacts,
+  decided: ReadonlyMap<string, readonly number[]>,
+  settled: ReadonlyMap<string, ReadonlySet<number>>,
+  options: SettleOptions
+) => {
+  const first = settleValue(
+    value,
+    facts,
+    new Map([...decided].map(([root, ranks]) => [root, new Set(ranks)])),
+    options
+  );
+
+  if (!first.value || !first.change) return null;
+
+  const decidedValue = first.value;
+
+  const blocksIn = (of: JsonEditorValue, root: string) =>
+    (root === 'main' ? of.children : of.roots?.[root])?.length;
+
+  for (const root of decided.keys()) {
+    if (blocksIn(value, root) !== blocksIn(decidedValue, root)) return null;
+  }
+
+  const others = new Map(
+    [...settled].map(([root, ranks]) => {
+      const named = new Set(decided.get(root));
+
+      return [root, new Set([...ranks].filter((rank) => !named.has(rank)))];
+    })
+  );
+
+  return {
+    change: first.change,
+    rest: settleValue(
+      decidedValue,
+      {
+        ...factsOf(decidedValue),
+        insertedIncarnations: facts.insertedIncarnations,
+      },
+      others,
+      options
+    ),
+    value: decidedValue,
+  };
+};
+
 export const authoredAdmission: DocumentAdmission = {
   commit: ({ after, before, change, editor, indexOf, loads }) => {
     const records = getInternalDocumentChangeRecords(change);
@@ -595,31 +654,48 @@ export const authoredAdmission: DocumentAdmission = {
       }
     }
 
-    if (decided.length > 0) {
-      const ledger = getDefined(getReviewLedger(getEditorRuntimeOwner(editor)));
+    const decidedRanks =
+      decided.length > 0
+        ? getDefined(
+            getReviewLedger(getEditorRuntimeOwner(editor))
+          ).ranksNaming(after, decided)
+        : null;
 
-      for (const [root, ranks] of ledger.ranksNaming(after, decided)) {
-        const at = settled.get(root) ?? new Set<number>();
+    for (const [root, ranks] of decidedRanks ?? []) {
+      const at = settled.get(root) ?? new Set<number>();
 
-        for (const rank of ranks) at.add(rank);
-        settled.set(root, at);
-      }
+      for (const rank of ranks) at.add(rank);
+      settled.set(root, at);
     }
 
     const schema = getCompiledEditorSchema(editor);
-    const settlement = settleValue(
-      compacted,
-      { ...compactedFacts, insertedIncarnations: () => counts },
-      settled,
-      {
-        resolveSchema: () =>
-          authoredResolveSchemaOf(editor, { generates: loads }),
-        returnsHeld: true,
-        restoreMissingFormats,
-        schema,
-      }
-    );
-    const admitted = settlement.value ?? compacted;
+    const settleOptions = {
+      resolveSchema: () =>
+        authoredResolveSchemaOf(editor, { generates: loads }),
+      returnsHeld: true,
+      restoreMissingFormats,
+      schema,
+    };
+    const decidedSettlement =
+      replaysLocalHistory && decidedRanks
+        ? settleDecidedApart(
+            compacted,
+            { ...compactedFacts, insertedIncarnations: () => counts },
+            decidedRanks,
+            settled,
+            settleOptions
+          )
+        : null;
+    const settlement =
+      decidedSettlement?.rest ??
+      settleValue(
+        compacted,
+        { ...compactedFacts, insertedIncarnations: () => counts },
+        settled,
+        settleOptions
+      );
+    const settledFrom = decidedSettlement?.value ?? compacted;
+    const admitted = settlement.value ?? settledFrom;
     // A replacement loads its document, whose pending changes may lack spares
     // or hold storage the schema no longer reads.
     const readable = loads ? withReadableStorage(admitted, schema) : admitted;
@@ -632,21 +708,46 @@ export const authoredAdmission: DocumentAdmission = {
       spares
     );
 
-    return spared === after
-      ? null
-      : repairOf(
-          after,
-          spared,
-          [
-            replay,
-            shrunk === replayed
-              ? null
-              : propertiesChange(replayed, shrunk, scope),
-            settlement.change,
-            spared === admitted ? null : propertiesChange(admitted, spared),
-          ],
-          indexOf
-        );
+    if (spared === after) return null;
+
+    const compaction = [
+      replay,
+      shrunk === replayed ? null : propertiesChange(replayed, shrunk, scope),
+    ];
+    const rest = [
+      settlement.change,
+      spared === admitted ? null : propertiesChange(admitted, spared),
+    ];
+
+    if (!decidedSettlement) {
+      return repairOf(after, spared, [...compaction, ...rest], indexOf);
+    }
+
+    const { change: settles, value: decidedValue } = decidedSettlement;
+    const parts = [
+      compacted === after
+        ? null
+        : {
+            change: repairOf(after, compacted, compaction, indexOf),
+            settles: false,
+          },
+      {
+        change: repairOf(compacted, decidedValue, [settles], (root) =>
+          rootOf(compacted, root)
+        ),
+        settles: true,
+      },
+      spared === decidedValue
+        ? null
+        : {
+            change: repairOf(decidedValue, spared, rest, (root) =>
+              rootOf(decidedValue, root)
+            ),
+            settles: false,
+          },
+    ];
+
+    return parts.filter((part) => part !== null);
   },
   // A document whose pending changes lack spares gets them, and storage the
   // schema no longer reads leaves, as a repair.

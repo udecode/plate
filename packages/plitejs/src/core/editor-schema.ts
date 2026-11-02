@@ -394,6 +394,12 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     elementPropertiesForSplitAt: (
       element: Element,
       path: Path,
+      root?: RootKey,
+      children?: NodeList<Descendant>
+    ) => Readonly<Record<string, unknown>>;
+    elementPropertiesForSplitUnder: (
+      element: Element,
+      ancestors: readonly Element[],
       root?: RootKey
     ) => Readonly<Record<string, unknown>>;
     /**
@@ -3061,12 +3067,10 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const getElementTargetOptionsAt = (
     path: Path,
-    root: RootKey = 'main'
+    root: RootKey = 'main',
+    children = getDocumentRootNodes(getDocument(), root)
   ): RuntimeTargetOptions => ({
-    ancestors: getElementAncestors(
-      getDocumentRootNodes(getDocument(), root),
-      path
-    ),
+    ancestors: getElementAncestors(children, path),
     root,
   });
 
@@ -3089,17 +3093,16 @@ export const createEditorSchema = <V extends Value = Value>(
           getCompiledPropertyCandidates(schema, 'element', key).length === 0;
   };
 
-  const elementPropertiesForSplitAt = (
+  const elementPropertiesForSplitIn = (
     element: Element,
-    path: Path,
-    root: RootKey = 'main'
+    options: RuntimeTargetOptions
   ) => {
     const schema = getDeclarativeSchema();
 
     if (!schema) return NodeApi.extractProps(element);
     const context = toCompiledTargetContext(
       getElementType(element) ?? '',
-      getElementTargetOptionsAt(path, root)
+      options
     );
 
     return Object.freeze(
@@ -3110,6 +3113,23 @@ export const createEditorSchema = <V extends Value = Value>(
       )
     );
   };
+
+  const elementPropertiesForSplitAt = (
+    element: Element,
+    path: Path,
+    root: RootKey = 'main',
+    children?: NodeList<Descendant>
+  ) =>
+    elementPropertiesForSplitIn(
+      element,
+      getElementTargetOptionsAt(path, root, children)
+    );
+
+  const elementPropertiesForSplitUnder = (
+    element: Element,
+    ancestors: readonly Element[],
+    root: RootKey = 'main'
+  ) => elementPropertiesForSplitIn(element, { ancestors, root });
 
   const elementSplitKeepsAt: InternalEditorSchemaApi['elementSplitKeepsAt'] = (
     source,
@@ -4852,6 +4872,56 @@ export const createEditorSchema = <V extends Value = Value>(
               if (boundary) addParentIndex(boundary.parentPath);
             }
 
+            // A range that writes one edge of an element, as a wrap, an
+            // unwrap or a moved edge does, hands the children between the
+            // edges to another parent without writing them, so each is
+            // checked against the parent that now holds it.
+            const edges = (
+              entry: Readonly<{ from: number; to: number }>,
+              from: number,
+              to: number
+            ) => ({
+              close: from < entry.to && entry.to <= to,
+              open: from <= entry.from && entry.from < to,
+            });
+
+            for (const entry of afterDocument.nodeRangesTouching(
+              fromAfter,
+              toAfter
+            )) {
+              const { close, open } = edges(entry, fromAfter, toAfter);
+
+              if (entry.kind !== 'element' || open === close) continue;
+
+              const node = afterDocument.node(entry.path) as Element;
+
+              node.children.forEach((_child, index) => {
+                addParentIndex(entry.path, index);
+              });
+            }
+            for (const entry of beforeDocument.nodeRangesTouching(
+              fromBefore,
+              toBefore
+            )) {
+              const { close, open } = edges(entry, fromBefore, toBefore);
+
+              if (entry.kind !== 'element' || open === close) continue;
+
+              const boundary = afterDocument.childBoundaryAt(
+                open ? fromAfter : toAfter
+              );
+
+              if (!boundary) continue;
+
+              const { length } = (beforeDocument.node(entry.path) as Element)
+                .children;
+              const first = open ? boundary.index : boundary.index - length;
+
+              for (let index = first; index < first + length; index++) {
+                addParentIndex(boundary.parentPath, index);
+              }
+            }
+
             const beforeEntry = beforeDocument.nodeStartingAt(fromBefore);
             const afterEntry = afterDocument.nodeStartingAt(fromAfter);
 
@@ -5111,6 +5181,7 @@ export const createEditorSchema = <V extends Value = Value>(
     elementPropertiesForResetAt,
     placeElementAt: placeDerivedElement,
     elementPropertiesForSplitAt,
+    elementPropertiesForSplitUnder,
     elementSplitKeepsAt,
     elementForTypeChangeAt,
     elementPropertyLanding,

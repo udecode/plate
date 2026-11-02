@@ -56,34 +56,16 @@ const comparePoints = (left: Point, right: Point) => {
   return left.offset < right.offset ? -1 : 1;
 };
 
-const mergeAdjacentTextRuns = (editor: Editor) => {
-  const textPaths = Array.from(
-    getNodes(editor, {
-      at: [],
-      reverse: true,
-      match: (node) => NodeApi.isText(node),
-      voids: true,
-    }),
-    ([, path]) => path
-  );
+const mergeAdjacentTextRuns = (editor: Editor, parentPath: Path) => {
+  if (parentPath.length === 0 || !editorHasPath(editor, parentPath)) return;
 
-  textPaths.forEach((path) => {
-    if (
-      !editorHasPath(editor, path) ||
-      path.length === 0 ||
-      path.at(-1) === 0
-    ) {
-      return;
-    }
+  const [parent] = getNode(editor, parentPath);
 
-    const previousPath = PathApi.previous(path);
+  if (!NodeApi.isElement(parent)) return;
 
-    if (!editorHasPath(editor, previousPath)) {
-      return;
-    }
-
-    const [node] = getNode(editor, path);
-    const [previous] = getNode(editor, previousPath);
+  for (let index = parent.children.length - 1; index > 0; index--) {
+    const [node] = getNode(editor, [...parentPath, index]);
+    const [previous] = getNode(editor, [...parentPath, index - 1]);
 
     if (
       NodeApi.isText(node) &&
@@ -91,9 +73,9 @@ const mergeAdjacentTextRuns = (editor: Editor) => {
       JSON.stringify(NodeApi.extractProps(node)) ===
         JSON.stringify(NodeApi.extractProps(previous))
     ) {
-      mergeNodes(editor, { at: path });
+      mergeNodes(editor, { at: [...parentPath, index] });
     }
-  });
+  }
 };
 
 export const unwrapNodes = ((
@@ -103,32 +85,18 @@ export const unwrapNodes = ((
   const unwrapNodeAtPath = (path: Path) => {
     const [node] = getNode(editor, path);
 
-    if (NodeApi.isText(node)) {
+    if (NodeApi.isText(node) || path.length === 0) {
       return;
     }
 
-    const parentPath = path.slice(0, -1);
-    const index = path.at(-1);
-
-    if (index == null) {
-      return;
-    }
-
-    const children = getChildren(editor, node);
-
-    applyBuiltDocumentChange(
-      editor,
-      (builder, root) =>
-        builder.withOrigin('unwrap', () =>
-          builder.replaceChildren(root, parentPath, index, 1, children)
-        ),
-      {
-        nodeKeyTransfers: children.map((child, offset) => ({
-          path: [...parentPath, index + offset],
-          source: child,
-        })),
-      }
+    applyBuiltDocumentChange(editor, (builder, root) =>
+      builder.unwrapNode(root, path)
     );
+  };
+  // The text cleanup reads only the parent whose children the unwrap changed.
+  const unwrapAndJoin = (path: Path) => {
+    unwrapNodeAtPath(path);
+    if (path.length > 0) mergeAdjacentTextRuns(editor, PathApi.parent(path));
   };
 
   const unwrapSelectedText = (path: Path, selected: Range) => {
@@ -137,7 +105,7 @@ export const unwrapNodes = ((
       stripLocationRoots(editorRange(editor, path))
     );
 
-    if (!overlap || RangeApi.isCollapsed(overlap)) return false;
+    if (!overlap || RangeApi.isCollapsed(overlap)) return;
 
     const [start, end] = RangeApi.edges(overlap);
     const match = (_node: Node, nodePath: Path) =>
@@ -152,9 +120,7 @@ export const unwrapNodes = ((
       selectedPath = PathApi.next(path);
     }
 
-    unwrapNodeAtPath(selectedPath);
-
-    return true;
+    unwrapAndJoin(selectedPath);
   };
 
   runEditorTransaction(editor, (tx) => {
@@ -214,7 +180,6 @@ export const unwrapNodes = ((
             deletion: 'drop',
           })
       ).reverse();
-      let changed = false;
 
       for (const pathAnchor of pathAnchors) {
         const path = pathAnchor.release();
@@ -230,8 +195,7 @@ export const unwrapNodes = ((
           getChildren(editor, node).some(NodeApi.isText);
 
         if (!split && holdsText) {
-          unwrapNodeAtPath(path);
-          changed = true;
+          unwrapAndJoin(path);
           continue;
         }
 
@@ -243,10 +207,9 @@ export const unwrapNodes = ((
           getEditorSchema(editor).isInline(node)
         ) {
           if (anchoredRange && RangeApi.isExpanded(anchoredRange)) {
-            changed = unwrapSelectedText(path, anchoredRange) || changed;
+            unwrapSelectedText(path, anchoredRange);
           } else {
-            unwrapNodeAtPath(path);
-            changed = true;
+            unwrapAndJoin(path);
           }
           continue;
         }
@@ -265,7 +228,6 @@ export const unwrapNodes = ((
           range = intersection;
         }
 
-        changed = true;
         liftNodes(editor, {
           at: range,
           match: (candidate, candidatePath) =>
@@ -275,9 +237,9 @@ export const unwrapNodes = ((
             PathApi.equals(candidatePath.slice(0, -1), path),
           voids,
         });
+        mergeAdjacentTextRuns(editor, PathApi.parent(path));
       }
 
-      if (changed) mergeAdjacentTextRuns(editor);
       rangeAnchor?.release();
       return;
     }
@@ -335,8 +297,6 @@ export const unwrapNodes = ((
       ) {
         unwrapNodeAtPath([wrapperIndex]);
       }
-
-      mergeAdjacentTextRuns(editor);
     } finally {
       const nextAnchor = anchor.release();
       const nextFocus = focus.release();

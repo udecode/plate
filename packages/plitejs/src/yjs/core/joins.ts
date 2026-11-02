@@ -649,6 +649,19 @@ const textAt = (document: DocumentIndex, path: Path) => {
 };
 
 /**
+ * The change of lines `before` into `after`, one to one, from the letters
+ * the batch kept, or null when the letters cannot place them. `afterAt` is
+ * where `after` starts in the stretch's lines after the batch, and `kept`
+ * says the caller already made the batch's letter edits in `before`.
+ */
+export type LinesByLetters = (
+  before: readonly JsonNode[],
+  after: readonly JsonNode[],
+  afterAt: number,
+  kept: boolean
+) => RootChange | null;
+
+/**
  * Build the change of a stretch of top-level lines that holds joins: each
  * joined line's letter edits, then each join, then a diff of the rest, line
  * by line around each top-level joined line. Returns null when the joins do
@@ -658,7 +671,8 @@ export const joinedChange = (
   before: DocumentIndex,
   after: readonly JsonNode[],
   joins: readonly FoundJoin[],
-  between: (before: DocumentIndex, after: DocumentIndex) => RootChange
+  between: (before: DocumentIndex, after: DocumentIndex) => RootChange,
+  byLetters?: LinesByLetters
 ): RootChange | null => {
   const edits: Edit[] = [];
   const anchors = new Map<number, number>();
@@ -818,7 +832,8 @@ export const joinedChange = (
         ).path[0],
       }))
       .sort((left, right) => left.line - right.line),
-    between
+    between,
+    byLetters
   );
 
   const change = rest && joined.compose(rest);
@@ -861,13 +876,15 @@ const readsAsExactly = (
 
 /**
  * Diff `after` against `document` piece by piece: the lines between two
- * anchors, then each anchor line on its own.
+ * anchors, then each anchor line on its own, whose letters the joins already
+ * edited.
  */
 const piecewiseBetween = (
   document: DocumentIndex,
   after: readonly JsonNode[],
   anchors: ReadonlyArray<Readonly<{ after: number; line: number }>>,
-  between: (before: DocumentIndex, after: DocumentIndex) => RootChange
+  between: (before: DocumentIndex, after: DocumentIndex) => RootChange,
+  byLetters?: LinesByLetters
 ) => {
   const nodes = document.value;
   const sections: number[] = [];
@@ -875,14 +892,15 @@ const piecewiseBetween = (
   let position = 0;
   let line = 0;
   let at = 0;
-  const diff = (lineTo: number, afterTo: number) => {
+  const diff = (lineTo: number, afterTo: number, kept = false) => {
     if (lineTo < line || afterTo < at) return false;
 
     const from = document.childPosition([], line);
-    const local = between(
-      DocumentIndex.fromValue(nodes.slice(line, lineTo)),
-      DocumentIndex.fromValue(after.slice(at, afterTo))
-    );
+    const left = nodes.slice(line, lineTo);
+    const right = after.slice(at, afterTo);
+    const local =
+      byLetters?.(left, right, at, kept) ??
+      between(DocumentIndex.fromValue(left), DocumentIndex.fromValue(right));
 
     if (!local.empty) {
       addSection(sections, data, from - position, -1, null);
@@ -905,7 +923,7 @@ const piecewiseBetween = (
 
   for (const anchor of anchors) {
     if (!diff(anchor.line, anchor.after)) return null;
-    if (!diff(anchor.line + 1, anchor.after + 1)) return null;
+    if (!diff(anchor.line + 1, anchor.after + 1, true)) return null;
   }
   if (!diff(nodes.length, after.length)) return null;
   addSection(sections, data, document.length - position, -1, null);

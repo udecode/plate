@@ -37,8 +37,6 @@ import { stripLocationRoots } from '../internal/root-location';
 import { select } from '../transforms-selection/select';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
-import { insertNodes } from './insert-nodes';
-import { moveNodes } from './move-nodes';
 import { splitNodesKeepingType } from './split-nodes';
 
 function* contentPaths(editor: Editor, range: Range) {
@@ -103,10 +101,8 @@ export const wrapNodes = ((
       split && wrapsInline && !hasExplicitSelector && RangeApi.isRange(target);
     const entersVoids = !trimsToContent && (options.voids ?? false);
     let match = normalizeNodeMatch(options.type, options.match);
-    const wrapper = {
-      ...element,
-      children: [],
-    };
+    const { children: _children, ...shell } = element;
+    const wrapper = { ...shell, children: [] };
 
     if (!target) {
       return;
@@ -248,11 +244,7 @@ export const wrapNodes = ((
       const index = getDefined(target.at(-1));
 
       applyBuiltDocumentChange(editor, (builder, root) =>
-        builder.withOrigin('wrap', () =>
-          builder.replaceChildren(root, parentPath, index, 1, [
-            { ...wrapper, children: [node] },
-          ])
-        )
+        builder.wrapChildren(root, parentPath, index, 1, shell)
       );
       return;
     }
@@ -351,138 +343,39 @@ export const wrapNodes = ((
       if (!span) continue;
 
       const { commonPath, firstPath, lastPath } = span;
-      const depth = commonPath.length + 1;
-      const wrapperPath = PathApi.next(lastPath.slice(0, depth));
       const firstChildIndex = firstPath[commonPath.length];
-      const lastChildIndex = lastPath[commonPath.length];
-      const movePaths = Array.from(
-        { length: lastChildIndex - firstChildIndex + 1 },
-        (_, offset) => [...commonPath, firstChildIndex + offset]
-      );
+      const count = lastPath[commonPath.length] - firstChildIndex + 1;
       const finalWrapperPath = [...commonPath, firstChildIndex];
 
-      if (!split) {
-        const movedChildren = movePaths.flatMap((path) => {
-          const node = getNode(editor, path)[0];
+      if (nextSelection) {
+        const mapPoint = (point: Point) => {
+          const at = point.path.slice(0, finalWrapperPath.length);
+          const offset = (at.at(-1) ?? 0) - firstChildIndex;
 
-          return NodeApi.isDescendant(node) ? [node] : [];
-        });
+          return at.length === finalWrapperPath.length &&
+            PathApi.equals(PathApi.parent(at), commonPath) &&
+            offset >= 0 &&
+            offset < count
+            ? {
+                path: [
+                  ...finalWrapperPath,
+                  offset,
+                  ...point.path.slice(finalWrapperPath.length),
+                ],
+                offset: point.offset,
+              }
+            : point;
+        };
 
-        if (movedChildren.length !== movePaths.length) continue;
-
-        if (nextSelection) {
-          const mapPoint = (point: Point) => {
-            const matchIndex = movePaths.findIndex((path) =>
-              PathApi.equals(path, point.path.slice(0, path.length))
-            );
-
-            if (matchIndex === -1) return point;
-            const basePath = movePaths[matchIndex];
-
-            return {
-              path: [
-                ...finalWrapperPath,
-                matchIndex,
-                ...point.path.slice(basePath.length),
-              ],
-              offset: point.offset,
-            };
-          };
-
-          nextSelection = {
-            anchor: mapPoint(nextSelection.anchor),
-            focus: mapPoint(nextSelection.focus),
-          };
-        }
-
-        applyBuiltDocumentChange(
-          editor,
-          (builder, root) =>
-            builder.withOrigin('wrap', () =>
-              builder.replaceChildren(
-                root,
-                commonPath,
-                firstChildIndex,
-                movePaths.length,
-                [{ ...wrapper, children: movedChildren }]
-              )
-            ),
-          {
-            nodeKeyTransfers: movedChildren.map((child, index) => ({
-              path: [...finalWrapperPath, index],
-              source: child,
-            })),
-          }
-        );
-        continue;
+        nextSelection = {
+          anchor: mapPoint(nextSelection.anchor),
+          focus: mapPoint(nextSelection.focus),
+        };
       }
-      const pathAnchors = movePaths.map((path) =>
-        editor.anchor(path, {
-          association: 'forward',
-          deletion: 'drop',
-        })
+
+      applyBuiltDocumentChange(editor, (builder, root) =>
+        builder.wrapChildren(root, commonPath, firstChildIndex, count, shell)
       );
-
-      insertNodes(
-        editor,
-        { ...wrapper },
-        { at: wrapperPath, voids: entersVoids }
-      );
-      const wrapperAnchor = editor.anchor(wrapperPath, {
-        association: 'forward',
-        deletion: 'drop',
-      });
-
-      try {
-        pathAnchors.forEach((pathAnchor, index) => {
-          const path = pathAnchor.resolve();
-          const currentWrapperPath = wrapperAnchor.resolve();
-
-          if (!path || !currentWrapperPath) {
-            return;
-          }
-
-          moveNodes(editor, {
-            at: path,
-            to: currentWrapperPath.concat(index),
-          });
-        });
-
-        const currentWrapperPath = wrapperAnchor.resolve();
-
-        if (nextSelection && currentWrapperPath) {
-          const mapPoint = (point: Point) => {
-            const matchIndex = movePaths.findIndex((path) =>
-              PathApi.equals(path, point.path.slice(0, path.length))
-            );
-
-            if (matchIndex === -1) {
-              return point;
-            }
-
-            const basePath = movePaths[matchIndex];
-
-            return {
-              path: [
-                ...currentWrapperPath,
-                matchIndex,
-                ...point.path.slice(basePath.length),
-              ],
-              offset: point.offset,
-            };
-          };
-
-          nextSelection = {
-            anchor: mapPoint(nextSelection.anchor),
-            focus: mapPoint(nextSelection.focus),
-          };
-        }
-      } finally {
-        wrapperAnchor.release();
-        for (const pathAnchor of pathAnchors) {
-          pathAnchor.release();
-        }
-      }
     }
 
     if (nextSelection) {

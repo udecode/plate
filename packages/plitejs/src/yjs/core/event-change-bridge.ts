@@ -7,7 +7,7 @@ import {
   getInternalDocumentRootChange,
 } from '../../core/change/document-change';
 import { DocumentIndex, type NodeList } from '../../core/change/document-index';
-import { deepFreeze } from '../../core/change/json';
+import { deepFreeze, jsonEqual } from '../../core/change/json';
 import type { LetterOrigin } from '../../core/change/lineage';
 import type { DocumentChangeRelocation } from '../../core/change/mapping';
 import {
@@ -87,11 +87,13 @@ import {
   type YjsTextAdmission,
   type YjsWrite,
 } from './document';
+import { enclosureStepsOf, writeEnclosure } from './enclosures';
 import {
   composeTextDeltas,
   editOf,
   type FoundJoin,
   joinedChange,
+  type LinesByLetters,
   type JoinRun,
   joinRunsOf,
   joinWrittenAsCopy,
@@ -113,6 +115,13 @@ import {
   YJS_VIRTUAL_CHILD_ID_KEY,
   YJS_VIRTUAL_PLACEHOLDER_KEY,
 } from './keys';
+import {
+  keptScriptsOf,
+  type LetterBatch,
+  type LetterScript,
+  linesChangeByLetters,
+  readLineScripts,
+} from './letter-scripts';
 import {
   holdsNewLetters,
   type LetterPlace,
@@ -1809,6 +1818,16 @@ const splitKeptBlock = (
   return descend(node, before, after, [0], []) ? windows : null;
 };
 
+/**
+ * The scripts of the line `line` shows at a top-level index after the batch,
+ * from the line that stood at `beforeIndex`, when the caller knows it.
+ */
+type LineScripts = (
+  afterIndex: number,
+  line: Descendant,
+  beforeIndex?: number
+) => readonly LetterScript[] | null;
+
 const createEventDocumentChange = (
   root: string,
   before: NodeList<Descendant>,
@@ -1822,7 +1841,8 @@ const createEventDocumentChange = (
   refine: Readonly<{
     keptBlockByRegion: ReadonlyArray<Y.XmlElement | null>;
     identity: ChildIdentity;
-  }> | null = null
+  }> | null = null,
+  scriptsOf?: LineScripts
 ): {
   change: DocumentChange;
   changedChildren: number;
@@ -1841,6 +1861,22 @@ const createEventDocumentChange = (
     const context = contexts.get(node);
 
     return context ? isSetValued(node, key, context) : false;
+  };
+  const byLetters = (
+    left: readonly JsonNode[],
+    right: readonly JsonNode[],
+    scriptsAt: (index: number) => readonly LetterScript[] | null
+  ) => {
+    if (left.length !== right.length) return null;
+
+    const lines = left.filter(
+      (line, index) => line !== right[index] && !jsonEqual(line, right[index])
+    ).length;
+    const change = linesChangeByLetters(left, right, scriptsAt, resolve);
+
+    countCoreWork(change ? 'yjsLetterLines' : 'yjsValueDiffLines', lines);
+
+    return change;
   };
   const sectionInputs = regions.flatMap((region, regionIndex) => {
     const regionAfter = Object.freeze(after(region.afterFrom, region.afterTo));
@@ -1864,10 +1900,28 @@ const createEventDocumentChange = (
       top - region.beforeFrom,
       ...rest,
     ];
+    const linesByLetters: LinesByLetters | undefined =
+      scriptsOf &&
+      ((left, right, afterAt, kept) =>
+        byLetters(left, right, (index) =>
+          kept
+            ? keptScriptsOf(getDefined(right[index]))
+            : scriptsOf(
+                region.afterFrom + afterAt + index,
+                getDefined(right[index]) as Descendant
+              )
+        ));
     const local =
       inside.length === 0
         ? cuts.length === 0 && heals.length === 0
-          ? null
+          ? scriptsOf &&
+            byLetters(regionBefore, regionAfter, (index) =>
+              scriptsOf(
+                region.afterFrom + index,
+                getDefined(regionAfter[index]),
+                region.beforeFrom + index
+              )
+            )
           : splitChangeTo(
               DocumentIndex.fromValue(regionBefore),
               regionAfter,
@@ -1883,7 +1937,8 @@ const createEventDocumentChange = (
               heals.map(({ left, line }) => ({
                 left: shift(left),
                 line: shift(line),
-              }))
+              })),
+              linesByLetters
             )
         : joinedChange(
             DocumentIndex.fromValue(regionBefore),
@@ -1897,7 +1952,8 @@ const createEventDocumentChange = (
               lines: join.lines.map(shift),
               removedElements: join.removedElements,
             })),
-            between
+            between,
+            linesByLetters
           );
 
     const from = lengths.prefix(region.beforeFrom);
@@ -2620,6 +2676,16 @@ export class YjsEventChangeBridge {
       };
     }
 
+    const enclosed = this.lowerEnclosures(write, rest.change, rest.before);
+
+    if (enclosed) {
+      return {
+        inlineJoinedLines,
+        lowered: [...lowered, enclosed].reduce(combineLowered),
+        writtenLines,
+      };
+    }
+
     return {
       inlineJoinedLines,
       lowered: [
@@ -2631,6 +2697,62 @@ export class YjsEventChangeBridge {
       ].reduce(combineLowered),
       writtenLines,
     };
+  }
+
+  /**
+   * Write a commit that only wraps and unwraps as the shapes that keep every
+   * enclosed letter and child: cuts and views at a wrap's text edges, and
+   * placeholders for the children an element encloses or releases. Returns
+   * null, before any write, for any other commit.
+   */
+  private lowerEnclosures(
+    write: YjsWrite,
+    change: DocumentChange,
+    before: DocumentIndex
+  ): YjsEventLowerResult | null {
+    const committed = getInternalDocumentRootChange(change, this.rootKey);
+    const steps = committed && enclosureStepsOf(committed, before);
+
+    if (!steps) return null;
+
+    let tokenLengthNodes = 0;
+    let written = 0;
+
+    for (const step of steps) {
+      if (!writeEnclosure(write, step, this.isSetValued, this.schemaRoot)) {
+        if (written === 0) return null;
+        return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
+      }
+      written += 1;
+
+      const { at, count, made } = step.top;
+
+      tokenLengthNodes += this.lengths.splice(
+        at,
+        count,
+        Array.from(
+          { length: made },
+          (_, index) => step.after.child(at + index) as Descendant
+        )
+      );
+    }
+
+    const { after } = getDefined(steps.at(-1));
+
+    this.setMirror(after.nodes as NodeList<Descendant>);
+    this.ready = this.rootIndex.length === this.mirror.length;
+
+    return this.ready
+      ? {
+          changedRanges: steps.length,
+          inserted: 0,
+          kind: 'lowered',
+          removed: 0,
+          start: Math.min(...steps.map((step) => step.top.at)),
+          strategy: 'compatible',
+          tokenLengthNodes,
+        }
+      : { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
   }
 
   /**
@@ -5055,10 +5177,10 @@ export class YjsEventChangeBridge {
         : { splits: [], unsplits: [] };
       const result = this.translate(
         batch,
+        read,
         this.normalize(write, batch),
         joins,
-        found,
-        read
+        found
       );
 
       if (result.kind !== 'fallback') return result;
@@ -6174,10 +6296,10 @@ export class YjsEventChangeBridge {
 
   private translate(
     batch: CapturedYjsEventBatch,
+    read: BatchReader | null,
     normalization: YjsEventNormalization,
     found: ReadonlyArray<FoundJoin & { top: YjsNode }>,
-    boundaries: BatchBoundaries,
-    read: BatchReader | null = null
+    boundaries: BatchBoundaries
   ): YjsEventImportResult {
     if (!this.ready) {
       return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
@@ -6536,7 +6658,31 @@ export class YjsEventChangeBridge {
           before: (parent) => read.childrenBefore(parent),
           moved: (node) => read.moved(node),
         },
-      }
+      },
+      read
+        ? this.letterScripts(
+            batch,
+            read,
+            normalization,
+            maskedBefore,
+            (index) => {
+              let shift = 0;
+
+              for (const region of structural) {
+                if (index < region.afterFrom) break;
+                if (index < region.afterTo) {
+                  return region.nodes[index - region.afterFrom];
+                }
+                shift +=
+                  region.afterTo -
+                  region.afterFrom -
+                  (region.beforeTo - region.beforeFrom);
+              }
+
+              return this.rootIndex.at(index - shift);
+            }
+          )
+        : undefined
     );
     const ticket = this.generation;
 
@@ -6580,6 +6726,47 @@ export class YjsEventChangeBridge {
         readTopLevelNodes: readNodes.size,
       },
       kind: 'change',
+    };
+  }
+
+  /**
+   * Reads the scripts of a line by its top-level index after the batch. Null
+   * for a line whose value the schema fit changed, since the letters Yjs
+   * holds are not the ones the editor shows, and for any line of a batch that
+   * deleted a cut, since letters then move between the texts that show them.
+   */
+  private letterScripts(
+    batch: CapturedYjsEventBatch,
+    read: BatchReader,
+    normalization: YjsEventNormalization,
+    maskedBefore: ReadonlySet<YjsNode>,
+    nodeAt: (afterIndex: number) => YjsNode | undefined
+  ): LineScripts {
+    const reshaped = new Set<unknown>(batch.visibilityBefore.keys());
+
+    for (const event of batch.events) {
+      if (
+        (event.childListChanged && event.target instanceof Y.XmlElement) ||
+        event.keys.some((key) => YJS_CHILD_VISIBILITY_KEYS.has(key))
+      ) {
+        reshaped.add(event.target);
+      }
+    }
+    for (const node of normalization.removedNodes) reshaped.add(node.parent);
+
+    const letters: LetterBatch = { ...read, reshaped, sources: new Map() };
+
+    return (afterIndex, line, beforeIndex) => {
+      const node = nodeAt(afterIndex);
+
+      return node &&
+        batch.deletedCuts.length === 0 &&
+        !maskedBefore.has(node) &&
+        !this.maskedBlocks.has(node) &&
+        (beforeIndex === undefined || this.rootIndex.at(beforeIndex) === node)
+        ? (readLineScripts(this.root, node, line, letters) ??
+            readLineScripts(this.root, node, line, letters, true))
+        : null;
     };
   }
 

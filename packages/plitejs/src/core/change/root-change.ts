@@ -7,6 +7,11 @@ import {
   decodeNodes,
   DocumentIndex,
 } from './document-index';
+import {
+  enclosureApplied,
+  type PieceProps,
+  rebaseOverPieces,
+} from './enclosure';
 import { rebaseOverJoins } from './join';
 import {
   cloneFrozen,
@@ -718,6 +723,33 @@ export const composeSections = (
   }
 };
 
+/** Whether inserted tokens open an element they do not close: a wrap's lead. */
+const opensEnclosure = (slice: PreparedTokenSlice | null) => {
+  let depth = 0;
+
+  for (const token of slice?.tokens ?? []) {
+    if (token.kind === 'open') depth += 1;
+    else if (token.kind === 'close') depth -= 1;
+  }
+
+  return depth > 0;
+};
+
+/**
+ * Whether `b`'s insertion goes before `a`'s at one position. Content one side
+ * inserts at the lead of an element the other wraps stays outside it, as it
+ * was before the wrap; otherwise `before` breaks the tie.
+ */
+const insertsFirst = (
+  a: SectionIterator,
+  b: SectionIterator,
+  before: boolean
+) => {
+  const aOpens = opensEnclosure(a.slice);
+
+  return aOpens === opensEnclosure(b.slice) ? !before : aOpens;
+};
+
 export const transformChange = (
   changeA: RootChange,
   changeB: RootChange,
@@ -764,7 +796,9 @@ export const transformChange = (
       (a.inserted < 0 ||
         inserted === a.index ||
         (a.offset === 0 &&
-          (b.length < a.length || (b.length === a.length && !before))))
+          (b.length < a.length ||
+            (b.length === a.length &&
+              (a.length === 0 ? insertsFirst(a, b, before) : !before)))))
     ) {
       const end = position + b.length;
 
@@ -889,7 +923,8 @@ export const collapseElementPropertyWrites = (
   change: RootChange,
   document: DocumentIndex,
   isSetValued: DocumentSetPropertyResolver,
-  root: string | null
+  root: string | null,
+  text = false
 ) => {
   const sections: number[] = [];
   const data: SectionData[] = [];
@@ -914,7 +949,7 @@ export const collapseElementPropertyWrites = (
     const entry =
       inserted === -2 ? document.nodeStartingAt(position) : undefined;
 
-    if (entry?.kind === 'element') {
+    if (entry?.kind === 'element' || (text && entry?.kind === 'text')) {
       const node = document.node(entry.path);
       const modifications = value as readonly PropertyModification[];
       const keys = new Set(modifications.map(({ key }) => key));
@@ -1459,6 +1494,152 @@ const sameNodeStructure = (left: JsonNode, right: JsonNode): boolean => {
     sameNodeStructure(child, right.children[index])
   );
 };
+
+/**
+ * Whether a range takes out no letter and no whole node, only edges that
+ * open or close an element it leaves in place.
+ */
+const takesOutEdgesOnly = (
+  document: DocumentIndex,
+  { from, to }: Replacement
+) => {
+  let depth = 0;
+
+  for (const token of document.slice(from, to).tokens) {
+    if (token.kind === 'text') return false;
+    depth += token.kind === 'open' ? 1 : -1;
+  }
+
+  return from === to || depth !== 0;
+};
+
+/**
+ * One key per position of `[from, to)` that `removed` leaves, so two token
+ * runs compare however their text is cut.
+ */
+const positionKeys = (
+  document: DocumentIndex,
+  removed: readonly Replacement[],
+  from: number,
+  to: number
+) => {
+  const keys: string[] = [];
+  let position = from;
+
+  for (const range of [...removed, { from: to, to }]) {
+    let at = position;
+
+    for (const token of document.slice(position, range.from).tokens) {
+      if (token.kind === 'text') {
+        // Positions count UTF-16 units, so the keys do too.
+        for (let unit = 0; unit < token.text.length; unit += 1) {
+          keys.push(token.text.charAt(unit));
+        }
+        at += token.text.length;
+        continue;
+      }
+
+      const edge =
+        token.kind === 'open'
+          ? `<${token.nodeKind}${JSON.stringify(token.props)}`
+          : `</${token.nodeKind}`;
+
+      const identity = token.nodeKind === 'element' ? `@${at}` : '';
+
+      keys.push(`${edge}${identity}`);
+      at += 1;
+    }
+    position = range.to;
+  }
+
+  return keys;
+};
+
+/**
+ * When `removal` only takes element and text edges out, and `other` takes
+ * out edges that leave the very same tokens before putting edges of its own
+ * in, as a step does that re-takes a teammate's equal wrap the teammate then
+ * unwraps, `other` over `removal` is its own edges alone, each placed where
+ * its removals left it.
+ */
+const putBackOver = (
+  removal: readonly Replacement[],
+  other: readonly Replacement[],
+  document: DocumentIndex
+) => {
+  const removed = other.filter(({ from, to }) => from < to);
+
+  if (
+    removal.length === 0 ||
+    removed.length === 0 ||
+    !removal.every(({ insert }) => insert.length === 0) ||
+    ![...removal, ...other].every((range) => takesOutEdgesOnly(document, range))
+  ) {
+    return null;
+  }
+
+  // Both leave every token outside the span their removals cover.
+  const spanFrom = Math.min(
+    ...[...removal, ...removed].map((range) => range.from)
+  );
+  const spanTo = Math.max(...[...removal, ...removed].map((range) => range.to));
+  const left = positionKeys(document, removal, spanFrom, spanTo);
+  const right = positionKeys(document, removed, spanFrom, spanTo);
+
+  if (
+    left.length !== right.length ||
+    left.some((key, index) => key !== right[index])
+  ) {
+    return null;
+  }
+
+  let shift = 0;
+
+  return other.flatMap(({ from, insert, to }) => {
+    const at = from - shift;
+
+    shift += to - from;
+
+    return insert.length === 0 ? [] : [{ from: at, insert, to: at }];
+  });
+};
+
+/** Whether a positional transform gives one document from both sides. */
+const convergesOn = (
+  transformed: Readonly<{ a: RootChange; b: RootChange }>,
+  afterA: DocumentIndex,
+  afterB: DocumentIndex
+) => {
+  try {
+    return jsonEqual(
+      transformed.b.apply(afterA).value,
+      transformed.a.apply(afterB).value
+    );
+  } catch {
+    return false;
+  }
+};
+
+/** Whether `other` inserts strictly between the edges of a wrap in `wrap`. */
+const addsInsideEnclosure = (
+  wrap: readonly Replacement[],
+  other: readonly Replacement[]
+) => {
+  const leads = wrap.filter(({ insert }) => opensEnclosure(insert));
+
+  if (leads.length === 0) return false;
+
+  const from = Math.min(...leads.map((lead) => lead.from));
+  const to = Math.max(...wrap.map((edge) => edge.from));
+
+  return other.some((edit) => from < edit.from && edit.from < to);
+};
+
+const onlyAddsStructure = (replacements: readonly Replacement[]) =>
+  replacements.every(
+    ({ from, insert, to }) =>
+      from === to && insert.tokens.every((token) => token.kind !== 'text')
+  );
 
 const sameDocumentStructure = (
   left: readonly JsonNode[],
@@ -2262,14 +2443,32 @@ export class RootChange {
     };
   }
 
+  /**
+   * Two matching moves, or two structural edits that start together and give
+   * one structure, become one edit unless `keepEqualEdits` keeps them as two.
+   * With `replay`, `b` is a recorded step replayed over `a`: a wrap of `a`
+   * equal to its own stays its own, and a wrap a split cuts gives each next
+   * piece the properties `replay.pieceProps` returns.
+   */
   static transformInDocument(
     a: RootChange,
     b: RootChange,
-    document: DocumentIndex
+    document: DocumentIndex,
+    {
+      keepEqualEdits = false,
+      replay,
+    }: Readonly<{
+      keepEqualEdits?: boolean;
+      replay?: Readonly<{ pieceProps: PieceProps }>;
+    }> = {}
   ) {
     const joined = rebaseOverJoins(a, b, document);
 
     if (joined) return joined;
+
+    const pieces = rebaseOverPieces(a, b, document, replay?.pieceProps);
+
+    if (pieces) return pieces;
     // Edits separated by unchanged content commute positionally. The
     // value-based repairs below exist for edits that touch, overlap or relocate
     // each other, and each costs O(document).
@@ -2277,6 +2476,31 @@ export class RootChange {
 
     const aReplacements = a.replacements();
     const bReplacements = b.replacements();
+
+    // The value repairs below would read a re-take of an unwrapped wrap,
+    // which leaves the same value, as no edit at all.
+    const bPutBack = putBackOver(aReplacements, bReplacements, document);
+
+    if (bPutBack) {
+      const afterB = b.apply(document);
+
+      return {
+        a: RootChange.empty(afterB.length),
+        b: RootChange.create(a.apply(document), bPutBack),
+      };
+    }
+
+    const aPutBack = putBackOver(bReplacements, aReplacements, document);
+
+    if (aPutBack) {
+      const afterA = a.apply(document);
+
+      return {
+        a: RootChange.create(b.apply(document), aPutBack),
+        b: RootChange.empty(afterA.length),
+      };
+    }
+
     const aPropertyChanges = a.propertyChanges();
     const bPropertyChanges = b.propertyChanges();
     const [aReplacement] = aReplacements;
@@ -2372,6 +2596,7 @@ export class RootChange {
     const aMove = getMove(aReplacements);
     const bMove = getMove(bReplacements);
     if (
+      !keepEqualEdits &&
       aMove &&
       bMove &&
       pathKey(aMove.path) === pathKey(bMove.path) &&
@@ -2463,16 +2688,53 @@ export class RootChange {
     const sharesStructuralStart = aReplacements.some(({ from }) =>
       bReplacements.some((replacement) => replacement.from === from)
     );
+    // Two edits that only add structure around letters, such as wraps of
+    // neighboring letters, can give one shape over different letters.
+    const sameEdit = () =>
+      onlyAddsStructure(aReplacements) && onlyAddsStructure(bReplacements)
+        ? jsonEqual(afterA.value, afterB.value)
+        : sameDocumentStructure(afterA.value, afterB.value);
 
     if (
+      !keepEqualEdits &&
       (aChangesStructure || bChangesStructure) &&
       sharesStructuralStart &&
-      sameDocumentStructure(afterA.value, afterB.value)
+      sameEdit()
     ) {
+      const keepsReplayedWrap =
+        replay !== undefined &&
+        onlyAddsStructure(aReplacements) &&
+        aReplacements.some(({ insert }) => opensEnclosure(insert));
+
+      if (keepsReplayedWrap) {
+        return {
+          a: RootChange.empty(afterB.length),
+          b: a.invert(document).compose(b),
+        };
+      }
+
       return {
         a: RootChange.between(afterB, afterA),
         b: RootChange.empty(afterA.length),
       };
+    }
+
+    // A wrap beside another edit that only adds structure, such as a split
+    // at its edge, moves no letter, so positions place both. The value
+    // repairs below read the split's letters as relocated and rewrite them.
+    // A split between the wrap's edges would leave its element open across
+    // the split, so positions cannot place that one.
+    if (
+      onlyAddsStructure(aReplacements) &&
+      onlyAddsStructure(bReplacements) &&
+      [...aReplacements, ...bReplacements].some(({ insert }) =>
+        opensEnclosure(insert)
+      ) &&
+      !addsInsideEnclosure(aReplacements, bReplacements) &&
+      !addsInsideEnclosure(bReplacements, aReplacements) &&
+      convergesOn(transformed, afterA, afterB)
+    ) {
+      return transformed;
     }
 
     const bThroughStableA = bChangesStructure
@@ -2529,18 +2791,7 @@ export class RootChange {
       };
     }
 
-    try {
-      if (
-        jsonEqual(
-          transformed.b.apply(afterA).value,
-          transformed.a.apply(afterB).value
-        )
-      ) {
-        return transformed;
-      }
-    } catch {
-      // Resolve structural conflicts below.
-    }
+    if (convergesOn(transformed, afterA, afterB)) return transformed;
 
     if (
       bMove &&
@@ -2856,6 +3107,15 @@ export class RootChange {
       }
 
       return document.withNodeUpdates(updates);
+    }
+
+    const enclosed = enclosureApplied(document, replacements);
+
+    if (enclosed) {
+      work.ancestorPaths.push([...enclosed.parent]);
+      work.localizedReplacements = 2;
+
+      return enclosed.after;
     }
 
     if (replacements.length === 2) {

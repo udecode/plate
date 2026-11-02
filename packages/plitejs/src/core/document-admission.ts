@@ -30,7 +30,11 @@ import { repairLoadedUniqueValues } from './unique-values';
  * @internal
  */
 export type DocumentAdmission = Readonly<{
-  /** A change from `after` to the admitted document, or `null` when `after` is admitted. */
+  /**
+   * A change from `after` to the admitted document, or `null` when `after` is
+   * admitted. A repair that settles a decision the commit replays returns its
+   * parts in order, each from the document the parts before it give.
+   */
   commit: (
     input: Readonly<{
       after: EditorDocumentValue;
@@ -44,7 +48,7 @@ export type DocumentAdmission = Readonly<{
        */
       loads: boolean;
     }>
-  ) => DocumentChange | null;
+  ) => DocumentChange | readonly DocumentAdmissionPart[] | null;
   load: (
     document: EditorDocumentValue,
     schema: CompiledEditorSchema
@@ -59,6 +63,15 @@ export type DocumentAdmission = Readonly<{
     schema: CompiledEditorSchema,
     commit: DocumentSettleCommit | null
   ) => DocumentChange | null;
+}>;
+
+/**
+ * One part of a commit's repair. A settling part settles a decision the commit
+ * replays, so its undo takes back only what the decision settled.
+ */
+export type DocumentAdmissionPart = Readonly<{
+  change: DocumentChange;
+  settles: boolean;
 }>;
 
 export type DocumentSettleCommit = Readonly<{

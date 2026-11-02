@@ -2079,17 +2079,19 @@ const readPliteNodeFromYjsWithResolver = (
 };
 
 /**
- * Move the children `parent` shows from `position` on: each moved child hides
- * where it is and a placeholder for it is returned, for the caller to insert
- * where the children move, so the children keep their Yjs nodes.
+ * Move the children `parent` shows from `position` up to `end`: each moved
+ * child hides where it is and a placeholder for it is returned, for the
+ * caller to insert where the children move, so the children keep their Yjs
+ * nodes.
  */
 export const moveVisibleYjsChildren = (
   write: YjsWrite,
   parent: Y.XmlElement,
-  position: number
+  position: number,
+  end?: number
 ): YjsNode[] => {
   const { rawChildren, slots } = materializeYjsStrands(write, parent);
-  const visibleSlots = slots.slice(position);
+  const visibleSlots = slots.slice(position, end);
   const moved = visibleSlots.map((slot) => {
     if (!hasRawYjsChildSlot(slot)) {
       writeYjsVisibility(write, parent, YJS_VIRTUAL_CHILD_ID_KEY, null);

@@ -1,10 +1,9 @@
 import {
   hasInternalDocumentChangeRoot,
   mapInternalDocumentChangePosition,
-  valueRoot,
+  valueRootIndex,
   valueRootNodes,
 } from '../../core/change/document-change';
-import { DocumentIndex } from '../../core/change/document-index';
 import type { NodeList } from '../../core/change/document-index';
 import { withoutRepairOrphans } from '../../core/document-admission';
 import { getCompiledEditorSchema } from '../../core/plugin-registry';
@@ -127,8 +126,8 @@ const mapImportRange = (
     return null;
   }
 
-  const source = DocumentIndex.fromValue(valueRoot(before, root));
-  const target = DocumentIndex.fromValue(valueRoot(after, root));
+  const source = valueRootIndex(before, root);
+  const target = valueRootIndex(after, root);
   const map = (point: Range['anchor']) => {
     const position = mapInternalDocumentChangePosition(
       change,
