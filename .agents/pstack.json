@@ -5,6 +5,9 @@
   "delivery": "trunk",
   "lintFix": "pnpm lint:task --allow-ignored",
   "check": "pnpm check",
+  "landChecks": [
+    "node tooling/scripts/notify.mjs check"
+  ],
   "freshEnv": [
     "TURBO_FORCE=true",
     "FAST_CHECK_SEED=random"
