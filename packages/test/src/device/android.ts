@@ -777,14 +777,18 @@ export const chromeContentBounds = (serial: string) => {
   };
 };
 
-/** Read Gboard's clickable keys by label from the current keyboard. */
-export const readKeyboard = (serial: string) => {
+/**
+ * A strip chip, such as a clipboard suggestion, labels a child of its
+ * clickable node, so `unclickable` also reads labeled nodes that cannot be
+ * clicked.
+ */
+export const readKeyboard = (serial: string, { unclickable = false } = {}) => {
   const keys: Record<string, DeviceKey> = {};
 
   for (const node of dumpWindows(serial)) {
     if (
       node.pkg !== GBOARD_PACKAGE ||
-      !node.clickable ||
+      (!unclickable && !node.clickable) ||
       !node.desc ||
       node.bounds[2] <= node.bounds[0] ||
       node.bounds[3] <= node.bounds[1]

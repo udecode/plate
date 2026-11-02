@@ -215,6 +215,7 @@ export type DeviceEditor = Pick<
 };
 
 export type DeviceLane = {
+  copy: (text: string) => Promise<void>;
   keyboard: {
     readonly languages: readonly DeviceLanguage[];
     shown: () => boolean;
@@ -726,6 +727,12 @@ export const createDeviceLane = ({
   };
 
   const lane: DeviceLane = {
+    copy: async (text) => {
+      await page.evaluate(
+        (value) => navigator.clipboard.writeText(value),
+        text
+      );
+    },
     keyboard: {
       languages: requestedLanguages(),
       shown: () => keyboardShown(state.serial),
@@ -872,7 +879,7 @@ export const createDeviceLane = ({
     },
     steps: () => steps,
     tapStrip: async (candidate) => {
-      const nodes = readKeyboard(state.serial);
+      const nodes = readKeyboard(state.serial, { unclickable: true });
       const map = currentKeyMap(state.serial, language);
       const letterTops = map.letterLabels.map((label) => {
         const key = nodes[label];

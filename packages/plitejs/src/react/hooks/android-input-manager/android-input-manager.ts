@@ -1082,6 +1082,19 @@ export function createAndroidInputManager({
           text = text.slice(0, -1);
         }
 
+        if (type === 'insertText' && event.cancelable && text.includes('\n')) {
+          const pasted = new DataTransfer();
+
+          pasted.setData('text/plain', text);
+          scheduleCommand(
+            { data: pasted, kind: 'insert-data' },
+            { at: innerTargetRange2, paste: true }
+          );
+          event.preventDefault();
+          flush();
+          return;
+        }
+
         const spansLeaves = !PathApi.equals(
           innerTargetRange2.anchor.path,
           innerTargetRange2.focus.path
