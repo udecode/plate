@@ -532,6 +532,12 @@ details > summary {
   margin: 12px 0 0;
 }
 
+.editor-comment-mode-controls > button {
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
+}
+
 .editor-comment-mode-code {
   display: inline-flex;
   width: fit-content;
@@ -654,6 +660,11 @@ details > summary {
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
+}
+
+.editor-document-state-status > * {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .editor-document-state-editor {
@@ -1296,6 +1307,7 @@ details > summary {
   font-size: 16px;
   line-height: 20px;
   white-space: pre;
+  overflow-x: auto;
 }
 
 .editor-code-highlighting-positioned {

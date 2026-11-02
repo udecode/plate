@@ -679,7 +679,7 @@ const AuthoredChangesExample = () => {
   const [sample, setSample] = useState<keyof typeof samples>('paragraphs');
   return (
     <div className="grid gap-6">
-      <label className="flex items-center gap-3">
+      <label className="flex flex-wrap items-center gap-3">
         Sample document
         <select
           aria-label="Sample document"

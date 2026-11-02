@@ -1055,14 +1055,14 @@ const ProviderBackedPeerContent = ({
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-3 py-2">
         <div>
           <h2 className="text-sm font-semibold text-slate-900">{label}</h2>
           <div className="mt-0.5" data-test-id={`yjs-peer-${peer.id}-cursors`}>
             <CursorStatus editor={editor} />
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span
             className={cn(
               'rounded-full px-2 py-1 text-xs font-medium',
