@@ -14,6 +14,7 @@ import {
   type Selection,
   SelectionApi,
 } from '../..';
+import { isAuthoredPreview } from '../../core/authored-runtime';
 import { Hotkeys } from '../../dom';
 import {
   DOMRootRuntime,
@@ -184,6 +185,11 @@ export function getEditableCommandDefinition(
 export function getEditableCommandDefinition(command: EditableCommand | null) {
   return command ? EDITABLE_COMMAND_DEFINITIONS[command.kind] : null;
 }
+
+export const dropsNativeEdits = (
+  editor: ReactRuntimeEditor,
+  readOnly: boolean
+) => readOnly || isAuthoredPreview(editor);
 
 export type EditableMovementAxis =
   | 'document'

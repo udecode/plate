@@ -3,7 +3,13 @@
 import { standardKeymap } from '@codemirror/commands';
 import { keymap } from '@codemirror/view';
 import { createCodeMirrorAdapter } from 'platejs/code-block/codemirror';
-import { defineEditorSchema, property, schema } from 'plitejs';
+import {
+  defineEditorSchema,
+  definePlugin,
+  editorCommands,
+  property,
+  schema,
+} from 'plitejs';
 import {
   type AuthoredChange,
   type AuthoredMark,
@@ -23,7 +29,7 @@ import {
   useEditorSelector,
   useElementSelected,
 } from 'plitejs/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -52,8 +58,26 @@ const inlineSchema = defineEditorSchema('schema:authored-example-inline', {
       content: schema.content.text({ default: 'text', min: 1 }),
       inline: true,
     },
+    paragraph: schema.element.textBlock(),
   },
-  root: schema.content.not(schema.content.text()),
+  root: schema.content.not(schema.content.text(), {
+    default: { type: 'paragraph' },
+  }),
+});
+const codeLines = definePlugin('authored-example-code-lines', {
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) => {
+      const selection = state.selection();
+
+      if (!selection || !state.nodes.above({ at: selection, type: 'code' })) {
+        return false;
+      }
+
+      return state.transaction((tx) => {
+        tx.text.insert('\n', { at: selection });
+      });
+    }),
+  ],
 });
 const proposal = { intent: 'propose' } as const;
 const paragraph = (text: string) => ({
@@ -179,11 +203,27 @@ const samples = {
   },
 };
 
+const kindsOf = (node: object) =>
+  new Set(
+    ((node as { authored?: readonly AuthoredMark[] }).authored ?? []).map(
+      (mark) => mark.kind
+    )
+  );
+
 const ReviewVoid = ({ element }: RenderVoidProps) => {
   const selected = useElementSelected();
+  const kinds = kindsOf(element);
+  const marks = cn(
+    kinds.has('insert') && 'bg-emerald-100 text-emerald-800 underline',
+    kinds.has('delete') && 'bg-red-50 text-red-700 line-through'
+  );
   return element.type === 'mention' ? (
     <span
-      className="rounded bg-blue-100 px-1 data-[selected=true]:bg-blue-300"
+      className={cn(
+        'rounded bg-blue-100 px-1',
+        marks,
+        'data-[selected=true]:bg-blue-300'
+      )}
       data-authored-atomic="mention"
       data-selected={selected}
     >
@@ -191,7 +231,11 @@ const ReviewVoid = ({ element }: RenderVoidProps) => {
     </span>
   ) : (
     <div
-      className="my-2 rounded border bg-gray-100 p-3 data-[selected=true]:bg-blue-300"
+      className={cn(
+        'my-2 rounded border bg-gray-100 p-3',
+        marks,
+        'data-[selected=true]:bg-blue-300'
+      )}
       data-authored-atomic="media"
       data-selected={selected}
     >
@@ -201,10 +245,18 @@ const ReviewVoid = ({ element }: RenderVoidProps) => {
 };
 const renderVoid = (props: RenderVoidProps) => <ReviewVoid {...props} />;
 
-const ReviewLeaf = ({ attributes, children, leaf }: RenderLeafProps) => {
-  const kinds = new Set(
-    ((leaf.authored ?? []) as readonly AuthoredMark[]).map((mark) => mark.kind)
+const splitJoinMark = (element: object) => {
+  const kinds = kindsOf(element);
+  return cn(
+    (kinds.has('split') || kinds.has('join')) &&
+      "relative before:absolute before:-left-4 before:content-['¶']",
+    kinds.has('split') && 'before:text-emerald-700',
+    kinds.has('join') && 'before:text-red-700 before:line-through'
   );
+};
+
+const ReviewLeaf = ({ attributes, children, leaf }: RenderLeafProps) => {
+  const kinds = kindsOf(leaf);
   return (
     <span
       {...attributes}
@@ -237,7 +289,7 @@ const ReviewElement = ({
   switch (element.type) {
     case 'code': {
       return (
-        <div {...attributes}>
+        <div {...attributes} className={splitJoinMark(element)}>
           {external && !('intent' in mode && mode.intent === 'propose')
             ? external === 'codemirror'
               ? slots.externalText({
@@ -266,7 +318,10 @@ const ReviewElement = ({
     }
     case 'quote': {
       return (
-        <blockquote {...attributes} className="my-2 border-l-2 pl-3">
+        <blockquote
+          {...attributes}
+          className={cn('my-2 border-l-2 pl-3', splitJoinMark(element))}
+        >
           {slots.children()}
         </blockquote>
       );
@@ -289,7 +344,11 @@ const ReviewElement = ({
       );
     }
     default: {
-      return <div {...attributes}>{slots.children()}</div>;
+      return (
+        <div {...attributes} className={splitJoinMark(element)}>
+          {slots.children()}
+        </div>
+      );
     }
   }
 };
@@ -414,6 +473,13 @@ const ReviewCards = ({ authoring }: { authoring: AuthoredPlugin }) => {
     currentEditor.plugin(authoring).read.changes()
   );
   const [result, setResult] = useState('');
+  useEffect(
+    () =>
+      editor
+        .plugin(authoring)
+        .api.subscribeRefusals(({ message }) => setResult(message)),
+    [authoring, editor]
+  );
   const byAuthor = (authorId: string) => {
     const changes: AuthoredChange[] = [];
     let cursor: string | undefined;
@@ -542,7 +608,7 @@ const AuthoredChangesDocument = ({
     };
   });
   const editor = useEditor({
-    plugins: [inlineSchema, historyPlugin, authoring],
+    plugins: [inlineSchema, codeLines, historyPlugin, authoring],
     initialValue: samples[sample].value,
   });
 

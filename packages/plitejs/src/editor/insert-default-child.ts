@@ -1,3 +1,4 @@
+import { assertFrameSelectionPlaced } from '../core/command-frame';
 import { getEditorSchema } from '../core/editor-runtime';
 import { toPublicRoot } from '../core/public-root';
 import { getActiveUpdateRoot } from '../core/public-state';
@@ -63,4 +64,10 @@ export const insertDefaultChild = (
   insertNodes(editor, block, { at, select: true, voids });
 
   return true;
+};
+
+export const startEmptyRoot = (editor: AnyEditor) => {
+  assertFrameSelectionPlaced(editor);
+
+  return insertDefaultChild(editor, [0]);
 };

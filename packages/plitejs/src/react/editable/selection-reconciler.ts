@@ -49,6 +49,7 @@ import {
   writeDOMSelection,
 } from '../../dom/utils/selection-writes';
 import { readOnlyInlineAt } from '../../editor/element-read-only';
+import { readTextEdge } from '../../editor/point';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
@@ -80,7 +81,6 @@ import {
   above as editorAbove,
   range as editorRange,
   isInline as editorIsInline,
-  point as editorPoint,
   void as editorVoid,
   hasPath as editorHasPath,
   getSelectionDOMRange,
@@ -439,8 +439,11 @@ export const applyEditableClick = ({
       }
     }
 
-    const start = editorPoint(editor, path, { edge: 'start' });
-    const end = editorPoint(editor, path, { edge: 'end' });
+    const start = readTextEdge(editor, path, 'start');
+    const end = readTextEdge(editor, path, 'end');
+
+    if (!start || !end) return;
+
     const startVoid = editorVoid(editor, { at: start });
     const endVoid = editorVoid(editor, { at: end });
 

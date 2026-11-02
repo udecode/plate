@@ -25,6 +25,7 @@ import { getInputEventTargetRanges } from './dom-input-event';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-adapter';
 import {
+  dropsNativeEdits,
   type EditableCommand,
   prepareEditableBeforeInputKernel,
 } from './editing-kernel';
@@ -453,14 +454,15 @@ export const useRuntimeBeforeInputEvents = ({
           event.inputType,
           runtime.rootRef.current
         );
-        const compositionTarget = runtime.isAndroidHost
-          ? settleAndroidCompositionBeforeInput({
-              editor,
-              event,
-              inputController,
-              setComposing,
-            })
-          : null;
+        const compositionTarget =
+          runtime.isAndroidHost && !dropsNativeEdits(editor, readOnly)
+            ? settleAndroidCompositionBeforeInput({
+                editor,
+                event,
+                inputController,
+                setComposing,
+              })
+            : null;
 
         const shouldFlushPendingTextInput =
           deferNativeTextInputRepair &&
@@ -540,7 +542,10 @@ export const useRuntimeBeforeInputEvents = ({
           return;
         }
 
-        if (readOnly && ReactEditor.hasEditableTarget(editor, event.target)) {
+        if (
+          dropsNativeEdits(editor, readOnly) &&
+          ReactEditor.hasEditableTarget(editor, event.target)
+        ) {
           event.preventDefault();
           event.stopImmediatePropagation();
           handledDOMBeforeInputRef.current = true;

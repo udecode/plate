@@ -52,7 +52,7 @@ import {
   writePliteViewSelection,
 } from '../view-selection';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
-import type { EditableCommand } from './editing-kernel';
+import { dropsNativeEdits, type EditableCommand } from './editing-kernel';
 import {
   type EditableRepairRequest,
   isInteractiveInternalTarget,
@@ -366,7 +366,7 @@ export const applyEditableCut = ({
 }): EditableClipboardResult => {
   const clipboardData = event.clipboardData ?? event.nativeEvent.clipboardData;
 
-  if (clipboardData && readOnly) {
+  if (clipboardData && dropsNativeEdits(editor, readOnly)) {
     preventReadOnlyClipboardDefault({ editor, event, handler: onCut });
     return clipboardResult({ command: null });
   }
@@ -589,7 +589,11 @@ export const applyEditableDragEnd = ({
   readOnly: boolean;
   state: EditableDragState;
 }) => {
-  if (!readOnly && state.isDraggingInternally && onDragEnd) {
+  if (
+    !dropsNativeEdits(editor, readOnly) &&
+    state.isDraggingInternally &&
+    onDragEnd
+  ) {
     shouldHandleEditorDragEvent({
       editor,
       event,
@@ -720,7 +724,7 @@ export const applyEditableDragStart = ({
   state: EditableDragState;
 }) => {
   if (
-    !readOnly &&
+    !dropsNativeEdits(editor, readOnly) &&
     shouldHandleEditorDragEvent({
       editor,
       event,
@@ -918,7 +922,10 @@ export const applyEditableDrop = ({
 }): EditableClipboardResult => {
   indicateDOMDropTarget(editor, null);
 
-  if (readOnly && ReactEditor.hasEditableTarget(editor, event.target)) {
+  if (
+    dropsNativeEdits(editor, readOnly) &&
+    ReactEditor.hasEditableTarget(editor, event.target)
+  ) {
     isDragEventHandled({ event, handler: onDrop });
     event.preventDefault();
     event.stopPropagation();
@@ -998,7 +1005,7 @@ export const applyEditablePaste = ({
   readOnly: boolean;
   viewportBackedSelection: boolean;
 }): EditableClipboardResult => {
-  if (readOnly) {
+  if (dropsNativeEdits(editor, readOnly)) {
     preventReadOnlyClipboardDefault({ editor, event, handler: onPaste });
     return clipboardResult({ command: null });
   }

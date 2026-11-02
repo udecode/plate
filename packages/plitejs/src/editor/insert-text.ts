@@ -23,11 +23,15 @@ import {
   type Range,
 } from '../interfaces';
 import type { EditorStaticApi } from '../interfaces/editor';
-import { void as editorVoid } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  void as editorVoid,
+} from '../interfaces/editor';
 import type { TextInsertTextOptions } from '../interfaces/transforms/text';
 import { applyInsertText } from '../transforms-text/insert-text';
 import { getDefaultInsertLocation } from '../utils';
 import { refusesReadOnlyWrite } from './element-read-only';
+import { startEmptyRoot } from './insert-default-child';
 
 const shouldIgnoreTarget = (
   editor: Parameters<EditorStaticApi['insertText']>[0],
@@ -98,6 +102,12 @@ export const applyInsertTextCommand: EditorStaticApi['insertText'] = (
           : null;
       let target = tx.resolveTarget({ at: options.at });
       if (!target && !hasExplicitAt && tx.getModelSelection() == null) {
+        if (
+          editorGetChildren(editor).length === 0 &&
+          (!text || !startEmptyRoot(editor))
+        ) {
+          return;
+        }
         target = getDefaultInsertLocation(editor);
       }
       if (PointApi.isPoint(target) || RangeApi.isRange(target)) {

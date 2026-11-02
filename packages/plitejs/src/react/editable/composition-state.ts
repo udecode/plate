@@ -30,6 +30,7 @@ import {
   getMountedEditableDOMRuntime,
   hasMountedEditableCompositionOwner,
 } from './editable-dom-runtime';
+import { dropsNativeEdits } from './editing-kernel';
 import type { EditableCompositionStateSetter } from './input-controller';
 import { createNativeGroupingId, updateNativeTextInput } from './input-history';
 import type {
@@ -209,7 +210,10 @@ const preventNoneditableComposition = ({
   readOnly: boolean;
   setComposing?: EditableCompositionStateSetter;
 }) => {
-  if (!readOnly || !ReactEditor.hasEditableTarget(editor, event.target)) {
+  if (
+    !dropsNativeEdits(editor, readOnly) ||
+    !ReactEditor.hasEditableTarget(editor, event.target)
+  ) {
     return false;
   }
 

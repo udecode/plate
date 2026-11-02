@@ -8,7 +8,10 @@ import {
   type Range,
   SelectionApi,
 } from '../..';
-import { readAuthoredView } from '../../core/authored-runtime';
+import {
+  isAuthoredPreview,
+  readAuthoredView,
+} from '../../core/authored-runtime';
 import { createInternalDocumentChange } from '../../core/change/document-change';
 import { DocumentIndex } from '../../core/change/document-index';
 import { RootChange } from '../../core/change/root-change';
@@ -696,7 +699,7 @@ export class ExternalTextRuntime {
     return Object.freeze({
       config: entry.config,
       decorations: externalDecorations(bucket),
-      readOnly: this.runtime.readOnly || binding.readOnly,
+      readOnly: this.isReadOnly(binding),
       selection,
       text: text.text,
       version: entry.state?.version ?? 0,
@@ -897,8 +900,16 @@ export class ExternalTextRuntime {
     ) {
       return this.stale(entry);
     }
-    if (write && (this.runtime.readOnly || binding.readOnly)) return READ_ONLY;
+    if (write && this.isReadOnly(binding)) return READ_ONLY;
     return null;
+  }
+
+  private isReadOnly(binding: Binding) {
+    return (
+      this.runtime.readOnly ||
+      binding.readOnly ||
+      isAuthoredPreview(this.runtime.editor)
+    );
   }
 
   private actions(entry: Entry): ExternalTextActions {

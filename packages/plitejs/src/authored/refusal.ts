@@ -1,9 +1,20 @@
 import type { AuthoredVeto } from '../core/authored-veto';
 import { type DraftStep, UNSCOPED_ORIGINS } from '../core/change/builder';
-import { getInternalDocumentChangeEntries } from '../core/change/document-change';
-import type { IndexedNodeRange } from '../core/change/document-index';
+import {
+  type DocumentChange,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRanges,
+} from '../core/change/document-change';
+import type {
+  DocumentIndex,
+  IndexedNodeRange,
+} from '../core/change/document-index';
 import { applyPropertyModifications } from '../core/change/root-change';
-import { nodeProps, PreparedTokenSlice } from '../core/change/tokens';
+import {
+  isElementNode,
+  nodeProps,
+  PreparedTokenSlice,
+} from '../core/change/tokens';
 import type { PropertyModification } from '../core/change/transform';
 import { EditorRefusalError } from '../core/refusal';
 import {
@@ -213,6 +224,38 @@ export const unrepresentable = (
     } satisfies AuthoredRefusal),
     message
   );
+
+export const splitOneTextRefusal = (
+  change: DocumentChange,
+  indexes: ReadonlyMap<string, DocumentIndex>,
+  oneText: (type: string) => boolean
+) => {
+  for (const [root, index] of indexes) {
+    for (const range of getInternalDocumentChangeRanges(change, root)) {
+      for (const { kind, path } of index.nodeRangesTouching(
+        range[2],
+        range[3]
+      )) {
+        if (kind !== 'element') continue;
+
+        const node = index.node(path);
+
+        if (
+          isElementNode(node) &&
+          node.children.length > 1 &&
+          typeof node.type === 'string' &&
+          oneText(node.type)
+        ) {
+          return unrepresentable(
+            `Suggesting cannot mark part of the text in "${node.type}", which holds one text.`
+          );
+        }
+      }
+    }
+  }
+
+  return null;
+};
 
 export const unplaced = () =>
   unrepresentable(

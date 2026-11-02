@@ -10,6 +10,7 @@ import {
 import { textPropertiesEqual } from '../core/value-codec';
 import type { EditorStaticApi } from '../interfaces/editor';
 import {
+  getChildren as editorGetChildren,
   getSelection as editorGetSelection,
   leaf as editorLeaf,
 } from '../interfaces/editor';
@@ -20,6 +21,7 @@ import { dividesTextCell, splitNodes } from '../transforms-node/split-nodes';
 import { deleteText } from '../transforms-text/delete-text';
 import { breakAtSelectedBlockVoid } from './block-void-break';
 import { refusesReadOnlyWrite } from './element-read-only';
+import { startEmptyRoot } from './insert-default-child';
 
 const getNextSoftBreakRange = (
   editor: Parameters<EditorStaticApi['insertBreak']>[0]
@@ -48,8 +50,14 @@ const getNextSoftBreakRange = (
 };
 
 export const applyInsertBreak: EditorStaticApi['insertBreak'] = (editor) => {
-  const softBreakRange = getNextSoftBreakRange(editor);
   const selection = editorGetSelection(editor);
+
+  if (!selection && editorGetChildren(editor).length === 0) {
+    startEmptyRoot(editor);
+    return;
+  }
+
+  const softBreakRange = getNextSoftBreakRange(editor);
 
   // Node selections may be disjoint, so they have no truthful break target.
   if (selection && !RangeApi.isRange(selection)) return;

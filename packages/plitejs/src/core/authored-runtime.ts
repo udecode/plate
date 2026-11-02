@@ -72,6 +72,12 @@ export const mapToAuthoredView = <T extends AuthoredLocation>(
 export const readAuthoredView = (view: Editor) =>
   AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view))?.view(view);
 
+export const isAuthoredPreview = (view: Editor) => {
+  const authored = readAuthoredView(view);
+
+  return authored !== undefined && 'preview' in authored;
+};
+
 export const withAuthoredViewRead = <T>(
   source: Editor,
   view: Editor,

@@ -38,6 +38,7 @@ import {
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { profilePliteReactDuration } from '../render-profiler';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
+import { dropsNativeEdits } from './editing-kernel';
 import { isInteractiveInternalTarget } from './input-controller';
 import {
   clearEditablePendingNativeTextInputRepair,
@@ -1350,7 +1351,7 @@ export const useEditableDOMInputHandler = ({
           return;
         }
 
-        if (readOnly) {
+        if (dropsNativeEdits(editor, readOnly)) {
           event.preventDefault();
           event.stopImmediatePropagation();
           restoreOwnedDOMText(nativeInput, rootRef.current);
@@ -1617,7 +1618,7 @@ export const useEditableReactBeforeInputHandler = ({
       // only works for the `insertText` input type.
       if (
         !supportsDOMBeforeInput(event) &&
-        !readOnly &&
+        !dropsNativeEdits(editor, readOnly) &&
         !(onBeforeInput?.(event) ?? event.defaultPrevented) &&
         ReactEditor.hasSelectableTarget(editor, event.target)
       ) {

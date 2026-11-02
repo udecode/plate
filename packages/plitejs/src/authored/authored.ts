@@ -175,6 +175,7 @@ import {
   GENERATED_VALUES_REFUSAL,
   movedRefusal,
   proposalRefusal,
+  splitOneTextRefusal,
   unplaced,
   unrepresentable,
 } from './refusal';
@@ -2312,6 +2313,11 @@ export const createAuthoredPlugin = (
             landed: landedHere,
           };
           const compiled = getCompiledEditorSchema(editor);
+          const oneText = (type: string) => {
+            const content = getEditorSchema(editor).getElementContent(type);
+
+            return content?.max === 1 && content.allowsText;
+          };
           const recorded = recordAuthoredSteps({
             before,
             changeId,
@@ -2363,11 +2369,7 @@ export const createAuthoredPlugin = (
               (authoredResolveSchemaOf(editor).content(type, root)?.prefix ??
                 0) > 0,
             now: at,
-            oneText: (type) => {
-              const content = getEditorSchema(editor).getElementContent(type);
-
-              return content?.max === 1 && content.allowsText;
-            },
+            oneText,
             ownedRoots: (props) => {
               const schema: InternalEditorSchemaApi = getEditorSchema(editor);
 
@@ -2698,6 +2700,9 @@ export const createAuthoredPlugin = (
             : null;
           const later = shown ? spared.compose(shown.change, before) : spared;
           const indexedAfter = shown?.indexes ?? sparedIndexes;
+          const split = splitOneTextRefusal(later, indexedAfter, oneText);
+
+          if (split) throw split;
 
           return {
             anchorChange: (plainAfter) =>

@@ -19,7 +19,10 @@ import {
   SelectionApi,
   TextApi,
 } from '../..';
-import { getPlacementGeneration } from '../../core/view-carets';
+import {
+  getPlacementGeneration,
+  liftShownTarget,
+} from '../../core/view-carets';
 import { isDOMNode } from '../../dom';
 import type {
   DOMPhase,
@@ -755,6 +758,12 @@ const applyProjectedDragSelection = ({
   return true;
 };
 
+const selectShown = (view: RootInteractionEditor, shown: Range) => {
+  const target = liftShownTarget(view, shown);
+
+  if (target) dispatchCommand(view, editorCommands.select, { target });
+};
+
 const collapseModelSelectionToProjectedDragAnchor = ({
   anchor,
   editor,
@@ -781,7 +790,7 @@ const collapseModelSelectionToProjectedDragAnchor = ({
     return;
   }
 
-  dispatchCommand(editor, editorCommands.select, { target: range });
+  selectShown(editor, range);
 };
 
 const applyModelProjectedDragSelection = ({
@@ -801,11 +810,9 @@ const applyModelProjectedDragSelection = ({
 
   selectionBridge?.beforeModelSelection();
   writePliteViewSelection(editor, null);
-  dispatchCommand(editor, editorCommands.select, {
-    target: {
-      anchor: anchor.point,
-      focus: focus.point,
-    },
+  selectShown(editor, {
+    anchor: anchor.point,
+    focus: focus.point,
   });
 
   return true;
@@ -1193,9 +1200,7 @@ const applyModelDragSelection = ({
     {
       place: () =>
         editor.update({ tags: 'skip-scroll-into-view' }, (tx) => {
-          dispatchCommand(editor, editorCommands.select, {
-            target: rootedRange,
-          });
+          selectShown(editor, rootedRange);
           if (block) tx.annotations.set(tripleClickedBlock, block);
           if (word) tx.annotations.set(placedSelectionWord, word);
         }),
@@ -1509,9 +1514,7 @@ export const useRootInteractionController = ({
 
           if (selectionEditor) {
             writePliteViewSelection(focusEditor, null);
-            dispatchCommand(selectionEditor, editorCommands.select, {
-              target: range,
-            });
+            selectShown(selectionEditor, range);
             focusPliteEditableAfterEventFrame(selectionEditor, {
               receipt: getPlacementGeneration(selectionEditor),
             });
@@ -1558,10 +1561,7 @@ export const useRootInteractionController = ({
                 options.placementDOMPoint ?? null
               );
               const { block, keepScroll, word } = options;
-              const select = () =>
-                dispatchCommand(focusEditor, editorCommands.select, {
-                  target: range,
-                });
+              const select = () => selectShown(focusEditor, range);
 
               if (block || keepScroll || word) {
                 focusEditor.update((tx) => {

@@ -62,7 +62,11 @@ import {
   isEditableEditingEpochCommand,
   markEditableEditingEpochCommandHandled,
 } from './editing-epoch-adapter';
-import { getEditableCommandFromKeyDown } from './editing-kernel';
+import {
+  dropsNativeEdits,
+  type EditableCommand,
+  getEditableCommandFromKeyDown,
+} from './editing-kernel';
 import type { HistoryFocusOwnerApi } from './history-focus';
 import {
   type EditableCompositionStateSetter,
@@ -308,6 +312,16 @@ const isReadOnlyNativeEditingKey = (nativeEvent: KeyboardEvent) => {
     nativeEvent.key === 'Enter'
   );
 };
+
+const isPreviewEditingKey = (
+  nativeEvent: KeyboardEvent,
+  command: EditableCommand | null
+) =>
+  !Hotkeys.isUndo(nativeEvent) &&
+  !Hotkeys.isRedo(nativeEvent) &&
+  (isReadOnlyNativeEditingKey(nativeEvent) ||
+    Hotkeys.isTransposeCharacter(nativeEvent) ||
+    isEditableEditingEpochCommand(command));
 
 const isViewportRuntime = (viewportRuntime: unknown) =>
   typeof viewportRuntime === 'object' &&
@@ -570,7 +584,7 @@ export const applyEditableKeyDown = ({
     }
 
     if (
-      !readOnly &&
+      !dropsNativeEdits(editor, readOnly) &&
       projectedSelection &&
       !isPliteViewSelectionCollapsed(projectedSelection) &&
       isPlainTextKeyboardInput(nativeEvent) &&
@@ -597,7 +611,10 @@ export const applyEditableKeyDown = ({
       );
     }
 
-    if (!readOnly && isEditableEditingEpochCommand(projectedCommand)) {
+    if (
+      !dropsNativeEdits(editor, readOnly) &&
+      isEditableEditingEpochCommand(projectedCommand)
+    ) {
       event.preventDefault();
       event.stopPropagation();
       applyEditableCommand({ command: projectedCommand, editor });
@@ -705,6 +722,20 @@ export const applyEditableKeyDown = ({
     }
 
     if (ReactEditor.isComposing(editor)) {
+      return keyDownHandled();
+    }
+    if (
+      dropsNativeEdits(editor, readOnly) &&
+      isPreviewEditingKey(
+        nativeEvent,
+        getEditableCommandFromKeyDown({
+          event,
+          selection: readRuntimeSelection(editor),
+        })
+      )
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
       return keyDownHandled();
     }
 

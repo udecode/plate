@@ -9,6 +9,7 @@ import { commitInsertFromComposition } from './composition-state';
 import { isDataTransferInput } from './dom-input-event';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import {
+  dropsNativeEdits,
   type EditableCommand,
   getEditableCommandFromBeforeInputType,
 } from './editing-kernel';
@@ -105,9 +106,11 @@ export const applyEditableInput = ({
     return inputResult();
   }
 
+  const dropsEdits = dropsNativeEdits(editor, readOnly);
+
   if (
     skipNativeTextInputRepair &&
-    !readOnly &&
+    !dropsEdits &&
     deferredMutations.current.length === 0
   ) {
     handledDOMBeforeInputRef.current = false;
@@ -123,7 +126,8 @@ export const applyEditableInput = ({
       inputController.state.selectionSource === 'model-owned');
   const androidInputManager = androidInputManagerRef.current;
   const androidOwnsInput =
-    androidInputManager?.handleInput(capturedDOMInputRepair?.target) ?? false;
+    !dropsEdits &&
+    (androidInputManager?.handleInput(capturedDOMInputRepair?.target) ?? false);
 
   if (androidOwnsInput) {
     return inputResult();
@@ -147,7 +151,7 @@ export const applyEditableInput = ({
   const domText =
     event.currentTarget.textContent?.replace(/\uFEFF/g, '') ?? modelText;
 
-  if (readOnly) {
+  if (dropsEdits) {
     handledDOMBeforeInputRef.current = false;
 
     return inputResult(

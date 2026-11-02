@@ -1188,13 +1188,20 @@ export const setSelectionAsView = (
   );
 };
 
-export const setShownSelectionAsView = (
+export const liftShownTarget = (
   view: Editor,
   shown: EditorSelectionTarget | null
 ) => {
   const lifted = shown && toStoredTarget(view, shown);
 
-  setSelectionAsView(view, lifted?.kind === 'stored' ? lifted.target : null);
+  return lifted?.kind === 'stored' ? lifted.target : null;
+};
+
+export const setShownSelectionAsView = (
+  view: Editor,
+  shown: EditorSelectionTarget | null
+) => {
+  setSelectionAsView(view, liftShownTarget(view, shown));
 };
 
 export const clearCaretUnlessHeldElsewhere = (view: Editor) => {
