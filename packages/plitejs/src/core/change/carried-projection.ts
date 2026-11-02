@@ -115,6 +115,66 @@ const sectionsOf = (change: RootChange): Section[] => {
 const sliceOf = (data: SectionData) =>
   data instanceof PreparedTokenSlice ? data : PreparedTokenSlice.empty;
 
+const keptReinserted = (sections: readonly Section[], before: DocumentIndex) =>
+  sections.flatMap((section): Section[] => {
+    if (section.inserted <= 0 || section.length === 0) return [section];
+
+    const slice = sliceOf(section.data);
+    const removedAt = (offset: number) =>
+      before.slice(section.from + offset, section.from + offset + 1).tokens[0];
+    const insertedAt = (offset: number) =>
+      slice.slice(offset, offset + 1).tokens[0];
+    const kind = removedAt(0)?.kind;
+
+    if (kind === 'text') return [section];
+    for (let offset = 1; offset < section.length; offset++) {
+      if (removedAt(offset)?.kind !== kind) return [section];
+    }
+
+    let head = 0;
+    let tail = 0;
+
+    while (
+      head < section.length &&
+      head < section.inserted &&
+      sameToken(removedAt(head), insertedAt(head))
+    ) {
+      head += 1;
+    }
+    while (
+      tail < section.length - head &&
+      tail < section.inserted - head &&
+      sameToken(
+        removedAt(section.length - 1 - tail),
+        insertedAt(section.inserted - 1 - tail)
+      )
+    ) {
+      tail += 1;
+    }
+    if (head + tail === 0) return [section];
+
+    const length = section.length - head - tail;
+    const inserted = section.inserted - head - tail;
+    const kept = (from: number, at: number, count: number): Section[] =>
+      count > 0 ? [{ at, data: null, from, inserted: -1, length: count }] : [];
+
+    return [
+      ...kept(section.from, section.at, head),
+      ...(length > 0 || inserted > 0
+        ? [
+            {
+              at: section.at + head,
+              data: slice.slice(head, section.inserted - tail),
+              from: section.from + head,
+              inserted,
+              length,
+            },
+          ]
+        : []),
+      ...kept(section.from + head + length, section.at + head + inserted, tail),
+    ];
+  });
+
 const outputOf = (section: Section) =>
   section.inserted < 0 ? section.length : section.inserted;
 
@@ -148,8 +208,16 @@ class Correspondence {
   readonly move: Move | null;
   readonly sections: readonly Section[];
 
-  constructor(change: RootChange, before: DocumentIndex) {
-    this.sections = sectionsOf(change);
+  constructor(
+    change: RootChange,
+    before: DocumentIndex,
+    { keepReinserted = false }: Readonly<{ keepReinserted?: boolean }> = {}
+  ) {
+    const sections = sectionsOf(change);
+
+    this.sections = keepReinserted
+      ? keptReinserted(sections, before)
+      : sections;
     this.move = moveOf(this.sections, change, before);
   }
 
@@ -518,14 +586,24 @@ export const touchesCarriedRuns = (input: CarriedProjectionInput) => {
   const edit = new Correspondence(input.edit, input.before);
   const holders =
     shape.letter === null ? [] : insideOf(input.before, shape.letter);
-  const deletes = sectionsOf(input.step).filter(
+  const steps = sectionsOf(input.step);
+  const deletes = steps.filter(
     (section) => section.inserted >= 0 && section.length > 0
   );
+  const inserts = steps.filter((section) => section.inserted > 0);
+  const deletesWhereStepInserts = (section: Section) =>
+    section.length > 0 &&
+    inserts.some(
+      (inserted) =>
+        section.from <= inserted.from &&
+        inserted.from <= section.from + section.length
+    );
   const writes = edit.sections.some((section) => {
     const end = section.from + section.length;
 
     if (section.inserted === -1) return false;
     if (section.from < shape.end && end > shape.source) return true;
+    if (deletesWhereStepInserts(section)) return true;
     if (section.inserted === -2) {
       return holders.some(({ from }) => section.from <= from && from < end);
     }
@@ -690,7 +768,7 @@ export const projectCarriedStep = (
   const { after, before, edit, edited, schema, step } = input;
   const shape = shapeOf(input);
   const stepMap = new Correspondence(step, before);
-  const editMap = new Correspondence(edit, before);
+  const editMap = new Correspondence(edit, before, { keepReinserted: true });
   const sourceLine =
     lineAt(before, schema, shape.source) ??
     refuse('The run starts outside a line.');
@@ -765,15 +843,34 @@ export const projectCarriedStep = (
   const built = shape.forward
     ? forwardParts(context, sourceLine)
     : backwardParts(context, getLine(landingLine));
+  const parts: readonly Part[] = [
+    { from: region.editedFrom, kept: true, kind: 'copy', to: built.from },
+    ...built.parts,
+    { from: built.to, kept: true, kind: 'copy', to: region.editedTo },
+  ];
+  const copied = (position: number | null) =>
+    position !== null &&
+    parts.some(
+      (part) =>
+        part.kind === 'copy' &&
+        part.kept &&
+        part.from <= position &&
+        position < part.to
+    );
+
+  for (const section of stepMap.sections) {
+    if (section.inserted !== -2) continue;
+    for (let at = section.from; at < section.from + section.length; at++) {
+      if (copied(editMap.target(at))) {
+        refuse('The step sets properties on a node the edit keeps.');
+      }
+    }
+  }
 
   return assemble({
     edited,
     originOf,
-    parts: [
-      { from: region.editedFrom, kept: true, kind: 'copy', to: built.from },
-      ...built.parts,
-      { from: built.to, kept: true, kind: 'copy', to: region.editedTo },
-    ],
+    parts,
     read,
     readAfter,
     region,
@@ -1013,32 +1110,130 @@ const restoredOf = (
   return made([...tokens, ...closes], [...origins, ...closes.map(() => null)]);
 };
 
-/**
- * The whole nodes the step restores between `from` and `to`, past the closes
- * that `from` starts with and before the opens `to` ends with.
- */
-const betweenOf = ({ readAfter }: Context, from: number, to: number) => {
-  let start = from;
-  let end = to;
+type Held = Readonly<
+  { kind: 'brought' } | { kind: 'gone' } | { at: number; kind: 'held' }
+>;
 
-  while (start < end && readAfter.at(start)?.kind === 'close') start += 1;
-  while (end > start && readAfter.at(end - 1)?.kind === 'open') end -= 1;
+const enteredOf = (
+  { after, edited, editMap, readAfter, stepMap }: Context,
+  cutLine: Line,
+  landed: Line,
+  span: Readonly<{ end: number; land: number }> | null
+) => {
+  const parts: Part[] = [];
+  const brought: IndexedNodeRange[] = [];
+  const kept: IndexedNodeRange[] = [];
+  let cursor = span?.end ?? null;
+  let start = cutLine.line.to;
+  let depth = 0;
+  const heldAt = (entry: IndexedNodeRange): Held => {
+    const source = stepMap.source(entry.from);
 
-  const { depth, lowest } = depthOf(readAfter, start, end);
+    if (source === null) return { kind: 'brought' };
 
-  if (depth !== 0 || lowest < 0) {
+    const at = editMap.target(source);
+
+    return at === null ? { kind: 'gone' } : { at, kind: 'held' };
+  };
+  const copy = (to: number) => {
+    const from =
+      cursor !== null && to >= cursor
+        ? cursor
+        : refuse('The landed line sits in an element the edit moved.');
+
+    if (to > from) parts.push({ from, kept: true, kind: 'copy', to });
+    cursor = to;
+  };
+  const nodes = (to: number) => {
+    const tokens: JsonToken[] = [];
+    const origins: number[] = [];
+
+    for (let position = start; position < to; position++) {
+      tokens.push(readAfter.at(position) ?? refuse('A token is out of reach.'));
+      origins.push(position);
+    }
+    if (tokens.length > 0) parts.push(made(tokens, origins));
+    start = to + 1;
+  };
+
+  const closing = new Map(
+    cutLine.ancestors.map((entry) => [entry.to - 1, entry])
+  );
+  const opening = new Map(landed.ancestors.map((entry) => [entry.from, entry]));
+
+  for (let position = start; position < landed.line.from; position++) {
+    const token = readAfter.at(position) ?? refuse('A token is out of reach.');
+
+    if (token.kind === 'close' && depth === 0) {
+      const closed =
+        closing.get(position) ??
+        refuse('The step restores nodes between its lines at another depth.');
+      const held = heldAt(closed);
+      const node = held.kind === 'held' ? edited.nodeStartingAt(held.at) : null;
+
+      if (cursor !== null && node && node.to - 1 >= cursor) {
+        copy(node.to - 1);
+        nodes(position);
+        copy(node.to);
+      } else nodes(position);
+    } else if (token.kind === 'close') {
+      depth -= 1;
+    } else if (token.kind === 'open') {
+      const entry = depth === 0 ? opening.get(position) : undefined;
+
+      if (!entry) {
+        depth += 1;
+        continue;
+      }
+      if (span && cursor !== null && cursor < span.land) copy(span.land);
+
+      const held = heldAt(entry);
+
+      nodes(position);
+      if (held.kind === 'brought') {
+        parts.push(made(opensOf(after, [entry]), [entry.from]));
+        brought.push(entry);
+      } else if (held.kind === 'held') {
+        if (brought.length > 0) {
+          refuse('The landed line sits in an element the edit moved.');
+        }
+        copy(held.at + 1);
+        kept.push(entry);
+      }
+    }
+  }
+  if (depth !== 0) {
     refuse('The step restores nodes between its lines at another depth.');
   }
+  if (cursor !== null) {
+    const holders = new Set(
+      landed.ancestors.flatMap((entry) => {
+        const held = heldAt(entry);
 
-  const tokens: JsonToken[] = [];
-  const origins: number[] = [];
+        return held.kind === 'held' ? [held.at] : [];
+      })
+    );
+    const around = insideOf(edited, cursor).filter(
+      (entry) => entry.kind === 'element'
+    );
+    const deepest = around.findLastIndex((entry) => holders.has(entry.from));
 
-  for (let position = start; position < end; position++) {
-    tokens.push(readAfter.at(position) ?? refuse('A token is out of reach.'));
-    origins.push(position);
+    if (around.slice(deepest + 1).some((entry) => !holders.has(entry.from))) {
+      refuse('The edit wrapped the elements the restored line leaves.');
+    }
   }
+  nodes(landed.line.from);
+  if (span && cursor !== null && cursor < span.land) copy(span.land);
 
-  return made(tokens, origins);
+  return {
+    closes: made(
+      closesOf(brought),
+      brought.toReversed().map((entry) => entry.to - 1)
+    ),
+    nodes: [...kept, ...brought].map((entry) => after.node(entry.path)),
+    parts,
+    to: cursor,
+  };
 };
 
 /**
@@ -1079,7 +1274,6 @@ const forwardParts = (context: Context, sourceLine: Line): Built => {
     landedAfter.line.contentFrom,
     shape.landing
   );
-  const between = betweenOf(context, lineAfter.line.to, landedAfter.line.from);
   const openLine = made(
     [openToken('element', propsOf(after, landedAfter.line))],
     [landedAfter.line.from]
@@ -1101,6 +1295,8 @@ const forwardParts = (context: Context, sourceLine: Line): Built => {
   const lineA = lineAt(edited, schema, cut);
 
   if (!lineA) {
+    const entered = enteredOf(context, lineAfter, landedAfter, null);
+
     // No line is left to cut, so both lines come back whole.
     return {
       from: cut,
@@ -1111,11 +1307,12 @@ const forwardParts = (context: Context, sourceLine: Line): Built => {
         ),
         restoredLeft,
         closeLine,
-        between,
+        ...entered.parts,
         openLine,
         restoredRight,
         { from: cut, kept: false, kind: 'copy', run: true, to: cut },
         made([closeToken('element')]),
+        entered.closes,
       ],
       to: cut,
     };
@@ -1157,6 +1354,7 @@ const forwardParts = (context: Context, sourceLine: Line): Built => {
 
   const landedIn =
     outer === -1 ? lineA.ancestors : lineA.ancestors.slice(0, outer);
+  const entered = enteredOf(context, lineAfter, landedAfter, { end, land });
 
   return {
     from: cut,
@@ -1164,19 +1362,20 @@ const forwardParts = (context: Context, sourceLine: Line): Built => {
       made(closesOf(lineA.within)),
       restoredLeft,
       closeLine,
-      { from: end, kept: true, kind: 'copy', to: land },
-      between,
+      ...entered.parts,
       openLine,
       restoredRight,
       made(
         pieceOpensOf(context, lineA.within, [
           after.node(landedAfter.line.path),
+          ...entered.nodes.toReversed(),
           ...landedIn.toReversed().map((entry) => edited.node(entry.path)),
         ])
       ),
       { from: cut, kept: false, kind: 'copy', run: true, to: end },
+      entered.closes,
     ],
-    to: land,
+    to: entered.to ?? land,
   };
 };
 
@@ -1279,6 +1478,12 @@ const backwardParts = (context: Context, landingLine: Line): Built => {
 
   countCoreWork('carriedLines', 2);
 
+  const between = withDeletedClosed(
+    context,
+    withoutDeleted(context, lineA.line.to, lineB.line.from),
+    end
+  );
+
   return {
     from: landing,
     parts: [
@@ -1287,25 +1492,26 @@ const backwardParts = (context: Context, landingLine: Line): Built => {
       survivors(lineB.line.from, start),
       made(opensOf(edited, lineB.within)),
       { from: start, kept: false, kind: 'copy', run: true, to: end },
-      withoutDeleted(context, lineA.line.to, lineB.line.from),
+      between.part,
     ],
-    to: end,
+    to: between.to,
   };
 };
 
-const withoutDeleted = (
-  { editMap, originOf, read, stepMap }: Context,
-  from: number,
-  to: number
-): Part => {
-  const tokens: JsonToken[] = [];
-  const origins: Array<number | null> = [];
-  const opened: Array<{ at: number; shrunk: boolean }> = [];
-  const deleted = (position: number) => {
+const deletedOf =
+  ({ editMap, stepMap }: Context) =>
+  (position: number) => {
     const source = editMap.source(position);
 
     return source !== null && stepMap.target(source) === null;
   };
+
+const withoutDeleted = (context: Context, from: number, to: number) => {
+  const { originOf, read } = context;
+  const tokens: JsonToken[] = [];
+  const origins: Array<number | null> = [];
+  const opened: Array<{ at: number; deleted: boolean; shrunk: boolean }> = [];
+  const deleted = deletedOf(context);
   const shrinkParent = () => {
     const parent = opened.at(-1);
 
@@ -1320,7 +1526,9 @@ const withoutDeleted = (
       continue;
     }
     if (token.kind === 'open') {
-      opened.push({ at: tokens.length, shrunk: deleted(position) });
+      const gone = deleted(position);
+
+      opened.push({ at: tokens.length, deleted: gone, shrunk: gone });
     } else if (token.kind === 'close') {
       const open = opened.pop();
 
@@ -1339,7 +1547,44 @@ const withoutDeleted = (
     origins.push(originOf(position));
   }
 
-  return made(tokens, origins);
+  return { opened, origins, tokens };
+};
+
+const withDeletedClosed = (
+  context: Context,
+  { opened, origins, tokens }: ReturnType<typeof withoutDeleted>,
+  end: number
+) => {
+  const deleted = deletedOf(context);
+  const closes: JsonToken[] = [];
+  const closeOrigins: Array<number | null> = [];
+  let through = end;
+
+  for (let open = opened.pop(); open; open = opened.pop()) {
+    const close = context.read.at(through);
+
+    if (
+      tokens.length !== open.at + 1 + closes.length ||
+      close?.kind !== 'close'
+    ) {
+      break;
+    }
+    if (open.deleted && deleted(through)) {
+      tokens.splice(open.at, 1);
+      origins.splice(open.at, 1);
+    } else if (!open.deleted && !deleted(through)) {
+      closes.push(close);
+      closeOrigins.push(context.originOf(through));
+    } else {
+      break;
+    }
+    through += 1;
+  }
+
+  return {
+    part: made([...tokens, ...closes], [...origins, ...closeOrigins]),
+    to: through,
+  };
 };
 
 type Match = Readonly<{ source: number; target: number; length: number }>;

@@ -153,9 +153,10 @@ suggested deletion of text. The step's `change` is `unsettle` then `rest`.
 else the commit did. Redoing the step replays only the inverse of `rest`, so
 the accept settles again against the document the redo finds.
 
-`carried` appears on an undo step whose commit moved content to the end of
-an element it directly followed, such as a line merged into the last line of
-a quote before it, and on each step an undo or redo of it pushes. Each run
+`carried` appears on an undo step whose commit moved content earlier across
+element edges and nothing else, such as a line merged into the last line of
+a quote before it, or a line in one quote merged into a line of the quote
+before it, and on each step an undo or redo of it pushes. Each run
 names `length` tokens the step deletes at `source` in the document before it
 and inserts at `at` in the document after it, so a teammate's edit inside a
 run moves with the run.

@@ -49,7 +49,8 @@ export interface Batch<_V extends Value = Value> {
    */
   readonly rest?: DocumentChange;
   /**
-   * On an undo step whose commit merged a line into a nested line, and on
+   * On an undo step whose commit merged a line into a nested line or out of
+   * one, such as a line of one quote into the quote before it, and on
    * each step an undo or redo of it pushes: the runs of tokens the step
    * deletes at `source` in its base and inserts, the same tokens, at `at` in
    * the document it gives. An outside edit inside a run moves with the run.

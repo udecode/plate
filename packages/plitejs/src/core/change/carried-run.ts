@@ -8,9 +8,10 @@ import { keptRunsOf, type RootChange } from './root-change';
 
 /**
  * Tokens a change deletes at `source` in its input and inserts, the same
- * tokens, at `at` in its output. A merge into a nested line carries the
- * joined line's content across the closing tokens of the line it joins, so an
- * edit inside the run belongs to that content wherever it stands.
+ * tokens, at `at` in its output. A merge into a nested line, or out of one,
+ * carries the joined line's content across the closing tokens of the line it
+ * joins and the opening tokens of the elements it leaves, so an edit inside
+ * the run belongs to that content wherever it stands.
  */
 export type CarriedRun = Readonly<{
   at: number;
@@ -19,13 +20,7 @@ export type CarriedRun = Readonly<{
   source: number;
 }>;
 
-/**
- * The run a node move carries when it lands the node earlier in the document
- * across closing tokens only, so the node joins the subtree those tokens
- * close.
- *
- * @internal
- */
+/** @internal */
 export const carriedRunOfMove = (
   root: string,
   document: DocumentIndex,
@@ -34,21 +29,25 @@ export const carriedRunOfMove = (
 ): readonly CarriedRun[] => {
   // A move inserts its node first when it lands it earlier.
   const [target, targetInserted, removed, inserted] = move.sections;
+  const closable = document.openContextAt(target).length;
+  const edges = closable + document.openContextAt(range.from).length;
 
   if (
     targetInserted !== -1 ||
     removed !== 0 ||
     inserted !== range.to - range.from ||
     target >= range.from ||
-    // Each close the node crosses ends one node open where it lands.
-    range.from - target > document.openContextAt(target).length
+    range.from - target > edges
   ) {
     return [];
   }
 
   const crossed = document.slice(target, range.from).tokens;
+  const opens = crossed.findIndex((token) => token.kind !== 'close');
+  const closed = opens === -1 ? crossed.length : opens;
 
-  return crossed.every((token) => token.kind === 'close')
+  return closed <= closable &&
+    crossed.slice(closed).every((token) => token.kind === 'open')
     ? [{ at: target, length: range.to - range.from, root, source: range.from }]
     : [];
 };
