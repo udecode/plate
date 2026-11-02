@@ -1,6 +1,6 @@
 ---
 extends: investigation
-when: Use it for `triage`, `triage label:<label>`, `triage #<N>`, `triage plate-private#<N>`, `triage fix #<N>`, `triage fix plate-private#<N>`, `triage fix <domain>` or `triage fix next`, for `maintainer issues`, and for a udecode/plate or udecode/plate-private issue URL. A Slate issue stays with `maintainer slate-issue`, and a security-shaped report with `maintainer security`.
+when: Use it for `triage`, `triage label:<label>`, `triage #<N>`, `triage plate-private#<N>`, `triage fix #<N>`, `triage fix plate-private#<N>`, `triage fix <domain>`, `triage fix next` or `triage chips`, for `maintainer issues`, and for a udecode/plate or udecode/plate-private issue URL. A Slate issue stays with `maintainer slate-issue`, and a security-shaped report with `maintainer security`.
 ---
 
 # Triage
@@ -17,6 +17,7 @@ Triage turns an open udecode/plate or udecode/plate-private issue into a call: w
 | `triage fix #<N>` or `triage fix plate-private#<N>` | issue N's group | the claim, records, then the Bug fix playbook over what the claim holds |
 | `triage fix <domain>` | the domain's group | the claim, records, then one Bug fix run over every kind the claim holds |
 | `triage fix next` | the group of the domain the claim picks, from udecode/plate-private's queue first | the same as `triage fix <domain>` for that domain |
+| `triage chips` | the open tasks that `pnpm triage kinds` names | a card for each Ready one, worst priority first, and no other chip |
 
 ## Who records
 
@@ -121,6 +122,17 @@ The `skip-changeset` label belongs to the changeset check on PRs into `main`, no
 ## Offer fix runs
 
 A domain is the review scope a `kind` record names in `scope`. An issue whose `claim:` line, as `show` prints it, names a holder, or whose `tasks:` line names an open task, stays with that holder or task. A device kind stays in the [Device lane](#device-lane). Once a run's records land, each domain that a landed `kind` record names gets one fix-run task for the rest of its open issues, when one of their current `kind` records is P0 or P1. A main report counts toward no task, because no claim takes it. A domain with kinds in both repositories gets one task per repository, because a claim reads one repository. Offer it through the `chips` skill's Offer mode. The task's priority is its worst kind's, its `repro:` names those issues, whose numbered repros hold the exact steps, and its `writes:` names the owner files their records trace. Its finding starts with the claim its session runs first, `pnpm triage claim --domain <scope> --task <id> --repo <name>`, then asks for `triage fix <domain>`. The task runs at `xhigh`, because its session records triage and `record` needs xhigh on every turn. So the offer's batch also logs an `updated` row with `effort: xhigh`, and the finding says why. This overrides chips.md's Title rule for these tasks, and the effort check its Cards rule runs against that rule. When an open task builds the check a kind needs, the domain task waits on it. A domain whose other kinds are all P2 or P3 gets no task, and the run's plan lists them in Open work, or its reply when it keeps no plan. Domain tasks run by priority, P0 first, as the chips board orders them. A sweep adds its own handoff to the offer, as the sweep's [Triage a domain](../rules/verify/references/sweep.md#triage-a-domain) says.
+
+## Triage chips
+
+`triage chips` cards the fix-run tasks of triaged issues ahead of every other chip (owner's word, 2026-11-02). It reads no `chips` board, because a board's card pass also lists tasks that no triage record names, and cards the way the `chips` skill's Close does:
+
+1. Run `pnpm triage kinds`. It lists the open `kind` records of every repository, worst priority first, and its fifth column says what takes each one: the holder, the open tasks that name it, `lane` for a device kind, `main` for a main report, or `free`.
+2. When a domain has a `free` P0 or P1 kind, offer its fix run first, as [Offer fix runs](#offer-fix-runs) says, and run `pnpm triage kinds` again.
+3. Take each task id the fifth column names, once each, in the order listed, and run `chips brief <id>` for each. Keep only the tasks whose `State:` line says Ready.
+4. Save the session tool's list of every session, archived ones included, as `/chips all` does. A kept task whose owner session is archived or missing from that list becomes this session's through an `updated` row with `session: <this session's id>`, as chips.md's Owner says. A kept task whose owner session still runs stays with that session.
+5. Judge each remaining task's dependencies and effort as chips.md's Cards says, offer its card within the card limit, all in one turn, and log every `carded` row in one `append --from` batch.
+6. The reply names each card, each Ready task the limit left uncarded with `start <id>`, each task a live session owns with that session, and how many kinds wait in the device lane or as main reports.
 
 ## Device lane
 

@@ -10,6 +10,7 @@
 //        pnpm triage claim --next --repo <name> [--drives <device>] [--session <id>]
 //        pnpm triage release <N>... --why "<reason>" [--session <id>]
 //        pnpm triage lane [<device>]
+//        pnpm triage kinds [--json]   (every repository unless --repo names one)
 //        pnpm triage show <N>... [--brief] [--json]
 //        pnpm triage queue [--label <label>] [--json]
 //        pnpm triage record <N> --outcome <outcome> --detail <detail> --seen <fingerprint> --why <why> [--dry-run]
@@ -2761,6 +2762,109 @@ function lane(argv) {
   for (const entry of entries) console.log(entry.line);
 }
 
+function kindsIn(reads) {
+  const open = openList(reads.policy.repo);
+  const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
+  const prefix = reads.policy.primary
+    ? '#'
+    : `${repoNameOf(reads.policy.repo)}#`;
+  return [...open]
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .flatMap(([issue, { title, assignees, milestone }]) => {
+      const head = headOf(issue, reads);
+      if (head?.outcome !== 'kind') return [];
+      const claim = claims.get(issue);
+      const devices = devicesOf(head);
+      const tasks = (reads.ledger ? linkedTasks(issue, reads.ledger) : [])
+        .filter(({ status }) => status === 'offered' || status === 'started')
+        .map(({ id }) => id);
+      const route =
+        (claim && `${claim.actor.who}/${claim.actor.session}`) ||
+        assignees.join(',') ||
+        tasks.join(',') ||
+        (devices.length > 0 && 'lane') ||
+        (reads.policy.primary &&
+          milestone !== reads.policy.milestone &&
+          'main') ||
+        'free';
+      return [
+        {
+          issue: `${prefix}${issue}`,
+          priority: head.fields.get('priority'),
+          scope: head.fields.get('scope'),
+          devices,
+          route,
+          title,
+        },
+      ];
+    });
+}
+
+function kinds(argv) {
+  const options = parseArgs(argv, { boolean: ['json'] });
+  if (options.positional.length > 0) usage('kinds takes no issue numbers');
+  let notes;
+  let entries;
+  if (repoName === null) {
+    // One process reads one repository, so the list of every repository runs this command once per repository.
+    notes = [];
+    entries = [];
+    for (const repo of localConfig().triage.repos) {
+      const read = spawnSync(
+        process.execPath,
+        [
+          fileURLToPath(import.meta.url),
+          'kinds',
+          '--repo',
+          repoNameOf(repo),
+          '--json',
+        ],
+        { encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024 }
+      );
+      if (read.status !== 0) {
+        refuse(
+          read.stderr.trim().replace(/^triage kinds: /u, '') ||
+            `kinds of ${repo} exited ${read.status}`
+        );
+      }
+      const listed = JSON.parse(read.stdout);
+      notes.push(...listed.notes.map((note) => `${repoNameOf(repo)}: ${note}`));
+      entries.push(...listed.kinds);
+    }
+  } else {
+    const reads = freshReads({ fallback: true, claims: true });
+    if (!reads.policy) {
+      refuse(
+        `kinds needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+      );
+    }
+    ({ notes } = reads);
+    entries = kindsIn(reads);
+  }
+  entries.sort(
+    (a, b) =>
+      PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority)
+  );
+  if (options.json) {
+    console.log(JSON.stringify({ notes, kinds: entries }, null, 2));
+    return;
+  }
+  for (const note of notes) console.log(`note: ${note}`);
+  if (entries.length === 0) console.log('no open kind');
+  for (const entry of entries) {
+    console.log(
+      [
+        entry.issue,
+        entry.priority,
+        entry.scope,
+        entry.devices.join(',') || '-',
+        entry.route,
+        entry.title,
+      ].join('\t')
+    );
+  }
+}
+
 function entriesOf(options) {
   if (options.from) {
     const lines = readFileSync(options.from, 'utf-8')
@@ -3075,6 +3179,7 @@ const COMMANDS = {
   claim: claimCommand,
   release: releaseCommand,
   lane,
+  kinds,
   show,
   queue,
   record: recordCommand,
