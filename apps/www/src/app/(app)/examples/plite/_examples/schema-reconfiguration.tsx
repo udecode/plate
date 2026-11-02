@@ -183,7 +183,12 @@ const SchemaControls = () => {
           </button>
         ))}
       </div>
-      <output data-test-id="schema-reconfiguration-status">{status}</output>
+      <output
+        className="wrap-anywhere"
+        data-test-id="schema-reconfiguration-status"
+      >
+        {status}
+      </output>
       <output
         className="sr-only"
         data-test-id="schema-reconfiguration-document"
