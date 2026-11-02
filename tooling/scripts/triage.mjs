@@ -2047,13 +2047,18 @@ const reporterGestureMiss = (body, tag) => {
     )
   );
   if (routes.length === 0 && keys.size === 0) return null;
+  const escape = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  // openExample(page, name) in @platejs/test opens /examples/<name>.
   const opens = (text) =>
     routes.length === 0 ||
-    routes.some((path) =>
-      new RegExp(
-        `['"\`]${path.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}[?#/'"\`]`,
-        'u'
-      ).test(text)
+    routes.some(
+      (path) =>
+        new RegExp(`['"\`]${escape(path)}[?#/'"\`]`, 'u').test(text) ||
+        (path.startsWith('/examples/') &&
+          new RegExp(
+            `openExample(?:WithOptions)?\\(\\s*\\w+,\\s*['"\`]${escape(path.slice('/examples/'.length))}['"\`]`,
+            'u'
+          ).test(text))
     );
   const presses = (text) =>
     keys.size === 0 ||
