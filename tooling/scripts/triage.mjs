@@ -54,10 +54,10 @@ import {
   decide,
   decideNext,
   DEVICES,
-  domainsOf,
   devicesOf,
   foldClaims,
   laneOf,
+  nextTargets,
   ownerFiles,
   parseClaims,
   sameActor,
@@ -2290,10 +2290,9 @@ function claimCommand(argv) {
   const scan = claimWorld(reads, open, [], new Map(), actor, git);
   const members = [
     ...new Set(
-      (target
-        ? [target]
-        : domainsOf(scan).map((domain) => ({ domain, task: null }))
-      ).flatMap((each) => targetMembers(each, scan).members)
+      (target ? [target] : nextTargets(scan)).flatMap(
+        (each) => targetMembers(each, scan).members
+      )
     ),
   ];
   const readGitHub = () =>
@@ -2341,8 +2340,8 @@ function claimCommand(argv) {
   if (options.next) {
     console.log(
       decision.target
-        ? `next: --domain ${decision.target.domain}, whose worst kind this claim holds is ${decision.priorities[0]}`
-        : 'next: no domain has a kind this claim can hold'
+        ? `next: ${decision.target.task ? `--task ${decision.target.task}` : `--domain ${decision.target.domain}`}, whose worst kind this claim holds is ${decision.priorities[0]}`
+        : 'next: no domain or task has a kind this claim can hold'
     );
   }
   console.log(

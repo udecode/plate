@@ -425,20 +425,30 @@ export function decide(request, world) {
   };
 }
 
-export const domainsOf = (world) =>
-  [
+// An offered task is a target of its own, because a domain target skips each
+// unit its task ties to a kind of another domain.
+export const nextTargets = (world) => [
+  ...[
     ...new Set(
       [...world.open.keys()]
         .map((issue) => world.head(issue))
         .filter((head) => head?.outcome === 'kind')
         .map((head) => head.fields.get('scope'))
     ),
-  ].sort((a, b) => a.localeCompare(b));
+  ]
+    .sort((a, b) => a.localeCompare(b))
+    .map((domain) => ({ domain, task: null })),
+  ...[...world.tasks]
+    .filter(
+      ([id, task]) =>
+        task.status === 'offered' && world.taskIssues(id).length > 0
+    )
+    .map(([id]) => ({ domain: null, task: id })),
+];
 
 export function decideNext(request, world) {
-  const [best] = domainsOf(world)
-    .map((domain) => {
-      const target = { domain, task: null };
+  const [best] = nextTargets(world)
+    .map((target) => {
       const result = decide({ ...request, target }, world);
       const priorities = result.held
         .map((issue) => world.head(issue))
@@ -447,7 +457,7 @@ export function decideNext(request, world) {
         .sort((a, b) => a.localeCompare(b));
       return { ...result, target, priorities };
     })
-    .filter((result) => result.exit === 0)
+    .filter((result) => result.exit === 0 && result.priorities.length > 0)
     .sort(
       (a, b) =>
         a.priorities[0].localeCompare(b.priorities[0]) ||
