@@ -9318,6 +9318,61 @@ export const continueTransactionSpec = (
   });
 };
 
+const discardTransactionSpecPrefix = (
+  editor: Editor,
+  prefix: TransactionSpec,
+  result: TransactionSpec
+): TransactionSpec => {
+  const inverse = prefix.changes.invert(getEditorDocumentValue(editor));
+  const effects = result.effects.flatMap((effect) => {
+    const mapped = prefix.changes.empty ? effect : mapEffect(effect, inverse);
+
+    return mapped ? [mapped] : [];
+  });
+  const rebased = createTransactionSpec(editor, (tx) => {
+    for (const annotation of result.annotations) {
+      tx.annotations.set(annotation.type, annotation.value);
+    }
+    for (const effect of effects) {
+      tx.effects.emit(effect.type, effect.value);
+    }
+    for (const tag of result.tags) tx.tags.add(tag);
+  });
+  const afterCommitHandlers =
+    TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS.get(result);
+
+  if (afterCommitHandlers) {
+    TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS.set(rebased, afterCommitHandlers);
+  }
+
+  return rebased;
+};
+
+/**
+ * Continue command dispatch against a prefix that stands only when the
+ * continuation changes the document.
+ *
+ * @internal
+ */
+export const continueTransactionSpecOrDiscardPrefix = (
+  editor: Editor,
+  prefix: TransactionSpec,
+  run: () => false | TransactionSpec
+): false | TransactionSpec => {
+  const unchanged: { result?: TransactionSpec } = {};
+  const spec = continueTransactionSpec(editor, prefix, () => {
+    const result = run();
+
+    if (result && result.changes.empty) unchanged.result = result;
+
+    return result;
+  });
+
+  return unchanged.result
+    ? discardTransactionSpecPrefix(editor, prefix, unchanged.result)
+    : spec;
+};
+
 /**
  * Rebase a non-document result from a discarded transaction prefix.
  *
@@ -9344,29 +9399,7 @@ export const rebaseTransactionSpecWithoutChanges = (
     throw new Error('Cannot discard a prefix from a document-changing spec.');
   }
 
-  const inverse = prefix.changes.invert(getEditorDocumentValue(editor));
-  const effects = result.effects.flatMap((effect) => {
-    const mapped = prefix.changes.empty ? effect : mapEffect(effect, inverse);
-
-    return mapped ? [mapped] : [];
-  });
-  const rebased = createTransactionSpec(editor, (tx) => {
-    for (const annotation of result.annotations) {
-      tx.annotations.set(annotation.type, annotation.value);
-    }
-    for (const effect of effects) {
-      tx.effects.emit(effect.type, effect.value);
-    }
-    for (const tag of result.tags) tx.tags.add(tag);
-  });
-  const afterCommitHandlers =
-    TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS.get(result);
-
-  if (afterCommitHandlers) {
-    TRANSACTION_SPEC_AFTER_COMMIT_HANDLERS.set(rebased, afterCommitHandlers);
-  }
-
-  return rebased;
+  return discardTransactionSpecPrefix(editor, prefix, result);
 };
 
 /** Apply one transaction spec inside the dispatcher's active transaction. */

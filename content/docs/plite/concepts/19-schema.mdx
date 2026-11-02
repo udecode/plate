@@ -113,10 +113,10 @@ content rule needs a constructable default. An element default can also set
 properties, such as a heading's required level:
 `{ type: "heading", properties: { level: 2 } }`. Every child Plite builds from
 that default gets them, and so does every block that `tx.blocks.reset`
-converts to it. A root whose minimum is zero can be empty. A typed letter or
-Enter there first builds the root's default, and a root without a default
-ignores them. `state.schema.create(type)` uses the compiled plan, and
-`state.schema.findWrapping(parent, child)` uses the same grammar.
+converts to it. A root whose minimum is zero can be empty. A typed letter,
+Enter or a clipboard paste there first builds the root's default, and a root
+without a default ignores them. `state.schema.create(type)` uses the compiled
+plan, and `state.schema.findWrapping(parent, child)` uses the same grammar.
 
 `schema.content.not(...)` is a true complement. It permits undeclared element
 types when they are outside the excluded rule. Inspect compiled grammar through

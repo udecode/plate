@@ -1,8 +1,17 @@
 import { assertFrameSelectionPlaced } from '../core/command-frame';
-import { getEditorSchema } from '../core/editor-runtime';
+import { getEditorRuntimeOwner, getEditorSchema } from '../core/editor-runtime';
 import { toPublicRoot } from '../core/public-root';
-import { getActiveUpdateRoot } from '../core/public-state';
-import type { AnyEditor } from '../interfaces/editor';
+import {
+  continueTransactionSpecOrDiscardPrefix,
+  getActiveUpdateRoot,
+  withTransactionSpecDraftRead,
+} from '../core/public-state';
+import type {
+  AnyEditor,
+  Editor,
+  EditorStateView,
+  TransactionSpec,
+} from '../interfaces/editor';
 import { parent as editorParent } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
 import { NodeApi } from '../interfaces/node';
@@ -70,4 +79,28 @@ export const startEmptyRoot = (editor: AnyEditor) => {
   assertFrameSelectionPlaced(editor);
 
   return insertDefaultChild(editor, [0]);
+};
+
+export const withLandingBlock = (
+  editor: Editor,
+  state: EditorStateView,
+  land: (state: EditorStateView) => false | TransactionSpec
+) => {
+  if (state.selection() || state.children().length > 0) return land(state);
+
+  assertFrameSelectionPlaced(editor);
+  const owner = getEditorRuntimeOwner(editor);
+  const start = state.transaction((tx) => {
+    const block = buildDefaultChild(owner, [0]);
+
+    if (block) tx.nodes.insert(block, { at: [0], select: true });
+  });
+
+  if (start.changes.empty) return land(state);
+
+  return continueTransactionSpecOrDiscardPrefix(owner, start, () =>
+    land(
+      withTransactionSpecDraftRead(owner, () => editor.read((draft) => draft))
+    )
+  );
 };

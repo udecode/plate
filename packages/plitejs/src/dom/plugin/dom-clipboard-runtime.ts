@@ -24,6 +24,7 @@ import {
 import { getEditorRuntimeOwner } from '../../core/editor-runtime';
 import { importContentSlice } from '../../core/import-content-slice';
 import { getInstalledPlugin } from '../../core/plugin';
+import { withLandingBlock } from '../../editor/insert-default-child';
 import {
   getSelection as getEditorSelection,
   void as editorVoid,
@@ -66,7 +67,9 @@ export const domCommands = Object.freeze({
       const editor = getActiveCommandEditor();
 
       return getInstalledPlugin(editor, 'dom')
-        ? createDOMDataTransactionSpec(editor, input, state)
+        ? withLandingBlock(editor, state, (current) =>
+            createDOMDataTransactionSpec(editor, input, current)
+          )
         : false;
     },
   }),
