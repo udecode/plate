@@ -1,7 +1,7 @@
 import React from 'react';
 import { isTabbable as isTabbableElement, tabbable } from 'tabbable';
 
-import { PathApi, type EditorStateView } from '../../core';
+import { PathApi, RangeApi, type EditorStateView } from '../../core';
 import { useEditorReadOnly, useEditor, usePluginStore } from '../../react/core';
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';
 import { TabbablePlugin } from './TabbablePlugin';
@@ -46,22 +46,20 @@ export function findTabDestination(
     (direction === 'forward'
       ? selectedNodes.at(-1)?.[1]
       : selectedNodes[0]?.[1]) ??
-    selection?.anchor.path ??
+    (selection &&
+      (direction === 'forward'
+        ? RangeApi.end(selection)
+        : RangeApi.start(selection)
+      ).path) ??
     [];
   const nextEntry =
     direction === 'forward'
       ? tabbableEntries.find(
-          (entry) =>
-            (PathApi.compare(entry.path, selectionPath) ||
-              entry.path.length - selectionPath.length) >= 0
+          (entry) => !PathApi.isBefore(entry.path, selectionPath)
         )
       : [...tabbableEntries]
           .reverse()
-          .find(
-            (entry) =>
-              (PathApi.compare(entry.path, selectionPath) ||
-                entry.path.length - selectionPath.length) < 0
-          );
+          .find((entry) => PathApi.isBefore(entry.path, selectionPath));
 
   return nextEntry ? { domNode: nextEntry.domNode, type: 'dom-node' } : null;
 }

@@ -664,6 +664,14 @@ export function NodeSelectionDrag({
         .map(([, path]) => path);
       const committedAnchorPath = gesture.lastAnchorPath;
       const committedFocusPath = gesture.lastFocusPath;
+      const clickCaret =
+        committedPaths.length === 0
+          ? editor.api.dom.resolveEventRange({
+              clientX: gesture.pointer.x,
+              clientY: gesture.pointer.y,
+              target: editable,
+            })
+          : null;
       const committedChange = editor.read.lastCommit();
 
       clearGesture();
@@ -673,6 +681,12 @@ export function NodeSelectionDrag({
         suppressClick = false;
       }, 0);
       setSelectionRect(null);
+      // Typing can follow the pointerup before the next frame.
+      if (clickCaret) {
+        editor.update.selection.set(clickCaret);
+        editor.api.dom.focus();
+        return;
+      }
       finishFrame = ownerWindow.requestAnimationFrame(() => {
         finishFrame = undefined;
         if (editor.read.lastCommit() !== committedChange) return;

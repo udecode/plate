@@ -1781,22 +1781,20 @@ export const EditableTextFlow = ({
     [entries]
   );
   const reconcile = useCallback(
-    function reconcile(readLiveEntries = true): void {
+    function reconcile(): void {
       const root = rootRef.current;
 
       if (!root) return;
       if (editableRuntime?.deferCompositionDOMWrite(root, () => reconcile())) {
         return;
       }
-      const liveEntries = readLiveEntries
-        ? entriesRef.current.flatMap((entry) => {
-            const { node, path } = readNodeByKey(editor, entry.nodeKey);
+      const liveEntries = entriesRef.current.flatMap((entry) => {
+        const { node, path } = readNodeByKey(editor, entry.nodeKey);
 
-            return node && path && typeof (node as TextNode).text === 'string'
-              ? [{ ...entry, node: node as TextNode, path }]
-              : [];
-          })
-        : entriesRef.current;
+        return node && path && typeof (node as TextNode).text === 'string'
+          ? [{ ...entry, node: node as TextNode, path }]
+          : [];
+      });
       const buckets = decorationManager?.hasSources()
         ? liveEntries.map(({ nodeKey }) =>
             decorationManager.getNodeSnapshot(nodeKey)
@@ -1910,7 +1908,7 @@ export const EditableTextFlow = ({
         )
       : [];
 
-    reconcile(false);
+    reconcile();
 
     return () => {
       active = false;
