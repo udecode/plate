@@ -30,7 +30,7 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--
 Run every command from the repository root.
 
 - `pnpm check:yjs-peer-order` checks the gate bound: both intents, the `sets` and `shared` documents, one command each. It plays 11,480 leaves from 360 cases in 37 to 53 s with 12 workers while other sessions load the machine, with load averages from 12 to 48. A worker peaks near 650 MB. On one worker the whole run takes about 155 s, about 11 ms a leaf in Plain and 16 ms in Suggesting, most of it spent building editors and applying updates. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check yjs-peer-order` runs the same step through the check runner, and `pnpm check --affected` runs it for a change to the script or its baseline, `packages/plitejs/src/` or `tooling/scripts/finding-baseline.mjs`.
-- `--all-docs` adds the blocks documents `pp`, `hp` and `ppp`. It plays 35,822 leaves in 100 to 115 s while other sessions load the machine and finds 194, the gate's 90 and 104 more `yjs-peer-mirror` findings, all in the first and last classes of Findings. `--commands=2` gives each peer two commands, but each case then grows to about 20,000 leaves: `--world=blocks --intent=plain` alone ran past 500,000 leaves in 20 minutes, an estimated nine hours for the whole bound, which no run may take. Any flag that changes what runs, `--commands`, `--world`, `--intent`, `--all-docs` or `--case`, skips the baseline and exits 1 on any finding.
+- `--all-docs` adds the blocks documents `pp`, `hp` and `ppp`. It plays 35,822 leaves in 100 to 115 s while other sessions load the machine and finds 168, the gate's 64 and 104 more `yjs-peer-mirror` findings, all in the first and last classes of Findings. `--commands=2` gives each peer two commands, but each case then grows to about 20,000 leaves: `--world=blocks --intent=plain` alone ran past 500,000 leaves in 20 minutes, an estimated nine hours for the whole bound, which no run may take. Any flag that changes what runs, `--commands`, `--world`, `--intent`, `--all-docs` or `--case`, skips the baseline and exits 1 on any finding.
 - `--case='<identity or part of one>'` prints the detail of each leaf whose identity contains it, passing or failing. It still plays the whole bound, so add `--world` and `--intent` to make it quick, such as `--world=blocks --intent=plain --case='plain blocks/sets | alice enter 1 end | bob retype 2 after 1'`.
 - `--jobs=<n>` sets the number of worker processes, the machine's cores up to 12 by default.
 - Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag or a broken run, such as a shard that crashed or a replay that took a different path, so a broken harness never reads as a finding. At the gate the run also fails when it plays other than 11,480 leaves, the `GATE_LEAVES` constant, so a core change that stops commands from applying cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
@@ -52,21 +52,19 @@ yjs-peer-mirror plain blocks/sets | alice backspace 1 start | bob retype 0 after
   yjs    {"children":[{"tags":["t"],"type":"heading","children":[{"text":"abcd"}]}],"roots":{}}
 ```
 
-The first is a known finding: alice presses Enter at the end of `cd`, bob imports it and makes the new empty line a heading, and alice then refuses bob's update. The second comes from a hand revert of 15ce336b9d, where bob's retype leaves the paragraph's `tags` in his Y.Doc while his editor drops them.
+The first was a finding until t_b55c730e. Alice presses Enter at the end of `cd`, so her caret's pending marks hold its `commentIds`. Bob imports it and makes the new empty line a heading, and alice refuses bob's update, because her caret kept a mark a heading cannot hold. The second comes from a hand revert of 15ce336b9d, where bob's retype leaves the paragraph's `tags` in his Y.Doc while his editor drops them.
 
 Tell a real bug from a modeling error before you change code:
 
-- **Real bug.** The commands are ones a user can make, a solo editor accepts each one, and a peer still fails a rule. Fix the binding, then run `--lower`. A mirror failure is the earliest sign, because the peer's next update carries the Y.Doc's version to everyone.
+- **Real bug.** The commands are ones a user can make, a solo editor accepts each one, and a peer still fails a rule. Fix its owner, then run `--lower`. The owner can be core rather than the binding. The check's solo editor opens fresh on the value, so it never holds a peer's caret state. In the first failure above, alice's own editor, with the marks Enter left on her caret, threw on the same retype of her line. A mirror failure is the earliest sign, because the peer's next update carries the Y.Doc's version to everyone.
 - **Modeling error.** The difference is one no user sees and the binding does not promise, such as an empty text the editor adds beside an inline element, or the script's command builds a step the editor would not. Fix the script with the reason. The mirror read already follows the schema's text rule. Without it, every empty element read back with an empty text.
 - **Intended change.** A change to what a command does changes what the solo editor accepts too, so the gate follows it. Never weaken a rule or add a baseline entry to get green.
 
 ## Findings
 
-The gate finds 90: 26 `yjs-peer-admission`, 64 `yjs-peer-mirror` and no `yjs-peer-converge`. Each class is one cause:
+The gate finds 64: 64 `yjs-peer-mirror`, and no `yjs-peer-admission` or `yjs-peer-converge`. Each class is one cause:
 
 - **A retype beside another edit of the same block.** One peer retypes a block while the other tags it, types in it or deletes into it, and a peer's editor drops the property or edit that its Y.Doc keeps. 40 `yjs-peer-mirror` entries, 20 in each intent.
-- **Enter, then a retype of the new line.** One peer presses Enter at the end of `cd`, the other imports it and retypes or retype-unsets the new empty line, and the first peer refuses that update. 8 `yjs-peer-admission` entries, both intents.
-- **A move of a caption owner beside an edit that joins them.** One peer moves a media block while the other deletes forward from `A` or backspaces at the start of `B`, which joins the two owners of `caption:1`. In 10 entries the peer that imported the move throws on its own Delete or Backspace, `Element-owned root index provenance for "media.caption" is stale`. In 4 the peers agree and the final schema check throws that error. In 4 a peer refuses the other's update in a sync round. 18 `yjs-peer-admission` entries, 16 of them in Plain.
 - **Enter after Enter, in Suggesting.** One peer presses Enter at a block's start or end, the other imports it and presses Enter at a start or end beside it, and that peer's editor keeps an insert mark on the new empty text, which its Y.Doc cannot store. 24 `yjs-peer-mirror` entries.
 
 ## What a pass proves
@@ -74,7 +72,7 @@ The gate finds 90: 26 `yjs-peer-admission`, 64 `yjs-peer-mirror` and no `yjs-pee
 The gate catches a peer that keeps a property its editor dropped and a merge a peer refuses. A proof worktree at `bde686f7c3`, with this check copied in, gave:
 
 - A hand revert of 15ce336b9d, where set entries are cleared only for a key the current type calls set-valued and a retyped line's runs are written without a rewrite, gives 408 `yjs-peer-mirror` findings against 64. One is the second failure in Read a failure.
-- A hand revert of 9545f7976b's import half, which no longer drops a shared root the merge orphaned, gives 32 `yjs-peer-admission` findings against 26. The six new ones are pairs of peers that between them remove both owners of `caption:1`.
+- A hand revert of 9545f7976b's import half, which no longer drops a shared root the merge orphaned, adds six `yjs-peer-admission` findings. The six new ones are pairs of peers that between them remove both owners of `caption:1`.
 - The prototype the script grew from failed at each fix's parent commit on the kind that fix removed, and passed it at the fix.
 - t_78e51eb0's mutants y4 and y5 in `packages/plitejs/src/authored/facts/facts.ts` and y7 in `packages/plitejs/src/core/record-store.ts` leave every finding unchanged and only slow the run. Each returns the same value as the code it replaces, so no convergence rule can see it.
 
@@ -92,6 +90,8 @@ Synced at `test(plitejs): check two Yjs peers converge on every short interleavi
 | `packages/plitejs/src/yjs/core/text-runs.ts` | text runs and their marks |
 | `packages/plitejs/src/yjs/core/document.ts` | `readPliteValueFromYjs`, the mirror read |
 | `packages/plitejs/src/core/editor-commands.ts` | the commands each peer runs |
+| `packages/plitejs/src/core/selection-protocol.ts` | how a peer's caret maps through an import |
+| `packages/plitejs/src/core/editor-schema.ts` | `landTextPropertiesAt`, what a peer's caret keeps where it lands |
 | `packages/plitejs/src/authored/authored.ts` | `createAuthoredPlugin` in Suggesting intent |
 
 To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep 'check two Yjs peers converge on every short interleaving'`, then run `git log --oneline <that commit>..HEAD --` with the table's files and `packages/plitejs/scripts/yjs-peer-order.ts`. For each commit it lists, read the diff and confirm three things. The script still installs the binding and syncs peers the way the binding's users do. The mirror read still reads the root the way the controller does. A new command or property shape that the two worlds should reach is in their schemas and in `commandsOf`. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:yjs-peer-order`.

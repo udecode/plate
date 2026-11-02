@@ -19,7 +19,7 @@ import type {
   Text,
   Value,
 } from '../interfaces';
-import { ElementApi, NodeApi } from '../interfaces';
+import { ElementApi, NodeApi, TextApi } from '../interfaces';
 import type { EditorJsonValue } from '../interfaces/json';
 import type {
   PropertyValueDescriptor,
@@ -41,6 +41,7 @@ import {
   type NodeList,
   rootIndexOf,
 } from './change/document-index';
+import { jsonEqual } from './change/json';
 import type { DocumentPropertyContext, RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import { normalizeSetValues } from './change/transform';
@@ -247,6 +248,12 @@ type DerivedRoots = ReadonlyMap<
   Readonly<{ change: RootChange; from: DocumentIndex }>
 >;
 
+type TextLandingPlace = Readonly<{
+  path: Path;
+  root: RootKey;
+  value: EditorDocumentValue;
+}>;
+
 /**
  * Schema implementation used only by the slice transaction owner.
  *
@@ -434,6 +441,19 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       path: Path,
       root: RootKey
     ) => Element;
+    /**
+     * The properties an empty text holding `properties` keeps at the text
+     * place `at`. Each property whose target or value the place refuses
+     * drops, a property the schema does not declare stays, and a canonical
+     * default fills in unless the text stored at `at` holds another value.
+     * No generated value is added. Throws when the place requires a property
+     * that no kept property, default or generator supplies. Returns
+     * `properties` itself when nothing changes.
+     */
+    landTextPropertiesAt: (
+      properties: Readonly<Record<string, unknown>>,
+      at: TextLandingPlace
+    ) => Readonly<Record<string, unknown>>;
     /**
      * The properties, `type` included, that reset gives `element` at `at`
      * when it converts it to its slot's default: what the type change keeps,
@@ -3514,6 +3534,59 @@ export const createEditorSchema = <V extends Value = Value>(
       });
     };
 
+  const landTextPropertiesAt: InternalEditorSchemaApi<V>['landTextPropertiesAt'] =
+    (properties, at) => {
+      const schema = getDeclarativeSchema();
+
+      if (!schema) return properties;
+      const children = getDocumentRootNodes(at.value, at.root);
+      const ancestors = getElementAncestors(children, at.path);
+      const context = toCompiledNodeContext({ text: '' }, ancestors, at.root);
+      const stored = getDescendant(children, at.path);
+      const kept = new Map<string, unknown>();
+      const undeclared: Array<[string, unknown]> = [];
+
+      for (const [key, value] of Object.entries(properties)) {
+        if (getCompiledPropertyCandidates(schema, 'text', key).length === 0) {
+          undeclared.push([key, value]);
+          continue;
+        }
+        const property = resolveCompiledSchemaProperty(
+          schema,
+          'text',
+          key,
+          context
+        );
+
+        if (!property || acceptsPropertyValue(property.descriptor, value)) {
+          kept.set(key, value);
+        }
+      }
+      const [landed] = canonicalizeChildren(
+        [{ ...Object.fromEntries(kept), text: '' }],
+        at.root,
+        ancestors,
+        true
+      );
+      const storedProperties =
+        stored && NodeApi.isText(stored) ? getTextProperties(stored) : {};
+      const marks = Object.fromEntries([
+        ...Object.entries(getTextProperties(landed as Text)).filter(
+          ([key, value]) =>
+            kept.has(key) ||
+            (!resolveCompiledSchemaProperty(schema, 'text', key, context)
+              ?.descriptor.generate &&
+              (!Object.hasOwn(storedProperties, key) ||
+                jsonEqual(storedProperties[key], value)))
+        ),
+        ...undeclared,
+      ]);
+
+      return TextApi.equals({ ...properties, text: '' }, { ...marks, text: '' })
+        ? properties
+        : marks;
+    };
+
   const elementPropertiesForResetAt: InternalEditorSchemaApi<V>['elementPropertiesForResetAt'] =
     (element, at, root = 'main') => {
       const slot = resolveDefaultSlot(at, root);
@@ -5184,6 +5257,7 @@ export const createEditorSchema = <V extends Value = Value>(
     elementPropertiesForSplitUnder,
     elementSplitKeepsAt,
     elementForTypeChangeAt,
+    landTextPropertiesAt,
     elementPropertyLanding,
     assertContentSliceForSchema,
     assertDocument,

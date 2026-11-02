@@ -8,7 +8,12 @@ import {
 import { getInternalDocumentChangeRootKeys } from '../core/change/document-change';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
-import { getUpdateView, withEditorUpdateRootScope } from '../core/public-state';
+import {
+  getEditorDocumentValue,
+  getUpdateView,
+  withEditorUpdateRootScope,
+} from '../core/public-state';
+import { withLandedMarks } from '../core/selection-protocol';
 import type { AnyEditor } from '../interfaces/editor';
 import type { Batch } from './history';
 
@@ -129,14 +134,17 @@ export const restoreHistoricSelection = <V extends Value>(
     getHistoricSelectionRoot(batch, target) ??
     SelectionApi.root(selection) ??
     MAIN_ROOT_KEY;
-  const restoredSelection = cloneSelection(selection, root);
+  const owner = getEditorRuntimeOwner(editor);
+  const cloned = cloneSelection(selection, root);
+  const restoredSelection =
+    SelectionApi.isText(cloned) && cloned.marks
+      ? withLandedMarks(owner, cloned, getEditorDocumentValue(owner), root)
+      : cloned;
 
   if (root === viewRoot) {
     tx.selection.set(restoredSelection);
     return;
   }
-
-  const owner = getEditorRuntimeOwner(editor);
 
   withEditorUpdateRootScope(owner, root, () => {
     getUpdateView(owner).selection.set(restoredSelection);
