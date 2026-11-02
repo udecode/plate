@@ -17,6 +17,7 @@
 //        pnpm triage record --from <batch.tsv> [--dry-run]
 //        pnpm triage mark <draft.md>
 //        pnpm triage labels
+//        pnpm triage retest <N> --pass|--fail --on "<browser or device and version>" [--device ios|android|ime] [--found <M>[,<M>...]] [--note "<text>"] [--dry-run]
 //        pnpm triage check [<register>]
 
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -375,6 +376,7 @@ const policyOf = (config) => ({
   moved: new Map(),
   floor: config.triage.floor.map(parseLabel),
   floorText: config.triage.floor.join(' or '),
+  team: Object.keys(config.team),
   maintainers: maintainersOf(config.team),
   maintainersText: `a maintainer (${maintainersOf(config.team).join(', ')})`,
   confirmed: [...maintainersOf(config.team), ...(config.triage.gated ?? [])],
@@ -856,6 +858,7 @@ function fieldValues(repo, numbers) {
 
 function issueReader(repo) {
   const cache = new Map();
+  const listed = new Map();
   const load = (issues) => {
     const reopens = reopenIds(
       repo,
@@ -871,6 +874,14 @@ function issueReader(repo) {
   };
   return {
     prime: load,
+    list(issues) {
+      for (const issue of issues) {
+        listed.set(String(issue.number), issue.comments);
+      }
+    },
+    comments(number) {
+      return listed.get(number) ?? this.get(number)?.comments ?? [];
+    },
     get(number) {
       if (!repo) return null;
       if (!cache.has(number)) {
@@ -895,6 +906,7 @@ function issueReader(repo) {
 const unixText = (text) => (text ?? '').replace(/\r\n?/gu, '\n');
 const markOf = (text) =>
   createHash('sha256').update(unixText(text).trim()).digest('hex').slice(0, 12);
+const marked = (text) => `${text}\n\n<!-- triage:${markOf(text)} -->`;
 const isDraft = (comment) => {
   const text = unixText(comment.body);
   const match = DRAFT_MARK.exec(text);
@@ -904,6 +916,18 @@ const isDraft = (comment) => {
     markOf(text.slice(0, match.index)) === match[1]
   );
 };
+const FAIL_MARK = /\n<!-- triage-retest:fail:(\S+) -->\s*$/u;
+const failedFixes = (comments, team) =>
+  new Set(
+    comments.flatMap((comment) => {
+      const found = FAIL_MARK.exec(unixText(comment.body));
+      return found &&
+        TEAM.has(comment.authorAssociation) &&
+        team.includes(comment.author?.login)
+        ? [found[1]]
+        : [];
+    })
+  );
 const isBot = (login) => BOTS.has(login) || login.endsWith('[bot]');
 const hashedComments = (issue) =>
   (issue.comments ?? []).filter(
@@ -967,6 +991,32 @@ const headsOf = (rows) => {
   const replaced = new Set(rows.flatMap((row) => row.prevIds));
   return rows.filter((row) => !replaced.has(row.id));
 };
+const hasLanded = (issue, row, reads) =>
+  reads.landed.get(issue)?.get(row.id)?.cells.join('\t') ===
+  row.cells.join('\t');
+
+const fixRun = (row, byId) =>
+  row?.outcome === 'fixed'
+    ? [row, ...row.prevIds.flatMap((id) => fixRun(byId.get(id), byId))]
+    : [];
+
+function liveRows(issue, reads) {
+  const rows = [...(reads.rows.get(issue)?.values() ?? [])];
+  const heads = headsOf(rows);
+  const [head] = heads;
+  if (
+    !reads.policy ||
+    heads.length !== 1 ||
+    head.outcome !== 'fixed' ||
+    !failedFixes(reads.issues.comments(issue), reads.policy.team).has(head.id)
+  ) {
+    return rows;
+  }
+  const voided = new Set(
+    fixRun(head, new Map(rows.map((row) => [row.id, row])))
+  );
+  return rows.filter((row) => !voided.has(row));
+}
 
 const stripLine = (ref) => ref.replace(/:\d+(?:-\d+)?$/u, '');
 
@@ -1059,7 +1109,7 @@ function stateFor(issue, reads) {
 
 function computeState(issue, reads, visiting) {
   if (!reads.tip) return { state: 'unchecked', reasons: reads.problems };
-  const rows = [...(reads.rows.get(issue)?.values() ?? [])];
+  const rows = liveRows(issue, reads);
   if (rows.length === 0) {
     if (!reads.policy) return { state: 'unchecked', reasons: reads.problems };
     return reads.issues.get(issue)
@@ -1075,7 +1125,8 @@ function computeState(issue, reads, visiting) {
     };
   }
   const [head] = heads;
-  const stale = [];
+  const stale =
+    rows.length < reads.rows.get(issue).size ? ['retest-failed'] : [];
   const unknown = [];
   if (!reads.policy) unknown.push(...reads.problems);
   else {
@@ -1419,6 +1470,29 @@ function parseArgs(argv, flags) {
   return options;
 }
 
+const OPTIONS = {
+  claim: {
+    boolean: ['next'],
+    value: ['domain', 'task', 'take', 'why', 'drives', 'session'],
+  },
+  release: { value: ['why', 'session'] },
+  lane: {},
+  kinds: { boolean: ['json', 'titles'] },
+  show: { boolean: ['brief', 'json'] },
+  queue: { boolean: ['json'], value: ['label'] },
+  record: {
+    boolean: ['dry-run'],
+    value: ['from', 'outcome', 'detail', 'seen', 'why'],
+  },
+  retest: {
+    boolean: ['pass', 'fail', 'dry-run'],
+    value: ['on', 'device', 'found', 'note'],
+  },
+  mark: {},
+  labels: {},
+  check: {},
+};
+
 const issueNumber = (value) => {
   const [, name, number] =
     /^(?:([\w.-]+)#|#)?([1-9]\d*)$/u.exec(String(value ?? '')) ?? [];
@@ -1467,8 +1541,7 @@ const taskText = (tasks) =>
         .join(', ')
     : '-';
 
-function show(argv) {
-  const options = parseArgs(argv, { boolean: ['brief', 'json'] });
+function show(options) {
   if (options.positional.length === 0) {
     refuse('show takes one or more issue numbers');
   }
@@ -1551,11 +1624,10 @@ function show(argv) {
   }
 }
 
-function mark(argv) {
-  const [file, extra] = argv;
+function mark(options) {
+  const [file, extra] = options.positional;
   if (!file || extra) refuse('mark takes one file holding a drafted comment');
-  const text = unixText(readFileSync(file, 'utf-8')).trim();
-  console.log(`${text}\n\n<!-- triage:${markOf(text)} -->`);
+  console.log(marked(unixText(readFileSync(file, 'utf-8')).trim()));
 }
 
 function openIssues(reads, label = null) {
@@ -1591,8 +1663,7 @@ function openIssues(reads, label = null) {
   return open;
 }
 
-function queue(argv) {
-  const options = parseArgs(argv, { boolean: ['json'], value: ['label'] });
+function queue(options) {
   const reads = freshReads({ fallback: true });
   if (!reads.policy) {
     refuse(
@@ -1696,7 +1767,7 @@ function labels() {
       state === 'current' &&
       head.outcome === 'fixed' &&
       replaysReport(parseDetail(head.detail)) &&
-      reads.landed.get(String(issue.number))?.has(head.id) === true &&
+      hasLanded(String(issue.number), head, reads) &&
       devices.length === 0;
     if (state === 'current') {
       const triageId = fields.triage.optionIds.get(
@@ -1754,7 +1825,13 @@ function labels() {
           }
         }
       }
-    } else if (state !== 'unchecked' && clearedIds.has(triage)) {
+    } else if (
+      state !== 'unchecked' &&
+      (clearedIds.has(triage) ||
+        (triage === fields.triage.optionIds.get(NEEDS_RETEST) &&
+          head !== undefined &&
+          head.outcome !== 'fixed'))
+    ) {
       changes.push(`{ fieldId: "${fields.triage.id}", delete: true }`);
     }
     if (changes.length > 0) {
@@ -1779,6 +1856,242 @@ function labels() {
     );
   }
   console.log([...commands, ...sets].join('\n'));
+}
+
+const BETA = 'beta.platejs.org';
+const RETEST = {
+  pass: { closes: true, verb: 'passed' },
+  fail: { closes: false, verb: 'failed' },
+};
+const ghProblem = (result) =>
+  result.stderr?.trim().split('\n')[0] || `gh exited ${result.status}`;
+
+function deployedCommit(reads) {
+  const result = run(
+    'gh',
+    [
+      'run',
+      'list',
+      '--repo',
+      reads.policy.first,
+      '--workflow',
+      'deploy.yml',
+      '--branch',
+      reads.branch,
+      '--status',
+      'success',
+      '--limit',
+      '1',
+      '--json',
+      'headSha',
+    ],
+    { timeout: NETWORK_MS }
+  );
+  const sha =
+    result.status === 0 ? readJson(result.stdout)?.[0]?.headSha : null;
+  if (!/^[0-9a-f]{40}$/u.test(sha ?? '')) {
+    refuse(
+      `gh could not read the last successful beta deploy from ${reads.policy.first} (${result.status === 0 ? 'no deploy.yml run' : ghProblem(result)}); retest once a deploy of ${reads.branch} succeeds`
+    );
+  }
+  if (gitOut('cat-file', '-e', `${sha}^{commit}`) === null) {
+    const error = fetchRef(reads.remote, sha);
+    if (error) {
+      refuse(
+        `beta runs ${sha.slice(0, 10)}, which this clone lacks and could not fetch from ${reads.remote} (${error.message})`
+      );
+    }
+  }
+  return sha;
+}
+
+function retestCommand(options) {
+  const verdicts = Object.keys(RETEST).filter((name) => options[name]);
+  if (
+    options.positional.length !== 1 ||
+    verdicts.length !== 1 ||
+    !options.on?.trim()
+  ) {
+    usage(
+      'retest takes one issue, exactly one of --pass or --fail, and --on "<browser or device and version>"'
+    );
+  }
+  if (options.device !== undefined && !DEVICES.includes(options.device)) {
+    usage(`--device is one of ${DEVICES.join(', ')}`);
+  }
+  const [name] = verdicts;
+  const verdict = RETEST[name];
+  const issue = issueNumber(options.positional[0]);
+  const found = [
+    ...new Set(
+      (options.found === undefined ? [] : paths(options.found)).map((value) => {
+        const number = /^#?([1-9]\d*)$/u.exec(value)?.[1];
+        if (!number) {
+          usage(
+            `--found takes issue numbers in the retested issue's repository, not ${JSON.stringify(value)}`
+          );
+        }
+        return number;
+      })
+    ),
+  ];
+  const reads = freshReads({ fallback: false });
+  if (!reads.policy) {
+    refuse(
+      `a retest needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
+    );
+  }
+  const { repo, team } = reads.policy;
+  const login = ghLogin();
+  if (!login) refuse('gh is not logged in; run gh auth login');
+  if (!team.includes(login)) {
+    refuse(
+      `${login} is not on the team in ${CONFIG}; ask a maintainer to add you before you record a retest`
+    );
+  }
+  const current = reads.issues.get(issue);
+  if (!current) refuse(`gh could not read #${issue} from ${repo}`);
+  const { state, reasons, head } = stateFor(issue, reads);
+  const stateText = `${state}${reasons.length ? ` (${reasons.join('; ')})` : ''}`;
+  if (reasons.includes('retest-failed')) {
+    refuse(
+      `#${issue} reads ${stateText}: its fix failed a retest, so it waits in the fix-run queue for a new fix`
+    );
+  }
+  if (
+    !(state === 'current' || state === 'stale') ||
+    reasons.includes('issue-changed')
+  ) {
+    refuse(
+      `#${issue} reads ${stateText}; a maintainer records it again first, so the record has seen every comment, and pnpm triage show ${issue} says why`
+    );
+  }
+  if (head.outcome !== 'fixed' || !hasLanded(issue, head, reads)) {
+    refuse(
+      `#${issue} reads ${stateText} with a ${head.outcome} record; only an issue whose fixed record has landed on ${reads.branch} waits for a retest`
+    );
+  }
+  if (!reads.policy.confirmed.includes(head.who)) {
+    refuse(
+      `#${issue}'s fixed record is by ${head.who}, so it waits for ${reads.policy.maintainersText} to record it again before a retest`
+    );
+  }
+  const recorded = parseDetail(head.detail).get('commit');
+  const fix = gitOut(
+    'rev-parse',
+    '--verify',
+    '--quiet',
+    `${recorded}^{commit}`
+  )?.trim();
+  if (!fix) {
+    refuse(
+      `the fix commit ${recorded} is not in this clone; fetch ${reads.remote}/${reads.branch} and run the retest again`
+    );
+  }
+  const deployed = deployedCommit(reads);
+  if (run('git', ['merge-base', '--is-ancestor', fix, deployed]).status !== 0) {
+    refuse(
+      `beta runs ${deployed.slice(0, 10)}, which does not hold the fix ${fix.slice(0, 10)}; retest once a deploy of ${reads.branch} that holds it succeeds`
+    );
+  }
+  const devices = deviceLaneOf(issue, reads);
+  if (devices.length > 0 && !devices.includes(options.device)) {
+    refuse(
+      `#${issue} reproduces only on ${devices.join(' or ')}; retest there and pass --device with the one you used`
+    );
+  }
+  if (found.length > 0 && repo === reads.policy.first) {
+    refuse(
+      `comments on ${repo} are public, and a new bug's draft goes to the private repository; name #${issue} in that draft and record this retest without --found`
+    );
+  }
+  for (const number of found) {
+    if (number === issue) {
+      refuse(`--found names #${issue} itself; name the new issue you opened`);
+    }
+    if (reads.issues.get(number)?.state !== 'OPEN') {
+      refuse(
+        `#${number} is not an open issue in ${repo}; open the new bug there first and pass its number to --found`
+      );
+    }
+  }
+
+  const text = [
+    `Retest ${verdict.verb} on ${BETA}, which holds the fix ${fix.slice(0, 10)}, in ${options.on.trim()}${options.device ? ` on ${options.device}` : ''}.`,
+    unixText(options.note).trim(),
+    found.length > 0 &&
+      `New bugs found while retesting: ${found.map((number) => `#${number}`).join(', ')}.`,
+    `<!-- triage-retest:${name}:${head.id} -->`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+  const body = verdict.closes ? marked(text) : text;
+  const posted = (current.comments ?? []).some(
+    (comment) =>
+      comment.author?.login === login && unixText(comment.body).trim() === body
+  );
+  if (current.state !== 'OPEN') {
+    if (posted && verdict.closes) {
+      console.log(`#${issue}: this retest is already recorded and closed`);
+      return;
+    }
+    refuse(
+      `#${issue} is closed; reopen it on GitHub first when the retest found the bug again`
+    );
+  }
+  const comment = [
+    'issue',
+    'comment',
+    issue,
+    '--repo',
+    repo,
+    '--body-file',
+    '-',
+  ];
+  const close = [
+    'issue',
+    'close',
+    issue,
+    '--repo',
+    repo,
+    '--reason',
+    'completed',
+  ];
+  if (posted) {
+    console.log(`#${issue} already has this comment from ${login}`);
+  }
+  if (options['dry-run']) {
+    console.log(`${body}\n`);
+    for (const args of [
+      ...(posted ? [] : [comment]),
+      ...(verdict.closes ? [close] : []),
+    ]) {
+      console.log(`gh ${args.join(' ')}`);
+    }
+    return;
+  }
+  if (!posted) {
+    const result = run('gh', comment, { input: body, timeout: NETWORK_MS });
+    if (result.status !== 0) {
+      refuse(
+        `gh could not post the comment (${ghProblem(result)}); run the retest again`
+      );
+    }
+    console.log(`commented ${result.stdout.trim()}`);
+  }
+  if (!verdict.closes) {
+    console.log(
+      `left #${issue} open; its fixed record no longer counts, so it returns to the fix-run queue`
+    );
+    return;
+  }
+  const result = run('gh', close, { timeout: NETWORK_MS });
+  if (result.status !== 0) {
+    refuse(
+      `the comment is posted, but gh could not close #${issue} (${ghProblem(result)}); run the retest again to close it`
+    );
+  }
+  console.log(`closed #${issue} in ${repo} as completed`);
 }
 
 function fetchClaims(remote) {
@@ -1876,7 +2189,8 @@ function actorOf(options) {
   };
 }
 
-function openList(repo) {
+function openList(reads) {
+  const { repo } = reads.policy;
   const listed = spawnSync(
     'gh',
     [
@@ -1889,7 +2203,7 @@ function openList(repo) {
       '--limit',
       String(QUEUE_LIMIT),
       '--json',
-      'number,title,assignees,milestone',
+      'number,title,assignees,milestone,comments',
     ],
     { encoding: 'utf-8', maxBuffer: 64 * 1024 * 1024, timeout: NETWORK_MS }
   );
@@ -1904,6 +2218,7 @@ function openList(repo) {
       `gh listed ${open.length} open issues, the most one call asks for, so some may be missing`
     );
   }
+  reads.issues.list(open);
   return new Map(
     open.map((issue) => [
       String(issue.number),
@@ -2006,7 +2321,7 @@ const latest = (...times) =>
     .reduce((a, b) => (Date.parse(b) > Date.parse(a) ? b : a));
 
 function headOf(issue, reads) {
-  const [head] = headsOf([...(reads.rows.get(issue)?.values() ?? [])]).sort(
+  const [head] = headsOf(liveRows(issue, reads)).sort(
     (a, b) => Date.parse(b.ts) - Date.parse(a.ts)
   );
   return head
@@ -2221,11 +2536,7 @@ function sessionOption(options) {
 const holdText = (hold) =>
   `  ${hold.key}${hold.who ? ` by ${hold.who}` : ''}${hold.session ? ` in session ${hold.session}` : ''}, since ${hold.since ?? 'an unknown time'}${hold.activity ? `, last activity ${hold.activity}` : ''}${hold.stale ? ', stale' : ''}`;
 
-function claimCommand(argv) {
-  const options = parseArgs(argv, {
-    boolean: ['next'],
-    value: ['domain', 'task', 'take', 'why', 'drives', 'session'],
-  });
+function claimCommand(options) {
   const issues = usageIssues(options.positional, 'claim');
   const forms = [
     issues.length > 0,
@@ -2288,7 +2599,7 @@ function claimCommand(argv) {
   }
   const { repo } = reads.policy;
   const actor = actorOf(options);
-  const open = openList(repo);
+  const open = openList(reads);
   const git = gitMerges({ branch: reads.branch });
   let target = null;
   if (issues.length > 0) target = { issues };
@@ -2639,8 +2950,7 @@ function startTask(task, actor, why, main, current) {
   return `task ${task.id} started for session ${actor.session}; note: its row is only in ${ledger}, and node .agents/pstack/setup.mjs run in ${main} pushes it`;
 }
 
-function releaseCommand(argv) {
-  const options = parseArgs(argv, { value: ['why', 'session'] });
+function releaseCommand(options) {
   const issues = usageIssues(options.positional, 'release');
   if (issues.length === 0) usage('release takes one or more issue numbers');
   if (!options.why?.trim()) {
@@ -2656,7 +2966,7 @@ function releaseCommand(argv) {
   }
   const { repo, maintainers } = reads.policy;
   const actor = actorOf(options);
-  const open = openList(repo);
+  const open = openList(reads);
   const { claims, released } = pushClaims(reads.remote, (text) => {
     const live = liveClaims(reads, parseClaims(text), (issue) =>
       open.has(issue)
@@ -2722,8 +3032,7 @@ function releaseCommand(argv) {
   }
 }
 
-function lane(argv) {
-  const options = parseArgs(argv, {});
+function lane(options) {
   const [device, extra] = options.positional;
   if (extra || (device !== undefined && !DEVICES.includes(device))) {
     usage(`lane takes one device of ${DEVICES.join(', ')}, or none`);
@@ -2734,7 +3043,7 @@ function lane(argv) {
       `the lane needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
     );
   }
-  const open = openList(reads.policy.repo);
+  const open = openList(reads);
   const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
   const entries = [...open].flatMap(([issue, { title, assignees }]) => {
     const head = headOf(issue, reads);
@@ -2773,7 +3082,7 @@ function lane(argv) {
 }
 
 function kindsIn(reads) {
-  const open = openList(reads.policy.repo);
+  const open = openList(reads);
   const claims = liveClaims(reads, reads.claimRows, (issue) => open.has(issue));
   const prefix = reads.policy.primary
     ? '#'
@@ -2811,8 +3120,7 @@ function kindsIn(reads) {
     });
 }
 
-function kinds(argv) {
-  const options = parseArgs(argv, { boolean: ['json', 'titles'] });
+function kinds(options) {
   if (options.positional.length > 0) usage('kinds takes no issue numbers');
   if (options.json && options.titles) usage('kinds takes --json or --titles');
   let notes;
@@ -2949,11 +3257,7 @@ function refuseBadRowsBeforeAnyRead(entries) {
   }
 }
 
-function recordCommand(argv) {
-  const options = parseArgs(argv, {
-    boolean: ['dry-run'],
-    value: ['from', 'outcome', 'detail', 'seen', 'why'],
-  });
+function recordCommand(options) {
   const entries = entriesOf(options);
   refuseBadRowsBeforeAnyRead(entries);
   const reads = freshReads({ fallback: false });
@@ -3135,13 +3439,13 @@ function recordCommand(argv) {
   for (const row of rows) console.log(row);
 }
 
-function check(argv) {
+function check(options) {
   const config = localConfig();
   const found = policyProblems(config);
   const repos = config?.triage?.repos ?? [];
   const files =
-    argv.length > 0
-      ? argv
+    options.positional.length > 0
+      ? options.positional
       : repoName === null && found.length === 0
         ? repos
             .map((repo) => registerOf(repos, repo))
@@ -3168,8 +3472,7 @@ function check(argv) {
   console.log(`${counts.join(', ')}, shape ok`);
 }
 
-// "--repo <name>" or an issue written <name>#N picks the repository from triage.repos that the command reads.
-function pickRepo(argv) {
+function pickRepo(options) {
   const repos = localConfig()?.triage?.repos ?? [];
   const names = Array.isArray(repos) ? repos.map(repoNameOf) : [];
   const pick = (name) => {
@@ -3180,26 +3483,23 @@ function pickRepo(argv) {
     }
     repoName = name;
   };
-  const kept = [];
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
-    const named = /^([\w.-]+)(#[1-9]\d*)$/u.exec(arg);
-    if (arg === '--repo') {
-      index += 1;
-      if (!names.includes(argv[index])) {
-        usage(`--repo names one of ${names.join(', ')}`);
-      }
-      pick(argv[index]);
-    } else if (named && names.includes(named[1])) {
-      pick(named[1]);
-      kept.push(named[2]);
-    } else kept.push(arg);
+  if (options.repo !== undefined) {
+    if (!names.includes(options.repo)) {
+      usage(`--repo names one of ${names.join(', ')}`);
+    }
+    pick(options.repo);
   }
+  const positional = options.positional.map((arg) => {
+    const named = /^([\w.-]+)(#[1-9]\d*)$/u.exec(arg);
+    if (!named || !names.includes(named[1])) return arg;
+    pick(named[1]);
+    return named[2];
+  });
   if (repoName !== null && repoName !== names[0]) {
     registerFile = registerOf(repos, repos[names.indexOf(repoName)]);
     claimsRef = `${CLAIMS_REF}-${repoName}`;
   }
-  return kept;
+  return { ...options, positional };
 }
 
 const COMMANDS = {
@@ -3212,6 +3512,7 @@ const COMMANDS = {
   record: recordCommand,
   mark,
   labels,
+  retest: retestCommand,
   check,
 };
 const [command, ...rest] = process.argv.slice(2);
@@ -3222,7 +3523,12 @@ if (!COMMANDS[command]) {
   process.exit(2);
 }
 try {
-  COMMANDS[command](pickRepo(rest));
+  const flags = OPTIONS[command];
+  COMMANDS[command](
+    pickRepo(
+      parseArgs(rest, { ...flags, value: [...(flags.value ?? []), 'repo'] })
+    )
+  );
 } catch (error) {
   if (!(error instanceof RefusalError)) throw error;
   console.error(`triage ${command}: ${error.message}`);

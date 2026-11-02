@@ -6,7 +6,7 @@ A sweep is a series of rounds over beta's pages. In each round agents test every
 
 The sweep has two roles, and the proof subject, `docs/plans/topics/proof.md`, names who holds each.
 
-- **The tester** runs the rounds: the page list, the sessions and retests, the rechecks, Triage a domain with its publishing, closing each issue once its recheck passes on a beta build that serves its fix, or its recheck left the hand list as Rechecks says, and `maintainer`'s proof gates hold, Preparing round N and the verification-skill pass After a round.
+- **The tester** runs the rounds: the page list, the sessions and retests, the rechecks, Triage a domain with its publishing, closing each issue once its recheck passes on a beta build that serves its fix, through `pnpm triage retest` as the Triage playbook's GitHub state says, or once its recheck left the hand list as Rechecks says, and `maintainer`'s proof gates hold, Preparing round N and the verification-skill pass After a round.
 - **The fixer** runs Fix a domain and babysits each fix run until it lands. The fixer also keeps the formal checks, through `/pstack:create-formal-verification-skill` and `/pstack:maintain-formal-verification-skill`, and runs the `/pstack:correct` passes the Triage playbook's Why tests missed it calls for.
 
 The roles meet at one handoff. Triage a domain ends by offering the domain's fix run as one suggested task. `setup.mjs` syncs the ledger between clones through `refs/pstack/ledger`, and the fixer's `/chips all` takes the task over and cards it, as chips.md's Owner says.
