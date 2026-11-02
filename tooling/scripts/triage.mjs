@@ -1946,7 +1946,9 @@ function retestCommand(options) {
   if (!login) refuse('gh is not logged in; run gh auth login');
   if (!team.includes(login)) {
     refuse(
-      `${login} is not on the team in ${CONFIG}; ask a maintainer to add you before you record a retest`
+      login.endsWith('[bot]')
+        ? `${login} is a bot, and a retest comes from the teammate who tested; run it in your own session, signed in to gh as yourself`
+        : `${login} is not on the team in ${CONFIG}; ask a maintainer to add you before you record a retest`
     );
   }
   const current = reads.issues.get(issue);
