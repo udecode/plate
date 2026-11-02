@@ -65,6 +65,8 @@ vitest.config.*
 /packages/platejs/src/markdown/lib/internal/commonmark-spec.d.ts
 /packages/plitejs/scripts/authored-decision-order*
 /packages/plitejs/scripts/yjs-peer-order*
+/packages/plitejs/scripts/authored-recording-order*
+/packages/plitejs/scripts/authored-documents.ts
 /packages/plitejs/scripts/yjs/benchmark-event-change-bridge.ts
 /apps/*/src/app/dev/
 /apps/www/src/app/api/dev/

@@ -55,5 +55,5 @@
     },
     "moved": "docs/triage/moved.tsv"
   },
-  "baselines": ["packages/plitejs/scripts/authored-decision-order-baseline.json", "apps/www/scripts/autoformat-input-rules-baseline.json"]
+  "baselines": ["packages/plitejs/scripts/authored-decision-order-baseline.json", "apps/www/scripts/autoformat-input-rules-baseline.json", "packages/plitejs/scripts/authored-recording-order-baseline.json"]
 }

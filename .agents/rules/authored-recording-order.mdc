@@ -1,0 +1,127 @@
+---
+description: Check that every command the recording laws use, run at every place in Suggesting and in Editing on every small document with another author's pending change, records a document whose accept-everything result is what a plain editor gives, whose reject-everything result is the document before, whose undo and redo give back each side, and whose review ledger matches the kernel. Use before and after changing packages/plitejs/src/authored or packages/plitejs/src/history or another file in its coverage record, when the authored-recording step of pnpm check fails, or when fixing a recording bug a seed or a tester found.
+argument-hint: '[check | deep | lower | case <identity> | update]'
+---
+
+# Authored recording order
+
+Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--blocks=2` and compares its failures with Findings. `lower` runs `--lower` after a fix removes a known finding. `case <identity>` runs `--case=<identity>` to print one case's full detail. `update` brings the verification in line with changed code, as Coverage record says.
+
+**The property.** Bob runs one command on a document that holds another author's pending change. In Suggesting and in Editing, accepting every change gives what a plain editor gives when it runs the same command on the accepted document. In Suggesting, rejecting every change gives what rejecting them gave before the command, and after a key, so does rejecting only Bob's. In Suggesting, each element's proposed children are the ones accepting everything keeps. After a key, a letter typed next lands where the plain editor puts it. In both intents the review ledger equals the kernel's projection after loading, after the command and after its undo, undo gives back the document before, review marks included, redo gives back the result, and an undo after another peer appends a paragraph gives the document before with that paragraph.
+
+**The harm.** A reviewer who accepts a suggestion gets a document the author never typed, and one who rejects it keeps part of it. Seven recording fixes landed between 2026-10-24 and 2026-11-02, each found one case at a time by a lucky seed or a beta tester, and three seeds of the sampled laws in `packages/plitejs/test/authored-tree-recording-laws.spec.ts` still name open bugs.
+
+## What it checks
+
+`packages/plitejs/scripts/authored-recording-order.ts` runs the real recorder, resolver and history on every case up to a bound. It checks the TypeScript code itself, not a model of it, because no verifier runs on this code.
+
+1. **Worlds.** `quotes` is the recording laws' schema: paragraphs and quotes of paragraphs, with links, a pending `align` line format on paragraphs and quotes, and no prefix. `titled` puts a required `title` before the same body through `schema.content.prefix`, the shape behind 09a9769bcc.
+2. **Documents.** `packages/plitejs/scripts/authored-documents.ts`, the builder the decision-order check uses, builds every document of up to `--blocks` top-level blocks, `--marks` pending marks and `--changes` changes. It places marks at every place recording writes one: a join, a joined claim, a split, a follow, a block's or leaf's insertion or deletion, a wrap or unwrap, an `align` format with and without its stored value, and the cut link that Enter inside a link writes. The script turns change `s0` into alice and `s1` into bob, so `--marks=2` gives Bob pending changes of his own. In `titled`, the first block becomes the title, and the title never carries a whole-block insertion or deletion, because a required block cannot be pending as a whole.
+3. **Commands.** Every step at every caret beside a letter: type `Z`, Enter, Backspace and Delete, and a selection delete in both directions between every two carets. Every command the recording laws use: paste of two lines at every caret, `deleteRange` and `typeOver` from every letter to itself or a later one, `transferText`, `moveNode` and `transferNode` for every pair of letters, `wrap`, `unwrap` and `removeLink` at every letter, and `replaceChildren` at every shift. Each runs as Bob in Suggesting and in Editing.
+4. **Laws.** The script calls the laws in `packages/plitejs/test/support/recording-laws.ts`, the same code the sampled spec calls, and adds the history laws. A case records its first failure per rule:
+   - `recording-accept`: accepting everything differs from what a plain editor gives when it runs the same step or command on the accepted document. After a step, the law also compares the two after a letter typed next.
+   - `recording-reject`: rejecting everything differs from doing so before the command. After a step, the law also compares rejecting only Bob's changes.
+   - `recording-applies`: accepting or rejecting everything does not apply.
+   - `recording-proposed`: after a Suggesting command, an element's proposed children differ from the ones accepting everything keeps.
+   - `recording-schema`: the step or command throws a schema validation error under review where a plain editor on the accepted document runs it.
+   - `recording-ledger`: the review ledger differs from the kernel's projection after the load, the command or its undo.
+   - `recording-undo`: undo, redo, the command again after undo, or undo after another peer appends a paragraph does not give what it should. The remote paragraph goes at the end of the document, because beside a moved letter the law would have to pick a side. An undo that puts a block back at the end could land on either side of that paragraph, so the law checks that the paragraph is still there and that the other blocks are the document before.
+   - `recording-shape`: an empty element, two joins on a line, a typed letter with a deletion, a doubled letter or another author's lost letter.
+   - `recording-throws`: any other error.
+5. A refusal the editor gives on purpose, such as "decide the pending join first", counts in the summary's `refused` and is not a failure, because the editor declined what it cannot record. A refusal after the laws started comparing is a failure.
+6. It compares the findings with `packages/plitejs/scripts/authored-recording-order-baseline.json` through `tooling/scripts/finding-baseline.mjs`. Every finding is filed under `packages/plitejs/src/authored`. An identity names the world, the document as the builder's story prints it, the intent and the command, never the result.
+
+## Run it
+
+Run every command from the repository root.
+
+- `pnpm check:authored-recording` checks the gate bound: one block, one pending mark, line formats, both worlds. With one mark, every pending change is alice's. It compares 9,095 cases on 72 documents in 28 to 33 s while other sessions load the machine, with load averages from 16 to 77. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check authored-recording` runs the same step through the check runner, and `pnpm check --affected` runs it for a change under `packages/plitejs/src/`, to the script, its document builder or baseline, to a file under `packages/plitejs/test/support/`, to `config/plite-source-aliases.ts` or to `tooling/scripts/finding-baseline.mjs`.
+- `--blocks`, `--marks` and `--changes` raise one part of the bound. `--world=quotes --blocks=2` builds 301 documents and compares 93,926 cases in 250 to 300 s. `--marks=2` gives Bob his own pending changes. A bound other than the gate's, `--world`, `--case` or `--replay` skips the baseline and exits 1 on any failure.
+- `--world=quotes` or `--world=titled` runs one world.
+- `--replay='<counterexample>'` runs every command on the document a sampled recording law's counterexample leaves. Pass the `[initial, history, command]` array fast-check prints. It runs in the `quotes` world and skips the baseline.
+- `--case='<identity or part of one>'` prints the full stack of each failure whose identity contains it. Add `--world` to make it quick, such as `--world=titled --case='title("a") paragraph{join alice:1}("b") :: propose Enter at b|1'`.
+- `--jobs=<n>` sets the number of worker processes, the machine's cores up to 16 by default.
+- Exit 0 is a pass and exit 1 a finding or a document that does not load. Exit 2 is a bad flag or a crashed worker. At the gate the run also fails when it compares other than 9,095 cases, the `GATE_CASES` constant, so a change that stops commands from applying cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
+- After a fix removes a known finding, the gate fails until you run `pnpm check:authored-recording --lower`. The baseline never grows. `--init` seeds only a rule the baseline lacks, and `--lower` and `--init` write nothing when the case count misses `GATE_CASES`.
+
+## Read a failure
+
+A finding prints its rule, identity and the first line of its detail:
+
+```text
+recording-reject titled title{align alice:1}("a") paragraph("b") :: propose Enter at a|0
+  rejecting everything differs: {"before":[...],"intent":"propose","step":{...}}
+
+recording-schema titled title("a") paragraph("b"{insert alice:1}) :: propose select a|0..b|1 Backspace
+  Editor primary root cannot contain "title".
+```
+
+Both are known findings. In the first, Bob's suggested Enter at the start of the title records a new title and turns the old one into a paragraph, and rejecting everything leaves both. In the second, Bob's suggested delete across the title and Alice's pending insertion builds a document the schema refuses. Run `--case` on the identity for the full diff and stack.
+
+Tell a real bug from a modeling error before you change code:
+
+- **Real bug.** A user can reach the document and run the command, the plain editor runs it, and a law still fails. Fix the recorder, resolver or history, then run `--lower`.
+- **Modeling error.** The document is one no recording reaches, or the law's oracle is ambiguous for that command, such as an undo that has to choose which side of a moved letter another peer's text stays on. Fix the builder or the script with the reason, as the title rule and the remote paragraph above do.
+- **Intended change.** A change to what a command does changes the plain editor too, so the laws follow it. Never weaken a law or add a baseline entry to get green.
+
+## Findings
+
+The gate finds 300: 44 `recording-accept`, 34 `recording-applies`, 74 `recording-reject`, 116 `recording-schema` and 30 `recording-proposed`. All but 12 sit beside the required title, which no sampled law's schema holds. Each class is one cause:
+
+- **A selection delete, `deleteRange` or `typeOver` across the title and the body.** With any pending change in the document, the step throws `Editor primary root cannot contain "title"` in Suggesting, and in Editing when the title holds a pending deletion. 112 `recording-schema` entries.
+- **Paste of two lines in a titled document.** Rejecting everything does not apply, or gives another document, and accepting everything differs from the plain editor. Pasting into the title records a new title and a type change on the old one. 34 `recording-applies`, 37 `recording-reject` and 8 `recording-accept` entries.
+- **Suggested Enter in a titled document.** Rejecting everything gives another document. At the title's start the old title becomes a paragraph under a new empty title, and the reject leaves both. 36 `recording-reject` entries, and 8 `recording-accept` entries beside a body another author struck whole.
+- **A quote whose pending join folds it into the title.** The proposed children differ from what accepting everything keeps after most Suggesting commands. 30 `recording-proposed` entries and 1 `recording-accept`, all on `title("a") quote{join alice:1}(paragraph("b"))`.
+- **Editing Enter right before another author's struck letter.** The next letter Bob types lands on the other line than a plain editor puts it. 4 `quotes` and 12 `titled` `recording-accept` entries.
+- **A wrap inside a quote with a pending unwrap.** Accepting everything loses Bob's wrap: `quote{unwrap alice:1}(paragraph("a"))` with a suggested wrap of `a` accepts to `paragraph("a")`, where the plain editor gives `quote(paragraph("a"))`. 3 `quotes` and 1 `titled` `recording-accept` entries, and in `titled` 1 more beside a pending join.
+- **`typeOver` inside a quote with a pending unwrap.** The step throws a schema error in both intents where the plain editor applies it. 4 `recording-schema` entries.
+- **Moves and transfers beside the title.** `moveNode` and `transferNode` of a quoted line with a pending align or unwrap to after the title, and `transferText` across a split link, accept to another document than the plain editor's. 6 `recording-accept` entries.
+- **Suggested Enter at the start of a line that holds another author's joined claim.** Rejecting everything does not give back the document before. 1 `recording-reject` entry.
+
+`--world=quotes --blocks=2` fails 299 `recording-accept`, 443 `recording-proposed`, 339 `recording-undo`, 40 `recording-throws`, 36 `recording-ledger`, 32 `recording-schema` and 10 `recording-reject` cases. The deep run reads no baseline. One undo class there is plain: in Editing, Delete at the end of `quote(paragraph("a"))` joins a following `paragraph{align alice:1}("b")` into it, and after another peer appends a paragraph, undo leaves `quote(paragraph("ab"))` as it was. Every one of the 339 `recording-undo` cases is that law, mostly an Editing delete that merges two blocks.
+
+## What a pass proves
+
+The gate catches a history that loses its mappings or keeps a redo it should clear, and a review ledger that merges two authors' cards. Bugs planted at `fc9906287b` showed where that holds:
+
+- Mutant rec-undo-h2, where `addMapping` in `packages/plitejs/src/history/history-state.ts` drops the mapping that a history-skip commit queues, gives 4,521 `recording-undo` findings. Undo after another peer appends a paragraph no longer applies, because the undo entry still counts the document without that paragraph. Undo and redo alone never see this bug, which is why the remote law exists.
+- Mutant rec-undo-h5, where a new undo entry no longer clears the redo stack, gives 4,521 `recording-undo` findings. The command again after its undo leaves a redo.
+- Mutant rec-r8, where the ledger merges a card with the previous one by book alone and not by author, gives 777 `recording-ledger` findings.
+- The three open seeds of the sampled laws, -956128617, -627200196 and 719949670, fail the same law here. `--replay` with each counterexample gives 3, 16 and 7 `recording-proposed` findings, and the counterexample's own command is among them. Seed 198320648 passes in the spec and here, because an earlier fix removed its bug.
+
+The gate does not catch three resolver bugs, and neither does `--world=quotes --blocks=2`, whose findings under each mutant equal the clean run's one for one:
+
+- rec-r2, where rejecting a cut joins its halves without the content between them, in `packages/plitejs/src/authored/tree/cuts.ts`.
+- rec-r6, where a rejected cut whose left half no longer holds keeps its dependencies, in the same file.
+- rec-r12, where `resolveAuthoredChildren` ignores a stored accept verdict.
+
+Each needs a document no generated document holds: plain content between the halves of a cut, which only an earlier edit writes, or a stored verdict. The decision-order check and the sampled laws at their default runs miss them too.
+
+## Coverage record
+
+Synced at `test(plitejs): check every recording command's accept and reject on every small document`. The verification describes these files as they stand there:
+
+| File | What the check exercises |
+| --- | --- |
+| `packages/plitejs/src/authored/tree/record.ts` | how Suggesting records each command |
+| `packages/plitejs/src/authored/tree/record-completion.ts` | completion of a recorded change, the prefix slot included |
+| `packages/plitejs/src/authored/tree/resolve.ts` | accepting and rejecting everything |
+| `packages/plitejs/src/authored/tree/cuts.ts` | joining the halves of a rejected cut |
+| `packages/plitejs/src/authored/ledger` | the review ledger the ledger law compares |
+| `packages/plitejs/src/history/history-state.ts` | undo, redo and the mapping through a remote paragraph |
+| `packages/plitejs/test/support/recording-laws.ts` | the laws the check and the sampled spec share |
+| `packages/plitejs/scripts/authored-documents.ts` | the documents both formal checks build |
+
+To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "check every recording command's accept and reject"`, then run `git log --oneline <that commit>..HEAD --` with the table's files and `packages/plitejs/scripts/authored-recording-order.ts`. For each commit it lists, read the diff and confirm three things. A new command or mark kind that recording writes is in `actsOf` or the builder. A new refusal the editor gives on purpose is still an `EditorRefusalError`. The laws still compare with a plain editor, not with the resolver's own output. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:authored-recording`.
+
+## What it does not cover
+
+- Documents of more than one top-level block at the gate, and prior edits. The sampled laws start at two blocks with two-letter lines and up to three earlier edits, so they still own that space.
+- Plain content between the halves of a cut and stored verdicts, so the three resolver mutants in What a pass proves pass.
+- `--replay` reads only a recording law's counterexample, `[initial, history, command]`. The ledger law's counterexample has another shape, and the flag refuses it.
+- A bug the resolver repeats before and after the command. The reject law compares the resolver with itself across the command, so a resolver that rejects some stored shape wrongly passes when the shape was already there.
+- Decisions one at a time, stored verdicts and their order, which the `authored-decision-order` check owns.
+- Named roots, nested roots, tables, lists and marks other than links, which neither world holds.
+- The browser, `beforeinput`, IME, the clipboard and Yjs.
+
+`/pstack:maintain-formal-verification-skill` brings this verification back in line after changes that did not recheck it.

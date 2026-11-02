@@ -296,6 +296,20 @@ export const steps = [
     key: [],
   },
   {
+    name: 'authored-recording',
+    private: true,
+    run: 'pnpm check:authored-recording',
+    affected: touches(
+      'packages/plitejs/scripts/authored-recording-order',
+      'packages/plitejs/scripts/authored-documents',
+      'packages/plitejs/src/',
+      'packages/plitejs/test/support/',
+      'config/plite-source-aliases.ts',
+      'tooling/scripts/finding-baseline.mjs'
+    ),
+    key: [],
+  },
+  {
     name: 'bench-targets',
     private: true,
     run: 'pnpm plite:bench:targets:check',
