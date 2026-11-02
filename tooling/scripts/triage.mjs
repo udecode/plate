@@ -136,6 +136,7 @@ const STATE_ORDER = [
 const PATH_REF = /^[^\s:,;]+(?::\d+(?:-\d+)?)?$/u;
 const ISSUE = /^[1-9]\d*$/u;
 const LOGIN = /^[A-Za-z\d](?:[A-Za-z\d-]{0,38})(?:\[bot\])?$/u;
+const ROLES = ['maintainer', 'qa'];
 const paths = (value) => value.split(/,\s*/u);
 const KEY_VALUES = {
   scope: /^[a-z][a-z0-9-]*$/u,
@@ -282,9 +283,7 @@ const meets = (model, effort, floor, max = null) =>
 function policyProblems(config) {
   const policy = config?.triage;
   if (!policy) {
-    return [
-      `${CONFIG} has no triage key with repos, milestone, floor, owners and rev`,
-    ];
+    return [`${CONFIG} has no triage key with repos, milestone, floor and rev`];
   }
   const found = [];
   const repos = Array.isArray(policy.repos) ? policy.repos : [];
@@ -328,15 +327,21 @@ function policyProblems(config) {
       );
     }
   }
-  if (!Array.isArray(policy.owners) || policy.owners.length === 0) {
-    found.push(`${CONFIG}: triage.owners lists at least one GitHub login`);
-  }
-  for (const entry of Array.isArray(policy.owners) ? policy.owners : []) {
-    if (typeof entry !== 'string' || !LOGIN.test(entry)) {
+  const team = Object.entries(config.team ?? {});
+  for (const [login, member] of team) {
+    if (!LOGIN.test(login)) {
       found.push(
-        `${CONFIG}: triage.owners entry ${JSON.stringify(entry)} is not a GitHub login`
+        `${CONFIG}: team key ${JSON.stringify(login)} is not a GitHub login`
       );
     }
+    if (!ROLES.includes(member?.role)) {
+      found.push(
+        `${CONFIG}: team.${login}.role is ${ROLES.join(' or ')}, not ${JSON.stringify(member?.role)}`
+      );
+    }
+  }
+  if (!team.some(([, member]) => member?.role === 'maintainer')) {
+    found.push(`${CONFIG}: team has at least one maintainer`);
   }
   if (policy.gated !== undefined && !Array.isArray(policy.gated)) {
     found.push(`${CONFIG}: triage.gated lists GitHub logins`);
@@ -359,6 +364,9 @@ const repoOf = (repos) =>
     ? repos[0]
     : repos.find((repo) => repoNameOf(repo) === repoName);
 
+const maintainersOf = (team) =>
+  Object.keys(team).filter((login) => team[login].role === 'maintainer');
+
 const policyOf = (config) => ({
   repo: repoOf(config.triage.repos),
   primary: repoOf(config.triage.repos) === config.triage.repos[0],
@@ -367,9 +375,9 @@ const policyOf = (config) => ({
   moved: new Map(),
   floor: config.triage.floor.map(parseLabel),
   floorText: config.triage.floor.join(' or '),
-  owners: config.triage.owners,
-  ownersText: config.triage.owners.join(' or '),
-  confirmed: [...config.triage.owners, ...(config.triage.gated ?? [])],
+  maintainers: maintainersOf(config.team),
+  maintainersText: `a maintainer (${maintainersOf(config.team).join(', ')})`,
+  confirmed: [...maintainersOf(config.team), ...(config.triage.gated ?? [])],
   rev: config.triage.rev,
   max: config.maxEffort ?? null,
 });
@@ -1488,7 +1496,7 @@ function show(argv) {
     };
   };
   const session = identity.by
-    ? `${identity.who} on ${identity.by} can record${reads.policy.confirmed.includes(identity.who) ? '' : `; its records read unconfirmed until ${reads.policy.ownersText} records the issue again`}`
+    ? `${identity.who} on ${identity.by} can record${reads.policy.confirmed.includes(identity.who) ? '' : `; its records read unconfirmed until ${reads.policy.maintainersText} records the issue again`}`
     : `cannot record: ${identity.refusal}`;
   const results = numbers.map((number) => ({
     ...summary(number, reads),
@@ -1607,9 +1615,9 @@ function queue(argv) {
     return;
   }
   for (const note of reads.notes) console.log(`note: ${note}`);
-  // A record by someone who is not an owner reads unconfirmed, so a non-owner's queue would list their own records forever.
+  // An unconfirmed issue waits for a maintainer's record, so anyone else's queue would list it forever.
   const login = ghLogin();
-  const owner = login !== null && reads.policy.owners.includes(login);
+  const maintainer = login !== null && reads.policy.maintainers.includes(login);
   const counts = STATE_ORDER.map(
     (state) =>
       `${results.filter((result) => result.state === state).length} ${state}`
@@ -1617,17 +1625,17 @@ function queue(argv) {
   console.log(
     `${results.length} open issues${options.label ? ` labeled ${options.label}` : ''}: ${counts.join(', ')}`
   );
-  const hidden = owner
+  const hidden = maintainer
     ? 0
     : results.filter((result) => result.state === 'unconfirmed').length;
   if (hidden > 0) {
     console.log(
-      `note: ${hidden} unconfirmed issue(s) wait for ${reads.policy.ownersText} to triage them again`
+      `note: ${hidden} unconfirmed issue(s) wait for ${reads.policy.maintainersText} to triage them again`
     );
   }
   for (const result of results.filter(
     (entry) =>
-      entry.state !== 'current' && (owner || entry.state !== 'unconfirmed')
+      entry.state !== 'current' && (maintainer || entry.state !== 'unconfirmed')
   )) {
     console.log(
       [
@@ -2142,7 +2150,7 @@ function claimActivity(reads, claim, issue) {
 
 const liveClaims = (reads, rows, isOpen) =>
   foldClaims(rows, {
-    owners: reads.policy?.owners ?? [],
+    maintainers: reads.policy?.maintainers ?? [],
     endedAt: claimEnd(reads, isOpen),
   });
 
@@ -2171,7 +2179,7 @@ function claimWorld(reads, open, rows, live, actor, git) {
   return {
     actor,
     now: Date.now(),
-    owners: reads.policy.owners,
+    maintainers: reads.policy.maintainers,
     open,
     // The first repository is public, where an issue off the next milestone reports main.
     main: (issue) =>
@@ -2646,7 +2654,7 @@ function releaseCommand(argv) {
       `a release needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
     );
   }
-  const { repo, owners } = reads.policy;
+  const { repo, maintainers } = reads.policy;
   const actor = actorOf(options);
   const open = openList(repo);
   const { claims, released } = pushClaims(reads.remote, (text) => {
@@ -2657,7 +2665,7 @@ function releaseCommand(argv) {
       (issue) =>
         live.has(issue) &&
         !sameActor(live.get(issue).actor, actor) &&
-        !owners.includes(actor.who)
+        !maintainers.includes(actor.who)
     );
     if (theirs.length > 0) {
       refuse(
@@ -2666,7 +2674,9 @@ function releaseCommand(argv) {
             (issue) =>
               `#${issue} is held by ${live.get(issue).actor.who} in session ${live.get(issue).actor.session}`
           )
-          .join('; ')}; only that session or ${owners.join(' or ')} releases it`
+          .join(
+            '; '
+          )}; only that session or ${reads.policy.maintainersText} releases it`
       );
     }
     const held = issues.filter((issue) => live.has(issue));
@@ -3106,7 +3116,7 @@ function recordCommand(argv) {
     ].join('\t');
   });
 
-  const author = `${identity.who} on ${identity.by}${reads.policy.confirmed.includes(identity.who) ? '' : `; they read unconfirmed until ${reads.policy.ownersText} records them again`}`;
+  const author = `${identity.who} on ${identity.by}${reads.policy.confirmed.includes(identity.who) ? '' : `; they read unconfirmed until ${reads.policy.maintainersText} records them again`}`;
   if (options['dry-run']) {
     console.log(
       `dry run, nothing written: ${rows.length} row(s) would be recorded by ${author}`

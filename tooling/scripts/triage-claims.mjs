@@ -60,7 +60,7 @@ export const sameActor = (a, b) =>
     (a.transcript !== null && a.transcript === b.transcript));
 
 // endedAt(issue, claim) gives the time a claim ended without a row, such as its task landing, or null.
-export function foldClaims(rows, { owners, endedAt }) {
+export function foldClaims(rows, { maintainers, endedAt }) {
   const live = new Map();
   for (const row of rows) {
     const current = live.get(row.issue);
@@ -84,7 +84,7 @@ export function foldClaims(rows, { owners, endedAt }) {
     } else if (
       row.move === 'release' &&
       held &&
-      (sameActor(current.actor, row) || owners.includes(row.who))
+      (sameActor(current.actor, row) || maintainers.includes(row.who))
     ) {
       live.delete(row.issue);
     }
@@ -328,11 +328,11 @@ export function decide(request, world) {
   const foreign = [...results.values()]
     .flatMap((result) => result.taken ?? [])
     .filter((hold) => hold.who !== world.actor.who);
-  if (foreign.length > 0 && !world.owners.includes(world.actor.who)) {
+  if (foreign.length > 0 && !world.maintainers.includes(world.actor.who)) {
     return {
       members,
       results: [...results.values()],
-      refusal: `only ${world.owners.join(' or ')} takes over another login's hold (${foreign.map((hold) => hold.key).join(', ')}); ask them`,
+      refusal: `only a maintainer (${world.maintainers.join(', ')}) takes over another login's hold (${foreign.map((hold) => hold.key).join(', ')}); ask them`,
     };
   }
   const stopper = roots.find((root) =>

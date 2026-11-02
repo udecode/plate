@@ -24,7 +24,10 @@ const readProject = () =>
     readFileSync(new URL('../../.agents/pstack.json', import.meta.url), 'utf-8')
   );
 
-const readConfig = () => readProject().notify;
+const readConfig = () => {
+  const { notify, team } = readProject();
+  return { ...notify, team };
+};
 
 const SHELL =
   /^(?:pnpm|npm|npx|node|bun|bunx|yarn|git|gh|claude|codex|curl|brew|cd|export|sh|bash|zsh|python3?|pip3?)(?:\s|$)|&&|\|\|/u;
@@ -54,11 +57,11 @@ const teamLines = (message) => {
   return lines.filter(({ text }) => text.toLowerCase() !== 'none');
 };
 
-const recipients = ({ people, role }) => ({
+const recipients = ({ team, role }) => ({
   ...Object.fromEntries(
-    Object.entries(people).map(([login, id]) => [
+    Object.entries(team).map(([login, { discord }]) => [
       login,
-      { mention: `<@${id}>`, allowedMentions: { users: [id] } },
+      { mention: `<@${discord}>`, allowedMentions: { users: [discord] } },
     ])
   ),
   dev: { mention: `<@&${role}>`, allowedMentions: { roles: [role] } },
@@ -164,7 +167,7 @@ const send = async (args) => {
   if (!recipient) {
     fail(
       2,
-      `${to} is not on the team: add their GitHub login and Discord user ID to notify.people in .agents/pstack.json`
+      `${to} is not on the team: add their GitHub login, role and Discord user ID to team in .agents/pstack.json`
     );
   }
   const body = message(recipient, text);

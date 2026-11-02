@@ -62,6 +62,24 @@
       "ship"
     ]
   },
+  "team": {
+    "felixfeng33": {
+      "role": "maintainer",
+      "discord": "1199232580394946581"
+    },
+    "natamox": {
+      "role": "maintainer",
+      "discord": "1129788480059359232"
+    },
+    "sin6626": {
+      "role": "maintainer",
+      "discord": "1559894481027989572"
+    },
+    "zbeyens": {
+      "role": "maintainer",
+      "discord": "275762728738750486"
+    }
+  },
   "triage": {
     "repos": [
       "udecode/plate",
@@ -72,10 +90,6 @@
       "claude-opus-5 @xhigh",
       "gpt-6.1-sol @xhigh"
     ],
-    "owners": [
-      "zbeyens",
-      "natamox"
-    ],
     "gated": [
       "zbeyens-bot[bot]"
     ],
@@ -83,13 +97,7 @@
   },
   "notify": {
     "channel": "1080884840884346941",
-    "role": "1026229447751376996",
-    "people": {
-      "felixfeng33": "1199232580394946581",
-      "natamox": "1129788480059359232",
-      "sin6626": "1559894481027989572",
-      "zbeyens": "275762728738750486"
-    }
+    "role": "1026229447751376996"
   },
   "plans": "docs/plans",
   "companion": {
