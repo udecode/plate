@@ -57,14 +57,12 @@ import {
 import {
   ensureElementOwnedRootIndex,
   findElementOwnedRootOwnerPath,
-  getDirtyElementOwnedRootIssues,
   getElementOwnedRootGrammarBindings,
+  getChangedElementOwnedRootKeys,
   getElementOwnedRootIssues,
   getElementOwnedRootKeys,
-  matchesElementOwnedRootDeclaration,
+  getIntroducedElementOwnedRootIssues,
   rebaseElementOwnedRootIndex,
-  resolveElementOwnedRootPath,
-  sealElementOwnedRootIndex,
   type ElementOwnedRootBinding,
   type ElementOwnedRootIndex,
   type ElementOwnedRootIssue,
@@ -4243,50 +4241,33 @@ export const createEditorSchema = <V extends Value = Value>(
     }
   };
 
-  const locateElementOwnedRootPath = (
+  const elementOwnedRootLocation = (
     value: EditorDocumentValue,
-    input: ElementOwnedRootBinding | ElementOwnedRootIssue,
-    index: ElementOwnedRootIndex
+    input: ElementOwnedRootBinding | ElementOwnedRootIssue
   ) => {
-    const children =
+    const path = findElementOwnedRootOwnerPath(
       input.ownerRoot === 'main'
         ? value.children
-        : (value.roots?.[input.ownerRoot] ?? []);
-    const resolved = resolveElementOwnedRootPath(index, input);
-    const owner = resolved ? getDescendant(children, resolved) : undefined;
-    const path =
-      owner && matchesElementOwnedRootDeclaration(input, owner)
-        ? resolved
-        : findElementOwnedRootOwnerPath(children, input);
+        : (value.roots?.[input.ownerRoot] ?? []),
+      input
+    );
 
     if (!path) {
-      throw new EditorSchemaValidationError(
-        `Element-owned root index provenance for "${input.ownerType}.${
+      return failInvariant(
+        `Element-owned root index counts a "${input.ownerType}.${
           input.slot ?? 'contentRoots'
-        }" is stale.`
+        }" declaration the document lacks.`
       );
     }
 
-    return path;
+    return toSchemaValidationLocation(input.ownerRoot, path, input.ownerType);
   };
-
-  const elementOwnedRootLocation = (
-    value: EditorDocumentValue,
-    input: ElementOwnedRootBinding | ElementOwnedRootIssue,
-    index: ElementOwnedRootIndex
-  ) =>
-    toSchemaValidationLocation(
-      input.ownerRoot,
-      locateElementOwnedRootPath(value, input, index),
-      input.ownerType
-    );
 
   const throwElementOwnedRootIssue = (
     value: EditorDocumentValue,
-    issue: ElementOwnedRootIssue,
-    index: ElementOwnedRootIndex
+    issue: ElementOwnedRootIssue
   ): never => {
-    const location = elementOwnedRootLocation(value, issue, index);
+    const location = elementOwnedRootLocation(value, issue);
 
     if (issue.kind === 'missing-content-roots') {
       throw createEditorSchemaValidationError(
@@ -4320,7 +4301,6 @@ export const createEditorSchema = <V extends Value = Value>(
     let projection:
       | Readonly<{
           content: CompiledSchemaContentProgram;
-          index: ElementOwnedRootIndex;
           owner: ElementOwnedRootBinding;
         }>
       | undefined;
@@ -4336,16 +4316,8 @@ export const createEditorSchema = <V extends Value = Value>(
           projection &&
           !contentProgramsEqual(projection.content, grammar.content)
         ) {
-          const previous = elementOwnedRootLocation(
-            value,
-            projection.owner,
-            projection.index
-          );
-          const conflicting = elementOwnedRootLocation(
-            value,
-            grammar.owner,
-            index
-          );
+          const previous = elementOwnedRootLocation(value, projection.owner);
+          const conflicting = elementOwnedRootLocation(value, grammar.owner);
 
           throw createEditorSchemaValidationError(
             'invalid-root',
@@ -4361,23 +4333,16 @@ export const createEditorSchema = <V extends Value = Value>(
         }
         projection ??= Object.freeze({
           content: grammar.content,
-          index,
           owner: grammar.owner,
         });
       }
     }
 
     if (exclusive && ownerCount !== 1 && projection) {
-      const location = elementOwnedRootLocation(
-        value,
-        projection.owner,
-        projection.index
-      );
-
       throw createEditorSchemaValidationError(
         'invalid-root',
         `Exclusive editor content root "${childRoot}" must have exactly one owner; received ${ownerCount}.`,
-        location
+        elementOwnedRootLocation(value, projection.owner)
       );
     }
 
@@ -4401,7 +4366,7 @@ export const createEditorSchema = <V extends Value = Value>(
       string,
       Readonly<{
         content: CompiledSchemaContentProgram;
-        location: EditorSchemaValidationLocation;
+        owner: ElementOwnedRootBinding;
       }>
     >();
     const projectedRootKeys = new Set<string>();
@@ -4409,7 +4374,7 @@ export const createEditorSchema = <V extends Value = Value>(
     for (const { index } of ownershipIndexes) {
       const issue = getElementOwnedRootIssues(index)[0];
 
-      if (issue) throwElementOwnedRootIssue(value, issue, index);
+      if (issue) throwElementOwnedRootIssue(value, issue);
       for (const childRoot of getElementOwnedRootKeys(index)) {
         projectedRootKeys.add(childRoot);
       }
@@ -4422,16 +4387,7 @@ export const createEditorSchema = <V extends Value = Value>(
         ownershipIndexes
       );
 
-      if (projection) {
-        projectedRoots.set(childRoot, {
-          content: projection.content,
-          location: elementOwnedRootLocation(
-            value,
-            projection.owner,
-            projection.index
-          ),
-        });
-      }
+      if (projection) projectedRoots.set(childRoot, projection);
     }
 
     for (const [name, root] of schema.roots) {
@@ -4448,14 +4404,14 @@ export const createEditorSchema = <V extends Value = Value>(
         throw createEditorSchemaValidationError(
           'invalid-root',
           `Editor content root "${root}" is missing from the document.`,
-          projection.location
+          elementOwnedRootLocation(value, projection.owner)
         );
       }
       if (schema.roots.has(root)) {
         throw createEditorSchemaValidationError(
           'invalid-root',
           `Editor root "${root}" cannot be both named and element-owned.`,
-          projection.location
+          elementOwnedRootLocation(value, projection.owner)
         );
       }
     }
@@ -4504,7 +4460,6 @@ export const createEditorSchema = <V extends Value = Value>(
   };
   const rememberValidatedDocumentRoots = (
     value: EditorDocumentValue,
-    schema?: CompiledEditorSchema | null,
     derived?: DerivedRoots
   ) => {
     const authority = getValidationAuthority();
@@ -4544,9 +4499,6 @@ export const createEditorSchema = <V extends Value = Value>(
         holdsFrozenNodes(root, document)
       ) {
         markRootValidatedBy(document, authority);
-        if (schema && hasContentRoots()) {
-          sealElementOwnedRootIndex(schema, root, document);
-        }
       }
     }
   };
@@ -4599,7 +4551,7 @@ export const createEditorSchema = <V extends Value = Value>(
         }
       }
 
-      rememberValidatedDocumentRoots(value, declarative);
+      rememberValidatedDocumentRoots(value);
     });
   };
 
@@ -4644,13 +4596,27 @@ export const createEditorSchema = <V extends Value = Value>(
 
     if (schema && hasContentRoots()) {
       const dirtyChildRoots = new Set<string>();
-      const dirtyIssues: Array<
-        Readonly<{
-          index: ElementOwnedRootIndex;
-          issue: ElementOwnedRootIssue;
-          root: string;
-        }>
-      > = [];
+      let introduced: ElementOwnedRootIssue | undefined;
+      const collectOwnershipChanges = (
+        root: string,
+        index: ElementOwnedRootIndex | null
+      ) => {
+        const previous = beforeRoots[root]
+          ? ensureElementOwnedRootIndex(
+              schema,
+              root,
+              indexedBefore.get(root) ?? beforeRoots[root]
+            )
+          : null;
+
+        for (const childRoot of getChangedElementOwnedRootKeys(
+          previous,
+          index
+        )) {
+          dirtyChildRoots.add(childRoot);
+        }
+        introduced ??= getIntroducedElementOwnedRootIssues(previous, index)[0];
+      };
 
       for (const [root, document] of Object.entries(afterRoots)) {
         const afterDocument = indexedAfter.get(root) ?? document;
@@ -4658,83 +4624,24 @@ export const createEditorSchema = <V extends Value = Value>(
           indexedBefore.get(root) ??
           beforeRoots[root] ??
           emptyIndexedDocument();
-        const rootChange = getInternalDocumentRootChange(change, root);
         const index = touchedRoots.has(root)
           ? rebaseElementOwnedRootIndex(
               schema,
               root,
-              rootChange,
+              getInternalDocumentRootChange(change, root),
               beforeDocument,
               afterDocument
             )
           : ensureElementOwnedRootIndex(schema, root, afterDocument);
 
         ownershipIndexes.push({ index, root });
-        const childRoots =
-          index.validation === 'full'
-            ? getElementOwnedRootKeys(index)
-            : index.dirtyChildRoots;
-
-        for (const childRoot of childRoots) {
-          dirtyChildRoots.add(childRoot);
-        }
-        dirtyIssues.push(
-          ...(index.validation === 'full'
-            ? getElementOwnedRootIssues(index)
-            : getDirtyElementOwnedRootIssues(index)
-          ).map((issue) => ({ index, issue, root }))
-        );
+        if (touchedRoots.has(root)) collectOwnershipChanges(root, index);
       }
       for (const root of change.deleteRoots) {
-        const beforeDocument =
-          indexedBefore.get(root) ??
-          beforeRoots[root] ??
-          emptyIndexedDocument();
-        const index = rebaseElementOwnedRootIndex(
-          schema,
-          root,
-          getInternalDocumentRootChange(change, root),
-          beforeDocument,
-          emptyIndexedDocument()
-        );
-
-        const childRoots =
-          index.validation === 'full'
-            ? getElementOwnedRootKeys(index)
-            : index.dirtyChildRoots;
-
-        for (const childRoot of childRoots) {
-          dirtyChildRoots.add(childRoot);
-        }
-        dirtyIssues.push(
-          ...(index.validation === 'full'
-            ? getElementOwnedRootIssues(index)
-            : getDirtyElementOwnedRootIssues(index)
-          ).map((issue) => ({ index, issue, root }))
-        );
+        collectOwnershipChanges(root, null);
       }
 
-      const baselineHasIssue = (root: string, issue: ElementOwnedRootIssue) =>
-        !!beforeRoots[root] &&
-        getElementOwnedRootIssues(
-          ensureElementOwnedRootIndex(
-            schema,
-            root,
-            indexedBefore.get(root) ?? beforeRoots[root]
-          )
-        ).some(
-          (known) =>
-            known.owner === issue.owner &&
-            known.kind === issue.kind &&
-            known.slot === issue.slot
-        );
-      const introduced = dirtyIssues.find(
-        ({ issue, root }) => !baselineHasIssue(root, issue)
-      );
-
-      if (introduced) {
-        throwElementOwnedRootIssue(after, introduced.issue, introduced.index);
-      }
+      if (introduced) throwElementOwnedRootIssue(after, introduced);
       const ownershipRoots = new Set([
         ...dirtyChildRoots,
         ...change.createRoots,
@@ -4749,24 +4656,18 @@ export const createEditorSchema = <V extends Value = Value>(
         const projection = getProjectedRoot(value, schema, root, indexes);
 
         if (projection) {
-          const location = elementOwnedRootLocation(
-            value,
-            projection.owner,
-            projection.index
-          );
-
           if (!Object.hasOwn(roots, root)) {
             throw createEditorSchemaValidationError(
               'invalid-root',
               `Editor content root "${root}" is missing from the document.`,
-              location
+              elementOwnedRootLocation(value, projection.owner)
             );
           }
           if (schema.roots.has(root)) {
             throw createEditorSchemaValidationError(
               'invalid-root',
               `Editor root "${root}" cannot be both named and element-owned.`,
-              location
+              elementOwnedRootLocation(value, projection.owner)
             );
           }
 
@@ -5190,7 +5091,7 @@ export const createEditorSchema = <V extends Value = Value>(
       checked.push(afterDocument);
     }
 
-    return { afterRoots, checked, schema, touchedRoots };
+    return { afterRoots, checked, touchedRoots };
   };
   const validateDocumentChange: InternalEditorSchemaApi['validateDocumentChange'] =
     (input) => {
@@ -5207,8 +5108,7 @@ export const createEditorSchema = <V extends Value = Value>(
         );
       }
 
-      const { afterRoots, checked, schema, touchedRoots } =
-        checkDocumentChange(input);
+      const { afterRoots, checked, touchedRoots } = checkDocumentChange(input);
 
       for (const document of checked) markRootValidatedBy(document, authority);
       for (const [root, document] of Object.entries(afterRoots)) {
@@ -5221,16 +5121,11 @@ export const createEditorSchema = <V extends Value = Value>(
           );
         }
       }
-      if (schema) {
-        for (const [root, document] of Object.entries(afterRoots)) {
-          sealElementOwnedRootIndex(schema, root, document);
-        }
-      }
     };
 
   const api: InternalEditorSchemaApi<V> = Object.freeze({
     adoptDocumentBaseline: (value, derived) => {
-      rememberValidatedDocumentRoots(value, getDeclarativeSchema(), derived);
+      rememberValidatedDocumentRoots(value, derived);
     },
     allowsElementType,
     canContain,

@@ -31,7 +31,6 @@ import {
   getPreparedDocumentNodeKey,
   getPreparedDocumentRuntimePath,
   isDeferredPreparedDocumentSlice,
-  type JsonNode,
 } from './change/tokens';
 import { profileCoreDuration } from './profiling';
 import { countCoreWork } from './work';
@@ -335,23 +334,6 @@ type PathStableSnapshotIndexMappingSegment = Readonly<{
 type SnapshotIndexMappingSegment =
   | PathStableSnapshotIndexMappingSegment
   | StructuralSnapshotIndexMappingSegment;
-
-/**
- * Canonical, compacted path history shared by sparse indexes.
- *
- * @internal
- */
-export type CanonicalDocumentPathMapping =
-  readonly SnapshotIndexMappingSegment[];
-
-/**
- * Empty canonical path history for a newly indexed document.
- *
- * @internal
- */
-export const EMPTY_CANONICAL_DOCUMENT_PATH_MAPPING = Object.freeze(
-  []
-) as CanonicalDocumentPathMapping;
 
 type MappedSnapshotIndexDescriptor = Readonly<{
   base: SnapshotIndex;
@@ -719,81 +701,6 @@ const mapPathBackward = (
   return entry?.from === mapped
     ? ([...entry.path] as Path)
     : mapRelocatedPath(segment, path, 'backward');
-};
-
-/**
- * Append one root change using the snapshot index's binary compaction.
- *
- * @internal
- */
-export const appendCanonicalDocumentPathMapping = (
-  mapping: CanonicalDocumentPathMapping,
-  before: DocumentIndex,
-  after: DocumentIndex,
-  change: RootChange
-): CanonicalDocumentPathMapping =>
-  compactMappingSegments(mapping, createMappingSegment(before, after, change));
-
-/**
- * Map one stable node path through a compacted canonical history.
- *
- * @internal
- */
-export const mapCanonicalDocumentPath = (
-  mapping: CanonicalDocumentPathMapping,
-  source: readonly number[],
-  acceptsPathStableReplacement?: (before: JsonNode, after: JsonNode) => boolean
-): Path | null => {
-  let path: Path | null = [...source] as Path;
-
-  for (const segment of mapping) {
-    const mapped = mapPathForward(segment, path);
-
-    if (mapped) {
-      path = mapped;
-      continue;
-    }
-    if (acceptsPathStableReplacement) {
-      try {
-        if (
-          acceptsPathStableReplacement(
-            segment.before.node(path),
-            segment.after.node(path)
-          )
-        ) {
-          continue;
-        }
-      } catch {
-        // Missing source or target paths cannot be a stable replacement.
-      }
-    }
-
-    return null;
-  }
-
-  return path;
-};
-
-/**
- * Test-only structural bound for shared canonical path histories.
- *
- * @internal
- */
-export const getCanonicalDocumentPathMappingStats = (
-  mapping: CanonicalDocumentPathMapping
-) => {
-  const documents = new Set<DocumentIndex>();
-
-  for (const segment of mapping) {
-    documents.add(segment.before);
-    documents.add(segment.after);
-  }
-
-  return Object.freeze({
-    mappedChanges: mapping.reduce((count, segment) => count + segment.span, 0),
-    retainedDocuments: documents.size,
-    segments: mapping.length,
-  });
 };
 
 const placementKeysAdopted = (

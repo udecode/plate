@@ -1,31 +1,24 @@
 import type { Descendant, Element, RootKey } from '../interfaces';
 import { ElementApi } from '../interfaces';
 import type { SchemaContentRootOwnership } from '../interfaces/schema';
+import { failInvariant } from '../internal/fail-invariant';
 import { getDefined } from '../internal/get-defined';
 import type { DocumentIndex } from './change/document-index';
-import { getRootChangeRelocations } from './change/mapping';
 import type { RootChange } from './change/root-change';
 import type { JsonNode } from './change/tokens';
 import {
+  persistentMapChanges,
   persistentMapDelete,
   persistentMapEntries,
   persistentMapGet,
   type PersistentMapNode,
   persistentMapSet,
-  persistentMapSize,
 } from './persistent-map';
 import { profileCoreDuration } from './profiling';
 import type {
   CompiledEditorSchema,
   CompiledSchemaContentProgram,
 } from './schema-compiler';
-import {
-  appendCanonicalDocumentPathMapping,
-  type CanonicalDocumentPathMapping,
-  EMPTY_CANONICAL_DOCUMENT_PATH_MAPPING,
-  getCanonicalDocumentPathMappingStats,
-  mapCanonicalDocumentPath,
-} from './snapshot-index';
 import { countCoreWork } from './work';
 
 const stableProgramValue = (value: unknown): unknown => {
@@ -71,51 +64,23 @@ const contentProgramKey = (content: CompiledSchemaContentProgram) => {
   return key;
 };
 
-const ownerIds = new WeakMap<object, string>();
-let nextOwnerId = 0;
-const getOwnerId = (owner: object) => {
-  let id = ownerIds.get(owner);
-
-  if (!id) {
-    id = (nextOwnerId += 1).toString(36).padStart(8, '0');
-    ownerIds.set(owner, id);
-  }
-
-  return id;
-};
-
-let nextPathOriginId = 0;
-const createPathOriginId = () =>
-  (nextPathOriginId += 1).toString(36).padStart(8, '0');
-
 export type ElementOwnedRootBinding = Readonly<{
   childRoot: string;
   content: CompiledSchemaContentProgram;
   ownership: SchemaContentRootOwnership;
-  owner: Element;
   ownerRoot: RootKey;
   ownerType: string;
-  path: readonly number[];
-  pathOrigin: string;
   slot: string;
 }>;
 
 export type ElementOwnedRootIssue = Readonly<{
   kind: 'invalid-root' | 'missing-content-roots' | 'missing-slot';
-  owner: Element;
   ownerRoot: RootKey;
   ownerType: string;
-  path: readonly number[];
-  pathOrigin: string;
   slot?: string;
 }>;
 
-/**
- * Verify one indexed declaration without scanning for owner identity.
- *
- * @internal
- */
-export const matchesElementOwnedRootDeclaration = (
+const matchesElementOwnedRootDeclaration = (
   input: ElementOwnedRootBinding | ElementOwnedRootIssue,
   node: JsonNode
 ) => {
@@ -154,9 +119,15 @@ export const matchesElementOwnedRootDeclaration = (
   );
 };
 
+const issueKey = ({ kind, ownerType, slot }: ElementOwnedRootIssue) =>
+  JSON.stringify([kind, ownerType, slot ?? null]);
+
+type Counted<T> = Readonly<{ count: number; value: T }>;
+
 type GrammarOwners = Readonly<{
-  bindings: PersistentMapNode<ElementOwnedRootBinding>;
+  bindings: PersistentMapNode<Counted<ElementOwnedRootBinding>>;
   content: CompiledSchemaContentProgram;
+  count: number;
   ownership: SchemaContentRootOwnership;
 }>;
 
@@ -164,50 +135,22 @@ type ChildRootOwners = Readonly<{
   grammars: PersistentMapNode<GrammarOwners>;
 }>;
 
+/**
+ * How many elements of one root make each declaration. Elements are counted
+ * by what they declare, never by identity, so an edit that rebuilds or reuses
+ * element objects cannot leave a count behind.
+ */
 export type ElementOwnedRootIndex = Readonly<{
   childRoots: PersistentMapNode<ChildRootOwners> | null;
-  dirtyChildRoots: ReadonlySet<string>;
-  dirtyOwnerIds: ReadonlySet<string>;
-  issues: PersistentMapNode<readonly ElementOwnedRootIssue[]> | null;
-  ownerPathOrigins: PersistentMapNode<string> | null;
-  pathMappingCounts: PersistentMapNode<number> | null;
-  pathMappings: PersistentMapNode<CanonicalDocumentPathMapping> | null;
-  validation: 'full' | 'incremental' | 'sealed';
+  issues: PersistentMapNode<Counted<ElementOwnedRootIssue>> | null;
 }>;
 
 type MutableIndex = {
-  childRoots: PersistentMapNode<ChildRootOwners> | null;
-  dirtyChildRoots: Set<string>;
-  dirtyOwnerIds: Set<string>;
-  issues: PersistentMapNode<readonly ElementOwnedRootIssue[]> | null;
-  ownerPathOrigins: PersistentMapNode<string> | null;
-  pathMappingCounts: PersistentMapNode<number> | null;
-  pathMappings: PersistentMapNode<CanonicalDocumentPathMapping> | null;
-  validation: ElementOwnedRootIndex['validation'];
+  -readonly [Key in keyof ElementOwnedRootIndex]: ElementOwnedRootIndex[Key];
 };
 
-const EMPTY_INDEX: ElementOwnedRootIndex = Object.freeze({
-  childRoots: null,
-  dirtyChildRoots: Object.freeze(new Set<string>()),
-  dirtyOwnerIds: Object.freeze(new Set<string>()),
-  issues: null,
-  ownerPathOrigins: null,
-  pathMappingCounts: null,
-  pathMappings: null,
-  validation: 'sealed',
-});
-
-const freezeIndex = (index: MutableIndex): ElementOwnedRootIndex =>
-  Object.freeze({
-    childRoots: index.childRoots,
-    dirtyChildRoots: Object.freeze(index.dirtyChildRoots),
-    dirtyOwnerIds: Object.freeze(index.dirtyOwnerIds),
-    issues: index.issues,
-    ownerPathOrigins: index.ownerPathOrigins,
-    pathMappingCounts: index.pathMappingCounts,
-    pathMappings: index.pathMappings,
-    validation: index.validation,
-  });
+const freezeIndex = ({ childRoots, issues }: MutableIndex) =>
+  Object.freeze({ childRoots, issues });
 
 const schemaIndexes = new WeakMap<
   DocumentIndex,
@@ -256,14 +199,11 @@ type OwnerDeclaration = Readonly<{
   bindings: ReadonlyArray<
     Readonly<{
       binding: ElementOwnedRootBinding;
-      childRoot: string;
       key: string;
       programKey: string;
     }>
   >;
-  id: string;
   issues: readonly ElementOwnedRootIssue[];
-  pathOrigin: string;
 }>;
 
 const declaredContentRoots = (
@@ -321,9 +261,7 @@ export const ownedRootsOf = (
 const readOwnerDeclaration = (
   schema: CompiledEditorSchema,
   ownerRoot: RootKey,
-  owner: Element,
-  path: readonly number[],
-  pathOrigin: string
+  owner: Element
 ): OwnerDeclaration | null => {
   const declared = declaredContentRoots(schema, owner);
 
@@ -332,27 +270,17 @@ const readOwnerDeclaration = (
   const { contentRoots, ownerType } = declared;
 
   return profileCoreDuration('schema-root-ownership-index-owner-visit', () => {
-    const id = getOwnerId(owner);
-    const location = {
-      owner,
-      ownerRoot,
-      ownerType,
-      path: Object.freeze([...path]),
-      pathOrigin,
-    } as const;
+    const issue = (
+      kind: ElementOwnedRootIssue['kind'],
+      slot?: string
+    ): ElementOwnedRootIssue =>
+      Object.freeze({ kind, ownerRoot, ownerType, slot });
     const { childRoots } = owner as { childRoots?: unknown };
 
     if (typeof childRoots !== 'object' || childRoots === null) {
       return Object.freeze({
         bindings: Object.freeze([]),
-        id,
-        issues: Object.freeze([
-          Object.freeze({
-            ...location,
-            kind: 'missing-content-roots' as const,
-          }),
-        ]),
-        pathOrigin,
+        issues: Object.freeze([issue('missing-content-roots')]),
       });
     }
 
@@ -361,7 +289,7 @@ const readOwnerDeclaration = (
 
     for (const [slot, root] of contentRoots) {
       if (!Object.hasOwn(childRoots, slot)) {
-        issues.push(Object.freeze({ ...location, kind: 'missing-slot', slot }));
+        issues.push(issue('missing-slot', slot));
         continue;
       }
       const childRoot = (childRoots as Record<string, unknown>)[slot];
@@ -371,20 +299,20 @@ const readOwnerDeclaration = (
         childRoot.length === 0 ||
         childRoot === 'main'
       ) {
-        issues.push(Object.freeze({ ...location, kind: 'invalid-root', slot }));
+        issues.push(issue('invalid-root', slot));
         continue;
       }
       bindings.push(
         Object.freeze({
           binding: Object.freeze({
-            ...location,
             childRoot,
             content: root.content,
+            ownerRoot,
             ownership: root.ownership,
+            ownerType,
             slot,
           }),
-          childRoot,
-          key: `${id}:${slot}`,
+          key: JSON.stringify([ownerType, slot]),
           programKey: `${root.ownership}:${contentProgramKey(root.content)}`,
         })
       );
@@ -392,84 +320,52 @@ const readOwnerDeclaration = (
 
     return Object.freeze({
       bindings: Object.freeze(bindings),
-      id,
       issues: Object.freeze(issues),
-      pathOrigin,
     });
   });
+};
+
+const countAfter = (count: number, delta: number, what: string) => {
+  const next = count + delta;
+
+  if (next < 0) {
+    failInvariant(`Element-owned root index removed an uncounted ${what}.`);
+  }
+
+  return next;
 };
 
 const updateDeclaration = (
   index: MutableIndex,
   declaration: OwnerDeclaration,
-  action: 'add' | 'remove',
-  dirty: boolean
+  delta: 1 | -1
 ) => {
-  const previousPathOrigin = persistentMapGet(
-    index.ownerPathOrigins,
-    declaration.id
-  );
+  for (const issue of declaration.issues) {
+    const key = issueKey(issue);
+    const entry = persistentMapGet(index.issues, key);
+    const count = countAfter(entry?.count ?? 0, delta, issue.kind);
 
-  if (action === 'add') {
-    index.ownerPathOrigins = persistentMapSet(
-      index.ownerPathOrigins,
-      declaration.id,
-      declaration.pathOrigin
-    );
-    const count =
-      persistentMapGet(index.pathMappingCounts, declaration.pathOrigin) ?? 0;
-
-    index.pathMappingCounts = persistentMapSet(
-      index.pathMappingCounts,
-      declaration.pathOrigin,
-      count + 1
-    );
-    if (!persistentMapGet(index.pathMappings, declaration.pathOrigin)) {
-      index.pathMappings = persistentMapSet(
-        index.pathMappings,
-        declaration.pathOrigin,
-        EMPTY_CANONICAL_DOCUMENT_PATH_MAPPING
-      );
-    }
-  } else if (previousPathOrigin) {
-    index.ownerPathOrigins = persistentMapDelete(
-      index.ownerPathOrigins,
-      declaration.id
-    );
-    const count =
-      persistentMapGet(index.pathMappingCounts, previousPathOrigin) ?? 0;
-
-    if (count <= 1) {
-      index.pathMappingCounts = persistentMapDelete(
-        index.pathMappingCounts,
-        previousPathOrigin
-      );
-      index.pathMappings = persistentMapDelete(
-        index.pathMappings,
-        previousPathOrigin
-      );
-    } else {
-      index.pathMappingCounts = persistentMapSet(
-        index.pathMappingCounts,
-        previousPathOrigin,
-        count - 1
-      );
-    }
+    index.issues =
+      count > 0
+        ? persistentMapSet(index.issues, key, {
+            count,
+            value: entry?.value ?? issue,
+          })
+        : persistentMapDelete(index.issues, key);
   }
 
-  if (dirty) index.dirtyOwnerIds.add(declaration.id);
-  index.issues =
-    action === 'add' && declaration.issues.length > 0
-      ? persistentMapSet(index.issues, declaration.id, declaration.issues)
-      : persistentMapDelete(index.issues, declaration.id);
-
-  for (const { binding, childRoot, key, programKey } of declaration.bindings) {
-    if (dirty) index.dirtyChildRoots.add(childRoot);
+  for (const { binding, key, programKey } of declaration.bindings) {
+    const { childRoot } = binding;
     const owners = persistentMapGet(index.childRoots, childRoot);
     const grammar = persistentMapGet(owners?.grammars ?? null, programKey);
+    const entry = persistentMapGet(grammar?.bindings ?? null, key);
+    const count = countAfter(entry?.count ?? 0, delta, `${key} owner`);
     const bindings =
-      action === 'add'
-        ? persistentMapSet(grammar?.bindings ?? null, key, binding)
+      count > 0
+        ? persistentMapSet(grammar?.bindings ?? null, key, {
+            count,
+            value: entry?.value ?? binding,
+          })
         : persistentMapDelete(grammar?.bindings ?? null, key);
     let grammars = owners?.grammars ?? null;
 
@@ -477,6 +373,7 @@ const updateDeclaration = (
       grammars = persistentMapSet(grammars, programKey, {
         bindings,
         content: grammar?.content ?? binding.content,
+        count: (grammar?.count ?? 0) + delta,
         ownership: grammar?.ownership ?? binding.ownership,
       });
     } else {
@@ -488,172 +385,60 @@ const updateDeclaration = (
   }
 };
 
-const visitOwnerDeclarations = (
+const countOwners = (
   schema: CompiledEditorSchema,
   ownerRoot: RootKey,
   node: JsonNode,
-  path: readonly number[],
-  visit: (declaration: OwnerDeclaration) => void,
-  skip: WeakSet<object>,
-  pathOrigin: string,
-  recursive = true
+  index: MutableIndex
 ) => {
-  if (!ElementApi.isElement(node) || skip.has(node)) return;
-  const declaration = readOwnerDeclaration(
-    schema,
-    ownerRoot,
-    node,
-    path,
-    pathOrigin
-  );
+  if (!ElementApi.isElement(node)) return;
+  const declaration = readOwnerDeclaration(schema, ownerRoot, node);
 
-  if (declaration) visit(declaration);
-  if (!recursive) return;
-  for (const [index, child] of node.children.entries()) {
-    visitOwnerDeclarations(
-      schema,
-      ownerRoot,
-      child,
-      [...path, index],
-      visit,
-      skip,
-      pathOrigin
-    );
+  if (declaration) updateDeclaration(index, declaration, 1);
+  for (const child of node.children) {
+    countOwners(schema, ownerRoot, child, index);
   }
 };
 
-const changedNodes = (
+/**
+ * Count each element whose open token lies in `[from, to)`. An element's type
+ * and `childRoots` sit on its open token, so these are the only elements whose
+ * declarations a change can make or unmake.
+ */
+const countChangedOwners = (
+  schema: CompiledEditorSchema,
+  ownerRoot: RootKey,
   document: DocumentIndex,
   from: number,
   to: number,
-  metrics?: {
-    prefixNodes: number;
-    prefixSteps: number;
-    touching: number;
-  }
-): ReadonlyArray<Readonly<{ path: readonly number[]; recursive: boolean }>> => {
-  const touching = document.nodeRangesTouching(from, to);
-
-  if (metrics) metrics.touching = touching.length;
-  const contained: Array<(typeof touching)[number]> = [];
-  const boundary: Array<(typeof touching)[number]> = [];
-
-  for (const entry of touching) {
-    if (entry.from >= from && entry.to <= to) {
-      contained.push(entry);
-    } else if (entry.from >= from && entry.from < to) {
-      boundary.push(entry);
-    }
-  }
-  contained.sort((left, right) => left.path.length - right.path.length);
-  boundary.sort((left, right) => left.path.length - right.path.length);
-  const selected: Array<
-    Readonly<{
-      path: readonly number[];
-      recursive: boolean;
-    }>
-  > = [];
-  type SelectedPathNode = {
-    children?: Map<number, SelectedPathNode>;
-    selected: boolean;
-  };
-  const selectedPaths: SelectedPathNode = {
-    children: new Map(),
-    selected: false,
-  };
-
-  if (metrics) metrics.prefixNodes = 1;
-  const select = (path: readonly number[], recursive: boolean) => {
-    let node = selectedPaths;
-
-    if (node.selected) return;
-    for (const part of path) {
-      if (metrics) metrics.prefixSteps += 1;
-      let child = node.children?.get(part);
-
-      if (!child) {
-        child = { selected: false };
-        node.children ??= new Map();
-        node.children.set(part, child);
-        if (metrics) metrics.prefixNodes += 1;
-      }
-      node = child;
-      if (node.selected) return;
-    }
-    node.selected = true;
-    selected.push(Object.freeze({ path, recursive }));
-  };
-
-  for (const entry of contained) {
-    select(entry.path, true);
-  }
-
-  for (const entry of boundary) {
-    select(entry.path, false);
-  }
-
-  const entry = document.nodeStartingAt(from);
-
-  if (entry) select(entry.path, false);
-
-  return Object.freeze(selected);
-};
-
-const innermostPathContaining = (document: DocumentIndex, position: number) =>
-  document
-    .openContextAt(position)
-    .findLast((entry) => entry.from < position && position < entry.to)?.path ??
-  [];
-
-/**
- * Inspect changed-owner selection and its prefix-index work.
- *
- * @internal
- */
-export const inspectElementOwnedRootChangedNodes = (
-  document: DocumentIndex,
-  from: number,
-  to: number
+  index: MutableIndex,
+  delta: 1 | -1
 ) => {
-  const metrics = { prefixNodes: 0, prefixSteps: 0, touching: 0 };
-  const candidates = changedNodes(document, from, to, metrics);
+  for (const entry of document.nodeRangesTouching(from, to)) {
+    if (entry.kind !== 'element' || entry.from < from || entry.from >= to) {
+      continue;
+    }
+    const declaration = readOwnerDeclaration(
+      schema,
+      ownerRoot,
+      document.node(entry.path) as Element
+    );
 
-  return Object.freeze({ candidates, ...metrics });
+    if (declaration) updateDeclaration(index, declaration, delta);
+  }
 };
 
 const buildIndex = (
   schema: CompiledEditorSchema,
   root: RootKey,
-  document: DocumentIndex,
-  dirty: boolean
+  document: DocumentIndex
 ) =>
   profileCoreDuration('schema-root-ownership-index-build', () => {
     countCoreWork('ownershipBuilds');
-    const pathOrigin = createPathOriginId();
-    const index: MutableIndex = {
-      childRoots: null,
-      dirtyChildRoots: new Set(),
-      dirtyOwnerIds: new Set(),
-      issues: null,
-      ownerPathOrigins: null,
-      pathMappingCounts: null,
-      pathMappings: null,
-      validation: 'full',
-    };
-    const skip = new WeakSet<object>();
+    const index: MutableIndex = { childRoots: null, issues: null };
 
-    for (const [position, node] of document.value.entries()) {
-      visitOwnerDeclarations(
-        schema,
-        root,
-        node,
-        [position],
-        (declaration) => {
-          updateDeclaration(index, declaration, 'add', dirty);
-        },
-        skip,
-        pathOrigin
-      );
+    for (const node of document.value) {
+      countOwners(schema, root, node, index);
     }
 
     return cacheIndex(schema, root, document, freezeIndex(index));
@@ -665,113 +450,7 @@ export const ensureElementOwnedRootIndex = (
   document: DocumentIndex
 ) =>
   getElementOwnedRootIndex(schema, root, document) ??
-  buildIndex(schema, root, document, false);
-
-const ownerDeclarationIdentityEqual = (
-  schema: CompiledEditorSchema,
-  before: Element,
-  after: Element
-) => {
-  const type = getElementType(before);
-
-  if (!type || getElementType(after) !== type) return false;
-  const slots = schema.elements.byType.get(type)?.contentRoots;
-
-  if (!slots || slots.size === 0) return false;
-  const beforeRoots = (before as { childRoots?: unknown }).childRoots;
-  const afterRoots = (after as { childRoots?: unknown }).childRoots;
-
-  if (
-    typeof beforeRoots !== 'object' ||
-    beforeRoots === null ||
-    typeof afterRoots !== 'object' ||
-    afterRoots === null
-  ) {
-    return beforeRoots === afterRoots;
-  }
-
-  return [...slots.keys()].every(
-    (slot) =>
-      Object.hasOwn(beforeRoots, slot) === Object.hasOwn(afterRoots, slot) &&
-      Object.is(
-        (beforeRoots as Record<string, unknown>)[slot],
-        (afterRoots as Record<string, unknown>)[slot]
-      )
-  );
-};
-
-const transferChangedOwnerIdentities = (
-  schema: CompiledEditorSchema,
-  before: DocumentIndex,
-  after: DocumentIndex,
-  change: RootChange,
-  ranges: ReadonlyArray<
-    Readonly<{
-      fromBefore: number;
-      toBefore: number;
-    }>
-  >
-) => {
-  const mapping = appendCanonicalDocumentPathMapping(
-    EMPTY_CANONICAL_DOCUMENT_PATH_MAPPING,
-    before,
-    after,
-    change
-  );
-  const visited = new Set<string>();
-  const continuedBefore = new WeakSet<object>();
-  const continuedAfter = new WeakSet<object>();
-  const transferIdsAlongPath = (nodePath: readonly number[]) => {
-    for (let depth = 1; depth <= nodePath.length; depth += 1) {
-      const path = nodePath.slice(0, depth);
-      const key = path.join('.');
-
-      if (visited.has(key)) continue;
-      visited.add(key);
-      const beforeNode = before.node(path);
-      const id =
-        typeof beforeNode === 'object' && beforeNode !== null
-          ? ownerIds.get(beforeNode)
-          : undefined;
-
-      if (!id || !ElementApi.isElement(beforeNode)) continue;
-      const targetPath = mapCanonicalDocumentPath(mapping, path);
-
-      if (!targetPath) continue;
-      const afterNode = after.node(targetPath);
-
-      if (
-        ElementApi.isElement(afterNode) &&
-        ownerDeclarationIdentityEqual(schema, beforeNode, afterNode)
-      ) {
-        ownerIds.set(afterNode, id);
-        continuedBefore.add(beforeNode);
-        continuedAfter.add(afterNode);
-      }
-    }
-  };
-
-  for (const { fromBefore, toBefore } of ranges) {
-    transferIdsAlongPath(innermostPathContaining(before, fromBefore));
-    for (const candidate of changedNodes(before, fromBefore, toBefore)) {
-      const candidateTargetPath = mapCanonicalDocumentPath(
-        mapping,
-        candidate.path
-      );
-
-      if (
-        candidateTargetPath &&
-        before.node(candidate.path) === after.node(candidateTargetPath)
-      ) {
-        continuedBefore.add(before.node(candidate.path));
-        continuedAfter.add(after.node(candidateTargetPath));
-      }
-      transferIdsAlongPath(candidate.path);
-    }
-  }
-
-  return { continuedAfter, continuedBefore };
-};
+  buildIndex(schema, root, document);
 
 export const rebaseElementOwnedRootIndex = (
   schema: CompiledEditorSchema,
@@ -783,124 +462,25 @@ export const rebaseElementOwnedRootIndex = (
   const cached = getElementOwnedRootIndex(schema, root, after);
 
   if (cached) return cached;
-  if (before === after || !change || change.empty) {
+  // A move changes no open token, so it leaves every count as it was.
+  if (before === after || !change || change.empty || change.exactMove(before)) {
     const previous = getElementOwnedRootIndex(schema, root, before);
 
     return previous
       ? cacheIndex(schema, root, after, previous)
-      : buildIndex(schema, root, after, true);
+      : buildIndex(schema, root, after);
   }
 
   return profileCoreDuration('schema-root-ownership-index-rebase', () => {
     const previous = getElementOwnedRootIndex(schema, root, before);
 
-    if (!previous) return buildIndex(schema, root, after, true);
-    const relocations = getRootChangeRelocations(change, before, after);
-    let pathMappings: MutableIndex['pathMappings'] = null;
-
-    for (const [pathOrigin, mapping] of persistentMapEntries(
-      previous.pathMappings
-    )) {
-      pathMappings = persistentMapSet(
-        pathMappings,
-        pathOrigin,
-        appendCanonicalDocumentPathMapping(mapping, before, after, change)
-      );
-    }
-    const index: MutableIndex = {
-      childRoots: previous.childRoots,
-      dirtyChildRoots: new Set(previous.dirtyChildRoots),
-      dirtyOwnerIds: new Set(previous.dirtyOwnerIds),
-      issues: previous.issues,
-      ownerPathOrigins: previous.ownerPathOrigins,
-      pathMappingCounts: previous.pathMappingCounts,
-      pathMappings,
-      validation: 'incremental',
-    };
-    const ranges: Array<{
-      fromAfter: number;
-      fromBefore: number;
-      toAfter: number;
-      toBefore: number;
-    }> = [];
+    if (!previous) return buildIndex(schema, root, after);
+    const index: MutableIndex = { ...previous };
 
     change.iterChangedRanges((fromBefore, toBefore, fromAfter, toAfter) => {
-      ranges.push({ fromAfter, fromBefore, toAfter, toBefore });
+      countChangedOwners(schema, root, before, fromBefore, toBefore, index, -1);
+      countChangedOwners(schema, root, after, fromAfter, toAfter, index, 1);
     });
-    const { continuedAfter: relocatedAfter, continuedBefore: relocatedBefore } =
-      transferChangedOwnerIdentities(schema, before, after, change, ranges);
-    const pathOrigin = createPathOriginId();
-    const relocatedBeforePaths = new Set(
-      relocations.map(({ path }) => path.join('.'))
-    );
-    const relocatedAfterPaths = new Set(
-      relocations.map(({ targetPath }) => targetPath.join('.'))
-    );
-    const isInsideRelocation = (
-      paths: ReadonlySet<string>,
-      path: readonly number[]
-    ) => {
-      for (let depth = 1; depth <= path.length; depth += 1) {
-        if (paths.has(path.slice(0, depth).join('.'))) return true;
-      }
-
-      return false;
-    };
-
-    for (const relocation of relocations) {
-      const beforeNode = before.node(relocation.path);
-      const afterNode = after.node(relocation.targetPath);
-
-      if (typeof beforeNode === 'object' && beforeNode !== null) {
-        relocatedBefore.add(beforeNode);
-      }
-      if (typeof afterNode === 'object' && afterNode !== null) {
-        relocatedAfter.add(afterNode);
-      }
-    }
-    const removed = new WeakSet<object>();
-    const added = new WeakSet<object>();
-
-    for (const { fromAfter, fromBefore, toAfter, toBefore } of ranges) {
-      for (const candidate of changedNodes(before, fromBefore, toBefore)) {
-        if (isInsideRelocation(relocatedBeforePaths, candidate.path)) continue;
-        const node = before.node(candidate.path);
-
-        if (removed.has(node)) continue;
-        removed.add(node);
-        visitOwnerDeclarations(
-          schema,
-          root,
-          node,
-          candidate.path,
-          (declaration) => {
-            updateDeclaration(index, declaration, 'remove', true);
-          },
-          relocatedBefore,
-          pathOrigin,
-          candidate.recursive
-        );
-      }
-      for (const candidate of changedNodes(after, fromAfter, toAfter)) {
-        if (isInsideRelocation(relocatedAfterPaths, candidate.path)) continue;
-        const node = after.node(candidate.path);
-
-        if (added.has(node)) continue;
-        added.add(node);
-        visitOwnerDeclarations(
-          schema,
-          root,
-          node,
-          candidate.path,
-          (declaration) => {
-            updateDeclaration(index, declaration, 'add', true);
-          },
-          relocatedAfter,
-          pathOrigin,
-          candidate.recursive
-        );
-      }
-    }
 
     return cacheIndex(schema, root, after, freezeIndex(index));
   });
@@ -917,9 +497,10 @@ export const getElementOwnedRootGrammarBindings = (
   return Object.freeze(
     [...persistentMapEntries(owners.grammars)].map(([, grammar]) => ({
       content: grammar.content,
-      count: persistentMapSize(grammar.bindings),
+      count: grammar.count,
       ownership: grammar.ownership,
-      owner: getDefined(persistentMapEntries(grammar.bindings).next().value)[1],
+      owner: getDefined(persistentMapEntries(grammar.bindings).next().value)[1]
+        .value,
     }))
   );
 };
@@ -931,7 +512,7 @@ export function* getElementOwnedRootOwnerCounts(
     let count = 0;
 
     for (const [, grammar] of persistentMapEntries(owners.grammars)) {
-      count += persistentMapSize(grammar.bindings);
+      count += grammar.count;
     }
     yield [childRoot, count];
   }
@@ -944,39 +525,35 @@ export const getElementOwnedRootKeys = (index: ElementOwnedRootIndex) =>
 
 export const getElementOwnedRootIssues = (index: ElementOwnedRootIndex) =>
   Object.freeze(
-    [...persistentMapEntries(index.issues)].flatMap(([, issues]) => issues)
+    [...persistentMapEntries(index.issues)].map(([, { value }]) => value)
   );
 
-export const getDirtyElementOwnedRootIssues = (index: ElementOwnedRootIndex) =>
-  Object.freeze(
-    [...index.dirtyOwnerIds].flatMap(
-      (ownerId) => persistentMapGet(index.issues, ownerId) ?? []
-    )
+export const getChangedElementOwnedRootKeys = (
+  before: ElementOwnedRootIndex | null,
+  after: ElementOwnedRootIndex | null
+) =>
+  persistentMapChanges(before?.childRoots ?? null, after?.childRoots ?? null);
+
+export const getIntroducedElementOwnedRootIssues = (
+  before: ElementOwnedRootIndex | null,
+  after: ElementOwnedRootIndex | null
+) =>
+  persistentMapChanges(before?.issues ?? null, after?.issues ?? null).flatMap(
+    (key) => {
+      const added = persistentMapGet(after?.issues ?? null, key);
+
+      return added &&
+        added.count >
+          (persistentMapGet(before?.issues ?? null, key)?.count ?? 0)
+        ? [added.value]
+        : [];
+    }
   );
-
-export const resolveElementOwnedRootPath = (
-  index: ElementOwnedRootIndex,
-  input: ElementOwnedRootBinding | ElementOwnedRootIssue
-) => {
-  const mapping = persistentMapGet(index.pathMappings, input.pathOrigin);
-
-  return mapping
-    ? mapCanonicalDocumentPath(
-        mapping,
-        input.path,
-        (before, after) =>
-          matchesElementOwnedRootDeclaration(input, before) &&
-          matchesElementOwnedRootDeclaration(input, after)
-      )
-    : Object.freeze([...input.path]);
-};
 
 /**
- * Path history can compose a move of an owner and an edit inside it into one
- * step, which finds moved nodes only by unchanged content and so loses the
- * owner. A change that rebuilds a relocated subtree can drop owner ids too, so
- * any element matching the same declaration stands in: it is a true location
- * for the error, and finding none means the owner is gone.
+ * The first element in `children` that makes `input`'s declaration. The index
+ * counts declarations without positions, so validation finds an error's
+ * location only when it reports one.
  *
  * @internal
  */
@@ -984,8 +561,6 @@ export const findElementOwnedRootOwnerPath = (
   children: readonly Descendant[],
   input: ElementOwnedRootBinding | ElementOwnedRootIssue
 ) => {
-  const id = ownerIds.get(input.owner);
-  let declared: readonly number[] | null = null;
   const visit = (
     nodes: readonly Descendant[],
     path: readonly number[]
@@ -995,8 +570,7 @@ export const findElementOwnedRootOwnerPath = (
       const nodePath = [...path, position];
 
       if (matchesElementOwnedRootDeclaration(input, node)) {
-        if (id && ownerIds.get(node) === id) return Object.freeze(nodePath);
-        declared ??= Object.freeze(nodePath);
+        return Object.freeze(nodePath);
       }
       const found = visit(node.children, nodePath);
 
@@ -1006,60 +580,5 @@ export const findElementOwnedRootOwnerPath = (
     return null;
   };
 
-  return visit(children, []) ?? declared;
-};
-
-/**
- * Test-only bounds for retained element-owned root path history.
- *
- * @internal
- */
-export const getElementOwnedRootPathMappingStats = (
-  index: ElementOwnedRootIndex
-) => {
-  const mappings = [...persistentMapEntries(index.pathMappings)].map(
-    ([, mapping]) => getCanonicalDocumentPathMappingStats(mapping)
-  );
-
-  return Object.freeze({
-    mappedChanges: Math.max(
-      0,
-      ...mappings.map(({ mappedChanges }) => mappedChanges)
-    ),
-    origins: mappings.length,
-    retainedDocuments: mappings.reduce(
-      (count, { retainedDocuments }) => count + retainedDocuments,
-      0
-    ),
-    segments: mappings.reduce((count, { segments }) => count + segments, 0),
-  });
-};
-
-export const sealElementOwnedRootIndex = (
-  schema: CompiledEditorSchema,
-  root: RootKey,
-  document: DocumentIndex
-) => {
-  const index = getElementOwnedRootIndex(schema, root, document);
-
-  if (
-    !index ||
-    (index.validation === 'sealed' &&
-      index.dirtyChildRoots.size === 0 &&
-      index.dirtyOwnerIds.size === 0)
-  ) {
-    return index;
-  }
-
-  return cacheIndex(
-    schema,
-    root,
-    document,
-    Object.freeze({
-      ...index,
-      dirtyChildRoots: EMPTY_INDEX.dirtyChildRoots,
-      dirtyOwnerIds: EMPTY_INDEX.dirtyOwnerIds,
-      validation: 'sealed',
-    })
-  );
+  return visit(children, []);
 };

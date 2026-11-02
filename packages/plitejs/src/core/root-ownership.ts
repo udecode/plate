@@ -12,11 +12,11 @@ import type { JsonNode } from './change/tokens';
 import {
   type ElementOwnedRootIndex,
   ensureElementOwnedRootIndex,
+  getChangedElementOwnedRootKeys,
   getElementOwnedRootGrammarBindings,
   getElementOwnedRootOwnerCounts,
   rebaseElementOwnedRootIndex,
 } from './element-owned-root-index';
-import { persistentMapChanges } from './persistent-map';
 import type { CompiledEditorSchema } from './schema-compiler';
 import { countCoreWork, readCoreWork, restoreCoreWork } from './work';
 
@@ -27,7 +27,7 @@ export type OwnershipSides = Readonly<{
 }>;
 
 const ownerChanges = ({ after, before }: OwnershipSides) =>
-  persistentMapChanges(before?.childRoots ?? null, after?.childRoots ?? null);
+  getChangedElementOwnedRootKeys(before, after);
 
 const ownersOf = (index: ElementOwnedRootIndex | null, childRoot: string) => {
   let count = 0;
