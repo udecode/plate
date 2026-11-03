@@ -138,6 +138,7 @@ const PATH_REF = /^[^\s:,;]+(?::\d+(?:-\d+)?)?$/u;
 const ISSUE = /^[1-9]\d*$/u;
 const LOGIN = /^[A-Za-z\d](?:[A-Za-z\d-]{0,38})(?:\[bot\])?$/u;
 const ROLES = ['maintainer', 'qa'];
+const FOCUSES = new Set(['next', 'all']);
 const paths = (value) => value.split(/,\s*/u);
 const KEY_VALUES = {
   scope: /^[a-z][a-z0-9-]*$/u,
@@ -284,7 +285,9 @@ const meets = (model, effort, floor, max = null) =>
 function policyProblems(config) {
   const policy = config?.triage;
   if (!policy) {
-    return [`${CONFIG} has no triage key with repos, milestone, floor and rev`];
+    return [
+      `${CONFIG} has no triage key with repos, milestone, focus, floor and rev`,
+    ];
   }
   const found = [];
   const repos = Array.isArray(policy.repos) ? policy.repos : [];
@@ -306,6 +309,11 @@ function policyProblems(config) {
   if (typeof policy.milestone !== 'string' || !policy.milestone.trim()) {
     found.push(
       `${CONFIG}: triage.milestone names the milestone that marks an issue of the first repository as next work`
+    );
+  }
+  if (!FOCUSES.has(policy.focus)) {
+    found.push(
+      `${CONFIG}: triage.focus is "all", or "next", which leaves the first repository's main reports out of the queue and the kinds until launch`
     );
   }
   if (!Array.isArray(policy.floor) || policy.floor.length === 0) {
@@ -373,6 +381,7 @@ const policyOf = (config) => ({
   primary: repoOf(config.triage.repos) === config.triage.repos[0],
   first: config.triage.repos[0],
   milestone: config.triage.milestone,
+  focus: config.triage.focus,
   moved: new Map(),
   floor: config.triage.floor.map(parseLabel),
   floorText: config.triage.floor.join(' or '),
@@ -1635,6 +1644,12 @@ function mark(options) {
   console.log(marked(unixText(readFileSync(file, 'utf-8')).trim()));
 }
 
+const mainReport = (reads, milestone) =>
+  reads.policy.primary && milestone !== reads.policy.milestone;
+
+const inFocus = (reads, issue) =>
+  reads.policy.focus === 'all' || !mainReport(reads, issue.milestone?.title);
+
 function openIssues(reads, label = null) {
   const listed = spawnSync(
     'gh',
@@ -1703,13 +1718,13 @@ function queue(options) {
       `the queue needs the triage policy on ${reads.remote}/${reads.branch}: ${reads.problems.join('; ')}`
     );
   }
-  const { results, maintainer, waiting } = queued(
-    reads,
-    openIssues(reads, options.label)
-  );
+  const listed = openIssues(reads, options.label);
+  const focus = listed.filter((issue) => inFocus(reads, issue));
+  const outside = listed.length - focus.length;
+  const { results, maintainer, waiting } = queued(reads, focus);
   if (options.json) {
     console.log(
-      JSON.stringify({ notes: reads.notes, issues: results }, null, 2)
+      JSON.stringify({ notes: reads.notes, issues: results, outside }, null, 2)
     );
     return;
   }
@@ -1727,6 +1742,11 @@ function queue(options) {
   if (hidden > 0) {
     console.log(
       `note: ${hidden} unconfirmed issue(s) wait for ${reads.policy.maintainersText} to triage them again`
+    );
+  }
+  if (outside > 0) {
+    console.log(
+      `note: ${outside} main report(s) wait outside the next focus; triage #<N> still records one`
     );
   }
   for (const result of waiting) console.log(queueLine(result));
@@ -2513,10 +2533,7 @@ function claimWorld(reads, open, rows, live, actor, git) {
     now: Date.now(),
     maintainers: reads.policy.maintainers,
     open,
-    // The first repository is public, where an issue off the next milestone reports main.
-    main: (issue) =>
-      reads.policy.primary &&
-      open.get(issue)?.milestone !== reads.policy.milestone,
+    main: (issue) => mainReport(reads, open.get(issue)?.milestone),
     head,
     tasks,
     linked: links,
@@ -2617,6 +2634,20 @@ function claimCommand(options) {
   const { repo } = reads.policy;
   const actor = actorOf(options);
   const open = openList(reads);
+  if (issues.length === 0) {
+    const prefix = issuePrefix(reads);
+    const untriaged = [...open]
+      .filter(
+        ([issue, { milestone }]) =>
+          !mainReport(reads, milestone) && !reads.rows.get(issue)?.size
+      )
+      .map(([issue]) => `${prefix}${issue}`);
+    if (untriaged.length > 0) {
+      refuse(
+        `${untriaged.join(' ')} ${untriaged.length === 1 ? 'has' : 'have'} no triage record yet, so this claim cannot tell which group each joins; triage ${untriaged.length === 1 ? 'it' : 'them'} first, then claim again`
+      );
+    }
+  }
   const git = gitMerges({ branch: reads.branch });
   let target = null;
   if (issues.length > 0) target = { issues };
@@ -3101,7 +3132,7 @@ function lane(options) {
 const issuePrefix = (reads) =>
   reads.policy.primary ? '#' : `${repoNameOf(reads.policy.repo)}#`;
 
-function openSummaryIn(reads, open) {
+function openSummaryIn(reads, open, outside) {
   const { results, waiting } = queued(reads, open);
   const counts = new Map();
   for (const { head, state } of results) {
@@ -3111,6 +3142,7 @@ function openSummaryIn(reads, open) {
   return {
     repo: repoNameOf(reads.policy.repo),
     count: results.length,
+    outside,
     counts: [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])),
     waiting: waiting.map((result) => queueLine(result, issuePrefix(reads))),
   };
@@ -3134,9 +3166,7 @@ function kindsIn(reads, open) {
         assignees.join(',') ||
         tasks.join(',') ||
         (devices.length > 0 && 'lane') ||
-        (reads.policy.primary &&
-          milestone !== reads.policy.milestone &&
-          'main') ||
+        (mainReport(reads, milestone) && 'main') ||
         'free';
       return [
         {
@@ -3195,8 +3225,9 @@ function kinds(options) {
     }
     ({ notes } = reads);
     const listed = openIssues(reads);
-    entries = kindsIn(reads, openMap(listed));
-    open = [openSummaryIn(reads, listed)];
+    const focus = listed.filter((issue) => inFocus(reads, issue));
+    entries = kindsIn(reads, openMap(focus));
+    open = [openSummaryIn(reads, focus, listed.length - focus.length)];
   }
   entries.sort(
     (a, b) =>
@@ -3242,11 +3273,12 @@ function kinds(options) {
       ].join('\t')
     );
   }
-  for (const { repo, count, counts } of open) {
+  for (const { repo, count, counts, outside } of open) {
     console.log(
       [
         `${repo}: ${count} open issues`,
         ...counts.map(([outcome, n]) => `${n} ${outcome}`),
+        ...(outside > 0 ? [`${outside} main reports outside the focus`] : []),
       ].join(', ')
     );
   }

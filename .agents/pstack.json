@@ -86,6 +86,7 @@
       "udecode/plate-private"
     ],
     "milestone": "v54",
+    "focus": "next",
     "floor": [
       "claude-opus-5 @xhigh",
       "gpt-6.1-sol @xhigh"

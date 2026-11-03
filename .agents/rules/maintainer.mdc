@@ -60,7 +60,8 @@ A broad scan: "queue", "all issues", "all PRs" or repo maintenance.
    setup breakage.
 3. Take issue picks from `pnpm triage queue` for udecode/plate and
    `pnpm triage queue --repo plate-private` for udecode/plate-private, each of
-   which lists every open issue that still needs a triage call from you; a Slate scan lists its
+   which lists every open issue in the triage focus that still needs a triage call from you
+   and counts the main reports outside it; a Slate scan lists its
    issues with `gh issue list --repo ianstormtaylor/slate`. Build the candidate
    matrix for PRs, advisories and Slate items, pick at most one safe item,
    verify its live state and authority, then route it, run its safe local
