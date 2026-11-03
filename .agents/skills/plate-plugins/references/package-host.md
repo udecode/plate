@@ -32,9 +32,12 @@ Treat `platejs` as the shared Plate host, not another feature dependency.
   peer set and the DAG's peer set must match exactly. Optional peers are not a
   dumping ground for normal dependencies.
 - Import a CommonJS dependency through its default import unless its named exports are proven under native Node ESM; Bun and bundlers accept named imports that Node rejects.
-- Packed release proof records minified consumer sizes for the root and every
-  public feature entrypoint. Review each byte diff before running
-  `pnpm plite:entrypoint-sizes:update`.
+- `pnpm check`'s `entrypoint-sizes` step bundles the Plate root, every public
+  Plate feature entrypoint and every public plitejs entrypoint from packed
+  packages and judges each against its size budget in
+  `tooling/entrypoints/entrypoint-sizes.json`. Growth past the margin fails,
+  and a shrink lowers the budget, which the landing commits. Raise a budget
+  only with `pnpm entrypoint:sizes:update`, in a commit whose body says why.
 
 Run `pnpm test:manifests` after changing package
 dependencies. Do not weaken the validator to admit a package that violates the

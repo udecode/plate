@@ -50,6 +50,8 @@ const canRetargetImports = (files, retargeted) =>
   files.some((file) => RESOLVER_CONFIG.test(file));
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$/u;
 const PACKAGE_MANIFEST = /^packages\/[^/]+\/package\.json$/u;
+const PACKAGE_BUILD =
+  /^packages\/(?:plitejs|platejs)\/(?:src\/|package\.json$|tsdown\.config\.mts$|tsconfig\.build\.json$)/u;
 const BUILD_CONFIG = /(?:^|\/)(?:package|turbo|tsconfig[\w.-]*)\.json$/u;
 const inTestSuite = (file) =>
   TEST_FILE_PATTERNS.some((pattern) => matchesGlob(file, pattern)) &&
@@ -341,6 +343,18 @@ export const steps = [
     affected: source,
     key: [],
     filesOnly: true,
+  },
+  {
+    // A shrink lowers tooling/entrypoints/entrypoint-sizes.json in place, so
+    // the landing that shrank an entrypoint commits its lower budget.
+    name: 'entrypoint-sizes',
+    run: 'pnpm entrypoint:sizes',
+    affected: (files) =>
+      touches('tooling/entrypoints/')(files) ||
+      files.some((file) => PACKAGE_BUILD.test(file) && !TEST.test(file)),
+    key: [],
+    // The script makes its packed consumer in a fresh folder under .tmp.
+    ignoredReads: ['.tmp'],
   },
   {
     name: 'cli-test',

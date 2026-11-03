@@ -147,7 +147,9 @@ Rules:
   For `@platejs/test`, select `test:react`, `test:dom`, or a named partition;
   focused arguments through its aggregate `test` do not select those runners;
 - `pnpm plite:release:packages` builds and checks packed artifacts through
-  `tooling/scripts/check-plite-release-artifacts.mjs`. The managed
+  `tooling/scripts/check-plite-release-artifacts.mjs`; `pnpm entrypoint:sizes`
+  runs only its entrypoint size budget, as `pnpm check`'s `entrypoint-sizes`
+  step does. The managed
   `tests/plite-browser/runtime-entrypoints.test.ts` drives `/runtime-entrypoints`
   for client imports. These runners derive membership from the DAG; type-only
   exports retain their separate proof scope;

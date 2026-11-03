@@ -18,6 +18,7 @@ import { builtinModules } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 
 import { parse } from '@babel/parser';
 
@@ -40,9 +41,9 @@ const compareStrings = (left, right) => {
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDirectory, '..', '..');
-const plateEntrypointSizeBaselinePath = join(
+const entrypointSizeBudgetPath = join(
   repoRoot,
-  'tooling/entrypoints/platejs-entrypoint-sizes.json'
+  'tooling/entrypoints/entrypoint-sizes.json'
 );
 const temporaryRoot = join(repoRoot, '.tmp');
 const localImportPattern =
@@ -92,37 +93,60 @@ export const getPlitePackageBoundaryContracts = () =>
     PLITE_PACKAGE_BOUNDARY_NAMES.has(name)
   );
 
-export const getPlateEntrypointSizeSpecifiers = () => [
+export const getEntrypointSizeSpecifiers = () => [
   'platejs',
   ...Object.keys(publicFeatureDependencies).map((name) => `platejs/${name}`),
   ...publicFeatureReactEntrypoints.map((name) => `platejs/${name}/react`),
   ...publicReactOnlyEntrypoints.map((name) => `platejs/${name}/react`),
+  ...getPublicEntrypointRuntimeRows()
+    .filter(({ packageName }) => packageName === 'plitejs')
+    .map(({ specifier }) => specifier),
 ];
 
-export function assertPlateEntrypointSizes(actual, expected) {
+/**
+ * Judges measured entrypoint sizes against the budget. A measure fails when
+ * it grows past the budget plus the margin, the larger of `margin.percent`
+ * of the budget and `margin.minimumBytes`. `sizes` is the budget after the
+ * run: each measure that shrank drops to what it measures now, and none rises.
+ */
+export function judgeEntrypointSizes(actual, budget) {
   const actualSpecifiers = Object.keys(actual).sort(compareStrings);
-  const expectedSpecifiers = Object.keys(expected).sort(compareStrings);
+  const budgetSpecifiers = Object.keys(budget.sizes).sort(compareStrings);
 
-  if (JSON.stringify(actualSpecifiers) !== JSON.stringify(expectedSpecifiers)) {
+  if (JSON.stringify(actualSpecifiers) !== JSON.stringify(budgetSpecifiers)) {
     throw new Error(
-      `Plate entrypoint size snapshot keys differ. Expected ${expectedSpecifiers.join(', ')}; received ${actualSpecifiers.join(', ')}.`
+      `Entrypoint size budget keys differ. Budgeted ${budgetSpecifiers.join(', ')}; measured ${actualSpecifiers.join(', ')}. Run pnpm entrypoint:sizes:update and say why in the commit body.`
     );
   }
 
-  const changes = actualSpecifiers
-    .filter((specifier) => actual[specifier] !== expected[specifier])
-    .map((specifier) => {
-      const delta = actual[specifier] - expected[specifier];
-      const sign = delta > 0 ? '+' : '';
+  const growth = [];
+  const sizes = Object.fromEntries(
+    Object.keys(actual).map((specifier) => [
+      specifier,
+      Object.fromEntries(
+        ['bytes', 'gzip'].map((measure) => {
+          const measured = actual[specifier][measure];
+          const budgeted = budget.sizes[specifier][measure];
+          const limit =
+            budgeted +
+            Math.max(
+              Math.ceil((budgeted * budget.margin.percent) / 100),
+              budget.margin.minimumBytes
+            );
 
-      return `${specifier}: ${expected[specifier]} -> ${actual[specifier]} bytes (${sign}${delta})`;
-    });
+          if (measured > limit) {
+            growth.push(
+              `${specifier} ${measure}: ${budgeted} -> ${measured} (+${measured - budgeted}, limit ${limit})`
+            );
+          }
 
-  if (changes.length > 0) {
-    throw new Error(
-      `Plate entrypoint bundle sizes changed:\n${changes.join('\n')}\nRun pnpm plite:entrypoint-sizes:update after reviewing the diff.`
-    );
-  }
+          return [measure, Math.min(measured, budgeted)];
+        })
+      ),
+    ])
+  );
+
+  return { growth, sizes };
 }
 
 export function getPublicExports(packageJson) {
@@ -1091,10 +1115,116 @@ function createPlateSchemaConsumerSource({ typed }) {
   ].join('\n');
 }
 
+function packConsumer(workDirectory, packageContracts) {
+  const consumerDirectory = join(workDirectory, 'consumer');
+  const tarballDirectory = join(workDirectory, 'tarballs');
+
+  ensureDirectory(consumerDirectory);
+  ensureDirectory(tarballDirectory);
+  ensureDirectory(join(consumerDirectory, 'node_modules'));
+  writeJson(join(consumerDirectory, 'package.json'), {
+    name: 'plite-release-artifact-consumer',
+    private: true,
+    type: 'module',
+  });
+
+  return {
+    consumerDirectory,
+    packedPackages: packageContracts.map((packageContract) =>
+      packAndInstallPackage({
+        consumerDirectory,
+        packageContract,
+        tarballDirectory,
+      })
+    ),
+  };
+}
+
+/**
+ * Bundles each budgeted entrypoint from packed plitejs and platejs and judges
+ * it against tooling/entrypoints/entrypoint-sizes.json. A shrink lowers the
+ * budget file in place; `update` sets every budget to what it measures, the
+ * only way a budget rises.
+ */
+export function checkEntrypointSizes({ update = false } = {}) {
+  ensureDirectory(temporaryRoot);
+
+  const workDirectory = mkdtempSync(join(temporaryRoot, 'entrypoint-sizes-'));
+
+  try {
+    const { consumerDirectory, packedPackages } = packConsumer(
+      workDirectory,
+      getPlitePackageBoundaryContracts()
+    );
+
+    linkConsumerDependencies({ consumerDirectory, packedPackages });
+    writeTypeScriptConfigs(consumerDirectory);
+
+    const bundleExternals = getConsumerBundleExternals(packedPackages);
+    const actual = Object.fromEntries(
+      getEntrypointSizeSpecifiers().map((specifier, index) => {
+        const filename = `entrypoint-size-${index}.mjs`;
+
+        writeFileSync(
+          join(consumerDirectory, filename),
+          `import * as entrypoint from ${JSON.stringify(specifier)};\nglobalThis.__plateEntrypoint = entrypoint;\n`
+        );
+
+        const bundle = normalizeBundle(
+          bundleConsumerEntry(consumerDirectory, filename, bundleExternals)
+        );
+
+        return [
+          specifier,
+          {
+            bytes: Buffer.byteLength(bundle),
+            gzip: gzipSync(bundle, { level: 9 }).length,
+          },
+        ];
+      })
+    );
+    const budgetFile = relative(repoRoot, entrypointSizeBudgetPath);
+    const budget = readJson(entrypointSizeBudgetPath);
+
+    if (update) {
+      writeJson(entrypointSizeBudgetPath, { ...budget, sizes: actual });
+      console.log(
+        `Set every budget in ${budgetFile} to its measured size. Say why in the commit body of any budget that rose.`
+      );
+      return;
+    }
+
+    const { growth, sizes } = judgeEntrypointSizes(actual, budget);
+
+    if (growth.length > 0) {
+      throw new Error(
+        `Entrypoints grew past their size budget:\n${growth.join('\n')}\nShrink them, or raise the budget with pnpm entrypoint:sizes:update and say why in the commit body.`
+      );
+    }
+
+    const lowered = Object.keys(sizes).filter(
+      (specifier) =>
+        JSON.stringify(sizes[specifier]) !==
+        JSON.stringify(budget.sizes[specifier])
+    );
+
+    if (lowered.length > 0) {
+      writeJson(entrypointSizeBudgetPath, { ...budget, sizes });
+      console.log(
+        `Lowered the size budget of ${lowered.join(', ')} in ${budgetFile}; commit it.`
+      );
+    }
+    console.log(
+      `Verified ${Object.keys(actual).length} entrypoints within their size budget.`
+    );
+  } finally {
+    rmSync(workDirectory, { force: true, recursive: true });
+  }
+}
+
 export function checkPliteReleaseArtifacts({
   keep = false,
   packageBoundariesOnly = false,
-  updateEntrypointSizes = false,
 } = {}) {
   ensureDirectory(temporaryRoot);
 
@@ -1106,27 +1236,11 @@ export function checkPliteReleaseArtifacts({
   );
 
   try {
-    const consumerDirectory = join(workDirectory, 'consumer');
-    const tarballDirectory = join(workDirectory, 'tarballs');
-
-    ensureDirectory(consumerDirectory);
-    ensureDirectory(tarballDirectory);
-    ensureDirectory(join(consumerDirectory, 'node_modules'));
-    writeJson(join(consumerDirectory, 'package.json'), {
-      name: 'plite-release-artifact-consumer',
-      private: true,
-      type: 'module',
-    });
-
-    const packageContracts = packageBoundariesOnly
-      ? getPlitePackageBoundaryContracts()
-      : PLITE_RELEASE_PACKAGES;
-    const packedPackages = packageContracts.map((packageContract) =>
-      packAndInstallPackage({
-        consumerDirectory,
-        packageContract,
-        tarballDirectory,
-      })
+    const { consumerDirectory, packedPackages } = packConsumer(
+      workDirectory,
+      packageBoundariesOnly
+        ? getPlitePackageBoundaryContracts()
+        : PLITE_RELEASE_PACKAGES
     );
     if (!packageBoundariesOnly) {
       assertPackedRuntimeCoverage(packedPackages);
@@ -1296,57 +1410,6 @@ export function checkPliteReleaseArtifacts({
         );
       }
     });
-    captureProof(errors, 'Plate entrypoint bundle sizes', () => {
-      const sizes = Object.fromEntries(
-        getPlateEntrypointSizeSpecifiers().map((specifier, index) => {
-          const filename = `entrypoint-size-${index}.mjs`;
-
-          writeFileSync(
-            join(consumerDirectory, filename),
-            `import * as entrypoint from ${JSON.stringify(specifier)};\nglobalThis.__plateEntrypoint = entrypoint;\n`
-          );
-
-          return [
-            specifier,
-            Buffer.byteLength(
-              normalizeBundle(
-                bundleConsumerEntry(
-                  consumerDirectory,
-                  filename,
-                  bundleExternals
-                )
-              )
-            ),
-          ];
-        })
-      );
-
-      if (updateEntrypointSizes) {
-        writeJson(plateEntrypointSizeBaselinePath, {
-          sizes,
-          version: 1,
-        });
-        console.log(
-          `Updated ${relative(repoRoot, plateEntrypointSizeBaselinePath)}.`
-        );
-        return;
-      }
-
-      if (!existsSync(plateEntrypointSizeBaselinePath)) {
-        throw new Error(
-          'Plate entrypoint size snapshot is missing. Run pnpm plite:entrypoint-sizes:update.'
-        );
-      }
-
-      const baseline = readJson(plateEntrypointSizeBaselinePath);
-      if (baseline.version !== 1 || !baseline.sizes) {
-        throw new Error(
-          'Plate entrypoint size snapshot has an unsupported shape.'
-        );
-      }
-      assertPlateEntrypointSizes(sizes, baseline.sizes);
-    });
-
     if (errors.length > 0) {
       throw new Error(errors.join('\n\n'));
     }
@@ -2248,11 +2311,16 @@ function isMainModule() {
 
 if (isMainModule()) {
   try {
-    checkPliteReleaseArtifacts({
-      keep: process.argv.includes('--keep'),
-      packageBoundariesOnly: process.argv.includes('--package-boundaries-only'),
-      updateEntrypointSizes: process.argv.includes('--update-entrypoint-sizes'),
-    });
+    if (process.argv.includes('--entrypoint-sizes')) {
+      checkEntrypointSizes({ update: process.argv.includes('--update') });
+    } else {
+      checkPliteReleaseArtifacts({
+        keep: process.argv.includes('--keep'),
+        packageBoundariesOnly: process.argv.includes(
+          '--package-boundaries-only'
+        ),
+      });
+    }
   } catch (error) {
     console.error(error instanceof Error ? error.message : error);
     process.exit(1);
