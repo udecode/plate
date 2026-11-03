@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
 import type { NextConfig } from 'next';
@@ -135,6 +136,12 @@ const buildWorkspaceDevAliases = () => ({
 });
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: Object.values(os.networkInterfaces()).flatMap(
+    (addresses) =>
+      (addresses ?? []).flatMap(({ address, family, internal }) =>
+        family === 'IPv4' && !internal ? [address] : []
+      )
+  ),
   distDir: '.next',
   experimental: {
     externalDir: true,

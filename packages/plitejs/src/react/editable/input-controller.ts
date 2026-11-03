@@ -214,12 +214,14 @@ const TEXT_INPUT_TYPES = new Set([
   'url',
 ]);
 
-export const isNativeTextControlTarget = (target: EventTarget | null) =>
+export const isTextFieldTarget = (target: EventTarget | null) =>
   isDOMElement(target) &&
   (target.localName === 'textarea' ||
     (target.localName === 'input' &&
-      TEXT_INPUT_TYPES.has((target as HTMLInputElement).type))) &&
-  !getExternalTextHostOwner(target);
+      TEXT_INPUT_TYPES.has((target as HTMLInputElement).type)));
+
+export const isNativeTextControlTarget = (target: EventTarget | null) =>
+  isTextFieldTarget(target) && !getExternalTextHostOwner(target);
 
 export const isNativeDraggableTarget = (
   editor: ReactRuntimeEditor,
