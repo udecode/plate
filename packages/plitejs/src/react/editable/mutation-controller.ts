@@ -916,7 +916,7 @@ export const dispatchUserText = (
 
     if (!held) {
       tx.selection.set(target);
-    } else if (landing === 'selection') {
+    } else {
       syncImplicitTargetToCurrentSelection(getEditorRuntimeOwner(editor));
     }
     if (pending !== undefined) tx.marks.set(pending);
