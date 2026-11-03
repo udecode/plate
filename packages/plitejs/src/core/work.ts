@@ -99,6 +99,8 @@ export type CoreWork = {
   spareReads: number;
   /** Change sections read to map a position or compose a change. */
   sectionsWalked: number;
+  /** Document tokens, written tokens and cut elements a history replay's walk of a change visited. */
+  replayWalkVisits: number;
   /** Record ids a local commit looked up among the ids its roots' imports built spares from. */
   spareIdChecks: number;
   /** Snapshot indexes built over a root's children. */
@@ -189,6 +191,7 @@ export const coreWork: CoreWork = {
   spareReads: 0,
   spareIdChecks: 0,
   sectionsWalked: 0,
+  replayWalkVisits: 0,
   snapshotIndexes: 0,
   snapshotIndexWalks: 0,
   snapshotRoots: 0,

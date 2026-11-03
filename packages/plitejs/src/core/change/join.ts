@@ -942,7 +942,8 @@ const rebaseIntoRun = (
 export const rebaseOverJoins = (
   a: RootChange,
   b: RootChange,
-  document: DocumentIndex
+  document: DocumentIndex,
+  replayBase: DocumentIndex | undefined
 ) => {
   const aJoins = joinsOf(a, document);
   const bJoins = joinsOf(b, document);
@@ -971,7 +972,8 @@ export const rebaseOverJoins = (
 
   const { a: aOverB, b: bOverA } = RootChange.transform(
     aRewrite.change,
-    bRewrite.change
+    bRewrite.change,
+    replayBase
   );
   const aApart = applyIfNested(aRewrite.change, document);
   const throughA = aApart && applyIfNested(bOverA, aApart);

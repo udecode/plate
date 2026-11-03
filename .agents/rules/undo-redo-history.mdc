@@ -37,7 +37,7 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--
 Run every command from the repository root.
 
 - `pnpm check:undo-redo-history` checks the gate bound: one block, three moves, two edits, size four. It compares 8,667 cases on 3 documents in 14 s on a quiet machine and 26 s at a load average of 21. A `--depth` above 3 exits 2, because each move types its own letter. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check undo-redo-history` runs the same step through the check runner, and `pnpm check --affected` runs it for a change under `packages/plitejs/src/`, to the script, `check-harness.ts`, `letter-commands.ts` or `authored-documents.ts`, to a file under `packages/plitejs/test/support/`, to `config/plite-source-aliases.ts` or to `tooling/scripts/finding-baseline.mjs`.
-- `--blocks`, `--depth`, `--edits` and `--size` raise one part of the bound. `--size=5` compares 26,581 cases in 34 s, and `--blocks=2 --size=5` compares 125,654 cases on 12 documents in 127 s, both at a load average near 20. A bound other than the gate's or `--case` skips the baseline and exits 1 on any failure.
+- `--blocks`, `--depth`, `--edits` and `--size` raise one part of the bound. `--size=5` compares 26,581 cases in 49 s, and `--blocks=2 --size=5` compares 122,435 cases on 12 documents in 153 s, both at a load average near 30. A bound other than the gate's or `--case` skips the baseline and exits 1 on any failure.
 - `--case='<identity or part of one>'` prints the full stack of each failure whose identity contains it, such as `--size=5 '--case=Enter at b|0 ; undo ; remote delete block 0.1'`.
 - `--jobs=<n>` sets the number of worker processes, the machine's cores up to 16 by default.
 - Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag or a crashed worker. At the gate the run also fails when it compares other than 8,667 cases, the `GATE_CASES` constant, so a change that stops edits from applying cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
@@ -65,17 +65,16 @@ Tell a real bug from a modeling error before you change code:
 
 ## Findings
 
-The gate finds 102, all under `history: 'merge'`: 70 `history-caret`, 25 `history-group`, 2 `history-stack` and 5 `history-undo`. Each class is one cause:
+The gate finds 97, all under `history: 'merge'` and all from one cause:
 
 - **An explicit merge whose edit takes back its step's change keeps an empty step.** `Enter at a|1 ; Delete at a|1 [merge]` leaves the document as it was and one undo step. Its undo moves only the caret, a later appended paragraph from another peer drops the step, and after `wrap a ; unwrap a [merge]` the undo leaves no redo. 70 `history-caret`, 25 `history-group` and 2 `history-stack` entries.
-- **An undo of a merged step that holds an unwrap after another peer appends a paragraph.** On `quote(paragraph("a"))`, `unwrap a ; Enter at a|0 [merge] ; remote append R` undoes to a quote that holds both `a` and `R`. 5 `history-undo` entries.
 
-`--size=5` fails 165 cases and `--blocks=2 --size=5` 1,246. The deep runs read no baseline. Most hold an explicit merge. These classes have none:
+`--size=5` fails 144 cases and `--blocks=2 --size=5` 3,466. The deep runs read no baseline. Most hold an explicit merge. These classes have none:
 
 - **Another peer's appended paragraph drops an undo step.** On `paragraph("a") paragraph("b")`, `wrap a ; Backspace at b|0 ; remote append R` leaves one undo step of two. 215 `history-group` cases.
-- **A restored history refuses a step after another peer deletes a block.** `quote(paragraph("a") paragraph("b")) :: Enter at b|0 ; undo ; remote delete block 0.1` keeps a redo of the split, and `History.fromJSON` throws `Editor element "quote" at [0] cannot contain "text"` when it validates it. 87 `history-throws` cases.
+- **A restored history refuses a step after another peer deletes a block.** `quote(paragraph("a") paragraph("b")) :: Enter at b|0 ; undo ; remote delete block 0.1` keeps a redo of the split, and `History.fromJSON` throws `Editor element "quote" at [0] cannot contain "text"` when it validates it. 86 `history-throws` cases.
 - **An undo puts the caret in another peer's appended paragraph.** `paragraph("a") paragraph("b") :: Enter at a|0 ; select a|0..b|1 Backspace ; remote append R` undoes to a caret at `[2,0]`, not `[1,0]`. 36 `history-caret` cases.
-- **An undo after another peer appends a paragraph pulls it into a quote.** `wrap a ; undo` and other steps that end beside a quote give a quote that holds `R`. 4 `history-undo` cases. The recording check's deep run finds the same class in Editing.
+- **An undo after another peer appends a paragraph loses a quote that a Backspace joined.** `quote(paragraph("a")) quote(paragraph("b")) :: Backspace at a|1 ; Backspace at b|0 ; remote append R` undoes to `quote(paragraph(""))` beside `R`, and `b` is gone. 4 `history-undo` cases.
 - **An undo fails after another peer deletes the block it unwrapped.** `quote(paragraph("a")) quote(paragraph("b")) :: unwrap a ; remote delete block 0 ; undo` fails with `Editor element "quote" at [0] cannot contain "quote"`. 1 `history-failed` case.
 
 ## What a pass proves
@@ -99,6 +98,9 @@ Synced at `test(plitejs): check that undo and redo give back each earlier docume
 | `packages/plitejs/src/history/history-replay.ts` | replaying a step inside a skipped transaction |
 | `packages/plitejs/src/history/history-merge-policy.ts` | that typing joins and that idle, new-batch and merge group as their modes say |
 | `packages/plitejs/src/history/history-codec.ts` | `History.toJSON` and `History.fromJSON` |
+| `packages/plitejs/src/core/change/root-change.ts` | where a step's inserts land beside another peer's insert at one position |
+| `packages/plitejs/src/core/change/join.ts` | rebasing a step over another peer's change when either joins lines |
+| `packages/plitejs/src/core/change/enclosure.ts` | rebasing a step that wraps blocks over another peer's change that splits them |
 | `packages/plitejs/test/support/recording-laws.ts` | the commands, run under an update policy |
 | `packages/plitejs/scripts/letter-commands.ts` | the commands both checks run at every letter |
 | `packages/plitejs/scripts/check-harness.ts` | the flags, workers and gate both checks share |

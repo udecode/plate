@@ -320,7 +320,8 @@ const wrapOverPieces = (
   split: RootChange,
   splitSections: readonly Section[],
   wrapFirst: boolean,
-  pieceProps: PieceProps | undefined
+  pieceProps: PieceProps | undefined,
+  replayBase: DocumentIndex | undefined
 ) => {
   if (
     wrapSections.length !== 2 ||
@@ -378,7 +379,11 @@ const wrapOverPieces = (
     ])
   );
   const wrapOver = edges.compose(
-    transformChange(transformChange(wrap, split, wrapFirst), edges, true)
+    transformChange(
+      transformChange(wrap, split, wrapFirst, replayBase),
+      edges,
+      true
+    )
   );
   const splitOver = transformChange(
     RootChange.create(
@@ -399,7 +404,8 @@ const wrapOverPieces = (
       })
     ),
     wrap,
-    !wrapFirst
+    !wrapFirst,
+    replayBase
   );
 
   return { split: splitOver, wrap: wrapOver };
@@ -417,7 +423,8 @@ export const rebaseOverPieces = (
   a: RootChange,
   b: RootChange,
   document: DocumentIndex,
-  pieceProps?: PieceProps
+  pieceProps?: PieceProps,
+  replayBase?: DocumentIndex
 ) => {
   const aSections = replacementsOf(a);
   const bSections = replacementsOf(b);
@@ -515,7 +522,8 @@ export const rebaseOverPieces = (
     b,
     bSections,
     true,
-    pieceProps
+    pieceProps,
+    replayBase
   );
 
   if (aWraps) {
@@ -532,7 +540,8 @@ export const rebaseOverPieces = (
     a,
     aSections,
     false,
-    pieceProps
+    pieceProps,
+    replayBase
   );
 
   return bWraps

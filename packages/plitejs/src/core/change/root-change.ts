@@ -2,6 +2,7 @@ import type { NodeKey } from '../../interfaces/editor';
 import { getDefined } from '../../internal/get-defined';
 import { profileCoreDuration } from '../profiling';
 import { assertEditorJsonValue } from '../value-codec';
+import { countCoreWork } from '../work';
 import {
   type ChangedOutputRange,
   decodeNodes,
@@ -542,14 +543,19 @@ export class SectionIterator {
     return this.keep ? this.length : this.inserted;
   }
 
+  /** The current section's index in the change's data. */
+  get pair() {
+    return (this.index - 2) >> 1;
+  }
+
   get slice() {
-    return (this.data[(this.index - 2) >> 1] ??
+    return (this.data[this.pair] ??
       PreparedTokenSlice.empty) as PreparedTokenSlice;
   }
 
   get modifications() {
     return this.inserted === -2
-      ? (this.data[(this.index - 2) >> 1] as readonly PropertyModification[])
+      ? (this.data[this.pair] as readonly PropertyModification[])
       : null;
   }
 
@@ -759,24 +765,467 @@ const opensEnclosure = (slice: PreparedTokenSlice | null) => {
 };
 
 /**
- * Whether `b`'s insertion goes before `a`'s at one position. Content one side
- * inserts at the lead of an element the other wraps stays outside it, as it
- * was before the wrap; otherwise `before` breaks the tie.
+ * A replayed change's sections, with the whole blocks and element closes that
+ * start an insert split off as an insert of their own when those closes end
+ * elements the change wrapped around content, or that its base already closed
+ * there. `ownCloses` holds the data index of each such insert.
  */
-const insertsFirst = (
+type ReplaySections = {
+  readonly data: readonly SectionData[];
+  readonly ownCloses: ReadonlySet<number>;
+  readonly sections: readonly number[];
+};
+
+const replaySections = new WeakMap<
+  RootChange,
+  WeakMap<DocumentIndex, ReplaySections>
+>();
+
+const leadingNodeTokens = (tokens: readonly JsonToken[], from = 0) => {
+  let depth = 0;
+  let at = from;
+
+  for (; at < tokens.length; at++) {
+    const token = getDefined(tokens[at]);
+
+    if (depth === 0 && !isElementOpen(token)) break;
+    if (token.kind === 'open') depth += 1;
+    else if (token.kind === 'close') depth -= 1;
+  }
+
+  return at - from;
+};
+
+const insertsWhere = (
+  change: RootChange,
+  passes: (tokens: readonly JsonToken[]) => boolean
+) => {
+  const positions: number[] = [];
+  let position = 0;
+
+  for (let at = 0; at < change.sections.length; at += 2) {
+    const length = getDefined(change.sections[at]);
+    const inserted = getDefined(change.sections[at + 1]);
+
+    if (
+      length === 0 &&
+      inserted > 0 &&
+      passes((change.data[at >> 1] as PreparedTokenSlice).tokens)
+    ) {
+      positions.push(position);
+    }
+    position += length;
+  }
+
+  return positions;
+};
+
+const isElementClose = (token: JsonToken | undefined) =>
+  token?.kind === 'close' && token.nodeKind === 'element';
+
+const isElementOpen = (token: JsonToken | undefined) =>
+  token?.kind === 'open' && token.nodeKind === 'element';
+
+const closesAfterNodes = (tokens: readonly JsonToken[]) =>
+  isElementClose(tokens[leadingNodeTokens(tokens)]);
+
+const meetsNodesAtClose = (change: RootChange, other: RootChange) => {
+  const closes = insertsWhere(change, closesAfterNodes);
+
+  if (closes.length === 0) return false;
+
+  const nodes = new Set(
+    insertsWhere(other, (tokens) => isElementOpen(tokens[0]))
+  );
+
+  return closes.some((position) => nodes.has(position));
+};
+
+type Continued = {
+  readonly closesAt: number;
+  readonly everyCloseDeleted: boolean;
+};
+
+type OutputElement = {
+  readonly continued: Continued | null;
+  /** Node kind and type, or kind and `*` when a property change may have retyped it. */
+  readonly key: string;
+  readonly kind: string;
+};
+
+type DeletedOpens = { keptCloses: number; readonly opens: number[] };
+
+/** An element the output cut, until an open continues it. */
+type CutElement = { readonly continued: Continued; taken: boolean };
+
+const openKind = (token: JsonToken) =>
+  token.kind === 'open' ? token.nodeKind : '';
+
+const nodeKey = (token: JsonToken) =>
+  `${openKind(token)}:${String(token.kind === 'open' ? token.props.type : '')}`;
+
+const documentCloses = (change: RootChange, document: DocumentIndex) => {
+  const base = document.tokens.tokens;
+  const { offsets } = document.tokens;
+  const closeOf = new Map<number, number>();
+  const deleted = new Uint8Array(base.length);
+  const opens: number[] = [];
+
+  for (let at = 0; at < base.length; at++) {
+    const { kind } = getDefined(base[at]);
+
+    if (kind === 'open') opens.push(at);
+    else if (kind === 'close') closeOf.set(getDefined(opens.pop()), at);
+  }
+
+  let at = 0;
+  let position = 0;
+  let written: JsonToken | undefined;
+
+  for (let pair = 0; pair < change.sections.length; pair += 2) {
+    const length = getDefined(change.sections[pair]);
+    const inserted = getDefined(change.sections[pair + 1]);
+    const tokens =
+      inserted > 0 ? (change.data[pair >> 1] as PreparedTokenSlice).tokens : [];
+    let writesClose = isElementClose(
+      length > 0 && inserted > 0 ? tokens.at(-1) : written
+    );
+
+    for (
+      ;
+      at < base.length && getDefined(offsets[at]) < position + length;
+      at++
+    ) {
+      if (inserted >= 0 && !(writesClose && isElementClose(base[at]))) {
+        deleted[at] = 1;
+      }
+      writesClose = false;
+    }
+    written = length === 0 ? tokens.at(-1) : undefined;
+    position += length;
+  }
+
+  countCoreWork('replayWalkVisits', base.length);
+
+  const closeAt = (open: number) => getDefined(closeOf.get(open));
+
+  return {
+    closeAt,
+    closeDeleted: (open: number) => deleted[closeAt(open)] === 1,
+  };
+};
+
+const splitOwnCloses = (
+  change: RootChange,
+  document: DocumentIndex
+): ReplaySections => {
+  const base = document.tokens.tokens;
+  const { offsets } = document.tokens;
+  const sections: number[] = [];
+  const data: SectionData[] = [];
+  const ownCloses = new Set<number>();
+  const baseOpen: number[] = [];
+  const outputOpen: OutputElement[] = [];
+  // Elements the output has closed while a document element they continue
+  // stays open, by key and by node kind, so a later open of the same node
+  // continues one, as after a split or a lift.
+  const cut = new Map<string, CutElement[]>();
+  let retypeCandidates = new Set<number>();
+  const paired = new Set<number>();
+  const deletedByKind = new Map<string, DeletedOpens>();
+  const { closeAt, closeDeleted } = documentCloses(change, document);
+  let token = 0;
+  let position = 0;
+
+  const stillOpen = (continued: Continued | null) =>
+    continued !== null && continued.closesAt >= token;
+
+  const lastCut = (key: string) => {
+    const elements = cut.get(key) ?? [];
+    let last = elements.at(-1);
+
+    countCoreWork('replayWalkVisits');
+    while (last && (last.taken || !stillOpen(last.continued))) {
+      countCoreWork('replayWalkVisits');
+      elements.pop();
+      last = elements.at(-1);
+    }
+
+    return last;
+  };
+
+  const continues = (written: JsonToken) => {
+    const typed = lastCut(nodeKey(written));
+
+    if (typed) return typed;
+
+    const any = lastCut(`${openKind(written)}:*`);
+
+    if (any) return any;
+
+    const last = lastCut(openKind(written));
+
+    return last?.continued.everyCloseDeleted ? last : undefined;
+  };
+
+  const unmatchedOpens = (from: number, to: number) => {
+    const opens: number[] = [];
+    let at = from;
+
+    for (; at < base.length && getDefined(offsets[at]) < to; at++) {
+      const { kind } = getDefined(base[at]);
+
+      if (kind === 'open') opens.push(at);
+      else if (kind === 'close') opens.pop();
+    }
+    countCoreWork('replayWalkVisits', at - from);
+
+    return opens;
+  };
+
+  for (let at = 0; at < change.sections.length; at += 2) {
+    const length = getDefined(change.sections[at]);
+    const inserted = getDefined(change.sections[at + 1]);
+    const value = change.data[at >> 1] ?? null;
+    let split = 0;
+
+    if (inserted < 0) retypeCandidates = new Set();
+
+    if (length === 0 && inserted > 0) {
+      const { tokens } = value as PreparedTokenSlice;
+      let closed = 0;
+      let next = 0;
+
+      for (;;) {
+        const nodes = next + leadingNodeTokens(tokens, next);
+        let own = 0;
+
+        while (isElementClose(tokens[nodes + own])) {
+          const element = outputOpen.at(-1 - closed - own);
+
+          if (element === undefined || stillOpen(element.continued)) break;
+          own += 1;
+        }
+        if (own === 0) break;
+        closed += own;
+        next = nodes + own;
+      }
+      if (next > 0) {
+        split = (value as PreparedTokenSlice).offsets[next] ?? inserted;
+      }
+    }
+
+    if (split > 0) {
+      const slice = value as PreparedTokenSlice;
+
+      ownCloses.add(data.length);
+      sections.push(0, split);
+      data.push(slice.slice(0, split));
+      if (inserted > split) {
+        sections.push(0, inserted - split);
+        data.push(slice.slice(split));
+      }
+    } else if (length > 0 || inserted > 0) {
+      sections.push(length, inserted);
+      data.push(value);
+    }
+
+    countCoreWork('replayWalkVisits', Math.max(inserted, 0));
+    for (
+      ;
+      token < base.length && getDefined(offsets[token]) < position + length;
+      token++
+    ) {
+      const written = getDefined(base[token]);
+
+      if (written.kind === 'open') {
+        baseOpen.push(token);
+        if (inserted < 0) {
+          outputOpen.push({
+            continued: {
+              closesAt: closeAt(token),
+              everyCloseDeleted: closeDeleted(token),
+            },
+            key: inserted === -1 ? nodeKey(written) : `${openKind(written)}:*`,
+            kind: openKind(written),
+          });
+        } else {
+          const kind = openKind(written);
+          const sameKind = deletedByKind.get(kind) ?? {
+            keptCloses: 0,
+            opens: [],
+          };
+
+          sameKind.opens.push(token);
+          if (!closeDeleted(token)) sameKind.keptCloses += 1;
+          deletedByKind.set(kind, sameKind);
+          if (!paired.has(token)) retypeCandidates.add(token);
+        }
+      } else if (written.kind === 'close') {
+        const open = getDefined(baseOpen.pop());
+        const sameKind = deletedByKind.get(openKind(getDefined(base[open])));
+
+        retypeCandidates.delete(open);
+        if (sameKind?.opens.at(-1) === open) {
+          sameKind.opens.pop();
+          if (!closeDeleted(open)) sameKind.keptCloses -= 1;
+        }
+        if (inserted < 0) outputOpen.pop();
+      }
+    }
+
+    if (inserted > 0) {
+      const next = change.sections[at + 2] ?? 0;
+
+      if (next > 0 && change.sections[at + 3] === 0) {
+        for (const open of unmatchedOpens(token, position + length + next)) {
+          retypeCandidates.add(open);
+          paired.add(open);
+        }
+      }
+
+      const opened: number[] = [];
+
+      for (const written of (value as PreparedTokenSlice).tokens) {
+        if (written.kind === 'open') {
+          const from = continues(written);
+
+          if (from) from.taken = true;
+          opened.push(outputOpen.length);
+          outputOpen.push({
+            continued: from?.continued ?? null,
+            key: nodeKey(written),
+            kind: openKind(written),
+          });
+        } else if (written.kind === 'close') {
+          const element = getDefined(outputOpen.pop());
+
+          if (opened.at(-1) === outputOpen.length) opened.pop();
+          if (element.continued && stillOpen(element.continued)) {
+            const cutElement = { continued: element.continued, taken: false };
+
+            for (const key of [element.key, element.kind]) {
+              const elements = cut.get(key) ?? [];
+
+              elements.push(cutElement);
+              cut.set(key, elements);
+            }
+          }
+        }
+      }
+
+      const wraps = opened.filter(
+        (index) => getDefined(outputOpen[index]).continued === null
+      );
+
+      if (wraps.length > 0) {
+        let retypeClosesAt = -1;
+        let retypeClosesDeleted = true;
+
+        countCoreWork('replayWalkVisits', retypeCandidates.size);
+        for (const open of retypeCandidates) {
+          retypeClosesAt = Math.max(retypeClosesAt, closeAt(open));
+          retypeClosesDeleted &&= closeDeleted(open);
+        }
+        for (const index of wraps) {
+          const element = getDefined(outputOpen[index]);
+          const sameKind = deletedByKind.get(element.kind);
+          const outermost = sameKind?.opens[0];
+          const closesAt = Math.max(
+            retypeClosesAt,
+            outermost === undefined ? -1 : closeAt(outermost)
+          );
+
+          if (closesAt < 0) continue;
+          outputOpen[index] = {
+            ...element,
+            continued: {
+              closesAt,
+              everyCloseDeleted:
+                retypeClosesDeleted && (sameKind?.keptCloses ?? 0) === 0,
+            },
+          };
+        }
+        retypeCandidates = new Set();
+      }
+    }
+
+    position += length;
+  }
+
+  return { data, ownCloses, sections };
+};
+
+const replaySectionsOf = (
+  change: RootChange,
+  other: RootChange,
+  document: DocumentIndex
+) => {
+  if (!meetsNodesAtClose(change, other)) return null;
+
+  let byDocument = replaySections.get(change);
+
+  if (!byDocument) {
+    byDocument = new WeakMap();
+    replaySections.set(change, byDocument);
+  }
+
+  let split = byDocument.get(document);
+
+  if (!split) {
+    split = splitOwnCloses(change, document);
+    byDocument.set(document, split);
+  }
+
+  return split;
+};
+
+const landing = { beforePeer: -1, tie: 0, afterPeer: 1 } as const;
+
+const landingOrder = (
+  side: SectionIterator,
+  ownCloses: ReadonlySet<number> | undefined,
+  other: SectionIterator,
+  otherLeftOpen: boolean
+) => {
+  if (
+    ownCloses?.has(side.pair) &&
+    !otherLeftOpen &&
+    other.slice.tokens.length > 0 &&
+    leadingNodeTokens(other.slice.tokens) === other.slice.tokens.length
+  ) {
+    return landing.beforePeer;
+  }
+
+  return opensEnclosure(side.slice) ? landing.afterPeer : landing.tie;
+};
+
+/**
+ * Whether `b`'s insertion goes before `a`'s at one position. A replayed insert
+ * split off as own lands before the other side's whole blocks, unless the
+ * other side's insert just before it here left an element open. Content one
+ * side inserts at the lead of an element the other wraps stays outside it, as
+ * it was before the wrap; otherwise `before` breaks the tie.
+ */
+const bLandsFirst = (
   a: SectionIterator,
   b: SectionIterator,
-  before: boolean
+  ownA: ReadonlySet<number> | undefined,
+  ownB: ReadonlySet<number> | undefined,
+  before: boolean,
+  leftOpen: 'a' | 'b' | null
 ) => {
-  const aOpens = opensEnclosure(a.slice);
+  const aOrder = landingOrder(a, ownA, b, leftOpen === 'b');
+  const bOrder = landingOrder(b, ownB, a, leftOpen === 'a');
 
-  return aOpens === opensEnclosure(b.slice) ? !before : aOpens;
+  return aOrder === bOrder ? !before : bOrder < aOrder;
 };
 
 export const transformChange = (
   changeA: RootChange,
   changeB: RootChange,
-  before: boolean
+  before: boolean,
+  replayBase?: DocumentIndex
 ) => {
   if (changeA.length !== changeB.length) {
     throw new Error('Cannot transform mismatched change-set lengths.');
@@ -784,14 +1233,25 @@ export const transformChange = (
 
   const sections: number[] = [];
   const data: SectionData[] = [];
-  const a = new SectionIterator(changeA.sections, changeA.data);
-  const b = new SectionIterator(changeB.sections, changeB.data);
+  const replayA = replayBase && replaySectionsOf(changeA, changeB, replayBase);
+  const replayB = replayBase && replaySectionsOf(changeB, changeA, replayBase);
+  const a = new SectionIterator(
+    replayA ? replayA.sections : changeA.sections,
+    replayA ? replayA.data : changeA.data
+  );
+  const b = new SectionIterator(
+    replayB ? replayB.sections : changeB.sections,
+    replayB ? replayB.data : changeB.data
+  );
   let inserted = -1;
   let position = 0;
+  let leftOpen: 'a' | 'b' | null = null;
 
   for (;;) {
     if (a.keep && b.keep) {
       const length = Math.min(a.length, b.length);
+
+      if (length > 0) leftOpen = null;
       const modifications = a.modifications
         ? before
           ? transformEarlierPropertyModifications(
@@ -821,11 +1281,23 @@ export const transformChange = (
         (a.offset === 0 &&
           (b.length < a.length ||
             (b.length === a.length &&
-              (a.length === 0 ? insertsFirst(a, b, before) : !before)))))
+              (a.length === 0
+                ? bLandsFirst(
+                    a,
+                    b,
+                    replayA?.ownCloses,
+                    replayB?.ownCloses,
+                    before,
+                    leftOpen
+                  )
+                : !before)))))
     ) {
       const end = position + b.length;
 
       addSection(sections, data, b.inserted, -1, null);
+      if (replayBase && b.inserted > 0) {
+        leftOpen = opensEnclosure(b.slice) ? 'b' : null;
+      }
 
       while (position < end) {
         if (a.done) throw new Error('Mismatched transformed change sets.');
@@ -835,6 +1307,9 @@ export const transformChange = (
         if (a.inserted >= 0 && inserted < a.index && a.length <= piece) {
           addSection(sections, data, 0, a.inserted, a.slice);
           inserted = a.index;
+          if (replayBase && a.inserted > 0) {
+            leftOpen = opensEnclosure(a.slice) ? 'a' : null;
+          }
         }
 
         a.forward(piece);
@@ -870,6 +1345,9 @@ export const transformChange = (
       if (inserted < a.index) {
         addSection(sections, data, length, a.inserted, a.slice);
         inserted = a.index;
+        if (replayBase && a.inserted > 0) {
+          leftOpen = opensEnclosure(a.slice) ? 'a' : null;
+        }
       } else {
         addSection(sections, data, length, 0, PreparedTokenSlice.empty);
       }
@@ -2717,10 +3195,10 @@ export class RootChange {
     return new RootChange([...sections], [...data]);
   }
 
-  static transform(a: RootChange, b: RootChange) {
+  static transform(a: RootChange, b: RootChange, replayBase?: DocumentIndex) {
     return {
-      a: transformChange(a, b, true),
-      b: transformChange(b, a, false),
+      a: transformChange(a, b, true, replayBase),
+      b: transformChange(b, a, false, replayBase),
     };
   }
 
@@ -2743,17 +3221,26 @@ export class RootChange {
       replay?: Readonly<{ anchor?: boolean; pieceProps: PieceProps }>;
     }> = {}
   ): Readonly<{ a: RootChange; b: RootChange; keptWrap?: KeptWrap }> {
-    const joined = rebaseOverJoins(a, b, document);
+    const replayBase = replay && document;
+    const joined = rebaseOverJoins(a, b, document, replayBase);
 
     if (joined) return joined;
 
-    const pieces = rebaseOverPieces(a, b, document, replay?.pieceProps);
+    const pieces = rebaseOverPieces(
+      a,
+      b,
+      document,
+      replay?.pieceProps,
+      replayBase
+    );
 
     if (pieces) return pieces;
     // Edits separated by unchanged content commute positionally. The
     // value-based repairs below exist for edits that touch, overlap or relocate
     // each other, and each costs O(document).
-    if (changedRangesAreSeparated(a, b)) return RootChange.transform(a, b);
+    if (changedRangesAreSeparated(a, b)) {
+      return RootChange.transform(a, b, replayBase);
+    }
 
     const aReplacements = a.replacements();
     const bReplacements = b.replacements();
@@ -2955,7 +3442,7 @@ export class RootChange {
       if (carried) return { a: carried.move, b: carried.edit };
     }
 
-    const transformed = RootChange.transform(a, b);
+    const transformed = RootChange.transform(a, b, replayBase);
     const afterA = a.apply(document);
     const afterB = b.apply(document);
     const aChangesStructure = !sameDocumentStructure(
