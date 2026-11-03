@@ -24,6 +24,7 @@ import {
 const DOCS_HREF_REGEX = /^\/docs(?:\/|$)/;
 const INSTALLED_DOCS_HREF_REGEX = /^\/docs\/plate(?:\/|$)/;
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
+const CJK_REGEX = /\p{Script=Han}/u;
 const PLATE_REGISTRY_NAMESPACE_PREFIX = '@plate/';
 const HASH_OR_QUERY_REGEX = /[#?].*$/;
 const META_PAGE_HREF_REGEX = /\]\(([^)]+)\)$/;
@@ -549,6 +550,27 @@ async function checkChineseRoutes(sourceRoutes: {
   const cnMdxCount = await countCnMdxFiles(CONTENT_DIR);
 
   assert(cnMdxCount > 0, 'Expected translated .cn.mdx docs to exist');
+
+  const untranslated: string[] = [];
+
+  for (const file of await getMdxFiles(CONTENT_DIR)) {
+    if (!file.endsWith('.cn.mdx')) continue;
+
+    const source = await fs.readFile(file, 'utf-8');
+    const prose = source
+      .split(/^\s*(?:```|~~~).*$/m)
+      .filter((_, index) => index % 2 === 0)
+      .join('\n');
+
+    if (!CJK_REGEX.test(prose)) {
+      untranslated.push(path.relative(CONTENT_DIR, file));
+    }
+  }
+
+  assert(
+    untranslated.length === 0,
+    `Expected every .cn.mdx doc to hold Chinese text outside code blocks, so /cn/docs does not serve English as a translation:\n${untranslated.join('\n')}`
+  );
 
   assert(
     sourceRoutes.cn.has('/cn/docs/table'),

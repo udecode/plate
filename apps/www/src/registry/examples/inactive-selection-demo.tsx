@@ -22,9 +22,9 @@ export default function InactiveSelectionDemo() {
   });
 
   return (
-    <div className="space-y-4" data-inactive-selection-demo="">
+    <div className="flex h-full flex-col gap-4" data-inactive-selection-demo="">
       <EditorRoot editor={editor}>
-        <EditorContainer className="h-[650px]">
+        <EditorContainer className="min-h-0 flex-1">
           <Editor aria-label="Inactive selection editor" />
         </EditorContainer>
 

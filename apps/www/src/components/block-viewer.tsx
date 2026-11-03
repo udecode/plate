@@ -458,7 +458,9 @@ function BlockViewerView({
               width={1440}
             /> */}
 
-            {previewNode ?? (
+            {previewNode ? (
+              <div className="size-full overflow-y-auto">{previewNode}</div>
+            ) : (
               <div
                 className={cn(
                   'size-full',

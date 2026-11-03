@@ -8,6 +8,7 @@ import { frontmatter } from 'fumadocs-core/content/md/frontmatter';
 import { notFound } from 'next/navigation';
 
 import { DocContent } from '@/app/(app)/docs/[[...slug]]/doc-content';
+import { Callout } from '@/components/callout';
 import { ComponentInstallation } from '@/components/component-installation';
 import { ComponentPreview } from '@/components/component-preview';
 import { mdxComponents } from '@/components/mdx-components';
@@ -72,11 +73,7 @@ async function getDocFromParams({ params }: DocPageProps, locale: DocsLocale) {
   const resolvedParams = await params;
   const slugParam = resolvedParams.slug;
 
-  return (
-    source.getPage(slugParam ?? [], locale) ??
-    (locale === 'cn' ? source.getPage(slugParam ?? [], 'en') : null) ??
-    null
-  );
+  return source.getPage(slugParam ?? [], locale) ?? null;
 }
 
 function getDocsPath(slug: string[] | undefined, locale: DocsLocale) {
@@ -360,6 +357,11 @@ async function DocPageContent({
       neighbours={neighbours}
       toc={toc}
     >
+      {locale === 'cn' && !doc.absolutePath?.endsWith('.cn.mdx') && (
+        <Callout className="mt-0 mb-6" data-docs-untranslated="">
+          此页面暂无中文翻译，以下为英文原文。
+        </Callout>
+      )}
       <MdxProvider packageInfo={packageInfo}>
         <MDX components={mdxComponents as any} />
       </MdxProvider>
