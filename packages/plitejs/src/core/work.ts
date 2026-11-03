@@ -9,6 +9,7 @@ export type CoreWork = {
   adapterMappings: number;
   /** Sequence nodes built. */
   allocatedNodes: number;
+  keptRedoFallbacks: number;
   /** Anchor scopes entered on a projected document. */
   anchorScopes: number;
   /** Projected documents adopted as the schema's validated baseline. */
@@ -140,6 +141,7 @@ export type CoreWork = {
 export const coreWork: CoreWork = {
   adapterMappings: 0,
   allocatedNodes: 0,
+  keptRedoFallbacks: 0,
   anchorScopes: 0,
   baselines: 0,
   bookCopies: 0,

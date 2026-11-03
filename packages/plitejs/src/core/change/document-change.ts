@@ -31,6 +31,7 @@ import { deepFreeze, isRecord, jsonEqual, type JsonRecord } from './json';
 import { lazyRootOf, setLazyRoot } from './lazy-root';
 import {
   collapseElementPropertyWrites,
+  type KeptWrap,
   RootChange,
   type RootChangeJson,
   type DocumentSetPropertyResolver,
@@ -1371,7 +1372,9 @@ export class DocumentChange {
     b: DocumentChange,
     value: JsonEditorValue
   ) {
-    return transformInternalDocumentChange(a, b, value);
+    const transformed = transformInternalDocumentChange(a, b, value);
+
+    return { a: transformed.a, b: transformed.b };
   }
 
   /**
@@ -1653,6 +1656,7 @@ export const transformInternalDocumentChange = (
   }: Readonly<{
     keepEqualEdits?: boolean;
     replay?: Readonly<{
+      anchor?: boolean;
       pieceProps: (
         element: JsonNode,
         parent: readonly number[],
@@ -1668,6 +1672,7 @@ export const transformInternalDocumentChange = (
   ]);
   const aChanges = new Map<string, RootChange>();
   const bChanges = new Map<string, RootChange>();
+  let keptWrap: KeptWrap | null = null;
 
   for (const root of roots) {
     const aChange = getInternalDocumentRootChange(a, root);
@@ -1682,12 +1687,14 @@ export const transformInternalDocumentChange = (
         {
           keepEqualEdits,
           replay: replay && {
+            anchor: replay.anchor,
             pieceProps: (element, parent, nodes) =>
               replay.pieceProps(element, parent, root, nodes),
           },
         }
       );
 
+      keptWrap ??= transformed.keptWrap ?? null;
       if (!transformed.a.empty) aChanges.set(root, transformed.a);
       if (!transformed.b.empty) bChanges.set(root, transformed.b);
     } else if (aChange) {
@@ -1733,6 +1740,7 @@ export const transformInternalDocumentChange = (
       deleteRoots: b.deleteRoots,
       records: getInternalDocumentChangeRecords(b),
     }),
+    keptWrap,
   };
 };
 

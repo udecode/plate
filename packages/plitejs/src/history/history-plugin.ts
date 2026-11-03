@@ -51,7 +51,10 @@ import {
   getEditorCommitUnsettle,
 } from '../core/commit';
 import { DOCUMENT_SETTLED_TAG } from '../core/document-admission';
-import { getEditorRuntimeOwner } from '../core/editor-runtime';
+import {
+  getEditorRuntime,
+  getEditorRuntimeOwner,
+} from '../core/editor-runtime';
 import { reportEditorLifecycleError } from '../core/lifecycle-error';
 import { getCompiledEditorSchema } from '../core/plugin-registry';
 import { MAIN_ROOT_KEY } from '../core/public-root';
@@ -66,8 +69,12 @@ import {
   registerEditorHistoryRuntime,
   registerEditorTransactionGuard,
 } from '../core/public-state';
-import { EditorNoncanonicalChangeError } from '../core/schema-validation';
+import {
+  EditorNoncanonicalChangeError,
+  EditorSchemaValidationError,
+} from '../core/schema-validation';
 import { createEditorEffect } from '../core/transaction-values';
+import type { SpeculativeUpdate } from '../core/update-policy';
 import { consumeCommitCarets, restoreHistoryCarets } from '../core/view-carets';
 import { countCoreWork } from '../core/work';
 import { getSelection } from '../interfaces/editor';
@@ -102,6 +109,7 @@ import {
   completeHistoryAction,
   configureHistoryState,
   dropHistoryHead,
+  attachKeptHistoryRedo,
   dropPendingHistoryReplayEntry,
   getHistory,
   getWorkingHistory,
@@ -397,7 +405,8 @@ const applyHistoryAction = <V extends Value>(
 ) => {
   const entry = (canonical ? peekHistoryReplayEntry : peekHistoryEntry)(
     editor,
-    direction === 'undo' ? 'undos' : 'redos'
+    direction === 'undo' ? 'undos' : 'redos',
+    request
   );
 
   if (!entry) return false;
@@ -809,9 +818,12 @@ const createHistoryPlugin = <
 
     if (action) {
       LAST_AUTOMATIC_HISTORY_GROUP_TIME.delete(editor);
+      if (!replayRequest) {
+        throw new Error('History replay requires its owning service request.');
+      }
       const source = action === 'undo' ? 'undos' : 'redos';
       const destination = action === 'undo' ? 'redos' : 'undos';
-      const entry = peekHistoryEntry(editor, source);
+      const entry = peekHistoryEntry(editor, source, replayRequest);
       const batch = entry?.batch;
 
       if (!batch) {
@@ -870,11 +882,9 @@ const createHistoryPlugin = <
           ...(carried && carriedBack(carried, change, after)),
         },
         after,
-        unsettled
+        unsettled,
+        replayRequest
       );
-      if (!replayRequest) {
-        throw new Error('History replay requires its owning service request.');
-      }
       return Object.freeze({
         receipt: Object.freeze({
           group: entry.identity,
@@ -1097,27 +1107,30 @@ const createHistoryPlugin = <
         nextHistoryReplayRequest += 1;
         let hasEntry = false;
         let failedAt: 'commit' | 'replay' | null = null;
-        const attempt = (canonical: boolean) => {
+        const attempt = (canonical: boolean, trial?: SpeculativeUpdate) => {
           failedAt = null;
-          editor.update((tx) => {
-            try {
-              hasEntry = applyHistoryAction(
-                editor,
-                tx,
-                direction,
-                getEditorUpdateRoot(editor),
-                request,
-                canonical
-              );
-            } catch (error) {
-              failedAt = 'replay';
-              throw error;
-            }
-            failedAt = 'commit';
-          });
+          getEditorRuntime(editor).update(
+            (tx) => {
+              try {
+                hasEntry = applyHistoryAction(
+                  editor,
+                  tx,
+                  direction,
+                  getEditorUpdateRoot(editor),
+                  request,
+                  canonical
+                );
+              } catch (error) {
+                failedAt = 'replay';
+                throw error;
+              }
+              failedAt = 'commit';
+            },
+            { speculative: trial }
+          );
         };
 
-        try {
+        const replayEntry = () => {
           try {
             attempt(false);
           } catch (error) {
@@ -1130,6 +1143,38 @@ const createHistoryPlugin = <
             PREPARED_HISTORY_REPLAYS.delete(request);
             attempt(true);
           }
+        };
+
+        const trial: SpeculativeUpdate = { committed: false };
+        let keptError: Readonly<{ value: unknown }> | null = null;
+
+        try {
+          const kept =
+            direction === 'redo'
+              ? attachKeptHistoryRedo(editor, request)
+              : null;
+
+          if (kept) {
+            try {
+              attempt(false, trial);
+            } catch (error) {
+              if (PREPARED_HISTORY_REPLAYS.has(request) || trial.committed) {
+                throw error;
+              }
+              if (failedAt && !(error instanceof EditorSchemaValidationError)) {
+                keptError = { value: error };
+              }
+            } finally {
+              kept.detach();
+            }
+            if (!PREPARED_HISTORY_REPLAYS.has(request)) {
+              kept.forget();
+              countCoreWork('keptRedoFallbacks');
+              replayEntry();
+            }
+          } else {
+            replayEntry();
+          }
         } catch (error) {
           PREPARED_HISTORY_REPLAYS.delete(request);
           if (!failedAt) throw error;
@@ -1139,6 +1184,9 @@ const createHistoryPlugin = <
             reportFailedHistoryReplay(editor, direction, error);
           }
           return FAILED_HISTORY_RESULT;
+        }
+        if (keptError) {
+          reportFailedHistoryReplay(editor, direction, keptError.value);
         }
 
         if (!hasEntry) return EMPTY_HISTORY_RESULT;

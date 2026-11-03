@@ -99,6 +99,8 @@ export type NodePropertyDelta = Readonly<{
 
 export type TrackMode = 'after' | 'around' | 'before';
 
+export type KeptWrap = Readonly<{ props: Readonly<JsonRecord> }>;
+
 export type RootChangeJson = ReadonlyArray<{
   length: number;
   properties?: PropertyDeltaJson;
@@ -1621,6 +1623,115 @@ const convergesOn = (
   }
 };
 
+const depthChange = (token: JsonToken) =>
+  token.kind === 'open' ? 1 : token.kind === 'close' ? -1 : 0;
+
+const writtenBackCloses = (
+  removed: readonly JsonToken[],
+  insert: readonly JsonToken[]
+) => {
+  let closes = 0;
+
+  while (
+    closes < removed.length &&
+    removed[removed.length - 1 - closes].kind === 'close'
+  ) {
+    closes += 1;
+  }
+  if (closes === 0) return null;
+
+  let target = -closes;
+
+  for (let index = 0; index < removed.length - closes; index += 1) {
+    target += depthChange(removed[index]);
+  }
+
+  let depth = 0;
+  let insertEnd = 0;
+
+  while (insertEnd < insert.length && (insertEnd === 0 || depth !== target)) {
+    depth += depthChange(insert[insertEnd]);
+    insertEnd += 1;
+  }
+  if (depth !== target) return null;
+
+  let keptCloses = 0;
+
+  while (
+    keptCloses < closes &&
+    keptCloses < insertEnd &&
+    tokensEqual(
+      insert[insertEnd - 1 - keptCloses],
+      removed[removed.length - 1 - keptCloses]
+    )
+  ) {
+    keptCloses += 1;
+  }
+
+  return keptCloses === 0 ? null : { insertEnd, keptCloses };
+};
+
+const soleWrapProps = (
+  replacements: readonly Replacement[],
+  document: DocumentIndex
+) => {
+  if (replacements.length !== 2) return null;
+
+  const [open, close] = replacements;
+  const [lead] = open.insert.tokens;
+  const [end] = close.insert.tokens;
+
+  if (
+    open.from !== open.to ||
+    close.from !== close.to ||
+    open.from >= close.from ||
+    open.insert.tokens.length !== 1 ||
+    close.insert.tokens.length !== 1 ||
+    lead.kind !== 'open' ||
+    lead.nodeKind !== 'element' ||
+    end.kind !== 'close' ||
+    end.nodeKind !== 'element'
+  ) {
+    return null;
+  }
+
+  const { tokens } = document.slice(open.from, close.from);
+  let depth = 0;
+
+  for (const token of tokens) {
+    depth += depthChange(token);
+    if (depth < 0) return null;
+  }
+  if (depth !== 0) return null;
+
+  return lead.props;
+};
+
+const addsElementOrRetypesTo = (step: RootChange, type: unknown) => {
+  for (let index = 0; index < step.sections.length; index += 2) {
+    const inserted = step.sections[index + 1];
+    const data = step.data[index >> 1];
+
+    if (
+      inserted === -2
+        ? (data as readonly PropertyModification[]).some(
+            (modification) =>
+              modification.key === 'type' &&
+              modification.type === 'set' &&
+              modification.value === type
+          )
+        : inserted > 0 &&
+          (data as PreparedTokenSlice).tokens.some(
+            (token) => token.kind === 'open' && token.nodeKind === 'element'
+          )
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 /** Whether `other` inserts strictly between the edges of a wrap in `wrap`. */
 const addsInsideEnclosure = (
   wrap: readonly Replacement[],
@@ -2605,9 +2716,9 @@ export class RootChange {
       replay,
     }: Readonly<{
       keepEqualEdits?: boolean;
-      replay?: Readonly<{ pieceProps: PieceProps }>;
+      replay?: Readonly<{ anchor?: boolean; pieceProps: PieceProps }>;
     }> = {}
-  ) {
+  ): Readonly<{ a: RootChange; b: RootChange; keptWrap?: KeptWrap }> {
     const joined = rebaseOverJoins(a, b, document);
 
     if (joined) return joined;
@@ -3041,10 +3152,42 @@ export class RootChange {
         : { a: deleted, b: edited };
     }
 
+    const wrap = replay?.anchor ? soleWrapProps(aReplacements, document) : null;
+    const anchored =
+      wrap &&
+      RootChange.keepOverWrittenBack(a, b, document, afterA, afterB, wrap);
+
+    if (anchored) return anchored;
+
     return {
       a: RootChange.empty(afterB.length),
       b: RootChange.between(afterA, afterB),
     };
+  }
+
+  private static keepOverWrittenBack(
+    a: RootChange,
+    b: RootChange,
+    document: DocumentIndex,
+    afterA: DocumentIndex,
+    afterB: DocumentIndex,
+    wrap: Readonly<JsonRecord>
+  ) {
+    try {
+      const step = b.keepWrittenBackCloses(document);
+
+      if (!step || addsElementOrRetypesTo(b, wrap.type)) return null;
+
+      const kept = RootChange.transform(a, step);
+
+      if (!jsonEqual(kept.b.apply(afterA).value, kept.a.apply(afterB).value)) {
+        return null;
+      }
+
+      return { ...kept, keptWrap: { props: wrap } };
+    } catch {
+      return null;
+    }
   }
 
   get empty() {
@@ -3144,6 +3287,78 @@ export class RootChange {
     }
 
     return head + tail === written.length ? [from + head, to - tail] : null;
+  }
+
+  keepWrittenBackCloses(document: DocumentIndex): RootChange | null {
+    const sections: number[] = [];
+    const data: SectionData[] = [];
+    let changed = false;
+    let position = 0;
+
+    for (let index = 0; index < this.sections.length;) {
+      const first = index;
+      const from = position;
+
+      do {
+        position += this.sections[index];
+        index += 2;
+      } while (
+        this.sections[first + 1] >= 0 &&
+        index < this.sections.length &&
+        this.sections[index + 1] >= 0
+      );
+
+      const insert =
+        this.sections[first + 1] >= 0
+          ? PreparedTokenSlice.concat(
+              this.data
+                .slice(first >> 1, index >> 1)
+                .map(
+                  (slice) =>
+                    (slice as PreparedTokenSlice | null) ??
+                    PreparedTokenSlice.empty
+                )
+            )
+          : null;
+      const written =
+        insert &&
+        writtenBackCloses(document.slice(from, position).tokens, insert.tokens);
+
+      if (!insert || !written) {
+        for (let at = first; at < index; at += 2) {
+          addSection(
+            sections,
+            data,
+            this.sections[at],
+            this.sections[at + 1],
+            this.data[at >> 1]
+          );
+        }
+        continue;
+      }
+
+      const { offsets } = insert;
+      const rest =
+        written.insertEnd < offsets.length
+          ? offsets[written.insertEnd]
+          : insert.length;
+      const lead = offsets[written.insertEnd - written.keptCloses];
+
+      changed = true;
+      addSection(
+        sections,
+        data,
+        position - written.keptCloses - from,
+        lead,
+        insert.slice(0, lead)
+      );
+      addSection(sections, data, written.keptCloses, -1, null);
+      if (rest < insert.length) {
+        addSection(sections, data, 0, insert.length - rest, insert.slice(rest));
+      }
+    }
+
+    return changed ? RootChange.fromSections(sections, data) : null;
   }
 
   /** @internal */

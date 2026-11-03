@@ -27,10 +27,13 @@ export type CompiledEditorUpdatePolicy = Readonly<{
   tags: readonly EditorUpdateTag[];
 }>;
 
+export type SpeculativeUpdate = { committed: boolean };
+
 export type InternalEditorUpdateOptions = {
   onAdmission?: (admission: AdmittedRepair | null) => void;
   placement?: ViewPresentation;
   skipCorrections?: boolean;
+  speculative?: SpeculativeUpdate;
   tags?: readonly EditorUpdateTag[];
 };
 

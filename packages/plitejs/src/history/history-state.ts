@@ -17,9 +17,14 @@ import { landCarriedRuns } from '../core/change/carried-run';
 import {
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeRootKeys,
+  valueRoot,
 } from '../core/change/document-change';
+import { jsonEqual, type JsonRecord } from '../core/change/json';
+import type { KeptWrap } from '../core/change/root-change';
+import { isElementNode, type JsonNode, nodeProps } from '../core/change/tokens';
 import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
+import { getEditorDocumentValue } from '../core/public-state';
 import { areEditorSchemaIdentitiesEqual } from '../core/schema-compiler';
 import { countCoreWork } from '../core/work';
 import type { AnyEditor } from '../interfaces/editor';
@@ -45,6 +50,7 @@ type PendingMapping<V extends Value> = Readonly<{
   after: EditorDocumentValue<V>;
   change: DocumentChange;
   textOnly: boolean;
+  anchors?: true;
 }>;
 
 type MappingJournal<V extends Value> = Readonly<{
@@ -69,6 +75,12 @@ type HistoryBranch<V extends Value> = Readonly<{
   next: HistoryBranch<V> | null;
   recovery: AnchorHistoryRecovery | null;
   replay: HistoryReplay<EditorDocumentValue<V>>;
+  kept: KeptRedo<V> | null;
+}>;
+
+type KeptRedo<V extends Value> = Readonly<{
+  branch: HistoryBranch<V>;
+  wrap: KeptWrap;
 }>;
 
 type ResolvedHistoryEntry<V extends Value> = Readonly<{
@@ -79,6 +91,7 @@ type ResolvedHistoryEntry<V extends Value> = Readonly<{
   group: HistoryBatchGroup | null;
   identity: object;
   recovery: AnchorHistoryRecovery | null;
+  kept: KeptRedo<V> | null;
   replay: HistoryReplay<EditorDocumentValue<V>>;
 }>;
 
@@ -111,6 +124,7 @@ const HISTORY_DRAFTS = new WeakMap<
   Array<{ state: HistoryStore<Value> | undefined }>
 >();
 const PUBLISHED_HISTORY_READ_DEPTH = new WeakMap<AnyEditor, number>();
+const KEPT_REDO_ATTEMPTS = new Map<number, HistoryBranch<Value>>();
 
 const getHistoryDraft = (editor: AnyEditor) => {
   const owner = getEditorRuntimeOwner(editor);
@@ -332,7 +346,8 @@ const branch = <V extends Value>(
   recovery: AnchorHistoryRecovery | null = null,
   anchorCeiling = 0,
   identity: object = {},
-  carets: HistoryCarets | null = null
+  carets: HistoryCarets | null = null,
+  kept: KeptRedo<V> | null = null
 ): HistoryBranch<V> =>
   Object.freeze({
     anchorCeiling,
@@ -344,10 +359,20 @@ const branch = <V extends Value>(
     depth: (next?.depth ?? 0) + 1,
     group,
     identity,
+    kept,
     mappings,
     next,
     recovery,
   });
+
+const withKeptBranch = <V extends Value>(
+  kept: KeptRedo<V> | null,
+  change: (branch: HistoryBranch<V>) => HistoryBranch<V> | null
+): KeptRedo<V> | null => {
+  const mapped = kept && change(kept.branch);
+
+  return kept && mapped ? Object.freeze({ ...kept, branch: mapped }) : null;
+};
 
 const clipBranch = <V extends Value>(
   value: HistoryBranch<V> | null,
@@ -365,7 +390,9 @@ const clipBranch = <V extends Value>(
   }
 
   let clipped: HistoryBranch<V> | null = null;
-  for (const item of kept.toReversed()) {
+  for (let index = kept.length - 1; index >= 0; index -= 1) {
+    const item = kept[index];
+
     clipped = branch(
       item.batch,
       item.base,
@@ -376,7 +403,8 @@ const clipBranch = <V extends Value>(
       item.recovery,
       item.anchorCeiling,
       item.identity,
-      item.carets
+      item.carets,
+      withKeptBranch(item.kept, (other) => clipBranch(other, maxDepth - index))
     );
   }
 
@@ -427,7 +455,11 @@ const addMapping = <V extends Value>(
         })
       : Object.freeze({ entry, previous });
 
-  return Object.freeze({ ...value, mappings });
+  return Object.freeze({
+    ...value,
+    kept: withKeptBranch(value.kept, (other) => addMapping(other, entry)),
+    mappings,
+  });
 };
 
 const journalEntries = <V extends Value>(
@@ -468,12 +500,14 @@ const yieldTo = <V extends Value>(
   base: EditorDocumentValue<V>
 ) => DocumentChange.transform(change, edit, base).a;
 
-const resolveHead = <V extends Value>(
+const mapHead = <V extends Value>(
   editor: Editor<V>,
-  value: HistoryBranch<V>
-): HistoryBranch<V> | null => {
-  if (!value.mappings) return value;
+  value: HistoryBranch<V>,
+  anchor: boolean
+) => {
+  if (!value.mappings) return { head: value, keptWrap: null };
 
+  let keptWrap: KeptWrap | null = null;
   let batchBase = value.base;
   let batchValue = value.batch;
   let { replay } = value;
@@ -486,8 +520,10 @@ const resolveHead = <V extends Value>(
       historyReplaySchemaOf(editor),
       replay,
       batchBase,
-      mapping
+      mapping,
+      anchor && mapping.anchors === true
     );
+    keptWrap ??= mapped.keptWrap;
     const mappedBatchBase = mapping.after;
     const mappedNextBase = mapped.replay.record().after;
     ({ replay } = mapped);
@@ -580,20 +616,65 @@ const resolveHead = <V extends Value>(
     batchBase = mappedBatchBase;
   }
 
-  if (batchValue.change.empty && batchValue.effects.length === 0) return next;
+  return {
+    head:
+      batchValue.change.empty && batchValue.effects.length === 0
+        ? next
+        : branch<V>(
+            batchValue,
+            batchBase,
+            replay,
+            next,
+            null,
+            retainMappedCompositionGroup(value.group),
+            recovery,
+            value.anchorCeiling,
+            value.identity,
+            carets
+          ),
+    keptWrap,
+  };
+};
 
-  return branch<V>(
-    batchValue,
-    batchBase,
-    replay,
-    next,
-    null,
-    retainMappedCompositionGroup(value.group),
-    recovery,
-    value.anchorCeiling,
-    value.identity,
-    carets
-  );
+const mapAnchored = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V>
+) => {
+  try {
+    return mapHead(editor, value, true);
+  } catch {
+    return null;
+  }
+};
+
+const resolveHead = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V>
+): HistoryBranch<V> | null => {
+  if (!value.mappings) return value;
+
+  const anchorable =
+    !value.kept &&
+    value.replay.direction === 'redo' &&
+    journalEntries(value.mappings).some(({ anchors }) => anchors);
+  const anchored = value.kept
+    ? mapAnchored(editor, value.kept.branch)
+    : anchorable
+      ? mapAnchored(editor, value)
+      : null;
+
+  if (anchorable && anchored && !anchored.keptWrap) return anchored.head;
+
+  const wrap = value.kept?.wrap ?? anchored?.keptWrap;
+  const kept =
+    wrap && anchored?.head?.identity === value.identity
+      ? Object.freeze({ branch: anchored.head, wrap })
+      : null;
+  const { head } = mapHead(editor, value, false);
+
+  return kept && head?.identity === value.identity
+    ? Object.freeze({ ...head, kept })
+    : head;
 };
 
 const resolveTop = <V extends Value>(
@@ -723,6 +804,7 @@ const resolveAll = <V extends Value>(
       carets: current.carets,
       group: current.group,
       identity: current.identity,
+      kept: current.kept,
       recovery: current.recovery,
       replay: current.replay,
     });
@@ -743,7 +825,8 @@ const resolveAll = <V extends Value>(
       entry.recovery,
       entry.anchorCeiling,
       entry.identity,
-      entry.carets
+      entry.carets,
+      entry.kept
     );
   }
 
@@ -760,7 +843,13 @@ const rebuildBranch = <V extends Value>(
 ) => {
   let value: HistoryBranch<V> | null = null;
 
-  for (const entry of entries.slice(0, maxDepth).toReversed()) {
+  for (
+    let index = Math.min(entries.length, maxDepth) - 1;
+    index >= 0;
+    index -= 1
+  ) {
+    const entry = entries[index];
+
     value = branch(
       entry.batch,
       entry.base,
@@ -771,7 +860,8 @@ const rebuildBranch = <V extends Value>(
       entry.recovery,
       entry.anchorCeiling,
       entry.identity,
-      entry.carets
+      entry.carets,
+      withKeptBranch(entry.kept, (other) => clipBranch(other, maxDepth - index))
     );
   }
 
@@ -1014,6 +1104,7 @@ export const settlePendingHistoryReplay = <V extends Value>(
   const replayed = Object.freeze({
     ...claimed,
     base: replayBase,
+    kept: null,
     replay: recordHistoryReplay(
       historyReplaySchemaOf(editor),
       replayBase,
@@ -1142,15 +1233,27 @@ export const getWorkingHistory = <V extends Value>(
 export const getHistory = <V extends Value>(editor: Editor<V>): History<V> =>
   withPublishedHistoryState(editor, () => getWorkingHistory(editor));
 
+const keptAttempt = <V extends Value>(stack: HistoryStack, request?: number) =>
+  stack === 'redos' && request !== undefined
+    ? (KEPT_REDO_ATTEMPTS.get(request) as HistoryBranch<V> | undefined)
+    : undefined;
+
 const peekResolvedEntry = <V extends Value>(
   editor: Editor<V>,
   stack: HistoryStack,
-  resolve: typeof resolveTop
+  resolve: typeof resolveTop,
+  request?: number
 ) => {
   const store = getStore(editor);
-  const resolved = resolve(editor, store[stack]);
+  const kept = keptAttempt<V>(stack, request);
+  const head = kept ?? store[stack];
+  const resolved = resolve(editor, head);
 
-  if (resolved !== store[stack]) {
+  if (kept) {
+    if (resolved && resolved !== kept && request !== undefined) {
+      KEPT_REDO_ATTEMPTS.set(request, resolved);
+    }
+  } else if (resolved !== head) {
     setStore(
       editor,
       Object.freeze({
@@ -1176,8 +1279,9 @@ const peekResolvedEntry = <V extends Value>(
 
 export const peekHistoryEntry = <V extends Value>(
   editor: Editor<V>,
-  stack: HistoryStack
-) => peekResolvedEntry(editor, stack, resolveTop);
+  stack: HistoryStack,
+  request?: number
+) => peekResolvedEntry(editor, stack, resolveTop, request);
 
 /**
  * The top entry, past every step history can no longer map, which it drops
@@ -1190,8 +1294,123 @@ export const peekSurvivingHistoryEntry = <V extends Value>(
 
 export const peekHistoryReplayEntry = <V extends Value>(
   editor: Editor<V>,
-  stack: HistoryStack
-) => peekResolvedEntry(editor, stack, resolveCanonicalTop);
+  stack: HistoryStack,
+  request?: number
+) => peekResolvedEntry(editor, stack, resolveCanonicalTop, request);
+
+const unwrapsTo = (
+  after: EditorDocumentValue,
+  before: EditorDocumentValue,
+  props: Readonly<JsonRecord>
+) => {
+  if (!jsonEqual(after.records, before.records)) return false;
+
+  const roots = new Set([
+    MAIN_ROOT_KEY,
+    ...Object.keys(after.roots ?? {}),
+    ...Object.keys(before.roots ?? {}),
+  ]);
+  const changed = [...roots].filter(
+    (root) => !jsonEqual(valueRoot(after, root), valueRoot(before, root))
+  );
+
+  if (changed.length !== 1) return false;
+
+  const [root] = changed;
+  const equalFrom = (
+    left: readonly JsonNode[],
+    right: readonly JsonNode[],
+    from: number,
+    shift: number
+  ) =>
+    left.length - from === right.length - from - shift &&
+    left
+      .slice(from)
+      .every((node, index) => jsonEqual(node, right[from + shift + index]));
+  let left: readonly JsonNode[] = valueRoot(after, root);
+  let right: readonly JsonNode[] = valueRoot(before, root);
+
+  while (true) {
+    let at = 0;
+
+    while (at < left.length && jsonEqual(left[at], right[at])) at += 1;
+
+    const element = left[at];
+    const other = right[at];
+
+    if (!element || !isElementNode(element)) return false;
+
+    const held = element.children.length;
+
+    if (
+      jsonEqual(nodeProps(element), props) &&
+      element.children.every((child, index) =>
+        jsonEqual(child, right[at + index])
+      ) &&
+      equalFrom(left, right, at + 1, held - 1)
+    ) {
+      return true;
+    }
+    if (
+      !other ||
+      !isElementNode(other) ||
+      !jsonEqual(nodeProps(element), nodeProps(other)) ||
+      !equalFrom(left, right, at + 1, 0)
+    ) {
+      return false;
+    }
+    left = element.children;
+    right = other.children;
+  }
+};
+
+const keepsOnlyWrap = <V extends Value>(
+  current: EditorDocumentValue<V>,
+  head: HistoryBranch<V>,
+  kept: KeptRedo<V>
+) => {
+  try {
+    return unwrapsTo(
+      kept.branch.replay.change.apply(current),
+      head.replay.change.apply(current),
+      kept.wrap.props
+    );
+  } catch {
+    return false;
+  }
+};
+
+export const attachKeptHistoryRedo = <V extends Value>(
+  editor: Editor<V>,
+  request: number
+) => {
+  const state = getStore(editor);
+  const head = state.redos;
+  const kept = head?.kept;
+
+  if (!head || !kept) return null;
+  if (head.next || !keepsOnlyWrap(getEditorDocumentValue(editor), head, kept)) {
+    setStore(
+      editor,
+      Object.freeze({ ...state, redos: Object.freeze({ ...head, kept: null }) })
+    );
+
+    return null;
+  }
+
+  const causes = DROPPED_HISTORY_CAUSES.get(editor)?.length ?? 0;
+
+  KEPT_REDO_ATTEMPTS.set(request, kept.branch);
+
+  return {
+    detach: () => {
+      KEPT_REDO_ATTEMPTS.delete(request);
+    },
+    forget: () => {
+      DROPPED_HISTORY_CAUSES.get(editor)?.splice(causes);
+    },
+  };
+};
 
 export const peekHistoryBatch = <V extends Value>(
   editor: Editor<V>,
@@ -1349,13 +1568,19 @@ export const completeHistoryAction = <V extends Value>(
   destination: HistoryStack,
   batchValue: Batch<V>,
   current: EditorDocumentValue<V>,
-  olderStepsMapping?: Readonly<{
-    after: EditorDocumentValue<V>;
-    change: DocumentChange;
-  }>
+  olderStepsMapping:
+    | Readonly<{
+        after: EditorDocumentValue<V>;
+        change: DocumentChange;
+      }>
+    | undefined,
+  request: number
 ) => {
   const store = getStore(editor);
-  const resolved = resolveTop(editor, store[source]);
+  const resolved = resolveTop(
+    editor,
+    keptAttempt<V>(source, request) ?? store[source]
+  );
 
   if (!resolved) throw new Error(`Missing ${source} history batch.`);
 
@@ -1430,6 +1655,7 @@ export const queueHistoryMapping = <V extends Value>(
   const store = getStore(editor);
   const mapping = Object.freeze({
     after,
+    anchors: true as const,
     change,
     textOnly: isTextOnlyMapping(change),
   });

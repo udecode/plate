@@ -31,8 +31,9 @@ import {
 import type { NodeList } from '../core/change/document-index';
 import { jsonEqual, type JsonRecord } from '../core/change/json';
 import {
-  RootChange,
   getDocumentPropertyContext,
+  type KeptWrap,
+  RootChange,
 } from '../core/change/root-change';
 import {
   isTextNode,
@@ -185,10 +186,12 @@ const replayOver = (
   schema: HistoryReplaySchema,
   edit: DocumentChange,
   step: DocumentChange,
-  base: JsonEditorValue
+  base: JsonEditorValue,
+  anchor: boolean
 ) =>
   transformInternalDocumentChange(edit, step, base, {
     replay: {
+      anchor,
       pieceProps: (element, parent, root, nodes) =>
         schema.pieceProps(element, [...parent, 0], root, nodes),
     },
@@ -726,6 +729,7 @@ type CarriedMapping = Readonly<{
     root: string;
     letterAt: (position: number) => LetterPlace;
   }>;
+  keptWrap: KeptWrap | null;
 }>;
 
 /**
@@ -739,10 +743,11 @@ const carryReplay = <T extends JsonEditorValue>(
   recorded: RecordedHistoryReplay<T>,
   base: T,
   middle: T,
-  mapping: HistoryMapping<T>
+  mapping: HistoryMapping<T>,
+  anchor: boolean
 ): CarriedMapping => {
   const ordinary = () =>
-    replayOver(schema, mapping.change, recorded.structure, base);
+    replayOver(schema, mapping.change, recorded.structure, base, anchor);
   const { root } = runs[0];
   const step = getInternalDocumentRootChange(recorded.structure, root);
   const edit = getInternalDocumentRootChange(mapping.change, root);
@@ -804,6 +809,7 @@ const carryReplay = <T extends JsonEditorValue>(
       a: createInternalDocumentChange(new Map([[root, projected.rest]])),
       b: createInternalDocumentChange(new Map([[root, projected.step]])),
       letters,
+      keptWrap: null,
       runs: projected.runs,
     };
   }
@@ -814,6 +820,7 @@ const carryReplay = <T extends JsonEditorValue>(
     a: withInternalDocumentRootChange(mapped.a, root, projected.rest),
     b: withInternalDocumentRootChange(mapped.b, root, projected.step),
     letters,
+    keptWrap: mapped.keptWrap,
     runs: projected.runs,
   };
 };
@@ -839,9 +846,14 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,
   replay: HistoryReplay<T>,
   base: T,
-  mapping: HistoryMapping<T>
-): Readonly<{ replay: HistoryReplay<T>; rest: DocumentChange }> => {
-  if (!replay.parts) return mapOneReplay(schema, replay, base, mapping);
+  mapping: HistoryMapping<T>,
+  anchor: boolean
+): Readonly<{
+  keptWrap: KeptWrap | null;
+  replay: HistoryReplay<T>;
+  rest: DocumentChange;
+}> => {
+  if (!replay.parts) return mapOneReplay(schema, replay, base, mapping, anchor);
 
   const unsettle = mapOneReplay(schema, replay.parts.unsettle, base, mapping);
   const rest = mapOneReplay(
@@ -856,6 +868,7 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
   );
 
   return {
+    keptWrap: null,
     replay: pairedReplay(
       unsettle.replay.change.compose(rest.replay.change),
       replay.direction,
@@ -870,9 +883,15 @@ const mapOneReplay = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,
   replay: HistoryReplay<T>,
   base: T,
-  mapping: HistoryMapping<T>
-): Readonly<{ replay: HistoryReplay<T>; rest: DocumentChange }> => {
+  mapping: HistoryMapping<T>,
+  anchor = false
+): Readonly<{
+  keptWrap: KeptWrap | null;
+  replay: HistoryReplay<T>;
+  rest: DocumentChange;
+}> => {
   const { exact } = replay;
+  const anchors = anchor && replay.direction === 'redo' && !exact;
   const asReplay = (
     change: DocumentChange,
     record: () => RecordedHistoryReplay<T>
@@ -890,7 +909,15 @@ const mapOneReplay = <T extends JsonEditorValue>(
   ];
   const carry =
     replay.carried && !exact && recorded.runs
-      ? carryReplay(schema, recorded.runs, recorded, base, middle, mapping)
+      ? carryReplay(
+          schema,
+          recorded.runs,
+          recorded,
+          base,
+          middle,
+          mapping,
+          anchors
+        )
       : null;
   const structure =
     !exact &&
@@ -904,7 +931,8 @@ const mapOneReplay = <T extends JsonEditorValue>(
       ? DocumentChange.between(base, recorded.after)
       : recorded.structure;
   const transformed =
-    carry ?? replayOver(schema, mapping.change, structure, base);
+    carry ?? replayOver(schema, mapping.change, structure, base, anchors);
+  const { keptWrap } = transformed;
   const mappedMiddle = transformed.b.apply(mapping.after);
   if (recorded.format.size === 0) {
     const mappedAfter = carry
@@ -942,6 +970,7 @@ const mapOneReplay = <T extends JsonEditorValue>(
     });
 
     return {
+      keptWrap,
       replay: carried ? { ...mapped, carried } : mapped,
       rest,
     };
@@ -1028,7 +1057,11 @@ const mapOneReplay = <T extends JsonEditorValue>(
     };
   });
 
-  return { replay: carried ? { ...replayed, carried } : replayed, rest };
+  return {
+    keptWrap,
+    replay: carried ? { ...replayed, carried } : replayed,
+    rest,
+  };
 };
 
 export const mapHistorySelection = (

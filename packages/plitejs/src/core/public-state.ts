@@ -439,6 +439,7 @@ import {
   applyEditorUpdateTags,
   type InternalEditorUpdateOptions,
   reduceEditorUpdateTags,
+  type SpeculativeUpdate,
 } from './update-policy';
 import {
   areEditorJsonValuesEqual,
@@ -9651,6 +9652,7 @@ export const updateEditor = <
         onAdmission: options.onAdmission,
         placement: options.placement,
         skipCorrections: options.skipCorrections,
+        speculative: options.speculative,
       }
     );
 
@@ -12056,6 +12058,7 @@ export const runEditorTransaction = <R>(
     onAdmission?: (admission: AdmittedRepair | null) => void;
     placement?: ViewPresentation;
     skipCorrections?: boolean;
+    speculative?: SpeculativeUpdate;
   } = {}
 ): R | undefined => {
   if (PREPARING_COMMIT.has(getEditorRuntimeOwner(editor))) {
@@ -12088,6 +12091,10 @@ export const runEditorTransaction = <R>(
   let answer: R | undefined;
   let transactionFailed = false;
   let transactionError: Readonly<{ value: unknown }> | null = null;
+  const draftsBefore = options.speculative
+    ? AFTER_OPEN_DRAFTS.get(getEditorRuntimeOwner(editor))
+    : undefined;
+  const draftCountBefore = draftsBefore?.length ?? 0;
 
   assertCanStartEditorWrite(editor, options.authority);
   const transactionStartedAt = globalThis.performance?.now?.() ?? Date.now();
@@ -12522,7 +12529,22 @@ export const runEditorTransaction = <R>(
           committed = change;
           options.onAdmission?.(admitted);
           anchorPublication?.publish();
-          for (const publishPrepared of publications) publishPrepared();
+          let publishError: Readonly<{ value: unknown }> | null = null;
+
+          for (const publishPrepared of publications) {
+            if (
+              publishError &&
+              getVersion(editor) !== snapshot.previousVersion + 1
+            ) {
+              break;
+            }
+            try {
+              publishPrepared();
+            } catch (error) {
+              publishError ??= { value: error };
+            }
+          }
+          if (publishError) throw publishError.value;
           pluginPublication?.finalize();
           if (pluginPublication) {
             seedUniqueIndex(editor);
@@ -12575,11 +12597,23 @@ export const runEditorTransaction = <R>(
   } catch (error) {
     transactionError = { value: error };
   }
+  if (options.speculative) options.speculative.committed = committed !== null;
 
-  try {
-    drainAfterOpenDrafts(editor);
-  } catch (error) {
-    transactionError ??= { value: error };
+  if (options.speculative && committed === null) {
+    const owner = getEditorRuntimeOwner(editor);
+    const drafts = AFTER_OPEN_DRAFTS.get(owner);
+
+    if (drafts && drafts === draftsBefore) {
+      drafts.splice(draftCountBefore);
+    } else {
+      AFTER_OPEN_DRAFTS.delete(owner);
+    }
+  } else {
+    try {
+      drainAfterOpenDrafts(editor);
+    } catch (error) {
+      transactionError ??= { value: error };
+    }
   }
 
   if (transactionError) {
@@ -12587,7 +12621,9 @@ export const runEditorTransaction = <R>(
       committed === null &&
       transactionError.value instanceof EditorRefusalError
     ) {
-      publishEditorRefusal(editor, transactionError.value.refusal);
+      if (!options.speculative) {
+        publishEditorRefusal(editor, transactionError.value.refusal);
+      }
 
       return undefined;
     }
