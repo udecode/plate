@@ -1,0 +1,123 @@
+---
+description: Check that every undo gives back the document from before its step and every redo the one after, over every list of up to three short commands on every small document, under the grouping, skipping and restoration rules of Plite history. Use before and after changing packages/plitejs/src/history or another file in its coverage record, when the undo-redo-history step of pnpm check fails, or when fixing an undo or redo bug a seed or a tester found.
+argument-hint: '[check | deep | lower | case <identity> | update]'
+name: undo-redo-history
+metadata:
+  skiller:
+    source: .agents/rules/undo-redo-history.mdc
+---
+
+# Undo and redo history
+
+Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--size=5` and `--blocks=2 --size=5` and compares their failures with Findings. `lower` runs `--lower` after a fix removes a known finding. `case <identity>` runs `--case=<identity>` to print one case's full detail. `update` brings the verification in line with changed code, as Coverage record says.
+
+**The property.** A user runs a short list of edits, undos, redos and one change from another peer. Each undo gives back the document and caret from before its step, and each redo the document and caret after it, and neither drops nor copies another peer's paragraph that its step never touched. `docs/vision/plite.md` says transaction history controls grouping, skipping and restoration, and that ordinary input groups by its idle clock. The laws hold the history plugin to how it groups: an edit under `history: 'merge'` joins the step before it, an edit after the idle window or under `history: 'new-batch'` starts a step, typing right after the letter the plain way or the idle way typed before joins, and a change under `history: 'skip'`, such as another peer's, adds none. A new step clears the redos, and `hasUndo` and `hasRedo` match the steps left. A history saved with `History.toJSON` and restored into a fresh editor replays the same documents.
+
+**The harm.** An undo that gives back another document loses the user's work, and one that loses a step leaves an edit the user cannot take back. Three history fixes landed before this check: 94cf545da2, ab4b6576ee and t_d3072b82's fix in 128eb410c9. A seed or a tester found each one, one case at a time.
+
+## What it checks
+
+`packages/plitejs/scripts/undo-redo-history.ts` runs the real history plugin on every list up to a bound. It checks the TypeScript code itself, not a model of it.
+
+1. **Documents.** Every document of up to `--blocks` top-level blocks, each a paragraph or a quote of paragraphs, from the `shapes` builder in `packages/plitejs/scripts/authored-documents.ts`. Each line holds one letter. The schema adds an `align` property to paragraphs and quotes.
+2. **Edits.** The steps and commands of `packages/plitejs/scripts/letter-commands.ts`, which the recording check also runs: typing, Enter, Backspace and Delete at every caret beside a letter, a backward selection delete between every two carets, paste of two lines, `wrap` and `unwrap` at every letter. The check adds an `align` change at every letter. The first edit in a list types `X`, the second `Y` and the third `Z`, so a doubled or lost letter shows.
+3. **Modes.** Once the history holds a step, each edit runs four ways: right after the move before it, after the idle window, under `history: 'merge'` and under `history: 'new-batch'`. The script fakes `performance.now()` to step the clock. The idle way runs only where the plain way joined the step before, because elsewhere it records what the plain way records. The new-batch way runs there too, and wherever another edit can follow it, because the plugin stops typing from joining a step that new-batch started.
+4. **Moves.** A list holds up to `--depth` moves and up to `--edits` edits, and no more moves than `--size` less the document's letters. Undo and redo run where a step can replay. One move per list may be another peer's change, under `history: 'skip'` with the collaboration tag: a paragraph `R` appended to the document, or the deletion of one block or two sibling blocks at any level that leaves each parent a block.
+5. **Laws.** After each move the script compares what the history did with a model of the steps. A case records its first failure per rule:
+   - `history-undo`: an undo that does not give back the document from before its step, or that changes how many copies of another peer's paragraph `R` the document holds when its step never changed that count.
+   - `history-redo`: the same for a redo and the document after its step.
+   - `history-caret`: an undo or redo whose selection is not the one from before or after its step.
+   - `history-failed`: an undo or redo that reports `failed` or `pending`, throws, or reports through the lifecycle error sink.
+   - `history-group`: an edit that joins the step before it after the idle window or under new-batch, an edit under merge that starts a step of its own while no redo waits and no other peer has changed the document, typing right after the letter typed before that starts a step of its own, or another peer's appended paragraph that changes the number of undo steps.
+   - `history-stack`: `hasUndo` or `hasRedo` that differs from the steps left, a changed document with no step, or an edit that leaves a redo.
+   - `history-restore`: a history restored from its JSON whose undos and redos give other documents than the editor it came from.
+   - `history-throws`: an edit, another peer's change or `History.fromJSON` that throws an error other than a refusal.
+6. **Unwinding.** At the end of each list the script undoes every step and redoes every step through the same laws, then saves the history as JSON, restores it into a fresh editor and unwinds that the same way. After another peer deletes a block, the model no longer knows which documents the steps give, so the script only checks that each undo and redo replays and that the restored history gives the same documents.
+7. A refusal the editor gives on purpose counts in the summary's `refused` and is not a failure.
+8. It compares the findings with `packages/plitejs/scripts/undo-redo-history-baseline.json` through `tooling/scripts/finding-baseline.mjs`. Every finding is filed under `packages/plitejs/src/history`. An identity names the document and the moves, never the result.
+
+## Run it
+
+Run every command from the repository root.
+
+- `pnpm check:undo-redo-history` checks the gate bound: one block, three moves, two edits, size four. It compares 8,667 cases on 3 documents in 14 s on a quiet machine and 26 s at a load average of 21. A `--depth` above 3 exits 2, because each move types its own letter. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check undo-redo-history` runs the same step through the check runner, and `pnpm check --affected` runs it for a change under `packages/plitejs/src/`, to the script, `check-harness.ts`, `letter-commands.ts` or `authored-documents.ts`, to a file under `packages/plitejs/test/support/`, to `config/plite-source-aliases.ts` or to `tooling/scripts/finding-baseline.mjs`.
+- `--blocks`, `--depth`, `--edits` and `--size` raise one part of the bound. `--size=5` compares 26,581 cases in 34 s, and `--blocks=2 --size=5` compares 125,654 cases on 12 documents in 127 s, both at a load average near 20. A bound other than the gate's or `--case` skips the baseline and exits 1 on any failure.
+- `--case='<identity or part of one>'` prints the full stack of each failure whose identity contains it, such as `--size=5 '--case=Enter at b|0 ; undo ; remote delete block 0.1'`.
+- `--jobs=<n>` sets the number of worker processes, the machine's cores up to 16 by default.
+- Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag or a crashed worker. At the gate the run also fails when it compares other than 8,667 cases, the `GATE_CASES` constant, so a change that stops edits from applying cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
+- After a fix removes a known finding, the gate fails until you run `pnpm check:undo-redo-history --lower`. The baseline never grows. `--init` seeds only a rule the baseline lacks, and `--lower` and `--init` write nothing when the case count misses `GATE_CASES`.
+
+## Read a failure
+
+A finding prints its rule, identity and the first line of its detail:
+
+```text
+history-caret paragraph("a") :: Enter at a|1 ; Delete at a|1 [merge]
+  undo selects {"anchor":{"offset":1,"path":[0,0]},...}, not {...}
+
+history-stack paragraph("a") :: wrap a ; unwrap a [merge]
+  after undo, hasUndo is false and hasRedo false, with 0 undo and 1 redo steps left
+```
+
+Both are known findings. In the first, Delete takes back the Enter it merges into, and the undo of the empty step moves only the caret. Run `--case` on the identity for the full diff and stack.
+
+Tell a real bug from a modeling error before you change code:
+
+- **Real bug.** A user can reach the list, and an undo, redo or restore gives what the law says it must not. Fix the history plugin, then run `--lower`.
+- **Modeling error.** The law's oracle is ambiguous for that list, such as which side of another peer's paragraph an undone block lands on. Fix the script with the reason.
+- **Intended change.** A change to how history groups steps changes the law too. Change the law and `docs/vision/plite.md` together. Never weaken a law or add a baseline entry to get green.
+
+## Findings
+
+The gate finds 102, all under `history: 'merge'`: 70 `history-caret`, 25 `history-group`, 2 `history-stack` and 5 `history-undo`. Each class is one cause:
+
+- **An explicit merge whose edit takes back its step's change keeps an empty step.** `Enter at a|1 ; Delete at a|1 [merge]` leaves the document as it was and one undo step. Its undo moves only the caret, a later appended paragraph from another peer drops the step, and after `wrap a ; unwrap a [merge]` the undo leaves no redo. 70 `history-caret`, 25 `history-group` and 2 `history-stack` entries.
+- **An undo of a merged step that holds an unwrap after another peer appends a paragraph.** On `quote(paragraph("a"))`, `unwrap a ; Enter at a|0 [merge] ; remote append R` undoes to a quote that holds both `a` and `R`. 5 `history-undo` entries.
+
+`--size=5` fails 165 cases and `--blocks=2 --size=5` 1,246. The deep runs read no baseline. Most hold an explicit merge. These classes have none:
+
+- **Another peer's appended paragraph drops an undo step.** On `paragraph("a") paragraph("b")`, `wrap a ; Backspace at b|0 ; remote append R` leaves one undo step of two. 215 `history-group` cases.
+- **A restored history refuses a step after another peer deletes a block.** `quote(paragraph("a") paragraph("b")) :: Enter at b|0 ; undo ; remote delete block 0.1` keeps a redo of the split, and `History.fromJSON` throws `Editor element "quote" at [0] cannot contain "text"` when it validates it. 87 `history-throws` cases.
+- **An undo puts the caret in another peer's appended paragraph.** `paragraph("a") paragraph("b") :: Enter at a|0 ; select a|0..b|1 Backspace ; remote append R` undoes to a caret at `[2,0]`, not `[1,0]`. 36 `history-caret` cases.
+- **An undo after another peer appends a paragraph pulls it into a quote.** `wrap a ; undo` and other steps that end beside a quote give a quote that holds `R`. 4 `history-undo` cases. The recording check's deep run finds the same class in Editing.
+- **An undo fails after another peer deletes the block it unwrapped.** `quote(paragraph("a")) quote(paragraph("b")) :: unwrap a ; remote delete block 0 ; undo` fails with `Editor element "quote" at [0] cannot contain "quote"`. 1 `history-failed` case.
+
+## What a pass proves
+
+Bugs planted on this tree showed where the gate holds:
+
+- Mutant rec-undo-h2, where `addMapping` in `packages/plitejs/src/history/history-state.ts` drops the mapping a history-skip commit queues, gives 3,964 `history-throws`, 16 `history-failed`, 94 `history-caret` and 3 `history-stack` findings. Undo after another peer appends a paragraph applies a change sized for the document without it.
+- Mutant rec-undo-h5, where `writeHistory` and `replaceHistoryHead` no longer clear the redos, gives 244 `history-stack` findings, such as `align a ; undo ; align a` leaving a redo.
+- A mutant where `history-plugin.ts` ignores the `history-merge` tag gives 1,262 `history-group` findings, each an explicit merge that starts its own step.
+
+The gate does not catch t_d3072b82's bug, which 128eb410c9 fixed, and neither do the deep runs or the `yjs-peer-order` check: with `deletesWholeSiblings` in `packages/plitejs/src/history/root-change.ts` back to its one-node test, every count equals the clean run's. In one editor, another peer's deletion of the edited blocks drops the step before any rebase runs, and the bug needs a concurrent deletion rebased through a link spacer and `value.replace`, which no short command writes.
+
+## Coverage record
+
+Synced at `test(plitejs): check that undo and redo give back each earlier document over every short command list`. The verification describes these files as they stand there:
+
+| File | What the check exercises |
+| --- | --- |
+| `packages/plitejs/src/history/history-plugin.ts` | undo, redo and the update policies |
+| `packages/plitejs/src/history/history-state.ts` | the stacks and the mapping through a skipped change |
+| `packages/plitejs/src/history/history-replay.ts` | replaying a step inside a skipped transaction |
+| `packages/plitejs/src/history/history-merge-policy.ts` | that typing joins and that idle, new-batch and merge group as their modes say |
+| `packages/plitejs/src/history/history-codec.ts` | `History.toJSON` and `History.fromJSON` |
+| `packages/plitejs/test/support/recording-laws.ts` | the commands, run under an update policy |
+| `packages/plitejs/scripts/letter-commands.ts` | the commands both checks run at every letter |
+| `packages/plitejs/scripts/check-harness.ts` | the flags, workers and gate both checks share |
+| `packages/plitejs/scripts/authored-documents.ts` | the document shapes |
+
+To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "undo and redo give back each earlier document"`, then run `git log --oneline <that commit>..HEAD --` with the table's files and `packages/plitejs/scripts/undo-redo-history.ts`. For each commit it lists, read the diff and confirm three things. A new update policy or grouping rule is a mode or a law. A new refusal the editor gives on purpose is still an `EditorRefusalError`. The laws still compare with the documents the script recorded before each step, not with the history's own output. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:undo-redo-history`.
+
+## What it does not cover
+
+- Two editors or Yjs. Another peer's change is a skipped update in the same editor, so a concurrent change rebased through a transform, t_d3072b82's case, is out of reach. The `yjs-peer-order` check owns two peers.
+- Named and nested roots, tables, lists, links, marks and link spacers, which no generated document holds.
+- Suggesting, review marks and authored history, which the `authored-recording-order` check owns.
+- Grouping beyond typing and the modes. No law requires a run of deletes, two `align` changes or a type-over to join, and `typeOver` is not among the edits.
+- An explicit merge after another peer's change. The plugin starts a step of its own for most of them, and nothing yet says whether it should, so the merge law skips every list where another peer changed the document.
+- A settle stage, a session effect or a replay that waits on an external owner.
+- The browser, `beforeinput`, IME composition and native input grouping.
+
+`/pstack:maintain-formal-verification-skill` brings this verification back in line after changes that did not recheck it.

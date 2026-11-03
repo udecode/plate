@@ -302,6 +302,24 @@ export const steps = [
     affected: touches(
       'packages/plitejs/scripts/authored-recording-order',
       'packages/plitejs/scripts/authored-documents',
+      'packages/plitejs/scripts/check-harness',
+      'packages/plitejs/scripts/letter-commands',
+      'packages/plitejs/src/',
+      'packages/plitejs/test/support/',
+      'config/plite-source-aliases.ts',
+      'tooling/scripts/finding-baseline.mjs'
+    ),
+    key: [],
+  },
+  {
+    name: 'undo-redo-history',
+    private: true,
+    run: 'pnpm check:undo-redo-history',
+    affected: touches(
+      'packages/plitejs/scripts/undo-redo-history',
+      'packages/plitejs/scripts/authored-documents',
+      'packages/plitejs/scripts/check-harness',
+      'packages/plitejs/scripts/letter-commands',
       'packages/plitejs/src/',
       'packages/plitejs/test/support/',
       'config/plite-source-aliases.ts',

@@ -67,6 +67,9 @@ vitest.config.*
 /packages/plitejs/scripts/yjs-peer-order*
 /packages/plitejs/scripts/authored-recording-order*
 /packages/plitejs/scripts/authored-documents.ts
+/packages/plitejs/scripts/undo-redo-history*
+/packages/plitejs/scripts/check-harness.ts
+/packages/plitejs/scripts/letter-commands.ts
 /packages/plitejs/scripts/yjs/benchmark-event-change-bridge.ts
 /apps/*/src/app/dev/
 /apps/www/src/app/api/dev/
