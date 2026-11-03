@@ -29,6 +29,7 @@ import {
   assertEditorExternalMutationAllowed,
   getCollabEffects,
   getEditorDocumentRecords,
+  isNotifyingNestedCommit,
   registerEditorTransactionGuard,
   scheduleAfterCommitNotification,
   trackEditorLetters,
@@ -278,6 +279,9 @@ export class YjsController<
 
   private admitted = false;
   private admissionAttempting = false;
+  private earlyCommits: EditorCommit[] = [];
+  private lastLoweredVersion: number | null = null;
+  private loweringCommits: EditorCommit[] | null = null;
   private admissionStatusValue: YjsAdmissionStatus = WAITING_FOR_LOAD;
   private awarenessRevision = 0;
   private disposed = false;
@@ -825,13 +829,56 @@ export class YjsController<
         this.processAvailableInput();
       });
     }
+    if (this.loweringCommits) {
+      this.loweringCommits.push(commit);
 
+      return;
+    }
+    if (this.arrivedBeforeItsParent(commit)) {
+      this.earlyCommits.push(commit);
+
+      return;
+    }
+
+    const queue = [...this.earlyCommits, commit];
+
+    this.earlyCommits = [];
+    this.loweringCommits = queue;
+    try {
+      while (queue.length > 0) {
+        queue.sort((a, b) => a.version - b.version);
+        const next = queue.shift() as EditorCommit;
+
+        this.lastLoweredVersion = next.version;
+        this.lowerCommit(next);
+      }
+    } finally {
+      this.loweringCommits = null;
+    }
+  }
+
+  private arrivedBeforeItsParent(commit: EditorCommit): boolean {
+    return (
+      this.lastLoweredVersion !== null &&
+      commit.version > this.lastLoweredVersion + 1 &&
+      isNotifyingNestedCommit(this.editor)
+    );
+  }
+
+  private waitsForAdmission(): boolean {
+    return (
+      this.admissionStatusValue.state !== 'ready' &&
+      !this.editorAdapter.importing()
+    );
+  }
+
+  private lowerCommit(commit: EditorCommit): void {
     const cursorCache = this.awarenessAdapter?.forView(this.editor);
     const sharedEffects = getCollabEffects(this.editor, commit);
     const shouldSyncSelection =
       cursorCache !== undefined && commit.selectionChanged;
 
-    if (this.admissionStatusValue.state !== 'ready') {
+    if (this.waitsForAdmission()) {
       if (shouldSyncSelection) cursorCache.claimSelection();
 
       return;
@@ -1091,22 +1138,25 @@ export class YjsController<
         : null;
 
       scheduleAfterCommitNotification(this.editor, () => {
-        const outcome = this.admitRemote({
-          change: drift.change,
-          effects: [],
-          ...(mapped
-            ? {
-                selection: SelectionApi.text({
-                  ...mapped,
-                  ...(root === 'main' ? {} : { root }),
-                }),
-              }
-            : {}),
-        });
-
-        drift.accept(valueRootIndex(this.editorAdapter.readValue(), root));
-        this.lowerAdmissionRepair(outcome);
-        this.awarenessAdapter?.publishMappedRoots(new Set([root]));
+        this.admitRemote(
+          {
+            change: drift.change,
+            effects: [],
+            ...(mapped
+              ? {
+                  selection: SelectionApi.text({
+                    ...mapped,
+                    ...(root === 'main' ? {} : { root }),
+                  }),
+                }
+              : {}),
+          },
+          (outcome) => {
+            drift.accept(valueRootIndex(this.editorAdapter.readValue(), root));
+            this.lowerAdmissionRepair(outcome);
+            this.awarenessAdapter?.publishMappedRoots(new Set([root]));
+          }
+        );
       });
     }
   }
@@ -1222,8 +1272,8 @@ export class YjsController<
         } else {
           this.seedInitialValue();
           if (pending.effects.length > 0) {
-            this.lowerAdmissionRepair(
-              this.admitRemote({ effects: pending.effects })
+            this.admitRemote({ effects: pending.effects }, (outcome) =>
+              this.lowerAdmissionRepair(outcome)
             );
           }
         }
@@ -1267,20 +1317,23 @@ export class YjsController<
   }
 
   private admitRemote(
-    input: Parameters<YjsEditorAdapter['applyRemote']>[0]
-  ): YjsAdmittedImport {
+    input: Parameters<YjsEditorAdapter['applyRemote']>[0],
+    settle: (outcome: YjsAdmittedImport) => void
+  ): void {
     const writes = this.storageWrites;
     const open = new Set(this.openRemoteTransactions);
 
-    return {
-      ...this.editorAdapter.applyRemote(input),
-      storageMoved: () =>
-        writes !== this.storageWrites ||
-        [...this.openRemoteTransactions].some(
-          (transaction) =>
-            !open.has(transaction) && this.writesStorage(transaction)
-        ),
-    };
+    this.editorAdapter.applyRemote(input, (outcome) =>
+      settle({
+        ...outcome,
+        storageMoved: () =>
+          writes !== this.storageWrites ||
+          [...this.openRemoteTransactions].some(
+            (transaction) =>
+              !open.has(transaction) && this.writesStorage(transaction)
+          ),
+      })
+    );
   }
 
   private importAgain(): void {
@@ -1510,7 +1563,7 @@ export class YjsController<
         this.importYjsEvents(events, remote);
       }
     } else if (remote.effects.length > 0 || remote.records) {
-      this.lowerAdmissionRepair(this.admitRemote(remote));
+      this.admitRemote(remote, (outcome) => this.lowerAdmissionRepair(outcome));
     }
     this.sharedEffectLog.acknowledge(pending.eventIds);
     this.clearPendingInput();
@@ -1522,7 +1575,6 @@ export class YjsController<
     shouldSyncSelection: boolean
   ): boolean {
     return (
-      this.editorAdapter.importing() ||
       (!commit.changed.hasAny('document') &&
         !hasSharedEffects &&
         !shouldSyncSelection) ||
@@ -1822,20 +1874,23 @@ export class YjsController<
       mode,
       ...(root === MAIN_ROOT_KEY ? {} : { root }),
     });
-    const outcome = this.admitRemote({
-      ...remote,
-      change,
-      selection: this.currentSelection(),
-    });
+    this.admitRemote(
+      {
+        ...remote,
+        change,
+        selection: this.currentSelection(),
+      },
+      (outcome) => {
+        binding.bridge.reset(children);
+        binding.bridge.refreshMasks(children);
+        this.lowerAdmissionRepair(outcome);
+        const changedRoots = new Set([root]);
 
-    binding.bridge.reset(children);
-    binding.bridge.refreshMasks(children);
-    this.lowerAdmissionRepair(outcome);
-    const changedRoots = new Set([root]);
-
-    this.awarenessAdapter?.publishMappedRoots(changedRoots, {
-      fallbackRoots: changedRoots,
-    });
+        this.awarenessAdapter?.publishMappedRoots(changedRoots, {
+          fallbackRoots: changedRoots,
+        });
+      }
+    );
   }
 
   private importDocumentFromYjs(
@@ -1944,20 +1999,23 @@ export class YjsController<
       });
     }
 
-    const outcome = this.admitRemote({
-      ...remote,
-      change,
-      selection: this.currentSelection(),
-    });
-
-    this.resetBindingsFromYjs({
-      main: changed?.main ?? true,
-      named: namedRoots,
-    });
-    this.lowerAdmissionRepair(outcome);
-    this.awarenessAdapter?.publishMappedRoots(roots, {
-      fallbackRoots: roots,
-    });
+    this.admitRemote(
+      {
+        ...remote,
+        change,
+        selection: this.currentSelection(),
+      },
+      (outcome) => {
+        this.resetBindingsFromYjs({
+          main: changed?.main ?? true,
+          named: namedRoots,
+        });
+        this.lowerAdmissionRepair(outcome);
+        this.awarenessAdapter?.publishMappedRoots(roots, {
+          fallbackRoots: roots,
+        });
+      }
+    );
   }
 
   private readYjsDocumentValue(
@@ -2190,14 +2248,19 @@ export class YjsController<
       readTopLevelNodes: result.import.readTopLevelNodes,
       ...(root === MAIN_ROOT_KEY ? {} : { root }),
     });
-    const outcome = this.admitRemote({
-      ...remote,
-      change: result.import.change,
-      selection: this.currentSelection(),
-    });
-
-    result.import.accept(valueRootIndex(this.editorAdapter.readValue(), root));
-    this.lowerAdmissionRepair(outcome);
-    this.awarenessAdapter?.publishMappedRoots(new Set([root]));
+    this.admitRemote(
+      {
+        ...remote,
+        change: result.import.change,
+        selection: this.currentSelection(),
+      },
+      (outcome) => {
+        result.import.accept(
+          valueRootIndex(this.editorAdapter.readValue(), root)
+        );
+        this.lowerAdmissionRepair(outcome);
+        this.awarenessAdapter?.publishMappedRoots(new Set([root]));
+      }
+    );
   }
 }

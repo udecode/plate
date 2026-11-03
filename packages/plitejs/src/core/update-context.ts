@@ -34,5 +34,19 @@ export const popUpdateTagContext = (editor: Editor) => {
   }
 };
 
+export const withoutUpdateTagContext = <T>(editor: Editor, fn: () => T): T => {
+  const stack = UPDATE_TAG_CONTEXT.get(editor);
+
+  if (!stack) return fn();
+
+  UPDATE_TAG_CONTEXT.delete(editor);
+
+  try {
+    return fn();
+  } finally {
+    UPDATE_TAG_CONTEXT.set(editor, stack);
+  }
+};
+
 export const getCurrentUpdateTags = (editor: Editor) =>
   UPDATE_TAG_CONTEXT.get(editor)?.at(-1) ?? [];

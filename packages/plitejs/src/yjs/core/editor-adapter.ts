@@ -40,7 +40,10 @@ export type YjsImportOutcome = Readonly<{
 }>;
 
 export type YjsEditorAdapter = {
-  readonly applyRemote: (input: YjsRemoteImport) => YjsImportOutcome;
+  readonly applyRemote: (
+    input: YjsRemoteImport,
+    beforeListeners: (outcome: YjsImportOutcome) => void
+  ) => void;
   readonly canonicalize: (
     root: string,
     children: readonly Descendant[]
@@ -166,7 +169,7 @@ export const createYjsEditorAdapter = (
   editor: YjsEditor,
   canonicalize: YjsEditorAdapter['canonicalize']
 ): YjsEditorAdapter => {
-  let importing = false;
+  let importing = 0;
 
   const readValue = (): EditorDocumentValue => editor.read.value();
   const readChildren = (root: string): readonly Descendant[] => {
@@ -174,13 +177,10 @@ export const createYjsEditorAdapter = (
 
     return root === 'main' ? value.children : (value.roots?.[root] ?? []);
   };
-  const applyRemote: YjsEditorAdapter['applyRemote'] = ({
-    replacement,
-    change,
-    effects,
-    records,
-    selection,
-  }) => {
+  const applyRemote: YjsEditorAdapter['applyRemote'] = (
+    { replacement, change, effects, records, selection },
+    beforeListeners
+  ) => {
     let nextSelection: EditorSelection | null = null;
     // Two peers can each remove one owner of a shared root, so neither update
     // deletes it; the merge orphans it, and a closed schema refuses that
@@ -228,7 +228,20 @@ export const createYjsEditorAdapter = (
       );
     }
 
-    importing = true;
+    const deletedRoots = imported ? [...imported.change.deleteRoots] : NO_ROOTS;
+    let settled = false;
+    let settleError = null as Readonly<{ value: unknown }> | null;
+    const settleOnce = (admission: AdmittedRepair | null) => {
+      if (settled) return;
+      settled = true;
+      try {
+        beforeListeners(Object.freeze({ admission, deletedRoots }));
+      } catch (error) {
+        settleError = { value: error };
+      }
+    };
+
+    importing += 1;
 
     try {
       const { admission } = runTrustedUpdate(
@@ -248,16 +261,14 @@ export const createYjsEditorAdapter = (
             if (effect) tx.effects.emit(effect.type, effect.value);
           }
         },
-        { tags: YjsUpdatePolicy.remote.tags }
+        { onAdmission: settleOnce, tags: YjsUpdatePolicy.remote.tags }
       );
 
-      return Object.freeze({
-        admission,
-        deletedRoots: imported ? [...imported.change.deleteRoots] : NO_ROOTS,
-      });
+      settleOnce(admission);
     } finally {
-      importing = false;
+      importing -= 1;
     }
+    if (settleError) throw settleError.value;
   };
 
   return {
@@ -265,7 +276,7 @@ export const createYjsEditorAdapter = (
     canonicalize,
     canonicalizeDocument: (value) =>
       editor.read.schema.fitDocument(value as unknown as EditorDocumentValue),
-    importing: () => importing,
+    importing: () => importing > 0,
     readChildren,
     readValue,
   };

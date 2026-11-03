@@ -433,6 +433,7 @@ import {
   getCurrentUpdateTags,
   popUpdateTagContext,
   pushUpdateTagContext,
+  withoutUpdateTagContext,
 } from './update-context';
 import {
   applyEditorUpdateTag,
@@ -1349,6 +1350,9 @@ const PREPARED_TRANSACTION_SPECS = new WeakMap<
     document: object;
   }>
 >();
+
+export const isNotifyingNestedCommit = (editor: Editor) =>
+  (COMMIT_NOTIFICATION_DEPTH.get(editor) ?? 0) > 1;
 
 export const scheduleAfterCommitNotification = (
   editor: Editor,
@@ -9681,7 +9685,7 @@ export const runTrustedUpdate = <
     transaction: EditorUpdateTransaction<V, TPlugins>,
     context: EditorUpdateContext<Editor<V, TPlugins>>
   ) => void,
-  options: Pick<InternalEditorUpdateOptions, 'tags'> = {}
+  options: Pick<InternalEditorUpdateOptions, 'onAdmission' | 'tags'> = {}
 ): Readonly<{ admission: AdmittedRepair | null }> => {
   const owner = getEditorRuntimeOwner(editor) as Editor<V, TPlugins>;
   const snapshot = getTransactionSnapshot(owner);
@@ -9703,6 +9707,7 @@ export const runTrustedUpdate = <
       ...options,
       onAdmission: (admitted) => {
         admission = admitted;
+        options.onAdmission?.(admitted);
       },
       skipCorrections: true,
     }
@@ -12565,24 +12570,26 @@ export const runEditorTransaction = <R>(
 
           let notificationError: Readonly<{ value: unknown }> | null = null;
           try {
-            if (hasPluginChangeListeners(editor)) {
-              profileCoreDuration('notify-plugin-change-listeners', () => {
-                notifyEditorChangeListeners(
-                  editor,
-                  change,
-                  beforeValue,
-                  afterValue
-                );
+            withoutUpdateTagContext(editor, () => {
+              if (hasPluginChangeListeners(editor)) {
+                profileCoreDuration('notify-plugin-change-listeners', () => {
+                  notifyEditorChangeListeners(
+                    editor,
+                    change,
+                    beforeValue,
+                    afterValue
+                  );
+                });
+              }
+              profileCoreDuration('notify-listeners', () => {
+                notifyListeners(editor, change);
               });
-            }
-            profileCoreDuration('notify-listeners', () => {
-              notifyListeners(editor, change);
-            });
-            profileCoreDuration('run-after-commit-handlers', () => {
-              runAfterCommitHandlers(afterCommitHandlers);
-            });
-            profileCoreDuration('transaction-flush-post-commit', () => {
-              flushPostCommitNotificationQueue(editor);
+              profileCoreDuration('run-after-commit-handlers', () => {
+                runAfterCommitHandlers(afterCommitHandlers);
+              });
+              profileCoreDuration('transaction-flush-post-commit', () => {
+                flushPostCommitNotificationQueue(editor);
+              });
             });
           } catch (error) {
             notificationError = { value: error };
