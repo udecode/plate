@@ -25,6 +25,7 @@ import {
   moveVisibleYjsChildren,
   removeYjsChild,
   removeYjsVirtualPlaceholderChild,
+  type YjsPropertyContext,
   type YjsSetPropertyResolver,
   type YjsWrite,
 } from './document';
@@ -162,12 +163,52 @@ const applyPair = (before: DocumentIndex, lead: Section, trail: Section) => {
 
 const parentOf = (range: IndexedNodeRange) => range.path.slice(0, -1);
 
+const isElementToken = (token: JsonToken, kind: 'close' | 'open') =>
+  token.kind === kind && token.nodeKind === 'element';
+
+/**
+ * A pair that wraps several elements nested at the same edges, as one wrap
+ * per element, outermost first, so each wrapper is made under the parent it
+ * ends in. Any other pair stays whole.
+ */
+const unstack = (
+  lead: Section,
+  trail: Section
+): Array<readonly [Section, Section]> => {
+  const opens = lead.insert.tokens;
+  const closes = trail.insert.tokens;
+  const count = opens.length;
+
+  if (
+    lead.from !== lead.to ||
+    trail.from !== trail.to ||
+    count < 2 ||
+    closes.length !== count ||
+    !opens.every((token) => isElementToken(token, 'open')) ||
+    !closes.every((token) => isElementToken(token, 'close'))
+  ) {
+    return [[lead, trail]];
+  }
+
+  const one = (from: number, token: JsonToken): Section => ({
+    from,
+    insert: PreparedTokenSlice.fromTokens([token]),
+    to: from,
+  });
+
+  // Each outer wrap adds an open before both edges.
+  return Array.from({ length: count }, (_, applied) => [
+    one(lead.from + applied, opens[applied]),
+    one(trail.from + applied, closes[count - 1 - applied]),
+  ]);
+};
+
 /**
  * The commit's wraps and unwraps, each as its own step in the order they
  * apply, or null when the change holds anything else. A wrap inserts an
  * element's open and close tokens, each with only text tokens around it,
  * and an unwrap deletes them, so each keeps every letter and child it
- * encloses.
+ * encloses. Wraps of several elements at the same edges are one step each.
  */
 export const enclosureStepsOf = (
   change: RootChange,
@@ -183,10 +224,15 @@ export const enclosureStepsOf = (
   let current = before;
 
   // The pairs apply right to left, so each pair's positions in `before`
-  // still hold when it applies.
-  for (let pair = sections.length - 2; pair >= 0; pair -= 2) {
-    const lead = sections[pair];
-    const trail = sections[pair + 1];
+  // still hold when it applies; `unstack` places the wraps it splits a pair
+  // into.
+  const pairs = Array.from({ length: sections.length / 2 }, (_, index) =>
+    unstack(sections[2 * index], sections[2 * index + 1])
+  )
+    .reverse()
+    .flat();
+
+  for (const [lead, trail] of pairs) {
     const wraps = lead.from === lead.to && trail.from === trail.to;
     const unwraps = lead.insert.length === 0 && trail.insert.length === 0;
     const leadTokens = wraps
@@ -473,6 +519,122 @@ const nextShown = (
   }
 
   return visible.length;
+};
+
+const typeOf = (element: Element) => String(element.type ?? 'element');
+
+/**
+ * An element a step moves under other ancestors, at `path` in the step's
+ * `after` for a wrap and in its `before` otherwise, with each key whose Yjs
+ * storage, set or plain value, the new ancestry changes, and the element's
+ * context under that ancestry.
+ */
+export type StorageFlip = Readonly<{
+  context: YjsPropertyContext;
+  element: Element;
+  keys: readonly string[];
+  path: readonly number[];
+}>;
+
+/**
+ * Each element the step moves under other ancestors, or one inside it, whose
+ * properties need another Yjs storage there, or null when a text's does. The
+ * write moves those nodes with the attributes they store, so each such key
+ * is written anew afterwards; nothing rewrites a text's marks in place. The
+ * resolver reads a property's merge from the node's placement, type, root
+ * and ancestors, never its path, so both contexts share the node's path in
+ * the document it is read from.
+ */
+export const storageFlipsOf = (
+  step: EnclosureStep,
+  isSetValued: YjsSetPropertyResolver,
+  schemaRoot: string | null
+): StorageFlip[] | null => {
+  const document = step.kind === 'wrap' ? step.after : step.before;
+  const element = document.node(step.element) as Element;
+  const outer = createYjsPropertyLocationAt(
+    step.before.nodes as NodeList<Descendant>,
+    step.parent,
+    schemaRoot
+  ).ancestors;
+  const inner = [typeOf(element), ...outer];
+  const into = step.kind === 'wrap' || (step.kind === 'edge' && step.into);
+  const [holder, from, count] =
+    step.kind === 'edge'
+      ? [step.into ? step.parent : step.element, step.from, step.count]
+      : [step.element, 0, element.children.length];
+  const children =
+    holder.length === 0
+      ? (document.nodes as NodeList<Descendant>)
+      : (document.node(holder) as Element).children;
+  const flips: StorageFlip[] = [];
+
+  const visit = (
+    nodes: readonly Descendant[],
+    at: readonly number[],
+    first: number,
+    was: readonly string[],
+    is: readonly string[]
+  ): boolean => {
+    // Siblings share their ancestry, so one answer serves every sibling of
+    // the same placement and type for a key.
+    const answers = new Map<string, boolean>();
+
+    return nodes.every((node, index) => {
+      const path = [...at, first + index];
+      const context = (ancestors: readonly string[]) =>
+        createYjsPropertyContext(node, {
+          ancestors: [...ancestors],
+          path,
+          root: schemaRoot,
+        });
+      const kind = NodeApi.isElement(node) ? `element:${typeOf(node)}` : 'text';
+      const flipped = Object.keys(node).filter((key) => {
+        if (key === 'children' || key === 'text') return false;
+
+        const id = `${kind}\u0000${key}`;
+        const known = answers.get(id);
+
+        if (known !== undefined) return known;
+
+        const answer =
+          isSetValued(node, key, context(was)) !==
+          isSetValued(node, key, context(is));
+
+        answers.set(id, answer);
+
+        return answer;
+      });
+
+      if (!NodeApi.isElement(node)) return flipped.length === 0;
+      if (flipped.length > 0) {
+        flips.push({
+          context: context(is),
+          element: node,
+          keys: flipped,
+          path,
+        });
+      }
+
+      return visit(
+        node.children,
+        path,
+        0,
+        [typeOf(node), ...was],
+        [typeOf(node), ...is]
+      );
+    });
+  };
+
+  return visit(
+    children.slice(from, from + count),
+    holder,
+    from,
+    into ? outer : inner,
+    into ? inner : outer
+  )
+    ? flips
+    : null;
 };
 
 /**

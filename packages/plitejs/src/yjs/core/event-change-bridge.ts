@@ -34,7 +34,10 @@ import {
 import { failInvariant } from '../../internal/fail-invariant';
 import { getDefined } from '../../internal/get-defined';
 import { yjsAddressesOf, yjsNodeOf } from './addresses';
-import { splitAncestorPropertyEdits } from './ancestor-properties';
+import {
+  splitAncestorPropertyEdits,
+  splitElementPropertyEdits,
+} from './ancestor-properties';
 import type { YjsNode } from './attributes';
 import { getYjsAttributes } from './attributes';
 import {
@@ -87,7 +90,13 @@ import {
   type YjsTextAdmission,
   type YjsWrite,
 } from './document';
-import { enclosureStepsOf, writeEnclosure } from './enclosures';
+import {
+  type EnclosureStep,
+  enclosureStepsOf,
+  type StorageFlip,
+  storageFlipsOf,
+  writeEnclosure,
+} from './enclosures';
 import {
   composeTextDeltas,
   editOf,
@@ -2411,6 +2420,7 @@ export class YjsEventChangeBridge {
     const elements = split.peeled.map(({ path }) => ({
       node: addresses.elementAt(path),
       path,
+      previous: indexes().before.node(path) as Element,
     }));
 
     const middleNodes = middle.nodes as NodeList<Descendant>;
@@ -2432,7 +2442,7 @@ export class YjsEventChangeBridge {
     if (rest.lowered.kind !== 'lowered' && this.mirror === middleNodes) {
       this.setMirror(mirror);
     } else {
-      this.lowerAncestorProperties(elements, indexes().before, middle);
+      this.lowerPeeledProperties(elements, middle);
     }
 
     return rest;
@@ -2442,20 +2452,23 @@ export class YjsEventChangeBridge {
    * Write the peeled properties of each element whose Yjs element the rest of
    * the commit kept. One the rest wrote anew already carries them.
    */
-  private lowerAncestorProperties(
+  private lowerPeeledProperties(
     elements: ReadonlyArray<
-      Readonly<{ node: YjsNode | null; path: readonly number[] }>
+      Readonly<{
+        node: YjsNode | null;
+        path: readonly number[];
+        previous: Element;
+      }>
     >,
-    before: DocumentIndex,
-    middle: DocumentIndex
+    document: DocumentIndex
   ): void {
-    for (const { node, path } of elements) {
+    for (const { node, path, previous } of elements) {
       if (!(node instanceof Y.XmlElement) || !this.isLiveInRoot(node)) continue;
 
-      const next = middle.node(path) as Element;
+      const next = document.node(path) as Element;
       const context = createYjsPropertyContext(next, {
         ...createYjsPropertyLocationAt(
-          middle.nodes as NodeList<Descendant>,
+          document.nodes as NodeList<Descendant>,
           parentPath(path),
           this.schemaRoot
         ),
@@ -2464,7 +2477,7 @@ export class YjsEventChangeBridge {
 
       setYjsElementAttributes(
         node,
-        propertiesOf(before.node(path) as Element),
+        propertiesOf(previous),
         propertiesOf(next),
         (key) => this.isSetValued(next, key, context)
       );
@@ -2699,11 +2712,58 @@ export class YjsEventChangeBridge {
     };
   }
 
+  private flippedNodes(
+    document: DocumentIndex,
+    flips: readonly StorageFlip[]
+  ): Array<Readonly<{ flip: StorageFlip; node: YjsNode | null }>> {
+    const addresses = yjsAddressesOf(
+      this.root,
+      document.nodes as NodeList<Descendant>
+    );
+
+    return flips.map((flip) => ({
+      flip,
+      node: addresses.elementAt(flip.path),
+    }));
+  }
+
   /**
-   * Write a commit that only wraps and unwraps as the shapes that keep every
-   * enclosed letter and child: cuts and views at a wrap's text edges, and
-   * placeholders for the children an element encloses or releases. Returns
-   * null, before any write, for any other commit.
+   * Write anew each key a moved element stores as a set where it now needs a
+   * plain value, or the reverse. False when a moved element has no live Yjs
+   * element in the root.
+   */
+  private lowerStorageFlips(
+    flipped: ReadonlyArray<
+      Readonly<{ flip: StorageFlip; node: YjsNode | null }>
+    >
+  ): boolean {
+    for (const { flip, node } of flipped) {
+      if (!(node instanceof Y.XmlElement) || !this.isLiveInRoot(node)) {
+        return false;
+      }
+
+      const next = propertiesOf(flip.element);
+
+      setYjsElementAttributes(
+        node,
+        Object.fromEntries(
+          Object.entries(next).filter(([key]) => !flip.keys.includes(key))
+        ),
+        next,
+        (key) => this.isSetValued(flip.element, key, flip.context)
+      );
+    }
+
+    return true;
+  }
+
+  /**
+   * Write a commit that only wraps and unwraps, and may set any element's
+   * properties but its type, as the shapes that keep every enclosed letter
+   * and child: cuts and views at a wrap's text edges, placeholders for the
+   * children an element encloses or releases, then each property write on
+   * the element's kept Yjs element. Returns null, before any write, for any
+   * other commit.
    */
   private lowerEnclosures(
     write: YjsWrite,
@@ -2711,15 +2771,40 @@ export class YjsEventChangeBridge {
     before: DocumentIndex
   ): YjsEventLowerResult | null {
     const committed = getInternalDocumentRootChange(change, this.rootKey);
-    const steps = committed && enclosureStepsOf(committed, before);
+
+    if (!committed) return null;
+
+    const whole = enclosureStepsOf(committed, before);
+    const split = whole ? null : splitElementPropertyEdits(committed, before);
+    const middle = split ? split.inner.apply(before) : before;
+    const steps = whole ?? (split && enclosureStepsOf(split.outer, middle));
 
     if (!steps) return null;
+
+    const moves: Array<
+      Readonly<{ flips: StorageFlip[]; step: EnclosureStep }>
+    > = [];
+
+    for (const step of steps) {
+      const flips = storageFlipsOf(step, this.isSetValued, this.schemaRoot);
+
+      if (!flips) return null;
+      moves.push({ flips, step });
+    }
 
     let tokenLengthNodes = 0;
     let written = 0;
 
-    for (const step of steps) {
-      if (!writeEnclosure(write, step, this.isSetValued, this.schemaRoot)) {
+    for (const { flips, step } of moves) {
+      // An unwrap or edge names its moved elements in `before`, where they
+      // are found before the write moves them.
+      const kept =
+        step.kind === 'wrap' ? null : this.flippedNodes(step.before, flips);
+
+      if (
+        !writeEnclosure(write, step, this.isSetValued, this.schemaRoot) ||
+        !this.lowerStorageFlips(kept ?? this.flippedNodes(step.after, flips))
+      ) {
         if (written === 0) return null;
         return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
       }
@@ -2738,6 +2823,30 @@ export class YjsEventChangeBridge {
     }
 
     const { after } = getDefined(steps.at(-1));
+
+    if (split) {
+      const addresses = yjsAddressesOf(
+        this.root,
+        after.nodes as NodeList<Descendant>
+      );
+
+      this.lowerPeeledProperties(
+        split.peeled.map(({ path }) => {
+          const at = steps.reduce(
+            (position, step) => getDefined(step.change.mapPos(position, 1)),
+            middle.nodeRange(path).from
+          );
+          const { path: moved } = getDefined(after.nodeStartingAt(at));
+
+          return {
+            node: addresses.elementAt(moved),
+            path: moved,
+            previous: before.node(path) as Element,
+          };
+        }),
+        after
+      );
+    }
 
     this.setMirror(after.nodes as NodeList<Descendant>);
     this.ready = this.rootIndex.length === this.mirror.length;

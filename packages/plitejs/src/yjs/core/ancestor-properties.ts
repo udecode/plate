@@ -1,4 +1,7 @@
-import type { DocumentIndex } from '../../core/change/document-index';
+import type {
+  DocumentIndex,
+  IndexedNodeRange,
+} from '../../core/change/document-index';
 import {
   addSection,
   RootChange,
@@ -11,15 +14,17 @@ export type PeeledProperties = Readonly<{
   path: readonly number[];
 }>;
 
+type Replaced = ReadonlyArray<readonly [number, number]>;
+
 /**
- * Split out each property edit on the opening token of an element whose
- * content holds another of the change's replacements, so the element's own
- * properties and its children can lower apart. A retype stays, since child
- * encoding reads the type. `inner.compose(outer)` is the change.
+ * Split out each property edit on the opening token of an element that
+ * `peels` picks, beside a change that also replaces tokens. A retype stays,
+ * since child encoding reads the type. `inner.compose(outer)` is the change.
  */
-export const splitAncestorPropertyEdits = (
+const splitPropertyEdits = (
   change: RootChange,
-  document: DocumentIndex
+  document: DocumentIndex,
+  peels: (element: IndexedNodeRange, replaced: Replaced) => boolean
 ): Readonly<{
   inner: RootChange;
   outer: RootChange;
@@ -56,9 +61,7 @@ export const splitAncestorPropertyEdits = (
       !(value as readonly PropertyModification[]).some(
         ({ key }) => key === 'type'
       ) &&
-      replaced.some(
-        ([from, to]) => entry.contentFrom <= from && to <= entry.contentTo
-      );
+      peels(entry, replaced);
 
     if (peel) {
       peeled.push({ path: entry.path });
@@ -79,3 +82,27 @@ export const splitAncestorPropertyEdits = (
         peeled,
       };
 };
+
+/**
+ * Split out each property edit of an element whose content holds another of
+ * the change's replacements, so the element's own properties and its
+ * children can lower apart.
+ */
+export const splitAncestorPropertyEdits = (
+  change: RootChange,
+  document: DocumentIndex
+) =>
+  splitPropertyEdits(change, document, (element, replaced) =>
+    replaced.some(
+      ([from, to]) => element.contentFrom <= from && to <= element.contentTo
+    )
+  );
+
+/**
+ * Split out the property edits of every element, for a rest that keeps each
+ * element's Yjs node, such as wraps and unwraps.
+ */
+export const splitElementPropertyEdits = (
+  change: RootChange,
+  document: DocumentIndex
+) => splitPropertyEdits(change, document, () => true);
