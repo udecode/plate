@@ -1,0 +1,127 @@
+---
+description: Check that every small Markdown source parses, serializes and parses again to the same document, and that a streamed parse that continues its previous result equals a fresh parse at every chunking, over the plugins of the Markdown test editor. Use before and after changing packages/platejs/src/markdown/lib or another file in its coverage record, when the markdown-round-trip step of pnpm check fails, or when fixing a Markdown or streaming bug a seed or a tester found.
+argument-hint: '[check | deep | lower | case <identity> | update]'
+---
+
+# Markdown round trips and streamed parses
+
+Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--inline=3 --part=round-trip` and `--blocks=3` and compares their failures with Findings. `lower` runs `--lower` after a fix removes a known finding. `case <identity>` runs `--case=<identity>` to print one case's full detail. `update` brings the verification in line with changed code, as Coverage record says.
+
+**The property.** Two rules hold for every source up to the bound. A source that `editor.api.markdown.parse` accepts serializes, and the serialized Markdown parses to the same document. A streamed parse with `parseSlice` that continues a previous preview of the same source gives the result a fresh `parseSlice` of that prefix gives, at every chunking. `docs/vision/plate.md` says streaming continues the prior result with `previous`, and that the Markdown runtime owns reuse and invalidation so consumers keep no parse cache. Reuse that changed the result would break that promise.
+
+**The harm.** A round trip that changes the document loses content each time a user saves and reopens Markdown, or each time an AI reply goes through the codec. A streamed preview that differs from a fresh parse shows the user a document that changes when the stream ends, or a final document that differs from the source. Each Markdown fix before this check, such as e1fb01295e, covered only the cases someone had already found.
+
+## What it checks
+
+`packages/platejs/scripts/markdown-round-trip.ts` runs the real codec of `createTestEditor` in `packages/platejs/src/markdown/lib/__tests__/createTestEditor.tsx`. That editor has the plugins the Markdown stress cases use. The script checks the TypeScript code itself, not a model of it.
+
+1. **Inline contents.** Every string of up to `--inline` tokens from 22 tokens: `a`, a space, `*`, `**`, `_`, a backtick, `~~`, `[a](b)`, `<br/>`, `<u>`, `</u>`, a backslash, a newline, `$`, `!`, `#`, `<`, `&`, `https://a.b`, `[^1]`, `|` and `:+1:`.
+2. **Block forms.** 21 forms: paragraph, ATX heading, setext heading, quote, bullet, ordered and task items, table, fenced and indented code, math, div, callout, link reference, link definition, footnote definition, a lazy list item, thematic break, bold, link and a trailing break. 15 forms take every inline content. The setext heading, lazy list item, thematic break, bold, link and trailing break are fixed sources.
+3. **Sequences.** Every list of up to `--blocks` forms, each holding `a`, joined by one or two newlines.
+4. **Round trip.** Each form with each inline content, and each sequence, goes through parse, serialize and parse again under the default policy. A parse that refuses the source counts in the summary's `refused` and is not a failure. The script compares documents after `nameDocumentListIds`, because each parse gives every list a new id.
+5. **Streaming.** For each sequence the script parses every prefix fresh, as a preview (`lossPolicy: 'allow', partial: true`) and as a strict parse. Then it continues each reachable preview to its own prefix and every longer one, as a preview and as a strict parse, and compares each with the fresh result. A continuation reads its previous result through the runtime's checkpoint. Every stored state is a preview of a prefix of the same source, so the checkpoint's editor, formats, limits, policy and source test are the same for all of them, and each segment's nodes, diagnostics and last root follow from the segment ends. So the script records each checkpoint, merges previews whose segment ends match, and still covers every chunking without walking each chain. A failed preview merges with a checkpoint that has no segments, because neither reuses anything. When a preview has no recorded checkpoint, or a segment has no whole-number end, the script exits 2, because it can no longer read `markdownCheckpoints` in `packages/platejs/src/markdown/lib/internal/markdownConversion.ts`.
+6. **Rules.** A case records its first failure per rule:
+   - `markdown-round-trip`: a source whose parse, serialized and parsed again, gives another document.
+   - `markdown-serialize`: a parsed document that does not serialize, or whose Markdown does not parse.
+   - `markdown-stream`: a preview that continues an earlier preview and differs from a fresh preview.
+   - `markdown-stream-final`: a strict parse that continues a preview and differs from a fresh strict parse.
+   - `markdown-throws`: a parse or serialize that throws.
+7. It compares the findings with `packages/platejs/scripts/markdown-round-trip-baseline.json` through `tooling/scripts/finding-baseline.mjs`. Every finding is filed under `packages/platejs/src/markdown/lib`. An identity is the source alone, and the detail names the chunking, because which chain first reaches a state changes whenever the codec's segments do.
+
+## Run it
+
+Run every command from the repository root.
+
+- `pnpm check:markdown-round-trip` checks the gate bound: two inline tokens and two blocks. It compares 9,314 cases, 8,412 round trips and 902 streamed sources, in 6 to 17 s and 77 to 82 CPU-s at load averages of 33 to 60. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check markdown-round-trip` runs the same step through the check runner, and `pnpm check --affected` runs it for a change under `packages/platejs/src/` or `packages/plitejs/src/`, to the script or its baseline, to `packages/plitejs/scripts/check-harness.ts`, to `config/plite-source-aliases.ts`, to `tooling/scripts/finding-baseline.mjs`, or to a dependency through `pnpm-lock.yaml`.
+- `--inline` and `--blocks` raise one part of the bound, and `--part=round-trip` or `--part=stream` runs one half. `--inline=3 --part=round-trip` compares 166,264 cases in 437 CPU-s, and `--blocks=3` compares 83,234 cases in 1,722 CPU-s. A bound other than the gate's, `--part` or `--case` skips the baseline and exits 1 on any failure.
+- `--case='<identity or part of one>'` prints the full diff and stack of each failure whose identity contains it, such as `--case='"1. a\na\n\n1. a"'`.
+- `--jobs=<n>` sets the number of worker processes, the machine's cores up to 16 by default. Findings do not depend on it.
+- Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag, a crashed worker or a checkpoint the script cannot read. At the gate the run also fails when it compares other than 9,314 cases, the `GATE_CASES` constant, so a change that makes parse refuse more sources cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
+- After a fix removes a known finding, the gate fails until you run `pnpm check:markdown-round-trip --lower`. The baseline never grows past the base commit's copy. `--init` seeds only a rule the baseline lacks, and `--lower` and `--init` write nothing when the case count misses `GATE_CASES`.
+
+## Read a failure
+
+A finding prints its rule, identity and the first line of its detail:
+
+```text
+markdown-round-trip "# a<br/>"
+  serialized "a\n\n"; the parse again differs at .children.0: {"type":"paragraph","children":[{"text":"a"}]}, not {"level":1,"type":"heading","children":[{"text":"a\n"}]}
+
+markdown-stream "1. a\na\n\n1. a"
+  chunked at 1,9,10, the continued result differs at .slice.content.1.listId: "b", not "a"
+```
+
+Both are known findings. In the first, a heading that ends in a break serializes as a paragraph. In the second, the preview of the first 9 characters ends in `1`, which is not a list marker yet. So the segment scanner commits a boundary after the lazy line, and the continuation splits one list in two. Run `--case` on the identity for the full documents.
+
+Tell a real bug from a modeling error before you change code:
+
+- **Real bug.** A user can write the source, or a stream can deliver that chunking, and the codec breaks a rule. Fix the codec, then run `--lower`.
+- **Modeling error.** The script compares something the codec does not promise, such as a list id. Fix the script with the reason.
+- **Intended change.** A change to what the codec keeps, such as a new syntax it refuses, changes the rule too. Change the rule and `docs/vision/plate.md` together. Never weaken a rule or add a baseline entry to get green.
+
+## Findings
+
+The gate finds 223: 218 `markdown-round-trip`, 1 `markdown-throws`, 2 `markdown-stream` and 2 `markdown-stream-final`. Read by their examples, the round-trip entries fall into these classes. No log proves that each class has a single cause:
+
+- **An autolink before trailing punctuation.** The serializer escapes `_`, `*`, `**`, `</u>` or `~~` after the URL, so the parse again loses the link and keeps the backslash. `https://a.b_` serializes to `https://a.b\_`.
+- **An emoji shortcode inside a div.** `<div>:+1:</div>` comes back with the emoji glyph and escaped tags.
+- **A callout whose text starts or ends with a break.** `<callout>\na<br/>\n</callout>` loses its break.
+- **A heading that ends in a break.** `# a<br/>` serializes as a paragraph, and so does a setext heading over `a<br/>`.
+- **A heading that starts with a break.** `# <br/>a` serializes as a setext heading and loses the break.
+- **An autolink before a shortcode.** `https://a.b:+1:` gives a link whose URL holds the glyph.
+- **A break before an autolink.** `<br/>https://a.b` serializes the break as a backslash and a space.
+- **An unclosed `<u>`.** The serializer closes it around the text after it, and `<br/><u>` loses its break.
+- **A task item that starts with a break.** `- [ ] <br/>` loses its checkbox.
+- **Two breaks in a row.** `- <br/><br/>` gains a third newline.
+- **A bracketed autolink.** `[https://a.b&]` comes back with the `&` in the URL.
+- **A URL inside a div.** `<div>https://a.b </div>` becomes a link when parsed again.
+- **A table cell that ends in a newline.** `| https://a.b\n |\n| - |` loses its link.
+
+The other entries each have one cause:
+
+- **A footnote definition in a quote.** `> [^1]:+1:` throws `Markdown node mapping "blockquote" expected block content.` during serialize. 1 `markdown-throws` entry.
+- **A lazy line hides an open list from the segment scanner.** `findMarkdownSegmentBoundaries` in `packages/platejs/src/markdown/lib/internal/markdownSegments.ts` reads the line before a blank line, which is the lazy `a` and not a list line. So `1. a\na\n\n1. a` streamed at `1,9,10` gives two lists where a fresh parse gives one. 2 `markdown-stream` and 2 `markdown-stream-final` entries.
+
+`--inline=3 --part=round-trip` fails 7,793 round trips and 24 throws, and every throw is a footnote definition in a quote. `--blocks=3` fails 294 round trips, 1 throw, 183 `markdown-stream` and 181 `markdown-stream-final` cases. Every stream case has a lazy line after a list item, such as `1. a\n[a](b)\n\n1. a`. The deep runs read no baseline.
+
+## What a pass proves
+
+Bugs planted on this tree showed where the gate holds:
+
+- Reverting e1fb01295e's codec changes, which kept links, trailing breaks and table images, gives 330 `markdown-round-trip` and 74 `markdown-throws` findings, 199 of them new. `- a<br/>` drops its break, and a heading with an autolink throws `heading expected inline content`.
+- Dropping the `!LIST.test(state.previousNonBlank)` test in `markdownSegments.ts` gives stream findings on `1. a\n\n1. a` and `1. a\n\n1. a\na` chunked at 1,7,8, two lists where one belongs.
+- Dropping the `MARKDOWN_DEFINITION.test(source)` fallback in `markdownConversion.ts` gives stream findings on `[a]\n\n[a]: b` chunked at 1,11 and `[^1]: a\n\n[^1]: a` chunked at 1,13, a reference that a later definition does not resolve.
+- Keeping a segment that ends in an inline node in `markdownConversion.ts` gives a stream finding on `<div>a</div>\n\n<div>a</div>` chunked at 1,18, two text runs that normalization would join.
+
+Each run used the final script at the gate bound, and each restored the product files byte for byte.
+
+## Coverage record
+
+Synced at `test(platejs): check Markdown round trips and streamed parses on every small document`. The verification describes these files as they stand there:
+
+| File | What the check exercises |
+| --- | --- |
+| `packages/platejs/src/markdown/lib/MarkdownPlugin.ts` | `parse`, `parseSlice` and `serialize` |
+| `packages/platejs/src/markdown/lib/internal/markdownConversion.ts` | the full parse, checkpoints and segment reuse |
+| `packages/platejs/src/markdown/lib/internal/markdownSegments.ts` | where a streamed parse may commit a segment |
+| `packages/platejs/src/markdown/lib/internal/` | the mappings, tags, lines and intrinsics both directions use |
+| `packages/platejs/src/markdown/lib/deserializer/` | Markdown to nodes |
+| `packages/platejs/src/markdown/lib/serializer/` | nodes to Markdown |
+| `packages/platejs/src/markdown/lib/__tests__/createTestEditor.tsx` | the plugins under test |
+| `packages/platejs/src/markdown/lib/__tests__/nameListIds.ts` | comparing documents up to list ids |
+| `packages/plitejs/scripts/check-harness.ts` | the flags, workers and gate the formal checks share |
+
+To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "Markdown round trips and streamed parses"`, then run `git log --oneline <that commit>..HEAD --` with the table's paths and `packages/platejs/scripts/markdown-round-trip.ts`. For each commit it lists, read the diff and confirm three things. A continuation still reads its previous result only through the checkpoint's segments and the `startsWith` test on its source, so merging previews by segment ends stays sound. New Markdown syntax the codec supports has an inline token or a block form. A new plugin in the test editor that changes what a source parses to is in the gate. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:markdown-round-trip`.
+
+## What it does not cover
+
+- HTML round trips and the HTML codec.
+- Streaming of most inline contents. The stream half runs only the block sequences, where each form holds `a`, so inline syntax streams only in the fixed bold, link and trailing-break forms.
+- Sources longer than the bound, and containers nested inside one another.
+- Plugins outside the test editor, MDX components and custom rules.
+- A serialized form that is not the source the user wrote. The check compares documents, not Markdown text.
+- A second failure on a known source. A case records its first failure per rule, and its identity names only the source, so a known source that starts to fail in a new way, or on another chunking, still matches its baseline entry.
+- A parse that refuses a source under the default policy. Such a source counts in `refused` and gets no round trip.
+- The editor surface: pasting, AI streaming into a document, and the browser.
+
+`/pstack:maintain-formal-verification-skill` brings this verification back in line after changes that did not recheck it.

@@ -356,6 +356,20 @@ export const steps = [
     key: [],
   },
   {
+    name: 'markdown-round-trip',
+    private: true,
+    run: 'pnpm check:markdown-round-trip',
+    affected: touches(
+      'packages/platejs/scripts/markdown-round-trip',
+      'packages/platejs/src/',
+      'packages/plitejs/scripts/check-harness',
+      'packages/plitejs/src/',
+      'config/plite-source-aliases.ts',
+      'tooling/scripts/finding-baseline.mjs'
+    ),
+    key: [],
+  },
+  {
     name: 'bench-targets',
     private: true,
     run: 'pnpm plite:bench:targets:check',
