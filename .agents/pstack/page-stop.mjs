@@ -14,12 +14,11 @@
 import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CODE_VERSION, contextOf, gonePagesFile, pageFile, pageUrlOf, parsePageFile, runBody, runHeader, slugOf, viewerCode } from './plan-page.mjs';
+import { asksOwner, CODE_VERSION, contextOf, gonePagesFile, pageFile, pageUrlOf, parsePageFile, runBody, runHeader, slugOf, viewerCode } from './plan-page.mjs';
 import { stageOfRow } from './status.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/page-stop.mjs stage|stop <plan.md> [--base <file>] [--new] [--session <id>], or --hook';
 const CODEX = 'Nothing to send: outside Claude Code, such as in Codex, a run publishes nothing; render the page locally';
-const DUE = ['occurrence', 'state', 'status', 'title', 'asks', 'picks'];
 
 const readJson = (path) => (existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null);
 const same = (a, b, fields) => fields.every((field) => JSON.stringify(a[field]) === JSON.stringify(b[field]));
@@ -63,15 +62,15 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
   const header = runHeader(planPath, { session, at: now });
   const previous = readJson(join(out, 'runs', `${header.key}.json`));
   const listed = base.runs.find((entry) => entry.key === header.key);
-  // The page shows the previous header only when the base lists the entry that publish wrote.
-  const shown = previous && listed && listed.at === previous.at ? previous : null;
+  const onPage = listed && previous?.at === listed.at ? previous : null;
   const { occurrence, since } = occurrenceOf(planPath, header.stage);
   header.occurrence = occurrence;
-  header.since = since ?? (shown?.occurrence === occurrence ? shown.since : now);
+  header.since = since ?? (onPage?.occurrence === occurrence ? onPage.since : now);
   const highest = Math.max(0, ...base.runs.map((entry) => (Number.isInteger(entry.handback) ? entry.handback : 0)));
   header.handback = command === 'stop' ? highest + 1 : (listed?.handback ?? null);
-  if (command === 'stage' && shown && same(header, shown, DUE)) return ['Nothing to send: the page already shows this stage'];
-  const body = command === 'stop' || !shown || !same(header, shown, ['asks', 'picks']) ? runBody(planPath, { key: header.key }) : null;
+  const body = runBody(planPath, { key: header.key });
+  const quiet = onPage ? same(header, onPage, ['asks', 'picks']) : !previous && !listed && !asksOwner(header);
+  if (command === 'stage' && quiet) return ['Nothing to send: between stops the page changes only for a new or changed open question or (look) or (answer) pick'];
 
   const entry = { key: header.key, session, plan: header.plan, slug: header.slug, title: header.title, added: listed?.added ?? now, at: now, handback: header.handback, done: header.state === 'done' };
   const stages = Object.fromEntries(base.list.map((item) => [item.slug, item.stage]));
@@ -84,14 +83,12 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
   };
   write('index.html', pageFile({ title: doc.title || name, subject: name, runs, stages }));
   write(files[0], `${JSON.stringify(header, null, 2)}\n`);
-  if (body) {
-    write(`runs/${header.key}.html`, body.html);
-    files.push(`runs/${header.key}.html`);
-    for (const shot of body.shots) {
-      mkdirSync(dirname(join(out, shot.path)), { recursive: true });
-      copyFileSync(shot.source, join(out, shot.path));
-      files.push(shot.path);
-    }
+  write(`runs/${header.key}.html`, body.html);
+  files.push(`runs/${header.key}.html`);
+  for (const shot of body.shots) {
+    mkdirSync(dirname(join(out, shot.path)), { recursive: true });
+    copyFileSync(shot.source, join(out, shot.path));
+    files.push(shot.path);
   }
   if (base.code < CODE_VERSION) {
     const { version, js, css } = viewerCode();

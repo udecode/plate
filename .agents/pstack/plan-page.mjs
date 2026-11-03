@@ -27,6 +27,16 @@ const sha256 = (data) => createHash('sha256').update(data).digest('hex');
 const FONTS = 'https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
 const HLJS = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
 
+const CODE_1_FORM_CSS = `
+.needs-head h2 { margin: 0; padding-bottom: 4px; color: var(--c-amber); }
+.needs-head .lg, .needs .bar, .o input, .hd { display: none; }
+div.opts { display: grid; gap: 3px; }
+.o { display: block; }
+.o > span { margin-left: 0.35em; }
+.o:has(input[checked]) b { color: var(--c); }
+.o .why { display: block; margin: 0; }
+`;
+
 const PAGE_CSS = `
 :root {
   --ground: #ffffff; --paper: #ffffff; --ink: #15181d; --muted: #4a535e; --faint: #626b77; --rule: #e4e7eb;
@@ -61,43 +71,26 @@ h3, h4, h5 { font-size: 0.95rem; margin: 10px 0 2px; }
 .panel { min-width: 0; }
 .count { font-size: 0.78rem; color: var(--faint); font-weight: 500; letter-spacing: 0; text-transform: none; }
 .chip { font: 700 0.68rem var(--sans); letter-spacing: 0.05em; text-transform: uppercase; color: var(--cta-ink); background: var(--cta); border-radius: 999px; padding: 1px 7px; }
-.needs { display: grid; border: 2px solid var(--frame, var(--c-amber)); border-radius: 12px; padding: 12px 16px 0; min-width: 0; }
-.needs:not(:has(.bar)) { padding-bottom: 12px; }
-.needs-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding-bottom: 4px; }
-.needs-head h2 { margin: 0; color: var(--frame, var(--c-amber)); }
-.lg { color: var(--c); font-size: 0.8rem; font-weight: 600; }
-.lg::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 5px; vertical-align: 1px; }
+.needs { display: grid; border: 2px solid var(--c-amber); border-radius: 12px; padding: 12px 16px; min-width: 0; }
+.needs > h2 { margin: 0; padding-bottom: 4px; color: var(--c-amber); }
 .q { display: grid; gap: 4px; padding: 12px 0; border-top: 1px solid var(--rule); min-width: 0; }
 .q h3 { margin: 0; font-size: 1.02rem; line-height: 1.35; display: flex; gap: 9px; align-items: baseline; text-wrap: balance; }
 .n { flex: none; font: 700 0.74rem var(--mono); color: var(--badge-ink); background: var(--c); border-radius: 999px; min-width: 1.65em; text-align: center; padding: 1px 0; }
 .ctx { margin: 0 0 2px 2.25em; font-size: 0.86rem; color: var(--muted); }
 .fact { color: var(--faint); }
 .fact::before { content: "· "; }
-.opts { display: grid; grid-template-columns: 1.3em minmax(7.5em, max-content) minmax(0, 1.2fr) minmax(0, 1fr); gap: 0 12px; margin-left: 2.25em; font-size: 0.9rem; }
-.hd { font: 700 0.62rem var(--sans); letter-spacing: 0.07em; text-transform: uppercase; color: var(--faint); padding-bottom: 2px; }
-.o { display: contents; cursor: pointer; }
-.o > * { padding: 4px 0; border-top: 1px solid var(--rule); }
-.o input { margin: 7px 0 0; width: 1.05em; height: 1.05em; accent-color: var(--c); }
-.o b { font-weight: 650; }
-.o .cost { color: var(--muted); }
-.o.is-selected b { color: var(--c); }
-.o .why { grid-column: 3 / -1; border-top: 0; padding: 0 0 4px; margin-top: -2px; color: var(--muted); font-size: 0.82rem; font-style: italic; }
-.why-all, .nopick { margin: 2px 0 0 2.25em; font-size: 0.82rem; color: var(--muted); font-style: italic; }
+.opts { margin: 2px 0 0 2.25em; padding-left: 1.1em; font-size: 0.9rem; }
+.opts li + li { margin-top: 3px; }
+.opts b { font-weight: 650; }
+.opts .pick b { color: var(--c); }
+.opts .cost { color: var(--muted); }
+.mine { font: 700 0.62rem var(--sans); letter-spacing: 0.07em; text-transform: uppercase; color: var(--c); }
+.why, .nopick { margin: 2px 0 0 2.25em; font-size: 0.82rem; color: var(--muted); font-style: italic; }
 .nopick { color: var(--c); font-style: normal; font-weight: 600; }
 .from { color: var(--faint); font-weight: 400; font-size: 0.8rem; }
-.bar { position: sticky; bottom: env(safe-area-inset-bottom, 0px); display: flex; gap: 10px; align-items: center; margin: 4px -16px 0; padding: 9px 16px; background: var(--ground); border-top: 2px solid var(--frame, var(--c-amber)); border-radius: 0 0 10px 10px; }
-.bar code { flex: 1 1 auto; min-width: 0; font: 600 0.88rem var(--mono); overflow-wrap: anywhere; padding: 0; }
-.bar.is-default code { color: var(--c-green); }
-.bar.is-changed code { color: var(--c-amber); }
-.bar.is-missing code { color: var(--c-red); }
-.bar button { padding: 4px 12px; font-weight: 700; color: var(--frame, var(--c-amber)); border-color: var(--frame, var(--c-amber)); }
-.bar button:disabled { opacity: 0.4; cursor: not-allowed; }
-@media (max-width: 620px) {
-  .opts { grid-template-columns: 1.3em minmax(0, 1fr); margin-left: 0; }
-  .hd { display: none; }
-  .o > span { grid-column: 2; border-top: 0; padding: 0; }
-  .o > .cost { padding-bottom: 6px; }
-  .ctx, .why-all, .nopick { margin-left: 0; }
+.more { margin: 4px 0 0; font-size: 0.82rem; color: var(--faint); }
+${CODE_1_FORM_CSS}@media (max-width: 620px) {
+  .opts, .ctx, .why, .nopick { margin-left: 0; }
 }
 .topics { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
 .topic { display: grid; gap: 2px; min-width: 0; }
@@ -508,11 +501,8 @@ function assertUnfolded(plan, doc, { name, others, paired, where }) {
 const DEFAULTS_HEAD = ['decision', 'pick', 'alternative', 'word'];
 const headCell = (cell) => sameText(cell.replace(/[*_`]/g, ''));
 const isDefaultsHead = (head) => DEFAULTS_HEAD.every((cell, index) => headCell(head[index] ?? '') === cell);
-const TIERS = new Map([
-  ['big', 'Big calls'],
-  ['small', 'Small calls'],
-  ['detail', 'Details'],
-]);
+const IMPACTS = new Set(['big', 'small']);
+const RETIRED_IMPACTS = new Set(['detail']);
 const impactColumn = (head) => head.findIndex((cell) => headCell(cell) === 'impact');
 
 function assertDefaults(plan, where) {
@@ -524,8 +514,8 @@ function assertDefaults(plan, where) {
     }
     for (const { head, rows } of tables) {
       const impact = impactColumn(head);
-      const wrong = impact < 0 ? null : rows.find((row) => !TIERS.has(headCell(row[impact] ?? '')));
-      if (wrong) throw new Error(`## Defaults in ${where} gives "${wrong[0]}" the impact "${wrong[impact] ?? ''}"; write big, small or detail`);
+      const wrong = impact < 0 ? null : rows.find((row) => !IMPACTS.has(headCell(row[impact] ?? '')) && !RETIRED_IMPACTS.has(headCell(row[impact] ?? '')));
+      if (wrong) throw new Error(`## Defaults in ${where} gives "${wrong[0]}" the impact "${wrong[impact] ?? ''}"; write big or small`);
     }
   }
 }
@@ -738,15 +728,10 @@ function picksHtml(lines) {
         })
         .join('')}</ul>`;
     const impact = impactColumn(head);
-    if (impact < 0) {
-      out.push(list(rows));
-      continue;
-    }
-    const tierOf = (row) => headCell(row[impact] ?? '') || 'unsorted';
-    for (const tier of new Set([...TIERS.keys(), ...rows.map(tierOf)])) {
-      const group = rows.filter((row) => tierOf(row) === tier);
-      if (group.length) out.push(`<h3>${escapeHtml(TIERS.get(tier) ?? tier[0].toUpperCase() + tier.slice(1))}</h3>${list(group)}`);
-    }
+    const shown = rows.filter((row) => headCell(row[impact] ?? '') === 'big' || PICK_LEVEL.test(row[1] ?? ''));
+    const rest = rows.length - shown.length;
+    if (shown.length) out.push(list(shown));
+    if (rest) out.push(`<p class="more">${rest} other ${rest === 1 ? 'pick stays' : 'picks stay'} in the plan file.</p>`);
   }
   flush();
   return out.join('');
@@ -1001,9 +986,7 @@ const ASK_FIELDS = [
   ['go', /^if you say go:\s*/i],
   ['attention', /^attention:\s*/i],
 ];
-const PICK_ANY = /^pick any\.?$/i;
-const ATTENTION = { answer: ['needs you', 'red'], look: ['worth a look', 'amber'], safe: ['safe', 'green'] };
-const LEVELS = Object.keys(ATTENTION);
+const ATTENTION = { answer: 'red', look: 'amber', safe: 'green' };
 const levelOf = (ask) => (ask.options.some((option) => option.recommended) ? (ATTENTION[ask.attention] ? ask.attention : 'look') : 'answer');
 
 const splitCost = (text) => {
@@ -1032,12 +1015,11 @@ function questionGroups(sections) {
 }
 
 function askOf({ header, lines, from, plan = null }) {
-  const ask = { header, from, plan, lines, question: [], why: '', facts: [], options: [], reason: '', go: '', attention: '', multi: false, rest: [] };
+  const ask = { header, from, plan, lines, question: [], why: '', facts: [], options: [], reason: '', go: '', attention: '', rest: [] };
   let last = null;
   for (const line of lines) {
     const text = line.trim();
-    if (PICK_ANY.test(text)) ask.multi = true;
-    if (!text || PICK_ANY.test(text)) {
+    if (!text) {
       last = null;
       continue;
     }
@@ -1075,29 +1057,10 @@ function missingParts(ask) {
     !ask.why && 'Why it needs you:',
     ask.options.length < 2 && 'two or more options',
     ask.options.some((option) => !option.cost) && 'a Cost: on every option',
-    picks > 1 && !ask.multi && 'at most one (recommended) option, or a Pick any. line',
+    picks > 1 && 'at most one (recommended) option',
     picks > 0 && !ask.reason && 'Why I pick it:',
     picks > 0 && !ATTENTION[ask.attention] && 'Attention: safe, look or answer',
     picks === 0 && !ask.go && 'If you say go:',
-  ].filter(Boolean);
-}
-
-const MEMO_WORDS = 15;
-const MEMO_LABEL_WORDS = 3;
-const MEMO_FACTS = 2;
-function longParts(ask) {
-  const parts = [
-    ['the question', ask.question.join(' ')],
-    ['Why it needs you:', ask.why],
-    ...ask.facts.map((fact, index) => [`fact ${index + 1}`, fact]),
-    ...ask.options.flatMap((option) => [[`"${option.label}"`, option.does], [`"${option.label}" Cost:`, option.cost]]),
-    ['Why I pick it:', ask.reason],
-    ['If you say go:', ask.go],
-  ];
-  return [
-    ask.facts.length > MEMO_FACTS && `${ask.facts.length} facts, where ${MEMO_FACTS} is the most`,
-    ...ask.options.filter((option) => wordCount(option.label) > MEMO_LABEL_WORDS).map((option) => `the label "${option.label}" at ${wordCount(option.label)} words, where ${MEMO_LABEL_WORDS} is the most`),
-    ...parts.filter(([, text]) => wordCount(text) > MEMO_WORDS).map(([name, text]) => `${name} at ${wordCount(text)} words, where ${MEMO_WORDS} is the most`),
   ].filter(Boolean);
 }
 
@@ -1117,12 +1080,8 @@ const listed = (items) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} 
 function assertAsks(plan, where) {
   const { groups } = questionGroups(sectionsNamed(plan, 'Open questions'));
   for (const group of groups) {
-    const ask = askOf(group);
-    const fix = "write it as the decision memo in the plan-page skill's references/shape.md";
-    const missing = missingParts(ask);
-    if (missing.length) throw new Error(`"${group.header}" in ${where} needs ${listed(missing)}; ${fix}`);
-    const long = longParts(ask);
-    if (long.length) throw new Error(`"${group.header}" in ${where} runs long: ${listed(long)}; ${fix}`);
+    const missing = missingParts(askOf(group));
+    if (missing.length) throw new Error(`"${group.header}" in ${where} needs ${listed(missing)}; write it as the decision memo in the plan-page skill's references/shape.md`);
   }
 }
 
@@ -1335,66 +1294,21 @@ function carriedPlans(entry, root) {
   return paths.map((path) => ({ path, plan: parsePlan(readFileSync(path, 'utf-8')) }));
 }
 
-// A question's digest covers its rendered memo, so it changes exactly when the owner would read a different question.
 const askDigest = (ask) => sha256(askHtml(ask, 0));
 
-// A run body names its inputs by the run's key, so two bodies open on one page keep separate answers.
-function askHtml(ask, index, anchor = '', run = null) {
-  const style = `--c: var(--c-${ATTENTION[levelOf(ask)][1]})`;
-  const tags = `${ask.plan ? ` data-plan="${escapeHtml(ask.plan)}"` : ''}${anchor}${run ? ` data-digest="${askDigest(ask)}"` : ''}`;
-  const name = run ? `${run.key}:q${index}` : `q${index}`;
+function askHtml(ask, index, anchor = '') {
+  const style = `--c: var(--c-${ATTENTION[levelOf(ask)]})`;
+  const tags = `${ask.plan ? ` data-plan="${escapeHtml(ask.plan)}"` : ''}${anchor}`;
   const head = `<h3><span class="n">${index + 1}</span><span>${ask.options.length ? inline(ask.question.join(' ')) : inline(ask.header)}${ask.from ? ` <span class="from">from ${inline(ask.from)}</span>` : ''}</span></h3>`;
   if (ask.options.length === 0) return `<article class="q" style="${style}"${tags}>${head}${blocksHtml(ask.lines)}</article>`;
-  const picks = ask.options.filter((option) => option.recommended).map((option) => option.label);
-  const type = ask.multi ? 'checkbox' : 'radio';
+  const picked = ask.options.some((option) => option.recommended);
   const context = [ask.why && inline(ask.why), ...ask.facts.map((fact) => `<span class="fact">${inline(fact)}</span>`)].filter(Boolean).join(' ');
   const rows = ask.options
-    .map((option) => `<label class="o"><input type="${type}" name="${escapeHtml(name)}" value="${escapeHtml(option.label)}"${option.recommended ? ' checked' : ''}><b>${inline(option.label)}</b><span>${inline(option.does)}</span><span class="cost">${inline(option.cost)}</span>${option.recommended && ask.reason && !ask.multi ? `<span class="why">${inline(ask.reason)}</span>` : ''}</label>`)
+    .map((option) => `<li${option.recommended ? ' class="pick"' : ''}><b>${inline(option.label)}</b>${option.recommended ? ' <span class="mine">my pick</span>' : ''} ${inline(option.does)}${option.cost ? ` <span class="cost">Cost: ${inline(option.cost)}</span>` : ''}</li>`)
     .join('');
-  const after = picks.length === 0 ? `<p class="nopick">${inline(ask.go || 'No pick: choose one.')}</p>` : ask.multi && ask.reason ? `<p class="why-all">${inline(ask.reason)}</p>` : '';
-  return `<article class="q" style="${style}"${tags} data-title="${escapeHtml(ask.header)}" data-multi="${ask.multi ? 1 : 0}" data-default="${escapeHtml(JSON.stringify(picks))}">${head}${context ? `<p class="ctx">${context}</p>` : ''}<div class="opts" role="${ask.multi ? 'group' : 'radiogroup'}"><span class="hd"></span><span class="hd"></span><span class="hd">Then</span><span class="hd">Cost</span>${rows}</div>${blocksHtml(ask.rest)}${after}</article>`;
+  const after = !picked ? `<p class="nopick">${inline(ask.go || 'No pick: choose one.')}</p>` : ask.reason ? `<p class="why">${inline(ask.reason)}</p>` : '';
+  return `<article class="q" style="${style}"${tags}>${head}${context ? `<p class="ctx">${context}</p>` : ''}<ul class="opts">${rows}</ul>${blocksHtml(ask.rest)}${after}</article>`;
 }
-
-const ANSWER_SCRIPT = `<script>
-(() => {
-  const root = document.querySelector('.needs');
-  const bar = root.querySelector('.bar');
-  const text = bar.querySelector('code');
-  const copy = bar.querySelector('button');
-  const update = () => {
-    const changed = [];
-    const missing = [];
-    for (const q of root.querySelectorAll('.q[data-title]')) {
-      for (const input of q.querySelectorAll('input')) input.closest('.o').classList.toggle('is-selected', input.checked);
-      const chosen = [...q.querySelectorAll('input:checked')].map((input) => input.value);
-      const picks = JSON.parse(q.dataset.default);
-      if (q.dataset.multi !== '1' && chosen.length === 0) {
-        missing.push(q.dataset.title);
-        continue;
-      }
-      if (chosen.length !== picks.length || chosen.some((value) => !picks.includes(value))) changed.push(q.dataset.title + ': ' + (chosen.join(', ') || 'none'));
-    }
-    bar.className = 'bar ' + (missing.length ? 'is-missing' : changed.length ? 'is-changed' : 'is-default');
-    text.textContent = missing.length ? 'Answer ' + missing.join(', ') : changed.length ? 'go, except ' + changed.join('; ') : 'go';
-    copy.disabled = missing.length > 0;
-    copy.textContent = 'Copy';
-  };
-  root.addEventListener('change', update);
-  copy.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(text.textContent);
-      copy.textContent = 'Copied';
-    } catch {
-      const range = document.createRange();
-      range.selectNodeContents(text);
-      getSelection().removeAllRanges();
-      getSelection().addRange(range);
-      copy.textContent = 'Selected';
-    }
-  });
-  update();
-})();
-</script>`;
 
 const PICK_LEVEL = /\s*\((look|answer)\)\s*$/iu;
 
@@ -1413,7 +1327,6 @@ export function planParts(entry) {
     reason: ask.reason,
     go: ask.go,
     attention: levelOf(ask),
-    multi: ask.multi,
     lines: ask.options.length ? [] : ask.lines.map((line) => line.trim()).filter(Boolean),
     rest: ask.rest.map((line) => line.trim()).filter(Boolean),
   }));
@@ -1431,10 +1344,7 @@ export function planParts(entry) {
   return { title: plan.title || basename(entry.path, '.md'), status: plan.meta.status ?? '', brief: answers ? { changes: answer(0), risks: answer(1) } : null, asks, picks };
 }
 
-// The copied answer names this digest, so the lead can tell which version of the questions it answers.
-const answerDigest = (asks) => sha256(asks.map(askDigest).join('\n')).slice(0, 12);
-
-function needsSection(sections, lead, run = null) {
+function needsSection(sections, lead) {
   const { intro, groups, notes } = questionGroups(sections);
   const anchored = new Set([lead]);
   const anchorOnce = (plan) => {
@@ -1443,17 +1353,11 @@ function needsSection(sections, lead, run = null) {
     return ` id="run-${escapeHtml(slugOf(plan))}"`;
   };
   const noteHtml = () => notes.map((note) => `<p class="from" data-plan="${escapeHtml(note.plan)}"${anchorOnce(note.plan)}>from ${inline(note.from)}</p>${blocksHtml(note.lines)}`).join('');
-  if (groups.length === 0) return `<section class="needs"><div class="needs-head"><h2>Needs you</h2></div>${blocksHtml(intro)}${noteHtml()}</section>`;
-  const asks = groups.map(askOf).sort((a, b) => LEVELS.indexOf(levelOf(a)) - LEVELS.indexOf(levelOf(b)));
-  const legend = LEVELS.map((level) => [level, asks.filter((ask) => levelOf(ask) === level).length])
-    .filter(([, count]) => count)
-    .map(([level, count]) => `<span class="lg" style="--c: var(--c-${ATTENTION[level][1]})">${count} ${ATTENTION[level][0]}</span>`)
+  const items = groups
+    .map(askOf)
+    .map((ask, index) => askHtml(ask, index, anchorOnce(ask.plan)))
     .join('');
-  const answerable = asks.some((ask) => ask.options.length);
-  const items = asks.map((ask, index) => askHtml(ask, index, anchorOnce(ask.plan), run)).join('');
-  const others = noteHtml();
-  const tags = run && answerable ? ` data-asks="${answerDigest(asks)}"` : '';
-  return `<section class="needs" style="--frame: var(--c-${ATTENTION[levelOf(asks[0])][1]})"${tags}><div class="needs-head"><h2>Needs you</h2>${legend}</div>${blocksHtml(intro)}${items}${others}${answerable ? '<div class="bar" aria-live="polite"><code></code><button type="button">Copy</button></div>' : ''}</section>${answerable && !run ? ANSWER_SCRIPT : ''}`;
+  return `<section class="needs"><h2>Needs you</h2>${blocksHtml(intro)}${items}${noteHtml()}</section>`;
 }
 
 function parsePlan(source) {
@@ -1752,11 +1656,10 @@ function page(planPath, { folded = false, run = null } = {}) {
   const statusLine = sentence ? `<p class="status-line">${inline(sentence[0].toUpperCase() + sentence.slice(1))}</p>` : '';
   const title = escapeHtml(doc.title || basename(planPath, '.md'));
   const where = subjectPath ? relative(root, subjectPath) : repoPath;
-  // The viewer gives each plan's section the run-<slug> id, so a body's header carries none.
   const headerTag = run ? `<header data-plan="${escapeHtml(repoPath)}">` : `<header id="run-${escapeHtml(slugOf(repoPath))}" data-plan="${escapeHtml(repoPath)}">`;
   const briefMain = () => {
     const asks = needsOf(true);
-    const asking = asks.length ? needsSection(asks, repoPath, run) : '';
+    const asking = asks.length ? needsSection(asks, repoPath) : '';
     const answers = brief
       .map((answer) => ({ answer, index: BRIEF.findIndex((question) => sameText(question) === sameText(answer.question)) }))
       .filter(({ index }) => index >= 0)
@@ -1809,7 +1712,7 @@ function page(planPath, { folded = false, run = null } = {}) {
     <div class="meta"><code>${escapeHtml(where)}</code>${planTag}${hub ? `<span>History <code>${escapeHtml(hub)}</code></span>` : ''}${carriedTag}${leadSeatsHtml(entries)}${reviewTag}<span>Updated ${updated} UTC</span></div>
   </header>
   ${byRole('demo', plan).map((section) => demoHtml(section, shot)).join('')}
-  ${needs.length ? needsSection(needs, repoPath, run) : ''}${close ? sectionHtml(close, 'panel') : ''}
+  ${needs.length ? needsSection(needs, repoPath) : ''}${close ? sectionHtml(close, 'panel') : ''}
   ${byRole('teach', plan).map((section) => teachHtml(section, shot)).join('')}
   ${changeHtml('api')}
   ${changeHtml('lead')}
@@ -1846,7 +1749,7 @@ document.querySelectorAll('.diff code').forEach((element) => window.hljs?.highli
   return { html, name };
 }
 
-export const CODE_VERSION = 1;
+export const CODE_VERSION = 2;
 
 const RUNNING = { now: 'working', waiting: 'waiting', blocked: 'blocked' };
 
@@ -1861,6 +1764,9 @@ function ownAsks(plan, repoPath) {
   const unheaded = intro.some((line) => line.trim()) ? [{ title: '', digest: sha256(blocksHtml(intro)) }] : [];
   return [...unheaded, ...groups.map(askOf).map((ask) => ({ title: ask.header, digest: askDigest(ask) }))];
 }
+
+const NO_PICKS = sha256('');
+export const asksOwner = (header) => header.asks.length > 0 || header.picks !== NO_PICKS;
 
 const picksDigest = (plan) =>
   sha256(
@@ -2044,41 +1950,6 @@ function viewerModel({ data, headers = {}, now = Date.now(), hash = '' }) {
   return { lead, sections, strip, alsoWaiting, target: { section: section?.id ?? null, entry: entry?.id ?? null } };
 }
 
-function answerText({ subject, slug, digest, asks }) {
-  const missing = asks.filter((ask) => !ask.multi && ask.chosen.length === 0).map((ask) => ask.title);
-  if (missing.length) return { state: 'missing', text: `Answer ${missing.join(', ')}` };
-  const changed = asks
-    .filter((ask) => ask.chosen.length !== ask.defaults.length || ask.chosen.some((value) => !ask.defaults.includes(value)))
-    .map((ask) => `${ask.title}: ${ask.chosen.join(', ') || 'none'}`);
-  const go = `go ${subject}/${slug} @${digest}`;
-  return changed.length ? { state: 'changed', text: `${go}, except ${changed.join('; ')}` } : { state: 'default', text: go };
-}
-
-function draftKey(subject, key, digest) {
-  return `pstack-draft ${JSON.stringify([subject, key, digest])}`;
-}
-
-// Storage can be missing or throw in a private window or a preview, so a draft is only ever a convenience.
-function draftStore(storage) {
-  return {
-    read(name) {
-      try {
-        const text = storage?.getItem(name);
-        return text ? JSON.parse(text) : null;
-      } catch {
-        return null;
-      }
-    },
-    write(name, value) {
-      try {
-        storage?.setItem(name, JSON.stringify(value));
-      } catch {
-        // The draft is lost, and the answer still works.
-      }
-    },
-  };
-}
-
 async function viewerMain(api, { hljs: hljsSource }) {
   const block = document.getElementById('pstack-page');
   const mount = document.getElementById('pstack-mount');
@@ -2116,13 +1987,6 @@ async function viewerMain(api, { hljs: hljsSource }) {
       return null;
     }
   };
-  let storage = null;
-  try {
-    storage = window.localStorage;
-  } catch {
-    storage = null;
-  }
-  const drafts = api.draftStore(storage);
   const headers = {};
   await Promise.all(
     data.runs.map(async (entry) => {
@@ -2199,63 +2063,12 @@ async function viewerMain(api, { hljs: hljsSource }) {
     });
   };
 
-  const wire = (part, entry) => {
-    const needs = part.querySelector('.needs[data-asks]');
-    const bar = needs?.querySelector('.bar');
-    const text = bar?.querySelector('code');
-    const copy = bar?.querySelector('button');
-    if (!needs || !text || !copy) return;
-    const questions = [...needs.querySelectorAll('.q[data-title]')];
-    const chosen = (question) => [...question.querySelectorAll('input:checked')].map((input) => input.value);
-    for (const question of questions) {
-      const saved = drafts.read(api.draftKey(data.subject, entry.key, question.dataset.digest));
-      if (Array.isArray(saved)) for (const input of question.querySelectorAll('input')) input.checked = saved.includes(input.value);
-    }
-    const update = () => {
-      const asks = questions.map((question) => {
-        for (const input of question.querySelectorAll('input')) input.closest('.o')?.classList.toggle('is-selected', input.checked);
-        return { title: question.dataset.title, multi: question.dataset.multi === '1', defaults: JSON.parse(question.dataset.default || '[]'), chosen: chosen(question) };
-      });
-      const answer = api.answerText({ subject: data.subject, slug: entry.slug, digest: needs.dataset.asks, asks });
-      bar.className = `bar is-${answer.state}`;
-      text.textContent = answer.text;
-      copy.disabled = answer.state === 'missing';
-      copy.textContent = 'Copy';
-    };
-    needs.addEventListener('change', (event) => {
-      const question = event.target.closest?.('.q[data-digest]');
-      if (question) drafts.write(api.draftKey(data.subject, entry.key, question.dataset.digest), chosen(question));
-      update();
-    });
-    copy.addEventListener('click', () => {
-      const select = () => {
-        const range = document.createRange();
-        range.selectNodeContents(text);
-        getSelection().removeAllRanges();
-        getSelection().addRange(range);
-        copy.textContent = 'Selected';
-      };
-      let written = null;
-      try {
-        written = navigator.clipboard?.writeText(text.textContent) ?? null;
-      } catch {
-        written = null;
-      }
-      if (!written) return select();
-      written.then(() => {
-        copy.textContent = 'Copied';
-      }, select);
-    });
-    update();
-  };
-
   const loadBody = async (entry, holder) => {
     const html = await get(entry.body);
     if (html === null) return;
     const part = node('div', 'body');
     part.innerHTML = html;
     holder.append(part);
-    wire(part, entry);
     highlight(part);
   };
 
@@ -2344,11 +2157,11 @@ details.entry > summary { cursor: pointer; }
 `;
 
 export function viewerCode() {
-  const parts = [parseHash, viewerModel, answerText, draftKey, draftStore, viewerMain];
+  const parts = [parseHash, viewerModel, viewerMain];
   const js = `(() => {
 ${parts.join('\n\n')}
 
-const api = { parseHash, viewerModel, answerText, draftKey, draftStore };
+const api = { parseHash, viewerModel };
 globalThis.pstackViewer = api;
 if (typeof document !== 'undefined') viewerMain(api, ${JSON.stringify({ hljs: HLJS })});
 })();
