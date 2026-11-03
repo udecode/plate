@@ -87,6 +87,8 @@ import {
   type YjsPropertyLocation,
   type YjsPropertyContext,
   type YjsSetPropertyResolver,
+  noSetProperties,
+  yjsKeyStorageOf,
   type YjsTextAdmission,
   type YjsWrite,
 } from './document';
@@ -2198,7 +2200,7 @@ export class YjsEventChangeBridge {
     root: Y.XmlElement,
     rootKey: string,
     children: NodeList<Descendant>,
-    isSetValued: YjsSetPropertyResolver = () => false,
+    isSetValued: YjsSetPropertyResolver = noSetProperties,
     fit: YjsImportFit = UNCHECKED_IMPORT_FIT
   ) {
     this.fit = fit;
@@ -2507,7 +2509,7 @@ export class YjsEventChangeBridge {
         node,
         propertiesOf(previous),
         propertiesOf(next),
-        (key) => this.isSetValued(next, key, context)
+        yjsKeyStorageOf(this.isSetValued, next, context)
       );
     }
   }
@@ -2526,7 +2528,9 @@ export class YjsEventChangeBridge {
       getDefined(this.mirror.at(index))
     );
     const matched = matchHeldChildren(
-      visible.map((child) => readPliteNodeFromYjs(this.root, child)),
+      visible.map((child) =>
+        readPliteNodeFromYjs(this.root, child, undefined, this.isSetValued)
+      ),
       children
     );
 
@@ -2575,7 +2579,14 @@ export class YjsEventChangeBridge {
           ? visible.map((_, index) => index)
           : visible.every((child) => child instanceof Y.XmlElement)
             ? matchHeldChildren(
-                visible.map((child) => readPliteNodeFromYjs(this.root, child)),
+                visible.map((child) =>
+                  readPliteNodeFromYjs(
+                    this.root,
+                    child,
+                    undefined,
+                    this.isSetValued
+                  )
+                ),
                 element.children
               )
             : null;
@@ -2602,7 +2613,12 @@ export class YjsEventChangeBridge {
     }
     if (!editsNode(path)) return;
 
-    const room = readPliteNodeFromYjs(this.root, node) as Element;
+    const room = readPliteNodeFromYjs(
+      this.root,
+      node,
+      undefined,
+      this.isSetValued
+    ) as Element;
     const location = createYjsPropertyLocationAt(
       this.mirror,
       path,
@@ -2648,7 +2664,7 @@ export class YjsEventChangeBridge {
       node,
       propertiesOf(room),
       { ...propertiesOf(room), ...propertiesOf(element) },
-      (key) => this.isSetValued(element, key, context)
+      yjsKeyStorageOf(this.isSetValued, element, context)
     );
   }
 
@@ -2778,7 +2794,7 @@ export class YjsEventChangeBridge {
           Object.entries(next).filter(([key]) => !flip.keys.includes(key))
         ),
         next,
-        (key) => this.isSetValued(flip.element, key, flip.context)
+        yjsKeyStorageOf(this.isSetValued, flip.element, flip.context)
       );
     }
 
@@ -3268,7 +3284,7 @@ export class YjsEventChangeBridge {
             yjsLines[0],
             firstProperties,
             joinedProperties,
-            (key) => this.isSetValued(joined, key, context)
+            yjsKeyStorageOf(this.isSetValued, joined, context)
           )
         );
       }
@@ -5329,7 +5345,12 @@ export class YjsEventChangeBridge {
   }
 
   private readFittedBlock(node: YjsNode): Descendant {
-    const raw = readPliteNodeFromYjs(this.root, node, this.fit.admitsText);
+    const raw = readPliteNodeFromYjs(
+      this.root,
+      node,
+      this.fit.admitsText,
+      this.isSetValued
+    );
     const fitted = deepFreeze(this.fit.block(raw));
 
     if (areJsonLikeValuesEqual(raw, fitted)) this.maskedBlocks.delete(node);
@@ -5347,7 +5368,12 @@ export class YjsEventChangeBridge {
         node &&
         (children.length !== this.rootIndex.length ||
           !areJsonLikeValuesEqual(
-            readPliteNodeFromYjs(this.root, node, this.fit.admitsText),
+            readPliteNodeFromYjs(
+              this.root,
+              node,
+              this.fit.admitsText,
+              this.isSetValued
+            ),
             children.at(index)
           ))
       ) {

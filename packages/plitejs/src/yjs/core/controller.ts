@@ -45,6 +45,8 @@ import { fitImportedBlock } from '../../core/representation';
 import {
   areEditorSchemaIdentitiesEqual,
   getCompiledPropertyMergeStrategy,
+  hasPlaceDependentElementProperty,
+  isPlaceDependentElementProperty,
 } from '../../core/schema-compiler';
 import { createEditorEffect } from '../../core/transaction-values';
 import { countCoreWork } from '../../core/work';
@@ -73,6 +75,7 @@ import {
   removeRedundantEmptyYjsTextNodes,
   replaceYjsChildren,
   withYjsWrites,
+  type YjsPropertyContext,
   type YjsSetPropertyResolver,
   type YjsTextAdmission,
   type YjsWrite,
@@ -102,6 +105,7 @@ import {
   getYjsSchemaMetadataName,
   readYjsSchemaEnvelope,
   writeYjsSchemaEnvelope,
+  type YjsSchemaMetadataFormat,
 } from './schema-metadata';
 import { rangeToYjsRelativeRange, yjsRelativeRangeToRange } from './selection';
 import {
@@ -306,23 +310,35 @@ export class YjsController<
     this.editor = editor;
     this.emptyValueFor = context.emptyValueFor;
     this.editorAdapter = createYjsEditorAdapter(editor, context.canonicalize);
-    this.isSetValued = (_node, key, propertyContext) => {
-      const schema = getCompiledEditorSchema(this.editor);
 
-      return (
-        schema !== null &&
-        getCompiledPropertyMergeStrategy(
-          schema,
-          propertyContext.placement,
-          key,
-          {
-            ancestors: propertyContext.ancestors,
-            root: propertyContext.root,
-            type: propertyContext.type,
-          }
-        ) === 'set'
-      );
-    };
+    this.isSetValued = Object.assign(
+      (_node: unknown, key: string, propertyContext: YjsPropertyContext) => {
+        const schema = getCompiledEditorSchema(this.editor);
+
+        return (
+          schema !== null &&
+          getCompiledPropertyMergeStrategy(
+            schema,
+            propertyContext.placement,
+            key,
+            {
+              ancestors: propertyContext.ancestors,
+              root: propertyContext.root,
+              type: propertyContext.type,
+            }
+          ) === 'set'
+        );
+      },
+      {
+        isPlaceDependent: (key: string) => {
+          const schema = getCompiledEditorSchema(this.editor);
+
+          return (
+            schema !== null && isPlaceDependentElementProperty(schema, key)
+          );
+        },
+      }
+    );
     this.doc = options.doc;
     this.initialReady = options.initialReady;
     this.rootName = options.rootName ?? DEFAULT_YJS_ROOT_NAME;
@@ -1095,6 +1111,16 @@ export class YjsController<
     }
   }
 
+  private roomFormat(): YjsSchemaMetadataFormat {
+    return this.placesVary() ? 7 : 6;
+  }
+
+  private placesVary(): boolean {
+    const schema = getCompiledEditorSchema(this.editor);
+
+    return schema !== null && hasPlaceDependentElementProperty(schema);
+  }
+
   assertSchemaIdentity(next: EditorSchemaIdentity): void {
     const current = this.localSchemaIdentity();
 
@@ -1102,7 +1128,10 @@ export class YjsController<
       return;
     }
 
-    const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
+    const envelope = readYjsSchemaEnvelope(
+      this.schemaMetadata,
+      this.roomFormat()
+    );
 
     if (envelope === null) {
       if (this.root.length > 0) {
@@ -1380,7 +1409,10 @@ export class YjsController<
   private assertRoomSchemaForImport(): boolean {
     assertYjsDocumentSchemaFormats(this.doc);
 
-    const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
+    const envelope = readYjsSchemaEnvelope(
+      this.schemaMetadata,
+      this.roomFormat()
+    );
 
     if (envelope === null) {
       if (
@@ -1685,11 +1717,18 @@ export class YjsController<
       this.captureSharedSnapshotEffects()
     );
     this.transact((writeOf) => {
-      const envelope = readYjsSchemaEnvelope(this.schemaMetadata);
+      const envelope = readYjsSchemaEnvelope(
+        this.schemaMetadata,
+        this.roomFormat()
+      );
       const identity = this.localSchemaIdentity();
 
       if (envelope === null) {
-        writeYjsSchemaEnvelope(this.schemaMetadata, identity);
+        writeYjsSchemaEnvelope(
+          this.schemaMetadata,
+          identity,
+          this.roomFormat()
+        );
       } else {
         assertYjsSchemaIdentity(identity, envelope.identity);
       }
@@ -1995,7 +2034,8 @@ export class YjsController<
     children: readonly Descendant[] = readPliteValueFromYjs(
       binding.root,
       undefined,
-      this.admitsText
+      this.admitsText,
+      this.isSetValued
     )
   ): Readonly<{ children: readonly Descendant[]; records: RecordOps | null }> {
     const spared = this.authored()?.spareRoot(
@@ -2045,7 +2085,8 @@ export class YjsController<
     return readPliteValueFromYjs(
       binding.root,
       binding.emptyValue,
-      this.admitsText
+      this.admitsText,
+      this.isSetValued
     );
   }
 

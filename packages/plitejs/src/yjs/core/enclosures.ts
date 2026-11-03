@@ -598,8 +598,9 @@ export const storageFlipsOf = (
         if (known !== undefined) return known;
 
         const answer =
+          !(kind !== 'text' && isSetValued.isPlaceDependent(key)) &&
           isSetValued(node, key, context(was)) !==
-          isSetValued(node, key, context(is));
+            isSetValued(node, key, context(is));
 
         answers.set(id, answer);
 

@@ -1,6 +1,6 @@
 import { assertEditorJsonValue } from '../../core/value-codec';
 import type { YjsAttributeRecord } from './attributes';
-import { YJS_SET_VALUE_KEY_PREFIX } from './keys';
+import { YJS_SET_EDIT_KEY_PREFIX, YJS_SET_VALUE_KEY_PREFIX } from './keys';
 
 const canonicalJson = (value: unknown): string => {
   assertEditorJsonValue(value, 'Yjs set-valued attribute item');
@@ -32,6 +32,27 @@ export const createYjsSetValueAttributeKey = (
   value: unknown
 ): string =>
   `${propertyPrefix(property)}${encodeURIComponent(canonicalJson(value))}`;
+
+const setEditPrefix = (property: string): string =>
+  `${YJS_SET_EDIT_KEY_PREFIX}${encodeURIComponent(property)}:`;
+
+/**
+ * The attribute a per-member write of a place-dependent property leaves, one
+ * per writer, since Yjs drops the loser of two concurrent writes to one key.
+ */
+export const createYjsSetEditAttributeKey = (
+  property: string,
+  writer: number
+): string => `${setEditPrefix(property)}${writer}`;
+
+export const getYjsSetEditAttributeKeys = (
+  attributes: Readonly<YjsAttributeRecord>,
+  property: string
+): readonly string[] => {
+  const prefix = setEditPrefix(property);
+
+  return Object.keys(attributes).filter((key) => key.startsWith(prefix));
+};
 
 export const isYjsSetValueAttribute = (key: string): boolean =>
   key.startsWith(YJS_SET_VALUE_KEY_PREFIX);

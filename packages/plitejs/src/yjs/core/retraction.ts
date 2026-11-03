@@ -17,6 +17,7 @@ import {
   removeYjsChild,
   type YjsPropertyLocation,
   type YjsSetPropertyResolver,
+  yjsKeyStorageOf,
   type YjsWrite,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
@@ -115,7 +116,7 @@ export const retractYjsRoot = (
         stored,
         attributesOf(was),
         attributesOf(next),
-        (key) => isSetValued(next, key, context)
+        yjsKeyStorageOf(isSetValued, next, context)
       )
     );
 
@@ -234,7 +235,7 @@ export const retractYjsRoot = (
       !was ||
       !areJsonLikeValuesEqual(
         withoutEmptyTextProperties(
-          readStored(readPliteNodeFromYjs(root, stored))
+          readStored(readPliteNodeFromYjs(root, stored, undefined, isSetValued))
         ),
         withoutEmptyTextProperties(was)
       )

@@ -7,12 +7,14 @@ import {
 import type { EditorSchemaIdentity } from '../../index';
 import { isRecord } from './record';
 
-const SCHEMA_METADATA_FORMAT = 6;
+const SCHEMA_METADATA_FORMATS = [6, 7] as const;
 const SCHEMA_METADATA_KEY = 'current';
 const SCHEMA_METADATA_SUFFIX = ':schema';
 
+export type YjsSchemaMetadataFormat = (typeof SCHEMA_METADATA_FORMATS)[number];
+
 export type YjsSchemaEnvelope = Readonly<{
-  format: typeof SCHEMA_METADATA_FORMAT;
+  format: YjsSchemaMetadataFormat;
   identity: EditorSchemaIdentity;
 }>;
 
@@ -65,10 +67,11 @@ const freezeIdentity = (
       });
 
 export const createYjsSchemaEnvelope = (
-  identity: EditorSchemaIdentity
+  identity: EditorSchemaIdentity,
+  format: YjsSchemaMetadataFormat
 ): YjsSchemaEnvelope =>
   Object.freeze({
-    format: SCHEMA_METADATA_FORMAT,
+    format,
     identity: freezeIdentity(identity),
   });
 
@@ -89,25 +92,29 @@ const readOwnValue = (value: unknown, key: string): unknown => {
   }
 };
 
-const assertSchemaMetadataFormat = (format: unknown): void => {
-  if (format === SCHEMA_METADATA_FORMAT) return;
+const assertSchemaMetadataFormat = (
+  format: unknown,
+  formats: readonly YjsSchemaMetadataFormat[]
+): void => {
+  if (formats.includes(format as YjsSchemaMetadataFormat)) return;
   if (typeof format !== 'number') {
     throw new Error('Invalid Yjs schema metadata envelope.');
   }
 
   throw new Error(
-    `Cannot open a Yjs document written with schema metadata format ${format}; this editor reads format ${SCHEMA_METADATA_FORMAT}.`
+    `Cannot open a Yjs document written with schema metadata format ${format}; this editor reads format ${formats.join(' or ')}.`
   );
 };
 
 export const readYjsSchemaEnvelope = (
-  metadata: Y.Map<unknown>
+  metadata: Y.Map<unknown>,
+  format: YjsSchemaMetadataFormat
 ): YjsSchemaEnvelope | null => {
   const value = metadata.get(SCHEMA_METADATA_KEY);
 
   if (value === undefined) return null;
 
-  assertSchemaMetadataFormat(readOwnValue(value, 'format'));
+  assertSchemaMetadataFormat(readOwnValue(value, 'format'), [format]);
 
   const identity = readEditorSchemaIdentity(readEnvelopeIdentity(value));
 
@@ -115,7 +122,7 @@ export const readYjsSchemaEnvelope = (
     throw new Error('Invalid Yjs schema metadata envelope.');
   }
 
-  return createYjsSchemaEnvelope(identity);
+  return createYjsSchemaEnvelope(identity, format);
 };
 
 // Yjs leaves a root that only a remote update created as a bare AbstractType,
@@ -153,15 +160,16 @@ export const assertYjsDocumentSchemaFormats = (doc: Y.Doc): void => {
       continue;
     }
 
-    assertSchemaMetadataFormat(format);
+    assertSchemaMetadataFormat(format, SCHEMA_METADATA_FORMATS);
   }
 };
 
 export const writeYjsSchemaEnvelope = (
   metadata: Y.Map<unknown>,
-  identity: EditorSchemaIdentity
+  identity: EditorSchemaIdentity,
+  format: YjsSchemaMetadataFormat
 ): void => {
-  metadata.set(SCHEMA_METADATA_KEY, createYjsSchemaEnvelope(identity));
+  metadata.set(SCHEMA_METADATA_KEY, createYjsSchemaEnvelope(identity, format));
 };
 
 const describeIdentity = (identity: EditorSchemaIdentity): string =>

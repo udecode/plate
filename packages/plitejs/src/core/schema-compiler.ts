@@ -3464,6 +3464,70 @@ export const getCompiledPropertyCandidates = (
   });
 };
 
+const mixesMerges = (
+  schema: Pick<CompiledEditorSchema, 'properties'>,
+  ids: readonly string[]
+): boolean => {
+  const merges = new Set(
+    ids.map((id) => schema.properties.byId.get(id)?.merge)
+  );
+
+  return merges.has('set') && merges.has('replace');
+};
+
+const placeDependentKeysBySchema = new WeakMap<object, Map<string, boolean>>();
+
+/** @internal */
+export const isPlaceDependentElementProperty = (
+  schema: Pick<CompiledEditorSchema, 'properties'>,
+  key: string
+): boolean => {
+  let byKey = placeDependentKeysBySchema.get(schema);
+
+  if (byKey === undefined) {
+    byKey = new Map();
+    placeDependentKeysBySchema.set(schema, byKey);
+  }
+
+  let answer = byKey.get(key);
+
+  if (answer === undefined) {
+    answer = mixesMerges(
+      schema,
+      getCompiledPropertyCandidates(schema, 'element', key).map(({ id }) => id)
+    );
+    byKey.set(key, answer);
+  }
+
+  return answer;
+};
+
+const placeDependentBySchema = new WeakMap<object, boolean>();
+
+/** @internal */
+export const hasPlaceDependentElementProperty = (
+  schema: Pick<CompiledEditorSchema, 'properties'>
+): boolean => {
+  const cached = placeDependentBySchema.get(schema);
+
+  if (cached !== undefined) return cached;
+
+  const { exact, prefixes } = schema.properties.lookup.element;
+  const prefixIdsOf = (key: string) =>
+    prefixes.flatMap(({ prefix, propertyIds }) =>
+      key.startsWith(prefix) ? propertyIds : []
+    );
+  const result =
+    [...exact.keys()].some((key) =>
+      isPlaceDependentElementProperty(schema, key)
+    ) ||
+    prefixes.some(({ prefix }) => mixesMerges(schema, prefixIdsOf(prefix)));
+
+  placeDependentBySchema.set(schema, result);
+
+  return result;
+};
+
 type ContextAncestor =
   | Readonly<{ type?: unknown }>
   | Readonly<Record<string, unknown>>;

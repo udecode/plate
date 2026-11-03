@@ -42,6 +42,7 @@ import type {
 } from './root-projection-index';
 import {
   encodeYjsSetValueAttributes,
+  getYjsSetEditAttributeKeys,
   readYjsSetValueAttributes,
 } from './set-valued-attributes';
 import {
@@ -88,13 +89,41 @@ export type YjsPropertyLocation = Readonly<{
   root: string | null;
 }>;
 
-export type YjsSetPropertyResolver = (
+export type YjsSetPropertyResolver = ((
   node: JsonNode,
   key: string,
   context: YjsPropertyContext
-) => boolean;
+) => boolean) &
+  Readonly<{ isPlaceDependent: (key: string) => boolean }>;
 
-const noSetProperties: YjsSetPropertyResolver = () => false;
+export const noSetProperties: YjsSetPropertyResolver = Object.assign(
+  () => false,
+  { isPlaceDependent: () => false }
+);
+
+export type YjsKeyStorage =
+  | 'members'
+  | 'placed-members'
+  | 'placed-value'
+  | 'value';
+
+export type YjsKeyStorageOf = (key: string) => YjsKeyStorage;
+
+export const yjsKeyStorageOf =
+  (
+    isSetValued: YjsSetPropertyResolver,
+    node: JsonNode,
+    context: YjsPropertyContext
+  ): YjsKeyStorageOf =>
+  (key) => {
+    const members = isSetValued(node, key, context);
+
+    if (!isSetValued.isPlaceDependent(key)) {
+      return members ? 'members' : 'value';
+    }
+
+    return members ? 'placed-members' : 'placed-value';
+  };
 
 /**
  * Whether an element of `type` holds text, so one that shows no children reads
@@ -1715,6 +1744,7 @@ const createYjsNodeAttributes = (
 ): YjsAttributeRecord => {
   const attributes: YjsAttributeRecord = {};
   const excludedSet = new Set(excluded);
+  const storageOf = yjsKeyStorageOf(isSetValued, node, context);
 
   for (const key in node) {
     if (!Object.hasOwn(node, key) || excludedSet.has(key)) continue;
@@ -1722,8 +1752,9 @@ const createYjsNodeAttributes = (
     assertPublicYjsAttributeCanBeSet(key);
 
     const value = (node as Readonly<Record<string, unknown>>)[key];
+    const storage = storageOf(key);
 
-    if (isSetValued(node, key, context)) {
+    if (storage === 'members' || storage === 'placed-members') {
       if (!Array.isArray(value)) {
         throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
       }
@@ -1731,6 +1762,12 @@ const createYjsNodeAttributes = (
       Object.assign(attributes, encodeYjsSetValueAttributes(key, value));
     } else {
       attributes[key] = value;
+      if (storage === 'placed-value') {
+        Object.assign(
+          attributes,
+          encodeYjsSetValueAttributes(key, Array.isArray(value) ? value : [])
+        );
+      }
     }
   }
 
@@ -1837,7 +1874,8 @@ const EMPTY_YJS_VALUE = Object.freeze([]) as readonly Descendant[];
 export const readPliteValueFromYjs = (
   root: Y.XmlElement,
   emptyValue: readonly Descendant[] = EMPTY_YJS_VALUE,
-  admitsText: YjsTextAdmission = admitsAnyText
+  admitsText: YjsTextAdmission = admitsAnyText,
+  isSetValued: YjsSetPropertyResolver = noSetProperties
 ): Descendant[] => {
   const lookup = createLazyYjsTreeLookup(root);
   const visibleChildren = getYjsVisibleChildrenWithResolver(root, root, lookup);
@@ -1849,7 +1887,8 @@ export const readPliteValueFromYjs = (
             root,
             segment.node,
             lookup,
-            admitsText
+            admitsText,
+            isSetValued
           ),
         ]
   );
@@ -1860,13 +1899,15 @@ export const readPliteValueFromYjs = (
 export const readPliteNodeFromYjs = (
   root: Y.XmlElement,
   node: YjsNode,
-  admitsText: YjsTextAdmission = admitsAnyText
+  admitsText: YjsTextAdmission = admitsAnyText,
+  isSetValued: YjsSetPropertyResolver = noSetProperties
 ): Descendant =>
   readPliteNodeFromYjsWithResolver(
     root,
     node,
     createLazyYjsTreeLookup(root),
-    admitsText
+    admitsText,
+    isSetValued
   );
 
 const removeDuplicateVirtualYjsChildReferences = (
@@ -2009,14 +2050,12 @@ export const removeRedundantEmptyYjsTextNodesAt = (
   return removed;
 };
 
-const getPublicAttributes = (
-  attributes?: Readonly<YjsAttributeRecord>
+const getPublicYjsElementAttributes = (
+  attributes: Readonly<YjsAttributeRecord>,
+  isSetValued: YjsSetPropertyResolver
 ): YjsAttributeRecord => {
   const publicAttributes: YjsAttributeRecord = {};
-
-  if (attributes === undefined) {
-    return publicAttributes;
-  }
+  const entries = readYjsSetValueAttributes(attributes);
 
   for (const key in attributes) {
     if (!Object.hasOwn(attributes, key) || isReservedYjsKey(key)) {
@@ -2026,34 +2065,48 @@ const getPublicAttributes = (
     publicAttributes[key] = attributes[key];
   }
 
-  Object.assign(publicAttributes, readYjsSetValueAttributes(attributes));
+  const isEdited = (key: string) =>
+    getYjsSetEditAttributeKeys(attributes, key).length > 0;
+
+  for (const key of Object.keys(publicAttributes)) {
+    if (
+      !Object.hasOwn(entries, key) &&
+      isSetValued.isPlaceDependent(key) &&
+      isEdited(key)
+    ) {
+      delete publicAttributes[key];
+    }
+  }
+
+  for (const key of Object.keys(entries)) {
+    if (
+      !Object.hasOwn(publicAttributes, key) ||
+      !isSetValued.isPlaceDependent(key) ||
+      isEdited(key)
+    ) {
+      publicAttributes[key] = entries[key];
+    }
+  }
+
+  delete publicAttributes.type;
 
   return publicAttributes;
-};
-
-const getPublicYjsAttributes = (node: YjsNode): YjsAttributeRecord =>
-  getPublicAttributes(getYjsAttributes(node));
-
-const getPublicYjsElementAttributes = (
-  node: Y.XmlElement
-): YjsAttributeRecord => {
-  const attributes = getPublicYjsAttributes(node);
-
-  delete attributes.type;
-
-  return attributes;
 };
 
 const readPliteNodeFromYjsWithResolver = (
   root: Y.XmlElement,
   node: YjsNode,
   lookup: YjsTreeLookup,
-  admitsText: YjsTextAdmission
+  admitsText: YjsTextAdmission,
+  isSetValued: YjsSetPropertyResolver
 ): Descendant => {
   if (node instanceof Y.XmlText) return readTextRuns([node])[0];
 
-  const attributes = getPublicYjsElementAttributes(node);
   const type = getYjsElementType(node);
+  const attributes = getPublicYjsElementAttributes(
+    getYjsAttributes(node),
+    isSetValued
+  );
   const visibleChildren = getYjsVisibleChildrenWithResolver(root, node, lookup);
   const children = segmentYjsChildren(visibleChildren).flatMap((segment) =>
     segment.kind === 'text'
@@ -2063,7 +2116,8 @@ const readPliteNodeFromYjsWithResolver = (
             root,
             segment.node,
             lookup,
-            admitsText
+            admitsText,
+            isSetValued
           ),
         ]
   );

@@ -1,6 +1,7 @@
 import type * as Y from 'yjs';
 
 import type { Descendant } from '../../index';
+import { getDefined } from '../../internal/get-defined';
 import {
   getYjsAttributes,
   setYjsAttribute,
@@ -13,8 +14,12 @@ import {
   createYjsVisibleChildrenReader,
   insertYjsChild,
   type YjsPropertyLocation,
+  type YjsKeyStorage,
+  type YjsKeyStorageOf,
   type YjsSetPropertyResolver,
+  noSetProperties,
   type YjsVisibleChildrenReader,
+  yjsKeyStorageOf,
   type YjsWrite,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
@@ -24,7 +29,9 @@ import {
   type YjsLettersAt,
 } from './new-letters';
 import {
+  createYjsSetEditAttributeKey,
   encodeYjsSetValueAttributes,
+  getYjsSetEditAttributeKeys,
   getYjsSetValueAttributeKeys,
 } from './set-valued-attributes';
 import {
@@ -48,17 +55,68 @@ export const setYjsElementAttributes = (
   node: Y.XmlElement,
   previousProperties: YjsAttributeRecord,
   newProperties: YjsAttributeRecord,
-  isSetValued: (key: string) => boolean = () => false
+  storageOf: YjsKeyStorageOf = (): YjsKeyStorage => 'value'
 ): void => {
   let stored: YjsAttributeRecord | undefined;
   const readStored = () => (stored ??= getYjsAttributes(node));
-  // A key's set entries are found by what the node stores, not by
-  // `isSetValued`, because a type change can make a key set-valued only under
-  // the old type.
   const removeSetEntries = (key: string, kept: YjsAttributeRecord = {}) => {
     for (const encodedKey of getYjsSetValueAttributeKeys(readStored(), key)) {
       if (!Object.hasOwn(kept, encodedKey)) node.removeAttribute(encodedKey);
     }
+  };
+  // Yjs deletes the stored item a peer saw, not the key, so a member this
+  // writer's view lacked is set again: the new item outlives a teammate's
+  // concurrent delete of the stored one.
+  const writeSetEntries = (
+    key: string,
+    value: readonly unknown[],
+    seen?: readonly unknown[]
+  ) => {
+    const encoded = encodeYjsSetValueAttributes(key, value);
+    const unseen =
+      seen === undefined
+        ? {}
+        : encodeYjsSetValueAttributes(
+            key,
+            value.filter(
+              (member) =>
+                !seen.some((item) => areJsonLikeValuesEqual(item, member))
+            )
+          );
+
+    removeSetEntries(key, encoded);
+    for (const [encodedKey, encodedValue] of Object.entries(encoded)) {
+      if (
+        !Object.hasOwn(unseen, encodedKey) &&
+        areJsonLikeValuesEqual(readStored()[encodedKey], encodedValue)
+      ) {
+        continue;
+      }
+
+      setYjsAttribute(node, encodedKey, encodedValue);
+    }
+  };
+  const removeSetEdits = (key: string, kept?: string) => {
+    for (const editKey of getYjsSetEditAttributeKeys(readStored(), key)) {
+      if (editKey !== kept) node.removeAttribute(editKey);
+    }
+  };
+  // A fresh item each time, so a whole-value write that never saw this edit
+  // keeps its flag.
+  const markSetEdit = (key: string) => {
+    const own = createYjsSetEditAttributeKey(
+      key,
+      getDefined(node.doc).clientID
+    );
+
+    removeSetEdits(key, own);
+    setYjsAttribute(node, own, true);
+  };
+  const removeKey = (key: string) => {
+    node.removeAttribute(key);
+    removeSetEntries(key);
+    if (storageOf(key) === 'placed-members') markSetEdit(key);
+    else removeSetEdits(key);
   };
 
   for (const key in newProperties) {
@@ -67,31 +125,37 @@ export const setYjsElementAttributes = (
     }
 
     const value = newProperties[key];
+    const storage = storageOf(key);
 
     assertPublicYjsAttributeCanBeSet(key);
 
-    if (isSetValued(key)) {
+    if (
+      storage === 'members' ||
+      (storage === 'placed-members' && value !== null && value !== undefined)
+    ) {
       if (!Array.isArray(value)) {
         throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
       }
       if (areJsonLikeValuesEqual(previousProperties[key], value)) continue;
 
-      const encoded = encodeYjsSetValueAttributes(key, value);
-
       node.removeAttribute(key);
-      removeSetEntries(key, encoded);
-      for (const [encodedKey, encodedValue] of Object.entries(encoded)) {
-        if (areJsonLikeValuesEqual(readStored()[encodedKey], encodedValue)) {
-          continue;
-        }
+      if (storage === 'placed-members') {
+        const previous = previousProperties[key];
 
-        setYjsAttribute(node, encodedKey, encodedValue);
+        writeSetEntries(key, value, Array.isArray(previous) ? previous : []);
+        markSetEdit(key);
+      } else {
+        writeSetEntries(key, value);
       }
 
       continue;
     }
 
     if (value === null || value === undefined) {
+      if (storage !== 'value') {
+        removeKey(key);
+        continue;
+      }
       removeSetEntries(key);
       if (
         previousProperties[key] === null ||
@@ -108,7 +172,12 @@ export const setYjsElementAttributes = (
       continue;
     }
 
-    removeSetEntries(key);
+    if (storage === 'placed-value') {
+      writeSetEntries(key, Array.isArray(value) ? value : []);
+      removeSetEdits(key);
+    } else {
+      removeSetEntries(key);
+    }
 
     setYjsAttribute(node, key, value);
   }
@@ -122,8 +191,7 @@ export const setYjsElementAttributes = (
       continue;
     }
     assertPublicYjsAttributeCanBeSet(key);
-    node.removeAttribute(key);
-    removeSetEntries(key);
+    removeKey(key);
   }
 };
 
@@ -324,7 +392,7 @@ const writeReplacement = (
         target.node,
         getElementAttributes(previous.node),
         getElementAttributes(next.node),
-        (key) => isSetValued(next.node, key, context)
+        yjsKeyStorageOf(isSetValued, next.node, context)
       );
       writeReplacement(
         write,
@@ -361,7 +429,7 @@ export const replaceCompatibleYjsChildren = (
   before: readonly Descendant[],
   after: readonly Descendant[],
   start = 0,
-  isSetValued: YjsSetPropertyResolver = () => false,
+  isSetValued: YjsSetPropertyResolver = noSetProperties,
   location: YjsPropertyLocation = { ancestors: [], path: [], root: null },
   /** Whether `before` sits under an element whose type `after` changes. */
   retyped = false,

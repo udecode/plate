@@ -13,6 +13,7 @@ import {
   readPliteValueFromYjs,
   removeYjsChild,
   type YjsSetPropertyResolver,
+  noSetProperties,
   type YjsTextAdmission,
   type YjsWrite,
 } from './document';
@@ -40,7 +41,7 @@ export const createRootDocumentChange = (
   root: string,
   before: readonly Descendant[],
   after: readonly Descendant[],
-  isSetValued: YjsSetPropertyResolver = () => false
+  isSetValued: YjsSetPropertyResolver = noSetProperties
 ) => {
   const contexts = indexYjsPropertyContexts(before, schemaRoot(root));
 
@@ -121,7 +122,7 @@ export const reconcileYjsRoot = (
   write: YjsWrite,
   before: readonly Descendant[],
   after: readonly Descendant[],
-  isSetValued: YjsSetPropertyResolver = () => false,
+  isSetValued: YjsSetPropertyResolver = noSetProperties,
   schemaRootName: string | null = null,
   letters?: YjsLetters
 ): YjsCanonicalChangeResult => {
@@ -240,7 +241,7 @@ export const lowerDocumentChangeToYjs = ({
   emptyValue,
   expected,
   knownYjsValue,
-  isSetValued = () => false,
+  isSetValued = noSetProperties,
   letters,
   root,
   write,
@@ -258,7 +259,12 @@ export const lowerDocumentChangeToYjs = ({
   root: string;
   write: YjsWrite;
 }): YjsCanonicalChangeResult => {
-  const yjsBefore = readPliteValueFromYjs(write.root, emptyValue, admitsText);
+  const yjsBefore = readPliteValueFromYjs(
+    write.root,
+    emptyValue,
+    admitsText,
+    isSetValued
+  );
   const before = canonicalize(yjsBefore);
 
   if (areJsonLikeValuesEqual(before, expected)) {
