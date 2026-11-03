@@ -41,3 +41,10 @@
     display: none;
   }
 }
+
+.editor-pagination-shell {
+  position: fixed;
+  inset: 84px 0 0;
+  z-index: 1;
+  height: auto;
+}

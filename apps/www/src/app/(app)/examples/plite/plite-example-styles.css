@@ -886,10 +886,8 @@ details > summary {
 }
 
 .editor-pagination-shell {
-  position: fixed;
-  inset: 84px 0 0;
-  z-index: 1;
   display: flex;
+  height: calc(100svh - 84px);
   flex-direction: column;
   overflow: hidden;
   background: linear-gradient(180deg, #e8ecf2 0%, #d8dee8 42%, #cfd6e0 100%);

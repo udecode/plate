@@ -747,7 +747,7 @@ const renderPaginationLeaf = ({
 
 type ElementSize = { height: number; width: number };
 
-const useElementSize = <T extends HTMLElement>(): [
+const useLayoutSize = <T extends HTMLElement>(): [
   RefObject<T | null>,
   ElementSize,
 ] => {
@@ -757,10 +757,8 @@ const useElementSize = <T extends HTMLElement>(): [
   useEffect(() => {
     const element = ref.current;
     if (!element) return undefined;
-    const update = () => {
-      const rect = element.getBoundingClientRect();
-      setSize({ height: rect.height, width: rect.width });
-    };
+    const update = () =>
+      setSize({ height: element.offsetHeight, width: element.offsetWidth });
     const observer = new ResizeObserver(update);
 
     update();
@@ -787,8 +785,8 @@ const PaginationSurface = ({
 }) => {
   const editor = useEditorContext();
   const setSettings = useSetStateField(pageSettings);
-  const [viewportRef, viewportSize] = useElementSize<HTMLDivElement>();
-  const [editableRef, editableSize] = useElementSize<HTMLDivElement>();
+  const [viewportRef, viewportSize] = useLayoutSize<HTMLDivElement>();
+  const [editableRef, editableSize] = useLayoutSize<HTMLDivElement>();
   const layout = usePageLayout(editableRef);
   const blockCount = useEditorState((state) => state.children().length);
   const tableRowsEffectMounted = useRef(false);
