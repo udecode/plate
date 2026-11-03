@@ -5,7 +5,9 @@ import {
   type CarriedRun,
   carriedRunOfMove,
   carriesRun,
+  followCarriedRun,
   mapCarriedRunThrough,
+  trimRunLeaves,
 } from './carried-run';
 import {
   classifyRootChange,
@@ -1879,6 +1881,21 @@ export const carriedRunsOf = (
 
   const rootChange = (step: DraftStep, root: string) =>
     getInternalDocumentRootChange(step.change, root) ?? null;
+  // Composed once per root, so a draft of many moves stays quadratic.
+  const drafts = new Map<string, Array<RootChange | null>>();
+  const draftBefore = (root: string, step: number) => {
+    const composed = drafts.get(root) ?? [null];
+
+    drafts.set(root, composed);
+    while (composed.length <= step) {
+      const last = composed.at(-1) ?? null;
+      const change = rootChange(steps[composed.length - 1], root);
+
+      composed.push(last && change ? last.compose(change) : (last ?? change));
+    }
+
+    return composed[step];
+  };
   // Each run keeps its source in the input of the step that carried it,
   // because an earlier step may have deleted tokens around it.
   let runs: Array<Readonly<{ run: CarriedRun; step: number }>> = [];
@@ -1886,24 +1903,39 @@ export const carriedRunsOf = (
   for (const [index, step] of steps.entries()) {
     runs = runs.flatMap(({ run, step: carriedAt }) => {
       const change = rootChange(step, run.root);
-      const mapped = change ? mapCarriedRunThrough(run, change) : run;
+
+      if (!change) return [{ run, step: carriedAt }];
+
+      const before = step.indexedBefore.get(run.root);
+      const after = step.indexedAfter.get(run.root);
+      const mapped =
+        before && after
+          ? followCarriedRun(run, change, before, after)
+          : mapCarriedRunThrough(run, change);
 
       return mapped ? [{ run: mapped, step: carriedAt }] : [];
     });
     for (const run of step.carried ?? []) runs.push({ run, step: index });
   }
 
-  return runs.flatMap(({ run, step }) => {
-    const end = run.source + run.length;
-    const draft = steps
-      .slice(0, step)
-      .reduce<RootChange | null>((composed, earlier) => {
-        const change = rootChange(earlier, run.root);
+  return runs.flatMap(({ run: carried, step }) => {
+    const landingLeavesRewritten = carried.length !== carried.landed;
+    const run = landingLeavesRewritten
+      ? trimRunLeaves(
+          carried,
+          getDefined(steps[step].indexedBefore.get(carried.root)),
+          getDefined(
+            steps
+              .findLast((each) => each.indexedAfter.has(carried.root))
+              ?.indexedAfter.get(carried.root)
+          )
+        )
+      : carried;
 
-        return composed && change
-          ? composed.compose(change)
-          : (composed ?? change);
-      }, null);
+    if (!run) return [];
+
+    const end = run.source + run.length;
+    const draft = draftBefore(run.root, step);
     const kept = draft
       ? keptRunsOf(draft, run.source, end)
       : [{ at: run.source, from: run.source, to: end }];

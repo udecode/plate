@@ -1,6 +1,10 @@
 import { countCoreWork } from '../work';
-import type { CarriedRun } from './carried-run';
-import type { DocumentIndex, IndexedNodeRange } from './document-index';
+import type { CarriedRun, ExactRun } from './carried-run';
+import {
+  decodeNodes,
+  type DocumentIndex,
+  type IndexedNodeRange,
+} from './document-index';
 import { jsonEqual, type JsonRecord } from './json';
 import {
   addSection,
@@ -24,13 +28,14 @@ import {
  * - Input: the step `step` on `before` with its runs, the document `after` it
  *   gives, and the edit `edit` from `before` to `edited`.
  * - Correspondence: each token the edit kept or moved exactly, found through
- *   its kept sections and its exact move, never by equal values.
+ *   its kept sections and its exact move, never by equal letters alone.
  * - Placement: content the edit inserted goes with the first letter it
  *   replaced, or else with the kept letter before it in its line, or with the
  *   one after it when the step deletes that one; content inserted where a run
  *   holds no letter goes with the run.
  * - Output: `step` mapped onto `edited`, and `rest`, the change from `after`
- *   to the same result, both written from one assembled document.
+ *   to the same result, both written from one assembled document, with where
+ *   each letter of `after` stands in it.
  */
 export type CarriedProjectionInput = Readonly<{
   after: DocumentIndex;
@@ -38,7 +43,7 @@ export type CarriedProjectionInput = Readonly<{
   edit: RootChange;
   edited: DocumentIndex;
   root: string;
-  runs: readonly CarriedRun[];
+  runs: readonly ExactRun[];
   schema: CarriedProjectionSchema;
   step: RootChange;
 }>;
@@ -53,7 +58,14 @@ export type CarriedProjectionSchema = Readonly<{
   ) => JsonRecord;
 }>;
 
+/**
+ * Where a letter lands, null where it lands nowhere, or undefined to leave it
+ * to the ordinary pairing.
+ */
+export type LetterPlace = number | null | undefined;
+
 export type CarriedProjection = Readonly<{
+  letterAt: (position: number) => LetterPlace;
   /** The change from `after` to the projected document. */
   rest: RootChange;
   /** The run the mapped step carries, from `edited` to the projection. */
@@ -181,9 +193,10 @@ const outputOf = (section: Section) =>
 type Move = Readonly<{
   deletion: Section;
   insertion: Section;
+  /** The moved node is a text leaf. */
+  leaf: boolean;
 }>;
 
-/** The node an edit deletes and inserts again whole, read as one move. */
 const moveOf = (
   sections: readonly Section[],
   change: RootChange,
@@ -199,7 +212,11 @@ const moveOf = (
   );
 
   return deletion && insertion && deletion.length === insertion.inserted
-    ? { deletion, insertion }
+    ? {
+        deletion,
+        insertion,
+        leaf: before.nodeStartingAt(deletion.from)?.kind === 'text',
+      }
     : null;
 };
 
@@ -277,7 +294,7 @@ class Correspondence {
       : null;
   }
 
-  /** The sections that delete or insert, other than an exact move. */
+  /** The sections that delete or insert, other than the move. */
   replacements() {
     return this.sections.filter(
       (section) =>
@@ -576,6 +593,51 @@ const insertsAtRun = (shape: Shape, position: number) =>
   position >= shape.point &&
   (position < shape.end || position === shape.source);
 
+export const relocatesCarriedBlock = (input: CarriedProjectionInput) => {
+  const { before, edit } = input;
+
+  if (edit.exactMove(before)) return false;
+
+  const shape = shapeOf(input);
+  const sections = sectionsOf(edit);
+  const deletion = sections.find(
+    (section) =>
+      section.inserted === 0 &&
+      section.from <= shape.source &&
+      shape.end <= section.from + section.length
+  );
+  if (!deletion) return false;
+
+  const block = before.nodeStartingAt(deletion.from);
+
+  if (
+    block?.kind !== 'element' ||
+    block.path.length !== 1 ||
+    block.to !== deletion.from + deletion.length
+  ) {
+    return false;
+  }
+
+  const node = before.node(block.path);
+
+  return sections.some((section) => {
+    if (section.length > 0 || section.inserted <= 0) return false;
+    if (insideOf(before, section.from).length > 0) return false;
+
+    const slice = sliceOf(section.data);
+
+    if (slice.tokens[0]?.kind !== 'open') return false;
+
+    try {
+      const { nodes } = decodeNodes(slice);
+
+      return nodes.length === 1 && jsonEqual(nodes[0], node);
+    } catch {
+      return false;
+    }
+  });
+};
+
 /**
  * Whether `edit` reaches the run: it deletes a token of it, inserts from its
  * first token up to its last or where it holds no letter, or writes
@@ -843,16 +905,29 @@ export const projectCarriedStep = (
     shape,
     sideOf,
   });
+  const afterOf = (source: number) =>
+    shape.source <= source && source < shape.end
+      ? shape.landing + source - shape.source
+      : stepMap.target(source);
   const originOf = (position: number) => {
     const source = editMap.source(position);
 
-    if (source === null) return null;
-    if (shape.source <= source && source < shape.end) {
-      return shape.landing + source - shape.source;
-    }
-
-    return stepMap.target(source);
+    return source === null ? null : afterOf(source);
   };
+  // A text leaf the edit deletes and inserts again may hold letters retyped,
+  // not moved, so the letter map places none of its letters.
+  const unplaced = new Set<number>();
+  const moved = editMap.move;
+
+  if (moved?.leaf) {
+    const { from, length } = moved.deletion;
+
+    for (let source = from; source < from + length; source++) {
+      const origin = afterOf(source);
+
+      if (origin !== null) unplaced.add(origin);
+    }
+  }
   const context = {
     after,
     before,
@@ -897,6 +972,7 @@ export const projectCarriedStep = (
 
   return assemble({
     edited,
+    editMap,
     originOf,
     parts,
     read,
@@ -904,6 +980,7 @@ export const projectCarriedStep = (
     region,
     root: input.root,
     grown,
+    unplaced,
   });
 };
 
@@ -1711,6 +1788,7 @@ const sameToken = (
 
 const assemble = ({
   edited,
+  editMap,
   originOf,
   parts,
   read,
@@ -1718,8 +1796,10 @@ const assemble = ({
   region,
   root,
   grown,
+  unplaced,
 }: Readonly<{
   edited: DocumentIndex;
+  editMap: Correspondence;
   originOf: (position: number) => number | null;
   parts: readonly Part[];
   read: Tokens;
@@ -1727,10 +1807,13 @@ const assemble = ({
   region: Region;
   root: string;
   grown: number;
+  /** Letters of `after` the letter map gives no place. */
+  unplaced: ReadonlySet<number>;
 }>): CarriedProjection => {
   const slices: PreparedTokenSlice[] = [];
   const stepMatches: Match[] = [];
   const restMatches: Match[] = [];
+  const letters = new Map<number, number>();
   let position = 0;
   let run: CarriedRun | null = null;
   const matchRest = (
@@ -1739,6 +1822,9 @@ const assemble = ({
     token?: JsonToken
   ) => {
     if (origin === null || !sameToken(token, readAfter.at(origin))) return;
+    if (token?.kind === 'text' && !unplaced.has(origin)) {
+      letters.set(origin, region.editedFrom + target);
+    }
 
     const source = origin - region.from;
     const last = restMatches.at(-1);
@@ -1776,6 +1862,7 @@ const assemble = ({
     if (part.run && !run) {
       run = {
         at: region.editedFrom + position,
+        landed: part.to - part.from,
         length: part.to - part.from,
         root,
         source: part.from,
@@ -1823,8 +1910,27 @@ const assemble = ({
   );
   addAll(restSections, restData, region.trailing);
 
+  const rest = RootChange.fromSections(restSections, restData);
+
   return {
-    rest: RootChange.fromSections(restSections, restData),
+    letterAt: (origin) => {
+      if (unplaced.has(origin)) return null;
+      if (origin >= region.from && origin < region.to + grown) {
+        return letters.get(origin) ?? null;
+      }
+
+      const kept = editMap.target(
+        origin < region.from ? origin : origin - grown
+      );
+
+      if (kept === null) return undefined;
+      if (kept < region.editedFrom) return kept;
+
+      return kept >= region.editedTo
+        ? kept + position - (region.editedTo - region.editedFrom)
+        : undefined;
+    },
+    rest,
     runs: [run ?? refuse('The run has no place.')],
     step: RootChange.fromSections(stepSections, stepData),
   };

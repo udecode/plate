@@ -1,3 +1,4 @@
+import type { LetterPlace } from '../core/change/carried-projection';
 import {
   getInternalDocumentRootChange,
   valueRootIndex,
@@ -176,14 +177,16 @@ const retainedRanges = (
 /**
  * Pair the letters of `before` with the letters `change` keeps in `after`.
  * With `exact`, letters pair only through the tokens `change` retains and
- * the parents it moves whole, never by comparing letter values.
+ * the parents it moves whole, never by comparing letter values. `letterAt`
+ * pairs the letters it knows instead, by token position.
  */
 export const createCharacterCorrespondence = (
   before: JsonEditorValue,
   after: JsonEditorValue,
   change: DocumentChange,
   root: string,
-  exact = false
+  exact = false,
+  letterAt?: (position: number) => LetterPlace
 ) => {
   const source = valueRootIndex(before, root);
   const target = valueRootIndex(after, root);
@@ -413,66 +416,133 @@ export const createCharacterCorrespondence = (
     });
     return fragments;
   };
-  return {
-    fragments(span: CharacterSpan) {
-      const pair = parentPair(span.path);
-      if (!pair) return [];
-      if ('retained' in pair) return retainedFragments(span, pair.retained);
-      const start = sourcePosition(span, pair);
-      if (pair.change.empty) {
-        const entry = pair.after.textAt(start);
-        return entry
-          ? [
-              {
-                from: span.from,
-                to: span.to,
-                target: {
-                  path: [
-                    ...pair.path,
-                    ...actualPath(pair.children, entry.path),
-                  ],
-                  from: span.from,
-                  to: span.to,
-                },
-              },
-            ]
-          : [];
-      }
-      const fragments: Fragment[] = [];
-      let beforePosition = 0;
-      let afterPosition = 0;
-      pair.change.data.forEach((_, section) => {
-        const length = pair.change.sections[section * 2];
-        const inserted = pair.change.sections[section * 2 + 1];
-        if (inserted < 0) {
-          const from = Math.max(start + span.from, beforePosition);
-          const to = Math.min(start + span.to, beforePosition + length);
-          let mapped = afterPosition + from - beforePosition;
-          while (mapped < afterPosition + to - beforePosition) {
-            const entry = pair.after.textAt(mapped);
-            if (!entry) break;
-            const end = Math.min(
-              afterPosition + to - beforePosition,
-              entry.contentTo
-            );
-            if (end <= mapped) break;
-            fragments.push({
-              from: beforePosition + mapped - afterPosition - start,
-              to: beforePosition + end - afterPosition - start,
+  const pairedFragments = (span: CharacterSpan) => {
+    const pair = parentPair(span.path);
+    if (!pair) return [];
+    if ('retained' in pair) return retainedFragments(span, pair.retained);
+    const start = sourcePosition(span, pair);
+    if (pair.change.empty) {
+      const entry = pair.after.textAt(start);
+      return entry
+        ? [
+            {
+              from: span.from,
+              to: span.to,
               target: {
                 path: [...pair.path, ...actualPath(pair.children, entry.path)],
-                from: mapped - entry.contentFrom,
-                to: end - entry.contentFrom,
+                from: span.from,
+                to: span.to,
               },
-            });
-            mapped = end;
-          }
+            },
+          ]
+        : [];
+    }
+    const fragments: Fragment[] = [];
+    let beforePosition = 0;
+    let afterPosition = 0;
+    pair.change.data.forEach((_, section) => {
+      const length = pair.change.sections[section * 2];
+      const inserted = pair.change.sections[section * 2 + 1];
+      if (inserted < 0) {
+        const from = Math.max(start + span.from, beforePosition);
+        const to = Math.min(start + span.to, beforePosition + length);
+        let mapped = afterPosition + from - beforePosition;
+        while (mapped < afterPosition + to - beforePosition) {
+          const entry = pair.after.textAt(mapped);
+          if (!entry) break;
+          const end = Math.min(
+            afterPosition + to - beforePosition,
+            entry.contentTo
+          );
+          if (end <= mapped) break;
+          fragments.push({
+            from: beforePosition + mapped - afterPosition - start,
+            to: beforePosition + end - afterPosition - start,
+            target: {
+              path: [...pair.path, ...actualPath(pair.children, entry.path)],
+              from: mapped - entry.contentFrom,
+              to: end - entry.contentFrom,
+            },
+          });
+          mapped = end;
         }
-        beforePosition += length;
-        afterPosition += inserted < 0 ? length : inserted;
+      }
+      beforePosition += length;
+      afterPosition += inserted < 0 ? length : inserted;
+    });
+    return fragments;
+  };
+  const letterFragments = (
+    span: CharacterSpan,
+    at: (position: number) => LetterPlace
+  ) => {
+    const host = textHostAt(source, span.path);
+    const fragments: Fragment[] = [];
+    let unpaired: number | null = null;
+    let offset = 0;
+    const flush = (to: number) => {
+      if (unpaired === null) return;
+      fragments.push(...pairedFragments({ ...span, from: unpaired, to }));
+      unpaired = null;
+    };
+
+    host.leaves.forEach((leaf, index) => {
+      const length = leaf.text?.length ?? 0;
+      const start = source.positionAt({
+        offset: 0,
+        path: [...host.path.slice(0, -1), getDefined(host.path.at(-1)) + index],
       });
-      return fragments;
-    },
+
+      for (
+        let letter = Math.max(span.from, offset);
+        letter < Math.min(span.to, offset + length);
+        letter++
+      ) {
+        const landed = at(start + letter - offset);
+
+        if (landed === undefined) {
+          unpaired ??= letter;
+          continue;
+        }
+        flush(letter);
+
+        const entry = landed === null ? null : target.textAt(landed);
+
+        if (!entry || landed === null) continue;
+
+        const next = targetHostOf(entry.path);
+        const from = next.offset + landed - entry.contentFrom;
+        const last = fragments.at(-1);
+
+        if (
+          last &&
+          last.to === letter &&
+          last.target.to === from &&
+          last.target.path.join('.') === next.path.join('.')
+        ) {
+          fragments[fragments.length - 1] = {
+            ...last,
+            target: { ...last.target, to: from + 1 },
+            to: letter + 1,
+          };
+        } else {
+          fragments.push({
+            from: letter,
+            target: { from, path: next.path, to: from + 1 },
+            to: letter + 1,
+          });
+        }
+      }
+      offset += length;
+    });
+    flush(span.to);
+
+    return fragments;
+  };
+
+  return {
+    fragments: (span: CharacterSpan) =>
+      letterAt ? letterFragments(span, letterAt) : pairedFragments(span),
     point(point: JsonPoint, association: -1 | 1): JsonPoint | null {
       const pair = parentPair(point.path);
       if (!pair || 'retained' in pair) return null;

@@ -36,6 +36,7 @@ import {
   nodeProps,
   openToken,
   pathKey,
+  tokensEqual,
 } from './tokens';
 import {
   assertNodePropertyKey,
@@ -1799,6 +1800,107 @@ type SectionEnds = Readonly<{
 
 const SECTION_ENDS = new WeakMap<RootChange, SectionEnds>();
 
+/**
+ * The sections from `before` to `after` that keep every letter and element
+ * token, rewriting only the leaf tokens between them; null when the two hold
+ * other letters or element tokens.
+ */
+const alignLetters = (
+  before: PreparedTokenSlice,
+  after: PreparedTokenSlice
+): Readonly<{ data: SectionData[]; sections: number[] }> | null => {
+  const left = before.tokens;
+  const right = after.tokens;
+  const sections: number[] = [];
+  const data: SectionData[] = [];
+  let leftToken = 0;
+  let rightToken = 0;
+  let leftLetter = 0;
+  let rightLetter = 0;
+  let rightPosition = 0;
+
+  for (;;) {
+    const leftGap = leftToken;
+    const rightGap = rightToken;
+    const gapFrom = rightPosition;
+
+    while (leftToken < left.length && isLeafToken(left[leftToken])) {
+      leftToken += 1;
+    }
+    while (rightToken < right.length && isLeafToken(right[rightToken])) {
+      rightToken += 1;
+      rightPosition += 1;
+    }
+
+    const leftLength = leftToken - leftGap;
+    const rightLength = rightToken - rightGap;
+
+    if (
+      leftLength === rightLength &&
+      left
+        .slice(leftGap, leftToken)
+        .every((token, at) => tokensEqual(token, right[rightGap + at]))
+    ) {
+      addSection(sections, data, leftLength, -1, null);
+    } else {
+      addSection(
+        sections,
+        data,
+        leftLength,
+        rightLength,
+        after.slice(gapFrom, rightPosition)
+      );
+    }
+    if (leftToken === left.length || rightToken === right.length) {
+      return leftToken === left.length && rightToken === right.length
+        ? { data, sections }
+        : null;
+    }
+
+    const leftAnchor = left[leftToken];
+    const rightAnchor = right[rightToken];
+
+    if (leftAnchor.kind === 'text' && rightAnchor.kind === 'text') {
+      const length = Math.min(
+        leftAnchor.text.length - leftLetter,
+        rightAnchor.text.length - rightLetter
+      );
+
+      if (
+        leftAnchor.text.slice(leftLetter, leftLetter + length) !==
+        rightAnchor.text.slice(rightLetter, rightLetter + length)
+      ) {
+        return null;
+      }
+      addSection(sections, data, length, -1, null);
+      leftLetter += length;
+      rightLetter += length;
+      rightPosition += length;
+      if (leftLetter === leftAnchor.text.length) {
+        leftToken += 1;
+        leftLetter = 0;
+      }
+      if (rightLetter === rightAnchor.text.length) {
+        rightToken += 1;
+        rightLetter = 0;
+      }
+    } else if (
+      leftLetter === 0 &&
+      rightLetter === 0 &&
+      tokensEqual(leftAnchor, rightAnchor)
+    ) {
+      addSection(sections, data, 1, -1, null);
+      leftToken += 1;
+      rightToken += 1;
+      rightPosition += 1;
+    } else return null;
+  }
+};
+
+/** An open or close of a text leaf, which holds no letter of its own. */
+export const isLeafToken = (token: JsonToken) =>
+  token.kind !== 'text' && token.nodeKind === 'text';
+
 const sectionEndsOf = (change: RootChange): SectionEnds => {
   let ends = SECTION_ENDS.get(change);
 
@@ -2238,6 +2340,50 @@ export class RootChange {
     const aligned = createStructurallyAlignedChanges(before, after, options);
 
     return aligned ? RootChange.create(before, aligned) : flat;
+  }
+
+  /**
+   * The change from `before` to `after` that keeps every letter and element
+   * token and rewrites only the text-leaf tokens around them, so a change of
+   * marks or leaf splits keeps what each letter is; null when the two hold
+   * other letters or element tokens, or the same in another order.
+   */
+  static aligned(before: DocumentIndex, after: DocumentIndex) {
+    const ranges = before.changedChildren(after);
+    const first = ranges[0];
+    const last = ranges.at(-1);
+
+    if (!first || !last) return RootChange.empty(before.length);
+
+    const startOf = (document: DocumentIndex, child: number) =>
+      child < document.size
+        ? document.nodeRange([child]).from
+        : document.length;
+    const from = startOf(before, first[0]);
+    const to = startOf(before, last[1]);
+    const window = alignLetters(
+      before.slice(from, to),
+      after.slice(startOf(after, first[2]), startOf(after, last[3]))
+    );
+
+    if (!window) return null;
+
+    const sections: number[] = [];
+    const data: SectionData[] = [];
+
+    addSection(sections, data, from, -1, null);
+    for (let index = 0; index < window.sections.length; index += 2) {
+      addSection(
+        sections,
+        data,
+        window.sections[index],
+        window.sections[index + 1],
+        window.data[index >> 1]
+      );
+    }
+    addSection(sections, data, before.length - to, -1, null);
+
+    return new RootChange(sections, data);
   }
 
   static empty(length: number) {

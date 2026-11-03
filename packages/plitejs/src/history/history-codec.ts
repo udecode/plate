@@ -62,7 +62,13 @@ const encodeBatch = (editor: AnyEditor, batch: Batch): HistoryBatchJSON => ({
     : {}),
   ...(batch.unsettle ? { unsettle: batch.unsettle.toJSON() } : {}),
   ...(batch.rest ? { rest: batch.rest.toJSON() } : {}),
-  ...(batch.carried ? { carried: batch.carried } : {}),
+  ...(batch.carried
+    ? {
+        carried: batch.carried.map(({ landed, ...run }) =>
+          landed === run.length ? run : { ...run, landed }
+        ),
+      }
+    : {}),
 });
 
 const isPosition = (value: unknown): value is number =>
@@ -74,16 +80,21 @@ const decodeCarriedRuns = (value: unknown): readonly CarriedRun[] | null =>
   value.every(
     (run) =>
       isObject(run) &&
-      Object.keys(run).length === 4 &&
+      Object.keys(run).length === (Object.hasOwn(run, 'landed') ? 5 : 4) &&
       isPosition(run.at) &&
       isPosition(run.length) &&
       run.length > 0 &&
+      (!Object.hasOwn(run, 'landed') ||
+        (isPosition(run.landed) &&
+          run.landed > 0 &&
+          run.landed !== run.length)) &&
       isPosition(run.source) &&
       typeof run.root === 'string' &&
       run.root.length > 0
   )
-    ? value.map(({ at, length, root, source }) => ({
+    ? value.map(({ at, landed, length, root, source }) => ({
         at,
+        landed: landed ?? length,
         length,
         root,
         source,

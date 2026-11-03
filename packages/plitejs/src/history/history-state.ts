@@ -626,7 +626,10 @@ const resolveCanonicalTop = <V extends Value>(
   const rest = head.batch.rest?.compose(repair);
   const { carried: _carried, ...repairedBatch } = head.batch;
   const carried =
-    head.batch.carried && landCarriedRuns(head.batch.carried, repair);
+    head.batch.carried &&
+    landCarriedRuns(head.batch.carried, [
+      { after: repaired, before: target, change: repair },
+    ]);
   const undo = head.replay.direction === 'undo';
   const unmoved = {
     after: head.base,

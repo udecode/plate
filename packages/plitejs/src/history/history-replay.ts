@@ -1,16 +1,23 @@
 import { classifyDocumentChange } from '../core/change/builder';
 import {
   type CarriedProjection,
+  type LetterPlace,
   projectCarriedStep,
+  relocatesCarriedBlock,
   touchesCarriedRuns,
 } from '../core/change/carried-projection';
 import {
   type CarriedRun,
-  carriesRun,
+  carriedLetterPairs,
+  type ExactRun,
+  exactRunOn,
+  landCarriedRuns,
   mapCarriedRunThrough,
+  widenRun,
 } from '../core/change/carried-run';
 import {
   DocumentChange,
+  alignedDocumentChange,
   collapseDocumentElementPropertyWrites,
   createInternalDocumentChange,
   getInternalDocumentChangeClassificationEntries,
@@ -65,6 +72,11 @@ type RecordedHistoryReplay<T extends JsonEditorValue> = Readonly<{
   structure: DocumentChange;
   format: ReadonlyMap<string, readonly TextFormatSpan[]>;
   after: T;
+  /**
+   * The runs `structure` carries token for token, from the step's base to
+   * the document `structure` gives; absent when a run has no such form.
+   */
+  runs?: readonly ExactRun[];
 }>;
 export type HistoryReplay<T extends JsonEditorValue = JsonEditorValue> =
   Readonly<{
@@ -91,8 +103,32 @@ export type HistoryReplayParts = Readonly<{
 export const historyReplaySchemaOf = (editor: AnyEditor) => {
   const schema = getEditorSchema(editor);
   return {
-    canonicalize: schema.canonicalizeTextPropertiesAt,
-    allows: schema.isTextPropertyAllowedAt,
+    canonicalize: (
+      properties: JsonRecord,
+      path: readonly number[],
+      root: string,
+      key: string,
+      value: JsonEditorValue
+    ) =>
+      schema.canonicalizeTextPropertiesAt(
+        properties,
+        [...path],
+        root,
+        key,
+        value as EditorDocumentValue
+      ),
+    allows: (
+      key: string,
+      path: readonly number[],
+      root: string,
+      value: JsonEditorValue
+    ) =>
+      schema.isTextPropertyAllowedAt(
+        key,
+        [...path],
+        root,
+        value as EditorDocumentValue
+      ),
     lines: {
       isInline: (node: JsonNode) =>
         ElementApi.isElement(node) && schema.isInline(node),
@@ -300,7 +336,8 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
     change,
     ...(carried?.length ? { carried } : {}),
     direction,
-    record: () => (recorded ??= recordReplay(schema, base, change)),
+    record: () =>
+      (recorded ??= recordReplay(schema, base, change, false, carried)),
   };
 };
 
@@ -337,17 +374,78 @@ const pairedReplay = <T extends JsonEditorValue>(
   }),
 });
 
+/**
+ * The runs `structure` carries token for token from `before` to `after`, or
+ * undefined when it has none or one of them has no such form.
+ */
+const exactRunsOf = (
+  runs: readonly CarriedRun[] | undefined,
+  structure: DocumentChange,
+  before: JsonEditorValue,
+  after: JsonEditorValue
+) => {
+  const exact: ExactRun[] = [];
+
+  for (const run of runs ?? []) {
+    const change = getInternalDocumentRootChange(structure, run.root);
+    const found =
+      change &&
+      exactRunOn(
+        run,
+        change,
+        valueRootIndex(before, run.root),
+        valueRootIndex(after, run.root)
+      );
+
+    if (!found) return undefined;
+    exact.push(found);
+  }
+
+  return exact.length > 0 ? exact : undefined;
+};
+
+/** Each carried letter of `root` in `before`, with where it lands in `after`. */
+const carriedLettersOf = (
+  runs: readonly CarriedRun[] | undefined,
+  root: string,
+  before: JsonEditorValue,
+  after: JsonEditorValue
+) => {
+  const letters = new Map<number, number>();
+
+  for (const run of runs ?? []) {
+    if (run.root !== root) continue;
+    for (const { from, to } of carriedLetterPairs(
+      run,
+      valueRootIndex(before, root),
+      valueRootIndex(after, root)
+    )) {
+      letters.set(from, to);
+    }
+  }
+
+  return letters.size > 0
+    ? (position: number) => letters.get(position)
+    : undefined;
+};
+
 const recordReplay = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,
   base: T,
   change: DocumentChange,
-  exact = false
+  exact = false,
+  carried?: readonly CarriedRun[]
 ): RecordedHistoryReplay<T> => {
   const after = change.apply(base);
   const format = new Map<string, TextFormatSpan[]>();
   const classifications = [
     ...getInternalDocumentChangeClassificationEntries(change),
   ];
+  const unformatted = () => {
+    const runs = exactRunsOf(carried, change, base, after);
+
+    return { structure: change, format, after, ...(runs ? { runs } : {}) };
+  };
   if (
     change.empty ||
     (classifications.length > 0 &&
@@ -355,7 +453,7 @@ const recordReplay = <T extends JsonEditorValue>(
         ([, kind]) => kind.text && !kind.properties && !kind.structure
       ))
   ) {
-    return { structure: change, format, after };
+    return unformatted();
   }
   const reset = new Map<CharacterSpan, JsonRecord>();
   const resets = new Map<string, CharacterSpan[]>();
@@ -367,7 +465,8 @@ const recordReplay = <T extends JsonEditorValue>(
       after,
       change,
       root,
-      exact
+      exact,
+      carriedLettersOf(carried, root, base, after)
     );
     const spans: TextFormatSpan[] = [];
     const rootResets: CharacterSpan[] = [];
@@ -480,19 +579,22 @@ const recordReplay = <T extends JsonEditorValue>(
     if (spans.length) format.set(root, spans);
     if (rootResets.length) resets.set(root, rootResets);
   }
-  if (format.size === 0) {
-    return { structure: change, format, after };
-  }
+  if (format.size === 0) return unformatted();
   const middle = rewriteSpans(after, resets, (span) => reset.get(span) ?? {});
-  const resetChange = DocumentChange.between(after, middle, {
-    isSetValued: schema.isSetValued,
-  });
+  const carriesRuns = Boolean(carried?.length);
+  const aligned = carriesRuns ? alignedDocumentChange(after, middle) : null;
+  const resetChange =
+    aligned ??
+    DocumentChange.between(after, middle, {
+      isSetValued: schema.isSetValued,
+    });
   for (const [root, spans] of format) {
     const correspondence = createCharacterCorrespondence(
       after,
       middle,
       resetChange,
-      root
+      root,
+      aligned !== null
     );
     format.set(
       root,
@@ -502,6 +604,21 @@ const recordReplay = <T extends JsonEditorValue>(
           .map(({ target }) => ({ ...target, writes: span.writes }))
       )
     );
+  }
+  if (aligned) {
+    const structure = change.compose(aligned);
+    const moved = carried?.map((run) => {
+      const rootReset = getInternalDocumentRootChange(aligned, run.root);
+
+      return rootReset
+        ? mapCarriedRunThrough(run, rootReset, valueRootIndex(after, run.root))
+        : run;
+    });
+    const runs = moved?.every((run) => run !== null)
+      ? exactRunsOf(moved, structure, base, middle)
+      : undefined;
+
+    return { structure, format, after, ...(runs ? { runs } : {}) };
   }
   // A part keeps its own change as its structure, so no diff of letter values
   // picks which letters it keeps; the diff from `after` only resets marks.
@@ -541,7 +658,7 @@ const applyFormatIntent = <T extends JsonEditorValue>(
     const result = { ...properties };
     const preferred: string[] = [];
     for (const write of writes.get(span) ?? []) {
-      if (!schema.allows(write.key, path, root)) continue;
+      if (!schema.allows(write.key, path, root, value)) continue;
       if (write.kind === 'members') {
         const current = result[write.key];
         const members: unknown[] = Array.isArray(current) ? current : [];
@@ -568,7 +685,8 @@ const applyFormatIntent = <T extends JsonEditorValue>(
             candidate,
             path,
             root,
-            write.key
+            write.key,
+            value
           );
           if (
             direction === 'undo' &&
@@ -585,7 +703,9 @@ const applyFormatIntent = <T extends JsonEditorValue>(
     }
     let canonical = result;
     for (const key of preferred) {
-      canonical = { ...schema.canonicalize(canonical, path, root, key) };
+      canonical = {
+        ...schema.canonicalize(canonical, path, root, key, value),
+      };
     }
     return canonical;
   });
@@ -601,6 +721,11 @@ type CarriedMapping = Readonly<{
   b: DocumentChange;
   /** The runs the mapped step carries, or null when it no longer carries any. */
   runs: readonly CarriedRun[] | null;
+  /** The projection's letter map, when it placed the step. */
+  letters?: Readonly<{
+    root: string;
+    letterAt: (position: number) => LetterPlace;
+  }>;
 }>;
 
 /**
@@ -610,9 +735,10 @@ type CarriedMapping = Readonly<{
  */
 const carryReplay = <T extends JsonEditorValue>(
   schema: HistoryReplaySchema,
-  runs: readonly CarriedRun[],
+  runs: readonly ExactRun[],
   recorded: RecordedHistoryReplay<T>,
   base: T,
+  middle: T,
   mapping: HistoryMapping<T>
 ): CarriedMapping => {
   const ordinary = () =>
@@ -624,10 +750,10 @@ const carryReplay = <T extends JsonEditorValue>(
   if (!step || runs.some((run) => run.root !== root)) {
     return { ...ordinary(), runs: null };
   }
-  if (!edit) return { ...ordinary(), runs };
+  if (!edit) return { ...ordinary(), runs: runs.map(widenRun) };
 
   const input = {
-    after: valueRootIndex(recorded.after, root),
+    after: valueRootIndex(middle, root),
     before: valueRootIndex(base, root),
     edit,
     edited: valueRootIndex(mapping.after, root),
@@ -637,9 +763,12 @@ const carryReplay = <T extends JsonEditorValue>(
     step,
   };
   let projected: CarriedProjection | null;
+  let moved = false;
 
   try {
-    projected = touchesCarriedRuns(input) ? projectCarriedStep(input) : null;
+    moved = relocatesCarriedBlock(input);
+    projected =
+      !moved && touchesCarriedRuns(input) ? projectCarriedStep(input) : null;
   } catch {
     // Counted only once the ordinary map works, since a step no map can
     // place is dropped and counted there.
@@ -650,6 +779,7 @@ const carryReplay = <T extends JsonEditorValue>(
     return { ...fallback, runs: null };
   }
 
+  if (moved) return { ...ordinary(), runs: null };
   if (!projected) {
     const mapped = ordinary();
     const rest = getInternalDocumentRootChange(mapped.a, root);
@@ -660,14 +790,20 @@ const carryReplay = <T extends JsonEditorValue>(
         const source = edit.mapPos(run.source, 1);
         const at = rest ? rest.mapPos(run.at, 1) : run.at;
 
-        return source === null || at === null ? [] : [{ ...run, at, source }];
+        return source === null || at === null
+          ? []
+          : [{ ...widenRun(run), at, source }];
       }),
     };
   }
+
+  const letters = { letterAt: projected.letterAt, root };
+
   if (holdsOnly(mapping.change, root) && holdsOnly(recorded.structure, root)) {
     return {
       a: createInternalDocumentChange(new Map([[root, projected.rest]])),
       b: createInternalDocumentChange(new Map([[root, projected.step]])),
+      letters,
       runs: projected.runs,
     };
   }
@@ -677,6 +813,7 @@ const carryReplay = <T extends JsonEditorValue>(
   return {
     a: withInternalDocumentRootChange(mapped.a, root, projected.rest),
     b: withInternalDocumentRootChange(mapped.b, root, projected.step),
+    letters,
     runs: projected.runs,
   };
 };
@@ -687,37 +824,6 @@ const holdsOnly = (change: DocumentChange, root: string) =>
   change.deleteRoots.size === 0 &&
   getInternalDocumentChangeRecords(change).size === 0 &&
   [...getInternalDocumentChangeEntries(change)].every(([key]) => key === root);
-
-/**
- * The runs `change` carries from `before` to `after`, each moved through the
- * canonical repair; undefined when none is left.
- */
-const landRuns = (
-  runs: readonly CarriedRun[],
-  repair: DocumentChange,
-  change: DocumentChange,
-  before: JsonEditorValue,
-  after: JsonEditorValue
-) => {
-  const landed = runs.flatMap((run) => {
-    const repairRoot = getInternalDocumentRootChange(repair, run.root);
-    const moved = repairRoot ? mapCarriedRunThrough(run, repairRoot) : run;
-    const stepRoot = getInternalDocumentRootChange(change, run.root);
-
-    return moved &&
-      stepRoot &&
-      carriesRun(
-        stepRoot,
-        valueRootIndex(before, run.root),
-        valueRootIndex(after, run.root),
-        moved
-      )
-      ? [moved]
-      : [];
-  });
-
-  return landed.length > 0 ? landed : undefined;
-};
 
 type HistoryMapping<T extends JsonEditorValue> = Readonly<{
   after: T;
@@ -783,8 +889,8 @@ const mapOneReplay = <T extends JsonEditorValue>(
     ...getInternalDocumentChangeClassificationEntries(replay.change),
   ];
   const carry =
-    replay.carried && !exact && recorded.format.size === 0
-      ? carryReplay(schema, replay.carried, recorded, base, mapping)
+    replay.carried && !exact && recorded.runs
+      ? carryReplay(schema, recorded.runs, recorded, base, middle, mapping)
       : null;
   const structure =
     !exact &&
@@ -813,12 +919,27 @@ const mapOneReplay = <T extends JsonEditorValue>(
     const after = repair.empty ? mappedAfter : repair.apply(mappedAfter);
     const rest = composeRepair(transformed.a, repair);
     const carried =
-      carry?.runs && landRuns(carry.runs, repair, change, mapping.after, after);
-    const mapped = asReplay(change, () => ({
-      structure: change,
-      format: recorded.format,
-      after,
-    }));
+      carry?.runs &&
+      landCarriedRuns(
+        carry.runs,
+        [{ after, before: mappedAfter, change: repair }],
+        { after, before: mapping.after, change }
+      );
+    const mapped = asReplay(change, () => {
+      const runs = exactRunsOf(
+        carried ?? undefined,
+        change,
+        mapping.after,
+        after
+      );
+
+      return {
+        structure: change,
+        format: recorded.format,
+        after,
+        ...(runs ? { runs } : {}),
+      };
+    });
 
     return {
       replay: carried ? { ...mapped, carried } : mapped,
@@ -827,12 +948,14 @@ const mapOneReplay = <T extends JsonEditorValue>(
   }
   const format = new Map<string, TextFormatSpan[]>();
   for (const [root, spans] of recorded.format) {
+    const letters = carry?.letters?.root === root ? carry.letters : undefined;
     const correspondence = createCharacterCorrespondence(
       middle,
       mappedMiddle,
       transformed.a,
       root,
-      exact
+      exact,
+      letters?.letterAt
     );
     format.set(
       root,
@@ -849,12 +972,11 @@ const mapOneReplay = <T extends JsonEditorValue>(
     format,
     replay.direction
   );
+  const formatWrites = DocumentChange.between(mappedMiddle, formatted, {
+    isSetValued: schema.isSetValued,
+  });
   const formattedChange = format.size
-    ? transformed.b.compose(
-        DocumentChange.between(mappedMiddle, formatted, {
-          isSetValued: schema.isSetValued,
-        })
-      )
+    ? transformed.b.compose(formatWrites)
     : transformed.b;
   const repair = schema.repairCanonical(
     mapping.after,
@@ -863,6 +985,16 @@ const mapOneReplay = <T extends JsonEditorValue>(
   );
   const change = composeRepair(formattedChange, repair);
   const after = repair.empty ? formatted : repair.apply(formatted);
+  const carried =
+    carry?.runs &&
+    landCarriedRuns(
+      carry.runs,
+      [
+        { after: formatted, before: mappedMiddle, change: formatWrites },
+        { after, before: formatted, change: repair },
+      ],
+      { after, before: mapping.after, change }
+    );
   const formatChange = DocumentChange.between(middle, recorded.after, {
     isSetValued: schema.isSetValued,
   });
@@ -880,14 +1012,23 @@ const mapOneReplay = <T extends JsonEditorValue>(
     ),
     repair
   );
-  return {
-    replay: asReplay(change, () => ({
+  const replayed = asReplay(change, () => {
+    const runs = exactRunsOf(
+      carry?.runs ?? undefined,
+      transformed.b,
+      mapping.after,
+      mappedMiddle
+    );
+
+    return {
       structure: transformed.b,
       format,
       after,
-    })),
-    rest,
-  };
+      ...(runs ? { runs } : {}),
+    };
+  });
+
+  return { replay: carried ? { ...replayed, carried } : replayed, rest };
 };
 
 export const mapHistorySelection = (

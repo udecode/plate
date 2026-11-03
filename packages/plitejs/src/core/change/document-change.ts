@@ -1809,3 +1809,55 @@ export const applyDocumentChangeWithIndexes = <T extends JsonEditorValue>(
 
   return Object.freeze(nextValue);
 };
+
+/**
+ * `RootChange.aligned` for each root: the change from `before` to `after`
+ * that keeps every letter and element token, or null when a root holds other
+ * ones, a root comes or goes, or the records differ.
+ *
+ * @internal
+ */
+export const alignedDocumentChange = (
+  before: JsonEditorValue,
+  after: JsonEditorValue
+) => {
+  const roots = new Set([
+    'main',
+    ...Object.keys(before.roots ?? {}),
+    ...Object.keys(after.roots ?? {}),
+  ]);
+  const changes = new Map<string, RootChange>();
+  const classifications = new Map<string, DocumentChangeRootClassification>();
+
+  if (!jsonEqual(getValueRecords(before), getValueRecords(after))) {
+    return null;
+  }
+  for (const root of roots) {
+    const from = valueRoot(before, root);
+    const to = valueRoot(after, root);
+
+    if (from === to) continue;
+    if (
+      root !== 'main' &&
+      Object.hasOwn(before.roots ?? {}, root) !==
+        Object.hasOwn(after.roots ?? {}, root)
+    ) {
+      return null;
+    }
+
+    const beforeDocument = valueRootIndex(before, root);
+    const afterDocument = valueRootIndex(after, root);
+    const change = RootChange.aligned(beforeDocument, afterDocument);
+
+    if (!change) return null;
+    if (!change.empty) {
+      changes.set(root, change);
+      classifications.set(
+        root,
+        classifyRootChange(change, beforeDocument, afterDocument)
+      );
+    }
+  }
+
+  return createInternalDocumentChange(changes, { classifications });
+};

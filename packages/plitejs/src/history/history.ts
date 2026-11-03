@@ -52,8 +52,9 @@ export interface Batch<_V extends Value = Value> {
    * On an undo step whose commit merged a line into a nested line or out of
    * one, such as a line of one quote into the quote before it, and on
    * each step an undo or redo of it pushes: the runs of tokens the step
-   * deletes at `source` in its base and inserts, the same tokens, at `at` in
-   * the document it gives. An outside edit inside a run moves with the run.
+   * deletes at `source` in its base and inserts at `at` in the document it
+   * gives, with the same letters and element tokens however the step changed
+   * their marks. An outside edit inside a run moves with the run.
    */
   readonly carried?: readonly CarriedRun[];
 }
@@ -89,8 +90,19 @@ export type HistoryBatchJSON = Readonly<{
   unsettle?: ReturnType<DocumentChange['toJSON']>;
   /** Only beside `unsettle` on a step whose commit settled a decision's text. */
   rest?: ReturnType<DocumentChange['toJSON']>;
-  /** Only on a step that merges a line into a nested line or takes it back. */
-  carried?: readonly CarriedRun[];
+  /**
+   * Only on a step that merges a line into a nested line or takes it back.
+   * A run names `landed` only when it differs from `length`.
+   */
+  carried?: ReadonlyArray<
+    Readonly<{
+      at: number;
+      landed?: number;
+      length: number;
+      root: string;
+      source: number;
+    }>
+  >;
 }>;
 
 const hasFunctions = (

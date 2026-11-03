@@ -352,7 +352,9 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
       properties: Readonly<Record<string, unknown>>,
       path: Path,
       root?: RootKey,
-      preferredKey?: string
+      preferredKey?: string,
+      /** The document `path` reads, the editor's own by default. */
+      value?: EditorDocumentValue
     ) => Readonly<Record<string, unknown>>;
     /**
      * `canonicalizeTextPropertiesAt` for a text whose parent and ancestors
@@ -508,7 +510,9 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     isTextPropertyAllowedAt: (
       key: string,
       path: Path,
-      root?: RootKey
+      root?: RootKey,
+      /** The document `path` reads, the editor's own by default. */
+      value?: EditorDocumentValue
     ) => boolean;
     isSetValuedProperty: (
       node: JsonNode,
@@ -3237,9 +3241,10 @@ export const createEditorSchema = <V extends Value = Value>(
     properties: Readonly<Record<string, unknown>>,
     path: Path,
     root: RootKey = 'main',
-    preferredKey?: string
+    preferredKey?: string,
+    value: EditorDocumentValue = getDocument()
   ) => {
-    const { ancestors = [], parent } = getTextTargetOptionsAt(path, root);
+    const { ancestors = [], parent } = getTextTargetOptions(value, path, root);
 
     return canonicalizeTextPropertiesIn(
       properties,
@@ -3311,9 +3316,10 @@ export const createEditorSchema = <V extends Value = Value>(
   const isTextPropertyAllowedAt = (
     key: string,
     path: Path,
-    root: RootKey = 'main'
+    root: RootKey = 'main',
+    value: EditorDocumentValue = getDocument()
   ) => {
-    const options = getTextTargetOptionsAt(path, root);
+    const options = getTextTargetOptions(value, path, root);
 
     return Boolean(
       options.parent &&

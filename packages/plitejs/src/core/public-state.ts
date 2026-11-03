@@ -176,7 +176,7 @@ import {
   type DraftStepMove,
   type DraftStepSource,
 } from './change/builder';
-import type { CarriedRun } from './change/carried-run';
+import { type CarriedRun, followCarriedRun } from './change/carried-run';
 import {
   classifyDocumentChangeRoot,
   classifyRootChangeWithRuntimeCandidates,
@@ -1510,6 +1510,8 @@ export const withDraftSource = <T>(
 
 type RecordingFrontier = Readonly<{
   change: DocumentChange;
+  /** The runs `change` carries from the transaction's base. */
+  runs: readonly CarriedRun[];
   selection: Selection;
   selectionRoot: string;
   steps: number;
@@ -1660,7 +1662,7 @@ export const draftRunsOf = (
       : [
           {
             at: run.at,
-            end: run.at + run.length,
+            end: run.at + run.landed,
             root: run.root,
             source,
             sourceEnd,
@@ -1671,8 +1673,8 @@ export const draftRunsOf = (
 /**
  * The runs the recorded change carries, from the runs the plain draft
  * carried: each landing follows the recorder's map, and each source maps back
- * through the drafts recorded before. A run whose two spans differ in length
- * is not one the recorded change carries.
+ * through the drafts recorded before. `ChangeDraft.apply` keeps only the runs
+ * whose two spans hold the same letters.
  */
 const recordedRunsOf = (
   runs: readonly DraftRun[],
@@ -1692,13 +1694,37 @@ const recordedRunsOf = (
 
     return at === null ||
       end === null ||
-      end - at !== length ||
+      end <= at ||
       length <= 0 ||
       kept.length !== 1 ||
       kept[0].from !== run.source ||
       kept[0].to !== run.sourceEnd
       ? []
-      : [{ at, length, root: run.root, source: kept[0].at }];
+      : [{ at, landed: end - at, length, root: run.root, source: kept[0].at }];
+  });
+
+/**
+ * The runs an earlier frame's recorded change carried, as the next recorded
+ * change from that frame's document leaves them.
+ */
+const frontierRunsThrough = (
+  frontier: RecordingFrontier,
+  recorded: RecordedDraft
+) =>
+  frontier.runs.flatMap((run) => {
+    const change = getInternalDocumentRootChange(recorded.change, run.root);
+
+    if (!change) return [run];
+
+    const before = valueRootIndex(frontier.value, run.root);
+    const moved = followCarriedRun(
+      run,
+      change,
+      before,
+      recorded.indexedAfter?.get(run.root) ?? change.apply(before)
+    );
+
+    return moved ? [moved] : [];
   });
 
 export const commitRecordedDraft = (
@@ -1740,10 +1766,12 @@ export const commitRecordedDraft = (
       }
     : null;
   const recordedLetters = new Map<string, LetterSpan[]>();
-  const recordedRuns =
-    mapPosition && runs?.length
+  const recordedRuns = [
+    ...(frontier ? frontierRunsThrough(frontier, recorded) : []),
+    ...(mapPosition && runs?.length
       ? recordedRunsOf(runs, mapPosition, frontier?.change ?? null)
-      : [];
+      : []),
+  ];
 
   if (mapPosition && plainToRecorded) {
     for (const [root, spans] of [
@@ -1827,6 +1855,7 @@ export const commitRecordedDraft = (
   if (!change.empty) settleBeforeRecordingFrontier(editor, snapshot);
   RECORDING_FRONTIERS.set(snapshot, {
     change: snapshot.builder.change,
+    runs: snapshot.builder.carriedRuns(),
     selection: context.caret.selection,
     selectionRoot: context.caret.root,
     steps: snapshot.builder.draftSteps.length,
