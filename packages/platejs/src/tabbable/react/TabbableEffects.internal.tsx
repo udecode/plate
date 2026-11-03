@@ -1,10 +1,34 @@
 import React from 'react';
 import { isTabbable as isTabbableElement, tabbable } from 'tabbable';
 
-import { PathApi, RangeApi, type EditorStateView } from '../../core';
+import {
+  PathApi,
+  RangeApi,
+  type EditorStateView,
+  type Point,
+} from '../../core';
 import { useEditorReadOnly, useEditor, usePluginStore } from '../../react/core';
 import type { TabbableEntry } from '../lib/TabbablePluginTypes';
 import { TabbablePlugin } from './TabbablePlugin';
+
+function caretPointOutsideVoids(
+  state: EditorStateView,
+  path: TabbableEntry['path'],
+  direction: 'backward' | 'forward'
+) {
+  const forward = direction === 'forward';
+  let point = forward ? state.points.after(path) : state.points.get(path);
+  let voidEntry = point && state.nodes.void({ at: point });
+
+  while (voidEntry) {
+    point = forward
+      ? state.points.after(voidEntry[1])
+      : state.points.before(voidEntry[1]);
+    voidEntry = point && state.nodes.void({ at: point });
+  }
+
+  return point;
+}
 
 export function findTabDestination(
   state: EditorStateView,
@@ -19,25 +43,34 @@ export function findTabDestination(
   }
 ):
   | { domNode: TabbableEntry['domNode']; type: 'dom-node' }
-  | { path: TabbableEntry['path']; type: 'path' }
+  | { point: Point; type: 'point' }
   | null {
   if (activeTabbableEntry) {
+    const forward = direction === 'forward';
     const activeIndex = tabbableEntries.indexOf(activeTabbableEntry);
-    const nextEntry =
-      tabbableEntries[activeIndex + (direction === 'forward' ? 1 : -1)];
+    const nextEntry = tabbableEntries[activeIndex + (forward ? 1 : -1)];
 
     if (nextEntry && PathApi.equals(activeTabbableEntry.path, nextEntry.path)) {
       return { domNode: nextEntry.domNode, type: 'dom-node' };
     }
-    if (direction === 'forward') {
-      const point = state.points.after(activeTabbableEntry.path);
 
-      return point ? { path: point.path, type: 'path' } : null;
+    const point = caretPointOutsideVoids(
+      state,
+      activeTabbableEntry.path,
+      direction
+    );
+
+    if (
+      nextEntry &&
+      (!point ||
+        (forward
+          ? PathApi.isBefore(nextEntry.path, point.path)
+          : PathApi.isAfter(nextEntry.path, point.path)))
+    ) {
+      return { domNode: nextEntry.domNode, type: 'dom-node' };
     }
 
-    const point = state.points.get(activeTabbableEntry.path);
-
-    return point ? { path: point.path, type: 'path' } : null;
+    return point ? { point, type: 'point' } : null;
   }
 
   const selection = state.selection();
@@ -240,10 +273,10 @@ export function TabbableEffects() {
 
             break;
           }
-          case 'path': {
+          case 'point': {
             editor.update.selection.set({
-              anchor: { offset: 0, path: tabDestination.path },
-              focus: { offset: 0, path: tabDestination.path },
+              anchor: tabDestination.point,
+              focus: tabDestination.point,
             });
             editor.api.dom.focus();
 
