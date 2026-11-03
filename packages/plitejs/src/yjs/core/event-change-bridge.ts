@@ -1484,7 +1484,8 @@ const parseProjectedRootDelta = (
 const finalizeRootRegions = (
   base: readonly RootStructuralRegion[],
   normalizedNodes: readonly YjsNode[],
-  before: RootProjectionIndex
+  before: RootProjectionIndex,
+  showsTopNode: (node: YjsNode, old: YjsNode) => boolean
 ): Array<EventImportRegion & { nodes: readonly YjsNode[] }> | null => {
   const regions: Array<{
     beforeFrom: number;
@@ -1519,6 +1520,8 @@ const finalizeRootRegions = (
 
   regions.sort((left, right) => left.beforeFrom - right.beforeFrom);
 
+  pairTopLevelWraps(regions, before, showsTopNode);
+
   let offset = 0;
   let previousTo = 0;
   const finalized: Array<EventImportRegion & { nodes: readonly YjsNode[] }> =
@@ -1542,6 +1545,31 @@ const finalizeRootRegions = (
   }
 
   return before.length + offset > 0 ? finalized : null;
+};
+
+const pairTopLevelWraps = (
+  regions: Array<{ beforeFrom: number; beforeTo: number; nodes: YjsNode[] }>,
+  before: RootProjectionIndex,
+  showsTopNode: (node: YjsNode, old: YjsNode) => boolean
+) => {
+  for (let index = regions.length - 1; index > 0; index--) {
+    const removal = regions[index - 1];
+    const insertion = regions[index];
+    const old = before.at(removal.beforeFrom);
+
+    if (
+      old &&
+      removal.nodes.length === 0 &&
+      removal.beforeTo === removal.beforeFrom + 1 &&
+      insertion.beforeFrom === removal.beforeTo &&
+      insertion.beforeTo === insertion.beforeFrom &&
+      insertion.nodes.length === 1 &&
+      showsTopNode(insertion.nodes[0], old)
+    ) {
+      removal.nodes = insertion.nodes;
+      regions.splice(index, 1);
+    }
+  }
 };
 
 const mapRootNodeIndex = (
@@ -5621,6 +5649,30 @@ export class YjsEventChangeBridge {
     );
   }
 
+  private showsTopNode(node: YjsNode, old: YjsNode): boolean {
+    const stack: YjsNode[] = [node];
+
+    for (let current = stack.pop(); current; current = stack.pop()) {
+      const ref = current.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY);
+
+      if (current === old) return true;
+      if (typeof ref === 'string' && this.rootIndex.resolve(ref) === old) {
+        return true;
+      }
+      if (current instanceof Y.XmlElement) {
+        stack.push(...rawYjsChildren(current));
+      }
+    }
+
+    return false;
+  }
+
+  private showsAt(node: YjsNode, beforeIndex: number): boolean {
+    const old = this.rootIndex.at(beforeIndex);
+
+    return old !== undefined && this.showsTopNode(node, old);
+  }
+
   private hasUnresolvedReference(node: YjsNode): boolean {
     const stack: YjsNode[] = [node];
 
@@ -6550,7 +6602,8 @@ export class YjsEventChangeBridge {
     const structural = finalizeRootRegions(
       parsedRootDelta,
       removedTopNodes,
-      this.rootIndex
+      this.rootIndex,
+      (node, old) => this.showsTopNode(node, old)
     );
 
     if (structural === null) {
@@ -6872,7 +6925,7 @@ export class YjsEventChangeBridge {
         batch.deletedCuts.length === 0 &&
         !maskedBefore.has(node) &&
         !this.maskedBlocks.has(node) &&
-        (beforeIndex === undefined || this.rootIndex.at(beforeIndex) === node)
+        (beforeIndex === undefined || this.showsAt(node, beforeIndex))
         ? (readLineScripts(this.root, node, line, letters) ??
             readLineScripts(this.root, node, line, letters, true))
         : null;
