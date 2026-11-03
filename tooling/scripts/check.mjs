@@ -345,6 +345,17 @@ export const steps = [
     key: [],
   },
   {
+    name: 'docx-import-report',
+    run: 'pnpm check:docx-import-report',
+    affected: touches(
+      'packages/platejs/scripts/docx-import-report',
+      'packages/platejs/src/',
+      'packages/plitejs/src/',
+      'config/plite-source-aliases.ts'
+    ),
+    key: [],
+  },
+  {
     name: 'bench-targets',
     private: true,
     run: 'pnpm plite:bench:targets:check',
