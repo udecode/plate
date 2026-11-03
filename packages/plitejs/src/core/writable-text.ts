@@ -12,7 +12,11 @@ import { getCompiledEditorSchemaFromApi } from './editor-schema';
 export const isNonEditable = (schema: InternalEditorSchemaApi, node: Element) =>
   schema.isVoid(node) || schema.isAtom(node) || schema.isReadOnly(node);
 
-export const isEditablePath = (editor: Editor, path: Path) => {
+export const isEditablePath = (
+  editor: Editor,
+  path: Path,
+  { voids = false } = {}
+) => {
   const schema = getEditorSchema(editor);
   let children: readonly Descendant[] = editorGetChildren(editor);
 
@@ -20,16 +24,25 @@ export const isEditablePath = (editor: Editor, path: Path) => {
     const node = children[index];
 
     if (!NodeApi.isElement(node)) return true;
-    if (isNonEditable(schema, node)) return false;
+    if (
+      isNonEditable(schema, node) &&
+      !(voids && schema.isVoid(node) && !schema.isReadOnly(node))
+    ) {
+      return false;
+    }
     ({ children } = node);
   }
 
   return true;
 };
 
-export const isWritablePoint = (editor: Editor, point: Point) =>
+export const isWritablePoint = (
+  editor: Editor,
+  point: Point,
+  options?: { voids?: boolean }
+) =>
   NodeApi.isText(NodeApi.get(editor, point.path)) &&
-  isEditablePath(editor, point.path);
+  isEditablePath(editor, point.path, options);
 
 export const canReplaceChildrenWithText = (
   schema: InternalEditorSchemaApi,

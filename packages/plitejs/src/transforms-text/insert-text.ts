@@ -11,6 +11,7 @@ import {
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
+import { isWritablePoint } from '../core/writable-text';
 import {
   elementReadOnly,
   refusesReadOnlyWrite,
@@ -30,6 +31,7 @@ import {
 import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   getChildren as editorGetChildren,
+  isInline as editorIsInline,
   range as editorRange,
   void as editorVoid,
 } from '../interfaces/editor';
@@ -123,6 +125,13 @@ const createFullDocumentTextReplacement = (
   }
 
   return [textNode];
+};
+
+const startsWithTextBlock = (editor: Editor) => {
+  const [first] = editorGetChildren(editor);
+  const [child] = NodeApi.isElement(first) ? first.children : [];
+
+  return !NodeApi.isElement(child) || editorIsInline(editor, child);
 };
 
 const normalizeTextMarks = (marks: TextMarks | null): TextMarks | null =>
@@ -229,13 +238,28 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
       return;
     }
 
-    if (
+    const documentRange =
       text.length > 0 &&
-      LocationApi.isRange(defaultAt) &&
-      !RangeApi.isCollapsed(defaultAt) &&
-      isFullDocumentRange(editor, defaultAt)
+      LocationApi.isRange(preflightAt) &&
+      isFullDocumentRange(editor, preflightAt)
+        ? preflightAt
+        : null;
+    const writesFirstBlock = !!documentRange && startsWithTextBlock(editor);
+
+    if (
+      documentRange &&
+      !isWritablePoint(editor, RangeApi.start(documentRange), {
+        voids: voids && writesFirstBlock,
+      })
     ) {
-      const replacementMarks = getConsistentRangeTextMarks(editor, defaultAt);
+      return;
+    }
+
+    if (documentRange && writesFirstBlock) {
+      const replacementMarks = getConsistentRangeTextMarks(
+        editor,
+        documentRange
+      );
 
       const root = getEditorUpdateRoot(editor);
       const newSelection = explicitAtPreservesNullSelection
