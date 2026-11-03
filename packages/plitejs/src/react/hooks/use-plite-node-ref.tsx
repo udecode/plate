@@ -10,6 +10,7 @@ import type {
   Value,
 } from '../..';
 import { NodeApi } from '../..';
+import { isDOMElement } from '../../dom';
 import {
   EDITOR_TO_KEY_TO_ELEMENT,
   ELEMENT_TO_NODE,
@@ -798,6 +799,18 @@ export const getPliteNodeElementByKey = (
   return null;
 };
 
+export const holdsPliteNodeKeyElement = (
+  editor: Editor,
+  nodeKey: NodeKey,
+  node: Node
+) =>
+  isDOMElement(node) &&
+  [node, ...node.querySelectorAll('[data-editor-node-key]')].some(
+    (element) =>
+      element.getAttribute('data-editor-node-key') === nodeKey &&
+      ELEMENT_TO_EDITOR.get(element as HTMLElement) === editor
+  );
+
 export const isPliteNodeFlowRootBound = (
   editor: Editor,
   nodeKey: NodeKey,
@@ -860,6 +873,7 @@ const usePliteNodeRefBinding = (
 
       editableRuntime?.renderContract.noteBind(nodeKey);
       cleanupRef.current = () => {
+        editableRuntime?.restorePrunedLineBeforeUnbind();
         detachNode();
         editableRuntime?.renderContract.noteBind(nodeKey);
       };

@@ -71,6 +71,7 @@ type CompositionFinalInputType = 'insertFromComposition' | 'insertText';
 
 export type EditableCompositionLeaseBinding = Readonly<{
   grant: (selection: Range | null) => void;
+  reenterLine: () => void;
   settleAndFlushRender: () => void;
   settle: () => void;
 }>;

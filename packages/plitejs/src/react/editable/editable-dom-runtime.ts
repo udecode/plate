@@ -392,9 +392,11 @@ export class EditableDOMRuntime {
   private readonly nativeInputHandlers: {
     beforeInput: ((event: InputEvent) => void) | null;
     input: ((event: Event) => void) | null;
+    reenterCompositionLine: (() => void) | null;
   } = {
     beforeInput: null,
     input: null,
+    reenterCompositionLine: null,
   };
 
   private nativeInputListenersCleanup: (() => void) | null = null;
@@ -478,6 +480,10 @@ export class EditableDOMRuntime {
           manager &&
           (manager.hasPendingChanges() || manager.isFlushing())
         );
+      },
+      compositionLine: {
+        holds: (node) => this.compositionLease.holdsLine(editor, node),
+        restored: () => this.compositionLease.markLineRestored(),
       },
       isCompositionLeasedMutation: (mutation) =>
         this.compositionLease.protectsMutation(mutation),
@@ -992,6 +998,14 @@ export class EditableDOMRuntime {
     this.rootRuntime.prepareHostCommit();
   }
 
+  // React must not remove a line WebKit already removed, so the integrity
+  // observer puts it back before the line's binding goes.
+  readonly restorePrunedLineBeforeUnbind = () => {
+    if (this.compositionLease.held) {
+      this.rootRuntime.domIntegrityObserver.restorePrunedCompositionLine();
+    }
+  };
+
   readonly importUnreadPressBeforeUnmount = (node: Node | null) => {
     if (!node && this.importUnreadPressCaret()) {
       this.requestSelectionExportAfterDOMCommit();
@@ -1394,12 +1408,15 @@ export class EditableDOMRuntime {
   updateNativeInputHandlers({
     onDOMBeforeInput,
     onDOMInput,
+    reenterCompositionLine,
   }: {
     onDOMBeforeInput: (event: InputEvent) => void;
     onDOMInput: (event: Event) => void;
+    reenterCompositionLine: () => void;
   }) {
     this.nativeInputHandlers.beforeInput = onDOMBeforeInput;
     this.nativeInputHandlers.input = onDOMInput;
+    this.nativeInputHandlers.reenterCompositionLine = reenterCompositionLine;
   }
 
   updateSelectionChangeHandlers({
@@ -1445,6 +1462,13 @@ export class EditableDOMRuntime {
     const handleInput = (event: Event) => {
       if (getEditableInteractionOwner(node, event.target) === 'external-text') {
         return;
+      }
+      if (
+        this.compositionLease.held &&
+        (event as InputEvent).inputType === 'deleteCompositionText'
+      ) {
+        this.rootRuntime.domIntegrityObserver.flushRecords();
+        this.nativeInputHandlers.reenterCompositionLine?.();
       }
       this.nativeInputHandlers.input?.(event);
     };

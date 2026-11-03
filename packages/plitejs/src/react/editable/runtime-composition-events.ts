@@ -5,6 +5,7 @@ import { useRebuildLine } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import {
   grantCompositionLease,
+  reenterCompositionLine,
   settleCompositionLeaseAndFlushRender,
   settleCompositionLease,
 } from './composition-lease';
@@ -59,6 +60,7 @@ export const useEditableCompositionLease = ({
           });
         }
       },
+      reenterLine: () => reenterCompositionLine(settleInput()),
       settleAndFlushRender: () =>
         settleCompositionLeaseAndFlushRender(settleInput()),
       settle: () => {

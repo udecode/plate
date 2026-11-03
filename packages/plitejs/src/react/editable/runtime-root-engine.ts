@@ -343,6 +343,7 @@ export const useEditableRootRuntime = ({
     onDOMBeforeInput: eventRuntime.handlers.onDOMBeforeInput,
     onDOMInput: eventRuntime.handlers.onDOMInput,
     onDOMSelectionChange,
+    reenterCompositionLine: eventRuntime.composition.lease.reenterLine,
     runtime,
     scheduleOnDOMSelectionChange,
   });

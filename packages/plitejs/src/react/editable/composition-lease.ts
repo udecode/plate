@@ -10,7 +10,9 @@ import {
   RangeApi,
 } from '../..';
 import { getSelection, isDOMElement } from '../../dom';
+import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { PliteDecorationStore } from '../decoration-context';
+import { holdsPliteNodeKeyElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { getNodeKey, getPathByNodeKey } from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
@@ -35,6 +37,7 @@ type CompositionLeaseState = {
   coveredBlockKeys: readonly NodeKey[];
   hostBlockKey: NodeKey | null;
   leafKey: NodeKey | null;
+  restoredLine: 'owed' | 'reentered' | null;
   snapshot: CompositionLeaseSnapshot | null;
   writes: Map<globalThis.Node, () => void>;
 };
@@ -160,6 +163,7 @@ export class CompositionLease {
       coveredBlockKeys,
       hostBlockKey,
       leafKey,
+      restoredLine: null,
       snapshot: host ? snapshotCompositionHost(host) : null,
       writes: new Map(),
     };
@@ -178,6 +182,24 @@ export class CompositionLease {
       this.protects(mutation.target) ||
       [...mutation.removedNodes].some((node) => this.protects(node))
     );
+  }
+
+  holdsLine(editor: ReactRuntimeEditor, node: globalThis.Node) {
+    const lineKey = this.state?.hostBlockKey;
+
+    return !!lineKey && holdsPliteNodeKeyElement(editor, lineKey, node);
+  }
+
+  markLineRestored() {
+    if (this.state) this.state.restoredLine = 'owed';
+  }
+
+  takeRestoredLine() {
+    const { state } = this;
+
+    if (state?.restoredLine !== 'owed') return null;
+    state.restoredLine = 'reentered';
+    return state.hostBlockKey;
   }
 
   queue(node: globalThis.Node, write: () => void) {
@@ -292,7 +314,7 @@ export const grantCompositionLease = ({
     lease.grant({
       coveredBlockKeys,
       host: null,
-      hostBlockKey: null,
+      hostBlockKey: readLowestBlockKey(editor, RangeApi.start(selection)),
       leafKey: null,
     });
     return;
@@ -335,6 +357,34 @@ const readFocusBlockKey = (
   return point ? readLowestBlockKey(editor, point) : null;
 };
 
+const redrawRestoredLineAndCaret = (
+  editor: ReactRuntimeEditor,
+  lineKey: NodeKey,
+  rebuild: (blockKey: NodeKey) => void,
+  root: HTMLElement
+) => {
+  const linePath = getPathByNodeKey(editor, lineKey);
+
+  if (!linePath) return false;
+  flushSync(() => rebuild(lineKey));
+  const point = editor.read((state) => {
+    const selection = state.selection();
+
+    return selection && PathApi.isAncestor(linePath, selection.focus.path)
+      ? selection.focus
+      : state.points.start(linePath);
+  });
+  const domPoint = point && ReactEditor.resolveDOMPoint(editor, point);
+
+  if (domPoint) {
+    writeDOMSelection(root.getRootNode() as Document | ShadowRoot, {
+      anchor: domPoint,
+      focus: domPoint,
+    });
+  }
+  return true;
+};
+
 export const settleCompositionLease = ({
   decorations,
   editor,
@@ -352,12 +402,14 @@ export const settleCompositionLease = ({
 
   if (!state) return null;
   const { snapshot } = state;
-  const verdict = snapshot
-    ? judgeCompositionLease(
-        snapshot,
-        readLeaf(editor, decorations, state.leafKey)
-      )
-    : null;
+  const verdict = state.restoredLine
+    ? 'rebuild'
+    : snapshot
+      ? judgeCompositionLease(
+          snapshot,
+          readLeaf(editor, decorations, state.leafKey)
+        )
+      : null;
   const rebuilt = new Set<NodeKey>();
   const rebuildBlock = (blockKey: NodeKey | null) => {
     if (!blockKey || rebuilt.has(blockKey)) return;
@@ -367,6 +419,15 @@ export const settleCompositionLease = ({
     rebuilt.add(blockKey);
     rebuild(blockKey);
   };
+
+  if (
+    state.restoredLine &&
+    state.hostBlockKey &&
+    root &&
+    redrawRestoredLineAndCaret(editor, state.hostBlockKey, rebuild, root)
+  ) {
+    rebuilt.add(state.hostBlockKey);
+  }
 
   if (verdict === 'restore' && snapshot) {
     for (const { node, value } of snapshot.texts) {
@@ -405,6 +466,24 @@ export const settleCompositionLease = ({
   }
 
   return verdict;
+};
+
+export const reenterCompositionLine = ({
+  editor,
+  lease,
+  rebuild,
+  root,
+}: {
+  editor: ReactRuntimeEditor;
+  lease: CompositionLease;
+  rebuild: (blockKey: NodeKey) => void;
+  root: HTMLElement | null;
+}) => {
+  const lineKey = lease.takeRestoredLine();
+
+  if (lineKey && root) {
+    redrawRestoredLineAndCaret(editor, lineKey, rebuild, root);
+  }
 };
 
 export const settleCompositionLeaseAndFlushRender = (

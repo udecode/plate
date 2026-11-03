@@ -931,6 +931,7 @@ export const useEditableRootRef = ({
   onDOMBeforeInput,
   onDOMInput,
   onDOMSelectionChange,
+  reenterCompositionLine,
   runtime,
   scheduleOnDOMSelectionChange,
 }: {
@@ -938,6 +939,7 @@ export const useEditableRootRef = ({
   onDOMBeforeInput: (event: InputEvent) => void;
   onDOMInput: (event: Event) => void;
   onDOMSelectionChange: CancelableCallback;
+  reenterCompositionLine: () => void;
   runtime: EditableDOMRuntime;
   scheduleOnDOMSelectionChange: CancelableCallback & (() => void);
 }) => {
@@ -946,6 +948,7 @@ export const useEditableRootRef = ({
   runtime.updateNativeInputHandlers({
     onDOMBeforeInput,
     onDOMInput,
+    reenterCompositionLine,
   });
   useInsertionEffect(() => {
     runtime.updateSelectionChangeHandlers({

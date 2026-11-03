@@ -38,7 +38,13 @@ type ScheduleDOMIntegrityTask = (
   }
 ) => () => void;
 
+export type DOMIntegrityCompositionLine = Readonly<{
+  holds: (node: Node) => boolean;
+  restored: () => void;
+}>;
+
 export type DOMIntegrityObserverOptions = {
+  compositionLine?: DOMIntegrityCompositionLine;
   consumeOwnedMutation: (mutation: MutationRecord) => boolean;
   getAndroidMutationHandler: () =>
     | ((mutations: MutationRecord[]) => void)
@@ -291,6 +297,57 @@ const restoreMutation = (mutation: MutationRecord) => {
   }
 };
 
+const isPlaceholderBreak = (node: Node | undefined): node is Element =>
+  !!node &&
+  isElement(node) &&
+  node.localName === 'br' &&
+  node.attributes.length === 0;
+
+/**
+ * WebKit's composition commit can remove the emptied line it composes in and
+ * put a bare `<br>` in its place right after (DeleteSelectionCommand::doApply).
+ */
+const findCompositionLinePrune = (
+  records: readonly MutationRecord[],
+  holds: (node: Node) => boolean
+) => {
+  const index = records.findIndex(
+    ({ addedNodes, removedNodes }) =>
+      addedNodes.length === 0 &&
+      removedNodes.length === 1 &&
+      removedNodes[0].parentNode === null &&
+      holds(removedNodes[0])
+  );
+  const removal = records[index];
+  const addition = records[index + 1];
+
+  if (
+    !removal ||
+    !addition ||
+    addition.target !== removal.target ||
+    addition.removedNodes.length > 0
+  ) {
+    return null;
+  }
+  const [placeholder, ...rest] = addition.addedNodes;
+
+  if (
+    rest.length > 0 ||
+    !isPlaceholderBreak(placeholder) ||
+    placeholder.parentNode !== removal.target ||
+    (placeholder.previousSibling !== removal.previousSibling &&
+      placeholder.nextSibling !== removal.nextSibling)
+  ) {
+    return null;
+  }
+
+  return {
+    line: removal.removedNodes[0],
+    placeholder,
+    records: new Set([removal, addition]),
+  };
+};
+
 export class DOMIntegrityObserver {
   private cancelRepairPassReset: (() => void) | null = null;
 
@@ -312,6 +369,8 @@ export class DOMIntegrityObserver {
   };
 
   private deferredHostCommitEvidence: DOMIntegrityMutationEvidence[] = [];
+
+  private heldRecords: MutationRecord[] = [];
 
   private observer: MutationObserver | null = null;
 
@@ -357,6 +416,7 @@ export class DOMIntegrityObserver {
     this.observer = null;
     this.root = null;
     this.pendingMutations = [];
+    this.heldRecords = [];
     this.deferredHostCommitEvidence = [];
     this.cancelRepairPassReset?.();
     this.cancelRepairPassReset = null;
@@ -376,7 +436,7 @@ export class DOMIntegrityObserver {
   }
 
   discardPending(owner: DOMIntegrityMutationOwner) {
-    const records = this.observer?.takeRecords() ?? [];
+    const records = this.restoreCompositionLine(this.takeRecords());
 
     if (records.length === 0) return;
     if (records.some((record) => !isRootChromeMutation(record))) {
@@ -462,6 +522,7 @@ export class DOMIntegrityObserver {
     this.observer?.disconnect();
     this.observer = null;
     this.pendingMutations = [];
+    this.heldRecords = [];
     this.deferredHostCommitEvidence = [];
     this.cancelRepairPassReset?.();
     this.cancelRepairPassReset = null;
@@ -475,14 +536,46 @@ export class DOMIntegrityObserver {
     if (this.connected && root && !this.hostCommitPaused) this.observe();
   }
 
-  private flushRecords() {
-    const records = this.observer?.takeRecords() ?? [];
+  flushRecords() {
+    const records = this.takeRecords();
 
     if (records.length > 0) this.handleMutations(records);
   }
 
-  private readonly handleMutations = (records: MutationRecord[]) => {
+  restorePrunedCompositionLine() {
+    this.heldRecords.push(
+      ...this.restoreCompositionLine(this.observer?.takeRecords() ?? [])
+    );
+  }
+
+  private takeRecords() {
+    return this.withHeldRecords(this.observer?.takeRecords() ?? []);
+  }
+
+  private withHeldRecords(records: MutationRecord[]) {
+    return this.heldRecords.length > 0
+      ? [...this.heldRecords.splice(0), ...records]
+      : records;
+  }
+
+  private restoreCompositionLine(records: MutationRecord[]) {
+    const { compositionLine } = this.options;
+    const prune =
+      compositionLine &&
+      findCompositionLinePrune(records, compositionLine.holds);
+
+    if (!compositionLine || !prune) return records;
+    prune.placeholder.replaceWith(prune.line);
+    this.observer?.takeRecords();
+    compositionLine.restored();
+    return records.filter((record) => !prune.records.has(record));
+  }
+
+  private readonly handleMutations = (mutations: MutationRecord[]) => {
     const { root } = this;
+    const records = this.restoreCompositionLine(
+      this.withHeldRecords(mutations)
+    );
 
     if (!root || records.length === 0) return;
     if (records.some((record) => !isRootChromeMutation(record))) {

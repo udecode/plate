@@ -605,6 +605,9 @@ export class DOMRootRuntime<TRoot extends HTMLElement = HTMLElement> {
       isAndroidMutationOwned: options.isAndroidMutationOwned,
       isCanonicalTextMutation: options.isCanonicalTextMutation,
       isComposing: options.isComposing,
+      ...(options.compositionLine
+        ? { compositionLine: options.compositionLine }
+        : {}),
       ...(options.isCompositionLeasedMutation
         ? { isCompositionLeasedMutation: options.isCompositionLeasedMutation }
         : {}),
