@@ -13,14 +13,17 @@ import type { DocumentChangeRelocation } from '../../core/change/mapping';
 import {
   getDocumentChangeRelocations,
   getExactDocumentChangeRelocation,
+  hasIndexedPathAncestor,
 } from '../../core/change/mapping';
 import {
   type DocumentPropertyContext,
   RootChange,
 } from '../../core/change/root-change';
 import {
+  isElementNode,
   PreparedTokenSlice,
   PreparedTokenSliceStructureError,
+  pathKey,
 } from '../../core/change/tokens';
 import { countCoreWork } from '../../core/work';
 import {
@@ -135,6 +138,8 @@ import {
 } from './letter-scripts';
 import {
   holdsNewLetters,
+  firstEndingAfter,
+  keptLettersSpan,
   type LetterPlace,
   lettersAfter,
   lettersBefore,
@@ -657,6 +662,104 @@ const findNestedChildSplice = (
 };
 
 const relocationPathKey = (path: readonly number[]): string => path.join('.');
+
+const holdsPathOrAncestor = (
+  paths: ReadonlySet<string>,
+  path: readonly number[]
+) => paths.has(pathKey(path)) || hasIndexedPathAncestor(paths, path);
+
+/**
+ * Yjs drops a teammate's concurrent edit inside a deleted element, so the
+ * relocations this adds let a moved element keep its Yjs node.
+ */
+const withKeptAncestorRelocations = (
+  change: RootChange,
+  letters: YjsLetters,
+  root: string | null,
+  relocations: readonly DocumentChangeRelocation[]
+): readonly DocumentChangeRelocation[] => {
+  const relocationAncestors = new Map<string, readonly number[]>();
+
+  for (const { targetPath } of relocations) {
+    for (let depth = 1; depth < targetPath.length; depth += 1) {
+      const path = targetPath.slice(0, depth);
+
+      relocationAncestors.set(relocationPathKey(path), path);
+    }
+  }
+  if (relocationAncestors.size === 0) return relocations;
+
+  const { after, before } = letters;
+  const removed: Array<readonly [number, number]> = [];
+  const inserted: Array<readonly [number, number]> = [];
+
+  change.iterChangedRanges((fromA, toA, fromB, toB) => {
+    removed.push([fromA, toA]);
+    inserted.push([fromB, toB]);
+  });
+
+  const holds = (
+    ranges: ReadonlyArray<readonly [number, number]>,
+    { from, to }: Readonly<{ from: number; to: number }>
+  ) => {
+    const at = firstEndingAfter(
+      ranges.length,
+      (index) => ranges[index][1],
+      from
+    );
+
+    return at < ranges.length && ranges[at][0] <= from && to <= ranges[at][1];
+  };
+  const targets = [...relocationAncestors.values()]
+    .map((path) => ({ ...after.nodeRange(path), path }))
+    .filter((range) => holds(inserted, range))
+    .sort((left, right) => left.path.length - right.path.length);
+  const kept: DocumentChangeRelocation[] = [];
+  const keptSources = new Set<string>();
+  const keptTargets = new Set<string>();
+
+  for (const target of targets) {
+    if (holdsPathOrAncestor(keptTargets, target.path)) continue;
+
+    const span = keptLettersSpan(letters, target.from, target.to);
+    const element = after.node(target.path);
+
+    if (!span || !isElementNode(element)) continue;
+
+    const source = before.openContextAt(span.from).find((range) => {
+      const node = before.node(range.path);
+
+      return (
+        range.kind === 'element' &&
+        range.from <= span.from &&
+        span.to <= range.to &&
+        holds(removed, range) &&
+        isElementNode(node) &&
+        node.type === element.type &&
+        jsonEqual(node.children, element.children)
+      );
+    });
+
+    if (!source || holdsPathOrAncestor(keptSources, source.path)) continue;
+
+    keptSources.add(pathKey(source.path));
+    keptTargets.add(pathKey(target.path));
+    kept.push(
+      Object.freeze({ path: source.path, root, targetPath: target.path })
+    );
+  }
+
+  return kept.length === 0
+    ? relocations
+    : [
+        ...kept,
+        ...relocations.filter(
+          ({ path, targetPath }) =>
+            !holdsPathOrAncestor(keptSources, path) &&
+            !holdsPathOrAncestor(keptTargets, targetPath)
+        ),
+      ];
+};
 
 const nodeAtPath = (
   children: NodeList<Descendant>,
@@ -3697,12 +3800,7 @@ export class YjsEventChangeBridge {
     if (detected !== null) return detected;
 
     const { after, before } = indexes();
-    const relocations = getDocumentChangeRelocations(
-      change,
-      this.rootKey,
-      before,
-      after
-    );
+    const relocations = this.relocationsOf(change, before, after);
 
     if (relocations.length === 0 && inPlace) {
       return this.lowerRegions(write, change, expected, [], inPlace, before);
@@ -3814,6 +3912,32 @@ export class YjsEventChangeBridge {
     );
   }
 
+  private relocationsOf(
+    change: DocumentChange,
+    before: DocumentIndex,
+    after: DocumentIndex
+  ) {
+    const relocations = getDocumentChangeRelocations(
+      change,
+      this.rootKey,
+      before,
+      after
+    );
+    const committed = getInternalDocumentRootChange(change, this.rootKey);
+    const letters = [...(this.letters?.values() ?? [])].find(
+      (entry) => entry.before === before && entry.after === after
+    );
+
+    return committed && letters
+      ? withKeptAncestorRelocations(
+          committed,
+          letters,
+          this.schemaRoot,
+          relocations
+        )
+      : relocations;
+  }
+
   /**
    * The change's relocations that move a node. A sibling that only shifts
    * reads as a relocation too, but a move removes its node from inside one of
@@ -3832,12 +3956,7 @@ export class YjsEventChangeBridge {
       }
     );
 
-    return getDocumentChangeRelocations(
-      change,
-      this.rootKey,
-      before,
-      after
-    ).filter(({ path }) => {
+    return this.relocationsOf(change, before, after).filter(({ path }) => {
       const range = before.nodeRange(path);
 
       return removed.some(([from, to]) => from <= range.from && range.to <= to);

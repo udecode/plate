@@ -77,7 +77,7 @@ export const yjsLettersOf = (
   })),
 });
 
-const firstEndingAfter = (
+export const firstEndingAfter = (
   count: number,
   endAt: (index: number) => number,
   position: number,
@@ -107,6 +107,42 @@ const firstEndingAfter = (
 
 const originFrom = (stretch: Stretch, from: number) =>
   stretch.origin < 0 ? stretch.origin : stretch.origin + from - stretch.from;
+
+/**
+ * The positions in `letters.before` that the letters `[from, to)` of
+ * `letters.after` keep, from the lowest to the end of the highest. Null when
+ * the span holds no letter, or one the commit wrote.
+ */
+export const keptLettersSpan = (
+  { stretches }: YjsLetters,
+  from: number,
+  to: number
+): Readonly<{ from: number; to: number }> | null => {
+  let start = Number.POSITIVE_INFINITY;
+  let end = Number.NEGATIVE_INFINITY;
+
+  for (
+    let at = firstEndingAfter(
+      stretches.length,
+      (index) => stretches[index].to,
+      from
+    );
+    at < stretches.length && stretches[at].from < to;
+    at += 1
+  ) {
+    const stretch = stretches[at];
+
+    if (stretch.origin < 0) return null;
+
+    const first = Math.max(stretch.from, from);
+    const origin = originFrom(stretch, first);
+
+    start = Math.min(start, origin);
+    end = Math.max(end, origin + Math.min(stretch.to, to) - first);
+  }
+
+  return start < end ? { from: start, to: end } : null;
+};
 
 /**
  * `letters` as a writer of `document`, the before document of `change`, reads
