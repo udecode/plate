@@ -330,6 +330,21 @@ export const steps = [
     key: [],
   },
   {
+    name: 'delete-paste-ranges',
+    private: true,
+    run: 'pnpm check:delete-paste-ranges',
+    affected: touches(
+      'packages/plitejs/scripts/delete-paste-ranges',
+      'packages/plitejs/scripts/authored-documents',
+      'packages/plitejs/scripts/check-harness',
+      'packages/plitejs/src/',
+      'packages/plitejs/test/support/',
+      'config/plite-source-aliases.ts',
+      'tooling/scripts/finding-baseline.mjs'
+    ),
+    key: [],
+  },
+  {
     name: 'bench-targets',
     private: true,
     run: 'pnpm plite:bench:targets:check',
