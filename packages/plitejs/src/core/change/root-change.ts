@@ -278,6 +278,26 @@ export const semanticPropertyModifications = (
   return Object.freeze(modifications);
 };
 
+const isEmptyList = (value: unknown) =>
+  Array.isArray(value) && value.length === 0;
+
+const betweenPropertyModifications = (
+  before: Readonly<JsonRecord>,
+  after: Readonly<JsonRecord>,
+  isSetValued: (key: string) => boolean,
+  emptySetsAsValues = false
+) =>
+  semanticPropertyModifications(
+    before,
+    after,
+    (key) =>
+      isSetValued(key) &&
+      !(
+        emptySetsAsValues &&
+        (isEmptyList(before[key]) || isEmptyList(after[key]))
+      )
+  );
+
 export const invertPropertyModifications = (
   props: Readonly<JsonRecord>,
   modifications: readonly PropertyModification[]
@@ -1034,6 +1054,7 @@ export const createStructurallyAlignedChanges = (
   before: DocumentIndex,
   after: DocumentIndex,
   options: Readonly<{
+    emptySetsAsValues?: boolean;
     isSetValued?: DocumentSetPropertyResolver;
     root?: string | null;
   }>
@@ -1171,10 +1192,11 @@ export const createStructurallyAlignedChanges = (
       path,
       options.root ?? null
     );
-    const modifications = semanticPropertyModifications(
+    const modifications = betweenPropertyModifications(
       sourceProperties,
       targetProperties,
-      (key) => options.isSetValued?.(source, key, context) ?? false
+      (key) => options.isSetValued?.(source, key, context) ?? false,
+      options.emptySetsAsValues
     );
 
     if (modifications.length > 0) {
@@ -2361,6 +2383,7 @@ export class RootChange {
     before: DocumentIndex,
     after: DocumentIndex,
     options: Readonly<{
+      emptySetsAsValues?: boolean;
       isSetValued?: DocumentSetPropertyResolver;
       root?: string | null;
     }> = {}
@@ -2416,10 +2439,11 @@ export class RootChange {
           entry.path,
           options.root ?? null
         );
-        const modifications = semanticPropertyModifications(
+        const modifications = betweenPropertyModifications(
           token.props,
           next.props,
-          (key) => options.isSetValued?.(node, key, context) ?? false
+          (key) => options.isSetValued?.(node, key, context) ?? false,
+          options.emptySetsAsValues
         );
 
         return modifications.length === 0

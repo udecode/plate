@@ -1149,59 +1149,7 @@ export class DocumentChange {
       isSetValued?: DocumentSetPropertyResolver;
     }> = {}
   ) {
-    const roots = new Set([
-      'main',
-      ...Object.keys(before.roots ?? {}),
-      ...Object.keys(after.roots ?? {}),
-    ]);
-    const changes = new Map<string, RootChange>();
-    const classifications = new Map<string, DocumentChangeRootClassification>();
-    const createRoots = new Set<string>();
-    const deleteRoots = new Set<string>();
-
-    for (const root of roots) {
-      const beforeDocument = DocumentIndex.fromValue(valueRoot(before, root));
-      const afterDocument = DocumentIndex.fromValue(valueRoot(after, root));
-      const change = RootChange.between(beforeDocument, afterDocument, {
-        ...options,
-        root: root === 'main' ? null : root,
-      });
-
-      if (!change.empty) {
-        changes.set(root, change);
-        classifications.set(
-          root,
-          classifyRootChange(change, beforeDocument, afterDocument)
-        );
-      }
-
-      if (
-        root !== 'main' &&
-        !Object.hasOwn(before.roots ?? {}, root) &&
-        Object.hasOwn(after.roots ?? {}, root)
-      ) {
-        createRoots.add(root);
-      }
-
-      if (
-        root !== 'main' &&
-        Object.hasOwn(before.roots ?? {}, root) &&
-        !Object.hasOwn(after.roots ?? {}, root)
-      ) {
-        deleteRoots.add(root);
-      }
-    }
-
-    return createInternalDocumentChange(changes, {
-      classifications,
-      createRoots,
-      deleteRoots,
-      // A value without records says nothing about them, so records are never
-      // removed by a value that leaves them out.
-      records: hasValueRecords(after)
-        ? recordOpsBetween(getValueRecords(before), getValueRecords(after))
-        : NO_RECORD_OPS,
-    });
+    return documentChangeBetween(before, after, options);
   }
 
   get empty() {
@@ -1637,6 +1585,69 @@ export class DocumentChange {
     };
   }
 }
+
+export const documentChangeBetween = (
+  before: JsonEditorValue,
+  after: JsonEditorValue,
+  options: Readonly<{
+    emptySetsAsValues?: boolean;
+    isSetValued?: DocumentSetPropertyResolver;
+  }>
+) => {
+  const roots = new Set([
+    'main',
+    ...Object.keys(before.roots ?? {}),
+    ...Object.keys(after.roots ?? {}),
+  ]);
+  const changes = new Map<string, RootChange>();
+  const classifications = new Map<string, DocumentChangeRootClassification>();
+  const createRoots = new Set<string>();
+  const deleteRoots = new Set<string>();
+
+  for (const root of roots) {
+    const beforeDocument = DocumentIndex.fromValue(valueRoot(before, root));
+    const afterDocument = DocumentIndex.fromValue(valueRoot(after, root));
+    const change = RootChange.between(beforeDocument, afterDocument, {
+      ...options,
+      root: root === 'main' ? null : root,
+    });
+
+    if (!change.empty) {
+      changes.set(root, change);
+      classifications.set(
+        root,
+        classifyRootChange(change, beforeDocument, afterDocument)
+      );
+    }
+
+    if (
+      root !== 'main' &&
+      !Object.hasOwn(before.roots ?? {}, root) &&
+      Object.hasOwn(after.roots ?? {}, root)
+    ) {
+      createRoots.add(root);
+    }
+
+    if (
+      root !== 'main' &&
+      Object.hasOwn(before.roots ?? {}, root) &&
+      !Object.hasOwn(after.roots ?? {}, root)
+    ) {
+      deleteRoots.add(root);
+    }
+  }
+
+  return createInternalDocumentChange(changes, {
+    classifications,
+    createRoots,
+    deleteRoots,
+    // A value without records says nothing about them, so records are never
+    // removed by a value that leaves them out.
+    records: hasValueRecords(after)
+      ? recordOpsBetween(getValueRecords(before), getValueRecords(after))
+      : NO_RECORD_OPS,
+  });
+};
 
 /**
  * `DocumentChange.transform`, with `keepEqualEdits` for one author's

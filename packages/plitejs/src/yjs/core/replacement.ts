@@ -126,12 +126,22 @@ export const setYjsElementAttributes = (
 
     const value = newProperties[key];
     const storage = storageOf(key);
+    // An empty list writes no member attributes and would read back as
+    // absent, so a per-member place stores it as a plain value, as on a line
+    // moved into that place.
+    const wholeEmpty =
+      storage === 'placed-members' &&
+      Array.isArray(value) &&
+      value.length === 0;
 
     assertPublicYjsAttributeCanBeSet(key);
 
     if (
       storage === 'members' ||
-      (storage === 'placed-members' && value !== null && value !== undefined)
+      (storage === 'placed-members' &&
+        !wholeEmpty &&
+        value !== null &&
+        value !== undefined)
     ) {
       if (!Array.isArray(value)) {
         throw new Error(`Set-valued Yjs property "${key}" must be an array.`);
@@ -172,7 +182,7 @@ export const setYjsElementAttributes = (
       continue;
     }
 
-    if (storage === 'placed-value') {
+    if (storage === 'placed-value' || wholeEmpty) {
       writeSetEntries(key, Array.isArray(value) ? value : []);
       removeSetEdits(key);
     } else {

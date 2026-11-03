@@ -1932,6 +1932,7 @@ const createEventDocumentChange = (
     const heals = unsplits.filter(({ left }) => holds(left[0]));
     const between = (left: DocumentIndex, right: DocumentIndex) =>
       RootChange.between(left, right, {
+        emptySetsAsValues: true,
         isSetValued: resolve,
         root: root === 'main' ? null : root,
       });
@@ -2046,7 +2047,11 @@ const createEventDocumentChange = (
             local: RootChange.between(
               DocumentIndex.fromValue(window.before),
               DocumentIndex.fromValue(window.after),
-              { isSetValued: lift, root: root === 'main' ? null : root }
+              {
+                emptySetsAsValues: true,
+                isSetValued: lift,
+                root: root === 'main' ? null : root,
+              }
             ),
             region: regionIndex,
           });
@@ -6468,6 +6473,7 @@ export class YjsEventChangeBridge {
     let contexts: ReturnType<typeof indexYjsPropertyContexts> | undefined;
 
     return RootChange.between(before, after, {
+      emptySetsAsValues: true,
       isSetValued: (node, key) => {
         contexts ??= indexYjsPropertyContexts(
           before.value as unknown as NodeList<Descendant>,

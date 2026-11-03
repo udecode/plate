@@ -1,9 +1,6 @@
+import { documentChangeBetween } from '../../core/change/document-change';
 import { countCoreWork } from '../../core/work';
-import {
-  type Descendant,
-  DocumentChange,
-  type JsonEditorValue,
-} from '../../index';
+import type { Descendant, DocumentChange, JsonEditorValue } from '../../index';
 import {
   createYjsNode,
   createYjsPropertyContext,
@@ -45,10 +42,11 @@ export const createRootDocumentChange = (
 ) => {
   const contexts = indexYjsPropertyContexts(before, schemaRoot(root));
 
-  return DocumentChange.between(
+  return documentChangeBetween(
     valueForRoot(root, before),
     valueForRoot(root, after),
     {
+      emptySetsAsValues: true,
       isSetValued: (node, key) => {
         const context = contexts.get(node);
 

@@ -1760,6 +1760,11 @@ const createYjsNodeAttributes = (
       }
 
       Object.assign(attributes, encodeYjsSetValueAttributes(key, value));
+      // An empty list writes no member attributes and would read back as
+      // absent, so it is stored as a plain value, as on a line moved here.
+      if (storage === 'placed-members' && value.length === 0) {
+        attributes[key] = value;
+      }
     } else {
       attributes[key] = value;
       if (storage === 'placed-value') {
