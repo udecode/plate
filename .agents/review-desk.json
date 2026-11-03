@@ -55,5 +55,5 @@
     },
     "moved": "docs/triage/moved.tsv"
   },
-  "baselines": ["packages/plitejs/scripts/authored-decision-order-baseline.json", "apps/www/scripts/autoformat-input-rules-baseline.json", "packages/plitejs/scripts/authored-recording-order-baseline.json", "packages/plitejs/scripts/undo-redo-history-baseline.json", "packages/plitejs/scripts/delete-paste-ranges-baseline.json", "packages/platejs/scripts/markdown-round-trip-baseline.json"]
+  "baselines": ["packages/plitejs/scripts/authored-decision-order-baseline.json", "apps/www/scripts/autoformat-input-rules-baseline.json", "packages/plitejs/scripts/authored-recording-order-baseline.json", "packages/plitejs/scripts/undo-redo-history-baseline.json", "packages/plitejs/scripts/delete-paste-ranges-baseline.json", "packages/platejs/scripts/markdown-round-trip-baseline.json", "packages/platejs/scripts/table-grid-commands-baseline.json"]
 }

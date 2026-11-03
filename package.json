@@ -47,6 +47,7 @@
     "check:markdown-round-trip": "bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/markdown-round-trip.ts",
     "check:autoformat-rules": "bun --preload ./config/plite-source-aliases.ts apps/www/scripts/autoformat-input-rules.ts",
     "check:docx-import-report": "bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/docx-import-report.ts",
+    "check:table-grid": "bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/table-grid-commands.ts",
     "check:yjs-peer-order": "bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/yjs-peer-order.ts",
     "check:core": "node tooling/scripts/check-core.mjs",
     "check:plate-feature": "node tooling/scripts/check-plate-feature.mjs",

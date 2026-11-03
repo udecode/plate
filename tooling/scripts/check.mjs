@@ -370,6 +370,20 @@ export const steps = [
     key: [],
   },
   {
+    name: 'table-grid',
+    private: true,
+    run: 'pnpm check:table-grid',
+    affected: touches(
+      'packages/platejs/scripts/table-grid-commands',
+      'packages/plitejs/scripts/check-harness',
+      'packages/platejs/src/',
+      'packages/plitejs/src/',
+      'config/plite-source-aliases.ts',
+      'tooling/scripts/finding-baseline.mjs'
+    ),
+    key: [],
+  },
+  {
     name: 'bench-targets',
     private: true,
     run: 'pnpm plite:bench:targets:check',
