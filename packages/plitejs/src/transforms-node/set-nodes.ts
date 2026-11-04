@@ -77,6 +77,25 @@ const isUntouchedEdgeText = (
   );
 };
 
+const isEdgeInsideText = (node: Node, path: Path, edges: readonly Point[]) =>
+  NodeApi.isText(node) &&
+  edges.some(
+    (edge) =>
+      PathApi.equals(edge.path, path) &&
+      edge.offset > 0 &&
+      edge.offset < node.text.length
+  );
+
+const isSoleText = (editor: Editor, path: Path) => {
+  const [parentNode] = getParentEntry(editor, path);
+
+  return (
+    NodeApi.isElement(parentNode) &&
+    typeof parentNode.type === 'string' &&
+    getEditorSchema(editor).getElementContent(parentNode.type)?.max === 1
+  );
+};
+
 export const setNodes = ((
   editor: Editor,
   props: Partial<Node>,
@@ -102,6 +121,7 @@ export const setNodes = ((
     let split = optionSplit;
     let voids = optionVoids;
     let splitEdges: readonly [Point, Point] | undefined;
+    let refusedEdges: Point[] = [];
 
     if (!at) {
       return;
@@ -207,10 +227,29 @@ export const setNodes = ((
       });
       const [start, end] = RangeApi.edges(at);
       const splitMode = mode === 'lowest' ? 'lowest' : 'highest';
+      const nodeMatch = getDefined(match);
+      const refused = [start, end].map((point) => {
+        const node = NodeApi.get(editor, point.path);
+
+        return (
+          isEdgeInsideText(node, point.path, [point]) &&
+          nodeMatch(node, point.path) &&
+          isSoleText(editor, point.path)
+        );
+      });
+      const splitMatchAt =
+        (point: Point, isRefused: boolean): NodeMatchPredicate =>
+        (node, path) =>
+          !(
+            isRefused &&
+            (splitMode === 'lowest'
+              ? PathApi.isCommon(path, point.path)
+              : PathApi.equals(path, point.path))
+          ) && nodeMatch(node, path);
       const endAtEndOfNode = editorIsEnd(editor, end, end.path);
       splitNodesKeepingType(editor, {
         at: end,
-        match,
+        match: splitMatchAt(end, refused[1]),
         mode: splitMode,
         voids,
         always: !endAtEndOfNode,
@@ -218,7 +257,7 @@ export const setNodes = ((
       const startAtStartOfNode = editorIsStart(editor, start, start.path);
       splitNodesKeepingType(editor, {
         at: start,
-        match,
+        match: splitMatchAt(start, refused[0]),
         mode: splitMode,
         voids,
         always: !startAtStartOfNode,
@@ -227,6 +266,7 @@ export const setNodes = ((
 
       if (RangeApi.isRange(at)) {
         splitEdges = RangeApi.edges(at);
+        refusedEdges = splitEdges.filter((_, index) => refused[index]);
       }
 
       if (options.at == null) {
@@ -255,7 +295,11 @@ export const setNodes = ((
       if (path.length === 0) {
         continue;
       }
-      if (splitEdges && isUntouchedEdgeText(editor, node, path, splitEdges)) {
+      if (
+        splitEdges &&
+        (isUntouchedEdgeText(editor, node, path, splitEdges) ||
+          isEdgeInsideText(node, path, refusedEdges))
+      ) {
         continue;
       }
 
