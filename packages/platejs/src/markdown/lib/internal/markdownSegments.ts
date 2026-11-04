@@ -21,6 +21,7 @@ export const MARKDOWN_DEFINITION = /(?:^|\n) {0,3}\[[^\]\n]+\]:/;
 
 type ScanState = {
   fence: Readonly<{ char: string; length: number }> | null;
+  openList: boolean;
   math: boolean;
   previousNonBlank: string | null;
   rawEnd: RegExp | null;
@@ -71,6 +72,7 @@ const scanLine = (
 
     return;
   }
+  if (LIST.test(line)) state.openList = true;
   const fence = FENCE.exec(line);
 
   if (fence) {
@@ -104,10 +106,12 @@ const scanLine = (
 /**
  * Offsets after `from` where a streamed source can be split without changing
  * how either side parses: a blank line followed by a new block, with no open
- * fence, math block, raw HTML block or registered block tag, and no list or
- * indented line before it that the next block could continue. The next block
- * must start unindented and not with a list marker, since either can continue
- * an earlier list item or list. `from` must be such a boundary itself (or 0).
+ * fence, math block, raw HTML block or registered block tag, no open list and
+ * no indented line before it that the next block could continue. The next
+ * block must start unindented and not with a list marker, since either can
+ * continue an earlier list item or list. A list stays open until such a block
+ * starts after a blank line, because a streamed chunk can end inside the next
+ * item's marker. `from` must be such a boundary itself (or 0).
  */
 export const findMarkdownSegmentBoundaries = (
   source: string,
@@ -117,6 +121,7 @@ export const findMarkdownSegmentBoundaries = (
   const tagPatterns = createTagPatterns(tags);
   const state: ScanState = {
     fence: null,
+    openList: false,
     math: false,
     previousNonBlank: null,
     rawEnd: null,
@@ -141,11 +146,12 @@ export const findMarkdownSegmentBoundaries = (
       !state.fence &&
       !state.math &&
       !state.rawEnd &&
-      state.tagDepth === 0 &&
-      !LIST.test(state.previousNonBlank) &&
-      !INDENTED.test(state.previousNonBlank)
+      state.tagDepth === 0
     ) {
-      boundaries.push(offset);
+      if (!state.openList && !INDENTED.test(state.previousNonBlank)) {
+        boundaries.push(offset);
+      }
+      state.openList = false;
     }
     pendingBlank = blank;
     if (!blank) scanLine(state, line, tagPatterns);
