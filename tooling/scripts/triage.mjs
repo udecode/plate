@@ -2773,7 +2773,11 @@ function claimCommand(options) {
       );
     }
   }
-  const branches = (gitOut('ls-remote', '--heads', reads.remote) ?? '')
+  const listing = run('git', ['ls-remote', '--heads', reads.remote], {
+    env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
+    timeout: NETWORK_MS,
+  });
+  const branches = (listing.status === 0 ? listing.stdout : '')
     .split('\n')
     .map((line) => line.split('\t')[1]?.replace('refs/heads/', ''))
     .filter(Boolean);
