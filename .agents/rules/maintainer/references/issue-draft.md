@@ -20,9 +20,10 @@ evidence uploads, creation and read-back in one run. Nothing else creates an iss
   `NOT_ENOUGH_INFO`; do not downgrade the report to a generic bug.
 - Write the title with no `[Beta]: `, `[Bug]: ` or other bracket prefix,
   including when the repository bug form supplies one. The publisher puts the
-  issue on the `Stable` milestone that `triage.later` names, which marks it as
-  Beta, and gives it the Bug type. Triage moves it to `Beta 1` when it blocks
-  the first beta.
+  issue on the `New Plate` milestone that `triage.milestones.plate.new` names,
+  which marks it as Beta, and gives it the Bug type. Once the issue has a
+  triage record, `pnpm triage labels` moves it to the milestone that record
+  picks.
 
 ## Hard boundaries
 
@@ -248,7 +249,7 @@ The publisher:
    reference alone in its paragraph, so gh embeds an image and leaves a
    video's bare URL, which GitHub plays;
 3. refuses a gh without `--attach`;
-4. creates the issue with the Bug issue type on the `triage.later` milestone, or the
+4. creates the issue with the Bug issue type on the `triage.milestones.plate.new` milestone, or the
    comment, reads it back and checks the title, the body's first line, the
    issue type, the milestone and the labels, that no local path remains, and
    that the body holds a `github.com/user-attachments` URL for each file. Then

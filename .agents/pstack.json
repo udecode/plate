@@ -85,12 +85,20 @@
       "udecode/plate",
       "udecode/plate-private"
     ],
-    "milestone": "Beta 1",
-    "later": "Stable",
-    "regressionOnly": [
-      "collaboration",
-      "suggestions",
-      "authored"
+    "milestones": {
+      "slate": {
+        "regression": "Slate regressions",
+        "new": "New Slate"
+      },
+      "plate": {
+        "regression": "Plate regressions",
+        "new": "New Plate"
+      }
+    },
+    "slatePaths": [
+      "packages/plitejs/",
+      "apps/plite/",
+      "apps/www/src/app/(app)/examples/plite/"
     ],
     "focus": "next",
     "floor": [

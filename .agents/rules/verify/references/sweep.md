@@ -15,11 +15,11 @@ The roles meet at one handoff. Triage a domain ends by offering the domain's fix
 
 `node tooling/scripts/page-health.mjs --list` prints the round's session pages by tier, each with its beta address and its reference page. `--base <url>` points the addresses at another build, such as a preview. A tier says which pages a session covers and what they are compared with, never how urgent a bug on them is. A bug's priority is the P0 to P3 of chips.md's Priority, whatever its page's tier.
 
-- R1 is each visible upstream Slate example, beside its page on slatejs.org. The hidden Android page belongs to the Android device lane.
-- R2 is each Plate docs page with a live demo, each example page no docs page shows and the playground, beside the same page on platejs.org.
-- R3 is every other Plite example, hidden and experimental ones included. It has no reference page.
-- R4 is a Plate page only beta has.
-- R5 is the gaps against other editors, in the areas the round plan names. Its sessions produce proposals for `verdict`, not bugs. An R5 session loads `research` with the comparison the round plan names as its question, inside the session's time budget. It writes what it learns about one editor to that editor's area page and a comparison across editors to the matching `editor-architecture/` page, each as a `docs-packet`, as research's Promotion and `docs/research/sources/README.md` say, and leaves a question the sources do not settle as an open question on that page. Each gap between Plate and the other editor is a find, not a `decide` task or an Open work item, and Triage a domain sends it to `verdict`.
+- Slate is each visible upstream Slate example, beside its page on slatejs.org. The hidden Android page belongs to the Android device lane.
+- Plate is each Plate docs page with a live demo, each example page no docs page shows and the playground, beside the same page on platejs.org.
+- New Slate is every other Plite example, hidden and experimental ones included. It has no reference page.
+- New Plate is a Plate page only beta has.
+- Editor gaps covers the gaps against other editors, in the areas the round plan names. Its sessions produce proposals for `verdict`, not bugs. An Editor gaps session loads `research` with the comparison the round plan names as its question, inside the session's time budget. It writes what it learns about one editor to that editor's area page and a comparison across editors to the matching `editor-architecture/` page, each as a `docs-packet`, as research's Promotion and `docs/research/sources/README.md` say, and leaves a question the sources do not settle as an open question on that page. Each gap between Plate and the other editor is a find, not a `decide` task or an Open work item, and Triage a domain sends it to `verdict`.
 - A page whose platejs.org twin the script cannot settle prints as unresolved and keeps the round open until the script's `STABLE_TWINS` names its twin or its `BETA_ONLY` lists it as a page only beta has.
 
 Without `--list`, the script opens every docs and example route on beta in Chromium, Firefox and WebKit and prints each page error, rendered Not Found, failed status and missing editor. Run it at the start of every round.
@@ -30,9 +30,9 @@ A session is one visit to one page and scope in one browser. An agent runs it fi
 
 - **The agent pass.** The agent drives the page beside its reference page the way the [playtest](./playtest.md)'s Run steps 2 to 4 drive a feature: every row of the page's scenario catalog in `docs/editor-behavior/scenarios/` when its feature has one, then improvisation with the six moves below, reproducing each find once in a fresh tab before it logs it. It drives the browser the session names. Codex computer use drives desktop Chrome, Safari and Firefox; Claude's built-in browser is Chromium only and suits comparing pixels and paint. It types key by key and checks frames as `.agents/pstack/rules/browser.md` says. The round plan sets each page's budget.
 - **The retest.** A person reruns each find on live beta and marks it a bug, intended design or not reproduced, with the browser and the beta build. A find marked intended design that neither `docs/vision/` nor `docs/editor-behavior/markdown-editing-spec.md` decides goes to triage as a spec question.
-- **The person's own sessions.** A person runs what no agent can drive: the iPhone page checks, OS input methods, paste from another app and native drag images. Such a session lasts 8 minutes for an R1 or R2 page and 6 for an R3 or R4 page.
+- **The person's own sessions.** A person runs what no agent can drive: the iPhone page checks, OS input methods, paste from another app and native drag images. Such a session lasts 8 minutes for a Slate or Plate page and 6 for a New Slate or New Plate page.
 
-In an R1 or R2 session, the reference page sits beside beta and the session covers the behavior both share. A paired page whose beta adds features gets a second session for those features, in R3 for a Plite page and R4 for a Plate page. A difference that is a beta-only feature is not a find.
+In a Slate or Plate session, the reference page sits beside beta and the session covers the behavior both share. A paired page whose beta adds features gets a second session for those features, in New Slate for a Plite page and New Plate for a Plate page. A difference that is a beta-only feature is not a find.
 
 Build state instead of resetting it. Follow anything odd at once. Never click to repair focus, because a lost caret is itself a find. During every move, watch the caret, the selection paint, focus, where menus land and the layout.
 
@@ -61,13 +61,13 @@ A find note is one line, `mm:ss browser: what differed`, written during the sess
 
 A domain is the review scope whose owners or members hold the page's demo, as the review ledger maps it, and the round plan names each page's domain. Triage a domain once every page of it has its session, or a session logged blocked with its reason, and every find of it its retest. A blocked session runs again in the next round. Nothing from a domain is filed before its triage, because two finds with one cause belong in one issue.
 
-1. Save the round record's export for the domain in the round's run folder. Gather the domain's finds marked bug, its open udecode/plate-private issues and its udecode/plate issues on a Beta milestone, `Beta 1` or `Stable`. A find the retest sent as a spec question goes to `verdict`, like an R5 gap. A find on an R1 or R2 page differs from its reference page by definition, so its kind's record names that page in `regression:`, which puts a P0 or P1 kind on the `Beta 1` milestone, as the Triage playbook's GitHub state says.
+1. Save the round record's export for the domain in the round's run folder. Gather the domain's finds marked bug, its open udecode/plate-private issues and its udecode/plate issues on a Beta milestone. A find the retest sent as a spec question goes to `verdict`, like an Editor gaps find. A find on a Slate or Plate page differs from its reference page by definition, so its kind's record names that page in `regression:`, which puts the issue on `Slate regressions` or `Plate regressions` by the page's site, as the Triage playbook's GitHub state says.
 2. Triage them by the [Triage playbook](../../../playbooks/triage.md)'s Sweep domains: their failure kinds, each kind's owner with its `path:line`, its miss classes from that playbook's [Why tests missed it](../../../playbooks/triage.md#why-tests-missed-it) with the cheapest test layer that would have failed on it, its priority by chips.md's Priority, and one drafted issue per kind. The tester publishes the drafts, and each published issue gets its triage record.
 3. Once the tester has published the domain's issues, offer its fix run as one suggested task, as the Triage playbook's [Offer fix runs](../../../playbooks/triage.md#offer-fix-runs) says. The task's `session:` names the tester's session where the runtime's session tool gives one. A domain whose kinds are all P2 or P3 goes in the round plan's Open work with the fixer as its owner. The tester's session never cards the task, as `AGENTS.md`'s Sweep handoff says, and runs `node .agents/pstack/setup.mjs` from the main checkout after the offer, which pushes the ledger to `refs/pstack/ledger` at once. The fixer's `/chips all` takes the task over, because the tester's sessions never appear in the fixer's session list.
 
 ## Fix a domain
 
-The fixer runs each triaged domain's fix run, `triage fix <domain>`, as the Triage playbook's [Fix](../../../playbooks/triage.md#fix) says. The fixer takes domains by priority, P0 first, and between two domains of one priority, the one with a bug on the lower tier first. A domain's fix may start while other domains are still in sessions. R5 gaps go to `verdict` as proposals.
+The fixer runs each triaged domain's fix run, `triage fix <domain>`, as the Triage playbook's [Fix](../../../playbooks/triage.md#fix) says. The fixer takes domains by priority, P0 first, and between two domains of one priority, the one with a bug on a tier earlier in the list above first. A domain's fix may start while other domains are still in sessions. Editor gaps finds go to `verdict` as proposals.
 
 ## Rechecks
 
@@ -82,11 +82,11 @@ A recheck leaves the hand list when its test is present, not skipped, gated at t
 1. List the pages with `page-health.mjs --list`, run against the build the round tests.
 2. Give each page and scope its domain, its session, browser and agent budget, by the rotation above.
 3. Carry every due recheck, with `pnpm kb`'s output for its issue tag.
-4. Reserve person time, in this order, for setup and breaks, the retests, the rechecks, the R5 sessions against other editors and the iPhone page checks on R1 pages.
+4. Reserve person time, in this order, for setup and breaks, the retests, the rechecks, the Editor gaps sessions and the iPhone page checks on Slate pages.
 5. Name the round's record and state how many tester days the person's part takes.
 
 ## After a round
 
 A round ends when every domain is triaged, and each domain is fixed as Fix a domain says. Before the next round, the tester runs `/pstack:maintain-verification-skill` on `verify`'s inventory for each feature an agent could not drive. The fixer runs `/pstack:maintain-formal-verification-skill` once over every formal check, to catch a change to covered code that skipped the check's own skill. The next round starts once beta serves every fix the round's domain runs landed. A kind a run leaves open, such as a P2 row of a redesign run, stays an open issue, so the next round rechecks it.
 
-The sweep is done when a round gives every page and scope its session, finds no new bug on an R1 to R4 page, leaves no recheck blocked and no page unresolved, and every R5 gap has a verdict. At the 2026-12-15 handoff, every open find, blocked recheck and unvisited or unresolved page moves to the proof subject's Open work in `docs/plans/topics/proof.md`.
+The sweep is done when a round gives every page and scope its session, finds no new bug on a Slate, Plate, New Slate or New Plate page, leaves no recheck blocked and no page unresolved, and every Editor gaps find has a verdict. At the 2026-12-15 handoff, every open find, blocked recheck and unvisited or unresolved page moves to the proof subject's Open work in `docs/plans/topics/proof.md`.

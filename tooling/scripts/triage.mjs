@@ -109,12 +109,11 @@ const NEEDS_REPRO = 'Needs reproduction';
 const NEEDS_RETEST = 'Needs retest';
 const DUPLICATE = 'Duplicate';
 const IME_LABEL = 'ime';
-const REGRESSION_LABEL = 'regression';
-const RELEASED_HOSTS = new Set([
-  'slatejs.org',
-  'www.slatejs.org',
-  'platejs.org',
-  'www.platejs.org',
+const RELEASED_SITES = new Map([
+  ['slatejs.org', 'slate'],
+  ['www.slatejs.org', 'slate'],
+  ['platejs.org', 'plate'],
+  ['www.platejs.org', 'plate'],
 ]);
 const OUTCOME_TYPES = { kind: 'Bug', spec: 'Feature' };
 const QUEUE_LIMIT = 5000;
@@ -158,7 +157,7 @@ const KEY_VALUES = {
   regression: (value) =>
     paths(value).every((page) => {
       const url = URL.parse(page);
-      return url?.protocol === 'https:' && RELEASED_HOSTS.has(url.hostname);
+      return url?.protocol === 'https:' && RELEASED_SITES.has(url.hostname);
     }),
   of: ISSUE,
   commit: /^[0-9a-f]{7,40}$/u,
@@ -294,11 +293,17 @@ const meets = (model, effort, floor, max = null) =>
       (max === null || rank(effort) <= rank(max))
   );
 
+const betaMilestones = (policy) =>
+  [policy.milestones?.slate, policy.milestones?.plate].flatMap((layer) => [
+    layer?.regression,
+    layer?.new,
+  ]);
+
 function policyProblems(config) {
   const policy = config?.triage;
   if (!policy) {
     return [
-      `${CONFIG} has no triage key with repos, milestone, later, regressionOnly, focus, floor and rev`,
+      `${CONFIG} has no triage key with repos, milestones, slatePaths, focus, floor and rev`,
     ];
   }
   const found = [];
@@ -318,33 +323,23 @@ function policyProblems(config) {
   ) {
     found.push(`${CONFIG}: triage.repos has no ${repoName}`);
   }
-  if (typeof policy.milestone !== 'string' || !policy.milestone.trim()) {
+  const milestones = betaMilestones(policy);
+  if (
+    milestones.some((title) => typeof title !== 'string' || !title.trim()) ||
+    new Set(milestones).size !== milestones.length
+  ) {
     found.push(
-      `${CONFIG}: triage.milestone names the milestone of the next work that must close before the next release`
+      `${CONFIG}: triage.milestones names four different milestones, a regression and a new one for each of slate and plate`
     );
   }
   if (
-    typeof policy.later !== 'string' ||
-    !policy.later.trim() ||
-    policy.later === policy.milestone
+    !Array.isArray(policy.slatePaths) ||
+    policy.slatePaths.length === 0 ||
+    policy.slatePaths.some((prefix) => typeof prefix !== 'string' || !prefix)
   ) {
     found.push(
-      `${CONFIG}: triage.later names the milestone of the rest of the next work, other than triage.milestone`
+      `${CONFIG}: triage.slatePaths lists the path prefixes of the code whose new bugs go on triage.milestones.slate.new`
     );
-  }
-  if (!Array.isArray(policy.regressionOnly)) {
-    found.push(
-      `${CONFIG}: triage.regressionOnly lists the review scopes whose P0 kinds go on triage.milestone only as regressions`
-    );
-  }
-  for (const scope of Array.isArray(policy.regressionOnly)
-    ? policy.regressionOnly
-    : []) {
-    if (typeof scope !== 'string' || !KEY_VALUES.scope.test(scope)) {
-      found.push(
-        `${CONFIG}: triage.regressionOnly entry ${JSON.stringify(scope)} is not a review-scope name`
-      );
-    }
   }
   if (!FOCUSES.has(policy.focus)) {
     found.push(
@@ -415,9 +410,8 @@ const policyOf = (config) => ({
   repo: repoOf(config.triage.repos),
   primary: repoOf(config.triage.repos) === config.triage.repos[0],
   first: config.triage.repos[0],
-  milestone: config.triage.milestone,
-  later: config.triage.later,
-  regressionOnly: config.triage.regressionOnly,
+  milestones: config.triage.milestones,
+  slatePaths: config.triage.slatePaths,
   focus: config.triage.focus,
   moved: new Map(),
   floor: config.triage.floor.map(parseLabel),
@@ -1681,24 +1675,36 @@ function mark(options) {
   console.log(marked(unixText(readFileSync(file, 'utf-8')).trim()));
 }
 
-const betaMilestones = (policy) => [policy.milestone, policy.later];
-
 const mainReport = (policy, milestone) =>
   policy.primary && !betaMilestones(policy).includes(milestone);
 
-function milestoneFor(policy, milestone, state, head) {
+function bugMilestone(policy, detail) {
+  const regression = detail.get('regression');
+  const slate = regression
+    ? paths(regression).some(
+        (page) => RELEASED_SITES.get(URL.parse(page).hostname) === 'slate'
+      )
+    : paths(detail.get('owner')).some((ref) =>
+        policy.slatePaths.some((prefix) => ref.startsWith(prefix))
+      );
+  return policy.milestones[slate ? 'slate' : 'plate'][
+    regression ? 'regression' : 'new'
+  ];
+}
+
+function milestoneFor(policy, milestone, state, head, bug) {
   if (mainReport(policy, milestone)) return milestone;
-  if (state === 'current' && head.outcome === 'kind') {
-    const detail = parseDetail(head.detail);
-    const priority = detail.get('priority');
-    const gates = detail.has('regression')
-      ? priority === 'P0' || priority === 'P1'
-      : priority === 'P0' &&
-        !policy.regressionOnly.includes(detail.get('scope'));
-    return gates ? policy.milestone : policy.later;
+  if (
+    state === 'current' &&
+    head.outcome !== 'kind' &&
+    head.outcome !== 'fixed'
+  ) {
+    return policy.milestones.plate.new;
   }
-  if (state === 'current' && head.outcome !== 'fixed') return policy.later;
-  return betaMilestones(policy).includes(milestone) ? milestone : policy.later;
+  if (bug) return bugMilestone(policy, parseDetail(bug.detail));
+  return betaMilestones(policy).includes(milestone)
+    ? milestone
+    : policy.milestones.plate.new;
 }
 
 const inFocus = (reads, issue) =>
@@ -1887,12 +1893,6 @@ function labels() {
         const priorityId = fields.priority.optionIds.get(level);
         const scopeId = fields.scope.optionIds.get(scope);
         mutationId.push(level, scope);
-        const regression = detail.has('regression');
-        if (regression && !names.has(REGRESSION_LABEL)) {
-          edits.push(`--add-label ${REGRESSION_LABEL}`);
-        } else if (!regression && names.has(REGRESSION_LABEL)) {
-          edits.push(`--remove-label ${REGRESSION_LABEL}`);
-        }
         if (priority !== priorityId) {
           changes.push(
             `{ fieldId: "${fields.priority.id}", singleSelectOptionId: "${priorityId}" }`
@@ -1927,7 +1927,10 @@ function labels() {
       changes.push(`{ fieldId: "${fields.triage.id}", delete: true }`);
     }
     const milestone = issue.milestone?.title ?? null;
-    const target = milestoneFor(reads.policy, milestone, state, head);
+    const [bug] = liveRows(String(issue.number), reads)
+      .filter((row) => row.outcome === 'kind')
+      .sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts));
+    const target = milestoneFor(reads.policy, milestone, state, head, bug);
     if (target !== milestone) {
       edits.push(`--milestone '${target}'`);
     }
@@ -2830,7 +2833,7 @@ function claimCommand(options) {
     if (result.verdict === 'closed') console.log(`skipped ${at}: closed`);
     if (result.verdict === 'main') {
       console.log(
-        `skipped ${at}: on neither the ${reads.policy.milestone} nor the ${reads.policy.later} milestone it reports main, which gets no fixes yet`
+        `skipped ${at}: on none of the Beta milestones, ${betaMilestones(reads.policy).join(', ')}, it reports main, which gets no fixes yet`
       );
     }
     if (result.verdict === 'fixed') {

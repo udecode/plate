@@ -89,8 +89,8 @@ if [[ -z "$comment_on" ]]; then
   [[ -n "$title" && ! "$title" =~ ^\[[^]]*\]: ]] || { echo "Title takes no [Beta]: or other bracket prefix; the milestone marks a Beta issue" >&2; exit 2; }
   root=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || { echo "The publisher runs from a checkout of the repository whose .agents/pstack.json names the Beta milestones" >&2; exit 2; }
   config="$root/.agents/pstack.json"
-  milestone=$(jq -r '.triage.later // empty' "$config" 2>/dev/null || true)
-  [[ -n "$milestone" ]] || { echo "$config names no triage.later, the milestone a new Beta issue goes on" >&2; exit 2; }
+  milestone=$(jq -r '.triage.milestones.plate.new // empty' "$config" 2>/dev/null || true)
+  [[ -n "$milestone" ]] || { echo "$config names no triage.milestones.plate.new, the milestone a new Beta issue goes on" >&2; exit 2; }
 fi
 if grep -Eq 'TODO|TBD' ${title_file:+"$title_file"} "$body_file" ||
   grep -Eiq '<one sentence|<setup>|<action>|<failure trigger>|<expected behavior|<observed behavior|<verified value|<timestamp note|<inference' ${title_file:+"$title_file"} "$body_file"; then

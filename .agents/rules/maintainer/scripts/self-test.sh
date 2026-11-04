@@ -18,7 +18,7 @@ else
 fi
 node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); const kinds=new Set(p.cases?.map(x=>x.kind)); for(const k of ["two-videos","one-video","text-only"]) if(!kinds.has(k)) process.exit(1); const c=p.cases.find(x=>x.kind==="two-videos"); if(c.inputs?.join(",")!=="main.mp4,next.mp4"||!/main normal baseline/.test(c.expected)||!/current next\/Beta bug/.test(c.expected)||!/normal-versus-regression behavioral delta/.test(c.expected)||!/ask the user only when that evidence is ambiguous/.test(c.expected)||!/never infer roles from input order or visual presentation/i.test(c.expected)) process.exit(1)' "$skill_dir/assets/intake-cases.json"
 
-milestone=$(jq -r '.triage.later' "$(git -C "$script_dir" rev-parse --show-toplevel)/.agents/pstack.json")
+milestone=$(jq -r '.triage.milestones.plate.new' "$(git -C "$script_dir" rev-parse --show-toplevel)/.agents/pstack.json")
 test_dir=$(cd "$(mktemp -d "${TMPDIR:-/tmp}/plate-issue-publish-test.XXXXXX")" && pwd -P)
 trap 'rm -rf "$test_dir"' EXIT
 publish() { bash "$script_dir/publish-issue.sh" --repo udecode/plate-private "$@"; }
@@ -51,8 +51,8 @@ output=$(bash "$unconfigured/scripts/publish-issue.sh" --repo udecode/plate-priv
   --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run 2>&1)
 status=$?
 set -e
-[[ "$status" == 2 ]] && grep -Fq 'names no triage.later' <<<"$output" ||
-  { echo "Publisher accepted a config without triage.later: $output" >&2; exit 1; }
+[[ "$status" == 2 ]] && grep -Fq 'names no triage.milestones.plate.new' <<<"$output" ||
+  { echo "Publisher accepted a config without triage.milestones.plate.new: $output" >&2; exit 1; }
 
 printf '%s\n' '## Summary' '' 'The export call is at lines 50-56 of `exportHtmlToDocx.internal.ts`.' >"$test_dir/identifier-body.md"
 publish --title-file "$test_dir/title.txt" --body-file "$test_dir/identifier-body.md" --dry-run >/dev/null

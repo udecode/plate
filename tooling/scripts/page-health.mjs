@@ -33,7 +33,7 @@ const LAUNCH_OPTIONS = {
     },
   },
 };
-const TIERS = ['R1', 'R2', 'R3', 'R4', 'unresolved'];
+const TIERS = ['Slate', 'Plate', 'New Slate', 'New Plate', 'unresolved'];
 
 const FRAMED_SITE_DEMOS = new Set(['potion-iframe-demo', 'pro-iframe-demo']);
 const EDITORLESS_ROUTES = new Set([
@@ -142,7 +142,7 @@ export async function sessionPages(
     if (betaOnly.has(page)) {
       const status = await stableStatus(page);
       return status === 404
-        ? { page, tier: 'R4' }
+        ? { page, tier: 'New Plate' }
         : {
             note: `platejs.org answered ${status} for this beta-only page`,
             page,
@@ -152,7 +152,7 @@ export async function sessionPages(
     const twin = twins.get(page) ?? page;
     const status = await stableStatus(twin);
     if (status === 200) {
-      return { page, tier: 'R2', reference: `${STABLE}${twin}` };
+      return { page, tier: 'Plate', reference: `${STABLE}${twin}` };
     }
     return {
       note: twins.has(page)
@@ -168,7 +168,7 @@ export async function sessionPages(
       .filter((name) => !hidden.has(name))
       .map((name) => ({
         page: `/examples/plite/${name}`,
-        tier: 'R1',
+        tier: 'Slate',
         reference: `https://www.slatejs.org/examples/${name}`,
       })),
     ...(await Promise.all(
@@ -176,7 +176,10 @@ export async function sessionPages(
     )),
     ...registry.EXAMPLE_NAMES_AND_PATHS.filter(
       ([, name]) => !upstream.has(name)
-    ).map(([, name]) => ({ page: `/examples/plite/${name}`, tier: 'R3' })),
+    ).map(([, name]) => ({
+      page: `/examples/plite/${name}`,
+      tier: 'New Slate',
+    })),
   ].sort(
     (a, b) =>
       TIERS.indexOf(a.tier) - TIERS.indexOf(b.tier) ||
