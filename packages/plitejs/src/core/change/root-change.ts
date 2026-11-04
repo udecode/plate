@@ -4149,6 +4149,144 @@ export class RootChange {
     };
   }
 
+  private static carryAcrossMove(
+    a: RootChange,
+    b: RootChange,
+    document: DocumentIndex,
+    options: Parameters<typeof RootChange.transformInDocument>[3],
+    runMoves: () => readonly [SiblingRunMove | null, SiblingRunMove | null]
+  ) {
+    if (changedRangesAreSeparated(a, b)) return null;
+
+    const [aMove, bMove] = runMoves();
+
+    if (aMove && bMove) return null;
+    if (bMove) {
+      const carried = RootChange.carryEditAcrossMove(
+        a,
+        b,
+        bMove,
+        document,
+        options,
+        true
+      );
+
+      return carried && { a: carried.edit, b: carried.move };
+    }
+    if (aMove) {
+      const carried = RootChange.carryEditAcrossMove(
+        b,
+        a,
+        aMove,
+        document,
+        options,
+        false
+      );
+
+      return carried && { a: carried.move, b: carried.edit };
+    }
+
+    return null;
+  }
+
+  private static carryEditAcrossMove(
+    edit: RootChange,
+    moveChange: RootChange,
+    move: SiblingRunMove,
+    document: DocumentIndex,
+    options: Parameters<typeof RootChange.transformInDocument>[3],
+    editIsA: boolean
+  ) {
+    if (
+      move.count !== 1 ||
+      pathKey(move.path) === pathKey(move.targetPath) ||
+      !isElementNode(document.node(move.path)) ||
+      moveChange.propertyChanges().length > 0
+    ) {
+      return null;
+    }
+
+    const parts = edit.partition(move.from, move.to - 1);
+
+    if (
+      !parts ||
+      parts.inside.empty ||
+      !deletesAcrossLandingOnly(parts.outside, move)
+    ) {
+      return null;
+    }
+
+    const afterInside = parts.inside.apply(document);
+    const moved = moveChangeAfterEdit(afterInside, move, parts.inside);
+
+    if (!moved) return null;
+
+    const carried = getDefined(
+      parts.inside.within(move.from, move.to - 1)
+    ).embed(moveChange.newLength, move.fromAfterMove);
+    const outside = RootChange.transform(
+      parts.outside,
+      parts.inside
+    ).a.withEmptyLinesRemoved(afterInside);
+    const rest = editIsA
+      ? RootChange.transformInDocument(outside, moved, afterInside, options)
+      : RootChange.transformInDocument(moved, outside, afterInside, options);
+
+    if (rest.keptWrap) return null;
+
+    const outsideAfterMove = editIsA ? rest.a : rest.b;
+    const moveAfterEdit = editIsA ? rest.b : rest.a;
+    const residualReplacements = moveAfterEdit.replacements();
+    const residual =
+      residualReplacements.length === 2 &&
+      siblingRunMove(edit.apply(document), residualReplacements);
+
+    return {
+      edit: carried.compose(outsideAfterMove),
+      move:
+        residual && pathKey(residual.path) === pathKey(residual.targetPath)
+          ? RootChange.empty(moveAfterEdit.length)
+          : moveAfterEdit,
+    };
+  }
+
+  private withEmptyLinesRemoved(document: DocumentIndex) {
+    const replacements = this.replacements();
+    const properties = this.propertyChanges();
+    const sections: RootChangeSection[] = [...replacements];
+    let changed = false;
+
+    replacements.forEach((join, index) => {
+      const removal = emptyLineRemovalFor(document, join);
+
+      if (!removal) return;
+
+      const typed = replacements.filter(
+        (other) => other !== join && meets(removal, other)
+      );
+      const moved = typingMovedToJoinStart(join, typed);
+
+      if (!moved) return;
+
+      sections[index] = removal;
+      moved.forEach((replacement, at) => {
+        sections[replacements.indexOf(getDefined(typed[at]))] = replacement;
+      });
+      changed = true;
+    });
+
+    if (!changed) return this;
+
+    return RootChange.create(document, [
+      ...sections,
+      ...properties.map(({ from, modifications, to }) => ({
+        from,
+        properties: propertyDeltaFromModifications(modifications),
+        to,
+      })),
+    ]);
+  }
+
   /**
    * Two matching moves, or two structural edits that start together and give
    * one structure, become one edit unless `keepEqualEdits` keeps them as two.
@@ -4172,6 +4310,24 @@ export class RootChange {
     }> = {}
   ): Readonly<{ a: RootChange; b: RootChange; keptWrap?: KeptWrap }> {
     const replayBase = replay && document;
+    let runMoves:
+      | readonly [SiblingRunMove | null, SiblingRunMove | null]
+      | undefined;
+    const readRunMoves = () =>
+      (runMoves ??= [
+        siblingRunMove(document, a.replacements()),
+        siblingRunMove(document, b.replacements()),
+      ]);
+    const acrossMove = RootChange.carryAcrossMove(
+      a,
+      b,
+      document,
+      { keepEqualEdits, replay },
+      readRunMoves
+    );
+
+    if (acrossMove) return acrossMove;
+
     const joined = rebaseOverJoins(a, b, document, replayBase);
 
     if (joined) return joined;
@@ -4246,82 +4402,7 @@ export class RootChange {
     const containsAll = (outer: Replacement, inner: readonly Replacement[]) =>
       inner.length > 0 &&
       inner.every((replacement) => contains(outer, replacement));
-    const getMove = (
-      replacements: readonly Replacement[]
-    ): SiblingRunMove | null => {
-      if (replacements.length !== 2) return null;
-
-      const deletion = replacements.find(
-        (replacement) =>
-          replacement.from < replacement.to && replacement.insert.length === 0
-      );
-      const insertion = replacements.find(
-        (replacement) =>
-          replacement.from === replacement.to && replacement.insert.length > 0
-      );
-
-      if (!deletion || !insertion) return null;
-
-      const source = document.nodeStartingAt(deletion.from);
-      const target = document.childBoundaryAt(insertion.from);
-
-      if (
-        !source ||
-        !target ||
-        insertion.insert.length !== deletion.to - deletion.from
-      ) {
-        return null;
-      }
-
-      const sourceParent = source.path.slice(0, -1);
-      const sourceNodes: JsonNode[] = [];
-
-      for (let at = deletion.from; at < deletion.to;) {
-        const node = document.nodeStartingAt(at);
-
-        if (
-          !node ||
-          node.to > deletion.to ||
-          pathKey(node.path.slice(0, -1)) !== pathKey(sourceParent)
-        ) {
-          return null;
-        }
-        sourceNodes.push(document.node(node.path));
-        at = node.to;
-      }
-
-      let insertedNodes: readonly JsonNode[];
-
-      try {
-        insertedNodes = decodeNodes(insertion.insert).nodes;
-      } catch {
-        return null;
-      }
-
-      if (!jsonEqual(insertedNodes, sourceNodes)) return null;
-
-      const sourceIndex = getDefined(source.path.at(-1));
-      const sameParent = pathKey(sourceParent) === pathKey(target.parentPath);
-      const targetIndex =
-        sameParent && sourceIndex < target.index
-          ? target.index - sourceNodes.length
-          : target.index;
-
-      return {
-        count: sourceNodes.length,
-        from: source.from,
-        fromAfterMove:
-          insertion.from >= deletion.to
-            ? insertion.from - (deletion.to - deletion.from)
-            : insertion.from,
-        insertAt: insertion.from,
-        path: source.path,
-        to: deletion.to,
-        targetPath: [...target.parentPath, targetIndex],
-      };
-    };
-    const aRunMove = getMove(aReplacements);
-    const bRunMove = getMove(bReplacements);
+    const [aRunMove, bRunMove] = readRunMoves();
     const aMove = aRunMove?.count === 1 ? aRunMove : null;
     const bMove = bRunMove?.count === 1 ? bRunMove : null;
     if (
@@ -6165,6 +6246,161 @@ type SiblingRunMove = Readonly<{
   targetPath: readonly number[];
   to: number;
 }>;
+
+const siblingRunMove = (
+  document: DocumentIndex,
+  replacements: readonly Replacement[]
+): SiblingRunMove | null => {
+  if (replacements.length !== 2) return null;
+
+  const deletion = replacements.find(
+    (replacement) =>
+      replacement.from < replacement.to && replacement.insert.length === 0
+  );
+  const insertion = replacements.find(
+    (replacement) =>
+      replacement.from === replacement.to && replacement.insert.length > 0
+  );
+
+  if (!deletion || !insertion) return null;
+
+  const source = document.nodeStartingAt(deletion.from);
+  const target = document.childBoundaryAt(insertion.from);
+
+  if (
+    !source ||
+    !target ||
+    insertion.insert.length !== deletion.to - deletion.from
+  ) {
+    return null;
+  }
+
+  const sourceParent = source.path.slice(0, -1);
+  const sourceNodes: JsonNode[] = [];
+
+  for (let at = deletion.from; at < deletion.to;) {
+    const node = document.nodeStartingAt(at);
+
+    if (
+      !node ||
+      node.to > deletion.to ||
+      pathKey(node.path.slice(0, -1)) !== pathKey(sourceParent)
+    ) {
+      return null;
+    }
+    sourceNodes.push(document.node(node.path));
+    at = node.to;
+  }
+
+  let insertedNodes: readonly JsonNode[];
+
+  try {
+    insertedNodes = decodeNodes(insertion.insert).nodes;
+  } catch {
+    return null;
+  }
+
+  if (!jsonEqual(insertedNodes, sourceNodes)) return null;
+
+  const sourceIndex = getDefined(source.path.at(-1));
+  const sameParent = pathKey(sourceParent) === pathKey(target.parentPath);
+  const targetIndex =
+    sameParent && sourceIndex < target.index
+      ? target.index - sourceNodes.length
+      : target.index;
+
+  return {
+    count: sourceNodes.length,
+    from: source.from,
+    fromAfterMove:
+      insertion.from >= deletion.to
+        ? insertion.from - (deletion.to - deletion.from)
+        : insertion.from,
+    insertAt: insertion.from,
+    path: source.path,
+    to: deletion.to,
+    targetPath: [...target.parentPath, targetIndex],
+  };
+};
+
+const typingMovedToJoinStart = (
+  join: Replacement,
+  typed: readonly Replacement[]
+) =>
+  typed.every((other) => other.from === join.to && other.to === join.to)
+    ? typed.map((other) => ({ ...other, from: join.from, to: join.from }))
+    : null;
+
+const meets = (
+  range: Readonly<{ from: number; to: number }>,
+  other: Readonly<{ from: number; to: number }>
+) =>
+  other.from === other.to
+    ? range.from < other.from && other.from < range.to
+    : other.from < range.to && range.from < other.to;
+
+const deletesAcrossLandingOnly = (
+  outside: RootChange,
+  move: SiblingRunMove
+) => {
+  let touchesNode = false;
+  let spansLanding = false;
+
+  outside.iterChangedRanges((from, to) => {
+    if (to > move.from && from < move.to) touchesNode = true;
+    if (from < move.insertAt && move.insertAt < to) spansLanding = true;
+  });
+
+  return spansLanding && !touchesNode;
+};
+
+const LINE_CLOSE_TOKENS = 2;
+const LINE_BREAK_TOKENS = 2 * LINE_CLOSE_TOKENS;
+
+const emptyLineRemovalFor = (
+  document: DocumentIndex,
+  replacement: Replacement
+): Replacement | null => {
+  if (
+    replacement.insert.length > 0 ||
+    replacement.to - replacement.from !== LINE_BREAK_TOKENS
+  ) {
+    return null;
+  }
+
+  const line = document.nodeStartingAt(replacement.from + LINE_CLOSE_TOKENS);
+
+  if (!line || line.to !== replacement.to + LINE_CLOSE_TOKENS) return null;
+
+  const index = getDefined(line.path.at(-1));
+  const node = document.node(line.path);
+
+  if (index === 0 || !isElementNode(node) || node.children.length !== 1) {
+    return null;
+  }
+
+  const [text] = node.children;
+
+  if (!text || !isTextNode(text) || text.text !== '') return null;
+
+  const previousPath = [...line.path.slice(0, -1), index - 1];
+  const previous = document.node(previousPath);
+
+  if (!isElementNode(previous)) return null;
+
+  const lastIndex = previous.children.length - 1;
+  const last = previous.children[lastIndex];
+
+  if (
+    !last ||
+    !isTextNode(last) ||
+    document.nodeRange([...previousPath, lastIndex]).to !== replacement.from + 1
+  ) {
+    return null;
+  }
+
+  return { from: line.from, insert: PreparedTokenSlice.empty, to: line.to };
+};
 
 const moveChangeAfterEdit = (
   afterEdit: DocumentIndex,
