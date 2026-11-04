@@ -2340,26 +2340,6 @@ const collectDocumentNodes = (
   return result;
 };
 
-type ChangedRange = readonly [
-  from: number,
-  to: number,
-  fromAfter: number,
-  toAfter: number,
-];
-
-const insertedBeforeNode = (
-  changedRanges: readonly ChangedRange[],
-  range: Readonly<{ from: number }>,
-  nodeAfter: Readonly<{ from: number; to: number }>
-) =>
-  changedRanges.some(
-    ([from, to, fromAfter, toAfter]) =>
-      from === range.from &&
-      to === range.from &&
-      fromAfter <= nodeAfter.from &&
-      nodeAfter.to <= toAfter
-  );
-
 const mergeNestedChangeThroughStructuralRelocation = (
   nested: RootChange,
   structural: RootChange,
@@ -2374,9 +2354,9 @@ const mergeNestedChangeThroughStructuralRelocation = (
     return null;
   }
 
-  const changedRanges: ChangedRange[] = [];
+  const changedRanges: Array<readonly [number, number]> = [];
 
-  nested.iterChangedRanges((...range) => changedRanges.push(range));
+  nested.iterChangedRanges((from, to) => changedRanges.push([from, to]));
   if (changedRanges.length === 0) return null;
 
   const structuralRanges: Array<readonly [number, number]> = [];
@@ -2393,6 +2373,8 @@ const mergeNestedChangeThroughStructuralRelocation = (
       );
     })
     .sort((left, right) => right.path.length - left.path.length);
+
+  let partial: DocumentIndex | null = null;
 
   for (const candidate of candidates) {
     const range = before.nodeRange(candidate.path);
@@ -2411,32 +2393,56 @@ const mergeNestedChangeThroughStructuralRelocation = (
 
     if (targets.length !== 1) continue;
 
-    let edited: JsonNode;
-    let editedRange: Readonly<{ from: number; to: number }>;
+    const end = range.to + nested.newLength - nested.length;
+    const parentPath = candidate.path.slice(0, -1);
+    const edited: JsonNode[] = [];
+    let at = range.from;
+    let index = candidate.path.at(-1) ?? 0;
+    let siblings: readonly JsonNode[] = [];
 
     try {
-      edited = afterNested.node(candidate.path);
-      editedRange = afterNested.nodeRange(candidate.path);
+      const parent =
+        parentPath.length === 0 ? null : afterNested.node(parentPath);
+
+      siblings =
+        parent === null
+          ? afterNested.value
+          : isElementNode(parent)
+            ? parent.children
+            : [];
+
+      for (; at < end && index < siblings.length; index++) {
+        const siblingRange = afterNested.nodeRange([...parentPath, index]);
+
+        if (siblingRange.from !== at) break;
+        edited.push(siblings[index]);
+        at = siblingRange.to;
+      }
     } catch {
       continue;
     }
-    if (jsonEqual(edited, candidate.node)) continue;
-    if (insertedBeforeNode(changedRanges, range, editedRange)) continue;
+    if (edited.length === 0 || (at !== end && index < siblings.length)) {
+      continue;
+    }
+    if (edited.some((node) => jsonEqual(node, candidate.node))) continue;
 
     const targetPath = targets[0].path;
     const targetIndex = targetPath.at(-1);
 
     if (targetIndex === undefined) continue;
 
-    return afterStructural.withSplicedNodes(
+    const merged = afterStructural.withSplicedNodes(
       targetPath.slice(0, -1),
       targetIndex,
       1,
-      [edited]
+      edited
     );
+
+    if (at === end) return merged;
+    partial ??= merged;
   }
 
-  return null;
+  return partial;
 };
 
 type SectionEnds = Readonly<{
