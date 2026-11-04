@@ -36,6 +36,7 @@ jspm_packages/
 /dist
 **/tmp/
 **/tmp-cli-*/
+**/tmp-migration-run-*/
 /out-tsc
 **/build
 

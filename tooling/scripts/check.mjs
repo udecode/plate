@@ -1,5 +1,18 @@
-import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import {
+  appendFileSync,
+  closeSync,
+  existsSync,
+  mkdtempSync,
+  openSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
+import {
+  availableParallelism,
+  constants as osConstants,
+  tmpdir,
+} from 'node:os';
 import { basename, extname, join, matchesGlob } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -155,6 +168,13 @@ const packageDiff = () =>
     { cwd: root, encoding: 'utf-8', maxBuffer: 1024 * 1024 * 256 }
   ).stdout;
 
+// Steps run side by side within the worker share that land.mjs reserves for
+// its checks. `cores` is how many of those slots a step occupies, default 1,
+// passed to its command as CHECK_CORES, which only `pnpm test` reads; the
+// steps at 4 fan out to many workers themselves. Two steps that name the
+// same folder in `holds` never overlap, because one of them writes it. An
+// `alone` step runs after every other step, one at a time, for the reason its
+// value gives.
 export const steps = [
   {
     name: 'lint',
@@ -166,6 +186,7 @@ export const steps = [
   },
   {
     name: 'lint-type-aware',
+    cores: 2,
     run: 'pnpm lint:type-aware',
     affected: source,
     key: ['date'],
@@ -180,6 +201,8 @@ export const steps = [
   },
   {
     name: 'typecheck',
+    cores: 3,
+    holds: ['packages/cli/tmp-*'],
     run: 'pnpm typecheck && node tooling/scripts/check-source-declaration-leaks.mjs',
     affected: source,
     key: [],
@@ -189,6 +212,7 @@ export const steps = [
     // tsc reads the route types in the ignored apps/plite/.next/types, so the
     // step writes them from the app's source first.
     name: 'plite-app-typecheck',
+    holds: ['apps/plite/.next'],
     run: 'pnpm --filter plite exec next typegen && pnpm --filter plite typecheck',
     affected: source,
     key: [],
@@ -212,6 +236,8 @@ export const steps = [
   },
   {
     name: 'test',
+    cores: 4,
+    holds: ['apps/www/.source'],
     private: true,
     run: 'pnpm test',
     key: [],
@@ -246,12 +272,14 @@ export const steps = [
   },
   {
     name: 'plite-browser',
+    holds: ['packages/*/dist', 'apps/plite/.next'],
     private: true,
     run: 'pnpm --filter plite test:plite-browser:chromium',
     optIn: '--browser',
   },
   {
     name: 'plite-test',
+    cores: 4,
     private: true,
     run: 'pnpm plite:test',
     affected: touches(
@@ -265,6 +293,7 @@ export const steps = [
   },
   {
     name: 'authored-order',
+    cores: 4,
     private: true,
     run: 'pnpm check:authored-order && pnpm check:authored-order --schema=generated-elements --family=quotes --blocks=1',
     affected: touches(
@@ -275,6 +304,7 @@ export const steps = [
   },
   {
     name: 'autoformat-rules',
+    cores: 4,
     private: true,
     run: 'pnpm check:autoformat-rules',
     affected: touches(
@@ -288,6 +318,7 @@ export const steps = [
   },
   {
     name: 'yjs-peer-order',
+    cores: 4,
     private: true,
     run: 'pnpm check:yjs-peer-order',
     affected: touches(
@@ -299,6 +330,7 @@ export const steps = [
   },
   {
     name: 'authored-recording',
+    cores: 4,
     private: true,
     run: 'pnpm check:authored-recording',
     affected: touches(
@@ -315,6 +347,7 @@ export const steps = [
   },
   {
     name: 'undo-redo-history',
+    cores: 4,
     private: true,
     run: 'pnpm check:undo-redo-history',
     affected: touches(
@@ -331,6 +364,7 @@ export const steps = [
   },
   {
     name: 'delete-paste-ranges',
+    cores: 4,
     private: true,
     run: 'pnpm check:delete-paste-ranges',
     affected: touches(
@@ -346,6 +380,7 @@ export const steps = [
   },
   {
     name: 'docx-import-report',
+    cores: 4,
     run: 'pnpm check:docx-import-report',
     affected: touches(
       'packages/platejs/scripts/docx-import-report',
@@ -357,6 +392,7 @@ export const steps = [
   },
   {
     name: 'markdown-round-trip',
+    cores: 4,
     private: true,
     run: 'pnpm check:markdown-round-trip',
     affected: touches(
@@ -371,6 +407,7 @@ export const steps = [
   },
   {
     name: 'table-grid',
+    cores: 4,
     private: true,
     run: 'pnpm check:table-grid',
     affected: touches(
@@ -392,6 +429,8 @@ export const steps = [
   },
   {
     name: 'public-types',
+    cores: 2,
+    holds: ['packages/*/dist'],
     private: true,
     run: 'pnpm plite:public-types',
     affected: source,
@@ -402,6 +441,8 @@ export const steps = [
     // A shrink lowers tooling/entrypoints/entrypoint-sizes.json in place, so
     // the landing that shrank an entrypoint commits its lower budget.
     name: 'entrypoint-sizes',
+    holds: ['packages/*/dist'],
+    alone: 'rewrites tracked files',
     run: 'pnpm entrypoint:sizes',
     affected: (files) =>
       touches('tooling/entrypoints/')(files) ||
@@ -412,6 +453,9 @@ export const steps = [
   },
   {
     name: 'cli-test',
+    cores: 2,
+    holds: ['packages/cli/tmp-*', 'packages/*/dist'],
+    after: ['public-types'],
     private: true,
     run: `pnpm --filter @platejs/cli run test --timeout=${BUN_TEST_TIMEOUT_MS}`,
     // The CLI tests compile editors against platejs source, which builds on plitejs.
@@ -592,12 +636,15 @@ export const steps = [
   },
   {
     name: 'toolbar-variants',
+    holds: ['packages/*/dist'],
+    after: ['public-types'],
     run: 'pnpm --filter www check:toolbar-variants',
     affected: source,
     key: [],
   },
   {
     name: 'barrels',
+    alone: 'rewrites tracked files',
     run: 'pnpm brl',
     unchangedFiles: packageDiff,
     write: 'pnpm brl',
@@ -606,6 +653,8 @@ export const steps = [
   },
   {
     name: 'www',
+    cores: 2,
+    holds: ['packages/*/dist', 'apps/www/.source'],
     run: 'pnpm turbo run build --filter=@platejs/cli && pnpm --filter www typecheck',
     // next.config.ts imports docs/plite/reference/public-route-map.json, and
     // scripts/build-registry.mts imports the entrypoint DAG.
@@ -631,6 +680,7 @@ export const steps = [
   },
   {
     name: 'www-build',
+    alone: 'rewrites tracked files',
     run: 'pnpm build:www:ci',
     optIn: '--build',
   },
@@ -638,6 +688,7 @@ export const steps = [
     // It reruns the Node scripts of every keyed step, about two minutes, and
     // traces www fully only once the www step has built packages/cli/dist.
     name: 'step-reads',
+    alone: 'reruns the keyed steps',
     run: 'node tooling/scripts/check-step-reads.mjs',
     optIn: '--reads',
   },
@@ -799,24 +850,90 @@ const FRESH_ENV = {
   PLITE_PROOF_FORCE_BUILD: '1',
 };
 
-const runStep = (step, command, { fresh, writing }) => {
+const runStep = (step, command, { cores, fresh, log, running, writing }) => {
   const started = Date.now();
   const watch = !writing && step.unchangedFiles;
   const before = watch && step.unchangedFiles();
-  const result = spawnSync('bash', ['-o', 'pipefail', '-c', command], {
+  const output = openSync(log, 'w');
+  const child = spawn('bash', ['-o', 'pipefail', '-c', command], {
     cwd: root,
-    env: fresh ? { ...process.env, ...FRESH_ENV } : process.env,
-    stdio: 'inherit',
+    env: {
+      ...process.env,
+      ...(fresh ? FRESH_ENV : {}),
+      CHECK_CORES: String(cores),
+    },
+    stdio: ['ignore', output, output],
   });
-  let status = result.status ?? 1;
-  if (status === 0 && watch && step.unchangedFiles() !== before) {
-    console.error(`[check] ${step.name} changed files under packages/.`);
-    status = 1;
-  }
-  return { seconds: Math.round((Date.now() - started) / 1000), status };
+  closeSync(output);
+  running.add(child);
+  return new Promise((resolveStep) => {
+    const finish = (code) => {
+      if (!running.delete(child)) return;
+      let status = code;
+      if (status === 0 && watch && step.unchangedFiles() !== before) {
+        appendFileSync(
+          log,
+          `[check] ${step.name} changed files under packages/.\n`
+        );
+        status = 1;
+      }
+      resolveStep({
+        seconds: Math.round((Date.now() - started) / 1000),
+        status,
+      });
+    };
+    child.once('error', (error) => {
+      appendFileSync(log, `${error.message}\n`);
+      finish(1);
+    });
+    child.once('exit', (code) => finish(code ?? 1));
+  });
 };
 
-const main = () => {
+const schedule = async (entries, budget, start, stopped) => {
+  const slots = ({ step }) => Math.min(step.cores ?? 1, budget);
+  const pending = entries
+    .filter(({ step }) => !step.alone)
+    .toSorted((a, b) => (b.step.cores ?? 1) - (a.step.cores ?? 1));
+  const unfinished = new Set(pending.map(({ step }) => step.name));
+  const held = new Set();
+  const active = new Set();
+  let free = budget;
+  const launch = () => {
+    for (const entry of [...pending]) {
+      const holds = entry.step.holds ?? [];
+      const after = entry.step.after ?? [];
+      if (
+        slots(entry) > free ||
+        holds.some((name) => held.has(name)) ||
+        after.some((name) => unfinished.has(name))
+      ) {
+        continue;
+      }
+      pending.splice(pending.indexOf(entry), 1);
+      free -= slots(entry);
+      for (const name of holds) held.add(name);
+      const run = start(entry).then(() => {
+        free += slots(entry);
+        for (const name of holds) held.delete(name);
+        unfinished.delete(entry.step.name);
+        active.delete(run);
+      });
+      active.add(run);
+    }
+  };
+  launch();
+  while (active.size > 0) {
+    await Promise.race(active);
+    if (!stopped()) launch();
+  }
+  for (const entry of entries.filter(({ step }) => step.alone)) {
+    if (stopped()) break;
+    await start(entry);
+  }
+};
+
+const main = async () => {
   const args = process.argv.slice(2);
   const flags = [
     '--affected',
@@ -924,19 +1041,79 @@ const main = () => {
   }
   const group = Boolean(process.env.GITHUB_ACTIONS);
   const results = new Map();
-
-  for (const { step, command, scope } of selected) {
-    console.info(
-      group ? `::group::${step.name}` : `\n[check] ${step.name}: ${command}`
-    );
-    // Stamping every file costs over a second, and only a keyed step records
-    // a pass, so a run of keyless steps alone never stamps.
-    if (scope.key) cache.watch();
-    const result = runStep(step, command, { fresh, writing });
+  // Writers can read each other's output, so --write keeps one step at a time.
+  const share = Math.ceil(availableParallelism() / 2);
+  const budget = writing
+    ? 1
+    : Math.min(
+        share,
+        selected.reduce(
+          (sum, { step }) => sum + Math.min(step.cores ?? 1, share),
+          0
+        )
+      );
+  const { reserve } = await import('../../.agents/pstack/proof.mjs');
+  const release =
+    writing || selected.length === 0 ? () => {} : reserve(budget, 'pnpm check');
+  const logs = mkdtempSync(join(tmpdir(), 'plate-check-'));
+  const running = new Set();
+  let interrupted = 0;
+  // Steps share this process group, so a terminal's or supervisor's signal to
+  // the group reaches each of them; this passes on one sent to this process.
+  const stop = (signal) => {
+    interrupted ||= 128 + osConstants.signals[signal];
+    for (const child of running) child.kill(signal);
+  };
+  const signals = ['SIGHUP', 'SIGINT', 'SIGTERM'];
+  for (const signal of signals) process.on(signal, stop);
+  const recordsPasses = selected.some(({ scope }) => scope.key);
+  if (recordsPasses) cache.watch();
+  const start = async ({ command, scope, step }) => {
+    console.info(`[check] ${step.name} started`);
+    const log = join(logs, `${step.name}.log`);
+    cache.begin(step.name);
+    const result = await runStep(step, command, {
+      cores: Math.min(step.cores ?? 1, budget),
+      fresh,
+      log,
+      running,
+      writing,
+    });
+    const reason = cache.end(step.name);
     results.set(step.name, result);
-    if (result.status === 0) cache.record(scope, result.seconds);
+    // pnpm exits 0 when an interrupt stops its script, so a step that ends
+    // after one never counts as passed.
+    if (result.status === 0 && !interrupted) {
+      cache.record(scope, result.seconds, reason);
+    }
+    if (group) console.info(`::group::${step.name}`);
+    console.info(`${group ? '' : '\n'}[check] ${step.name}: ${command}`);
+    process.stdout.write(readFileSync(log));
+    rmSync(log, { force: true });
+    const state = interrupted
+      ? 'interrupted'
+      : result.status === 0
+        ? 'ok'
+        : `failed (exit ${result.status})`;
+    console.info(`[check] ${step.name} ${state} in ${result.seconds}s`);
     if (group) console.info('::endgroup::');
+  };
+  const stopped = () => interrupted !== 0;
+  try {
+    if (writing) {
+      for (const entry of selected) {
+        if (stopped()) break;
+        await start(entry);
+      }
+    } else {
+      await schedule(selected, budget, start, stopped);
+    }
+  } finally {
+    for (const signal of signals) process.removeListener(signal, stop);
+    rmSync(logs, { force: true, recursive: true });
+    release();
   }
+  if (interrupted) return interrupted;
   const { dropped } = cache.flush();
   if (dropped) console.info(`[check] ${dropped}.`);
 
@@ -966,5 +1143,8 @@ const main = () => {
 };
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  process.exit(main());
+  // exitCode instead of exit, so the step logs written to a pipe drain first.
+  void main().then((code) => {
+    process.exitCode = code;
+  });
 }

@@ -425,6 +425,7 @@ export function openCache(root, { fresh = false } = {}) {
   let marked;
   // Whether every file held the snapshot's bytes at the last mark.
   let faithful = true;
+  const running = new Map();
   const skipped = [];
   let store;
   let global;
@@ -455,26 +456,29 @@ export function openCache(root, { fresh = false } = {}) {
     marked = stamp(root);
     faithful = sameWork();
   };
-  // Closes the span since the last mark, which holds the check that just
-  // passed and any failed check before it, and says why that pass cannot
-  // stand on the state the cache opened on, or null when it can.
-  const markStep = (name) => {
+  const begin = (name) => {
+    running.set(name, { faithful, reason: null });
+  };
+  const end = (name) => {
+    const span = running.get(name);
     if (!marked) {
+      running.delete(name);
       return `the cache was not watching the files while ${name} ran`;
     }
-    const startedFaithful = faithful;
-    const now = new Map();
-    let written;
-    for (const [file, line] of marked) {
-      now.set(file, statLine(root, file));
-      if (written === undefined && now.get(file) !== line) written = file;
-    }
+    const now = stamp(root);
+    const written =
+      [...now].find(([file, line]) => marked.get(file) !== line)?.[0] ??
+      [...marked.keys()].find((file) => !now.has(file));
     marked = now;
     if (written !== undefined) {
       faithful = sameWork();
-      return `${written} was written while ${name} ran`;
+      for (const [other, entry] of running) {
+        entry.reason ??= `${written} was written while ${other} ran`;
+      }
     }
-    return startedFaithful
+    running.delete(name);
+    if (span.reason) return span.reason;
+    return span.faithful
       ? null
       : `${name} ran on files that changed after the cache opened`;
   };
@@ -659,22 +663,38 @@ export function openCache(root, { fresh = false } = {}) {
       return found;
     },
     /**
-     * Stamps every file of both halves, once, so `record` can tell which
-     * check wrote one. Call it just before the first check runs.
+     * Stamps every file of both halves, so `end` can tell which checks were
+     * running when one was written. Call it just before the first check runs.
      */
     watch,
     /**
-     * Queues `scope` as passed on the state the cache opened on, unless a file
-     * of either half was written while it ran, even back to the same bytes, or
-     * held other bytes when it started; flushes once FLUSH_SECONDS of passes
+     * Registers `name` as running from now on. Call it as each check starts.
+     * @param {string} name the check that starts
+     */
+    begin,
+    /**
+     * Ends the running check `name` and says why its pass cannot stand on the
+     * state the cache opened on, or null when it can: a file of either half
+     * was written, added or removed while it ran, even back to the same bytes,
+     * or the files held other bytes when it started. A write is found at the
+     * next `end` after it and costs its pass to every check running then,
+     * including one that began after the write. A file added and removed
+     * again between two ends goes unseen. Call it as each check ends, passed
+     * or failed.
+     * @param {string} name the check that ended
+     * @returns {string | null} why the check's pass cannot be recorded
+     */
+    end,
+    /**
+     * Queues `scope` as passed on the state the cache opened on unless
+     * `reason` says why it cannot be; flushes once FLUSH_SECONDS of passes
      * wait. Call it right after each check that passed.
      * @param {Scope} scope the check that passed
      * @param {number} seconds how long it ran
+     * @param {string | null} reason what `end` returned for it
      */
-    record(scope, seconds) {
-      if (fresh || dropped) return;
-      const reason = markStep(scope.name);
-      if (!scope.key) return;
+    record(scope, seconds, reason) {
+      if (fresh || dropped || !scope.key) return;
       if (reason) {
         skipped.push(reason);
         return;

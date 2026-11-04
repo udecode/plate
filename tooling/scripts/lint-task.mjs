@@ -53,6 +53,7 @@ if (cover) {
   process.exit(0);
 }
 cache.watch();
+cache.begin(scope.name);
 const started = Date.now();
 
 const run = (args) => {
@@ -115,6 +116,10 @@ if (linted === 0) {
     `Lint ignores ${paths.length - linted} of the ${paths.length} paths; a lint-clean claim covers only the other ${linted}.`
   );
 }
-cache.record(scope, Math.round((Date.now() - started) / 1000));
+cache.record(
+  scope,
+  Math.round((Date.now() - started) / 1000),
+  cache.end(scope.name)
+);
 cache.flush();
 process.exit(0);
