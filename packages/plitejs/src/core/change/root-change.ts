@@ -2340,6 +2340,26 @@ const collectDocumentNodes = (
   return result;
 };
 
+type ChangedRange = readonly [
+  from: number,
+  to: number,
+  fromAfter: number,
+  toAfter: number,
+];
+
+const insertedBeforeNode = (
+  changedRanges: readonly ChangedRange[],
+  range: Readonly<{ from: number }>,
+  nodeAfter: Readonly<{ from: number; to: number }>
+) =>
+  changedRanges.some(
+    ([from, to, fromAfter, toAfter]) =>
+      from === range.from &&
+      to === range.from &&
+      fromAfter <= nodeAfter.from &&
+      nodeAfter.to <= toAfter
+  );
+
 const mergeNestedChangeThroughStructuralRelocation = (
   nested: RootChange,
   structural: RootChange,
@@ -2354,9 +2374,9 @@ const mergeNestedChangeThroughStructuralRelocation = (
     return null;
   }
 
-  const changedRanges: Array<readonly [number, number]> = [];
+  const changedRanges: ChangedRange[] = [];
 
-  nested.iterChangedRanges((from, to) => changedRanges.push([from, to]));
+  nested.iterChangedRanges((...range) => changedRanges.push(range));
   if (changedRanges.length === 0) return null;
 
   const structuralRanges: Array<readonly [number, number]> = [];
@@ -2392,13 +2412,16 @@ const mergeNestedChangeThroughStructuralRelocation = (
     if (targets.length !== 1) continue;
 
     let edited: JsonNode;
+    let editedRange: Readonly<{ from: number; to: number }>;
 
     try {
       edited = afterNested.node(candidate.path);
+      editedRange = afterNested.nodeRange(candidate.path);
     } catch {
       continue;
     }
     if (jsonEqual(edited, candidate.node)) continue;
+    if (insertedBeforeNode(changedRanges, range, editedRange)) continue;
 
     const targetPath = targets[0].path;
     const targetIndex = targetPath.at(-1);
