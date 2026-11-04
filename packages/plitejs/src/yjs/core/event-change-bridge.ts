@@ -64,8 +64,6 @@ import {
   createYjsNodes,
   createYjsPropertyContext,
   createYjsPropertyLocationAt,
-  getShownYjsReferrer,
-  getYjsStrandAnchor,
   getYjsVisibleChild,
   getYjsVisibleChildren,
   indexYjsPropertyContexts,
@@ -91,6 +89,7 @@ import {
   type YjsPropertyContext,
   type YjsSetPropertyResolver,
   noSetProperties,
+  projectYjsRoot,
   yjsKeyStorageOf,
   type YjsTextAdmission,
   type YjsWrite,
@@ -5695,7 +5694,8 @@ export class YjsEventChangeBridge {
     node: Y.AbstractType<unknown> | YjsNode,
     blocks: Set<YjsNode>,
     visited = new Set<unknown>(),
-    views = true
+    views = true,
+    projection = projectYjsRoot(this.root)
   ): boolean {
     let shown = false;
 
@@ -5712,24 +5712,28 @@ export class YjsEventChangeBridge {
       const id = current.getAttribute(YJS_NODE_ID_KEY);
 
       if (typeof id === 'string') {
-        const shownBy = getShownYjsReferrer(this.root, id);
+        const shownBy = projection.referrerOf(id);
 
         for (const referrer of this.rootIndex.referrersOf(id)) {
           if (referrer instanceof Y.XmlText ? !views : referrer !== shownBy) {
             continue;
           }
-          shown = this.addShownBlocks(referrer, blocks, visited) || shown;
+          shown =
+            this.addShownBlocks(referrer, blocks, visited, true, projection) ||
+            shown;
         }
 
         const anchor =
           shownBy === null &&
           current instanceof Y.XmlElement &&
           typeof current.getAttribute(YJS_JOINED_AFTER_KEY) === 'string'
-            ? getYjsStrandAnchor(this.root, current)
+            ? projection.anchorOf(current)
             : null;
 
         if (anchor) {
-          shown = this.addShownBlocks(anchor, blocks, visited) || shown;
+          shown =
+            this.addShownBlocks(anchor, blocks, visited, true, projection) ||
+            shown;
         }
       }
       // A root placeholder's slot shows its target, wherever the target sits.
@@ -6010,10 +6014,11 @@ export class YjsEventChangeBridge {
 
       return false;
     };
+    const projection = projectYjsRoot(this.root);
     const shownBy = (node: YjsNode) => {
       const id = node.getAttribute(YJS_NODE_ID_KEY);
 
-      return typeof id === 'string' ? getShownYjsReferrer(this.root, id) : null;
+      return typeof id === 'string' ? projection.referrerOf(id) : null;
     };
     const shownBefore = (node: YjsNode) => {
       const id = node.getAttribute(YJS_NODE_ID_KEY);
