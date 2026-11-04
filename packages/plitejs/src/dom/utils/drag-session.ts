@@ -40,8 +40,10 @@ const endSession = (document: Document, session: ActiveDragSession) => {
 };
 
 /**
- * Listens for the end of the drag only while it runs: `dragend`, or the first
- * `pointermove` after a drag whose source unmounted before `dragend` reached it.
+ * Listens for the end of the drag only while it runs: `dragend`, or a later
+ * press, release or buttonless move when the source unmounted before `dragend`
+ * reached it. Firefox on macOS can send the move that started the drag after
+ * `dragstart`, with the button still down.
  */
 export const beginDragSession = ({
   dataTransfer,
@@ -77,6 +79,9 @@ export const beginDragSession = ({
 
     if (current?.id === id) endSession(document, current);
   };
+  const endAfterRelease = (event: PointerEvent) => {
+    if (event.buttons === 0) end();
+  };
   // Browsers repeat dragover for a held pointer only periodically, so content
   // scrolling under it would leave the indicator at stale viewport coordinates.
   const repaint = () => REPAINTS.get(document)?.repaint();
@@ -87,7 +92,9 @@ export const beginDragSession = ({
       if (released) return;
       released = true;
       document.removeEventListener('dragend', end, true);
-      document.removeEventListener('pointermove', end, true);
+      document.removeEventListener('pointerdown', end, true);
+      document.removeEventListener('pointerup', end, true);
+      document.removeEventListener('pointermove', endAfterRelease, true);
       document.removeEventListener('scroll', repaint, true);
       REPAINTS.delete(document);
       ORIGINS.delete(document);
@@ -99,7 +106,9 @@ export const beginDragSession = ({
   };
 
   document.addEventListener('dragend', end, true);
-  document.addEventListener('pointermove', end, true);
+  document.addEventListener('pointerdown', end, true);
+  document.addEventListener('pointerup', end, true);
+  document.addEventListener('pointermove', endAfterRelease, true);
   document.addEventListener('scroll', repaint, {
     capture: true,
     passive: true,
@@ -164,25 +173,15 @@ export const isDragSessionClaimed = (
 export const takeDragSession = ({
   dataTransfer,
   document,
-  internal,
-  targetEditor,
 }: {
   dataTransfer: DataTransfer;
   document: Document;
-  internal: boolean;
-  targetEditor: AnyEditor;
 }): DragSession | 'consumed' | null => {
   const session = SESSIONS.get(document);
   const token = readToken(dataTransfer);
 
   if (token && CONSUMED.get(document) === token) return 'consumed';
-  if (!session) return null;
-
-  const owned = internal
-    ? session.sourceEditor === targetEditor || token === session.id
-    : token === session.id;
-
-  if (!owned) return null;
+  if (!session || token !== session.id) return null;
 
   SESSIONS.delete(document);
   CONSUMED.set(document, session.id);

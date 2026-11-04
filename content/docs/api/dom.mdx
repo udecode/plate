@@ -345,10 +345,12 @@ Scroll one step for a pointer drag at `point`, in client coordinates of the
 window that holds the editor's view, and return the pixels scrolled, or 0. On
 the editor `createEditor` returns, it runs in the [view](#views) under the
 point, found in the document of the view the editor picks, else in the picked
-view. It scrolls the innermost scroller around that view whose visible top or
-bottom edge zone holds the point and that can still move that way, else the
-window, at the speed text selection and block
-dragging use: faster nearer the edge. Each zone is 48px, at most half the visible height.
+view. It scrolls the innermost scroller around that view whose horizontal
+bounds hold the point and that can still move toward the pointer, else the
+window, at the speed text selection and block dragging use. Scrolling starts
+within 48px of the visible top or bottom edge, at most half the visible height,
+and gets faster nearer the edge. Above or below the visible area, it scrolls at
+the maximum step of 28px per call.
 Call it once per animation frame while a custom drag lasts, and call again on
 the next frame while it returns a value other than 0.
 
@@ -362,7 +364,10 @@ it lands beside the block under the pointer, or beside an outer block when the
 schema or a veto refuses that edge. An edge inside the dragged blocks, or one
 that would not move them, drops nothing. A move whose pointer is over or beside
 its own blocks also drops nothing, even within a container's band. Edges inside
-collapsed content are refused. Without options it reads the active drag session.
+collapsed content are refused. A block or files drop whose pointer is beside a
+top-level block, as in the root's side padding, and that finds no drop target
+resolves again just inside that block. Without options it reads the active drag
+session.
 With no `target`, a text drop resolves nothing, and a block or files drop on
 the editor `createEditor` returns resolves in the [view](#views) under the
 pointer, found in the document of the view the editor picks, else in the picked

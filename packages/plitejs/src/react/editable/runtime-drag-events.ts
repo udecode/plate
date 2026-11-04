@@ -149,7 +149,6 @@ export const useRuntimeDragEvents = ({
         readOnly,
         reportDrop,
         runDrop,
-        state,
       });
       if (dropResult.repair) {
         repair.requestEditableRepair(dropResult.repair);
@@ -170,7 +169,6 @@ export const useRuntimeDragEvents = ({
       repair,
       reportDrop,
       runDrop,
-      state,
       trace,
     ]
   );

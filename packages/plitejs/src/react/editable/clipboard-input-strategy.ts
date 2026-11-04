@@ -27,10 +27,10 @@ import {
   supportsDOMBeforeInput,
 } from '../../dom/internal';
 import {
-  blockCopyIntent,
   copyIntentOf,
   type DOMDropTargetInput,
   indicateDOMDropTarget,
+  pointAt,
   resolveDOMDropTarget,
 } from '../../dom/plugin/dom-drag';
 import { getDragAutoScrollTarget } from '../../dom/plugin/dom-drag-scroll';
@@ -617,7 +617,7 @@ const followDOMDropTargetOnScroll = (
 
   const point = { clientX: input.clientX, clientY: input.clientY };
   const options = {
-    copy: blockCopyIntent(session, input),
+    copy: copyIntentOf(input, session),
     from: session.sourceEditor,
     nodes: session.source.keys,
   };
@@ -674,7 +674,7 @@ export const applyEditableDragOver = ({
     // even when no valid drop target is found.
     event.preventDefault();
     if (target) {
-      event.dataTransfer.dropEffect = blockCopyIntent(session, input)
+      event.dataTransfer.dropEffect = copyIntentOf(input, session)
         ? 'copy'
         : 'move';
     } else {
@@ -692,7 +692,7 @@ export const applyEditableDragOver = ({
   }
 
   if (state.isDraggingInternally) {
-    event.dataTransfer.dropEffect = copyIntentOf(dropInputOf(event))
+    event.dataTransfer.dropEffect = copyIntentOf(dropInputOf(event), session)
       ? 'copy'
       : 'move';
   }
@@ -832,9 +832,7 @@ const applySessionDrop = ({
   reportDrop: (outcome: TransferOutcome) => void;
   session: DragSession;
 }): EditableClipboardResult => {
-  const copy = session.draggedBlock
-    ? blockCopyIntent(session, dropInputOf(event))
-    : session.copyOnly || copyIntentOf(dropInputOf(event));
+  const copy = copyIntentOf(dropInputOf(event), session);
   const { transfer } = editor.api;
   const from = session.sourceEditor;
   const range =
@@ -853,10 +851,9 @@ const applySessionDrop = ({
     session.source.kind === 'nodes'
       ? { nodes: session.source.keys }
       : { range: range as Range };
-  const dropPoint = (
-    resolveTextDropRangeFromEvent(editor, event) ??
-    ReactEditor.resolveEventRange(editor, event)
-  )?.anchor;
+  const dropPoint =
+    resolveTextDropRangeFromEvent(editor, event)?.anchor ??
+    pointAt(editor, dropInputOf(event));
   const resolved = session.draggedBlock
     ? resolveDOMDropTarget(editor, dropInputOf(event), {
         copy,
@@ -910,7 +907,6 @@ export const applyEditableDrop = ({
   readOnly,
   reportDrop = () => {},
   runDrop = (drop) => drop(),
-  state,
 }: {
   editor: ReactRuntimeEditor;
   event: DragEvent<HTMLDivElement>;
@@ -918,7 +914,6 @@ export const applyEditableDrop = ({
   readOnly: boolean;
   reportDrop?: (outcome: TransferOutcome) => void;
   runDrop?: <T>(drop: () => T) => T;
-  state: EditableDragState;
 }): EditableClipboardResult => {
   indicateDOMDropTarget(editor, null);
 
@@ -948,8 +943,6 @@ export const applyEditableDrop = ({
     const session = takeDragSession({
       dataTransfer: event.dataTransfer,
       document,
-      internal: state.isDraggingInternally,
-      targetEditor: editor,
     });
 
     if (session === 'consumed') return clipboardResult({ command: null });

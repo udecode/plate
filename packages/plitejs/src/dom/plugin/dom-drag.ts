@@ -78,7 +78,7 @@ const asDOM = (editor: AnyEditor) =>
 
 // Drop data is readable only at drop, where it would steer the caret to a
 // block-fragment boundary; dragover and drop must resolve the same point.
-const pointAt = (
+export const pointAt = (
   editor: AnyEditor,
   { clientX, clientY, target }: DOMDropTargetInput
 ) =>
@@ -197,6 +197,9 @@ const rectOf = (host: HTMLElement | null) => {
 
   return rect && (rect.width > 0 || rect.height > 0) ? rect : null;
 };
+
+const xOnePixelInside = (rect: DOMRect, x: number) =>
+  rect.width > 2 ? Math.min(Math.max(x, rect.left + 1), rect.right - 1) : x;
 
 // Coverage indexes boundaries by top-level block, so a dragover reads only
 // the boundaries under the top-level blocks its range touches.
@@ -568,17 +571,15 @@ const edgeOf = (
     : 'after';
 };
 
-/** Copy intent of a drag event: the platform copy modifier, or a copy drop effect. */
-export const copyIntentOf = (input: DOMDropTargetInput) =>
-  input.dataTransfer?.dropEffect === 'copy' ||
-  !!(usesAppleDOMHotkeys(input) ? input.altKey : input.ctrlKey);
-
-/** Block-drag copy intent: session flag or the platform copy modifier. */
-export const blockCopyIntent = (
-  session: DragSession,
-  input: DOMDropTargetInput
+/**
+ * Browsers may default `dropEffect` to `copy` when `effectAllowed` is
+ * `copyMove`, so it never counts as copy intent.
+ */
+export const copyIntentOf = (
+  input: DOMDropTargetInput,
+  session?: DragSession | null
 ) =>
-  session.copyOnly ||
+  !!session?.copyOnly ||
   !!(usesAppleDOMHotkeys(input) ? input.altKey : input.ctrlKey);
 
 export const resolveDOMDropTarget = (
@@ -590,7 +591,7 @@ export const resolveDOMDropTarget = (
 
   if (!document) return null;
   const session = readDragSession(document, input.dataTransfer ?? null);
-  const copy = options.copy ?? (session?.copyOnly || copyIntentOf(input));
+  const copy = options.copy ?? copyIntentOf(input, session);
   const from = options.from ?? session?.sourceEditor;
   const textRange =
     options.range ??
@@ -793,7 +794,21 @@ export const resolveDOMDropTarget = (
     }
   }
 
-  return null;
+  const box = level.path.length === 0 ? rectOf(anchor?.host ?? null) : null;
+  const contentX = box ? xOnePixelInside(box, input.clientX) : input.clientX;
+
+  // A native event's fields are inherited getters, which a spread drops.
+  return contentX === input.clientX
+    ? null
+    : resolveDOMDropTarget(
+        editor,
+        {
+          clientX: contentX,
+          clientY: input.clientY,
+          dataTransfer: input.dataTransfer,
+        },
+        { ...options, copy }
+      );
 };
 
 export const indicateDOMDropTarget = (
