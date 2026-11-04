@@ -195,6 +195,25 @@ const getPointTextInsertionPoint = (
   return null;
 };
 
+/**
+ * Whether the caret sits in a non-empty text that is its parent's only allowed
+ * child. A text with the pending marks would need a sibling, which the schema
+ * refuses, so typing there joins the caret's text without them. An empty text
+ * returns false: the typed text replaces it, so it can carry the marks.
+ */
+const fillsOneTextParent = (editor: Editor, at: Point) => {
+  const node = NodeApi.get(editor, at.path);
+  const parent = NodeApi.get(editor, PathApi.parent(at.path));
+
+  return (
+    TextApi.isText(node) &&
+    node.text !== '' &&
+    NodeApi.isElement(parent) &&
+    typeof parent.type === 'string' &&
+    getEditorSchema(editor).getElementContent(parent.type)?.max === 1
+  );
+};
+
 const getNextTextInBlock = (editor: Editor, path: Path) => {
   let blockPath = PathApi.parent(path);
 
@@ -523,16 +542,20 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             return;
           }
 
-          insertNodes(
-            editor as Editor,
-            continueEmptyText(
-              editor,
-              createTypedText(editor, text, marks, path, root),
-              path,
-              root
-            ),
-            { at, select: !explicitAtPreservesNullSelection, voids }
-          );
+          if (fillsOneTextParent(editor, at)) {
+            insertTextAtPoint(editor, { path, offset, root }, text);
+          } else {
+            insertNodes(
+              editor as Editor,
+              continueEmptyText(
+                editor,
+                createTypedText(editor, text, marks, path, root),
+                path,
+                root
+              ),
+              { at, select: !explicitAtPreservesNullSelection, voids }
+            );
+          }
           setCurrentMarks(editor, null);
           return;
         }
