@@ -1,5 +1,12 @@
 # @platejs/docx-io
 
+## 53.5.5
+
+### Patch Changes
+
+- [#5333](https://github.com/udecode/plate/pull/5333) by [@zbeyens](https://github.com/zbeyens) –
+  - Stop writing an extra blank paragraph after each image, and after any other void element, when exporting to DOCX.
+
 ## 53.5.4
 
 ### Patch Changes
