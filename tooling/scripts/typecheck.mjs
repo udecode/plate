@@ -109,6 +109,16 @@ const assertBunMatchesTypescript = () => {
   }
 
   const [bunVersion, bunTypescript] = JSON.parse(bunVersions.stdout);
+  const { devDependencies } = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf-8')
+  );
+
+  if (bunVersion !== devDependencies.bun) {
+    throw new Error(
+      `This checkout installed Bun ${bunVersion}, but package.json pins bun ${devDependencies.bun}. Run pnpm install.`
+    );
+  }
+
   const { version: typescriptVersion } = JSON.parse(
     fs.readFileSync(
       path.join(repoRoot, 'node_modules/typescript/package.json'),
