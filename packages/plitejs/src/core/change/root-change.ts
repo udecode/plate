@@ -767,6 +767,13 @@ const opensEnclosure = (slice: PreparedTokenSlice | null) => {
   return depth > 0;
 };
 
+const tokenKey = (token: JsonToken) =>
+  token.kind === 'open'
+    ? ['open', token.nodeKind, token.props]
+    : token.kind === 'close'
+      ? ['close', token.nodeKind]
+      : ['text', token.text];
+
 const insertedElementKeys = ({ from, insert, to }: Replacement) => {
   if (from !== to) return undefined;
 
@@ -783,15 +790,8 @@ const insertedElementKeys = ({ from, insert, to }: Replacement) => {
       element = [];
     }
 
-    if (token.kind === 'open') {
-      element.push(['open', token.nodeKind, token.props]);
-      depth += 1;
-    } else if (token.kind === 'close') {
-      element.push(['close', token.nodeKind]);
-      depth -= 1;
-    } else {
-      element.push(['text', token.text]);
-    }
+    element.push(tokenKey(token));
+    depth += depthChange(token);
 
     if (depth === 0) keys.push(canonicalJsonKey(element));
   }
@@ -817,39 +817,218 @@ const placesBlocks = (document: DocumentIndex, position: number) => {
   return !holdsInlineContent;
 };
 
-const insertsDisjointBlocksAtSameStarts = (
+const removesElement = (
   document: DocumentIndex,
-  left: readonly Replacement[],
-  right: readonly Replacement[]
-) => {
-  if (left.length === 0 || left.length !== right.length) return false;
+  replacements: readonly Replacement[]
+) =>
+  replacements.some(({ from, to }) => {
+    let depth = 0;
 
-  const rightByStart = new Map<number, Replacement>();
+    return document.slice(from, to).tokens.some((token) => {
+      if (token.kind === 'open') depth += 1;
+      if (token.kind !== 'close' || depth === 0) return false;
 
-  for (const replacement of right) {
-    if (rightByStart.has(replacement.from)) return false;
+      depth -= 1;
 
-    rightByStart.set(replacement.from, replacement);
+      return token.nodeKind === 'element';
+    });
+  });
+
+const sameSlice = (left: PreparedTokenSlice, right: PreparedTokenSlice) =>
+  left.length === right.length &&
+  left.tokens.every((token, index) => tokensEqual(token, right.tokens[index]));
+
+const netDepth = (tokens: readonly JsonToken[]) =>
+  tokens.reduce((depth, token) => depth + depthChange(token), 0);
+
+const editedRanges = (change: RootChange, side: 'from' | 'to') => {
+  const ranges: Array<readonly [number, number]> = [];
+  let position = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
+    const size = side === 'to' && inserted >= 0 ? inserted : length;
+
+    if (inserted !== -1) ranges.push([position, position + size]);
+    position += size;
   }
 
-  for (const replacement of left) {
-    const other = rightByStart.get(replacement.from);
+  return ranges;
+};
 
-    rightByStart.delete(replacement.from);
+/** Whether every edit `change` made to give `result` is still in `later`. */
+const keptIn = (
+  change: RootChange,
+  result: DocumentIndex,
+  later: DocumentIndex
+) => {
+  const written = editedRanges(change, 'to');
 
-    if (!other) return false;
+  return editedRanges(RootChange.between(result, later), 'from').every(
+    ([from, to]) => written.every(([start, end]) => to < start || end < from)
+  );
+};
+
+/**
+ * An edit both sides make at one place: the same edit, or different blocks
+ * both kept, the first side's first.
+ */
+type SharedEdit = Readonly<
+  { from: number; merged: PreparedTokenSlice; to: number } & (
+    | { kind: 'same' }
+    | {
+        first: PreparedTokenSlice;
+        kind: 'different';
+        second: PreparedTokenSlice;
+      }
+  )
+>;
+
+const editKey = (from: number, to: number) => `${from}:${to}`;
+
+/**
+ * The places where both sides insert whole blocks between blocks, by
+ * `editKey`. The same blocks count once, with each other edit both sides make
+ * alike, and different blocks both stay. Null when there is no such place,
+ * when two inserts there share blocks but not all of them in order, when
+ * the same blocks go in while a side takes an element out, as a move does,
+ * or when both sides also wrap letters, which the rebase decides as a pair.
+ */
+const sharedPlaceEdits = (
+  document: DocumentIndex,
+  aReplacements: readonly Replacement[],
+  bReplacements: readonly Replacement[]
+) => {
+  const bByRange = new Map(
+    bReplacements.map((replacement) => [
+      editKey(replacement.from, replacement.to),
+      replacement,
+    ])
+  );
+  const blocks: SharedEdit[] = [];
+  const alike: SharedEdit[] = [];
+  let sameBlocks = false;
+  let removes: boolean | undefined;
+
+  for (const replacement of aReplacements) {
+    const { from, insert, to } = replacement;
+    const other = bByRange.get(editKey(from, to));
+
+    if (!other) continue;
 
     const keys = insertedElementKeys(replacement);
     const otherKeys = insertedElementKeys(other);
 
-    if (!keys || !otherKeys) return false;
+    if (!keys || !otherKeys || !placesBlocks(document, from)) {
+      if (
+        sameSlice(insert, other.insert) &&
+        netDepth(insert.tokens) === netDepth(document.slice(from, to).tokens)
+      ) {
+        alike.push({ from, kind: 'same', merged: insert, to });
+      }
+      continue;
+    }
 
     const otherKeySet = new Set(otherKeys);
+    const common = keys.filter((key) => otherKeySet.has(key)).length;
 
-    if (keys.some((key) => otherKeySet.has(key))) return false;
+    if (common === 0) {
+      blocks.push({
+        first: insert,
+        from,
+        kind: 'different',
+        merged: insert.concat(other.insert),
+        second: other.insert,
+        to,
+      });
+      continue;
+    }
+    if (
+      keys.length !== otherKeys.length ||
+      keys.some((key, index) => key !== otherKeys[index])
+    ) {
+      return null;
+    }
+
+    removes ??= removesElement(document, [...aReplacements, ...bReplacements]);
+
+    if (removes) return null;
+
+    sameBlocks = true;
+    blocks.push({ from, kind: 'same', merged: insert, to });
   }
 
-  return left.every(({ from }) => placesBlocks(document, from));
+  if (blocks.length === 0) return null;
+
+  const edits = new Map(
+    [...blocks, ...(sameBlocks ? alike : [])].map((edit) => [
+      editKey(edit.from, edit.to),
+      edit,
+    ])
+  );
+  const wraps = (replacements: readonly Replacement[]) =>
+    replacements.some(
+      ({ from, insert, to }) =>
+        !edits.has(editKey(from, to)) && opensEnclosure(insert)
+    );
+
+  return wraps(aReplacements) && wraps(bReplacements) ? null : edits;
+};
+
+const overSharedEdits = (
+  change: RootChange,
+  edits: ReadonlyMap<string, SharedEdit>
+) => {
+  const sections: number[] = [];
+  const data: SectionData[] = [];
+  let position = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
+    const edit =
+      inserted >= 0 ? edits.get(editKey(position, position + length)) : null;
+
+    if (edit) addSection(sections, data, edit.merged.length, -1, null);
+    else addSection(sections, data, length, inserted, change.data[index >> 1]);
+
+    position += length;
+  }
+
+  return RootChange.fromSections(sections, data);
+};
+
+/**
+ * Adds the other side's blocks beside `change`'s own at each place both
+ * insert different ones.
+ */
+const resultToSharedDocument = (
+  change: RootChange,
+  edits: ReadonlyMap<string, SharedEdit>,
+  side: 'first' | 'second'
+) => {
+  const sections: number[] = [];
+  const data: SectionData[] = [];
+  let position = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
+    const edit =
+      inserted >= 0 ? edits.get(editKey(position, position + length)) : null;
+    const different = edit?.kind === 'different' ? edit : null;
+    const before = side === 'second' ? different?.first : null;
+    const after = side === 'first' ? different?.second : null;
+
+    if (before) addSection(sections, data, 0, before.length, before);
+    addSection(sections, data, inserted < 0 ? length : inserted, -1, null);
+    if (after) addSection(sections, data, 0, after.length, after);
+
+    position += length;
+  }
+
+  return RootChange.fromSections(sections, data);
 };
 
 /**
@@ -3973,6 +4152,9 @@ export class RootChange {
   /**
    * Two matching moves, or two structural edits that start together and give
    * one structure, become one edit unless `keepEqualEdits` keeps them as two.
+   * The same whole blocks both insert at one place count once, and each
+   * side's other edits rebase over them. Different ones both stay, the
+   * first side's first when the two give one structure.
    * With `replay`, `b` is a recorded step replayed over `a`: a wrap of `a`
    * equal to its own stays its own, and a wrap a split cuts gives each next
    * piece the properties `replay.pieceProps` returns.
@@ -4224,9 +4406,58 @@ export class RootChange {
       if (carried) return { a: carried.move, b: carried.edit };
     }
 
-    const transformed = RootChange.transform(a, b, replayBase);
     const afterA = a.apply(document);
     const afterB = b.apply(document);
+    const shared = keepEqualEdits
+      ? null
+      : sharedPlaceEdits(document, aReplacements, bReplacements);
+    // A side whose every edit the other's result already holds, such as a
+    // letter the other typed another way, adds nothing. A rebase over the
+    // shared lines would type that letter twice.
+    if (shared && keptIn(b, afterB, afterA)) {
+      return {
+        a: RootChange.between(afterB, afterA),
+        b: RootChange.empty(afterA.length),
+      };
+    }
+    if (shared && keptIn(a, afterA, afterB)) {
+      return {
+        a: RootChange.empty(afterB.length),
+        b: RootChange.between(afterA, afterB),
+      };
+    }
+    const rebaseAfterShared = (edits: ReadonlyMap<string, SharedEdit>) => {
+      const rest = RootChange.transformInDocument(
+        overSharedEdits(a, edits),
+        overSharedEdits(b, edits),
+        RootChange.create(
+          document,
+          [...edits.values()].map(({ from, merged, to }) => ({
+            from,
+            insert: merged,
+            to,
+          }))
+        ).apply(document),
+        { keepEqualEdits, replay }
+      );
+
+      return {
+        ...rest,
+        a: resultToSharedDocument(b, edits, 'second').compose(rest.a),
+        b: resultToSharedDocument(a, edits, 'first').compose(rest.b),
+      };
+    };
+
+    // Different blocks at one place go in the first side's first only in the
+    // sameEdit branch below. Elsewhere, as when an undo puts back a quote
+    // beside a teammate's new line at the quote's old place, they rebase as
+    // plain inserts, and the repairs after them keep the quote first.
+    const sameShared =
+      shared && new Map([...shared].filter(([, { kind }]) => kind === 'same'));
+
+    if (sameShared?.size) return rebaseAfterShared(sameShared);
+
+    const transformed = RootChange.transform(a, b, replayBase);
     const aChangesStructure = !sameDocumentStructure(
       document.value,
       afterA.value
@@ -4251,18 +4482,7 @@ export class RootChange {
       sharesStructuralStart &&
       sameEdit()
     ) {
-      if (
-        aPropertyChanges.length === 0 &&
-        bPropertyChanges.length === 0 &&
-        insertsDisjointBlocksAtSameStarts(
-          document,
-          aReplacements,
-          bReplacements
-        ) &&
-        convergesOn(transformed, afterA, afterB)
-      ) {
-        return transformed;
-      }
+      if (shared) return rebaseAfterShared(shared);
 
       const keepsReplayedWrap =
         replay !== undefined &&
