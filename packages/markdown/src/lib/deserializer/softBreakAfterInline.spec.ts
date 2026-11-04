@@ -11,19 +11,32 @@ describe('soft break after an inline node', () => {
     ['link', 'a [link](https://x.dev)\nb\n', 'a link\nb'],
     ['emphasis', 'a *em*\nb\n', 'a em\nb'],
     ['inline code', 'a `code`\nb\n', 'a code\nb'],
-    ['plain text', 'a\nb\n', 'a\nb'],
   ])('keeps the line ending after %s', (_name, input, expected) => {
     const [paragraph] = deserializeMd(editor, input);
 
     expect(getText(paragraph)).toBe(expected);
   });
 
-  it('keeps a single newline after a <br> in a blockquote', () => {
-    const [blockquote] = deserializeMd(
-      editor,
-      '> Blockquote line1<br>\n> Blockquote line2'
-    );
+  it.each([
+    [
+      'a blockquote',
+      '> Blockquote line1<br>\n> Blockquote line2',
+      'Blockquote line1\nBlockquote line2',
+    ],
+    ['bold', '**a<br>\nb**\n', 'a\nb'],
+    ['bold that ends with it', '**a<br>**\nb\n', 'a\nb'],
+    ['a link that ends with it', '[a<br>](https://x.dev)\nb\n', 'a\nb'],
+  ])('reads a <br> and the newline after it as one break in %s', (_name, input, expected) => {
+    const [block] = deserializeMd(editor, input);
 
-    expect(getText(blockquote)).toBe('Blockquote line1\nBlockquote line2');
+    expect(getText(block)).toBe(expected);
+  });
+
+  it('drops the newline after a raw <br> with attributes kept as text', () => {
+    const [block] = deserializeMd(editor, 'a<br class="x">\nb\n', {
+      withoutMdx: true,
+    });
+
+    expect(getText(block)).toBe('a<br class="x">b');
   });
 });
