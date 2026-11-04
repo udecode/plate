@@ -2342,6 +2342,7 @@ const collectDocumentNodes = (
 
 const mergeNestedChangeThroughStructuralRelocation = (
   nested: RootChange,
+  structural: RootChange,
   before: DocumentIndex,
   afterNested: DocumentIndex,
   afterStructural: DocumentIndex
@@ -2358,6 +2359,10 @@ const mergeNestedChangeThroughStructuralRelocation = (
   nested.iterChangedRanges((from, to) => changedRanges.push([from, to]));
   if (changedRanges.length === 0) return null;
 
+  const structuralRanges: Array<readonly [number, number]> = [];
+
+  structural.iterChangedRanges((from, to) => structuralRanges.push([from, to]));
+
   const afterNodes = collectDocumentNodes(afterStructural.value);
   const candidates = collectDocumentNodes(before.value)
     .filter(({ path }) => {
@@ -2370,6 +2375,16 @@ const mergeNestedChangeThroughStructuralRelocation = (
     .sort((left, right) => right.path.length - left.path.length);
 
   for (const candidate of candidates) {
+    const range = before.nodeRange(candidate.path);
+
+    if (
+      structuralRanges.every(
+        ([from, to]) => to <= range.from || range.to <= from
+      )
+    ) {
+      continue;
+    }
+
     const targets = afterNodes.filter(({ node }) =>
       jsonEqual(node, candidate.node)
     );
@@ -3530,6 +3545,7 @@ export class RootChange {
     const aThroughB = bChangesStructure
       ? mergeNestedChangeThroughStructuralRelocation(
           a,
+          b,
           document,
           afterA,
           afterB
@@ -3546,6 +3562,7 @@ export class RootChange {
     const bThroughA = aChangesStructure
       ? mergeNestedChangeThroughStructuralRelocation(
           b,
+          a,
           document,
           afterB,
           afterA

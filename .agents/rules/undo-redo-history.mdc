@@ -69,13 +69,11 @@ The gate finds 97, all under `history: 'merge'` and all from one cause:
 
 - **An explicit merge whose edit takes back its step's change keeps an empty step.** `Enter at a|1 ; Delete at a|1 [merge]` leaves the document as it was and one undo step. Its undo moves only the caret, a later appended paragraph from another peer drops the step, and after `wrap a ; unwrap a [merge]` the undo leaves no redo. 70 `history-caret`, 25 `history-group` and 2 `history-stack` entries.
 
-`--size=5` fails 144 cases and `--blocks=2 --size=5` 3,466. The deep runs read no baseline. Most hold an explicit merge. These classes have none:
+`--size=5` fails 142 cases and `--blocks=2 --size=5` 3,343. The deep runs read no baseline. Most hold an explicit merge. These classes have none:
 
 - **Another peer's appended paragraph drops an undo step.** On `paragraph("a") paragraph("b")`, `wrap a ; Backspace at b|0 ; remote append R` leaves one undo step of two. 215 `history-group` cases.
-- **A restored history refuses a step after another peer deletes a block.** `quote(paragraph("a") paragraph("b")) :: Enter at b|0 ; undo ; remote delete block 0.1` keeps a redo of the split, and `History.fromJSON` throws `Editor element "quote" at [0] cannot contain "text"` when it validates it. 86 `history-throws` cases.
+- **A restored history refuses a step after another peer deletes a block.** `quote(paragraph("a") paragraph("b")) :: Enter at b|0 ; undo ; remote delete block 0.1` keeps a redo of the split, and `History.fromJSON` throws `Editor element "quote" at [0] cannot contain "text"` when it validates it. 11 `history-throws` cases.
 - **An undo puts the caret in another peer's appended paragraph.** `paragraph("a") paragraph("b") :: Enter at a|0 ; select a|0..b|1 Backspace ; remote append R` undoes to a caret at `[2,0]`, not `[1,0]`. 36 `history-caret` cases.
-- **An undo after another peer appends a paragraph loses a quote that a Backspace joined.** `quote(paragraph("a")) quote(paragraph("b")) :: Backspace at a|1 ; Backspace at b|0 ; remote append R` undoes to `quote(paragraph(""))` beside `R`, and `b` is gone. 4 `history-undo` cases.
-- **An undo fails after another peer deletes the block it unwrapped.** `quote(paragraph("a")) quote(paragraph("b")) :: unwrap a ; remote delete block 0 ; undo` fails with `Editor element "quote" at [0] cannot contain "quote"`. 1 `history-failed` case.
 
 ## What a pass proves
 
