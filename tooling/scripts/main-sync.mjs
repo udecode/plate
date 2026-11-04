@@ -53,7 +53,7 @@ if (flag === '--set') {
 
   const row = rows.find((candidate) =>
     target.startsWith('#')
-      ? candidate[4].endsWith(`(${target})`)
+      ? candidate[4].includes(`(${target})`)
       : candidate[0].startsWith(target.slice(0, 10))
   );
 

@@ -11,7 +11,7 @@ export const mdastToSlate = (
   root.children = root.children.map((child) => {
     if (child.type === 'html' && /^<br\s*\/?>$/i.test(child.value)) {
       return {
-        children: [{ type: 'text', value: '\n' }],
+        children: [{ type: 'text', value: '' }],
         type: 'paragraph',
       };
     }

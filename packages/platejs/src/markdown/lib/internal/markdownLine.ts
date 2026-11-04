@@ -16,6 +16,7 @@ import type { DeserializeMdContext, MdMarks } from '../types';
 import { ReportedMarkdownFailureError } from './markdownDiagnostics';
 import { toMarkdownBlockContent } from './markdownDocument';
 import {
+  BARE_URL_HTML,
   readEmptyParagraphMarker,
   TRAILING_BREAK_HTML,
 } from './markdownIntrinsics';
@@ -42,7 +43,6 @@ const TEXT_MODE_COMMAND =
 const MATH_MODE_COMMAND =
   /^\\(?:[cdt]?frac|[dt]?binom|sqrt|(?:over|under)(?:line|brace|set)|wide(?:hat|tilde)|hat|tilde|bar|vec|dot|ddot|stackrel|boxed|math(?:bb|bf|cal|frak|it|rm|sf|tt)|boldsymbol|operatorname|textcolor)$/;
 const VERB_DELIMITERS = ['!', '+', '=', ':', ';', '/', '@', '#'];
-const URL_LITERAL = /^[a-z][a-z\d+.-]*:\S*$/i;
 
 const html = (value: string): Html => ({ type: 'html', value });
 
@@ -281,7 +281,7 @@ const lowerPhrasing = (
         if (!value.includes('|')) return [{ ...child, value }];
         // The link mapping writes a bare autolink literal as raw HTML, where a
         // character reference would change the URL.
-        if (URL_LITERAL.test(value)) {
+        if (BARE_URL_HTML.test(value)) {
           reportDestination(line);
 
           return [{ ...child, value: value.replaceAll('|', '%7C') }];

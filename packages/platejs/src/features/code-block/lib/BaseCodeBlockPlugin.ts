@@ -250,7 +250,7 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         node: 'code',
         decode: ({ node }) => ({
           ...(node.lang ? { language: node.lang } : {}),
-          children: [{ text: node.value || '' }],
+          children: [{ text: (node.value || '').replaceAll(/\r\n?/g, '\n') }],
           type,
         }),
         encode: ({ node, preserve }) => {

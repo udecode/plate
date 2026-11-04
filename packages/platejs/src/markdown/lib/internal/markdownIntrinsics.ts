@@ -19,12 +19,16 @@ import type {
 } from '../types';
 import { getMarkdownTagRepair } from './markdownTags';
 
-const LEADING_NEWLINE_REGEX = /^\n/;
+const LEADING_LINE_ENDING = /^(?:\r\n?|\n)/;
+const LINE_ENDING = /[\r\n]/;
+const LINE_ENDING_PARTS = /(\r\n?|\n)/;
 const BR_TAG = /<br\s*\/?>/gi;
 const ONLY_BR_TAGS = /^(?:\s*<br\s*\/?>)+\s*$/i;
 const LINE_ENDING_AT_END = /\r?\n$/;
 const HTML_COMMENT = /^\s*<!--[\s\S]*-->\s*$/;
 const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
+
+export const BARE_URL_HTML = /^[a-z][a-z\d+.-]*:\S*$/i;
 
 /** Markdown drops an empty paragraph, so the writer gives it this text. */
 const EMPTY_PARAGRAPH_TEXT = '\u200B';
@@ -68,6 +72,30 @@ const withoutTrailingBreakMarkup = (
   if (previous.type === 'break') return [...children.slice(0, -2), last];
   return children;
 };
+
+const endsWithBr = (node: MdRootContent | null | undefined): boolean => {
+  if (node && 'children' in node && node.children.length > 0) {
+    return endsWithBr(node.children.at(-1));
+  }
+
+  return node?.type === 'html' && ONLY_BR_TAGS.test(node.value);
+};
+
+const dropLineEndingAfterBr = (
+  value: string,
+  previousSibling: MdRootContent | null
+) =>
+  endsWithBr(previousSibling) ? value.replace(LEADING_LINE_ENDING, '') : value;
+
+const withUnmarkedLineEndings = (text: string, marks: MdMarks) =>
+  LINE_ENDING.test(text)
+    ? text
+        .split(LINE_ENDING_PARTS)
+        .filter(Boolean)
+        .map((part) =>
+          LINE_ENDING.test(part) ? { text: part } : { ...marks, text: part }
+        )
+    : { ...marks, text };
 
 /**
  * Language-level decoders every editor needs, even without feature plugins.
@@ -165,10 +193,16 @@ export const markdownIntrinsicDecoders = {
 
     return elements.length === 1 ? elements[0] : elements;
   },
-  text: (node: MdText, marks: MdMarks) => ({
-    ...marks,
-    text: node.value.replace(LEADING_NEWLINE_REGEX, ''),
-  }),
+  text: (
+    node: MdText,
+    marks: MdMarks,
+    _options: DeserializeMdContext,
+    previousSibling: MdRootContent | null
+  ) =>
+    withUnmarkedLineEndings(
+      dropLineEndingAfterBr(node.value, previousSibling),
+      marks
+    ),
 };
 
 export const getMarkdownParagraphLanding = (
@@ -182,6 +216,26 @@ export const getMarkdownParagraphLanding = (
   const facts = schema.element(block.type);
 
   return facts?.content?.allowsText && !facts.behavior.void ? block : null;
+};
+
+/**
+ * A bare URL takes in a backslash written right after it, and a hard break
+ * starts with one. So a URL that ends a line is written as a link, which the
+ * writer puts in angle brackets.
+ */
+const withEndingUrlAsLink = (nodes: MdRootContent[]): MdRootContent[] => {
+  const last = nodes.at(-1);
+
+  if (last?.type !== 'html' || !BARE_URL_HTML.test(last.value)) return nodes;
+
+  return [
+    ...nodes.slice(0, -1),
+    {
+      children: [{ type: 'text', value: last.value }],
+      type: 'link',
+      url: last.value,
+    },
+  ];
 };
 
 /** The `<br />` that keeps a paragraph's trailing line break, after its line ending. */
@@ -233,10 +287,14 @@ export const encodeMarkdownParagraph = (
     modelLocation: (child) =>
       options.modelLocation(origins.get(child) ?? child),
   };
-  const children = lines.flatMap((line, index): MdRootContent[] => [
-    ...(index > 0 ? [{ type: 'break' } as const] : []),
-    ...convertNodesSerialize(line, lineOptions),
-  ]);
+  const children = lines.flatMap((line, index): MdRootContent[] => {
+    const nodes = convertNodesSerialize(line, lineOptions);
+
+    return [
+      ...(index > 0 ? [{ type: 'break' } as const] : []),
+      ...(index < lines.length - 1 ? withEndingUrlAsLink(nodes) : nodes),
+    ];
+  });
 
   if (lines.length > 1 && lines.at(-1)?.length === 0) {
     for (let index = children.length - 2; index >= 0; index -= 1) {
