@@ -18,7 +18,7 @@ Every command below is `node .agents/pstack/decisions-check.mjs <command>`, run 
 | [Start](#start) | begin a task a card opened, in the card's session |
 | [Drop](#drop) | record the owner's word to drop a task |
 
-pstack calls these modes too. Where a pstack step files a tracked issue, a follow-up or a reflect Backlog item, or puts an out-of-band fix in its own PR, the lead runs Offer instead for a new P0 or P1 finding, or in a verdict or babysit run, and otherwise lists the item in the plan's Open work, as chips.md's Offer says. It runs a sweep only on `/chips`, as chips.md's Sweep says, and Close at the last hand-back of a run that offered a task, never after a sweep, whose card pass replaces it. A question about open chips, such as "what's next" over side work, runs steps 1 and 6 without step 1's cleanup, logs no row and offers no card.
+pstack calls these modes too. Where a pstack step files a tracked issue, a follow-up or a reflect Backlog item, or puts an out-of-band fix in its own PR, the lead runs Offer instead for a new P0 or P1 finding, for an item the run's verdict judges or for any finding in a babysit run, and otherwise lists the finding in the plan's Open work, as chips.md's Offer says. It runs a sweep only on `/chips`, as chips.md's Sweep says, and Close at the last hand-back of a run that offered a task, never after a sweep, whose card pass replaces it. A question about open chips, such as "what's next" over side work, runs steps 1 and 6 without step 1's cleanup, logs no row and offers no card.
 
 ## Sweep
 
@@ -48,7 +48,7 @@ pstack calls these modes too. Where a pstack step files a tracked issue, a follo
 
 ## Offer
 
-Offer only a new P0 or P1 finding, unless the run is a verdict or babysit run or the finding is a measurement the Time budget rule sends here, as chips.md's Offer says. List any other finding in the plan's Open work, or in the reply when the run keeps no plan. A project hook that finds recurring work due offers its own P2 or P3 task with `via: hook` without this mode, and the session it stops runs [Close](#close) on that task.
+Offer only a new P0 or P1 finding, unless it is an item the run's verdict judges, a finding in a babysit run or a measurement the Time budget rule sends here, as chips.md's Offer says. List any other finding in the plan's Open work, or in the reply when the run keeps no plan. A project hook that finds recurring work due offers its own P2 or P3 task with `via: hook` without this mode, and the session it stops runs [Close](#close) on that task.
 
 1. Run `chips --session <id>` first, and read the brief of each open task whose topic or title touches the finding with `chips brief <id>`.
 2. Pick the row as chips.md's Offer says:
