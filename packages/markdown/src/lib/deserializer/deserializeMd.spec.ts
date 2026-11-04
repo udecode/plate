@@ -314,6 +314,18 @@ describe('deserializeMd', () => {
     ]);
   });
 
+  it.each([
+    ['CRLF', '\r\n'],
+    ['CR', '\r'],
+  ])('reads %s line endings as LF [plate#5322] [plate#5323]', (_name, lineEnding) => {
+    const editor = createTestEditor();
+    const lf = '```ts\nconst x = 1;\nconsole.log(x)\n```\n\nline 1\nline 2\n';
+
+    expect(deserializeMd(editor, lf.replaceAll('\n', lineEnding))).toEqual(
+      deserializeMd(editor, lf)
+    );
+  });
+
   it('deserializes raw markdown headings across multiple depths', () => {
     const editor = createTestEditor();
 
