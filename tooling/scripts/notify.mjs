@@ -37,6 +37,65 @@ const commandSpans = (text) =>
     .map(([, span]) => span.trim())
     .filter((span) => SHELL.test(span));
 
+const gitDirs = () => {
+  const { companion } = readProject();
+  return [
+    [],
+    ...(existsSync(companion.dir)
+      ? [[`--git-dir=${companion.dir}`, '--work-tree=.']]
+      : []),
+  ];
+};
+
+const git = (dir, args) =>
+  spawnSync('git', [...dir, ...args], { encoding: 'utf-8' }).stdout.trim();
+
+const commitLink = (repo, sha, text) =>
+  `[${text}](<https://github.com/${repo}/commit/${sha}>)`;
+
+const CODE_SPAN_LINK_OR_URL =
+  /`[^`\n]*`|\[[^\]\n]*\]\([^)\n]*\)|<?https?:\/\/[^\s>]+>?/u;
+const HEX_WORD = /(?<![\w./#-])[0-9a-f]{7,40}(?![\w/-]|\.\w)/u;
+const MENTION = new RegExp(
+  `(${CODE_SPAN_LINK_OR_URL.source})|(${HEX_WORD.source})`,
+  'gu'
+);
+const namesCommit = (word) => /[a-f]/u.test(word);
+
+const linkCommits = (text) => {
+  const repos = gitDirs().flatMap((dir) => {
+    const repo = /github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/u.exec(
+      git(dir, ['remote', 'get-url', 'origin'])
+    )?.[1];
+    return repo ? [{ dir, repo }] : [];
+  });
+  const missing = [];
+  const linked = text.replace(MENTION, (whole, kept, hash) => {
+    if (kept || !namesCommit(hash)) return whole;
+    for (const { dir, repo } of repos) {
+      const sha = git(dir, [
+        'rev-parse',
+        '--verify',
+        '--quiet',
+        `${hash}^{commit}`,
+      ]);
+      const pushed =
+        sha &&
+        git(dir, [
+          'for-each-ref',
+          '--count=1',
+          '--contains',
+          sha,
+          'refs/remotes/origin',
+        ]);
+      if (pushed) return commitLink(repo, sha, hash);
+    }
+    missing.push(hash);
+    return whole;
+  });
+  return { linked, missing };
+};
+
 const TEAM_START = /^(?<kind>Team|Team-Action):[ \t]*(?<text>\S.*?)[ \t]*$/u;
 const TRAILER = /^(?:[A-Z][\w-]*|Beyond the ask):[ \t]/u;
 
@@ -160,6 +219,13 @@ const send = async (args) => {
       `the text hands a teammate ${handed.map((span) => `\`${span}\``).join(', ')} to run, but teammates work through Claude; say what to ask Claude for instead, then send again.`
     );
   }
+  const { linked, missing } = linkCommits(text);
+  if (missing.length > 0) {
+    fail(
+      1,
+      `the text names ${missing.join(', ')}, but neither this checkout nor its companion has pushed a commit with that hash; write each as a link, [<hash>](https://github.com/<owner>/<repo>/commit/<sha>), or put a word that names no commit in backticks, then send again.`
+    );
+  }
 
   const config = readConfig();
   const team = recipients(config);
@@ -170,7 +236,7 @@ const send = async (args) => {
       `${to} is not on the team: add their GitHub login, role and Discord user ID to team in .agents/pstack.json`
     );
   }
-  const body = message(recipient, text);
+  const body = message(recipient, linked);
   checkLength([body]);
 
   const path = statePath();
@@ -203,7 +269,7 @@ const landed = async (args) => {
     'Team-Action': recipients(config).dev,
   };
   const messages = (event.commits ?? []).flatMap((commit) => {
-    const link = ` ([${commit.id.slice(0, 7)}](<https://github.com/${event.repository.full_name}/commit/${commit.id}>))`;
+    const link = ` (${commitLink(event.repository.full_name, commit.id, commit.id.slice(0, 7))})`;
     return teamLines(commit.message).map(({ kind, text }) =>
       message(kinds[kind], `${text}${link}`)
     );
@@ -223,18 +289,12 @@ const landed = async (args) => {
 // before it pushes, so a Team line that would hand teammates a command never posts.
 const check = (args) => {
   if (args.length !== 0) fail(2, USAGE);
-  const { branch, companion } = readProject();
-  const gits = [
-    [],
-    ...(existsSync(companion.dir)
-      ? [[`--git-dir=${companion.dir}`, '--work-tree=.']]
-      : []),
-  ];
+  const { branch } = readProject();
   const landing = new Set(
-    gits.flatMap((git) => {
+    gitDirs().flatMap((dir) => {
       const run = spawnSync(
         'git',
-        [...git, 'log', '--format=%B%x00', `origin/${branch}..HEAD`],
+        [...dir, 'log', '--format=%B%x00', `origin/${branch}..HEAD`],
         { encoding: 'utf-8' }
       );
       if (run.status !== 0) {
