@@ -991,13 +991,34 @@ export function setListTracking(
   listNumberingByLevel.set(key, numberingId);
 }
 
+// Plate's static void elements hold their empty text in a hidden spacer span,
+// which would otherwise become a paragraph holding only U+FEFF.
+const dropVoidSpacers = (tree: VTree): VTree => {
+  for (const node of Array.isArray(tree) ? tree : [tree]) {
+    if (!isVNode(node)) continue;
+    const vNode = node as VNodeType;
+
+    if (!vNode.children) continue;
+    vNode.children = vNode.children.filter(
+      (child) =>
+        !(
+          isVNode(child) &&
+          (child as VNodeType).properties?.attributes?.['data-slate-spacer']
+        )
+    );
+    dropVoidSpacers(vNode.children);
+  }
+
+  return tree;
+};
+
 async function renderDocumentFile(
   docxDocumentInstance: DocxDocumentInstance
 ): Promise<XMLBuilderType> {
   // Reset list tracking at the start of each document render
   resetListTracking();
 
-  const vTree = convertHTML(docxDocumentInstance.htmlString);
+  const vTree = dropVoidSpacers(convertHTML(docxDocumentInstance.htmlString));
 
   const xmlFragment = fragment({ namespaceAlias: { w: namespaces.w } });
 
