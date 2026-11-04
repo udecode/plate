@@ -1,0 +1,22 @@
+---
+description: Send a Discord message as plate-bot to a teammate or the dev role in the team channel, in the team's house style. Use for /notify, for telling or pinging a teammate, for answering a teammate's pasted Discord message, and for every team message a playbook or rule has a session send, such as a retest notice.
+argument-hint: <github-login | dev> <what to say> | <pasted Discord message>
+name: notify
+metadata:
+  skiller:
+    source: .agents/rules/notify.mdc
+---
+
+# Notify
+
+Send $ARGUMENTS as plate-bot. A message only the team can read proceeds without asking, as `AGENTS.md`'s Team rules say, so draft it, send it and report it.
+
+1. Pick the recipient. It is a GitHub login on `team` in `.agents/pstack.json`, or `dev` to ping every teammate. A pasted Discord message goes back to its author. When the person is not on `team`, stop and say so, because the send refuses them.
+2. Draft the text in the voice of `.agents/pstack/rules/writing.md`, as one post for a teammate with no summary block and no link list. The reader is a teammate who works through Claude.
+   - Lead with the result, then the one thing the reader does.
+   - Name an issue or PR as a Markdown link with its number and title, such as `[#132 <title>](<url>)`. Read the title with `gh issue view <N> --repo <owner/repo> --json title -q .title`. When a comment asks the reader to act, such as a retest request, link that comment's URL.
+   - Leave out what the reader already knows, such as "on beta" in a retest notice, because every retest runs on beta.
+   - When the reader must act, name the skill command that does it, such as `/triage retest plate-private#132`. Say what to ask Claude for only when no skill does it. A shell command never goes in the text, and the send refuses one in backticks.
+3. Write the text to a file in the run directory or the scratchpad. Run `node .agents/pstack/writing-check.mjs <file>` and fix each line it prints.
+4. Send it with `node tooling/scripts/notify.mjs send --to <login or dev> "$(cat <file>)"`. Write it as `$(cat <file>)` even when the text looks plain, because an issue title can hold a backtick or `$`. Never use `pnpm notify send`, because pnpm hands its arguments to `sh` inside double quotes, so each backticked span or `$` in the text runs as a command. The send links each commit hash in the text to that commit on GitHub. It refuses a hash that neither this checkout nor its companion has pushed, so write the link yourself for a commit of another repository. A post holds at most Discord's 2,000 characters, so split a longer text into several files and send each one.
+5. Tell the owner who got it and the exact text. When the command prints `skipped:`, say so instead, because the same text went to that person in the last 24 hours.
