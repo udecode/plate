@@ -91,6 +91,7 @@ import {
   noSetProperties,
   projectYjsRoot,
   yjsKeyStorageOf,
+  type YjsJoinMark,
   type YjsTextAdmission,
   type YjsWrite,
 } from './document';
@@ -124,6 +125,7 @@ import {
   YJS_HIDDEN_KEY,
   YJS_JOINED_AFTER_KEY,
   YJS_JOINED_BEFORE_KEY,
+  YJS_JOINED_END_KEY,
   YJS_NODE_ID_KEY,
   YJS_VIRTUAL_CHILD_ID_KEY,
   YJS_VIRTUAL_PLACEHOLDER_KEY,
@@ -2239,14 +2241,13 @@ const eventNormalizationTargets = (batch: CapturedYjsEventBatch) => {
 };
 
 type JoinWrite = Readonly<{
-  /** The node each joined line's concurrent appends follow, once placed. */
-  anchors: ReadonlyMap<YjsNode, YjsNode>;
   edit: () => void;
   joined: readonly number[];
   joinedLine: Y.XmlElement;
   lines: ReadonlyArray<readonly number[]>;
   parent: Y.XmlElement;
   place: () => void;
+  places: ReadonlyMap<YjsNode, YjsJoinMark>;
   removed: readonly YjsNode[];
 }>;
 
@@ -3215,7 +3216,7 @@ export class YjsEventChangeBridge {
     for (const { parent, removed } of planned) {
       removals.set(parent, [...(removals.get(parent) ?? []), ...removed]);
     }
-    const anchors = new Map(planned.flatMap((join) => [...join.anchors]));
+    const places = new Map(planned.flatMap((join) => [...join.places]));
 
     for (const [parent, nodes] of removals) {
       const visible = this.visibleChildrenOf(parent);
@@ -3225,8 +3226,8 @@ export class YjsEventChangeBridge {
 
       for (const [index, node] of indexes) {
         if (index === -1) continue;
-        if (anchors.has(node) && node instanceof Y.XmlElement) {
-          removeJoinedYjsLine(write, parent, index, node, anchors);
+        if (places.has(node) && node instanceof Y.XmlElement) {
+          removeJoinedYjsLine(write, parent, index, node, places);
         } else if (
           !removeYjsVirtualPlaceholderChild(write, parent, index, node)
         ) {
@@ -3398,7 +3399,7 @@ export class YjsEventChangeBridge {
     }
 
     const [yjsLines] = yjsLevels;
-    const anchors = new Map<YjsNode, YjsNode>();
+    const places = new Map<YjsNode, YjsJoinMark>();
     const append = (line: Y.XmlElement, children: readonly YjsNode[]) => {
       let end = getYjsVisibleChildren(this.root, line).length;
 
@@ -3414,7 +3415,6 @@ export class YjsEventChangeBridge {
     };
 
     return {
-      anchors,
       edit: () => {
         for (const edit of edits) edit();
         this.removeLineChildren(write, gone);
@@ -3457,15 +3457,19 @@ export class YjsEventChangeBridge {
           if (heals) healYjsCut(head);
           append(innermost[0], moved);
           last = moved.at(-1) ?? last;
-          if (last) anchors.set(line, last);
+
+          const end = moved.length === 0 && !heals ? innermost[0] : null;
+
+          if (last || end) places.set(line, { anchor: last ?? null, end });
         }
 
         for (const [first, second] of yjsLevels.slice(0, -1)) {
           const anchor = getYjsVisibleChildren(this.root, first).at(-1);
 
-          if (anchor) anchors.set(second, anchor);
+          if (anchor) places.set(second, { anchor, end: null });
         }
       },
+      places,
       removed: [...yjsLines.slice(1), ...removed],
     };
   }
@@ -5723,17 +5727,20 @@ export class YjsEventChangeBridge {
             shown;
         }
 
-        const anchor =
-          shownBy === null &&
-          current instanceof Y.XmlElement &&
-          typeof current.getAttribute(YJS_JOINED_AFTER_KEY) === 'string'
-            ? projection.anchorOf(current)
+        const place =
+          shownBy === null && current instanceof Y.XmlElement
+            ? projection.placeOf(current)
             : null;
 
-        if (anchor) {
+        if (place) {
           shown =
-            this.addShownBlocks(anchor, blocks, visited, true, projection) ||
-            shown;
+            this.addShownBlocks(
+              place.kind === 'end' ? place.line : place.anchor,
+              blocks,
+              visited,
+              true,
+              projection
+            ) || shown;
         }
       }
       // A root placeholder's slot shows its target, wherever the target sits.
@@ -5798,6 +5805,7 @@ export class YjsEventChangeBridge {
           key === YJS_HIDDEN_KEY ||
           key === YJS_JOINED_AFTER_KEY ||
           key === YJS_JOINED_BEFORE_KEY ||
+          key === YJS_JOINED_END_KEY ||
           !YJS_CHILD_VISIBILITY_KEYS.has(key)
       )
     );

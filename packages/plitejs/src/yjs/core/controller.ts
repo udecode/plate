@@ -1162,7 +1162,7 @@ export class YjsController<
   }
 
   private roomFormat(): YjsSchemaMetadataFormat {
-    return this.placesVary() ? 7 : 6;
+    return this.placesVary() ? 9 : 8;
   }
 
   private placesVary(): boolean {

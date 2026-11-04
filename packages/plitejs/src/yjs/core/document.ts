@@ -19,6 +19,7 @@ import {
 } from './attributes';
 import {
   getJoinedYjsLines,
+  getYjsLinesJoinedAtEnd,
   hasJoinedYjsLines,
   noteJoinedYjsLine,
 } from './joined-lines';
@@ -30,6 +31,7 @@ import {
   YJS_HIDDEN_KEY,
   YJS_JOINED_AFTER_KEY,
   YJS_JOINED_BEFORE_KEY,
+  YJS_JOINED_END_KEY,
   YJS_NODE_ID_KEY,
   YJS_VIRTUAL_CHILD_ID_KEY,
   YJS_VIRTUAL_PLACEHOLDER_KEY,
@@ -1063,16 +1065,21 @@ type YjsTreeLookup = Readonly<{
   resolve: (id: string) => YjsNode | null;
 }>;
 
+type YjsJoinedPlace =
+  | Readonly<{ anchor: YjsNode; kind: 'strand' }>
+  | Readonly<{ kind: 'end'; line: Y.XmlElement }>;
+
 type YjsShownStep =
   | Readonly<{ kind: 'child'; parent: Y.XmlElement }>
   | Readonly<{ kind: 'slot'; placeholder: Y.XmlElement }>
-  | Readonly<{ kind: 'strand'; anchor: YjsNode }>
-  | Readonly<{ kind: 'virtual'; element: Y.XmlElement }>;
+  | Readonly<{ kind: 'virtual'; element: Y.XmlElement }>
+  | YjsJoinedPlace;
 
 const stepTarget = (step: YjsShownStep): YjsNode => {
   if (step.kind === 'child') return step.parent;
   if (step.kind === 'slot') return step.placeholder;
   if (step.kind === 'virtual') return step.element;
+  if (step.kind === 'end') return step.line;
 
   return step.anchor;
 };
@@ -1083,7 +1090,7 @@ const showsInsideStepTarget = (step: YjsShownStep): boolean =>
 type YjsWalkResult = 'continue' | 'stop';
 
 type YjsReferenceReads = Readonly<{
-  anchorOf: (line: Y.XmlElement) => YjsNode | null;
+  placeOf: (line: Y.XmlElement) => YjsJoinedPlace | null;
   referrerOf: (id: string) => Y.XmlElement | null;
 }>;
 
@@ -1134,6 +1141,17 @@ const compareYjsItemIds = (left: YjsNode, right: YjsNode): number => {
   if (!a || !b) return 0;
 
   return a.client === b.client ? a.clock - b.clock : a.client - b.client;
+};
+
+const endPositionOf = (host: YjsNode, line: Y.XmlElement): number => {
+  const id = line.getAttribute(YJS_NODE_ID_KEY);
+  const hosts =
+    typeof id === 'string' ? getYjsLinesJoinedAtEnd(line.doc, id) : [];
+
+  return (
+    getYjsLength(line) +
+    hosts.filter((other) => compareYjsItemIds(other, host) < 0).length
+  );
 };
 
 /** @internal */
@@ -1221,6 +1239,10 @@ export class YjsProjection {
     return this.readAnchor(line, this);
   }
 
+  placeOf(line: Y.XmlElement): YjsJoinedPlace | null {
+    return this.readPlace(line, this);
+  }
+
   shows(node: YjsNode): boolean {
     const read = new Set<YjsNode>();
 
@@ -1261,12 +1283,8 @@ export class YjsProjection {
     expanding = new Set<Y.XmlElement>()
   ): YjsWalkResult {
     const joined = hasJoinedYjsLines(node.doc);
-    const emit = (slot: YjsVisibleChildSlot): YjsWalkResult => {
-      visibleNodes.add(slot.node);
-      if (visit(slot) === 'stop') return 'stop';
-      if (!joined) return 'continue';
-
-      for (const host of this.strandHostsAfter(slot.node, expanding)) {
+    const expand = (hosts: readonly Y.XmlElement[]): YjsWalkResult => {
+      for (const host of hosts) {
         expanding.add(host);
 
         const result = this.walk(
@@ -1282,6 +1300,14 @@ export class YjsProjection {
       }
 
       return 'continue';
+    };
+    const emit = (slot: YjsVisibleChildSlot): YjsWalkResult => {
+      visibleNodes.add(slot.node);
+      if (visit(slot) === 'stop') return 'stop';
+
+      return joined
+        ? expand(this.strandHostsAfter(slot.node, expanding))
+        : 'continue';
     };
 
     if (!isVirtualYjsPlaceholder(node)) {
@@ -1309,7 +1335,7 @@ export class YjsProjection {
       if (emit({ node: shown, rawIndex }) === 'stop') return 'stop';
     }
 
-    return 'continue';
+    return joined ? expand(this.endHostsOf(node, expanding)) : 'continue';
   }
 
   virtualChildOf(
@@ -1358,6 +1384,25 @@ export class YjsProjection {
       .sort(compareYjsItemIds);
   }
 
+  private endHostsOf(
+    line: Y.XmlElement,
+    expanding: ReadonlySet<Y.XmlElement>
+  ): Y.XmlElement[] {
+    const id = line.getAttribute(YJS_NODE_ID_KEY);
+    const candidates =
+      typeof id === 'string' ? getYjsLinesJoinedAtEnd(line.doc, id) : [];
+
+    return candidates
+      .filter((host) => {
+        if (host === line || expanding.has(host)) return false;
+
+        const place = this.placeOf(host);
+
+        return place?.kind === 'end' && place.line === line;
+      })
+      .sort(compareYjsItemIds);
+  }
+
   private stepUp(node: YjsNode, reads: YjsReferenceReads): YjsShownStep | null {
     if (isDeletedYjsNode(node)) return null;
     if (isHiddenYjsNode(node)) {
@@ -1370,9 +1415,7 @@ export class YjsProjection {
           : { kind: 'virtual', element: shownBy };
       }
 
-      const anchor = node instanceof Y.XmlElement ? reads.anchorOf(node) : null;
-
-      return anchor && { anchor, kind: 'strand' };
+      return node instanceof Y.XmlElement ? reads.placeOf(node) : null;
     }
 
     const { parent } = node;
@@ -1406,6 +1449,8 @@ export class YjsProjection {
         position.push(VIRTUAL_YJS_CHILD_RAW_INDEX);
       } else if (step.kind === 'strand') {
         position.push(JOINED_LINE_POSITION);
+      } else if (step.kind === 'end') {
+        position.push(endPositionOf(current, step.line));
       }
       current = stepTarget(step);
     }
@@ -1413,7 +1458,7 @@ export class YjsProjection {
 
   private readsWhileResolving(resolving: Set<string>): YjsReferenceReads {
     const reads: YjsReferenceReads = {
-      anchorOf: (line) => this.readAnchor(line, reads),
+      placeOf: (line) => this.readPlace(line, reads),
       referrerOf: (id) =>
         this.lastPlacedReferrer(this.lookup.referrers(id), resolving, id),
     };
@@ -1463,6 +1508,39 @@ export class YjsProjection {
     resolving.delete(id);
 
     return shown;
+  }
+
+  private readPlace(
+    line: Y.XmlElement,
+    reads: YjsReferenceReads
+  ): YjsJoinedPlace | null {
+    const anchor = this.readAnchor(line, reads);
+    const endId = line.getAttribute(YJS_JOINED_END_KEY);
+
+    if (typeof endId !== 'string') {
+      return anchor ? { anchor, kind: 'strand' } : null;
+    }
+
+    const anchorId = anchor?.getAttribute(YJS_NODE_ID_KEY);
+    const unshown =
+      anchor !== null &&
+      isHiddenYjsNode(anchor) &&
+      (typeof anchorId !== 'string' || reads.referrerOf(anchorId) === null);
+
+    if (anchor && !unshown) return { anchor, kind: 'strand' };
+
+    const lineId = line.getAttribute(YJS_NODE_ID_KEY);
+
+    if (
+      !isHiddenYjsNode(line) ||
+      (typeof lineId === 'string' && reads.referrerOf(lineId) !== null)
+    ) {
+      return null;
+    }
+
+    const into = this.lookup.resolve(endId);
+
+    return into instanceof Y.XmlElement ? { kind: 'end', line: into } : null;
   }
 
   private readAnchor(
@@ -2081,6 +2159,11 @@ const materializeYjsStrands = (
   };
 };
 
+export type YjsJoinMark = Readonly<{
+  anchor: YjsNode | null;
+  end: Y.XmlElement | null;
+}>;
+
 /**
  * Removes `line`, the `index`th child `parent` shows, for a join, and keeps
  * it as a joined line: a peer may still append to it, and Yjs drops an insert
@@ -2091,7 +2174,7 @@ export const removeJoinedYjsLine = (
   parent: Y.XmlElement,
   index: number,
   line: Y.XmlElement,
-  anchors: ReadonlyMap<YjsNode, YjsNode>
+  places: ReadonlyMap<YjsNode, YjsJoinMark>
 ): void => {
   if (!removeYjsVirtualPlaceholderChild(write, parent, index, line)) {
     const slot = projectYjsRoot(write.root).slotAt(parent, index);
@@ -2103,22 +2186,13 @@ export const removeJoinedYjsLine = (
     else writeYjsVisibility(write, parent, YJS_VIRTUAL_CHILD_ID_KEY, null);
   }
 
-  markJoinedYjsLine(write, line, anchors);
+  markJoinedYjsLine(write, line, places);
 };
 
-/**
- * Keeps `line`, which a join hid, as a joined line: a peer's concurrent
- * appends to it show right after its anchor in `anchors`, the last child the
- * line it joined into shows once the join placed `line`'s children. It first
- * deletes each child `line` still shows, hides one that holds what the join
- * moved, and marks one the join joined one level in the same way. Then it
- * deletes the other joined lines that show nothing and whose children would
- * show at the same place, so Enter and join cycles at one place keep one.
- */
 const markJoinedYjsLine = (
   write: YjsWrite,
   line: Y.XmlElement,
-  anchors: ReadonlyMap<YjsNode, YjsNode>
+  places: ReadonlyMap<YjsNode, YjsJoinMark>
 ): void => {
   const projection = projectYjsRoot(write.root);
 
@@ -2129,15 +2203,15 @@ const markJoinedYjsLine = (
       ? projection.slotNodeOf(child)
       : null;
 
-    if (target instanceof Y.XmlElement && anchors.has(target)) {
+    if (target instanceof Y.XmlElement && places.has(target)) {
       deleteYjsChildren(write, line, rawIndexIn(line, child), 1);
-      markJoinedYjsLine(write, target, anchors);
+      markJoinedYjsLine(write, target, places);
       continue;
     }
     if (isHiddenYjsNode(child)) continue;
-    if (child instanceof Y.XmlElement && anchors.has(child)) {
+    if (child instanceof Y.XmlElement && places.has(child)) {
       hideShownYjsElement(write, child);
-      markJoinedYjsLine(write, child, anchors);
+      markJoinedYjsLine(write, child, places);
       continue;
     }
     if (
@@ -2152,7 +2226,31 @@ const markJoinedYjsLine = (
     deleteYjsChildren(write, line, rawIndexIn(line, child), 1);
   }
 
-  const anchor = getDefined(anchors.get(line));
+  const { anchor, end: into } = getDefined(places.get(line));
+  const endId = into && ensureYjsNodeId(write, into);
+
+  if (endId) {
+    writeYjsVisibility(write, line, YJS_JOINED_END_KEY, endId);
+    noteJoinedYjsLine(line, YJS_JOINED_END_KEY, endId);
+  }
+  if (anchor === null) {
+    for (const host of endId ? getYjsLinesJoinedAtEnd(line.doc, endId) : []) {
+      const { parent } = host;
+
+      if (
+        host !== line &&
+        typeof host.getAttribute(YJS_JOINED_AFTER_KEY) !== 'string' &&
+        parent instanceof Y.XmlElement &&
+        !isDeletedYjsNode(parent) &&
+        isInertJoinedYjsLine(host, projection)
+      ) {
+        deleteYjsChildren(write, parent, rawIndexIn(parent, host), 1);
+      }
+    }
+
+    return;
+  }
+
   const text = anchor instanceof Y.XmlText ? anchor : null;
   const anchorId = ensureYjsNodeId(
     write,
@@ -2162,7 +2260,7 @@ const markJoinedYjsLine = (
 
   writeYjsVisibility(write, line, YJS_JOINED_AFTER_KEY, anchorId);
   if (end) writeYjsVisibility(write, line, YJS_JOINED_BEFORE_KEY, end);
-  noteJoinedYjsLine(line, anchorId);
+  noteJoinedYjsLine(line, YJS_JOINED_AFTER_KEY, anchorId);
 
   const marked = projectYjsRoot(write.root);
   const place = marked.anchorOf(line);
@@ -2194,7 +2292,8 @@ const isInertJoinedYjsLine = (
   if (
     !(node instanceof Y.XmlElement) ||
     !isHiddenYjsNode(node) ||
-    typeof node.getAttribute(YJS_JOINED_AFTER_KEY) !== 'string'
+    (typeof node.getAttribute(YJS_JOINED_AFTER_KEY) !== 'string' &&
+      typeof node.getAttribute(YJS_JOINED_END_KEY) !== 'string')
   ) {
     return false;
   }
@@ -2202,7 +2301,9 @@ const isInertJoinedYjsLine = (
   const id = node.getAttribute(YJS_NODE_ID_KEY);
 
   return (
-    (typeof id !== 'string' || projection.referrerOf(id) === null) &&
+    (typeof id !== 'string' ||
+      (projection.referrerOf(id) === null &&
+        getYjsLinesJoinedAtEnd(node.doc, id).length === 0)) &&
     getRawYjsChildren(node).every((child) =>
       isInertJoinedYjsLine(child, projection)
     )
@@ -2281,9 +2382,13 @@ export const insertYjsChild = (
   index: number,
   child: YjsNode
 ): void => {
+  const id = parent.getAttribute(YJS_NODE_ID_KEY);
+
   if (
     getYjsLength(parent) === 0 &&
-    typeof parent.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) !== 'string'
+    typeof parent.getAttribute(YJS_VIRTUAL_CHILD_ID_KEY) !== 'string' &&
+    (typeof id !== 'string' ||
+      getYjsLinesJoinedAtEnd(parent.doc, id).length === 0)
   ) {
     insertRawYjsChildren(write, parent, 0, [child]);
 

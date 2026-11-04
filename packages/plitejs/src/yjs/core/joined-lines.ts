@@ -1,26 +1,37 @@
 import * as Y from 'yjs';
 
-import { YJS_JOINED_AFTER_KEY } from './keys';
+import { YJS_JOINED_AFTER_KEY, YJS_JOINED_END_KEY } from './keys';
+
+type JoinedLineKey = typeof YJS_JOINED_AFTER_KEY | typeof YJS_JOINED_END_KEY;
 
 type JoinedLines = {
   /** How far each client's structs have been read. */
   readonly clocks: Map<number, number>;
   readonly lines: Map<string, Set<Y.XmlElement>>;
+  readonly ends: Map<string, Set<Y.XmlElement>>;
   /** Whether a transaction ended since the structs were last read. */
   stale: boolean;
 };
 
 const joinedLinesByDoc = new WeakMap<Y.Doc, JoinedLines>();
 
+const linesBy = (
+  known: JoinedLines,
+  key: JoinedLineKey
+): Map<string, Set<Y.XmlElement>> =>
+  key === YJS_JOINED_AFTER_KEY ? known.lines : known.ends;
+
 const noteLine = (
   known: JoinedLines,
   line: Y.XmlElement,
-  anchorId: string
+  key: JoinedLineKey,
+  id: string
 ): void => {
-  const lines = known.lines.get(anchorId);
+  const byId = linesBy(known, key);
+  const lines = byId.get(id);
 
   if (lines) lines.add(line);
-  else known.lines.set(anchorId, new Set([line]));
+  else byId.set(id, new Set([line]));
 };
 
 const readNewStructs = (doc: Y.Doc, known: JoinedLines): void => {
@@ -34,16 +45,17 @@ const readNewStructs = (doc: Y.Doc, known: JoinedLines): void => {
 
       if (
         !(struct instanceof Y.Item) ||
-        struct.parentSub !== YJS_JOINED_AFTER_KEY ||
+        (struct.parentSub !== YJS_JOINED_AFTER_KEY &&
+          struct.parentSub !== YJS_JOINED_END_KEY) ||
         !(struct.parent instanceof Y.XmlElement)
       ) {
         continue;
       }
 
-      const anchorId = struct.parent.getAttribute(YJS_JOINED_AFTER_KEY);
+      const id = struct.parent.getAttribute(struct.parentSub);
 
-      if (typeof anchorId === 'string') {
-        noteLine(known, struct.parent, anchorId);
+      if (typeof id === 'string') {
+        noteLine(known, struct.parent, struct.parentSub, id);
       }
     }
     known.clocks.set(client, to);
@@ -56,6 +68,7 @@ const joinedLinesOf = (doc: Y.Doc): JoinedLines => {
   if (known === undefined) {
     const created: JoinedLines = {
       clocks: new Map(),
+      ends: new Map(),
       lines: new Map(),
       stale: true,
     };
@@ -78,9 +91,10 @@ const joinedLinesOf = (doc: Y.Doc): JoinedLines => {
  */
 export const noteJoinedYjsLine = (
   line: Y.XmlElement,
-  anchorId: string
+  key: JoinedLineKey,
+  id: string
 ): void => {
-  if (line.doc !== null) noteLine(joinedLinesOf(line.doc), line, anchorId);
+  if (line.doc !== null) noteLine(joinedLinesOf(line.doc), line, key, id);
 };
 
 const readJoinedYjsLines = (doc: Y.Doc): JoinedLines => {
@@ -94,42 +108,46 @@ const readJoinedYjsLines = (doc: Y.Doc): JoinedLines => {
   return known;
 };
 
-/**
- * Whether an element of `doc` may carry `yjs:joined-after`. A read that finds
- * every line of an anchor gone forgets that anchor.
- */
-export const hasJoinedYjsLines = (doc: Y.Doc | null): boolean =>
-  doc !== null && readJoinedYjsLines(doc).lines.size > 0;
+export const hasJoinedYjsLines = (doc: Y.Doc | null): boolean => {
+  if (doc === null) return false;
 
-/**
- * The live elements of `doc` whose `yjs:joined-after` names `anchorId`. Each
- * write of the attribute adds a struct, so a read after a transaction ended
- * reads only the structs added since the last read.
- */
-export const getJoinedYjsLines = (
+  const known = readJoinedYjsLines(doc);
+
+  return known.lines.size > 0 || known.ends.size > 0;
+};
+
+const liveJoinedYjsLines = (
   doc: Y.Doc | null,
-  anchorId: string
+  key: JoinedLineKey,
+  id: string
 ): Y.XmlElement[] => {
   if (doc === null) return [];
 
-  const known = readJoinedYjsLines(doc);
-  const lines = known.lines.get(anchorId);
+  const byId = linesBy(readJoinedYjsLines(doc), key);
+  const lines = byId.get(id);
 
   if (lines === undefined) return [];
 
   const live: Y.XmlElement[] = [];
 
   for (const line of lines) {
-    if (
-      line.getAttribute(YJS_JOINED_AFTER_KEY) === anchorId &&
-      line._item?.deleted !== true
-    ) {
+    if (line.getAttribute(key) === id && line._item?.deleted !== true) {
       live.push(line);
     } else {
       lines.delete(line);
     }
   }
-  if (lines.size === 0) known.lines.delete(anchorId);
+  if (lines.size === 0) byId.delete(id);
 
   return live;
 };
+
+export const getJoinedYjsLines = (
+  doc: Y.Doc | null,
+  anchorId: string
+): Y.XmlElement[] => liveJoinedYjsLines(doc, YJS_JOINED_AFTER_KEY, anchorId);
+
+export const getYjsLinesJoinedAtEnd = (
+  doc: Y.Doc | null,
+  lineId: string
+): Y.XmlElement[] => liveJoinedYjsLines(doc, YJS_JOINED_END_KEY, lineId);

@@ -6,6 +6,7 @@ export const YJS_VIRTUAL_CHILD_ID_KEY = 'yjs:virtual-child-id';
 export const YJS_VIRTUAL_PLACEHOLDER_KEY = 'yjs:virtual-placeholder';
 export const YJS_JOINED_AFTER_KEY = 'yjs:joined-after';
 export const YJS_JOINED_BEFORE_KEY = 'yjs:joined-before';
+export const YJS_JOINED_END_KEY = 'yjs:joined-end';
 export const YJS_SET_VALUE_KEY_PREFIX = 'yjs:set:';
 export const YJS_SET_EDIT_KEY_PREFIX = 'yjs:set-edit:';
 export const YJS_MARK_KEY_PREFIX = 'yjs:mark:';
@@ -22,6 +23,7 @@ export const YJS_CHILD_VISIBILITY_KEYS: ReadonlySet<string> = new Set([
   YJS_VIRTUAL_PLACEHOLDER_KEY,
   YJS_JOINED_AFTER_KEY,
   YJS_JOINED_BEFORE_KEY,
+  YJS_JOINED_END_KEY,
 ]);
 
 export const YJS_ELEMENT_NODE_NAME = 'element';
