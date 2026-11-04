@@ -1697,6 +1697,7 @@ function milestoneFor(policy, milestone, state, head) {
         !policy.regressionOnly.includes(detail.get('scope'));
     return gates ? policy.milestone : policy.later;
   }
+  if (state === 'current' && head.outcome !== 'fixed') return policy.later;
   return betaMilestones(policy).includes(milestone) ? milestone : policy.later;
 }
 
