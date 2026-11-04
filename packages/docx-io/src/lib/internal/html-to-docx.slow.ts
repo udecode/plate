@@ -455,6 +455,44 @@ describe('htmlToDocxBlob', () => {
     });
 
     it.each([
+      'display: block',
+      'width: 800px; height: 800px',
+    ])('fits a table-cell image with %s within its column', async (style) => {
+      const image =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAAMgAQMAAADhvpQrAAAABlBMVEXlMzP////nT4D1AAAAZUlEQVR4nO3BMQEAAADCoPVPbQZ/oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHgMO68AAUDTJYcAAAAASUVORK5CYII=';
+      const html = `<table><tr><td><p>Before</p><p><img src="${image}" style="${style}"></p><p><strong>Caption</strong></p><p>After</p></td><td><p>Other cell</p></td></tr></table>`;
+      const zip = await loadZipFromBlob(await htmlToDocxBlob(html));
+      const docXml = await zip.file('word/document.xml')!.async('string');
+
+      expect(docXml).toContain('cx="2540000" cy="2540000"');
+    });
+
+    it.each([
+      'ul',
+      'ol',
+    ])('indents and fits an image under its %s item', async (tag) => {
+      const html = `<${tag}><li>One</li><li><p>Two</p><div><figure><img src="${image}" style="width: 600px; height: 240px"><figcaption><strong>Caption</strong></figcaption></figure></div></li><li>Three</li></${tag}>`;
+      const zip = await loadZipFromBlob(await htmlToDocxBlob(html));
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      const paragraphs =
+        docXml.match(/<w:p(?:\s[^>]*)?>[\s\S]*?<\/w:p>/g) ?? [];
+      const imageParagraph = paragraphs.find((paragraph) =>
+        paragraph.includes('<w:drawing>')
+      );
+
+      expect(imageParagraph).toContain('<w:ind w:left="360"/>');
+      expect(imageParagraph).toContain('cx="5257800" cy="2103120"');
+    });
+
+    it('fits a list image inside the table cell content area', async () => {
+      const html = `<table><tr><td><ul><li><p>Item</p><figure><img src="${image}" style="width: 600px; height: 240px"><figcaption>Caption</figcaption></figure></li></ul></td><td>Other</td></tr></table>`;
+      const zip = await loadZipFromBlob(await htmlToDocxBlob(html));
+      const docXml = await zip.file('word/document.xml')!.async('string');
+
+      expect(docXml).toContain('cx="2311400" cy="924560"');
+    });
+
+    it.each([
       'ul',
       'ol',
     ])('keeps continuation paragraphs and nesting in %s', async (tag) => {

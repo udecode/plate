@@ -164,7 +164,7 @@ const convertHTML = HTMLToVDOM({
 export const buildImage = async (
   docxDocumentInstance: DocxDocumentInstance,
   vNode: VNodeType,
-  maximumWidth: number | null = null
+  attributes: Parameters<typeof xmlBuilder.buildParagraph>[1] = {}
 ): Promise<XMLBuilderType | null> => {
   let response: MediaFileResponse | null = null;
   let base64Uri: string | null = null;
@@ -270,13 +270,17 @@ export const buildImage = async (
     const imageFragment = await xmlBuilder.buildParagraph(
       vNode,
       {
+        ...attributes,
         type: 'picture',
         inlineOrAnchored: true,
         relationshipId: documentRelsId,
         ...response,
         description: vNode.properties?.alt,
         maximumWidth:
-          maximumWidth || docxDocumentInstance.availableDocumentSpace,
+          (attributes.maximumWidth ||
+            docxDocumentInstance.availableDocumentSpace) -
+          (attributes.indentation?.left || 0) -
+          (attributes.indentation?.right || 0),
         originalWidth: imageProperties.width,
         originalHeight: imageProperties.height,
       },
@@ -316,7 +320,7 @@ export const buildFigure = async (
       const imageFragment = await buildImage(
         docxDocumentInstance,
         node,
-        attributes.maximumWidth || null
+        attributes
       );
       if (imageFragment) xmlFragment.import(imageFragment);
     } else if (node.tagName === 'figcaption') {
@@ -357,7 +361,8 @@ export const buildList = async (
   docxDocumentInstance: DocxDocumentInstance,
   xmlFragment: XMLBuilderType,
   existingNumberingId: number | null = null,
-  baseIndentLevel = 0
+  baseIndentLevel = 0,
+  maximumWidth = docxDocumentInstance.availableDocumentSpace
 ): Promise<void[]> => {
   const listElements: void[] = [];
 
@@ -380,6 +385,7 @@ export const buildList = async (
     const figure = getWrappedFigure(tempVNodeObject.node);
     if (figure) {
       await buildFigure(docxDocumentInstance, figure, xmlFragment, {
+        maximumWidth,
         indentation: { left: tempVNodeObject.level * 360 + 360 },
       });
     } else if (
@@ -393,8 +399,12 @@ export const buildList = async (
         tempVNodeObject.node,
         // Continuation paragraphs align with the item's text without another marker.
         tempVNodeObject.continuation
-          ? { indentation: { left: tempVNodeObject.level * 360 + 360 } }
+          ? {
+              maximumWidth: maximumWidth - tempVNodeObject.level * 360 - 360,
+              indentation: { left: tempVNodeObject.level * 360 + 360 },
+            }
           : {
+              maximumWidth: maximumWidth - tempVNodeObject.level * 360 - 360,
               numbering: {
                 levelId: tempVNodeObject.level,
                 numberingId: tempVNodeObject.numberingId,

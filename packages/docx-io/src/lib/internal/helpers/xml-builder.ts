@@ -1389,8 +1389,16 @@ const computeImageDimensions = (
     modifiedHeight = originalHeightInEMU;
   }
 
+  modifiedWidth ??= originalWidthInEMU;
+  modifiedHeight ??= originalHeightInEMU;
+  // Explicit CSS dimensions must respect the container, just like intrinsic sizes.
+  if (modifiedWidth > maximumWidthInEMU) {
+    modifiedHeight = Math.round(
+      (modifiedHeight * maximumWidthInEMU) / modifiedWidth
+    );
+    modifiedWidth = maximumWidthInEMU;
+  }
   attributes.width = modifiedWidth;
-
   attributes.height = modifiedHeight;
 };
 
@@ -1974,6 +1982,8 @@ const fixupTableCellBorder = (
   }
 };
 
+const TABLE_CELL_MARGIN = 160;
+
 type RowSpanInfo = {
   colSpan: number;
   rowSpan: number;
@@ -2059,6 +2069,12 @@ const buildTableCell = async (
   // It should only apply to the cell itself (tcPr), not text runs
   const paragraphAttributes = { ...modifiedAttributes };
   paragraphAttributes.backgroundColor = undefined;
+  paragraphAttributes.maximumWidth = Math.max(
+    1,
+    (modifiedAttributes.maximumWidth ||
+      docxDocumentInstance.availableDocumentSpace) -
+      TABLE_CELL_MARGIN * 2
+  );
 
   const importNestedTable = async (tableVNode: VNodeType) => {
     const nestedTableFragment = await buildTable(
@@ -2096,7 +2112,7 @@ const buildTableCell = async (
         const imageFragment = await buildImage(
           docxDocumentInstance,
           childVNode as VNodeType,
-          modifiedAttributes.maximumWidth || null
+          paragraphAttributes
         );
         if (imageFragment) {
           tableCellFragment.import(imageFragment);
@@ -2108,7 +2124,14 @@ const buildTableCell = async (
         // render list in table
         const listVn = childVNode as VNodeType;
         if (vNodeHasChildren(listVn)) {
-          await buildList(listVn, docxDocumentInstance, tableCellFragment);
+          await buildList(
+            listVn,
+            docxDocumentInstance,
+            tableCellFragment,
+            null,
+            0,
+            paragraphAttributes.maximumWidth
+          );
         }
       } else if (
         isVNode(childVNode) &&
@@ -2141,7 +2164,7 @@ const buildTableCell = async (
               const imageFragment = await buildImage(
                 docxDocumentInstance,
                 divChild as VNodeType,
-                modifiedAttributes.maximumWidth || null
+                paragraphAttributes
               );
               if (imageFragment) {
                 tableCellFragment.import(imageFragment);
@@ -2155,7 +2178,10 @@ const buildTableCell = async (
                 await buildList(
                   listVn,
                   docxDocumentInstance,
-                  tableCellFragment
+                  tableCellFragment,
+                  null,
+                  0,
+                  paragraphAttributes.maximumWidth
                 );
               }
             } else {
@@ -2534,7 +2560,7 @@ const buildTableProperties = (
       }
     });
   }
-  const tableCellMarginFragment = buildTableCellMargins(160);
+  const tableCellMarginFragment = buildTableCellMargins(TABLE_CELL_MARGIN);
   tablePropertiesFragment.import(tableCellMarginFragment);
 
   // by default, all tables are center aligned.
