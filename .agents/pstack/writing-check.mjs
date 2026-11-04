@@ -26,6 +26,10 @@ const FENCE = /^[\s>]*(?:(?:[-*+]|\d+[.)])\s+)?(`{3,}|~{3,})(.*)$/u;
 // length, and an escaped backtick outside a span opens none:
 // https://spec.commonmark.org/0.31.2/#code-spans, #backslash-escapes
 const SPAN = /\\.|(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)/gu;
+// A block quote marker is up to three spaces, a > and an optional space, and is
+// not text, so `> - item` is a list item:
+// https://spec.commonmark.org/0.31.2/#block-quotes
+const QUOTE = /^(?: {0,3}>[ \t]?)+(?= {0,3}(?:[-*+]|\d{1,9}[.)])[ \t])/u;
 
 function closedFences(lines) {
   const hidden = new Set();
@@ -49,7 +53,7 @@ export function findings(text) {
   const found = [];
   for (const [index, line] of lines.entries()) {
     if (hidden.has(index)) continue;
-    const prose = line.replace(SPAN, (match, run) => (run ? '' : match));
+    const prose = line.replace(QUOTE, (marks) => ' '.repeat(marks.length)).replace(SPAN, (match, run) => (run ? '' : match));
     for (const [rule, pattern] of RULES) {
       const match = pattern.exec(prose);
       if (match) found.push({ line: index + 1, rule, match: (match[1] ?? match[0]).trim(), text: line.trim() });
