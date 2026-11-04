@@ -158,6 +158,7 @@
     "**/node_modules",
     "dist",
     "**/dist",
+    "**/tmp-cli-*",
     "./packages/**/src/**/*.spec.*",
     "./packages/**/src/**/*.test.*",
     "./packages/**/src/**/*-contract.*"
