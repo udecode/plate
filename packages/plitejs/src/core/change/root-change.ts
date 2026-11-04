@@ -4064,7 +4064,9 @@ export class RootChange {
     const containsAll = (outer: Replacement, inner: readonly Replacement[]) =>
       inner.length > 0 &&
       inner.every((replacement) => contains(outer, replacement));
-    const getMove = (replacements: readonly Replacement[]) => {
+    const getMove = (
+      replacements: readonly Replacement[]
+    ): SiblingRunMove | null => {
       if (replacements.length !== 2) return null;
 
       const deletion = replacements.find(
@@ -4081,7 +4083,30 @@ export class RootChange {
       const source = document.nodeStartingAt(deletion.from);
       const target = document.childBoundaryAt(insertion.from);
 
-      if (!source || source.to !== deletion.to || !target) return null;
+      if (
+        !source ||
+        !target ||
+        insertion.insert.length !== deletion.to - deletion.from
+      ) {
+        return null;
+      }
+
+      const sourceParent = source.path.slice(0, -1);
+      const sourceNodes: JsonNode[] = [];
+
+      for (let at = deletion.from; at < deletion.to;) {
+        const node = document.nodeStartingAt(at);
+
+        if (
+          !node ||
+          node.to > deletion.to ||
+          pathKey(node.path.slice(0, -1)) !== pathKey(sourceParent)
+        ) {
+          return null;
+        }
+        sourceNodes.push(document.node(node.path));
+        at = node.to;
+      }
 
       let insertedNodes: readonly JsonNode[];
 
@@ -4091,36 +4116,32 @@ export class RootChange {
         return null;
       }
 
-      const sourceNode = document.node(source.path);
+      if (!jsonEqual(insertedNodes, sourceNodes)) return null;
 
-      if (
-        insertedNodes.length !== 1 ||
-        !jsonEqual(insertedNodes[0], sourceNode)
-      ) {
-        return null;
-      }
-
-      const sourceParent = source.path.slice(0, -1);
       const sourceIndex = getDefined(source.path.at(-1));
       const sameParent = pathKey(sourceParent) === pathKey(target.parentPath);
       const targetIndex =
         sameParent && sourceIndex < target.index
-          ? target.index - 1
+          ? target.index - sourceNodes.length
           : target.index;
 
       return {
+        count: sourceNodes.length,
         from: source.from,
         fromAfterMove:
           insertion.from >= deletion.to
             ? insertion.from - (deletion.to - deletion.from)
             : insertion.from,
+        insertAt: insertion.from,
         path: source.path,
-        to: source.to,
+        to: deletion.to,
         targetPath: [...target.parentPath, targetIndex],
       };
     };
-    const aMove = getMove(aReplacements);
-    const bMove = getMove(bReplacements);
+    const aRunMove = getMove(aReplacements);
+    const bRunMove = getMove(bReplacements);
+    const aMove = aRunMove?.count === 1 ? aRunMove : null;
+    const bMove = bRunMove?.count === 1 ? bRunMove : null;
     if (
       !keepEqualEdits &&
       aMove &&
@@ -4134,14 +4155,10 @@ export class RootChange {
       };
     }
 
-    // Edits of a node the other side moves, its own properties included, go
-    // where the node goes, found by the move's own ranges, so an equal twin
-    // cannot take them. Edits outside the node rebase over the move by
-    // position.
     const carryThroughMove = (
       edit: RootChange,
       moveChange: RootChange,
-      move: NonNullable<ReturnType<typeof getMove>>
+      move: SiblingRunMove
     ) => {
       if (
         pathKey(move.path) === pathKey(move.targetPath) ||
@@ -4169,11 +4186,12 @@ export class RootChange {
       ).embed(afterMove.length, move.fromAfterMove);
 
       if (parts.outside.empty && moveChange.propertyChanges().length === 0) {
-        return {
-          edit: carried,
-          move: moveNodeChange(afterEdit, move.path, move.targetPath),
-        };
+        const moved = moveChangeAfterEdit(afterEdit, move, edit);
+
+        if (moved) return { edit: carried, move: moved };
       }
+
+      if (move.count > 1) return null;
 
       const editAfterMove = carried.compose(
         RootChange.transform(
@@ -4188,14 +4206,20 @@ export class RootChange {
       };
     };
 
-    if (bMove && !aMove) {
-      const carried = carryThroughMove(a, b, bMove);
+    const carriesOver = (
+      move: SiblingRunMove | null,
+      other: SiblingRunMove | null
+    ): move is SiblingRunMove =>
+      !!move && (move.count === 1 ? other?.count !== 1 : !other);
+
+    if (carriesOver(bRunMove, aRunMove)) {
+      const carried = carryThroughMove(a, b, bRunMove);
 
       if (carried) return { a: carried.edit, b: carried.move };
     }
 
-    if (aMove && !bMove) {
-      const carried = carryThroughMove(b, a, aMove);
+    if (carriesOver(aRunMove, bRunMove)) {
+      const carried = carryThroughMove(b, a, aRunMove);
 
       if (carried) return { a: carried.move, b: carried.edit };
     }
@@ -5910,6 +5934,53 @@ export const updateNodePropertiesChange = (
     properties,
     to: range.from + 1,
   });
+};
+
+type SiblingRunMove = Readonly<{
+  count: number;
+  from: number;
+  fromAfterMove: number;
+  insertAt: number;
+  path: readonly number[];
+  targetPath: readonly number[];
+  to: number;
+}>;
+
+const moveChangeAfterEdit = (
+  afterEdit: DocumentIndex,
+  move: SiblingRunMove,
+  edit: RootChange
+) => {
+  const end = move.to + edit.newLength - edit.length;
+
+  if (move.count === 1 && afterEdit.nodeStartingAt(move.from)?.to === end) {
+    return moveNodeChange(afterEdit, move.path, move.targetPath);
+  }
+
+  if (end <= move.from) return null;
+
+  const parent = pathKey(move.path.slice(0, -1));
+  let at = move.from;
+
+  while (at < end) {
+    const node = afterEdit.nodeStartingAt(at);
+
+    if (!node || node.to > end || pathKey(node.path.slice(0, -1)) !== parent) {
+      return null;
+    }
+    at = node.to;
+  }
+
+  return RootChange.create(afterEdit, [
+    { from: move.from, to: end },
+    {
+      from:
+        move.insertAt >= move.to
+          ? move.insertAt + end - move.to
+          : move.insertAt,
+      insert: afterEdit.slice(move.from, end),
+    },
+  ]);
 };
 
 export const moveNodeChange = (
