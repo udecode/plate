@@ -4,9 +4,9 @@
 //        node .agents/pstack/page-stop.mjs --hook
 // Prints the Artifact publish that adds or updates this run's part of its
 // subject page, and the files to read in full before sending it. --base names
-// the page as the Artifact tool last returned it, such as the source a refused
-// publish saved; without it the helper starts from this checkout's last
-// publish. --new makes a new page for a subject whose page no longer opens.
+// the page as the Artifact tool last returned it; without it the helper starts
+// from this checkout's last publish. --new makes a new page for a subject whose
+// page no longer opens.
 // --hook reads a Claude Code PostToolUseFailure payload and, when a plan
 // page's publish failed because the page no longer opens, tells the lead to
 // rerun with --new.
@@ -107,7 +107,7 @@ function publish(command, planPath, { session, base: baseFile, fresh }) {
       : bound
         ? `This publish makes a new page: replace \`Page: ${bound}\` in ${target} with its URL, and give the plan the reply links a Defaults row that names the old and new links, as the plan-page skill says`
         : `This publish makes the page: write its URL as \`Page: <url>\` ${subjectPath ? 'under the title' : 'under the `Status:` line'} of ${target}`,
-    url ? `If the tool refuses the publish because the page changed, run this command again with --base <the source path the refusal saved> and send what it prints` : null,
+    url ? `If the tool refuses the publish and returns the page's live version, such as when this session has not viewed it or the page changed, run this command again with --base <the source path the refusal saved> and send what it prints. When the refusal saved no file, first read the page's index.html by path with the Artifact tool and pass the file that read saves` : null,
     url ? `If the tool says the page was deleted or is not found, as it also says after a switch to another claude.ai account, run this command again with --new and send what it prints, without asking` : null,
     command === 'stop' ? `Once the publish goes through, reply with 📄 ${url ?? '<url>'}#run-${header.slug}` : null,
   ].filter(Boolean);
