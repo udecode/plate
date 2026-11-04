@@ -60,7 +60,13 @@ import { findings } from './writing-check.mjs';
 
 const USAGE = 'Usage: node .agents/pstack/land.mjs [--message <file>] [--check <command>]... [--dry]';
 const SUBJECT = /^(feat|fix|docs|refactor|test|chore|perf)(\([^()\s]+\))?!?: \S(.*\S)?$/u;
-const BEYOND = /^Beyond the ask: \S/mu;
+const REQUIRED = [
+  ['Beyond the ask', 'name every change the request did not ask for'],
+  ['Picks', 'name each call the owner would notice, with the word that reverses it'],
+  ['Not checked', 'name what the proof did not check'],
+];
+const REQUIRED_LABELS = REQUIRED.map(([label]) => label).join('|');
+const withoutHtmlComments = (text) => text.replace(/<!--[\s\S]*?-->/gu, '');
 const SESSION = /^Session: \S/mu;
 const PLAN = /^Plan: \S/mu;
 const TRAILER = /^(?:Session|Plan|Lands-With): \S/u;
@@ -335,7 +341,10 @@ function validate(text) {
     fail(`the subject "${subject}" is not one Conventional Commit, \`type(scope): subject\` with type feat, fix, docs, refactor, test, chore or perf and no trailing period`);
   }
   if (rest.length > 0 && gap !== '') fail('a blank line must separate the subject from the body');
-  if (!BEYOND.test(rest.join('\n'))) fail('the body has no `Beyond the ask:` line; name every change the request did not ask for, or write `Beyond the ask: none`');
+  const body = rest.join('\n');
+  for (const [label, what] of REQUIRED) {
+    if (!new RegExp(`^${label}: \\S`, 'mu').test(withoutHtmlComments(body))) fail(`the body has no \`${label}:\` line; ${what}, or write \`${label}: none\`, then run land.mjs again with --message`);
+  }
   const broken = findings(text.replace(STAMP_LINES, ''));
   if (broken.length > 0) {
     fail(`the message breaks the Writing rule, as writing-check.mjs reads it:\n${broken.map(({ line, rule, match, text: shown }) => `  line ${line}, ${rule} "${match}": ${shown}`).join('\n')}\nReword each line, or put literal text in backticks, then run land.mjs again with --message.`);
@@ -346,7 +355,7 @@ function validate(text) {
     fail(`${JSON.stringify(closing[0])} closes an issue once it reaches the default branch, because a form of close, fix or resolve comes right before its reference; write \`${name}#<N>\`, which links nothing`);
   }
   if (SUBJECT.exec(subject)[1] === 'fix') introduced(rest.join('\n'));
-  return { subject, body: rest.join('\n').trim() };
+  return { subject, body: body.trim() };
 }
 
 function introduced(body) {
@@ -441,12 +450,10 @@ function sourceRefusal(subject, body, plan) {
 
 const paged = (plan) => plan && existsSync(plan) && existsSync('.agents/pstack/plan-page.mjs');
 
-// A heading counts only when text other than an HTML comment, such as the PR template's placeholder, follows it before the next heading or the Beyond the ask line.
+const sectionUntilNextHeadingOrRequiredLine = (body, name) =>
+  body.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |^(?:${REQUIRED_LABELS}):|(?![\\s\\S]))`, 'mu'))?.[1] ?? '';
 function missingSections(body) {
-  return PR_SECTIONS.filter((name) => {
-    const section = body.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |^Beyond the ask:|(?![\\s\\S]))`, 'mu'));
-    return !section || section[1].replace(/<!--[\s\S]*?-->/gu, '').trim() === '';
-  });
+  return PR_SECTIONS.filter((name) => sectionUntilNextHeadingOrRequiredLine(withoutHtmlComments(body), name).trim() === '');
 }
 
 // The PR body file and its --attach arguments: the plan's page when the task changes one plan, else the commit body.

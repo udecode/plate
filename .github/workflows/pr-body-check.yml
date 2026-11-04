@@ -40,10 +40,10 @@ jobs:
             const { data: pr } = await github.rest.pulls.get({ owner, repo, pull_number: number });
             // GitHub's editor saves CRLF, which the section match below would miss.
             const body = (pr.body ?? '').replace(/\r\n/g, '\n');
-            // The same test land.mjs runs before it opens a PR whose body is the commit body.
+            const uncommented = body.replace(/<!--[\s\S]*?-->/gu, '');
             const filled = (name) => {
-              const section = body.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |^Beyond the ask:|(?![\\s\\S]))`, 'mu'));
-              return Boolean(section) && section[1].replace(/<!--[\s\S]*?-->/gu, '').trim() !== '';
+              const section = uncommented.match(new RegExp(`^## ${name}[ \\t]*\\n([\\s\\S]*?)(?=^## |^(?:Beyond the ask|Picks|Not checked):|(?![\\s\\S]))`, 'mu'));
+              return Boolean(section) && section[1].trim() !== '';
             };
             const missing = [
               ...['Why', 'Verification'].filter((name) => !filled(name)).map((name) => `a \`## ${name}\` section with text`),

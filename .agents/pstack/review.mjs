@@ -4,8 +4,9 @@
 // Lists the commits on origin/<branch>, the branch .agents/pstack.json names,
 // since refs/pstack/reviewed, oldest first and grouped by the session each
 // commit's `Session:` line names, with a DiffsHub link to each, the plan the
-// message links under the config's plans directory, its `Beyond the ask:` line
-// and whether it shipped fast. It follows first parents, so a merged PR shows
+// message links under the config's plans directory, its `Beyond the ask:` line,
+// its `Picks:` and `Not checked:` lines when it has them, and whether it
+// shipped fast. It follows first parents, so a merged PR shows
 // as its merge commit. Without the ref it lists the last 20 commits.
 // --done <session> marks that session's listed commits reviewed, `none`
 // standing for commits without a Session: line, and moves the ref past the
@@ -57,6 +58,18 @@ const TIERS = ['public', 'internal'];
 const USAGE =
   'Usage: node .agents/pstack/review.mjs [--tier public|internal|all] [--net <session>] | --mark | --done <session> | --revert <session> [--stage] [--check <command>]...';
 const GLOB = { '**/': '(?:.*/)?', '**': '.*', '*': '[^/]*', '?': '[^/]' };
+const STOP = /^(?:(?:Session|Plan|Introduced-by|Beyond the ask|Picks|Not checked): |Shipped fast, no review\.$)/u;
+
+const labeled = (body, label) => {
+  const lines = body.split('\n');
+  const found = lines.flatMap((line, at) => {
+    if (!line.startsWith(`${label}:`)) return [];
+    let end = at + 1;
+    while (end < lines.length && lines[end].trim() !== '' && !STOP.test(lines[end])) end += 1;
+    return [lines.slice(at, end).join(' ')];
+  });
+  return found.length > 0 ? found.join(' ') : undefined;
+};
 
 const fail = (message, code = 1) => {
   console.error(`review.mjs: ${message}`);
@@ -167,7 +180,9 @@ const load = (repo) =>
         landsWith: body.match(/^Lands-With: (\S+)$/mu)?.[1],
         session: body.match(/^Session: (\S+)$/mu)?.[1] ?? 'none',
         plan: `${subject}\n${body}`.match(PLAN)?.[0] ?? 'No plan link',
-        beyond: body.match(/^Beyond the ask:.*(?:\n(?!(?:Session|Plan|Introduced-by): ).+)*/mu)?.[0].replaceAll('\n', ' ') ?? 'No Beyond the ask: line',
+        beyond: labeled(body, 'Beyond the ask') ?? 'No Beyond the ask: line',
+        picks: labeled(body, 'Picks'),
+        unchecked: labeled(body, 'Not checked'),
         fast: /^Shipped fast, no review\.$/mu.test(body),
       };
     });
@@ -260,7 +275,7 @@ for (const commit of listed) {
     const paired = listed.some((other) => other.sha === commit.landsWith && other.session === commit.session);
     lines.push(`    In ${commit.repo.name}${paired ? `, with ${commit.landsWith.slice(0, 7)}` : ''}`);
   }
-  lines.push(`    ${commit.plan}`, `    ${commit.beyond}`);
+  lines.push(...[commit.plan, commit.beyond, commit.picks, commit.unchecked].filter(Boolean).map((line) => `    ${line}`));
   const files = commit.files.filter((file) => file.tier === tier).map((file) => file.paths.at(-1));
   if (tier !== 'all' && files.length > 0) lines.push(`    ${files.length} ${tier} file(s): ${some(files)}`);
   if (commit.weak) lines.push(`    Tests: ${commit.weak}`);
@@ -333,9 +348,11 @@ function revert(session) {
       '',
       '## Verification',
       '',
-      checks.length > 0 ? `land.mjs ran ${checks.map((check) => `\`${check}\``).join(', ')} on the reverted tree before landing it.` : 'No check ran on the reverted tree, because review.mjs --revert got no --check.',
+      checks.length > 0 ? `land.mjs ran ${checks.map((check) => `\`${check}\``).join(', ')} on the reverted tree before landing it.` : "review.mjs --revert got no --check, so land.mjs ran only its lint fix and the config's landChecks on the reverted tree.",
       '',
       'Beyond the ask: none',
+      'Picks: none',
+      checks.length > 0 ? 'Not checked: none' : "Not checked: the reverted tree, beyond the lint fix and the config's landChecks",
       '',
       ...ours.map((commit) => `Introduced-by: ${commit.sha}`),
       '',

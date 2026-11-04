@@ -97,7 +97,7 @@ const linkCommits = (text) => {
 };
 
 const TEAM_START = /^(?<kind>Team|Team-Action):[ \t]*(?<text>\S.*?)[ \t]*$/u;
-const TRAILER = /^(?:[A-Z][\w-]*|Beyond the ask):[ \t]/u;
+const TRAILER = /^(?:[A-Z][\w-]*|Beyond the ask|Not checked):[ \t]/u;
 
 const teamLines = (message) => {
   const lines = [];

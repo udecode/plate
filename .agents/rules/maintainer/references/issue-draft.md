@@ -3,7 +3,7 @@
 Turn incomplete Plate `next`/Beta bug evidence into one concise, reproducible
 `udecode/plate-private` GitHub issue. A user request to publish the issue, or a
 Triage run that moves a repro's kind to a new issue, authorizes analysis, necessary
-evidence uploads, creation and read-back in one run.
+evidence uploads, creation and read-back in one run. Nothing else creates an issue: the leave in `.agents/pstack/rules/messages.md` to send a message only the team reads covers messages, not issues.
 
 `draft only`, `analyze only` and `do not publish` keep the result local.
 
