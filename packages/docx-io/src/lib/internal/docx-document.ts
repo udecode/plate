@@ -40,6 +40,7 @@ import type { DocumentMargins } from './schemas/document.template';
 import type { Spacing } from './types';
 import { fontFamilyToTableObject } from './utils/font-family-conversion';
 import ListStyleBuilder, {
+  getListTextIndent,
   type ListStyleDefaults,
   type ListStyleType,
 } from './utils/list';
@@ -782,11 +783,11 @@ class DocxDocument {
           .ele('@w', 'tabs')
           .ele('@w', 'tab')
           .att('@w', 'val', 'num')
-          .att('@w', 'pos', String(level * 360 + 360))
+          .att('@w', 'pos', String(getListTextIndent(level)))
           .up()
           .up()
           .ele('@w', 'ind')
-          .att('@w', 'left', String(level * 360 + 360))
+          .att('@w', 'left', String(getListTextIndent(level)))
           .att('@w', 'hanging', '360')
           .up()
           .up()

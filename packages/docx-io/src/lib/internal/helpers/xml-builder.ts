@@ -59,7 +59,7 @@ import { isValidUrl } from '../utils/url';
 import { vNodeHasChildren } from '../utils/vnode';
 // FIXME: remove the cyclic dependency
 // eslint-disable-next-line import/no-cycle
-import { buildImage, buildList } from './render-document-file';
+import { buildFigure, buildImage, buildList } from './render-document-file';
 
 // Types for Virtual DOM
 type VNodeProperties = {
@@ -1384,8 +1384,16 @@ const computeImageDimensions = (
     modifiedHeight = originalHeightInEMU;
   }
 
+  modifiedWidth ??= originalWidthInEMU;
+  modifiedHeight ??= originalHeightInEMU;
+  // Explicit CSS dimensions must respect the container, just like intrinsic sizes.
+  if (modifiedWidth > maximumWidthInEMU) {
+    modifiedHeight = Math.round(
+      (modifiedHeight * maximumWidthInEMU) / modifiedWidth
+    );
+    modifiedWidth = maximumWidthInEMU;
+  }
   attributes.width = modifiedWidth;
-
   attributes.height = modifiedHeight;
 };
 
@@ -1969,6 +1977,8 @@ const fixupTableCellBorder = (
   }
 };
 
+const TABLE_CELL_MARGIN = 160;
+
 type RowSpanInfo = {
   colSpan: number;
   rowSpan: number;
@@ -1978,17 +1988,27 @@ type ColumnIndex = {
   index: number;
 };
 
-// Static table markup wraps a table in single-child divs.
-const getWrappedTable = (
-  vNode: VNodeType | VTextType
+const isVoidSpacer = (vNode: VNodeType | VTextType) =>
+  isVNode(vNode) &&
+  (vNode as VNodeType).properties?.attributes?.['data-slate-spacer'] !==
+    undefined;
+
+// Static table markup wraps a table in single-child divs, and a static image
+// sits in its void's div beside the hidden spacer that holds its empty text.
+const getWrappedElement = (
+  vNode: VNodeType | VTextType,
+  tagName: 'figure' | 'table'
 ): VNodeType | undefined => {
   if (!isVNode(vNode)) return;
 
   const vn = vNode as VNodeType;
 
-  if (vn.tagName === 'table') return vn;
-  if (vn.tagName === 'div' && vn.children?.length === 1) {
-    return getWrappedTable(vn.children[0]);
+  if (vn.tagName === tagName) return vn;
+
+  const children = (vn.children || []).filter((child) => !isVoidSpacer(child));
+
+  if (vn.tagName === 'div' && children.length === 1) {
+    return getWrappedElement(children[0], tagName);
   }
 };
 
@@ -2054,6 +2074,12 @@ const buildTableCell = async (
   // It should only apply to the cell itself (tcPr), not text runs
   const paragraphAttributes = { ...modifiedAttributes };
   paragraphAttributes.backgroundColor = undefined;
+  paragraphAttributes.maximumWidth = Math.max(
+    1,
+    (modifiedAttributes.maximumWidth ||
+      docxDocumentInstance.availableDocumentSpace) -
+      TABLE_CELL_MARGIN * 2
+  );
 
   const importNestedTable = async (tableVNode: VNodeType) => {
     const nestedTableFragment = await buildTable(
@@ -2069,119 +2095,63 @@ const buildTableCell = async (
     tableCellFragment.import(await buildParagraph(null, {}));
   };
 
-  if (vNodeHasChildren(vNode as VNodeType)) {
-    const vn = vNode as VNodeType;
-    for (let index = 0; index < (vn.children || []).length; index++) {
-      const childVNode = (vn.children || [])[index];
-      const nestedTable = getWrappedTable(childVNode);
-      if (nestedTable) {
-        await importNestedTable(nestedTable);
-      } else if (
-        isVNode(childVNode) &&
-        (childVNode as VNodeType).tagName === 'img'
-      ) {
-        const imageFragment = await buildImage(
-          docxDocumentInstance,
-          childVNode as VNodeType,
-          modifiedAttributes.maximumWidth || null
-        );
-        if (imageFragment) {
-          tableCellFragment.import(imageFragment);
-        }
-      } else if (
-        isVNode(childVNode) &&
-        (childVNode as VNodeType).tagName === 'figure'
-      ) {
-        const figureVn = childVNode as VNodeType;
-        if (vNodeHasChildren(figureVn)) {
-          for (
-            let iteratorIndex = 0;
-            iteratorIndex < (figureVn.children || []).length;
-            iteratorIndex++
-          ) {
-            const grandChildVNode = (figureVn.children || [])[
-              iteratorIndex
-            ] as VNodeType;
-            if (grandChildVNode.tagName === 'img') {
-              const imageFragment = await buildImage(
-                docxDocumentInstance,
-                grandChildVNode,
-                modifiedAttributes.maximumWidth || null
-              );
-              if (imageFragment) {
-                tableCellFragment.import(imageFragment);
-              }
-            }
-          }
-        }
-      } else if (
-        isVNode(childVNode) &&
-        ['ul', 'ol'].includes((childVNode as VNodeType).tagName || '')
-      ) {
-        // render list in table
-        const listVn = childVNode as VNodeType;
-        if (vNodeHasChildren(listVn)) {
-          await buildList(listVn, docxDocumentInstance, tableCellFragment);
-        }
-      } else if (
-        isVNode(childVNode) &&
-        (childVNode as VNodeType).tagName === 'div'
-      ) {
-        // Handle div wrapper - process its children instead
-        const divVn = childVNode as VNodeType;
-        if (vNodeHasChildren(divVn)) {
-          for (
-            let divIndex = 0;
-            divIndex < (divVn.children || []).length;
-            divIndex++
-          ) {
-            const divChild = (divVn.children || [])[divIndex];
-            const nestedDivTable = getWrappedTable(divChild);
-            if (nestedDivTable) {
-              await importNestedTable(nestedDivTable);
-            } else if (
-              isVNode(divChild) &&
-              (divChild as VNodeType).tagName === 'img'
-            ) {
-              const imageFragment = await buildImage(
-                docxDocumentInstance,
-                divChild as VNodeType,
-                modifiedAttributes.maximumWidth || null
-              );
-              if (imageFragment) {
-                tableCellFragment.import(imageFragment);
-              }
-            } else if (
-              isVNode(divChild) &&
-              ['ul', 'ol'].includes((divChild as VNodeType).tagName || '')
-            ) {
-              const listVn = divChild as VNodeType;
-              if (vNodeHasChildren(listVn)) {
-                await buildList(
-                  listVn,
-                  docxDocumentInstance,
-                  tableCellFragment
-                );
-              }
-            } else {
-              const paragraphFragment = await buildParagraph(
-                divChild,
-                paragraphAttributes,
-                docxDocumentInstance
-              );
-              tableCellFragment.import(paragraphFragment);
-            }
-          }
-        }
-      } else {
-        const paragraphFragment = await buildParagraph(
-          childVNode,
-          paragraphAttributes,
-          docxDocumentInstance
-        );
-
-        tableCellFragment.import(paragraphFragment);
+  const importCellBlock = async (blockVNode: VNodeType | VTextType) => {
+    const nestedTable = getWrappedElement(blockVNode, 'table');
+    const figure = getWrappedElement(blockVNode, 'figure');
+    if (nestedTable) {
+      await importNestedTable(nestedTable);
+    } else if (figure) {
+      await buildFigure(
+        docxDocumentInstance,
+        figure,
+        tableCellFragment,
+        paragraphAttributes
+      );
+    } else if (
+      isVNode(blockVNode) &&
+      (blockVNode as VNodeType).tagName === 'img'
+    ) {
+      const imageFragment = await buildImage(
+        docxDocumentInstance,
+        blockVNode as VNodeType,
+        paragraphAttributes
+      );
+      if (imageFragment) {
+        tableCellFragment.import(imageFragment);
       }
+    } else if (
+      isVNode(blockVNode) &&
+      ['ul', 'ol'].includes((blockVNode as VNodeType).tagName || '')
+    ) {
+      const listVn = blockVNode as VNodeType;
+      if (vNodeHasChildren(listVn)) {
+        await buildList(
+          listVn,
+          docxDocumentInstance,
+          tableCellFragment,
+          null,
+          0,
+          paragraphAttributes.maximumWidth
+        );
+      }
+    } else {
+      const paragraphFragment = await buildParagraph(
+        blockVNode,
+        paragraphAttributes,
+        docxDocumentInstance
+      );
+
+      tableCellFragment.import(paragraphFragment);
+    }
+  };
+
+  for (const childVNode of (vNode as VNodeType).children || []) {
+    const blockVNodes =
+      isVNode(childVNode) && (childVNode as VNodeType).tagName === 'div'
+        ? (childVNode as VNodeType).children || []
+        : [childVNode];
+    for (const blockVNode of blockVNodes) {
+      await importCellBlock(blockVNode);
     }
   }
   // Word rejects a cell that does not end with a paragraph.
@@ -2539,7 +2509,7 @@ const buildTableProperties = (
       }
     });
   }
-  const tableCellMarginFragment = buildTableCellMargins(160);
+  const tableCellMarginFragment = buildTableCellMargins(TABLE_CELL_MARGIN);
   tablePropertiesFragment.import(tableCellMarginFragment);
 
   // by default, all tables are center aligned.
@@ -3280,4 +3250,7 @@ export {
   buildUnderline,
   buildDrawing,
   fixupLineHeight,
+  getWrappedElement,
 };
+
+export type { ParagraphAttributes };
