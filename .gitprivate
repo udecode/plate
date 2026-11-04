@@ -74,6 +74,7 @@ vitest.config.*
 /packages/plitejs/scripts/letter-commands.ts
 /packages/platejs/scripts/table-grid-commands*
 /packages/plitejs/scripts/yjs/benchmark-event-change-bridge.ts
+/packages/plitejs/scripts/tsconfig.json
 /apps/*/src/app/dev/
 /apps/www/src/app/api/dev/
 /apps/www/src/app/(blocks)/blocks/*-proof/

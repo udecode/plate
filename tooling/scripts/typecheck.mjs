@@ -35,6 +35,10 @@ const handWrittenProjects = {
       config: 'packages/plitejs/test/react/tsconfig.json',
       readsPrivateHalf: true,
     },
+    {
+      config: 'packages/plitejs/scripts/tsconfig.json',
+      readsPrivateHalf: true,
+    },
   ],
 };
 
