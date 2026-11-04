@@ -14,6 +14,7 @@ import {
 import {
   isElementNode,
   isTextNode,
+  type JsonElementNode,
   type JsonToken,
   nodeProps,
   openToken,
@@ -40,6 +41,7 @@ export type Join = Readonly<{
   kept: readonly Range[];
   /** The tokens a rebase keeps when the other side removes a joined line. */
   keptApart: readonly Range[];
+  meetsAtElements: boolean;
   /** Whole lines between the two that the change copies after the joined line. */
   run: Range | null;
   second: Range;
@@ -67,11 +69,9 @@ const lineAt = (document: DocumentIndex, position: number) => {
   );
 };
 
-/**
- * Read a deletion as a join. The line it removes needs text, since joining
- * away a line with no text removes that line, and typed text needs a text to
- * land in.
- */
+const holdsOnlyEmptyText = ({ children }: JsonElementNode) =>
+  children.length === 1 && isTextNode(children[0]) && children[0].text === '';
+
 const joinIn = (
   document: DocumentIndex,
   from: number,
@@ -115,9 +115,7 @@ const joinIn = (
     !isElementNode(firstNode) ||
     !isElementNode(secondNode) ||
     !(isElementNode(next) || spacer) ||
-    (secondNode.children.length === 1 &&
-      isTextNode(secondNode.children[0]) &&
-      secondNode.children[0].text === '')
+    holdsOnlyEmptyText(secondNode)
   ) {
     return null;
   }
@@ -125,9 +123,11 @@ const joinIn = (
   const first = document.nodeRange(left.path);
   const second = document.nodeRange(right.path);
   const lastIndex = firstNode.children.length - 1;
-  const last = firstNode.children[lastIndex];
-  const emptyLast =
-    left.index === lastIndex && isTextNode(last) && last.text === '';
+  const last = firstNode.children.at(-1);
+  const lastIsText = last !== undefined && isTextNode(last);
+  const emptyLast = left.index === lastIndex && lastIsText && last.text === '';
+  const [head] = secondNode.children;
+  const headIsText = head !== undefined && isTextNode(head);
   const leftKept = left.text
     ? { from: left.text.to - 1, to: left.text.to }
     : emptyLast
@@ -148,14 +148,13 @@ const joinIn = (
       { from: second.from, to: second.from + 1 },
       rightKept,
     ].filter((range) => range !== null),
+    meetsAtElements: !left.text && !lastIsText && !headIsText,
     second,
     to,
     typed,
     window: {
-      from: isTextNode(last) ? first.to - 2 : first.to - 1,
-      to: isTextNode(secondNode.children[0])
-        ? second.from + 2
-        : second.from + 1,
+      from: lastIsText ? first.to - 2 : first.to - 1,
+      to: headIsText ? second.from + 2 : second.from + 1,
     },
   };
 };
@@ -596,9 +595,11 @@ const rewrite = (
     fix: apartFix.compose(moveFix),
     settlePoints: joins
       .flatMap((join) =>
-        moot(join)
-          ? [join.first.from + 1, join.second.from + 1]
-          : [join.junction]
+        join.meetsAtElements
+          ? []
+          : moot(join)
+            ? [join.first.from + 1, join.second.from + 1]
+            : [join.junction]
       )
       .map((at) => getDefined(rewritten.mapPos(at, 1))),
   };
@@ -980,10 +981,12 @@ export const rebaseOverJoins = (
 
   if (!throughA) return null;
 
-  const landed = (over: RootChange) => (at: number) => [
-    getDefined(over.mapPos(at, -1)),
-    getDefined(over.mapPos(at, 1)),
-  ];
+  const insideChange = (over: RootChange, at: number) =>
+    over.mapPos(at, -1, 'around') === null;
+  const landed = (over: RootChange) => (at: number) =>
+    insideChange(over, at)
+      ? []
+      : [getDefined(over.mapPos(at, -1)), getDefined(over.mapPos(at, 1))];
   const points = [
     ...aRewrite.settlePoints.flatMap(landed(bOverA)),
     ...bRewrite.settlePoints.flatMap(landed(aOverB)),

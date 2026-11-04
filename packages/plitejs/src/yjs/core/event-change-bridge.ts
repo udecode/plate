@@ -6660,6 +6660,7 @@ export class YjsEventChangeBridge {
           };
         }
         hiddenTopNodes.add(event.target as YjsNode);
+        this.addShownBlocks(event.target, affectedTopNodes);
         continue;
       }
 
