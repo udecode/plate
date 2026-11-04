@@ -59,7 +59,12 @@ import { isValidUrl } from '../utils/url';
 import { vNodeHasChildren } from '../utils/vnode';
 // FIXME: remove the cyclic dependency
 // eslint-disable-next-line import/no-cycle
-import { buildImage, buildList } from './render-document-file';
+import {
+  buildFigure,
+  buildImage,
+  buildList,
+  getWrappedFigure,
+} from './render-document-file';
 
 // Types for Virtual DOM
 type VNodeProperties = {
@@ -2074,8 +2079,16 @@ const buildTableCell = async (
     for (let index = 0; index < (vn.children || []).length; index++) {
       const childVNode = (vn.children || [])[index];
       const nestedTable = getWrappedTable(childVNode);
+      const figure = getWrappedFigure(childVNode);
       if (nestedTable) {
         await importNestedTable(nestedTable);
+      } else if (figure) {
+        await buildFigure(
+          docxDocumentInstance,
+          figure,
+          tableCellFragment,
+          paragraphAttributes
+        );
       } else if (
         isVNode(childVNode) &&
         (childVNode as VNodeType).tagName === 'img'
@@ -2087,32 +2100,6 @@ const buildTableCell = async (
         );
         if (imageFragment) {
           tableCellFragment.import(imageFragment);
-        }
-      } else if (
-        isVNode(childVNode) &&
-        (childVNode as VNodeType).tagName === 'figure'
-      ) {
-        const figureVn = childVNode as VNodeType;
-        if (vNodeHasChildren(figureVn)) {
-          for (
-            let iteratorIndex = 0;
-            iteratorIndex < (figureVn.children || []).length;
-            iteratorIndex++
-          ) {
-            const grandChildVNode = (figureVn.children || [])[
-              iteratorIndex
-            ] as VNodeType;
-            if (grandChildVNode.tagName === 'img') {
-              const imageFragment = await buildImage(
-                docxDocumentInstance,
-                grandChildVNode,
-                modifiedAttributes.maximumWidth || null
-              );
-              if (imageFragment) {
-                tableCellFragment.import(imageFragment);
-              }
-            }
-          }
         }
       } else if (
         isVNode(childVNode) &&
@@ -2137,8 +2124,16 @@ const buildTableCell = async (
           ) {
             const divChild = (divVn.children || [])[divIndex];
             const nestedDivTable = getWrappedTable(divChild);
+            const figure = getWrappedFigure(divChild);
             if (nestedDivTable) {
               await importNestedTable(nestedDivTable);
+            } else if (figure) {
+              await buildFigure(
+                docxDocumentInstance,
+                figure,
+                tableCellFragment,
+                paragraphAttributes
+              );
             } else if (
               isVNode(divChild) &&
               (divChild as VNodeType).tagName === 'img'

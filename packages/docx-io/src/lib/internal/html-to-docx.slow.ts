@@ -405,6 +405,91 @@ describe('htmlToDocxBlob', () => {
     });
   });
 
+  describe('figures and list paragraphs', () => {
+    const image =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+    const figure = `<figure><div><a href="https://example.com"><img src="${image}" style="width: 300px; height: 120px;"></a></div><figcaption><strong><em>Caption</em></strong></figcaption></figure>`;
+
+    it.each([
+      ['body', `<div>${figure}</div>`],
+      ['table', `<table><tr><td>${figure}</td></tr></table>`],
+      [
+        'wrapped table',
+        `<table><tr><td><div><div>${figure}</div></div></td></tr></table>`,
+      ],
+      [
+        'unordered list',
+        `<ul><li><p>Before</p><div>${figure}</div><p>After</p></li></ul>`,
+      ],
+      [
+        'ordered list',
+        `<ol><li><p>Before</p><div>${figure}</div><p>After</p></li></ol>`,
+      ],
+    ])('keeps image bytes and rich captions in a %s', async (_, html) => {
+      const zip = await loadZipFromBlob(await htmlToDocxBlob(html));
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      const media = zip.file(/^word\/media\/.+\.png$/);
+
+      expect(docXml.match(/<w:drawing>/g)).toHaveLength(1);
+      expect(media.length).toBeGreaterThan(0);
+      for (const file of media) {
+        expect(await file.async('base64')).toBe(image.split(',')[1]);
+      }
+      expect(docXml).toContain('cx="2857500" cy="1143000"');
+      expect(
+        getTextRuns(docXml)
+          .filter(([text]) => text)
+          .map(([text, marks]) => [
+            text,
+            marks.filter((mark) => mark !== 'rPr'),
+          ])
+      ).toEqual(
+        html.includes('Before')
+          ? [
+              ['Before', []],
+              ['Caption', ['b', 'i']],
+              ['After', []],
+            ]
+          : [['Caption', ['b', 'i']]]
+      );
+    });
+
+    it.each([
+      'ul',
+      'ol',
+    ])('keeps continuation paragraphs and nesting in %s', async (tag) => {
+      const html = `<${tag}><li><div>First <strong>bold</strong></div><p>Continuation</p><ul><li>Nested</li></ul><p>After nested</p></li><li>Second</li></${tag}>`;
+      const zip = await loadZipFromBlob(await htmlToDocxBlob(html));
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      const paragraphs =
+        docXml.match(/<w:p(?:\s[^>]*)?>[\s\S]*?<\/w:p>/g) ?? [];
+
+      expect(
+        paragraphs.map((paragraph) =>
+          getTextRuns(paragraph).map(([text, marks]) => [
+            text,
+            marks.filter((mark) => mark !== 'rPr'),
+          ])
+        )
+      ).toEqual([
+        [
+          ['First ', []],
+          ['bold', ['b']],
+        ],
+        [['Continuation', []]],
+        [['Nested', []]],
+        [['After nested', []]],
+        [['Second', []]],
+      ]);
+      expect(
+        paragraphs.map((paragraph) => paragraph.includes('<w:numPr>'))
+      ).toEqual([true, false, true, false, true]);
+      expect(paragraphs[2]).toContain('<w:ilvl w:val="1"/>');
+      expect(paragraphs[1]).toContain('<w:ind w:left="360"/>');
+      expect(paragraphs[3]).toContain('<w:ind w:left="360"/>');
+    });
+  });
+
   describe('links', () => {
     it('handle hyperlinks', async () => {
       const html = '<p><a href="https://example.com">Click here</a></p>';

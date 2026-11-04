@@ -288,7 +288,64 @@ export const buildImage = async (
   return null;
 };
 
+// Static image renderers wrap figures in divs; list items also add paragraphs.
+export const getWrappedFigure = (
+  vNode: VNodeType | VTextType
+): VNodeType | undefined => {
+  if (!isVNode(vNode)) return;
+  const node = vNode as VNodeType;
+  if (node.tagName === 'figure') return node;
+  if (
+    ['div', 'p'].includes(node.tagName || '') &&
+    node.children?.length === 1
+  ) {
+    return getWrappedFigure(node.children[0]);
+  }
+};
+
+export const buildFigure = async (
+  docxDocumentInstance: DocxDocumentInstance,
+  vNode: VNodeType,
+  xmlFragment: XMLBuilderType,
+  attributes: Parameters<typeof xmlBuilder.buildParagraph>[1] = {}
+): Promise<void> => {
+  for (const child of vNode.children || []) {
+    if (!isVNode(child)) continue;
+    const node = child as VNodeType;
+    if (node.tagName === 'img') {
+      const imageFragment = await buildImage(
+        docxDocumentInstance,
+        node,
+        attributes.maximumWidth || null
+      );
+      if (imageFragment) xmlFragment.import(imageFragment);
+    } else if (node.tagName === 'figcaption') {
+      xmlFragment.import(
+        await xmlBuilder.buildParagraph(node, attributes, docxDocumentInstance)
+      );
+    } else if (node.tagName === 'table') {
+      xmlFragment.import(
+        await xmlBuilder.buildTable(
+          node,
+          {
+            maximumWidth:
+              attributes.maximumWidth ||
+              docxDocumentInstance.availableDocumentSpace,
+            rowCantSplit: docxDocumentInstance.tableRowCantSplit,
+          },
+          docxDocumentInstance
+        )
+      );
+      // Word merges adjacent tables that have no paragraph between them.
+      xmlFragment.import(await xmlBuilder.buildParagraph(null, {}));
+    } else if (node.children?.length) {
+      await buildFigure(docxDocumentInstance, node, xmlFragment, attributes);
+    }
+  }
+};
+
 type VNodeObject = {
+  continuation?: boolean;
   level: number;
   node: VNodeType | VTextType;
   numberingId: number;
@@ -320,7 +377,12 @@ export const buildList = async (
   while (vNodeObjects.length) {
     const tempVNodeObject = vNodeObjects.shift()!;
 
-    if (
+    const figure = getWrappedFigure(tempVNodeObject.node);
+    if (figure) {
+      await buildFigure(docxDocumentInstance, figure, xmlFragment, {
+        indentation: { left: tempVNodeObject.level * 360 + 360 },
+      });
+    } else if (
       isVText(tempVNodeObject.node) ||
       (isVNode(tempVNodeObject.node) &&
         !['ul', 'ol', 'li'].includes(
@@ -329,12 +391,15 @@ export const buildList = async (
     ) {
       const paragraphFragment = await xmlBuilder.buildParagraph(
         tempVNodeObject.node,
-        {
-          numbering: {
-            levelId: tempVNodeObject.level,
-            numberingId: tempVNodeObject.numberingId,
-          },
-        },
+        // Continuation paragraphs align with the item's text without another marker.
+        tempVNodeObject.continuation
+          ? { indentation: { left: tempVNodeObject.level * 360 + 360 } }
+          : {
+              numbering: {
+                levelId: tempVNodeObject.level,
+                numberingId: tempVNodeObject.numberingId,
+              },
+            },
         docxDocumentInstance
       );
 
@@ -348,7 +413,19 @@ export const buildList = async (
       ['ul', 'ol', 'li'].includes(tempNode.tagName || '')
     ) {
       const tempVNodeObjects = tempNode.children.reduce<VNodeObject[]>(
-        (accumulator, childVNode) => {
+        (accumulator, child) => {
+          let childVNode = child;
+          // Static paragraphs use divs rather than p elements.
+          if (
+            isVNode(childVNode) &&
+            (childVNode as VNodeType).tagName === 'div'
+          ) {
+            childVNode = new VNode(
+              'p',
+              (childVNode as VNodeType).properties,
+              (childVNode as VNodeType).children
+            );
+          }
           const childNode = childVNode as VNodeType;
           const isBlankTextNode =
             isVText(childVNode) && (childVNode as VTextType).text.trim() === '';
@@ -373,7 +450,7 @@ export const buildList = async (
             (
               (accumulator.at(-1)!.node as VNodeType).tagName || ''
             ).toLowerCase() === 'p' &&
-            (childNode.tagName || '').toLowerCase() !== 'li'
+            isInlineElement(childVNode)
           ) {
             const lastNode = accumulator.at(-1)!.node as VNodeType;
             if (lastNode.children) {
@@ -392,6 +469,13 @@ export const buildList = async (
                   : []
             );
             accumulator.push({
+              continuation:
+                tempNode.tagName === 'li' &&
+                accumulator.some(
+                  ({ node }) =>
+                    isVNode(node) &&
+                    !['ul', 'ol'].includes((node as VNodeType).tagName || '')
+                ),
               node: isVNode(childVNode)
                 ? (childNode.tagName || '').toLowerCase() === 'li'
                   ? childVNode
@@ -737,83 +821,7 @@ async function findXMLEquivalent(
       return;
     }
     case 'figure':
-      if (vNodeHasChildren(vNode)) {
-        // Helper to find and process img elements recursively
-        const processImageInNode = async (
-          node: VNodeType | VTextType
-        ): Promise<void> => {
-          if (!isVNode(node)) return;
-          const vn = node as VNodeType;
-          if (vn.tagName === 'img') {
-            const imageFragment = await buildImage(docxDocumentInstance, vn);
-            if (imageFragment) {
-              xmlFragment.import(imageFragment);
-            }
-            return;
-          }
-          if (vNodeHasChildren(vn)) {
-            for (const child of vn.children || []) {
-              await processImageInNode(child);
-            }
-          }
-        };
-
-        for (let index = 0; index < (vNode.children || []).length; index++) {
-          const childVNode = (vNode.children || [])[index] as VNodeType;
-          if (childVNode.tagName === 'table') {
-            const tableFragment = await xmlBuilder.buildTable(
-              childVNode,
-              {
-                maximumWidth: docxDocumentInstance.availableDocumentSpace,
-                rowCantSplit: docxDocumentInstance.tableRowCantSplit,
-              },
-              docxDocumentInstance
-            );
-            xmlFragment.import(tableFragment);
-            // Adding empty paragraph for space after table
-            const emptyParagraphFragment = await xmlBuilder.buildParagraph(
-              null,
-              {}
-            );
-            xmlFragment.import(emptyParagraphFragment);
-          } else if (childVNode.tagName === 'img') {
-            const imageFragment = await buildImage(
-              docxDocumentInstance,
-              childVNode
-            );
-            if (imageFragment) {
-              xmlFragment.import(imageFragment);
-            }
-          } else if (childVNode.tagName === 'figcaption') {
-            // Handle image caption
-            const captionFragment = await xmlBuilder.buildParagraph(
-              childVNode,
-              {},
-              docxDocumentInstance
-            );
-            xmlFragment.import(captionFragment);
-          } else if (childVNode.tagName === 'div') {
-            // Look for img and figcaption inside div (static component pattern)
-            await processImageInNode(childVNode);
-            // Also check for figcaption in the div
-            if (vNodeHasChildren(childVNode)) {
-              for (const divChild of childVNode.children || []) {
-                if (
-                  isVNode(divChild) &&
-                  (divChild as VNodeType).tagName === 'figcaption'
-                ) {
-                  const captionFragment = await xmlBuilder.buildParagraph(
-                    divChild,
-                    {},
-                    docxDocumentInstance
-                  );
-                  xmlFragment.import(captionFragment);
-                }
-              }
-            }
-          }
-        }
-      }
+      await buildFigure(docxDocumentInstance, vNode, xmlFragment);
       return;
     case 'table': {
       const tableFragment = await xmlBuilder.buildTable(
