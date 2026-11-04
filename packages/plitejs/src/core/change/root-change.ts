@@ -43,6 +43,7 @@ import {
 } from './tokens';
 import {
   assertNodePropertyKey,
+  canonicalJsonKey,
   clonePropertyModification,
   normalizeSetValues,
   type PropertyDeltaJson,
@@ -764,6 +765,91 @@ const opensEnclosure = (slice: PreparedTokenSlice | null) => {
   }
 
   return depth > 0;
+};
+
+const insertedElementKeys = ({ from, insert, to }: Replacement) => {
+  if (from !== to) return undefined;
+
+  const keys: string[] = [];
+  let element: unknown[] = [];
+  let depth = 0;
+
+  for (const token of insert.tokens) {
+    if (depth === 0) {
+      if (token.kind !== 'open' || token.nodeKind !== 'element') {
+        return undefined;
+      }
+
+      element = [];
+    }
+
+    if (token.kind === 'open') {
+      element.push(['open', token.nodeKind, token.props]);
+      depth += 1;
+    } else if (token.kind === 'close') {
+      element.push(['close', token.nodeKind]);
+      depth -= 1;
+    } else {
+      element.push(['text', token.text]);
+    }
+
+    if (depth === 0) keys.push(canonicalJsonKey(element));
+  }
+
+  return depth === 0 && keys.length > 0 ? keys : undefined;
+};
+
+const placesBlocks = (document: DocumentIndex, position: number) => {
+  const context = document
+    .openContextAt(position)
+    .findLast(
+      ({ contentFrom, contentTo }) =>
+        contentFrom <= position && position <= contentTo
+    );
+
+  if (context === undefined) return true;
+  if (context.kind !== 'element') return false;
+
+  const node = document.node(context.path);
+  const first = node && isElementNode(node) ? node.children[0] : undefined;
+  const holdsInlineContent = first !== undefined && isTextNode(first);
+
+  return !holdsInlineContent;
+};
+
+const insertsDisjointBlocksAtSameStarts = (
+  document: DocumentIndex,
+  left: readonly Replacement[],
+  right: readonly Replacement[]
+) => {
+  if (left.length === 0 || left.length !== right.length) return false;
+
+  const rightByStart = new Map<number, Replacement>();
+
+  for (const replacement of right) {
+    if (rightByStart.has(replacement.from)) return false;
+
+    rightByStart.set(replacement.from, replacement);
+  }
+
+  for (const replacement of left) {
+    const other = rightByStart.get(replacement.from);
+
+    rightByStart.delete(replacement.from);
+
+    if (!other) return false;
+
+    const keys = insertedElementKeys(replacement);
+    const otherKeys = insertedElementKeys(other);
+
+    if (!keys || !otherKeys) return false;
+
+    const otherKeySet = new Set(otherKeys);
+
+    if (keys.some((key) => otherKeySet.has(key))) return false;
+  }
+
+  return left.every(({ from }) => placesBlocks(document, from));
 };
 
 /**
@@ -3757,6 +3843,19 @@ export class RootChange {
       sharesStructuralStart &&
       sameEdit()
     ) {
+      if (
+        aPropertyChanges.length === 0 &&
+        bPropertyChanges.length === 0 &&
+        insertsDisjointBlocksAtSameStarts(
+          document,
+          aReplacements,
+          bReplacements
+        ) &&
+        convergesOn(transformed, afterA, afterB)
+      ) {
+        return transformed;
+      }
+
       const keepsReplayedWrap =
         replay !== undefined &&
         onlyAddsStructure(aReplacements) &&
