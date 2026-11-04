@@ -55,11 +55,11 @@ Hard constraints:
   mechanism it credits mutated out, because a base that already has the
   property cannot catch a probe that bypasses it.
 - A mutant judged through a build, a bundle or emitted declarations counts only
-  after the run shows its bytes reached that artifact. Rebuild the owning
-  partition's declarations before a type test, because `typecheck:contracts`
-  reads declarations, not source. Rebuild the measured app before a browser or
-  benchmark run. Mutate with an import the bundler keeps, because the bundler
-  drops a bare side-effect import in a `sideEffects: false` package.
+  after the run shows its bytes reached that artifact. The package typecheck
+  checks type tests against source, so a type test needs no rebuild. Rebuild
+  the measured app before a browser or benchmark run. Mutate with an import the
+  bundler keeps, because the bundler drops a bare side-effect import in a
+  `sideEffects: false` package.
 - A lossy case asserts that the round trip equals the input apart from the
   reported part, plus the diagnostic; a reported loss narrows the check and
   never removes the case.

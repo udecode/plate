@@ -428,7 +428,7 @@ export const BaseLinkPlugin = definePlugin('link', {
           tx.nodes.unwrap({ type: plugin, ...options }) || undefined
       ),
       upsert: txLocate(
-        ([options], place) => {
+        ([options], place): [UpsertLinkOptions] | null => {
           const insert = options.insertNodesOptions;
 
           if (insert?.at === undefined) return [options];

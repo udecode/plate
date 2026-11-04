@@ -660,10 +660,7 @@ export const manualOnly = {
   'check:plite:packages':
     'Runs plite:typecheck, plite:test and check:plite:contracts, which other steps cover.',
   'deps:check': 'Lists available dependency updates; it gates nothing.',
-  'g:typecheck:all':
-    'Typechecks every workspace, which the typecheck, plite-app-typecheck and www-typecheck steps cover.',
   'p:test': 'Template that each package test script calls.',
-  'p:typecheck': 'Template that each package typecheck script calls.',
   'plite:browser:test':
     'Runs the @platejs/test package tests, which the plite-test step runs.',
   'plite:browser:test:proof':
@@ -698,7 +695,8 @@ export const manualOnly = {
     'Runs www Playwright specs against a running www server.',
   'test:www-browser:webkit':
     'Runs www Playwright specs against a running www server.',
-  'typecheck:all': 'Runs g:typecheck:all.',
+  'typecheck:all':
+    'Typechecks every workspace, which the typecheck, plite-app-typecheck and www-typecheck steps cover.',
   'typecheck:watch': 'Watch mode.',
 };
 

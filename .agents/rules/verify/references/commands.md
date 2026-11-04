@@ -57,22 +57,17 @@ Rules:
   guessing command variants. Locate the exact file or wrapper with `rg --files`
   / `rg -n`, then rerun once with the correct runner;
 - run Plite package checks through the entrypoint-aware `plitejs` scripts, such
-  as `pnpm --filter plitejs typecheck`, which runs `typecheck:tests`. That task
-  covers the `src` specs and `test/react` with the helpers they import.
-  Elsewhere under `test/`, `check:core`, `typecheck:contracts` and
+  as `pnpm --filter plitejs typecheck`, which also checks its tests project and
+  `test/react`. Together they cover the `src` specs and `test/react` with the
+  helpers they import. Elsewhere under `test/`, `check:core`, the contracts project and
   `plite:public-types` check only the files that
   `test/tsconfig.generic-types.json`, `tsconfig.public-api.json` and
   `test/tsconfig.public-package-types.json` list, and no gate typechecks the
-  rest. Run alone in a fresh worktree, `typecheck:tests` fails
-  with TS6305 because its partition outputs are not built. Never use
-  `tsc -p test/tsconfig.json` or `tsconfig.test.json` for plitejs; do not target
-  deleted package roots;
-- platejs package typechecks cover source partitions only. To typecheck a
-  platejs spec the task touched, run
-  `pnpm exec tsc -p packages/platejs/tsconfig.test.json --noEmit` from the
-  repository root and compare its errors in the task's files with the same run
-  at `HEAD` in a detached worktree, because that config already reports errors
-  at base;
+  rest. Never use `tsc -p test/tsconfig.json` or `tsconfig.test.json` for
+  plitejs; do not target deleted package roots;
+- `pnpm --filter platejs typecheck` also checks the platejs `src` specs, through
+  `tsconfig.entrypoints/tests.json`, and its type-tests, through
+  `tsconfig.entrypoints/contracts.json`;
 - use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
@@ -142,8 +137,9 @@ Rules:
 - `tooling/entrypoints/entrypoint-dag.mjs` owns public JS imports, runtime
   classes and descriptor-call recipes. `entrypoint-turbo.mjs` derives package
   partitions and their test paths. Use
-  `pnpm --filter <package> typecheck:partition:<partition>` and
-  `test:partition:<partition>` for an existing nonempty test partition.
+  `pnpm --filter <package> test:partition:<partition>` for an existing
+  nonempty test partition. The package typecheck checks every partition in one
+  run, so no partition has a typecheck script of its own.
   For `@platejs/test`, select `test:react`, `test:dom`, or a named partition;
   focused arguments through its aggregate `test` do not select those runners;
 - `pnpm plite:release:packages` builds and checks packed artifacts through
@@ -220,6 +216,17 @@ A probe or test that checks a collapsed caret's formatting reads `editor.read((s
 A `plitejs` React probe runs under Vitest instead, from a config in the run directory that merges `packages/plitejs/vitest.config.mjs`. The config imports `vitest/config` by the absolute path that `readlink -f packages/plitejs/node_modules/vitest` prints, followed by `/dist/config.js`. It sets `test.dir` to its own directory and `include` to the probe files. Run it from `packages/plitejs` as `pnpm exec vitest run --config <config> --reporter=verbose --silent=false`. The jsdom variant reuses `test/react/vitest-setup.ts`. A claim about DOM behavior that jsdom does not implement, such as visibility, `inert`, `showModal()`, slot assignment, layout or scrolling, needs the Chromium variant. That variant adds `test.browser` with a headless `chromium` instance and `provider: playwright()`, imported from the `@vitest/browser-playwright` that `packages/test` resolves. It also sets `server.fs.allow` to the repository and `resolve.dedupe` to `react`, `react-dom` and `@testing-library/react`, and uses its own setup file, which calls `installBrowserHandle()` and runs `cleanup()` in a global `afterEach`.
 
 Default to source-first typecheck. Do not build packages just to run types.
+`pnpm typecheck` runs `tooling/scripts/typecheck.mjs`. It runs one
+`bun check -b` over every entrypoint project of `plitejs`, `platejs` and
+`@platejs/test` and the CLI's source config. At the same time it runs `tsc` on the plitejs
+tests and `test/react` projects, where Bun reports errors that `tsc` does not.
+Bun checks each partition from source and hands the projects that reference it
+the declarations it derives, so one error in a partition can also print TS6305
+and false TS2578 errors in the projects that depend on it. Fix the first error,
+then run the typecheck again. The runner refuses to run when Bun's TypeScript version differs
+from the pinned `typescript`. `pnpm typecheck <package>...` and
+`pnpm --filter <package> typecheck` check only those packages' projects, with
+the partitions they reference.
 Inspect the affected package/app `paths` and source-entry graph if stale
 declarations or unresolved exports suggest built-output resolution. Repair
 source-entry debt when appropriate; build when the actual claim concerns
@@ -233,18 +240,17 @@ when a dependency needs its own scripts, and run `pnpm run prepare` only on
 purpose. A dependency or toolchain upgrade searches the whole repository for
 every load form of the package, `import`, `require` and a `createRequire(...)`
 call, and closes only on `pnpm check`. Then
-use `pnpm turbo typecheck --filter=./packages/<modified-package>`. Run affected
+run `pnpm typecheck <modified-package>`. Run affected
 lint and fix actual diagnostics before final verification. Useful forms:
 
 ```bash
-pnpm turbo typecheck --filter=./packages/platejs --filter=./packages/test
-pnpm turbo typecheck --filter='[HEAD^1]'
-pnpm turbo typecheck --filter='...[origin/main]'
+pnpm typecheck
+pnpm typecheck platejs @platejs/test
 pnpm --filter platejs typecheck
 pnpm --filter platejs lint:fix
 ```
 
-A typecheck that reports TS6305, a referenced project's output not built, checked nothing: it is neither a clean result nor evidence that its other errors are unrelated. Build the references or run the package's partition typecheck instead.
+A `tsc --project` run on a config with project references, such as a generated `tsconfig.entrypoints` project, reports TS6305 when the referenced outputs are not built. That run checked nothing: it is neither a clean result nor evidence that its other errors are unrelated. Run `pnpm typecheck <package>` instead.
 
 Use root `pnpm lint:fix` when the affected lint scope needs that command.
 `pnpm typecheck` checks root packages from source; `pnpm build` builds all

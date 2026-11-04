@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
 import path from 'node:path';
 
 import { BUN_TEST_TIMEOUT_MS, vitestSuites } from '../config/test-suites.mjs';
@@ -13,27 +12,19 @@ import {
 } from '../entrypoints/entrypoint-turbo.mjs';
 import { usesMockModule } from './import-graph.mjs';
 import { runTraced } from './load-trace.mjs';
-import { hasPrivateHalf } from './private-files.mjs';
 
 const [command, packageName, partitionName] = process.argv.slice(2);
 const definition = entrypointDags[packageName];
 
-if (!definition || !(partitionName in definition.taskPartitions)) {
+if (
+  !['lint', 'test'].includes(command) ||
+  !definition ||
+  !(partitionName in definition.taskPartitions)
+) {
   console.error(
-    'Usage: run-entrypoint-task.mjs <lint|test|typecheck|typecheck-contracts|typecheck-package-tests> <package> <partition>'
+    'Usage: run-entrypoint-task.mjs <lint|test> <package> <partition>'
   );
   process.exit(1);
-}
-
-if (
-  (command === 'typecheck-contracts' ||
-    command === 'typecheck-package-tests') &&
-  !hasPrivateHalf(repoRoot)
-) {
-  console.info(
-    `[${packageName}] skip ${command}: it reads udecode/plate-private's files`
-  );
-  process.exit(0);
 }
 
 const packageRoot = path.join(repoRoot, definition.packageRoot);
@@ -50,37 +41,6 @@ const runProcess = (executable, args, cwd = packageRoot, env = process.env) => {
   if (result.error) throw result.error;
 
   return result.status ?? 1;
-};
-
-const runTypecheck = () => {
-  const configPath = path.join(
-    packageRoot,
-    'tsconfig.entrypoints',
-    `${partitionName}.json`
-  );
-
-  return runProcess(
-    path.join(repoRoot, 'node_modules/.bin/tsc'),
-    ['--build', configPath, '--pretty', 'false'],
-    repoRoot
-  );
-};
-
-const runPackageTestsTypecheck = () => {
-  const configs = ['tsconfig.entrypoints/tests.json'];
-  if (packageName === 'plitejs') configs.push('test/react/tsconfig.json');
-
-  for (const config of configs) {
-    const status = runProcess(path.join(repoRoot, 'node_modules/.bin/tsc'), [
-      '--project',
-      config,
-      '--pretty',
-      'false',
-    ]);
-    if (status !== 0) return status;
-  }
-
-  return 0;
 };
 
 const runLint = () => {
@@ -197,29 +157,6 @@ const runTests = (runtimeTestFiles, traceEnv) => {
   return 0;
 };
 
-const runContracts = () => {
-  if (packageName === 'platejs') {
-    fs.rmSync(path.join(repoRoot, '.tmp/plate-type-contract-declarations'), {
-      force: true,
-      recursive: true,
-    });
-
-    return runProcess(path.join(repoRoot, 'node_modules/.bin/tsc'), [
-      '--project',
-      'tsconfig.entrypoints/contracts.json',
-      '--pretty',
-      'false',
-    ]);
-  }
-
-  return runProcess(path.join(repoRoot, 'node_modules/.bin/tsc'), [
-    '--project',
-    'tsconfig.entrypoints/contracts.json',
-    '--pretty',
-    'false',
-  ]);
-};
-
 const runTestTask = () => {
   const testFiles = getPackageRuntimeTestFiles(packageName, partitionName);
 
@@ -229,21 +166,4 @@ const runTestTask = () => {
   );
 };
 
-const status =
-  command === 'lint'
-    ? runLint()
-    : command === 'test'
-      ? runTestTask()
-      : command === 'typecheck'
-        ? runTypecheck()
-        : command === 'typecheck-package-tests'
-          ? runPackageTestsTypecheck()
-          : command === 'typecheck-contracts'
-            ? runContracts()
-            : 1;
-
-if (status === 1 && !command) {
-  console.error('Missing entrypoint task command.');
-}
-
-process.exit(status);
+process.exit(command === 'lint' ? runLint() : runTestTask());

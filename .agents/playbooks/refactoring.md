@@ -45,7 +45,7 @@ Proof:
 
 ```bash
 pnpm check:core
-pnpm turbo typecheck --filter=./packages/platejs
+pnpm typecheck platejs
 pnpm --filter platejs test
 pnpm --filter platejs build
 ```

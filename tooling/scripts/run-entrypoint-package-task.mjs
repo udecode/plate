@@ -9,9 +9,9 @@ import { repoRoot } from '../entrypoints/entrypoint-turbo.mjs';
 const [packageName, taskName, ...taskArguments] = process.argv.slice(2);
 const definition = entrypointDags[packageName];
 
-if (!definition || !['lint', 'test', 'typecheck'].includes(taskName)) {
+if (!definition || !['lint', 'test'].includes(taskName)) {
   console.error(
-    'Usage: run-entrypoint-package-task.mjs <platejs|plitejs> <lint|test|typecheck> [...focused arguments]'
+    'Usage: run-entrypoint-package-task.mjs <platejs|plitejs> <lint|test> [...focused arguments]'
   );
   process.exit(1);
 }
@@ -33,10 +33,6 @@ const run = (executable, args, cwd = packageRoot) => {
 const runFocused = () => {
   if (taskName === 'lint') {
     return run('pnpm', ['exec', 'ultracite', 'check', ...taskArguments]);
-  }
-  if (taskName === 'typecheck') {
-    console.error('Focused arguments are not supported for package typecheck.');
-    return 1;
   }
   if (packageName === 'platejs') {
     return run('bun', ['test', ...taskArguments]);

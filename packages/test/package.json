@@ -80,14 +80,7 @@
     "test:proof": "bun test --preload ../../config/plite-source-test-setup.ts test/proof/raw-mobile-proof.test.ts test/proof/scenario.test.ts",
     "test:react": "bun test --preload ../../config/plite-source-test-setup.ts test/react",
     "test:selection": "vitest run --config ./vitest.config.ts --project browser test/browser/selection.browser.test.ts",
-    "typecheck": "node ../../tooling/scripts/run-entrypoint-package-task.mjs @platejs/test typecheck",
-    "typecheck:contracts": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck-contracts @platejs/test root",
-    "typecheck:partition:browser": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test browser",
-    "typecheck:partition:device": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test device",
-    "typecheck:partition:playwright": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test playwright",
-    "typecheck:partition:proof": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test proof",
-    "typecheck:partition:react": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test react",
-    "typecheck:partition:root": "node ../../tooling/scripts/run-entrypoint-task.mjs typecheck @platejs/test root"
+    "typecheck": "node ../../tooling/scripts/typecheck.mjs @platejs/test"
   },
   "dependencies": {
     "is-hotkey": "^0.2.0"

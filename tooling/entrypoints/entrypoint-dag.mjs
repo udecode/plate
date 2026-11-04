@@ -588,7 +588,6 @@ export const entrypointDags = {
     },
   },
   '@platejs/test': {
-    contractPartition: 'root',
     entrypoints: {
       browser: client(directory('browser')),
       device: headless(
@@ -800,8 +799,8 @@ export const assertEntrypointDags = (dags = entrypointDags) => {
 export const entrypointTaskSlug = (entrypointName) =>
   entrypointName.replaceAll('/', '-');
 
-export const partitionTypecheckTask = (partitionName) =>
-  `typecheck:partition:${partitionName}`;
+export const partitionSourceHashTask = (partitionName) =>
+  `source-hash:partition:${partitionName}`;
 
 export const entrypointTaskPartition = (packageName, entrypointName) => {
   const partition = Object.entries(

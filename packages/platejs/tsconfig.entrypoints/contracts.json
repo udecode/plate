@@ -1,7 +1,4 @@
 {
-  "compilerOptions": {
-    "disableSourceOfProjectReferenceRedirect": true
-  },
   "extends": "../tsconfig.type-tests.json",
   "references": [
     {

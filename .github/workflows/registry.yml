@@ -55,7 +55,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         name: Install bun
         with:
-          bun-version: 1.3.9
+          bun-version: 1.4.4
 
       - name: 📦 Monorepo install
         uses: ./.github/actions/pnpm-install
@@ -127,7 +127,7 @@ jobs:
         if: ${{ steps.changesets.outputs.present != 'true' }}
         name: Install bun
         with:
-          bun-version: 1.3.9
+          bun-version: 1.4.4
 
       - name: 📦 Monorepo install
         if: ${{ steps.changesets.outputs.present != 'true' }}

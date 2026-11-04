@@ -115,14 +115,6 @@ switch (command) {
     result = runPnpm('bun', bunTestArgs);
     break;
   }
-  case 'p:typecheck': {
-    result = run(process.execPath, [
-      path.join(PROJECT_CWD, 'tooling/scripts/typecheck-package-source.mjs'),
-      path.join(INIT_CWD, 'tsconfig.json'),
-      ...commandArgs,
-    ]);
-    break;
-  }
   case 'p:brl': {
     const sh = process.platform === 'win32' ? 'sh' : 'sh';
     result = run(

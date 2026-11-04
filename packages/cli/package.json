@@ -40,7 +40,7 @@
     "lint": "node ../../tooling/scripts/plate-pkg.cjs p:lint",
     "lint:fix": "node ../../tooling/scripts/plate-pkg.cjs p:lint:fix",
     "test": "bun test src test",
-    "typecheck": "node ../../tooling/scripts/typecheck-package-source.mjs tsconfig.json --noEmit"
+    "typecheck": "node ../../tooling/scripts/typecheck.mjs @platejs/cli"
   },
   "dependencies": {
     "@antfu/ni": "24.3.0",

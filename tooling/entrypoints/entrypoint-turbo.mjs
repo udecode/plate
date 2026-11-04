@@ -15,7 +15,7 @@ import {
   entrypointDags,
   normalizePath,
   normalizeSourcePath,
-  partitionTypecheckTask,
+  partitionSourceHashTask,
 } from './entrypoint-dag.mjs';
 import { testModuleEffects } from './test-module-effects.mjs';
 
@@ -38,14 +38,6 @@ const sourceTestInputNegations = [
   '!src/**/*.test.*',
   '!src/**/*-contract.*',
   '!src/**/__tests__/**',
-];
-const sharedTypecheckInputs = () => [
-  ...runnerInputs('tooling/scripts/run-entrypoint-task.mjs'),
-  '$TURBO_ROOT$/tooling/config/global.d.ts',
-  '$TURBO_ROOT$/tooling/config/tsconfig.base.json',
-  '$TURBO_ROOT$/tooling/config/tsconfig.test.json',
-  '$TURBO_ROOT$/tsconfig.json',
-  'tsconfig.json',
 ];
 // The preloads import package source, so the walk starts from them too.
 export const testPreloadFiles = [
@@ -367,9 +359,9 @@ const entrypointPackageOf = (filename) =>
       !packageRelativePath(packageName, filename).startsWith('../')
   );
 
-const typecheckTaskFor = (filename, currentPackageName) => {
+const sourceTaskFor = (filename, currentPackageName) => {
   const packageName = entrypointPackageOf(filename);
-  const taskName = partitionTypecheckTask(
+  const taskName = partitionSourceHashTask(
     entrypointTaskPartition(
       packageName,
       classifyPackageFile(packageName, filename)
@@ -404,19 +396,19 @@ const collectSourceTaskDependencies = (
         currentPartitionName
       ).filter(isTypecheckedSource),
       ...(includeInitialOwners ? initialFiles : []),
-    ].map((filename) => typecheckTaskFor(filename, packageName))
+    ].map((filename) => sourceTaskFor(filename, packageName))
   );
 
   if (currentPartitionName && !includeInitialOwners) {
-    dependencies.delete(partitionTypecheckTask(currentPartitionName));
+    dependencies.delete(partitionSourceHashTask(currentPartitionName));
   }
 
   return [...dependencies].sort(compareStrings);
 };
 
-const managedScriptPattern =
-  /^(?:lint|test|typecheck)(?::(?:partition|tests):|$)|^typecheck:(?:contracts|tests)$/u;
-const managedCommandPattern = /run-entrypoint-(?:package-)?task\.mjs/u;
+const managedScriptPattern = /^(?:lint|test)(?::partition:|$)|^typecheck$/u;
+const managedCommandPattern =
+  /run-entrypoint-(?:package-)?task\.mjs|tooling\/scripts\/typecheck\.mjs/u;
 
 const aggregateScript = (packageName, taskName) =>
   `node ../../tooling/scripts/run-entrypoint-package-task.mjs ${packageName} ${taskName}`;
@@ -426,25 +418,11 @@ const partitionScript = (command, packageName, partitionName) =>
 
 export const createManagedPackageScripts = (packageName) => {
   const definition = entrypointDags[packageName];
-  const contractPartition = definition.contractPartition ?? 'core';
   const scripts = {
     lint: aggregateScript(packageName, 'lint'),
     test: aggregateScript(packageName, 'test'),
-    typecheck: aggregateScript(packageName, 'typecheck'),
-    'typecheck:contracts': partitionScript(
-      'typecheck-contracts',
-      packageName,
-      contractPartition
-    ),
+    typecheck: `node ../../tooling/scripts/typecheck.mjs ${packageName}`,
   };
-
-  if (packagesWithTypecheckedTests.has(packageName)) {
-    scripts['typecheck:tests'] = partitionScript(
-      'typecheck-package-tests',
-      packageName,
-      'core'
-    );
-  }
 
   for (const partitionName of Object.keys(definition.taskPartitions).sort(
     compareStrings
@@ -461,11 +439,6 @@ export const createManagedPackageScripts = (packageName) => {
         partitionName
       );
     }
-    scripts[partitionTypecheckTask(partitionName)] = partitionScript(
-      'typecheck',
-      packageName,
-      partitionName
-    );
   }
 
   return Object.fromEntries(
@@ -507,7 +480,7 @@ const resolveTaskReference = (packageName, taskReference) => {
       : taskReference.slice(separatorIndex + 1);
   const partitionName = Object.keys(
     entrypointDags[dependencyPackageName].taskPartitions
-  ).find((candidate) => partitionTypecheckTask(candidate) === taskName);
+  ).find((candidate) => partitionSourceHashTask(candidate) === taskName);
 
   if (!partitionName) {
     throw new Error(`Unknown partition task reference ${taskReference}.`);
@@ -522,6 +495,32 @@ const partitionTsconfigPath = (packageName, partitionName) =>
     'tsconfig.entrypoints',
     `${partitionName}.json`
   );
+
+const packageTestsTsconfigPath = (packageName) =>
+  path.join(packageRoot(packageName), 'tsconfig.entrypoints/tests.json');
+
+const packageContractsTsconfigPath = (packageName) =>
+  path.join(packageRoot(packageName), 'tsconfig.entrypoints/contracts.json');
+
+const packageTsconfigs = (packageName) => [
+  ...Object.keys(entrypointDags[packageName].taskPartitions)
+    .sort(compareStrings)
+    .map((partitionName) => ({
+      file: partitionTsconfigPath(packageName, partitionName),
+      kind: 'partition',
+      partitionName,
+    })),
+  ...(packagesWithTypecheckedTests.has(packageName)
+    ? [{ file: packageTestsTsconfigPath(packageName), kind: 'tests' }]
+    : []),
+  { file: packageContractsTsconfigPath(packageName), kind: 'contracts' },
+];
+
+export const getEntrypointTypecheckProjects = (packageName) =>
+  packageTsconfigs(packageName).map(({ file, kind }) => ({
+    config: path.relative(repoRoot, file),
+    readsPrivateHalf: kind !== 'partition',
+  }));
 
 const createPartitionTsconfig = (
   packageName,
@@ -606,7 +605,6 @@ const createPackageTestsTsconfig = (packageName) => {
 
   return {
     compilerOptions: {
-      disableSourceOfProjectReferenceRedirect: true,
       noEmit: true,
     },
     exclude: [],
@@ -632,9 +630,6 @@ const createPackageContractsTsconfig = (packageName) => {
   );
 
   return {
-    compilerOptions: {
-      disableSourceOfProjectReferenceRedirect: true,
-    },
     extends:
       packageName === 'platejs'
         ? '../tsconfig.type-tests.json'
@@ -688,7 +683,7 @@ const runtimeTestTaskGraph = (packageName, partitionName, runtimeTestFiles) => {
     dependsOn: [
       ...new Set(
         [...loadedFiles.filter(isTypecheckedSource), ...runtimeTestFiles].map(
-          (filename) => typecheckTaskFor(filename, packageName)
+          (filename) => sourceTaskFor(filename, packageName)
         )
       ),
     ].sort(compareStrings),
@@ -737,7 +732,6 @@ export const createPackageTurboConfig = (packageName) => {
   };
   const lintTasks = [];
   const testTasks = [];
-  const typecheckTasks = [];
   const partitionTaskDependencies = new Map();
 
   for (const partitionName of partitionNames) {
@@ -751,10 +745,8 @@ export const createPackageTurboConfig = (packageName) => {
     );
     const lintTask = `lint:partition:${partitionName}`;
     const testTask = `test:partition:${partitionName}`;
-    const typecheckTask = partitionTypecheckTask(partitionName);
 
     lintTasks.push(lintTask);
-    typecheckTasks.push(typecheckTask);
 
     tasks[lintTask] = {
       cache: true,
@@ -799,74 +791,19 @@ export const createPackageTurboConfig = (packageName) => {
     );
 
     partitionTaskDependencies.set(partitionName, sourceTaskDependencies);
-    tasks[typecheckTask] = {
+    tasks[partitionSourceHashTask(partitionName)] = {
       cache: true,
       dependsOn: sourceTaskDependencies,
       inputs: [
         ...partitionSourceOwnerGlobs(definition, partitionName),
         ...sourceTestInputNegations,
-        ...sharedTypecheckInputs(),
         ...new Set(effectInputs(sourceFiles)),
-        `tsconfig.entrypoints/${partitionName}.json`,
-      ],
-      outputLogs: 'errors-only',
-      outputs: [
-        `.turbo/entrypoint-types/${partitionName}/**`,
-        `.turbo/entrypoint-types/${partitionName}.tsbuildinfo`,
-      ],
-    };
-  }
-
-  const contractFiles = packageContractFiles(packageName);
-  const contractDependencies = collectSourceTaskDependencies(
-    packageName,
-    contractFiles
-  );
-
-  tasks['typecheck:contracts'] = {
-    cache: true,
-    dependsOn: contractDependencies,
-    inputs: [
-      ...(packageName === 'platejs'
-        ? ['type-tests/**', 'tsconfig.type-tests.json']
-        : ['test/public-api-contract.tsx', 'tsconfig.public-api.json']),
-      ...sharedTypecheckInputs(),
-      '$TURBO_ROOT$/config/workspace-source-entries.mjs',
-      '$TURBO_ROOT$/tooling/scripts/typecheck-package-source.mjs',
-      'tsconfig.entrypoints/contracts.json',
-    ],
-    outputLogs: 'errors-only',
-    outputs: [],
-  };
-  if (packagesWithTypecheckedTests.has(packageName)) {
-    const packageTestFiles = [
-      ...getPackageSourceFiles(packageName, { tests: true }),
-      ...getTypecheckedExternalTestFiles(packageName),
-      ...walkFiles(path.join(packageRoot(packageName), 'test/react')).filter(
-        (filename) => sourceFilePattern.test(filename)
-      ),
-    ];
-
-    tasks['typecheck:tests'] = {
-      cache: true,
-      dependsOn: collectSourceTaskDependencies(packageName, packageTestFiles, {
-        includeInitialOwners: true,
-      }),
-      inputs: [
-        'src/**/*.spec.*',
-        'src/**/*.test.*',
-        'src/**/*-contract.*',
-        'src/**/__tests__/**',
-        ...(packageName === 'platejs'
-          ? ['test/testing/**', 'tsconfig.test.json']
-          : ['test/**']),
-        ...sharedTypecheckInputs(),
-        'tsconfig.entrypoints/tests.json',
       ],
       outputLogs: 'errors-only',
       outputs: [],
     };
   }
+
   tasks.lint = {
     cache: true,
     dependsOn: lintTasks,
@@ -883,17 +820,21 @@ export const createPackageTurboConfig = (packageName) => {
     passThroughEnv: partitionTestEnv(packageName),
   };
   tasks.typecheck = {
-    cache: true,
-    dependsOn: [
-      ...typecheckTasks,
-      'typecheck:contracts',
-      ...(packagesWithTypecheckedTests.has(packageName)
-        ? ['typecheck:tests']
-        : []),
-    ],
-    inputs: aggregateTaskInputs(),
+    cache: false,
+    dependsOn: [],
     outputLogs: 'errors-only',
     outputs: [],
+  };
+
+  const createTsconfig = {
+    contracts: () => createPackageContractsTsconfig(packageName),
+    partition: (partitionName) =>
+      createPartitionTsconfig(
+        packageName,
+        partitionName,
+        partitionTaskDependencies.get(partitionName)
+      ),
+    tests: () => createPackageTestsTsconfig(packageName),
   };
 
   return {
@@ -906,34 +847,12 @@ export const createPackageTurboConfig = (packageName) => {
         )
       ),
     },
-    tsconfigs: Object.fromEntries([
-      ...partitionNames.map((partitionName) => [
-        partitionTsconfigPath(packageName, partitionName),
-        createPartitionTsconfig(
-          packageName,
-          partitionName,
-          partitionTaskDependencies.get(partitionName)
-        ),
-      ]),
-      ...(packagesWithTypecheckedTests.has(packageName)
-        ? [
-            [
-              path.join(
-                packageRoot(packageName),
-                'tsconfig.entrypoints/tests.json'
-              ),
-              createPackageTestsTsconfig(packageName),
-            ],
-          ]
-        : []),
-      [
-        path.join(
-          packageRoot(packageName),
-          'tsconfig.entrypoints/contracts.json'
-        ),
-        createPackageContractsTsconfig(packageName),
-      ],
-    ]),
+    tsconfigs: Object.fromEntries(
+      packageTsconfigs(packageName).map(({ file, kind, partitionName }) => [
+        file,
+        createTsconfig[kind](partitionName),
+      ])
+    ),
   };
 };
 

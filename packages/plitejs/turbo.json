@@ -420,6 +420,166 @@
       "outputLogs": "errors-only",
       "outputs": []
     },
+    "source-hash:partition:authored": {
+      "cache": true,
+      "dependsOn": ["source-hash:partition:core", "source-hash:partition:diff"],
+      "inputs": [
+        "src/authored/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:core": {
+      "cache": true,
+      "dependsOn": [],
+      "inputs": [
+        "src/annotations/**",
+        "src/internal/index.*",
+        "src/**",
+        "!src/authored/**",
+        "!src/diff/**",
+        "!src/dom/**",
+        "!src/history/**",
+        "!src/hyperscript/**",
+        "!src/pagination/**",
+        "!src/pagination/react.*",
+        "!src/react/**",
+        "!src/react/virtualized.*",
+        "!src/react/virtualized/**",
+        "!src/testing/**",
+        "!src/yjs/**",
+        "!src/yjs/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:diff": {
+      "cache": true,
+      "dependsOn": ["source-hash:partition:core"],
+      "inputs": [
+        "src/diff/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:dom": {
+      "cache": true,
+      "dependsOn": ["source-hash:partition:core"],
+      "inputs": [
+        "src/dom/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:history": {
+      "cache": true,
+      "dependsOn": ["source-hash:partition:core"],
+      "inputs": [
+        "src/history/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:pagination": {
+      "cache": true,
+      "dependsOn": [
+        "source-hash:partition:core",
+        "source-hash:partition:react"
+      ],
+      "inputs": [
+        "src/pagination/**",
+        "src/pagination/react.*",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:react": {
+      "cache": true,
+      "dependsOn": ["source-hash:partition:core", "source-hash:partition:dom"],
+      "inputs": [
+        "src/react/**",
+        "!src/react/virtualized.*",
+        "!src/react/virtualized/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:react-virtualized": {
+      "cache": true,
+      "dependsOn": [
+        "source-hash:partition:core",
+        "source-hash:partition:react"
+      ],
+      "inputs": [
+        "src/react/virtualized.*",
+        "src/react/virtualized/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:testing": {
+      "cache": true,
+      "dependsOn": ["source-hash:partition:core"],
+      "inputs": [
+        "src/hyperscript/**",
+        "src/testing/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
+    "source-hash:partition:yjs": {
+      "cache": true,
+      "dependsOn": [
+        "source-hash:partition:core",
+        "source-hash:partition:react"
+      ],
+      "inputs": [
+        "src/yjs/**",
+        "src/yjs/react/**",
+        "!src/**/*.spec.*",
+        "!src/**/*.test.*",
+        "!src/**/*-contract.*",
+        "!src/**/__tests__/**"
+      ],
+      "outputLogs": "errors-only",
+      "outputs": []
+    },
     "test": {
       "cache": true,
       "dependsOn": [
@@ -456,14 +616,14 @@
     "test:partition:authored": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:diff",
-        "typecheck:partition:dom",
-        "typecheck:partition:history",
-        "typecheck:partition:react",
-        "typecheck:partition:testing",
-        "typecheck:partition:yjs"
+        "source-hash:partition:authored",
+        "source-hash:partition:core",
+        "source-hash:partition:diff",
+        "source-hash:partition:dom",
+        "source-hash:partition:history",
+        "source-hash:partition:react",
+        "source-hash:partition:testing",
+        "source-hash:partition:yjs"
       ],
       "inputs": [
         "src/authored/**",
@@ -494,7 +654,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -515,12 +674,12 @@
     "test:partition:core": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:dom",
-        "typecheck:partition:history",
-        "typecheck:partition:testing",
-        "typecheck:partition:yjs"
+        "source-hash:partition:authored",
+        "source-hash:partition:core",
+        "source-hash:partition:dom",
+        "source-hash:partition:history",
+        "source-hash:partition:testing",
+        "source-hash:partition:yjs"
       ],
       "inputs": [
         "src/annotations/**",
@@ -620,7 +779,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -641,9 +799,9 @@
     "test:partition:diff": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:core",
-        "typecheck:partition:diff",
-        "typecheck:partition:testing"
+        "source-hash:partition:core",
+        "source-hash:partition:diff",
+        "source-hash:partition:testing"
       ],
       "inputs": [
         "src/diff/**",
@@ -666,7 +824,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -687,11 +844,11 @@
     "test:partition:dom": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:core",
-        "typecheck:partition:dom",
-        "typecheck:partition:history",
-        "typecheck:partition:react",
-        "typecheck:partition:testing"
+        "source-hash:partition:core",
+        "source-hash:partition:dom",
+        "source-hash:partition:history",
+        "source-hash:partition:react",
+        "source-hash:partition:testing"
       ],
       "inputs": [
         "src/dom/**",
@@ -723,7 +880,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -744,11 +900,11 @@
     "test:partition:history": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:history",
-        "typecheck:partition:testing",
-        "typecheck:partition:yjs"
+        "source-hash:partition:authored",
+        "source-hash:partition:core",
+        "source-hash:partition:history",
+        "source-hash:partition:testing",
+        "source-hash:partition:yjs"
       ],
       "inputs": [
         "src/history/**",
@@ -779,7 +935,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -800,14 +955,14 @@
     "test:partition:pagination": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:dom",
-        "typecheck:partition:history",
-        "typecheck:partition:pagination",
-        "typecheck:partition:react",
-        "typecheck:partition:testing",
-        "typecheck:partition:yjs"
+        "source-hash:partition:authored",
+        "source-hash:partition:core",
+        "source-hash:partition:dom",
+        "source-hash:partition:history",
+        "source-hash:partition:pagination",
+        "source-hash:partition:react",
+        "source-hash:partition:testing",
+        "source-hash:partition:yjs"
       ],
       "inputs": [
         "src/pagination/**",
@@ -839,7 +994,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -860,15 +1014,15 @@
     "test:partition:react": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:dom",
-        "typecheck:partition:history",
-        "typecheck:partition:pagination",
-        "typecheck:partition:react",
-        "typecheck:partition:react-virtualized",
-        "typecheck:partition:testing",
-        "typecheck:partition:yjs"
+        "source-hash:partition:authored",
+        "source-hash:partition:core",
+        "source-hash:partition:dom",
+        "source-hash:partition:history",
+        "source-hash:partition:pagination",
+        "source-hash:partition:react",
+        "source-hash:partition:react-virtualized",
+        "source-hash:partition:testing",
+        "source-hash:partition:yjs"
       ],
       "inputs": [
         "src/react/**",
@@ -908,7 +1062,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -929,11 +1082,11 @@
     "test:partition:react-virtualized": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:core",
-        "typecheck:partition:dom",
-        "typecheck:partition:react",
-        "typecheck:partition:react-virtualized",
-        "typecheck:partition:testing"
+        "source-hash:partition:core",
+        "source-hash:partition:dom",
+        "source-hash:partition:react",
+        "source-hash:partition:react-virtualized",
+        "source-hash:partition:testing"
       ],
       "inputs": [
         "src/react/virtualized.*",
@@ -962,7 +1115,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -982,7 +1134,10 @@
     },
     "test:partition:testing": {
       "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:testing"],
+      "dependsOn": [
+        "source-hash:partition:core",
+        "source-hash:partition:testing"
+      ],
       "inputs": [
         "src/hyperscript/**",
         "src/testing/**",
@@ -1012,7 +1167,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -1033,13 +1187,13 @@
     "test:partition:yjs": {
       "cache": true,
       "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:dom",
-        "typecheck:partition:history",
-        "typecheck:partition:react",
-        "typecheck:partition:testing",
-        "typecheck:partition:yjs"
+        "source-hash:partition:authored",
+        "source-hash:partition:core",
+        "source-hash:partition:dom",
+        "source-hash:partition:history",
+        "source-hash:partition:react",
+        "source-hash:partition:testing",
+        "source-hash:partition:yjs"
       ],
       "inputs": [
         "src/yjs/**",
@@ -1077,7 +1231,6 @@
         "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
         "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
         "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
         "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
         "$TURBO_ROOT$/bunfig.toml",
         "$TURBO_ROOT$/config/*",
@@ -1096,431 +1249,8 @@
       "outputs": []
     },
     "typecheck": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:diff",
-        "typecheck:partition:dom",
-        "typecheck:partition:history",
-        "typecheck:partition:pagination",
-        "typecheck:partition:react",
-        "typecheck:partition:react-virtualized",
-        "typecheck:partition:testing",
-        "typecheck:partition:yjs",
-        "typecheck:contracts",
-        "typecheck:tests"
-      ],
-      "inputs": [
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-package-task.mjs"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "typecheck:contracts": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:react"
-      ],
-      "inputs": [
-        "test/public-api-contract.tsx",
-        "tsconfig.public-api.json",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/scripts/typecheck-package-source.mjs",
-        "tsconfig.entrypoints/contracts.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": []
-    },
-    "typecheck:partition:authored": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:diff"],
-      "inputs": [
-        "src/authored/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/authored.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/authored/**",
-        ".turbo/entrypoint-types/authored.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:core": {
-      "cache": true,
+      "cache": false,
       "dependsOn": [],
-      "inputs": [
-        "src/annotations/**",
-        "src/internal/index.*",
-        "src/**",
-        "!src/authored/**",
-        "!src/diff/**",
-        "!src/dom/**",
-        "!src/history/**",
-        "!src/hyperscript/**",
-        "!src/pagination/**",
-        "!src/pagination/react.*",
-        "!src/react/**",
-        "!src/react/virtualized.*",
-        "!src/react/virtualized/**",
-        "!src/testing/**",
-        "!src/yjs/**",
-        "!src/yjs/react/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/core.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/core/**",
-        ".turbo/entrypoint-types/core.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:diff": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
-      "inputs": [
-        "src/diff/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/diff.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/diff/**",
-        ".turbo/entrypoint-types/diff.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:dom": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
-      "inputs": [
-        "src/dom/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/dom.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/dom/**",
-        ".turbo/entrypoint-types/dom.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:history": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
-      "inputs": [
-        "src/history/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/history.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/history/**",
-        ".turbo/entrypoint-types/history.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:pagination": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:react"],
-      "inputs": [
-        "src/pagination/**",
-        "src/pagination/react.*",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/pagination.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/pagination/**",
-        ".turbo/entrypoint-types/pagination.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:react": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:dom"],
-      "inputs": [
-        "src/react/**",
-        "!src/react/virtualized.*",
-        "!src/react/virtualized/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/react.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/react/**",
-        ".turbo/entrypoint-types/react.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:react-virtualized": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:react"],
-      "inputs": [
-        "src/react/virtualized.*",
-        "src/react/virtualized/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/react-virtualized.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/react-virtualized/**",
-        ".turbo/entrypoint-types/react-virtualized.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:testing": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core"],
-      "inputs": [
-        "src/hyperscript/**",
-        "src/testing/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/testing.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/testing/**",
-        ".turbo/entrypoint-types/testing.tsbuildinfo"
-      ]
-    },
-    "typecheck:partition:yjs": {
-      "cache": true,
-      "dependsOn": ["typecheck:partition:core", "typecheck:partition:react"],
-      "inputs": [
-        "src/yjs/**",
-        "src/yjs/react/**",
-        "!src/**/*.spec.*",
-        "!src/**/*.test.*",
-        "!src/**/*-contract.*",
-        "!src/**/__tests__/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/yjs.json"
-      ],
-      "outputLogs": "errors-only",
-      "outputs": [
-        ".turbo/entrypoint-types/yjs/**",
-        ".turbo/entrypoint-types/yjs.tsbuildinfo"
-      ]
-    },
-    "typecheck:tests": {
-      "cache": true,
-      "dependsOn": [
-        "typecheck:partition:authored",
-        "typecheck:partition:core",
-        "typecheck:partition:diff",
-        "typecheck:partition:dom",
-        "typecheck:partition:history",
-        "typecheck:partition:pagination",
-        "typecheck:partition:react",
-        "typecheck:partition:react-virtualized",
-        "typecheck:partition:testing",
-        "typecheck:partition:yjs"
-      ],
-      "inputs": [
-        "src/**/*.spec.*",
-        "src/**/*.test.*",
-        "src/**/*-contract.*",
-        "src/**/__tests__/**",
-        "test/**",
-        "$TURBO_ROOT$/config/workspace-source-entries.mjs",
-        "$TURBO_ROOT$/tooling/config/test-suites.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/entrypoint-turbo.mjs",
-        "$TURBO_ROOT$/tooling/entrypoints/test-module-effects.mjs",
-        "$TURBO_ROOT$/tooling/scripts/import-graph.mjs",
-        "$TURBO_ROOT$/tooling/scripts/load-trace.mjs",
-        "$TURBO_ROOT$/tooling/scripts/private-files.mjs",
-        "$TURBO_ROOT$/tooling/scripts/run-entrypoint-task.mjs",
-        "$TURBO_ROOT$/tooling/config/global.d.ts",
-        "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
-        "$TURBO_ROOT$/tooling/config/tsconfig.test.json",
-        "$TURBO_ROOT$/tsconfig.json",
-        "tsconfig.json",
-        "tsconfig.entrypoints/tests.json"
-      ],
       "outputLogs": "errors-only",
       "outputs": []
     }
