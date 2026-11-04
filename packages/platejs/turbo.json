@@ -3262,6 +3262,7 @@
         "source-hash:partition:math",
         "source-hash:partition:standard-basic-nodes",
         "source-hash:partition:standard-code-block",
+        "source-hash:partition:standard-list",
         "source-hash:partition:static",
         "source-hash:partition:toc"
       ],
@@ -5363,6 +5364,7 @@
         "source-hash:partition:standard-indent",
         "source-hash:partition:standard-list",
         "source-hash:partition:static",
+        "source-hash:partition:table",
         "source-hash:partition:toc"
       ],
       "inputs": [

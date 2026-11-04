@@ -34,6 +34,7 @@ import {
   getStaticDocumentView,
   getStaticRootView,
 } from '../internal/staticDocumentView';
+import { getStaticWrapElement } from '../internal/staticPresentation';
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic.internal';
 import { pipeRenderLeafStatic } from '../pluginRenderLeafStatic.internal';
 import { pipeRenderTextStatic } from '../pluginRenderTextStatic.internal';
@@ -387,9 +388,20 @@ function BaseElementStatic({
 
   return (
     <>
-      {withDocumentViewRead(editor, () =>
-        renderElement?.({ attributes, children, element, path, slots })
-      )}
+      {withDocumentViewRead(editor, () => {
+        const drawn = renderElement?.({
+          attributes,
+          children,
+          element,
+          path,
+          slots,
+        });
+        const wrapElement = getStaticWrapElement(editor);
+
+        return wrapElement
+          ? wrapElement({ attributes, children: drawn, editor, element, path })
+          : drawn;
+      })}
     </>
   );
 }

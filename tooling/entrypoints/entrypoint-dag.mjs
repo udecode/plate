@@ -292,6 +292,7 @@ export const entrypointDags = {
             'footnote',
             'layout',
             'math',
+            'standard/list',
             'static',
             'toc',
           ],

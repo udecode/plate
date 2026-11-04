@@ -11,23 +11,32 @@ import VText from 'virtual-dom/vnode/vtext.js';
 import { fragment } from 'xmlbuilder2';
 import type { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
+import { REVIEW_TOKEN } from '../reviewProjection';
+import type { ListItemPlacement } from './docx-document';
+import {
+  type DocxListItem,
+  isListedBlock,
+  listTextIndent,
+  readListItem,
+} from './list-item';
 import namespaces from './namespaces';
 import { vNodeHasChildren } from './vnode';
 import type { WordStyles } from './word-styles';
 import {
   type BlockScope,
+  type BlockSink,
   buildImage,
   buildList,
   buildParagraph,
   buildTable,
   defineNamedStyles,
-  itemNumberingId,
+  inheritParagraphStyle,
+  narrowedWidth,
   quoteScope,
   type RenderBlocks,
-  withItemRestart,
 } from './xml-builder';
 
-type XMLBuilderType = XMLBuilder;
+type XMLBuilderType = BlockSink;
 
 // Types for Virtual DOM
 type VNodeProperties = {
@@ -74,8 +83,8 @@ type DocxDocumentInstance = {
   createFont: (fontFamily: string) => string;
   createMediaFile: (base64Uri: string) => MediaFileResponse;
   createNumbering: (type: 'ol' | 'ul', properties?: VNodeProperties) => number;
-  taskNumberingId: (checked: boolean) => number;
   getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
+  openItem: (item: DocxListItem) => ListItemPlacement;
   openList: (
     type: 'ol' | 'ul',
     properties: VNodeProperties,
@@ -105,7 +114,6 @@ type DocxDocumentInstance = {
   };
 };
 
-// Inline elements that should be grouped into a single paragraph
 const INLINE_ELEMENTS = new Set([
   'span',
   'strong',
@@ -124,10 +132,11 @@ const INLINE_ELEMENTS = new Set([
   'code',
 ]);
 
-// Check if a vNode is an inline element
 const isInlineElement = (node: VNodeType | VTextType): boolean =>
   isVText(node) ||
-  (isVNode(node) && INLINE_ELEMENTS.has((node as VNodeType).tagName || ''));
+  (isVNode(node) &&
+    INLINE_ELEMENTS.has((node as VNodeType).tagName || '') &&
+    !isListedBlock((node as VNodeType).properties?.attributes));
 
 // Elements that need special handling and should not be wrapped in inline grouping
 const SPECIAL_BLOCK_ELEMENTS = new Set([
@@ -186,34 +195,154 @@ function getHeadingBookmark(vNode: VNodeType) {
   return firstChild.properties?.id || firstChild.properties?.attributes?.id;
 }
 
-// The registry's static list kit draws a listed block's list inside the block,
-// as h2 > ol > li. A div holding one keeps the generic path into buildList.
-const readPlateListItem = (block: VNodeType) => {
-  if (block.tagName === 'div') return undefined;
+const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
+const REVIEW_START = new RegExp(`^${REVIEW_TOKEN}[^\uE001]*_start\uE001`);
+const EMPTY_SPACER_TEXT = /^\uFEFF*$/;
 
-  const children = (block.children ?? []).filter(
-    (child) => isVNode(child) || (child as VTextType).text.trim() !== ''
+const wordChild = (node: Node | undefined, name: string) =>
+  Array.from(node?.childNodes ?? []).find(
+    (child): child is Element =>
+      child.nodeType === 1 &&
+      (child as Element).namespaceURI === namespaces.w &&
+      (child as Element).localName === name
   );
-  const [list, ...rest] = getHeadingBookmark(block)
-    ? children.slice(1)
-    : children;
 
-  if (
-    rest.length > 0 ||
-    !isVNode(list) ||
-    !['ol', 'ul'].includes((list as VNodeType).tagName ?? '') ||
-    (list as VNodeType).properties?.attributes?.['data-list-id'] === undefined
+const isUnnumberedParagraph = (node: Node): node is Element =>
+  node.nodeType === 1 &&
+  (node as Element).namespaceURI === namespaces.w &&
+  (node as Element).localName === 'p' &&
+  !wordChild(wordChild(node, 'pPr'), 'numPr');
+
+class PlacingSink implements BlockSink {
+  private readonly target: BlockSink;
+  private readonly placement: ListItemPlacement;
+  private readonly reviewStart: string | undefined;
+
+  constructor(
+    target: BlockSink,
+    placement: ListItemPlacement,
+    reviewStart: string | undefined
   ) {
-    return undefined;
+    this.target = target;
+    this.placement = placement;
+    this.reviewStart = reviewStart;
   }
-  const items = ((list as VNodeType).children ?? []).filter((child) =>
-    isVNode(child)
-  ) as VNodeType[];
 
-  return items.length === 1 && items[0].tagName === 'li'
-    ? { item: items[0], list: list as VNodeType }
-    : undefined;
+  import(node: XMLBuilder) {
+    const root = node.node as unknown as Node;
+    const tops = root.nodeType === 11 ? Array.from(root.childNodes) : [root];
+
+    for (const top of tops) {
+      if (isUnnumberedParagraph(top)) this.place(top);
+      else if (top.nodeType === 1) this.flushPendingMarker();
+    }
+
+    return this.target.import(node);
+  }
+
+  flushPendingMarker(): BlockSink {
+    if (!this.placement.placed) {
+      const paragraph = fragment({ namespaceAlias: { w: namespaces.w } }).ele(
+        '@w',
+        'p'
+      );
+
+      this.place(paragraph.node as unknown as Element);
+      this.target.import(paragraph);
+    }
+
+    return this.target;
+  }
+
+  private place(paragraph: Element) {
+    const first = !this.placement.placed;
+
+    this.placement.place(paragraph);
+    if (!first || !this.reviewStart) return;
+    const document = paragraph.ownerDocument;
+    const run = document.createElementNS(namespaces.w, 'w:r');
+    const text = document.createElementNS(namespaces.w, 'w:t');
+
+    text.setAttributeNS(XML_NAMESPACE, 'xml:space', 'preserve');
+    text.textContent = this.reviewStart;
+    run.append(text);
+    wordChild(paragraph, 'pPr')?.after(run);
+  }
+}
+
+const firstText = (
+  node: VNodeType
+): Readonly<{ parent: VNodeType; text: VTextType }> | undefined => {
+  for (const child of node.children ?? []) {
+    if (isVText(child)) {
+      if ((child as VTextType).text) {
+        return { parent: node, text: child as VTextType };
+      }
+      continue;
+    }
+    const found = firstText(child);
+
+    if (found) return found;
+  }
+
+  return undefined;
 };
+
+const textOf = (node: VNodeType | VTextType): string =>
+  isVText(node)
+    ? (node as VTextType).text
+    : ((node as VNodeType).children ?? []).map(textOf).join('');
+
+const isPlaceholderSpacer = (node: VNodeType | VTextType) =>
+  isVNode(node) &&
+  (node as VNodeType).properties?.attributes?.['data-editor-spacer'] !==
+    undefined &&
+  EMPTY_SPACER_TEXT.test(textOf(node));
+
+const detachReviewStart = (vNode: VNodeType) => {
+  const found = firstText(vNode);
+  const start = found?.text.text.match(REVIEW_START)?.[0];
+
+  if (!found || !start) return undefined;
+  found.text.text = found.text.text.slice(start.length);
+  if (!found.text.text) {
+    found.parent.children = found.parent.children?.filter(
+      (child) => child !== found.text
+    );
+  }
+
+  return start;
+};
+
+async function renderListItem(
+  docxDocumentInstance: DocxDocumentInstance,
+  vNode: VNodeType,
+  item: DocxListItem,
+  xmlFragment: XMLBuilderType,
+  indentedAncestor: VNodeType | undefined,
+  scope: BlockScope
+) {
+  const outsideListWidth =
+    scope.outsideListWidth ??
+    scope.maximumWidth ??
+    docxDocumentInstance.availableDocumentSpace;
+  const target =
+    xmlFragment instanceof PlacingSink
+      ? xmlFragment.flushPendingMarker()
+      : xmlFragment;
+  const placing = new PlacingSink(
+    target,
+    docxDocumentInstance.openItem(item),
+    detachReviewStart(vNode)
+  );
+
+  await renderBlock(docxDocumentInstance, vNode, placing, indentedAncestor, {
+    ...inheritParagraphStyle(docxDocumentInstance, vNode, scope),
+    maximumWidth: narrowedWidth(outsideListWidth, listTextIndent(item.level)),
+    outsideListWidth,
+  });
+  placing.flushPendingMarker();
+}
 
 type ContentGroup = {
   children?: Array<VNodeType | VTextType>;
@@ -249,6 +378,34 @@ async function findXMLEquivalent(
   indentedAncestor: VNodeType | undefined,
   scope: BlockScope
 ): Promise<void> {
+  const item = readListItem(vNode.properties?.attributes);
+
+  await (item
+    ? renderListItem(
+        docxDocumentInstance,
+        vNode,
+        item,
+        xmlFragment,
+        indentedAncestor,
+        scope
+      )
+    : renderBlock(
+        docxDocumentInstance,
+        vNode,
+        xmlFragment,
+        indentedAncestor,
+        scope
+      ));
+}
+
+async function renderBlock(
+  docxDocumentInstance: DocxDocumentInstance,
+  vNode: VNodeType,
+  xmlFragment: XMLBuilderType,
+  indentedAncestor: VNodeType | undefined,
+  scope: BlockScope
+): Promise<void> {
+  if (isPlaceholderSpacer(vNode)) return;
   const childIndentedAncestor = isIndented(vNode) ? vNode : indentedAncestor;
   const paragraph = (
     node: VNodeType | VTextType | null,
@@ -271,41 +428,6 @@ async function findXMLEquivalent(
       .up();
 
     xmlFragment.import(paragraphFragment);
-    return;
-  }
-
-  const listed = readPlateListItem(vNode);
-
-  if (listed) {
-    const { item, list } = listed;
-    const attributes = item.properties?.attributes;
-    const levelId = Math.max(0, Number(attributes?.['data-indent'] ?? 1) - 1);
-    const instance = docxDocumentInstance.openList(
-      list.tagName as 'ol' | 'ul',
-      withItemRestart(list.properties ?? {}, item),
-      levelId
-    );
-    const numberingId = itemNumberingId(
-      docxDocumentInstance,
-      item,
-      instance.numberingId
-    );
-    // The list level owns the indent, as for a buildList item.
-    const { 'margin-left': _margin, ...style } = vNode.properties?.style ?? {};
-
-    await findXMLEquivalent(
-      docxDocumentInstance,
-      new VNode(vNode.tagName, { ...vNode.properties, style }, [
-        ...(getHeadingBookmark(vNode)
-          ? (vNode.children ?? []).slice(0, 1)
-          : []),
-        ...(item.children ?? []),
-      ]),
-      xmlFragment,
-      indentedAncestor,
-      { numbering: { levelId, numberingId }, ...scope }
-    );
-    instance.next += 1;
     return;
   }
 
@@ -338,6 +460,7 @@ async function findXMLEquivalent(
       let currentInlineGroup: Array<VNodeType | VTextType> = [];
 
       for (const child of vNode.children || []) {
+        if (isPlaceholderSpacer(child)) continue;
         if (isInlineElement(child)) {
           currentInlineGroup.push(child);
         } else {
@@ -465,10 +588,6 @@ async function findXMLEquivalent(
       return;
     }
     case 'blockquote': {
-      if (scope.numbering) {
-        xmlFragment.import(await paragraph(vNode));
-        return;
-      }
       await renderQuote(
         docxDocumentInstance,
         vNode,
@@ -665,7 +784,15 @@ async function renderQuote(
 
     const block = child as VNodeType;
 
-    if (
+    if (readListItem(block.properties?.attributes)) {
+      await convertVTreeToXML(
+        docxDocumentInstance,
+        block,
+        xmlFragment,
+        indentedAncestor,
+        scope
+      );
+    } else if (
       ['div', 'p'].includes(block.tagName ?? '') &&
       (block.children ?? []).every(
         (grandchild) =>
@@ -686,13 +813,13 @@ async function renderQuote(
   await flush();
 }
 
-export async function convertVTreeToXML(
+export async function convertVTreeToXML<Sink extends BlockSink>(
   docxDocumentInstance: DocxDocumentInstance,
   vTree: VTree | null,
-  xmlFragment: XMLBuilderType,
+  xmlFragment: Sink,
   indentedAncestor?: VNodeType,
   scope: BlockScope = {}
-): Promise<XMLBuilderType | string> {
+): Promise<Sink | string> {
   if (!vTree) {
     return '';
   }
@@ -727,7 +854,7 @@ export async function convertVTreeToXML(
 
 async function renderDocumentFile(
   docxDocumentInstance: DocxDocumentInstance
-): Promise<XMLBuilderType> {
+): Promise<XMLBuilder> {
   const vTree = convertHTML(docxDocumentInstance.htmlString);
   const registerBookmarks = (tree: VTree) => {
     if (Array.isArray(tree)) {
@@ -778,7 +905,7 @@ async function renderDocumentFile(
     xmlFragment
   );
 
-  return populatedXmlFragment as XMLBuilderType;
+  return populatedXmlFragment as XMLBuilder;
 }
 
 export default renderDocumentFile;

@@ -48,6 +48,9 @@
       "path": "./standard-code-block.json"
     },
     {
+      "path": "./standard-list.json"
+    },
+    {
       "path": "./static.json"
     },
     {

@@ -27,8 +27,12 @@ import {
   type DocxSourceLease,
 } from '../../internal/source';
 import type { DocxComment, DocxDiagnostic } from '../../internal/types';
-import { addDocxComments, prepareDocxComments } from './comments';
-import { DOCX_STATIC_COMPONENTS } from './docxStaticComponents';
+import {
+  addDocxComments,
+  anchorDocxComments,
+  joinDocxCommentBodies,
+} from './comments';
+import { docxStaticOverrides } from './docxStaticComponents';
 import { exportHtmlToDocx } from './exportHtmlToDocx.internal';
 import { toWordLevelRules } from './internal/docx-document';
 import type { Margins, PageSize } from './internal/types';
@@ -77,11 +81,11 @@ export type DocxExportOptions = Readonly<{
   pageSize?: PageSize;
   /**
    * Static plugins that draw the body and every comment body, such as the
-   * app's static kit; see `renderStaticHtml`. DOCX's own drawings of code
-   * blocks, columns, equations, callouts, headings and tables of contents
-   * take precedence. Each `missing-static-presentation` diagnostic counts as
-   * lost content under `lossPolicy`. It does not stop an unchanged `source`
-   * from returning its original file.
+   * app's static kit; see `renderStaticHtml`. DOCX's own drawings of lists,
+   * code blocks, columns, equations, callouts, headings and tables of
+   * contents take precedence. Each `missing-static-presentation` diagnostic
+   * counts as lost content under `lossPolicy`. It does not stop an unchanged
+   * `source` from returning its original file.
    */
   presentation?: readonly BasePluginInput[];
   /** Visible document projection to export. */
@@ -103,8 +107,11 @@ export type DocxExportOptions = Readonly<{
    * drawn element has the class `editor-<plugin name>`. A callout draws
    * `table > tbody > tr > td`, its first cell holding the icon; a code block
    * draws `[data-docx-preserve-whitespace]`; an empty equation or table of
-   * contents marks its placeholder `[data-empty]`. A task list item marks its
-   * `li` with `data-checked`, which becomes a ☑ or ☐ list marker.
+   * contents marks its placeholder `[data-empty]`. A listed block's own outer
+   * element carries its list item as `data-docx-list` attributes, so a rule
+   * on `[data-docx-list="task"][data-docx-list-checked]` styles a checked
+   * to-do's element. The rule's alignment and line height apply to each text
+   * paragraph the listed block writes, not to an image or a table.
    *
    * The top and bottom margin, in `pt` or `px`, of an element drawn as a Word
    * paragraph, such as a paragraph or heading, sets its Word space before and
@@ -393,9 +400,7 @@ const quoteDiagnostics = (
     });
   };
   const mergesIntoQuote = (child: Descendant) =>
-    ElementApi.isElement(child) &&
-    child.type === quote.schema.type &&
-    child.listType === undefined;
+    ElementApi.isElement(child) && child.type === quote.schema.type;
   const leavesQuote = (child: Descendant) =>
     ElementApi.isElement(child) &&
     !mergesIntoQuote(child) &&
@@ -431,20 +436,6 @@ const quoteDiagnostics = (
             `The quote at ${place(path)} joins the quote before it in Word.`
           );
         }
-        if (node.listType !== undefined) {
-          if (
-            node.children.length > 1 ||
-            node.children.some(
-              (child) => mergesIntoQuote(child) || leavesQuote(child)
-            )
-          ) {
-            warn(
-              path,
-              `The numbered quote at ${place(path)} exports as one paragraph in Word.`
-            );
-          }
-          return;
-        }
         node.children.forEach((child, childIndex) => {
           const childPath = [...path, childIndex];
 
@@ -473,6 +464,7 @@ const quoteDiagnostics = (
 const renderDocxHtml = async (
   editor: Editor,
   document: EditorDocumentValue,
+  story: string,
   { component, fontFamily, presentation, signal }: DocxExportOptions
 ) => {
   const rendered = await renderStaticHtmlWithOverrides(
@@ -485,7 +477,7 @@ const renderDocxHtml = async (
         style: { padding: '0', ...(fontFamily ? { fontFamily } : {}) },
       },
     },
-    DOCX_STATIC_COMPONENTS
+    docxStaticOverrides(story)
   );
 
   throwIfDocxAborted(signal);
@@ -702,27 +694,33 @@ export async function exportDocx(
 
   try {
     const [main, commentRenders] = await Promise.all([
-      renderDocxHtml(editor, capture.document, options),
+      renderDocxHtml(editor, capture.document, 'body', options),
       Promise.all(
         capture.comments.map(async ({ body, id }) => ({
           id,
-          ...(await renderDocxHtml(editor, { children: body }, options)),
+          ...(await renderDocxHtml(
+            editor,
+            { children: body },
+            `comment:${id}`,
+            options
+          )),
         }))
       ),
     ]);
 
     throwIfDocxAborted(options.signal);
+    const anchored = anchorDocxComments(main.data, capture.comments);
     const review = capture.review
-      ? applyReviewProjection(main.data, capture.review)
+      ? applyReviewProjection(anchored.html, capture.review)
       : undefined;
 
     diagnostics.push(
       ...(review?.diagnostics ?? []),
       ...missingDrawings([main, ...commentRenders])
     );
-    const preparedComments = prepareDocxComments(
-      review?.html ?? main.data,
-      capture.comments,
+    const preparedComments = joinDocxCommentBodies(
+      review?.html ?? anchored.html,
+      anchored,
       new Map(commentRenders.map(({ data, id }) => [id, data]))
     );
 

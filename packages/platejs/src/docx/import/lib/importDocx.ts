@@ -1322,7 +1322,12 @@ const moveCommentMarkers = (
   stored: readonly Descendant[],
   codec: ReturnType<typeof createMarkerCodec>
 ) => {
-  const anchors: Array<{ end: boolean; offset: number; token: string }> = [];
+  const anchors: Array<{
+    end: boolean;
+    id: string;
+    offset: number;
+    token: string;
+  }> = [];
   let convertedText = '';
 
   for (const text of textsOf(converted)) {
@@ -1334,6 +1339,7 @@ const moveCommentMarkers = (
       if (marker.kind === 'comment-end' || marker.kind === 'comment-start') {
         anchors.push({
           end: marker.kind === 'comment-end',
+          id: marker.id,
           offset: convertedText.length,
           token: marker.token,
         });
@@ -1348,12 +1354,19 @@ const moveCommentMarkers = (
     texts.slice(0, index).reduce((length, text) => length + text.length, 0)
   );
   const inserts = new Map<number, Array<{ at: number; token: string }>>();
+  const startLeaves = new Map<string, { index: number; offset: number }>();
 
-  for (const { end, offset, token } of anchors) {
-    const found = starts.findIndex((from, index) =>
-      (end ? endsIn : startsIn)(from, texts[index].length, offset)
-    );
+  for (const { end, id, offset, token } of anchors) {
+    const start = end ? startLeaves.get(id) : undefined;
+    const found =
+      start?.offset === offset
+        ? start.index
+        : starts.findIndex((from, index) =>
+            (end ? endsIn : startsIn)(from, texts[index].length, offset)
+          );
     const index = found === -1 ? (end ? 0 : texts.length - 1) : found;
+
+    if (!end) startLeaves.set(id, { index, offset });
 
     inserts.set(index, [
       ...(inserts.get(index) ?? []),

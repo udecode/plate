@@ -10,7 +10,7 @@ import type {
 } from '../renderStaticHtml';
 import {
   bindStaticPresentation,
-  type StaticComponentOverrides,
+  type StaticOverrides,
 } from './staticPresentation';
 
 // The browser build keeps a plain Node process alive through its MessagePort.
@@ -33,7 +33,7 @@ export const renderStaticHtmlWithOverrides = async (
     projection,
     props = {},
   }: RenderStaticHtmlOptions = {},
-  overrides?: StaticComponentOverrides
+  overrides?: StaticOverrides
 ): Promise<StaticHtmlResult> => {
   const appearance = { ...props };
 
@@ -50,7 +50,7 @@ export const renderStaticHtmlWithOverrides = async (
   }) as unknown as Editor;
 
   const missing = bindStaticPresentation(renderEditor, {
-    components: overrides,
+    overrides,
     plugins: presentation,
   });
   const { renderToStaticMarkup } = await loadStaticRenderer();

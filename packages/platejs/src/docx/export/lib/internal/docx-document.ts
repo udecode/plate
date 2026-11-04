@@ -25,6 +25,7 @@ import ListStyleBuilder, {
   type ListStyleDefaults,
   type ListStyleType,
 } from './list';
+import { type DocxListItem, listTextIndent } from './list-item';
 import namespaces from './namespaces';
 import { convertVTreeToXML } from './render-document-file';
 import contentTypesXMLString from './schemas/content-types';
@@ -209,15 +210,6 @@ interface PlateListNumbering {
   counters: Array<OpenList | undefined>;
 }
 
-const HTML_ENTITIES: Readonly<Record<string, string>> = {
-  '&#39;': "'",
-  '&#x27;': "'",
-  '&amp;': '&',
-  '&gt;': '>',
-  '&lt;': '<',
-  '&quot;': '"',
-};
-
 // `listLevels` keys Plate levels from 1.
 export const toWordLevelRules = (listLevels: unknown) => {
   const rules = new Map<number, LevelRules>();
@@ -232,23 +224,6 @@ export const toWordLevelRules = (listLevels: unknown) => {
   return rules;
 };
 
-// html-to-vdom keeps attribute values entity-encoded.
-const readLevelRules = (value: string | undefined) => {
-  if (!value) return toWordLevelRules(undefined);
-  try {
-    return toWordLevelRules(
-      JSON.parse(
-        value.replaceAll(
-          /&(?:#39|#x27|amp|gt|lt|quot);/g,
-          (entity) => HTML_ENTITIES[entity]
-        )
-      )
-    );
-  } catch {
-    return toWordLevelRules(undefined);
-  }
-};
-
 /** A Word numbering instance that a later list at the same level can continue. */
 export interface OpenList {
   readonly numberingId: number;
@@ -260,6 +235,77 @@ const getListStart = (type: 'ol' | 'ul', { start }: NumberingProperties) =>
   type === 'ol' && typeof start === 'number' && Number.isInteger(start)
     ? start
     : 1;
+
+export type ListItemPlacement = Readonly<{
+  place: (paragraph: Element) => void;
+  readonly placed: boolean;
+}>;
+
+const childElement = (parent: Element, name: string) =>
+  Array.from(parent.childNodes).find(
+    (node): node is Element =>
+      node.nodeType === 1 &&
+      (node as Element).namespaceURI === namespaces.w &&
+      (node as Element).localName === name
+  );
+
+const wordElement = (paragraph: Element, name: string) =>
+  paragraph.ownerDocument.createElementNS(namespaces.w, `w:${name}`);
+
+const paragraphProperties = (paragraph: Element) => {
+  const existing = childElement(paragraph, 'pPr');
+
+  if (existing) return existing;
+  const properties = wordElement(paragraph, 'pPr');
+
+  paragraph.prepend(properties);
+
+  return properties;
+};
+
+const writeMarker = (
+  paragraph: Element,
+  levelId: number,
+  numberingId: number
+) => {
+  const properties = paragraphProperties(paragraph);
+  const numbering = wordElement(paragraph, 'numPr');
+
+  for (const [name, value] of [
+    ['ilvl', levelId],
+    ['numId', numberingId],
+  ] as const) {
+    const child = wordElement(paragraph, name);
+
+    child.setAttributeNS(namespaces.w, 'w:val', String(value));
+    numbering.append(child);
+  }
+  const style = childElement(properties, 'pStyle');
+
+  if (style) style.after(numbering);
+  else properties.prepend(numbering);
+  const indentation = childElement(properties, 'ind');
+
+  if (!indentation) return;
+  for (const name of ['left', 'firstLine', 'hanging']) {
+    indentation.removeAttributeNS(namespaces.w, name);
+  }
+  if (indentation.attributes.length === 0) indentation.remove();
+};
+
+const writeTextIndent = (paragraph: Element, left: number) => {
+  const properties = paragraphProperties(paragraph);
+  let indentation = childElement(properties, 'ind');
+
+  if (!indentation) {
+    indentation = wordElement(paragraph, 'ind');
+    const change = childElement(properties, 'pPrChange');
+
+    if (change) change.before(indentation);
+    else properties.append(indentation);
+  }
+  indentation.setAttributeNS(namespaces.w, 'w:left', String(left));
+};
 
 /** Font table object */
 export interface FontTableObject {
@@ -916,11 +962,11 @@ class DocxDocument {
             .ele('@w', 'tabs')
             .ele('@w', 'tab')
             .att('@w', 'val', 'num')
-            .att('@w', 'pos', String(level * 360 + 360))
+            .att('@w', 'pos', String(listTextIndent(level)))
             .up()
             .up()
             .ele('@w', 'ind')
-            .att('@w', 'left', String(level * 360 + 360))
+            .att('@w', 'left', String(listTextIndent(level)))
             .att('@w', 'hanging', '360')
             .up()
             .up()
@@ -1063,20 +1109,20 @@ class DocxDocument {
 
   private createPlateList(
     type: 'ol' | 'ul',
-    properties: NumberingProperties
+    levels: unknown
   ): PlateListNumbering {
     this.lastNumberingId += 1;
 
     const definition = {
       firstKindByLevel: new Map(),
-      rules: readLevelRules(properties.attributes?.['data-list-levels']),
+      rules: toWordLevelRules(levels),
       styles: new Map(),
     };
 
     this.numberingObjects.push({
       numberingId: this.lastNumberingId,
       plateList: definition,
-      properties,
+      properties: {},
       type,
     });
 
@@ -1084,6 +1130,43 @@ class DocxDocument {
       counters: [],
       definition,
       definitionId: this.lastNumberingId,
+    };
+  }
+
+  openItem({ level, levels, list, marker }: DocxListItem): ListItemPlacement {
+    let placed = false;
+    const countItemOnFirstParagraph = () => {
+      if (marker.kind === 'task') return this.taskNumberingId(marker.checked);
+      const counter = this.openPlateList(
+        marker.kind === 'numbered' ? 'ol' : 'ul',
+        {
+          levels,
+          restart: marker.kind === 'numbered' && marker.restart,
+          start: marker.kind === 'numbered' ? marker.number : 1,
+          style: { 'list-style-type': marker.style as ListStyleType },
+        },
+        level,
+        [list.story, list.root, list.id].join('\0')
+      );
+
+      counter.next += 1;
+
+      return counter.numberingId;
+    };
+
+    return {
+      get placed() {
+        return placed;
+      },
+      place: (paragraph) => {
+        if (placed) {
+          writeTextIndent(paragraph, listTextIndent(level));
+
+          return;
+        }
+        placed = true;
+        writeMarker(paragraph, level, countItemOnFirstParagraph());
+      },
     };
   }
 
@@ -1099,21 +1182,31 @@ class DocxDocument {
    */
   private openPlateList(
     type: 'ol' | 'ul',
-    properties: NumberingProperties,
+    {
+      levels,
+      restart,
+      start,
+      style,
+    }: Readonly<{
+      levels: unknown;
+      restart: boolean;
+      start: number;
+      style: NumberingProperties['style'];
+    }>,
     level: number,
     listId: string
   ): OpenList {
     let list = this.plateLists.get(listId);
 
     if (!list) {
-      list = this.createPlateList(type, properties);
+      list = this.createPlateList(type, levels);
       this.plateLists.set(listId, list);
     }
     if ((list.definition.firstKindByLevel.get(level) ?? type) !== type) {
       const key = `${type}:${listId}`;
       const other =
         this.plateListsOfOtherKind.get(key) ??
-        this.createPlateList(type, properties);
+        this.createPlateList(type, levels);
 
       this.plateListsOfOtherKind.set(key, other);
       list = other;
@@ -1122,22 +1215,17 @@ class DocxDocument {
     const { firstKindByLevel, rules, styles } = list.definition;
 
     if (!firstKindByLevel.has(level)) firstKindByLevel.set(level, type);
-    if (!styles.has(level)) styles.set(level, properties.style);
+    if (!styles.has(level)) styles.set(level, style);
     for (let deeper = level + 1; deeper < list.counters.length; deeper += 1) {
       if (level + 1 <= (rules.get(deeper)?.restartAfter ?? deeper)) {
         list.counters[deeper] = undefined;
       }
     }
 
-    const start = getListStart(type, properties);
     const next = list.counters[level]?.next ?? rules.get(level)?.start ?? 1;
     let numberingId = list.definitionId;
 
-    if (
-      type === 'ol' &&
-      (start !== next ||
-        properties.attributes?.['data-list-restart'] !== undefined)
-    ) {
+    if (type === 'ol' && (start !== next || restart)) {
       this.lastNumberingId += 1;
       numberingId = this.lastNumberingId;
       this.numberingOverrides.push({
@@ -1155,25 +1243,11 @@ class DocxDocument {
     return counter;
   }
 
-  /**
-   * Returns the Word numbering instance for an HTML list at `level`. A list
-   * that names its Plate list with `data-list-id` uses that list's definition.
-   * Other HTML continues the open instance of the same list type and marker
-   * style when that instance prints the list's `start` next, and opens a new
-   * instance starting at `start` otherwise. A bullet list always continues, so
-   * a run of one-item task lists shares one numbering definition.
-   */
   openList(
     type: 'ol' | 'ul',
     properties: NumberingProperties,
     level: number
   ): OpenList {
-    const listId = properties.attributes?.['data-list-id'];
-
-    if (listId !== undefined) {
-      return this.openPlateList(type, properties, level, listId);
-    }
-
     const key = `${type}:${level}:${properties.style?.['list-style-type'] ?? ''}`;
     const start = getListStart(type, properties);
     const open = this.openLists.get(key);

@@ -28,9 +28,36 @@ const preserveMarkedWhitespace = (html: string) =>
       )}${close}`
   );
 
+const blockOfRecord = (wrapper: Element) => {
+  const content = Array.from(wrapper.childNodes).filter(
+    (node) =>
+      node.nodeType !== Node.TEXT_NODE || (node.textContent ?? '').trim() !== ''
+  );
+  const [block] = content;
+
+  return content.length === 1 &&
+    block.nodeType === Node.ELEMENT_NODE &&
+    !(block as Element).hasAttribute('data-docx-list')
+    ? (block as Element)
+    : undefined;
+};
+
+const unwrapListRecords = (body: HTMLElement) => {
+  for (const wrapper of Array.from(body.querySelectorAll('[data-docx-list]'))) {
+    const block = blockOfRecord(wrapper);
+
+    if (!block) continue;
+    for (const { name, value } of Array.from(wrapper.attributes)) {
+      block.setAttribute(name, value);
+    }
+    wrapper.replaceWith(block);
+  }
+};
+
 const stampOwnStyles = (html: string) => {
   const { body } = parseDocxHtml(html);
 
+  unwrapListRecords(body);
   for (const element of Array.from(body.querySelectorAll('[style]'))) {
     element.setAttribute(
       'data-docx-own-style',

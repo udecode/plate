@@ -320,7 +320,6 @@ type DocxDocumentInstance = {
   createFont: (fontFamily: string) => string;
   createMediaFile: (base64Uri: string) => MediaFileResponse;
   createNumbering: (type: 'ol' | 'ul', properties?: VNodeProperties) => number;
-  taskNumberingId: (checked: boolean) => number;
   getBookmark: (htmlId: string) => { id: number; name: string } | undefined;
   htmlString: string;
   openList: (
@@ -461,13 +460,15 @@ export const buildImage = async (
   );
 };
 
+const TABLE_CELL_MARGIN = 160;
+const MIN_NARROWED_WIDTH = 360;
+
+export const narrowedWidth = (width: number, less: number) =>
+  Math.max(MIN_NARROWED_WIDTH, width - less);
+
 type VNodeObject = {
   inherited: BlockScope;
   instance?: { readonly numberingId: number; next: number };
-  pendingListOpen?: Readonly<{
-    properties: VNodeProperties;
-    type: 'ol' | 'ul';
-  }>;
   level: number;
   node: VNodeType | VTextType;
   numberingId: number;
@@ -495,82 +496,42 @@ const getIndentLevel = (vNode: VNodeType, hostVNode?: VNodeType) => {
     : 0;
 };
 
-/**
- * Builds the numbered paragraphs of an HTML list. Its level comes from the
- * host block's Plate indent class, else from the list's own left margin, else
- * from the host's.
- */
-const itemStart = (properties: VNodeProperties, itemIndex: number) =>
-  (typeof properties.start === 'number' ? properties.start : 1) + itemIndex - 1;
+export type BlockSink = Readonly<{ import: (node: XMLBuilder) => unknown }>;
 
-// Plate writes a restart on the item, and Word restarts through the instance
-// that item's paragraph uses, so the restart travels with that open.
-export const withItemRestart = (
-  properties: VNodeProperties,
-  item: VNodeType | VTextType | undefined
-) => {
-  const restart = isVNode(item)
-    ? (item as VNodeType).properties?.attributes?.['data-list-restart']
-    : undefined;
-
-  return restart === undefined
-    ? properties
-    : {
-        ...properties,
-        attributes: { ...properties.attributes, 'data-list-restart': restart },
-      };
-};
-
-// A to-do item's paragraphs take the document's checked or unchecked to-do
-// numbering instead of their list's.
-export const itemNumberingId = (
+export const inheritParagraphStyle = (
   docxDocumentInstance: DocxDocumentInstance,
-  item: VNodeType,
-  numberingId: number
-) => {
-  const checked = item.properties?.attributes?.['data-checked'];
-
-  return checked === 'true' || checked === 'false'
-    ? docxDocumentInstance.taskNumberingId(checked === 'true')
-    : numberingId;
-};
-
-const firstItem = (list: VNodeType) =>
-  list.children?.find(
-    (child) =>
-      isVNode(child) && (child as VNodeType).tagName?.toLowerCase() === 'li'
+  node: VNodeType | undefined,
+  inherited: BlockScope
+): BlockScope => {
+  const { lineHeight, textAlign } = modifiedStyleAttributesBuilder(
+    docxDocumentInstance,
+    node ?? null,
+    {}
   );
+
+  return {
+    ...inherited,
+    ...(lineHeight ? { lineHeight } : {}),
+    ...(textAlign ? { textAlign } : {}),
+  };
+};
 
 export const buildList = async (
   vNode: VNodeType,
   docxDocumentInstance: DocxDocumentInstance,
-  xmlFragment: XMLBuilderType,
+  xmlFragment: BlockSink,
   {
     container,
     host,
     scope = {},
   }: Readonly<{ container?: VNodeType; host?: VNodeType; scope?: BlockScope }>
 ): Promise<void> => {
-  const inherit = (
-    node: VNodeType | undefined,
-    inherited: BlockScope
-  ): BlockScope => {
-    const { lineHeight, textAlign } = modifiedStyleAttributesBuilder(
-      docxDocumentInstance,
-      node ?? null,
-      {}
-    );
-
-    return {
-      ...inherited,
-      ...(lineHeight ? { lineHeight } : {}),
-      ...(textAlign ? { textAlign } : {}),
-    };
-  };
+  const inherit = (node: VNodeType | undefined, inherited: BlockScope) =>
+    inheritParagraphStyle(docxDocumentInstance, node, inherited);
   const level = getIndentLevel(vNode, host);
   const list = docxDocumentInstance.openList(
     (vNode.tagName || 'ul') as 'ol' | 'ul',
-    withItemRestart(vNode.properties ?? {}, firstItem(vNode)),
+    vNode.properties ?? {},
     level
   );
   let vNodeObjects: VNodeObject[] = [
@@ -587,17 +548,6 @@ export const buildList = async (
   while (vNodeObjects.length) {
     const current =
       vNodeObjects.shift() ?? failInvariant('Expected value to be defined');
-
-    if (current.pendingListOpen) {
-      const instance = docxDocumentInstance.openList(
-        current.pendingListOpen.type,
-        current.pendingListOpen.properties,
-        current.level
-      );
-
-      current.instance = instance;
-      current.numberingId = instance.numberingId;
-    }
 
     if (
       isVText(current.node) ||
@@ -627,11 +577,7 @@ export const buildList = async (
       node.children?.length &&
       ['ul', 'ol', 'li'].includes(node.tagName || '')
     ) {
-      const numberingId =
-        node.tagName === 'li'
-          ? itemNumberingId(docxDocumentInstance, node, current.numberingId)
-          : current.numberingId;
-      let items = 0;
+      const { numberingId } = current;
       const children = node.children.reduce<VNodeObject[]>(
         (accumulator, child) => {
           const childNode = child as VNodeType;
@@ -640,32 +586,15 @@ export const buildList = async (
             return accumulator;
           }
           if (['ul', 'ol'].includes(childNode.tagName || '')) {
-            const type = (childNode.tagName || 'ul') as 'ol' | 'ul';
-            const plateList =
-              childNode.properties?.attributes?.['data-list-id'] !== undefined;
-
             accumulator.push({
               inherited: inherit(childNode, current.inherited),
               node: child,
               level: current.level + 1,
               type: childNode.tagName || '',
-              numberingId: plateList
-                ? 0
-                : docxDocumentInstance.createNumbering(
-                    type,
-                    childNode.properties
-                  ),
-              ...(plateList
-                ? {
-                    pendingListOpen: {
-                      properties: withItemRestart(
-                        childNode.properties ?? {},
-                        firstItem(childNode)
-                      ),
-                      type,
-                    },
-                  }
-                : {}),
+              numberingId: docxDocumentInstance.createNumbering(
+                (childNode.tagName || 'ul') as 'ol' | 'ul',
+                childNode.properties
+              ),
             });
 
             return accumulator;
@@ -712,8 +641,6 @@ export const buildList = async (
 
           const item =
             isVNode(child) && (childNode.tagName || '').toLowerCase() === 'li';
-          const itemIndex = item ? (items += 1) : 0;
-          const listType = (node.tagName || 'ul') as 'ol' | 'ul';
 
           accumulator.push({
             inherited: item
@@ -730,21 +657,6 @@ export const buildList = async (
             level: current.level,
             type: current.type,
             numberingId,
-            ...(itemIndex > 1 &&
-            node.properties?.attributes?.['data-list-id'] !== undefined
-              ? {
-                  pendingListOpen: {
-                    properties: withItemRestart(
-                      {
-                        ...node.properties,
-                        start: itemStart(node.properties, itemIndex),
-                      },
-                      child
-                    ),
-                    type: listType,
-                  },
-                }
-              : {}),
           });
 
           return accumulator;
@@ -832,6 +744,7 @@ interface ParagraphAttributes extends RunAttributes {
   inlineOrAnchored?: boolean;
   maximumWidth?: number;
   numbering?: NumberingInfo;
+  outsideListWidth?: number;
   originalHeight?: number;
   originalWidth?: number;
   paragraphStyle?: string;
@@ -2294,6 +2207,12 @@ const computeImageDimensions = (
     modifiedWidth = originalWidthInEMU;
     modifiedHeight = originalHeightInEMU;
   }
+  if (modifiedWidth && modifiedHeight && modifiedWidth > maximumWidthInEMU) {
+    modifiedHeight = Math.round(
+      (modifiedHeight * maximumWidthInEMU) / modifiedWidth
+    );
+    modifiedWidth = maximumWidthInEMU;
+  }
 
   attributes.width = modifiedWidth;
 
@@ -2938,7 +2857,15 @@ const buildTableCell = async (
   await renderBlocks(
     isVNode(vNode) ? ((vNode as VNodeType).children ?? []) : [],
     tableCellFragment,
-    { ...modifiedAttributes, backgroundColor: undefined }
+    {
+      ...modifiedAttributes,
+      backgroundColor: undefined,
+      maximumWidth: narrowedWidth(
+        modifiedAttributes.maximumWidth ??
+          docxDocumentInstance.availableDocumentSpace,
+        2 * TABLE_CELL_MARGIN
+      ),
+    }
   );
   if (tableCellFragment.node.lastChild?.nodeName !== 'p') {
     tableCellFragment.import(
@@ -3289,7 +3216,7 @@ const buildTableProperties = (
       }
     });
   }
-  const tableCellMarginFragment = buildTableCellMargins(160);
+  const tableCellMarginFragment = buildTableCellMargins(TABLE_CELL_MARGIN);
   tablePropertiesFragment.import(tableCellMarginFragment);
 
   // by default, all tables are center aligned.

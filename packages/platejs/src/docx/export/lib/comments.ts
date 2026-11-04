@@ -92,10 +92,9 @@ const textLength = (host: HTMLElement) => {
   return length;
 };
 
-export const prepareDocxComments = (
+export const anchorDocxComments = (
   html: string,
-  comments: readonly DocxComment[] | undefined,
-  bodyHtmlById: ReadonlyMap<string, string> = new Map()
+  comments: readonly DocxComment[] | undefined
 ): PreparedDocxComments => {
   if (!comments?.length) {
     return Object.freeze({
@@ -174,10 +173,35 @@ export const prepareDocxComments = (
       });
       return;
     }
-    const bodyStart = document.createElement('p');
+    prepared.push(record);
+  });
 
-    bodyStart.textContent = record.bodyStart;
-    document.body.append(bodyStart);
+  return Object.freeze({
+    comments: Object.freeze(prepared),
+    diagnostics: Object.freeze(diagnostics),
+    html: document.body.innerHTML,
+  });
+};
+
+export const joinDocxCommentBodies = (
+  html: string,
+  anchored: PreparedDocxComments,
+  bodyHtmlById: ReadonlyMap<string, string>
+): PreparedDocxComments => {
+  if (anchored.comments.length === 0) {
+    return Object.freeze({ ...anchored, html });
+  }
+
+  const document = parseDocxHtml(html);
+  const paragraph = (text: string) => {
+    const element = document.createElement('p');
+
+    element.textContent = text;
+    document.body.append(element);
+  };
+
+  for (const { bodyEnd, bodyStart, comment } of anchored.comments) {
+    paragraph(bodyStart);
     const bodyDocument = parseDocxHtml(bodyHtmlById.get(comment.id) ?? '');
     const bodyRoot =
       bodyDocument.querySelector('[data-editor-node="editor"]') ??
@@ -191,18 +215,10 @@ export const prepareDocxComments = (
         document.body.append(document.importNode(block, true));
       });
     }
-    const bodyEnd = document.createElement('p');
+    paragraph(bodyEnd);
+  }
 
-    bodyEnd.textContent = record.bodyEnd;
-    document.body.append(bodyEnd);
-    prepared.push(record);
-  });
-
-  return Object.freeze({
-    comments: Object.freeze(prepared),
-    diagnostics: Object.freeze(diagnostics),
-    html: document.body.innerHTML,
-  });
+  return Object.freeze({ ...anchored, html: document.body.innerHTML });
 };
 
 const invalidGeneratedXml = () => new Error('Generated DOCX XML is invalid.');

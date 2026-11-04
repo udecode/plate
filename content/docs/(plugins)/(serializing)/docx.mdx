@@ -264,9 +264,9 @@ A heading, list, table or other block inside a blockquote exports in its place b
 
 ### Lists
 
-Each Plate list becomes one Word list. Its `listLevels` give the list's level starts, `lvlRestart` rules and level text. An item with `listRestart`, or one whose number Word would not reach, gets a numbering instance of its own that overrides that level's start, as Word's Restart Numbering writes it. The items after it count on from it in the list's own instance. Word and a re-import then show the numbers the editor shows, and the restart stays on that item. Word draws one marker style per list level, so an item whose `listStyle` differs from the first item at its level keeps that first style and reports a `list-marker` warning under both policies. A Word list level is numbered or unordered, as its first item is, and the exporter writes one set of level rules per list. Bullets and to-dos share unordered levels, and every to-do takes the document's shared to-do numbering. A numbered item at an unordered level, or the reverse, is therefore not part of its list in Word, and an item whose `listLevels` differ from its list's first item takes that item's rules. A kind split reports a `list-structure` warning, and so does a numbered or task item whose `listLevels` differ from its list's first numbered or task item; `lossPolicy: 'reject'` fails the export. A bullet without `listId`, as Markdown and AI output write it, stays out of the kind check, because a Markdown bullet list never shares a list with a numbered one. Word has no start that applies only when an item opens its level, and it takes each level's start from the list's first item, 1 by default. A numbered or task item whose `listStart` differs from the start its list's first numbered or task item gives that level exports its shown number and reports a `list-start` warning under both policies. Bullets take no part in the level-rule and start checks, so a bullet that leads its list gives Word its level rules and starts without a warning.
+Each Plate list becomes one Word list. Its `listLevels` give the list's level starts, `lvlRestart` rules and level text. An item with `listRestart`, or one whose number Word would not reach, gets a numbering instance of its own that overrides that level's start, as Word's Restart Numbering writes it. The items after it count on from it in the list's own instance. Word and a re-import then show the numbers the editor shows, and the restart stays on that item. Past 9,007,199,254,740,991, the largest whole number JavaScript counts exactly, an item can continue its Word list where it should restart, so Word can show a number one higher than the editor shows. Word draws one marker style per list level, so an item whose `listStyle` differs from the first item at its level keeps that first style and reports a `list-marker` warning under both policies. A Word list level is numbered or unordered, as its first item is, and the exporter writes one set of level rules per list. Bullets and to-dos share unordered levels, and every to-do takes the document's shared to-do numbering. A numbered item at an unordered level, or the reverse, is therefore not part of its list in Word, and an item whose `listLevels` differ from its list's first item takes that item's rules. A kind split reports a `list-structure` warning, and so does a numbered or task item whose `listLevels` differ from its list's first numbered or task item; `lossPolicy: 'reject'` fails the export. A bullet without `listId`, as Markdown and AI output write it, stays out of the kind check, because a Markdown bullet list never shares a list with a numbered one. Word has no start that applies only when an item opens its level, and it takes each level's start from the list's first item, 1 by default. A numbered or task item whose `listStart` differs from the start its list's first numbered or task item gives that level exports its shown number and reports a `list-start` warning under both policies. Bullets take no part in the level-rule and start checks, so a bullet that leads its list gives Word its level rules and starts without a warning.
 
-A heading or blockquote that is a list item keeps its heading style and bookmark or its `Quote` style, and takes its number and indent from its list level. A numbered blockquote exports as one numbered paragraph that joins the text of the blocks it holds. Export warns when it holds more than one paragraph or any other block. A table cell exports its blocks as the body does, and a nested table and its images fit the cell that holds them.
+A block the list plugin targets, such as a heading, blockquote, image, toggle or code block, can be a list item, and export reads its item from the document. The block's first Word paragraph carries the item's marker and counts once in its list. Each later paragraph the block writes, such as an image caption, a toggle body or the second paragraph of a blockquote, sits at the item's text indent with no marker. A heading keeps its heading style and bookmark, and a blockquote or toggle keeps its own style on every paragraph. A listed blockquote that starts with a table writes its number on an empty paragraph above the table, and a listed block that writes no paragraph keeps its number on an empty paragraph. A listed blockquote gets the same `quote-structure` warnings as a plain one. An image in a list item fits the item's text width. A table cell exports its blocks as the body does, and a nested table and its images fit the cell that holds them, less the cell's padding.
 
 ### Links and images
 
@@ -310,11 +310,16 @@ The same configured static renderer handles the main document and rich comment b
 ### Static rendering and styles
 
 DOCX owns its semantic static mappings for code blocks, columns, equations,
-callouts, headings, and tables of contents. They set no color, font, or font
+callouts, headings, lists, and tables of contents. They set no color, font, or font
 size beyond an element's own values, such as a callout's color. The app's
 `stylesheet` sets them and can select:
 
 - `editor-<plugin name>`, the class on each drawn element, such as `.editor-codeBlock`;
+- `[data-docx-list]`, a listed block, whose value is `bulleted`, `numbered` or
+  `task`, with `data-docx-list-checked` on a checked to-do, such as
+  `[data-docx-list="task"][data-docx-list-checked]`. A rule there styles the
+  block's own element, and the rule's alignment and line height apply to each
+  text paragraph the block writes, not to an image or a table;
 - `table > tbody > tr > td` inside a callout, whose first cell holds the icon;
 - `[data-docx-preserve-whitespace]`, the text of a code block;
 - `[data-empty]`, the placeholder of an empty equation or table of contents.
@@ -351,8 +356,8 @@ The app may pass a custom root `component` when it needs a different wrapper.
 
 Equations export as Word math built from KaTeX's MathML. An equation that uses
 notation the converter does not cover, such as a matrix, exports its TeX as
-text inside a Word equation. A task list item, an `li` with `data-checked`, exports with a ☑ or ☐
-list marker, and import reads a bullet level drawn as ☐, ☑ or ☒ as a task item with
+text inside a Word equation. A to-do list item exports with a ☑ or ☐ list marker from its
+`checked` value, and import reads a bullet level drawn as ☐, ☑ or ☒ as a task item with
 its checked state.
 
 A live editor's components are editing UI. Pass the app's static kit as
@@ -378,7 +383,7 @@ diagnostic, which counts as lost content under `lossPolicy`.
 | Fields, text boxes, shapes, charts, SmartArt, and embedded objects | Keep reachable plain text when conversion exposes it; report unsupported or omitted content                 |
 | Plate named roots and metadata                                     | Omit from Word output with a `lossy-content` warning; keep them in authored JSON                            |
 | Equations                                                          | Export as Word math, or as TeX inside a Word equation when the converter does not cover the notation. Import reads Word math into `equation` and `inlineEquation` nodes, with TeX rebuilt from the equation's structure, or into TeX text when those plugins are not installed. A display equation that shares its paragraph with a comment, tracked change or text, or sits in a list item or an indented paragraph, imports inline |
-| Task lists                                                         | Give an item drawn as an `li` with `data-checked` a ☑ or ☐ list marker; import a bullet level drawn as ☐, ☑ or ☒ as a task item with its checked state |
+| Task lists                                                         | Give a to-do item a ☑ or ☐ list marker from its `checked` value; import a bullet level drawn as ☐, ☑ or ☒ as a task item with its checked state |
 | Custom Plate, emoji, and media nodes                               | Use their configured static serializers; unsupported output produces diagnostics                            |
 
 ## API reference

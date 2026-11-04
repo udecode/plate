@@ -1,5 +1,6 @@
 import type React from 'react';
 
+import type { Element, Path } from '../../facade';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type {
@@ -15,13 +16,31 @@ export type StaticComponentOverrides = Readonly<
   Record<string, React.ComponentType<any> | undefined>
 >;
 
+type StaticSlot = 'afterNodeChildren' | 'wrapNode' | 'wrapNodeChildren';
+
+export type StaticOverrides = Readonly<{
+  components?: StaticComponentOverrides;
+  slots?: Readonly<
+    Record<string, Readonly<Partial<Record<StaticSlot, null>>> | undefined>
+  >;
+  wrapElement?: (
+    props: Readonly<{
+      attributes: Readonly<Record<string, unknown>>;
+      children: React.ReactNode;
+      editor: Editor;
+      element: Element;
+      path: Path;
+    }>
+  ) => React.ReactNode;
+}>;
+
 type Peers = Readonly<Record<string, AnyBasePlugin>>;
 
-type StaticPresentation = Readonly<{
-  components?: StaticComponentOverrides;
-  missing: Set<string>;
-  peers?: Peers;
-}>;
+type StaticPresentation = StaticOverrides &
+  Readonly<{
+    missing: Set<string>;
+    peers?: Peers;
+  }>;
 
 const PRESENTATIONS = new WeakMap<object, StaticPresentation>();
 const COMPILED = new WeakMap<
@@ -56,18 +75,18 @@ const compilePeers = (plugins: readonly BasePluginInput[]) => {
 export const bindStaticPresentation = (
   editor: Editor,
   {
-    components,
+    overrides,
     plugins,
   }: Readonly<{
-    components?: StaticComponentOverrides;
+    overrides?: StaticOverrides;
     plugins?: readonly BasePluginInput[];
   }>
 ): ReadonlySet<string> => {
   const missing = new Set<string>();
 
-  if (components || plugins) {
+  if (overrides || plugins) {
     PRESENTATIONS.set(editor, {
-      components,
+      ...overrides,
       missing,
       peers: plugins && compilePeers(plugins),
     });
@@ -75,6 +94,9 @@ export const bindStaticPresentation = (
 
   return missing;
 };
+
+export const getStaticWrapElement = (editor: Editor) =>
+  PRESENTATIONS.get(editor)?.wrapElement;
 
 export const hasStaticPresentation = (editor: Editor) =>
   !!PRESENTATIONS.get(editor)?.peers;
@@ -142,8 +164,12 @@ export const getStaticMarkComponent = (
 export const getStaticSlot = (
   editor: Editor,
   plugin: DrawnPlugin,
-  slot: 'afterNodeChildren' | 'wrapNode' | 'wrapNodeChildren'
+  slot: StaticSlot
 ) => {
+  if (PRESENTATIONS.get(editor)?.slots?.[plugin.name]?.[slot] === null) {
+    return undefined;
+  }
+
   const readFunction = ({ slots }: DrawnPlugin) => {
     const drawing = slots[slot];
 

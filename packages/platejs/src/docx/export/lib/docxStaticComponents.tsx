@@ -1,7 +1,7 @@
 import katex from 'katex';
 import React from 'react';
 
-import type { Editor } from '../../../core';
+import type { Editor, Path } from '../../../core';
 import { BaseHeadingPlugin } from '../../../features/basic-nodes';
 import { BaseCalloutPlugin } from '../../../features/callout';
 import { BaseCodeBlockPlugin } from '../../../features/code-block';
@@ -13,6 +13,11 @@ import {
   BaseColumnItemPlugin,
   BaseColumnGroupPlugin,
 } from '../../../features/layout';
+import {
+  BaseListPlugin,
+  type ListElement,
+  ListType,
+} from '../../../features/list';
 import { BaseTocPlugin, type Heading } from '../../../features/toc';
 import {
   BaseEquationPlugin,
@@ -23,7 +28,11 @@ import {
   EditorElement,
   type EditorElementProps,
 } from '../../../static/components/plite-nodes';
-import type { StaticComponentOverrides } from '../../../static/internal/staticPresentation';
+import type {
+  StaticComponentOverrides,
+  StaticOverrides,
+} from '../../../static/internal/staticPresentation';
+import { type DocxListItem, writeListItem } from './internal/list-item';
 
 /** Without `border: 'none'`, the converter draws a black grid around a layout table. */
 const layoutTable = { border: 'none', width: '100%' } as const;
@@ -197,7 +206,7 @@ const TocDocx = (props: EditorElementProps<typeof BaseTocPlugin>) => {
   );
 };
 
-export const DOCX_STATIC_COMPONENTS: StaticComponentOverrides = Object.freeze({
+const DOCX_STATIC_COMPONENTS: StaticComponentOverrides = Object.freeze({
   [BaseCalloutPlugin.name]: CalloutDocx,
   [BaseCodeBlockPlugin.name]: CodeBlockDocx,
   [BaseColumnItemPlugin.name]: ColumnItemDocx,
@@ -209,3 +218,65 @@ export const DOCX_STATIC_COMPONENTS: StaticComponentOverrides = Object.freeze({
   [BaseInlineEquationPlugin.name]: InlineEquationDocx,
   [BaseTocPlugin.name]: TocDocx,
 });
+
+const listItemOf = (
+  editor: Editor,
+  element: ListElement,
+  path: Path,
+  list: DocxListItem['list']
+): DocxListItem | undefined => {
+  const base = {
+    level: Math.max(0, (element.indent ?? 1) - 1),
+    levels: element.listLevels,
+    list,
+  };
+
+  switch (element.listType) {
+    case ListType.Bulleted: {
+      return {
+        ...base,
+        marker: { kind: 'bulleted', style: element.listStyle ?? 'disc' },
+      };
+    }
+    case ListType.Numbered: {
+      return {
+        ...base,
+        marker: {
+          kind: 'numbered',
+          number: editor.plugin(BaseListPlugin).read.ordinal(path) ?? 1,
+          restart: element.listRestart !== undefined,
+          style: element.listStyle ?? 'decimal',
+        },
+      };
+    }
+    case ListType.Task: {
+      return {
+        ...base,
+        marker: { checked: element.checked === true, kind: 'task' },
+      };
+    }
+    default: {
+      return undefined;
+    }
+  }
+};
+
+export const docxStaticOverrides = (story: string): StaticOverrides =>
+  Object.freeze({
+    components: DOCX_STATIC_COMPONENTS,
+    slots: { [BaseListPlugin.name]: { wrapNodeChildren: null } },
+    wrapElement: ({ attributes, children, editor, element, path }) => {
+      const item = editor.plugin(BaseListPlugin).installed
+        ? listItemOf(editor, element as ListElement, path, {
+            id: typeof element.listId === 'string' ? element.listId : '',
+            root:
+              typeof attributes['data-editor-root'] === 'string'
+                ? attributes['data-editor-root']
+                : 'main',
+            story,
+          })
+        : undefined;
+
+      return item ? <div {...writeListItem(item)}>{children}</div> : children;
+    },
+  });
