@@ -2737,6 +2737,95 @@ const wrapsInsideDeletion = (
   };
 };
 
+const keepsElementsWhole = (document: DocumentIndex, change: RootChange) => {
+  let from = 0;
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+    const inserted = change.sections[index + 1];
+
+    if (inserted >= 0) {
+      const to = from + length;
+      let depth = 0;
+
+      if (
+        length > 0 &&
+        document
+          .nodeRangesTouching(from, to)
+          .some(
+            (range) =>
+              range.kind === 'element' &&
+              (range.contentFrom > from || range.contentTo < to)
+          )
+      ) {
+        return false;
+      }
+      for (const token of (change.data[index >> 1] as PreparedTokenSlice)
+        .tokens) {
+        if (token.kind === 'text' || token.nodeKind === 'text') continue;
+        depth += token.kind === 'open' ? 1 : -1;
+
+        if (depth < 0) return false;
+      }
+      if (depth !== 0) return false;
+    }
+    from += length;
+  }
+
+  return true;
+};
+
+const transformMixedEditOverSiblingRemoval = (
+  a: RootChange,
+  b: RootChange,
+  aReplacements: readonly Replacement[],
+  bReplacements: readonly Replacement[],
+  document: DocumentIndex,
+  afterA: DocumentIndex,
+  afterB: DocumentIndex
+): Readonly<{ a: RootChange; b: RootChange }> | null => {
+  for (const [removal, edit, replacements, side] of [
+    [b, a, bReplacements, 'b'],
+    [a, b, aReplacements, 'a'],
+  ] as const) {
+    const [removed] = replacements;
+
+    if (replacements.length !== 1 || !deletesWholeSiblings(document, removed)) {
+      continue;
+    }
+
+    const parts = edit.partition(removed.from, removed.to - 1);
+    const from = edit.mapPos(removed.from, 1);
+    const to = edit.mapPos(removed.to, -1);
+
+    if (
+      !parts ||
+      parts.inside.empty ||
+      parts.outside.empty ||
+      !keepsElementsWhole(document, parts.outside) ||
+      from === null ||
+      to === null
+    ) {
+      continue;
+    }
+
+    const [afterEdit, afterRemoval] =
+      side === 'b' ? [afterA, afterB] : [afterB, afterA];
+    const kept = RootChange.transform(parts.outside, removal).a;
+    const merged = kept.apply(afterRemoval);
+    const removalAfterEdit = RootChange.create(afterEdit, { from, to });
+    const removedAfterEdit = removalAfterEdit.compose(
+      RootChange.between(removalAfterEdit.apply(afterEdit), merged)
+    );
+
+    return side === 'b'
+      ? { a: kept, b: removedAfterEdit }
+      : { a: removedAfterEdit, b: kept };
+  }
+
+  return null;
+};
+
 /**
  * Transform a deletion of whole siblings by position alone against an edit
  * whose wrappers hold only what it deletes, and take those wrappers with it.
@@ -4051,6 +4140,18 @@ export class RootChange {
         ? { a: edited, b: deleted }
         : { a: deleted, b: edited };
     }
+
+    const overRemoval = transformMixedEditOverSiblingRemoval(
+      a,
+      b,
+      aReplacements,
+      bReplacements,
+      document,
+      afterA,
+      afterB
+    );
+
+    if (overRemoval) return overRemoval;
 
     const wrap = replay?.anchor ? soleWrapProps(aReplacements, document) : null;
     const anchored =
