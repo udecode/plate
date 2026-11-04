@@ -4,6 +4,7 @@ import {
   type LetterPlace,
   projectCarriedStep,
   relocatesCarriedBlock,
+  mapPosThroughBlockMove,
   touchesCarriedRuns,
 } from '../core/change/carried-projection';
 import {
@@ -1146,12 +1147,14 @@ const carryReplay = <T extends JsonEditorValue>(
   if (!projected) {
     const mapped = ordinary();
     const rest = getInternalDocumentRootChange(mapped.a, root);
+    const sourceOf = mapPosThroughBlockMove(edit, input.before);
+    const atOf = rest ? mapPosThroughBlockMove(rest, input.after) : null;
 
     return {
       ...mapped,
       runs: runs.flatMap((run) => {
-        const source = edit.mapPos(run.source, 1);
-        const at = rest ? rest.mapPos(run.at, 1) : run.at;
+        const source = sourceOf(run.source);
+        const at = atOf ? atOf(run.at) : run.at;
 
         return source === null || at === null
           ? []

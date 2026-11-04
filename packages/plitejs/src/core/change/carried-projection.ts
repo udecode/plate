@@ -8,6 +8,7 @@ import {
 import { jsonEqual, type JsonRecord } from './json';
 import {
   addSection,
+  applyPropertyModifications,
   mapRootChangePositionBackward,
   RootChange,
   type SectionData,
@@ -265,6 +266,11 @@ export class Correspondence {
       return section.at + position - section.from;
     }
 
+    return this.moveTarget(position);
+  }
+
+  /** Where the move takes input token `position`, or null. */
+  moveTarget(position: number): number | null {
     const { move } = this;
 
     return move &&
@@ -280,6 +286,17 @@ export class Correspondence {
 
     return section?.inserted === -2 && section.from === position
       ? (section.data as readonly PropertyModification[])
+      : null;
+  }
+
+  insertionAt(position: number): Section | null {
+    const section = this.find(position, (each) => each.at + outputOf(each));
+
+    return section &&
+      section.inserted > 0 &&
+      section.at <= position &&
+      position < section.at + section.inserted
+      ? section
       : null;
   }
 
@@ -464,6 +481,15 @@ type Part =
       kind: 'make';
       tokens: readonly JsonToken[];
       origins: ReadonlyArray<number | null>;
+      /** Where each token stays in the edited document, or null when it moves. */
+      keptAt?: ReadonlyArray<number | null>;
+      /** The run's tokens among `tokens`, and its span in the edited document. */
+      run?: Readonly<{
+        from: number;
+        to: number;
+        source: number;
+        length: number;
+      }>;
     }>;
 
 const made = (
@@ -658,10 +684,34 @@ export const relocatesCarriedBlock = (input: CarriedProjectionInput) => {
   });
 };
 
+const lineOfRun = (input: CarriedProjectionInput, shape: Shape) => {
+  const line = lineAt(input.before, input.schema, shape.source)?.line;
+
+  return line &&
+    line.contentFrom <= shape.source &&
+    line.contentFrom <= shape.landingBefore &&
+    shape.landingBefore <= line.contentTo &&
+    lineAt(input.after, input.schema, shape.landing)?.line.from === line.from
+    ? line
+    : null;
+};
+
+export const mapPosThroughBlockMove = (
+  change: RootChange,
+  before: DocumentIndex
+) => {
+  const edit = new Correspondence(change, before);
+
+  return (position: number) =>
+    (edit.move?.leaf ? null : edit.moveTarget(position)) ??
+    change.mapPos(position, 1);
+};
+
 /**
  * Whether `edit` reaches the run: it deletes a token of it, inserts from its
- * first token up to its last or where it holds no letter, or writes
- * properties on a node that holds its letters.
+ * first token up to its last or where it holds no letter, writes between a
+ * run that stays in its line and where it lands, or writes properties on a
+ * node that holds its letters.
  */
 export const touchesCarriedRuns = (input: CarriedProjectionInput) => {
   const shape = shapeOf(input);
@@ -680,11 +730,29 @@ export const touchesCarriedRuns = (input: CarriedProjectionInput) => {
         section.from <= inserted.from &&
         inserted.from <= section.from + section.length
     );
+  const line = shape.letters ? lineOfRun(input, shape) : null;
+  const { move } = edit;
+
+  // A block move of the run's whole line keeps each of its tokens, so the
+  // ordinary map keeps the run.
+  if (
+    line &&
+    move &&
+    !move.leaf &&
+    move.deletion.from <= line.from &&
+    line.to <= move.deletion.from + move.deletion.length
+  ) {
+    return false;
+  }
+
+  const crossFrom = Math.min(shape.source, shape.landingBefore);
+  const crossTo = Math.max(shape.end, shape.landingBefore);
   const writes = edit.sections.some((section) => {
     const end = section.from + section.length;
 
     if (section.inserted === -1) return false;
     if (section.from < shape.end && end > shape.source) return true;
+    if (line && section.from <= crossTo && end >= crossFrom) return true;
     if (deletesWhereStepInserts(section)) return true;
     if (section.inserted === -2) {
       return holders.some(({ from }) => section.from <= from && from < end);
@@ -870,6 +938,596 @@ const regionThrough = (region: Region, editedTo: number): Region => {
   };
 };
 
+/** A letter with its leaf's properties, or an element token, of one line. */
+type Unit = Readonly<{
+  at: number;
+  props: JsonRecord | null;
+  token: JsonToken;
+}>;
+
+const unitsOf = (index: DocumentIndex, line: IndexedNodeRange) => {
+  const read = new Tokens(index, line.contentFrom, line.contentTo);
+  const units: Unit[] = [];
+  let leaf: JsonRecord = {};
+
+  for (let at = line.contentFrom; at < line.contentTo; at++) {
+    const token = read.at(at);
+
+    if (token?.kind === 'text') units.push({ at, props: leaf, token });
+    else if (token?.nodeKind === 'text') {
+      if (token.kind === 'open') leaf = token.props;
+    } else if (token) units.push({ at, props: null, token });
+  }
+
+  return units;
+};
+
+const enclosingOf = (list: readonly Unit[], index: number) => {
+  let depth = 0;
+
+  for (let at = index - 1; at >= 0; at--) {
+    const { props, token } = list[at];
+
+    if (props !== null) continue;
+    if (token.kind === 'close') depth += 1;
+    else if (depth === 0) return list[at];
+    else depth -= 1;
+  }
+
+  return undefined;
+};
+
+const directLettersOf = (list: readonly Unit[], open: Unit) => {
+  const letters: Unit[] = [];
+  let depth = 0;
+
+  for (let index = list.indexOf(open) + 1; index < list.length; index++) {
+    const unit = list[index];
+
+    if (unit.props !== null) {
+      if (depth === 0) letters.push(unit);
+    } else if (unit.token.kind === 'open') depth += 1;
+    else if (depth === 0) break;
+    else depth -= 1;
+  }
+
+  return letters;
+};
+
+const elementOf = (list: readonly Unit[], unit: Unit) =>
+  unit.token.kind === 'open' ? unit : enclosingOf(list, list.indexOf(unit));
+
+const sameUnit = (left: Unit, right: Unit) =>
+  sameToken(left.token, right.token) &&
+  (left.props === null
+    ? right.props === null
+    : right.props !== null && jsonEqual(left.props, right.props));
+
+const emptyLeafOf = (read: Tokens) => (at: number) => {
+  const open = read.at(at - 2);
+  const close = read.at(at - 1);
+
+  return open?.kind === 'open' &&
+    open.nodeKind === 'text' &&
+    close?.kind === 'close' &&
+    close.nodeKind === 'text'
+    ? open.props
+    : {};
+};
+
+/**
+ * The tokens of a line's content: its letters in leaves by their properties,
+ * and an empty leaf where an element token would touch another one or the
+ * line's edge, with the properties `emptyLeaf` gives for the unit after it, or
+ * for the line's end. `indexes` gives each token's index in `units`, or null
+ * for a leaf token.
+ */
+const contentOf = (
+  units: readonly Unit[],
+  emptyLeaf: (next: Unit | undefined) => JsonRecord
+) => {
+  const tokens: JsonToken[] = [];
+  const indexes: Array<number | null> = [];
+  let leaf: JsonRecord | null = null;
+  let filled = false;
+  const push = (token: JsonToken, index: number | null) => {
+    tokens.push(token);
+    indexes.push(index);
+  };
+  const close = () => {
+    if (leaf === null) return;
+    push(closeToken('text'), null);
+    leaf = null;
+  };
+  const fill = (next?: Unit) => {
+    if (filled) return;
+    push(openToken('text', emptyLeaf(next)), null);
+    push(closeToken('text'), null);
+  };
+
+  units.forEach((unit, index) => {
+    if (unit.props === null) {
+      close();
+      fill(unit);
+      push(unit.token, index);
+      filled = false;
+      return;
+    }
+    if (leaf === null || !jsonEqual(leaf, unit.props)) {
+      close();
+      push(openToken('text', unit.props), null);
+      leaf = unit.props;
+    }
+    push(unit.token, index);
+    filled = true;
+  });
+  close();
+  fill();
+
+  return { indexes, tokens };
+};
+
+/**
+ * A step that moves letters inside one line, mapped as the edited line with
+ * those letters, and what the edit typed with them, moved the same way past
+ * the edges they cross. Null when the run holds no letters or the step writes
+ * outside its line; a refusal when the step is not one move of the run's
+ * letters or the edit leaves the move no place.
+ */
+const inLineOf = (
+  input: CarriedProjectionInput,
+  shape: Shape,
+  stepMap: Correspondence,
+  editMap: Correspondence
+): CarriedProjection | null => {
+  if (!shape.letters) return null;
+
+  const { after, before, edited, schema, step } = input;
+  const line = lineOfRun(input, shape);
+
+  if (!line) return null;
+  for (const section of stepMap.sections) {
+    if (section.inserted === -1) continue;
+    if (
+      section.inserted === -2 ||
+      section.from < line.contentFrom ||
+      section.from + section.length > line.contentTo
+    ) {
+      refuse('The step writes more than its line’s letters.');
+    }
+  }
+
+  const grown = step.newLength - step.length;
+  const lineAfter =
+    lineAt(after, schema, shape.landing)?.line ??
+    refuse('The run lands outside a line.');
+
+  if (lineAfter.contentTo !== line.contentTo + grown) {
+    refuse('The step changes its line’s length.');
+  }
+
+  const readBefore = new Tokens(before, line.contentFrom, line.contentTo);
+  const landedEnd = shape.landing + shape.end - shape.source;
+  const inRun = (at: number) => shape.source <= at && at < shape.end;
+  const landed = (at: number) => shape.landing <= at && at < landedEnd;
+  const unitsBefore = unitsOf(before, line);
+  const unitsAfter = unitsOf(after, lineAfter);
+  const run = unitsBefore.filter((unit) => inRun(unit.at));
+  const rest = unitsBefore.filter((unit) => !inRun(unit.at));
+  const runAfter = unitsAfter.filter((unit) => landed(unit.at));
+  const restAfter = unitsAfter.filter((unit) => !landed(unit.at));
+  const slot = unitsAfter.findIndex((unit) => landed(unit.at));
+  const runStart = rest.filter((unit) => unit.at < shape.source).length;
+
+  if (
+    run.some((unit) => unit.props === null) ||
+    run.length !== runAfter.length ||
+    rest.length !== restAfter.length ||
+    !run.every((unit, at) => sameUnit(unit, runAfter[at])) ||
+    !rest.every((unit, at) => sameUnit(unit, restAfter[at])) ||
+    !runAfter.every((unit, at) => unitsAfter[slot + at] === unit) ||
+    slot === runStart
+  ) {
+    refuse('The step is not one move of letters inside its line.');
+  }
+
+  const emptyBefore = emptyLeafOf(readBefore);
+  const rebuilt = contentOf(
+    [...rest.slice(0, slot), ...run, ...rest.slice(slot)],
+    (next) => emptyBefore(next?.at ?? line.contentTo)
+  ).tokens;
+  const readLine = new Tokens(
+    after,
+    lineAfter.contentFrom,
+    lineAfter.contentTo
+  );
+
+  if (
+    rebuilt.length !== lineAfter.contentTo - lineAfter.contentFrom ||
+    !rebuilt.every((token, at) =>
+      sameToken(token, readLine.at(lineAfter.contentFrom + at))
+    )
+  ) {
+    refuse('The step’s line has leaves the projection would not write.');
+  }
+
+  const afterAt = new Map<number, number>();
+
+  run.forEach((unit, at) => afterAt.set(unit.at, runAfter[at].at));
+  rest.forEach((unit, at) => afterAt.set(unit.at, restAfter[at].at));
+
+  const afterOf = (source: number) =>
+    source >= line.contentFrom && source < line.contentTo
+      ? (afterAt.get(source) ?? null)
+      : stepMap.target(source);
+
+  const forward = slot > runStart;
+  const edge =
+    rest[forward ? slot - 1 : slot] ?? refuse('The run crosses no edge.');
+  const edgeAt = editMap.target(edge.at);
+  const crossed = rest.slice(
+    Math.min(slot, runStart),
+    Math.max(slot, runStart)
+  );
+  const partner = (() => {
+    const direction = edge.token.kind === 'close' ? -1 : 1;
+    let depth = 0;
+
+    for (
+      let index = unitsBefore.indexOf(edge);
+      index >= 0 && index < unitsBefore.length;
+      index += direction
+    ) {
+      const { props, token } = unitsBefore[index];
+
+      if (props !== null) continue;
+      depth += token.kind === edge.token.kind ? 1 : -1;
+      if (depth === 0) return unitsBefore[index];
+    }
+
+    return undefined;
+  })();
+  const edgeGone =
+    edgeAt === null &&
+    (partner === undefined || editMap.target(partner.at) === null);
+  const firstReplaced = (section: Section) => {
+    for (
+      let position = Math.max(section.from, line.contentFrom);
+      position < Math.min(section.from + section.length, line.contentTo);
+      position++
+    ) {
+      if (readBefore.isLetter(position)) return position;
+    }
+
+    return null;
+  };
+  const replacesRun = (section: Section) => {
+    const replaced = section.inserted > 0 ? firstReplaced(section) : null;
+
+    return replaced !== null && inRun(replaced);
+  };
+  const lineOf = (position: number) =>
+    lineAt(before, schema, position)?.line ?? null;
+  const region = regionOf(editMap, line.from, line.to, before.length, lineOf);
+  const readNear = new Tokens(edited, region.editedFrom, region.editedTo);
+  const keptRun = run
+    .map((unit) => editMap.target(unit.at))
+    .find((at) => at !== null);
+  const typed = editMap.sections.find(replacesRun);
+  const typedEnd = typed ? typed.at + typed.inserted : 0;
+  let typedRun: number | undefined;
+
+  for (let at = typed?.at ?? 0; at < typedEnd; at++) {
+    if (readNear.isLetter(at)) {
+      typedRun = at;
+      break;
+    }
+  }
+
+  const runAt = keptRun ?? typedRun;
+  const unplaced = new Set<number>();
+  const { move } = editMap;
+
+  if (move?.leaf) {
+    for (
+      let source = move.deletion.from;
+      source < move.deletion.from + move.deletion.length;
+      source++
+    ) {
+      const origin = afterOf(source);
+
+      if (origin !== null) unplaced.add(origin);
+    }
+  }
+
+  const originOf = (position: number) => {
+    const source = editMap.source(position);
+
+    return source === null ? null : afterOf(source);
+  };
+  const projected = (parts: Part[]) => {
+    countCoreWork('carriedLines', 1);
+
+    return assemble({
+      edited,
+      editMap,
+      grown,
+      originOf,
+      parts,
+      read: new Tokens(edited, region.editedFrom, region.editedTo),
+      readAfter: new Tokens(after, region.from, region.to + grown),
+      region,
+      root: input.root,
+      unplaced,
+    });
+  };
+  const keepRegion = () =>
+    projected([
+      {
+        from: region.editedFrom,
+        kept: true,
+        kind: 'copy',
+        to: region.editedTo,
+      },
+    ]);
+
+  if (runAt === undefined) return keepRegion();
+
+  // The edited line is the one that holds the run's letters, which a split
+  // can carry to a new line.
+  const editedLine =
+    lineAt(edited, schema, runAt)?.line ??
+    refuse('The edit moved the run out of a line.');
+
+  if (
+    editedLine.contentFrom < region.editedFrom ||
+    editedLine.contentTo > region.editedTo
+  ) {
+    refuse('The edited line leaves the region.');
+  }
+  for (const unit of run) {
+    const kept = editMap.target(unit.at);
+
+    if (
+      kept !== null &&
+      (kept < editedLine.contentFrom || kept >= editedLine.contentTo)
+    ) {
+      refuse('The edit moved a letter of the run out of its line.');
+    }
+  }
+
+  const units = unitsOf(edited, editedLine);
+  const replacedRuns = new Map<Section, boolean | null>();
+  const replacedRun = (at: number) => {
+    const section = editMap.insertionAt(at);
+
+    if (!section) return null;
+    if (!replacedRuns.has(section)) {
+      const replaced = firstReplaced(section);
+
+      replacedRuns.set(section, replaced === null ? null : inRun(replaced));
+    }
+
+    return replacedRuns.get(section) ?? null;
+  };
+
+  // What the edit typed goes with the first letter it replaced, or else with
+  // the letter before it, or right after the run's edge with the letter after
+  // it.
+  let previous: boolean | null = null;
+  const sides = units.map((unit) => {
+    if (unit.props === null) {
+      previous = unit.at === edgeAt ? null : false;
+
+      return false;
+    }
+
+    const source = editMap.source(unit.at);
+
+    previous =
+      source !== null ? inRun(source) : (replacedRun(unit.at) ?? previous);
+
+    return previous;
+  });
+  let next = false;
+
+  for (let index = sides.length - 1; index >= 0; index--) {
+    if (units[index].props === null) {
+      next = false;
+      continue;
+    }
+    next = sides[index] ?? next;
+    sides[index] = next;
+  }
+
+  const moves = sides.map((side) => side === true);
+  const first = moves.indexOf(true);
+  const last = moves.lastIndexOf(true);
+  const head = units[first];
+  const tail = units[last];
+
+  if (head === undefined || tail === undefined) return keepRegion();
+  if (moves.slice(first, last + 1).includes(false)) {
+    refuse('The edit split the run.');
+  }
+
+  const moved = units.slice(first, last + 1);
+  const indexAt = new Map(units.map((unit, index) => [unit.at, index]));
+  const unitAt = (at: number | null) => {
+    const index = at === null ? undefined : indexAt.get(at);
+
+    return index === undefined ? undefined : units[index];
+  };
+  const parentOf = (unit: Unit) => {
+    const index = indexAt.get(unit.at);
+
+    return index === undefined ? undefined : enclosingOf(units, index);
+  };
+  const insideOriginal = (editedOpen: Unit, original: number | null) => {
+    for (let holder = parentOf(editedOpen); holder; holder = parentOf(holder)) {
+      if (holder.at === original) return true;
+    }
+
+    return false;
+  };
+  const restStayedTogether = (beforeOpen: Unit, original: number | null) =>
+    directLettersOf(unitsBefore, beforeOpen).every((letter) => {
+      if (inRun(letter.at)) return true;
+
+      const kept = unitAt(editMap.target(letter.at));
+      const holder = kept && parentOf(kept);
+
+      return (
+        !kept ||
+        (holder !== undefined &&
+          (holder.at === original || sameUnit(holder, beforeOpen)))
+      );
+    });
+  const isSplitCopy = (beforeOpen: Unit, editedOpen: Unit) => {
+    const original = editMap.target(beforeOpen.at);
+
+    return (
+      sameUnit(beforeOpen, editedOpen) &&
+      !insideOriginal(editedOpen, original) &&
+      restStayedTogether(beforeOpen, original)
+    );
+  };
+  const sameElement = (
+    beforeOpen: Unit | undefined,
+    editedOpen: Unit | undefined
+  ) =>
+    beforeOpen === undefined || editedOpen === undefined
+      ? beforeOpen === editedOpen
+      : editMap.target(beforeOpen.at) === editedOpen.at ||
+        isSplitCopy(beforeOpen, editedOpen);
+  const edgeElement = elementOf(unitsBefore, edge);
+  const isEdgeElement = (open: Unit | undefined) =>
+    sameElement(edgeElement, open);
+
+  if (
+    !sameElement(
+      enclosingOf(unitsBefore, unitsBefore.indexOf(run[0])),
+      enclosingOf(units, first)
+    )
+  ) {
+    return keepRegion();
+  }
+
+  const edgeUnit = units.find((unit) => unit.at === edgeAt);
+  let anchorAt =
+    edgeUnit && isEdgeElement(elementOf(units, edgeUnit)) ? edgeUnit.at : null;
+
+  // A split can carry the edge's token to the other line or write a new one,
+  // leaving an equal edge beside the moved letters. An equal edge on their
+  // other side means the edit already took them past it, and a removed edge
+  // means it took the element away.
+  if (anchorAt === null) {
+    const near = forward ? units[last + 1] : units[first - 1];
+    const far = forward ? units[first - 1] : units[last + 1];
+
+    if (
+      crossed.length === 1 &&
+      near &&
+      sameUnit(near, edge) &&
+      isEdgeElement(elementOf(units, near))
+    ) {
+      anchorAt = near.at;
+    } else if (
+      (crossed.length === 1 && far && sameUnit(far, edge)) ||
+      (edgeGone && crossed.every((unit) => editMap.target(unit.at) === null))
+    ) {
+      return keepRegion();
+    } else if (edgeGone) {
+      refuse('The edit removed part of what the run crosses.');
+    } else refuse('The edit moved the run’s edge out of its line.');
+  }
+
+  const placed: Unit[] = [];
+
+  units.forEach((unit, index) => {
+    if (moves[index]) return;
+    if (!forward && unit.at === anchorAt) placed.push(...moved);
+    placed.push(unit);
+    if (forward && unit.at === anchorAt) placed.push(...moved);
+  });
+  if (placed.length !== units.length) refuse('The run’s edge left the line.');
+
+  const readEdited = new Tokens(
+    edited,
+    editedLine.contentFrom,
+    editedLine.contentTo
+  );
+  const emptyEdited = emptyLeafOf(readEdited);
+  const content = contentOf(placed, (following) =>
+    emptyEdited(following?.at ?? editedLine.contentTo)
+  );
+  const origins = content.indexes.map((index) =>
+    index === null ? null : originOf(placed[index].at)
+  );
+  const runFrom = content.indexes.indexOf(placed.indexOf(head));
+  const runTo = content.indexes.indexOf(placed.indexOf(tail)) + 1;
+  const movedSet = new Set(moved);
+  const stays = (index: number | null) =>
+    index !== null && !movedSet.has(placed[index]);
+  // A leaf token stays when the teammate's line holds it at the same distance
+  // from the nearest letter or element that stays.
+  const keptOf = (at: number, direction: 1 | -1) => {
+    for (
+      let near = at + direction;
+      near >= 0 && near < content.tokens.length;
+      near += direction
+    ) {
+      const index = content.indexes[near];
+
+      if (index === null) continue;
+      if (!stays(index)) return null;
+
+      const kept = placed[index].at - (near - at);
+
+      return sameToken(content.tokens[at], readEdited.at(kept)) ? kept : null;
+    }
+
+    return null;
+  };
+  const kept = content.tokens.map((token, at) => {
+    const index = content.indexes[at];
+
+    if (at >= runFrom && at < runTo) return null;
+    if (index !== null) return stays(index) ? placed[index].at : null;
+
+    return token.kind === 'open'
+      ? (keptOf(at, 1) ?? keptOf(at, -1))
+      : (keptOf(at, -1) ?? keptOf(at, 1));
+  });
+
+  return projected([
+    {
+      from: region.editedFrom,
+      kept: true,
+      kind: 'copy',
+      to: editedLine.contentFrom,
+    },
+    {
+      keptAt: kept,
+      kind: 'make',
+      origins,
+      run: {
+        from: runFrom,
+        length: tail.at + 1 - head.at,
+        source: head.at,
+        to: runTo,
+      },
+      tokens: content.tokens,
+    },
+    {
+      from: editedLine.contentTo,
+      kept: true,
+      kind: 'copy',
+      to: region.editedTo,
+    },
+  ]);
+};
+
 /** Map a step that carries a run through `edit` by the letters it kept. */
 export const projectCarriedStep = (
   input: CarriedProjectionInput
@@ -878,6 +1536,10 @@ export const projectCarriedStep = (
   const shape = shapeOf(input);
   const stepMap = new Correspondence(step, before);
   const editMap = new Correspondence(edit, before, { keepReinserted: true });
+  const inLine = inLineOf(input, shape, stepMap, editMap);
+
+  if (inLine) return inLine;
+
   const sourceLine =
     lineAt(before, schema, shape.source) ??
     refuse('The run starts outside a line.');
@@ -990,7 +1652,7 @@ export const projectCarriedStep = (
     }
   }
 
-  return assemble({
+  const projection = assemble({
     edited,
     editMap,
     originOf,
@@ -1002,6 +1664,10 @@ export const projectCarriedStep = (
     grown,
     unplaced,
   });
+
+  if (projection.runs.length === 0) refuse('The run has no place.');
+
+  return projection;
 };
 
 const getLine = (line: Line | null) =>
@@ -1822,6 +2488,25 @@ export const sameToken = (
   );
 };
 
+const addMatch = (matches: Match[], source: number, target: number) => {
+  const last = matches.at(-1);
+
+  if (
+    last &&
+    !last.modifications &&
+    last.target + last.length === target &&
+    last.source + last.length === source
+  ) {
+    matches[matches.length - 1] = {
+      length: last.length + 1,
+      source: last.source,
+      target: last.target,
+    };
+  } else {
+    matches.push({ length: 1, source, target });
+  }
+};
+
 const assemble = ({
   edited,
   editMap,
@@ -1852,40 +2537,72 @@ const assemble = ({
   const letters = new Map<number, number>();
   let position = 0;
   let run: CarriedRun | null = null;
+  // `editedAt` is where the token stands in the edited document, so a token
+  // whose properties the edit modified matches as that modification.
   const matchRest = (
     target: number,
     origin: number | null,
-    token?: JsonToken
+    token: JsonToken | undefined,
+    editedAt: number | null
   ) => {
-    if (origin === null || !sameToken(token, readAfter.at(origin))) return;
+    if (origin === null) return;
+
+    const kept = readAfter.at(origin);
+
+    if (!sameToken(token, kept)) {
+      const input = editedAt === null ? null : editMap.source(editedAt);
+      const modifications =
+        input === null ? null : editMap.modificationsAt(input);
+
+      if (
+        modifications &&
+        kept?.kind === 'open' &&
+        sameToken(
+          openToken(
+            kept.nodeKind,
+            applyPropertyModifications(kept.props, modifications)
+          ),
+          token
+        )
+      ) {
+        restMatches.push({
+          length: 1,
+          modifications,
+          source: origin - region.from,
+          target,
+        });
+      }
+
+      return;
+    }
     if (token?.kind === 'text' && !unplaced.has(origin)) {
       letters.set(origin, region.editedFrom + target);
     }
 
-    const source = origin - region.from;
-    const last = restMatches.at(-1);
-
-    if (
-      last &&
-      last.target + last.length === target &&
-      last.source + last.length === source
-    ) {
-      restMatches[restMatches.length - 1] = {
-        length: last.length + 1,
-        source: last.source,
-        target: last.target,
-      };
-    } else {
-      restMatches.push({ length: 1, source, target });
-    }
+    addMatch(restMatches, origin - region.from, target);
   };
 
   for (const part of parts) {
     if (part.kind === 'make') {
+      if (part.run && !run) {
+        run = {
+          at: region.editedFrom + position + part.run.from,
+          landed: part.run.to - part.run.from,
+          length: part.run.length,
+          root,
+          source: part.run.source,
+        };
+      }
+
       let offset = 0;
 
       part.tokens.forEach((token, index) => {
-        matchRest(position + offset, part.origins[index], token);
+        const kept = part.keptAt?.[index] ?? null;
+
+        matchRest(position + offset, part.origins[index], token, kept);
+        if (kept !== null) {
+          addMatch(stepMatches, kept - region.editedFrom, position + offset);
+        }
         offset += token.kind === 'text' ? token.text.length : 1;
       });
 
@@ -1915,7 +2632,7 @@ const assemble = ({
       });
     }
     for (let at = part.from; at < part.to; at++) {
-      matchRest(position + at - part.from, originOf(at), read.at(at));
+      matchRest(position + at - part.from, originOf(at), read.at(at), at);
     }
     position += part.to - part.from;
   }
@@ -1968,7 +2685,7 @@ const assemble = ({
         : undefined;
     },
     rest,
-    runs: [run ?? refuse('The run has no place.')],
+    runs: run ? [run] : [],
     step: RootChange.fromSections(stepSections, stepData),
   };
 };
