@@ -109,6 +109,13 @@ const NEEDS_REPRO = 'Needs reproduction';
 const NEEDS_RETEST = 'Needs retest';
 const DUPLICATE = 'Duplicate';
 const IME_LABEL = 'ime';
+const REGRESSION_LABEL = 'regression';
+const RELEASED_HOSTS = new Set([
+  'slatejs.org',
+  'www.slatejs.org',
+  'platejs.org',
+  'www.platejs.org',
+]);
 const OUTCOME_TYPES = { kind: 'Bug', spec: 'Feature' };
 const QUEUE_LIMIT = 5000;
 // A triage draft ends in a marker holding the hash of its own text, so posting it unchanged keeps its record current and editing it does not.
@@ -148,6 +155,11 @@ const KEY_VALUES = {
   miss: /\S/u,
   moved: /\S/u,
   device: (value) => paths(value).every((device) => DEVICES.includes(device)),
+  regression: (value) =>
+    paths(value).every((page) => {
+      const url = URL.parse(page);
+      return url?.protocol === 'https:' && RELEASED_HOSTS.has(url.hostname);
+    }),
   of: ISSUE,
   commit: /^[0-9a-f]{7,40}$/u,
   proof: /\S/u,
@@ -162,7 +174,7 @@ const KEY_VALUES = {
 const OUTCOMES = {
   kind: {
     required: ['scope', 'priority', 'owner', 'cause'],
-    optional: ['miss', 'moved', 'device'],
+    optional: ['miss', 'moved', 'device', 'regression'],
   },
   dup: { required: ['of'], optional: [] },
   fixed: {
@@ -286,7 +298,7 @@ function policyProblems(config) {
   const policy = config?.triage;
   if (!policy) {
     return [
-      `${CONFIG} has no triage key with repos, milestone, focus, floor and rev`,
+      `${CONFIG} has no triage key with repos, milestone, later, regressionOnly, focus, floor and rev`,
     ];
   }
   const found = [];
@@ -308,8 +320,31 @@ function policyProblems(config) {
   }
   if (typeof policy.milestone !== 'string' || !policy.milestone.trim()) {
     found.push(
-      `${CONFIG}: triage.milestone names the milestone that marks an issue of the first repository as next work`
+      `${CONFIG}: triage.milestone names the milestone of the next work that must close before the next release`
     );
+  }
+  if (
+    typeof policy.later !== 'string' ||
+    !policy.later.trim() ||
+    policy.later === policy.milestone
+  ) {
+    found.push(
+      `${CONFIG}: triage.later names the milestone of the rest of the next work, other than triage.milestone`
+    );
+  }
+  if (!Array.isArray(policy.regressionOnly)) {
+    found.push(
+      `${CONFIG}: triage.regressionOnly lists the review scopes whose P0 kinds go on triage.milestone only as regressions`
+    );
+  }
+  for (const scope of Array.isArray(policy.regressionOnly)
+    ? policy.regressionOnly
+    : []) {
+    if (typeof scope !== 'string' || !KEY_VALUES.scope.test(scope)) {
+      found.push(
+        `${CONFIG}: triage.regressionOnly entry ${JSON.stringify(scope)} is not a review-scope name`
+      );
+    }
   }
   if (!FOCUSES.has(policy.focus)) {
     found.push(
@@ -381,6 +416,8 @@ const policyOf = (config) => ({
   primary: repoOf(config.triage.repos) === config.triage.repos[0],
   first: config.triage.repos[0],
   milestone: config.triage.milestone,
+  later: config.triage.later,
+  regressionOnly: config.triage.regressionOnly,
   focus: config.triage.focus,
   moved: new Map(),
   floor: config.triage.floor.map(parseLabel),
@@ -1644,11 +1681,28 @@ function mark(options) {
   console.log(marked(unixText(readFileSync(file, 'utf-8')).trim()));
 }
 
-const mainReport = (reads, milestone) =>
-  reads.policy.primary && milestone !== reads.policy.milestone;
+const betaMilestones = (policy) => [policy.milestone, policy.later];
+
+const mainReport = (policy, milestone) =>
+  policy.primary && !betaMilestones(policy).includes(milestone);
+
+function milestoneFor(policy, milestone, state, head) {
+  if (mainReport(policy, milestone)) return milestone;
+  if (state === 'current' && head.outcome === 'kind') {
+    const detail = parseDetail(head.detail);
+    const priority = detail.get('priority');
+    const gates = detail.has('regression')
+      ? priority === 'P0' || priority === 'P1'
+      : priority === 'P0' &&
+        !policy.regressionOnly.includes(detail.get('scope'));
+    return gates ? policy.milestone : policy.later;
+  }
+  return betaMilestones(policy).includes(milestone) ? milestone : policy.later;
+}
 
 const inFocus = (reads, issue) =>
-  reads.policy.focus === 'all' || !mainReport(reads, issue.milestone?.title);
+  reads.policy.focus === 'all' ||
+  !mainReport(reads.policy, issue.milestone?.title);
 
 function openIssues(reads, label = null) {
   const listed = spawnSync(
@@ -1832,6 +1886,12 @@ function labels() {
         const priorityId = fields.priority.optionIds.get(level);
         const scopeId = fields.scope.optionIds.get(scope);
         mutationId.push(level, scope);
+        const regression = detail.has('regression');
+        if (regression && !names.has(REGRESSION_LABEL)) {
+          edits.push(`--add-label ${REGRESSION_LABEL}`);
+        } else if (!regression && names.has(REGRESSION_LABEL)) {
+          edits.push(`--remove-label ${REGRESSION_LABEL}`);
+        }
         if (priority !== priorityId) {
           changes.push(
             `{ fieldId: "${fields.priority.id}", singleSelectOptionId: "${priorityId}" }`
@@ -1864,6 +1924,11 @@ function labels() {
           head.outcome !== 'fixed'))
     ) {
       changes.push(`{ fieldId: "${fields.triage.id}", delete: true }`);
+    }
+    const milestone = issue.milestone?.title ?? null;
+    const target = milestoneFor(reads.policy, milestone, state, head);
+    if (target !== milestone) {
+      edits.push(`--milestone '${target}'`);
     }
     if (changes.length > 0) {
       sets.push(
@@ -2533,7 +2598,7 @@ function claimWorld(reads, open, rows, live, actor, git) {
     now: Date.now(),
     maintainers: reads.policy.maintainers,
     open,
-    main: (issue) => mainReport(reads, open.get(issue)?.milestone),
+    main: (issue) => mainReport(reads.policy, open.get(issue)?.milestone),
     head,
     tasks,
     linked: links,
@@ -2639,7 +2704,7 @@ function claimCommand(options) {
     const untriaged = [...open]
       .filter(
         ([issue, { milestone }]) =>
-          !mainReport(reads, milestone) && !reads.rows.get(issue)?.size
+          !mainReport(reads.policy, milestone) && !reads.rows.get(issue)?.size
       )
       .map(([issue]) => `${prefix}${issue}`);
     if (untriaged.length > 0) {
@@ -2764,7 +2829,7 @@ function claimCommand(options) {
     if (result.verdict === 'closed') console.log(`skipped ${at}: closed`);
     if (result.verdict === 'main') {
       console.log(
-        `skipped ${at}: without the ${reads.policy.milestone} milestone it reports main, which gets no fixes yet`
+        `skipped ${at}: on neither the ${reads.policy.milestone} nor the ${reads.policy.later} milestone it reports main, which gets no fixes yet`
       );
     }
     if (result.verdict === 'fixed') {
@@ -3170,7 +3235,7 @@ function kindsIn(reads, open) {
         assignees.join(',') ||
         tasks.join(',') ||
         (devices.length > 0 && 'lane') ||
-        (mainReport(reads, milestone) && 'main') ||
+        (mainReport(reads.policy, milestone) && 'main') ||
         'free';
       return [
         {

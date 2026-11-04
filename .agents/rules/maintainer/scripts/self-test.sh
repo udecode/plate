@@ -18,6 +18,7 @@ else
 fi
 node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); const kinds=new Set(p.cases?.map(x=>x.kind)); for(const k of ["two-videos","one-video","text-only"]) if(!kinds.has(k)) process.exit(1); const c=p.cases.find(x=>x.kind==="two-videos"); if(c.inputs?.join(",")!=="main.mp4,next.mp4"||!/main normal baseline/.test(c.expected)||!/current next\/Beta bug/.test(c.expected)||!/normal-versus-regression behavioral delta/.test(c.expected)||!/ask the user only when that evidence is ambiguous/.test(c.expected)||!/never infer roles from input order or visual presentation/i.test(c.expected)) process.exit(1)' "$skill_dir/assets/intake-cases.json"
 
+milestone=$(jq -r '.triage.later' "$(git -C "$script_dir" rev-parse --show-toplevel)/.agents/pstack.json")
 test_dir=$(cd "$(mktemp -d "${TMPDIR:-/tmp}/plate-issue-publish-test.XXXXXX")" && pwd -P)
 trap 'rm -rf "$test_dir"' EXIT
 publish() { bash "$script_dir/publish-issue.sh" --repo udecode/plate-private "$@"; }
@@ -38,7 +39,20 @@ ffmpeg -hide_banner -loglevel error -y -f lavfi -i color=c=white:s=16x16:d=0.1 \
   -frames:v 1 "$test_dir/next frame.png"
 
 dry_run=$(publish --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run)
-jq -e '.repo == "udecode/plate-private" and .title == "Editor drag crashes the page" and .command[0:3] == ["gh","issue","create"] and .command[(.command | index("--type")) + 1] == "Bug" and .command[(.command | index("--milestone")) + 1] == "v54"' <<<"$dry_run" >/dev/null
+jq -e --arg milestone "$milestone" '.repo == "udecode/plate-private" and .title == "Editor drag crashes the page" and .command[0:3] == ["gh","issue","create"] and .command[(.command | index("--type")) + 1] == "Bug" and .command[(.command | index("--milestone")) + 1] == $milestone' <<<"$dry_run" >/dev/null
+
+unconfigured="$test_dir/unconfigured"
+mkdir -p "$unconfigured/.agents" "$unconfigured/scripts"
+git -C "$unconfigured" init --quiet
+printf '%s\n' '{"triage":{}}' >"$unconfigured/.agents/pstack.json"
+cp "$script_dir/publish-issue.sh" "$unconfigured/scripts/"
+set +e
+output=$(bash "$unconfigured/scripts/publish-issue.sh" --repo udecode/plate-private \
+  --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" --dry-run 2>&1)
+status=$?
+set -e
+[[ "$status" == 2 ]] && grep -Fq 'names no triage.later' <<<"$output" ||
+  { echo "Publisher accepted a config without triage.later: $output" >&2; exit 1; }
 
 printf '%s\n' '## Summary' '' 'The export call is at lines 50-56 of `exportHtmlToDocx.internal.ts`.' >"$test_dir/identifier-body.md"
 publish --title-file "$test_dir/title.txt" --body-file "$test_dir/identifier-body.md" --dry-run >/dev/null
@@ -135,13 +149,13 @@ case "$*" in
   'issue view https://github.com/udecode/plate-private/issues/123 '*)
     case "${TEST_ISSUE_READBACK:-}" in
       ok)
-        jq -n '{title:"Editor drag crashes the page",
+        jq -n --arg milestone "$TEST_MILESTONE" '{title:"Editor drag crashes the page",
           body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
-          issueType:{name:"Bug"}, milestone:{title:"v54"}, labels:[{name:"ime"}]}' ;;
+          issueType:{name:"Bug"}, milestone:{title:$milestone}, labels:[{name:"ime"}]}' ;;
       untyped)
-        jq -n '{title:"Editor drag crashes the page",
+        jq -n --arg milestone "$TEST_MILESTONE" '{title:"Editor drag crashes the page",
           body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
-          issueType:null, milestone:{title:"v54"}, labels:[{name:"ime"}]}' ;;
+          issueType:null, milestone:{title:$milestone}, labels:[{name:"ime"}]}' ;;
       unmilestoned)
         jq -n '{title:"Editor drag crashes the page",
           body:"## Summary\n\nDragging a block crashes the page.\n\n## Evidence\n\n#### a\n\nhttps://github.com/user-attachments/assets/aaa\n\n#### b\n\n![b](https://github.com/user-attachments/assets/bbb)\n",
@@ -155,7 +169,7 @@ exit 2
 FAKE_GH
 chmod +x "$fake_bin/gh"
 create() {
-  PATH="$fake_bin:$PATH" TEST_ISSUE_READBACK=$1 bash "$script_dir/publish-issue.sh" --repo udecode/plate-private \
+  PATH="$fake_bin:$PATH" TEST_ISSUE_READBACK=$1 TEST_MILESTONE=$milestone bash "$script_dir/publish-issue.sh" --repo udecode/plate-private \
     --title-file "$test_dir/title.txt" --body-file "$test_dir/body.md" \
     --attach "$test_dir/main.mp4" --attach "$test_dir/next frame.png" \
     --labels 'ime' --platform Android --confirm-create 2>&1
@@ -185,7 +199,7 @@ for case_name in untyped unmilestoned; do
   [[ "$status" == 7 ]] || { echo "Expected $case_name to exit 7, got $status" >&2; exit 1; }
   case "$case_name" in
     untyped) grep -Fq '(missing type: Bug)' <<<"$output" ;;
-    unmilestoned) grep -Fq '(missing milestone: v54)' <<<"$output" ;;
+    unmilestoned) grep -Fq "(missing milestone: $milestone)" <<<"$output" ;;
   esac
 done
 

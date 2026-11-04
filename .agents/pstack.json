@@ -85,7 +85,13 @@
       "udecode/plate",
       "udecode/plate-private"
     ],
-    "milestone": "v54",
+    "milestone": "Beta 1",
+    "later": "Stable",
+    "regressionOnly": [
+      "collaboration",
+      "suggestions",
+      "authored"
+    ],
     "focus": "next",
     "floor": [
       "claude-opus-5 @xhigh",

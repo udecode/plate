@@ -65,7 +65,7 @@ for label in ${label_items[@]+"${label_items[@]}"}; do
   [[ -n "$label" ]] || continue
   facet=false
   for each in "${facet_labels[@]}"; do [[ "$label" == "$each" ]] && facet=true; done
-  [[ "$facet" == true ]] || { echo "Label '$label' is not a facet label (${facet_labels[*]}); the Scope issue field names the domain, the Platform field the browser or OS, and the v54 milestone marks Beta" >&2; exit 2; }
+  [[ "$facet" == true ]] || { echo "Label '$label' is not a facet label (${facet_labels[*]}); the Scope issue field names the domain, the Platform field the browser or OS, and the milestone marks Beta" >&2; exit 2; }
   clean_labels+=("$label")
 done
 platform_options=(Chrome Safari Firefox Edge Android iOS)
@@ -83,9 +83,14 @@ command -v jq >/dev/null || { echo "Missing command: jq" >&2; exit 3; }
 platform_json=$(jq -cn '$ARGS.positional' --args ${platforms[@]+"${platforms[@]}"})
 
 title=""
+milestone=""
 if [[ -z "$comment_on" ]]; then
   title=$(tr '\n' ' ' <"$title_file" | sed -E 's/[[:space:]]+/ /g; s/^ //; s/ $//')
-  [[ -n "$title" && ! "$title" =~ ^\[[^]]*\]: ]] || { echo "Title takes no [Beta]: or other bracket prefix; the v54 milestone marks a Beta issue" >&2; exit 2; }
+  [[ -n "$title" && ! "$title" =~ ^\[[^]]*\]: ]] || { echo "Title takes no [Beta]: or other bracket prefix; the milestone marks a Beta issue" >&2; exit 2; }
+  root=$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel) || { echo "The publisher runs from a checkout of the repository whose .agents/pstack.json names the Beta milestones" >&2; exit 2; }
+  config="$root/.agents/pstack.json"
+  milestone=$(jq -r '.triage.later // empty' "$config" 2>/dev/null || true)
+  [[ -n "$milestone" ]] || { echo "$config names no triage.later, the milestone a new Beta issue goes on" >&2; exit 2; }
 fi
 if grep -Eq 'TODO|TBD' ${title_file:+"$title_file"} "$body_file" ||
   grep -Eiq '<one sentence|<setup>|<action>|<failure trigger>|<expected behavior|<observed behavior|<verified value|<timestamp note|<inference' ${title_file:+"$title_file"} "$body_file"; then
@@ -115,7 +120,7 @@ if [[ -n "$comment_on" ]]; then
   args=(issue comment "$comment_on" --repo "$repo" --body-file "$final_body")
   url_pattern="https://github\\.com/udecode/plate-private/issues/$comment_on#issuecomment-[0-9]+"
 else
-  args=(issue create --repo "$repo" --title "$title" --type Bug --milestone v54 --body-file "$final_body")
+  args=(issue create --repo "$repo" --title "$title" --type Bug --milestone "$milestone" --body-file "$final_body")
   url_pattern='https://github\.com/udecode/plate-private/issues/[0-9]+'
 fi
 for abs_path in ${abs_paths[@]+"${abs_paths[@]}"}; do
@@ -170,7 +175,7 @@ uploaded=$(jq "$urls_filter | length" "$verified")
 ((uploaded >= attach_count)) || failed "expected $attach_count attachments, found $uploaded"
 if [[ -z "$comment_on" ]]; then
   jq -e '.issueType.name == "Bug"' "$verified" >/dev/null || failed "missing type: Bug"
-  jq -e '.milestone.title == "v54"' "$verified" >/dev/null || failed "missing milestone: v54"
+  jq -e --arg milestone "$milestone" '.milestone.title == $milestone' "$verified" >/dev/null || failed "missing milestone: $milestone"
 fi
 for label in ${clean_labels[@]+"${clean_labels[@]}"}; do
   jq -e --arg label "$label" 'any(.labels[]; .name == $label)' "$verified" >/dev/null || failed "missing label: $label"
