@@ -1,7 +1,7 @@
 [
   {
     "changelogUrl": "https://github.com/udecode/plate/blob/d142cfb5b9358d97b3ec67448e7e00be41f067a4/packages/plate/CHANGELOG.md",
-    "content": "`@platejs/core`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n`@platejs/slate`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning for Slate. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n[`v53.5.3...v54.0.0-beta.0`](https://github.com/udecode/plate/compare/%40platejs%2Fai%4053.5.3...platejs%4054.0.0-beta.0) · By [@felixfeng33](https://github.com/felixfeng33)",
+    "content": "`@platejs/core`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n`@platejs/slate`\n\n### Breaking Changes\n\n- Prepare v54 beta prerelease versioning for Slate. ([#5031](https://github.com/udecode/plate/pull/5031))\n\n[`v53.5.4...v54.0.0-beta.0`](https://github.com/udecode/plate/compare/%40platejs%2Fdocx-io%4053.5.4...platejs%4054.0.0-beta.0) · By [@felixfeng33](https://github.com/felixfeng33)",
     "contributors": [
       {
         "url": "https://github.com/felixfeng33",
@@ -15,6 +15,23 @@
     "type": "major",
     "versionPackagePrUrl": "https://github.com/udecode/plate/pull/5033",
     "url": "https://github.com/udecode/plate/releases/tag/v54.0.0-beta.0"
+  },
+  {
+    "changelogUrl": "https://github.com/udecode/plate/blob/main/packages/docx-io/CHANGELOG.md",
+    "content": "`@platejs/docx-io`\n\n### Bug Fixes\n\n-   - Preserve images and formatted captions inside table cells and list items when exporting to DOCX. ([#5331](https://github.com/udecode/plate/pull/5331))\n  - Keep continuation paragraphs separate within a list item without adding extra list markers.\n  - Fit images within their table cell or list text width and preserve the image paragraph indentation.\n\n[`CHANGELOG`](https://github.com/udecode/plate/pull/5335) · [`v53.5.3...v53.5.4`](https://github.com/udecode/plate/compare/%40platejs%2Fai%4053.5.3...%40platejs%2Fdocx-io%4053.5.4) · By [@zbeyens](https://github.com/zbeyens)",
+    "contributors": [
+      {
+        "url": "https://github.com/zbeyens",
+        "username": "@zbeyens"
+      }
+    ],
+    "date": "2026-11-04",
+    "packageTag": "@platejs/docx-io@53.5.4",
+    "tag": "v53.5.4",
+    "title": "v53.5.4",
+    "type": "patch",
+    "versionPackagePrUrl": "https://github.com/udecode/plate/pull/5335",
+    "url": "https://github.com/udecode/plate/pull/5335"
   },
   {
     "changelogUrl": "https://github.com/udecode/plate/blob/main/packages/ai/CHANGELOG.md",
