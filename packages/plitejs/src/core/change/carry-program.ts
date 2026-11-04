@@ -15,13 +15,20 @@ import {
 import type { CarriedRun } from './carried-run';
 import type { DocumentIndex, IndexedNodeRange } from './document-index';
 import { jsonEqual } from './json';
-import { addSection, RootChange, type SectionData } from './root-change';
+import {
+  addSection,
+  applyPropertyModifications,
+  RootChange,
+  type SectionData,
+} from './root-change';
 import {
   closeToken,
   type JsonToken,
   type OpenToken,
+  openToken,
   PreparedTokenSlice,
 } from './tokens';
+import type { PropertyModification } from './transform';
 
 export type SeparateProgram = Readonly<{
   kind: 'separate';
@@ -468,6 +475,8 @@ const pushMatch = (matches: Match[], match: Match) => {
 
   if (
     last &&
+    !last.modifications &&
+    !match.modifications &&
     last.source + last.length === match.source &&
     last.target + last.length === match.target
   ) {
@@ -919,14 +928,21 @@ const matchKeptOutsideWindows = (
 ) => {
   const matches: Match[] = [];
   const kept = editMap.sections
-    .filter((section) => section.inserted === -1)
-    .map(({ at, from, length }) => ({ at, from, length }));
+    .filter((section) => section.inserted < 0)
+    .map(({ at, data, from, inserted, length }) => ({
+      at,
+      from,
+      length,
+      modifications:
+        inserted === -2 ? (data as readonly PropertyModification[]) : null,
+    }));
 
   if (editMap.move) {
     kept.push({
       at: editMap.move.insertion.at,
       from: editMap.move.deletion.from,
       length: editMap.move.deletion.length,
+      modifications: null,
     });
   }
 
@@ -951,11 +967,19 @@ const matchKeptOutsideWindows = (
         );
 
         if (from < to) {
-          matches.push({
-            length: to - from,
-            source: keptAt(old, baseLength, from) as number,
-            target: keptAt(fresh, editedLength, from + shift) as number,
-          });
+          const source = keptAt(old, baseLength, from) as number;
+          const target = keptAt(fresh, editedLength, from + shift) as number;
+
+          matches.push(
+            section.modifications
+              ? {
+                  length: 1,
+                  modifications: section.modifications,
+                  source,
+                  target,
+                }
+              : { length: to - from, source, target }
+          );
         }
       }
     }
@@ -984,8 +1008,35 @@ export const carryRest = (
     baseLength,
     editedLength
   );
-  const match = (source: number, target: number) => {
-    matches.push({ length: 1, source, target });
+  /**
+   * Keeps source token `source` as target token `target`, or modifies it
+   * there when the edit modified the properties of its input token `input`.
+   */
+  const match = (source: number, target: number, input: number | null) => {
+    const kept = tokenAt(previous.after, source);
+    const written = tokenAt(next.after, target);
+
+    if (sameToken(kept, written)) {
+      matches.push({ length: 1, source, target });
+      return;
+    }
+
+    const modifications =
+      input === null ? null : editMap.modificationsAt(input);
+
+    if (
+      modifications &&
+      kept?.kind === 'open' &&
+      sameToken(
+        openToken(
+          kept.nodeKind,
+          applyPropertyModifications(kept.props, modifications)
+        ),
+        written
+      )
+    ) {
+      matches.push({ length: 1, modifications, source, target });
+    }
   };
 
   const oldOrigin = finalOrigins(previous);
@@ -1009,34 +1060,24 @@ export const carryRest = (
 
     const outside = keptAt(fresh, editedLength, target);
 
-    if (
-      outside !== null &&
-      sameToken(tokenAt(previous.after, position), tokenAt(next.after, outside))
-    ) {
-      match(position, outside);
-    }
+    if (outside !== null) match(position, outside, origin);
   }
 
   for (let position = fresh.from; position < fresh.to; position++) {
     const origin = newOrigin(position);
     let source: number | null | undefined;
+    let input: number | null = null;
 
     if (typeof origin === 'string') source = byKey.get(origin);
     else if (origin !== null) {
+      input = editMap.source(origin);
       source = byPosition.get(origin);
 
       if (source === undefined) {
-        const input = editMap.source(origin);
-
         source = input === null ? null : keptAt(old, baseLength, input);
       }
     }
-    if (
-      typeof source === 'number' &&
-      sameToken(tokenAt(previous.after, source), tokenAt(next.after, position))
-    ) {
-      match(source, position);
-    }
+    if (typeof source === 'number') match(source, position, input);
   }
 
   matches.sort((left, right) => left.target - right.target);

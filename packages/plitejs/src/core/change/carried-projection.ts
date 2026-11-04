@@ -20,6 +20,7 @@ import {
   PreparedTokenSlice,
   textToken,
 } from './tokens';
+import type { PropertyModification } from './transform';
 
 /**
  * A step that moves a run of tokens, mapped through an outside edit by the
@@ -270,6 +271,15 @@ export class Correspondence {
       move.deletion.from <= position &&
       position < move.deletion.from + move.deletion.length
       ? move.insertion.at + position - move.deletion.from
+      : null;
+  }
+
+  /** What the change writes on input token `position`'s properties, or null. */
+  modificationsAt(position: number): readonly PropertyModification[] | null {
+    const section = this.find(position, (each) => each.from + each.length);
+
+    return section?.inserted === -2 && section.from === position
+      ? (section.data as readonly PropertyModification[])
       : null;
   }
 
@@ -1714,11 +1724,18 @@ const withDeletedClosed = (
   };
 };
 
-export type Match = Readonly<{
-  source: number;
-  target: number;
-  length: number;
-}>;
+/**
+ * Source tokens kept as target tokens, or one source open whose properties
+ * the edit modified into the target open's.
+ */
+export type Match = Readonly<{ source: number; target: number }> &
+  (
+    | Readonly<{ length: number; modifications?: undefined }>
+    | Readonly<{
+        length: 1;
+        modifications: readonly PropertyModification[];
+      }>
+  );
 
 /** The matches that keep their order, each whole or not at all. */
 const increasing = (matches: readonly Match[]) => {
@@ -1759,7 +1776,9 @@ export const addMatched = (
         target.slice(at, match.target)
       );
     }
-    addSection(sections, data, match.length, -1, null);
+    if (match.modifications) {
+      addSection(sections, data, 1, -2, match.modifications);
+    } else addSection(sections, data, match.length, -1, null);
     source = match.source + match.length;
     at = match.target + match.length;
   }
@@ -1852,8 +1871,9 @@ const assemble = ({
       last.source + last.length === source
     ) {
       restMatches[restMatches.length - 1] = {
-        ...last,
         length: last.length + 1,
+        source: last.source,
+        target: last.target,
       };
     } else {
       restMatches.push({ length: 1, source, target });

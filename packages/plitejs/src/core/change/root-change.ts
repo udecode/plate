@@ -27,6 +27,7 @@ import {
   commonPrefixLength,
   commonSuffixLength,
   DOCUMENT_SLICE_PREPARED_NODES,
+  getDocumentSliceNodeKeys,
   PreparedTokenSlice,
   isElementNode,
   isTextNode,
@@ -37,6 +38,7 @@ import {
   nodeProps,
   openToken,
   pathKey,
+  tokenLength,
   tokensEqual,
 } from './tokens';
 import {
@@ -2368,8 +2370,12 @@ const mergeNestedChangeThroughStructuralRelocation = (
     .filter(({ path }) => {
       const range = before.nodeRange(path);
 
-      return changedRanges.every(
-        ([from, to]) => range.from <= from && to <= range.to
+      // A node the change removes whole has no image, and its old path
+      // names a sibling.
+      return (
+        changedRanges.every(
+          ([from, to]) => range.from <= from && to <= range.to
+        ) && nested.mapPos(range.from, -1) !== nested.mapPos(range.to, 1)
       );
     })
     .sort((left, right) => right.path.length - left.path.length);
@@ -2443,6 +2449,254 @@ const mergeNestedChangeThroughStructuralRelocation = (
   }
 
   return partial;
+};
+
+const deletesWholeSiblings = (
+  document: DocumentIndex,
+  replacement: Replacement | undefined
+): replacement is Replacement => {
+  if (!replacement || replacement.insert.length > 0) return false;
+
+  const first = document.nodeStartingAt(replacement.from);
+  const end = document.childBoundaryAt(replacement.to);
+
+  if (!first || !end) return false;
+
+  const index = getDefined(first.path.at(-1));
+
+  return (
+    end.index > index &&
+    pathKey(first.path.slice(0, -1)) === pathKey(end.parentPath)
+  );
+};
+
+type WrapFrame = {
+  holdsKept: boolean;
+  holdsRemoved: boolean;
+  /** Where the edit inserts the open, as section and token index, or null. */
+  open: readonly [number, number] | null;
+};
+
+/**
+ * When `edit` only inserts inside the whole siblings `deletion` removes,
+ * finds each element `edit` inserts whose content is only removed tokens or
+ * such elements. Returns `edit` without those elements and the change that
+ * takes them out of `edit`'s output, or null when there are none or an
+ * insert does not nest whole between the deleted tokens. It reads which
+ * tokens are original, never their letters.
+ */
+const wrapsInsideDeletion = (
+  document: DocumentIndex,
+  deletion: Replacement,
+  edit: RootChange
+): Readonly<{ stripped: RootChange; unwrap: RootChange }> | null => {
+  const inserts: Array<
+    Readonly<{ at: number; section: number; tokens: readonly JsonToken[] }>
+  > = [];
+  let position = 0;
+
+  for (let index = 0; index < edit.sections.length; index += 2) {
+    const length = edit.sections[index];
+    const from = position;
+
+    position += length;
+    if (edit.sections[index + 1] < 0) continue;
+    if (length > 0) {
+      if (from < deletion.to && position > deletion.from) return null;
+      continue;
+    }
+    if (deletion.from <= from && from <= deletion.to) {
+      inserts.push({
+        at: from,
+        section: index,
+        tokens: (edit.data[index >> 1] as PreparedTokenSlice).tokens,
+      });
+    }
+  }
+  if (inserts.length === 0) return null;
+
+  const absorbed = new Map<number, Set<number>>();
+  const stack: WrapFrame[] = [
+    { holdsKept: false, holdsRemoved: false, open: null },
+  ];
+  const visit = (
+    token: JsonToken,
+    origin: readonly [number, number] | null
+  ) => {
+    const top = getDefined(stack.at(-1));
+
+    if (token.kind === 'text') {
+      if (origin) top.holdsKept = true;
+      else top.holdsRemoved = true;
+      return true;
+    }
+    if (token.kind === 'open') {
+      stack.push({ holdsKept: false, holdsRemoved: false, open: origin });
+      return true;
+    }
+    if (stack.length === 1) return false;
+
+    const frame = getDefined(stack.pop());
+    const parent = getDefined(stack.at(-1));
+
+    if (!frame.open && !origin) {
+      parent.holdsRemoved = true;
+      parent.holdsKept ||= frame.holdsKept;
+    } else if (
+      frame.open &&
+      origin &&
+      token.nodeKind === 'element' &&
+      frame.holdsRemoved &&
+      !frame.holdsKept
+    ) {
+      for (const [section, index] of [frame.open, origin]) {
+        const peeled = absorbed.get(section) ?? new Set<number>();
+
+        peeled.add(index);
+        absorbed.set(section, peeled);
+      }
+      parent.holdsRemoved = true;
+    } else {
+      parent.holdsKept = true;
+    }
+    return true;
+  };
+  let next = 0;
+  const visitInsertsUpTo = (at: number) => {
+    for (; next < inserts.length && inserts[next].at <= at; next += 1) {
+      const { section, tokens } = inserts[next];
+
+      // An insert before `at` that was not visited lands inside a text token.
+      if (inserts[next].at < at) return false;
+      for (let index = 0; index < tokens.length; index += 1) {
+        if (!visit(tokens[index], [section, index])) return false;
+      }
+    }
+    return true;
+  };
+  let at = deletion.from;
+
+  for (const token of document.slice(deletion.from, deletion.to).tokens) {
+    if (!visitInsertsUpTo(at) || !visit(token, null)) return null;
+    at += tokenLength(token);
+  }
+  if (!visitInsertsUpTo(at) || stack.length !== 1 || absorbed.size === 0) {
+    return null;
+  }
+
+  const sections: number[] = [];
+  const data: SectionData[] = [];
+  const unwrapSections: number[] = [];
+  const unwrapData: SectionData[] = [];
+
+  for (let index = 0; index < edit.sections.length; index += 2) {
+    const length = edit.sections[index];
+    const inserted = edit.sections[index + 1];
+    const value = edit.data[index >> 1];
+    const peeled = absorbed.get(index);
+
+    if (!peeled) {
+      addSection(sections, data, length, inserted, value);
+      addSection(
+        unwrapSections,
+        unwrapData,
+        inserted < 0 ? length : inserted,
+        -1,
+        null
+      );
+      continue;
+    }
+
+    const slice = value as PreparedTokenSlice;
+    const { tokens } = slice;
+    const keptTokens: JsonToken[] = [];
+    const keptAt = new Map<number, number>();
+    let start = 0;
+    let peeledLength = 0;
+
+    tokens.forEach((token, tokenIndex) => {
+      if (peeled.has(tokenIndex)) {
+        peeledLength += tokenLength(token);
+      } else {
+        keptTokens.push(token);
+        keptAt.set(start, start - peeledLength);
+      }
+      start += tokenLength(token);
+    });
+
+    const nodeKeys = new Map<number, NodeKey>();
+
+    for (const [keyAt, key] of getDocumentSliceNodeKeys(slice)) {
+      const to = keptAt.get(keyAt);
+
+      if (to !== undefined) nodeKeys.set(to, key);
+    }
+
+    const kept =
+      PreparedTokenSlice.fromTokens(keptTokens).withNodeKeys(nodeKeys);
+
+    addSection(sections, data, length, kept.length, kept);
+    tokens.forEach((token, offset) => {
+      if (peeled.has(offset)) {
+        addSection(unwrapSections, unwrapData, 1, 0, PreparedTokenSlice.empty);
+      } else {
+        addSection(unwrapSections, unwrapData, tokenLength(token), -1, null);
+      }
+    });
+  }
+
+  return {
+    stripped: RootChange.fromSections(sections, data),
+    unwrap: RootChange.fromSections(unwrapSections, unwrapData),
+  };
+};
+
+/**
+ * Transform a deletion of whole siblings by position alone against an edit
+ * whose wrappers hold only what it deletes, and take those wrappers with it.
+ * Null leaves the pair, wrappers included, to the value repairs.
+ */
+const transformByPositionOverAbsorbedWraps = (
+  a: RootChange,
+  b: RootChange,
+  aReplacements: readonly Replacement[],
+  bReplacements: readonly Replacement[],
+  document: DocumentIndex,
+  replayBase: DocumentIndex | undefined
+): Readonly<{ a: RootChange; b: RootChange }> | null => {
+  for (const side of ['a', 'b'] as const) {
+    const [replacements, edit] =
+      side === 'a' ? [aReplacements, b] : [bReplacements, a];
+    const [deletion] = replacements;
+
+    if (
+      replacements.length !== 1 ||
+      !deletesWholeSiblings(document, deletion)
+    ) {
+      continue;
+    }
+
+    const wraps = wrapsInsideDeletion(document, deletion, edit);
+
+    if (!wraps) continue;
+
+    const inner =
+      side === 'a'
+        ? RootChange.transform(a, wraps.stripped, replayBase)
+        : RootChange.transform(wraps.stripped, b, replayBase);
+    const [afterInnerA, afterInnerB] =
+      side === 'a'
+        ? [a.apply(document), wraps.stripped.apply(document)]
+        : [wraps.stripped.apply(document), b.apply(document)];
+
+    if (!convergesOn(inner, afterInnerA, afterInnerB)) continue;
+
+    return side === 'a'
+      ? { a: wraps.unwrap.compose(inner.a), b: inner.b }
+      : { a: inner.a, b: wraps.unwrap.compose(inner.b) };
+  }
+
+  return null;
 };
 
 type SectionEnds = Readonly<{
@@ -3289,6 +3543,17 @@ export class RootChange {
     const aReplacements = a.replacements();
     const bReplacements = b.replacements();
 
+    const absorbed = transformByPositionOverAbsorbedWraps(
+      a,
+      b,
+      aReplacements,
+      bReplacements,
+      document,
+      replayBase
+    );
+
+    if (absorbed) return absorbed;
+
     // The value repairs below would read a re-take of an unwrapped wrap,
     // which leaves the same value, as no edit at all.
     const bPutBack = putBackOver(aReplacements, bReplacements, document);
@@ -3317,27 +3582,6 @@ export class RootChange {
     const bPropertyChanges = b.propertyChanges();
     const [aReplacement] = aReplacements;
     const [bReplacement] = bReplacements;
-    const deletesWholeSiblings = (
-      replacement: Replacement | undefined
-    ): boolean => {
-      if (!replacement || replacement.insert.length > 0) return false;
-
-      const first = document.nodeStartingAt(replacement.from);
-
-      if (!first) return false;
-
-      const parent = pathKey(first.path.slice(0, -1));
-      let { to } = first;
-
-      while (to < replacement.to) {
-        const next = document.nodeStartingAt(to);
-
-        if (!next || pathKey(next.path.slice(0, -1)) !== parent) return false;
-        ({ to } = next);
-      }
-
-      return to === replacement.to;
-    };
     const contains = (
       outer: Replacement | undefined,
       inner: Replacement | undefined
@@ -3665,7 +3909,7 @@ export class RootChange {
     };
     const deletion =
       bReplacements.length === 1 &&
-      deletesWholeSiblings(bReplacement) &&
+      deletesWholeSiblings(document, bReplacement) &&
       containsAll(bReplacement, aReplacements)
         ? {
             edit: a,
@@ -3674,7 +3918,7 @@ export class RootChange {
             side: 'b' as const,
           }
         : aReplacements.length === 1 &&
-            deletesWholeSiblings(aReplacement) &&
+            deletesWholeSiblings(document, aReplacement) &&
             containsAll(aReplacement, bReplacements)
           ? {
               edit: b,
