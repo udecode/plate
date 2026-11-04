@@ -49,7 +49,7 @@ async function isPublished(pkg) {
   try {
     const { stdout } = await execFileAsync(
       'npm',
-      ['view', `${pkg.name}@${pkg.version}`, 'version', '--json'],
+      ['view', `${pkg.name}@${pkg.version}`, 'dist.tarball', '--json'],
       {
         env: {
           ...process.env,
@@ -60,19 +60,15 @@ async function isPublished(pkg) {
       }
     );
 
-    const output = stdout.trim();
+    const tarball = JSON.parse(stdout.trim() || 'null');
 
-    if (!output) return false;
+    if (typeof tarball !== 'string') return false;
 
-    try {
-      const parsed = JSON.parse(output);
+    // npm lists a new version before its tarball downloads, and the template
+    // update that follows fetches the tarball.
+    const response = await fetch(tarball, { method: 'HEAD' });
 
-      return Array.isArray(parsed)
-        ? parsed.includes(pkg.version)
-        : parsed === pkg.version;
-    } catch {
-      return output.replace(/^"|"$/g, '') === pkg.version;
-    }
+    return response.ok;
   } catch {
     return false;
   }
