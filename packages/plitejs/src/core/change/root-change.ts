@@ -2348,11 +2348,292 @@ const sameDocumentStructure = (
   left.length === right.length &&
   left.every((node, index) => sameNodeStructure(node, right[index]));
 
+const mergeStructuralRunByPosition = (
+  structural: RootChange,
+  concurrent: RootChange,
+  concurrentReplacements: readonly Replacement[],
+  before: DocumentIndex,
+  afterStructural: DocumentIndex,
+  afterConcurrent: DocumentIndex
+): { merged: DocumentIndex; other: RootChange; rebased: RootChange } | null => {
+  if (deletesBlocksAndInserts(before, concurrentReplacements)) return null;
+
+  let rebased: RootChange | null = null;
+  let twin = false;
+  const structuralRanges: Array<readonly [number, number]> = [];
+  const concurrentRanges: Array<readonly [number, number, number, number]> = [];
+
+  structural.iterChangedRanges((from, to) => structuralRanges.push([from, to]));
+  concurrent.iterChangedRanges((from, to, fromB, toB) =>
+    concurrentRanges.push([from, to, fromB, toB])
+  );
+
+  const childrenAt = (document: DocumentIndex, path: readonly number[]) => {
+    if (path.length === 0) return document.value;
+
+    const node = document.node(path);
+
+    return isElementNode(node) ? node.children : [];
+  };
+  const childStartingAt = (path: readonly number[], position: number) =>
+    childrenAt(afterConcurrent, path).findIndex(
+      (_, index) =>
+        afterConcurrent.nodeRange([...path, index]).from === position
+    );
+  const descendantStartingAt = (
+    path: readonly number[],
+    position: number
+  ): number[] | null => {
+    const nodes = childrenAt(afterConcurrent, path);
+
+    for (let index = 0; index < nodes.length; index++) {
+      const { from, to } = afterConcurrent.nodeRange([...path, index]);
+
+      if (from === position) return [index];
+      if (from < position && position < to) {
+        const rest = descendantStartingAt([...path, index], position);
+
+        return rest && [index, ...rest];
+      }
+    }
+
+    return null;
+  };
+  const withNodeAt = (
+    nodes: readonly JsonNode[],
+    [index, ...rest]: readonly number[],
+    node: JsonNode
+  ): JsonNode[] => {
+    const at = getDefined(index);
+    const current = nodes[at];
+
+    return nodes.with(
+      at,
+      rest.length === 0 || !isElementNode(current)
+        ? node
+        : { ...current, children: withNodeAt(current.children, rest, node) }
+    );
+  };
+
+  const mergeAt = (
+    path: readonly number[],
+    concurrentPath: readonly number[]
+  ): JsonNode[] | null => {
+    const beforeNodes = childrenAt(before, path);
+    const structuralNodes = childrenAt(afterStructural, path);
+    const concurrentNodes = childrenAt(afterConcurrent, concurrentPath);
+    const shorter = Math.min(beforeNodes.length, structuralNodes.length);
+    const prefixOf = (limit: number) => {
+      let length = 0;
+
+      while (
+        length < limit &&
+        jsonEqual(beforeNodes[length], structuralNodes[length])
+      ) {
+        length += 1;
+      }
+
+      return length;
+    };
+    const suffixOf = (limit: number) => {
+      let length = 0;
+
+      while (
+        length < limit &&
+        jsonEqual(beforeNodes.at(-1 - length), structuralNodes.at(-1 - length))
+      ) {
+        length += 1;
+      }
+
+      return length;
+    };
+    const from = prefixOf(shorter);
+    const suffix = suffixOf(shorter - from);
+    const lowest = prefixOf(shorter - suffixOf(shorter));
+    const source = beforeNodes.slice(from, beforeNodes.length - suffix);
+    const replacement = structuralNodes.slice(
+      from,
+      structuralNodes.length - suffix
+    );
+
+    if (source.length === 0 || sameDocumentStructure(source, replacement)) {
+      return null;
+    }
+
+    const [element] = source;
+    const range = before.nodeRange([...path, from]);
+    const rewritesOnlyOpenToken = (
+      changeFrom: number,
+      changeTo: number,
+      fromB: number,
+      toB: number
+    ) =>
+      changeFrom === range.from &&
+      changeTo === range.from + 1 &&
+      toB - fromB === 1;
+
+    if (
+      source.length === 1 &&
+      replacement.length === 1 &&
+      isElementNode(element) &&
+      structuralRanges.every(
+        ([changeFrom, changeTo]) =>
+          range.from < changeFrom && changeTo < range.to
+      ) &&
+      concurrentRanges.every(
+        ([changeFrom, changeTo, fromB, toB]) =>
+          changeTo <= range.from ||
+          range.to <= changeFrom ||
+          (range.from < changeFrom && changeTo < range.to) ||
+          rewritesOnlyOpenToken(changeFrom, changeTo, fromB, toB)
+      )
+    ) {
+      const opened = concurrent.mapPos(range.from + 1, -1);
+      const at =
+        opened === null
+          ? null
+          : descendantStartingAt(concurrentPath, opened - 1);
+      const kept = at && afterConcurrent.node([...concurrentPath, ...at]);
+
+      if (kept && isElementNode(kept) && kept.type === element.type) {
+        const children = mergeAt([...path, from], [...concurrentPath, ...at]);
+
+        if (children) {
+          return withNodeAt(concurrentNodes, at, { ...kept, children });
+        }
+      }
+    }
+
+    const runRange = (at: number) => ({
+      from: before.nodeRange([...path, at]).from,
+      to: before.nodeRange([...path, at + source.length - 1]).to,
+    });
+    const shift = source.length - replacement.length;
+    const tailMatches: boolean[] = [];
+
+    tailMatches[structuralNodes.length] = true;
+    for (let at = structuralNodes.length - 1; at >= lowest; at--) {
+      tailMatches[at] =
+        tailMatches[at + 1] &&
+        jsonEqual(beforeNodes[at + shift], structuralNodes[at]);
+    }
+
+    const candidates: number[] = [];
+
+    for (let at = lowest; at <= from; at++) {
+      if (tailMatches[at + replacement.length]) candidates.push(at);
+    }
+
+    const rewrittenOpen = candidates.filter((at) =>
+      structuralRanges.some(
+        ([changeFrom, changeTo]) =>
+          changeFrom <= runRange(at).from && runRange(at).from < changeTo
+      )
+    );
+    const touched = candidates.filter((at) =>
+      structuralRanges.some(
+        ([changeFrom, changeTo]) =>
+          changeFrom < runRange(at).to && runRange(at).from < changeTo
+      )
+    );
+    const ownStarts =
+      candidates.length === 1
+        ? candidates
+        : rewrittenOpen.length
+          ? rewrittenOpen
+          : touched;
+
+    if (ownStarts.length !== 1) return null;
+
+    const [start] = ownStarts as [number];
+    const { from: runFrom, to: runTo } = runRange(start);
+    const untouchedCopyAt = () => {
+      const position = concurrent.mapPos(runFrom, 1);
+      const untouched = concurrentRanges.every(
+        ([changeFrom, changeTo]) => changeTo <= runFrom || runTo <= changeFrom
+      );
+
+      return position !== null && untouched
+        ? childStartingAt(concurrentPath, position)
+        : -1;
+    };
+    const match = untouchedCopyAt();
+
+    if (match === -1) return null;
+
+    const placed = structuralNodes.slice(start, start + replacement.length);
+    const merged = [...concurrentNodes];
+
+    merged.splice(match, source.length, ...placed);
+
+    const copyFrom = afterConcurrent.nodeRange([...concurrentPath, match]).from;
+
+    twin = candidates.length > 1;
+    rebased =
+      structural
+        .within(runFrom, runTo)
+        ?.embed(afterConcurrent.length, copyFrom) ??
+      (twin
+        ? RootChange.between(
+            DocumentIndex.fromValue(
+              concurrentNodes.slice(match, match + source.length)
+            ),
+            DocumentIndex.fromValue(placed)
+          ).embed(afterConcurrent.length, copyFrom)
+        : null);
+
+    return merged;
+  };
+
+  const merged = mergeAt([], []);
+
+  if (!merged) return null;
+
+  const document = DocumentIndex.fromValue(merged);
+  const lands = (change: RootChange, from: DocumentIndex) => {
+    try {
+      return jsonEqual(change.apply(from).value, merged);
+    } catch {
+      return false;
+    }
+  };
+
+  const removedLength = (change: RootChange) => {
+    let length = 0;
+
+    change.iterChangedRanges((from, to) => {
+      length += to - from;
+    });
+
+    return length;
+  };
+  const [rebasedChange] = [
+    rebased,
+    twin ? null : RootChange.between(afterConcurrent, document),
+  ]
+    .filter(
+      (change): change is RootChange =>
+        change !== null && lands(change, afterConcurrent)
+    )
+    .sort((left, right) => removedLength(left) - removedLength(right));
+
+  if (!rebasedChange) return null;
+
+  const concurrentPastStructural = [
+    RootChange.transform(concurrent, structural).a,
+    RootChange.transform(structural, concurrent).b,
+  ].find((change) => lands(change, afterStructural));
+  const other =
+    concurrentPastStructural ?? RootChange.between(afterStructural, document);
+
+  return { merged: document, other, rebased: rebasedChange };
+};
+
 const mergeStructuralChangeAtStableSiblingRange = (
   before: DocumentIndex,
   afterStructural: DocumentIndex,
   afterConcurrent: DocumentIndex
-): DocumentIndex | null => {
+): { merged: DocumentIndex; other: RootChange; rebased: RootChange } | null => {
   let from = 0;
 
   while (
@@ -2410,7 +2691,13 @@ const mergeStructuralChangeAtStableSiblingRange = (
 
   merged.splice(match, source.length, ...replacement);
 
-  return DocumentIndex.fromValue(merged);
+  const document = DocumentIndex.fromValue(merged);
+
+  return {
+    merged: document,
+    other: RootChange.between(afterStructural, document),
+    rebased: RootChange.between(afterConcurrent, document),
+  };
 };
 
 const collectDocumentNodes = (
@@ -2555,6 +2842,14 @@ const deletesWholeSiblings = (
     pathKey(first.path.slice(0, -1)) === pathKey(end.parentPath)
   );
 };
+
+const deletesBlocksAndInserts = (
+  document: DocumentIndex,
+  replacements: readonly Replacement[]
+) =>
+  replacements.some((replacement) =>
+    deletesWholeSiblings(document, replacement)
+  ) && replacements.some(({ insert }) => insert.length > 0);
 
 type WrapFrame = {
   holdsKept: boolean;
@@ -3982,24 +4277,40 @@ export class RootChange {
     }
 
     const bThroughStableA = bChangesStructure
-      ? mergeStructuralChangeAtStableSiblingRange(document, afterB, afterA)
+      ? (mergeStructuralRunByPosition(
+          b,
+          a,
+          aReplacements,
+          document,
+          afterB,
+          afterA
+        ) ??
+        mergeStructuralChangeAtStableSiblingRange(document, afterB, afterA))
       : null;
 
     if (bThroughStableA !== null) {
       return {
-        a: RootChange.between(afterB, bThroughStableA),
-        b: RootChange.between(afterA, bThroughStableA),
+        a: bThroughStableA.other,
+        b: bThroughStableA.rebased,
       };
     }
 
     const aThroughStableB = aChangesStructure
-      ? mergeStructuralChangeAtStableSiblingRange(document, afterA, afterB)
+      ? (mergeStructuralRunByPosition(
+          a,
+          b,
+          bReplacements,
+          document,
+          afterA,
+          afterB
+        ) ??
+        mergeStructuralChangeAtStableSiblingRange(document, afterA, afterB))
       : null;
 
     if (aThroughStableB !== null) {
       return {
-        a: RootChange.between(afterB, aThroughStableB),
-        b: RootChange.between(afterA, aThroughStableB),
+        a: aThroughStableB.rebased,
+        b: aThroughStableB.other,
       };
     }
 
