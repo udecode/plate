@@ -653,4 +653,28 @@ describe('htmlToDocxBlob', () => {
       ).rejects.toThrow(RangeError);
     });
   });
+
+  describe('Plate static voids', () => {
+    const plateImage = `<div data-slate-node="element" data-slate-void="true"><figure><div><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="></div><figcaption>Caption</figcaption></figure><span data-slate-spacer="true" style="color:transparent;height:0;outline:none;position:absolute"><span data-slate-node="text"><span data-slate-leaf="true"><span data-slate-zero-width="z" data-slate-length="0">\uFEFF<br></span></span></span></span></div>`;
+
+    it.each([
+      ['the body', `${plateImage}<p>After</p>`],
+      [
+        'a table cell',
+        `<table><tr><td>${plateImage}</td><td>Other</td></tr></table>`,
+      ],
+    ])('writes no paragraph for the spacer of an image in %s', async (_, html) => {
+      const zip = await loadZipFromBlob(await htmlToDocxBlob(html));
+      const docXml = await zip.file('word/document.xml')!.async('string');
+      const paragraphTexts = (
+        docXml.match(/<w:p(?:\s[^>]*)?>[\s\S]*?<\/w:p>/g) ?? []
+      ).map((paragraph) =>
+        [...paragraph.matchAll(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g)]
+          .map((match) => match[1])
+          .join('')
+      );
+
+      expect(paragraphTexts).not.toContain('\uFEFF');
+    });
+  });
 });
