@@ -68,9 +68,11 @@ export const markdownToSlateNodes = (
     .use((mergedOptions.remarkPlugins ?? []).map(replaceRawMdx))
     .use(remarkToSlate, mergedOptions);
 
+  // CommonMark reads LF, CR and CRLF as line endings, and the value keeps LF.
+  const source = data.replaceAll(/\r\n?/g, '\n');
   const processedData = options?.withoutMdx
-    ? data
-    : normalizeProcessorHtml(toSlateProcessor, data);
+    ? source
+    : normalizeProcessorHtml(toSlateProcessor, source);
 
   if (options?.memoize) {
     return parseMarkdownBlocks(processedData, options.parser).flatMap(

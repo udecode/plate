@@ -44,7 +44,6 @@ import { parseAttributes, propsToAttributes } from './utils';
 // Other destinations need the link handler's Markdown escaping.
 const BARE_AUTOLINK_REGEX = /^https?:\/\/[^\s<>\\]+$/i;
 const LEADING_NEWLINE_REGEX = /^\n/;
-const CODE_LINE_BREAK_REGEX = /\r\n|\r|\n/;
 
 function isBoolean(value: any) {
   return (
@@ -294,12 +293,10 @@ export const defaultRules: MdRules = {
   },
   code_block: {
     deserialize: (mdastNode, _deco, options) => ({
-      children: (mdastNode.value || '')
-        .split(CODE_LINE_BREAK_REGEX)
-        .map((line) => ({
-          children: [{ text: line } as TText],
-          type: getPluginType(options.editor!, KEYS.codeLine),
-        })),
+      children: (mdastNode.value || '').split('\n').map((line) => ({
+        children: [{ text: line } as TText],
+        type: getPluginType(options.editor!, KEYS.codeLine),
+      })),
       lang: mdastNode.lang ?? undefined,
       type: getPluginType(options.editor!, KEYS.codeBlock),
     }),
