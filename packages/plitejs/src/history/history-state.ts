@@ -14,6 +14,7 @@ import {
   mapAnchorHistoryRecovery,
 } from '../core/anchor-state';
 import { landCarriedRuns } from '../core/change/carried-run';
+import type { CarryProgram } from '../core/change/carry-program';
 import {
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeRootKeys,
@@ -33,6 +34,7 @@ import { type HistoryCarets, mapHistoryCarets } from './history-carets';
 import type { HistoryBatchGroup } from './history-merge-policy';
 import {
   historyReplaySchemaOf,
+  projectedHistoryReplay,
   recordHistoryReplay,
   mapHistoryReplay,
   mapHistorySelection,
@@ -78,8 +80,13 @@ type HistoryBranch<V extends Value> = Readonly<{
   kept: KeptRedo<V> | null;
 }>;
 
-type KeptRedo<V extends Value> = Readonly<{
+type KeptRedo<V extends Value> =
+  | Readonly<{ branch: HistoryBranch<V>; kind: 'program' }>
+  | KeptWrapRedo<V>;
+
+type KeptWrapRedo<V extends Value> = Readonly<{
   branch: HistoryBranch<V>;
+  kind: 'wrap';
   wrap: KeptWrap;
 }>;
 
@@ -294,6 +301,19 @@ const omitPrimarySelectionRoot = <T extends Batch['selectionAfter']>(
 const additionalRoot = (root: string | undefined) =>
   root && root !== MAIN_ROOT_KEY ? root : undefined;
 
+const HISTORY_PROGRAMS = new WeakMap<Batch, CarryProgram>();
+
+export const withHistoryProgram = <B extends Batch>(
+  batch: B,
+  program: CarryProgram | undefined
+): B => {
+  if (program) HISTORY_PROGRAMS.set(batch, program);
+
+  return batch;
+};
+
+export const historyProgramOf = (batch: Batch) => HISTORY_PROGRAMS.get(batch);
+
 export const freezeHistoryBatch = <V extends Value>(
   batch: Batch<V>
 ): Batch<V> => {
@@ -301,25 +321,30 @@ export const freezeHistoryBatch = <V extends Value>(
   const afterRoot = additionalRoot(selectionAfterRoot);
   const beforeRoot = additionalRoot(selectionBeforeRoot);
 
-  return Object.freeze({
-    ...value,
-    ...(batch.carried
-      ? {
-          carried: Object.freeze(
-            batch.carried.map((run) => Object.freeze({ ...run }))
-          ),
-        }
-      : {}),
-    effects: Object.freeze(
-      batch.effects.map((effect) => Object.freeze({ ...effect }))
-    ),
-    selectionAfter: cloneFrozen(omitPrimarySelectionRoot(batch.selectionAfter)),
-    ...(afterRoot ? { selectionAfterRoot: afterRoot } : {}),
-    selectionBefore: cloneFrozen(
-      omitPrimarySelectionRoot(batch.selectionBefore)
-    ),
-    ...(beforeRoot ? { selectionBeforeRoot: beforeRoot } : {}),
-  });
+  return withHistoryProgram(
+    Object.freeze({
+      ...value,
+      ...(batch.carried
+        ? {
+            carried: Object.freeze(
+              batch.carried.map((run) => Object.freeze({ ...run }))
+            ),
+          }
+        : {}),
+      effects: Object.freeze(
+        batch.effects.map((effect) => Object.freeze({ ...effect }))
+      ),
+      selectionAfter: cloneFrozen(
+        omitPrimarySelectionRoot(batch.selectionAfter)
+      ),
+      ...(afterRoot ? { selectionAfterRoot: afterRoot } : {}),
+      selectionBefore: cloneFrozen(
+        omitPrimarySelectionRoot(batch.selectionBefore)
+      ),
+      ...(beforeRoot ? { selectionBeforeRoot: beforeRoot } : {}),
+    }),
+    HISTORY_PROGRAMS.get(batch)
+  );
 };
 
 const freezeBatch = freezeHistoryBatch;
@@ -330,6 +355,7 @@ const freezeBatch = freezeHistoryBatch;
  */
 const replayedOf = <V extends Value>(batch: Batch<V>) => ({
   carried: batch.carried,
+  program: HISTORY_PROGRAMS.get(batch),
   parts:
     batch.rest && batch.unsettle
       ? { rest: batch.rest, unsettle: batch.unsettle }
@@ -352,7 +378,10 @@ const branch = <V extends Value>(
   Object.freeze({
     anchorCeiling,
     base,
-    batch: freezeBatch({ ...batch, change: replay.change }),
+    batch: withHistoryProgram(
+      freezeBatch({ ...batch, change: replay.change }),
+      replay.program
+    ),
     carets,
     carries: replay.carried !== undefined || (next?.carries ?? false),
     replay,
@@ -647,11 +676,62 @@ const mapAnchored = <V extends Value>(
   }
 };
 
+const resolveProgramHead = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V>
+) => {
+  const { head: attempt } = mapHead(editor, value, false);
+  const fallbackReplay = projectedHistoryReplay(
+    historyReplaySchemaOf(editor),
+    value.replay,
+    value.base
+  );
+
+  if (
+    !attempt?.replay.program ||
+    attempt.identity !== value.identity ||
+    !fallbackReplay
+  ) {
+    return attempt;
+  }
+
+  const { head: fallback } = mapHead(
+    editor,
+    branch<V>(
+      value.batch,
+      value.base,
+      fallbackReplay,
+      value.next,
+      value.mappings,
+      value.group,
+      value.recovery,
+      value.anchorCeiling,
+      value.identity,
+      value.carets
+    ),
+    false
+  );
+
+  return fallback?.identity === value.identity
+    ? Object.freeze({
+        ...fallback,
+        kept: Object.freeze({ branch: attempt, kind: 'program' as const }),
+      })
+    : attempt;
+};
+
 const resolveHead = <V extends Value>(
   editor: Editor<V>,
   value: HistoryBranch<V>
 ): HistoryBranch<V> | null => {
   if (!value.mappings) return value;
+  if (
+    value.replay.program &&
+    value.replay.direction === 'redo' &&
+    !value.kept
+  ) {
+    return resolveProgramHead(editor, value);
+  }
 
   const anchorable =
     !value.kept &&
@@ -665,11 +745,19 @@ const resolveHead = <V extends Value>(
 
   if (anchorable && anchored && !anchored.keptWrap) return anchored.head;
 
-  const wrap = value.kept?.wrap ?? anchored?.keptWrap;
-  const kept =
-    wrap && anchored?.head?.identity === value.identity
-      ? Object.freeze({ branch: anchored.head, wrap })
-      : null;
+  const wrap = value.kept
+    ? value.kept.kind === 'wrap'
+      ? value.kept.wrap
+      : null
+    : anchored?.keptWrap;
+  const attempt =
+    anchored?.head?.identity === value.identity ? anchored.head : null;
+  const kept: KeptRedo<V> | null =
+    attempt && wrap
+      ? Object.freeze({ branch: attempt, kind: 'wrap', wrap })
+      : attempt?.replay.program
+        ? Object.freeze({ branch: attempt, kind: 'program' })
+        : null;
   const { head } = mapHead(editor, value, false);
 
   return kept && head?.identity === value.identity
@@ -754,6 +842,7 @@ const resolveCanonicalTop = <V extends Value>(
     head.base,
     recordHistoryReplay(schema, head.base, change, head.replay.direction, {
       carried,
+      program: head.replay.program,
       parts:
         rest && head.batch.unsettle
           ? { rest, unsettle: head.batch.unsettle }
@@ -785,6 +874,24 @@ const resolveCanonicalTop = <V extends Value>(
           : { after: moved, before: unmoved }
       )
   );
+};
+
+const shownBatches = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V> | null
+) => {
+  const batches: Array<Batch<V>> = [];
+  let current = resolveTop(editor, value);
+
+  while (current) {
+    const shown =
+      current.kept?.kind === 'program' ? current.kept.branch : current;
+
+    batches.push(shown.batch);
+    current = resolveTop(editor, shown.next);
+  }
+
+  return Object.freeze(batches.toReversed());
 };
 
 const resolveAll = <V extends Value>(
@@ -831,7 +938,7 @@ const resolveAll = <V extends Value>(
   }
 
   return {
-    batches: Object.freeze(newest.toReversed().map((entry) => entry.batch)),
+    batches: shownBatches(editor, resolved),
     branch: resolved,
     entries: Object.freeze(newest),
   };
@@ -1367,7 +1474,7 @@ const unwrapsTo = (
 const keepsOnlyWrap = <V extends Value>(
   current: EditorDocumentValue<V>,
   head: HistoryBranch<V>,
-  kept: KeptRedo<V>
+  kept: KeptWrapRedo<V>
 ) => {
   try {
     return unwrapsTo(
@@ -1389,7 +1496,10 @@ export const attachKeptHistoryRedo = <V extends Value>(
   const kept = head?.kept;
 
   if (!head || !kept) return null;
-  if (head.next || !keepsOnlyWrap(getEditorDocumentValue(editor), head, kept)) {
+  if (
+    kept.kind === 'wrap' &&
+    (head.next || !keepsOnlyWrap(getEditorDocumentValue(editor), head, kept))
+  ) {
     setStore(
       editor,
       Object.freeze({ ...state, redos: Object.freeze({ ...head, kept: null }) })

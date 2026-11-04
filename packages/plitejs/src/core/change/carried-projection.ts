@@ -221,7 +221,7 @@ const moveOf = (
 };
 
 /** The tokens a change keeps or moves exactly, from each side to the other. */
-class Correspondence {
+export class Correspondence {
   readonly move: Move | null;
   readonly sections: readonly Section[];
 
@@ -307,7 +307,7 @@ class Correspondence {
 }
 
 /** One region of a document, a token per position. */
-class Tokens {
+export class Tokens {
   readonly from: number;
   private readonly tokens: JsonToken[] = [];
 
@@ -341,13 +341,13 @@ const insideOf = (index: DocumentIndex, position: number) =>
     .openContextAt(position)
     .filter((entry) => entry.from < position && position < entry.to);
 
-const propsOf = (index: DocumentIndex, entry: IndexedNodeRange) => {
+export const propsOf = (index: DocumentIndex, entry: IndexedNodeRange) => {
   const [token] = index.slice(entry.from, entry.from + 1).tokens;
 
   return token?.kind === 'open' ? token.props : {};
 };
 
-type Line = Readonly<{
+export type Line = Readonly<{
   line: IndexedNodeRange;
   /** Its ancestors, outermost first. */
   ancestors: readonly IndexedNodeRange[];
@@ -355,7 +355,7 @@ type Line = Readonly<{
   within: readonly IndexedNodeRange[];
 }>;
 
-const lineAt = (
+export const lineAt = (
   index: DocumentIndex,
   schema: CarriedProjectionSchema,
   position: number
@@ -384,14 +384,24 @@ const lineAt = (
   return null;
 };
 
-const closesOf = (entries: readonly IndexedNodeRange[]) =>
+export const closesOf = (entries: readonly IndexedNodeRange[]) =>
   entries.toReversed().map((entry) => closeToken(entry.kind));
 
-const opensOf = (index: DocumentIndex, entries: readonly IndexedNodeRange[]) =>
-  entries.map((entry) => openToken(entry.kind, propsOf(index, entry)));
+export const opensOf = (
+  index: DocumentIndex,
+  entries: readonly IndexedNodeRange[]
+) => entries.map((entry) => openToken(entry.kind, propsOf(index, entry)));
 
-const pieceOpensOf = (
-  { edited, root, schema }: Context,
+export const pieceOpensOf = (
+  {
+    edited,
+    root,
+    schema,
+  }: Readonly<{
+    edited: DocumentIndex;
+    root: string;
+    schema: CarriedProjectionSchema;
+  }>,
   entries: readonly IndexedNodeRange[],
   landingParents: readonly JsonNode[]
 ) => {
@@ -1704,7 +1714,11 @@ const withDeletedClosed = (
   };
 };
 
-type Match = Readonly<{ source: number; target: number; length: number }>;
+export type Match = Readonly<{
+  source: number;
+  target: number;
+  length: number;
+}>;
 
 /** The matches that keep their order, each whole or not at all. */
 const increasing = (matches: readonly Match[]) => {
@@ -1722,11 +1736,14 @@ const increasing = (matches: readonly Match[]) => {
 };
 
 /** Add the change from `length` source tokens to `target` keeping `matches`. */
-const addMatched = (
+export const addMatched = (
   sections: number[],
   data: SectionData[],
   length: number,
-  target: PreparedTokenSlice,
+  target: Readonly<{
+    length: number;
+    slice: (from: number, to?: number) => PreparedTokenSlice;
+  }>,
   matches: readonly Match[]
 ) => {
   let source = 0;
@@ -1767,7 +1784,7 @@ const addAll = (
   }
 };
 
-const sameToken = (
+export const sameToken = (
   left: JsonToken | undefined,
   right: JsonToken | undefined
 ) => {

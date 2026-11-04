@@ -95,7 +95,12 @@ import {
   shouldMergeCompositionBatch,
   shouldMergeExplicitBatch,
 } from './history-merge-policy';
-import { historyReplaySchemaOf, mapHistorySelection } from './history-replay';
+import {
+  checkedCarryProgram,
+  historyReplaySchemaOf,
+  invertedCarryProgram,
+  mapHistorySelection,
+} from './history-replay';
 import {
   cloneSelection,
   restoreHistoricSelection,
@@ -113,6 +118,7 @@ import {
   dropPendingHistoryReplayEntry,
   getHistory,
   getWorkingHistory,
+  historyProgramOf,
   markPendingHistoryReplayEdited,
   peekHistoryEntry,
   peekHistoryReplayEntry,
@@ -127,6 +133,7 @@ import {
   settlePendingHistoryReplay,
   withHistoryStateDraft,
   withPublishedHistoryState,
+  withHistoryProgram,
   writeHistory,
 } from './history-state';
 
@@ -868,19 +875,35 @@ const createHistoryPlugin = <
         (unsettled
           ? redoWithoutSettlement(editor, inverse, unsettled.change, after)
           : inverse);
+      const program = historyProgramOf(batch);
+      const inverted =
+        program && !redoParts
+          ? invertedCarryProgram(
+              historyReplaySchemaOf(editor),
+              program,
+              entry.base,
+              after,
+              change
+            )
+          : undefined;
 
       completeHistoryAction(
         editor,
         source,
         destination,
-        {
-          ...moved,
-          ...redone,
-          change,
-          effects: effects.toReversed().map(invertEffect),
-          ...redoParts,
-          ...(carried && carriedBack(carried, change, after)),
-        },
+        withHistoryProgram(
+          {
+            ...moved,
+            ...redone,
+            change,
+            effects: effects.toReversed().map(invertEffect),
+            ...redoParts,
+            ...(inverted
+              ? { carried: [inverted.run] }
+              : carried && carriedBack(carried, change, after)),
+          },
+          inverted?.program
+        ),
         after,
         unsettled,
         replayRequest
@@ -939,9 +962,23 @@ const createHistoryPlugin = <
       partedBatch.change,
       after
     );
-    const preparedBatch = carried
-      ? { ...partedBatch, ...carried }
-      : partedBatch;
+    const checked =
+      !parts && carried?.carried.length === 1
+        ? checkedCarryProgram(
+            historyReplaySchemaOf(editor),
+            after,
+            partedBatch.change,
+            carried.carried[0]
+          )
+        : undefined;
+    const preparedBatch = checked
+      ? withHistoryProgram(
+          { ...partedBatch, carried: [checked.run] },
+          checked.program
+        )
+      : carried
+        ? { ...partedBatch, ...carried }
+        : partedBatch;
     const lastEntry = peekSurvivingHistoryEntry(editor, 'undos');
 
     for (const cause of takeDroppedHistoryCauses(editor)) {

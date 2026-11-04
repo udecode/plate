@@ -747,7 +747,8 @@
         "typecheck:partition:authored",
         "typecheck:partition:core",
         "typecheck:partition:history",
-        "typecheck:partition:testing"
+        "typecheck:partition:testing",
+        "typecheck:partition:yjs"
       ],
       "inputs": [
         "src/history/**",
@@ -769,6 +770,8 @@
         "$TURBO_ROOT$/tooling/config/tsconfig.base.json",
         "$TURBO_ROOT$/tsconfig.json",
         "test/support/schema.ts",
+        "test/yjs/support/collaboration.ts",
+        "test/yjs/support/provider.ts",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/tooling/config/test-suites.mjs",
         "$TURBO_ROOT$/tooling/entrypoints/entrypoint-dag.mjs",

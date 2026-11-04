@@ -28,7 +28,8 @@ import { decodeEditorEffect, encodeEditorEffect } from '../core/value-codec';
 import type { AnyEditor } from '../interfaces/editor';
 import { isObject } from '../utils/is-object';
 import type { Batch, History, HistoryBatchJSON, HistoryJSON } from './history';
-import { freezeHistoryBatch } from './history-state';
+import { checkedCarryProgram, historyReplaySchemaOf } from './history-replay';
+import { freezeHistoryBatch, withHistoryProgram } from './history-state';
 
 export const isHistorySchemaIdentity = (
   value: unknown
@@ -143,7 +144,8 @@ const validateBatchSelections = <V extends Value>(
   editor: Editor<V>,
   batches: ReadonlyArray<Batch<V>>,
   direction: 'redo' | 'undo',
-  document: EditorDocumentValue
+  document: EditorDocumentValue,
+  recordPrograms: boolean
 ) => {
   let value = document;
 
@@ -197,6 +199,22 @@ const validateBatchSelections = <V extends Value>(
         throw new Error('A history step carries a run its change does not.');
       }
     }
+    if (
+      recordPrograms &&
+      batch.carried?.length === 1 &&
+      !batch.rest &&
+      !batch.unsettle
+    ) {
+      withHistoryProgram(
+        batch,
+        checkedCarryProgram(
+          historyReplaySchemaOf(editor),
+          base,
+          batch.change,
+          batch.carried[0]
+        )?.program
+      );
+    }
     editor.read.schema.assertDocument(value);
     assertSelectionSupported(
       editor,
@@ -210,12 +228,25 @@ const validateBatchSelections = <V extends Value>(
 const validateHistory = <V extends Value>(
   editor: Editor<V>,
   history: Pick<History<V>, 'redos' | 'undos'>,
-  validateAgainst: EditorDocumentValue | false = editor.read.value()
+  validateAgainst: EditorDocumentValue | false = editor.read.value(),
+  recordPrograms = false
 ) => {
   if (!validateAgainst) return;
 
-  validateBatchSelections(editor, history.redos, 'redo', validateAgainst);
-  validateBatchSelections(editor, history.undos, 'undo', validateAgainst);
+  validateBatchSelections(
+    editor,
+    history.redos,
+    'redo',
+    validateAgainst,
+    recordPrograms
+  );
+  validateBatchSelections(
+    editor,
+    history.undos,
+    'undo',
+    validateAgainst,
+    recordPrograms
+  );
 };
 
 type HistoryValidationOptions = Readonly<{
@@ -357,7 +388,7 @@ export const decodeHistoryValue = <V extends Value>(
     ),
   });
 
-  validateHistory(editor, history, options.validateAgainst);
+  validateHistory(editor, history, options.validateAgainst, true);
 
   return history;
 };

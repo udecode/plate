@@ -11,10 +11,22 @@ import {
   carriedLetterPairs,
   type ExactRun,
   exactRunOn,
+  invertCarriedRun,
   landCarriedRuns,
   mapCarriedRunThrough,
   widenRun,
 } from '../core/change/carried-run';
+import {
+  type CarryFinal,
+  type CarryProgram,
+  carriedRunOf,
+  carryRest,
+  compileCarryProgram,
+  mapCarryProgram,
+  recordCarryProgram,
+  repairKeepsCarry,
+  sameResultsOfOneInput,
+} from '../core/change/carry-program';
 import {
   DocumentChange,
   alignedDocumentChange,
@@ -28,7 +40,7 @@ import {
   valueRootIndex,
   withInternalDocumentRootChange,
 } from '../core/change/document-change';
-import type { NodeList } from '../core/change/document-index';
+import type { DocumentIndex, NodeList } from '../core/change/document-index';
 import { jsonEqual, type JsonRecord } from '../core/change/json';
 import {
   getDocumentPropertyContext,
@@ -41,6 +53,7 @@ import {
   PreparedTokenSlice,
   type JsonEditorValue,
   type JsonNode,
+  type JsonToken,
 } from '../core/change/tokens';
 import { normalizeSetValues } from '../core/change/transform';
 import { getEditorSchema } from '../core/editor-runtime';
@@ -92,6 +105,7 @@ export type HistoryReplay<T extends JsonEditorValue = JsonEditorValue> =
     parts?: Readonly<{ rest: HistoryReplay<T>; unsettle: HistoryReplay<T> }>;
     /** The runs the step carries out of a nested line, as `Batch.carried`. */
     carried?: readonly CarriedRun[];
+    program?: CarryProgram;
     record: () => RecordedHistoryReplay<T>;
   }>;
 
@@ -317,9 +331,11 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
   {
     carried,
     parts,
+    program,
   }: Readonly<{
     carried?: readonly CarriedRun[];
     parts?: HistoryReplayParts;
+    program?: CarryProgram;
   }> = {}
 ): HistoryReplay<T> => {
   if (parts) {
@@ -335,12 +351,354 @@ export const recordHistoryReplay = <T extends JsonEditorValue>(
 
   let recorded: RecordedHistoryReplay<T> | undefined;
 
+  if (program) {
+    return {
+      change,
+      ...(carried?.length ? { carried } : {}),
+      direction,
+      program,
+      record: () => (recorded ??= recordReplay(schema, base, change, false)),
+    };
+  }
+
   return {
     change,
     ...(carried?.length ? { carried } : {}),
     direction,
     record: () =>
       (recorded ??= recordReplay(schema, base, change, false, carried)),
+  };
+};
+
+type CompiledProgram<T extends JsonEditorValue> = Readonly<{
+  after: T;
+  change: DocumentChange;
+  final: CarryFinal;
+}>;
+
+const COMPILED_PROGRAMS = new WeakMap<
+  CarryProgram,
+  Readonly<{
+    base: JsonEditorValue;
+    compiled: CompiledProgram<JsonEditorValue>;
+  }>
+>();
+
+const compileProgram = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  program: CarryProgram,
+  base: T
+): CompiledProgram<T> | null => {
+  const cached = COMPILED_PROGRAMS.get(program);
+
+  if (cached?.base === base) return cached.compiled as CompiledProgram<T>;
+
+  const { root } = program;
+  const document = valueRootIndex(base, root);
+  const carry = compileCarryProgram(program, document, schema.lines);
+
+  if (!carry) return null;
+
+  const step = createInternalDocumentChange(new Map([[root, carry.step]]));
+  const output = step.apply(base);
+  const repair = schema.repairCanonical(base, step, output);
+
+  if (!repair.empty && !holdsOnly(repair, root)) return null;
+
+  const outputDocument = valueRootIndex(output, root);
+  const repairRoot =
+    getInternalDocumentRootChange(repair, root) ??
+    RootChange.empty(outputDocument.length);
+
+  if (!repairKeepsCarry(carry, outputDocument, repairRoot)) return null;
+
+  const after = repair.empty ? output : repair.apply(output);
+  const compiled = {
+    after,
+    change: composeRepair(step, repair),
+    final: {
+      after: valueRootIndex(after, root),
+      carry,
+      output: outputDocument,
+      repair: repairRoot,
+    },
+  };
+
+  COMPILED_PROGRAMS.set(program, { base, compiled });
+
+  return compiled;
+};
+
+export const projectedHistoryReplay = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  replay: HistoryReplay<T>,
+  base: T
+) => {
+  const { program } = replay;
+  const compiled =
+    !replay.carried && program && compileProgram(schema, program, base);
+  const run = program && compiled && carriedRunOf(compiled.final, program.root);
+  const carried = replay.carried ?? (run ? [run] : undefined);
+
+  return carried
+    ? recordHistoryReplay(schema, base, replay.change, replay.direction, {
+        carried,
+      })
+    : null;
+};
+
+const producesResultOfSameBase = <T extends JsonEditorValue>(
+  compiled: CompiledProgram<T>,
+  after: T,
+  root: string,
+  change: RootChange
+) => {
+  const step = getInternalDocumentRootChange(compiled.change, root);
+
+  return (
+    step !== undefined &&
+    sameResultsOfOneInput(compiled.final.after, valueRootIndex(after, root), [
+      step,
+      change,
+    ])
+  );
+};
+
+export const checkedCarryProgram = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  base: T,
+  change: DocumentChange,
+  run: CarriedRun
+) => {
+  const step = getInternalDocumentRootChange(change, run.root);
+
+  if (!step || !holdsOnly(change, run.root)) return undefined;
+
+  const after = change.apply(base);
+  const program = recordCarryProgram({
+    after: valueRootIndex(after, run.root),
+    before: valueRootIndex(base, run.root),
+    run,
+    schema: schema.lines,
+    step,
+  });
+  const compiled = program && compileProgram(schema, program, base);
+  const implied =
+    compiled &&
+    producesResultOfSameBase(compiled, after, run.root, step) &&
+    carriedRunOf(compiled.final, run.root);
+
+  return program && implied ? { program, run: implied } : undefined;
+};
+
+export const invertedCarryProgram = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  program: CarryProgram,
+  base: T,
+  after: T,
+  change: DocumentChange
+) => {
+  const compiled = compileProgram(schema, program, base);
+  const back = getInternalDocumentRootChange(change, program.root);
+
+  if (
+    !compiled ||
+    !back ||
+    !holdsOnly(change, program.root) ||
+    !producesResultOfSameBase(compiled, after, program.root, back)
+  ) {
+    return undefined;
+  }
+
+  const run = carriedRunOf(compiled.final, program.root);
+
+  return run
+    ? checkedCarryProgram(schema, after, change, invertCarriedRun(run))
+    : undefined;
+};
+
+type ProgramWindow = Readonly<{
+  base: JsonEditorValue;
+  from: number;
+  inputFrom: number;
+  inputTo: number;
+  to: number;
+}>;
+
+const PROGRAM_WINDOWS = new WeakMap<CarryProgram, ProgramWindow>();
+
+const programWindow = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  program: CarryProgram,
+  base: T
+): ProgramWindow | null => {
+  const known = PROGRAM_WINDOWS.get(program);
+
+  if (known?.base === base) return known;
+
+  const compiled = compileProgram(schema, program, base);
+
+  if (!compiled) return null;
+
+  const document = valueRootIndex(base, program.root);
+  const block = (position: number) =>
+    document
+      .openContextAt(position)
+      .find(
+        (entry) =>
+          entry.path.length === 1 &&
+          entry.from <= position &&
+          position < entry.to
+      );
+  const { inputFrom, inputTo } = compiled.final.carry;
+
+  return {
+    base,
+    from: block(inputFrom)?.from ?? inputFrom,
+    inputFrom,
+    inputTo,
+    to: inputTo > inputFrom ? (block(inputTo - 1)?.to ?? inputTo) : inputTo,
+  };
+};
+
+const writesElementEdge = (tokens: readonly JsonToken[]) =>
+  tokens.some((token) => token.kind !== 'text' && token.nodeKind === 'element');
+
+const editsWithin = (
+  edit: RootChange,
+  document: DocumentIndex,
+  window: ProgramWindow
+) => {
+  let to = 0;
+
+  for (let index = 0; index < edit.sections.length; index += 2) {
+    const from = to;
+    const inserted = edit.sections[index + 1];
+    const written = edit.data[index / 2];
+
+    to += edit.sections[index];
+    if (inserted === -1 || to < window.from || window.to < from) continue;
+
+    const structural =
+      inserted === -2 ||
+      (written instanceof PreparedTokenSlice &&
+        writesElementEdge(written.tokens)) ||
+      writesElementEdge(document.slice(from, to).tokens);
+    const start = structural ? window.from : window.inputFrom;
+    const end = structural ? window.to : window.inputTo;
+
+    if (from <= end && start <= to) return true;
+  }
+
+  return false;
+};
+
+const mapProgramByPosition = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  replay: HistoryReplay<T>,
+  program: CarryProgram,
+  base: T,
+  mapping: HistoryMapping<T>,
+  edit: RootChange,
+  window: ProgramWindow
+) => {
+  const mapped = mapOneReplay(
+    schema,
+    recordHistoryReplay(schema, base, replay.change, replay.direction, {
+      carried: replay.carried,
+    }),
+    base,
+    mapping
+  );
+  const moved = mapCarryProgram(
+    program,
+    edit,
+    valueRootIndex(base, program.root),
+    valueRootIndex(mapping.after, program.root),
+    schema.lines
+  );
+  const from = edit.mapPos(window.from, -1);
+  const to = edit.mapPos(window.to, 1);
+  const inputFrom = edit.mapPos(window.inputFrom, -1);
+  const inputTo = edit.mapPos(window.inputTo, 1);
+
+  if (!moved || mapped.replay.carried?.length !== 1) return mapped;
+  if (from !== null && to !== null && inputFrom !== null && inputTo !== null) {
+    PROGRAM_WINDOWS.set(moved, {
+      base: mapping.after,
+      from,
+      inputFrom,
+      inputTo,
+      to,
+    });
+  }
+
+  return {
+    ...mapped,
+    replay: recordHistoryReplay(
+      schema,
+      mapping.after,
+      mapped.replay.change,
+      replay.direction,
+      { carried: mapped.replay.carried, program: moved }
+    ),
+  };
+};
+
+const mapProgramReplay = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  replay: HistoryReplay<T>,
+  program: CarryProgram,
+  base: T,
+  mapping: HistoryMapping<T>
+) => {
+  const { root } = program;
+  const edit = getInternalDocumentRootChange(mapping.change, root);
+
+  if (!edit || !holdsOnly(mapping.change, root)) return null;
+
+  const window = replay.carried && programWindow(schema, program, base);
+
+  if (window && !editsWithin(edit, valueRootIndex(base, root), window)) {
+    return mapProgramByPosition(
+      schema,
+      replay,
+      program,
+      base,
+      mapping,
+      edit,
+      window
+    );
+  }
+
+  const previous = compileProgram(schema, program, base);
+  const before = valueRootIndex(base, root);
+  const mapped =
+    previous &&
+    mapCarryProgram(
+      program,
+      edit,
+      before,
+      valueRootIndex(mapping.after, root),
+      schema.lines
+    );
+  const next = mapped && compileProgram(schema, mapped, mapping.after);
+  const run = next && carriedRunOf(next.final, root);
+
+  if (!previous || !mapped || !next || !run) return null;
+
+  return {
+    keptWrap: null,
+    replay: recordHistoryReplay(
+      schema,
+      mapping.after,
+      next.change,
+      replay.direction,
+      { carried: [run], program: mapped }
+    ),
+    rest: createInternalDocumentChange(
+      new Map([[root, carryRest(previous.final, edit, before, next.final)]])
+    ),
   };
 };
 
@@ -890,6 +1248,26 @@ const mapOneReplay = <T extends JsonEditorValue>(
   replay: HistoryReplay<T>;
   rest: DocumentChange;
 }> => {
+  if (replay.program) {
+    const mapped = mapProgramReplay(
+      schema,
+      replay,
+      replay.program,
+      base,
+      mapping
+    );
+
+    if (mapped) return mapped;
+
+    const projected = projectedHistoryReplay(schema, replay, base);
+
+    if (projected) {
+      return mapOneReplay(schema, projected, base, mapping, anchor);
+    }
+
+    countCoreWork('carriedFallbacks');
+  }
+
   const { exact } = replay;
   const anchors = anchor && replay.direction === 'redo' && !exact;
   const asReplay = (
