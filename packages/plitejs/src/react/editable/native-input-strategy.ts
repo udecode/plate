@@ -12,27 +12,21 @@ import { isUnmarkedTextNode } from './mutation-full-block-editing';
 import {
   string as editorString,
   above as editorAbove,
-  getEditorCurrentMarks,
   isBlock as editorIsBlock,
 } from './runtime-editor-api';
 
 const NATIVE_CHAR_RE = /^[ -~]$/;
 
-const canTypeIntoCaretText = (editor: ReactRuntimeEditor, selection: Range) => {
-  const nextMarks = editor.read((state) => state.marks());
+const getCaretTextBlocker = (editor: ReactRuntimeEditor, selection: Range) =>
+  editor.read((state) => {
+    const nextMarks = state.marks();
 
-  if (nextMarks && Object.keys(nextMarks).length > 0) return false;
+    if (nextMarks && Object.keys(nextMarks).length > 0) return 'active-marks';
 
-  const marksTurnedOff = getEditorCurrentMarks(editor) !== null;
-
-  if (!marksTurnedOff) return true;
-
-  return editor.read((state) => {
     const node = state.nodes.get(selection.anchor.path)?.[0];
 
-    return !!node && isUnmarkedTextNode(node);
+    return node && isUnmarkedTextNode(node) ? null : 'marked-caret-text';
   });
-};
 
 const canUseNativeTextHost = (textHost: Element | null | undefined) =>
   textHost?.getAttribute('data-editor-dom-sync') === 'true' &&
@@ -68,9 +62,9 @@ export const getNativeSingleCharacterInputDecision = ({
   // right after it (the start of the next node).
   if (selection.anchor.offset === 0) return blocked('text-start');
 
-  if (!canTypeIntoCaretText(editor, selection)) {
-    return blocked('active-marks');
-  }
+  const caretTextBlocker = getCaretTextBlocker(editor, selection);
+
+  if (caretTextBlocker) return blocked(caretTextBlocker);
 
   // Chrome also has issues correctly editing the end of anchor elements: https://bugs.chromium.org/p/chromium/issues/detail?id=1259100
   // Therefore we don't allow native events to insert text at the end of anchor nodes.

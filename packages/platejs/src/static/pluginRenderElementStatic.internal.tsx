@@ -5,6 +5,7 @@ import {
   getCompiledPlatePlugin,
   getPlateRuntime,
 } from '../internal/plugin/compilePlateModel';
+import { getDefaultElementTag } from '../internal/plugin/defaultElementTag';
 import type {
   AnyBasePluginPortal,
   AnyPluginBase,
@@ -99,8 +100,8 @@ export const pluginRenderElementStatic = (
       }
     );
 
-    const defaultProps =
-      typeof nodeComponent === 'string' ? { as: nodeComponent } : {};
+    const tag = nodeComponent ?? getDefaultElementTag(nodeProps.attributes);
+    const defaultProps = typeof tag === 'string' ? { as: tag } : {};
 
     let renderedNode: React.ReactNode = (
       <Element {...defaultProps} {...nodeProps}>

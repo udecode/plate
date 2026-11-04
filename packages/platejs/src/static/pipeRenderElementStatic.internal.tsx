@@ -7,6 +7,7 @@ import {
   getCompiledPlatePluginByType,
   getPlateRuntime,
 } from '../internal/plugin/compilePlateModel';
+import { getDefaultElementTag } from '../internal/plugin/defaultElementTag';
 import type { AnyPluginBase, Editor } from '../lib';
 import { EditorElement } from './components/plite-nodes';
 import { hasStaticPresentation } from './internal/staticPresentation';
@@ -49,7 +50,10 @@ export const pipeRenderElementStatic = (
     });
 
     return (
-      <EditorElement {...ctxProps}>
+      <EditorElement
+        {...ctxProps}
+        as={getDefaultElementTag(ctxProps.attributes)}
+      >
         {props.children}
 
         {hasStaticPresentation(editor)

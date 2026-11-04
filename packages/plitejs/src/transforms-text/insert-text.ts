@@ -32,6 +32,7 @@ import type { AnyEditor as Editor } from '../interfaces/editor';
 import {
   getChildren as editorGetChildren,
   isInline as editorIsInline,
+  isVoid as editorIsVoid,
   range as editorRange,
   void as editorVoid,
 } from '../interfaces/editor';
@@ -192,6 +193,69 @@ const getPointTextInsertionPoint = (
   }
 
   return null;
+};
+
+const getNextTextInBlock = (editor: Editor, path: Path) => {
+  let blockPath = PathApi.parent(path);
+
+  while (editorIsInline(editor, NodeApi.get(editor, blockPath))) {
+    blockPath = PathApi.parent(blockPath);
+  }
+
+  const from = path.slice(blockPath.length);
+
+  for (const [text, textPath] of NodeApi.texts(NodeApi.get(editor, blockPath), {
+    from,
+    pass: ([node]) => NodeApi.isElement(node) && editorIsVoid(editor, node),
+  })) {
+    if (!PathApi.equals(textPath, from)) return text;
+  }
+
+  return null;
+};
+
+const getMarksAtNonInclusiveEnd = (
+  editor: Editor,
+  at: Point
+): TextMarks | null => {
+  const node = NodeApi.has(editor, at.path)
+    ? NodeApi.get(editor, at.path)
+    : null;
+  const atNonEmptyTextEnd =
+    TextApi.isText(node) && node.text !== '' && at.offset === node.text.length;
+
+  if (!atNonEmptyTextEnd) return null;
+
+  const editorSchema = getEditorSchema(editor);
+  const parent = NodeApi.get(editor, PathApi.parent(at.path));
+  const parentIsFull =
+    NodeApi.isElement(parent) &&
+    typeof parent.type === 'string' &&
+    (editorSchema.getElementContent(parent.type)?.max ?? Infinity) <=
+      parent.children.length;
+
+  if (parentIsFull) return null;
+
+  const root = at.root ?? getEditorUpdateRoot(editor);
+  const next = getNextTextInBlock(editor, at.path);
+  const typingKeeps = (key: string) => {
+    const property = editorSchema.getTextPropertyAt(key, at.path, root);
+
+    return (
+      property?.lifecycle.inclusive !== false ||
+      property.role === 'metadata' ||
+      property.descriptor.required ||
+      (TextApi.isText(next) && jsonEqual(next[key], node[key]))
+    );
+  };
+  const properties = NodeApi.extractProps(node);
+  const marks = Object.fromEntries(
+    Object.entries(properties).filter(([key]) => typingKeeps(key))
+  );
+
+  return Object.keys(marks).length < Object.keys(properties).length
+    ? marks
+    : null;
 };
 
 const insertTextAtPoint = (editor: Editor, at: Point, text: string) => {
@@ -435,11 +499,12 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
       const { path, offset, root } = at;
       if (text.length > 0) {
-        const marks = normalizeTextMarks(
-          shouldApplyPendingMarks ? getCurrentMarks(editor) : null
-        );
+        const typedMarks = shouldApplyPendingMarks
+          ? (getCurrentMarks(editor) ?? getMarksAtNonInclusiveEnd(editor, at))
+          : null;
+        const marks = normalizeTextMarks(typedMarks);
 
-        if (shouldApplyPendingMarks && getCurrentMarks(editor)) {
+        if (typedMarks) {
           const textInsertionPoint = getPointTextInsertionPoint(
             editor,
             at,

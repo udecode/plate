@@ -4,6 +4,7 @@ import type { Path } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { mergePlateRenderedAttributes } from '../../internal/mergePlateRenderedAttributes';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import { getDefaultElementTag } from '../../internal/plugin/defaultElementTag';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import type { RenderElementProps } from '../../lib';
 import { type EditorNodeProps, EditorElement } from '../components';
@@ -85,7 +86,8 @@ function ElementContent({
     }
   });
 
-  const defaultProps = typeof Component === 'string' ? { as: Component } : {};
+  const tag = Component ?? getDefaultElementTag(nodeProps.attributes);
+  const defaultProps = typeof tag === 'string' ? { as: tag } : {};
 
   let component: React.ReactNode = (
     <Element {...defaultProps} {...nodeProps}>

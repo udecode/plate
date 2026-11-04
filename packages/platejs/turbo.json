@@ -5144,6 +5144,7 @@
         "typecheck:partition:standard-basic-nodes-react",
         "typecheck:partition:standard-basic-styles-react",
         "typecheck:partition:standard-link",
+        "typecheck:partition:standard-link-react",
         "typecheck:partition:static",
         "typecheck:partition:suggestion",
         "typecheck:partition:testing"
@@ -6193,6 +6194,7 @@
         "typecheck:partition:footnote",
         "typecheck:partition:proxies",
         "typecheck:partition:standard-basic-nodes",
+        "typecheck:partition:standard-link",
         "typecheck:partition:standard-list",
         "typecheck:partition:static",
         "typecheck:partition:table",

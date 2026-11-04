@@ -8,6 +8,7 @@ import {
   getCompiledPlatePluginByType,
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
+import { getDefaultElementTag } from '../../internal/plugin/defaultElementTag';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { type EditableProps, getPluginNodeClass } from '../../lib';
@@ -178,7 +179,11 @@ function FastElementBody({
   return (
     <EditorElement
       {...pluginContext}
-      as={typeof plugin.component === 'string' ? plugin.component : undefined}
+      as={
+        typeof plugin.component === 'string'
+          ? plugin.component
+          : getDefaultElementTag(attributes)
+      }
       attributes={mergedAttributes}
       element={element}
       slots={slots}
@@ -379,7 +384,10 @@ function DefaultElementWithPath({
     renderedAttributes
   );
   const DefaultPlateElement = EditorElement as unknown as React.ComponentType<
-    Omit<typeof ctxProps, 'path'> & { children: React.ReactNode }
+    Omit<typeof ctxProps, 'path'> & {
+      as: 'div' | 'span';
+      children: React.ReactNode;
+    }
   >;
   const { path: _path, ...nodeProps } = ctxProps;
 
@@ -390,7 +398,11 @@ function DefaultElementWithPath({
       path={path}
       scope={ctxProps.element.type ?? 'default'}
     >
-      <DefaultPlateElement {...nodeProps} attributes={attributes}>
+      <DefaultPlateElement
+        {...nodeProps}
+        as={getDefaultElementTag(attributes)}
+        attributes={attributes}
+      >
         {props.children}
 
         <AfterNodeChildren {...nodeProps} />
@@ -446,7 +458,9 @@ export const pipeRenderElement = (
               .join(' ') || undefined,
         };
         const Tag =
-          typeof plugin.component === 'string' ? plugin.component : 'div';
+          typeof plugin.component === 'string'
+            ? plugin.component
+            : getDefaultElementTag(props.attributes);
         const isVoidTag = isHtmlVoidElementTag(Tag);
         const hasBelowNodeWrappers =
           getPlateRuntime(editor).pluginCache.slots.wrapNodeChildren.length > 0;
