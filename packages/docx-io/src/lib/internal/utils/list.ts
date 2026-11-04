@@ -24,6 +24,8 @@ export type ListStyle = {
   'list-style-type'?: ListStyleType;
 };
 
+export const getListTextIndent = (level: number) => level * 360 + 360;
+
 class ListStyleBuilder {
   private readonly defaults: ListStyleDefaults;
 
