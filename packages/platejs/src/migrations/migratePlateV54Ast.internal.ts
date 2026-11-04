@@ -173,6 +173,8 @@ export const migratePlateV54Ast = ({
         detailsProperties[key] = value;
         continue;
       }
+      // An unowned id is v53 NodeIdPlugin's, which v54 drops.
+      if (key === 'id') continue;
 
       throw new Error(
         `Plate v54 migration cannot convert legacy Toggle at ${location}: neither Details nor Summary owns property "${key}".`

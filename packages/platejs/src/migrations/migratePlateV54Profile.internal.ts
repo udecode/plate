@@ -265,6 +265,17 @@ export const migratePlateV54Profile = ({
 
       element = { ...properties, textAlign: align };
     }
+    // v53's NodeIdPlugin stored an id on every block; v54 has no such plugin.
+    // convertLegacyToggle routes a legacy Toggle's id to Summary or Details, or drops it.
+    if (
+      Object.hasOwn(element, 'id') &&
+      element.type !== 'toggle' &&
+      !ownsProperty(element.type, 'id', context)
+    ) {
+      const { id: _id, ...withoutId } = element;
+
+      element = withoutId;
+    }
 
     const legacyHeading = LEGACY_HEADING_TYPE_RE.exec(input.type);
 
