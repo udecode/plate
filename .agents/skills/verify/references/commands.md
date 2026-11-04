@@ -310,7 +310,8 @@ those links. Remove it with `git worktree remove --force <path>` when the run
 ends. That removal leaves the worktree's private record behind. Before it,
 read the worktree's `.git-private` file, which names the record's folder under
 the main checkout's `.git-private/worktrees/`, and delete that folder after it.
-A run with `-- <command>` removes both.
+A run with `-- <command>` removes both. It needs `--dir <run dir> --name <name>`
+before the `--`, which name where its log goes, and exits 2 without them.
 A package's own `node_modules` links its workspace siblings by relative path.
 Through that link, a sibling import outside the TypeScript path aliases
 resolves to this checkout's source, so a base proof that must run a sibling at
