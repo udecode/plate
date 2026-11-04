@@ -207,9 +207,11 @@ export type DeviceEditor = Pick<
   BrowserEditorHarness,
   'assert' | 'get' | 'snapshot'
 > & {
+  childRoot: (key: string) => DeviceEditor;
   selection: Pick<BrowserEditorHarness['selection'], 'get'>;
   touch: {
     press: (point: SelectionPoint, ms?: number) => Promise<void>;
+    pressPastEnd: (path: number[], ms?: number) => Promise<void>;
     tap: (point: SelectionPoint) => Promise<void>;
   };
 };
@@ -500,17 +502,56 @@ export const createDeviceLane = ({
     };
   };
 
-  const pointFor = (point: SelectionPoint) =>
-    page.evaluate(
-      ({ offset: modelOffset, path }) => {
-        const host = document.querySelector(
-          `[data-editor-node="text"][data-editor-path="${path.join(',')}"]`
-        );
+  const pointFor = (
+    editorRoot: Locator,
+    path: number[],
+    target: number | 'past-end'
+  ) =>
+    editorRoot.evaluate(
+      async (element, { path: textPath, target: textTarget }) => {
+        const renderedHere = (text: Element) =>
+          text.closest('[data-editor="true"]') === element;
+        const host = [
+          ...element.querySelectorAll(
+            `[data-editor-node="text"][data-editor-path="${textPath.join(',')}"]`
+          ),
+        ].find(renderedHere);
 
         if (!host) return null;
 
+        const view = window.visualViewport;
+        const box = host.getBoundingClientRect();
+        const top = view?.offsetTop ?? 0;
+
+        if (box.top < top || box.bottom > top + (view?.height ?? innerHeight)) {
+          host.scrollIntoView({ block: 'center' });
+          await new Promise((resolveScroll) => {
+            setTimeout(resolveScroll, 400);
+          });
+        }
+
+        if (textTarget === 'past-end') {
+          const contents = document.createRange();
+
+          contents.selectNodeContents(host);
+
+          const line = [...contents.getClientRects()].at(-1);
+          const block = host.closest('[data-editor-node="element"]');
+
+          if (!line || !block) return null;
+
+          const { right } = block.getBoundingClientRect();
+
+          if (right - line.right < 16) {
+            throw new Error(
+              `The text at ${textPath.join(',')} fills its line.`
+            );
+          }
+          return { x: (line.right + right) / 2, y: line.top + line.height / 2 };
+        }
+
         const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT);
-        let remaining = modelOffset;
+        let remaining = textTarget;
         let node = walker.nextNode() as Text | null;
 
         while (node && remaining > node.data.length) {
@@ -537,7 +578,7 @@ export const createDeviceLane = ({
         const rect = range.getBoundingClientRect();
         return { x: rect.right - 1, y: rect.top + rect.height / 2 };
       },
-      { offset: point.offset, path: [...point.path] }
+      { path, target }
     );
 
   const contentTouch = async (
@@ -683,38 +724,56 @@ export const createDeviceLane = ({
     }
   };
 
-  const editorFor = (harness: BrowserEditorHarness): DeviceEditor => ({
-    assert: harness.assert,
-    get: harness.get,
-    selection: { get: harness.selection.get },
-    snapshot: harness.snapshot,
-    touch: {
-      press: async (point, ms = 600) => {
-        const css = await pointFor(point);
+  const editorFor = (
+    harness: BrowserEditorHarness,
+    editorRoot: Locator,
+    name = ''
+  ): DeviceEditor => {
+    const touchText = async (
+      verb: string,
+      path: number[],
+      target: number | 'past-end',
+      act: (screen: { x: number; y: number }) => void
+    ) => {
+      const at = `${name}${path.join(',')}`;
+      const css = await pointFor(editorRoot, path, target);
 
-        if (!css) {
-          throw new Error(`No rendered text at ${point.path.join(',')}.`);
-        }
-        await contentTouch(
-          `press ${point.path.join(',')}:${point.offset}`,
-          css,
-          (screen) => touch.press(screen.x, screen.y, ms)
+      if (!css) throw new Error(`No rendered text at ${at}.`);
+      await contentTouch(`${verb} ${at}:${target}`, css, act);
+    };
+
+    return {
+      assert: harness.assert,
+      childRoot: (key) => {
+        const childRoot = editorRoot.locator(
+          `[data-editor="true"][data-editor-root="${key}"]`
+        );
+
+        return editorFor(
+          createBrowserEditorHarness(page, key, childRoot),
+          childRoot,
+          `${key} `
         );
       },
-      tap: async (point) => {
-        const css = await pointFor(point);
-
-        if (!css) {
-          throw new Error(`No rendered text at ${point.path.join(',')}.`);
-        }
-        await contentTouch(
-          `tap ${point.path.join(',')}:${point.offset}`,
-          css,
-          (screen) => touch.tap(screen.x, screen.y)
-        );
+      get: harness.get,
+      selection: { get: harness.selection.get },
+      snapshot: harness.snapshot,
+      touch: {
+        press: (point, ms = 600) =>
+          touchText('press', point.path, point.offset, (screen) =>
+            touch.press(screen.x, screen.y, ms)
+          ),
+        pressPastEnd: (path, ms = 600) =>
+          touchText('press', path, 'past-end', (screen) =>
+            touch.press(screen.x, screen.y, ms)
+          ),
+        tap: (point) =>
+          touchText('tap', point.path, point.offset, (screen) =>
+            touch.tap(screen.x, screen.y)
+          ),
       },
-    },
-  });
+    };
+  };
 
   const openEditor = async (url: string, title: string) => {
     await leavePage();
@@ -730,7 +789,7 @@ export const createDeviceLane = ({
     await harness.ready({ editor: 'visible' });
     await calibrateContent();
     await startTrace(editorRoot);
-    return editorFor(harness);
+    return editorFor(harness, editorRoot);
   };
 
   const lane: DeviceLane = {
