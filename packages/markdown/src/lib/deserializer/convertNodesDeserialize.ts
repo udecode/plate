@@ -6,6 +6,7 @@ import type { DeserializeMdOptions } from './deserializeMd';
 
 import { mdastToPlate } from '../types';
 import { customMdxDeserialize } from './utils';
+import { dropNewlineAfterBr } from './internal/dropNewlineAfterBr';
 import { shouldDeserializeNode } from './internal/shouldDeserializeNode';
 import { getDeserializerByKey } from './utils/getDeserializerByKey';
 
@@ -14,10 +15,12 @@ export const convertNodesDeserialize = (
   deco: MdDecoration,
   options: DeserializeMdOptions
 ): Descendant[] => {
-  return nodes.reduce<Descendant[]>((acc, node) => {
+  return nodes.reduce<Descendant[]>((acc, node, index) => {
     // Only process nodes that pass the filtering
     if (shouldDeserializeNode(node, options)) {
-      acc.push(...buildSlateNode(node, deco, options));
+      const current = dropNewlineAfterBr(node, nodes[index - 1]);
+
+      acc.push(...buildSlateNode(current, deco, options));
     }
     return acc;
   }, []);

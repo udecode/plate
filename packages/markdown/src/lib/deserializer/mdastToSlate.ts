@@ -23,7 +23,7 @@ const buildSlateRoot = (
     root.children = root.children.map((child) => {
       if (child.type === 'html' && child.value === '<br />') {
         return {
-          children: [{ type: 'text', value: '\n' }],
+          children: [{ type: 'text', value: '' }],
           type: 'paragraph',
         };
       }

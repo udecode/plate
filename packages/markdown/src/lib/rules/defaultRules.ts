@@ -43,7 +43,6 @@ import { parseAttributes, propsToAttributes } from './utils';
 
 // Other destinations need the link handler's Markdown escaping.
 const BARE_AUTOLINK_REGEX = /^https?:\/\/[^\s<>\\]+$/i;
-const LEADING_NEWLINE_REGEX = /^\n/;
 
 function isBoolean(value: any) {
   return (
@@ -997,7 +996,7 @@ export const defaultRules: MdRules = {
   text: {
     deserialize: (mdastNode, deco) => ({
       ...deco,
-      text: mdastNode.value.replace(LEADING_NEWLINE_REGEX, ''),
+      text: mdastNode.value,
     }),
   },
   toc: {
