@@ -10,6 +10,7 @@ import {
   type Point,
   type Range,
   RangeApi,
+  TextApi,
 } from '../../..';
 import { setShownSelectionAsView } from '../../../core/view-carets';
 import {
@@ -53,6 +54,7 @@ import {
   type DOMInputRepairTarget,
   type EditableInputController,
   endNativeMoveHold,
+  replayAsAndroidCommand,
   shouldMergeEditableCompositionHistory,
 } from '../../editable/input-state';
 import {
@@ -62,6 +64,7 @@ import {
 import {
   editorCommands,
   failInvariant,
+  getEditorCurrentMarks,
   getNodeKey as editorGetNodeKey,
   probeCommandNativeEquivalent,
   range as editorRange,
@@ -222,12 +225,7 @@ export function createAndroidInputManager({
 
     const version = editor.read((state) => state.lastCommit()?.version);
 
-    inputController.state.isReplayingAndroidCommand = true;
-    try {
-      action.run();
-    } finally {
-      inputController.state.isReplayingAndroidCommand = false;
-    }
+    replayAsAndroidCommand(inputController, action.run);
 
     const at = action.at ?? selection;
 
@@ -371,14 +369,16 @@ export function createAndroidInputManager({
 
       const version = editor.read((state) => state.lastCommit()?.version);
 
-      if (diff.diff.text) {
-        applyAndroidTextInput(diff.diff.text, diff.inputType ?? 'insertText');
-      } else {
-        applyEditableCommand({
-          command: { kind: 'delete-fragment' },
-          editor,
-        });
-      }
+      replayAsAndroidCommand(inputController, () => {
+        if (diff.diff.text) {
+          applyAndroidTextInput(diff.diff.text, diff.inputType ?? 'insertText');
+        } else {
+          applyEditableCommand({
+            command: { kind: 'delete-fragment' },
+            editor,
+          });
+        }
+      });
 
       // Remove diff only after we have applied it to account for it when transforming
       // pending ranges.
@@ -670,6 +670,20 @@ export function createAndroidInputManager({
     const textHost = element?.closest('[data-editor-node="text"]');
 
     return textHost?.getAttribute('data-editor-dom-sync') === 'true';
+  };
+
+  const caretMarksDifferAt = (range: Range) => {
+    const marks = getEditorCurrentMarks(editor);
+
+    return (
+      marks !== null &&
+      RangeApi.isCollapsed(range) &&
+      !TextApi.equals(
+        NodeApi.leaf(editor, range.anchor.path),
+        { ...marks, text: '' },
+        { loose: true }
+      )
+    );
   };
 
   const scheduleAction = (
@@ -1134,7 +1148,9 @@ export function createAndroidInputManager({
         }
 
         if (!spansLeaves) {
-          canStoreDiff &&= canStoreDOMTextDiffAtRange(innerTargetRange2);
+          canStoreDiff &&=
+            canStoreDOMTextDiffAtRange(innerTargetRange2) &&
+            !caretMarksDifferAt(innerTargetRange2);
           if (!canStoreDiff && event.cancelable) {
             event.preventDefault();
             preventedTextInput = true;

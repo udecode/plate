@@ -390,11 +390,11 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
 
     if (!ownerDocument || !view) return undefined;
 
-    let timeout: number | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
     const onBlur = () => {
-      view.clearTimeout(timeout);
+      globalThis.clearTimeout(timeout);
       // Iframe focus does not dispatch an outside pointer event in this document.
-      timeout = view.setTimeout(() => {
+      timeout = globalThis.setTimeout(() => {
         let active = ownerDocument.activeElement;
 
         while (active?.shadowRoot?.activeElement) {
@@ -407,7 +407,7 @@ export function LinkFloatingToolbar({ editableRef }: EditableSiblingProps) {
     view.addEventListener('blur', onBlur);
     return () => {
       view.removeEventListener('blur', onBlur);
-      view.clearTimeout(timeout);
+      globalThis.clearTimeout(timeout);
     };
   }, [api, floatingElement]);
 

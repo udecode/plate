@@ -406,6 +406,20 @@ export const commitUnderCompositionReceipt = <T>(
   }
 };
 
+export const replayAsAndroidCommand = (
+  inputController: EditableInputController,
+  replay: () => void
+) => {
+  const replaying = inputController.state.isReplayingAndroidCommand;
+
+  inputController.state.isReplayingAndroidCommand = true;
+  try {
+    replay();
+  } finally {
+    inputController.state.isReplayingAndroidCommand = replaying;
+  }
+};
+
 export const cancelCompositionReceipt = (
   inputController: EditableInputController
 ) => {

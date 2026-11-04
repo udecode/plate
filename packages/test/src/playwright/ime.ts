@@ -11,10 +11,27 @@ type SyntheticCompositionEventType =
 export const enableCompositionKeyEvents = async (
   surface: CompositionSurface
 ) => {
-  await surface.evaluate(() => {
-    const target = window as Window & {
-      __EDITOR_BROWSER_COMPOSITION_KEY_EVENTS__?: boolean;
-    };
+  const frameElement =
+    'parentFrame' in surface && surface.parentFrame()
+      ? await surface.frameElement()
+      : null;
+  // A frame sandboxed without allow-scripts runs no listener of its own realm,
+  // so the parent adds the listener to each frame whose document it can reach.
+  const windowHandle =
+    frameElement &&
+    (await frameElement.evaluate(
+      (frame) => (frame as HTMLIFrameElement).contentDocument !== null
+    ))
+      ? await frameElement.evaluateHandle(
+          (frame) => (frame as HTMLIFrameElement).contentWindow!
+        )
+      : await surface.evaluateHandle(() => window);
+
+  await windowHandle.evaluate((view) => {
+    const target = view as Window &
+      typeof globalThis & {
+        __EDITOR_BROWSER_COMPOSITION_KEY_EVENTS__?: boolean;
+      };
 
     if (target.__EDITOR_BROWSER_COMPOSITION_KEY_EVENTS__) {
       return;
@@ -22,11 +39,11 @@ export const enableCompositionKeyEvents = async (
 
     target.__EDITOR_BROWSER_COMPOSITION_KEY_EVENTS__ = true;
 
-    window.addEventListener(
+    target.addEventListener(
       'compositionstart',
       () => {
-        document.activeElement?.dispatchEvent(
-          new KeyboardEvent('keydown', {
+        target.document.activeElement?.dispatchEvent(
+          new target.KeyboardEvent('keydown', {
             bubbles: true,
             cancelable: true,
             key: 'Unidentified',
@@ -37,6 +54,7 @@ export const enableCompositionKeyEvents = async (
       true
     );
   });
+  await Promise.all([windowHandle.dispose(), frameElement?.dispose()]);
 };
 
 export const dispatchSyntheticCompositionEvent = async (

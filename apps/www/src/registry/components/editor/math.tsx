@@ -254,12 +254,11 @@ function EquationPopoverContent({
 
   React.useEffect(() => {
     if (!open) return undefined;
-    const window = ref.current?.ownerDocument.defaultView;
-    const timeout = window?.setTimeout(() => {
+    const timeout = globalThis.setTimeout(() => {
       ref.current?.focus();
       ref.current?.select();
     }, 0);
-    return () => window?.clearTimeout(timeout);
+    return () => globalThis.clearTimeout(timeout);
   }, [open]);
 
   if (readOnly) return null;

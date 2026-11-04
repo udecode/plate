@@ -54,11 +54,7 @@ export type DOMPhaseScheduler = {
 
 type SchedulerWindow = Pick<
   Window,
-  | 'cancelAnimationFrame'
-  | 'clearTimeout'
-  | 'queueMicrotask'
-  | 'requestAnimationFrame'
-  | 'setTimeout'
+  'cancelAnimationFrame' | 'queueMicrotask' | 'requestAnimationFrame'
 >;
 
 type ScheduledDOMPhaseTask = {
@@ -70,8 +66,7 @@ type ScheduledDOMPhaseTask = {
   label: string;
   phase: DOMPhase;
   ready: boolean;
-  timeoutHandle: number | null;
-  timeoutWindow: SchedulerWindow | null;
+  timeoutHandle: ReturnType<typeof setTimeout> | null;
   timing: DOMPhaseTiming;
 };
 
@@ -155,11 +150,8 @@ export const createDOMPhaseScheduler = ({
   const clearTaskTimeout = (task: ScheduledDOMPhaseTask) => {
     if (task.timeoutHandle === null) return;
 
-    if (task.timeoutWindow) {
-      task.timeoutWindow.clearTimeout(task.timeoutHandle);
-    } else globalThis.clearTimeout(task.timeoutHandle);
+    globalThis.clearTimeout(task.timeoutHandle);
     task.timeoutHandle = null;
-    task.timeoutWindow = null;
   };
 
   const cancelTask = (task: ScheduledDOMPhaseTask) => {
@@ -243,20 +235,16 @@ export const createDOMPhaseScheduler = ({
       return;
     }
 
-    const schedulerWindow = getWindow();
     const run = () => {
       task.timeoutHandle = null;
-      task.timeoutWindow = null;
       if (task.cancelled) return;
 
       task.ready = true;
       flushReady();
     };
 
-    task.timeoutHandle = schedulerWindow
-      ? schedulerWindow.setTimeout(run, task.delay)
-      : (globalThis.setTimeout(run, task.delay) as unknown as number);
-    task.timeoutWindow = schedulerWindow ?? null;
+    // A frame sandboxed without allow-scripts never runs its own timers.
+    task.timeoutHandle = globalThis.setTimeout(run, task.delay);
   };
 
   flushReady = (force = false, frameTime?: number) => {
@@ -380,7 +368,6 @@ export const createDOMPhaseScheduler = ({
         phase,
         ready: false,
         timeoutHandle: null,
-        timeoutWindow: null,
         timing: options.timing ?? 'animation-frame',
       };
 

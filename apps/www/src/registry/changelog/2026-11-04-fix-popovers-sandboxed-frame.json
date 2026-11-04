@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-04-fix-popovers-sandboxed-frame",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-04-fix-popovers-sandboxed-frame.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-04",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Fix the link and equation popovers in a sandboxed frame",
+  "targets": [
+    {
+      "name": "link",
+      "files": ["apps/www/src/registry/components/editor/link.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math",
+      "files": ["apps/www/src/registry/components/editor/math.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-04-link-close-form-sandboxed-frame-acd8e510",
+      "kind": "fix",
+      "summary": "Close the link form when focus moves into another iframe, also when the editor renders inside a frame sandboxed without `allow-scripts`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["link"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-04",
+          "entry": "2026-11-04-fix-popovers-sandboxed-frame",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-04-math-select-tex-sandboxed-frame-5c1e93b2",
+      "kind": "fix",
+      "summary": "Select the equation's TeX when its popover opens, also when the editor renders inside a frame sandboxed without `allow-scripts`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["math"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-04",
+          "entry": "2026-11-04-fix-popovers-sandboxed-frame",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

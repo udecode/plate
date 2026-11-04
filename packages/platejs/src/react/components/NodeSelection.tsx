@@ -438,7 +438,7 @@ export function NodeSelectionDrag({
     const ownerWindow = ownerDocument.defaultView;
     if (!ownerWindow) return undefined;
 
-    let clickResetTimer: number | undefined;
+    let clickResetTimer: ReturnType<typeof setTimeout> | undefined;
     let finishFrame: number | undefined;
     let frame: number | undefined;
     let suppressClick = false;
@@ -593,7 +593,7 @@ export function NodeSelectionDrag({
         finishFrame = undefined;
       }
       if (clickResetTimer !== undefined) {
-        ownerWindow.clearTimeout(clickResetTimer);
+        globalThis.clearTimeout(clickResetTimer);
         clickResetTimer = undefined;
       }
       suppressClick = false;
@@ -647,7 +647,7 @@ export function NodeSelectionDrag({
       }
       finishFrame = undefined;
       if (clickResetTimer !== undefined) {
-        ownerWindow.clearTimeout(clickResetTimer);
+        globalThis.clearTimeout(clickResetTimer);
       }
       clickResetTimer = undefined;
       suppressClick = false;
@@ -676,7 +676,7 @@ export function NodeSelectionDrag({
 
       clearGesture();
       suppressClick = true;
-      clickResetTimer = ownerWindow.setTimeout(() => {
+      clickResetTimer = globalThis.setTimeout(() => {
         clickResetTimer = undefined;
         suppressClick = false;
       }, 0);
@@ -766,7 +766,7 @@ export function NodeSelectionDrag({
 
       suppressClick = false;
       if (clickResetTimer !== undefined) {
-        ownerWindow.clearTimeout(clickResetTimer);
+        globalThis.clearTimeout(clickResetTimer);
         clickResetTimer = undefined;
       }
       event.preventDefault();

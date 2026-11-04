@@ -22,6 +22,7 @@ import {
   cancelCompositionReceipt,
   type EditableInputController,
   openCompositionReceipt,
+  replayAsAndroidCommand,
 } from './input-state';
 import { applyModelOwnedTextInput } from './mutation-controller';
 import {
@@ -717,10 +718,7 @@ const writeDraft = (
 
   // The DOM caret sits after the draft, so the insert resolves its target
   // from the model selection, as a replayed Android command does.
-  const replaying = inputController.state.isReplayingAndroidCommand;
-
-  inputController.state.isReplayingAndroidCommand = true;
-  try {
+  replayAsAndroidCommand(inputController, () => {
     applyModelOwnedTextInput({
       data: replacement.text,
       editor,
@@ -729,9 +727,7 @@ const writeDraft = (
       marks,
       selection: target,
     });
-  } finally {
-    inputController.state.isReplayingAndroidCommand = replaying;
-  }
+  });
 };
 
 // A handler that rewrote or rejected the word leaves the line's DOM showing

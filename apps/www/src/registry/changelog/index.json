@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-04-fix-popovers-sandboxed-frame",
+      "href": "/registry/changelog/2026-11-04-fix-popovers-sandboxed-frame.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Fix the link and equation popovers in a sandboxed frame",
+      "change": {
+        "type": "source",
+        "date": "2026-11-04",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["link", "math"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-01-fix-highlight-after-equality-substitution",
       "href": "/registry/changelog/2026-11-01-fix-highlight-after-equality-substitution.json",
       "status": "draft",

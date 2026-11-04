@@ -585,6 +585,16 @@ export default defineConfig({
       },
     },
     {
+      files: [
+        'packages/*/src/**/*.{cts,mts,ts,tsx}',
+        'apps/www/src/registry/**/*.{ts,tsx}',
+      ],
+      excludeFiles: ['**/*.spec.*', '**/*.test.*', '**/__tests__/**'],
+      rules: {
+        'plate/no-dom-window-timer': 'error',
+      },
+    },
+    {
       files: ['packages/platejs/src/**/*.{cts,mts,ts,tsx}'],
       excludeFiles: [
         '**/*.internal.*',

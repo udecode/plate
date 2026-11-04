@@ -710,6 +710,55 @@ const noAsNever = {
   },
 };
 
+const TIMER_METHODS = new Set([
+  'clearInterval',
+  'clearTimeout',
+  'setInterval',
+  'setTimeout',
+]);
+const REALM_GLOBALS = new Set(['globalThis', 'self', 'window']);
+
+const noDOMWindowTimer = {
+  create(context) {
+    return {
+      CallExpression(node) {
+        const { callee } = node;
+        if (callee.type !== 'MemberExpression') return;
+        const method = callee.computed
+          ? callee.property.type === 'Literal' && callee.property.value
+          : callee.property.name;
+        if (!TIMER_METHODS.has(method)) return;
+        if (
+          callee.object.type === 'Identifier' &&
+          REALM_GLOBALS.has(callee.object.name) &&
+          !resolvedVariable(context, callee.object)?.defs.length
+        ) {
+          return;
+        }
+        context.report({
+          data: {
+            method,
+            receiver: context.sourceCode.getText(callee.object),
+          },
+          messageId: 'domWindowTimer',
+          node,
+        });
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'Editor code takes timers from its own realm, never from the window of the document it renders into.',
+    },
+    messages: {
+      domWindowTimer:
+        '`{{receiver}}.{{method}}` uses the timers of a DOM window, which never run in a frame sandboxed without `allow-scripts`. Call `globalThis.{{method}}`.',
+    },
+    type: 'problem',
+  },
+};
+
 // TypeScript's scanner tests a line comment whole and a block comment from the
 // start of its last line. It reads `@ts-nocheck` only as a `//` pragma before
 // the file's first token, in any case.
@@ -1874,6 +1923,7 @@ export default {
     'no-annotated-inferred-callback': noAnnotatedInferredCallback,
     'no-as-never': withBaseline('no-as-never', noAsNever),
     'no-branded-value': withBaseline('no-branded-value', noBrandedValue),
+    'no-dom-window-timer': noDOMWindowTimer,
     'no-existence-only-test': withBaseline(
       'no-existence-only-test',
       noExistenceOnlyTest

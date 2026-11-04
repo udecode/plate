@@ -240,6 +240,7 @@ export type DeviceLane = {
   steps: () => readonly DeviceWitnessStep[];
   tapStrip: (candidate: RegExp | string) => Promise<string>;
   touch: {
+    tapButton: (name: RegExp | string) => Promise<void>;
     tapTestId: (testId: string) => Promise<void>;
     tapText: (text: string) => Promise<void>;
   };
@@ -558,9 +559,15 @@ export const createDeviceLane = ({
         const view = window.visualViewport;
         const top = view?.offsetTop ?? 0;
         const height = view?.height ?? innerHeight;
+        const left = view?.offsetLeft ?? 0;
+        const width = view?.width ?? innerWidth;
 
         return {
-          visible: rect.top >= top && rect.bottom <= top + height,
+          visible:
+            rect.top >= top &&
+            rect.bottom <= top + height &&
+            rect.left >= left &&
+            rect.right <= left + width,
           x: rect.left + rect.width / 2,
           y: rect.top + rect.height / 2,
         };
@@ -935,6 +942,11 @@ export const createDeviceLane = ({
       return label;
     },
     touch: {
+      tapButton: (name) =>
+        tapLocator(
+          `tap button ${name}`,
+          page.getByRole('button', { name }).first()
+        ),
       tapTestId: (testId) =>
         tapLocator(`tap ${testId}`, page.getByTestId(testId)),
       tapText: (text) =>
