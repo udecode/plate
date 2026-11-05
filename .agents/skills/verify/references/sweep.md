@@ -67,7 +67,7 @@ A domain is the review scope whose owners or members hold the page's demo, as th
 
 ## Fix a domain
 
-The fixer runs each triaged domain's fix run, `triage fix <domain>`, as the Triage playbook's [Fix](../../../playbooks/triage.md#fix) says. The fixer takes domains by priority, P0 first, and between two domains of one priority, the one with a bug on a tier earlier in the list above first. A domain's fix may start while other domains are still in sessions. Editor gaps finds go to `verdict` as proposals.
+The fixer runs each triaged domain's fix run, `triage fix <domain>`, as the Triage playbook's [Fix](../../../playbooks/triage.md#fix) says. The fixer takes domains in the order `pnpm triage claim --next` ranks them: a domain with a regression first, then by priority, P0 first. Between two domains that tie, it takes the one with a bug on a tier earlier in the list above first. A domain's fix may start while other domains are still in sessions. Editor gaps finds go to `verdict` as proposals.
 
 ## Rechecks
 

@@ -446,22 +446,29 @@ export const nextTargets = (world) => [
     .map(([id]) => ({ domain: null, task: id })),
 ];
 
+const byRegressionThenPriority = (a, b) =>
+  Number(b.regression) - Number(a.regression) ||
+  a.priority.localeCompare(b.priority);
+
 export function decideNext(request, world) {
   const [best] = nextTargets(world)
     .map((target) => {
       const result = decide({ ...request, target }, world);
-      const priorities = result.held
+      const kinds = result.held
         .map((issue) => world.head(issue))
         .filter((head) => head?.outcome === 'kind')
-        .map((head) => head.fields.get('priority'))
-        .sort((a, b) => a.localeCompare(b));
-      return { ...result, target, priorities };
+        .map(({ fields }) => ({
+          regression: fields.has('regression'),
+          priority: fields.get('priority'),
+        }))
+        .sort(byRegressionThenPriority);
+      return { ...result, target, kinds };
     })
-    .filter((result) => result.exit === 0 && result.priorities.length > 0)
+    .filter((result) => result.exit === 0 && result.kinds.length > 0)
     .sort(
       (a, b) =>
-        a.priorities[0].localeCompare(b.priorities[0]) ||
-        b.priorities.length - a.priorities.length
+        byRegressionThenPriority(a.kinds[0], b.kinds[0]) ||
+        b.kinds.length - a.kinds.length
     );
   return (
     best ?? {

@@ -2782,7 +2782,7 @@ function claimCommand(options) {
   if (options.next) {
     console.log(
       decision.target
-        ? `next: ${decision.target.task ? `--task ${decision.target.task}` : `--domain ${decision.target.domain}`}, whose worst kind this claim holds is ${decision.priorities[0]}`
+        ? `next: ${decision.target.task ? `--task ${decision.target.task}` : `--domain ${decision.target.domain}`}, whose first kind this claim holds is a ${decision.kinds[0].priority} ${decision.kinds[0].regression ? 'regression' : 'new bug'}`
         : 'next: no domain or task has a kind this claim can hold'
     );
   }
