@@ -111,6 +111,16 @@ const TRIAGED = 'Triaged';
 const NEEDS_REPRO = 'Needs reproduction';
 const NEEDS_RETEST = 'Needs retest';
 const DUPLICATE = 'Duplicate';
+const PLATFORM_FIELD = 'Platform';
+const PLATFORM_DEVICES = new Map([
+  ['iOS', 'ios'],
+  ['Android', 'android'],
+]);
+const DEVICE_WORDS = {
+  ios: /\b(?:iOS|iPhone|iPad)\b/iu,
+  android: /\bAndroid\b/iu,
+  ime: /\b(?:IME|input method)\b/iu,
+};
 const IME_LABEL = 'ime';
 const RELEASED_SITES = new Map([
   ['slatejs.org', 'slate'],
@@ -168,6 +178,7 @@ const KEY_VALUES = {
   retest: /\S/u,
   clips: /^unavailable \S/u,
   escaped: /\S/u,
+  unchecked: /\S/u,
   missing: /\S/u,
   law: PATH_REF,
   into: (value) =>
@@ -182,7 +193,7 @@ const OUTCOMES = {
   dup: { required: ['of'], optional: [] },
   fixed: {
     required: ['commit', 'owner', 'proof'],
-    optional: ['retest', 'clips', 'escaped'],
+    optional: ['retest', 'unchecked', 'clips', 'escaped'],
   },
   'needs-repro': { required: ['missing'], optional: [] },
   'not-bug': { required: ['law'], optional: [] },
@@ -824,6 +835,43 @@ function reopenIds(repo, numbers) {
       if (Array.isArray(nodes)) {
         found.set(String(number), nodes[0]?.id ?? 'none');
       }
+    }
+  }
+  return found;
+}
+
+function platformDevices(repo, numbers) {
+  const [owner, name] = repo.split('/');
+  const found = new Map();
+  for (let at = 0; at < numbers.length; at += GRAPHQL_BATCH) {
+    const part = numbers.slice(at, at + GRAPHQL_BATCH);
+    const fields = part.map(
+      (number) =>
+        `i${number}: issue(number: ${number}) { issueFieldValues(first: 20) { nodes { ... on IssueFieldMultiSelectValue { field { ... on IssueFieldMultiSelect { name } } options { name } } } } }`
+    );
+    const query = `query { repository(owner: ${JSON.stringify(owner)}, name: ${JSON.stringify(name)}) { ${fields.join(' ')} } }`;
+    const result = spawnSync('gh', ['api', 'graphql', '-f', `query=${query}`], {
+      encoding: 'utf-8',
+      maxBuffer: 64 * 1024 * 1024,
+      timeout: NETWORK_MS,
+    });
+    const repository = readJson(result.stdout)?.data?.repository;
+    for (const number of part) {
+      const nodes = repository?.[`i${number}`]?.issueFieldValues?.nodes;
+      if (!Array.isArray(nodes)) {
+        refuse(
+          `gh could not read the ${PLATFORM_FIELD} field of ${repo}#${number}: ${ghProblem(result)}`
+        );
+      }
+      const platform = nodes.find(
+        (node) => node?.field?.name === PLATFORM_FIELD
+      );
+      found.set(
+        String(number),
+        (platform?.options ?? []).flatMap(
+          (option) => PLATFORM_DEVICES.get(option.name) ?? []
+        )
+      );
     }
   }
   return found;
@@ -2118,6 +2166,13 @@ function retestCommand(options) {
   if (devices.length > 0 && !devices.includes(options.device)) {
     refuse(
       `#${issue} reproduces only on ${devices.join(' or ')}; retest there and pass --device with the one you used`
+    );
+  }
+  const platform =
+    name === 'pass' ? platformDevices(repo, [issue]).get(issue) : [];
+  if (platform.length > 0 && !platform.includes(options.device)) {
+    refuse(
+      `#${issue}'s ${PLATFORM_FIELD} field names ${platform.join(' and ')}, so a pass needs a retest there; pass --device with the one you used, or record a fail from any browser`
     );
   }
   if (found.length > 0 && repo === reads.policy.first) {
@@ -3504,6 +3559,13 @@ function recordCommand(options) {
       `this checkout shares no commit with ${reads.remote}/${reads.branch}`
     );
   }
+  const platforms = platformDevices(reads.policy.repo, [
+    ...new Set(
+      entries
+        .filter((entry) => entry.outcome === 'fixed')
+        .map((entry) => issueNumber(entry.issue))
+    ),
+  ]);
 
   const start = Date.now();
   const rows = entries.map((entry, index) => {
@@ -3554,15 +3616,40 @@ function recordCommand(options) {
         `${where}: commit ${fields.get('commit')} is not on ${reads.remote}/${reads.branch}`
       );
     }
-    if (entry.outcome === 'fixed' && replaysReport(fields)) {
-      const devices = deviceLaneOf(issue, reads);
-      if (devices.length > 0) {
-        refuse(
-          `${where}: its kind needs ${devices.join(', ')}, so only a retest on that device proves the fix; record what the reporter retests as retest: instead of none`
-        );
-      }
-    }
     if (entry.outcome === 'fixed') {
+      const kindDevices = deviceLaneOf(issue, reads);
+      const platformOnly = platforms
+        .get(issue)
+        .filter((device) => !kindDevices.includes(device));
+      const needs = [...kindDevices, ...platformOnly];
+      const why = [
+        kindDevices.length > 0 && `its kind needs ${kindDevices.join(', ')}`,
+        platformOnly.length > 0 &&
+          `its ${PLATFORM_FIELD} field names ${platformOnly.join(', ')}`,
+      ]
+        .filter(Boolean)
+        .join(' and ');
+      const unchecked = fields.get('unchecked');
+      if (replaysReport(fields)) {
+        if (needs.length > 0) {
+          refuse(
+            `${where}: ${why}, so only a retest on that device proves the fix; record what the reporter retests as retest: instead of none`
+          );
+        }
+      } else if (!unchecked || unchecked === 'none') {
+        refuse(
+          `${where}: the reporter retests this fix, so unchecked: names what its proof did not check, such as a browser it did not run, a real device, an input method, a screen reader or a native gesture, for the retest to cover`
+        );
+      } else {
+        const unnamed = needs.filter(
+          (device) => !DEVICE_WORDS[device].test(unchecked)
+        );
+        if (unnamed.length > 0) {
+          refuse(
+            `${where}: ${why}, which an agent's proof cannot drive, so unchecked: names ${unnamed.join(' and ')}`
+          );
+        }
+      }
       const tag = `[${repoNameOf(reads.policy.repo)}#${issue}]`;
       const miss = reporterGestureMiss(current.body ?? '', tag);
       if (miss) refuse(`${where}: ${miss}`);
