@@ -208,7 +208,7 @@
       ".agents/pstack/rules/browser.md": "731a6d245a301a46f632d6800a2891dc55030f14ee3e974034b8aa119b03d779",
       ".agents/pstack/rules/chips.md": "f6ec82c4564b0d5d48e963dcdcfed6d72104982d2e74f195ec7616fecf9f28b6",
       ".agents/pstack/rules/fast.md": "b829f6f1623fbd096472d9dcda36cfb59b456a0c4544929b8384fca368764439",
-      ".agents/pstack/rules/land.md": "b337cdcb55ff76884eeee26e6f46b8f131f84d16f0d6a44a8c2871954f1feb40",
+      ".agents/pstack/rules/land.md": "d5f80f7da0f831297237430e82c144d965904fe2670bbafff97ee2a815c41539",
       ".agents/pstack/rules/linked.md": "414bb3823bc3719af5303941eb5a028092e815dacbe61ba83ce95697c99dae70",
       ".agents/pstack/rules/long-runs.md": "744660bde000f42a110ade8291a4acb96214c15cdda62e94c18bfc792b1c168e",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
@@ -220,7 +220,7 @@
       ".agents/pstack/rules/title.md": "bc2abd881cd24d576be230de93b72e523f9c2c32da20816d9af6ad68cda711b3",
       ".agents/pstack/rules/writing.md": "7ef48ad2eaac31f60795ae512b74bb60a73314afadbdb3bd5e1df7e24e633c0e"
     },
-    "source": "25fd1bf7f9d31114a5f3f2f4d9ec80688a3a23b6"
+    "source": "d0367e923c37c6ed19f9cb3a39d046ec8437f8df"
   },
   "pageTopic": {
     "field": "review_scopes",
