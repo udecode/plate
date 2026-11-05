@@ -525,6 +525,7 @@ export const setEditableComposingState = ({
   inputController.state.isComposing = nextValue;
   if (nextValue) {
     inputController.state.selectionSource = 'composition-owned';
+    inputController.state.isNativeSelectionDragActive = false;
   } else if (inputController.state.selectionSource === 'composition-owned') {
     inputController.state.selectionSource = 'unknown';
   }
