@@ -25,7 +25,8 @@
 //        refuse a new step's "built: step <n>" row while another step is built and has
 //        no delivery row "step <n> landed", published or dropped.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
-//        (exits 1 when the log is at the cap of panel rounds before a build)
+//        (exits 1 when the log is at the cap of panel rounds before a build, the
+//        maxRounds in .agents/pstack.json or 3)
 //        node .agents/pstack/decisions-check.mjs chips [--fetch] [--session <id>] [<ledger>]
 //        (prints every open suggested task as ready, started, waiting or unmigrated,
 //        by priority, listing P0 and P1 in full and counting the rest unless chips all,
@@ -73,7 +74,11 @@ const opens = (line) => {
   const [, phase, decision = ''] = line.split('\t');
   return phase === 'panel' && SEATS.test(decision);
 };
-const MAX_ROUNDS = 3;
+const roundCap = () => {
+  const { maxRounds: cap = 3 } = projectConfig();
+  if (!Number.isInteger(cap) || cap < 1) throw new Error(`.agents/pstack.json: maxRounds is ${JSON.stringify(cap)}, not a whole number of 1 or more`);
+  return cap;
+};
 const restartsRoundCount = (line) => {
   const [, phase, decision = '', , , result = ''] = line.split('\t');
   if (phase === 'build') return /^built:\s*\S/u.test(decision) && /^(applied|fixed|partial|proven|recorded|verified)\b/u.test(result);
@@ -340,8 +345,8 @@ function append(path, batch, run, miss = null) {
     if (opens(row) && roster && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
-    if (opens(row) && rounds >= MAX_ROUNDS) {
-      found.push(`${where}: this would be panel round ${rounds + 1} since the last restart, past the cap of ${MAX_ROUNDS}. Stop reviewing: settle each open finding as applied, dismissed on its proof, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, pivoting the run for a critical the lead must apply, then build a plan or move a diff to its next gate. A build row whose decision starts with "built:" and names the files a plan's build changed, with a result that starts applied, fixed, partial, proven, recorded or verified, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again`);
+    if (opens(row) && rounds >= roundCap()) {
+      found.push(`${where}: this would be panel round ${rounds + 1} since the last restart, past the cap of ${roundCap()}. Stop reviewing: settle each open finding as applied, dismissed on its proof, deferred with its owner when it is not critical, or open with its patch:, owner: and stop: when the Panel review rule lets it stay open, pivoting the run for a critical the lead must apply, then build a plan or move a diff to its next gate. A build row whose decision starts with "built:" and names the files a plan's build changed, with a result that starts applied, fixed, partial, proven, recorded or verified, or an owner row whose decision starts with "another round:" and quotes the owner, starts the count again`);
     }
     if (steps) {
       found.push(...stepInFlightProblems(steps, row, where));
@@ -421,8 +426,9 @@ if (args[0] === 'rounds') {
   }
   const lines = readFileSync(args[1], 'utf8').split('\n');
   const rounds = roundsSince(lines);
-  console.info(`${rounds} panel round(s) since the last restart; the cap is ${MAX_ROUNDS}`);
-  process.exit(rounds >= MAX_ROUNDS ? 1 : 0);
+  const cap = roundCap();
+  console.info(`${rounds} panel round(s) since the last restart; the cap is ${cap}`);
+  process.exit(rounds >= cap ? 1 : 0);
 }
 if (args[0] === 'chips') {
   const fetch = args.includes('--fetch');

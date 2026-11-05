@@ -13,6 +13,7 @@
     "FAST_CHECK_SEED=random"
   ],
   "maxEffort": "xhigh",
+  "maxRounds": 3,
   "sourceless": [
     "zbeyens",
     "felixfeng33"
@@ -178,7 +179,7 @@
     "verify-plate"
   ],
   "synced": {
-    "block": "9b70d223479b45dbde2a3dc7f81948dc548493f66446ecf1b5b5c7ff9589a07c",
+    "block": "cbc1e4b565bae794f2ea4cb8e44a0a9f40d9c4806ec5b5a110e74405b6822c2b",
     "files": {
       ".agents/pstack/codex-browser.mjs": "6528eec4bc067814940f7cfcebf4f7c07fceff68dbe47bf46f7d898307a51283",
       ".agents/pstack/codex-isolation.mjs": "4185d2e9ab96a67a2e8ac1ddb8970bf0aae3a21442e7e05aa3a29e4a9b670dea",
@@ -192,7 +193,7 @@
       ".agents/pstack/reread.mjs": "398a9f0f0d300ee59e37618308f6ff9801f562167d18051d38edd15c6f866276",
       ".agents/pstack/seats.mjs": "5a410124323f879282ef1670074f66ba1cc86a3e0c61115c887b3b935e919c1a",
       ".agents/pstack/title.mjs": "2c530dd09c7f545393939aa7446f362c8fb7ffc9ea4a3f0f597d31c302bbdc84",
-      ".agents/pstack/decisions-check.mjs": "6120924095b1575d80751d2ceae50501879d5c4c1b87ce57dad298ef4222d560",
+      ".agents/pstack/decisions-check.mjs": "5966ff1c6a5ad8d9c8fc99e6eaf39b2a23ec18971ba2dabb6a63b2362f893c7a",
       ".agents/pstack/levels.mjs": "6377cf1ed1de0ddedf9d926e22203ab0e98c880add339c6611627dbadfe17044",
       ".agents/pstack/plan-open.mjs": "03e9a563204c17ddff8b4057ecfa1a11eaebdcf2f054f6f5c2fe6fd9deb99372",
       ".agents/pstack/page-stop.mjs": "03d3cb633128578d13d120e688e1e95ccca0dca8c2a4a15477b364bc7449db13",
@@ -213,14 +214,14 @@
       ".agents/pstack/rules/long-runs.md": "744660bde000f42a110ade8291a4acb96214c15cdda62e94c18bfc792b1c168e",
       ".agents/pstack/rules/messages.md": "8255347259c81bc8cbd364c36140304cf033df0efaad59531d23c9cb4e18dd3e",
       ".agents/pstack/rules/pages.md": "191c4a0cb993837137a0dfe4e40e80cfc00300248912865a14048e5f0ccf2a0e",
-      ".agents/pstack/rules/panel.md": "9e88ab9ae31cdba6234d54b895650b6b8e2447cc1444fd401d54c4e2ab3e1a56",
+      ".agents/pstack/rules/panel.md": "109668a36e6d3534da5fdd06d061c81fc7c0972b2bf70791b7ac12500f3bf2cb",
       ".agents/pstack/rules/reflect.md": "4096109574ae3502ce54b395ea35dd185e7c167fac0b147e251947c961b28719",
       ".agents/pstack/rules/tests.md": "3aab5d539a2288532771a3c472b00a4135a0077dd21af6d06f29112cd66a1414",
       ".agents/pstack/rules/time.md": "fc132ef7a8f0cbec135a00c882911f0c849d9b49bf84db599ee8a6b86d32d6ba",
       ".agents/pstack/rules/title.md": "bc2abd881cd24d576be230de93b72e523f9c2c32da20816d9af6ad68cda711b3",
       ".agents/pstack/rules/writing.md": "7ef48ad2eaac31f60795ae512b74bb60a73314afadbdb3bd5e1df7e24e633c0e"
     },
-    "source": "9b289f2b2d79954780736a48f4d76ffa90fbe913"
+    "source": "d1564509044a16b88ebf121e79c79ff9b5fa5fed"
   },
   "pageTopic": {
     "field": "review_scopes",
