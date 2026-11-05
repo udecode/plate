@@ -3,8 +3,8 @@ import { isSoftLineTextStale } from '../../dom/dom-soft-line-end';
 import type { DOMCoverageSession } from '../../dom/internal';
 import { resolveDOMRangeInRoot } from '../../dom/plugin/dom-editor';
 import {
+  type DOMSelectionPoints,
   getDOMRangeSelectionPoints,
-  writeDOMSelection,
 } from '../../dom/utils/selection-writes';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 
@@ -137,16 +137,14 @@ export const applyDOMCoverageSelectionPolicy = ({
   coverage,
   editor,
   editorElement,
-  onDOMSelectionWillChange,
+  exportSelection,
   selection,
-  tree,
 }: {
   coverage: DOMCoverageSession;
   editor: ReactRuntimeEditor;
   editorElement?: HTMLElement;
-  onDOMSelectionWillChange?: () => void;
+  exportSelection: (points: DOMSelectionPoints | null) => void;
   selection: ModelRange;
-  tree: Document | ShadowRoot;
 }) => {
   const boundaries = coverage.getBoundariesForRange(selection);
 
@@ -178,9 +176,7 @@ export const applyDOMCoverageSelectionPolicy = ({
 
   const projection = getDOMRangeProjection(editor, selection, editorElement);
 
-  onDOMSelectionWillChange?.();
-  writeDOMSelection(
-    tree,
+  exportSelection(
     projection
       ? getDOMRangeSelectionPoints(projection.domRange, projection.backward)
       : null

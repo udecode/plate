@@ -17,7 +17,7 @@ import { basename, extname, join, matchesGlob } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  BUN_TEST_TIMEOUT_MS,
+  TEST_TIMEOUT_MS,
   TEST_FAST_IGNORE_PATTERNS,
   TEST_FILE_PATTERNS,
 } from '../config/test-suites.mjs';
@@ -457,7 +457,7 @@ export const steps = [
     holds: ['packages/cli/tmp-*', 'packages/*/dist'],
     after: ['public-types'],
     private: true,
-    run: `pnpm --filter @platejs/cli run test --timeout=${BUN_TEST_TIMEOUT_MS}`,
+    run: `pnpm --filter @platejs/cli run test --timeout=${TEST_TIMEOUT_MS}`,
     // The CLI tests compile editors against platejs source, which builds on plitejs.
     affected: touches(
       'packages/cli/',

@@ -72,6 +72,7 @@ import type {
   SelectionSource,
 } from './input-state';
 import {
+  exportEditableDOMSelection,
   isEditableOutsideFocusBoundarySettling,
   isSelectionHeldForNativeMove,
 } from './input-state';
@@ -1596,6 +1597,8 @@ export const syncEditableDOMSelectionToEditor = ({
       timing: 'timeout',
     });
   };
+  const clearAfter = (label: string, delay?: number) => () =>
+    scheduleClearSelectionUpdate(label, delay);
 
   if (
     (viewportBackedSelection && selectionHasDOMCoverage) ||
@@ -1649,25 +1652,19 @@ export const syncEditableDOMSelectionToEditor = ({
         range,
         viewSelection.segments.backward
       );
-      if (
-        domSelection.anchorNode === points.anchor[0] &&
-        domSelection.anchorOffset === points.anchor[1] &&
-        domSelection.focusNode === points.focus[0] &&
-        domSelection.focusOffset === points.focus[1]
-      ) {
-        return;
-      }
-
-      state.isUpdatingSelection = true;
-      state.selectionChangeOrigin = 'programmatic-export';
-      const writeSelection = () => writeDOMSelection(root, points);
+      const writeSelection = () =>
+        exportEditableDOMSelection(
+          state,
+          root,
+          points,
+          clearAfter('clear-exported-view-range-update')
+        );
 
       if (preserveScroll) {
         preserveScrollAround(editorElement, writeSelection);
       } else {
         writeSelection();
       }
-      scheduleClearSelectionUpdate('clear-exported-view-range-update');
       return;
     }
     if (collapsedViewSelection) {
@@ -1678,16 +1675,23 @@ export const syncEditableDOMSelectionToEditor = ({
         { rejectStaleText: true }
       );
       if (!point) return;
-      state.isUpdatingSelection = true;
-      state.selectionChangeOrigin = 'programmatic-export';
-      writeDOMSelection(root, { anchor: point, focus: point });
-      scheduleClearSelectionUpdate('clear-exported-view-caret-update');
+      exportEditableDOMSelection(
+        state,
+        root,
+        { anchor: point, focus: point },
+        clearAfter('clear-exported-view-caret-update')
+      );
       return;
     }
     if (viewSelection || !projectedSelection) {
-      state.isUpdatingSelection = true;
-      state.selectionChangeOrigin = 'programmatic-export';
-      writeDOMSelection(root, null);
+      const label = viewSelection
+        ? 'view-selection'
+        : SelectionApi.isNode(selection)
+          ? 'node-selection'
+          : 'model-only-selection';
+      const clearUpdate = clearAfter(`clear-${label}-update`);
+
+      exportEditableDOMSelection(state, root, null, clearUpdate);
       const clearNativeSelection = () => {
         if (!claimPageSelection()) return;
         const current = readPliteViewSelection(editor);
@@ -1698,13 +1702,8 @@ export const syncEditableDOMSelectionToEditor = ({
         ) {
           return;
         }
-        writeDOMSelection(root, null);
+        exportEditableDOMSelection(state, root, null, clearUpdate);
       };
-      const label = viewSelection
-        ? 'view-selection'
-        : SelectionApi.isNode(selection)
-          ? 'node-selection'
-          : 'model-only-selection';
 
       domPhaseScheduler.schedule(
         'selection-repair',
@@ -1718,7 +1717,6 @@ export const syncEditableDOMSelectionToEditor = ({
         clearNativeSelection,
         { timing: 'animation-frame' }
       );
-      scheduleClearSelectionUpdate(`clear-${label}-update`);
       return;
     }
 
@@ -1738,13 +1736,14 @@ export const syncEditableDOMSelectionToEditor = ({
         editorElement,
         coverage: runtime.domCoverage,
         editor,
-        onDOMSelectionWillChange: () => {
-          state.isUpdatingSelection = true;
-          state.selectionChangeOrigin = 'programmatic-export';
-          scheduleClearSelectionUpdate('clear-dom-coverage-selection-update');
-        },
+        exportSelection: (points) =>
+          exportEditableDOMSelection(
+            state,
+            root,
+            points,
+            clearAfter('clear-dom-coverage-selection-update')
+          ),
         selection: projectedSelection,
-        tree: root,
       })
     ) {
       return;
@@ -1769,27 +1768,22 @@ export const syncEditableDOMSelectionToEditor = ({
       writePliteViewSelection(editor, null);
     }
 
-    state.isUpdatingSelection = true;
-    state.selectionChangeOrigin = 'programmatic-export';
+    const writeSelection = () =>
+      exportEditableDOMSelection(
+        state,
+        root,
+        getDOMRangeSelectionPoints(
+          domRange,
+          RangeApi.isBackward(projectedSelection)
+        ),
+        clearAfter('clear-exported-selection-update', 80)
+      );
 
-    try {
-      const writeSelection = () =>
-        writeDOMSelection(
-          root,
-          getDOMRangeSelectionPoints(
-            domRange,
-            RangeApi.isBackward(projectedSelection)
-          )
-        );
-
-      if (preserveScroll) {
-        preserveScrollAround(editorElement, writeSelection);
-      } else {
-        writeSelection();
-        scrollSelectionIntoView(editor, domRange);
-      }
-    } finally {
-      scheduleClearSelectionUpdate('clear-exported-selection-update', 80);
+    if (preserveScroll) {
+      preserveScrollAround(editorElement, writeSelection);
+    } else {
+      writeSelection();
+      scrollSelectionIntoView(editor, domRange);
     }
   } catch {
     // Leave browser selection unchanged if the DOM bridge is between commits.

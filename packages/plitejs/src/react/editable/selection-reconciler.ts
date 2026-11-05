@@ -74,6 +74,7 @@ import {
   setEditableModelSelectionPreference,
   syncEditableDOMSelectionToEditor,
 } from './input-controller';
+import { exportEditableDOMSelection } from './input-state';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
   failInvariant,
@@ -1356,13 +1357,14 @@ export const useEditableSelectionReconciler = ({
           editorElement,
           coverage: runtime.domCoverage,
           editor,
-          onDOMSelectionWillChange: () => {
-            state.isUpdatingSelection = true;
-            state.selectionChangeOrigin = 'programmatic-export';
-            clearUpdatingSelection();
-          },
+          exportSelection: (points) =>
+            exportEditableDOMSelection(
+              state,
+              root,
+              points,
+              clearUpdatingSelection
+            ),
           selection: projectedSelection,
-          tree: root,
         })
       ) {
         return undefined;
@@ -1391,9 +1393,8 @@ export const useEditableSelectionReconciler = ({
         }${mismatchDetail}`,
         kind: 'runtime-time',
       });
-      state.isUpdatingSelection = true;
-      state.selectionChangeOrigin = 'programmatic-export';
-
+      const exportSelection = (points: DOMSelectionPoints | null) =>
+        exportEditableDOMSelection(state, root, points);
       const newDomRange = projectedSelection
         ? (readModelSelectionDOMPreference({
             editor,
@@ -1425,15 +1426,15 @@ export const useEditableSelectionReconciler = ({
             ? [range.endContainer, range.endOffset]
             : end;
 
-          writeDOMSelection(root, { anchor: caret, focus: caret });
+          exportSelection({ anchor: caret, focus: caret });
         } else if (
           RangeApi.isBackward(
             projectedSelection ?? failInvariant('Expected value to be defined')
           )
         ) {
-          writeDOMSelection(root, { anchor: end, focus: start });
+          exportSelection({ anchor: end, focus: start });
         } else {
-          writeDOMSelection(root, { anchor: start, focus: end });
+          exportSelection({ anchor: start, focus: end });
         }
         if (!shouldSkipSelectionScroll(editor)) {
           scrollSelectionIntoView(editor, newDomRange);
@@ -1446,7 +1447,7 @@ export const useEditableSelectionReconciler = ({
         SelectionApi.isNode(selection) ||
         !projectedSelection
       ) {
-        writeDOMSelection(root, null);
+        exportSelection(null);
       }
 
       return newDomRange;

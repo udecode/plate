@@ -96,6 +96,14 @@ export const writeDOMSelection = (
   tree: Document | ShadowRoot,
   points: DOMSelectionPoints | null
 ) => {
+  changeDOMSelection(tree, points);
+};
+
+export const changeDOMSelection = (
+  tree: Document | ShadowRoot,
+  points: DOMSelectionPoints | null,
+  beforeChange?: () => void
+) => {
   const selection = getSelection(tree);
 
   if (
@@ -104,6 +112,7 @@ export const writeDOMSelection = (
   ) {
     return;
   }
+  beforeChange?.();
   if (points) {
     selection.setBaseAndExtent(
       points.anchor[0],

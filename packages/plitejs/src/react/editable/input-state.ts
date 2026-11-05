@@ -9,6 +9,10 @@ import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
 } from '../../dom/internal';
+import {
+  changeDOMSelection,
+  type DOMSelectionPoints,
+} from '../../dom/utils/selection-writes';
 import { createNativeGroupingId } from './input-history';
 import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
 
@@ -632,6 +636,22 @@ export const finishEditableModelSelectionProjection = (
 ) => {
   endSelectionImport(inputController);
   inputController.state.isProjectingSelection = false;
+};
+
+export const exportEditableDOMSelection = (
+  state: {
+    isUpdatingSelection: boolean;
+    selectionChangeOrigin?: SelectionChangeOrigin | null;
+  },
+  tree: Document | ShadowRoot,
+  points: DOMSelectionPoints | null,
+  onExport?: () => void
+) => {
+  changeDOMSelection(tree, points, () => {
+    state.isUpdatingSelection = true;
+    state.selectionChangeOrigin = 'programmatic-export';
+    onExport?.();
+  });
 };
 
 export const beginEditableNativeSelectionImport = (

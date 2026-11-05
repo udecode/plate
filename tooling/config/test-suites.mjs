@@ -76,4 +76,4 @@ export const FAST_TEST_TIMEOUT_MS = 5000;
 // CI's dedicated runner judges each case against 5 s. On a shared local host,
 // other sessions and the check's own parallel steps stretch wall-clock time,
 // so local runs only catch a hang.
-export const BUN_TEST_TIMEOUT_MS = isCI ? FAST_TEST_TIMEOUT_MS : 30_000;
+export const TEST_TIMEOUT_MS = isCI ? FAST_TEST_TIMEOUT_MS : 30_000;

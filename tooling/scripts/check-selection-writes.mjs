@@ -29,7 +29,7 @@ const METHODS = new Set([
 const EXCEPTIONS = [
   {
     file: 'packages/plitejs/src/dom/utils/selection-writes.ts',
-    fn: 'writeDOMSelection',
+    fn: 'changeDOMSelection',
     reason: 'The one writer, which records what each write leaves.',
   },
   {

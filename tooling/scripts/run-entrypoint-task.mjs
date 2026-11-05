@@ -3,7 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
-import { BUN_TEST_TIMEOUT_MS, vitestSuites } from '../config/test-suites.mjs';
+import { TEST_TIMEOUT_MS, vitestSuites } from '../config/test-suites.mjs';
 import { entrypointDags } from '../entrypoints/entrypoint-dag.mjs';
 import {
   getPackageLintFiles,
@@ -85,7 +85,7 @@ const runTests = (runtimeTestFiles, traceEnv) => {
           `--config=${path.join(repoRoot, 'bunfig.toml')}`,
           `--cwd=${repoRoot}`,
           'test',
-          `--timeout=${BUN_TEST_TIMEOUT_MS}`,
+          `--timeout=${TEST_TIMEOUT_MS}`,
           ...reporterArgs(),
           // Without `./`, bun treats each path as a substring filter and scans the whole repository for matching test files.
           ...testFiles.map(
@@ -99,7 +99,7 @@ const runTests = (runtimeTestFiles, traceEnv) => {
     // Bun reads bunfig.toml from its cwd.
     return runTest(path.join(packageRoot, 'bunfig.toml'), 'bun', [
       'test',
-      `--timeout=${BUN_TEST_TIMEOUT_MS}`,
+      `--timeout=${TEST_TIMEOUT_MS}`,
       ...reporterArgs(),
       `--preload=${path.join(repoRoot, 'config/plite-source-test-setup.ts')}`,
       ...testFiles.map((filename) => `./${filename}`),
@@ -149,6 +149,7 @@ const runTests = (runtimeTestFiles, traceEnv) => {
       'run',
       '--config',
       `./${suite.config}`,
+      `--testTimeout=${TEST_TIMEOUT_MS}`,
       ...suite.args,
       ...vitestFiles,
     ]);
