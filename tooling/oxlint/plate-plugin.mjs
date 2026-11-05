@@ -1227,6 +1227,108 @@ const noSelectionRootCopy = {
   },
 };
 
+const DOM_RESOLVERS = new Set(['resolvePoint', 'resolveRange']);
+const RANGE_ENDPOINTS = new Set(['anchor', 'focus']);
+const EQUALS_OWNERS = new Set(['PointApi', 'RangeApi']);
+const FUNCTION_SCOPES = new Set([
+  'ArrowFunctionExpression',
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'Program',
+]);
+
+const enclosingScope = (node) => {
+  let scope = node.parent;
+  while (scope && !FUNCTION_SCOPES.has(scope.type)) scope = scope.parent;
+  return scope;
+};
+
+const resolvesFromDOM = (node) => {
+  if (
+    node?.type === 'ChainExpression' ||
+    node?.type === 'TSNonNullExpression' ||
+    node?.type === 'TSAsExpression' ||
+    node?.type === 'AwaitExpression'
+  ) {
+    return resolvesFromDOM(node.expression ?? node.argument);
+  }
+  if (node?.type === 'ConditionalExpression') {
+    return resolvesFromDOM(node.consequent) || resolvesFromDOM(node.alternate);
+  }
+  if (node?.type === 'LogicalExpression') {
+    return resolvesFromDOM(node.left) || resolvesFromDOM(node.right);
+  }
+  return (
+    node?.type === 'CallExpression' &&
+    DOM_RESOLVERS.has(memberName(node.callee))
+  );
+};
+
+const noResolvedPointEquals = {
+  create(context) {
+    const resolvedNames = new Map();
+    const markResolved = (identifier) => {
+      const scope = enclosingScope(identifier);
+      if (!resolvedNames.has(scope)) resolvedNames.set(scope, new Set());
+      resolvedNames.get(scope).add(identifier.name);
+    };
+    const boundFromDOM = (identifier) => {
+      for (let scope = enclosingScope(identifier); scope;) {
+        if (resolvedNames.get(scope)?.has(identifier.name)) return true;
+        scope = enclosingScope(scope);
+      }
+      return false;
+    };
+    const fromDOM = (node) => {
+      const value = readValue(node);
+      if (resolvesFromDOM(value)) return true;
+      if (RANGE_ENDPOINTS.has(memberName(value))) return fromDOM(value.object);
+      return value?.type === 'Identifier' && boundFromDOM(value);
+    };
+
+    return {
+      AssignmentExpression({ left, right }) {
+        if (left.type === 'Identifier' && resolvesFromDOM(right)) {
+          markResolved(left);
+        }
+      },
+      CallExpression(node) {
+        const { callee } = node;
+        if (
+          memberName(callee) !== 'equals' ||
+          !EQUALS_OWNERS.has(callee.object?.name)
+        ) {
+          return;
+        }
+        const [left, right] = node.arguments;
+        if (fromDOM(left) !== fromDOM(right)) {
+          context.report({
+            data: { owner: callee.object.name },
+            messageId: 'implicitRoot',
+            node,
+          });
+        }
+      },
+      VariableDeclarator({ id, init }) {
+        if (id.type === 'Identifier' && resolvesFromDOM(init)) {
+          markResolved(id);
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'A point or range resolved from the DOM is compared with a stored one in the view root, not as written.',
+    },
+    messages: {
+      implicitRoot:
+        "`{{owner}}.equals` compares a point or range resolved from the DOM with one that was not (baselined in this file: {{baselined}}). A resolved point leaves the view's own root implicit, while a child root's stored selection names it, so the two never match there. Compare points with `samePliteRootPoint(point, other, viewRoot)` from packages/plitejs/src/react/view-boundary-graph.ts, and a range by its anchor and focus.",
+    },
+    type: 'problem',
+  },
+};
+
 const STRUCTURAL_MARK_KINDS = new Set(['join', 'split', 'unwrap', 'wrap']);
 
 const noStructuralMarkCopy = {
@@ -1942,6 +2044,10 @@ export default {
     'no-relative-plite-source': withBaseline(
       'no-relative-plite-source',
       noRelativePliteSource
+    ),
+    'no-resolved-point-equals': withBaseline(
+      'no-resolved-point-equals',
+      noResolvedPointEquals
     ),
     'no-schema-placement-copy': withBaseline(
       'no-schema-placement-copy',

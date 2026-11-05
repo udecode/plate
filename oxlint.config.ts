@@ -376,6 +376,20 @@ export default defineConfig({
     },
     {
       files: [
+        'packages/plitejs/src/dom/**/*.{ts,tsx}',
+        'packages/plitejs/src/react/**/*.{ts,tsx}',
+      ],
+      excludeFiles: [
+        'packages/plitejs/src/**/*.spec.*',
+        'packages/plitejs/src/**/*.test.*',
+        'packages/plitejs/src/**/__tests__/**',
+      ],
+      rules: {
+        'plate/no-resolved-point-equals': 'error',
+      },
+    },
+    {
+      files: [
         'packages/plitejs/src/dom/plugin/dom-clipboard-runtime.ts',
         'packages/plitejs/src/dom/plugin/dom-drag.ts',
         'packages/plitejs/src/react/editable/content-root-navigation.ts',

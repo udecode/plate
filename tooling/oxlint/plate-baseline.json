@@ -244,6 +244,27 @@
   },
   "plate/no-raised-test-timeout": {},
   "plate/no-relative-plite-source": {},
+  "plate/no-resolved-point-equals": {
+    "packages/plitejs/src/dom/plugin/dom-editor.ts": [
+      "PointApi.equals(point, next) &&"
+    ],
+    "packages/plitejs/src/react/editable/runtime-selection-engine.ts": [
+      "if (point && PointApi.equals(point, caret)) clearAfterInsertCaret(editor);"
+    ],
+    "packages/plitejs/src/react/editable/selection-controller.ts": [
+      "if (selectionRange && RangeApi.equals(selectionRange, range)) return;"
+    ],
+    "packages/plitejs/src/react/editable/selection-reconciler.ts": [
+      "(!nextSelection || !RangeApi.equals(nextSelection, range))",
+      "if (range && (!nextSelection || !RangeApi.equals(nextSelection, range))) {",
+      "if (range && (!nextSelection || !RangeApi.equals(nextSelection, range))) {",
+      "RangeApi.equals(pliteRange, projectedSelection) &&"
+    ],
+    "packages/plitejs/src/react/editable/soft-line-end-delete.ts": [
+      "return PointApi.equals(anchor, from) || PointApi.equals(anchor, to)",
+      "return PointApi.equals(anchor, from) || PointApi.equals(anchor, to)"
+    ]
+  },
   "plate/no-schema-placement-copy": {
     "packages/platejs/src/lib/plugins/html/HtmlPlugin.ts": [
       "(content.max !== null && children.length > content.max)",
