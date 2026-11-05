@@ -446,9 +446,24 @@ export const nextTargets = (world) => [
     .map(([id]) => ({ domain: null, task: id })),
 ];
 
-const byRegressionThenPriority = (a, b) =>
+export const rankOf = ({ fields }) => ({
+  regression: fields.has('regression'),
+  priority: fields.get('priority'),
+});
+
+export const byRegressionThenPriority = (a, b) =>
   Number(b.regression) - Number(a.regression) ||
   a.priority.localeCompare(b.priority);
+
+const REGRESSION_PRIORITY = 'P1';
+
+export function taskPriority(kinds) {
+  const worst = kinds.map(({ priority }) => priority).sort()[0];
+  return kinds.some(({ regression }) => regression) &&
+    worst > REGRESSION_PRIORITY
+    ? REGRESSION_PRIORITY
+    : worst;
+}
 
 export function decideNext(request, world) {
   const [best] = nextTargets(world)
@@ -457,10 +472,7 @@ export function decideNext(request, world) {
       const kinds = result.held
         .map((issue) => world.head(issue))
         .filter((head) => head?.outcome === 'kind')
-        .map(({ fields }) => ({
-          regression: fields.has('regression'),
-          priority: fields.get('priority'),
-        }))
+        .map(rankOf)
         .sort(byRegressionThenPriority);
       return { ...result, target, kinds };
     })
@@ -497,9 +509,9 @@ function offerOf(loose, world) {
   const issues = loose
     .filter((issue) => kinds.includes(rootOf(issue, world)))
     .sort((a, b) => Number(a) - Number(b));
-  const priority = kinds
-    .map((issue) => world.head(issue).fields.get('priority'))
-    .sort((a, b) => a.localeCompare(b))[0];
+  const priority = taskPriority(
+    kinds.map((issue) => rankOf(world.head(issue)))
+  );
   if (!OFFERED.has(priority)) return { skip: 'priority', issues, priority };
   return {
     skip: null,

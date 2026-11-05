@@ -48,6 +48,7 @@ import {
   UPSTREAM,
 } from './private-files.mjs';
 import {
+  byRegressionThenPriority,
   CLAIM_COLUMNS,
   CLAIMS_FILE,
   CLAIMS_REF,
@@ -62,9 +63,11 @@ import {
   nextTargets,
   ownerFiles,
   parseClaims,
+  rankOf,
   sameActor,
   STALE_MS,
   targetMembers,
+  taskPriority,
 } from './triage-claims.mjs';
 
 // Each repository in triage.repos keeps its own register and claims ref, chosen before the command runs. The first
@@ -2913,7 +2916,7 @@ function claimCommand(options) {
   }
   if (offer?.skip === 'priority') {
     console.log(
-      `note: no task covers ${listed(offer.issues)}, whose worst kind is ${offer.priority}, so the claim offers none; a run offers only P0 or P1 tasks`
+      `note: no task covers ${listed(offer.issues)}, whose worst kind is a ${offer.priority} new bug, so the claim offers none; a run offers a task only for a regression or a P0 or P1 kind`
     );
   }
   const offering = offer?.skip === null;
@@ -3244,7 +3247,7 @@ function kindsIn(reads, open) {
       return [
         {
           issue: `${prefix}${issue}`,
-          priority: head.fields.get('priority'),
+          ...rankOf(head),
           scope: head.fields.get('scope'),
           devices,
           route,
@@ -3302,10 +3305,7 @@ function kinds(options) {
     entries = kindsIn(reads, openMap(focus));
     open = [openSummaryIn(reads, focus, listed.length - focus.length)];
   }
-  entries.sort(
-    (a, b) =>
-      PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority)
-  );
+  entries.sort(byRegressionThenPriority);
   if (options.json) {
     console.log(JSON.stringify({ notes, kinds: entries, open }, null, 2));
     return;
@@ -3313,16 +3313,17 @@ function kinds(options) {
   for (const note of notes) console.log(`note: ${note}`);
   if (options.titles) {
     const titles = new Map();
-    for (const { issue, priority, tasks } of entries) {
-      for (const id of tasks) {
-        const title = titles.get(id) ?? { priority, numbers: [] };
-        title.numbers.push(Number(issue.split('#')[1]));
-        titles.set(id, title);
+    for (const entry of entries) {
+      for (const id of entry.tasks) {
+        titles.set(id, [...(titles.get(id) ?? []), entry]);
       }
     }
-    for (const [id, { priority, numbers }] of titles) {
-      const refs = numbers.sort((a, b) => a - b).map((n) => `#${n}`);
-      console.log(`${id}\t[${priority}] ${refs.join(' ')}`);
+    for (const [id, held] of titles) {
+      const refs = held
+        .map(({ issue }) => Number(issue.split('#')[1]))
+        .sort((a, b) => a - b)
+        .map((n) => `#${n}`);
+      console.log(`${id}\t[${taskPriority(held)}] ${refs.join(' ')}`);
     }
     return;
   }
@@ -3338,7 +3339,7 @@ function kinds(options) {
     console.log(
       [
         entry.issue,
-        entry.priority,
+        entry.regression ? `${entry.priority} regression` : entry.priority,
         entry.scope,
         entry.devices.join(',') || '-',
         entry.route,
