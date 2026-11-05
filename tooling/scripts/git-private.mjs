@@ -796,6 +796,15 @@ const main = async (argv) => {
         );
         return 1;
       }
+      if (
+        command === 'add' &&
+        rest.some((arg) => ['-A', '--all', '.'].includes(arg))
+      ) {
+        console.error(
+          `[git-private] git add of the whole tree through ${PRIVATE_DIR} stages every public file; name the private files to add`
+        );
+        return 1;
+      }
       const result = spawnSync(
         'git',
         [
