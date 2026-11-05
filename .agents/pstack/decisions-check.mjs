@@ -27,7 +27,15 @@
 //        open critical panel finding on, both refuse each one unless its result names
 //        task:<id> of an offered or started kind: decide task in the project's ledger
 //        whose finding, or one folded or merged into it, holds the log's file name
-//        without .decisions.tsv.
+//        without .decisions.tsv. When the plan beside the log names in its Playbook:
+//        line a project playbook whose frontmatter sets redesign-runs: on, both refuse,
+//        in a panel round that holds no "plan round:" row, a critical panel finding that
+//        is not dismissed once its round holds as many such findings as it has owners:
+//        one, or the count an earlier "separate owners:" row in that round names,
+//        separated by semicolons. In such a log this refusal and the task:<id> one
+//        above end once it holds a row whose decision starts with "redesign run:"
+//        followed by text, in phase owner, or in phase verdict with evidence naming
+//        another existing .md or .decisions.tsv file in the plans directory.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
 //        (exits 1 when the log is at the cap of panel rounds before a build, the
 //        maxRounds in .agents/pstack.json or 3)
@@ -66,7 +74,7 @@ import { appendFileSync, existsSync, readFileSync, statSync, writeFileSync } fro
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
-import { contextOf, pageUrlOf } from './plan-page.mjs';
+import { contextOf, pageUrlOf, parsePlan } from './plan-page.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, SEVERITIES, STAGE_PHASES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
@@ -304,6 +312,42 @@ function designQuestionProblems(log, cells, where, count) {
   return reasons.includes(null) ? [] : [`${where}: ${held}; ${reasons.join('; ')}; ${route}`];
 }
 
+function redesignPlaybook(log) {
+  const plan = log.replace(/\.decisions\.tsv$/u, '.md');
+  if (plan === log || !existsSync(plan)) return null;
+  const meta = (file) => parsePlan(readFileSync(file, 'utf8').replaceAll('\r\n', '\n')).meta;
+  const name = meta(plan).playbook ?? '';
+  const file = join('.agents/playbooks', `${name}.md`);
+  return /^[\w-]+$/u.test(name) && existsSync(file) && meta(file)['redesign-runs'] === 'on' ? name : null;
+}
+
+const isFailureKind = ([phase, decision = '', , , result = '']) => phase === 'panel' && /^critical\b/u.test(decision) && !/^dismissed\b/u.test(result);
+const ownersNamed = (decision) => new Set(decision.replace(/^separate owners:/u, '').split(';').map((owner) => owner.trim().toLowerCase()).filter(Boolean)).size;
+
+function marksRedesign([phase, decision = '', , evidence = ''], log) {
+  if (!/^redesign run:\s*\S/u.test(decision)) return false;
+  if (phase !== 'verdict') return phase === 'owner';
+  const own = [log, log.replace(/\.decisions\.tsv$/u, '.md')].map((file) => resolve(file));
+  const isOtherPlan = (file) => /\.(?:md|decisions\.tsv)$/u.test(file) && dirname(resolve(file)) === resolve(plansDir()) && !own.includes(resolve(file)) && onDisk(file);
+  return evidence.split(/[\s`,;()[\]'"]+/u).map((token) => token.replace(/\.$/u, '').replace(/(?::\d+)+$/u, '')).some(isOtherPlan);
+}
+
+function trackRedesign(state, cells) {
+  if (cells[0] === 'panel' && SEATS.test(cells[1])) Object.assign(state, { kinds: 0, owners: 1, plan: false });
+  else if (marksRedesign(cells, state.log)) state.redesign = true;
+  else if (/^plan round:\s*\S/u.test(cells[1])) state.plan = true;
+  else if (/^separate owners:/u.test(cells[1])) state.owners = Math.max(ownersNamed(cells[1]), 1);
+  else if (isFailureKind(cells)) state.kinds += 1;
+}
+
+function redesignProblems(state, cells, where) {
+  if (!state.playbook || state.redesign || state.plan || !isFailureKind(cells) || state.kinds < state.owners) return [];
+  const owners = state.owners > 1 ? ` while its separate owners: row names ${state.owners} owners` : '';
+  return [
+    `${where}: this is critical finding ${state.kinds + 1} of its panel round${owners}, and the ${state.playbook} playbook counts more than one failure kind with one owner in the review of one fix as a second failed fix. Before another attempt, run pstack:recall on the bug and its owner with no time window, then verdict on the owner, and log a row whose decision starts with "redesign run:": in phase verdict, giving the verdict and naming in its evidence the verdict's page or, in a plan that continues a redesign run, the earlier log that holds its "redesign run:" row; or in phase owner, quoting the owner's words that made this run a redesign. When this round reviews a plan, not a fix, log instead, before this row, a row whose decision starts with "plan round:" and names the plan. When each of the round's critical findings has its own owner, log instead, before this row, a row whose decision starts with "separate owners:" and names each owner, separated by semicolons`,
+  ];
+}
+
 function problems(path) {
   const lines = readFileSync(path, 'utf8').split('\n');
   if (lines[0] !== HEADER) return [`${path}:1: header must be "${HEADER.replaceAll('\t', ' ')}"`];
@@ -346,6 +390,8 @@ function append(path, batch, run, miss = null) {
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
   let rounds = roundsSince(existing);
   let openCriticals = existing.slice(1).filter((line) => isOpenCritical(line.split('\t').slice(1))).length;
+  const redesign = { log: path, playbook: redesignPlaybook(path), redesign: false, plan: false, kinds: 0, owners: 1 };
+  for (const line of existing.slice(1).filter(Boolean)) trackRedesign(redesign, line.split('\t').slice(1));
   const steps = trunk() ? { built: new Set(), unlanded: new Set(), landing: false } : null;
   if (steps) for (const line of existing.slice(1)) trackStep(steps, line);
   const chips = readTasks(existing.slice(1));
@@ -369,9 +415,11 @@ function append(path, batch, run, miss = null) {
     if (cells[0] === 'chip' && !ledger) found.push(`${where}: chip rows go in the project's ledger ${ledgerFile()}, because a suggested task outlives the run that offered it`);
     found.push(...rowProblems(row, where, roster, ledger ? chips : null), ...newRowProblems(cells, where, ledger ? chips : null, writer), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
     if (isOpenCritical(cells)) {
-      if (openCriticals > 0) found.push(...designQuestionProblems(path, cells, where, openCriticals));
+      if (openCriticals > 0 && !(redesign.playbook && redesign.redesign)) found.push(...designQuestionProblems(path, cells, where, openCriticals));
       openCriticals += 1;
     }
+    found.push(...redesignProblems(redesign, cells, where));
+    trackRedesign(redesign, cells);
     if (opens(row) && roster && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
