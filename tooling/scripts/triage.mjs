@@ -3533,7 +3533,7 @@ function recordCommand(options) {
       );
       if (!fields.has('clips') && untranscribed.length > 0) {
         refuse(
-          `${where}: ${untranscribed.length} clip(s) on the issue have no transcript cache, such as ${untranscribed[0].url}; run video-transcripts on each, check its lines against the frames, post the cache as that skill says and run pnpm triage show ${issue} again, or record clips: unavailable <reason>`
+          `${where}: ${untranscribed.length} clip(s) on the issue have no transcript cache, such as ${untranscribed[0].url}; run video-transcripts on each, whose Frames fallback transcribes a clip from its frames when Gemini fails, check its lines against the frames, post the cache as that skill says and run pnpm triage show ${issue} again, or record clips: unavailable <reason> when the helper cannot read the video`
         );
       }
     }

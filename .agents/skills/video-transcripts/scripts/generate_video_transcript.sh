@@ -10,6 +10,9 @@ Usage:
 Writes the video's frames to --frames DIR (default: a new temporary
 directory), named by second, and prints that directory on stderr.
 
+Exits 3 when Gemini gives no transcript, after it writes frames-brief.md
+in the frames directory for a transcript made from the frames.
+
 Examples:
   generate_video_transcript.sh "/tmp/bug.mov" --title "Preview link leaves workflow"
   generate_video_transcript.sh "https://uploads.linear.app/.../recording.mov" --title "PDF preview hyperlink exits workflow"
@@ -386,6 +389,47 @@ escape_xml_attr() {
   printf '%s' "$value"
 }
 
+transcript_shape() {
+  printf '<video-transcripts>\n<video-transcript title="%s">\n[00:00] (Sentence.)\n</video-transcript>\n</video-transcripts>' "$1"
+}
+
+transcript_rules() {
+  cat <<'EOF'
+Rules:
+- Use [MM:SS] timestamps.
+- One line per visible action, UI transition, or audible spoken event if present.
+- Quote visible UI text when legible.
+- Describe only visible behavior and clearly observable system responses.
+- Do not invent hidden state, motives, or implementation details.
+- Prefer concise, high-signal transcript lines over per-keystroke typing spam.
+- Collapse active typing into the final stable text for that field unless intermediate edits are themselves the bug.
+- Do not output multiple partial strings for the same text field while the user is still typing.
+- Avoid repetitive scrolling lines unless a scroll directly reveals the bug.
+- For a 2 to 5 minute product video, target roughly 15 to 35 transcript lines.
+- Keep the transcript useful for bug triage and QA reproduction.
+EOF
+}
+
+write_frames_brief() {
+  local brief="$FRAMES_DIR/frames-brief.md"
+  {
+    printf '# Transcribe "%s" from its frames\n\n' "$TITLE"
+    printf 'Gemini gave no transcript for this recording, so transcribe it from the frames in %s. Read only that folder.\n\n' "$FRAMES_DIR"
+    printf -- '- `frames/tSSSS.png` is the frame at second SSSS, so `[00:12]` is `t0012.png`.\n'
+    printf -- '- `sheet-SSSS-SSSS.png` shows the nine seconds its name spans in one image.\n'
+    printf -- '- The frames carry no sound.\n\n'
+    printf '1. Open every sheet.\n'
+    printf '2. Open the full frame wherever a sheet is too small to read, such as bold, italic or struck-through text, a caret, a selection, a popup or a candidate window. Judge text formatting only from a full frame.\n'
+    printf '3. Write the transcript.\n\n'
+    transcript_rules
+    printf '\nReturn only this XML, with no Markdown fences:\n\n'
+    transcript_shape "$(escape_xml_attr "$TITLE")"
+    printf '\n'
+  } > "$brief"
+  echo "Gemini gave no transcript. Transcribe from frames with $brief, as the skill's Frames fallback says." >&2
+  exit 3
+}
+
 normalize_output() {
   local raw="$1"
   raw="$(printf '%s\n' "$raw" | sed -e '1{/^```[a-zA-Z0-9_-]*$/d;}' -e '${/^```$/d;}')"
@@ -505,19 +549,25 @@ call_model() {
   local generation_config
   generation_config="$(generation_config_json "$model_name")"
 
-  curl -s "https://generativelanguage.googleapis.com/upload/v1beta/files?key=$API_KEY" \
+  local upload_body="$WORK_DIR/${prefix}.upload-start.json"
+  local upload_status
+  upload_status="$(curl -s "https://generativelanguage.googleapis.com/upload/v1beta/files?key=$API_KEY" \
     -D "$header_file" \
+    -o "$upload_body" \
+    -w '%{http_code}' \
     -H "X-Goog-Upload-Protocol: resumable" \
     -H "X-Goog-Upload-Command: start" \
     -H "X-Goog-Upload-Header-Content-Length: $num_bytes" \
     -H "X-Goog-Upload-Header-Content-Type: $mime_type" \
     -H "Content-Type: application/json" \
-    -d "{\"file\":{\"display_name\":\"$display_name\"}}" >/dev/null
+    -d "{\"file\":{\"display_name\":\"$display_name\"}}")"
 
   local upload_url
   upload_url="$(awk -F': ' 'tolower($1)=="x-goog-upload-url" {gsub("\r", "", $2); print $2}' "$header_file")"
   if [[ -z "$upload_url" ]]; then
-    echo "Failed to get resumable upload URL for $model_name." >&2
+    local reason
+    reason="$(jq -r '.error.message // empty' "$upload_body" 2>/dev/null || true)"
+    echo "Gemini refused the upload for $model_name with HTTP $upload_status${reason:+: $reason}" >&2
     return 1
   fi
 
@@ -555,6 +605,12 @@ call_model() {
     return 1
   fi
 
+  local prompt_json
+  prompt_json="$(printf '%s' "Analyze this video and return exactly one XML transcript block for the supplied title. Output only XML with no Markdown code fences. Use this exact shape:
+$(transcript_shape "$safe_title")
+
+$(transcript_rules)" | jq -Rs .)"
+
   cat > "$request_file" <<EOF
 {
   "generationConfig": $generation_config,
@@ -567,7 +623,7 @@ call_model() {
         }
       },
       {
-        "text": "Analyze this video and return exactly one XML transcript block for the supplied title. Output only XML with no Markdown code fences. Use this exact shape:\n<video-transcripts>\n<video-transcript title=\"$safe_title\">\n[00:00] (Sentence.)\n</video-transcript>\n</video-transcripts>\n\nRules:\n- Use [MM:SS] timestamps.\n- One line per visible action, UI transition, or audible spoken event if present.\n- Quote visible UI text when legible.\n- Describe only visible behavior and clearly observable system responses.\n- Do not invent hidden state, motives, or implementation details.\n- Prefer concise, high-signal transcript lines over per-keystroke typing spam.\n- Collapse active typing into the final stable text for that field unless intermediate edits are themselves the bug.\n- Do not output multiple partial strings for the same text field while the user is still typing.\n- Avoid repetitive scrolling lines unless a scroll directly reveals the bug.\n- For a 2 to 5 minute product video, target roughly 15 to 35 transcript lines.\n- Keep the transcript useful for bug triage and QA reproduction."
+        "text": $prompt_json
       }
     ]
   }]
@@ -619,15 +675,15 @@ if [[ -z "${GEMINI_API_KEY:-}" && -z "${GOOGLE_API_KEY:-}" && -f "$HOME/.bash_pr
   source "$HOME/.bash_profile"
 fi
 
-API_KEY="${GEMINI_API_KEY:-${GOOGLE_API_KEY:-}}"
-if [[ -z "$API_KEY" ]]; then
-  echo "Missing GEMINI_API_KEY or GOOGLE_API_KEY." >&2
-  exit 1
-fi
-
 if [[ -z "$TITLE" ]]; then
   TITLE="$(basename "$VIDEO_PATH")"
   TITLE="${TITLE%.*}"
+fi
+
+API_KEY="${GEMINI_API_KEY:-${GOOGLE_API_KEY:-}}"
+if [[ -z "$API_KEY" ]]; then
+  echo "Missing GEMINI_API_KEY or GOOGLE_API_KEY." >&2
+  write_frames_brief
 fi
 
 run_and_validate() {
@@ -660,10 +716,10 @@ fi
 
 if [[ "$FALLBACK_MODEL" != "$MODEL" ]]; then
   echo "Retrying with fallback model: $FALLBACK_MODEL" >&2
-  transcript="$(run_and_validate "$FALLBACK_MODEL" "fallback")"
-  printf '%s\n' "$transcript"
-  exit 0
+  if transcript="$(run_and_validate "$FALLBACK_MODEL" "fallback")"; then
+    printf '%s\n' "$transcript"
+    exit 0
+  fi
 fi
 
-echo "Failed to generate a valid transcript." >&2
-exit 1
+write_frames_brief
