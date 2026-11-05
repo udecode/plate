@@ -94,8 +94,10 @@
       "plate": {
         "regression": "Plate regressions",
         "new": "New Plate"
-      }
+      },
+      "experimental": "Experimental"
     },
+    "experimental": ["ai", "authored", "diff", "documents", "pagination"],
     "slatePaths": [
       "packages/plitejs/",
       "apps/plite/",

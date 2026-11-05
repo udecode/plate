@@ -296,11 +296,13 @@ const meets = (model, effort, floor, max = null) =>
       (max === null || rank(effort) <= rank(max))
   );
 
-const betaMilestones = (policy) =>
-  [policy.milestones?.slate, policy.milestones?.plate].flatMap((layer) => [
+const betaMilestones = (policy) => [
+  ...[policy.milestones?.slate, policy.milestones?.plate].flatMap((layer) => [
     layer?.regression,
     layer?.new,
-  ]);
+  ]),
+  policy.milestones?.experimental,
+];
 
 function policyProblems(config) {
   const policy = config?.triage;
@@ -332,7 +334,15 @@ function policyProblems(config) {
     new Set(milestones).size !== milestones.length
   ) {
     found.push(
-      `${CONFIG}: triage.milestones names four different milestones, a regression and a new one for each of slate and plate`
+      `${CONFIG}: triage.milestones names five different milestones, a regression and a new one for each of slate and plate, and an experimental one`
+    );
+  }
+  if (
+    !Array.isArray(policy.experimental) ||
+    policy.experimental.some((scope) => typeof scope !== 'string' || !scope)
+  ) {
+    found.push(
+      `${CONFIG}: triage.experimental lists the review scopes whose new bugs go on triage.milestones.experimental`
     );
   }
   if (
@@ -414,6 +424,7 @@ const policyOf = (config) => ({
   primary: repoOf(config.triage.repos) === config.triage.repos[0],
   first: config.triage.repos[0],
   milestones: config.triage.milestones,
+  experimental: config.triage.experimental,
   slatePaths: config.triage.slatePaths,
   focus: config.triage.focus,
   moved: new Map(),
@@ -1683,6 +1694,9 @@ const mainReport = (policy, milestone) =>
 
 function bugMilestone(policy, detail) {
   const regression = detail.get('regression');
+  if (!regression && policy.experimental.includes(detail.get('scope'))) {
+    return policy.milestones.experimental;
+  }
   const slate = regression
     ? paths(regression).some(
         (page) => RELEASED_SITES.get(URL.parse(page).hostname) === 'slate'

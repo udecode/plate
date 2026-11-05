@@ -113,7 +113,7 @@ For a PR, check `baseRefName` before routing. A PR based on `main` is worked in 
 | Item | Default owner |
 | --- | --- |
 | One public Slate substrate issue | `maintainer slate-issue` |
-| One udecode/plate or udecode/plate-private issue | the Triage playbook; `triage fix #<N>` or `triage fix plate-private#<N>` continues into the Bug fix playbook, and a udecode/plate issue on none of the four Beta milestones that playbook lists reports `main`, which gets a record and no fix |
+| One udecode/plate or udecode/plate-private issue | the Triage playbook; `triage fix #<N>` or `triage fix plate-private#<N>` continues into the Bug fix playbook, and a udecode/plate issue on none of the five Beta milestones that playbook lists reports `main`, which gets a record and no fix |
 | One public Plate/Plite performance regression | the Triage playbook, then the Perf issue playbook with `benchmark` |
 | One local Plate or Plite behavior bug or regression with no public mutation | pstack's Bug fix playbook |
 | Plite public call-shape fork | `best-api`, then the Plan playbook if adoption or runtime planning is needed |

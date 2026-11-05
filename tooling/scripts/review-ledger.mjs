@@ -1301,8 +1301,9 @@ const shipSteps = {
 
 /**
  * The open scopes, which chips offers as P1 tasks through `chips.ship` in
- * `.agents/pstack.json`. A deferred scope waits on outside evidence, so it is
- * left out. Each item waits on the open plans that name its scope.
+ * `.agents/pstack.json`. A deferred scope waits on outside evidence, and a
+ * scope that `triage.experimental` lists does not hold up a release, so both
+ * are left out. Each item waits on the open plans that name its scope.
  */
 export function ship(root) {
   const ledger = loadLedger(root);
@@ -1310,9 +1311,12 @@ export function ship(root) {
   const running = plans.filter((plan) =>
     ['active', 'held', 'planning'].includes(stateOf(plan.status))
   );
+  const experimental =
+    readJson(root, '.agents/pstack.json', ledger.warnings).value?.triage
+      ?.experimental ?? [];
   return [...ledger.scopes.values()].sort(byId).flatMap((scope) => {
     const step = shipSteps[openState(ledger, scope.id, plans).open];
-    if (!step) return [];
+    if (!step || experimental.includes(scope.id)) return [];
     const item = step({ id: scope.id, title: scope.title ?? scope.id });
     const prerequisites = (scope.dependsOn ?? []).filter(
       (id) => ledger.scopes.has(id) && openState(ledger, id, plans).open
