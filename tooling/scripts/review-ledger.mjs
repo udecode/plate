@@ -13,8 +13,10 @@ import {
   filesAt,
   grepFiles,
   inHistory,
+  showAt,
   trackedFiles,
   untrackedFiles,
+  UPSTREAM,
 } from './private-files.mjs';
 
 export const scopesDir = 'docs/research/review-scopes';
@@ -430,7 +432,7 @@ export function loadLedger(root) {
   )
     .split('\n')
     .filter(Boolean)) {
-    const page = pageOf(root, scopes, path);
+    const page = pageOf(scopes, path, read(root, path));
     if (page) pages.set(page.id, page);
   }
   const reviews = new Map();
@@ -480,8 +482,7 @@ export function loadLedger(root) {
   };
 }
 
-function pageOf(root, scopes, path) {
-  const text = read(root, path);
+function pageOf(scopes, path, text) {
   const meta = documentMetadata(text);
   if (!Array.isArray(meta.review_scopes) || meta.verdict === undefined) {
     return null;
@@ -1715,7 +1716,65 @@ export function check(root, { base = 'HEAD' } = {}) {
  * census and every other plan, so a plan can be checked while it is written.
  */
 export function checkPlans(root, paths, { base = 'HEAD' } = {}) {
+  const errors = planErrors(root, loadLedger(root), paths, base);
+  assert.ok(!errors.length, errors.join('\n'));
+  return { ok: true, plans: paths.length };
+}
+
+/**
+ * Checks only what a landing changes since `base`: the plans it adds or
+ * changes, as `checkPlans` does, and each fork `check` fails on where one head
+ * is a review page whose scopes or basis the landing adds, changes or deletes,
+ * or a review that such a page named at `base`. Other forks and plan problems
+ * stay for `check`, so another plan's repair never blocks the land, and
+ * editing a forked head's prose does not count as forking it. Review records
+ * are frozen legacy, so the landing reads only pages.
+ */
+export function checkLanding(root, { base }) {
+  const changed = changedSince(root, base);
+  assert.ok(
+    changed,
+    `Cannot diff against the base commit ${base}. Pass a base this checkout holds.`
+  );
   const ledger = loadLedger(root);
+  const pageLinks = (path, text) => {
+    const page = text === null ? null : pageOf(ledger.scopes, path, text);
+    return page && { scopes: page.scopes, basis: page.basis };
+  };
+  const paths = [
+    ...new Set([...changed, ...untrackedFiles(root, ['docs/plans'])]),
+  ].filter((path) => path.startsWith('docs/plans/') && path.endsWith('.md'));
+  const touched = new Set();
+  for (const path of paths) {
+    const shown = showAt(root, base, path);
+    const before = pageLinks(path, shown.status === 0 ? shown.stdout : null);
+    const after = pageLinks(
+      path,
+      existsSync(join(root, path)) ? read(root, path) : null
+    );
+    if (JSON.stringify(before) === JSON.stringify(after)) continue;
+    touched.add(idOf(path));
+    for (const id of before?.basis ?? []) touched.add(id);
+  }
+  const plans = paths.filter((path) => existsSync(join(root, path)));
+  const errors = planErrors(root, ledger, plans, base);
+  for (const id of ledger.scopes.keys()) {
+    const heads = headsOf(ledger, id);
+    if (
+      heads.length > 1 &&
+      heads.some((head) => head.path) &&
+      heads.some((head) => touched.has(head.id))
+    ) {
+      errors.push(
+        `Fork in ${id}: ${heads.map((head) => head.id).join(', ')}. The review that continues ${id} names every head in review_basis; node tooling/scripts/review-ledger.mjs lookup ${id} lists them.`
+      );
+    }
+  }
+  assert.ok(!errors.length, errors.join('\n'));
+  return { ok: true, plans: plans.length };
+}
+
+function planErrors(root, ledger, paths, base) {
   const errors = [];
   const context = planContext(
     root,
@@ -1737,8 +1796,7 @@ export function checkPlans(root, paths, { base = 'HEAD' } = {}) {
     ];
     if (problems.length) errors.push(`${path}: ${problems.join(', ')}`);
   }
-  assert.ok(!errors.length, errors.join('\n'));
-  return { ok: true, plans: paths.length };
+  return errors;
 }
 
 function planContext(root, ledger, plans, base, errors) {
@@ -2201,7 +2259,7 @@ export function researchRows(root) {
 }
 
 const usage =
-  'Usage: node tooling/scripts/review-ledger.mjs status|ship|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|research <term>';
+  'Usage: node tooling/scripts/review-ledger.mjs status|ship|lookup <scope|group|path|term> [--detail]|show [scope]|coverage [prefix]|check [plan...]|land [--base <rev>]|research <term>';
 
 export function main(root, args) {
   const [command, argument] = args;
@@ -2222,6 +2280,18 @@ export function main(root, args) {
           { base }
         )
       : check(root, { base });
+  }
+  if (command === 'land') {
+    const at = args.indexOf('--base');
+    const base =
+      at === -1
+        ? git(root, ['merge-base', 'HEAD', UPSTREAM])?.trim()
+        : args[at + 1];
+    assert.ok(
+      base,
+      `Cannot find where HEAD meets ${UPSTREAM}; pass --base <rev>.`
+    );
+    return checkLanding(root, { base });
   }
   if (command === 'research') return searchResearch(root, argument);
   throw new Error(usage);

@@ -6,7 +6,8 @@
   "lintFix": "pnpm lint:task --allow-ignored",
   "check": "pnpm check",
   "landChecks": [
-    "node tooling/scripts/notify.mjs check"
+    "node tooling/scripts/notify.mjs check",
+    "node tooling/scripts/review-ledger.mjs land"
   ],
   "freshEnv": [
     "TURBO_FORCE=true",
