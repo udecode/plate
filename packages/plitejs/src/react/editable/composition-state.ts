@@ -9,7 +9,13 @@ import {
   TextApi,
 } from '../..';
 import { withCompositionStamp } from '../../core/composition-stamp';
-import { getSelection, isDOMElement, isDOMNode } from '../../dom';
+import {
+  getSelection,
+  isDOMElement,
+  isDOMNode,
+  isDOMText,
+  writeDOMSelection,
+} from '../../dom';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
@@ -158,11 +164,43 @@ const getNativeCompositionAnchor = (
   if (!point || !PointApi.equals(point, selection.focus)) return null;
   if (readRuntimeText(editor, selection.focus.path)?.text !== '') return anchor;
 
-  // Chrome replaces an empty line's line-break placeholder with the preedit,
-  // so only its text host outlives the first composition input.
-  return textHost.querySelector('[data-editor-zero-width="n"]')
-    ? textHost
-    : null;
+  // Chrome writes the preedit into an empty text's zero-width spacer and over
+  // an empty line's line break, so the anchor is the text host, which outlives
+  // the first composition input.
+  return textHost.querySelector('[data-editor-zero-width]') ? textHost : null;
+};
+
+// Chrome counts the first preedit's caret from where the replaced selection
+// started. The deletion can add a spacer's zero-width character ahead of the
+// preedit or remove one from before that start, and either puts the caret one
+// letter off. Chrome places the caret before it fires input, so the input
+// listener moves it after the preedit.
+const keepCaretAfterFirstPreedit = (
+  event: CompositionEvent<HTMLDivElement>
+) => {
+  const root = event.currentTarget;
+  const preedit = event.data;
+  const tree = root.getRootNode() as Document | ShadowRoot;
+  const domSelection = getSelection(tree);
+  const insertion = domSelection?.focusNode;
+
+  if (!preedit || !domSelection?.isCollapsed || !isDOMText(insertion)) return;
+
+  const start = domSelection.focusOffset;
+  const end = start + preedit.length;
+
+  root.addEventListener(
+    'input',
+    () => {
+      if (insertion.data.slice(start, end) === preedit) {
+        writeDOMSelection(tree, {
+          anchor: [insertion, end],
+          focus: [insertion, end],
+        });
+      }
+    },
+    { once: true }
+  );
 };
 
 const isCompositionEventTargetInput = ({
@@ -1069,6 +1107,7 @@ export const applyEditableCompositionStart = ({
     inputController?.state.pendingCompositionEnd?.cancel();
     if (inputController) inputController.state.pendingCompositionEnd = null;
     clearEditableCompositionRuntimeState(editor);
+    inputController?.domInputRuntime.clearOwnerAfterDeletion();
 
     if (isCompositionEventHandled({ event, handler: onCompositionStart })) {
       return;
@@ -1084,6 +1123,8 @@ export const applyEditableCompositionStart = ({
     const marks = editor.read((state) => state.marks());
     const selection = readRuntimeSelectionRange(editor);
     const nativeAnchor = getNativeCompositionAnchor(editor, event, selection);
+    const replaced =
+      selection && RangeApi.isExpanded(selection) ? selection : null;
 
     lease?.grant(selection);
 
@@ -1091,6 +1132,7 @@ export const applyEditableCompositionStart = ({
       beginEditableCompositionSession(inputController, {
         historyMergePending: editor.read.selection.isExpanded(),
         nativeAnchor,
+        ownerAfterDeletion: replaced !== null,
       });
       openCompositionReceipt(editor, inputController);
       inputController.state.activeIntent = 'composition';
@@ -1098,7 +1140,7 @@ export const applyEditableCompositionStart = ({
 
     setComposing(true);
 
-    if (selection && RangeApi.isExpanded(selection)) {
+    if (replaced) {
       updateNativeTextInput(
         editor,
         (tx) => {
@@ -1106,7 +1148,7 @@ export const applyEditableCompositionStart = ({
           // drop a whole selected line and compose into a neighboring one.
           withCompositionStamp(
             editor,
-            { place: RangeApi.start(selection) },
+            { place: RangeApi.start(replaced) },
             () => tx.command(editorCommands.insertText, { text: '' })
           );
         },
@@ -1188,6 +1230,17 @@ export const applyEditableCompositionUpdate = ({
           openCompositionReceipt(editor, inputController);
         }
         setComposing(true);
+      } else if (
+        inputController?.domInputRuntime.compositionEpoch?.ownerAfterDeletion
+      ) {
+        const nativeAnchor = getNativeCompositionAnchor(
+          editor,
+          event,
+          readRuntimeSelectionRange(editor)
+        );
+
+        inputController.domInputRuntime.decideOwnerAfterDeletion(nativeAnchor);
+        if (nativeAnchor) keepCaretAfterFirstPreedit(event);
       }
     }
   }

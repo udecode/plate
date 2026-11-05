@@ -334,9 +334,11 @@ export const beginEditableCompositionSession = (
   {
     historyMergePending = false,
     nativeAnchor = null,
+    ownerAfterDeletion = false,
   }: {
     historyMergePending?: boolean;
     nativeAnchor?: unknown;
+    ownerAfterDeletion?: boolean;
   } = {}
 ) => {
   inputController.nativeHistoryComposition = createNativeGroupingId();
@@ -351,6 +353,7 @@ export const beginEditableCompositionSession = (
   inputController.domInputRuntime.beginComposition({
     anchor: nativeAnchor,
     owner: nativeOwned ? 'native' : 'model',
+    ownerAfterDeletion,
     phase: nativeOwned ? 'native-composing' : 'model-composing',
   });
 };

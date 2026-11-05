@@ -295,6 +295,7 @@ type CompositionEpoch = Readonly<{
     | 'model-composing'
     | 'native-composing'
     | 'repairing';
+  ownerAfterDeletion: boolean;
   root: RootKey;
   settledInputType: 'insertFromComposition' | 'insertText' | null;
   text: string | null;
@@ -1171,10 +1172,12 @@ export class DOMInputRuntime {
     anchor = null,
     owner = 'native',
     phase = 'native-composing',
+    ownerAfterDeletion = false,
   }: {
     anchor?: unknown;
     owner?: CompositionEpoch['owner'];
     phase?: CompositionEpoch['phase'];
+    ownerAfterDeletion?: boolean;
   } = {}) {
     const id = this.nextCompositionEpochId;
 
@@ -1185,6 +1188,7 @@ export class DOMInputRuntime {
       id,
       modelCommitted: false,
       owner,
+      ownerAfterDeletion,
       phase,
       root: this.options.getRoot(),
       settledInputType: null,
@@ -1228,6 +1232,38 @@ export class DOMInputRuntime {
       ...epoch,
       modelCommitted: session.modelCommitted,
       text: session.text ?? null,
+    });
+  }
+
+  clearOwnerAfterDeletion() {
+    const epoch = this.compositionEpoch;
+
+    if (epoch?.ownerAfterDeletion) {
+      this.compositionEpochValue = Object.freeze({
+        ...epoch,
+        ownerAfterDeletion: false,
+      });
+    }
+  }
+
+  decideOwnerAfterDeletion(nativeAnchor: unknown) {
+    const epoch = this.compositionEpoch;
+
+    if (!epoch?.ownerAfterDeletion) return;
+    if (
+      nativeAnchor === null ||
+      epoch.phase !== 'model-composing' ||
+      epoch.modelCommitted
+    ) {
+      this.clearOwnerAfterDeletion();
+      return;
+    }
+    this.compositionEpochValue = Object.freeze({
+      ...epoch,
+      anchor: nativeAnchor,
+      owner: 'native',
+      ownerAfterDeletion: false,
+      phase: 'native-composing',
     });
   }
 
