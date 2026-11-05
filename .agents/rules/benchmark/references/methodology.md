@@ -30,6 +30,9 @@ If a named issue is already known to live in a later lane, lane 2 uses that
 surface for the initial smoke. The table order still governs attribution and
 resume state.
 
+To profile a Plite operation in lane 4, run it from a plain script under
+`bun --cpu-prof`, not from a test file. Bun's test runner writes no profile.
+
 ## Candidate And Baseline Identity
 
 Record before measuring:
