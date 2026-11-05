@@ -1,6 +1,40 @@
 {
   "schemaVersion": 1,
   "components": {
+    "ai": [
+      "2026-11-05-remove-ai-leaf",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-05-editor-feature-lifetimes",
+      "2026-09-01-plugin-render-contract",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-25-base-first-registry",
+      "2026-08-17-flat-editor-registry"
+    ],
+    "ai-menu": [
+      "2026-11-05-remove-ai-leaf",
+      "2026-10-08-registry-install-dependencies",
+      "2026-09-30-streaming-preview-deferred-render",
+      "2026-09-28-markdown-streaming-demo-lifecycle",
+      "2026-09-21-ai-edit-suggestions",
+      "2026-09-17-ai-comment-recovery",
+      "2026-09-15-history-actions",
+      "2026-09-10-ai-menu-focus",
+      "2026-09-08-ai-session",
+      "2026-09-08-keyboard-dismissal",
+      "2026-08-31-transient-editor-geometry",
+      "2026-08-28-canonical-editor-api-names",
+      "2026-08-24-react-compiler-owned-editor-state",
+      "2026-08-24-single-selection-authority",
+      "2026-08-17-flat-editor-registry",
+      "2026-08-16-direct-react-component-families",
+      "2026-08-13-fix-registry-install-dependencies",
+      "2026-08-03-use-schema-handles",
+      "2026-07-31-simplify-ai-chat-source-commands",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
     "link": [
       "2026-11-04-fix-popovers-sandboxed-frame",
       "2026-10-22-edit-link-text",
@@ -1006,15 +1040,6 @@
       "2026-07-24-decouple-suggestion-trailing-block",
       "2026-03-28-render-url-videos-media-node"
     ],
-    "ai": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-05-editor-feature-lifetimes",
-      "2026-09-01-plugin-render-contract",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-25-base-first-registry",
-      "2026-08-17-flat-editor-registry"
-    ],
     "ai-api": [
       "2026-10-08-registry-install-dependencies",
       "2026-09-29-markdown-joiner-removal",
@@ -1025,29 +1050,6 @@
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
       "2025-11-20-biome-ultracite",
       "2025-10-21-add-rejectaisuggestions"
-    ],
-    "ai-menu": [
-      "2026-10-08-registry-install-dependencies",
-      "2026-09-30-streaming-preview-deferred-render",
-      "2026-09-28-markdown-streaming-demo-lifecycle",
-      "2026-09-21-ai-edit-suggestions",
-      "2026-09-17-ai-comment-recovery",
-      "2026-09-15-history-actions",
-      "2026-09-10-ai-menu-focus",
-      "2026-09-08-ai-session",
-      "2026-09-08-keyboard-dismissal",
-      "2026-08-31-transient-editor-geometry",
-      "2026-08-28-canonical-editor-api-names",
-      "2026-08-24-react-compiler-owned-editor-state",
-      "2026-08-24-single-selection-authority",
-      "2026-08-17-flat-editor-registry",
-      "2026-08-16-direct-react-component-families",
-      "2026-08-13-fix-registry-install-dependencies",
-      "2026-08-03-use-schema-handles",
-      "2026-07-31-simplify-ai-chat-source-commands",
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
     ],
     "settings-dialog": [
       "2026-10-08-registry-install-dependencies",

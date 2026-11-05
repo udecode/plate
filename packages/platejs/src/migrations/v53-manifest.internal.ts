@@ -1,6 +1,6 @@
 export const V53_FIRST_PARTY_IDENTITIES = [
   { identity: 'a', kind: 'element-rename', owner: 'link' },
-  { identity: 'ai', kind: 'mark-unchanged' },
+  { identity: 'ai', kind: 'mark-retired' },
   { identity: 'aiChat', kind: 'element-unchanged' },
   { identity: 'audio', kind: 'element-unchanged' },
   { identity: 'blockquote', kind: 'element-unchanged' },
@@ -88,4 +88,10 @@ export type V53ElementOwner =
 
 export const V53_ELEMENT_IDENTITIES = V53_FIRST_PARTY_IDENTITIES.filter(
   (entry): entry is V53ElementIdentity => entry.kind.startsWith('element-')
+);
+
+export const V53_RETIRED_TEXT_MARKS = new Set<string>(
+  V53_FIRST_PARTY_IDENTITIES.flatMap((entry) =>
+    entry.kind === 'mark-retired' ? [entry.identity] : []
+  )
 );

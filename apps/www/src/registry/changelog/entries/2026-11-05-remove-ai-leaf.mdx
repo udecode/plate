@@ -1,0 +1,18 @@
+---
+id: 2026-11-05-remove-ai-leaf
+date: 2026-11-05
+status: draft
+kind: remove
+summary: 'Remove the AI leaf from the AI kit'
+change: { 'type': 'source', 'date': '2026-11-05', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-05-ai-remove-leaf-from-kit-cf78bf7d","kind":"remove","migrationNotes":[]} -->
+
+- **`ai`**: Remove `AIPlugin` and `AILeaf` from `AIKit`. A response shows only in the AI menu's draft until you accept it.
+
+<!-- entry: {"id":"2026-11-05-ai-menu-preview-end-marker","kind":"wiring","migrationNotes":[]} -->
+
+- **`ai-menu`**: Draw the draft's end marker with a local `aiPreviewEnd` decoration plugin instead of the AI plugin.

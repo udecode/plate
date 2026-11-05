@@ -3,4 +3,3 @@
  */
 
 export * from './AIChatRequestContext';
-export * from './BaseAIPlugin';

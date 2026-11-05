@@ -216,6 +216,7 @@ export {
   getPluginContributions,
   getCompiledEditorSchema,
   getCompiledEditorSchemaFromApi,
+  getCompiledPropertyCandidates,
   getEditorAuthoredDocumentCapability,
   getEditorCommitSnapshot,
   getEditorCommitValue,

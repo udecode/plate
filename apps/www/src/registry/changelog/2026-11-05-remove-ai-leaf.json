@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-05-remove-ai-leaf",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-05-remove-ai-leaf.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-05",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "remove",
+  "summary": "Remove the AI leaf from the AI kit",
+  "targets": [
+    {
+      "name": "ai",
+      "files": ["apps/www/src/registry/components/editor/ai.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/components/editor/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-05-ai-remove-leaf-from-kit-cf78bf7d",
+      "kind": "remove",
+      "summary": "Remove `AIPlugin` and `AILeaf` from `AIKit`. A response shows only in the AI menu's draft until you accept it.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-05",
+          "entry": "2026-11-05-remove-ai-leaf",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-05-ai-menu-preview-end-marker",
+      "kind": "wiring",
+      "summary": "Draw the draft's end marker with a local `aiPreviewEnd` decoration plugin instead of the AI plugin.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-05",
+          "entry": "2026-11-05-remove-ai-leaf",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

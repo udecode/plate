@@ -3,6 +3,5 @@
  */
 
 export * from './AIChatPlugin';
-export * from './AIPlugin';
 export * from './CopilotPlugin';
 export * from './useAIChat';

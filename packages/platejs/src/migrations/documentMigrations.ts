@@ -38,6 +38,10 @@ import {
   registerDocumentMigrationAuthoredCapability,
 } from './documentMigrationAuthored.internal';
 import {
+  historicalSelectionGeometry,
+  landSelectionMarks,
+} from './documentMigrationSelection.internal';
+import {
   getMigrationBinding,
   registerMigrationBindings,
 } from './documentMigrationTarget.internal';
@@ -335,17 +339,6 @@ const isConcreteSelection = (
   selection !== 'start' &&
   selection !== 'end';
 
-const historicalSelectionGeometry = (
-  selection: Exclude<Selection, null>
-): Exclude<Selection, null> => {
-  if (!SelectionApi.isText(selection) || selection.marks === undefined) {
-    return selection;
-  }
-  const { marks: _marks, ...geometry } = selection;
-
-  return geometry;
-};
-
 const assertHistoricalSelection = (
   authority: MigrationAuthority,
   selection: SnapshotSelectionInput | undefined,
@@ -367,16 +360,27 @@ const mapSelection = (
   selection: Exclude<Selection, null>,
   before: EditorDocumentValue,
   after: EditorDocumentValue
-): Selection =>
-  mapDetachedSelectionThroughChange(
+): Selection => {
+  const geometry = historicalSelectionGeometry(selection);
+  const mapped = mapDetachedSelectionThroughChange(
     authority.schema,
-    selection,
+    geometry,
     DocumentChange.between(before, after),
     before,
     after,
     SelectionApi.root(selection) ?? 'main',
     { association: 'backward', preferPositionMapping: true }
   );
+
+  if (mapped === geometry) return selection;
+
+  return landSelectionMarks(
+    authority.schema,
+    mapped,
+    SelectionApi.isText(selection) ? selection.marks : undefined,
+    after
+  );
+};
 
 const edgePoint = (
   children: readonly unknown[],

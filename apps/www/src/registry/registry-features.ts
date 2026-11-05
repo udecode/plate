@@ -235,16 +235,10 @@ export const registryFeatures: Registry['items'] = [
     name: 'ai',
     registryDependencies: ['@plate/ai-toolbar-button', '@plate/ai-api'],
     type: 'registry:component',
-    description: 'Streaming edits, command menu, and text highlighting.',
+    description: 'Streaming edits and command menu.',
     title: 'AI',
     meta: {
-      docs: [
-        { route: '/docs/ai', title: 'AI' },
-        {
-          route: 'https://pro.platejs.org/docs/components/ai',
-          title: 'AI Leaf',
-        },
-      ],
+      docs: [{ route: '/docs/ai', title: 'AI' }],
       examples: ['ai-demo', 'ai-pro'],
       label: 'New',
     },

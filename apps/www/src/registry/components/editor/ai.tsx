@@ -1,17 +1,14 @@
 'use client';
 
 import { BaseParagraphPlugin } from 'platejs';
-import { AIChatPlugin, AIPlugin } from 'platejs/ai/react';
+import { AIChatPlugin } from 'platejs/ai/react';
 import {
-  EditorText,
   useEditorSelector,
   usePluginStore,
-  type EditorTextProps,
   type RenderNodeWrapperProps,
   type WrapRootProps,
 } from 'platejs/react';
 
-import { cn } from '@/lib/utils';
 import {
   AIChatEditor,
   AILoadingBar,
@@ -19,18 +16,6 @@ import {
 } from '@/registry/components/editor/ai-menu';
 
 import { AIChatTransportPlugin, useEditorChat } from './use-chat';
-
-export function AILeaf(props: EditorTextProps<typeof AIPlugin>) {
-  return (
-    <EditorText
-      className={cn(
-        'border-b-2 border-b-purple-100 bg-purple-50 text-purple-800',
-        'transition-all duration-200 ease-in-out'
-      )}
-      {...props}
-    />
-  );
-}
 
 function AIInlinePreview({
   children,
@@ -58,7 +43,6 @@ function AIIntegration({ children, editableRef }: WrapRootProps) {
 }
 
 export const AIKit = [
-  AIPlugin.configure({ component: AILeaf }),
   AIChatTransportPlugin.extend(({ api, store }) => ({
     render: {
       useViewElementAttributes() {

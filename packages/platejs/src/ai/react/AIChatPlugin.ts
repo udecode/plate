@@ -57,7 +57,7 @@ import type {
   AIChatRequestContext,
   AIToolName,
 } from '../lib/AIChatRequestContext';
-import { BaseAIPlugin } from '../lib/BaseAIPlugin';
+import { findQuotedSpan } from '../lib/findQuotedSpan.internal';
 import {
   captureTextRange,
   fillEmptyListItem,
@@ -127,7 +127,6 @@ export type AIChatPluginState = {
   _blockRefs: Record<string, Readonly<{ key: NodeKey }>>;
   _changeId: string | null;
   _requestId: string | null;
-  _replaceNodeKeys: NodeKey[];
   _tableCellRefs: Record<string, Readonly<{ key: NodeKey }>>;
   chat: AIChatAdapter | null;
   chatNodeMode: NodeSelectionMode | null;
@@ -154,7 +153,7 @@ const aiChatShowEffect = defineEffect<NodeKey>({ key: 'ai.chat.show' });
 const aiChatCommandEditors = new WeakMap<object, Editor>();
 export const getAIChatCommandEditor = (editor: Editor) =>
   aiChatCommandEditors.get(editor) ?? editor;
-const plateDependencies = [BaseAIPlugin, MarkdownPlugin] as const;
+const plateDependencies = [MarkdownPlugin] as const;
 const dependencies = [
   ...plateDependencies,
   AuthoredPlugin,
@@ -192,7 +191,6 @@ const initialState: AIChatPluginState = {
   _changeId: null,
   _requestId: null,
 
-  _replaceNodeKeys: [],
   _tableCellRefs: {},
   chat: null,
   chatNodeMode: null,
@@ -432,7 +430,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       : { ids: [changeId], status: 'unchanged' };
 
     if (reviewSucceeded(result)) {
-      context.store.set({ _changeId: null, _replaceNodeKeys: [] });
+      context.store.set({ _changeId: null });
     }
 
     return result;
@@ -490,7 +488,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
       _changeId: null,
       _requestId: null,
 
-      _replaceNodeKeys: [],
       _tableCellRefs: {},
       chatNodeMode: null,
       chatNodes: [],
@@ -1224,7 +1221,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     suggestion = { children: actionEditor.read.children() };
     context.store.set({
       _changeId: publishedChangeId,
-      _replaceNodeKeys: publishedChangeId ? targetKeys : [],
       previewValue: [],
     });
 
@@ -1558,7 +1554,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         context.store.set({
           _blockKey: null,
           _requestId: null,
-          _replaceNodeKeys: [],
           previewValue: [],
         });
         tableDraft.clear();
@@ -1829,7 +1824,6 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
           mode: nextMode,
           previewValue: [],
-          _replaceNodeKeys: [],
           streaming: false,
           toolName: nextToolName,
         });
@@ -1939,27 +1933,16 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             }
           );
 
-          const localRange = commandEditor
-            .plugin(BaseAIPlugin)
-            .api.findTextRangeInBlock({
-              block: [
-                {
-                  ...block[0],
-                  children: segments.map(({ text }) => ({ text })),
-                },
-                [],
-              ],
-              findText: NodeApi.string(node),
-            });
-          if (!localRange) return undefined;
-          const start = segments[localRange.anchor.path[0]].point;
-          const end = segments[localRange.focus.path[0]].point;
+          const span = findQuotedSpan(
+            segments.map(({ text }) => text),
+            NodeApi.string(node)
+          );
+          if (!span) return undefined;
+          const start = segments[span.start.segment].point;
+          const end = segments[span.end.segment].point;
           ranges.push({
-            anchor: {
-              ...start,
-              offset: start.offset + localRange.anchor.offset,
-            },
-            focus: { ...end, offset: end.offset + localRange.focus.offset },
+            anchor: { ...start, offset: start.offset + span.start.offset },
+            focus: { ...end, offset: end.offset + span.end.offset },
           });
         }
 

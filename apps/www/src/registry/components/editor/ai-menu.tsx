@@ -18,8 +18,7 @@ import {
   Wand,
   X,
 } from 'lucide-react';
-import { ElementApi, isHotkey, NodeApi, TextApi } from 'platejs';
-import { BaseAIPlugin } from 'platejs/ai';
+import { definePlugin, ElementApi, isHotkey, NodeApi, TextApi } from 'platejs';
 import { AIChatPlugin } from 'platejs/ai/react';
 import { CommentsPlugin } from 'platejs/comments/react';
 import {
@@ -51,7 +50,7 @@ import { EditorStatic } from './editor-static';
 
 // The preview renders a document through this plugin's editor, so its
 // decoration reads that document from the rendering view in its context.
-const PreviewAIPlugin = BaseAIPlugin.extend(() => ({
+const AIPreviewEndPlugin = definePlugin('aiPreviewEnd', {
   decorate: {
     // The end marker sits on the draft's last text, so only the last block
     // decorates. Only the last character carries it, so it stays one element
@@ -83,7 +82,7 @@ const PreviewAIPlugin = BaseAIPlugin.extend(() => ({
       ];
     },
   },
-}));
+});
 
 const scrollAIPreviewEnd = (editor: Editor, draft: HTMLElement | null) => {
   const scrollElement = editor.api.dom.scroll();
@@ -104,7 +103,7 @@ export function AIChatEditor({ inline = false }: { inline?: boolean }) {
   const draftRef = React.useRef<HTMLDivElement>(null);
   // Supplies the preview plugins; the draft renders as its document.
   const aiEditor = useCreateEditor({
-    plugins: [...BaseEditorKit, PreviewAIPlugin],
+    plugins: [...BaseEditorKit, AIPreviewEndPlugin],
   });
   const previewValue = usePluginStore(AIChatPlugin, 'previewValue');
   const streaming = usePluginStore(AIChatPlugin, 'streaming');

@@ -3858,10 +3858,10 @@
       ]
     ]
   },
-  "fingerprint": "fnv1a64:3e2999c45df78b21",
+  "fingerprint": "fnv1a64:b6ca4ce10fa3eb9e",
   "formatVersion": 1,
   "identity": {
-    "fingerprint": "fnv1a64:3e2999c45df78b21",
+    "fingerprint": "fnv1a64:b6ca4ce10fa3eb9e",
     "kind": "derived"
   },
   "primaryRoot": {
@@ -5375,31 +5375,6 @@
       },
       {
         "descriptor": {
-          "default": false,
-          "kind": "boolean",
-          "omitDefault": true,
-          "required": false
-        },
-        "exclusiveGroupIds": [],
-        "id": "text:ai@2f2791ccdc09f005",
-        "key": "ai",
-        "lifecycle": {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        },
-        "merge": "replace",
-        "owner": "ai",
-        "placement": "text",
-        "role": "content",
-        "target": {
-          "group": "element",
-          "kind": "group"
-        }
-      },
-      {
-        "descriptor": {
           "item": {
             "kind": "json",
             "omitDefault": false,
@@ -5907,10 +5882,6 @@
       ],
       [
         "element:width@d289fcde94c1475e",
-        []
-      ],
-      [
-        "text:ai@2f2791ccdc09f005",
         []
       ],
       [
@@ -6743,15 +6714,6 @@
         }
       ],
       [
-        "text:ai@2f2791ccdc09f005",
-        {
-          "copy": "preserve",
-          "inclusive": true,
-          "split": "preserve",
-          "typeChange": "preserve-if-allowed"
-        }
-      ],
-      [
         "text:authored@2b7320c75af17567",
         {
           "copy": "drop",
@@ -7123,12 +7085,6 @@
       "text": {
         "exact": [
           [
-            "ai",
-            [
-              "text:ai@2f2791ccdc09f005"
-            ]
-          ],
-          [
             "authored",
             [
               "text:authored@2b7320c75af17567"
@@ -7432,10 +7388,6 @@
         "replace"
       ],
       [
-        "text:ai@2f2791ccdc09f005",
-        "replace"
-      ],
-      [
         "text:authored@2b7320c75af17567",
         "set"
       ],
@@ -7493,7 +7445,6 @@
       [
         "audio",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7512,7 +7463,6 @@
       [
         "blockquote",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7531,7 +7481,6 @@
       [
         "callout",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7550,7 +7499,6 @@
       [
         "codeBlock",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7569,7 +7517,6 @@
       [
         "column",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7588,7 +7535,6 @@
       [
         "columnGroup",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7607,7 +7553,6 @@
       [
         "date",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7626,7 +7571,6 @@
       [
         "details",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7645,7 +7589,6 @@
       [
         "equation",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7664,7 +7607,6 @@
       [
         "file",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7683,7 +7625,6 @@
       [
         "footnoteDefinition",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7702,7 +7643,6 @@
       [
         "footnoteReference",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7721,7 +7661,6 @@
       [
         "heading",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7740,7 +7679,6 @@
       [
         "horizontalRule",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7759,7 +7697,6 @@
       [
         "image",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7778,7 +7715,6 @@
       [
         "inlineEquation",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7797,7 +7733,6 @@
       [
         "link",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7816,7 +7751,6 @@
       [
         "mediaEmbed",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7835,7 +7769,6 @@
       [
         "mention",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7854,7 +7787,6 @@
       [
         "paragraph",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7873,7 +7805,6 @@
       [
         "summary",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7892,7 +7823,6 @@
       [
         "table",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7911,7 +7841,6 @@
       [
         "tableCell",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7930,7 +7859,6 @@
       [
         "tableRow",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7949,7 +7877,6 @@
       [
         "toc",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7968,7 +7895,6 @@
       [
         "upload",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -7987,7 +7913,6 @@
       [
         "video",
         [
-          "text:ai@2f2791ccdc09f005",
           "text:authored@2b7320c75af17567",
           "text:backgroundColor@cb359bb332a9fb72",
           "text:bold@66c11ef06c87ed62",
@@ -8104,7 +8029,6 @@
       "element:width@b3737226e8fe3a6e",
       "element:width@cf5e67ed73c5a82d",
       "element:width@d289fcde94c1475e",
-      "text:ai@2f2791ccdc09f005",
       "text:authored@2b7320c75af17567",
       "text:backgroundColor@cb359bb332a9fb72",
       "text:bold@66c11ef06c87ed62",

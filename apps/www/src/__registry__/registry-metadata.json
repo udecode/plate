@@ -1,5 +1,5 @@
 {
-  "generation": "e28a2a6fa4c1781bb09e0f9a1b7aae1762d0c57365dbd1b8a61f15b5f6819d2e",
+  "generation": "136d8dd3cb19d16c8b13a833b327c8a7b151c55c51233cf5f15c2ac125c1a55d",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -2386,17 +2386,13 @@
           ],
           "name": "ai",
           "type": "registry:component",
-          "description": "Streaming edits, command menu, and text highlighting.",
+          "description": "Streaming edits and command menu.",
           "title": "AI",
           "meta": {
             "docs": [
               {
                 "route": "/docs/ai",
                 "title": "AI"
-              },
-              {
-                "route": "https://pro.platejs.org/docs/components/ai",
-                "title": "AI Leaf"
               }
             ],
             "examples": [
@@ -9258,17 +9254,13 @@
           ],
           "name": "ai",
           "type": "registry:component",
-          "description": "Streaming edits, command menu, and text highlighting.",
+          "description": "Streaming edits and command menu.",
           "title": "AI",
           "meta": {
             "docs": [
               {
                 "route": "/docs/ai",
                 "title": "AI"
-              },
-              {
-                "route": "https://pro.platejs.org/docs/components/ai",
-                "title": "AI Leaf"
               }
             ],
             "examples": [

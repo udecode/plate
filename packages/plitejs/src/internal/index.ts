@@ -172,6 +172,7 @@ export {
 export {
   compileEditorSchemaContributions,
   EditorSchemaCompileError,
+  getCompiledPropertyCandidates,
   getCompiledSchemaPropertyId,
   getCompiledPropertyMergeStrategy,
   matchesCompiledSchemaTarget,

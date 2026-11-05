@@ -206,6 +206,29 @@ holds only a weight refuses the parse, and a weight beside another style drops
 without a report. Rewrite those spans before parsing, or keep an app plugin that
 declares `fontWeight` with its Markdown mapping.
 
+### Saved AI marks
+
+A v53 text leaf with `ai: true` holds AI output that nobody accepted. Plate
+keeps an unaccepted response in a separate draft, so a v54 document has no place
+to put that output back. When no plugin of the target schema declares an `ai`
+text property, `migrateV54` keeps the text as ordinary text and drops the mark
+from every leaf, every root, every media caption and the saved selection's
+marks. Adjacent leaves then merge as usual.
+
+An app that wants the mark declares its own `ai` text property. `migrateV54`
+then leaves every saved `ai` alone, and the app's schema decides where it loads.
+`migrateDocument` refuses an `ai` under a block whose schema does not allow it,
+as it refuses any other undeclared property.
+
+A later step in the app's own chain cannot rename a saved `ai`, because
+`migrateV54` drops it first when the target does not declare it. To keep the
+mark under another name, rename it in a pre-pass before `migrateDocument`, as
+the font-weight pre-pass above does.
+
+A document that the v53 AI kit saved while a response was streaming also holds
+`aiPreview` on its blocks and an `aiChat` anchor. `migrateDocument` refuses it
+for those keys.
+
 ## Representative feature shapes
 
 Plate packages own local node shapes; the consuming application's plugin tuple and schema determine its complete grammar. Use `plate generate` when an application needs an exact committed `Value` type.

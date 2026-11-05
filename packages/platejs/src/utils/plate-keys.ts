@@ -1,7 +1,6 @@
 /** First-party Plate capability names. Not a persisted AST identity catalog. */
 export const PLUGINS = {
   affinity: 'affinity',
-  ai: 'ai',
   aiChat: 'aiChat',
   audio: 'audio',
   backgroundColor: 'backgroundColor',

@@ -11,10 +11,18 @@ import type {
   DocumentMigrationContext,
   DocumentMigrationStepResult,
 } from './documentMigrations';
+import {
+  historicalSelectionGeometry,
+  landSelectionMarks,
+} from './documentMigrationSelection.internal';
 import { migratePlateV54Ast } from './migratePlateV54Ast.internal';
 import { migratePlateV54CodeBlocks } from './migratePlateV54CodeBlocks.internal';
 import { migratePlateV54Inputs } from './migratePlateV54Inputs.internal';
 import { migratePlateV54Profile } from './migratePlateV54Profile.internal';
+import {
+  migratePlateV54RetiredMarks,
+  retainedSelectionMarks,
+} from './migratePlateV54RetiredMarks.internal';
 import { migratePlateV54Suggestions } from './migratePlateV54Suggestions.internal';
 import { migratePlateV54Urls } from './migratePlateV54Urls.internal';
 
@@ -50,7 +58,10 @@ const shapeDocument = (
   context: DocumentMigrationContext,
   document: EditorDocumentValue
 ): PlateV54Shape => {
-  const inputs = migratePlateV54Inputs({ ...context, document });
+  const inputs = migratePlateV54Inputs({
+    ...context,
+    document: migratePlateV54RetiredMarks({ ...context, document }),
+  });
   const profile = migratePlateV54Profile({
     ...context,
     document: inputs.document,
@@ -87,8 +98,12 @@ export const migrateV54: PlateV54Migration = (context) => {
   const shapedSource = shapeDocument(context, context.document);
   // One diff across stages that rename some blocks and restructure others
   // replaces everything between them, so the selection follows each stage.
-  const mapThroughStages = (selection: Selection) => {
+  const mapThroughStages = (
+    original: Exclude<Selection, null>,
+    document: EditorDocumentValue
+  ) => {
     const { ast, codeBlocks, inputs, profile, urls } = shapedSource;
+    const selection = historicalSelectionGeometry(original);
     const inputSelection = inputs.mapSelection?.(selection) ?? selection;
     const astSelection = mapBetween(
       schema,
@@ -105,13 +120,29 @@ export const migrateV54: PlateV54Migration = (context) => {
       codeBlocks.document
     );
 
-    return codeBlocks.mapSelection?.(urlSelection, codeDiff) ?? codeDiff;
+    const staged =
+      codeBlocks.mapSelection?.(urlSelection, codeDiff) ?? codeDiff;
+    const mapped =
+      document === shapedSource.document
+        ? staged
+        : mapBetween(schema, staged, shapedSource.document, document);
+    const marks = retainedSelectionMarks(context.target, original);
+    const unmoved = mapped === selection;
+
+    if (unmoved) {
+      return SelectionApi.isText(original) && marks !== original.marks
+        ? { ...original, marks }
+        : original;
+    }
+
+    return landSelectionMarks(schema, mapped, marks, document);
   };
 
   if (!legacy) {
     return Object.freeze({
       document: shapedSource.document,
-      mapSelection: ({ selection }) => mapThroughStages(selection),
+      mapSelection: ({ selection }) =>
+        mapThroughStages(selection, shapedSource.document),
     });
   }
 
@@ -142,12 +173,6 @@ export const migrateV54: PlateV54Migration = (context) => {
 
   return Object.freeze({
     document,
-    mapSelection: ({ selection }) =>
-      mapBetween(
-        schema,
-        mapThroughStages(selection),
-        shapedSource.document,
-        document
-      ),
+    mapSelection: ({ selection }) => mapThroughStages(selection, document),
   });
 };

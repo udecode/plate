@@ -112,6 +112,7 @@
     "[DOCX](/docs/docx)",
     "---Components---",
     "[Components](/docs/components)",
+    "[AI](/docs/components/ai)",
     "[AI Menu](/docs/components/ai-menu)",
     "[AI Toolbar Button](/docs/components/ai-toolbar-button)",
     "[Align Toolbar Button](/docs/components/align-toolbar-button)",
@@ -150,7 +151,6 @@
     "[Toolbar](/docs/components/toolbar)",
     "[Suggestion Toolbar Button](/docs/components/suggestion-toolbar-button)",
     "[Node Components](/docs/components#node-components)",
-    "[AI Leaf](/docs/components/ai)",
     "[List](/docs/components/block-list)",
     "[Blockquote Element](/docs/components/blockquote)",
     "[Callout Node](/docs/components/callout)",
@@ -396,6 +396,12 @@
           "href": "/docs/components",
           "items": [
             {
+              "description": "Streaming edits and command menu.",
+              "href": "/docs/components/ai",
+              "title": "AI",
+              "titleCn": "AI"
+            },
+            {
               "description": "A menu for AI-powered content generation and insertion.",
               "href": "/docs/components/ai-menu",
               "title": "AI Menu",
@@ -624,12 +630,6 @@
         {
           "href": "/docs/components#node-components",
           "items": [
-            {
-              "description": "A text highlighter for AI-generated content.",
-              "href": "/docs/components/ai",
-              "title": "AI",
-              "titleCn": "AI"
-            },
             {
               "description": "List components.",
               "href": "/docs/components/block-list",
@@ -2643,7 +2643,7 @@
         "titleCn": "节点组件"
       },
       "/docs/components/ai": {
-        "description": "A text highlighter for AI-generated content.",
+        "description": "Streaming edits and command menu.",
         "title": "AI",
         "titleCn": "AI"
       },

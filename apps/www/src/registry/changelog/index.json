@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-05-remove-ai-leaf",
+      "href": "/registry/changelog/2026-11-05-remove-ai-leaf.json",
+      "status": "draft",
+      "kind": "remove",
+      "summary": "Remove the AI leaf from the AI kit",
+      "change": {
+        "type": "source",
+        "date": "2026-11-05",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai", "ai-menu"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-04-fix-popovers-sandboxed-frame",
       "href": "/registry/changelog/2026-11-04-fix-popovers-sandboxed-frame.json",
       "status": "draft",

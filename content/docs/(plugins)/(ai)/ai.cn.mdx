@@ -27,13 +27,12 @@ docs:
 
 ### 安装
 
-添加 AI 功能最快的方式是使用 `AIKit`。它包含已配置的 `AIPlugin`、`AIChatPlugin`、Markdown 流式助手、光标覆盖层及其 [Plate UI](/docs/installation/plate-ui) 组件。
+添加 AI 功能最快的方式是使用 `AIKit`。它包含已配置的 `AIChatPlugin`、Markdown 流式助手、光标覆盖层及其 [Plate UI](/docs/installation/plate-ui) 组件。
 
 <ComponentSource name="ai" />
 
 - [`AIMenu`](/docs/components/ai-menu)：用于提示、工具快捷方式和聊天审查的浮动命令界面。
 - [`AILoadingBar`](/docs/components/ai-menu)：在编辑器容器中显示流式状态。
-- [`AILeaf`](/docs/components/ai)：以微妙的样式渲染 AI 标记的文本。
 
 ### 添加 Kit
 
@@ -130,7 +129,7 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` 包含 AI 标记、Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，并为 `CommentsPlugin` 配置当前用户及对应文档版本的 `initialComments: CommentsJSON`。
+`AIKit` 包含 Markdown 依赖和必需的 React 集成。自定义 `afterContainer` 和 `afterEditable` 插槽会保留会话。替换 `wrapRoot` 会替换其 React 挂载逻辑；自定义此插槽时，请在包装组件中组合所需的挂载逻辑。若要创建 AI 评论，请安装 `DiscussionKit`，并为 `CommentsPlugin` 配置当前用户及对应文档版本的 `initialComments: CommentsJSON`。
 
 已完成的生成评论直接发布为普通线程，不显示批准提示。通过 `CommentsPlugin.configure({ initialState: { mutate } })` 配置授权和规范持久化；集成等待持久化操作结果后才确认发布成功。生成文档编辑的草稿接受控件不会阻止评论发布。持久化与操作结果请参阅[评论](/docs/comment)。
 
@@ -322,36 +321,11 @@ aiChat.api.setPreview(accumulatedMarkdown);
 
 | 命名空间 | 方法 |
 | --- | --- |
-| `ai.api` | `findTextRangeInBlock` |
 | `aiChat.api` | `accept`, `setPreview`, `setTablePreview`, `hide`, `insertBelow`, `reload`, `replaceSelection`, `reset`, `show`, `stop`, `submit` |
 | `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders` |
 | `aiChat.store.get` | `lastAssistantMessage` |
 
-### `ai.api.findTextRangeInBlock`
-
-在块内查找精确匹配、容错匹配或部分前缀匹配：
-
-```tsx
-const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
-  block,
-  findText: '要查找的文本',
-});
-```
-
-返回 Plate `Range` 或 `null`。
-
 ## 插件
-
-### `AIPlugin`
-
-向流式文本添加 `ai` 标记，并提供插入和移除 AI 标记文本的事务辅助方法。使用 `.configure({ component })` 以自定义组件渲染 AI 标记的文本。
-
-<API name="AIPlugin">
-  <APIOptions>
-    <APIItem name="schema.mark" type="PluginSchemaMark">AI 内容通过 `property.boolean({ default: false, omitDefault: true })` 和显式生命周期规则存储为布尔文本属性。</APIItem>
-    <APIItem name="render.mark.placement" type="'text'">AI 标记在每个 text node 周围渲染一次。</APIItem>
-  </APIOptions>
-</API>
 
 ### `AIChatPlugin`
 
@@ -458,18 +432,6 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>控制应应用原始选择的多少格式。</APIItem>
 </APIParameters>
 </API>
-
-### `editor.update.ai.insertNodes(nodes, options?)`
-
-在当前选择（或 `options.target`）处插入带有 AI 标记的节点。
-
-### `editor.update.ai.removeMarks(options?)`
-
-从 `options.at` 中匹配的节点清除 AI 标记。未传 `at` 时，清除光标所在整个根中的 AI 标记。
-
-### `editor.update.ai.removeNodes(options?)`
-
-移除 `options.at` 中标记为 AI 生成的文本节点。未传 `at` 时，从光标所在的整个根中移除它们。
 
 ### 草稿预览
 

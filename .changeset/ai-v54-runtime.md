@@ -8,16 +8,14 @@ Use editor-scoped `NodeKey` values for live AI selections, snapshots, and replac
 
 Publish AI behavior through explicit services, snapshot reads, selectors, and transaction updates. Remove standalone preview, streaming, prompt, comment, suggestion, and Copilot command helpers.
 
-**Migration:** Use the installed plugin capabilities:
+Remove `BaseAIPlugin`, `AIPlugin`, their `ai` text mark and its `ai` transforms `insertNodes`, `removeMarks` and `removeNodes`. An AI answer stays in the AI Chat draft until you accept it.
+
+**Migration:** Remove `AIPlugin` and `AILeaf` from your plugin list. Use the installed plugin capabilities:
 
 ```tsx
-const ai = editor.plugin(BaseAIPlugin);
 const aiChat = editor.plugin(AIChatPlugin);
 const copilot = editor.plugin(CopilotPlugin);
 
-ai.api.findTextRangeInBlock({ block, findText });
-ai.update.insertNodes(nodes);
-ai.update.removeMarks();
 aiChat.read.prompt({ prompt: 'Improve this' });
 aiChat.api.setPreview(accumulatedMarkdown);
 aiChat.api.accept();
@@ -30,7 +28,7 @@ copilot.update.accept();
 
 Use `{tableCellWithRef}` for selected-table prompt context. Table-cell updates use `{ ref, content }`, while comment results use `{ blockRef, content, comment }`. These refs are request-local and do not require `ElementIdPlugin`.
 
-AI Chat draft publication and complete actions live in `aiChat.api`; document queries live in `aiChat.read`. Use `setPreview` for accumulated Markdown and `setTablePreview` for a complete cell response. Remove standalone `findTextRangeInBlock` imports.
+AI Chat draft publication and complete actions live in `aiChat.api`; document queries live in `aiChat.read`. Use `setPreview` for accumulated Markdown and `setTablePreview` for a complete cell response. Remove standalone `findTextRangeInBlock` imports; `aiChat.read.commentRange(comment)` anchors a generated comment.
 
 Bind the editor with `useAIChat({ editableRef, transport, onData })`. The package owns the stream cursor, request cancellation, and writable-view lifetime across views sharing one editor. Insert and chat output share a temporary `previewValue`. Accept, insert below, or replace selection applies the draft in one history batch under the current editing mode. When the answer does not fit its target, such as an answer with more blocks than the parent allows, the action changes nothing and keeps the preview. Streaming does not enter Suggesting or add document history. The copied `ai-menu` owns anchoring, prompts, and product interaction policy. Replace `useChatChunk` with this editor binding.
 

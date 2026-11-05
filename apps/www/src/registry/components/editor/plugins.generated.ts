@@ -10,7 +10,6 @@ import type * as EditorModule from "./plugins";
 
 export interface EditorText extends Text {
   readonly text: string;
-  readonly ai?: boolean;
   readonly authored?: readonly (unknown)[];
   readonly backgroundColor?: string;
   readonly bold?: boolean;
@@ -303,7 +302,6 @@ export type Value = readonly (AudioElement | BlockquoteElement | CalloutElement 
 export type Schema = Readonly<{
   readonly plugins: Readonly<{
     readonly paragraph: Readonly<{ readonly type: "paragraph"; }>;
-    readonly ai: Readonly<{ readonly key: "ai"; }>;
     readonly heading: Readonly<{ readonly type: "heading"; }>;
     readonly blockquote: Readonly<{ readonly type: "blockquote"; }>;
     readonly horizontalRule: Readonly<{ readonly type: "horizontalRule"; }>;
@@ -853,7 +851,6 @@ type Types = Readonly<{
 export const schema = Object.freeze({
   plugins: Object.freeze({
     paragraph: Object.freeze({ type: "paragraph" }),
-    ai: Object.freeze({ key: "ai" }),
     heading: Object.freeze({ type: "heading" }),
     blockquote: Object.freeze({ type: "blockquote" }),
     horizontalRule: Object.freeze({ type: "horizontalRule" }),

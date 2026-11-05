@@ -27,13 +27,12 @@ docs:
 
 ### Installation
 
-The fastest way to add AI functionality is with the `AIKit`. It ships the configured `AIPlugin`, `AIChatPlugin`, Markdown streaming helpers, cursor overlay, and their [Plate UI](/docs/installation/plate-ui) components.
+The fastest way to add AI functionality is with the `AIKit`. It ships the configured `AIChatPlugin`, Markdown streaming helpers, cursor overlay, and their [Plate UI](/docs/installation/plate-ui) components.
 
 <ComponentSource name="ai" />
 
 - [`AIMenu`](/docs/components/ai-menu): Floating command surface for prompts, tool shortcuts, and chat review.
 - [`AILoadingBar`](/docs/components/ai-menu): Displays streaming status at the editor container.
-- [`AILeaf`](/docs/components/ai): Renders AI-marked text with subtle styling.
 
 ### Add kit
 
@@ -130,7 +129,7 @@ const editor = createEditor({
 });
 ```
 
-`AIKit` includes the AI mark, Markdown dependency, and required React integration. Custom `afterContainer` and `afterEditable` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit` and configure `CommentsPlugin` with the current user and the matching revision's `initialComments: CommentsJSON`.
+`AIKit` includes the Markdown dependency and the required React integration. Custom `afterContainer` and `afterEditable` slots preserve the session. Replacing `wrapRoot` replaces its React attachment; compose the attachment inside your wrapper when customizing that slot. For AI comments, install `DiscussionKit` and configure `CommentsPlugin` with the current user and the matching revision's `initialComments: CommentsJSON`.
 
 Completed generated comments publish directly as ordinary threads without an approval prompt. Configure authorization and canonical persistence through `CommentsPlugin.configure({ initialState: { mutate } })`; the integration awaits the durable mutation result before treating publication as successful. The draft acceptance controls for generated document edits do not gate comment publication. See [Comments](/docs/comment) for persistence and mutation results.
 
@@ -300,17 +299,6 @@ Copilot ghost text also stays temporary until accepted.
 
 ## API Reference
 
-### `AIPlugin`
-
-Adds an `ai` mark to streamed text and exposes transaction helpers for inserting and removing AI-marked text. Use `.configure({ component })` to render AI-marked text with a custom component.
-
-<API name="AIPlugin">
-  <APIOptions>
-    <APIItem name="schema.mark" type="PluginSchemaMark">AI content is stored as a boolean text property using `property.boolean({ default: false, omitDefault: true })` with explicit lifecycle rules.</APIItem>
-    <APIItem name="render.mark.placement" type="'text'">AI marks render once around each text node.</APIItem>
-  </APIOptions>
-</API>
-
 ### `AIChatPlugin`
 
 Main plugin that powers the AI menu, chat state, and transforms.
@@ -416,18 +404,6 @@ Replaces the mapped selection with the draft in one history batch.
 </APIParameters>
 </API>
 
-### `editor.update.ai.insertNodes(nodes, options?)`
-
-Inserts nodes tagged with the AI mark at the current selection (or `options.target`).
-
-### `editor.update.ai.removeMarks(options?)`
-
-Clears the AI mark from matching nodes in `options.at`. Without `at`, it clears the whole root that holds the caret.
-
-### `editor.update.ai.removeNodes(options?)`
-
-Removes text nodes that are marked as AI-generated in `options.at`. Without `at`, it removes them from the whole root that holds the caret.
-
 ### Registry chat preview
 
 `AIChatEditor` renders `previewValue` as the `document` of a static preview
@@ -492,23 +468,9 @@ aiChat.api.setPreview(accumulatedMarkdown);
 
 | Namespace | Methods |
 | --- | --- |
-| `ai.api` | `findTextRangeInBlock` |
 | `aiChat.api` | `accept`, `setPreview`, `setTablePreview`, `hide`, `insertBelow`, `reload`, `replaceSelection`, `reset`, `show`, `stop`, `submit` |
 | `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders` |
 | `aiChat.store.get` | `lastAssistantMessage` |
-
-### `ai.api.findTextRangeInBlock`
-
-Find an exact, typo-tolerant, or partial-prefix text match inside a block:
-
-```tsx
-const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
-  block,
-  findText: 'Text to locate',
-});
-```
-
-It returns a Plate `Range` or `null`.
 
 ## Customization
 
