@@ -1,4 +1,13 @@
-import type { Html, Nodes, Paragraph, Parent, Text as MdText } from 'mdast';
+import type {
+  Html,
+  Nodes,
+  Paragraph,
+  Parent,
+  Root,
+  Text as MdText,
+} from 'mdast';
+import type { Processor, Plugin as UnifiedPlugin } from 'unified';
+import type { Point } from 'unist';
 
 import {
   type Descendant,
@@ -295,6 +304,62 @@ export const writeBareUrlsSafely = (parent: MdParent) => {
       url: child.value,
     };
   });
+};
+
+const startText = function (this: { stack: Nodes[] }, token: { start: Point }) {
+  const { column, line, offset } = token.start;
+  const node: MdText = {
+    position: {
+      end: { column, line, offset },
+      start: { column, line, offset },
+    },
+    type: 'text',
+    value: '',
+  };
+
+  (this.stack.at(-1) as Parent).children.push(node);
+  this.stack.push(node);
+};
+
+const joinTexts = (parent: MdParent) => {
+  const children: Parent['children'] = [];
+
+  for (const child of parent.children) {
+    const last = children.at(-1);
+
+    if (last?.type === 'text' && child.type === 'text') {
+      last.value += child.value;
+      last.position =
+        last.position && child.position
+          ? { end: child.position.end, start: last.position.start }
+          : undefined;
+      continue;
+    }
+    if ('children' in child) joinTexts(child);
+    children.push(child);
+  }
+  parent.children = children;
+};
+
+/**
+ * Remark plugin that starts a text node at each backslash escape and
+ * character reference while the source parses, then joins the texts again.
+ * mdast-util-gfm-autolink-literal links a URL it finds in decoded text during
+ * the parse, so without the split the `https\://a.b` that the writer gives a
+ * text URL reads back as a link.
+ */
+export const remarkSeparateEscapes: UnifiedPlugin<[], Root> = function (
+  this: Processor
+) {
+  const data = this.data() as { fromMarkdownExtensions?: unknown[] };
+
+  (data.fromMarkdownExtensions ??= []).push({
+    enter: { characterEscape: startText, characterReference: startText },
+  });
+
+  return (tree, file) => {
+    if (/[&\\]/.test(String(file.value))) joinTexts(tree);
+  };
 };
 
 /** The `<br />` that keeps a paragraph's trailing line break, after its line ending. */

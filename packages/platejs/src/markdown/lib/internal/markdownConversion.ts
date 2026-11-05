@@ -64,6 +64,7 @@ import {
 import type { MarkdownSerializeDocumentValue } from './markdownDocument';
 import {
   getMarkdownParagraphLanding,
+  remarkSeparateEscapes,
   writeBareUrlsSafely,
 } from './markdownIntrinsics';
 import {
@@ -290,6 +291,7 @@ export const markdownToSlateNodesWithRuntime = (
   };
   const toSlateProcessor = unified()
     .use(remarkParse)
+    .use(remarkSeparateEscapes)
     .use(remarkMarkdownTags, { tags: runtime.formats.tags })
     .use(remarkResolveMarkdownReferences)
     .use(mergedOptions.remarkPlugins ?? [])

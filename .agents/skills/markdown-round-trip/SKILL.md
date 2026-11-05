@@ -20,7 +20,7 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--
 `packages/platejs/scripts/markdown-round-trip.ts` runs the real codec of `createTestEditor` in `packages/platejs/src/markdown/lib/__tests__/createTestEditor.tsx`. That editor has the plugins the Markdown stress cases use. The script checks the TypeScript code itself, not a model of it.
 
 1. **Inline contents.** Every string of up to `--inline` tokens from 22 tokens: `a`, a space, `*`, `**`, `_`, a backtick, `~~`, `[a](b)`, `<br/>`, `<u>`, `</u>`, a backslash, a newline, `$`, `!`, `#`, `<`, `&`, `https://a.b`, `[^1]`, `|` and `:+1:`.
-2. **Block forms.** 21 forms: paragraph, ATX heading, setext heading, quote, bullet, ordered and task items, table, fenced and indented code, math, div, callout, link reference, link definition, footnote definition, a lazy list item, thematic break, bold, link and a trailing break. 15 forms take every inline content. The setext heading, lazy list item, thematic break, bold, link and trailing break are fixed sources. Five more fixed sources hold a URL that cannot round-trip as a bare URL. `https://a.b.\na` and `https://a.b)\na` put a bare URL before a line break, and `<https://a.b'> a`, `<https://a.b"> a` and `<https://a.b;> a` end a URL in a character that GFM trims from a bare URL. They run alone and join no sequence, because a line after a raw HTML block reads as text, which the div form already finds.
+2. **Block forms.** 21 forms: paragraph, ATX heading, setext heading, quote, bullet, ordered and task items, table, fenced and indented code, math, div, callout, link reference, link definition, footnote definition, a lazy list item, thematic break, bold, link and a trailing break. 15 forms take every inline content. The setext heading, lazy list item, thematic break, bold, link and trailing break are fixed sources. Eight more fixed sources hold a URL that cannot stay a bare URL or that the parse keeps as text. `https://a.b.\na` and `https://a.b)\na` put a bare URL before a line break, and `<https://a.b'> a`, `<https://a.b"> a` and `<https://a.b;> a` end a URL in a character that GFM trims from a bare URL. The link plugin refuses the URL of `<https://a.b]> a`, so the parse keeps it as text. The parse also keeps `<div>www.a.b </div>` and `<div>a@b.cd </div>` as text. Each must parse again as text, though GFM finds an autolink literal in it. They run alone and join no sequence, because as block forms they would almost double the 902 sequences.
 3. **Sequences.** Every list of up to `--blocks` forms, each holding `a`, joined by one or two newlines.
 4. **Round trip.** Each form with each inline content, and each sequence, goes through parse, serialize and parse again under the default policy. A parse that refuses the source counts in the summary's `refused` and is not a failure. The script compares documents after `nameDocumentListIds`, because each parse gives every list a new id. A source that holds a line ending is also parsed with each one written as CRLF and then as CR, and each parse must give the document of the LF form.
 5. **Streaming.** For each sequence the script parses every prefix fresh, as a preview (`lossPolicy: 'allow', partial: true`) and as a strict parse. Then it continues each reachable preview to its own prefix and every longer one, as a preview and as a strict parse, and compares each with the fresh result. A continuation reads its previous result through the runtime's checkpoint. Every stored state is a preview of a prefix of the same source, so the checkpoint's editor, formats, limits, policy and source test are the same for all of them, and each segment's nodes, diagnostics and last root follow from the segment ends. So the script records each checkpoint, merges previews whose segment ends match, and still covers every chunking without walking each chain. A failed preview merges with a checkpoint that has no segments, because neither reuses anything. When a preview has no recorded checkpoint, or a segment has no whole-number end, the script exits 2, because it can no longer read `markdownCheckpoints` in `packages/platejs/src/markdown/lib/internal/markdownConversion.ts`.
@@ -37,11 +37,11 @@ Handle $ARGUMENTS. `check`, or no argument, runs the gate bound. `deep` runs `--
 
 Run every command from the repository root.
 
-- `pnpm check:markdown-round-trip` checks the gate bound: two inline tokens and two blocks. It compares 9,319 cases, 8,417 round trips and 902 streamed sources, in 3 to 17 s and 49 to 82 CPU-s, depending on the machine's load. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check markdown-round-trip` runs the same step through the check runner, and `pnpm check --affected` runs it for a change under `packages/platejs/src/` or `packages/plitejs/src/`, to the script or its baseline, to `packages/plitejs/scripts/check-harness.ts`, to `config/plite-source-aliases.ts`, to `tooling/scripts/finding-baseline.mjs`, or to a dependency through `pnpm-lock.yaml`.
-- `--inline` and `--blocks` raise one part of the bound, and `--part=round-trip` or `--part=stream` runs one half. `--inline=3 --part=round-trip` compares 166,269 cases in 303 to 437 CPU-s, and `--blocks=3` compares 83,239 cases in 1,052 to 1,722 CPU-s. A bound other than the gate's, `--part` or `--case` skips the baseline and exits 1 on any failure.
+- `pnpm check:markdown-round-trip` checks the gate bound: two inline tokens and two blocks. It compares 9,322 cases, 8,420 round trips and 902 streamed sources, in 3 to 17 s and 49 to 82 CPU-s, depending on the machine's load. It prints one JSON summary line, then each finding the baseline does not list. `pnpm check markdown-round-trip` runs the same step through the check runner, and `pnpm check --affected` runs it for a change under `packages/platejs/src/` or `packages/plitejs/src/`, to the script or its baseline, to `packages/plitejs/scripts/check-harness.ts`, to `config/plite-source-aliases.ts`, to `tooling/scripts/finding-baseline.mjs`, or to a dependency through `pnpm-lock.yaml`.
+- `--inline` and `--blocks` raise one part of the bound, and `--part=round-trip` or `--part=stream` runs one half. `--inline=3 --part=round-trip` compares 166,272 cases in 303 to 437 CPU-s, and `--blocks=3` compares 83,242 cases in 1,052 to 1,722 CPU-s. A bound other than the gate's, `--part` or `--case` skips the baseline and exits 1 on any failure.
 - `--case='<identity or part of one>'` prints the full diff and stack of each failure whose identity contains it, such as `--case='"# a<br/>"'`.
 - `--jobs=<n>` sets the number of worker processes, the machine's cores up to 16 by default. Findings do not depend on it.
-- Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag, a crashed worker or a checkpoint the script cannot read. At the gate the run also fails when it compares other than 9,319 cases, the `GATE_CASES` constant, so a change that makes parse refuse more sources cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
+- Exit 0 is a pass and exit 1 a finding. Exit 2 is a bad flag, a crashed worker or a checkpoint the script cannot read. At the gate the run also fails when it compares other than 9,322 cases, the `GATE_CASES` constant, so a change that makes parse refuse more sources cannot shrink the gate while the baseline still matches. Update the constant only with the reason the count moved.
 - After a fix removes a known finding, the gate fails until you run `pnpm check:markdown-round-trip --lower`. The baseline never grows past the base commit's copy. `--init` seeds only a rule the baseline lacks, and `--lower` and `--init` write nothing when the case count misses `GATE_CASES`.
 
 ## Read a failure
@@ -66,7 +66,7 @@ Tell a real bug from a modeling error before you change code:
 
 ## Findings
 
-The gate finds 161: 160 `markdown-round-trip` and 1 `markdown-throws`. Read by their examples, the round-trip entries fall into these classes. No log proves that each class has a single cause:
+The gate finds 157: 156 `markdown-round-trip` and 1 `markdown-throws`. Read by their examples, the round-trip entries fall into these classes. No log proves that each class has a single cause:
 
 - **An emoji shortcode inside a div.** `<div>:+1:</div>` comes back with the emoji glyph and escaped tags.
 - **A callout whose text starts or ends with a break.** `<callout>\na<br/>\n</callout>` loses its break.
@@ -77,13 +77,12 @@ The gate finds 161: 160 `markdown-round-trip` and 1 `markdown-throws`. Read by t
 - **An unclosed `<u>`.** The serializer closes it around the text after it, and `<br/><u>` loses its break.
 - **A task item that starts with a break.** `- [ ] <br/>` loses its checkbox.
 - **Two breaks in a row.** `- <br/><br/>` gains a third newline.
-- **A URL inside a div.** `<div>https://a.b </div>` becomes a link when parsed again.
 
 The other entry has one cause:
 
 - **A footnote definition in a quote.** `> [^1]:+1:` throws `Markdown node mapping "blockquote" expected block content.` during serialize. 1 `markdown-throws` entry.
 
-`--inline=3 --part=round-trip` fails 5,161 round trips and 24 throws, and every throw is a footnote definition in a quote. `--blocks=3` fails 236 round trips and 1 throw, and no streamed source fails. Neither run finds a `markdown-line-endings` case. The deep runs read no baseline.
+`--inline=3 --part=round-trip` fails 4,894 round trips and 24 throws, and every throw is a footnote definition in a quote. `--blocks=3` fails 232 round trips and 1 throw, and no streamed source fails. Neither run finds a `markdown-line-endings` case. The deep runs read no baseline.
 
 ## What a pass proves
 
@@ -91,15 +90,16 @@ Bugs planted on this tree showed where the gate holds:
 
 - Reverting e1fb01295e's codec changes, which kept links, trailing breaks and table images, gives 330 `markdown-round-trip` and 74 `markdown-throws` findings, 199 of them new. `- a<br/>` drops its break, and a heading with an autolink throws `heading expected inline content`.
 - Dropping the `!state.openList` test in `markdownSegments.ts` gives 4 `markdown-stream` and 4 `markdown-stream-final` findings, such as `1. a\n\n1. a` chunked at 1,7,8 and `1. a\na\n\n1. a` chunked at 1,9,10, two lists where one belongs.
-- Running the codec of 0cfbdc701a, before the line-ending pass in `markdownConversion.ts` and the bare URL check in `markdownIntrinsics.ts`, gives 405 `markdown-line-endings` findings, such as `- [ ] \n_`, whose CRLF form keeps a leading line ending. It also fails all five bare URL sources. `https://a.b.\na` serializes to `https://a.b.\\\na`, which parses again without the link. `<https://a.b'> a` serializes to `https://a.b' a`, which parses again with the `'` cut from the URL.
+- Running the codec of 0cfbdc701a, before the line-ending pass in `markdownConversion.ts` and the bare URL check in `markdownIntrinsics.ts`, gives 405 `markdown-line-endings` findings, such as `- [ ] \n_`, whose CRLF form keeps a leading line ending. It also fails the five bare URL sources that the script held then. `https://a.b.\na` serializes to `https://a.b.\\\na`, which parses again without the link. `<https://a.b'> a` serializes to `https://a.b' a`, which parses again with the `'` cut from the URL.
+- Dropping `remarkSeparateEscapes` from the parse in `markdownConversion.ts` gives 7 `markdown-round-trip` findings: the `]`, `www.` and email sources and four div sources, such as `<div>https://a.b </div>`. `<https://a.b]> a` serializes to `https\://a.b] a`, which parses again with a link to `https://a.b`, because mdast-util-gfm-autolink-literal finds the URL in the decoded text.
 - Dropping the `MARKDOWN_DEFINITION.test(source)` fallback in `markdownConversion.ts` gives stream findings on `[a]\n\n[a]: b` chunked at 1,11 and `[^1]: a\n\n[^1]: a` chunked at 1,13, a reference that a later definition does not resolve.
 - Keeping a segment that ends in an inline node in `markdownConversion.ts` gives a stream finding on `<div>a</div>\n\n<div>a</div>` chunked at 1,18, two text runs that normalization would join.
 
-Each run used the gate bound and restored the product files byte for byte. The `openList` and 0cfbdc701a runs used this sync's script, and the others ran at the earlier sync, `test(platejs): check Markdown round trips and streamed parses on every small document`.
+Each run used the gate bound and restored the product files byte for byte. The `remarkSeparateEscapes` run used this sync's script. The `openList` and 0cfbdc701a runs used the script of `fix(markdown): read CR line endings as LF and keep a bare URL a link`, and the others ran at the earlier sync, `test(platejs): check Markdown round trips and streamed parses on every small document`.
 
 ## Coverage record
 
-Synced at `fix(markdown): read CR line endings as LF and keep a bare URL a link`. The verification describes these files as they stand there:
+Synced at `fix(markdown): read an escaped URL as text`. The verification describes these files as they stand there:
 
 | File | What the check exercises |
 | --- | --- |
@@ -113,7 +113,7 @@ Synced at `fix(markdown): read CR line endings as LF and keep a bare URL a link`
 | `packages/platejs/src/markdown/lib/__tests__/nameListIds.ts` | comparing documents up to list ids |
 | `packages/plitejs/scripts/check-harness.ts` | the flags, workers and gate the formal checks share |
 
-To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "read CR line endings as LF and keep a bare URL a link"`, then run `git log --oneline <that commit>..HEAD --` with the table's paths and `packages/platejs/scripts/markdown-round-trip.ts`. For each commit it lists, read the diff and confirm three things. A continuation still reads its previous result only through the checkpoint's segments and the `startsWith` test on its source, so merging previews by segment ends stays sound. New Markdown syntax the codec supports has an inline token or a block form. A new plugin in the test editor that changes what a source parses to is in the gate. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:markdown-round-trip`.
+To see whether the verification needs another look, find the sync commit with `git log --oneline -1 --grep "read an escaped URL as text"`, then run `git log --oneline <that commit>..HEAD --` with the table's paths and `packages/platejs/scripts/markdown-round-trip.ts`. For each commit it lists, read the diff and confirm three things. A continuation still reads its previous result only through the checkpoint's segments and the `startsWith` test on its source, so merging previews by segment ends stays sound. New Markdown syntax the codec supports has an inline token or a block form. A new plugin in the test editor that changes what a source parses to is in the gate. Move the sync commit in this file forward, naming its subject, only after that check and a run of `pnpm check:markdown-round-trip`.
 
 ## What it does not cover
 
