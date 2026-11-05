@@ -24,30 +24,26 @@
 // in the earlier directory, and after `cd <dir>;` or a newline in both, because
 // the `cd` may fail. A `cd` before a `|`, inside `( )` or in a list that `&`
 // sends to the background moves nothing after it, one that ends a pipeline
-// counts both ways, because zsh runs it in the current shell and bash does not.
-// A `$NAME` or `${NAME}` that an earlier plain assignment, `export`,
-// `readonly`, `declare`, `typeset` or `local` in the same command set expands
-// to that value, and `$HOME` to the home directory, unless that assignment
-// sits in a `( )` that closed before it, a pipeline, a background list, an
-// `||` branch or after a shell keyword at its level, because it may not run or
-// last. A shell's `-c` payload expands only `$HOME` and its own assignments.
-// A `cd` target the guard still cannot resolve, such as any other
-// variable or a `$(...)`, keeps the earlier directory, as does a `git -C`
-// value holding `$` or a backtick, and a denial names each such target. A bare
-// name also counts in the earlier directory, because CDPATH could send it
+// counts both ways, because zsh runs it in the current shell and bash does not,
+// and one whose target the guard cannot resolve, such as a variable, keeps the
+// earlier directory, as does a `git -C` value holding `$`, a backtick, `*`,
+// `?` or `[`, so such a target that leads into a checkout holding the
+// companion directory, or into one on the branch, passes there. A push or
+// companion denial names each `cd` target holding `$` or a backtick and each
+// `git -C` value the guard cannot resolve. A bare name also counts in the
+// earlier directory, because CDPATH could send it
 // elsewhere, and `cd <old> <new>` counts where zsh swaps the operands, in
 // `<old>`, where bash 3.2 moves, and in the earlier directory. The owner's
 // terminal never runs this hook. It denies an agent's `gh pr create` or `gh pr
-// new` into the branch or with no --base, unless it asks for --help or -h,
-// because land.mjs opens those PRs; one that names another base, such as a PR
-// stacked on someone's head branch, passes. It denies an agent's approval of a
-// workflow run, such as a contributor's fork run waiting for approval, which
-// needs the user's word: a `gh api` or `curl` call on a run's `approve` path
-// and any POST to its `pending_deployments` path, which
-// approves or rejects those deployments, unless that command is prefixed with
-// PSTACK_USER_WORD=1. In a checkout that holds the config's `companion.dir`, it
-// denies what would delete or overwrite the files that companion repository
-// tracks there:
+// new` into the branch or with no --base, because land.mjs opens those PRs;
+// one that names another base, such as a PR stacked on someone's head branch,
+// passes, and so does one where --help or -h is a flag rather than an option's
+// value. It denies any line whose text, with quotes and backslashes removed,
+// holds `actions/runs/` followed later by `/approve` or
+// `/pending_deployments`, whatever the client or method, so a read of pending
+// deployments or a commit message that spells such a path is denied too. In a
+// checkout that holds the config's `companion.dir`, it denies what
+// would delete or overwrite the files that companion repository tracks there:
 // `git clean -x` or `-X`, any `git clean` through its git directory, and a
 // checkout, switch, reset, merge or rebase to a commit without
 // `companion.list`. It also denies the app's base-branch sync, which refuses
@@ -75,7 +71,7 @@ const PREFIXES = new Set(['sudo', 'env', 'command', 'builtin', 'exec', 'nohup', 
 const SHELLS = new Set(['bash', 'sh', 'zsh']);
 const KEYWORDS = new Set(['!', 'if', 'then', 'elif', 'else', 'while', 'until', 'do']);
 const OPERATOR = /;|&&|\|[|&]?|&(?!>)|\n|[(){}]/uy;
-const BARE = /(?:\\.|\$\{[^}\s]*\}|[<>]&|&>|[$<>](?!\()|[^\s;&|(){}"'`\\$<>])+/uy;
+const BARE = /(?:\\.|\$\{[^{}\s$`\\]*\}|[<>]&|&>|[$<>](?!\()|[^\s;&|(){}"'`\\$<>])+/uy;
 const SUBSTITUTION = /[$<>]\(/uy;
 
 function stripHeredocs(text) {
@@ -171,9 +167,6 @@ function segments(source) {
 }
 
 const unresolved = new Set();
-const DECLARES = new Set(['export', 'readonly', 'declare', 'typeset', 'local']);
-const VARIABLE = /\$(?:\{([A-Za-z_]\w*)\}|([A-Za-z_]\w*))/gu;
-const ASSIGNMENT = /^([A-Za-z_]\w*)=(.*)$/su;
 
 function shellPath(word, dir) {
   if (/[$`*?[]/u.test(word)) return null;
@@ -195,17 +188,15 @@ function cdTargets(args, dir) {
 const GROUPS = new Set(['(', ')', '{', '}']);
 const STAYS = new Set([...KEYWORDS, 'builtin', 'command', 'time']);
 const union = (...sets) => new Set(sets.flatMap((set) => [...set]));
-const level = (dirs, vars, group = null, unsure = false) => ({ group, start: dirs, dirs, vars, unsure, ifOk: null, ifFailed: null, join: null, pipeline: null, closedGroup: null });
+const level = (dirs, group = null) => ({ group, start: dirs, dirs, ifOk: null, ifFailed: null, join: null, pipeline: null, closedGroup: null });
 
-function eachCommand(command, visit, cwds, depth = 0, vars = new Map([['HOME', homedir()]])) {
-  const levels = [level(cwds, vars)];
-  for (const { words: raw, operator, substitutions } of segments(command)) {
+function eachCommand(command, visit, cwds, depth = 0) {
+  const levels = [level(cwds)];
+  for (const { words, operator, substitutions } of segments(command)) {
     const here = levels.at(-1);
     const entry = here.pipeline ?? here.closedGroup?.start ?? (here.join === '&&' ? here.ifOk : here.join === '||' ? here.ifFailed : here.dirs);
     let ifOk = here.closedGroup?.after ?? entry;
     let ifFailed = ifOk;
-    const expand = (word) => word.replace(VARIABLE, (match, braced, bare) => here.vars.get(braced ?? bare) ?? match);
-    const words = raw.map(expand);
     if (words.length > 0) {
       let start = 0;
       let wrapped = false;
@@ -214,32 +205,25 @@ function eachCommand(command, visit, cwds, depth = 0, vars = new Map([['HOME', h
         else if (!KEYWORDS.has(words[start]) && !(wrapped && /^[-\d]/u.test(words[start])) && !/^[A-Za-z_]\w*=/u.test(words[start])) break;
       }
       const prefix = words.slice(0, start);
-      const assigned = start === words.length && !wrapped ? raw : DECLARES.has(words[start]) ? raw.slice(start + 1) : [];
-      here.unsure ||= prefix.some((word) => KEYWORDS.has(word));
-      const sure = !here.unsure && here.join !== '||' && !here.pipeline && !['|', '|&', '&'].includes(operator);
-      for (const [, name, value] of assigned.map((word) => word.match(ASSIGNMENT)).filter(Boolean)) {
-        const known = sure ? expand(value) : null;
-        here.vars.set(name, known === null || /[$`]/u.test(known) ? null : known);
-      }
       if (start < words.length) for (const dir of entry) visit(words.slice(start), prefix, dir);
       if (words[start] === 'cd' && prefix.every((word) => STAYS.has(word) || /^[A-Za-z_]\w*=/u.test(word))) {
         ifOk = new Set([...entry].flatMap((dir) => cdTargets(words.slice(start + 1), dir)));
-        if (words.slice(start + 1).some((word) => /[$`]/u.test(word))) unresolved.add(['cd', ...raw.slice(start + 1)].join(' '));
+        if (words.slice(start + 1).some((word) => /[$`]/u.test(word))) unresolved.add(['cd', ...words.slice(start + 1)].join(' '));
         if (prefix.includes('!')) ifOk = ifFailed = union(ifOk, ifFailed);
       }
       if (depth < 4) {
-        for (const [index, word] of raw.entries()) {
-          const rest = raw.slice(index + 1);
+        for (const [index, word] of words.entries()) {
+          const rest = words.slice(index + 1);
           if (SHELLS.has(word.split('/').at(-1)) && rest.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/u.test(arg))) {
             for (const arg of rest) if (!arg.startsWith('-')) eachCommand(arg, visit, entry, depth + 1);
           }
         }
-        for (const body of substitutions) eachCommand(body, visit, entry, depth + 1, new Map(here.vars));
-        if (words[start] === 'eval') eachCommand(words.slice(start + 1).join(' '), visit, entry, depth + 1, new Map(here.vars));
+        for (const body of substitutions) eachCommand(body, visit, entry, depth + 1);
+        if (words[start] === 'eval') eachCommand(words.slice(start + 1).join(' '), visit, entry, depth + 1);
       }
     } else if (!here.closedGroup && !GROUPS.has(operator)) continue;
     if (operator === '(' || operator === '{') {
-      levels.push(level(entry, new Map(here.vars), operator, here.unsure || here.join === '||'));
+      levels.push(level(entry, operator));
       continue;
     }
     here.closedGroup = null;
@@ -258,7 +242,6 @@ function eachCommand(command, visit, cwds, depth = 0, vars = new Map([['HOME', h
     if (operator !== '&') here.dirs = union(here.ifOk, here.ifFailed);
     if ((operator === ')' || operator === '}') && levels.length > 1) {
       levels.pop();
-      if (here.group === '{') levels.at(-1).vars = here.vars;
       levels.at(-1).closedGroup = { start: here.start, after: here.group === '{' ? here.dirs : here.start };
     }
   }
@@ -338,7 +321,7 @@ function pushes(words, cwd) {
 // Whether a command is `gh pr create` into the branch or with no base, which defaults to the repository's default branch.
 function opensPr(words, branch) {
   if (words[0]?.split('/').at(-1) !== 'gh' || words[1] !== 'pr' || !['create', 'new'].includes(words[2])) return false;
-  if (words.includes('--help') || words.includes('-h')) return false;
+  if (asksHelp(words.slice(3))) return false;
   let base = null;
   for (let at = 3; at < words.length; at += 1) {
     const word = words[at];
@@ -349,17 +332,28 @@ function opensPr(words, branch) {
   return base === null || base.replace(/^refs\/heads\//u, '') === branch;
 }
 
-const RUN_APPROVE = /(?:^|\/)actions\/runs\/[^/\s]+\/approve(?:[?#]|$)/u;
-const RUN_DEPLOYMENTS = /(?:^|\/)actions\/runs\/[^/\s]+\/pending_deployments(?:[?#]|$)/u;
+// gh pr create's flags that take no value; any other option consumes the next word, so `--title --help` sets a title.
+const PR_SWITCHES = new Set(['--draft', '--editor', '--fill', '--fill-first', '--fill-verbose', '--web', '--dry-run', '--no-maintainer-edit']);
+const SHORT_SWITCHES = /^[dewf]+/u;
 
-function approvesRun(words) {
-  const tool = words[0]?.split('/').at(-1);
-  if (!(tool === 'gh' && words[1] === 'api') && tool !== 'curl') return false;
-  if (words.some((word) => RUN_APPROVE.test(word))) return true;
-  if (!words.some((word) => RUN_DEPLOYMENTS.test(word))) return false;
-  const body = tool === 'gh' ? /^(?:-[fF]|--(?:field|raw-field|input))(?:=|$)|^-[fF]./u : /^(?:-[dF]|--(?:data(?:-\w+)?|json|form))(?:=|$)|^-[dF]./u;
-  return words.some((word, at) => body.test(word) || /^(?:-X|--method=|--request=)post$/iu.test(word) || (['-X', '--method', '--request'].includes(word) && /^post$/iu.test(words[at + 1] ?? '')));
+function asksHelp(args) {
+  for (let at = 0; at < args.length; at += 1) {
+    const word = args[at];
+    if (word === '--') return false;
+    if (word === '--help' || word === '--help=true') return true;
+    if (word.startsWith('--')) {
+      if (!word.includes('=') && !PR_SWITCHES.has(word)) at += 1;
+    } else if (word.startsWith('-')) {
+      // A short cluster such as `-dt` ends with a flag that takes the next word, while `-tx` holds its value.
+      const rest = word.slice(1).replace(SHORT_SWITCHES, '');
+      if (rest.startsWith('h')) return true;
+      if (rest.length === 1) at += 1;
+    }
+  }
+  return false;
 }
+
+const RUN_APPROVAL = /actions\/runs\/.*?\/(?:approve|pending_deployments)\b/u;
 
 const MOVES = new Set(['checkout', 'switch', 'reset', 'merge', 'rebase']);
 
@@ -506,7 +500,6 @@ const hits = new Set();
 let direct = false;
 let pr = false;
 let lost = null;
-let approval = false;
 eachCommand(command, (words, prefix, dir) => {
   lost ??= companionDenial(words, dir, config.companion);
   const push = pushes(words, dir);
@@ -518,7 +511,6 @@ eachCommand(command, (words, prefix, dir) => {
     }
   }
   pr ||= opensPr(words, config.branch);
-  approval ||= approvesRun(words) && !prefix.includes('PSTACK_USER_WORD=1');
 }, new Set([input.cwd ?? process.cwd()]));
 const reasons = [];
 if (hits.size > 0) reasons.push(`agents never force-push or delete ${[...hits].join(' and ')}. Tell the owner, who can run it in their own terminal if they want it:\n  ${command}`);
@@ -533,14 +525,14 @@ if (pr) {
     `agents open a PR into ${config.branch} only through \`node .agents/pstack/land.mjs\`, which renders the plan page as its body. A PR stacked on another branch names that branch with --base.`
   );
 }
-if (approval) {
+if (RUN_APPROVAL.test(command.replace(/['"\\]/gu, ''))) {
   reasons.push(
-    `agents approve a workflow run, such as a contributor's fork run waiting for approval, only on the user's word. Ask the user which runs to approve. Once they say so in this session, prefix each approving command with PSTACK_USER_WORD=1, such as \`PSTACK_USER_WORD=1 gh api -X POST repos/<owner>/<repo>/actions/runs/<id>/approve\`.`
+    `agents never approve a workflow run, such as a contributor's fork run waiting for approval, because that needs the user's word. Tell the user which runs wait, so they click "Approve and run workflows" on the PR or run the command in their own terminal. A line that only mentions such a path, such as a commit message, writes it without \`actions/runs/\`:\n  ${command}`
   );
 }
-if (reasons.length > 0 && unresolved.size > 0) {
+if ((lost || direct || hits.size > 0) && unresolved.size > 0) {
   reasons.push(
-    `The guard could not resolve ${[...unresolved].map((part) => `\`${part}\``).join(', ')}, so it judged the command in the directory before it too. Assign the variable earlier in the same command, or use an absolute path.`
+    `The guard could not resolve ${[...unresolved].map((part) => `\`${part}\``).join(', ')}, so it judged what follows in the directory before that step. If it runs elsewhere, repeat it with an absolute path.`
   );
 }
 if (reasons.length > 0) deny(reasons.join('\n'));
