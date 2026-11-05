@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Installed by the sync-pstack skill.
 // Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check]
-//        node .agents/pstack/plan-page.mjs <plan.md> --pr [--into <body.md>]
+//        node .agents/pstack/plan-page.mjs <plan.md> --pr [--public] [--into <body.md>]
 //        node .agents/pstack/plan-page.mjs <plan.md> --comment <author sha> [--into <comment.md>] [--against <description.md>]
 //        node .agents/pstack/plan-page.mjs --index
 
@@ -1490,6 +1490,7 @@ function rail(planPath) {
 
 const PART_ORDER = ['teach', 'ontop', 'demo', 'moved', 'needs', 'picked', 'api', 'lead', 'main', 'idea', 'verification', 'scope', 'plans'];
 const COMMENT_PARTS = new Set(['ontop', 'demo', 'api', 'lead', 'verification']);
+const PRIVATE_PARTS = new Set(['needs', 'picked', 'plans']);
 const isOpenWork = (section) => sameText(section.title) === 'open work';
 const isVerification = (section) => sameText(section.title) === 'verification';
 
@@ -2329,7 +2330,7 @@ function assertPrBrief(plan, where) {
 }
 
 // With since, the body is a comment on someone else's PR about the commits after theirs; against is the PR's description.
-function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
+function prBody(planPath, existing = '', { since = null, against = '', forPublic = false } = {}) {
   page(planPath);
   const { plan, root, playbooks } = contextOf(planPath);
   const where = relative(root, planPath);
@@ -2390,8 +2391,8 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
   });
   const titled = (title, lines) => (lines.some((line) => line.trim()) ? [`## ${title}`, '', ...lines, ''] : []);
   const filled = (section) => (section?.lines.some((line) => line.trim()) ? section : null);
-  const process = since ? '' : prProcess(entries, playbooks);
-  const models = since ? [] : prModels(entries);
+  const process = since || forPublic ? '' : prProcess(entries, playbooks);
+  const models = since || forPublic ? [] : prModels(entries);
   if (models.length) models[0] = [models[0], process].filter(Boolean).join(' · ');
   else if (process) models.push(process);
   // A reviewer needs what the PR leaves out, not who tracks it or where its run files sit.
@@ -2422,6 +2423,7 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
     // The playbook names the sections a reviewer judges the design by; a PR plan without one shows each carried plan's.
     lead: () =>
       [...pr]
+        .filter((title) => !forPublic || !PRIVATE_PARTS.has(ROLES.find(([pattern]) => pattern.test(title))?.[1]))
         .sort((a, b) => lead.indexOf(a) - lead.indexOf(b))
         .flatMap((title) => {
           const own = filled(sectionNamed(plan, title));
@@ -2441,7 +2443,7 @@ function prBody(planPath, existing = '', { since = null, against = '' } = {}) {
     plans: () => titled('Plans', entries.map((entry) => `- ${link(entry)}`)),
   };
   const range = since && (github ? [`[My commits after yours](https://diffshub.com/${github.repo}/compare/${since}...${github.sha})`, ''] : [`My commits after \`${since}\``, '']);
-  const region = [PR_START, ...models, '', ...(range || []), ...brief.flat(), ...PART_ORDER.filter((key) => !since || COMMENT_PARTS.has(key)).flatMap((key) => parts[key]?.() ?? []), PR_END]
+  const region = [PR_START, ...models, '', ...(range || []), ...brief.flat(), ...PART_ORDER.filter((key) => (since ? COMMENT_PARTS.has(key) : !forPublic || !PRIVATE_PARTS.has(key))).flatMap((key) => parts[key]?.() ?? []), PR_END]
     .join('\n')
     .replace(/\n{3,}/g, '\n\n');
   const start = existing.indexOf(PR_START);
@@ -2590,19 +2592,20 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
   if (
     !planPath ||
     !existsSync(planPath) ||
-    flags.some((arg) => arg.startsWith('--') && !['--folded', '--check', '--rail', '--pr', '--into', '--comment', '--against'].includes(arg)) ||
+    flags.some((arg) => arg.startsWith('--') && !['--folded', '--check', '--rail', '--pr', '--public', '--into', '--comment', '--against'].includes(arg)) ||
     (flags.includes('--pr') && since !== null) ||
+    (flags.includes('--public') && !flags.includes('--pr')) ||
     (since !== null && (!since || since.startsWith('--'))) ||
     [into, against].some((path) => path !== null && (!path || !existsSync(path))) ||
     (into !== null && !flags.includes('--pr') && since === null) ||
     (against !== null && since === null)
   ) {
-    console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check] | <plan.md> --pr [--into <body.md>] | <plan.md> --comment <author sha> [--into <comment.md>] [--against <description.md>] | <plan.md> --rail | --index');
+    console.error('Usage: node .agents/pstack/plan-page.mjs <plan.md> [--folded] [--check] | <plan.md> --pr [--public] [--into <body.md>] | <plan.md> --comment <author sha> [--into <comment.md>] [--against <description.md>] | <plan.md> --rail | --index');
     process.exit(2);
   }
   if (flags.includes('--pr') || since !== null) {
     try {
-      const { body, attach, name } = prBody(planPath, into ? readFileSync(into, 'utf-8') : '', { since, against: against ? readFileSync(against, 'utf-8') : '' });
+      const { body, attach, name } = prBody(planPath, into ? readFileSync(into, 'utf-8') : '', { since, against: against ? readFileSync(against, 'utf-8') : '', forPublic: flags.includes('--public') });
       const out = join(dirname(planPath), 'artifacts', `${name}.md`);
       mkdirSync(dirname(out), { recursive: true });
       writeFileSync(out, body);

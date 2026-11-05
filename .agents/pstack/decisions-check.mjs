@@ -15,7 +15,8 @@
 //        Both append forms print the stage a written batch moves the log into, so
 //        the lead renames the session as the Session title rule asks, and in Claude
 //        Code, outside trunk delivery, print what page-stop.mjs stage prints for
-//        the plan beside the log.
+//        the plan beside the log. They also warn, without refusing, when a batch
+//        writes the first review or ship row of a babysit plan that has no Page: line.
 //        Both append forms, unlike the <log> and --all checks, refuse a partial, open, gap,
 //        blocked or inconclusive row without proof: <existing file under <plans>/artifacts/>
 //        or proof: none, and an accepted row unless its proof: names files an earlier row
@@ -57,11 +58,12 @@
 
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
+import { contextOf, pageUrlOf } from './plan-page.mjs';
 import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
-import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, SEVERITIES, stageOfRow, STATUSES, statusOf } from './status.mjs';
+import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, SEVERITIES, STAGE_PHASES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
 const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u;
@@ -382,6 +384,26 @@ function stagePage(log) {
   }
 }
 
+const pageDue = (phase) => [...STAGE_PHASES.Review, ...STAGE_PHASES.Ship, 'quality'].includes(phase) || /^(review|deliver)/iu.test(phase ?? '');
+const pageDueRows = (path) =>
+  existsSync(path) ? readFileSync(path, 'utf8').split('\n').slice(1).filter((line) => pageDue(line.split('\t')[1])).length : 0;
+
+function warnUnpublishedBabysit(log) {
+  const plan = log.replace(/\.decisions\.tsv$/u, '.md');
+  if (plan === log || !existsSync(plan)) return;
+  try {
+    const { plan: parsed, root, playbooks, subjectPath } = contextOf(resolve(plan));
+    const name = parsed.meta.playbook;
+    const babysit = name === 'babysit' || playbooks.some((entry) => entry.name === name && entry.extends.includes('babysit'));
+    const target = subjectPath ?? resolve(plan);
+    if (babysit && !pageUrlOf(root, target).url) {
+      console.error(`Warning: ${relative(process.cwd(), target)} has no Page: line, and the babysit playbook publishes the plan page before its first review round. Publish it now, before the next public action, as the plan-page skill says.`);
+    }
+  } catch (error) {
+    console.error(`No page check: ${error.message}`);
+  }
+}
+
 const args = process.argv.slice(2);
 const invokedFrom = process.cwd();
 runLedgerCommandFromMainCheckout(args);
@@ -528,6 +550,7 @@ if (args[0] === 'append') {
           .map((line) => line.split('\t'))
       : [args.slice(2)];
   const before = stageMoves(args[1] ?? '').length;
+  const dueBefore = pageDueRows(args[1] ?? '');
   const lead = findLead();
   const run = lead.run ?? null;
   if (!run) console.error(`Runtime identity is unknown because ${lead.miss}, so ${args[1]} records an unknown lead boundary.`);
@@ -541,6 +564,7 @@ if (args[0] === 'append') {
   const entered = stageMoves(args[1]).slice(before);
   if (entered.length) console.info(`Stage: ${entered.join(', then ')}.${existsSync(new URL('rules/title.md', import.meta.url)) ? ' Rename the session now, as .agents/pstack/rules/title.md says.' : ''}`);
   stagePage(args[1]);
+  if (dueBefore === 0 && pageDueRows(args[1]) > 0) warnUnpublishedBabysit(args[1]);
   process.exit(0);
 }
 const paths = args[0] === '--all' ? decisionLogs(plansDir()) : args;
