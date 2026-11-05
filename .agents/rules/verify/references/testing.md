@@ -202,6 +202,35 @@ imports both sides.
 - Avoid `toHaveStyle` here. Use direct style-property assertions instead.
 - The Tests rule bans snapshots in new tests. In an existing snapshot-backed suite, delete and regenerate the snapshot file after broad title renames. `bun test -u` updates and adds keys, but does not reliably prune dead ones.
 
+## Serializer and exporter fixtures
+
+- A serializer or exporter fixture starts from the markup the product's own
+  renderer gives, never from markup written by hand. Drive the exporter from a
+  Plate value through the static render it uses in the product, with the real
+  plugin kit and components, or feed it HTML captured from that render and keep
+  the command that captured it beside the test. Hand-written markup holds only
+  the elements its author expected. In the udecode/plate PR 5330 babysit every
+  figure test used hand-written `div` and `figure` markup, while Plate's own
+  static image sat in its void's `div` beside a hidden `data-slate-spacer`
+  span. The exporter dropped that image from list items on `main`, on the PR
+  head and in the first repair round, and every test passed. A comment pass
+  found it by checking a comment against the real markup.
+- An edge probe, a script that runs the change over a set of hard inputs, keeps
+  every case each review round finds. A case a round finds joins the probe and
+  the test suite before that round's fix, and each round reruns the whole set
+  on the current head. In the same babysit each later round found cases the
+  probe lacked, such as an unfetchable image, a table-first figure, a
+  blockquote after a paragraph and an empty figure, and the probe still ran
+  only round 1's cases.
+- On a Mac without Word, look at an exported `.docx` through Quick Look.
+  `qlmanage -t -s 1200 -o <run directory> <file>.docx` writes
+  `<file>.docx.png`, a picture of the first page, and
+  `textutil -convert txt -stdout <file>.docx` prints the text. `textutil`
+  prints `•` for every list marker, numbered ones included, so judge markers on
+  the picture. Claim the result as Quick Look's rendering, never as Word's,
+  because Quick Look uses Apple's own reader, which can differ from Word in
+  numbering, spacing and layout.
+
 ## Package-specific contracts
 
 Read [package recipes](./test-packages.md) only for the affected
