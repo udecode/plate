@@ -1,9 +1,9 @@
 ---
 title: "Why This Fork"
-description: "Why Plate maintains a Plite, what it optimizes for, and where the proof boundary is."
+description: "Why Plate runs on its own Slate fork, what Plite optimizes for, and where its proof stops."
 ---
 
-Plite is an agent-first editor substrate, not an official upstream Slate release. It keeps a plain JSON document model and rebuilds the runtime around canonical changes, explicit reads and writes, typed transactions, multi-root documents, state fields, and browser proof. This page explains the bet, the runtime shape, the package split, and the current proof limits.
+Plite is the editor runtime under Plate. It is a fork of Slate, not an official upstream Slate release. It keeps the plain JSON document model and rebuilds the runtime around canonical changes, explicit reads and writes, typed transactions, multi-root documents, state fields, and browser proof. This page explains the bet, the runtime shape, the package split, and the current proof limits.
 
 ## On this page
 
@@ -19,7 +19,7 @@ Plite is an agent-first editor substrate, not an official upstream Slate release
 - [Browser Proof](#browser-proof)
 - [Package Ownership](#package-ownership)
 - [Current Boundaries](#current-boundaries)
-- [Complete Change Map](#complete-change-map)
+- [Feature Map](#feature-map)
 - [Read Next](#read-next)
 
 ## The main fork
@@ -62,6 +62,8 @@ Lexical and ProseMirror are the closest comparisons. Lexical also separates read
 ## Who it is for
 
 Use this fork when you want the editor runtime maintained like infrastructure.
+
+A Plate editor already runs on Plite. Start with [Plate](/docs) when you want its plugins, React components, and copied UI. Use `plitejs` directly when you want the runtime without Plate's plugin system. To move a Plite editor to Plate, follow [From Plite to Plate](/docs/migration/plite-to-plate).
 
 | Use Plite if                                                                                    | Use upstream Slate if                                                                  |
 | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
@@ -239,12 +241,15 @@ The packages are split by responsibility.
 | `plitejs/dom`         | DOM bridge, clipboard helpers, selection conversion, hotkeys, DOM coverage helpers                           |
 | `plitejs/react`       | React editor setup, `<EditorRoot>`, `<Editable>`, render primitives, hooks, overlays, annotations, DOM strategies |
 | `plitejs/history`     | history plugin and undo/redo runtime                                                                      |
+| `plitejs/annotations` | `createAnnotationStore` and the durable, id-bearing anchors it keeps                                         |
+| `plitejs/authored`    | attributed suggestions: review marks, review contexts and decisions, accepted and proposed previews          |
+| `plitejs/diff`        | `compare`, which compares two or three immutable documents without editor state                             |
 | `plitejs/hyperscript` | JSX fixtures for tests                                                                                       |
 | `plitejs/yjs`               | Yjs collaboration adapter, awareness bridge, remote cursor hooks                                             |
 | `plitejs/pagination`      | immutable page measurement and the view-owned `PagedEditable` surface                                        |
 | `@platejs/test`           | Node-safe fixtures plus React, DOM, Playwright, and proof helpers behind explicit subpaths                   |
 
-Apps should import public package exports. `/internal` subpaths are for sibling packages in this repo.
+Apps import public package exports and use `@platejs/test` in tests. `plitejs/internal` and `plitejs/testing` are for sibling packages in this repo.
 
 ## Current boundaries
 
@@ -253,7 +258,8 @@ This fork is intentionally narrow about what it claims.
 | Area                       | Claim                                                                                                           |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Desktop browser editing    | In scope when covered by browser proof.                                                                         |
-| Release status             | Pre-1.0. No production-readiness claim; public APIs can still be hard-cut.                                      |
+| Release status             | Pre-1.0, in beta together with Plate. No production-readiness claim; public APIs can still be hard-cut.         |
+| Experimental packages      | `plitejs/authored`, `plitejs/diff`, and `plitejs/pagination` are experimental. Expect gaps in behavior and changes to their APIs. |
 | Raw mobile device behavior | Not claimed without real device proof artifacts.                                                                |
 | Pagination and page layout | Live page measurement and editing are supported; identical cross-platform export geometry needs a controlled measurement environment. |
 | Collaboration              | `plitejs/yjs` owns the adapter. Apps own provider packages, auth, persistence, room naming, and server policy. |
@@ -261,11 +267,11 @@ This fork is intentionally narrow about what it claims.
 
 The line is simple: if the proof lane does not own it, the docs should not pretend it is done.
 
-## Complete change map
+## Feature map
 
-This table is intentionally exhaustive. It gives humans and agents one place to route deeper reading.
+This table covers every area of the runtime, so readers and agents have one place to start deeper reading.
 
-| Area               | What changed                                                                                                                                                                                                                                                                                  |
+| Area               | What it covers                                                                                                                                                                                                                                                                                |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Core lifecycle     | `editor.read(...)`, `editor.update(...)`, state/transaction runtime namespaces, commits, and owner-local read/update groups                                                                                                                                                                    |
 | Core data model    | immutable JSON nodes, snapshots, root-aware `DocumentChange`, node keys, anchors, and extensible selections                                                                                                                                                                                   |
@@ -278,6 +284,8 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration and annotation hooks                                                                                                                                                                                          |
 | Browser editing    | DOM repair, native selection sync, beforeinput/input/paste/cut/drop authority, generated proof scenarios                                                                                                                                                                                      |
 | DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |
+| Authored changes   | attributed suggestions in `plitejs/authored`, with review marks, review decisions, and accepted and proposed previews |
+| Comparison         | two-way and three-way comparison of immutable documents through `compare` in `plitejs/diff` |
 | Overlays           | decoration manager, annotation stores, source-scoped invalidation                                                                                                                                                                                                                |
 | Large documents    | complete DOM rendering, explicit virtualized rendering, bounded editing proof, huge-document smoke lanes                                                                                                                                                                                        |
 | History            | `history()` plugin, `state.history`, `editor.api.history`, transaction grouping controls, semantic `editor.update({ history })` policies, and history stack validation                                                                                                                                                |
@@ -286,7 +294,7 @@ This table is intentionally exhaustive. It gives humans and agents one place to 
 | Browser proof      | `@platejs/test/proof`, `@platejs/test/browser`, `@platejs/test/playwright`, feature contracts, screenshots, traces, replay, and explicit non-replayable imperative runs                                                                                                                 |
 | Docs               | migration guide, walkthroughs, API reference, roots/meta docs, React setup docs, DOM coverage docs, layout docs                                                                                                                                                                               |
 | Examples           | plaintext, richtext, checklists, markdown, inlines, mentions, images, embeds, tables, paste HTML, placeholder, read-only, iframe/shadow DOM, styling, document meta, hidden content, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs examples |
-| Hard cuts          | rootless primary APIs, explicit reads/writes, transaction groups, no public compatibility aliases, no primary mutable editor-field authoring story                                                                                                                                            |
+| Compatibility      | no public Slate 0.x compatibility aliases, rootless primary APIs, explicit reads/writes, transaction groups, and no authoring through mutable editor fields                                                                                                                                            |
 
 ## Read next
 
