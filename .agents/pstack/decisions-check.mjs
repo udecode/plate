@@ -23,7 +23,11 @@
 //        left not passed and its word: is a Word option in the plan's Defaults. Review-phase
 //        rows are exempt. In trunk delivery, once the log records a landed step, both
 //        refuse a new step's "built: step <n>" row while another step is built and has
-//        no delivery row "step <n> landed", published or dropped.
+//        no delivery row "step <n> landed", published or dropped. From a log's second
+//        open critical panel finding on, both refuse each one unless its result names
+//        task:<id> of an offered or started kind: decide task in the project's ledger
+//        whose finding, or one folded or merged into it, holds the log's file name
+//        without .decisions.tsv.
 //        node .agents/pstack/decisions-check.mjs rounds <log>
 //        (exits 1 when the log is at the cap of panel rounds before a build, the
 //        maxRounds in .agents/pstack.json or 3)
@@ -279,6 +283,27 @@ function appendOnlyLabelProblems(log, row, earlier, where) {
   return found;
 }
 
+const escaped = (text) => text.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+const isOpenCritical = ([phase, decision = '', , , result = '']) => phase === 'panel' && /^critical\b/u.test(decision) && /^open\b/u.test(result);
+
+function designQuestionProblems(log, cells, where, count) {
+  const slug = basename(log).replace(/\.decisions\.tsv$/u, '');
+  const cited = new RegExp(`(?<![\\w-])${escaped(slug)}(?![\\w-])`, 'u');
+  const held = `this log already holds ${count} open critical finding${count === 1 ? '' : 's'}, and a design that leaves two critical findings open may need a redesign`;
+  const route = `offer one kind: decide task in ${ledgerFile()}, with via: panel when it ranks P2 or P3, whose finding cites ${slug} and asks whether the design those findings live in needs a redesign, or fold this finding into the topic's open design question with a folded row whose finding cites ${slug}, then name it in this row's result as "task:<id>"`;
+  const ids = [...cells[4].matchAll(/(?:^|[\s,;(])task:\s*([\w-]+)/gu)].map((match) => match[1]);
+  if (ids.length === 0) return [`${where}: ${held}: ${route}`];
+  const reasons = ids.map((id) => {
+    const task = currentLedger().get(id);
+    if (!task) return `task:${id} is not a task in ${ledgerFile()}`;
+    if (task.kind !== 'decide') return `task:${id} is a ${task.kind} task, not a design question`;
+    if (!['offered', 'started'].includes(task.status)) return `task:${id} is ${task.status}, not open`;
+    const findings = [...task.findings, ...task.covers.flatMap((covered) => covered.findings)];
+    return findings.some((finding) => cited.test(finding)) ? null : `no finding of task:${id} cites ${slug}`;
+  });
+  return reasons.includes(null) ? [] : [`${where}: ${held}; ${reasons.join('; ')}; ${route}`];
+}
+
 function problems(path) {
   const lines = readFileSync(path, 'utf8').split('\n');
   if (lines[0] !== HEADER) return [`${path}:1: header must be "${HEADER.replaceAll('\t', ' ')}"`];
@@ -320,6 +345,7 @@ function append(path, batch, run, miss = null) {
   const isWriting = (line) => line.split('\t')[1] === 'writing';
   let written = isWriting(existing.findLast((line) => opens(line) || isWriting(line)) ?? '');
   let rounds = roundsSince(existing);
+  let openCriticals = existing.slice(1).filter((line) => isOpenCritical(line.split('\t').slice(1))).length;
   const steps = trunk() ? { built: new Set(), unlanded: new Set(), landing: false } : null;
   if (steps) for (const line of existing.slice(1)) trackStep(steps, line);
   const chips = readTasks(existing.slice(1));
@@ -342,6 +368,10 @@ function append(path, batch, run, miss = null) {
     const row = [stamp, ...cells].join('\t');
     if (cells[0] === 'chip' && !ledger) found.push(`${where}: chip rows go in the project's ledger ${ledgerFile()}, because a suggested task outlives the run that offered it`);
     found.push(...rowProblems(row, where, roster, ledger ? chips : null), ...newRowProblems(cells, where, ledger ? chips : null, writer), ...missingPlan(path, row, where), ...appendOnlyLabelProblems(path, row, [...existing.slice(1).filter(Boolean), ...rows], where));
+    if (isOpenCritical(cells)) {
+      if (openCriticals > 0) found.push(...designQuestionProblems(path, cells, where, openCriticals));
+      openCriticals += 1;
+    }
     if (opens(row) && roster && !written) {
       found.push(`${where}: a later round's seats row needs a writing row after the previous seats row: log the round's writing passes under phase writing, or log a writing row that says why none ran`);
     }
