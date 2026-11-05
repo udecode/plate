@@ -1,4 +1,10 @@
-import type { Parent, Root, RootContent as MdRootContent } from 'mdast';
+import type {
+  Nodes,
+  Paragraph,
+  Parent,
+  Root,
+  RootContent as MdRootContent,
+} from 'mdast';
 import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { type Processor, type Plugin as UnifiedPlugin, unified } from 'unified';
@@ -56,7 +62,10 @@ import {
   ReportedMarkdownFailureError,
 } from './markdownDiagnostics';
 import type { MarkdownSerializeDocumentValue } from './markdownDocument';
-import { getMarkdownParagraphLanding } from './markdownIntrinsics';
+import {
+  getMarkdownParagraphLanding,
+  writeBareUrlsSafely,
+} from './markdownIntrinsics';
 import {
   type CompiledMarkdownMappings,
   compileMarkdownMappings,
@@ -295,9 +304,38 @@ declare module 'unified' {
   }
 }
 
+// This reads the parsed tree, not the source, because node positions count the
+// raw source.
+const readLineEndingsAsLf = (node: Nodes) => {
+  if ('value' in node) node.value = node.value.replaceAll(/\r\n?/g, '\n');
+  if ('alt' in node && node.alt) {
+    node.alt = node.alt.replaceAll(/\r\n?/g, '\n');
+  }
+  if ('title' in node && node.title) {
+    node.title = node.title.replaceAll(/\r\n?/g, '\n');
+  }
+  if ('children' in node) node.children.forEach(readLineEndingsAsLf);
+  // mdast-util-gfm-task-list-item drops the first character of the item's
+  // text, expecting the space after `[ ]`. When nothing but spaces follows
+  // `[ ]` on its line, that character is a CRLF's CR, so its LF stays.
+  if (node.type === 'listItem' && typeof node.checked === 'boolean') {
+    const paragraph = node.children.find(
+      (child): child is Paragraph => child.type === 'paragraph'
+    );
+    const head = paragraph?.children[0];
+
+    if (head?.type === 'text' && head.value.startsWith('\n')) {
+      head.value = head.value.slice(1);
+      if (!head.value) paragraph?.children.shift();
+    }
+  }
+};
+
 const remarkToSlate: UnifiedPlugin<[DeserializeMdContext], Root, Descendant[]> =
   function (options) {
-    this.compiler = (node) => {
+    this.compiler = (node, file) => {
+      if (String(file).includes('\r')) readLineEndingsAsLf(node as Root);
+
       const syntaxNodes = checkMarkdownTreeLimits(
         node,
         options.limits,
@@ -396,6 +434,8 @@ export const serializeMdWithRuntime = (
   );
 
   const transformed = toRemarkProcessor.runSync(tree);
+
+  writeBareUrlsSafely(transformed);
   const configuredWriters = new Set<string>();
 
   [

@@ -1,4 +1,4 @@
-import type { Html, Paragraph, Text as MdText } from 'mdast';
+import type { Html, Nodes, Paragraph, Parent, Text as MdText } from 'mdast';
 
 import {
   type Descendant,
@@ -19,12 +19,8 @@ import type {
 } from '../types';
 import { getMarkdownTagRepair } from './markdownTags';
 
-const LEADING_LINE_ENDING = /^(?:\r\n?|\n)/;
-const LINE_ENDING = /[\r\n]/;
-const LINE_ENDING_PARTS = /(\r\n?|\n)/;
 const BR_TAG = /<br\s*\/?>/gi;
 const ONLY_BR_TAGS = /^(?:\s*<br\s*\/?>)+\s*$/i;
-const LINE_ENDING_AT_END = /\r?\n$/;
 const HTML_COMMENT = /^\s*<!--[\s\S]*-->\s*$/;
 const TAG_NAME = /^<\/?([A-Za-z][\w-]*)/;
 
@@ -53,17 +49,17 @@ const withoutTrailingBreakMarkup = (
   if (previous.type === 'image') return children.slice(0, -1);
   if (
     previous.type === 'text' &&
-    /^\r?\n$/.test(previous.value) &&
+    previous.value === '\n' &&
     children.at(-3)?.type === 'image'
   ) {
     return children.slice(0, -2);
   }
   // The writer keeps a trailing line break as a line ending plus `<br />`:
   // the line ending is not content, the `<br>` is.
-  if (previous.type === 'text' && LINE_ENDING_AT_END.test(previous.value)) {
+  if (previous.type === 'text' && previous.value.endsWith('\n')) {
     return [
       ...children.slice(0, -2),
-      { ...previous, value: previous.value.replace(LINE_ENDING_AT_END, '') },
+      { ...previous, value: previous.value.slice(0, -1) },
       last,
     ];
   }
@@ -85,15 +81,17 @@ const dropLineEndingAfterBr = (
   value: string,
   previousSibling: MdRootContent | null
 ) =>
-  endsWithBr(previousSibling) ? value.replace(LEADING_LINE_ENDING, '') : value;
+  endsWithBr(previousSibling) && value.startsWith('\n')
+    ? value.slice(1)
+    : value;
 
 const withUnmarkedLineEndings = (text: string, marks: MdMarks) =>
-  LINE_ENDING.test(text)
+  text.includes('\n')
     ? text
-        .split(LINE_ENDING_PARTS)
+        .split(/(\n)/)
         .filter(Boolean)
         .map((part) =>
-          LINE_ENDING.test(part) ? { text: part } : { ...marks, text: part }
+          part === '\n' ? { text: part } : { ...marks, text: part }
         )
     : { ...marks, text };
 
@@ -218,24 +216,85 @@ export const getMarkdownParagraphLanding = (
   return facts?.content?.allowsText && !facts.behavior.void ? block : null;
 };
 
-/**
- * A bare URL takes in a backslash written right after it, and a hard break
- * starts with one. So a URL that ends a line is written as a link, which the
- * writer puts in angle brackets.
- */
-const withEndingUrlAsLink = (nodes: MdRootContent[]): MdRootContent[] => {
-  const last = nodes.at(-1);
+const ENDS_BARE_URL = /^[?!.,:)*_~]*(?:[\s<]|$)/;
+const ONLY_TRIMMED = /^[?!.,:)*_~]*$/;
+const TRIMMED_FROM_BARE_URL = /[?!.,:*_~"';\]]$/;
+const JOINS_URL = 'x';
+const ENDS_INSIDE_LINE = new Set(['delete', 'emphasis', 'link', 'strong']);
 
-  if (last?.type !== 'html' || !BARE_URL_HTML.test(last.value)) return nodes;
+const writtenStart = (node: Nodes): string => {
+  switch (node.type) {
+    case 'break': {
+      return '\\\n';
+    }
+    case 'delete':
+    case 'emphasis':
+    case 'strong': {
+      return `*${node.children.map(writtenStart).join('')}*`;
+    }
+    case 'html': {
+      return node.value;
+    }
+    case 'text': {
+      // The writer may put a backslash escape before each of these.
+      return node.value.replaceAll(/[*_~<]/g, '\\');
+    }
+    default: {
+      return node.type.startsWith('mdxJsx') ? '<' : JOINS_URL;
+    }
+  }
+};
 
-  return [
-    ...nodes.slice(0, -1),
-    {
-      children: [{ type: 'text', value: last.value }],
+type MdParent = { children: Parent['children']; type: string };
+
+const writtenAfter = (parent: MdParent, index: number) => {
+  let written = '';
+
+  for (let next = index + 1; next < parent.children.length; next += 1) {
+    written += writtenStart(parent.children[next]);
+    if (!ONLY_TRIMMED.test(written)) return written;
+  }
+
+  return ENDS_INSIDE_LINE.has(parent.type) ? written + JOINS_URL : written;
+};
+
+const count = (text: string, character: string) =>
+  text.split(character).length - 1;
+
+const staysBare = (url: string, after: string) => {
+  const end = ENDS_BARE_URL.exec(after)?.[0];
+
+  if (end === undefined || TRIMMED_FROM_BARE_URL.test(url)) return false;
+
+  const opened = count(url, '(') - count(url, ')');
+
+  if (opened < 0 || (opened > 0 && end.includes(')'))) return false;
+
+  // mdast-util-gfm-autolink-literal escapes a `.` after `w` before `.` or a
+  // word character.
+  return !(/w$/i.test(url) && /^\.[-.\w]/.test(end));
+};
+
+export const writeBareUrlsSafely = (parent: MdParent) => {
+  parent.children.forEach((child, index) => {
+    if ('children' in child) {
+      writeBareUrlsSafely(child);
+      return;
+    }
+    if (
+      child.type !== 'html' ||
+      !BARE_URL_HTML.test(child.value) ||
+      staysBare(child.value, writtenAfter(parent, index))
+    ) {
+      return;
+    }
+
+    parent.children[index] = {
+      children: [{ type: 'text', value: child.value }],
       type: 'link',
-      url: last.value,
-    },
-  ];
+      url: child.value,
+    };
+  });
 };
 
 /** The `<br />` that keeps a paragraph's trailing line break, after its line ending. */
@@ -290,10 +349,7 @@ export const encodeMarkdownParagraph = (
   const children = lines.flatMap((line, index): MdRootContent[] => {
     const nodes = convertNodesSerialize(line, lineOptions);
 
-    return [
-      ...(index > 0 ? [{ type: 'break' } as const] : []),
-      ...(index < lines.length - 1 ? withEndingUrlAsLink(nodes) : nodes),
-    ];
+    return [...(index > 0 ? [{ type: 'break' } as const] : []), ...nodes];
   });
 
   if (lines.length > 1 && lines.at(-1)?.length === 0) {
