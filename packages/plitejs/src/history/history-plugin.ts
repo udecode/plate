@@ -1205,9 +1205,14 @@ const createHistoryPlugin = <
               kept.detach();
             }
             if (!PREPARED_HISTORY_REPLAYS.has(request)) {
-              kept.forget();
+              const release = kept.fallBack();
+
               countCoreWork('keptRedoFallbacks');
-              replayEntry();
+              try {
+                replayEntry();
+              } finally {
+                if (!PREPARED_HISTORY_REPLAYS.has(request)) release();
+              }
             }
           } else {
             replayEntry();

@@ -5,6 +5,7 @@ import {
   type DocumentIndex,
   type IndexedNodeRange,
 } from './document-index';
+import { liftOf } from './join';
 import { jsonEqual, type JsonRecord } from './json';
 import {
   addSection,
@@ -705,6 +706,38 @@ export const mapPosThroughBlockMove = (
   return (position: number) =>
     (edit.move?.leaf ? null : edit.moveTarget(position)) ??
     change.mapPos(position, 1);
+};
+
+export const liftsCarriedLine = (input: CarriedProjectionInput) => {
+  if (rewritesRunLines(input)) return false;
+
+  const lift = liftOf(input.step, input.before);
+
+  return (
+    lift?.movesMore === true &&
+    lift.cut === Math.min(...input.runs.map(({ source }) => source))
+  );
+};
+
+const rewritesRunLines = (input: CarriedProjectionInput) => {
+  const { before, edit, schema } = input;
+  const shape = shapeOf(input);
+  const spans = [
+    { from: shape.source, to: shape.end },
+    ...[shape.source, shape.landingBefore].flatMap((position) => {
+      const found = lineAt(before, schema, position);
+
+      return found ? [found.line] : [];
+    }),
+  ];
+
+  return sectionsOf(edit).some(
+    ({ data, from, inserted, length }) =>
+      inserted > 0 &&
+      (length > 0 ||
+        sliceOf(data).tokens.some((token) => token.kind !== 'text')) &&
+      spans.some((span) => from <= span.to && span.from <= from + length)
+  );
 };
 
 /**
@@ -1906,11 +1939,13 @@ type Held = Readonly<
 >;
 
 const enteredOf = (
-  { after, edited, editMap, readAfter, stepMap }: Context,
+  context: Context,
   cutLine: Line,
   landed: Line,
   span: Readonly<{ end: number; land: number }> | null
 ) => {
+  const { after, edited, editMap, readAfter, stepMap } = context;
+  const deleted = deletedOf(context);
   const parts: Part[] = [];
   const brought: IndexedNodeRange[] = [];
   const kept: IndexedNodeRange[] = [];
@@ -1931,15 +1966,38 @@ const enteredOf = (
       cursor !== null && to >= cursor
         ? cursor
         : refuse('The landed line sits in an element the edit moved.');
+    let gone = false;
 
-    if (to > from) parts.push({ from, kept: true, kind: 'copy', to });
+    for (let at = from; at < to && !gone; at++) gone = deleted(at);
+    if (gone) parts.push(...keptRunsOf(withoutDeleted(context, from, to)));
+    else if (to > from) parts.push({ from, kept: true, kind: 'copy', to });
     cursor = to;
+  };
+  const ownedByCopy = (position: number) => {
+    const node =
+      readAfter.at(position)?.kind === 'open'
+        ? after.nodeStartingAt(position)
+        : null;
+    const source = node ? stepMap.source(node.from) : null;
+
+    if (!node || source === null) return null;
+    for (let at = node.from + 1; at < node.to; at++) {
+      if (stepMap.source(at) !== source + at - node.from) return null;
+    }
+
+    return node.to;
   };
   const nodes = (to: number) => {
     const tokens: JsonToken[] = [];
     const origins: number[] = [];
 
     for (let position = start; position < to; position++) {
+      const skip = ownedByCopy(position);
+
+      if (skip !== null && skip <= to) {
+        position = skip - 1;
+        continue;
+      }
       tokens.push(readAfter.at(position) ?? refuse('A token is out of reach.'));
       origins.push(position);
     }
@@ -2313,6 +2371,7 @@ const withoutDeleted = (context: Context, from: number, to: number) => {
   const { originOf, read } = context;
   const tokens: JsonToken[] = [];
   const origins: Array<number | null> = [];
+  const positions: number[] = [];
   const opened: Array<{ at: number; deleted: boolean; shrunk: boolean }> = [];
   const deleted = deletedOf(context);
   const shrinkParent = () => {
@@ -2342,15 +2401,32 @@ const withoutDeleted = (context: Context, from: number, to: number) => {
       ) {
         tokens.length = open.at;
         origins.length = open.at;
+        positions.length = open.at;
         shrinkParent();
         continue;
       }
     }
     tokens.push(token);
     origins.push(originOf(position));
+    positions.push(position);
   }
 
-  return { opened, origins, tokens };
+  return { opened, origins, positions, tokens };
+};
+
+const keptRunsOf = ({
+  positions,
+}: Readonly<{ positions: readonly number[] }>): Part[] => {
+  const runs: Part[] = [];
+  let from = positions[0];
+
+  for (let index = 1; index <= positions.length; index++) {
+    if (positions[index] === positions[index - 1] + 1) continue;
+    runs.push({ from, kept: true, kind: 'copy', to: positions[index - 1] + 1 });
+    from = positions[index];
+  }
+
+  return positions.length === 0 ? [] : runs;
 };
 
 const withDeletedClosed = (

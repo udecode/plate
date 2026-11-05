@@ -27,7 +27,7 @@ import { getEditorRuntimeOwner } from '../core/editor-runtime';
 import { MAIN_ROOT_KEY } from '../core/public-root';
 import { getEditorDocumentValue } from '../core/public-state';
 import { areEditorSchemaIdentitiesEqual } from '../core/schema-compiler';
-import { countCoreWork } from '../core/work';
+import { countCoreWork, readCoreWork } from '../core/work';
 import type { AnyEditor } from '../interfaces/editor';
 import type { Batch, History } from './history';
 import { type HistoryCarets, mapHistoryCarets } from './history-carets';
@@ -39,6 +39,7 @@ import {
   mapHistoryReplay,
   mapHistorySelection,
   type HistoryReplay,
+  type ReplayRules,
 } from './history-replay';
 
 type HistoryStack = 'redos' | 'undos';
@@ -82,6 +83,7 @@ type HistoryBranch<V extends Value> = Readonly<{
 
 type KeptRedo<V extends Value> =
   | Readonly<{ branch: HistoryBranch<V>; kind: 'program' }>
+  | Readonly<{ kind: 'fallback'; plain: HistoryBranch<V> }>
   | KeptWrapRedo<V>;
 
 type KeptWrapRedo<V extends Value> = Readonly<{
@@ -314,14 +316,53 @@ export const withHistoryProgram = <B extends Batch>(
 
 export const historyProgramOf = (batch: Batch) => HISTORY_PROGRAMS.get(batch);
 
+const HISTORY_FALLBACKS = new WeakMap<
+  Batch,
+  Batch | null | (() => Batch | null)
+>();
+
+export const withHistoryFallback = <B extends Batch>(
+  batch: B,
+  fallback: Batch | null
+): B => {
+  HISTORY_FALLBACKS.set(batch, fallback);
+
+  return batch;
+};
+
+export const historyFallbackOf = <V extends Value>(
+  batch: Batch<V>
+): Batch<V> | null => {
+  const fallback = HISTORY_FALLBACKS.get(batch) ?? null;
+
+  if (typeof fallback !== 'function') return fallback;
+
+  const mapped = fallback();
+
+  HISTORY_FALLBACKS.set(batch, mapped);
+
+  return mapped;
+};
+
+const outsideFallbackCount = <T>(run: () => T) => {
+  const fallbacks = readCoreWork().carriedFallbacks;
+  const result = run();
+
+  countCoreWork(
+    'carriedFallbacks',
+    fallbacks - readCoreWork().carriedFallbacks
+  );
+
+  return result;
+};
+
 export const freezeHistoryBatch = <V extends Value>(
   batch: Batch<V>
 ): Batch<V> => {
   const { selectionAfterRoot, selectionBeforeRoot, ...value } = batch;
   const afterRoot = additionalRoot(selectionAfterRoot);
   const beforeRoot = additionalRoot(selectionBeforeRoot);
-
-  return withHistoryProgram(
+  const frozen = withHistoryProgram(
     Object.freeze({
       ...value,
       ...(batch.carried
@@ -345,6 +386,11 @@ export const freezeHistoryBatch = <V extends Value>(
     }),
     HISTORY_PROGRAMS.get(batch)
   );
+  const fallback = HISTORY_FALLBACKS.get(batch);
+
+  if (fallback !== undefined) HISTORY_FALLBACKS.set(frozen, fallback);
+
+  return frozen;
 };
 
 const freezeBatch = freezeHistoryBatch;
@@ -398,9 +444,16 @@ const withKeptBranch = <V extends Value>(
   kept: KeptRedo<V> | null,
   change: (branch: HistoryBranch<V>) => HistoryBranch<V> | null
 ): KeptRedo<V> | null => {
-  const mapped = kept && change(kept.branch);
+  if (!kept) return null;
+  if (kept.kind === 'fallback') {
+    const plain = change(kept.plain);
 
-  return kept && mapped ? Object.freeze({ ...kept, branch: mapped }) : null;
+    return plain ? Object.freeze({ ...kept, plain }) : null;
+  }
+
+  const mapped = change(kept.branch);
+
+  return mapped ? Object.freeze({ ...kept, branch: mapped }) : null;
 };
 
 const clipBranch = <V extends Value>(
@@ -532,11 +585,22 @@ const yieldTo = <V extends Value>(
 const mapHead = <V extends Value>(
   editor: Editor<V>,
   value: HistoryBranch<V>,
-  anchor: boolean
+  { anchor, readBack: reads }: ReplayRules
 ) => {
-  if (!value.mappings) return { head: value, keptWrap: null };
+  if (!value.mappings) {
+    return {
+      head: value,
+      keptWrap: null,
+      projected: false,
+      projectedAfterReadBack: false,
+      readBack: false,
+    };
+  }
 
   let keptWrap: KeptWrap | null = null;
+  let readBack = false;
+  let projected = false;
+  let projectedAfterReadBack = false;
   let batchBase = value.base;
   let batchValue = value.batch;
   let { replay } = value;
@@ -550,9 +614,12 @@ const mapHead = <V extends Value>(
       replay,
       batchBase,
       mapping,
-      anchor && mapping.anchors === true
+      { anchor: anchor && mapping.anchors === true, readBack: reads }
     );
     keptWrap ??= mapped.keptWrap;
+    projected ||= mapped.projected;
+    projectedAfterReadBack ||= readBack && mapped.projected;
+    readBack ||= mapped.readBack;
     const mappedBatchBase = mapping.after;
     const mappedNextBase = mapped.replay.record().after;
     ({ replay } = mapped);
@@ -662,15 +729,19 @@ const mapHead = <V extends Value>(
             carets
           ),
     keptWrap,
+    projected,
+    projectedAfterReadBack,
+    readBack,
   };
 };
 
 const mapAnchored = <V extends Value>(
   editor: Editor<V>,
-  value: HistoryBranch<V>
+  value: HistoryBranch<V>,
+  readBack: boolean
 ) => {
   try {
-    return mapHead(editor, value, true);
+    return mapHead(editor, value, { anchor: true, readBack });
   } catch {
     return null;
   }
@@ -678,9 +749,11 @@ const mapAnchored = <V extends Value>(
 
 const resolveProgramHead = <V extends Value>(
   editor: Editor<V>,
-  value: HistoryBranch<V>
+  value: HistoryBranch<V>,
+  readBack: boolean
 ) => {
-  const { head: attempt } = mapHead(editor, value, false);
+  const mapped = mapHead(editor, value, { anchor: false, readBack });
+  const { head: attempt } = mapped;
   const fallbackReplay = projectedHistoryReplay(
     historyReplaySchemaOf(editor),
     value.replay,
@@ -692,7 +765,7 @@ const resolveProgramHead = <V extends Value>(
     attempt.identity !== value.identity ||
     !fallbackReplay
   ) {
-    return attempt;
+    return mapped;
   }
 
   const { head: fallback } = mapHead(
@@ -709,15 +782,20 @@ const resolveProgramHead = <V extends Value>(
       value.identity,
       value.carets
     ),
-    false
+    { anchor: false, readBack: false }
   );
 
   return fallback?.identity === value.identity
-    ? Object.freeze({
-        ...fallback,
-        kept: Object.freeze({ branch: attempt, kind: 'program' as const }),
-      })
-    : attempt;
+    ? {
+        head: Object.freeze({
+          ...fallback,
+          kept: Object.freeze({ branch: attempt, kind: 'program' as const }),
+        }),
+        projected: mapped.projected,
+        projectedAfterReadBack: mapped.projectedAfterReadBack,
+        readBack: mapped.readBack,
+      }
+    : mapped;
 };
 
 const resolveHead = <V extends Value>(
@@ -725,12 +803,95 @@ const resolveHead = <V extends Value>(
   value: HistoryBranch<V>
 ): HistoryBranch<V> | null => {
   if (!value.mappings) return value;
+
+  const earlier = value.kept?.kind === 'fallback' ? value.kept.plain : null;
+  const current = earlier ? Object.freeze({ ...value, kept: null }) : value;
+  const {
+    head: best,
+    projected,
+    projectedAfterReadBack,
+    readBack: shaped,
+  } = resolveByRules(editor, current, true);
+
+  if (projectedAfterReadBack || (earlier && projected)) {
+    return resolveByRules(editor, earlier ?? current, false).head;
+  }
+  if (
+    current.replay.direction !== 'redo' ||
+    !best ||
+    best.kept ||
+    best.identity !== value.identity ||
+    (!earlier && !shaped)
+  ) {
+    return best;
+  }
+
+  const fallback = earlier ?? plainOf(editor, current);
+
+  if (shaped) {
+    try {
+      editor.read.schema.assertDocument(best.replay.change.apply(best.base));
+    } catch {
+      return resolveByRules(editor, fallback, false).head;
+    }
+  }
+
+  return Object.freeze({
+    ...best,
+    kept: Object.freeze({ kind: 'fallback' as const, plain: fallback }),
+  });
+};
+
+const plainOf = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V>
+) => {
+  const { head } = outsideFallbackCount(() =>
+    resolveByRules(editor, value, false)
+  );
+
+  return head?.identity === value.identity ? head : value;
+};
+
+const plainFallback = <V extends Value>(
+  editor: Editor<V>,
+  shown: HistoryBranch<V>
+) => {
+  if (shown.kept?.kind !== 'fallback') return null;
+
+  const { head: plain } = resolveByRules(editor, shown.kept.plain, false);
+
+  return plain &&
+    plain.identity === shown.identity &&
+    !jsonEqual(plain.replay.change.toJSON(), shown.replay.change.toJSON())
+    ? plain
+    : null;
+};
+
+const resolveByRules = <V extends Value>(
+  editor: Editor<V>,
+  value: HistoryBranch<V>,
+  readBack: boolean
+): Readonly<{
+  head: HistoryBranch<V> | null;
+  projected: boolean;
+  projectedAfterReadBack: boolean;
+  readBack: boolean;
+}> => {
+  if (!value.mappings) {
+    return {
+      head: value,
+      projected: false,
+      projectedAfterReadBack: false,
+      readBack: false,
+    };
+  }
   if (
     value.replay.program &&
     value.replay.direction === 'redo' &&
     !value.kept
   ) {
-    return resolveProgramHead(editor, value);
+    return resolveProgramHead(editor, value, readBack);
   }
 
   const anchorable =
@@ -738,12 +899,16 @@ const resolveHead = <V extends Value>(
     value.replay.direction === 'redo' &&
     journalEntries(value.mappings).some(({ anchors }) => anchors);
   const anchored = value.kept
-    ? mapAnchored(editor, value.kept.branch)
+    ? mapAnchored(
+        editor,
+        value.kept.kind === 'fallback' ? value.kept.plain : value.kept.branch,
+        readBack
+      )
     : anchorable
-      ? mapAnchored(editor, value)
+      ? mapAnchored(editor, value, readBack)
       : null;
 
-  if (anchorable && anchored && !anchored.keptWrap) return anchored.head;
+  if (anchorable && anchored && !anchored.keptWrap) return anchored;
 
   const wrap = value.kept
     ? value.kept.kind === 'wrap'
@@ -758,11 +923,15 @@ const resolveHead = <V extends Value>(
       : attempt?.replay.program
         ? Object.freeze({ branch: attempt, kind: 'program' })
         : null;
-  const { head } = mapHead(editor, value, false);
+  const mapped = mapHead(editor, value, {
+    anchor: false,
+    readBack: readBack && !kept,
+  });
+  const { head } = mapped;
 
   return kept && head?.identity === value.identity
-    ? Object.freeze({ ...head, kept })
-    : head;
+    ? { ...mapped, head: Object.freeze({ ...head, kept }) }
+    : mapped;
 };
 
 const resolveTop = <V extends Value>(
@@ -887,6 +1056,22 @@ const shownBatches = <V extends Value>(
     const shown =
       current.kept?.kind === 'program' ? current.kept.branch : current;
 
+    if (
+      shown !== current &&
+      !jsonEqual(current.replay.change.toJSON(), shown.replay.change.toJSON())
+    ) {
+      HISTORY_FALLBACKS.set(shown.batch, current.batch);
+    }
+    if (shown.kept?.kind === 'fallback') {
+      const withFallback = shown;
+
+      HISTORY_FALLBACKS.set(
+        shown.batch,
+        () =>
+          outsideFallbackCount(() => plainFallback(editor, withFallback))
+            ?.batch ?? null
+      );
+    }
     batches.push(shown.batch);
     current = resolveTop(editor, shown.next);
   }
@@ -1265,18 +1450,47 @@ const fromBatches = <V extends Value>(
   }
 
   let value: HistoryBranch<V> | null = null;
+  const replayOf = (batchValue: Batch<V>, from: EditorDocumentValue<V>) =>
+    recordHistoryReplay(
+      historyReplaySchemaOf(editor),
+      from,
+      batchValue.change,
+      direction,
+      replayedOf(batchValue)
+    );
+
   for (const entry of entries.toReversed()) {
+    const fallback =
+      direction === 'redo' ? historyFallbackOf(entry.batch) : null;
+    const identity = {};
+
     value = branch(
       entry.batch,
       entry.base,
-      recordHistoryReplay(
-        historyReplaySchemaOf(editor),
-        entry.base,
-        entry.batch.change,
-        direction,
-        replayedOf(entry.batch)
-      ),
-      value
+      replayOf(entry.batch, entry.base),
+      value,
+      null,
+      null,
+      null,
+      0,
+      identity,
+      null,
+      fallback
+        ? Object.freeze({
+            kind: 'fallback' as const,
+            plain: branch(
+              fallback,
+              entry.base,
+              replayOf(fallback, entry.base),
+              value,
+              null,
+              null,
+              null,
+              0,
+              identity
+            ),
+          })
+        : null
     );
   }
 
@@ -1510,14 +1724,29 @@ export const attachKeptHistoryRedo = <V extends Value>(
 
   const causes = DROPPED_HISTORY_CAUSES.get(editor)?.length ?? 0;
 
-  KEPT_REDO_ATTEMPTS.set(request, kept.branch);
+  KEPT_REDO_ATTEMPTS.set(
+    request,
+    kept.kind === 'fallback'
+      ? Object.freeze({ ...head, kept: null })
+      : kept.branch
+  );
 
   return {
     detach: () => {
       KEPT_REDO_ATTEMPTS.delete(request);
     },
-    forget: () => {
+    fallBack: () => {
       DROPPED_HISTORY_CAUSES.get(editor)?.splice(causes);
+
+      const waiting = getStore(editor).redos;
+      const plain =
+        waiting?.identity === head.identity && plainFallback(editor, waiting);
+
+      if (plain) KEPT_REDO_ATTEMPTS.set(request, plain);
+
+      return () => {
+        KEPT_REDO_ATTEMPTS.delete(request);
+      };
     },
   };
 };
@@ -1692,6 +1921,7 @@ export const completeHistoryAction = <V extends Value>(
     keptAttempt<V>(source, request) ?? store[source]
   );
 
+  KEPT_REDO_ATTEMPTS.delete(request);
   if (!resolved) throw new Error(`Missing ${source} history batch.`);
 
   const nextSource = rebaseOnto(editor, resolved.next, current);

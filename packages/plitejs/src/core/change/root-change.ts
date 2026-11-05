@@ -13,7 +13,13 @@ import {
   type PieceProps,
   rebaseOverPieces,
 } from './enclosure';
-import { rebaseOverJoins } from './join';
+import {
+  convergedResult,
+  liftOf,
+  rebaseOverJoins,
+  editsInMovedLine,
+  rebaseOverLift,
+} from './join';
 import {
   cloneFrozen,
   cloneJson,
@@ -21,6 +27,7 @@ import {
   jsonEqual,
   type JsonRecord,
 } from './json';
+import { markReadBack, type ReadBack } from './read-back';
 import {
   claimPreparedNodeSlice,
   closeToken,
@@ -53,6 +60,7 @@ import {
   transformPathAfterRemove,
   unsafeNodePropertyKeys,
 } from './transform';
+import { crossed, wrapFidelity } from './wrap-fidelity';
 
 /**
  * Concrete placement used to resolve schema-owned property laws.
@@ -1492,7 +1500,8 @@ export const transformChange = (
   changeA: RootChange,
   changeB: RootChange,
   before: boolean,
-  replayBase?: DocumentIndex
+  replayBase?: DocumentIndex,
+  readBack: ReadBack | null = null
 ) => {
   if (changeA.length !== changeB.length) {
     throw new Error('Cannot transform mismatched change-set lengths.');
@@ -1500,15 +1509,31 @@ export const transformChange = (
 
   const sections: number[] = [];
   const data: SectionData[] = [];
-  const replayA = replayBase && replaySectionsOf(changeA, changeB, replayBase);
-  const replayB = replayBase && replaySectionsOf(changeB, changeA, replayBase);
+  const fidelity =
+    readBack && replayBase
+      ? wrapFidelity(changeA, changeB, replayBase, before ? 'a' : 'b')
+      : null;
+
+  if (fidelity) markReadBack(readBack);
+  const replayA =
+    !fidelity && replayBase && replaySectionsOf(changeA, changeB, replayBase);
+  const replayB =
+    !fidelity && replayBase && replaySectionsOf(changeB, changeA, replayBase);
   const a = new SectionIterator(
-    replayA ? replayA.sections : changeA.sections,
-    replayA ? replayA.data : changeA.data
+    fidelity
+      ? fidelity.a.sections
+      : replayA
+        ? replayA.sections
+        : changeA.sections,
+    fidelity ? fidelity.a.data : replayA ? replayA.data : changeA.data
   );
   const b = new SectionIterator(
-    replayB ? replayB.sections : changeB.sections,
-    replayB ? replayB.data : changeB.data
+    fidelity
+      ? fidelity.b.sections
+      : replayB
+        ? replayB.sections
+        : changeB.sections,
+    fidelity ? fidelity.b.data : replayB ? replayB.data : changeB.data
   );
   let inserted = -1;
   let position = 0;
@@ -1549,14 +1574,16 @@ export const transformChange = (
           (b.length < a.length ||
             (b.length === a.length &&
               (a.length === 0
-                ? bLandsFirst(
-                    a,
-                    b,
-                    replayA?.ownCloses,
-                    replayB?.ownCloses,
-                    before,
-                    leftOpen
-                  )
+                ? fidelity?.merges(position)
+                  ? fidelity.bFirst(position)
+                  : bLandsFirst(
+                      a,
+                      b,
+                      replayA ? replayA.ownCloses : undefined,
+                      replayB ? replayB.ownCloses : undefined,
+                      before,
+                      leftOpen
+                    )
                 : !before)))))
     ) {
       const end = position + b.length;
@@ -2474,6 +2501,185 @@ const soleWrapProps = (
   return lead.props;
 };
 
+const wrapsInsideReplacement = (
+  wrap: readonly Replacement[],
+  other: readonly Replacement[],
+  document: DocumentIndex
+) =>
+  wrap.length > 1 &&
+  wrap.every(
+    ({ from, insert, to }) =>
+      from === to &&
+      insert.tokens.length === 1 &&
+      insert.tokens[0].kind !== 'text' &&
+      insert.tokens[0].nodeKind === 'element'
+  ) &&
+  other.some((range) =>
+    wrap.every(({ from }) => range.from < from && from < range.to)
+  ) &&
+  !other.some(({ insert }) =>
+    JSON.stringify(insert.toJSON()).includes(
+      JSON.stringify(
+        document
+          .slice(getDefined(wrap[0]).from, getDefined(wrap.at(-1)).from)
+          .toJSON()
+      ).slice(1, -1)
+    )
+  );
+
+const propertyWritesOf = (change: RootChange) => {
+  const sections: number[] = [];
+  const data: SectionData[] = [];
+
+  for (let index = 0; index < change.sections.length; index += 2) {
+    const length = change.sections[index];
+
+    if (change.sections[index + 1] === -2) {
+      addSection(sections, data, length, -2, change.data[index >> 1] ?? null);
+    } else {
+      addSection(sections, data, length, -1, null);
+    }
+  }
+
+  return RootChange.fromSections(sections, data);
+};
+
+const piecesOf = (slice: PreparedTokenSlice) => {
+  const pieces: string[] = [];
+  let piece: unknown[] = [];
+  let depth = 0;
+
+  for (const token of slice.toJSON()) {
+    const step = depthChange(token);
+
+    piece.push(token);
+    depth += step;
+    if (depth <= 0) {
+      pieces.push(JSON.stringify(piece));
+      piece = [];
+      depth = 0;
+    }
+  }
+  if (piece.length > 0) {
+    pieces.push(...piece.map((token) => JSON.stringify([token])));
+  }
+
+  return pieces;
+};
+
+type Range = Readonly<{ from: number; to: number }>;
+
+type InsertedElement = Readonly<{
+  close: Range;
+  open: Range;
+  props: Readonly<JsonRecord>;
+}>;
+
+export const insertedElementsOf = (
+  change: RootChange,
+  document: DocumentIndex
+) => {
+  const elements: InsertedElement[] = [];
+  const open: Array<{ props: Readonly<JsonRecord>; run: Range } | null> = [];
+  let position = 0;
+
+  for (let index = 0; index < change.sections.length;) {
+    if (change.sections[index + 1] < 0) {
+      const length = change.sections[index];
+      const { closes, opens } = crossed(document, position, position + length);
+
+      open.length = Math.max(0, open.length - closes);
+      for (const _ of opens) open.push(null);
+      position += length;
+      index += 2;
+      continue;
+    }
+
+    const from = position;
+    const tokens: JsonToken[] = [];
+
+    while (index < change.sections.length && change.sections[index + 1] >= 0) {
+      position += change.sections[index];
+      tokens.push(
+        ...((change.data[index >> 1] as PreparedTokenSlice | null)?.tokens ??
+          [])
+      );
+      index += 2;
+    }
+
+    const run = { from, to: position };
+
+    for (const token of tokens) {
+      if (token.kind === 'open') {
+        open.push(
+          token.nodeKind === 'element' ? { props: token.props, run } : null
+        );
+      } else if (token.kind === 'close') {
+        const element = open.pop();
+
+        if (element) {
+          elements.push({
+            close: run,
+            open: element.run,
+            props: element.props,
+          });
+        }
+      }
+    }
+  }
+
+  return elements;
+};
+
+const touches = ({ from, to }: Range, at: number) => from <= at && at <= to;
+
+const insertsWithin = (
+  inner: RootChange,
+  outer: RootChange,
+  innerReplacements: readonly Replacement[],
+  outerReplacements: readonly Replacement[],
+  document: DocumentIndex
+) => {
+  if (
+    innerReplacements.length === 0 ||
+    innerReplacements.some(
+      ({ from, insert, to }) => from !== to || insert.length === 0
+    )
+  ) {
+    return false;
+  }
+
+  const nodesHeld = innerReplacements.every(({ from, insert }) => {
+    const around = outerReplacements
+      .filter((replacement) => touches(replacement, from))
+      .map((replacement) => JSON.stringify(replacement.insert.toJSON()))
+      .join('');
+
+    return piecesOf(insert).every((piece) => {
+      const [token, ...rest] = JSON.parse(piece) as JsonToken[];
+
+      return rest.length === 0
+        ? token.kind !== 'text' && token.nodeKind === 'element'
+        : around.includes(piece.slice(1, -1));
+    });
+  });
+
+  if (!nodesHeld) return false;
+
+  const written = insertedElementsOf(outer, document);
+
+  return insertedElementsOf(inner, document)
+    .filter(({ close, open }) => open.from !== close.from)
+    .every((element) =>
+      written.some(
+        (other) =>
+          jsonEqual(other.props, element.props) &&
+          touches(other.open, element.open.from) &&
+          touches(other.close, element.close.from)
+      )
+    );
+};
+
 const addsElementOrRetypesTo = (step: RootChange, type: unknown) => {
   for (let index = 0; index < step.sections.length; index += 2) {
     const inserted = step.sections[index + 1];
@@ -3311,7 +3517,8 @@ const transformByPositionOverAbsorbedWraps = (
   aReplacements: readonly Replacement[],
   bReplacements: readonly Replacement[],
   document: DocumentIndex,
-  replayBase: DocumentIndex | undefined
+  replayBase: DocumentIndex | undefined,
+  readBack: ReadBack | null
 ): Readonly<{ a: RootChange; b: RootChange }> | null => {
   for (const side of ['a', 'b'] as const) {
     const [replacements, edit] =
@@ -3331,8 +3538,8 @@ const transformByPositionOverAbsorbedWraps = (
 
     const inner =
       side === 'a'
-        ? RootChange.transform(a, wraps.stripped, replayBase)
-        : RootChange.transform(wraps.stripped, b, replayBase);
+        ? RootChange.transform(a, wraps.stripped, replayBase, readBack)
+        : RootChange.transform(wraps.stripped, b, replayBase, readBack);
     const [afterInnerA, afterInnerB] =
       side === 'a'
         ? [a.apply(document), wraps.stripped.apply(document)]
@@ -4142,10 +4349,15 @@ export class RootChange {
     return new RootChange([...sections], [...data]);
   }
 
-  static transform(a: RootChange, b: RootChange, replayBase?: DocumentIndex) {
+  static transform(
+    a: RootChange,
+    b: RootChange,
+    replayBase?: DocumentIndex,
+    readBack: ReadBack | null = null
+  ) {
     return {
-      a: transformChange(a, b, true, replayBase),
-      b: transformChange(b, a, false, replayBase),
+      a: transformChange(a, b, true, replayBase, readBack),
+      b: transformChange(b, a, false, replayBase, readBack),
     };
   }
 
@@ -4306,7 +4518,12 @@ export class RootChange {
       replay,
     }: Readonly<{
       keepEqualEdits?: boolean;
-      replay?: Readonly<{ anchor?: boolean; pieceProps: PieceProps }>;
+      replay?: Readonly<{
+        anchor?: boolean;
+        carriesLift?: boolean;
+        pieceProps: PieceProps;
+        readBack?: ReadBack | null;
+      }>;
     }> = {}
   ): Readonly<{ a: RootChange; b: RootChange; keptWrap?: KeptWrap }> {
     const replayBase = replay && document;
@@ -4328,7 +4545,19 @@ export class RootChange {
 
     if (acrossMove) return acrossMove;
 
-    const joined = rebaseOverJoins(a, b, document, replayBase);
+    const readBack = replay?.readBack ?? null;
+    const inMovedLine =
+      replay?.carriesLift && editsInMovedLine(a, b, document)
+        ? rebaseOverLift(a, b, document, { keepEqualEdits, replay })
+        : null;
+
+    if (inMovedLine) {
+      markReadBack(readBack);
+
+      return inMovedLine;
+    }
+
+    const joined = rebaseOverJoins(a, b, document, replayBase, readBack);
 
     if (joined) return joined;
 
@@ -4345,11 +4574,46 @@ export class RootChange {
     // value-based repairs below exist for edits that touch, overlap or relocate
     // each other, and each costs O(document).
     if (changedRangesAreSeparated(a, b)) {
-      return RootChange.transform(a, b, replayBase);
+      return RootChange.transform(a, b, replayBase, readBack);
     }
 
     const aReplacements = a.replacements();
     const bReplacements = b.replacements();
+
+    const wrapGoesWithReplaced = (wrapping: RootChange, other: RootChange) => {
+      const rest = propertyWritesOf(wrapping);
+      const over =
+        rest.propertyChanges().length === 0
+          ? { a: RootChange.empty(other.newLength), b: other }
+          : RootChange.transformInDocument(rest, other, document, {
+              keepEqualEdits,
+              replay,
+            });
+
+      markReadBack(readBack);
+
+      return {
+        kept: over.a,
+        other: wrapping.invert(document).compose(rest).compose(over.b),
+      };
+    };
+
+    if (
+      readBack &&
+      wrapsInsideReplacement(aReplacements, bReplacements, document)
+    ) {
+      const { kept, other } = wrapGoesWithReplaced(a, b);
+
+      return { a: kept, b: other };
+    }
+    if (
+      readBack &&
+      wrapsInsideReplacement(bReplacements, aReplacements, document)
+    ) {
+      const { kept, other } = wrapGoesWithReplaced(b, a);
+
+      return { a: other, b: kept };
+    }
 
     const absorbed = transformByPositionOverAbsorbedWraps(
       a,
@@ -4357,7 +4621,8 @@ export class RootChange {
       aReplacements,
       bReplacements,
       document,
-      replayBase
+      replayBase,
+      readBack
     );
 
     if (absorbed) return absorbed;
@@ -4538,7 +4803,102 @@ export class RootChange {
 
     if (sameShared?.size) return rebaseAfterShared(sameShared);
 
-    const transformed = RootChange.transform(a, b, replayBase);
+    const wrapGoesWithMove = (
+      edit: RootChange,
+      moveChange: RootChange,
+      move: SiblingRunMove
+    ) => {
+      const insertion = moveChange
+        .replacements()
+        .find(({ from, insert, to }) => from === to && insert.length > 0);
+      const wraps = insertedElementsOf(edit, document).some(
+        ({ close, open }) =>
+          open.from === move.from &&
+          open.to === move.from &&
+          close.from === move.to &&
+          close.to === move.to
+      );
+
+      if (!insertion || !wraps) return null;
+
+      const afterEdit = edit.apply(document);
+      const node = afterEdit.nodeStartingAt(
+        getDefined(edit.mapPos(move.from, 1))
+      );
+      const wrapperPath = node?.path.slice(0, -1);
+
+      if (!node || !wrapperPath?.length) return null;
+
+      const wrapper = afterEdit.nodeRange(wrapperPath);
+      const wrapperNode = afterEdit.node(wrapperPath);
+      const target = edit.mapPos(insertion.from, -1);
+
+      if (
+        !isElementNode(wrapperNode) ||
+        wrapperNode.children.length !== 1 ||
+        target === null ||
+        (wrapper.from <= target && target <= wrapper.to)
+      ) {
+        return null;
+      }
+
+      const wrapperMove = RootChange.create(afterEdit, [
+        { from: wrapper.from, to: wrapper.to },
+        { from: target, insert: afterEdit.slice(wrapper.from, wrapper.to) },
+      ]);
+      const writes = propertyWritesOf(moveChange);
+      let inMoved = false;
+
+      writes.iterChangedRanges((from, to) => {
+        if (to > move.from && from < move.to) inMoved = true;
+      });
+      if (inMoved) return null;
+
+      const moved = writes.propertyChanges().length
+        ? wrapperMove.compose(
+            RootChange.transform(
+              RootChange.transform(writes, edit).a,
+              wrapperMove
+            ).a
+          )
+        : wrapperMove;
+
+      return {
+        edit: RootChange.between(
+          moveChange.apply(document),
+          moved.apply(afterEdit)
+        ),
+        move: moved,
+      };
+    };
+
+    if (readBack && bMove && !aMove) {
+      const wrapped = wrapGoesWithMove(a, b, bMove);
+      const kept =
+        wrapped &&
+        convergedResult(document, a, b, { a: wrapped.edit, b: wrapped.move });
+
+      if (kept) {
+        markReadBack(readBack);
+
+        return kept;
+      }
+    }
+
+    if (readBack && aMove && !bMove) {
+      const wrapped = wrapGoesWithMove(b, a, aMove);
+      const kept =
+        wrapped &&
+        convergedResult(document, a, b, { a: wrapped.move, b: wrapped.edit });
+
+      if (kept) {
+        markReadBack(readBack);
+
+        return kept;
+      }
+    }
+
+    const transformed = RootChange.transform(a, b, replayBase, readBack);
     const aChangesStructure = !sameDocumentStructure(
       document.value,
       afterA.value
@@ -4557,12 +4917,16 @@ export class RootChange {
         ? jsonEqual(afterA.value, afterB.value)
         : sameDocumentStructure(afterA.value, afterB.value);
 
-    if (
+    const oneEdit =
       !keepEqualEdits &&
       (aChangesStructure || bChangesStructure) &&
       sharesStructuralStart &&
-      sameEdit()
-    ) {
+      sameEdit();
+    const moveMeetsNonMove =
+      readBack !== null && Boolean(aMove) !== Boolean(bMove);
+
+    if (oneEdit && moveMeetsNonMove) markReadBack(readBack);
+    if (oneEdit && !moveMeetsNonMove) {
       if (shared) return rebaseAfterShared(shared);
 
       const keepsReplayedWrap =
@@ -4789,7 +5153,48 @@ export class RootChange {
 
     if (overRemoval) return overRemoval;
 
-    const wrap = replay?.anchor ? soleWrapProps(aReplacements, document) : null;
+    const soleWrap = soleWrapProps(aReplacements, document);
+    const bHoldsEdit =
+      readBack &&
+      !keepEqualEdits &&
+      aPropertyChanges.length === 0 &&
+      (insertsWithin(a, b, aReplacements, bReplacements, document) ||
+        (soleWrap !== null &&
+          bPropertyChanges.some(
+            ({ from, modifications }) =>
+              from < getDefined(aReplacements[0]).from &&
+              document.nodeStartingAt(from)?.to !== undefined &&
+              getDefined(aReplacements[1]).from <
+                getDefined(document.nodeStartingAt(from)).to &&
+              modifications.some(
+                (modification) =>
+                  modification.key === 'type' &&
+                  modification.type === 'set' &&
+                  modification.value === soleWrap.type
+              )
+          )));
+
+    if (bHoldsEdit && liftOf(b, document)) {
+      markReadBack(readBack);
+
+      return {
+        a: RootChange.empty(afterB.length),
+        b: a.invert(document).compose(b),
+      };
+    }
+
+    const lifted =
+      readBack && !bHoldsEdit
+        ? rebaseOverLift(a, b, document, { keepEqualEdits, replay })
+        : null;
+
+    if (lifted) {
+      markReadBack(readBack);
+
+      return lifted;
+    }
+
+    const wrap = replay?.anchor ? soleWrap : null;
     const anchored =
       wrap &&
       RootChange.keepOverWrittenBack(a, b, document, afterA, afterB, wrap);

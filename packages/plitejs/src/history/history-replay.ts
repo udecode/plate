@@ -2,6 +2,7 @@ import { classifyDocumentChange } from '../core/change/builder';
 import {
   type CarriedProjection,
   type LetterPlace,
+  liftsCarriedLine,
   projectCarriedStep,
   relocatesCarriedBlock,
   mapPosThroughBlockMove,
@@ -43,6 +44,7 @@ import {
 } from '../core/change/document-change';
 import type { DocumentIndex, NodeList } from '../core/change/document-index';
 import { jsonEqual, type JsonRecord } from '../core/change/json';
+import { markReadBack, type ReadBack } from '../core/change/read-back';
 import {
   getDocumentPropertyContext,
   type KeptWrap,
@@ -196,19 +198,32 @@ export const historyReplaySchemaOf = (editor: AnyEditor) => {
   };
 };
 
+/** @internal */
+export type ReplayRules = Readonly<{ anchor: boolean; readBack: boolean }>;
+
+type Shaping = ReadBack & { projected: boolean };
+
+type MapRules = Readonly<{
+  anchor: boolean;
+  carriesLift?: boolean;
+  readBack: Shaping | null;
+}>;
+
 /** `step` replayed over `edit`, both from `base`. */
 const replayOver = (
   schema: HistoryReplaySchema,
   edit: DocumentChange,
   step: DocumentChange,
   base: JsonEditorValue,
-  anchor: boolean
+  { anchor, carriesLift, readBack }: MapRules
 ) =>
   transformInternalDocumentChange(edit, step, base, {
     replay: {
       anchor,
+      carriesLift,
       pieceProps: (element, parent, root, nodes) =>
         schema.pieceProps(element, [...parent, 0], root, nodes),
+      readBack,
     },
   });
 
@@ -601,7 +616,8 @@ const mapProgramByPosition = <T extends JsonEditorValue>(
   base: T,
   mapping: HistoryMapping<T>,
   edit: RootChange,
-  window: ProgramWindow
+  window: ProgramWindow,
+  rules: MapRules
 ) => {
   const mapped = mapOneReplay(
     schema,
@@ -609,7 +625,8 @@ const mapProgramByPosition = <T extends JsonEditorValue>(
       carried: replay.carried,
     }),
     base,
-    mapping
+    mapping,
+    { anchor: false, readBack: rules.readBack }
   );
   const moved = mapCarryProgram(
     program,
@@ -651,7 +668,8 @@ const mapProgramReplay = <T extends JsonEditorValue>(
   replay: HistoryReplay<T>,
   program: CarryProgram,
   base: T,
-  mapping: HistoryMapping<T>
+  mapping: HistoryMapping<T>,
+  rules: MapRules
 ) => {
   const { root } = program;
   const edit = getInternalDocumentRootChange(mapping.change, root);
@@ -668,7 +686,8 @@ const mapProgramReplay = <T extends JsonEditorValue>(
       base,
       mapping,
       edit,
-      window
+      window,
+      rules
     );
   }
 
@@ -1103,10 +1122,13 @@ const carryReplay = <T extends JsonEditorValue>(
   base: T,
   middle: T,
   mapping: HistoryMapping<T>,
-  anchor: boolean
+  rules: MapRules
 ): CarriedMapping => {
-  const ordinary = () =>
-    replayOver(schema, mapping.change, recorded.structure, base, anchor);
+  const ordinary = (carriesLift = false) =>
+    replayOver(schema, mapping.change, recorded.structure, base, {
+      ...rules,
+      carriesLift,
+    });
   const { root } = runs[0];
   const step = getInternalDocumentRootChange(recorded.structure, root);
   const edit = getInternalDocumentRootChange(mapping.change, root);
@@ -1128,11 +1150,15 @@ const carryReplay = <T extends JsonEditorValue>(
   };
   let projected: CarriedProjection | null;
   let moved = false;
+  let lifts = false;
 
   try {
     moved = relocatesCarriedBlock(input);
-    projected =
-      !moved && touchesCarriedRuns(input) ? projectCarriedStep(input) : null;
+
+    const touched = !moved && touchesCarriedRuns(input);
+
+    lifts = touched && rules.readBack !== null && liftsCarriedLine(input);
+    projected = touched && !lifts ? projectCarriedStep(input) : null;
   } catch {
     // Counted only once the ordinary map works, since a step no map can
     // place is dropped and counted there.
@@ -1144,8 +1170,10 @@ const carryReplay = <T extends JsonEditorValue>(
   }
 
   if (moved) return { ...ordinary(), runs: null };
+  if (lifts) markReadBack(rules.readBack);
+  if (projected && rules.readBack) rules.readBack.projected = true;
   if (!projected) {
-    const mapped = ordinary();
+    const mapped = ordinary(lifts);
     const rest = getInternalDocumentRootChange(mapped.a, root);
     const sourceOf = mapPosThroughBlockMove(edit, input.before);
     const atOf = rest ? mapPosThroughBlockMove(rest, input.after) : null;
@@ -1208,15 +1236,48 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
   replay: HistoryReplay<T>,
   base: T,
   mapping: HistoryMapping<T>,
-  anchor: boolean
+  { anchor, readBack: reads }: ReplayRules
+): Readonly<{
+  keptWrap: KeptWrap | null;
+  projected: boolean;
+  readBack: boolean;
+  replay: HistoryReplay<T>;
+  rest: DocumentChange;
+}> => {
+  const readBack = reads ? { changed: false, projected: false } : null;
+  const mapped = mapReplay(schema, replay, base, mapping, {
+    anchor,
+    readBack,
+  });
+
+  return {
+    ...mapped,
+    projected: readBack?.projected === true,
+    readBack: readBack?.changed === true,
+  };
+};
+
+const mapReplay = <T extends JsonEditorValue>(
+  schema: HistoryReplaySchema,
+  replay: HistoryReplay<T>,
+  base: T,
+  mapping: HistoryMapping<T>,
+  rules: MapRules
 ): Readonly<{
   keptWrap: KeptWrap | null;
   replay: HistoryReplay<T>;
   rest: DocumentChange;
 }> => {
-  if (!replay.parts) return mapOneReplay(schema, replay, base, mapping, anchor);
+  if (!replay.parts) return mapOneReplay(schema, replay, base, mapping, rules);
 
-  const unsettle = mapOneReplay(schema, replay.parts.unsettle, base, mapping);
+  const partRules = { ...rules, anchor: false };
+  const unsettle = mapOneReplay(
+    schema,
+    replay.parts.unsettle,
+    base,
+    mapping,
+    partRules
+  );
   const rest = mapOneReplay(
     schema,
     replay.parts.rest,
@@ -1225,7 +1286,8 @@ export const mapHistoryReplay = <T extends JsonEditorValue>(
       after: unsettle.replay.record().after,
       change: unsettle.rest,
       textOnly: false,
-    }
+    },
+    partRules
   );
 
   return {
@@ -1245,7 +1307,7 @@ const mapOneReplay = <T extends JsonEditorValue>(
   replay: HistoryReplay<T>,
   base: T,
   mapping: HistoryMapping<T>,
-  anchor = false
+  rules: MapRules
 ): Readonly<{
   keptWrap: KeptWrap | null;
   replay: HistoryReplay<T>;
@@ -1257,7 +1319,8 @@ const mapOneReplay = <T extends JsonEditorValue>(
       replay,
       replay.program,
       base,
-      mapping
+      mapping,
+      rules
     );
 
     if (mapped) return mapped;
@@ -1265,14 +1328,17 @@ const mapOneReplay = <T extends JsonEditorValue>(
     const projected = projectedHistoryReplay(schema, replay, base);
 
     if (projected) {
-      return mapOneReplay(schema, projected, base, mapping, anchor);
+      return mapOneReplay(schema, projected, base, mapping, rules);
     }
 
     countCoreWork('carriedFallbacks');
   }
 
   const { exact } = replay;
-  const anchors = anchor && replay.direction === 'redo' && !exact;
+  const stepRules = {
+    anchor: rules.anchor && replay.direction === 'redo' && !exact,
+    readBack: rules.readBack,
+  };
   const asReplay = (
     change: DocumentChange,
     record: () => RecordedHistoryReplay<T>
@@ -1297,7 +1363,7 @@ const mapOneReplay = <T extends JsonEditorValue>(
           base,
           middle,
           mapping,
-          anchors
+          stepRules
         )
       : null;
   const structure =
@@ -1312,7 +1378,7 @@ const mapOneReplay = <T extends JsonEditorValue>(
       ? DocumentChange.between(base, recorded.after)
       : recorded.structure;
   const transformed =
-    carry ?? replayOver(schema, mapping.change, structure, base, anchors);
+    carry ?? replayOver(schema, mapping.change, structure, base, stepRules);
   const { keptWrap } = transformed;
   const mappedMiddle = transformed.b.apply(mapping.after);
   if (recorded.format.size === 0) {

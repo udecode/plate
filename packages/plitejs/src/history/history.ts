@@ -73,8 +73,11 @@ export type HistoryJSON = Readonly<{
   redos: readonly HistoryBatchJSON[];
   schema: EditorSchemaIdentity;
   undos: readonly HistoryBatchJSON[];
-  /** 5 when a step keeps `rest` or `carried`, else 4. */
-  version: 4 | 5;
+  /**
+   * 6 when a redo keeps a `fallback`, else 5 when a step keeps `rest` or
+   * `carried`, else 4.
+   */
+  version: 4 | 5 | 6;
 }>;
 
 export type HistoryBatchJSON = Readonly<{
@@ -103,6 +106,11 @@ export type HistoryBatchJSON = Readonly<{
       source: number;
     }>
   >;
+  /**
+   * Only on a redo history maps apart from its plain rules: the redo it
+   * applies from the same document when a guard refuses this one.
+   */
+  fallback?: HistoryBatchJSON;
 }>;
 
 const hasFunctions = (

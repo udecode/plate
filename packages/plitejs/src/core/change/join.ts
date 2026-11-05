@@ -3,10 +3,13 @@ import { textPropertiesEqual } from '../value-codec';
 import { countCoreWork } from '../work';
 import type { DocumentIndex } from './document-index';
 import { jsonEqual } from './json';
+import type { ReadBack } from './read-back';
 import {
   addSection,
+  insertedElementsOf,
   insertNodeChange,
   mergeNodeChange,
+  moveNodeChange,
   removeNodeChange,
   RootChange,
   type SectionData,
@@ -23,6 +26,8 @@ import {
 } from './tokens';
 
 type Range = Readonly<{ from: number; to: number }>;
+
+type Run = Range & { inserted: PreparedTokenSlice };
 
 /**
  * A deletion that joins a line into an earlier sibling line. It removes the
@@ -161,7 +166,7 @@ const joinIn = (
 
 const editRuns = (change: RootChange) => {
   const { data, sections } = change;
-  const runs: Array<Range & { inserted: PreparedTokenSlice }> = [];
+  const runs: Run[] = [];
   let position = 0;
 
   for (let index = 0; index < sections.length;) {
@@ -245,6 +250,354 @@ export const joinsOf = (change: RootChange, document: DocumentIndex) => {
 
     return [{ ...join, run: moves ? between : null }];
   });
+};
+
+/** @internal */
+export type Lift = Readonly<{
+  cut: number;
+  joinRun: Range;
+  lifted: DocumentIndex;
+  movedLine: Range;
+  move: RootChange;
+  movesMore: boolean;
+  rest: RootChange;
+}>;
+
+/** @internal */
+export const liftOf = (
+  change: RootChange,
+  document: DocumentIndex
+): Lift | null => {
+  if (!someRunDeletesTwoTokens(change)) return null;
+
+  const runs = editRuns(change);
+
+  for (let first = 0; first < runs.length; first += 1) {
+    const head = runs[first];
+    const text = document.textAt(head.from);
+
+    if (!text || head.to <= text.contentTo || head.inserted.length === 0) {
+      continue;
+    }
+
+    const linePath = text.path.slice(0, -1);
+    const lineRange = document.nodeRange(linePath);
+    const closes = document.slice(text.contentTo, head.to).tokens;
+
+    if (
+      linePath.length === 0 ||
+      head.to < lineRange.to ||
+      !closes.every((token) => token.kind === 'close')
+    ) {
+      continue;
+    }
+
+    for (const tail of runs.slice(first + 1)) {
+      const node = document.nodeStartingAt(tail.from);
+
+      if (
+        node?.kind !== 'element' ||
+        node.to !== tail.to ||
+        tail.inserted.length > 0 ||
+        node.path.length === linePath.length
+      ) {
+        continue;
+      }
+
+      const second = document.node(node.path);
+      const last = isElementNode(second) ? second.children.at(-1) : undefined;
+
+      if (!last || !isTextNode(last) || !isElementNode(second)) continue;
+
+      const secondText = document.nodeRange([
+        ...node.path,
+        second.children.length - 1,
+      ]);
+      const inserted = head.inserted.toJSON();
+      const starts: number[] = [];
+      let position = 0;
+
+      for (const token of inserted) {
+        starts.push(position);
+        position += token.kind === 'text' ? token.text.length : 1;
+      }
+
+      for (const [index, token] of inserted.entries()) {
+        if (token.kind !== 'text') continue;
+
+        const keptText = token.text;
+        const cut = secondText.to - 1 - keptText.length;
+
+        if (cut <= secondText.from || !last.text.endsWith(keptText)) continue;
+
+        const kept = document.slice(cut, tail.to).toJSON();
+        const lift =
+          jsonEqual(inserted.slice(index, index + kept.length), kept) &&
+          liftAround(change, document, runs, head, tail, {
+            before: getDefined(starts[index]),
+            cut,
+            linePath,
+            lineTo: lineRange.to,
+            secondPath: node.path,
+          });
+
+        if (lift) return lift;
+      }
+    }
+  }
+
+  return null;
+};
+
+const liftAround = (
+  change: RootChange,
+  document: DocumentIndex,
+  runs: readonly Run[],
+  head: Run,
+  tail: Run,
+  {
+    before,
+    cut,
+    linePath,
+    lineTo,
+    secondPath,
+  }: Readonly<{
+    before: number;
+    cut: number;
+    linePath: readonly number[];
+    lineTo: number;
+    secondPath: readonly number[];
+  }>
+): Lift | null => {
+  let move: RootChange;
+
+  try {
+    move = moveNodeChange(document, secondPath, [
+      ...linePath.slice(0, -1),
+      getDefined(linePath.at(-1)) + 1,
+    ]);
+  } catch {
+    return null;
+  }
+
+  const lifted = move.apply(document);
+  const length = tail.to - tail.from;
+  const shift = (position: number) =>
+    position >= lineTo && position < tail.from ? position + length : position;
+  const prefix = head.inserted.slice(0, before);
+  const kept = head.inserted.slice(
+    before + document.slice(cut, tail.to).length
+  );
+  const sections: number[] = [];
+  const data: SectionData[] = [];
+  const edits: Array<Run | { at: number; data: SectionData }> = [...runs];
+  let position = 0;
+
+  for (let index = 0, at = 0; index < change.sections.length; index += 2) {
+    if (change.sections[index + 1] === -2) {
+      if (at >= tail.from && at < tail.to) return null;
+      edits.push({ at, data: change.data[index >> 1] ?? null });
+    }
+    at += change.sections[index];
+  }
+  edits.sort(
+    (x, y) => ('at' in x ? x.at : x.from) - ('at' in y ? y.at : y.from)
+  );
+
+  for (const run of edits) {
+    if ('at' in run) {
+      const from = shift(run.at);
+
+      addSection(sections, data, from - position, -1, null);
+      addSection(sections, data, 1, -2, run.data);
+      position = from + 1;
+      continue;
+    }
+    if (run === tail) continue;
+    if (run === head) {
+      const joinTo = lineTo + cut - tail.from;
+
+      addSection(sections, data, run.from - position, -1, null);
+      addSection(sections, data, joinTo - run.from, prefix.length, prefix);
+      addSection(sections, data, lineTo + length - joinTo, -1, null);
+      addSection(sections, data, head.to - lineTo, kept.length, kept);
+      position = head.to + length;
+      continue;
+    }
+
+    const from = shift(run.from);
+
+    addSection(sections, data, from - position, -1, null);
+    addSection(
+      sections,
+      data,
+      run.to - run.from,
+      run.inserted.length,
+      run.inserted
+    );
+    position = from + run.to - run.from;
+  }
+  addSection(sections, data, lifted.length - position, -1, null);
+
+  const rest = RootChange.fromSections(sections, data);
+
+  if (rest.length !== lifted.length) return null;
+
+  const after = applyIfNested(rest, lifted);
+
+  if (!after || !jsonEqual(after.value, change.apply(document).value)) {
+    return null;
+  }
+
+  return {
+    cut,
+    movesMore: edits.length > 2 || before > 0 || kept.length > 0,
+    joinRun: { from: head.from, to: head.to },
+    lifted,
+    movedLine: { from: tail.from, to: tail.to },
+    move,
+    rest,
+  };
+};
+
+const editsInsideWrap = (
+  lifting: RootChange,
+  lift: Lift,
+  other: RootChange,
+  document: DocumentIndex
+) => {
+  const wraps = insertedElementsOf(other, document).filter(
+    ({ close, open }) => open.to < close.from
+  );
+
+  return editRuns(lifting).some(
+    (run) =>
+      run.from !== lift.joinRun.from &&
+      run.from !== lift.movedLine.from &&
+      !staysInLine(document, run) &&
+      wraps.some(
+        ({ close, open }) => open.to < run.from && run.from < close.from
+      )
+  );
+};
+
+const staysInLine = (document: DocumentIndex, { from, inserted, to }: Run) => {
+  const start = document.nodeStartingAt(from);
+  const textPath =
+    document.textAt(from)?.path ?? (start?.kind === 'text' ? start.path : null);
+
+  if (!textPath || to >= document.nodeRange(textPath.slice(0, -1)).to) {
+    return false;
+  }
+
+  let depth = 0;
+
+  return inserted.tokens.every((token) => {
+    depth += depthChange(token);
+
+    return depth >= -1;
+  });
+};
+
+type TransformOptions = Parameters<typeof RootChange.transformInDocument>[3];
+
+const touchesInside = (change: RootChange, { from, to }: Range) =>
+  editedRanges(change).some(
+    (range) => range.to > from + 1 && range.from < to - 1
+  );
+
+const overMove = (
+  edit: RootChange,
+  lift: Lift,
+  document: DocumentIndex,
+  options: TransformOptions
+) => {
+  if (touchesInside(edit, lift.movedLine)) {
+    const carried = RootChange.transformInDocument(
+      edit,
+      lift.move,
+      document,
+      options
+    );
+
+    return { edit: carried.a, move: carried.b };
+  }
+
+  const { a: move, b: moved } = RootChange.transform(lift.move, edit);
+
+  return { edit: moved, move };
+};
+
+export const editsInMovedLine = (
+  edit: RootChange,
+  step: RootChange,
+  document: DocumentIndex
+) => {
+  const runs = editRuns(edit);
+  const lift = runs.length > 0 ? liftOf(step, document) : null;
+
+  return (
+    lift !== null &&
+    runs.every(
+      ({ from, to }) =>
+        from > lift.movedLine.from &&
+        to < lift.movedLine.to &&
+        document.textAt(from) !== null
+    )
+  );
+};
+
+/** @internal */
+export const rebaseOverLift = (
+  a: RootChange,
+  b: RootChange,
+  document: DocumentIndex,
+  options: TransformOptions
+) => ifNested(() => liftRebase(a, b, document, options));
+
+const liftRebase = (
+  a: RootChange,
+  b: RootChange,
+  document: DocumentIndex,
+  options: TransformOptions
+) => {
+  const bLift = liftOf(b, document);
+  const aLift = bLift ? null : liftOf(a, document);
+
+  if (bLift) {
+    if (editsInsideWrap(b, bLift, a, document)) return null;
+
+    const first = overMove(a, bLift, document, options);
+    const second = RootChange.transformInDocument(
+      first.edit,
+      bLift.rest,
+      bLift.lifted,
+      options
+    );
+
+    return convergedResult(document, a, b, {
+      a: second.a,
+      b: first.move.compose(second.b),
+    });
+  }
+  if (aLift) {
+    if (editsInsideWrap(a, aLift, b, document)) return null;
+
+    const first = overMove(b, aLift, document, options);
+    const second = RootChange.transformInDocument(
+      aLift.rest,
+      first.edit,
+      aLift.lifted,
+      options
+    );
+
+    return convergedResult(document, a, b, {
+      a: first.move.compose(second.a),
+      b: second.b,
+    });
+  }
+
+  return null;
 };
 
 /**
@@ -761,14 +1114,17 @@ const editedRanges = (change: RootChange) => {
   return ranges;
 };
 
-const applyIfNested = (change: RootChange, document: DocumentIndex) => {
+const ifNested = <T>(run: () => T) => {
   try {
-    return change.apply(document);
+    return run();
   } catch (error) {
     if (error instanceof PreparedTokenSliceStructureError) return null;
     throw error;
   }
 };
+
+const applyIfNested = (change: RootChange, document: DocumentIndex) =>
+  ifNested(() => change.apply(document));
 
 /** @internal */
 export const convergedResult = (
@@ -944,7 +1300,8 @@ export const rebaseOverJoins = (
   a: RootChange,
   b: RootChange,
   document: DocumentIndex,
-  replayBase: DocumentIndex | undefined
+  replayBase: DocumentIndex | undefined,
+  readBack: ReadBack | null = null
 ) => {
   const aJoins = joinsOf(a, document);
   const bJoins = joinsOf(b, document);
@@ -974,7 +1331,8 @@ export const rebaseOverJoins = (
   const { a: aOverB, b: bOverA } = RootChange.transform(
     aRewrite.change,
     bRewrite.change,
-    replayBase
+    replayBase,
+    readBack
   );
   const aApart = applyIfNested(aRewrite.change, document);
   const throughA = aApart && applyIfNested(bOverA, aApart);

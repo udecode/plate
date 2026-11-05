@@ -29,7 +29,12 @@ import type { AnyEditor } from '../interfaces/editor';
 import { isObject } from '../utils/is-object';
 import type { Batch, History, HistoryBatchJSON, HistoryJSON } from './history';
 import { checkedCarryProgram, historyReplaySchemaOf } from './history-replay';
-import { freezeHistoryBatch, withHistoryProgram } from './history-state';
+import {
+  freezeHistoryBatch,
+  historyFallbackOf,
+  withHistoryFallback,
+  withHistoryProgram,
+} from './history-state';
 
 export const isHistorySchemaIdentity = (
   value: unknown
@@ -46,7 +51,11 @@ const copyHistorySchemaIdentity = (
   return identity;
 };
 
-const encodeBatch = (editor: AnyEditor, batch: Batch): HistoryBatchJSON => ({
+const encodeBatch = (
+  editor: AnyEditor,
+  batch: Batch,
+  fallback?: Batch | null
+): HistoryBatchJSON => ({
   change: batch.change.toJSON(),
   effects: batch.effects.map(encodeEditorEffect),
   selectionAfter: encodeEditorSelection(editor, batch.selectionAfter, {
@@ -70,6 +79,7 @@ const encodeBatch = (editor: AnyEditor, batch: Batch): HistoryBatchJSON => ({
         ),
       }
     : {}),
+  ...(fallback ? { fallback: encodeBatch(editor, fallback) } : {}),
 });
 
 const isPosition = (value: unknown): value is number =>
@@ -104,7 +114,7 @@ const decodeCarriedRuns = (value: unknown): readonly CarriedRun[] | null =>
 
 const isHistoryJSON = (value: unknown): value is HistoryJSON =>
   isObject(value) &&
-  (value.version === 4 || value.version === 5) &&
+  (value.version === 4 || value.version === 5 || value.version === 6) &&
   isHistorySchemaIdentity(value.schema) &&
   Array.isArray(value.redos) &&
   Array.isArray(value.undos);
@@ -140,88 +150,108 @@ const assertSchemaIdentity = (
   );
 };
 
-const validateBatchSelections = <V extends Value>(
+const checkBatch = <V extends Value>(
   editor: Editor<V>,
-  batches: ReadonlyArray<Batch<V>>,
+  batch: Batch<V>,
   direction: 'redo' | 'undo',
   document: EditorDocumentValue,
   recordPrograms: boolean
 ) => {
   let value = document;
+  const selectionAtBase =
+    direction === 'undo' ? batch.selectionAfter : batch.selectionBefore;
+  const selectionAtBaseRoot =
+    direction === 'undo' ? batch.selectionAfterRoot : batch.selectionBeforeRoot;
+  const selectionAfterChange =
+    direction === 'undo' ? batch.selectionBefore : batch.selectionAfter;
+  const selectionAfterChangeRoot =
+    direction === 'undo' ? batch.selectionBeforeRoot : batch.selectionAfterRoot;
 
-  for (const batch of batches.toReversed()) {
-    const selectionAtBase =
-      direction === 'undo' ? batch.selectionAfter : batch.selectionBefore;
-    const selectionAtBaseRoot =
-      direction === 'undo'
-        ? batch.selectionAfterRoot
-        : batch.selectionBeforeRoot;
-    const selectionAfterChange =
-      direction === 'undo' ? batch.selectionBefore : batch.selectionAfter;
-    const selectionAfterChangeRoot =
-      direction === 'undo'
-        ? batch.selectionBeforeRoot
-        : batch.selectionAfterRoot;
-
-    editor.read.schema.assertDocument(value);
-    assertSelectionSupported(
-      editor,
-      selectionAtBase,
-      value,
-      selectionAtBaseRoot ?? 'main'
-    );
-    if (batch.unsettle) {
-      if (
-        !batch.rest &&
-        !documentChangeWritesOnlyElementProperties(batch.unsettle, value)
-      ) {
-        throw new Error(
-          'A history step can take back only element properties its settle stage wrote.'
-        );
-      }
-      editor.read.schema.assertDocument(batch.unsettle.apply(value));
-    }
-    const base = value;
-
-    value = batch.change.apply(value);
-    for (const run of batch.carried ?? []) {
-      const change = getInternalDocumentRootChange(batch.change, run.root);
-
-      if (
-        !change ||
-        !carriesRun(
-          change,
-          valueRootIndex(base, run.root),
-          valueRootIndex(value, run.root),
-          run
-        )
-      ) {
-        throw new Error('A history step carries a run its change does not.');
-      }
-    }
+  editor.read.schema.assertDocument(value);
+  assertSelectionSupported(
+    editor,
+    selectionAtBase,
+    value,
+    selectionAtBaseRoot ?? 'main'
+  );
+  if (batch.unsettle) {
     if (
-      recordPrograms &&
-      batch.carried?.length === 1 &&
       !batch.rest &&
-      !batch.unsettle
+      !documentChangeWritesOnlyElementProperties(batch.unsettle, value)
     ) {
-      withHistoryProgram(
-        batch,
-        checkedCarryProgram(
-          historyReplaySchemaOf(editor),
-          base,
-          batch.change,
-          batch.carried[0]
-        )?.program
+      throw new Error(
+        'A history step can take back only element properties its settle stage wrote.'
       );
     }
-    editor.read.schema.assertDocument(value);
-    assertSelectionSupported(
-      editor,
-      selectionAfterChange,
-      value,
-      selectionAfterChangeRoot ?? 'main'
+    editor.read.schema.assertDocument(batch.unsettle.apply(value));
+  }
+  const base = value;
+
+  value = batch.change.apply(value);
+  for (const run of batch.carried ?? []) {
+    const change = getInternalDocumentRootChange(batch.change, run.root);
+
+    if (
+      !change ||
+      !carriesRun(
+        change,
+        valueRootIndex(base, run.root),
+        valueRootIndex(value, run.root),
+        run
+      )
+    ) {
+      throw new Error('A history step carries a run its change does not.');
+    }
+  }
+  if (
+    recordPrograms &&
+    batch.carried?.length === 1 &&
+    !batch.rest &&
+    !batch.unsettle
+  ) {
+    withHistoryProgram(
+      batch,
+      checkedCarryProgram(
+        historyReplaySchemaOf(editor),
+        base,
+        batch.change,
+        batch.carried[0]
+      )?.program
     );
+  }
+  editor.read.schema.assertDocument(value);
+  assertSelectionSupported(
+    editor,
+    selectionAfterChange,
+    value,
+    selectionAfterChangeRoot ?? 'main'
+  );
+
+  return value;
+};
+
+const validateBatches = <V extends Value>(
+  editor: Editor<V>,
+  batches: ReadonlyArray<Batch<V>>,
+  direction: 'redo' | 'undo',
+  document: EditorDocumentValue,
+  recordPrograms: boolean,
+  fallbacks: Map<Batch<V>, Batch<V>>
+) => {
+  let value = document;
+
+  for (const batch of batches.toReversed()) {
+    const fallback = direction === 'redo' ? historyFallbackOf(batch) : null;
+
+    if (fallback) {
+      try {
+        checkBatch(editor, fallback, direction, value, recordPrograms);
+        fallbacks.set(batch, fallback);
+      } catch (error) {
+        if (recordPrograms) throw error;
+      }
+    }
+    value = checkBatch(editor, batch, direction, value, recordPrograms);
   }
 };
 
@@ -229,24 +259,37 @@ const validateHistory = <V extends Value>(
   editor: Editor<V>,
   history: Pick<History<V>, 'redos' | 'undos'>,
   validateAgainst: EditorDocumentValue | false = editor.read.value(),
-  recordPrograms = false
+  recordPrograms = false,
+  fallbacks = new Map<Batch<V>, Batch<V>>()
 ) => {
-  if (!validateAgainst) return;
+  if (!validateAgainst) {
+    for (const batch of history.redos) {
+      const fallback = historyFallbackOf(batch);
 
-  validateBatchSelections(
+      if (fallback) fallbacks.set(batch, fallback);
+    }
+
+    return fallbacks;
+  }
+
+  validateBatches(
     editor,
     history.redos,
     'redo',
     validateAgainst,
-    recordPrograms
+    recordPrograms,
+    fallbacks
   );
-  validateBatchSelections(
+  validateBatches(
     editor,
     history.undos,
     'undo',
     validateAgainst,
-    recordPrograms
+    recordPrograms,
+    fallbacks
   );
+
+  return fallbacks;
 };
 
 type HistoryValidationOptions = Readonly<{
@@ -258,10 +301,13 @@ const decodeBatch = <V extends Value>(
   input: unknown,
   effectTypes: ReadonlyMap<string, { type: EditorEffectType }>,
   direction: 'redo' | 'undo',
-  version: 4 | 5
+  version: 4 | 5 | 6,
+  nested = false
 ): Batch<V> => {
   if (
     !isObject(input) ||
+    (input.fallback !== undefined &&
+      (version < 6 || direction !== 'redo' || nested)) ||
     (input.unsettle !== undefined && direction === 'redo') ||
     (input.rest !== undefined &&
       (version < 5 || input.unsettle === undefined)) ||
@@ -322,7 +368,7 @@ const decodeBatch = <V extends Value>(
     throw new Error('Invalid history batch JSON.');
   }
 
-  return {
+  const batch: Batch<V> = {
     change: DocumentChange.fromJSON(
       input.change as ReturnType<DocumentChange['toJSON']>
     ),
@@ -351,6 +397,22 @@ const decodeBatch = <V extends Value>(
         }),
     ...(carried ? { carried } : {}),
   };
+
+  return input.fallback === undefined
+    ? batch
+    : withHistoryFallback(
+        batch,
+        freezeHistoryBatch(
+          decodeBatch(
+            editor,
+            input.fallback,
+            effectTypes,
+            direction,
+            version,
+            true
+          )
+        )
+      );
 };
 
 export const decodeHistoryValue = <V extends Value>(
@@ -360,7 +422,7 @@ export const decodeHistoryValue = <V extends Value>(
 ): History<V> => {
   if (!isHistoryJSON(json)) {
     throw new Error(
-      'Invalid history JSON or unsupported history version; expected version 4 or 5.'
+      'Invalid history JSON or unsupported history version; expected version 4, 5 or 6.'
     );
   }
 
@@ -388,7 +450,16 @@ export const decodeHistoryValue = <V extends Value>(
     ),
   });
 
-  validateHistory(editor, history, options.validateAgainst, true);
+  const fallbacks = validateHistory(
+    editor,
+    history,
+    options.validateAgainst,
+    true
+  );
+
+  for (const batch of history.redos) {
+    if (!fallbacks.has(batch)) withHistoryFallback(batch, null);
+  }
 
   return history;
 };
@@ -401,7 +472,7 @@ export const encodeHistoryValue = <V extends Value>(
   const schema = copyHistorySchemaIdentity(history.schema);
 
   assertSchemaIdentity(editor, schema);
-  validateHistory(editor, history, options.validateAgainst);
+  const fallbacks = validateHistory(editor, history, options.validateAgainst);
 
   const persistent = (batches: ReadonlyArray<Batch<V>>) =>
     batches.filter((batch) =>
@@ -412,11 +483,15 @@ export const encodeHistoryValue = <V extends Value>(
   const undos = persistent(history.undos);
 
   return {
-    redos: redos.map((batch) => encodeBatch(editor, batch)),
+    redos: redos.map((batch) =>
+      encodeBatch(editor, batch, fallbacks.get(batch))
+    ),
     schema,
     undos: undos.map((batch) => encodeBatch(editor, batch)),
-    version: [...redos, ...undos].some((batch) => batch.rest || batch.carried)
-      ? 5
-      : 4,
+    version: redos.some((batch) => fallbacks.has(batch))
+      ? 6
+      : [...redos, ...undos].some((batch) => batch.rest || batch.carried)
+        ? 5
+        : 4,
   };
 };

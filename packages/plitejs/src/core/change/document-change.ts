@@ -29,6 +29,7 @@ import {
 } from './document-index';
 import { deepFreeze, isRecord, jsonEqual, type JsonRecord } from './json';
 import { lazyRootOf, setLazyRoot } from './lazy-root';
+import type { ReadBack } from './read-back';
 import {
   collapseElementPropertyWrites,
   type KeptWrap,
@@ -1668,6 +1669,8 @@ export const transformInternalDocumentChange = (
     keepEqualEdits?: boolean;
     replay?: Readonly<{
       anchor?: boolean;
+      carriesLift?: boolean;
+      readBack?: ReadBack | null;
       pieceProps: (
         element: JsonNode,
         parent: readonly number[],
@@ -1699,8 +1702,10 @@ export const transformInternalDocumentChange = (
           keepEqualEdits,
           replay: replay && {
             anchor: replay.anchor,
+            carriesLift: replay.carriesLift,
             pieceProps: (element, parent, nodes) =>
               replay.pieceProps(element, parent, root, nodes),
+            readBack: replay.readBack,
           },
         }
       );
