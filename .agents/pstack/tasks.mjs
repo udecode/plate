@@ -26,7 +26,8 @@ const FROM = {
   uncarded: ['offered'],
   updated: ['offered', 'started'],
   folded: ['offered'],
-  reopened: ['dismissed gone'],
+  apart: ['offered', 'started'],
+  reopened: ['dismissed gone', 'dismissed dup'],
   'dismissed done': ['offered'],
   'dismissed dup': ['offered'],
   'dismissed superseded': ['offered'],
@@ -54,9 +55,10 @@ const TAKES = {
   landed: ['patch', 'commit'],
   carded: ['card', 'shown', 'session', 'codex'],
   uncarded: ['card'],
+  apart: ['from'],
   'dismissed declined': ['card'],
 };
-const LIST_KEYS = ['writes', 'waits', 'owns', 'commit'];
+const LIST_KEYS = ['writes', 'waits', 'owns', 'commit', 'from'];
 const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'shown', 'session', 'transcript', 'codex', 'via', ...EVIDENCE];
 const KINDS = ['fix', 'decide', 'review'];
 const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
@@ -196,6 +198,7 @@ const waitsInTopic = (task, tasks) =>
 const mergeInto = (kept, task, tasks) => {
   kept.covers.push({ id: task.id, title: displayTitle(task), findings: task.findings }, ...task.covers);
   kept.owns = joined(kept.owns, task.owns);
+  kept.apart = joined(kept.apart, task.apart).filter((other) => other !== kept.id);
   if (kept.status !== 'offered') return;
   const outside = (wait) => {
     const target = wait.match(WAIT)?.[2];
@@ -251,6 +254,7 @@ export function recordRow(tasks, cells, ts = null) {
       reviewed: false,
       findings: [row.why],
       covers: [],
+      apart: [],
     };
     created.cardEffort = created.card ? levelOf(created) : null;
     tasks.set(row.id, created);
@@ -282,6 +286,7 @@ export function recordRow(tasks, cells, ts = null) {
     task.landedAt = ts;
   }
   if (row.move === 'reviewed') task.reviewed = true;
+  if (row.move === 'apart') task.apart = joined(task.apart, given.from ?? []);
   if (row.move === 'carded') {
     task.card = given.card ?? null;
     task.cardedAt = ts;
@@ -300,8 +305,14 @@ export function recordRow(tasks, cells, ts = null) {
     task.cardEffort = null;
   }
   if (row.move === 'reopened') {
+    const kept = task.reason === 'dup' && follow(task.target, tasks);
+    if (kept) {
+      const brought = new Set([task.id, ...task.covers.map((entry) => entry.id)]);
+      kept.covers = kept.covers.filter((entry) => !brought.has(entry.id));
+    }
     task.status = 'offered';
     task.reason = null;
+    task.target = null;
   }
   if (row.move === 'updated') {
     if (given.writes) {
@@ -369,7 +380,7 @@ export function chipRowProblems(cells, before, where) {
   const [, id] = decision.match(CHIP) ?? [];
   if (!id) return [`${where}: a chip row's decision is "<task id> <title>", with (xhigh) after the title of a design question or of a bug whose cause nobody has located`];
   const row = parseRow(cells);
-  if (!row) return [`${where}: a chip row's result is offered, carded, uncarded, updated, folded, started, landed, reviewed, reopened, or dismissed with done, superseded, declined, stopped or dup <task id>`];
+  if (!row) return [`${where}: a chip row's result is offered, carded, uncarded, updated, folded, apart, started, landed, reviewed, reopened, or dismissed with done, superseded, declined, stopped or dup <task id>`];
   const { move } = row;
   const known = before.get(id);
   const { given } = fields(evidence);
@@ -386,6 +397,9 @@ export function chipRowProblems(cells, before, where) {
     if (!FROM[move].includes(state)) found.push(`${where}: ${id} is ${state}, so it cannot be ${move}`);
   }
   if (move === 'carded' && !given.card) found.push(`${where}: a carded row names the suggest tool's card id as "card: <id>"`);
+  if (move === 'apart' && (!given.from?.length || given.from.some((other) => other === id || !before.has(other) || follow(other, before)?.id === id))) {
+    found.push(`${where}: an apart row names in "from: <task id>, <task id>" each other task the ledger holds that a sweep judged separate work from ${id}`);
+  }
   if (move === 'updated' && !TAKES.updated.some((key) => given[key] !== undefined)) found.push(`${where}: an updated row names what changes: writes:, topic:, kind:, effort:, waits:, owns:, fast: or session:`);
   if (move === 'updated' && given.transcript !== undefined && given.session === undefined) found.push(`${where}: transcript: goes beside session:, the owner it names`);
   if (move === 'updated' && known && sessionPicksPlan(known) && Object.keys(given).some((key) => key !== 'owns')) {
@@ -522,6 +536,7 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
     const after = afterRow(before, cells).get(id);
     if (after && (after.kind !== 'fix' || needsJudgment(after))) found.push(`${where}: ${id} is ${after.kind === 'fix' ? 'an (xhigh) task' : `a ${after.kind} task`}, and fast: yes marks only a fix at high effort that names its exact change`);
   }
+  if (move === 'dismissed dup' && own && keeper && judgedApart(own, keeper, before)) found.push(`${where}: an apart row keeps ${id} and ${keeper.id} apart as separate work, so ${id} is no duplicate of ${keeper.id}; keep both open`);
   if (move === 'dismissed dup' && held(keeper)) found.push(`${where}: ${keeper.id} holds card ${keeper.card}, which cannot show new work; keep ${id} open and log updated on it with its waits plus task:${keeper.id}, and chips merges it once the card is withdrawn`);
   if (move === 'carded' || (move === 'offered' && given.card)) {
     const uncarded = move === 'carded' ? before : afterRow(before, cells);
@@ -763,6 +778,84 @@ export function staleReport(tasks, at, probe) {
   return rows.map(({ task, facts }) => line(task, `  ${facts.join('; ')}`));
 }
 
+const COMMON_WORDS = new Set('the and are for its with from into onto over under through after before when whose that this their his her one two every each make keep find why fix let give stop decide whether what how does not more than again also xhigh fast'.split(' '));
+const wordsOf = (text) => new Set(text.toLowerCase().split(/[^a-z0-9]+/u).filter((word) => word.length > 2 && !COMMON_WORDS.has(word)).map((word) => (word.endsWith('s') && !word.endsWith('ss') ? word.slice(0, -1) : word)));
+const shareOf = (a, b) => {
+  const both = [...a].filter((word) => b.has(word)).length;
+  return both / (a.size + b.size - both || 1);
+};
+const CODE_NAME = /\b(?:[a-z][a-z0-9]*[A-Z][a-z0-9]+\w*|[\w-]+(?:\.[\w-]+)*\.(?:tsx?|jsx?|mjs))\b/gu;
+const REPRO_FILE = /[\w./-]+\.(?:test|spec)\.[a-z]+|[\w./-]+\.log\b/gu;
+const WRITTEN_FILE = /(?:^|\/)[^/.][^/]*\.[a-z0-9]+$/iu;
+const RARE = 3;
+const TITLE_SHARE = 0.3;
+const TOPIC_SHARE = 0.5;
+const KINDS_TO_PAIR = 2;
+
+const judgedApart = (task, other, tasks) => task.apart.some((id) => follow(id, tasks)?.id === other.id) || other.apart.some((id) => follow(id, tasks)?.id === task.id);
+
+const isBookkeeping = (path, plans) => path.startsWith('.changeset/') || path === plans || path.startsWith(`${plans}/`);
+
+export function groupsOf(tasks, plans = 'docs/plans') {
+  const open = [...tasks.values()].filter(isOpen).sort(byOrder);
+  const facts = new Map(
+    open.map((task) => [
+      task.id,
+      {
+        title: wordsOf(task.title),
+        topic: wordsOf(task.topic ?? ''),
+        repro: new Set(task.repro?.match(REPRO_FILE) ?? []),
+        reproNames: new Set((task.repro?.match(REPRO_FILE) ?? []).map((file) => basename(file))),
+        area: new Set([...task.writes.filter((path) => WRITTEN_FILE.test(path) && !isBookkeeping(path, plans)), ...([...task.findings, ...task.covers.flatMap((entry) => entry.findings)].join(' ').match(CODE_NAME) ?? [])]),
+      },
+    ]),
+  );
+  const named = new Map();
+  for (const { area } of facts.values()) for (const key of area) named.set(key, (named.get(key) ?? 0) + 1);
+  const waitsOn = (task, other) =>
+    task.waits.some((wait) => {
+      const target = wait.match(WAIT)?.[2];
+      return target && follow(target, tasks)?.id === other.id;
+    });
+  const links = [];
+  for (const [at, a] of open.entries()) {
+    for (const b of open.slice(at + 1)) {
+      if (waitsOn(a, b) || waitsOn(b, a) || judgedApart(a, b, tasks)) continue;
+      const one = facts.get(a.id);
+      const two = facts.get(b.id);
+      const kinds = [];
+      if (shareOf(one.title, two.title) >= TITLE_SHARE || (one.topic.size > 0 && shareOf(one.topic, two.topic) >= TOPIC_SHARE)) kinds.push('problem');
+      const failure = [...a.owns.filter((check) => b.owns.includes(check)), ...[...one.repro].filter((file) => two.repro.has(file))];
+      if (failure.length > 0) kinds.push(`failure (${failure.join(', ')})`);
+      const area = [...one.area].filter((key) => two.area.has(key) && (named.get(key) <= RARE || (a.writes.includes(key) && b.writes.includes(key))) && !one.reproNames.has(basename(key)) && !two.reproNames.has(basename(key)));
+      if (area.length > 0) kinds.push(`fix area (${area.slice(0, 3).join(', ')})`);
+      if (kinds.length >= KINDS_TO_PAIR) links.push({ a, b, kinds });
+    }
+  }
+  const root = new Map(open.map((task) => [task.id, task.id]));
+  const rootOf = (id) => (root.get(id) === id ? id : rootOf(root.get(id)));
+  for (const { a, b } of links) root.set(rootOf(b.id), rootOf(a.id));
+  const groups = new Map();
+  for (const link of links) {
+    const group = groups.get(rootOf(link.a.id)) ?? { members: new Map(), links: [] };
+    group.members.set(link.a.id, link.a).set(link.b.id, link.b);
+    group.links.push(link);
+    groups.set(rootOf(link.a.id), group);
+  }
+  return [...groups.values()].map((group) => ({ members: [...group.members.values()].sort(byOrder), links: group.links })).sort((x, y) => byOrder(x.members[0], y.members[0]));
+}
+
+export function renderGroups(groups, ledger) {
+  if (groups.length === 0) return `No two open tasks in ${ledger} share two kinds of evidence, so no group needs judging.`;
+  const out = [
+    `${groups.length} ${groups.length === 1 ? 'group' : 'groups'} of open tasks in ${ledger} that may answer one question. Judge each pair as chips.md's Groups bullet says: dismissed dup when they share two kinds of evidence and one fix removes both, and otherwise apart with from:, then a task: wait when an offered task needs the other's result or one fix removes both.`,
+  ];
+  for (const { members, links } of groups) {
+    out.push('', ...links.map(({ a, b, kinds }) => `  ${a.id} and ${b.id}: ${kinds.join('; ')}`), ...members.map((task) => line(task, `  ${task.status === 'started' ? 'started' : task.card ? `card ${task.card}` : 'no card'}`)));
+  }
+  return out.join('\n');
+}
+
 export function startedOverlaps(tasks) {
   const started = [...tasks.values()].filter((task) => task.status === 'started');
   return started.flatMap((task, at) =>
@@ -877,7 +970,7 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
       };
     });
   const passes = [
-    ['withdrawal', withdrawals],
+    ['withdrawal', here === null ? [] : withdrawals],
     ['ledger', merge ? [merge, ...rows.filter((item) => !item.ids.some((id) => merge.ids.includes(id)))] : rows],
     ['card', cards],
   ];
@@ -959,7 +1052,7 @@ function mergeItem(offered, tasks, git) {
     for (const wait of task.waits) {
       const target = wait.match(WAIT)?.[2];
       const keeper = target && follow(target, tasks);
-      if (!keeper || keeper.status !== 'offered' || keeper.card || keeper.topic !== task.topic || waitBlocker(wait, task, tasks, git)?.stuck) continue;
+      if (!keeper || keeper.status !== 'offered' || keeper.card || keeper.topic !== task.topic || judgedApart(task, keeper, tasks) || waitBlocker(wait, task, tasks, git)?.stuck) continue;
       const cells = ['chip', task.decision, 'its card is gone, so it joins the task it waited on', '', `dismissed dup ${keeper.id}`];
       if (chipRowProblems(cells, tasks, 'merge').length === 0 && newChipRowProblems(cells, tasks, 'merge', git).length === 0) {
         return { kind: 'merge', ids: [task.id, keeper.id], text: `merge ${task.id} into ${keeper.id}: ${keeper.id} has no card now, so log ${task.id} dismissed dup ${keeper.id}` };

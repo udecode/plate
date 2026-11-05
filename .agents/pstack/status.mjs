@@ -163,6 +163,7 @@ export function committedLines(path) {
 
 export const STATUSES = [
   'accepted',
+  'apart',
   'applied',
   'blocked',
   'carded',
