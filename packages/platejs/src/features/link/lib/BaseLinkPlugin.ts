@@ -351,7 +351,7 @@ export const BaseLinkPlugin = definePlugin('link', {
         },
       },
     }),
-
+  component: 'a',
   rules: {
     normalize: { removeEmpty: true },
     selection: { affinity: 'directional' },

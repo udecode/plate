@@ -167,6 +167,7 @@ const KEY_VALUES = {
   proof: /\S/u,
   retest: /\S/u,
   clips: /^unavailable \S/u,
+  escaped: /\S/u,
   missing: /\S/u,
   law: PATH_REF,
   into: (value) =>
@@ -181,7 +182,7 @@ const OUTCOMES = {
   dup: { required: ['of'], optional: [] },
   fixed: {
     required: ['commit', 'owner', 'proof'],
-    optional: ['retest', 'clips'],
+    optional: ['retest', 'clips', 'escaped'],
   },
   'needs-repro': { required: ['missing'], optional: [] },
   'not-bug': { required: ['law'], optional: [] },
@@ -2458,6 +2459,45 @@ function headOf(issue, reads) {
 
 const replaysReport = (fields) => fields.get('retest') === 'none';
 
+const TEST_FILE = /(?:[\w@.-]+\/)+[\w@.-]+\.(?:spec|test)\.[cm]?[jt]sx?/gu;
+const THREE_WORDS = /\p{L}+\s+\p{L}+\s+\p{L}+/u;
+
+function escapedMiss(issue, fields, reads, tag) {
+  const failedIds = failedFixes(
+    reads.issues.comments(issue),
+    reads.policy.team
+  );
+  const [failed] = [...(reads.rows.get(issue)?.values() ?? [])]
+    .filter((row) => failedIds.has(row.id))
+    .sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts));
+  if (!failed) return null;
+  const before = parseDetail(failed.detail)?.get('commit');
+  if (!before || gitOut('cat-file', '-e', `${before}^{commit}`) === null) {
+    return `cannot read the commit of ${failed.id}, the fix that failed its retest`;
+  }
+  const ask = `say in escaped: why the proof of ${before.slice(0, 10)} passed, and name the test file whose ${tag} case it lacked`;
+  const value = fields.get('escaped');
+  if (!value) {
+    return `its fix ${before.slice(0, 10)} failed a retest, so ${ask}`;
+  }
+  if (!THREE_WORDS.test(value.replace(TEST_FILE, ''))) {
+    return `escaped: gives no reason; ${ask}`;
+  }
+  const tagged = (rev, file) => {
+    const read = showAt(root, rev, file);
+    return read.status === 0
+      ? read.stdout.split('\n').filter((line) => line.includes(tag))
+      : [];
+  };
+  const addsCase = (value.match(TEST_FILE) ?? []).some((file) => {
+    const old = new Set(tagged(before, file));
+    return tagged(fields.get('commit'), file).some((line) => !old.has(line));
+  });
+  return addsCase
+    ? null
+    : `escaped: names no test file with a ${tag} line that ${before.slice(0, 10)} lacked; ${ask}`;
+}
+
 const REPORT_ROUTE = /https?:\/\/beta\.platejs\.org(\/[^\s)<>,`'"]*)/gu;
 const REPORT_SHORTCUT =
   /(?:\b(?:Command|Cmd|Ctrl|Control|Meta)\s*\+\s*|⌘\s*)(Shift\s*\+\s*)?(?:(?:Alt|Option)\s*\+\s*)?([A-Za-z0-9])\b/giu;
@@ -3523,11 +3563,11 @@ function recordCommand(options) {
       }
     }
     if (entry.outcome === 'fixed') {
-      const miss = reporterGestureMiss(
-        current.body ?? '',
-        `[${repoNameOf(reads.policy.repo)}#${issue}]`
-      );
+      const tag = `[${repoNameOf(reads.policy.repo)}#${issue}]`;
+      const miss = reporterGestureMiss(current.body ?? '', tag);
       if (miss) refuse(`${where}: ${miss}`);
+      const escaped = escapedMiss(issue, fields, reads, tag);
+      if (escaped) refuse(`${where}: ${escaped}`);
       const untranscribed = clipsOf(current).filter(
         (clip) => !clip.transcribed
       );
