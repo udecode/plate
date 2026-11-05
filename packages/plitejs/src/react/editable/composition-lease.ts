@@ -1,20 +1,18 @@
 // oxlint-disable-next-line react-doctor/no-flush-sync -- A composition that starts before React drew the previous commit must snapshot that render, or its lease would restore stale text.
 import { flushSync } from 'react-dom';
 
-import {
-  type NodeKey,
-  PathApi,
-  type Point,
-  PointApi,
-  type Range,
-  RangeApi,
-} from '../..';
+import { type NodeKey, PathApi, type Point, type Range, RangeApi } from '../..';
 import { getSelection, isDOMElement } from '../../dom';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { PliteDecorationStore } from '../decoration-context';
 import { holdsPliteNodeKeyElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
-import { getNodeKey, getPathByNodeKey } from './runtime-editor-api';
+import { samePliteRootPoint } from '../view-boundary-graph';
+import {
+  getNodeKey,
+  getPathByNodeKey,
+  toInternalRoot,
+} from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 
 type ChildListSnapshot = Readonly<{
@@ -286,7 +284,12 @@ const resolveLeaseHost = (
   });
 
   return point &&
-    (PointApi.equals(point, caret) || isLeafEdgePair(editor, point, caret))
+    (samePliteRootPoint(
+      point,
+      caret,
+      toInternalRoot(editor.read((state) => state.view.root()))
+    ) ||
+      isLeafEdgePair(editor, point, caret))
     ? focus.host
     : null;
 };

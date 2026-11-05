@@ -2,7 +2,6 @@ import { type CompositionEvent, useEffect } from 'react';
 
 import {
   type EditorMarks,
-  PointApi,
   type Range,
   RangeApi,
   type Text,
@@ -26,6 +25,7 @@ import {
 } from '../../dom/internal';
 import { supersedeEditableFocusRequests } from '../hooks/focus-plite-editable';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { samePliteRootPoint } from '../view-boundary-graph';
 import {
   ANDROID_COMPOSITION_END_DELAY,
   hasAndroidComposition,
@@ -59,7 +59,11 @@ import {
   shouldMergeEditableCompositionHistory,
 } from './input-state';
 import { dispatchUserText, getUserTextLanding } from './mutation-controller';
-import { type Editor, editorCommands } from './runtime-editor-api';
+import {
+  type Editor,
+  editorCommands,
+  toInternalRoot,
+} from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { writeRuntimeMarks } from './runtime-mutation-state';
 import { readRuntimeSelectionRange } from './runtime-selection-state';
@@ -161,7 +165,16 @@ const getNativeCompositionAnchor = (
     { exactMatch: false }
   );
 
-  if (!point || !PointApi.equals(point, selection.focus)) return null;
+  if (
+    !point ||
+    !samePliteRootPoint(
+      point,
+      selection.focus,
+      toInternalRoot(editor.read((state) => state.view.root()))
+    )
+  ) {
+    return null;
+  }
   if (readRuntimeText(editor, selection.focus.path)?.text !== '') return anchor;
 
   // Chrome writes the preedit into an empty text's zero-width spacer and over
