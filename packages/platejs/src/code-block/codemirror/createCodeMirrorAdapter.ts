@@ -44,6 +44,11 @@ type CodeMirrorExternalTextUpdate = Readonly<{
 const INITIAL_PARSE_BUDGET_MS = 100;
 
 const appliedByAdapter = Annotation.define<boolean>();
+// The text inherits the host's color, while CodeMirror's light base theme
+// paints a black caret, which disappears on a dark host.
+const caretInTextColor = EditorView.baseTheme({
+  '.cm-content': { caretColor: 'currentColor' },
+});
 const replaceDecorations = StateEffect.define<DecorationSet>();
 const decorationField = StateField.define<DecorationSet>({
   create: () => Decoration.none,
@@ -656,6 +661,7 @@ export function createCodeMirrorAdapter({
           ),
           readOnly.of(readOnlyExtensions(state.readOnly)),
           attributes.of(contentAttributes(host)),
+          caretInTextColor,
 
           EditorView.domEventHandlers({
             beforeinput(event) {
