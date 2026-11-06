@@ -1091,7 +1091,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     const state = context.store.get();
     if (requestId !== undefined && requestId !== state._requestId) return false;
     const actionEditor = getActionEditor(commandEditor);
-    if (!actionEditor) return false;
+    if (!actionEditor || actionEditor.read.view.isReadOnly()) return false;
     const sourceRoots = new Set(
       state.chatNodes.map(
         ({ nodeKey }) => resolveTargetRoot(commandEditor, nodeKey)?.root

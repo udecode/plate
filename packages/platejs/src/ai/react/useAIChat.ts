@@ -184,24 +184,30 @@ function createEditorChat(
     }
   };
   const finish = () => {
-    flushPendingInsert({ final: true });
-    if (store.get('chat')?.stop === stop) {
-      store.set({
-        streaming: false,
-      });
+    try {
+      flushPendingInsert({ final: true });
+    } finally {
+      if (store.get('chat')?.stop === stop) {
+        store.set({
+          streaming: false,
+        });
+      }
     }
   };
   const stop = () => {
-    finish();
-    request?.abort();
-    clearPendingChatPublish();
-    clearPendingInsert();
-    return chat.stop();
+    try {
+      finish();
+    } finally {
+      request?.abort();
+      clearPendingChatPublish();
+      clearPendingInsert();
+      void chat.stop();
+    }
   };
   const retire = () => {
     const ownsStore = store.get('chat')?.stop === stop;
 
-    void stop();
+    stop();
     if (!ownsStore) return;
 
     getCommandEditor().plugin(AIChatPlugin).api.reset();
@@ -339,7 +345,7 @@ function createEditorChat(
       }
     },
     refresh() {
-      if (!isLive()) void stop();
+      if (!isLive()) stop();
     },
   };
   return session;
