@@ -10156,9 +10156,9 @@ export const notifyEditorViewState = (
 ) => {
   const runtime = getEditorRuntime(editor);
   scheduleMicrotask(() => {
-    EDITOR_VIEW_STATE_LISTENERS.get(runtime)?.forEach((listener) => {
-      listener(change);
-    });
+    for (const listener of EDITOR_VIEW_STATE_LISTENERS.get(runtime) ?? []) {
+      runEditorObserver(editor, 'commit-listener', () => listener(change));
+    }
   });
 };
 

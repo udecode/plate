@@ -1697,7 +1697,9 @@ export const createAuthoredPlugin = (
       },
       subscribeRefusals: (listener: (refusal: AuthoredRefusal) => void) =>
         subscribeEditorRefusals(editor, (refusal) =>
-          listener(refusal as AuthoredRefusal)
+          runEditorObserver(editor, 'commit-listener', () =>
+            listener(refusal as AuthoredRefusal)
+          )
         ),
       subscribeChanges: (listener: (delta: AuthoredChangesDelta) => void) => {
         const runtime = getEditorRuntime(editor);

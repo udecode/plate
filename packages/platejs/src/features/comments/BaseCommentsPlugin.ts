@@ -17,6 +17,7 @@ import {
   type Range,
   type Value,
 } from '../../core';
+import { reportEditorLifecycleError } from '../../facade';
 import { readEditorAuthor } from '../../lib/editor/editorUser.internal';
 import {
   createAnnotationStore,
@@ -408,6 +409,20 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const dataListeners = new Set<(change: CommentsChange) => void>();
   let unsubscribeActive: (() => void) | null = null;
 
+  const notify = (listener: () => void) => {
+    try {
+      listener();
+    } catch (error) {
+      reportEditorLifecycleError(
+        Object.freeze({
+          cause: error,
+          editor,
+          phase: 'commit-listener',
+          pluginName: BaseCommentsPlugin.name,
+        })
+      );
+    }
+  };
   const getAnnotations = (view: Editor) => {
     const observed = viewIndexes.get(view);
     if (observed) return observed.annotations;
@@ -432,10 +447,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       const unsubscribe = annotations.subscribeChanges((change) => {
         if (change.reason !== 'editor' && change.nodeKeys.length) {
           refreshers.forEach((refresh) =>
-            refresh({ nodeKeys: change.nodeKeys })
+            notify(() => refresh({ nodeKeys: change.nodeKeys }))
           );
         }
-        listeners.forEach((listener) => listener(change));
+        listeners.forEach((listener) => notify(() => listener(change)));
       });
       index = { annotations, listeners, refreshers, unsubscribe };
       viewIndexes.set(view, index);
@@ -452,11 +467,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
 
   const notifyThreads = (ids: readonly string[]) => {
     ids.forEach((id) =>
-      threadListeners.get(id)?.forEach((listener) => listener())
+      threadListeners.get(id)?.forEach((listener) => notify(listener))
     );
     if (ids.length) {
       const change = Object.freeze({ ids: Object.freeze([...ids]) });
-      dataListeners.forEach((listener) => listener(change));
+      dataListeners.forEach((listener) => notify(() => listener(change)));
     }
   };
   const publish = (
@@ -469,9 +484,13 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     } = {}
   ) => {
     snapshot = Object.freeze(next);
-    if (changes.draft) draftListeners.forEach((listener) => listener());
-    if (changes.pending) pendingListeners.forEach((listener) => listener());
-    if (changes.visible) visibleListeners.forEach((listener) => listener());
+    if (changes.draft) draftListeners.forEach((listener) => notify(listener));
+    if (changes.pending) {
+      pendingListeners.forEach((listener) => notify(listener));
+    }
+    if (changes.visible) {
+      visibleListeners.forEach((listener) => notify(listener));
+    }
     if (changes.threads) notifyThreads(changes.threads);
   };
   const nodeKeysAt = (view: Editor, location: Location) => {
@@ -493,7 +512,9 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         if (range) nodeKeysAt(view, range).forEach((key) => nodeKeys.add(key));
       });
       if (nodeKeys.size) {
-        refreshers.forEach((refresh) => refresh({ nodeKeys: [...nodeKeys] }));
+        refreshers.forEach((refresh) =>
+          notify(() => refresh({ nodeKeys: [...nodeKeys] }))
+        );
       }
     }
   };
