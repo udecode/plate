@@ -48,7 +48,7 @@ import {
 import { getCompiledPlatePlugin } from '../../internal/plugin/compilePlateModel';
 import { resolveInsertionAnchor } from '../../internal/plugin/insertionAnchor';
 import {
-  type MarkdownSerializeResult,
+  type MarkdownEditorSerializeOptions,
   type MarkdownSliceParseResult,
   MarkdownPlugin,
 } from '../../markdown';
@@ -75,12 +75,6 @@ type TComment = {
   blockRef: string;
   comment: string;
   content: string;
-};
-
-const requireMarkdownData = (result: MarkdownSerializeResult) => {
-  if (result.ok) return result.data;
-
-  throw new Error(result.diagnostics.map(({ message }) => message).join('\n'));
 };
 
 export type AIChatAdapter = {
@@ -514,6 +508,19 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
   const hideOptions = () => {
     context.store.set({ open: false });
   };
+  // A prompt is context for a model, not a copy of the document, so content
+  // Markdown cannot write stays out instead of failing the whole prompt.
+  const promptMarkdown = (options: MarkdownEditorSerializeOptions) => {
+    const result = editor.api.markdown.serialize({
+      ...options,
+      lossPolicy: 'allow',
+    });
+    if (result.ok) return result.data;
+
+    throw new Error(
+      result.diagnostics.map(({ message }) => message).join('\n')
+    );
+  };
   const serializeMarkdown = (
     view: Editor,
     state: AIChatPluginReadState,
@@ -522,16 +529,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
     if (type === 'editor') {
       const document = state.value();
 
-      return requireMarkdownData(
-        editor.api.markdown.serialize({
-          document: {
-            children: document.children,
-            ...(document.records ? { records: document.records } : {}),
-            ...(document.roots ? { roots: document.roots } : {}),
-          },
-          projection: 'proposed',
-        })
-      );
+      return promptMarkdown({
+        document: {
+          children: document.children,
+          ...(document.records ? { records: document.records } : {}),
+          ...(document.roots ? { roots: document.roots } : {}),
+        },
+        projection: 'proposed',
+      });
     }
     if (type === 'block') {
       const root =
@@ -540,9 +545,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
 
       if (blocks.length === 0) return '';
 
-      return requireMarkdownData(
-        editor.api.markdown.serialize({ document: { children: blocks } })
-      );
+      return promptMarkdown({ document: { children: blocks } });
     }
     if (type === 'nodeSelection') {
       const fragment = state.fragment();
@@ -562,12 +565,10 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         throw new Error('Node selections must contain block elements.');
       }
 
-      return requireMarkdownData(
-        editor.api.markdown.serialize({
-          document: withReviewRecords(value),
-          projection: 'proposed',
-        })
-      );
+      return promptMarkdown({
+        document: withReviewRecords(value),
+        projection: 'proposed',
+      });
     }
     if (type !== 'tableCellWithRef') return '';
 
@@ -626,11 +627,7 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
               throw new Error('Table cells must contain block elements.');
             }
 
-            return requireMarkdownData(
-              editor.api.markdown.serialize({
-                document: { children: [child] },
-              })
-            ).trim();
+            return promptMarkdown({ document: { children: [child] } }).trim();
           })
           .filter(Boolean)
           .join('<br/>');
@@ -651,11 +648,9 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           throw new Error('Table cells must contain block elements.');
         }
 
-        return `<Cell ref="${ref}">\n${requireMarkdownData(
-          editor.api.markdown.serialize({
-            document: { children: cell.children },
-          })
-        ).trim()}\n</Cell>`;
+        return `<Cell ref="${ref}">\n${promptMarkdown({
+          document: { children: cell.children },
+        }).trim()}\n</Cell>`;
       })
       .join('\n\n');
 
@@ -1795,10 +1790,16 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
         if (!prompt && input.length === 0) return undefined;
         const discarded = decideCurrentChange('reject');
         if (discarded && !reviewSucceeded(discarded)) return discarded;
+        // The prompt reads the document without the withdrawn proposal, so it
+        // cannot resolve earlier. It can throw, so the old request stops here,
+        // and the new id waits for a prompt that exists.
+        cancel();
         suggestion = null;
         suggestionTarget = null;
         previewOwner = null;
         previewParse = undefined;
+        context.store.set({ _blockKey: null, previewValue: [] });
+        tableDraft.clear();
         if (isOpen && !restoreTarget(commandEditor)) return discarded;
 
         aiChatCommandEditors.set(editor, commandEditor);
@@ -1810,29 +1811,14 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
           viewNodes.length ? viewNodes : editor.read.selection.nodes()
         ).map(([, path]) => [...path]);
         const isNodeSelecting = selectedNodePaths.length > 0;
-        tableDraft.clear();
         const nextMode =
           mode ??
           (isNodeSelecting || (selection && RangeApi.isExpanded(selection))
             ? 'chat'
             : 'insert');
 
-        context.store.set({
-          _blockKey: null,
-          _changeId: null,
-          _requestId: crypto.randomUUID(),
+        context.store.set({ mode: nextMode, toolName: nextToolName });
 
-          mode: nextMode,
-          previewValue: [],
-          streaming: false,
-          toolName: nextToolName,
-        });
-
-        const requestContext = getRequestContext(
-          commandEditor,
-          selection ?? null,
-          selectedNodePaths
-        );
         const resolvedPrompt = resolvePrompt(prompt ?? input, {
           editor: commandEditor,
           isNodeSelecting,
@@ -1844,6 +1830,13 @@ export const AIChatPlugin = definePlugin(PLUGINS.aiChat, {
             : commandEditor
                 .plugin(AIChatPlugin)
                 .read.resolvePlaceholders(resolvedPrompt, { prompt: input });
+        const requestContext = getRequestContext(
+          commandEditor,
+          selection ?? null,
+          selectedNodePaths
+        );
+
+        context.store.set({ _requestId: crypto.randomUUID() });
         void chat?.sendMessage(promptText, {
           body: {
             ctx: {

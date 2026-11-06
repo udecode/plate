@@ -211,7 +211,11 @@ editor.plugin(AIChatPlugin).api.submit('', {
   precedence over `selecting`.
 - `aiChat.read.prompt` resolves that input for the current snapshot.
 - `aiChat.read.resolvePlaceholders` expands `{editor}`, `{block}`,
-  `{nodeSelection}`, and `{prompt}` with snapshot Markdown.
+  `{nodeSelection}`, and `{prompt}` with snapshot Markdown, and leaves out
+  content with no Markdown mapping.
+- When a prompt throws, `aiChat.api.submit` stops the running request and
+  discards its draft, then lets the error reach the caller. No new request
+  starts.
 
 ```tsx
 const aiChat = editor.plugin(AIChatPlugin);

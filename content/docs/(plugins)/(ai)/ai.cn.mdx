@@ -205,7 +205,8 @@ editor.plugin(AIChatPlugin).api.submit('', {
 - `aiChat.api.submit` 接受 `EditorPrompt`：字符串、`default`/`selecting`/`nodeSelecting` 对象，或接收 `{ editor, isSelecting, isNodeSelecting }` 的函数。
 - `isSelecting` 表示代表范围是否展开；`isNodeSelecting` 表示精确节点成员关系，因此选择空节点时，即使代表范围折叠，它仍为 `true`。`nodeSelecting` 优先于 `selecting`。
 - `aiChat.read.prompt` 针对当前快照解析该输入。
-- `aiChat.read.resolvePlaceholders` 使用快照 Markdown 扩展 `{editor}`、`{block}`、`{nodeSelection}` 和 `{prompt}`。
+- `aiChat.read.resolvePlaceholders` 使用快照 Markdown 扩展 `{editor}`、`{block}`、`{nodeSelection}` 和 `{prompt}`，并省略没有 Markdown 映射的内容。
+- 当提示抛出错误时，`aiChat.api.submit` 会停止正在运行的请求并丢弃其草稿，然后让错误传递给调用方，且不会启动新请求。
 
 ```tsx
 const aiChat = editor.plugin(AIChatPlugin);
