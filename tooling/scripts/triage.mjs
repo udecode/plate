@@ -3114,7 +3114,10 @@ function offerTask(offer, { id, world, policy, actor, named, main, current }) {
       'chip',
       decision,
       `pnpm triage claim ${named} holds ${names}, which no open task covers, so it offers this task and starts it for its own session. ${details.join(' ')}`,
-      `writes: ${offer.files.join(', ')}; topic: ${name}-${offer.issues[0]}; kind: fix; priority: ${offer.priority}; repro: ${names} numbered repros hold the exact steps; session: ${actor.session}`,
+      `writes: ${offer.files.join(', ')}; topic: ${name}-${offer.issues[0]}; kind: fix; priority: ${offer.priority}; repro: ${names} numbered repros hold the exact steps; ${milestoneFacts(
+        offer.kinds.map((issue) => world.head(issue)),
+        policy.experimental
+      )}; session: ${actor.session}`,
       'offered',
     ],
     { cwd: main }
@@ -3123,6 +3126,32 @@ function offerTask(offer, { id, world, policy, actor, named, main, current }) {
     return `note: the claim offers no task for ${names}, because its offered row was refused: ${appended.stderr.trim().split('\n').at(-1)}`;
   }
   return `offered ${decision}\n${startTask({ id, decision }, actor, `claimed by pnpm triage claim ${named}`, main, current)}`;
+}
+
+function milestoneFacts(records, experimental) {
+  const scopes = [...new Set(records.map((head) => head.fields.get('scope')))];
+  const kept = scopes.filter((scope) => !experimental.includes(scope));
+  const owned = (scope) =>
+    new Set(
+      records
+        .filter((head) => head.fields.get('scope') === scope)
+        .flatMap(ownerFiles)
+    ).size;
+  const scope = (kept.length > 0 ? kept : scopes).reduce((best, each) =>
+    owned(each) > owned(best) ? each : best
+  );
+  const pages = [
+    ...new Set(
+      records.flatMap((head) =>
+        head.fields.has('regression')
+          ? paths(head.fields.get('regression'))
+          : []
+      )
+    ),
+  ];
+  return pages.length > 0
+    ? `review-scope: ${scope}; regression: ${pages.join(', ')}`
+    : `review-scope: ${scope}`;
 }
 
 function ledgerIn(main) {

@@ -81,7 +81,7 @@ import { basename, dirname, isAbsolute, join, normalize, relative, resolve } fro
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { contextOf, pageUrlOf, parsePlan } from './plan-page.mjs';
-import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
 import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, SEVERITIES, STAGE_PHASES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -266,7 +266,7 @@ const transcriptOf = (run) => (run ? basename(run.transcript, '.jsonl') : null);
 // that names session: also records the writing session's transcript id.
 function stampTranscript(cells, run) {
   const [phase, , , evidence, result] = cells;
-  const owning = phase === 'chip' && /^(?:offered|updated)\b/u.test(result) && /(?:^|[\s;])session:/u.test(evidence) && !/(?:^|[\s;])transcript:/u.test(evidence);
+  const owning = phase === 'chip' && /^(?:offered|updated)\b/u.test(result) && hasToken(evidence, 'session') && !hasToken(evidence, 'transcript');
   return owning && run ? [cells[0], cells[1], cells[2], `${evidence}; transcript: ${transcriptOf(run)}`, cells[4]] : cells;
 }
 
@@ -496,247 +496,253 @@ function warnUnpublishedBabysit(log) {
 const args = process.argv.slice(2);
 const invokedFrom = process.cwd();
 runLedgerCommandFromMainCheckout(args);
-if (args[0] === '--help' || args[0] === '-h') {
-  const source = readFileSync(new URL(import.meta.url), 'utf8').split('\n');
-  const from = source.findIndex((line) => line.startsWith('// Usage:'));
-  const to = source.findIndex((line, index) => index > from && !line.startsWith('//'));
-  console.info(source.slice(from, to).map((line) => line.replace(/^\/\/ ?/, '')).join('\n'));
-  process.exit(0);
-}
-if (args[0] === 'rounds') {
-  if (!args[1] || !existsSync(args[1])) {
-    console.error(args[1] ? `no log at ${args[1]}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv>');
-    process.exit(2);
+function dispatch() {
+  if (args[0] === '--help' || args[0] === '-h') {
+    const source = readFileSync(new URL(import.meta.url), 'utf8').split('\n');
+    const from = source.findIndex((line) => line.startsWith('// Usage:'));
+    const to = source.findIndex((line, index) => index > from && !line.startsWith('//'));
+    console.info(source.slice(from, to).map((line) => line.replace(/^\/\/ ?/, '')).join('\n'));
+    return 0;
   }
-  const lines = readFileSync(args[1], 'utf8').split('\n');
-  const rounds = roundsSince(lines);
-  const cap = roundCap();
-  console.info(`${rounds} panel round(s) since the last restart; the cap is ${cap}`);
-  process.exit(rounds >= cap ? 1 : 0);
-}
-if (args[0] === 'chips') {
-  const fetch = args.includes('--fetch');
-  const at = args.indexOf('--session');
-  const here = at === -1 ? null : (args[at + 1] ?? null);
-  if (at !== -1 && !SESSION.test(here ?? '')) {
-    console.error("--session takes this session's id, the one the runtime's session tool gives it");
-    process.exit(2);
-  }
-  const { rest, logAt } = chipsArgs(args);
-  if (rest[0] === 'id') {
-    console.info(newId());
-    process.exit(0);
-  }
-  const id = rest[0] === 'brief' ? rest[1] : null;
-  const named = args[logAt];
-  const ledger = named ?? ledgerFile();
-  if (!existsSync(ledger)) {
-    console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
-    process.exit(named ? 2 : 0);
-  }
-  const lines = readFileSync(ledger, 'utf8').split('\n').slice(1);
-  const tasks = readTasks(lines);
-  const sessionList = () => {
-    const file = args.includes('--sessions') ? args[args.indexOf('--sessions') + 1] : null;
-    if (!file) return null;
-    let sessions = null;
-    try {
-      sessions = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
-    } catch {}
-    if (!Array.isArray(sessions)) {
-      console.error(`${file} does not hold a JSON array of sessions, the session tool's list saved as JSON`);
-      process.exit(2);
+  if (args[0] === 'rounds') {
+    if (!args[1] || !existsSync(args[1])) {
+      console.error(args[1] ? `no log at ${args[1]}` : 'Usage: node .agents/pstack/decisions-check.mjs rounds <log.decisions.tsv>');
+      return 2;
     }
-    return sessions;
-  };
-  const all = rest[0] === 'all';
-  if (all && here === null) {
-    console.error("chips all takes --session <id>, the id the runtime's session tool gives this session, because the tasks it takes become this session's");
-    process.exit(2);
+    const lines = readFileSync(args[1], 'utf8').split('\n');
+    const rounds = roundsSince(lines);
+    const cap = roundCap();
+    console.info(`${rounds} panel round(s) since the last restart; the cap is ${cap}`);
+    return rounds >= cap ? 1 : 0;
   }
-  const listed = all ? sessionList() : null;
-  const owning = { transcript: here === null ? null : transcriptOf(findLead().run ?? null), all, live: listed && new Set(listed.filter((session) => !session.isArchived).map((session) => session.sessionId)) };
-  if (rest[0] === 'cleanup') {
-    const sessions = sessionList();
-    if (!sessions) {
-      console.error("chips cleanup takes --sessions <file>, the session tool's list of every session, archived ones included, saved as a JSON array");
-      process.exit(2);
+  if (args[0] === 'chips') {
+    const fetch = args.includes('--fetch');
+    const at = args.indexOf('--session');
+    const here = at === -1 ? null : (args[at + 1] ?? null);
+    if (at !== -1 && !SESSION.test(here ?? '')) {
+      console.error("--session takes this session's id, the one the runtime's session tool gives it");
+      return 2;
     }
-    // The shell may have moved out of the session's folder, which the runtime process keeps.
-    const { archive, remove, report, kept } = cleanupOf(tasks, sessions, here, [invokedFrom, runtimeFolder()]);
-    if (!report.length) {
-      console.info('Nothing to clean up: no landed task has an idle card session or a worktree left.');
-      process.exit(0);
+    const { rest, logAt } = chipsArgs(args);
+    if (rest[0] === 'id') {
+      console.info(newId());
+      return 0;
     }
-    const out = [];
-    if (archive.length) out.push(`Archive (${archive.length}), with the session tool, each idle card session whose task landed, then save the session list again and rerun chips cleanup:`, ...archive.map((session) => `  ${session.sessionId}  ${session.title}`));
-    if (remove.length) out.push(`Remove (${remove.length}) the worktrees of landed tasks whose sessions are archived:`, `  node .agents/skills/cleanup/scripts/scan.mjs --repo . --remove ${remove.join(' ')}`);
-    if (kept.length) out.push(`Keep (${kept.length}) each idle card session that holds a card nobody has started, because archiving it drops that card; a later cleanup archives it once the card is started or a week old:`, ...kept.map((line) => `  ${line}`));
-    out.push(`Report (${report.length}):`, ...report.map((line) => `  ${line}`));
-    console.info(out.join('\n'));
-    process.exit(0);
-  }
-  if (rest[0] === 'groups') {
-    console.info(renderGroups(groupsOf(tasks, plansDir()), ledger));
-    process.exit(0);
-  }
-  if (rest[0] === 'stale') {
-    const states = new Map();
-    const prState = (pr) => {
-      if (!states.has(pr)) {
-        try {
-          states.set(pr, execFileSync('gh', ['pr', 'view', String(pr), '--json', 'state', '-q', '.state'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim());
-        } catch {
-          states.set(pr, null);
-        }
-      }
-      return states.get(pr);
-    };
-    const at = offeredAt(lines);
-    const DAY = 86_400;
-    const oldest = [...at.values()].sort()[0] ?? new Date().toISOString();
-    const read = (via, args, input) => {
+    const id = rest[0] === 'brief' ? rest[1] : null;
+    const named = args[logAt];
+    const ledger = named ?? ledgerFile();
+    if (!existsSync(ledger)) {
+      console.error(named ? `no log at ${ledger}` : `No ledger at ${ledger} yet; run this from the project root.`);
+      return named ? 2 : 0;
+    }
+    const lines = readFileSync(ledger, 'utf8').split('\n').slice(1);
+    const tasks = readTasks(lines);
+    const sessionList = () => {
+      const file = args.includes('--sessions') ? args[args.indexOf('--sessions') + 1] : null;
+      if (!file) return null;
+      let sessions = null;
       try {
-        return execFileSync('git', [...via, ...args], { encoding: 'utf8', input, maxBuffer: 1 << 30, stdio: [input === undefined ? 'ignore' : 'pipe', 'pipe', 'ignore'] });
-      } catch {
-        return '';
+        sessions = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : null;
+      } catch {}
+      if (!Array.isArray(sessions)) {
+        console.error(`${file} does not hold a JSON array of sessions, the session tool's list saved as JSON`);
+        return false;
       }
+      return sessions;
     };
-    const PURE_RENAME = 'R100';
-    const logged = new Map();
-    const logEntries = (via) => {
-      const key = via.join('\0');
-      if (logged.has(key)) return logged.get(key);
-      const entries = [];
-      let commit = null;
-      for (const row of read([...via, '-c', 'core.quotePath=false'], ['log', '--first-parent', '--diff-merges=first-parent', `--since-as-filter=${oldest}`, '--format=%x01%ct%x09%h%x09%s', '--raw', '--no-abbrev', '-M']).split('\n')) {
-        if (row.startsWith('\x01')) {
-          const [time, hash, subject] = row.slice(1).split('\t');
-          commit = { time: Number(time), hash, subject };
-        } else if (row.startsWith(':') && commit) {
-          const [meta, ...paths] = row.split('\t');
-          const [, , before, after, status] = meta.split(' ');
-          const changesContent = status !== PURE_RENAME;
-          if (status.startsWith('R')) entries.push({ ...commit, status: 'D', path: paths[0], content: before, changesContent, renamed: true });
-          entries.push({ ...commit, status: status[0], path: paths.at(-1), content: status[0] === 'D' ? before : after, changesContent });
-        }
-      }
-      logged.set(key, entries);
-      return entries;
-    };
-    const markMovesBetween = (entries, partner) => {
-      const opposite = { A: 'D', D: 'A' };
-      const halves = new Map();
-      for (const entry of logEntries(partner)) {
-        const key = `${entry.status}\0${entry.path}\0${entry.content}`;
-        halves.set(key, [...(halves.get(key) ?? []), entry.time]);
-      }
-      for (const entry of entries) {
-        const times = opposite[entry.status] ? halves.get(`${opposite[entry.status]}\0${entry.path}\0${entry.content}`) : null;
-        if (times?.some((time) => Math.abs(time - entry.time) <= DAY)) entry.moved = true;
-      }
-    };
-    const history = new Map();
-    const historyOf = (via, partner = null) => {
-      const key = via.join('\0');
-      if (history.has(key)) return history.get(key);
-      const entries = logEntries(via);
-      if (partner) markMovesBetween(entries, partner);
-      const byPath = new Map();
-      for (const entry of entries) byPath.set(entry.path, [...(byPath.get(entry.path) ?? []), entry]);
-      history.set(key, byPath);
-      return byPath;
-    };
-    const companion = projectConfig().companion?.dir;
-    const own = companion && existsSync(companion) ? [[], ['--git-dir', companion, '--work-tree', '.']] : [[]];
-    const repoPath = (path) => {
-      const clean = normalize(path).replace(/\/$/u, '');
-      return clean === '.' ? '' : clean;
-    };
-    const root = realpathSync('.');
-    const nearestDir = (path) => (existsSync(path) ? (statSync(path).isDirectory() ? path : dirname(path)) : nearestDir(dirname(path)));
-    const ownHomes = (path) => own.map((via, index) => ({ byPath: historyOf(via, own.length > 1 ? own[1 - index] : null), path: repoPath(path) }));
-    const homes = (written) => {
-      if (!isAbsolute(written)) return ownHomes(written);
-      const dir = nearestDir(written);
-      const top = read(['-C', dir], ['rev-parse', '--show-toplevel']).trim();
-      if (!top) return [];
-      const path = join(read(['-C', dir], ['rev-parse', '--show-prefix']).trim(), relative(dir, written));
-      return realpathSync(top) === root ? ownHomes(path) : [{ byPath: historyOf(['-C', top]), path: repoPath(path) }];
-    };
-    const entriesAt = (byPath, under, file) => (file ? (byPath.get(under) ?? []) : [...byPath].filter(([each]) => under === '' || each === under || each.startsWith(`${under}/`)).flatMap(([, entries]) => entries));
-    const changesOf = (since, path) => {
-      const after = Date.parse(since) / 1000;
-      const file = existsSync(path) && !statSync(path).isDirectory();
-      return homes(path).flatMap(({ byPath, path: under }) => entriesAt(byPath, under, file).filter((entry) => entry.time >= after && !entry.moved));
-    };
-    const deletedSince = (since, path) => changesOf(since, path).some((entry) => entry.status === 'D' && !entry.renamed);
-    const commitsSince = (since, paths) => {
-      const seen = new Map();
-      for (const path of paths) for (const entry of changesOf(since, path)) if (entry.changesContent) seen.set(entry.hash, entry);
-      return [...seen.values()].sort((a, b) => b.time - a.time).map((commit) => commit.subject);
-    };
-    const rows = staleReport(tasks, at, { exists: existsSync, deletedSince, commitsSince, prState, now: Date.now(), ship: shipList().items });
-    console.info(rows.length ? `${rows.length} open suggested tasks in ${ledger}, the likeliest stale first:\n${rows.join('\n')}` : `No open suggested tasks in ${ledger}.`);
-    process.exit(0);
-  }
-  if (rest[0] === 'brief') {
-    const task = tasks.get(id ?? '');
-    if (!task) {
-      console.error(`${id ?? '(no id)'} is not a task in ${ledger}`);
-      process.exit(2);
+    const all = rest[0] === 'all';
+    if (all && here === null) {
+      console.error("chips all takes --session <id>, the id the runtime's session tool gives this session, because the tasks it takes become this session's");
+      return 2;
     }
-    const git = gitMerges({ fetch, branch: projectConfig().branch });
-    let view;
-    const wholeBoard = () => (view ??= board(tasks, git, null, { ship: shipList() }));
-    const { ok, text } = briefOf(tasks, id, ledger, maxEffort(), projectConfig().chips?.codex, (each) => boardState(tasks, each, git, wholeBoard));
-    (ok ? console.info : console.error)(text);
-    process.exit(ok ? 0 : 1);
+    const listed = all ? sessionList() : null;
+    if (listed === false) return 2;
+    const owning = { transcript: here === null ? null : transcriptOf(findLead().run ?? null), all, live: listed && new Set(listed.filter((session) => !session.isArchived).map((session) => session.sessionId)) };
+    if (rest[0] === 'cleanup') {
+      const sessions = sessionList();
+      if (sessions === false) return 2;
+      if (!sessions) {
+        console.error("chips cleanup takes --sessions <file>, the session tool's list of every session, archived ones included, saved as a JSON array");
+        return 2;
+      }
+      // The shell may have moved out of the session's folder, which the runtime process keeps.
+      const { archive, remove, report, kept } = cleanupOf(tasks, sessions, here, [invokedFrom, runtimeFolder()]);
+      if (!report.length) {
+        console.info('Nothing to clean up: no landed task has an idle card session or a worktree left.');
+        return 0;
+      }
+      const out = [];
+      if (archive.length) out.push(`Archive (${archive.length}), with the session tool, each idle card session whose task landed, then save the session list again and rerun chips cleanup:`, ...archive.map((session) => `  ${session.sessionId}  ${session.title}`));
+      if (remove.length) out.push(`Remove (${remove.length}) the worktrees of landed tasks whose sessions are archived:`, `  node .agents/skills/cleanup/scripts/scan.mjs --repo . --remove ${remove.join(' ')}`);
+      if (kept.length) out.push(`Keep (${kept.length}) each idle card session that holds a card nobody has started, because archiving it drops that card; a later cleanup archives it once the card is started or a week old:`, ...kept.map((line) => `  ${line}`));
+      out.push(`Report (${report.length}):`, ...report.map((line) => `  ${line}`));
+      console.info(out.join('\n'));
+      return 0;
+    }
+    if (rest[0] === 'groups') {
+      console.info(renderGroups(groupsOf(tasks, plansDir()), ledger));
+      return 0;
+    }
+    if (rest[0] === 'stale') {
+      const states = new Map();
+      const prState = (pr) => {
+        if (!states.has(pr)) {
+          try {
+            states.set(pr, execFileSync('gh', ['pr', 'view', String(pr), '--json', 'state', '-q', '.state'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim());
+          } catch {
+            states.set(pr, null);
+          }
+        }
+        return states.get(pr);
+      };
+      const at = offeredAt(lines);
+      const DAY = 86_400;
+      const oldest = [...at.values()].sort()[0] ?? new Date().toISOString();
+      const read = (via, args, input) => {
+        try {
+          return execFileSync('git', [...via, ...args], { encoding: 'utf8', input, maxBuffer: 1 << 30, stdio: [input === undefined ? 'ignore' : 'pipe', 'pipe', 'ignore'] });
+        } catch {
+          return '';
+        }
+      };
+      const PURE_RENAME = 'R100';
+      const logged = new Map();
+      const logEntries = (via) => {
+        const key = via.join('\0');
+        if (logged.has(key)) return logged.get(key);
+        const entries = [];
+        let commit = null;
+        for (const row of read([...via, '-c', 'core.quotePath=false'], ['log', '--first-parent', '--diff-merges=first-parent', `--since-as-filter=${oldest}`, '--format=%x01%ct%x09%h%x09%s', '--raw', '--no-abbrev', '-M']).split('\n')) {
+          if (row.startsWith('\x01')) {
+            const [time, hash, subject] = row.slice(1).split('\t');
+            commit = { time: Number(time), hash, subject };
+          } else if (row.startsWith(':') && commit) {
+            const [meta, ...paths] = row.split('\t');
+            const [, , before, after, status] = meta.split(' ');
+            const changesContent = status !== PURE_RENAME;
+            if (status.startsWith('R')) entries.push({ ...commit, status: 'D', path: paths[0], content: before, changesContent, renamed: true });
+            entries.push({ ...commit, status: status[0], path: paths.at(-1), content: status[0] === 'D' ? before : after, changesContent });
+          }
+        }
+        logged.set(key, entries);
+        return entries;
+      };
+      const markMovesBetween = (entries, partner) => {
+        const opposite = { A: 'D', D: 'A' };
+        const halves = new Map();
+        for (const entry of logEntries(partner)) {
+          const key = `${entry.status}\0${entry.path}\0${entry.content}`;
+          halves.set(key, [...(halves.get(key) ?? []), entry.time]);
+        }
+        for (const entry of entries) {
+          const times = opposite[entry.status] ? halves.get(`${opposite[entry.status]}\0${entry.path}\0${entry.content}`) : null;
+          if (times?.some((time) => Math.abs(time - entry.time) <= DAY)) entry.moved = true;
+        }
+      };
+      const history = new Map();
+      const historyOf = (via, partner = null) => {
+        const key = via.join('\0');
+        if (history.has(key)) return history.get(key);
+        const entries = logEntries(via);
+        if (partner) markMovesBetween(entries, partner);
+        const byPath = new Map();
+        for (const entry of entries) byPath.set(entry.path, [...(byPath.get(entry.path) ?? []), entry]);
+        history.set(key, byPath);
+        return byPath;
+      };
+      const companion = projectConfig().companion?.dir;
+      const own = companion && existsSync(companion) ? [[], ['--git-dir', companion, '--work-tree', '.']] : [[]];
+      const repoPath = (path) => {
+        const clean = normalize(path).replace(/\/$/u, '');
+        return clean === '.' ? '' : clean;
+      };
+      const root = realpathSync('.');
+      const nearestDir = (path) => (existsSync(path) ? (statSync(path).isDirectory() ? path : dirname(path)) : nearestDir(dirname(path)));
+      const ownHomes = (path) => own.map((via, index) => ({ byPath: historyOf(via, own.length > 1 ? own[1 - index] : null), path: repoPath(path) }));
+      const homes = (written) => {
+        if (!isAbsolute(written)) return ownHomes(written);
+        const dir = nearestDir(written);
+        const top = read(['-C', dir], ['rev-parse', '--show-toplevel']).trim();
+        if (!top) return [];
+        const path = join(read(['-C', dir], ['rev-parse', '--show-prefix']).trim(), relative(dir, written));
+        return realpathSync(top) === root ? ownHomes(path) : [{ byPath: historyOf(['-C', top]), path: repoPath(path) }];
+      };
+      const entriesAt = (byPath, under, file) => (file ? (byPath.get(under) ?? []) : [...byPath].filter(([each]) => under === '' || each === under || each.startsWith(`${under}/`)).flatMap(([, entries]) => entries));
+      const changesOf = (since, path) => {
+        const after = Date.parse(since) / 1000;
+        const file = existsSync(path) && !statSync(path).isDirectory();
+        return homes(path).flatMap(({ byPath, path: under }) => entriesAt(byPath, under, file).filter((entry) => entry.time >= after && !entry.moved));
+      };
+      const deletedSince = (since, path) => changesOf(since, path).some((entry) => entry.status === 'D' && !entry.renamed);
+      const commitsSince = (since, paths) => {
+        const seen = new Map();
+        for (const path of paths) for (const entry of changesOf(since, path)) if (entry.changesContent) seen.set(entry.hash, entry);
+        return [...seen.values()].sort((a, b) => b.time - a.time).map((commit) => commit.subject);
+      };
+      const rows = staleReport(tasks, at, { exists: existsSync, deletedSince, commitsSince, prState, now: Date.now(), ship: shipList().items });
+      console.info(rows.length ? `${rows.length} open suggested tasks in ${ledger}, the likeliest stale first:\n${rows.join('\n')}` : `No open suggested tasks in ${ledger}.`);
+      return 0;
+    }
+    if (rest[0] === 'brief') {
+      const task = tasks.get(id ?? '');
+      if (!task) {
+        console.error(`${id ?? '(no id)'} is not a task in ${ledger}`);
+        return 2;
+      }
+      const git = gitMerges({ fetch, branch: projectConfig().branch });
+      let view;
+      const wholeBoard = () => (view ??= board(tasks, git, null, { ship: shipList() }));
+      const { ok, text } = briefOf(tasks, id, ledger, maxEffort(), projectConfig().chips?.codex, (each) => boardState(tasks, each, git, wholeBoard));
+      (ok ? console.info : console.error)(text);
+      return ok ? 0 : 1;
+    }
+    const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, { ...owning, ship: shipList() });
+    for (const note of startedOverlaps(tasks)) console.error(note);
+    console.info(renderBoard(view, ledger, maxEffort()));
+    return view.problem ? 1 : 0;
   }
-  const view = board(tasks, gitMerges({ fetch, branch: projectConfig().branch }), here, { ...owning, ship: shipList() });
-  console.info(renderBoard(view, ledger, maxEffort()));
-  for (const note of startedOverlaps(tasks)) console.error(note);
-  process.exit(view.problem ? 1 : 0);
-}
-if (args[0] === 'append') {
-  const batch =
-    args[2] === '--from'
-      ? readFileSync(args[3] ?? '', 'utf8')
-          .split(/\r?\n/u)
-          .filter((line) => line.trim())
-          .map((line) => line.split('\t'))
-      : [args.slice(2)];
-  const before = stageMoves(args[1] ?? '').length;
-  const dueBefore = pageDueRows(args[1] ?? '');
-  const lead = findLead();
-  const run = lead.run ?? null;
-  if (!run) console.error(`Runtime identity is unknown because ${lead.miss}, so ${args[1]} records an unknown lead boundary.`);
-  const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run, lead.miss);
+  if (args[0] === 'append') {
+    const batch =
+      args[2] === '--from'
+        ? readFileSync(args[3] ?? '', 'utf8')
+            .split(/\r?\n/u)
+            .filter((line) => line.trim())
+            .map((line) => line.split('\t'))
+        : [args.slice(2)];
+    const before = stageMoves(args[1] ?? '').length;
+    const dueBefore = pageDueRows(args[1] ?? '');
+    const lead = findLead();
+    const run = lead.run ?? null;
+    if (!run) console.error(`Runtime identity is unknown because ${lead.miss}, so ${args[1]} records an unknown lead boundary.`);
+    const found = batch.length === 0 ? [`${args[3]} holds no rows`] : append(args[1] ?? '', batch, run, lead.miss);
+    if (found.length > 0) {
+      console.error(`${batch.length > 1 ? 'No row written' : 'Row not written'}:\n${found.join('\n')}`);
+      return 1;
+    }
+    console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);
+    if (run) console.info(`Lead: ${leadLabel(run)}.`);
+    const entered = stageMoves(args[1]).slice(before);
+    if (entered.length) console.info(`Stage: ${entered.join(', then ')}.${existsSync(new URL('rules/title.md', import.meta.url)) ? ' Rename the session now, as .agents/pstack/rules/title.md says.' : ''}`);
+    stagePage(args[1]);
+    if (dueBefore === 0 && pageDueRows(args[1]) > 0) warnUnpublishedBabysit(args[1]);
+    return 0;
+  }
+  const paths = args[0] === '--all' ? decisionLogs(plansDir()) : args;
+  if (paths.length === 0 && args[0] !== '--all') {
+    console.error('Usage: node .agents/pstack/decisions-check.mjs <log.decisions.tsv> [...] | --all');
+    return 2;
+  }
+  const missing = paths.filter((path) => !existsSync(path));
+  if (missing.length > 0) {
+    console.error(`no log at ${missing.join(', ')}; --help prints the usage`);
+    return 2;
+  }
+  const found = paths.flatMap(problems);
   if (found.length > 0) {
-    console.error(`${batch.length > 1 ? 'No row written' : 'Row not written'}:\n${found.join('\n')}`);
-    process.exit(1);
+    console.error(`${found.length} problem(s):\n${found.join('\n')}`);
+    return 1;
   }
-  console.info(batch.length > 1 ? `Appended ${batch.length} rows to ${args[1]}.` : `Appended a row to ${args[1]}.`);
-  if (run) console.info(`Lead: ${leadLabel(run)}.`);
-  const entered = stageMoves(args[1]).slice(before);
-  if (entered.length) console.info(`Stage: ${entered.join(', then ')}.${existsSync(new URL('rules/title.md', import.meta.url)) ? ' Rename the session now, as .agents/pstack/rules/title.md says.' : ''}`);
-  stagePage(args[1]);
-  if (dueBefore === 0 && pageDueRows(args[1]) > 0) warnUnpublishedBabysit(args[1]);
-  process.exit(0);
+  console.info(`New rows are well formed in ${paths.length} log(s).`);
+  return 0;
 }
-const paths = args[0] === '--all' ? decisionLogs(plansDir()) : args;
-if (paths.length === 0 && args[0] !== '--all') {
-  console.error('Usage: node .agents/pstack/decisions-check.mjs <log.decisions.tsv> [...] | --all');
-  process.exit(2);
-}
-const missing = paths.filter((path) => !existsSync(path));
-if (missing.length > 0) {
-  console.error(`no log at ${missing.join(', ')}; --help prints the usage`);
-  process.exit(2);
-}
-const found = paths.flatMap(problems);
-if (found.length > 0) {
-  console.error(`${found.length} problem(s):\n${found.join('\n')}`);
-  process.exit(1);
-}
-console.info(`New rows are well formed in ${paths.length} log(s).`);
+process.exitCode = dispatch();

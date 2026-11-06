@@ -2,7 +2,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { capEffort } from './lead.mjs';
 import { landed, stateOf } from './status.mjs';
@@ -17,6 +17,7 @@ let config;
 const projectConfig = () => (config ??= existsSync('.agents/pstack.json') ? JSON.parse(readFileSync('.agents/pstack.json', 'utf8')) : {});
 const trunk = () => projectConfig().delivery === 'trunk';
 const branch = () => projectConfig().branch ?? 'main';
+const reviewScopes = (dir) => (existsSync(dir) ? readdirSync(dir, { withFileTypes: true }).filter((entry) => entry.isFile()).map((entry) => entry.name.replace(/\.[^.]+$/u, '')) : []);
 
 const FROM = {
   started: ['offered', 'started'],
@@ -47,9 +48,10 @@ const RESULT = new RegExp(`^(${CHIP_STATES.join('|')}|dismissed (?:${REASONS.joi
 const LEGACY_ONLY = ['dismissed gone', 'dismissed replaced'];
 const PROOFS = ['repro', 'regressed', 'ship'];
 const EVIDENCE = ['priority', ...PROOFS];
+const FACTS = ['review-scope', 'regression'];
 const TAKES = {
-  offered: ['writes', 'topic', 'kind', 'waits', 'owns', 'fast', 'card', 'shown', 'session', 'transcript', 'via', ...EVIDENCE],
-  updated: ['writes', 'topic', 'kind', 'effort', 'waits', 'owns', 'fast', 'session', 'transcript', ...EVIDENCE],
+  offered: ['writes', 'topic', 'kind', 'waits', 'owns', 'fast', 'card', 'shown', 'session', 'transcript', 'via', ...EVIDENCE, ...FACTS],
+  updated: ['writes', 'topic', 'kind', 'effort', 'waits', 'owns', 'fast', 'session', 'transcript', ...EVIDENCE, ...FACTS],
   folded: ['writes', 'kind', 'effort', 'waits', 'owns', ...EVIDENCE],
   started: ['writes', 'session'],
   landed: ['patch', 'commit'],
@@ -58,8 +60,8 @@ const TAKES = {
   apart: ['from'],
   'dismissed declined': ['card'],
 };
-const LIST_KEYS = ['writes', 'waits', 'owns', 'commit', 'from'];
-const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'shown', 'session', 'transcript', 'codex', 'via', ...EVIDENCE];
+const LIST_KEYS = ['writes', 'waits', 'owns', 'commit', 'from', 'regression'];
+const SCALAR_KEYS = ['topic', 'kind', 'effort', 'fast', 'patch', 'card', 'shown', 'session', 'transcript', 'codex', 'via', 'review-scope', ...EVIDENCE];
 const KINDS = ['fix', 'decide', 'review'];
 const PRIORITIES = ['P0', 'P1', 'P2', 'P3'];
 const ROUTES = ['verdict', 'babysit', 'time', 'hook', 'panel'];
@@ -73,7 +75,9 @@ const CHECK = /^[\w.:/-]+$/u;
 export const SESSION = /^\w[\w.-]*$/u;
 const WAIT = /^(?:pr:(\d+)|task:([\w-]+)|run:(\S+\.md))$/u;
 
-const values = (evidence, key) => [...evidence.matchAll(new RegExp(`(?:^|[\\s;])${key}:\\s*([^;]*)`, 'gu'))].map((match) => match[1].trim());
+const withoutReproProse = (evidence, key) => (key === 'repro' ? evidence : evidence.replace(/(^|;)\s*repro:[^;]*/gu, '$1'));
+const values = (evidence, key) => [...withoutReproProse(evidence, key).matchAll(new RegExp(`(?:^|[\\s;])${key}:\\s*([^;]*)`, 'gu'))].map((match) => match[1].trim());
+export const hasToken = (evidence, key) => values(evidence, key).length > 0;
 const list = (value) => value.split(',').map((item) => item.trim()).filter(Boolean);
 // A one-token value with a space in it ran into the next field.
 const ranOn = (value) => (/\s/u.test(value) ? '; a field runs to the next ";", so end it with ";" before more evidence' : '');
@@ -248,6 +252,8 @@ export function recordRow(tasks, cells, ts = null) {
       repro: given.repro ?? null,
       regressed: given.regressed ?? null,
       ship: given.ship ?? null,
+      reviewScope: given['review-scope'] ?? null,
+      regression: given.regression ?? [],
       patch: null,
       commits: [],
       landedAt: null,
@@ -320,6 +326,8 @@ export function recordRow(tasks, cells, ts = null) {
       task.keys = given.writes.map(writeKey);
     }
     for (const key of ['topic', 'kind', 'effort', 'waits', 'owns', ...EVIDENCE]) if (given[key] !== undefined) task[key] = given[key];
+    if (given['review-scope'] !== undefined) task.reviewScope = given['review-scope'];
+    if (given.regression !== undefined) task.regression = given.regression;
     if (given.fast !== undefined) task.fast = given.fast === 'yes';
     if (given.session !== undefined) {
       task.owner = given.session;
@@ -365,6 +373,8 @@ const tokenProblems = (given, where) => {
   if (given.repro === '') found.push(`${where}: repro: names a failing test, or exact steps someone ran and saw fail`);
   if (given.regressed !== undefined && !/^[0-9a-f]{7,40}$/u.test(given.regressed)) found.push(`${where}: regressed: names the commit the regression came in by its hash`);
   if (given.ship !== undefined && !SESSION.test(given.ship)) found.push(`${where}: ship: names one item of the project's ship list by its id`);
+  if (given['review-scope'] !== undefined && !TOPIC.test(given['review-scope'])) found.push(`${where}: review-scope: names the review scope that owns the task's code by its id, or none when no review scope owns it`);
+  for (const page of given.regression ?? []) if (!['http:', 'https:'].includes(URL.parse(page)?.protocol)) found.push(`${where}: regression: names each page where the behavior still works by its URL, comma-separated, as a triage record's regression: does; "${page}" is not a URL`);
   return found;
 };
 
@@ -402,8 +412,8 @@ export function chipRowProblems(cells, before, where) {
   }
   if (move === 'updated' && !TAKES.updated.some((key) => given[key] !== undefined)) found.push(`${where}: an updated row names what changes: writes:, topic:, kind:, effort:, waits:, owns:, fast: or session:`);
   if (move === 'updated' && given.transcript !== undefined && given.session === undefined) found.push(`${where}: transcript: goes beside session:, the owner it names`);
-  if (move === 'updated' && known && sessionPicksPlan(known) && Object.keys(given).some((key) => key !== 'owns')) {
-    found.push(`${where}: ${id} is started, so an updated row on it takes only owns:; the session adds paths with another started row`);
+  if (move === 'updated' && known && sessionPicksPlan(known) && Object.keys(given).some((key) => key !== 'owns' && !FACTS.includes(key))) {
+    found.push(`${where}: ${id} is started, so an updated row on it takes only owns:, review-scope: and regression:; the session adds paths with another started row`);
   }
   const kept = row.target && before.get(row.target);
   if (move === 'dismissed dup' && (row.target === id || !kept || !isOpen(kept))) found.push(`${where}: ${row.target} must be another task the ledger holds as offered; offer the task it merges into before this row`);
@@ -484,6 +494,9 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
     if (!items) found.push(`${where}: ship: names an item of the project's ship list, and ${note ?? 'this project sets no chips.ship command in .agents/pstack.json'}`);
     else if (!items.some((item) => item.id === given.ship)) found.push(`${where}: ship: ${given.ship} is not an open item of the project's ship list; chips lists the open ones`);
   }
+  const scopes = projectConfig().chips?.scopes;
+  const scope = given['review-scope'];
+  if (scopes && scope && scope !== 'none' && !reviewScopes(scopes).includes(scope)) found.push(`${where}: review-scope: ${scope} is no review scope in ${scopes}; name the one that owns the task's code, or none`);
   const cycledBefore = cyclicEdges(before);
   const added = [...cyclicEdges(afterRow(before, cells))].filter((edge) => !cycledBefore.has(edge)).map((edge) => edge.split(' '));
   const self = added.find(([from, to]) => from === to);
@@ -528,9 +541,9 @@ export function newChipRowProblems(cells, before, where, git, here = null, shipL
   if (move === 'folded' && held(own)) found.push(`${where}: ${id} holds card ${own.card}, which cannot show new work; offer the finding as a new task in topic ${own.topic ?? '<its question>'} with waits: task:${id}, and chips merges it once the card is withdrawn`);
   const narrows = Object.keys(given).every((key) => key === 'writes') && (given.writes ?? []).map(writeKey).every((key) => own?.keys.some((old) => key === old || contains(old, key)));
   const addsWaits = Object.keys(given).every((key) => key === 'waits') && given.waits !== undefined && given.waits.length > (own?.waits.length ?? 0) && (own?.waits ?? []).every((wait) => given.waits.includes(wait));
-  const relabels = Object.keys(given).every((key) => key === 'effort' || EVIDENCE.includes(key));
+  const relabels = Object.keys(given).every((key) => key === 'effort' || EVIDENCE.includes(key) || FACTS.includes(key));
   if (move === 'updated' && held(own) && !narrows && !addsWaits && !relabels) {
-    found.push(`${where}: ${id} holds card ${own.card}, which cannot change; withdraw the card first, as chips.md's Limits says, then log this row; a row that only narrows writes:, only adds waits: and keeps every wait it has, or only sets effort:, priority: and its evidence, needs no withdrawal`);
+    found.push(`${where}: ${id} holds card ${own.card}, which cannot change; withdraw the card first, as chips.md's Limits says, then log this row; a row that only narrows writes:, only adds waits: and keeps every wait it has, or only sets effort:, priority: and its evidence, review-scope: or regression:, needs no withdrawal`);
   }
   if (given.fast === 'yes') {
     const after = afterRow(before, cells).get(id);
@@ -770,6 +783,7 @@ export function staleReport(tasks, at, probe) {
         ...(commits.length ? [`${commits.length} ${commits.length === 1 ? 'commit' : 'commits'} on its paths since its offer, last "${commits[0]}"`] : []),
         ...closed,
         ...(possiblyThin(task) ? ['possibly thin: every finding is a note an older migration wrote, so add the finding before its next card'] : []),
+        ...(projectConfig().triage?.experimental && task.status === 'offered' && !task.reviewScope ? ['no review scope'] : []),
         ...(task.card ? [`card ${task.card}${task.session ? ` in session ${task.session}` : ''}`] : []),
       ];
       return { task, facts, weight: 3 * (deleted.length > 0) + 3 * (closed.length > 0) + 3 * shipClosed + 2 * possiblyThin(task) + (missing.length > 0) + (commits.length > 0) };
@@ -1013,9 +1027,18 @@ const rank = (task) => {
   return at === -1 ? PRIORITIES.length : at;
 };
 
+const milestoneClassOf = ({ reviewScope, regression }) => {
+  const experimental = projectConfig().triage?.experimental;
+  if (!experimental || !reviewScope || reviewScope === 'none') return null;
+  if (regression.length > 0) return 'regression';
+  return experimental.includes(reviewScope) ? 'experimental' : 'new';
+};
+const MILESTONE_RANK = { regression: 0, new: 1, experimental: 2 };
+const milestoneRank = (task) => MILESTONE_RANK[milestoneClassOf(task) ?? 'new'];
+
 const PUBLIC_ISSUE = /(?<![&\w])[\w.-]*#\d+\b|:\/\/\S+\/issues\/\d+/u;
 const issueRank = (task) => (PUBLIC_ISSUE.test(task.repro ?? '') ? 0 : 1);
-const byPriority = (a, b) => rank(a) - rank(b) || issueRank(a) - issueRank(b) || byOrder(a, b);
+const byPriority = (a, b) => rank(a) - rank(b) || milestoneRank(a) - milestoneRank(b) || issueRank(a) - issueRank(b) || byOrder(a, b);
 
 function shipOffers(items, tasks, open) {
   const served = new Set(open.map((task) => task.ship).filter(Boolean));
@@ -1067,7 +1090,7 @@ const sharesWith = (task, open) => {
   return ids.length > 5 ? [...ids.slice(0, 5), `${ids.length - 5} more`] : ids;
 };
 
-const line = (task, extra = '') => `  ${task.id}  ${displayTitle(task)}${task.topic ? `  [${task.topic}${task.kind === 'decide' ? ', decide' : ''}]` : ''}${task.owns.length ? `  owns ${task.owns.join(', ')}` : ''}${extra}`;
+const line = (task, extra = '') => `  ${task.id}  ${displayTitle(task)}${task.topic ? `  [${task.topic}${task.kind === 'decide' ? ', decide' : ''}]` : ''}${milestoneClassOf(task) ? `  ${milestoneClassOf(task)}` : ''}${task.owns.length ? `  owns ${task.owns.join(', ')}` : ''}${extra}`;
 
 export function renderBoard(view, ledger, max = null) {
   if (view.open.length === 0 && view.lost.length === 0 && view.owed.length === 0) return `No open suggested tasks in ${ledger}.`;
@@ -1162,6 +1185,7 @@ function brief(task, ledger, max, tasks, codex, state) {
   const patch = resolve(root, artifacts, 'chips', `${task.id}.patch`);
   const reviewed = task.waits.map((wait) => follow(wait.match(WAIT)?.[2] ?? '', tasks)).filter(Boolean);
   const priority = priorityOf(task);
+  const milestone = milestoneClassOf(task);
   return [
     `${priority ? `[${priority}] ` : ''}${displayTitle(task)}`,
     '',
@@ -1169,6 +1193,8 @@ function brief(task, ledger, max, tasks, codex, state) {
     ...(task.repro ? [`Repro: ${task.repro}`] : []),
     ...(task.regressed ? [`Regressed in: ${task.regressed}`] : []),
     ...(task.ship ? [`Serves ship item: ${task.ship}`] : []),
+    ...(task.reviewScope ? [`Review scope: ${task.reviewScope}.${milestone ? ` Milestone: ${milestone}.` : ''}`] : []),
+    ...(task.regression.length ? [`Regression: it still works on ${task.regression.join(', ')}`] : []),
     'Findings:',
     ...task.findings.map((finding) => `- ${finding}`),
     ...(task.covers.length ? ['Also covers:', ...task.covers.flatMap((entry) => [`- ${entry.id} ${entry.title}`, ...entry.findings.map((finding) => `  - ${finding}`)])] : []),
