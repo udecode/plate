@@ -283,21 +283,14 @@ type DOMInputCommandEditingEpochTrace<TCommand = unknown> = Omit<
   command: TCommand | null;
 };
 
+type CompositionCommitPhase = 'committing' | 'final-input-ready';
+
 type CompositionEpoch = Readonly<{
   anchor: unknown;
-  generation: number;
-  id: number;
+  historyMerge: boolean;
   modelCommitted: boolean;
-  owner: 'app' | 'model' | 'native';
-  phase:
-    | 'committing'
-    | 'final-input-ready'
-    | 'model-composing'
-    | 'native-composing'
-    | 'repairing';
   ownerAfterDeletion: boolean;
-  root: RootKey;
-  settledInputType: 'insertFromComposition' | 'insertText' | null;
+  phase: CompositionCommitPhase | 'model-composing' | 'native-composing';
   text: string | null;
 }>;
 
@@ -652,8 +645,6 @@ export class DOMInputRuntime {
 
   private currentFrameValue: DOMInputEventFrame | null = null;
 
-  private nextCompositionEpochId = 1;
-
   private nextEditingEpochId = 1;
 
   private nextFrameId = 1;
@@ -886,8 +877,7 @@ export class DOMInputRuntime {
   }: DOMInputNativeInputDecisionInput<TIntent, TSelection>) {
     const nativeComposition =
       intent === 'composition' &&
-      this.compositionEpoch?.owner === 'native' &&
-      this.compositionEpoch.phase === 'native-composing';
+      this.compositionEpoch?.phase === 'native-composing';
     const ownership: DOMInputOwnership =
       intent === 'internal-control'
         ? 'app-owned'
@@ -1170,34 +1160,25 @@ export class DOMInputRuntime {
 
   beginComposition({
     anchor = null,
-    owner = 'native',
-    phase = 'native-composing',
+    historyMerge = false,
     ownerAfterDeletion = false,
   }: {
     anchor?: unknown;
-    owner?: CompositionEpoch['owner'];
-    phase?: CompositionEpoch['phase'];
+    historyMerge?: boolean;
     ownerAfterDeletion?: boolean;
   } = {}) {
-    const id = this.nextCompositionEpochId;
-
-    this.nextCompositionEpochId += 1;
-    const epoch = Object.freeze({
+    this.compositionEpochValue = Object.freeze({
       anchor,
-      generation: this.options.getGeneration(),
-      id,
+      historyMerge,
       modelCommitted: false,
-      owner,
       ownerAfterDeletion,
-      phase,
-      root: this.options.getRoot(),
-      settledInputType: null,
+      phase: anchor === null ? 'model-composing' : 'native-composing',
       text: null,
     }) satisfies CompositionEpoch;
+  }
 
-    this.compositionEpochValue = epoch;
-
-    return epoch;
+  endComposition() {
+    this.compositionEpochValue = null;
   }
 
   get compositionEpoch() {
@@ -1213,26 +1194,6 @@ export class DOMInputRuntime {
           text: epoch.text,
         }
       : null;
-  }
-
-  setCompositionSession(
-    session: {
-      modelCommitted: boolean;
-      text?: string | null;
-    } | null
-  ) {
-    if (!session) {
-      this.compositionEpochValue = null;
-      return;
-    }
-
-    const epoch = this.compositionEpoch ?? this.beginComposition();
-
-    this.compositionEpochValue = Object.freeze({
-      ...epoch,
-      modelCommitted: session.modelCommitted,
-      text: session.text ?? null,
-    });
   }
 
   clearOwnerAfterDeletion() {
@@ -1261,7 +1222,6 @@ export class DOMInputRuntime {
     this.compositionEpochValue = Object.freeze({
       ...epoch,
       anchor: nativeAnchor,
-      owner: 'native',
       ownerAfterDeletion: false,
       phase: 'native-composing',
     });
@@ -1274,7 +1234,6 @@ export class DOMInputRuntime {
       this.compositionEpochValue = Object.freeze({
         ...epoch,
         modelCommitted: true,
-        owner: 'model',
         phase:
           epoch.phase === 'native-composing' ? 'model-composing' : epoch.phase,
       });
@@ -1289,27 +1248,7 @@ export class DOMInputRuntime {
     }
   }
 
-  settleComposition(
-    inputType: 'insertFromComposition' | 'insertText',
-    owner: CompositionEpoch['owner']
-  ) {
-    const epoch = this.compositionEpoch;
-
-    if (!epoch) return null;
-
-    const settled = Object.freeze({
-      ...epoch,
-      owner,
-      phase: 'final-input-ready' as const,
-      settledInputType: inputType,
-    });
-
-    this.compositionEpochValue = settled;
-
-    return settled;
-  }
-
-  setCompositionPhase(phase: CompositionEpoch['phase']) {
+  setCompositionPhase(phase: CompositionCommitPhase) {
     const epoch = this.compositionEpoch;
 
     if (epoch) {

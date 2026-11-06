@@ -19,7 +19,6 @@ import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
 type DOMInputRuntime = DOMRootRuntime['domInputRuntime'];
 
 const EDITABLE_INPUT_RUNTIME = Symbol('editable-input-runtime');
-const EDITABLE_COMPOSITION_HISTORY_MERGE = new WeakSet<DOMInputRuntime>();
 
 export type InputIntent =
   | 'clipboard'
@@ -122,7 +121,7 @@ export type NativeMoveHold = Readonly<{ selection: Range | null }>;
 export type EditableInputControllerState = {
   activeIntent: InputIntent | null;
   compositionReceipt: CompositionReceipt | null;
-  compositionSession: {
+  readonly compositionSession: {
     modelCommitted: boolean;
     text: string | null;
   } | null;
@@ -211,7 +210,6 @@ const bindEditableInputRuntimeState = (
 
   if (runtimeState[EDITABLE_INPUT_RUNTIME] === domInputRuntime) return state;
 
-  domInputRuntime.setCompositionSession(state.compositionSession);
   domInputRuntime.setPendingCompositionEnd(state.pendingCompositionEnd);
   domInputRuntime.nativeInputState.pendingInput =
     state.pendingRootDOMInput ?? null;
@@ -233,12 +231,6 @@ const bindEditableInputRuntimeState = (
       configurable: true,
       enumerable: true,
       get: () => domInputRuntime.compositionSession,
-      set: (session) => {
-        if (!session) {
-          EDITABLE_COMPOSITION_HISTORY_MERGE.delete(domInputRuntime);
-        }
-        domInputRuntime.setCompositionSession(session);
-      },
     },
     pendingCompositionEnd: {
       configurable: true,
@@ -346,19 +338,10 @@ export const beginEditableCompositionSession = (
   } = {}
 ) => {
   inputController.nativeHistoryComposition = createNativeGroupingId();
-  if (historyMergePending) {
-    EDITABLE_COMPOSITION_HISTORY_MERGE.add(inputController.domInputRuntime);
-  } else {
-    EDITABLE_COMPOSITION_HISTORY_MERGE.delete(inputController.domInputRuntime);
-  }
-
-  const nativeOwned = nativeAnchor !== null;
-
   inputController.domInputRuntime.beginComposition({
     anchor: nativeAnchor,
-    owner: nativeOwned ? 'native' : 'model',
+    historyMerge: historyMergePending,
     ownerAfterDeletion,
-    phase: nativeOwned ? 'native-composing' : 'model-composing',
   });
 };
 
@@ -439,9 +422,7 @@ export const hasCommittedCompositionReceipt = (
 
 export const shouldMergeEditableCompositionHistory = (
   inputController: EditableInputController
-) =>
-  inputController.state.compositionSession !== null &&
-  EDITABLE_COMPOSITION_HISTORY_MERGE.has(inputController.domInputRuntime);
+) => inputController.domInputRuntime.compositionEpoch?.historyMerge === true;
 
 export const getEditableNativeGroupingInput = (
   inputController: EditableInputController,

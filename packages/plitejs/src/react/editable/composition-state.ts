@@ -124,7 +124,7 @@ export const endCompositionWithoutCommit = (
   const failures = createCompositionFailureScope();
 
   failures.attempt(() => lease?.settle());
-  inputController.state.compositionSession = null;
+  inputController.domInputRuntime.endComposition();
   cancelCompositionReceipt(inputController);
   failures.throwIfAny();
 };
@@ -295,7 +295,7 @@ const preventNoneditableComposition = ({
   );
   if (inputController) {
     inputController.state.pendingCompositionEnd = null;
-    inputController.state.compositionSession = null;
+    inputController.domInputRuntime.endComposition();
     failures.attempt(() => endCompositionWithoutCommit(inputController, lease));
   }
   if (wasComposing && setComposing) {
@@ -547,10 +547,6 @@ const schedulePendingCompositionEnd = ({
       }
 
       claimedInput = input;
-      inputController.domInputRuntime.settleComposition(
-        input.inputType,
-        'model'
-      );
       settledInput = {
         data: input.data,
         inputTypes: ['insertFromComposition', 'insertText'],
@@ -911,7 +907,7 @@ export const applyEditableCompositionEnd = ({
           setComposing(false);
         }
       } finally {
-        inputController.state.compositionSession = null;
+        inputController.domInputRuntime.endComposition();
         clearCompositionIntent();
       }
     };
@@ -931,7 +927,7 @@ export const applyEditableCompositionEnd = ({
       // Safari's direct route commits before compositionend.
       lease?.settle();
       clearEditableCompositionRuntimeState(editor);
-      inputController.state.compositionSession = null;
+      inputController.domInputRuntime.endComposition();
       cancelCompositionReceipt(inputController);
       clearCompositionIntent();
       return;
@@ -963,8 +959,6 @@ export const applyEditableCompositionEnd = ({
 
     const rootElement = event.currentTarget;
 
-    // A cancel, such as Escape, ends here rather than in a pending end, which
-    // would take the next keystroke as this composition's final input.
     if (isCancel) {
       const failures = createCompositionFailureScope();
 

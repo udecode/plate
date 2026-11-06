@@ -869,8 +869,7 @@ export class EditableDOMRuntime {
       anchors.some(
         (anchor) => isDOMNode(anchor) && this.rootElement?.contains(anchor)
       ) &&
-      epoch?.phase !== 'committing' &&
-      epoch?.phase !== 'repairing'
+      epoch?.phase !== 'committing'
     );
   }
 
@@ -1603,7 +1602,7 @@ export class EditableDOMRuntime {
       () => cancelCompositionReceipt(this.inputController),
       () => {
         this.inputController.state.pendingCompositionEnd = null;
-        this.inputController.state.compositionSession = null;
+        this.inputController.domInputRuntime.endComposition();
         this.inputController.state.isComposing = false;
         if (this.inputController.state.activeIntent === 'composition') {
           this.inputController.state.activeIntent = null;

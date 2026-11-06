@@ -543,8 +543,7 @@ export const syncEditorSelectionFromDOM = ({
 
   if (
     inputController.state.isComposing &&
-    epoch?.owner === 'native' &&
-    epoch.phase === 'native-composing'
+    epoch?.phase === 'native-composing'
   ) {
     return;
   }
