@@ -27,7 +27,7 @@
 - Keep schema-bound initialization and common structural transforms local to the changed document region, reducing large-document startup and edit latency.
 - Render transient inline paint through ordered `<Plite decorations>` sources that observe once, read by node, and return keyed render-safe attributes. Keep durable annotations and out-of-flow widgets as separate lifetimes.
 - Read resolved annotations by `NodeKey` with `getAnnotationsAt(nodeKey)`. Annotation change subscribers receive exact `ids`, affected `nodeKeys`, and an `editor`, `external`, `refresh`, or `annotation` reason so consumers can invalidate only changed content.
-- Create framework-owned annotation stores through `plitejs/annotations`. React components keep hook-owned lifecycle through `usePliteAnnotationStore`; `plitejs/react` does not expose the imperative constructor.
+- Create framework-owned annotation stores through `plitejs/annotations`. React components keep hook-owned lifecycle through `usePliteAnnotationStore`; `plitejs/react` does not expose the imperative constructor. A store listener that throws goes to the editor's `lifecycleErrorSink`, and the store's other listeners still hear the change.
 - Preserve exact `property.*` descriptor inference in packed declarations and reject declaration artifacts whose generic `Readonly` arguments were erased.
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling

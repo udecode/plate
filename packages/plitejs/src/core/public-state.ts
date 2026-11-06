@@ -11720,7 +11720,8 @@ export const applyDocumentChange = (
   applyTransactionSpecDocumentChangeStep(editor, step, options);
 };
 
-const runEditorObserver = (
+/** @internal */
+export const runEditorObserver = (
   editor: Editor,
   phase:
     | 'after-commit'

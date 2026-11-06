@@ -26,7 +26,8 @@ type MappedViewStoreKernel<TSnapshot> = {
 };
 
 export const createMappedViewStoreKernel = <TSnapshot>(
-  initialSnapshot: TSnapshot
+  initialSnapshot: TSnapshot,
+  call: (listener: () => void) => void
 ): MappedViewStoreKernel<TSnapshot> => {
   const listeners = new Set<Listener>();
   const changeListeners = new Set<(keys: readonly string[]) => void>();
@@ -84,15 +85,11 @@ export const createMappedViewStoreKernel = <TSnapshot>(
       );
 
       snapshot = nextSnapshot;
-      listeners.forEach((listener) => {
-        listener();
-      });
-      changeListeners.forEach((listener) => listener(keys));
-      keys.forEach((key) => {
-        keyedListeners.get(key)?.forEach((listener) => {
-          listener();
-        });
-      });
+      for (const listener of listeners) call(listener);
+      for (const listener of changeListeners) call(() => listener(keys));
+      for (const key of keys) {
+        for (const listener of keyedListeners.get(key) ?? []) call(listener);
+      }
 
       return { globalWakeCount, keyWakeCount };
     },

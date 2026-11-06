@@ -70,6 +70,7 @@ import {
   getActiveEditorUpdateTags,
   isEditorCompositionPending,
   notifyEditorViewState,
+  runEditorObserver,
   subscribeEditorViewState,
   withEditorDocumentProjection,
 } from '../core/public-state';
@@ -1745,7 +1746,9 @@ export const createAuthoredPlugin = (
               removed: fresh ? delta.removed : [],
             });
 
-            for (const each of [...listeners]) each(view);
+            for (const each of [...listeners]) {
+              runEditorObserver(editor, 'snapshot-listener', () => each(view));
+            }
           });
 
           publisher = { ledger, listeners, sink, stop };

@@ -8,7 +8,10 @@ import {
   type Value,
 } from '..';
 import { readAuthoredView } from '../core/authored-runtime';
-import { subscribeEditorViewState } from '../core/public-state';
+import {
+  runEditorObserver,
+  subscribeEditorViewState,
+} from '../core/public-state';
 import { projectRange as editorProjectRange } from '../editor/project-range';
 import {
   type AnnotationStoreMetrics,
@@ -232,7 +235,10 @@ const createPliteAnnotationStoreInternal = <TData>(
       byId: snapshot.byId,
     }) as AnnotationSnapshot<TData>;
   };
-  const annotationsStore = createMappedViewStoreKernel(toSnapshot());
+  const annotationsStore = createMappedViewStoreKernel(
+    toSnapshot(),
+    (listener) => runEditorObserver(editor, 'commit-listener', listener)
+  );
   const changeListeners = new Set<(change: AnnotationChange) => void>();
   let metrics = Object.freeze({
     ...EMPTY_METRICS,
@@ -308,7 +314,9 @@ const createPliteAnnotationStoreInternal = <TData>(
         reason,
       });
       annotationsStore.publish(toSnapshot(), changedIds);
-      changeListeners.forEach((listener) => listener(change));
+      for (const listener of changeListeners) {
+        runEditorObserver(editor, 'commit-listener', () => listener(change));
+      }
     }
   };
 
