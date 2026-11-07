@@ -6977,6 +6977,7 @@
         "source-hash:partition:core",
         "source-hash:partition:html",
         "source-hash:partition:html-server",
+        "source-hash:partition:media",
         "source-hash:partition:proxies",
         "source-hash:partition:standard-basic-nodes",
         "source-hash:partition:standard-basic-styles",

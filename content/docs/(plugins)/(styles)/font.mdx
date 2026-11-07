@@ -98,10 +98,19 @@ text instead of a block target list. Every stored value renders, so a pasted
 directly onto text properties; block target injection does not constrain text
 marks.
 
-When you paste or parse HTML copied from Google Docs, the font plugins skip
-the default text style Docs writes on every run: black text, `11pt`, Arial and
-a `transparent` background. Black stays on a highlight when the editor has
-`FontBackgroundColorPlugin`, and in a shaded table cell when it has
+When you paste or parse HTML copied from Google Docs, the font plugins skip the
+default text style Docs writes on every run: black text, `11pt`, Arial and a
+`transparent` background. With `HeadingPlugin`, a run in a heading skips its
+level's default size in place of `11pt`: `20pt`, `16pt`, `14pt`, `12pt`, `11pt`
+and `11pt` for Heading 1 to 6. It also skips the grey of Heading 3, `#434343`,
+and of Heading 4 to 6, `#666666`, so the heading takes your editor's own
+heading size and color. This holds wherever the heading lands, such as in a
+list item that pastes as a list paragraph because the `targetPlugins` of
+`ListPlugin` leave out headings. Without `HeadingPlugin`, a heading pastes as a
+paragraph and keeps its level's size and grey, apart from the `11pt` that
+Heading 5 and 6 share with body text. Text that Docs copies without its heading
+tag keeps that size and grey too. The text color stays on a highlight when the
+editor has `FontBackgroundColorPlugin`, and in a shaded table cell when it has
 `TablePlugin`, because the author read the text against that background. A
 color, size, font or highlight other than those defaults is kept.
 

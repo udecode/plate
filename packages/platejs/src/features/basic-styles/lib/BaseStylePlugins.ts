@@ -96,6 +96,7 @@ export type TextIndentPluginState = {
 // Google Docs writes its default text style on every run it copies, and each run
 // is a span that carries its whole style. So inside a Docs paste, a value equal
 // to that default is not one the author picked, and only a span styles text.
+// A heading run carries its level's default size and color instead.
 const docsPastes = new WeakMap<Document, boolean>();
 
 const markDocsPaste = ({ document }: { document: Document }) => {
@@ -105,18 +106,69 @@ const markDocsPaste = ({ document }: { document: Document }) => {
   );
 };
 
-const isDocsDefault = (value: string, docsDefaults: readonly string[]) =>
-  docsDefaults.includes(value.replaceAll(/["'\s]/g, '').toLowerCase());
+const docsBlack = ['#000000', 'rgb(0,0,0)'];
+
+const docsNormal = {
+  backgroundColor: ['transparent'],
+  color: docsBlack,
+  fontFamily: ['arial', 'arial,sans-serif'],
+  fontSize: ['11pt'],
+};
+
+const docsHeading = (fontSize: string, ...grey: string[]) => ({
+  asHeading: {
+    ...docsNormal,
+    color: [...docsBlack, ...grey],
+    fontSize: [fontSize],
+  },
+  asParagraph: {
+    ...docsNormal,
+    fontSize: docsNormal.fontSize.filter((size) => size === fontSize),
+  },
+});
+
+const docsGrey = ['#666666', 'rgb(102,102,102)'];
+
+const docsHeadings = new Map([
+  ['H1', docsHeading('20pt')],
+  ['H2', docsHeading('16pt')],
+  ['H3', docsHeading('14pt', '#434343', 'rgb(67,67,67)')],
+  ['H4', docsHeading('12pt', ...docsGrey)],
+  ['H5', docsHeading('11pt', ...docsGrey)],
+  ['H6', docsHeading('11pt', ...docsGrey)],
+]);
+
+const isDocsDefault = (value: string, defaults: readonly string[]) =>
+  defaults.includes(value.replaceAll(/["'\s]/g, '').toLowerCase());
+
+type DocsRunContext = Readonly<{
+  element: Readonly<HTMLElement>;
+  registry: PluginFormatRegistry;
+}>;
+
+const docsDefaults = (
+  context: DocsRunContext,
+  key: keyof typeof docsNormal
+) => {
+  const heading = context.element.closest('h1, h2, h3, h4, h5, h6');
+  const headingStyle = heading && docsHeadings.get(heading.tagName);
+
+  if (!headingStyle) return docsNormal[key];
+
+  return context.registry.has(PLUGINS.heading)
+    ? headingStyle.asHeading[key]
+    : headingStyle.asParagraph[key];
+};
 
 const hasBackground = (element: HTMLElement | null) =>
   !!element?.style.backgroundColor &&
-  !isDocsDefault(element.style.backgroundColor, ['transparent']);
+  !isDocsDefault(element.style.backgroundColor, docsNormal.backgroundColor);
 
 const decodeTextStyle = (
-  element: HTMLElement,
-  key: 'backgroundColor' | 'color' | 'fontFamily' | 'fontSize',
-  docsDefaults: readonly string[]
+  context: DocsRunContext,
+  key: keyof typeof docsNormal
 ) => {
+  const { element, registry } = context;
   const value = element.style[key];
 
   if (!value || docsPastes.get(element.ownerDocument) !== true) {
@@ -124,23 +176,16 @@ const decodeTextStyle = (
   }
   if (element.tagName !== 'SPAN') return undefined;
 
-  return isDocsDefault(value, docsDefaults) ? undefined : value;
-};
+  if (
+    key === 'color' &&
+    ((registry.has(PLUGINS.backgroundColor) && hasBackground(element)) ||
+      (registry.has(PLUGINS.tableCell) &&
+        hasBackground(element.closest('td, th'))))
+  ) {
+    return value;
+  }
 
-const decodeTextColor = (
-  element: HTMLElement,
-  registry: Pick<PluginFormatRegistry, 'has'>
-) => {
-  const onBackground =
-    (registry.has(PLUGINS.backgroundColor) && hasBackground(element)) ||
-    (registry.has(PLUGINS.tableCell) &&
-      hasBackground(element.closest('td, th')));
-
-  return decodeTextStyle(
-    element,
-    'color',
-    onBackground ? [] : ['#000000', 'rgb(0,0,0)']
-  );
+  return isDocsDefault(value, docsDefaults(context, key)) ? undefined : value;
 };
 
 export const BaseFontBackgroundColorPlugin = definePlugin(
@@ -151,8 +196,7 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
       defineFormats({
         html: {
           prepareDocument: markDocsPaste,
-          decode: ({ element }) =>
-            decodeTextStyle(element, 'backgroundColor', ['transparent']),
+          decode: (context) => decodeTextStyle(context, 'backgroundColor'),
           encode: ({ value }) => ({
             style: { backgroundColor: value },
             tag: 'span',
@@ -176,7 +220,7 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
     defineFormats({
       html: {
         prepareDocument: markDocsPaste,
-        decode: ({ element, registry }) => decodeTextColor(element, registry),
+        decode: (context) => decodeTextStyle(context, 'color'),
         encode: ({ value }) => ({
           style: { color: value },
           tag: 'span',
@@ -199,8 +243,7 @@ export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
     defineFormats({
       html: {
         prepareDocument: markDocsPaste,
-        decode: ({ element }) =>
-          decodeTextStyle(element, 'fontFamily', ['arial', 'arial,sans-serif']),
+        decode: (context) => decodeTextStyle(context, 'fontFamily'),
         encode: ({ value }) => ({
           style: { fontFamily: value },
           tag: 'span',
@@ -223,7 +266,7 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
     defineFormats({
       html: {
         prepareDocument: markDocsPaste,
-        decode: ({ element }) => decodeTextStyle(element, 'fontSize', ['11pt']),
+        decode: (context) => decodeTextStyle(context, 'fontSize'),
         encode: ({ value }) => ({
           style: { fontSize: value },
           tag: 'span',
