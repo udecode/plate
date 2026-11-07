@@ -103,6 +103,15 @@ const countTrailingNewlines = (text: string) =>
 
 const readCodeDomText = (node: Node): string => {
   if (node.nodeName === 'SELECT') return '';
+  // MathML Core draws only the first child of <semantics>, so code keeps the
+  // formula's drawn text and not its TeX annotation.
+  if (
+    node.parentElement?.nodeName === 'SEMANTICS' &&
+    node.parentElement.closest('math') &&
+    (node as ChildNode & NonDocumentTypeChildNode).previousElementSibling
+  ) {
+    return '';
+  }
   if (node.nodeName === 'BR') return '\n';
   if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
 
@@ -206,7 +215,15 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
         encode: ({ children }) => children,
       },
       html: {
-        decode: ({ element, preserve }) => {
+        decode: ({ element, preserve, report }) => {
+          if (element.querySelector('math')) {
+            report({
+              action: 'replaced',
+              kind: 'element',
+              message:
+                'Plate HTML decode kept only the drawn text of <math> in a code block.',
+            });
+          }
           const languageClass = element
             .querySelector(':scope > code')
             ?.className.match(CODE_LANGUAGE_CLASS_RE)?.[1];

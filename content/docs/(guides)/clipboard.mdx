@@ -343,9 +343,12 @@ types it wrote.
 Plate's HTML format parses like `editor.api.html.parseSlice` with
 `lossPolicy: 'allow'`.
 Before any mapping runs, it removes comments, metadata, scripts, style sheets,
-embedded objects, SVG and MathML, event handlers, `srcdoc` and `srcset`, URLs
-that fail their role (see [HTML safety](/docs/html#results-and-diagnostics)),
-and `style` attributes that load resources.
+embedded objects, SVG, MathML in an editor without an equation plugin, event
+handlers, `srcdoc` and `srcset`, URLs that fail their role (see
+[HTML safety](/docs/html#results-and-diagnostics)), and `style` attributes that
+load resources. An editor with an equation plugin keeps MathML for
+[its mapping](/docs/equation#html), without URL attributes or HTML and SVG
+inside it.
 Embedded media without an installed mapping keeps only its fallback content.
 If nothing insertable remains, the HTML format still reports what it removed,
 then returns `null` and plain text handles the paste.

@@ -29,7 +29,6 @@ const INLINE_TAG_NAMES = new Set([
   'MAP',
   'MARK',
   'MARQUEE',
-  'math',
   'MENUITEM',
   'METER',
   'NOBR',
@@ -66,6 +65,55 @@ const INLINE_TAG_NAMES = new Set([
   'WBR',
 ]);
 
+export const MATHML_ELEMENTS: ReadonlySet<string> = new Set([
+  'annotation',
+  'annotation-xml',
+  'maction',
+  'math',
+  'menclose',
+  'merror',
+  'mfenced',
+  'mfrac',
+  'mglyph',
+  'mi',
+  'mlabeledtr',
+  'mlongdiv',
+  'mmultiscripts',
+  'mn',
+  'mo',
+  'mover',
+  'mpadded',
+  'mphantom',
+  'mprescripts',
+  'mroot',
+  'mrow',
+  'ms',
+  'mscarries',
+  'mscarry',
+  'msgroup',
+  'msline',
+  'mspace',
+  'msqrt',
+  'msrow',
+  'mstack',
+  'mstyle',
+  'msub',
+  'msubsup',
+  'msup',
+  'mtable',
+  'mtd',
+  'mtext',
+  'mtr',
+  'munder',
+  'munderover',
+  'none',
+  'semantics',
+]);
+
+const MATHML_TAG_NAMES = new Set(
+  Array.from(MATHML_ELEMENTS, (name) => name.toUpperCase())
+);
+
 export const isHtmlComment = (node: Node): node is Comment =>
   node.nodeType === 8;
 
@@ -78,13 +126,16 @@ export const isHtmlText = (node: Node): node is Text => node.nodeType === 3;
  * Return whether a DOM node participates in an inline formatting context.
  *
  * The fallback tag list mirrors browser defaults, except that it leaves out
- * `audio`. An explicit `display` style wins, including inherited and special
- * CSS values.
+ * `audio`.
  */
 export const isHtmlInlineElement = (node: Node): boolean => {
   if (!isHtmlElement(node)) return false;
 
   const element = node as HTMLElement;
+
+  if (MATHML_TAG_NAMES.has(element.tagName) && element.closest('math')) {
+    return true;
+  }
   // Browsers lay out custom and namespaced elements inline by default.
   const tagNameIsInline =
     INLINE_TAG_NAMES.has(element.tagName) || /[-:]/.test(element.tagName);

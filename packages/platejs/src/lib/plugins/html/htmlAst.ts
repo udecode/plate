@@ -1,6 +1,7 @@
 import {
   defaultTreeAdapter,
   ErrorCodes,
+  html,
   parse,
   parseFragment,
   type DefaultTreeAdapterMap,
@@ -12,6 +13,7 @@ import {
 import {
   decideHtmlAttribute,
   decideHtmlElement,
+  type HtmlMathmlPlace,
   type HtmlUnsafeRemoval,
 } from './htmlSafety';
 import type {
@@ -312,10 +314,19 @@ const unsafeDiagnostic = (
 const applySafetyPolicy = (
   source: string,
   parent: HtmlAstParentNode,
-  removals: HtmlWarningDiagnostic[]
+  removals: HtmlWarningDiagnostic[],
+  mathml?: HtmlMathmlPlace
 ) => {
   const children = getChildNodes(parent);
   const kept: HtmlAstChildNode[] = [];
+  // MathML Core draws only the first child of <semantics>.
+  const hidesLaterChildren =
+    mathml !== undefined &&
+    mathml !== 'outside' &&
+    defaultTreeAdapter.isElementNode(parent) &&
+    parent.namespaceURI === html.NS.MATHML &&
+    parent.tagName === 'semantics';
+  let isFirstElement = true;
 
   for (const node of children) {
     if (defaultTreeAdapter.isCommentNode(node)) continue;
@@ -324,8 +335,14 @@ const applySafetyPolicy = (
       continue;
     }
     const tag = node.tagName.toLowerCase();
-    const removal = decideHtmlElement(node.namespaceURI, tag, () =>
-      isAriaHidden(node)
+    const place = hidesLaterChildren && !isFirstElement ? 'hidden' : mathml;
+
+    isFirstElement = false;
+    const removal = decideHtmlElement(
+      node.namespaceURI,
+      tag,
+      () => isAriaHidden(node),
+      place
     );
 
     if (removal) {
@@ -333,6 +350,7 @@ const applySafetyPolicy = (
       continue;
     }
     const attributes = node.attrs;
+    const isMathml = node.namespaceURI === html.NS.MATHML;
     let removedSource = false;
 
     node.attrs = [];
@@ -340,7 +358,8 @@ const applySafetyPolicy = (
       const decision = decideHtmlAttribute(
         tag,
         attribute.name,
-        attribute.value
+        attribute.value,
+        isMathml
       );
 
       if (decision && 'removal' in decision) {
@@ -364,7 +383,12 @@ const applySafetyPolicy = (
       continue;
     }
     kept.push(node);
-    applySafetyPolicy(source, node, removals);
+    applySafetyPolicy(
+      source,
+      node,
+      removals,
+      place === 'outside' && isMathml ? 'inside' : place
+    );
     if (tag === 'template') {
       applySafetyPolicy(
         source,
@@ -409,7 +433,13 @@ const findEditorRoots = (node: HtmlAstParentNode, roots: HtmlAstElement[]) => {
 export const parseHtmlAst = (
   source: string,
   kind: 'document' | 'slice',
-  limitOverrides: Partial<HtmlParseLimits> = {}
+  {
+    limits: limitOverrides,
+    admitsMathml = false,
+  }: Readonly<{
+    limits?: Partial<HtmlParseLimits>;
+    admitsMathml?: boolean;
+  }> = {}
 ): HtmlAstParseResult => {
   const limits = Object.freeze({
     ...DEFAULT_HTML_PARSE_LIMITS,
@@ -456,7 +486,12 @@ export const parseHtmlAst = (
 
     const removals: HtmlWarningDiagnostic[] = [];
 
-    applySafetyPolicy(source, tree, removals);
+    applySafetyPolicy(
+      source,
+      tree,
+      removals,
+      admitsMathml ? 'outside' : undefined
+    );
     const sourceDiagnostics = [...removals, ...diagnostics];
 
     if (kind === 'document') {

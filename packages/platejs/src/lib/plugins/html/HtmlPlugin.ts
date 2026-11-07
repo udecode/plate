@@ -308,6 +308,15 @@ const collapseWhiteSpaceNode = (node: Node, state: CollapseWhiteSpaceState) => {
 
   if (isHtmlElement(node)) {
     const element = node as HTMLElement;
+
+    if (element.tagName === 'MATH') {
+      state.inlineFormattingContext =
+        element.getAttribute('display') === 'block'
+          ? null
+          : { atStart: false, lastHasTrailingWhiteSpace: false };
+
+      return;
+    }
     const isInlineElement = !isHtmlBlockElement(element);
     const previousWhiteSpaceRule = state.whiteSpaceRule;
     const inferredWhiteSpaceRule = inferWhiteSpaceRule(element);
@@ -1830,6 +1839,8 @@ export const PLATE_HTML_ATTRIBUTES: ReadonlySet<string> = new Set([
   'data-editor-footnote-ref',
   'data-editor-footnote-definition',
   'data-editor-footnote-chrome',
+  'data-editor-equation',
+  'data-editor-equation-latex',
   'data-editor-media-provider',
   'data-editor-media-source-url',
   'data-editor-media-url',
@@ -2059,6 +2070,20 @@ const decodeCompiledHtml = (
       claimFormatting(rule, matchedFormatting, claims);
       structural = Object.freeze({ claims, result, rule });
       break;
+    }
+
+    if (!structural && element.tagName === 'MATH') {
+      lossAt(element)?.(
+        Object.freeze({
+          action: 'dropped' as const,
+          kind: 'element' as const,
+          message: 'Plate HTML decode has no mapping for <math>.',
+          owner: 'core:html',
+          source: source(),
+        })
+      );
+
+      return [];
     }
 
     const defaultRootChild =
@@ -2739,8 +2764,9 @@ const escapeHtmlText = (value: string) =>
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;');
 
+// The parser reads a raw carriage return in an attribute as a line feed.
 const escapeHtmlAttribute = (value: string) =>
-  escapeHtmlText(value).replaceAll('"', '&quot;');
+  escapeHtmlText(value).replaceAll('"', '&quot;').replaceAll('\r', '&#13;');
 
 const renderNodeSpec = (
   root: MutableHtmlNode,
@@ -3535,7 +3561,10 @@ const decodeHtmlTransferWithArtifact = (
   context: DataTransferDecodeContext,
   limits?: Partial<HtmlParseLimits>
 ): ContentSlice | null => {
-  const parsed = parseHtmlAst(context.data, 'slice', limits);
+  const parsed = parseHtmlAst(context.data, 'slice', {
+    admitsMathml: artifact.matcherIndex.tags.has('math'),
+    limits,
+  });
 
   if (!parsed.ok) return null;
   const plainText = context.snapshot.getData('text/plain');
@@ -4027,7 +4056,15 @@ const decodeHtmlAstWithEditor = (
   options: HtmlEditorParseOptions,
   readState: HtmlStateReader
 ): HtmlDocumentParseResult | HtmlSliceParseResult => {
-  const parsed = parseHtmlAst(source, kind, options.limits);
+  const artifact = COMPILED_PLATE_HTML.get(
+    getCompiledPlateModel(editor).revision
+  );
+
+  if (!artifact) throw new Error('Plate HTML format is not compiled.');
+  const parsed = parseHtmlAst(source, kind, {
+    limits: options.limits,
+    admitsMathml: artifact.matcherIndex.tags.has('math'),
+  });
 
   if (!parsed.ok) return parsed;
   const root = materializeHtmlAst(parsed.ast, ownerDocument);

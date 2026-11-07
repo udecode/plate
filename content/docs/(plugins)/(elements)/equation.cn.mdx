@@ -21,6 +21,7 @@ docs:
 - 提供行内公式和块级公式两种格式
 - 使用KaTeX实时渲染公式
 - 便捷的公式编辑和导航功能
+- HTML 复制和粘贴保留 TeX，包括从 KaTeX 页面和维基百科复制的公式
 
 编辑弹出框保留本地草稿。按 Enter 或点击 Done 后，以一个撤销批次提交；
 按 Escape 或关闭弹出框则丢弃草稿，不写入文档。外部公式更新会替换当前草稿。
@@ -176,6 +177,32 @@ $$
 ```
 
 行内公式解析为 `inlineEquation`，块级公式解析为 `equation`。序列化时从 `latex` 写回相同的 Markdown 公式结构。
+
+## HTML
+
+HTML 映射由公式插件负责。`editor.api.html.serialize` 和复制会把每个公式写成一个元素，TeX 保存在 `data-editor-equation-latex` 中。元素的文本是放在美元符号之间的 TeX，所以只读取文本的应用也能拿到源码。
+
+```html
+<p>Area <span data-editor-equation data-editor-equation-latex="x^2">$x^2$</span> units</p>
+<div data-editor-equation="block" data-editor-equation-latex="E=mc^2">$$E=mc^2$$</div>
+```
+
+粘贴和 `editor.api.html.parse` 从第一个含有 TeX 的来源读取 TeX。
+
+| 粘贴的 HTML | Plate 读取 | 结果 |
+|-------------|------------|------|
+| Plate 的公式元素 | `data-editor-equation-latex` | 相同的公式。`data-editor-equation="block"` 得到 `equation`，否则得到 `inlineEquation`。 |
+| 带有 TeX 注释的 KaTeX 默认输出，例如从加载了 KaTeX copy-tex 扩展的页面复制的内容 | 其 MathML 中的 `application/x-tex` 注释 | 带有该 TeX 的公式。KaTeX 绘制的字形不会进入文本。 |
+| 不含 TeX 的 KaTeX 输出，例如在 Chrome 中从未加载 copy-tex 的页面复制的内容（Chrome 会省略隐藏的注释），或不含 MathML 的输出（`output: 'html'`） | 不读取 | KaTeX 绘制的文本。复制内容保留了 KaTeX 的 MathML 时，Plate 会丢弃它并给出一条诊断，因此在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败。 |
+| 维基百科的公式 | 每个 `math` 元素 `data-mw` 属性中的 TeX | 带有该 TeX 的公式。 |
+| 其他带 `application/x-tex` 注释的 MathML | 该注释 | 带有该 TeX 的公式。 |
+| 没有 TeX 的 MathML | 不读取 | 丢弃，并给出一条 [HTML 诊断](/docs/html#results-and-diagnostics)。在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败。 |
+
+带 `display="block"` 的公式成为 `equation`，并拆分所在段落。在列表项或标题中，它成为 `inlineEquation`，因此列表保留原有的项和编号，标题仍是一个标题。当 `IndentPlugin` 的目标包含公式时，列表项第一个段落之后的块级公式与该位置的其他块一样，位于该项下一级。代码块中的公式会变成它绘制出的文本，不保留 TeX。解析会报告这一损失，因此在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败。Plate 会移除公式外的链接并给出一条 warning，因为链接只能包含文本。链接中的其他文本留在原位，但不再带有链接。
+
+只有安装了公式插件的编辑器才读取公式标记。在 `math` 元素中，MathML 元素经过与 HTML 元素相同的安全检查，会去掉所有 URL 属性，Plate 会移除其中的 HTML 或 SVG。没有公式插件的编辑器会丢弃粘贴的公式。
+
+只安装 `BaseInlineEquationPlugin` 时，所有粘贴的公式都成为 `inlineEquation`。只安装 `BaseEquationPlugin` 时，块级公式成为 `equation`，行内公式以及列表项或标题中的块级公式会被丢弃。
 
 ## Plate Plus
 

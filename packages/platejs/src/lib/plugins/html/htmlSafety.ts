@@ -4,9 +4,17 @@ import {
   isScriptUrl,
   type UrlRole,
 } from '../../../internal/utils/urlPolicy';
-import { isHtmlElement } from './htmlDom';
+import { isHtmlElement, MATHML_ELEMENTS } from './htmlDom';
 
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
+const MATHML_NAMESPACE = 'http://www.w3.org/1998/Math/MathML';
+const MATHML_URL_ATTRIBUTES = new Set([
+  'altimg',
+  'definitionurl',
+  'href',
+  'src',
+  'xlink:href',
+]);
 
 /** Elements removed with their subtree wherever HTML is read or written. */
 export const HTML_UNSAFE_TAGS: ReadonlySet<string> = new Set([
@@ -19,8 +27,14 @@ export const HTML_UNSAFE_TAGS: ReadonlySet<string> = new Set([
   'style',
 ]);
 
-// Removing these renders nothing less: metadata, scripts and style sheets.
-const NON_RENDERING_TAGS = new Set(['base', 'link', 'meta', 'script', 'style']);
+const NON_RENDERING_TAGS = new Set([
+  'base',
+  'link',
+  'meta',
+  'script',
+  'style',
+  'template',
+]);
 const HTML_SURROUNDING_WHITESPACE = /^[\t\n\f\r ]+|[\t\n\f\r ]+$/gu;
 const CSS_RESOURCE = /(?:\burl\s*\(|\bimage-set\s*\(|\bsrc\s*\(|@import\b)/iu;
 const CSS_ESCAPE = /\\(?:([\da-f]{1,6})[\t\n\f\r ]?|([^\n\f\r\da-f]))/giu;
@@ -73,6 +87,8 @@ const decodeCssEscapes = (value: string) =>
 const isResourceBearingCss = (value: string) =>
   CSS_RESOURCE.test(decodeCssEscapes(value));
 
+export type HtmlMathmlPlace = 'hidden' | 'inside' | 'outside';
+
 /**
  * Decide whether an element is removed with its subtree. `isDecorative` is
  * read only for a removal: content hidden from assistive technology is not
@@ -81,20 +97,31 @@ const isResourceBearingCss = (value: string) =>
 export const decideHtmlElement = (
   namespace: string | null,
   tag: string,
-  isDecorative: () => boolean
+  isDecorative: () => boolean,
+  mathml?: HtmlMathmlPlace
 ): HtmlUnsafeRemoval | undefined => {
   const isHtml = namespace === HTML_NAMESPACE;
+  const inMath = mathml === 'inside' || mathml === 'hidden';
 
-  if (isHtml && !HTML_UNSAFE_TAGS.has(tag)) return undefined;
+  if (mathml && namespace === MATHML_NAMESPACE && MATHML_ELEMENTS.has(tag)) {
+    return undefined;
+  }
+  if (!inMath && isHtml && !HTML_UNSAFE_TAGS.has(tag)) {
+    return undefined;
+  }
 
   return Object.freeze({
     action: 'removed' as const,
     impact:
-      (isHtml && NON_RENDERING_TAGS.has(tag)) || isDecorative()
+      mathml === 'hidden' ||
+      (isHtml && NON_RENDERING_TAGS.has(tag)) ||
+      isDecorative()
         ? ('lossless' as const)
         : ('lossy' as const),
     kind: 'element' as const,
-    message: `Removed unsafe HTML element <${tag}>.`,
+    message: inMath
+      ? `Removed <${tag}> from inside <math>.`
+      : `Removed unsafe HTML element <${tag}>.`,
   });
 };
 
@@ -106,7 +133,8 @@ export const decideHtmlElement = (
 export const decideHtmlAttribute = (
   tag: string,
   rawName: string,
-  value: string
+  value: string,
+  inMath = false
 ): HtmlAttributeDecision => {
   const name = rawName.toLowerCase();
   const remove = (
@@ -130,6 +158,9 @@ export const decideHtmlAttribute = (
   }
   if (name === 'style') {
     return isResourceBearingCss(value) ? remove('style', 'lossy') : undefined;
+  }
+  if (inMath && MATHML_ELEMENTS.has(tag) && MATHML_URL_ATTRIBUTES.has(name)) {
+    return remove('url', 'lossless');
   }
   const role = urlRole(tag, name);
 
@@ -179,7 +210,8 @@ export const sanitizeHtmlDom = (
       const decision = decideHtmlAttribute(
         tag,
         name,
-        element.getAttribute(name) ?? ''
+        element.getAttribute(name) ?? '',
+        element.closest('math') !== null
       );
 
       if (!decision) continue;

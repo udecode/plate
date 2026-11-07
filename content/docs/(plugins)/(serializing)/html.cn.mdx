@@ -231,8 +231,11 @@ success 包含 `data`；failure 不包含。配置错误、mapping bug 与无效
 （`action: 'unwrapped'`），并在任何策略下报告 warning；仅当目标可能执行 script
 （例如 `javascript:` 或 `data:`）时为 `lossless`。没有可用 `src` 的 `img` 会替换为
 其 alt 文本。移除 metadata、script、style sheet、event handler、script 资源 URL，
-或 `aria-hidden="true"` subtree 中的图形（例如 icon SVG）为 `lossless`；移除其他 SVG、MathML、embedded object、无法加载的
-media source、inline frame document 或加载资源的 style 为 `lossy`。序列化会从输出
+或 `aria-hidden="true"` subtree 中的图形（例如 icon SVG）为 `lossless`；移除其他 SVG、没有公式插件的编辑器中的 MathML、embedded object、无法加载的
+media source、inline frame document 或加载资源的 style 为 `lossy`。在安装了公式插件的
+编辑器中，从 `math` 元素内移除不是 MathML 的元素遵循相同的规则，因此移除 `mtext` 中的
+链接为 `lossy`。浏览器只绘制 `semantics` 元素的第一个子元素，所以移除其后的元素
+为 `lossless`，例如 LaTeXML 写在 TeX 旁边的 Content MathML。序列化会从输出
 中移除不安全的 attribute 或 CSS 值，并以相同方式报告。
 
 没有已安装 mapping 的 embedded media（`img`、`video`、`audio`、`iframe`、

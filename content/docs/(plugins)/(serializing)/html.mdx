@@ -267,8 +267,14 @@ only when the destination could run script, such as `javascript:` or `data:`.
 An `img` without a usable `src` is replaced by its alt text. Removing
 metadata, scripts, style sheets, event handlers, a script resource URL, or
 graphics inside an `aria-hidden="true"` subtree, such as icon SVG, is
-`lossless`. Removing other SVG, MathML, embedded objects, media sources that
-cannot load, inline frame documents, or resource-loading styles is `lossy`.
+`lossless`. Removing other SVG, MathML in an editor without an equation plugin,
+embedded objects, media sources that cannot load, inline frame documents, or
+resource-loading styles is `lossy`. In an editor with an equation plugin,
+removing an element that is not MathML from inside a `math` element follows
+the same rules, so removing a link inside `mtext` is `lossy`. Removing an
+element after the first child of a `semantics` element, such as the Content
+MathML that LaTeXML writes beside its TeX, is `lossless`, because browsers draw
+only that first child.
 Serialization removes an unsafe attribute or CSS value from its output and
 reports it the same way.
 

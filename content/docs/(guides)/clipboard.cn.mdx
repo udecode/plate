@@ -281,9 +281,10 @@ encoder 生效。因此已声明的 `text/html` 或 `text/plain` encoder 会替�
 Plate 的 HTML format 按 `editor.api.html.parseSlice` 加 `lossPolicy: 'allow'`
 的方式解析。
 任何 mapping 运行前，它会移除 comment、metadata、script、style sheet、embedded
-object、SVG 与 MathML、event handler、`srcdoc` 与 `srcset`、不符合其用途的 URL
+object、SVG、没有公式插件的编辑器中的 MathML、event handler、`srcdoc` 与 `srcset`、不符合其用途的 URL
 （参阅 [HTML](/docs/html)），以及会加载资源的 `style`
-attribute。没有已安装 mapping 的 embedded
+attribute。有公式插件的编辑器会为[其映射](/docs/equation#html)保留 MathML，但去掉 URL attribute，
+其中也不保留 HTML 或 SVG。没有已安装 mapping 的 embedded
 media 只保留 fallback content。没有可插入内容时，HTML format 仍会报告它移除的内容，
 然后返回 `null`，由 plain text 处理 paste。
 

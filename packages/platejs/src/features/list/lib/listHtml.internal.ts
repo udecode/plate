@@ -6,7 +6,7 @@ export const isHtmlList = (node: globalThis.Node) =>
   node.nodeName === 'UL' || node.nodeName === 'OL';
 
 const HTML_MEDIA =
-  'img, picture, video, audio, iframe, embed, object, svg, canvas';
+  'img, picture, video, audio, iframe, embed, object, svg, canvas, math';
 
 const isVisibleHtml = (node: globalThis.Node) =>
   !!node.textContent?.trim() ||

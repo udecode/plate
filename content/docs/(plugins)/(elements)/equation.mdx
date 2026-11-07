@@ -10,7 +10,7 @@ docs:
     title: Plus
 ---
 
-Equation adds block and inline void nodes for LaTeX expressions. Both nodes store source in `latex` and render through KaTeX. This page covers kit setup, block versus inline ownership, insertion, input rules, Markdown serialization, and registry UI behavior.
+Equation adds block and inline void nodes for LaTeX expressions. Both nodes store source in `latex` and render through KaTeX. This page covers kit setup, block versus inline ownership, insertion, input rules, Markdown serialization, HTML copy and paste, and registry UI behavior.
 
 <ComponentPreview name="equation-demo" />
 
@@ -24,6 +24,7 @@ Equation adds block and inline void nodes for LaTeX expressions. Both nodes stor
 - KaTeX rendering in editable and static UI.
 - `$...$` inline input rule and `$$` block input rule.
 - Markdown round-trip for inline math and block math.
+- HTML copy and paste that keeps the TeX, including math copied from KaTeX pages and Wikipedia.
 
 </PackageInfo>
 
@@ -222,6 +223,32 @@ $$
 ```
 
 Inline math parses to `inlineEquation`. Block math parses to `equation`. Serialization writes the same Markdown math shapes from `latex`.
+
+## HTML
+
+The equation plugins own the HTML mapping. `editor.api.html.serialize` and copy write each equation as an element that keeps its TeX in `data-editor-equation-latex`. Its text is the TeX between dollar signs, so an app that reads only the text still gets the source.
+
+```html
+<p>Area <span data-editor-equation data-editor-equation-latex="x^2">$x^2$</span> units</p>
+<div data-editor-equation="block" data-editor-equation-latex="E=mc^2">$$E=mc^2$$</div>
+```
+
+Paste and `editor.api.html.parse` take the TeX from the first source that holds it.
+
+| Pasted HTML | Plate reads | Result |
+|-------------|-------------|--------|
+| Plate's equation element | `data-editor-equation-latex` | The same equation. `data-editor-equation="block"` gives `equation`, otherwise `inlineEquation`. |
+| KaTeX's default output with its TeX annotation, such as a copy from a page that loads KaTeX's copy-tex extension | The `application/x-tex` annotation inside its MathML | An equation with that TeX. KaTeX's drawn glyphs never reach the text. |
+| KaTeX output with no TeX, such as a Chrome copy from a page without copy-tex, which leaves out the hidden annotation, or output drawn without MathML (`output: 'html'`) | Nothing | KaTeX's drawn text. When the copy keeps KaTeX's MathML, Plate drops it with a diagnostic, so `editor.api.html.parse` fails under the default `lossPolicy: 'reject'`. |
+| Wikipedia math | The TeX in each `math` element's `data-mw` attribute | An equation with that TeX. |
+| Other MathML with an `application/x-tex` annotation | The annotation | An equation with that TeX. |
+| MathML without TeX | Nothing | Dropped, with an [HTML diagnostic](/docs/html#results-and-diagnostics). Under the default `lossPolicy: 'reject'`, `editor.api.html.parse` fails. |
+
+Math with `display="block"` becomes `equation` and splits its paragraph. Inside a list item or a heading it becomes `inlineEquation`, so the list keeps its items and numbers and the heading stays one heading. Display math after a list item's first paragraph lands one level under the item, like other blocks there, when `IndentPlugin` targets equations. Math inside a code block becomes the text it draws, without its TeX. The parse reports that loss, so `editor.api.html.parse` fails under the default `lossPolicy: 'reject'`. Plate removes the link around an equation and warns, because a link holds only text. The link's other text stays where it was, without the link.
+
+An editor reads math markup only when it has an equation plugin. Inside a `math` element, MathML elements pass the same safety checks as HTML elements and lose every URL attribute, and Plate removes any HTML or SVG. An editor without the equation plugins drops pasted math.
+
+With only `BaseInlineEquationPlugin`, all pasted math becomes `inlineEquation`. With only `BaseEquationPlugin`, display math becomes `equation`, and inline math and display math in a list item or heading are dropped.
 
 ## Plate Plus
 
