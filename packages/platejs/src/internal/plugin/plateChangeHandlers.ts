@@ -2,7 +2,7 @@ import type {
   EditorNodeChangeContext,
   EditorTextChangeContext,
 } from '../../facade';
-import { defineRuntimePlugin } from '../../facade';
+import { defineRuntimePlugin, reportEditorLifecycleError } from '../../facade';
 import type { Editor } from '../../lib/editor';
 import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { failInvariant } from '../failInvariant';
@@ -23,6 +23,36 @@ type PlateChangeCallbacks<E extends Editor = Editor> = {
 
 const PLATE_CHANGE_CALLBACKS = new WeakMap<Editor, Set<PlateChangeCallbacks>>();
 
+type PlateObserverPhase =
+  | 'commit-listener'
+  | 'node-change-listener'
+  | 'text-change-listener';
+
+// Plite isolates each listener it registers, not what that listener fans out,
+// so each plugin handler and EditorRoot callback gets its own boundary here.
+const runObserver = (
+  editor: Editor,
+  pluginName: string,
+  phase: PlateObserverPhase,
+  observer: () => void
+) => {
+  try {
+    observer();
+  } catch (error) {
+    reportEditorLifecycleError(
+      Object.freeze({ cause: error, editor, phase, pluginName })
+    );
+  }
+};
+
+export const runEditorRootObserver = (
+  editor: Editor,
+  phase: PlateObserverPhase,
+  observer: () => void
+) => {
+  runObserver(editor, 'EditorRoot', phase, observer);
+};
+
 export const subscribePlateChangeCallbacks = <E extends Editor>(
   editor: E,
   callbacks: PlateChangeCallbacks<E>
@@ -35,12 +65,16 @@ export const subscribePlateChangeCallbacks = <E extends Editor>(
   const listener: PlateChangeCallbacks = {
     onNodeChange: onNodeChange
       ? (context) => {
-          onNodeChange(context as EditorNodeChangeContext<E>);
+          runEditorRootObserver(editor, 'node-change-listener', () => {
+            onNodeChange(context as EditorNodeChangeContext<E>);
+          });
         }
       : undefined,
     onTextChange: onTextChange
       ? (context) => {
-          onTextChange(context as EditorTextChangeContext<E>);
+          runEditorRootObserver(editor, 'text-change-listener', () => {
+            onTextChange(context as EditorTextChangeContext<E>);
+          });
         }
       : undefined,
   };
@@ -87,15 +121,17 @@ export const createPlateChangeHandlersPlugin = (editor: Editor) =>
           const handler = plugin.on?.nodeChange;
           if (!handler) return;
 
-          Reflect.apply(handler, undefined, [
-            {
-              ...createPluginContext(editor, plugin),
-              ...change,
-              editor,
-              plugin,
-              root: change.root === 'main' ? undefined : change.root,
-            },
-          ]);
+          runObserver(editor, name, 'node-change-listener', () => {
+            Reflect.apply(handler, undefined, [
+              {
+                ...createPluginContext(editor, plugin),
+                ...change,
+                editor,
+                plugin,
+                root: change.root === 'main' ? undefined : change.root,
+              },
+            ]);
+          });
         });
 
         for (const callback of callbacks ?? []) {
@@ -126,15 +162,17 @@ export const createPlateChangeHandlersPlugin = (editor: Editor) =>
           const handler = plugin.on?.textChange;
           if (!handler) return;
 
-          Reflect.apply(handler, undefined, [
-            {
-              ...createPluginContext(editor, plugin),
-              ...change,
-              editor,
-              plugin,
-              root: change.root === 'main' ? undefined : change.root,
-            },
-          ]);
+          runObserver(editor, name, 'text-change-listener', () => {
+            Reflect.apply(handler, undefined, [
+              {
+                ...createPluginContext(editor, plugin),
+                ...change,
+                editor,
+                plugin,
+                root: change.root === 'main' ? undefined : change.root,
+              },
+            ]);
+          });
         });
 
         for (const callback of callbacks ?? []) {

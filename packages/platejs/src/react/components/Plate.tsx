@@ -11,7 +11,10 @@ import type {
 } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
-import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
+import {
+  runEditorRootObserver,
+  subscribePlateChangeCallbacks,
+} from '../../internal/plugin/plateChangeHandlers';
 import type { Editor } from '../editor/Editor';
 import { createPlateTargetScope } from '../internal/createPlateTargetScope';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
@@ -192,12 +195,16 @@ function PlateInner({
 
       const context = { commit, editor: observedEditor, snapshot };
 
-      innerOnCommit?.(context);
+      runEditorRootObserver(observedEditor, 'commit-listener', () => {
+        innerOnCommit?.(context);
+      });
 
       if (value && (documentChanged || persistedMetaChanged)) {
-        innerOnValueChange?.({
-          ...context,
-          value,
+        runEditorRootObserver(observedEditor, 'commit-listener', () => {
+          innerOnValueChange?.({
+            ...context,
+            value,
+          });
         });
       }
 
@@ -206,9 +213,11 @@ function PlateInner({
         (commit.selectionBeforeRoot === undefined ||
           commit.selectionAfterRoot === undefined)
       ) {
-        innerOnSelectionChange?.({
-          ...context,
-          selection: snapshot.selection,
+        runEditorRootObserver(observedEditor, 'commit-listener', () => {
+          innerOnSelectionChange?.({
+            ...context,
+            selection: snapshot.selection,
+          });
         });
       }
     };
