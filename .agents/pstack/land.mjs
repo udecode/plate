@@ -173,6 +173,8 @@ const gitAsync = (args) =>
     child.on('close', (status) => resolve({ status, stderr }));
   });
 
+let fetched;
+
 // Each half's fetch is a network round trip of a second or two, so both run at once.
 async function fetch() {
   const own = ['fetch', '--quiet', canonical, `+refs/heads/${branch}:${upstream}`];
@@ -180,11 +182,13 @@ async function fetch() {
   const [run, crun] = await Promise.all([gitAsync(own), pair ? gitAsync([...side, ...theirs]) : null]);
   if (run.status !== 0) fail(`git ${own.join(' ')} failed: ${run.stderr.trim()}`);
   if (crun && crun.status !== 0) fail(`git ${theirs.join(' ')} in ${pair.dir} failed: ${crun.stderr.trim()}`);
+  // FETCH_HEAD is per worktree. Every worktree shares the upstream refs, and another session's push moves them.
+  fetched = { own: must('rev-parse', 'FETCH_HEAD'), theirs: pair ? cmust('rev-parse', 'FETCH_HEAD') : null };
 }
 
 function rebase(inCompanion = false) {
   const run = inCompanion ? cgit : git;
-  const onto = inCompanion ? cupstream : upstream;
+  const onto = inCompanion ? fetched.theirs : fetched.own;
   const where = inCompanion ? `${pair.dir}'s origin/${branch}` : target;
   if (!inCompanion) rebuilt.clear();
   if (run('merge-base', '--is-ancestor', onto, 'HEAD').status === 0) return;
@@ -579,8 +583,8 @@ function check(rebased = false) {
   const started = performance.now();
   rmSync(record, { force: true });
   const changed = [
-    ...nul(must('diff', '-z', '--name-only', '--diff-filter=d', upstream, 'HEAD')),
-    ...(landing.theirs ? nul(cmust('diff', '-z', '--name-only', '--diff-filter=d', cupstream, 'HEAD')) : []),
+    ...nul(must('diff', '-z', '--name-only', '--diff-filter=d', fetched.own, 'HEAD')),
+    ...(landing.theirs ? nul(cmust('diff', '-z', '--name-only', '--diff-filter=d', fetched.theirs, 'HEAD')) : []),
   ];
   refuseDefaults(changed);
   const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs checks');

@@ -351,6 +351,7 @@ export function readTasks(lines) {
     const [ts, ...cells] = line.split('\t');
     recordRow(tasks, cells, ts);
   }
+  markDeferred(tasks);
   liftPriorities(tasks);
   return tasks;
 }
@@ -381,6 +382,7 @@ const tokenProblems = (given, where) => {
 const afterRow = (before, cells) => {
   const after = structuredClone(before);
   recordRow(after, cells);
+  markDeferred(after);
   liftPriorities(after);
   return after;
 };
@@ -891,7 +893,7 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
   const ready = [];
   const waiting = [];
   const unmigrated = [];
-  const cardedFirst = [...offered.filter((each) => each.card), ...offered.filter((each) => !each.card)];
+  const cardedFirst = [...offered.filter((each) => each.card), ...offered.filter((each) => !each.card).sort((a, b) => Number(a.deferred) - Number(b.deferred))];
   for (const task of cardedFirst) {
     if (!task.topic) {
       unmigrated.push(task);
@@ -952,8 +954,12 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
     ...ready
       .filter((task) => task.card && !elsewhere(task) && cardDrift(task))
       .map((task) => ({ kind: 'effort', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: ${cardDrift(task)}; ${withdrawn(task.card)} once it is withdrawn or its session has ended, and the card pass offers it again` })),
+    ...displacedCards(ready, waiting, offered, elsewhere, (task) => mayCard(task) && ownPriority(task))
+      .map(({ task, crowded }) => ({ kind: 'deferred', ids: [task.id], text: `withdraw ${task.id}'s card ${task.card}: its review scope is deferred, and ${crowded} ready ${crowded === 1 ? 'task that ranks' : 'tasks that rank'} above it ${crowded === 1 ? 'has' : 'have'} no room for a card; ${withdrawn(task.card)} once it is withdrawn or its session has ended` })),
   ];
+  const misdeferred = deferredProblem();
   const rows = [
+    ...(misdeferred ? [{ kind: 'problem', ids: [], text: misdeferred }] : []),
     ...waiting.flatMap(({ task, stuck }) => stuck.map((blocker) => ({ kind: 'problem', ids: [task.id], text: `fix ${task.id}'s wait: ${blocker}; log updated with the waits it has now` }))),
     ...[...topics.values()]
       .filter((entry) => freeDecides(entry).length > 1)
@@ -971,7 +977,7 @@ export function board(tasks, git, here = null, { transcript = null, all = false,
   const merge = mergeItem(offered, tasks, git);
   const cardable = ready.filter((task) => !task.card && mayCard(task) && ownPriority(task));
   const room = Math.max(0, CARD_LIMIT - offered.filter((task) => task.card && !elsewhere(task)).length);
-  const notes = cardable.length > room ? [{ kind: 'note', text: `${cardable.length - room} more can start once this session holds fewer than ${CARD_LIMIT} cards; the card pass offers the highest priority first` }] : [];
+  const notes = cardable.length > room ? [{ kind: 'note', text: `${cardable.length - room} more can start once this session holds fewer than ${CARD_LIMIT} cards; the card pass offers them in board order` }] : [];
   const cards = cardable
     .slice(0, room)
     .map((task) => {
@@ -1013,9 +1019,54 @@ function liftPriorities(tasks) {
       for (const wait of waiter.waits) {
         const blocker = follow(wait.match(WAIT)?.[2] ?? '', tasks);
         const current = blocker && priorityOf(blocker);
-        if (!level || !blocker || blocker === waiter || !isOpen(blocker) || (current && current <= level)) continue;
+        if (!level || !blocker || blocker === waiter || !isOpen(blocker) || (waiter.deferred && !blocker.deferred) || (current && current <= level)) continue;
         blocker.blockingPriority = level;
         blocker.blocks = waiter.id;
+        changed = true;
+      }
+    }
+  }
+}
+
+const deferredScopes = () => {
+  const listed = projectConfig().chips?.deferred;
+  return Array.isArray(listed) ? listed : [];
+};
+
+function deferredProblem() {
+  const { deferred, scopes } = projectConfig().chips ?? {};
+  if (deferred === undefined) return null;
+  if (!Array.isArray(deferred) || !deferred.every((id) => typeof id === 'string')) return 'fix chips.deferred in .agents/pstack.json: it is a list of review scope ids, such as ["collaboration"], so chips defers no task until it is one';
+  const unknown = scopes ? deferred.filter((id) => !reviewScopes(scopes).includes(id)) : [];
+  return unknown.length ? `fix chips.deferred in .agents/pstack.json: ${unknown.join(', ')} is no review scope in ${scopes}, so chips defers no task for it` : null;
+}
+
+function markDeferred(tasks) {
+  const deferred = deferredScopes();
+  for (const task of tasks.values()) task.deferred = deferred.includes(task.reviewScope) && !failsOnBase(task);
+  undeferBlockers(tasks);
+}
+
+function displacedCards(ready, waiting, offered, elsewhere, cardable) {
+  const leaving = new Set(waiting.map(({ task }) => task));
+  const kept = offered.filter((task) => task.card && !elsewhere(task) && !leaving.has(task)).length;
+  const crowded = ready.filter((task) => !task.card && !task.deferred && cardable(task)).length - Math.max(0, CARD_LIMIT - kept);
+  if (crowded <= 0) return [];
+  const deferredCards = ready.filter((task) => task.card && !elsewhere(task) && task.deferred && !cardDrift(task));
+  return deferredCards.slice(-crowded).map((task) => ({ task, crowded }));
+}
+
+function undeferBlockers(tasks) {
+  const waiters = [...tasks.values()].filter((task) => task.status === 'offered');
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const waiter of waiters) {
+      if (waiter.deferred) continue;
+      for (const wait of waiter.waits) {
+        const blocker = follow(wait.match(WAIT)?.[2] ?? '', tasks);
+        if (!blocker?.deferred || blocker === waiter || !isOpen(blocker)) continue;
+        blocker.deferred = false;
         changed = true;
       }
     }
@@ -1038,7 +1089,7 @@ const milestoneRank = (task) => MILESTONE_RANK[milestoneClassOf(task) ?? 'new'];
 
 const PUBLIC_ISSUE = /(?<![&\w])[\w.-]*#\d+\b|:\/\/\S+\/issues\/\d+/u;
 const issueRank = (task) => (PUBLIC_ISSUE.test(task.repro ?? '') ? 0 : 1);
-const byPriority = (a, b) => rank(a) - rank(b) || milestoneRank(a) - milestoneRank(b) || issueRank(a) - issueRank(b) || byOrder(a, b);
+const byPriority = (a, b) => Number(a.deferred) - Number(b.deferred) || rank(a) - rank(b) || milestoneRank(a) - milestoneRank(b) || issueRank(a) - issueRank(b) || byOrder(a, b);
 
 function shipOffers(items, tasks, open) {
   const served = new Set(open.map((task) => task.ship).filter(Boolean));
@@ -1127,10 +1178,14 @@ export function renderBoard(view, ledger, max = null) {
     }
     if (hidden.length > 0) out.push('', `${title}, lower priority (${hidden.join(', ')}): chips all lists them`);
   };
+  const deferredApart = (title, entries, taskOf, render) => {
+    tiered(title, entries.filter((entry) => !taskOf(entry).deferred), taskOf, render);
+    tiered(`${title}, deferred`, entries.filter((entry) => taskOf(entry).deferred), taskOf, render);
+  };
   const blocking = (task) => (task.blocks ? `  blocks ${task.blocks}` : '');
-  tiered('Ready', view.ready, (task) => task, (task) => line(task, loweredEffort(task) + blocking(task) + (task.card ? card(task) : '  no card') + shares(task)));
+  deferredApart('Ready', view.ready, (task) => task, (task) => line(task, loweredEffort(task) + blocking(task) + (task.card ? card(task) : '  no card') + shares(task)));
   section('Started', view.started.map((task) => line(task, task.startedIn ? `  session ${task.startedIn}` : '')));
-  tiered('Waiting', view.waiting, ({ task }) => task, ({ task, blockers }) => line(task, `${loweredEffort(task)}${blocking(task)}  waits on ${blockers.join('; ')}`));
+  deferredApart('Waiting', view.waiting, ({ task }) => task, ({ task, blockers }) => line(task, `${loweredEffort(task)}${blocking(task)}  waits on ${blockers.join('; ')}`));
   section('Owed review', view.owed.map((task) => line(task, task.patch ? `  patch ${task.patch}` : '')));
   section('Unmigrated', view.unmigrated.map((task) => line(task)));
   section('Lost', view.lost.map((task) => line(task)));
@@ -1193,7 +1248,7 @@ function brief(task, ledger, max, tasks, codex, state) {
     ...(task.repro ? [`Repro: ${task.repro}`] : []),
     ...(task.regressed ? [`Regressed in: ${task.regressed}`] : []),
     ...(task.ship ? [`Serves ship item: ${task.ship}`] : []),
-    ...(task.reviewScope ? [`Review scope: ${task.reviewScope}.${milestone ? ` Milestone: ${milestone}.` : ''}`] : []),
+    ...(task.reviewScope ? [`Review scope: ${task.reviewScope}.${milestone ? ` Milestone: ${milestone}.` : ''}${task.deferred ? ' Deferred, so it ranks after every task whose scope chips.deferred does not list.' : ''}`] : []),
     ...(task.regression.length ? [`Regression: it still works on ${task.regression.join(', ')}`] : []),
     'Findings:',
     ...task.findings.map((finding) => `- ${finding}`),

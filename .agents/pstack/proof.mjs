@@ -81,12 +81,23 @@ function lockPool() {
   }
 }
 
+function readUnlessReleased(path) {
+  try {
+    return readFileSync(path, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
 // The holders (`.json`) or waiters (`.wait`) whose process still runs.
 function entries(suffix) {
   const live = [];
   for (const file of readdirSync(POOL).filter((name) => name.endsWith(suffix))) {
     const path = join(POOL, file);
-    const entry = JSON.parse(readFileSync(path, 'utf8'));
+    const text = readUnlessReleased(path);
+    if (text === null) continue;
+    const entry = JSON.parse(text);
     if (alive(entry.pid)) live.push(entry);
     else rmSync(path, { force: true });
   }

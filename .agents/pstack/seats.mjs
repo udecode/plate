@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 import { ask } from './cross.mjs';
 
 const SEAT = /^([\w-]+)=(claude|codex):([^@\s]+)(?:@(\w+))?$/u;
+// cross.mjs starts every claude seat in plan mode, which a seat cannot leave and otherwise finds out by trying.
+const CLAUDE_SEAT_NOTE = 'You run in plan mode and cannot leave it. Read-only commands work, and every write fails, a scratch copy included. Prove what a read-only command can prove, and name each probe that needs a write, with its commands, so the lead can run it.';
 const usage = 'Usage: node .agents/pstack/seats.mjs --dir <answer dir> (--prompt-file <path> | --prompt <prompt>) [--timeout <seconds>] [--read-dir <dir>]... [--offline] [--effort-root <dir>] <name>=<claude|codex>:<model>[@<effort>]...';
 
 function mainCheckout() {
@@ -72,7 +74,7 @@ export async function main(argv) {
   const claudeDirs = [...new Set([mainCheckout(), ...readDirs].filter(Boolean))];
   const answers = await Promise.all(
     seats.map(async (seat) => {
-      const answer = await ask(seat.runtime, prompt, { timeout, model: seat.model, effort: seat.effort, effortRoot, reach: seat.runtime === 'codex' && !offline, offline, readDirs: seat.runtime === 'claude' ? claudeDirs : [] }).catch((error) => ({ ok: false, text: error.message }));
+      const answer = await ask(seat.runtime, seat.runtime === 'claude' ? `${CLAUDE_SEAT_NOTE}\n\n${prompt}` : prompt, { timeout, model: seat.model, effort: seat.effort, effortRoot, reach: seat.runtime === 'codex' && !offline, offline, readDirs: seat.runtime === 'claude' ? claudeDirs : [] }).catch((error) => ({ ok: false, text: error.message }));
       try {
         writeFileSync(join(dir, `${seat.name}.err`), `${answer.ok ? '' : `${answer.text}\n`}${answer.seat ? `seat: ${answer.seat}\n` : ''}`);
         writeFileSync(join(dir, `${seat.name}.md`), answer.ok ? `${answer.text}\n` : '');
