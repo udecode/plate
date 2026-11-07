@@ -98,6 +98,7 @@ const showUploadFailure = (failure: UploadFailure) => {
       toast.error(`${fileNames(failure.files)} cannot be added here.`);
       break;
     }
+    case 'completion-error':
     case 'upload-error':
     case 'resolver-error': {
       toast.error(

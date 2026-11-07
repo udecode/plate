@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-06-upload-completion-error",
+      "href": "/registry/changelog/2026-11-06-upload-completion-error.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Show a toast when a finished upload cannot be added to the document",
+      "change": {
+        "type": "source",
+        "date": "2026-11-06",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["upload"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-05-remove-ai-leaf",
       "href": "/registry/changelog/2026-11-05-remove-ai-leaf.json",
       "status": "draft",

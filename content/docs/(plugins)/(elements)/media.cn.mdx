@@ -388,11 +388,12 @@ React 版 `UploadPlugin` 会把拖入的文件放在指针所在区块的边缘�
 | `editor.plugin(UploadPlugin).store.get('task', key)` | 返回 `UploadTask` 或 `undefined`；通过 `file`、`getSnapshot` 和 `subscribe` 构建进度与重试 UI。 |
 
 只要 `NodeKey`、草稿类型和 `kind` 仍然有效，任务就保留权限。移动草稿不会取消任务；
-删除、改类型、改 `kind`、替换整个文档、重试或清理插件会取消任务。只读模式会阻止新提交，
-但不会取消已经提交的请求。
+删除、改类型、改 `kind`、替换整个文档、重试或清理插件会取消任务。只读模式和 authored 预览会阻止新提交，
+但不会取消已经提交的请求；任务按接收它时的 authored 意图完成。
 
 `UploadFailure` 区分接收、配置、放置、上传和 URL 结果错误。上传错误保留 SDK 的
-`unknown` 错误；无效的 URL 或抛错的 `getUrl` 属于结果错误。任务快照直接使用
+`unknown` 错误；无效的 URL 或抛错的 `getUrl` 属于结果错误。`completion-error` 也属于结果错误，
+表示编辑器在写入上传后的 URL 时抛错、拒绝或丢弃了写入，草稿保持原样。任务快照直接使用
 SDK 的 `AggregateProgress`（`loaded`、`total`、`fraction`），不是百分比数值。
 
 ## 转换方法

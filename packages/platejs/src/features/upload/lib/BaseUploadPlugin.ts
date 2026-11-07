@@ -5,6 +5,7 @@ import type {
 } from 'files-sdk/client';
 
 import {
+  createEditorView,
   defineEffect,
   definePlugin,
   documentReplacement,
@@ -15,7 +16,6 @@ import {
   type BlockInsertOptions,
   type Element,
   type ElementOf,
-  type NodeEntry,
   type NodeKey,
   property,
   transferVeto,
@@ -23,7 +23,14 @@ import {
   locateAt,
 } from '../../../core';
 import { domCommands } from '../../../dom/plite-dom.internal';
-import { getActiveEditorTransaction } from '../../../facade';
+import {
+  configureAuthoredView,
+  getActiveEditorTransaction,
+  getAuthoredUpdateView,
+  readAuthoredView,
+  reportEditorLifecycleError,
+  withStoredAuthoredRead,
+} from '../../../facade';
 import { isReplaceableEmptyBlock } from '../../../internal/plugin/blockInsertion';
 import { getCompiledPlatePlugin } from '../../../internal/plugin/compilePlateModel';
 import { getCaretAnchor } from '../../../internal/plugin/insertionAnchor';
@@ -111,7 +118,7 @@ export type UploadFailure =
       result: UploadOutcome;
     }>
   | Readonly<{
-      code: 'resolver-error';
+      code: 'completion-error' | 'resolver-error';
       error: unknown;
       file: File;
       key: NodeKey;
@@ -132,14 +139,6 @@ export type UploadTask = Readonly<{
   file: File;
   getSnapshot: () => UploadTaskState;
   subscribe: (listener: () => void) => () => void;
-}>;
-
-type UploadNodeReader = Readonly<{
-  read: Readonly<{
-    nodes: Readonly<{
-      get: (key: NodeKey) => NodeEntry | undefined;
-    }>;
-  }>;
 }>;
 
 /** The Files SDK capability Plate needs to complete one admitted browser file. */
@@ -368,8 +367,6 @@ const validateFiles = (
 type InternalTask = {
   controller: AbortController;
   kind: UploadKind;
-  /** Node keys belong to the editor view that admitted the draft. */
-  owner: UploadNodeReader;
   state: ReturnType<typeof createZustandStore<UploadTaskState>>;
   token: object;
 };
@@ -419,12 +416,11 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
     } = context;
     const tasks = new Map<NodeKey, InternalTask>();
 
-    const currentSlot = (
-      key: NodeKey,
-      kind: UploadKind | undefined,
-      owner: UploadNodeReader
-    ) => {
-      const entry = owner.read.nodes.get(key);
+    const currentSlot = (key: NodeKey, kind?: UploadKind) => {
+      // A draft a preview hides still exists, so read the stored document.
+      const entry = withStoredAuthoredRead(editor, () =>
+        editor.read.nodes.get(key)
+      );
 
       return entry &&
         NodeApi.isElement(entry[0]) &&
@@ -457,6 +453,14 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
     };
     const notifyFailure = (failure: UploadFailure) => {
       store.get('onError')?.(failure);
+    };
+    const reportTaskError = (cause: unknown) => {
+      reportEditorLifecycleError({
+        cause,
+        editor,
+        phase: 'after-commit',
+        pluginName: PLUGINS.upload,
+      });
     };
     const destination = (kind: UploadKind) => {
       const name =
@@ -507,7 +511,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       getUrl: (file: UploadOutcome) => string,
       owner: typeof editor
     ) => {
-      if (!currentSlot(upload.key, upload.kind, owner)) return;
+      if (!currentSlot(upload.key, upload.kind)) return;
 
       cancel(upload.key);
       const controller = new AbortController();
@@ -525,7 +529,6 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       const task: InternalTask = {
         controller,
         kind: upload.kind,
-        owner,
         state,
         token: {},
       };
@@ -537,7 +540,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
       const owns = () =>
         tasks.get(upload.key)?.token === task.token &&
         !controller.signal.aborted &&
-        !!currentSlot(upload.key, upload.kind, owner);
+        !!currentSlot(upload.key, upload.kind);
       const fail = (
         failure: Extract<UploadFailure, { phase: 'result' | 'upload' }>
       ) => {
@@ -551,7 +554,11 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             status: 'failed',
           })
         );
-        notifyFailure(failure);
+        try {
+          notifyFailure(failure);
+        } catch (error) {
+          reportTaskError(error);
+        }
       };
 
       void (async () => {
@@ -630,42 +637,67 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
         }
 
         if (!owns()) return;
-        const normalized = normalizeResult(
-          upload.kind,
-          upload.file,
-          url,
-          dimensions
-        );
+        try {
+          const normalized = normalizeResult(
+            upload.kind,
+            upload.file,
+            url,
+            dimensions
+          );
 
-        if (!normalized) {
+          if (!normalized) {
+            fail({
+              code: 'invalid-url',
+              file: upload.file,
+              key: upload.key,
+              phase: 'result',
+              result,
+            });
+            return;
+          }
+
+          owner.update({ history: 'skip' }, (tx) => {
+            const entry = tx.nodes.get(upload.key);
+            if (
+              tasks.get(upload.key)?.token !== task.token ||
+              !entry ||
+              !NodeApi.isElement(entry[0]) ||
+              entry[0].type !== type ||
+              entry[0].kind !== upload.kind
+            ) {
+              return;
+            }
+
+            tx.nodes.set(normalized, {
+              at: upload.key,
+              voids: true,
+            });
+            tx.nodes.unset('kind', { at: upload.key, voids: true });
+          });
+
+          // A write the editor refuses or drops leaves the draft in place.
+          if (owns()) {
+            throw new Error('The editor refused the completed upload.');
+          }
+        } catch (error) {
+          // `fail` ignores a task that lost ownership, which would hide this error.
+          if (!owns()) {
+            // A throw while publishing the commit skips the `on.commit` handler
+            // that drops the task.
+            cancel(upload.key, task);
+            reportTaskError(error);
+            return;
+          }
+
           fail({
-            code: 'invalid-url',
+            code: 'completion-error',
+            error,
             file: upload.file,
             key: upload.key,
             phase: 'result',
             result,
           });
-          return;
         }
-
-        owner.update({ history: 'skip' }, (tx) => {
-          const entry = tx.nodes.get(upload.key);
-          if (
-            tasks.get(upload.key)?.token !== task.token ||
-            !entry ||
-            !NodeApi.isElement(entry[0]) ||
-            entry[0].type !== type ||
-            entry[0].kind !== upload.kind
-          ) {
-            return;
-          }
-
-          tx.nodes.set(normalized, {
-            at: upload.key,
-            voids: true,
-          });
-          tx.nodes.unset('kind', { at: upload.key, voids: true });
-        });
       })();
     };
 
@@ -686,7 +718,7 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           if (!commit.changed.hasAny('document')) return;
 
           for (const [key, task] of tasks) {
-            if (!currentSlot(key, task.kind, task.owner)) cancel(key, task);
+            if (!currentSlot(key, task.kind)) cancel(key, task);
           }
         },
       },
@@ -708,15 +740,21 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
           },
           (input: File[] | FileList, options: UploadSubmitOptions = {}) => {
             const files = Array.from(input);
-            if (files.length === 0 || updateEditor.read.view.isReadOnly()) {
+            const authored = readAuthoredView(
+              getAuthoredUpdateView(updateEditor)
+            );
+
+            if (
+              files.length === 0 ||
+              updateEditor.read.view.isReadOnly() ||
+              (authored && 'preview' in authored)
+            ) {
               return false;
             }
 
             const state = store.get();
             const slot = 'slot' in options ? options.slot : undefined;
-            const slotEntry = slot
-              ? currentSlot(slot, undefined, updateEditor)
-              : undefined;
+            const slotEntry = slot ? currentSlot(slot) : undefined;
 
             if (
               slot &&
@@ -852,8 +890,14 @@ export const BaseUploadPlugin = definePlugin(PLUGINS.upload, {
             }
 
             afterCommit(() => {
+              // A task keeps the intent that admitted it, so its view can turn
+              // read-only, unmount or preview while the task runs.
+              const owner = createEditorView(editor);
+
+              configureAuthoredView(owner, authored);
+
               for (const upload of prepared) {
-                startTask(upload, client, getUrl, updateEditor);
+                startTask(upload, client, getUrl, owner);
               }
             });
             return true;

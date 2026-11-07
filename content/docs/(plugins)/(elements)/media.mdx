@@ -412,11 +412,14 @@ like a pasted one, without landing rules or vetoes.
 A task remains authoritative while its `NodeKey`, draft type, and `kind`
 remain live. Moving the draft preserves authority. Removal, retagging,
 whole-document replacement, retry, or plugin cleanup aborts it. Read-only mode
-blocks new submissions but does not cancel a request that already committed.
+and an authored preview block new submissions. Neither cancels a request that
+already committed, and the task completes in the authored intent that admitted it.
 
 `UploadFailure` distinguishes admission, configuration, placement, upload, and
 URL-result failures. Upload failures retain the SDK error as `unknown`; an invalid or
-throwing `getUrl` is a result failure. The task snapshot uses the SDK's
+throwing `getUrl` is a result failure. So is `completion-error`, which means the
+editor threw, refused or dropped the write of the uploaded URL and the draft stays
+in place. The task snapshot uses the SDK's
 `AggregateProgress` (`loaded`, `total`, `fraction`) rather than a percent value.
 
 ## Transforms

@@ -1,6 +1,14 @@
 {
   "schemaVersion": 1,
   "components": {
+    "upload": [
+      "2026-11-06-upload-completion-error",
+      "2026-10-15-upload-refusal-toast",
+      "2026-10-14-block-void-selection",
+      "2026-10-01-native-block-drag",
+      "2026-09-21-upload-provider-items",
+      "2026-09-19-files-sdk-upload-kit"
+    ],
     "ai": [
       "2026-11-05-remove-ai-leaf",
       "2026-10-08-registry-install-dependencies",
@@ -670,13 +678,6 @@
       "2026-09-18-ui-commands-and-installation",
       "2026-09-09-ai-code-drawing-context",
       "2026-08-17-flat-editor-registry"
-    ],
-    "upload": [
-      "2026-10-15-upload-refusal-toast",
-      "2026-10-14-block-void-selection",
-      "2026-10-01-native-block-drag",
-      "2026-09-21-upload-provider-items",
-      "2026-09-19-files-sdk-upload-kit"
     ],
     "code-drawing": [
       "2026-10-14-block-void-selection",

@@ -327,7 +327,12 @@ export {
   decodeVersionedValue,
   encodeVersionedValue,
 } from '../core/value-codec';
-export { readAuthoredView } from '../core/authored-runtime';
+export {
+  configureAuthoredView,
+  getAuthoredUpdateView,
+  readAuthoredView,
+  withStoredAuthoredRead,
+} from '../core/authored-runtime';
 export { normalizeSetValues } from '../core/change/transform';
 export {
   isDocumentView,
