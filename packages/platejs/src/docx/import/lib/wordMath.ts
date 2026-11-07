@@ -165,6 +165,33 @@ const largeOperator = (element: Element | undefined) => {
     : null;
 };
 
+const runTex = (run: Element, text: string, inFunctionName: boolean) => {
+  const properties = childNamed(run, 'rPr');
+
+  if (properties && childNamed(properties, 'nor')) {
+    return `\\text{${escape(text, TEXT_ESCAPES)}}`;
+  }
+  const scr = mathValue(properties && childNamed(properties, 'scr'));
+  const sty = mathValue(properties && childNamed(properties, 'sty'));
+
+  if ((sty === 'p' || inFunctionName) && FUNCTIONS.has(text)) {
+    return `\\${text} `;
+  }
+  // A lone italic letter, or an upright run with no letters, needs no command.
+  const plain =
+    sty === 'p' ? !/\p{L}/u.test(text) : sty === 'i' && /^\p{L}$/u.test(text);
+  const variant =
+    scr || (sty && !plain)
+      ? (WORD_MATH_VARIANTS.find(
+          (entry) => (entry.scr ?? null) === (scr ?? null) && entry.sty === sty
+        ) ?? WORD_MATH_VARIANTS.find((entry) => scr && entry.scr === scr))
+      : undefined;
+
+  return variant
+    ? `${variant.tex}{${escape(text, MATH_ESCAPES)}}`
+    : escape(text, MATH_ESCAPES);
+};
+
 /** Word math as TeX; `onUnknown` hears about structure only its text survives. */
 const toTex = (
   element: Element,
@@ -202,34 +229,48 @@ const toTex = (
       return join(element, true);
     }
     case 'r': {
-      const text = runText(element);
-      const properties = childNamed(element, 'rPr');
+      return runTex(element, runText(element), inFunctionName);
+    }
+    case 'eqArr': {
+      let aligned = false;
+      // A `&` in a run of a row is the row's alignment point, not a character.
+      const rows = elements(element)
+        .filter((row) => isMath(row, 'e'))
+        .map((row) =>
+          elements(row)
+            .map((child) => {
+              const text = isMath(child, 'r') ? runText(child) : '';
 
-      if (properties && childNamed(properties, 'nor')) {
-        return `\\text{${escape(text, TEXT_ESCAPES)}}`;
-      }
-      const scr = mathValue(properties && childNamed(properties, 'scr'));
-      const sty = mathValue(properties && childNamed(properties, 'sty'));
+              if (!text.includes('&')) {
+                return toTex(child, onUnknown, inFunctionName);
+              }
+              aligned = true;
 
-      if ((sty === 'p' || inFunctionName) && FUNCTIONS.has(text)) {
-        return `\\${text} `;
-      }
-      // A lone italic letter, or an upright run with no letters, needs no command.
-      const plain =
-        sty === 'p'
-          ? !/\p{L}/u.test(text)
-          : sty === 'i' && /^\p{L}$/u.test(text);
-      const variant =
-        scr || (sty && !plain)
-          ? (WORD_MATH_VARIANTS.find(
-              (entry) =>
-                (entry.scr ?? null) === (scr ?? null) && entry.sty === sty
-            ) ?? WORD_MATH_VARIANTS.find((entry) => scr && entry.scr === scr))
-          : undefined;
+              return text
+                .split('&')
+                .map((piece) => piece && runTex(child, piece, inFunctionName))
+                .join('&');
+            })
+            .join('')
+        );
+      const environment = aligned ? 'aligned' : 'gathered';
 
-      return variant
-        ? `${variant.tex}{${escape(text, MATH_ESCAPES)}}`
-        : escape(text, MATH_ESCAPES);
+      return `\\begin{${environment}} ${rows.join(' \\\\ ')} \\end{${environment}}`;
+    }
+    case 'm': {
+      const rows = elements(element)
+        .filter((row) => isMath(row, 'mr'))
+        .map((row) =>
+          elements(row)
+            .filter((cell) => isMath(cell, 'e'))
+            .map((cell) => join(cell))
+            .join(' & ')
+        );
+
+      return `\\begin{matrix} ${rows.join(' \\\\ ')} \\end{matrix}`;
+    }
+    case 'sPre': {
+      return `{}_{${part('sub')}}^{${part('sup')}}{${part('e')}}`;
     }
     case 'f': {
       const type = propertyValue(element, 'type');
