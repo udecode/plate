@@ -649,6 +649,21 @@ export default defineConfig({
     },
     {
       files: [
+        'packages/*/src/**/*.{cts,mts,ts,tsx}',
+        'apps/www/src/registry/**/*.{ts,tsx}',
+      ],
+      excludeFiles: [
+        'packages/platejs/src/features/list/**',
+        '**/*.spec.*',
+        '**/*.test.*',
+        '**/__tests__/**',
+      ],
+      rules: {
+        'plate/no-list-landing-copy': 'error',
+      },
+    },
+    {
+      files: [
         'packages/platejs/src/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
         'packages/plitejs/src/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',
         'packages/test/src/**/*.{cjs,cts,js,jsx,mjs,mts,ts,tsx}',

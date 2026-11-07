@@ -1107,34 +1107,35 @@ const constBinding = (context, identifier) => {
   return property ? { init, key: propertyKey(property) } : null;
 };
 
+const isSchema = (context, node, depth = 0) => {
+  const value = readValue(node);
+  if (memberName(value) === 'schema') return true;
+  if (value?.type === 'CallExpression') {
+    return (
+      value.callee.type === 'Identifier' &&
+      value.callee.name === 'getEditorSchema'
+    );
+  }
+  if (value?.type !== 'Identifier') return false;
+  if (value.name === 'schema') return true;
+  if (depth > 4) return false;
+  const binding = constBinding(context, value);
+  if (!binding) return false;
+
+  return (
+    binding.key === 'schema' ||
+    (binding.key === undefined && isSchema(context, binding.init, depth + 1))
+  );
+};
+
 const noSchemaPlacementCopy = {
   create(context) {
-    const isSchema = (node, depth) => {
-      const value = readValue(node);
-      if (memberName(value) === 'schema') return true;
-      if (value?.type === 'CallExpression') {
-        return (
-          value.callee.type === 'Identifier' &&
-          value.callee.name === 'getEditorSchema'
-        );
-      }
-      if (value?.type !== 'Identifier') return false;
-      if (value.name === 'schema') return true;
-      if (depth > 4) return false;
-      const binding = constBinding(context, value);
-      if (!binding) return false;
-
-      return (
-        binding.key === 'schema' ||
-        (binding.key === undefined && isSchema(binding.init, depth + 1))
-      );
-    };
     const isSpec = (node, depth = 0) => {
       const value = readValue(node);
       if (
         value?.type === 'CallExpression' &&
         memberName(value.callee) === 'element' &&
-        isSchema(value.callee.object, depth)
+        isSchema(context, value.callee.object, depth)
       ) {
         return true;
       }
@@ -1181,6 +1182,39 @@ const noSchemaPlacementCopy = {
     },
     messages: {
       copy: "This reads a content program's prefix, min or max (baselined in this file: {{baselined}}) to decide where children fit, which copies Plite's placement law. `canPlaceAt` in packages/plitejs/src/core/editor-schema.ts owns it. Land through Plite's slice fitter, which runs it, or add a public placement read there.",
+    },
+    type: 'problem',
+  },
+};
+
+const noListLandingCopy = {
+  create(context) {
+    return {
+      CallExpression(node) {
+        const [options] = node.arguments;
+        if (
+          memberName(node.callee) !== 'property' ||
+          options?.type !== 'ObjectExpression' ||
+          !isSchema(context, node.callee.object)
+        ) {
+          return;
+        }
+        const key = options.properties.find(
+          (property) => propertyKey(property) === 'key'
+        );
+        if (key?.value.type === 'Literal' && key.value.value === 'listType') {
+          context.report({ messageId: 'copy', node });
+        }
+      },
+    };
+  },
+  meta: {
+    docs: {
+      description:
+        'Code outside the list feature reads the landed document instead of asking the schema which blocks hold list properties.',
+    },
+    messages: {
+      copy: "This asks the schema whether a block holds `listType` (baselined in this file: {{baselined}}), which copies the list plugin's landing rule. `BaseListPlugin` in packages/platejs/src/features/list/lib/BaseListPlugin.ts owns which blocks a list item keeps as list blocks, in its HTML and Markdown mappings. Read the document it lands, or add a read to that plugin.",
     },
     type: 'problem',
   },
@@ -2047,6 +2081,10 @@ export default {
     ),
     'no-fixed-sleep': withBaseline('no-fixed-sleep', noFixedSleep),
     'no-inline-hydration-flag': noInlineHydrationFlag,
+    'no-list-landing-copy': withBaseline(
+      'no-list-landing-copy',
+      noListLandingCopy
+    ),
     'no-one-off-editor-type': withBaseline(
       'no-one-off-editor-type',
       noOneOffEditorType
