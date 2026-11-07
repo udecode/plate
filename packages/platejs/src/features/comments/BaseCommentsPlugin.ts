@@ -544,13 +544,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   };
   const setActive = (ids: readonly string[]) => {
     if (destroyed) return;
-    observe(
-      () => store.set({ activeIds: Object.freeze([...new Set(ids)]) }),
-      'snapshot-listener'
-    );
-    // An earlier store subscriber that throws skips the subscription in
-    // initialize.
-    repaintActive();
+    store.set({ activeIds: Object.freeze([...new Set(ids)]) });
   };
   const syncSource = () => {
     source = Object.freeze(

@@ -63,6 +63,15 @@ const describeFailingPart = (error: EditorLifecycleError<unknown>): string => {
   )(error);
 };
 
+const logLifecycleError = (...values: unknown[]) => {
+  try {
+    globalThis.console?.error(...values);
+  } catch {
+    // Reports run inside other listeners' loops, and a console can throw while
+    // it formats a value whose inspect hook throws.
+  }
+};
+
 /** @internal */
 export const reportEditorLifecycleError = <
   TEditor extends BaseEditor<any, any>,
@@ -78,7 +87,7 @@ export const reportEditorLifecycleError = <
       sink(error);
       return;
     } catch (sinkError) {
-      globalThis.console?.error(error, sinkError);
+      logLifecycleError(error, sinkError);
       return;
     }
   }
@@ -95,6 +104,6 @@ export const reportEditorLifecycleError = <
   if (reportError) {
     reportError(reported);
   } else {
-    globalThis.console?.error(reported);
+    logLifecycleError(reported);
   }
 };

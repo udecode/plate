@@ -923,7 +923,11 @@ export type PluginStore<
       | Partial<InferPluginStoreState<C>>
       | ((state: Draft<InferPluginStoreState<C>>) => void)
   ): void;
-  /** Subscribe to raw state changes. */
+  /**
+   * Subscribe to raw state changes. A listener that throws goes to the editor's
+   * `lifecycleErrorSink`, and the other listeners still run. The throw fails
+   * neither the write nor an update around it.
+   */
   subscribe: (
     listener: (
       state: InferPluginStoreState<C>,
@@ -960,6 +964,11 @@ export type PluginViewStoreWriter<
 export type PluginViewStore<
   C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
 > = PluginViewStoreWriter<C> & {
+  /**
+   * Subscribe to raw view state changes. A listener that throws goes to the
+   * editor's `lifecycleErrorSink`, and the other listeners still run. The throw
+   * fails neither the write nor an update around it.
+   */
   subscribe: (
     listener: (
       state: InferPluginViewState<C>,

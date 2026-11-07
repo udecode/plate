@@ -2,6 +2,7 @@ import { create } from 'mutative';
 import {
   getViewPresentation,
   onPresentationRelease,
+  reportEditorLifecycleError,
   type ViewPresentation,
 } from 'plitejs/internal';
 
@@ -41,10 +42,13 @@ export type InternalPluginStore<
 };
 
 export const createPluginStore = <C extends AnyBasePluginDefinition>(
+  editor: object,
   plugin: AnyBasePlugin | PluginReference<C['name']> | C['name'],
   base: PluginStoreBase<C>,
   selectors: InferSelectors<C>
 ): InternalPluginStore<C> => {
+  // A view store outlives the view that first asked for it, so it keeps the owner.
+  const owner = getPlateRuntimeOwner(editor);
   const name = typeof plugin === 'string' ? plugin : plugin.name;
   const state = base.store.getState();
 
@@ -86,7 +90,19 @@ export const createPluginStore = <C extends AnyBasePluginDefinition>(
         replace({ ...current, ...value });
       }
     },
-    subscribe: base.store.subscribe,
+    subscribe: (listener) =>
+      base.store.subscribe((current, previous) => {
+        try {
+          listener(current, previous);
+        } catch (error) {
+          reportEditorLifecycleError({
+            cause: error,
+            editor: owner,
+            phase: 'snapshot-listener',
+            pluginName: name,
+          });
+        }
+      }),
   } as PluginStore<C>;
 
   return Object.freeze({
@@ -256,6 +272,7 @@ export const getViewStore = (
 
   if (!store) {
     store = createPluginStore(
+      editor,
       plugin,
       createZustandStore(
         snapshotPluginState(plugin.initialViewState?.() ?? {}),
