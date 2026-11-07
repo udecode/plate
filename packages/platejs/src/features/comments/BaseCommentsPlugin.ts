@@ -17,7 +17,7 @@ import {
   type Range,
   type Value,
 } from '../../core';
-import { reportEditorLifecycleError } from '../../facade';
+import { notifyObservers, runEditorObserver } from '../../facade';
 import { readEditorAuthor } from '../../lib/editor/editorUser.internal';
 import {
   createAnnotationStore,
@@ -410,26 +410,18 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const pendingListeners = new Set<() => void>();
   const dataListeners = new Set<(change: CommentsChange) => void>();
   let heldChanges: Array<() => void> | null = null;
-  const observe = (
-    step: () => void,
-    phase: 'after-commit' | 'commit-listener' | 'snapshot-listener'
-  ) => {
-    try {
-      step();
-    } catch (error) {
-      reportEditorLifecycleError(
-        Object.freeze({ cause: error, editor, phase, pluginName: 'comments' })
-      );
-    }
-  };
   const deliver = <TArgs extends unknown[]>(
     listeners: ReadonlySet<(...args: TArgs) => void>,
     phase: 'commit-listener' | 'snapshot-listener',
     ...args: TArgs
   ) => {
-    for (const listener of [...listeners]) {
-      if (listeners.has(listener)) observe(() => listener(...args), phase);
-    }
+    notifyObservers(
+      editor,
+      listeners,
+      phase,
+      (listener) => listener(...args),
+      'comments'
+    );
   };
 
   const getAnnotations = (view: Editor) => {
@@ -764,7 +756,9 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       previousAnchor?.release();
       announce = refreshViews([id]);
     }
-    if (afterWrite) observe(afterWrite, 'after-commit');
+    if (afterWrite) {
+      runEditorObserver(editor, 'after-commit', afterWrite, 'comments');
+    }
     announce();
     const current = threads.get(id);
     if (

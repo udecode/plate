@@ -1,4 +1,6 @@
+import { notifyObservers } from '../../core/lifecycle-error';
 import { areEditorJsonValuesEqual } from '../../core/value-codec';
+import type { BaseEditor } from '../../interfaces/editor';
 import type {
   ViewSourceErrorSink,
   ViewSourceOptions,
@@ -27,7 +29,7 @@ type MappedViewStoreKernel<TSnapshot> = {
 
 export const createMappedViewStoreKernel = <TSnapshot>(
   initialSnapshot: TSnapshot,
-  call: (listener: () => void) => void
+  editor: BaseEditor<any, any>
 ): MappedViewStoreKernel<TSnapshot> => {
   const listeners = new Set<Listener>();
   const changeListeners = new Set<(keys: readonly string[]) => void>();
@@ -85,10 +87,19 @@ export const createMappedViewStoreKernel = <TSnapshot>(
       );
 
       snapshot = nextSnapshot;
-      for (const listener of listeners) call(listener);
-      for (const listener of changeListeners) call(() => listener(keys));
+      const wake = (listener: Listener) => listener();
+
+      notifyObservers(editor, listeners, 'commit-listener', wake);
+      notifyObservers(editor, changeListeners, 'commit-listener', (listener) =>
+        listener(keys)
+      );
       for (const key of keys) {
-        for (const listener of keyedListeners.get(key) ?? []) call(listener);
+        notifyObservers(
+          editor,
+          keyedListeners.get(key),
+          'commit-listener',
+          wake
+        );
       }
 
       return { globalWakeCount, keyWakeCount };

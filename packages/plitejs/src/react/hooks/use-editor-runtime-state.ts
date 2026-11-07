@@ -7,6 +7,7 @@ import type {
   PluginsOf,
   ValueOf,
 } from '../..';
+import { callShouldUpdate } from './use-editor-selector';
 import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
@@ -67,13 +68,13 @@ export function useEditorRuntimeState<
 
   const updateWithCommit = useCallback(
     (change: EditorCommit<ValueOf<TEditor>>) => {
-      if (shouldUpdateRef.current && !shouldUpdateRef.current(change)) {
+      if (!callShouldUpdate(editor, shouldUpdateRef.current, change)) {
         return;
       }
 
       update();
     },
-    [update]
+    [editor, update]
   );
 
   useIsomorphicLayoutEffect(() => {

@@ -56,6 +56,7 @@ import {
   type InternalEditorSchemaApi,
   withoutGeneration,
 } from '../core/editor-schema';
+import { notifyObservers, runEditorObserver } from '../core/lifecycle-error';
 import { definePlugin } from '../core/plugin';
 import {
   getCompiledEditorSchema,
@@ -70,7 +71,6 @@ import {
   getActiveEditorUpdateTags,
   isEditorCompositionPending,
   notifyEditorViewState,
-  runEditorObserver,
   subscribeEditorViewState,
   withEditorDocumentProjection,
 } from '../core/public-state';
@@ -1748,9 +1748,9 @@ export const createAuthoredPlugin = (
               removed: fresh ? delta.removed : [],
             });
 
-            for (const each of [...listeners]) {
-              runEditorObserver(editor, 'snapshot-listener', () => each(view));
-            }
+            notifyObservers(editor, listeners, 'snapshot-listener', (each) =>
+              each(view)
+            );
           });
 
           publisher = { ledger, listeners, sink, stop };

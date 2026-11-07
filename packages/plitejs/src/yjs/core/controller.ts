@@ -18,6 +18,7 @@ import { type EmptyTextRead, retractionOf } from '../../core/change/retraction';
 import { getEditorCommitValue } from '../../core/commit';
 import { getEditorSchema } from '../../core/editor-runtime';
 import { holdsImportedRoot, readEmptyText } from '../../core/editor-schema';
+import { notifyObservers } from '../../core/lifecycle-error';
 import { isMissingReference } from '../../core/missing-reference';
 import {
   getCompiledEditorSchema,
@@ -126,10 +127,17 @@ import type {
   YjsTraceEntry,
 } from './types';
 
-const notifySubscribers = (subscribers: ReadonlySet<() => void>): void => {
-  for (const listener of subscribers) {
-    listener();
-  }
+const notifySubscribers = (
+  editor: YjsEditor,
+  subscribers: ReadonlySet<() => void>
+): void => {
+  notifyObservers(
+    editor,
+    subscribers,
+    'snapshot-listener',
+    (listener) => listener(),
+    'yjs'
+  );
 };
 
 const WAITING_FOR_LOAD = Object.freeze({
@@ -1203,7 +1211,7 @@ export class YjsController<
     if (this.admissionStatusValue === status) return;
 
     this.admissionStatusValue = status;
-    notifySubscribers(this.admissionSubscribers);
+    notifySubscribers(this.editor, this.admissionSubscribers);
   }
 
   private setAdmissionError(cause: unknown): void {
@@ -1228,7 +1236,9 @@ export class YjsController<
       throw error;
     }
 
-    if (previous !== READY) notifySubscribers(this.admissionSubscribers);
+    if (previous !== READY) {
+      notifySubscribers(this.editor, this.admissionSubscribers);
+    }
   }
 
   private clearPendingInput(): void {

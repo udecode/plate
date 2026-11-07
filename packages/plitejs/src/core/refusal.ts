@@ -42,7 +42,10 @@ export const subscribeEditorRefusals = (
 
 /** @internal */
 export const publishEditorRefusal = (editor: Editor, refusal: unknown) => {
-  for (const listener of LISTENERS.get(getEditorRuntimeOwner(editor)) ?? []) {
-    listener(refusal);
+  const listeners = LISTENERS.get(getEditorRuntimeOwner(editor));
+
+  if (!listeners) return;
+  for (const listener of [...listeners]) {
+    if (listeners.has(listener)) listener(refusal);
   }
 };

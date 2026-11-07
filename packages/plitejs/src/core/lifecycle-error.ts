@@ -107,3 +107,46 @@ export const reportEditorLifecycleError = <
     logLifecycleError(reported);
   }
 };
+
+type EditorObserverPhase =
+  | 'after-commit'
+  | 'commit-listener'
+  | 'node-change-listener'
+  | 'snapshot-listener'
+  | 'source-listener'
+  | 'text-change-listener';
+
+/** @internal */
+export const runEditorObserver = (
+  editor: BaseEditor<any, any>,
+  phase: EditorObserverPhase,
+  observer: () => void,
+  pluginName = '$editor'
+) => {
+  try {
+    observer();
+  } catch (error) {
+    reportEditorLifecycleError(
+      Object.freeze({ cause: error, editor, pluginName, phase })
+    );
+  }
+};
+
+/** @internal */
+export const notifyObservers = <TListener>(
+  editor: BaseEditor<any, any>,
+  listeners: ReadonlySet<TListener> | undefined,
+  phase: EditorObserverPhase,
+  call: (listener: TListener) => void,
+  pluginName?: string
+) => {
+  if (!listeners || listeners.size === 0) {
+    return;
+  }
+
+  for (const listener of [...listeners]) {
+    if (listeners.has(listener)) {
+      runEditorObserver(editor, phase, () => call(listener), pluginName);
+    }
+  }
+};

@@ -3,6 +3,7 @@ import * as Y from 'yjs';
 import { withStoredAuthoredRead } from '../../core/authored-runtime';
 import type { NodeList } from '../../core/change/document-index';
 import { registerEditorViewLifetimeCleanup } from '../../core/editor-view-lifetime';
+import { notifyObservers } from '../../core/lifecycle-error';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
 import type { Anchor, Descendant, Point, Range } from '../../index';
 import { NodeApi, RangeApi } from '../../index';
@@ -146,8 +147,17 @@ const createRemoteCursor = <TCursorData extends YjsRemoteCursorData>(
     selection,
   });
 
-const notify = (listeners: ReadonlySet<() => void>) => {
-  for (const listener of listeners) listener();
+const notify = (
+  editor: YjsEditor,
+  listeners: ReadonlySet<() => void> | undefined
+) => {
+  notifyObservers(
+    editor,
+    listeners,
+    'snapshot-listener',
+    (listener) => listener(),
+    'yjs'
+  );
 };
 
 export const createYjsAwarenessAdapter = <
@@ -438,10 +448,10 @@ export const createYjsAwarenessAdapter = <
     for (const remoteClientId of changedClientIds) {
       const listeners = cursorListeners.get(remoteClientId);
 
-      if (listeners) notify(listeners);
+      notify(editor, listeners);
     }
-    if (idsChanged) notify(idsListeners);
-    notify(cursorsListeners);
+    if (idsChanged) notify(editor, idsListeners);
+    notify(editor, cursorsListeners);
   };
 
   const rebuild = () => {

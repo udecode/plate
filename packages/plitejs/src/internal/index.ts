@@ -208,6 +208,7 @@ export {
   setPluginPortalFactory,
   withPluginPortalCandidates,
 } from '../core/plugin';
+export { notifyObservers, runEditorObserver } from '../core/lifecycle-error';
 export {
   assertPublicRootKey,
   toInternalRoot,

@@ -306,7 +306,11 @@ import {
   limitSliceToLength,
 } from './insert-limit';
 import { getReplaceableEmptyBlock, isEmptyElement } from './is-empty-element';
-import { reportEditorLifecycleError } from './lifecycle-error';
+import {
+  notifyObservers,
+  reportEditorLifecycleError,
+  runEditorObserver,
+} from './lifecycle-error';
 import {
   getCommitListeners,
   getSnapshotListeners,
@@ -10156,9 +10160,12 @@ export const notifyEditorViewState = (
 ) => {
   const runtime = getEditorRuntime(editor);
   scheduleMicrotask(() => {
-    for (const listener of EDITOR_VIEW_STATE_LISTENERS.get(runtime) ?? []) {
-      runEditorObserver(editor, 'commit-listener', () => listener(change));
-    }
+    notifyObservers(
+      editor,
+      EDITOR_VIEW_STATE_LISTENERS.get(runtime),
+      'commit-listener',
+      (listener) => listener(change)
+    );
   });
 };
 
@@ -11720,30 +11727,6 @@ export const applyDocumentChange = (
   applyTransactionSpecDocumentChangeStep(editor, step, options);
 };
 
-/** @internal */
-export const runEditorObserver = (
-  editor: Editor,
-  phase:
-    | 'after-commit'
-    | 'commit-listener'
-    | 'snapshot-listener'
-    | 'source-listener',
-  observer: () => void
-) => {
-  try {
-    observer();
-  } catch (error) {
-    reportEditorLifecycleError(
-      Object.freeze({
-        cause: error,
-        editor,
-        pluginName: '$editor',
-        phase,
-      })
-    );
-  }
-};
-
 export const notifyListeners = (editor: Editor, change: EditorCommit) => {
   COMMIT_NOTIFICATION_DEPTH.set(
     editor,
@@ -11793,11 +11776,12 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
     });
 
     profileCoreDuration('notify-commit-listeners', () => {
-      for (const listener of getCommitListeners(editor) ?? []) {
-        runEditorObserver(editor, 'commit-listener', () => {
-          listener(change, getSnapshotForListeners());
-        });
-      }
+      notifyObservers(
+        editor,
+        getCommitListeners(editor),
+        'commit-listener',
+        (listener) => listener(change, getSnapshotForListeners())
+      );
     });
 
     if (hasSnapshotListeners || pluginCommitListenersNeedSnapshot) {
@@ -11806,11 +11790,9 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
       }
 
       profileCoreDuration('notify-snapshot-listeners', () => {
-        for (const listener of listeners ?? []) {
-          runEditorObserver(editor, 'snapshot-listener', () => {
-            listener(getSnapshotForListeners(), change);
-          });
-        }
+        notifyObservers(editor, listeners, 'snapshot-listener', (listener) =>
+          listener(getSnapshotForListeners(), change)
+        );
       });
 
       if (sourceListeners) {
@@ -11823,11 +11805,12 @@ export const notifyListeners = (editor: Editor, change: EditorCommit) => {
             }
 
             profileCoreDuration(`notify-source-listeners:${source}`, () => {
-              for (const listener of listenersForSource) {
-                runEditorObserver(editor, 'source-listener', () => {
-                  listener(getSnapshotForListeners(), change);
-                });
-              }
+              notifyObservers(
+                editor,
+                listenersForSource,
+                'source-listener',
+                (listener) => listener(getSnapshotForListeners(), change)
+              );
             });
           }
         });

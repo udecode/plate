@@ -9,12 +9,10 @@ import type {
   EditorViewOptions,
   Selection,
 } from '../../facade';
+import { runEditorObserver } from '../../facade';
 import { failInvariant } from '../../internal/failInvariant';
 import { getPlateDecorationSources } from '../../internal/plugin/getPlateDecorationSources';
-import {
-  runEditorRootObserver,
-  subscribePlateChangeCallbacks,
-} from '../../internal/plugin/plateChangeHandlers';
+import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChangeHandlers';
 import type { Editor } from '../editor/Editor';
 import { createPlateTargetScope } from '../internal/createPlateTargetScope';
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
@@ -195,17 +193,27 @@ function PlateInner({
 
       const context = { commit, editor: observedEditor, snapshot };
 
-      runEditorRootObserver(observedEditor, 'commit-listener', () => {
-        innerOnCommit?.(context);
-      });
+      runEditorObserver(
+        observedEditor,
+        'commit-listener',
+        () => {
+          innerOnCommit?.(context);
+        },
+        'EditorRoot'
+      );
 
       if (value && (documentChanged || persistedMetaChanged)) {
-        runEditorRootObserver(observedEditor, 'commit-listener', () => {
-          innerOnValueChange?.({
-            ...context,
-            value,
-          });
-        });
+        runEditorObserver(
+          observedEditor,
+          'commit-listener',
+          () => {
+            innerOnValueChange?.({
+              ...context,
+              value,
+            });
+          },
+          'EditorRoot'
+        );
       }
 
       if (
@@ -213,12 +221,17 @@ function PlateInner({
         (commit.selectionBeforeRoot === undefined ||
           commit.selectionAfterRoot === undefined)
       ) {
-        runEditorRootObserver(observedEditor, 'commit-listener', () => {
-          innerOnSelectionChange?.({
-            ...context,
-            selection: snapshot.selection,
-          });
-        });
+        runEditorObserver(
+          observedEditor,
+          'commit-listener',
+          () => {
+            innerOnSelectionChange?.({
+              ...context,
+              selection: snapshot.selection,
+            });
+          },
+          'EditorRoot'
+        );
       }
     };
 

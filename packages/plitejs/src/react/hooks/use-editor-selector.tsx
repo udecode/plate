@@ -7,6 +7,8 @@ import type {
   NodeKey,
   ValueOf,
 } from '../..';
+import { runEditorObserver } from '../../core/lifecycle-error';
+import type { BaseEditor } from '../../interfaces/editor';
 import type { EditorContextValue } from '../plugin/with-react';
 import { recordPliteReactRender } from '../render-profiler';
 import { useEditorContext } from './use-editor-context';
@@ -14,6 +16,20 @@ import { useGenericSelector } from './use-generic-selector';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
 
 type Callback = (change?: EditorCommit) => void;
+
+export const callShouldUpdate = <TChange,>(
+  editor: BaseEditor<any, any>,
+  shouldUpdate: ((change?: TChange) => boolean) | undefined,
+  change: TChange | undefined
+) => {
+  let changed = true;
+
+  runEditorObserver(editor, 'commit-listener', () => {
+    changed = shouldUpdate?.(change) ?? true;
+  });
+
+  return changed;
+};
 
 type DeferredCallbackPayload = {
   change?: EditorCommit;
@@ -134,8 +150,9 @@ export function useEditorSelector<T>(
   }, [shouldUpdate, update]);
 
   const shouldUpdateWithEditor = useCallback(
-    (change?: EditorCommit) => shouldUpdateRef.current?.(change) ?? true,
-    []
+    (change?: EditorCommit) =>
+      callShouldUpdate(editor, shouldUpdateRef.current, change),
+    [editor]
   );
 
   useIsomorphicLayoutEffect(() => {

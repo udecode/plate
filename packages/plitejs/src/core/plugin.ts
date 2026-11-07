@@ -58,7 +58,10 @@ import {
   createEditorSchema,
   type InternalEditorSchemaApi,
 } from './editor-schema';
-import { reportEditorLifecycleError } from './lifecycle-error';
+import {
+  reportEditorLifecycleError,
+  runEditorObserver,
+} from './lifecycle-error';
 import { callPluginUpdateMethod, resolvePluginMethod } from './plugin-dispatch';
 import { getPluginContributionValue } from './plugin-point';
 import {
@@ -324,12 +327,7 @@ export {
 const reportPluginLifecycleError = (
   editor: Editor,
   pluginName: string,
-  phase:
-    | 'afterPublish'
-    | 'cleanup'
-    | 'commit-listener'
-    | 'node-change-listener'
-    | 'text-change-listener',
+  phase: 'afterPublish' | 'cleanup',
   cause: unknown
 ) => {
   reportEditorLifecycleError(
@@ -1351,65 +1349,48 @@ const registerPluginSlots = <TEditor extends Editor>(
 
     if (slots.on?.commit) {
       cleanups.push(
-        registerCommitListenerInRegistry(registry, (commit) => {
-          try {
-            slots.on?.commit?.({
-              commit,
-              editor,
-              snapshot: getEditorCommitSnapshot(
+        registerCommitListenerInRegistry(registry, (commit) =>
+          runEditorObserver(
+            editor,
+            'commit-listener',
+            () =>
+              slots.on?.commit?.({
                 commit,
-                getEditorRuntimeRoot(editor)
-              ),
-            });
-          } catch (error) {
-            reportPluginLifecycleError(
-              editor,
-              plugin.name,
-              'commit-listener',
-              error
-            );
-          }
-        })
+                editor,
+                snapshot: getEditorCommitSnapshot(
+                  commit,
+                  getEditorRuntimeRoot(editor)
+                ),
+              }),
+            plugin.name
+          )
+        )
       );
     }
 
     if (slots.on?.nodeChange) {
       cleanups.push(
-        registerNodeChangeListenerInRegistry(registry, (context) => {
-          try {
-            slots.on?.nodeChange?.({
-              ...context,
-              editor,
-            });
-          } catch (error) {
-            reportPluginLifecycleError(
-              editor,
-              plugin.name,
-              'node-change-listener',
-              error
-            );
-          }
-        })
+        registerNodeChangeListenerInRegistry(registry, (context) =>
+          runEditorObserver(
+            editor,
+            'node-change-listener',
+            () => slots.on?.nodeChange?.({ ...context, editor }),
+            plugin.name
+          )
+        )
       );
     }
 
     if (slots.on?.textChange) {
       cleanups.push(
-        registerTextChangeListenerInRegistry(registry, (context) => {
-          try {
-            slots.on?.textChange?.({
-              ...context,
-              editor,
-            });
-          } catch (error) {
-            reportPluginLifecycleError(
-              editor,
-              plugin.name,
-              'text-change-listener',
-              error
-            );
-          }
-        })
+        registerTextChangeListenerInRegistry(registry, (context) =>
+          runEditorObserver(
+            editor,
+            'text-change-listener',
+            () => slots.on?.textChange?.({ ...context, editor }),
+            plugin.name
+          )
+        )
       );
     }
 

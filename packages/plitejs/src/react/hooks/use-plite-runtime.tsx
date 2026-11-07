@@ -65,6 +65,7 @@ import { MAIN_ROOT_KEY, toPublicRootOption } from '../root-key';
 import { REACT_MAJOR_VERSION } from '../utils/environment';
 import { focusPliteEditable } from './focus-plite-editable';
 import {
+  callShouldUpdate,
   type EditorSelectorContextValue,
   useEditorSelectorContext,
 } from './use-editor-selector';
@@ -681,8 +682,9 @@ export function useRuntimeState<T>(
   }, [shouldUpdate, update]);
 
   const shouldUpdateCommit = useCallback(
-    (change?: EditorCommit) => shouldUpdateRef.current?.(change) ?? true,
-    []
+    (change?: EditorCommit) =>
+      callShouldUpdate(runtime, shouldUpdateRef.current, change),
+    [runtime]
   );
 
   // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- The registration returns the unsubscribe function used by this effect's cleanup.
@@ -722,7 +724,7 @@ export function useRootState<T, const TRoot extends RootKey = RootKey>(
     throw new Error('Omit root to read the primary document root state.');
   }
 
-  const { getView, presentation, selectorContext } =
+  const { getView, presentation, runtime, selectorContext } =
     useRequiredPliteRuntimeContext();
   const internalRoot = root ?? MAIN_ROOT_KEY;
   const stateSelector = useCallback(
@@ -746,9 +748,9 @@ export function useRootState<T, const TRoot extends RootKey = RootKey>(
         return false;
       }
 
-      return shouldUpdateRef.current ? shouldUpdateRef.current(change) : true;
+      return callShouldUpdate(runtime, shouldUpdateRef.current, change);
     },
-    [internalRoot]
+    [internalRoot, runtime]
   );
 
   // oxlint-disable-next-line react-doctor/effect-needs-cleanup -- The registration returns the unsubscribe function used by this effect's cleanup.

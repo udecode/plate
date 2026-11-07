@@ -1,3 +1,4 @@
+import { notifyObservers } from '../../core/lifecycle-error';
 import type { YjsController } from './controller';
 import {
   deleteActiveYjsController,
@@ -218,6 +219,12 @@ export class YjsBinding<TCursorData extends YjsRemoteCursorData> {
   }
 
   private notify(): void {
-    for (const { listener } of [...this.forwards]) listener();
+    notifyObservers(
+      this.editor,
+      this.forwards,
+      'snapshot-listener',
+      ({ listener }) => listener(),
+      'yjs'
+    );
   }
 }
