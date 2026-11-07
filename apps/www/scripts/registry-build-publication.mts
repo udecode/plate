@@ -74,10 +74,17 @@ export async function acquireRegistryBuildLock({
     if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
 
     const owner = await readLock(lockPath);
-    throw new Error(
-      `Registry build lock is owned by pid ${owner.pid} with token ${owner.token}. If that process is dead, run pnpm --filter www build:registry --recover-lock ${owner.token}.`,
-      { cause: error }
-    );
+
+    if (isProcessAlive(owner.pid)) {
+      throw new Error(
+        `Registry build lock is owned by running pid ${owner.pid}.`,
+        { cause: error }
+      );
+    }
+
+    await recoverRegistryBuildLock({ buildRoot, token: owner.token });
+
+    return acquireRegistryBuildLock({ buildRoot, sourceIdentity });
   }
 
   const stageDir = path.join(buildRoot, `run-${lock.token}`);
