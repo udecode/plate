@@ -459,6 +459,18 @@ export const applyEditableClick = ({
   }
 };
 
+export const preferNativePressSelection = (
+  inputController: EditableInputController
+) => {
+  inputController.state.modelOwnedTextInputGuard = 0;
+  setEditableModelSelectionPreference({
+    inputController,
+    preferModelSelection: false,
+    selectionSource: 'dom-current',
+  });
+  inputController.state.selectionChangeOrigin = 'native-user';
+};
+
 export const applyEditableMouseDown = ({
   editor,
   event,
@@ -508,13 +520,7 @@ export const applyEditableMouseDown = ({
   if (modelTargetOwnsSelection) {
     event.preventDefault();
   } else {
-    inputController.state.modelOwnedTextInputGuard = 0;
-    setEditableModelSelectionPreference({
-      inputController,
-      preferModelSelection: false,
-      selectionSource: 'dom-current',
-    });
-    inputController.state.selectionChangeOrigin = 'native-user';
+    preferNativePressSelection(inputController);
   }
   onMouseDown?.(event);
   return modelTargetOwnsSelection;

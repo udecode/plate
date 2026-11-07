@@ -28,6 +28,7 @@ import {
   applyEditableFocus,
   applyEditableMouseDown,
   type EditableSelectionReconcilerState,
+  preferNativePressSelection,
   selectEditableSelectableOwnerTarget,
   selectEditableVoidTarget,
 } from './selection-reconciler';
@@ -76,6 +77,14 @@ export const useRuntimeFocusMouseEvents = ({
   const nativePointerFocusRef = useRef(false);
   const externalMouseGestureRef = useRef(false);
 
+  const isPointerFocus = useCallback(
+    (event: FocusEvent<HTMLDivElement>) =>
+      nativePointerFocusRef.current ||
+      findMountedEditableDOMRuntime(event.currentTarget)?.longPressSelected ===
+        true,
+    []
+  );
+
   const markNativePointerFocus = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
       nativePointerFocusRef.current = !isInteractiveInternalTarget(
@@ -116,7 +125,7 @@ export const useRuntimeFocusMouseEvents = ({
 
       if (
         isNativeInternalControlTarget(editor, event.target) &&
-        !nativePointerFocusRef.current
+        !isPointerFocus(event)
       ) {
         nativeInternalFocusRef.current = false;
         // Writing a selection into the editor focuses its root, which would
@@ -156,6 +165,7 @@ export const useRuntimeFocusMouseEvents = ({
       editor,
       flushPendingNativeTextInput,
       inputController,
+      isPointerFocus,
       onBlur,
       publishFocusState,
       readOnly,
@@ -192,7 +202,7 @@ export const useRuntimeFocusMouseEvents = ({
 
       if (
         nativeInternalFocusRef.current &&
-        !nativePointerFocusRef.current &&
+        !isPointerFocus(event) &&
         isInteractiveInternalTarget(editor, event.target)
       ) {
         nativeInternalFocusRef.current = false;
@@ -230,6 +240,11 @@ export const useRuntimeFocusMouseEvents = ({
         event.target === editorElement &&
         !nativePointerFocusRef.current
       ) {
+        if (findMountedEditableDOMRuntime(editorElement)?.longPressSelected) {
+          preferNativePressSelection(inputController);
+          publishFocusState();
+          return;
+        }
         const syncProgrammaticFocusSelection = () => {
           if (ReactEditor.isFocused(editor)) syncDOMSelectionToEditor();
         };
@@ -255,6 +270,7 @@ export const useRuntimeFocusMouseEvents = ({
       editor,
       domPhaseScheduler,
       inputController,
+      isPointerFocus,
       onFocus,
       publishFocusState,
       readOnly,

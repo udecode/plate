@@ -434,7 +434,11 @@ export const EditableDOMRoot = (
   const rootInteractionEventBindings = {
     onFocusCapture: (event: React.FocusEvent<HTMLDivElement>) => {
       activateRootView();
-      if (!runtime.mousePressActive && event.target === event.currentTarget) {
+      if (
+        !runtime.mousePressActive &&
+        !runtime.longPressSelected &&
+        event.target === event.currentTarget
+      ) {
         activateViewCaret(editor);
       }
       propsOnFocusCapture?.(event);

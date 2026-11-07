@@ -19,7 +19,12 @@ import {
   withUpdateTagContext,
 } from '../../core/public-state';
 import { watchFirstPlacement } from '../../core/view-carets';
-import type { DataTransferDiagnostic, DOMRange } from '../../dom';
+import {
+  containsShadowAware,
+  type DataTransferDiagnostic,
+  type DOMRange,
+  getSelection,
+} from '../../dom';
 import {
   clearAfterInsertCaret,
   isSoftLineTextStale,
@@ -67,6 +72,7 @@ import { ExternalTextRuntime } from './external-text-runtime';
 import {
   createEditableInputController,
   createEditableInputControllerState,
+  isInteractiveInternalTarget,
   setEditableComposingState,
 } from './input-controller';
 import {
@@ -388,6 +394,7 @@ export class EditableDOMRuntime {
   private nextClickSelected = false;
   private cancelPressTask: (() => void) | null = null;
   private inEditableMouseUp = false;
+  private nonMousePressHeld = false;
 
   private readonly nativeInputHandlers: {
     beforeInput: ((event: InputEvent) => void) | null;
@@ -1061,6 +1068,25 @@ export class EditableDOMRuntime {
   }
 
   /**
+   * Chrome on Android focuses the editor at the long-press timeout, while the
+   * touch is still down, with the word already selected and no mousedown, so
+   * that focus belongs to the press.
+   */
+  get longPressSelected() {
+    const root = this.rootElement;
+
+    if (!this.nonMousePressHeld || !root) return false;
+    const selection = getSelection(root.getRootNode() as Document | ShadowRoot);
+
+    return (
+      !!selection &&
+      !selection.isCollapsed &&
+      containsShadowAware(root, selection.anchorNode) &&
+      containsShadowAware(root, selection.focusNode)
+    );
+  }
+
+  /**
    * The browser's focus and selection for a press land within one task of its
    * mousedown, so the press window closes at the next zero-delay timeout.
    */
@@ -1483,6 +1509,13 @@ export class EditableDOMRuntime {
           getEditableInteractionOwner(node, event.target) === 'editor'
       );
       if (inRoot) this.beginMousePress();
+      this.nonMousePressHeld =
+        event.pointerType !== 'mouse' &&
+        inRoot &&
+        !isInteractiveInternalTarget(this.editorValue, event.target);
+    };
+    const endPress = () => {
+      this.nonMousePressHeld = false;
     };
     const ownerWindow = node.ownerDocument.defaultView;
     const claims = new SelectionClaims(
@@ -1516,6 +1549,8 @@ export class EditableDOMRuntime {
     node.addEventListener('input', handleInput);
     node.addEventListener('pointerdown', clearCaret, true);
     ownerWindow?.addEventListener('pointerdown', notePointerPress, true);
+    ownerWindow?.addEventListener('pointerup', endPress, true);
+    ownerWindow?.addEventListener('pointercancel', endPress, true);
     this.nativeInputListenersCleanup = () => {
       releaseCommits();
       node.removeEventListener('pointerdown', clearCaret, true);
@@ -1525,6 +1560,9 @@ export class EditableDOMRuntime {
       node.removeEventListener('beforeinput', handleBeforeInput);
       node.removeEventListener('input', handleInput);
       ownerWindow?.removeEventListener('pointerdown', notePointerPress, true);
+      ownerWindow?.removeEventListener('pointerup', endPress, true);
+      ownerWindow?.removeEventListener('pointercancel', endPress, true);
+      this.nonMousePressHeld = false;
     };
   }
 
