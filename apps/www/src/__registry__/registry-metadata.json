@@ -1,5 +1,5 @@
 {
-  "generation": "528700886625e2b3cf05924e4b6264e0ee18a9920b59640aa004ab914f171718",
+  "generation": "9d0685e202317f4e392528596840bdfeb80b2440834300067e5cab04eb6b070e",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -249,8 +249,7 @@
             "mammoth@^1.13.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
-            "unified@^11.0.5",
-            "validator@^13.15.15"
+            "unified@^11.0.5"
           ],
           "description": "A toolbar button to import editor content from a file.",
           "files": [
@@ -3148,9 +3147,7 @@
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
-            "jszip@^3.10.1",
-            "juice@^11.0.1",
-            "validator@^13.15.15"
+            "jszip@^3.10.1"
           ],
           "files": [
             {
@@ -3167,8 +3164,7 @@
             "platejs",
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
-            "mammoth@^1.13.0",
-            "validator@^13.15.15"
+            "mammoth@^1.13.0"
           ],
           "files": [
             {
@@ -3195,9 +3191,7 @@
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
-            "jszip@^3.10.1",
-            "juice@^11.0.1",
-            "validator@^13.15.15"
+            "jszip@^3.10.1"
           ],
           "files": [
             {
@@ -7121,8 +7115,7 @@
             "mammoth@^1.13.0",
             "remark-parse@^11.0.0",
             "remark-stringify@^11.0.0",
-            "unified@^11.0.5",
-            "validator@^13.15.15"
+            "unified@^11.0.5"
           ],
           "description": "A toolbar button to import editor content from a file.",
           "files": [
@@ -10016,9 +10009,7 @@
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
-            "jszip@^3.10.1",
-            "juice@^11.0.1",
-            "validator@^13.15.15"
+            "jszip@^3.10.1"
           ],
           "files": [
             {
@@ -10035,8 +10026,7 @@
             "platejs",
             "diff-match-patch-ts@^0.6.0",
             "jszip@^3.10.1",
-            "mammoth@^1.13.0",
-            "validator@^13.15.15"
+            "mammoth@^1.13.0"
           ],
           "files": [
             {
@@ -10063,9 +10053,7 @@
           "dependencies": [
             "platejs",
             "diff-match-patch-ts@^0.6.0",
-            "jszip@^3.10.1",
-            "juice@^11.0.1",
-            "validator@^13.15.15"
+            "jszip@^3.10.1"
           ],
           "files": [
             {

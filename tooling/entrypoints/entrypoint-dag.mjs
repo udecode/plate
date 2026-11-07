@@ -270,9 +270,7 @@ export const entrypointDags = {
       ),
       dom: client(directory('dom', [], ['plitejs/dom'])),
       'docx/paste': client(
-        directory('docx/paste', ['core', 'docx-html', 'docx-internal'], [], {
-          peerDependencies: ['juice'],
-        })
+        directory('docx/paste', ['core', 'docx-html', 'docx-internal'])
       ),
       'docx-internal': client(
         privateDirectory('docx/internal', ['authored', 'core'], [], {
@@ -323,9 +321,7 @@ export const entrypointDags = {
         )
       ),
       'docx-html': client(
-        privateDirectory('docx/html', ['core', 'docx-internal'], [], {
-          peerDependencies: ['validator'],
-        })
+        privateDirectory('docx/html', ['core', 'docx-internal'])
       ),
       excalidraw: headless(directory('excalidraw', ['core'])),
       'excalidraw/react': client(

@@ -1,5 +1,4 @@
-import validator from 'validator';
-
+import { decideUrl } from '../../internal/utils/urlPolicy';
 import { postCleanHtml } from '../../lib/plugins/html/htmlDom';
 import { parseDocxHtml } from '../internal/domParser';
 
@@ -10,6 +9,7 @@ type RtfImage = {
 };
 
 const V_SHAPE_ID = /\bid="([^"]+)"/i;
+const WEB_URL_PATTERN = /^https?:\/\/[^\s/]/i;
 const V_SHAPE_OPEN_TAG = /<v:shape\b[^>]*>/gi;
 const V_SHAPE_SPID = /\bo:spid="([^"]+)"/i;
 const INLINE_TAG_NAMES = new Set([
@@ -283,10 +283,7 @@ const cleanWordHtmlImageElements = (
 
       const alt = element.getAttribute('alt');
 
-      if (
-        typeof alt === 'string' &&
-        validator.isURL(alt, { require_protocol: true })
-      ) {
+      if (alt && WEB_URL_PATTERN.test(alt) && decideUrl('image', alt).ok) {
         element.setAttribute('src', alt);
 
         return true;

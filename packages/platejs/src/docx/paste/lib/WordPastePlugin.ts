@@ -1,5 +1,3 @@
-import juice from 'juice';
-
 import {
   ContentSlice,
   definePlugin,
@@ -62,6 +60,10 @@ const markWordEquations = (body: HTMLElement, markers: EquationMarkers) => {
   removeHtmlNodesBetweenComments(body, '[if !msEquation]', '[endif]');
 };
 
+const CSS_AT_RULE_PATTERN = /@[^{};]*(?:;|\{(?:[^{}]*\{[^{}]*\})*[^{}]*\})/g;
+const CSS_COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|<!--|-->/g;
+const CSS_RULE_PATTERN = /([^{}]+)\{([^{}]*)\}/g;
+const CSS_TRAILING_SEPARATOR_PATTERN = /[\s;]+$/;
 const DECIMAL_COMPONENT_PATTERN = /^\d+$/;
 const LEVEL_PATTERN = /level(\d+)/i;
 const LIST_IDENTITY_PATTERN =
@@ -75,8 +77,88 @@ const MSO_LIST_PATTERN = /mso-list:\s*l/i;
 const MSO_LIST_IGNORE_PATTERN = /mso-list:\s*ignore/i;
 const MSO_LEVEL_NUMBER_FORMAT_PATTERN = /mso-level-number-format:\s*([^;}]*)/i;
 const NON_NUMERIC_PATTERN = /[^\d,.]+/;
+const SELECTOR_CLASS_PATTERN = /\.[\w-]+|\[[^\]]*\]/g;
+const SELECTOR_ID_PATTERN = /#[\w-]+/g;
+const SELECTOR_TYPE_PATTERN = /(?:^|[\s+>~])[a-z][\w-]*/gi;
 const UPPER_ALPHA_PATTERN = /^[A-Z]+$/;
 const UPPER_ROMAN_PATTERN = /^[CDILMVX]+$/;
+
+const countMatches = (selector: string, pattern: RegExp) =>
+  selector.match(pattern)?.length ?? 0;
+
+const getSpecificity = (selector: string) =>
+  countMatches(selector, SELECTOR_ID_PATTERN) * 10_000 +
+  countMatches(selector, SELECTOR_CLASS_PATTERN) * 100 +
+  countMatches(selector, SELECTOR_TYPE_PATTERN);
+
+const trimDeclarations = (declarations: string) =>
+  declarations.replace(CSS_TRAILING_SEPARATOR_PATTERN, '').trim();
+
+const isPseudoOrNamespaceSelector = (selector: string) =>
+  selector.includes(':');
+
+// Pasted CSS can hold a selector this DOM rejects; that rule matches nothing.
+const queryAll = (document: Document, selector: string) => {
+  try {
+    return [...document.querySelectorAll(selector)];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * The declarations stay as written, because the browser's CSS parser drops the
+ * `mso-*` properties that list detection reads.
+ */
+const inlineStyleRules = (document: Document) => {
+  const styleElements = [...document.querySelectorAll('style')];
+  const css = styleElements
+    .map((element) => element.textContent ?? '')
+    .join('\n')
+    .replaceAll(CSS_COMMENT_PATTERN, '')
+    .replaceAll(CSS_AT_RULE_PATTERN, '');
+  const rulesByElement = new Map<
+    Element,
+    Array<{ declarations: string; order: number; specificity: number }>
+  >();
+  let order = 0;
+
+  for (const [, selectorList, block] of css.matchAll(CSS_RULE_PATTERN)) {
+    const declarations = trimDeclarations(block);
+
+    if (!declarations) continue;
+
+    for (const part of selectorList.split(',')) {
+      const selector = part.trim();
+
+      if (!selector || isPseudoOrNamespaceSelector(selector)) continue;
+
+      const specificity = getSpecificity(selector);
+
+      order += 1;
+
+      for (const element of queryAll(document, selector)) {
+        const rules = rulesByElement.get(element) ?? [];
+
+        rules.push({ declarations, order, specificity });
+        rulesByElement.set(element, rules);
+      }
+    }
+  }
+  for (const element of styleElements) element.remove();
+  for (const [element, rules] of rulesByElement) {
+    const declarations = rules
+      .sort(
+        (left, right) =>
+          left.specificity - right.specificity || left.order - right.order
+      )
+      .map((rule) => rule.declarations);
+    const inline = trimDeclarations(element.getAttribute('style') ?? '');
+
+    if (inline) declarations.push(inline);
+    element.setAttribute('style', declarations.join('; '));
+  }
+};
 
 const parseAlphaOrdinal = (value: string) =>
   Array.from(value.toLowerCase()).reduce(
@@ -171,9 +253,9 @@ const prepareWordHtml = (
   rtf: string,
   markers: EquationMarkers
 ) => {
-  // Juice skips the first CSS rule behind Word's opening style comment.
-  const data = juice(input.replaceAll(/<style>\s*<!--/g, '<style>'));
-  const document = parseDocxHtml(data);
+  const document = parseDocxHtml(input);
+
+  inlineStyleRules(document);
   const { body } = document;
 
   if (!isWordHtml(body)) return null;

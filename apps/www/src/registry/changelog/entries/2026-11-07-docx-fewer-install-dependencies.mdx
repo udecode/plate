@@ -1,0 +1,14 @@
+---
+id: 2026-11-07-docx-fewer-install-dependencies
+date: 2026-11-07
+status: draft
+kind: fix
+summary: 'Install fewer packages for Word paste and DOCX import'
+change: { 'type': 'source', 'date': '2026-11-07', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-07-docx-install-fewer-packages-word-d47b3664","kind":"fix","migrationNotes":[]} -->
+
+- **`docx`**, **`docx-source`**, **`import-toolbar-button`**, **`editor-plugins`**: Stop installing `juice` and `validator`. Word paste and DOCX import no longer use them.

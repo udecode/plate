@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-07-docx-fewer-install-dependencies",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-07-docx-fewer-install-dependencies.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Install fewer packages for Word paste and DOCX import",
+  "targets": [
+    {
+      "name": "docx",
+      "files": ["apps/www/src/registry/components/editor/docx.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "docx-source",
+      "files": ["apps/www/src/registry/components/editor/docx-source.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "import-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/import-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-plugins",
+      "files": ["apps/www/src/registry/components/editor/plugins.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-07-docx-install-fewer-packages-word-d47b3664",
+      "kind": "fix",
+      "summary": "Stop installing `juice` and `validator`. Word paste and DOCX import no longer use them.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "docx",
+        "docx-source",
+        "import-toolbar-button",
+        "editor-plugins"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-07",
+          "entry": "2026-11-07-docx-fewer-install-dependencies",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

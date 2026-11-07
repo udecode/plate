@@ -13,8 +13,7 @@
     "mammoth@^1.13.0",
     "remark-parse@^11.0.0",
     "remark-stringify@^11.0.0",
-    "unified@^11.0.5",
-    "validator@^13.15.15"
+    "unified@^11.0.5"
   ],
   "registryDependencies": [
     "https://platejs.org/r/docx-source.json",

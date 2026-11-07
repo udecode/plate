@@ -16,6 +16,6 @@ Preserve supported Word revisions as authored changes. Review export writes Word
 
 Use the pure `projectAuthoredDocument` and `projectAuthoredRange` helpers from `platejs/authored` to project detached complete documents and map ranges without constructing an editor runtime.
 
-The import entrypoint requires Mammoth; the export entrypoint owns the HTML-to-DOCX conversion dependencies. The paste entrypoint loads neither conversion graph. Copied import and export toolbars load their DOCX converters on demand.
+The import entrypoint requires Mammoth; the export entrypoint owns the HTML-to-DOCX conversion dependencies. The paste entrypoint needs no optional peer and loads neither conversion graph. Copied import and export toolbars load their DOCX converters on demand.
 
 Use `useModelEditor()` from `platejs/react` when a mounted control loads, replaces, persists, or converts the complete document. `useEditor()` remains the mounted command view for root-scoped commands, DOM access, and selection.

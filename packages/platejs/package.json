@@ -540,7 +540,6 @@
     "tabbable": "^6.2.0",
     "unified": "^11.0.5",
     "use-sync-external-store": "1.6.0",
-    "validator": "^13.15.15",
     "virtual-dom": "^2.1.1",
     "xmlbuilder2": "^3.1.1",
     "yjs": "13.6.30"
@@ -571,7 +570,6 @@
     "remark-stringify": "^11.0.0",
     "tabbable": "^6.2.0",
     "unified": "^11.0.5",
-    "validator": "^13.15.15",
     "virtual-dom": "^2.1.1",
     "xmlbuilder2": "^3.1.1"
   },
@@ -649,9 +647,6 @@
       "optional": true
     },
     "unified": {
-      "optional": true
-    },
-    "validator": {
       "optional": true
     },
     "virtual-dom": {

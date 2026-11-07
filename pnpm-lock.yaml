@@ -94,9 +94,6 @@ importers:
       '@types/react-dom':
         specifier: 19.2.3
         version: 19.2.3(@types/react@19.2.7)
-      '@types/validator':
-        specifier: 13.15.1
-        version: 13.15.1
       '@typescript/typescript6':
         specifier: 6.0.2
         version: 6.0.2
@@ -950,9 +947,6 @@ importers:
       use-sync-external-store:
         specifier: 1.6.0
         version: 1.6.0(react@19.2.8)
-      validator:
-        specifier: ^13.15.15
-        version: 13.15.26
       virtual-dom:
         specifier: ^2.1.1
         version: 2.1.1
@@ -5634,9 +5628,6 @@ packages:
 
   '@types/validate-npm-package-name@4.0.2':
     resolution: {integrity: sha512-lrpDziQipxCEeK5kWxvljWYhUvOiB2A9izZd9B2AFarYAkqZshb4lPbRs7zKEic6eGtH8V/2qJW+dPp9OtF6bw==}
-
-  '@types/validator@13.15.1':
-    resolution: {integrity: sha512-9gG6ogYcoI2mCMLdcO0NYI0AYrbxIjv0MDmy/5Ywo6CpWWrqYayc+mmgxRsCgtcGJm9BSbXkMsmxGah1iGHAAQ==}
 
   '@types/viz.js@2.1.5':
     resolution: {integrity: sha512-4gbs5vQ4hAP4mPfsiGIXWUmS3vjyicYPoR6kp5tVedHCQKmFW9trg5DlXKVTaF4mRhPW1nlI7mHYGQouZGMSRg==}
@@ -11249,10 +11240,6 @@ packages:
     resolution: {integrity: sha512-hVDIBwsRruT73PbK7uP5ebUt+ezEtCmzZz3F59BSr2F6OVFnJ/6h8liuvdLrQ88Xmnk6/+xGGuq+pG9WwTuy3A==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  validator@13.15.26:
-    resolution: {integrity: sha512-spH26xU080ydGggxRyR1Yhcbgx+j3y5jbNXk/8L+iRvdIEQ4uTRH2Sgf2dokud6Q4oAtsbNvJ1Ft+9xmm6IZcA==}
-    engines: {node: '>= 0.10'}
-
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
@@ -16390,8 +16377,6 @@ snapshots:
   '@types/use-sync-external-store@1.5.0': {}
 
   '@types/validate-npm-package-name@4.0.2': {}
-
-  '@types/validator@13.15.1': {}
 
   '@types/viz.js@2.1.5': {}
 
@@ -22822,8 +22807,6 @@ snapshots:
   valid-data-url@3.0.1: {}
 
   validate-npm-package-name@7.0.2: {}
-
-  validator@13.15.26: {}
 
   vary@1.1.2: {}
 

@@ -2,6 +2,29 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-07-docx-fewer-install-dependencies",
+      "href": "/registry/changelog/2026-11-07-docx-fewer-install-dependencies.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Install fewer packages for Word paste and DOCX import",
+      "change": {
+        "type": "source",
+        "date": "2026-11-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "docx",
+        "docx-source",
+        "import-toolbar-button",
+        "editor-plugins"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-06-upload-completion-error",
       "href": "/registry/changelog/2026-11-06-upload-completion-error.json",
       "status": "draft",
