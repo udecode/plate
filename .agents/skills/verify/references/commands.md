@@ -19,6 +19,7 @@ bun test ./packages/platejs/<file>.test.ts --test-name-pattern "<pattern>"
 
 Rules:
 
+- To run a whole folder of `platejs` or `plitejs` tests, run its partition, such as `pnpm --filter platejs run test:partition:docx-import`. A partition gives each file that calls `mock.module` its own process. `pnpm --filter platejs test -- <folder>` and `bun test <folder>` run every file in one process, so those mocks leak into the other files: one DOCX run failed 74 tests this way, at `HEAD` too. `pnpm test <path>` skips both packages and exits 1 with `No tests matched`.
 - `pnpm check:plite:dev` is the normal affected development lane.
 - Add `--dry-run` to inspect its exact proof selection. Local changes and
   `PLITE_CHECK_BASE=<ref>` use the same planner as Plite CI. Planner or runner
