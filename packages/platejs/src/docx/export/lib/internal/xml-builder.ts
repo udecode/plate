@@ -2646,10 +2646,12 @@ const buildTableCellProperties = (
           break;
         }
         case 'colSpan': {
-          const gridSpanFragment = buildGridSpanFragment(
-            attributes[key] ?? failInvariant('Expected value to be defined')
-          );
-          tableCellPropertiesFragment.import(gridSpanFragment);
+          // mammoth adds gridSpan to its column count, so 0 moves later merges.
+          if (attributes.colSpan) {
+            tableCellPropertiesFragment.import(
+              buildGridSpanFragment(attributes.colSpan)
+            );
+          }
 
           attributes.colSpan = undefined;
           break;
@@ -2883,6 +2885,24 @@ interface TableRowAttributes extends TableAttributes {
   tableRowHeight?: number;
 }
 
+const buildEmptyTableCell = (
+  attributes: TableCellAttributes
+): XMLBuilderType => {
+  const tableCellFragment = fragment({
+    namespaceAlias: { w: namespaces.w },
+  }).ele('@w', 'tc');
+
+  tableCellFragment.import(buildTableCellProperties({ ...attributes }));
+  tableCellFragment.import(
+    fragment({ namespaceAlias: { w: namespaces.w } })
+      .ele('@w', 'p')
+      .up()
+  );
+  tableCellFragment.up();
+
+  return tableCellFragment;
+};
+
 const buildRowSpanCell = (
   rowSpanMap: Map<number, RowSpanInfo>,
   columnIndex: ColumnIndex,
@@ -2891,24 +2911,13 @@ const buildRowSpanCell = (
   const rowSpanCellFragments: XMLBuilderType[] = [];
   let spanObject = rowSpanMap.get(columnIndex.index);
   while (spanObject?.rowSpan) {
-    const rowSpanCellFragment = fragment({
-      namespaceAlias: { w: namespaces.w },
-    }).ele('@w', 'tc');
-
-    const tableCellPropertiesFragment = buildTableCellProperties({
-      ...attributes,
-      rowSpan: 'continue',
-      colSpan: spanObject.colSpan ? spanObject.colSpan : 0,
-    });
-    rowSpanCellFragment.import(tableCellPropertiesFragment);
-
-    const paragraphFragment = fragment({ namespaceAlias: { w: namespaces.w } })
-      .ele('@w', 'p')
-      .up();
-    rowSpanCellFragment.import(paragraphFragment);
-    rowSpanCellFragment.up();
-
-    rowSpanCellFragments.push(rowSpanCellFragment);
+    rowSpanCellFragments.push(
+      buildEmptyTableCell({
+        ...attributes,
+        rowSpan: 'continue',
+        colSpan: spanObject.colSpan,
+      })
+    );
 
     if (spanObject.rowSpan - 1 === 0) {
       rowSpanMap.delete(columnIndex.index);
@@ -3040,16 +3049,23 @@ const buildTableRow = async (
     }
   }
 
-  if (columnIndex.index < rowSpanMap.size) {
+  let lastPendingColumn = -1;
+  for (const [column, { rowSpan }] of rowSpanMap) {
+    if (rowSpan && column > lastPendingColumn) lastPendingColumn = column;
+  }
+  while (columnIndex.index <= lastPendingColumn) {
     const rowSpanCellFragments = buildRowSpanCell(
       rowSpanMap,
       columnIndex,
       modifiedAttributes
     );
-    if (Array.isArray(rowSpanCellFragments)) {
-      for (const rowSpanCellFragment of rowSpanCellFragments) {
-        tableRowFragment.import(rowSpanCellFragment);
-      }
+    for (const rowSpanCellFragment of rowSpanCellFragments) {
+      tableRowFragment.import(rowSpanCellFragment);
+    }
+    if (rowSpanCellFragments.length === 0) {
+      // Cells are positional, so a short row fills its gap to reach the span.
+      tableRowFragment.import(buildEmptyTableCell(modifiedAttributes));
+      columnIndex.index += 1;
     }
   }
 
