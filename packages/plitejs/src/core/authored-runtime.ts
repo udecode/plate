@@ -28,6 +28,7 @@ type AuthoredRuntime = {
   ) => T | null;
   readStored: <T>(view: Editor, read: () => T) => T;
   readView: <T>(view: Editor, read: () => T) => T;
+  requestView: (view: Editor, value: AuthoredView) => void;
   setView: (view: Editor, value: AuthoredView) => void;
   toStored: (
     view: Editor,
@@ -96,6 +97,14 @@ export const configureAuthoredView = (view: Editor, value?: AuthoredView) => {
     return;
   }
   if (value) installed.setView(view, value);
+};
+
+/** Switch a live view's authored setting once its composition, if any, ends. */
+export const requestAuthoredView = (view: Editor, value: AuthoredView) => {
+  const installed = AUTHORED_RUNTIMES.get(getEditorRuntimeOwner(view));
+
+  if (!installed) throw new Error('Authored changes are not installed.');
+  installed.requestView(view, value);
 };
 
 /** Run an update as one view's, so the recorder reads that view's intent. */

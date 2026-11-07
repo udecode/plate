@@ -21,8 +21,8 @@ import {
   type ValueOf,
 } from '../..';
 import {
-  configureAuthoredView,
   readAuthoredView,
+  requestAuthoredView,
 } from '../../core/authored-runtime';
 import {
   createEditorCommitPublicationQueue,
@@ -335,7 +335,7 @@ export const EditorRuntimeView = <
     [reactEditor]
   );
   useIsomorphicLayoutEffect(() => {
-    if (authored) configureAuthoredView(reactEditor, authored);
+    if (authored) requestAuthoredView(reactEditor, authored);
     // Equivalent inline props must preserve a mode changed by view commands.
   }, [
     authored && ('intent' in authored ? authored.intent : authored.preview),

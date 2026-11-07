@@ -1431,6 +1431,34 @@ export const createAuthoredPlugin = (
     state.views.set(runtime, view);
     notifyEditorViewState(editor, 'authored');
   };
+  // Composed text records under the intent its composition began in.
+  const requestView = (editor: Editor, view: AuthoredView) => {
+    const runtime = getEditorRuntime(editor);
+    const state = stateOf(editor);
+    const waiting = state.pending.has(runtime);
+
+    if (!owesWord(editor)) {
+      const current = state.views.get(runtime);
+      const modeOf = (value: AuthoredView) =>
+        'intent' in value ? value.intent : value.preview;
+
+      if (waiting || !current || modeOf(current) !== modeOf(view)) {
+        applyView(editor, view);
+      }
+      return;
+    }
+
+    state.pending.set(runtime, view);
+    if (waiting) return;
+
+    const stop = subscribeEditorViewState(editor, () => {
+      const next = state.pending.get(runtime);
+
+      if (owesWord(editor)) return;
+      stop();
+      if (next) applyView(editor, next);
+    });
+  };
   const settleWaitingView = (editor: Editor) => {
     const waiting = stateOf(editor).pending.get(getEditorRuntime(editor));
 
@@ -1666,9 +1694,6 @@ export const createAuthoredPlugin = (
     ],
     api: ({ editor }) => ({
       setView: (view: AuthoredView) => {
-        const runtime = getEditorRuntime(editor);
-        const state = stateOf(editor);
-
         if (
           ('preview' in view || view.intent === 'propose') &&
           !storesGeneratedValues(getCompiledEditorSchema(editor))
@@ -1676,24 +1701,7 @@ export const createAuthoredPlugin = (
           publishEditorRefusal(editor, GENERATED_VALUES_REFUSAL);
           return;
         }
-        if (!owesWord(editor)) {
-          applyView(editor, view);
-          return;
-        }
-
-        // Composed text records under the intent its composition began in.
-        const waiting = state.pending.has(runtime);
-
-        state.pending.set(runtime, view);
-        if (waiting) return;
-
-        const stop = subscribeEditorViewState(editor, () => {
-          const next = state.pending.get(runtime);
-
-          if (owesWord(editor)) return;
-          stop();
-          if (next) applyView(editor, next);
-        });
+        requestView(editor, view);
       },
       subscribeRefusals: (listener: (refusal: AuthoredRefusal) => void) =>
         subscribeEditorRefusals(editor, (refusal) =>
@@ -2098,6 +2106,7 @@ export const createAuthoredPlugin = (
               }
             );
           },
+          requestView,
           setView: (view, value) => {
             state.views.set(getEditorRuntime(view), value);
           },
