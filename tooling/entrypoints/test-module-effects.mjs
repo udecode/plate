@@ -22,6 +22,11 @@ export const testModuleEffects = {
       'packages/platejs/src/docx/html/docx-cleaner/__tests__/output/*.html',
     ],
   },
+  'packages/platejs/src/docx/paste/lib/WordPastePlugin.spec.ts': {
+    reads: [
+      'packages/platejs/src/docx/html/docx-cleaner/__tests__/input/*.html',
+    ],
+  },
   'packages/platejs/src/docx/import/lib/importDocx.spec.tsx': {
     reads: ['apps/www/src/__tests__/package-integration/docx/*.docx'],
   },

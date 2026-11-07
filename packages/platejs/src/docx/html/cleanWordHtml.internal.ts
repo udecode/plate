@@ -437,6 +437,25 @@ const cleanWordHtmlBrComments = (rootNode: Node): void => {
   });
 };
 
+// cleanWordHtml wraps its output in pre-wrap, which keeps every space, so the
+// whitespace Word writes between tags goes first: a line-wrapped run beside
+// any element, and any run beside a block.
+const isMarkupWhitespace = (node: Text): boolean => {
+  const {
+    data,
+    nextElementSibling: next,
+    previousElementSibling: previous,
+  } = node;
+
+  if (data.trim().length > 0) return false;
+  if (data.startsWith('\n')) return Boolean(previous || next);
+
+  return (
+    !data.includes('\u00A0') &&
+    [previous, next].some((sibling) => sibling && isHtmlBlockElement(sibling))
+  );
+};
+
 const cleanWordHtmlListElements = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     const style = element.getAttribute('style');
@@ -503,11 +522,7 @@ export const cleanWordHtml = (
 
   traverseHtmlNode(body, (node) => {
     if (!isHtmlText(node)) return true;
-    if (
-      node.data.startsWith('\n') &&
-      node.data.trim().length === 0 &&
-      (node.previousElementSibling || node.nextElementSibling)
-    ) {
+    if (isMarkupWhitespace(node)) {
       node.remove();
 
       return true;
@@ -649,7 +664,16 @@ export const cleanWordHtml = (
     return true;
   });
 
-  // Preserve whitespace during HTML decoding.
+  // Preserve whitespace during HTML decoding. Excel's nowrap and normal cell
+  // styles would collapse the line feeds that replaced its line breaks.
+  traverseHtmlElements(body, (element) => {
+    const { style } = element as HTMLElement;
+
+    if (style.whiteSpace) style.removeProperty('white-space');
+
+    return true;
+  });
+
   const preformattedWrapper = document.createElement('div');
   preformattedWrapper.style.whiteSpace = 'pre-wrap';
   preformattedWrapper.innerHTML = body.innerHTML;

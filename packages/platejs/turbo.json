@@ -5551,6 +5551,7 @@
         "$TURBO_ROOT$/config/plite-test-jsx.js",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/packages/*/package.json",
+        "$TURBO_ROOT$/packages/platejs/src/docx/html/docx-cleaner/__tests__/input/*.html",
         "$TURBO_ROOT$/packages/platejs/tsconfig.json",
         "$TURBO_ROOT$/packages/plitejs/tsconfig.json",
         "$TURBO_ROOT$/tooling/config/bunTestSetup.ts",

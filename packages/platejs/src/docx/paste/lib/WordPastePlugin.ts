@@ -246,7 +246,19 @@ const getDeclaredListStyles = (html: string) => {
   return styles;
 };
 
-const isWordPayload = (html: string) => isWordHtml(parseDocxHtml(html).body);
+// Excel holds its cell formatting and mso- markers in its style block, so its
+// cells carry no inline Word markers until juice inlines that block.
+const isOfficePayload = (html: string) => {
+  const document = parseDocxHtml(html);
+
+  return (
+    isWordHtml(document.body) ||
+    document
+      .querySelector('meta[name="ProgId" i]')
+      ?.getAttribute('content')
+      ?.startsWith('Excel.') === true
+  );
+};
 
 const prepareWordHtml = (
   input: string,
@@ -287,12 +299,14 @@ const prepareWordHtml = (
     const htmlElement = element as HTMLElement;
     const style = element.getAttribute('style') ?? '';
 
+    // Firefox's CSS parser drops the mso-list style on copy, while the
+    // marker's conditional comment survives.
     if (
-      MSO_LIST_PATTERN.test(style) &&
-      ([...element.querySelectorAll('[style]')].some((child) =>
-        MSO_LIST_IGNORE_PATTERN.test(child.getAttribute('style') ?? '')
-      ) ||
-        element.outerHTML.includes('<!--[if !supportLists]-->'))
+      element.outerHTML.includes('<!--[if !supportLists]-->') ||
+      (MSO_LIST_PATTERN.test(style) &&
+        [...element.querySelectorAll('[style]')].some((child) =>
+          MSO_LIST_IGNORE_PATTERN.test(child.getAttribute('style') ?? '')
+        ))
     ) {
       const listItem = document.createElement(
         element.tagName === 'P' ? 'li' : element.tagName.toLowerCase()
@@ -471,7 +485,7 @@ export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {
 }).extend(() => ({
   dataTransferFormats: [
     {
-      accept: ({ data }) => isWordPayload(data),
+      accept: ({ data }) => isOfficePayload(data),
       decode: (context) => {
         const { data, registry, snapshot } = context;
         const markers = createEquationMarkers(data);
