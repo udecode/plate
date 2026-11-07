@@ -1,9 +1,7 @@
-import { type Descendant, TextApi } from '../../../core';
-import type { DocxDiagnostic } from '../../internal/types';
-import {
-  WORD_MATH_ACCENTS,
-  WORD_MATH_VARIANTS,
-} from '../../internal/wordMathVocabulary';
+import { type Descendant, TextApi } from '../../core';
+import { parseDocxXml } from './domParser';
+import type { DocxDiagnostic } from './types';
+import { WORD_MATH_ACCENTS, WORD_MATH_VARIANTS } from './wordMathVocabulary';
 
 const MATH_NAMESPACE =
   'http://schemas.openxmlformats.org/officeDocument/2006/math';
@@ -11,7 +9,7 @@ const WORD_NAMESPACE =
   'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace';
 
-type EquationMarkers = Readonly<{
+export type EquationMarkers = Readonly<{
   block: string;
   end: string;
   inline: string;
@@ -398,6 +396,46 @@ const verbatimTex = (math: Element) => {
     : null;
 };
 
+const mathTex = (math: Element, onUnknown: (name: string) => void) =>
+  verbatimTex(math) ?? toTex(math, onUnknown);
+
+export const parseClipboardEquation = (markup: string) => {
+  let root: Element;
+
+  try {
+    root = parseDocxXml(
+      `<root xmlns:m="${MATH_NAMESPACE}" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word">${markup.replaceAll('&nbsp;', '&#160;')}</root>`
+    ).documentElement;
+  } catch {
+    return null;
+  }
+  const math = elements(root).find(
+    (element) => isMath(element, 'oMathPara') || isMath(element, 'oMath')
+  );
+
+  if (!math) return null;
+  // Word styles each run with HTML around it and writes run text without m:t.
+  for (const node of descendants(math).reverse()) {
+    if (node.namespaceURI !== MATH_NAMESPACE) {
+      node.replaceWith(...node.childNodes);
+    }
+  }
+  for (const run of descendants(math)) {
+    if (!isMath(run, 'r') || childNamed(run, 't')) continue;
+    const text = root.ownerDocument.createElementNS(MATH_NAMESPACE, 'm:t');
+
+    text.append(
+      ...Array.from(run.childNodes).filter(
+        (node) => node.nodeType === node.TEXT_NODE
+      )
+    );
+    run.append(text);
+  }
+  const tex = mathTex(math, () => {});
+
+  return tex.trim() ? { block: math.localName === 'oMathPara', tex } : null;
+};
+
 const flattenRevisions = (math: Element) => {
   let flattened = 0;
 
@@ -478,11 +516,9 @@ export const instrumentWordMath = (
         severity: 'warning',
       });
     }
-    const tex =
-      verbatimTex(math) ??
-      toTex(math, () => {
-        simplified = true;
-      });
+    const tex = mathTex(math, () => {
+      simplified = true;
+    });
 
     if (!tex.trim()) {
       math.remove();

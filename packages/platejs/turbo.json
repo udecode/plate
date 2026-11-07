@@ -5533,6 +5533,7 @@
         "source-hash:partition:docx-html",
         "source-hash:partition:docx-internal",
         "source-hash:partition:docx-paste",
+        "source-hash:partition:math",
         "source-hash:partition:media",
         "source-hash:partition:standard-basic-nodes",
         "source-hash:partition:standard-basic-styles",

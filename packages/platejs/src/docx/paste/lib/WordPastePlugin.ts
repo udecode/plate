@@ -9,12 +9,58 @@ import {
   PLUGINS,
 } from '../../../core';
 import {
+  isHtmlComment,
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
+  traverseHtmlNode,
 } from '../../../lib/plugins/html/htmlDom';
 import { decodeHtmlDataTransfer } from '../../../lib/plugins/html/HtmlPlugin';
 import { cleanWordHtml, isWordHtml } from '../../html/cleanWordHtml.internal';
 import { parseDocxHtml } from '../../internal/domParser';
+import { MARKER_END, MARKER_START } from '../../internal/markerCharacters';
+import {
+  type EquationMarkers,
+  materializeEquations,
+  parseClipboardEquation,
+} from '../../internal/wordMath';
+
+const WORD_EQUATION_PATTERN =
+  /^\[if gte msEquation \d+\]>([\s\S]*)<!\[endif\]$/;
+
+const createEquationMarkers = (html: string): EquationMarkers => {
+  let tag = 'WordPasteEquation';
+
+  while (html.includes(tag)) tag += 'x';
+
+  return {
+    block: `${MARKER_START}${tag}-block${MARKER_END}`,
+    end: `${MARKER_START}${tag}-end${MARKER_END}`,
+    inline: `${MARKER_START}${tag}-inline${MARKER_END}`,
+  };
+};
+
+const markWordEquations = (body: HTMLElement, markers: EquationMarkers) => {
+  const comments: Comment[] = [];
+
+  traverseHtmlNode(body, (node) => {
+    if (isHtmlComment(node)) comments.push(node);
+
+    return true;
+  });
+  for (const comment of comments) {
+    const markup = WORD_EQUATION_PATTERN.exec(comment.data)?.[1];
+
+    if (markup === undefined) continue;
+    const equation = parseClipboardEquation(markup);
+
+    comment.replaceWith(
+      equation
+        ? `${equation.block ? markers.block : markers.inline}${equation.tex}${markers.end}`
+        : ''
+    );
+  }
+  removeHtmlNodesBetweenComments(body, '[if !msEquation]', '[endif]');
+};
 
 const DECIMAL_COMPONENT_PATTERN = /^\d+$/;
 const LEVEL_PATTERN = /level(\d+)/i;
@@ -120,13 +166,18 @@ const getDeclaredListStyles = (html: string) => {
 
 const isWordPayload = (html: string) => isWordHtml(parseDocxHtml(html).body);
 
-const prepareWordHtml = (input: string, rtf: string) => {
+const prepareWordHtml = (
+  input: string,
+  rtf: string,
+  markers: EquationMarkers
+) => {
   // Juice skips the first CSS rule behind Word's opening style comment.
   const data = juice(input.replaceAll(/<style>\s*<!--/g, '<style>'));
   const document = parseDocxHtml(data);
   const { body } = document;
 
   if (!isWordHtml(body)) return null;
+  markWordEquations(body, markers);
 
   const getIndent = (
     element: HTMLElement,
@@ -290,7 +341,9 @@ const prepareWordHtml = (input: string, rtf: string) => {
 const cleanWordSlice = (
   slice: ContentSlice,
   tableType: string | undefined,
-  tableCellType: string | undefined
+  tableCellType: string | undefined,
+  markers: EquationMarkers,
+  equationKinds: Readonly<{ block: boolean; inline: boolean }>
 ) => {
   const cleanNode = (node: Descendant): Descendant => {
     if (!ElementApi.isElement(node)) return node;
@@ -310,16 +363,18 @@ const cleanWordSlice = (
 
     return { ...node, children };
   };
+  const clean = (nodes: readonly Descendant[]) =>
+    materializeEquations(nodes.map(cleanNode), markers, equationKinds);
 
   return ContentSlice.fromJSON({
     ...slice,
-    content: slice.content.map(cleanNode),
+    content: clean(slice.content),
     ...(slice.roots
       ? {
           roots: Object.fromEntries(
             Object.entries(slice.roots).map(([root, children]) => [
               root,
-              children.map(cleanNode),
+              clean(children),
             ])
           ),
         }
@@ -337,7 +392,12 @@ export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {
       accept: ({ data }) => isWordPayload(data),
       decode: (context) => {
         const { data, registry, snapshot } = context;
-        const html = prepareWordHtml(data, snapshot.getData('text/rtf'));
+        const markers = createEquationMarkers(data);
+        const html = prepareWordHtml(
+          data,
+          snapshot.getData('text/rtf'),
+          markers
+        );
 
         if (!html) return null;
         const slice = decodeHtmlDataTransfer({ ...context, data: html });
@@ -347,7 +407,12 @@ export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {
         return cleanWordSlice(
           slice,
           registry.type(PLUGINS.table),
-          registry.type(PLUGINS.tableCell)
+          registry.type(PLUGINS.tableCell),
+          markers,
+          {
+            block: registry.has(PLUGINS.equation),
+            inline: registry.has(PLUGINS.inlineEquation),
+          }
         );
       },
       mimeType: 'text/html',

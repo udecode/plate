@@ -65,6 +65,10 @@ import type {
   DocxWarningDiagnostic,
 } from '../../internal/types';
 import {
+  instrumentWordMath,
+  materializeEquations,
+} from '../../internal/wordMath';
+import {
   DocxPackageError,
   readBoundedDocxPackage,
   resolveDocxImportLimits,
@@ -75,7 +79,6 @@ import {
   DOCX_CARRIED_STYLES,
   DOCX_CARRIED_TAGS,
 } from './wordFormatting';
-import { instrumentWordMath, materializeEquations } from './wordMath';
 
 export { DocxSource } from '../../internal/source';
 export type {
