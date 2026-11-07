@@ -106,12 +106,16 @@ const scanLine = (
 /**
  * Offsets after `from` where a streamed source can be split without changing
  * how either side parses: a blank line followed by a new block, with no open
- * fence, math block, raw HTML block or registered block tag, no open list and
- * no indented line before it that the next block could continue. The next
- * block must start unindented and not with a list marker, since either can
- * continue an earlier list item or list. A list stays open until such a block
- * starts after a blank line, because a streamed chunk can end inside the next
- * item's marker. `from` must be such a boundary itself (or 0).
+ * fence, math block or raw HTML block, no open list and no indented line before
+ * it that the next block could continue. The next block must start unindented
+ * and not with a list marker, since either can continue an earlier list item or
+ * list. A list stays open until such a block starts after a blank line, because
+ * a streamed chunk can end inside the next item's marker. `from` must be such a
+ * boundary itself (or 0).
+ *
+ * The count of registered block tags only skips offsets inside a balanced tag.
+ * It reads no pairing, so it can reach 0 while a tag is open, and the caller
+ * must still refuse a segment that ends inside an unclosed tag.
  */
 export const findMarkdownSegmentBoundaries = (
   source: string,

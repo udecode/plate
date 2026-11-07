@@ -86,6 +86,7 @@ import {
   shiftMarkdownDiagnostic,
 } from './markdownSegments';
 import {
+  getMarkdownTagRepair,
   remarkMarkdownTags,
   remarkMarkdownTagWriter,
   trimIncompleteMarkdownTag,
@@ -787,14 +788,25 @@ const convertMarkdownSource = (
     };
   };
 
-  for (const boundary of findMarkdownSegmentBoundaries(
+  const boundaries = findMarkdownSegmentBoundaries(
     source,
     stableEnd,
     runtime.formats.tags
-  )) {
+  );
+  let nextTry = 0;
+
+  for (const [index, boundary] of boundaries.entries()) {
+    if (index < nextTry) continue;
     const segment = convertRange(boundary);
 
     if (!segment) return full();
+    // A tag still open at the segment's end holds what follows, whatever the
+    // scan counted. Only the last boundary tries again, because trying each one
+    // inside a long open tag would parse its body once per boundary.
+    if (getMarkdownTagRepair(segment.lastRoot ?? {})?.repair === 'unclosed') {
+      nextTry = boundaries.length - 1;
+      continue;
+    }
     const last = segment.parsed.at(-1);
 
     // Normalization joins top-level inline runs across a blank line, so a
