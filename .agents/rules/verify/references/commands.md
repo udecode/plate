@@ -364,7 +364,8 @@ The helper has four modes for these cases:
   worktree, and the helper prints `candidate:` instead of `base:`, so a new test
   runs against the base source without labeling that run base. Before creating
   anything, the helper refuses a `--with` that names no file inside this
-  checkout or reaches it through a symlink.
+  checkout or reaches it through a symlink. When `--from` also changes that
+  file, the `--with` copy wins.
 - `--install` runs `pnpm install --offline --frozen-lockfile --ignore-scripts`
   instead of linking `node_modules`. A www server and the managed Plite
   runner's app build need it, because Turbopack
