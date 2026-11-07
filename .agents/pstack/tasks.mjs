@@ -76,8 +76,16 @@ export const SESSION = /^\w[\w.-]*$/u;
 const WAIT = /^(?:pr:(\d+)|task:([\w-]+)|run:(\S+\.md))$/u;
 
 const withoutReproProse = (evidence, key) => (key === 'repro' ? evidence : evidence.replace(/(^|;)\s*repro:[^;]*/gu, '$1'));
-const values = (evidence, key) => [...withoutReproProse(evidence, key).matchAll(new RegExp(`(?:^|[\\s;])${key}:\\s*([^;]*)`, 'gu'))].map((match) => match[1].trim());
+const field = (key) => new RegExp(`(^|[\\s;])${key}:\\s*([^;]*)`, 'gu');
+const values = (evidence, key) => [...withoutReproProse(evidence, key).matchAll(field(key))].map((match) => match[2].trim());
 export const hasToken = (evidence, key) => values(evidence, key).length > 0;
+export const withoutPlannedWrites = (cells) =>
+  TAKES[parseRow(cells)?.move]?.includes('writes')
+    ? cells[3]
+        .split(';')
+        .map((part) => (hasToken(part, 'writes') ? part.replace(field('writes'), '$1') : part))
+        .join(';')
+    : cells[3];
 const list = (value) => value.split(',').map((item) => item.trim()).filter(Boolean);
 // A one-token value with a space in it ran into the next field.
 const ranOn = (value) => (/\s/u.test(value) ? '; a field runs to the next ";", so end it with ";" before more evidence' : '');

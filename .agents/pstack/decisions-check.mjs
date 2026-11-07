@@ -81,7 +81,7 @@ import { basename, dirname, isAbsolute, join, normalize, relative, resolve } fro
 import { findLead, leadLabel, maxEffort, runtimeFolder } from './lead.mjs';
 import { cli as pageStop } from './page-stop.mjs';
 import { contextOf, pageUrlOf, parsePlan } from './plan-page.mjs';
-import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps } from './tasks.mjs';
+import { board, boardState, briefOf, CHIP_STATES, cleanupOf, chipRowProblems, baseRedProblems, gitMerges, groupsOf, hasToken, ledgerPath, newChipRowProblems, newId, offeredAt, readShip, readTasks, recordRow, renderBoard, renderGroups, SESSION, staleReport, startedOverlaps, withoutPlannedWrites } from './tasks.mjs';
 import { acceptedWord, bracketSeats, committedLines, decisionLogs, defaultsWords, isAcceptingWord, isHandOffReview, NOT_PASSED, proofLabels, proofStates, PROVEN, runPaths, seatRoster, SEATS, SEVERITIES, STAGE_PHASES, stageOfRow, STATUSES, statusOf } from './status.mjs';
 
 const HEADER = 'ts\tphase\tdecision\twhy\tevidence\tresult';
@@ -243,7 +243,7 @@ function rowProblems(line, where, roster, chips) {
   }
   if (rest[0] === 'chip' && chips) found.push(...chipRowProblems(rest, chips, where));
   const reviewerRow = isHandOffReview(rest[0]);
-  return reviewerRow ? found : [...found, ...missingPaths(rest[3], where)];
+  return reviewerRow ? found : [...found, ...missingPaths(chips ? withoutPlannedWrites(rest) : rest[3], where)];
 }
 
 // A card session reads a finding's evidence from this checkout, never from the worktree that wrote it.
