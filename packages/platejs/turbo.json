@@ -6975,9 +6975,13 @@
         "plitejs#source-hash:partition:core",
         "plitejs#source-hash:partition:testing",
         "source-hash:partition:core",
+        "source-hash:partition:html",
         "source-hash:partition:html-server",
         "source-hash:partition:proxies",
-        "source-hash:partition:standard-basic-styles"
+        "source-hash:partition:standard-basic-nodes",
+        "source-hash:partition:standard-basic-styles",
+        "source-hash:partition:standard-list",
+        "source-hash:partition:table"
       ],
       "inputs": [
         "src/features/basic-styles/**",

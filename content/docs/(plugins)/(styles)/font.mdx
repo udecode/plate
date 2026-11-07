@@ -98,6 +98,13 @@ text instead of a block target list. Every stored value renders, so a pasted
 directly onto text properties; block target injection does not constrain text
 marks.
 
+When you paste or parse HTML copied from Google Docs, the font plugins skip
+the default text style Docs writes on every run: black text, `11pt`, Arial and
+a `transparent` background. Black stays on a highlight when the editor has
+`FontBackgroundColorPlugin`, and in a shaded table cell when it has
+`TablePlugin`, because the author read the text against that background. A
+color, size, font or highlight other than those defaults is kept.
+
 Font weight is not a font mark. [Bold](/docs/bold) owns it, so a pasted
 `font-weight` of 600 or more stores `bold`.
 

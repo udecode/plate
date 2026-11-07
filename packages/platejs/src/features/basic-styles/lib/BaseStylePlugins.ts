@@ -10,6 +10,7 @@ import {
   type Editor,
   type Element,
   type NodeSetNodesOptions,
+  type PluginFormatRegistry,
   type PluginTransaction,
   txLocate,
   locateAt,
@@ -92,6 +93,56 @@ export type TextIndentPluginState = {
   unit: string;
 };
 
+// Google Docs writes its default text style on every run it copies, and each run
+// is a span that carries its whole style. So inside a Docs paste, a value equal
+// to that default is not one the author picked, and only a span styles text.
+const docsPastes = new WeakMap<Document, boolean>();
+
+const markDocsPaste = ({ document }: { document: Document }) => {
+  docsPastes.set(
+    document,
+    document.body.querySelector('[id^="docs-internal-guid"]') !== null
+  );
+};
+
+const isDocsDefault = (value: string, docsDefaults: readonly string[]) =>
+  docsDefaults.includes(value.replaceAll(/["'\s]/g, '').toLowerCase());
+
+const hasBackground = (element: HTMLElement | null) =>
+  !!element?.style.backgroundColor &&
+  !isDocsDefault(element.style.backgroundColor, ['transparent']);
+
+const decodeTextStyle = (
+  element: HTMLElement,
+  key: 'backgroundColor' | 'color' | 'fontFamily' | 'fontSize',
+  docsDefaults: readonly string[]
+) => {
+  const value = element.style[key];
+
+  if (!value || docsPastes.get(element.ownerDocument) !== true) {
+    return value || undefined;
+  }
+  if (element.tagName !== 'SPAN') return undefined;
+
+  return isDocsDefault(value, docsDefaults) ? undefined : value;
+};
+
+const decodeTextColor = (
+  element: HTMLElement,
+  registry: Pick<PluginFormatRegistry, 'has'>
+) => {
+  const onBackground =
+    (registry.has(PLUGINS.backgroundColor) && hasBackground(element)) ||
+    (registry.has(PLUGINS.tableCell) &&
+      hasBackground(element.closest('td, th')));
+
+  return decodeTextStyle(
+    element,
+    'color',
+    onBackground ? [] : ['#000000', 'rgb(0,0,0)']
+  );
+};
+
 export const BaseFontBackgroundColorPlugin = definePlugin(
   PLUGINS.backgroundColor,
   {
@@ -99,7 +150,9 @@ export const BaseFontBackgroundColorPlugin = definePlugin(
     formats: ({ defineFormats }) =>
       defineFormats({
         html: {
-          decode: ({ element }) => element.style.backgroundColor || undefined,
+          prepareDocument: markDocsPaste,
+          decode: ({ element }) =>
+            decodeTextStyle(element, 'backgroundColor', ['transparent']),
           encode: ({ value }) => ({
             style: { backgroundColor: value },
             tag: 'span',
@@ -122,7 +175,8 @@ export const BaseFontColorPlugin = definePlugin(PLUGINS.color, {
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
-        decode: ({ element }) => element.style.color || undefined,
+        prepareDocument: markDocsPaste,
+        decode: ({ element, registry }) => decodeTextColor(element, registry),
         encode: ({ value }) => ({
           style: { color: value },
           tag: 'span',
@@ -144,7 +198,9 @@ export const BaseFontFamilyPlugin = definePlugin(PLUGINS.fontFamily, {
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
-        decode: ({ element }) => element.style.fontFamily || undefined,
+        prepareDocument: markDocsPaste,
+        decode: ({ element }) =>
+          decodeTextStyle(element, 'fontFamily', ['arial', 'arial,sans-serif']),
         encode: ({ value }) => ({
           style: { fontFamily: value },
           tag: 'span',
@@ -166,7 +222,8 @@ export const BaseFontSizePlugin = definePlugin(PLUGINS.fontSize, {
   formats: ({ defineFormats }) =>
     defineFormats({
       html: {
-        decode: ({ element }) => element.style.fontSize || undefined,
+        prepareDocument: markDocsPaste,
+        decode: ({ element }) => decodeTextStyle(element, 'fontSize', ['11pt']),
         encode: ({ value }) => ({
           style: { fontSize: value },
           tag: 'span',
