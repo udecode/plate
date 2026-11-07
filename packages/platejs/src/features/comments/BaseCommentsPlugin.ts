@@ -367,7 +367,8 @@ const freezeComment = <T>(value: T): T => {
 /**
  * Owns comment records and their native range lifetime for one editor.
  * Load initialComments and save api.toJSON() with the exact document revision.
- * Successful local thread creation joins session undo after durable commit.
+ * Successful local thread creation joins session undo after durable commit,
+ * except through a read-only view.
  * Other conversation actions stay independent; native anchors own mapping.
  */
 export const BaseCommentsPlugin = definePlugin('comments', {
@@ -379,7 +380,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const anchors = new Map<string, Anchor<Range>>();
   let source: ReadonlyArray<{ id: string; anchor: AnnotationAnchor }> = [];
   let sourceOrder = new Map<string, number>();
-  let pendingAnchor: Anchor<Range> | null = null;
+  let composer: { anchor: Anchor<Range>; excerpt: string; id: string } | null =
+    null;
   let snapshot: CommentsSnapshot = Object.freeze({
     draftThreadIds: Object.freeze([]),
     pending: null,
@@ -407,22 +409,29 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const draftListeners = new Set<() => void>();
   const pendingListeners = new Set<() => void>();
   const dataListeners = new Set<(change: CommentsChange) => void>();
-  let unsubscribeActive: (() => void) | null = null;
-
-  const notify = (listener: () => void) => {
+  let heldChanges: Array<() => void> | null = null;
+  const observe = (
+    step: () => void,
+    phase: 'after-commit' | 'commit-listener' | 'snapshot-listener'
+  ) => {
     try {
-      listener();
+      step();
     } catch (error) {
       reportEditorLifecycleError(
-        Object.freeze({
-          cause: error,
-          editor,
-          phase: 'commit-listener',
-          pluginName: BaseCommentsPlugin.name,
-        })
+        Object.freeze({ cause: error, editor, phase, pluginName: 'comments' })
       );
     }
   };
+  const deliver = <TArgs extends unknown[]>(
+    listeners: ReadonlySet<(...args: TArgs) => void>,
+    phase: 'commit-listener' | 'snapshot-listener',
+    ...args: TArgs
+  ) => {
+    for (const listener of [...listeners]) {
+      if (listeners.has(listener)) observe(() => listener(...args), phase);
+    }
+  };
+
   const getAnnotations = (view: Editor) => {
     const observed = viewIndexes.get(view);
     if (observed) return observed.annotations;
@@ -445,17 +454,32 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         (input: { nodeKeys: readonly NodeKey[] }) => void
       >();
       const unsubscribe = annotations.subscribeChanges((change) => {
-        if (change.reason !== 'editor' && change.nodeKeys.length) {
-          refreshers.forEach((refresh) =>
-            notify(() => refresh({ nodeKeys: change.nodeKeys }))
-          );
-        }
-        listeners.forEach((listener) => notify(() => listener(change)));
+        const announce = () => {
+          if (change.reason !== 'editor' && change.nodeKeys.length) {
+            deliver(refreshers, 'commit-listener', {
+              nodeKeys: change.nodeKeys,
+            });
+          }
+          deliver(listeners, 'commit-listener', change);
+        };
+        if (heldChanges) heldChanges.push(announce);
+        else announce();
       });
       index = { annotations, listeners, refreshers, unsubscribe };
       viewIndexes.set(view, index);
     }
     return index;
+  };
+  // No listener runs until every view has refreshed, so a listener reading
+  // another view finds the new locations.
+  const refreshViews = (ids?: readonly string[]) => {
+    const changes: Array<() => void> = [];
+    heldChanges = changes;
+    viewIndexes.forEach(({ annotations }) =>
+      annotations.refresh(ids && { ids, reason: 'external' })
+    );
+    heldChanges = null;
+    return () => changes.forEach((announce) => announce());
   };
   const releaseView = (view: Editor) => {
     const index = viewIndexes.get(view);
@@ -466,31 +490,24 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   };
 
   const notifyThreads = (ids: readonly string[]) => {
-    ids.forEach((id) =>
-      threadListeners.get(id)?.forEach((listener) => notify(listener))
-    );
+    ids.forEach((id) => {
+      const listeners = threadListeners.get(id);
+      if (listeners) deliver(listeners, 'snapshot-listener');
+    });
     if (ids.length) {
       const change = Object.freeze({ ids: Object.freeze([...ids]) });
-      dataListeners.forEach((listener) => notify(() => listener(change)));
+      deliver(dataListeners, 'snapshot-listener', change);
     }
   };
-  const publish = (
-    next: CommentsSnapshot,
-    changes: {
-      draft?: boolean;
-      pending?: boolean;
-      threads?: readonly string[];
-      visible?: boolean;
-    } = {}
-  ) => {
-    snapshot = Object.freeze(next);
-    if (changes.draft) draftListeners.forEach((listener) => notify(listener));
-    if (changes.pending) {
-      pendingListeners.forEach((listener) => notify(listener));
-    }
-    if (changes.visible) {
-      visibleListeners.forEach((listener) => notify(listener));
-    }
+  const publish = (changes: {
+    draft?: boolean;
+    pending?: boolean;
+    threads?: readonly string[];
+    visible?: boolean;
+  }) => {
+    if (changes.draft) deliver(draftListeners, 'snapshot-listener');
+    if (changes.pending) deliver(pendingListeners, 'snapshot-listener');
+    if (changes.visible) deliver(visibleListeners, 'snapshot-listener');
     if (changes.threads) notifyThreads(changes.threads);
   };
   const nodeKeysAt = (view: Editor, location: Location) => {
@@ -505,22 +522,35 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     return [...keys];
   };
   const refreshIds = (ids: readonly string[]) => {
-    for (const [view, { annotations, refreshers }] of viewIndexes) {
+    for (const [view, { annotations, refreshers }] of [...viewIndexes]) {
       const nodeKeys = new Set<NodeKey>();
       ids.forEach((id) => {
         const range = annotations.getAnnotation(id)?.range;
         if (range) nodeKeysAt(view, range).forEach((key) => nodeKeys.add(key));
       });
       if (nodeKeys.size) {
-        refreshers.forEach((refresh) =>
-          notify(() => refresh({ nodeKeys: [...nodeKeys] }))
-        );
+        deliver(refreshers, 'commit-listener', { nodeKeys: [...nodeKeys] });
       }
     }
   };
+  let active: readonly string[] = [];
+  let unsubscribeActive: (() => void) | null = null;
+  const repaintActive = () => {
+    const next = store.get('activeIds');
+    if (next === active) return;
+    const previous = active;
+    active = next;
+    refreshIds([...previous, ...next]);
+  };
   const setActive = (ids: readonly string[]) => {
     if (destroyed) return;
-    store.set({ activeIds: Object.freeze([...new Set(ids)]) });
+    observe(
+      () => store.set({ activeIds: Object.freeze([...new Set(ids)]) }),
+      'snapshot-listener'
+    );
+    // An earlier store subscriber that throws skips the subscription in
+    // initialize.
+    repaintActive();
   };
   const syncSource = () => {
     source = Object.freeze(
@@ -597,15 +627,9 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     }
     initialComments = null;
     syncSource();
-    viewIndexes.forEach(({ annotations }) => annotations.refresh());
-    let active = store.get('activeIds');
-    unsubscribeActive = store.subscribe(() => {
-      const next = store.get('activeIds');
-      if (next === active) return;
-      const previous = active;
-      active = next;
-      refreshIds([...previous, ...next]);
-    });
+    refreshViews()();
+    active = store.get('activeIds');
+    unsubscribeActive = store.subscribe(repaintActive);
   };
   const replaceComments = (value: CommentsJSON) => {
     if (destroyed) return false;
@@ -663,18 +687,18 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         }
       });
     });
-    pendingAnchor?.release();
-    pendingAnchor = null;
+    composer?.anchor.release();
+    composer = null;
     anchors.forEach((anchor) => anchor.release());
     anchors.clear();
     nextAnchors.forEach((anchor, id) => anchors.set(id, anchor));
     threads = new Map(decoded.threads.map((thread) => [thread.id, thread]));
     syncSource();
     snapshot = next;
-    viewIndexes.forEach(({ annotations }) => annotations.refresh());
+    const announce = refreshViews();
     setActive([]);
-
-    publish(next, {
+    announce();
+    publish({
       draft: previousSnapshot.draftThreadIds.length > 0,
       pending: previousSnapshot.pending !== null,
       threads: [...changedIds],
@@ -686,7 +710,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
   const setThread = (
     id: string,
     thread: CommentThread | null,
-    anchor?: Anchor<Range>
+    anchor?: Anchor<Range>,
+    afterWrite?: () => void
   ) => {
     const previous = threads.get(id);
     const previousAnchor = anchors.get(id);
@@ -699,6 +724,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       if (queues.has(id)) generations.set(id, (generations.get(id) ?? 0) + 1);
       else generations.delete(id);
     }
+    const handoff = anchor !== undefined && anchor === composer?.anchor;
+    if (handoff) composer = null;
     const threadIds =
       previous && thread
         ? snapshot.threadIds
@@ -720,27 +747,43 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           threadIds.filter((key) => threads.get(key)?.status === 'draft')
         )
       : snapshot.draftThreadIds;
-    const next =
-      threadIds === snapshot.threadIds &&
-      visibleThreadIds === snapshot.visibleThreadIds &&
-      draftThreadIds === snapshot.draftThreadIds
-        ? snapshot
-        : { ...snapshot, threadIds, visibleThreadIds, draftThreadIds };
-    snapshot = Object.freeze(next);
+    if (
+      threadIds !== snapshot.threadIds ||
+      visibleThreadIds !== snapshot.visibleThreadIds ||
+      draftThreadIds !== snapshot.draftThreadIds
+    ) {
+      snapshot = Object.freeze({
+        ...snapshot,
+        draftThreadIds,
+        pending: handoff ? null : snapshot.pending,
+        threadIds,
+        visibleThreadIds,
+      });
+    }
+    let announce = () => {
+      if (visibilityChanged) refreshIds([id]);
+    };
+    // The history step runs commit observers, so every read agrees first. A
+    // nested commit there can also consume a refresh that ran after it.
     if (previousAnchor !== anchors.get(id)) {
       syncSource();
-      viewIndexes.forEach(({ annotations }) =>
-        annotations.refresh({ ids: [id], reason: 'external' })
-      );
       previousAnchor?.release();
-    } else if (visibilityChanged) refreshIds([id]);
-    if ((!thread || thread.resolution) && store.get('activeIds').includes(id)) {
+      announce = refreshViews([id]);
+    }
+    if (afterWrite) observe(afterWrite, 'after-commit');
+    announce();
+    const current = threads.get(id);
+    if (
+      (!current || current.resolution) &&
+      store.get('activeIds').includes(id)
+    ) {
       setActive(store.get('activeIds').filter((key) => key !== id));
     }
-    publish(next, {
+    publish({
+      draft: draftChanged,
+      pending: handoff,
       threads: [id],
       visible: visibilityChanged,
-      draft: draftChanged,
     });
   };
   const enqueue = <T>(
@@ -771,7 +814,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     operation: CommentOperation,
     proposed: CommentThread | null,
     anchor?: Anchor<Range>,
-    isCurrent: () => boolean = () => true
+    isCurrent: () => boolean = () => true,
+    afterWrite?: (canonical: CommentThread | null) => void
   ): Promise<CommentMutationResult> => {
     const previous = threads.get(id) ?? null;
     const generation = generations.get(id) ?? 0;
@@ -826,7 +870,12 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         'Comment mutation cannot replace thread identity or target'
       );
     }
-    setThread(id, canonical, anchor);
+    setThread(
+      id,
+      canonical,
+      anchor,
+      afterWrite && (() => afterWrite(canonical))
+    );
     return { status: 'applied', value: undefined };
   };
   const sameThread = (
@@ -874,7 +923,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           }
           restoredAnchor = editor.anchor.restore(transition.attachment);
           if (!restoredAnchor.resolve()) {
-            restoredAnchor.release();
             return {
               status: 'applied',
               value: {
@@ -885,16 +933,19 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           }
         }
 
+        let value: CommentThread | null = null;
         const mutation = await commitMutation(
           thread.id,
           transition.value ? 'createThread' : 'removeThread',
           transition.value,
           restoredAnchor,
-          () => sameThread(threads.get(thread.id) ?? null, transition.previous)
+          () => sameThread(threads.get(thread.id) ?? null, transition.previous),
+          (canonical) => {
+            value = canonical;
+          }
         );
 
         if (mutation.status !== 'applied') {
-          restoredAnchor?.release();
           return {
             status: 'applied',
             value: {
@@ -907,7 +958,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           };
         }
 
-        const value = threads.get(thread.id) ?? null;
         return {
           status: 'applied',
           value: {
@@ -920,7 +970,6 @@ export const BaseCommentsPlugin = definePlugin('comments', {
           } as const,
         };
       } catch {
-        restoredAnchor?.release();
         return {
           status: 'applied',
           value: {
@@ -928,6 +977,10 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             status: 'blocked',
           } as const,
         };
+      } finally {
+        if (restoredAnchor && anchors.get(thread.id) !== restoredAnchor) {
+          restoredAnchor.release();
+        }
       }
     });
 
@@ -955,10 +1008,11 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       return commitMutation(id, operation, proposed && freezeComment(proposed));
     });
   const cancel = () => {
-    if (!snapshot.pending) return;
-    pendingAnchor?.release();
-    pendingAnchor = null;
-    publish({ ...snapshot, pending: null }, { pending: true });
+    if (!composer) return;
+    composer.anchor.release();
+    composer = null;
+    snapshot = Object.freeze({ ...snapshot, pending: null });
+    publish({ pending: true });
   };
   const destroy = () => {
     if (destroyed) return;
@@ -979,8 +1033,8 @@ export const BaseCommentsPlugin = definePlugin('comments', {
     );
     viewIndexes.clear();
     passiveIndexes = new WeakMap();
-    pendingAnchor?.release();
-    pendingAnchor = null;
+    composer?.anchor.release();
+    composer = null;
     anchors.forEach((anchor) => anchor.release());
     anchors.clear();
     threads.clear();
@@ -995,6 +1049,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
       threadIds: Object.freeze([]),
       visibleThreadIds: Object.freeze([]),
     });
+    threadListeners.forEach((listeners) => listeners.clear());
     threadListeners.clear();
     visibleListeners.clear();
     draftListeners.clear();
@@ -1047,52 +1102,47 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             : undefined;
         return { thread, anchor };
       };
-      const createThread = async (
+      const submit = async (
         input: CreateCommentThreadInput,
-        pending?: Anchor<Range>
+        claimed?: NonNullable<typeof composer>
       ): Promise<CommentMutationResult<string>> => {
-        const prepared = prepareCreation(input, 'published', pending);
+        const prepared = prepareCreation(input, 'published', claimed?.anchor);
         if (!prepared) return { status: 'invalid' };
         const { thread, anchor } = prepared;
-        let transferred = false;
         try {
           return await enqueue(thread.id, async () => {
             if (threads.has(thread.id)) return { status: 'invalid' };
             const result = await commitMutation(
               thread.id,
-              pending ? 'create' : 'createThread',
+              claimed ? 'create' : 'createThread',
               thread,
               anchor,
-              () => !pending || pending === pendingAnchor
+              () => !claimed || claimed === composer,
+              (canonical) => {
+                const viewRefuses =
+                  commandEditor !== editor &&
+                  commandEditor.read.view.isReadOnly();
+                if (!canonical || viewRefuses) return;
+                commandEditor.update((tx) => {
+                  tx.effects.emit(commentCreationHistoryEffect, {
+                    attachment: anchor
+                      ? commandEditor.anchor.save(anchor)
+                      : null,
+                    messageId: canonical.messages[0].id,
+                    previous: null,
+                    value: canonical,
+                  });
+                });
+              }
             );
-            if (result.status !== 'applied') return result;
-            transferred = true;
-            const canonical = threads.get(thread.id);
-            const createdMessage = canonical?.messages[0];
-            if (!canonical || !createdMessage) {
-              throw new Error(
-                'Applied comment creation must publish one initial message'
-              );
-            }
-            const liveAnchor = anchors.get(thread.id);
-            commandEditor.update((tx) => {
-              tx.effects.emit(commentCreationHistoryEffect, {
-                attachment: liveAnchor
-                  ? commandEditor.anchor.save(liveAnchor)
-                  : null,
-                messageId: createdMessage.id,
-                previous: null,
-                value: canonical,
-              });
-            });
-            if (pending && pending === pendingAnchor) {
-              pendingAnchor = null;
-              publish({ ...snapshot, pending: null }, { pending: true });
-            }
-            return { status: 'applied', value: thread.id };
+            return result.status === 'applied'
+              ? { status: 'applied', value: thread.id }
+              : result;
           });
         } finally {
-          if (!transferred && !pending) anchor?.release();
+          if (!claimed && anchor && anchors.get(thread.id) !== anchor) {
+            anchor.release();
+          }
         }
       };
       return {
@@ -1112,38 +1162,37 @@ export const BaseCommentsPlugin = definePlugin('comments', {
             association: 'inward',
             deletion: 'nearest',
           });
-          pendingAnchor?.release();
-          pendingAnchor = anchor;
+          const excerpt = commandEditor.read.text.string(range);
+          composer?.anchor.release();
+          composer = { anchor, excerpt, id: nanoid() };
+          snapshot = Object.freeze({
+            ...snapshot,
+            pending: Object.freeze({ excerpt }),
+          });
           setActive([]);
-          publish(
-            {
-              ...snapshot,
-              pending: Object.freeze({
-                excerpt: commandEditor.read.text.string(range),
-              }),
-            },
-            { pending: true }
-          );
+          publish({ pending: true });
           return true;
         },
         /** Dismiss the pending composer and release its private range. */
         cancel,
         /** Publish from the pending selection; failure preserves the composer. */
         create: async (body: Value): Promise<CommentMutationResult<string>> => {
-          const range = pendingAnchor?.resolve(commandEditor);
-          return pendingAnchor && snapshot.pending && range
-            ? createThread(
+          const claimed = composer;
+          const range = claimed?.anchor.resolve(commandEditor);
+          return claimed && range
+            ? submit(
                 {
                   body,
-                  excerpt: snapshot.pending.excerpt,
+                  excerpt: claimed.excerpt,
+                  id: claimed.id,
                   target: { type: 'range', range },
                 },
-                pendingAnchor
+                claimed
               )
             : { status: 'invalid' };
         },
         /** Persist and publish at an explicit primary range or authored change ID. */
-        createThread,
+        createThread: (input: CreateCommentThreadInput) => submit(input),
         /** Allocate a local draft; only publishDraft invokes durable storage. */
         createDraft: (input: CreateCommentThreadInput) => {
           const prepared = prepareCreation(input, 'draft');
@@ -1221,7 +1270,7 @@ export const BaseCommentsPlugin = definePlugin('comments', {
         /** Resolve the pending selection without exposing its native handle. */
         pendingRange: () =>
           freezeComment(
-            structuredClone(pendingAnchor?.resolve(commandEditor) ?? null)
+            structuredClone(composer?.anchor.resolve(commandEditor) ?? null)
           ),
         /** Persist a local draft; discard during the request fences late completion. */
         publishDraft: (id: string) =>

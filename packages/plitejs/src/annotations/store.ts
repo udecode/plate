@@ -314,8 +314,10 @@ const createPliteAnnotationStoreInternal = <TData>(
         reason,
       });
       annotationsStore.publish(toSnapshot(), changedIds);
-      for (const listener of changeListeners) {
-        runEditorObserver(editor, 'commit-listener', () => listener(change));
+      for (const listener of [...changeListeners]) {
+        if (changeListeners.has(listener)) {
+          runEditorObserver(editor, 'commit-listener', () => listener(change));
+        }
       }
     }
   };

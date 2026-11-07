@@ -270,7 +270,8 @@ edits. History waits for the configured mutation adapter before moving its
 branch. Undo removes the unchanged one-message thread; redo restores its saved
 target and canonical thread. A reply, edit, resolution, canonical replacement,
 rejected mutation, or storage error blocks that replay and keeps it at the
-history head, so the next document batch is never skipped.
+history head, so the next document batch is never skipped. A thread created
+through a read-only view joins no undo order, because that view cannot commit.
 
 Resolve and reopen update conversation metadata outside document undo. Replies, message edits, and explicit message or thread deletion also stay outside document history. Undoing a text deletion can restore its highlight, but never recreates an explicitly deleted conversation.
 
@@ -427,6 +428,8 @@ Handle `invalid`, `rejected`, `stale`, and thrown errors without discarding inpu
 Use `subscribeAttachments(listener)` through the exact view's API for its placement changes. Decorations read and observe that same view. Switching another view's projection does not switch this subscription's view. Unsubscribing releases the view observation without releasing shared conversation targets.
 
 `subscribeVisibleThreadIds`, `subscribeDraftThreadIds`, and `subscribePending` observe their respective snapshots. Each method returns an unsubscribe function. Keep explicit `toJSON()` export outside these listeners.
+
+A listener runs after its action's outcome is decided, so it may throw or call any action. A synchronous throw goes to the editor's `lifecycleErrorSink`, later listeners still run, and the action still answers what landed. A notification means "read again", because a nested action can already have moved past it, so read `getThread`, `getSnapshot` and `attachment` for current state. An attachment or decoration listener that a Comments action wakes runs once every view has refreshed, so each view gives it the same locations. A listener added during a notification first runs on the next one, and a listener removed during it is skipped.
 
 ### Copied UI
 
