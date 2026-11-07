@@ -56,6 +56,7 @@ import { definePlugin } from '../../plugin';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import {
   createBrowserHtmlDocument,
+  fitsHtmlByteLimit,
   getHtmlAstPlainText,
   materializeHtmlAst,
   parseHtmlAst,
@@ -75,6 +76,7 @@ import type {
   HtmlEditorSerializeOptions,
   HtmlErrorDiagnostic,
   HtmlModelLocation,
+  HtmlParseLimits,
   HtmlSerializeResult,
   HtmlSliceParseResult,
   HtmlSourceLocation,
@@ -3530,14 +3532,22 @@ const restoreAppleConvertedSpaces = (root: HTMLElement) => {
 
 const decodeHtmlTransferWithArtifact = (
   artifact: CompiledPlateHtmlArtifact,
-  context: DataTransferDecodeContext
+  context: DataTransferDecodeContext,
+  limits?: Partial<HtmlParseLimits>
 ): ContentSlice | null => {
-  const parsed = parseHtmlAst(context.data, 'slice');
+  const parsed = parseHtmlAst(context.data, 'slice', limits);
 
   if (!parsed.ok) return null;
   const plainText = context.snapshot.getData('text/plain');
+  const isTransferHtml = context.data === context.snapshot.getData('text/html');
 
-  if (plainText && getHtmlAstPlainText(parsed.ast) === plainText) return null;
+  if (
+    plainText &&
+    isTransferHtml &&
+    getHtmlAstPlainText(parsed.ast) === plainText
+  ) {
+    return null;
+  }
   const document = createBrowserHtmlDocument();
   const root = materializeHtmlAst(parsed.ast, document);
   restoreAppleConvertedSpaces(root);
@@ -3568,26 +3578,43 @@ const decodeHtmlTransferWithArtifact = (
     });
   });
 
-  return result.slice.content.length === 0 ? null : result.slice;
+  return result.slice;
 };
 
-/**
- * Decode an HTML clipboard payload with the HTML format compiled for
- * `context.state`, for a format that prepares HTML first, such as Word paste.
- * Reports what the payload leaves out through `context.report` and returns the
- * slice to insert, or null when nothing is insertable so the next format can
- * decode the payload. HTML that fails to parse, or only repeats the plain
- * text, returns null without reports.
- */
-export const decodeHtmlDataTransfer = (context: DataTransferDecodeContext) => {
+const getCompiledHtmlArtifact = (context: DataTransferDecodeContext) => {
   const artifact = COMPILED_PLATE_HTML_BY_SCHEMA.get(context.state.schema);
 
   if (!artifact) {
     throw new Error('Plate HTML format is not compiled for this editor state.');
   }
 
-  return decodeHtmlTransferWithArtifact(artifact, context);
+  return artifact;
 };
+
+/**
+ * Decode an HTML clipboard payload with the HTML format compiled for
+ * `context.state`, for a format that prepares HTML first.
+ * Reports what the payload leaves out through `context.report` and returns the
+ * decoded slice, which is empty when nothing is insertable. Return an empty
+ * slice to claim the paste, or null to let the next format try. HTML that
+ * fails to parse returns null without reports. So does HTML that only repeats
+ * the plain text, unless `context.data` differs from the snapshot's
+ * `text/html`.
+ */
+export const decodeHtmlDataTransfer = (context: DataTransferDecodeContext) =>
+  decodeHtmlTransferWithArtifact(getCompiledHtmlArtifact(context), context);
+
+export const decodePreparedHtmlDataTransfer = (
+  context: DataTransferDecodeContext,
+  html: string
+) =>
+  fitsHtmlByteLimit(context.data)
+    ? decodeHtmlTransferWithArtifact(
+        getCompiledHtmlArtifact(context),
+        { ...context, data: html },
+        { maxBytes: Number.POSITIVE_INFINITY }
+      )
+    : null;
 
 export const compilePlateHtmlFormat = (
   editor: Editor,
@@ -3660,8 +3687,11 @@ export const compilePlateHtmlFormat = (
     mimeType: HTML_FORMAT,
     key: HTML_HOST_KEY,
     claims: Object.freeze([{ kind: 'schema' as const }]),
-    decode: (context: DataTransferDecodeContext) =>
-      decodeHtmlTransferWithArtifact(artifact, context),
+    decode: (context: DataTransferDecodeContext) => {
+      const slice = decodeHtmlTransferWithArtifact(artifact, context);
+
+      return slice?.content.length ? slice : null;
+    },
     encode: (context: DataTransferEncodeContext) => {
       const losses: HtmlMappingLoss[] = [];
       const removals: HtmlUnsafeOutput[] = [];

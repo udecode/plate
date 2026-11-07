@@ -237,7 +237,7 @@ Each declaration has one `mimeType` and at least one of `decode` and `encode`.
 | --- | --- |
 | `mimeType` | The MIME type read from and written to the `DataTransfer`. Declare it once per plugin, with `decode` and `encode` in the same object. |
 | `accept(context)` | Optional. Return `false` to skip this format before `decode` runs. |
-| `decode(context)` | Return a `ContentSlice`, or `null` to let the next format read the payload. |
+| `decode(context)` | Return a `ContentSlice`, or `null` to let the next format read the payload. An empty slice (`ContentSlice.empty`) claims the payload, so the paste ends with nothing inserted. |
 | `encode(context)` | Return the string to write, or `null` to leave this MIME type to the next encoder. |
 | `priority` | Optional, default `0`. Higher runs first. |
 | `scope` | `'document'` claims the whole schema. Without it, the format claims the plugin's own element type and properties, so the plugin must own one. |
@@ -278,9 +278,13 @@ Returning `null` or `false` without reporting stays silent. If `accept` or
 
 - `accept` returning `false` means the format does not apply here. Use it for
   cheap checks before parsing.
-- `decode` returning `null` means the payload is foreign, malformed, or empty.
-  Clipboard data is untrusted, so return `null` for bad input instead of
-  throwing.
+- `decode` returning `null` means the payload is foreign, malformed, or holds
+  nothing this format can insert, and the next format should try. Clipboard
+  data is untrusted, so return `null` for bad input instead of throwing.
+- `decode` returning an empty slice means the format owns the payload and
+  nothing in it is insertable, for example because the format left all of it
+  out on purpose. The paste ends there with nothing inserted and the selection
+  kept. `onPasteResult` gets `inserted: false` with the paste's reports.
 - `encode` returning `null` means the slice has nothing to write for this MIME
   type. The next encoder for the same type can still write it.
 - A throw is a bug. Plate catches it, sends it to the editor's
@@ -306,7 +310,8 @@ A format error carries `key`, `mimeType`, `pluginName`, and `phase`
 
 ### Paste order
 
-Paste tries each step until one inserts content:
+Paste tries each step until one inserts content or a format claims the payload
+with an empty slice:
 
 1. `domCommands.insertData` interceptors.
 2. Plate's own fragment payload.
@@ -316,8 +321,9 @@ Paste tries each step until one inserts content:
 5. Plain text.
 
 Plate fits each decoded slice at the actual insertion range and keeps its open
-edges and detached roots. A slice that does not fit writes nothing, and the
-next format tries. Plain text is the final fallback.
+edges and detached roots. A slice with content that does not fit writes
+nothing, and the next format tries. An empty slice ends the paste and writes
+nothing. Plain text is the final fallback.
 
 Formats with the same MIME type, direction, and priority must claim disjoint
 schema. Overlapping claims throw when the editor is created, so two
@@ -348,7 +354,8 @@ then returns `null` and plain text handles the paste.
 
 `EditorContent` calls `onPasteResult` once for each paste that Plate's
 built-in formats handle: after the pasted content commits (`inserted: true`),
-or when no format can insert it (`inserted: false`).
+or when nothing is inserted (`inserted: false`), because no format could insert
+the payload or a format claimed it with an empty slice.
 
 ```tsx
 <EditorContent
@@ -364,7 +371,8 @@ or when no format can insert it (`inserted: false`).
 />
 ```
 
-`diagnostics` holds the reports of the format whose content was inserted.
+`diagnostics` holds the reports of the format whose content was inserted, or of
+the format that claimed the payload with an empty slice.
 Loss reported by an earlier format that could not be used stays in the list
 unless the inserted format decoded the same MIME type: plain text that
 matches the HTML text does not recover what the HTML lost.
@@ -373,7 +381,7 @@ Only the editor surface that received the paste is called, and only while it
 is mounted. `onPasteResult` is not called when `onPaste` or a
 `domCommands.insertData` handler handles the paste without the built-in
 formats, for drops, or for a separate `editor.api.dom.clipboard.insertData`
-call, which returns `true` when content landed, `false` when no format applied
+call, which returns `true` when content landed, `false` when nothing landed
 and `undefined` when the editor refused the update. An `onPaste` handler that calls `insertData`
 during the paste gets that insertion's result.
 

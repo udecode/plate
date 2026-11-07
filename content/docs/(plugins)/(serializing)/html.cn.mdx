@@ -214,7 +214,8 @@ mapping 会让复制内容只保留纯文本。
 需要拥有完整 `text/html` browser payload 时，通过 `dataTransferFormats` 注册
 `DataTransferFormat`。该 owner 可以检查并准备完整 payload，然后返回
 `decodeHtmlDataTransfer({ ...context, data: prepared })`（按内置 HTML format 的
-方式解码并报告），或返回 `null` 让下一个 format 尝试。参阅
+方式解码并报告）。准备后的 payload 中没有可插入内容时，它返回空 slice。返回该
+slice 即认领 paste，返回 `null` 则让下一个 format 尝试。参阅
 [Clipboard](/cn/docs/clipboard#自定义-datatransfer-format)。
 
 ## Result 与 diagnostics
@@ -269,7 +270,7 @@ attribute 的自定义 decoder 用 `preserve` 声明它。
 | `editor.api.html.parse(source, options?)` | `HtmlPlugin` | 使用已安装 target 解析 document。 |
 | `editor.api.html.parseSlice(source, options?)` | `HtmlPlugin` | 使用已安装 target 解析 slice。 |
 | `editor.api.html.serialize(options?)` | `HtmlPlugin` | 序列化当前或指定 document。 |
-| `decodeHtmlDataTransfer(context)` | `platejs/html` | 在 `DataTransferFormat` 中按已安装 HTML format 的方式解码 transfer payload。 |
+| `decodeHtmlDataTransfer(context)` | `platejs/html` | 在 `DataTransferFormat` 中按已安装 HTML format 的方式解码 transfer payload。HTML 解析失败，或它就是 transfer 自身的 `text/html` 且只重复 `text/plain` 时，返回 `null`。没有可插入内容时返回空 slice。 |
 
 直接 parse 的 options 必须包含 `plugins`，并可包含 `schema`、`limits`、
 `lossPolicy` 与 `collapseWhitespace`。直接 serialize 的 options 必须包含

@@ -6,13 +6,15 @@ import {
   ElementApi,
   PLUGINS,
 } from '../../../core';
+import { fitsHtmlByteLimit } from '../../../lib/plugins/html/htmlAst';
 import {
+  getHtmlComments,
   isHtmlComment,
   removeHtmlNodesBetweenComments,
   traverseHtmlElements,
   traverseHtmlNode,
 } from '../../../lib/plugins/html/htmlDom';
-import { decodeHtmlDataTransfer } from '../../../lib/plugins/html/HtmlPlugin';
+import { decodePreparedHtmlDataTransfer } from '../../../lib/plugins/html/HtmlPlugin';
 import { cleanWordHtml, isWordHtml } from '../../html/cleanWordHtml.internal';
 import { parseDocxHtml } from '../../internal/domParser';
 import { MARKER_END, MARKER_START } from '../../internal/markerCharacters';
@@ -45,12 +47,19 @@ const markWordEquations = (body: HTMLElement, markers: EquationMarkers) => {
 
     return true;
   });
+  let equations = 0;
+  let fallbacks = 0;
+  let readable = 0;
+
   for (const comment of comments) {
+    if (comment.data === '[if !msEquation]') fallbacks += 1;
     const markup = WORD_EQUATION_PATTERN.exec(comment.data)?.[1];
 
     if (markup === undefined) continue;
     const equation = parseClipboardEquation(markup);
 
+    equations += 1;
+    if (equation) readable += 1;
     comment.replaceWith(
       equation
         ? `${equation.block ? markers.block : markers.inline}${equation.tex}${markers.end}`
@@ -58,10 +67,15 @@ const markWordEquations = (body: HTMLElement, markers: EquationMarkers) => {
     );
   }
   removeHtmlNodesBetweenComments(body, '[if !msEquation]', '[endif]');
+
+  // Each fallback picture stands in for one equation, so a fallback without a
+  // readable equation counts as unread.
+  return { unread: readable < Math.max(equations, fallbacks) };
 };
 
 const CSS_AT_RULE_PATTERN = /@[^{};]*(?:;|\{(?:[^{}]*\{[^{}]*\})*[^{}]*\})/g;
-const CSS_COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|<!--|-->/g;
+const CSS_COMMENT_PATTERN =
+  /("(?:[^"\\]|\\[\s\S])*"|'(?:[^'\\]|\\[\s\S])*')|\/\*[\s\S]*?\*\/|<!--|-->/g;
 const CSS_RULE_PATTERN = /([^{}]+)\{([^{}]*)\}/g;
 const CSS_TRAILING_SEPARATOR_PATTERN = /[\s;]+$/;
 const DECIMAL_COMPONENT_PATTERN = /^\d+$/;
@@ -115,7 +129,7 @@ const inlineStyleRules = (document: Document) => {
   const css = styleElements
     .map((element) => element.textContent ?? '')
     .join('\n')
-    .replaceAll(CSS_COMMENT_PATTERN, '')
+    .replaceAll(CSS_COMMENT_PATTERN, (_match, quoted?: string) => quoted ?? '')
     .replaceAll(CSS_AT_RULE_PATTERN, '');
   const rulesByElement = new Map<
     Element,
@@ -247,7 +261,7 @@ const getDeclaredListStyles = (html: string) => {
 };
 
 // Excel holds its cell formatting and mso- markers in its style block, so its
-// cells carry no inline Word markers until juice inlines that block.
+// cells carry no inline Word markers until Word paste inlines that block.
 const isOfficePayload = (html: string) => {
   const document = parseDocxHtml(html);
 
@@ -260,6 +274,28 @@ const isOfficePayload = (html: string) => {
   );
 };
 
+const WORD_COMMENT_STYLE_PATTERN =
+  /mso-(?:element:\s*comment-list|special-character:\s*comment)/i;
+
+const WORD_LEFT_OUT_PAYLOADS = [
+  {
+    matches: (element: HTMLElement) => element.style.display === 'none',
+    message: 'Word hidden text was left out.',
+  },
+  {
+    matches: (element: HTMLElement) =>
+      element.matches('a.msocomanchor, a[href^="#_msocom"]') ||
+      WORD_COMMENT_STYLE_PATTERN.test(element.getAttribute('style') ?? ''),
+    message: 'Word comments were left out.',
+    range: '[if !supportAnnotations]',
+  },
+  {
+    matches: (element: HTMLElement) => element.matches('del, .msoDel'),
+    message: 'Word tracked changes were accepted.',
+    unwrap: 'ins, .msoIns',
+  },
+];
+
 const prepareWordHtml = (
   input: string,
   rtf: string,
@@ -269,9 +305,29 @@ const prepareWordHtml = (
 
   inlineStyleRules(document);
   const { body } = document;
+  const elements = Array.from(body.querySelectorAll<HTMLElement>('*'));
+  const comments = getHtmlComments(body);
+  const found = WORD_LEFT_OUT_PAYLOADS.map(
+    ({ matches, message, range, unwrap }) => ({
+      message,
+      range: range && comments.includes(range) ? range : undefined,
+      removed: matches ? elements.filter(matches) : [],
+      unwrapped: unwrap ? Array.from(body.querySelectorAll(unwrap)) : [],
+    })
+  );
+  const leftOut: string[] = [];
 
-  if (!isWordHtml(body)) return null;
-  markWordEquations(body, markers);
+  for (const { message, range, removed, unwrapped } of found) {
+    for (const element of removed) element.remove();
+    for (const element of unwrapped) element.replaceWith(...element.childNodes);
+    if (range) removeHtmlNodesBetweenComments(body, range, '[endif]');
+    if (removed.length > 0 || unwrapped.length > 0 || range) {
+      leftOut.push(message);
+    }
+  }
+  if (markWordEquations(body, markers).unread) {
+    leftOut.push('Word equations were left out.');
+  }
 
   const getIndent = (
     element: HTMLElement,
@@ -425,13 +481,7 @@ const prepareWordHtml = (
     }
   });
 
-  const cleanedDocument = parseDocxHtml(cleanWordHtml(body.innerHTML, rtf));
-
-  cleanedDocument.body.querySelectorAll('img').forEach((element) => {
-    element.remove();
-  });
-
-  return cleanedDocument.body.outerHTML;
+  return { html: cleanWordHtml(body.innerHTML, rtf), leftOut };
 };
 
 const cleanWordSlice = (
@@ -485,20 +535,31 @@ export const WordPastePlugin = definePlugin(PLUGINS.wordPaste, {
 }).extend(() => ({
   dataTransferFormats: [
     {
-      accept: ({ data }) => isOfficePayload(data),
+      accept: ({ data }) => fitsHtmlByteLimit(data) && isOfficePayload(data),
       decode: (context) => {
-        const { data, registry, snapshot } = context;
+        const { data, registry, report, snapshot } = context;
         const markers = createEquationMarkers(data);
-        const html = prepareWordHtml(
+        const prepared = prepareWordHtml(
           data,
           snapshot.getData('text/rtf'),
           markers
         );
+        const slice = decodePreparedHtmlDataTransfer(context, prepared.html);
 
-        if (!html) return null;
-        const slice = decodeHtmlDataTransfer({ ...context, data: html });
+        const leftSomethingOut = prepared.leftOut.length > 0;
 
-        if (!slice) return null;
+        if (!leftSomethingOut && !slice?.content.length) return null;
+        for (const message of prepared.leftOut) {
+          report({ impact: 'lossy', message });
+        }
+        if (!slice) {
+          report({
+            impact: 'lossy',
+            message: 'Word content is too large or too deeply nested to paste.',
+          });
+
+          return ContentSlice.empty;
+        }
 
         return cleanWordSlice(
           slice,

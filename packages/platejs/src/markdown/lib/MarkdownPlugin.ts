@@ -286,7 +286,7 @@ const parseMarkdownDataTransferSlice = (
     });
   }
 
-  return result.ok ? result.slice : null;
+  return result.ok && result.slice.content.length > 0 ? result.slice : null;
 };
 
 export const MarkdownPlugin = definePlugin(PLUGINS.markdown, {

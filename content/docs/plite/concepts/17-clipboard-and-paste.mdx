@@ -111,11 +111,14 @@ Registered DataTransfer formats add schema-aware MIME representations without
 putting DOM types in Plite core. Register them with
 `dataTransferFormats(name, formats)`. A decoder returns one `ContentSlice`, or
 `null` to delegate the payload to the next format; `accept` returns `false` to
-skip the format before decoding. Plite preserves the slice's open edges and
-detached roots, then fits the complete slice at the actual insertion range.
+skip the format before decoding. An empty slice claims the payload, so no
+later format reads it and nothing is inserted. A claimed paste keeps the
+selection. Plite preserves the
+slice's open edges and detached roots, then fits the complete slice at the
+actual insertion range.
 
-A slice that does not fit leaves the transaction untouched, and the next format
-tries. Plain text is the final fallback. An encoder returns a string, or `null`
+A slice with content that does not fit leaves the transaction untouched, and
+the next format tries. Plain text is the final fallback. An encoder returns a string, or `null`
 to leave its MIME type to the next encoder; each MIME type is written once.
 Callback exceptions are reported to the editor's `lifecycleErrorSink` as
 `data-transfer-format` errors with the format `key`, `mimeType`, and `phase`,

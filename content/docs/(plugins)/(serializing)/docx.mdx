@@ -64,7 +64,11 @@ const editor = createEditor({
 });
 ```
 
-Clipboard paste does not upload embedded images or preserve Word table geometry. Configure those destination policies in their owning media and table features.
+A pasted Word picture lands as an image when its address is `http`, `https`, `blob` or a raster `data` address. In Chrome, a picture copied from Word has a local file address, and its bytes are in the RTF copy, so `WordPastePlugin` rebuilds the picture from the RTF copy as a `data` address. A local picture that the RTF copy lacks lands as its alt text, and the paste reports it. In Safari, a picture copied from Word has a `blob` address, which works only in the tab that pasted it.
+
+Word paste leaves out hidden text, rows hidden in a table copied from Excel, comment markers and the comment list. It accepts tracked changes, so inserted text lands as plain text and deleted text is left out. It reads each Word equation into an equation node as DOCX import does, or into TeX text without the equation plugins, and leaves out an equation it cannot read. Each paste reports hidden text, comments, tracked changes and unread equations once each as a `lossy` diagnostic, which [`onPasteResult`](/docs/clipboard#paste-results) receives. When nothing else remains, the paste inserts nothing, and `onPasteResult` receives `inserted: false` with those reports. When Word left something out and the cleaned HTML has more elements or deeper nesting than the HTML parser allows, the paste also inserts nothing and reports that the content is too large or too deeply nested. A Word or Excel payload over 5 MiB, the HTML byte limit, skips Word paste and pastes as plain text.
+
+Clipboard paste does not upload images or preserve Word table geometry. Configure those destination policies in their owning media and table features.
 
 ## Import a DOCX file
 

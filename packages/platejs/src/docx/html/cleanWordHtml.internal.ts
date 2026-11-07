@@ -269,35 +269,44 @@ const cleanWordHtmlImageElements = (
   rtf: string,
   rootNode: Node
 ): void => {
-  if (!rtf) return;
-
-  const rtfImagesMap = getRtfImagesMap(rtf);
+  const rtfImagesMap = rtf ? getRtfImagesMap(rtf) : {};
 
   traverseHtmlElements(rootNode, (element) => {
     if (!['IMG', 'V:IMAGEDATA'].includes(element.tagName)) return true;
 
+    const replaceShapeWithImage = (src: string) => {
+      const shape = element.parentElement;
+
+      if (!shape) return;
+      const imageElement = document.createElement('img');
+      const alt = shape.getAttribute('alt') || element.getAttribute('o:title');
+
+      imageElement.setAttribute('src', src);
+      if (alt) imageElement.setAttribute('alt', alt);
+      shape.replaceWith(imageElement);
+    };
+
     if (element.tagName === 'IMG') {
       const src = element.getAttribute('src');
 
-      if (!src?.startsWith('file://')) return true;
-
-      const alt = element.getAttribute('alt');
-
-      if (alt && WEB_URL_PATTERN.test(alt) && decideUrl('image', alt).ok) {
-        element.setAttribute('src', alt);
-
-        return true;
-      }
+      if (!rtf || !src?.startsWith('file://')) return true;
     }
 
     const vShapeSpid = getVShapeSpid(document, element);
-
-    if (!vShapeSpid) return true;
-
-    const rtfImage = rtfImagesMap[vShapeSpid];
+    const rtfImage = vShapeSpid ? rtfImagesMap[vShapeSpid] : undefined;
 
     if (!rtfImage) {
-      element.remove();
+      const alt = element.getAttribute('alt');
+
+      if (element.tagName !== 'IMG') {
+        replaceShapeWithImage(element.getAttribute('src') ?? '');
+      } else if (
+        alt &&
+        WEB_URL_PATTERN.test(alt) &&
+        decideUrl('image', alt).ok
+      ) {
+        element.setAttribute('src', alt);
+      }
 
       return true;
     }
@@ -310,14 +319,8 @@ const cleanWordHtmlImageElements = (
 
     if (element.tagName === 'IMG') {
       element.setAttribute('src', dataUri);
-    } else if (element.parentNode?.parentNode) {
-      const imageElement = document.createElement('img');
-
-      imageElement.setAttribute('src', dataUri);
-      element.parentNode.parentNode.replaceChild(
-        imageElement,
-        element.parentNode
-      );
+    } else {
+      replaceShapeWithImage(dataUri);
     }
 
     return true;

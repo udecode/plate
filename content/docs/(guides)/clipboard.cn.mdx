@@ -185,7 +185,7 @@ export const NotesTransferPlugin = definePlugin('notesTransfer', {
 | --- | --- |
 | `mimeType` | 从 `DataTransfer` 读取与写入的 MIME type。每个 plugin 只声明一次，`decode` 与 `encode` 放在同一个 object 中。 |
 | `accept(context)` | 可选。返回 `false` 时，在 `decode` 运行前跳过该 format。 |
-| `decode(context)` | 返回 `ContentSlice`，或返回 `null` 让下一个 format 读取 payload。 |
+| `decode(context)` | 返回 `ContentSlice`，或返回 `null` 让下一个 format 读取 payload。返回空 slice（`ContentSlice.empty`）表示认领该 payload，paste 到此结束，不插入任何内容。 |
 | `encode(context)` | 返回要写入的 string，或返回 `null` 把该 MIME type 留给下一个 encoder。 |
 | `priority` | 可选，默认 `0`。数值越高越先运行。 |
 | `scope` | `'document'` claim 整个 schema。省略时，format claim plugin 自己的 element type 与 property，因此 plugin 必须拥有其一。 |
@@ -221,8 +221,12 @@ decode: ({ data, report }) => {
 ### `null`、`false` 与 throw
 
 - `accept` 返回 `false`：该 format 不适用于当前情况。用于 parse 前的低成本检查。
-- `decode` 返回 `null`：payload 来自其他来源、格式错误或为空。Clipboard data
-  不可信，遇到错误输入时返回 `null`，不要 throw。
+- `decode` 返回 `null`：payload 来自其他来源、格式错误，或没有该 format 能插入的
+  内容，由下一个 format 继续尝试。Clipboard data 不可信，遇到错误输入时返回
+  `null`，不要 throw。
+- `decode` 返回空 slice：该 format 认领 payload，但其中没有可插入的内容，例如该
+  format 有意略去了全部内容。Paste 到此结束，不插入内容，选区保持不变，
+  `onPasteResult` 收到 `inserted: false` 与本次 paste 的报告。
 - `encode` 返回 `null`：该 slice 对这个 MIME type 没有可写内容。同一 type 的
   下一个 encoder 仍可写入。
 - Throw 表示 bug。Plate 捕获异常并发送到 editor 的 `lifecycleErrorSink`，然后
@@ -247,7 +251,7 @@ Format error 带有 `key`、`mimeType`、`pluginName` 与 `phase`（`'accept'`�
 
 ### Paste 顺序
 
-Paste 依次尝试以下步骤，直到某一步插入内容：
+Paste 依次尝试以下步骤，直到某一步插入内容，或某个 format 以空 slice 认领 payload：
 
 1. `domCommands.insertData` interceptor。
 2. Plate 自身的 fragment payload。
@@ -257,8 +261,8 @@ Paste 依次尝试以下步骤，直到某一步插入内容：
 5. Plain text。
 
 Plate 在实际 insertion range 处 fit 每个 decoded slice，并保留其 open edge 与
-detached root。无法 fit 的 slice 不写入任何内容，由下一个 format 继续尝试。
-Plain text 是最终 fallback。
+detached root。无法 fit 的非空 slice 不写入任何内容，由下一个 format 继续尝试。
+空 slice 结束 paste，不写入任何内容。Plain text 是最终 fallback。
 
 MIME type、方向与 priority 都相同的 format 必须 claim 互不重叠的 schema。Claim
 重叠会在创建 editor 时抛出，因此同一 MIME type 的两个 document-scope format
@@ -286,8 +290,8 @@ media 只保留 fallback content。没有可插入内容时，HTML format 仍会
 ### Paste 结果
 
 对 Plate 内置 format 处理的每次 paste，`EditorContent` 调用一次
-`onPasteResult`：粘贴内容 commit 之后（`inserted: true`），或没有 format 能插入
-时（`inserted: false`）。
+`onPasteResult`：粘贴内容 commit 之后（`inserted: true`），或没有插入任何内容时
+（`inserted: false`），即没有 format 能插入 payload，或某个 format 以空 slice 认领了它。
 
 ```tsx
 <EditorContent
@@ -303,13 +307,14 @@ media 只保留 fallback content。没有可插入内容时，HTML format 仍会
 />
 ```
 
-`diagnostics` 包含被插入内容的 format 的报告。之前无法使用的 format 报告的损失
+`diagnostics` 包含被插入内容的 format 的报告，或以空 slice 认领 payload 的 format
+的报告。之前无法使用的 format 报告的损失
 会保留在列表中，除非被插入的 format 解码的是同一 MIME type：与 HTML 文本相同的
 plain text 并不能恢复 HTML 丢失的内容。
 
 只会调用接收 paste 的 editor surface，且仅在其仍挂载时调用。`onPaste` 或
 `domCommands.insertData` handler 不经内置 format 处理 paste 时、drop 时，以及单独
-调用 `editor.api.dom.clipboard.insertData`（内容插入时返回 `true`，没有可用 format 时返回 `false`，编辑器拒绝 update 时返回 `undefined`）时都不会调用
+调用 `editor.api.dom.clipboard.insertData`（内容插入时返回 `true`，没有插入内容时返回 `false`，编辑器拒绝 update 时返回 `undefined`）时都不会调用
 `onPasteResult`。在 paste 期间通过 `insertData` 插入的 `onPaste` handler 会收到该次
 插入的结果。
 

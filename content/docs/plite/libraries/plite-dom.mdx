@@ -149,15 +149,18 @@ const editor = useEditor({
 ```
 
 `decode` returns a `ContentSlice`, or `null` to delegate the payload to the
-next format. `encode` returns a string, or `null` to leave its MIME type to the
+next format. An empty slice, such as `ContentSlice.empty`, claims the payload,
+so no later format reads it and nothing is inserted. A claimed paste keeps the
+selection.
+`encode` returns a string, or `null` to leave its MIME type to the
 next encoder. `accept` returns `false` to skip the format before decoding.
 Every declaration needs `decode`, `encode`, or both.
 
 Decoded slices keep their open edge depths and detached roots. Use
 `ContentSlice.closed(content)` for a closed fragment or
 `ContentSlice.fromJSON(payload)` for validated open data. Insertion fits the
-slice against the actual target. An unfit result delegates without publishing a
-partial write.
+slice against the actual target. An unfit slice with content delegates without
+publishing a partial write.
 
 Decode callbacks receive `{ data, mimeType, report, snapshot, state }`. Encode
 callbacks receive `{ mimeType, slice, state }`. They do not receive the editor,

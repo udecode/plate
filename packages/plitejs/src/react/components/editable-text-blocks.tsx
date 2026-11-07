@@ -668,10 +668,11 @@ export type EditableProps<
   onKeyDown?: EditableKeyDownHandler;
   onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
   /**
-   * Called once for each paste this editable inserts through its built-in
+   * Called once for each paste this editable handles through its built-in
    * formats: after the paste commits (`inserted: true`), or when no format
-   * can insert it (`inserted: false`). A diagnostic with `impact: 'lossy'`
-   * means pasted content was left out.
+   * can insert it or a format claims it with an empty slice
+   * (`inserted: false`). A diagnostic with `impact: 'lossy'` means pasted
+   * content was left out.
    *
    * Not called when `onPaste` or a plugin command handles the paste without
    * the built-in formats, or when this editable unmounts before the paste

@@ -122,8 +122,9 @@ export type EditableHistoryReplayEvent = Readonly<{
 /** Outcome of one paste that an editable's built-in insertion handled. */
 export type EditablePasteResult = Readonly<{
   /**
-   * Format reports for the inserted payload, plus loss from payloads that
-   * could not be used. `impact: 'lossy'` means pasted content was left out.
+   * Reports from the format that inserted or claimed the payload, plus loss
+   * from payloads that could not be used. `impact: 'lossy'` means pasted
+   * content was left out.
    */
   diagnostics: readonly DataTransferDiagnostic[];
   /** Whether the paste committed content. */

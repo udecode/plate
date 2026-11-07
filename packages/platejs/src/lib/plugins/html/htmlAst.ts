@@ -28,6 +28,12 @@ const DEFAULT_HTML_PARSE_LIMITS: HtmlParseLimits = Object.freeze({
   maxNodes: 100_000,
 });
 
+const getByteLength = (source: string) =>
+  new TextEncoder().encode(source).byteLength;
+
+export const fitsHtmlByteLimit = (source: string) =>
+  getByteLength(source) <= DEFAULT_HTML_PARSE_LIMITS.maxBytes;
+
 type HtmlAstNode = DefaultTreeAdapterTypes.Node;
 type HtmlAstChildNode = DefaultTreeAdapterTypes.ChildNode;
 type HtmlAstElement = DefaultTreeAdapterTypes.Element;
@@ -409,7 +415,7 @@ export const parseHtmlAst = (
     ...DEFAULT_HTML_PARSE_LIMITS,
     ...limitOverrides,
   });
-  const bytes = new TextEncoder().encode(source).byteLength;
+  const bytes = getByteLength(source);
 
   if (bytes > limits.maxBytes) {
     return limitError('maxBytes', limits.maxBytes, bytes);

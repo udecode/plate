@@ -234,8 +234,9 @@ If a browser transfer format owns a complete `text/html` payload, register a
 `DataTransferFormat` through `dataTransferFormats`. That owner can inspect the
 whole payload, prepare it, and return
 `decodeHtmlDataTransfer({ ...context, data: prepared })`, which decodes and
-reports as the built-in HTML format does, or return `null` to let the next
-format try. See
+reports as the built-in HTML format does. It returns an empty slice when
+nothing in the prepared payload is insertable. Return that slice to claim the
+paste, or return `null` to let the next format try. See
 [Clipboard](/docs/clipboard#custom-datatransfer-formats).
 
 ## Results and diagnostics
@@ -307,7 +308,7 @@ the node/depth limits while parse5 builds the tree.
 | `editor.api.html.parse(source, options?)` | `HtmlPlugin` | Parse with the installed target. |
 | `editor.api.html.parseSlice(source, options?)` | `HtmlPlugin` | Parse a slice with the installed target. |
 | `editor.api.html.serialize(options?)` | `HtmlPlugin` | Serialize the current or supplied document. |
-| `decodeHtmlDataTransfer(context)` | `platejs/html` | Decode a transfer payload as the installed HTML format does, inside a `DataTransferFormat`. |
+| `decodeHtmlDataTransfer(context)` | `platejs/html` | Decode a transfer payload as the installed HTML format does, inside a `DataTransferFormat`. Returns `null` when the HTML fails to parse, or when it is the transfer's own `text/html` and only repeats `text/plain`. Returns an empty slice when nothing is insertable. |
 
 Direct parse options require `plugins` and accept `schema`, `limits`,
 `lossPolicy`, and `collapseWhitespace`. Direct serialization options require

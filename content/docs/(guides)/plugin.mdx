@@ -477,6 +477,8 @@ Whole-payload admission, source-string cleanup, Word/RTF handling, and
 post-decode slice repair belong to a `DataTransferFormat`. That owner may
 prepare the payload and return
 `decodeHtmlDataTransfer({ ...context, data: prepared })` from `platejs/html`.
+An empty result claims the paste; return `null` instead to let the next format
+try.
 
 ## Typed plugins
 

@@ -398,8 +398,9 @@ interceptors can claim the payload, transform it, or return `next()` to
 continue. The accepted command spec commits through one transaction.
 
 The default command path reads the editor fragment format, then configured
-DataTransfer formats, then plain text. A refused format ends the paste; no later
-format runs.
+DataTransfer formats, then plain text. A format that returns `null`, or whose
+slice does not fit, lets the next format try. An empty slice ends the paste
+with nothing inserted.
 
 #### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean | undefined`
 

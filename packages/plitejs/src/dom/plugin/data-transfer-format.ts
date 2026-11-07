@@ -160,9 +160,11 @@ export type DataTransferFormat<V extends Value = Value> = Readonly<{
   /** MIME type read from and written to the host data container. */
   mimeType: string;
   /**
-   * Parse an intact slice, or return null to delegate to the next format.
-   * Contextual schema fitting occurs at insertion. Report what the slice
-   * leaves out through `context.report`.
+   * Parse an intact slice, or return null to delegate to the next format. An
+   * empty slice claims the payload, so no later format reads it and nothing is
+   * inserted. A claimed paste keeps the selection. Contextual schema fitting
+   * occurs at insertion. Report what the slice leaves out through
+   * `context.report`.
    */
   decode?: (context: DataTransferDecodeContext<V>) => ContentSlice<V> | null;
   /** Return false to skip this payload before decoding. */
@@ -1114,6 +1116,13 @@ export const createDataTransferTransactionSpec = <V extends Value>(
     attempts.push(attempt);
 
     if (!slice) continue;
+    if (slice.content.length === 0) {
+      return recordDataTransferOutcome(
+        editor,
+        false,
+        selectDataTransferDiagnostics(attempts, attempt)
+      );
+    }
 
     const input = { slice };
     const result = options?.state
