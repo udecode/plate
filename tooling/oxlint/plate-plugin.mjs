@@ -662,6 +662,21 @@ const noWallClockBound = {
   create(context) {
     return {
       CallExpression(node) {
+        if (
+          node.callee.type === 'MemberExpression' &&
+          node.callee.object.name === 'assert' &&
+          node.callee.property.name === 'ok'
+        ) {
+          const [value] = node.arguments;
+          if (
+            value?.type === 'BinaryExpression' &&
+            ORDERINGS.has(value.operator) &&
+            readsClock(value, context)
+          ) {
+            context.report({ messageId: 'wallClock', node });
+          }
+          return;
+        }
         const matcher = matcherOf(node);
         if (!matcher) return;
         const [actual] = matcher.expectCall.arguments;
