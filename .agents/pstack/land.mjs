@@ -91,9 +91,17 @@ const scale = process.env.PSTACK_LAND_WAIT_SCALE ?? '1';
 if (!/^\d+(\.\d+)?$/u.test(scale)) fail(`PSTACK_LAND_WAIT_SCALE must be a decimal number of at least 0, not "${scale}"`, 2);
 const MINUTE = 60_000 * Number(scale);
 const git = (...args) => spawnSync('git', args, { encoding: 'utf8' });
+function signerNote(prefix = [], rerun = 'run land.mjs again with the same --check options and no --message, because its commit stays local') {
+  const read = (...args) => spawnSync('git', [...prefix, 'config', ...args], { encoding: 'utf8' }).stdout?.trim() ?? '';
+  if (read('--type=bool', '--get', 'commit.gpgsign') !== 'true') return '';
+  const format = read('--get', 'gpg.format') || 'openpgp';
+  const keys = format === 'openpgp' ? '^gpg\\.(openpgp\\.)?program$' : `^gpg\\.${format}\\.program$`;
+  const signer = read('--get-regexp', keys).split('\n').at(-1).replace(/^\S+\s?/u, '') || ({ openpgp: 'gpg', ssh: 'ssh-keygen', x509: 'gpgsm' }[format] ?? format);
+  return `\nThis repository signs its commits with ${signer}. When the error comes from it and its key and settings are right, only a person can unlock or approve it, so ask the owner once, leave signing on and, after they answer, ${rerun}.`;
+}
 const must = (...args) => {
   const run = git(...args);
-  if (run.status !== 0) fail(`git ${args.join(' ')} failed: ${run.stderr.trim()}`);
+  if (run.status !== 0) fail(`git ${args.join(' ')} failed: ${run.stderr.trim()}${args[0] === 'commit' ? signerNote() : ''}`);
   return run.stdout.trim();
 };
 const quote = (text) => `'${text.replaceAll("'", "'\\''")}'`;
@@ -151,7 +159,7 @@ const side = pair ? [`--git-dir=${join(process.cwd(), pair.dir)}`, `--work-tree=
 const cgit = (...args) => spawnSync('git', [...side, ...args], { encoding: 'utf8' });
 const cmust = (...args) => {
   const run = cgit(...args);
-  if (run.status !== 0) fail(`git ${args.join(' ')} in ${pair.dir} failed: ${run.stderr.trim()}`);
+  if (run.status !== 0) fail(`git ${args.join(' ')} in ${pair.dir} failed: ${run.stderr.trim()}${args[0] === 'commit' ? signerNote(side) : ''}`);
   return run.stdout.trim();
 };
 const cupstream = `refs/remotes/origin/${branch}`;
@@ -175,15 +183,22 @@ const gitAsync = (args) =>
 
 let fetched;
 
-// Each half's fetch is a network round trip of a second or two, so both run at once.
-async function fetch() {
+async function fetchCompanionFirst() {
   const own = ['fetch', '--quiet', canonical, `+refs/heads/${branch}:${upstream}`];
   const theirs = ['fetch', '--quiet', 'origin', `+refs/heads/${branch}:${cupstream}`];
-  const [run, crun] = await Promise.all([gitAsync(own), pair ? gitAsync([...side, ...theirs]) : null]);
+  const crun = pair ? await gitAsync([...side, ...theirs]) : null;
+  const run = await gitAsync(own);
   if (run.status !== 0) fail(`git ${own.join(' ')} failed: ${run.stderr.trim()}`);
   if (crun && crun.status !== 0) fail(`git ${theirs.join(' ')} in ${pair.dir} failed: ${crun.stderr.trim()}`);
   // FETCH_HEAD is per worktree. Every worktree shares the upstream refs, and another session's push moves them.
   fetched = { own: must('rev-parse', 'FETCH_HEAD'), theirs: pair ? cmust('rev-parse', 'FETCH_HEAD') : null };
+}
+
+function lateCompanionHalf() {
+  if (!pair || cgit('fetch', '--quiet', 'origin', `+refs/heads/${branch}:${cupstream}`).status !== 0) return undefined;
+  const commits = cmust('log', '--format=%B%x00', `${fetched.theirs}..FETCH_HEAD`).split('\0');
+  const halves = commits.map((text) => [text.trim().split('\n')[0], text.match(/^Lands-With: (\S+)$/mu)?.[1]]);
+  return halves.find(([subject, sha]) => sha && git('log', '-1', '--format=%s', sha).stdout.trim() === subject && git('merge-base', '--is-ancestor', sha, fetched.own).status === 0)?.[1];
 }
 
 function rebase(inCompanion = false) {
@@ -197,7 +212,7 @@ function rebase(inCompanion = false) {
     const paths = unmerged(run);
     if (paths.length === 0) {
       run('rebase', '--abort');
-      fail(`git rebase ${where} failed: ${rebased.stderr.trim()}`);
+      fail(`git rebase ${where} failed: ${rebased.stderr.trim()}${signerNote(inCompanion ? side : [])}`);
     }
     const hits = inCompanion ? [] : generated.map((entry) => unmerged(git, entry.paths));
     const owners = generated.filter((_, index) => hits[index]?.length > 0);
@@ -522,14 +537,15 @@ function squash({ subject, body }) {
   const file = join(mkdtempSync(join(tmpdir(), 'land-')), 'message');
   writeFileSync(file, `${subject}\n\n${trailers(body, plan, lead)}\n`);
   const commit = (prefix) => spawnSync('git', [...prefix, 'commit', '--quiet', '--file', file], { stdio: 'inherit' }).status === 0;
-  if ((own.length > 0 && !commit([])) || (theirs.length > 0 && !commit(side))) {
+  const failed = own.length > 0 && !commit([]) ? [] : theirs.length > 0 && !commit(side) ? side : null;
+  if (failed) {
     undo();
-    fail('git commit failed; the task commits are back as they were');
+    fail(`git commit failed; the task commits are back as they were${signerNote(failed, 'run the same land.mjs command again')}`);
   }
   return { plan, lead, own: own.length > 0, theirs: theirs.length > 0 };
 }
 
-await fetch();
+await fetchCompanionFirst();
 // <branch>'s config, because a task could loosen its own copy, and a branch cut before the split still carries the config from before it.
 const settled = JSON.parse(git('show', `${upstream}:.agents/pstack.json`).stdout || '{}');
 const { sourceless } = settled;
@@ -602,7 +618,16 @@ function check(rebased = false) {
   }
   for (const command of checks) {
     const run = spawnSync(command, { shell: true, stdio: 'inherit' });
-    if (run.status !== 0) fail(`check failed: ${command}; the squashed commit stays local${rebased ? `, rebased onto the commits origin/${branch} gained while its checks ran, which may cause the failure` : ''}`);
+    if (run.status === 0) continue;
+    const late = lateCompanionHalf();
+    if (late) {
+      fail(
+        `check failed: ${command}; it ran on ${late} without that commit's ${pair.dir} half, which reached origin/${branch} after land.mjs read it, and that may cause the failure. ` +
+          'The squashed commit stays local, so run land.mjs again with the same --check options and no --message; it rebases and checks it.',
+        EX_TEMPFAIL
+      );
+    }
+    fail(`check failed: ${command}; the squashed commit stays local${rebased ? `, rebased onto the commits origin/${branch} gained while its checks ran, which may cause the failure` : ''}`);
   }
   release();
   if (dirty() || sideDirty()) {
@@ -640,7 +665,7 @@ if (mode === 'push') {
     } else if (moved && moves < RETRIES) {
       moves += 1;
       console.log(`origin/${branch} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
-      await fetch();
+      await fetchCompanionFirst();
       rebase();
       refresh();
       if (pair) rebase(true);
