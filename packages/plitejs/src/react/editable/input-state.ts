@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 
 import { type Path, type Range, RangeApi } from '../..';
 import { setEditorCompositionPending } from '../../core/public-state';
+import { placedSince } from '../../core/view-carets';
 import { containsShadowAware, type DOMElement, getSelection } from '../../dom';
 import {
   DOMRootRuntime,
@@ -115,8 +116,17 @@ export type CompositionReceipt = Readonly<{
   status: 'cancelled' | 'committed' | 'pending';
 }>;
 
-/** A vertical press the browser moves, with the model selection it started from. */
-export type NativeMoveHold = Readonly<{ selection: Range | null }>;
+export type NativeMoveHold = Readonly<{ receipt: number }>;
+
+export type ParkedExport = Readonly<{
+  breaks: number;
+  points: DOMSelectionPoints | null;
+}>;
+
+export type HiddenAnchorPress = Readonly<{
+  detach: () => void;
+  receipt: number;
+}>;
 
 export type EditableInputControllerState = {
   activeIntent: InputIntent | null;
@@ -127,6 +137,7 @@ export type EditableInputControllerState = {
   } | null;
   draggedBlock: boolean;
   draggedRange: Range | null;
+  hiddenAnchorPress: HiddenAnchorPress | null;
   isComposing: boolean;
   isDraggingInternally: boolean;
   isNativeSelectionDragActive: boolean;
@@ -138,6 +149,7 @@ export type EditableInputControllerState = {
   modelOwnedTextInputGuard?: number;
   nativeMoveHold: NativeMoveHold | null;
   outsideFocusBoundarySettleUntil: number;
+  parkedExport: ParkedExport | null;
   pendingDOMSelectionImport: boolean;
   pendingCompositionEnd: PendingCompositionEnd | null;
   pendingRootDOMInput?: {
@@ -299,6 +311,7 @@ export const createEditableInputControllerState = (
       compositionSession: null,
       draggedBlock: false,
       draggedRange: null,
+      hiddenAnchorPress: null,
       isComposing: false,
       isDraggingInternally: false,
       isNativeSelectionDragActive: false,
@@ -310,6 +323,7 @@ export const createEditableInputControllerState = (
       modelOwnedTextInputGuard: 0,
       nativeMoveHold: null,
       outsideFocusBoundarySettleUntil: 0,
+      parkedExport: null,
       pendingDOMSelectionImport: false,
       pendingCompositionEnd: null,
       pendingRootDOMInput: null,
@@ -569,13 +583,8 @@ export const isSelectionHeldForNativeMove = (
   const hold = inputController.state.nativeMoveHold;
 
   if (!hold || !editorElement) return false;
-  const selection = editor.read((state) => state.selection());
-  const modelSelectionMovedSincePress =
-    selection && hold.selection
-      ? !RangeApi.equals(selection, hold.selection)
-      : selection !== hold.selection;
 
-  if (modelSelectionMovedSincePress) {
+  if (placedSince(editor, hold.receipt)) {
     inputController.state.nativeMoveHold = null;
     return false;
   }
@@ -595,12 +604,60 @@ export const endNativeMoveHold = (inputController: EditableInputController) => {
   inputController.state.nativeMoveHold = null;
 };
 
+/**
+ * A Shift press that extends a range from its hidden anchor keeps that anchor
+ * for the import of the browser's move. Any key's release ends the press,
+ * because macOS sends no keyup for an arrow pressed while Command is held.
+ */
+export const armHiddenAnchorPress = (
+  inputController: EditableInputController,
+  receipt: number,
+  root: HTMLElement,
+  settle: () => void
+) => {
+  endHiddenAnchorPress(inputController);
+
+  const document = root.ownerDocument;
+  const window = document.defaultView;
+  const end = () => {
+    settle();
+    endHiddenAnchorPress(inputController);
+  };
+  const endWhenHidden = () => {
+    if (document.visibilityState === 'hidden') end();
+  };
+
+  document.addEventListener('keyup', end, true);
+  document.addEventListener('visibilitychange', endWhenHidden, true);
+  window?.addEventListener('blur', end);
+  window?.addEventListener('pointerdown', end, true);
+  root.addEventListener('focusout', end);
+  inputController.state.hiddenAnchorPress = {
+    detach: () => {
+      document.removeEventListener('keyup', end, true);
+      document.removeEventListener('visibilitychange', endWhenHidden, true);
+      window?.removeEventListener('blur', end);
+      window?.removeEventListener('pointerdown', end, true);
+      root.removeEventListener('focusout', end);
+    },
+    receipt,
+  };
+};
+
+export const endHiddenAnchorPress = (
+  inputController: EditableInputController
+) => {
+  inputController.state.hiddenAnchorPress?.detach();
+  inputController.state.hiddenAnchorPress = null;
+};
+
 /** Ends a pending selection import and the native-move hold it carries. */
 export const endSelectionImport = (
   inputController: EditableInputController
 ) => {
   inputController.state.pendingDOMSelectionImport = false;
   inputController.state.nativeMoveHold = null;
+  endHiddenAnchorPress(inputController);
 };
 
 export const prepareEditableModelSelection = (
@@ -622,12 +679,14 @@ export const finishEditableModelSelectionProjection = (
 export const exportEditableDOMSelection = (
   state: {
     isUpdatingSelection: boolean;
+    parkedExport?: ParkedExport | null;
     selectionChangeOrigin?: SelectionChangeOrigin | null;
   },
   tree: Document | ShadowRoot,
   points: DOMSelectionPoints | null,
   onExport?: () => void
 ) => {
+  state.parkedExport = null;
   changeDOMSelection(tree, points, () => {
     state.isUpdatingSelection = true;
     state.selectionChangeOrigin = 'programmatic-export';

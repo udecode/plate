@@ -3,6 +3,7 @@ import throttle from 'lodash/throttle.js';
 import type { RefObject } from 'react';
 
 import { PointApi, RangeApi } from '../..';
+import { getPlacementGeneration } from '../../core/view-carets';
 import { getSelection } from '../../dom';
 import {
   clearAfterInsertCaret,
@@ -12,6 +13,7 @@ import {
 import { findEditorDOMRootRuntime } from '../../dom/internal';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { readHiddenEndTarget } from './dom-coverage-selection';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import {
   beginEditableEventFrame,
@@ -21,7 +23,9 @@ import {
   recordEditableKernelTrace,
 } from './editing-kernel';
 import {
+  armHiddenAnchorPress,
   beginEditableNativeSelectionImport,
+  endHiddenAnchorPress,
   endSelectionImport,
   type EditableInputController,
 } from './input-state';
@@ -470,12 +474,54 @@ export const createRuntimeSelectionImportController = ({
     onDOMSelectionChange.flush();
   },
 
-  holdExportForNativeMove() {
+  holdExportForNativeMove({
+    fromHiddenAnchor,
+    root,
+  }: {
+    fromHiddenAnchor: boolean;
+    root: HTMLElement;
+  }) {
+    const receipt = getPlacementGeneration(editor);
+
     inputController.state.pendingDOMSelectionImport = true;
-    inputController.state.nativeMoveHold = {
-      selection: editor.read((state) => state.selection()),
-    };
+    inputController.state.nativeMoveHold = { receipt };
+    if (fromHiddenAnchor) {
+      armHiddenAnchorPress(inputController, receipt, root, () =>
+        this.settleHiddenEnd(root)
+      );
+    } else {
+      endHiddenAnchorPress(inputController);
+    }
     scheduleOnDOMSelectionChange();
+  },
+
+  /**
+   * Imports the DOM selection now when a hidden-anchor press is open or the
+   * DOM moved away from a parked range after its export, so the input that
+   * follows acts on it before its selectionchange arrives.
+   */
+  settleHiddenEnd(editorElement: HTMLElement) {
+    const { hiddenAnchorPress, isComposing } = inputController.state;
+    const selection = readRuntimeSelection(editor);
+    const domWins =
+      !isComposing &&
+      RangeApi.isRange(selection) &&
+      readHiddenEndTarget(editor, selection, editorElement, inputController) ===
+        'dom';
+
+    if (domWins) {
+      setEditableModelSelectionPreference({
+        inputController,
+        preferModelSelection: false,
+        selectionSource: 'dom-current',
+      });
+      beginEditableNativeSelectionImport(inputController);
+    }
+    if (domWins || hiddenAnchorPress) {
+      scheduleOnDOMSelectionChange();
+      this.flushSelectionChange();
+    }
+    endHiddenAnchorPress(inputController);
   },
 
   syncDOMSelectionFromRuntime() {

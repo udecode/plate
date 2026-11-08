@@ -23,6 +23,7 @@ import {
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
 import { isSelectAllHotkey } from '../viewport-commands';
+import { readHiddenEndTarget } from './dom-coverage-selection';
 import { getInputEventData, isDataTransferInput } from './dom-input-event';
 import type { EditableCommand } from './editable-command-types';
 import {
@@ -1061,14 +1062,28 @@ export const prepareEditableKeyDownKernel = ({
     : ReactEditor.hasEditableTarget(editor, event.target)
       ? 'editor'
       : 'unknown';
-  const hasModelOnlySelection = SelectionApi.isNode(selectionBefore);
+  const collapsesAtParkedCaret =
+    intent === 'native-selection-move' &&
+    command === null &&
+    !event.shiftKey &&
+    (event.key === 'ArrowLeft' || event.key === 'ArrowRight');
+  const keepsModelOnlySelection =
+    SelectionApi.isNode(selectionBefore) ||
+    (RangeApi.isRange(selectionBefore) &&
+      !collapsesAtParkedCaret &&
+      readHiddenEndTarget(
+        editor,
+        selectionBefore,
+        event.currentTarget,
+        inputController
+      ) === 'model');
 
   return DOMRootRuntime.resolveInputRuntime(editor).prepareKeyDownDecision({
     authoritativeModelSelection: hasAuthoritativeModelSelection({
       inputController,
     }),
     command,
-    hasModelOnlySelection,
+    keepsModelOnlySelection,
     hasProjectedViewSelection: readPliteViewSelection(editor) !== null,
     intent,
     internalTarget,

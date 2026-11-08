@@ -1299,6 +1299,33 @@ export const applyEditableCaretMovement = ({
           return;
         }
 
+        const moveLogically = () => {
+          if (!horizontal.extend && RangeApi.isExpanded(selection)) {
+            // Chromium and WebKit collapse a range one word step from its
+            // focus.
+            const next = editor.read((state) =>
+              modelReverse
+                ? state.points.before(selection.focus, {
+                    unit: horizontal.unit,
+                  })
+                : state.points.after(selection.focus, { unit: horizontal.unit })
+            );
+
+            dispatchCommand(editor, editorCommands.select, {
+              target: next ?? selection.focus,
+            });
+            return;
+          }
+
+          dispatchCommand(editor, editorCommands.move, {
+            options: {
+              edge: horizontal.extend ? 'focus' : undefined,
+              reverse: modelReverse,
+              unit: horizontal.unit,
+            },
+          });
+        };
+
         const usesVisualBidiOrder = editor.read((state) => {
           const block = state.nodes.block({
             at: selection.focus,
@@ -1309,13 +1336,7 @@ export const applyEditableCaretMovement = ({
         });
 
         if (!usesVisualBidiOrder) {
-          dispatchCommand(editor, editorCommands.move, {
-            options: {
-              edge: horizontal.extend ? 'focus' : undefined,
-              reverse: modelReverse,
-              unit: horizontal.unit,
-            },
-          });
+          moveLogically();
           return;
         }
 
@@ -1391,13 +1412,7 @@ export const applyEditableCaretMovement = ({
           return;
         }
 
-        dispatchCommand(editor, editorCommands.move, {
-          options: {
-            edge: horizontal.extend ? 'focus' : undefined,
-            reverse: modelReverse,
-            unit: horizontal.unit,
-          },
-        });
+        moveLogically();
       },
       boundarySkipUnit: horizontal.unit,
       preserveAnchorOnBoundarySkip: horizontal.extend,

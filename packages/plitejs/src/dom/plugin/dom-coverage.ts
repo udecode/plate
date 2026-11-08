@@ -149,6 +149,7 @@ interface DOMCoverageRegistry {
   boundaryRootKeys: Map<string, Set<string>>;
   boundariesByRootKey: Map<string, Set<string>>;
   collapsedByOwner: Map<NodeKey, Set<string>>;
+  modelBoundaryIds: Set<string>;
   collapsedOwners: Map<string, NodeKey | null>;
   unownedCollapsed: Set<string>;
   indexedIndex: ReturnType<typeof getSnapshot>['index'];
@@ -350,6 +351,9 @@ const addBoundaryToIndex = (
   const rootKeys = getRootKeysForBoundary(boundary);
 
   registry.boundaryRootKeys.set(boundary.boundaryId, rootKeys);
+  if (boundary.selectionPolicy === 'model') {
+    registry.modelBoundaryIds.add(boundary.boundaryId);
+  }
 
   for (const rootKey of rootKeys) {
     let boundaryIds = registry.boundariesByRootKey.get(rootKey);
@@ -369,6 +373,7 @@ const removeBoundaryFromIndex = (
 ) => {
   const rootKeys = registry.boundaryRootKeys.get(boundaryId);
 
+  registry.modelBoundaryIds.delete(boundaryId);
   if (!rootKeys) {
     return;
   }
@@ -492,6 +497,7 @@ const syncRegistryToEditor = (
   registry.boundaries.clear();
   registry.boundaryRootKeys.clear();
   registry.boundariesByRootKey.clear();
+  registry.modelBoundaryIds.clear();
 
   currentBoundaries.forEach((boundary) => {
     const resolved = resolveBoundary(editor, boundary);
@@ -606,6 +612,7 @@ export const createDOMCoverageSession = (
     boundariesByRootKey: new Map(),
     collapsedByOwner: new Map(),
     collapsedOwners: new Map(),
+    modelBoundaryIds: new Set(),
     unownedCollapsed: new Set(),
     indexedIndex: getSnapshot(editor).index,
     registrations: new Map(),
@@ -620,6 +627,7 @@ export const createDOMCoverageSession = (
       registry.boundariesByRootKey.clear();
       registry.collapsedByOwner.clear();
       registry.collapsedOwners.clear();
+      registry.modelBoundaryIds.clear();
       registry.unownedCollapsed.clear();
       registry.registrations.clear();
       registry.materializeHandlers.clear();
@@ -666,6 +674,11 @@ export const createDOMCoverageSession = (
     /** Return all currently valid boundaries after rebasing them to the editor. */
     getBoundaries(): readonly DOMCoverageBoundary[] {
       return [...syncRegistryToEditor(editor, registry).boundaries.values()];
+    },
+
+    /** Whether a `model` boundary is registered, without a coverage query. */
+    hasModelBoundaries(): boolean {
+      return registry.modelBoundaryIds.size > 0;
     },
 
     /** Return boundaries whose covered ranges intersect a Plite range. */

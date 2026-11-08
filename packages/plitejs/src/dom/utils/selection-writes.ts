@@ -83,7 +83,7 @@ export const getDOMRangeSelectionPoints = (
     : { anchor: start, focus: end };
 };
 
-const readsSelectionAsHost = (tree: Document | ShadowRoot) =>
+export const readsSelectionAsHost = (tree: Document | ShadowRoot) =>
   tree.nodeType === tree.DOCUMENT_FRAGMENT_NODE && isWebKitDOMHost(tree);
 
 /**

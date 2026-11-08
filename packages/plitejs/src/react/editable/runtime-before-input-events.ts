@@ -21,6 +21,7 @@ import {
   recordPliteReactRender,
 } from '../render-profiler';
 import { settleAndroidCompositionBeforeInput } from './android-composition';
+import { readHiddenEndTarget } from './dom-coverage-selection';
 import { getInputEventTargetRanges } from './dom-input-event';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
 import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-adapter';
@@ -671,6 +672,7 @@ export const useRuntimeBeforeInputEvents = ({
               selection.flushSelectionChange()
             );
           }
+          selection.settleHiddenEnd(el);
 
           let currentSelection = profilePliteReactDuration(
             'beforeinput-read-selection',
@@ -918,12 +920,24 @@ export const useRuntimeBeforeInputEvents = ({
             () => {
               const selectionPolicyAllowsDOMImport =
                 selection.allowDOMSelectionImport(decision.selectionPolicy);
+              // A parked DOM range is Plite's own write, so its target ranges
+              // name only the shown part of the model range.
+              const actsOnModelRange =
+                RangeApi.isRange(currentSelection) &&
+                readHiddenEndTarget(
+                  editor,
+                  currentSelection,
+                  el,
+                  inputController
+                ) === 'model';
 
               return syncSelectionForBeforeInput({
-                allowDOMSelectionImport: shouldAllowBeforeInputSelectionImport({
-                  event,
-                  selectionPolicyAllowsDOMImport,
-                }),
+                allowDOMSelectionImport:
+                  !actsOnModelRange &&
+                  shouldAllowBeforeInputSelectionImport({
+                    event,
+                    selectionPolicyAllowsDOMImport,
+                  }),
                 data,
                 editor,
                 editorElement: el,

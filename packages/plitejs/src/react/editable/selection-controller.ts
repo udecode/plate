@@ -11,6 +11,7 @@ import {
 } from '../..';
 import {
   clearCaretUnlessHeldElsewhere,
+  placedSince,
   setSelectionAsView,
   setShownSelectionAsView,
 } from '../../core/view-carets';
@@ -58,7 +59,12 @@ import {
   findContentRootOwners,
   isRangeAcrossContentRootOwners,
 } from './content-root-owners';
-import { applyDOMCoverageSelectionPolicy } from './dom-coverage-selection';
+import {
+  applyDOMCoverageSelectionPolicy,
+  getHiddenAnchor,
+  readHiddenEndTarget,
+  readParkedSelection,
+} from './dom-coverage-selection';
 import {
   getMountedEditableDOMRuntime,
   isDOMTargetInAnotherSelectionView,
@@ -634,6 +640,8 @@ const importDOMSelection = ({
     shouldSuppressCollapsedSelectionMoveDOMRange({
       activeIntent: inputController.state.activeIntent,
       currentSelection: selectionRange,
+      editor,
+      editorElement,
       nextSelection: range,
     })
   ) {
@@ -1008,10 +1016,14 @@ export const getPendingNativeTextInputRepairSelectionChangePolicy = ({
 export const shouldSuppressCollapsedSelectionMoveDOMRange = ({
   activeIntent,
   currentSelection,
+  editor,
+  editorElement,
   nextSelection,
 }: {
   activeIntent?: EditableInputController['state']['activeIntent'];
   currentSelection: Range | null | undefined;
+  editor: ReactRuntimeEditor;
+  editorElement: HTMLElement;
   nextSelection: Range | null;
 }) => {
   if (
@@ -1025,7 +1037,10 @@ export const shouldSuppressCollapsedSelectionMoveDOMRange = ({
     return false;
   }
 
-  return !RangeApi.includes(currentSelection, nextSelection.focus);
+  return (
+    !RangeApi.includes(currentSelection, nextSelection.focus) &&
+    readParkedSelection(editor, currentSelection, editorElement) !== 'moved'
+  );
 };
 
 export const resolveEditableImplicitTarget = ({
@@ -1056,12 +1071,30 @@ export const resolveEditableImplicitTarget = ({
     return request.fallback;
   }
 
+  const selectionView = getMountedEditableDOMRuntime(
+    editor,
+    domSelection.anchorNode ?? undefined
+  );
+  const selectionViewElement = selectionView?.rootRef.current;
+  const hiddenEnd =
+    selectionView && selectionViewElement && RangeApi.isRange(request.fallback)
+      ? readHiddenEndTarget(
+          editor,
+          request.fallback,
+          selectionViewElement,
+          selectionView.inputController
+        )
+      : null;
+
+  if (hiddenEnd === 'model') return request.fallback;
+
   const domTarget = ReactEditor.resolveRange(editor, domSelection, {
     exactMatch: false,
   });
   const target = domTarget ? SelectionApi.text(domTarget) : request.fallback;
 
   if (
+    !hiddenEnd &&
     preferModelSelection &&
     (!RangeApi.isRange(target) || !RangeApi.isExpanded(target))
   ) {
@@ -1181,6 +1214,15 @@ export const applyEditableDOMSelectionChange = ({
 
   if (SelectionApi.isNode(currentSelection) && domSelection.rangeCount === 0) {
     return;
+  }
+
+  if (RangeApi.isRange(currentSelection)) {
+    const parked = readParkedSelection(editor, currentSelection, editorElement);
+
+    if (parked === 'parked' && state.selectionChangeOrigin !== 'native-user') {
+      return;
+    }
+    if (parked === 'moved') state.selectionChangeOrigin = null;
   }
 
   const decision = decideEditableSelectionImport(
@@ -1306,11 +1348,22 @@ const importDOMSelectionChange = ({
     editor,
     domSelection
   );
-  const range = domSelectionBelongsToEditor
+  const domRange = domSelectionBelongsToEditor
     ? ReactEditor.resolveRange(editor, domSelection, {
         exactMatch: false,
       })
     : null;
+  const { hiddenAnchorPress } = state;
+  const hiddenAnchor =
+    domRange &&
+    hiddenAnchorPress &&
+    !placedSince(editor, hiddenAnchorPress.receipt)
+      ? getHiddenAnchor(editor, currentSelection, editorElement)
+      : null;
+  const range =
+    hiddenAnchor && domRange
+      ? { anchor: hiddenAnchor, focus: domRange.focus }
+      : domRange;
   const anchorElement = isDOMText(anchorNode)
     ? anchorNode.parentElement
     : isDOMElement(anchorNode)
@@ -1413,6 +1466,8 @@ const importDOMSelectionChange = ({
     shouldSuppressCollapsedSelectionMoveDOMRange({
       activeIntent: state.activeIntent,
       currentSelection: currentSelectionRange,
+      editor,
+      editorElement,
       nextSelection: range,
     })
   ) {
@@ -1477,6 +1532,16 @@ const importDOMSelectionChange = ({
   }
 
   if (domSelectionBelongsToEditor && range) {
+    if (hiddenAnchor) {
+      setEditableModelSelectionPreference({
+        inputController,
+        preferModelSelection: true,
+        reason: 'programmatic-export',
+        selectionSource: 'model-owned',
+      });
+      state.selectionChangeOrigin = 'programmatic-export';
+    }
+
     const acrossContentRootOwners = isRangeAcrossContentRootOwners(
       editor,
       range
@@ -1735,13 +1800,23 @@ export const syncEditableDOMSelectionToEditor = ({
         editorElement,
         coverage: runtime.domCoverage,
         editor,
-        exportSelection: (points) =>
+        exportSelection: (points, parked) => {
+          if (parked) {
+            setEditableModelSelectionPreference({
+              inputController: runtime.inputController,
+              preferModelSelection: true,
+              reason: 'model-command',
+              selectionSource: 'model-owned',
+            });
+          }
           exportEditableDOMSelection(
             state,
             root,
             points,
             clearAfter('clear-dom-coverage-selection-update')
-          ),
+          );
+        },
+        inputController: runtime.inputController,
         selection: projectedSelection,
       })
     ) {

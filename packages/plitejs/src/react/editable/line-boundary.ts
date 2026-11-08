@@ -64,9 +64,8 @@ export const getLineBoundarySelection = (
   editor: RuntimeEditor,
   selection: Range,
   { extend, reverse }: { extend: boolean; reverse: boolean }
-): Range => ({
-  anchor: extend
-    ? selection.anchor
-    : getLineBoundaryPoint(editor, selection.anchor, reverse),
-  focus: getLineBoundaryPoint(editor, selection.focus, reverse),
-});
+): Range => {
+  const focus = getLineBoundaryPoint(editor, selection.focus, reverse);
+
+  return { anchor: extend ? selection.anchor : focus, focus };
+};

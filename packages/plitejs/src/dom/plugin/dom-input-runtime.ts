@@ -124,7 +124,7 @@ type DOMInputKeyDownDecisionInput<
 > = {
   authoritativeModelSelection: boolean;
   command: TCommand | null;
-  hasModelOnlySelection: boolean;
+  keepsModelOnlySelection: boolean;
   hasProjectedViewSelection: boolean;
   intent: TIntent | null;
   internalTarget: boolean;
@@ -666,7 +666,7 @@ export class DOMInputRuntime {
   prepareKeyDownDecision<TCommand, TIntent extends string, TSelection>({
     authoritativeModelSelection,
     command,
-    hasModelOnlySelection,
+    keepsModelOnlySelection,
     hasProjectedViewSelection,
     intent,
     internalTarget,
@@ -680,7 +680,7 @@ export class DOMInputRuntime {
         : intent === 'composition'
           ? 'native-allowed'
           : intent === 'native-selection-move'
-            ? hasModelOnlySelection
+            ? keepsModelOnlySelection
               ? 'model-owned'
               : 'native-allowed'
             : intent
@@ -691,7 +691,7 @@ export class DOMInputRuntime {
       intent === 'insert-break' ||
       intent === 'model-selection-move';
     const shouldPreserveModelSelection =
-      hasModelOnlySelection ||
+      keepsModelOnlySelection ||
       intent === 'history' ||
       (authoritativeModelSelection &&
         (ownership === 'model-owned' ||

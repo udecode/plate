@@ -19,6 +19,7 @@ import {
   readContentRootAwareSelection,
   shouldModelOwnContentRootVerticalSelection,
 } from './content-root-navigation';
+import { getHiddenAnchor } from './dom-coverage-selection';
 import {
   isMountedPlainVerticalLargeDocumentMovement,
   shouldModelOwnPlainVerticalLargeDocumentPlugin,
@@ -289,6 +290,7 @@ export const useRuntimeKeyboardEvents = ({
       ) {
         flushPendingNativeTextInput?.();
       }
+      runtime.selection.settleHiddenEnd(event.currentTarget);
 
       const isVerticalArrowKey =
         event.key === 'ArrowUp' || event.key === 'ArrowDown';
@@ -304,6 +306,9 @@ export const useRuntimeKeyboardEvents = ({
           })
       );
       const snapshotRange = getSelectionDOMRange(editor, snapshotSelection);
+      const extendsHiddenAnchor = () =>
+        event.shiftKey &&
+        !!getHiddenAnchor(editor, snapshotSelection, event.currentTarget);
       const verticalFocus = isPhysicalVerticalMove
         ? getVerticalNavigationFocus(editor, snapshotSelection)
         : null;
@@ -417,7 +422,10 @@ export const useRuntimeKeyboardEvents = ({
           runtime.repair.requestEditableRepair(repair);
           return;
         }
-        runtime.selection.holdExportForNativeMove();
+        runtime.selection.holdExportForNativeMove({
+          fromHiddenAnchor: extendsHiddenAnchor(),
+          root: event.currentTarget,
+        });
         return;
       }
 
@@ -510,7 +518,14 @@ export const useRuntimeKeyboardEvents = ({
         decision.intent === 'native-selection-move'
       ) {
         scheduleNativeSelectionImport();
-        if (isVerticalArrowKey) runtime.selection.holdExportForNativeMove();
+        const fromHiddenAnchor = extendsHiddenAnchor();
+
+        if (isVerticalArrowKey || fromHiddenAnchor) {
+          runtime.selection.holdExportForNativeMove({
+            fromHiddenAnchor,
+            root: event.currentTarget,
+          });
+        }
       }
       profilePliteReactDuration('keydown.trace-record', () => {
         runtime.trace.recordKeyDownTrace({

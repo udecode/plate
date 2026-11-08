@@ -164,6 +164,11 @@ const COMMIT_CARETS = new WeakMap<
   EditorCommit,
   Readonly<{ after: Carets; before: Carets }>
 >();
+type Landing = Readonly<{ commit: EditorCommit; placed: boolean }>;
+
+const LANDINGS = new WeakMap<Carets, Landing>();
+const KEPT = new WeakMap<Editor, Map<number, boolean>>();
+const RANGE_BREAKS = new WeakMap<Editor, number>();
 const WATCHED = new WeakMap<Editor, Map<ViewPresentation, () => void>>();
 const CARET_OWNER_LISTENERS = new WeakMap<Editor, Set<() => void>>();
 const PLACEMENT_LISTENERS = new WeakMap<
@@ -742,6 +747,23 @@ const watch = (owner: Editor, presentation: ViewPresentation) => {
 
 export const commitCarets = (editor: Editor, carets: Carets) => {
   const owner = getEditorRuntimeOwner(editor);
+  const landing = LANDINGS.get(carets);
+
+  if (landing) {
+    LANDINGS.delete(carets);
+    if (!carriesRange(owner, carets, landing)) {
+      RANGE_BREAKS.set(owner, getRangeBreakCount(owner) + 1);
+    }
+  }
+  const kept = KEPT.get(owner);
+
+  if (kept) {
+    for (const generation of kept.keys()) {
+      if (generation > carets.generation) break;
+      kept.delete(generation);
+    }
+  }
+
   const previous = getCommittedCarets(owner);
 
   if (sameCarets(previous, carets)) return;
@@ -791,6 +813,43 @@ export const recordCommitCarets = (
     after: caretsOf(after),
     before: caretsOf(before),
   });
+  LANDINGS.set(after, {
+    commit,
+    placed: before.generation !== after.generation,
+  });
+};
+
+/**
+ * Counts each commit core records that leaves the selection anywhere but the
+ * expanded range it carried over, in commit order, so a view can tell whether
+ * the range it parked is still the one the selection holds.
+ */
+export const getRangeBreakCount = (editor: EditorRuntimeCarrier) =>
+  RANGE_BREAKS.get(getEditorRuntimeOwner(editor)) ?? 0;
+
+const carriesRange = (
+  owner: Editor,
+  carets: Carets,
+  { commit, placed }: Landing
+) => {
+  const { changes, selectionAfter, selectionChanged } = commit;
+
+  if (
+    !RangeApi.isRange(selectionAfter) ||
+    !RangeApi.isExpanded(selectionAfter)
+  ) {
+    return false;
+  }
+
+  // A commit that places nothing, such as a collaborator's, moves the range
+  // by its writer's own rule. One that changes neither the document nor the
+  // selection, such as an annotation, leaves the range where it was, as an
+  // update that publishes no commit does.
+  return (
+    !placed ||
+    (changes.empty && !selectionChanged) ||
+    KEPT.get(owner)?.get(carets.generation) === true
+  );
 };
 
 export const consumeCommitCarets = (commit: EditorCommit) => {
@@ -935,13 +994,36 @@ export const placeInDraft = (
 
   HIGHEST_MINTED.set(owner, generation);
 
-  return settlePlacement(
+  const placed = settlePlacement(
     before,
     after,
     placement,
     generation,
     (selection, root, departed) =>
       keyInDraft(editor, value, selection, root, departed)
+  );
+
+  judgePlacement(owner, before, placed);
+
+  return placed;
+};
+
+const judgePlacement = (
+  owner: Editor,
+  before: CaretState,
+  placed: CaretState
+) => {
+  let kept = KEPT.get(owner);
+
+  if (!kept) {
+    kept = new Map();
+    KEPT.set(owner, kept);
+  }
+  kept.set(
+    placed.generation,
+    (kept.get(before.generation) ?? true) &&
+      before.root === placed.root &&
+      SelectionApi.equals(before.selection, placed.selection)
   );
 };
 

@@ -1363,13 +1363,23 @@ export const useEditableSelectionReconciler = ({
           editorElement,
           coverage: runtime.domCoverage,
           editor,
-          exportSelection: (points) =>
+          exportSelection: (points, parked) => {
+            if (parked) {
+              setEditableModelSelectionPreference({
+                inputController: runtime.inputController,
+                preferModelSelection: true,
+                reason: 'model-command',
+                selectionSource: 'model-owned',
+              });
+            }
             exportEditableDOMSelection(
               state,
               root,
               points,
               clearUpdatingSelection
-            ),
+            );
+          },
+          inputController: runtime.inputController,
           selection: projectedSelection,
         })
       ) {

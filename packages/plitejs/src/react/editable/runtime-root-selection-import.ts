@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 import type { EditableDOMRuntime } from './editable-dom-runtime';
+import { endHiddenAnchorPress } from './input-state';
 import {
   createRuntimeSelectionChangeHandler,
   createRuntimeSelectionChangeScheduler,
@@ -38,6 +39,8 @@ export const useEditableRootSelectionImport = ({
     const dispose = runtime.installDisposable('selection-import', () => {
       scheduleOnDOMSelectionChange.cancel();
       onDOMSelectionChange.cancel();
+      // The press settles through these handlers, so it ends with them.
+      endHiddenAnchorPress(inputController);
     });
 
     // An import the previous handlers left pending still owns the browser's

@@ -17,6 +17,8 @@ import {
 import { mapSelectionThroughChange } from '../../core/selection-protocol';
 import { getSelection } from '../../dom';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import { getParkedRange } from './dom-coverage-selection';
+import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
 import {
   beginEditableCompositionSession,
   cancelCompositionReceipt,
@@ -54,6 +56,7 @@ type AndroidCompositionLine = Readonly<{
 /** What the model held when the run opened; the model holds still until it ends. */
 type AndroidCompositionBase = Readonly<{
   backward: boolean;
+  seesPartOfRange: boolean;
   end: KeyedPoint;
   from: number;
   lineKey: NodeKey;
@@ -242,10 +245,11 @@ const readLineSegments = (editor: ReactRuntimeEditor, lineKey: NodeKey) => {
 
 const captureBase = (
   editor: ReactRuntimeEditor,
+  shown: Range,
   selection: Range
 ): AndroidCompositionBase | null => {
   const entries = editor.read((state) =>
-    state.nodes.blocks({ at: selection, mode: 'lowest' })
+    state.nodes.blocks({ at: shown, mode: 'lowest' })
   );
   const lines: AndroidCompositionLine[] = [];
   const segments: Segment[] = [];
@@ -300,7 +304,7 @@ const captureBase = (
 
   const lineKey = lines[0]?.key;
   if (!lineKey) return null;
-  const [start, end] = RangeApi.edges(selection);
+  const [start, end] = RangeApi.edges(shown);
   const readPoint = (point: Point) => {
     const key = getNodeKey(editor, point.path);
     const segment = segments.find((candidate) => candidate.key === key);
@@ -314,12 +318,16 @@ const captureBase = (
   };
   const from = readPoint(start);
   const to = readPoint(end);
+  const [targetStart, targetEnd] = RangeApi.edges(selection);
+  const startKey = getNodeKey(editor, targetStart.path);
+  const endKey = getNodeKey(editor, targetEnd.path);
 
-  if (from === null || to === null) return null;
+  if (from === null || to === null || !startKey || !endKey) return null;
 
   return {
     backward: RangeApi.isBackward(selection),
-    end: to.point,
+    seesPartOfRange: !RangeApi.equals(shown, selection),
+    end: { key: endKey, offset: targetEnd.offset },
     from: from.offset,
     lineKey,
     lines,
@@ -330,7 +338,7 @@ const captureBase = (
     marks: getEditorCurrentMarks(editor),
     nodes,
     segments,
-    start: from.point,
+    start: { key: startKey, offset: targetStart.offset },
     text,
     to: to.offset,
   };
@@ -496,7 +504,14 @@ export const openAndroidComposition = ({
 
   const selection = readRuntimeSelectionRange(editor);
 
-  const base = selection && captureBase(editor, selection);
+  const coverage = getMountedEditableDOMRuntimes(editor).find(
+    (runtime) => runtime.inputController === inputController
+  )?.domCoverage;
+  const shown =
+    selection && coverage && RangeApi.isExpanded(selection)
+      ? getParkedRange(coverage, selection)
+      : selection;
+  const base = shown && selection && captureBase(editor, shown, selection);
 
   if (!base) return;
 
@@ -572,6 +587,8 @@ const touchesLine = (commit: EditorCommit, base: AndroidCompositionBase) =>
   [
     ...base.lines.map(({ key }) => key),
     ...base.segments.map((segment) => segment.key),
+    base.start.key,
+    base.end.key,
   ].some((key) =>
     LINE_CHANGE_KINDS.some((kind) => commit.changed.hasNodeKey(key, kind))
   );
@@ -614,14 +631,18 @@ const readDraft = (
   const edges = before
     ? [readPoint(base.start), readPoint(base.end)]
     : target && RangeApi.edges(target);
+  // A keyboard that sees only part of the range edits from the part it sees,
+  // so an edit that reaches past that part replaces the whole range.
+  const replacesRange = !!diff && base.seesPartOfRange;
   const start =
     diff &&
-    (diff.start === base.from && edges
+    ((diff.start === base.from || (replacesRange && diff.start < base.from)) &&
+    edges
       ? edges[0]
       : readPoint(toKeyedPoint(base.segments, diff.start)));
   const end =
     diff &&
-    (diff.end === base.to && edges
+    ((diff.end === base.to || (replacesRange && diff.end > base.to)) && edges
       ? edges[1]
       : readPoint(toKeyedPoint(base.segments, diff.end)));
   const nodes = liveLines.flatMap(({ element }) => readLineTextNodes(element));
