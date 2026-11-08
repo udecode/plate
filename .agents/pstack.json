@@ -151,6 +151,15 @@
       ],
       "command": "node tooling/scripts/generate-ui-changelog-entries.mjs --write",
       "always": true
+    },
+    {
+      "paths": [
+        "packages/platejs/turbo.json",
+        "packages/plitejs/turbo.json",
+        "packages/test/turbo.json"
+      ],
+      "command": "pnpm entrypoint:turbo:generate",
+      "always": true
     }
   ],
   "skip": [],
