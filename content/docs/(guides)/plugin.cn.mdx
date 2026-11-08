@@ -437,7 +437,11 @@ program，并返回 `{ key, attributes }[]`。`render.attributes` 与
 当 node matching 需要先规范化 DOM 时，HTML mapping 可以声明一次
 `prepareDocument`。Callback 接收 inert、operation-owned detached document，
 以及其他 HTML callback 使用的冻结 mapping context。它不能读取 browser
-`DataTransfer` 或 live editor。
+`DataTransfer` 或 live editor。它的 `report` 接收一条诊断，以及可选的、该损失所关联的
+`element`。只要 document 仍包含该元素，诊断就会指出它在报告时
+document 中的位置。更早运行的 mapping
+`prepareDocument`（例如 List 的）可能先移动节点，因此该位置可能与粘贴的 HTML
+不同。以相同消息报告的两个元素会得到两条诊断。请在移除元素之前报告它的损失。
 
 Whole-payload admission、source-string cleanup、Word/RTF 处理与 post-decode
 slice repair 属于 `DataTransferFormat`。该 owner 可以准备 payload，然后返回

@@ -51,6 +51,7 @@ import type {
   HtmlContentToken,
   HtmlMappingDiagnosticInput,
   HtmlMatcher,
+  HtmlPrepareDiagnosticInput,
 } from '../../plugin';
 import { definePlugin } from '../../plugin';
 import { createPluginContext } from '../../plugin/createPluginContext.internal';
@@ -62,6 +63,12 @@ import {
   parseHtmlAst,
 } from './htmlAst';
 import { isHtmlBlockElement, isHtmlElement, isHtmlText } from './htmlDom';
+import {
+  compileMatcher,
+  HTML_ATTRIBUTE_RE,
+  matches,
+  normalizeStyleName,
+} from './htmlMatcher.internal';
 import {
   decideHtmlAttribute,
   HTML_UNSAFE_TAGS,
@@ -152,12 +159,6 @@ const HTML_RULE_FIELDS = new Set([
   'prepareDocument',
   'priority',
 ]);
-const HTML_MATCHER_FIELDS = new Set([
-  'attributes',
-  'className',
-  'style',
-  'tag',
-]);
 const HTML_NODE_FIELDS = new Set([
   'attributes',
   'children',
@@ -184,8 +185,6 @@ const HTML_VOID_TAGS = new Set([
   'wbr',
 ]);
 const HTML_TAG_RE = /^[a-z][a-z0-9-]*$/;
-const HTML_ATTRIBUTE_RE = /^[a-z_:][a-z0-9_.:-]*$/;
-const HTML_CLASS_WHITESPACE_RE = /\s/;
 const HTML_STYLE_NAME_RE = /^(?:--[A-Za-z_][A-Za-z0-9_-]*|-?[a-z][a-z0-9-]*)$/;
 // A declaration value cannot open another declaration, block or comment, hide
 // a function name behind an escape, or load through a function besides url().
@@ -415,11 +414,6 @@ const COMPILED_PLATE_HTML_BY_SCHEMA = new WeakMap<
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const normalizeStyleName = (name: string) =>
-  name.startsWith('--')
-    ? name
-    : name.replaceAll(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
-
 const hasControlCharacter = (value: string) => {
   for (let index = 0; index < value.length; index += 1) {
     const code = value.charCodeAt(index);
@@ -477,125 +471,6 @@ const compareRules = (left: CompiledHtmlRule, right: CompiledHtmlRule) =>
   right.rulePriority - left.rulePriority ||
   left.owner.localeCompare(right.owner);
 
-const normalizeMatchValues = (
-  value: unknown,
-  label: string,
-  normalize: (item: string) => string = (item) => item
-): readonly string[] => {
-  const values = typeof value === 'string' ? [value] : value;
-
-  if (
-    !Array.isArray(values) ||
-    values.length === 0 ||
-    values.some((item) => typeof item !== 'string' || item.length === 0)
-  ) {
-    throw new Error(`${label} must be a non-empty string or string array.`);
-  }
-
-  return Object.freeze([...new Set(values.map(normalize))]);
-};
-
-const compileMatcher = (
-  owner: string,
-  matcher: unknown,
-  index: number
-): HtmlMatcher => {
-  const label = `Plate HTML mapping "${owner}" matcher ${index}`;
-
-  if (!isRecord(matcher)) throw new Error(`${label} must be an object.`);
-  const fields = Object.keys(matcher);
-
-  if (fields.length === 0) {
-    throw new Error(`${label} must define at least one matcher field.`);
-  }
-  fields.forEach((field) => {
-    if (!HTML_MATCHER_FIELDS.has(field)) {
-      throw new Error(`${label} has unknown field "${field}".`);
-    }
-  });
-
-  const compiled: {
-    attributes?: Readonly<Record<string, true | readonly string[]>>;
-    className?: string;
-    style?: Readonly<Record<string, '*' | readonly string[]>>;
-    tag?: readonly string[];
-  } = {};
-
-  if (matcher.tag !== undefined) {
-    compiled.tag = normalizeMatchValues(matcher.tag, `${label} tag`, (item) =>
-      item.toLowerCase()
-    );
-  }
-  if (matcher.className !== undefined) {
-    if (
-      typeof matcher.className !== 'string' ||
-      matcher.className.length === 0 ||
-      HTML_CLASS_WHITESPACE_RE.test(matcher.className)
-    ) {
-      throw new Error(`${label} className must be one non-empty class token.`);
-    }
-    compiled.className = matcher.className;
-  }
-  if (matcher.attributes !== undefined) {
-    if (!isRecord(matcher.attributes)) {
-      throw new Error(`${label} attributes must be an object.`);
-    }
-    const attributes = new Map<string, true | readonly string[]>();
-
-    if (Object.keys(matcher.attributes).length === 0) {
-      throw new Error(`${label} attributes cannot be empty.`);
-    }
-    Object.entries(matcher.attributes).forEach(([rawName, value]) => {
-      const name = rawName.toLowerCase();
-
-      if (!HTML_ATTRIBUTE_RE.test(name)) {
-        throw new Error(`${label} has invalid attribute "${rawName}".`);
-      }
-      const normalized =
-        value === true
-          ? true
-          : normalizeMatchValues(value, `${label} attribute "${name}"`);
-      const existing = attributes.get(name);
-
-      if (existing !== undefined && !isEqual(existing, normalized)) {
-        throw new Error(`${label} has conflicting attribute "${name}".`);
-      }
-      attributes.set(name, normalized);
-    });
-    compiled.attributes = Object.freeze(Object.fromEntries(attributes));
-  }
-  if (matcher.style !== undefined) {
-    if (!isRecord(matcher.style)) {
-      throw new Error(`${label} style must be an object.`);
-    }
-    const styles = new Map<string, '*' | readonly string[]>();
-
-    if (Object.keys(matcher.style).length === 0) {
-      throw new Error(`${label} style cannot be empty.`);
-    }
-    Object.entries(matcher.style).forEach(([rawName, value]) => {
-      if (!rawName) throw new Error(`${label} has an empty style key.`);
-      const name = normalizeStyleName(rawName);
-      const normalized =
-        value === '*'
-          ? '*'
-          : normalizeMatchValues(value, `${label} style "${name}"`);
-      const existing = styles.get(name);
-
-      if (existing !== undefined && !isEqual(existing, normalized)) {
-        throw new Error(`${label} has conflicting style key "${name}".`);
-      }
-      styles.set(name, normalized);
-    });
-    compiled.style = Object.freeze(Object.fromEntries(styles));
-  }
-  if (Object.keys(compiled).length === 0) {
-    throw new Error(`${label} must define at least one active matcher field.`);
-  }
-
-  return Object.freeze(compiled) as HtmlMatcher;
-};
-
 const compileProperties = (
   owner: string,
   binding: CompiledModelBinding
@@ -647,22 +522,22 @@ const targetMatchesElementType = (
       return matched === null ? null : !matched;
     }
     case 'and': {
-      const matches = target.targets.map((child) =>
+      const results = target.targets.map((child) =>
         targetMatchesElementType(model, child, type)
       );
 
-      if (matches.includes(false)) return false;
+      if (results.includes(false)) return false;
 
-      return matches.every((match) => match === true) ? true : null;
+      return results.every((match) => match === true) ? true : null;
     }
     case 'or': {
-      const matches = target.targets.map((child) =>
+      const results = target.targets.map((child) =>
         targetMatchesElementType(model, child, type)
       );
 
-      if (matches.includes(true)) return true;
+      if (results.includes(true)) return true;
 
-      return matches.every((match) => match === false) ? false : null;
+      return results.every((match) => match === false) ? false : null;
     }
     case 'parent':
     case 'root': {
@@ -888,52 +763,6 @@ const compileRule = (
     rulePriority: declaration.priority ?? 0,
     targetType,
   });
-};
-
-const matchValue = (actual: string, expected: unknown) =>
-  Array.isArray(expected) && expected.includes(actual);
-
-const getStyleValue = (element: HTMLElement, key: string) => {
-  const value =
-    element.style.getPropertyValue(key) ||
-    Reflect.get(element.style, key) ||
-    '';
-
-  return String(value).trim();
-};
-
-const matches = (element: HTMLElement, matcher: HtmlMatcher) => {
-  if (matcher.tag && !matchValue(element.tagName.toLowerCase(), matcher.tag)) {
-    return false;
-  }
-  if (matcher.className && !element.classList.contains(matcher.className)) {
-    return false;
-  }
-  if (
-    matcher.attributes &&
-    !Object.entries(matcher.attributes).every(([name, expected]) => {
-      if (expected === true) return element.hasAttribute(name);
-      const actual = element.getAttribute(name);
-
-      return actual !== null && matchValue(actual, expected);
-    })
-  ) {
-    return false;
-  }
-  if (
-    matcher.style &&
-    !Object.entries(matcher.style).every(([name, expected]) => {
-      const actual = getStyleValue(element, name);
-
-      return expected === '*'
-        ? actual.length > 0
-        : matchValue(actual, expected);
-    })
-  ) {
-    return false;
-  }
-
-  return true;
 };
 
 const ruleMatches = (rule: CompiledHtmlRule, element: HTMLElement) =>
@@ -1792,6 +1621,23 @@ const shouldBrBecomeEmptyParagraph = (node: HTMLElement) => {
   return true;
 };
 
+const childIndexCache = new WeakMap<Node, number>();
+
+const childIndex = (parent: ParentNode, child: Node) => {
+  const known = childIndexCache.get(child);
+
+  if (known !== undefined && parent.childNodes[known] === child) return known;
+
+  let index = 0;
+
+  for (let at = parent.firstChild; at; at = at.nextSibling) {
+    childIndexCache.set(at, index);
+    index += 1;
+  }
+
+  return childIndexCache.get(child) ?? -1;
+};
+
 const htmlTreeLocation = (
   root: Element,
   element: Element
@@ -1803,7 +1649,7 @@ const htmlTreeLocation = (
     const parent: ParentNode | null = current.parentNode;
 
     if (!parent) break;
-    path.unshift(Array.prototype.indexOf.call(parent.childNodes, current));
+    path.unshift(childIndex(parent, current));
     current = parent;
   }
 
@@ -2900,6 +2746,7 @@ export type HtmlMappingLoss = Readonly<{
   kind: 'attribute' | 'element' | 'style';
   message: string;
   model?: HtmlModelLocation;
+  occurrence?: number;
   owner: string;
   removal?: HtmlUnsafeRemoval;
   source?: HtmlSourceLocation;
@@ -3434,28 +3281,45 @@ const encodeCompiledHtml = (
 
 const prepareHtmlDocument = (
   artifact: CompiledPlateHtmlArtifact,
-  document: Document,
+  root: Element,
   state: EditorCoreStateView,
   operationKey: object,
   onLoss?: (loss: HtmlMappingLoss) => void
 ) => {
+  const occurrences = new Map<Element, number>();
+  const locate = (element: Element) => {
+    const occurrence = occurrences.get(element) ?? occurrences.size;
+
+    occurrences.set(element, occurrence);
+
+    return root.contains(element)
+      ? { occurrence, source: htmlTreeLocation(root, element) }
+      : { occurrence };
+  };
+
   artifact.prepareDocument.forEach((rule) => {
     const prepare =
       rule.declaration.prepareDocument ??
       failInvariant('Expected value to be defined');
-    const report = (diagnostic: HtmlMappingDiagnosticInput) => {
+    const report = ({ element, ...diagnostic }: HtmlPrepareDiagnosticInput) => {
       if (!onLoss) {
         throw new Error(
           `Plate HTML format "${rule.owner}" reported unsupported content without a diagnostic collector.`
         );
       }
-      onLoss(Object.freeze({ ...diagnostic, owner: rule.owner }));
+      onLoss(
+        Object.freeze({
+          ...diagnostic,
+          ...(element ? locate(element) : {}),
+          owner: rule.owner,
+        })
+      );
     };
 
     prepare(
       Object.freeze({
         ...artifact.getFormatContext(rule.plugin, state, operationKey),
-        document,
+        document: root.ownerDocument,
         report,
       })
     );
@@ -3470,7 +3334,7 @@ const htmlMappingDiagnostics = (
   const seen = new Set<string>();
   const diagnostics: HtmlDiagnostic[] = [];
 
-  losses.forEach((loss) => {
+  losses.forEach(({ occurrence, ...loss }) => {
     const key = JSON.stringify([
       phase,
       loss.owner,
@@ -3478,6 +3342,7 @@ const htmlMappingDiagnostics = (
       loss.source ?? null,
       loss.model ?? null,
       loss.action,
+      occurrence ?? null,
     ]);
 
     if (seen.has(key)) return;
@@ -3583,7 +3448,6 @@ const decodeHtmlTransferWithArtifact = (
   const result = decodeMaterializedHtmlWithEditor(
     artifact.editor,
     'slice',
-    document,
     root,
     parsed.ast.diagnostics,
     { lossPolicy: 'allow' },
@@ -3788,13 +3652,7 @@ export const compileHtmlElementDecoder = (
 
     // No source pass has read this DOM, and preparation may write to it.
     sanitize();
-    prepareHtmlDocument(
-      artifact,
-      element.ownerDocument,
-      state,
-      operationKey,
-      onLoss
-    );
+    prepareHtmlDocument(artifact, element, state, operationKey, onLoss);
     if (artifact.prepareDocument.length > 0) sanitize();
     const normalized = shouldCollapseWhiteSpace
       ? collapseWhiteSpace(element)
@@ -3929,7 +3787,6 @@ const repairDiagnostic = (
 const decodeMaterializedHtmlWithEditor = (
   editor: Editor,
   kind: 'document' | 'slice',
-  ownerDocument: Document,
   root: HTMLElement,
   parserDiagnostics: readonly HtmlWarningDiagnostic[],
   options: HtmlEditorParseOptions,
@@ -3947,7 +3804,7 @@ const decodeMaterializedHtmlWithEditor = (
   const losses: HtmlMappingLoss[] = [];
   const preparedRemovals: HtmlDiagnostic[] = [];
   const { children, schema } = readState((state) => {
-    prepareHtmlDocument(artifact, ownerDocument, state, operationKey, (loss) =>
+    prepareHtmlDocument(artifact, root, state, operationKey, (loss) =>
       losses.push(loss)
     );
     // Preparation runs after the source pass, so its writes are checked here.
@@ -4072,7 +3929,6 @@ const decodeHtmlAstWithEditor = (
   return decodeMaterializedHtmlWithEditor(
     editor,
     kind,
-    ownerDocument,
     root,
     parsed.ast.diagnostics,
     options,

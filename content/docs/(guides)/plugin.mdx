@@ -471,7 +471,13 @@ structural output uses components or slots. See the
 An HTML mapping may define `prepareDocument` when matching nodes requires one
 normalization pass over the inert, operation-owned DOM. The callback receives
 the detached document and the same frozen mapping context as other HTML
-callbacks. It cannot inspect a browser `DataTransfer` or live editor.
+callbacks. It cannot inspect a browser `DataTransfer` or live editor. Its
+`report` takes a diagnostic and, optionally, the `element` the loss is about.
+While the document still holds that element, the diagnostic names its place
+in the document at the time of the report. An earlier mapping's
+`prepareDocument`, such as List's, can move nodes first, so that place can
+differ from the pasted HTML. Two elements reported with the same message give
+two diagnostics. Report a loss before you remove its element.
 
 Whole-payload admission, source-string cleanup, Word/RTF handling, and
 post-decode slice repair belong to a `DataTransferFormat`. That owner may

@@ -99,6 +99,7 @@ export type {
   HtmlMatcher,
   HtmlMatchValue,
   HtmlNodeSpec,
+  HtmlPrepareDiagnosticInput,
   HtmlWrapperSpec,
   InjectNodeProps,
   LeafStaticProps,

@@ -854,9 +854,24 @@ type PluginSelfHtmlMapping<C extends AnyBasePluginDefinition> =
     target?: never;
   };
 
+export type HtmlPrepareDiagnosticInput = HtmlMappingDiagnosticInput &
+  Readonly<{
+    /**
+     * The element the loss is about. Each element reports its own diagnostic,
+     * so two dropped elements with the same message stay two. While the
+     * parsed HTML still holds the element, the diagnostic names its place
+     * there, so report a loss before removing its element.
+     */
+    element?: globalThis.Element;
+  }>;
+
 type HtmlPrepareDocument<C extends AnyBasePluginDefinition> = Readonly<{
   prepareDocument?: (
-    context: HtmlPluginFormatContext<C> & Readonly<{ document: Document }>
+    context: PluginFormatContext<C> &
+      Readonly<{
+        document: Document;
+        report: (diagnostic: HtmlPrepareDiagnosticInput) => void;
+      }>
   ) => void;
 }>;
 

@@ -192,17 +192,19 @@ HTML 映射由公式插件负责。`editor.api.html.serialize` 和复制会把�
 | 粘贴的 HTML | Plate 读取 | 结果 |
 |-------------|------------|------|
 | Plate 的公式元素 | `data-editor-equation-latex` | 相同的公式。`data-editor-equation="block"` 得到 `equation`，否则得到 `inlineEquation`。 |
-| 带有 TeX 注释的 KaTeX 默认输出，例如从加载了 KaTeX copy-tex 扩展的页面复制的内容 | 其 MathML 中的 `application/x-tex` 注释 | 带有该 TeX 的公式。KaTeX 绘制的字形不会进入文本。 |
-| 不含 TeX 的 KaTeX 输出，例如在 Chrome 中从未加载 copy-tex 的页面复制的内容（Chrome 会省略隐藏的注释），或不含 MathML 的输出（`output: 'html'`） | 不读取 | KaTeX 绘制的文本。复制内容保留了 KaTeX 的 MathML 时，Plate 会丢弃它并给出一条诊断，因此在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败。 |
+| 带有 TeX 注释的 KaTeX 默认输出，例如从加载了 KaTeX copy-tex 扩展的页面复制的内容 | 其 MathML 中的 `application/x-tex` 注释 | 带有该 TeX 的公式，不含 KaTeX 绘制的字形。 |
 | 维基百科的公式 | 每个 `math` 元素 `data-mw` 属性中的 TeX | 带有该 TeX 的公式。 |
 | 其他带 `application/x-tex` 注释的 MathML | 该注释 | 带有该 TeX 的公式。 |
-| 没有 TeX 的 MathML | 不读取 | 丢弃，并给出一条 [HTML 诊断](/docs/html#results-and-diagnostics)。在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败。 |
+| 没有 TeX 的 MathML，例如在 Chrome 中从未加载 copy-tex 的页面复制的 KaTeX 输出（Chrome 会省略隐藏的注释） | Plate 根据 MathML 重建的 TeX | 带有该 TeX 的公式，不含 KaTeX 绘制的字形。MathML 没有 TeX 形式时，Plate 会丢弃它并给出一条诊断，KaTeX 绘制的字形则作为文本保留。重建丢失了 TeX 无法保存的呈现信息（例如颜色、尺寸、间距或括号的伸缩）时，解析会给出 warning。重建在两个写出相同 MathML 但绘制不同的命令中选了一个（例如 `\mathcal` 和 `\mathscr`）时，解析也会给出 warning。每个公式只有一条 warning，其中列出每一处损失和选择。 |
+| 旁边有隐藏绘制、且绘制把字母写成文本的 MathML，例如 MathJax 2 的 CHTML 输出 | 不读取 | 绘制出的字母，作为文本。Plate 会丢弃 MathML 并给出一条诊断，因此在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败。 |
+| 没有 TeX 形式的 MathML，例如 `mlongdiv` 或 `merror` | 不读取 | 丢弃，并给出一条指明该元素的 [HTML 诊断](/docs/html#results-and-diagnostics)。在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败。 |
+| 不含 MathML 的 KaTeX 输出（`output: 'html'`） | 不读取 | KaTeX 绘制的文本。 |
 
-带 `display="block"` 的公式成为 `equation`，并拆分所在段落。在列表项或标题中，它成为 `inlineEquation`，因此列表保留原有的项和编号，标题仍是一个标题。当 `IndentPlugin` 的目标包含公式时，列表项第一个段落之后的块级公式与该位置的其他块一样，位于该项下一级。代码块中的公式会变成它绘制出的文本，不保留 TeX。解析会报告这一损失，因此在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败。Plate 会移除公式外的链接并给出一条 warning，因为链接只能包含文本。链接中的其他文本留在原位，但不再带有链接。
+带 `display="block"` 的公式成为 `equation`，并拆分所在段落。在列表项或标题中，它成为 `inlineEquation`，因此列表保留原有的项和编号，标题仍是一个标题。当 `IndentPlugin` 的目标包含公式时，列表项第一个段落之后的块级公式与该位置的其他块一样，位于该项下一级。代码块中的公式会变成它绘制出的文本，不保留 TeX。解析会报告这一损失，因此在默认的 `lossPolicy: 'reject'` 下，`editor.api.html.parse` 会失败；丢失了呈现信息的重建也会报告它的 warning。没有 TeX 形式的公式会连同它的诊断一起从代码中移除。Plate 会移除公式外的链接并给出一条 warning，因为链接只能包含文本。链接中的其他文本留在原位，但不再带有链接。
 
 只有安装了公式插件的编辑器才读取公式标记。在 `math` 元素中，MathML 元素经过与 HTML 元素相同的安全检查，会去掉所有 URL 属性，Plate 会移除其中的 HTML 或 SVG。没有公式插件的编辑器会丢弃粘贴的公式。
 
-只安装 `BaseInlineEquationPlugin` 时，所有粘贴的公式都成为 `inlineEquation`。只安装 `BaseEquationPlugin` 时，块级公式成为 `equation`，行内公式以及列表项或标题中的块级公式会被丢弃。
+只安装 `BaseInlineEquationPlugin` 时，所有粘贴的公式都成为 `inlineEquation`。只安装 `BaseEquationPlugin` 时，块级公式成为 `equation`。Plate 会丢弃行内公式，以及列表项或标题中的块级公式，并给出一条诊断。被丢弃的 KaTeX 公式会把它绘制的字形作为文本留下。
 
 ## Plate Plus
 

@@ -36,6 +36,12 @@ const getByteLength = (source: string) =>
 export const fitsHtmlByteLimit = (source: string) =>
   getByteLength(source) <= DEFAULT_HTML_PARSE_LIMITS.maxBytes;
 
+/** MathML elements of which MathML Core draws only the first child. */
+export const MATHML_FIRST_CHILD_DRAWN: ReadonlySet<string> = new Set([
+  'maction',
+  'semantics',
+]);
+
 type HtmlAstNode = DefaultTreeAdapterTypes.Node;
 type HtmlAstChildNode = DefaultTreeAdapterTypes.ChildNode;
 type HtmlAstElement = DefaultTreeAdapterTypes.Element;
@@ -319,13 +325,12 @@ const applySafetyPolicy = (
 ) => {
   const children = getChildNodes(parent);
   const kept: HtmlAstChildNode[] = [];
-  // MathML Core draws only the first child of <semantics>.
   const hidesLaterChildren =
     mathml !== undefined &&
     mathml !== 'outside' &&
     defaultTreeAdapter.isElementNode(parent) &&
     parent.namespaceURI === html.NS.MATHML &&
-    parent.tagName === 'semantics';
+    MATHML_FIRST_CHILD_DRAWN.has(parent.tagName);
   let isFirstElement = true;
 
   for (const node of children) {
@@ -350,7 +355,10 @@ const applySafetyPolicy = (
       continue;
     }
     const attributes = node.attrs;
-    const isMathml = node.namespaceURI === html.NS.MATHML;
+    const readAsMathml =
+      node.namespaceURI === html.NS.MATHML ||
+      place === 'inside' ||
+      place === 'hidden';
     let removedSource = false;
 
     node.attrs = [];
@@ -359,7 +367,7 @@ const applySafetyPolicy = (
         tag,
         attribute.name,
         attribute.value,
-        isMathml
+        readAsMathml
       );
 
       if (decision && 'removal' in decision) {
@@ -387,7 +395,7 @@ const applySafetyPolicy = (
       source,
       node,
       removals,
-      place === 'outside' && isMathml ? 'inside' : place
+      place === 'outside' && readAsMathml ? 'inside' : place
     );
     if (tag === 'template') {
       applySafetyPolicy(

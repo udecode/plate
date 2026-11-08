@@ -103,7 +103,13 @@ export const decideHtmlElement = (
   const isHtml = namespace === HTML_NAMESPACE;
   const inMath = mathml === 'inside' || mathml === 'hidden';
 
-  if (mathml && namespace === MATHML_NAMESPACE && MATHML_ELEMENTS.has(tag)) {
+  // The HTML parser puts an element inside a MathML token, such as KaTeX's
+  // `<mo><mrow>`, in the HTML namespace.
+  if (
+    mathml &&
+    MATHML_ELEMENTS.has(tag) &&
+    (namespace === MATHML_NAMESPACE || (inMath && isHtml))
+  ) {
     return undefined;
   }
   if (!inMath && isHtml && !HTML_UNSAFE_TAGS.has(tag)) {

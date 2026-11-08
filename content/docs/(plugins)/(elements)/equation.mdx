@@ -24,7 +24,7 @@ Equation adds block and inline void nodes for LaTeX expressions. Both nodes stor
 - KaTeX rendering in editable and static UI.
 - `$...$` inline input rule and `$$` block input rule.
 - Markdown round-trip for inline math and block math.
-- HTML copy and paste that keeps the TeX, including math copied from KaTeX pages and Wikipedia.
+- HTML copy and paste that keeps the TeX, including math copied from KaTeX pages and Wikipedia, and rebuilds it from MathML when a copy lost it.
 
 </PackageInfo>
 
@@ -238,17 +238,19 @@ Paste and `editor.api.html.parse` take the TeX from the first source that holds 
 | Pasted HTML | Plate reads | Result |
 |-------------|-------------|--------|
 | Plate's equation element | `data-editor-equation-latex` | The same equation. `data-editor-equation="block"` gives `equation`, otherwise `inlineEquation`. |
-| KaTeX's default output with its TeX annotation, such as a copy from a page that loads KaTeX's copy-tex extension | The `application/x-tex` annotation inside its MathML | An equation with that TeX. KaTeX's drawn glyphs never reach the text. |
-| KaTeX output with no TeX, such as a Chrome copy from a page without copy-tex, which leaves out the hidden annotation, or output drawn without MathML (`output: 'html'`) | Nothing | KaTeX's drawn text. When the copy keeps KaTeX's MathML, Plate drops it with a diagnostic, so `editor.api.html.parse` fails under the default `lossPolicy: 'reject'`. |
+| KaTeX's default output with its TeX annotation, such as a copy from a page that loads KaTeX's copy-tex extension | The `application/x-tex` annotation inside its MathML | An equation with that TeX, without KaTeX's drawn glyphs. |
 | Wikipedia math | The TeX in each `math` element's `data-mw` attribute | An equation with that TeX. |
 | Other MathML with an `application/x-tex` annotation | The annotation | An equation with that TeX. |
-| MathML without TeX | Nothing | Dropped, with an [HTML diagnostic](/docs/html#results-and-diagnostics). Under the default `lossPolicy: 'reject'`, `editor.api.html.parse` fails. |
+| MathML without TeX, such as a Chrome copy of KaTeX output from a page without copy-tex, which leaves out the hidden annotation | TeX that Plate rebuilds from the MathML | An equation with that TeX, without KaTeX's drawn glyphs. When the MathML has no TeX form, Plate drops it with a diagnostic and KaTeX's drawn glyphs stay as text. The parse warns when the rebuild loses presentation that TeX cannot hold, such as a color, a size, spacing or a bracket's stretch. It also warns when the rebuild picks one of two commands that write the same MathML but draw differently, such as `\mathcal` and `\mathscr`. Each formula gets one warning that names each loss and pick. |
+| MathML beside a hidden drawing that writes its letters as text, such as MathJax 2's CHTML output | Nothing | The drawn letters, as text. Plate drops the MathML with a diagnostic, so `editor.api.html.parse` fails under the default `lossPolicy: 'reject'`. |
+| MathML with no TeX form, such as `mlongdiv` or `merror` | Nothing | Dropped, with an [HTML diagnostic](/docs/html#results-and-diagnostics) that names the element. Under the default `lossPolicy: 'reject'`, `editor.api.html.parse` fails. |
+| KaTeX output drawn without MathML (`output: 'html'`) | Nothing | KaTeX's drawn text. |
 
-Math with `display="block"` becomes `equation` and splits its paragraph. Inside a list item or a heading it becomes `inlineEquation`, so the list keeps its items and numbers and the heading stays one heading. Display math after a list item's first paragraph lands one level under the item, like other blocks there, when `IndentPlugin` targets equations. Math inside a code block becomes the text it draws, without its TeX. The parse reports that loss, so `editor.api.html.parse` fails under the default `lossPolicy: 'reject'`. Plate removes the link around an equation and warns, because a link holds only text. The link's other text stays where it was, without the link.
+Math with `display="block"` becomes `equation` and splits its paragraph. Inside a list item or a heading it becomes `inlineEquation`, so the list keeps its items and numbers and the heading stays one heading. Display math after a list item's first paragraph lands one level under the item, like other blocks there, when `IndentPlugin` targets equations. Math inside a code block becomes the text it draws, without its TeX. The parse reports that loss, so `editor.api.html.parse` fails under the default `lossPolicy: 'reject'`, and a rebuild that lost presentation also reports its warning. Math with no TeX form is cut from the code with its diagnostic. Plate removes the link around an equation and warns, because a link holds only text. The link's other text stays where it was, without the link.
 
 An editor reads math markup only when it has an equation plugin. Inside a `math` element, MathML elements pass the same safety checks as HTML elements and lose every URL attribute, and Plate removes any HTML or SVG. An editor without the equation plugins drops pasted math.
 
-With only `BaseInlineEquationPlugin`, all pasted math becomes `inlineEquation`. With only `BaseEquationPlugin`, display math becomes `equation`, and inline math and display math in a list item or heading are dropped.
+With only `BaseInlineEquationPlugin`, all pasted math becomes `inlineEquation`. With only `BaseEquationPlugin`, display math becomes `equation`. Plate drops inline math, and display math in a list item or heading, with a diagnostic. A dropped KaTeX formula leaves its drawn glyphs as text.
 
 ## Plate Plus
 

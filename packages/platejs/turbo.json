@@ -6177,6 +6177,7 @@
         "$TURBO_ROOT$/config/plite-test-jsx.js",
         "$TURBO_ROOT$/config/workspace-source-entries.mjs",
         "$TURBO_ROOT$/packages/*/package.json",
+        "$TURBO_ROOT$/packages/platejs/src/math/lib/__fixtures__/katex-docs-chrome-copy.html",
         "$TURBO_ROOT$/packages/platejs/test/tsconfig.json",
         "$TURBO_ROOT$/packages/platejs/tsconfig.json",
         "$TURBO_ROOT$/packages/plitejs/tsconfig.json",

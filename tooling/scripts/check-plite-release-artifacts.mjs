@@ -95,6 +95,7 @@ export const getPlitePackageBoundaryContracts = () =>
 
 export const getEntrypointSizeSpecifiers = () => [
   'platejs',
+  'platejs/math',
   ...Object.keys(publicFeatureDependencies).map((name) => `platejs/${name}`),
   ...publicFeatureReactEntrypoints.map((name) => `platejs/${name}/react`),
   ...publicReactOnlyEntrypoints.map((name) => `platejs/${name}/react`),

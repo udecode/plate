@@ -8,6 +8,10 @@
       "bytes": 1329170,
       "gzip": 417547
     },
+    "platejs/math": {
+      "bytes": 174600,
+      "gzip": 51611
+    },
     "platejs/callout": {
       "bytes": 114997,
       "gzip": 31634

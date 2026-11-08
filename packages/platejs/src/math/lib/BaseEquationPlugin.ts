@@ -4,8 +4,8 @@ import {
   defineInputRule,
   definePlugin,
   type ElementOf,
-  type HtmlMappingDiagnosticInput,
   type HtmlMatcher,
+  type HtmlPrepareDiagnosticInput,
   matchDelimitedInline,
   type NodeInsertOptions,
   type PluginFormatRegistry,
@@ -16,6 +16,11 @@ import {
   txLocate,
   locateAt,
 } from '../../core';
+import {
+  compileMatcher,
+  matches,
+} from '../../lib/plugins/html/htmlMatcher.internal';
+import { type MathmlTex, rebuildTexFromMathml } from './mathmlTex.internal';
 
 const INLINE_EQUATION_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_EQUATION_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
@@ -28,15 +33,9 @@ const BLOCK_EQUATION_MATCH = [
   { attributes: { 'data-editor-equation': 'block' } },
   { attributes: { display: 'block' }, tag: 'math' },
 ] as const satisfies readonly HtmlMatcher[];
-
-const isBlockEquation = (element: Element) =>
-  BLOCK_EQUATION_MATCH.some(
-    (matcher) =>
-      (!('tag' in matcher) || element.localName === matcher.tag) &&
-      Object.entries(matcher.attributes).every(
-        ([name, value]) => element.getAttribute(name) === value
-      )
-  );
+const BLOCK_EQUATION_MATCHERS = BLOCK_EQUATION_MATCH.map((matcher, index) =>
+  compileMatcher(PLUGINS.equation, matcher, index)
+);
 
 const readEquationTex = (element: Element) => {
   const latex = element.getAttribute('data-editor-equation-latex');
@@ -66,16 +65,17 @@ const readEquationTex = (element: Element) => {
   }
 };
 
+const BLANK_TEXT = /^[\t\n\f\r ]*$/u;
+
 const holdsOnly = (parent: Element, keeps: (node: Node) => boolean) =>
   Array.from(parent.childNodes).every(
     (node) =>
       keeps(node) ||
-      (node.nodeType === 3 && /^[\t\n\f\r ]*$/u.test(node.textContent ?? ''))
+      (node.nodeType === 3 && BLANK_TEXT.test(node.textContent ?? ''))
   );
 
 // KaTeX writes a formula as its MathML beside its drawn glyphs.
 const readKatexOutputMath = (katex: Element) => {
-  if (readEquationTex(katex) !== undefined) return undefined;
   const maths = katex.querySelectorAll('math');
   const math = maths[0];
   const mathml = math?.parentElement;
@@ -96,7 +96,102 @@ const readKatexOutputMath = (katex: Element) => {
     return undefined;
   }
 
-  return readEquationTex(math) === undefined ? undefined : math;
+  return math;
+};
+
+const SHOWN_SIBLINGS_READ = 2;
+
+// MathJax 2 writes a formula's letters as text in one hidden element beside
+// its MathML, so a formula rebuilt from that MathML would paste twice.
+const findDrawnBesideLetters = (root: Element, maths: readonly Element[]) => {
+  const blank = new Map<Node, boolean>();
+  const shown = new Map<Node, Node[]>();
+  const isBlank = (node: Node): boolean => {
+    let known = blank.get(node);
+
+    if (known === undefined) {
+      known = true;
+      if (node.nodeType === 3) known = BLANK_TEXT.test(node.nodeValue ?? '');
+      else if (node.nodeType === 1) {
+        for (const child of node.childNodes) {
+          if (!isBlank(child)) {
+            known = false;
+            break;
+          }
+        }
+      }
+      blank.set(node, known);
+    }
+
+    return known;
+  };
+  const shownChildren = (parent: Node) => {
+    let children = shown.get(parent);
+
+    if (children === undefined) {
+      children = [];
+      for (const child of parent.childNodes) {
+        if (children.length > SHOWN_SIBLINGS_READ) break;
+        if (!isBlank(child)) children.push(child);
+      }
+      shown.set(parent, children);
+    }
+
+    return children;
+  };
+  const isDrawnBesideLetters = (math: Element) => {
+    for (let child = math; child !== root;) {
+      const parent = child.parentElement;
+
+      if (!parent) return false;
+      const [other, second] = shownChildren(parent).filter(
+        (node) => node !== child
+      );
+
+      if (second) return false;
+      if (other) {
+        return (
+          other.nodeType === 1 &&
+          (other as Element).getAttribute('aria-hidden') === 'true'
+        );
+      }
+      child = parent;
+    }
+
+    return false;
+  };
+
+  return new Set(maths.filter(isDrawnBesideLetters));
+};
+
+const listOf = (items: readonly string[], last: string, separator = ',') =>
+  items.length < 2
+    ? items.join('')
+    : `${items.slice(0, -1).join(`${separator} `)}${separator === ',' ? '' : separator} ${last} ${items.at(-1)}`;
+
+const rebuildWarning = (
+  rebuilt: Exclude<MathmlTex, { kind: 'refused' }>
+): HtmlPrepareDiagnosticInput => {
+  const lost =
+    rebuilt.kind === 'approximate'
+      ? ` without its ${listOf(rebuilt.lost, 'and')}`
+      : '';
+  const picks =
+    rebuilt.picks.length === 0
+      ? ''
+      : `${lost ? ',' : ''} and picked ${listOf(
+          rebuilt.picks.map(
+            ({ name, others }) => `${name} over ${listOf(others, 'or')}`
+          ),
+          'and',
+          ';'
+        )}`;
+
+  return {
+    action: 'replaced',
+    kind: rebuilt.kind === 'approximate' ? 'style' : 'attribute',
+    message: `Plate HTML decode rebuilt the TeX of <math> from its MathML${lost}${picks}.`,
+  };
 };
 
 const prepareEquationHtml = ({
@@ -106,7 +201,7 @@ const prepareEquationHtml = ({
 }: Readonly<{
   document: Document;
   registry: PluginFormatRegistry;
-  report: (diagnostic: HtmlMappingDiagnosticInput) => void;
+  report: (diagnostic: HtmlPrepareDiagnosticInput) => void;
 }>) => {
   const { body } = document;
 
@@ -115,70 +210,130 @@ const prepareEquationHtml = ({
   const hasBlock = registry.has(PLUGINS.equation);
   const hasInline = registry.has(PLUGINS.inlineEquation);
   const hasLink = registry.has(PLUGINS.link);
-  const isTaken = (element: Element) =>
-    hasInline || (hasBlock && isBlockEquation(element));
+  const isTaken = (element: Element & ElementCSSInlineStyle) =>
+    hasInline ||
+    (hasBlock &&
+      BLOCK_EQUATION_MATCHERS.some((matcher) => matches(element, matcher)));
+  const formulas = Array.from(body.querySelectorAll('math'))
+    .filter((math) => !math.parentElement?.closest('math'))
+    .map((math) => ({
+      block: math.getAttribute('display') === 'block',
+      math,
+    }));
 
-  for (const katex of Array.from(body.querySelectorAll('span.katex'))) {
-    const math = readKatexOutputMath(katex);
-
-    if (!math) continue;
-    const display = katex.parentElement;
-
-    (display?.classList.contains('katex-display') &&
-    holdsOnly(display, (node) => node === katex)
-      ? display
-      : katex
-    ).replaceWith(math);
+  for (const { block, math } of formulas) {
+    if (block && (!hasBlock || math.closest('li, h1, h2, h3, h4, h5, h6'))) {
+      math.removeAttribute('display');
+    }
   }
+  const katexes = Array.from(body.querySelectorAll('span.katex')).flatMap(
+    (katex) => {
+      const math =
+        readEquationTex(katex) === undefined
+          ? readKatexOutputMath(katex)
+          : undefined;
 
+      return math ? [{ katex, math }] : [];
+    }
+  );
+  const katexMaths = new Set(katexes.map(({ math }) => math));
+  const carriesTex = (math: Element) => {
+    for (
+      let carrier = math.parentElement?.closest('[data-editor-equation]');
+      carrier;
+      carrier = carrier.parentElement?.closest('[data-editor-equation]')
+    ) {
+      if (readEquationTex(carrier) !== undefined) return true;
+    }
+
+    return false;
+  };
+  const warnings = new Map<Element, HtmlPrepareDiagnosticInput>();
+  const refusals = new Map<Element, string>();
+  const besideLetters = findDrawnBesideLetters(
+    body,
+    formulas.flatMap(({ math }) => (katexMaths.has(math) ? [] : [math]))
+  );
+
+  for (const { math } of formulas) {
+    if (
+      readEquationTex(math) !== undefined ||
+      !isTaken(math) ||
+      carriesTex(math) ||
+      besideLetters.has(math)
+    ) {
+      continue;
+    }
+    const rebuilt = rebuildTexFromMathml(
+      math,
+      math.getAttribute('display') === 'block' ? 'block' : 'inline'
+    );
+
+    if (rebuilt.kind === 'refused') {
+      refusals.set(math, rebuilt.element.localName);
+      continue;
+    }
+    math.setAttribute('data-editor-equation-latex', rebuilt.tex);
+    if (rebuilt.kind === 'approximate' || rebuilt.picks.length > 0) {
+      warnings.set(math, rebuildWarning(rebuilt));
+    }
+  }
   const kept = new Set<Element>();
+  const dropped = new Set<Element>();
+  const unwrapped = new Set<Element>();
+  const indents: Array<readonly [Element, string]> = [];
 
-  for (const element of Array.from(body.querySelectorAll(EQUATION_SELECTOR))) {
+  for (const element of Array.from(
+    body.querySelectorAll<HTMLElement | MathMLElement>(EQUATION_SELECTOR)
+  )) {
     let outer = element.parentElement?.closest(EQUATION_SELECTOR);
 
-    while (outer && !kept.has(outer)) {
+    while (outer && !kept.has(outer) && !dropped.has(outer)) {
       outer = outer.parentElement?.closest(EQUATION_SELECTOR);
     }
-    if (outer || !body.contains(element)) continue;
+    if (outer) continue;
     const isMath = element.tagName === 'MATH';
-
-    if (
-      isMath &&
-      element.getAttribute('display') === 'block' &&
-      (!hasBlock || element.closest('li, h1, h2, h3, h4, h5, h6'))
-    ) {
-      element.removeAttribute('display');
-    }
-    const reason =
-      readEquationTex(element) === undefined
-        ? 'holds no TeX source'
-        : isTaken(element)
-          ? undefined
-          : 'has no equation plugin to take it';
+    const refused = refusals.get(element);
+    const reason = isTaken(element)
+      ? readEquationTex(element) === undefined
+        ? refused
+          ? `whose <${refused}> has no TeX form`
+          : 'which holds no TeX source'
+        : undefined
+      : 'which has no equation plugin to take it';
 
     if (reason) {
       if (isMath) {
         report({
           action: 'dropped',
+          element,
           kind: 'element',
-          message: `Plate HTML decode dropped <math>, which ${reason}.`,
+          message: `Plate HTML decode dropped <math>, ${reason}.`,
         });
-        element.remove();
+        dropped.add(element);
       }
       continue;
     }
     kept.add(element);
 
-    const link = hasLink ? element.closest('a') : null;
+    const warning = warnings.get(element);
 
+    if (warning) report({ ...warning, element });
+
+    let link = hasLink ? element.closest('a') : null;
+
+    while (link && unwrapped.has(link)) {
+      link = link.parentElement?.closest('a') ?? null;
+    }
     if (link?.getAttribute('href')) {
-      link.replaceWith(...Array.from(link.childNodes));
       report({
         action: 'unwrapped',
+        element: link,
         kind: 'attribute',
         message:
           'Plate HTML decode removed the link around an equation, because a link holds only text.',
       });
+      unwrapped.add(link);
     }
 
     const indent = element.closest('p')?.getAttribute('data-indent');
@@ -189,8 +344,27 @@ const prepareEquationHtml = ({
       indent &&
       !element.hasAttribute('data-indent')
     ) {
-      element.setAttribute('data-indent', indent);
+      indents.push([element, indent]);
     }
+  }
+
+  for (const { katex, math } of katexes) {
+    if (!kept.has(math)) continue;
+    const display = katex.parentElement;
+    const target =
+      display?.classList.contains('katex-display') &&
+      holdsOnly(display, (node) => node === katex)
+        ? display
+        : katex;
+
+    target.replaceWith(math);
+  }
+  for (const math of dropped) math.remove();
+  for (const link of unwrapped) {
+    link.replaceWith(...Array.from(link.childNodes));
+  }
+  for (const [math, indent] of indents) {
+    math.setAttribute('data-indent', indent);
   }
 };
 

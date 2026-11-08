@@ -65,7 +65,7 @@ const INLINE_TAG_NAMES = new Set([
   'WBR',
 ]);
 
-export const MATHML_ELEMENTS: ReadonlySet<string> = new Set([
+export const MATHML_ELEMENT_NAMES = [
   'annotation',
   'annotation-xml',
   'maction',
@@ -108,7 +108,13 @@ export const MATHML_ELEMENTS: ReadonlySet<string> = new Set([
   'munderover',
   'none',
   'semantics',
-]);
+] as const;
+
+export type MathmlElementName = (typeof MATHML_ELEMENT_NAMES)[number];
+
+export const MATHML_ELEMENTS: ReadonlySet<string> = new Set(
+  MATHML_ELEMENT_NAMES
+);
 
 const MATHML_TAG_NAMES = new Set(
   Array.from(MATHML_ELEMENTS, (name) => name.toUpperCase())

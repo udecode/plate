@@ -38,6 +38,7 @@ import {
 } from '../../../internal/plugin/blockRelease';
 import {
   createBrowserHtmlDocument,
+  MATHML_FIRST_CHILD_DRAWN,
   materializeHtmlAst,
   parseHtmlAst,
 } from '../../../lib/plugins/html/htmlAst';
@@ -103,11 +104,12 @@ const countTrailingNewlines = (text: string) =>
 
 const readCodeDomText = (node: Node): string => {
   if (node.nodeName === 'SELECT') return '';
-  // MathML Core draws only the first child of <semantics>, so code keeps the
-  // formula's drawn text and not its TeX annotation.
+  const parent = node.parentElement;
+
   if (
-    node.parentElement?.nodeName === 'SEMANTICS' &&
-    node.parentElement.closest('math') &&
+    parent &&
+    MATHML_FIRST_CHILD_DRAWN.has(parent.localName) &&
+    parent.closest('math') &&
     (node as ChildNode & NonDocumentTypeChildNode).previousElementSibling
   ) {
     return '';
@@ -132,6 +134,15 @@ const restoreTrailingNewlines = (text: string, element: HTMLElement) => {
 
   return current < expected ? text + '\n'.repeat(expected - current) : text;
 };
+
+const everyEquationTexCarrierIsOrHoldsMath = (element: HTMLElement) =>
+  Array.from(
+    element.querySelectorAll(
+      '[data-editor-equation], [data-editor-equation-latex]'
+    )
+  ).every(
+    (carrier) => carrier.localName === 'math' || carrier.querySelector('math')
+  );
 
 const getSelectedLineStarts = (text: string, start: number, end: number) => {
   const starts = [getLineStartOffset(text, start)];
@@ -223,6 +234,9 @@ export const BaseCodeBlockPlugin = definePlugin(PLUGINS.codeBlock, {
               message:
                 'Plate HTML decode kept only the drawn text of <math> in a code block.',
             });
+            if (everyEquationTexCarrierIsOrHoldsMath(element)) {
+              preserve('data-editor-equation', 'data-editor-equation-latex');
+            }
           }
           const languageClass = element
             .querySelector(':scope > code')

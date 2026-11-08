@@ -5006,6 +5006,18 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:HtmlPrepareDiagnosticInput": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "HtmlPrepareDiagnosticInput",
+          "route": null,
+          "runtime": false,
+          "signature": "type HtmlPrepareDiagnosticInput = HtmlMappingDiagnosticInput & Readonly<{\n  /**\n   * The element the loss is about. Each element reports its own diagnostic,\n   * so two dropped elements with the same message stay two. While the\n   * parsed HTML still holds the element, the diagnostic names its place\n   * there, so report a loss before removing its element.\n   */\n  element?: globalThis.Element;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:HtmlWrapperSpec": {
           "aliases": [],
           "documentation": "",

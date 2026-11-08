@@ -554,6 +554,19 @@ export const steps = [
     key: [],
   },
   {
+    name: 'mathml-tex-symbols',
+    private: true,
+    run: 'node tooling/scripts/mathml-tex-symbols.mjs --check',
+    write: 'node tooling/scripts/mathml-tex-symbols.mjs',
+    affected: touches(
+      'packages/platejs/src/math/lib/mathmlTexSymbols.internal.ts',
+      'packages/platejs/src/math/lib/__fixtures__/katex-supported-tex.json',
+      'packages/platejs/package.json',
+      'oxfmt.config.ts'
+    ),
+    key: [],
+  },
+  {
     name: 'bench-report',
     private: true,
     run: 'node tooling/scripts/bench-targets.mjs report --check',

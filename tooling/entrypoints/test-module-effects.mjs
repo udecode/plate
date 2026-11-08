@@ -34,6 +34,11 @@ export const testModuleEffects = {
     { reads: ['apps/www/src/__tests__/package-integration/docx/*.docx'] },
   'packages/platejs/src/html/server/index.ts':
     'loads linkedom from node_modules through createRequire',
+  'packages/platejs/src/math/lib/BaseEquationPlugin.spec.tsx': {
+    reads: [
+      'packages/platejs/src/math/lib/__fixtures__/katex-docs-chrome-copy.html',
+    ],
+  },
   'packages/platejs/test/public-package-import-smoke.spec.ts': {
     reads: ['packages/plitejs/package.json', 'packages/test/package.json'],
   },
