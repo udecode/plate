@@ -88,7 +88,7 @@ const comparison = await compare({
 const result = proposeAuthoredComparison(editor, { comparison });
 ```
 
-导入前会检查基线、schema、文档 metadata 和选中的分组，再创建一个原生 pending proposal。传入 `groupIds` 选择分组；导入会包含所需的依赖分组。结果把比较分组映射到 authored change ID。输入必须是 `TwoWayComparison`。
+导入前会检查基线、schema、文档 metadata 和选中的分组，再创建一个原生 pending proposal。传入 `groupIds` 选择分组；导入会包含它们必需的分组。导入会写入每一段所有分组都被选中的变更内容。每一段都落在两个文档都保持原位的同样两个块之间，与它来源的文档一致。在同一段中有编辑的分组互相依赖。一次移动、拆分或合并的各个部分属于同一个分组，或互相依赖。把一个在每个文档中都只出现一次的词从一段移到另一段的分组属于同一个分组。如果一个编辑删除了某个三个或更多字母的词，而另一个编辑添加了它，即使是在更长的词内部，这两个编辑也会成为同一个分组。只有当没有其他编辑改动的字母包含这个词时才会这样，因为比较读取的是改动的字母，而不是词。其他移动文本，例如不含字母的文本或文档中重复出现的短词，不会合并任何分组。重复块内编辑的分组，例如引用块的粗体，依赖这些编辑。如果选择会漏掉某个没有分组覆盖、且改变文本或标记的差异，会返回 `blocked`，原因为 `ambiguous-selection`。只有当单独接受该 proposal 得到只应用所选分组的文档、单独拒绝它得到导入开始时的文档，并且其他所有 suggestion 仍保持待处理时，导入才返回 `applied`。否则它返回 `blocked`，原因为 `dependency`，并且不写入任何内容。proposal 写入后从更新中抛出的错误会继续传播。结果把比较分组映射到 authored change ID。输入必须是 `TwoWayComparison`。
 
 ## 查询 change
 

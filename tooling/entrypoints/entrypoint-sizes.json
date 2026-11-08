@@ -137,12 +137,12 @@
       "gzip": 193830
     },
     "plitejs/authored": {
-      "bytes": 1027757,
-      "gzip": 327020
+      "bytes": 1050970,
+      "gzip": 335021
     },
     "plitejs/diff": {
-      "bytes": 171414,
-      "gzip": 53152
+      "bytes": 190116,
+      "gzip": 59347
     },
     "plitejs/dom": {
       "bytes": 775234,

@@ -107,7 +107,14 @@ export type ComparisonEffect = ComparisonEffectBase &
       }>
   );
 
-/** One semantic review group. Effects remain independently typed and composable. */
+/**
+ * One edit. A run is the changed content between two blocks that both
+ * documents keep in place. Importing a set of groups writes each run whose
+ * groups are all selected, between the same two blocks as in the document the
+ * run comes from. Groups with edits in one run require each other, and groups
+ * that move a word found once in each document from one run to another are
+ * one group.
+ */
 export type ComparedChange = Readonly<{
   after: readonly ComparisonSpan[];
   before: readonly ComparisonSpan[];
@@ -117,6 +124,13 @@ export type ComparedChange = Readonly<{
   effects: readonly ComparisonEffect[];
   evidence: ComparisonEvidence;
   id: string;
+  /**
+   * Groups that must be selected with this one. The list is not closed: select
+   * what each listed group requires too, transitively. Groups with edits in
+   * one run require each other this way, and a container's group requires the
+   * edits inside it that it repeats, such as bold applied across a quote, each
+   * of which still selects alone.
+   */
   requiredChangeIds: readonly string[];
 }>;
 
@@ -135,6 +149,10 @@ export type ComparisonBranch = 'local' | 'remote';
 
 export type ComparisonConflictAlternative = Readonly<{
   branch: ComparisonBranch;
+  /**
+   * This branch's groups in the conflict, with every group of the branch that
+   * one of them requires or that requires one of them, transitively.
+   */
   changeIds: readonly string[];
   spans: readonly ComparisonSpan[];
 }>;

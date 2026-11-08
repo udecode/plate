@@ -4290,6 +4290,7 @@ export class RootChange {
 
     const sections: number[] = [];
     const data: SectionData[] = [];
+    const joins: PreparedTokenSlice[] = [];
 
     for (const section of json) {
       if (
@@ -4317,9 +4318,9 @@ export class RootChange {
           throw new Error('Invalid property delta JSON.');
         }
 
-        addSection(sections, data, 1, -2, modifications);
+        addSection(sections, data, 1, -2, modifications, false, joins);
       } else if (section.replacement === undefined) {
-        addSection(sections, data, section.length, -1, null);
+        addSection(sections, data, section.length, -1, null, false, joins);
       } else {
         if (!Array.isArray(section.replacement)) {
           throw new Error('Invalid RootChange JSON.');
@@ -4334,10 +4335,13 @@ export class RootChange {
           data,
           section.length,
           replacement.length,
-          replacement
+          replacement,
+          false,
+          joins
         );
       }
     }
+    flushJoins(data, joins);
 
     return new RootChange(sections, data);
   }

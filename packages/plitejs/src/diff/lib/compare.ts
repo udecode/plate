@@ -13,10 +13,15 @@ import {
   createComparisonSnapshot,
   detachComparisonDocument,
   detachComparisonEnvelope,
-  selectComparisonDocumentChange,
+  disjointSets,
   yieldComparisonWork,
 } from './comparison-internal';
 import { matchComparison } from './comparison-matcher';
+import {
+  closeOverRequired,
+  comparisonPlanOf,
+  planComparison,
+} from './comparison-plan';
 import type {
   ComparedChange,
   ComparisonBranch,
@@ -51,7 +56,6 @@ type ThreeWayInput<V extends Value> = Readonly<{
 }>;
 
 type ThreeWayState<V extends Value> = Readonly<{
-  commonRemoteIds: ReadonlySet<string>;
   local: TwoWayComparison<V>;
   localIds: ReadonlyMap<string, string>;
   remote: TwoWayComparison<V>;
@@ -260,52 +264,40 @@ const buildConflicts = (
   remote: readonly ComparedChange[],
   gridSpans: readonly ComparisonSpan[]
 ): readonly ComparisonConflict[] => {
-  const edges = local.flatMap((localGroup) =>
-    remote.flatMap((remoteGroup) =>
+  const { find, join } = disjointSets(local.length + remote.length);
+  const edges = local.flatMap((localGroup, localIndex) =>
+    remote.flatMap((remoteGroup, remoteIndex) =>
       groupsConflict(localGroup, remoteGroup)
-        ? [
-            Object.freeze({
-              local: localGroup,
-              remote: remoteGroup,
-            }),
-          ]
+        ? [[localIndex, local.length + remoteIndex] as const]
         : []
     )
   );
-  const pending = [...edges];
-  const components: Array<{
-    local: Set<ComparedChange>;
-    remote: Set<ComparedChange>;
-  }> = [];
 
-  while (pending.length > 0) {
-    const first = pending.shift();
-    if (!first) break;
-    const component = {
-      local: new Set([first.local]),
-      remote: new Set([first.remote]),
-    };
-    let expanded = true;
+  for (const [left, right] of edges) join(left, right);
+  for (const [offset, branchGroups] of [
+    [0, local],
+    [local.length, remote],
+  ] as const) {
+    const indexById = new Map(
+      branchGroups.map(({ id: groupId }, index) => [groupId, offset + index])
+    );
 
-    while (expanded) {
-      expanded = false;
-      for (let index = pending.length - 1; index >= 0; index--) {
-        const edge = pending[index];
-        if (!edge) continue;
+    branchGroups.forEach(({ requiredChangeIds }, index) => {
+      for (const requiredId of requiredChangeIds) {
+        const required = indexById.get(requiredId);
 
-        if (
-          component.local.has(edge.local) ||
-          component.remote.has(edge.remote)
-        ) {
-          component.local.add(edge.local);
-          component.remote.add(edge.remote);
-          pending.splice(index, 1);
-          expanded = true;
-        }
+        if (required !== undefined) join(offset + index, required);
       }
-    }
-    components.push(component);
+    });
   }
+  const components = [...new Set(edges.map(([left]) => find(left)))].map(
+    (root) => ({
+      local: local.filter((_group, index) => find(index) === root),
+      remote: remote.filter(
+        (_group, index) => find(local.length + index) === root
+      ),
+    })
+  );
 
   return Object.freeze(
     components.map((component, index) => {
@@ -379,37 +371,59 @@ const compareTwoWay = async <V extends Value>(
     before: before.fingerprint,
     policy: COMPARISON_POLICY,
   })}`;
-  const change = DocumentChange.between(beforeDocument, afterDocument);
-  const reconstructed = change.apply(beforeDocument);
-  const inverse = change.invert(beforeDocument);
+  const beforeIndex = createComparisonIndex(beforeDocument, input.schema);
+  const afterIndex = createComparisonIndex(afterDocument, input.schema);
+  const beforeRoots = beforeDocument.roots ?? {};
+  const afterRoots = afterDocument.roots ?? {};
+  const matched = await matchComparison(beforeIndex, afterIndex, id, {
+    createdRoots: new Set(
+      Object.keys(afterRoots).filter(
+        (root) => !Object.hasOwn(beforeRoots, root)
+      )
+    ),
+    deletedRoots: new Set(
+      Object.keys(beforeRoots).filter(
+        (root) => !Object.hasOwn(afterRoots, root)
+      )
+    ),
+    signal: input.signal,
+  });
+  let { changes: matchedChanges, diagnostics } = matched;
 
-  if (!comparisonDocumentsEqual(reconstructed, afterDocument)) {
+  if (
+    matchedChanges.length === 0 &&
+    !matched.visibleEquivalent &&
+    !comparisonDocumentsEqual(beforeDocument, afterDocument)
+  ) {
+    const fallback = coarseFallback(id, beforeIndex, afterIndex);
+
+    matchedChanges = Object.freeze([fallback.change]);
+    diagnostics = Object.freeze([...diagnostics, fallback.diagnostic]);
+  }
+
+  const plan = planComparison({
+    after: afterDocument,
+    afterIndex,
+    before: beforeDocument,
+    beforeIndex,
+    groups: matchedChanges,
+  });
+  const { change, changes } = plan;
+
+  if (!comparisonDocumentsEqual(change.apply(beforeDocument), afterDocument)) {
     throw new Error(
       'Comparison change does not reconstruct the target document.'
     );
   }
-  if (!comparisonDocumentsEqual(inverse.apply(afterDocument), beforeDocument)) {
+  if (
+    !comparisonDocumentsEqual(
+      change.invert(beforeDocument).apply(afterDocument),
+      beforeDocument
+    )
+  ) {
     throw new Error(
       'Comparison inverse does not reconstruct the source document.'
     );
-  }
-
-  const beforeIndex = createComparisonIndex(beforeDocument, input.schema);
-  const afterIndex = createComparisonIndex(afterDocument, input.schema);
-  const matched = await matchComparison(beforeIndex, afterIndex, id, {
-    createdRoots: change.createRoots,
-    deletedRoots: change.deleteRoots,
-    signal: input.signal,
-  });
-  const { changes: matchedChanges, diagnostics: matchedDiagnostics } = matched;
-  let changes = matchedChanges;
-  let diagnostics = matchedDiagnostics;
-
-  if (!change.empty && changes.length === 0 && !matched.visibleEquivalent) {
-    const fallback = coarseFallback(id, beforeIndex, afterIndex);
-
-    changes = Object.freeze([fallback.change]);
-    diagnostics = Object.freeze([...diagnostics, fallback.diagnostic]);
   }
 
   assertComparisonActive(input.signal);
@@ -599,7 +613,6 @@ const compareThreeWay = async <V extends Value>(
   THREE_WAY_STATE.set(
     comparison,
     Object.freeze({
-      commonRemoteIds,
       local,
       localIds,
       remote,
@@ -787,58 +800,102 @@ export async function resolveComparison<V extends Value>(
     return Object.freeze({ comparison, status: 'resolved' as const });
   }
 
-  const localSelected = new Set(state.localIds.keys());
-  const remoteSelected = new Set(
-    [...state.remoteIds.keys()].filter(
-      (groupId) => !state.commonRemoteIds.has(groupId)
-    )
-  );
+  const excludedLocal = new Set<string>();
+  const excludedRemote = new Set<string>();
   for (const conflict of input.comparison.conflicts) {
     const choice = byConflict.get(conflict.id)?.choice;
 
     if (choice === 'local') {
       for (const groupId of conflict.remote.changeIds) {
-        remoteSelected.delete(groupId);
+        excludedRemote.add(groupId);
       }
     } else if (choice === 'remote') {
       for (const groupId of conflict.local.changeIds) {
-        localSelected.delete(groupId);
+        excludedLocal.add(groupId);
       }
     }
   }
-
-  const localSourceIds = new Set(
-    [...localSelected].flatMap((id) => {
-      const sourceId = state.localIds.get(id);
+  const localSelected = [...state.localIds.keys()].filter(
+    (groupId) => !excludedLocal.has(groupId)
+  );
+  const sourcesOf = (
+    ids: ReadonlyMap<string, string>,
+    groupIds: Iterable<string>
+  ) =>
+    [...groupIds].flatMap((groupId) => {
+      const sourceId = ids.get(groupId);
 
       return sourceId ? [sourceId] : [];
-    })
-  );
-  const remoteSourceIds = new Set(
-    [...remoteSelected].flatMap((id) => {
-      const sourceId = state.remoteIds.get(id);
+    });
+  // A common edit comes from the local branch while its local twin stays
+  // selected, and from the remote branch once a conflict choice excludes it.
+  const leftOut = new Set(sourcesOf(state.remoteIds, localSelected));
+  const branch = (
+    comparison: TwoWayComparison<V>,
+    ids: ReadonlyMap<string, string>,
+    selected: readonly string[],
+    excluded: ReadonlySet<string>,
+    met: ReadonlySet<string>
+  ) => {
+    const plan = comparisonPlanOf(comparison, state.schema);
 
-      return sourceId ? [sourceId] : [];
-    })
+    if (!plan) return null;
+    const groups = comparison.changes.map((group) => ({
+      ...group,
+      requiredChangeIds: group.requiredChangeIds.filter((id) => !met.has(id)),
+    }));
+    const closed = closeOverRequired(groups, sourcesOf(ids, selected));
+    const excludedSources = new Set(sourcesOf(ids, excluded));
+    const all = closed.size === comparison.changes.length;
+
+    if (
+      [...closed].some((id) => excludedSources.has(id)) ||
+      plan.windows.some(
+        ({ owners }) =>
+          owners.some((id) => closed.has(id)) &&
+          owners.some((id) => met.has(id))
+      ) ||
+      (!all && !plan.partitioned)
+    ) {
+      return null;
+    }
+
+    return { change: plan.select(all ? 'all' : closed), size: closed.size };
+  };
+  const local = branch(
+    state.local,
+    state.localIds,
+    localSelected,
+    excludedLocal,
+    new Set()
   );
+  const remote = branch(
+    state.remote,
+    state.remoteIds,
+    [...state.remoteIds.keys()].filter(
+      (groupId) =>
+        !excludedRemote.has(groupId) &&
+        !leftOut.has(state.remoteIds.get(groupId) ?? '')
+    ),
+    excludedRemote,
+    leftOut
+  );
+
+  if (!local || !remote) {
+    return invalidResolution(
+      'The selected branch contributions cannot be separated into one exact change.'
+    );
+  }
   let target: Pick<EditorDocumentValue<V>, 'children' | 'roots'>;
   try {
-    const localChange = selectComparisonDocumentChange(
-      state.local,
-      localSourceIds
-    );
-    const remoteChange = selectComparisonDocumentChange(
-      state.remote,
-      remoteSourceIds
-    );
     const transformed = DocumentChange.transform(
-      localChange,
-      remoteChange,
+      local.change,
+      remote.change,
       input.comparison.base.document
     );
 
     target = detachComparisonDocument(
-      transformed.b.apply(localChange.apply(input.comparison.base.document)),
+      transformed.b.apply(local.change.apply(input.comparison.base.document)),
       state.schema
     );
   } catch {
@@ -858,8 +915,8 @@ export async function resolveComparison<V extends Value>(
     baseline
   );
   const branches = Object.freeze([
-    ...(localSourceIds.size > 0 ? (['local'] as const) : []),
-    ...(remoteSourceIds.size > 0 ? (['remote'] as const) : []),
+    ...(local.size > 0 ? (['local'] as const) : []),
+    ...(remote.size > 0 ? (['remote'] as const) : []),
   ]);
 
   return Object.freeze({

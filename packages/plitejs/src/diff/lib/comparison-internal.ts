@@ -1,13 +1,12 @@
 import type { EditorDocumentValue, EditorStateSchemaApi, Value } from '../..';
-import {
-  DocumentChange,
-  type DocumentChangeJson,
-} from '../../core/change/document-change';
 import { jsonEqual } from '../../core/change/json';
-import { RootChange, type RootChangeJson } from '../../core/change/root-change';
 import { fingerprintEditorJson } from '../../core/json-fingerprint';
 import { snapshotEditorJsonValue } from '../../core/value-codec';
-import type { ComparisonSnapshot, TwoWayComparison } from './comparison-types';
+import type {
+  ComparedChange,
+  ComparisonSnapshot,
+  ComparisonSpan,
+} from './comparison-types';
 
 export type ComparisonDocument<V extends Value = Value> = Pick<
   EditorDocumentValue<V>,
@@ -100,6 +99,85 @@ export const comparisonDocumentsEqual = (
   right: ComparisonDocument
 ) => jsonEqual(left, right);
 
+export const disjointSets = (count: number) => {
+  const parent = Array.from({ length: count }, (_value, index) => index);
+  const find = (index: number) => {
+    let root = index;
+
+    while (parent[root] !== root) {
+      parent[root] = parent[parent[root]];
+      root = parent[root];
+    }
+
+    return root;
+  };
+
+  return {
+    find,
+    join: (left: number, right: number) => {
+      const from = find(left);
+      const to = find(right);
+
+      if (from === to) return false;
+      parent[from] = to;
+
+      return true;
+    },
+  };
+};
+
+export const spanKey = ({ from, root, to }: ComparisonSpan) =>
+  `${root === null ? 'primary' : `named:${root}`}:${from}:${to}`;
+
+export const uniqueSpans = (spans: readonly ComparisonSpan[]) =>
+  Object.freeze([
+    ...new Map(spans.map((value) => [spanKey(value), value])).values(),
+  ]);
+
+export type GroupMerge = Readonly<{
+  members: readonly number[];
+  owner: number;
+}>;
+
+export const mergeGroups = (
+  changes: readonly ComparedChange[],
+  merges: readonly GroupMerge[]
+) => {
+  const placed = new Map<number, GroupMerge>();
+  const absorbed = new Set<number>();
+
+  for (const merge of merges) {
+    placed.set(Math.min(...merge.members), merge);
+    for (const member of merge.members) absorbed.add(member);
+  }
+
+  return changes.flatMap((change, index) => {
+    const merge = placed.get(index);
+
+    if (!merge) return absorbed.has(index) ? [] : [change];
+    const merged = merge.members.map((member) => changes[member]);
+    const { evidence, id } = changes[merge.owner];
+
+    return [
+      Object.freeze({
+        after: uniqueSpans(merged.flatMap(({ after: spans }) => spans)),
+        before: uniqueSpans(merged.flatMap(({ before: spans }) => spans)),
+        correspondence: Object.freeze(
+          merged.flatMap(({ correspondence }) => correspondence)
+        ),
+        effects: Object.freeze(merged.flatMap(({ effects }) => effects)),
+        evidence,
+        id,
+        requiredChangeIds: Object.freeze([
+          ...new Set(
+            merged.flatMap(({ requiredChangeIds }) => requiredChangeIds)
+          ),
+        ]),
+      }),
+    ];
+  });
+};
+
 export const createAbortError = () => {
   const error = new Error('The comparison was aborted.');
 
@@ -118,92 +196,4 @@ export const yieldComparisonWork = async (signal?: AbortSignal) => {
     setTimeout(resolve, 0);
   });
   assertComparisonActive(signal);
-};
-
-export const selectComparisonDocumentChange = (
-  comparison: TwoWayComparison,
-  selectedIds: ReadonlySet<string>
-) => {
-  if (selectedIds.size === comparison.changes.length) return comparison.change;
-
-  const selected = comparison.changes.filter(({ id }) => selectedIds.has(id));
-  const spans = (side: 'after' | 'before', root: string | null) =>
-    selected.flatMap((group) =>
-      group[side].filter((span) => span.root === root)
-    );
-  const touches = (
-    from: number,
-    to: number,
-    candidates: ReadonlyArray<Readonly<{ from: number; to: number }>>
-  ) =>
-    candidates.some((span) =>
-      from === to
-        ? span.from <= from && from <= span.to
-        : Math.max(from, span.from) < Math.min(to, span.to)
-    );
-  const filterRoot = (
-    root: string | null,
-    value: RootChangeJson | undefined
-  ): RootChangeJson | undefined => {
-    if (!value) return undefined;
-    const beforeSpans = spans('before', root);
-    const afterSpans = spans('after', root);
-    let before = 0;
-    let after = 0;
-    const result = value.map((section) => {
-      const sectionChange = RootChange.fromJSON([section]);
-      const afterLength = sectionChange.newLength;
-      const changed =
-        section.properties !== undefined || section.replacement !== undefined;
-      const include =
-        changed &&
-        (touches(before, before + section.length, beforeSpans) ||
-          touches(after, after + afterLength, afterSpans));
-
-      before += section.length;
-      after += afterLength;
-
-      return include ? section : Object.freeze({ length: section.length });
-    });
-    const filtered = RootChange.fromJSON(result);
-
-    return filtered.empty ? undefined : filtered.toJSON();
-  };
-  const json = comparison.change.toJSON();
-  const primary = filterRoot(null, json.primary);
-  const roots = Object.fromEntries(
-    Object.entries(json.roots ?? {}).flatMap(([root, change]) => {
-      const filtered = filterRoot(root, change);
-
-      return filtered ? [[root, filtered] as const] : [];
-    })
-  );
-  const lifecycle = (kind: 'root-create' | 'root-delete', root: string) =>
-    selected.some(({ effects }) =>
-      effects.some(
-        (effect) =>
-          effect.kind === kind && 'root' in effect && effect.root === root
-      )
-    );
-  const selectedJson: DocumentChangeJson = {
-    ...(primary ? { primary } : {}),
-    ...(Object.keys(roots).length > 0 ? { roots } : {}),
-    ...(json.createRoots
-      ? {
-          createRoots: json.createRoots.filter((root) =>
-            lifecycle('root-create', root)
-          ),
-        }
-      : {}),
-    ...(json.deleteRoots
-      ? {
-          deleteRoots: json.deleteRoots.filter((root) =>
-            lifecycle('root-delete', root)
-          ),
-        }
-      : {}),
-    version: 3,
-  };
-
-  return DocumentChange.fromJSON(selectedJson);
 };

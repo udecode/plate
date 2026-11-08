@@ -799,6 +799,7 @@
     "test:partition:diff": {
       "cache": true,
       "dependsOn": [
+        "source-hash:partition:authored",
         "source-hash:partition:core",
         "source-hash:partition:diff",
         "source-hash:partition:testing"

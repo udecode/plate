@@ -12223,13 +12223,14 @@ export const runEditorTransaction = <R>(
         'recorded',
         snapshot.builder.value as EditorDocumentValue
       );
-      endEditorTransactionDraftGuards(editor);
     }
   } catch (error) {
     transactionFailed = true;
     pluginPublication?.rollback();
     pluginPublication = undefined;
     transactionError = { value: error };
+  } finally {
+    endEditorTransactionDraftGuards(editor);
   }
 
   decrementEditorTransactionDepth(editor);
@@ -12612,7 +12613,9 @@ export const runEditorTransaction = <R>(
       committed === null &&
       transactionError.value instanceof EditorRefusalError
     ) {
-      if (!options.speculative) {
+      if (options.speculative) {
+        options.speculative.refusal = transactionError.value.refusal;
+      } else {
         publishEditorRefusal(editor, transactionError.value.refusal);
       }
 

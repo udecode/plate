@@ -10,7 +10,10 @@ import {
 } from './comparison-index';
 import {
   assertComparisonActive,
+  mergeGroups,
+  spanKey,
   stableStringify,
+  uniqueSpans,
   yieldComparisonWork,
 } from './comparison-internal';
 import type {
@@ -111,9 +114,6 @@ const nodeKey = (node: ComparisonIndexNode) =>
   `${node.root ?? ''}:${stableStringify(node.path)}`;
 
 const pairKey = (before: number, after: number) => `${before}:${after}`;
-
-const spanKey = ({ from, root, to }: ComparisonSpan) =>
-  `${root === null ? 'primary' : `named:${root}`}:${from}:${to}`;
 
 const lastPathIndex = (node: ComparisonIndexNode) => node.path.at(-1) ?? 0;
 
@@ -801,11 +801,6 @@ const relationSpans = (
   source: ComparisonDocumentIndex
 ) => Object.freeze(indexes.map((index) => source.nodes[index].span));
 
-const uniqueSpans = (spans: readonly ComparisonSpan[]) =>
-  Object.freeze([
-    ...new Map(spans.map((value) => [spanKey(value), value])).values(),
-  ]);
-
 const composeWrapperGroups = (changes: readonly ComparedChange[]) => {
   let result = [...changes];
   const wrappers = changes
@@ -833,7 +828,6 @@ const composeWrapperGroups = (changes: readonly ComparedChange[]) => {
     );
 
     if (wrapperIndex === -1) continue;
-    const wrapper = result[wrapperIndex];
     const wrapperSpan =
       effect.action === 'add' ? effect.after[0] : effect.before[0];
     const nestedIndexes = result.flatMap((candidate, index) => {
@@ -851,59 +845,12 @@ const composeWrapperGroups = (changes: readonly ComparedChange[]) => {
     });
 
     if (nestedIndexes.length === 0) continue;
-    const merged = [wrapper, ...nestedIndexes.map((index) => result[index])];
-    const insertAt = Math.min(wrapperIndex, ...nestedIndexes);
-    const nestedSet = new Set([wrapperIndex, ...nestedIndexes]);
-    const value: ComparedChange = Object.freeze({
-      after: uniqueSpans(merged.flatMap(({ after: spans }) => spans)),
-      before: uniqueSpans(merged.flatMap(({ before: spans }) => spans)),
-      correspondence: Object.freeze(
-        merged.flatMap(({ correspondence }) => correspondence)
-      ),
-      effects: Object.freeze(merged.flatMap(({ effects }) => effects)),
-      evidence: wrapper.evidence,
-      id: wrapper.id,
-      requiredChangeIds: Object.freeze([
-        ...new Set(
-          merged.flatMap(({ requiredChangeIds }) => requiredChangeIds)
-        ),
-      ]),
-    });
-    const next = result.filter((_change, index) => !nestedSet.has(index));
-
-    next.splice(insertAt, 0, value);
-    result = next;
+    result = mergeGroups(result, [
+      { members: [wrapperIndex, ...nestedIndexes], owner: wrapperIndex },
+    ]);
   }
 
   return Object.freeze(result);
-};
-
-const mergeChangeIndexes = (
-  changes: readonly ComparedChange[],
-  indexes: readonly number[],
-  ownerIndex: number
-) => {
-  const selected = new Set(indexes);
-  const merged = indexes.map((index) => changes[index]);
-  const owner = changes[ownerIndex];
-  const value: ComparedChange = Object.freeze({
-    after: uniqueSpans(merged.flatMap(({ after: spans }) => spans)),
-    before: uniqueSpans(merged.flatMap(({ before: spans }) => spans)),
-    correspondence: Object.freeze(
-      merged.flatMap(({ correspondence }) => correspondence)
-    ),
-    effects: Object.freeze(merged.flatMap(({ effects }) => effects)),
-    evidence: owner.evidence,
-    id: owner.id,
-    requiredChangeIds: Object.freeze([
-      ...new Set(merged.flatMap(({ requiredChangeIds }) => requiredChangeIds)),
-    ]),
-  });
-  const result = changes.filter((_change, index) => !selected.has(index));
-
-  result.splice(Math.min(...indexes), 0, value);
-
-  return result;
 };
 
 const logicalOutlineSpan = (
@@ -995,7 +942,7 @@ const composeLogicalGroups = (
         result[index].effects.some(({ kind }) => kind === 'placement')
       ) ?? -1;
     if (ownerIndex === -1) continue;
-    result = mergeChangeIndexes(result, indexes, ownerIndex);
+    result = mergeGroups(result, [{ members: indexes, owner: ownerIndex }]);
   }
 
   return Object.freeze(result);

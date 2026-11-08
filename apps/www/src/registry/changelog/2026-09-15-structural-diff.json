@@ -34,7 +34,7 @@
     {
       "id": "2026-09-15-diff-structural-document-comparison-53abcaef",
       "kind": "new",
-      "summary": "Inspect two-way and three-way comparisons with grouped effects, evidence, conflict choices, filters, and navigation.",
+      "summary": "Inspect two-way and three-way comparisons with grouped effects, evidence, conflict choices, filters, and navigation. Checking a group also checks the groups it requires, and unchecking a group unchecks every checked group that requires it.",
       "details": [],
       "migrationNotes": [],
       "targets": ["diff"],

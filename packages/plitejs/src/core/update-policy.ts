@@ -27,7 +27,7 @@ export type CompiledEditorUpdatePolicy = Readonly<{
   tags: readonly EditorUpdateTag[];
 }>;
 
-export type SpeculativeUpdate = { committed: boolean };
+export type SpeculativeUpdate = { committed: boolean; refusal?: unknown };
 
 export type InternalEditorUpdateOptions = {
   onAdmission?: (admission: AdmittedRepair | null) => void;

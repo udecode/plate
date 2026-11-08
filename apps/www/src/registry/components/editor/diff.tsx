@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  ComparedChange,
   Comparison,
   ComparisonBranch,
   ComparisonEffect,
@@ -55,6 +56,21 @@ const evidenceLabel = (evidence: ComparisonEvidence) =>
 
 const formatSpan = ({ from, root, to }: ComparisonSpan) =>
   `${root ?? 'document'}:${from}–${to}`;
+
+const closeOverRequired = (
+  changesById: ReadonlyMap<string, ComparedChange>,
+  picks: Iterable<string>
+): ReadonlySet<string> => {
+  const selected = new Set(picks);
+
+  for (const id of selected) {
+    for (const required of changesById.get(id)?.requiredChangeIds ?? []) {
+      selected.add(required);
+    }
+  }
+
+  return selected;
+};
 
 function TextEffect({
   after,
@@ -194,15 +210,15 @@ export function Diff({
   }>(() => ({ comparisonId: comparison.id, values: new Map() }));
   const [selectionDraft, setSelectionDraft] = React.useState<{
     comparisonId: string;
-    values: ReadonlySet<string>;
-  }>(() => ({ comparisonId: comparison.id, values: new Set() }));
+    picks: ReadonlySet<string>;
+  }>(() => ({ comparisonId: comparison.id, picks: new Set() }));
   const resolutions =
     resolutionDraft.comparisonId === comparison.id
       ? resolutionDraft.values
       : new Map<string, ComparisonBranch>();
-  const selectedChangeIds =
+  const picks =
     selectionDraft.comparisonId === comparison.id
-      ? selectionDraft.values
+      ? selectionDraft.picks
       : new Set<string>();
   const effectKinds = React.useMemo(
     () =>
@@ -252,25 +268,26 @@ export function Diff({
     () => new Map(comparison.changes.map((change) => [change.id, change])),
     [comparison]
   );
+  const selectedChangeIds = closeOverRequired(changesById, picks);
 
-  const publishSelection = (requested: ReadonlySet<string>) => {
-    const selected = new Set(requested);
-    const pending = [...requested];
+  const publishPicks = (nextPicks: ReadonlySet<string>) => {
+    const selected = closeOverRequired(changesById, nextPicks);
 
-    for (const id of pending) {
-      const change = changesById.get(id);
-
-      for (const required of change?.requiredChangeIds ?? []) {
-        if (selected.has(required)) continue;
-        selected.add(required);
-        pending.push(required);
-      }
-    }
-    setSelectionDraft({ comparisonId: comparison.id, values: selected });
+    setSelectionDraft({ comparisonId: comparison.id, picks: nextPicks });
     onSelectionChange?.(
       comparison.changes
         .filter(({ id }) => selected.has(id))
         .map(({ id }) => id)
+    );
+  };
+
+  const uncheck = (changeId: string) => {
+    publishPicks(
+      new Set(
+        [...picks].filter(
+          (pick) => !closeOverRequired(changesById, [pick]).has(changeId)
+        )
+      )
     );
   };
 
@@ -399,11 +416,8 @@ export function Diff({
             aria-label="Select filtered comparison groups"
             disabled={visibleChanges.length === 0}
             onClick={() =>
-              publishSelection(
-                new Set([
-                  ...selectedChangeIds,
-                  ...visibleChanges.map(({ id }) => id),
-                ])
+              publishPicks(
+                new Set([...picks, ...visibleChanges.map(({ id }) => id)])
               )
             }
             size="sm"
@@ -414,7 +428,7 @@ export function Diff({
           <Button
             aria-label="Clear comparison group selection"
             disabled={selectedChangeIds.size === 0}
-            onClick={() => publishSelection(new Set())}
+            onClick={() => publishPicks(new Set())}
             size="sm"
             variant="outline"
           >
@@ -518,13 +532,11 @@ export function Diff({
                     <input
                       aria-label={`Select change ${index + 1}`}
                       checked={selectedChangeIds.has(change.id)}
-                      onChange={(event) => {
-                        const next = new Set(selectedChangeIds);
-
-                        if (event.target.checked) next.add(change.id);
-                        else next.delete(change.id);
-                        publishSelection(next);
-                      }}
+                      onChange={(event) =>
+                        event.target.checked
+                          ? publishPicks(new Set([...picks, change.id]))
+                          : uncheck(change.id)
+                      }
                       type="checkbox"
                     />
                     <button

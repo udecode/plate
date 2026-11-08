@@ -81,7 +81,9 @@ const comparison = await compare({
 const imported = proposeAuthoredComparison(editor, { comparison });
 ```
 
-`groupIds` 选择比较 group，并包含它们必需的依赖。结果把选中的 group ID 映射到原生 change ID。导入会在写入前检查 schema、已接受内容和 authored frontier；处理 `stale`、`blocked`、`invalid` 和 `unavailable` 时，不要把它们当作已应用的 proposal。比较必须是针对当前已接受文档的双向比较。
+`groupIds` 选择比较 group，并包含它们必需的 group。导入会写入每一段所有 group 都被选中的变更内容。每一段都落在两个文档都保持原位的同样两个块之间，与它来源的文档一致。在同一段中有编辑的 group 互相依赖，例如被移动的块和块内的编辑，所以选择其中一个会同时导入两者。一次移动、拆分或合并的各个部分属于同一个 group，或互相依赖。把一个在每个文档中都只出现一次的词从一段移到另一段的 group 属于同一个 group。如果一个编辑删除了某个三个或更多字母的词，而另一个编辑添加了它，即使是在更长的词内部，这两个编辑也会成为同一个 group，例如删除 `the` 的同时把 `brea` 改成 `breathe`。只有当没有其他编辑改动的字母包含这个词时才会这样。比较读取的是改动的字母，而不是词。在 `two` 前添加 `the` 可能只改动 `he t`，所以这个编辑不算在内。其他移动文本，例如不含字母的文本或文档中重复出现的短词，不会合并任何 group，所以单独导入其中一个 group，或 `resolveComparison` 的冲突选择只保留其中一个，可能丢失或重复这段文本。重复块内编辑的 group，例如应用到整个引用块的粗体，依赖这些编辑，而这些编辑仍可单独导入。如果选择会漏掉某个没有 group 覆盖、且改变文本或标记的差异，会返回 `blocked`，原因为 `ambiguous-selection`。
+
+只有当单独接受该 proposal 得到只应用所选 group 的文档、单独拒绝它得到导入开始时的文档，并且其他所有 suggestion 仍保持待处理时，导入才返回 `applied`。否则它返回 `blocked`，原因为 `dependency`，并且不写入任何内容，例如删除命名 root 的整体导入，Suggesting 无法记录它。在已应用 proposal 等待的待处理变更被决定之前，审阅仍可能暂缓该 proposal 的决定。proposal 写入后从更新中抛出的错误会继续传播，proposal 仍会保留。结果把选中的 group ID 映射到原生 change ID。导入会在写入前检查 schema、已接受内容和 authored frontier；处理 `stale`、`blocked`、`invalid` 和 `unavailable` 时，不要把它们当作已应用的 proposal。比较必须是针对当前已接受文档的双向比较。
 
 ## 配置 view
 
