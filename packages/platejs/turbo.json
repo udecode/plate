@@ -5918,7 +5918,8 @@
         "plitejs#source-hash:partition:testing",
         "source-hash:partition:core",
         "source-hash:partition:html-server",
-        "source-hash:partition:standard-basic-nodes"
+        "source-hash:partition:standard-basic-nodes",
+        "source-hash:partition:standard-code-block"
       ],
       "inputs": [
         "src/html/server/**",

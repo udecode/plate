@@ -115,7 +115,7 @@ const readCodeDomText = (node: Node): string => {
     return '';
   }
   if (node.nodeName === 'BR') return '\n';
-  if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
+  if (node.nodeType === node.TEXT_NODE) return node.textContent ?? '';
 
   return Array.from(node.childNodes).map(readCodeDomText).join('');
 };

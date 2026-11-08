@@ -321,7 +321,7 @@ export const addDocxComments = async (
     while (sibling && sibling !== bodyEnd) {
       const next = sibling.nextSibling;
 
-      if (sibling.nodeType === Node.ELEMENT_NODE) {
+      if (sibling.nodeType === sibling.ELEMENT_NODE) {
         body.push(sibling.cloneNode(true));
       }
       sibling.remove();

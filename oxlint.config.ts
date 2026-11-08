@@ -61,6 +61,12 @@ const htmlParserOwnerMessage =
 const docxDomParserOwnerMessage =
   'DOCX builds a DOM document only through parseDocxHtml, parseDocxXml or captureDocxDomParsers in packages/platejs/src/docx/internal/domParser.ts. HTML that needs no DOM document goes through parseHtmlAst from packages/platejs/src/lib/plugins/html/htmlAst.ts.';
 
+const nodeConstantRestriction = {
+  object: 'Node',
+  message:
+    'platejs/html/server parses with linkedom, which installs no Node global. Read a node-type constant from the node itself, such as node.TEXT_NODE.',
+};
+
 const editorWindowRestriction = {
   property: 'getWindow',
   message:
@@ -414,6 +420,7 @@ export default defineConfig({
         'no-restricted-properties': [
           'error',
           { property: 'DOMParser', message: htmlParserOwnerMessage },
+          nodeConstantRestriction,
         ],
       },
     },
@@ -435,6 +442,7 @@ export default defineConfig({
         'no-restricted-properties': [
           'error',
           { property: 'DOMParser', message: docxDomParserOwnerMessage },
+          nodeConstantRestriction,
         ],
       },
     },

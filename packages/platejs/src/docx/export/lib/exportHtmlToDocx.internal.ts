@@ -31,12 +31,12 @@ const preserveMarkedWhitespace = (html: string) =>
 const blockOfRecord = (wrapper: Element) => {
   const content = Array.from(wrapper.childNodes).filter(
     (node) =>
-      node.nodeType !== Node.TEXT_NODE || (node.textContent ?? '').trim() !== ''
+      node.nodeType !== node.TEXT_NODE || (node.textContent ?? '').trim() !== ''
   );
   const [block] = content;
 
   return content.length === 1 &&
-    block.nodeType === Node.ELEMENT_NODE &&
+    block.nodeType === block.ELEMENT_NODE &&
     !(block as Element).hasAttribute('data-docx-list')
     ? (block as Element)
     : undefined;
