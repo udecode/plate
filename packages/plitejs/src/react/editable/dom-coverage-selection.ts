@@ -54,35 +54,7 @@ const getBoundaryRangeRole = (
   return 'interior';
 };
 
-const hasAnchorSideVisibleText = (
-  editor: ReactRuntimeEditor,
-  selection: ModelRange
-) => {
-  if (RangeApi.isCollapsed(selection)) {
-    return false;
-  }
-
-  const { anchor } = selection;
-  const anchorEntry = editor.read((state) => state.nodes.get(anchor.path));
-
-  if (!anchorEntry) {
-    return false;
-  }
-
-  const [anchorNode] = anchorEntry;
-
-  if (!NodeApi.isText(anchorNode)) {
-    return false;
-  }
-
-  const anchorTextLength = NodeApi.string(anchorNode).length;
-
-  return RangeApi.isBackward(selection)
-    ? anchor.offset > 0
-    : anchor.offset < anchorTextLength;
-};
-
-const getFocusSideVisibleRange = (
+const getSelectedFocusText = (
   editor: ReactRuntimeEditor,
   selection: ModelRange
 ): ModelRange | null => {
@@ -117,41 +89,6 @@ const getFocusSideVisibleRange = (
   return RangeApi.isCollapsed(focusRange) ? null : focusRange;
 };
 
-const getDOMRangeProjection = (
-  editor: ReactRuntimeEditor,
-  selection: ModelRange,
-  editorElement?: HTMLElement
-): DOMRangeProjection | null => {
-  const fullDOMRange = hasAnchorSideVisibleText(editor, selection)
-    ? resolveDOMRangeInRoot(editor, selection, editorElement)
-    : null;
-
-  if (fullDOMRange) {
-    return {
-      backward: RangeApi.isBackward(selection),
-      domRange: fullDOMRange,
-    };
-  }
-
-  for (const range of [
-    getFocusSideVisibleRange(editor, selection),
-    getFocusSideVisibleRange(editor, {
-      anchor: selection.focus,
-      focus: selection.anchor,
-    }),
-  ]) {
-    const domRange = range
-      ? resolveDOMRangeInRoot(editor, range, editorElement)
-      : null;
-
-    if (domRange) {
-      return { backward: RangeApi.isBackward(selection), domRange };
-    }
-  }
-
-  return null;
-};
-
 const getModelHost = (
   coverage: DOMCoverageSession,
   point: ModelRange['anchor']
@@ -159,6 +96,48 @@ const getModelHost = (
   const boundary = coverage.getBoundaryForPoint(point);
 
   return boundary?.selectionPolicy === 'model' ? boundary : null;
+};
+
+const spansModelHost = (coverage: DOMCoverageSession, selection: ModelRange) =>
+  coverage.hasModelBoundaries() &&
+  !getModelHost(coverage, selection.anchor) &&
+  !getModelHost(coverage, selection.focus) &&
+  coverage
+    .getBoundariesForRange(selection)
+    .some((boundary) => boundary.selectionPolicy === 'model');
+
+const getDOMRangeProjection = (
+  coverage: DOMCoverageSession,
+  editor: ReactRuntimeEditor,
+  selection: ModelRange,
+  editorElement?: HTMLElement
+): DOMRangeProjection | null => {
+  const backward = RangeApi.isBackward(selection);
+  const focusText = getSelectedFocusText(editor, selection);
+  const anchorText = getSelectedFocusText(editor, {
+    anchor: selection.focus,
+    focus: selection.anchor,
+  });
+  const fullDOMRange =
+    anchorText || (focusText && spansModelHost(coverage, selection))
+      ? resolveDOMRangeInRoot(editor, selection, editorElement)
+      : null;
+
+  if (fullDOMRange) {
+    return { backward, domRange: fullDOMRange };
+  }
+
+  for (const range of [focusText, anchorText]) {
+    const domRange = range
+      ? resolveDOMRangeInRoot(editor, range, editorElement)
+      : null;
+
+    if (domRange) {
+      return { backward, domRange };
+    }
+  }
+
+  return null;
 };
 
 const getPointOutsideModelHost = (
@@ -257,16 +236,22 @@ const hasHiddenEnd = (
   return (
     !!anchorHost ||
     !!focusHost ||
-    !getDOMRangeProjection(editor, selection, editorElement)
+    !getDOMRangeProjection(coverage, editor, selection, editorElement)
   );
 };
 
 const getProjectedPoints = (
+  coverage: DOMCoverageSession,
   editor: ReactRuntimeEditor,
   selection: ModelRange,
   editorElement?: HTMLElement
 ): DOMSelectionPoints | null => {
-  const projection = getDOMRangeProjection(editor, selection, editorElement);
+  const projection = getDOMRangeProjection(
+    coverage,
+    editor,
+    selection,
+    editorElement
+  );
 
   return projection
     ? getDOMRangeSelectionPoints(projection.domRange, projection.backward)
@@ -279,7 +264,12 @@ const getParkedPoints = (
   selection: ModelRange,
   editorElement?: HTMLElement
 ): DOMSelectionPoints | null => {
-  const projected = getProjectedPoints(editor, selection, editorElement);
+  const projected = getProjectedPoints(
+    coverage,
+    editor,
+    selection,
+    editorElement
+  );
 
   if (projected) return projected;
 
@@ -402,7 +392,7 @@ export const applyDOMCoverageSelectionPolicy = ({
 
   const points = parked
     ? getParkedPoints(coverage, editor, selection, editorElement)
-    : getProjectedPoints(editor, selection, editorElement);
+    : getProjectedPoints(coverage, editor, selection, editorElement);
 
   exportSelection(points, parked);
 
