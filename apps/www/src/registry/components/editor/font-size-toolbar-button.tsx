@@ -20,7 +20,10 @@ import {
 } from '@/registry/components/editor/floating-popover';
 import { ToolbarButton } from '@/registry/components/editor/toolbar';
 
-import { useToolbarOverlayTrigger } from './toolbar-overlay';
+import {
+  useToolbarOverlayTrigger,
+  useToolbarScrollDismiss,
+} from './toolbar-overlay';
 
 const DEFAULT_FONT_SIZE = '16';
 
@@ -63,6 +66,7 @@ const toPixels = (value: string) => {
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const inputDirtyRef = React.useRef(false);
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
@@ -70,6 +74,11 @@ export function FontSizeToolbarButton() {
   const { opening: beginInteraction } = useToolbarOverlayTrigger({
     'aria-haspopup': 'dialog',
     'aria-expanded': isFocused,
+  });
+
+  useToolbarScrollDismiss(isFocused, inputRef, () => {
+    inputDirtyRef.current = false;
+    inputRef.current?.blur();
   });
 
   const cursorFontSize = useEditorSelector((innerEditor) => {
@@ -131,6 +140,7 @@ export function FontSizeToolbarButton() {
         <FloatingPopoverAnchor
           element={
             <Input
+              ref={inputRef}
               disabled={readOnly || !installed}
               aria-label="Font size"
               className={cn(

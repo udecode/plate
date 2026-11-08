@@ -5,6 +5,10 @@ import { useComposedRef } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import {
+  isToolbarSwipe,
+  useToolbarScrollDismiss,
+} from '@/registry/components/editor/toolbar-overlay';
 
 type FloatingAnchor =
   | Element
@@ -18,9 +22,11 @@ type FloatingAnchor =
 type FloatingPopoverContextValue = {
   anchor: Exclude<FloatingAnchor, React.ReactElement>;
   open: boolean;
+  scrollDismissed: boolean;
   setAnchor: React.Dispatch<
     React.SetStateAction<Exclude<FloatingAnchor, React.ReactElement>>
   >;
+  setHost: (host: Element | null) => void;
 };
 
 const FloatingPopoverContext = React.createContext<
@@ -53,21 +59,48 @@ export function FloatingPopover({
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
   const [anchor, setAnchor] =
     React.useState<Exclude<FloatingAnchor, React.ReactElement>>(null);
+  const [scrollDismissed, setScrollDismissed] = React.useState(false);
+  const hostRef = React.useRef<Element | null>(null);
+  const setHost = React.useCallback((host: Element | null) => {
+    hostRef.current = host;
+  }, []);
   const resolvedOpen = open ?? uncontrolledOpen;
+  const [wasOpen, setWasOpen] = React.useState(resolvedOpen);
   const context = React.useMemo(
-    () => ({ anchor, open: resolvedOpen, setAnchor }),
-    [anchor, resolvedOpen]
+    () => ({ anchor, open: resolvedOpen, scrollDismissed, setAnchor, setHost }),
+    [anchor, resolvedOpen, scrollDismissed, setHost]
   );
+  const setOpen = (nextOpen: boolean) => {
+    setUncontrolledOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  };
+
+  if (wasOpen !== resolvedOpen) {
+    setWasOpen(resolvedOpen);
+    if (resolvedOpen) setScrollDismissed(false);
+  }
+  const toolbar = useToolbarScrollDismiss(resolvedOpen, hostRef, () => {
+    setScrollDismissed(true);
+    setOpen(false);
+  });
 
   return (
     <FloatingPopoverContext.Provider value={context}>
       <PopoverPrimitive.Root
         {...props}
-        defaultOpen={defaultOpen}
-        open={open}
-        onOpenChange={(nextOpen) => {
-          setUncontrolledOpen(nextOpen);
-          onOpenChange?.(nextOpen);
+        open={resolvedOpen}
+        onOpenChange={(nextOpen, details) => {
+          if (isToolbarSwipe(toolbar, details.event)) {
+            details.cancel();
+
+            return;
+          }
+          setScrollDismissed(
+            !!toolbar &&
+              (details.event?.type === 'touchmove' ||
+                details.event?.type === 'touchend')
+          );
+          setOpen(nextOpen);
         }}
       >
         {children}
@@ -81,21 +114,25 @@ export function FloatingPopoverAnchor({
 }: {
   element: FloatingAnchor;
 }) {
-  const { setAnchor } = useFloatingPopoverContext();
+  const { setAnchor, setHost } = useFloatingPopoverContext();
   const reactElement = React.isValidElement(element) ? element : null;
 
   React.useLayoutEffect(() => {
     if (React.isValidElement(element)) return undefined;
 
     setAnchor(element);
+    setHost(element instanceof Element ? element : null);
 
-    return () => setAnchor(null);
-  }, [element, reactElement, setAnchor]);
+    return () => {
+      setAnchor(null);
+      setHost(null);
+    };
+  }, [element, reactElement, setAnchor, setHost]);
 
   const elementWithRef = reactElement as React.ReactElement<{
     ref?: React.Ref<Element>;
   }> | null;
-  const ref = useComposedRef(elementWithRef?.props.ref, setAnchor);
+  const ref = useComposedRef(elementWithRef?.props.ref, setAnchor, setHost);
 
   return elementWithRef ? React.cloneElement(elementWithRef, { ref }) : null;
 }
@@ -105,7 +142,9 @@ export function FloatingPopoverTrigger({
 }: {
   children: React.ReactElement;
 }) {
-  return <PopoverPrimitive.Trigger render={children} />;
+  const { setHost } = useFloatingPopoverContext();
+
+  return <PopoverPrimitive.Trigger ref={setHost} render={children} />;
 }
 
 export function FloatingPopoverContent({
@@ -132,7 +171,7 @@ export function FloatingPopoverContent({
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
 }) {
-  const { anchor, open } = useFloatingPopoverContext();
+  const { anchor, open, scrollDismissed } = useFloatingPopoverContext();
   const placedAnchor = React.useRef<typeof anchor>(null);
 
   React.useEffect(() => {
@@ -164,16 +203,18 @@ export function FloatingPopoverContent({
             className
           )}
           finalFocus={
-            onFinalFocus
-              ? () => {
-                  const event = new Event('closeAutoFocus', {
-                    cancelable: true,
-                  });
-                  onFinalFocus(event);
+            scrollDismissed
+              ? false
+              : onFinalFocus
+                ? () => {
+                    const event = new Event('closeAutoFocus', {
+                      cancelable: true,
+                    });
+                    onFinalFocus(event);
 
-                  return !event.defaultPrevented;
-                }
-              : undefined
+                    return !event.defaultPrevented;
+                  }
+                : undefined
           }
           initialFocus={
             onInitialFocus

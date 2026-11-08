@@ -25,6 +25,30 @@
       "diagnostics": []
     },
     {
+      "id": "2026-11-07-toolbar-overlays-close-on-scroll",
+      "href": "/registry/changelog/2026-11-07-toolbar-overlays-close-on-scroll.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Close toolbar menus and popovers when the toolbar scrolls",
+      "change": {
+        "type": "source",
+        "date": "2026-11-07",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "toolbar",
+        "editor-dropdown-menu",
+        "floating-popover",
+        "font-size-toolbar-button",
+        "toolbar-overlay"
+      ],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-06-upload-completion-error",
       "href": "/registry/changelog/2026-11-06-upload-completion-error.json",
       "status": "draft",

@@ -25,6 +25,7 @@ import {
   takeFinalFocus,
   useMenuRoot,
 } from '@/registry/components/editor/menu-close-focus';
+import { isToolbarSwipe } from '@/registry/components/editor/toolbar-overlay';
 
 type BaseDropdownMenuContentProps = BaseMenuPrimitive.Popup.Props &
   Pick<
@@ -77,6 +78,7 @@ type BaseUIEvent = React.MouseEvent<HTMLElement> & {
 };
 
 export function DropdownMenu({
+  actionsRef,
   modal = true,
   onOpenChange,
   ...props
@@ -84,15 +86,25 @@ export function DropdownMenu({
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(
     props.defaultOpen ?? false
   );
-  const root = useMenuRoot(modal, props.open ?? uncontrolledOpen);
+  const ownActionsRef = React.useRef<BaseMenuPrimitive.Root.Actions>(null);
+  const menuActionsRef = actionsRef ?? ownActionsRef;
+  const root = useMenuRoot(modal, props.open ?? uncontrolledOpen, () =>
+    menuActionsRef.current?.close()
+  );
   const { finalFocusRef } = root;
 
   return (
     <MenuRootContext.Provider value={root}>
       <BaseDropdownMenu
         {...props}
+        actionsRef={menuActionsRef}
         modal={modal}
         onOpenChange={(open, details) => {
+          if (isToolbarSwipe(root.toolbar, details.event)) {
+            details.cancel();
+
+            return;
+          }
           if (
             details.reason === 'outside-press' ||
             details.reason === 'focus-out'

@@ -4,6 +4,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
+import { useToolbarScrollDismiss } from '@/registry/components/editor/toolbar-overlay';
 
 type FloatingAnchor =
   | Element
@@ -21,9 +22,16 @@ const PopoverContentWithPlaced =
     }
   >;
 
+const FloatingPopoverRefsContext = React.createContext<{
+  scrollDismissedRef: React.RefObject<boolean>;
+  setHost: (host: Element | null) => void;
+} | null>(null);
+
 export function FloatingPopover({
+  defaultOpen = false,
   onOpenChange,
   onOpenChangeComplete,
+  open,
   ...props
 }: React.PropsWithChildren<{
   defaultOpen?: boolean;
@@ -32,14 +40,41 @@ export function FloatingPopover({
   onOpenChangeComplete?: (open: boolean) => void;
   open?: boolean;
 }>) {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
+  const resolvedOpen = open ?? uncontrolledOpen;
+  const hostRef = React.useRef<Element | null>(null);
+  const scrollDismissedRef = React.useRef(false);
+  const refs = React.useMemo(
+    () => ({
+      scrollDismissedRef,
+      setHost: (host: Element | null) => {
+        hostRef.current = host;
+      },
+    }),
+    []
+  );
+  const setOpen = (next: boolean) => {
+    setUncontrolledOpen(next);
+    onOpenChange?.(next);
+    requestAnimationFrame(() => onOpenChangeComplete?.(next));
+  };
+
+  React.useEffect(() => {
+    if (resolvedOpen) scrollDismissedRef.current = false;
+  }, [resolvedOpen]);
+  useToolbarScrollDismiss(resolvedOpen, hostRef, () => {
+    scrollDismissedRef.current = true;
+    setOpen(false);
+  });
+
   return (
-    <PopoverPrimitive.Root
-      {...props}
-      onOpenChange={(open) => {
-        onOpenChange?.(open);
-        requestAnimationFrame(() => onOpenChangeComplete?.(open));
-      }}
-    />
+    <FloatingPopoverRefsContext.Provider value={refs}>
+      <PopoverPrimitive.Root
+        {...props}
+        open={resolvedOpen}
+        onOpenChange={setOpen}
+      />
+    </FloatingPopoverRefsContext.Provider>
   );
 }
 
@@ -48,8 +83,22 @@ export function FloatingPopoverAnchor({
 }: {
   element: FloatingAnchor;
 }) {
+  const setHost = React.useContext(FloatingPopoverRefsContext)?.setHost;
+
+  React.useLayoutEffect(() => {
+    if (!setHost || !(element instanceof Element)) return undefined;
+
+    setHost(element);
+
+    return () => setHost(null);
+  }, [element, setHost]);
+
   if (React.isValidElement(element)) {
-    return <PopoverPrimitive.Anchor asChild>{element}</PopoverPrimitive.Anchor>;
+    return (
+      <PopoverPrimitive.Anchor asChild ref={setHost}>
+        {element}
+      </PopoverPrimitive.Anchor>
+    );
   }
 
   if (!element) return null;
@@ -62,8 +111,12 @@ export function FloatingPopoverTrigger({
 }: {
   children: React.ReactElement;
 }) {
+  const setHost = React.useContext(FloatingPopoverRefsContext)?.setHost;
+
   return (
-    <PopoverPrimitive.Trigger asChild>{children}</PopoverPrimitive.Trigger>
+    <PopoverPrimitive.Trigger asChild ref={setHost}>
+      {children}
+    </PopoverPrimitive.Trigger>
   );
 }
 
@@ -90,6 +143,10 @@ export function FloatingPopoverContent({
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
 }) {
+  const scrollDismissedRef = React.useContext(
+    FloatingPopoverRefsContext
+  )?.scrollDismissedRef;
+
   return (
     <PopoverPrimitive.Portal>
       <PopoverContentWithPlaced
@@ -100,7 +157,14 @@ export function FloatingPopoverContent({
           'cn-popover-content z-50 w-72 origin-(--radix-popover-content-transform-origin) outline-hidden',
           className
         )}
-        onCloseAutoFocus={onFinalFocus}
+        onCloseAutoFocus={(event) => {
+          if (scrollDismissedRef?.current) {
+            event.preventDefault();
+
+            return;
+          }
+          onFinalFocus?.(event);
+        }}
         onEscapeKeyDown={onEscapeKeyDown}
         onOpenAutoFocus={onInitialFocus}
         onPlaced={onPlaced}

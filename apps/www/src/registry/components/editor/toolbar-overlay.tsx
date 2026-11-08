@@ -6,6 +6,105 @@ import * as React from 'react';
 const ToolbarOverlayContext = React.createContext<
   (id: symbol, open: boolean) => void
 >(() => {});
+const ToolbarElementContext = React.createContext<HTMLElement | null>(null);
+
+function clippingBoxes(toolbar: HTMLElement) {
+  const boxes: Element[] = [toolbar];
+  let { position } = getComputedStyle(toolbar);
+
+  for (
+    let element = toolbar.parentElement;
+    element && position !== 'fixed';
+    element = element.parentElement
+  ) {
+    const style = getComputedStyle(element);
+
+    if (
+      style.display === 'contents' ||
+      (position === 'absolute' &&
+        style.position === 'static' &&
+        style.transform === 'none')
+    ) {
+      continue;
+    }
+
+    ({ position } = style);
+
+    if (style.display !== 'inline' && style.overflowX !== 'visible') {
+      boxes.push(element);
+    }
+  }
+
+  return boxes;
+}
+
+function shownShare(boxes: Element[], host: Element | null) {
+  const box = host?.getBoundingClientRect();
+
+  if (!box?.width) return 1;
+
+  let left = 0;
+  let right = document.documentElement.clientWidth;
+
+  for (const element of boxes) {
+    const edge = element.getBoundingClientRect().left + element.clientLeft;
+
+    left = Math.max(left, edge);
+    right = Math.min(right, edge + element.clientWidth);
+  }
+
+  return (
+    Math.max(Math.min(box.right, right) - Math.max(box.left, left), 0) /
+    box.width
+  );
+}
+
+export function isToolbarSwipe(toolbar: HTMLElement | null, event?: Event) {
+  return (
+    !!toolbar &&
+    (event?.type === 'touchmove' || event?.type === 'touchend') &&
+    event.target instanceof Node &&
+    toolbar.contains(event.target)
+  );
+}
+
+export function useToolbarScrollDismiss(
+  open: boolean,
+  hostRef: React.RefObject<Element | null>,
+  closeWithoutFocus: () => void
+) {
+  const toolbar = React.useContext(ToolbarElementContext);
+  const closeRef = React.useRef(closeWithoutFocus);
+
+  React.useInsertionEffect(() => {
+    closeRef.current = closeWithoutFocus;
+  });
+
+  React.useEffect(() => {
+    if (!open || !toolbar) return undefined;
+
+    const boxes = clippingBoxes(toolbar);
+    let lastShare = shownShare(boxes, hostRef.current);
+    const onScroll = () => {
+      const share = shownShare(boxes, hostRef.current);
+
+      if (share < 0.5 && share < lastShare) {
+        toolbar.removeEventListener('scroll', onScroll);
+        closeRef.current();
+
+        return;
+      }
+
+      lastShare = share;
+    };
+
+    toolbar.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => toolbar.removeEventListener('scroll', onScroll);
+  }, [hostRef, open, toolbar]);
+
+  return toolbar;
+}
 
 export function useToolbarOverlayTrigger(
   props: Pick<React.AriaAttributes, 'aria-expanded' | 'aria-haspopup'>
@@ -83,9 +182,11 @@ export function useToolbarOverlayHoldPastUnmount() {
 
 export function ToolbarOverlayProvider({
   children,
+  element,
   onOpenChange,
 }: {
   children: React.ReactNode;
+  element: HTMLElement | null;
   onOpenChange?: (open: boolean) => void;
 }) {
   const editor = useOptionalEditor();
@@ -116,11 +217,13 @@ export function ToolbarOverlayProvider({
 
   return (
     <ToolbarOverlayContext.Provider value={reportOverlayOpen}>
-      <EditorProvider
-        editor={capturedEditor === undefined ? editor : capturedEditor}
-      >
-        {children}
-      </EditorProvider>
+      <ToolbarElementContext.Provider value={element}>
+        <EditorProvider
+          editor={capturedEditor === undefined ? editor : capturedEditor}
+        >
+          {children}
+        </EditorProvider>
+      </ToolbarElementContext.Provider>
     </ToolbarOverlayContext.Provider>
   );
 }

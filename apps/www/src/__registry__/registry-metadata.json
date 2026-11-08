@@ -1,5 +1,5 @@
 {
-  "generation": "355e0b62e138f5ef70782b73bd7b9752e238dc4481035987a0f3288bc5c3a4d1",
+  "generation": "5805ad86cb03a9f2b5e8f87d1c2ae367d71a8edc40675a4867ac32604bb5dc7a",
   "registries": {
     "base": {
       "homepage": "https://platejs.org",
@@ -1182,7 +1182,10 @@
           ],
           "name": "floating-popover",
           "title": "Floating Popover",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/toolbar-overlay"
+          ]
         },
         {
           "description": "A customizable toolbar component with various button styles and group",
@@ -1200,7 +1203,9 @@
           "dependencies": [
             "@base-ui/react",
             "class-variance-authority",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
           ],
           "registryDependencies": [
             "@plate/toolbar-overlay"
@@ -8043,7 +8048,10 @@
           ],
           "name": "floating-popover",
           "title": "Floating Popover",
-          "type": "registry:component"
+          "type": "registry:component",
+          "registryDependencies": [
+            "@plate/toolbar-overlay"
+          ]
         },
         {
           "description": "A customizable toolbar component with various button styles and group",
@@ -8062,7 +8070,9 @@
             "@radix-ui/react-toolbar",
             "@radix-ui/react-tooltip",
             "class-variance-authority",
-            "lucide-react"
+            "diff-match-patch-ts@^0.6.0",
+            "lucide-react",
+            "platejs"
           ],
           "registryDependencies": [
             "@plate/toolbar-overlay"

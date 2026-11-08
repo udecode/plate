@@ -1,0 +1,18 @@
+---
+id: 2026-11-07-toolbar-overlays-close-on-scroll
+date: 2026-11-07
+status: draft
+kind: fix
+summary: 'Close toolbar menus and popovers when the toolbar scrolls'
+change: { 'type': 'source', 'date': '2026-11-07', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-07-toolbar-close-menus-popovers-when-3d244395","kind":"fix","migrationNotes":[]} -->
+
+- **`toolbar`**, **`editor-dropdown-menu`**, **`floating-popover`**, **`font-size-toolbar-button`**: A menu or popover opened from the toolbar, such as Turn into, Align, the emoji picker or the font size list, now closes once a toolbar scroll hides more than half of its button. While at least half of the button stays in view, the menu stays open. Before, the menu stayed on screen after its button scrolled out of view. In the Base UI variant, a swipe that starts on the toolbar no longer closes the menu by itself. The menu closes only when that swipe's scroll hides more than half of its button. Closing on a scroll, or with a swipe that starts outside the menu and the toolbar, leaves focus where it is, so the toolbar does not scroll back. A font size you were still typing is not applied.
+
+<!-- entry: {"id":"2026-11-07-toolbar-overlay-scroll-dismiss","kind":"behavior","migrationNotes":["Pass the toolbar's root element to `ToolbarOverlayProvider` as `element`, or `null` outside a toolbar."]} -->
+
+- **`toolbar-overlay`**: `ToolbarOverlayProvider` now takes the toolbar's root `element`. The new `useToolbarScrollDismiss(open, hostRef, closeWithoutFocus)` calls `closeWithoutFocus` when a scroll of that toolbar leaves less than half of the element in `hostRef` visible. It counts only the part inside the toolbar, inside each ancestor whose `overflow` clips the toolbar, and inside the viewport. A host that was already more than half hidden when the overlay opened closes only once a scroll hides more of it. The hook returns that toolbar's element after the toolbar mounts, and `null` before then or outside a toolbar. The new `isToolbarSwipe(toolbar, event)` returns `true` for a `touchmove` or `touchend` that started inside that toolbar, so a Base UI adapter can cancel the dismissal that Base UI reports for it. Pass the toolbar's root element as `element`, or `null` outside a toolbar.

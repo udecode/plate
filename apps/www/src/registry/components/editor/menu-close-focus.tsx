@@ -5,6 +5,7 @@ import * as React from 'react';
 import {
   useToolbarOverlayHold,
   useToolbarOverlayHoldPastUnmount,
+  useToolbarScrollDismiss,
 } from '@/registry/components/editor/toolbar-overlay';
 
 export type FinalFocus = false | (() => void);
@@ -13,6 +14,7 @@ export type MenuRoot = {
   finalFocusRef: FinalFocusRef;
   modal: boolean;
   open: boolean;
+  toolbar: HTMLElement | null;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
@@ -35,6 +37,8 @@ export function outsideFinalFocus(
   if (
     event instanceof FocusEvent ||
     event instanceof KeyboardEvent ||
+    event.type === 'touchmove' ||
+    event.type === 'touchend' ||
     secondaryPress(event)
   ) {
     return false;
@@ -73,19 +77,23 @@ export function takeFinalFocus(finalFocusRef: FinalFocusRef) {
   return finalFocus;
 }
 
-export function useMenuRoot(modal: boolean, open: boolean) {
+export function useMenuRoot(modal: boolean, open: boolean, close: () => void) {
   const finalFocusRef = React.useRef<FinalFocus | undefined>(undefined);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
   useToolbarOverlayHold(open);
+  const toolbar = useToolbarScrollDismiss(open, triggerRef, () => {
+    close();
+    finalFocusRef.current = false;
+  });
 
   React.useEffect(() => {
     if (open) finalFocusRef.current = undefined;
   }, [open]);
 
   return React.useMemo<MenuRoot>(
-    () => ({ finalFocusRef, modal, open, triggerRef }),
-    [modal, open]
+    () => ({ finalFocusRef, modal, open, toolbar, triggerRef }),
+    [modal, open, toolbar]
   );
 }
 

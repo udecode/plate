@@ -1173,6 +1173,9 @@
         "@base-ui/react",
         "diff-match-patch-ts@^0.6.0"
       ],
+      "registryDependencies": [
+        "https://platejs.org/r/toolbar-overlay.json"
+      ],
       "files": [
         {
           "path": "src/registry/bases/base/floating-popover.tsx",
@@ -1189,7 +1192,9 @@
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0",
+        "lucide-react",
+        "platejs"
       ],
       "registryDependencies": [
         "https://platejs.org/r/toolbar-overlay.json"

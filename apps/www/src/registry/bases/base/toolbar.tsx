@@ -4,6 +4,7 @@ import { Toolbar as ToolbarPrimitive } from '@base-ui/react/toolbar';
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { type VariantProps, cva } from 'class-variance-authority';
 import { ChevronDown } from 'lucide-react';
+import { useComposedRef } from 'platejs/react';
 import * as React from 'react';
 
 import { cn } from '@/lib/utils';
@@ -15,13 +16,22 @@ import {
 export function Toolbar({
   className,
   onOverlayOpenChange,
+  ref,
   ...props
 }: ToolbarPrimitive.Root.Props & {
   onOverlayOpenChange?: (open: boolean) => void;
+  ref?: React.Ref<HTMLDivElement>;
 }) {
+  const [element, setElement] = React.useState<HTMLDivElement | null>(null);
+  const rootRef = useComposedRef(ref, setElement);
+
   return (
-    <ToolbarOverlayProvider onOpenChange={onOverlayOpenChange}>
+    <ToolbarOverlayProvider
+      element={element}
+      onOpenChange={onOverlayOpenChange}
+    >
       <ToolbarPrimitive.Root
+        ref={rootRef}
         className={cn('relative flex select-none items-center', className)}
         {...props}
       />

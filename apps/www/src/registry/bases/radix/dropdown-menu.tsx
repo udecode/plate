@@ -52,7 +52,6 @@ export function DropdownMenu({
   );
   const controlled = props.open !== undefined;
   const open = props.open ?? uncontrolledOpen;
-  const root = useMenuRoot(modal, open);
   const setOpen = React.useCallback(
     (next: boolean) => {
       if (next === open) return;
@@ -62,6 +61,7 @@ export function DropdownMenu({
     },
     [controlled, onOpenChange, open]
   );
+  const root = useMenuRoot(modal, open, () => setOpen(false));
 
   return (
     <MenuRootContext.Provider value={root}>

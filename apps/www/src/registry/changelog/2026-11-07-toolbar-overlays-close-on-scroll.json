@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-07-toolbar-overlays-close-on-scroll",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-07-toolbar-overlays-close-on-scroll.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-07",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Close toolbar menus and popovers when the toolbar scrolls",
+  "targets": [
+    {
+      "name": "toolbar",
+      "files": [
+        "apps/www/src/registry/bases/base/toolbar.tsx",
+        "apps/www/src/registry/bases/radix/toolbar.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "editor-dropdown-menu",
+      "files": [
+        "apps/www/src/registry/bases/base/dropdown-menu.tsx",
+        "apps/www/src/registry/bases/radix/dropdown-menu.tsx",
+        "apps/www/src/registry/components/editor/menu-close-focus.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "font-size-toolbar-button",
+      "files": [
+        "apps/www/src/registry/components/editor/font-size-toolbar-button.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar-overlay",
+      "files": ["apps/www/src/registry/components/editor/toolbar-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-07-toolbar-close-menus-popovers-when-3d244395",
+      "kind": "fix",
+      "summary": "A menu or popover opened from the toolbar, such as Turn into, Align, the emoji picker or the font size list, now closes once a toolbar scroll hides more than half of its button. While at least half of the button stays in view, the menu stays open. Before, the menu stayed on screen after its button scrolled out of view. In the Base UI variant, a swipe that starts on the toolbar no longer closes the menu by itself. The menu closes only when that swipe's scroll hides more than half of its button. Closing on a scroll, or with a swipe that starts outside the menu and the toolbar, leaves focus where it is, so the toolbar does not scroll back. A font size you were still typing is not applied.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "toolbar",
+        "editor-dropdown-menu",
+        "floating-popover",
+        "font-size-toolbar-button"
+      ],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-07",
+          "entry": "2026-11-07-toolbar-overlays-close-on-scroll",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-07-toolbar-overlay-scroll-dismiss",
+      "kind": "behavior",
+      "summary": "`ToolbarOverlayProvider` now takes the toolbar's root `element`. The new `useToolbarScrollDismiss(open, hostRef, closeWithoutFocus)` calls `closeWithoutFocus` when a scroll of that toolbar leaves less than half of the element in `hostRef` visible. It counts only the part inside the toolbar, inside each ancestor whose `overflow` clips the toolbar, and inside the viewport. A host that was already more than half hidden when the overlay opened closes only once a scroll hides more of it. The hook returns that toolbar's element after the toolbar mounts, and `null` before then or outside a toolbar. The new `isToolbarSwipe(toolbar, event)` returns `true` for a `touchmove` or `touchend` that started inside that toolbar, so a Base UI adapter can cancel the dismissal that Base UI reports for it. Pass the toolbar's root element as `element`, or `null` outside a toolbar.",
+      "details": [],
+      "migrationNotes": [
+        "Pass the toolbar's root element to `ToolbarOverlayProvider` as `element`, or `null` outside a toolbar."
+      ],
+      "targets": ["toolbar-overlay"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-07",
+          "entry": "2026-11-07-toolbar-overlays-close-on-scroll",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

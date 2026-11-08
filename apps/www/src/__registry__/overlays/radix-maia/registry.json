@@ -52,6 +52,9 @@
         "platejs",
         "@radix-ui/react-popover"
       ],
+      "registryDependencies": [
+        "@plate/toolbar-overlay"
+      ],
       "files": [
         {
           "path": "src/registry/bases/radix/floating-popover.tsx",
@@ -69,7 +72,9 @@
         "@radix-ui/react-toolbar",
         "@radix-ui/react-tooltip",
         "class-variance-authority",
-        "lucide-react"
+        "diff-match-patch-ts@^0.6.0",
+        "lucide-react",
+        "platejs"
       ],
       "registryDependencies": [
         "@plate/toolbar-overlay"
