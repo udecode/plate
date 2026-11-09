@@ -1650,36 +1650,67 @@ export const documentChangeBetween = (
   });
 };
 
-/**
- * `DocumentChange.transform`, with `keepEqualEdits` for one author's
- * take-back and later edit, which are never copies of each other even where
- * they match, and `replay` for a recorded step `b` replayed over `a`, whose
- * `pieceProps` gives the properties of a next piece of a split element.
- *
- * @internal
- */
-export const transformInternalDocumentChange = (
+/** @internal */
+export type DocumentChangeConflict = Readonly<{
+  kind: 'root-lifecycle';
+  root: string;
+}>;
+
+type RebasedPair = Readonly<{
+  a: DocumentChange;
+  b: DocumentChange;
+  keptWrap: KeptWrap | null;
+}>;
+
+/** @internal */
+export type DocumentRebase =
+  | DocumentChangeConflict
+  | (RebasedPair & Readonly<{ kind: 'pair' }>);
+
+type RebaseOptions = Readonly<{
+  keepEqualEdits?: boolean;
+  replay?: Readonly<{
+    anchor?: boolean;
+    carriesLift?: boolean;
+    readBack?: ReadBack | null;
+    pieceProps: (
+      element: JsonNode,
+      parent: readonly number[],
+      root: string,
+      nodes: NodeList
+    ) => JsonRecord;
+  }>;
+}>;
+
+const touchesRoot = (change: DocumentChange, root: string) =>
+  change.createRoots.has(root) ||
+  change.deleteRoots.has(root) ||
+  !!getInternalDocumentRootChange(change, root);
+
+const lifecycleConflictOf = (
+  a: DocumentChange,
+  b: DocumentChange
+): DocumentChangeConflict | null => {
+  for (const root of [
+    ...a.createRoots,
+    ...a.deleteRoots,
+    ...b.createRoots,
+    ...b.deleteRoots,
+  ]) {
+    if (touchesRoot(a, root) && touchesRoot(b, root)) {
+      return { kind: 'root-lifecycle', root };
+    }
+  }
+
+  return null;
+};
+
+const rebasedPair = (
   a: DocumentChange,
   b: DocumentChange,
   value: JsonEditorValue,
-  {
-    keepEqualEdits = false,
-    replay,
-  }: Readonly<{
-    keepEqualEdits?: boolean;
-    replay?: Readonly<{
-      anchor?: boolean;
-      carriesLift?: boolean;
-      readBack?: ReadBack | null;
-      pieceProps: (
-        element: JsonNode,
-        parent: readonly number[],
-        root: string,
-        nodes: NodeList
-      ) => JsonRecord;
-    }>;
-  }> = {}
-) => {
+  { keepEqualEdits = false, replay }: RebaseOptions
+): RebasedPair => {
   const roots = new Set([
     ...[...getInternalDocumentChangeEntries(a)].map(([root]) => root),
     ...[...getInternalDocumentChangeEntries(b)].map(([root]) => root),
@@ -1720,30 +1751,6 @@ export const transformInternalDocumentChange = (
     }
   }
 
-  const lifecycleRoots = new Set([
-    ...a.createRoots,
-    ...a.deleteRoots,
-    ...b.createRoots,
-    ...b.deleteRoots,
-  ]);
-
-  for (const root of lifecycleRoots) {
-    const aTouches =
-      a.createRoots.has(root) ||
-      a.deleteRoots.has(root) ||
-      !!getInternalDocumentRootChange(a, root);
-    const bTouches =
-      b.createRoots.has(root) ||
-      b.deleteRoots.has(root) ||
-      !!getInternalDocumentRootChange(b, root);
-
-    if (aTouches && bTouches) {
-      throw new Error(
-        `Cannot transform concurrent root lifecycle changes for ${root}.`
-      );
-    }
-  }
-
   // Record ids name their content, so puts and drops commute.
   return {
     a: createInternalDocumentChange(aChanges, {
@@ -1758,6 +1765,36 @@ export const transformInternalDocumentChange = (
     }),
     keptWrap,
   };
+};
+
+/** @internal */
+export const rebaseDocumentChange = (
+  a: DocumentChange,
+  b: DocumentChange,
+  value: JsonEditorValue,
+  options: RebaseOptions = {}
+): DocumentRebase =>
+  lifecycleConflictOf(a, b) ?? {
+    kind: 'pair',
+    ...rebasedPair(a, b, value, options),
+  };
+
+/** @internal */
+export const transformInternalDocumentChange = (
+  a: DocumentChange,
+  b: DocumentChange,
+  value: JsonEditorValue,
+  options: RebaseOptions = {}
+): RebasedPair => {
+  const rebased = rebaseDocumentChange(a, b, value, options);
+
+  if (rebased.kind === 'root-lifecycle') {
+    throw new Error(
+      `Cannot transform concurrent root lifecycle changes for ${rebased.root}.`
+    );
+  }
+
+  return rebased;
 };
 
 export const applyDocumentChangeValue = <T extends JsonEditorValue>(
