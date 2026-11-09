@@ -59,6 +59,7 @@ Paths in these instructions are relative to the repository root.
 
 ## Plate overrides of pstack
 
+- **Architect runners.** In this project, `architect` runs two runners, `claude-fable-5-2 @high` and `codex:gpt-6.1-sol @xhigh`, in place of the models sheet's `architect runners` line and its ban on dispatching Fable (owner's word, 2026-11-09). Name the full model ID, because the `fable` alias still runs Fable 5.1, and `claude -p --model claude-fable-5-2` ran Fable 5.2 on 2026-11-09; in `seats.mjs` the runner is `<name>=claude:claude-fable-5-2@high`. Panel seats and arena runners keep the sheet's models. `levels.mjs` still judges architect rounds against the sheet, so it reports an architect round's Opus runner as missing. That gap comes from this override, and the round needs no rerun.
 - **Sweep handoff.** A sweep tester's session never cards the fix-run task its triage offers, in the `chips` skill's Close or in any `/chips` sweep, because a card keeps a task with the session that holds it. The fixer's `/chips all` takes the task over instead, as `.agents/rules/verify/references/sweep.md` says.
 
 ## Source authority
