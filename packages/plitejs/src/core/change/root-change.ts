@@ -2544,6 +2544,26 @@ const propertyWritesOf = (change: RootChange) => {
   return RootChange.fromSections(sections, data);
 };
 
+const rebaseWritesBesideEqualMove = (
+  a: RootChange,
+  b: RootChange,
+  move: RootChange,
+  document: DocumentIndex,
+  options: Parameters<typeof RootChange.transformInDocument>[3]
+) => {
+  const writes = RootChange.transformInDocument(
+    propertyWritesOf(a),
+    propertyWritesOf(b),
+    document,
+    options
+  );
+
+  return {
+    a: RootChange.transform(writes.a, move).a,
+    b: RootChange.transform(writes.b, move).a,
+  };
+};
+
 const piecesOf = (slice: PreparedTokenSlice) => {
   const pieces: string[] = [];
   let piece: unknown[] = [];
@@ -4504,11 +4524,6 @@ export class RootChange {
   }
 
   /**
-   * Two matching moves, or two structural edits that start together and give
-   * one structure, become one edit unless `keepEqualEdits` keeps them as two.
-   * The same whole blocks both insert at one place count once, and each
-   * side's other edits rebase over them. Different ones both stay, the
-   * first side's first when the two give one structure.
    * With `replay`, `b` is a recorded step replayed over `a`: a wrap of `a`
    * equal to its own stays its own, and a wrap a split cuts gives each next
    * piece the properties `replay.pieceProps` returns.
@@ -4518,10 +4533,16 @@ export class RootChange {
     b: RootChange,
     document: DocumentIndex,
     {
+      crossedMoves,
       keepEqualEdits = false,
+      keepEqualInserts = keepEqualEdits,
+      keepEqualMoves = keepEqualEdits,
       replay,
     }: Readonly<{
+      crossedMoves?: 'first-wins';
       keepEqualEdits?: boolean;
+      keepEqualInserts?: boolean;
+      keepEqualMoves?: boolean;
       replay?: Readonly<{
         anchor?: boolean;
         carriesLift?: boolean;
@@ -4530,6 +4551,7 @@ export class RootChange {
       }>;
     }> = {}
   ): Readonly<{ a: RootChange; b: RootChange; keptWrap?: KeptWrap }> {
+    const settings = { crossedMoves, keepEqualInserts, keepEqualMoves, replay };
     const replayBase = replay && document;
     let runMoves:
       | readonly [SiblingRunMove | null, SiblingRunMove | null]
@@ -4543,7 +4565,7 @@ export class RootChange {
       a,
       b,
       document,
-      { keepEqualEdits, replay },
+      settings,
       readRunMoves
     );
 
@@ -4552,7 +4574,7 @@ export class RootChange {
     const readBack = replay?.readBack ?? null;
     const inMovedLine =
       replay?.carriesLift && editsInMovedLine(a, b, document)
-        ? rebaseOverLift(a, b, document, { keepEqualEdits, replay })
+        ? rebaseOverLift(a, b, document, settings)
         : null;
 
     if (inMovedLine) {
@@ -4589,10 +4611,7 @@ export class RootChange {
       const over =
         rest.propertyChanges().length === 0
           ? { a: RootChange.empty(other.newLength), b: other }
-          : RootChange.transformInDocument(rest, other, document, {
-              keepEqualEdits,
-              replay,
-            });
+          : RootChange.transformInDocument(rest, other, document, settings);
 
       markReadBack(readBack);
 
@@ -4674,17 +4693,30 @@ export class RootChange {
     const [aRunMove, bRunMove] = readRunMoves();
     const aMove = aRunMove?.count === 1 ? aRunMove : null;
     const bMove = bRunMove?.count === 1 ? bRunMove : null;
-    if (
-      !keepEqualEdits &&
-      aMove &&
-      bMove &&
-      pathKey(aMove.path) === pathKey(bMove.path) &&
-      pathKey(aMove.targetPath) === pathKey(bMove.targetPath)
-    ) {
-      return {
-        a: RootChange.empty(a.newLength),
-        b: RootChange.empty(b.newLength),
-      };
+    if (aMove && bMove && pathKey(aMove.path) === pathKey(bMove.path)) {
+      const sameTarget =
+        pathKey(aMove.targetPath) === pathKey(bMove.targetPath);
+
+      if (sameTarget && !keepEqualMoves) {
+        return rebaseWritesBesideEqualMove(
+          a,
+          b,
+          RootChange.create(document, aReplacements),
+          document,
+          settings
+        );
+      }
+      if (
+        !sameTarget &&
+        crossedMoves === 'first-wins' &&
+        aPropertyChanges.length === 0 &&
+        bPropertyChanges.length === 0
+      ) {
+        return {
+          a: b.invert(document).compose(a),
+          b: RootChange.empty(a.newLength),
+        };
+      }
     }
 
     const carryThroughMove = (
@@ -4758,7 +4790,7 @@ export class RootChange {
 
     const afterA = a.apply(document);
     const afterB = b.apply(document);
-    const shared = keepEqualEdits
+    const shared = keepEqualInserts
       ? null
       : sharedPlaceEdits(document, aReplacements, bReplacements);
     // A side whose every edit the other's result already holds, such as a
@@ -4788,7 +4820,7 @@ export class RootChange {
             to,
           }))
         ).apply(document),
-        { keepEqualEdits, replay }
+        settings
       );
 
       return {
@@ -4922,7 +4954,7 @@ export class RootChange {
         : sameDocumentStructure(afterA.value, afterB.value);
 
     const oneEdit =
-      !keepEqualEdits &&
+      !keepEqualInserts &&
       (aChangesStructure || bChangesStructure) &&
       sharesStructuralStart &&
       sameEdit();
@@ -5160,7 +5192,7 @@ export class RootChange {
     const soleWrap = soleWrapProps(aReplacements, document);
     const bHoldsEdit =
       readBack &&
-      !keepEqualEdits &&
+      !keepEqualInserts &&
       aPropertyChanges.length === 0 &&
       (insertsWithin(a, b, aReplacements, bReplacements, document) ||
         (soleWrap !== null &&
@@ -5188,9 +5220,7 @@ export class RootChange {
     }
 
     const lifted =
-      readBack && !bHoldsEdit
-        ? rebaseOverLift(a, b, document, { keepEqualEdits, replay })
-        : null;
+      readBack && !bHoldsEdit ? rebaseOverLift(a, b, document, settings) : null;
 
     if (lifted) {
       markReadBack(readBack);
