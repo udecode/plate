@@ -730,7 +730,7 @@ pre[class*="language-"] {
 }
 
 .token.punctuation {
-    color: #999;
+    color: var(--muted-foreground);
 }
 
 .token.namespace {
@@ -745,6 +745,16 @@ pre[class*="language-"] {
 .token.symbol,
 .token.deleted {
     color: #905;
+}
+
+.dark .token.property,
+.dark .token.tag,
+.dark .token.boolean,
+.dark .token.number,
+.dark .token.constant,
+.dark .token.symbol,
+.dark .token.deleted {
+    color: #f472b6;
 }
 
 .token.selector,
@@ -762,8 +772,6 @@ pre[class*="language-"] {
 .language-css .token.string,
 .style .token.string {
     color: #9a6e3a;
-    /* This background color was intended by the author of this theme. */
-    background: hsla(0, 0%, 100%, .5);
 }
 
 .token.atrule,

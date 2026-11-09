@@ -3,7 +3,7 @@ input:not([data-slot]),
 textarea:not([data-slot]) {
   font-family: 'Roboto', sans-serif;
   line-height: 1.4;
-  background: #eee;
+  background: var(--muted);
 }
 
 body {
@@ -20,13 +20,13 @@ p {
 
 pre {
   padding: 10px;
-  background-color: #eee;
+  background-color: var(--muted);
   white-space: pre-wrap;
 }
 
 :not(pre) > code {
   font-family: monospace;
-  background-color: #eee;
+  background-color: var(--muted);
   padding: 3px;
 }
 
@@ -36,11 +36,11 @@ img {
 }
 
 blockquote {
-  border-left: 2px solid #ddd;
+  border-left: 2px solid var(--border);
   margin-left: 0;
   margin-right: 0;
   padding-left: 10px;
-  color: #aaa;
+  color: var(--muted-foreground);
   font-style: italic;
 }
 
@@ -48,7 +48,7 @@ blockquote[dir='rtl'] {
   border-left: none;
   padding-left: 0;
   padding-right: 10px;
-  border-right: 2px solid #ddd;
+  border-right: 2px solid var(--border);
 }
 
 table {
@@ -57,7 +57,7 @@ table {
 
 td {
   padding: 10px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border);
 }
 
 input[type='text']:not([data-slot]),
@@ -66,8 +66,8 @@ input[type='search']:not([data-slot]) {
   font-size: 0.85em;
   width: 100%;
   padding: 0.5em;
-  border: 2px solid #ddd;
-  background: #fafafa;
+  border: 2px solid var(--border);
+  background: var(--background);
 }
 
 input[type='text']:focus:not([data-slot]),
@@ -78,7 +78,7 @@ input[type='search']:focus:not([data-slot]) {
 
 iframe {
   width: 100%;
-  border: 1px solid #eee;
+  border: 1px solid var(--border);
 }
 
 details > summary {
@@ -139,6 +139,7 @@ details > summary {
   padding: 40px;
   font-size: 20px;
   min-height: 150px;
+  color: #111827;
   outline: 3px dashed rgb(0, 94, 128);
   border-radius: 20px;
   outline-offset: -20px;
@@ -148,11 +149,11 @@ details > summary {
 .performance-controls {
   padding: 20px;
   margin: -20px -20px 20px -20px;
-  background-color: white;
+  background-color: var(--background);
   position: sticky;
   top: 0;
   z-index: 1;
-  border-bottom: 1px solid lightgrey;
+  border-bottom: 1px solid var(--border);
   max-height: 50vh;
   overflow-y: auto;
 }
@@ -443,10 +444,10 @@ details > summary {
 }
 
 .editor-comment-mode-proof-cell {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px;
-  background: #f8fafc;
+  background: var(--muted);
 }
 
 .editor-comment-mode-layout {
@@ -462,10 +463,10 @@ details > summary {
 }
 
 .editor-comment-mode-pane {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px;
-  background: white;
+  background: var(--card);
 }
 
 .editor-comment-mode-writer-pane {
@@ -490,19 +491,20 @@ details > summary {
 }
 
 .editor-comment-mode-muted {
-  color: #64748b;
+  color: var(--muted-foreground);
   font-size: 13px;
 }
 
 .editor-comment-mode-editor {
   min-height: 138px;
   padding: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 6px;
 }
 
 .editor-comment-mode-highlight {
   border-radius: 4px;
+  color: #111827;
 }
 
 .editor-comment-mode-highlight-question {
@@ -556,7 +558,7 @@ details > summary {
 }
 
 .editor-comment-mode-comment-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px;
   display: grid;
@@ -583,13 +585,14 @@ details > summary {
 
 .editor-decorations-async-status {
   margin: 0 0 16px;
-  color: #4b5563;
+  color: var(--muted-foreground);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 13px;
 }
 
 .editor-decorations-async-highlight {
   background: #fde68a;
+  color: #111827;
   border-radius: 3px;
   box-decoration-break: clone;
 }
@@ -597,7 +600,7 @@ details > summary {
 .editor-decorations-async-editor {
   min-height: 120px;
   padding: 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border);
   border-radius: 8px;
   line-height: 1.55;
 }
@@ -669,10 +672,10 @@ details > summary {
 
 .editor-document-state-editor {
   min-height: 118px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 14px 16px;
-  background: #ffffff;
+  background: var(--card);
 }
 
 .editor-document-state-editor-surface {
@@ -686,7 +689,7 @@ details > summary {
 .editor-editable-voids-child-editor {
   min-height: 76px;
   padding: 12px;
-  border: 2px solid #ddd;
+  border: 2px solid var(--border);
 }
 
 .editor-linting-panel {
@@ -728,13 +731,14 @@ details > summary {
 
 .editor-linting-issue {
   padding: 8px 10px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #f9fafb;
+  background: var(--muted);
 }
 
 .editor-linting-segment {
   border-radius: 4px;
+  color: #111827;
 }
 
 .editor-linting-segment-error {
@@ -768,7 +772,7 @@ details > summary {
 }
 
 .editor-dom-coverage-editor-wrap {
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border);
   padding: 16px;
 }
 
@@ -787,8 +791,8 @@ details > summary {
 .editor-dom-coverage-copy {
   min-height: 80px;
   overflow: auto;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
+  border: 1px solid var(--border);
+  background: var(--muted);
   padding: 12px;
   white-space: pre-wrap;
 }
@@ -797,11 +801,12 @@ details > summary {
   display: inline-block;
   border: 1px solid #f59e0b;
   background: #fef3c7;
+  color: #111827;
   padding: 2px 6px;
 }
 
 .editor-dom-coverage-summary {
-  color: #475569;
+  color: var(--muted-foreground);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -837,9 +842,9 @@ details > summary {
 }
 
 .editor-multi-root-document-document {
-  border: 1px solid #d8dee9;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--card);
 }
 
 .editor-multi-root-document-root-section {
@@ -851,7 +856,7 @@ details > summary {
 
 .editor-multi-root-document-root-section
   + .editor-multi-root-document-root-section {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
 }
 
 .editor-multi-root-document-root-header {
@@ -869,10 +874,10 @@ details > summary {
   width: 100%;
   min-width: 0;
   min-height: 72px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 14px;
-  background: #f9fafb;
+  background: var(--muted);
   pointer-events: auto;
   position: relative;
   z-index: 1;
@@ -901,9 +906,8 @@ details > summary {
   align-items: center;
   justify-content: space-between;
   padding: 7px 12px;
-  border-bottom: 1px solid #c5ccd6;
-  background: #f3f4f6;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid var(--border);
+  background: var(--muted);
 }
 
 .editor-pagination-toolbar-group {
@@ -917,7 +921,7 @@ details > summary {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  color: #4b5563;
+  color: var(--foreground);
   font-size: 12px;
   font-weight: 650;
 }
@@ -926,7 +930,7 @@ details > summary {
   display: inline-flex;
   gap: 6px;
   align-items: center;
-  color: #4b5563;
+  color: var(--foreground);
   font-size: 12px;
 }
 
@@ -1066,7 +1070,7 @@ details > summary {
   margin: 10px 0;
   border: 1px solid #9a5b18;
   border-radius: 6px;
-  background: #fff;
+  background: var(--card);
 }
 
 .editor-synced-blocks-synced-block-toolbar {
@@ -1076,8 +1080,8 @@ details > summary {
   gap: 8px;
   min-height: 30px;
   padding: 4px 8px;
-  border-bottom: 1px solid #ead7c0;
-  color: #6b4a2a;
+  border-bottom: 1px solid color-mix(in srgb, #9a5b18 30%, transparent);
+  color: color-mix(in srgb, #6b4a2a, var(--foreground) 35%);
   font-size: 12px;
   user-select: none;
 }
@@ -1101,7 +1105,7 @@ details > summary {
 }
 
 .editor-synced-blocks-synced-block-button {
-  color: #6b4a2a;
+  color: color-mix(in srgb, #6b4a2a, var(--foreground) 35%);
 }
 
 .editor-example-button.is-reversed {
@@ -1121,7 +1125,7 @@ details > summary {
 
 .editor-example-instruction {
   margin: 0 -20px 10px;
-  background: #f8f8e8;
+  background: color-mix(in srgb, var(--highlight) 12%, var(--background));
   padding: 10px 20px;
   font-size: 14px;
   white-space: pre-wrap;
@@ -1139,7 +1143,7 @@ details > summary {
 .editor-example-toolbar {
   position: relative;
   margin: 0 -20px 20px;
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid var(--border);
   padding: 1px 18px 17px;
 }
 
@@ -1167,7 +1171,7 @@ details > summary {
   top: 0.5em;
   left: 0.5em;
   display: none;
-  background-color: white;
+  background-color: var(--background);
 }
 
 .editor-images-remove-button.is-visible {
@@ -1231,7 +1235,7 @@ details > summary {
   display: inline-block;
   margin: 0 1px;
   border-radius: 4px;
-  background-color: #eee;
+  background-color: var(--muted);
   padding: 3px 3px 2px;
   font-size: 0.9em;
   vertical-align: baseline;
@@ -1314,6 +1318,7 @@ details > summary {
 
 .editor-search-highlighting-highlight {
   background-color: #ffeeba;
+  color: #111827;
 }
 
 .editor-search-highlighting-bold {
@@ -1337,7 +1342,7 @@ details > summary {
   margin: 0 0.1em;
   border: 1px solid #767676;
   border-radius: 2px;
-  background-color: #efefef;
+  background-color: var(--muted);
   padding: 2px 6px;
   font-size: 0.9em;
 }
@@ -1381,20 +1386,20 @@ details > summary {
 
 .editor-markdown-preview-segment.is-hr {
   display: block;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 2px solid var(--border);
   text-align: center;
 }
 
 .editor-markdown-preview-segment.is-blockquote {
   display: inline-block;
-  border-left: 2px solid #ddd;
+  border-left: 2px solid var(--border);
   padding-left: 10px;
-  color: #aaa;
+  color: var(--muted-foreground);
   font-style: italic;
 }
 
 .editor-markdown-preview-segment.is-code {
-  background-color: #eee;
+  background-color: var(--muted);
   padding: 3px;
   font-family: monospace;
 }
@@ -1427,7 +1432,7 @@ details > summary {
 
 .editor-multi-root-document-body-editor {
   min-height: 136px;
-  background: #ffffff;
+  background: var(--card);
 }
 
 .editor-pagination-editor {

@@ -220,7 +220,7 @@ const ReviewVoid = ({ element }: RenderVoidProps) => {
   return element.type === 'mention' ? (
     <span
       className={cn(
-        'rounded bg-blue-100 px-1',
+        'rounded bg-blue-100 px-1 text-gray-900',
         marks,
         'data-[selected=true]:bg-blue-300'
       )}
@@ -232,7 +232,7 @@ const ReviewVoid = ({ element }: RenderVoidProps) => {
   ) : (
     <div
       className={cn(
-        'my-2 rounded border bg-gray-100 p-3',
+        'my-2 rounded border bg-gray-100 p-3 text-gray-900',
         marks,
         'data-[selected=true]:bg-blue-300'
       )}
@@ -263,7 +263,7 @@ const ReviewLeaf = ({ attributes, children, leaf }: RenderLeafProps) => {
       className={cn(
         kinds.has('insert') && 'bg-emerald-100 text-emerald-800 underline',
         kinds.has('delete') && 'bg-red-50 text-red-700 line-through',
-        kinds.has('format') && 'bg-amber-100'
+        kinds.has('format') && 'bg-amber-100 text-gray-900'
       )}
     >
       {children}
