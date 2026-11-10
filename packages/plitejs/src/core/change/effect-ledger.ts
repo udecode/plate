@@ -202,6 +202,48 @@ const commonPairs = <L, R>(
   return pairs;
 };
 
+const forEachNonRisingPair = (
+  values: readonly number[],
+  visit: (i: number, j: number) => void
+) => {
+  const order = values.map((_value, at) => at);
+  const scratch = [...order];
+  const sort = (from: number, to: number) => {
+    if (to - from < 2) return;
+    const middle = (from + to) >>> 1;
+    sort(from, middle);
+    sort(middle, to);
+    let left = from;
+    let right = middle;
+    let out = from;
+    for (; left < middle && right < to; out += 1) {
+      if (values[order[left]] < values[order[right]]) {
+        scratch[out] = order[left];
+        left += 1;
+      } else {
+        for (let at = left; at < middle; at += 1) {
+          visit(order[at], order[right]);
+        }
+        scratch[out] = order[right];
+        right += 1;
+      }
+    }
+    for (; left < middle; left += 1, out += 1) scratch[out] = order[left];
+    for (; right < to; right += 1, out += 1) scratch[out] = order[right];
+    for (let at = from; at < to; at += 1) order[at] = scratch[at];
+  };
+  sort(0, order.length);
+};
+
+const listIn = <K, V>(lists: Map<K, V[]>, key: K) => {
+  let list = lists.get(key);
+  if (list === undefined) {
+    list = [];
+    lists.set(key, list);
+  }
+  return list;
+};
+
 const elementRanges = (tokens: readonly Shape[]) => {
   const ranges: Array<Readonly<{ from: number; to: number }>> = [];
   const opens: number[] = [];
@@ -714,16 +756,17 @@ const foldChain = (
   const steps: Step[] = [];
   for (const [at, view] of views.entries()) {
     const folded = foldChange(streams, view, `${tag}:${at}`);
-    const after = factsOf(folded.streams);
     if (each !== undefined) {
+      const after = factsOf(folded.streams);
       identity = stepIdentity(identity, after, folded.streams);
       each(folded.step, facts, after);
+      facts = after;
     }
-    facts = after;
     records = foldRecords(records, view);
     ({ streams } = folded);
     steps.push(folded.step);
   }
+  if (each === undefined && views.length > 0) facts = factsOf(streams);
   return { facts, identity, records, steps, streams };
 };
 const streamsOf = (value: LedgerValue): Streams => {
@@ -758,6 +801,40 @@ const present = (facts: Facts, id: string | undefined) =>
   id !== undefined && (facts.letters.has(id) || facts.elements.has(id));
 const before = (facts: Facts, left: string, right: string) =>
   (facts.index.get(left) ?? -1) < (facts.index.get(right) ?? -1);
+const threeWaySilent = (
+  baseValue: unknown,
+  ownValue: unknown,
+  accValue: unknown,
+  mergedValue: unknown,
+  claimed = false
+) => {
+  const ownChanged = claimed || ownValue !== baseValue;
+  const accChanged = accValue !== baseValue;
+  return (
+    !(ownChanged && accChanged && ownValue !== accValue) &&
+    mergedValue === (ownChanged ? ownValue : accValue)
+  );
+};
+const findLastBefore = <T>(
+  list: readonly T[],
+  end: number,
+  test: (item: T) => boolean
+) => {
+  for (let at = end - 1; at >= 0; at -= 1) {
+    if (test(list[at])) return list[at];
+  }
+  return undefined;
+};
+const findFrom = <T>(
+  list: readonly T[],
+  start: number,
+  test: (item: T) => boolean
+) => {
+  for (let at = start; at < list.length; at += 1) {
+    if (test(list[at])) return list[at];
+  }
+  return undefined;
+};
 const rootOf = (facts: Facts, id: string) =>
   facts.letters.get(id)?.root ?? facts.elements.get(id)?.root;
 const blockOf = (facts: Facts, id: string) => facts.letters.get(id)?.block;
@@ -1005,14 +1082,15 @@ const ledgerAt = (
       mergedValue: unknown,
       claimed = false
     ) => {
+      if (threeWaySilent(baseValue, ownValue, accValue, mergedValue, claimed)) {
+        return;
+      }
       const ownChanged = claimed || ownValue !== baseValue;
       const accChanged = accValue !== baseValue;
       if (ownChanged && accChanged && ownValue !== accValue) {
         losses.push(`both sides changed ${what()}`);
         return;
       }
-      const expected = ownChanged ? ownValue : accValue;
-      if (mergedValue === expected) return;
       if (ownChanged) losses.push(`the merge drops own's ${what()}`);
       else if (accChanged) harms.push(`the merge undoes accepted ${what()}`);
       else harms.push(`the merge changes ${what()}`);
@@ -1283,7 +1361,49 @@ const ledgerAt = (
         );
       }
     }
+    const samePlace = (left: Place, right: Place) =>
+      left.type === right.type &&
+      left.ancestors.length === right.ancestors.length &&
+      left.ancestors.every((type, at) => type === right.ancestors[at]);
+    const sameProps = (
+      left: Readonly<JsonRecord>,
+      right: Readonly<JsonRecord>
+    ) =>
+      left === right ||
+      (Object.keys(left).length === 0 && Object.keys(right).length === 0);
+    const sameElement = (
+      left: ElementFact | undefined,
+      right: ElementFact | undefined
+    ) =>
+      left === undefined || right === undefined
+        ? left === right
+        : left.parent === right.parent &&
+          left.root === right.root &&
+          sameProps(left.props, right.props) &&
+          samePlace(left.place, right.place);
+    const unchangedIn = (facts: Facts, id: string) => {
+      const was = B.letters.get(id);
+      if (was === undefined) {
+        return sameElement(B.elements.get(id), facts.elements.get(id));
+      }
+      const now = facts.letters.get(id);
+      return (
+        now !== undefined &&
+        now.anc === was.anc &&
+        now.root === was.root &&
+        sameProps(now.text, was.text) &&
+        samePlace(now.textPlace, was.textPlace) &&
+        parentOf(facts, id) === parentOf(B, id) &&
+        sameElement(B.elements.get(was.block), facts.elements.get(now.block))
+      );
+    };
     for (const id of kept) {
+      if (
+        claims === NO_CLAIMS &&
+        [O, A, M].every((facts) => unchangedIn(facts, id))
+      ) {
+        continue;
+      }
       const [fb, fo, fa, fm] = asSets(
         [B, O, A, M].map((facts) => facetsIn(facts, id))
       );
@@ -1393,71 +1513,120 @@ const ledgerAt = (
       [ownFold, acceptedFold].some(
         (fold) => (fold.identity.heirs.get(id)?.length ?? 0) > 1
       );
-    for (let i = 0; i < kept.length; i += 1) {
-      const left = kept[i];
-      for (let j = i + 1; j < kept.length; j += 1) {
-        const right = kept[j];
-        if (rootOf(B, left) !== rootOf(B, right)) continue;
-        const pair = () => `${describe(B, left)} and ${describe(B, right)}`;
-        if (splitBySide(left) || splitBySide(right)) {
-          // An empty block has no letters to read its place by, so its
-          // halves read it, when they all stand on one side of the other.
-          if (
-            [left, right].some(
-              (id) => splitBySide(id) && (B.blocks.get(id)?.length ?? 1) > 0
-            )
-          ) {
-            continue;
-          }
-          const heirsIn = (fold: SideFold | 'merged', id: string) =>
-            (!B.elements.has(id)
-              ? [id]
-              : fold === 'merged'
-                ? (heirsInMerge.get(id) ?? [])
-                : (fold.identity.heirs.get(id) ?? [])
-            ).filter((heir) =>
-              present(fold === 'merged' ? M : fold.facts, heir)
-            );
-          const orderIn = (fold: SideFold | 'merged') => {
-            const facts = fold === 'merged' ? M : fold.facts;
-            const lefts = heirsIn(fold, left);
-            const rights = heirsIn(fold, right);
-            if (lefts.length === 0 || rights.length === 0) return undefined;
-            const all = lefts.flatMap((l) =>
-              rights.map((r) => before(facts, l, r))
-            );
-            return all.every(Boolean)
-              ? true
-              : all.some(Boolean)
-                ? undefined
-                : false;
-          };
-          const [own, acc, merged] = [
-            ownFold,
-            acceptedFold,
-            'merged' as const,
-          ].map(orderIn);
-          if (own === undefined || acc === undefined || merged === undefined) {
-            continue;
-          }
-          threeWay(
-            () => `the order of ${pair()}`,
-            before(B, left, right),
-            own,
-            acc,
-            merged,
-            claims.order(left, right)
-          );
-          continue;
-        }
-        threeWay(
-          () => `the order of ${pair()}`,
-          before(B, left, right),
-          before(O, left, right),
-          before(A, left, right),
-          before(M, left, right),
-          claims.order(left, right)
+    const emptyBlock = (id: string) => B.blocks.get(id)?.length === 0;
+    const orderLine = (left: string, right: string) => () =>
+      `the order of ${describe(B, left)} and ${describe(B, right)}`;
+    const plainOrderOf = (left: string, right: string) =>
+      [
+        before(B, left, right),
+        before(O, left, right),
+        before(A, left, right),
+        before(M, left, right),
+      ] as const;
+    const orderThroughHalves = (left: string, right: string) => {
+      if ([left, right].some((id) => splitBySide(id) && !emptyBlock(id))) {
+        return;
+      }
+      const heirsIn = (fold: SideFold | 'merged', id: string) =>
+        (!B.elements.has(id)
+          ? [id]
+          : fold === 'merged'
+            ? (heirsInMerge.get(id) ?? [])
+            : (fold.identity.heirs.get(id) ?? [])
+        ).filter((heir) => present(fold === 'merged' ? M : fold.facts, heir));
+      const orderIn = (fold: SideFold | 'merged') => {
+        const facts = fold === 'merged' ? M : fold.facts;
+        const lefts = heirsIn(fold, left);
+        const rights = heirsIn(fold, right);
+        if (lefts.length === 0 || rights.length === 0) return undefined;
+        const all = lefts.flatMap((l) =>
+          rights.map((r) => before(facts, l, r))
         );
+        return all.every(Boolean)
+          ? true
+          : all.some(Boolean)
+            ? undefined
+            : false;
+      };
+      const [own, acc, merged] = [ownFold, acceptedFold, 'merged' as const].map(
+        orderIn
+      );
+      if (own === undefined || acc === undefined || merged === undefined) {
+        return;
+      }
+      threeWay(
+        orderLine(left, right),
+        before(B, left, right),
+        own,
+        acc,
+        merged,
+        claims.order(left, right)
+      );
+    };
+    const orderPair = (left: string, right: string) => {
+      if (rootOf(B, left) !== rootOf(B, right)) return;
+      if (splitBySide(left) || splitBySide(right)) {
+        orderThroughHalves(left, right);
+        return;
+      }
+      threeWay(
+        orderLine(left, right),
+        ...plainOrderOf(left, right),
+        claims.order(left, right)
+      );
+    };
+    const pairsToOrder = () => {
+      const width = kept.length;
+      const codes = new Set<number>();
+      const add = (i: number, j: number) =>
+        codes.add(i < j ? i * width + j : j * width + i);
+      const addPrinting = (i: number, j: number) => {
+        const [left, right] = i < j ? [kept[i], kept[j]] : [kept[j], kept[i]];
+        if (!threeWaySilent(...plainOrderOf(left, right))) add(i, j);
+      };
+      const plainByRoot = new Map<string | undefined, number[]>();
+      const readByRoot = new Map<string | undefined, number[]>();
+      const emptySplits: number[] = [];
+      for (const [at, id] of kept.entries()) {
+        const root = rootOf(B, id);
+        if (!splitBySide(id)) {
+          listIn(plainByRoot, root).push(at);
+          listIn(readByRoot, root).push(at);
+        } else if (emptyBlock(id)) {
+          emptySplits.push(at);
+          listIn(readByRoot, root).push(at);
+        }
+      }
+      for (const at of emptySplits) {
+        for (const other of readByRoot.get(rootOf(B, kept[at])) ?? []) {
+          if (other !== at) add(at, other);
+        }
+      }
+      for (const ats of plainByRoot.values()) {
+        const inBase = [...ats].sort(
+          (x, y) => (B.index.get(kept[x]) ?? -1) - (B.index.get(kept[y]) ?? -1)
+        );
+        for (const facts of [O, A, M]) {
+          forEachNonRisingPair(
+            inBase.map((at) => facts.index.get(kept[at]) ?? -1),
+            (x, y) => addPrinting(inBase[x], inBase[y])
+          );
+        }
+      }
+      return [...codes].sort((x, y) => x - y);
+    };
+    if (claims === NO_CLAIMS) {
+      for (const code of pairsToOrder()) {
+        orderPair(
+          kept[Math.floor(code / kept.length)],
+          kept[code % kept.length]
+        );
+      }
+    } else {
+      for (let i = 0; i < kept.length; i += 1) {
+        for (let j = i + 1; j < kept.length; j += 1) {
+          orderPair(kept[i], kept[j]);
+        }
       }
     }
     // A cut or a join moves one boundary between two letters, so only letters
@@ -1504,20 +1673,36 @@ const ledgerAt = (
       [...M.letters].flatMap(([id, letter]) =>
         !isBase(id) && byOther(id) ? [letter.block] : []
       );
-    const baseGround = groundedIn(B);
-    const ownGround = new Set([
-      ...groundedIn(O),
-      ...typedInto((id) => !ownOf.has(id)).flatMap((block) => {
-        const mine = ownOf.get(block);
-        return mine === undefined ? [] : [mine];
-      }),
-    ]);
-    const accGround = new Set([
-      ...groundedIn(A),
-      ...typedInto((id) => ownOf.has(id)).filter(
-        (block) => !isBase(block) && A.elements.has(block)
-      ),
-    ]);
+    const groundOf = (facts: Facts, blocks: ReadonlySet<string>) => ({
+      facts,
+      sorted: [...blocks]
+        .flatMap((block) => {
+          const at = facts.index.get(block);
+          return at === undefined ? [] : [[at, block] as const];
+        })
+        .sort((x, y) => x[0] - y[0]),
+    });
+    type Ground = ReturnType<typeof groundOf>;
+    const baseGround = groundOf(B, groundedIn(B));
+    const ownGround = groundOf(
+      O,
+      new Set([
+        ...groundedIn(O),
+        ...typedInto((id) => !ownOf.has(id)).flatMap((block) => {
+          const mine = ownOf.get(block);
+          return mine === undefined ? [] : [mine];
+        }),
+      ])
+    );
+    const accGround = groundOf(
+      A,
+      new Set([
+        ...groundedIn(A),
+        ...typedInto((id) => ownOf.has(id)).filter(
+          (block) => !isBase(block) && A.elements.has(block)
+        ),
+      ])
+    );
     // A letter the other side deleted leaves a half as empty as the merge sees it.
     const letteredIn = (fold: Claimant, other: Claimant) =>
       new Set(
@@ -1528,19 +1713,25 @@ const ledgerAt = (
     const ownLettered = letteredIn(ownFold, acceptedFold);
     const accLettered = letteredIn(acceptedFold, ownFold);
     const boundaryOf = (
-      facts: Facts,
-      grounded: ReadonlySet<string>,
+      { facts, sorted }: Ground,
       left: string,
       right: string
     ) => {
-      const from = facts.index.get(left) as number;
-      const to = facts.index.get(right) as number;
-      return new Set(
-        [...grounded].filter((block) => {
-          const at = facts.index.get(block);
-          return at !== undefined && from < at && at < to;
-        })
-      );
+      const between = new Set<string>();
+      const from = facts.index.get(left);
+      const to = facts.index.get(right);
+      if (from === undefined || to === undefined) return between;
+      let low = 0;
+      let high = sorted.length;
+      while (low < high) {
+        const mid = (low + high) >>> 1;
+        if (sorted[mid][0] <= from) low = mid + 1;
+        else high = mid;
+      }
+      for (let at = low; at < sorted.length && sorted[at][0] < to; at += 1) {
+        between.add(sorted[at][1]);
+      }
+      return between;
     };
     for (const [key, [left, right]] of new Map([
       ...baseSides,
@@ -1553,21 +1744,17 @@ const ledgerAt = (
       const what = () =>
         `the boundary between ${describe(B, left)} and ${describe(B, right)}`;
       const claimed = claims.boundary(left, right);
-      const baseCut = boundaryOf(B, baseGround, left, right);
-      const sides = [
-        [O, ownGround],
-        [A, accGround],
-      ] as const;
+      const baseCut = boundaryOf(baseGround, left, right);
       // A move reorders the blocks between two letters without cutting or
       // joining any, so a pair whose blocks on either side a move carries is
       // read by whether its letters share a block. A base block a side split
       // and moved away from both letters does not count.
       if (
-        sides.some(([facts, grounded]) =>
+        [ownGround, accGround].some((ground) =>
           [
-            blockOf(facts, left),
-            blockOf(facts, right),
-            ...boundaryOf(facts, grounded, left, right),
+            blockOf(ground.facts, left),
+            blockOf(ground.facts, right),
+            ...boundaryOf(ground, left, right),
           ].some(
             (block) =>
               block !== undefined &&
@@ -1606,12 +1793,12 @@ const ledgerAt = (
       };
       const cutOf = (
         fold: Claimant,
-        grounded: ReadonlySet<string>,
+        ground: Ground,
         lettered: ReadonlySet<string>,
         stands: boolean
       ): ReadonlySet<string> =>
         new Set(
-          [...boundaryOf(fold.facts, grounded, left, right)]
+          [...boundaryOf(ground, left, right)]
             // A line inserted between two lines cuts neither, so it parts
             // nothing a join of theirs put together.
             .filter((block) => continuesOf(fold, block).some(isBase))
@@ -1694,6 +1881,39 @@ const ledgerAt = (
     ) => {
       const report = side === 'own' ? losses : harms;
       const { facts } = fold;
+      const aroundByRoot = new Map<string, string[]>();
+      for (const [held, fact] of facts.letters) {
+        if (onBase(held)) listIn(aroundByRoot, fact.root).push(held);
+      }
+      const goneByRoot = new Map<string, string[]>();
+      for (const [held, fact] of B.letters) {
+        if (onBase(held) && !facts.letters.has(held)) {
+          listIn(goneByRoot, fact.root).push(held);
+        }
+      }
+      const heldByBlock = new Map<string, string[]>();
+      for (const [token, owner] of facts.owners) {
+        if (isBase(token)) listIn(heldByBlock, owner).push(token);
+      }
+      const fromTranslated = new Map<string, string[]>();
+      for (const held of facts.letters.keys()) {
+        const there = translate(held);
+        if (there !== undefined) listIn(fromTranslated, there).push(held);
+      }
+      const countSortedBefore = (
+        ids: readonly string[],
+        on: Facts,
+        at: number
+      ) => {
+        let low = 0;
+        let high = ids.length;
+        while (low < high) {
+          const mid = (low + high) >>> 1;
+          if ((on.index.get(ids[mid]) as number) < at) low = mid + 1;
+          else high = mid;
+        }
+        return low;
+      };
       // The births of an earlier front are accepted's births too, which the
       // rest keeps in their place as the whole does.
       const unborn = side === 'own' ? isBase : inFirstBase;
@@ -1837,26 +2057,19 @@ const ledgerAt = (
           continue;
         }
         const place = facts.index.get(id) as number;
-        const around = [...facts.letters.keys()].filter(
-          (held) => onBase(held) && rootOf(facts, held) === letter.root
-        );
-        const baseLeft = around.findLast(
-          (held) => (facts.index.get(held) as number) < place
-        );
-        const baseRight = around.find(
-          (held) => (facts.index.get(held) as number) > place
-        );
+        const around = aroundByRoot.get(letter.root) ?? [];
+        const leftCount = countSortedBefore(around, facts, place);
+        const rightFrom = countSortedBefore(around, facts, place + 1);
+        const baseLeft = around[leftCount - 1];
+        const baseRight = around[rightFrom];
         // A letter this side deleted beside this one was a neighbor too.
         const indexIn = (held: string) => B.index.get(held) as number;
         const from = baseLeft === undefined ? -1 : indexIn(baseLeft);
         const to = baseRight === undefined ? Infinity : indexIn(baseRight);
-        const deletedBeside = [...B.letters.keys()].filter(
-          (held) =>
-            onBase(held) &&
-            !facts.letters.has(held) &&
-            rootOf(B, held) === letter.root &&
-            from < indexIn(held) &&
-            indexIn(held) < to
+        const deletedOnRoot = goneByRoot.get(letter.root) ?? [];
+        const deletedBeside = deletedOnRoot.slice(
+          countSortedBefore(deletedOnRoot, B, from + 1),
+          countSortedBefore(deletedOnRoot, B, to)
         );
         const span = [baseLeft, ...deletedBeside, baseRight].filter(
           (held) => held !== undefined
@@ -1954,12 +2167,8 @@ const ledgerAt = (
           cutAtGap() ||
           (baseLeft === undefined && splitAtEdge(span[0])) ||
           parted(
-            around
-              .filter((held) => (facts.index.get(held) as number) < place)
-              .findLast(keptByOther),
-            around
-              .filter((held) => (facts.index.get(held) as number) > place)
-              .find(keptByOther)
+            findLastBefore(around, leftCount, keptByOther),
+            findFrom(around, rightFrom, keptByOther)
           ) ||
           span
             .filter(keptByOther)
@@ -1979,11 +2188,13 @@ const ledgerAt = (
               blockOf(other.facts, gone) === blockOf(other.facts, held)
           );
         const apart = () =>
-          [...facts.letters].some(([held, fact]) => {
-            if (fact.block === letter.block || joinedBeside(held)) return false;
-            const there = translate(held);
-            return there !== undefined && blockOf(M, there) === landed.block;
-          });
+          (M.blocks.get(landed.block) ?? []).some((there) =>
+            (fromTranslated.get(there) ?? []).some(
+              (held) =>
+                facts.letters.get(held)?.block !== letter.block &&
+                !joinedBeside(held)
+            )
+          );
         // Two letters typed at one place tie, and the other side's split of the
         // neighbor's block past its own letter parts this one from its neighbor
         // whichever way the tie falls.
@@ -2045,10 +2256,7 @@ const ledgerAt = (
           }
           continue;
         }
-        const heldBase = (block: string) =>
-          [...facts.owners]
-            .filter(([token, owner]) => owner === block && isBase(token))
-            .map(([token]) => token);
+        const heldBase = (block: string) => heldByBlock.get(block) ?? [];
         const held = heldBase(id);
         // A birth in a container the other side removed with all it held goes
         // with that container.
