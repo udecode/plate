@@ -348,6 +348,7 @@
     "lint:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs ai-react",
     "lint:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs authored",
     "lint:partition:board": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs board",
+    "lint:partition:board-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs board-react",
     "lint:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout",
     "lint:partition:callout-react": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs callout-react",
     "lint:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs lint platejs code-block-codemirror",
@@ -422,6 +423,7 @@
     "test:partition:ai-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs ai-react",
     "test:partition:authored": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs authored",
     "test:partition:board": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs board",
+    "test:partition:board-react": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs board-react",
     "test:partition:callout": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs callout",
     "test:partition:code-block-codemirror": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs code-block-codemirror",
     "test:partition:combobox": "node ../../tooling/scripts/run-entrypoint-task.mjs test platejs combobox",
@@ -500,6 +502,7 @@
     "optics-ts": "2.4.1",
     "parse5": "^8.0.1",
     "plitejs": "workspace:*",
+    "rbush": "4.0.1",
     "saxes": "6.0.0",
     "unist-util-visit": "5.0.0",
     "zustand": "^5.0.5"

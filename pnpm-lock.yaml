@@ -829,6 +829,9 @@ importers:
       plitejs:
         specifier: workspace:*
         version: link:../plitejs
+      rbush:
+        specifier: 4.0.1
+        version: 4.0.1
       saxes:
         specifier: 6.0.0
         version: 6.0.0

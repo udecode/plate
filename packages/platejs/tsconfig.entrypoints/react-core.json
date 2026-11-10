@@ -12,6 +12,7 @@
     "tsBuildInfoFile": "../.turbo/entrypoint-types/react-core.tsbuildinfo"
   },
   "exclude": [
+    "../src/react/features/board/**/*",
     "../src/react/virtualized.*",
     "../src/react/index.*",
     "../src/react/features/basic-nodes/**/*",

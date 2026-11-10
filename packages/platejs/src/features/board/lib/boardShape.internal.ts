@@ -22,10 +22,7 @@ import {
   type SchemaElementProperties,
   txLocate,
 } from '../../../core';
-import {
-  type TxDeclaredMethod,
-  withEditorUpdateRootScope,
-} from '../../../facade';
+import type { TxDeclaredMethod } from '../../../facade';
 
 /** A shape's place on its board, in board coordinates. */
 export type BoardPlace = Readonly<{ x: number; y: number }>;
@@ -167,7 +164,7 @@ function boardShapeStage(size: BoardSize): unknown {
   const stage: BoardShapeStage<
     BoardShapeDefinition,
     Readonly<Record<string, unknown>>
-  > = ({ editor, schema: { type } }) => ({
+  > = ({ schema: { type } }) => ({
     update: ({ tx }) => ({
       insert: txLocate(
         locateAt(1, 'board'),
@@ -210,11 +207,9 @@ function boardShapeStage(size: BoardSize): unknown {
             zIndex: stackingKeyBetween(top, null),
           });
 
-          withEditorUpdateRootScope(editor, root, () =>
-            tx.nodes.insert(
-              children ? { ...shape, children: [...children] } : shape,
-              { at: [shapes.length] }
-            )
+          tx.nodes.replaceChildren(
+            [children ? { ...shape, children: [...children] } : shape],
+            { at: [], count: 0, index: shapes.length, root }
           );
 
           return shapeId;

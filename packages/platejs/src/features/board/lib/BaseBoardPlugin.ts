@@ -37,7 +37,13 @@ export type { BoardPlace, BoardSize } from './boardShape.internal';
 
 /** A board shape as the board reads it. */
 export type BoardShapeEntry = EditorUniqueHolder &
-  Readonly<{ id: string; node: Element }>;
+  Readonly<{
+    id: string;
+    node: Element;
+    place: BoardPlace;
+    size: BoardSize;
+    zIndex: string;
+  }>;
 
 /** Where `restack` moves shapes in paint order. */
 export type BoardRestackDirection = 'back' | 'backward' | 'forward' | 'front';
@@ -125,35 +131,58 @@ export const BaseBoardPlugin = definePlugin('board', {
 
     return {
       contributions: [transferVeto.of(moveTouchesShape)],
-      read: ({ state }) => ({
-        /** The shape whose `shapeId` is `id`, in any board. */
-        shape: (id: string): BoardShapeEntry | null => {
-          const holder = state.unique.holder('shapeId', id);
-          const node = holder && state.nodes.get(holder.key)?.[0];
+      read: ({ state }) => {
+        const entryOf = (
+          holder: EditorUniqueHolder,
+          node: Element
+        ): BoardShapeEntry | null => {
+          const place = state.schema.getProperty(node, properties.place);
+          const size = state.schema.getProperty(node, properties.size);
+          const zIndex = state.schema.getProperty(node, properties.zIndex);
 
-          return holder && node && ElementApi.isElement(node)
-            ? { ...holder, id, node }
+          return place && size && zIndex
+            ? {
+                ...holder,
+                id: state.schema.getProperty(node, properties.shapeId) ?? '',
+                node,
+                place,
+                size,
+                zIndex,
+              }
             : null;
-        },
-        /** The shapes of the board block `board`, in stored order. */
-        shapes: (board: NodeKey): BoardShapeEntry[] => {
-          const owner = state.nodes.get(board)?.[0];
-          const root =
-            owner && ElementApi.isElement(owner)
-              ? state.schema.getElementContentRoots(owner)[BOARD_SHAPES_SLOT]
-              : undefined;
+        };
 
-          if (!root) return [];
+        return {
+          /** The shape whose `shapeId` is `id`, in any board. */
+          shape: (id: string): BoardShapeEntry | null => {
+            const holder = state.unique.holder('shapeId', id);
+            const node = holder && state.nodes.get(holder.key)?.[0];
 
-          return state.root(root).map((node, index) => ({
-            id: state.schema.getProperty(node, properties.shapeId) ?? '',
-            key: state.key(node),
-            node,
-            path: [index],
-            root,
-          }));
-        },
-      }),
+            return holder && node && ElementApi.isElement(node)
+              ? entryOf(holder, node)
+              : null;
+          },
+          /** The shapes of the board block `board`, in stored order. */
+          shapes: (board: NodeKey): BoardShapeEntry[] => {
+            const owner = state.nodes.get(board)?.[0];
+            const root =
+              owner && ElementApi.isElement(owner)
+                ? state.schema.getElementContentRoots(owner)[BOARD_SHAPES_SLOT]
+                : undefined;
+
+            if (!root) return [];
+
+            return state.root(root).flatMap((node, index) => {
+              const entry = entryOf(
+                { key: state.key(node), path: [index], root },
+                node
+              );
+
+              return entry ? [entry] : [];
+            });
+          },
+        };
+      },
     };
   })
   .extend(({ editor, plugin, schema: { properties, type } }) => ({
