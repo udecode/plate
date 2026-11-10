@@ -18,6 +18,7 @@ import type { CarryProgram } from '../core/change/carry-program';
 import {
   getInternalDocumentChangeClassificationEntries,
   getInternalDocumentChangeRootKeys,
+  transformInternalDocumentChange,
   valueRoot,
 } from '../core/change/document-change';
 import { jsonEqual, type JsonRecord } from '../core/change/json';
@@ -580,7 +581,10 @@ const yieldTo = <V extends Value>(
   change: DocumentChange,
   edit: DocumentChange,
   base: EditorDocumentValue<V>
-) => DocumentChange.transform(change, edit, base).a;
+) =>
+  transformInternalDocumentChange(change, edit, base, {
+    keepRecordWrites: true,
+  }).a;
 
 const mapHead = <V extends Value>(
   editor: Editor<V>,

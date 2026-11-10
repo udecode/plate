@@ -209,7 +209,6 @@ type MapRules = Readonly<{
   readBack: Shaping | null;
 }>;
 
-/** `step` replayed over `edit`, both from `base`. */
 const replayOver = (
   schema: HistoryReplaySchema,
   edit: DocumentChange,
@@ -218,6 +217,7 @@ const replayOver = (
   { anchor, carriesLift, readBack }: MapRules
 ) =>
   transformInternalDocumentChange(edit, step, base, {
+    keepRecordWrites: true,
     replay: {
       anchor,
       carriesLift,
@@ -1474,10 +1474,11 @@ const mapOneReplay = <T extends JsonEditorValue>(
   const formatChange = DocumentChange.between(middle, recorded.after, {
     isSetValued: schema.isSetValued,
   });
-  const mapped = DocumentChange.transform(
+  const mapped = transformInternalDocumentChange(
     transformed.a,
     formatChange,
-    middle
+    middle,
+    { keepRecordWrites: true }
   ).a;
   const intermediate = mapped.apply(recorded.after);
   const rest = composeRepair(

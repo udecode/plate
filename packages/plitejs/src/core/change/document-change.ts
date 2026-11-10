@@ -13,6 +13,7 @@ import {
   recordOpsFromJson,
   recordOpsToJson,
   showValueRecords,
+  transformRecordOps,
   withValueRecords,
 } from '../record-store';
 import { assertEditorJsonValue } from '../value-codec';
@@ -1651,10 +1652,9 @@ export const documentChangeBetween = (
 };
 
 /** @internal */
-export type DocumentChangeConflict = Readonly<{
-  kind: 'root-lifecycle';
-  root: string;
-}>;
+export type DocumentChangeConflict =
+  | Readonly<{ id: string; kind: 'record'; set: string }>
+  | Readonly<{ kind: 'root-lifecycle'; root: string }>;
 
 type RebasedPair = Readonly<{
   a: DocumentChange;
@@ -1690,7 +1690,7 @@ const touchesRoot = (change: DocumentChange, root: string) =>
 const lifecycleConflictOf = (
   a: DocumentChange,
   b: DocumentChange
-): DocumentChangeConflict | null => {
+): Extract<DocumentChangeConflict, { kind: 'root-lifecycle' }> | null => {
   for (const root of [
     ...a.createRoots,
     ...a.deleteRoots,
@@ -1705,11 +1705,18 @@ const lifecycleConflictOf = (
   return null;
 };
 
+const recordsRebasedOf = (a: DocumentChange, b: DocumentChange) =>
+  transformRecordOps(
+    getInternalDocumentChangeRecords(a),
+    getInternalDocumentChangeRecords(b)
+  );
+
 const rebasedPair = (
   a: DocumentChange,
   b: DocumentChange,
   value: JsonEditorValue,
-  { keepEqualEdits = false, replay }: RebaseOptions
+  { keepEqualEdits = false, replay }: RebaseOptions,
+  records: Readonly<{ first: RecordOps; second: RecordOps }>
 ): RebasedPair => {
   const roots = new Set([
     ...[...getInternalDocumentChangeEntries(a)].map(([root]) => root),
@@ -1751,17 +1758,16 @@ const rebasedPair = (
     }
   }
 
-  // Record ids name their content, so puts and drops commute.
   return {
     a: createInternalDocumentChange(aChanges, {
       createRoots: a.createRoots,
       deleteRoots: a.deleteRoots,
-      records: getInternalDocumentChangeRecords(a),
+      records: records.first,
     }),
     b: createInternalDocumentChange(bChanges, {
       createRoots: b.createRoots,
       deleteRoots: b.deleteRoots,
-      records: getInternalDocumentChangeRecords(b),
+      records: records.second,
     }),
     keptWrap,
   };
@@ -1773,28 +1779,45 @@ export const rebaseDocumentChange = (
   b: DocumentChange,
   value: JsonEditorValue,
   options: RebaseOptions = {}
-): DocumentRebase =>
-  lifecycleConflictOf(a, b) ?? {
-    kind: 'pair',
-    ...rebasedPair(a, b, value, options),
-  };
+): DocumentRebase => {
+  const lifecycle = lifecycleConflictOf(a, b);
+
+  if (lifecycle) return lifecycle;
+
+  const records = recordsRebasedOf(a, b);
+
+  if (records.unequal) return { kind: 'record', ...records.unequal };
+
+  return { kind: 'pair', ...rebasedPair(a, b, value, options, records) };
+};
 
 /** @internal */
 export const transformInternalDocumentChange = (
   a: DocumentChange,
   b: DocumentChange,
   value: JsonEditorValue,
-  options: RebaseOptions = {}
+  options: RebaseOptions & Readonly<{ keepRecordWrites?: boolean }> = {}
 ): RebasedPair => {
-  const rebased = rebaseDocumentChange(a, b, value, options);
+  const lifecycle = lifecycleConflictOf(a, b);
 
-  if (rebased.kind === 'root-lifecycle') {
+  if (lifecycle) {
     throw new Error(
-      `Cannot transform concurrent root lifecycle changes for ${rebased.root}.`
+      `Cannot transform concurrent root lifecycle changes for ${lifecycle.root}.`
     );
   }
 
-  return rebased;
+  return rebasedPair(
+    a,
+    b,
+    value,
+    options,
+    options.keepRecordWrites
+      ? {
+          first: getInternalDocumentChangeRecords(a),
+          second: getInternalDocumentChangeRecords(b),
+        }
+      : recordsRebasedOf(a, b)
+  );
 };
 
 export const applyDocumentChangeValue = <T extends JsonEditorValue>(

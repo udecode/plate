@@ -204,6 +204,56 @@ export const composeRecordOps = (
   return composed;
 };
 
+const withoutIds = (
+  ops: RecordOps,
+  ids: ReadonlyMap<string, ReadonlySet<string>>
+): RecordOps => {
+  if (ids.size === 0) return ops;
+
+  const kept = new Map<string, ReadonlyMap<string, string | null>>();
+
+  for (const [set, writes] of ops) {
+    const lost = ids.get(set);
+    const left = lost
+      ? new Map([...writes].filter(([id]) => !lost.has(id)))
+      : writes;
+
+    if (left.size > 0) kept.set(set, left);
+  }
+
+  return kept;
+};
+
+export const transformRecordOps = (first: RecordOps, second: RecordOps) => {
+  const firstLost = new Map<string, Set<string>>();
+  const secondLost = new Map<string, Set<string>>();
+  let unequal: Readonly<{ id: string; set: string }> | null = null;
+
+  for (const [set, secondWrites] of second) {
+    const firstWrites = first.get(set);
+
+    if (!firstWrites) continue;
+
+    for (const [id, secondWrite] of secondWrites) {
+      const firstWrite = firstWrites.get(id);
+
+      if (firstWrite === undefined || firstWrite === secondWrite) continue;
+      if (firstWrite !== null && secondWrite !== null) unequal ??= { id, set };
+
+      const lost = firstWrite === null ? firstLost : secondLost;
+      const ids = lost.get(set) ?? new Set();
+
+      lost.set(set, ids.add(id));
+    }
+  }
+
+  return {
+    first: withoutIds(first, firstLost),
+    second: withoutIds(second, secondLost),
+    unequal,
+  };
+};
+
 export const invertRecordOps = (
   before: RecordStore,
   ops: RecordOps

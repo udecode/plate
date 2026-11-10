@@ -11473,7 +11473,7 @@ const advanceSettlementSplit = (
       carried.takeBack,
       edit,
       before,
-      { keepEqualEdits: true }
+      { keepEqualEdits: true, keepRecordWrites: true }
     );
 
     carried = {
