@@ -53,7 +53,7 @@ A plan that picks an API or architecture target writes these sections as its del
 
 ## Ready
 
-An architecture plan is ready only when every current-state claim has live evidence, every responsibility has one owner, every row has a resolved verdict, every public break has adoption, docs and proof answers, the slices and their verification are concrete, every conditional gate is resolved or marked inapplicable with a reason, every scale-sensitive decision has its receipt, every Page section that applies is written, and no decision-changing question remains. Missing evidence is an open gate, never a confidence score.
+An architecture plan is ready only when every current-state claim has live evidence, every responsibility has one owner, every row has a resolved verdict, every public break has adoption, docs and proof answers, the slices and their verification are concrete, every conditional gate is resolved or marked inapplicable with a reason, every scale-sensitive decision has its receipt, every Page section that applies is written, and no decision-changing question remains. In a plan with phases, the slices and their verification mean those of the next phase to build, and the receipts are the ones the Plan playbook's Architecture decisions ask for before the target is picked; a later phase's slices and budgets are judged when that phase gets its steps. Missing evidence is an open gate, never a confidence score.
 
 ## Hard cut
 
