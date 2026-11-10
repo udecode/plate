@@ -251,6 +251,7 @@ export const entrypointDags = {
         )
       ),
       authored: headless(directory('authored', ['core'], ['plitejs/authored'])),
+      board: headless(privateDirectory('features/board', ['core'])),
       core: headless(
         privateRoot(['dom', 'history'], ['plitejs', 'plitejs/internal'])
       ),
@@ -491,6 +492,7 @@ export const entrypointDags = {
         'ai',
         'ai/react',
         'authored',
+        'board',
         'code-block/codemirror',
         'compiler',
         'docx/export',

@@ -409,6 +409,14 @@ const intentionalProductionExtendStageChains = new Map([
     [[['$factory:defineMediaPlugin']]],
   ],
   ['packages/platejs/src/yjs/react/YjsPlugin.tsx', [[['$factory:yjs']]]],
+  [
+    'packages/platejs/src/features/board/lib/BaseBoardPlugin.ts',
+    [[['contributions', 'read'], ['update']]],
+  ],
+  [
+    'packages/platejs/src/features/board/lib/boardShape.internal.ts',
+    [[['$factory:boardShapeStage']]],
+  ],
 ]);
 const allowedSchemaFactoryBindings = new Set([
   'initialState',
@@ -429,6 +437,7 @@ const intentionalRawSchemaQueryCounts = new Map([
   ],
   ['packages/platejs/src/internal/plugin/compilePlateModel.spec.ts', 6],
   ['packages/platejs/src/features/list/lib/listConversion.internal.ts', 1],
+  ['packages/platejs/src/features/board/lib/boardShape.internal.ts', 1],
   ['packages/platejs/src/lib/editor/withPlite.schema-plugins.spec.ts', 2],
   ['packages/platejs/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
   ['packages/platejs/src/lib/plugins/html/HtmlPlugin.ts', 5],

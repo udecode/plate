@@ -1,6 +1,8 @@
 import {
+  canPlaceBlocksAtPath,
   type Descendant,
   ElementApi,
+  getEditorUpdateRoot,
   NodeApi,
   type NodeMatch,
   PathApi,
@@ -50,8 +52,15 @@ export const TrailingBlockPlugin = definePlugin(PLUGINS.trailingBlock, {
                 NodeApi.matches(lastChildNode, match, lastChild[1]))))
         ) {
           const at = lastChild ? PathApi.next(lastChild[1]) : [0];
+          const block = tx.schema.create(type);
 
-          tx.nodes.insert(tx.schema.create(type), { at });
+          if (
+            canPlaceBlocksAtPath(tx.schema, at, [block], {
+              root: getEditorUpdateRoot(editor),
+            })
+          ) {
+            tx.nodes.insert(block, { at });
+          }
         }
       },
     },

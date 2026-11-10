@@ -19,8 +19,8 @@ export const SingleLinePlugin = definePlugin(PLUGINS.singleLine, {
     {
       event: 'children',
       query: 'root',
-      correct({ tx }) {
-        joinNextRootBlock(tx, '', 'SingleLinePlugin');
+      correct({ editor, tx }) {
+        joinNextRootBlock(editor, tx, '', 'SingleLinePlugin');
       },
     },
     {

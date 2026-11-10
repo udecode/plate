@@ -1,22 +1,41 @@
 import {
+  canPlaceBlocksAtPath,
   type EditorUpdateTransaction,
   ElementApi,
+  getEditorUpdateRoot,
   NodeApi,
 } from '../../facade';
+import type { Editor } from '../../lib/editor/Editor';
+import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 
 type SingleRootBlockTransaction = Pick<
   EditorUpdateTransaction,
   'nodes' | 'schema' | 'text'
 >;
 
+const rootHoldsLines = (
+  editor: Editor,
+  tx: SingleRootBlockTransaction,
+  end: number
+) =>
+  canPlaceBlocksAtPath(
+    tx.schema,
+    [end],
+    [tx.schema.create(editor.plugin(BaseParagraphPlugin).schema.type)],
+    { root: getEditorUpdateRoot(editor) }
+  );
+
 export const joinNextRootBlock = (
+  editor: Editor,
   tx: SingleRootBlockTransaction,
   separator: string,
   policyName: string
 ) => {
   const children = tx.nodes.children();
 
-  if (children.length <= 1) return;
+  if (children.length <= 1 || !rootHoldsLines(editor, tx, children.length)) {
+    return;
+  }
 
   const first = children[0];
   const second = children[1];

@@ -16,6 +16,7 @@
     "../src/ai/**/*",
     "../src/ai/react/**/*",
     "../src/authored/**/*",
+    "../src/features/board/**/*",
     "../src/code-block/codemirror/**/*",
     "../src/diff/**/*",
     "../src/dom/**/*",

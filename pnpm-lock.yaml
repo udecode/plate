@@ -787,6 +787,9 @@ importers:
       dequal:
         specifier: 2.0.3
         version: 2.0.3
+      fractional-indexing:
+        specifier: 3.2.0
+        version: 3.2.0
       html-entities:
         specifier: ^2.6.0
         version: 2.6.0

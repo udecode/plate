@@ -221,6 +221,7 @@ export {
   getEditorAuthoredDocumentCapability,
   getEditorCommitSnapshot,
   getEditorCommitValue,
+  getEditorUpdateRoot,
   getInstalledPlugin,
   getSchemaElementSourceReference,
   getSelectionDOMRange,

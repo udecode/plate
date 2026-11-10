@@ -6,7 +6,7 @@
   "sizes": {
     "platejs": {
       "bytes": 1361321,
-      "gzip": 428962
+      "gzip": 428917
     },
     "platejs/math": {
       "bytes": 175784,
