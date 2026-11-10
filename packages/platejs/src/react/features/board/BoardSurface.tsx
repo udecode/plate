@@ -38,8 +38,12 @@ export function BoardSurface({
 }: EditorElementProps<typeof BoardPlugin> & { toolbar?: React.ReactNode }) {
   const { element } = props;
   const editor = useModelEditor();
-  const [, render] = React.useReducer((count: number) => count + 1, 0);
-  const [view] = React.useState(() => createBoardView(editor, element, render));
+  const [view] = React.useState(() => createBoardView(editor, element));
+  const viewport = React.useSyncExternalStore(
+    view.subscribeViewport,
+    view.viewport,
+    view.viewport
+  );
   const attach = React.useCallback(
     (layer: HTMLDivElement | null) => (layer ? view.attach(layer) : undefined),
     [view]
@@ -81,7 +85,7 @@ export function BoardSurface({
           >
             {props.slots.contentRoot(BOARD_SHAPES_SLOT, {
               ariaLabel: 'Board',
-              viewport: view.viewport(),
+              viewport,
             })}
           </div>
         </div>

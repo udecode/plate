@@ -148,11 +148,15 @@ const placeElement = (element: HTMLElement, box: BoardBox) => {
   element.style.height = `${box.height}px`;
 };
 
-export const createBoardView = (
-  editor: Editor,
-  element: Element,
-  requestRender: () => void
-) => {
+const subscribeTo = (listeners: Set<() => void>) => (listener: () => void) => {
+  listeners.add(listener);
+
+  return () => {
+    listeners.delete(listener);
+  };
+};
+
+export const createBoardView = (editor: Editor, element: Element) => {
   const keyOf = (node: Descendant) => editor.read((state) => state.key(node));
   const board = keyOf(element);
   const root =
@@ -167,6 +171,7 @@ export const createBoardView = (
   };
   const stateListeners = new Set<() => void>();
   const shapeListeners = new Set<() => void>();
+  const viewportListeners = new Set<() => void>();
 
   const setState = (next: Partial<BoardViewState>) => {
     state = { ...state, ...next };
@@ -181,6 +186,7 @@ export const createBoardView = (
   let version = 0;
   let shownVersion = 0;
   let mountedKeys: ReadonlySet<NodeKey> = new Set();
+  let viewport = { mountedKeys, reveal };
   let size: BoardSize = { height: 0, width: 0 };
 
   const index = () => {
@@ -259,10 +265,10 @@ export const createBoardView = (
     );
     const next = frame === 0 ? found : new Set([...mountedKeys, ...found]);
 
-    if (sameKeys(next, mountedKeys)) return false;
+    if (sameKeys(next, mountedKeys)) return;
     mountedKeys = next;
-
-    return true;
+    viewport = { mountedKeys, reveal };
+    for (const listener of viewportListeners) listener();
   };
 
   const follow = () => {
@@ -270,7 +276,7 @@ export const createBoardView = (
     if (version === shownVersion) return;
     shownVersion = version;
     for (const listener of shapeListeners) listener();
-    if (refresh()) requestRender();
+    refresh();
   };
 
   // The promoted layer translates in screen pixels, and a child of it scales
@@ -299,7 +305,7 @@ export const createBoardView = (
       drawnZoom = state.camera.zoom;
       paintCamera();
     }
-    if (refresh()) requestRender();
+    refresh();
   };
 
   // Blink relayerizes every paint chunk on each change to a layer's transform
@@ -325,6 +331,23 @@ export const createBoardView = (
       ) ?? null;
     followPointer();
   };
+
+  function reveal(path: readonly number[]) {
+    const entry = entries[path[0] ?? -1];
+
+    if (!entry) return false;
+
+    const { zoom } = state.camera;
+
+    setCamera({
+      x: entry.place.x + entry.size.width / 2 - size.width / 2 / zoom,
+      y: entry.place.y + entry.size.height / 2 - size.height / 2 / zoom,
+      zoom,
+    });
+    refresh();
+
+    return true;
+  }
 
   let corner: BoardPlace = { x: 0, y: 0 };
   let gesture: Gesture | null = null;
@@ -503,7 +526,7 @@ export const createBoardView = (
       corner = { x: rect.left, y: rect.top };
       if (rect.width === size.width && rect.height === size.height) return;
       size = { height: rect.height, width: rect.width };
-      if (refresh()) requestRender();
+      refresh();
     };
     const resizeObserver = new ResizeObserver(measure);
 
@@ -511,8 +534,11 @@ export const createBoardView = (
     resizeObserver.observe(host);
 
     let swallowClick = false;
+    let pressed: BoardShapeLayout | undefined;
 
     const onPointerDown = (event: PointerEvent) => {
+      pressed = undefined;
+      swallowClick = false;
       if (event.button !== 0 || gesture || !(event.target instanceof Element)) {
         return;
       }
@@ -527,6 +553,8 @@ export const createBoardView = (
       const shape = shapeElement
         ? byId.get(shapeElement.dataset.boardShape ?? '')
         : undefined;
+
+      pressed = shape;
       const handle =
         CORNERS[
           event.target.closest<HTMLElement>('[data-board-handle]')?.dataset
@@ -587,27 +615,28 @@ export const createBoardView = (
         followPointer();
       }
     };
-    const onPointerUp = () => {
-      release();
-      setTimeout(() => {
-        swallowClick = false;
-      }, 0);
-    };
     const onClick = (event: MouseEvent) => {
-      if (!swallowClick) return;
+      const swallow = swallowClick;
+
       swallowClick = false;
+      if (
+        !swallow ||
+        !(event.target instanceof Node) ||
+        !host.contains(event.target)
+      ) {
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
     };
+    // Pointer capture sends the double click to the board, not the shape the
+    // pointer is over, so it edits the shape the last press went down on.
     const onDoubleClick = (event: MouseEvent) => {
-      if (!(event.target instanceof Element) || !host.contains(event.target)) {
+      if (!(event.target instanceof Node) || !host.contains(event.target)) {
         return;
       }
 
-      const shapeElement =
-        event.target.closest<HTMLElement>('[data-board-shape]');
-      const shape =
-        shapeElement && byId.get(shapeElement.dataset.boardShape ?? '');
+      const shape = pressed;
 
       if (!shape || editedShape()?.key === shape.key) return;
       event.preventDefault();
@@ -659,8 +688,8 @@ export const createBoardView = (
 
     host.addEventListener('pointerdown', onPointerDown, true);
     host.addEventListener('pointermove', onPointerMove);
-    host.addEventListener('pointerup', onPointerUp);
-    host.addEventListener('pointercancel', onPointerUp);
+    host.addEventListener('pointerup', release);
+    host.addEventListener('pointercancel', release);
     host.addEventListener('wheel', onWheel, { passive: false });
     view?.addEventListener('click', onClick, true);
     view?.addEventListener('dblclick', onDoubleClick, true);
@@ -678,8 +707,8 @@ export const createBoardView = (
       resizeObserver.disconnect();
       host.removeEventListener('pointerdown', onPointerDown, true);
       host.removeEventListener('pointermove', onPointerMove);
-      host.removeEventListener('pointerup', onPointerUp);
-      host.removeEventListener('pointercancel', onPointerUp);
+      host.removeEventListener('pointerup', release);
+      host.removeEventListener('pointercancel', release);
       host.removeEventListener('wheel', onWheel);
       view?.removeEventListener('click', onClick, true);
       view?.removeEventListener('dblclick', onDoubleClick, true);
@@ -748,39 +777,10 @@ export const createBoardView = (
     },
     root,
     state: () => state,
-    subscribe: (listener: () => void) => {
-      stateListeners.add(listener);
-
-      return () => {
-        stateListeners.delete(listener);
-      };
-    },
-    subscribeShapes: (listener: () => void) => {
-      shapeListeners.add(listener);
-
-      return () => {
-        shapeListeners.delete(listener);
-      };
-    },
-    viewport: () => ({
-      mountedKeys,
-      reveal: (path: readonly number[]) => {
-        const entry = entries[path[0] ?? -1];
-
-        if (!entry) return false;
-
-        const { zoom } = state.camera;
-
-        setCamera({
-          x: entry.place.x + entry.size.width / 2 - size.width / 2 / zoom,
-          y: entry.place.y + entry.size.height / 2 - size.height / 2 / zoom,
-          zoom,
-        });
-        if (refresh()) requestRender();
-
-        return true;
-      },
-    }),
+    subscribe: subscribeTo(stateListeners),
+    subscribeShapes: subscribeTo(shapeListeners),
+    subscribeViewport: subscribeTo(viewportListeners),
+    viewport: () => viewport,
   };
 };
 
