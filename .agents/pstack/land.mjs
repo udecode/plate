@@ -26,9 +26,12 @@
 // stages what the command wrote and continues the rebase. A failed command
 // puts the conflicts back, and a write outside the entry's globs, staged or
 // not, stops it with the rebase in progress, as any other conflict does.
-// land.mjs also runs an `always` entry's command after every rebase that did
-// not already run it, and folds what it wrote into the task's commit. The
-// config's `landChecks` run before each --check on every land.
+// land.mjs also runs an `always` entry's command once both halves are rebased,
+// unless the rebase already ran it or the task changes only companion files.
+// It folds what the command wrote into the task's commit, and what it wrote in
+// files the companion tracks into the task's companion commit, which it starts
+// when the task has none. The config's `landChecks` run before each --check on
+// every land.
 // When the config names a `companion` whose git directory `companion.dir` is
 // in the checkout, that repository tracks the files this checkout's git
 // ignores through `companion.list`, and the task's changes there land in push
@@ -239,12 +242,13 @@ let rebuildTime = 0;
 let refreshTime = 0;
 const rebuilt = new Set();
 
-function worktreeTree() {
+function worktreeTree(prefix = [], add = '--all') {
+  const run = (args, env) => spawnSync('git', [...prefix, ...args], { encoding: 'utf8', env });
   const index = join(mkdtempSync(join(tmpdir(), 'land-')), 'index');
-  copyFileSync(must('rev-parse', '--git-path', 'index'), index);
+  copyFileSync(run(['rev-parse', '--git-path', 'index']).stdout.trim(), index);
   const env = { ...process.env, GIT_INDEX_FILE: index };
-  if (spawnSync('git', ['add', '--all'], { env }).status !== 0) fail('git add --all into a scratch index failed while rebuilding the generated paths');
-  const tree = spawnSync('git', ['write-tree'], { env, encoding: 'utf8' });
+  if (run(['add', add], env).status !== 0) fail(`git add ${add} into a scratch index failed while rebuilding the generated paths`);
+  const tree = run(['write-tree'], env);
   if (tree.status !== 0) fail(`git write-tree failed while rebuilding the generated paths: ${tree.stderr.trim()}`);
   return tree.stdout.trim();
 }
@@ -257,7 +261,7 @@ function rebuild(paths, owners) {
   if (kept.length > 0) must('checkout', 'HEAD', '--', ...literal(kept));
   if (gone.length > 0) must('rm', '--quiet', '--force', '--', ...literal(gone));
   const started = performance.now();
-  const written = regenerate(
+  const { own: written } = regenerate(
     owners,
     (command) => {
       git('checkout', '--merge', '--', ...literal(paths));
@@ -271,35 +275,49 @@ function rebuild(paths, owners) {
   return spawnSync('git', ['rebase', '--continue'], { encoding: 'utf8', env: { ...process.env, GIT_EDITOR: 'true' } });
 }
 
-// A clean rebase can still leave an `always` entry's output stale, such as when origin/<branch> changed the sources it reads.
 function refresh() {
   const owners = generated.filter((entry) => entry.always && !rebuilt.has(entry));
   if (!landing.own || owners.length === 0) return;
   const rerun = 'then run land.mjs again without --message.';
   const started = performance.now();
-  const written = regenerate(owners, (command) => fail(`${command} failed while rebuilding its generated paths after the rebase. Fix the cause, ${rerun}`), `Add or discard those files, ${rerun}`);
+  const { own, theirs } = regenerate(owners, (command) => fail(`${command} failed while rebuilding its generated paths after the rebase. Fix the cause, ${rerun}`), `Add or discard those files, ${rerun}`);
   refreshTime = performance.now() - started;
-  if (written.length === 0) return;
-  console.log(`land.mjs rebuilt ${written.join(', ')} after the rebase and folds the output into the commit`);
-  must('add', '--all', '--', ...literal(written));
-  must('commit', '--quiet', '--amend', '--no-edit');
+  if (own.length + theirs.length === 0) return;
+  console.log(`land.mjs rebuilt ${[...own, ...theirs].join(', ')} after the rebase and folds the output into the commit`);
+  if (own.length > 0) {
+    must('add', '--all', '--', ...literal(own));
+    must('commit', '--quiet', '--amend', '--no-edit');
+  }
+  if (theirs.length === 0) return;
+  cmust('add', '--all', '--', ...literal(theirs));
+  if (landing.theirs) cmust('commit', '--quiet', '--amend', '--no-edit');
+  else cmust('commit', '--quiet', '--message', must('log', '-1', '--format=%B'));
+  landing.theirs = true;
 }
 
+// The companion's tree takes `--update`, because with `--all` its git would take every file of this checkout.
 function regenerate(owners, failed, outsideHint) {
   const release = reserve(Math.ceil(availableParallelism() / 2), 'land.mjs rebuild');
-  const written = [];
+  const own = [];
+  const theirs = [];
   let before = worktreeTree();
+  let sideBefore = pair && worktreeTree(side, '--update');
   for (const { command, paths: globs } of owners) {
     console.log(`$ ${command}`);
     if (spawnSync(command, { shell: true, stdio: 'inherit' }).status !== 0) failed(command);
     const after = worktreeTree();
     const outside = nul(git('diff', '-z', '--name-only', before, after, '--', '.', ...globs.map((glob) => `:(exclude,glob)${glob}`)).stdout);
     if (outside.length > 0) fail(`${command} also changed files outside its generated paths:\n${outside.map((path) => `  ${path}`).join('\n')}\n${outsideHint}`);
-    written.push(...nul(git('diff', '-z', '--name-only', before, after).stdout));
+    own.push(...nul(git('diff', '-z', '--name-only', before, after).stdout));
     before = after;
+    if (pair) {
+      const sideAfter = worktreeTree(side, '--update');
+      theirs.push(...nul(cgit('diff', '-z', '--name-only', sideBefore, sideAfter).stdout));
+      sideBefore = sideAfter;
+    }
   }
   release();
-  return written;
+  return { own, theirs };
 }
 
 // The companion's git never reads this clone's .git/info/exclude, so a path only that file ignores is local, not companion work.
@@ -579,8 +597,8 @@ if (dry) {
 const landing = squash(message);
 const { plan, lead } = landing;
 rebase();
-refresh();
 if (pair) rebase(true);
+refresh();
 
 const record = must('rev-parse', '--git-path', 'pstack-land-checked');
 const stamp = () =>
@@ -667,8 +685,8 @@ if (mode === 'push') {
       console.log(`origin/${branch} moved; rebasing and pushing again (retry ${moves} of ${RETRIES})`);
       await fetchCompanionFirst();
       rebase();
-      refresh();
       if (pair) rebase(true);
+      refresh();
       check(true);
     } else if (declined && wait !== undefined && performance.now() + wait * MINUTE <= DEADLINE) {
       declines += 1;
