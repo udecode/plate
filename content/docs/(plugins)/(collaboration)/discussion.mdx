@@ -122,7 +122,7 @@ Use `action: 'reject'` to reject the card. Keep a card open for `stale` or `bloc
 
 A block trigger opens every unresolved comment and pending suggestion currently attached to that block. Clicking inline comment text opens the records at that point. Clicking an authored-change marker activates its card in the mounted suggestion view. These live entry points open the same copied popover and cards.
 
-When comment ranges overlap, clicking the shared text opens every thread at that point in source order. The selected group survives edits and source reordering until another activation or thread removal changes it. Clicking unmarked editor content clears the active review.
+When comment ranges overlap, clicking the shared text opens every thread at that point in source order. The selected group survives edits and source reordering until another activation or thread removal changes it. Clicking unmarked editor content clears the active review. In Safari with an input method such as WeType, a tap gets no click of its own, so its press opens or clears the records instead. A drag clears the active review when the comment or change under the pointer changes from the one where the drag started, or when the pointer leaves the editor.
 
 When `attachment(id)` reports `unavailable`, Discussion removes its inline decoration and block count. It does not remember the previous block or move the thread to nearby text. **All comments** keeps the conversation and original excerpt reachable independently of block placement. Live-session undo can restore exact mapped coverage without rewinding the conversation.
 

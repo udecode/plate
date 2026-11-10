@@ -1,6 +1,32 @@
 {
   "schemaVersion": 1,
   "components": {
+    "floating-popover": [
+      "2026-11-10-discussion-safari-taps",
+      "2026-11-07-toolbar-overlays-close-on-scroll",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-07-provider-lifetimes",
+      "2026-09-05-fix-ref-cleanup",
+      "2026-08-31-inline-component-props",
+      "2026-08-25-base-first-registry"
+    ],
+    "discussion": [
+      "2026-11-10-discussion-safari-taps",
+      "2026-10-18-discussion-preview-block-reads",
+      "2026-10-13-suggestions-review-tree",
+      "2026-09-18-comment-discovery",
+      "2026-09-18-fix-comment-popover-scroll",
+      "2026-09-17-comment-persistence-actions",
+      "2026-09-14-fix-comments-selection-visibility",
+      "2026-09-13-suggestion-package-behavior",
+      "2026-09-10-discussion-focus-touch",
+      "2026-09-08-keyboard-dismissal",
+      "2026-09-08-suggestion-reviews",
+      "2026-09-04-preserve-suggestion-replies-through-history",
+      "2026-09-03-fix-comment-anchor-history",
+      "2026-09-02-comments-ownership",
+      "2026-08-17-flat-editor-registry"
+    ],
     "caption": [
       "2026-11-09-pass-view-root-to-key-questions",
       "2026-10-18-layout-style-values",
@@ -77,14 +103,6 @@
       "2026-10-20-preserve-more-formatting-toolbar",
       "2026-09-24-export-menu-projection",
       "2026-09-18-item-focus-block-upsert",
-      "2026-08-25-base-first-registry"
-    ],
-    "floating-popover": [
-      "2026-11-07-toolbar-overlays-close-on-scroll",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-07-provider-lifetimes",
-      "2026-09-05-fix-ref-cleanup",
-      "2026-08-31-inline-component-props",
       "2026-08-25-base-first-registry"
     ],
     "font-size-toolbar-button": [
@@ -501,22 +519,6 @@
     ],
     "toc-static": [
       "2026-10-19-toc-six-heading-levels",
-      "2026-08-17-flat-editor-registry"
-    ],
-    "discussion": [
-      "2026-10-18-discussion-preview-block-reads",
-      "2026-10-13-suggestions-review-tree",
-      "2026-09-18-comment-discovery",
-      "2026-09-18-fix-comment-popover-scroll",
-      "2026-09-17-comment-persistence-actions",
-      "2026-09-14-fix-comments-selection-visibility",
-      "2026-09-13-suggestion-package-behavior",
-      "2026-09-10-discussion-focus-touch",
-      "2026-09-08-keyboard-dismissal",
-      "2026-09-08-suggestion-reviews",
-      "2026-09-04-preserve-suggestion-replies-through-history",
-      "2026-09-03-fix-comment-anchor-history",
-      "2026-09-02-comments-ownership",
       "2026-08-17-flat-editor-registry"
     ],
     "media-image": [

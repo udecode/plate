@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-11-10-discussion-safari-taps",
+      "href": "/registry/changelog/2026-11-10-discussion-safari-taps.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep the discussion open while tapping between comments and suggestions in Safari",
+      "change": {
+        "type": "source",
+        "date": "2026-11-10",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["floating-popover", "discussion"],
+      "entries": 2,
+      "diagnostics": []
+    },
+    {
       "id": "2026-11-09-pass-view-root-to-key-questions",
       "href": "/registry/changelog/2026-11-09-pass-view-root-to-key-questions.json",
       "status": "draft",

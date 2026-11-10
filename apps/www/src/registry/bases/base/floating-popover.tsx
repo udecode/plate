@@ -33,6 +33,37 @@ const FloatingPopoverContext = React.createContext<
   FloatingPopoverContextValue | undefined
 >(undefined);
 
+function isInside(
+  element: Element | null | undefined,
+  target: EventTarget | null
+) {
+  if (!element) return false;
+
+  const NodeClass = element.ownerDocument.defaultView?.Node;
+
+  return !!NodeClass && target instanceof NodeClass && element.contains(target);
+}
+
+// Safari with an input method such as WeType can send a tap's click to the
+// common ancestor of the previous press and this release, so the element under
+// the pointer names the pressed one.
+// https://bugs.webkit.org/show_bug.cgi?id=219670
+function isPressInside(element: Element | null | undefined, event: Event) {
+  if (!element) return false;
+  if (isInside(element, event.target)) return true;
+
+  const { defaultView } = element.ownerDocument;
+
+  return (
+    !!defaultView &&
+    event instanceof defaultView.MouseEvent &&
+    isInside(
+      element,
+      element.ownerDocument.elementFromPoint(event.clientX, event.clientY)
+    )
+  );
+}
+
 function useFloatingPopoverContext() {
   const context = React.useContext(FloatingPopoverContext);
 
@@ -46,11 +77,14 @@ function useFloatingPopoverContext() {
 export function FloatingPopover({
   children,
   defaultOpen = false,
+  insideElement,
   onOpenChange,
   open,
   ...props
 }: React.PropsWithChildren<{
   defaultOpen?: boolean;
+  /** Presses on this element or with the pointer over it, and focus moving into it, never dismiss the popover. */
+  insideElement?: Element | null;
   modal?: boolean;
   onOpenChange?: (open: boolean) => void;
   onOpenChangeComplete?: (open: boolean) => void;
@@ -91,6 +125,17 @@ export function FloatingPopover({
         open={resolvedOpen}
         onOpenChange={(nextOpen, details) => {
           if (isToolbarSwipe(toolbar, details.event)) {
+            details.cancel();
+
+            return;
+          }
+          if (
+            (details.reason === 'outside-press' &&
+              isPressInside(insideElement, details.event)) ||
+            (details.reason === 'focus-out' &&
+              'relatedTarget' in details.event &&
+              isInside(insideElement, details.event.relatedTarget))
+          ) {
             details.cancel();
 
             return;

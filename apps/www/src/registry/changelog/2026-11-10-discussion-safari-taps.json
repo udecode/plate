@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-11-10-discussion-safari-taps",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-11-10-discussion-safari-taps.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-11-10",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep the discussion open while tapping between comments and suggestions in Safari",
+  "targets": [
+    {
+      "name": "floating-popover",
+      "files": [
+        "apps/www/src/registry/bases/base/floating-popover.tsx",
+        "apps/www/src/registry/bases/radix/floating-popover.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-editor.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion",
+      "files": ["apps/www/src/registry/components/editor/discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-features.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-11-10-floating-popover-inside-element",
+      "kind": "new",
+      "summary": "Add `insideElement`. Presses on that element, and focus moving into it, never close the popover. The Base popover also counts a press whose pointer lies over that element.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["floating-popover"],
+      "source": {
+        "line": 14,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-11-10",
+          "entry": "2026-11-10-discussion-safari-taps",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-11-10-discussion-keep-open-between-annotations",
+      "kind": "fix",
+      "summary": "Keep the discussion open while the user taps between comments and suggestions in Safari with the WeType input method.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["discussion"],
+      "source": {
+        "line": 18,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-11-10",
+          "entry": "2026-11-10-discussion-safari-taps",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

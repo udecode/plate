@@ -1,0 +1,18 @@
+---
+id: 2026-11-10-discussion-safari-taps
+date: 2026-11-10
+status: draft
+kind: fix
+summary: 'Keep the discussion open while tapping between comments and suggestions in Safari'
+change: { 'type': 'source', 'date': '2026-11-10', 'commits': [] }
+release: { 'status': 'unresolved' }
+diagnostics: []
+---
+
+<!-- entry: {"id":"2026-11-10-floating-popover-inside-element","kind":"new","migrationNotes":[]} -->
+
+- **`floating-popover`**: Add `insideElement`. Presses on that element, and focus moving into it, never close the popover. The Base popover also counts a press whose pointer lies over that element.
+
+<!-- entry: {"id":"2026-11-10-discussion-keep-open-between-annotations","kind":"fix","migrationNotes":[]} -->
+
+- **`discussion`**: Keep the discussion open while the user taps between comments and suggestions in Safari with the WeType input method.

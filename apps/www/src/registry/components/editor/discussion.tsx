@@ -1205,9 +1205,12 @@ function DiscussionPopover({
     }
   }, [activeItems.length, pending, snapshot.target, store, targetItems.length]);
 
+  const editorDecidesOpen = !pending && activeItems.length > 0;
+
   return (
     <div data-discussion-root="">
       <FloatingPopover
+        insideElement={editorDecidesOpen ? rootElement : null}
         modal={false}
         open={open}
         onOpenChange={(nextOpen) => {

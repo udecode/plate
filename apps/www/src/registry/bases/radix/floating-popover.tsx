@@ -23,18 +23,33 @@ const PopoverContentWithPlaced =
   >;
 
 const FloatingPopoverRefsContext = React.createContext<{
+  insideElement?: Element | null;
   scrollDismissedRef: React.RefObject<boolean>;
   setHost: (host: Element | null) => void;
 } | null>(null);
 
+function isInside(
+  element: Element | null | undefined,
+  target: EventTarget | null
+) {
+  if (!element) return false;
+
+  const NodeClass = element.ownerDocument.defaultView?.Node;
+
+  return !!NodeClass && target instanceof NodeClass && element.contains(target);
+}
+
 export function FloatingPopover({
   defaultOpen = false,
+  insideElement,
   onOpenChange,
   onOpenChangeComplete,
   open,
   ...props
 }: React.PropsWithChildren<{
   defaultOpen?: boolean;
+  /** Presses on this element, and focus moving into it, never dismiss the popover. */
+  insideElement?: Element | null;
   modal?: boolean;
   onOpenChange?: (open: boolean) => void;
   onOpenChangeComplete?: (open: boolean) => void;
@@ -46,12 +61,13 @@ export function FloatingPopover({
   const scrollDismissedRef = React.useRef(false);
   const refs = React.useMemo(
     () => ({
+      insideElement,
       scrollDismissedRef,
       setHost: (host: Element | null) => {
         hostRef.current = host;
       },
     }),
-    []
+    [insideElement]
   );
   const setOpen = (next: boolean) => {
     setUncontrolledOpen(next);
@@ -143,9 +159,8 @@ export function FloatingPopoverContent({
   side?: 'bottom' | 'left' | 'right' | 'top';
   sideOffset?: number;
 }) {
-  const scrollDismissedRef = React.useContext(
-    FloatingPopoverRefsContext
-  )?.scrollDismissedRef;
+  const refs = React.useContext(FloatingPopoverRefsContext);
+  const scrollDismissedRef = refs?.scrollDismissedRef;
 
   return (
     <PopoverPrimitive.Portal>
@@ -166,6 +181,11 @@ export function FloatingPopoverContent({
           onFinalFocus?.(event);
         }}
         onEscapeKeyDown={onEscapeKeyDown}
+        onInteractOutside={(event) => {
+          if (isInside(refs?.insideElement, event.target)) {
+            event.preventDefault();
+          }
+        }}
         onOpenAutoFocus={onInitialFocus}
         onPlaced={onPlaced}
         side={side}

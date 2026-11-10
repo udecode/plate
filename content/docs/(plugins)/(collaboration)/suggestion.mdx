@@ -176,7 +176,7 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 `useSuggestionGroups(blockKey)` returns the review cards of the block with that key, as `read.groups` summaries. A nested block's key reads that block's own cards. It rereads when the component that calls it renders and when the review delta names the block, which happens when a change reaches or leaves that block or one of its changes moves to another card. A delta names top-level blocks only, so for a nested block's key it rereads only when that component renders. An edit to the same card in another block does neither, so a summary's `changeCount` or `revision` can trail; read `editor.plugin(AuthoredPlugin).read.groupOf(card.id)` when a control needs the current one. Read a card's changes a page at a time with `read.changes({ group: card.id })`.
 
-In the current view, clicking a marked element activates the first card its `data-editor-authored-groups` attribute names. Clicking unmarked editor content clears it. Unmounting the view, switching it to another intent or preview, or deciding the card also clears stale active state. Use `setActiveId` when a custom card or control needs to activate a card directly.
+In the current view, clicking a marked element activates the first card its `data-editor-authored-groups` attribute names. Clicking unmarked editor content clears it. In Safari with an input method such as WeType, a tap gets no click of its own, so its press activates or clears instead. A drag clears the active card when the card under the pointer changes from the one where the drag started, or when the pointer leaves the editor. Unmounting the view, switching it to another intent or preview, or deciding the card also clears stale active state. Use `setActiveId` when a custom card or control needs to activate a card directly.
 
 ## Examples
 
@@ -333,7 +333,7 @@ Import from `platejs/suggestion`. It supplies the two suggestion modes and CSS-f
 
 ### `SuggestionPlugin`
 
-Import from `platejs/suggestion/react`. It extends `BaseSuggestionPlugin` with exact-view active state and click activation.
+Import from `platejs/suggestion/react`. It extends `BaseSuggestionPlugin` with exact-view active state and pointer activation.
 
 ### `suggestion.api.setMode(mode)`
 

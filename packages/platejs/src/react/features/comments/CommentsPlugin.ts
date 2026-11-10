@@ -1,6 +1,42 @@
 import type { Range } from '../../../core';
 import { BaseCommentsPlugin } from '../../../features/comments';
-import { RangeApi, toReactPlugin } from '../../core';
+import { type Editor, RangeApi, toReactPlugin } from '../../core';
+import { createAnnotationPointerHandlers } from '../../utils/annotationPointer.internal';
+
+const commentElementAt = (event: {
+  currentTarget: Element;
+  target: EventTarget | null;
+}) => {
+  const { target } = event;
+  const commentElement =
+    target instanceof globalThis.Element
+      ? target.closest('[data-comment-id]')
+      : null;
+
+  return commentElement && event.currentTarget.contains(commentElement)
+    ? commentElement
+    : null;
+};
+
+const commentIdsAt = (
+  editor: Editor,
+  event: { currentTarget: Element; target: EventTarget | null }
+) => {
+  const commentElement = commentElementAt(event);
+
+  if (!commentElement) return [];
+
+  const range = editor.api.dom.resolveEventRange(event);
+  const activeIds = range
+    ? editor.plugin(BaseCommentsPlugin).api.idsAt(RangeApi.start(range))
+    : [];
+
+  if (activeIds.length > 0) return activeIds;
+
+  const fallbackId = commentElement.getAttribute('data-comment-id');
+
+  return fallbackId ? [fallbackId] : [];
+};
 
 /** Comment data and mapped ranges with interaction for the exact mounted view. */
 export const CommentsPlugin = toReactPlugin(BaseCommentsPlugin).extend({
@@ -14,27 +50,13 @@ export const CommentsPlugin = toReactPlugin(BaseCommentsPlugin).extend({
       handler: ({ editor }) => editor.plugin(BaseCommentsPlugin).api.begin(),
     },
   },
-  on: {
-    click: ({ editor, event }) => {
-      const commentsApi = editor.plugin(BaseCommentsPlugin).api;
-      const { target } = event;
-      const targetElement =
-        target instanceof globalThis.Element ? target : null;
-      const commentElement = targetElement?.closest('[data-comment-id]');
-
-      if (!commentElement || !event.currentTarget.contains(commentElement)) {
-        commentsApi.setActive([]);
-        return;
-      }
-
-      const range = editor.api.dom.resolveEventRange(event);
-      const activeAt = range ? RangeApi.start(range) : null;
-      const activeIds = activeAt ? commentsApi.idsAt(activeAt) : [];
-
-      const fallbackId = commentElement.getAttribute('data-comment-id');
-      commentsApi.setActive(
-        activeIds.length > 0 ? activeIds : fallbackId ? [fallbackId] : []
-      );
-    },
-  },
+  on: createAnnotationPointerHandlers({
+    clear: (editor) => editor.plugin(BaseCommentsPlugin).api.setActive([]),
+    keyAt: (event) =>
+      commentElementAt(event)?.getAttribute('data-comment-id') ?? null,
+    select: ({ editor, event }) =>
+      editor
+        .plugin(BaseCommentsPlugin)
+        .api.setActive(commentIdsAt(editor, event)),
+  }),
 });

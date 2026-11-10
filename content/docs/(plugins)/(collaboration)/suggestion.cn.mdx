@@ -176,7 +176,7 @@ const { activeId, setActiveId } = useActiveSuggestion();
 
 `useSuggestionGroups(blockKey)` 以 `read.groups` 摘要的形式，返回该 key 对应区块的审阅卡片。嵌套区块的 key 读取该区块自己的卡片。调用它的组件重新渲染时，以及审阅 delta 指名该区块时，它会重新读取：某个 change 进入或离开了该区块，或它的某个 change 移到了另一张卡片。delta 只指名顶层区块，因此对嵌套区块的 key，它只在该组件重新渲染时重新读取。同一张卡片在其他区块中的编辑两者都不会引发，因此摘要中的 `changeCount` 或 `revision` 可能滞后；控件需要当前摘要时，请读取 `editor.plugin(AuthoredPlugin).read.groupOf(card.id)`。用 `read.changes({ group: card.id })` 逐页读取卡片中的 change。
 
-点击带标记的元素会在当前 view 中激活其 `data-editor-authored-groups` 属性列出的第一张卡片。点击未标记的编辑器内容会清除活动项。卸载 view、把它切换到其他 intent 或 preview，或决定该卡片时，也会清除失效的活动状态。自定义卡片或控件可调用 `setActiveId` 直接激活卡片。
+点击带标记的元素会在当前 view 中激活其 `data-editor-authored-groups` 属性列出的第一张卡片。点击未标记的编辑器内容会清除活动项。在 Safari 中使用 WeType 等输入法时，轻点不会产生自己的 click，因此由轻点的按下来激活或清除。拖动时，一旦指针下的卡片与拖动起点处的不同，或指针离开编辑器，就会清除活动卡片。卸载 view、把它切换到其他 intent 或 preview，或决定该卡片时，也会清除失效的活动状态。自定义卡片或控件可调用 `setActiveId` 直接激活卡片。
 
 ## 示例
 
@@ -330,7 +330,7 @@ if (result.status === 'applied') {
 
 ### `SuggestionPlugin`
 
-从 `platejs/suggestion/react` 导入。它在 `BaseSuggestionPlugin` 上添加精确 view 的活动状态和点击激活。
+从 `platejs/suggestion/react` 导入。它在 `BaseSuggestionPlugin` 上添加精确 view 的活动状态和指针激活。
 
 ### `suggestion.api.setMode(mode)`
 

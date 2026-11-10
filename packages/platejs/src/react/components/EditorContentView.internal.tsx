@@ -27,6 +27,7 @@ import { pipeHandler } from '../utils/pipeHandler.internal';
 import { pipeRenderElement } from '../utils/pipeRenderElement.internal';
 import { pipeRenderLeaf } from '../utils/pipeRenderLeaf.internal';
 import { pipeRenderText } from '../utils/pipeRenderText.internal';
+import { TapOrderEffect } from '../utils/tapOrder.internal';
 import { EditorRefEffect } from './EditorRefEffect';
 import { PlateRoot } from './PlateRoot.internal';
 
@@ -317,6 +318,7 @@ function EditorContentBranch<TExtra extends object>({
       <Editable {...editableExtra} {...editableProps} ref={ref} />
 
       <EditorRefEffect />
+      <TapOrderEffect editableRef={editableRef} />
     </PlateRenderedAttributeProvider>
   );
 
