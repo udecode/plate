@@ -21,7 +21,7 @@ const ownersOf = (facts: Facts, streams: Streams) => {
   for (const stream of streams.values()) {
     const opens: Origin[] = [];
     for (const token of stream) {
-      if (token.nodeKind !== 'element') continue;
+      if (token.kind === 'skip' || token.nodeKind !== 'element') continue;
       if (token.kind === 'open') {
         owners.set(token.id, token.id);
         opens.push(token.id);

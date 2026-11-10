@@ -25,6 +25,7 @@ import {
   stepIdentity,
   withLineage,
 } from './effect-ledger-identity';
+import { type Span, type Window, windowOf } from './effect-ledger-window';
 import type { JsonRecord } from './json';
 import { applyPropertyModifications, SectionIterator } from './root-change';
 import {
@@ -142,7 +143,14 @@ type Shape = Readonly<{
   props?: Readonly<JsonRecord>;
 }>;
 type Token = Shape & Readonly<{ id: string }>;
-export type Streams = ReadonlyMap<string, readonly Token[]>;
+/** A run of base tokens no change of a judged span touches, by its width. */
+type Skip = Readonly<{ kind: 'skip'; width: number }>;
+export type Entry = Skip | Token;
+export type Streams = ReadonlyMap<string, readonly Entry[]>;
+
+class SkippedRunError extends Error {
+  override name = 'SkippedRunError';
+}
 
 const shapesOf = (tokens: readonly JsonToken[]) => {
   const shapes: Shape[] = [];
@@ -165,7 +173,7 @@ const shapesOf = (tokens: readonly JsonToken[]) => {
   return shapes;
 };
 
-const isCarrier = (token: Shape) =>
+export const isCarrier = (token: Pick<Shape, 'kind' | 'nodeKind'>) =>
   token.kind === 'letter' ||
   (token.kind === 'open' && token.nodeKind === 'element');
 const alignKey = (token: Shape) =>
@@ -407,19 +415,61 @@ const foldChange = (
 ): { step: Step; streams: Streams } => {
   const next = new Map(streams);
   const replacements: Replacement[] = [];
-  const parts = new Map<string, Array<Replacement | readonly Token[]>>();
+  const parts = new Map<string, Array<Replacement | readonly Entry[]>>();
   for (const [root, sections] of view.roots) {
     const old = streams.get(root) ?? [];
-    const rootParts: Array<Replacement | readonly Token[]> = [];
+    const rootParts: Array<Replacement | readonly Entry[]> = [];
+    let entry = 0;
+    let into = 0;
     let at = 0;
+    const skipped = () =>
+      new SkippedRunError(
+        `A change at ${at} of ${root} lands in or beside a skipped run.`
+      );
+    const retain = (length: number) => {
+      const kept: Entry[] = [];
+      for (let left = length; left > 0 && entry < old.length;) {
+        const held = old[entry];
+        if (held.kind !== 'skip') {
+          kept.push(held);
+          entry += 1;
+          left -= 1;
+          continue;
+        }
+        const width = Math.min(held.width - into, left);
+        kept.push(width === held.width ? held : { kind: 'skip', width });
+        into += width;
+        left -= width;
+        if (into === held.width) {
+          entry += 1;
+          into = 0;
+        }
+      }
+      at += length;
+      return kept;
+    };
+    const tokens = (length: number) => {
+      if (into > 0 || old[entry - 1]?.kind === 'skip') throw skipped();
+      const read: Token[] = [];
+      for (let left = length; left > 0 && entry < old.length; left -= 1) {
+        const held = old[entry];
+        if (held.kind === 'skip') throw skipped();
+        read.push(held);
+        entry += 1;
+      }
+      if (old[entry]?.kind === 'skip') throw skipped();
+      at += length;
+      return read;
+    };
     for (const section of sections) {
       if (section.kind === 'retain') {
-        rootParts.push(old.slice(at, at + section.length));
-        at += section.length;
+        rootParts.push(retain(section.length));
       } else if (section.kind === 'props') {
-        const token = old[at];
+        const [token] = tokens(1);
         if (token?.kind !== 'open') {
-          throw new Error(`A property write at ${at} of ${root} has no node.`);
+          throw new Error(
+            `A property write at ${at - 1} of ${root} has no node.`
+          );
         }
         rootParts.push([
           {
@@ -430,19 +480,18 @@ const foldChange = (
             ),
           },
         ]);
-        at += 1;
       } else {
+        const deleted = tokens(section.length);
         const replacement: Replacement = {
-          deleted: old.slice(at, at + section.length),
+          deleted,
           ids: [],
           inserted: shapesOf(section.insert),
         };
         replacements.push(replacement);
         rootParts.push(replacement);
-        at += section.length;
       }
     }
-    rootParts.push(old.slice(at));
+    rootParts.push(retain(Number.POSITIVE_INFINITY));
     parts.set(root, rootParts);
   }
 
@@ -474,11 +523,11 @@ const foldChange = (
     });
   }
   for (const [root, rootParts] of parts) {
-    const stream: Token[] = [];
+    const stream: Entry[] = [];
     const rootBirths: Token[] = [];
     for (const part of rootParts) {
       if (Array.isArray(part)) {
-        stream.push(...part);
+        for (const entry of part as readonly Entry[]) stream.push(entry);
         continue;
       }
       const replacement = part as Replacement;
@@ -575,8 +624,14 @@ const factsOf = (streams: Streams): Facts => {
   for (const [root, stream] of streams) {
     const top: TreeNode[] = [];
     const stack: TreeNode[] = [];
-    for (const [at, token] of stream.entries()) {
-      if (isCarrier(token)) index.set(token.id, at);
+    let position = 0;
+    for (const token of stream) {
+      if (token.kind === 'skip') {
+        position += token.width;
+        continue;
+      }
+      if (isCarrier(token)) index.set(token.id, position);
+      position += 1;
       if (token.kind === 'open') {
         const node: TreeNode = { children: [], letters: [], token };
         (stack.at(-1)?.children ?? top).push(node);
@@ -791,7 +846,11 @@ export const shapesOfFold = (fold: Readonly<{ streams: Streams }>) =>
   new Map(
     [...fold.streams].map(([root, stream]) => [
       root,
-      stream.map(({ id: _id, ...shape }) => shape),
+      stream.flatMap((entry) => {
+        if (entry.kind === 'skip') return [];
+        const { id: _id, ...shape } = entry;
+        return [shape];
+      }),
     ])
   );
 
@@ -908,9 +967,19 @@ export type Ledger = Readonly<{
 
 export const createEffectLedger = (
   base: LedgerValue,
-  options: Readonly<{ isSetValued?: SetValued }> = {}
+  options: Readonly<{
+    isSetValued?: SetValued;
+    /**
+     * False turns off the two exact shortcuts of the top frame, the skip of a
+     * token whose facts no document changed and the filter of the order pairs,
+     * so the check can compare a judgment with and without them.
+     */
+    shortcuts?: boolean;
+    /** The sparse base to judge; absent, every token of `base`. */
+    window?: Window;
+  }> = {}
 ): Ledger => {
-  const streams = streamsOf(base);
+  const streams = options.window?.streams ?? streamsOf(base);
   const facts = factsOf(streams);
   return ledgerAt(
     {
@@ -921,8 +990,74 @@ export const createEffectLedger = (
     },
     '',
     options.isSetValued ?? (() => false),
-    NO_CLAIMS
+    NO_CLAIMS,
+    options.shortcuts ?? true
   );
+};
+
+export type SpanWork = Readonly<{
+  /** Base positions the window left out. */
+  skipped: number;
+  /** Changes folded: the accepted, own and merged chains together. */
+  steps: number;
+  /** Base tokens the window holds. */
+  tokens: number;
+}>;
+export type SpanVerdict<Head> = Readonly<{ head: Head; work: SpanWork }> &
+  (
+    | Readonly<{ kind: 'unjudged'; reason: 'budget' | 'window' }>
+    | Readonly<{
+        contests: readonly string[];
+        harms: readonly string[];
+        kind: Verdict['kind'];
+        losses: readonly string[];
+      }>
+  );
+
+/**
+ * Judges a span on a window of its base. A change that lands inside or beside
+ * a skipped run, or a span past `budget` token-steps, reads `unjudged`, which
+ * keeps the batch. `head` is the head the accepted chain ends at, returned so
+ * that a settle can refuse a verdict on another head.
+ */
+export const judgeSpan = <Head>(
+  span: Span &
+    Readonly<{
+      base: LedgerValue;
+      /** The most window tokens times changes folded the judgment may spend. */
+      budget?: number;
+      head: Head;
+      isSetValued?: SetValued;
+    }>,
+  window = windowOf(span.base, span)
+): SpanVerdict<Head> => {
+  const { head } = span;
+  const work = {
+    skipped: window.skipped,
+    steps: span.accepted.length + span.own.length + span.merged.length,
+    tokens: window.tokens,
+  };
+  if (span.budget !== undefined && work.tokens * work.steps > span.budget) {
+    return { head, kind: 'unjudged', reason: 'budget', work };
+  }
+  try {
+    const ledger = createEffectLedger(span.base, {
+      isSetValued: span.isSetValued,
+      window,
+    });
+    const accepted = ledger.fold(span.accepted, 'acc');
+    const own = ledger.fold(span.own, 'own');
+    const { contests, harms, kind, losses } = ledger.judge(
+      accepted,
+      own,
+      ledger.foldMerged(accepted, span.merged)
+    );
+    // No held proof: resuming one folds changes the window never saw.
+    return { contests, harms, head, kind, losses, work };
+  } catch (error) {
+    if (!(error instanceof SkippedRunError)) throw error;
+    return { head, kind: 'unjudged', reason: 'window', work };
+  }
 };
 
 const ledgerAt = (
@@ -930,6 +1065,7 @@ const ledgerAt = (
   generation: string,
   isSetValued: SetValued,
   claims: Claims,
+  shortcuts: boolean,
   firstBase?: (id: string) => boolean
 ): Ledger &
   Readonly<{
@@ -993,6 +1129,7 @@ const ledgerAt = (
   const baseContent = new Set<string>();
   for (const stream of start.streams.values()) {
     for (const token of stream) {
+      if (token.kind === 'skip') continue;
       baseIds.add(token.id);
       if (token.ch) baseChars.set(token.id, token.ch);
       if (token.kind !== 'close') baseContent.add(token.id);
@@ -1065,7 +1202,10 @@ const ledgerAt = (
         if (ch === undefined) {
           for (const fold of [ownFold, acceptedFold, mergedFold]) {
             for (const stream of fold.streams.values()) {
-              ch ??= stream.find((token) => token.id === id)?.ch;
+              ch ??= stream.find(
+                (token): token is Token =>
+                  token.kind !== 'skip' && token.id === id
+              )?.ch;
             }
           }
         }
@@ -1399,6 +1539,7 @@ const ledgerAt = (
     };
     for (const id of kept) {
       if (
+        shortcuts &&
         claims === NO_CLAIMS &&
         [O, A, M].every((facts) => unchangedIn(facts, id))
       ) {
@@ -1615,7 +1756,7 @@ const ledgerAt = (
       }
       return [...codes].sort((x, y) => x - y);
     };
-    if (claims === NO_CLAIMS) {
+    if (shortcuts && claims === NO_CLAIMS) {
       for (const code of pairsToOrder()) {
         orderPair(
           kept[Math.floor(code / kept.length)],
@@ -1673,15 +1814,19 @@ const ledgerAt = (
       [...M.letters].flatMap(([id, letter]) =>
         !isBase(id) && byOther(id) ? [letter.block] : []
       );
-    const groundOf = (facts: Facts, blocks: ReadonlySet<string>) => ({
-      facts,
-      sorted: [...blocks]
-        .flatMap((block) => {
-          const at = facts.index.get(block);
-          return at === undefined ? [] : [[at, block] as const];
-        })
-        .sort((x, y) => x[0] - y[0]),
-    });
+    const groundOf = (facts: Facts, blocks: ReadonlySet<string>) => {
+      const byRoot = new Map<string, Array<readonly [number, string]>>();
+      for (const block of blocks) {
+        const at = facts.index.get(block);
+        const root = rootOf(facts, block);
+        if (at === undefined || root === undefined) continue;
+        const sorted = byRoot.get(root);
+        if (sorted === undefined) byRoot.set(root, [[at, block]]);
+        else sorted.push([at, block]);
+      }
+      for (const sorted of byRoot.values()) sorted.sort((x, y) => x[0] - y[0]);
+      return { byRoot, facts };
+    };
     type Ground = ReturnType<typeof groundOf>;
     const baseGround = groundOf(B, groundedIn(B));
     const ownGround = groundOf(
@@ -1713,14 +1858,21 @@ const ledgerAt = (
     const ownLettered = letteredIn(ownFold, acceptedFold);
     const accLettered = letteredIn(acceptedFold, ownFold);
     const boundaryOf = (
-      { facts, sorted }: Ground,
+      { byRoot, facts }: Ground,
       left: string,
       right: string
     ) => {
       const between = new Set<string>();
       const from = facts.index.get(left);
       const to = facts.index.get(right);
-      if (from === undefined || to === undefined) return between;
+      const root = rootOf(facts, left);
+      const sorted =
+        root !== undefined && root === rootOf(facts, right)
+          ? byRoot.get(root)
+          : undefined;
+      if (from === undefined || to === undefined || sorted === undefined) {
+        return between;
+      }
       let low = 0;
       let high = sorted.length;
       while (low < high) {
@@ -2793,7 +2945,9 @@ const ledgerAt = (
     const streams = new Map(
       [...origin.streams].map(([root, stream]) => [
         root,
-        stream.map((token) => ({ ...token, id: rename(token.id) })),
+        stream.map((token) =>
+          token.kind === 'skip' ? token : { ...token, id: rename(token.id) }
+        ),
       ])
     );
     return {
@@ -2831,6 +2985,7 @@ const ledgerAt = (
         String(Number(generation) + 1),
         isSetValued,
         front.claims,
+        shortcuts,
         inFirstBase
       );
       const accepted = later.fold(rest.accepted, 'acc');

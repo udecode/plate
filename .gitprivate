@@ -61,6 +61,7 @@ vitest.config.*
 *.test-run.*
 /packages/*/tsconfig.entrypoints/tests.json
 /packages/*/benchmarks/
+/packages/plitejs/scripts/bench/
 /packages/platejs/scripts/code-block-text-flow-browser.mjs
 /packages/platejs/src/markdown/lib/internal/commonmark-spec.d.ts
 /packages/plitejs/scripts/authored-decision-order*
