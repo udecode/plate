@@ -49,6 +49,7 @@
     "check:docx-import-report": "bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/docx-import-report.ts",
     "check:table-grid": "bun --preload ./config/plite-source-aliases.ts packages/platejs/scripts/table-grid-commands.ts",
     "check:yjs-peer-order": "bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/yjs-peer-order.ts",
+    "check:effect-ledger": "bun --preload ./config/plite-source-aliases.ts packages/plitejs/scripts/effect-ledger.ts",
     "check:core": "node tooling/scripts/check-core.mjs",
     "check:plate-feature": "node tooling/scripts/check-plate-feature.mjs",
     "check:plite": "node tooling/scripts/check-plite.mjs strict",

@@ -329,6 +329,19 @@ export const steps = [
     key: [],
   },
   {
+    name: 'effect-ledger',
+    cores: 4,
+    private: true,
+    run: 'pnpm check:effect-ledger',
+    affected: touches(
+      'config/plite-source-aliases.ts',
+      'packages/plitejs/scripts/check-harness.ts',
+      'packages/plitejs/scripts/effect-ledger',
+      'packages/plitejs/src/'
+    ),
+    key: [],
+  },
+  {
     name: 'authored-recording',
     cores: 4,
     private: true,

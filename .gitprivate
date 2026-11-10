@@ -65,6 +65,7 @@ vitest.config.*
 /packages/platejs/src/markdown/lib/internal/commonmark-spec.d.ts
 /packages/plitejs/scripts/authored-decision-order*
 /packages/plitejs/scripts/yjs-peer-order*
+/packages/plitejs/scripts/effect-ledger*
 /packages/plitejs/scripts/authored-recording-order*
 /packages/plitejs/scripts/authored-documents.ts
 /packages/plitejs/scripts/undo-redo-history*
