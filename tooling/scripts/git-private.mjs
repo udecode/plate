@@ -35,6 +35,7 @@ import {
   PRIVATE_LIST,
   privateGit,
   privateMust,
+  privatePaths,
   publicObjects,
   repoFiles,
   run,
@@ -622,6 +623,14 @@ export const crossingImports = async (root, only) => {
   return crossings;
 };
 
+// A landing's `git add --all` commits such a file to udecode/plate too, and
+// each later rebase of the private half then refuses to write over it.
+const unlistedPrivate = (root) => {
+  const tracked = entries(privateMust(root, ['ls-files', '-z']));
+  const listed = privatePaths(root, tracked);
+  return tracked.filter((file) => !listed.has(file));
+};
+
 /** What `pnpm check`'s private step refuses; its private-imports step runs crossingImports. */
 export const problems = (root) => {
   if (!existsSync(path.join(root, PRIVATE_LIST))) return [];
@@ -631,6 +640,10 @@ export const problems = (root) => {
       ...listedPublic(root).map(
         (file) =>
           `${file} is tracked by udecode/plate, but ${PRIVATE_LIST} makes it private; run git rm --cached on it`
+      ),
+      ...unlistedPrivate(root).map(
+        (file) =>
+          `${file} is tracked by udecode/plate-private, but ${PRIVATE_LIST} leaves it to udecode/plate; list it in ${PRIVATE_LIST}, or run node tooling/scripts/git-private.mjs rm --cached on it`
       )
     );
     const note = missingFilesNote(root);
