@@ -247,6 +247,7 @@ export const createEditorReadApi = <
     selection: createCallableGroup('selection'),
     slice: createGroup('slice'),
     text: createGroup('text'),
+    unique: createGroup('unique'),
     value: ((...args) =>
       read((state) => state.value(...args))) as RuntimeReadMethods['value'],
     view: createGroup('view'),

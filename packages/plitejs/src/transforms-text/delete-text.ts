@@ -7,11 +7,13 @@ import {
   getChildList,
   getCurrentSelection,
   getEditorUpdateRoot,
+  getSetSite,
   profileCoreDuration,
   runEditorTransaction,
   withEditorUpdateRoot,
   withEditorUpdateRootChildren,
 } from '../core/public-state';
+import { crossesMembers, refuseCrossing } from '../core/set-root';
 import { isWritablePoint } from '../core/writable-text';
 import { hasEdgeInReadOnlyInline } from '../editor/element-read-only';
 import {
@@ -19,6 +21,8 @@ import {
   type Location,
   LocationApi,
   NodeApi,
+  type NodeEntry,
+  type NodeSelection,
   type Path,
   PathApi,
   type Point,
@@ -26,6 +30,7 @@ import {
   type Range,
   RangeApi,
   SelectionApi,
+  type Span,
   TextApi,
 } from '../interfaces';
 import type { AnyEditor as Editor } from '../interfaces/editor';
@@ -1403,17 +1408,49 @@ const spansTexts = (
 ): target is DeleteRangePlan =>
   target.kind === 'range' && !target.isCollapsed && !target.isSingleText;
 
+export const refuseMemberCrossing = (editor: Editor, at: Location) => {
+  if (LocationApi.isRange(at)) {
+    refuseCrossing(getSetSite(editor), at, getEditorUpdateRoot(editor));
+  }
+};
+
+export const refuseMemberCrossingNodes = (
+  editor: Editor,
+  at: Location | NodeSelection | Span,
+  nodes: readonly NodeEntry[]
+) => {
+  const range = LocationApi.isSpan(at)
+    ? {
+        anchor: { offset: 0, path: at[0] },
+        focus: { offset: 0, path: at[1] },
+      }
+    : at;
+
+  if (
+    RangeApi.isRange(range) &&
+    nodes.some(
+      ([node]) => !NodeApi.isElement(node) || !editorIsBlock(editor, node)
+    )
+  ) {
+    refuseMemberCrossing(editor, range);
+  }
+};
+
 const prepareAt = (
   editor: Editor,
   options: DeleteOptions,
   at: Location,
   writes: boolean
 ): PreparedRemoval | null => {
+  refuseMemberCrossing(editor, at);
   const target = profileCoreDuration('delete-resolve-target', () =>
     resolveDeleteTarget(editor, options, at)
   );
 
   if (!target) return null;
+  if (target.kind === 'range') {
+    refuseMemberCrossing(editor, target.effectiveRange);
+  }
   if (!spansTexts(target)) return { kind: 'ordinary', options, target };
 
   const plan = profileCoreDuration('delete-grid-plan', () =>
@@ -1613,13 +1650,23 @@ export const readRemovalLanding = <T>(
   });
 };
 
+/**
+ * The range a move of `range` removes, or null when the removal cannot take
+ * it exactly, such as a range across two members of a set root. A move then
+ * refuses before it runs; a copy removes nothing and lands.
+ */
 export const resolveDeletedRange = (
   editor: Editor,
   range: Range
 ): Range | null => {
+  const site = getSetSite(editor);
+  const root = getLocationRoot(range) ?? getEditorUpdateRoot(editor);
+
+  if (crossesMembers(site, range, root)) return null;
   const target = resolveDeleteTarget(editor, {}, range);
 
   if (target?.kind !== 'range') return range;
+  if (crossesMembers(site, target.effectiveRange, root)) return null;
   if (
     spansTexts(target) &&
     planGridSteps(editor, target.effectiveRange)?.keepsGrid

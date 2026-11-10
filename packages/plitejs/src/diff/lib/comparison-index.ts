@@ -1,9 +1,10 @@
 import type {
   EditorSchemaElementStructure,
   EditorStateSchemaApi,
+  SchemaContentRootStructure,
   Value,
 } from '../..';
-import type { JsonRecord } from '../../core/change/json';
+import { isRecord, type JsonRecord } from '../../core/change/json';
 import {
   isElementNode,
   isTextNode,
@@ -52,6 +53,7 @@ export type ComparisonRootIndex = Readonly<{
   length: number;
   name: string | null;
   nodeIndexes: readonly number[];
+  structure: SchemaContentRootStructure | null;
   topLevelIndexes: readonly number[];
 }>;
 
@@ -80,7 +82,8 @@ export const createComparisonIndex = <V extends Value>(
   schema: EditorStateSchemaApi<V>
 ): ComparisonDocumentIndex => {
   const nodes: ComparisonIndexNode[] = [];
-  const roots = new Map<string | null, ComparisonRootIndex>();
+  const rootIndexes: Array<Omit<ComparisonRootIndex, 'structure'>> = [];
+  const rootStructures = new Map<string, SchemaContentRootStructure>();
   const rootNames: Array<string | null> = [
     null,
     ...Object.keys(document.roots ?? {}).sort(),
@@ -195,26 +198,48 @@ export const createComparisonIndex = <V extends Value>(
       nodes[index] = record;
       rootNodeIndexes.push(index);
 
+      const { childRoots } = node;
+
+      if (element && isRecord(childRoots)) {
+        for (const [slot, contentRoot] of Object.entries(
+          element.contentRoots
+        )) {
+          const childRoot = childRoots[slot];
+
+          if (contentRoot.structure && typeof childRoot === 'string') {
+            rootStructures.set(childRoot, contentRoot.structure);
+          }
+        }
+      }
+
       return index;
     };
 
     rootChildren(document, root).forEach((node, index) => {
       topLevelIndexes.push(visit(node, [index], null));
     });
-    roots.set(
-      root,
-      Object.freeze({
-        length: position,
-        name: root,
-        nodeIndexes: Object.freeze(rootNodeIndexes),
-        topLevelIndexes: Object.freeze(topLevelIndexes),
-      })
-    );
+    rootIndexes.push({
+      length: position,
+      name: root,
+      nodeIndexes: Object.freeze(rootNodeIndexes),
+      topLevelIndexes: Object.freeze(topLevelIndexes),
+    });
   }
 
   return Object.freeze({
     nodes: Object.freeze(nodes),
-    roots,
+    roots: new Map(
+      rootIndexes.map((rootIndex) => [
+        rootIndex.name,
+        Object.freeze({
+          ...rootIndex,
+          structure:
+            rootIndex.name === null
+              ? null
+              : (rootStructures.get(rootIndex.name) ?? null),
+        }),
+      ])
+    ),
     textUnits,
   });
 };

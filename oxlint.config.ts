@@ -85,6 +85,49 @@ const plitejsImportPattern = {
     'Only exact Plate facade bridges and dedicated raw Plite proof surfaces may import plitejs. Plate source and tests must import a relative Plate facade or matching entrypoint owner.',
 };
 
+const plitejsSourceImportPatterns = [
+  forbiddenUdecodeImport,
+  {
+    regex: '^plitejs(?:/|$)',
+    message:
+      'plitejs source must use private relative imports instead of its public package name.',
+  },
+  {
+    regex: '^platejs(?:/|$)',
+    message: 'plitejs cannot depend on platejs.',
+  },
+];
+
+const plitejsRootImportPatterns = [
+  {
+    regex: '^(?:react|react-compiler-runtime|react-dom)(?:/|$)',
+    message: 'The plitejs root cannot depend on React.',
+  },
+  {
+    regex: '^(?:\\.\\.?/)+(?:[^/]+/)*react(?:/|(?:\\.[^/]+)?$)',
+    message: 'The plitejs root cannot import a React-owned source tree.',
+  },
+];
+
+const setRootImportPattern = {
+  regex: '^(?:\\.\\.?/)+(?:[^/]+/)*set-root$',
+  message:
+    'core/set-root.ts makes settled carets. Write a selection through the transaction or read API, which settles it.',
+};
+
+const setRootImporters = [
+  'packages/plitejs/src/core/editor-commands.ts',
+  'packages/plitejs/src/core/node-selection.ts',
+  'packages/plitejs/src/core/public-state.ts',
+  'packages/plitejs/src/core/selection-protocol.ts',
+  'packages/plitejs/src/core/selection-state.ts',
+  'packages/plitejs/src/core/view-carets.ts',
+  'packages/plitejs/src/editor/delete-fragment.ts',
+  'packages/plitejs/src/transforms-text/delete-text.ts',
+  'packages/plitejs/src/yjs/core/awareness-adapter.ts',
+  'packages/plitejs/src/react/editable/input-target.ts',
+];
+
 const platePliteBridgePatterns = [
   'packages/platejs/src/authored/AuthoredPlugin.ts',
   'packages/platejs/src/authored/index.ts',
@@ -222,6 +265,8 @@ export default defineConfig({
         'apps/plite/src/app/providers.tsx',
         // This route proves which raw Plite view the document's editor reaches.
         'apps/plite/src/app/dev/view-focus-chain/page.tsx',
+        // This route proves a selection stays in one member of a set root.
+        'apps/plite/src/app/dev/set-root-selection/page.tsx',
         // These routes measure raw Plite against Plate on the same fixture.
         'apps/www/src/app/dev/combobox-typing/page.tsx',
         'apps/plite/src/board-scale/stub-board.ts',
@@ -459,20 +504,7 @@ export default defineConfig({
       rules: {
         'no-restricted-imports': [
           'error',
-          {
-            patterns: [
-              forbiddenUdecodeImport,
-              {
-                regex: '^plitejs(?:/|$)',
-                message:
-                  'plitejs source must use private relative imports instead of its public package name.',
-              },
-              {
-                regex: '^platejs(?:/|$)',
-                message: 'plitejs cannot depend on platejs.',
-              },
-            ],
-          },
+          { patterns: [...plitejsSourceImportPatterns, setRootImportPattern] },
         ],
       },
     },
@@ -491,27 +523,34 @@ export default defineConfig({
           'error',
           {
             patterns: [
-              forbiddenUdecodeImport,
-              {
-                regex: '^plitejs(?:/|$)',
-                message:
-                  'plitejs source must use private relative imports instead of its public package name.',
-              },
-              {
-                regex: '^platejs(?:/|$)',
-                message: 'plitejs cannot depend on platejs.',
-              },
-              {
-                regex: '^(?:react|react-compiler-runtime|react-dom)(?:/|$)',
-                message: 'The plitejs root cannot depend on React.',
-              },
-              {
-                regex: '^(?:\\.\\.?/)+(?:[^/]+/)*react(?:/|(?:\\.[^/]+)?$)',
-                message:
-                  'The plitejs root cannot import a React-owned source tree.',
-              },
+              ...plitejsSourceImportPatterns,
+              ...plitejsRootImportPatterns,
+              setRootImportPattern,
             ],
           },
+        ],
+      },
+    },
+    {
+      files: setRootImporters.filter((file) => !file.includes('/react/')),
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            patterns: [
+              ...plitejsSourceImportPatterns,
+              ...plitejsRootImportPatterns,
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: setRootImporters.filter((file) => file.includes('/react/')),
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          { patterns: plitejsSourceImportPatterns },
         ],
       },
     },

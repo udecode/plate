@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 
 import {
   PathApi,
+  type Point,
   PointApi,
   type Range,
   RangeApi,
@@ -9,9 +10,12 @@ import {
   SelectionApi,
   type TargetFreshnessRequest,
 } from '../..';
-import { getChildList } from '../../core/public-state';
+import { getEditorRuntimeOwner } from '../../core/editor-runtime';
+import { asSelectionMotion, getChildList } from '../../core/public-state';
+import { getSelectionStateCaret } from '../../core/selection-state';
 import {
   clearCaretUnlessHeldElsewhere,
+  liftShownTarget,
   placedSince,
   setSelectionAsView,
   setShownSelectionAsView,
@@ -57,7 +61,7 @@ import { hasAndroidComposition } from './android-composition';
 import {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
-  findContentRootOwners,
+  findCrossingContentRootOwners,
   isRangeAcrossContentRootOwners,
   readRootNodes,
 } from './content-root-owners';
@@ -69,6 +73,7 @@ import {
 } from './dom-coverage-selection';
 import {
   getMountedEditableDOMRuntime,
+  getMountedEditableDOMRuntimes,
   isDOMTargetInAnotherSelectionView,
 } from './editable-dom-runtime';
 import type { EditableSelectionPolicy } from './editing-kernel';
@@ -479,6 +484,35 @@ const clearDisappearedSelection = (
   }
 };
 
+/**
+ * Draws the stored selection on the page once the import ends. The set law
+ * moved an end the browser placed, and a settle that keeps the previous
+ * selection commits nothing that would redraw it.
+ */
+const showStoredSelection = (
+  editor: ReactRuntimeEditor,
+  inputController: EditableInputController
+) => {
+  const runtime = getMountedEditableDOMRuntimes(editor).find(
+    (candidate) => candidate.inputController === inputController
+  );
+
+  runtime?.domPhaseScheduler.schedule(
+    'selection-repair',
+    'settled-import',
+    () =>
+      syncEditableDOMSelectionToEditor({
+        editor,
+        editorElement: runtime.rootElement ?? undefined,
+        options: { forceModelExport: true },
+        scrollSelectionIntoView: () => {},
+        state: inputController.state,
+        viewportBackedSelection: false,
+      }),
+    { timing: 'animation-frame' }
+  );
+};
+
 const importProjectedDOMSelection = ({
   domSelection,
   editor,
@@ -501,6 +535,12 @@ const importProjectedDOMSelection = ({
   });
 
   if (!projectedSelection) return false;
+  if ('range' in projectedSelection) {
+    writePliteViewSelection(editor, null);
+    setShownSelectionAsView(editor, projectedSelection.range);
+    showStoredSelection(editor, inputController);
+    return true;
+  }
 
   const shown = writePliteViewSelection(editor, projectedSelection, {
     place: () =>
@@ -599,6 +639,51 @@ export const syncEditorSelectionFromDOM = ({
   });
 };
 
+/**
+ * Places an imported DOM range. The browser's own vertical move imports as
+ * keyboard motion, so it keeps the member of a set root the caret held.
+ */
+const showImportedRange = (
+  editor: ReactRuntimeEditor,
+  inputController: EditableInputController,
+  range: Range
+) => {
+  const hold = inputController.state.nativeMoveHold;
+  const place = () => setShownSelectionAsView(editor, range);
+
+  if (hold && !placedSince(editor, hold.receipt)) {
+    asSelectionMotion(editor, place);
+  } else {
+    place();
+  }
+  if (settleMovedImport(editor, range)) {
+    showStoredSelection(editor, inputController);
+  }
+};
+
+/**
+ * Whether the set law moved an end of the imported `range` as it stored it.
+ */
+const settleMovedImport = (editor: ReactRuntimeEditor, range: Range) => {
+  if (!getSelectionStateCaret(getEditorRuntimeOwner(editor)).inSetRoot) {
+    return false;
+  }
+  const stored = readRuntimeSelection(editor);
+  const placed = liftShownTarget(editor, range);
+
+  if (!RangeApi.isRange(stored) || !RangeApi.isRange(placed)) return false;
+  const viewRoot = editor.read.view.root();
+  const samePlace = (left: Point, right: Point) =>
+    (left.root ?? viewRoot) === (right.root ?? viewRoot) &&
+    left.offset === right.offset &&
+    PathApi.equals(left.path, right.path);
+
+  return !(
+    samePlace(stored.anchor, placed.anchor) &&
+    samePlace(stored.focus, placed.focus)
+  );
+};
+
 const importDOMSelection = ({
   domSelection,
   editor,
@@ -669,7 +754,7 @@ const importDOMSelection = ({
   }
 
   writePliteViewSelection(editor, null);
-  setShownSelectionAsView(editor, range);
+  showImportedRange(editor, inputController, range);
 };
 
 export const setEditableModelSelectionPreference = ({
@@ -1545,7 +1630,7 @@ const importDOMSelectionChange = ({
       range
     );
     const contentRootOwners = acrossContentRootOwners
-      ? findContentRootOwners(editor)
+      ? findCrossingContentRootOwners(editor)
       : [];
 
     writePliteViewSelection(
@@ -1564,7 +1649,7 @@ const importDOMSelectionChange = ({
             !androidInputManager?.hasPendingChanges() &&
             !androidInputManager?.isFlushing()
           ) {
-            setShownSelectionAsView(editor, range);
+            showImportedRange(editor, inputController, range);
           } else {
             androidInputManager?.handleUserSelect(range);
           }

@@ -14,10 +14,23 @@ import type { Key } from './key';
 
 type AnyPluginEditor = Editor<any, any>;
 
+declare const open: unique symbol;
+
+export type InputTarget = Readonly<{
+  root: string;
+  session: number;
+  inSetRoot: boolean;
+  view: object | null;
+  readonly [open]: true;
+}>;
+
+export type OpenedInput = InputTarget | 'sealed';
+
 export type Action = {
   at?: Point | Range;
   deletes?: boolean;
   run: () => void;
+  target: OpenedInput;
 };
 
 /**

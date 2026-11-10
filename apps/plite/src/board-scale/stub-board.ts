@@ -816,6 +816,7 @@ const boardElements = {
       shapes: {
         content: schema.content.types([...SHAPE_TYPES], { min: 0 }),
         ownership: 'exclusive' as const,
+        structure: { kind: 'set' as const },
       },
     },
     void: 'block' as const,

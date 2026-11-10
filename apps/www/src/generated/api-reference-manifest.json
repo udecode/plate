@@ -2291,7 +2291,7 @@
           "name": "EditorCoreStateView",
           "route": null,
           "runtime": false,
-          "signature": "type EditorCoreStateView<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => ReadonlyArray<V[number]>;\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi<TSelection, V>;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
+          "signature": "type EditorCoreStateView<V extends Value = Value, TSelection extends SelectionValue = SelectionValue> = {\n  /**\n   * Read the primary document children without cloning the full serializable\n   * document value. Treat the returned nodes as read-only live state.\n   */\n  children: () => readonly [...V];\n  fragment: EditorStateFragmentApi<V>;\n  getField: <TValue>(field: EditorStateField<TValue>) => TValue;\n  lastCommit: () => EditorCommit<V> | null;\n  /** Return the stable runtime key for a live node or location. */\n  key: EditorKeyApi;\n  marks: EditorStateMarksApi<V>;\n  /**\n   * Read persisted document metadata. Use state fields for typed access.\n   */\n  meta: () => Readonly<Record<string, unknown>> | undefined;\n  nodes: EditorStateNodesApi<V>;\n  points: EditorStatePointsApi;\n  ranges: EditorStateRangesApi;\n  /**\n   * Read a named secondary root. Use `children()` for the primary document.\n   */\n  root: <TRoot extends RootKey>(root: NamedRootKey<TRoot>) => ReadonlyArray<V[number]>;\n  runtime: EditorStateRuntimeApi<V>;\n  schema: EditorStateSchemaApi<V>;\n  selection: EditorStateSelectionApi<TSelection, V>;\n  slice: EditorStateSliceApi<V>;\n  text: EditorStateTextApi;\n  unique: EditorStateUniqueApi;\n  value: EditorStateValueApi<V>;\n  view: EditorStateViewApi;\n};",
           "source": null,
           "typeParameters": [
             "V extends Value = Value",
@@ -3006,7 +3006,7 @@
           "name": "EditorSchemaContentRoot",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaContentRoot = Readonly<{\n  content: EditorSchemaContent;\n  ownership: SchemaContentRootOwnership;\n}>;",
+          "signature": "type EditorSchemaContentRoot = Readonly<{\n  content: EditorSchemaContent;\n  ownership: SchemaContentRootOwnership;\n  structure?: SchemaContentRootStructure;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -3066,7 +3066,7 @@
           "name": "EditorSchemaContractContentRoot",
           "route": null,
           "runtime": false,
-          "signature": "type EditorSchemaContractContentRoot = Readonly<{\n  content: EditorSchemaContractContentProgram;\n  ownership: SchemaContentRootOwnership;\n}>;",
+          "signature": "type EditorSchemaContractContentRoot = Readonly<{\n  content: EditorSchemaContractContentProgram;\n  ownership: SchemaContentRootOwnership;\n  structure?: SchemaContentRootStructure;\n}>;",
           "source": null,
           "typeParameters": []
         },
@@ -3722,6 +3722,18 @@
           "source": null,
           "typeParameters": []
         },
+        "platejs:EditorStateUniqueApi": {
+          "aliases": [],
+          "documentation": "",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorStateUniqueApi",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorStateUniqueApi = Readonly<{\n  /**\n   * Find the node that holds `value` of the `unique` property `property`,\n   * without a scan. It reads the index of the last published commit and\n   * places the node in the current state, so inside an update a node that got\n   * the value earlier in the same update reads `null`.\n   */\n  holder: (property: string, value: unknown) => EditorUniqueHolder | null;\n}>;",
+          "source": null,
+          "typeParameters": []
+        },
         "platejs:EditorStateValueApi": {
           "aliases": [],
           "documentation": "",
@@ -4140,6 +4152,18 @@
           "typeParameters": [
             "V extends Value = Value"
           ]
+        },
+        "platejs:EditorUniqueHolder": {
+          "aliases": [],
+          "documentation": "Where the node that holds one value of a `unique` property sits.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "EditorUniqueHolder",
+          "route": null,
+          "runtime": false,
+          "signature": "type EditorUniqueHolder = Readonly<{\n  key: NodeKey;\n  path: Path;\n  root: RootKey;\n}>;",
+          "source": null,
+          "typeParameters": []
         },
         "platejs:EditorUpdate": {
           "aliases": [],
@@ -8787,7 +8811,7 @@
           "name": "SchemaContentRoot",
           "route": null,
           "runtime": false,
-          "signature": "type SchemaContentRoot<TContent extends SchemaContent = SchemaContent, TOwnership extends SchemaContentRootOwnership = SchemaContentRootOwnership> = Readonly<{\n  content: TContent;\n  ownership: TOwnership;\n}>;",
+          "signature": "type SchemaContentRoot<TContent extends SchemaContent = SchemaContent, TOwnership extends SchemaContentRootOwnership = SchemaContentRootOwnership> = Readonly<{\n  content: TContent;\n  ownership: TOwnership;\n  /** Needs `ownership: 'exclusive'` and a void owner. */\n  structure?: SchemaContentRootStructure;\n}>;",
           "source": null,
           "typeParameters": [
             "TContent extends SchemaContent = SchemaContent",
@@ -8848,6 +8872,18 @@
             "TSchema extends EditorSchemaSource",
             "TType extends SchemaElementTypes<TSchema>"
           ]
+        },
+        "platejs:SchemaContentRootStructure": {
+          "aliases": [],
+          "documentation": "A content root whose top-level blocks are members of a set: a text selection\nstays in one member, and range removal never crosses two. Members keep their\nstored order.",
+          "entrypoint": "platejs",
+          "kind": "type",
+          "name": "SchemaContentRootStructure",
+          "route": null,
+          "runtime": false,
+          "signature": "type SchemaContentRootStructure = Readonly<{\n  kind: 'set';\n}>;",
+          "source": null,
+          "typeParameters": []
         },
         "platejs:SchemaContentRule": {
           "aliases": [],

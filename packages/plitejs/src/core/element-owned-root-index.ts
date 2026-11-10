@@ -64,6 +64,23 @@ const contentProgramKey = (content: CompiledSchemaContentProgram) => {
   return key;
 };
 
+const SET_DECLARATIONS = new WeakMap<CompiledEditorSchema, boolean>();
+
+export const schemaDeclaresSetRoots = (schema: CompiledEditorSchema) => {
+  let declares = SET_DECLARATIONS.get(schema);
+
+  if (declares === undefined) {
+    declares = [...schema.elements.byType.values()].some((element) =>
+      [...element.contentRoots.values()].some(
+        (root) => root.structure?.kind === 'set'
+      )
+    );
+    SET_DECLARATIONS.set(schema, declares);
+  }
+
+  return declares;
+};
+
 export type ElementOwnedRootBinding = Readonly<{
   childRoot: string;
   content: CompiledSchemaContentProgram;

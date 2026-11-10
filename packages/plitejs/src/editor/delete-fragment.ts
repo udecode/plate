@@ -1,9 +1,15 @@
 import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
-import { runEditorTransaction } from '../core/public-state';
+import {
+  getEditorUpdateRoot,
+  getSetSite,
+  runEditorTransaction,
+} from '../core/public-state';
+import { refuseCrossing } from '../core/set-root';
 import type { EditorStaticApi } from '../interfaces/editor';
 import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
+import { getLocationRoot } from '../internal/root-location';
 import { deleteText } from '../transforms-text/delete-text';
 import { applyDelete } from './delete-backward';
 
@@ -28,6 +34,11 @@ export const applyDeleteFragment: EditorStaticApi['deleteFragment'] = (
       RangeApi.isRange(selection) &&
       RangeApi.isExpanded(selection)
     ) {
+      refuseCrossing(
+        getSetSite(editor),
+        selection,
+        getLocationRoot(selection) ?? getEditorUpdateRoot(editor)
+      );
       tx.setSelection(SelectionApi.text(selection));
       deleteText(editor, {
         at: selection,

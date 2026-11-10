@@ -12,8 +12,12 @@ import {
 import {
   hasInternalDocumentChangeRoot,
   mapInternalDocumentChangePoint,
+  mapInternalDocumentChangePosition,
+  valueRoot,
 } from '../../core/change/document-change';
+import { DocumentIndex } from '../../core/change/document-index';
 import { MAIN_ROOT_KEY, toInternalRoot } from '../../core/public-root';
+import { getSetSite } from '../../core/public-state';
 import {
   type AnyEditor as EditorType,
   above as editorAbove,
@@ -283,6 +287,37 @@ const nodeAt = (
   return node ?? null;
 };
 
+const staysInMember = (
+  editor: EditorType,
+  context: PendingDocumentChange,
+  root: string,
+  from: Path,
+  to: Path
+) => {
+  const site = getSetSite(editor);
+
+  if (!site.schema.isSetRoot(root, site)) return true;
+  const [slot] = from;
+  const [landed] = to;
+
+  if (slot === undefined || landed === undefined) return false;
+  const opened = mapInternalDocumentChangePosition(
+    context.change,
+    root,
+    memberStart(context.before, root, slot),
+    1,
+    'after'
+  );
+
+  return opened !== null && memberStart(context.after, root, landed) === opened;
+};
+
+const memberStart = (
+  value: PendingDocumentChange['before'],
+  root: string,
+  slot: number
+) => DocumentIndex.fromValue(valueRoot(value, root)).nodeRange([slot]).from;
+
 const mapPointThroughChange = (
   editor: EditorType,
   point: Point,
@@ -303,7 +338,9 @@ const mapPointThroughChange = (
     association
   );
 
-  if (!next) return null;
+  if (!next || !staysInMember(editor, context, root, point.path, next.path)) {
+    return null;
+  }
 
   const mappedPoint = {
     offset: next.offset,

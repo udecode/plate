@@ -413,7 +413,7 @@ const previousStartMapsTo = (
         before: getEditorCommitSnapshot(commit, root, 'before').index,
       },
     }
-  );
+  ).selection;
 
   return RangeApi.isRange(mapped) && PointApi.equals(mapped.anchor, point);
 };

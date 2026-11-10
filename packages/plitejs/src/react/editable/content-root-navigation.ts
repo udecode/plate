@@ -11,6 +11,7 @@ import {
   SelectionApi,
   type RootKey,
 } from '../..';
+import { asSelectionMotion } from '../../core/public-state';
 import { setShownSelectionAsView } from '../../core/view-carets';
 import { writeDOMSelection } from '../../dom/utils/selection-writes';
 import type { EditorSelectionTarget } from '../../interfaces/editor';
@@ -64,7 +65,7 @@ import {
   type ContentRootNavigationEditor,
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
-  findContentRootOwners,
+  findCrossingContentRootOwners,
   getOwnerForCurrentViewEditor,
   getOwnerForRoot,
   getRegisteredRootViewEditor,
@@ -94,6 +95,7 @@ import {
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
+import { isSetRootOf } from './set-root-endpoints';
 import { claimPageSelection } from './unread-press';
 
 export {
@@ -1201,7 +1203,7 @@ const getContentRootActionTarget = ({
   const point = selection.anchor;
   const currentRoot =
     point.root ?? toInternalRoot(editor.read((state) => state.view.root()));
-  const owners = findContentRootOwners(editor);
+  const owners = findCrossingContentRootOwners(editor);
   const currentViewOwner = getOwnerForCurrentViewEditor({
     editor,
     getContentRootOwnerViewEditor,
@@ -1306,7 +1308,7 @@ export const shouldModelOwnContentRootVerticalSelection = ({
     return false;
   }
 
-  const owners = findContentRootOwners(editor);
+  const owners = findCrossingContentRootOwners(editor);
   const currentRoot =
     selection.focus.root ??
     toInternalRoot(editor.read((state) => state.view.root()));
@@ -1361,7 +1363,7 @@ const applyContentRootViewSelectionAction = ({
     return { handled: false };
   }
 
-  const owners = findContentRootOwners(editor);
+  const owners = findCrossingContentRootOwners(editor);
   const viewSelection = readPliteViewSelection(editor);
   if (!extend || !hasContentRootOwner(editor)) return { handled: false };
   const currentViewOwner = getOwnerForCurrentViewEditor({
@@ -1522,6 +1524,13 @@ const applyContentRootViewSelectionAction = ({
       owners,
       selection: selection ?? failInvariant('Expected value to be defined'),
     });
+  const anchorRoot = getPliteViewBoundaryPointRoot(anchor);
+
+  // Motion inside a set root is root-local: the selection write settles it in
+  // the member, which a projected selection across members would leave.
+  if (anchorRoot === target.root && isSetRootOf(editor, anchorRoot)) {
+    return { handled: false };
+  }
   let projectedSelection = createPliteViewSelection(graph, {
     anchor,
     focus: toViewBoundaryPoint({
@@ -1618,25 +1627,26 @@ export const applyContentRootViewSelection = ({
   isRTL: boolean;
   preferredX?: number;
   selection: Range | null;
-} & ContentRootViewEditorLookup): ContentRootNavigationResult => {
-  const result = applyContentRootViewSelectionAction({
-    action: getProjectedSelectionAction({ event, isRTL }),
-    editor,
-    element: event.currentTarget,
-    getActiveContentRootOwner,
-    getContentRootOwnerViewEditor,
-    getMountedViewEditor,
-    preferredX,
-    preventDefault: () => {
-      event.preventDefault();
-    },
-    selection,
+} & ContentRootViewEditorLookup): ContentRootNavigationResult =>
+  asSelectionMotion(editor, () => {
+    const result = applyContentRootViewSelectionAction({
+      action: getProjectedSelectionAction({ event, isRTL }),
+      editor,
+      element: event.currentTarget,
+      getActiveContentRootOwner,
+      getContentRootOwnerViewEditor,
+      getMountedViewEditor,
+      preferredX,
+      preventDefault: () => {
+        event.preventDefault();
+      },
+      selection,
+    });
+
+    if (result.handled) ANSWERED_KEYS.add(event.nativeEvent);
+
+    return result;
   });
-
-  if (result.handled) ANSWERED_KEYS.add(event.nativeEvent);
-
-  return result;
-};
 
 export const applyContentRootNavigation = ({
   editor,
@@ -1655,38 +1665,39 @@ export const applyContentRootNavigation = ({
   isRTL: boolean;
   preferredX?: number;
   selection: Range | null;
-} & ContentRootViewEditorLookup): ContentRootNavigationResult => {
-  const action = getContentRootNavigationAction({ event, isRTL });
+} & ContentRootViewEditorLookup): ContentRootNavigationResult =>
+  asSelectionMotion(editor, () => {
+    const action = getContentRootNavigationAction({ event, isRTL });
 
-  // While a projected selection shows, a delete removes that selection instead
-  // of moving the model caret into the neighboring content root.
-  if (action?.kind === 'delete' && readProjectedSelection(editor)) {
-    return { handled: false };
-  }
+    // While a projected selection shows, a delete removes that selection
+    // instead of moving the model caret into the neighboring content root.
+    if (action?.kind === 'delete' && readProjectedSelection(editor)) {
+      return { handled: false };
+    }
 
-  const target = getContentRootActionTarget({
-    action,
-    editor,
-    getActiveContentRootOwner,
-    getContentRootOwnerViewEditor,
-    getMountedViewEditor,
-    preferredX,
-    selection,
+    const target = getContentRootActionTarget({
+      action,
+      editor,
+      getActiveContentRootOwner,
+      getContentRootOwnerViewEditor,
+      getMountedViewEditor,
+      preferredX,
+      selection,
+    });
+
+    if (!target) {
+      return { handled: false };
+    }
+
+    return selectContentRootTarget({
+      editor,
+      event,
+      focusEditor,
+      getContentRootOwnerViewEditor,
+      getMountedViewEditor,
+      target,
+    });
   });
-
-  if (!target) {
-    return { handled: false };
-  }
-
-  return selectContentRootTarget({
-    editor,
-    event,
-    focusEditor,
-    getContentRootOwnerViewEditor,
-    getMountedViewEditor,
-    target,
-  });
-};
 
 /**
  * A plain Left or Right arrow over a projected selection collapses it to the

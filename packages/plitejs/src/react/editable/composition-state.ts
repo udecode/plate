@@ -58,6 +58,7 @@ import {
   restoreEditableCompositionRuntimeMarks,
   shouldMergeEditableCompositionHistory,
 } from './input-state';
+import { inputTargetLive, openInputTarget } from './input-target';
 import { dispatchUserText, getUserTextLanding } from './mutation-controller';
 import {
   type Editor,
@@ -247,11 +248,35 @@ const isCompositionEventHandled = ({
   return event.isDefaultPrevented() || event.isPropagationStopped();
 };
 
+type CompositionPhase = 'end' | 'start' | 'update';
+
+const sealsComposition = (
+  editor: ReactRuntimeEditor,
+  inputController: EditableInputController | undefined,
+  phase: CompositionPhase
+) => {
+  if (!inputController) return openInputTarget(editor) === 'sealed';
+  const { state } = inputController;
+
+  if (phase === 'start') {
+    state.compositionTarget = openInputTarget(editor);
+
+    return state.compositionTarget === 'sealed';
+  }
+  const target = state.compositionTarget;
+
+  if (phase === 'end') state.compositionTarget = undefined;
+  if (target === undefined) return false;
+
+  return !inputTargetLive(editor, target);
+};
+
 const preventNoneditableComposition = ({
   editor,
   event,
   inputController,
   lease,
+  phase,
   readOnly,
   setComposing,
 }: {
@@ -259,12 +284,16 @@ const preventNoneditableComposition = ({
   event: CompositionEvent<HTMLDivElement>;
   inputController?: EditableInputController;
   lease?: EditableCompositionLeaseBinding;
+  phase: CompositionPhase;
   readOnly: boolean;
   setComposing?: EditableCompositionStateSetter;
 }) => {
   if (
-    !dropsNativeEdits(editor, readOnly) ||
-    !ReactEditor.hasEditableTarget(editor, event.target)
+    !ReactEditor.hasEditableTarget(editor, event.target) ||
+    !(
+      dropsNativeEdits(editor, readOnly) ||
+      sealsComposition(editor, inputController, phase)
+    )
   ) {
     return false;
   }
@@ -874,6 +903,7 @@ export const applyEditableCompositionEnd = ({
       event,
       inputController,
       lease,
+      phase: 'end',
       readOnly,
       setComposing,
     })
@@ -1094,6 +1124,7 @@ export const applyEditableCompositionStart = ({
       event,
       inputController,
       lease,
+      phase: 'start',
       readOnly,
       setComposing,
     })
@@ -1209,6 +1240,7 @@ export const applyEditableCompositionUpdate = ({
       event,
       inputController,
       lease,
+      phase: 'update',
       readOnly,
       setComposing,
     })

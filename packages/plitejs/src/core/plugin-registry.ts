@@ -163,6 +163,7 @@ const builtInTransactionMembers: Record<
   tags: true,
   text: true,
   transaction: true,
+  unique: true,
   value: true,
   view: true,
 };

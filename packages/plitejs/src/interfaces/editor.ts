@@ -851,6 +851,23 @@ export type EditorStateViewApi = {
   root: () => NamedRootKey | undefined;
 };
 
+/** Where the node that holds one value of a `unique` property sits. */
+export type EditorUniqueHolder = Readonly<{
+  key: NodeKey;
+  path: Path;
+  root: RootKey;
+}>;
+
+export type EditorStateUniqueApi = Readonly<{
+  /**
+   * Find the node that holds `value` of the `unique` property `property`,
+   * without a scan. It reads the index of the last published commit and
+   * places the node in the current state, so inside an update a node that got
+   * the value earlier in the same update reads `null`.
+   */
+  holder: (property: string, value: unknown) => EditorUniqueHolder | null;
+}>;
+
 export type EditorFragmentReadOptions = {
   at?: Range;
   unwrap?: readonly string[];
@@ -1763,6 +1780,7 @@ export type EditorCoreStateView<
   selection: EditorStateSelectionApi<TSelection, V>;
   slice: EditorStateSliceApi<V>;
   text: EditorStateTextApi;
+  unique: EditorStateUniqueApi;
   value: EditorStateValueApi<V>;
   view: EditorStateViewApi;
 };

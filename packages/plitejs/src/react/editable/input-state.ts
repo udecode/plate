@@ -14,6 +14,7 @@ import {
   changeDOMSelection,
   type DOMSelectionPoints,
 } from '../../dom/utils/selection-writes';
+import type { OpenedInput } from '../../dom/utils/weak-maps';
 import { createNativeGroupingId } from './input-history';
 import { type AnyEditor, setEditorMarks } from './runtime-editor-api';
 
@@ -138,6 +139,7 @@ export type EditableInputControllerState = {
   draggedBlock: boolean;
   draggedRange: Range | null;
   hiddenAnchorPress: HiddenAnchorPress | null;
+  compositionTarget?: OpenedInput;
   isComposing: boolean;
   isDraggingInternally: boolean;
   isNativeSelectionDragActive: boolean;

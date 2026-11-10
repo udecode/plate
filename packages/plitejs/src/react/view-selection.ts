@@ -1,9 +1,13 @@
 import { PathApi, type Range, RangeApi, type RootKey } from '..';
 import {
   type EditorRuntimeCarrier,
+  getEditorRuntimeOwner,
   hasEditorRuntime,
 } from '../core/editor-runtime';
-import { readEditorHistoryHeadIdentity } from '../core/public-state';
+import {
+  getSetSite,
+  readEditorHistoryHeadIdentity,
+} from '../core/public-state';
 import {
   getPlacementGeneration,
   subscribeCommittedPlacement,
@@ -286,6 +290,23 @@ export type PliteViewSelectionShow = PliteViewSelectionWrite &
       }>
   );
 
+const leavesSetMember = (editor: object, selection: PliteViewSelection) => {
+  if (!hasEditorRuntime(editor)) return false;
+  const site = getSetSite(getEditorRuntimeOwner(editor));
+
+  if (!site.schema.declaresSetRoots()) return false;
+  const anchorRoot = getPliteViewBoundaryPointRoot(selection.anchor);
+  const focusRoot = getPliteViewBoundaryPointRoot(selection.focus);
+  const inSet = (root: RootKey) => site.schema.isSetRoot(root, site);
+
+  if (anchorRoot !== focusRoot) return inSet(anchorRoot) || inSet(focusRoot);
+
+  return (
+    selection.anchor.point.path[0] !== selection.focus.point.path[0] &&
+    inSet(anchorRoot)
+  );
+};
+
 type WritePliteViewSelection = {
   (editor: object, selection: null, options?: PliteViewSelectionWrite): boolean;
   (
@@ -297,13 +318,17 @@ type WritePliteViewSelection = {
 
 export const writePliteViewSelection: WritePliteViewSelection = (
   editor: object,
-  selection: PliteViewSelection | null,
+  written: PliteViewSelection | null,
   options: Readonly<{
     notify?: boolean;
     place?: () => void;
     placedAt?: number;
   }> = {}
 ) => {
+  // The set law keeps a selection in one member; a view selection that leaves
+  // it shows nothing, and `place` still writes the caret, which settles.
+  const selection =
+    written && leavesSetMember(editor, written) ? null : written;
   const key = getViewSelectionStoreKey(editor);
   const previous = EDITOR_TO_VIEW_SELECTION.get(key);
   const wasShown = !!previous && isCurrent(editor, previous);

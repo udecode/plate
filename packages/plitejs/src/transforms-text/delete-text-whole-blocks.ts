@@ -2,6 +2,7 @@ import { getEditorSchema } from '../core/editor-runtime';
 import {
   applyBuiltDocumentChange,
   getEditorUpdateRoot,
+  getSetSite,
   profileCoreDuration,
 } from '../core/public-state';
 import { canReplaceChildrenWithText } from '../core/writable-text';
@@ -21,6 +22,12 @@ export type WholeTopLevelBlockRange = Readonly<{
   startIndex: number;
 }>;
 
+const updateRootIsSet = (editor: Editor) => {
+  const site = getSetSite(editor);
+
+  return site.schema.isSetRoot(getEditorUpdateRoot(editor), site);
+};
+
 export const getWholeTopLevelBlockRange = (
   editor: Editor,
   plan: DeleteRangePlan
@@ -30,7 +37,8 @@ export const getWholeTopLevelBlockRange = (
     plan.startNonEditable ||
     plan.endNonEditable ||
     plan.preserveEmptyStartBlockPath ||
-    !plan.isAcrossBlocks
+    !plan.isAcrossBlocks ||
+    updateRootIsSet(editor)
   ) {
     return null;
   }

@@ -17,6 +17,7 @@ import {
 } from '../../core/commit';
 import { mapSelectionThroughChange } from '../../core/selection-protocol';
 import { getSelection } from '../../dom';
+import type { OpenedInput } from '../../dom/utils/weak-maps';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { getParkedRange } from './dom-coverage-selection';
 import { getMountedEditableDOMRuntimes } from './editable-dom-runtime';
@@ -27,6 +28,7 @@ import {
   openCompositionReceipt,
   replayAsAndroidCommand,
 } from './input-state';
+import { inputTargetLive, openInputTarget } from './input-target';
 import { applyModelOwnedTextInput } from './mutation-controller';
 import {
   getEditorCurrentMarks,
@@ -74,6 +76,7 @@ type AndroidCompositionBase = Readonly<{
 type AndroidCompositionRun = {
   base: AndroidCompositionBase;
   cancelEnd: (() => void) | null;
+  inputTarget: OpenedInput;
   text: string | null | undefined;
   release: () => void;
   setComposing: (composing: boolean) => void;
@@ -83,6 +86,7 @@ type KeyedPoint = Readonly<{ key: NodeKey; offset: number }>;
 
 /** The keyboard's draft, read from the line before anything renders over it. */
 type AndroidCompositionDraft = Readonly<{
+  inputTarget: OpenedInput;
   lineKey: NodeKey;
   lineKeys: readonly NodeKey[];
   textKeys: readonly NodeKey[];
@@ -530,6 +534,7 @@ export const openAndroidComposition = ({
   const run: AndroidCompositionRun = {
     base,
     cancelEnd: null,
+    inputTarget: openInputTarget(editor),
     text,
     release: () => {
       releaseCommits();
@@ -677,10 +682,11 @@ const readDraft = (
             after: getEditorCommitSnapshot(commit, root, 'after').index,
           },
         }
-      )
+      ).selection
     : range;
 
   return {
+    inputTarget: run.inputTarget,
     lineKey: base.lineKey,
     lineKeys: base.lines.map(({ key }) => key),
     textKeys: base.segments.map(({ key }) => key),
@@ -730,7 +736,7 @@ const restoreLineElements = (
 const writeDraft = (
   editor: ReactRuntimeEditor,
   inputController: EditableInputController,
-  { lineKey, marks, replacement }: AndroidCompositionDraft
+  { inputTarget, lineKey, marks, replacement }: AndroidCompositionDraft
 ) => {
   const target = replacement?.target.release();
 
@@ -738,6 +744,7 @@ const writeDraft = (
   if (
     !replacement ||
     !target ||
+    !inputTargetLive(editor, inputTarget) ||
     editor.read.view.isReadOnly() ||
     !getPathByNodeKey(editor, lineKey)
   ) {

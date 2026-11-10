@@ -50,7 +50,7 @@ import { insertNodes } from '../transforms-node/insert-nodes';
 import { deselect } from '../transforms-selection/deselect';
 import { setSelection } from '../transforms-selection/set-selection';
 import { getDefaultInsertLocation } from '../utils';
-import { removeText } from './delete-text';
+import { refuseMemberCrossing, removeText } from './delete-text';
 import { isFullDocumentRange } from './full-document-range';
 
 /**
@@ -312,6 +312,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
       return defaultAt;
     })();
 
+    refuseMemberCrossing(editor, preflightAt);
     if (
       (LocationApi.isPoint(preflightAt) &&
         !voids &&

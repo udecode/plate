@@ -66,7 +66,10 @@ import {
   isSameOwner,
   mouseEventTargetToElement,
 } from './content-root-owner-target';
-import { readRootNodes } from './content-root-owners';
+import {
+  findCrossingContentRootOwners,
+  readRootNodes,
+} from './content-root-owners';
 import {
   findMountedEditableDOMRuntime,
   focusPressedView,
@@ -126,6 +129,7 @@ import {
   readSelectionAnnotation,
   tripleClickedBlock,
 } from './selection-triple-click';
+import { settleViewFocus } from './set-root-endpoints';
 import { activateViewCaret } from './view-caret-restore';
 import type { ViewLines } from './view-lines';
 
@@ -223,6 +227,12 @@ type PendingProjectedDrag = {
   editor: RootInteractionEditor;
   endpoint: RootInteractionDragEndpoint;
   finish: () => void;
+  /**
+   * Whether the drag holds a model selection the set law settled. WebKit runs
+   * its own drag selection after a cancelled mousemove, so the drag projects
+   * until release and then draws its selection again.
+   */
+  ownsSettledSelection: boolean;
   wroteViewSelection: boolean;
   releaseCleanup: () => void;
 };
@@ -461,7 +471,7 @@ const hasContentRootOwnerBetweenDragEndpoints = ({
       ? [anchor.point, focus.point]
       : [focus.point, anchor.point];
 
-  return findContentRootOwners(editor).some(
+  return findCrossingContentRootOwners(editor).some(
     (owner) =>
       owner.ownerRoot === anchor.root &&
       PathApi.compare(owner.ownerPath, start.path) >= 0 &&
@@ -472,13 +482,15 @@ const hasContentRootOwnerBetweenDragEndpoints = ({
 const shouldUseModelProjectedDragSelection = ({
   anchor,
   focus,
+  settled,
 }: {
   anchor: RootInteractionDragEndpoint;
   focus: RootInteractionDragEndpoint;
+  settled: boolean;
 }) =>
   anchor.root === focus.root &&
   isSameOwner(anchor.owner, focus.owner) &&
-  (anchor.isDOMCoverageBoundary || focus.isDOMCoverageBoundary);
+  (settled || anchor.isDOMCoverageBoundary || focus.isDOMCoverageBoundary);
 
 const findOwnerContainingPoint = (
   owners: readonly ContentRootOwner[],
@@ -801,18 +813,22 @@ const applyModelProjectedDragSelection = ({
   anchor,
   editor,
   focus,
+  projecting,
   selectionBridge,
 }: {
   anchor: RootInteractionDragEndpoint;
   editor: RootInteractionEditor;
   focus: RootInteractionDragEndpoint;
+  projecting: boolean;
   selectionBridge?: RootInteractionControllerOptions['selectionBridge'];
 }) => {
-  if (isSameProjectedEndpoint(anchor, focus)) {
+  if (projecting) {
+    selectionBridge?.beginProjectedDrag();
+  } else if (isSameProjectedEndpoint(anchor, focus)) {
     return false;
+  } else {
+    selectionBridge?.beforeModelSelection();
   }
-
-  selectionBridge?.beforeModelSelection();
   writePliteViewSelection(editor, null);
   selectShown(editor, {
     anchor: anchor.point,
@@ -1088,15 +1104,20 @@ const applyProjectedDragSelectionFromEvent = ({
     return false;
   }
 
-  const focus = resolveProjectedDragEndpoint({
+  const resolvedFocus = resolveProjectedDragEndpoint({
     editor: projectedDrag.editor,
     event,
     getMountedViewEditor,
   });
 
-  if (!focus) {
+  if (!resolvedFocus) {
     return false;
   }
+  const focus = settleViewFocus(
+    projectedDrag.editor,
+    projectedDrag.endpoint,
+    resolvedFocus
+  );
 
   const shouldUseView =
     projectedDrag.wroteViewSelection ||
@@ -1116,11 +1137,13 @@ const applyProjectedDragSelectionFromEvent = ({
   if (appliedView) {
     projectedDrag.wroteViewSelection = true;
   }
+  const settled = projectedDrag.ownsSettledSelection || focus !== resolvedFocus;
   const shouldUseModel =
     !appliedView &&
     shouldUseModelProjectedDragSelection({
       anchor: projectedDrag.endpoint,
       focus,
+      settled,
     });
   const appliedModel =
     shouldUseModel &&
@@ -1128,18 +1151,23 @@ const applyProjectedDragSelectionFromEvent = ({
       anchor: projectedDrag.endpoint,
       editor: projectedDrag.editor,
       focus,
+      projecting: settled,
       selectionBridge,
     });
 
   if (!(appliedView || appliedModel)) {
     return false;
   }
+  if (appliedModel && settled) {
+    projectedDrag.ownsSettledSelection = true;
+  }
 
   event.preventDefault();
   const viewSelection = readPliteViewSelection(projectedDrag.editor);
   if (
-    viewSelection &&
-    canUseNativeViewSelection(projectedDrag.editor, viewSelection)
+    (appliedModel && settled) ||
+    (viewSelection &&
+      canUseNativeViewSelection(projectedDrag.editor, viewSelection))
   ) {
     selectionBridge?.syncDOMSelectionToEditor({ preserveScroll: true });
   } else {
@@ -2269,12 +2297,19 @@ export const useRootInteractionController = ({
             browserOwned: nativeSelectionOwnsInteraction,
             editor: projectedDragEditor,
             endpoint: projectedDragEndpoint,
+            ownsSettledSelection: false,
             wroteViewSelection: false,
             finish: () => {
               setNativeSelectionDragActive(rootRuntime, false);
               if (!nextProjectedDrag.browserOwned) {
                 selectionBridge?.finishProjectedDrag();
                 refreshPliteViewSelection(projectedDragEditor);
+              }
+              if (nextProjectedDrag.ownsSettledSelection) {
+                focusPliteEditableAfterEventFrame(
+                  getMountedViewEditor(projectedDragEndpoint.root) ??
+                    projectedDragEditor
+                );
               }
             },
             releaseCleanup: () => {},

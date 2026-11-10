@@ -43,6 +43,7 @@ import {
   getNativeTextInputUpdateTags,
   nativeGroupingInput,
 } from './input-history';
+import { openInputTarget } from './input-target';
 import { registerExternalTextHost } from './interaction-owner';
 import {
   dispatchCommand,
@@ -901,6 +902,9 @@ export class ExternalTextRuntime {
       return this.stale(entry);
     }
     if (write && this.isReadOnly(binding)) return READ_ONLY;
+    if (write && openInputTarget(this.runtime.editor) === 'sealed') {
+      return this.stale(entry);
+    }
     return null;
   }
 

@@ -353,6 +353,13 @@ export type SchemaContentInput = SchemaContent | SchemaContentRule;
 
 export type SchemaContentRootOwnership = 'exclusive' | 'shared';
 
+/**
+ * A content root whose top-level blocks are members of a set: a text selection
+ * stays in one member, and range removal never crosses two. Members keep their
+ * stored order.
+ */
+export type SchemaContentRootStructure = Readonly<{ kind: 'set' }>;
+
 /** One element-owned named-root grammar and its ownership law. */
 export type SchemaContentRoot<
   TContent extends SchemaContent = SchemaContent,
@@ -360,6 +367,8 @@ export type SchemaContentRoot<
 > = Readonly<{
   content: TContent;
   ownership: TOwnership;
+  /** Needs `ownership: 'exclusive'` and a void owner. */
+  structure?: SchemaContentRootStructure;
 }>;
 
 /** Shared roots may use their grammar directly; ownership defaults to shared. */
@@ -483,6 +492,7 @@ export type EditorSchemaContent = Readonly<{
 export type EditorSchemaContentRoot = Readonly<{
   content: EditorSchemaContent;
   ownership: SchemaContentRootOwnership;
+  structure?: SchemaContentRootStructure;
 }>;
 
 /** One compiled property identity used by a logical structure facet. */

@@ -72,6 +72,7 @@ import {
   type RecordedDraft,
   recordedCarets,
   recorderBookmarks,
+  carryCurrentCaret,
   resolveNodeTargetLocation,
   runEditorDocumentRecorder,
   type TransactionSpecContext,
@@ -448,7 +449,10 @@ const enterFrameDraft = (
             map: bookCaret,
             roots: getInternalDocumentChangeEntries(projected.map.change()),
           }),
-    selection,
+    ...carryCurrentCaret(editor, frame.caret, {
+      root: frame.caret.root,
+      selection,
+    }),
   };
   frame.baseCaret = frame.caret;
   snapshot.selection = selection;
@@ -527,7 +531,7 @@ const createFramePlace = (
       stored,
       projected.value,
       fallbackRoot
-    );
+    ).selection;
   // A stored point maps to a position in the frame. One at a line's edge,
   // beside a leaf, reads on that leaf, so a point beside hidden content at
   // the edge stays on its line.

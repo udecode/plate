@@ -490,6 +490,11 @@ export const createRuntimeSelectionImportController = ({
         this.settleHiddenEnd(root)
       );
     } else {
+      // The next selection change is the browser's move. A throttled echo of
+      // an earlier export still pending would otherwise read it as that
+      // export and skip the import. A hidden-anchor press decides at its
+      // release whether the browser's end wins.
+      beginEditableNativeSelectionImport(inputController);
       endHiddenAnchorPress(inputController);
     }
     scheduleOnDOMSelectionChange();

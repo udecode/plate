@@ -40,6 +40,7 @@ import {
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
 } from '../../../dom/internal';
+import type { OpenedInput } from '../../../dom/utils/weak-maps';
 import { hasEdgeInReadOnlyInline } from '../../../editor/element-read-only';
 import { hasAndroidComposition } from '../../editable/android-composition';
 import {
@@ -57,6 +58,7 @@ import {
   replayAsAndroidCommand,
   shouldMergeEditableCompositionHistory,
 } from '../../editable/input-state';
+import { inputTargetLive, openInputTarget } from '../../editable/input-target';
 import {
   applyEditableCommand,
   applyModelOwnedTextInput,
@@ -78,8 +80,6 @@ import {
   ReactEditor,
   type ReactRuntimeEditor,
 } from '../../plugin/react-editor';
-
-export type Action = { at?: Point | Range; run: () => void };
 
 const DOUBLE_NEWLINE_AT_END_RE = /.*\n.*\n$/;
 
@@ -164,6 +164,7 @@ export function createAndroidInputManager({
   let cancelSelectionFlush: (() => void) | null = null;
 
   let idCounter = 0;
+  const diffTargets = new Map<number, OpenedInput>();
   let insertPositionHint: StringDiff | null | false = false;
 
   const applyAndroidTextInput = (text: string, inputType: string) =>
@@ -196,6 +197,15 @@ export function createAndroidInputManager({
     const action = EDITOR_TO_PENDING_ACTION.get(editor);
     EDITOR_TO_PENDING_ACTION.delete(editor);
     if (!action) {
+      return;
+    }
+    // A queued action that outlived its edit session, through Escape and back
+    // or a teammate's removal of its member, is dropped before it places.
+    if (
+      action.target === 'sealed'
+        ? !action.deletes
+        : !inputTargetLive(editor, action.target)
+    ) {
       return;
     }
 
@@ -361,6 +371,21 @@ export function createAndroidInputManager({
         continue;
       }
 
+      const opened = diffTargets.get(diff.id);
+
+      if (opened !== undefined && !inputTargetLive(editor, opened)) {
+        EDITOR_TO_PENDING_DIFFS.set(
+          editor,
+          EDITOR_TO_PENDING_DIFFS.get(editor)?.filter(
+            ({ id }) => id !== diff.id
+          ) ?? []
+        );
+        const lineKey = editorGetNodeKey(editor, diff.path.slice(0, -1));
+
+        if (lineKey) rebuildLine?.(lineKey);
+        continue;
+      }
+
       const range = targetRange(diff);
       const selection = readRuntimeSelectionRange(editor);
       if (!selection || !RangeApi.equals(selection, range)) {
@@ -460,8 +485,11 @@ export function createAndroidInputManager({
     applyPendingSelection();
 
     const userMarks = EDITOR_TO_USER_MARKS.get(editor);
+    const caret = readRuntimeSelectionRange(editor);
+    const selectionTakesMarks =
+      userMarks === null || (caret !== null && RangeApi.isCollapsed(caret));
     EDITOR_TO_USER_MARKS.delete(editor);
-    if (userMarks !== undefined) {
+    if (userMarks !== undefined && selectionTakesMarks) {
       editor.update(() => {
         writeRuntimeMarks(editor, userMarks);
       });
@@ -509,7 +537,9 @@ export function createAndroidInputManager({
   const storeDiff = (path: Path, diff: StringDiff, inputType?: string) => {
     const pendingDiffs = EDITOR_TO_PENDING_DIFFS.get(editor) ?? [];
     EDITOR_TO_PENDING_DIFFS.set(editor, pendingDiffs);
+    if (pendingDiffs.length === 0) diffTargets.clear();
 
+    const inputTarget = openInputTarget(editor);
     const target = NodeApi.leaf(editor, path);
     const pathKey = path.join(',');
     const recentEcho = inputController.state.recentTextInputRepairEcho;
@@ -539,11 +569,16 @@ export function createAndroidInputManager({
       const normalized = normalizeStringDiff(target.text, nextDiff);
       if (normalized) {
         pendingDiffs.push({ path, diff: normalized, id: idCounter, inputType });
+        diffTargets.set(idCounter, inputTarget);
         idCounter += 1;
       }
 
       updatePlaceholderVisibility();
       return;
+    }
+
+    if (inputTarget === 'sealed') {
+      diffTargets.set(pendingDiffs[idx].id, 'sealed');
     }
 
     const merged = mergeStringDiffs(
@@ -711,7 +746,12 @@ export function createAndroidInputManager({
       flush();
     }
 
-    EDITOR_TO_PENDING_ACTION.set(editor, { at, deletes, run });
+    EDITOR_TO_PENDING_ACTION.set(editor, {
+      at,
+      deletes,
+      run,
+      target: openInputTarget(editor),
+    });
 
     // COMPAT: When deleting before a non-contenteditable element chrome only fires a beforeinput,
     // (no input) and doesn't perform any dom mutations. Without a flush timeout we would never flush

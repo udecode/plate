@@ -67,6 +67,7 @@ import {
   getElementOwnedRootKeys,
   getIntroducedElementOwnedRootIssues,
   rebaseElementOwnedRootIndex,
+  schemaDeclaresSetRoots,
   type ElementOwnedRootBinding,
   type ElementOwnedRootIndex,
   type ElementOwnedRootIssue,
@@ -248,6 +249,12 @@ type TextLandingPlace = Readonly<{
   path: Path;
   root: RootKey;
   value: EditorDocumentValue;
+}>;
+
+/** @internal */
+export type DocumentRead = Readonly<{
+  rootChildren: (root: RootKey) => readonly unknown[] | undefined;
+  value: () => EditorDocumentValue;
 }>;
 
 /**
@@ -486,6 +493,17 @@ export type InternalEditorSchemaApi<V extends Value = Value> =
     getOrphanedElementOwnedRoots: (
       input: OrphanedRootsInput
     ) => readonly NamedRootKey[];
+    /**
+     * Whether `root` is a content root whose owner declares
+     * `structure: { kind: 'set' }`.
+     */
+    isSetRoot: (root: RootKey, read: DocumentRead) => boolean;
+    holdsSetRoot: (type: string) => boolean;
+    declaresSetRoots: () => boolean;
+    findRootOwner: (
+      root: RootKey,
+      value: EditorDocumentValue
+    ) => Readonly<{ path: Path; root: RootKey }> | null;
     indexConstructedRoot: (
       input: Readonly<{
         after: DocumentIndex;
@@ -1238,6 +1256,7 @@ export const createEditorSchema = <V extends Value = Value>(
             Object.freeze({
               content: toPublicContent(root.content),
               ownership: root.ownership,
+              ...(root.structure ? { structure: root.structure } : {}),
             }),
           ])
         )
@@ -1622,6 +1641,107 @@ export const createEditorSchema = <V extends Value = Value>(
     const schema = getDeclarativeSchema();
 
     return schema ? schemaHasContentRoots(schema) : false;
+  };
+
+  const rootOwnerBinding = (
+    schema: CompiledEditorSchema,
+    root: RootKey,
+    value: EditorDocumentValue
+  ) => {
+    for (const { index } of getDocumentOwnershipIndexes(schema, value)) {
+      const [binding] = getElementOwnedRootGrammarBindings(index, root);
+
+      if (binding) return binding.owner;
+    }
+
+    return null;
+  };
+
+  const setRootAnswers = new Map<
+    RootKey,
+    Readonly<{
+      ownerChildren: WeakRef<object>;
+      ownerRoot: RootKey;
+      schema: CompiledEditorSchema;
+      set: boolean;
+    }>
+  >();
+
+  const isSetRoot: InternalEditorSchemaApi['isSetRoot'] = (root, read) => {
+    if (root === 'main') return false;
+    const schema = getDeclarativeSchema();
+
+    if (!schema || !schemaDeclaresSetRoots(schema) || schema.roots.has(root)) {
+      return false;
+    }
+    const known = setRootAnswers.get(root);
+    const knownChildren = known?.ownerChildren.deref();
+
+    if (
+      known?.schema === schema &&
+      knownChildren !== undefined &&
+      knownChildren === read.rootChildren(known.ownerRoot)
+    ) {
+      return known.set;
+    }
+    const owner = rootOwnerBinding(schema, root, read.value());
+    const ownerChildren = owner
+      ? read.rootChildren(owner.ownerRoot)
+      : undefined;
+
+    if (!owner || !ownerChildren) {
+      setRootAnswers.delete(root);
+
+      return false;
+    }
+    const set =
+      schema.elements.byType.get(owner.ownerType)?.contentRoots.get(owner.slot)
+        ?.structure?.kind === 'set';
+
+    setRootAnswers.set(root, {
+      ownerChildren: new WeakRef(ownerChildren),
+      ownerRoot: owner.ownerRoot,
+      schema,
+      set,
+    });
+
+    return set;
+  };
+
+  const holdsSetRoot: InternalEditorSchemaApi['holdsSetRoot'] = (type) => {
+    const schema = getDeclarativeSchema();
+
+    if (!schema || !schemaDeclaresSetRoots(schema)) return false;
+
+    return [
+      ...(schema.elements.byType.get(type)?.contentRoots.values() ?? []),
+    ].some((root) => root.structure?.kind === 'set');
+  };
+
+  const declaresSetRoots = () => {
+    const schema = getDeclarativeSchema();
+
+    return !!schema && schemaDeclaresSetRoots(schema);
+  };
+
+  const findRootOwner: InternalEditorSchemaApi['findRootOwner'] = (
+    root,
+    value
+  ) => {
+    const schema = getDeclarativeSchema();
+
+    if (!schema || root === 'main') return null;
+    const owner = rootOwnerBinding(schema, root, value);
+
+    if (!owner) return null;
+    const children = (
+      owner.ownerRoot === 'main'
+        ? value.children
+        : (value.roots?.[owner.ownerRoot] ?? [])
+    ) as readonly Descendant[];
+    const path = findElementOwnedRootOwnerPath(children, owner);
+
+    return path ? Object.freeze({ path, root: owner.ownerRoot }) : null;
   };
 
   const getOrphanedElementOwnedRoots: InternalEditorSchemaApi['getOrphanedElementOwnedRoots'] =
@@ -5206,6 +5326,10 @@ export const createEditorSchema = <V extends Value = Value>(
     getElementContent,
     getElementContentRoots,
     getOrphanedElementOwnedRoots,
+    isSetRoot,
+    holdsSetRoot,
+    declaresSetRoots,
+    findRootOwner,
     getElementOwnedRoots,
     getProperty,
     getElementSlicePolicy,

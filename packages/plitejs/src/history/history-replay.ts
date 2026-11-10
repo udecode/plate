@@ -1617,7 +1617,7 @@ export const mapHistorySelection = (
       before,
       after,
       root
-    );
+    ).selection;
   }
   const correspondence = createCharacterCorrespondence(
     before,
@@ -1636,7 +1636,7 @@ export const mapHistorySelection = (
       before,
       after,
       root
-    );
+    ).selection;
   }
   return {
     ...selection,

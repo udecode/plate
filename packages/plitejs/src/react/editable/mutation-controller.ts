@@ -12,6 +12,7 @@ import {
 import { withCompositionStamp } from '../../core/composition-stamp';
 import { getRootTransaction } from '../../core/plugin-dispatch';
 import {
+  asSelectionMotion,
   getActiveEditorTransaction,
   syncImplicitTargetToCurrentSelection,
   withUpdateTagContext,
@@ -772,18 +773,16 @@ export const applyEditableCommand = ({
     }
 
     case 'move-selection': {
-      if (
-        applyContentRootSelectionMoveCommand({
-          command,
-          editor: editor as ReactRuntimeEditor,
-          element,
-          selection: readRuntimeSelectionRange(editor),
-        }).handled
-      ) {
-        return true;
-      }
-
-      return applyRootLocalSelectionMoveCommand({ command, editor });
+      return asSelectionMotion(
+        editor,
+        () =>
+          applyContentRootSelectionMoveCommand({
+            command,
+            editor: editor as ReactRuntimeEditor,
+            element,
+            selection: readRuntimeSelectionRange(editor),
+          }).handled || applyRootLocalSelectionMoveCommand({ command, editor })
+      );
     }
   }
 

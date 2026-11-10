@@ -1,8 +1,10 @@
 import type {
   EditorDocumentValue,
+  EditorUniqueHolder,
   NodeKey,
   SnapshotIndex,
 } from '../interfaces/editor';
+import type { Path } from '../interfaces/path';
 import { getDefined } from '../internal/get-defined';
 import {
   createInternalDocumentChange,
@@ -181,6 +183,32 @@ export const buildUniqueIndex = (
   }
 
   return index;
+};
+
+export const uniqueHolderOf = (
+  index: UniqueIndex,
+  key: string,
+  value: unknown,
+  locate: (
+    root: string,
+    nodeKey: NodeKey
+  ) => Readonly<{ held: unknown; path: Path }> | null
+): EditorUniqueHolder | null => {
+  const canonical = canonicalJsonKey(value);
+
+  for (const [nodeKey, root] of index.holders.get(key)?.get(canonical) ?? []) {
+    const found = locate(root, nodeKey);
+
+    if (
+      found &&
+      found.held !== undefined &&
+      canonicalJsonKey(found.held) === canonical
+    ) {
+      return Object.freeze({ key: nodeKey, path: found.path, root });
+    }
+  }
+
+  return null;
 };
 
 export const sameUniqueIndex = (left: UniqueIndex, right: UniqueIndex) => {

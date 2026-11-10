@@ -14,6 +14,7 @@ import {
   type Selection,
   SelectionApi,
 } from '../..';
+import { asSelectionMotion } from '../../core/public-state';
 import { capturePlacement } from '../../core/view-carets';
 import { Hotkeys } from '../../dom';
 import {
@@ -66,6 +67,7 @@ import {
   getSelectableOwnerAncestorNodeSelection,
   getSelectableOwnerNodeSelection,
 } from './selection-void-target';
+import { isSetRootOf } from './set-root-endpoints';
 import { claimPageSelection } from './unread-press';
 
 export type EditableCaretMovementResult = {
@@ -624,6 +626,15 @@ export const getSelectableOwnerVerticalNavigationTarget = ({
     });
 
     if (!adjacent) return null;
+    // A vertical move never steps into another member of a set root; the
+    // native move that follows is clamped back to this member's edge.
+    if (
+      adjacent.point.path[0] !== selection.focus.path[0] &&
+      selection.focus.root !== undefined &&
+      isSetRootOf(editor, selection.focus.root)
+    ) {
+      return null;
+    }
 
     const ancestorOwner = getSelectableOwnerAncestorNodeSelection(
       editor,
@@ -914,15 +925,7 @@ const getVisibleOwnerTarget = (
     : null;
 };
 
-export const applyEditableCaretMovement = ({
-  domPhaseScheduler,
-  editor,
-  event,
-  ownerNavigationTarget,
-  preferredX,
-  selection,
-  viewportRuntime,
-}: {
+type EditableCaretMovementInput = {
   domPhaseScheduler: DOMPhaseScheduler;
   viewportRuntime: unknown;
   editor: ReactRuntimeEditor;
@@ -930,7 +933,22 @@ export const applyEditableCaretMovement = ({
   ownerNavigationTarget?: Selection;
   preferredX?: number;
   selection: Range | Selection;
-}): EditableCaretMovementResult => {
+};
+
+export const applyEditableCaretMovement = (
+  input: EditableCaretMovementInput
+): EditableCaretMovementResult =>
+  asSelectionMotion(input.editor, () => moveEditableCaret(input));
+
+const moveEditableCaret = ({
+  domPhaseScheduler,
+  editor,
+  event,
+  ownerNavigationTarget,
+  preferredX,
+  selection,
+  viewportRuntime,
+}: EditableCaretMovementInput): EditableCaretMovementResult => {
   const { nativeEvent } = event;
   const runtime = getMountedEditableDOMRuntime(editor, event.currentTarget);
   const coverage = runtime?.domCoverage;

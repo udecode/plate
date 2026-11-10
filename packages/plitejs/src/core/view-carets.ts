@@ -41,6 +41,7 @@ import {
   withEditorRootChildren,
   withEditorUpdateRootScope,
 } from './public-state';
+import type { SettledCaret } from './set-root';
 import {
   isViewPresentationRetained,
   onPresentationRelease,
@@ -108,11 +109,7 @@ export type Carets = Readonly<{
 }>;
 
 /** The live selection and the bookmarks, which every mapping moves together. */
-export type CaretState = Carets &
-  Readonly<{
-    root: string;
-    selection: Selection;
-  }>;
+export type CaretState = Carets & SettledCaret;
 
 export type KeyLens = Readonly<{
   keyAt: (path: Path) => NodeKey | null;

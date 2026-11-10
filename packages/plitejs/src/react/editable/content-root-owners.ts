@@ -10,6 +10,7 @@ import {
   type Value,
 } from '../..';
 import { type NodeList, rootNodesOf } from '../../core/change/document-index';
+import { getSetSite } from '../../core/public-state';
 import { countCoreWork } from '../../core/work';
 import { EDITOR_TO_ROOT_VIEW_EDITORS } from '../../dom/internal';
 import { matchesPresentationOf } from '../../editor-runtime-view';
@@ -202,6 +203,31 @@ export const findContentRootOwners = <V extends Value>(
   });
 };
 
+/**
+ * Drops the owners of set roots. A set root's members are separate texts, so a
+ * range across its holder selects over the void holder, and a view mounted in
+ * the set root is the top of its graph.
+ */
+const withoutSetOwners = <T extends readonly ContentRootOwner[]>(
+  editor: object,
+  owners: T
+): T => {
+  const runtimeEditor = owners.length > 0 ? getRuntimeEditor(editor) : null;
+
+  if (!runtimeEditor) return owners;
+  const site = getSetSite(getEditorRuntimeOwner(runtimeEditor));
+
+  if (!site.schema.declaresSetRoots()) return owners;
+
+  return owners.filter(
+    (owner) => !site.schema.isSetRoot(owner.childRoot, site)
+  ) as unknown as T;
+};
+
+export const findCrossingContentRootOwners = <V extends Value>(
+  editor: Pick<AnyEditor<V>, 'read'>
+) => withoutSetOwners(editor, findContentRootOwners(editor));
+
 export const hasContentRootOwner = (editor: ContentRootNavigationEditor) =>
   hasCompiledContentRoots(editor);
 
@@ -242,7 +268,7 @@ export const isRangeAcrossContentRootOwners = (
       ? [range.anchor, range.focus]
       : [range.focus, range.anchor];
 
-  return findContentRootOwners(editor).some(
+  return findCrossingContentRootOwners(editor).some(
     (owner) =>
       owner.ownerRoot === anchorRoot &&
       PathApi.compare(owner.ownerPath, start.path) >= 0 &&
@@ -371,11 +397,13 @@ const getViewDocumentRoot = (
 
 const walkContentRootView = <V extends Value>(
   editor: Pick<AnyEditor<V>, 'read'>,
-  owners: readonly ContentRootOwner[],
+  allOwners: readonly ContentRootOwner[],
   getActiveContentRootOwner?: (root: RootKey) => ContentRootOwner | null,
   edge?: 'start' | 'end'
-) =>
-  editor.read((state) => {
+) => {
+  const owners = withoutSetOwners(editor, allOwners);
+
+  return editor.read((state) => {
     const nodes: PliteViewBoundaryGraphNodeInput[] = [];
     const graphRoot = getViewDocumentRoot(
       owners,
@@ -445,6 +473,7 @@ const walkContentRootView = <V extends Value>(
 
     return nodes;
   });
+};
 
 export const createContentRootViewBoundaryGraph = <V extends Value>(
   editor: Pick<AnyEditor<V>, 'read'>,

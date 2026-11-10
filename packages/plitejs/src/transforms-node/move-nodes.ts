@@ -16,6 +16,7 @@ import type {
   NodeMutationMethods,
 } from '../interfaces/transforms/node';
 import { getDefined } from '../internal/get-defined';
+import { refuseMemberCrossingNodes } from '../transforms-text/delete-text';
 import { normalizeNodeMatch } from '../utils/node-match';
 
 export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
@@ -72,17 +73,18 @@ export const moveNodes = ((editor: Editor, options: NodeMoveNodesOptions) => {
       match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
     }
 
+    const entries = Array.from(getNodes(editor, { at, match, mode, voids }));
+
+    refuseMemberCrossingNodes(editor, at, entries);
     const toAnchor = editor.anchor(to, {
       association: 'forward',
       deletion: 'nearest',
     });
-    const pathAnchors = Array.from(
-      getNodes(editor, { at, match, mode, voids }),
-      ([, path]) =>
-        editor.anchor(path, {
-          association: 'forward',
-          deletion: 'drop',
-        })
+    const pathAnchors = entries.map(([, path]) =>
+      editor.anchor(path, {
+        association: 'forward',
+        deletion: 'drop',
+      })
     );
     let followsDestination = false;
 

@@ -18,6 +18,7 @@ import type {
   EditableRepairRequest,
 } from './input-controller';
 import type { DOMInputRepairTarget, RepairDOMInput } from './input-state';
+import { openInputTarget } from './input-target';
 import {
   applyEditableCommand,
   applyModelOwnedDataTransferInput,
@@ -106,7 +107,8 @@ export const applyEditableInput = ({
     return inputResult();
   }
 
-  const dropsEdits = dropsNativeEdits(editor, readOnly);
+  const dropsEdits =
+    dropsNativeEdits(editor, readOnly) || openInputTarget(editor) === 'sealed';
 
   if (
     skipNativeTextInputRepair &&

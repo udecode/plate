@@ -19,6 +19,7 @@ import {
   getInternalEditorSchemaFromApi,
 } from './editor-schema';
 import { toPublicRoot } from './public-root';
+import { sealsText, valueSite } from './set-root';
 import { isTextCell } from './writable-text';
 
 export type SelectedBlocksReplacement = Readonly<{
@@ -79,6 +80,25 @@ export const getNodeSelectionReplacement = (
   replacements: readonly Descendant[]
 ): SelectedBlocksReplacement | null => {
   const [, firstPath] = getDefined(blocks[0]);
+  const schema = getInternalEditorSchemaFromApi(state.schema);
+
+  if (
+    sealsText(
+      valueSite(schema, () => state.value()),
+      {
+        root,
+        selection: SelectionApi.nodes(
+          blocks.map(([, path]) => path) as [Path, ...Path[]],
+          {
+            mode: 'block',
+            ...(toPublicRoot(root) ? { root: toPublicRoot(root) } : {}),
+          }
+        ),
+      }
+    )
+  ) {
+    return null;
+  }
   const lastReplacement = replacements.at(-1);
   const textEntry = lastReplacement
     ? [...NodeApi.texts(lastReplacement)].at(-1)
@@ -86,7 +106,6 @@ export const getNodeSelectionReplacement = (
 
   if (!textEntry) return null;
 
-  const schema = getInternalEditorSchemaFromApi(state.schema);
   const dividesTextCell =
     replacements.length > blocks.length &&
     blocks.some(([block]) => isTextCell(schema, block));

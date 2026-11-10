@@ -318,7 +318,7 @@ const publishInitialPlugins = <TEditor extends AnyEditor>(
             admitted.document,
             root,
             { association: 'backward', preferPositionMapping: true }
-          ),
+          ).selection,
           root
         );
       }
@@ -375,7 +375,7 @@ const adoptInitialDocumentChange = (
     admitted.document,
     initialSelectionRoot,
     { association: 'backward', preferPositionMapping: true }
-  );
+  ).selection;
 
   if (!mapped) {
     throw new Error(

@@ -948,6 +948,173 @@ const composeLogicalGroups = (
   return Object.freeze(result);
 };
 
+const setMemberOf = (
+  index: ComparisonDocumentIndex,
+  node: ComparisonIndexNode
+) => {
+  const root = index.roots.get(node.root);
+
+  return root?.structure?.kind === 'set'
+    ? (root.topLevelIndexes[node.path[0]] ?? null)
+    : null;
+};
+
+const pairSetMembers = (
+  before: ComparisonDocumentIndex,
+  after: ComparisonDocumentIndex,
+  matchedBefore: ReadonlySet<number>,
+  matchedAfter: ReadonlySet<number>
+) => {
+  const result: Array<Readonly<{ after: number; before: number }>> = [];
+
+  for (const [root, beforeRoot] of before.roots) {
+    const afterRoot = after.roots.get(root);
+
+    if (
+      beforeRoot.structure?.kind !== 'set' ||
+      afterRoot?.structure?.kind !== 'set'
+    ) {
+      continue;
+    }
+    const sources = beforeRoot.topLevelIndexes.filter(
+      (index) => !matchedBefore.has(index)
+    );
+    const targets = afterRoot.topLevelIndexes.filter(
+      (index) => !matchedAfter.has(index)
+    );
+    const sameAt = (source: number, target: number) =>
+      before.nodes[sources[source]].exactHash ===
+      after.nodes[targets[target]].exactHash;
+    let prefix = 0;
+    let suffix = 0;
+
+    while (
+      prefix < Math.min(sources.length, targets.length) &&
+      sameAt(prefix, prefix)
+    ) {
+      prefix += 1;
+    }
+    while (
+      suffix < Math.min(sources.length, targets.length) - prefix &&
+      sameAt(sources.length - 1 - suffix, targets.length - 1 - suffix)
+    ) {
+      suffix += 1;
+    }
+    const fromStart = Math.min(sources.length, targets.length) - suffix;
+
+    for (let position = 0; position < fromStart; position += 1) {
+      result.push({ after: targets[position], before: sources[position] });
+    }
+    for (let fromEnd = 1; fromEnd <= suffix; fromEnd += 1) {
+      result.push({
+        after: targets[targets.length - fromEnd],
+        before: sources[sources.length - fromEnd],
+      });
+    }
+  }
+
+  return result;
+};
+
+const membersHolding = (
+  index: ComparisonDocumentIndex,
+  members: Iterable<number>
+) => {
+  const byRoot = new Map<ComparisonSpan['root'], number[]>();
+
+  for (const member of members) {
+    const { root } = index.nodes[member].span;
+    const list = byRoot.get(root) ?? [];
+
+    list.push(member);
+    byRoot.set(root, list);
+  }
+  for (const list of byRoot.values()) {
+    list.sort(
+      (left, right) =>
+        index.nodes[left].span.from - index.nodes[right].span.from
+    );
+  }
+
+  return (span: ComparisonSpan) => {
+    const list = byRoot.get(span.root) ?? [];
+    let low = 0;
+    let high = list.length;
+
+    while (low < high) {
+      const middle = (low + high) >> 1;
+
+      if (index.nodes[list[middle]].span.from <= span.from) low = middle + 1;
+      else high = middle;
+    }
+    const holding: number[] = [];
+
+    for (
+      let at = low - 1;
+      at >= 0 && index.nodes[list[at]].span.to >= span.from;
+      at -= 1
+    ) {
+      if (spanWithin(span, index.nodes[list[at]].span)) holding.push(list[at]);
+    }
+
+    return holding;
+  };
+};
+
+const composeSetMemberGroups = (
+  changes: readonly ComparedChange[],
+  members: ReadonlyMap<number, number>,
+  before: ComparisonDocumentIndex,
+  after: ComparisonDocumentIndex
+) => {
+  const sourcesHolding = membersHolding(before, members.keys());
+  const targetsHolding = membersHolding(after, members.values());
+  const sourcesOf = new Map<number, number[]>();
+
+  for (const [source, target] of members) {
+    sourcesOf.set(target, [...(sourcesOf.get(target) ?? []), source]);
+  }
+  const buckets = new Map<number, number[]>();
+
+  changes.forEach((change, index) => {
+    const [firstBefore] = change.before;
+    const [firstAfter] = change.after;
+    const sources = firstBefore
+      ? sourcesHolding(firstBefore)
+      : firstAfter
+        ? targetsHolding(firstAfter).flatMap(
+            (target) => sourcesOf.get(target) ?? []
+          )
+        : [...members.keys()];
+
+    for (const source of sources) {
+      const target = members.get(source);
+
+      if (
+        target !== undefined &&
+        change.before.every((span) =>
+          spanWithin(span, before.nodes[source].span)
+        ) &&
+        change.after.every((span) => spanWithin(span, after.nodes[target].span))
+      ) {
+        const bucket = buckets.get(source) ?? [];
+
+        bucket.push(index);
+        buckets.set(source, bucket);
+      }
+    }
+  });
+  const merges = [...members.keys()].flatMap((source) => {
+    const indexes = buckets.get(source) ?? [];
+
+    return indexes.length < 2 ? [] : [{ members: indexes, owner: indexes[0] }];
+  });
+
+  return merges.length === 0
+    ? changes
+    : Object.freeze(mergeGroups(changes, merges));
+};
+
 export const matchComparison = async (
   before: ComparisonDocumentIndex,
   after: ComparisonDocumentIndex,
@@ -1074,17 +1241,69 @@ export const matchComparison = async (
     }
   }
 
+  for (const member of pairSetMembers(
+    before,
+    after,
+    matchedBefore,
+    matchedAfter
+  )) {
+    const source = before.nodes[member.before];
+    const target = after.nodes[member.after];
+
+    recordPair(
+      source,
+      target,
+      false,
+      Object.freeze({
+        basis: source.exactHash === target.exactHash ? 'exact' : 'structure',
+        kind: 'inferred',
+      })
+    );
+  }
+
+  const memberPairs = new Map(
+    pairs.flatMap((pair) =>
+      setMemberOf(before, before.nodes[pair.before]) === pair.before &&
+      setMemberOf(after, after.nodes[pair.after]) === pair.after
+        ? [[pair.before, pair.after] as const]
+        : []
+    )
+  );
+  // Inside a set, a node matches only inside the member paired with its own;
+  // an unpaired member's nodes get a scope no target has.
+  const beforeScope = (node: ComparisonIndexNode) => {
+    const member = setMemberOf(before, node);
+
+    if (member === null) return null;
+    const target = memberPairs.get(member);
+
+    return target === undefined ? `removed:${member}` : `${target}`;
+  };
+  const afterScope = (node: ComparisonIndexNode) => {
+    const member = setMemberOf(after, node);
+
+    return member === null ? null : `${member}`;
+  };
+  const sameScope = (
+    source: ComparisonIndexNode,
+    target: ComparisonIndexNode
+  ) => beforeScope(source) === afterScope(target);
+  const scopedKey = (scope: string | null, key: string) =>
+    scope === null ? key : `${scope}\u0000${key}`;
+
   for (const node of beforeElements) {
-    const values = exactBefore.get(node.exactHash) ?? [];
+    const key = scopedKey(beforeScope(node), node.exactHash);
+    const values = exactBefore.get(key) ?? [];
 
     values.push(node);
-    exactBefore.set(node.exactHash, values);
+    exactBefore.set(key, values);
   }
   for (const node of afterElements) {
-    const values = exactAfter.get(node.exactHash) ?? [];
+    const key = scopedKey(afterScope(node), node.exactHash);
+    const values = exactAfter.get(key) ?? [];
 
     values.push(node);
-    exactAfter.set(node.exactHash, values);
+    exactAfter.set(key, values);
   }
 
   for (const [hash, beforeBucket] of exactBefore) {
@@ -1517,13 +1736,15 @@ export const matchComparison = async (
 
   for (const node of unmatchedAfter) {
     const tokens = semanticTokens(node.text);
+    const scope = afterScope(node);
 
     afterTokens.set(node.index, tokens);
     for (const token of tokens) {
-      const values = tokenTargets.get(token) ?? [];
+      const key = scopedKey(scope, token);
+      const values = tokenTargets.get(key) ?? [];
 
       if (values.length < CANDIDATES_PER_NODE) values.push(node.index);
-      tokenTargets.set(token, values);
+      tokenTargets.set(key, values);
     }
   }
 
@@ -1532,13 +1753,16 @@ export const matchComparison = async (
 
   for (const source of unmatchedBefore) {
     const sourceTokens = semanticTokens(source.text);
+    const scope = beforeScope(source);
     const targetIndexes = new Set<number>();
     const samePath = unmatchedAfterByPath.get(nodeKey(source));
 
-    if (samePath) targetIndexes.add(samePath.index);
+    if (samePath && sameScope(source, samePath)) {
+      targetIndexes.add(samePath.index);
+    }
 
     for (const token of sourceTokens) {
-      for (const target of tokenTargets.get(token) ?? []) {
+      for (const target of tokenTargets.get(scopedKey(scope, token)) ?? []) {
         targetIndexes.add(target);
         if (targetIndexes.size >= CANDIDATES_PER_NODE) break;
       }
@@ -1546,7 +1770,9 @@ export const matchComparison = async (
     }
     if (targetIndexes.size === 0 && source.text.length === 0) {
       for (const target of unmatchedAfter) {
-        if (target.type === source.type) targetIndexes.add(target.index);
+        if (target.type === source.type && sameScope(source, target)) {
+          targetIndexes.add(target.index);
+        }
         if (targetIndexes.size >= CANDIDATES_PER_NODE) break;
       }
     }
@@ -2109,12 +2335,20 @@ export const matchComparison = async (
           ...effect.before.filter((value) => {
             const node = beforeNodeBySpan.get(spanKey(value));
 
-            return node?.blockContainer === true && node.structure === null;
+            return (
+              node?.blockContainer === true &&
+              node.structure === null &&
+              setMemberOf(before, node) === null
+            );
           }),
           ...effect.after.filter((value) => {
             const node = afterNodeBySpan.get(spanKey(value));
 
-            return node?.blockContainer === true && node.structure === null;
+            return (
+              node?.blockContainer === true &&
+              node.structure === null &&
+              setMemberOf(after, node) === null
+            );
           }),
         ];
       })
@@ -2166,8 +2400,11 @@ export const matchComparison = async (
 
   return Object.freeze({
     candidateEdges,
-    changes: composeWrapperGroups(
-      composeLogicalGroups(changes, pairs, before, after)
+    changes: composeSetMemberGroups(
+      composeWrapperGroups(composeLogicalGroups(changes, pairs, before, after)),
+      memberPairs,
+      before,
+      after
     ),
     diagnostics: Object.freeze(diagnostics),
     localAlignmentCells,

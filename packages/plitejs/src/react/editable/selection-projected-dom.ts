@@ -25,10 +25,11 @@ import {
 import {
   type ContentRootOwner,
   createContentRootViewBoundaryGraph,
-  findContentRootOwners,
+  findCrossingContentRootOwners,
 } from './content-root-owners';
 import { getMountedEditableDOMRuntime } from './editable-dom-runtime';
 import { toInternalRoot } from './runtime-editor-api';
+import { settleViewFocus } from './set-root-endpoints';
 
 type ProjectedDOMSelectionEndpoint = {
   affinity?: 'backward' | 'forward';
@@ -288,6 +289,10 @@ export const resolveProjectedDOMSelectionEndpoint = ({
   };
 };
 
+/**
+ * The view selection a DOM selection across views shows, or `{ range }` when
+ * the set law kept its focus in the anchor's member, which one root holds.
+ */
 export const resolveProjectedDOMSelection = ({
   domSelection,
   editor,
@@ -313,25 +318,30 @@ export const resolveProjectedDOMSelection = ({
     return null;
   }
 
-  const owners = findContentRootOwners(editor);
+  const owners = findCrossingContentRootOwners(editor);
   const anchor = resolveProjectedDOMSelectionEndpoint({
     node: domSelection.anchorNode,
     offset: domSelection.anchorOffset,
     owners,
   });
-  const focus = resolveProjectedDOMSelectionEndpoint({
+  const resolvedFocus = resolveProjectedDOMSelectionEndpoint({
     node: domSelection.focusNode,
     offset: domSelection.focusOffset,
     owners,
   });
 
-  if (!anchor || !focus) {
+  if (!anchor || !resolvedFocus) {
     return null;
   }
+  const focus = settleViewFocus(editor, anchor, resolvedFocus);
   const sameOwner =
     anchor.root === focus.root &&
     isSameContentRootOwner(anchor.owner, focus.owner);
-  if (sameOwner) return null;
+  if (sameOwner) {
+    return focus === resolvedFocus
+      ? null
+      : { range: { anchor: anchor.point, focus: focus.point } };
+  }
 
   const anchorOwner = anchor.owner
     ? owners.find((owner) => isSameContentRootOwner(owner, anchor.owner))

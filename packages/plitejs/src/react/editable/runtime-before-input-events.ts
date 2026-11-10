@@ -53,6 +53,7 @@ import {
   runTrackedEditableCompositionMutation,
   shouldMergeEditableCompositionHistory,
 } from './input-state';
+import { textSealedElsewhere } from './input-target';
 import {
   applyModelOwnedBeforeInputMutation,
   applyModelOwnedNativeHistoryEvent,
@@ -675,6 +676,12 @@ export const useRuntimeBeforeInputEvents = ({
             );
           }
           selection.settleHiddenEnd(el);
+
+          if (textSealedElsewhere(editor)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return;
+          }
 
           let currentSelection = profilePliteReactDuration(
             'beforeinput-read-selection',

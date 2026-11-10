@@ -62,9 +62,14 @@ import {
   getNodeSelectionReplacement,
   replaceSelectedBlocks,
 } from './node-selection';
-import { MAIN_ROOT_KEY, toPublicRoot } from './public-root';
-import { getActiveDocumentChangeBuilder } from './public-state';
+import { toPublicRoot } from './public-root';
+import {
+  getActiveDocumentChangeBuilder,
+  getEditorUpdateRoot,
+  getSetSite,
+} from './public-state';
 import { toCompiledNodeContext } from './schema-compiler';
+import { refuseCrossing } from './set-root';
 import { planPaste, writePaste } from './slice-landing';
 import { areEditorJsonValuesEqual } from './value-codec';
 
@@ -76,6 +81,9 @@ type CommandTargetOptions<
 > = Omit<TOptions, 'at'> & {
   at?: Extract<TOptions['at'], NodeSelection> | NodeTarget<TNode>;
 };
+
+const rootOrUpdateRoot = (root: string | undefined) =>
+  root ?? getEditorUpdateRoot(getActiveCommandEditor());
 
 const resolveCommandRange = (
   state: CommandStateView,
@@ -421,7 +429,7 @@ const getFullBlockTextReplacement = (
     return null;
   }
 
-  const root = range.anchor.root ?? range.focus.root ?? MAIN_ROOT_KEY;
+  const root = rootOrUpdateRoot(range.anchor.root ?? range.focus.root);
   const replacement = blockReplacing(
     state,
     getDefined(blocks[0]),
@@ -630,7 +638,11 @@ export const editorCommands: EditorCommands = Object.freeze({
         : null;
       const onlyBlock =
         selectedBlocks?.length === 1 ? getDefined(selectedBlocks[0]) : null;
-      const root = range?.anchor.root ?? range?.focus.root ?? MAIN_ROOT_KEY;
+      const root = rootOrUpdateRoot(range?.anchor.root ?? range?.focus.root);
+
+      if (range) {
+        refuseCrossing(getSetSite(getActiveCommandEditor()), range, root);
+      }
       const publicRoot = toPublicRoot(root);
       const rootHasOtherBlock =
         onlyBlock !== null &&
@@ -795,7 +807,7 @@ export const editorCommands: EditorCommands = Object.freeze({
         if (!nodeBlocks || LINE_BREAK_PATTERN.test(nodeReplacementText)) {
           return false;
         }
-        const root = SelectionApi.root(state.selection()) ?? MAIN_ROOT_KEY;
+        const root = rootOrUpdateRoot(SelectionApi.root(state.selection()));
         const replacement = blockReplacing(
           state,
           getDefined(nodeBlocks[0]),
@@ -819,6 +831,14 @@ export const editorCommands: EditorCommands = Object.freeze({
       }
 
       const range = resolveCommandRange(state, input.options?.at);
+
+      if (range) {
+        refuseCrossing(
+          getSetSite(getActiveCommandEditor()),
+          range,
+          rootOrUpdateRoot(range.anchor.root ?? range.focus.root)
+        );
+      }
       const replacementText = range
         ? limitTextInsert(state, input.text, { at: range })
         : input.text;

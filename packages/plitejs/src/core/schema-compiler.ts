@@ -14,6 +14,7 @@ import type {
   SchemaContentRootContribution,
   SchemaContentRootInput,
   SchemaContentRootOwnership,
+  SchemaContentRootStructure,
   SchemaContentRule,
   SchemaElement,
   SchemaElementTarget,
@@ -310,6 +311,7 @@ export type CompiledSchemaContentProgram = Readonly<{
 export type CompiledSchemaContentRoot = Readonly<{
   content: CompiledSchemaContentProgram;
   ownership: SchemaContentRootOwnership;
+  structure: SchemaContentRootStructure | null;
 }>;
 
 export type CompiledSchemaElementBehavior = Readonly<{
@@ -986,14 +988,17 @@ const collectSchemaKeyDiagnostics = (
     const root = check(
       value,
       targeted
-        ? ['content', 'ownership', 'slot', 'target']
-        : ['content', 'ownership'],
+        ? ['content', 'ownership', 'slot', 'structure', 'target']
+        : ['content', 'ownership', 'structure'],
       owner,
       path
     );
 
     if (!root) return;
     visitContent(root.content, owner, `${path}.content`);
+    if (root.structure !== undefined) {
+      check(root.structure, ['kind'], owner, `${path}.structure`);
+    }
     if (root.target !== undefined) {
       visitTarget(root.target, owner, `${path}.target`);
     }
@@ -4165,6 +4170,23 @@ const compileEditorSchemaInternal = (
         `${source.path}.ownership`
       );
     }
+    if (root.structure === undefined) return;
+    if (root.structure?.kind !== 'set') {
+      compileFailure(
+        'invalid-content-root-structure',
+        `Schema content root at ${source.path} structure must be { kind: "set" }.`,
+        [source],
+        `${source.path}.structure`
+      );
+    }
+    if (root.ownership !== 'exclusive') {
+      compileFailure(
+        'invalid-content-root-structure',
+        `Schema content root at ${source.path} declares a set, which needs ownership "exclusive".`,
+        [source],
+        `${source.path}.structure`
+      );
+    }
   };
 
   for (const element of mutableElements.values()) {
@@ -4227,6 +4249,9 @@ const compileEditorSchemaInternal = (
             value: Object.freeze({
               content: contribution.content,
               ownership: contribution.ownership,
+              ...(contribution.structure
+                ? { structure: contribution.structure }
+                : {}),
             }),
           })
         );
@@ -4237,6 +4262,19 @@ const compileEditorSchemaInternal = (
           `Schema content root slot "${contribution.slot}" at ${source.path} does not target any element type.`,
           [source],
           `${source.path}.target`
+        );
+      }
+    }
+  }
+
+  for (const element of mutableElements.values()) {
+    for (const root of element.contentRoots.values()) {
+      if (root.value.structure && !element.behavior.void) {
+        compileFailure(
+          'invalid-content-root-structure',
+          `Schema content root at ${root.path} declares a set, which needs a void owner, and element type "${element.type}" is not void.`,
+          [root],
+          `${root.path}.structure`
         );
       }
     }
@@ -4362,6 +4400,22 @@ const compileEditorSchemaInternal = (
           [contentSource],
           contentSource.path
         );
+      }
+      if (root.value.structure) {
+        const joinable = [...innerProgram.allowedElementTypes].find((type) => {
+          const behavior = mutableElements.get(type)?.behavior;
+
+          return !behavior?.object && !behavior?.void;
+        });
+
+        if (joinable !== undefined || innerProgram.allowsUnknownElements) {
+          compileFailure(
+            'invalid-content-root-structure',
+            `Schema content root at ${root.path} declares a set, whose members must each be an object or a void element, and ${joinable === undefined ? 'an unknown element' : `"${joinable}"`} is neither.`,
+            [root],
+            `${root.path}.structure`
+          );
+        }
       }
       mutablePrograms.set(`contentRoot:${element.type}:${slot}`, innerProgram);
     }
@@ -5081,6 +5135,9 @@ const compileEditorSchemaInternal = (
                 frozenPrograms.get(`contentRoot:${type}:${slot}`)
               ),
               ownership: root.value.ownership,
+              structure: root.value.structure
+                ? Object.freeze({ kind: root.value.structure.kind })
+                : null,
             }),
           ])
       )
@@ -5639,6 +5696,7 @@ const canonicalContentProgram = (
 export type EditorSchemaContractContentRoot = Readonly<{
   content: EditorSchemaContractContentProgram;
   ownership: SchemaContentRootOwnership;
+  structure?: SchemaContentRootStructure;
 }>;
 
 export type EditorSchemaContractElementBehavior = Readonly<
@@ -6065,6 +6123,7 @@ const contractContentRoot = (
   Object.freeze({
     content: contractContentProgram(root.content),
     ownership: root.ownership,
+    ...(root.structure ? { structure: root.structure } : {}),
   });
 
 const contractSlicePolicy = ({
@@ -6242,7 +6301,9 @@ const isContractContentProgram = (value: unknown): boolean =>
 const isContractContentRoot = (value: unknown) =>
   isRecord(value) &&
   isContractContentProgram(value.content) &&
-  (value.ownership === 'exclusive' || value.ownership === 'shared');
+  (value.ownership === 'exclusive' || value.ownership === 'shared') &&
+  (value.structure === undefined ||
+    (isRecord(value.structure) && value.structure.kind === 'set'));
 
 const isContractElementBehavior = (value: unknown) =>
   isRecord(value) &&
@@ -7069,6 +7130,9 @@ const restoreContentRoot = (
   Object.freeze({
     content: restoreContentProgram(root.content),
     ownership: root.ownership,
+    structure: root.structure
+      ? Object.freeze({ kind: root.structure.kind })
+      : null,
   });
 
 const restoreRoot = (root: EditorSchemaContractRoot): CompiledSchemaRoot =>

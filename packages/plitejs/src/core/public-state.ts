@@ -388,15 +388,26 @@ import {
   getSelectionRange,
   getSelectionRanges,
   isValidEditorSelection,
+  landAfterRemovedHolder,
   mapSelectionThroughChange,
 } from './selection-protocol';
 import {
-  getSelectionStateRoot,
-  getSelectionStateSelection,
-  initializeSelectionState,
-  setSelectionStateSelection,
+  getSelectionStateCaret,
+  setSelectionStateCaret,
 } from './selection-state';
 import { defineSemanticUpdateMethod } from './semantic-update-method';
+import {
+  bootstrapCaret,
+  carryCaret,
+  crossesMembers,
+  NO_CARET,
+  type SetSite,
+  type SettledCaret,
+  type SettledSelection,
+  settleCaret,
+  settleShown,
+  valueSite,
+} from './set-root';
 import { dissolveOpenEndMatter, splitEndMatter } from './slice-end-matter';
 import type { SliceLandingTarget } from './slice-landing-types';
 import {
@@ -434,6 +445,7 @@ import {
   repairCommittedUniqueValues,
   sameUniqueIndex,
   type UniqueIndex,
+  uniqueHolderOf,
 } from './unique-values';
 import {
   getCurrentUpdateTags,
@@ -1851,8 +1863,10 @@ export const commitRecordedDraft = (
   moveDraftTracks(snapshot, plainBuilder, snapshot.builder, plainToRecorded);
   context.caret = {
     ...context.caret,
-    root: selectionRoot,
-    selection: cloneValue(recorded.selection),
+    ...carryCaret(getSetSite(editor), context.caret, {
+      root: selectionRoot,
+      selection: cloneValue(recorded.selection),
+    }),
   };
   if (carried) context.caret = landCarets(editor, context.caret, carried);
   if (snapshot.implicitTargetResolved) {
@@ -2062,6 +2076,65 @@ export const seedUniqueIndex = (editor: Editor) => {
     getSnapshotVersion(editor),
     (root) =>
       withEditorRootChildren(editor, root, () => getSnapshot(editor)).index
+  );
+};
+
+const publishedUniqueIndex = (editor: Editor) => {
+  const snapshot = getTransactionSnapshot(editor);
+
+  if (!snapshot) {
+    return uniqueIndexOf(
+      editor,
+      getEditorDocumentValue(editor),
+      getSnapshotVersion(editor),
+      (root) =>
+        withEditorRootChildren(editor, root, () => getSnapshot(editor)).index
+    );
+  }
+
+  const stored = getChangeValue(
+    snapshot.roots,
+    snapshot.records
+  ) as EditorDocumentValue;
+
+  return uniqueIndexOf(
+    editor,
+    stored,
+    snapshot.previousVersion,
+    (root) =>
+      snapshot.baseSnapshots[root]?.index ??
+      snapshotIndexOf(
+        getEditorRuntimeOwner(editor),
+        getDocumentRootChildren(stored, root)
+      )
+  );
+};
+
+const readUniqueHolder = (editor: Editor, property: string, value: unknown) => {
+  if (!uniquePropertiesOf(getCompiledEditorSchema(editor)).has(property)) {
+    throw new Error(
+      `Property "${property}" is not unique in this editor's schema.`
+    );
+  }
+
+  const roots = getEditorDocumentRoots(editor);
+
+  return uniqueHolderOf(
+    publishedUniqueIndex(editor),
+    property,
+    value,
+    (root, nodeKey) => {
+      if (root !== MAIN_ROOT_KEY && !Object.hasOwn(roots, root)) return null;
+
+      return withEditorRootChildren(editor, root, () => {
+        const path = getSnapshot(editor).index.pathOf(nodeKey);
+        const node = path && getLiveNode(editor, path);
+
+        return path && node && NodeApi.isElement(node)
+          ? { held: node[property], path }
+          : null;
+      });
+    }
   );
 };
 
@@ -3763,6 +3836,33 @@ export const getEditorDocumentRoots = (
     : withRoot(storedRoots, currentRoot, children);
 };
 
+const getEditorRootChildren = (
+  editor: Editor,
+  root: string
+): readonly unknown[] | undefined => {
+  const value =
+    getReadProjection(editor) ??
+    getTransactionSpecContext(editor)?.snapshot.builder.value;
+
+  if (value) {
+    return root === MAIN_ROOT_KEY ? value.children : value.roots?.[root];
+  }
+  const storedRoots = ROOTS.get(editor);
+
+  if (!storedRoots) {
+    return root === MAIN_ROOT_KEY
+      ? childrenOf(getStoredChildrenSource(editor))
+      : undefined;
+  }
+  if (!Object.hasOwn(storedRoots, root)) return undefined;
+
+  return childrenOf(
+    root === getCurrentChildrenRoot(editor)
+      ? getStoredChildrenSource(editor)
+      : rootSourceOf(storedRoots, root)
+  );
+};
+
 export const getEditorDocumentValue = <V extends Value>(
   editor: Editor<V>
 ): EditorDocumentValue<V> =>
@@ -4701,6 +4801,10 @@ const placeSliceFitRange = (
     }
   }
   if (!range) return false;
+  const site = getSetSite(editor);
+  const rangeRoot = range.anchor.root ?? root ?? getEditorUpdateRoot(editor);
+
+  if (crossesMembers(site, range, rangeRoot)) return false;
   if (!insertionBoundary && childrenAt === undefined) {
     range = landTextWrite(editor, range, getChildren(editor));
   }
@@ -4708,6 +4812,7 @@ const placeSliceFitRange = (
   if (!insertionBoundary && !options?.hanging) {
     range = state.ranges.unhang(range, { voids: options?.voids });
   }
+  if (crossesMembers(site, range, rangeRoot)) return false;
   if (
     !insertionBoundary &&
     ((!options?.voids && getEditorRuntime(editor).void({ at: range })) ||
@@ -6885,6 +6990,10 @@ const getStateView = <
           });
         },
       }),
+      unique: Object.freeze({
+        holder: (property: string, value: unknown) =>
+          readUniqueHolder(editor, property, value),
+      }),
       value: () =>
         withEditorDocumentProjection(editor, undefined, () =>
           getEditorDocumentValue(editor)
@@ -8600,7 +8709,9 @@ export const getUpdateView = <
         ),
         move: defineSemanticUpdateMethod<EditorTransactionSelectionApi['move']>(
           (options = {}) => {
-            runSelectionWrite(() => applyMove(editor, options));
+            runSelectionWrite(() =>
+              asSelectionMotion(editor, () => applyMove(editor, options))
+            );
           },
           (command, [options]) => {
             command(editorCommands.move, { options });
@@ -8943,11 +9054,9 @@ export const createTransactionSpecContext = (
   const anchorValue = getEditorDocumentValue(editor);
   const roots = getEditorDocumentRoots(editor);
   const selection = getCurrentSelection(editor);
-  const selectionRoot = getCurrentSelectionRoot(editor);
   const caret: CaretState = {
     ...(parent?.caret ?? getCommittedCarets(getEditorRuntimeOwner(editor))),
-    root: selectionRoot,
-    selection,
+    ...getCurrentCaret(editor),
   };
   const currentChildrenRoot = getCurrentChildrenRoot(editor);
   const baseRuntimeIndexes: Record<string, () => SnapshotIndex> = {};
@@ -9011,7 +9120,7 @@ export const createTransactionSpecContext = (
     roots,
     runtimeIndexRollbacks: new Map(),
     selection,
-    selectionRoot,
+    selectionRoot: caret.root,
     skipCorrections: true,
     tags: new Set(),
     transactionChangeObservers: new Set(),
@@ -9192,6 +9301,18 @@ const dropOrphanedRoots = (
     changedRoots: changedRootsOf(builder.change),
     tracked: snapshot.contentSliceRoots,
   });
+  const caret = getTransactionSpecContext(editor)?.caret;
+  const landed =
+    caret?.selection && orphaned.includes(caret.root)
+      ? landAfterRemovedHolder(
+          editor,
+          caret,
+          builder.change,
+          getChangeValue(roots, snapshot.records) as EditorDocumentValue,
+          after
+        )
+      : null;
+
   for (const root of orphaned) {
     applyDocumentChangeStep(editor, builder.deleteRoot(root), options);
     snapshot.contentSliceRoots.delete(root);
@@ -9200,6 +9321,7 @@ const dropOrphanedRoots = (
       setCurrentSelection(editor, null, MAIN_ROOT_KEY);
     }
   }
+  if (landed?.selection) setCurrentCaret(editor, landed);
 
   return orphaned.length > 0;
 };
@@ -10073,22 +10195,78 @@ export const deleteEditorRoot = (
   );
 };
 
+/**
+ * Reads the owner's document, because a view's own document outside an update
+ * holds only its root, where no set's owner is found.
+ *
+ * @internal
+ */
+export const getSetSite = (editor: Editor): SetSite => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  return {
+    rootChildren: (root) => getEditorRootChildren(owner, root),
+    get schema() {
+      return getEditorSchema(owner);
+    },
+    value: () => getEditorDocumentValue(owner),
+  };
+};
+
+/** @internal */
+export const carryCurrentCaret = (
+  editor: Editor,
+  previous: SettledCaret,
+  write: Readonly<{ root: string; selection: Selection }>
+): SettledCaret => carryCaret(getSetSite(editor), previous, write);
+
+const MOVING = new WeakSet<Editor>();
+
+/**
+ * Runs keyboard motion: each selection write inside `run` keeps the member
+ * of a set root that the previous selection held, so an arrow, a word move,
+ * Home or End never carries a caret into the next member.
+ */
+export const asSelectionMotion = <T>(editor: Editor, run: () => T): T => {
+  const owner = getEditorRuntimeOwner(editor);
+
+  if (MOVING.has(owner)) return run();
+  MOVING.add(owner);
+  try {
+    return run();
+  } finally {
+    MOVING.delete(owner);
+  }
+};
+
+const storeCaret = (editor: Editor, caret: SettledCaret) => {
+  const context = getTransactionSpecContext(editor);
+  const { root, selection, session, inSetRoot } = caret;
+
+  if (context) {
+    context.caret = { ...context.caret, root, selection, session, inSetRoot };
+  } else {
+    setSelectionStateCaret(editor, { root, selection, session, inSetRoot });
+  }
+};
+
 const setSelectionValue = (
   editor: Editor,
   selection: Selection,
   root: string
 ) => {
+  const owner = getEditorRuntimeOwner(editor);
   const context = getTransactionSpecContext(editor);
 
-  if (context) {
-    context.caret = {
-      ...context.caret,
-      root,
-      selection: cloneValue(selection),
-    };
-  } else {
-    setSelectionStateSelection(editor, selection, root);
-  }
+  storeCaret(
+    editor,
+    settleCaret(
+      getSetSite(editor),
+      context ? context.caret : getSelectionStateCaret(owner),
+      { root, selection: cloneValue(selection) },
+      MOVING.has(owner) ? 'move' : 'place'
+    )
+  );
 };
 
 export const getCurrentMarks = (editor: Editor): EditorMarks | null => {
@@ -10125,7 +10303,7 @@ export const setCurrentMarks = (editor: Editor, marks: EditorMarks | null) => {
   syncImplicitTargetToCurrentSelection(editor);
 };
 
-const readCurrentSelection = (editor: Editor): Selection => {
+const readCurrentSelection = (editor: Editor): SettledSelection => {
   const owner = getEditorRuntimeOwner(editor);
   const context = getTransactionSpecContext(owner);
 
@@ -10138,11 +10316,11 @@ const readCurrentSelection = (editor: Editor): Selection => {
   return context
     ? context.caret.selection
     : frame
-      ? frame.selection()
-      : getSelectionStateSelection(owner);
+      ? settleShown(getSetSite(owner), frame.root, frame.selection())
+      : getSelectionStateCaret(owner).selection;
 };
 
-export const getCurrentSelection = (editor: Editor): Selection =>
+export const getCurrentSelection = (editor: Editor): SettledSelection =>
   cloneValue(readCurrentSelection(editor));
 
 export const getCurrentSelectionRoot = (editor: Editor): string => {
@@ -10151,8 +10329,20 @@ export const getCurrentSelectionRoot = (editor: Editor): string => {
   return (
     getTransactionSpecContext(owner)?.caret.root ??
     READ_SELECTIONS.get(owner)?.root ??
-    getSelectionStateRoot(owner)
+    getSelectionStateCaret(owner).root
   );
+};
+
+const getCurrentCaret = (editor: Editor): SettledCaret => {
+  const owner = getEditorRuntimeOwner(editor);
+  const context = getTransactionSpecContext(owner);
+
+  if (context) return context.caret;
+
+  return carryCaret(getSetSite(owner), getSelectionStateCaret(owner), {
+    root: getCurrentSelectionRoot(editor),
+    selection: getCurrentSelection(editor),
+  });
 };
 
 export const getSelectionRoot = (
@@ -10329,6 +10519,33 @@ export const setCurrentSelection = (
 };
 
 /**
+ * Stores a caret a change carried or landed, as `setCurrentSelection` stores
+ * a written one, without settling it again or starting an edit session.
+ */
+const setCurrentCaret = (editor: Editor, caret: SettledCaret) => {
+  const owner = getEditorRuntimeOwner(editor);
+  const snapshot = getTransactionSnapshot(owner);
+
+  if (snapshot && caret.selection) {
+    assertRootPlaced(
+      owner,
+      snapshot,
+      SelectionApi.root(caret.selection) ?? caret.root
+    );
+  }
+  assertSelectionSupported(
+    editor,
+    caret.selection,
+    getEditorDocumentValue(editor),
+    caret.root
+  );
+  storeCaret(owner, caret);
+  bumpMutationVersion(owner);
+  clearSnapshotCache(owner);
+  markTransactionChanged(owner);
+};
+
+/**
  * Replace bootstrap selection without creating mutation authority.
  *
  * @internal
@@ -10346,7 +10563,15 @@ export const initializeEditorSchemaSelection = (
     getEditorDocumentValue(owner),
     root
   );
-  setSelectionValue(owner, selection, root);
+  storeCaret(
+    owner,
+    settleCaret(
+      getSetSite(owner),
+      { ...NO_CARET, session: getSelectionStateCaret(owner).session },
+      { root, selection: cloneValue(selection) },
+      'place'
+    )
+  );
   clearSnapshotCache(owner);
 };
 
@@ -10401,7 +10626,7 @@ export const transformImplicitTarget = (
     after,
     root,
     options
-  );
+  ).selection;
 };
 
 export const getActiveImplicitTarget = (
@@ -11681,8 +11906,15 @@ const applyTransactionSpecDocumentChangeStep = (
         specContext.caret,
         {
           ...specContext.caret,
-          root: explicitSelection.root,
-          selection: explicitSelection.value,
+          ...settleCaret(
+            valueSite(getEditorSchema(editor), () => after),
+            specContext.caret,
+            {
+              root: explicitSelection.root,
+              selection: explicitSelection.value,
+            },
+            'place'
+          ),
         },
         () => before
       )
@@ -11707,7 +11939,10 @@ const applyTransactionSpecDocumentChangeStep = (
   const selectionRuntimeIndexes = runtimeIndexes.get(selectionRoot);
   specContext.currentChildrenRoot = nextRoot;
 
-  const mapThroughStep = (selection: Selection, root: string) => {
+  const mapThroughStep = (
+    selection: Selection | SettledCaret,
+    root: string
+  ) => {
     const indexes = runtimeIndexes.get(root);
 
     return mapSelectionThroughChange(
@@ -11728,10 +11963,17 @@ const applyTransactionSpecDocumentChangeStep = (
       }
     );
   };
-  const mappedSelection = explicitSelection
-    ? explicitSelection.value
-    : selectionBefore
-      ? mapThroughStep(selectionBefore, selectionRoot)
+  const mappedCaret =
+    !explicitSelection && selectionBefore
+      ? mapThroughStep(
+          {
+            root: specContext.caret.root,
+            selection: specContext.caret.selection,
+            session: specContext.caret.session,
+            inSetRoot: specContext.caret.inSetRoot,
+          },
+          selectionRoot
+        )
       : null;
 
   specContext.caret = {
@@ -11742,16 +11984,25 @@ const applyTransactionSpecDocumentChangeStep = (
         step.indexedBefore.get(root) ?? valueRootIndex(step.before, root),
       deletedRoots: step.change.deleteRoots,
       keys: (root) => getDefined(runtimeIndexes.get(root)),
-      map: mapThroughStep,
+      map: (selection, root) => mapThroughStep(selection, root).selection,
       roots: changedRoots,
     }),
   };
-  setCurrentSelection(
-    editor,
-    mappedSelection,
-    explicitSelection?.root ??
-      (hasRoot(selectionRoot) ? selectionRoot : nextRoot)
-  );
+  if (explicitSelection) {
+    setCurrentSelection(
+      editor,
+      explicitSelection.value,
+      explicitSelection.root
+    );
+  } else if (mappedCaret && hasRoot(mappedCaret.root)) {
+    setCurrentCaret(editor, mappedCaret);
+  } else {
+    setCurrentSelection(
+      editor,
+      null,
+      hasRoot(selectionRoot) ? selectionRoot : nextRoot
+    );
+  }
   if (explicitSelection) {
     specContext.selectionWritten = true;
     syncImplicitTargetToCurrentSelection(editor);
@@ -12003,12 +12254,17 @@ const createEditorUpdateDraftContext = (
     getChangeValue(transactionRoots, records)
   );
   const documentState = copyDocumentState(DOCUMENT_STATE.get(editor));
-  const selection = previousSnapshot.selection ?? getCurrentSelection(editor);
   const selectionRoot = getCurrentSelectionRoot(editor);
+  const current = getCurrentCaret(editor);
+  const selection = previousSnapshot.selection ?? current.selection;
   const caret: CaretState = {
     ...getCommittedCarets(editor),
-    root: selectionRoot,
-    selection: cloneValue(selection),
+    ...(previousSnapshot.selection
+      ? carryCaret(getSetSite(editor), current, {
+          root: selectionRoot,
+          selection: cloneValue(previousSnapshot.selection),
+        })
+      : current),
   };
   const cachedSnapshots = new Map(SNAPSHOT_CACHE.get(editor));
 
@@ -12116,10 +12372,11 @@ const publishTransactionDraft = (
   RECORDS.set(editor, getValueRecords(context.snapshot.builder.value));
   CURRENT_CHILDREN_ROOT.set(editor, currentRoot);
   CHILDREN.set(editor, rootSourceOf(roots, currentRoot));
-  setSelectionStateSelection(
+  setSelectionStateCaret(
     editor,
-    selection,
-    selection === null ? MAIN_ROOT_KEY : context.caret.root
+    selection === null
+      ? { ...context.caret, root: MAIN_ROOT_KEY, selection: null }
+      : context.caret
   );
   commitCarets(editor, context.caret);
   if (documentState === undefined) DOCUMENT_STATE.delete(editor);
@@ -13224,7 +13481,7 @@ export const initializeEditorSchemaSnapshot = (
           admitted.document,
           selectedRoot,
           { association: 'backward', preferPositionMapping: true }
-        );
+        ).selection;
   const resolvedSelection = withEditorUpdateRootScope(
     editor,
     selectedRoot,
@@ -13265,6 +13522,7 @@ export const toEditorCoreStateView = <V extends Value>(
     selection: state.selection,
     slice: state.slice,
     text: state.text,
+    unique: state.unique,
     value: state.value,
     view: state.view,
   }) satisfies EditorCoreStateView<V>;
@@ -13312,10 +13570,9 @@ export const initializePublicState = <
   const initialSelectionRoot = options.initialSelection
     ? (SelectionApi.root(options.initialSelection) ?? MAIN_ROOT_KEY)
     : MAIN_ROOT_KEY;
-  initializeSelectionState(
+  setSelectionStateCaret(
     editor,
-    options.initialSelection ?? null,
-    initialSelectionRoot
+    bootstrapCaret(initialSelectionRoot, options.initialSelection ?? null)
   );
   initializeListenerState(editor);
   LAST_COMMIT.set(editor, null);

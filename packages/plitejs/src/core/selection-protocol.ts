@@ -33,6 +33,14 @@ import { getEditorSchema } from './editor-runtime';
 import type { InternalEditorSchemaApi } from './editor-schema';
 import { toPublicRoot } from './public-root';
 import {
+  carryCaret,
+  holderSelection,
+  landCaret,
+  NO_CARET,
+  type SettledCaret,
+  valueSite,
+} from './set-root';
+import {
   assertEditorJsonValue,
   decodeVersionedValue,
   encodeVersionedValue,
@@ -925,19 +933,127 @@ export const withLandedMarks = (
     : Object.freeze({ ...selection, marks });
 };
 
+const isSettledCaret = (
+  value: Selection | SettledCaret
+): value is SettledCaret => value !== null && Object.hasOwn(value, 'session');
+
+const pointAfterOwner = (
+  change: DocumentChange,
+  before: EditorDocumentValue,
+  after: EditorDocumentValue,
+  owner: Readonly<{ path: Path; root: RootKey }>
+): Selection => {
+  if (change.deleteRoots.has(owner.root)) return null;
+  const { to } = valueRootIndex(before, owner.root).nodeRange(owner.path);
+  const mapped = mapInternalDocumentChangePosition(
+    change,
+    owner.root,
+    to,
+    1,
+    undefined
+  );
+
+  if (mapped == null) return null;
+  const document = valueRootIndex(after, owner.root);
+  const point = document.pointAt(mapped, 1) ?? document.pointAt(mapped, -1);
+
+  if (!point) return null;
+  const at = publicPoint(point, owner.root, owner.root !== 'main');
+
+  return { anchor: at, focus: at, kind: 'text' };
+};
+
+/** @internal */
+export const landAfterRemovedHolder = (
+  editor: Editor,
+  caret: SettledCaret,
+  change: DocumentChange,
+  before: EditorDocumentValue,
+  after: EditorDocumentValue
+): SettledCaret | null => {
+  const schema = selectionSchema(editor);
+  const owner = caret.inSetRoot
+    ? schema.findRootOwner(caret.root, before)
+    : null;
+
+  if (!owner) return null;
+
+  return landCaret(
+    valueSite(schema, () => after),
+    caret,
+    {
+      root: owner.root,
+      selection: pointAfterOwner(change, before, after, owner),
+    }
+  );
+};
+
+const landSetSelection = (
+  schema: InternalEditorSchemaApi,
+  previous: SettledCaret,
+  context: EditorSelectionMapContext,
+  change: DocumentChange,
+  before: EditorDocumentValue,
+  after: EditorDocumentValue
+): Readonly<{ root: RootKey; selection: Selection }> | undefined => {
+  const { root, selection } = previous;
+
+  if (!previous.inSetRoot || !selection) return undefined;
+  const landAfterHolder = () => {
+    const owner = schema.findRootOwner(root, before);
+
+    return owner
+      ? {
+          root: owner.root,
+          selection: pointAfterOwner(change, before, after, owner),
+        }
+      : undefined;
+  };
+
+  if (change.deleteRoots.has(root)) return landAfterHolder();
+  const slots = SelectionApi.isNode(selection)
+    ? [...new Set(selection.paths.map((path) => path[0] ?? 0))]
+    : [selection.anchor.path[0] ?? 0];
+  const removed = (slot: number) =>
+    context.mapPath([slot], { deletion: 'drop' }) === null;
+
+  if (!slots.every(removed)) return undefined;
+  const holder = schema.findRootOwner(root, after);
+
+  return holder
+    ? {
+        root: holder.root,
+        selection: holderSelection(holder.root, holder.path),
+      }
+    : landAfterHolder();
+};
+
 /** @internal */
 export const mapSelectionThroughChange = (
   editor: Editor,
-  selection: Selection,
+  from: Selection | SettledCaret,
   change: DocumentChange,
   before: EditorDocumentValue,
   after: EditorDocumentValue,
   fallbackRoot: RootKey,
   options: SelectionMappingOptions = {}
-): Selection => {
-  if (!selection || change.empty) return selection;
+): SettledCaret => {
+  const schema = selectionSchema(editor);
+  const previous = isSettledCaret(from)
+    ? from
+    : carryCaret(
+        valueSite(schema, () => before),
+        NO_CARET,
+        {
+          root: (from && SelectionApi.root(from)) ?? fallbackRoot,
+          selection: from,
+        }
+      );
+  const { selection } = previous;
 
-  const root = SelectionApi.root(selection) ?? fallbackRoot;
+  if (!selection || change.empty) return previous;
+
+  const root = SelectionApi.root(selection) ?? previous.root;
   const context = createMapContext(
     change,
     before,
@@ -945,6 +1061,7 @@ export const mapSelectionThroughChange = (
     root,
     options.runtimeIndexes
   );
+  const site = valueSite(schema, () => after);
 
   if (SelectionApi.isNode(selection)) {
     if (
@@ -952,7 +1069,7 @@ export const mapSelectionThroughChange = (
         (path) => !rawNodeAt(valueRootIndex(before, root), path)
       )
     ) {
-      return null;
+      return carryCaret(site, previous, { root, selection: null });
     }
   } else if (RangeApi.isRange(selection)) {
     const rangeRoot = pointRoot(selection.anchor, root);
@@ -967,8 +1084,25 @@ export const mapSelectionThroughChange = (
       document.positionAt(selection.anchor);
       document.positionAt(selection.focus);
     } catch {
-      return null;
+      return carryCaret(site, previous, { root, selection: null });
     }
+  }
+
+  const landed = landSetSelection(
+    schema,
+    previous,
+    context,
+    change,
+    before,
+    after
+  );
+
+  if (landed) {
+    if (landed.selection) {
+      assertSelectionSupported(editor, landed.selection, after, landed.root);
+    }
+
+    return landCaret(site, previous, landed);
   }
 
   const result = withLandedMarks(
@@ -986,7 +1120,7 @@ export const mapSelectionThroughChange = (
     assertSelectionSupported(editor, result, after, root);
   }
 
-  return result;
+  return carryCaret(site, previous, { root, selection: result });
 };
 
 const detachedSelectionContext = (schema: InternalEditorSchemaApi) =>
@@ -1001,7 +1135,7 @@ export const mapDetachedSelectionThroughChange = (
   after: EditorDocumentValue,
   fallbackRoot: RootKey,
   options: SelectionMappingOptions = {}
-) =>
+): Selection =>
   mapSelectionThroughChange(
     detachedSelectionContext(schema),
     selection,
@@ -1010,7 +1144,7 @@ export const mapDetachedSelectionThroughChange = (
     after,
     fallbackRoot,
     options
-  );
+  ).selection;
 
 /** Validate one persisted selection without a live editor runtime. @internal */
 export const assertDetachedSelectionSupported = (

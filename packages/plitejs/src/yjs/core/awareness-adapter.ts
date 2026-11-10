@@ -5,6 +5,8 @@ import type { NodeList } from '../../core/change/document-index';
 import { registerEditorViewLifetimeCleanup } from '../../core/editor-view-lifetime';
 import { notifyObservers } from '../../core/lifecycle-error';
 import { toInternalRoot as normalizeRootKey } from '../../core/public-root';
+import { getSetSite } from '../../core/public-state';
+import { settleRange } from '../../core/set-root';
 import type { Anchor, Descendant, Point, Range } from '../../index';
 import { NodeApi, RangeApi } from '../../index';
 import {
@@ -256,6 +258,17 @@ export const createYjsAwarenessAdapter = <
     return point ? withRoot(point, rootKey) : null;
   };
 
+  const anchorCursorEnd = (
+    point: Point,
+    position: Y.RelativePosition,
+    root: string
+  ) =>
+    editor.anchor(point, {
+      association: position.assoc < 0 ? 'backward' : 'forward',
+      deletion: 'drop',
+      ...(root === 'main' ? {} : { root }),
+    });
+
   const resolveSelection = (
     rawSelection: CachedCursor<TCursorData>['rawSelection']
   ): Readonly<{
@@ -282,7 +295,7 @@ export const createYjsAwarenessAdapter = <
         rawSelection.root,
         rawSelection.range.anchor
       );
-      const focusPoint = sameEndpoint
+      const resolvedFocus = sameEndpoint
         ? anchorPoint
         : resolveRelativePoint(
             root,
@@ -290,26 +303,33 @@ export const createYjsAwarenessAdapter = <
             rawSelection.range.focus
           );
 
-      if (!anchorPoint || !focusPoint) {
+      if (!anchorPoint || !resolvedFocus) {
         return { anchor: null, focus: null, selection: null };
       }
+      // A teammate's range across two members shows in the anchor's member.
+      // The focus anchor tracks the settled point, so a later mapping keeps
+      // the range there without settling it again.
+      const settled = settleRange(
+        getSetSite(editor),
+        { anchor: anchorPoint, focus: resolvedFocus },
+        rawSelection.root
+      );
 
-      const anchor = editor.anchor(anchorPoint, {
-        association:
-          rawSelection.range.anchor.assoc < 0 ? 'backward' : 'forward',
-        deletion: 'drop',
-        ...(rawSelection.root === 'main' ? {} : { root: rawSelection.root }),
-      });
+      if (!settled) return { anchor: null, focus: null, selection: null };
+      const focusPoint = settled.focus;
+
+      const anchor = anchorCursorEnd(
+        anchorPoint,
+        rawSelection.range.anchor,
+        rawSelection.root
+      );
       const focus = sameEndpoint
         ? anchor
-        : editor.anchor(focusPoint, {
-            association:
-              rawSelection.range.focus.assoc < 0 ? 'backward' : 'forward',
-            deletion: 'drop',
-            ...(rawSelection.root === 'main'
-              ? {}
-              : { root: rawSelection.root }),
-          });
+        : anchorCursorEnd(
+            focusPoint,
+            rawSelection.range.focus,
+            rawSelection.root
+          );
 
       return {
         anchor,
@@ -538,7 +558,23 @@ export const createYjsAwarenessAdapter = <
         continue;
       }
 
-      for (const [cached, selection] of mapped) {
+      for (const [cached, range] of mapped) {
+        const selection = settleRange(getSetSite(editor), range, root);
+
+        if (!selection) {
+          if (setCursorSelection(cached, null, null, null)) {
+            changedClientIds.add(cached.cursor.clientId);
+          }
+          continue;
+        }
+        if (selection.focus !== range.focus && cached.rawSelection) {
+          if (cached.focus !== cached.anchor) cached.focus?.release();
+          cached.focus = anchorCursorEnd(
+            selection.focus,
+            cached.rawSelection.range.focus,
+            root
+          );
+        }
         if (
           cached.cursor.selection === null ||
           !RangeApi.equals(cached.cursor.selection, selection)

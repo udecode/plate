@@ -24,6 +24,7 @@ import type {
   NodeMutationMethods,
   NodeRemoveNodesOptions,
 } from '../interfaces/transforms/node';
+import { refuseMemberCrossingNodes } from '../transforms-text/delete-text';
 import { matchPath } from '../utils/match-path';
 import { normalizeNodeMatch } from '../utils/node-match';
 
@@ -126,13 +127,15 @@ export const removeNodes = ((
       match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
     }
 
+    const entries = Array.from(getNodes(editor, { at, match, mode, voids }));
+
+    refuseMemberCrossingNodes(editor, at, entries);
     const selection =
       options.at === undefined ? getCurrentSelection(editor) : null;
     const selectionAnchor = SelectionApi.isText(selection)
       ? editor.anchor(selection, { deletion: 'nearest' })
       : null;
-    const depths = getNodes(editor, { at, match, mode, voids });
-    const pathAnchors = Array.from(depths, ([, path]) =>
+    const pathAnchors = entries.map(([, path]) =>
       editor.anchor(path, {
         association: 'forward',
         deletion: 'drop',
