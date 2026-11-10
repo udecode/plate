@@ -1,0 +1,80 @@
+{
+  "metric": "p95Ms",
+  "budget": 1,
+  "cohorts": ["sparse-200", "region-200", "sparse-2000", "region-2000"],
+  "arms": {
+    "base": {
+      "cwd": "../../../..",
+      "source": "packages/plitejs/",
+      "command": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "packages/plitejs/scripts/bench/sync-reconnect.ts",
+        "--mode",
+        "budget"
+      ]
+    },
+    "candidate": {
+      "cwd": "../../../..",
+      "source": "packages/plitejs/",
+      "command": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "packages/plitejs/scripts/bench/sync-reconnect.ts",
+        "--mode",
+        "composed",
+        "--samples",
+        "20",
+        "--reference",
+        "packages/plitejs/scripts/bench/sync-reconnect.reference.json"
+      ]
+    },
+    "same": {
+      "cwd": "../../../..",
+      "source": "packages/plitejs/",
+      "command": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "packages/plitejs/scripts/bench/sync-reconnect.ts",
+        "--mode",
+        "composed",
+        "--samples",
+        "20",
+        "--reference",
+        "packages/plitejs/scripts/bench/sync-reconnect.reference.json"
+      ]
+    },
+    "planted": {
+      "cwd": "../../../..",
+      "source": "packages/plitejs/",
+      "command": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "packages/plitejs/scripts/bench/sync-reconnect.ts",
+        "--mode",
+        "composed",
+        "--samples",
+        "3",
+        "--plant-ms",
+        "4000",
+        "--reference",
+        "packages/plitejs/scripts/bench/sync-reconnect.reference.json"
+      ]
+    }
+  },
+  "planted": {
+    "planted": {
+      "sparse-200": 2.05,
+      "region-200": 2.05,
+      "sparse-2000": 2.05,
+      "region-2000": 2.05
+    }
+  },
+  "sameCode": {
+    "same": ["sparse-200", "region-200", "sparse-2000", "region-2000"]
+  }
+}

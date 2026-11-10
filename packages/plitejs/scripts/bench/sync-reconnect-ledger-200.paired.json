@@ -1,0 +1,92 @@
+{
+  "metric": "p95Ms",
+  "budget": 1,
+  "cohorts": ["sparse-200", "region-200"],
+  "arms": {
+    "base": {
+      "cwd": "../../../..",
+      "source": "packages/plitejs/",
+      "command": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "packages/plitejs/scripts/bench/sync-reconnect.ts",
+        "--cohorts",
+        "sparse-200,region-200",
+        "--mode",
+        "budget"
+      ]
+    },
+    "candidate": {
+      "cwd": "../../../..",
+      "source": "packages/plitejs/",
+      "command": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "packages/plitejs/scripts/bench/sync-reconnect.ts",
+        "--cohorts",
+        "sparse-200,region-200",
+        "--mode",
+        "stepwise",
+        "--judge",
+        "whole",
+        "--samples",
+        "10",
+        "--reference",
+        "packages/plitejs/scripts/bench/sync-reconnect.reference.json"
+      ]
+    },
+    "same": {
+      "cwd": "../../../..",
+      "source": "packages/plitejs/",
+      "command": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "packages/plitejs/scripts/bench/sync-reconnect.ts",
+        "--cohorts",
+        "sparse-200,region-200",
+        "--mode",
+        "stepwise",
+        "--judge",
+        "whole",
+        "--samples",
+        "10",
+        "--reference",
+        "packages/plitejs/scripts/bench/sync-reconnect.reference.json"
+      ]
+    },
+    "planted": {
+      "cwd": "../../../..",
+      "source": "packages/plitejs/",
+      "command": [
+        "bun",
+        "--preload",
+        "./config/plite-source-aliases.ts",
+        "packages/plitejs/scripts/bench/sync-reconnect.ts",
+        "--cohorts",
+        "sparse-200,region-200",
+        "--mode",
+        "stepwise",
+        "--judge",
+        "whole",
+        "--samples",
+        "3",
+        "--plant-ms",
+        "4000",
+        "--reference",
+        "packages/plitejs/scripts/bench/sync-reconnect.reference.json"
+      ]
+    }
+  },
+  "planted": {
+    "planted": {
+      "sparse-200": 3.2,
+      "region-200": 3.2
+    }
+  },
+  "sameCode": {
+    "same": ["sparse-200", "region-200"]
+  }
+}
